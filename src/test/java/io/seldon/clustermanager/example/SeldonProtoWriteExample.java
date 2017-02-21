@@ -55,7 +55,7 @@ public class SeldonProtoWriteExample {
                 predictiveUnitDefBuilder.setEndpoint(EndpointDef.newBuilder()
                         .setHost("127.0.0.1")
                         .setPort(5004)
-                        .setType("REST")
+                        .setType(EndpointDef.EndpointType.REST)
                         );
                 //@formatter:on
 
@@ -63,12 +63,15 @@ public class SeldonProtoWriteExample {
 
                 predictiveUnitDefBuilder.setName("digit_classifier_v0.2");
 
-                //@formatter:on
-                predictiveUnitDefBuilder.addParameters(PredictiveUnitDef.ParamDef.newBuilder().setName("n_layers").setType("INT").setValue("5"));
                 //@formatter:off
+                predictiveUnitDefBuilder.addParameters(PredictiveUnitDef.ParamDef.newBuilder()
+                            .setName("n_layers")
+                            .setType(PredictiveUnitDef.ParamType.STRING)
+                            .setValue("5"));
+                //@formatter:on
 
                 predictiveUnitDefBuilder.setSubtype("simpleModel");
-                
+
                 predictiveUnitDefBuilder.setType("model");
 
                 PredictiveUnitDef predictiveUnitDef = predictiveUnitDefBuilder.build();

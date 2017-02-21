@@ -14,15 +14,21 @@ option java_outer_classname = "DeploymentProtos";
 message ClusterDef {}
 
 message EndpointDef {
+
+    enum EndpointType {
+        REST = 0;
+        GRPC = 1;
+    }
+
     string host = 1;
     int32 port = 2;
-    string type = 3;
+    EndpointType type = 3;
 }
 
 message ClusterResourcesDef {
 
     message DockerRegistryDef {
-        int32 id = 1;
+        int64 id = 1;
         string name = 2;
         string password = 3;
         string url = 4;
@@ -32,7 +38,7 @@ message ClusterResourcesDef {
     int32 cpus = 1;
     DockerRegistryDef dockerRegistry = 2;
     int32 gpus = 3;
-    int32 id = 4;
+    int64 id = 4;
     string image = 5;
     int32 memoryGb = 6;
     int32 replicas = 7;
@@ -41,17 +47,24 @@ message ClusterResourcesDef {
 
 message PredictiveUnitDef {
 
+    enum ParamType {
+        INT = 0;
+        FLOAT = 1;
+        DOUBLE = 2;
+        STRING = 3;
+    }
+
     message ParamDef {
         string name = 1;
-        string type = 2;
+        ParamType type = 2;
         string value = 3;
     }
 
-    repeated int32 children = 1;
+    repeated int64 children = 1;
     ClusterResourcesDef cluster_resources = 2;
     EndpointDef endpoint = 3;
     string name = 4;
-    int32 id = 5;
+    int64 id = 5;
     repeated ParamDef parameters = 6;
     string subtype = 7;
     string type = 8;
@@ -59,7 +72,7 @@ message PredictiveUnitDef {
 
 message PredictorDef {
     bool enabled = 1;
-    int32 id = 2;
+    int64 id = 2;
     string name = 3;
     repeated PredictiveUnitDef predictiveUnits = 4;
     int32 root = 5;
@@ -67,7 +80,7 @@ message PredictorDef {
 
 message DeploymentDef {
     ClusterDef cluster = 1;
-    int32 id = 2;
+    int64 id = 2;
     string name = 3;
     PredictorDef predictor = 4;
     string uniqueName = 5;
