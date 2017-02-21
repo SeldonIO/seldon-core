@@ -1,0 +1,8 @@
+# build
+/target/
+
+# eclipse
+.classpath
+.settings/
+.project
+
