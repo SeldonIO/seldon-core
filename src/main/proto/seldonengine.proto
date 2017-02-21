@@ -1,0 +1,75 @@
+// [START declaration]
+syntax = "proto3";
+package seldon.protos;
+import "google/protobuf/any.proto";
+// [END declaration]
+
+// [START java_declaration]
+option java_package = "io.seldon.protos";
+option java_outer_classname = "DeploymentProtos";
+// [END java_declaration]
+
+// [START messages]
+
+message ClusterDef {}
+
+message EndpointDef {
+    string host = 1;
+    int32 port = 2;
+    string type = 3;
+}
+
+message ClusterResourcesDef {
+
+    message DockerRegistryDef {
+        int32 id = 1;
+        string name = 2;
+        string password = 3;
+        string url = 4;
+        string username = 5;
+    }
+
+    int32 cpus = 1;
+    DockerRegistryDef dockerRegistry = 2;
+    int32 gpus = 3;
+    int32 id = 4;
+    string image = 5;
+    int32 memoryGb = 6;
+    int32 replicas = 7;
+    string version = 8;
+}
+
+message PredictiveUnitDef {
+
+    message ParamDef {
+        string name = 1;
+        string type = 2;
+        string value = 3;
+    }
+
+    repeated int32 children = 1;
+    ClusterResourcesDef cluster_resources = 2;
+    EndpointDef endpoint = 3;
+    string name = 4;
+    int32 id = 5;
+    repeated ParamDef parameters = 6;
+    string subtype = 7;
+    string type = 8;
+}
+
+message PredictorDef {
+    bool enabled = 1;
+    int32 id = 2;
+    string name = 3;
+    repeated PredictiveUnitDef predictiveUnits = 4;
+    int32 root = 5;
+}
+
+message DeploymentDef {
+    ClusterDef cluster = 1;
+    int32 id = 2;
+    string name = 3;
+    PredictorDef predictor = 4;
+    string uniqueName = 5;
+}
+// [END messages]
