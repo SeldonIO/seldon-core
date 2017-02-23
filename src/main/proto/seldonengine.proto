@@ -86,7 +86,7 @@ message DeploymentDef {
     string uniqueName = 5;
 }
 
-message CMStatus {
+message CMStatusDef {
 
     enum Status {
         SUCCESS = 0;
@@ -101,7 +101,7 @@ message CMStatus {
 
 message CMResultDef {
 
-    CMStatus cmstatus = 1;
+    CMStatusDef cmstatus = 1;
     oneof oneof_data {
         string test_str = 2;
         int32 test_num = 3;

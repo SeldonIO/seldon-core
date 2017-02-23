@@ -4,7 +4,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 
 import io.seldon.protos.DeploymentProtos.CMResultDef;
-import io.seldon.protos.DeploymentProtos.CMStatus;
+import io.seldon.protos.DeploymentProtos.CMStatusDef;
 
 public class CMResultDefExample {
 
@@ -18,11 +18,11 @@ public class CMResultDefExample {
         System.out.println("---------- Testing Failure ----------");
         //@formatter:off
         CMResultDef cmResultDef = CMResultDef.newBuilder()
-                .setCmstatus(CMStatus.newBuilder()
+                .setCmstatus(CMStatusDef.newBuilder()
                         .setCode(500)
                         .setInfo("Something went wrong")
                         .setReason("BadStuff")
-                        .setStatus(CMStatus.Status.FAILURE))
+                        .setStatus(CMStatusDef.Status.FAILURE))
                 .clearOneofData()
                 .build();
         //@formatter:on
@@ -37,9 +37,9 @@ public class CMResultDefExample {
         System.out.println("---------- Testing Success with test_str ----------");
         //@formatter:off
         CMResultDef cmResultDef = CMResultDef.newBuilder()
-                .setCmstatus(CMStatus.newBuilder()
+                .setCmstatus(CMStatusDef.newBuilder()
                         .setCode(200)
-                        .setStatus(CMStatus.Status.SUCCESS))
+                        .setStatus(CMStatusDef.Status.SUCCESS))
                 .setTestStr("Some String Value")
                 .build();
         //@formatter:on
@@ -54,9 +54,9 @@ public class CMResultDefExample {
         System.out.println("---------- Testing Success with test_num ----------");
         //@formatter:off
         CMResultDef cmResultDef = CMResultDef.newBuilder()
-                .setCmstatus(CMStatus.newBuilder()
+                .setCmstatus(CMStatusDef.newBuilder()
                         .setCode(200)
-                        .setStatus(CMStatus.Status.SUCCESS))
+                        .setStatus(CMStatusDef.Status.SUCCESS))
                 .setTestNum(42)
                 .build();
         //@formatter:on
@@ -89,10 +89,10 @@ public class CMResultDefExample {
     }
 
     private static void examineCMResultDef(CMResultDef cmResultDef) {
-        CMStatus.Status status = cmResultDef.getCmstatus().getStatus();
-        if (status == CMStatus.Status.SUCCESS) {
+        CMStatusDef.Status status = cmResultDef.getCmstatus().getStatus();
+        if (status == CMStatusDef.Status.SUCCESS) {
             System.out.println("SUCCESS!");
-        } else if (status == CMStatus.Status.FAILURE) {
+        } else if (status == CMStatusDef.Status.FAILURE) {
             System.out.println("FAILURE!");
         } else {
             System.out.println("NOT SUCCESS!");
