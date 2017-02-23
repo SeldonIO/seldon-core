@@ -85,4 +85,27 @@ message DeploymentDef {
     PredictorDef predictor = 4;
     string uniqueName = 5;
 }
+
+message CMStatus {
+
+    enum Status {
+        SUCCESS = 0;
+        FAILURE = 1;
+    }
+
+    int32 code = 1;
+    string info = 2;
+    string reason = 3;
+    Status status = 4;
+}
+
+message CMResultDef {
+
+    CMStatus cmstatus = 1;
+    oneof oneof_data {
+        string test_str = 2;
+        int32 test_num = 3;
+    }
+}
+
 // [END messages]
