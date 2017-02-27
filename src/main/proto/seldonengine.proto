@@ -75,7 +75,7 @@ message PredictorDef {
     int64 id = 2;
     string name = 3;
     repeated PredictiveUnitDef predictiveUnits = 4;
-    int32 root = 5;
+    int64 root = 5;
 }
 
 message DeploymentDef {
