@@ -12,7 +12,6 @@ import io.seldon.clustermanager.component.ZookeeperManager;
 import io.seldon.clustermanager.k8s.KubernetesManagerImpl;
 import io.seldon.clustermanager.zk.ZookeeperManagerImpl;
 
-@Configuration
 public class AppConfig {
     @Bean(initMethod = "init", destroyMethod = "cleanup")
     @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
