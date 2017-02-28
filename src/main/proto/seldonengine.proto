@@ -86,6 +86,10 @@ message DeploymentDef {
     string uniqueName = 5;
 }
 
+message StringListDef {
+    repeated string items = 1;
+}
+
 message CMStatusDef {
 
     enum Status {
@@ -103,8 +107,9 @@ message CMResultDef {
 
     CMStatusDef cmstatus = 1;
     oneof oneof_data {
-        string test_str = 2;
-        int32 test_num = 3;
+        StringListDef string_list = 2;
+        string test_str = 3;
+        int32 test_num = 4;
     }
 }
 

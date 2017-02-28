@@ -12,7 +12,7 @@ public class ZookeeperManagerImpl implements ZookeeperManager {
     private CuratorFramework curator = null;
 
     public void init() throws Exception {
-        System.out.println("ZookeeperManager init");
+        System.out.println("ZookeeperManager: init");
         String zookeeperConnectionString = "localhost";
         RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 3);
         curator = CuratorFrameworkFactory.newClient(zookeeperConnectionString, retryPolicy);
@@ -20,14 +20,14 @@ public class ZookeeperManagerImpl implements ZookeeperManager {
 
         try {
             byte[] v = curator.getData().forPath("/"); // Check we can get the root node to see if all is working
-            System.out.println("Sucessfully checked node '/' from zookeeper");
+            System.out.println("ZookeeperManager: sucessfully passed get node '/' test");
         } catch (Exception e) {
             throw e;
         }
     }
 
     public void cleanup() throws Exception {
-        System.out.println("ZookeeperManager cleanup");
+        System.out.println("ZookeeperManager: cleanup");
         if (curator != null) {
             curator.close();
         }
