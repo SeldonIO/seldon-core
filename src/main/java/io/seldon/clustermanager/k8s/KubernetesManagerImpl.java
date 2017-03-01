@@ -43,7 +43,7 @@ public class KubernetesManagerImpl implements KubernetesManager {
         }
     }
 
-    private List<String> getNamespaceList() {
+    public List<String> getNamespaceList() {
         List<String> namespace_list = new ArrayList<>();
         NamespaceList namespaceList = kubernetesClient.namespaces().list();
         for (Namespace ns : namespaceList.getItems()) {
