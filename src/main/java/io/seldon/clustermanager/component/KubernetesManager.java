@@ -8,6 +8,4 @@ public interface KubernetesManager extends AppComponent {
 
     public List<String> getNamespaceList();
 
-    public CMResultDef getNamespaces();
-
 }
