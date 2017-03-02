@@ -15,14 +15,12 @@ import io.seldon.clustermanager.component.ClusterManager;
 import io.seldon.clustermanager.pb.ProtoBufUtils;
 import io.seldon.protos.DeploymentProtos.CMResultDef;
 
-
-
 @RestController
 public class MainController {
-    
+
     @Autowired
     private ClusterManager clusterManager;
-    
+
     @RequestMapping(value = "/ping", method = RequestMethod.GET)
     public String ping() {
         return "pong";
@@ -30,18 +28,26 @@ public class MainController {
 
     @RequestMapping(value = "/namespaces", method = RequestMethod.GET)
     public ResponseEntity<String> get_namespaces() {
-        
+
         CMResultDef cmResultDef = clusterManager.getNamespaces();
-        
+        return cmResultDefToResponseEntity(cmResultDef);
+    }
+
+    private static ResponseEntity<String> cmResultDefToResponseEntity(CMResultDef cmResultDef) {
+
+        HttpStatus httpStatus = HttpStatus.valueOf(cmResultDef.getCmstatus().getCode());
         String json = null;
         try {
             json = ProtoBufUtils.toJson(cmResultDef);
         } catch (InvalidProtocolBufferException e) {
+            httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
             json = "Error writing json";
         }
-        
+
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
-        return new ResponseEntity<String>(json, responseHeaders, HttpStatus.UNAUTHORIZED);
+        ResponseEntity<String> responseEntity = new ResponseEntity<String>(json, responseHeaders, httpStatus);
+
+        return responseEntity;
     }
 }
