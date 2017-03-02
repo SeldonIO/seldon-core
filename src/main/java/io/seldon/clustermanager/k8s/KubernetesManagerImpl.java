@@ -79,9 +79,8 @@ public class KubernetesManagerImpl implements KubernetesManager {
             ClusterResourcesDef clusterResourcesDef = predictiveUnitDef.getClusterResources();
             Deployment deployment = createKubernetesDeployement(seldon_deployment_uniqueName, kubernetesClient, clusterResourcesDef);
             
-            System.out.println(deployment.getMetadata().getName());
-            String m = (deployment != null) ? deployment.getMetadata().getName() : null;
-            logger.info(String.format("Created kubernetes delployment [%s]", m));
+            String msg = (deployment != null) ? deployment.getMetadata().getName() : null;
+            logger.info(String.format("Created kubernetes delployment [%s]", msg));
 
         }
 
@@ -91,17 +90,20 @@ public class KubernetesManagerImpl implements KubernetesManager {
     public void deleteSeldonDeployment(DeploymentDef deploymentDef) {
         
         final String seldon_deployment_uniqueName = deploymentDef.getUniqueName();
+        logger.info(String.format("Deleting Seldon Deployment[%s]", seldon_deployment_uniqueName));
         final String namespace_name = "default"; // TODO change this!
         
         Deployment deployment = kubernetesClient.extensions().deployments().inNamespace(namespace_name).withName(seldon_deployment_uniqueName).get();
-        logger.info("Deleting "+deployment.toString());
+        String msg = (deployment != null) ? deployment.getMetadata().getName() : null;
+        logger.info(String.format("Deleted kubernetes delployment [%s]", msg));
 
         io.fabric8.kubernetes.api.model.extensions.ReplicaSetList rslist = kubernetesClient.extensions().replicaSets().inNamespace(namespace_name)
                 .withLabel("seldon-app", seldon_deployment_uniqueName).list();
         kubernetesClient.resource(deployment).delete();
         for (io.fabric8.kubernetes.api.model.extensions.ReplicaSet rs : rslist.getItems()) {
-            logger.info("Deleting "+rs.toString());
             kubernetesClient.resource(rs).delete();
+            String rsmsg = (rs != null) ? rs.getMetadata().getName() : null;
+            logger.info(String.format("Deleted kubernetes replicaSet [%s]", rsmsg));
         }
     }
 
