@@ -105,6 +105,9 @@ public class KubernetesManagerImpl implements KubernetesManager {
         }
     }
 
+    /**
+     * Helper method to create a kubernetes deployment
+     */
     private static Deployment createKubernetesDeployement(String seldon_deployment_uniqueName, KubernetesClient kubernetesClient, ClusterResourcesDef clusterResourcesDef) {
             final int replica_number = clusterResourcesDef.getReplicas();
             final int container_port = 80; // TODO change this!
