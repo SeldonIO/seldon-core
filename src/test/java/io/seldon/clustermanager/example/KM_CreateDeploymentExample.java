@@ -1,11 +1,8 @@
 package io.seldon.clustermanager.example;
 
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Scope;
 
@@ -18,28 +15,7 @@ import io.seldon.protos.DeploymentProtos.DeploymentDef;
 
 public class KM_CreateDeploymentExample {
 
-    public static class ApplicationContextProvider implements ApplicationContextAware {
-
-        private static ApplicationContext _applicationContext;
-
-        @Override
-        public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-            _applicationContext = applicationContext;
-        }
-
-        public static ApplicationContext getContext() {
-            return _applicationContext;
-        }
-
-    }
-
     public static class AppConfigKubernetes {
-
-        @Bean
-        @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
-        public ApplicationContextProvider applicationContextProvider() {
-            return new ApplicationContextProvider();
-        }
 
         @Bean(initMethod = "init", destroyMethod = "cleanup")
         @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
@@ -50,9 +26,8 @@ public class KM_CreateDeploymentExample {
     }
 
     public static void main(String[] args) {
-        new SpringApplicationBuilder(AppConfigKubernetes.class).web(false).run(args);
-        
-        ApplicationContext ctx = ApplicationContextProvider.getContext();
+        ConfigurableApplicationContext ctx = new SpringApplicationBuilder(AppConfigKubernetes.class).web(false).run(args);
+
         KubernetesManager kubernetesManager = ctx.getBean(KubernetesManager.class);
         DeploymentDef exampleDeploymentDef = KubernetesManagerExampleUtils.buildExampleDeploymentDef();
         try {
@@ -66,6 +41,8 @@ public class KM_CreateDeploymentExample {
         }
 
         kubernetesManager.createSeldonDeployment(exampleDeploymentDef);
+
+        ctx.close();
     }
 
 }
