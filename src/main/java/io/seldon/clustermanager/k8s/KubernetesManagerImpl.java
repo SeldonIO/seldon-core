@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceList;
 import io.fabric8.kubernetes.api.model.Service;
-import io.fabric8.kubernetes.api.model.ServiceBuilder;
 import io.fabric8.kubernetes.api.model.extensions.Deployment;
 import io.fabric8.kubernetes.api.model.extensions.DeploymentList;
 import io.fabric8.kubernetes.client.Config;
@@ -85,7 +84,7 @@ public class KubernetesManagerImpl implements KubernetesManager {
             String msg = (deployment != null) ? deployment.getMetadata().getName() : null;
             logger.info(String.format("Created kubernetes delployment [%s]", msg));
 
-            Service service = createKubernetesService(kubernetesClient, namespace_name, deployment);
+            Service service = new KubernetesServiceOps(kubernetesClient, namespace_name, deployment).create();
             String smsg = (service != null) ? service.getMetadata().getName() : null;
             logger.info(String.format("Created kubernetes service [%s]", smsg));
 
@@ -103,9 +102,7 @@ public class KubernetesManagerImpl implements KubernetesManager {
                 .withLabel("seldon-deployment-id", seldonDeploymentId).list();
         for (Deployment deployment : deployments.getItems()) {
             new KubernetesDeploymentOps(seldonDeploymentId, kubernetesClient, namespace_name).delete(deployment);
-
-            deleteKubernetesService(kubernetesClient, namespace_name, deployment);
-
+            new KubernetesServiceOps(kubernetesClient, namespace_name, deployment).delete();
         }
 
     }
@@ -115,47 +112,6 @@ public class KubernetesManagerImpl implements KubernetesManager {
      */
     private static String getKubernetesDeploymentId(String seldonDeploymentId, String predictiveUnitId) {
         return "sd-" + seldonDeploymentId + "-" + predictiveUnitId;
-    }
-
-    private static Service createKubernetesService(KubernetesClient client, String namespace_name, Deployment deployment) {
-        final String deploymentName = deployment.getMetadata().getName();
-        String serviceName = deploymentName;
-
-        String selectorName = "seldon-app";
-        String selectorValue = deploymentName;
-
-        int port = 8000;
-        int targetPort = 80;
-
-        //@formatter:off
-        Service service = new ServiceBuilder()
-                .withNewMetadata()
-                    .withName(serviceName)
-                .endMetadata()
-                .withNewSpec()
-                    .addNewPort()
-                        .withProtocol("TCP")
-                        .withPort(port)
-                        .withNewTargetPort(targetPort)
-                    .endPort()
-                    .addToSelector(selectorName, selectorValue)
-                    .withType("ClusterIP")
-                .endSpec()
-                .build();
-        //@formatter:on
-
-        service = client.services().inNamespace(namespace_name).create(service);
-
-        return service;
-    }
-
-    private static void deleteKubernetesService(KubernetesClient client, String namespace_name, Deployment deployment) {
-        final String deploymentName = deployment.getMetadata().getName();
-        String serviceName = deploymentName;
-
-        Service service = client.services().inNamespace(namespace_name).withName(serviceName).get();
-        client.resource(service).delete();
-        logger.info(String.format("Deleted kubernetes service [%s]", service.getMetadata().getName()));
     }
 
 }
