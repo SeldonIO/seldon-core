@@ -10,6 +10,7 @@ import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceList;
 import io.fabric8.kubernetes.api.model.extensions.Deployment;
 import io.fabric8.kubernetes.api.model.extensions.DeploymentBuilder;
+import io.fabric8.kubernetes.api.model.extensions.DeploymentList;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
@@ -20,7 +21,6 @@ import io.seldon.protos.DeploymentProtos.ClusterResourcesDef;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
 import io.seldon.protos.DeploymentProtos.PredictiveUnitDef;
 import io.seldon.protos.DeploymentProtos.PredictorDef;
-
 
 public class KubernetesManagerImpl implements KubernetesManager {
 
@@ -64,21 +64,21 @@ public class KubernetesManagerImpl implements KubernetesManager {
 
     @Override
     public void createSeldonDeployment(DeploymentDef deploymentDef) {
-        final String seldon_deployment_uniqueName = deploymentDef.getUniqueName();
-        logger.info(String.format("Creating Seldon Deployment[%s]", seldon_deployment_uniqueName));
+        final String seldonDeploymentId = Long.toString(deploymentDef.getId());
+        logger.info(String.format("Creating Seldon Deployment id[%s]", seldonDeploymentId));
 
         PredictorDef predictorDef = deploymentDef.getPredictor();
-        final String predictor_name = predictorDef.getName();
 
         List<PredictiveUnitDef> predictiveUnits = predictorDef.getPredictiveUnitsList();
         for (PredictiveUnitDef predictiveUnitDef : predictiveUnits) {
+            final String predictiveUnitId = Long.toString(predictiveUnitDef.getId());
             final String predictive_unit_name = predictiveUnitDef.getName();
-            logger.info(String.format("Deploying predictiveUnit[%s] for seldonDeployment[%s]", predictive_unit_name,
-                    seldon_deployment_uniqueName));
+            final String kubernetesDeploymentId = getKubernetesDeploymentId(seldonDeploymentId, predictiveUnitId);
+            logger.info(String.format("Deploying predictiveUnit[%s] for seldonDeployment id[%s]", predictive_unit_name, seldonDeploymentId));
 
             ClusterResourcesDef clusterResourcesDef = predictiveUnitDef.getClusterResources();
-            Deployment deployment = createKubernetesDeployement(seldon_deployment_uniqueName, kubernetesClient, clusterResourcesDef);
-            
+            Deployment deployment = createKubernetesDeployement(seldonDeploymentId, kubernetesDeploymentId, kubernetesClient, clusterResourcesDef);
+
             String msg = (deployment != null) ? deployment.getMetadata().getName() : null;
             logger.info(String.format("Created kubernetes delployment [%s]", msg));
 
@@ -88,18 +88,25 @@ public class KubernetesManagerImpl implements KubernetesManager {
 
     @Override
     public void deleteSeldonDeployment(DeploymentDef deploymentDef) {
-        
-        final String seldon_deployment_uniqueName = deploymentDef.getUniqueName();
-        logger.info(String.format("Deleting Seldon Deployment[%s]", seldon_deployment_uniqueName));
+        final String seldonDeploymentId = Long.toString(deploymentDef.getId());
+        logger.info(String.format("Deleting Seldon Deployment[%s]", seldonDeploymentId));
         final String namespace_name = "default"; // TODO change this!
-        
-        Deployment deployment = kubernetesClient.extensions().deployments().inNamespace(namespace_name).withName(seldon_deployment_uniqueName).get();
-        String msg = (deployment != null) ? deployment.getMetadata().getName() : null;
-        logger.info(String.format("Deleted kubernetes delployment [%s]", msg));
+
+        DeploymentList deployments = kubernetesClient.extensions().deployments().inNamespace(namespace_name)
+                .withLabel("seldon-deployment-id", seldonDeploymentId).list();
+        for (Deployment deployment : deployments.getItems()) {
+            deleteKubernetesDeployment(seldonDeploymentId, deployment, kubernetesClient, namespace_name);
+        }
+
+    }
+
+    public static void deleteKubernetesDeployment(String seldonDeploymentId, Deployment deployment, KubernetesClient kubernetesClient, String namespace_name) {
+        final String deploymentName = deployment.getMetadata().getName();
 
         io.fabric8.kubernetes.api.model.extensions.ReplicaSetList rslist = kubernetesClient.extensions().replicaSets().inNamespace(namespace_name)
-                .withLabel("seldon-app", seldon_deployment_uniqueName).list();
+                .withLabel("seldon-app", deploymentName).list();
         kubernetesClient.resource(deployment).delete();
+        logger.info(String.format("Deleted kubernetes delployment [%s]", deploymentName));
         for (io.fabric8.kubernetes.api.model.extensions.ReplicaSet rs : rslist.getItems()) {
             kubernetesClient.resource(rs).delete();
             String rsmsg = (rs != null) ? rs.getMetadata().getName() : null;
@@ -110,18 +117,19 @@ public class KubernetesManagerImpl implements KubernetesManager {
     /**
      * Helper method to create a kubernetes deployment
      */
-    private static Deployment createKubernetesDeployement(String seldon_deployment_uniqueName, KubernetesClient kubernetesClient, ClusterResourcesDef clusterResourcesDef) {
-            final int replica_number = clusterResourcesDef.getReplicas();
-            final int container_port = 80; // TODO change this!
-            final String namespace_name = "default"; // TODO change this!
-            final String image_name_and_version = clusterResourcesDef.getImage()+":"+clusterResourcesDef.getVersion();
+    private static Deployment createKubernetesDeployement(String seldonDeploymentId, String kubernetesDeploymentId, KubernetesClient kubernetesClient,
+            ClusterResourcesDef clusterResourcesDef) {
+        final int replica_number = clusterResourcesDef.getReplicas();
+        final int container_port = 80; // TODO change this!
+        final String namespace_name = "default"; // TODO change this!
+        final String image_name_and_version = clusterResourcesDef.getImage() + ":" + clusterResourcesDef.getVersion();
 
-            //@formatter:off
+        //@formatter:off
             Deployment deployment = new DeploymentBuilder()
-                    .withNewMetadata().withName(seldon_deployment_uniqueName).endMetadata()
+                    .withNewMetadata().withName(kubernetesDeploymentId).addToLabels("seldon-deployment-id", seldonDeploymentId).endMetadata()
                     .withNewSpec().withReplicas(replica_number)
                         .withNewTemplate()
-                            .withNewMetadata().addToLabels("seldon-app", seldon_deployment_uniqueName).endMetadata()
+                            .withNewMetadata().addToLabels("seldon-app", kubernetesDeploymentId).endMetadata()
                             .withNewSpec().addNewContainer().withName("seldon-container").withImage(image_name_and_version)
                                 .addNewPort().withContainerPort(container_port).endPort().endContainer()
                             .endSpec()
@@ -129,7 +137,14 @@ public class KubernetesManagerImpl implements KubernetesManager {
                     .endSpec().build();
             //@formatter:on
 
-            deployment = kubernetesClient.extensions().deployments().inNamespace(namespace_name).create(deployment);
+        deployment = kubernetesClient.extensions().deployments().inNamespace(namespace_name).create(deployment);
         return deployment;
+    }
+
+    /**
+     * Convert a SeldonDeploymentId into a KubernetesDeploymentId
+     */
+    private static String getKubernetesDeploymentId(String seldonDeploymentId, String predictiveUnitId) {
+        return "sd-" + seldonDeploymentId + "-" + predictiveUnitId;
     }
 }
