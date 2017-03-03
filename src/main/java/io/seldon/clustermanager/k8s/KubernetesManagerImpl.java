@@ -130,7 +130,7 @@ public class KubernetesManagerImpl implements KubernetesManager {
     private static Deployment createKubernetesDeployement(String seldonDeploymentId, String kubernetesDeploymentId, KubernetesClient kubernetesClient,
             ClusterResourcesDef clusterResourcesDef) {
         final int replica_number = clusterResourcesDef.getReplicas();
-        final int container_port = 8080; // TODO change this!
+        final int container_port = 80; // TODO change this!
         final String namespace_name = "default"; // TODO change this!
         final String image_name_and_version = clusterResourcesDef.getImage() + ":" + clusterResourcesDef.getVersion();
 
@@ -165,8 +165,8 @@ public class KubernetesManagerImpl implements KubernetesManager {
         String selectorName = "seldon-app";
         String selectorValue = deploymentName;
 
-        int port = 80;
-        int targetPort = 8080;
+        int port = 8000;
+        int targetPort = 80;
 
         //@formatter:off
         Service service = new ServiceBuilder()
