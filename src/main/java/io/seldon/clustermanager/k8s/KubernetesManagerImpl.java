@@ -1,7 +1,9 @@
 package io.seldon.clustermanager.k8s;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,12 +83,72 @@ public class KubernetesManagerImpl implements KubernetesManager {
             Deployment deployment = new KubernetesDeploymentOps(seldonDeploymentId, kubernetesClient, namespace_name).create(kubernetesDeploymentId,
                     clusterResourcesDef);
 
-            String msg = (deployment != null) ? deployment.getMetadata().getName() : null;
-            logger.info(String.format("Created kubernetes delployment [%s]", msg));
-
             Service service = new KubernetesServiceOps(kubernetesClient, namespace_name, deployment).create();
-            String smsg = (service != null) ? service.getMetadata().getName() : null;
-            logger.info(String.format("Created kubernetes service [%s]", smsg));
+
+        }
+
+    }
+
+    @Override
+    public void updateSeldonDeployment(DeploymentDef deploymentDef) {
+        final String seldonDeploymentId = Long.toString(deploymentDef.getId());
+        logger.info(String.format("Updating Seldon Deployment id[%s]", seldonDeploymentId));
+        final String namespace_name = "default"; // TODO change this!
+
+        Set<String> requiredDeployments = new HashSet<>();
+        { // check required deployment list
+            PredictorDef predictorDef = deploymentDef.getPredictor();
+            List<PredictiveUnitDef> predictiveUnits = predictorDef.getPredictiveUnitsList();
+            for (PredictiveUnitDef predictiveUnitDef : predictiveUnits) {
+                final String predictiveUnitId = Long.toString(predictiveUnitDef.getId());
+                final String kubernetesDeploymentId = getKubernetesDeploymentId(seldonDeploymentId, predictiveUnitId);
+                requiredDeployments.add(kubernetesDeploymentId);
+            }
+        }
+        Set<String> existingDeployments = new HashSet<>();
+        { // find existing deployments
+            DeploymentList deployments = kubernetesClient.extensions().deployments().inNamespace(namespace_name)
+                    .withLabel("seldon-deployment-id", seldonDeploymentId).list();
+            for (Deployment deployment : deployments.getItems()) {
+                String kubernetesDeploymentId = deployment.getMetadata().getName();
+                existingDeployments.add(kubernetesDeploymentId);
+            }
+        }
+
+        { // Delete deployments not required anymore
+            DeploymentList deployments = kubernetesClient.extensions().deployments().inNamespace(namespace_name)
+                    .withLabel("seldon-deployment-id", seldonDeploymentId).list();
+            for (Deployment deployment : deployments.getItems()) {
+                String kubernetesDeploymentId = deployment.getMetadata().getName();
+                if (!requiredDeployments.contains(kubernetesDeploymentId)) {
+                    /// System.out.println("Delete: " + kubernetesDeploymentId);
+                    new KubernetesDeploymentOps(seldonDeploymentId, kubernetesClient, namespace_name).delete(deployment);
+                    new KubernetesServiceOps(kubernetesClient, namespace_name, deployment).delete();
+                }
+            }
+
+        }
+
+        { // Update or create the required deployments
+            PredictorDef predictorDef = deploymentDef.getPredictor();
+            List<PredictiveUnitDef> predictiveUnits = predictorDef.getPredictiveUnitsList();
+            for (PredictiveUnitDef predictiveUnitDef : predictiveUnits) {
+                final String predictiveUnitId = Long.toString(predictiveUnitDef.getId());
+                final String kubernetesDeploymentId = getKubernetesDeploymentId(seldonDeploymentId, predictiveUnitId);
+                if (existingDeployments.contains(kubernetesDeploymentId)) {
+                    //System.out.println("Update: " + kubernetesDeploymentId);
+                    ClusterResourcesDef clusterResourcesDef = predictiveUnitDef.getClusterResources();
+                    Deployment deployment = new KubernetesDeploymentOps(seldonDeploymentId, kubernetesClient, namespace_name).update(kubernetesDeploymentId,
+                            clusterResourcesDef);
+                    Service service = new KubernetesServiceOps(kubernetesClient, namespace_name, deployment).update();
+                } else {
+                    //System.out.println("Create: " + kubernetesDeploymentId);
+                    ClusterResourcesDef clusterResourcesDef = predictiveUnitDef.getClusterResources();
+                    Deployment deployment = new KubernetesDeploymentOps(seldonDeploymentId, kubernetesClient, namespace_name).create(kubernetesDeploymentId,
+                            clusterResourcesDef);
+                    Service service = new KubernetesServiceOps(kubernetesClient, namespace_name, deployment).create();
+                }
+            }
 
         }
 

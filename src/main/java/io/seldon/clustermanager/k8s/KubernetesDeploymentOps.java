@@ -41,6 +41,34 @@ class KubernetesDeploymentOps {
             //@formatter:on
 
         deployment = kubernetesClient.extensions().deployments().inNamespace(namespace_name).create(deployment);
+        String deploymentName = (deployment != null) ? deployment.getMetadata().getName() : null;
+        logger.info(String.format("Created kubernetes delployment [%s]", deploymentName));
+
+        return deployment;
+    }
+
+    public Deployment update(String kubernetesDeploymentId, ClusterResourcesDef clusterResourcesDef) {
+        final int replica_number = clusterResourcesDef.getReplicas();
+        final int container_port = 80; // TODO change this!
+        final String image_name_and_version = clusterResourcesDef.getImage() + ":" + clusterResourcesDef.getVersion();
+
+        //@formatter:off
+        Deployment deployment = new DeploymentBuilder()
+                .withNewMetadata().withName(kubernetesDeploymentId).addToLabels("seldon-deployment-id", seldonDeploymentId).endMetadata()
+                .withNewSpec().withReplicas(replica_number)
+                    .withNewTemplate()
+                        .withNewMetadata().addToLabels("seldon-app", kubernetesDeploymentId).endMetadata()
+                        .withNewSpec().addNewContainer().withName("seldon-container").withImage(image_name_and_version)
+                            .addNewPort().withContainerPort(container_port).endPort().endContainer()
+                        .endSpec()
+                    .endTemplate()
+                .endSpec().build();
+            //@formatter:on
+
+        deployment = kubernetesClient.extensions().deployments().inNamespace(namespace_name).createOrReplace(deployment);
+        String deploymentName = (deployment != null) ? deployment.getMetadata().getName() : null;
+        logger.info(String.format("Updated kubernetes delployment [%s]", deploymentName));
+
         return deployment;
     }
 

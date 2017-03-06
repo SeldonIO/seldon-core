@@ -50,7 +50,41 @@ public class KubernetesServiceOps {
         //@formatter:on
 
         service = kubernetesClient.services().inNamespace(namespace_name).create(service);
+        String serviceNameForMsg = (service != null) ? service.getMetadata().getName() : null;
+        logger.info(String.format("Created kubernetes service [%s]", serviceNameForMsg));
+        return service;
+    }
 
+    public Service update() {
+        final String deploymentName = deployment.getMetadata().getName();
+        String serviceName = deploymentName;
+
+        String selectorName = "seldon-app";
+        String selectorValue = deploymentName;
+
+        int port = 8000;
+        int targetPort = 80;
+
+        //@formatter:off
+        Service service = new ServiceBuilder()
+                .withNewMetadata()
+                    .withName(serviceName)
+                .endMetadata()
+                .withNewSpec()
+                    .addNewPort()
+                        .withProtocol("TCP")
+                        .withPort(port)
+                        .withNewTargetPort(targetPort)
+                    .endPort()
+                    .addToSelector(selectorName, selectorValue)
+                    .withType("ClusterIP")
+                .endSpec()
+                .build();
+        //@formatter:on
+
+        service = kubernetesClient.services().inNamespace(namespace_name).createOrReplace(service);
+        String serviceNameForMsg = (service != null) ? service.getMetadata().getName() : null;
+        logger.info(String.format("Updated kubernetes service [%s]", serviceNameForMsg));
         return service;
     }
 
