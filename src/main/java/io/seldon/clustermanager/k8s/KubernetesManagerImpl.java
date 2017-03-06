@@ -121,7 +121,6 @@ public class KubernetesManagerImpl implements KubernetesManager {
             for (Deployment deployment : deployments.getItems()) {
                 String kubernetesDeploymentId = deployment.getMetadata().getName();
                 if (!requiredDeployments.contains(kubernetesDeploymentId)) {
-                    /// System.out.println("Delete: " + kubernetesDeploymentId);
                     new KubernetesDeploymentOps(seldonDeploymentId, kubernetesClient, namespace_name).delete(deployment);
                     new KubernetesServiceOps(kubernetesClient, namespace_name, deployment).delete();
                 }
@@ -135,14 +134,14 @@ public class KubernetesManagerImpl implements KubernetesManager {
             for (PredictiveUnitDef predictiveUnitDef : predictiveUnits) {
                 final String predictiveUnitId = Long.toString(predictiveUnitDef.getId());
                 final String kubernetesDeploymentId = getKubernetesDeploymentId(seldonDeploymentId, predictiveUnitId);
+                final String predictive_unit_name = predictiveUnitDef.getName();
+                logger.info(String.format("Deploying predictiveUnit[%s] for seldonDeployment id[%s]", predictive_unit_name, seldonDeploymentId));
                 if (existingDeployments.contains(kubernetesDeploymentId)) {
-                    //System.out.println("Update: " + kubernetesDeploymentId);
                     ClusterResourcesDef clusterResourcesDef = predictiveUnitDef.getClusterResources();
                     Deployment deployment = new KubernetesDeploymentOps(seldonDeploymentId, kubernetesClient, namespace_name).update(kubernetesDeploymentId,
                             clusterResourcesDef);
                     Service service = new KubernetesServiceOps(kubernetesClient, namespace_name, deployment).update();
                 } else {
-                    //System.out.println("Create: " + kubernetesDeploymentId);
                     ClusterResourcesDef clusterResourcesDef = predictiveUnitDef.getClusterResources();
                     Deployment deployment = new KubernetesDeploymentOps(seldonDeploymentId, kubernetesClient, namespace_name).create(kubernetesDeploymentId,
                             clusterResourcesDef);
