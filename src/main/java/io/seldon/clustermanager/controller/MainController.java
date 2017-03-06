@@ -18,8 +18,13 @@ import io.seldon.protos.DeploymentProtos.CMResultDef;
 import io.seldon.protos.DeploymentProtos.CMStatusDef;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @RestController
 public class MainController {
+    
+    private final static Logger logger = LoggerFactory.getLogger(MainController.class);
 
     @Autowired
     private ClusterManager clusterManager;
@@ -40,6 +45,7 @@ public class MainController {
     public ResponseEntity<String> deployments_post(RequestEntity<String> requestEntity) {
 
         String json = requestEntity.getBody();
+        logger.debug(String.format("[%s] [%s] [%s]", "POST", "/deployments", json));
 
         CMResultDef cmResultDef = null;
         try {
@@ -66,6 +72,7 @@ public class MainController {
     public ResponseEntity<String> deployments_delete(RequestEntity<String> requestEntity) {
 
         String json = requestEntity.getBody();
+        logger.debug(String.format("[%s] [%s] [%s]", "DELETE", "/deployments", json));
 
         CMResultDef cmResultDef = null;
         try {
@@ -92,6 +99,7 @@ public class MainController {
     public ResponseEntity<String> deployments_patch(RequestEntity<String> requestEntity) {
 
         String json = requestEntity.getBody();
+        logger.debug(String.format("[%s] [%s] [%s]", "PATCH", "/deployments", json));
 
         CMResultDef cmResultDef = null;
         try {
