@@ -9,9 +9,8 @@ import io.seldon.clustermanager.component.KubernetesManager;
 import io.seldon.clustermanager.component.ZookeeperManager;
 import io.seldon.protos.DeploymentProtos.CMResultDef;
 import io.seldon.protos.DeploymentProtos.CMStatusDef;
+import io.seldon.protos.DeploymentProtos.DeploymentDef;
 import io.seldon.protos.DeploymentProtos.StringListDef;
-
-
 
 public class CluserManagerImpl implements ClusterManager {
 
@@ -43,7 +42,7 @@ public class CluserManagerImpl implements ClusterManager {
         CMResultDef cmResultDef = null;
         try {
             List<String> namespace_list = kubernetesManager.getNamespaceList();
-            
+
             //@formatter:off
             StringListDef.Builder stringListDefBuilder = StringListDef.newBuilder();
             for (String item: namespace_list) {
@@ -75,4 +74,67 @@ public class CluserManagerImpl implements ClusterManager {
         return cmResultDef;
     }
 
+    @Override
+    public CMResultDef createSeldonDeployment(DeploymentDef deploymentDef) {
+        CMResultDef cmResultDef = null;
+        try {
+            kubernetesManager.createSeldonDeployment(deploymentDef);
+            cmResultDef = buildSUCCESS();
+        } catch (Throwable e) {
+            String info = org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(e);
+            cmResultDef = buildFAILURE(info);
+        }
+        return cmResultDef;
+    }
+
+    @Override
+    public CMResultDef updateSeldonDeployment(DeploymentDef deploymentDef) {
+        CMResultDef cmResultDef = null;
+        try {
+            kubernetesManager.updateSeldonDeployment(deploymentDef);
+            cmResultDef = buildSUCCESS();
+        } catch (Throwable e) {
+            String info = org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(e);
+            cmResultDef = buildFAILURE(info);
+        }
+        return cmResultDef;
+    }
+
+    @Override
+    public CMResultDef deleteSeldonDeployment(DeploymentDef deploymentDef) {
+        CMResultDef cmResultDef = null;
+        try {
+            kubernetesManager.deleteSeldonDeployment(deploymentDef);
+            cmResultDef = buildSUCCESS();
+        } catch (Throwable e) {
+            String info = org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(e);
+            cmResultDef = buildFAILURE(info);
+        }
+        return cmResultDef;
+    }
+
+    private static CMResultDef buildSUCCESS() {
+        //@formatter:off
+        CMResultDef cmResultDef = CMResultDef.newBuilder()
+                .setCmstatus(CMStatusDef.newBuilder()
+                        .setCode(200)
+                        .setStatus(CMStatusDef.Status.SUCCESS))
+                .clearOneofData()
+                .build();
+        //@formatter:on
+        return cmResultDef;
+    }
+
+    private static CMResultDef buildFAILURE(String info) {
+        //@formatter:off
+        CMResultDef cmResultDef = CMResultDef.newBuilder()
+                .setCmstatus(CMStatusDef.newBuilder()
+                        .setCode(500)
+                        .setStatus(CMStatusDef.Status.FAILURE)
+                        .setInfo(info))
+                .clearOneofData()
+                .build();
+        //@formatter:on
+        return cmResultDef;
+    }
 }
