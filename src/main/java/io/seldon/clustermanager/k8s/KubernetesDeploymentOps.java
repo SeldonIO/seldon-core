@@ -42,7 +42,7 @@ class KubernetesDeploymentOps {
 
         deployment = kubernetesClient.extensions().deployments().inNamespace(namespace_name).create(deployment);
         String deploymentName = (deployment != null) ? deployment.getMetadata().getName() : null;
-        logger.info(String.format("Created kubernetes delployment [%s]", deploymentName));
+        logger.debug(String.format("Created kubernetes delployment [%s]", deploymentName));
 
         return deployment;
     }
@@ -67,7 +67,7 @@ class KubernetesDeploymentOps {
 
         deployment = kubernetesClient.extensions().deployments().inNamespace(namespace_name).createOrReplace(deployment);
         String deploymentName = (deployment != null) ? deployment.getMetadata().getName() : null;
-        logger.info(String.format("Updated kubernetes delployment [%s]", deploymentName));
+        logger.debug(String.format("Updated kubernetes delployment [%s]", deploymentName));
 
         return deployment;
     }
@@ -78,11 +78,11 @@ class KubernetesDeploymentOps {
         io.fabric8.kubernetes.api.model.extensions.ReplicaSetList rslist = kubernetesClient.extensions().replicaSets().inNamespace(namespace_name)
                 .withLabel("seldon-app", deploymentName).list();
         kubernetesClient.resource(deployment).delete();
-        logger.info(String.format("Deleted kubernetes delployment [%s]", deploymentName));
+        logger.debug(String.format("Deleted kubernetes delployment [%s]", deploymentName));
         for (io.fabric8.kubernetes.api.model.extensions.ReplicaSet rs : rslist.getItems()) {
             kubernetesClient.resource(rs).delete();
             String rsmsg = (rs != null) ? rs.getMetadata().getName() : null;
-            logger.info(String.format("Deleted kubernetes replicaSet [%s]", rsmsg));
+            logger.debug(String.format("Deleted kubernetes replicaSet [%s]", rsmsg));
         }
     }
 }

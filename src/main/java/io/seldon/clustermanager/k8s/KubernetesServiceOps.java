@@ -51,7 +51,7 @@ public class KubernetesServiceOps {
 
         service = kubernetesClient.services().inNamespace(namespace_name).create(service);
         String serviceNameForMsg = (service != null) ? service.getMetadata().getName() : null;
-        logger.info(String.format("Created kubernetes service [%s]", serviceNameForMsg));
+        logger.debug(String.format("Created kubernetes service [%s]", serviceNameForMsg));
         return service;
     }
 
@@ -84,7 +84,7 @@ public class KubernetesServiceOps {
 
         service = kubernetesClient.services().inNamespace(namespace_name).createOrReplace(service);
         String serviceNameForMsg = (service != null) ? service.getMetadata().getName() : null;
-        logger.info(String.format("Updated kubernetes service [%s]", serviceNameForMsg));
+        logger.debug(String.format("Updated kubernetes service [%s]", serviceNameForMsg));
         return service;
     }
 
@@ -94,6 +94,6 @@ public class KubernetesServiceOps {
 
         Service service = kubernetesClient.services().inNamespace(namespace_name).withName(serviceName).get();
         kubernetesClient.resource(service).delete();
-        logger.info(String.format("Deleted kubernetes service [%s]", service.getMetadata().getName()));
+        logger.debug(String.format("Deleted kubernetes service [%s]", service.getMetadata().getName()));
     }
 }

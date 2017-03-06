@@ -67,7 +67,7 @@ public class KubernetesManagerImpl implements KubernetesManager {
     @Override
     public void createSeldonDeployment(DeploymentDef deploymentDef) {
         final String seldonDeploymentId = Long.toString(deploymentDef.getId());
-        logger.info(String.format("Creating Seldon Deployment id[%s]", seldonDeploymentId));
+        logger.debug(String.format("Creating Seldon Deployment id[%s]", seldonDeploymentId));
         final String namespace_name = "default"; // TODO change this!
 
         PredictorDef predictorDef = deploymentDef.getPredictor();
@@ -77,7 +77,7 @@ public class KubernetesManagerImpl implements KubernetesManager {
             final String predictiveUnitId = Long.toString(predictiveUnitDef.getId());
             final String predictive_unit_name = predictiveUnitDef.getName();
             final String kubernetesDeploymentId = getKubernetesDeploymentId(seldonDeploymentId, predictiveUnitId);
-            logger.info(String.format("Deploying predictiveUnit[%s] for seldonDeployment id[%s]", predictive_unit_name, seldonDeploymentId));
+            logger.debug(String.format("Deploying predictiveUnit[%s] for seldonDeployment id[%s]", predictive_unit_name, seldonDeploymentId));
 
             ClusterResourcesDef clusterResourcesDef = predictiveUnitDef.getClusterResources();
             Deployment deployment = new KubernetesDeploymentOps(seldonDeploymentId, kubernetesClient, namespace_name).create(kubernetesDeploymentId,
@@ -92,7 +92,7 @@ public class KubernetesManagerImpl implements KubernetesManager {
     @Override
     public void updateSeldonDeployment(DeploymentDef deploymentDef) {
         final String seldonDeploymentId = Long.toString(deploymentDef.getId());
-        logger.info(String.format("Updating Seldon Deployment id[%s]", seldonDeploymentId));
+        logger.debug(String.format("Updating Seldon Deployment id[%s]", seldonDeploymentId));
         final String namespace_name = "default"; // TODO change this!
 
         Set<String> requiredDeployments = new HashSet<>();
@@ -135,7 +135,7 @@ public class KubernetesManagerImpl implements KubernetesManager {
                 final String predictiveUnitId = Long.toString(predictiveUnitDef.getId());
                 final String kubernetesDeploymentId = getKubernetesDeploymentId(seldonDeploymentId, predictiveUnitId);
                 final String predictive_unit_name = predictiveUnitDef.getName();
-                logger.info(String.format("Deploying predictiveUnit[%s] for seldonDeployment id[%s]", predictive_unit_name, seldonDeploymentId));
+                logger.debug(String.format("Deploying predictiveUnit[%s] for seldonDeployment id[%s]", predictive_unit_name, seldonDeploymentId));
                 if (existingDeployments.contains(kubernetesDeploymentId)) {
                     ClusterResourcesDef clusterResourcesDef = predictiveUnitDef.getClusterResources();
                     Deployment deployment = new KubernetesDeploymentOps(seldonDeploymentId, kubernetesClient, namespace_name).update(kubernetesDeploymentId,
@@ -156,7 +156,7 @@ public class KubernetesManagerImpl implements KubernetesManager {
     @Override
     public void deleteSeldonDeployment(DeploymentDef deploymentDef) {
         final String seldonDeploymentId = Long.toString(deploymentDef.getId());
-        logger.info(String.format("Deleting Seldon Deployment[%s]", seldonDeploymentId));
+        logger.debug(String.format("Deleting Seldon Deployment[%s]", seldonDeploymentId));
         final String namespace_name = "default"; // TODO change this!
 
         DeploymentList deployments = kubernetesClient.extensions().deployments().inNamespace(namespace_name)
