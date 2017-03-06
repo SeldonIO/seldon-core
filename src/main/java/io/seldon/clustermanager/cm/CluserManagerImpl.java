@@ -2,6 +2,8 @@ package io.seldon.clustermanager.cm;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import io.seldon.clustermanager.component.ClusterManager;
@@ -14,26 +16,28 @@ import io.seldon.protos.DeploymentProtos.StringListDef;
 
 public class CluserManagerImpl implements ClusterManager {
 
+    private final static Logger logger = LoggerFactory.getLogger(CluserManagerImpl.class);
+
     private ZookeeperManager zookeeperManager;
     private KubernetesManager kubernetesManager;
 
     public void init() throws Exception {
-        System.out.println("ClusterManager: init");
+        logger.info("init");
     }
 
     public void cleanup() throws Exception {
-        System.out.println("ClusterManager: cleanup");
+        logger.info("cleanup");
     }
 
     @Autowired
     public void setZookeeperManager(ZookeeperManager zookeeperManager) {
-        System.out.println("ClusterManager: set ZookeeperManager injection");
+        logger.info("injecting ZookeeperManager");
         this.zookeeperManager = zookeeperManager;
     }
 
     @Autowired
     public void setKubernetesManager(KubernetesManager kubernetesManager) {
-        System.out.println("ClusterManager: set KubernetesManager injection");
+        logger.info("injecting KubernetesManager");
         this.kubernetesManager = kubernetesManager;
     }
 

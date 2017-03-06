@@ -5,6 +5,8 @@ import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 import com.google.protobuf.util.JsonFormat.Printer;
 
+import io.seldon.protos.DeploymentProtos.DeploymentDef;
+
 public class ProtoBufUtils {
 
     private ProtoBufUtils() {
@@ -13,8 +15,10 @@ public class ProtoBufUtils {
     /**
      * Serialize a protobuf message to JSON, indicating if whitespace needs to be stripped.
      * 
-     * @param message   The protobuf message to serialize.
-     * @param omittingInsignificantWhitespace   True if needs to be stripped of whitespace.
+     * @param message
+     *            The protobuf message to serialize.
+     * @param omittingInsignificantWhitespace
+     *            True if needs to be stripped of whitespace.
      * @return json string
      * @throws InvalidProtocolBufferException
      */
@@ -34,13 +38,18 @@ public class ProtoBufUtils {
     /**
      * Serialize a protobuf message to JSON, allowing the inclusion of whitespace.
      * 
-     * @param message   The protobuf message to serialize.
+     * @param message
+     *            The protobuf message to serialize.
      * @return json string
      * @throws InvalidProtocolBufferException
      */
     public static String toJson(Message message) throws InvalidProtocolBufferException {
         boolean omittingInsignificantWhitespace = false;
         return toJson(message, omittingInsignificantWhitespace);
+    }
+
+    public static <T extends Message.Builder> void updateMessageBuilderFromJson(T messageBuilder, String json) throws InvalidProtocolBufferException {
+        JsonFormat.parser().ignoringUnknownFields().merge(json, messageBuilder);
     }
 
 }

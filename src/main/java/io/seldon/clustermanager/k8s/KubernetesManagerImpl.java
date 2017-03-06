@@ -40,7 +40,7 @@ public class KubernetesManagerImpl implements KubernetesManager {
         try {
             kubernetesClient = new DefaultKubernetesClient(config);
             getNamespaceList(); // simple check to see if client works
-            logger.info("Sucessfully passed namespace check test");
+            logger.info("Sucessfully passed namespace check");
         } catch (KubernetesClientException e) {
             throw new Exception(e);
         }

@@ -7,12 +7,17 @@ import org.apache.curator.retry.ExponentialBackoffRetry;
 
 import io.seldon.clustermanager.component.ZookeeperManager;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ZookeeperManagerImpl implements ZookeeperManager {
+
+    private final static Logger logger = LoggerFactory.getLogger(ZookeeperManagerImpl.class);
 
     private CuratorFramework curator = null;
 
     public void init() throws Exception {
-        System.out.println("ZookeeperManager: init");
+        logger.info("init");
         String zookeeperConnectionString = "localhost";
         RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 3);
         curator = CuratorFrameworkFactory.newClient(zookeeperConnectionString, retryPolicy);
@@ -20,14 +25,14 @@ public class ZookeeperManagerImpl implements ZookeeperManager {
 
         try {
             byte[] v = curator.getData().forPath("/"); // Check we can get the root node to see if all is working
-            System.out.println("ZookeeperManager: sucessfully passed get node '/' test");
+            logger.info("Sucessfully passed root node data check");
         } catch (Exception e) {
             throw e;
         }
     }
 
     public void cleanup() throws Exception {
-        System.out.println("ZookeeperManager: cleanup");
+        logger.info("cleanup");
         if (curator != null) {
             curator.close();
         }
