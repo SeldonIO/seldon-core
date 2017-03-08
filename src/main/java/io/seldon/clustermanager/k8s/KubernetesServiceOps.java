@@ -7,6 +7,7 @@ import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.ServiceBuilder;
 import io.fabric8.kubernetes.api.model.extensions.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.seldon.protos.DeploymentProtos.EndpointDef;
 
 public class KubernetesServiceOps {
 
@@ -22,14 +23,14 @@ public class KubernetesServiceOps {
         this.deployment = deployment;
     }
 
-    public Service create() {
+    public Service create(EndpointDef endpointDef) {
         final String deploymentName = deployment.getMetadata().getName();
         String serviceName = deploymentName;
 
         String selectorName = "seldon-app";
         String selectorValue = deploymentName;
 
-        int port = 8000;
+        int port = endpointDef.getPort();
         int targetPort = 80;
 
         //@formatter:off
@@ -55,14 +56,14 @@ public class KubernetesServiceOps {
         return service;
     }
 
-    public Service update() {
+    public Service update(EndpointDef endpointDef) {
         final String deploymentName = deployment.getMetadata().getName();
         String serviceName = deploymentName;
 
         String selectorName = "seldon-app";
         String selectorValue = deploymentName;
 
-        int port = 8000;
+        int port = endpointDef.getPort();
         int targetPort = 80;
 
         //@formatter:off

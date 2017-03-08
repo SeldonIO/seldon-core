@@ -22,6 +22,7 @@ import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.seldon.clustermanager.component.KubernetesManager;
 import io.seldon.protos.DeploymentProtos.ClusterResourcesDef;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
+import io.seldon.protos.DeploymentProtos.EndpointDef;
 import io.seldon.protos.DeploymentProtos.PredictiveUnitDef;
 import io.seldon.protos.DeploymentProtos.PredictorDef;
 
@@ -83,10 +84,11 @@ public class KubernetesManagerImpl implements KubernetesManager {
             logger.debug(String.format("Deploying predictiveUnit[%s] for seldonDeployment id[%s]", predictive_unit_name, seldonDeploymentId));
 
             ClusterResourcesDef clusterResourcesDef = predictiveUnitDef.getClusterResources();
+            EndpointDef endpointDef = predictiveUnitDef.getEndpoint();
             Optional<Deployment> deployment = new KubernetesDeploymentOps(seldonDeploymentId, kubernetesClient, namespace_name).create(kubernetesDeploymentId,
                     clusterResourcesDef);
             if (deployment.isPresent()) {
-                Service service = new KubernetesServiceOps(kubernetesClient, namespace_name, deployment.get()).create();
+                Service service = new KubernetesServiceOps(kubernetesClient, namespace_name, deployment.get()).create(endpointDef);
                 /// String serviceClusterIP = service.getSpec().getClusterIP();
                 String serviceName = service.getMetadata().getName();
                 resultingDeploymentDefBuilder.getPredictorBuilder().getPredictiveUnitsBuilder(predictiveUnitIndex).getEndpointBuilder().setHost(serviceName);
@@ -147,20 +149,20 @@ public class KubernetesManagerImpl implements KubernetesManager {
                 final String kubernetesDeploymentId = getKubernetesDeploymentId(seldonDeploymentId, predictiveUnitId);
                 final String predictive_unit_name = predictiveUnitDef.getName();
                 logger.debug(String.format("Deploying predictiveUnit[%s] for seldonDeployment id[%s]", predictive_unit_name, seldonDeploymentId));
+                ClusterResourcesDef clusterResourcesDef = predictiveUnitDef.getClusterResources();
+                EndpointDef endpointDef = predictiveUnitDef.getEndpoint();
                 if (existingDeployments.contains(kubernetesDeploymentId)) {
-                    ClusterResourcesDef clusterResourcesDef = predictiveUnitDef.getClusterResources();
                     Deployment deployment = new KubernetesDeploymentOps(seldonDeploymentId, kubernetesClient, namespace_name).update(kubernetesDeploymentId,
                             clusterResourcesDef);
-                    Service service = new KubernetesServiceOps(kubernetesClient, namespace_name, deployment).update();
+                    Service service = new KubernetesServiceOps(kubernetesClient, namespace_name, deployment).update(endpointDef);
                     String serviceName = service.getMetadata().getName();
                     resultingDeploymentDefBuilder.getPredictorBuilder().getPredictiveUnitsBuilder(predictiveUnitIndex).getEndpointBuilder()
                             .setHost(serviceName);
                 } else {
-                    ClusterResourcesDef clusterResourcesDef = predictiveUnitDef.getClusterResources();
                     Optional<Deployment> deployment = new KubernetesDeploymentOps(seldonDeploymentId, kubernetesClient, namespace_name)
                             .create(kubernetesDeploymentId, clusterResourcesDef);
                     if (deployment.isPresent()) {
-                        Service service = new KubernetesServiceOps(kubernetesClient, namespace_name, deployment.get()).create();
+                        Service service = new KubernetesServiceOps(kubernetesClient, namespace_name, deployment.get()).create(endpointDef);
                         String serviceName = service.getMetadata().getName();
                         resultingDeploymentDefBuilder.getPredictorBuilder().getPredictiveUnitsBuilder(predictiveUnitIndex).getEndpointBuilder()
                                 .setHost(serviceName);
