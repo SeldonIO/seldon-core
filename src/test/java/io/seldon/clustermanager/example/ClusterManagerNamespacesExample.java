@@ -34,11 +34,11 @@ public class ClusterManagerNamespacesExample {
                 }
 
                 @Override
-                public void persistDeployment(DeploymentDef deploymentDef) throws Exception {
+                public void persistSeldonDeployment(DeploymentDef deploymentDef) throws Exception {
                 }
 
                 @Override
-                public void deleteDeployment(DeploymentDef deploymentDef) throws Exception {
+                public void deleteSeldonDeployment(DeploymentDef deploymentDef) throws Exception {
                 }
             };
         }

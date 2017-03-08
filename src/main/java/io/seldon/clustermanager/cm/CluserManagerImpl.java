@@ -84,7 +84,7 @@ public class CluserManagerImpl implements ClusterManager {
         CMResultDef cmResultDef = null;
         try {
             DeploymentDef resultingDeploymentDef = kubernetesManager.createSeldonDeployment(deploymentDef);
-            zookeeperManager.persistDeployment(resultingDeploymentDef);
+            zookeeperManager.persistSeldonDeployment(resultingDeploymentDef);
             //@formatter:off
             DeploymentResultDef deploymentResultDef = DeploymentResultDef.newBuilder()
                     .setDeployment(resultingDeploymentDef)
@@ -105,7 +105,7 @@ public class CluserManagerImpl implements ClusterManager {
         CMResultDef cmResultDef = null;
         try {
             DeploymentDef resultingDeploymentDef = kubernetesManager.updateSeldonDeployment(deploymentDef);
-            zookeeperManager.persistDeployment(resultingDeploymentDef);
+            zookeeperManager.persistSeldonDeployment(resultingDeploymentDef);
             //@formatter:off
             DeploymentResultDef deploymentResultDef = DeploymentResultDef.newBuilder()
                     .setDeployment(resultingDeploymentDef)
@@ -126,7 +126,7 @@ public class CluserManagerImpl implements ClusterManager {
         CMResultDef cmResultDef = null;
         try {
             kubernetesManager.deleteSeldonDeployment(deploymentDef);
-            zookeeperManager.deleteDeployment(deploymentDef);
+            zookeeperManager.deleteSeldonDeployment(deploymentDef);
             cmResultDef = buildSUCCESS();
         } catch (Throwable e) {
             String info = org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(e);

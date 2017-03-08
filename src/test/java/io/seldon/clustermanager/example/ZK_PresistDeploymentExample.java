@@ -33,7 +33,7 @@ public class ZK_PresistDeploymentExample {
             String s = ProtoBufUtils.toJson(exampleDeploymentDef, true);
             System.out.println(s);
             System.out.println("-------------------------------------------------------------------------------");
-            zookeeperManager.persistDeployment(exampleDeploymentDef);
+            zookeeperManager.persistSeldonDeployment(exampleDeploymentDef);
         } catch (Exception e) {
             e.printStackTrace();
         }

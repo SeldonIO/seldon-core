@@ -40,7 +40,7 @@ public class ZookeeperManagerImpl implements ZookeeperManager {
     }
 
     @Override
-    public void persistDeployment(DeploymentDef deploymentDef) throws Exception {
+    public void persistSeldonDeployment(DeploymentDef deploymentDef) throws Exception {
         String json = ProtoBufUtils.toJson(deploymentDef, true);
         byte[] json_bytes = json.getBytes("UTF-8");
 
@@ -60,7 +60,7 @@ public class ZookeeperManagerImpl implements ZookeeperManager {
     }
 
     @Override
-    public void deleteDeployment(DeploymentDef deploymentDef) throws Exception {
+    public void deleteSeldonDeployment(DeploymentDef deploymentDef) throws Exception {
         final String seldonDeploymentId = Long.toString(deploymentDef.getId());
         String deployment_node_path = String.format("/deployments/%s", seldonDeploymentId);
 

@@ -33,7 +33,7 @@ public class ZK_DeleteDeploymentExample {
             String s = ProtoBufUtils.toJson(exampleDeploymentDef, true);
             System.out.println(s);
             System.out.println("-------------------------------------------------------------------------------");
-            zookeeperManager.deleteDeployment(exampleDeploymentDef);
+            zookeeperManager.deleteSeldonDeployment(exampleDeploymentDef);
         } catch (Exception e) {
             e.printStackTrace();
         }
