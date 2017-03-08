@@ -4,7 +4,6 @@ import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,6 +57,15 @@ public class ZookeeperManagerImpl implements ZookeeperManager {
             logger.debug(String.format("[UPDATE] [%s] [%s]", deployment_node_path, json));
         }
 
+    }
+
+    @Override
+    public void deleteDeployment(DeploymentDef deploymentDef) throws Exception {
+        final String seldonDeploymentId = Long.toString(deploymentDef.getId());
+        String deployment_node_path = String.format("/deployments/%s", seldonDeploymentId);
+
+        curator.delete().deletingChildrenIfNeeded().forPath(deployment_node_path);
+        logger.debug(String.format("[DELETE] [%s]", deployment_node_path));
     }
 
 }

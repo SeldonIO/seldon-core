@@ -11,7 +11,7 @@ import io.seldon.clustermanager.pb.ProtoBufUtils;
 import io.seldon.clustermanager.zk.ZookeeperManagerImpl;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
 
-public class ZK_PresistDeploymentExample {
+public class ZK_DeleteDeploymentExample {
 
     public static class AppConfig {
         @Bean(initMethod = "init", destroyMethod = "cleanup")
@@ -33,7 +33,7 @@ public class ZK_PresistDeploymentExample {
             String s = ProtoBufUtils.toJson(exampleDeploymentDef, true);
             System.out.println(s);
             System.out.println("-------------------------------------------------------------------------------");
-            zookeeperManager.persistDeployment(exampleDeploymentDef);
+            zookeeperManager.deleteDeployment(exampleDeploymentDef);
         } catch (Exception e) {
             e.printStackTrace();
         }

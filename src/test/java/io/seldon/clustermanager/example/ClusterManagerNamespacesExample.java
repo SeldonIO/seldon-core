@@ -34,7 +34,11 @@ public class ClusterManagerNamespacesExample {
                 }
 
                 @Override
-                public void persistDeployment(DeploymentDef deploymentDef) {
+                public void persistDeployment(DeploymentDef deploymentDef) throws Exception {
+                }
+
+                @Override
+                public void deleteDeployment(DeploymentDef deploymentDef) throws Exception {
                 }
             };
         }
