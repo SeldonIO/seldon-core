@@ -14,6 +14,7 @@ import io.seldon.clustermanager.component.ZookeeperManager;
 import io.seldon.clustermanager.k8s.KubernetesManagerImpl;
 import io.seldon.clustermanager.pb.ProtoBufUtils;
 import io.seldon.protos.DeploymentProtos.CMResultDef;
+import io.seldon.protos.DeploymentProtos.DeploymentDef;
 
 public class ClusterManagerNamespacesExample {
 
@@ -30,6 +31,10 @@ public class ClusterManagerNamespacesExample {
 
                 @Override
                 public void cleanup() throws Exception {
+                }
+
+                @Override
+                public void persistDeployment(DeploymentDef deploymentDef) {
                 }
             };
         }
