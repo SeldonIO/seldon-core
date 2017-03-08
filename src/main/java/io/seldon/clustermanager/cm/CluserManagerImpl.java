@@ -12,6 +12,7 @@ import io.seldon.clustermanager.component.ZookeeperManager;
 import io.seldon.protos.DeploymentProtos.CMResultDef;
 import io.seldon.protos.DeploymentProtos.CMStatusDef;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
+import io.seldon.protos.DeploymentProtos.DeploymentResultDef;
 import io.seldon.protos.DeploymentProtos.StringListDef;
 
 public class CluserManagerImpl implements ClusterManager {
@@ -83,7 +84,15 @@ public class CluserManagerImpl implements ClusterManager {
         CMResultDef cmResultDef = null;
         try {
             kubernetesManager.createSeldonDeployment(deploymentDef);
-            cmResultDef = buildSUCCESS();
+            DeploymentDef resultingDeploymentDef = deploymentDef;
+            //@formatter:off
+            DeploymentResultDef deploymentResultDef = DeploymentResultDef.newBuilder()
+                    .setDeployment(resultingDeploymentDef)
+                    .setOauthKey("PLACEHOLDER_OAUTH_KEY")
+                    .setOauthSecret("PLACEHOLDER_OAUTH_SECRET")
+                    .build();
+            //@formatter:on
+            cmResultDef = buildSUCCESS(deploymentResultDef);
         } catch (Throwable e) {
             String info = org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(e);
             cmResultDef = buildFAILURE(info);
@@ -96,7 +105,15 @@ public class CluserManagerImpl implements ClusterManager {
         CMResultDef cmResultDef = null;
         try {
             kubernetesManager.updateSeldonDeployment(deploymentDef);
-            cmResultDef = buildSUCCESS();
+            DeploymentDef resultingDeploymentDef = deploymentDef;
+            //@formatter:off
+            DeploymentResultDef deploymentResultDef = DeploymentResultDef.newBuilder()
+                    .setDeployment(resultingDeploymentDef)
+                    .setOauthKey("PLACEHOLDER_OAUTH_KEY")
+                    .setOauthSecret("PLACEHOLDER_OAUTH_SECRET")
+                    .build();
+            //@formatter:on
+            cmResultDef = buildSUCCESS(deploymentResultDef);
         } catch (Throwable e) {
             String info = org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(e);
             cmResultDef = buildFAILURE(info);
@@ -117,6 +134,19 @@ public class CluserManagerImpl implements ClusterManager {
         return cmResultDef;
     }
 
+    private static CMResultDef buildFAILURE(String info) {
+        //@formatter:off
+        CMResultDef cmResultDef = CMResultDef.newBuilder()
+                .setCmstatus(CMStatusDef.newBuilder()
+                        .setCode(500)
+                        .setStatus(CMStatusDef.Status.FAILURE)
+                        .setInfo(info))
+                .clearOneofData()
+                .build();
+        //@formatter:on
+        return cmResultDef;
+    }
+
     private static CMResultDef buildSUCCESS() {
         //@formatter:off
         CMResultDef cmResultDef = CMResultDef.newBuilder()
@@ -129,14 +159,13 @@ public class CluserManagerImpl implements ClusterManager {
         return cmResultDef;
     }
 
-    private static CMResultDef buildFAILURE(String info) {
+    private static CMResultDef buildSUCCESS(DeploymentResultDef deploymentResultDef) {
         //@formatter:off
         CMResultDef cmResultDef = CMResultDef.newBuilder()
                 .setCmstatus(CMStatusDef.newBuilder()
-                        .setCode(500)
-                        .setStatus(CMStatusDef.Status.FAILURE)
-                        .setInfo(info))
-                .clearOneofData()
+                        .setCode(200)
+                        .setStatus(CMStatusDef.Status.SUCCESS))
+                .setDeploymentResult(deploymentResultDef)
                 .build();
         //@formatter:on
         return cmResultDef;

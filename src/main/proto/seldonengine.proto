@@ -1,7 +1,6 @@
 // [START declaration]
 syntax = "proto3";
 package seldon.protos;
-import "google/protobuf/any.proto";
 // [END declaration]
 
 // [START java_declaration]
@@ -86,6 +85,12 @@ message DeploymentDef {
     string uniqueName = 5;
 }
 
+message DeploymentResultDef {
+    DeploymentDef deployment = 1;
+    string oauth_key = 2;
+    string oauth_secret = 3;
+}
+
 message StringListDef {
     repeated string items = 1;
 }
@@ -107,10 +112,12 @@ message CMResultDef {
 
     CMStatusDef cmstatus = 1;
     oneof oneof_data {
-        StringListDef string_list = 2;
-        string test_str = 3;
-        int32 test_num = 4;
+        DeploymentResultDef deployment_result = 2;
+        StringListDef string_list = 3;
+        string test_str = 4;
+        int32 test_num = 5;
     }
 }
 
 // [END messages]
+
