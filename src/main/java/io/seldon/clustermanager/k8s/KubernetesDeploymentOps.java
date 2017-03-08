@@ -1,5 +1,7 @@
 package io.seldon.clustermanager.k8s;
 
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,13 +24,16 @@ class KubernetesDeploymentOps {
         this.namespace_name = namespace_name;
     }
 
-    public Deployment create(String kubernetesDeploymentId, ClusterResourcesDef clusterResourcesDef) {
-        final int replica_number = clusterResourcesDef.getReplicas();
-        final int container_port = 80; // TODO change this!
-        final String image_name_and_version = clusterResourcesDef.getImage() + ":" + clusterResourcesDef.getVersion();
+    public Optional<Deployment> create(String kubernetesDeploymentId, ClusterResourcesDef clusterResourcesDef) {
 
-        //@formatter:off
-        Deployment deployment = new DeploymentBuilder()
+        Optional<Deployment> retVal = Optional.empty();
+        if (hasDeployableImage(clusterResourcesDef)) {
+            final int replica_number = clusterResourcesDef.getReplicas();
+            final int container_port = 80; // TODO change this!
+            final String image_name_and_version = clusterResourcesDef.getImage() + ":" + clusterResourcesDef.getVersion();
+
+            //@formatter:off
+            Deployment deployment = new DeploymentBuilder()
                 .withNewMetadata().withName(kubernetesDeploymentId).addToLabels("seldon-deployment-id", seldonDeploymentId).endMetadata()
                 .withNewSpec().withReplicas(replica_number)
                     .withNewTemplate()
@@ -40,11 +45,15 @@ class KubernetesDeploymentOps {
                 .endSpec().build();
             //@formatter:on
 
-        deployment = kubernetesClient.extensions().deployments().inNamespace(namespace_name).create(deployment);
-        String deploymentName = (deployment != null) ? deployment.getMetadata().getName() : null;
-        logger.debug(String.format("Created kubernetes delployment [%s]", deploymentName));
+            deployment = kubernetesClient.extensions().deployments().inNamespace(namespace_name).create(deployment);
+            String deploymentName = (deployment != null) ? deployment.getMetadata().getName() : null;
+            logger.debug(String.format("Created kubernetes delployment [%s]", deploymentName));
+            retVal = Optional.of(deployment);
+        } else {
+            logger.debug(String.format("Ignoring kubernetes delployment [%s], not deployable", kubernetesDeploymentId));
+        }
 
-        return deployment;
+        return retVal;
     }
 
     public Deployment update(String kubernetesDeploymentId, ClusterResourcesDef clusterResourcesDef) {
@@ -85,4 +94,9 @@ class KubernetesDeploymentOps {
             logger.debug(String.format("Deleted kubernetes replicaSet [%s]", rsmsg));
         }
     }
+
+    public static boolean hasDeployableImage(ClusterResourcesDef clusterResourcesDef) {
+        return (clusterResourcesDef.getImage().length() > 0);
+    }
+
 }

@@ -3,6 +3,7 @@ package io.seldon.clustermanager.k8s;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -80,11 +81,11 @@ public class KubernetesManagerImpl implements KubernetesManager {
             logger.debug(String.format("Deploying predictiveUnit[%s] for seldonDeployment id[%s]", predictive_unit_name, seldonDeploymentId));
 
             ClusterResourcesDef clusterResourcesDef = predictiveUnitDef.getClusterResources();
-            Deployment deployment = new KubernetesDeploymentOps(seldonDeploymentId, kubernetesClient, namespace_name).create(kubernetesDeploymentId,
+            Optional<Deployment> deployment = new KubernetesDeploymentOps(seldonDeploymentId, kubernetesClient, namespace_name).create(kubernetesDeploymentId,
                     clusterResourcesDef);
-
-            Service service = new KubernetesServiceOps(kubernetesClient, namespace_name, deployment).create();
-
+            if (deployment.isPresent()) {
+                Service service = new KubernetesServiceOps(kubernetesClient, namespace_name, deployment.get()).create();
+            }
         }
 
     }
@@ -143,9 +144,11 @@ public class KubernetesManagerImpl implements KubernetesManager {
                     Service service = new KubernetesServiceOps(kubernetesClient, namespace_name, deployment).update();
                 } else {
                     ClusterResourcesDef clusterResourcesDef = predictiveUnitDef.getClusterResources();
-                    Deployment deployment = new KubernetesDeploymentOps(seldonDeploymentId, kubernetesClient, namespace_name).create(kubernetesDeploymentId,
-                            clusterResourcesDef);
-                    Service service = new KubernetesServiceOps(kubernetesClient, namespace_name, deployment).create();
+                    Optional<Deployment> deployment = new KubernetesDeploymentOps(seldonDeploymentId, kubernetesClient, namespace_name)
+                            .create(kubernetesDeploymentId, clusterResourcesDef);
+                    if (deployment.isPresent()) {
+                        Service service = new KubernetesServiceOps(kubernetesClient, namespace_name, deployment.get()).create();
+                    }
                 }
             }
 
