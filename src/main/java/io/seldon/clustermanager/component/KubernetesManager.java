@@ -10,7 +10,7 @@ public interface KubernetesManager extends AppComponent {
     public List<String> getNamespaceList();
 
     public DeploymentDef createSeldonDeployment(DeploymentDef deploymentDef);
-    public void updateSeldonDeployment(DeploymentDef deploymentDef);
+    public DeploymentDef updateSeldonDeployment(DeploymentDef deploymentDef);
     public void deleteSeldonDeployment(DeploymentDef deploymentDef);
 
 }

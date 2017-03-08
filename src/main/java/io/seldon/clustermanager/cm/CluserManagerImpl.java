@@ -103,8 +103,7 @@ public class CluserManagerImpl implements ClusterManager {
     public CMResultDef updateSeldonDeployment(DeploymentDef deploymentDef) {
         CMResultDef cmResultDef = null;
         try {
-            kubernetesManager.updateSeldonDeployment(deploymentDef);
-            DeploymentDef resultingDeploymentDef = deploymentDef;
+            DeploymentDef resultingDeploymentDef = kubernetesManager.updateSeldonDeployment(deploymentDef);
             //@formatter:off
             DeploymentResultDef deploymentResultDef = DeploymentResultDef.newBuilder()
                     .setDeployment(resultingDeploymentDef)

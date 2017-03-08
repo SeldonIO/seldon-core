@@ -99,7 +99,8 @@ public class KubernetesManagerImpl implements KubernetesManager {
     }
 
     @Override
-    public void updateSeldonDeployment(DeploymentDef deploymentDef) {
+    public DeploymentDef updateSeldonDeployment(DeploymentDef deploymentDef) {
+        DeploymentDef.Builder resultingDeploymentDefBuilder = DeploymentDef.newBuilder(deploymentDef);
         final String seldonDeploymentId = Long.toString(deploymentDef.getId());
         logger.debug(String.format("Updating Seldon Deployment id[%s]", seldonDeploymentId));
         final String namespace_name = "default"; // TODO change this!
@@ -140,6 +141,7 @@ public class KubernetesManagerImpl implements KubernetesManager {
         { // Update or create the required deployments
             PredictorDef predictorDef = deploymentDef.getPredictor();
             List<PredictiveUnitDef> predictiveUnits = predictorDef.getPredictiveUnitsList();
+            int predictiveUnitIndex = 0;
             for (PredictiveUnitDef predictiveUnitDef : predictiveUnits) {
                 final String predictiveUnitId = Long.toString(predictiveUnitDef.getId());
                 final String kubernetesDeploymentId = getKubernetesDeploymentId(seldonDeploymentId, predictiveUnitId);
@@ -150,18 +152,27 @@ public class KubernetesManagerImpl implements KubernetesManager {
                     Deployment deployment = new KubernetesDeploymentOps(seldonDeploymentId, kubernetesClient, namespace_name).update(kubernetesDeploymentId,
                             clusterResourcesDef);
                     Service service = new KubernetesServiceOps(kubernetesClient, namespace_name, deployment).update();
+                    String serviceName = service.getMetadata().getName();
+                    resultingDeploymentDefBuilder.getPredictorBuilder().getPredictiveUnitsBuilder(predictiveUnitIndex).getEndpointBuilder()
+                            .setHost(serviceName);
                 } else {
                     ClusterResourcesDef clusterResourcesDef = predictiveUnitDef.getClusterResources();
                     Optional<Deployment> deployment = new KubernetesDeploymentOps(seldonDeploymentId, kubernetesClient, namespace_name)
                             .create(kubernetesDeploymentId, clusterResourcesDef);
                     if (deployment.isPresent()) {
                         Service service = new KubernetesServiceOps(kubernetesClient, namespace_name, deployment.get()).create();
+                        String serviceName = service.getMetadata().getName();
+                        resultingDeploymentDefBuilder.getPredictorBuilder().getPredictiveUnitsBuilder(predictiveUnitIndex).getEndpointBuilder()
+                                .setHost(serviceName);
                     }
                 }
+
+                predictiveUnitIndex++;
             }
 
         }
 
+        return resultingDeploymentDefBuilder.build();
     }
 
     @Override
