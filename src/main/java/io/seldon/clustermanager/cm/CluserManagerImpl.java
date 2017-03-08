@@ -84,6 +84,7 @@ public class CluserManagerImpl implements ClusterManager {
         CMResultDef cmResultDef = null;
         try {
             DeploymentDef resultingDeploymentDef = kubernetesManager.createSeldonDeployment(deploymentDef);
+            zookeeperManager.persistDeployment(resultingDeploymentDef);
             //@formatter:off
             DeploymentResultDef deploymentResultDef = DeploymentResultDef.newBuilder()
                     .setDeployment(resultingDeploymentDef)
@@ -104,6 +105,7 @@ public class CluserManagerImpl implements ClusterManager {
         CMResultDef cmResultDef = null;
         try {
             DeploymentDef resultingDeploymentDef = kubernetesManager.updateSeldonDeployment(deploymentDef);
+            zookeeperManager.persistDeployment(resultingDeploymentDef);
             //@formatter:off
             DeploymentResultDef deploymentResultDef = DeploymentResultDef.newBuilder()
                     .setDeployment(resultingDeploymentDef)
