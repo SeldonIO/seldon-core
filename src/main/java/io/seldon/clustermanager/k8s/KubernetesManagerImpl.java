@@ -66,7 +66,8 @@ public class KubernetesManagerImpl implements KubernetesManager {
     }
 
     @Override
-    public void createSeldonDeployment(DeploymentDef deploymentDef) {
+    public DeploymentDef createSeldonDeployment(DeploymentDef deploymentDef) {
+        DeploymentDef.Builder resultingDeploymentDefBuilder = DeploymentDef.newBuilder(deploymentDef);
         final String seldonDeploymentId = Long.toString(deploymentDef.getId());
         logger.debug(String.format("Creating Seldon Deployment id[%s]", seldonDeploymentId));
         final String namespace_name = "default"; // TODO change this!
@@ -74,6 +75,7 @@ public class KubernetesManagerImpl implements KubernetesManager {
         PredictorDef predictorDef = deploymentDef.getPredictor();
 
         List<PredictiveUnitDef> predictiveUnits = predictorDef.getPredictiveUnitsList();
+        int predictiveUnitIndex = 0;
         for (PredictiveUnitDef predictiveUnitDef : predictiveUnits) {
             final String predictiveUnitId = Long.toString(predictiveUnitDef.getId());
             final String predictive_unit_name = predictiveUnitDef.getName();
@@ -85,9 +87,15 @@ public class KubernetesManagerImpl implements KubernetesManager {
                     clusterResourcesDef);
             if (deployment.isPresent()) {
                 Service service = new KubernetesServiceOps(kubernetesClient, namespace_name, deployment.get()).create();
+                /// String serviceClusterIP = service.getSpec().getClusterIP();
+                String serviceName = service.getMetadata().getName();
+                resultingDeploymentDefBuilder.getPredictorBuilder().getPredictiveUnitsBuilder(predictiveUnitIndex).getEndpointBuilder().setHost(serviceName);
             }
+
+            predictiveUnitIndex++;
         }
 
+        return resultingDeploymentDefBuilder.build();
     }
 
     @Override
