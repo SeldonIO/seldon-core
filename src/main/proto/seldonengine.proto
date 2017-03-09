@@ -27,16 +27,8 @@ message EndpointDef {
 
 message ClusterResourcesDef {
 
-    message DockerRegistryDef {
-        int64 id = 1;
-        string name = 2;
-        string password = 3;
-        string url = 4;
-        string username = 5;
-    }
-
     int32 cpus = 1;
-    DockerRegistryDef dockerRegistry = 2;
+    string imagePullSecret = 2;
     int32 gpus = 3;
     int64 id = 4;
     string image = 5;

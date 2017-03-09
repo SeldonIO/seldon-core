@@ -1,10 +1,13 @@
 package io.seldon.clustermanager.k8s;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.fabric8.kubernetes.api.model.LocalObjectReference;
 import io.fabric8.kubernetes.api.model.extensions.Deployment;
 import io.fabric8.kubernetes.api.model.extensions.DeploymentBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -28,26 +31,10 @@ class KubernetesDeploymentOps {
 
         Optional<Deployment> retVal = Optional.empty();
         if (hasDeployableImage(clusterResourcesDef)) {
-            final int replica_number = clusterResourcesDef.getReplicas();
-            final int container_port = 80; // TODO change this!
-            final String image_name_and_version = clusterResourcesDef.getImage() + ":" + clusterResourcesDef.getVersion();
-
-            //@formatter:off
-            Deployment deployment = new DeploymentBuilder()
-                .withNewMetadata().withName(kubernetesDeploymentId).addToLabels("seldon-deployment-id", seldonDeploymentId).endMetadata()
-                .withNewSpec().withReplicas(replica_number)
-                    .withNewTemplate()
-                        .withNewMetadata().addToLabels("seldon-app", kubernetesDeploymentId).endMetadata()
-                        .withNewSpec().addNewContainer().withName("seldon-container").withImage(image_name_and_version)
-                            .addNewPort().withContainerPort(container_port).endPort().endContainer()
-                        .endSpec()
-                    .endTemplate()
-                .endSpec().build();
-            //@formatter:on
-
+            Deployment deployment = buildDeploymentHelper(kubernetesDeploymentId, clusterResourcesDef);
             deployment = kubernetesClient.extensions().deployments().inNamespace(namespace_name).create(deployment);
             String deploymentName = (deployment != null) ? deployment.getMetadata().getName() : null;
-            logger.debug(String.format("Created kubernetes delployment [%s]", deploymentName));
+            logger.debug(String.format("Created kubernetes delployment [%s] [%s]", deploymentName, deployment));
             retVal = Optional.of(deployment);
         } else {
             logger.debug(String.format("Ignoring kubernetes delployment [%s], not deployable", kubernetesDeploymentId));
@@ -57,26 +44,10 @@ class KubernetesDeploymentOps {
     }
 
     public Deployment update(String kubernetesDeploymentId, ClusterResourcesDef clusterResourcesDef) {
-        final int replica_number = clusterResourcesDef.getReplicas();
-        final int container_port = 80; // TODO change this!
-        final String image_name_and_version = clusterResourcesDef.getImage() + ":" + clusterResourcesDef.getVersion();
-
-        //@formatter:off
-        Deployment deployment = new DeploymentBuilder()
-                .withNewMetadata().withName(kubernetesDeploymentId).addToLabels("seldon-deployment-id", seldonDeploymentId).endMetadata()
-                .withNewSpec().withReplicas(replica_number)
-                    .withNewTemplate()
-                        .withNewMetadata().addToLabels("seldon-app", kubernetesDeploymentId).endMetadata()
-                        .withNewSpec().addNewContainer().withName("seldon-container").withImage(image_name_and_version)
-                            .addNewPort().withContainerPort(container_port).endPort().endContainer()
-                        .endSpec()
-                    .endTemplate()
-                .endSpec().build();
-            //@formatter:on
-
+        Deployment deployment = buildDeploymentHelper(kubernetesDeploymentId, clusterResourcesDef);
         deployment = kubernetesClient.extensions().deployments().inNamespace(namespace_name).createOrReplace(deployment);
         String deploymentName = (deployment != null) ? deployment.getMetadata().getName() : null;
-        logger.debug(String.format("Updated kubernetes delployment [%s]", deploymentName));
+        logger.debug(String.format("Updated kubernetes delployment [%s] [%s]", deploymentName, deployment));
 
         return deployment;
     }
@@ -99,4 +70,34 @@ class KubernetesDeploymentOps {
         return (clusterResourcesDef.getImage().length() > 0);
     }
 
+    private Deployment buildDeploymentHelper(String kubernetesDeploymentId, ClusterResourcesDef clusterResourcesDef) {
+        final int replica_number = clusterResourcesDef.getReplicas();
+        final int container_port = 80; // TODO change this!
+        final String image_name_and_version = clusterResourcesDef.getImage() + ":" + clusterResourcesDef.getVersion();
+        final String imagePullSecret = clusterResourcesDef.getImagePullSecret();
+
+        List<LocalObjectReference> imagePullSecrets = new ArrayList<>();
+        if (imagePullSecret.length() > 0) {
+            LocalObjectReference imagePullSecretObject = new LocalObjectReference(imagePullSecret);
+            imagePullSecrets.add(imagePullSecretObject);
+        }
+
+        //@formatter:off
+        Deployment deployment = new DeploymentBuilder()
+            .withNewMetadata().withName(kubernetesDeploymentId).addToLabels("seldon-deployment-id", seldonDeploymentId).endMetadata()
+            .withNewSpec().withReplicas(replica_number)
+                .withNewTemplate()
+                    .withNewMetadata().addToLabels("seldon-app", kubernetesDeploymentId).endMetadata()
+                    .withNewSpec()
+                        .addNewContainer()
+                            .withName("seldon-container").withImage(image_name_and_version)
+                            .addNewPort().withContainerPort(container_port).endPort()
+                         .endContainer()
+                         .addAllToImagePullSecrets(imagePullSecrets)
+                    .endSpec()
+                .endTemplate()
+            .endSpec().build();
+        //@formatter:on
+        return deployment;
+    }
 }

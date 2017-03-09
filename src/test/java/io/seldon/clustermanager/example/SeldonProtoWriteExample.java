@@ -36,12 +36,7 @@ public class SeldonProtoWriteExample {
                 //@formatter:off
                 predictiveUnitDefBuilder.setClusterResources(ClusterResourcesDef.newBuilder()
                         .setCpus(5)
-                        .setDockerRegistry(ClusterResourcesDef.DockerRegistryDef.newBuilder()
-                                .setId(1).setName("Seldon Registry")
-                                .setPassword("secret")
-                                .setUrl("http://registry.seldon.io")
-                                .setUsername("seldon")
-                                .build())
+                        .setImagePullSecret("my-registry-secret")
                         .setGpus(0)
                         .setId(2)
                         .setImage("seldonio/model2")
