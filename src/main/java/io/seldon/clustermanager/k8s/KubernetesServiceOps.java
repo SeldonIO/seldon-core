@@ -30,8 +30,8 @@ public class KubernetesServiceOps {
         String selectorName = "seldon-app";
         String selectorValue = deploymentName;
 
-        int port = endpointDef.getPort();
-        int targetPort = 80;
+        int port = endpointDef.getServicePort();
+        int targetPort = endpointDef.getContainerPort();
 
         //@formatter:off
         Service service = new ServiceBuilder()
@@ -63,8 +63,8 @@ public class KubernetesServiceOps {
         String selectorName = "seldon-app";
         String selectorValue = deploymentName;
 
-        int port = endpointDef.getPort();
-        int targetPort = 80;
+        int port = endpointDef.getServicePort();
+        int targetPort = endpointDef.getContainerPort();
 
         //@formatter:off
         Service service = new ServiceBuilder()

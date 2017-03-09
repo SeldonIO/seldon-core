@@ -91,7 +91,7 @@ public class KubernetesManagerImpl implements KubernetesManager {
                 Service service = new KubernetesServiceOps(kubernetesClient, namespace_name, deployment.get()).create(endpointDef);
                 /// String serviceClusterIP = service.getSpec().getClusterIP();
                 String serviceName = service.getMetadata().getName();
-                resultingDeploymentDefBuilder.getPredictorBuilder().getPredictiveUnitsBuilder(predictiveUnitIndex).getEndpointBuilder().setHost(serviceName);
+                resultingDeploymentDefBuilder.getPredictorBuilder().getPredictiveUnitsBuilder(predictiveUnitIndex).getEndpointBuilder().setServiceHost(serviceName);
             }
 
             predictiveUnitIndex++;
@@ -157,7 +157,7 @@ public class KubernetesManagerImpl implements KubernetesManager {
                     Service service = new KubernetesServiceOps(kubernetesClient, namespace_name, deployment).update(endpointDef);
                     String serviceName = service.getMetadata().getName();
                     resultingDeploymentDefBuilder.getPredictorBuilder().getPredictiveUnitsBuilder(predictiveUnitIndex).getEndpointBuilder()
-                            .setHost(serviceName);
+                            .setServiceHost(serviceName);
                 } else {
                     Optional<Deployment> deployment = new KubernetesDeploymentOps(seldonDeploymentId, kubernetesClient, namespace_name)
                             .create(kubernetesDeploymentId, clusterResourcesDef);
@@ -165,7 +165,7 @@ public class KubernetesManagerImpl implements KubernetesManager {
                         Service service = new KubernetesServiceOps(kubernetesClient, namespace_name, deployment.get()).create(endpointDef);
                         String serviceName = service.getMetadata().getName();
                         resultingDeploymentDefBuilder.getPredictorBuilder().getPredictiveUnitsBuilder(predictiveUnitIndex).getEndpointBuilder()
-                                .setHost(serviceName);
+                                .setServiceHost(serviceName);
                     }
                 }
 

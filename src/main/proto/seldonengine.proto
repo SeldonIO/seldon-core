@@ -19,9 +19,10 @@ message EndpointDef {
         GRPC = 1;
     }
 
-    string host = 1;
-    int32 port = 2;
-    EndpointType type = 3;
+    string service_host = 1;
+    int32 service_port = 2;
+    int32 container_port = 3;
+    EndpointType type = 4;
 }
 
 message ClusterResourcesDef {
@@ -83,12 +84,12 @@ message DeploymentDef {
     string name = 3;
     PredictorDef predictor = 4;
     string uniqueName = 5;
+    string oauth_key = 6;
+    string oauth_secret = 7;
 }
 
 message DeploymentResultDef {
     DeploymentDef deployment = 1;
-    string oauth_key = 2;
-    string oauth_secret = 3;
 }
 
 message StringListDef {

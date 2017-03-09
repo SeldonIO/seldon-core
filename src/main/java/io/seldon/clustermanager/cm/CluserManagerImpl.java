@@ -88,8 +88,6 @@ public class CluserManagerImpl implements ClusterManager {
             //@formatter:off
             DeploymentResultDef deploymentResultDef = DeploymentResultDef.newBuilder()
                     .setDeployment(resultingDeploymentDef)
-                    .setOauthKey("PLACEHOLDER_OAUTH_KEY")
-                    .setOauthSecret("PLACEHOLDER_OAUTH_SECRET")
                     .build();
             //@formatter:on
             cmResultDef = buildSUCCESS(deploymentResultDef);
@@ -109,8 +107,6 @@ public class CluserManagerImpl implements ClusterManager {
             //@formatter:off
             DeploymentResultDef deploymentResultDef = DeploymentResultDef.newBuilder()
                     .setDeployment(resultingDeploymentDef)
-                    .setOauthKey("PLACEHOLDER_OAUTH_KEY")
-                    .setOauthSecret("PLACEHOLDER_OAUTH_SECRET")
                     .build();
             //@formatter:on
             cmResultDef = buildSUCCESS(deploymentResultDef);
