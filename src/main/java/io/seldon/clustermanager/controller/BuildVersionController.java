@@ -13,7 +13,7 @@ public class BuildVersionController {
 
     @RequestMapping(value = "/version", method = RequestMethod.GET, produces = "text/plain; charset=utf-8")
     public String get_buildVersion() {
-        return buildVersion;
+        return buildVersion+"\n";
     }
 
 }
