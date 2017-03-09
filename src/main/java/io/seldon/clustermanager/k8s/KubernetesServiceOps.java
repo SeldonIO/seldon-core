@@ -24,32 +24,7 @@ public class KubernetesServiceOps {
     }
 
     public Service create(EndpointDef endpointDef) {
-        final String deploymentName = deployment.getMetadata().getName();
-        String serviceName = deploymentName;
-
-        String selectorName = "seldon-app";
-        String selectorValue = deploymentName;
-
-        int port = endpointDef.getServicePort();
-        int targetPort = endpointDef.getContainerPort();
-
-        //@formatter:off
-        Service service = new ServiceBuilder()
-                .withNewMetadata()
-                    .withName(serviceName)
-                .endMetadata()
-                .withNewSpec()
-                    .addNewPort()
-                        .withProtocol("TCP")
-                        .withPort(port)
-                        .withNewTargetPort(targetPort)
-                    .endPort()
-                    .addToSelector(selectorName, selectorValue)
-                    .withType("ClusterIP")
-                .endSpec()
-                .build();
-        //@formatter:on
-
+        Service service = buildServiceHelper(endpointDef);
         service = kubernetesClient.services().inNamespace(namespace_name).create(service);
         String serviceNameForMsg = (service != null) ? service.getMetadata().getName() : null;
         logger.debug(String.format("Created kubernetes service [%s]", serviceNameForMsg));
@@ -57,32 +32,7 @@ public class KubernetesServiceOps {
     }
 
     public Service update(EndpointDef endpointDef) {
-        final String deploymentName = deployment.getMetadata().getName();
-        String serviceName = deploymentName;
-
-        String selectorName = "seldon-app";
-        String selectorValue = deploymentName;
-
-        int port = endpointDef.getServicePort();
-        int targetPort = endpointDef.getContainerPort();
-
-        //@formatter:off
-        Service service = new ServiceBuilder()
-                .withNewMetadata()
-                    .withName(serviceName)
-                .endMetadata()
-                .withNewSpec()
-                    .addNewPort()
-                        .withProtocol("TCP")
-                        .withPort(port)
-                        .withNewTargetPort(targetPort)
-                    .endPort()
-                    .addToSelector(selectorName, selectorValue)
-                    .withType("ClusterIP")
-                .endSpec()
-                .build();
-        //@formatter:on
-
+        Service service = buildServiceHelper(endpointDef);
         service = kubernetesClient.services().inNamespace(namespace_name).createOrReplace(service);
         String serviceNameForMsg = (service != null) ? service.getMetadata().getName() : null;
         logger.debug(String.format("Updated kubernetes service [%s]", serviceNameForMsg));
@@ -96,5 +46,34 @@ public class KubernetesServiceOps {
         Service service = kubernetesClient.services().inNamespace(namespace_name).withName(serviceName).get();
         kubernetesClient.resource(service).delete();
         logger.debug(String.format("Deleted kubernetes service [%s]", service.getMetadata().getName()));
+    }
+
+    private Service buildServiceHelper(EndpointDef endpointDef) {
+        final String deploymentName = deployment.getMetadata().getName();
+        String serviceName = deploymentName;
+
+        String selectorName = "seldon-app";
+        String selectorValue = deploymentName;
+
+        int port = endpointDef.getServicePort();
+        int targetPort = endpointDef.getContainerPort();
+
+        //@formatter:off
+        Service service = new ServiceBuilder()
+                .withNewMetadata()
+                    .withName(serviceName)
+                .endMetadata()
+                .withNewSpec()
+                    .addNewPort()
+                        .withProtocol("TCP")
+                        .withPort(port)
+                        .withNewTargetPort(targetPort)
+                    .endPort()
+                    .addToSelector(selectorName, selectorValue)
+                    .withType("ClusterIP")
+                .endSpec()
+                .build();
+        //@formatter:on
+        return service;
     }
 }
