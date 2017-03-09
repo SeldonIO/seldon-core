@@ -12,6 +12,7 @@ import io.fabric8.kubernetes.api.model.extensions.Deployment;
 import io.fabric8.kubernetes.api.model.extensions.DeploymentBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.seldon.protos.DeploymentProtos.ClusterResourcesDef;
+import io.seldon.protos.DeploymentProtos.EndpointDef;
 
 class KubernetesDeploymentOps {
 
@@ -27,11 +28,11 @@ class KubernetesDeploymentOps {
         this.namespace_name = namespace_name;
     }
 
-    public Optional<Deployment> create(String kubernetesDeploymentId, ClusterResourcesDef clusterResourcesDef) {
+    public Optional<Deployment> create(String kubernetesDeploymentId, ClusterResourcesDef clusterResourcesDef, EndpointDef endpointDef) {
 
         Optional<Deployment> retVal = Optional.empty();
         if (hasDeployableImage(clusterResourcesDef)) {
-            Deployment deployment = buildDeploymentHelper(kubernetesDeploymentId, clusterResourcesDef);
+            Deployment deployment = buildDeploymentHelper(kubernetesDeploymentId, clusterResourcesDef, endpointDef);
             deployment = kubernetesClient.extensions().deployments().inNamespace(namespace_name).create(deployment);
             String deploymentName = (deployment != null) ? deployment.getMetadata().getName() : null;
             logger.debug(String.format("Created kubernetes delployment [%s] [%s]", deploymentName, deployment));
@@ -43,8 +44,8 @@ class KubernetesDeploymentOps {
         return retVal;
     }
 
-    public Deployment update(String kubernetesDeploymentId, ClusterResourcesDef clusterResourcesDef) {
-        Deployment deployment = buildDeploymentHelper(kubernetesDeploymentId, clusterResourcesDef);
+    public Deployment update(String kubernetesDeploymentId, ClusterResourcesDef clusterResourcesDef, EndpointDef endpointDef) {
+        Deployment deployment = buildDeploymentHelper(kubernetesDeploymentId, clusterResourcesDef, endpointDef);
         deployment = kubernetesClient.extensions().deployments().inNamespace(namespace_name).createOrReplace(deployment);
         String deploymentName = (deployment != null) ? deployment.getMetadata().getName() : null;
         logger.debug(String.format("Updated kubernetes delployment [%s] [%s]", deploymentName, deployment));
@@ -70,9 +71,9 @@ class KubernetesDeploymentOps {
         return (clusterResourcesDef.getImage().length() > 0);
     }
 
-    private Deployment buildDeploymentHelper(String kubernetesDeploymentId, ClusterResourcesDef clusterResourcesDef) {
+    private Deployment buildDeploymentHelper(String kubernetesDeploymentId, ClusterResourcesDef clusterResourcesDef, EndpointDef endpointDef) {
         final int replica_number = clusterResourcesDef.getReplicas();
-        final int container_port = 80; // TODO change this!
+        final int container_port = endpointDef.getContainerPort();
         final String image_name_and_version = clusterResourcesDef.getImage() + ":" + clusterResourcesDef.getVersion();
         final String imagePullSecret = clusterResourcesDef.getImagePullSecret();
 

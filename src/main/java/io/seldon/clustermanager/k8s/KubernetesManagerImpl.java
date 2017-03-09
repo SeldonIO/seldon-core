@@ -86,12 +86,13 @@ public class KubernetesManagerImpl implements KubernetesManager {
             ClusterResourcesDef clusterResourcesDef = predictiveUnitDef.getClusterResources();
             EndpointDef endpointDef = predictiveUnitDef.getEndpoint();
             Optional<Deployment> deployment = new KubernetesDeploymentOps(seldonDeploymentId, kubernetesClient, namespace_name).create(kubernetesDeploymentId,
-                    clusterResourcesDef);
+                    clusterResourcesDef, endpointDef);
             if (deployment.isPresent()) {
                 Service service = new KubernetesServiceOps(kubernetesClient, namespace_name, deployment.get()).create(endpointDef);
                 /// String serviceClusterIP = service.getSpec().getClusterIP();
                 String serviceName = service.getMetadata().getName();
-                resultingDeploymentDefBuilder.getPredictorBuilder().getPredictiveUnitsBuilder(predictiveUnitIndex).getEndpointBuilder().setServiceHost(serviceName);
+                resultingDeploymentDefBuilder.getPredictorBuilder().getPredictiveUnitsBuilder(predictiveUnitIndex).getEndpointBuilder()
+                        .setServiceHost(serviceName);
             }
 
             predictiveUnitIndex++;
@@ -153,14 +154,14 @@ public class KubernetesManagerImpl implements KubernetesManager {
                 EndpointDef endpointDef = predictiveUnitDef.getEndpoint();
                 if (existingDeployments.contains(kubernetesDeploymentId)) {
                     Deployment deployment = new KubernetesDeploymentOps(seldonDeploymentId, kubernetesClient, namespace_name).update(kubernetesDeploymentId,
-                            clusterResourcesDef);
+                            clusterResourcesDef, endpointDef);
                     Service service = new KubernetesServiceOps(kubernetesClient, namespace_name, deployment).update(endpointDef);
                     String serviceName = service.getMetadata().getName();
                     resultingDeploymentDefBuilder.getPredictorBuilder().getPredictiveUnitsBuilder(predictiveUnitIndex).getEndpointBuilder()
                             .setServiceHost(serviceName);
                 } else {
                     Optional<Deployment> deployment = new KubernetesDeploymentOps(seldonDeploymentId, kubernetesClient, namespace_name)
-                            .create(kubernetesDeploymentId, clusterResourcesDef);
+                            .create(kubernetesDeploymentId, clusterResourcesDef, endpointDef);
                     if (deployment.isPresent()) {
                         Service service = new KubernetesServiceOps(kubernetesClient, namespace_name, deployment.get()).create(endpointDef);
                         String serviceName = service.getMetadata().getName();
