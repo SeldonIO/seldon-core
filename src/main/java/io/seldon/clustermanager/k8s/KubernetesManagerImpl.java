@@ -1,16 +1,22 @@
 package io.seldon.clustermanager.k8s;
 
 import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceList;
+import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.extensions.Deployment;
 import io.fabric8.kubernetes.api.model.extensions.DeploymentList;
@@ -25,6 +31,7 @@ import io.seldon.protos.DeploymentProtos.DeploymentDef;
 import io.seldon.protos.DeploymentProtos.EndpointDef;
 import io.seldon.protos.DeploymentProtos.PredictiveUnitDef;
 import io.seldon.protos.DeploymentProtos.PredictorDef;
+import io.seldon.protos.DeploymentProtos.StringSecretDef;
 
 public class KubernetesManagerImpl implements KubernetesManager {
 
@@ -198,6 +205,18 @@ public class KubernetesManagerImpl implements KubernetesManager {
      */
     private static String getKubernetesDeploymentId(String seldonDeploymentId, String predictiveUnitId) {
         return "sd-" + seldonDeploymentId + "-" + predictiveUnitId;
+    }
+
+    @Override
+    public void createStringSecret(StringSecretDef stringSecretDef) {
+        final String namespace_name = "default"; // TODO change this!
+        Secret secret = new KubernetesSecretOps(kubernetesClient, namespace_name).create(stringSecretDef);
+    }
+
+    @Override
+    public void deleteStringSecret(String name) {
+        final String namespace_name = "default"; // TODO change this!
+        new KubernetesSecretOps(kubernetesClient, namespace_name).delete(name);;
     }
 
 }

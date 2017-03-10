@@ -112,5 +112,11 @@ message CMResultDef {
     }
 }
 
+message StringSecretDef {
+    string name = 1;
+    map<string, string> data = 2;
+    string type = 3;
+}
+
 // [END messages]
 
