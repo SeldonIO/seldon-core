@@ -118,5 +118,17 @@ message StringSecretDef {
     string type = 3;
 }
 
+message DockerRegistrySecretDef {
+
+    message DockerRegistryDetailsDef {
+        string url = 1;
+        string username = 2;
+        string password = 3;
+    }
+
+    string name = 1;
+    DockerRegistryDetailsDef dockerRegistryDetails = 2;
+}
+
 // [END messages]
 

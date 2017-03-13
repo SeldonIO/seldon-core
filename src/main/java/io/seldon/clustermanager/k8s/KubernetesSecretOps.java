@@ -7,9 +7,13 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.SecretBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.seldon.protos.DeploymentProtos.DockerRegistrySecretDef;
 import io.seldon.protos.DeploymentProtos.StringSecretDef;
 
 public final class KubernetesSecretOps {
@@ -24,9 +28,10 @@ public final class KubernetesSecretOps {
         this.namespace_name = namespace_name;
     }
 
-    public Secret create(StringSecretDef stringSecretDef) {
+    public Secret createSecret(StringSecretDef stringSecretDef) {
         final String name = stringSecretDef.getName();
         final Map<String, String> data = stringSecretDef.getDataMap();
+        final String type = stringSecretDef.getType();
 
         // Transform the values of the map to be base64Encoded
         // eg
@@ -40,6 +45,7 @@ public final class KubernetesSecretOps {
                 .withNewMetadata()
                     .withName(name)
                 .endMetadata()
+                .withType(type)
                 .withData(dataBase64Encoded)
                 .build();
         //@formatter:on
@@ -49,8 +55,41 @@ public final class KubernetesSecretOps {
         return secret;
     }
 
-    public void delete(String name) {
+    public Secret createSecret(DockerRegistrySecretDef dockerRegistrySecretDef) {
+        final String name = dockerRegistrySecretDef.getName();
+        logger.debug(String.format("Creating kubernetes docker registry secret [%s]", name));
+        final String username = dockerRegistrySecretDef.getDockerRegistryDetails().getUsername();
+        final String psword = dockerRegistrySecretDef.getDockerRegistryDetails().getPassword();
+
+        String url = dockerRegistrySecretDef.getDockerRegistryDetails().getUrl();
+        String auth = username + ":" + psword;
+        String authBase64Encoded = new String(Base64.getEncoder().encode(auth.getBytes()));
+
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode dotDockercfgObject = mapper.createObjectNode();
+        //@formatter:off
+        dotDockercfgObject
+            .put(url, mapper.createObjectNode()
+                .put("auth", authBase64Encoded)
+                .put("username", username)
+                .put("psword", psword));
+        //@formatter:on
+        
+        String dotDockercfgString = dotDockercfgObject.toString();
+        //@formatter:off
+        StringSecretDef stringSecretDef = StringSecretDef.newBuilder()
+                .setName(name)
+                .putData(".dockercfg", dotDockercfgString)
+                .setType("kubernetes.io/dockercfg")
+                .build();
+        //@formatter:on
+
+        return createSecret(stringSecretDef);
+    }
+
+    public void deleteSecret(String name) {
         kubernetesClient.secrets().inNamespace(namespace_name).withName(name).delete();
         logger.debug(String.format("Deleted kubernetes secret [%s]", name));
     }
+
 }

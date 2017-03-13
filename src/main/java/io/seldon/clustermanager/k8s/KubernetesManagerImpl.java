@@ -28,6 +28,7 @@ import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.seldon.clustermanager.component.KubernetesManager;
 import io.seldon.protos.DeploymentProtos.ClusterResourcesDef;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
+import io.seldon.protos.DeploymentProtos.DockerRegistrySecretDef;
 import io.seldon.protos.DeploymentProtos.EndpointDef;
 import io.seldon.protos.DeploymentProtos.PredictiveUnitDef;
 import io.seldon.protos.DeploymentProtos.PredictorDef;
@@ -210,13 +211,25 @@ public class KubernetesManagerImpl implements KubernetesManager {
     @Override
     public void createStringSecret(StringSecretDef stringSecretDef) {
         final String namespace_name = "default"; // TODO change this!
-        Secret secret = new KubernetesSecretOps(kubernetesClient, namespace_name).create(stringSecretDef);
+        Secret secret = new KubernetesSecretOps(kubernetesClient, namespace_name).createSecret(stringSecretDef);
     }
 
     @Override
     public void deleteStringSecret(String name) {
         final String namespace_name = "default"; // TODO change this!
-        new KubernetesSecretOps(kubernetesClient, namespace_name).delete(name);;
+        new KubernetesSecretOps(kubernetesClient, namespace_name).deleteSecret(name);
+    }
+
+    @Override
+    public void createDockerRegistrySecret(DockerRegistrySecretDef dockerRegistrySecretDef) {
+        final String namespace_name = "default"; // TODO change this!
+        new KubernetesSecretOps(kubernetesClient, namespace_name).createSecret(dockerRegistrySecretDef);
+    }
+
+    @Override
+    public void deleteDockerRegistrySecret(String name) {
+        final String namespace_name = "default"; // TODO change this!
+        new KubernetesSecretOps(kubernetesClient, namespace_name).deleteSecret(name);
     }
 
 }
