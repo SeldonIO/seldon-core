@@ -3,9 +3,6 @@ package io.seldon.clustermanager.controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,7 +30,8 @@ public class DockerRegistrySecretsController {
     public ResponseEntity<String> dockerRegistrySecrets_post(RequestEntity<String> requestEntity) {
 
         String json = requestEntity.getBody();
-        logger.debug(String.format("[%s] [%s] [%s]", "POST", requestEntity.getUrl().getPath(), json));
+        /// logger.debug(String.format("[%s] [%s] [%s]", "POST", requestEntity.getUrl().getPath(), json));
+        logger.debug(String.format("[%s] [%s]", "POST", requestEntity.getUrl().getPath()));
 
         CMResultDef cmResultDef = null;
         try {
@@ -53,7 +51,7 @@ public class DockerRegistrySecretsController {
             //@formatter:on
         }
 
-        return cmResultDefToResponseEntity(cmResultDef);
+        return ControllerUtils.cmResultDefToResponseEntity(cmResultDef);
     }
 
     @RequestMapping(value = "/docker-registry-secrets/{name}", method = RequestMethod.DELETE, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
@@ -63,24 +61,7 @@ public class DockerRegistrySecretsController {
 
         CMResultDef cmResultDef = clusterManager.deleteDockerRegistrySecret(name);
 
-        return cmResultDefToResponseEntity(cmResultDef);
+        return ControllerUtils.cmResultDefToResponseEntity(cmResultDef);
     }
 
-    private static ResponseEntity<String> cmResultDefToResponseEntity(CMResultDef cmResultDef) {
-
-        HttpStatus httpStatus = HttpStatus.valueOf(cmResultDef.getCmstatus().getCode());
-        String json = null;
-        try {
-            json = ProtoBufUtils.toJson(cmResultDef);
-        } catch (InvalidProtocolBufferException e) {
-            httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
-            json = "Error writing json";
-        }
-
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.setContentType(MediaType.APPLICATION_JSON);
-        ResponseEntity<String> responseEntity = new ResponseEntity<String>(json, responseHeaders, httpStatus);
-
-        return responseEntity;
-    }
 }
