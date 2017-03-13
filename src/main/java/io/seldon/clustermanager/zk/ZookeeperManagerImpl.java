@@ -44,7 +44,7 @@ public class ZookeeperManagerImpl implements ZookeeperManager {
         String json = ProtoBufUtils.toJson(deploymentDef, true);
         byte[] json_bytes = json.getBytes("UTF-8");
 
-        final String seldonDeploymentId = Long.toString(deploymentDef.getId());
+        final String seldonDeploymentId = deploymentDef.getId();
         String deployment_node_path = String.format("/deployments/%s", seldonDeploymentId);
 
         if (curator.checkExists().forPath(deployment_node_path) == null) {
@@ -61,7 +61,7 @@ public class ZookeeperManagerImpl implements ZookeeperManager {
 
     @Override
     public void deleteSeldonDeployment(DeploymentDef deploymentDef) throws Exception {
-        final String seldonDeploymentId = Long.toString(deploymentDef.getId());
+        final String seldonDeploymentId = deploymentDef.getId();
         String deployment_node_path = String.format("/deployments/%s", seldonDeploymentId);
 
         curator.delete().deletingChildrenIfNeeded().forPath(deployment_node_path);

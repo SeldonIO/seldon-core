@@ -72,7 +72,7 @@ public class MainController {
         logger.debug(String.format("[%s] [%s]", "DELETE", requestEntity.getUrl().getPath()));
 
         DeploymentDef.Builder deploymentDefBuilder = DeploymentDef.newBuilder();
-        deploymentDefBuilder.setId(Long.valueOf(seldon_deployment_id));
+        deploymentDefBuilder.setId(seldon_deployment_id);
         CMResultDef cmResultDef = clusterManager.deleteSeldonDeployment(deploymentDefBuilder.build());
 
         return ControllerUtils.cmResultDefToResponseEntity(cmResultDef);

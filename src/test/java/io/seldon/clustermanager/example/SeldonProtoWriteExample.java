@@ -17,7 +17,7 @@ public class SeldonProtoWriteExample {
         DeploymentDef.Builder deploymentDefBuiler = DeploymentDef.newBuilder();
 
         deploymentDefBuiler.setCluster(ClusterDef.newBuilder());
-        deploymentDefBuiler.setId(1);
+        deploymentDefBuiler.setId("1");
         deploymentDefBuiler.setName("my deployment");
         deploymentDefBuiler.setUniqueName("my_interesting_project1.my_deployment.1");
 
@@ -25,7 +25,7 @@ public class SeldonProtoWriteExample {
             PredictorDef.Builder predictorDefBuilder = PredictorDef.newBuilder();
 
             predictorDefBuilder.setEnabled(true);
-            predictorDefBuilder.setId(0);
+            predictorDefBuilder.setId("0");
             predictorDefBuilder.setName("my_fantastic_predictor");
 
             {
@@ -38,7 +38,7 @@ public class SeldonProtoWriteExample {
                         .setCpus(5)
                         .setImagePullSecret("my-registry-secret")
                         .setGpus(0)
-                        .setId(2)
+                        .setId("2")
                         .setImage("seldonio/model2")
                         .setMemoryGb(20)
                         .setReplicas(1)
@@ -55,7 +55,7 @@ public class SeldonProtoWriteExample {
                         );
                 //@formatter:on
 
-                predictiveUnitDefBuilder.setId(4);
+                predictiveUnitDefBuilder.setId("4");
 
                 predictiveUnitDefBuilder.setName("digit_classifier_v0.2");
 

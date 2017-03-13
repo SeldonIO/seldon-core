@@ -30,7 +30,7 @@ message ClusterResourcesDef {
     int32 cpus = 1;
     string imagePullSecret = 2;
     int32 gpus = 3;
-    int64 id = 4;
+    string id = 4;
     string image = 5;
     int32 memoryGb = 6;
     int32 replicas = 7;
@@ -56,7 +56,7 @@ message PredictiveUnitDef {
     ClusterResourcesDef cluster_resources = 2;
     EndpointDef endpoint = 3;
     string name = 4;
-    int64 id = 5;
+    string id = 5;
     repeated ParamDef parameters = 6;
     string subtype = 7;
     string type = 8;
@@ -64,15 +64,15 @@ message PredictiveUnitDef {
 
 message PredictorDef {
     bool enabled = 1;
-    int64 id = 2;
+    string id = 2;
     string name = 3;
     repeated PredictiveUnitDef predictiveUnits = 4;
-    int64 root = 5;
+    string root = 5;
 }
 
 message DeploymentDef {
     ClusterDef cluster = 1;
-    int64 id = 2;
+    string id = 2;
     string name = 3;
     PredictorDef predictor = 4;
     string uniqueName = 5;

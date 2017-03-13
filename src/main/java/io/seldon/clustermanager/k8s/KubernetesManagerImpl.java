@@ -77,7 +77,7 @@ public class KubernetesManagerImpl implements KubernetesManager {
     @Override
     public DeploymentDef createSeldonDeployment(DeploymentDef deploymentDef) {
         DeploymentDef.Builder resultingDeploymentDefBuilder = DeploymentDef.newBuilder(deploymentDef);
-        final String seldonDeploymentId = Long.toString(deploymentDef.getId());
+        final String seldonDeploymentId = deploymentDef.getId();
         logger.debug(String.format("Creating Seldon Deployment id[%s]", seldonDeploymentId));
         final String namespace_name = "default"; // TODO change this!
 
@@ -86,7 +86,7 @@ public class KubernetesManagerImpl implements KubernetesManager {
         List<PredictiveUnitDef> predictiveUnits = predictorDef.getPredictiveUnitsList();
         int predictiveUnitIndex = 0;
         for (PredictiveUnitDef predictiveUnitDef : predictiveUnits) {
-            final String predictiveUnitId = Long.toString(predictiveUnitDef.getId());
+            final String predictiveUnitId = predictiveUnitDef.getId();
             final String predictive_unit_name = predictiveUnitDef.getName();
             final String kubernetesDeploymentId = getKubernetesDeploymentId(seldonDeploymentId, predictiveUnitId);
             logger.debug(String.format("Deploying predictiveUnit[%s] for seldonDeployment id[%s]", predictive_unit_name, seldonDeploymentId));
@@ -112,7 +112,7 @@ public class KubernetesManagerImpl implements KubernetesManager {
     @Override
     public DeploymentDef updateSeldonDeployment(DeploymentDef deploymentDef) {
         DeploymentDef.Builder resultingDeploymentDefBuilder = DeploymentDef.newBuilder(deploymentDef);
-        final String seldonDeploymentId = Long.toString(deploymentDef.getId());
+        final String seldonDeploymentId = deploymentDef.getId();
         logger.debug(String.format("Updating Seldon Deployment id[%s]", seldonDeploymentId));
         final String namespace_name = "default"; // TODO change this!
 
@@ -121,7 +121,7 @@ public class KubernetesManagerImpl implements KubernetesManager {
             PredictorDef predictorDef = deploymentDef.getPredictor();
             List<PredictiveUnitDef> predictiveUnits = predictorDef.getPredictiveUnitsList();
             for (PredictiveUnitDef predictiveUnitDef : predictiveUnits) {
-                final String predictiveUnitId = Long.toString(predictiveUnitDef.getId());
+                final String predictiveUnitId = predictiveUnitDef.getId();
                 final String kubernetesDeploymentId = getKubernetesDeploymentId(seldonDeploymentId, predictiveUnitId);
                 requiredDeployments.add(kubernetesDeploymentId);
             }
@@ -154,7 +154,7 @@ public class KubernetesManagerImpl implements KubernetesManager {
             List<PredictiveUnitDef> predictiveUnits = predictorDef.getPredictiveUnitsList();
             int predictiveUnitIndex = 0;
             for (PredictiveUnitDef predictiveUnitDef : predictiveUnits) {
-                final String predictiveUnitId = Long.toString(predictiveUnitDef.getId());
+                final String predictiveUnitId = predictiveUnitDef.getId();
                 final String kubernetesDeploymentId = getKubernetesDeploymentId(seldonDeploymentId, predictiveUnitId);
                 final String predictive_unit_name = predictiveUnitDef.getName();
                 logger.debug(String.format("Deploying predictiveUnit[%s] for seldonDeployment id[%s]", predictive_unit_name, seldonDeploymentId));
@@ -188,7 +188,7 @@ public class KubernetesManagerImpl implements KubernetesManager {
 
     @Override
     public void deleteSeldonDeployment(DeploymentDef deploymentDef) {
-        final String seldonDeploymentId = Long.toString(deploymentDef.getId());
+        final String seldonDeploymentId = deploymentDef.getId();
         logger.debug(String.format("Deleting Seldon Deployment[%s]", seldonDeploymentId));
         final String namespace_name = "default"; // TODO change this!
 
