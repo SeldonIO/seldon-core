@@ -69,10 +69,8 @@ public final class KubernetesSecretOps {
         ObjectNode dotDockercfgObject = mapper.createObjectNode();
         //@formatter:off
         dotDockercfgObject
-            .put(url, mapper.createObjectNode()
-                .put("auth", authBase64Encoded)
-                .put("username", username)
-                .put("psword", psword));
+            .set(url, mapper.createObjectNode()
+                .put("auth", authBase64Encoded));
         //@formatter:on
         
         String dotDockercfgString = dotDockercfgObject.toString();
