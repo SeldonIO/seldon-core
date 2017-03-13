@@ -13,6 +13,7 @@ import io.seldon.protos.DeploymentProtos.CMResultDef;
 import io.seldon.protos.DeploymentProtos.CMStatusDef;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
 import io.seldon.protos.DeploymentProtos.DeploymentResultDef;
+import io.seldon.protos.DeploymentProtos.DockerRegistrySecretDef;
 import io.seldon.protos.DeploymentProtos.StringListDef;
 
 public class CluserManagerImpl implements ClusterManager {
@@ -131,6 +132,32 @@ public class CluserManagerImpl implements ClusterManager {
         return cmResultDef;
     }
 
+    @Override
+    public CMResultDef createOrReplaceDockerRegistrySecret(DockerRegistrySecretDef dockerRegistrySecretDef) {
+        CMResultDef cmResultDef = null;
+        try {
+            kubernetesManager.createOrReplaceDockerRegistrySecret(dockerRegistrySecretDef);
+            cmResultDef = buildSUCCESS();
+        } catch (Throwable e) {
+            String info = org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(e);
+            cmResultDef = buildFAILURE(info);
+        }
+        return cmResultDef;
+    }
+
+    @Override
+    public CMResultDef deleteDockerRegistrySecret(String name) {
+        CMResultDef cmResultDef = null;
+        try {
+            kubernetesManager.deleteDockerRegistrySecret(name);
+            cmResultDef = buildSUCCESS();
+        } catch (Throwable e) {
+            String info = org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(e);
+            cmResultDef = buildFAILURE(info);
+        }
+        return cmResultDef;
+    }
+
     private static CMResultDef buildFAILURE(String info) {
         //@formatter:off
         CMResultDef cmResultDef = CMResultDef.newBuilder()
@@ -167,4 +194,5 @@ public class CluserManagerImpl implements ClusterManager {
         //@formatter:on
         return cmResultDef;
     }
+
 }
