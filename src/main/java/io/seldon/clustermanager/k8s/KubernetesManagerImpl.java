@@ -32,7 +32,7 @@ import io.seldon.protos.DeploymentProtos.StringSecretDef;
 public class KubernetesManagerImpl implements KubernetesManager {
 
     private final static Logger logger = LoggerFactory.getLogger(KubernetesManagerImpl.class);
-    private final static String CLUSTER_MANAGER_POD_NAMESPACE_KEY = "CLUSTER_MANAGER_POD_NAMESPACE";
+    private final static String SELDON_CLUSTER_MANAGER_POD_NAMESPACE_KEY = "SELDON_CLUSTER_MANAGER_POD_NAMESPACE";
 
     private KubernetesClient kubernetesClient = null;
 
@@ -57,9 +57,9 @@ public class KubernetesManagerImpl implements KubernetesManager {
         }
 
         { // set the namespace to use
-            seldonClusterNamespaceName = System.getenv().get(CLUSTER_MANAGER_POD_NAMESPACE_KEY);
+            seldonClusterNamespaceName = System.getenv().get(SELDON_CLUSTER_MANAGER_POD_NAMESPACE_KEY);
             if (seldonClusterNamespaceName == null) {
-                logger.error(String.format("FAILED to find env var [%s]", CLUSTER_MANAGER_POD_NAMESPACE_KEY));
+                logger.error(String.format("FAILED to find env var [%s]", SELDON_CLUSTER_MANAGER_POD_NAMESPACE_KEY));
                 seldonClusterNamespaceName = "default";
             }
             logger.info(String.format("Setting cluster manager namespace as [%s]", seldonClusterNamespaceName, seldonClusterNamespaceName));
