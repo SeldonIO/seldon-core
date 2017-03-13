@@ -32,8 +32,14 @@ import io.seldon.protos.DeploymentProtos.StringSecretDef;
 public class KubernetesManagerImpl implements KubernetesManager {
 
     private final static Logger logger = LoggerFactory.getLogger(KubernetesManagerImpl.class);
+    private final static String CLUSTER_MANAGER_POD_NAMESPACE_KEY = "CLUSTER_MANAGER_POD_NAMESPACE";
 
     private KubernetesClient kubernetesClient = null;
+
+    private String seldonClusterNamespaceName = "UNKOWN_NAMESPACE";
+
+    public KubernetesManagerImpl() {
+    }
 
     @Override
     public void init() throws Exception {
@@ -45,9 +51,18 @@ public class KubernetesManagerImpl implements KubernetesManager {
         try {
             kubernetesClient = new DefaultKubernetesClient(config);
             getNamespaceList(); // simple check to see if client works
-            logger.info("Sucessfully passed namespace check");
+            logger.info("Sucessfully passed getNamespaceList() check");
         } catch (KubernetesClientException e) {
             throw new Exception(e);
+        }
+
+        { // set the namespace to use
+            seldonClusterNamespaceName = System.getenv().get(CLUSTER_MANAGER_POD_NAMESPACE_KEY);
+            if (seldonClusterNamespaceName == null) {
+                logger.error(String.format("FAILED to find env var [%s]", CLUSTER_MANAGER_POD_NAMESPACE_KEY));
+                seldonClusterNamespaceName = "default";
+            }
+            logger.info(String.format("Setting cluster manager namespace as [%s]", seldonClusterNamespaceName, seldonClusterNamespaceName));
         }
     }
 
@@ -228,6 +243,6 @@ public class KubernetesManagerImpl implements KubernetesManager {
     }
 
     private String getNamespaceName() {
-        return "default"; // TODO change this!
+        return seldonClusterNamespaceName;
     }
 }
