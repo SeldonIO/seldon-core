@@ -209,9 +209,9 @@ public class KubernetesManagerImpl implements KubernetesManager {
     }
 
     @Override
-    public void createStringSecret(StringSecretDef stringSecretDef) {
+    public void createOrReplaceStringSecret(StringSecretDef stringSecretDef) {
         final String namespace_name = "default"; // TODO change this!
-        Secret secret = new KubernetesSecretOps(kubernetesClient, namespace_name).createSecret(stringSecretDef);
+        Secret secret = new KubernetesSecretOps(kubernetesClient, namespace_name).createOrReplaceSecret(stringSecretDef);
     }
 
     @Override
@@ -221,9 +221,9 @@ public class KubernetesManagerImpl implements KubernetesManager {
     }
 
     @Override
-    public void createDockerRegistrySecret(DockerRegistrySecretDef dockerRegistrySecretDef) {
+    public void createOrReplaceDockerRegistrySecret(DockerRegistrySecretDef dockerRegistrySecretDef) {
         final String namespace_name = "default"; // TODO change this!
-        new KubernetesSecretOps(kubernetesClient, namespace_name).createSecret(dockerRegistrySecretDef);
+        new KubernetesSecretOps(kubernetesClient, namespace_name).createOrReplaceSecret(dockerRegistrySecretDef);
     }
 
     @Override

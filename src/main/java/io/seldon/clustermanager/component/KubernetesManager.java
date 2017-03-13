@@ -14,8 +14,8 @@ public interface KubernetesManager extends AppComponent {
     public DeploymentDef createSeldonDeployment(DeploymentDef deploymentDef);
     public DeploymentDef updateSeldonDeployment(DeploymentDef deploymentDef);
     public void deleteSeldonDeployment(DeploymentDef deploymentDef);
-    public void createStringSecret(StringSecretDef stringSecretDef);
+    public void createOrReplaceStringSecret(StringSecretDef stringSecretDef);
     public void deleteStringSecret(String name);
-    public void createDockerRegistrySecret(DockerRegistrySecretDef dockerRegistrySecretDef);
+    public void createOrReplaceDockerRegistrySecret(DockerRegistrySecretDef dockerRegistrySecretDef);
     public void deleteDockerRegistrySecret(String name);
 }

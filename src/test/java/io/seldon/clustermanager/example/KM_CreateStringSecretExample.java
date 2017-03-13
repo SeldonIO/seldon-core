@@ -50,7 +50,7 @@ public class KM_CreateStringSecretExample {
                 e.printStackTrace();
             }
         }
-        kubernetesManager.createStringSecret(stringSecretDef);
+        kubernetesManager.createOrReplaceStringSecret(stringSecretDef);
 
         ctx.close();
     }

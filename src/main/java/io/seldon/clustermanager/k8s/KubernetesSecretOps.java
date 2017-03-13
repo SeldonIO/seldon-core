@@ -28,7 +28,7 @@ public final class KubernetesSecretOps {
         this.namespace_name = namespace_name;
     }
 
-    public Secret createSecret(StringSecretDef stringSecretDef) {
+    public Secret createOrReplaceSecret(StringSecretDef stringSecretDef) {
         final String name = stringSecretDef.getName();
         final Map<String, String> data = stringSecretDef.getDataMap();
         final String type = stringSecretDef.getType();
@@ -50,12 +50,12 @@ public final class KubernetesSecretOps {
                 .build();
         //@formatter:on
 
-        secret = kubernetesClient.secrets().inNamespace(namespace_name).create(secret);
+        secret = kubernetesClient.secrets().inNamespace(namespace_name).createOrReplace(secret);
         logger.debug(String.format("Created kubernetes secret [%s]", name));
         return secret;
     }
 
-    public Secret createSecret(DockerRegistrySecretDef dockerRegistrySecretDef) {
+    public Secret createOrReplaceSecret(DockerRegistrySecretDef dockerRegistrySecretDef) {
         final String name = dockerRegistrySecretDef.getName();
         logger.debug(String.format("Creating kubernetes docker registry secret [%s]", name));
         final String username = dockerRegistrySecretDef.getDockerRegistryDetails().getUsername();
@@ -82,7 +82,7 @@ public final class KubernetesSecretOps {
                 .build();
         //@formatter:on
 
-        return createSecret(stringSecretDef);
+        return createOrReplaceSecret(stringSecretDef);
     }
 
     public void deleteSecret(String name) {

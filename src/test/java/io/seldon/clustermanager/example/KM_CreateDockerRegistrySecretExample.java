@@ -56,7 +56,7 @@ public class KM_CreateDockerRegistrySecretExample {
                 e.printStackTrace();
             }
         }
-        kubernetesManager.createDockerRegistrySecret(dockerRegistrySecretDef);
+        kubernetesManager.createOrReplaceDockerRegistrySecret(dockerRegistrySecretDef);
 
         ctx.close();
     }
