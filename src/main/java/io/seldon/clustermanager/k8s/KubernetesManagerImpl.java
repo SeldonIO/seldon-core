@@ -1,15 +1,10 @@
 package io.seldon.clustermanager.k8s;
 
 import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,7 +74,7 @@ public class KubernetesManagerImpl implements KubernetesManager {
         DeploymentDef.Builder resultingDeploymentDefBuilder = DeploymentDef.newBuilder(deploymentDef);
         final String seldonDeploymentId = deploymentDef.getId();
         logger.debug(String.format("Creating Seldon Deployment id[%s]", seldonDeploymentId));
-        final String namespace_name = "default"; // TODO change this!
+        final String namespace_name = getNamespaceName();
 
         PredictorDef predictorDef = deploymentDef.getPredictor();
 
@@ -114,7 +109,7 @@ public class KubernetesManagerImpl implements KubernetesManager {
         DeploymentDef.Builder resultingDeploymentDefBuilder = DeploymentDef.newBuilder(deploymentDef);
         final String seldonDeploymentId = deploymentDef.getId();
         logger.debug(String.format("Updating Seldon Deployment id[%s]", seldonDeploymentId));
-        final String namespace_name = "default"; // TODO change this!
+        final String namespace_name = getNamespaceName();
 
         Set<String> requiredDeployments = new HashSet<>();
         { // check required deployment list
@@ -190,7 +185,7 @@ public class KubernetesManagerImpl implements KubernetesManager {
     public void deleteSeldonDeployment(DeploymentDef deploymentDef) {
         final String seldonDeploymentId = deploymentDef.getId();
         logger.debug(String.format("Deleting Seldon Deployment[%s]", seldonDeploymentId));
-        final String namespace_name = "default"; // TODO change this!
+        final String namespace_name = getNamespaceName();
 
         DeploymentList deployments = kubernetesClient.extensions().deployments().inNamespace(namespace_name)
                 .withLabel("seldon-deployment-id", seldonDeploymentId).list();
@@ -210,26 +205,29 @@ public class KubernetesManagerImpl implements KubernetesManager {
 
     @Override
     public void createOrReplaceStringSecret(StringSecretDef stringSecretDef) {
-        final String namespace_name = "default"; // TODO change this!
+        final String namespace_name = getNamespaceName();
         Secret secret = new KubernetesSecretOps(kubernetesClient, namespace_name).createOrReplaceSecret(stringSecretDef);
     }
 
     @Override
     public void deleteStringSecret(String name) {
-        final String namespace_name = "default"; // TODO change this!
+        final String namespace_name = getNamespaceName();
         new KubernetesSecretOps(kubernetesClient, namespace_name).deleteSecret(name);
     }
 
     @Override
     public void createOrReplaceDockerRegistrySecret(DockerRegistrySecretDef dockerRegistrySecretDef) {
-        final String namespace_name = "default"; // TODO change this!
+        final String namespace_name = getNamespaceName();
         new KubernetesSecretOps(kubernetesClient, namespace_name).createOrReplaceSecret(dockerRegistrySecretDef);
     }
 
     @Override
     public void deleteDockerRegistrySecret(String name) {
-        final String namespace_name = "default"; // TODO change this!
+        final String namespace_name = getNamespaceName();
         new KubernetesSecretOps(kubernetesClient, namespace_name).deleteSecret(name);
     }
 
+    private String getNamespaceName() {
+        return "default"; // TODO change this!
+    }
 }
