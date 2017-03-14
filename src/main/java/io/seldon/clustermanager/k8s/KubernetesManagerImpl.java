@@ -46,6 +46,7 @@ public class KubernetesManagerImpl implements KubernetesManager {
         logger.info("init");
 
         String master = "http://localhost:8001/";
+        logger.info(String.format("Connecting to kubernetes master[%s]", master));
         Config config = new ConfigBuilder().withMasterUrl(master).build();
 
         try {
