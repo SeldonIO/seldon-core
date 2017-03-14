@@ -62,7 +62,7 @@ public class KubernetesManagerImpl implements KubernetesManager {
                 logger.error(String.format("FAILED to find env var [%s]", SELDON_CLUSTER_MANAGER_POD_NAMESPACE_KEY));
                 seldonClusterNamespaceName = "default";
             }
-            logger.info(String.format("Setting cluster manager namespace as [%s]", seldonClusterNamespaceName, seldonClusterNamespaceName));
+            logger.info(String.format("Setting cluster manager namespace as [%s]", seldonClusterNamespaceName));
         }
     }
 

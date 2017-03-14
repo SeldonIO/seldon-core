@@ -14,12 +14,23 @@ import io.seldon.protos.DeploymentProtos.DeploymentDef;
 public class ZookeeperManagerImpl implements ZookeeperManager {
 
     private final static Logger logger = LoggerFactory.getLogger(ZookeeperManagerImpl.class);
+    private final static String SELDON_CLUSTER_MANAGER_ZK_SERVERS_KEY = "SELDON_CLUSTER_MANAGER_ZK_SERVERS";
 
     private CuratorFramework curator = null;
 
     public void init() throws Exception {
         logger.info("init");
-        String zookeeperConnectionString = "localhost";
+
+        String zookeeperConnectionString = "UNDEFINED";
+        { // setup the zookeeperConnectionString using the env vars
+            zookeeperConnectionString = System.getenv().get(SELDON_CLUSTER_MANAGER_ZK_SERVERS_KEY);
+            if (zookeeperConnectionString == null) {
+                logger.error(String.format("FAILED to find env var [%s]", SELDON_CLUSTER_MANAGER_ZK_SERVERS_KEY));
+                zookeeperConnectionString = "localhost:2181";
+            }
+            logger.info(String.format("Setting zookeeper connection string as [%s]", zookeeperConnectionString));
+        }
+
         RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 3);
         curator = CuratorFrameworkFactory.newClient(zookeeperConnectionString, retryPolicy);
         curator.start();
