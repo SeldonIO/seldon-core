@@ -1,5 +1,6 @@
 DOCKER_IMAGE_NAME=seldonio/zookeeper-k8s
-DOCKER_IMAGE_VERSION=1.0
+SELDON_ZOOKEEPER_K8S_IMAGE_VERSION=1.0
+DOCKER_IMAGE_VERSION=$(SELDON_ZOOKEEPER_K8S_IMAGE_VERSION)
 
 build_docker_image:
 	docker build --force-rm=true -t $(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VERSION) .
@@ -7,3 +8,27 @@ build_docker_image:
 push_to_registry:
 	docker push $(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VERSION)
 
+
+
+
+zookeeper.json: zookeeper.json.in
+	@cat zookeeper.json.in | sed \
+		-e  "s|%SELDON_ZOOKEEPER_K8S_IMAGE_VERSION%|$(SELDON_ZOOKEEPER_K8S_IMAGE_VERSION)|" \
+		> zookeeper.json && echo "created $@"
+
+start_zookeeper: zookeeper.json
+	kubectl create -f zookeeper.json
+stop_zookeeper: zookeeper.json
+	kubectl delete -f zookeeper.json
+
+zk_shell:
+	kubectl exec -it zookeeper-1 -- /opt/zookeeper/bin/zkCli.sh
+
+zk_port_forward:
+	kubectl port-forward zookeeper-1 2181:2181
+
+check:
+	@echo srvr | nc localhost  2181
+
+clean:
+	@rm -fv zookeeper.json
