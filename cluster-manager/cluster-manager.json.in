@@ -8,7 +8,7 @@
                 "labels": {
                     "app": "seldon-cluster-manager-container-app"
                 },
-                "name": "seldon-cluster-manager-container"
+                "name": "seldon-cluster-manager"
             },
             "spec": {
                 "containers": [
@@ -24,6 +24,16 @@
                         "ports": [
                             {
                                 "containerPort": 8080,
+                                "protocol": "TCP"
+                            }
+                        ]
+                    },
+                    {
+                        "image": "seldonio/kubectl-proxy:v1.5.1",
+                        "name": "kube-proxy-container",
+                        "ports": [
+                            {
+                                "containerPort": 8001,
                                 "protocol": "TCP"
                             }
                         ]
