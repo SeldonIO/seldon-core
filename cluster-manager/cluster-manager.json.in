@@ -1,0 +1,31 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "labels": {
+                    "app": "seldon-cluster-manager-container-app"
+                },
+                "name": "seldon-cluster-manager-container"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "image": "seldonio/cluster-manager:%CLUSTER_MANAGER_IMAGE_VERSION%",
+                        "name": "seldon-cluster-manager-container",
+                        "ports": [
+                            {
+                                "containerPort": 8080,
+                                "protocol": "TCP"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {}
+}
