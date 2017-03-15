@@ -7,7 +7,8 @@ RUN update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/jav
 
 WORKDIR /work
 
-Add .m2 /work/.m2
+ADD .m2 /work/.m2
+ADD version.txt /work/version.txt
 
 # Prepare by downloading dependencies
 ADD pom.xml /work/pom.xml
