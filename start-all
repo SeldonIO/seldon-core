@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+(cd "${STARTUP_DIR}/zookeeper-k8s" && make start_zookeeper)
+(cd "${STARTUP_DIR}/cluster-manager" && make start_cluster_manager)
+
