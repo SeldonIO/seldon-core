@@ -1,5 +1,5 @@
 DOCKER_IMAGE_NAME=seldonio/cluster-manager
-PROJECT_VERSION:=$(shell MAVEN_OPTS="-Dorg.slf4j.simpleLogger.defaultLogLevel=WARN -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugins.help=INFO" mvn help:evaluate -o -Dexpression=project.version | tail -1)
+PROJECT_VERSION:=`cat version.txt`
 DOCKER_IMAGE_VERSION=$(PROJECT_VERSION)
 CLUSTER_MANAGER_IMAGE_VERSION=$(PROJECT_VERSION)
 
@@ -26,4 +26,8 @@ start_cluster_manager: cluster-manager.json
 	kubectl create -f cluster-manager.json
 stop_cluster_manager: cluster-manager.json
 	kubectl delete -f cluster-manager.json
+
+
+update_version_txt:
+	PROJECT_VERSION=$$(MAVEN_OPTS="-Dorg.slf4j.simpleLogger.defaultLogLevel=WARN -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugins.help=INFO" mvn help:evaluate -o -Dexpression=project.version | tail -1) && echo "$${PROJECT_VERSION}" > version.txt
 
