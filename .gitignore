@@ -1,5 +1,6 @@
 # build
 /target/
+cluster-manager/.m2/
 
 # eclipse
 .classpath
