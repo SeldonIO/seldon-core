@@ -7,3 +7,4 @@ cluster-manager/.m2/
 .settings/
 .project
 
+/bin/

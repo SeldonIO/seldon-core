@@ -7,8 +7,8 @@
 		<version>1.4.3.RELEASE</version>
   	</parent>
 
-  	<groupId>io.seldon</groupId>
-	<artifactId>engine</artifactId>
+  	<groupId>io.seldon.engine</groupId>
+	<artifactId>seldon-engine</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
  	<packaging>jar</packaging>
   
@@ -22,7 +22,6 @@
 	</properties>
 	
   	<build>
-    	<sourceDirectory>src</sourceDirectory>
     	<extensions>
 			<extension>
 				<groupId>kr.motd.maven</groupId>
