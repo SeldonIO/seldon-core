@@ -27,7 +27,7 @@ public class KubernetesManagerExampleUtils {
             {
                 PredictiveUnitDef.Builder predictiveUnitDefBuilder = PredictiveUnitDef.newBuilder();
 
-                predictiveUnitDefBuilder.addChildren(1).addChildren(2);
+                predictiveUnitDefBuilder.addChildren("1").addChildren("2");
 
                 //@formatter:off
                 predictiveUnitDefBuilder.setClusterResources(ClusterResourcesDef.newBuilder()
@@ -72,7 +72,7 @@ public class KubernetesManagerExampleUtils {
             {
                 PredictiveUnitDef.Builder predictiveUnitDefBuilder = PredictiveUnitDef.newBuilder();
 
-                predictiveUnitDefBuilder.addChildren(1).addChildren(2);
+                predictiveUnitDefBuilder.addChildren("1").addChildren("2");
 
                 //@formatter:off
                 predictiveUnitDefBuilder.setClusterResources(ClusterResourcesDef.newBuilder()
@@ -144,7 +144,7 @@ public class KubernetesManagerExampleUtils {
             {
                 PredictiveUnitDef.Builder predictiveUnitDefBuilder = PredictiveUnitDef.newBuilder();
 
-                predictiveUnitDefBuilder.addChildren(1).addChildren(2);
+                predictiveUnitDefBuilder.addChildren("1").addChildren("2");
 
                 //@formatter:off
                 predictiveUnitDefBuilder.setClusterResources(ClusterResourcesDef.newBuilder()
@@ -189,7 +189,7 @@ public class KubernetesManagerExampleUtils {
             {
                 PredictiveUnitDef.Builder predictiveUnitDefBuilder = PredictiveUnitDef.newBuilder();
 
-                predictiveUnitDefBuilder.addChildren(1).addChildren(2);
+                predictiveUnitDefBuilder.addChildren("1").addChildren("2");
 
                 //@formatter:off
                 predictiveUnitDefBuilder.setClusterResources(ClusterResourcesDef.newBuilder()
