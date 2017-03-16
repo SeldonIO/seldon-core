@@ -8,4 +8,4 @@ STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
 
 (cd "${STARTUP_DIR}/cluster-manager" && make stop_cluster_manager)
 (cd "${STARTUP_DIR}/zookeeper-k8s" && make stop_zookeeper)
-
+(cd "${STARTUP_DIR}/engine" && make stop_engine)
