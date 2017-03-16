@@ -52,7 +52,7 @@ message PredictiveUnitDef {
         string value = 3;
     }
 
-    repeated int64 children = 1;
+    repeated string children = 1;
     ClusterResourcesDef cluster_resources = 2;
     EndpointDef endpoint = 3;
     string name = 4;
