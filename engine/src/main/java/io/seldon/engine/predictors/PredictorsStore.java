@@ -6,7 +6,8 @@ import java.util.concurrent.ConcurrentMap;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -20,7 +21,7 @@ import io.seldon.protos.DeploymentProtos.DeploymentDef;
 
 @Component
 public class PredictorsStore implements DeploymentsListener {
-	protected static Logger logger = Logger.getLogger(PredictorsStore.class.getName());
+	protected static Logger logger = LoggerFactory.getLogger(PredictorsStore.class.getName());
 	public static final String ALG_KEY = "predict_algs";
 	
 	private ConcurrentMap<String, PredictorState> predictorsStore = new ConcurrentHashMap<>();

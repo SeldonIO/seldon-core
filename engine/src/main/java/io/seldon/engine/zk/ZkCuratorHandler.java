@@ -30,13 +30,14 @@ import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.state.ConnectionState;
 import org.apache.curator.framework.state.ConnectionStateListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ZkCuratorHandler implements ConnectionStateListener {
 
-    private static Logger logger = Logger.getLogger(ZkCuratorHandler.class.getName());
+    private static Logger logger = LoggerFactory.getLogger(ZkCuratorHandler.class.getName());
     final private static String ENV_VAR_SELDON_ZK_SERVERS = "SELDON_ENGINE_ZK_SERVERS";
 
     public ZkCuratorHandler() {

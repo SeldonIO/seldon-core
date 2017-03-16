@@ -5,7 +5,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +28,7 @@ import io.seldon.engine.logging.PredictLogger;
 @Service
 public class PredictionService {
 	
-	private static Logger logger = Logger.getLogger(PredictionService.class.getName());
+	private static Logger logger = LoggerFactory.getLogger(PredictionService.class.getName());
 	
 	private final ExecutorService pool = Executors.newFixedThreadPool(50);
 	

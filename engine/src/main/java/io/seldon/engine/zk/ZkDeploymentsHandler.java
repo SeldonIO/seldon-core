@@ -15,7 +15,8 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
 import org.apache.curator.framework.recipes.cache.TreeCacheListener;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -24,7 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
 public class ZkDeploymentsHandler implements TreeCacheListener, DeploymentsHandler{
-	private static Logger logger = Logger.getLogger(ZkDeploymentsHandler.class.getName());
+	private static Logger logger = LoggerFactory.getLogger(ZkDeploymentsHandler.class.getName());
     private final ZkSubscriptionHandler handler;
     private Map<String,Map<String,String>> deploymentsWithInitialConfig;
     private final Set<DeploymentsListener> listeners;

@@ -13,7 +13,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.protocol.HttpContext;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,7 +34,7 @@ import io.seldon.protos.DeploymentProtos.EndpointDef;
 @Service
 public class InternalPredictionService {
 	
-	private static Logger logger = Logger.getLogger(InternalPredictionService.class.getName());
+	private static Logger logger = LoggerFactory.getLogger(InternalPredictionService.class.getName());
 
 	private PoolingHttpClientConnectionManager connectionManager;
     private CloseableHttpClient httpClient;

@@ -27,7 +27,8 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.*;
 import org.apache.curator.utils.EnsurePath;
 import org.apache.curator.framework.recipes.cache.TreeCacheListener;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -43,7 +44,7 @@ import java.util.*;
  */
 @Component
 public class ZkSubscriptionHandler {
-    private static Logger logger = Logger.getLogger(ZkSubscriptionHandler.class.getName());
+    private static Logger logger = LoggerFactory.getLogger(ZkSubscriptionHandler.class.getName());
     @Autowired
     private ZkCuratorHandler curator;
 
