@@ -37,14 +37,14 @@ import org.springframework.stereotype.Component;
 public class ZkCuratorHandler implements ConnectionStateListener {
 
     private static Logger logger = Logger.getLogger(ZkCuratorHandler.class.getName());
-    final private static String ENV_VAR_SELDON_ZKSERVERS = "SELDON_ZKSERVERS";
+    final private static String ENV_VAR_SELDON_ZK_SERVERS = "SELDON_ENGINE_ZK_SERVERS";
 
     public ZkCuratorHandler() {
         String servers = null;
-        servers = System.getenv(ENV_VAR_SELDON_ZKSERVERS);
-        logger.info(String.format("using %s[%s]", ENV_VAR_SELDON_ZKSERVERS, servers));
+        servers = System.getenv(ENV_VAR_SELDON_ZK_SERVERS);
+        logger.info(String.format("using %s[%s]", ENV_VAR_SELDON_ZK_SERVERS, servers));
         if (servers == null) {
-            logger.warn("*WARNING* SELDON_ZKSERVERS environment variable not set!");
+            logger.warn("*WARNING* SELDON_ZK_SERVERS environment variable not set!");
             servers = "localhost";
         }
         this.zkServers = servers;

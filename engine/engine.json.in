@@ -50,7 +50,7 @@
                 "ports": [
                     {
                         "name": "client",
-                        "nodePort": 30030,
+                        "nodePort": 30031,
                         "port": 8080,
                         "protocol": "TCP",
                         "targetPort": 8080
