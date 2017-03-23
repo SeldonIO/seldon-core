@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.StringJoiner;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -254,23 +255,16 @@ public class KubernetesManagerImpl implements KubernetesManager {
     }
 
     private static String extractPredictiveUnitParametersAsJson(PredictiveUnitDef predictiveUnitDef) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("[");
+        StringJoiner sj = new StringJoiner(",", "[", "]");
         List<ParamDef> parameters = predictiveUnitDef.getParametersList();
-        boolean isFirst = true;
         for (ParamDef parameter : parameters) {
             try {
                 String j = ProtoBufUtils.toJson(parameter, true);
-                if (!isFirst) {
-                    sb.append(",");
-                }
-                sb.append(j);
-                isFirst = false;
+                sj.add(j);
             } catch (InvalidProtocolBufferException e) {
                 throw new RuntimeException(e);
             }
         }
-        sb.append("]");
-        return sb.toString();
+        return sj.toString();
     }
 }
