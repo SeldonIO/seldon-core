@@ -16,9 +16,9 @@ cache_dependencies:
 	mvn -Dmaven.repo.local=./.m2 dependency:resolve
 	mvn -Dmaven.repo.local=./.m2 verify
 
+FORCE:
 
-
-cluster-manager.json: cluster-manager.json.in Makefile
+cluster-manager.json: FORCE
 	@cat cluster-manager.json.in | sed \
 		-e  "s|%CLUSTER_MANAGER_IMAGE_VERSION%|$(CLUSTER_MANAGER_IMAGE_VERSION)|" > $@ && echo "created $@"
 
@@ -32,4 +32,5 @@ update_version_txt:
 	PROJECT_VERSION=$$(MAVEN_OPTS="-Dorg.slf4j.simpleLogger.defaultLogLevel=WARN -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugins.help=INFO" mvn help:evaluate -o -Dexpression=project.version | tail -1) && echo "$${PROJECT_VERSION}" > version.txt
 
 update_proto:
-	cp -v ../proto/seldonengine.proto src/main/proto/ 
+	cp -v ../proto/seldonengine.proto src/main/proto/
+
