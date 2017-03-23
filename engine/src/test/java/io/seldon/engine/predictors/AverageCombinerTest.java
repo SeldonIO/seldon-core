@@ -24,13 +24,13 @@ public class AverageCombinerTest {
 		List<PredictorReturn> predictorReturns = new ArrayList<>();
 		String[] names = {"c","d"};
 		
-		Double[] values1 = {1.0,1.0};
+		Double[][] values1 = {{1.0,1.0}};
 		predictorReturns.add(new PredictorReturn(names,values1));
 		
-		Double[] values2 = {1.0,0.5};
+		Double[][] values2 = {{1.0,0.5}};
 		predictorReturns.add(new PredictorReturn(names,values2));
 		
-		Double[] values3 = {2.2,0.9};
+		Double[][] values3 = {{2.2,0.9}};
 		predictorReturns.add(new PredictorReturn(names,values3));
 		
 		AverageCombinerUnit averageCombinerUnit = new AverageCombinerUnit();
@@ -40,7 +40,7 @@ public class AverageCombinerTest {
 		
 		Assert.assertThat(average.names,is(names));
 		
-		Double[] expected_values = {(1.0+1.0+2.2)/3,(1.0+0.5+0.9)/3};
+		Double[][] expected_values = {{(1.0+1.0+2.2)/3,(1.0+0.5+0.9)/3}};
 		Assert.assertThat(average.values,is(expected_values));
 	}
 	
@@ -50,10 +50,10 @@ public class AverageCombinerTest {
 		List<PredictorReturn> predictorReturns = new ArrayList<>();
 		String[] names = {"c"};
 		
-		Double[] values1 = {1.0};
+		Double[][] values1 = {{1.0}};
 		predictorReturns.add(new PredictorReturn(names,values1));
 		
-		Double[] values2 = {1.0};
+		Double[][] values2 = {{1.0}};
 		predictorReturns.add(new PredictorReturn(names,values2));
 		
 		AverageCombinerUnit averageCombinerUnit = new AverageCombinerUnit();
@@ -63,7 +63,7 @@ public class AverageCombinerTest {
 		
 		Assert.assertThat(average.names,is(names));
 		
-		Double[] expected_values = {2.0/2};
+		Double[][] expected_values = {{2.0/2}};
 		Assert.assertThat(average.values,is(expected_values));
 	}
 	
@@ -73,7 +73,7 @@ public class AverageCombinerTest {
 		List<PredictorReturn> predictorReturns = new ArrayList<>();
 		String[] names = {"c"};
 		
-		Double[] values1 = {1.0,5.0,0.3};
+		Double[][] values1 = {{1.0,5.0,0.3}};
 		predictorReturns.add(new PredictorReturn(names,values1));
 		
 		
@@ -84,7 +84,7 @@ public class AverageCombinerTest {
 		
 		Assert.assertThat(average.names,is(names));
 		
-		Double[] expected_values = {1.0,5.0,0.3};
+		Double[][] expected_values = {{1.0,5.0,0.3}};
 		Assert.assertThat(average.values,is(expected_values));
 	}
 	
@@ -108,17 +108,17 @@ public class AverageCombinerTest {
 		List<PredictorReturn> predictorReturns = new ArrayList<>();
 		String[] names = {};
 		
-		Double[] values1 = {};
+		Double[][] values1 = {{}};
 		predictorReturns.add(new PredictorReturn(names,values1));
 		
-		Double[] values2 = {};
+		Double[][] values2 = {{}};
 		predictorReturns.add(new PredictorReturn(names,values2));
 		AverageCombinerUnit averageCombinerUnit = new AverageCombinerUnit();
 		Method method = AverageCombinerUnit.class.getDeclaredMethod("backwardPass",List.class,PredictiveUnitState.class);
 		method.setAccessible(true);
 		PredictorReturn average = (PredictorReturn) method.invoke(averageCombinerUnit, predictorReturns, null);
 		
-		Assert.assertThat(average.values,is(names));
+		Assert.assertThat(average.names,is(names));
 		Assert.assertThat(average.values,is(values1));
 	}
 
@@ -127,13 +127,13 @@ public class AverageCombinerTest {
 		List<PredictorReturn> predictorReturns = new ArrayList<>();
 		String[] names = {"c","d"};
 		
-		Double[] values1 = {1.0,1.0};
+		Double[][] values1 = {{1.0,1.0}};
 		predictorReturns.add(new PredictorReturn(names,values1));
 		
-		Double[] values2 = {1.0,0.5};
+		Double[][] values2 = {{1.0,0.5}};
 		predictorReturns.add(new PredictorReturn(names,values2));
 		
-		Double[] values3 = {2.2,0.9,4.5};
+		Double[][] values3 = {{2.2,0.9,4.5}};
 		predictorReturns.add(new PredictorReturn(names,values3));
 		
 		AverageCombinerUnit averageCombinerUnit = new AverageCombinerUnit();

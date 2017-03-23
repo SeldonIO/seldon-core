@@ -5,11 +5,11 @@ import java.util.Map;
 public class PredictorState {
 	
 	public PredictiveUnitState rootState;
-	public Long rootId;
-	public Map<Long,PredictiveUnitState> predictiveUnitStatesMap;
+	public String rootId;
+	public Map<String,PredictiveUnitState> predictiveUnitStatesMap;
 	public Boolean enabled;
 	
-	public PredictorState(Long rootId, Map<Long,PredictiveUnitState> predictiveUnitStatesMap, Boolean enabled){
+	public PredictorState(String rootId, Map<String,PredictiveUnitState> predictiveUnitStatesMap, Boolean enabled){
 		this.rootId = rootId;
 		this.predictiveUnitStatesMap = predictiveUnitStatesMap;
 		this.enabled = enabled;

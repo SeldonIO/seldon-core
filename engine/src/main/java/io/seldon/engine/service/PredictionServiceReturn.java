@@ -14,7 +14,7 @@ public class PredictionServiceReturn {
 	
 	public PredictionServiceReturn(){
 		this.meta = new PredictionServiceReturnMeta();
-		this.predictorReturn = new PredictorReturn(new String[0], new Double[0]);
+		this.predictorReturn = new PredictorReturn(new String[0], new Double[0][0]);
 	}
 
 }
