@@ -65,6 +65,7 @@ public class CluserManagerImpl implements ClusterManager {
             //@formatter:on
 
         } catch (Throwable e) {
+            logger.error("Error getting namespaces",e);
             String info = org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(e);
             //@formatter:off
             cmResultDef = CMResultDef.newBuilder()
@@ -93,6 +94,7 @@ public class CluserManagerImpl implements ClusterManager {
             //@formatter:on
             cmResultDef = buildSUCCESS(deploymentResultDef);
         } catch (Throwable e) {
+            logger.error("Error creating seldon deployment",e);
             String info = org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(e);
             cmResultDef = buildFAILURE(info);
         }
@@ -112,6 +114,7 @@ public class CluserManagerImpl implements ClusterManager {
             //@formatter:on
             cmResultDef = buildSUCCESS(deploymentResultDef);
         } catch (Throwable e) {
+            logger.error("Error updating seldon deployment",e);
             String info = org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(e);
             cmResultDef = buildFAILURE(info);
         }
@@ -126,6 +129,7 @@ public class CluserManagerImpl implements ClusterManager {
             zookeeperManager.deleteSeldonDeployment(deploymentDef);
             cmResultDef = buildSUCCESS();
         } catch (Throwable e) {
+            logger.error("Error deleting seldon deployment",e);
             String info = org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(e);
             cmResultDef = buildFAILURE(info);
         }
@@ -139,6 +143,7 @@ public class CluserManagerImpl implements ClusterManager {
             kubernetesManager.createOrReplaceDockerRegistrySecret(dockerRegistrySecretDef);
             cmResultDef = buildSUCCESS();
         } catch (Throwable e) {
+            logger.error("Error creating/updating docker registry secret",e);
             String info = org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(e);
             cmResultDef = buildFAILURE(info);
         }
@@ -152,6 +157,7 @@ public class CluserManagerImpl implements ClusterManager {
             kubernetesManager.deleteDockerRegistrySecret(name);
             cmResultDef = buildSUCCESS();
         } catch (Throwable e) {
+            logger.error("Error deleting docker registry secret",e);
             String info = org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(e);
             cmResultDef = buildFAILURE(info);
         }
