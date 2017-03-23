@@ -8,3 +8,4 @@ cluster-manager/.m2/
 .project
 
 /bin/
+*~

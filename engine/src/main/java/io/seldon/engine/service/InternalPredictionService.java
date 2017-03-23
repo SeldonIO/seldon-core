@@ -71,9 +71,9 @@ public class InternalPredictionService {
 				// PredictorRequestProto to PredictorRqeustJSON
 				
 				PredictorRequestJSON requestJson = (PredictorRequestJSON) request;
+				Boolean isDefault = requestJson.isDefault;
 				String dataString = requestJson.data;
-				JsonNode dataNode = mapper.readTree(dataString);
-				JsonNode node = predictREST(dataNode, endpoint);
+				JsonNode node = predictREST(dataString, isDefault, endpoint);
 				
 				ret = mapper.readValue(node.toString(),PredictorReturn.class);
 				
@@ -87,16 +87,17 @@ public class InternalPredictionService {
 		return null;
 	}
 	
-	public JsonNode predictREST(JsonNode jsonNode, EndpointDef endpoint){
+	public JsonNode predictREST(String dataString, Boolean isDefault, EndpointDef endpoint){
 		{
     		long timeNow = System.currentTimeMillis();
     		URI uri;
 			try {
     			URIBuilder builder = new URIBuilder().setScheme("http")
-    					.setHost(endpoint.getServiceHost())
+    					.setHost("localhost")//endpoint.getServiceHost())
     					.setPort(endpoint.getServicePort())
-    					.setPath("/predict/")
-    					.setParameter("json", jsonNode.toString());
+    					.setPath("/predict")
+    					.setParameter("isDefault", isDefault.toString())
+    					.setParameter("json", dataString);
 
     			uri = builder.build();
     		} catch (URISyntaxException e) 

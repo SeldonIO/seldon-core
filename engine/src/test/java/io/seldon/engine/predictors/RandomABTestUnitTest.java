@@ -27,8 +27,8 @@ public class RandomABTestUnitTest {
 		PredictiveUnitState childA = new PredictiveUnitState("A",null,null);
 		PredictiveUnitState childB = new PredictiveUnitState("B",null,null);
 		
-		state.addChild(0L, childA);
-		state.addChild(1L, childB);
+		state.addChild("0", childA);
+		state.addChild("1", childB);
 		
 		RandomABTestUnit randomABTestUnit = new RandomABTestUnit();
 		Method method = RandomABTestUnit.class.getDeclaredMethod("forwardPass", PredictorData.class, PredictiveUnitState.class);
@@ -64,7 +64,7 @@ public class RandomABTestUnitTest {
 		
 		PredictiveUnitState childA = new PredictiveUnitState("A",null,null);
 		
-		state.addChild(0L, childA);
+		state.addChild("0", childA);
 		
 		RandomABTestUnit randomABTestUnit = new RandomABTestUnit();
 		Method method = RandomABTestUnit.class.getDeclaredMethod("forwardPass", PredictorData.class, PredictiveUnitState.class);

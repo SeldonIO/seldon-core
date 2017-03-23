@@ -50,17 +50,17 @@ public class PredictorBean {
 	public PredictorState predictorStateFromDeploymentDef(DeploymentDef deploymentDef){
 		PredictorDef predictorDef = deploymentDef.getPredictor();
 		
-		Long rootId = predictorDef.getRoot();
+		String rootId = predictorDef.getRoot();
         Boolean enabled = predictorDef.getEnabled();
         List<PredictiveUnitDef> predictiveUnitDefList = predictorDef.getPredictiveUnitsList();
         
-        Map<Long,PredictiveUnitDef> predictiveUnitDefMap = new HashMap<>();
-        Map<Long,PredictiveUnitState> predictiveUnitStateMap = new HashMap<>();
+        Map<String,PredictiveUnitDef> predictiveUnitDefMap = new HashMap<>();
+        Map<String,PredictiveUnitState> predictiveUnitStateMap = new HashMap<>();
      
         // First we go through all the nodes, instantiate the PredictorNode objects and populate dictionaries
         for (PredictiveUnitDef predictiveUnitDef : predictiveUnitDefList){
         	
-        	Long id = predictiveUnitDef.getId();
+        	String id = predictiveUnitDef.getId();
             
         	String typeSubtype = predictiveUnitDef.getType() + "_" + predictiveUnitDef.getSubtype();
         	PredictiveUnitBean predictiveUnitBean = nodeClassMap.get(typeSubtype);
@@ -74,13 +74,13 @@ public class PredictorBean {
         }
         
         // Then we go through the json nodes again and add the children links
-        for (Map.Entry<Long, PredictiveUnitDef> entry : predictiveUnitDefMap.entrySet()) {
+        for (Map.Entry<String, PredictiveUnitDef> entry : predictiveUnitDefMap.entrySet()) {
         	PredictiveUnitDef predictiveUnitDef = entry.getValue();
         	PredictiveUnitState predictiveUnitState = predictiveUnitStateMap.get(entry.getKey());
         	
-        	List<Long> childIds = predictiveUnitDef.getChildrenList();
+        	List<String> childIds = predictiveUnitDef.getChildrenList();
        
-        	for (Long childId : childIds)
+        	for (String childId : childIds)
             {
         		predictiveUnitState.addChild(childId, predictiveUnitStateMap.get(childId));
             }

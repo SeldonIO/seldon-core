@@ -15,7 +15,7 @@ public class PredictiveUnitState {
 	public String name;
 	public PredictiveUnitBean predictiveUnitBean;
 	public EndpointDef endpoint;
-	public Map<Long,PredictiveUnitState> children = new HashMap<>();
+	public Map<String,PredictiveUnitState> children = new HashMap<>();
 	public Map<String,PredictiveUnitParameterInterface>  parameters;
 	
 	public PredictiveUnitState(){}
@@ -29,7 +29,7 @@ public class PredictiveUnitState {
 	public PredictiveUnitState(String name, 
 			PredictiveUnitBean predictiveUnitBean, 
 			EndpointDef endpoint, 
-			Map<Long,PredictiveUnitState> children, 
+			Map<String,PredictiveUnitState> children, 
 			Map<String,PredictiveUnitParameterInterface> parameters){
 		this(
 				name,
@@ -56,7 +56,7 @@ public class PredictiveUnitState {
 		return paramsMap;
 	}
 	
-	public void addChild(Long childId,PredictiveUnitState child){
+	public void addChild(String childId,PredictiveUnitState child){
 		this.children.put(childId, child);
 	}
 	
