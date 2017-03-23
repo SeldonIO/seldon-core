@@ -7,6 +7,8 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.fabric8.kubernetes.api.model.EnvVar;
+import io.fabric8.kubernetes.api.model.EnvVarBuilder;
 import io.fabric8.kubernetes.api.model.LocalObjectReference;
 import io.fabric8.kubernetes.api.model.extensions.Deployment;
 import io.fabric8.kubernetes.api.model.extensions.DeploymentBuilder;
@@ -28,11 +30,12 @@ class KubernetesDeploymentOps {
         this.namespace_name = namespace_name;
     }
 
-    public Optional<Deployment> create(String kubernetesDeploymentId, ClusterResourcesDef clusterResourcesDef, EndpointDef endpointDef) {
+    public Optional<Deployment> create(String kubernetesDeploymentId, ClusterResourcesDef clusterResourcesDef, EndpointDef endpointDef,
+            String predictiveUnitParameters) {
 
         Optional<Deployment> retVal = Optional.empty();
         if (hasDeployableImage(clusterResourcesDef)) {
-            Deployment deployment = buildDeploymentHelper(kubernetesDeploymentId, clusterResourcesDef, endpointDef);
+            Deployment deployment = buildDeploymentHelper(kubernetesDeploymentId, clusterResourcesDef, endpointDef, predictiveUnitParameters);
             deployment = kubernetesClient.extensions().deployments().inNamespace(namespace_name).create(deployment);
             String deploymentName = (deployment != null) ? deployment.getMetadata().getName() : null;
             logger.debug(String.format("Created kubernetes delployment [%s] [%s]", deploymentName, deployment));
@@ -44,8 +47,8 @@ class KubernetesDeploymentOps {
         return retVal;
     }
 
-    public Deployment update(String kubernetesDeploymentId, ClusterResourcesDef clusterResourcesDef, EndpointDef endpointDef) {
-        Deployment deployment = buildDeploymentHelper(kubernetesDeploymentId, clusterResourcesDef, endpointDef);
+    public Deployment update(String kubernetesDeploymentId, ClusterResourcesDef clusterResourcesDef, EndpointDef endpointDef, String predictiveUnitParameters) {
+        Deployment deployment = buildDeploymentHelper(kubernetesDeploymentId, clusterResourcesDef, endpointDef, predictiveUnitParameters);
         deployment = kubernetesClient.extensions().deployments().inNamespace(namespace_name).createOrReplace(deployment);
         String deploymentName = (deployment != null) ? deployment.getMetadata().getName() : null;
         logger.debug(String.format("Updated kubernetes delployment [%s] [%s]", deploymentName, deployment));
@@ -71,7 +74,8 @@ class KubernetesDeploymentOps {
         return (clusterResourcesDef.getImage().length() > 0);
     }
 
-    private Deployment buildDeploymentHelper(String kubernetesDeploymentId, ClusterResourcesDef clusterResourcesDef, EndpointDef endpointDef) {
+    private Deployment buildDeploymentHelper(String kubernetesDeploymentId, ClusterResourcesDef clusterResourcesDef, EndpointDef endpointDef,
+            String predictiveUnitParameters) {
         final int replica_number = clusterResourcesDef.getReplicas();
         final int container_port = endpointDef.getContainerPort();
         final String image_name_and_version = clusterResourcesDef.getImage() + ":" + clusterResourcesDef.getVersion();
@@ -83,6 +87,8 @@ class KubernetesDeploymentOps {
             imagePullSecrets.add(imagePullSecretObject);
         }
 
+        EnvVar envVar_PREDICTIVE_UNIT_PARAMETERS = new EnvVarBuilder().withName("PREDICTIVE_UNIT_PARAMETERS").withValue(predictiveUnitParameters).build();
+
         //@formatter:off
         Deployment deployment = new DeploymentBuilder()
             .withNewMetadata().withName(kubernetesDeploymentId).addToLabels("seldon-deployment-id", seldonDeploymentId).endMetadata()
@@ -92,6 +98,7 @@ class KubernetesDeploymentOps {
                     .withNewSpec()
                         .addNewContainer()
                             .withName("seldon-container").withImage(image_name_and_version)
+                            .withEnv(envVar_PREDICTIVE_UNIT_PARAMETERS)
                             .addNewPort().withContainerPort(container_port).endPort()
                          .endContainer()
                          .addAllToImagePullSecrets(imagePullSecrets)

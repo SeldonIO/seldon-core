@@ -60,6 +60,10 @@ public class KubernetesManagerExampleUtils {
                             .setName("n_layers")
                             .setType(PredictiveUnitDef.ParamType.STRING)
                             .setValue("5"));
+                predictiveUnitDefBuilder.addParameters(PredictiveUnitDef.ParamDef.newBuilder()
+                            .setName("x_layers")
+                            .setType(PredictiveUnitDef.ParamType.STRING)
+                            .setValue("6"));
                 //@formatter:on
 
                 predictiveUnitDefBuilder.setSubtype("simpleModel");

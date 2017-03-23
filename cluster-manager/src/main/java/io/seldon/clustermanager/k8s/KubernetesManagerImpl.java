@@ -9,6 +9,8 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceList;
 import io.fabric8.kubernetes.api.model.Secret;
@@ -21,11 +23,13 @@ import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.seldon.clustermanager.component.KubernetesManager;
+import io.seldon.clustermanager.pb.ProtoBufUtils;
 import io.seldon.protos.DeploymentProtos.ClusterResourcesDef;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
 import io.seldon.protos.DeploymentProtos.DockerRegistrySecretDef;
 import io.seldon.protos.DeploymentProtos.EndpointDef;
 import io.seldon.protos.DeploymentProtos.PredictiveUnitDef;
+import io.seldon.protos.DeploymentProtos.PredictiveUnitDef.ParamDef;
 import io.seldon.protos.DeploymentProtos.PredictorDef;
 import io.seldon.protos.DeploymentProtos.StringSecretDef;
 
@@ -97,6 +101,7 @@ public class KubernetesManagerImpl implements KubernetesManager {
         List<PredictiveUnitDef> predictiveUnits = predictorDef.getPredictiveUnitsList();
         int predictiveUnitIndex = 0;
         for (PredictiveUnitDef predictiveUnitDef : predictiveUnits) {
+            final String predictiveUnitParameters = extractPredictiveUnitParametersAsJson(predictiveUnitDef);
             final String predictiveUnitId = predictiveUnitDef.getId();
             final String predictive_unit_name = predictiveUnitDef.getName();
             final String kubernetesDeploymentId = getKubernetesDeploymentId(seldonDeploymentId, predictiveUnitId);
@@ -105,7 +110,7 @@ public class KubernetesManagerImpl implements KubernetesManager {
             ClusterResourcesDef clusterResourcesDef = predictiveUnitDef.getClusterResources();
             EndpointDef endpointDef = predictiveUnitDef.getEndpoint();
             Optional<Deployment> deployment = new KubernetesDeploymentOps(seldonDeploymentId, kubernetesClient, namespace_name).create(kubernetesDeploymentId,
-                    clusterResourcesDef, endpointDef);
+                    clusterResourcesDef, endpointDef, predictiveUnitParameters);
             if (deployment.isPresent()) {
                 Service service = new KubernetesServiceOps(kubernetesClient, namespace_name, deployment.get()).create(endpointDef);
                 /// String serviceClusterIP = service.getSpec().getClusterIP();
@@ -165,6 +170,7 @@ public class KubernetesManagerImpl implements KubernetesManager {
             List<PredictiveUnitDef> predictiveUnits = predictorDef.getPredictiveUnitsList();
             int predictiveUnitIndex = 0;
             for (PredictiveUnitDef predictiveUnitDef : predictiveUnits) {
+                final String predictiveUnitParameters = extractPredictiveUnitParametersAsJson(predictiveUnitDef);
                 final String predictiveUnitId = predictiveUnitDef.getId();
                 final String kubernetesDeploymentId = getKubernetesDeploymentId(seldonDeploymentId, predictiveUnitId);
                 final String predictive_unit_name = predictiveUnitDef.getName();
@@ -173,14 +179,14 @@ public class KubernetesManagerImpl implements KubernetesManager {
                 EndpointDef endpointDef = predictiveUnitDef.getEndpoint();
                 if (existingDeployments.contains(kubernetesDeploymentId)) {
                     Deployment deployment = new KubernetesDeploymentOps(seldonDeploymentId, kubernetesClient, namespace_name).update(kubernetesDeploymentId,
-                            clusterResourcesDef, endpointDef);
+                            clusterResourcesDef, endpointDef, predictiveUnitParameters);
                     Service service = new KubernetesServiceOps(kubernetesClient, namespace_name, deployment).update(endpointDef);
                     String serviceName = service.getMetadata().getName();
                     resultingDeploymentDefBuilder.getPredictorBuilder().getPredictiveUnitsBuilder(predictiveUnitIndex).getEndpointBuilder()
                             .setServiceHost(serviceName);
                 } else {
                     Optional<Deployment> deployment = new KubernetesDeploymentOps(seldonDeploymentId, kubernetesClient, namespace_name)
-                            .create(kubernetesDeploymentId, clusterResourcesDef, endpointDef);
+                            .create(kubernetesDeploymentId, clusterResourcesDef, endpointDef, predictiveUnitParameters);
                     if (deployment.isPresent()) {
                         Service service = new KubernetesServiceOps(kubernetesClient, namespace_name, deployment.get()).create(endpointDef);
                         String serviceName = service.getMetadata().getName();
@@ -245,5 +251,26 @@ public class KubernetesManagerImpl implements KubernetesManager {
 
     private String getNamespaceName() {
         return seldonClusterNamespaceName;
+    }
+
+    private static String extractPredictiveUnitParametersAsJson(PredictiveUnitDef predictiveUnitDef) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+        List<ParamDef> parameters = predictiveUnitDef.getParametersList();
+        boolean isFirst = true;
+        for (ParamDef parameter : parameters) {
+            try {
+                String j = ProtoBufUtils.toJson(parameter, true);
+                if (!isFirst) {
+                    sb.append(",");
+                }
+                sb.append(j);
+                isFirst = false;
+            } catch (InvalidProtocolBufferException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        sb.append("]");
+        return sb.toString();
     }
 }
