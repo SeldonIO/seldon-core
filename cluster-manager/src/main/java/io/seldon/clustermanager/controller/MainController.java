@@ -31,6 +31,11 @@ public class MainController {
         return "pong";
     }
 
+    @RequestMapping(value = "/authping", method = RequestMethod.GET)
+    public String authping() {
+        return "authpong";
+    }
+
     @RequestMapping(value = "/namespaces", method = RequestMethod.GET)
     public ResponseEntity<String> get_namespaces() {
 
