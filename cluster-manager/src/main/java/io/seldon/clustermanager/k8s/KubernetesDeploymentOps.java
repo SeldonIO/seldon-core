@@ -78,7 +78,8 @@ class KubernetesDeploymentOps {
             String predictiveUnitParameters) {
         final int replica_number = clusterResourcesDef.getReplicas();
         final int container_port = endpointDef.getContainerPort();
-        final String image_name_and_version = clusterResourcesDef.getImage() + ":" + clusterResourcesDef.getVersion();
+        final String image_name_and_version = (clusterResourcesDef.getVersion().length() > 0)
+                ? clusterResourcesDef.getImage() + ":" + clusterResourcesDef.getVersion() : clusterResourcesDef.getImage();
         final String imagePullSecret = clusterResourcesDef.getImagePullSecret();
 
         List<LocalObjectReference> imagePullSecrets = new ArrayList<>();
