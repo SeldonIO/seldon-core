@@ -35,12 +35,12 @@ public class SeldonProtoWriteExample {
 
                 //@formatter:off
                 predictiveUnitDefBuilder.setClusterResources(ClusterResourcesDef.newBuilder()
-                        .setCpus(5)
+                        .setCpu("5")
                         .setImagePullSecret("my-registry-secret")
-                        .setGpus(0)
+                        .setGpu("0")
                         .setId("2")
                         .setImage("seldonio/model2")
-                        .setMemoryGb(20)
+                        .setMemory("20Gi")
                         .setReplicas(1)
                         .setVersion("1.2")
                         );

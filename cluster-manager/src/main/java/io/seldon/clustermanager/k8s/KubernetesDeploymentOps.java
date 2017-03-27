@@ -1,15 +1,20 @@
 package io.seldon.clustermanager.k8s;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.protobuf.Descriptors.FieldDescriptor;
+
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.EnvVarBuilder;
 import io.fabric8.kubernetes.api.model.LocalObjectReference;
+import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.api.model.extensions.Deployment;
 import io.fabric8.kubernetes.api.model.extensions.DeploymentBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -90,6 +95,16 @@ class KubernetesDeploymentOps {
 
         EnvVar envVar_PREDICTIVE_UNIT_PARAMETERS = new EnvVarBuilder().withName("PREDICTIVE_UNIT_PARAMETERS").withValue(predictiveUnitParameters).build();
 
+        Map<String, Quantity> resource_requests = new HashMap<>();
+        { // Add container resource requests
+            if (clusterResourcesDef.hasField(clusterResourcesDef.getDescriptorForType().findFieldByNumber(ClusterResourcesDef.CPU_FIELD_NUMBER))) {
+                resource_requests.put("cpu", new Quantity(clusterResourcesDef.getCpu()));
+            }
+            if (clusterResourcesDef.hasField(clusterResourcesDef.getDescriptorForType().findFieldByNumber(ClusterResourcesDef.MEMORY_FIELD_NUMBER))) {
+                resource_requests.put("memory", new Quantity(clusterResourcesDef.getMemory()));
+            }
+        }
+
         //@formatter:off
         Deployment deployment = new DeploymentBuilder()
             .withNewMetadata().withName(kubernetesDeploymentId).addToLabels("seldon-deployment-id", seldonDeploymentId).endMetadata()
@@ -101,6 +116,9 @@ class KubernetesDeploymentOps {
                             .withName("seldon-container").withImage(image_name_and_version)
                             .withEnv(envVar_PREDICTIVE_UNIT_PARAMETERS)
                             .addNewPort().withContainerPort(container_port).endPort()
+                            .withNewResources()
+                                .addToRequests(resource_requests)
+                            .endResources()
                          .endContainer()
                          .addAllToImagePullSecrets(imagePullSecrets)
                     .endSpec()

@@ -27,12 +27,12 @@ message EndpointDef {
 
 message ClusterResourcesDef {
 
-    int32 cpus = 1;
+    string cpu = 1;
     string imagePullSecret = 2;
-    int32 gpus = 3;
+    string gpu = 3;
     string id = 4;
     string image = 5;
-    int32 memoryGb = 6;
+    string memory = 6;
     int32 replicas = 7;
     string version = 8;
 }

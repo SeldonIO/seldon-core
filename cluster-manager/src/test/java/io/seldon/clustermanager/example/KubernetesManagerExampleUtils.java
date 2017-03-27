@@ -31,12 +31,12 @@ public class KubernetesManagerExampleUtils {
 
                 //@formatter:off
                 predictiveUnitDefBuilder.setClusterResources(ClusterResourcesDef.newBuilder()
-                        .setCpus(5)
+                        .setCpu("5")
                         .setImagePullSecret("")
-                        .setGpus(0)
+                        .setGpu("0")
                         .setId("2")
                         .setImage("nginx")
-                        .setMemoryGb(20)
+                        .setMemory("20Gi")
                         .setReplicas(3)
                         .setVersion("1.9.0")
                         );
@@ -80,12 +80,12 @@ public class KubernetesManagerExampleUtils {
 
                 //@formatter:off
                 predictiveUnitDefBuilder.setClusterResources(ClusterResourcesDef.newBuilder()
-                        .setCpus(5)
+                        .setCpu("5")
                         .setImagePullSecret("my-registry-secret")
-                        .setGpus(0)
+                        .setGpu("0")
                         .setId("2")
                         .setImage("nginx")
-                        .setMemoryGb(20)
+                        .setMemory("20Gi")
                         .setReplicas(3)
                         .setVersion("1.9.0")
                         );
@@ -152,12 +152,12 @@ public class KubernetesManagerExampleUtils {
 
                 //@formatter:off
                 predictiveUnitDefBuilder.setClusterResources(ClusterResourcesDef.newBuilder()
-                        .setCpus(5)
+                        .setCpu("5")
                         .setImagePullSecret("my-registry-secret")
-                        .setGpus(0)
+                        .setGpu("0")
                         .setId("2")
                         .setImage("nginx")
-                        .setMemoryGb(20)
+                        .setMemory("20Gi")
                         .setReplicas(3)
                         .setVersion("1.9.2")
                         );
@@ -197,12 +197,12 @@ public class KubernetesManagerExampleUtils {
 
                 //@formatter:off
                 predictiveUnitDefBuilder.setClusterResources(ClusterResourcesDef.newBuilder()
-                        .setCpus(5)
+                        .setCpu("5")
                         .setImagePullSecret("my-registry-secret")
-                        .setGpus(0)
+                        .setGpu("0")
                         .setId("2")
                         .setImage("nginx")
-                        .setMemoryGb(20)
+                        .setMemory("20Gi")
                         .setReplicas(3)
                         .setVersion("1.9.2")
                         );
