@@ -31,19 +31,19 @@ public class MainController {
         return "pong";
     }
 
-    @RequestMapping(value = "/authping", method = RequestMethod.GET)
+    @RequestMapping(value = "/api/v1/authping", method = RequestMethod.GET)
     public String authping() {
         return "authpong";
     }
 
-    @RequestMapping(value = "/namespaces", method = RequestMethod.GET)
-    public ResponseEntity<String> get_namespaces() {
+    @RequestMapping(value = "/api/v1/namespaces", method = RequestMethod.GET)
+    public ResponseEntity<String> namespaces_get() {
 
         CMResultDef cmResultDef = clusterManager.getNamespaces();
         return ControllerUtils.cmResultDefToResponseEntity(cmResultDef);
     }
 
-    @RequestMapping(value = "/deployments", method = RequestMethod.POST, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
+    @RequestMapping(value = "/api/v1/deployments", method = RequestMethod.POST, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
     public ResponseEntity<String> deployments_post(RequestEntity<String> requestEntity) {
 
         String json = requestEntity.getBody();
@@ -70,7 +70,7 @@ public class MainController {
         return ControllerUtils.cmResultDefToResponseEntity(cmResultDef);
     }
 
-    @RequestMapping(value = "/deployments/{id}", method = RequestMethod.DELETE, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
+    @RequestMapping(value = "/api/v1/deployments/{id}", method = RequestMethod.DELETE, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
     public ResponseEntity<String> deployments_delete(@PathVariable("id") String id, RequestEntity<String> requestEntity) {
 
         String seldon_deployment_id = id;
@@ -83,7 +83,7 @@ public class MainController {
         return ControllerUtils.cmResultDefToResponseEntity(cmResultDef);
     }
 
-    @RequestMapping(value = "/deployments", method = RequestMethod.PATCH, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
+    @RequestMapping(value = "/api/v1/deployments", method = RequestMethod.PATCH, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
     public ResponseEntity<String> deployments_patch(RequestEntity<String> requestEntity) {
 
         String json = requestEntity.getBody();

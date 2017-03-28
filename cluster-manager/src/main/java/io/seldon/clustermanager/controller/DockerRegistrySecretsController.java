@@ -26,7 +26,7 @@ public class DockerRegistrySecretsController {
     @Autowired
     private ClusterManager clusterManager;
 
-    @RequestMapping(value = "/docker-registry-secrets", method = RequestMethod.POST, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
+    @RequestMapping(value = "/api/v1/docker-registry-secrets", method = RequestMethod.POST, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
     public ResponseEntity<String> dockerRegistrySecrets_post(RequestEntity<String> requestEntity) {
 
         String json = requestEntity.getBody();
@@ -54,7 +54,7 @@ public class DockerRegistrySecretsController {
         return ControllerUtils.cmResultDefToResponseEntity(cmResultDef);
     }
 
-    @RequestMapping(value = "/docker-registry-secrets/{name}", method = RequestMethod.DELETE, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
+    @RequestMapping(value = "/api/v1/docker-registry-secrets/{name}", method = RequestMethod.DELETE, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
     public ResponseEntity<String> deployments_delete(@PathVariable("name") String name, RequestEntity<String> requestEntity) {
 
         logger.debug(String.format("[%s] [%s]", "DELETE", requestEntity.getUrl().getPath()));

@@ -12,16 +12,8 @@ class ResourceServerConfiguration extends ResourceServerConfigurerAdapter {
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
-        // @formatter:off
-        http
-            .authorizeRequests()
-                .antMatchers("/ping")
-                .permitAll()
-            .and()
-            .authorizeRequests()
-                .antMatchers("/authping")
-                .authenticated();
-        // @formatter:on
+        // http.authorizeRequests().antMatchers("/api/**/*").authenticated();
+        http.authorizeRequests().antMatchers("/api/**/*").permitAll(); // TODO remove TEMP allow all
     }
 
     @Override
