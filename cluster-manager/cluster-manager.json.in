@@ -40,6 +40,15 @@
                                         "fieldPath": "metadata.namespace"
                                     }
                                 }
+                            },
+                            {
+                                "name": "SELDON_CLUSTER_MANAGER_CLIENT_SECRET",
+                                "valueFrom": {
+                                    "secretKeyRef": {
+                                        "key": "cluster-manager-client-secret.txt",
+                                        "name": "cluster-manager-client-secret"
+                                    }
+                                }
                             }
                         ],
                         "image": "seldonio/cluster-manager:%CLUSTER_MANAGER_IMAGE_VERSION%",
