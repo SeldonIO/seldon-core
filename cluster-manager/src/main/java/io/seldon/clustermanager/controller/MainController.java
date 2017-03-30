@@ -70,7 +70,7 @@ public class MainController {
         return ControllerUtils.cmResultDefToResponseEntity(cmResultDef);
     }
 
-    @RequestMapping(value = "/api/v1/deployments/{id}", method = RequestMethod.DELETE, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
+    @RequestMapping(value = "/api/v1/deployments/{id}", method = RequestMethod.DELETE, produces = "application/json; charset=utf-8")
     public ResponseEntity<String> deployments_delete(@PathVariable("id") String id, RequestEntity<String> requestEntity) {
 
         String seldon_deployment_id = id;
