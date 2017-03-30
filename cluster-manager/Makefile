@@ -1,5 +1,5 @@
 DOCKER_IMAGE_NAME=seldonio/cluster-manager
-PROJECT_VERSION:=$(shell cat version.txt)
+PROJECT_VERSION=$(shell cat version.txt)
 DOCKER_IMAGE_VERSION=$(PROJECT_VERSION)
 CLUSTER_MANAGER_IMAGE_VERSION=$(PROJECT_VERSION)
 
@@ -39,4 +39,13 @@ update_proto:
 
 cluster-manager-client-secret.txt:
 	@openssl rand -base64 12 > $@ && echo "created: $@"
+
+
+port_forward_cluster_manager:
+	kubectl port-forward seldon-cluster-manager 8080:8080
+check:
+	curl -s -i localhost:8080/ping
+
+port_forward_kubeapi:
+	kubectl port-forward seldon-cluster-manager 8001:8001
 

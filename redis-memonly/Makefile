@@ -9,7 +9,7 @@ stop_redis: redis-memonly.json
 redis_cli:
 	kubectl exec -it redis -- bash -c 'redis-cli'
 
-redis_port_forward:
+port_forward_redis:
 	kubectl port-forward redis 6379
 
 clean:

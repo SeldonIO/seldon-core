@@ -24,7 +24,7 @@ stop_zookeeper: zookeeper.json
 zk_shell:
 	kubectl exec -it zookeeper-1 -- /opt/zookeeper/bin/zkCli.sh
 
-zk_port_forward:
+port_forward_zk:
 	kubectl port-forward zookeeper-1 2181:2181
 
 check:
