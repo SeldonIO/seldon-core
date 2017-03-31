@@ -70,6 +70,19 @@ public class MainController {
         return ControllerUtils.cmResultDefToResponseEntity(cmResultDef);
     }
 
+    @RequestMapping(value = "/api/v1/deployments/{id}", method = RequestMethod.GET, produces = "application/json; charset=utf-8")
+    public ResponseEntity<String> deployments_get(@PathVariable("id") String id, RequestEntity<String> requestEntity) {
+
+        String seldon_deployment_id = id;
+        logger.debug(String.format("[%s] [%s]", "GET", requestEntity.getUrl().getPath()));
+
+        DeploymentDef.Builder deploymentDefBuilder = DeploymentDef.newBuilder();
+        deploymentDefBuilder.setId(seldon_deployment_id);
+        CMResultDef cmResultDef = clusterManager.getSeldonDeployment(deploymentDefBuilder.build());
+
+        return ControllerUtils.cmResultDefToResponseEntity(cmResultDef);
+    }
+
     @RequestMapping(value = "/api/v1/deployments/{id}", method = RequestMethod.DELETE, produces = "application/json; charset=utf-8")
     public ResponseEntity<String> deployments_delete(@PathVariable("id") String id, RequestEntity<String> requestEntity) {
 
