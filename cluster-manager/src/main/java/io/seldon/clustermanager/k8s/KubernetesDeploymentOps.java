@@ -9,8 +9,6 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.protobuf.Descriptors.FieldDescriptor;
-
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.EnvVarBuilder;
 import io.fabric8.kubernetes.api.model.LocalObjectReference;
@@ -47,6 +45,17 @@ class KubernetesDeploymentOps {
             retVal = Optional.of(deployment);
         } else {
             logger.debug(String.format("Ignoring kubernetes delployment [%s], not deployable", kubernetesDeploymentId));
+        }
+
+        return retVal;
+    }
+
+    public Optional<Deployment> get(String kubernetesDeploymentId) {
+        Optional<Deployment> retVal = Optional.empty();
+
+        Deployment deployment = kubernetesClient.extensions().deployments().inNamespace(namespace_name).withName(kubernetesDeploymentId).get();
+        if (deployment != null) {
+            retVal = Optional.of(deployment);
         }
 
         return retVal;

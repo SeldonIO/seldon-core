@@ -31,13 +31,13 @@ public class KubernetesManagerExampleUtils {
 
                 //@formatter:off
                 predictiveUnitDefBuilder.setClusterResources(ClusterResourcesDef.newBuilder()
-                        .setCpu("5")
+                        .setCpu("0.1")
                         .setImagePullSecret("")
                         .setGpu("0")
                         .setId("2")
                         .setImage("nginx")
-                        .setMemory("20Gi")
-                        .setReplicas(3)
+                        .setMemory("0.5Gi")
+                        .setReplicas(2)
                         .setVersion("1.9.0")
                         );
                 //@formatter:on
@@ -80,13 +80,13 @@ public class KubernetesManagerExampleUtils {
 
                 //@formatter:off
                 predictiveUnitDefBuilder.setClusterResources(ClusterResourcesDef.newBuilder()
-                        .setCpu("5")
+                        .setCpu("0.1")
                         .setImagePullSecret("my-registry-secret")
                         .setGpu("0")
                         .setId("2")
                         .setImage("nginx")
-                        .setMemory("20Gi")
-                        .setReplicas(3)
+                        .setMemory("4Gi")
+                        .setReplicas(2)
                         .setVersion("1.9.0")
                         );
                 //@formatter:on

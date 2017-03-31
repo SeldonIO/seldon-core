@@ -35,6 +35,7 @@ message ClusterResourcesDef {
     string memory = 6;
     int32 replicas = 7;
     string version = 8;
+    int32 unavailableReplicas = 9;
 }
 
 message PredictiveUnitDef {
