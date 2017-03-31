@@ -1,6 +1,7 @@
 package io.seldon.clustermanager.cm;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +66,7 @@ public class CluserManagerImpl implements ClusterManager {
             //@formatter:on
 
         } catch (Throwable e) {
-            logger.error("Error getting namespaces",e);
+            logger.error("Error getting namespaces", e);
             String info = org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(e);
             //@formatter:off
             cmResultDef = CMResultDef.newBuilder()
@@ -94,7 +95,32 @@ public class CluserManagerImpl implements ClusterManager {
             //@formatter:on
             cmResultDef = buildSUCCESS(deploymentResultDef);
         } catch (Throwable e) {
-            logger.error("Error creating seldon deployment",e);
+            logger.error("Error creating seldon deployment", e);
+            String info = org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(e);
+            cmResultDef = buildFAILURE(info);
+        }
+        return cmResultDef;
+    }
+
+    @Override
+    public CMResultDef getSeldonDeployment(DeploymentDef deploymentDef) {
+        CMResultDef cmResultDef = null;
+        try {
+            Optional<DeploymentDef> deploymentDefInStorage = zookeeperManager.getSeldonDeployment(deploymentDef);
+            if (deploymentDefInStorage.isPresent()) {
+                DeploymentDef resultingDeploymentDef = kubernetesManager.getSeldonDeployment(deploymentDefInStorage.get());
+                //@formatter:off
+                DeploymentResultDef deploymentResultDef = DeploymentResultDef.newBuilder()
+                        .setDeployment(resultingDeploymentDef)
+                        .build();
+                //@formatter:on
+                cmResultDef = buildSUCCESS(deploymentResultDef);
+            } else {
+                final String seldonDeploymentId = deploymentDef.getId();
+                throw new RuntimeException(String.format("seldonDeploymentId[%s] not found in zookeeper", seldonDeploymentId));
+            }
+        } catch (Throwable e) {
+            logger.error("Error getting seldon deployment", e);
             String info = org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(e);
             cmResultDef = buildFAILURE(info);
         }
@@ -114,7 +140,7 @@ public class CluserManagerImpl implements ClusterManager {
             //@formatter:on
             cmResultDef = buildSUCCESS(deploymentResultDef);
         } catch (Throwable e) {
-            logger.error("Error updating seldon deployment",e);
+            logger.error("Error updating seldon deployment", e);
             String info = org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(e);
             cmResultDef = buildFAILURE(info);
         }
@@ -129,7 +155,7 @@ public class CluserManagerImpl implements ClusterManager {
             zookeeperManager.deleteSeldonDeployment(deploymentDef);
             cmResultDef = buildSUCCESS();
         } catch (Throwable e) {
-            logger.error("Error deleting seldon deployment",e);
+            logger.error("Error deleting seldon deployment", e);
             String info = org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(e);
             cmResultDef = buildFAILURE(info);
         }
@@ -143,7 +169,7 @@ public class CluserManagerImpl implements ClusterManager {
             kubernetesManager.createOrReplaceDockerRegistrySecret(dockerRegistrySecretDef);
             cmResultDef = buildSUCCESS();
         } catch (Throwable e) {
-            logger.error("Error creating/updating docker registry secret",e);
+            logger.error("Error creating/updating docker registry secret", e);
             String info = org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(e);
             cmResultDef = buildFAILURE(info);
         }
@@ -157,7 +183,7 @@ public class CluserManagerImpl implements ClusterManager {
             kubernetesManager.deleteDockerRegistrySecret(name);
             cmResultDef = buildSUCCESS();
         } catch (Throwable e) {
-            logger.error("Error deleting docker registry secret",e);
+            logger.error("Error deleting docker registry secret", e);
             String info = org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(e);
             cmResultDef = buildFAILURE(info);
         }
