@@ -1,5 +1,7 @@
 package io.seldon.clustermanager.example;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -39,6 +41,11 @@ public class ClusterManagerNamespacesExample {
 
                 @Override
                 public void deleteSeldonDeployment(DeploymentDef deploymentDef) throws Exception {
+                }
+
+                @Override
+                public Optional<DeploymentDef> getSeldonDeployment(DeploymentDef deploymentDef) throws Exception {
+                    return null;
                 }
             };
         }

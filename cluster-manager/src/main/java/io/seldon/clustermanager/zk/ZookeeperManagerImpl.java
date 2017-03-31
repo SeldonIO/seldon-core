@@ -1,11 +1,15 @@
 package io.seldon.clustermanager.zk;
 
+import java.util.Optional;
+
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.protobuf.util.JsonFormat;
 
 import io.seldon.clustermanager.component.ZookeeperManager;
 import io.seldon.clustermanager.pb.ProtoBufUtils;
@@ -68,6 +72,27 @@ public class ZookeeperManagerImpl implements ZookeeperManager {
             logger.debug(String.format("[UPDATE] [%s] [%s]", deployment_node_path, json));
         }
 
+    }
+
+    @Override
+    public Optional<DeploymentDef> getSeldonDeployment(DeploymentDef deploymentDef) throws Exception {
+        final String seldonDeploymentId = deploymentDef.getId();
+        String deployment_node_path = String.format("/deployments/%s", seldonDeploymentId);
+
+        DeploymentDef deploymentDefResult = null;
+        if (curator.checkExists().forPath(deployment_node_path) != null) {
+            byte[] json_bytes = curator.getData().forPath(deployment_node_path);
+            String json = new String(json_bytes);
+
+            DeploymentDef.Builder deploymentDefBuilder = DeploymentDef.newBuilder();
+            JsonFormat.parser().ignoringUnknownFields().merge(json, deploymentDefBuilder);
+            deploymentDefResult = deploymentDefBuilder.build();
+            logger.debug(String.format("[GET] [%s] [%s]", deployment_node_path, json));
+        } else {
+            logger.error(String.format("[GET] [%s] %s", deployment_node_path, "Not Found!"));
+        }
+
+        return (deploymentDefResult != null) ? Optional.of(deploymentDefResult) : Optional.empty();
     }
 
     @Override
