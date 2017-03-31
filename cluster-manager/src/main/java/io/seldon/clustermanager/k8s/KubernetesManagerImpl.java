@@ -118,6 +118,11 @@ public class KubernetesManagerImpl implements KubernetesManager {
                 String serviceName = service.getMetadata().getName();
                 resultingDeploymentDefBuilder.getPredictorBuilder().getPredictiveUnitsBuilder(predictiveUnitIndex).getEndpointBuilder()
                         .setServiceHost(serviceName);
+
+                final int replicas = resultingDeploymentDefBuilder.getPredictorBuilder().getPredictiveUnitsBuilder(predictiveUnitIndex).getClusterResources()
+                        .getReplicas();
+                resultingDeploymentDefBuilder.getPredictorBuilder().getPredictiveUnitsBuilder(predictiveUnitIndex).getClusterResourcesBuilder()
+                        .setUnavailableReplicas(replicas);
             }
 
             predictiveUnitIndex++;
