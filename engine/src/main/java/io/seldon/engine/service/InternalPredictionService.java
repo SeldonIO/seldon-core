@@ -93,7 +93,7 @@ public class InternalPredictionService {
     		URI uri;
 			try {
     			URIBuilder builder = new URIBuilder().setScheme("http")
-    					.setHost("localhost")//endpoint.getServiceHost())
+    					.setHost(endpoint.getServiceHost())
     					.setPort(endpoint.getServicePort())
     					.setPath("/predict")
     					.setParameter("isDefault", isDefault.toString())
