@@ -31,7 +31,7 @@ public class AverageCombinerUnit extends CombinerUnit{
 				averages = new Double[batchLength][valuesLength];
 				for (int i =0; i < batchLength; i++){
 					Arrays.fill(averages[i], 0.);
-				}
+				}	
 				names = predRet.names;
 				initialised = true;
 			}
