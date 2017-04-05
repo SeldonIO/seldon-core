@@ -97,7 +97,7 @@ public class CluserManagerImpl implements ClusterManager {
         } catch (Throwable e) {
             logger.error("Error creating seldon deployment", e);
             String info = org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(e);
-            cmResultDef = buildFAILURE(info);
+            cmResultDef = buildFAILURE_500(info);
         }
         return cmResultDef;
     }
@@ -117,12 +117,13 @@ public class CluserManagerImpl implements ClusterManager {
                 cmResultDef = buildSUCCESS(deploymentResultDef);
             } else {
                 final String seldonDeploymentId = deploymentDef.getId();
-                throw new RuntimeException(String.format("seldonDeploymentId[%s] not found in zookeeper", seldonDeploymentId));
+                final String info = String.format("seldonDeploymentId[%s] not found in zookeeper", seldonDeploymentId);
+                cmResultDef = buildFAILURE_404(info);
             }
         } catch (Throwable e) {
             logger.error("Error getting seldon deployment", e);
             String info = org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(e);
-            cmResultDef = buildFAILURE(info);
+            cmResultDef = buildFAILURE_500(info);
         }
         return cmResultDef;
     }
@@ -142,7 +143,7 @@ public class CluserManagerImpl implements ClusterManager {
         } catch (Throwable e) {
             logger.error("Error updating seldon deployment", e);
             String info = org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(e);
-            cmResultDef = buildFAILURE(info);
+            cmResultDef = buildFAILURE_500(info);
         }
         return cmResultDef;
     }
@@ -157,7 +158,7 @@ public class CluserManagerImpl implements ClusterManager {
         } catch (Throwable e) {
             logger.error("Error deleting seldon deployment", e);
             String info = org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(e);
-            cmResultDef = buildFAILURE(info);
+            cmResultDef = buildFAILURE_500(info);
         }
         return cmResultDef;
     }
@@ -171,7 +172,7 @@ public class CluserManagerImpl implements ClusterManager {
         } catch (Throwable e) {
             logger.error("Error creating/updating docker registry secret", e);
             String info = org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(e);
-            cmResultDef = buildFAILURE(info);
+            cmResultDef = buildFAILURE_500(info);
         }
         return cmResultDef;
     }
@@ -185,22 +186,30 @@ public class CluserManagerImpl implements ClusterManager {
         } catch (Throwable e) {
             logger.error("Error deleting docker registry secret", e);
             String info = org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(e);
-            cmResultDef = buildFAILURE(info);
+            cmResultDef = buildFAILURE_500(info);
         }
         return cmResultDef;
     }
 
-    private static CMResultDef buildFAILURE(String info) {
+    private static CMResultDef buildFAILURE(String info, int code) {
         //@formatter:off
         CMResultDef cmResultDef = CMResultDef.newBuilder()
                 .setCmstatus(CMStatusDef.newBuilder()
-                        .setCode(500)
+                        .setCode(code)
                         .setStatus(CMStatusDef.Status.FAILURE)
                         .setInfo(info))
                 .clearOneofData()
                 .build();
         //@formatter:on
         return cmResultDef;
+    }
+
+    private static CMResultDef buildFAILURE_404(String info) {
+        return buildFAILURE(info, 404);
+    }
+
+    private static CMResultDef buildFAILURE_500(String info) {
+        return buildFAILURE(info, 500);
     }
 
     private static CMResultDef buildSUCCESS() {
