@@ -23,6 +23,7 @@ class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdap
 
     private final static Logger logger = LoggerFactory.getLogger(AuthorizationServerConfiguration.class);
     private final static String SELDON_CLUSTER_MANAGER_CLIENT_SECRET_KEY = "SELDON_CLUSTER_MANAGER_CLIENT_SECRET";
+    private final static int ACCESS_TOKEN_VALIDITY_SECONDS = 43200;
 
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -63,7 +64,10 @@ class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdap
                 .inMemory()
                 .withClient(client_id)
                 .authorizedGrantTypes("client_credentials", "password")
-                .authorities("ROLE_CLIENT").scopes("read", "write", "trust").resourceIds("cluster-manger-api")
+                .authorities("ROLE_CLIENT")
+                .scopes("read","write")
+                .resourceIds("cluster-manger-api")
+                .accessTokenValiditySeconds(ACCESS_TOKEN_VALIDITY_SECONDS)
                 .secret(client_secret);
         // @formatter:on
     }
