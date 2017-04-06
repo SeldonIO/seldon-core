@@ -3,6 +3,7 @@ FROM openjdk:8
 RUN apt-get update -y
 RUN apt-get install -y python-pip python-dev build-essential
 
-COPY .
+COPY . /pyseldon
+WORKDIR /pyseldon
 
 RUN python setup.py install
