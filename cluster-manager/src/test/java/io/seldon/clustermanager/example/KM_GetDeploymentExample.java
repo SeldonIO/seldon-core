@@ -37,12 +37,10 @@ public class KM_GetDeploymentExample {
             System.out.println("exampleDeploymentDef:");
             String s = ProtoBufUtils.toJson(exampleDeploymentDef, true);
             System.out.println(s);
-            for (PredictiveUnitDef predictiveUnitDef : exampleDeploymentDef.getPredictor().getPredictiveUnitsList()) {
-                ClusterResourcesDef clusterResourcesDef = predictiveUnitDef.getClusterResources();
-                String cr = ProtoBufUtils.toJson(clusterResourcesDef, true);
-                System.out.println(cr);
+            ClusterResourcesDef clusterResourcesDef = exampleDeploymentDef.getPredictor().getClusterResources();
+            String cr = ProtoBufUtils.toJson(clusterResourcesDef, true);
+            System.out.println(cr);
 
-            }
             System.out.println("-------------------------------------------------------------------------------");
         } catch (InvalidProtocolBufferException e) {
             e.printStackTrace();
@@ -54,12 +52,9 @@ public class KM_GetDeploymentExample {
             System.out.println("resultingDeploymentDef:");
             String s = ProtoBufUtils.toJson(resultingDeploymentDef, true);
             System.out.println(s);
-            for (PredictiveUnitDef predictiveUnitDef : resultingDeploymentDef.getPredictor().getPredictiveUnitsList()) {
-                ClusterResourcesDef clusterResourcesDef = predictiveUnitDef.getClusterResources();
-                String cr = ProtoBufUtils.toJson(clusterResourcesDef, true);
-                System.out.println(cr);
-
-            }
+            ClusterResourcesDef clusterResourcesDef = resultingDeploymentDef.getPredictor().getClusterResources();
+            String cr = ProtoBufUtils.toJson(clusterResourcesDef, true);
+            System.out.println(cr);
             System.out.println("-------------------------------------------------------------------------------");
         } catch (InvalidProtocolBufferException e) {
             e.printStackTrace();

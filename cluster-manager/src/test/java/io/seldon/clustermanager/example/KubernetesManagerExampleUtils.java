@@ -23,24 +23,20 @@ public class KubernetesManagerExampleUtils {
             predictorDefBuilder.setEnabled(true);
             predictorDefBuilder.setId("0");
             predictorDefBuilder.setName("my_fantastic_predictor");
+            
+            //@formatter:off
+            predictorDefBuilder.setClusterResources(ClusterResourcesDef.newBuilder()
+                    .setCpu("0.1")
+                    .setGpu("0")
+                    .setMemory("0.5Gi")
+                    .setReplicas(2)
+                    );
+            //@formatter:on
 
             {
                 PredictiveUnitDef.Builder predictiveUnitDefBuilder = PredictiveUnitDef.newBuilder();
 
                 predictiveUnitDefBuilder.addChildren("1").addChildren("2");
-
-                //@formatter:off
-                predictiveUnitDefBuilder.setClusterResources(ClusterResourcesDef.newBuilder()
-                        .setCpu("0.1")
-                        .setImagePullSecret("")
-                        .setGpu("0")
-                        .setId("2")
-                        .setImage("nginx")
-                        .setMemory("0.5Gi")
-                        .setReplicas(2)
-                        .setVersion("1.9.0")
-                        );
-                //@formatter:on
 
                 //@formatter:off
                 predictiveUnitDefBuilder.setEndpoint(EndpointDef.newBuilder()
@@ -77,19 +73,6 @@ public class KubernetesManagerExampleUtils {
                 PredictiveUnitDef.Builder predictiveUnitDefBuilder = PredictiveUnitDef.newBuilder();
 
                 predictiveUnitDefBuilder.addChildren("1").addChildren("2");
-
-                //@formatter:off
-                predictiveUnitDefBuilder.setClusterResources(ClusterResourcesDef.newBuilder()
-                        .setCpu("0.1")
-                        .setImagePullSecret("my-registry-secret")
-                        .setGpu("0")
-                        .setId("2")
-                        .setImage("nginx")
-                        .setMemory("4Gi")
-                        .setReplicas(2)
-                        .setVersion("1.9.0")
-                        );
-                //@formatter:on
 
                 //@formatter:off
                 predictiveUnitDefBuilder.setEndpoint(EndpointDef.newBuilder()
@@ -145,23 +128,19 @@ public class KubernetesManagerExampleUtils {
             predictorDefBuilder.setId("0");
             predictorDefBuilder.setName("my_fantastic_predictor");
 
+            //@formatter:off
+            predictorDefBuilder.setClusterResources(ClusterResourcesDef.newBuilder()
+                    .setCpu("5")
+                    .setGpu("0")
+                    .setMemory("20Gi")
+                    .setReplicas(3)
+                    );
+            //@formatter:on
+
             {
                 PredictiveUnitDef.Builder predictiveUnitDefBuilder = PredictiveUnitDef.newBuilder();
 
                 predictiveUnitDefBuilder.addChildren("1").addChildren("2");
-
-                //@formatter:off
-                predictiveUnitDefBuilder.setClusterResources(ClusterResourcesDef.newBuilder()
-                        .setCpu("5")
-                        .setImagePullSecret("my-registry-secret")
-                        .setGpu("0")
-                        .setId("2")
-                        .setImage("nginx")
-                        .setMemory("20Gi")
-                        .setReplicas(3)
-                        .setVersion("1.9.2")
-                        );
-                //@formatter:on
 
                 //@formatter:off
                 predictiveUnitDefBuilder.setEndpoint(EndpointDef.newBuilder()
@@ -194,19 +173,6 @@ public class KubernetesManagerExampleUtils {
                 PredictiveUnitDef.Builder predictiveUnitDefBuilder = PredictiveUnitDef.newBuilder();
 
                 predictiveUnitDefBuilder.addChildren("1").addChildren("2");
-
-                //@formatter:off
-                predictiveUnitDefBuilder.setClusterResources(ClusterResourcesDef.newBuilder()
-                        .setCpu("5")
-                        .setImagePullSecret("my-registry-secret")
-                        .setGpu("0")
-                        .setId("2")
-                        .setImage("nginx")
-                        .setMemory("20Gi")
-                        .setReplicas(3)
-                        .setVersion("1.9.2")
-                        );
-                //@formatter:on
 
                 //@formatter:off
                 predictiveUnitDefBuilder.setEndpoint(EndpointDef.newBuilder()
