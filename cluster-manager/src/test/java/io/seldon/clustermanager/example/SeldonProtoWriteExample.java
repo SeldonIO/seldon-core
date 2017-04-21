@@ -5,7 +5,6 @@ import com.google.protobuf.util.JsonFormat;
 
 import io.seldon.protos.DeploymentProtos.ClusterDef;
 import io.seldon.protos.DeploymentProtos.ClusterResourcesDef;
-import io.seldon.protos.DeploymentProtos.ContainerResourcesDef;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
 import io.seldon.protos.DeploymentProtos.EndpointDef;
 import io.seldon.protos.DeploymentProtos.PredictiveUnitDef;
@@ -29,28 +28,23 @@ public class SeldonProtoWriteExample {
             predictorDefBuilder.setId("0");
             predictorDefBuilder.setName("my_fantastic_predictor");
 
-            //@formatter:off
-            predictorDefBuilder.setClusterResources(ClusterResourcesDef.newBuilder()
-                    .setCpu("5")
-                    .setGpu("0")
-                    .setMemory("20Gi")
-                    .setReplicas(1)
-                    );
-            //@formatter:on
-                
             {
                 PredictiveUnitDef.Builder predictiveUnitDefBuilder = PredictiveUnitDef.newBuilder();
 
                 predictiveUnitDefBuilder.addChildren("1").addChildren("2");
 
                 //@formatter:off
-                predictiveUnitDefBuilder.setContainerResources(ContainerResourcesDef.newBuilder()
-                        .setImage("seldonio/model2")
+                predictiveUnitDefBuilder.setClusterResources(ClusterResourcesDef.newBuilder()
+                        .setCpu("5")
                         .setImagePullSecret("my-registry-secret")
+                        .setGpu("0")
+                        .setId("2")
+                        .setImage("seldonio/model2")
+                        .setMemory("20Gi")
+                        .setReplicas(1)
                         .setVersion("1.2")
-                );
+                        );
                 //@formatter:on
-
 
                 //@formatter:off
                 predictiveUnitDefBuilder.setEndpoint(EndpointDef.newBuilder()

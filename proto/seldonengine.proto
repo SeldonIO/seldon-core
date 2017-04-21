@@ -28,19 +28,14 @@ message EndpointDef {
 message ClusterResourcesDef {
 
     string cpu = 1;
-    string gpu = 2;
-    string memory = 3;
-    int32 replicas = 4;
-    int32 replicasDesired = 5;
-    int32 replicasReady = 6;
-    int32 unavailableReplicas = 7;
-}
-
-message ContainerResourcesDef {
-
-    string image = 1;
     string imagePullSecret = 2;
-    string version = 3;
+    string gpu = 3;
+    string id = 4;
+    string image = 5;
+    string memory = 6;
+    int32 replicas = 7;
+    string version = 8;
+    int32 unavailableReplicas = 9;
 }
 
 message PredictiveUnitDef {
@@ -59,7 +54,7 @@ message PredictiveUnitDef {
     }
 
     repeated string children = 1;
-    ContainerResourcesDef container_resources = 2;
+    ClusterResourcesDef cluster_resources = 2;
     EndpointDef endpoint = 3;
     string name = 4;
     string id = 5;
@@ -69,12 +64,11 @@ message PredictiveUnitDef {
 }
 
 message PredictorDef {
-    ClusterResourcesDef cluster_resources = 1;
-    bool enabled = 2;
-    string id = 3;
-    string name = 4;
-    repeated PredictiveUnitDef predictiveUnits = 5;
-    string root = 6;
+    bool enabled = 1;
+    string id = 2;
+    string name = 3;
+    repeated PredictiveUnitDef predictiveUnits = 4;
+    string root = 5;
 }
 
 message DeploymentDef {
