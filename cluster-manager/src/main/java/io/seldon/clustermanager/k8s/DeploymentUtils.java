@@ -57,10 +57,14 @@ public class DeploymentUtils {
         int predictiveUnitIndex = 0;
         for (PredictiveUnitDef predictiveUnitDef : predictiveUnits) {
 
+            final ClusterResourcesDef clusterResourcesDef = predictiveUnitDef.getClusterResources();
+            if (!hasDeployableImage(clusterResourcesDef)) {
+                break; // only create container details for predictiveUnit that has an image
+            }
+
             final int container_port = CONTAINER_PORT_BASE + predictiveUnitIndex;
             final int service_port = container_port;
 
-            final ClusterResourcesDef clusterResourcesDef = predictiveUnitDef.getClusterResources();
             final String predictiveUnitParameters = extractPredictiveUnitParametersAsJson(predictiveUnitDef);
 
             final String image_name_and_version = (clusterResourcesDef.getVersion().length() > 0)
@@ -172,6 +176,10 @@ public class DeploymentUtils {
             }
         }
         return sj.toString();
+    }
+
+    private static boolean hasDeployableImage(ClusterResourcesDef clusterResourcesDef) {
+        return (clusterResourcesDef.getImage().length() > 0);
     }
 
 }
