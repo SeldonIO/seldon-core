@@ -21,7 +21,7 @@ message EndpointDef {
 
     string service_host = 1;
     int32 service_port = 2;
-    EndpointType type = 4;
+    EndpointType type = 3;
 }
 
 message ClusterResourcesDef {
@@ -68,6 +68,7 @@ message PredictorDef {
     string name = 3;
     repeated PredictiveUnitDef predictiveUnits = 4;
     string root = 5;
+    int32 replicas = 7;
 }
 
 message DeploymentDef {

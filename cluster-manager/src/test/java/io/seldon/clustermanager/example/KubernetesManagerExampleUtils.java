@@ -23,7 +23,8 @@ public class KubernetesManagerExampleUtils {
             predictorDefBuilder.setEnabled(true);
             predictorDefBuilder.setId("0");
             predictorDefBuilder.setName("my_fantastic_predictor");
-
+            predictorDefBuilder.setReplicas(3);
+            
             {
                 PredictiveUnitDef.Builder predictiveUnitDefBuilder = PredictiveUnitDef.newBuilder();
 

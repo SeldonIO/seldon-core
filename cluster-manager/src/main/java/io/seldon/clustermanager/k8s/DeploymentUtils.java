@@ -145,8 +145,8 @@ public class DeploymentUtils {
             predictiveUnitIndex++;
         }
 
-        final int replica_number = 1; // clusterResourcesDef.getReplicas();
-        final String imagePullSecret = ""; // clusterResourcesDef.getImagePullSecret();
+        final int replica_number = deploymentDef.getPredictor().getReplicas();
+        final String imagePullSecret = ""; // clusterResourcesDef.getImagePullSecret(); TODO!!
         List<LocalObjectReference> imagePullSecrets = new ArrayList<>();
         if (imagePullSecret.length() > 0) {
             LocalObjectReference imagePullSecretObject = new LocalObjectReference(imagePullSecret);
