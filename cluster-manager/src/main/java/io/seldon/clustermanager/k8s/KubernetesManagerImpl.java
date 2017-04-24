@@ -3,6 +3,7 @@ package io.seldon.clustermanager.k8s;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
@@ -97,35 +98,29 @@ public class KubernetesManagerImpl implements KubernetesManager {
         logger.debug(String.format("Creating Seldon Deployment id[%s]", seldonDeploymentId));
         final String namespace_name = getNamespaceName();
 
-        PredictorDef predictorDef = deploymentDef.getPredictor();
+        DeploymentUtils.BuildDeploymentResult buildDeploymentResult = DeploymentUtils.buildDeployment(deploymentDef);
+        DeploymentUtils.createDeployment(kubernetesClient, namespace_name, buildDeploymentResult);
 
-        List<PredictiveUnitDef> predictiveUnits = predictorDef.getPredictiveUnitsList();
+        Map<String, EndpointDef> endpointsByPredictiveUnitId = buildDeploymentResult.endpointsByPredictiveUnitId;
+
+        List<PredictiveUnitDef> predictiveUnits = deploymentDef.getPredictor().getPredictiveUnitsList();
         int predictiveUnitIndex = 0;
         for (PredictiveUnitDef predictiveUnitDef : predictiveUnits) {
-            final String predictiveUnitParameters = extractPredictiveUnitParametersAsJson(predictiveUnitDef);
             final String predictiveUnitId = predictiveUnitDef.getId();
-            final String predictive_unit_name = predictiveUnitDef.getName();
-            final String kubernetesDeploymentId = getKubernetesDeploymentId(seldonDeploymentId, predictiveUnitId);
-            logger.debug(String.format("Deploying predictiveUnit[%s] for seldonDeployment id[%s]", predictive_unit_name, seldonDeploymentId));
 
-            ClusterResourcesDef clusterResourcesDef = predictiveUnitDef.getClusterResources();
-            EndpointDef endpointDef = predictiveUnitDef.getEndpoint();
-            Optional<Deployment> deployment = new KubernetesDeploymentOps(seldonDeploymentId, kubernetesClient, namespace_name).create(kubernetesDeploymentId,
-                    clusterResourcesDef, endpointDef, predictiveUnitParameters);
-            if (deployment.isPresent()) {
-                Service service = new KubernetesServiceOps(kubernetesClient, namespace_name, deployment.get()).create(endpointDef);
-                /// String serviceClusterIP = service.getSpec().getClusterIP();
-                String serviceName = service.getMetadata().getName();
-                resultingDeploymentDefBuilder.getPredictorBuilder().getPredictiveUnitsBuilder(predictiveUnitIndex).getEndpointBuilder()
-                        .setServiceHost(serviceName);
+            EndpointDef endpointDef = endpointsByPredictiveUnitId.get(predictiveUnitId);
+            final String service_host = (endpointDef != null) ? endpointDef.getServiceHost() : "UNKOWN";
+            final int service_port = (endpointDef != null) ? endpointDef.getServicePort() : -1;
 
-                setUnavailableReplicasSameAsReplicas(resultingDeploymentDefBuilder.getPredictorBuilder().getPredictiveUnitsBuilder(predictiveUnitIndex));
-            }
-
+            resultingDeploymentDefBuilder.getPredictorBuilder().getPredictiveUnitsBuilder(predictiveUnitIndex).getEndpointBuilder()
+                    .setServiceHost(service_host);
+            resultingDeploymentDefBuilder.getPredictorBuilder().getPredictiveUnitsBuilder(predictiveUnitIndex).getEndpointBuilder()
+                    .setServicePort(service_port);
             predictiveUnitIndex++;
         }
 
         return resultingDeploymentDefBuilder.build();
+
     }
 
     @Override
@@ -247,17 +242,8 @@ public class KubernetesManagerImpl implements KubernetesManager {
 
     @Override
     public void deleteSeldonDeployment(DeploymentDef deploymentDef) {
-        final String seldonDeploymentId = deploymentDef.getId();
-        logger.debug(String.format("Deleting Seldon Deployment[%s]", seldonDeploymentId));
-        final String namespace_name = getNamespaceName();
-
-        DeploymentList deployments = kubernetesClient.extensions().deployments().inNamespace(namespace_name)
-                .withLabel("seldon-deployment-id", seldonDeploymentId).list();
-        for (Deployment deployment : deployments.getItems()) {
-            new KubernetesDeploymentOps(seldonDeploymentId, kubernetesClient, namespace_name).delete(deployment);
-            new KubernetesServiceOps(kubernetesClient, namespace_name, deployment).delete();
-        }
-
+        String namespace_name = getNamespaceName();
+        DeploymentUtils.deleteDeployment(kubernetesClient, namespace_name, deploymentDef);
     }
 
     /**

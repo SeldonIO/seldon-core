@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import io.fabric8.kubernetes.api.model.Container;
@@ -18,6 +21,7 @@ import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.ServiceBuilder;
 import io.fabric8.kubernetes.api.model.extensions.Deployment;
 import io.fabric8.kubernetes.api.model.extensions.DeploymentBuilder;
+import io.fabric8.kubernetes.client.KubernetesClient;
 import io.seldon.clustermanager.pb.ProtoBufUtils;
 import io.seldon.protos.DeploymentProtos.ClusterResourcesDef;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
@@ -27,6 +31,8 @@ import io.seldon.protos.DeploymentProtos.PredictiveUnitDef.ParamDef;
 import io.seldon.protos.DeploymentProtos.PredictorDef;
 
 public class DeploymentUtils {
+
+    private final static Logger logger = LoggerFactory.getLogger(DeploymentUtils.class);
 
     public static class BuildDeploymentResult {
         public final Deployment deployment;
@@ -111,6 +117,7 @@ public class DeploymentUtils {
                 Service service = new ServiceBuilder()
                         .withNewMetadata()
                             .withName(serviceName)
+                            .addToLabels("seldon-deployment-id", seldonDeploymentId)
                         .endMetadata()
                         .withNewSpec()
                             .addNewPort()
@@ -162,6 +169,38 @@ public class DeploymentUtils {
 
         BuildDeploymentResult buildDeploymentResult = new BuildDeploymentResult(deployment, services, endpointsByPredictiveUnitId);
         return buildDeploymentResult;
+    }
+
+    public static void createDeployment(KubernetesClient kubernetesClient, String namespace_name, BuildDeploymentResult buildDeploymentResult) {
+        Deployment deployment = kubernetesClient.extensions().deployments().inNamespace(namespace_name).create(buildDeploymentResult.deployment);
+        if (deployment != null) {
+            for (Service service : buildDeploymentResult.services) {
+                service = kubernetesClient.services().inNamespace(namespace_name).create(service);
+            }
+        }
+    }
+
+    public static void deleteDeployment(KubernetesClient kubernetesClient, String namespace_name, DeploymentDef deploymentDef) {
+        final String seldonDeploymentId = deploymentDef.getId();
+        final String deploymentName = "sd-" + seldonDeploymentId;
+
+        kubernetesClient.extensions().deployments().inNamespace(namespace_name).withName(deploymentName).delete();
+        logger.debug(String.format("Deleted kubernetes delployment [%s]", deploymentName));
+        io.fabric8.kubernetes.api.model.extensions.ReplicaSetList rslist = kubernetesClient.extensions().replicaSets().inNamespace(namespace_name)
+                .withLabel("seldon-app", deploymentName).list();
+        for (io.fabric8.kubernetes.api.model.extensions.ReplicaSet rs : rslist.getItems()) {
+            kubernetesClient.resource(rs).inNamespace(namespace_name).delete();
+            String rsmsg = (rs != null) ? rs.getMetadata().getName() : null;
+            logger.debug(String.format("Deleted kubernetes replicaSet [%s]", rsmsg));
+        }
+
+        io.fabric8.kubernetes.api.model.ServiceList svcList = kubernetesClient.services().inNamespace(namespace_name)
+                .withLabel("seldon-deployment-id", seldonDeploymentId).list();
+        for (io.fabric8.kubernetes.api.model.Service service : svcList.getItems()) {
+            kubernetesClient.resource(service).inNamespace(namespace_name).delete();
+            String rsmsg = (service != null) ? service.getMetadata().getName() : null;
+            logger.debug(String.format("Deleted kubernetes service [%s]", rsmsg));
+        }
     }
 
     private static String extractPredictiveUnitParametersAsJson(PredictiveUnitDef predictiveUnitDef) {

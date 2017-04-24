@@ -35,10 +35,10 @@ public class KubernetesManagerExampleUtils {
                         .setImagePullSecret("")
                         .setGpu("0")
                         .setId("2")
-                        .setImage("nginx")
+                        .setImage("gsunner/putest")
                         .setMemory("0.5Gi")
                         .setReplicas(2)
-                        .setVersion("1.9.0")
+                        .setVersion("")
                         );
                 //@formatter:on
 
@@ -84,10 +84,10 @@ public class KubernetesManagerExampleUtils {
                         .setImagePullSecret("my-registry-secret")
                         .setGpu("0")
                         .setId("2")
-                        .setImage("nginx")
+                        .setImage("gsunner/putest")
                         .setMemory("4Gi")
                         .setReplicas(2)
-                        .setVersion("1.9.0")
+                        .setVersion("")
                         );
                 //@formatter:on
 
@@ -156,10 +156,10 @@ public class KubernetesManagerExampleUtils {
                         .setImagePullSecret("my-registry-secret")
                         .setGpu("0")
                         .setId("2")
-                        .setImage("nginx")
+                        .setImage("gsunner/putest")
                         .setMemory("20Gi")
                         .setReplicas(3)
-                        .setVersion("1.9.2")
+                        .setVersion("")
                         );
                 //@formatter:on
 
@@ -201,10 +201,10 @@ public class KubernetesManagerExampleUtils {
                         .setImagePullSecret("my-registry-secret")
                         .setGpu("0")
                         .setId("2")
-                        .setImage("nginx")
+                        .setImage("gsunner/putest")
                         .setMemory("20Gi")
                         .setReplicas(3)
-                        .setVersion("1.9.2")
+                        .setVersion("")
                         );
                 //@formatter:on
 
