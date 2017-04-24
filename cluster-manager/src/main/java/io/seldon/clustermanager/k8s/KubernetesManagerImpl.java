@@ -242,6 +242,8 @@ public class KubernetesManagerImpl implements KubernetesManager {
 
     @Override
     public void deleteSeldonDeployment(DeploymentDef deploymentDef) {
+        final String seldonDeploymentId = deploymentDef.getId();
+        logger.debug(String.format("Deleting Seldon Deployment id[%s]", seldonDeploymentId));
         String namespace_name = getNamespaceName();
         DeploymentUtils.deleteDeployment(kubernetesClient, namespace_name, deploymentDef);
     }

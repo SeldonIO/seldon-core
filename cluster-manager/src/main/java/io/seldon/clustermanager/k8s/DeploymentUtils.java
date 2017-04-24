@@ -173,9 +173,13 @@ public class DeploymentUtils {
 
     public static void createDeployment(KubernetesClient kubernetesClient, String namespace_name, BuildDeploymentResult buildDeploymentResult) {
         Deployment deployment = kubernetesClient.extensions().deployments().inNamespace(namespace_name).create(buildDeploymentResult.deployment);
+        String deploymentName = (deployment != null) ? deployment.getMetadata().getName() : "null";
+        logger.debug(String.format("Created kubernetes delployment [%s]", deploymentName));
         if (deployment != null) {
             for (Service service : buildDeploymentResult.services) {
                 service = kubernetesClient.services().inNamespace(namespace_name).create(service);
+                String serviceName = (service != null) ? service.getMetadata().getName() : "null";
+                logger.debug(String.format("Created kubernetes service [%s]", serviceName));
             }
         }
     }
@@ -184,22 +188,26 @@ public class DeploymentUtils {
         final String seldonDeploymentId = deploymentDef.getId();
         final String deploymentName = "sd-" + seldonDeploymentId;
 
-        kubernetesClient.extensions().deployments().inNamespace(namespace_name).withName(deploymentName).delete();
-        logger.debug(String.format("Deleted kubernetes delployment [%s]", deploymentName));
-        io.fabric8.kubernetes.api.model.extensions.ReplicaSetList rslist = kubernetesClient.extensions().replicaSets().inNamespace(namespace_name)
-                .withLabel("seldon-app", deploymentName).list();
-        for (io.fabric8.kubernetes.api.model.extensions.ReplicaSet rs : rslist.getItems()) {
-            kubernetesClient.resource(rs).inNamespace(namespace_name).delete();
-            String rsmsg = (rs != null) ? rs.getMetadata().getName() : null;
-            logger.debug(String.format("Deleted kubernetes replicaSet [%s]", rsmsg));
-        }
+        { // delete the services for this seldon deployment
 
-        io.fabric8.kubernetes.api.model.ServiceList svcList = kubernetesClient.services().inNamespace(namespace_name)
-                .withLabel("seldon-deployment-id", seldonDeploymentId).list();
-        for (io.fabric8.kubernetes.api.model.Service service : svcList.getItems()) {
-            kubernetesClient.resource(service).inNamespace(namespace_name).delete();
-            String rsmsg = (service != null) ? service.getMetadata().getName() : null;
-            logger.debug(String.format("Deleted kubernetes service [%s]", rsmsg));
+            io.fabric8.kubernetes.api.model.ServiceList svcList = kubernetesClient.services().inNamespace(namespace_name)
+                    .withLabel("seldon-deployment-id", seldonDeploymentId).list();
+            for (io.fabric8.kubernetes.api.model.Service service : svcList.getItems()) {
+                kubernetesClient.resource(service).inNamespace(namespace_name).delete();
+                String rsmsg = (service != null) ? service.getMetadata().getName() : null;
+                logger.debug(String.format("Deleted kubernetes service [%s]", rsmsg));
+            }
+        }
+        { // delete the kubernetes deployemnt for this seldon deployment
+            kubernetesClient.extensions().deployments().inNamespace(namespace_name).withName(deploymentName).delete();
+            logger.debug(String.format("Deleted kubernetes delployment [%s]", deploymentName));
+            io.fabric8.kubernetes.api.model.extensions.ReplicaSetList rslist = kubernetesClient.extensions().replicaSets().inNamespace(namespace_name)
+                    .withLabel("seldon-app", deploymentName).list();
+            for (io.fabric8.kubernetes.api.model.extensions.ReplicaSet rs : rslist.getItems()) {
+                kubernetesClient.resource(rs).inNamespace(namespace_name).delete();
+                String rsmsg = (rs != null) ? rs.getMetadata().getName() : null;
+                logger.debug(String.format("Deleted kubernetes replicaSet [%s]", rsmsg));
+            }
         }
     }
 
