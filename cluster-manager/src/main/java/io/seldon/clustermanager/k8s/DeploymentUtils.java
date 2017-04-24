@@ -29,9 +29,15 @@ import io.seldon.protos.DeploymentProtos.PredictorDef;
 public class DeploymentUtils {
 
     public static class BuildDeploymentResult {
-        public Deployment deployment;
-        public List<Service> services;
-        public Map<String, EndpointDef> endpointsByPredictiveUnitId;
+        public final Deployment deployment;
+        public final List<Service> services;
+        public final Map<String, EndpointDef> endpointsByPredictiveUnitId;
+
+        public BuildDeploymentResult(Deployment deployment, List<Service> services, Map<String, EndpointDef> endpointsByPredictiveUnitId) {
+            this.deployment = deployment;
+            this.services = services;
+            this.endpointsByPredictiveUnitId = endpointsByPredictiveUnitId;
+        }
     }
 
     public static BuildDeploymentResult buildDeployment(DeploymentDef deploymentDef) {
@@ -150,11 +156,7 @@ public class DeploymentUtils {
             .endSpec().build();
         //@formatter:on
 
-        BuildDeploymentResult buildDeploymentResult = new BuildDeploymentResult();
-        buildDeploymentResult.deployment = deployment;
-        buildDeploymentResult.services = services;
-        buildDeploymentResult.endpointsByPredictiveUnitId = endpointsByPredictiveUnitId;
-
+        BuildDeploymentResult buildDeploymentResult = new BuildDeploymentResult(deployment, services, endpointsByPredictiveUnitId);
         return buildDeploymentResult;
     }
 
