@@ -32,9 +32,7 @@ message ClusterResourcesDef {
     string id = 4;
     string image = 5;
     string memory = 6;
-    int32 replicas = 7;
-    string version = 8;
-    int32 unavailableReplicas = 9;
+    string version = 7;
 }
 
 message PredictiveUnitDef {
@@ -67,8 +65,8 @@ message PredictorDef {
     string id = 2;
     string name = 3;
     repeated PredictiveUnitDef predictiveUnits = 4;
-    string root = 5;
-    int32 replicas = 7;
+    int32 replicas = 5;
+    string root = 6;
 }
 
 message DeploymentDef {

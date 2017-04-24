@@ -41,7 +41,6 @@ public class SeldonProtoWriteExample {
                         .setId("2")
                         .setImage("seldonio/model2")
                         .setMemory("20Gi")
-                        .setReplicas(1)
                         .setVersion("1.2")
                         );
                 //@formatter:on

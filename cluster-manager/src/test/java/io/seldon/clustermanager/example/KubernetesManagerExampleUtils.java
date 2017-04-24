@@ -38,7 +38,6 @@ public class KubernetesManagerExampleUtils {
                         .setId("2")
                         .setImage("gsunner/putest")
                         .setMemory("0.5Gi")
-                        .setReplicas(2)
                         .setVersion("")
                         );
                 //@formatter:on
@@ -86,7 +85,6 @@ public class KubernetesManagerExampleUtils {
                         .setId("2")
                         .setImage("gsunner/putest")
                         .setMemory("4Gi")
-                        .setReplicas(2)
                         .setVersion("")
                         );
                 //@formatter:on
@@ -157,7 +155,6 @@ public class KubernetesManagerExampleUtils {
                         .setId("2")
                         .setImage("gsunner/putest")
                         .setMemory("20Gi")
-                        .setReplicas(3)
                         .setVersion("")
                         );
                 //@formatter:on
@@ -201,7 +198,6 @@ public class KubernetesManagerExampleUtils {
                         .setId("2")
                         .setImage("gsunner/putest")
                         .setMemory("20Gi")
-                        .setReplicas(3)
                         .setVersion("")
                         );
                 //@formatter:on

@@ -148,8 +148,7 @@ public class KubernetesManagerImpl implements KubernetesManager {
             } else {
                 unavailableReplicas = -1; // If a kubernetes deployment cannot be found, use -1 to indicate this
             }
-            resultingDeploymentDefBuilder.getPredictorBuilder().getPredictiveUnitsBuilder(predictiveUnitIndex).getClusterResourcesBuilder()
-                    .setUnavailableReplicas(unavailableReplicas);
+            //// resultingDeploymentDefBuilder.getPredictorBuilder().getPredictiveUnitsBuilder(predictiveUnitIndex).getClusterResourcesBuilder().setUnavailableReplicas(unavailableReplicas);
 
             predictiveUnitIndex++;
         }
@@ -298,7 +297,7 @@ public class KubernetesManagerImpl implements KubernetesManager {
     }
 
     private static void setUnavailableReplicasSameAsReplicas(PredictiveUnitDef.Builder predictiveUnitDefBuilder) {
-        final int replicas = predictiveUnitDefBuilder.getClusterResources().getReplicas();
-        predictiveUnitDefBuilder.getClusterResourcesBuilder().setUnavailableReplicas(replicas);
+//        final int replicas = predictiveUnitDefBuilder.getClusterResources().getReplicas();
+//        predictiveUnitDefBuilder.getClusterResourcesBuilder().setUnavailableReplicas(replicas);
     }
 }

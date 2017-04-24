@@ -92,7 +92,7 @@ class KubernetesDeploymentOps {
 
     private Deployment buildDeploymentHelper(String kubernetesDeploymentId, ClusterResourcesDef clusterResourcesDef, EndpointDef endpointDef,
             String predictiveUnitParameters) {
-        final int replica_number = clusterResourcesDef.getReplicas();
+        final int replica_number = -1; ///clusterResourcesDef.getReplicas();
         final int container_port = -1; //endpointDef.getContainerPort();
         final String image_name_and_version = (clusterResourcesDef.getVersion().length() > 0)
                 ? clusterResourcesDef.getImage() + ":" + clusterResourcesDef.getVersion() : clusterResourcesDef.getImage();
