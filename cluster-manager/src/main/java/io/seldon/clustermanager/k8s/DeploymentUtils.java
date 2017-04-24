@@ -31,6 +31,7 @@ public class DeploymentUtils {
     public static class BuildDeploymentResult {
         public Deployment deployment;
         public List<Service> services;
+        public Map<String, EndpointDef> endpointsByPredictiveUnitId;
     }
 
     public static BuildDeploymentResult buildDeployment(DeploymentDef deploymentDef) {
@@ -42,6 +43,7 @@ public class DeploymentUtils {
 
         List<Container> containers = new ArrayList<>();
         List<Service> services = new ArrayList<>();
+        Map<String, EndpointDef> endpointsByPredictiveUnitId = new HashMap<>();
 
         final String kubernetesDeploymentId = "sd-" + seldonDeploymentId;
 
@@ -112,6 +114,15 @@ public class DeploymentUtils {
                         .build();
                 //@formatter:on
                 services.add(service);
+
+                // build an EndpointDef with service details
+                //@formatter:off
+                EndpointDef endpointDef = EndpointDef.newBuilder()
+                        .setServiceHost(serviceName)
+                        .setServicePort(port)
+                        .build();
+                //@formatter:on
+                endpointsByPredictiveUnitId.put(predictiveUnitDef.getId(), endpointDef);
             }
 
             predictiveUnitIndex++;
@@ -142,9 +153,9 @@ public class DeploymentUtils {
         BuildDeploymentResult buildDeploymentResult = new BuildDeploymentResult();
         buildDeploymentResult.deployment = deployment;
         buildDeploymentResult.services = services;
+        buildDeploymentResult.endpointsByPredictiveUnitId = endpointsByPredictiveUnitId;
 
         return buildDeploymentResult;
-
     }
 
     private static String extractPredictiveUnitParametersAsJson(PredictiveUnitDef predictiveUnitDef) {
