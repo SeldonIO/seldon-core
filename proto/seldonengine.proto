@@ -21,7 +21,6 @@ message EndpointDef {
 
     string service_host = 1;
     int32 service_port = 2;
-    int32 container_port = 3;
     EndpointType type = 4;
 }
 

@@ -50,7 +50,6 @@ public class SeldonProtoWriteExample {
                 predictiveUnitDefBuilder.setEndpoint(EndpointDef.newBuilder()
                         .setServiceHost("127.0.0.1")
                         .setServicePort(5004)
-                        .setContainerPort(80)
                         .setType(EndpointDef.EndpointType.REST)
                         );
                 //@formatter:on
