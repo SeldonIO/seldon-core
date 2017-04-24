@@ -14,6 +14,8 @@ import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.EnvVarBuilder;
 import io.fabric8.kubernetes.api.model.LocalObjectReference;
 import io.fabric8.kubernetes.api.model.Quantity;
+import io.fabric8.kubernetes.api.model.Service;
+import io.fabric8.kubernetes.api.model.ServiceBuilder;
 import io.fabric8.kubernetes.api.model.extensions.Deployment;
 import io.fabric8.kubernetes.api.model.extensions.DeploymentBuilder;
 import io.seldon.clustermanager.pb.ProtoBufUtils;
@@ -26,25 +28,39 @@ import io.seldon.protos.DeploymentProtos.PredictorDef;
 
 public class DeploymentUtils {
 
-    public static Deployment buildKubernetesDeployment(DeploymentDef deploymentDef) {
+    public static class BuildDeploymentResult {
+        public Deployment deployment;
+        public List<Service> services;
+    }
+
+    public static BuildDeploymentResult buildDeployment(DeploymentDef deploymentDef) {
+
+        final int CONTAINER_PORT_BASE = 5000;
 
         final String seldonDeploymentId = deploymentDef.getId();
         PredictorDef predictorDef = deploymentDef.getPredictor();
 
         List<Container> containers = new ArrayList<>();
+        List<Service> services = new ArrayList<>();
+
+        final String kubernetesDeploymentId = "sd-" + seldonDeploymentId;
 
         List<PredictiveUnitDef> predictiveUnits = predictorDef.getPredictiveUnitsList();
         int predictiveUnitIndex = 0;
         for (PredictiveUnitDef predictiveUnitDef : predictiveUnits) {
+
+            final int container_port = CONTAINER_PORT_BASE + predictiveUnitIndex;
+            final int service_port = container_port;
+
             final ClusterResourcesDef clusterResourcesDef = predictiveUnitDef.getClusterResources();
-            EndpointDef endpointDef = predictiveUnitDef.getEndpoint();
             final String predictiveUnitParameters = extractPredictiveUnitParametersAsJson(predictiveUnitDef);
 
-            final int container_port = endpointDef.getContainerPort();
             final String image_name_and_version = (clusterResourcesDef.getVersion().length() > 0)
                     ? clusterResourcesDef.getImage() + ":" + clusterResourcesDef.getVersion() : clusterResourcesDef.getImage();
 
             EnvVar envVar_PREDICTIVE_UNIT_PARAMETERS = new EnvVarBuilder().withName("PREDICTIVE_UNIT_PARAMETERS").withValue(predictiveUnitParameters).build();
+            EnvVar envVar_PREDICTIVE_UNIT_SERVICE_PORT = new EnvVarBuilder().withName("PREDICTIVE_UNIT_SERVICE_PORT").withValue(String.valueOf(container_port))
+                    .build();
 
             Map<String, Quantity> resource_requests = new HashMap<>();
             { // Add container resource requests
@@ -59,7 +75,7 @@ public class DeploymentUtils {
             //@formatter:off
             Container c = new ContainerBuilder()
                     .withName("seldon-container-"+String.valueOf(predictiveUnitIndex)).withImage(image_name_and_version)
-                    .withEnv(envVar_PREDICTIVE_UNIT_PARAMETERS)
+                    .withEnv(envVar_PREDICTIVE_UNIT_PARAMETERS, envVar_PREDICTIVE_UNIT_SERVICE_PORT)
                     .addNewPort().withContainerPort(container_port).endPort()
                     .withNewResources()
                         .addToRequests(resource_requests)
@@ -68,7 +84,36 @@ public class DeploymentUtils {
             
             containers.add(c);
             //@formatter:on
-            
+
+            { // build service for this predictiveUnit
+                final String deploymentName = kubernetesDeploymentId;
+                String serviceName = deploymentName + "-" + predictiveUnitDef.getId();
+
+                String selectorName = "seldon-app";
+                String selectorValue = deploymentName;
+
+                int port = service_port;
+                int targetPort = container_port;
+
+                //@formatter:off
+                Service service = new ServiceBuilder()
+                        .withNewMetadata()
+                            .withName(serviceName)
+                        .endMetadata()
+                        .withNewSpec()
+                            .addNewPort()
+                                .withProtocol("TCP")
+                                .withPort(port)
+                                .withNewTargetPort(targetPort)
+                            .endPort()
+                            .addToSelector(selectorName, selectorValue)
+                            .withType("ClusterIP")
+                        .endSpec()
+                        .build();
+                //@formatter:on
+                services.add(service);
+            }
+
             predictiveUnitIndex++;
         }
 
@@ -79,8 +124,6 @@ public class DeploymentUtils {
             LocalObjectReference imagePullSecretObject = new LocalObjectReference(imagePullSecret);
             imagePullSecrets.add(imagePullSecretObject);
         }
-
-        final String kubernetesDeploymentId = "sd-" + seldonDeploymentId;
 
         //@formatter:off
         Deployment deployment = new DeploymentBuilder()
@@ -95,7 +138,12 @@ public class DeploymentUtils {
                 .endTemplate()
             .endSpec().build();
         //@formatter:on
-        return deployment;
+
+        BuildDeploymentResult buildDeploymentResult = new BuildDeploymentResult();
+        buildDeploymentResult.deployment = deployment;
+        buildDeploymentResult.services = services;
+
+        return buildDeploymentResult;
 
     }
 
