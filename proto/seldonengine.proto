@@ -27,12 +27,11 @@ message EndpointDef {
 message ClusterResourcesDef {
 
     string cpu = 1;
-    string imagePullSecret = 2;
-    string gpu = 3;
-    string id = 4;
-    string image = 5;
-    string memory = 6;
-    string version = 7;
+    string gpu = 2;
+    string id = 3;
+    string image = 4;
+    string memory = 5;
+    string version = 6;
 }
 
 message PredictiveUnitDef {
@@ -63,10 +62,11 @@ message PredictiveUnitDef {
 message PredictorDef {
     bool enabled = 1;
     string id = 2;
-    string name = 3;
-    repeated PredictiveUnitDef predictiveUnits = 4;
-    int32 replicas = 5;
-    string root = 6;
+    string imagePullSecret = 3;
+    string name = 4;
+    repeated PredictiveUnitDef predictiveUnits = 5;
+    int32 replicas = 6;
+    string root = 7;
 }
 
 message DeploymentDef {

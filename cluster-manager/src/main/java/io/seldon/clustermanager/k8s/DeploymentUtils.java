@@ -146,7 +146,7 @@ public class DeploymentUtils {
         }
 
         final int replica_number = deploymentDef.getPredictor().getReplicas();
-        final String imagePullSecret = ""; // clusterResourcesDef.getImagePullSecret(); TODO!!
+        final String imagePullSecret = deploymentDef.getPredictor().getImagePullSecret();
         List<LocalObjectReference> imagePullSecrets = new ArrayList<>();
         if (imagePullSecret.length() > 0) {
             LocalObjectReference imagePullSecretObject = new LocalObjectReference(imagePullSecret);

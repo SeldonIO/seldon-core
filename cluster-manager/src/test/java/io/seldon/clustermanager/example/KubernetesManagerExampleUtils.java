@@ -24,7 +24,8 @@ public class KubernetesManagerExampleUtils {
             predictorDefBuilder.setId("0");
             predictorDefBuilder.setName("my_fantastic_predictor");
             predictorDefBuilder.setReplicas(3);
-            
+            predictorDefBuilder.setImagePullSecret("my-registry-secret");
+
             {
                 PredictiveUnitDef.Builder predictiveUnitDefBuilder = PredictiveUnitDef.newBuilder();
 
@@ -33,7 +34,6 @@ public class KubernetesManagerExampleUtils {
                 //@formatter:off
                 predictiveUnitDefBuilder.setClusterResources(ClusterResourcesDef.newBuilder()
                         .setCpu("0.1")
-                        .setImagePullSecret("")
                         .setGpu("0")
                         .setId("2")
                         .setImage("gsunner/putest")
@@ -80,7 +80,6 @@ public class KubernetesManagerExampleUtils {
                 //@formatter:off
                 predictiveUnitDefBuilder.setClusterResources(ClusterResourcesDef.newBuilder()
                         .setCpu("0.1")
-                        .setImagePullSecret("my-registry-secret")
                         .setGpu("0")
                         .setId("2")
                         .setImage("gsunner/putest")
@@ -150,7 +149,6 @@ public class KubernetesManagerExampleUtils {
                 //@formatter:off
                 predictiveUnitDefBuilder.setClusterResources(ClusterResourcesDef.newBuilder()
                         .setCpu("5")
-                        .setImagePullSecret("my-registry-secret")
                         .setGpu("0")
                         .setId("2")
                         .setImage("gsunner/putest")
@@ -193,7 +191,6 @@ public class KubernetesManagerExampleUtils {
                 //@formatter:off
                 predictiveUnitDefBuilder.setClusterResources(ClusterResourcesDef.newBuilder()
                         .setCpu("5")
-                        .setImagePullSecret("my-registry-secret")
                         .setGpu("0")
                         .setId("2")
                         .setImage("gsunner/putest")

@@ -96,7 +96,7 @@ class KubernetesDeploymentOps {
         final int container_port = -1; //endpointDef.getContainerPort();
         final String image_name_and_version = (clusterResourcesDef.getVersion().length() > 0)
                 ? clusterResourcesDef.getImage() + ":" + clusterResourcesDef.getVersion() : clusterResourcesDef.getImage();
-        final String imagePullSecret = clusterResourcesDef.getImagePullSecret();
+        final String imagePullSecret = ""; //clusterResourcesDef.getImagePullSecret();
 
         List<LocalObjectReference> imagePullSecrets = new ArrayList<>();
         if (imagePullSecret.length() > 0) {

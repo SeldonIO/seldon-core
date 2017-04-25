@@ -27,6 +27,7 @@ public class SeldonProtoWriteExample {
             predictorDefBuilder.setEnabled(true);
             predictorDefBuilder.setId("0");
             predictorDefBuilder.setName("my_fantastic_predictor");
+            predictorDefBuilder.setImagePullSecret("my-registry-secret");
 
             {
                 PredictiveUnitDef.Builder predictiveUnitDefBuilder = PredictiveUnitDef.newBuilder();
@@ -36,7 +37,6 @@ public class SeldonProtoWriteExample {
                 //@formatter:off
                 predictiveUnitDefBuilder.setClusterResources(ClusterResourcesDef.newBuilder()
                         .setCpu("5")
-                        .setImagePullSecret("my-registry-secret")
                         .setGpu("0")
                         .setId("2")
                         .setImage("seldonio/model2")
