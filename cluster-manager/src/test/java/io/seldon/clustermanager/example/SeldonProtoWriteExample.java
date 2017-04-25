@@ -27,7 +27,8 @@ public class SeldonProtoWriteExample {
             predictorDefBuilder.setEnabled(true);
             predictorDefBuilder.setId("0");
             predictorDefBuilder.setName("my_fantastic_predictor");
-            predictorDefBuilder.setImagePullSecret("my-registry-secret");
+            predictorDefBuilder.addImagePullSecrets("my-registry-secret1");
+            predictorDefBuilder.addImagePullSecrets("my-registry-secret2");
 
             {
                 PredictiveUnitDef.Builder predictiveUnitDefBuilder = PredictiveUnitDef.newBuilder();

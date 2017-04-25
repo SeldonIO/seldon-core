@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
+import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -146,11 +147,14 @@ public class DeploymentUtils {
         }
 
         final int replica_number = deploymentDef.getPredictor().getReplicas();
-        final String imagePullSecret = deploymentDef.getPredictor().getImagePullSecret();
+
         List<LocalObjectReference> imagePullSecrets = new ArrayList<>();
-        if (imagePullSecret.length() > 0) {
-            LocalObjectReference imagePullSecretObject = new LocalObjectReference(imagePullSecret);
-            imagePullSecrets.add(imagePullSecretObject);
+        { // add any image pull secrets
+            Consumer<String> p = (x) -> {
+                LocalObjectReference imagePullSecretObject = new LocalObjectReference(x);
+                imagePullSecrets.add(imagePullSecretObject);
+            };
+            deploymentDef.getPredictor().getImagePullSecretsList().forEach(p);
         }
 
         //@formatter:off

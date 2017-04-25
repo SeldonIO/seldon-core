@@ -62,7 +62,7 @@ message PredictiveUnitDef {
 message PredictorDef {
     bool enabled = 1;
     string id = 2;
-    string imagePullSecret = 3;
+    repeated string imagePullSecrets = 3;
     string name = 4;
     repeated PredictiveUnitDef predictiveUnits = 5;
     int32 replicas = 6;
