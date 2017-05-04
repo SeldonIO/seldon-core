@@ -108,6 +108,11 @@ public class KubernetesManagerImpl implements KubernetesManager {
             }
         });
 
+        // remove a canary if necessary
+        if (!deploymentDef.hasField(deploymentDef.getDescriptorForType().findFieldByNumber(DeploymentDef.PREDICTOR_CANARY_FIELD_NUMBER))) {
+            DeploymentUtils.deleteDeployemntResources(kubernetesClient, namespace_name, seldonDeploymentId, true);
+        }
+
         return resultingDeploymentDefBuilder.build();
 
     }

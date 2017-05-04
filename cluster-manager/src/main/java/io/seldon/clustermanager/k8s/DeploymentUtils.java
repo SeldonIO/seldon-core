@@ -283,25 +283,27 @@ public class DeploymentUtils {
             }
         }
 
-        // delete the kubernetes deployemnt for this seldon deployment's predictor
-        Consumer<Boolean> deleteDeployemntResources = (Boolean isCanary) -> {
-            final String kubernetesDeploymentId = getKubernetesDeploymentId(seldonDeploymentId, isCanary);
-            final String deploymentName = kubernetesDeploymentId;
-            boolean wasDeleted = kubernetesClient.extensions().deployments().inNamespace(namespace_name).withName(deploymentName).delete();
-            if (wasDeleted) {
-                logger.debug(String.format("Deleted kubernetes delployment [%s]", deploymentName));
-            }
-            io.fabric8.kubernetes.api.model.extensions.ReplicaSetList rslist = kubernetesClient.extensions().replicaSets().inNamespace(namespace_name)
-                    .withLabel("seldon-app", deploymentName).list();
-            for (io.fabric8.kubernetes.api.model.extensions.ReplicaSet rs : rslist.getItems()) {
-                kubernetesClient.resource(rs).inNamespace(namespace_name).delete();
-                String rsmsg = (rs != null) ? rs.getMetadata().getName() : null;
-                logger.debug(String.format("Deleted kubernetes replicaSet [%s]", rsmsg));
-            }
-        };
+        //@formatter:off
+        deleteDeployemntResources(kubernetesClient, namespace_name, seldonDeploymentId, false); // for the main predictor
+        deleteDeployemntResources(kubernetesClient, namespace_name, seldonDeploymentId, true); // for the canary
+        //@formatter:on
+    }
 
-        deleteDeployemntResources.accept(false); // delete for the main predictor
-        deleteDeployemntResources.accept(true); // delete for the canary
+    public static void deleteDeployemntResources(KubernetesClient kubernetesClient, String namespace_name, String seldonDeploymentId, boolean isCanary) {
+        final String kubernetesDeploymentId = getKubernetesDeploymentId(seldonDeploymentId, isCanary);
+        final String deploymentName = kubernetesDeploymentId;
+        boolean wasDeleted = kubernetesClient.extensions().deployments().inNamespace(namespace_name).withName(deploymentName).delete();
+        if (wasDeleted) {
+            logger.debug(String.format("Deleted kubernetes delployment [%s]", deploymentName));
+        }
+        io.fabric8.kubernetes.api.model.extensions.ReplicaSetList rslist = kubernetesClient.extensions().replicaSets().inNamespace(namespace_name)
+                .withLabel("seldon-app", deploymentName).list();
+        for (io.fabric8.kubernetes.api.model.extensions.ReplicaSet rs : rslist.getItems()) {
+            kubernetesClient.resource(rs).inNamespace(namespace_name).delete();
+            String rsmsg = (rs != null) ? rs.getMetadata().getName() : null;
+            logger.debug(String.format("Deleted kubernetes replicaSet [%s]", rsmsg));
+        }
+
     }
 
     private static String extractPredictiveUnitParametersAsJson(PredictiveUnitDef predictiveUnitDef) {
