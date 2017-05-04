@@ -3,7 +3,6 @@ package io.seldon.clustermanager.k8s;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
@@ -98,26 +97,16 @@ public class KubernetesManagerImpl implements KubernetesManager {
         logger.debug(String.format("Creating Seldon Deployment id[%s]", seldonDeploymentId));
         final String namespace_name = getNamespaceName();
 
-        DeploymentUtils.BuildDeploymentResult buildDeploymentResult = DeploymentUtils.buildDeployment(deploymentDef);
-        DeploymentUtils.createDeployment(kubernetesClient, namespace_name, buildDeploymentResult);
-
-        Map<String, EndpointDef> endpointsByPredictiveUnitId = buildDeploymentResult.endpointsByPredictiveUnitId;
-
-        List<PredictiveUnitDef> predictiveUnits = deploymentDef.getPredictor().getPredictiveUnitsList();
-        int predictiveUnitIndex = 0;
-        for (PredictiveUnitDef predictiveUnitDef : predictiveUnits) {
-            final String predictiveUnitId = predictiveUnitDef.getId();
-
-            EndpointDef endpointDef = endpointsByPredictiveUnitId.get(predictiveUnitId);
-            final String service_host = (endpointDef != null) ? endpointDef.getServiceHost() : "UNKOWN";
-            final int service_port = (endpointDef != null) ? endpointDef.getServicePort() : -1;
-
-            resultingDeploymentDefBuilder.getPredictorBuilder().getPredictiveUnitsBuilder(predictiveUnitIndex).getEndpointBuilder()
-                    .setServiceHost(service_host);
-            resultingDeploymentDefBuilder.getPredictorBuilder().getPredictiveUnitsBuilder(predictiveUnitIndex).getEndpointBuilder()
-                    .setServicePort(service_port);
-            predictiveUnitIndex++;
-        }
+        DeploymentUtils.buildDeployments(deploymentDef).stream().forEach((buildDeploymentResult) -> {
+            DeploymentUtils.createDeployment(kubernetesClient, namespace_name, buildDeploymentResult);
+            { // update the resultingDeploymentDef with the predictor having the predictive unit endpoints
+                if (buildDeploymentResult.isCanary) {
+                    resultingDeploymentDefBuilder.setPredictorCanary(buildDeploymentResult.resultingPredictorDef);
+                } else {
+                    resultingDeploymentDefBuilder.setPredictor(buildDeploymentResult.resultingPredictorDef);
+                }
+            }
+        });
 
         return resultingDeploymentDefBuilder.build();
 
@@ -297,7 +286,7 @@ public class KubernetesManagerImpl implements KubernetesManager {
     }
 
     private static void setUnavailableReplicasSameAsReplicas(PredictiveUnitDef.Builder predictiveUnitDefBuilder) {
-//        final int replicas = predictiveUnitDefBuilder.getClusterResources().getReplicas();
-//        predictiveUnitDefBuilder.getClusterResourcesBuilder().setUnavailableReplicas(replicas);
+        // final int replicas = predictiveUnitDefBuilder.getClusterResources().getReplicas();
+        // predictiveUnitDefBuilder.getClusterResourcesBuilder().setUnavailableReplicas(replicas);
     }
 }

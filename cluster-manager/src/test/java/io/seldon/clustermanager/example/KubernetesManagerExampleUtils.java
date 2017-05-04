@@ -122,6 +122,10 @@ public class KubernetesManagerExampleUtils {
 
         }
 
+        { // canary testing
+            // deploymentDefBuiler.setPredictorCanary(PredictorDef.newBuilder().setId("100").build());
+        }
+
         DeploymentDef deploymentDef = deploymentDefBuiler.build();
 
         return deploymentDef;
@@ -232,7 +236,7 @@ public class KubernetesManagerExampleUtils {
             deploymentDefBuiler.setPredictor(predictorDef);
 
         }
-
+        
         DeploymentDef deploymentDef = deploymentDefBuiler.build();
 
         return deploymentDef;

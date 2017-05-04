@@ -61,12 +61,13 @@ message PredictiveUnitDef {
 
 message PredictorDef {
     bool enabled = 1;
-    string id = 2;
-    repeated string imagePullSecrets = 3;
-    string name = 4;
-    repeated PredictiveUnitDef predictiveUnits = 5;
-    int32 replicas = 6;
-    string root = 7;
+    EndpointDef endpoint = 2;
+    string id = 3;
+    repeated string imagePullSecrets = 4;
+    string name = 5;
+    repeated PredictiveUnitDef predictiveUnits = 6;
+    int32 replicas = 7;
+    string root = 8;
 }
 
 message DeploymentDef {
@@ -77,6 +78,7 @@ message DeploymentDef {
     string uniqueName = 5;
     string oauth_key = 6;
     string oauth_secret = 7;
+    PredictorDef predictor_canary = 8;
 }
 
 message DeploymentResultDef {
