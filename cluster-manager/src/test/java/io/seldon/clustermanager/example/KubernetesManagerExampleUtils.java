@@ -17,8 +17,8 @@ public class KubernetesManagerExampleUtils {
         deploymentDefBuiler.setName("my deployment");
         deploymentDefBuiler.setUniqueName("my-interesting-project1.my-deployment.1");
 
+        PredictorDef.Builder predictorDefBuilder = PredictorDef.newBuilder();
         {
-            PredictorDef.Builder predictorDefBuilder = PredictorDef.newBuilder();
 
             predictorDefBuilder.setEnabled(true);
             predictorDefBuilder.setId("0");
@@ -117,13 +117,12 @@ public class KubernetesManagerExampleUtils {
             }
 
             PredictorDef predictorDef = predictorDefBuilder.build();
-
             deploymentDefBuiler.setPredictor(predictorDef);
 
         }
 
         { // canary testing
-            // deploymentDefBuiler.setPredictorCanary(PredictorDef.newBuilder().setId("100").build());
+            deploymentDefBuiler.setPredictorCanary(predictorDefBuilder.setId("100").build());
         }
 
         DeploymentDef deploymentDef = deploymentDefBuiler.build();
@@ -236,7 +235,7 @@ public class KubernetesManagerExampleUtils {
             deploymentDefBuiler.setPredictor(predictorDef);
 
         }
-        
+
         DeploymentDef deploymentDef = deploymentDefBuiler.build();
 
         return deploymentDef;

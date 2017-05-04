@@ -5,6 +5,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
 
@@ -39,13 +40,31 @@ public class DeploymentUtils {
 
     private final static Logger logger = LoggerFactory.getLogger(DeploymentUtils.class);
 
+    public static class ServiceSelectorDetails {
+        public final String labelName = "seldon-app";
+        public final String labelValue;
+        public final boolean serviceNeeded;
+
+        public ServiceSelectorDetails(String seldonDeploymentId, boolean isCanary) {
+            //@formatter:off
+            this.labelValue = getKubernetesDeploymentId(seldonDeploymentId, false); // Force selector to use the main predictor
+            //@formatter:on
+            this.serviceNeeded = !isCanary;
+        }
+
+        @Override
+        public String toString() {
+            return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+        }
+    }
+
     public static class BuildDeploymentResult {
         public final Deployment deployment;
-        public final Service service;
+        public final Optional<Service> service;
         public final PredictorDef resultingPredictorDef;
         public final boolean isCanary;
 
-        public BuildDeploymentResult(Deployment deployment, Service service, PredictorDef resultingPredictorDef, boolean isCanary) {
+        public BuildDeploymentResult(Deployment deployment, Optional<Service> service, PredictorDef resultingPredictorDef, boolean isCanary) {
             this.deployment = deployment;
             this.service = service;
             this.resultingPredictorDef = resultingPredictorDef;
@@ -87,8 +106,8 @@ public class DeploymentUtils {
 
         PredictorDef.Builder resultingPredictorDefBuilder = PredictorDef.newBuilder(predictorDef);
 
-        final int ENGINE_CONTAINER_PORT = 80;
-        final String ENGINE_CONTAINER_IMAGE_AND_VERSION = "nginx";
+        final int ENGINE_CONTAINER_PORT = 8000;
+        final String ENGINE_CONTAINER_IMAGE_AND_VERSION = "gsunner/putest";
         final EndpointType ENGINE_CONTAINER_ENDPOINT_TYPE = EndpointDef.EndpointType.REST;
         final int PU_CONTAINER_PORT_BASE = 9000;
 
@@ -180,13 +199,14 @@ public class DeploymentUtils {
 
         }
 
-        Service service;
-        { // build service for this predictiveUnit
+        ServiceSelectorDetails serviceSelectorDetails = new ServiceSelectorDetails(seldonDeploymentId, isCanary);
+        Service service = null;
+        if (serviceSelectorDetails.serviceNeeded) { // build service for this predictor
             final String deploymentName = kubernetesDeploymentId;
             String serviceName = deploymentName;
 
-            String selectorName = "seldon-app";
-            String selectorValue = deploymentName;
+            String selectorName = serviceSelectorDetails.labelName;
+            String selectorValue = serviceSelectorDetails.labelValue;
 
             int port = engine_service_port;
             int targetPort = engine_container_port;
@@ -224,7 +244,7 @@ public class DeploymentUtils {
             .withNewMetadata().withName(kubernetesDeploymentId).addToLabels("seldon-deployment-id", seldonDeploymentId).endMetadata()
             .withNewSpec().withReplicas(replica_number)
                 .withNewTemplate()
-                    .withNewMetadata().addToLabels("seldon-app", kubernetesDeploymentId).endMetadata()
+                    .withNewMetadata().addToLabels(serviceSelectorDetails.labelName, serviceSelectorDetails.labelValue).endMetadata()
                     .withNewSpec()
                         .addAllToContainers(containers)
                         .addAllToImagePullSecrets(imagePullSecrets)
@@ -233,7 +253,8 @@ public class DeploymentUtils {
             .endSpec().build();
         //@formatter:on
 
-        BuildDeploymentResult buildDeploymentResult = new BuildDeploymentResult(deployment, service, resultingPredictorDefBuilder.build(), isCanary);
+        BuildDeploymentResult buildDeploymentResult = new BuildDeploymentResult(deployment, Optional.ofNullable(service), resultingPredictorDefBuilder.build(),
+                isCanary);
         return buildDeploymentResult;
     }
 
@@ -241,8 +262,8 @@ public class DeploymentUtils {
         Deployment deployment = kubernetesClient.extensions().deployments().inNamespace(namespace_name).create(buildDeploymentResult.deployment);
         String deploymentName = (deployment != null) ? deployment.getMetadata().getName() : "null";
         logger.debug(String.format("Created kubernetes delployment [%s]", deploymentName));
-        if (deployment != null) {
-            Service service = kubernetesClient.services().inNamespace(namespace_name).create(buildDeploymentResult.service);
+        if ((deployment != null) && (buildDeploymentResult.service.isPresent())) {
+            Service service = kubernetesClient.services().inNamespace(namespace_name).create(buildDeploymentResult.service.get());
             String serviceName = (service != null) ? service.getMetadata().getName() : "null";
             logger.debug(String.format("Created kubernetes service [%s]", serviceName));
         }
