@@ -259,11 +259,11 @@ public class DeploymentUtils {
     }
 
     public static void createDeployment(KubernetesClient kubernetesClient, String namespace_name, BuildDeploymentResult buildDeploymentResult) {
-        Deployment deployment = kubernetesClient.extensions().deployments().inNamespace(namespace_name).create(buildDeploymentResult.deployment);
+        Deployment deployment = kubernetesClient.extensions().deployments().inNamespace(namespace_name).createOrReplace(buildDeploymentResult.deployment);
         String deploymentName = (deployment != null) ? deployment.getMetadata().getName() : "null";
         logger.debug(String.format("Created kubernetes delployment [%s]", deploymentName));
         if ((deployment != null) && (buildDeploymentResult.service.isPresent())) {
-            Service service = kubernetesClient.services().inNamespace(namespace_name).create(buildDeploymentResult.service.get());
+            Service service = kubernetesClient.services().inNamespace(namespace_name).createOrReplace(buildDeploymentResult.service.get());
             String serviceName = (service != null) ? service.getMetadata().getName() : "null";
             logger.debug(String.format("Created kubernetes service [%s]", serviceName));
         }
