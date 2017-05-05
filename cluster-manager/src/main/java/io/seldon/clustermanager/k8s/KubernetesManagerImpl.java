@@ -97,35 +97,24 @@ public class KubernetesManagerImpl implements KubernetesManager {
         logger.debug(String.format("Creating Seldon Deployment id[%s]", seldonDeploymentId));
         final String namespace_name = getNamespaceName();
 
-        PredictorDef predictorDef = deploymentDef.getPredictor();
-
-        List<PredictiveUnitDef> predictiveUnits = predictorDef.getPredictiveUnitsList();
-        int predictiveUnitIndex = 0;
-        for (PredictiveUnitDef predictiveUnitDef : predictiveUnits) {
-            final String predictiveUnitParameters = extractPredictiveUnitParametersAsJson(predictiveUnitDef);
-            final String predictiveUnitId = predictiveUnitDef.getId();
-            final String predictive_unit_name = predictiveUnitDef.getName();
-            final String kubernetesDeploymentId = getKubernetesDeploymentId(seldonDeploymentId, predictiveUnitId);
-            logger.debug(String.format("Deploying predictiveUnit[%s] for seldonDeployment id[%s]", predictive_unit_name, seldonDeploymentId));
-
-            ClusterResourcesDef clusterResourcesDef = predictiveUnitDef.getClusterResources();
-            EndpointDef endpointDef = predictiveUnitDef.getEndpoint();
-            Optional<Deployment> deployment = new KubernetesDeploymentOps(seldonDeploymentId, kubernetesClient, namespace_name).create(kubernetesDeploymentId,
-                    clusterResourcesDef, endpointDef, predictiveUnitParameters);
-            if (deployment.isPresent()) {
-                Service service = new KubernetesServiceOps(kubernetesClient, namespace_name, deployment.get()).create(endpointDef);
-                /// String serviceClusterIP = service.getSpec().getClusterIP();
-                String serviceName = service.getMetadata().getName();
-                resultingDeploymentDefBuilder.getPredictorBuilder().getPredictiveUnitsBuilder(predictiveUnitIndex).getEndpointBuilder()
-                        .setServiceHost(serviceName);
-
-                setUnavailableReplicasSameAsReplicas(resultingDeploymentDefBuilder.getPredictorBuilder().getPredictiveUnitsBuilder(predictiveUnitIndex));
+        DeploymentUtils.buildDeployments(deploymentDef).stream().forEach((buildDeploymentResult) -> {
+            DeploymentUtils.createDeployment(kubernetesClient, namespace_name, buildDeploymentResult);
+            { // update the resultingDeploymentDef with the predictor having the predictive unit endpoints
+                if (buildDeploymentResult.isCanary) {
+                    resultingDeploymentDefBuilder.setPredictorCanary(buildDeploymentResult.resultingPredictorDef);
+                } else {
+                    resultingDeploymentDefBuilder.setPredictor(buildDeploymentResult.resultingPredictorDef);
+                }
             }
+        });
 
-            predictiveUnitIndex++;
+        // remove a canary if necessary
+        if (!deploymentDef.hasField(deploymentDef.getDescriptorForType().findFieldByNumber(DeploymentDef.PREDICTOR_CANARY_FIELD_NUMBER))) {
+            DeploymentUtils.deleteDeployemntResources(kubernetesClient, namespace_name, seldonDeploymentId, true);
         }
 
         return resultingDeploymentDefBuilder.build();
+
     }
 
     @Override
@@ -153,8 +142,7 @@ public class KubernetesManagerImpl implements KubernetesManager {
             } else {
                 unavailableReplicas = -1; // If a kubernetes deployment cannot be found, use -1 to indicate this
             }
-            resultingDeploymentDefBuilder.getPredictorBuilder().getPredictiveUnitsBuilder(predictiveUnitIndex).getClusterResourcesBuilder()
-                    .setUnavailableReplicas(unavailableReplicas);
+            //// resultingDeploymentDefBuilder.getPredictorBuilder().getPredictiveUnitsBuilder(predictiveUnitIndex).getClusterResourcesBuilder().setUnavailableReplicas(unavailableReplicas);
 
             predictiveUnitIndex++;
         }
@@ -248,16 +236,9 @@ public class KubernetesManagerImpl implements KubernetesManager {
     @Override
     public void deleteSeldonDeployment(DeploymentDef deploymentDef) {
         final String seldonDeploymentId = deploymentDef.getId();
-        logger.debug(String.format("Deleting Seldon Deployment[%s]", seldonDeploymentId));
-        final String namespace_name = getNamespaceName();
-
-        DeploymentList deployments = kubernetesClient.extensions().deployments().inNamespace(namespace_name)
-                .withLabel("seldon-deployment-id", seldonDeploymentId).list();
-        for (Deployment deployment : deployments.getItems()) {
-            new KubernetesDeploymentOps(seldonDeploymentId, kubernetesClient, namespace_name).delete(deployment);
-            new KubernetesServiceOps(kubernetesClient, namespace_name, deployment).delete();
-        }
-
+        logger.debug(String.format("Deleting Seldon Deployment id[%s]", seldonDeploymentId));
+        String namespace_name = getNamespaceName();
+        DeploymentUtils.deleteDeployment(kubernetesClient, namespace_name, deploymentDef);
     }
 
     /**
@@ -310,7 +291,7 @@ public class KubernetesManagerImpl implements KubernetesManager {
     }
 
     private static void setUnavailableReplicasSameAsReplicas(PredictiveUnitDef.Builder predictiveUnitDefBuilder) {
-        final int replicas = predictiveUnitDefBuilder.getClusterResources().getReplicas();
-        predictiveUnitDefBuilder.getClusterResourcesBuilder().setUnavailableReplicas(replicas);
+        // final int replicas = predictiveUnitDefBuilder.getClusterResources().getReplicas();
+        // predictiveUnitDefBuilder.getClusterResourcesBuilder().setUnavailableReplicas(replicas);
     }
 }

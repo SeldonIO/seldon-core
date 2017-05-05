@@ -56,7 +56,7 @@ public class KubernetesServiceOps {
         String selectorValue = deploymentName;
 
         int port = endpointDef.getServicePort();
-        int targetPort = endpointDef.getContainerPort();
+        int targetPort = -1; //endpointDef.getContainerPort();
 
         //@formatter:off
         Service service = new ServiceBuilder()

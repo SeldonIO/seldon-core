@@ -9,6 +9,8 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.fabric8.kubernetes.api.model.Container;
+import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.EnvVarBuilder;
 import io.fabric8.kubernetes.api.model.LocalObjectReference;
@@ -90,11 +92,11 @@ class KubernetesDeploymentOps {
 
     private Deployment buildDeploymentHelper(String kubernetesDeploymentId, ClusterResourcesDef clusterResourcesDef, EndpointDef endpointDef,
             String predictiveUnitParameters) {
-        final int replica_number = clusterResourcesDef.getReplicas();
-        final int container_port = endpointDef.getContainerPort();
+        final int replica_number = -1; ///clusterResourcesDef.getReplicas();
+        final int container_port = -1; //endpointDef.getContainerPort();
         final String image_name_and_version = (clusterResourcesDef.getVersion().length() > 0)
                 ? clusterResourcesDef.getImage() + ":" + clusterResourcesDef.getVersion() : clusterResourcesDef.getImage();
-        final String imagePullSecret = clusterResourcesDef.getImagePullSecret();
+        final String imagePullSecret = ""; //clusterResourcesDef.getImagePullSecret();
 
         List<LocalObjectReference> imagePullSecrets = new ArrayList<>();
         if (imagePullSecret.length() > 0) {
@@ -114,6 +116,18 @@ class KubernetesDeploymentOps {
             }
         }
 
+        Container c = new ContainerBuilder()
+                .withName("seldon-container").withImage(image_name_and_version)
+                .withEnv(envVar_PREDICTIVE_UNIT_PARAMETERS)
+                .addNewPort().withContainerPort(container_port).endPort()
+                .withNewResources()
+                    .addToRequests(resource_requests)
+                .endResources()
+                .build();
+        
+        List<Container> containers = new ArrayList<>();
+        containers.add(c);
+        
         //@formatter:off
         Deployment deployment = new DeploymentBuilder()
             .withNewMetadata().withName(kubernetesDeploymentId).addToLabels("seldon-deployment-id", seldonDeploymentId).endMetadata()
@@ -121,15 +135,8 @@ class KubernetesDeploymentOps {
                 .withNewTemplate()
                     .withNewMetadata().addToLabels("seldon-app", kubernetesDeploymentId).endMetadata()
                     .withNewSpec()
-                        .addNewContainer()
-                            .withName("seldon-container").withImage(image_name_and_version)
-                            .withEnv(envVar_PREDICTIVE_UNIT_PARAMETERS)
-                            .addNewPort().withContainerPort(container_port).endPort()
-                            .withNewResources()
-                                .addToRequests(resource_requests)
-                            .endResources()
-                         .endContainer()
-                         .addAllToImagePullSecrets(imagePullSecrets)
+                        .addAllToContainers(containers)
+                        .addAllToImagePullSecrets(imagePullSecrets)
                     .endSpec()
                 .endTemplate()
             .endSpec().build();

@@ -21,21 +21,17 @@ message EndpointDef {
 
     string service_host = 1;
     int32 service_port = 2;
-    int32 container_port = 3;
-    EndpointType type = 4;
+    EndpointType type = 3;
 }
 
 message ClusterResourcesDef {
 
     string cpu = 1;
-    string imagePullSecret = 2;
-    string gpu = 3;
-    string id = 4;
-    string image = 5;
-    string memory = 6;
-    int32 replicas = 7;
-    string version = 8;
-    int32 unavailableReplicas = 9;
+    string gpu = 2;
+    string id = 3;
+    string image = 4;
+    string memory = 5;
+    string version = 6;
 }
 
 message PredictiveUnitDef {
@@ -65,10 +61,14 @@ message PredictiveUnitDef {
 
 message PredictorDef {
     bool enabled = 1;
-    string id = 2;
-    string name = 3;
-    repeated PredictiveUnitDef predictiveUnits = 4;
-    string root = 5;
+    EndpointDef endpoint = 2;
+    string id = 3;
+    repeated string imagePullSecrets = 4;
+    string name = 5;
+    repeated PredictiveUnitDef predictiveUnits = 6;
+    int32 replicas = 7;
+    int32 replicasReady = 8;
+    string root = 9;
 }
 
 message DeploymentDef {
@@ -79,6 +79,7 @@ message DeploymentDef {
     string uniqueName = 5;
     string oauth_key = 6;
     string oauth_secret = 7;
+    PredictorDef predictor_canary = 8;
 }
 
 message DeploymentResultDef {

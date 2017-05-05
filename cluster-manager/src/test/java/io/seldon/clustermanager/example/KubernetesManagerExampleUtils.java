@@ -17,12 +17,16 @@ public class KubernetesManagerExampleUtils {
         deploymentDefBuiler.setName("my deployment");
         deploymentDefBuiler.setUniqueName("my-interesting-project1.my-deployment.1");
 
+        PredictorDef.Builder predictorDefBuilder = PredictorDef.newBuilder();
         {
-            PredictorDef.Builder predictorDefBuilder = PredictorDef.newBuilder();
 
             predictorDefBuilder.setEnabled(true);
             predictorDefBuilder.setId("0");
             predictorDefBuilder.setName("my_fantastic_predictor");
+            predictorDefBuilder.setReplicas(3);
+            predictorDefBuilder.setReplicasReady(0);
+            predictorDefBuilder.addImagePullSecrets("my-registry-secret1");
+            predictorDefBuilder.addImagePullSecrets("my-registry-secret2");
 
             {
                 PredictiveUnitDef.Builder predictiveUnitDefBuilder = PredictiveUnitDef.newBuilder();
@@ -32,13 +36,11 @@ public class KubernetesManagerExampleUtils {
                 //@formatter:off
                 predictiveUnitDefBuilder.setClusterResources(ClusterResourcesDef.newBuilder()
                         .setCpu("0.1")
-                        .setImagePullSecret("")
                         .setGpu("0")
                         .setId("2")
-                        .setImage("nginx")
+                        .setImage("gsunner/putest")
                         .setMemory("0.5Gi")
-                        .setReplicas(2)
-                        .setVersion("1.9.0")
+                        .setVersion("")
                         );
                 //@formatter:on
 
@@ -46,7 +48,6 @@ public class KubernetesManagerExampleUtils {
                 predictiveUnitDefBuilder.setEndpoint(EndpointDef.newBuilder()
                         .setServiceHost("127.0.0.1")
                         .setServicePort(5004)
-                        .setContainerPort(80)
                         .setType(EndpointDef.EndpointType.REST)
                         );
                 //@formatter:on
@@ -81,13 +82,11 @@ public class KubernetesManagerExampleUtils {
                 //@formatter:off
                 predictiveUnitDefBuilder.setClusterResources(ClusterResourcesDef.newBuilder()
                         .setCpu("0.1")
-                        .setImagePullSecret("my-registry-secret")
                         .setGpu("0")
                         .setId("2")
-                        .setImage("nginx")
+                        .setImage("gsunner/putest")
                         .setMemory("4Gi")
-                        .setReplicas(2)
-                        .setVersion("1.9.0")
+                        .setVersion("")
                         );
                 //@formatter:on
 
@@ -95,7 +94,6 @@ public class KubernetesManagerExampleUtils {
                 predictiveUnitDefBuilder.setEndpoint(EndpointDef.newBuilder()
                         .setServiceHost("127.0.0.1")
                         .setServicePort(5004)
-                        .setContainerPort(80)
                         .setType(EndpointDef.EndpointType.REST)
                         );
                 //@formatter:on
@@ -120,9 +118,12 @@ public class KubernetesManagerExampleUtils {
             }
 
             PredictorDef predictorDef = predictorDefBuilder.build();
-
             deploymentDefBuiler.setPredictor(predictorDef);
 
+        }
+
+        { // canary testing
+            deploymentDefBuiler.setPredictorCanary(predictorDefBuilder.setId("100").build());
         }
 
         DeploymentDef deploymentDef = deploymentDefBuiler.build();
@@ -153,13 +154,11 @@ public class KubernetesManagerExampleUtils {
                 //@formatter:off
                 predictiveUnitDefBuilder.setClusterResources(ClusterResourcesDef.newBuilder()
                         .setCpu("5")
-                        .setImagePullSecret("my-registry-secret")
                         .setGpu("0")
                         .setId("2")
-                        .setImage("nginx")
+                        .setImage("gsunner/putest")
                         .setMemory("20Gi")
-                        .setReplicas(3)
-                        .setVersion("1.9.2")
+                        .setVersion("")
                         );
                 //@formatter:on
 
@@ -167,7 +166,6 @@ public class KubernetesManagerExampleUtils {
                 predictiveUnitDefBuilder.setEndpoint(EndpointDef.newBuilder()
                         .setServiceHost("127.0.0.1")
                         .setServicePort(5004)
-                        .setContainerPort(80)
                         .setType(EndpointDef.EndpointType.REST)
                         );
                 //@formatter:on
@@ -198,13 +196,11 @@ public class KubernetesManagerExampleUtils {
                 //@formatter:off
                 predictiveUnitDefBuilder.setClusterResources(ClusterResourcesDef.newBuilder()
                         .setCpu("5")
-                        .setImagePullSecret("my-registry-secret")
                         .setGpu("0")
                         .setId("2")
-                        .setImage("nginx")
+                        .setImage("gsunner/putest")
                         .setMemory("20Gi")
-                        .setReplicas(3)
-                        .setVersion("1.9.2")
+                        .setVersion("")
                         );
                 //@formatter:on
 
@@ -212,7 +208,6 @@ public class KubernetesManagerExampleUtils {
                 predictiveUnitDefBuilder.setEndpoint(EndpointDef.newBuilder()
                         .setServiceHost("127.0.0.1")
                         .setServicePort(5004)
-                        .setContainerPort(80)
                         .setType(EndpointDef.EndpointType.REST)
                         );
                 //@formatter:on
