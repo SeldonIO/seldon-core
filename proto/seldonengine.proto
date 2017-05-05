@@ -67,7 +67,8 @@ message PredictorDef {
     string name = 5;
     repeated PredictiveUnitDef predictiveUnits = 6;
     int32 replicas = 7;
-    string root = 8;
+    int32 replicasReady = 8;
+    string root = 9;
 }
 
 message DeploymentDef {
