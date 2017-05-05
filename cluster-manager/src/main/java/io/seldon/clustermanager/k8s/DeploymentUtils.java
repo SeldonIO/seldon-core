@@ -41,14 +41,17 @@ public class DeploymentUtils {
     private final static Logger logger = LoggerFactory.getLogger(DeploymentUtils.class);
 
     public static class ServiceSelectorDetails {
-        public final String labelName = "seldon-app";
-        public final String labelValue;
+        public final String appLabelName = "seldon-app";
+        public final String appLabelValue;
+        public final String trackLabelName = "seldon-track";
+        public final String trackLabelValue;
         public final boolean serviceNeeded;
 
         public ServiceSelectorDetails(String seldonDeploymentId, boolean isCanary) {
             //@formatter:off
-            this.labelValue = getKubernetesDeploymentId(seldonDeploymentId, false); // Force selector to use the main predictor
+            this.appLabelValue = getKubernetesDeploymentId(seldonDeploymentId, false); // Force selector to use the main predictor
             //@formatter:on
+            this.trackLabelValue = isCanary ? "canary" : "stable";
             this.serviceNeeded = !isCanary;
         }
 
@@ -205,8 +208,8 @@ public class DeploymentUtils {
             final String deploymentName = kubernetesDeploymentId;
             String serviceName = deploymentName;
 
-            String selectorName = serviceSelectorDetails.labelName;
-            String selectorValue = serviceSelectorDetails.labelValue;
+            String selectorName = serviceSelectorDetails.appLabelName;
+            String selectorValue = serviceSelectorDetails.appLabelValue;
 
             int port = engine_service_port;
             int targetPort = engine_container_port;
@@ -244,7 +247,10 @@ public class DeploymentUtils {
             .withNewMetadata().withName(kubernetesDeploymentId).addToLabels("seldon-deployment-id", seldonDeploymentId).endMetadata()
             .withNewSpec().withReplicas(replica_number)
                 .withNewTemplate()
-                    .withNewMetadata().addToLabels(serviceSelectorDetails.labelName, serviceSelectorDetails.labelValue).endMetadata()
+                    .withNewMetadata()
+                        .addToLabels(serviceSelectorDetails.appLabelName, serviceSelectorDetails.appLabelValue)
+                        .addToLabels(serviceSelectorDetails.trackLabelName, serviceSelectorDetails.trackLabelValue)
+                    .endMetadata()
                     .withNewSpec()
                         .addAllToContainers(containers)
                         .addAllToImagePullSecrets(imagePullSecrets)
