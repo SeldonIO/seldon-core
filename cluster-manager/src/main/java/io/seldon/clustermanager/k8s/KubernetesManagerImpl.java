@@ -119,35 +119,11 @@ public class KubernetesManagerImpl implements KubernetesManager {
 
     @Override
     public DeploymentDef getSeldonDeployment(DeploymentDef deploymentDef) {
-        DeploymentDef.Builder resultingDeploymentDefBuilder = DeploymentDef.newBuilder(deploymentDef);
         final String seldonDeploymentId = deploymentDef.getId();
         logger.debug(String.format("Getting Seldon Deployment id[%s]", seldonDeploymentId));
         final String namespace_name = getNamespaceName();
-
-        PredictorDef predictorDef = deploymentDef.getPredictor();
-
-        List<PredictiveUnitDef> predictiveUnits = predictorDef.getPredictiveUnitsList();
-        int predictiveUnitIndex = 0;
-        for (PredictiveUnitDef predictiveUnitDef : predictiveUnits) {
-            final String predictiveUnitId = predictiveUnitDef.getId();
-            final String kubernetesDeploymentId = getKubernetesDeploymentId(seldonDeploymentId, predictiveUnitId);
-            Optional<Deployment> deployment = new KubernetesDeploymentOps(seldonDeploymentId, kubernetesClient, namespace_name).get(kubernetesDeploymentId);
-
-            Integer unavailableReplicas = null;
-            if (deployment.isPresent()) {
-                //@formatter:off
-                unavailableReplicas = deployment.get().getStatus().getUnavailableReplicas(); // unavailableReplicas can be null if not set
-                unavailableReplicas = (unavailableReplicas != null) ? unavailableReplicas : 0;
-                //@formatter:on
-            } else {
-                unavailableReplicas = -1; // If a kubernetes deployment cannot be found, use -1 to indicate this
-            }
-            //// resultingDeploymentDefBuilder.getPredictorBuilder().getPredictiveUnitsBuilder(predictiveUnitIndex).getClusterResourcesBuilder().setUnavailableReplicas(unavailableReplicas);
-
-            predictiveUnitIndex++;
-        }
-
-        return resultingDeploymentDefBuilder.build();
+        DeploymentDef resultingDeploymentDef = DeploymentUtils.getDeployments(kubernetesClient, namespace_name, deploymentDef);
+        return resultingDeploymentDef;
     }
 
     @Override
