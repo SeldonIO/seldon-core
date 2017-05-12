@@ -86,7 +86,7 @@ public class CluserManagerImpl implements ClusterManager {
     public CMResultDef createSeldonDeployment(DeploymentDef deploymentDef) {
         CMResultDef cmResultDef = null;
         try {
-            DeploymentDef resultingDeploymentDef = kubernetesManager.createSeldonDeployment(deploymentDef);
+            DeploymentDef resultingDeploymentDef = kubernetesManager.createOrReplaceSeldonDeployment(deploymentDef);
             zookeeperManager.persistSeldonDeployment(resultingDeploymentDef);
             //@formatter:off
             DeploymentResultDef deploymentResultDef = DeploymentResultDef.newBuilder()
@@ -130,22 +130,7 @@ public class CluserManagerImpl implements ClusterManager {
 
     @Override
     public CMResultDef updateSeldonDeployment(DeploymentDef deploymentDef) {
-        CMResultDef cmResultDef = null;
-        try {
-            DeploymentDef resultingDeploymentDef = kubernetesManager.createSeldonDeployment(deploymentDef);
-            zookeeperManager.persistSeldonDeployment(resultingDeploymentDef);
-            //@formatter:off
-            DeploymentResultDef deploymentResultDef = DeploymentResultDef.newBuilder()
-                    .setDeployment(resultingDeploymentDef)
-                    .build();
-            //@formatter:on
-            cmResultDef = buildSUCCESS(deploymentResultDef);
-        } catch (Throwable e) {
-            logger.error("Error updating seldon deployment", e);
-            String info = org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(e);
-            cmResultDef = buildFAILURE_500(info);
-        }
-        return cmResultDef;
+        return this.createSeldonDeployment(deploymentDef);
     }
 
     @Override
