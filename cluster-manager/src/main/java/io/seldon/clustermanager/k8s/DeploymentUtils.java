@@ -318,8 +318,7 @@ public class DeploymentUtils {
 
         final String seldonDeploymentId = deploymentDef.getId();
 
-        { // check the main predictor for replicasReady
-            boolean isCanary = false;
+        Consumer<Boolean> updateReplicasReady = (isCanary) -> {
             final String kubernetesDeploymentId = getKubernetesDeploymentId(seldonDeploymentId, isCanary);
             int replicasReady = 0;
             Deployment deployment = kubernetesClient.extensions().deployments().inNamespace(namespace_name).withName(kubernetesDeploymentId).get();
@@ -329,22 +328,15 @@ public class DeploymentUtils {
                     replicasReady = readyReplicasValue;
                 }
             }
-            resultingDeploymentDefBuilder.getPredictorBuilder().setReplicasReady(replicasReady);
-        }
-        { // check the canary predictor for replicasReady, if it exists
-            if (deploymentDef.hasField(deploymentDef.getDescriptorForType().findFieldByNumber(DeploymentDef.PREDICTOR_CANARY_FIELD_NUMBER))) {
-                boolean isCanary = true;
-                final String kubernetesDeploymentId = getKubernetesDeploymentId(seldonDeploymentId, isCanary);
-                int replicasReady = 0;
-                Deployment deployment = kubernetesClient.extensions().deployments().inNamespace(namespace_name).withName(kubernetesDeploymentId).get();
-                if (deployment != null) {
-                    Integer readyReplicasValue = (Integer) deployment.getStatus().getAdditionalProperties().get("readyReplicas");
-                    if (readyReplicasValue != null) {
-                        replicasReady = readyReplicasValue;
-                    }
-                }
-                resultingDeploymentDefBuilder.getPredictorCanaryBuilder().setReplicasReady(replicasReady);
-            }
+
+            PredictorDef.Builder predictorDefBuilder = (isCanary) ? resultingDeploymentDefBuilder.getPredictorCanaryBuilder()
+                    : resultingDeploymentDefBuilder.getPredictorBuilder();
+            predictorDefBuilder.setReplicasReady(replicasReady);
+        };
+
+        updateReplicasReady.accept(false); // for main predictor
+        if (deploymentDef.hasField(deploymentDef.getDescriptorForType().findFieldByNumber(DeploymentDef.PREDICTOR_CANARY_FIELD_NUMBER))) {
+            updateReplicasReady.accept(true); // for canary predictor
         }
 
         return resultingDeploymentDefBuilder.build();
