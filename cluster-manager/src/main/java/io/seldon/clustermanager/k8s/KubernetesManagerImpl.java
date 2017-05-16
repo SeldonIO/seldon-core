@@ -1,37 +1,22 @@
 package io.seldon.clustermanager.k8s;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.StringJoiner;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.protobuf.InvalidProtocolBufferException;
-
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceList;
 import io.fabric8.kubernetes.api.model.Secret;
-import io.fabric8.kubernetes.api.model.Service;
-import io.fabric8.kubernetes.api.model.extensions.Deployment;
-import io.fabric8.kubernetes.api.model.extensions.DeploymentList;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.seldon.clustermanager.component.KubernetesManager;
-import io.seldon.clustermanager.pb.ProtoBufUtils;
-import io.seldon.protos.DeploymentProtos.ClusterResourcesDef;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
 import io.seldon.protos.DeploymentProtos.DockerRegistrySecretDef;
-import io.seldon.protos.DeploymentProtos.EndpointDef;
-import io.seldon.protos.DeploymentProtos.PredictiveUnitDef;
-import io.seldon.protos.DeploymentProtos.PredictiveUnitDef.ParamDef;
-import io.seldon.protos.DeploymentProtos.PredictorDef;
 import io.seldon.protos.DeploymentProtos.StringSecretDef;
 
 public class KubernetesManagerImpl implements KubernetesManager {
@@ -137,25 +122,25 @@ public class KubernetesManagerImpl implements KubernetesManager {
     @Override
     public void createOrReplaceStringSecret(StringSecretDef stringSecretDef) {
         final String namespace_name = getNamespaceName();
-        Secret secret = new KubernetesSecretOps(kubernetesClient, namespace_name).createOrReplaceSecret(stringSecretDef);
+        Secret secret = SecretUtils.createOrReplaceSecret(kubernetesClient, namespace_name, stringSecretDef);
     }
 
     @Override
     public void deleteStringSecret(String name) {
         final String namespace_name = getNamespaceName();
-        new KubernetesSecretOps(kubernetesClient, namespace_name).deleteSecret(name);
+        SecretUtils.deleteSecret(kubernetesClient, namespace_name, name);
     }
 
     @Override
     public void createOrReplaceDockerRegistrySecret(DockerRegistrySecretDef dockerRegistrySecretDef) {
         final String namespace_name = getNamespaceName();
-        new KubernetesSecretOps(kubernetesClient, namespace_name).createOrReplaceSecret(dockerRegistrySecretDef);
+        SecretUtils.createOrReplaceSecret(kubernetesClient, namespace_name, dockerRegistrySecretDef);
     }
 
     @Override
     public void deleteDockerRegistrySecret(String name) {
         final String namespace_name = getNamespaceName();
-        new KubernetesSecretOps(kubernetesClient, namespace_name).deleteSecret(name);
+        SecretUtils.deleteSecret(kubernetesClient, namespace_name, name);
     }
 
     private String getNamespaceName() {
