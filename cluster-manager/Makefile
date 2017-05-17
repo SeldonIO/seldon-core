@@ -46,6 +46,3 @@ port_forward_cluster_manager:
 check:
 	curl -s -i localhost:8080/ping
 
-port_forward_kubeapi:
-	kubectl port-forward seldon-cluster-manager 8001:8001
-
