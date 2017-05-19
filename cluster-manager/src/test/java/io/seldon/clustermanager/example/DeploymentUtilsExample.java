@@ -4,14 +4,32 @@ import java.util.List;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
+import io.seldon.clustermanager.ClusterManagerProperites;
 import io.seldon.clustermanager.k8s.DeploymentUtils;
 import io.seldon.clustermanager.k8s.DeploymentUtils.BuildDeploymentResult;
 import io.seldon.clustermanager.pb.ProtoBufUtils;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Bean;
+
 
 public class DeploymentUtilsExample {
 
+    @EnableAutoConfiguration
+    public static class AppConfig {
+
+        @ConfigurationProperties(prefix = "io.seldon.clustermanager")
+        @Bean
+        public ClusterManagerProperites clusterManagerProperites() {
+            return new ClusterManagerProperites();
+        }
+    }
+
     public static void main(String[] args) {
+        ConfigurableApplicationContext ctx = new SpringApplicationBuilder(AppConfig.class).web(false).run(args);
 
         DeploymentDef exampleDeploymentDef = KubernetesManagerExampleUtils.buildExampleDeploymentDef();
 
@@ -25,8 +43,10 @@ public class DeploymentUtilsExample {
             e.printStackTrace();
         }
 
-        List<BuildDeploymentResult> buildDeploymentResults = DeploymentUtils.buildDeployments(exampleDeploymentDef);
+        ClusterManagerProperites clusterManagerProperites = ctx.getBean(ClusterManagerProperites.class);
+        List<BuildDeploymentResult> buildDeploymentResults = DeploymentUtils.buildDeployments(exampleDeploymentDef, clusterManagerProperites);
         System.out.println(buildDeploymentResults);
 
+        ctx.close();
     }
 }

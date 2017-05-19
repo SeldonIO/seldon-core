@@ -27,6 +27,7 @@ import io.fabric8.kubernetes.api.model.ServiceBuilder;
 import io.fabric8.kubernetes.api.model.extensions.Deployment;
 import io.fabric8.kubernetes.api.model.extensions.DeploymentBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.seldon.clustermanager.ClusterManagerProperites;
 import io.seldon.clustermanager.pb.ProtoBufUtils;
 import io.seldon.protos.DeploymentProtos.ClusterResourcesDef;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
@@ -81,7 +82,7 @@ public class DeploymentUtils {
 
     }
 
-    public static List<BuildDeploymentResult> buildDeployments(DeploymentDef deploymentDef) {
+    public static List<BuildDeploymentResult> buildDeployments(DeploymentDef deploymentDef, ClusterManagerProperites clusterManagerProperites) {
 
         final String seldonDeploymentId = deploymentDef.getId();
         List<BuildDeploymentResult> buildDeploymentResults = new ArrayList<>();
@@ -89,7 +90,7 @@ public class DeploymentUtils {
         { // Add the main predictor
             PredictorDef mainPredictor = deploymentDef.getPredictor();
             boolean isCanary = false;
-            BuildDeploymentResult buildDeploymentResult = buildDeployment(seldonDeploymentId, mainPredictor, isCanary);
+            BuildDeploymentResult buildDeploymentResult = buildDeployment(seldonDeploymentId, mainPredictor, isCanary, clusterManagerProperites);
             buildDeploymentResults.add(buildDeploymentResult);
         }
 
@@ -97,7 +98,7 @@ public class DeploymentUtils {
             if (deploymentDef.hasField(deploymentDef.getDescriptorForType().findFieldByNumber(DeploymentDef.PREDICTOR_CANARY_FIELD_NUMBER))) {
                 PredictorDef canaryPredictor = deploymentDef.getPredictorCanary();
                 boolean isCanary = true;
-                BuildDeploymentResult buildDeploymentResult = buildDeployment(seldonDeploymentId, canaryPredictor, isCanary);
+                BuildDeploymentResult buildDeploymentResult = buildDeployment(seldonDeploymentId, canaryPredictor, isCanary, clusterManagerProperites);
                 buildDeploymentResults.add(buildDeploymentResult);
             }
         }
@@ -105,14 +106,14 @@ public class DeploymentUtils {
         return buildDeploymentResults;
     }
 
-    public static BuildDeploymentResult buildDeployment(String seldonDeploymentId, PredictorDef predictorDef, boolean isCanary) {
+    public static BuildDeploymentResult buildDeployment(String seldonDeploymentId, PredictorDef predictorDef, boolean isCanary, ClusterManagerProperites clusterManagerProperites) {
 
         PredictorDef.Builder resultingPredictorDefBuilder = PredictorDef.newBuilder(predictorDef);
 
-        final int ENGINE_CONTAINER_PORT = 8000;
-        final String ENGINE_CONTAINER_IMAGE_AND_VERSION = "gsunner/putest";
         final EndpointType ENGINE_CONTAINER_ENDPOINT_TYPE = EndpointDef.EndpointType.REST;
-        final int PU_CONTAINER_PORT_BASE = 9000;
+        final int ENGINE_CONTAINER_PORT = clusterManagerProperites.getEngineContainerPort();
+        final String ENGINE_CONTAINER_IMAGE_AND_VERSION = clusterManagerProperites.getEngineContainerImageAndVersion();
+        final int PU_CONTAINER_PORT_BASE = clusterManagerProperites.getPuContainerPortBase();
 
         List<Container> containers = new ArrayList<>();
         List<Service> services = new ArrayList<>();

@@ -89,7 +89,7 @@ public class KubernetesManagerImpl implements KubernetesManager {
         logger.debug(String.format("Creating Seldon Deployment id[%s]", seldonDeploymentId));
         final String namespace_name = getNamespaceName();
 
-        DeploymentUtils.buildDeployments(deploymentDef).stream().forEach((buildDeploymentResult) -> {
+        DeploymentUtils.buildDeployments(deploymentDef, clusterManagerProperites).stream().forEach((buildDeploymentResult) -> {
             DeploymentUtils.createDeployment(kubernetesClient, namespace_name, buildDeploymentResult);
             { // update the resultingDeploymentDef with the predictor having the predictive unit endpoints
                 if (buildDeploymentResult.isCanary) {
