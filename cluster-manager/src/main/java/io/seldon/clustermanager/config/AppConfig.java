@@ -1,10 +1,12 @@
 package io.seldon.clustermanager.config;
 
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 
+import io.seldon.clustermanager.ClusterManagerProperites;
 import io.seldon.clustermanager.cm.CluserManagerImpl;
 import io.seldon.clustermanager.component.ClusterManager;
 import io.seldon.clustermanager.component.KubernetesManager;
@@ -29,5 +31,11 @@ public class AppConfig {
     @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
     public ClusterManager clusterManager() {
         return new CluserManagerImpl();
+    }
+    
+    @ConfigurationProperties(prefix = "io.seldon.clustermanager")
+    @Bean
+    public ClusterManagerProperites clusterManagerProperites() {
+        return new ClusterManagerProperites();
     }
 }

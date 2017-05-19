@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceList;
@@ -14,6 +15,7 @@ import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
+import io.seldon.clustermanager.ClusterManagerProperites;
 import io.seldon.clustermanager.component.KubernetesManager;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
 import io.seldon.protos.DeploymentProtos.DockerRegistrySecretDef;
@@ -24,6 +26,7 @@ public class KubernetesManagerImpl implements KubernetesManager {
     private final static Logger logger = LoggerFactory.getLogger(KubernetesManagerImpl.class);
     private final static String SELDON_CLUSTER_MANAGER_POD_NAMESPACE_KEY = "SELDON_CLUSTER_MANAGER_POD_NAMESPACE";
 
+    private ClusterManagerProperites clusterManagerProperites;
     private KubernetesClient kubernetesClient = null;
 
     private String seldonClusterNamespaceName = "UNKOWN_NAMESPACE";
@@ -61,6 +64,12 @@ public class KubernetesManagerImpl implements KubernetesManager {
         if (kubernetesClient != null) {
             kubernetesClient.close();
         }
+    }
+
+    @Autowired
+    public void setClusterManagerProperites(ClusterManagerProperites clusterManagerProperites) {
+        logger.info(String.format("injecting %s", clusterManagerProperites.toString()));
+        this.clusterManagerProperites = clusterManagerProperites;
     }
 
     public List<String> getNamespaceList() {
