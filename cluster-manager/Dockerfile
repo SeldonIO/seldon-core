@@ -27,5 +27,5 @@ RUN \
     rm -rf /work/pom.xml
 
 EXPOSE 8080
-CMD ["/usr/lib/jvm/java-8-openjdk-amd64/bin/java", "-jar", "/work/seldon-cluster-manager.jar"]
+ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -jar /work/seldon-cluster-manager.jar" ]
 

@@ -15,6 +15,10 @@
                     {
                         "env": [
                             {
+                                "name": "JAVA_OPTS",
+                                "value": "%JAVA_OPTS%"
+                            },
+                            {
                                 "name": "SELDON_CLUSTER_MANAGER_ZK_SERVERS",
                                 "value": "zookeeper-1:2181,zookeeper-2:2181,zookeeper-3:2181"
                             },
