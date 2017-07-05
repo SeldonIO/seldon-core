@@ -1,0 +1,76 @@
+package io.seldon.apife.service;
+
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.seldon.apife.exception.APIException;
+import io.seldon.apife.logging.PredictLogger;
+import io.seldon.apife.predictors.PredictorBean;
+import io.seldon.apife.predictors.PredictorRequest;
+import io.seldon.apife.predictors.PredictorReturn;
+import io.seldon.apife.predictors.PredictorState;
+import io.seldon.apife.predictors.PredictorsStore;
+
+
+@Service
+public class PredictionService {
+	
+	private static Logger logger = LoggerFactory.getLogger(PredictionService.class.getName());
+	
+	private final ExecutorService pool = Executors.newFixedThreadPool(50);
+	
+	@Autowired
+	PredictLogger predictLogger;
+	
+	@Autowired
+	PredictorsStore predictorsStore;
+	
+	@Autowired
+	PredictorBean predictorBean;
+	
+	private JsonNode getValidatedJson(String jsonRaw) throws JsonParseException, IOException
+	{
+		ObjectMapper mapper = new ObjectMapper();
+	    JsonFactory factory = mapper.getFactory();
+	    JsonParser parser = factory.createParser(jsonRaw);
+	    JsonNode actualObj = mapper.readTree(parser);
+	    
+	    return actualObj;
+	}
+	
+	public PredictionServiceReturn predict(PredictionServiceRequest predictionServiceRequest) throws APIException, InterruptedException, ExecutionException{
+
+		PredictorState predictorState = predictorsStore.retrievePredictorState(predictionServiceRequest.meta.deployment);
+		
+		if (predictorState != null){
+
+			PredictorRequest predictorRequest = predictionServiceRequest.request;
+			
+			PredictorReturn predictorReturn = predictorBean.predict(predictorRequest,predictorState);
+			
+			PredictionServiceReturnMeta meta = new PredictionServiceReturnMeta();
+			
+			PredictionServiceReturn res = new PredictionServiceReturn(meta, predictorReturn);
+			
+			predictLogger.log(predictionServiceRequest.meta.deployment, predictionServiceRequest.request, res);
+			return res;
+		}
+		else{
+			throw new APIException(APIException.DEPLOYMENT_NOT_FOUND);
+		}
+
+	}
+}

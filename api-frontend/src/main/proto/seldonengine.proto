@@ -1,0 +1,136 @@
+// [START declaration]
+syntax = "proto3";
+package seldon.protos;
+// [END declaration]
+
+// [START java_declaration]
+option java_package = "io.seldon.protos";
+option java_outer_classname = "DeploymentProtos";
+// [END java_declaration]
+
+// [START messages]
+
+message ClusterDef {}
+
+message EndpointDef {
+
+    enum EndpointType {
+        REST = 0;
+        GRPC = 1;
+    }
+
+    string service_host = 1;
+    int32 service_port = 2;
+    EndpointType type = 3;
+}
+
+message ClusterResourcesDef {
+
+    string cpu = 1;
+    string gpu = 2;
+    string id = 3;
+    string image = 4;
+    string memory = 5;
+    string version = 6;
+}
+
+message PredictiveUnitDef {
+
+    enum ParamType {
+        INT = 0;
+        FLOAT = 1;
+        DOUBLE = 2;
+        STRING = 3;
+    }
+
+    message ParamDef {
+        string name = 1;
+        ParamType type = 2;
+        string value = 3;
+    }
+
+    repeated string children = 1;
+    ClusterResourcesDef cluster_resources = 2;
+    EndpointDef endpoint = 3;
+    string name = 4;
+    string id = 5;
+    repeated ParamDef parameters = 6;
+    string subtype = 7;
+    string type = 8;
+}
+
+message PredictorDef {
+    bool enabled = 1;
+    EndpointDef endpoint = 2;
+    string id = 3;
+    repeated string imagePullSecrets = 4;
+    string name = 5;
+    repeated PredictiveUnitDef predictiveUnits = 6;
+    int32 replicas = 7;
+    int32 replicasReady = 8;
+    string root = 9;
+}
+
+message DeploymentDef {
+    ClusterDef cluster = 1;
+    string id = 2;
+    string name = 3;
+    PredictorDef predictor = 4;
+    string uniqueName = 5;
+    string oauth_key = 6;
+    string oauth_secret = 7;
+    PredictorDef predictor_canary = 8;
+}
+
+message DeploymentResultDef {
+    DeploymentDef deployment = 1;
+}
+
+message StringListDef {
+    repeated string items = 1;
+}
+
+message CMStatusDef {
+
+    enum Status {
+        SUCCESS = 0;
+        FAILURE = 1;
+    }
+
+    int32 code = 1;
+    string info = 2;
+    string reason = 3;
+    Status status = 4;
+}
+
+message CMResultDef {
+
+    CMStatusDef cmstatus = 1;
+    oneof oneof_data {
+        DeploymentResultDef deployment_result = 2;
+        StringListDef string_list = 3;
+        string test_str = 4;
+        int32 test_num = 5;
+    }
+}
+
+message StringSecretDef {
+    string name = 1;
+    map<string, string> data = 2;
+    string type = 3;
+}
+
+message DockerRegistrySecretDef {
+
+    message DockerRegistryDetailsDef {
+        string url = 1;
+        string username = 2;
+        string password = 3;
+    }
+
+    string name = 1;
+    DockerRegistryDetailsDef dockerRegistryDetails = 2;
+}
+
+// [END messages]
+
