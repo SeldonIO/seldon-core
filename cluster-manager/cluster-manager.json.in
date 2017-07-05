@@ -77,7 +77,7 @@
                     "app": "seldon-cluster-manager-container-app"
                 },
                 "sessionAffinity": "None",
-                "type": "NodePort"
+                "type": "%SELDON_CLUSTER_MANAGER_SERVICE_TYPE%"
             },
             "status": {
                 "loadBalancer": {}
