@@ -1,0 +1,3 @@
+# NodePort | LoadBalancer
+SELDON_CLUSTER_MANAGER_SERVICE_TYPE=NodePort
+
