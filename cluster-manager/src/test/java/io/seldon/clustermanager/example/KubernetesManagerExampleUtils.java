@@ -38,7 +38,7 @@ public class KubernetesManagerExampleUtils {
                         .setCpu("0.1")
                         .setGpu("0")
                         .setId("2")
-                        .setImage("gsunner/putest")
+                        .setImage("bogusimage")
                         .setMemory("0.5Gi")
                         .setVersion("")
                         );
@@ -85,7 +85,7 @@ public class KubernetesManagerExampleUtils {
                         .setGpu("0")
                         .setId("2")
                         .setImage("gsunner/putest")
-                        .setMemory("4Gi")
+                        .setMemory("0.1Gi")
                         .setVersion("")
                         );
                 //@formatter:on
