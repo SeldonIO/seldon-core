@@ -106,7 +106,8 @@ public class DeploymentUtils {
         return buildDeploymentResults;
     }
 
-    public static BuildDeploymentResult buildDeployment(String seldonDeploymentId, PredictorDef predictorDef, boolean isCanary, ClusterManagerProperites clusterManagerProperites) {
+    public static BuildDeploymentResult buildDeployment(String seldonDeploymentId, PredictorDef predictorDef, boolean isCanary,
+            ClusterManagerProperites clusterManagerProperites) {
 
         PredictorDef.Builder resultingPredictorDefBuilder = PredictorDef.newBuilder(predictorDef);
 
@@ -121,13 +122,15 @@ public class DeploymentUtils {
         final String kubernetesDeploymentId = getKubernetesDeploymentId(seldonDeploymentId, isCanary);
 
         List<PredictiveUnitDef> predictiveUnits = predictorDef.getPredictiveUnitsList();
-        int predictiveUnitIndex = 0;
+        int predictiveUnitIndex = -1;
         for (PredictiveUnitDef predictiveUnitDef : predictiveUnits) {
+            predictiveUnitIndex++;
+            
+            if (!isContainerRequired(predictiveUnitDef)) {
+                continue; // only create container details for predictiveUnit that need it (eg. subtype is external)
+            }
 
             final ClusterResourcesDef clusterResourcesDef = predictiveUnitDef.getClusterResources();
-            if (!hasDeployableImage(clusterResourcesDef)) {
-                break; // only create container details for predictiveUnit that has an image
-            }
 
             final int container_port = PU_CONTAINER_PORT_BASE + predictiveUnitIndex;
             final int service_port = container_port;
@@ -168,8 +171,6 @@ public class DeploymentUtils {
                 resultingPredictorDefBuilder.getPredictiveUnitsBuilder(predictiveUnitIndex).getEndpointBuilder().setServiceHost("localhost");
                 resultingPredictorDefBuilder.getPredictiveUnitsBuilder(predictiveUnitIndex).getEndpointBuilder().setServicePort(service_port);
             }
-
-            predictiveUnitIndex++;
         }
 
         final int replica_number = predictorDef.getReplicas();
@@ -357,8 +358,9 @@ public class DeploymentUtils {
         return sj.toString();
     }
 
-    private static boolean hasDeployableImage(ClusterResourcesDef clusterResourcesDef) {
-        return (clusterResourcesDef.getImage().length() > 0);
+    private static boolean isContainerRequired(PredictiveUnitDef predictiveUnitDef) {
+        // Predictive units that have the subtype "external" are the only ones that need a container to be provisioned
+        return predictiveUnitDef.getSubtype().equalsIgnoreCase("external");
     }
 
     private static String getKubernetesDeploymentId(String seldonDeploymentId, boolean isCanary) {

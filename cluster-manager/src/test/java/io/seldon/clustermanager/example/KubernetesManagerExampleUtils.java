@@ -109,7 +109,7 @@ public class KubernetesManagerExampleUtils {
                             .setValue("5"));
                 //@formatter:on
 
-                predictiveUnitDefBuilder.setSubtype("simpleModel");
+                predictiveUnitDefBuilder.setSubtype("external");
 
                 predictiveUnitDefBuilder.setType("model");
 
