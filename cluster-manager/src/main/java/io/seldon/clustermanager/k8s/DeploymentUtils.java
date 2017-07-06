@@ -125,8 +125,10 @@ public class DeploymentUtils {
         int predictiveUnitIndex = -1;
         for (PredictiveUnitDef predictiveUnitDef : predictiveUnits) {
             predictiveUnitIndex++;
-            
+
             if (!isContainerRequired(predictiveUnitDef)) {
+                logger.debug("IGNORE provision for container of predictiveUnit name[{}] type[{}] subtype[{}]", predictiveUnitDef.getName(),
+                        predictiveUnitDef.getType(), predictiveUnitDef.getSubtype());
                 continue; // only create container details for predictiveUnit that need it (eg. subtype is external)
             }
 
@@ -166,6 +168,8 @@ public class DeploymentUtils {
             
             containers.add(c);
             //@formatter:on
+            logger.debug("ADDING provision for container of predictiveUnit name[{}] type[{}] subtype[{}] image[{}]", predictiveUnitDef.getName(),
+                    predictiveUnitDef.getType(), predictiveUnitDef.getSubtype(), image_name_and_version);
 
             { // update the resulting predictorDef with the host/port details for this predictive
                 resultingPredictorDefBuilder.getPredictiveUnitsBuilder(predictiveUnitIndex).getEndpointBuilder().setServiceHost("localhost");
@@ -201,7 +205,7 @@ public class DeploymentUtils {
             
             containers.add(c);
             //@formatter:on
-
+            logger.debug("ADDING provision for container of seldon engine");
         }
 
         ServiceSelectorDetails serviceSelectorDetails = new ServiceSelectorDetails(seldonDeploymentId, isCanary);
