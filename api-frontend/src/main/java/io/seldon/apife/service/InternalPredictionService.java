@@ -25,10 +25,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.seldon.apife.exception.APIException;
-import io.seldon.apife.predictors.InternalEndpoint;
-import io.seldon.apife.predictors.PredictorRequest;
-import io.seldon.apife.predictors.PredictorRequestJSON;
-import io.seldon.apife.predictors.PredictorReturn;
 import io.seldon.protos.DeploymentProtos.EndpointDef;
 
 @Service
@@ -62,30 +58,21 @@ public class InternalPredictionService {
                 .build();
     }
 		
-	public PredictorReturn getPrediction(PredictorRequest request, EndpointDef endpoint) throws JsonProcessingException, IOException{
-		PredictorReturn ret = null;
+	public JsonNode getPrediction(JsonNode requestJson, EndpointDef endpoint) {
+		JsonNode ret = null;
 		switch (endpoint.getType()){
 			case REST:
-				// TODO: Add proper conversion method. At the moment just casting because 
-				// RPC is not implemented but in the future we want to convert from 
-				// PredictorRequestProto to PredictorRqeustJSON
 				
-				PredictorRequestJSON requestJson = (PredictorRequestJSON) request;
-				Boolean isDefault = requestJson.isDefault;
-				String dataString = requestJson.data;
-				JsonNode node = predictREST(dataString, isDefault, endpoint);
+				ret = predictREST(requestJson.toString(), true, endpoint);
 				
-				ret = mapper.readValue(node.toString(),PredictorReturn.class);
-				
+				break;
 			case GRPC:
 				
 		}
 		return ret;
 	}
 	
-	public String[] getRoute(PredictorRequest request, EndpointDef endpoint){
-		return null;
-	}
+	
 	
 	public JsonNode predictREST(String dataString, Boolean isDefault, EndpointDef endpoint){
 		{
@@ -102,7 +89,7 @@ public class InternalPredictionService {
     			uri = builder.build();
     		} catch (URISyntaxException e) 
     		{
-    			throw new APIException(APIException.GENERIC_ERROR);
+    			throw new APIException(APIException.INVALID_ENDPOINT_URL);
     		}
     		HttpContext context = HttpClientContext.create();
     		HttpGet httpGet = new HttpGet(uri);

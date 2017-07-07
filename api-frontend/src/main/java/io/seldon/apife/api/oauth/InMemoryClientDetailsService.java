@@ -13,6 +13,19 @@ import org.springframework.stereotype.Component;
 public class InMemoryClientDetailsService implements ClientDetailsService {
 
 	private Map<String, ClientDetails> clientDetails = new ConcurrentHashMap<String, ClientDetails>();
+	private final static int ACCESS_TOKEN_VALIDITY_SECONDS = 43200;
+	public void addClient(String clientId,String secret)
+	{
+		 ClientBuilder cb = new ClientBuilder(clientId);
+		 cb.authorizedGrantTypes("client_credentials", "password")
+		 	.authorities("ROLE_CLIENT")
+	        .scopes("read","write")
+	        .resourceIds("prediction-client")
+	        .accessTokenValiditySeconds(ACCESS_TOKEN_VALIDITY_SECONDS)
+	        .secret(secret);	
+		 
+		 this.addClient(clientId, cb.build());
+	}	
 	
 	public void addClient(String clientId,ClientDetails cd)
 	{

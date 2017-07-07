@@ -33,3 +33,4 @@ update_version_txt:
 
 update_proto:
 	cp -v ../proto/seldonengine.proto src/main/proto/ 
+	cp -v ../proto/prediction.proto src/main/proto/ 
