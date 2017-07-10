@@ -6,22 +6,21 @@ import java.net.URISyntaxException;
 
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.protocol.HttpContext;
+import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.seldon.apife.exception.APIException;
@@ -58,23 +57,15 @@ public class InternalPredictionService {
                 .build();
     }
 		
-	public JsonNode getPrediction(JsonNode requestJson, EndpointDef endpoint) {
-		JsonNode ret = null;
-		switch (endpoint.getType()){
-			case REST:
+	public String getPrediction(String request, EndpointDef endpoint) {
+		
+		return predictREST(request, endpoint);
 				
-				ret = predictREST(requestJson.toString(), true, endpoint);
-				
-				break;
-			case GRPC:
-				
-		}
-		return ret;
 	}
 	
 	
 	
-	public JsonNode predictREST(String dataString, Boolean isDefault, EndpointDef endpoint){
+	public String predictREST(String dataString, EndpointDef endpoint){
 		{
     		long timeNow = System.currentTimeMillis();
     		URI uri;
@@ -82,32 +73,29 @@ public class InternalPredictionService {
     			URIBuilder builder = new URIBuilder().setScheme("http")
     					.setHost(endpoint.getServiceHost())
     					.setPort(endpoint.getServicePort())
-    					.setPath("/predict")
-    					.setParameter("isDefault", isDefault.toString())
-    					.setParameter("json", dataString);
+    					.setPath("/predict");
 
     			uri = builder.build();
     		} catch (URISyntaxException e) 
     		{
     			throw new APIException(APIException.INVALID_ENDPOINT_URL);
     		}
+			
+			StringEntity requestEntity = new StringEntity(dataString,ContentType.APPLICATION_JSON);
+			
     		HttpContext context = HttpClientContext.create();
-    		HttpGet httpGet = new HttpGet(uri);
+    		HttpPost httpPost = new HttpPost(uri);
+    		httpPost.setEntity(requestEntity);
     		try  
     		{
     			if (logger.isDebugEnabled())
-    				logger.debug("Requesting " + httpGet.getURI().toString());
-    			CloseableHttpResponse resp = httpClient.execute(httpGet, context);
+    				logger.debug("Requesting " + httpPost.getURI().toString());
+    			CloseableHttpResponse resp = httpClient.execute(httpPost, context);
     			try
     			{
     				if(resp.getStatusLine().getStatusCode() == 200) 
     				{
-    					ObjectMapper mapper = new ObjectMapper();
-    				    JsonFactory factory = mapper.getFactory();
-    				    JsonParser parser = factory.createParser(resp.getEntity().getContent());
-    				    JsonNode actualObj = mapper.readTree(parser);
-    				    
-    				    return actualObj;
+    					return EntityUtils.toString(resp.getEntity());
     				} 
     				else 
     				{

@@ -1,0 +1,77 @@
+// [START declaration]
+syntax = "proto3";
+
+import "google/protobuf/any.proto";
+
+package seldon.protos;
+// [END declaration]
+
+// [START java_declaration]
+option java_package = "io.seldon.protos";
+option java_outer_classname = "PredictionProtos";
+// [END java_declaration]
+
+// [START messages]
+
+message PredictionRequestDef {
+
+  PredictionRequestMetaDef meta = 1;
+  google.protobuf.Any data = 2;
+
+}
+
+message PredictionRequestMetaDef {
+  string puid = 1; 
+}
+
+message PredictionResponseDef {
+
+  PredictionStatusDef status = 1;
+  PredictionResponseMetaDef meta = 2;
+  google.protobuf.Any data = 3;
+
+}
+
+message PredictionStatusDef {
+
+    enum Status {
+        SUCCESS = 0;
+        FAILURE = 1;
+    }
+
+    int32 code = 1;
+    string info = 2;
+    string reason = 3;
+    Status status = 4;
+}
+
+
+message PredictionResponseMetaDef {
+  string puid = 1; 
+}
+
+
+// default prediction request
+
+message DefaultPredictionRequestDef {
+  repeated string features = 1;
+  repeated DefaultPredictionFeatureValues values = 2;
+}
+
+message DefaultPredictionFeatureValues {
+  repeated float value = 1;
+}
+
+
+// default prediction response
+
+message DefaultPredictionResponseDef {
+  repeated string names = 1;
+  repeated DefaultPredictionResponseValues values = 2;
+}
+
+message DefaultPredictionResponseValues {
+  repeated float value = 1;
+}
+
+

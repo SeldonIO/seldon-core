@@ -63,11 +63,11 @@ public class RestClientController {
 		
 		HttpStatus httpStatus = HttpStatus.OK;
 		
-		JsonNode ret = predictionService.predict(getValidatedJson(json),clientId);
+		String ret = predictionService.predict(json,clientId);
 		
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.setContentType(MediaType.APPLICATION_JSON);
-		ResponseEntity<String> responseEntity = new ResponseEntity<String>(ret.toString(), responseHeaders, httpStatus);
+		ResponseEntity<String> responseEntity = new ResponseEntity<String>(ret, responseHeaders, httpStatus);
 
 		return responseEntity;
 
