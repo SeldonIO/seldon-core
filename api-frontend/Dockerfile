@@ -20,12 +20,12 @@ ADD src /work/src
 RUN ["mvn", "-Dmaven.repo.local=./.m2", "clean", "package"]
 
 RUN \
-    mv /work/target/seldon-engine.jar /work/ && \
+    mv /work/target/seldon-apife.jar /work/ && \
     rm -rf /work/target && \
     rm -rf /work/src && \
     rm -rf /work/.m2 && \
     rm -rf /work/pom.xml
 
 EXPOSE 8080
-CMD ["/usr/lib/jvm/java-8-openjdk-amd64/bin/java", "-jar", "/work/seldon-engine.jar"]
+CMD ["/usr/lib/jvm/java-8-openjdk-amd64/bin/java", "-jar", "/work/seldon-apife.jar"]
 
