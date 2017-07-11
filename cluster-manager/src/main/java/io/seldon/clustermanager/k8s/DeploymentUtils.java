@@ -195,11 +195,12 @@ public class DeploymentUtils {
 
             String enginePredictorJson = getEnginePredictorEnvVarJson(resultingPredictorDefBuilder.build());
             EnvVar envVar_ENGINE_PREDICTOR = new EnvVarBuilder().withName("ENGINE_PREDICTOR").withValue(enginePredictorJson).build();
+            EnvVar envVar_ENGINE_SERVER_PORT = new EnvVarBuilder().withName("ENGINE_SERVER_PORT").withValue(String.valueOf(engine_container_port)).build();
 
             //@formatter:off
             Container c = new ContainerBuilder()
                     .withName("seldon-container-engine").withImage(image_name_and_version)
-                    .withEnv(envVar_ENGINE_PREDICTOR)
+                    .withEnv(envVar_ENGINE_PREDICTOR, envVar_ENGINE_SERVER_PORT)
                     .addNewPort().withContainerPort(engine_container_port).endPort()
                     .build();
             

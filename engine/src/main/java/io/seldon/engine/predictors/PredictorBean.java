@@ -47,9 +47,8 @@ public class PredictorBean {
 		return ret.get();
 	}
 	
-	public PredictorState predictorStateFromDeploymentDef(DeploymentDef deploymentDef){
-		PredictorDef predictorDef = deploymentDef.getPredictor();
-		
+	//TODO
+	public PredictorState predictorStateFromDeploymentDef(PredictorDef predictorDef){
 		String rootId = predictorDef.getRoot();
         Boolean enabled = predictorDef.getEnabled();
         List<PredictiveUnitDef> predictiveUnitDefList = predictorDef.getPredictiveUnitsList();
@@ -90,6 +89,12 @@ public class PredictorBean {
         // and the graph contains a cycle. Maybe add some code to check that the json is well formed
         
         return new PredictorState(rootId,predictiveUnitStateMap,enabled);
+	}
+	   
+	public PredictorState predictorStateFromDeploymentDef(DeploymentDef deploymentDef){
+		PredictorDef predictorDef = deploymentDef.getPredictor();
+		
+        return predictorStateFromDeploymentDef(predictorDef);
 	}
 	
 	

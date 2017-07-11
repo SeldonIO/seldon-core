@@ -34,7 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-@Component
+// @Component TODO REMOVE
 public class ZkCuratorHandler implements ConnectionStateListener {
 
     private static Logger logger = LoggerFactory.getLogger(ZkCuratorHandler.class.getName());

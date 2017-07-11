@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.seldon.engine.predictors.PredictorReturn;
 import io.seldon.engine.predictors.PredictorState;
 import io.seldon.engine.predictors.PredictorRequest;
+import io.seldon.engine.predictors.EnginePredictor;
 import io.seldon.engine.predictors.PredictorBean;
 import io.seldon.engine.predictors.PredictorsStore;
 import io.seldon.engine.exception.APIException;
@@ -35,11 +36,14 @@ public class PredictionService {
 	@Autowired
 	PredictLogger predictLogger;
 	
-	@Autowired
-	PredictorsStore predictorsStore;
+//	@Autowired
+//	PredictorsStore predictorsStore;
 	
 	@Autowired
 	PredictorBean predictorBean;
+	
+	@Autowired
+	EnginePredictor enginePredictor;
 	
 	private JsonNode getValidatedJson(String jsonRaw) throws JsonParseException, IOException
 	{
@@ -53,8 +57,11 @@ public class PredictionService {
 	
 	public PredictionServiceReturn predict(PredictionServiceRequest predictionServiceRequest) throws APIException, InterruptedException, ExecutionException{
 
-		PredictorState predictorState = predictorsStore.retrievePredictorState(predictionServiceRequest.meta.deployment);
+	    /// TODO remove previous code
+		////PredictorState predictorState = predictorsStore.retrievePredictorState(predictionServiceRequest.meta.deployment);
 		
+        PredictorState predictorState = predictorBean.predictorStateFromDeploymentDef(enginePredictor.getPredictorDef());
+
 		if (predictorState != null){
 
 			PredictorRequest predictorRequest = predictionServiceRequest.request;

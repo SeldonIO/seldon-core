@@ -23,7 +23,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-@Component
+// @Component TODO REMOVE
 public class ZkDeploymentsHandler implements TreeCacheListener, DeploymentsHandler{
 	private static Logger logger = LoggerFactory.getLogger(ZkDeploymentsHandler.class.getName());
     private final ZkSubscriptionHandler handler;

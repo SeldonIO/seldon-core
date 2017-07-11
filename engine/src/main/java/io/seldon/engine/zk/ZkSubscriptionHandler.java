@@ -42,7 +42,7 @@ import java.util.*;
  *         Date: 06/10/2014
  *         Time: 16:10
  */
-@Component
+// @Component TODO REMOVE
 public class ZkSubscriptionHandler {
     private static Logger logger = LoggerFactory.getLogger(ZkSubscriptionHandler.class.getName());
     @Autowired

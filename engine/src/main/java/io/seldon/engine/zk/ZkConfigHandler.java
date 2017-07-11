@@ -10,7 +10,7 @@ import org.springframework.util.StringUtils;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
-@Component
+// @Component TODO REMOVE
 public class ZkConfigHandler implements ZkNodeChangeListener{
 	  	private static Logger logger = LoggerFactory.getLogger(ZkConfigHandler.class.getName());
 	    private final Multimap<String,ConfigUpdateListener> nodeListeners;
