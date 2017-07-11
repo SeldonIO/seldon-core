@@ -36,8 +36,8 @@ public class PredictionService {
 	@Autowired
 	PredictLogger predictLogger;
 	
-	@Autowired
-	PredictorsStore predictorsStore;
+//	@Autowired
+//	PredictorsStore predictorsStore;
 	
 	@Autowired
 	PredictorBean predictorBean;

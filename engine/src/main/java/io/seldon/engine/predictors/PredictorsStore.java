@@ -19,7 +19,7 @@ import io.seldon.engine.zk.DeploymentsListener;
 import io.seldon.engine.zk.ZkDeploymentsHandler;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
 
-@Component
+// @Component TODO REMOVE
 public class PredictorsStore implements DeploymentsListener {
 	protected static Logger logger = LoggerFactory.getLogger(PredictorsStore.class.getName());
 	public static final String ALG_KEY = "predict_algs";
