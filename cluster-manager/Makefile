@@ -32,7 +32,7 @@ start_cluster_manager: cluster-manager.json cluster-manager-client-secret.txt
 	@CLUSTER_MANAGER_CLIENT_SECRET="$$(cat cluster-manager-client-secret.txt)" && \
 			kubectl delete secret cluster-manager-client-secret  > /dev/null 2>&1 || : && \
 			kubectl create secret generic cluster-manager-client-secret --from-literal=cluster-manager-client-secret.txt="$${CLUSTER_MANAGER_CLIENT_SECRET}"
-	@kubectl create -f cluster-manager.json
+	@kubectl apply -f cluster-manager.json
 stop_cluster_manager: cluster-manager.json
 	@kubectl delete -f cluster-manager.json
 
@@ -48,10 +48,12 @@ cluster-manager-client-secret.txt:
 
 
 port_forward_cluster_manager:
-	kubectl port-forward seldon-cluster-manager 8080:8080
+	POD_NAME=$$(kubectl --namespace default get pod -l app=seldon-cluster-manager-server -o template --template="{{(index .items 0).metadata.name}}") && \
+		kubectl port-forward $${POD_NAME} 8080:8080
 check:
 	curl -s -i localhost:8080/ping
 
 port_forward_cluster_manager_debug:
-	kubectl port-forward seldon-cluster-manager 8000:8000
+	POD_NAME=$$(kubectl --namespace default get pod -l app=seldon-cluster-manager-server -o template --template="{{(index .items 0).metadata.name}}") && \
+		kubectl port-forward $${POD_NAME} 8000:8000
 

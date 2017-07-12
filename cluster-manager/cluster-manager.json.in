@@ -2,59 +2,66 @@
     "apiVersion": "v1",
     "items": [
         {
-            "apiVersion": "v1",
-            "kind": "Pod",
+            "apiVersion": "extensions/v1beta1",
+            "kind": "Deployment",
             "metadata": {
-                "labels": {
-                    "app": "seldon-cluster-manager-container-app"
-                },
                 "name": "seldon-cluster-manager"
             },
             "spec": {
-                "containers": [
-                    {
-                        "env": [
+                "replicas": 1,
+                "template": {
+                    "metadata": {
+                        "labels": {
+                            "app": "seldon-cluster-manager-server"
+                        }
+                    },
+                    "spec": {
+                        "containers": [
                             {
-                                "name": "JAVA_OPTS",
-                                "value": "%JAVA_OPTS%"
-                            },
-                            {
-                                "name": "SELDON_CLUSTER_MANAGER_ZK_SERVERS",
-                                "value": "zookeeper-1:2181,zookeeper-2:2181,zookeeper-3:2181"
-                            },
-                            {
-                                "name": "SELDON_CLUSTER_MANAGER_REDIS_HOST",
-                                "value": "redis"
-                            },
-                            {
-                                "name": "SELDON_CLUSTER_MANAGER_POD_NAMESPACE",
-                                "valueFrom": {
-                                    "fieldRef": {
-                                        "apiVersion": "v1",
-                                        "fieldPath": "metadata.namespace"
+                                "env": [
+                                    {
+                                        "name": "JAVA_OPTS",
+                                        "value": "%JAVA_OPTS%"
+                                    },
+                                    {
+                                        "name": "SELDON_CLUSTER_MANAGER_ZK_SERVERS",
+                                        "value": "zookeeper-1:2181,zookeeper-2:2181,zookeeper-3:2181"
+                                    },
+                                    {
+                                        "name": "SELDON_CLUSTER_MANAGER_REDIS_HOST",
+                                        "value": "redis"
+                                    },
+                                    {
+                                        "name": "SELDON_CLUSTER_MANAGER_POD_NAMESPACE",
+                                        "valueFrom": {
+                                            "fieldRef": {
+                                                "apiVersion": "v1",
+                                                "fieldPath": "metadata.namespace"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "name": "SELDON_CLUSTER_MANAGER_CLIENT_SECRET",
+                                        "valueFrom": {
+                                            "secretKeyRef": {
+                                                "key": "cluster-manager-client-secret.txt",
+                                                "name": "cluster-manager-client-secret"
+                                            }
+                                        }
                                     }
-                                }
-                            },
-                            {
-                                "name": "SELDON_CLUSTER_MANAGER_CLIENT_SECRET",
-                                "valueFrom": {
-                                    "secretKeyRef": {
-                                        "key": "cluster-manager-client-secret.txt",
-                                        "name": "cluster-manager-client-secret"
+                                ],
+                                "image": "seldonio/cluster-manager:%CLUSTER_MANAGER_IMAGE_VERSION%",
+                                "name": "seldon-cluster-manager-container",
+                                "ports": [
+                                    {
+                                        "containerPort": 8080,
+                                        "protocol": "TCP"
                                     }
-                                }
-                            }
-                        ],
-                        "image": "seldonio/cluster-manager:%CLUSTER_MANAGER_IMAGE_VERSION%",
-                        "name": "seldon-cluster-manager-container",
-                        "ports": [
-                            {
-                                "containerPort": 8080,
-                                "protocol": "TCP"
+                                ]
                             }
                         ]
                     }
-                ]
+                }
             }
         },
         {
@@ -74,7 +81,7 @@
                     }
                 ],
                 "selector": {
-                    "app": "seldon-cluster-manager-container-app"
+                    "app": "seldon-cluster-manager-server"
                 },
                 "sessionAffinity": "None",
                 "type": "%SELDON_CLUSTER_MANAGER_SERVICE_TYPE%"
