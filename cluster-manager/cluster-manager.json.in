@@ -78,9 +78,6 @@
                 },
                 "sessionAffinity": "None",
                 "type": "%SELDON_CLUSTER_MANAGER_SERVICE_TYPE%"
-            },
-            "status": {
-                "loadBalancer": {}
             }
         }
     ],
