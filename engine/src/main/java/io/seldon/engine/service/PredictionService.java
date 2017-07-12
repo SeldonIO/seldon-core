@@ -57,27 +57,18 @@ public class PredictionService {
 	
 	public PredictionServiceReturn predict(PredictionServiceRequest predictionServiceRequest) throws APIException, InterruptedException, ExecutionException{
 
-	    /// TODO remove previous code
-		////PredictorState predictorState = predictorsStore.retrievePredictorState(predictionServiceRequest.meta.deployment);
-		
         PredictorState predictorState = predictorBean.predictorStateFromDeploymentDef(enginePredictor.getPredictorDef());
 
-		if (predictorState != null){
-
-			PredictorRequest predictorRequest = predictionServiceRequest.request;
+        PredictorRequest predictorRequest = predictionServiceRequest.request;
 			
-			PredictorReturn predictorReturn = predictorBean.predict(predictorRequest,predictorState);
+        PredictorReturn predictorReturn = predictorBean.predict(predictorRequest,predictorState);
 			
-			PredictionServiceReturnMeta meta = new PredictionServiceReturnMeta();
+        PredictionServiceReturnMeta meta = new PredictionServiceReturnMeta();
 			
-			PredictionServiceReturn res = new PredictionServiceReturn(meta, predictorReturn);
+        PredictionServiceReturn res = new PredictionServiceReturn(meta, predictorReturn);
 			
-			predictLogger.log(predictionServiceRequest.meta.deployment, predictionServiceRequest.request, res);
-			return res;
-		}
-		else{
-			throw new APIException(APIException.DEPLOYMENT_NOT_FOUND);
-		}
-
+        predictLogger.log(predictionServiceRequest.meta.deployment, predictionServiceRequest.request, res);
+        return res;
+		
 	}
 }

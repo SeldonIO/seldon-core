@@ -37,10 +37,10 @@ public class AverageCombinerUnit extends CombinerUnit{
 			}
 			if (predRet.values.length!=batchLength){
 				// TODO: Maybe we should also check that the names are always the same
-				throw new APIException(APIException.COMBINER_ERROR);
+				throw new APIException(APIException.ApiExceptionType.APIFE_INVALID_COMBINER_RESPONSE,String.format("Found %d Expected %d", predRet.values[0].length,valuesLength));				
 			}
 			if (predRet.values[0].length!=valuesLength){
-				throw new APIException(APIException.COMBINER_ERROR);
+				throw new APIException(APIException.ApiExceptionType.APIFE_INVALID_COMBINER_RESPONSE,String.format("Found %d Expected %d", predRet.values[0].length,valuesLength));
 			}
 			for (int i = 0; i < batchLength; ++i) {
 				for (int j = 0; j < valuesLength; j++){

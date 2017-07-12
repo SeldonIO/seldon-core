@@ -25,7 +25,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.seldon.engine.exception.APIException;
-import io.seldon.engine.predictors.InternalEndpoint;
 import io.seldon.engine.predictors.PredictorRequest;
 import io.seldon.engine.predictors.PredictorRequestJSON;
 import io.seldon.engine.predictors.PredictorReturn;
@@ -102,7 +101,7 @@ public class InternalPredictionService {
     			uri = builder.build();
     		} catch (URISyntaxException e) 
     		{
-    			throw new APIException(APIException.GENERIC_ERROR);
+    			throw new APIException(APIException.ApiExceptionType.APIFE_INVALID_ENDPOINT_URL,"Host: "+endpoint.getServiceHost()+" port:"+endpoint.getServicePort());
     		}
     		HttpContext context = HttpClientContext.create();
     		HttpGet httpGet = new HttpGet(uri);
@@ -125,7 +124,7 @@ public class InternalPredictionService {
     				else 
     				{
     					logger.error("Couldn't retrieve prediction from external prediction server -- bad http return code: " + resp.getStatusLine().getStatusCode());
-    					throw new APIException(APIException.MICROSERVICE_ERROR);
+    					throw new APIException(APIException.ApiExceptionType.APIFE_MICROSERVICE_ERROR,String.format("Bad return code %d", resp.getStatusLine().getStatusCode()));
     				}
     			}
     			finally
@@ -139,12 +138,12 @@ public class InternalPredictionService {
     		catch (IOException e) 
     		{
     			logger.error("Couldn't retrieve prediction from external prediction server - ", e);
-    			throw new APIException(APIException.MICROSERVICE_ERROR);
+    			throw new APIException(APIException.ApiExceptionType.APIFE_MICROSERVICE_ERROR,e.toString());
     		}
     		catch (Exception e)
             {
     			logger.error("Couldn't retrieve prediction from external prediction server - ", e);
-    			throw new APIException(APIException.MICROSERVICE_ERROR);
+    			throw new APIException(APIException.ApiExceptionType.APIFE_MICROSERVICE_ERROR,e.toString());
             }
     		finally
     		{
