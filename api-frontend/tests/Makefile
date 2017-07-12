@@ -30,6 +30,10 @@ do_post_test:
 	echo "------------------------------" && echo "ACCESS_TOKEN[$(ACCESS_TOKEN)]" && echo "------------------------------" \
 		&& curl -v -i -X POST -H "Content-Type:application/json" -H "Accept: application/json" -H "Authorization: Bearer $(ACCESS_TOKEN)" $(API_ENDPOINT)$(EP_PREDICTION) -d '{"meta":{"default_format":true},"data":{"feature":["a","b"],"values":[[1.0,2.0],[3.0,4.0]]}}'
 
+do_exception_test:
+	echo "------------------------------" && echo "ACCESS_TOKEN[$(ACCESS_TOKEN)]" && echo "------------------------------" \
+		&& curl -v -i -X POST -H "Content-Type:application/json" -H "Accept: application/json" -H "Authorization: Bearer $(ACCESS_TOKEN)" $(API_ENDPOINT)$(EP_PREDICTION) -d '{"meta":{"default_format":true},"data":{"feature":["a","b"],"values":[[1.0,2.0],[3.0,4.0]]}}'
+
 
 
 compile_proto:
