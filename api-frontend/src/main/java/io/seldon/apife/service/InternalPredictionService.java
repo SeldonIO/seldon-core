@@ -78,7 +78,7 @@ public class InternalPredictionService {
     			uri = builder.build();
     		} catch (URISyntaxException e) 
     		{
-    			throw new APIException(APIException.ApiExceptionType.APIFE_INVALID_ENDPOINT_URL);
+    			throw new APIException(APIException.ApiExceptionType.APIFE_INVALID_ENDPOINT_URL,"Host: "+endpoint.getServiceHost()+" port:"+endpoint.getServicePort());
     		}
 			
 			StringEntity requestEntity = new StringEntity(dataString,ContentType.APPLICATION_JSON);
@@ -93,15 +93,7 @@ public class InternalPredictionService {
     			CloseableHttpResponse resp = httpClient.execute(httpPost, context);
     			try
     			{
-    				if(resp.getStatusLine().getStatusCode() == 200) 
-    				{
-    					return EntityUtils.toString(resp.getEntity());
-    				} 
-    				else 
-    				{
-    					logger.error("Couldn't retrieve prediction from external prediction server -- bad http return code: " + resp.getStatusLine().getStatusCode());
-    					throw new APIException(APIException.ApiExceptionType.APIFE_MICROSERVICE_ERROR);
-    				}
+    				return EntityUtils.toString(resp.getEntity());
     			}
     			finally
     			{
@@ -114,12 +106,12 @@ public class InternalPredictionService {
     		catch (IOException e) 
     		{
     			logger.error("Couldn't retrieve prediction from external prediction server - ", e);
-    			throw new APIException(APIException.ApiExceptionType.APIFE_MICROSERVICE_ERROR);
+    			throw new APIException(APIException.ApiExceptionType.APIFE_MICROSERVICE_ERROR,e.toString());
     		}
     		catch (Exception e)
             {
     			logger.error("Couldn't retrieve prediction from external prediction server - ", e);
-    			throw new APIException(APIException.ApiExceptionType.APIFE_MICROSERVICE_ERROR);
+    			throw new APIException(APIException.ApiExceptionType.APIFE_MICROSERVICE_ERROR,e.toString());
             }
     		finally
     		{

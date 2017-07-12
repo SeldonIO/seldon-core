@@ -28,9 +28,9 @@ public class APIException extends RuntimeException {
 	public enum ApiExceptionType { 
 		
 		APIFE_INVALID_JSON(101,"Invalid JSON",400),
-		APIFE_INVALID_ENDPOINT_URL(102,"Invalid Endpoint URL",400),	
-		APIFE_MICROSERVICE_ERROR(103,"Microservice error",400),
-		APIFE_NO_RUNNING_DEPLOYMENT(104,"No Running Deployment",400);
+		APIFE_INVALID_ENDPOINT_URL(102,"Invalid Endpoint URL",500),	
+		APIFE_MICROSERVICE_ERROR(103,"Microservice error",500),
+		APIFE_NO_RUNNING_DEPLOYMENT(104,"No Running Deployment",500);
 		
 		int id;
 		String message;
@@ -53,15 +53,17 @@ public class APIException extends RuntimeException {
 		public int getHttpCode() {
 			return httpCode;
 		}
-		
+
 		
 	};
 
    ApiExceptionType apiExceptionType;
+   String info;
 
-   public APIException(ApiExceptionType apiExceptionType) {
+   public APIException(ApiExceptionType apiExceptionType,String info) {
 	   super();
 	   this.apiExceptionType = apiExceptionType;
+	   this.info = info;
    }
 
    public ApiExceptionType getApiExceptionType() {
@@ -70,6 +72,14 @@ public class APIException extends RuntimeException {
 
    public void setApiExceptionType(ApiExceptionType apiExceptionType) {
 	   this.apiExceptionType = apiExceptionType;
+   }
+
+   public String getInfo() {
+	   return info;
+   }
+
+   public void setInfo(String info) {
+	   this.info = info;
    }	
 
 }

@@ -24,7 +24,7 @@ public class RandomABTestUnit extends RouterUnit {
 		Float comparator = rand.nextFloat();
 		
 		if (state.children.size() != 2){
-			throw new APIException(APIException.ABTEST_ERROR);
+			throw new APIException(APIException.ApiExceptionType.APIFE_INVALID_ABTEST,String.format("test has %d children ",state.children.size()));
 		}
 		
 		PredictiveUnitState selectedChild;

@@ -17,8 +17,7 @@ import io.seldon.protos.PredictionProtos.PredictionStatusDef;
 @ControllerAdvice
 public class ExceptionControllerAdvice {
 
-	private final Logger logger = LoggerFactory.getLogger(this.getClass());
-	
+
 	@ExceptionHandler(APIException.class)
 	public ResponseEntity<String> handleUnauthorizedException(APIException exception) throws InvalidProtocolBufferException {
 
@@ -26,6 +25,7 @@ public class ExceptionControllerAdvice {
 		PredictionStatusDef.Builder statusBuilder = PredictionStatusDef.newBuilder();
 		statusBuilder.setCode(exception.getApiExceptionType().getId());
 		statusBuilder.setReason(exception.getApiExceptionType().getMessage());
+		statusBuilder.setInfo(exception.getInfo());
 		statusBuilder.setStatus(PredictionStatusDef.Status.FAILURE);		
 		
 		PredictionStatusDef status = statusBuilder.build();
