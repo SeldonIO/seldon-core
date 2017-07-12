@@ -1,73 +1,40 @@
 package io.seldon.apife;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+
 import io.seldon.apife.exception.APIException;
+import io.seldon.apife.pb.ProtoBufUtils;
+import io.seldon.protos.PredictionProtos.PredictionStatusDef;
 
 
 @ControllerAdvice
 public class ExceptionControllerAdvice {
 
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+	
 	@ExceptionHandler(APIException.class)
-	public ResponseEntity<ErrorLog> handleUnauthorizedException(APIException exception) {
+	public ResponseEntity<String> handleUnauthorizedException(APIException exception) throws InvalidProtocolBufferException {
 
-		ErrorLog e = new ErrorLog(System.currentTimeMillis(),"API Exception",exception.getHttpResponse(),exception.getError_msg());
-		return new ResponseEntity<ErrorLog>(e,HttpStatus.valueOf(exception.getHttpResponse())); 
+		
+		PredictionStatusDef.Builder statusBuilder = PredictionStatusDef.newBuilder();
+		statusBuilder.setCode(exception.getApiExceptionType().getId());
+		statusBuilder.setReason(exception.getApiExceptionType().getMessage());
+		statusBuilder.setStatus(PredictionStatusDef.Status.FAILURE);		
+		
+		PredictionStatusDef status = statusBuilder.build();
+		String json;
+		json = ProtoBufUtils.toJson(status);
+		return new ResponseEntity<String>(json,HttpStatus.valueOf(exception.getApiExceptionType().getHttpCode())); 
+
 
 	}
 
-	public static class ErrorLog
-	{
-		private long timestamp;
-		private int status;
-		private String error;
-		private List<String> codes;
-		public ErrorLog(long timestamp, String error, int status, List<String> codes) {
-			super();
-			this.timestamp = timestamp;
-			this.status = status;
-			this.codes = codes;
-			this.error = error;
-		}
-		public ErrorLog(long timestamp, String error, int status, String code) {
-			super();
-			this.timestamp = timestamp;
-			this.status = status;
-			this.codes = new ArrayList<>();
-			this.codes.add(code);
-			this.error = error;
-		}
-		public long getTimestamp() {
-			return timestamp;
-		}
-		public void setTimestamp(long timestamp) {
-			this.timestamp = timestamp;
-		}
-		public int getStatus() {
-			return status;
-		}
-		public void setStatus(int status) {
-			this.status = status;
-		}
-		public List<String> getCodes() {
-			return codes;
-		}
-		public void setCodes(List<String> codes) {
-			this.codes = codes;
-		}
-		public void setError(String error){
-			this.error = error;
-		}
-		public String getError(){
-			return error;
-		}
-		
-		
-	}
+	
 }

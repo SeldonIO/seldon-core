@@ -23,88 +23,53 @@
 
 package io.seldon.apife.exception;
 
-import java.util.Map;
-
-/**
- * @author claudio
- */
-
 public class APIException extends RuntimeException {
-	//possible errors
-	static final String ERROR = "error";
 
-	public static final int INVALID_JSON = 101;
-	public static final int INVALID_ENDPOINT_URL = 102;	
-	public static final int MICROSERVICE_ERROR = 103;	
-	public static final int NO_RUNNING_DEPLOYMENT = 104;	
+	public enum ApiExceptionType { 
+		
+		APIFE_INVALID_JSON(101,"Invalid JSON",400),
+		APIFE_INVALID_ENDPOINT_URL(102,"Invalid Endpoint URL",400),	
+		APIFE_MICROSERVICE_ERROR(103,"Microservice error",400),
+		APIFE_NO_RUNNING_DEPLOYMENT(104,"No Running Deployment",400);
+		
+		int id;
+		String message;
+		int httpCode;
 
-	//ATTRIBUTES
-    int error_id;
-    String error_msg;
-    int httpResponse;
+		ApiExceptionType(int id,String message,int httpCode) {
+		    this.id = id;
+		    this.message = message;
+		    this.httpCode = httpCode;
+		  }
 
-    private Map<String, String> failureMap;
-
-    //CONSTRUCTOR
-	public APIException(int error_id) {
-		super();
-		this.error_id = error_id;
-		switch(error_id) {
-
-		case INVALID_JSON:
-			error_msg = "Invalid JSON";
-			httpResponse = 400;
-			break;
-		case INVALID_ENDPOINT_URL:
-			error_msg = "Invalid Endpoint URL";
-			httpResponse = 400;
-			break;
-		case MICROSERVICE_ERROR:
-			error_msg = "Microservice error";
-			httpResponse = 400;
-			break;
-		case NO_RUNNING_DEPLOYMENT:
-			error_msg = "No Running Deployment";
-			httpResponse = 400;
-			break;
-
+		public int getId() {
+			return id;
 		}
-	}
-	
-	//GETTER AND SETTER
-	public String toString() {
-		return error_id + " : " + error_msg;
-	}
 
-	public int getError_id() {
-		return error_id;
-	}
+		public String getMessage() {
+			return message;
+		}
 
-	public void setError_id(int errorId) {
-		error_id = errorId;
-	}
+		public int getHttpCode() {
+			return httpCode;
+		}
+		
+		
+	};
 
-	public String getError_msg() {
-		return error_msg;
-	}
+   ApiExceptionType apiExceptionType;
 
-	public void setError_msg(String errorMsg) {
-		error_msg = errorMsg;
-	}
+   public APIException(ApiExceptionType apiExceptionType) {
+	   super();
+	   this.apiExceptionType = apiExceptionType;
+   }
 
-	public int getHttpResponse() {
-		return httpResponse;
-	}
+   public ApiExceptionType getApiExceptionType() {
+	   return apiExceptionType;
+   }
 
-	public void setHttpResponse(int httpResponse) {
-		this.httpResponse = httpResponse;
-	}
+   public void setApiExceptionType(ApiExceptionType apiExceptionType) {
+	   this.apiExceptionType = apiExceptionType;
+   }	
 
-    public Map<String, String> getFailureMap() {
-        return failureMap;
-    }
-
-    public void setFailureMap(Map<String, String> failureMap) {
-        this.failureMap = failureMap;
-    }
 }

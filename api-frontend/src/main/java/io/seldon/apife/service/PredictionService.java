@@ -28,7 +28,7 @@ public class PredictionService {
 		if (deployment != null)
 			return internalPredictionService.getPrediction(request, deployment.getPredictor().getEndpoint());
 		else
-			throw new APIException(APIException.NO_RUNNING_DEPLOYMENT);
+			throw new APIException(APIException.ApiExceptionType.APIFE_NO_RUNNING_DEPLOYMENT);
 
 	}
 }

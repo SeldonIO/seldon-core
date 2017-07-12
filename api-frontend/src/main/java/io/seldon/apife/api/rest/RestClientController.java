@@ -1,6 +1,5 @@
 package io.seldon.apife.api.rest;
 
-import java.io.IOException;
 import java.security.Principal;
 
 import org.slf4j.Logger;
@@ -15,13 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import io.seldon.apife.exception.APIException;
 import io.seldon.apife.service.PredictionService;
 
 @RestController
@@ -37,21 +29,6 @@ public class RestClientController {
         return "Hello World!";
     }
 	
-	private JsonNode getValidatedJson(String jsonRaw) 
-	{
-		try
-		{
-			ObjectMapper mapper = new ObjectMapper();
-			JsonFactory factory = mapper.getFactory();
-			JsonParser parser = factory.createParser(jsonRaw);
-			JsonNode actualObj = mapper.readTree(parser);
-			return actualObj;
-		} catch (JsonParseException e) {
-			throw new APIException(APIException.INVALID_JSON);
-		} catch (IOException e) {
-			throw new APIException(APIException.INVALID_JSON);
-		}
-	}
 	
 	
 	@RequestMapping(value = "/api/v0.1/predictions", method = RequestMethod.POST, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
