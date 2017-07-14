@@ -8,6 +8,8 @@ import io.seldon.protos.DeploymentProtos.ClusterResourcesDef;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
 import io.seldon.protos.DeploymentProtos.EndpointDef;
 import io.seldon.protos.DeploymentProtos.PredictiveUnitDef;
+import io.seldon.protos.DeploymentProtos.PredictiveUnitDef.PredictiveUnitSubType;
+import io.seldon.protos.DeploymentProtos.PredictiveUnitDef.PredictiveUnitType;
 import io.seldon.protos.DeploymentProtos.PredictorDef;
 
 public class SeldonProtoWriteExample {
@@ -65,9 +67,8 @@ public class SeldonProtoWriteExample {
                             .setValue("5"));
                 //@formatter:on
 
-                predictiveUnitDefBuilder.setSubtype("simpleModel");
-
-                predictiveUnitDefBuilder.setType("model");
+                predictiveUnitDefBuilder.setSubtype(PredictiveUnitSubType.SIMPLE_MODEL);
+                predictiveUnitDefBuilder.setType(PredictiveUnitType.MODEL);
 
                 PredictiveUnitDef predictiveUnitDef = predictiveUnitDefBuilder.build();
                 predictorDefBuilder.addPredictiveUnits(predictiveUnitDef);

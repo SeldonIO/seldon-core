@@ -5,6 +5,8 @@ import io.seldon.protos.DeploymentProtos.ClusterResourcesDef;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
 import io.seldon.protos.DeploymentProtos.EndpointDef;
 import io.seldon.protos.DeploymentProtos.PredictiveUnitDef;
+import io.seldon.protos.DeploymentProtos.PredictiveUnitDef.PredictiveUnitSubType;
+import io.seldon.protos.DeploymentProtos.PredictiveUnitDef.PredictiveUnitType;
 import io.seldon.protos.DeploymentProtos.PredictorDef;
 
 public class KubernetesManagerExampleUtils {
@@ -67,9 +69,8 @@ public class KubernetesManagerExampleUtils {
                             .setValue("6"));
                 //@formatter:on
 
-                predictiveUnitDefBuilder.setSubtype("simpleModel");
-
-                predictiveUnitDefBuilder.setType("model");
+                predictiveUnitDefBuilder.setSubtype(PredictiveUnitSubType.SIMPLE_MODEL);
+                predictiveUnitDefBuilder.setType(PredictiveUnitType.MODEL);
 
                 PredictiveUnitDef predictiveUnitDef = predictiveUnitDefBuilder.build();
                 predictorDefBuilder.addPredictiveUnits(predictiveUnitDef);
@@ -109,9 +110,8 @@ public class KubernetesManagerExampleUtils {
                             .setValue("5"));
                 //@formatter:on
 
-                predictiveUnitDefBuilder.setSubtype("external");
-
-                predictiveUnitDefBuilder.setType("model");
+                predictiveUnitDefBuilder.setSubtype(PredictiveUnitSubType.MICROSERVICE);
+                predictiveUnitDefBuilder.setType(PredictiveUnitType.MODEL);
 
                 PredictiveUnitDef predictiveUnitDef = predictiveUnitDefBuilder.build();
                 predictorDefBuilder.addPredictiveUnits(predictiveUnitDef);
@@ -181,9 +181,8 @@ public class KubernetesManagerExampleUtils {
                             .setValue("5"));
                 //@formatter:on
 
-                predictiveUnitDefBuilder.setSubtype("simpleModel");
-
-                predictiveUnitDefBuilder.setType("model");
+                predictiveUnitDefBuilder.setSubtype(PredictiveUnitSubType.SIMPLE_MODEL);
+                predictiveUnitDefBuilder.setType(PredictiveUnitType.MODEL);
 
                 PredictiveUnitDef predictiveUnitDef = predictiveUnitDefBuilder.build();
                 predictorDefBuilder.addPredictiveUnits(predictiveUnitDef);
@@ -223,9 +222,8 @@ public class KubernetesManagerExampleUtils {
                             .setValue("5"));
                 //@formatter:on
 
-                predictiveUnitDefBuilder.setSubtype("simpleModel");
-
-                predictiveUnitDefBuilder.setType("model");
+                predictiveUnitDefBuilder.setSubtype(PredictiveUnitSubType.SIMPLE_MODEL);
+                predictiveUnitDefBuilder.setType(PredictiveUnitType.MODEL);
 
                 PredictiveUnitDef predictiveUnitDef = predictiveUnitDefBuilder.build();
                 predictorDefBuilder.addPredictiveUnits(predictiveUnitDef);

@@ -35,6 +35,7 @@ import io.seldon.protos.DeploymentProtos.EndpointDef;
 import io.seldon.protos.DeploymentProtos.EndpointDef.EndpointType;
 import io.seldon.protos.DeploymentProtos.PredictiveUnitDef;
 import io.seldon.protos.DeploymentProtos.PredictiveUnitDef.ParamDef;
+import io.seldon.protos.DeploymentProtos.PredictiveUnitDef.PredictiveUnitSubType;
 import io.seldon.protos.DeploymentProtos.PredictorDef;
 
 public class DeploymentUtils {
@@ -364,8 +365,8 @@ public class DeploymentUtils {
     }
 
     private static boolean isContainerRequired(PredictiveUnitDef predictiveUnitDef) {
-        // Predictive units that have the subtype "external" are the only ones that need a container to be provisioned
-        return predictiveUnitDef.getSubtype().equalsIgnoreCase("external");
+        // Predictive units that have the subtype "microservice" are the only ones that need a container to be provisioned
+        return predictiveUnitDef.getSubtype().equals(PredictiveUnitSubType.MICROSERVICE);
     }
 
     private static String getKubernetesDeploymentId(String seldonDeploymentId, boolean isCanary) {
