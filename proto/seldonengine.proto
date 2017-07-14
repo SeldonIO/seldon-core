@@ -52,7 +52,7 @@ message PredictiveUnitDef {
 
   enum PredictiveUnitSubType {
     MODEL_MICROSERVICE = 0;
-    MODEL_SIMPLEMODE = 1;
+    MODEL_SIMPLEMODEL = 1;
     ROUTER_MICROSERVICE = 2;
     ROUTER_SIMPLEROUTER = 3;
     ROUTER_RANDOMABTEST = 4;

@@ -32,6 +32,15 @@ message PredictionResponseDef {
 
 }
 
+
+message PredictionFeedbackDef {
+
+  string puid = 1;
+  google.protobuf.Any data = 2;
+
+}
+
+
 message PredictionStatusDef {
 
     enum Status {
