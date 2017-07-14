@@ -51,13 +51,11 @@ message PredictiveUnitDef {
   }
 
   enum PredictiveUnitSubType {
-    MODEL_MICROSERVICE = 0;
-    MODEL_SIMPLEMODEL = 1;
-    ROUTER_MICROSERVICE = 2;
-    ROUTER_SIMPLEROUTER = 3;
-    ROUTER_RANDOMABTEST = 4;
-    COMBINER_MICROSERVICE= 5;
-    COMBINER_AVERAGECOMBINER = 6;
+    MICROSERVICE = 0;
+    SIMPLE_MODEL = 1;
+    SIMPLE_ROUTER = 2;
+    RANDOM_ABTEST = 3;
+    AVERAGE_COMBINER = 4;
   }
 
     message ParamDef {
