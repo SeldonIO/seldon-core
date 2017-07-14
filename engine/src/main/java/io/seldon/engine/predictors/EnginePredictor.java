@@ -1,16 +1,17 @@
 package io.seldon.engine.predictors;
 
+import java.util.Base64;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import io.seldon.protos.DeploymentProtos.PredictiveUnitDef;
-import io.seldon.protos.DeploymentProtos.PredictorDef;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 import com.google.protobuf.util.JsonFormat.Printer;
-import java.util.Base64;
+
+import io.seldon.protos.DeploymentProtos.PredictiveUnitDef;
+import io.seldon.protos.DeploymentProtos.PredictorDef;
 
 public class EnginePredictor {
 
@@ -66,8 +67,8 @@ public class EnginePredictor {
             PredictiveUnitDef.Builder predictiveUnitDefBuilder = PredictiveUnitDef.newBuilder()
                     .setId("0")
                     .setName("basic-pu")
-                    .setType("model")
-                    .setSubtype("simpleModel");
+                    .setType(PredictiveUnitDef.PredictiveUnitType.MODEL)
+                    .setSubtype(PredictiveUnitDef.PredictiveUnitSubType.MODEL_SIMPLEMODEL);
             //@formatter:on
 
             predictorDefBuilder.addPredictiveUnits(predictiveUnitDefBuilder);
