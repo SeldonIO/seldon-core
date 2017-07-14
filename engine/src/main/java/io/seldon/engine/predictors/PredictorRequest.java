@@ -1,15 +1,14 @@
 package io.seldon.engine.predictors;
 
-public class PredictorRequest extends PredictorData {
+public class PredictorRequest  {
 	
 	public String request;
-	public Boolean isDefault;
+	
 	
 	public PredictorRequest(){}
 	
-	public PredictorRequest(String request, Boolean isDefault){
+	public PredictorRequest(String request){
 		this.request = request;
-		this.isDefault = isDefault;
 	}
 
 //	public PredictorRequest(String jsonRaw){

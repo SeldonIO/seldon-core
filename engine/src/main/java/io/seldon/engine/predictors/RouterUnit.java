@@ -12,7 +12,7 @@ public class RouterUnit extends PredictiveUnitBean{
     }
 
 	@Override
-	protected PredictorReturn backwardPass(List<PredictorData> inputs, PredictiveUnitState state){
+	protected PredictorReturn backwardPass(List<PredictorReturn> inputs, PredictiveUnitState state){
 		return (PredictorReturn) inputs.get(0);
 	}
 

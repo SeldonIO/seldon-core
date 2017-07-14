@@ -2,7 +2,6 @@ package io.seldon.engine.predictors;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
@@ -14,7 +13,7 @@ public class AverageCombinerUnit extends CombinerUnit{
 	public AverageCombinerUnit() {}
 
 	@Override
-	public PredictorReturn backwardPass(List<PredictorData> inputs, PredictiveUnitState state){
+	public PredictorReturn backwardPass(List<PredictorReturn> inputs, PredictiveUnitState state){
 		
 		Integer batchLength = 0;
 		Integer valuesLength = 0;
@@ -23,8 +22,7 @@ public class AverageCombinerUnit extends CombinerUnit{
 		Double[][] averages = null;
 		String[] names = null;
 		
-		for (PredictorData predData : inputs){
-			PredictorReturn predRet = (PredictorReturn) predData;
+		for (PredictorReturn predRet : inputs){
 			if (!initialised){
 				batchLength = predRet.values.length;
 				valuesLength = predRet.values[0].length;

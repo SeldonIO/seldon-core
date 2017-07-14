@@ -71,7 +71,7 @@ public class EnginePredictor {
                     .setId("0")
                     .setName("basic-pu")
                     .setType(PredictiveUnitType.MODEL)
-                    .setSubtype(PredictiveUnitSubType.MODEL_SIMPLEMODEL);
+                    .setSubtype(PredictiveUnitSubType.SIMPLE_MODEL);
             //@formatter:on
 
             predictorDefBuilder.addPredictiveUnits(predictiveUnitDefBuilder);

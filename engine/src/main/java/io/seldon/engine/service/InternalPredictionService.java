@@ -61,7 +61,7 @@ public class InternalPredictionService {
                 .build();
     }
 		
-	public PredictorReturn getPrediction(PredictorRequest request, EndpointDef endpoint) throws JsonProcessingException, IOException{
+	public PredictorReturn getPrediction(PredictionServiceRequest request, EndpointDef endpoint) throws JsonProcessingException, IOException{
 		PredictorReturn ret = null;
 		switch (endpoint.getType()){
 			case REST:
@@ -69,10 +69,9 @@ public class InternalPredictionService {
 				// RPC is not implemented but in the future we want to convert from 
 				// PredictorRequestProto to PredictorRqeustJSON
 				
-				PredictorRequestJSON requestJson = (PredictorRequestJSON) request;
-				Boolean isDefault = requestJson.isDefault;
+				PredictorRequestJSON requestJson = (PredictorRequestJSON) request.request;
 				String dataString = requestJson.data;
-				JsonNode node = predictREST(dataString, isDefault, endpoint);
+				JsonNode node = predictREST(dataString, endpoint);
 				
 				ret = mapper.readValue(node.toString(),PredictorReturn.class);
 				
@@ -86,7 +85,7 @@ public class InternalPredictionService {
 		return null;
 	}
 	
-	public JsonNode predictREST(String dataString, Boolean isDefault, EndpointDef endpoint){
+	public JsonNode predictREST(String dataString, EndpointDef endpoint){
 		{
     		long timeNow = System.currentTimeMillis();
     		URI uri;
@@ -95,7 +94,6 @@ public class InternalPredictionService {
     					.setHost(endpoint.getServiceHost())
     					.setPort(endpoint.getServicePort())
     					.setPath("/predict")
-    					.setParameter("isDefault", isDefault.toString())
     					.setParameter("json", dataString);
 
     			uri = builder.build();

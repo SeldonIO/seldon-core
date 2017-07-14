@@ -7,6 +7,7 @@ import java.util.Random;
 import org.springframework.stereotype.Component;
 
 import io.seldon.engine.exception.APIException;
+import io.seldon.engine.service.PredictionServiceRequest;
 
 
 @Component
@@ -15,7 +16,7 @@ public class RandomABTestUnit extends RouterUnit {
 	Random rand = new Random(1337);
 
 	@Override
-	protected List<PredictiveUnitState> forwardPass(PredictorData request, PredictiveUnitState state){
+	protected List<PredictiveUnitState> forwardPass(PredictionServiceRequest request, PredictiveUnitState state){
 		
 		@SuppressWarnings("unchecked")
 		PredictiveUnitParameter<Float> parameter = (PredictiveUnitParameter<Float>) state.parameters.get("ratioA");
@@ -29,6 +30,7 @@ public class RandomABTestUnit extends RouterUnit {
 		
 		PredictiveUnitState selectedChild;
 		
+		//FIXME Possible bug : keySet is not ordered as per the definition of the AB test
 		if (comparator<=ratioA){
 			// We select model A
 			selectedChild = state.children.get(state.children.keySet().toArray()[0]);

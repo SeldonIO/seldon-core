@@ -41,11 +41,9 @@ public class PredictionServiceRequestDeserializer extends StdDeserializer<Predic
         
         try {
         	request = mapper.readValue(requestNode.toString(), PredictorRequestJSON.class);
-        	request.isDefault = false;
 		}
 		catch (JsonMappingException e) {
 			request = new PredictorRequestJSON(requestNode.get("data").toString());
-			request.isDefault = true;
 		}
         
         return new PredictionServiceRequest(meta,request);

@@ -4,16 +4,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class PredictionServiceRequestMeta {
 	
-	@JsonProperty("deployment")
-	public String deployment;
-	
-	public String getDeployment(){
-		return deployment;
+	@JsonProperty("puid")
+	public String puid;
+
+	public String getPuid() {
+		return puid;
+	}
+
+	public void setPuid(String puid) {
+		this.puid = puid;
 	}
 	
-	public void setDeployment(String deployment){
-		this.deployment = deployment;
-	}
 
 //	public PredictionServiceRequestMeta(String deployment) {
 //		super();

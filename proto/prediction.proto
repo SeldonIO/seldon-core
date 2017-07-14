@@ -16,7 +16,7 @@ option java_outer_classname = "PredictionProtos";
 message PredictionRequestDef {
 
   PredictionRequestMetaDef meta = 1;
-  google.protobuf.Any data = 2;
+  google.protobuf.Any request = 2;
 
 }
 
@@ -28,7 +28,7 @@ message PredictionResponseDef {
 
   PredictionStatusDef status = 1;
   PredictionResponseMetaDef meta = 2;
-  google.protobuf.Any data = 3;
+  google.protobuf.Any response = 3;
 
 }
 
@@ -36,7 +36,7 @@ message PredictionResponseDef {
 message PredictionFeedbackDef {
 
   string puid = 1;
-  google.protobuf.Any data = 2;
+  google.protobuf.Any truth = 2;
 
 }
 

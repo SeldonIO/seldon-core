@@ -9,7 +9,7 @@ import java.util.concurrent.Future;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-
+import io.seldon.engine.service.PredictionServiceRequest;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
 import io.seldon.protos.DeploymentProtos.PredictiveUnitDef;
 import io.seldon.protos.DeploymentProtos.PredictorDef;
@@ -30,17 +30,17 @@ public class PredictorBean {
 			AverageCombinerUnit averageCombinerUnit,
 			RandomABTestUnit randomABTestUnit) {
         nodeClassMap = new HashMap<String,PredictiveUnitBean>();
-    	nodeClassMap.put("model_external", modelUnit);
-    	nodeClassMap.put("model_simpleModel", simpleModelUnit);
-    	nodeClassMap.put("router_external", routerUnit);
-    	nodeClassMap.put("router_simpleRouter", simpleRouterUnit);
-    	nodeClassMap.put("combiner_external", combinerUnit);
-    	nodeClassMap.put("combiner_averageCombiner", averageCombinerUnit);
-    	nodeClassMap.put("router_randomABTest", randomABTestUnit);
+    	nodeClassMap.put(PredictiveUnitDef.PredictiveUnitType.MODEL.toString() + "_" + PredictiveUnitDef.PredictiveUnitSubType.MICROSERVICE.toString(), modelUnit);
+    	nodeClassMap.put(PredictiveUnitDef.PredictiveUnitType.MODEL.toString() + "_" + PredictiveUnitDef.PredictiveUnitSubType.SIMPLE_MODEL.toString(), simpleModelUnit);
+    	nodeClassMap.put(PredictiveUnitDef.PredictiveUnitType.ROUTER.toString() + "_" + PredictiveUnitDef.PredictiveUnitSubType.MICROSERVICE.toString(), routerUnit);
+    	nodeClassMap.put(PredictiveUnitDef.PredictiveUnitType.ROUTER.toString() + "_" + PredictiveUnitDef.PredictiveUnitSubType.SIMPLE_ROUTER.toString(), simpleRouterUnit);
+    	nodeClassMap.put(PredictiveUnitDef.PredictiveUnitType.COMBINER.toString() + "_" + PredictiveUnitDef.PredictiveUnitSubType.MICROSERVICE.toString(), combinerUnit);
+    	nodeClassMap.put(PredictiveUnitDef.PredictiveUnitType.COMBINER.toString() + "_" + PredictiveUnitDef.PredictiveUnitSubType.AVERAGE_COMBINER.toString(), averageCombinerUnit);
+    	nodeClassMap.put(PredictiveUnitDef.PredictiveUnitType.ROUTER.toString() + "_" + PredictiveUnitDef.PredictiveUnitSubType.RANDOM_ABTEST.toString(), randomABTestUnit);
     }
    
 	
-	public PredictorReturn predict(PredictorRequest request, PredictorState predictorState) throws InterruptedException, ExecutionException
+	public PredictorReturn predict(PredictionServiceRequest request, PredictorState predictorState) throws InterruptedException, ExecutionException
 	{
 		PredictiveUnitState rootState = predictorState.rootState;
 		Future<PredictorReturn> ret = rootState.predictiveUnitBean.predict(request, rootState);

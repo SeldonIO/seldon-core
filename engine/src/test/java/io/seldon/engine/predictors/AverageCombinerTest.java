@@ -1,21 +1,19 @@
 package io.seldon.engine.predictors;
 
+import static org.hamcrest.CoreMatchers.is;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import io.seldon.engine.exception.APIException;
-
-import org.junit.Assert;
-
-import static org.hamcrest.CoreMatchers.*;
+import io.seldon.engine.service.PredictionServiceRequest;
 
 public class AverageCombinerTest {
 	
@@ -153,7 +151,8 @@ public class AverageCombinerTest {
     @Test
 	public void testPredictNoChildren() throws InterruptedException, ExecutionException{
     	
-    	PredictorRequest request = new PredictorRequest("",false);
+    	PredictorRequest request = new PredictorRequest("");
+    	PredictionServiceRequest pRequest = new PredictionServiceRequest(null, request);
     	
     	PredictiveUnitState state = new PredictiveUnitState("Cool_name",null,null);
     	
@@ -161,7 +160,7 @@ public class AverageCombinerTest {
     	
     	state.predictiveUnitBean = averageCombinerUnit;
 
-    	Future<PredictorReturn> futurePred = averageCombinerUnit.predict(request, state);
+    	Future<PredictorReturn> futurePred = averageCombinerUnit.predict(pRequest, state);
     	
     	PredictorReturn average = futurePred.get();
     	

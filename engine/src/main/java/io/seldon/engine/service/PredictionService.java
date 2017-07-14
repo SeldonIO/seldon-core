@@ -5,6 +5,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,15 +17,15 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.seldon.engine.predictors.PredictorReturn;
-import io.seldon.engine.predictors.PredictorState;
-import io.seldon.engine.predictors.PredictorRequest;
-import io.seldon.engine.predictors.EnginePredictor;
-import io.seldon.engine.predictors.PredictorBean;
-import io.seldon.engine.predictors.PredictorsStore;
 import io.seldon.engine.exception.APIException;
 import io.seldon.engine.logging.PredictLogger;
-
+import io.seldon.engine.predictors.EnginePredictor;
+import io.seldon.engine.predictors.PredictorBean;
+import io.seldon.engine.predictors.PredictorRequest;
+import io.seldon.engine.predictors.PredictorReturn;
+import io.seldon.engine.predictors.PredictorState;
+import java.security.SecureRandom;
+import java.math.BigInteger;
 
 @Service
 public class PredictionService {
@@ -45,6 +46,16 @@ public class PredictionService {
 	@Autowired
 	EnginePredictor enginePredictor;
 	
+	PuidGenerator puidGenerator = new PuidGenerator();
+
+	public final class PuidGenerator {
+	    private SecureRandom random = new SecureRandom();
+
+	    public String nextPuidId() {
+	        return new BigInteger(130, random).toString(32);
+	    }
+	}
+	
 	private JsonNode getValidatedJson(String jsonRaw) throws JsonParseException, IOException
 	{
 		ObjectMapper mapper = new ObjectMapper();
@@ -57,17 +68,18 @@ public class PredictionService {
 	
 	public PredictionServiceReturn predict(PredictionServiceRequest predictionServiceRequest) throws APIException, InterruptedException, ExecutionException{
 
+		if (StringUtils.isEmpty(predictionServiceRequest.getMeta().getPuid()))
+			predictionServiceRequest.getMeta().setPuid(puidGenerator.nextPuidId());
+		
         PredictorState predictorState = predictorBean.predictorStateFromDeploymentDef(enginePredictor.getPredictorDef());
 
-        PredictorRequest predictorRequest = predictionServiceRequest.request;
+        PredictorReturn predictorReturn = predictorBean.predict(predictionServiceRequest,predictorState);
 			
-        PredictorReturn predictorReturn = predictorBean.predict(predictorRequest,predictorState);
-			
-        PredictionServiceReturnMeta meta = new PredictionServiceReturnMeta();
+        PredictionServiceReturnMeta meta = new PredictionServiceReturnMeta(predictionServiceRequest.getMeta().getPuid());
 			
         PredictionServiceReturn res = new PredictionServiceReturn(meta, predictorReturn);
 			
-        predictLogger.log(predictionServiceRequest.meta.deployment, predictionServiceRequest.request, res);
+        //predictLogger.log(predictionServiceRequest.meta.deployment, predictionServiceRequest.request, res);
         return res;
 		
 	}

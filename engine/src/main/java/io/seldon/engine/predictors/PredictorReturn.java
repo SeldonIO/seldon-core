@@ -1,6 +1,6 @@
 package io.seldon.engine.predictors;
 
-public class PredictorReturn extends PredictorData{
+public class PredictorReturn {
 	public String[] names;
 	public Double[][] values;
 	
