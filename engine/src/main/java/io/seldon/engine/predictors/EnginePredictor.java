@@ -4,6 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.seldon.protos.DeploymentProtos.PredictiveUnitDef;
+import io.seldon.protos.DeploymentProtos.PredictiveUnitDef.PredictiveUnitSubType;
+import io.seldon.protos.DeploymentProtos.PredictiveUnitDef.PredictiveUnitType;
 import io.seldon.protos.DeploymentProtos.PredictorDef;
 
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -66,8 +68,8 @@ public class EnginePredictor {
             PredictiveUnitDef.Builder predictiveUnitDefBuilder = PredictiveUnitDef.newBuilder()
                     .setId("0")
                     .setName("basic-pu")
-                    .setType("model")
-                    .setSubtype("simpleModel");
+                    .setType(PredictiveUnitType.MODEL)
+                    .setSubtype(PredictiveUnitSubType.MODEL_SIMPLEMODEL);
             //@formatter:on
 
             predictorDefBuilder.addPredictiveUnits(predictiveUnitDefBuilder);
