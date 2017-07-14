@@ -43,6 +43,23 @@ message PredictiveUnitDef {
         STRING = 3;
     }
 
+  enum PredictiveUnitType {
+    ROUTER = 0;
+    COMBINER = 1;
+    MODEL = 2;
+    TRANSFORMER = 3;
+  }
+
+  enum PredictiveUnitSubType {
+    MODEL_MICROSERVICE = 0;
+    MODEL_SIMPLEMODE = 1;
+    ROUTER_MICROSERVICE = 2;
+    ROUTER_SIMPLEROUTER = 3;
+    ROUTER_RANDOMABTEST = 4;
+    COMBINER_MICROSERVICE= 5;
+    COMBINER_AVERAGECOMBINER = 6;
+  }
+
     message ParamDef {
         string name = 1;
         ParamType type = 2;
@@ -55,8 +72,8 @@ message PredictiveUnitDef {
     string name = 4;
     string id = 5;
     repeated ParamDef parameters = 6;
-    string subtype = 7;
-    string type = 8;
+    PredictiveUnitSubType subtype = 7;
+    PredictiveUnitType type = 8;
 }
 
 message PredictorDef {
