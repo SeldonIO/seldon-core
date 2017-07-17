@@ -1,47 +1,48 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  	<modelVersion>4.0.0</modelVersion>
-  
-  	<parent>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>1.4.3.RELEASE</version>
-  	</parent>
+	</parent>
 
-  	<groupId>io.seldon.engine</groupId>
+	<groupId>io.seldon.engine</groupId>
 	<artifactId>seldon-engine</artifactId>
 	<version>0.1.2</version>
- 	<packaging>jar</packaging>
-  
+	<packaging>jar</packaging>
+
 	<name>engine</name>
 	<url>http://maven.apache.org</url>
-	
- 	<properties>
+
+	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>1.8</java.version>
 		<grpc.version>1.0.0</grpc.version>
 		<start-class>io.seldon.engine.App</start-class>
 	</properties>
-	
-  	<build>
-  		<finalName>${project.artifactId}</finalName>
-    	<extensions>
+
+	<build>
+		<finalName>${project.artifactId}</finalName>
+		<extensions>
 			<extension>
 				<groupId>kr.motd.maven</groupId>
 				<artifactId>os-maven-plugin</artifactId>
 				<version>1.4.1.Final</version>
 			</extension>
 		</extensions>
-    	<plugins>
-      		<plugin>
-        		<artifactId>maven-compiler-plugin</artifactId>
-        		<version>3.5.1</version>
-        		<configuration>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.5.1</version>
+				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
 					<encoding>UTF-8</encoding>
 				</configuration>
-      		</plugin>
-      		<plugin>
+			</plugin>
+			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
@@ -64,9 +65,9 @@
 					</execution>
 				</executions>
 			</plugin>
-    	</plugins>
-  	</build>
-  	<dependencies>
+		</plugins>
+	</build>
+	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
@@ -76,58 +77,58 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-jdbc</artifactId>
 		</dependency>
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.17</version>
-        </dependency>
-        <dependency>
-   			<groupId>org.apache.curator</groupId>
-    		<artifactId>curator-framework</artifactId>
-    		<version>2.7.1</version>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.17</version>
 		</dependency>
 		<dependency>
-      		<groupId>org.apache.curator</groupId>
-      		<artifactId>curator-recipes</artifactId>
-      		<version>2.7.1</version>
-      		<scope>compile</scope>
-    	</dependency>
-    	<dependency>
-    		<groupId>com.fasterxml.jackson.core</groupId>
-    		<artifactId>jackson-core</artifactId>
-    		<version>2.8.6</version>
+			<groupId>org.apache.curator</groupId>
+			<artifactId>curator-framework</artifactId>
+			<version>2.7.1</version>
 		</dependency>
 		<dependency>
-		    <groupId>com.fasterxml.jackson.core</groupId>
-		    <artifactId>jackson-databind</artifactId>
-		    <version>2.8.6</version>
+			<groupId>org.apache.curator</groupId>
+			<artifactId>curator-recipes</artifactId>
+			<version>2.7.1</version>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
-		    <groupId>commons-lang</groupId>
-		    <artifactId>commons-lang</artifactId>
-		    <version>2.6</version>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+			<version>2.8.6</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.8.6</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>2.6</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
 		<dependency>
-		    <groupId>org.apache.commons</groupId>
-		    <artifactId>commons-lang3</artifactId>
-		    <version>3.5</version>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.5</version>
 		</dependency>
 		<dependency>
-        	<groupId>org.springframework.boot</groupId>
-        	<artifactId>spring-boot-starter-web</artifactId>
-    	</dependency>
-    	<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
 		</dependency>
 		<dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>4.3.4</version>
-        </dependency>
-        
-        <dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.3.4</version>
+		</dependency>
+
+		<dependency>
 			<groupId>io.grpc</groupId>
 			<artifactId>grpc-protobuf</artifactId>
 			<version>${grpc.version}</version>
@@ -143,13 +144,6 @@
 			<artifactId>protobuf-java-util</artifactId>
 			<version>3.2.0rc2</version>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-
-        
 
 	</dependencies>
 </project>

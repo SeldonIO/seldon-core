@@ -46,6 +46,8 @@ public class RestClientController {
 		}
 	}
 	
+	private 
+	
 	
 	@RequestMapping("/")
     String home() {

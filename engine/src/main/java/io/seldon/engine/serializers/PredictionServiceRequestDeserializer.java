@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import io.seldon.engine.predictors.PredictorRequest;
 import io.seldon.engine.predictors.PredictorRequestJSON;
 import io.seldon.engine.service.PredictionServiceRequest;
 import io.seldon.engine.service.PredictionServiceRequestMeta;
@@ -33,19 +34,23 @@ public class PredictionServiceRequestDeserializer extends StdDeserializer<Predic
 		ObjectMapper mapper = (ObjectMapper) jp.getCodec();
         ObjectNode root = mapper.readTree(jp);
         
-        PredictionServiceRequestMeta meta = mapper.readValue(root.get("meta").toString(),PredictionServiceRequestMeta.class);
+        PredictionServiceRequestMeta meta;
+        if (root.has("meta"))
+        	meta = mapper.readValue(root.get("meta").toString(),PredictionServiceRequestMeta.class);
+        else
+        	meta = new PredictionServiceRequestMeta();
         
-        PredictorRequestJSON request;
+        PredictorRequest request;
         
         JsonNode requestNode = root.get("request");
         
         try {
         	request = mapper.readValue(requestNode.toString(), PredictorRequestJSON.class);
+        	request.request = requestNode.toString();
 		}
 		catch (JsonMappingException e) {
-			request = new PredictorRequestJSON(requestNode.get("data").toString());
+			request = new PredictorRequest(requestNode.toString());
 		}
-        
         return new PredictionServiceRequest(meta,request);
 	}
 	

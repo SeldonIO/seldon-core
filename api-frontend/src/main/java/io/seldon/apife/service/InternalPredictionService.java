@@ -73,7 +73,7 @@ public class InternalPredictionService {
     			URIBuilder builder = new URIBuilder().setScheme("http")
     					.setHost(endpoint.getServiceHost())
     					.setPort(endpoint.getServicePort())
-    					.setPath("/predict");
+    					.setPath("/api/v0.1/predictions");
 
     			uri = builder.build();
     		} catch (URISyntaxException e) 

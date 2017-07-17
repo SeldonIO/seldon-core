@@ -6,17 +6,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import io.seldon.engine.exception.APIException;
-import org.junit.Assert;
+import io.seldon.engine.service.PredictionServiceRequest;
 
 public class RandomABTestUnitInternalTest {
 
 	@Test
 	public void simpleCase() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		
-		PredictorRequest request = new PredictorRequest();
+		PredictorRequest pRequest = new PredictorRequest();
+		PredictionServiceRequest request = new PredictionServiceRequest(null,pRequest);
 		
 		PredictiveUnitParameter<Float> ratioParam = new PredictiveUnitParameter<Float>(0.5F);
     	Map<String,PredictiveUnitParameterInterface> params = new HashMap<>();
@@ -31,7 +33,7 @@ public class RandomABTestUnitInternalTest {
 		state.addChild("1", childB);
 		
 		RandomABTestUnit randomABTestUnit = new RandomABTestUnit();
-		Method method = RandomABTestUnit.class.getDeclaredMethod("forwardPass", PredictorRequest.class, PredictiveUnitState.class);
+		Method method = RandomABTestUnit.class.getDeclaredMethod("forwardPass", PredictionServiceRequest.class, PredictiveUnitState.class);
 		method.setAccessible(true);
 
 		// The following values are from random seed 1337
@@ -54,7 +56,8 @@ public class RandomABTestUnitInternalTest {
 	@Test(expected=APIException.class)
 	public void failureOneChild() throws Throwable{
 		
-		PredictorRequest request = new PredictorRequest();
+		PredictorRequest pRequest = new PredictorRequest();
+		PredictionServiceRequest request = new PredictionServiceRequest(null,pRequest);
 		
 		PredictiveUnitParameter<Float> ratioParam = new PredictiveUnitParameter<Float>(0.5F);
     	Map<String,PredictiveUnitParameterInterface> params = new HashMap<>();
@@ -67,7 +70,7 @@ public class RandomABTestUnitInternalTest {
 		state.addChild("0", childA);
 		
 		RandomABTestUnit randomABTestUnit = new RandomABTestUnit();
-		Method method = RandomABTestUnit.class.getDeclaredMethod("forwardPass", PredictorRequest.class, PredictiveUnitState.class);
+		Method method = RandomABTestUnit.class.getDeclaredMethod("forwardPass", PredictionServiceRequest.class, PredictiveUnitState.class);
 		method.setAccessible(true);
 
 		// The following should return an error

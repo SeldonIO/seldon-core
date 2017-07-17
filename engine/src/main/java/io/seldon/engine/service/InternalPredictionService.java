@@ -69,9 +69,13 @@ public class InternalPredictionService {
 				// RPC is not implemented but in the future we want to convert from 
 				// PredictorRequestProto to PredictorRqeustJSON
 				
-				PredictorRequestJSON requestJson = (PredictorRequestJSON) request.request;
-				String dataString = requestJson.data;
-				JsonNode node = predictREST(dataString, endpoint);
+				
+				
+				String dataString = request.request.request;
+				boolean isDefault = false;
+				if (request.request instanceof PredictorRequestJSON)
+					isDefault = true;
+				JsonNode node = predictREST(dataString, endpoint, isDefault);
 				
 				ret = mapper.readValue(node.toString(),PredictorReturn.class);
 				
@@ -85,7 +89,7 @@ public class InternalPredictionService {
 		return null;
 	}
 	
-	public JsonNode predictREST(String dataString, EndpointDef endpoint){
+	public JsonNode predictREST(String dataString, EndpointDef endpoint,boolean isDefault){
 		{
     		long timeNow = System.currentTimeMillis();
     		URI uri;
@@ -94,7 +98,8 @@ public class InternalPredictionService {
     					.setHost(endpoint.getServiceHost())
     					.setPort(endpoint.getServicePort())
     					.setPath("/predict")
-    					.setParameter("json", dataString);
+    					.setParameter("json", dataString)
+    					.setParameter("isDefault", Boolean.toString(isDefault));
 
     			uri = builder.build();
     		} catch (URISyntaxException e) 

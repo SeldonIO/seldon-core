@@ -1,11 +1,9 @@
 package io.seldon.engine.predictors;
 
 public class PredictorRequestJSON extends PredictorRequest{
-	public String data;
+	public String[] features;
+	public double[][] values;
 	
 	public PredictorRequestJSON(){}
 	
-	public PredictorRequestJSON(String data){
-		this.data = data;
-	}
 }

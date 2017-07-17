@@ -11,14 +11,6 @@ public class PredictorRequest  {
 		this.request = request;
 	}
 
-//	public PredictorRequest(String jsonRaw){
-//		request = jsonRaw;
-//	}
 
-//	public PredictorRequest(String request) {
-//		super();
-//		this.request = request;
-//	}
-//	
 	
 }

@@ -6,6 +6,7 @@ import json
 from kazoo.client import KazooClient
 import seldonengine_pb2 as spb
 from google.protobuf import json_format
+import base64
 
 def is_json_data(data):
     if (data != None) and (len(data)>0):
@@ -39,11 +40,8 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(prog='create_replay')
     parser.add_argument('--zookeeper', help='zookeeper host:port', default="0.0.0.0:2181")
-    parser.add_argument('--service-host', help='service endpoint', default="0.0.0.0")
-    parser.add_argument('--service-port', help='service port', type=int, default=5000)
-    parser.add_argument('--oauth-key', help='oauth key', default="client")
-    parser.add_argument('--oauth-secret', help='oauth secret', default="secret")
-    parser.add_argument('--deployment-id', help='deployment id', default="sd-1")
+    parser.add_argument('--json', help='deployment json', required=True)
+    #parser.add_argument('--deployment-store-folder', help='deployment store folder', default="")
 
     args = parser.parse_args()
     opts = vars(args)
@@ -51,11 +49,21 @@ if __name__ == '__main__':
     zk_client = KazooClient(hosts=args.zookeeper)
     zk_client.start()
 
-    endpoint = spb.EndpointDef(service_host=args.service_host,service_port=args.service_port)
-    predictor = spb.PredictorDef(endpoint=endpoint)
-    dep = spb.DeploymentDef(oauth_key=args.oauth_key,oauth_secret=args.oauth_secret,predictor=predictor,id=args.deployment_id,name="test deployment")
-    json_string = json_format.MessageToJson(dep)
+    with open(args.json) as json_data:
+        d = json.load(json_data)
 
-    node_set(zk_client,"/deployments/"+args.deployment_id,json_string)
+    # check json parses
+    deployment = spb.DeploymentDef()
+    json_format.ParseDict(d,deployment)
+    json_string = json_format.MessageToJson(deployment)
+
+    node_set(zk_client,"/deployments/"+d["id"],json_string)
+
+
+    json_string = json_format.MessageToJson(deployment.predictor)
+    x = base64.b64encode(json_string)
+    print "Base64 encoded predictor for Cluster Manager"
+    print x
+
 
 
