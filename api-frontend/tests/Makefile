@@ -1,4 +1,5 @@
 API_ENDPOINT:=$(shell cat API_ENDPOINT)
+API_CLIENT_KEY=$(shell cat api-client-key.txt)
 API_CLIENT_SECRET=$(shell cat api-client-secret.txt)
 
 EP_PING=/ping
@@ -7,7 +8,7 @@ EP_TOKEN=/oauth/token
 EP_FEEDBACK=/api/v0.1/feedback
 EP_PREDICTION=/api/v0.1/predictions
 
-ACCESS_TOKEN=$(shell curl -s -H "Accept: application/json" client:$(API_CLIENT_SECRET)@$(API_ENDPOINT)$(EP_TOKEN) -d grant_type=client_credentials|jq -r '.access_token')
+ACCESS_TOKEN=$(shell curl -s -H "Accept: application/json" ${API_CLIENT_KEY}:$(API_CLIENT_SECRET)@$(API_ENDPOINT)$(EP_TOKEN) -d grant_type=client_credentials|jq -r '.access_token')
 
 notarget:
 	@echo need target
@@ -15,11 +16,11 @@ notarget:
 update_api_endpoint_for_localhost:
 	@echo "localhost:8080" > API_ENDPOINT && cat API_ENDPOINT
 update_api_endpoint_for_minikube:
-	@MINIKUBE_IP=$$(minikube ip) && echo "$${MINIKUBE_IP}:30030" > API_ENDPOINT && cat API_ENDPOINT
+	@MINIKUBE_IP=$$(minikube ip) && echo "$${MINIKUBE_IP}:30032" > API_ENDPOINT && cat API_ENDPOINT
 
 
 get_token:
-	curl -v -H "Accept: application/json" client:$(API_CLIENT_SECRET)@$(API_ENDPOINT)$(EP_TOKEN) -d grant_type=client_credentials
+	curl -v -H "Accept: application/json" ${API_CLIENT_KEY}:$(API_CLIENT_SECRET)@$(API_ENDPOINT)$(EP_TOKEN) -d grant_type=client_credentials
 
 do_get_feedback:
 	echo "------------------------------" && echo "ACCESS_TOKEN[$(ACCESS_TOKEN)]" && echo "------------------------------" \

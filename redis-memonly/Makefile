@@ -4,7 +4,7 @@ redis-memonly.json: redis-memonly.json.in
 start_redis: redis-memonly.json
 	kubectl create -f redis-memonly.json
 stop_redis: redis-memonly.json
-	kubectl delete -f redis-memonly.json
+	kubectl delete --ignore-not-found=true -f redis-memonly.json
 
 redis_cli:
 	kubectl exec -it redis -- bash -c 'redis-cli'

@@ -16,7 +16,10 @@ option java_outer_classname = "PredictionProtos";
 message PredictionRequestDef {
 
   PredictionRequestMetaDef meta = 1;
-  google.protobuf.Any request = 2;
+  oneof request_oneof {
+    DefaultPredictionRequestDef request = 2;
+    bytes custom = 3;
+  }
 
 }
 

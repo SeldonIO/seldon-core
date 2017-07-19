@@ -1,3 +1,5 @@
+SHELL=/bin/bash
+
 DOCKER_IMAGE_NAME=seldonio/cluster-manager
 PROJECT_VERSION=$(shell cat version.txt)
 DOCKER_IMAGE_VERSION=$(PROJECT_VERSION)
@@ -34,7 +36,7 @@ start_cluster_manager: cluster-manager.json cluster-manager-client-secret.txt
 			kubectl create secret generic cluster-manager-client-secret --from-literal=cluster-manager-client-secret.txt="$${CLUSTER_MANAGER_CLIENT_SECRET}"
 	@kubectl apply -f cluster-manager.json
 stop_cluster_manager: cluster-manager.json
-	@kubectl delete -f cluster-manager.json
+	@kubectl delete --ignore-not-found=true -f cluster-manager.json
 
 
 update_version_txt:

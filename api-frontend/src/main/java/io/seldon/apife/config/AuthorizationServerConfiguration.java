@@ -52,6 +52,7 @@ class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdap
     }
     
     
+    /*
     @Bean
     public DataSource dataSource() {
         final DriverManagerDataSource dataSource = new DriverManagerDataSource();
@@ -60,7 +61,8 @@ class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdap
         dataSource.setUsername("user1");
         dataSource.setPassword("mypass");
         return dataSource;
-}
+	}
+	*/
 
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {

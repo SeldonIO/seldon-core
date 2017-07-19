@@ -25,7 +25,7 @@ apife.json: apife.json.in Makefile
 start_apife: apife.json
 	kubectl create -f apife.json
 stop_apife: apife.json
-	kubectl delete -f apife.json
+	kubectl delete --ignore-not-found=true -f apife.json
 
 
 update_version_txt:

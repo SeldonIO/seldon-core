@@ -25,7 +25,7 @@ engine.json: engine.json.in Makefile
 start_engine: engine.json
 	kubectl create -f engine.json
 stop_engine: engine.json
-	kubectl delete -f engine.json
+	kubectl delete --ignore-not-found=true -f engine.json
 
 
 update_version_txt:

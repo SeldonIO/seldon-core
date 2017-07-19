@@ -9,4 +9,5 @@ STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
 cd "${STARTUP_DIR}/redis-memonly"   && make start_redis
 cd "${STARTUP_DIR}/zookeeper-k8s"   && make start_zookeeper
 cd "${STARTUP_DIR}/cluster-manager" && make start_cluster_manager
+cd "${STARTUP_DIR}/api-frontend" && make start_apife
 

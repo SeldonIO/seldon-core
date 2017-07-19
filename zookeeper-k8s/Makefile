@@ -19,7 +19,7 @@ zookeeper.json: zookeeper.json.in
 start_zookeeper: zookeeper.json
 	kubectl create -f zookeeper.json
 stop_zookeeper: zookeeper.json
-	kubectl delete -f zookeeper.json
+	kubectl delete --ignore-not-found=true -f zookeeper.json
 
 zk_shell:
 	kubectl exec -it zookeeper-1 -- /opt/zookeeper/bin/zkCli.sh
