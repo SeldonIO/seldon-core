@@ -12,8 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import io.seldon.engine.exception.APIException;
-import io.seldon.engine.logging.PredictLogger;
 import io.seldon.engine.predictors.EnginePredictor;
 import io.seldon.engine.predictors.PredictorBean;
 import io.seldon.engine.predictors.PredictorState;
@@ -28,9 +26,6 @@ public class PredictionService {
 	private static Logger logger = LoggerFactory.getLogger(PredictionService.class.getName());
 	
 	private final ExecutorService pool = Executors.newFixedThreadPool(50);
-	
-	@Autowired
-	PredictLogger predictLogger;
 	
 //	@Autowired
 //	PredictorsStore predictorsStore;
