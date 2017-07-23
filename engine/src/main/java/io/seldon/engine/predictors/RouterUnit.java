@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
+import io.seldon.protos.PredictionProtos.PredictionResponseDef;
+
 @Component
 public class RouterUnit extends PredictiveUnitBean{
     
@@ -12,8 +14,8 @@ public class RouterUnit extends PredictiveUnitBean{
     }
 
 	@Override
-	protected PredictorReturn backwardPass(List<PredictorReturn> inputs, PredictiveUnitState state){
-		return (PredictorReturn) inputs.get(0);
+	protected PredictionResponseDef backwardPass(List<PredictionResponseDef> inputs, PredictiveUnitState state){
+		return inputs.get(0);
 	}
 
 }

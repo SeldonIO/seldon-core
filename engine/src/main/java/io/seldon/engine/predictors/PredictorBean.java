@@ -9,10 +9,11 @@ import java.util.concurrent.Future;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import io.seldon.engine.service.PredictionServiceRequest;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
 import io.seldon.protos.DeploymentProtos.PredictiveUnitDef;
 import io.seldon.protos.DeploymentProtos.PredictorDef;
+import io.seldon.protos.PredictionProtos.PredictionRequestDef;
+import io.seldon.protos.PredictionProtos.PredictionResponseDef;
 
 
 @Component
@@ -40,10 +41,10 @@ public class PredictorBean {
     }
    
 	
-	public PredictorReturn predict(PredictionServiceRequest request, PredictorState predictorState) throws InterruptedException, ExecutionException
+	public PredictionResponseDef predict(PredictionRequestDef request, PredictorState predictorState) throws InterruptedException, ExecutionException
 	{
 		PredictiveUnitState rootState = predictorState.rootState;
-		Future<PredictorReturn> ret = rootState.predictiveUnitBean.predict(request, rootState);
+		Future<PredictionResponseDef> ret = rootState.predictiveUnitBean.predict(request, rootState);
 		return ret.get();
 	}
 	

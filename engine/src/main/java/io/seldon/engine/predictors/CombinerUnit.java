@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
-import io.seldon.engine.service.PredictionServiceRequest;
+import io.seldon.protos.PredictionProtos.PredictionRequestDef;
 
 @Component
 public class CombinerUnit extends PredictiveUnitBean{
@@ -15,7 +15,7 @@ public class CombinerUnit extends PredictiveUnitBean{
 	}
 
 	@Override
-	protected List<PredictiveUnitState> forwardPass(PredictionServiceRequest request, PredictiveUnitState state){
+	protected List<PredictiveUnitState> forwardPass(PredictionRequestDef request, PredictiveUnitState state){
 		return new ArrayList<PredictiveUnitState>(state.children.values());
 	}
 

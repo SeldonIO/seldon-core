@@ -13,7 +13,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import io.seldon.engine.exception.APIException;
-import io.seldon.engine.service.PredictionServiceRequest;
+import io.seldon.protos.PredictionProtos.PredictionRequestDef;
+import io.seldon.protos.PredictionProtos.PredictionResponseDef;
 
 public class AverageCombinerTest {
 	
@@ -151,8 +152,7 @@ public class AverageCombinerTest {
     @Test
 	public void testPredictNoChildren() throws InterruptedException, ExecutionException{
     	
-    	PredictorRequest request = new PredictorRequest("");
-    	PredictionServiceRequest pRequest = new PredictionServiceRequest(null, request);
+    	PredictionRequestDef p = PredictionRequestDef.newBuilder().build();
     	
     	PredictiveUnitState state = new PredictiveUnitState("Cool_name",null,null);
     	
@@ -160,12 +160,12 @@ public class AverageCombinerTest {
     	
     	state.predictiveUnitBean = averageCombinerUnit;
 
-    	Future<PredictorReturn> futurePred = averageCombinerUnit.predict(pRequest, state);
+    	Future<PredictionResponseDef> futurePred = averageCombinerUnit.predict(p, state);
     	
-    	PredictorReturn average = futurePred.get();
+    	PredictionResponseDef average = futurePred.get();
     	
-    	Assert.assertNull(average.names);
-		Assert.assertNull(average.values);
+    	Assert.assertNull(average.getResponse().getNamesList());
+		Assert.assertNull(average.getResponse().getValuesList());
     	
 	}
     

@@ -1,8 +1,6 @@
 // [START declaration]
 syntax = "proto3";
 
-import "google/protobuf/any.proto";
-
 package seldon.protos;
 // [END declaration]
 
@@ -13,12 +11,30 @@ option java_outer_classname = "PredictionProtos";
 
 // [START messages]
 
+
+// [START default data]
+
+message DefaultDataDef {
+  repeated string names = 1;
+  repeated DefaultDataValues values = 2;
+}
+
+message DefaultDataValues {
+  repeated double value = 1;
+}
+
+// [END default data]
+
+
+// [START Prediction Request]
+
 message PredictionRequestDef {
 
   PredictionRequestMetaDef meta = 1;
   oneof request_oneof {
-    DefaultPredictionRequestDef request = 2;
-    bytes custom = 3;
+    DefaultDataDef request = 2;
+    bytes binRequest = 3;
+    string strRequest = 4;
   }
 
 }
@@ -27,22 +43,22 @@ message PredictionRequestMetaDef {
   string puid = 1; 
 }
 
+
+// [END Prediction Request]
+
+
+// [START Prediction Response]
+
 message PredictionResponseDef {
 
   PredictionStatusDef status = 1;
   PredictionResponseMetaDef meta = 2;
-  google.protobuf.Any response = 3;
-
+  oneof response_oneof {
+    DefaultDataDef response = 3;
+    bytes binResponse = 4;
+    string strResponse = 5;
+  }
 }
-
-
-message PredictionFeedbackDef {
-
-  string puid = 1;
-  google.protobuf.Any truth = 2;
-
-}
-
 
 message PredictionStatusDef {
 
@@ -57,33 +73,31 @@ message PredictionStatusDef {
     Status status = 4;
 }
 
-
 message PredictionResponseMetaDef {
   string puid = 1; 
+  repeated string model = 2;
 }
 
 
-// default prediction request
+// [END Prediction Response]
 
-message DefaultPredictionRequestDef {
-  repeated string features = 1;
-  repeated DefaultPredictionFeatureValues values = 2;
+// [START Feedback]
+
+message PredictionFeedbackDef {
+
+  PredictionResponseMetaDef meta = 1;
+  float reward = 2;
+  oneof feedback_oneof {
+    DefaultDataDef response = 3;
+    bytes binResponse = 4;
+    string strResponse = 5;
+  }
 }
 
-message DefaultPredictionFeatureValues {
-  repeated float value = 1;
-}
+// [END Feedback]
 
 
-// default prediction response
 
-message DefaultPredictionResponseDef {
-  repeated string names = 1;
-  repeated DefaultPredictionResponseValues values = 2;
-}
 
-message DefaultPredictionResponseValues {
-  repeated float value = 1;
-}
 
 

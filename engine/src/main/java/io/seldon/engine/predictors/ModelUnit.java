@@ -11,7 +11,8 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 
-import io.seldon.engine.service.PredictionServiceRequest;
+import io.seldon.protos.PredictionProtos.PredictionRequestDef;
+import io.seldon.protos.PredictionProtos.PredictionResponseDef;
 
 @Component
 public class ModelUnit extends PredictiveUnitBean{
@@ -20,9 +21,9 @@ public class ModelUnit extends PredictiveUnitBean{
 		super();
 	}
 	
-	private PredictorReturn doPredict(PredictionServiceRequest request, PredictiveUnitState state)
+	private PredictionResponseDef doPredict(PredictionRequestDef request, PredictiveUnitState state)
 	{
-		PredictorReturn ret = null;
+		PredictionResponseDef ret = null;
 		try {
 			ret = internalPredictionService.getPrediction(request, state.endpoint);
 		} catch (IOException e) {
@@ -34,12 +35,12 @@ public class ModelUnit extends PredictiveUnitBean{
 
 	@Override
 	@Async
-	public Future<PredictorReturn> predict(PredictionServiceRequest request, PredictiveUnitState state) throws InterruptedException, ExecutionException{
+	public Future<PredictionResponseDef> predict(PredictionRequestDef request, PredictiveUnitState state) throws InterruptedException, ExecutionException{
 		return new AsyncResult<>(doPredict(request,state));
 	}
 
 	@Override
-	protected List<PredictiveUnitState> forwardPass(PredictionServiceRequest request, PredictiveUnitState state){
+	protected List<PredictiveUnitState> forwardPass(PredictionRequestDef request, PredictiveUnitState state){
 		return new ArrayList<PredictiveUnitState>(Arrays.asList(state));
 	}
 	
