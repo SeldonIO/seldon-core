@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.codahale.metrics.annotation.Timed;
+
 import io.seldon.apife.service.PredictionService;
 
 @RestController
@@ -24,6 +26,7 @@ public class RestClientController {
 	@Autowired
 	private PredictionService predictionService;
 	
+	@Timed
 	@RequestMapping("/")
     String home() {
         return "Hello World!";
