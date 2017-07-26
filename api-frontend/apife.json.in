@@ -5,6 +5,11 @@
             "apiVersion": "v1",
             "kind": "Pod",
             "metadata": {
+                "annotations": {
+                    "prometheus.io/path": "/prometheus",
+                    "prometheus.io/port": "8080",
+                    "prometheus.io/scrape": "true"
+                },
                 "labels": {
                     "app": "seldon-apiserver-container-app"
                 },

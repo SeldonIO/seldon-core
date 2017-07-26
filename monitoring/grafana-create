@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+function create_grafana_deployment {
+	kubectl apply -f grafana/grafana-deployment.json
+}
+
+grafana/auth/create-grafana-prom-admin-password-secret
+create_grafana_deployment
+

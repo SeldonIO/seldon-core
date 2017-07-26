@@ -1,6 +1,7 @@
 package io.seldon.apife.api.rest;
 
 import java.security.Principal;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +30,14 @@ public class RestClientController {
 	@Timed
 	@RequestMapping("/")
     String home() {
+	    
+        int randomNum = ThreadLocalRandom.current().nextInt(0, 10);
+        try {
+            Thread.sleep(40 + randomNum); // simulate a delay 40~50 ms
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         return "Hello World!";
     }
 	

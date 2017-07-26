@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+function delete_grafana_deployment {
+	kubectl delete -f grafana/grafana-deployment.json
+}
+
+delete_grafana_deployment || :
+kubectl delete --ignore-not-found=true secret grafana-prom-admin-password
+

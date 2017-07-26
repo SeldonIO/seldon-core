@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+function generate_grafana_configmap {
+    rm -f ${STARTUP_DIR}/grafana/_configmap.yaml
+    ${STARTUP_DIR}/grafana/build-confmaps && ls ${STARTUP_DIR}/grafana/_configmap.yaml
+}
+
+function create_configmap_in_cluster {
+    kubectl apply -f ${STARTUP_DIR}/grafana/_configmap.yaml
+}
+
+function run_import_dashboards_job {
+
+    JOB_MANIFEST=${STARTUP_DIR}/grafana/grafana-prom-import-dashboards-job.json
+    kubectl delete --ignore-not-found=true -f ${JOB_MANIFEST}
+    kubectl create -f ${JOB_MANIFEST}
+}
+
+generate_grafana_configmap
+create_configmap_in_cluster
+run_import_dashboards_job
+

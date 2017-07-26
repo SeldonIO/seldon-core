@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+function create_prometheus_rules_configmap {
+    kubectl create configmap prometheus-rules \
+        --dry-run \
+        --from-file=${STARTUP_DIR}/prometheus/rules \
+        --output yaml > ${STARTUP_DIR}/prometheus/_prometheus-rules-configmap.yaml
+
+    kubectl apply -f ${STARTUP_DIR}/prometheus/_prometheus-rules-configmap.yaml
+}
+
+function create_prometheus_configmap {
+    kubectl create configmap prometheus-server-conf \
+        --dry-run \
+        --from-file=${STARTUP_DIR}/prometheus/prometheus-config.yml \
+        --output yaml > ${STARTUP_DIR}/prometheus/_prometheus-server-conf-configmap.yaml
+
+    kubectl apply -f ${STARTUP_DIR}/prometheus/_prometheus-server-conf-configmap.yaml
+}
+
+function build_prometheus_deployment {
+    CONFIG_HASH=$(cat ${STARTUP_DIR}/prometheus/_prometheus-rules-configmap.yaml ${STARTUP_DIR}/prometheus/_prometheus-server-conf-configmap.yaml|openssl dgst -sha1 -binary | xxd -p)
+    cat ${STARTUP_DIR}/prometheus/prometheus-deployment.json.in | sed \
+            -e "s|%CONFIG_HASH%|${CONFIG_HASH}|" > ${STARTUP_DIR}/prometheus/_prometheus-deployment.json && echo "_prometheus-deployment.json"
+}
+
+function delete_prometheus_deployment {
+	kubectl delete --ignore-not-found=true -f ${STARTUP_DIR}/prometheus/_prometheus-deployment.json
+}
+
+function delete_prometheus_configmap {
+    kubectl delete --ignore-not-found=true configmap prometheus-server-conf
+}
+
+function delete_node_exporter_daemonset {
+    kubectl delete --ignore-not-found=true -f prometheus/node-exporter-daemonset.json
+}
+
+create_prometheus_rules_configmap
+create_prometheus_configmap
+build_prometheus_deployment
+delete_prometheus_deployment
+delete_prometheus_configmap
+delete_node_exporter_daemonset
+

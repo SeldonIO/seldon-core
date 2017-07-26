@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+function build_alertmanager_configmap {
+
+    if [ ! -f "${STARTUP_DIR}/alertmanager/config.yml" ]; then
+        cp -v ${STARTUP_DIR}/alertmanager/config.yml.example ${STARTUP_DIR}/alertmanager/config.yml
+    fi
+
+    kubectl create configmap alertmanager-server-conf \
+        --dry-run \
+        --from-file=${STARTUP_DIR}/alertmanager/config.yml \
+        --output yaml > ${STARTUP_DIR}/alertmanager/_configmap.yaml
+}
+
+function build_alertmanager_deployment {
+    CONFIG_HASH=$(cat ${STARTUP_DIR}/alertmanager/_configmap.yaml|openssl dgst -sha1 -binary | xxd -p)
+    cat ${STARTUP_DIR}/alertmanager/alertmanager-deployment.json.in | sed \
+            -e "s|%CONFIG_HASH%|${CONFIG_HASH}|" > ${STARTUP_DIR}/alertmanager/_alertmanager-deployment.json && echo "_alertmanager-deployment.json"
+}
+
+function delete_alertmanager_deployment {
+    kubectl delete --ignore-not-found=true -f ${STARTUP_DIR}/alertmanager/_alertmanager-deployment.json
+}
+
+function delete_alertmanager_configmap {
+    kubectl delete --ignore-not-found=true configmap alertmanager-server-conf
+}
+
+build_alertmanager_configmap
+build_alertmanager_deployment
+delete_alertmanager_deployment
+delete_alertmanager_configmap
+
