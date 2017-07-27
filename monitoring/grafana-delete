@@ -13,3 +13,6 @@ function delete_grafana_deployment {
 delete_grafana_deployment
 kubectl delete --ignore-not-found=true secret grafana-prom-admin-password
 
+# remove finished job if necessary
+kubectl delete --ignore-not-found=true job grafana-prom-import-dashboards
+
