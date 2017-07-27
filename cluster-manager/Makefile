@@ -59,3 +59,6 @@ port_forward_cluster_manager_debug:
 	POD_NAME=$$(kubectl --namespace default get pod -l app=seldon-cluster-manager-server -o template --template="{{(index .items 0).metadata.name}}") && \
 		kubectl port-forward $${POD_NAME} 8000:8000
 
+get_published_versions:
+	curl -L -s 'https://registry.hub.docker.com/v2/repositories/seldonio/cluster-manager/tags' | jq '.results[]|.name'
+
