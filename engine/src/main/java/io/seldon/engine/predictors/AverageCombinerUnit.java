@@ -30,7 +30,8 @@ public class AverageCombinerUnit extends CombinerUnit{
 		for (PredictionResponseDef predRet : inputs){
 			if (!initialised){
 				batchLength = predRet.getResponse().getValuesCount();
-				valuesLength = predRet.getResponse().getValues(0).getValueCount();
+				if (batchLength > 0)
+					valuesLength = predRet.getResponse().getValues(0).getValueCount();
 				averages = new Double[batchLength][valuesLength];
 				for (int i =0; i < batchLength; i++){
 					Arrays.fill(averages[i], 0.);
@@ -43,7 +44,7 @@ public class AverageCombinerUnit extends CombinerUnit{
 				// TODO: Maybe we should also check that the names are always the same
 				throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_COMBINER_RESPONSE,String.format("Found batch size %d Expected %d for model %d", predRet.getResponse().getValuesCount(),valuesLength,modelIdx));				
 			}
-			if (predRet.getResponse().getValues(0).getValueCount()!=valuesLength){
+			if (batchLength > 0 && predRet.getResponse().getValues(0).getValueCount()!=valuesLength){
 				throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_COMBINER_RESPONSE,String.format("Found value size %d Expected %d for model %d", predRet.getResponse().getValues(0).getValueCount(),valuesLength,modelIdx));
 			}
 			for (int i = 0; i < batchLength; ++i) {

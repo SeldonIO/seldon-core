@@ -18,17 +18,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.util.JsonFormat;
 
 import io.seldon.engine.exception.APIException;
 import io.seldon.engine.pb.ProtoBufUtils;
-import io.seldon.engine.predictors.PredictorRequest;
-import io.seldon.engine.predictors.PredictorReturn;
 import io.seldon.protos.DeploymentProtos.EndpointDef;
 import io.seldon.protos.PredictionProtos.PredictionRequestDef;
 import io.seldon.protos.PredictionProtos.PredictionRequestDef.RequestOneofCase;
@@ -66,7 +61,7 @@ public class InternalPredictionService {
     }
 		
 	public PredictionResponseDef getPrediction(PredictionRequestDef request, EndpointDef endpoint) throws JsonProcessingException, IOException{
-		PredictorReturn ret = null;
+
 		switch (endpoint.getType()){
 			case REST:
 				String dataString = ProtoBufUtils.toJson(request);
@@ -81,9 +76,6 @@ public class InternalPredictionService {
 		throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,"no service available");
 	}
 	
-	public String[] getRoute(PredictorRequest request, EndpointDef endpoint){
-		return null;
-	}
 	
 	public PredictionResponseDef predictREST(String dataString, EndpointDef endpoint,boolean isDefault){
 		{

@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.is;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -13,134 +14,166 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import io.seldon.engine.exception.APIException;
+import io.seldon.protos.PredictionProtos.DefaultDataDef;
+import io.seldon.protos.PredictionProtos.DefaultDataValues;
 import io.seldon.protos.PredictionProtos.PredictionRequestDef;
 import io.seldon.protos.PredictionProtos.PredictionResponseDef;
+import io.seldon.protos.PredictionProtos.PredictionStatusDef;
 
 public class AverageCombinerTest {
 	
 	@Test
 	public void testSimpleCase() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
-		List<PredictorReturn> predictorReturns = new ArrayList<>();
+		List<PredictionResponseDef> predictorReturns = new ArrayList<>();
 		String[] names = {"c","d"};
 		
-		Double[][] values1 = {{1.0,1.0}};
-		predictorReturns.add(new PredictorReturn(names,values1));
+		Double[] values1 = {1.0,1.0};
+		predictorReturns.add(PredictionResponseDef.newBuilder().setStatus(PredictionStatusDef.newBuilder().setStatus(PredictionStatusDef.Status.SUCCESS).build())
+				.setResponse(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
+						.addValues(DefaultDataValues.newBuilder().addAllValue(Arrays.asList(values1)))
+						.build()).build());
 		
-		Double[][] values2 = {{1.0,0.5}};
-		predictorReturns.add(new PredictorReturn(names,values2));
+		Double[] values2 = {1.0,0.5};
+		predictorReturns.add(PredictionResponseDef.newBuilder().setStatus(PredictionStatusDef.newBuilder().setStatus(PredictionStatusDef.Status.SUCCESS).build())
+				.setResponse(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
+						.addValues(DefaultDataValues.newBuilder().addAllValue(Arrays.asList(values2)))
+						.build()).build());
 		
-		Double[][] values3 = {{2.2,0.9}};
-		predictorReturns.add(new PredictorReturn(names,values3));
+		Double[] values3 = {2.2,0.9};
+		predictorReturns.add(PredictionResponseDef.newBuilder().setStatus(PredictionStatusDef.newBuilder().setStatus(PredictionStatusDef.Status.SUCCESS).build())
+				.setResponse(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
+						.addValues(DefaultDataValues.newBuilder().addAllValue(Arrays.asList(values3)))
+						.build()).build());
 		
 		AverageCombinerUnit averageCombinerUnit = new AverageCombinerUnit();
 		Method method = AverageCombinerUnit.class.getDeclaredMethod("backwardPass",List.class,PredictiveUnitState.class);
 		method.setAccessible(true);
-		PredictorReturn average = (PredictorReturn) method.invoke(averageCombinerUnit, predictorReturns, null);
+		PredictionResponseDef average = (PredictionResponseDef) method.invoke(averageCombinerUnit, predictorReturns, null);
 		
-		Assert.assertThat(average.names,is(names));
+		Assert.assertThat(average.getResponse().getNamesList().get(0),is(names[0]));
 		
 		Double[][] expected_values = {{(1.0+1.0+2.2)/3,(1.0+0.5+0.9)/3}};
-		Assert.assertThat(average.values,is(expected_values));
+		Assert.assertThat(average.getResponse().getValuesList().get(0).getValue(0),is(expected_values[0][0]));
 	}
 	
 	@Test
 	public void testUniqueValue() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
 
-		List<PredictorReturn> predictorReturns = new ArrayList<>();
+		List<PredictionResponseDef> predictorReturns = new ArrayList<>();
 		String[] names = {"c"};
 		
-		Double[][] values1 = {{1.0}};
-		predictorReturns.add(new PredictorReturn(names,values1));
+		Double[] values1 = {1.0};
+		predictorReturns.add(PredictionResponseDef.newBuilder().setStatus(PredictionStatusDef.newBuilder().setStatus(PredictionStatusDef.Status.SUCCESS).build())
+				.setResponse(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
+						.addValues(DefaultDataValues.newBuilder().addAllValue(Arrays.asList(values1)))
+						.build()).build());
 		
-		Double[][] values2 = {{1.0}};
-		predictorReturns.add(new PredictorReturn(names,values2));
+		Double[] values2 = {1.0};
+		predictorReturns.add(PredictionResponseDef.newBuilder().setStatus(PredictionStatusDef.newBuilder().setStatus(PredictionStatusDef.Status.SUCCESS).build())
+				.setResponse(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
+						.addValues(DefaultDataValues.newBuilder().addAllValue(Arrays.asList(values2)))
+						.build()).build());
 		
 		AverageCombinerUnit averageCombinerUnit = new AverageCombinerUnit();
 		Method method = AverageCombinerUnit.class.getDeclaredMethod("backwardPass",List.class,PredictiveUnitState.class);
 		method.setAccessible(true);
-		PredictorReturn average = (PredictorReturn) method.invoke(averageCombinerUnit, predictorReturns, null);
+		PredictionResponseDef average = (PredictionResponseDef) method.invoke(averageCombinerUnit, predictorReturns, null);
 		
-		Assert.assertThat(average.names,is(names));
-		
+		Assert.assertThat(average.getResponse().getNamesList().get(0),is(names[0]));
+
 		Double[][] expected_values = {{2.0/2}};
-		Assert.assertThat(average.values,is(expected_values));
+		Assert.assertThat(average.getResponse().getValuesList().get(0).getValue(0),is(expected_values[0][0]));
 	}
 	
 	@Test
 	public void testUniqueInput() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
 
-		List<PredictorReturn> predictorReturns = new ArrayList<>();
+		List<PredictionResponseDef> predictorReturns = new ArrayList<>();
 		String[] names = {"c"};
 		
-		Double[][] values1 = {{1.0,5.0,0.3}};
-		predictorReturns.add(new PredictorReturn(names,values1));
+		Double[] values1 = {1.0,5.0,0.3};
+		predictorReturns.add(PredictionResponseDef.newBuilder().setStatus(PredictionStatusDef.newBuilder().setStatus(PredictionStatusDef.Status.SUCCESS).build())
+				.setResponse(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
+						.addValues(DefaultDataValues.newBuilder().addAllValue(Arrays.asList(values1)))
+						.build()).build());
 		
 		
 		AverageCombinerUnit averageCombinerUnit = new AverageCombinerUnit();
 		Method method = AverageCombinerUnit.class.getDeclaredMethod("backwardPass",List.class,PredictiveUnitState.class);
 		method.setAccessible(true);
-		PredictorReturn average = (PredictorReturn) method.invoke(averageCombinerUnit, predictorReturns, null);
+		PredictionResponseDef average = (PredictionResponseDef) method.invoke(averageCombinerUnit, predictorReturns, null);
 		
-		Assert.assertThat(average.names,is(names));
-		
+		Assert.assertThat(average.getResponse().getNamesList().get(0),is(names[0]));
+
 		Double[][] expected_values = {{1.0,5.0,0.3}};
-		Assert.assertThat(average.values,is(expected_values));
+		Assert.assertThat(average.getResponse().getValuesList().get(0).getValue(0),is(expected_values[0][0]));
 	}
 	
 	@Test
 	public void testNoInput() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
 
-		List<PredictorReturn> predictorReturns = new ArrayList<>();
+		List<PredictionResponseDef> predictorReturns = new ArrayList<>();
 		
 		AverageCombinerUnit averageCombinerUnit = new AverageCombinerUnit();
 		Method method = AverageCombinerUnit.class.getDeclaredMethod("backwardPass",List.class,PredictiveUnitState.class);
 		method.setAccessible(true);
-		PredictorReturn average = (PredictorReturn) method.invoke(averageCombinerUnit, predictorReturns, null);
+		PredictionResponseDef average = (PredictionResponseDef) method.invoke(averageCombinerUnit, predictorReturns, null);
 		
-		Assert.assertNull(average.names);
-		Assert.assertNull(average.values);
+		Assert.assertEquals(0,average.getResponse().getNamesList().size());
+		Assert.assertEquals(0,average.getResponse().getValuesList().size());
 	}
 	
 	@Test
 	public void testNoValues() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
 
-		List<PredictorReturn> predictorReturns = new ArrayList<>();
+		List<PredictionResponseDef> predictorReturns = new ArrayList<>();
 		String[] names = {};
 		
-		Double[][] values1 = {{}};
-		predictorReturns.add(new PredictorReturn(names,values1));
+		predictorReturns.add(PredictionResponseDef.newBuilder().setStatus(PredictionStatusDef.newBuilder().setStatus(PredictionStatusDef.Status.SUCCESS).build())
+				.setResponse(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
+						.build()).build());
 		
-		Double[][] values2 = {{}};
-		predictorReturns.add(new PredictorReturn(names,values2));
+		predictorReturns.add(PredictionResponseDef.newBuilder().setStatus(PredictionStatusDef.newBuilder().setStatus(PredictionStatusDef.Status.SUCCESS).build())
+				.setResponse(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
+						.build()).build());
 		AverageCombinerUnit averageCombinerUnit = new AverageCombinerUnit();
 		Method method = AverageCombinerUnit.class.getDeclaredMethod("backwardPass",List.class,PredictiveUnitState.class);
 		method.setAccessible(true);
-		PredictorReturn average = (PredictorReturn) method.invoke(averageCombinerUnit, predictorReturns, null);
+		PredictionResponseDef average = (PredictionResponseDef) method.invoke(averageCombinerUnit, predictorReturns, null);
 		
-		Assert.assertThat(average.names,is(names));
-		Assert.assertThat(average.values,is(values1));
+		Assert.assertEquals(0,average.getResponse().getNamesList().size());
+		Assert.assertEquals(0,average.getResponse().getValuesList().size());
 	}
 
     @Test(expected = APIException.class)
 	public void testIncompatibleSizes() throws Throwable{
-		List<PredictorReturn> predictorReturns = new ArrayList<>();
+		List<PredictionResponseDef> predictorReturns = new ArrayList<>();
 		String[] names = {"c","d"};
 		
-		Double[][] values1 = {{1.0,1.0}};
-		predictorReturns.add(new PredictorReturn(names,values1));
+		Double[] values1 = {1.0,1.0};
+		predictorReturns.add(PredictionResponseDef.newBuilder().setStatus(PredictionStatusDef.newBuilder().setStatus(PredictionStatusDef.Status.SUCCESS).build())
+				.setResponse(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
+						.addValues(DefaultDataValues.newBuilder().addAllValue(Arrays.asList(values1)))
+						.build()).build());
 		
-		Double[][] values2 = {{1.0,0.5}};
-		predictorReturns.add(new PredictorReturn(names,values2));
+		Double[] values2 = {1.0,0.5};
+		predictorReturns.add(PredictionResponseDef.newBuilder().setStatus(PredictionStatusDef.newBuilder().setStatus(PredictionStatusDef.Status.SUCCESS).build())
+				.setResponse(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
+						.addValues(DefaultDataValues.newBuilder().addAllValue(Arrays.asList(values2)))
+						.build()).build());
 		
-		Double[][] values3 = {{2.2,0.9,4.5}};
-		predictorReturns.add(new PredictorReturn(names,values3));
+		Double[] values3 = {2.2,0.9,4.5};
+		predictorReturns.add(PredictionResponseDef.newBuilder().setStatus(PredictionStatusDef.newBuilder().setStatus(PredictionStatusDef.Status.SUCCESS).build())
+				.setResponse(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
+						.addValues(DefaultDataValues.newBuilder().addAllValue(Arrays.asList(values3)))
+						.build()).build());
 		
 		AverageCombinerUnit averageCombinerUnit = new AverageCombinerUnit();
 		Method method = AverageCombinerUnit.class.getDeclaredMethod("backwardPass",List.class,PredictiveUnitState.class);
 		method.setAccessible(true);
 		
 		try{
-			PredictorReturn average = (PredictorReturn) method.invoke(averageCombinerUnit, predictorReturns, null);
+			PredictionResponseDef average = (PredictionResponseDef) method.invoke(averageCombinerUnit, predictorReturns, null);
 		}
 		catch( InvocationTargetException e){
 			Throwable targetException = e.getTargetException();
@@ -164,8 +197,8 @@ public class AverageCombinerTest {
     	
     	PredictionResponseDef average = futurePred.get();
     	
-    	Assert.assertNull(average.getResponse().getNamesList());
-		Assert.assertNull(average.getResponse().getValuesList());
+    	Assert.assertEquals(average.getResponse().getNamesList().size(),0);
+		Assert.assertEquals(average.getResponse().getValuesList().size(),0);
     	
 	}
     
