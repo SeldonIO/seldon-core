@@ -13,6 +13,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.protocol.HttpContext;
+import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -106,7 +107,9 @@ public class InternalPredictionService {
     				if(resp.getStatusLine().getStatusCode() == 200) 
     				{
     				    PredictionResponseDef.Builder builder = PredictionResponseDef.newBuilder();
-    				    JsonFormat.parser().ignoringUnknownFields().merge(resp.getEntity().getContent().toString(), builder);
+    				    String response = EntityUtils.toString(resp.getEntity());
+    				    logger.info(response);
+    				    JsonFormat.parser().ignoringUnknownFields().merge(response, builder);
     				    return builder.build();
     				} 
     				else 

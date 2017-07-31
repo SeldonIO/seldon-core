@@ -9,3 +9,4 @@ cluster-manager/.m2/
 
 /bin/
 *~
+*.pyc

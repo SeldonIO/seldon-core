@@ -11,16 +11,12 @@ option java_outer_classname = "PredictionProtos";
 
 // [START messages]
 
-
 // [START default data]
 
 message DefaultDataDef {
-  repeated string names = 1;
-  repeated DefaultDataValues values = 2;
-}
-
-message DefaultDataValues {
-  repeated double value = 1;
+  repeated string keys = 1;
+  repeated int32 shape  = 2;
+  repeated double values = 3;
 }
 
 // [END default data]
@@ -41,6 +37,7 @@ message PredictionRequestDef {
 
 message PredictionRequestMetaDef {
   string puid = 1; 
+  map<string, string> tags = 2;
 }
 
 

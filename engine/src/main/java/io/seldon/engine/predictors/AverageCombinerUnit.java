@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 
 import io.seldon.engine.exception.APIException;
 import io.seldon.protos.PredictionProtos.DefaultDataDef;
-import io.seldon.protos.PredictionProtos.DefaultDataValues;
 import io.seldon.protos.PredictionProtos.PredictionResponseDef;
 
 @Component
@@ -22,34 +21,39 @@ public class AverageCombinerUnit extends CombinerUnit{
 		Integer valuesLength = 0;
 		Integer inputsLength = inputs.size();
 		Boolean initialised = false;
-		Double[][] averages = null;
+		Double[] averages = null;
 		
 		PredictionResponseDef.Builder respBuilder = PredictionResponseDef.newBuilder();
 		DefaultDataDef.Builder dataBuilder = DefaultDataDef.newBuilder();
 		int modelIdx = 0;
 		for (PredictionResponseDef predRet : inputs){
 			if (!initialised){
-				batchLength = predRet.getResponse().getValuesCount();
-				if (batchLength > 0)
-					valuesLength = predRet.getResponse().getValues(0).getValueCount();
-				averages = new Double[batchLength][valuesLength];
-				for (int i =0; i < batchLength; i++){
-					Arrays.fill(averages[i], 0.);
-				}	
+				if (predRet.getResponse().getShapeCount() == 2)
+				{
+					batchLength = predRet.getResponse().getShape(0);
+					valuesLength = predRet.getResponse().getShape(1);
+				}
+				else
+				{
+					batchLength = 1;
+					valuesLength = predRet.getResponse().getValuesCount();
+				}
+				
+				averages = new Double[batchLength*valuesLength];
+				Arrays.fill(averages, 0.);
+				
 				respBuilder.setMeta(predRet.getMeta()).setStatus(predRet.getStatus());
-				dataBuilder.addAllNames(predRet.getResponse().getNamesList());
+				dataBuilder.addAllKeys(predRet.getResponse().getKeysList());
 				initialised = true;
 			}
-			if (predRet.getResponse().getValuesCount()!=batchLength){
-				// TODO: Maybe we should also check that the names are always the same
-				throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_COMBINER_RESPONSE,String.format("Found batch size %d Expected %d for model %d", predRet.getResponse().getValuesCount(),valuesLength,modelIdx));				
-			}
-			if (batchLength > 0 && predRet.getResponse().getValues(0).getValueCount()!=valuesLength){
-				throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_COMBINER_RESPONSE,String.format("Found value size %d Expected %d for model %d", predRet.getResponse().getValues(0).getValueCount(),valuesLength,modelIdx));
+			else
+			{
+				if (predRet.getResponse().getValuesCount() != (averages.length))
+					throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_COMBINER_RESPONSE, String.format("Expected values of length %d but found %d",averages.length,predRet.getResponse().getValuesCount()));
 			}
 			for (int i = 0; i < batchLength; ++i) {
 				for (int j = 0; j < valuesLength; j++){
-					averages[i][j] += predRet.getResponse().getValues(i).getValue(j);
+					averages[(i*valuesLength)+j] += predRet.getResponse().getValues((i*valuesLength)+j);
 				}
 			}
 			modelIdx++;
@@ -57,13 +61,12 @@ public class AverageCombinerUnit extends CombinerUnit{
 		
 		for (int i = 0; i < batchLength; ++i) {
 			for (int j = 0; j < valuesLength; j++){
-				averages[i][j] /= inputsLength;
+				averages[(i*valuesLength)+j] /= inputsLength;
 			}
 		}
 	
-		for (int i = 0; i < batchLength; ++i) {
-			dataBuilder.addValues(DefaultDataValues.newBuilder().addAllValue(Arrays.asList(averages[i])).build());
-		}
+		if (averages != null)
+			dataBuilder.addAllValues(Arrays.asList(averages)).build();
 		respBuilder.setResponse(dataBuilder.build());
 		
 		return respBuilder.build();

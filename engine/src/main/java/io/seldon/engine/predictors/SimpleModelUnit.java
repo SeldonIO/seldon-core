@@ -8,7 +8,6 @@ import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 
 import io.seldon.protos.PredictionProtos.DefaultDataDef;
-import io.seldon.protos.PredictionProtos.DefaultDataValues;
 import io.seldon.protos.PredictionProtos.PredictionRequestDef;
 import io.seldon.protos.PredictionProtos.PredictionResponseDef;
 import io.seldon.protos.PredictionProtos.PredictionStatusDef;
@@ -25,8 +24,8 @@ public class SimpleModelUnit extends ModelUnit {
 	{
 		
 		PredictionResponseDef ret = PredictionResponseDef.newBuilder().setStatus(PredictionStatusDef.newBuilder().setStatus(PredictionStatusDef.Status.SUCCESS).build())
-			.setResponse(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(classes))
-					.addValues(DefaultDataValues.newBuilder().addAllValue(Arrays.asList(values)))
+			.setResponse(DefaultDataDef.newBuilder().addAllKeys(Arrays.asList(classes))
+					.addAllValues(Arrays.asList(values))
 					.build()).build();
 		try {
 			Thread.sleep(20);

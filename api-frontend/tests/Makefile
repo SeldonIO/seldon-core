@@ -29,11 +29,11 @@ do_get_feedback:
 
 do_post_test:
 	echo "------------------------------" && echo "ACCESS_TOKEN[$(ACCESS_TOKEN)]" && echo "------------------------------" \
-		&& curl -v -i -X POST -H "Content-Type:application/json" -H "Accept: application/json" -H "Authorization: Bearer $(ACCESS_TOKEN)" $(API_ENDPOINT)$(EP_PREDICTION) -d '{"request":{"features":["a"],"values":[[1.0]]}}'
+		&& curl -v -i -X POST -H "Content-Type:application/json" -H "Accept: application/json" -H "Authorization: Bearer $(ACCESS_TOKEN)" $(API_ENDPOINT)$(EP_PREDICTION) -d '{"request":{"keys":["a"],"values":[[1.0]]}}'
 
 do_exception_test:
 	echo "------------------------------" && echo "ACCESS_TOKEN[$(ACCESS_TOKEN)]" && echo "------------------------------" \
-		&& curl -v -i -X POST -H "Content-Type:application/json" -H "Accept: application/json" -H "Authorization: Bearer $(ACCESS_TOKEN)" $(API_ENDPOINT)$(EP_PREDICTION) -d '{"meta":{"default_format":true},"data":{"feature":["a","b"],"values":[[1.0,2.0],[3.0,4.0]]}}'
+		&& curl -v -i -X POST -H "Content-Type:application/json" -H "Accept: application/json" -H "Authorization: Bearer $(ACCESS_TOKEN)" $(API_ENDPOINT)$(EP_PREDICTION) -d '{"meta":{"bad_field":true},"data":{"names":["a","b"],"values":[[1.0,2.0],[3.0,4.0]]}}'
 
 
 
