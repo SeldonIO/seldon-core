@@ -5,9 +5,13 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
+import com.google.protobuf.ListValue;
+
 import io.seldon.engine.exception.APIException;
 import io.seldon.protos.PredictionProtos.DefaultDataDef;
+import io.seldon.protos.PredictionProtos.DefaultDataDef.DataOneofCase;
 import io.seldon.protos.PredictionProtos.PredictionResponseDef;
+import io.seldon.protos.PredictionProtos.Tensor;
 
 @Component
 public class AverageCombinerUnit extends CombinerUnit{
@@ -22,38 +26,61 @@ public class AverageCombinerUnit extends CombinerUnit{
 		Integer inputsLength = inputs.size();
 		Boolean initialised = false;
 		Double[] averages = null;
+		DataOneofCase dataType = DataOneofCase.DATAONEOF_NOT_SET;
 		
 		PredictionResponseDef.Builder respBuilder = PredictionResponseDef.newBuilder();
 		DefaultDataDef.Builder dataBuilder = DefaultDataDef.newBuilder();
 		int modelIdx = 0;
 		for (PredictionResponseDef predRet : inputs){
-			if (!initialised){
-				if (predRet.getResponse().getShapeCount() == 2)
+			int bLength = 0;
+			int vLength = 0;
+			if (predRet.getResponse().getDataOneofCase() == DataOneofCase.TENSOR)
+			{
+				Tensor tensor = predRet.getResponse().getTensor();
+				if (tensor.getShapeCount() == 2)
 				{
-					batchLength = predRet.getResponse().getShape(0);
-					valuesLength = predRet.getResponse().getShape(1);
+					bLength = tensor.getShape(0);
+					vLength = tensor.getShape(1);
 				}
 				else
 				{
-					batchLength = 1;
-					valuesLength = predRet.getResponse().getValuesCount();
+					bLength = 1;
+					vLength = tensor.getValuesCount();
 				}
-				
+			}
+			else if (predRet.getResponse().getDataOneofCase() == DataOneofCase.NDARRAY)// nDArray
+			{
+				ListValue list = predRet.getResponse().getNdarray();
+				bLength = list.getValuesCount();
+				vLength = list.getValues(0).getListValue().getValuesCount();
+			}
+			if (!initialised){
+				dataType = predRet.getResponse().getDataOneofCase();
+				batchLength = bLength;
+				valuesLength = vLength;
 				averages = new Double[batchLength*valuesLength];
 				Arrays.fill(averages, 0.);
-				
 				respBuilder.setMeta(predRet.getMeta()).setStatus(predRet.getStatus());
-				dataBuilder.addAllKeys(predRet.getResponse().getKeysList());
+				dataBuilder.addAllFeatures(predRet.getResponse().getFeaturesList());
 				initialised = true;
 			}
 			else
 			{
-				if (predRet.getResponse().getValuesCount() != (averages.length))
-					throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_COMBINER_RESPONSE, String.format("Expected values of length %d but found %d",averages.length,predRet.getResponse().getValuesCount()));
+				if (bLength != batchLength)
+				{
+					throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_COMBINER_RESPONSE, String.format("Expected batch length %d but found %d",batchLength,bLength));
+				}
+				if (vLength != valuesLength)
+				{
+					throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_COMBINER_RESPONSE, String.format("Expected values length %d but found %d",valuesLength,vLength));
+				}
 			}
 			for (int i = 0; i < batchLength; ++i) {
 				for (int j = 0; j < valuesLength; j++){
-					averages[(i*valuesLength)+j] += predRet.getResponse().getValues((i*valuesLength)+j);
+					if (predRet.getResponse().getDataOneofCase() == DataOneofCase.TENSOR)
+						averages[(i*valuesLength)+j] += predRet.getResponse().getTensor().getValues((i*valuesLength)+j);
+					else if (predRet.getResponse().getDataOneofCase() == DataOneofCase.NDARRAY)
+						averages[(i*valuesLength)+j] += predRet.getResponse().getNdarray().getValues(i).getListValue().getValues(j).getNumberValue();
 				}
 			}
 			modelIdx++;
@@ -66,7 +93,16 @@ public class AverageCombinerUnit extends CombinerUnit{
 		}
 	
 		if (averages != null)
-			dataBuilder.addAllValues(Arrays.asList(averages)).build();
+		{
+			if (dataType == DataOneofCase.TENSOR)
+			{
+				dataBuilder.setTensor(Tensor.newBuilder().addShape(batchLength).addShape(valuesLength).addAllValues(Arrays.asList(averages)).build());
+			}
+			else if(dataType == DataOneofCase.NDARRAY)
+			{
+				
+			}
+		}
 		respBuilder.setResponse(dataBuilder.build());
 		
 		return respBuilder.build();

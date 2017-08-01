@@ -1,6 +1,8 @@
 // [START declaration]
 syntax = "proto3";
 
+import "google/protobuf/struct.proto";
+
 package seldon.protos;
 // [END declaration]
 
@@ -13,11 +15,19 @@ option java_outer_classname = "PredictionProtos";
 
 // [START default data]
 
-message DefaultDataDef {
-  repeated string keys = 1;
+message Tensor {
   repeated int32 shape  = 2;
   repeated double values = 3;
 }
+
+message DefaultDataDef {
+  repeated string features = 1;
+  oneof data_oneof {
+    Tensor tensor = 2;
+    google.protobuf.ListValue ndarray = 3;
+  }
+}
+
 
 // [END default data]
 
@@ -35,9 +45,13 @@ message PredictionRequestDef {
 
 }
 
+message Tag{
+  repeated string value = 1;
+}
+
 message PredictionRequestMetaDef {
   string puid = 1; 
-  map<string, string> tags = 2;
+  map<string,google.protobuf.Value> tags = 2;
 }
 
 

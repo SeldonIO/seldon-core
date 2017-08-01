@@ -11,6 +11,7 @@ import io.seldon.protos.PredictionProtos.DefaultDataDef;
 import io.seldon.protos.PredictionProtos.PredictionRequestDef;
 import io.seldon.protos.PredictionProtos.PredictionResponseDef;
 import io.seldon.protos.PredictionProtos.PredictionStatusDef;
+import io.seldon.protos.PredictionProtos.Tensor;
 
 @Component
 public class SimpleModelUnit extends ModelUnit {
@@ -24,8 +25,9 @@ public class SimpleModelUnit extends ModelUnit {
 	{
 		
 		PredictionResponseDef ret = PredictionResponseDef.newBuilder().setStatus(PredictionStatusDef.newBuilder().setStatus(PredictionStatusDef.Status.SUCCESS).build())
-			.setResponse(DefaultDataDef.newBuilder().addAllKeys(Arrays.asList(classes))
-					.addAllValues(Arrays.asList(values))
+			.setResponse(DefaultDataDef.newBuilder().addAllFeatures(Arrays.asList(classes))
+					.setTensor(Tensor.newBuilder().addShape(1).addShape(values.length)
+					.addAllValues(Arrays.asList(values)).build())
 					.build()).build();
 		try {
 			Thread.sleep(20);

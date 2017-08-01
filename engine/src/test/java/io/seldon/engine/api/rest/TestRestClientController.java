@@ -55,7 +55,7 @@ public class TestRestClientController {
     {
         final String predictJson = "{" +
         	    "\"request\": {" + 
-        	    "\"values\": [1.0,2.0]}" +
+        	    "\"ndarray\": [1.0,2.0]}" +
         		"}";
 
     	MvcResult res = mvc.perform(MockMvcRequestBuilders.post("/api/v0.1/predictions")
@@ -72,7 +72,7 @@ public class TestRestClientController {
     {
         final String predictJson = "{" +
         	    "\"request\": {" + 
-        	    "\"values\": [[1.0]]}" +
+        	    "\"ndarray\": [[1.0]]}" +
         		"}";
 
     	MvcResult res = mvc.perform(MockMvcRequestBuilders.post("/api/v0.1/predictions")
@@ -89,7 +89,7 @@ public class TestRestClientController {
     {
         final String predictJson = "{" +
         	    "\"request\": {" + 
-        	    "\"values\": [[1.0],[2.0]]}" +
+        	    "\"ndarray\": [[1.0],[2.0]]}" +
         		"}";
 
     	MvcResult res = mvc.perform(MockMvcRequestBuilders.post("/api/v0.1/predictions")

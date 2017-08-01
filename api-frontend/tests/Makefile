@@ -29,7 +29,7 @@ do_get_feedback:
 
 do_post_test:
 	echo "------------------------------" && echo "ACCESS_TOKEN[$(ACCESS_TOKEN)]" && echo "------------------------------" \
-		&& curl -v -i -X POST -H "Content-Type:application/json" -H "Accept: application/json" -H "Authorization: Bearer $(ACCESS_TOKEN)" $(API_ENDPOINT)$(EP_PREDICTION) -d '{"request":{"keys":["a"],"values":[[1.0]]}}'
+		&& curl -v -i -X POST -H "Content-Type:application/json" -H "Accept: application/json" -H "Authorization: Bearer $(ACCESS_TOKEN)" $(API_ENDPOINT)$(EP_PREDICTION) -d '{"request":{"features":["a"],"ndarray":[[1.0],[2.0]]}}'
 
 do_exception_test:
 	echo "------------------------------" && echo "ACCESS_TOKEN[$(ACCESS_TOKEN)]" && echo "------------------------------" \
