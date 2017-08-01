@@ -23,10 +23,10 @@ public class RandomABTestUnitInternalTest {
     	Map<String,PredictiveUnitParameterInterface> params = new HashMap<>();
     	params.put("ratioA", ratioParam);
 		
-		PredictiveUnitState state = new PredictiveUnitState("Cool_name",null,params);
+		PredictiveUnitState state = new PredictiveUnitState("1","Cool_name",null,params);
 		
-		PredictiveUnitState childA = new PredictiveUnitState("A",null,null);
-		PredictiveUnitState childB = new PredictiveUnitState("B",null,null);
+		PredictiveUnitState childA = new PredictiveUnitState("2","A",null,null);
+		PredictiveUnitState childB = new PredictiveUnitState("3","B",null,null);
 		
 		state.addChild("0", childA);
 		state.addChild("1", childB);
@@ -61,9 +61,9 @@ public class RandomABTestUnitInternalTest {
     	Map<String,PredictiveUnitParameterInterface> params = new HashMap<>();
     	params.put("ratioA", ratioParam);
 		
-		PredictiveUnitState state = new PredictiveUnitState("Cool_name",null,params);
+		PredictiveUnitState state = new PredictiveUnitState("1","Cool_name",null,params);
 		
-		PredictiveUnitState childA = new PredictiveUnitState("A",null,null);
+		PredictiveUnitState childA = new PredictiveUnitState("2","A",null,null);
 		
 		state.addChild("0", childA);
 		

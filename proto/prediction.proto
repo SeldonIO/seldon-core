@@ -95,14 +95,10 @@ message PredictionResponseMetaDef {
 // [START Feedback]
 
 message PredictionFeedbackDef {
-
-  PredictionResponseMetaDef meta = 1;
-  float reward = 2;
-  oneof feedback_oneof {
-    DefaultDataDef response = 3;
-    bytes binResponse = 4;
-    string strResponse = 5;
-  }
+  PredictionRequestDef request = 1
+  PredictionResponseDef response = 2
+  DefaultDataDef truth = 3
+  repeated float rewards = 4;
 }
 
 // [END Feedback]

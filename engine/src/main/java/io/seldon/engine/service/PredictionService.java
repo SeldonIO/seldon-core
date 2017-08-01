@@ -65,13 +65,7 @@ public class PredictionService {
 
         PredictionResponseDef predictorReturn = predictorBean.predict(request,predictorState);
 			
-        PredictionResponseDef.Builder builder = PredictionResponseDef.newBuilder().setResponse(predictorReturn.getResponse())
-        	.setMeta(predictorReturn.getMeta())
-        	.setStatus(predictorReturn.getStatus());
-        if (!predictorReturn.hasMeta() || predictorReturn.getMeta().getPuid().equals(puid))
-        {
-        	builder.setMeta(PredictionResponseMetaDef.newBuilder().addAllModel(predictorReturn.getMeta().getModelList()).setPuid(puid));
-        }
+        PredictionResponseDef.Builder builder = PredictionResponseDef.newBuilder(predictorReturn).setMeta(PredictionResponseMetaDef.newBuilder(predictorReturn.getMeta()).setPuid(puid));
 
         return builder.build();
 		

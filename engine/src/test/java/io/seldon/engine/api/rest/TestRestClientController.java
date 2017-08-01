@@ -50,22 +50,7 @@ public class TestRestClientController {
     	Assert.assertEquals(200, res.getResponse().getStatus());
     }
     
-    @Test
-    public void testPredict_1dim() throws Exception
-    {
-        final String predictJson = "{" +
-        	    "\"request\": {" + 
-        	    "\"ndarray\": [1.0,2.0]}" +
-        		"}";
-
-    	MvcResult res = mvc.perform(MockMvcRequestBuilders.post("/api/v0.1/predictions")
-    			.accept(MediaType.APPLICATION_JSON_UTF8)
-    			.content(predictJson)
-    			.contentType(MediaType.APPLICATION_JSON_UTF8)).andReturn();
-    	String response = res.getResponse().getContentAsString();
-    	System.out.println(response);
-    	Assert.assertEquals(200, res.getResponse().getStatus());
-    }
+    
     
     @Test
     public void testPredict_11dim() throws Exception

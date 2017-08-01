@@ -13,6 +13,9 @@ import java.util.concurrent.Future;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.google.protobuf.ListValue;
+import com.google.protobuf.Value;
+
 import io.seldon.engine.exception.APIException;
 import io.seldon.protos.PredictionProtos.DefaultDataDef;
 import io.seldon.protos.PredictionProtos.PredictionRequestDef;
@@ -23,7 +26,7 @@ import io.seldon.protos.PredictionProtos.Tensor;
 public class AverageCombinerTest {
 	
 	@Test
-	public void testSimpleCase() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
+	public void testSimpleTensorCase() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
 		List<PredictionResponseDef> predictorReturns = new ArrayList<>();
 		String[] names = {"c","d"};
 		
@@ -57,6 +60,43 @@ public class AverageCombinerTest {
 		
 		Double[][] expected_values = {{(1.0+1.0+2.2)/3,(1.0+0.5+0.9)/3}};
 		Assert.assertThat(average.getResponse().getTensor().getValuesList().get(0),is(expected_values[0][0]));
+	}
+	
+	@Test
+	public void testSimpleNDArrayCase() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
+		List<PredictionResponseDef> predictorReturns = new ArrayList<>();
+		String[] names = {"c","d"};
+		
+		Double[] values1 = {1.0,1.0};
+		predictorReturns.add(PredictionResponseDef.newBuilder().setStatus(PredictionStatusDef.newBuilder().setStatus(PredictionStatusDef.Status.SUCCESS).build())
+				.setResponse(DefaultDataDef.newBuilder().addAllFeatures(Arrays.asList(names))
+						.setNdarray(ListValue.newBuilder().addValues(Value.newBuilder().setListValue(ListValue.newBuilder()
+								.addValues(Value.newBuilder().setNumberValue(values1[0]))
+								.addValues(Value.newBuilder().setNumberValue(values1[1])).build())).build()).build()).build());
+		
+		Double[] values2 = {1.0,0.5};
+		predictorReturns.add(PredictionResponseDef.newBuilder().setStatus(PredictionStatusDef.newBuilder().setStatus(PredictionStatusDef.Status.SUCCESS).build())
+				.setResponse(DefaultDataDef.newBuilder().addAllFeatures(Arrays.asList(names))
+						.setNdarray(ListValue.newBuilder().addValues(Value.newBuilder().setListValue(ListValue.newBuilder()
+								.addValues(Value.newBuilder().setNumberValue(values2[0]))
+								.addValues(Value.newBuilder().setNumberValue(values2[1])).build())).build()).build()).build());
+		
+		Double[] values3 = {2.2,0.9};
+		predictorReturns.add(PredictionResponseDef.newBuilder().setStatus(PredictionStatusDef.newBuilder().setStatus(PredictionStatusDef.Status.SUCCESS).build())
+				.setResponse(DefaultDataDef.newBuilder().addAllFeatures(Arrays.asList(names))
+						.setNdarray(ListValue.newBuilder().addValues(Value.newBuilder().setListValue(ListValue.newBuilder()
+								.addValues(Value.newBuilder().setNumberValue(values3[0]))
+								.addValues(Value.newBuilder().setNumberValue(values3[1])).build())).build()).build()).build());
+		
+		AverageCombinerUnit averageCombinerUnit = new AverageCombinerUnit();
+		Method method = AverageCombinerUnit.class.getDeclaredMethod("backwardPass",List.class,PredictiveUnitState.class);
+		method.setAccessible(true);
+		PredictionResponseDef average = (PredictionResponseDef) method.invoke(averageCombinerUnit, predictorReturns, null);
+		
+		Assert.assertThat(average.getResponse().getFeaturesList().get(0),is(names[0]));
+		
+		Double[][] expected_values = {{(1.0+1.0+2.2)/3,(1.0+0.5+0.9)/3}};
+		Assert.assertThat(average.getResponse().getNdarray().getValues(0).getListValue().getValues(0).getNumberValue(),is(expected_values[0][0]));
 	}
 	
 	@Test
@@ -196,7 +236,7 @@ public class AverageCombinerTest {
     	
     	PredictionRequestDef p = PredictionRequestDef.newBuilder().build();
     	
-    	PredictiveUnitState state = new PredictiveUnitState("Cool_name",null,null);
+    	PredictiveUnitState state = new PredictiveUnitState("1","Cool_name",null,null);
     	
     	AverageCombinerUnit averageCombinerUnit = new AverageCombinerUnit();
     	

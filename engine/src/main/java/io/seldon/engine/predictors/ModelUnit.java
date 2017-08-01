@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import io.seldon.protos.PredictionProtos.PredictionRequestDef;
 import io.seldon.protos.PredictionProtos.PredictionResponseDef;
+import io.seldon.protos.PredictionProtos.PredictionResponseMetaDef;
 
 @Component
 public class ModelUnit extends PredictiveUnitBean{
@@ -26,6 +27,7 @@ public class ModelUnit extends PredictiveUnitBean{
 		PredictionResponseDef ret = null;
 		try {
 			ret = internalPredictionService.getPrediction(request, state.endpoint);
+			ret = PredictionResponseDef.newBuilder(ret).setMeta(PredictionResponseMetaDef.newBuilder(ret.getMeta()).addModel(state.id)).build();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

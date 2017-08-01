@@ -6,11 +6,13 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 
 import com.google.protobuf.ListValue;
+import com.google.protobuf.Value;
 
 import io.seldon.engine.exception.APIException;
 import io.seldon.protos.PredictionProtos.DefaultDataDef;
 import io.seldon.protos.PredictionProtos.DefaultDataDef.DataOneofCase;
 import io.seldon.protos.PredictionProtos.PredictionResponseDef;
+import io.seldon.protos.PredictionProtos.PredictionResponseMetaDef;
 import io.seldon.protos.PredictionProtos.Tensor;
 
 @Component
@@ -29,9 +31,10 @@ public class AverageCombinerUnit extends CombinerUnit{
 		DataOneofCase dataType = DataOneofCase.DATAONEOF_NOT_SET;
 		
 		PredictionResponseDef.Builder respBuilder = PredictionResponseDef.newBuilder();
+		PredictionResponseMetaDef.Builder metaBuilder = PredictionResponseMetaDef.newBuilder();
 		DefaultDataDef.Builder dataBuilder = DefaultDataDef.newBuilder();
-		int modelIdx = 0;
 		for (PredictionResponseDef predRet : inputs){
+			metaBuilder.addAllModel(predRet.getMeta().getModelList());
 			int bLength = 0;
 			int vLength = 0;
 			if (predRet.getResponse().getDataOneofCase() == DataOneofCase.TENSOR)
@@ -83,7 +86,6 @@ public class AverageCombinerUnit extends CombinerUnit{
 						averages[(i*valuesLength)+j] += predRet.getResponse().getNdarray().getValues(i).getListValue().getValues(j).getNumberValue();
 				}
 			}
-			modelIdx++;
 		}
 		
 		for (int i = 0; i < batchLength; ++i) {
@@ -100,10 +102,18 @@ public class AverageCombinerUnit extends CombinerUnit{
 			}
 			else if(dataType == DataOneofCase.NDARRAY)
 			{
-				
+				ListValue.Builder b1 = ListValue.newBuilder();
+				for (int i = 0; i < batchLength; ++i) {
+					ListValue.Builder b2 = ListValue.newBuilder();
+					for (int j = 0; j < valuesLength; j++){
+						b2.addValues(Value.newBuilder().setNumberValue(averages[(i*valuesLength)+j]));
+					}
+					b1.addValues(Value.newBuilder().setListValue(b2.build()));
+				}
+				dataBuilder.setNdarray(b1.build());
 			}
 		}
-		respBuilder.setResponse(dataBuilder.build());
+		respBuilder.setResponse(dataBuilder).setMeta(metaBuilder);
 		
 		return respBuilder.build();
 	}
