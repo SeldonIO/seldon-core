@@ -18,7 +18,7 @@
                     "id": "2",
                     "image": "seldonio/mean_classifier",
                     "memory": "",
-                    "version": "0.3"
+                    "version": "0.4"
                 },
                 "endpoint": {
                     "service_host": "-",
@@ -26,7 +26,7 @@
                     "type": "REST"
                 },
                 "id": "0",
-                "name": "digit_classifier_v0.2",
+                "name": "digit_classifier_v0.4",
                 "parameters": [],
                 "subtype": "MICROSERVICE",
                 "type": "MODEL"

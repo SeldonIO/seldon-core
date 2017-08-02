@@ -11,7 +11,8 @@ import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 
 import io.seldon.engine.service.InternalPredictionService;
-import io.seldon.engine.service.PredictionServiceRequest;
+import io.seldon.protos.PredictionProtos.PredictionRequestDef;
+import io.seldon.protos.PredictionProtos.PredictionResponseDef;
 
 @Component
 public abstract class PredictiveUnitBean {
@@ -26,14 +27,14 @@ public abstract class PredictiveUnitBean {
 	}
 	
 	@Async
-	public Future<PredictorReturn> predict(PredictionServiceRequest request, PredictiveUnitState state) throws InterruptedException, ExecutionException{
+	public Future<PredictionResponseDef> predict(PredictionRequestDef request, PredictiveUnitState state) throws InterruptedException, ExecutionException{
 		System.out.println("NODE " + state.name + ": entered predict");
 		List<PredictiveUnitState> routing = forwardPass(request,state);
 		System.out.println("NODE " + state.name + ": got routing");
 		
-		List<PredictorReturn> inputs = new ArrayList<>();
+		List<PredictionResponseDef> inputs = new ArrayList<>();
 		
-		List<Future<PredictorReturn>> futureInputs = new ArrayList<>();
+		List<Future<PredictionResponseDef>> futureInputs = new ArrayList<>();
 			
 		for (PredictiveUnitState route : routing)
 		{
@@ -42,7 +43,7 @@ public abstract class PredictiveUnitBean {
 		}
 		System.out.println("NODE " + state.name + ": called child futures");
 		
-		for (Future<PredictorReturn> futureInput : futureInputs)
+		for (Future<PredictionResponseDef> futureInput : futureInputs)
 		{
 			inputs.add(futureInput.get());
 		}
@@ -52,11 +53,11 @@ public abstract class PredictiveUnitBean {
 		return new AsyncResult<>(backwardPass(inputs,state));
 	}
 	
-	protected List<PredictiveUnitState> forwardPass(PredictionServiceRequest request, PredictiveUnitState data){
+	protected List<PredictiveUnitState> forwardPass(PredictionRequestDef request, PredictiveUnitState data){
 		return null;
 	}
 	
-	protected PredictorReturn backwardPass(List<PredictorReturn> inputs, PredictiveUnitState data){
+	protected PredictionResponseDef backwardPass(List<PredictionResponseDef> inputs, PredictiveUnitState data){
 		return null;
 	}
 }

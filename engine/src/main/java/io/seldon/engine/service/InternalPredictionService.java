@@ -13,22 +13,22 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.protocol.HttpContext;
+import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.protobuf.util.JsonFormat;
 
 import io.seldon.engine.exception.APIException;
-import io.seldon.engine.predictors.PredictorRequest;
-import io.seldon.engine.predictors.PredictorRequestJSON;
-import io.seldon.engine.predictors.PredictorReturn;
+import io.seldon.engine.pb.ProtoBufUtils;
 import io.seldon.protos.DeploymentProtos.EndpointDef;
+import io.seldon.protos.PredictionProtos.PredictionRequestDef;
+import io.seldon.protos.PredictionProtos.PredictionRequestDef.RequestOneofCase;
+import io.seldon.protos.PredictionProtos.PredictionResponseDef;
 
 @Service
 public class InternalPredictionService {
@@ -61,35 +61,24 @@ public class InternalPredictionService {
                 .build();
     }
 		
-	public PredictorReturn getPrediction(PredictionServiceRequest request, EndpointDef endpoint) throws JsonProcessingException, IOException{
-		PredictorReturn ret = null;
+	public PredictionResponseDef getPrediction(PredictionRequestDef request, EndpointDef endpoint) throws JsonProcessingException, IOException{
+
 		switch (endpoint.getType()){
 			case REST:
-				// TODO: Add proper conversion method. At the moment just casting because 
-				// RPC is not implemented but in the future we want to convert from 
-				// PredictorRequestProto to PredictorRqeustJSON
-				
-				
-				
-				String dataString = request.request.request;
+				String dataString = ProtoBufUtils.toJson(request);
 				boolean isDefault = false;
-				if (request.request instanceof PredictorRequestJSON)
+				if (request.getRequestOneofCase() == RequestOneofCase.REQUEST)
 					isDefault = true;
-				JsonNode node = predictREST(dataString, endpoint, isDefault);
-				
-				ret = mapper.readValue(node.toString(),PredictorReturn.class);
+				return predictREST(dataString, endpoint, isDefault);
 				
 			case GRPC:
 				
 		}
-		return ret;
+		throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,"no service available");
 	}
 	
-	public String[] getRoute(PredictorRequest request, EndpointDef endpoint){
-		return null;
-	}
 	
-	public JsonNode predictREST(String dataString, EndpointDef endpoint,boolean isDefault){
+	public PredictionResponseDef predictREST(String dataString, EndpointDef endpoint,boolean isDefault){
 		{
     		long timeNow = System.currentTimeMillis();
     		URI uri;
@@ -104,7 +93,7 @@ public class InternalPredictionService {
     			uri = builder.build();
     		} catch (URISyntaxException e) 
     		{
-    			throw new APIException(APIException.ApiExceptionType.APIFE_INVALID_ENDPOINT_URL,"Host: "+endpoint.getServiceHost()+" port:"+endpoint.getServicePort());
+    			throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_ENDPOINT_URL,"Host: "+endpoint.getServiceHost()+" port:"+endpoint.getServicePort());
     		}
     		HttpContext context = HttpClientContext.create();
     		HttpGet httpGet = new HttpGet(uri);
@@ -117,17 +106,16 @@ public class InternalPredictionService {
     			{
     				if(resp.getStatusLine().getStatusCode() == 200) 
     				{
-    					ObjectMapper mapper = new ObjectMapper();
-    				    JsonFactory factory = mapper.getFactory();
-    				    JsonParser parser = factory.createParser(resp.getEntity().getContent());
-    				    JsonNode actualObj = mapper.readTree(parser);
-    				    
-    				    return actualObj;
+    				    PredictionResponseDef.Builder builder = PredictionResponseDef.newBuilder();
+    				    String response = EntityUtils.toString(resp.getEntity());
+    				    logger.info(response);
+    				    JsonFormat.parser().ignoringUnknownFields().merge(response, builder);
+    				    return builder.build();
     				} 
     				else 
     				{
     					logger.error("Couldn't retrieve prediction from external prediction server -- bad http return code: " + resp.getStatusLine().getStatusCode());
-    					throw new APIException(APIException.ApiExceptionType.APIFE_MICROSERVICE_ERROR,String.format("Bad return code %d", resp.getStatusLine().getStatusCode()));
+    					throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,String.format("Bad return code %d", resp.getStatusLine().getStatusCode()));
     				}
     			}
     			finally
@@ -141,12 +129,12 @@ public class InternalPredictionService {
     		catch (IOException e) 
     		{
     			logger.error("Couldn't retrieve prediction from external prediction server - ", e);
-    			throw new APIException(APIException.ApiExceptionType.APIFE_MICROSERVICE_ERROR,e.toString());
+    			throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,e.toString());
     		}
     		catch (Exception e)
             {
     			logger.error("Couldn't retrieve prediction from external prediction server - ", e);
-    			throw new APIException(APIException.ApiExceptionType.APIFE_MICROSERVICE_ERROR,e.toString());
+    			throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,e.toString());
             }
     		finally
     		{

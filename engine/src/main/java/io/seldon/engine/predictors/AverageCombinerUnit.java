@@ -5,7 +5,15 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
+import com.google.protobuf.ListValue;
+import com.google.protobuf.Value;
+
 import io.seldon.engine.exception.APIException;
+import io.seldon.protos.PredictionProtos.DefaultDataDef;
+import io.seldon.protos.PredictionProtos.DefaultDataDef.DataOneofCase;
+import io.seldon.protos.PredictionProtos.PredictionResponseDef;
+import io.seldon.protos.PredictionProtos.PredictionResponseMetaDef;
+import io.seldon.protos.PredictionProtos.Tensor;
 
 @Component
 public class AverageCombinerUnit extends CombinerUnit{
@@ -13,47 +21,101 @@ public class AverageCombinerUnit extends CombinerUnit{
 	public AverageCombinerUnit() {}
 
 	@Override
-	public PredictorReturn backwardPass(List<PredictorReturn> inputs, PredictiveUnitState state){
+	public PredictionResponseDef backwardPass(List<PredictionResponseDef> inputs, PredictiveUnitState state){
 		
 		Integer batchLength = 0;
 		Integer valuesLength = 0;
 		Integer inputsLength = inputs.size();
 		Boolean initialised = false;
-		Double[][] averages = null;
-		String[] names = null;
+		Double[] averages = null;
+		DataOneofCase dataType = DataOneofCase.DATAONEOF_NOT_SET;
 		
-		for (PredictorReturn predRet : inputs){
+		PredictionResponseDef.Builder respBuilder = PredictionResponseDef.newBuilder();
+		PredictionResponseMetaDef.Builder metaBuilder = PredictionResponseMetaDef.newBuilder();
+		DefaultDataDef.Builder dataBuilder = DefaultDataDef.newBuilder();
+		for (PredictionResponseDef predRet : inputs){
+			metaBuilder.addAllModel(predRet.getMeta().getModelList());
+			int bLength = 0;
+			int vLength = 0;
+			if (predRet.getResponse().getDataOneofCase() == DataOneofCase.TENSOR)
+			{
+				Tensor tensor = predRet.getResponse().getTensor();
+				if (tensor.getShapeCount() == 2)
+				{
+					bLength = tensor.getShape(0);
+					vLength = tensor.getShape(1);
+				}
+				else
+				{
+					bLength = 1;
+					vLength = tensor.getValuesCount();
+				}
+			}
+			else if (predRet.getResponse().getDataOneofCase() == DataOneofCase.NDARRAY)// nDArray
+			{
+				ListValue list = predRet.getResponse().getNdarray();
+				bLength = list.getValuesCount();
+				vLength = list.getValues(0).getListValue().getValuesCount();
+			}
 			if (!initialised){
-				batchLength = predRet.values.length;
-				valuesLength = predRet.values[0].length;
-				averages = new Double[batchLength][valuesLength];
-				for (int i =0; i < batchLength; i++){
-					Arrays.fill(averages[i], 0.);
-				}	
-				names = predRet.names;
+				dataType = predRet.getResponse().getDataOneofCase();
+				batchLength = bLength;
+				valuesLength = vLength;
+				averages = new Double[batchLength*valuesLength];
+				Arrays.fill(averages, 0.);
+				respBuilder.setMeta(predRet.getMeta()).setStatus(predRet.getStatus());
+				dataBuilder.addAllFeatures(predRet.getResponse().getFeaturesList());
 				initialised = true;
 			}
-			if (predRet.values.length!=batchLength){
-				// TODO: Maybe we should also check that the names are always the same
-				throw new APIException(APIException.ApiExceptionType.APIFE_INVALID_COMBINER_RESPONSE,String.format("Found %d Expected %d", predRet.values[0].length,valuesLength));				
-			}
-			if (predRet.values[0].length!=valuesLength){
-				throw new APIException(APIException.ApiExceptionType.APIFE_INVALID_COMBINER_RESPONSE,String.format("Found %d Expected %d", predRet.values[0].length,valuesLength));
+			else
+			{
+				if (bLength != batchLength)
+				{
+					throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_COMBINER_RESPONSE, String.format("Expected batch length %d but found %d",batchLength,bLength));
+				}
+				if (vLength != valuesLength)
+				{
+					throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_COMBINER_RESPONSE, String.format("Expected values length %d but found %d",valuesLength,vLength));
+				}
 			}
 			for (int i = 0; i < batchLength; ++i) {
 				for (int j = 0; j < valuesLength; j++){
-					averages[i][j] += predRet.values[i][j];
+					if (predRet.getResponse().getDataOneofCase() == DataOneofCase.TENSOR)
+						averages[(i*valuesLength)+j] += predRet.getResponse().getTensor().getValues((i*valuesLength)+j);
+					else if (predRet.getResponse().getDataOneofCase() == DataOneofCase.NDARRAY)
+						averages[(i*valuesLength)+j] += predRet.getResponse().getNdarray().getValues(i).getListValue().getValues(j).getNumberValue();
 				}
 			}
 		}
 		
 		for (int i = 0; i < batchLength; ++i) {
 			for (int j = 0; j < valuesLength; j++){
-				averages[i][j] /= inputsLength;
+				averages[(i*valuesLength)+j] /= inputsLength;
 			}
 		}
+	
+		if (averages != null)
+		{
+			if (dataType == DataOneofCase.TENSOR)
+			{
+				dataBuilder.setTensor(Tensor.newBuilder().addShape(batchLength).addShape(valuesLength).addAllValues(Arrays.asList(averages)).build());
+			}
+			else if(dataType == DataOneofCase.NDARRAY)
+			{
+				ListValue.Builder b1 = ListValue.newBuilder();
+				for (int i = 0; i < batchLength; ++i) {
+					ListValue.Builder b2 = ListValue.newBuilder();
+					for (int j = 0; j < valuesLength; j++){
+						b2.addValues(Value.newBuilder().setNumberValue(averages[(i*valuesLength)+j]));
+					}
+					b1.addValues(Value.newBuilder().setListValue(b2.build()));
+				}
+				dataBuilder.setNdarray(b1.build());
+			}
+		}
+		respBuilder.setResponse(dataBuilder).setMeta(metaBuilder);
 		
-		return new PredictorReturn(names,averages);
+		return respBuilder.build();
 	}
 
 }

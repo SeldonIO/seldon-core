@@ -1,65 +1,79 @@
 package io.seldon.engine.api.rest;
 
-import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
-import javax.servlet.http.HttpServletRequest;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.protobuf.InvalidProtocolBufferException;
 
 import io.seldon.engine.exception.APIException;
+import io.seldon.engine.exception.APIException.ApiExceptionType;
+import io.seldon.engine.pb.ProtoBufUtils;
 import io.seldon.engine.service.PredictionService;
-import io.seldon.engine.service.PredictionServiceRequest;
-import io.seldon.engine.service.PredictionServiceReturn;
+import io.seldon.protos.PredictionProtos.PredictionRequestDef;
+import io.seldon.protos.PredictionProtos.PredictionResponseDef;
 
 @RestController
 public class RestClientController {
 	
+	private static Logger logger = LoggerFactory.getLogger(RestClientController.class.getName());
+	
 	@Autowired
 	private PredictionService predictionService;
-	
-	
-	private JsonNode getValidatedJson(String jsonRaw) 
-	{
-		try
-		{
-			ObjectMapper mapper = new ObjectMapper();
-			JsonFactory factory = mapper.getFactory();
-			JsonParser parser = factory.createParser(jsonRaw);
-			JsonNode actualObj = mapper.readTree(parser);
-			return actualObj;
-		} catch (JsonParseException e) {
-			throw new APIException(io.seldon.engine.exception.APIException.ApiExceptionType.APIFE_INVALID_JSON,jsonRaw);
-		} catch (IOException e) {
-			throw new APIException(APIException.ApiExceptionType.APIFE_INVALID_JSON,jsonRaw);
-		}
-	}
-	
-	private 
-	
 	
 	@RequestMapping("/")
     String home() {
         return "Hello World!";
     }
 	
-	/*
-	@RequestMapping(value = "/api/v0.1/predictions", method = RequestMethod.POST, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
-    public ResponseEntity<String> test(RequestEntity<String> requestEntity,Principal principal) {
-	}
-	*/
+	@RequestMapping("/ping")
+    String ping() {
+        return "pong";
+    }
 	
+	
+	@RequestMapping(value = "/api/v0.1/predictions", method = RequestMethod.POST, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
+    public ResponseEntity<String> predictions(RequestEntity<String> requestEntity) 
+	{
+		PredictionRequestDef request;
+		try
+		{
+			PredictionRequestDef.Builder builder = PredictionRequestDef.newBuilder();
+			ProtoBufUtils.updateMessageBuilderFromJson(builder, requestEntity.getBody() );
+			request = builder.build();
+		} 
+		catch (InvalidProtocolBufferException e) 
+		{
+			logger.error("Bad request",e);
+			throw new APIException(ApiExceptionType.ENGINE_INVALID_JSON,requestEntity.getBody());
+		}
+
+		try
+		{
+			PredictionResponseDef response = predictionService.predict(request);
+			String json = ProtoBufUtils.toJson(response);
+			return new ResponseEntity<String>(json,HttpStatus.OK);
+		}
+		 catch (InterruptedException e) {
+			throw new APIException(ApiExceptionType.ENGINE_INTERTUPTED,e.getMessage());
+		} catch (ExecutionException e) {
+			throw new APIException(ApiExceptionType.ENGINE_EXECUTION_FAILURE,e.getMessage());
+		} catch (InvalidProtocolBufferException e) {
+			throw new APIException(ApiExceptionType.ENGINE_INVALID_JSON,"");
+		} 
+
+	}
+	
+	
+	/*
 	@RequestMapping(value="/api/v0.1/predictions", method = RequestMethod.POST)
     public @ResponseBody
     PredictionServiceReturn predictions(@RequestBody PredictionServiceRequest request, HttpServletRequest req) throws InterruptedException, ExecutionException {
@@ -70,6 +84,7 @@ public class RestClientController {
 		return predictionService.predict(request);
 		
     }
+    */
 	
 	@RequestMapping("/api/v0.1/feedback")
     String feedback() {

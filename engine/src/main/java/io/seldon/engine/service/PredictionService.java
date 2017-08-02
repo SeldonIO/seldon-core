@@ -1,6 +1,7 @@
 package io.seldon.engine.service;
 
-import java.io.IOException;
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -11,21 +12,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import io.seldon.engine.exception.APIException;
-import io.seldon.engine.logging.PredictLogger;
 import io.seldon.engine.predictors.EnginePredictor;
 import io.seldon.engine.predictors.PredictorBean;
-import io.seldon.engine.predictors.PredictorRequest;
-import io.seldon.engine.predictors.PredictorReturn;
 import io.seldon.engine.predictors.PredictorState;
-import java.security.SecureRandom;
-import java.math.BigInteger;
+import io.seldon.protos.PredictionProtos.PredictionRequestDef;
+import io.seldon.protos.PredictionProtos.PredictionRequestMetaDef;
+import io.seldon.protos.PredictionProtos.PredictionResponseDef;
+import io.seldon.protos.PredictionProtos.PredictionResponseMetaDef;
 
 @Service
 public class PredictionService {
@@ -33,9 +26,6 @@ public class PredictionService {
 	private static Logger logger = LoggerFactory.getLogger(PredictionService.class.getName());
 	
 	private final ExecutorService pool = Executors.newFixedThreadPool(50);
-	
-	@Autowired
-	PredictLogger predictLogger;
 	
 //	@Autowired
 //	PredictorsStore predictorsStore;
@@ -56,31 +46,28 @@ public class PredictionService {
 	    }
 	}
 	
-	private JsonNode getValidatedJson(String jsonRaw) throws JsonParseException, IOException
-	{
-		ObjectMapper mapper = new ObjectMapper();
-	    JsonFactory factory = mapper.getFactory();
-	    JsonParser parser = factory.createParser(jsonRaw);
-	    JsonNode actualObj = mapper.readTree(parser);
-	    
-	    return actualObj;
-	}
 	
-	public PredictionServiceReturn predict(PredictionServiceRequest predictionServiceRequest) throws APIException, InterruptedException, ExecutionException{
+	
+	public PredictionResponseDef predict(PredictionRequestDef request) throws InterruptedException, ExecutionException
+	{
 
-		if (StringUtils.isEmpty(predictionServiceRequest.getMeta().getPuid()))
-			predictionServiceRequest.getMeta().setPuid(puidGenerator.nextPuidId());
+		if (!request.hasMeta())
+		{
+			request = request.toBuilder().setMeta(PredictionRequestMetaDef.newBuilder().setPuid(puidGenerator.nextPuidId()).build()).build();
+		}
+		else if (StringUtils.isEmpty(request.getMeta().getPuid()))
+		{
+			request = request.toBuilder().setMeta(request.getMeta().toBuilder().setPuid(puidGenerator.nextPuidId()).build()).build();
+		}
+		String puid = request.getMeta().getPuid();
 		
         PredictorState predictorState = predictorBean.predictorStateFromDeploymentDef(enginePredictor.getPredictorDef());
 
-        PredictorReturn predictorReturn = predictorBean.predict(predictionServiceRequest,predictorState);
+        PredictionResponseDef predictorReturn = predictorBean.predict(request,predictorState);
 			
-        PredictionServiceReturnMeta meta = new PredictionServiceReturnMeta(predictionServiceRequest.getMeta().getPuid());
-			
-        PredictionServiceReturn res = new PredictionServiceReturn(meta, predictorReturn);
-			
-        //predictLogger.log(predictionServiceRequest.meta.deployment, predictionServiceRequest.request, res);
-        return res;
+        PredictionResponseDef.Builder builder = PredictionResponseDef.newBuilder(predictorReturn).setMeta(PredictionResponseMetaDef.newBuilder(predictorReturn.getMeta()).setPuid(puid));
+
+        return builder.build();
 		
 	}
 }

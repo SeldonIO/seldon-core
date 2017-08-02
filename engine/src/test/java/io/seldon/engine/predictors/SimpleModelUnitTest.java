@@ -9,9 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import io.seldon.engine.service.PredictionServiceRequest;
 import io.seldon.protos.DeploymentProtos.PredictiveUnitDef;
 import io.seldon.protos.DeploymentProtos.PredictorDef;
+import io.seldon.protos.PredictionProtos.PredictionRequestDef;
+import io.seldon.protos.PredictionProtos.PredictionResponseDef;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -41,16 +42,16 @@ public class SimpleModelUnitTest {
 		PredictorState predictorState = predictorBean.predictorStateFromDeploymentDef(predictor);
 
 		
-		PredictorRequest predictorRequest = new PredictorRequest("{\"values\":[[1.0]]}");
-		PredictionServiceRequest pRequest = new PredictionServiceRequest(null, predictorRequest);
+		PredictionRequestDef p = PredictionRequestDef.newBuilder().build();
+
 		
-        PredictorReturn predictorReturn = predictorBean.predict(pRequest,predictorState);
+        PredictionResponseDef predictorReturn = predictorBean.predict(p,predictorState);
         
+        Assert.assertEquals((double) SimpleModelUnit.values[0], predictorReturn.getResponse().getTensor().getValues(0),0);
+        Assert.assertEquals((double) SimpleModelUnit.values[1], predictorReturn.getResponse().getTensor().getValues(1),0);
+        Assert.assertEquals((double) SimpleModelUnit.values[2], predictorReturn.getResponse().getTensor().getValues(2),0);   
 		
-        Assert.assertEquals(SimpleModelUnit.values[0][0], predictorReturn.values[0][0]);
-        Assert.assertEquals(SimpleModelUnit.values[0][1], predictorReturn.values[0][1]);
-        Assert.assertEquals(SimpleModelUnit.values[0][2], predictorReturn.values[0][2]);        
-	
+        
 	}
 	
 }

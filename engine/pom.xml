@@ -10,7 +10,7 @@
 
 	<groupId>io.seldon.engine</groupId>
 	<artifactId>seldon-engine</artifactId>
-	<version>0.1.3</version>
+	<version>0.1.4</version>
 	<packaging>jar</packaging>
 
 	<name>engine</name>
@@ -144,6 +144,10 @@
 			<artifactId>protobuf-java-util</artifactId>
 			<version>3.2.0rc2</version>
 		</dependency>
-
+		<dependency>
+   	 		<groupId>com.google.guava</groupId>
+   		 	<artifactId>guava</artifactId>
+    		<version>22.0</version>
+		</dependency>
 	</dependencies>
 </project>

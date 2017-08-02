@@ -10,30 +10,29 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import io.seldon.engine.exception.APIException;
-import io.seldon.engine.service.PredictionServiceRequest;
+import io.seldon.protos.PredictionProtos.PredictionRequestDef;
 
 public class RandomABTestUnitInternalTest {
 
 	@Test
 	public void simpleCase() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		
-		PredictorRequest pRequest = new PredictorRequest();
-		PredictionServiceRequest request = new PredictionServiceRequest(null,pRequest);
+		PredictionRequestDef request = PredictionRequestDef.newBuilder().build();
 		
 		PredictiveUnitParameter<Float> ratioParam = new PredictiveUnitParameter<Float>(0.5F);
     	Map<String,PredictiveUnitParameterInterface> params = new HashMap<>();
     	params.put("ratioA", ratioParam);
 		
-		PredictiveUnitState state = new PredictiveUnitState("Cool_name",null,params);
+		PredictiveUnitState state = new PredictiveUnitState("1","Cool_name",null,params);
 		
-		PredictiveUnitState childA = new PredictiveUnitState("A",null,null);
-		PredictiveUnitState childB = new PredictiveUnitState("B",null,null);
+		PredictiveUnitState childA = new PredictiveUnitState("2","A",null,null);
+		PredictiveUnitState childB = new PredictiveUnitState("3","B",null,null);
 		
 		state.addChild("0", childA);
 		state.addChild("1", childB);
 		
 		RandomABTestUnit randomABTestUnit = new RandomABTestUnit();
-		Method method = RandomABTestUnit.class.getDeclaredMethod("forwardPass", PredictionServiceRequest.class, PredictiveUnitState.class);
+		Method method = RandomABTestUnit.class.getDeclaredMethod("forwardPass", PredictionRequestDef.class, PredictiveUnitState.class);
 		method.setAccessible(true);
 
 		// The following values are from random seed 1337
@@ -56,21 +55,20 @@ public class RandomABTestUnitInternalTest {
 	@Test(expected=APIException.class)
 	public void failureOneChild() throws Throwable{
 		
-		PredictorRequest pRequest = new PredictorRequest();
-		PredictionServiceRequest request = new PredictionServiceRequest(null,pRequest);
+		PredictionRequestDef request = PredictionRequestDef.newBuilder().build();
 		
 		PredictiveUnitParameter<Float> ratioParam = new PredictiveUnitParameter<Float>(0.5F);
     	Map<String,PredictiveUnitParameterInterface> params = new HashMap<>();
     	params.put("ratioA", ratioParam);
 		
-		PredictiveUnitState state = new PredictiveUnitState("Cool_name",null,params);
+		PredictiveUnitState state = new PredictiveUnitState("1","Cool_name",null,params);
 		
-		PredictiveUnitState childA = new PredictiveUnitState("A",null,null);
+		PredictiveUnitState childA = new PredictiveUnitState("2","A",null,null);
 		
 		state.addChild("0", childA);
 		
 		RandomABTestUnit randomABTestUnit = new RandomABTestUnit();
-		Method method = RandomABTestUnit.class.getDeclaredMethod("forwardPass", PredictionServiceRequest.class, PredictiveUnitState.class);
+		Method method = RandomABTestUnit.class.getDeclaredMethod("forwardPass", PredictionRequestDef.class, PredictiveUnitState.class);
 		method.setAccessible(true);
 
 		// The following should return an error

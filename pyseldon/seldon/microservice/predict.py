@@ -15,7 +15,7 @@ def extract_input():
     data = json.loads(jStr)
     return {
         'is_default':is_default,
-        'data':data
+        'request':data
         }
 
 def default_data_to_dataframe(data):
@@ -28,21 +28,40 @@ def default_data_to_dataframe(data):
     """
     if not type(data) == dict:
         raise DataContractException("Data must be a dictionary")
-    if data.get('values') is None:
-        raise DataContractException("Data dictionary has no 'values' keyword.")
-    values = np.array(data.get("values"))
+    if data.get('values') is None and data.get('ndarray') is None:
+        raise DataContractException("Data dictionary has no 'values' or 'ndarray' keyword.")
+    if not data.get('values') is None:
+        values = np.array(data.get("values"))
+        shape = data.get('shape')
+        if shape is None or len(shape)==0:
+            if len(values.shape) == 1:
+                values = np.expand_dims(values, axis=0)
+        else:
+            values = values.reshape(shape)
+    else:
+        values = np.array(data.get("ndarray"))
     if not len(values.shape) == 2:
         raise DataContractException("Data values must be a 2-dimensional array.")
     if data.get('features') is not None:
         features = data.get('features')
         if len(features) != values.shape[1]:
-            raise DataContractException("Lenght of features vector different from length of values vectors")
+            raise DataContractException("Length of features vector different from length of values vectors")
         return pd.DataFrame(values,columns=features)
     return pd.DataFrame(values)
 
 @predict_blueprint.route('/ping',methods=['GET'])
 def ping():
     return "pong"
+
+def create_response(names,preds):
+    preds = np.array(preds)
+    ret = {'response':
+           {
+               'features':names,
+               'ndarray':preds.tolist()
+           }
+        }
+    return ret
 
 @predict_blueprint.route('/predict',methods=['GET','POST'])
 def do_predict():
@@ -52,9 +71,9 @@ def do_predict():
     input_ = extract_input()
     pipeline =  current_app.config["seldon_pipeline"]
     if input_['is_default']:
-        data = default_data_to_dataframe(input_['data'])
+        data = default_data_to_dataframe(input_['request']['request'])
     else:
-        data = input_['data']
+        data = input_['request']['request']
     print 'DATA'
     print data
     preds = pipeline.predict_proba(data)
@@ -66,10 +85,7 @@ def do_predict():
         print "Final estimator has no class names defined. Consider implementing the get_class_id_map method."
         names = [str(i) for i in xrange(len(preds[0]))]
     
-    ret = {
-        'names':names,
-        'values':preds
-        }
+    ret = create_response(names,preds)
     json_ret = jsonify(ret)
     return json_ret
             

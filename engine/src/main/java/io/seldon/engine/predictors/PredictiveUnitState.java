@@ -12,6 +12,7 @@ import io.seldon.protos.DeploymentProtos.PredictiveUnitDef.ParamDef;
 
 @JsonIgnoreProperties({"children","cluster_resources","id","subtype","type"})
 public class PredictiveUnitState {
+	public String id;
 	public String name;
 	public PredictiveUnitBean predictiveUnitBean;
 	public EndpointDef endpoint;
@@ -20,18 +21,19 @@ public class PredictiveUnitState {
 	
 	public PredictiveUnitState(){}
 	
-	public PredictiveUnitState(String name, EndpointDef endpoint, Map<String,PredictiveUnitParameterInterface> parameters){
+	public PredictiveUnitState(String id,String name, EndpointDef endpoint, Map<String,PredictiveUnitParameterInterface> parameters){
+		this.id = id;
 		this.name = name;
 		this.endpoint = endpoint;
 		this.parameters = parameters;
 	}
 	
-	public PredictiveUnitState(String name, 
+	public PredictiveUnitState(String id,String name, 
 			PredictiveUnitBean predictiveUnitBean, 
 			EndpointDef endpoint, 
 			Map<String,PredictiveUnitState> children, 
 			Map<String,PredictiveUnitParameterInterface> parameters){
-		this(
+		this(	id,
 				name,
 				endpoint,
 				parameters
@@ -41,7 +43,7 @@ public class PredictiveUnitState {
 	}
 	
 	public PredictiveUnitState(PredictiveUnitDef predictiveUnitDef){
-		this(
+		this(	predictiveUnitDef.getId(),
 				predictiveUnitDef.getName(),
 				predictiveUnitDef.getEndpoint(),
 				deserializeParameters(predictiveUnitDef.getParametersList())
