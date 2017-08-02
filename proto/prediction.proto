@@ -95,9 +95,9 @@ message PredictionResponseMetaDef {
 // [START Feedback]
 
 message PredictionFeedbackDef {
-  PredictionRequestDef request = 1
-  PredictionResponseDef response = 2
-  DefaultDataDef truth = 3
+  PredictionRequestDef request = 1;
+  PredictionResponseDef response = 2;
+  DefaultDataDef truth = 3;
   repeated float rewards = 4;
 }
 
