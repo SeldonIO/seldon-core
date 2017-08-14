@@ -17,7 +17,7 @@ zookeeper.json: zookeeper.json.in
 		> zookeeper.json && echo "created $@"
 
 start_zookeeper: zookeeper.json
-	kubectl create -f zookeeper.json
+	kubectl apply -f zookeeper.json
 stop_zookeeper: zookeeper.json
 	kubectl delete --ignore-not-found=true -f zookeeper.json
 

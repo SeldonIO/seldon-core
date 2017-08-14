@@ -23,7 +23,7 @@ apife.json: apife.json.in Makefile
 		-e  "s|%APIFE_IMAGE_VERSION%|$(APIFE_IMAGE_VERSION)|" > $@ && echo "created $@"
 
 start_apife: apife.json
-	kubectl create -f apife.json
+	kubectl apply -f apife.json
 stop_apife: apife.json
 	kubectl delete --ignore-not-found=true -f apife.json
 

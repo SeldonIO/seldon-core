@@ -2,7 +2,7 @@ redis-memonly.json: redis-memonly.json.in
 	@cat redis-memonly.json.in > redis-memonly.json && echo "created $@"
 
 start_redis: redis-memonly.json
-	kubectl create -f redis-memonly.json
+	kubectl apply -f redis-memonly.json
 stop_redis: redis-memonly.json
 	kubectl delete --ignore-not-found=true -f redis-memonly.json
 
