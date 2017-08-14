@@ -55,6 +55,7 @@ public class MainController {
             ProtoBufUtils.updateMessageBuilderFromJson(deploymentDefBuilder, json);
             cmResultDef = clusterManager.createSeldonDeployment(deploymentDefBuilder.build());
         } catch (InvalidProtocolBufferException e) {
+            logger.error("Error deployments_post", e);
             String info = org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(e);
             //@formatter:off
             cmResultDef = CMResultDef.newBuilder()
@@ -108,6 +109,7 @@ public class MainController {
             ProtoBufUtils.updateMessageBuilderFromJson(deploymentDefBuilder, json);
             cmResultDef = clusterManager.updateSeldonDeployment(deploymentDefBuilder.build());
         } catch (InvalidProtocolBufferException e) {
+            logger.error("Error deployments_patch", e);
             String info = org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(e);
             //@formatter:off
             cmResultDef = CMResultDef.newBuilder()
