@@ -42,6 +42,12 @@ public class RestClientController {
     }
 	
 	
+	@RequestMapping("/ping")
+    String ping() {	    
+        return "pong";
+    }
+	
+	
 	
 	@RequestMapping(value = "/api/v0.1/predictions", method = RequestMethod.POST, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
 	    public ResponseEntity<String> test(RequestEntity<String> requestEntity,Principal principal) {
@@ -65,11 +71,7 @@ public class RestClientController {
 	
 	@RequestMapping("/api/v0.1/feedback")
     String feedback() {
-        return "Hello World!";
+        return "Not Implemented";
     }
 	
-	@RequestMapping("/api/v0.1/events")
-    String events() {
-        return "Hello World!";
-    }
 }

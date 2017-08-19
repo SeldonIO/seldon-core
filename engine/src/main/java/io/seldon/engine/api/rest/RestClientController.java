@@ -31,10 +31,10 @@ public class RestClientController {
 	
 	@RequestMapping("/")
     String home() {
-        return "Hello World!";
+        return "Hello World!!";
     }
 	
-	@RequestMapping("/ping")
+	@RequestMapping(value = "/ping", method = RequestMethod.GET)
     String ping() {
         return "pong";
     }
