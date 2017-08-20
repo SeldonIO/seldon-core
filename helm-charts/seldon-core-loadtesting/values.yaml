@@ -1,0 +1,16 @@
+# Default values for seldon-core-loadtesting.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+image:
+  release: 0.1
+replicaCount: 1
+locust:
+  script : predict_rest_locust.py
+  host : http://seldon-apiserver:8080
+  hatchRate: 1
+  clients: 1
+oauth:
+  key: key
+  secret: secret
+data:
+  size: 2
