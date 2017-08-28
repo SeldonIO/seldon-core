@@ -16,8 +16,16 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.codahale.metrics.annotation.Timed;
+import com.google.protobuf.InvalidProtocolBufferException;
 
+import io.seldon.apife.exception.APIException;
+import io.seldon.apife.exception.APIException.ApiExceptionType;
+import io.seldon.apife.kafka.KafkaRequestResponseProducer;
+import io.seldon.apife.pb.ProtoBufUtils;
 import io.seldon.apife.service.PredictionService;
+import io.seldon.protos.PredictionProtos.PredictionRequestDef;
+import io.seldon.protos.PredictionProtos.PredictionRequestResponseDef;
+import io.seldon.protos.PredictionProtos.PredictionResponseDef;
 
 @RestController
 public class RestClientController {
@@ -26,6 +34,9 @@ public class RestClientController {
 	
 	@Autowired
 	private PredictionService predictionService;
+	
+	@Autowired
+	private KafkaRequestResponseProducer kafkaProducer;
 	
 	@Timed
 	@RequestMapping("/")
@@ -56,9 +67,39 @@ public class RestClientController {
 		String json = requestEntity.getBody();
 		logger.info(String.format("[%s] [%s] [%s] [%s]", "POST", requestEntity.getUrl().getPath(), clientId, json));
 		
+		PredictionRequestDef request;
+		try
+		{
+			PredictionRequestDef.Builder builder = PredictionRequestDef.newBuilder();
+			ProtoBufUtils.updateMessageBuilderFromJson(builder, requestEntity.getBody() );
+			request = builder.build();
+		} 
+		catch (InvalidProtocolBufferException e) 
+		{
+			logger.error("Bad request",e);
+			throw new APIException(ApiExceptionType.APIFE_INVALID_JSON,requestEntity.getBody());
+		}
+		
 		HttpStatus httpStatus = HttpStatus.OK;
 		
+		// At present passes JSON string. Could use gRPC?
 		String ret = predictionService.predict(json,clientId);
+		
+		PredictionResponseDef response;
+		try
+		{
+			PredictionResponseDef.Builder builder = PredictionResponseDef.newBuilder();
+			ProtoBufUtils.updateMessageBuilderFromJson(builder, ret);
+			response = builder.build();
+		}
+		catch (InvalidProtocolBufferException e) 
+		{
+			logger.error("Bad response",e);
+			throw new APIException(ApiExceptionType.APIFE_INVALID_RESPONSE_JSON,requestEntity.getBody());
+		}
+		
+		kafkaProducer.send(clientId,PredictionRequestResponseDef.newBuilder().setRequest(request).setResponse(response).build());
+		
 		
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.setContentType(MediaType.APPLICATION_JSON);

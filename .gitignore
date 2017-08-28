@@ -39,3 +39,5 @@ tests/out.log
 cluster-manager/settings.sh
 engine/target/
 zookeeper-k8s/zookeeper.json
+kafka/tests/src/prediction_pb2.py
+kafka/tests/src/seldonengine_pb2.py

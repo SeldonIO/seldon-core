@@ -24,6 +24,10 @@
                                 "value": "zookeeper-1:2181,zookeeper-2:2181,zookeeper-3:2181"
                             },
                             {
+                                "name": "SELDON_ENGINE_KAFKA_SERVER",
+                                "value": "kafka:9092"
+                            },
+                            {
                                 "name": "SELDON_CLUSTER_MANAGER_REDIS_HOST",
                                 "value": "redis"
                             }

@@ -104,6 +104,11 @@ message PredictionFeedbackDef {
 // [END Feedback]
 
 
+message PredictionRequestResponseDef {
+  PredictionRequestDef request = 1;
+  PredictionResponseDef response = 2;
+}
+
 
 
 
