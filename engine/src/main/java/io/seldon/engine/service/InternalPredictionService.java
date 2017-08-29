@@ -26,6 +26,7 @@ import com.google.protobuf.util.JsonFormat;
 import io.seldon.engine.exception.APIException;
 import io.seldon.engine.pb.ProtoBufUtils;
 import io.seldon.protos.DeploymentProtos.EndpointDef;
+import io.seldon.protos.PredictionProtos.PredictionFeedbackDef;
 import io.seldon.protos.PredictionProtos.PredictionRequestDef;
 import io.seldon.protos.PredictionProtos.PredictionRequestDef.RequestOneofCase;
 import io.seldon.protos.PredictionProtos.PredictionResponseDef;
@@ -93,6 +94,25 @@ public class InternalPredictionService {
 				
 		}
 		return null;
+	}
+	
+	public void sendFeedback(PredictionFeedbackDef feedback, EndpointDef endpoint){
+		switch (endpoint.getType()){
+			case REST:
+			
+			case GRPC:
+				sendFeedbackGRPC(feedback, endpoint);
+		}
+		return;
+	}
+	
+	private void sendFeedbackGRPC(PredictionFeedbackDef feedback, EndpointDef endpoint){
+		ManagedChannel channel = ManagedChannelBuilder.forAddress(endpoint.getServiceHost(), endpoint.getServicePort()).usePlaintext(true).build();
+		MABBlockingStub stub =  MABGrpc.newBlockingStub(channel).withDeadlineAfter(5, TimeUnit.SECONDS);
+		
+		stub.train(feedback);
+		
+		return;
 	}
 	
 	private RouteResponseDef getRoutingGRPC(PredictionRequestDef request, EndpointDef endpoint){

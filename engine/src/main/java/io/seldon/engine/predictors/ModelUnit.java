@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -37,12 +38,12 @@ public class ModelUnit extends PredictiveUnitBean{
 
 	@Override
 	@Async
-	public Future<PredictionResponseDef> predict(PredictionRequestDef request, PredictiveUnitState state) throws InterruptedException, ExecutionException{
+	protected Future<PredictionResponseDef> predict(PredictionRequestDef request, PredictiveUnitState state, Map<String,Integer> routingDict) throws InterruptedException, ExecutionException{
 		return new AsyncResult<>(doPredict(request,state));
 	}
 
 	@Override
-	protected List<PredictiveUnitState> forwardPass(PredictionRequestDef request, PredictiveUnitState state){
+	protected List<PredictiveUnitState> forwardPass(PredictionRequestDef request, PredictiveUnitState state, Map<String,Integer> routingDict){
 		return new ArrayList<PredictiveUnitState>(Arrays.asList(state));
 	}
 	
