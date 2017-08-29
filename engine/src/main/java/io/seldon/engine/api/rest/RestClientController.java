@@ -10,6 +10,7 @@ import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -18,6 +19,7 @@ import io.seldon.engine.exception.APIException;
 import io.seldon.engine.exception.APIException.ApiExceptionType;
 import io.seldon.engine.pb.ProtoBufUtils;
 import io.seldon.engine.service.PredictionService;
+import io.seldon.protos.PredictionProtos.PredictionFeedbackDef;
 import io.seldon.protos.PredictionProtos.PredictionRequestDef;
 import io.seldon.protos.PredictionProtos.PredictionResponseDef;
 
@@ -86,9 +88,33 @@ public class RestClientController {
     }
     */
 	
-	@RequestMapping("/api/v0.1/feedback")
-    String feedback() {
-        return "Hello World!";
+	@RequestMapping(value= "/api/v0.1/feedback", method = RequestMethod.POST, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
+	@ResponseStatus(value = HttpStatus.OK)
+	public void feedback(RequestEntity<String> requestEntity) {
+		PredictionFeedbackDef feedback;
+		
+		try
+		{
+			PredictionFeedbackDef.Builder builder = PredictionFeedbackDef.newBuilder();
+			ProtoBufUtils.updateMessageBuilderFromJson(builder, requestEntity.getBody() );
+			feedback = builder.build();
+		} 
+		catch (InvalidProtocolBufferException e) 
+		{
+			logger.error("Bad request",e);
+			throw new APIException(ApiExceptionType.ENGINE_INVALID_JSON,requestEntity.getBody());
+		}
+		
+		try
+		{
+			predictionService.sendFeedback(feedback);
+		}
+		 catch (InterruptedException e) {
+			throw new APIException(ApiExceptionType.ENGINE_INTERTUPTED,e.getMessage());
+		} catch (ExecutionException e) {
+			throw new APIException(ApiExceptionType.ENGINE_EXECUTION_FAILURE,e.getMessage());
+		}
+		return;
     }
 	
 	@RequestMapping("/api/v0.1/events")

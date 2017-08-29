@@ -1,6 +1,7 @@
 package io.seldon.engine.predictors;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -42,7 +43,7 @@ public class SimpleModelUnit extends ModelUnit {
 	}
 	
 	@Override
-	public Future<PredictionResponseDef> predict(PredictionRequestDef request, PredictiveUnitState state) throws InterruptedException, ExecutionException{
+	protected Future<PredictionResponseDef> predict(PredictionRequestDef request, PredictiveUnitState state, Map<String, Integer> routingDict) throws InterruptedException, ExecutionException{
 		System.out.println("Model " + state.name + " starting computations");
 		
 		return new AsyncResult<>(doPredict(request,state));

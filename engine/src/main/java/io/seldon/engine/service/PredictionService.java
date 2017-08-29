@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import io.seldon.engine.predictors.EnginePredictor;
 import io.seldon.engine.predictors.PredictorBean;
 import io.seldon.engine.predictors.PredictorState;
+import io.seldon.protos.PredictionProtos.PredictionFeedbackDef;
 import io.seldon.protos.PredictionProtos.PredictionRequestDef;
 import io.seldon.protos.PredictionProtos.PredictionRequestMetaDef;
 import io.seldon.protos.PredictionProtos.PredictionResponseDef;
@@ -46,7 +47,14 @@ public class PredictionService {
 	    }
 	}
 	
-	
+	public void sendFeedback(PredictionFeedbackDef feedback) throws InterruptedException, ExecutionException
+	{
+		PredictorState predictorState = predictorBean.predictorStateFromDeploymentDef(enginePredictor.getPredictorDef());
+
+		predictorBean.sendFeedback(feedback, predictorState);
+		
+		return;
+	}
 	
 	public PredictionResponseDef predict(PredictionRequestDef request) throws InterruptedException, ExecutionException
 	{

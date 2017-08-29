@@ -2,6 +2,7 @@ package io.seldon.engine.predictors;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
@@ -15,7 +16,7 @@ public class CombinerUnit extends PredictiveUnitBean{
 	}
 
 	@Override
-	protected List<PredictiveUnitState> forwardPass(PredictionRequestDef request, PredictiveUnitState state){
+	protected List<PredictiveUnitState> forwardPass(PredictionRequestDef request, PredictiveUnitState state, Map<String,Integer> routingDict){
 		return state.children;
 	}
 

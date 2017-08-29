@@ -242,7 +242,7 @@ public class AverageCombinerTest {
     	
     	state.predictiveUnitBean = averageCombinerUnit;
 
-    	Future<PredictionResponseDef> futurePred = averageCombinerUnit.predict(p, state);
+    	Future<PredictionResponseDef> futurePred = averageCombinerUnit.predict(p, state, null);
     	
     	PredictionResponseDef average = futurePred.get();
     	

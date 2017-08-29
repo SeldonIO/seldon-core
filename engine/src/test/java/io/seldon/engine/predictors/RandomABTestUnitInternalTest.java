@@ -30,26 +30,27 @@ public class RandomABTestUnitInternalTest {
 		
 		state.addChild("0", childA);
 		state.addChild("1", childB);
+//		
+//		Map<String,Integer> emptyDict = new HashMap<String, Integer>();
+//		Class<Map<String,Integer>> clazz = (Class<Map<String,Integer>>)(Class)Map.class;
+
 		
 		RandomABTestUnit randomABTestUnit = new RandomABTestUnit();
 		Method method = RandomABTestUnit.class.getDeclaredMethod("forwardPass", PredictionRequestDef.class, PredictiveUnitState.class);
 		method.setAccessible(true);
 
 		// The following values are from random seed 1337
-		List<PredictiveUnitState> routing1 = (List<PredictiveUnitState>) method.invoke(randomABTestUnit, request, state);
+		Integer routing1 = (Integer) method.invoke(randomABTestUnit, request, state);
 
-		Assert.assertEquals(1,routing1.size());
-		Assert.assertEquals("B",routing1.get(0).name); 
+		Assert.assertEquals((Integer)1,routing1); 
 		
-		List<PredictiveUnitState> routing2 = (List<PredictiveUnitState>) method.invoke(randomABTestUnit, request, state);
+		Integer routing2 = (Integer) method.invoke(randomABTestUnit, request, state);
 
-		Assert.assertEquals(1,routing2.size());
-		Assert.assertEquals("A",routing2.get(0).name);
+		Assert.assertEquals((Integer)0,routing2);
 		
-		List<PredictiveUnitState> routing3 = (List<PredictiveUnitState>) method.invoke(randomABTestUnit, request, state);
+		Integer routing3 = (Integer) method.invoke(randomABTestUnit, request, state);
 
-		Assert.assertEquals(1,routing3.size());
-		Assert.assertEquals("B",routing3.get(0).name);
+		Assert.assertEquals((Integer)1,routing3);
 	}
 	
 	@Test(expected=APIException.class)
@@ -67,13 +68,15 @@ public class RandomABTestUnitInternalTest {
 		
 		state.addChild("0", childA);
 		
+//		Map<String,Integer> emptyDict = new HashMap<String, Integer>();
+		
 		RandomABTestUnit randomABTestUnit = new RandomABTestUnit();
 		Method method = RandomABTestUnit.class.getDeclaredMethod("forwardPass", PredictionRequestDef.class, PredictiveUnitState.class);
 		method.setAccessible(true);
 
 		// The following should return an error
 		try{
-			List<PredictiveUnitState> routing1 = (List<PredictiveUnitState>) method.invoke(randomABTestUnit, request, state);
+			Integer routing1 = (Integer) method.invoke(randomABTestUnit, request, state);
 		}
 		catch( InvocationTargetException e){
 			Throwable targetException = e.getTargetException();

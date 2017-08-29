@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
 import io.seldon.protos.DeploymentProtos.PredictiveUnitDef;
 import io.seldon.protos.DeploymentProtos.PredictorDef;
+import io.seldon.protos.PredictionProtos.PredictionFeedbackDef;
 import io.seldon.protos.PredictionProtos.PredictionRequestDef;
 import io.seldon.protos.PredictionProtos.PredictionResponseDef;
 
@@ -44,8 +45,14 @@ public class PredictorBean {
 	public PredictionResponseDef predict(PredictionRequestDef request, PredictorState predictorState) throws InterruptedException, ExecutionException
 	{
 		PredictiveUnitState rootState = predictorState.rootState;
-		Future<PredictionResponseDef> ret = rootState.predictiveUnitBean.predict(request, rootState);
-		return ret.get();
+		return rootState.predictiveUnitBean.predict(request, rootState);
+	}
+	
+	public void sendFeedback(PredictionFeedbackDef feedback, PredictorState predictorState) throws InterruptedException, ExecutionException
+	{
+		PredictiveUnitState rootState = predictorState.rootState;
+		rootState.predictiveUnitBean.sendFeedback(feedback, rootState);
+		return;
 	}
 	
 	//TODO

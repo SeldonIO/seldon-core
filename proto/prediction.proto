@@ -86,7 +86,7 @@ message PredictionStatusDef {
 
 message PredictionResponseMetaDef {
   string puid = 1; 
-  map<int32,int32> routing = 2;
+  map<string,int32> routing = 2;
 }
 
 
