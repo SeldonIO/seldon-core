@@ -16,7 +16,7 @@ public class CombinerUnit extends PredictiveUnitBean{
 
 	@Override
 	protected List<PredictiveUnitState> forwardPass(PredictionRequestDef request, PredictiveUnitState state){
-		return new ArrayList<PredictiveUnitState>(state.children.values());
+		return state.children;
 	}
 
 }

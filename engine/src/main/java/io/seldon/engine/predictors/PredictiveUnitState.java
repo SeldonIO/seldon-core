@@ -1,5 +1,6 @@
 package io.seldon.engine.predictors;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +17,7 @@ public class PredictiveUnitState {
 	public String name;
 	public PredictiveUnitBean predictiveUnitBean;
 	public EndpointDef endpoint;
-	public Map<String,PredictiveUnitState> children = new HashMap<>();
+	public List<PredictiveUnitState> children = new ArrayList<>();
 	public Map<String,PredictiveUnitParameterInterface>  parameters;
 	
 	public PredictiveUnitState(){}
@@ -31,7 +32,7 @@ public class PredictiveUnitState {
 	public PredictiveUnitState(String id,String name, 
 			PredictiveUnitBean predictiveUnitBean, 
 			EndpointDef endpoint, 
-			Map<String,PredictiveUnitState> children, 
+			List<PredictiveUnitState> children, 
 			Map<String,PredictiveUnitParameterInterface> parameters){
 		this(	id,
 				name,
@@ -59,7 +60,7 @@ public class PredictiveUnitState {
 	}
 	
 	public void addChild(String childId,PredictiveUnitState child){
-		this.children.put(childId, child);
+		this.children.add(child);
 	}
 	
 	public void setPredictiveUnitBean(PredictiveUnitBean predictiveUnitBean){

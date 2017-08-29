@@ -33,10 +33,10 @@ public class RandomABTestUnit extends RouterUnit {
 		//FIXME Possible bug : keySet is not ordered as per the definition of the AB test
 		if (comparator<=ratioA){
 			// We select model A
-			selectedChild = state.children.get(state.children.keySet().toArray()[0]);
+			selectedChild = state.children.get(0);
 		}
 		else{
-			selectedChild = state.children.get(state.children.keySet().toArray()[1]);
+			selectedChild = state.children.get(1);
 		}
 		
 		List<PredictiveUnitState> ret = new ArrayList<>();

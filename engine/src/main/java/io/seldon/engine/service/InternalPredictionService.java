@@ -29,6 +29,13 @@ import io.seldon.protos.DeploymentProtos.EndpointDef;
 import io.seldon.protos.PredictionProtos.PredictionRequestDef;
 import io.seldon.protos.PredictionProtos.PredictionRequestDef.RequestOneofCase;
 import io.seldon.protos.PredictionProtos.PredictionResponseDef;
+import io.seldon.protos.PredictionProtos.RouteResponseDef;
+import io.seldon.protos.MABGrpc;
+import io.seldon.protos.MABGrpc.MABBlockingStub;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class InternalPredictionService {
@@ -77,6 +84,24 @@ public class InternalPredictionService {
 		throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,"no service available");
 	}
 	
+	public RouteResponseDef getRouting(PredictionRequestDef request, EndpointDef endpoint){
+		switch (endpoint.getType()){
+			case REST:
+				
+			case GRPC:
+				return getRoutingGRPC(request, endpoint);
+				
+		}
+		return null;
+	}
+	
+	private RouteResponseDef getRoutingGRPC(PredictionRequestDef request, EndpointDef endpoint){
+		ManagedChannel channel = ManagedChannelBuilder.forAddress(endpoint.getServiceHost(), endpoint.getServicePort()).usePlaintext(true).build();
+		MABBlockingStub stub =  MABGrpc.newBlockingStub(channel).withDeadlineAfter(5, TimeUnit.SECONDS);
+		
+		RouteResponseDef routing = stub.route(request);
+		return routing;
+	}
 	
 	public PredictionResponseDef predictREST(String dataString, EndpointDef endpoint,boolean isDefault){
 		{

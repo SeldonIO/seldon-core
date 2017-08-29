@@ -1,5 +1,8 @@
 package io.seldon.engine.predictors;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Base64;
 
 import org.slf4j.Logger;
@@ -30,8 +33,25 @@ public class EnginePredictor {
         { // setup the predictorDef using the env vars
             String enginePredictorBase64Encoded = System.getenv().get(ENGINE_PREDICTOR_KEY);
             if (enginePredictorBase64Encoded == null) {
-                logger.error("FAILED to find env var [{}], will use defaults for engine predictor", ENGINE_PREDICTOR_KEY);
-                predictorDef = buildDefaultPredictorDef();
+            	String filePath = "./deploymentdef.json";
+            	File deploymentFile = new File(filePath);
+            	if (deploymentFile.exists()){
+            		logger.error("FAILED to find env var [{}], will use json file", ENGINE_PREDICTOR_KEY);
+            		byte[] encoded = Files.readAllBytes(Paths.get(filePath));
+            		String enginePredictorJson = new String(encoded);
+            		PredictorDef.Builder predictorDefBuilder = PredictorDef.newBuilder();
+	                try {
+	                    updateMessageBuilderFromJson(predictorDefBuilder, enginePredictorJson);
+	                } catch (Exception e) {
+	                    logger.error("FAILED building predictorDef from file content", ENGINE_PREDICTOR_KEY,e);
+	                    throw e;
+	                }
+	                predictorDef = predictorDefBuilder.build();
+            	}
+            	else {	
+            		logger.error("FAILED to find env var [{}], will use defaults for engine predictor", ENGINE_PREDICTOR_KEY);
+            		predictorDef = buildDefaultPredictorDef();
+            	}
             } else {
                 logger.info("FOUND env var [{}], will use for engine predictor", ENGINE_PREDICTOR_KEY);
                 byte[] enginePredictorBytes = Base64.getDecoder().decode(enginePredictorBase64Encoded);

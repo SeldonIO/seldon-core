@@ -15,7 +15,7 @@ public class SimpleRouterUnit extends RouterUnit {
 	@Override
 	protected List<PredictiveUnitState> forwardPass(PredictionRequestDef request, PredictiveUnitState state){
 		List<PredictiveUnitState> ret = new ArrayList<>();
-		ret.add(state.children.get(state.children.keySet().toArray()[0]));
+		ret.add(state.children.get(0));
 		return ret;
 	} 
 

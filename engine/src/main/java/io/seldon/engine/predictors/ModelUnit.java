@@ -27,7 +27,7 @@ public class ModelUnit extends PredictiveUnitBean{
 		PredictionResponseDef ret = null;
 		try {
 			ret = internalPredictionService.getPrediction(request, state.endpoint);
-			ret = PredictionResponseDef.newBuilder(ret).setMeta(PredictionResponseMetaDef.newBuilder(ret.getMeta()).addModel(state.id)).build();
+//			ret = PredictionResponseDef.newBuilder(ret).setMeta(PredictionResponseMetaDef.newBuilder(ret.getMeta()).addModel(state.id)).build();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

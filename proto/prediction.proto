@@ -86,7 +86,7 @@ message PredictionStatusDef {
 
 message PredictionResponseMetaDef {
   string puid = 1; 
-  repeated string model = 2;
+  map<int32,int32> routing = 2;
 }
 
 
@@ -97,8 +97,8 @@ message PredictionResponseMetaDef {
 message PredictionFeedbackDef {
   PredictionRequestDef request = 1;
   PredictionResponseDef response = 2;
-  DefaultDataDef truth = 3;
-  repeated float rewards = 4;
+  float reward = 3;
+  DefaultDataDef truth = 4;
 }
 
 // [END Feedback]
@@ -109,7 +109,16 @@ message PredictionRequestResponseDef {
   PredictionResponseDef response = 2;
 }
 
+service MAB {
+  rpc Route (PredictionRequestDef) returns (RouteResponseDef) {};
+  rpc Train (PredictionFeedbackDef) returns (PredictionFeedbackResponseDef) {};
+}
 
+message RouteResponseDef {
+	int32 branch = 1;
+}
 
-
-
+message PredictionFeedbackResponseDef {
+	bool success = 1;
+}
+	

@@ -34,7 +34,7 @@ public class AverageCombinerUnit extends CombinerUnit{
 		PredictionResponseMetaDef.Builder metaBuilder = PredictionResponseMetaDef.newBuilder();
 		DefaultDataDef.Builder dataBuilder = DefaultDataDef.newBuilder();
 		for (PredictionResponseDef predRet : inputs){
-			metaBuilder.addAllModel(predRet.getMeta().getModelList());
+//			metaBuilder.addAllModel(predRet.getMeta().getModelList());
 			int bLength = 0;
 			int vLength = 0;
 			if (predRet.getResponse().getDataOneofCase() == DataOneofCase.TENSOR)

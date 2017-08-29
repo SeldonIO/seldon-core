@@ -27,7 +27,7 @@ public class SimpleModelUnit extends ModelUnit {
 	{
 		PredictionResponseDef ret = PredictionResponseDef.newBuilder()
 				.setStatus(PredictionStatusDef.newBuilder().setStatus(PredictionStatusDef.Status.SUCCESS).build())
-				.setMeta(PredictionResponseMetaDef.newBuilder().addModel(state.id))
+				.setMeta(PredictionResponseMetaDef.newBuilder())//.addModel(state.id))
 				.setResponse(DefaultDataDef.newBuilder().addAllFeatures(Arrays.asList(classes))
 					.setTensor(Tensor.newBuilder().addShape(1).addShape(values.length)
 					.addAllValues(Arrays.asList(values)))).build();
