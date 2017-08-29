@@ -63,6 +63,63 @@ public class InternalPredictionService {
 				
 	}
 	
+	public void sendFeedback(String feedback, EndpointDef endpoint) {
+		sendFeedbackREST(feedback, endpoint);
+	}
+	
+	public void sendFeedbackREST(String feedback, EndpointDef endpoint) {
+		long timeNow = System.currentTimeMillis();
+		URI uri;
+		try {
+			URIBuilder builder = new URIBuilder().setScheme("http")
+					.setHost(endpoint.getServiceHost())
+					.setPort(endpoint.getServicePort())
+					.setPath("/api/v0.1/feedback");
+
+			uri = builder.build();
+		} catch (URISyntaxException e) 
+		{
+			throw new APIException(APIException.ApiExceptionType.APIFE_INVALID_ENDPOINT_URL,"Host: "+endpoint.getServiceHost()+" port:"+endpoint.getServicePort());
+		}
+		
+		StringEntity requestEntity = new StringEntity(feedback,ContentType.APPLICATION_JSON);
+		
+		HttpContext context = HttpClientContext.create();
+		HttpPost httpPost = new HttpPost(uri);
+		httpPost.setEntity(requestEntity);
+		
+		try  
+		{
+			if (logger.isDebugEnabled())
+				logger.debug("Requesting " + httpPost.getURI().toString());
+			CloseableHttpResponse resp = httpClient.execute(httpPost, context);
+			try
+			{
+				resp.getEntity();
+			}
+			finally
+			{
+				if (resp != null)
+					resp.close();
+				if (logger.isDebugEnabled())
+					logger.debug("External prediction server took "+(System.currentTimeMillis()-timeNow) + "ms");
+			}
+		} 
+		catch (IOException e) 
+		{
+			logger.error("Couldn't retrieve prediction from external prediction server - ", e);
+			throw new APIException(APIException.ApiExceptionType.APIFE_MICROSERVICE_ERROR,e.toString());
+		}
+		catch (Exception e)
+        {
+			logger.error("Couldn't retrieve prediction from external prediction server - ", e);
+			throw new APIException(APIException.ApiExceptionType.APIFE_MICROSERVICE_ERROR,e.toString());
+        }
+		finally
+		{
+			
+		}
+	}
 	
 	
 	public String predictREST(String dataString, EndpointDef endpoint){

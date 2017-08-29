@@ -31,4 +31,13 @@ public class PredictionService {
 			throw new APIException(APIException.ApiExceptionType.APIFE_NO_RUNNING_DEPLOYMENT,"no deployment with id "+clientId);
 
 	}
+	
+	public void sendFeedback(String feedback, String deploymentId){
+		DeploymentDef deployment = deploymentStore.getDeployment(deploymentId);
+		if (deployment != null)
+			internalPredictionService.sendFeedback(feedback, deployment.getPredictor().getEndpoint());
+		else
+			throw new APIException(APIException.ApiExceptionType.APIFE_NO_RUNNING_DEPLOYMENT,"no deployment with id "+deploymentId);
+
+	}
 }

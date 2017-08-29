@@ -13,6 +13,7 @@ import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.codahale.metrics.annotation.Timed;
@@ -23,9 +24,11 @@ import io.seldon.apife.exception.APIException.ApiExceptionType;
 import io.seldon.apife.kafka.KafkaRequestResponseProducer;
 import io.seldon.apife.pb.ProtoBufUtils;
 import io.seldon.apife.service.PredictionService;
+import io.seldon.protos.PredictionProtos.PredictionFeedbackDef;
 import io.seldon.protos.PredictionProtos.PredictionRequestDef;
 import io.seldon.protos.PredictionProtos.PredictionRequestResponseDef;
 import io.seldon.protos.PredictionProtos.PredictionResponseDef;
+import io.seldon.protos.PredictionProtos.PredictionFeedbackDef;
 
 @RestController
 public class RestClientController {
@@ -110,9 +113,26 @@ public class RestClientController {
 	}
 
 	
-	@RequestMapping("/api/v0.1/feedback")
-    String feedback() {
-        return "Not Implemented";
+	@RequestMapping(value = "/api/v0.1/feedback", method = RequestMethod.POST, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
+	@ResponseStatus(value = HttpStatus.OK)
+	public void feedback(RequestEntity<String> requestEntity, Principal principal) 
+	{
+		String clientId = principal.getName();
+		String json = requestEntity.getBody();
+		PredictionFeedbackDef feedback;
+		try
+		{
+			PredictionFeedbackDef.Builder builder = PredictionFeedbackDef.newBuilder();
+			ProtoBufUtils.updateMessageBuilderFromJson(builder, requestEntity.getBody() );
+			feedback = builder.build();
+		} 
+		catch (InvalidProtocolBufferException e) 
+		{
+			logger.error("Bad request",e);
+			throw new APIException(ApiExceptionType.APIFE_INVALID_RESPONSE_JSON,requestEntity.getBody());
+		}
+		
+		predictionService.sendFeedback(json,clientId);
     }
 	
 }
