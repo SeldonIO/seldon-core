@@ -52,7 +52,7 @@ public class PredictorBean {
 	{
 		PredictiveUnitState rootState = predictorState.rootState;
 		rootState.predictiveUnitBean.sendFeedback(feedback, rootState);
-		return ;
+		return;
 	}
 	
 	//TODO

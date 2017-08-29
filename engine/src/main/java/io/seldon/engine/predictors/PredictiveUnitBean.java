@@ -38,7 +38,10 @@ public abstract class PredictiveUnitBean {
 	public void sendFeedback(PredictionFeedbackDef feedback, PredictiveUnitState state){
 		System.out.println("NODE " + state.name + ": entered feedback");
 		List<PredictiveUnitState> children = state.children;
-		doSendFeedback(feedback, state);
+		if (feedback.getResponse().getMeta().getRoutingMap().get(state.id)!=null){
+			// If the response routing dictionary contains the current predictive unit key
+			doSendFeedback(feedback, state);
+		}
 		for (PredictiveUnitState child : children){
 			sendFeedback(feedback,child);
 		}
