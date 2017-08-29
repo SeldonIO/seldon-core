@@ -12,6 +12,8 @@ cluster-manager/.m2/
 *.pyc
 .m2
 \#*
+_*.yaml
+_*.json
 
 api-frontend/apife.json
 api-frontend/src/main/proto/prediction.proto
@@ -41,3 +43,5 @@ engine/target/
 zookeeper-k8s/zookeeper.json
 kafka/tests/src/prediction_pb2.py
 kafka/tests/src/seldonengine_pb2.py
+monitoring/alertmanager/config.yml
+monitoring/grafana/auth/grafana-prom-admin-password.txt

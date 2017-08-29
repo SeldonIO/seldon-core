@@ -59,9 +59,9 @@ public class RestClientController {
     }
 	
 	
-	
+	@Timed
 	@RequestMapping(value = "/api/v0.1/predictions", method = RequestMethod.POST, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
-	    public ResponseEntity<String> test(RequestEntity<String> requestEntity,Principal principal) {
+	    public ResponseEntity<String> prediction(RequestEntity<String> requestEntity,Principal principal) {
 		
 		String clientId = principal.getName();
 		String json = requestEntity.getBody();
