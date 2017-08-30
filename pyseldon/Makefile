@@ -1,5 +1,5 @@
 DOCKER_IMAGE_NAME=seldonio/pyseldon2
-DOCKER_IMAGE_VERSION=3.1
+DOCKER_IMAGE_VERSION=3.2
 
 install:
 	python setup.py install
