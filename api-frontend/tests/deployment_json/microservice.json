@@ -1,5 +1,5 @@
 {
-  "oauthKey": "client", 
+  "oauthKey": "key", 
   "predictor": {
     "endpoint": {
       "serviceHost": "0.0.0.0", 

@@ -10,7 +10,7 @@ from flask import request
 
 app = Flask(__name__)
 
-@app.route('/predict',methods=['GET','POST'])
+@app.route('/api/v0.1/predictions',methods=['GET','POST'])
 def hello_world():
     if not request.args.get('json') is None:
         jStr = request.args.get('json')
