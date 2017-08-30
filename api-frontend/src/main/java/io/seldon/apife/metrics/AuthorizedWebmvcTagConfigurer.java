@@ -20,8 +20,10 @@ public class AuthorizedWebmvcTagConfigurer extends WebmvcTagConfigurer {
 	}
 	
 	 public Tag principal(HttpServletRequest request) {
-		 //SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-	        return Tag.of("principal", request.getUserPrincipal().getName());
+		 if (request.getUserPrincipal() != null)
+			 return Tag.of("principal", request.getUserPrincipal().getName());
+		 else
+			 return Tag.of("principal", "None");
 	 }
 	
 }

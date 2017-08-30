@@ -98,7 +98,7 @@ public class RestClientController {
 			throw new APIException(ApiExceptionType.APIFE_INVALID_RESPONSE_JSON,requestEntity.getBody());
 		}
 		
-		//kafkaProducer.send(clientId,PredictionRequestResponseDef.newBuilder().setRequest(request).setResponse(response).build());
+		kafkaProducer.send(clientId,PredictionRequestResponseDef.newBuilder().setRequest(request).setResponse(response).build());
 		
 		
 		HttpHeaders responseHeaders = new HttpHeaders();
