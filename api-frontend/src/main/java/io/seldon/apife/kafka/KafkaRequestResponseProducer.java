@@ -26,7 +26,7 @@ public class KafkaRequestResponseProducer {
         logger.info(String.format("using %s[%s]", ENV_VAR_SELDON_KAFKA_SERVER, kafkaHostPort));
         if (kafkaHostPort == null) {
             logger.warn("*WARNING* SELDON_KAFKA_SERVER environment variable not set!");
-            kafkaHostPort = "localhost:9092";
+            kafkaHostPort = "localhost:9093";
         }
         logger.info("Starting kafka client with server "+kafkaHostPort);
 	    Properties props = new Properties();
