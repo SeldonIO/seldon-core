@@ -8,7 +8,7 @@ locust:
   script : predict_rest_locust.py
   host : http://seldon-apiserver:8080
   hatchRate: 1
-  clients: 1
+  clients: 10
 oauth:
   key: key
   secret: secret
