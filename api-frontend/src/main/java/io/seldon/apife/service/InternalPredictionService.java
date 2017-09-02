@@ -54,6 +54,7 @@ public class InternalPredictionService {
         httpClient = HttpClients.custom()
                 .setConnectionManager(connectionManager)
                 .setDefaultRequestConfig(requestConfig)
+                .setRetryHandler(new HttpRetryHandler())
                 .build();
     }
 		

@@ -7,12 +7,32 @@ import pandas as pd
 predict_blueprint = Blueprint('predict',__name__)
 
 class DataContractException(Exception):
-    pass
+    status_code = 400
+
+    def __init__(self, message, status_code=None, payload=None):
+        Exception.__init__(self)
+        self.message = message
+        if status_code is not None:
+            self.status_code = status_code
+        self.payload = payload
+
+    def to_dict(self):
+        rv = {"status":{"status":1,"info":self.message,"code":-1,"reason":"MICROSERVICE_BAD_DATA"}}
+        return rv
+
+@predict_blueprint.errorhandler(DataContractException)
+def handle_invalid_usage(error):
+    response = jsonify(error.to_dict())
+    response.status_code = 400
+    return response
 
 def extract_input():
     jStr = request.args.get("json")
     is_default = request.args.get("isDefault")
-    data = json.loads(jStr)
+    if jStr:
+        data = json.loads(jStr)
+    else:
+        raise DataContractException("Empty json parameter in request")
     return {
         'is_default':is_default,
         'request':data
@@ -49,9 +69,34 @@ def default_data_to_dataframe(data):
         return pd.DataFrame(values,columns=features)
     return pd.DataFrame(values)
 
-@predict_blueprint.route('/ping',methods=['GET'])
-def ping():
-    return "pong"
+
+
+
+@predict_blueprint.route('/pausez',methods=['POST'])
+def pause():
+    current_app.config["seldon_ready"] = False
+    ret = {"ready": current_app.config["seldon_ready"] }
+    json_ret = jsonify(ret)
+    return json_ret
+
+@predict_blueprint.route('/restartz',methods=['POST'])
+def restart():
+    current_app.config["seldon_ready"] = True
+    ret = {"ready": current_app.config["seldon_ready"] }
+    json_ret = jsonify(ret)
+    return json_ret
+
+@predict_blueprint.route('/readyz',methods=['GET'])
+def ready():
+    ret = {"ready": current_app.config["seldon_ready"] }
+    response = jsonify(ret)
+    if not current_app.config["seldon_ready"]:
+        response.status_code = 503
+    return response
+
+@predict_blueprint.route('/healthz',methods=['GET'])
+def health():
+    return "healthy"
 
 def create_response(names,preds):
     preds = np.array(preds)
@@ -70,6 +115,8 @@ def do_predict():
     """
     input_ = extract_input()
     pipeline =  current_app.config["seldon_pipeline"]
+    if input_.get('request') is None or input_['request']['request'] is None:
+        raise DataContractException("Request format invalid")
     if input_['is_default']:
         data = default_data_to_dataframe(input_['request']['request'])
     else:
@@ -84,9 +131,8 @@ def do_predict():
     else:
         print "Final estimator has no class names defined. Consider implementing the get_class_id_map method."
         names = [str(i) for i in xrange(len(preds[0]))]
-    
+
     ret = create_response(names,preds)
     json_ret = jsonify(ret)
     return json_ret
-            
         

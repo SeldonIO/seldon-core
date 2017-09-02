@@ -20,6 +20,8 @@ import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.EnvVarBuilder;
+import io.fabric8.kubernetes.api.model.HTTPGetAction;
+import io.fabric8.kubernetes.api.model.HTTPGetActionBuilder;
 import io.fabric8.kubernetes.api.model.LocalObjectReference;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.api.model.Service;
@@ -165,6 +167,23 @@ public class DeploymentUtils {
                     .withNewResources()
                         .addToRequests(resource_requests)
                     .endResources()
+                    .withNewReadinessProbe()
+                		.withHttpGet(new HTTPGetActionBuilder().withNewPort(container_port).withPath("/readyz").build())
+                		.withInitialDelaySeconds(4)
+                		.withPeriodSeconds(2)
+                	.endReadinessProbe()
+                	.withNewLivenessProbe()
+            			.withHttpGet(new HTTPGetActionBuilder().withNewPort(container_port).withPath("/healthz").build())
+            			.withInitialDelaySeconds(60)
+            			.withPeriodSeconds(5)
+            		.endLivenessProbe()                   
+/*
+            		.withNewReadinessProbe()
+                    	.withNewTcpSocket().withNewPort(container_port).endTcpSocket()
+                    	.withInitialDelaySeconds(6)
+                    	.withPeriodSeconds(2)
+                    .endReadinessProbe()
+                    */
                     .build();
             
             containers.add(c);
@@ -203,6 +222,16 @@ public class DeploymentUtils {
                     .withName("seldon-container-engine").withImage(image_name_and_version)
                     .withEnv(envVar_ENGINE_PREDICTOR, envVar_ENGINE_SERVER_PORT)
                     .addNewPort().withContainerPort(engine_container_port).endPort()
+                    .withNewReadinessProbe()
+                    	.withHttpGet(new HTTPGetActionBuilder().withNewPort(engine_container_port).withPath("/ping").build())
+                    	.withInitialDelaySeconds(4)
+                    	.withPeriodSeconds(2)
+                    .endReadinessProbe()
+                    .withNewLivenessProbe()
+                		.withHttpGet(new HTTPGetActionBuilder().withNewPort(engine_container_port).withPath("/ping").build())
+                		.withInitialDelaySeconds(60)
+                		.withPeriodSeconds(10)
+                	.endLivenessProbe()
                     .build();
             
             containers.add(c);
@@ -277,9 +306,17 @@ public class DeploymentUtils {
         String deploymentName = (deployment != null) ? deployment.getMetadata().getName() : "null";
         logger.debug(String.format("Created kubernetes delployment [%s]", deploymentName));
         if ((deployment != null) && (buildDeploymentResult.service.isPresent())) {
-            Service service = kubernetesClient.services().inNamespace(namespace_name).createOrReplace(buildDeploymentResult.service.get());
-            String serviceName = (service != null) ? service.getMetadata().getName() : "null";
-            logger.debug(String.format("Created kubernetes service [%s]", serviceName));
+        	String serviceName = buildDeploymentResult.service.get().getMetadata().getName();
+        	logger.debug(String.format("Looking for kubernetes service [%s]", serviceName));
+        	Service service = kubernetesClient.services().inNamespace(namespace_name).withName(serviceName).get();
+        	if (service == null)
+        	{
+        		service = kubernetesClient.services().inNamespace(namespace_name).createOrReplace(buildDeploymentResult.service.get());
+        		serviceName = (service != null) ? service.getMetadata().getName() : "null";
+        		logger.debug(String.format("Created kubernetes service [%s]", serviceName));
+        	}
+        	else
+        		logger.debug(String.format("kubernetes service [%s] already exists. Not updating", serviceName));
         }
     }
 

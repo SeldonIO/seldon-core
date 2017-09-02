@@ -29,6 +29,7 @@ class Microservices(object):
 
         app.config['seldon_pipeline'] = pipeline
         app.config['seldon_model_name'] = model_name
+        app.config['seldon_ready'] = True
 
         app.register_blueprint(predict_blueprint)
 
