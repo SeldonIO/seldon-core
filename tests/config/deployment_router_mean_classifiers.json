@@ -1,0 +1,103 @@
+{
+    "cluster": {},
+    "id": "1",
+    "name": "my-name",
+    "oauth_key": "key",
+    "oauth_secret": "secret",
+    "predictor": {
+        "enabled": true,
+        "id": "0",
+        "imagePullSecrets": [],
+        "name": "my-predictor",
+        "predictiveUnits": [
+            {
+                "children": ["1","2","3"],
+                "cluster_resources": {
+                    "cpu": "",
+                    "gpu": "",
+                    "id": "2",
+                    "image": "seldonio/mab_epsilon_greedy",
+                    "memory": "",
+                    "version": "0.2"
+                },
+                "endpoint": {
+                    "service_host": "-",
+                    "service_port": -1,
+                    "type": "REST"
+                },
+                "id": "0",
+                "name": "MAB",
+                "parameters": [],
+                "subtype": "MICROSERVICE",
+                "type": "ROUTER"
+            },
+	    {
+                "children": [],
+                "cluster_resources": {
+                    "cpu": "",
+                    "gpu": "",
+                    "id": "3",
+                    "image": "seldonio/mean_classifier",
+                    "memory": "",
+                    "version": "0.4"
+                },
+                "endpoint": {
+                    "service_host": "-",
+                    "service_port": -1,
+                    "type": "REST"
+                },
+                "id": "1",
+                "name": "digit_classifier_1",
+                "parameters": [],
+                "subtype": "MICROSERVICE",
+                "type": "MODEL"
+            },
+	    {
+                "children": [],
+                "cluster_resources": {
+                    "cpu": "",
+                    "gpu": "",
+                    "id": "4",
+                    "image": "seldonio/mean_classifier",
+                    "memory": "",
+                    "version": "0.4"
+                },
+                "endpoint": {
+                    "service_host": "-",
+                    "service_port": -1,
+                    "type": "REST"
+                },
+                "id": "2",
+                "name": "digit_classifier_2",
+                "parameters": [],
+                "subtype": "MICROSERVICE",
+                "type": "MODEL"
+            },
+	    {
+                "children": [],
+                "cluster_resources": {
+                    "cpu": "",
+                    "gpu": "",
+                    "id": "5",
+                    "image": "seldonio/mean_classifier",
+                    "memory": "",
+                    "version": "0.4"
+                },
+                "endpoint": {
+                    "service_host": "-",
+                    "service_port": -1,
+                    "type": "REST"
+                },
+                "id": "3",
+                "name": "digit_classifier_3",
+                "parameters": [],
+                "subtype": "MICROSERVICE",
+                "type": "MODEL"
+            }
+        ],
+        "replicas": 1,
+        "replicasReady": 0,
+        "root": "0"
+    },
+    "uniqueName": "my-uniqueName"
+}
