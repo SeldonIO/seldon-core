@@ -3,5 +3,5 @@
     "basicAuth": false,
     "name": "prometheus",
     "type": "prometheus",
-    "url": "http://prometheus"
+    "url": "http://prometheus-seldon"
 }

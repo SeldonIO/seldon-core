@@ -89,12 +89,19 @@ public class InternalPredictionService {
     		httpPost.setEntity(requestEntity);
     		try  
     		{
-    			if (logger.isDebugEnabled())
-    				logger.debug("Requesting " + httpPost.getURI().toString());
+    			//if (logger.isDebugEnabled())
+    			logger.info("Requesting " + httpPost.getURI().toString());
     			CloseableHttpResponse resp = httpClient.execute(httpPost, context);
     			try
     			{
-    				return EntityUtils.toString(resp.getEntity());
+    				if (resp.getStatusLine().getStatusCode() != 200)
+    				{
+        				logger.warn("Received response with code "+resp.getStatusLine().getStatusCode()+" with reason "+resp.getStatusLine().getReasonPhrase());
+        				throw new APIException(APIException.ApiExceptionType.APIFE_MICROSERVICE_ERROR,String.format("Status code: %s Reason: %s", resp.getStatusLine().getStatusCode(),resp.getStatusLine().getReasonPhrase()));
+
+    				}
+    				else
+    					return EntityUtils.toString(resp.getEntity());    				
     			}
     			finally
     			{

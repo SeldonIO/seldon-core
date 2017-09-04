@@ -2,46 +2,53 @@
     "apiVersion": "v1",
     "items": [
         {
-            "apiVersion": "v1",
-            "kind": "Pod",
+            "apiVersion": "extensions/v1beta1",
+            "kind": "Deployment",
             "metadata": {
-                "annotations": {
-                    "prometheus.io/path": "/prometheus",
-                    "prometheus.io/port": "8080",
-                    "prometheus.io/scrape": "true"
-                },
-                "labels": {
-                    "app": "seldon-apiserver-container-app"
-                },
                 "name": "seldon-apiserver"
             },
             "spec": {
-                "containers": [
-                    {
-                        "env": [
+                "replicas": 1,
+                "template": {
+                    "metadata": {
+                        "annotations": {
+                            "prometheus.io/path": "/prometheus",
+                            "prometheus.io/port": "8080",
+                            "prometheus.io/scrape": "true"
+                        },
+                        "labels": {
+                            "app": "seldon-apiserver-container-app"
+                        }
+                    },
+                    "spec": {
+                        "containers": [
                             {
-                                "name": "SELDON_ENGINE_ZK_SERVERS",
-                                "value": "zookeeper-1:2181,zookeeper-2:2181,zookeeper-3:2181"
-                            },
-                            {
-                                "name": "SELDON_ENGINE_KAFKA_SERVER",
-                                "value": "kafka:9092"
-                            },
-                            {
-                                "name": "SELDON_CLUSTER_MANAGER_REDIS_HOST",
-                                "value": "redis"
-                            }
-                        ],
-                        "image": "seldonio/apife:%APIFE_IMAGE_VERSION%",
-                        "name": "seldon-apiserver-container",
-                        "ports": [
-                            {
-                                "containerPort": 8080,
-                                "protocol": "TCP"
+                                "env": [
+                                    {
+                                        "name": "SELDON_ENGINE_ZK_SERVERS",
+                                        "value": "zookeeper-1:2181,zookeeper-2:2181,zookeeper-3:2181"
+                                    },
+                                    {
+                                        "name": "SELDON_ENGINE_KAFKA_SERVER",
+                                        "value": "kafka:9092"
+                                    },
+                                    {
+                                        "name": "SELDON_CLUSTER_MANAGER_REDIS_HOST",
+                                        "value": "redis"
+                                    }
+                                ],
+                                "image": "seldonio/apife:%APIFE_IMAGE_VERSION%",
+                                "name": "seldon-apiserver-container",
+                                "ports": [
+                                    {
+                                        "containerPort": 8080,
+                                        "protocol": "TCP"
+                                    }
+                                ]
                             }
                         ]
                     }
-                ]
+                }
             }
         },
         {
@@ -53,7 +60,7 @@
             "spec": {
                 "ports": [
                     {
-                        "name": "client",
+                        "name": "http",
                         "nodePort": 30032,
                         "port": 8080,
                         "protocol": "TCP",

@@ -33,4 +33,5 @@ add_dashboard() {
 recreate_datasource
 add_dashboard grafana-net-2115-dashboard.json DS_PROM
 add_dashboard metrics-test-dashboard.json DS_PROM
+add_dashboard predictions-analytics-dashboard.json DS_PROM
 

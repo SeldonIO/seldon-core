@@ -2,9 +2,12 @@ package io.seldon.engine.api.rest;
 
 import java.util.concurrent.ExecutionException;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +34,13 @@ public class RestClientController {
 	@Autowired
 	private PredictionService predictionService;
 	
+	private boolean ready = false;
+	
+	 @PostConstruct
+	 public void init(){
+		 ready = true;
+	 }	
+	
 	@RequestMapping("/")
     String home() {
         return "Hello World!!";
@@ -41,6 +51,38 @@ public class RestClientController {
         return "pong";
     }
 	
+	@RequestMapping("/ready")
+	ResponseEntity<String> ready() {
+		
+		HttpHeaders responseHeaders = new HttpHeaders();
+		HttpStatus httpStatus;
+		String ret;
+		if (ready)
+		{
+			httpStatus = HttpStatus.OK;
+			ret = "ready";
+		}
+		else
+		{
+			httpStatus = HttpStatus.SERVICE_UNAVAILABLE;
+			ret = "Service unavailable";
+		}
+		ResponseEntity<String> responseEntity = new ResponseEntity<String>(ret, responseHeaders, httpStatus);
+		return responseEntity;
+    }
+	
+	@RequestMapping("/pause")
+    String pause() {	    
+		ready = false;
+        return "paused";
+    }
+	
+	@RequestMapping("/unpause")
+    String unpause() {	    
+		ready = true;
+        return "unpaused";
+    }
+
 	
 	@RequestMapping(value = "/api/v0.1/predictions", method = RequestMethod.POST, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
     public ResponseEntity<String> predictions(RequestEntity<String> requestEntity) 

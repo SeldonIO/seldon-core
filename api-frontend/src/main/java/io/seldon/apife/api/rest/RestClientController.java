@@ -3,6 +3,8 @@ package io.seldon.apife.api.rest;
 import java.security.Principal;
 import java.util.concurrent.ThreadLocalRandom;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +40,13 @@ public class RestClientController {
 	@Autowired
 	private KafkaRequestResponseProducer kafkaProducer;
 	
+	private boolean ready = false;
+	
+	 @PostConstruct
+	 public void init(){
+		 ready = true;
+	 }	
+	
 	@Timed(quantiles = {0.5, 0.95})
 	@RequestMapping("/")
     String home() {
@@ -52,6 +61,37 @@ public class RestClientController {
         return "Hello World!";
     }
 	
+	@RequestMapping("/ready")
+	ResponseEntity<String> ready() {
+		
+		HttpHeaders responseHeaders = new HttpHeaders();
+		HttpStatus httpStatus;
+		String ret;
+		if (ready)
+		{
+			httpStatus = HttpStatus.OK;
+			ret = "ready";
+		}
+		else
+		{
+			httpStatus = HttpStatus.SERVICE_UNAVAILABLE;
+			ret = "Service unavailable";
+		}
+		ResponseEntity<String> responseEntity = new ResponseEntity<String>(ret, responseHeaders, httpStatus);
+		return responseEntity;
+    }
+	
+	@RequestMapping("/pause")
+    String pause() {	    
+		ready = false;
+        return "paused";
+    }
+	
+	@RequestMapping("/unpause")
+    String unpause() {	    
+		ready = true;
+        return "unpaused";
+    }
 	
 	@RequestMapping("/ping")
     String ping() {	    

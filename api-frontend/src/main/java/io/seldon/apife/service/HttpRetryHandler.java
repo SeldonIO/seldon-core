@@ -36,6 +36,10 @@ public class HttpRetryHandler implements HttpRequestRetryHandler {
         	logger.info("Got socket exception");
         	return true;
         }
+        if (exception instanceof org.apache.http.NoHttpResponseException){
+            logger.warn("got no http response exception");
+            return true;
+        }
         if (exception instanceof UnknownHostException) {
             // Unknown host
             return false;
