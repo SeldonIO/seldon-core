@@ -101,7 +101,10 @@ public class InternalPredictionService {
 
     				}
     				else
-    					return EntityUtils.toString(resp.getEntity());    				
+    				{
+    					logger.info("Received response");
+    					return EntityUtils.toString(resp.getEntity());    	
+    				}
     			}
     			finally
     			{
