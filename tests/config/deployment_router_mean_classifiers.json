@@ -29,7 +29,10 @@
                 "name": "MAB",
                 "parameters": [
 		    {"name":"router_id",
-		     "value":"ts0",
+		     "value":"0",
+		     "type":"STRING"},
+		    {"name":"deployment_id",
+		     "value":"ts_test0",
 		     "type":"STRING"}],
                 "subtype": "MICROSERVICE",
                 "type": "ROUTER"
