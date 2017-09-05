@@ -16,18 +16,21 @@
                     "cpu": "",
                     "gpu": "",
                     "id": "2",
-                    "image": "seldonio/mab_epsilon_greedy",
+                    "image": "seldonio/mab_thomson_sampling",
                     "memory": "",
-                    "version": "0.2"
+                    "version": "0.6"
                 },
                 "endpoint": {
                     "service_host": "-",
                     "service_port": -1,
-                    "type": "REST"
+                    "type": "GRPC"
                 },
                 "id": "0",
                 "name": "MAB",
-                "parameters": [],
+                "parameters": [
+		    {"name":"router_id",
+		     "value":"ts0",
+		     "type":"STRING"}],
                 "subtype": "MICROSERVICE",
                 "type": "ROUTER"
             },
