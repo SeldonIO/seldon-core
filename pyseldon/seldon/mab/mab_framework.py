@@ -11,6 +11,7 @@ import seldon.proto.prediction_pb2 as prediction_pb2
 DEFAULT_REDIS_HOST = '127.0.0.1'
 DEFAULT_REDIS_PORT = 6379
 DEFAULT_GRPC_PORT = 50051
+DEFAULT_GRPC_HOST = '0.0.0.0'
 
 class Repeater(threading.Thread):
     def __init__(self,function,frequency):
@@ -49,6 +50,7 @@ class SavedDict(dict):
 
 class MAB(prediction_pb2.MABServicer):
     def __init__(self,id,deployment_key,n_branches,redis_host,push_frequency=300,**kwargs):
+
         self.id = id
         self.deployment_key = deployment_key
         self.n_branches = n_branches
@@ -85,7 +87,7 @@ class MAB(prediction_pb2.MABServicer):
 class MABServiceFactory(object):
 
     @staticmethod
-    def create_MAB_microservice(mab_class,mab_id,deployment_key,n_branches,push_frequency=6,redis_host=DEFAULT_REDIS_HOST,grpc_port=DEFAULT_GRPC_PORT,**kwargs):
+    def create_MAB_microservice(mab_class,mab_id,deployment_key,n_branches,push_frequency=6,redis_host=DEFAULT_REDIS_HOST,grpc_port=DEFAULT_GRPC_PORT,grpc_host=DEFAULT_GRPC_HOST,**kwargs):
         """
         Create a Multi Armed Bandits microservice app
 
@@ -110,6 +112,6 @@ class MABServiceFactory(object):
         prediction_pb2.add_MABServicer_to_server(mab_servicer, server)
 
         #TODO: make secure
-        server.add_insecure_port('[::]:{}'.format(grpc_port))
+        server.add_insecure_port('{}:{}'.format(grpc_host,grpc_port))
 
         return server
