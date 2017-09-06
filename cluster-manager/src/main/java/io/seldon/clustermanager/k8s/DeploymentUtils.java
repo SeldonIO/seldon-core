@@ -194,7 +194,7 @@ public class DeploymentUtils {
                 	.withNewLifecycle()
             		.withNewPreStop()
             			.withNewExec()
-            				.withCommand("/bin/bash","-c","sleep 20")
+            				.withCommand("/bin/bash","-c","sleep 10")
             			.endExec()
             			.endPreStop()
             		.endLifecycle()
@@ -224,6 +224,58 @@ public class DeploymentUtils {
 
         final int engine_container_port = ENGINE_CONTAINER_PORT;
         final int engine_service_port = engine_container_port;
+        
+        if (clusterManagerProperites.isIstioEnabled())
+        {
+        	List<String> args = new ArrayList<>();
+        	args.add("proxy");
+            args.add("sidecar");
+            args.add("-v");
+            args.add("2");
+            args.add("--passthrough");
+            args.add(""+ENGINE_CONTAINER_PORT);
+           
+            EnvVar envar_pod_name = new EnvVarBuilder().withName("POD_NAME")
+            			.withNewValueFrom()
+            				.withNewFieldRef()
+            					.withApiVersion("v1")
+            					.withFieldPath("metadata.name")
+            				.endFieldRef()
+            			.endValueFrom()
+            			.build();
+            
+            EnvVar envar_pod_namespace = new EnvVarBuilder().withName("POD_NAMESPACE")
+        			.withNewValueFrom()
+        				.withNewFieldRef()
+        					.withApiVersion("v1")
+        					.withFieldPath("metadata.namespace")
+        				.endFieldRef()
+        			.endValueFrom()
+        			.build();
+
+            EnvVar envar_pod_ip = new EnvVarBuilder().withName("POD_IP")
+        			.withNewValueFrom()
+        				.withNewFieldRef()
+        					.withApiVersion("v1")
+        					.withFieldPath("status.podIP")
+        				.endFieldRef()
+        			.endValueFrom()
+        			.build();
+            //@formatter:off
+        	Container c = new ContainerBuilder()
+        			 .withName("proxy")
+        			 .withImage("docker.io/istio/proxy_debug:0.1")
+        			 .withNewSecurityContext()
+        			 	.withRunAsUser(1337L)
+        			 .endSecurityContext()
+        			 .withArgs(args)
+        			 .withEnv(envar_pod_name, envar_pod_namespace, envar_pod_ip)
+        			 .build();
+        	 containers.add(c);
+             //@formatter:on
+        	 logger.debug("ADDING istio container");
+        }
+        
         { // add container for engine
             final String image_name_and_version = ENGINE_CONTAINER_IMAGE_AND_VERSION;
 
@@ -253,7 +305,7 @@ public class DeploymentUtils {
                 	.withNewLifecycle()
             		.withNewPreStop()
             			.withNewExec()
-            				.withCommand("/bin/bash","-c","curl 127.0.0.1:"+engine_container_port+"/pause && sleep 20")
+            				.withCommand("/bin/bash","-c","curl 127.0.0.1:"+engine_container_port+"/pause && sleep 10")
             			.endExec()
             		.endPreStop()
             	.endLifecycle()
@@ -316,6 +368,7 @@ public class DeploymentUtils {
                     	.addToLabels("app", serviceSelectorDetails.appLabelValue)
                     	.addToLabels("version", "1")                    	
                         .addToLabels(serviceSelectorDetails.trackLabelName, serviceSelectorDetails.trackLabelValue)
+                        .withAnnotations(getDeploymentAnnotations(clusterManagerProperites))
                     .endMetadata()
                     .withNewSpec()
                         .addAllToContainers(containers)
@@ -328,6 +381,22 @@ public class DeploymentUtils {
         BuildDeploymentResult buildDeploymentResult = new BuildDeploymentResult(deployment, Optional.ofNullable(service), resultingPredictorDefBuilder.build(),
                 isCanary);
         return buildDeploymentResult;
+    }
+    
+    private static Map<String,String> getDeploymentAnnotations(ClusterManagerProperites clusterManagerProperites)
+    {
+    	if (clusterManagerProperites.isIstioEnabled())
+    	{
+    		logger.debug("ADDING istio annotations");
+    		Map<String,String> props = new HashMap<>();
+    		props.put("alpha.istio.io/sidecar", "injected");
+    		props.put( "alpha.istio.io/version","jenkins@ubuntu-16-04-build-12ac793f80be71-0.1.6-dab2033");
+    		props.put("pod.alpha.kubernetes.io/init-containers", "[{\"name\":\"init\",\"image\":\"docker.io/istio/init:0.1\",\"args\":[\"-p\",\"15001\",\"-u\",\"1337\"],\"resources\":{},\"terminationMessagePath\":\"/dev/termination-log\",\"terminationMessagePolicy\":\"File\",\"imagePullPolicy\":\"Always\",\"securityContext\":{\"capabilities\":{\"add\":[\"NET_ADMIN\"]}}},{\"name\":\"enable-core-dump\",\"image\":\"alpine\",\"command\":[\"/bin/sh\"],\"args\":[\"-c\",\"sysctl -w kernel.core_pattern=/tmp/core.%e.%p.%t \\u0026\\u0026 ulimit -c unlimited\"],\"resources\":{},\"terminationMessagePath\":\"/dev/termination-log\",\"terminationMessagePolicy\":\"File\",\"imagePullPolicy\":\"Always\",\"securityContext\":{\"privileged\":true}}]");
+    		props.put("pod.beta.kubernetes.io/init-containers", "[{\"name\":\"init\",\"image\":\"docker.io/istio/init:0.1\",\"args\":[\"-p\",\"15001\",\"-u\",\"1337\"],\"resources\":{},\"terminationMessagePath\":\"/dev/termination-log\",\"terminationMessagePolicy\":\"File\",\"imagePullPolicy\":\"Always\",\"securityContext\":{\"capabilities\":{\"add\":[\"NET_ADMIN\"]}}},{\"name\":\"enable-core-dump\",\"image\":\"alpine\",\"command\":[\"/bin/sh\"],\"args\":[\"-c\",\"sysctl -w kernel.core_pattern=/tmp/core.%e.%p.%t \\u0026\\u0026 ulimit -c unlimited\"],\"resources\":{},\"terminationMessagePath\":\"/dev/termination-log\",\"terminationMessagePolicy\":\"File\",\"imagePullPolicy\":\"Always\",\"securityContext\":{\"privileged\":true}}]");
+    		return props;
+    	}
+    	else
+    		return new HashMap<>();
     }
 
     public static void createDeployment(KubernetesClient kubernetesClient, String namespace_name, BuildDeploymentResult buildDeploymentResult) {

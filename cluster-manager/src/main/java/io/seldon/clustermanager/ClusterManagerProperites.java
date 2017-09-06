@@ -8,6 +8,7 @@ public class ClusterManagerProperites {
     private int engineContainerPort;
     private String engineContainerImageAndVersion;
     private int puContainerPortBase;
+    private boolean istioEnabled;
 
     public int getEngineContainerPort() {
         return engineContainerPort;
@@ -32,8 +33,16 @@ public class ClusterManagerProperites {
     public void setPuContainerPortBase(int puContainerPortBase) {
         this.puContainerPortBase = puContainerPortBase;
     }
+    
+    public boolean isIstioEnabled() {
+		return istioEnabled;
+	}
 
-    @Override
+	public void setIstioEnabled(boolean istioEnabled) {
+		this.istioEnabled = istioEnabled;
+	}
+
+	@Override
     public String toString() {
         return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
