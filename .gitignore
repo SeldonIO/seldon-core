@@ -16,6 +16,7 @@ _*.yaml
 _*.json
 
 api-frontend/apife.json
+api-frontend/apife_istio.json
 api-frontend/src/main/proto/prediction.proto
 api-frontend/tests/API_ENDPOINT
 api-frontend/tests/api-client-key.txt

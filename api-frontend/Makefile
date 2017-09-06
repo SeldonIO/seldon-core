@@ -11,6 +11,8 @@ push_to_registry:
 clean:
 	@mvn clean
 	@rm -fv apife.json
+	@rm -fv apife.yaml
+	@rm -fv apife_istio.yaml
 
 cache_dependencies:
 	mvn -Dmaven.repo.local=./.m2 dependency:resolve
@@ -22,10 +24,20 @@ apife.json: apife.json.in Makefile
 	@cat apife.json.in | sed \
 		-e  "s|%APIFE_IMAGE_VERSION%|$(APIFE_IMAGE_VERSION)|" > $@ && echo "created $@"
 
+apife_istio.json: apife_istio.json.in Makefile
+	@cat apife_istio.json.in | sed \
+		-e  "s|%APIFE_IMAGE_VERSION%|$(APIFE_IMAGE_VERSION)|" > $@ && echo "created $@"
+
 start_apife: apife.json
 	kubectl apply -f apife.json
 stop_apife: apife.json
 	kubectl delete --ignore-not-found=true -f apife.json
+
+start_apife_istio: apife_istio.json
+	kubectl apply -f apife_istio.json
+
+stop_apife_istio: apife_istio.json
+	kubectl delete --ignore-not-found=true -f apife_istio.json
 
 
 update_version_txt:
