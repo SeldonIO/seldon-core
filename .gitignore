@@ -46,3 +46,4 @@ kafka/tests/src/prediction_pb2.py
 kafka/tests/src/seldonengine_pb2.py
 monitoring/alertmanager/config.yml
 monitoring/grafana/auth/grafana-prom-admin-password.txt
+monitoring/glusterfs-volume/_glusterfs.json
