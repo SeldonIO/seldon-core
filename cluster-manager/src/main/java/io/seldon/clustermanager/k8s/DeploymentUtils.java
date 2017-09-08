@@ -146,6 +146,8 @@ public class DeploymentUtils {
             EnvVar envVar_PREDICTIVE_UNIT_PARAMETERS = new EnvVarBuilder().withName("PREDICTIVE_UNIT_PARAMETERS").withValue(predictiveUnitParameters).build();
             EnvVar envVar_PREDICTIVE_UNIT_SERVICE_PORT = new EnvVarBuilder().withName("PREDICTIVE_UNIT_SERVICE_PORT").withValue(String.valueOf(container_port))
                     .build();
+            EnvVar envVar_PREDICTIVE_UNIT_ID = new EnvVarBuilder().withName("PREDICTIVE_UNIT_ID").withValue(predictiveUnitDef.getId()).build();
+            EnvVar envVar_SELDON_DEPLOYMENT_ID = new EnvVarBuilder().withName("SELDON_DEPLOYMENT_ID").withValue(seldonDeploymentId).build();
 
             Map<String, Quantity> resource_requests = new HashMap<>();
             { // Add container resource requests
@@ -160,7 +162,7 @@ public class DeploymentUtils {
             //@formatter:off
             Container c = new ContainerBuilder()
                     .withName("seldon-container-pu-"+String.valueOf(predictiveUnitIndex)).withImage(image_name_and_version)
-                    .withEnv(envVar_PREDICTIVE_UNIT_PARAMETERS, envVar_PREDICTIVE_UNIT_SERVICE_PORT)
+                    .withEnv(envVar_PREDICTIVE_UNIT_PARAMETERS, envVar_PREDICTIVE_UNIT_SERVICE_PORT, envVar_PREDICTIVE_UNIT_ID, envVar_SELDON_DEPLOYMENT_ID)
                     .addNewPort().withContainerPort(container_port).endPort()
                     .withNewResources()
                         .addToRequests(resource_requests)
