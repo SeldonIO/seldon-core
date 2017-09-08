@@ -1,3 +1,5 @@
+SHELL=/bin/bash
+
 DOCKER_IMAGE_NAME=seldonio/apife
 PROJECT_VERSION:=`cat version.txt`
 DOCKER_IMAGE_VERSION=$(PROJECT_VERSION)
@@ -18,14 +20,26 @@ cache_dependencies:
 	mvn -Dmaven.repo.local=./.m2 dependency:resolve
 	mvn -Dmaven.repo.local=./.m2 verify
 
+FORCE:
 
-
-apife.json: apife.json.in Makefile
-	@cat apife.json.in | sed \
+apife.json: FORCE
+	@ \
+	if [ ! -f settings.sh ]; then \
+		cp -v settings.sh.default settings.sh; \
+	fi && \
+	source settings.sh && cat apife.json.in | sed \
+		-e  "s|%SELDON_APIFE_SERVICE_TYPE%|$${SELDON_APIFE_SERVICE_TYPE}|" \
+		-e  "s|%JAVA_OPTS%|$${JAVA_OPTS}|" \
 		-e  "s|%APIFE_IMAGE_VERSION%|$(APIFE_IMAGE_VERSION)|" > $@ && echo "created $@"
 
-apife_istio.json: apife_istio.json.in Makefile
-	@cat apife_istio.json.in | sed \
+apife_istio.json: FORCE
+	@ \
+	if [ ! -f settings.sh ]; then \
+		cp -v settings.sh.default settings.sh; \
+	fi && \
+	source settings.sh && cat apife_istio.json.in | sed \
+		-e  "s|%SELDON_APIFE_SERVICE_TYPE%|$${SELDON_APIFE_SERVICE_TYPE}|" \
+		-e  "s|%JAVA_OPTS%|$${JAVA_OPTS}|" \
 		-e  "s|%APIFE_IMAGE_VERSION%|$(APIFE_IMAGE_VERSION)|" > $@ && echo "created $@"
 
 start_apife: apife.json

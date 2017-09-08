@@ -15,6 +15,7 @@ cluster-manager/.m2/
 _*.yaml
 _*.json
 
+api-frontend/settings.sh
 api-frontend/apife.json
 api-frontend/apife_istio.json
 api-frontend/src/main/proto/prediction.proto

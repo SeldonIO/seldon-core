@@ -11,14 +11,18 @@ API_CLIENT_KEY=$(shell cat config/$(DEPLOYMENT_JSON) | jq -r .oauth_key)
 API_CLIENT_SECRET=$(shell cat config/$(DEPLOYMENT_JSON) | jq -r .oauth_secret)
 
 cm_update_endpoint_for_localhost:
-	@echo "localhost:8080" > CLUSTER_MANAGER_ENDPOINT && cat CLUSTER_MANAGER_ENDPOINT
+	@echo "localhost:8081" > CLUSTER_MANAGER_ENDPOINT && cat CLUSTER_MANAGER_ENDPOINT
 cm_update_endpoint_for_minikube:
 	@MINIKUBE_IP=$$(minikube ip) && echo "$${MINIKUBE_IP}:30030" > CLUSTER_MANAGER_ENDPOINT && cat CLUSTER_MANAGER_ENDPOINT
+cm_update_endpoint_for_loadbalancer:
+	@API_IP=$$(kubectl get svc seldon-cluster-manager  -o jsonpath="{.status.loadBalancer.ingress[0].ip}") && echo "$${API_IP}:8080" > CLUSTER_MANAGER_ENDPOINT && cat CLUSTER_MANAGER_ENDPOINT
 
 api_update_endpoint_for_localhost:
 	@echo "localhost:8080" > API_ENDPOINT && cat API_ENDPOINT
 api_update_endpoint_for_minikube:
 	@MINIKUBE_IP=$$(minikube ip) && echo "$${MINIKUBE_IP}:30032" > API_ENDPOINT && cat API_ENDPOINT
+api_update_endpoint_for_loadbalancer:
+	@API_IP=$$(kubectl get svc seldon-apiserver  -o jsonpath="{.status.loadBalancer.ingress[0].ip}") && echo "$${API_IP}:8080" > API_ENDPOINT && cat API_ENDPOINT
 
 
 #

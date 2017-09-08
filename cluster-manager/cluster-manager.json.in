@@ -52,6 +52,7 @@
                                 ],
                                 "image": "seldonio/cluster-manager:%CLUSTER_MANAGER_IMAGE_VERSION%",
                                 "name": "seldon-cluster-manager-container",
+				"imagePullPolicy": "Always",
                                 "ports": [
                                     {
                                         "containerPort": 8080,
