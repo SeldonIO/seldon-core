@@ -2,5 +2,6 @@
 SELDON_CLUSTER_MANAGER_SERVICE_TYPE=NodePort
 
 # JAVA_OPTS=
-JAVA_OPTS='-agentlib:jdwp=transport=dt_socket,address=127.0.0.1:8000,server=y,suspend=n --io.seldon.clustermanager.istio-enabled=false'
+JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=127.0.0.1:8000,server=y,suspend=n
+SPRING_OPTS=--io.seldon.clustermanager.istio-enabled=false
 

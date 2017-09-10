@@ -27,8 +27,8 @@ def handle_invalid_usage(error):
     return response
 
 def extract_input():
-    jStr = request.args.get("json")
-    is_default = request.args.get("isDefault")
+    jStr = request.form.get("json")
+    is_default = request.form.get("isDefault")
     if jStr:
         data = json.loads(jStr)
     else:

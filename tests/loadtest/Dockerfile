@@ -4,9 +4,11 @@ ENV HOME /root
 ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt-get update -y
-RUN apt-get install gcc -y
+RUN apt-get install gcc g++ python-gevent libzmq3-dev  -y
 
-RUN pip install locustio
+RUN git clone https://github.com/locustio/locust && \
+    cd locust && \
+    python setup.py install
 
 ENV SELDON_HOME /home/seldon
 ADD ./scripts $SELDON_HOME/scripts

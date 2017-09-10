@@ -8,46 +8,49 @@ from locust.events import EventHook
 import requests
 import re
 import time
+import resource
+import socket
+import signal
+from socket import error as socket_error
+import errno
+
+def connect_to_master(host,port):
+    success = False
+    while not success:
+        s = socket.socket(
+            socket.AF_INET, socket.SOCK_STREAM)
+        s.settimeout(1)
+        try:
+            s.connect((host, int(port)))
+            s.shutdown(socket.SHUT_RD)
+            print("Connected to master")
+            success = True
+        except socket.error as serr:
+            print("Connection failed - sleeping")
+            time.sleep(1)
+
+
 
 def parse_arguments():
     parser = argparse.ArgumentParser(prog='locust')
     parser.add_argument('--host')
+    parser.add_argument('--master-host',default="127.0.0.1")
+    parser.add_argument('--master-port',default="5557")
     parser.add_argument('--clients',default=1, type=int)
     parser.add_argument('--hatch-rate',default=1, type=int)
     parser.add_argument('--master', action='store_true')
+    parser.add_argument('--slave', action='store_true')
     args, unknown = parser.parse_known_args() 
     #args = parser.parse_args()
     opts = vars(args)
-    if not args.master:
-        time.sleep(5)
     print args
+    if args.slave:
+        print "Sleeping 10 secs hack"
+        time.sleep(10)
+        connect_to_master(args.master_host,args.master_port)
     return args.host, args.clients, args.hatch_rate
 
 HOST, MAX_USERS_NUMBER, USERS_PER_SECOND = parse_arguments()
-
-slaves_connect = []
-slave_report = EventHook()
-ALL_SLAVES_CONNECTED = False
-SLAVES_NUMBER = 1
-def on_my_event(client_id,data):
-    """
-    Waits for all slaves to be connected and launches the swarm
-    :param client_id:
-    :param data:
-    :return:
-    """
-    global ALL_SLAVES_CONNECTED
-    if not ALL_SLAVES_CONNECTED:
-        print "Event was fired with arguments"
-        if client_id not in slaves_connect:
-            slaves_connect.append(client_id)
-        if len(slaves_connect) == SLAVES_NUMBER:
-            print "All Slaves Connected"
-            ALL_SLAVES_CONNECTED = True
-            print events.slave_report._handlers
-            header = {'Content-Type': 'application/x-www-form-urlencoded'}
-            r = requests.post('http://127.0.0.1:8089/swarm',data={'hatch_rate':USERS_PER_SECOND,'locust_count':MAX_USERS_NUMBER},headers=header)
-import resource
 
 rsrc = resource.RLIMIT_NOFILE
 soft, hard = resource.getrlimit(rsrc)
@@ -58,9 +61,6 @@ print 'RLIMIT_NOFILE soft limit starts as  :', soft
 soft, hard = resource.getrlimit(rsrc)
 print 'RLIMIT_NOFILE soft limit changed to :', soft
 
-events.slave_report += on_my_event # Register method in slaves report event
-
-
 
 class SeldonJsLocust(TaskSet):
 
@@ -70,11 +70,7 @@ class SeldonJsLocust(TaskSet):
         else:
             return default
 
-    def on_start(self):
-        print "on_start"
-        self.oauth_key = self.getEnviron('OAUTH_KEY',"key")
-        self.oauth_secret = self.getEnviron('OAUTH_SECRET',"secret")
-        self.data_size = int(self.getEnviron('DATA_SIZE',"784"))
+    def get_token(self):
         print "Getting access token"
         r = self.client.request("POST","/oauth/token",headers={"Accept":"application/json"},data={"grant_type":"client_credentials"},auth=(self.oauth_key,self.oauth_secret))
         if r.status_code == 200:
@@ -84,6 +80,14 @@ class SeldonJsLocust(TaskSet):
         else:
             print "failed to get access token"
             sys.exit(1)
+
+
+    def on_start(self):
+        print "on_start"
+        self.oauth_key = self.getEnviron('OAUTH_KEY',"key")
+        self.oauth_secret = self.getEnviron('OAUTH_SECRET',"secret")
+        self.data_size = int(self.getEnviron('DATA_SIZE',"1"))
+        self.get_token()
 
     @task
     def getPrediction(self):
@@ -97,8 +101,11 @@ class SeldonJsLocust(TaskSet):
             print r.content
         else:
             print "Failed request "+str(r.status_code)
-            print r.headers
-            r.raise_for_status()
+            if r.status_code == 401:
+                self.get_token()
+            else:
+                print r.headers
+                r.raise_for_status()
 
 class WebsiteUser(HttpLocust):
     task_set = SeldonJsLocust

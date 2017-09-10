@@ -3,15 +3,22 @@ package io.seldon.engine.service;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import org.apache.http.NameValuePair;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
@@ -23,20 +30,18 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.util.JsonFormat;
 
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 import io.seldon.engine.exception.APIException;
 import io.seldon.engine.pb.ProtoBufUtils;
 import io.seldon.protos.DeploymentProtos.EndpointDef;
+import io.seldon.protos.MABGrpc;
+import io.seldon.protos.MABGrpc.MABBlockingStub;
 import io.seldon.protos.PredictionProtos.PredictionFeedbackDef;
 import io.seldon.protos.PredictionProtos.PredictionRequestDef;
 import io.seldon.protos.PredictionProtos.PredictionRequestDef.RequestOneofCase;
 import io.seldon.protos.PredictionProtos.PredictionResponseDef;
 import io.seldon.protos.PredictionProtos.RouteResponseDef;
-import io.seldon.protos.MABGrpc;
-import io.seldon.protos.MABGrpc.MABBlockingStub;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-
-import java.util.concurrent.TimeUnit;
 
 @Service
 public class InternalPredictionService {
@@ -131,9 +136,7 @@ public class InternalPredictionService {
     			URIBuilder builder = new URIBuilder().setScheme("http")
     					.setHost(endpoint.getServiceHost())
     					.setPort(endpoint.getServicePort())
-    					.setPath("/predict")
-    					.setParameter("json", dataString)
-    					.setParameter("isDefault", Boolean.toString(isDefault));
+    					.setPath("/predict");
 
     			uri = builder.build();
     		} catch (URISyntaxException e) 
@@ -141,12 +144,17 @@ public class InternalPredictionService {
     			throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_ENDPOINT_URL,"Host: "+endpoint.getServiceHost()+" port:"+endpoint.getServicePort());
     		}
     		HttpContext context = HttpClientContext.create();
-    		HttpGet httpGet = new HttpGet(uri);
+    		
     		try  
     		{
-    			if (logger.isDebugEnabled())
-    				logger.debug("Requesting " + httpGet.getURI().toString());
-    			CloseableHttpResponse resp = httpClient.execute(httpGet, context);
+    			HttpPost httpPost = new HttpPost(uri);
+        		List<NameValuePair> params = new ArrayList<NameValuePair>();
+        		params.add(new BasicNameValuePair("json", dataString));
+        		params.add(new BasicNameValuePair("isDefault", Boolean.toString(isDefault)));
+        	    httpPost.setEntity(new UrlEncodedFormEntity(params));
+        	    
+        	    logger.info("Requesting " + httpPost.getURI().toString());
+    			CloseableHttpResponse resp = httpClient.execute(httpPost, context);
     			try
     			{
     				if(resp.getStatusLine().getStatusCode() == 200) 

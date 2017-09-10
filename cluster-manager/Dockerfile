@@ -27,5 +27,5 @@ RUN \
     rm -rf /work/pom.xml
 
 EXPOSE 8080
-ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -jar /work/seldon-cluster-manager.jar" ]
+ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -jar /work/seldon-cluster-manager.jar $SPRING_OPTS" ]
 

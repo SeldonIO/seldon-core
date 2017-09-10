@@ -22,14 +22,10 @@ spec:
         - locust
         - -f
         - /home/seldon/scripts/{{ .Values.locust.script }}
-        - --hatch-rate
-        - '{{ .Values.locust.hatchRate }}'
-        - --clients
-        - '{{ .Values.locust.clients }}'
         - --host
         - '{{ .Values.locust.host }}'
         - --master-host
-        - locust-master
+        - 'locust-master'
         - --slave
         env:
         - name: OAUTH_KEY
@@ -55,6 +51,7 @@ spec:
       securityContext: {}
       terminationGracePeriodSeconds: 30
       volumes:
-      - hostPath:
-          path: /seldon-data
-        name: storage
+        - name: storage
+          persistentVolumeClaim:
+            claimName: seldon-claim
+

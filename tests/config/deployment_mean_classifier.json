@@ -32,7 +32,7 @@
                 "type": "MODEL"
             }
         ],
-        "replicas": 1,
+        "replicas": 3,
         "replicasReady": 0,
         "root": "0"
     },

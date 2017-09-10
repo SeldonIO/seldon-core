@@ -24,6 +24,10 @@
                                         "value": "%JAVA_OPTS%"
                                     },
                                     {
+                                        "name": "SPRING_OPTS",
+                                        "value": "%SPRING_OPTS%"
+                                    },
+                                    {
                                         "name": "SELDON_CLUSTER_MANAGER_ZK_SERVERS",
                                         "value": "zookeeper-1:2181,zookeeper-2:2181,zookeeper-3:2181"
                                     },
@@ -52,7 +56,7 @@
                                 ],
                                 "image": "seldonio/cluster-manager:%CLUSTER_MANAGER_IMAGE_VERSION%",
                                 "name": "seldon-cluster-manager-container",
-				"imagePullPolicy": "Always",
+				"imagePullPolicy": "IfNotPresent",
                                 "ports": [
                                     {
                                         "containerPort": 8080,

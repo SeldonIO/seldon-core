@@ -28,6 +28,7 @@ cluster-manager.json: FORCE
 	source settings.sh && cat cluster-manager.json.in | sed \
 		-e  "s|%SELDON_CLUSTER_MANAGER_SERVICE_TYPE%|$${SELDON_CLUSTER_MANAGER_SERVICE_TYPE}|" \
 		-e  "s|%JAVA_OPTS%|$${JAVA_OPTS}|" \
+		-e  "s|%SPRING_OPTS%|$${SPRING_OPTS}|" \
 		-e  "s|%CLUSTER_MANAGER_IMAGE_VERSION%|$(CLUSTER_MANAGER_IMAGE_VERSION)|" > $@ && echo "created $@"
 
 start_cluster_manager: cluster-manager.json cluster-manager-client-secret.txt

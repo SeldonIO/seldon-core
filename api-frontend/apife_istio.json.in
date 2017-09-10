@@ -64,7 +64,7 @@
                                     }
                                 ],
                                 "image": "docker.io/istio/proxy_debug:0.1",
-                                "imagePullPolicy": "Always",
+                                "imagePullPolicy": "IfNotPresent",
                                 "name": "proxy",
                                 "resources": {},
                                 "securityContext": {
