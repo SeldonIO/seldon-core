@@ -119,11 +119,6 @@ public class InternalPredictionService {
     			logger.error("Couldn't retrieve prediction from external prediction server - ", e);
     			throw new APIException(APIException.ApiExceptionType.APIFE_MICROSERVICE_ERROR,e.toString());
     		}
-    		catch (Exception e)
-            {
-    			logger.error("Couldn't retrieve prediction from external prediction server - ", e);
-    			throw new APIException(APIException.ApiExceptionType.APIFE_MICROSERVICE_ERROR,e.toString());
-            }
     		finally
     		{
     			

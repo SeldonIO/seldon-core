@@ -22,7 +22,7 @@
                         },
                         "labels": {
                             "app": "seldon-apiserver-container-app",
-                            "version": "1"
+                            "version": "v1"
                         }
                     },
                     "spec": {

@@ -1,1 +1,9 @@
-helm install --name loadtest seldon-core-loadtesting
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+cd ${STARTUP_DIR} && helm install --name loadtest seldon-core-loadtesting
