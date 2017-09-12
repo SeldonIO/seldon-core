@@ -89,6 +89,7 @@
                                     }
                                 ],
                                 "image": "seldonio/apife:%APIFE_IMAGE_VERSION%",
+                                "imagePullPolicy": "Always",
                                 "name": "seldon-apiserver-container",
                                 "ports": [
                                     {
