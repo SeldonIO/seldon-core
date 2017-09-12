@@ -1,4 +1,6 @@
 To run iwth istio:
+  Prepare: if running on minikube you will need a larger than default cluster. Tested with 9g but should work with less:
+  	   minikube start --memory=9000 --disk-size "40g"
   1. Install istio on cluster using Helm.  See: https://github.com/kubernetes/charts/tree/master/incubator/istio
      a) One time only:
      	helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
@@ -10,6 +12,8 @@ To run iwth istio:
        cd "${STARTUP_DIR}/api-frontend" && make start_apife_istio
      This uses a kubernetes json with Envoy sidecar next to api front end
 
+To remove istio:
+   helm delete istio-test --purge
 
 -----------------------
 
