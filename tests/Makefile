@@ -1,4 +1,4 @@
-DEPLOYMENT_JSON=deployment_router_mean_classifiers.json
+DEPLOYMENT_JSON=deployment_mean_classifier.json
 
 #
 # Manage REST Endpoints
