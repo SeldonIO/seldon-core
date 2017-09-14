@@ -9,7 +9,7 @@ items:
     name: redis
   spec:
     containers:
-    - image: redis
+    - image: redis:4.0.1
       name: redis-container
       ports:
       - containerPort: 6379
