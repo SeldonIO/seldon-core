@@ -26,7 +26,7 @@
                     "type": "REST"
                 },
                 "id": "0",
-                "name": "digit_classifier_v0.4",
+                "name": "digit_classifier",
                 "parameters": [],
                 "subtype": "MICROSERVICE",
                 "type": "MODEL"

@@ -1,4 +1,5 @@
 DEPLOYMENT_JSON=deployment_mean_classifier.json
+DEPLOYMENT_ID=`cat config/${DEPLOYMENT_JSON} | jq -r .id`
 
 #
 # Manage REST Endpoints
@@ -84,7 +85,7 @@ cm_check_deployment_ready:
 
 cm_delete_deployment:
 	echo "------------------------------" && echo "ACCESS_TOKEN[$(CM_ACCESS_TOKEN)]" && echo "------------------------------" \
-		&& curl -s -i -H "Authorization: Bearer $(CM_ACCESS_TOKEN)" -X "DELETE" $(CLUSTER_MANAGER_ENDPOINT)$(EP_DEPLOYMENTS)/1 | tee out.log
+		&& curl -s -i -H "Authorization: Bearer $(CM_ACCESS_TOKEN)" -X "DELETE" $(CLUSTER_MANAGER_ENDPOINT)$(EP_DEPLOYMENTS)/${DEPLOYMENT_ID} | tee out.log
 
 
 #
