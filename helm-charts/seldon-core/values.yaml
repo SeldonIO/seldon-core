@@ -1,0 +1,10 @@
+# Default values for seldon-core.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+zookeeper:
+  image:
+    tag: "1.0"
+
+# set the cluster manager client secret
+#cluster_manager_client_secret:
+
