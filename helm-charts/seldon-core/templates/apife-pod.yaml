@@ -20,7 +20,7 @@ items:
         value: kafka:9092
       - name: SELDON_CLUSTER_MANAGER_REDIS_HOST
         value: redis
-      image: seldonio/apife:0.0.4
+      image: seldonio/apife:{{ .Values.apife.image.tag }}
       name: seldon-apiserver-container
       ports:
       - containerPort: 8080

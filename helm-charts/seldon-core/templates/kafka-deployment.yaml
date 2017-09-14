@@ -79,7 +79,7 @@ items:
             value: delete
           - name: KAFKA_LOG_CLEANER_ENABLE
             value: 'true'
-          image: seldonio/kafka-core:0.1
+          image: seldonio/kafka-core:{{ .Values.kafka_core.image.tag }}
           imagePullPolicy: IfNotPresent
           name: kafka
           ports:
