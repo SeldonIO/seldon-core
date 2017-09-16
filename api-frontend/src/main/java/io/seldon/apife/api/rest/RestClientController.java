@@ -102,7 +102,7 @@ public class RestClientController {
     }
 	
 	
-	@Timed
+	@Timed(quantiles = {0.5, 0.75, 0.9, 0.95, 0.99})
 	@RequestMapping(value = "/api/v0.1/predictions", method = RequestMethod.POST, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
 	    public ResponseEntity<String> prediction(RequestEntity<String> requestEntity,Principal principal) {
 		
@@ -152,7 +152,7 @@ public class RestClientController {
 
 	}
 
-	
+	@Timed(quantiles = {0.5, 0.75, 0.9, 0.95, 0.99})
 	@RequestMapping(value = "/api/v0.1/feedback", method = RequestMethod.POST, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
 	@ResponseStatus(value = HttpStatus.OK)
 	public void feedback(RequestEntity<String> requestEntity, Principal principal) 

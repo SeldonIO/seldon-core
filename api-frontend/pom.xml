@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>1.4.3.RELEASE</version>
+		<version>1.5.7.RELEASE</version>
 	</parent>
 
 	<groupId>io.seldon.apife</groupId>
@@ -20,7 +20,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>1.8</java.version>
 		<grpc.version>1.5.0</grpc.version>
-		<micrometer.version>0.10.0.RELEASE</micrometer.version>
+		<micrometer.version>1.0.0-rc.1</micrometer.version>
 		<start-class>io.seldon.apife.App</start-class>
 	</properties>
 
@@ -190,6 +190,10 @@
    			<version>0.11.0.0</version>
 		</dependency>
 
+		<dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
 
 		<dependency>
   			<groupId>io.micrometer</groupId>
@@ -197,8 +201,8 @@
   			<version>${micrometer.version}</version>
 		</dependency>
 		<dependency>
-  			<groupId>io.micrometer</groupId>
-  			<artifactId>micrometer-prometheus-starter</artifactId>
+		  	<groupId>io.micrometer</groupId>
+  			<artifactId>micrometer-registry-prometheus</artifactId>
   			<version>${micrometer.version}</version>
 		</dependency>
 

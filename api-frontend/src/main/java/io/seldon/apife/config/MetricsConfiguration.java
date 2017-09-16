@@ -3,16 +3,16 @@ package io.seldon.apife.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import io.micrometer.spring.web.WebmvcTagConfigurer;
-import io.seldon.apife.metrics.AuthorizedWebmvcTagConfigurer;
+import io.micrometer.spring.web.servlet.WebMvcTagsProvider;
+import io.seldon.apife.metrics.AuthorizedWebMvcTagsProvider;
 
 @Configuration
 public class MetricsConfiguration {
 
 	@Bean
-	WebmvcTagConfigurer getWebmvcTagConfigurer()
+	WebMvcTagsProvider getWebmvcTagConfigurer()
 	{
-		return new AuthorizedWebmvcTagConfigurer();
+		return new AuthorizedWebMvcTagsProvider();
 	}
 	
 }

@@ -19,11 +19,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.scheduling.annotation.EnableAsync;
 
-import io.micrometer.spring.export.prometheus.EnablePrometheusMetrics;
+
 
 @SpringBootApplication
 @EnableAsync
-@EnablePrometheusMetrics
 public class App  {
     public static void main(String[] args) throws Exception {
         SpringApplication.run(App.class, args);

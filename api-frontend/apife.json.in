@@ -40,6 +40,7 @@
                                 ],
                                 "image": "seldonio/apife:%APIFE_IMAGE_VERSION%",
                                 "name": "seldon-apiserver-container",
+                                "imagePullPolicy": "IfNotPresent",
                                 "ports": [
                                     {
                                         "containerPort": 8080,

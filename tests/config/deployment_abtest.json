@@ -1,0 +1,96 @@
+{
+    "id": "12",
+    "name": "Test Deployment",
+    "oauth_key": "key",
+    "oauth_secret": "secret",
+    "predictor": {
+        "enabled": true,
+        "endpoint": {
+            "service_host": "sd-12-p",
+            "service_port": 8000,
+            "type": "REST"
+        },
+        "id": "32805",
+        "imagePullSecrets": [],
+        "name": "",
+        "predictiveUnits": [
+            {
+                "children": [
+                    "11",
+                    "32804"
+                ],
+                "cluster_resources": {
+                    "cpu": "",
+                    "gpu": "",
+                    "id": "",
+                    "image": "",
+                    "memory": "",
+                    "version": ""
+                },
+                "endpoint": {
+                    "service_host": "",
+                    "service_port": 5000,
+                    "type": "REST"
+                },
+                "id": "32805",
+                "name": "abtest",
+                "parameters": [
+                    {
+                        "name": "ratioA",
+                        "type": "FLOAT",
+                        "value": "0.5"
+                    }
+                ],
+                "subtype": "RANDOM_ABTEST",
+                "type": "ROUTER"
+            },
+            {
+                "children": [],
+                "cluster_resources": {
+                    "cpu": "",
+                    "gpu": "",
+                    "id": "",
+                    "image": "seldonio/mean_classifier",
+                    "memory": "",
+                    "version": "0.5"
+                },
+                "endpoint": {
+                    "service_host": "localhost",
+                    "service_port": 9001,
+                    "type": "REST"
+                },
+                "id": "11",
+                "name": "Fixed Mean Model",
+                "parameters": [],
+                "subtype": "MICROSERVICE",
+                "type": "MODEL"
+            },
+            {
+                "children": [],
+                "cluster_resources": {
+                    "cpu": "",
+                    "gpu": "",
+                    "id": "",
+                    "image": "seldonio/mean_classifier",
+                    "memory": "",
+                    "version": "0.5"
+                },
+                "endpoint": {
+                    "service_host": "localhost",
+                    "service_port": 9002,
+                    "type": "REST"
+                },
+                "id": "32804",
+                "name": "model2",
+                "parameters": [],
+                "subtype": "MICROSERVICE",
+                "type": "MODEL"
+            }
+        ],
+        "replicas": 1,
+        "replicasReady": 1,
+        "root": "32805"
+    },
+    "uniqueName": ""
+}
+

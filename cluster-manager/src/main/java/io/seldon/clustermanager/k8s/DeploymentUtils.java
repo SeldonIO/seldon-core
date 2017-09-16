@@ -366,7 +366,7 @@ public class DeploymentUtils {
                     	.addToLabels("app", serviceSelectorDetails.appLabelValue)
                     	.addToLabels("version", "v1")                    	
                         .addToLabels(serviceSelectorDetails.trackLabelName, serviceSelectorDetails.trackLabelValue)
-                        .withAnnotations(getDeploymentAnnotations(clusterManagerProperites))
+                        .withAnnotations(getDeploymentAnnotations(clusterManagerProperites,engine_container_port))
                     .endMetadata()
                     .withNewSpec()
                         .addAllToContainers(containers)
@@ -386,20 +386,23 @@ public class DeploymentUtils {
         return buildDeploymentResult;
     }
     
-    private static Map<String,String> getDeploymentAnnotations(ClusterManagerProperites clusterManagerProperites)
+    private static Map<String,String> getDeploymentAnnotations(ClusterManagerProperites clusterManagerProperites,int engine_container_port)
     {
+		Map<String,String> props = new HashMap<>();
+		props.put("prometheus.io/path", "/prometheus");
+		props.put("prometheus.io/port", ""+ engine_container_port);
+		props.put("prometheus.io/scrape", "true");
+		
     	if (clusterManagerProperites.isIstioEnabled())
     	{
     		logger.debug("ADDING istio annotations");
-    		Map<String,String> props = new HashMap<>();
     		props.put("alpha.istio.io/sidecar", "injected");
     		props.put( "alpha.istio.io/version","jenkins@ubuntu-16-04-build-12ac793f80be71-0.1.6-dab2033");
     		props.put("pod.alpha.kubernetes.io/init-containers", "[{\"name\":\"init\",\"image\":\"docker.io/istio/init:0.1\",\"args\":[\"-p\",\"15001\",\"-u\",\"1337\"],\"resources\":{},\"terminationMessagePath\":\"/dev/termination-log\",\"terminationMessagePolicy\":\"File\",\"imagePullPolicy\":\"Always\",\"securityContext\":{\"capabilities\":{\"add\":[\"NET_ADMIN\"]}}},{\"name\":\"enable-core-dump\",\"image\":\"alpine\",\"command\":[\"/bin/sh\"],\"args\":[\"-c\",\"sysctl -w kernel.core_pattern=/tmp/core.%e.%p.%t \\u0026\\u0026 ulimit -c unlimited\"],\"resources\":{},\"terminationMessagePath\":\"/dev/termination-log\",\"terminationMessagePolicy\":\"File\",\"imagePullPolicy\":\"Always\",\"securityContext\":{\"privileged\":true}}]");
     		props.put("pod.beta.kubernetes.io/init-containers", "[{\"name\":\"init\",\"image\":\"docker.io/istio/init:0.1\",\"args\":[\"-p\",\"15001\",\"-u\",\"1337\"],\"resources\":{},\"terminationMessagePath\":\"/dev/termination-log\",\"terminationMessagePolicy\":\"File\",\"imagePullPolicy\":\"Always\",\"securityContext\":{\"capabilities\":{\"add\":[\"NET_ADMIN\"]}}},{\"name\":\"enable-core-dump\",\"image\":\"alpine\",\"command\":[\"/bin/sh\"],\"args\":[\"-c\",\"sysctl -w kernel.core_pattern=/tmp/core.%e.%p.%t \\u0026\\u0026 ulimit -c unlimited\"],\"resources\":{},\"terminationMessagePath\":\"/dev/termination-log\",\"terminationMessagePolicy\":\"File\",\"imagePullPolicy\":\"Always\",\"securityContext\":{\"privileged\":true}}]");
     		return props;
     	}
-    	else
-    		return new HashMap<>();
+    	return props;
     }
 
     public static void createDeployment(KubernetesClient kubernetesClient, String namespace_name, BuildDeploymentResult buildDeploymentResult) {
