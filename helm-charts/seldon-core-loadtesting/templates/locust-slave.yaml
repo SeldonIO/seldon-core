@@ -40,9 +40,6 @@ spec:
         resources: {}
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
-        volumeMounts:
-        - mountPath: /seldon-data
-          name: storage
       dnsPolicy: ClusterFirst
       nodeSelector:
         role: locust
@@ -50,8 +47,3 @@ spec:
       schedulerName: default-scheduler
       securityContext: {}
       terminationGracePeriodSeconds: 30
-      volumes:
-        - name: storage
-          persistentVolumeClaim:
-            claimName: seldon-claim
-

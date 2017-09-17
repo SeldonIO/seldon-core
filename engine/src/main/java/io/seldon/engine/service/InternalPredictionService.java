@@ -3,28 +3,21 @@ package io.seldon.engine.service;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.http.NameValuePair;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.protocol.HttpContext;
-import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,6 +27,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.seldon.engine.exception.APIException;
 import io.seldon.engine.pb.ProtoBufUtils;
+import io.seldon.engine.predictors.PredictiveUnitState;
 import io.seldon.protos.DeploymentProtos.EndpointDef;
 import io.seldon.protos.MABGrpc;
 import io.seldon.protos.MABGrpc.MABBlockingStub;
@@ -48,41 +42,30 @@ public class InternalPredictionService {
 	
 	private static Logger logger = LoggerFactory.getLogger(InternalPredictionService.class.getName());
 
-	private PoolingHttpClientConnectionManager connectionManager;
-    private CloseableHttpClient httpClient;
-    
-    private static final int DEFAULT_REQ_TIMEOUT = 200;
-    private static final int DEFAULT_CON_TIMEOUT = 500;
-    private static final int DEFAULT_SOCKET_TIMEOUT = 2000;
-
+	public static final String UNIT_ID_HEADER = "Seldon-Preditive-Unit-ID"; 
+	
     ObjectMapper mapper = new ObjectMapper();
     
+    RestTemplate restTemplate;
+    
+    
+    
     @Autowired
-    public InternalPredictionService(){
-        connectionManager = new PoolingHttpClientConnectionManager();
-        connectionManager.setMaxTotal(150);
-        connectionManager.setDefaultMaxPerRoute(150);
-        
-        RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectionRequestTimeout(DEFAULT_REQ_TIMEOUT)
-                .setConnectTimeout(DEFAULT_CON_TIMEOUT)
-                .setSocketTimeout(DEFAULT_SOCKET_TIMEOUT).build();
-        
-        httpClient = HttpClients.custom()
-                .setConnectionManager(connectionManager)
-                .setDefaultRequestConfig(requestConfig)
-                .build();
+    public InternalPredictionService(RestTemplate restTemplate){
+    	this.restTemplate = restTemplate;
+    	
     }
 		
-	public PredictionResponseDef getPrediction(PredictionRequestDef request, EndpointDef endpoint) throws JsonProcessingException, IOException{
+	public PredictionResponseDef getPrediction(PredictionRequestDef request, PredictiveUnitState state) throws JsonProcessingException, IOException{
 
+		final EndpointDef endpoint = state.endpoint;
 		switch (endpoint.getType()){
 			case REST:
 				String dataString = ProtoBufUtils.toJson(request);
 				boolean isDefault = false;
 				if (request.getRequestOneofCase() == RequestOneofCase.REQUEST)
 					isDefault = true;
-				return predictREST(dataString, endpoint, isDefault);
+				return predictREST(dataString, state.name, endpoint, isDefault);
 				
 			case GRPC:
 				
@@ -93,7 +76,7 @@ public class InternalPredictionService {
 	public RouteResponseDef getRouting(PredictionRequestDef request, EndpointDef endpoint){
 		switch (endpoint.getType()){
 			case REST:
-				
+				throw new NotImplementedException();
 			case GRPC:
 				return getRoutingGRPC(request, endpoint);
 				
@@ -104,7 +87,7 @@ public class InternalPredictionService {
 	public void sendFeedback(PredictionFeedbackDef feedback, EndpointDef endpoint){
 		switch (endpoint.getType()){
 			case REST:
-			
+				throw new NotImplementedException();
 			case GRPC:
 				sendFeedbackGRPC(feedback, endpoint);
 		}
@@ -128,7 +111,7 @@ public class InternalPredictionService {
 		return routing;
 	}
 	
-	public PredictionResponseDef predictREST(String dataString, EndpointDef endpoint,boolean isDefault){
+	public PredictionResponseDef predictREST(String dataString, String unitId, EndpointDef endpoint,boolean isDefault){
 		{
     		long timeNow = System.currentTimeMillis();
     		URI uri;
@@ -143,38 +126,40 @@ public class InternalPredictionService {
     		{
     			throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_ENDPOINT_URL,"Host: "+endpoint.getServiceHost()+" port:"+endpoint.getServicePort());
     		}
-    		HttpContext context = HttpClientContext.create();
     		
     		try  
     		{
-    			HttpPost httpPost = new HttpPost(uri);
-        		List<NameValuePair> params = new ArrayList<NameValuePair>();
-        		params.add(new BasicNameValuePair("json", dataString));
-        		params.add(new BasicNameValuePair("isDefault", Boolean.toString(isDefault)));
-        	    httpPost.setEntity(new UrlEncodedFormEntity(params));
-        	    
-        	    logger.info("Requesting " + httpPost.getURI().toString());
-    			CloseableHttpResponse resp = httpClient.execute(httpPost, context);
+    			HttpHeaders headers = new HttpHeaders();
+    			headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+    			headers.add(UNIT_ID_HEADER, unitId);
+
+    			MultiValueMap<String, String> map= new LinkedMultiValueMap<String, String>();
+    			map.add("json", dataString);
+    			map.add("isDefault", Boolean.toString(isDefault));
+
+    			HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(map, headers);
+
+    			logger.info("Requesting " + uri.toString());
+    			ResponseEntity<String> httpResponse = restTemplate.postForEntity( uri, request , String.class );
+    			
     			try
     			{
-    				if(resp.getStatusLine().getStatusCode() == 200) 
+    				if(httpResponse.getStatusCode().is2xxSuccessful()) 
     				{
     				    PredictionResponseDef.Builder builder = PredictionResponseDef.newBuilder();
-    				    String response = EntityUtils.toString(resp.getEntity());
+    				    String response = httpResponse.getBody();
     				    logger.info(response);
     				    JsonFormat.parser().ignoringUnknownFields().merge(response, builder);
     				    return builder.build();
     				} 
     				else 
     				{
-    					logger.error("Couldn't retrieve prediction from external prediction server -- bad http return code: " + resp.getStatusLine().getStatusCode());
-    					throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,String.format("Bad return code %d", resp.getStatusLine().getStatusCode()));
+    					logger.error("Couldn't retrieve prediction from external prediction server -- bad http return code: " + httpResponse.getStatusCode());
+    					throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,String.format("Bad return code %d", httpResponse.getStatusCode()));
     				}
     			}
     			finally
     			{
-    				if (resp != null)
-    					resp.close();
     				if (logger.isDebugEnabled())
     					logger.debug("External prediction server took "+(System.currentTimeMillis()-timeNow) + "ms");
     			}
