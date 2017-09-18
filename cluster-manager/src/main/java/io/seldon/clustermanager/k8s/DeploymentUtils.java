@@ -140,6 +140,7 @@ public class DeploymentUtils {
             final int container_port = PU_CONTAINER_PORT_BASE + predictiveUnitIndex;
             final int service_port = container_port;
 
+
             final String predictiveUnitParameters = extractPredictiveUnitParametersAsJson(predictiveUnitDef);
 
             final String image_name_and_version = (clusterResourcesDef.getVersion().length() > 0)
@@ -212,6 +213,7 @@ public class DeploymentUtils {
 
         final int engine_container_port = ENGINE_CONTAINER_PORT;
         final int engine_service_port = engine_container_port;
+        final int management_port = 8082;
         
         if (clusterManagerProperites.isIstioEnabled())
         {
@@ -285,7 +287,7 @@ public class DeploymentUtils {
                     .withEnv(envVar_ENGINE_PREDICTOR, envVar_ENGINE_SERVER_PORT)
                     .addNewPort().withContainerPort(engine_container_port).endPort()
                     .withNewReadinessProbe()
-                    	.withHttpGet(new HTTPGetActionBuilder().withNewPort(engine_container_port).withPath("/ready").build())
+                    	.withHttpGet(new HTTPGetActionBuilder().withNewPort(management_port).withPath("/ready").build())
                     	.withInitialDelaySeconds(20)
                     	.withPeriodSeconds(5)
                     	.withFailureThreshold(1)
@@ -293,7 +295,7 @@ public class DeploymentUtils {
                     	.withTimeoutSeconds(2)
                     .endReadinessProbe()
                     .withNewLivenessProbe()
-                		.withHttpGet(new HTTPGetActionBuilder().withNewPort(engine_container_port).withPath("/ping").build())
+                		.withHttpGet(new HTTPGetActionBuilder().withNewPort(management_port).withPath("/ping").build())
                 		.withInitialDelaySeconds(20)
                 		.withFailureThreshold(1)
                     	.withSuccessThreshold(1)

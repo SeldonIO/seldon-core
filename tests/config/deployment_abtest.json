@@ -60,7 +60,7 @@
                     "type": "REST"
                 },
                 "id": "11",
-                "name": "Fixed Mean Model",
+                "name": "Fixed Mean Model 2",
                 "parameters": [],
                 "subtype": "MICROSERVICE",
                 "type": "MODEL"
@@ -81,7 +81,7 @@
                     "type": "REST"
                 },
                 "id": "32804",
-                "name": "model2",
+                "name": "Fixed Mean Model 1",
                 "parameters": [],
                 "subtype": "MICROSERVICE",
                 "type": "MODEL"
