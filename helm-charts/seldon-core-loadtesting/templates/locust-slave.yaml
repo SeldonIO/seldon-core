@@ -3,18 +3,18 @@ kind: ReplicationController
 metadata:
   creationTimestamp: null
   labels:
-    name: locust-slave
+    name: locust-slave-{{ .Values.loadtest.id }}
     service: seldon
-  name: locust-slave
+  name: locust-slave-{{ .Values.loadtest.id }}
 spec:
   replicas: 1
   selector:
-    name: locust-slave
+    name: locust-slave-{{ .Values.loadtest.id }}
   template:
     metadata:
       creationTimestamp: null
       labels:
-        name: locust-slave
+        name: locust-slave-{{ .Values.loadtest.id }}
         service: seldon
     spec:
       containers:
@@ -25,7 +25,7 @@ spec:
         - --host
         - '{{ .Values.locust.host }}'
         - --master-host
-        - 'locust-master'
+        - 'locust-master-{{ .Values.loadtest.id }}'
         - --slave
         env:
         - name: OAUTH_KEY
@@ -36,7 +36,7 @@ spec:
           value: '{{ .Values.data.size }}'
         image: seldonio/locust-core:{{ .Values.image.release }}
         imagePullPolicy: IfNotPresent
-        name: locust-slave
+        name: locust-slave-{{ .Values.loadtest.id }}
         resources: {}
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File

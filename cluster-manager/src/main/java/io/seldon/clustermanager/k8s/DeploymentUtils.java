@@ -366,7 +366,7 @@ public class DeploymentUtils {
                     .withNewMetadata()
                     	.addToLabels(serviceSelectorDetails.appLabelName, serviceSelectorDetails.appLabelValue)
                     	.addToLabels("app", serviceSelectorDetails.appLabelValue)
-                    	.addToLabels("version", "v1")                    	
+                    	.addToLabels("version", predictorDef.getVersion())                    	
                         .addToLabels(serviceSelectorDetails.trackLabelName, serviceSelectorDetails.trackLabelValue)
                         .withAnnotations(getDeploymentAnnotations(clusterManagerProperites,engine_container_port))
                     .endMetadata()

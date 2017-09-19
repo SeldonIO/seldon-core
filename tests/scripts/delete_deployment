@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+if [ "$#" -ne 1 ]; then
+   echo "delete_deployment <deployment json>"
+   exit 1
+fi
+
+cd ${STARTUP_DIR}/.. && make cm_delete_deployment DEPLOYMENT_JSON=$1

@@ -1,0 +1,42 @@
+{
+    "cluster": {},
+    "project_name" : "{{project_name}}",
+    "id": "{{deployment_id}}",
+    "name": "test deployment",
+    "oauth_key": "{{oauth_key}}",
+    "oauth_secret": "{{oauth_secret}}",
+    "predictor": {
+        "enabled": true,
+        "id": "0",
+        "imagePullSecrets": [],
+        "name": "{{predictor_name}}",
+	"version" : "{{predictor_version}}",
+        "predictiveUnits": [
+            {
+                "children": [],
+                "cluster_resources": {
+                    "cpu": "",
+                    "gpu": "",
+                    "id": "2",
+                    "image": "{{model_image}}",
+                    "memory": "",
+                    "version": "{{model_version}}"
+                },
+                "endpoint": {
+                    "service_host": "-",
+                    "service_port": -1,
+                    "type": "REST"
+                },
+                "id": "0",
+                "name": "my_model",
+                "parameters": [],
+                "subtype": "MICROSERVICE",
+                "type": "MODEL"
+            }
+        ],
+        "replicas": 1,
+        "replicasReady": 0,
+        "root": "0"
+    },
+    "uniqueName": "my-uniqueName"
+}

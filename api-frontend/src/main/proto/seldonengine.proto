@@ -75,26 +75,28 @@ message PredictiveUnitDef {
 }
 
 message PredictorDef {
-    bool enabled = 1;
-    EndpointDef endpoint = 2;
-    string id = 3;
-    repeated string imagePullSecrets = 4;
-    string name = 5;
-    repeated PredictiveUnitDef predictiveUnits = 6;
-    int32 replicas = 7;
-    int32 replicasReady = 8;
-    string root = 9;
+  string id = 1;
+  string name = 2;
+  string version = 3;
+  bool enabled = 4;
+  EndpointDef endpoint = 5;
+  repeated string imagePullSecrets = 6;
+  repeated PredictiveUnitDef predictiveUnits = 7;
+  int32 replicas = 8;
+  int32 replicasReady = 9;
+  string root = 10;
 }
 
 message DeploymentDef {
-    ClusterDef cluster = 1;
-    string id = 2;
-    string name = 3;
-    PredictorDef predictor = 4;
-    string uniqueName = 5;
-    string oauth_key = 6;
-    string oauth_secret = 7;
-    PredictorDef predictor_canary = 8;
+  ClusterDef cluster = 1;
+  string id = 2;
+  string name = 3;
+  string project_name = 4;
+  PredictorDef predictor = 5;
+  string uniqueName = 6;
+  string oauth_key = 7;
+  string oauth_secret = 8;
+  PredictorDef predictor_canary = 9;
 }
 
 message DeploymentResultDef {

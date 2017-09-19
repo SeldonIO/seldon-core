@@ -5,18 +5,18 @@ items:
   metadata:
     creationTimestamp: null
     labels:
-      name: locust-master
+      name: locust-master-{{ .Values.loadtest.id }}
       service: seldon
-    name: locust-master
+    name: locust-master-{{ .Values.loadtest.id }}
   spec:
     replicas: 1
     selector:
-      name: locust-master
+      name: locust-master-{{ .Values.loadtest.id }}
     template:
       metadata:
         creationTimestamp: null
         labels:
-          name: locust-master
+          name: locust-master-{{ .Values.loadtest.id }}
           service: seldon
       spec:
         containers:
@@ -43,7 +43,7 @@ items:
             value: '{{ .Values.data.size }}'
           image: seldonio/locust-core:{{ .Values.image.release }}
           imagePullPolicy: IfNotPresent
-          name: locust-master
+          name: locust-master-{{ .Values.loadtest.id }}
           resources: {}
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
@@ -60,7 +60,7 @@ items:
     creationTimestamp: null
     labels:
       service: seldon
-    name: locust-master
+    name: locust-master-{{ .Values.loadtest.id }}
   spec:
     ports:
     - name: master-api1
@@ -72,12 +72,11 @@ items:
       protocol: TCP
       targetPort: 5558
     - name: master-web
-      nodePort: 30018
       port: 8089
       protocol: TCP
       targetPort: 8089
     selector:
-      name: locust-master
+      name: locust-master-{{ .Values.loadtest.id }}
     sessionAffinity: None
     type: NodePort
 kind: List

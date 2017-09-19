@@ -1,5 +1,5 @@
-DEPLOYMENT_JSON=deployment_mean_classifier.json
-DEPLOYMENT_ID=`cat config/${DEPLOYMENT_JSON} | jq -r .id`
+DEPLOYMENT_JSON=config/_deployment.json
+DEPLOYMENT_ID=`cat ${DEPLOYMENT_JSON} | jq -r .id`
 
 #
 # Manage REST Endpoints
@@ -8,8 +8,8 @@ DEPLOYMENT_ID=`cat config/${DEPLOYMENT_JSON} | jq -r .id`
 CLUSTER_MANAGER_ENDPOINT:=$(shell cat CLUSTER_MANAGER_ENDPOINT)
 CLUSTER_MANAGER_CLIENT_SECRET=$(shell cat ../cluster-manager/cluster-manager-client-secret.txt)
 API_ENDPOINT:=$(shell cat API_ENDPOINT)
-API_CLIENT_KEY=$(shell cat config/$(DEPLOYMENT_JSON) | jq -r .oauth_key)
-API_CLIENT_SECRET=$(shell cat config/$(DEPLOYMENT_JSON) | jq -r .oauth_secret)
+API_CLIENT_KEY=$(shell cat $(DEPLOYMENT_JSON) | jq -r .oauth_key)
+API_CLIENT_SECRET=$(shell cat $(DEPLOYMENT_JSON) | jq -r .oauth_secret)
 
 cm_update_endpoint_for_localhost:
 	@echo "localhost:8081" > CLUSTER_MANAGER_ENDPOINT && cat CLUSTER_MANAGER_ENDPOINT
@@ -74,7 +74,7 @@ cm_get_token:
 
 cm_create_deployment:
 	echo "------------------------------" && echo "ACCESS_TOKEN[$(CM_ACCESS_TOKEN)]" && echo "------------------------------" \
-		&& curl -s -i -H 'Content-Type: application/json' -H "Authorization: Bearer $(CM_ACCESS_TOKEN)" -X "POST" -d @config/$(DEPLOYMENT_JSON)  $(CLUSTER_MANAGER_ENDPOINT)$(EP_DEPLOYMENTS) | tee out.log
+		&& curl -s -i -H 'Content-Type: application/json' -H "Authorization: Bearer $(CM_ACCESS_TOKEN)" -X "POST" -d @$(DEPLOYMENT_JSON)  $(CLUSTER_MANAGER_ENDPOINT)$(EP_DEPLOYMENTS) | tee out.log
 
 cm_get_deployment:
 	echo "------------------------------" && echo "ACCESS_TOKEN[$(CM_ACCESS_TOKEN)]" && echo "------------------------------" \

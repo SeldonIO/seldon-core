@@ -4,6 +4,8 @@
 image:
   release: 0.1
 replicaCount: 1
+loadtest:
+  id: 1
 locust:
   script : predict_rest_locust.py
   host : http://seldon-apiserver:8080
