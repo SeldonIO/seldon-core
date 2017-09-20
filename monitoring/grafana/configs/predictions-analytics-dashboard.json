@@ -392,7 +392,7 @@
     },
     {
       "collapse": false,
-      "height": 272,
+      "height": 313,
       "panels": [
         {
           "aliasColors": {},
@@ -403,10 +403,12 @@
           "fill": 1,
           "id": 4,
           "legend": {
+            "alignAsTable": true,
             "avg": false,
             "current": false,
             "max": false,
             "min": false,
+            "rightSide": false,
             "show": true,
             "total": false,
             "values": false
@@ -421,18 +423,18 @@
           "renderer": "flot",
           "seriesOverrides": [],
           "spaceLength": 10,
-          "span": 3,
+          "span": 9,
           "stack": false,
           "steppedLine": false,
           "targets": [
             {
-              "expr": "round(sum(rate(seldon_api_ingress_server_requests_duration_seconds_count{uri=\"/api/v0.1/predictions\"}[1m]))by (principal, uri, status),0.0001)",
+              "expr": "round(sum(rate(seldon_api_ingress_server_requests_duration_seconds_count{uri=\"/api/v0.1/predictions\",project_name=~\"$project\",predictor_name=~\"$predictor\",version=~\"$version\"}[1m]))by (project_name, predictor_name, version, uri, status),0.0001)",
               "format": "time_series",
               "intervalFactor": 2,
-              "legendFormat": "{{principal}} -> {{uri}} : {{status}}",
+              "legendFormat": "{{project_name}}/{{predictor_name}}:{{version}} -> {{uri}} : {{status}}",
               "metric": "",
               "refId": "A",
-              "step": 4
+              "step": 2
             }
           ],
           "thresholds": [],
@@ -478,185 +480,6 @@
           "dashes": false,
           "datasource": "prometheus",
           "fill": 1,
-          "id": 5,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "span": 3,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "histogram_quantile(0.5, sum(rate(seldon_api_ingress_server_requests_duration_seconds_bucket{uri=~\"/api/.*\"}[20s])) by (uri,le))",
-              "format": "time_series",
-              "intervalFactor": 2,
-              "legendFormat": "{{uri}} (p50)",
-              "refId": "A",
-              "step": 4
-            },
-            {
-              "expr": "histogram_quantile(0.75, sum(rate(seldon_api_ingress_server_requests_duration_seconds_bucket{uri=~\"/api/.*\"}[20s])) by (uri,le))",
-              "format": "time_series",
-              "hide": false,
-              "intervalFactor": 2,
-              "legendFormat": "{{uri}} (p75)",
-              "metric": "",
-              "refId": "B",
-              "step": 4
-            },
-            {
-              "expr": "histogram_quantile(0.9, sum(rate(seldon_api_ingress_server_requests_duration_seconds_bucket{uri=~\"/api/.*\"}[20s])) by (uri,le))",
-              "format": "time_series",
-              "hide": false,
-              "intervalFactor": 2,
-              "legendFormat": "{{uri}} (p90)",
-              "refId": "C",
-              "step": 4
-            },
-            {
-              "expr": "histogram_quantile(0.99, sum(rate(seldon_api_ingress_server_requests_duration_seconds_bucket{uri=~\"/api/.*\"}[20s])) by (uri,le))",
-              "format": "time_series",
-              "hide": false,
-              "intervalFactor": 2,
-              "legendFormat": "{{uri}} (p99)",
-              "refId": "D",
-              "step": 4
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "API Prediction Latency",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ]
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": "prometheus",
-          "fill": 1,
-          "id": 24,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "span": 3,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "sum(irate(seldon_api_ingress_server_requests_duration_seconds_count{status=~\"4.*\"}[1m]))  by (uri)",
-              "format": "time_series",
-              "intervalFactor": 2,
-              "refId": "A",
-              "step": 4
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "4xxs by URI",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ]
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": "prometheus",
-          "fill": 1,
           "id": 25,
           "legend": {
             "avg": false,
@@ -682,7 +505,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(irate(seldon_api_ingress_server_requests_duration_seconds_count{status=~\"5.*\"}[1m]))  by (uri)",
+              "expr": "sum(irate(seldon_api_ingress_server_requests_duration_seconds_count{status=~\"5.*\"}[1m]))  by (project_name, predictor_name, version, uri)",
               "format": "time_series",
               "intervalFactor": 2,
               "refId": "A",
@@ -730,184 +553,89 @@
       "repeatIteration": null,
       "repeatRowId": null,
       "showTitle": false,
-      "title": "Dashboard Row",
+      "title": "API Percentiles",
       "titleSize": "h6"
     },
     {
       "collapse": false,
-      "height": "50",
+      "height": 294,
       "panels": [
         {
-          "content": "<div class=\"text-center dashboard-header\">\n  <span>Internal Engine</span>\n</div>",
-          "id": 10,
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "prometheus",
+          "fill": 1,
+          "id": 5,
+          "legend": {
+            "alignAsTable": true,
+            "avg": false,
+            "current": false,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "rightSide": true,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
           "links": [],
-          "mode": "html",
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
           "span": 12,
-          "title": "",
-          "type": "text"
-        }
-      ],
-      "repeat": null,
-      "repeatIteration": null,
-      "repeatRowId": null,
-      "showTitle": false,
-      "title": "Internal engine",
-      "titleSize": "h6"
-    },
-    {
-      "collapse": false,
-      "height": 259,
-      "panels": [
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": "prometheus",
-          "fill": 1,
-          "id": 1,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "span": 3,
           "stack": false,
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(seldon_api_engine_server_requests_duration_seconds_count{uri=\"/api/v0.1/predictions\"}[1m]))",
-              "format": "time_series",
-              "intervalFactor": 2,
-              "legendFormat": "{{ response_code}}",
-              "metric": "",
-              "refId": "A",
-              "step": 4
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "engine Prediction requests",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ]
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": "prometheus",
-          "fill": 1,
-          "id": 2,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "span": 3,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "sum(rate(seldon_api_engine_server_requests_duration_seconds_sum{uri=\"/api/v0.1/predictions\"}[60s]))/sum(rate(seldon_api_engine_server_requests_duration_seconds_count{uri=\"/api/v0.1/predictions\"}[60s]))",
+              "expr": "histogram_quantile(0.5, sum(rate(seldon_api_ingress_server_requests_duration_seconds_bucket{uri=~\"/api/.*\",project_name=~\"$project\",predictor_name=~\"$predictor\",version=~\"$version\"}[20s])) by (project_name, predictor_name, version, uri, status,le))",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "average",
+              "legendFormat": "{{project_name}}/{{predictor_name}}:{{version}} -> {{uri}} : {{status}} (p50)",
               "refId": "A",
-              "step": 4
+              "step": 2
             },
             {
-              "expr": "histogram_quantile(0.75, sum(rate(seldon_api_engine_server_requests_duration_seconds_bucket{uri=\"/api/v0.1/predictions\"}[20s])) by (le))",
+              "expr": "histogram_quantile(0.75, sum(rate(seldon_api_ingress_server_requests_duration_seconds_bucket{uri=~\"/api/.*\",project_name=~\"$project\",predictor_name=~\"$predictor\",version=~\"$version\"}[20s])) by (project_name, predictor_name, version, uri, status,le))",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "0.75 percentile",
+              "legendFormat": "{{project_name}}/{{predictor_name}}:{{version}} -> {{uri}} : {{status}} (p75)",
               "metric": "",
               "refId": "B",
-              "step": 4
+              "step": 2
             },
             {
-              "expr": "histogram_quantile(0.9, sum(rate(seldon_api_engine_server_requests_duration_seconds_bucket{uri=\"/api/v0.1/predictions\"}[20s])) by (le))",
+              "expr": "histogram_quantile(0.9, sum(rate(seldon_api_ingress_server_requests_duration_seconds_bucket{uri=~\"/api/.*\",project_name=~\"$project\",predictor_name=~\"$predictor\",version=~\"$version\"}[20s])) by (project_name, predictor_name, version, uri, status,le))",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "0.9 percentile",
+              "legendFormat": "{{project_name}}/{{predictor_name}}:{{version}} -> {{uri}} : {{status}} (p90)",
               "refId": "C",
-              "step": 4
+              "step": 2
             },
             {
-              "expr": "histogram_quantile(0.99, sum(rate(seldon_api_engine_server_requests_duration_seconds_bucket{uri=\"/api/v0.1/predictions\"}[20s])) by (le))",
+              "expr": "histogram_quantile(0.99, sum(rate(seldon_api_ingress_server_requests_duration_seconds_bucket{uri=~\"/api/.*\",project_name=~\"$project\",predictor_name=~\"$predictor\",version=~\"$version\"}[20s])) by (project_name, predictor_name, version, uri, status,le))",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "0.99 percentile",
+              "legendFormat": "{{project_name}}/{{predictor_name}}:{{version}} -> {{uri}} : {{status}} (p99)",
               "refId": "D",
-              "step": 4
+              "step": 2
             }
           ],
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Engine API Prediction Latency",
+          "title": "API Prediction Latency",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -928,81 +656,6 @@
               "logBase": 1,
               "max": null,
               "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ]
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": "prometheus",
-          "fill": 1,
-          "id": 3,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "span": 3,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "rate(seldon_api_engine_server_requests_duration_seconds_count{status=\"500\"}[10m])",
-              "format": "time_series",
-              "intervalFactor": 2,
-              "refId": "B",
-              "step": 4
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Engine Prediction Errors",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
               "show": true
             },
             {
@@ -1092,7 +745,7 @@
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "engine requests to $unit",
+          "title": "Requests to $unit",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -1245,16 +898,56 @@
   "templating": {
     "list": [
       {
-        "allValue": null,
+        "allValue": ".*",
         "current": {},
         "datasource": "prometheus",
         "hide": 0,
         "includeAll": true,
         "label": null,
-        "multi": false,
-        "name": "App",
+        "multi": true,
+        "name": "project",
         "options": [],
-        "query": "label_values(principal)",
+        "query": "label_values(project_name)",
+        "refresh": 1,
+        "regex": "",
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": ".*",
+        "current": {},
+        "datasource": "prometheus",
+        "hide": 0,
+        "includeAll": true,
+        "label": null,
+        "multi": true,
+        "name": "predictor",
+        "options": [],
+        "query": "label_values(predictor_name)",
+        "refresh": 1,
+        "regex": "",
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": ".*",
+        "current": {},
+        "datasource": "prometheus",
+        "hide": 0,
+        "includeAll": true,
+        "label": null,
+        "multi": true,
+        "name": "version",
+        "options": [],
+        "query": "label_values(version)",
         "refresh": 1,
         "regex": "",
         "sort": 0,
@@ -1271,7 +964,7 @@
         "hide": 0,
         "includeAll": true,
         "label": null,
-        "multi": false,
+        "multi": true,
         "name": "unit",
         "options": [],
         "query": "label_values(unitId)",
