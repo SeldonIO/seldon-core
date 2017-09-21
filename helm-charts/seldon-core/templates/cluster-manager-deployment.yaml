@@ -15,7 +15,7 @@ items:
         containers:
         - env:
           - name: JAVA_OPTS
-            value: -agentlib:jdwp=transport=dt_socket,address=127.0.0.1:8000,server=y,suspend=n
+            value: {{ .Values.java_opts }}
           - name: SELDON_CLUSTER_MANAGER_ZK_SERVERS
             value: zookeeper-1:2181,zookeeper-2:2181,zookeeper-3:2181
           - name: SELDON_CLUSTER_MANAGER_REDIS_HOST
@@ -49,7 +49,7 @@ items:
     selector:
       app: seldon-cluster-manager-server
     sessionAffinity: None
-    type: NodePort
+    type: {{ .Values.cluster_manager_service_type }}
 kind: List
 metadata: {}
 

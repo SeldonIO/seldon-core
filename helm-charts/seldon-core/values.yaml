@@ -22,3 +22,13 @@ redis:
 # set the cluster manager client secret
 #cluster_manager_client_secret:
 
+
+# set the JAVA_OPTS
+#java_opts: "-agentlib:jdwp=transport=dt_socket,address=127.0.0.1:8000,server=y,suspend=n"
+java_opts: ""
+
+
+# Set the type of service for Cluster Manager
+#seldon_cluster_manager_service_type: LoadBalancer
+cluster_manager_service_type: NodePort
+
