@@ -89,6 +89,25 @@ class SeldonJsLocust(TaskSet):
         self.data_size = int(self.getEnviron('DATA_SIZE',"1"))
         self.get_token()
 
+    def sendFeedback(self):
+        if random()>0.5:
+            j = {"reward":1.0}
+        else:
+            j = {"reward":0}
+        jStr = json.dumps(j)
+        print jStr
+        r = self.client.request("POST","/api/v0.1/feedback",headers={"Content-Type":"application/json","Accept":"application/json","Authorization":"Bearer "+self.access_token},name="feedback",data=jStr)
+        if r.status_code == 200:
+            print "Successful feedback"
+        else:
+            print "Failed feedback request "+str(r.status_code)
+            if r.status_code == 401:
+                self.get_token()
+            else:
+                print r.headers
+                r.raise_for_status()
+        
+
     @task
     def getPrediction(self):
         fake_data = [[round(random(),2) for i in range(0,self.data_size)]]
@@ -99,8 +118,9 @@ class SeldonJsLocust(TaskSet):
         r = self.client.request("POST","/api/v0.1/predictions",headers={"Content-Type":"application/json","Accept":"application/json","Authorization":"Bearer "+self.access_token},name="predictions",data=jStr)
         if r.status_code == 200:
             print r.content
+            self.sendFeedback()
         else:
-            print "Failed request "+str(r.status_code)
+            print "Failed prediction request "+str(r.status_code)
             if r.status_code == 401:
                 self.get_token()
             else:

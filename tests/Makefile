@@ -106,6 +106,6 @@ api_post_test:
 
 api_feedback_test:
 	echo "------------------------------" && echo "ACCESS_TOKEN[$(API_ACCESS_TOKEN)]" && echo "------------------------------" \
-		&& curl -v -i -X POST -H "Content-Type:application/json" -H "Accept: application/json" -H "Authorization: Bearer $(API_ACCESS_TOKEN)" $(API_ENDPOINT)$(EP_FEEDBACK) -d '{"request":{"features":["a"],"ndarray":[[1.0],[2.0]]},"response":{"meta":{"puid":"vmjfejn90adjniol7b8ghkk8un","routing":{"0": 0}},"response": {"features": ["proba"],"tensor": {"shape":[1,2],"values":[0.12823373759251927,0.2856375705089441]}}},"reward":1}'
+		&& curl -v -i -X POST -H "Content-Type:application/json" -H "Accept: application/json" -H "Authorization: Bearer $(API_ACCESS_TOKEN)" $(API_ENDPOINT)$(EP_FEEDBACK) -d '{"request":{"features":["a"],"ndarray":[[1.0],[2.0]]},"response":{"meta":{"puid":"vmjfejn90adjniol7b8ghkk8un","routing":{"0": 0}},"response": {"features": ["proba"],"tensor": {"shape":[1,2],"values":[0.12823373759251927,0.2856375705089441]}}},"reward":1.0}'
 
 

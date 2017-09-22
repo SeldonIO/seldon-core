@@ -1,5 +1,6 @@
 package io.seldon.apife.api.rest;
 
+import static java.util.Arrays.asList;
 import java.security.Principal;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -20,17 +21,19 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
-import io.micrometer.core.annotation.Timed;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.Tag;
 import io.seldon.apife.exception.APIException;
 import io.seldon.apife.exception.APIException.ApiExceptionType;
 import io.seldon.apife.kafka.KafkaRequestResponseProducer;
+import io.seldon.apife.metrics.AuthorizedWebMvcTagsProvider;
 import io.seldon.apife.pb.ProtoBufUtils;
 import io.seldon.apife.service.PredictionService;
 import io.seldon.protos.PredictionProtos.PredictionFeedbackDef;
 import io.seldon.protos.PredictionProtos.PredictionRequestDef;
 import io.seldon.protos.PredictionProtos.PredictionRequestResponseDef;
 import io.seldon.protos.PredictionProtos.PredictionResponseDef;
-import io.seldon.protos.PredictionProtos.PredictionFeedbackDef;
 
 @RestController
 public class RestClientController {
@@ -42,6 +45,9 @@ public class RestClientController {
 	
 	@Autowired
 	private KafkaRequestResponseProducer kafkaProducer;
+	
+	@Autowired
+	AuthorizedWebMvcTagsProvider tagsProvider;
 	
 	private boolean ready = false;
 	
@@ -163,6 +169,9 @@ public class RestClientController {
 			PredictionFeedbackDef.Builder builder = PredictionFeedbackDef.newBuilder();
 			ProtoBufUtils.updateMessageBuilderFromJson(builder, requestEntity.getBody() );
 			feedback = builder.build();
+			Iterable<Tag> tags = asList(tagsProvider.principal(clientId),tagsProvider.projectName(clientId),tagsProvider.predictorName(clientId),tagsProvider.version(clientId));
+			Counter.builder("seldon_api_ingress_server_feedback_reward").tags(tags).register(Metrics.globalRegistry).increment(feedback.getReward());
+			Counter.builder("seldon_api_ingress_server_feedback").tags(tags).register(Metrics.globalRegistry).increment();
 		} 
 		catch (InvalidProtocolBufferException e) 
 		{
