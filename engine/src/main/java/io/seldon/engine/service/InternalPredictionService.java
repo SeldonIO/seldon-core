@@ -28,6 +28,7 @@ import io.grpc.ManagedChannelBuilder;
 import io.seldon.engine.exception.APIException;
 import io.seldon.engine.pb.ProtoBufUtils;
 import io.seldon.engine.predictors.PredictiveUnitState;
+import io.seldon.protos.DeploymentProtos.ClusterResourcesDef;
 import io.seldon.protos.DeploymentProtos.EndpointDef;
 import io.seldon.protos.MABGrpc;
 import io.seldon.protos.MABGrpc.MABBlockingStub;
@@ -42,7 +43,8 @@ public class InternalPredictionService {
 	
 	private static Logger logger = LoggerFactory.getLogger(InternalPredictionService.class.getName());
 
-	public static final String UNIT_ID_HEADER = "Seldon-Preditive-Unit-ID"; 
+	public static final String MODEL_HEADER = "Seldon-model"; 
+	public static final String MODEL_VERSION_HEADER = "Seldon-model-version"; 
 	
     ObjectMapper mapper = new ObjectMapper();
     
@@ -65,7 +67,7 @@ public class InternalPredictionService {
 				boolean isDefault = false;
 				if (request.getRequestOneofCase() == RequestOneofCase.REQUEST)
 					isDefault = true;
-				return predictREST(dataString, state.name, endpoint, isDefault);
+				return predictREST(dataString, state.clusterResources, endpoint, isDefault);
 				
 			case GRPC:
 				
@@ -111,7 +113,7 @@ public class InternalPredictionService {
 		return routing;
 	}
 	
-	public PredictionResponseDef predictREST(String dataString, String unitId, EndpointDef endpoint,boolean isDefault){
+	public PredictionResponseDef predictREST(String dataString, ClusterResourcesDef clusterResources, EndpointDef endpoint,boolean isDefault){
 		{
     		long timeNow = System.currentTimeMillis();
     		URI uri;
@@ -131,7 +133,8 @@ public class InternalPredictionService {
     		{
     			HttpHeaders headers = new HttpHeaders();
     			headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-    			headers.add(UNIT_ID_HEADER, unitId);
+    			headers.add(MODEL_HEADER, clusterResources.getImage());
+    			headers.add(MODEL_VERSION_HEADER, clusterResources.getVersion());
 
     			MultiValueMap<String, String> map= new LinkedMultiValueMap<String, String>();
     			map.add("json", dataString);

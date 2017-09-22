@@ -7,6 +7,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import io.seldon.protos.DeploymentProtos.ClusterResourcesDef;
 import io.seldon.protos.DeploymentProtos.EndpointDef;
 import io.seldon.protos.DeploymentProtos.PredictiveUnitDef;
 import io.seldon.protos.DeploymentProtos.PredictiveUnitDef.ParamDef;
@@ -17,36 +18,25 @@ public class PredictiveUnitState {
 	public String name;
 	public PredictiveUnitBean predictiveUnitBean;
 	public EndpointDef endpoint;
+	public ClusterResourcesDef clusterResources; 
 	public List<PredictiveUnitState> children = new ArrayList<>();
 	public Map<String,PredictiveUnitParameterInterface>  parameters;
 	
 	public PredictiveUnitState(){}
 	
-	public PredictiveUnitState(String id,String name, EndpointDef endpoint, Map<String,PredictiveUnitParameterInterface> parameters){
+	public PredictiveUnitState(String id,String name, EndpointDef endpoint, ClusterResourcesDef clusterResources,Map<String,PredictiveUnitParameterInterface> parameters){
 		this.id = id;
 		this.name = name;
 		this.endpoint = endpoint;
+		this.clusterResources = clusterResources;
 		this.parameters = parameters;
-	}
-	
-	public PredictiveUnitState(String id,String name, 
-			PredictiveUnitBean predictiveUnitBean, 
-			EndpointDef endpoint, 
-			List<PredictiveUnitState> children, 
-			Map<String,PredictiveUnitParameterInterface> parameters){
-		this(	id,
-				name,
-				endpoint,
-				parameters
-				);
-		this.predictiveUnitBean = predictiveUnitBean;
-		this.children = children;
 	}
 	
 	public PredictiveUnitState(PredictiveUnitDef predictiveUnitDef){
 		this(	predictiveUnitDef.getId(),
 				predictiveUnitDef.getName(),
 				predictiveUnitDef.getEndpoint(),
+				predictiveUnitDef.getClusterResources(),
 				deserializeParameters(predictiveUnitDef.getParametersList())
 				);
 	}

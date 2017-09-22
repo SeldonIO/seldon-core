@@ -44,6 +44,7 @@
   "annotations": {
     "list": []
   },
+  "editMode": false,
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
@@ -907,7 +908,7 @@
         "multi": true,
         "name": "project",
         "options": [],
-        "query": "label_values(project_name)",
+        "query": "label_values(seldon_api_ingress_server_requests_duration_seconds_count,project_name)",
         "refresh": 1,
         "regex": "",
         "sort": 0,
@@ -927,7 +928,7 @@
         "multi": true,
         "name": "predictor",
         "options": [],
-        "query": "label_values(predictor_name)",
+        "query": "label_values(seldon_api_ingress_server_requests_duration_seconds_count,predictor_name)",
         "refresh": 1,
         "regex": "",
         "sort": 0,
@@ -947,7 +948,7 @@
         "multi": true,
         "name": "version",
         "options": [],
-        "query": "label_values(version)",
+        "query": "label_values(seldon_api_ingress_server_requests_duration_seconds_count,version)",
         "refresh": 1,
         "regex": "",
         "sort": 0,
@@ -1010,5 +1011,5 @@
   },
   "timezone": "browser",
   "title": "Prediction Analytics",
-  "version": 4
+  "version": 2
 }

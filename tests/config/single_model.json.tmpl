@@ -1,16 +1,20 @@
 {
+    "annotations": {
+        "project_name": "{{project_name}}"
+    },
     "cluster": {},
-    "project_name" : "{{project_name}}",
     "id": "{{deployment_id}}",
     "name": "test deployment",
     "oauth_key": "{{oauth_key}}",
     "oauth_secret": "{{oauth_secret}}",
     "predictor": {
+        "annotations": {
+            "project_name": "{{project_name}}"
+        },
         "enabled": true,
         "id": "0",
         "imagePullSecrets": [],
         "name": "{{predictor_name}}",
-	"version" : "{{predictor_version}}",
         "predictiveUnits": [
             {
                 "children": [],
@@ -36,7 +40,8 @@
         ],
         "replicas": 1,
         "replicasReady": 0,
-        "root": "0"
+        "root": "0",
+        "version": "{{predictor_version}}"
     },
     "uniqueName": "my-uniqueName"
 }

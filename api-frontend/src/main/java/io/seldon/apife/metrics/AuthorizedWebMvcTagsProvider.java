@@ -15,6 +15,8 @@ import io.seldon.apife.deployments.DeploymentStore;
 
 public class AuthorizedWebMvcTagsProvider extends DefaultWebMvcTagsProvider {
 
+	private final static String PROJECT_ANNOTATION_KEY = "project_name";
+	
 	@Autowired
 	DeploymentStore deploymentStore;
 	
@@ -37,9 +39,14 @@ public class AuthorizedWebMvcTagsProvider extends DefaultWebMvcTagsProvider {
 			 return Tag.of("principal", "None");
 	 }
 
+	 public Tag projectName(HttpServletRequest request)
+	 {
+		 return Tag.of("project_name",deploymentStore.getDeployment(request.getUserPrincipal().getName()).getAnnotationsOrDefault(PROJECT_ANNOTATION_KEY, "unknown"));
+	 }
+	 
 	 public Tag version(HttpServletRequest request)
 	 {
-		 return Tag.of("version",deploymentStore.getDeployment(request.getUserPrincipal().getName()).getPredictor().getVersion());
+		 return Tag.of("predictor_version",deploymentStore.getDeployment(request.getUserPrincipal().getName()).getPredictor().getVersion());
 	 }
 
 	 public Tag predictorName(HttpServletRequest request)
@@ -47,10 +54,7 @@ public class AuthorizedWebMvcTagsProvider extends DefaultWebMvcTagsProvider {
 		 return Tag.of("predictor_name",deploymentStore.getDeployment(request.getUserPrincipal().getName()).getPredictor().getName());
 	 }
 
-	 public Tag projectName(HttpServletRequest request)
-	 {
-		 return Tag.of("project_name",deploymentStore.getDeployment(request.getUserPrincipal().getName()).getProjectName());
-	 }
+	
 
 	
 }

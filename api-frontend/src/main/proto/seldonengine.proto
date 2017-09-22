@@ -85,18 +85,19 @@ message PredictorDef {
   int32 replicas = 8;
   int32 replicasReady = 9;
   string root = 10;
+  map<string,string> annotations = 11;
 }
 
 message DeploymentDef {
   ClusterDef cluster = 1;
   string id = 2;
   string name = 3;
-  string project_name = 4;
-  PredictorDef predictor = 5;
-  string uniqueName = 6;
-  string oauth_key = 7;
-  string oauth_secret = 8;
-  PredictorDef predictor_canary = 9;
+  PredictorDef predictor = 4;
+  string uniqueName = 5;
+  string oauth_key = 6;
+  string oauth_secret = 7;
+  PredictorDef predictor_canary = 8;
+  map<string,string> annotations = 9;
 }
 
 message DeploymentResultDef {

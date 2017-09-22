@@ -1,1 +1,0 @@
-helm delete loadtest --purge
