@@ -1071,7 +1071,7 @@
         "useTags": false
       },
       {
-        "allValue": "all",
+        "allValue": ".*",
         "current": {},
         "datasource": "prometheus",
         "hide": 0,
@@ -1091,7 +1091,7 @@
         "useTags": false
       },
       {
-        "allValue": "all",
+        "allValue": ".*",
         "current": {},
         "datasource": "prometheus",
         "hide": 0,
@@ -1143,5 +1143,5 @@
   },
   "timezone": "browser",
   "title": "Prediction Analytics",
-  "version": 2
+  "version": 3
 }

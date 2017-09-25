@@ -1,9 +1,15 @@
 {
-    "id": "12",
-    "name": "Test Deployment",
-    "oauth_key": "key",
-    "oauth_secret": "secret",
+    "annotations": {
+        "project_name": "{{project_name}}"
+    },
+    "id": "{{deployment_id}}",
+    "name": "Example AB Test",
+    "oauth_key": "{{oauth_key}}",
+    "oauth_secret": "{{oauth_secret}}",
     "predictor": {
+        "annotations": {
+            "project_name": "{{project_name}}"
+        },
         "enabled": true,
         "endpoint": {
             "service_host": "sd-12-p",
@@ -12,7 +18,7 @@
         },
         "id": "32805",
         "imagePullSecrets": [],
-        "name": "",
+        "name": "{{predictor_name}}",
         "predictiveUnits": [
             {
                 "children": [
@@ -50,9 +56,9 @@
                     "cpu": "",
                     "gpu": "",
                     "id": "",
-                    "image": "seldonio/mean_classifier",
+                    "image": "{{model_image_1}}",
                     "memory": "",
-                    "version": "0.5"
+                    "version": "{{model_version_1}}"
                 },
                 "endpoint": {
                     "service_host": "localhost",
@@ -60,7 +66,7 @@
                     "type": "REST"
                 },
                 "id": "11",
-                "name": "Fixed Mean Model 2",
+                "name": "{{model_name_1}}",
                 "parameters": [],
                 "subtype": "MICROSERVICE",
                 "type": "MODEL"
@@ -71,9 +77,9 @@
                     "cpu": "",
                     "gpu": "",
                     "id": "",
-                    "image": "seldonio/mean_classifier",
+                    "image": "{{model_image_2}}",
                     "memory": "",
-                    "version": "0.5"
+                    "version": "{{model_version_2}}"
                 },
                 "endpoint": {
                     "service_host": "localhost",
@@ -81,7 +87,7 @@
                     "type": "REST"
                 },
                 "id": "32804",
-                "name": "Fixed Mean Model 1",
+                "name": "{{model_name_2}}",
                 "parameters": [],
                 "subtype": "MICROSERVICE",
                 "type": "MODEL"

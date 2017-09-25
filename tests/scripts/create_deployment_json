@@ -22,6 +22,7 @@ if __name__ == '__main__':
     parser.add_argument('--oauth-secret', help='oauth secret', default="oauth-secret")
     parser.add_argument('--predictor-name', help='predictor name', default="simple model")
     parser.add_argument('--predictor-version', help='predictor version', default="v1")
+    parser.add_argument('--model-name', help='model name', action='append')
     parser.add_argument('--model-image', help='model image', action='append')
     parser.add_argument('--model-version', help='model version', action='append')
     args = parser.parse_args()
@@ -36,11 +37,14 @@ if __name__ == '__main__':
         data = data.replace("{{predictor_name}}",args.predictor_name)
         data = data.replace("{{predictor_version}}",args.predictor_version)
         if not args.model_image is None:
-            data = data.replace("{{model_image}}",args.model_image[0])
-            data = data.replace("{{model_version}}",args.model_version[0])
+            for i in range(0,len(args.model_image)):
+                data = data.replace("{{model_image_%d}}" % (i+1),args.model_image[i])
+                data = data.replace("{{model_version_%d}}" % (i+1),args.model_version[i])
+                data = data.replace("{{model_name_%d}}" % (i+1),args.model_name[i])
         else:
-            data = data.replace("{{model_image}}","seldonio/mean_classifier")
-            data = data.replace("{{model_version}}","0.5")
+            data = data.replace("{{model_image_1}}","seldonio/mean_classifier")
+            data = data.replace("{{model_version_1}}","0.5")
+            data = data.replace("{{model_name_1}}","My Model")
 
         data = json.loads(data)
         data_str = json.dumps(data, indent=4, sort_keys=True)
