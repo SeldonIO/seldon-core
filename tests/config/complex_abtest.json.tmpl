@@ -16,14 +16,14 @@
             "service_port": 8000,
             "type": "REST"
         },
-        "id": "32805",
+        "id": "1",
         "imagePullSecrets": [],
         "name": "{{predictor_name}}",
         "predictiveUnits": [
             {
                 "children": [
-                    "11",
-                    "32804"
+                    "2",
+                    "3"
                 ],
                 "cluster_resources": {
                     "cpu": "",
@@ -38,7 +38,7 @@
                     "service_port": 5000,
                     "type": "REST"
                 },
-                "id": "32805",
+                "id": "1",
                 "name": "abtest",
                 "parameters": [
                     {
@@ -65,11 +65,41 @@
                     "service_port": 9001,
                     "type": "REST"
                 },
-                "id": "11",
+                "id": "2",
                 "name": "{{model_name_1}}",
                 "parameters": [],
                 "subtype": "MICROSERVICE",
                 "type": "MODEL"
+            },
+            {
+                "children": [
+                    "4",
+                    "5"
+                ],
+                "cluster_resources": {
+                    "cpu": "",
+                    "gpu": "",
+                    "id": "",
+                    "image": "",
+                    "memory": "",
+                    "version": ""
+                },
+                "endpoint": {
+                    "service_host": "",
+                    "service_port": 5000,
+                    "type": "REST"
+                },
+                "id": "3",
+                "name": "abtest",
+                "parameters": [
+                    {
+                        "name": "ratioA",
+                        "type": "FLOAT",
+                        "value": "0.5"
+                    }
+                ],
+                "subtype": "RANDOM_ABTEST",
+                "type": "ROUTER"
             },
             {
                 "children": [],
@@ -86,8 +116,29 @@
                     "service_port": 9002,
                     "type": "REST"
                 },
-                "id": "32804",
+                "id": "4",
                 "name": "{{model_name_2}}",
+                "parameters": [],
+                "subtype": "MICROSERVICE",
+                "type": "MODEL"
+            },
+            {
+                "children": [],
+                "cluster_resources": {
+                    "cpu": "",
+                    "gpu": "",
+                    "id": "",
+                    "image": "{{model_image_3}}",
+                    "memory": "",
+                    "version": "{{model_version_3}}"
+                },
+                "endpoint": {
+                    "service_host": "localhost",
+                    "service_port": 9002,
+                    "type": "REST"
+                },
+                "id": "5",
+                "name": "{{model_name_3}}",
                 "parameters": [],
                 "subtype": "MICROSERVICE",
                 "type": "MODEL"
@@ -95,7 +146,7 @@
         ],
         "replicas": 1,
         "replicasReady": 1,
-        "root": "32805",
+        "root": "1",
         "version": "{{predictor_version}}"
     },
     "uniqueName": ""

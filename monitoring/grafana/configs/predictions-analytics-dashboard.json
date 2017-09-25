@@ -137,7 +137,7 @@
               "format": "time_series",
               "intervalFactor": 2,
               "refId": "A",
-              "step": 4
+              "step": 20
             }
           ],
           "thresholds": "",
@@ -213,7 +213,7 @@
               "format": "time_series",
               "intervalFactor": 2,
               "refId": "A",
-              "step": 4
+              "step": 20
             }
           ],
           "thresholds": "",
@@ -289,7 +289,7 @@
               "format": "time_series",
               "intervalFactor": 2,
               "refId": "A",
-              "step": 4
+              "step": 20
             }
           ],
           "thresholds": "",
@@ -366,7 +366,7 @@
               "hide": false,
               "intervalFactor": 2,
               "refId": "A",
-              "step": 4
+              "step": 20
             }
           ],
           "thresholds": "",
@@ -833,10 +833,10 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(seldon_api_engine_client_requests_duration_seconds_count{model_image=\"$model_image\",project_name=~\"$project\",predictor_name=~\"$predictor\",predictor_version=~\"$version\"}[1m])) by (project_name,predictor_name,predictor_version,model_image,model_version)",
+              "expr": "sum(rate(seldon_api_engine_client_requests_duration_seconds_count{model_image=\"$model_image\",project_name=~\"$project\",predictor_name=~\"$predictor\",predictor_version=~\"$version\"}[1m])) by (project_name,predictor_name,predictor_version,model_image,model_version,model_name)",
               "format": "time_series",
               "intervalFactor": 2,
-              "legendFormat": "{{project_name}}/{{predictor_name}} ({{model_image}} : {{model_version}})",
+              "legendFormat": "{{project_name}}/{{predictor_name}} ({{model_name}} {{model_image}} : {{model_version}})",
               "metric": "io_seldon_apife_api_rest_RestClientController_home_snapshot_75thPercentile",
               "refId": "A",
               "step": 2
@@ -910,51 +910,51 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "histogram_quantile(0.5, sum(rate(seldon_api_engine_client_requests_duration_seconds_bucket{uri=\"predict\",model_image=\"$model_image\",project_name=~\"$project\",predictor_name=~\"$predictor\",predictor_version=~\"$version\"}[20s])) by (project_name,predictor_name,predictor_version,model_version,le))",
+              "expr": "histogram_quantile(0.5, sum(rate(seldon_api_engine_client_requests_duration_seconds_bucket{uri=\"predict\",model_image=\"$model_image\",project_name=~\"$project\",predictor_name=~\"$predictor\",predictor_version=~\"$version\"}[20s])) by (project_name,predictor_name,predictor_version,model_name,model_image,model_version,le))",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "{{project_name}}/{{predictor_name}}:{{predictor_version}} model_version: {{model_version}} (p50)",
+              "legendFormat": "{{project_name}}/{{predictor_name}}:{{predictor_version}} {{model_name}}: {{model_version}} (p50)",
               "metric": "",
               "refId": "E",
               "step": 2
             },
             {
-              "expr": "histogram_quantile(0.75, sum(rate(seldon_api_engine_client_requests_duration_seconds_bucket{uri=\"predict\",model_image=\"$model_image\",project_name=~\"$project\",predictor_name=~\"$predictor\",predictor_version=~\"$version\"}[20s])) by (project_name,predictor_name,predictor_version,model_version,le))",
+              "expr": "histogram_quantile(0.75, sum(rate(seldon_api_engine_client_requests_duration_seconds_bucket{uri=\"predict\",model_image=\"$model_image\",project_name=~\"$project\",predictor_name=~\"$predictor\",predictor_version=~\"$version\"}[20s])) by (project_name,predictor_name,predictor_version,model_name,model_image,model_version,le))",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "{{project_name}}/{{predictor_name}}:{{predictor_version}} model_version: {{model_version}} (p75)",
+              "legendFormat": "{{project_name}}/{{predictor_name}}:{{predictor_version}} {{model_name}} : {{model_version}} (p75)",
               "metric": "",
               "refId": "B",
               "step": 2
             },
             {
-              "expr": "histogram_quantile(0.9, sum(rate(seldon_api_engine_client_requests_duration_seconds_bucket{uri=\"predict\",model_image=\"$model_image\",project_name=~\"$project\",predictor_name=~\"$predictor\",predictor_version=~\"$version\"}[20s])) by (project_name,predictor_name,predictor_version,model_version,le))",
+              "expr": "histogram_quantile(0.9, sum(rate(seldon_api_engine_client_requests_duration_seconds_bucket{uri=\"predict\",model_image=\"$model_image\",project_name=~\"$project\",predictor_name=~\"$predictor\",predictor_version=~\"$version\"}[20s])) by (project_name,predictor_name,predictor_version,model_name,model_image,model_version,le))",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "{{project_name}}/{{predictor_name}}:{{predictor_version}} model_version: {{model_version}} (p90)",
+              "legendFormat": "{{project_name}}/{{predictor_name}}:{{predictor_version}} {{model_name}}: {{model_version}} (p90)",
               "metric": "",
               "refId": "A",
               "step": 2
             },
             {
-              "expr": "histogram_quantile(0.95, sum(rate(seldon_api_engine_client_requests_duration_seconds_bucket{uri=\"predict\",model_image=\"$model_image\",project_name=~\"$project\",predictor_name=~\"$predictor\",predictor_version=~\"$version\"}[20s])) by (project_name,predictor_name,predictor_version,model_version,le))",
+              "expr": "histogram_quantile(0.95, sum(rate(seldon_api_engine_client_requests_duration_seconds_bucket{uri=\"predict\",model_image=\"$model_image\",project_name=~\"$project\",predictor_name=~\"$predictor\",predictor_version=~\"$version\"}[20s])) by (project_name,predictor_name,predictor_version,model_name,model_image,model_version,le))",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "{{project_name}}/{{predictor_name}}:{{predictor_version}} model_version: {{model_version}} (p95)",
+              "legendFormat": "{{project_name}}/{{predictor_name}}:{{predictor_version}} {{model_name}}: {{model_version}} (p95)",
               "metric": "",
               "refId": "C",
               "step": 2
             },
             {
-              "expr": "histogram_quantile(0.99, sum(rate(seldon_api_engine_client_requests_duration_seconds_bucket{uri=\"predict\",model_image=\"$model_image\",project_name=~\"$project\",predictor_name=~\"$predictor\",predictor_version=~\"$version\"}[20s])) by (project_name,predictor_name,predictor_version,model_version,le))",
+              "expr": "histogram_quantile(0.99, sum(rate(seldon_api_engine_client_requests_duration_seconds_bucket{uri=\"predict\",model_image=\"$model_image\",project_name=~\"$project\",predictor_name=~\"$predictor\",predictor_version=~\"$version\"}[20s])) by (project_name,predictor_name,predictor_version,model_name,model_image,model_version,le))",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "{{project_name}}/{{predictor_name}}:{{predictor_version}} model_version: {{model_version}} (p99)",
+              "legendFormat": "{{project_name}}/{{predictor_name}}:{{predictor_version}} {{model_name}}: {{model_version}} (p99)",
               "metric": "",
               "refId": "D",
               "step": 2
@@ -1113,7 +1113,7 @@
     ]
   },
   "time": {
-    "from": "now-5m",
+    "from": "now-15m",
     "to": "now"
   },
   "timepicker": {
@@ -1143,5 +1143,5 @@
   },
   "timezone": "browser",
   "title": "Prediction Analytics",
-  "version": 3
+  "version": 2
 }

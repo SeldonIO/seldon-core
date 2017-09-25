@@ -18,6 +18,11 @@ import io.seldon.engine.service.InternalPredictionService;
 public class SeldonRestTemplateExchangeTagsProvider implements RestTemplateExchangeTagsProvider {
 
 	private final static String PROJECT_ANNOTATION_KEY = "project_name";
+	private final static String PREDICTOR_NAME_METRIC = "predictor_name";
+	private final static String PREDICTOR_VERSION_METRIC = "predictor_version";
+	private final static String MODEL_NAME_METRIC = "model_name";
+	private final static String MODEL_IMAGE_METRIC = "model_image";
+	private final static String MODEL_VERSION_METRIC = "model_version";
 	
 	@Autowired
 	EnginePredictor enginePredictor;
@@ -32,6 +37,7 @@ public class SeldonRestTemplateExchangeTagsProvider implements RestTemplateExcha
 		return Arrays.asList(RestTemplateExchangeTags.method(request), uriTag,
 				RestTemplateExchangeTags.status(response),
 	            RestTemplateExchangeTags.clientName(request),
+	            modelName(request),
 	            modelImage(request),
 	            modelVersion(request),
 	            projectName(),
@@ -47,22 +53,36 @@ public class SeldonRestTemplateExchangeTagsProvider implements RestTemplateExcha
 	
 	private Tag predictorName()
 	{
-		return Tag.of("predictor_name", enginePredictor.getPredictorDef().getName());
+		if (!StringUtils.hasText(enginePredictor.getPredictorDef().getName()))
+			return Tag.of(PREDICTOR_NAME_METRIC, "unknown");
+		else
+			return Tag.of(PREDICTOR_NAME_METRIC,enginePredictor.getPredictorDef().getName()); 
 	}
 	
 	private Tag predictorVersion()
 	{
-		return Tag.of("predictor_version", enginePredictor.getPredictorDef().getVersion());
+		if (!StringUtils.hasText(enginePredictor.getPredictorDef().getVersion()))
+			return Tag.of(PREDICTOR_VERSION_METRIC, "unknown");
+		else
+			return Tag.of(PREDICTOR_VERSION_METRIC, enginePredictor.getPredictorDef().getVersion());
 	}
 
-	
-	private Tag modelImage(HttpRequest request)
+	private Tag modelName(HttpRequest request)
 	{
-		String modelImage = request.getHeaders().getFirst(InternalPredictionService.MODEL_HEADER);
+		String modelImage = request.getHeaders().getFirst(InternalPredictionService.MODEL_NAME_HEADER);
 		if (!StringUtils.hasText(modelImage))
 			modelImage = "unknown";
 		
-		return Tag.of("model_image", modelImage);
+		return Tag.of(MODEL_NAME_METRIC, modelImage);
+	}
+	
+	private Tag modelImage(HttpRequest request)
+	{
+		String modelImage = request.getHeaders().getFirst(InternalPredictionService.MODEL_IMAGE_HEADER);
+		if (!StringUtils.hasText(modelImage))
+			modelImage = "unknown";
+		
+		return Tag.of(MODEL_IMAGE_METRIC, modelImage);
 	}
 
 	private Tag modelVersion(HttpRequest request)
@@ -71,7 +91,7 @@ public class SeldonRestTemplateExchangeTagsProvider implements RestTemplateExcha
 		if (!StringUtils.hasText(modelVersion))
 			modelVersion = "latest";
 		
-		return Tag.of("model_version", modelVersion);
+		return Tag.of(MODEL_VERSION_METRIC, modelVersion);
 	}
 
 }

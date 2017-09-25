@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.spring.web.servlet.DefaultWebMvcTagsProvider;
@@ -17,6 +18,8 @@ import io.seldon.apife.deployments.DeploymentStore;
 public class AuthorizedWebMvcTagsProvider extends DefaultWebMvcTagsProvider {
 
 	private final static String PROJECT_ANNOTATION_KEY = "project_name";
+	private final static String PREDICTOR_NAME_METRIC = "predictor_name";
+	private final static String PREDICTOR_VERSION_METRIC = "predictor_version";
 	
 	@Autowired
 	DeploymentStore deploymentStore;
@@ -45,12 +48,18 @@ public class AuthorizedWebMvcTagsProvider extends DefaultWebMvcTagsProvider {
 	 
 	 public Tag version(String principalName)
 	 {
-		 return Tag.of("predictor_version",deploymentStore.getDeployment(principalName).getPredictor().getVersion());
+		 if (!StringUtils.hasText(deploymentStore.getDeployment(principalName).getPredictor().getVersion()))
+			 return Tag.of(PREDICTOR_VERSION_METRIC, "unknown");
+		 else
+			 return Tag.of(PREDICTOR_VERSION_METRIC,deploymentStore.getDeployment(principalName).getPredictor().getVersion());
 	 }
 
 	 public Tag predictorName(String principalName)
 	 {
-		 return Tag.of("predictor_name",deploymentStore.getDeployment(principalName).getPredictor().getName());
+		 if (!StringUtils.hasText(deploymentStore.getDeployment(principalName).getPredictor().getName()))
+			 return Tag.of(PREDICTOR_NAME_METRIC, "unknown");
+		 else
+			 return Tag.of("predictor_name",deploymentStore.getDeployment(principalName).getPredictor().getName());
 	 }
 
 	
