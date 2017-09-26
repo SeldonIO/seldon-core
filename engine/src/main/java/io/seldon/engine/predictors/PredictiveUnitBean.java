@@ -42,7 +42,7 @@ public abstract class PredictiveUnitBean {
 			// If the response routing dictionary contains the current predictive unit key
 			doSendFeedback(feedback, state);
 			PredictiveUnitState chosenRoute = state.children.get(feedback.getResponse().getMeta().getRoutingMap().get(state.id));
-			chosenRoute.predictiveUnitBean.doStoreFeedbackMetrics(feedback, state.children.get(feedback.getResponse().getMeta().getRoutingMap().get(state.id)));
+			chosenRoute.predictiveUnitBean.doStoreFeedbackMetrics(feedback, chosenRoute);
 		}
 		for (PredictiveUnitState child : children){
 			child.predictiveUnitBean.sendFeedback(feedback,child);
