@@ -137,7 +137,7 @@
               "format": "time_series",
               "intervalFactor": 2,
               "refId": "A",
-              "step": 20
+              "step": 4
             }
           ],
           "thresholds": "",
@@ -213,7 +213,7 @@
               "format": "time_series",
               "intervalFactor": 2,
               "refId": "A",
-              "step": 20
+              "step": 4
             }
           ],
           "thresholds": "",
@@ -289,7 +289,7 @@
               "format": "time_series",
               "intervalFactor": 2,
               "refId": "A",
-              "step": 20
+              "step": 4
             }
           ],
           "thresholds": "",
@@ -366,7 +366,7 @@
               "hide": false,
               "intervalFactor": 2,
               "refId": "A",
-              "step": 20
+              "step": 4
             }
           ],
           "thresholds": "",
@@ -609,7 +609,7 @@
               "format": "time_series",
               "intervalFactor": 2,
               "refId": "A",
-              "step": 4
+              "step": 2
             }
           ],
           "thresholds": [],
@@ -833,7 +833,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(seldon_api_engine_client_requests_duration_seconds_count{model_image=\"$model_image\",project_name=~\"$project\",predictor_name=~\"$predictor\",predictor_version=~\"$version\"}[1m])) by (project_name,predictor_name,predictor_version,model_image,model_version,model_name)",
+              "expr": "sum(rate(seldon_api_engine_client_requests_duration_seconds_count{model_image=~\"$model_image\",project_name=~\"$project\",predictor_name=~\"$predictor\",predictor_version=~\"$version\"}[1m])) by (project_name,predictor_name,predictor_version,model_image,model_version,model_name)",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{project_name}}/{{predictor_name}} ({{model_name}} {{model_image}} : {{model_version}})",
@@ -990,7 +990,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "histogram_quantile(0.5, sum(rate(seldon_api_engine_client_requests_duration_seconds_bucket{uri=\"predict\",model_image=\"$model_image\",project_name=~\"$project\",predictor_name=~\"$predictor\",predictor_version=~\"$version\"}[20s])) by (project_name,predictor_name,predictor_version,model_name,model_image,model_version,le))",
+              "expr": "histogram_quantile(0.5, sum(rate(seldon_api_engine_client_requests_duration_seconds_bucket{uri=\"predict\",model_image=~\"$model_image\",project_name=~\"$project\",predictor_name=~\"$predictor\",predictor_version=~\"$version\"}[20s])) by (project_name,predictor_name,predictor_version,model_name,model_image,model_version,le))",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -1000,7 +1000,7 @@
               "step": 2
             },
             {
-              "expr": "histogram_quantile(0.75, sum(rate(seldon_api_engine_client_requests_duration_seconds_bucket{uri=\"predict\",model_image=\"$model_image\",project_name=~\"$project\",predictor_name=~\"$predictor\",predictor_version=~\"$version\"}[20s])) by (project_name,predictor_name,predictor_version,model_name,model_image,model_version,le))",
+              "expr": "histogram_quantile(0.75, sum(rate(seldon_api_engine_client_requests_duration_seconds_bucket{uri=\"predict\",model_image=~\"$model_image\",project_name=~\"$project\",predictor_name=~\"$predictor\",predictor_version=~\"$version\"}[20s])) by (project_name,predictor_name,predictor_version,model_name,model_image,model_version,le))",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -1010,7 +1010,7 @@
               "step": 2
             },
             {
-              "expr": "histogram_quantile(0.9, sum(rate(seldon_api_engine_client_requests_duration_seconds_bucket{uri=\"predict\",model_image=\"$model_image\",project_name=~\"$project\",predictor_name=~\"$predictor\",predictor_version=~\"$version\"}[20s])) by (project_name,predictor_name,predictor_version,model_name,model_image,model_version,le))",
+              "expr": "histogram_quantile(0.9, sum(rate(seldon_api_engine_client_requests_duration_seconds_bucket{uri=\"predict\",model_image=~\"$model_image\",project_name=~\"$project\",predictor_name=~\"$predictor\",predictor_version=~\"$version\"}[20s])) by (project_name,predictor_name,predictor_version,model_name,model_image,model_version,le))",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -1020,7 +1020,7 @@
               "step": 2
             },
             {
-              "expr": "histogram_quantile(0.95, sum(rate(seldon_api_engine_client_requests_duration_seconds_bucket{uri=\"predict\",model_image=\"$model_image\",project_name=~\"$project\",predictor_name=~\"$predictor\",predictor_version=~\"$version\"}[20s])) by (project_name,predictor_name,predictor_version,model_name,model_image,model_version,le))",
+              "expr": "histogram_quantile(0.95, sum(rate(seldon_api_engine_client_requests_duration_seconds_bucket{uri=\"predict\",model_image=~\"$model_image\",project_name=~\"$project\",predictor_name=~\"$predictor\",predictor_version=~\"$version\"}[20s])) by (project_name,predictor_name,predictor_version,model_name,model_image,model_version,le))",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -1030,7 +1030,7 @@
               "step": 2
             },
             {
-              "expr": "histogram_quantile(0.99, sum(rate(seldon_api_engine_client_requests_duration_seconds_bucket{uri=\"predict\",model_image=\"$model_image\",project_name=~\"$project\",predictor_name=~\"$predictor\",predictor_version=~\"$version\"}[20s])) by (project_name,predictor_name,predictor_version,model_name,model_image,model_version,le))",
+              "expr": "histogram_quantile(0.99, sum(rate(seldon_api_engine_client_requests_duration_seconds_bucket{uri=\"predict\",model_image=~\"$model_image\",project_name=~\"$project\",predictor_name=~\"$predictor\",predictor_version=~\"$version\"}[20s])) by (project_name,predictor_name,predictor_version,model_name,model_image,model_version,le))",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -1193,7 +1193,7 @@
     ]
   },
   "time": {
-    "from": "now-15m",
+    "from": "now-5m",
     "to": "now"
   },
   "timepicker": {
@@ -1223,5 +1223,5 @@
   },
   "timezone": "browser",
   "title": "Prediction Analytics",
-  "version": 2
+  "version": 1
 }
