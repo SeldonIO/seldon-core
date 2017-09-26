@@ -88,9 +88,23 @@ class SeldonJsLocust(TaskSet):
         self.oauth_secret = self.getEnviron('OAUTH_SECRET',"secret")
         self.data_size = int(self.getEnviron('DATA_SIZE',"1"))
         self.get_token()
+        self.rewardProbas = [0.5,0.2,0.9,0.3,0.7]
+        self.routeRewards = {}
+        self.routesSeen = []
 
     def sendFeedback(self,response):
-        if random()>0.5:
+        route = json.dumps(response["meta"]["routing"], sort_keys=True)
+        rewardProba = 0.5
+        if not route in self.routeRewards:
+            if len(self.routesSeen) < len(self.rewardProbas):
+                self.routesSeen.append(route)
+                self.routesSeen.sort()
+                self.routeRewards = dict(zip(self.routesSeen,self.rewardProbas))
+            else:
+                self.routeRewards[route] = 0.5
+        rewardProba = self.routeRewards[route]
+        print route,rewardProba
+        if random()>rewardProba:
             j = {"response":response,"reward":1.0}
         else:
             j = {"response":response,"reward":0}

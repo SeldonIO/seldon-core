@@ -449,10 +449,10 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "round(sum(rate(seldon_api_ingress_server_requests_duration_seconds_count{uri=\"/api/v0.1/predictions\",project_name=~\"$project\",predictor_name=~\"$predictor\",predictor_version=~\"$version\"}[1m]))by (project_name, predictor_name, predictor_version, uri, status),0.0001)",
+              "expr": "round(sum(rate(seldon_api_ingress_server_requests_duration_seconds_count{uri=~\"/api/.*/predictions\",project_name=~\"$project\",predictor_name=~\"$predictor\",predictor_version=~\"$version\",status=\"200\"}[1m]))by (project_name, predictor_name, predictor_version, uri, status),0.0001)",
               "format": "time_series",
               "intervalFactor": 2,
-              "legendFormat": "{{project_name}}/{{predictor_name}}:{{predictor_version}} -> {{uri}} : {{status}}",
+              "legendFormat": "{{project_name}}/{{predictor_name}}:{{predictor_version}} -> {{uri}} ",
               "metric": "",
               "refId": "A",
               "step": 2
@@ -658,27 +658,6 @@
     },
     {
       "collapse": false,
-      "height": "50",
-      "panels": [
-        {
-          "content": "<div class=\"text-center dashboard-header\">\n  <span>Models</span>\n</div>",
-          "id": 8,
-          "links": [],
-          "mode": "html",
-          "span": 12,
-          "title": "",
-          "type": "text"
-        }
-      ],
-      "repeat": null,
-      "repeatIteration": null,
-      "repeatRowId": null,
-      "showTitle": false,
-      "title": "Predictive Units",
-      "titleSize": "h6"
-    },
-    {
-      "collapse": false,
       "height": 294,
       "panels": [
         {
@@ -716,7 +695,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "histogram_quantile(0.5, sum(rate(seldon_api_ingress_server_requests_duration_seconds_bucket{uri=~\"/api/.*\",project_name=~\"$project\",predictor_name=~\"$predictor\",predictor_version=~\"$version\"}[20s])) by (project_name, predictor_name, predictor_version, uri, status,le))",
+              "expr": "histogram_quantile(0.5, sum(rate(seldon_api_ingress_server_requests_duration_seconds_bucket{uri=~\"/api/.*/predictions\",project_name=~\"$project\",predictor_name=~\"$predictor\",predictor_version=~\"$version\",status=\"200\"}[20s])) by (project_name, predictor_name, predictor_version, uri, status,le))",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -725,7 +704,7 @@
               "step": 2
             },
             {
-              "expr": "histogram_quantile(0.75, sum(rate(seldon_api_ingress_server_requests_duration_seconds_bucket{uri=~\"/api/.*\",project_name=~\"$project\",predictor_name=~\"$predictor\",predictor_version=~\"$version\"}[20s])) by (project_name, predictor_name, predictor_version, uri, status,le))",
+              "expr": "histogram_quantile(0.75, sum(rate(seldon_api_ingress_server_requests_duration_seconds_bucket{uri=~\"/api/.*/predictions\",project_name=~\"$project\",predictor_name=~\"$predictor\",predictor_version=~\"$version\",status=\"200\"}[20s])) by (project_name, predictor_name, predictor_version, uri, status,le))",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -735,7 +714,7 @@
               "step": 2
             },
             {
-              "expr": "histogram_quantile(0.9, sum(rate(seldon_api_ingress_server_requests_duration_seconds_bucket{uri=~\"/api/.*\",project_name=~\"$project\",predictor_name=~\"$predictor\",predictor_version=~\"$version\"}[20s])) by (project_name, predictor_name, predictor_version, uri, status,le))",
+              "expr": "histogram_quantile(0.9, sum(rate(seldon_api_ingress_server_requests_duration_seconds_bucket{uri=~\"/api/.*/predictions\",project_name=~\"$project\",predictor_name=~\"$predictor\",predictor_version=~\"$version\",status=\"200\"}[20s])) by (project_name, predictor_name, predictor_version, uri, status,le))",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -744,7 +723,7 @@
               "step": 2
             },
             {
-              "expr": "histogram_quantile(0.99, sum(rate(seldon_api_ingress_server_requests_duration_seconds_bucket{uri=~\"/api/.*\",project_name=~\"$project\",predictor_name=~\"$predictor\",predictor_version=~\"$version\"}[20s])) by (project_name, predictor_name, predictor_version, uri, status,le))",
+              "expr": "histogram_quantile(0.99, sum(rate(seldon_api_ingress_server_requests_duration_seconds_bucket{uri=~\"/api/.*/predictions\",project_name=~\"$project\",predictor_name=~\"$predictor\",predictor_version=~\"$version\",status=\"200\"}[20s])) by (project_name, predictor_name, predictor_version, uri, status,le))",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -795,6 +774,27 @@
       "repeatRowId": null,
       "showTitle": false,
       "title": "Dashboard Row",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": "50",
+      "panels": [
+        {
+          "content": "<div class=\"text-center dashboard-header\">\n  <span>Models</span>\n</div>",
+          "id": 8,
+          "links": [],
+          "mode": "html",
+          "span": 12,
+          "title": "",
+          "type": "text"
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Predictive Units",
       "titleSize": "h6"
     },
     {
@@ -1080,7 +1080,7 @@
       "repeat": "model_image",
       "repeatIteration": null,
       "repeatRowId": null,
-      "showTitle": true,
+      "showTitle": false,
       "title": "Model Metrics",
       "titleSize": "h6"
     }
@@ -1223,5 +1223,5 @@
   },
   "timezone": "browser",
   "title": "Prediction Analytics",
-  "version": 1
+  "version": 2
 }
