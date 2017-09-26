@@ -10,7 +10,7 @@
 
 	<groupId>io.seldon.apife</groupId>
 	<artifactId>seldon-apife</artifactId>
-	<version>0.0.5_metrics</version>
+	<version>0.0.6</version>
 	<packaging>jar</packaging>
 
 	<name>api-frontend</name>
