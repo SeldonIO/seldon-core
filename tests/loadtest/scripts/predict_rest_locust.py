@@ -89,11 +89,11 @@ class SeldonJsLocust(TaskSet):
         self.data_size = int(self.getEnviron('DATA_SIZE',"1"))
         self.get_token()
 
-    def sendFeedback(self):
+    def sendFeedback(self,response):
         if random()>0.5:
-            j = {"reward":1.0}
+            j = {"response":response,"reward":1.0}
         else:
-            j = {"reward":0}
+            j = {"response":response,"reward":0}
         jStr = json.dumps(j)
         print jStr
         r = self.client.request("POST","/api/v0.1/feedback",headers={"Content-Type":"application/json","Accept":"application/json","Authorization":"Bearer "+self.access_token},name="feedback",data=jStr)
@@ -117,8 +117,9 @@ class SeldonJsLocust(TaskSet):
         print jStr
         r = self.client.request("POST","/api/v0.1/predictions",headers={"Content-Type":"application/json","Accept":"application/json","Authorization":"Bearer "+self.access_token},name="predictions",data=jStr)
         if r.status_code == 200:
+            j = json.loads(r.content)
             print r.content
-            self.sendFeedback()
+            self.sendFeedback(j)
         else:
             print "Failed prediction request "+str(r.status_code)
             if r.status_code == 401:

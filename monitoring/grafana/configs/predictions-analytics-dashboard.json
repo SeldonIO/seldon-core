@@ -413,7 +413,7 @@
     },
     {
       "collapse": false,
-      "height": 313,
+      "height": 259,
       "panels": [
         {
           "aliasColors": {},
@@ -461,7 +461,7 @@
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "API Prediction requests",
+          "title": "API Prediction req/sec",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -523,7 +523,7 @@
           "renderer": "flot",
           "seriesOverrides": [],
           "spaceLength": 10,
-          "span": 4,
+          "span": 5,
           "stack": false,
           "steppedLine": false,
           "targets": [
@@ -600,7 +600,7 @@
           "renderer": "flot",
           "seriesOverrides": [],
           "spaceLength": 10,
-          "span": 4,
+          "span": 3,
           "stack": false,
           "steppedLine": false,
           "targets": [
@@ -609,7 +609,7 @@
               "format": "time_series",
               "intervalFactor": 2,
               "refId": "A",
-              "step": 2
+              "step": 4
             }
           ],
           "thresholds": [],
@@ -654,6 +654,27 @@
       "repeatRowId": null,
       "showTitle": false,
       "title": "API Percentiles",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": "50",
+      "panels": [
+        {
+          "content": "<div class=\"text-center dashboard-header\">\n  <span>Models</span>\n</div>",
+          "id": 8,
+          "links": [],
+          "mode": "html",
+          "span": 12,
+          "title": "",
+          "type": "text"
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Predictive Units",
       "titleSize": "h6"
     },
     {
@@ -778,28 +799,7 @@
     },
     {
       "collapse": false,
-      "height": "50",
-      "panels": [
-        {
-          "content": "<div class=\"text-center dashboard-header\">\n  <span>Models</span>\n</div>",
-          "id": 8,
-          "links": [],
-          "mode": "html",
-          "span": 12,
-          "title": "",
-          "type": "text"
-        }
-      ],
-      "repeat": null,
-      "repeatIteration": null,
-      "repeatRowId": null,
-      "showTitle": false,
-      "title": "Predictive Units",
-      "titleSize": "h6"
-    },
-    {
-      "collapse": false,
-      "height": 250,
+      "height": 334,
       "panels": [
         {
           "aliasColors": {},
@@ -828,7 +828,7 @@
           "renderer": "flot",
           "seriesOverrides": [],
           "spaceLength": 10,
-          "span": 6,
+          "span": 4,
           "stack": false,
           "steppedLine": false,
           "targets": [
@@ -845,7 +845,86 @@
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Requests to $model_image",
+          "title": "Reqs/sec to $model_image",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "prometheus",
+          "fill": 1,
+          "id": 28,
+          "legend": {
+            "alignAsTable": true,
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "rightSide": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "span": 4,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "rate(seldon_api_model_feedback_reward_total{project_name=~\"$project\",predictor_name=~\"$predictor\",predictor_version=~\"$version\",model_image=~\"$model_image\"}[1m])/rate(seldon_api_model_feedback_total{project_name=~\"$project\",predictor_name=~\"$predictor\",predictor_version=~\"$version\",model_image=~\"$model_image\",model_version=~\"$model_version\"}[1m])",
+              "format": "time_series",
+              "intervalFactor": 2,
+              "legendFormat": "{{project_name}}/{{predictor_name}}:{{predictor_version}}  {{model_name}} {{model_image}} : {{model_version}}",
+              "metric": "",
+              "refId": "A",
+              "step": 2
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "API Average Feedback Reward",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -887,6 +966,7 @@
           "fill": 1,
           "id": 11,
           "legend": {
+            "alignAsTable": true,
             "avg": false,
             "current": false,
             "max": false,
@@ -905,7 +985,7 @@
           "renderer": "flot",
           "seriesOverrides": [],
           "spaceLength": 10,
-          "span": 6,
+          "span": 4,
           "stack": false,
           "steppedLine": false,
           "targets": [
@@ -965,7 +1045,7 @@
           "timeShift": null,
           "title": "Engine API Prediction Latency",
           "tooltip": {
-            "shared": true,
+            "shared": false,
             "sort": 0,
             "value_type": "individual"
           },
@@ -1000,8 +1080,8 @@
       "repeat": "model_image",
       "repeatIteration": null,
       "repeatRowId": null,
-      "showTitle": false,
-      "title": "Dashboard Row",
+      "showTitle": true,
+      "title": "Model Metrics",
       "titleSize": "h6"
     }
   ],

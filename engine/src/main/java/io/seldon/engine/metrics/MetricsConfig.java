@@ -5,10 +5,10 @@ import org.springframework.context.annotation.Configuration;
 
 import io.micrometer.spring.web.client.RestTemplateExchangeTagsProvider;
 
-@Configuration
+//@Configuration
 public class MetricsConfig {
 	
-	@Bean
+	//@Bean
 	RestTemplateExchangeTagsProvider getSeldonTagProvider()
 	{
 		return new SeldonRestTemplateExchangeTagsProvider();

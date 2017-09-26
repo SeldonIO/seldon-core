@@ -1,11 +1,10 @@
 package io.seldon.engine.predictors;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -14,13 +13,14 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 
-import com.google.protobuf.Descriptors.FieldDescriptor;
-
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.Tag;
 import io.seldon.engine.service.InternalPredictionService;
+import io.seldon.protos.PredictionProtos.PredictionFeedbackDef;
 import io.seldon.protos.PredictionProtos.PredictionRequestDef;
 import io.seldon.protos.PredictionProtos.PredictionResponseDef;
 import io.seldon.protos.PredictionProtos.PredictionResponseMetaDef;
-import io.seldon.protos.PredictionProtos.PredictionFeedbackDef;
 
 @Component
 public abstract class PredictiveUnitBean {
@@ -41,15 +41,22 @@ public abstract class PredictiveUnitBean {
 		if (feedback.getResponse().getMeta().getRoutingMap().get(state.id)!=null){
 			// If the response routing dictionary contains the current predictive unit key
 			doSendFeedback(feedback, state);
+			PredictiveUnitState chosenRoute = state.children.get(feedback.getResponse().getMeta().getRoutingMap().get(state.id));
+			chosenRoute.predictiveUnitBean.doStoreFeedbackMetrics(feedback, state.children.get(feedback.getResponse().getMeta().getRoutingMap().get(state.id)));
 		}
 		for (PredictiveUnitState child : children){
-			sendFeedback(feedback,child);
+			child.predictiveUnitBean.sendFeedback(feedback,child);
 		}
 	}
 	
 	protected void doSendFeedback(PredictionFeedbackDef feedback, PredictiveUnitState state){
 		return;
 	}
+	
+	protected void doStoreFeedbackMetrics(PredictionFeedbackDef feedback, PredictiveUnitState state){
+		return;
+	}
+	
 	
 	public PredictionResponseDef predict(PredictionRequestDef request, PredictiveUnitState state) throws InterruptedException, ExecutionException{
 		Map<String,Integer> routingDict = new HashMap<String,Integer>();
