@@ -461,7 +461,7 @@
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "API Prediction req/sec",
+          "title": "Prediction API req/sec",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -540,7 +540,7 @@
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "API Average Feedback Reward",
+          "title": "Feedback API Average Reward",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -735,7 +735,7 @@
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "API Prediction Latency",
+          "title": "Prediction API Latency",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -924,7 +924,7 @@
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "API Average Feedback Reward",
+          "title": "$model_image Reward",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -1043,7 +1043,7 @@
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Engine API Prediction Latency",
+          "title": "$model_image Latency",
           "tooltip": {
             "shared": false,
             "sort": 0,
