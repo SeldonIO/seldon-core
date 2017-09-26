@@ -57,7 +57,7 @@
       "height": "50",
       "panels": [
         {
-          "content": "<div class=\"text-center dashboard-header\">\n  <span>Seldon Deploy Prediction API Dashoard</span>\n</div>",
+          "content": "<div class=\"text-center dashboard-header\">\n  <span>Seldon Deploy Prediction API Dashboard</span>\n</div>",
           "id": 27,
           "links": [],
           "mode": "html",
