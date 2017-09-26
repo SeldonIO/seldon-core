@@ -1,19 +1,23 @@
 ---
 apiVersion: v1
 items:
-- apiVersion: v1
-  kind: Pod
+- apiVersion: extensions/v1beta1
+  kind: Deployment
   metadata:
-    labels:
-      app: redis-app
     name: redis
   spec:
-    containers:
-    - image: redis:{{ .Values.redis.image.tag }}
-      name: redis-container
-      ports:
-      - containerPort: 6379
-        protocol: TCP
+    replicas: 1
+    template:
+      metadata:
+        labels:
+          app: redis-app
+      spec:
+        containers:
+        - image: redis:{{ .Values.redis.image.tag }}
+          name: redis-container
+          ports:
+          - containerPort: 6379
+            protocol: TCP
 - apiVersion: v1
   kind: Service
   metadata:
@@ -31,3 +35,4 @@ items:
     loadBalancer: {}
 kind: List
 metadata: {}
+
