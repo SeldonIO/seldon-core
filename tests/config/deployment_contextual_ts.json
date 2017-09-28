@@ -3,15 +3,15 @@
     "annotations": {
             "project_name": "MAB_demos"
         },
-    "id": "1",
-    "name": "ts-example",
-    "oauth_key": "key1",
-    "oauth_secret": "secret1",
+    "id": "3",
+    "name": "contextual-ts-example",
+    "oauth_key": "key3",
+    "oauth_secret": "secret3",
     "predictor": {
         "enabled": true,
         "id": "0",
         "imagePullSecrets": [],
-        "name": "ThomsonSampling",
+        "name": "CTS",
 	"version": "0.1",
         "predictiveUnits": [
             {
@@ -20,7 +20,7 @@
                     "cpu": "",
                     "gpu": "",
                     "id": "2",
-                    "image": "seldonio/mab_thomson_sampling",
+                    "image": "seldonio/mab_contextual_ts",
                     "memory": "",
                     "version": "0.6"
                 },
@@ -36,7 +36,7 @@
 		     "value":"0",
 		     "type":"STRING"},
 		    {"name":"deployment_id",
-		     "value":"ts_test1",
+		     "value":"ts_test3",
 		     "type":"STRING"}],
                 "subtype": "MICROSERVICE",
                 "type": "ROUTER"
@@ -109,5 +109,5 @@
         "replicasReady": 0,
         "root": "0"
     },
-    "uniqueName": "my-uniqueName-1"
+    "uniqueName": "my-uniqueName-3"
 }
