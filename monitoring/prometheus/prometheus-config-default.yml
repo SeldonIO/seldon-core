@@ -112,3 +112,27 @@ scrape_configs:
     action: replace
     target_label: kubernetes_pod_name
 
+# Scrape config for Kubelet cAdvisor.
+# This is required for Kubernetes 1.7.3 and later, where cAdvisor metrics
+# (those whose names begin with 'container_') have been removed from the
+# Kubelet metrics endpoint.  This job scrapes the cAdvisor endpoint to
+# retrieve those metrics.
+- job_name: 'kubernetes-cadvisor'
+  # Default to scraping over https. If required, just disable this or change to
+  # `http`.
+  scheme: https
+  tls_config:
+    ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+  bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+  kubernetes_sd_configs:
+  - role: node
+  relabel_configs:
+  - action: labelmap
+    regex: __meta_kubernetes_node_label_(.+)
+  - target_label: __address__
+    replacement: kubernetes.default.svc:443
+  - source_labels: [__meta_kubernetes_node_name]
+    regex: (.+)
+    target_label: __metrics_path__
+    replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
+
