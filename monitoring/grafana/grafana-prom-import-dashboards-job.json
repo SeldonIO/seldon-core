@@ -21,8 +21,8 @@
                                 "name": "GF_SECURITY_ADMIN_PASSWORD",
                                 "valueFrom": {
                                     "secretKeyRef": {
-                                        "key": "grafana-prom-admin-password.txt",
-                                        "name": "grafana-prom-admin-password"
+                                        "key": "grafana-prom-admin-password",
+                                        "name": "grafana-prom-secret"
                                     }
                                 }
                             }
