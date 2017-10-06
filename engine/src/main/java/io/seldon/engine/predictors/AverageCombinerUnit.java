@@ -1,8 +1,11 @@
 package io.seldon.engine.predictors;
 
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 import org.springframework.stereotype.Component;
 
 import com.google.protobuf.ListValue;
@@ -12,8 +15,11 @@ import io.seldon.engine.exception.APIException;
 import io.seldon.protos.PredictionProtos.DefaultDataDef;
 import io.seldon.protos.PredictionProtos.DefaultDataDef.DataOneofCase;
 import io.seldon.protos.PredictionProtos.PredictionResponseDef;
+import io.seldon.protos.PredictionProtos.PredictionRequestDef;
 import io.seldon.protos.PredictionProtos.PredictionResponseMetaDef;
 import io.seldon.protos.PredictionProtos.Tensor;
+
+import io.seldon.engine.predictors.PredictorUtils;
 
 @Component
 public class AverageCombinerUnit extends CombinerUnit{
@@ -21,7 +27,55 @@ public class AverageCombinerUnit extends CombinerUnit{
 	public AverageCombinerUnit() {}
 
 	@Override
-	public PredictionResponseDef backwardPass(List<PredictionResponseDef> inputs, PredictiveUnitState state){
+	public PredictionResponseDef backwardPass(List<PredictionResponseDef> inputs, PredictionRequestDef request, PredictiveUnitState state){
+		
+		if (inputs.size()==0){
+			throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_COMBINER_RESPONSE, String.format("Combiner received no inputs"));
+		}
+		
+		int[] shape = PredictorUtils.getShape(inputs.get(0).getResponse());
+		
+		if (shape == null){
+			throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_COMBINER_RESPONSE, String.format("Combiner cannot extract data shape"));
+		}
+		
+		if (shape.length!=2){
+			throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_COMBINER_RESPONSE, String.format("Combiner received data that is not 2 dimensional"));
+		}
+		
+		INDArray currentSum = Nd4j.zeros(shape[0],shape[1]);
+		PredictionResponseDef.Builder respBuilder = PredictionResponseDef.newBuilder();
+		
+		for (Iterator<PredictionResponseDef> i = inputs.iterator(); i.hasNext();)
+		{
+			DefaultDataDef inputData = i.next().getResponse();
+			int[] inputShape = PredictorUtils.getShape(inputData);
+			if (inputShape == null){
+				throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_COMBINER_RESPONSE, String.format("Combiner cannot extract data shape"));
+			}
+			if (inputShape.length!=2){
+				throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_COMBINER_RESPONSE, String.format("Combiner received data that is not 2 dimensional"));
+			}
+			if (inputShape[0] != shape[0]){
+				throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_COMBINER_RESPONSE, String.format("Expected batch length %d but found %d",shape[0],inputShape[0]));
+			}
+			if (inputShape[1] != shape[1]){
+				throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_COMBINER_RESPONSE, String.format("Expected batch length %d but found %d",shape[1],inputShape[1]));
+			}
+			INDArray inputArr = PredictorUtils.getINDArray(inputData);
+			currentSum = currentSum.add(inputArr);
+		}
+		currentSum = currentSum.div((float)inputs.size());
+		
+		DefaultDataDef newData = PredictorUtils.updateData(inputs.get(0).getResponse(), currentSum);
+		respBuilder.setResponse(newData);
+		respBuilder.setMeta(inputs.get(0).getMeta());
+		respBuilder.setStatus(inputs.get(0).getStatus());
+		
+		return respBuilder.build();
+	}
+	
+	public PredictionResponseDef backwardPassOld(List<PredictionResponseDef> inputs, PredictionRequestDef request, PredictiveUnitState state){
 		
 		Integer batchLength = 0;
 		Integer valuesLength = 0;
