@@ -1,0 +1,23 @@
+ALERT NodeSwapUsage
+  IF (((node_memory_SwapTotal-node_memory_SwapFree)/node_memory_SwapTotal)*100) > 75
+  FOR 2m
+  LABELS {
+    context="unkown",
+    severity="page"
+  }
+  ANNOTATIONS {
+    SUMMARY = "{{$labels.instance}}: Swap usage detected",
+    DESCRIPTION = "{{$labels.instance}}: Swap usage usage is above 75% (current value is: {{ $value }})"
+  }
+
+ALERT NodeMemoryUsage
+  IF (((node_memory_MemTotal-node_memory_MemFree-node_memory_Cached)/(node_memory_MemTotal)*100)) > 75
+  FOR 2m
+  LABELS {
+    context="unkown",
+    severity="page"
+  }
+  ANNOTATIONS {
+    SUMMARY = "{{$labels.instance}}: High memory usage detected",
+    DESCRIPTION = "{{$labels.instance}}: Memory usage is above 75% (current value is: {{ $value }})"
+  }

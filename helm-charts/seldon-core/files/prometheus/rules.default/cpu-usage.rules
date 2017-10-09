@@ -1,0 +1,11 @@
+ALERT NodeCPUUsage
+  IF (100 - (avg by (instance) (irate(node_cpu{component="node-exporter",mode="idle"}[5m])) * 100)) > 75
+  FOR 2m
+  LABELS {
+    context="unkown",
+    severity="page"
+  }
+  ANNOTATIONS {
+    SUMMARY = "{{$labels.instance}}: High CPU usage detected",
+    DESCRIPTION = "{{$labels.instance}}: CPU usage is above 75% (current value is: {{ $value }})"
+  }
