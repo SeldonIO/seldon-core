@@ -37,25 +37,28 @@ message ClusterResourcesDef {
 message PredictiveUnitDef {
 
     enum ParamType {
-        INT = 0;
-        FLOAT = 1;
-        DOUBLE = 2;
-        STRING = 3;
+      UNKNOWN_PARAMTYPE = 0;
+      INT = 1;
+      FLOAT = 2;
+      DOUBLE = 3;
+      STRING = 4;
     }
 
   enum PredictiveUnitType {
-    ROUTER = 0;
-    COMBINER = 1;
-    MODEL = 2;
-    TRANSFORMER = 3;
+    UNKOWN_TYPE = 0;
+    ROUTER = 1;
+    COMBINER = 2;
+    MODEL = 3;
+    TRANSFORMER = 4;
   }
 
   enum PredictiveUnitSubType {
-    MICROSERVICE = 0;
-    SIMPLE_MODEL = 1;
-    SIMPLE_ROUTER = 2;
-    RANDOM_ABTEST = 3;
-    AVERAGE_COMBINER = 4;
+    UNKNOWN_SUBTYPE = 0;
+    MICROSERVICE = 1;
+    SIMPLE_MODEL = 2;
+    SIMPLE_ROUTER = 3;
+    RANDOM_ABTEST = 4;
+    AVERAGE_COMBINER = 5;
   }
 
     message ParamDef {
