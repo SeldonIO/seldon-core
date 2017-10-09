@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+if [ "$#" -ne 2 ]; then
+    echo "Need ip addresses of glusterfs volumes, e.g. ./glusterfs-create 10.132.0.5 10.132.0.6"
+    exit -1
+fi
+
+IP1=$1
+IP2=$2
+
+STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+
+function build_glusterfs_config {
+    cat ${STARTUP_DIR}/glusterfs-volume/glusterfs.json.in | sed \
+            -e "s|%GLUSTERFS_IP1%|${IP1}|" \
+            -e "s|%GLUSTERFS_IP2%|${IP2}|" \
+	     > ${STARTUP_DIR}/glusterfs-volume/_glusterfs.json && echo "_glusterfs.json"
+}
+
+function create_glusterfs_volume {
+	kubectl apply -f ${STARTUP_DIR}/glusterfs-volume/_glusterfs.json
+}
+
+build_glusterfs_config
+create_glusterfs_volume
+

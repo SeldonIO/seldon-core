@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+kubectl apply -f ${STARTUP_DIR}/host-volume/hostpath.json
+

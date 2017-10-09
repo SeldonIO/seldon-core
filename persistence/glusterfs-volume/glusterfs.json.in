@@ -1,0 +1,96 @@
+{
+  "kind": "Endpoints",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "glusterfs-cluster",
+    "labels": {
+	"component" : "glusterfs",
+	"service" : "seldon"
+    }
+  },
+  "subsets": [
+    {
+      "addresses": [
+        {
+          "ip": "%GLUSTERFS_IP1%"
+        }
+      ],
+      "ports": [
+        {
+          "port": 1
+        }
+      ]
+    },
+    {
+      "addresses": [
+        {
+          "ip": "%GLUSTERFS_IP2%"
+        }
+      ],
+      "ports": [
+        {
+          "port": 1
+        }
+      ]
+    }
+  ]
+}
+{
+  "kind": "Service",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "glusterfs-cluster",
+    "labels": {
+	"service" : "seldon"
+    }
+  },
+  "spec": {
+    "ports": [
+      {"port": 1}
+    ]
+  }
+}
+{
+    "kind": "PersistentVolume",
+    "apiVersion": "v1",
+    "metadata": {
+	"name": "glusterfs-volume",
+	"labels": {
+	    "service" : "seldon"
+	}
+    },
+    "spec": {
+        "capacity": {
+            "storage": "100Gi"
+        },
+        "glusterfs": {
+            "endpoints": "glusterfs-cluster",
+            "path": "gv0"
+        },
+        "accessModes": [
+            "ReadWriteMany"
+        ],
+        "persistentVolumeReclaimPolicy": "Retain"
+    }
+}
+{
+    "kind": "PersistentVolumeClaim",
+    "apiVersion": "v1",
+    "metadata": {
+        "name": "seldon-claim",
+	"labels": {
+	    "service" : "seldon"
+	}
+    },
+    "spec": {
+        "accessModes": [
+            "ReadWriteMany"
+        ],
+        "resources": {
+            "requests": {
+                "storage": "50Gi"
+            }
+        },
+	"storageClassName" : ""
+    }
+}
