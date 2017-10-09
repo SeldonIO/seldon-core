@@ -1,5 +1,8 @@
 {
     "cluster": {},
+    "annotations": {
+            "project_name": "MAB_demos"
+        },
     "id": "2",
     "name": "my-name",
     "oauth_key": "key2",
@@ -8,7 +11,8 @@
         "enabled": true,
         "id": "0",
         "imagePullSecrets": [],
-        "name": "my-predictor",
+        "name": "EpsilonGreedy",
+	"version": "0.1",
         "predictiveUnits": [
             {
                 "children": ["1","2","3"],
@@ -35,7 +39,7 @@
 		     "value":"ts_test2",
 		     "type":"STRING"},
 		    {"name":"epsilon",
-		     "value":0.05,
+		     "value":0.1,
 		     "type":"FLOAT"}],
                 "subtype": "MICROSERVICE",
                 "type": "ROUTER"
@@ -48,7 +52,7 @@
                     "id": "3",
                     "image": "seldonio/mean_classifier",
                     "memory": "",
-                    "version": "0.4"
+                    "version": "0.5"
                 },
                 "endpoint": {
                     "service_host": "-",
@@ -69,7 +73,7 @@
                     "id": "4",
                     "image": "seldonio/mean_classifier",
                     "memory": "",
-                    "version": "0.4"
+                    "version": "0.5"
                 },
                 "endpoint": {
                     "service_host": "-",
@@ -90,7 +94,7 @@
                     "id": "5",
                     "image": "seldonio/mean_classifier",
                     "memory": "",
-                    "version": "0.4"
+                    "version": "0.5"
                 },
                 "endpoint": {
                     "service_host": "-",

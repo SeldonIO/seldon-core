@@ -102,14 +102,14 @@ public abstract class PredictiveUnitBean {
 		System.out.println("NODE " + state.name + ": got child futures");
 		
 		System.out.println("NODE " + state.name + ": returning");
-		return new AsyncResult<>(backwardPass(inputs,state));
+		return new AsyncResult<>(backwardPass(inputs,request,state));
 	}
 	
 	protected List<PredictiveUnitState> forwardPass(PredictionRequestDef request, PredictiveUnitState data, Map<String,Integer> routingDict){
 		return null;
 	}
 	
-	protected PredictionResponseDef backwardPass(List<PredictionResponseDef> inputs, PredictiveUnitState data){
+	protected PredictionResponseDef backwardPass(List<PredictionResponseDef> inputs, PredictionRequestDef request, PredictiveUnitState data){
 		return null;
 	}
 }

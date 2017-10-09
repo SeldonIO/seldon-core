@@ -7,7 +7,8 @@ stop_redis: redis-memonly.json
 	kubectl delete --ignore-not-found=true -f redis-memonly.json
 
 redis_cli:
-	kubectl exec -it redis -- bash -c 'redis-cli'
+	POD_NAME=$$(kubectl --namespace default get pod -l app=redis-app -o template --template="{{(index .items 0).metadata.name}}") && \
+			kubectl exec -it $${POD_NAME} -- bash -c 'redis-cli'
 
 port_forward_redis:
 	kubectl port-forward redis 6379

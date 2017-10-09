@@ -4,14 +4,17 @@
             "project_name": "MAB_demos"
         },
     "id": "1",
-    "name": "ts-example",
+    "name": "my-name",
     "oauth_key": "key1",
     "oauth_secret": "secret1",
     "predictor": {
+	"annotations": {
+            "project_name": "MAB_demos"
+        },
         "enabled": true,
         "id": "0",
         "imagePullSecrets": [],
-        "name": "ThomsonSampling",
+        "name": "my-predictor",
 	"version": "0.1",
         "predictiveUnits": [
             {

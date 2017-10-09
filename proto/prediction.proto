@@ -16,8 +16,8 @@ option java_outer_classname = "PredictionProtos";
 // [START default data]
 
 message Tensor {
-  repeated int32 shape  = 2;
-  repeated double values = 3;
+  repeated int32 shape  = 2 [packed=true];
+  repeated double values = 3 [packed=true];
 }
 
 message DefaultDataDef {
@@ -84,9 +84,15 @@ message PredictionStatusDef {
     Status status = 4;
 }
 
+message OutlierStatus{
+    bool isOutlier = 1;
+    double score = 2;
+}
+
 message PredictionResponseMetaDef {
   string puid = 1; 
   map<string,int32> routing = 2;
+  OutlierStatus outlierStatus = 3;
 }
 
 

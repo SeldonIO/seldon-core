@@ -52,7 +52,7 @@ cluster-manager-client-secret.txt:
 
 port_forward_cluster_manager:
 	POD_NAME=$$(kubectl --namespace default get pod -l app=seldon-cluster-manager-server -o template --template="{{(index .items 0).metadata.name}}") && \
-		kubectl port-forward $${POD_NAME} 8081:8080
+		kubectl port-forward $${POD_NAME} 8080:8080
 check:
 	curl -s -i localhost:8080/ping
 
