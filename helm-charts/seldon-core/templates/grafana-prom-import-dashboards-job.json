@@ -2,10 +2,6 @@
     "apiVersion": "batch/v1",
     "kind": "Job",
     "metadata": {
-        "annotations": {
-            "helm.sh/hook": "post-install,post-upgrade,post-rollback",
-            "helm.sh/hook-delete-policy": "hook-succeeded"
-        },
         "name": "grafana-prom-import-dashboards"
     },
     "spec": {
