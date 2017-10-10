@@ -66,9 +66,11 @@
                             },
                             {
                                 "name": "prometheus-storage-volume",
-                                "persistentVolumeClaim": {
-                                    "claimName": "seldon-claim"
-                                }
+                              {{- if .Values.persistence.enabled }}
+                                "persistentVolumeClaim": { "claimName": "seldon-claim" }
+                              {{- else }}
+                                "emptyDir": {}
+                              {{- end -}}
                             }
                         ]
                     }

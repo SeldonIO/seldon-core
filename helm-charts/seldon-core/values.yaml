@@ -37,3 +37,7 @@ spring_opts: "--io.seldon.clustermanager.istio-enabled=false"
 #seldon_cluster_manager_service_type: LoadBalancer
 cluster_manager_service_type: NodePort
 
+# Persist data to a persitent volume
+persistence:
+  enabled: true
+
