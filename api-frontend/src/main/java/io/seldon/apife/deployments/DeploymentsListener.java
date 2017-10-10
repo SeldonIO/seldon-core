@@ -1,4 +1,4 @@
-package io.seldon.apife.zk;
+package io.seldon.apife.deployments;
 
 public interface DeploymentsListener {
 	 /**
@@ -8,7 +8,7 @@ public interface DeploymentsListener {
      * @param configKey
      * @param configValue
      */
-	void deploymentAdded(String deployment, String configValue);
-	void deploymentUpdated(String deployment, String configValue);
-	void deploymentRemoved(String deployment);
+	void deploymentAdded(String resource);
+	void deploymentUpdated(String resource);
+	void deploymentRemoved(String resource);
 }

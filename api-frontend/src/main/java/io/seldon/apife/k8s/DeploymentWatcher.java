@@ -2,7 +2,10 @@ package io.seldon.apife.k8s;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,20 +27,38 @@ import io.kubernetes.client.Configuration;
 import io.kubernetes.client.apis.CustomObjectsApi;
 import io.kubernetes.client.util.Config;
 import io.kubernetes.client.util.Watch;
-import java.text.SimpleDateFormat;
+import io.seldon.apife.deployments.DeploymentsHandler;
+import io.seldon.apife.deployments.DeploymentsListener;
 
 @Component
-public class DeploymentWatcher {
+public class DeploymentWatcher  implements DeploymentsHandler{
 	
 	protected static Logger logger = LoggerFactory.getLogger(DeploymentWatcher.class.getName());
 	
 	private ApiClient client;
 	private int resourceVersion = 0;
+	private final Set<DeploymentsListener> listeners;
 	
 	public DeploymentWatcher() throws IOException
 	{
 		this.client = Config.defaultClient();
+		this.listeners = new HashSet<>();
 		Configuration.setDefaultApiClient(client);
+	}
+	
+	private void processWatch(String json,String action)
+	{
+		if (action.equals("ADDED"))
+			for(DeploymentsListener listener: listeners)
+				listener.deploymentAdded(json);
+		else if (action.equals("MODIFIED"))
+			for(DeploymentsListener listener: listeners)
+				listener.deploymentUpdated(json);
+		else if (action.equals("DELETED"))
+			for(DeploymentsListener listener: listeners)
+				listener.deploymentRemoved(json);
+		else
+			logger.error("Unknown action "+action);
 	}
 	
 	public int watchSeldonMLDeployments(int resourceVersion) throws ApiException, JsonProcessingException, IOException
@@ -57,15 +78,28 @@ public class DeploymentWatcher {
         for (Watch.Response<Object> item : watch) {
         	Gson gson = new GsonBuilder().setPrettyPrinting().create();
     		String jsonInString = gson.toJson(item.object);
+	    	logger.info(String.format("%s\n : %s%n", item.type, jsonInString));
     		ObjectMapper mapper = new ObjectMapper();
     	    JsonFactory factory = mapper.getFactory();
     	    JsonParser parser = factory.createParser(jsonInString);
     	    JsonNode actualObj = mapper.readTree(parser);
-    	    int resourceVersionNew = actualObj.get("metadata").get("resourceVersion").asInt();
-    	    if (resourceVersionNew > maxResourceVersion)
-    	    	maxResourceVersion = resourceVersionNew;
-    	    logger.info("Resource version "+resourceVersionNew);
-        	logger.info(String.format("%s\n : %s%n", item.type, jsonInString));
+    	    if (actualObj.has("kind") && actualObj.get("kind").asText().equals("Status"))
+    	    {
+    	    	//Issue with resource version - add 1
+    	    	logger.warn("Possible old resource version found");
+    	    	return maxResourceVersion + 1;
+    	    }
+    	    else
+    	    {
+    	    	int resourceVersionNew = actualObj.get("metadata").get("resourceVersion").asInt();
+    	    	if (resourceVersionNew > maxResourceVersion)
+    	    		maxResourceVersion = resourceVersionNew;
+    	    	JsonNode deploymentSpec = actualObj.get("spec");
+    	    	String jsonDeploymentSpec = mapper.writeValueAsString(deploymentSpec);
+    	    	logger.info("Resource version "+resourceVersionNew);
+    	    	logger.info(String.format("%s",jsonDeploymentSpec));
+    	    	this.processWatch(jsonDeploymentSpec, item.type);
+    	    }
         }
 		}
 		catch(RuntimeException e)
@@ -81,8 +115,16 @@ public class DeploymentWatcher {
 	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 	
 	@Scheduled(fixedDelay = 5000)
-    public void reportCurrentTime() throws JsonProcessingException, ApiException, IOException {
+    public void watch() throws JsonProcessingException, ApiException, IOException {
         logger.info("The time is now {}", dateFormat.format(new Date()));
         this.resourceVersion = this.watchSeldonMLDeployments(this.resourceVersion);
     }
+
+	
+
+	@Override
+	public void addListener(DeploymentsListener listener) {
+		logger.info("Adding deployment config listener");
+        listeners.add(listener);
+	}
 }
