@@ -45,7 +45,7 @@ message PredictiveUnitDef {
     }
 
   enum PredictiveUnitType {
-    UNKOWN_TYPE = 0;
+    UNKNOWN_TYPE = 0;
     ROUTER = 1;
     COMBINER = 2;
     MODEL = 3;

@@ -32,6 +32,11 @@ public class InMemoryClientDetailsService implements ClientDetailsService {
 		clientDetails.put(clientId, cd);
 	}
 	
+	public void removeClient(String clientId)
+	{
+		clientDetails.remove(clientId);
+	}
+	
 	@Override
 	public ClientDetails loadClientByClientId(String clientId) throws ClientRegistrationException {
 	    ClientDetails details = clientDetails.get(clientId);

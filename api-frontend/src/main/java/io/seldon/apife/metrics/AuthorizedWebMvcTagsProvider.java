@@ -29,12 +29,20 @@ public class AuthorizedWebMvcTagsProvider extends DefaultWebMvcTagsProvider {
             HttpServletResponse response,
             Throwable ex) {
 		
-		final String PrincipalName = request.getUserPrincipal().getName();
-		return asList(WebMvcTags.method(request), WebMvcTags.uri(request), WebMvcTags.exception(ex), WebMvcTags.status(response),
+		
+		if (request.getUserPrincipal() != null )
+		{
+			final String PrincipalName = request.getUserPrincipal().getName();
+			return asList(WebMvcTags.method(request), WebMvcTags.uri(request), WebMvcTags.exception(ex), WebMvcTags.status(response),
 					principal(PrincipalName),
 					version(PrincipalName),
 					predictorName(PrincipalName),
 					projectName(PrincipalName));
+		}
+		else
+		{
+			return asList(WebMvcTags.method(request), WebMvcTags.uri(request), WebMvcTags.exception(ex), WebMvcTags.status(response));
+		}
 	}
 	
 	 public Tag principal(String principalName) {

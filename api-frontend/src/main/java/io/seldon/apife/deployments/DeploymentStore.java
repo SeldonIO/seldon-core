@@ -26,13 +26,13 @@ public class DeploymentStore implements DeploymentsListener {
 	
 	private final DeploymentsHandler deploymentsHandler;
 	 
-	private InMemoryClientDetailsService ClientDetailsService;
+	private InMemoryClientDetailsService clientDetailsService;
 	
 	@Autowired
 	public DeploymentStore(DeploymentsHandler deploymentsHandler,InMemoryClientDetailsService clientDetailsService)
 	{	
 		this.deploymentsHandler = deploymentsHandler;
-		this.ClientDetailsService = clientDetailsService;
+		this.clientDetailsService = clientDetailsService;
 	}
 	 
 	@PostConstruct
@@ -58,7 +58,7 @@ public class DeploymentStore implements DeploymentsListener {
 			deploymentDef = deploymentDefBuilder.build();
 			
 			deploymentStore.put(deploymentDef.getOauthKey(), deploymentDef);
-			ClientDetailsService.addClient(deploymentDef.getOauthKey(), deploymentDef.getOauthSecret());
+			clientDetailsService.addClient(deploymentDef.getOauthKey(), deploymentDef.getOauthSecret());
 
 			logger.info("Succesfully added deployment "+deploymentDef.getId());
 
@@ -84,6 +84,7 @@ public class DeploymentStore implements DeploymentsListener {
 			deploymentDef = deploymentDefBuilder.build();
 
 			deploymentStore.remove(deploymentDef.getOauthKey());
+			clientDetailsService.removeClient(deploymentDef.getOauthKey());
 			logger.info("Removed deployment "+deploymentDef.getId());
 		 } catch (IOException | BeansException e) {
 	            logger.error("Couldn't delete deployment " +resource, e);
