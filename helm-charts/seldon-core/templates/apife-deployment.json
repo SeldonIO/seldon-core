@@ -76,7 +76,7 @@
                     "app": "seldon-apiserver-container-app"
                 },
                 "sessionAffinity": "None",
-                "type": "NodePort"
+                "type": "{{ .Values.apife_service_type }}"
             },
             "status": {
                 "loadBalancer": {}
