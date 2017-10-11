@@ -61,7 +61,7 @@
                 "selector": {
                     "app": "grafana-prom-server"
                 },
-                "type": "NodePort"
+                "type": "{{ .Values.grafana_prom_service_type }}"
             }
         }
     ],
