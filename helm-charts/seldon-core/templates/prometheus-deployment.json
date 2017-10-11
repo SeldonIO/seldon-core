@@ -1,0 +1,103 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "extensions/v1beta1",
+            "kind": "Deployment",
+            "metadata": {
+                "name": "prometheus-deployment"
+            },
+            "spec": {
+                "replicas": 1,
+                "template": {
+                    "metadata": {
+                        "annotations": {
+                            "checksum/config-1": {{ include (print $.Template.BasePath "/prometheus-server-conf-configmap.yaml") . | sha256sum | quote }},
+                            "checksum/config-2": {{ include (print $.Template.BasePath "/prometheus-rules-configmap.yaml") . | sha256sum | quote }}
+                        },
+                        "labels": {
+                            "app": "prometheus-server"
+                        }
+                    },
+                    "spec": {
+                        "containers": [
+                            {
+                                "args": [
+                                    "-config.file=/etc/prometheus/conf/prometheus-config.yaml",
+                                    "-storage.local.path=/seldon-data/prometheus/data",
+                                    "-alertmanager.url=http://alertmanager/"
+                                ],
+                                "image": "prom/prometheus:v1.7.1",
+                                "name": "prometheus",
+                                "ports": [
+                                    {
+                                        "containerPort": 9090,
+                                        "protocol": "TCP"
+                                    }
+                                ],
+                                "volumeMounts": [
+                                    {
+                                        "mountPath": "/etc/prometheus/conf/",
+                                        "name": "prometheus-config-volume"
+                                    },
+                                    {
+                                        "mountPath": "/etc/prometheus-rules",
+                                        "name": "prometheus-rules-volume"
+                                    },
+                                    {
+                                        "mountPath": "/seldon-data",
+                                        "name": "prometheus-storage-volume"
+                                    }
+                                ]
+                            }
+                        ],
+                        "volumes": [
+                            {
+                                "configMap": {
+                                    "name": "prometheus-server-conf"
+                                },
+                                "name": "prometheus-config-volume"
+                            },
+                            {
+                                "configMap": {
+                                    "name": "prometheus-rules"
+                                },
+                                "name": "prometheus-rules-volume"
+                            },
+                            {
+                                "name": "prometheus-storage-volume",
+                              {{- if .Values.persistence.enabled }}
+                                "persistentVolumeClaim": { "claimName": "seldon-claim" }
+                              {{- else }}
+                                "emptyDir": {}
+                              {{- end -}}
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "metadata": {
+                "name": "prometheus-seldon"
+            },
+            "spec": {
+                "ports": [
+                    {
+                        "port": 80,
+                        "protocol": "TCP",
+                        "targetPort": 9090
+                    }
+                ],
+                "selector": {
+                    "app": "prometheus-server"
+                },
+                "type": "ClusterIP"
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {}
+}

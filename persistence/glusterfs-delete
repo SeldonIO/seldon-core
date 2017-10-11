@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+
+kubectl delete --ignore-not-found=true -f ${STARTUP_DIR}/glusterfs-volume/_glusterfs.json
+

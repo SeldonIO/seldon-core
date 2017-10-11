@@ -52,6 +52,7 @@
             "spec": {
                 "ports": [
                     {
+                        "nodePort": 30034,
                         "port": 80,
                         "protocol": "TCP",
                         "targetPort": 3000
@@ -60,7 +61,7 @@
                 "selector": {
                     "app": "grafana-prom-server"
                 },
-                "type": "LoadBalancer"
+                "type": "{{ .Values.grafana_prom_service_type }}"
             }
         }
     ],
