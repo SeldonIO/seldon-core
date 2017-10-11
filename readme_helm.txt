@@ -38,6 +38,7 @@ Using Seldon Core Helm chart
         --set cluster_manager_client_secret=your-cluster-manager-secret> \
         --set cluster_manager_service_type=NodePort \
         --set grafana_prom_service_type=NodePort \
+        --set apife_service_type=NodePort \
         --set cluster_manager.image.tag=0.2.14_metrics \
         --set apife.image.tag=0.0.5_metrics \
         --set spring_opts="--io.seldon.clustermanager.engine-container-image-and-version=seldonio/engine:0.1.5_metrics_v2 --io.seldon.clustermanager.istio-enabled=true"
