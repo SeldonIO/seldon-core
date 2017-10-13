@@ -4,10 +4,13 @@
 
 cluster_manager:
   image:
-    tag: "0.2.15"
+    tag: "0.2.16"
 apife:
   image:
     tag: "0.0.6"
+engine:
+  image:
+    tag: "0.1.6"
 
 kafka_core:
   image:

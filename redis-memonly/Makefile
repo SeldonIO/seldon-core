@@ -11,7 +11,8 @@ redis_cli:
 			kubectl exec -it $${POD_NAME} -- bash -c 'redis-cli'
 
 port_forward_redis:
-	kubectl port-forward redis 6379
+	POD_NAME=$$(kubectl --namespace default get pod -l app=redis-app -o template --template="{{(index .items 0).metadata.name}}") && \
+			kubectl port-forward $${POD_NAME} 6379
 
 clean:
 	@rm -fv redis-memonly.json
