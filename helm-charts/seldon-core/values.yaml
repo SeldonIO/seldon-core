@@ -3,12 +3,12 @@
 # Declare variables to be passed into your templates.
 
 cluster_manager:
+  enabled: true
   image:
     tag: "0.2.15"
 apife:
   image:
-    tag: "0.0.6"
-
+    tag: "0.0.7_kubeapi"
 kafka_core:
   image:
     tag: "0.1"
@@ -18,6 +18,9 @@ zookeeper:
 redis:
   image:
     tag: "4.0.1"
+kube_apiserver:
+  enabled: false
+
 
 # set the cluster manager client secret
 #cluster_manager_client_secret:
@@ -39,11 +42,11 @@ cluster_manager_service_type: NodePort
 
 # Set the type of service for Grafana Prom
 #grafana_prom_service_type: LoadBalancer
-grafana_prom_service_type: NodePort
+grafana_prom_service_type: LoadBalancer
 
 # Set the type of service for apife
 #apife_service_type: LoadBalancer
-apife_service_type: NodePort
+apife_service_type: LoadBalancer
 
 # Persist data to a persitent volume
 persistence:

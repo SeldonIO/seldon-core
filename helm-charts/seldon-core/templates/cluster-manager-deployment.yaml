@@ -1,3 +1,4 @@
+{{- if .Values.cluster_manager.enabled }}
 ---
 apiVersion: v1
 items:
@@ -54,4 +55,4 @@ items:
     type: {{ .Values.cluster_manager_service_type }}
 kind: List
 metadata: {}
-
+{{- end }}
