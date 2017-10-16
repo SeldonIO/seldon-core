@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceList;
+import io.fabric8.kubernetes.api.model.OwnerReference;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.ConfigBuilder;
@@ -83,13 +84,13 @@ public class KubernetesManagerImpl implements KubernetesManager {
     }
 
     @Override
-    public DeploymentDef createOrReplaceSeldonDeployment(DeploymentDef deploymentDef) {
+    public DeploymentDef createOrReplaceSeldonDeployment(DeploymentDef deploymentDef,OwnerReference oref) {
         DeploymentDef.Builder resultingDeploymentDefBuilder = DeploymentDef.newBuilder(deploymentDef);
         final String seldonDeploymentId = deploymentDef.getId();
         logger.debug(String.format("Creating Seldon Deployment id[%s]", seldonDeploymentId));
         final String namespace_name = getNamespaceName();
 
-        DeploymentUtils.buildDeployments(deploymentDef, clusterManagerProperites).stream().forEach((buildDeploymentResult) -> {
+        DeploymentUtils.buildDeployments(deploymentDef, clusterManagerProperites,oref).stream().forEach((buildDeploymentResult) -> {
             DeploymentUtils.createDeployment(kubernetesClient, namespace_name, buildDeploymentResult);
             { // update the resultingDeploymentDef with the predictor having the predictive unit endpoints
                 if (buildDeploymentResult.isCanary) {

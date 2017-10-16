@@ -40,7 +40,7 @@ public class KM_Update2DeploymentExample {
             e.printStackTrace();
         }
 
-        kubernetesManager.createOrReplaceSeldonDeployment(exampleDeploymentDef2);
+        kubernetesManager.createOrReplaceSeldonDeployment(exampleDeploymentDef2,null);
 
         ctx.close();
     }

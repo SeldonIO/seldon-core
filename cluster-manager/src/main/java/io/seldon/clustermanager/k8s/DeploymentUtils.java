@@ -20,9 +20,9 @@ import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.EnvVarBuilder;
-import io.fabric8.kubernetes.api.model.HTTPGetAction;
 import io.fabric8.kubernetes.api.model.HTTPGetActionBuilder;
 import io.fabric8.kubernetes.api.model.LocalObjectReference;
+import io.fabric8.kubernetes.api.model.OwnerReference;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.ServiceBuilder;
@@ -85,7 +85,7 @@ public class DeploymentUtils {
 
     }
 
-    public static List<BuildDeploymentResult> buildDeployments(DeploymentDef deploymentDef, ClusterManagerProperites clusterManagerProperites) {
+    public static List<BuildDeploymentResult> buildDeployments(DeploymentDef deploymentDef, ClusterManagerProperites clusterManagerProperites,OwnerReference oref) {
 
         final String seldonDeploymentId = deploymentDef.getId();
         List<BuildDeploymentResult> buildDeploymentResults = new ArrayList<>();
@@ -93,7 +93,7 @@ public class DeploymentUtils {
         { // Add the main predictor
             PredictorDef mainPredictor = deploymentDef.getPredictor();
             boolean isCanary = false;
-            BuildDeploymentResult buildDeploymentResult = buildDeployment(seldonDeploymentId, mainPredictor, isCanary, clusterManagerProperites);
+            BuildDeploymentResult buildDeploymentResult = buildDeployment(seldonDeploymentId, mainPredictor, isCanary, clusterManagerProperites,oref);
             buildDeploymentResults.add(buildDeploymentResult);
         }
 
@@ -101,7 +101,7 @@ public class DeploymentUtils {
             if (deploymentDef.hasField(deploymentDef.getDescriptorForType().findFieldByNumber(DeploymentDef.PREDICTOR_CANARY_FIELD_NUMBER))) {
                 PredictorDef canaryPredictor = deploymentDef.getPredictorCanary();
                 boolean isCanary = true;
-                BuildDeploymentResult buildDeploymentResult = buildDeployment(seldonDeploymentId, canaryPredictor, isCanary, clusterManagerProperites);
+                BuildDeploymentResult buildDeploymentResult = buildDeployment(seldonDeploymentId, canaryPredictor, isCanary, clusterManagerProperites,oref);
                 buildDeploymentResults.add(buildDeploymentResult);
             }
         }
@@ -110,8 +110,15 @@ public class DeploymentUtils {
     }
 
     public static BuildDeploymentResult buildDeployment(String seldonDeploymentId, PredictorDef predictorDef, boolean isCanary,
-            ClusterManagerProperites clusterManagerProperites) {
+            ClusterManagerProperites clusterManagerProperites,OwnerReference oref) {
 
+    	// Create owner reference list if exists
+    	List<OwnerReference> orefList = null;
+        if (oref != null)
+        {
+        	orefList = new ArrayList<>();
+        	orefList.add(oref);
+        }
         PredictorDef.Builder resultingPredictorDefBuilder = PredictorDef.newBuilder(predictorDef);
 
         final EndpointType ENGINE_CONTAINER_ENDPOINT_TYPE = EndpointDef.EndpointType.REST;
@@ -328,12 +335,14 @@ public class DeploymentUtils {
             int port = engine_service_port;
             int targetPort = engine_container_port;
 
+            
             //@formatter:off
             service = new ServiceBuilder()
                     .withNewMetadata()
                         .withName(serviceName)
                         .addToLabels("seldon-deployment-id", seldonDeploymentId)
                         .addToLabels("app", selectorValue)
+                        .withOwnerReferences(orefList)
                     .endMetadata()
                     .withNewSpec()
                         .addNewPort()
@@ -360,7 +369,7 @@ public class DeploymentUtils {
 
         //@formatter:off
         Deployment deployment = new DeploymentBuilder()
-            .withNewMetadata().withName(kubernetesDeploymentId).addToLabels("seldon-deployment-id", seldonDeploymentId).endMetadata()
+            .withNewMetadata().withName(kubernetesDeploymentId).addToLabels("seldon-deployment-id", seldonDeploymentId).withOwnerReferences(orefList).endMetadata()
             .withNewSpec().withReplicas(replica_number)
                 .withNewTemplate()
                     .withNewMetadata()

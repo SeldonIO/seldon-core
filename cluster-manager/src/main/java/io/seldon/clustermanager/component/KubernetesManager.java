@@ -2,6 +2,7 @@ package io.seldon.clustermanager.component;
 
 import java.util.List;
 
+import io.fabric8.kubernetes.api.model.OwnerReference;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
 import io.seldon.protos.DeploymentProtos.DockerRegistrySecretDef;
 import io.seldon.protos.DeploymentProtos.StringSecretDef;
@@ -10,7 +11,7 @@ public interface KubernetesManager extends AppComponent {
 
     public List<String> getNamespaceList();
 
-    public DeploymentDef createOrReplaceSeldonDeployment(DeploymentDef deploymentDef);
+    public DeploymentDef createOrReplaceSeldonDeployment(DeploymentDef deploymentDef,OwnerReference oref);
 
     public DeploymentDef getSeldonDeployment(DeploymentDef deploymentDef);
 

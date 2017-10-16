@@ -96,12 +96,17 @@ public class ZookeeperManagerImpl implements ZookeeperManager {
     }
 
     @Override
-    public void deleteSeldonDeployment(DeploymentDef deploymentDef) throws Exception {
+    public void deleteSeldonDeployment(DeploymentDef deploymentDef)  {
         final String seldonDeploymentId = deploymentDef.getId();
         String deployment_node_path = String.format("/deployments/%s", seldonDeploymentId);
 
-        curator.delete().deletingChildrenIfNeeded().forPath(deployment_node_path);
-        logger.debug(String.format("[DELETE] [%s]", deployment_node_path));
+        try
+        {
+        	curator.delete().deletingChildrenIfNeeded().forPath(deployment_node_path);
+        	logger.debug(String.format("[DELETE] [%s]", deployment_node_path));
+        } catch (Exception e) {
+			logger.warn("Failed to delete "+deployment_node_path);
+		}
     }
 
 }

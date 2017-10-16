@@ -1,5 +1,6 @@
 package io.seldon.clustermanager.component;
 
+import io.fabric8.kubernetes.api.model.OwnerReference;
 import io.seldon.protos.DeploymentProtos.CMResultDef;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
 import io.seldon.protos.DeploymentProtos.DockerRegistrySecretDef;
@@ -13,10 +14,12 @@ public interface ClusterManager extends AppComponent {
     public CMResultDef getNamespaces();
 
     public CMResultDef createSeldonDeployment(DeploymentDef deploymentDef);
+    public CMResultDef createSeldonDeployment(DeploymentDef deploymentDef,int resourceVersion,OwnerReference oref);
 
     public CMResultDef getSeldonDeployment(DeploymentDef deploymentDef);
 
     public CMResultDef updateSeldonDeployment(DeploymentDef deploymentDef);
+    public CMResultDef updateSeldonDeployment(DeploymentDef deploymentDef,int resourceVersion,OwnerReference oref);
 
     public CMResultDef deleteSeldonDeployment(DeploymentDef deploymentDef);
 

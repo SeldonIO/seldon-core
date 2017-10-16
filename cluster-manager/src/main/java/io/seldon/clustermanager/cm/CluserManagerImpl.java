@@ -7,9 +7,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import io.fabric8.kubernetes.api.model.OwnerReference;
 import io.seldon.clustermanager.component.ClusterManager;
 import io.seldon.clustermanager.component.KubernetesManager;
 import io.seldon.clustermanager.component.ZookeeperManager;
+import io.seldon.clustermanager.k8s.KubeCRDHandler;
 import io.seldon.protos.DeploymentProtos.CMResultDef;
 import io.seldon.protos.DeploymentProtos.CMStatusDef;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
@@ -23,6 +25,7 @@ public class CluserManagerImpl implements ClusterManager {
 
     private ZookeeperManager zookeeperManager;
     private KubernetesManager kubernetesManager;
+    private KubeCRDHandler kubeCRDHandler;
 
     public void init() throws Exception {
         logger.info("init");
@@ -42,6 +45,12 @@ public class CluserManagerImpl implements ClusterManager {
     public void setKubernetesManager(KubernetesManager kubernetesManager) {
         logger.info("injecting KubernetesManager");
         this.kubernetesManager = kubernetesManager;
+    }
+    
+    @Autowired
+    public void setKubeCRDHandler(KubeCRDHandler kubeCRDHandler) {
+    	logger.info("Injecting KubeCRDHandler");
+    	this.kubeCRDHandler = kubeCRDHandler;
     }
 
     @Override
@@ -84,23 +93,35 @@ public class CluserManagerImpl implements ClusterManager {
 
     @Override
     public CMResultDef createSeldonDeployment(DeploymentDef deploymentDef) {
-        CMResultDef cmResultDef = null;
-        try {
-            DeploymentDef resultingDeploymentDef = kubernetesManager.createOrReplaceSeldonDeployment(deploymentDef);
-            zookeeperManager.persistSeldonDeployment(resultingDeploymentDef);
-            //@formatter:off
-            DeploymentResultDef deploymentResultDef = DeploymentResultDef.newBuilder()
-                    .setDeployment(resultingDeploymentDef)
-                    .build();
-            //@formatter:on
-            cmResultDef = buildSUCCESS(deploymentResultDef);
-        } catch (Throwable e) {
-            logger.error("Error creating seldon deployment", e);
-            String info = org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(e);
-            cmResultDef = buildFAILURE_500(info);
-        }
-        return cmResultDef;
+       return this.createSeldonDeployment(deploymentDef,0,null);
     }
+    
+    @Override
+	public CMResultDef createSeldonDeployment(DeploymentDef deploymentDef,int resourceVersion,OwnerReference oref) {
+    	 CMResultDef cmResultDef = null;
+         try {
+             DeploymentDef resultingDeploymentDef = kubernetesManager.createOrReplaceSeldonDeployment(deploymentDef,oref);
+             zookeeperManager.persistSeldonDeployment(resultingDeploymentDef);
+             //@formatter:off
+             DeploymentResultDef deploymentResultDef = DeploymentResultDef.newBuilder()
+                     .setDeployment(resultingDeploymentDef)
+                     .build();
+             //@formatter:on
+             
+             if (!resultingDeploymentDef.equals(deploymentDef))
+             {
+            	 logger.info("Updating ML Deployment resource");
+            	 kubeCRDHandler.updateMLDeployment(resultingDeploymentDef, resourceVersion,oref);
+             }
+             
+             cmResultDef = buildSUCCESS(deploymentResultDef);
+         } catch (Throwable e) {
+             logger.error("Error creating seldon deployment", e);
+             String info = org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(e);
+             cmResultDef = buildFAILURE_500(info);
+         }
+         return cmResultDef;
+	}
 
     @Override
     public CMResultDef getSeldonDeployment(DeploymentDef deploymentDef) {
@@ -129,8 +150,13 @@ public class CluserManagerImpl implements ClusterManager {
     }
 
     @Override
+    public CMResultDef updateSeldonDeployment(DeploymentDef deploymentDef,int resourceVersion,OwnerReference oref) {
+        return this.createSeldonDeployment(deploymentDef,resourceVersion,oref);
+    }
+    
+    @Override
     public CMResultDef updateSeldonDeployment(DeploymentDef deploymentDef) {
-        return this.createSeldonDeployment(deploymentDef);
+        return this.createSeldonDeployment(deploymentDef,0,null);
     }
 
     @Override
@@ -220,5 +246,7 @@ public class CluserManagerImpl implements ClusterManager {
         //@formatter:on
         return cmResultDef;
     }
+
+	
 
 }

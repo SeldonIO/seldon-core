@@ -4,7 +4,7 @@
 	<groupId>io.seldon.clustermanager</groupId>
 	<artifactId>seldon-cluster-manager</artifactId>
 	<packaging>jar</packaging>
-	<version>0.2.15</version>
+	<version>0.2.16_kubeapi</version>
 	<name>seldon-cluster-manager</name>
 	<url>http://maven.apache.org</url>
 
@@ -84,6 +84,14 @@
 			<artifactId>kubernetes-client</artifactId>
 			<version>2.0.0</version>
 		</dependency>
+		
+		<dependency>
+    		<groupId>io.kubernetes</groupId>
+    		<artifactId>client-java</artifactId>
+    		<version>0.2</version>
+    		<scope>compile</scope>
+		</dependency>
+		
 
 		<dependency>
 			<groupId>org.springframework.security.oauth</groupId>

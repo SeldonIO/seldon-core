@@ -46,7 +46,7 @@ public class KM_CreateDeploymentExample {
             String s = ProtoBufUtils.toJson(exampleDeploymentDef, true);
             System.out.println(s);
             System.out.println("-------------------------------------------------------------------------------");
-            DeploymentDef resultingDeploymentDef = kubernetesManager.createOrReplaceSeldonDeployment(exampleDeploymentDef);
+            DeploymentDef resultingDeploymentDef = kubernetesManager.createOrReplaceSeldonDeployment(exampleDeploymentDef,null);
             String r = ProtoBufUtils.toJson(resultingDeploymentDef, true);
             System.out.println(r);
         } catch (InvalidProtocolBufferException e) {
