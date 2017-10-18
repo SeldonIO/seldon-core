@@ -32,6 +32,8 @@ import io.seldon.protos.DeploymentProtos.ClusterResourcesDef;
 import io.seldon.protos.DeploymentProtos.EndpointDef;
 import io.seldon.protos.MABGrpc;
 import io.seldon.protos.MABGrpc.MABBlockingStub;
+import io.seldon.protos.ModelGrpc;
+import io.seldon.protos.ModelGrpc.ModelBlockingStub;
 import io.seldon.protos.PredictionProtos.PredictionFeedbackDef;
 import io.seldon.protos.PredictionProtos.PredictionRequestDef;
 import io.seldon.protos.PredictionProtos.PredictionRequestDef.RequestOneofCase;
@@ -68,10 +70,10 @@ public class InternalPredictionService {
 				boolean isDefault = false;
 				if (request.getRequestOneofCase() == RequestOneofCase.REQUEST)
 					isDefault = true;
-				return predictREST(dataString, state, endpoint, isDefault);
+				return getPredictionREST(dataString, state, endpoint, isDefault);
 				
 			case GRPC:
-				
+				return getPredictionGRPC(request,state,endpoint);
 		}
 		throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,"no service available");
 	}
@@ -114,7 +116,17 @@ public class InternalPredictionService {
 		return routing;
 	}
 	
-	public PredictionResponseDef predictREST(String dataString, PredictiveUnitState state, EndpointDef endpoint,boolean isDefault){
+	public PredictionResponseDef getPredictionGRPC(PredictionRequestDef request, PredictiveUnitState state, EndpointDef endpoint){
+		ManagedChannel channel = ManagedChannelBuilder.forAddress(endpoint.getServiceHost(), endpoint.getServicePort()).usePlaintext(true).build();
+		ModelBlockingStub stub =  ModelGrpc.newBlockingStub(channel).withDeadlineAfter(5, TimeUnit.SECONDS);
+			
+		PredictionResponseDef response = stub.predict(request);
+		return response;
+	}
+	
+	
+	
+	public PredictionResponseDef getPredictionREST(String dataString, PredictiveUnitState state, EndpointDef endpoint, boolean isDefault){
 		{
     		long timeNow = System.currentTimeMillis();
     		URI uri;
