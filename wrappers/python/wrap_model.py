@@ -18,8 +18,7 @@ def wrap_model(repo,model_folder,model_name,version,REST=True,out_folder=None,fo
         else:
             shutil.rmtree(build_folder)
     shutil.copytree(model_folder,build_folder)
-    shutil.copy2('./rest_microservice.py',build_folder)
-    shutil.copy2("./grpc_microservice.py",build_folder)
+    shutil.copy2('./microservice.py',build_folder)
     shutil.copy2('./seldon_model.py',build_folder)
     shutil.copy2("./seldon_requirements.txt",build_folder)
     shutil.copytree('./proto',build_folder+'/proto')
@@ -27,7 +26,7 @@ def wrap_model(repo,model_folder,model_name,version,REST=True,out_folder=None,fo
         './Dockerfile.tmp',
         build_folder+'/Dockerfile',
         model_name=model_name,
-        api_type="rest" if REST else "grpc"
+        api_type="REST" if REST else "GRPC"
     )
     populate_template(
         './Makefile.tmp',

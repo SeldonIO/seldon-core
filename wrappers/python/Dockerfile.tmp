@@ -11,4 +11,4 @@ RUN pip install --no-cache-dir -r seldon_requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 EXPOSE 5000
-CMD ["python","{api_type}_microservice.py","{model_name}"]
+CMD ["python","microservice.py","{model_name}","{api_type}"]

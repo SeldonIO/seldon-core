@@ -121,24 +121,37 @@ def run(args):
 
     for i in range(args.n_requests):
         batch = generate_batch(contract,args.batch_size)
-        print batch
+        if args.prnt:
+            print '-'*40
+            print "SENDING NEW REQUEST:"
         
         if not args.grpc:
             REST_request = gen_REST_request(batch,features=feature_names,tensor=args.tensor)
+            if args.prnt:
+                print REST_request
             
             response = requests.post(
                 REST_url,
                 data={"json":json.dumps(REST_request),"isDefault":True})
             jresp = response.json()
-            print jresp["response"]
+
+            if args.prnt:
+                print "RECEIVED RESPONSE:"
+                print jresp
+                print
         else:
             GRPC_request = gen_GRPC_request(batch,features=feature_names,tensor=args.tensor)
+            if args.prnt:
+                print GRPC_request
 
             channel = grpc.insecure_channel('{}:{}'.format(args.host,args.port))
             stub = prediction_pb2_grpc.ModelStub(channel)
-
             response = stub.Predict(GRPC_request)
-            print response
+            
+            if args.prnt:
+                print "RECEIVED RESPONSE:"
+                print response
+                print
     
 
 if __name__ == "__main__":
@@ -150,6 +163,7 @@ if __name__ == "__main__":
     parser.add_argument("-n","--n-requests",type=int,default=1)
     parser.add_argument("--grpc",action="store_true")
     parser.add_argument("-t","--tensor",action="store_true")
+    parser.add_argument("-p","--prnt",action="store_true",help="Prints requests and responses")
 
     args = parser.parse_args()
 
