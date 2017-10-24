@@ -153,5 +153,19 @@ message DockerRegistrySecretDef {
     DockerRegistryDetailsDef dockerRegistryDetails = 2;
 }
 
+message KubeMeta {
+  string name = 1;
+  string resourceVersion = 2;
+  map<string,string> labels = 3;
+}
+
+message MLDeployment {
+  string apiVersion = 1;
+  string kind = 2;
+  KubeMeta metadata = 3;
+  DeploymentDef spec = 4;
+}
+
+
 // [END messages]
 
