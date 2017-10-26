@@ -128,3 +128,6 @@ message PredictionFeedbackResponseDef {
 	bool success = 1;
 }
 	
+service Model {
+  rpc Predict(PredictionRequestDef) returns (PredictionResponseDef) {};
+ }

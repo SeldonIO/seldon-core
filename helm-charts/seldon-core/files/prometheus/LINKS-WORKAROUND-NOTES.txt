@@ -1,0 +1,12 @@
+in helm v2.6.2 a feature that allowed sym links to be used was removed.
+
+So to simulate the following links:
+
+    prometheus-config.yaml -> prometheus-config-default.yaml
+    rules -> rules.default
+
+The file and dir is copied:
+
+    prometheus-config-default.yaml copied to prometheus-config.yaml
+    rules.default/ copied to rules/
+

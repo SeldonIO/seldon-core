@@ -9,6 +9,10 @@ cluster_manager:
 apife:
   image:
     tag: "0.0.7_kubeapi"
+engine:
+  image:
+    tag: "0.1.6"
+
 kafka_core:
   image:
     tag: "0.1"

@@ -1,0 +1,14 @@
+FROM python:2
+
+RUN apt-get update -y
+RUN apt-get install -y python-pip python-dev build-essential
+
+RUN mkdir microservice
+COPY ./ /microservice/
+WORKDIR /microservice
+
+RUN pip install --no-cache-dir -r seldon_requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+EXPOSE 5000
+CMD ["python","microservice.py","{model_name}","{api_type}"]

@@ -1,0 +1,9 @@
+DOCKER_REPO={docker_repo}
+DOCKER_IMAGE_NAME={docker_image_name}
+DOCKER_IMAGE_VERSION={version}
+
+build_docker_image:
+	docker build --force-rm=true -t $(DOCKER_REPO)/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VERSION) .
+
+push_to_registry:
+	docker push $(DOCKER_REPO)/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VERSION)
