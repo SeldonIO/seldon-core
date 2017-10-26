@@ -46,20 +46,19 @@ Using Seldon Core Helm chart
 
 7. Enabling Alerts
 
-	By default the alertmanger uses a noop configuration.
-	Use alerts by setting up a config file and then enabling it.
-	Setup the file
+    By default the alertmanger uses a noop configuration.
+    Use alerts by setting up a config file and then enabling it.
+    Setup the file
 
-	/files/alertmanager/config.yaml
+    /files/alertmanager/config.yaml
 
-	Use config.yaml.example for a Slack example.
+    Use config.yaml.example for a Slack example.
 
-	# Launch with the alertmanager config file enabled
+    # Launch with the alertmanager config file enabled
     $ cd seldon-core/helm-charts
     $ helm install seldon-core --name seldon-core \
         --set cluster_manager_client_secret=<your-cluster-manager-secret> \
         --set grafana_prom_admin_password=<your-grafana-prom-password> \
         --set persistence.enabled=false \
-		--set alertmanager.config.enabled=true
-
+        --set alertmanager.config.enabled=true
 
