@@ -22,6 +22,12 @@ redis:
   image:
     tag: "4.0.1"
 
+alertmanager:
+  # config disabled by default, create file "/files/alertmanager/config.yaml" then enable
+  config:
+    enabled: false
+
+
 # set the cluster manager client secret
 #cluster_manager_client_secret:
 
