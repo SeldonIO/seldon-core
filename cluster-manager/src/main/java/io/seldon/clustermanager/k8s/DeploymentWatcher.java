@@ -61,6 +61,7 @@ public class DeploymentWatcher  {
 			clusterManager.updateSeldonDeployment(deploymentDef,resourceVersion,oref);
 		else if (action.equals("DELETED"))
 		{
+			//TODO check it works with garbage collection in kubernetes 1.8+
 			//clusterManager.deleteSeldonDeployment(deploymentDef);
 		}
 		else
