@@ -28,9 +28,8 @@ import io.kubernetes.client.Configuration;
 import io.kubernetes.client.apis.CustomObjectsApi;
 import io.kubernetes.client.util.Config;
 import io.kubernetes.client.util.Watch;
-import io.seldon.clustermanager.component.ClusterManager;
+import io.seldon.clustermanager.component.KubernetesManager;
 import io.seldon.clustermanager.pb.ProtoBufUtils;
-import io.seldon.protos.DeploymentProtos.CMResultDef;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
 
 @Component
@@ -38,10 +37,11 @@ public class DeploymentWatcher  {
 	protected static Logger logger = LoggerFactory.getLogger(DeploymentWatcher.class.getName());
 	
 	@Autowired
-	private ClusterManager clusterManager;
+	private KubernetesManager kubernetesManager;
 
 	private ApiClient client;
 	private int resourceVersion = 0;
+	private int resourceVersionProcessed = 0;
 	
 	public DeploymentWatcher() throws IOException
 	{
@@ -49,26 +49,24 @@ public class DeploymentWatcher  {
 		Configuration.setDefaultApiClient(client);
 	}
 	
-	private void processWatch(DeploymentDef deploymentDef,OwnerReference oref,int resourceVersion,String action) throws InvalidProtocolBufferException
+	private void processWatch(DeploymentDef deploymentDef,CustomResourceDetails crd,String action) throws InvalidProtocolBufferException
 	{
-		if (action.equals("ADDED"))
+		switch(action)
 		{
-			CMResultDef cmResultDef =  clusterManager.createSeldonDeployment(deploymentDef,resourceVersion,oref);
-			String json = ProtoBufUtils.toJson(cmResultDef);
-			logger.info(json);
-		}
-		else if (action.equals("MODIFIED"))
-			clusterManager.updateSeldonDeployment(deploymentDef,resourceVersion,oref);
-		else if (action.equals("DELETED"))
-		{
-			//TODO check it works with garbage collection in kubernetes 1.8+
-			//clusterManager.deleteSeldonDeployment(deploymentDef);
-		}
-		else
+		case "ADDED":
+		case "MODIFIED":
+			kubernetesManager.createOrReplaceSeldonDeployment(deploymentDef, crd);
+			break;
+		case "DELETED":
+			// kubernetes >=1.8 has CRD garbage collection
+			logger.info("Resource deleted - ignoring");
+			break;
+		default:
 			logger.error("Unknown action "+action);
+		}
 	}
 	
-	public int watchSeldonMLDeployments(int resourceVersion) throws ApiException, JsonProcessingException, IOException
+	public int watchSeldonMLDeployments(int resourceVersion,int resourceVersionProcessed) throws ApiException, JsonProcessingException, IOException
 	{
 		String rs = null;
 		if (resourceVersion > 0)
@@ -83,7 +81,7 @@ public class DeploymentWatcher  {
 		int maxResourceVersion = resourceVersion;
 		try{
         for (Watch.Response<Object> item : watch) {
-        	Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        	Gson gson = new GsonBuilder().create();
     		String jsonInString = gson.toJson(item.object);
 	    	logger.info(String.format("%s\n : %s%n", item.type, jsonInString));
     		ObjectMapper mapper = new ObjectMapper();
@@ -92,30 +90,37 @@ public class DeploymentWatcher  {
     	    JsonNode actualObj = mapper.readTree(parser);
     	    if (actualObj.has("kind") && actualObj.get("kind").asText().equals("Status"))
     	    {
-    	    	//Issue with resource version - add 1
-    	    	logger.warn("Possible old resource version found");
-    	    	return maxResourceVersion + 1;
+    	    	logger.warn("Possible old resource version found - resetting");
+    	    	return 0;
     	    }
     	    else
     	    {
     	    	int resourceVersionNew = actualObj.get("metadata").get("resourceVersion").asInt();
-    	    	if (resourceVersionNew > maxResourceVersion)
-    	    		maxResourceVersion = resourceVersionNew;
-    	    	OwnerReference oref = new OwnerReference(
+    	    	if (resourceVersionNew <= resourceVersionProcessed)
+    	    	{
+    	    		logger.warn("Looking at already processed request - skipping");
+    	    	}
+    	    	else
+    	    	{
+    	    		if (resourceVersionNew > maxResourceVersion)
+        	    		maxResourceVersion = resourceVersionNew;
+    	    		OwnerReference oref = new OwnerReference(
     	    				actualObj.get("apiVersion").asText(), 
     	    				true, 
     	    				actualObj.get("kind").asText(), 
     	    				actualObj.get("metadata").get("name").asText(), 
     	    				actualObj.get("metadata").get("uid").asText());
-    	    	JsonNode deploymentSpec = actualObj.get("spec");
-    	    	String jsonDeploymentSpec = mapper.writeValueAsString(deploymentSpec);
-    	    	logger.info("Resource version "+resourceVersionNew);
-    	    	logger.info(String.format("%s",jsonDeploymentSpec));
+    	    		JsonNode deploymentSpec = actualObj.get("spec");
+    	    		String jsonDeploymentSpec = mapper.writeValueAsString(deploymentSpec);
+    	    		logger.info("Resource version "+resourceVersionNew);
+    	    		logger.info(String.format("%s",jsonDeploymentSpec));
     	    	
-    	    	 DeploymentDef.Builder deploymentDefBuilder = DeploymentDef.newBuilder();
-    	    	 ProtoBufUtils.updateMessageBuilderFromJson(deploymentDefBuilder, jsonDeploymentSpec);
-    	    	
-    	    	this.processWatch(deploymentDefBuilder.build(), oref,resourceVersionNew, item.type);
+    	    		DeploymentDef.Builder deploymentDefBuilder = DeploymentDef.newBuilder();
+    	    		ProtoBufUtils.updateMessageBuilderFromJson(deploymentDefBuilder, jsonDeploymentSpec);
+    	    		
+    	    		CustomResourceDetails crDetails = new CustomResourceDetails(resourceVersionNew, oref);
+    	    		this.processWatch(deploymentDefBuilder.build(), crDetails, item.type);
+    	    	}
     	    }
         }
 		}
@@ -134,7 +139,16 @@ public class DeploymentWatcher  {
 	@Scheduled(fixedDelay = 5000)
     public void watch() throws JsonProcessingException, ApiException, IOException {
         logger.info("The time is now {}", dateFormat.format(new Date()));
-        this.resourceVersion = this.watchSeldonMLDeployments(this.resourceVersion);
+        this.resourceVersion = this.watchSeldonMLDeployments(this.resourceVersion,this.resourceVersionProcessed);
+        if (this.resourceVersion > this.resourceVersionProcessed)
+        {
+        	logger.info("Updating processed resource version to "+resourceVersion);
+        	this.resourceVersionProcessed = this.resourceVersion;
+        }
+        else
+        {
+        	logger.info("Not updating resourceVersion - current:"+this.resourceVersion+" Processed:"+this.resourceVersionProcessed);
+        }
     }
 
 	

@@ -36,6 +36,7 @@ items:
                 key: cluster-manager-client-secret.txt
                 name: cluster-manager-client-secret
           image: seldonio/cluster-manager:{{ .Values.cluster_manager.image.tag }}
+          imagePullPolicy: {{ .Values.cluster_manager.image.pull_policy }}
           name: seldon-cluster-manager-container
           ports:
           - containerPort: 8080

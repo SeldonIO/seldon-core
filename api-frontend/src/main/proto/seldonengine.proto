@@ -156,7 +156,10 @@ message DockerRegistrySecretDef {
 message KubeMeta {
   string name = 1;
   string resourceVersion = 2;
-  map<string,string> labels = 3;
+  string uid = 3;
+  map<string,string> labels = 4;
+  map<string,string> annotations = 5;
+  string namespace = 6;
 }
 
 message MLDeployment {

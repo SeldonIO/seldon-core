@@ -5,10 +5,12 @@
 cluster_manager:
   enabled: true
   image:
-    tag: "0.2.16_kubeapi"
+    tag: "0.2.16"
+    pull_policy: "IfNotPresent"
 apife:
   image:
-    tag: "0.0.7_kubeapi"
+    tag: "0.0.7"
+    pull_policy: "IfNotPresent"
 engine:
   image:
     tag: "0.1.6"

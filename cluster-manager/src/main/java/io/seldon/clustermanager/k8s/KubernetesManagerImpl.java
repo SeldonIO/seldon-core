@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceList;
-import io.fabric8.kubernetes.api.model.OwnerReference;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.ConfigBuilder;
@@ -18,6 +17,7 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.seldon.clustermanager.ClusterManagerProperites;
 import io.seldon.clustermanager.component.KubernetesManager;
+import io.seldon.clustermanager.k8s.DeploymentUtils.BuildDeploymentResult;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
 import io.seldon.protos.DeploymentProtos.DockerRegistrySecretDef;
 import io.seldon.protos.DeploymentProtos.StringSecretDef;
@@ -29,7 +29,8 @@ public class KubernetesManagerImpl implements KubernetesManager {
 
     private ClusterManagerProperites clusterManagerProperites;
     private KubernetesClient kubernetesClient = null;
-
+    private KubeCRDHandler kubeCRDHandler;
+    
     private String seldonClusterNamespaceName = "UNKOWN_NAMESPACE";
 
     public KubernetesManagerImpl() {
@@ -73,6 +74,12 @@ public class KubernetesManagerImpl implements KubernetesManager {
         this.clusterManagerProperites = clusterManagerProperites;
     }
 
+    @Autowired
+    public void setKubeCRDHandler(KubeCRDHandler kubeCRDHandler) {
+    	logger.info("Injecting KubeCRDHandler");
+    	this.kubeCRDHandler = kubeCRDHandler;
+    }
+
     public List<String> getNamespaceList() {
         List<String> namespace_list = new ArrayList<>();
         NamespaceList namespaceList = kubernetesClient.namespaces().list();
@@ -84,14 +91,17 @@ public class KubernetesManagerImpl implements KubernetesManager {
     }
 
     @Override
-    public DeploymentDef createOrReplaceSeldonDeployment(DeploymentDef deploymentDef,OwnerReference oref) {
+    public DeploymentDef createOrReplaceSeldonDeployment(DeploymentDef deploymentDef,CustomResourceDetails crd) {
         DeploymentDef.Builder resultingDeploymentDefBuilder = DeploymentDef.newBuilder(deploymentDef);
         final String seldonDeploymentId = deploymentDef.getId();
         logger.debug(String.format("Creating Seldon Deployment id[%s]", seldonDeploymentId));
         final String namespace_name = getNamespaceName();
 
-        DeploymentUtils.buildDeployments(deploymentDef, clusterManagerProperites,oref).stream().forEach((buildDeploymentResult) -> {
-            DeploymentUtils.createDeployment(kubernetesClient, namespace_name, buildDeploymentResult);
+        List<BuildDeploymentResult> deploymentResult = DeploymentUtils.buildDeployments(deploymentDef, clusterManagerProperites,crd.getOref());
+        
+        
+        deploymentResult.stream().forEach((buildDeploymentResult) -> {
+
             { // update the resultingDeploymentDef with the predictor having the predictive unit endpoints
                 if (buildDeploymentResult.isCanary) {
                     resultingDeploymentDefBuilder.setPredictorCanary(buildDeploymentResult.resultingPredictorDef);
@@ -101,9 +111,24 @@ public class KubernetesManagerImpl implements KubernetesManager {
             }
         });
 
-        // remove a canary if necessary
-        if (!deploymentDef.hasField(deploymentDef.getDescriptorForType().findFieldByNumber(DeploymentDef.PREDICTOR_CANARY_FIELD_NUMBER))) {
-            DeploymentUtils.deleteDeployemntResources(kubernetesClient, namespace_name, seldonDeploymentId, true);
+        DeploymentDef resultingDeploymentDef = resultingDeploymentDefBuilder.build();
+        
+        if (!resultingDeploymentDef.equals(deploymentDef))
+        {
+        	logger.info("Updating ML Deployment resource");
+        	kubeCRDHandler.updateMLDeployment(resultingDeploymentDef, crd);
+        }
+        else
+        {
+
+        	deploymentResult.stream().forEach((buildDeploymentResult) -> {
+        		DeploymentUtils.createDeployment(kubernetesClient, namespace_name, buildDeploymentResult);
+        	});
+        	
+        	// remove a canary if necessary
+        	if (!deploymentDef.hasField(deploymentDef.getDescriptorForType().findFieldByNumber(DeploymentDef.PREDICTOR_CANARY_FIELD_NUMBER))) {
+        		DeploymentUtils.deleteDeployemntResources(kubernetesClient, namespace_name, seldonDeploymentId, true);
+        	}
         }
 
         return resultingDeploymentDefBuilder.build();

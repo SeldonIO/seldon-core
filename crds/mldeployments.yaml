@@ -20,14 +20,4 @@ spec:
     # shortNames allow shorter string to match your resource on the CLI
     shortNames:
     - mldeploy
-  validation:
-    openAPIV3Schema:
-      properties:
-        spec:
-          properties:
-            name:
-              type: string
-            id:
-              type: integer
-              maximum: 10
         

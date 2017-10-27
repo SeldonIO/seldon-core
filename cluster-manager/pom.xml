@@ -20,7 +20,6 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<grpc.version>1.0.0</grpc.version><!-- CURRENT_GRPC_VERSION -->
 		<start-class>io.seldon.clustermanager.Application</start-class>
-		<curator.version>2.7.1</curator.version>
 	</properties>
 
 	<repositories>
@@ -74,12 +73,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.apache.curator</groupId>
-			<artifactId>curator-framework</artifactId>
-			<version>${curator.version}</version>
-		</dependency>
-
-		<dependency>
 			<groupId>io.fabric8</groupId>
 			<artifactId>kubernetes-client</artifactId>
 			<version>2.0.0</version>
@@ -92,16 +85,6 @@
     		<scope>compile</scope>
 		</dependency>
 		
-
-		<dependency>
-			<groupId>org.springframework.security.oauth</groupId>
-			<artifactId>spring-security-oauth2</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-redis</artifactId>
-		</dependency>
 
 	</dependencies>
 
