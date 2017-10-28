@@ -11,6 +11,7 @@ import com.google.protobuf.util.JsonFormat;
 
 import io.kubernetes.client.ApiException;
 import io.kubernetes.client.apis.CustomObjectsApi;
+import io.kubernetes.client.proto.Meta.ObjectMeta;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
 import io.seldon.protos.DeploymentProtos.KubeMeta;
 import io.seldon.protos.DeploymentProtos.MLDeployment;
@@ -26,12 +27,11 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 		MLDeployment mlDeployment = MLDeployment.newBuilder()
 				.setApiVersion("machinelearning.seldon.io/v1alpha1")
 				.setKind("MLDeployment")
-				.setMetadata(KubeMeta.newBuilder()
+				.setMetadata(ObjectMeta.newBuilder()
 						.putLabels("app", "seldon")
 						.setName(crd.getOref().getName())
-						.setNamespace("default")
-						.build()
-					)
+						.setNamespace("default") 
+						.build())
 				.setSpec(def)
 				.build();
 		try
@@ -44,7 +44,7 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 			mlDeployment = MLDeployment.newBuilder()
 					.setApiVersion("machinelearning.seldon.io/v1alpha1")
 					.setKind("MLDeployment")
-					.setMetadata(KubeMeta.newBuilder()
+					.setMetadata(ObjectMeta.newBuilder()
 							.putLabels("app", "seldon")
 							.setName(crd.getOref().getName())
 							.setResourceVersion(""+crd.getResourceVersion())
@@ -69,6 +69,11 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 			logger.error("Failed to update deployment in kubernetes ",e);
 		}
 		finally{}
+	}
+	@Override
+	public DeploymentDef getMlDeployment(CustomResourceDetails crd) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

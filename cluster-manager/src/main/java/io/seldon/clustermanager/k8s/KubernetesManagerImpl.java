@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceList;
-import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
@@ -19,8 +18,6 @@ import io.seldon.clustermanager.ClusterManagerProperites;
 import io.seldon.clustermanager.component.KubernetesManager;
 import io.seldon.clustermanager.k8s.DeploymentUtils.BuildDeploymentResult;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
-import io.seldon.protos.DeploymentProtos.DockerRegistrySecretDef;
-import io.seldon.protos.DeploymentProtos.StringSecretDef;
 
 public class KubernetesManagerImpl implements KubernetesManager {
 
@@ -152,29 +149,6 @@ public class KubernetesManagerImpl implements KubernetesManager {
         DeploymentUtils.deleteDeployment(kubernetesClient, namespace_name, deploymentDef);
     }
 
-    @Override
-    public void createOrReplaceStringSecret(StringSecretDef stringSecretDef) {
-        final String namespace_name = getNamespaceName();
-        Secret secret = SecretUtils.createOrReplaceSecret(kubernetesClient, namespace_name, stringSecretDef);
-    }
-
-    @Override
-    public void deleteStringSecret(String name) {
-        final String namespace_name = getNamespaceName();
-        SecretUtils.deleteSecret(kubernetesClient, namespace_name, name);
-    }
-
-    @Override
-    public void createOrReplaceDockerRegistrySecret(DockerRegistrySecretDef dockerRegistrySecretDef) {
-        final String namespace_name = getNamespaceName();
-        SecretUtils.createOrReplaceSecret(kubernetesClient, namespace_name, dockerRegistrySecretDef);
-    }
-
-    @Override
-    public void deleteDockerRegistrySecret(String name) {
-        final String namespace_name = getNamespaceName();
-        SecretUtils.deleteSecret(kubernetesClient, namespace_name, name);
-    }
 
     private String getNamespaceName() {
         return seldonClusterNamespaceName;

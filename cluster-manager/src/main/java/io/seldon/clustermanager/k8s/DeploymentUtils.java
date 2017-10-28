@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.slf4j.Logger;
@@ -161,10 +162,12 @@ public class DeploymentUtils {
 
             Map<String, Quantity> resource_requests = new HashMap<>();
             { // Add container resource requests
-                if (clusterResourcesDef.hasField(clusterResourcesDef.getDescriptorForType().findFieldByNumber(ClusterResourcesDef.CPU_FIELD_NUMBER))) {
+                if (clusterResourcesDef.hasField(clusterResourcesDef.getDescriptorForType().findFieldByNumber(ClusterResourcesDef.CPU_FIELD_NUMBER)) &&
+                		StringUtils.isNotEmpty(clusterResourcesDef.getCpu())) {
                     resource_requests.put("cpu", new Quantity(clusterResourcesDef.getCpu()));
                 }
-                if (clusterResourcesDef.hasField(clusterResourcesDef.getDescriptorForType().findFieldByNumber(ClusterResourcesDef.MEMORY_FIELD_NUMBER))) {
+                if (clusterResourcesDef.hasField(clusterResourcesDef.getDescriptorForType().findFieldByNumber(ClusterResourcesDef.MEMORY_FIELD_NUMBER)) &&
+                		StringUtils.isNotEmpty(clusterResourcesDef.getMemory())) {
                     resource_requests.put("memory", new Quantity(clusterResourcesDef.getMemory()));
                 }
             }
