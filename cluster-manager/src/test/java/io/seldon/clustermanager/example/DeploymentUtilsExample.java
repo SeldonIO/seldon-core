@@ -44,8 +44,9 @@ public class DeploymentUtilsExample {
         }
 
         ClusterManagerProperites clusterManagerProperites = ctx.getBean(ClusterManagerProperites.class);
-        List<BuildDeploymentResult> buildDeploymentResults = DeploymentUtils.buildDeployments(exampleDeploymentDef, clusterManagerProperites,null);
-        System.out.println(buildDeploymentResults);
+        //FIXME
+        //List<BuildDeploymentResult> buildDeploymentResults = DeploymentUtils.buildDeployments(exampleDeploymentDef);
+        //System.out.println(buildDeploymentResults);
 
         ctx.close();
     }

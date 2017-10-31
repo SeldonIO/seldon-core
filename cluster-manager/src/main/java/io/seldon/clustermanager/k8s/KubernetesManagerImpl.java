@@ -18,6 +18,7 @@ import io.seldon.clustermanager.ClusterManagerProperites;
 import io.seldon.clustermanager.component.KubernetesManager;
 import io.seldon.clustermanager.k8s.DeploymentUtils.BuildDeploymentResult;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
+import io.seldon.protos.DeploymentProtos.MLDeployment;
 
 public class KubernetesManagerImpl implements KubernetesManager {
 
@@ -88,13 +89,14 @@ public class KubernetesManagerImpl implements KubernetesManager {
     }
 
     @Override
-    public DeploymentDef createOrReplaceSeldonDeployment(DeploymentDef deploymentDef,CustomResourceDetails crd) {
+    public DeploymentDef createOrReplaceSeldonDeployment(MLDeployment mldeployment) {
+    	final DeploymentDef deploymentDef = mldeployment.getSpec();
         DeploymentDef.Builder resultingDeploymentDefBuilder = DeploymentDef.newBuilder(deploymentDef);
-        final String seldonDeploymentId = deploymentDef.getId();
+        final String seldonDeploymentId = mldeployment.getSpec().getId();
         logger.debug(String.format("Creating Seldon Deployment id[%s]", seldonDeploymentId));
         final String namespace_name = getNamespaceName();
 
-        List<BuildDeploymentResult> deploymentResult = DeploymentUtils.buildDeployments(deploymentDef, clusterManagerProperites,crd.getOref());
+        List<BuildDeploymentResult> deploymentResult = DeploymentUtils.buildDeployments(mldeployment, clusterManagerProperites);
         
         
         deploymentResult.stream().forEach((buildDeploymentResult) -> {
@@ -112,8 +114,9 @@ public class KubernetesManagerImpl implements KubernetesManager {
         
         if (!resultingDeploymentDef.equals(deploymentDef))
         {
+        	MLDeployment resultingMldep = MLDeployment.newBuilder(mldeployment).setSpec(resultingDeploymentDef).build();
         	logger.info("Updating ML Deployment resource");
-        	kubeCRDHandler.updateMLDeployment(resultingDeploymentDef, crd);
+        	kubeCRDHandler.updateMLDeployment(resultingMldep);
         }
         else
         {

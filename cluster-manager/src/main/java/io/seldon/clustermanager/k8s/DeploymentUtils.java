@@ -36,6 +36,7 @@ import io.seldon.protos.DeploymentProtos.ClusterResourcesDef;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
 import io.seldon.protos.DeploymentProtos.EndpointDef;
 import io.seldon.protos.DeploymentProtos.EndpointDef.EndpointType;
+import io.seldon.protos.DeploymentProtos.MLDeployment;
 import io.seldon.protos.DeploymentProtos.PredictiveUnitDef;
 import io.seldon.protos.DeploymentProtos.PredictiveUnitDef.ParamDef;
 import io.seldon.protos.DeploymentProtos.PredictiveUnitDef.PredictiveUnitSubType;
@@ -86,11 +87,20 @@ public class DeploymentUtils {
 
     }
 
-    public static List<BuildDeploymentResult> buildDeployments(DeploymentDef deploymentDef, ClusterManagerProperites clusterManagerProperites,OwnerReference oref) {
+    public static List<BuildDeploymentResult> buildDeployments(MLDeployment mldeployment, ClusterManagerProperites clusterManagerProperites) {
 
+    	final DeploymentDef deploymentDef = mldeployment.getSpec();
         final String seldonDeploymentId = deploymentDef.getId();
         List<BuildDeploymentResult> buildDeploymentResults = new ArrayList<>();
 
+        
+        final OwnerReference oref = new OwnerReference(
+				mldeployment.getApiVersion(), 
+				true, 
+				mldeployment.getKind(), 
+				mldeployment.getMetadata().getName(), 
+				mldeployment.getMetadata().getUid());
+        
         { // Add the main predictor
             PredictorDef mainPredictor = deploymentDef.getPredictor();
             boolean isCanary = false;

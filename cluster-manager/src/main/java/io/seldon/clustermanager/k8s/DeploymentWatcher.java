@@ -12,16 +12,17 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.google.protobuf.InvalidProtocolBufferException;
 
-import io.fabric8.kubernetes.api.model.OwnerReference;
 import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.ApiException;
 import io.kubernetes.client.Configuration;
@@ -30,7 +31,7 @@ import io.kubernetes.client.util.Config;
 import io.kubernetes.client.util.Watch;
 import io.seldon.clustermanager.component.KubernetesManager;
 import io.seldon.clustermanager.pb.ProtoBufUtils;
-import io.seldon.protos.DeploymentProtos.DeploymentDef;
+import io.seldon.protos.DeploymentProtos.MLDeployment;
 
 @Component
 public class DeploymentWatcher  {
@@ -49,13 +50,13 @@ public class DeploymentWatcher  {
 		Configuration.setDefaultApiClient(client);
 	}
 	
-	private void processWatch(DeploymentDef deploymentDef,CustomResourceDetails crd,String action) throws InvalidProtocolBufferException
+	private void processWatch(MLDeployment mldep,String action) throws InvalidProtocolBufferException
 	{
 		switch(action)
 		{
 		case "ADDED":
 		case "MODIFIED":
-			kubernetesManager.createOrReplaceSeldonDeployment(deploymentDef, crd);
+			kubernetesManager.createOrReplaceSeldonDeployment(mldep);
 			break;
 		case "DELETED":
 			// kubernetes >=1.8 has CRD garbage collection
@@ -64,6 +65,31 @@ public class DeploymentWatcher  {
 		default:
 			logger.error("Unknown action "+action);
 		}
+	}
+	
+	private String removeCreationTimestampField(String json)
+	{
+		try
+		{
+		ObjectMapper mapper = new ObjectMapper();
+	    JsonFactory factory = mapper.getFactory();
+	    JsonParser parser = factory.createParser(json);
+	    JsonNode obj = mapper.readTree(parser);
+	    if (obj.has("metadata") && obj.get("metadata").has("creationTimestamp"))
+	    {
+	    	((ObjectNode) obj.get("metadata")).remove("creationTimestamp");
+	    	return mapper.writeValueAsString(obj);
+	    }
+	    else
+	    	return json;
+		} catch (JsonParseException e) {
+			logger.error("Failed to remove creationTimestamp");
+			return json;
+		} catch (IOException e) {
+			logger.error("Failed to remove creationTimestamp");
+			return json;
+		}
+		
 	}
 	
 	public int watchSeldonMLDeployments(int resourceVersion,int resourceVersionProcessed) throws ApiException, JsonProcessingException, IOException
@@ -104,22 +130,12 @@ public class DeploymentWatcher  {
     	    	{
     	    		if (resourceVersionNew > maxResourceVersion)
         	    		maxResourceVersion = resourceVersionNew;
-    	    		OwnerReference oref = new OwnerReference(
-    	    				actualObj.get("apiVersion").asText(), 
-    	    				true, 
-    	    				actualObj.get("kind").asText(), 
-    	    				actualObj.get("metadata").get("name").asText(), 
-    	    				actualObj.get("metadata").get("uid").asText());
-    	    		JsonNode deploymentSpec = actualObj.get("spec");
-    	    		String jsonDeploymentSpec = mapper.writeValueAsString(deploymentSpec);
-    	    		logger.info("Resource version "+resourceVersionNew);
-    	    		logger.info(String.format("%s",jsonDeploymentSpec));
-    	    	
-    	    		DeploymentDef.Builder deploymentDefBuilder = DeploymentDef.newBuilder();
-    	    		ProtoBufUtils.updateMessageBuilderFromJson(deploymentDefBuilder, jsonDeploymentSpec);
+
+    	    		String jsonModified = removeCreationTimestampField(jsonInString);
+    	    		MLDeployment.Builder mlBuilder = MLDeployment.newBuilder();
+    	    		ProtoBufUtils.updateMessageBuilderFromJson(mlBuilder, jsonModified);
     	    		
-    	    		CustomResourceDetails crDetails = new CustomResourceDetails(resourceVersionNew, oref);
-    	    		this.processWatch(deploymentDefBuilder.build(), crDetails, item.type);
+    	    		this.processWatch(mlBuilder.build(), item.type);
     	    	}
     	    }
         }
