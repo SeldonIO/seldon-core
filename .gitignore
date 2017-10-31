@@ -26,6 +26,8 @@ api-frontend/tests/api-client-key.txt
 api-frontend/tests/api-client-secret.txt
 api-frontend/tests/python/prediction_pb2.py
 api-frontend/tests/python/seldonengine_pb2.py
+api-frontend/src/main/proto/k8s.io/
+api-frontend/src/main/proto/v1.proto
 cluster-manager/cluster-manager-client-secret.txt
 cluster-manager/cluster-manager.json
 api-frontend/target/
