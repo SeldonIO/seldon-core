@@ -1,7 +1,9 @@
 // [START declaration]
-syntax = "proto3";
+syntax = "proto2";
 package seldon.protos;
 // [END declaration]
+
+import "k8s.io/apimachinery/pkg/apis/meta/v1/generated.proto";
 
 // [START java_declaration]
 option java_package = "io.seldon.protos";
@@ -19,19 +21,19 @@ message EndpointDef {
         GRPC = 1;
     }
 
-    string service_host = 1;
-    int32 service_port = 2;
-    EndpointType type = 3;
+    optional string service_host = 1;
+    optional int32 service_port = 2;
+    optional EndpointType type = 3;
 }
 
 message ClusterResourcesDef {
 
-    string cpu = 1;
-    string gpu = 2;
-    string id = 3;
-    string image = 4;
-    string memory = 5;
-    string version = 6;
+    optional string cpu = 1;
+    optional string gpu = 2;
+    optional string id = 3;
+    optional string image = 4;
+    optional string memory = 5;
+    optional string version = 6;
 }
 
 message PredictiveUnitDef {
@@ -61,112 +63,62 @@ message PredictiveUnitDef {
     AVERAGE_COMBINER = 5;
   }
 
-    message ParamDef {
-        string name = 1;
-        ParamType type = 2;
-        string value = 3;
-    }
+  message ParamDef {
+    optional string name = 1;
+    optional ParamType type = 2;
+    optional string value = 3;
+  }
 
-    repeated string children = 1;
-    ClusterResourcesDef cluster_resources = 2;
-    EndpointDef endpoint = 3;
-    string name = 4;
-    string id = 5;
-    repeated ParamDef parameters = 6;
-    PredictiveUnitSubType subtype = 7;
-    PredictiveUnitType type = 8;
+  repeated string children = 1;
+  optional ClusterResourcesDef cluster_resources = 2;
+  optional EndpointDef endpoint = 3;
+  optional string name = 4;
+  optional string id = 5;
+  repeated ParamDef parameters = 6;
+  optional PredictiveUnitSubType subtype = 7;
+  optional PredictiveUnitType type = 8;
 }
 
 message PredictorDef {
-  string id = 1;
-  string name = 2;
-  string version = 3;
-  bool enabled = 4;
-  EndpointDef endpoint = 5;
+  optional string id = 1;
+  optional string name = 2;
+  optional string version = 3;
+  optional bool enabled = 4;
+  optional EndpointDef endpoint = 5;
   repeated string imagePullSecrets = 6;
   repeated PredictiveUnitDef predictiveUnits = 7;
-  int32 replicas = 8;
-  int32 replicasReady = 9;
-  string root = 10;
+  optional int32 replicas = 8;
+  optional int32 replicasReady = 9;
+  optional string root = 10;
   map<string,string> annotations = 11;
 }
 
 message DeploymentDef {
-  ClusterDef cluster = 1;
-  string id = 2;
-  string name = 3;
-  PredictorDef predictor = 4;
-  string uniqueName = 5;
-  string oauth_key = 6;
-  string oauth_secret = 7;
-  PredictorDef predictor_canary = 8;
+  optional ClusterDef cluster = 1;
+  optional string id = 2;
+  optional string name = 3;
+  optional PredictorDef predictor = 4;
+  optional string uniqueName = 5;
+  optional string oauth_key = 6;
+  optional string oauth_secret = 7;
+  optional PredictorDef predictor_canary = 8;
   map<string,string> annotations = 9;
 }
 
-message DeploymentResultDef {
-    DeploymentDef deployment = 1;
-}
-
-message StringListDef {
-    repeated string items = 1;
-}
-
-message CMStatusDef {
-
-    enum Status {
-        SUCCESS = 0;
-        FAILURE = 1;
-    }
-
-    int32 code = 1;
-    string info = 2;
-    string reason = 3;
-    Status status = 4;
-}
-
-message CMResultDef {
-
-    CMStatusDef cmstatus = 1;
-    oneof oneof_data {
-        DeploymentResultDef deployment_result = 2;
-        StringListDef string_list = 3;
-        string test_str = 4;
-        int32 test_num = 5;
-    }
-}
-
-message StringSecretDef {
-    string name = 1;
-    map<string, string> data = 2;
-    string type = 3;
-}
-
-message DockerRegistrySecretDef {
-
-    message DockerRegistryDetailsDef {
-        string url = 1;
-        string username = 2;
-        string password = 3;
-    }
-
-    string name = 1;
-    DockerRegistryDetailsDef dockerRegistryDetails = 2;
-}
-
 message KubeMeta {
-  string name = 1;
-  string resourceVersion = 2;
-  string uid = 3;
+  optional string name = 1;
+  optional string resourceVersion = 2;
+  optional string uid = 3;
   map<string,string> labels = 4;
   map<string,string> annotations = 5;
-  string namespace = 6;
+  optional string namespace = 6;
 }
 
 message MLDeployment {
-  string apiVersion = 1;
-  string kind = 2;
-  KubeMeta metadata = 3;
-  DeploymentDef spec = 4;
+  required string apiVersion = 1;
+  required string kind = 2;
+  optional k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta metadata = 3;
+  required DeploymentDef spec = 4;
 }
 
 

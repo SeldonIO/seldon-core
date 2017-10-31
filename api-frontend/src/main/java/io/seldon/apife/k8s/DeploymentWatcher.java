@@ -13,10 +13,12 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -29,6 +31,8 @@ import io.kubernetes.client.util.Config;
 import io.kubernetes.client.util.Watch;
 import io.seldon.apife.deployments.DeploymentsHandler;
 import io.seldon.apife.deployments.DeploymentsListener;
+import io.seldon.apife.pb.ProtoBufUtils;
+import io.seldon.protos.DeploymentProtos.MLDeployment;
 
 @Component
 public class DeploymentWatcher  implements DeploymentsHandler{
@@ -37,6 +41,7 @@ public class DeploymentWatcher  implements DeploymentsHandler{
 	
 	private ApiClient client;
 	private int resourceVersion = 0;
+	private int resourceVersionProcessed = 0;
 	private final Set<DeploymentsListener> listeners;
 	
 	public DeploymentWatcher() throws IOException
@@ -46,22 +51,50 @@ public class DeploymentWatcher  implements DeploymentsHandler{
 		Configuration.setDefaultApiClient(client);
 	}
 	
-	private void processWatch(String json,String action)
+	private void processWatch(MLDeployment mlDep,String action)
 	{
 		if (action.equals("ADDED"))
 			for(DeploymentsListener listener: listeners)
-				listener.deploymentAdded(json);
+				listener.deploymentAdded(mlDep);
 		else if (action.equals("MODIFIED"))
 			for(DeploymentsListener listener: listeners)
-				listener.deploymentUpdated(json);
+				listener.deploymentUpdated(mlDep);
 		else if (action.equals("DELETED"))
 			for(DeploymentsListener listener: listeners)
-				listener.deploymentRemoved(json);
+				listener.deploymentRemoved(mlDep);
 		else
 			logger.error("Unknown action "+action);
 	}
 	
-	public int watchSeldonMLDeployments(int resourceVersion) throws ApiException, JsonProcessingException, IOException
+	
+	
+	
+	private String removeCreationTimestampField(String json)
+	{
+		try
+		{
+		ObjectMapper mapper = new ObjectMapper();
+	    JsonFactory factory = mapper.getFactory();
+	    JsonParser parser = factory.createParser(json);
+	    JsonNode obj = mapper.readTree(parser);
+	    if (obj.has("metadata") && obj.get("metadata").has("creationTimestamp"))
+	    {
+	    	((ObjectNode) obj.get("metadata")).remove("creationTimestamp");
+	    	return mapper.writeValueAsString(obj);
+	    }
+	    else
+	    	return json;
+		} catch (JsonParseException e) {
+			logger.error("Failed to remove creationTimestamp");
+			return json;
+		} catch (IOException e) {
+			logger.error("Failed to remove creationTimestamp");
+			return json;
+		}
+		
+	}
+	
+	public int watchSeldonMLDeployments(int resourceVersion,int resourceVersionProcessed) throws ApiException, JsonProcessingException, IOException
 	{
 		String rs = null;
 		if (resourceVersion > 0)
@@ -72,11 +105,11 @@ public class DeploymentWatcher  implements DeploymentsHandler{
                 client,
                 api.listNamespacedCustomObjectCall("machinelearning.seldon.io", "v1alpha1", "default", "mldeployments", null, null, rs, true, null, null),
                 new TypeToken<Watch.Response<Object>>(){}.getType());
-
+		
 		int maxResourceVersion = resourceVersion;
 		try{
         for (Watch.Response<Object> item : watch) {
-        	Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        	Gson gson = new GsonBuilder().create();
     		String jsonInString = gson.toJson(item.object);
 	    	logger.info(String.format("%s\n : %s%n", item.type, jsonInString));
     		ObjectMapper mapper = new ObjectMapper();
@@ -85,20 +118,27 @@ public class DeploymentWatcher  implements DeploymentsHandler{
     	    JsonNode actualObj = mapper.readTree(parser);
     	    if (actualObj.has("kind") && actualObj.get("kind").asText().equals("Status"))
     	    {
-    	    	//Issue with resource version - add 1
-    	    	logger.warn("Possible old resource version found");
-    	    	return maxResourceVersion + 1;
+    	    	logger.warn("Possible old resource version found - resetting");
+    	    	return 0;
     	    }
     	    else
     	    {
     	    	int resourceVersionNew = actualObj.get("metadata").get("resourceVersion").asInt();
-    	    	if (resourceVersionNew > maxResourceVersion)
-    	    		maxResourceVersion = resourceVersionNew;
-    	    	JsonNode deploymentSpec = actualObj.get("spec");
-    	    	String jsonDeploymentSpec = mapper.writeValueAsString(deploymentSpec);
-    	    	logger.info("Resource version "+resourceVersionNew);
-    	    	logger.info(String.format("%s",jsonDeploymentSpec));
-    	    	this.processWatch(jsonDeploymentSpec, item.type);
+    	    	if (resourceVersionNew <= resourceVersionProcessed)
+    	    	{
+    	    		logger.warn("Looking at already processed request - skipping");
+    	    	}
+    	    	else
+    	    	{
+    	    		if (resourceVersionNew > maxResourceVersion)
+        	    		maxResourceVersion = resourceVersionNew;
+
+    	    		String jsonModified = removeCreationTimestampField(jsonInString);
+    	    		MLDeployment.Builder mlBuilder = MLDeployment.newBuilder();
+    	    		ProtoBufUtils.updateMessageBuilderFromJson(mlBuilder, jsonModified);
+    	    		
+    	    		this.processWatch(mlBuilder.build(), item.type);
+    	    	}
     	    }
         }
 		}
@@ -116,8 +156,17 @@ public class DeploymentWatcher  implements DeploymentsHandler{
 	
 	@Scheduled(fixedDelay = 5000)
     public void watch() throws JsonProcessingException, ApiException, IOException {
-        logger.info("The time is now {}", dateFormat.format(new Date()));
-        this.resourceVersion = this.watchSeldonMLDeployments(this.resourceVersion);
+		 logger.info("The time is now {}", dateFormat.format(new Date()));
+		 this.resourceVersion = this.watchSeldonMLDeployments(this.resourceVersion,this.resourceVersionProcessed);
+		 if (this.resourceVersion > this.resourceVersionProcessed)
+		 {
+			 logger.info("Updating processed resource version to "+resourceVersion);
+			 this.resourceVersionProcessed = this.resourceVersion;
+		 }
+		 else
+		 {
+			 logger.info("Not updating resourceVersion - current:"+this.resourceVersion+" Processed:"+this.resourceVersionProcessed);
+		 }
     }
 
 	

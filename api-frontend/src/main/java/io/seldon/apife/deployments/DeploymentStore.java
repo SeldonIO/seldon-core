@@ -1,6 +1,5 @@
 package io.seldon.apife.deployments;
 
-import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -8,14 +7,12 @@ import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.google.protobuf.util.JsonFormat;
-
 import io.seldon.apife.api.oauth.InMemoryClientDetailsService;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
+import io.seldon.protos.DeploymentProtos.MLDeployment;
 
 @Component
 public class DeploymentStore implements DeploymentsListener {
@@ -48,47 +45,26 @@ public class DeploymentStore implements DeploymentsListener {
 	 
 	 
 	 @Override
-	 public void deploymentAdded(String resource) {
-		logger.info("Detected new deployment: "+ resource);
-		try {
-			DeploymentDef.Builder deploymentDefBuilder = DeploymentDef.newBuilder();
-	        DeploymentDef deploymentDef = null;
-	        
-			JsonFormat.parser().ignoringUnknownFields().merge(resource, deploymentDefBuilder);
-			deploymentDef = deploymentDefBuilder.build();
-			
-			deploymentStore.put(deploymentDef.getOauthKey(), deploymentDef);
-			clientDetailsService.addClient(deploymentDef.getOauthKey(), deploymentDef.getOauthSecret());
+	 public void deploymentAdded(MLDeployment mlDep) {
+		 final DeploymentDef deploymentDef = mlDep.getSpec();
+		 
+		 deploymentStore.put(deploymentDef.getOauthKey(), deploymentDef);
+		 clientDetailsService.addClient(deploymentDef.getOauthKey(), deploymentDef.getOauthSecret());
 
-			logger.info("Succesfully added deployment "+deploymentDef.getId());
-
-        } catch (IOException | BeansException e) {
-            logger.error("Couldn't update deployment " +resource, e);
-        }
-		
+		 logger.info("Succesfully added or updated deployment "+deploymentDef.getId());
 	}
 	 
 	@Override
-	public void deploymentUpdated(String resource) {
-		logger.info("Deployment updated "+resource);
-		deploymentAdded(resource);
+	public void deploymentUpdated(MLDeployment mlDep) {
+		deploymentAdded(mlDep);
 	}
 	
 	@Override
-	public void deploymentRemoved(String resource) {
-		try {
-			DeploymentDef.Builder deploymentDefBuilder = DeploymentDef.newBuilder();
-	        DeploymentDef deploymentDef = null;
-	        
-			JsonFormat.parser().ignoringUnknownFields().merge(resource, deploymentDefBuilder);
-			deploymentDef = deploymentDefBuilder.build();
-
-			deploymentStore.remove(deploymentDef.getOauthKey());
-			clientDetailsService.removeClient(deploymentDef.getOauthKey());
-			logger.info("Removed deployment "+deploymentDef.getId());
-		 } catch (IOException | BeansException e) {
-	            logger.error("Couldn't delete deployment " +resource, e);
-	        }
+	public void deploymentRemoved(MLDeployment mlDep) {
+		 final DeploymentDef deploymentDef = mlDep.getSpec();
+		 deploymentStore.remove(deploymentDef.getOauthKey());
+		 clientDetailsService.removeClient(deploymentDef.getOauthKey());
+		 logger.info("Removed deployment "+deploymentDef.getId());
 	}
 		
 }

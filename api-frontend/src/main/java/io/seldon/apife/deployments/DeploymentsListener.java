@@ -1,5 +1,7 @@
 package io.seldon.apife.deployments;
 
+import io.seldon.protos.DeploymentProtos.MLDeployment;
+
 public interface DeploymentsListener {
 	 /**
      * Notification of a change in deployments. DO NOT BLOCK ON THIS METHOD! Long
@@ -8,7 +10,7 @@ public interface DeploymentsListener {
      * @param configKey
      * @param configValue
      */
-	void deploymentAdded(String resource);
-	void deploymentUpdated(String resource);
-	void deploymentRemoved(String resource);
+	void deploymentAdded(MLDeployment resource);
+	void deploymentUpdated(MLDeployment resource);
+	void deploymentRemoved(MLDeployment resource);
 }
