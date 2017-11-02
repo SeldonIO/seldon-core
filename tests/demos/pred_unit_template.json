@@ -1,0 +1,27 @@
+{
+    "children": ["1","2","3"],
+    "cluster_resources": {
+        "cpu": "",
+        "gpu": "",
+        "id": "2",
+        "image": "seldonio/mab_thomson_sampling",
+        "memory": "",
+        "version": "0.6"
+    },
+    "endpoint": {
+        "service_host": "-",
+        "service_port": -1,
+        "type": "GRPC"
+    },
+    "id": "0",
+    "name": "MAB",
+    "parameters": [
+	{"name":"router_id",
+	 "value":"0",
+	 "type":"STRING"},
+	{"name":"deployment_id",
+	 "value":"ts_test1",
+	 "type":"STRING"}],
+    "subtype": "MICROSERVICE",
+    "type": "ROUTER"
+}

@@ -3,19 +3,24 @@ import json
 from requests.auth import HTTPBasicAuth
 import numpy as np
 import threading
+import time
 
 CORE_ROOT = "/home/maximux/git/int/seldon-core"
 
 TESTS_DIR = CORE_ROOT + "/tests"
 CM_DIR = CORE_ROOT + "/cluster-manager"
 
+PRED_UNIT_TMP = './pred_unit_template.json'
+DEPL_TMP = './depl_template.json'
+DEFAULT_MODEL_IMAGE = "gcr.io/seldon-priv/mean_classifier:0.8"
+
 def get_config(tests_dir=TESTS_DIR,cm_dir=CM_DIR):
     
     with open(TESTS_DIR+"/CLUSTER_MANAGER_ENDPOINT",'r') as f:
         cm_endpoint = f.read()[:-1]
 
-    with open(CM_DIR+"/cluster-manager-client-secret.txt",'r') as f:
-        cm_client_secret = f.readline()[:-1]
+
+    cm_client_secret = "mysecret"
 
     with open(TESTS_DIR+"/API_ENDPOINT",'r') as f:
         api_endpoint  = f.read()[:-1]
@@ -28,6 +33,76 @@ def get_config(tests_dir=TESTS_DIR,cm_dir=CM_DIR):
     
     return config
 
+def get_template(path):
+    template = json.load(open(path,'r'))
+    return template
+
+def _to_dict(list_arg):
+    if list_arg is None:
+        return {}
+    else:
+        return {i:v for i,v in enumerate(list_arg)}
+    
+def build_deployment(n_models,router_image=None,name="Deployment",id="depl_id_0",key="key",secret="secret",project_name="MAB_demos",model_images=None,model_names=None):
+    
+    model_names = _to_dict(model_names)
+    model_images = _to_dict(model_images)
+    
+    deployment = get_template(DEPL_TMP)
+    deployment["id"] = id
+    deployment["uniqueName"] = name + '_' + id
+    deployment["name"] = "deployment_"+name
+    deployment["oauth_key"] = key
+    deployment["oauth_secret"] = secret
+    deployment["predictor"]["imagePullSecrets"] = ["gcr-seldon-priv"]
+    deployment["predictor"]["name"] = "predictor_"+name
+    deployment["annotations"]["project_name"] = project_name
+    deployment["predictor"]["annotations"]["project_name"] = project_name
+    
+    
+    
+    router = get_template(PRED_UNIT_TMP)
+    router["children"] = [str(i+1) for i in range(n_models)]
+    router["name"] = "router"
+    router["type"] = "ROUTER"
+    router["id"] = "0"
+    if router_image is not None:
+        # MAB
+        router["cluster_resources"]["image"] = router_image.split(':')[0]
+        router["cluster_resources"]["version"] = router_image.split(':')[1]
+        router["cluster_resources"]["id"] = "2"
+        router["subtype"] = "MICROSERVICE"
+        router["parameters"] = [
+            {"name":"router_id", "type":"STRING","value":"0"},
+            {"name":"deployment_id","type":"STRING","value":id},
+            {"name":"n_branches","type":"INT","value":n_models}
+        ]
+    else:
+        # AB test
+        router["cluster_resources"] = {}
+        router["subtype"] = "RANDOM_ABTEST"
+        router["parameters"] = [
+            {"name":"ratioA", "type":"FLOAT","value":"0.5"}
+        ]
+        
+    deployment["predictor"]["predictiveUnits"].append(router)
+    
+    for i in range(n_models):
+        model = get_template(PRED_UNIT_TMP)
+        model["children"] = []
+        model["id"] = str(i+1)
+        model["type"] = "MODEL"
+        model["endpoint"]["type"] = "REST"
+        model["subtype"] = "MICROSERVICE"
+        model["parameters"] = []
+        model["cluster_resources"]["image"] = model_images.get(i,DEFAULT_MODEL_IMAGE).split(":")[0]
+        model["cluster_resources"]["version"] = model_images.get(i,DEFAULT_MODEL_IMAGE).split(":")[1]
+        model["cluster_resources"]["id"] = str(i+2)
+        model["name"] = model_names.get(i,"model_{}".format(i))
+        
+        deployment["predictor"]["predictiveUnits"].append(model)
+        
+    return deployment
 
 def feedback_to_tensor(feedback):
     ndarray = np.array(feedback["response"]["response"]["ndarray"])
@@ -121,10 +196,12 @@ class BernouilliRouting(RewardModel):
     def __init__(self,probas):
         self.n_models = len(probas)
         self.params = {'proba_model_{}'.format(i):p for i,p in enumerate(probas)}
+        self.probas = probas
         
     def get_reward(self,x,y,prediction,routing):
-        probas = [self.params['proba_model_{}'.format(i)] for i in range(self.n_models)]
-        return float(np.random.random()<probas[routing])
+        # probas = [self.params['proba_model_{}'.format(i)] for i in range(self.n_models)]
+        
+        return float(np.random.random()<self.probas[routing])
     
 class XYGenerator(object):
     def __init__(self,**kwargs):
