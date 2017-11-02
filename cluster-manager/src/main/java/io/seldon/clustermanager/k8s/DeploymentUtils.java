@@ -296,7 +296,7 @@ public class DeploymentUtils {
                     .endReadinessProbe()
                     .withNewLivenessProbe()
                 		.withHttpGet(new HTTPGetActionBuilder().withNewPort(management_port).withPath("/ping").build())
-                		.withInitialDelaySeconds(20)
+                		.withInitialDelaySeconds(60)
                 		.withFailureThreshold(1)
                     	.withSuccessThreshold(1)
                 		.withPeriodSeconds(5)
