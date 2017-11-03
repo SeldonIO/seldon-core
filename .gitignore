@@ -48,3 +48,9 @@ kafka/tests/src/seldonengine_pb2.py
 monitoring/alertmanager/config.yml
 monitoring/grafana/auth/grafana-prom-admin-password.txt
 monitoring/glusterfs-volume/_glusterfs.json
+
+*pb2.py
+*pb2_grpc.py
+wrappers/**/*.proto
+pyseldon/**/*.proto
+**/*/.ipynb_checkpoints
