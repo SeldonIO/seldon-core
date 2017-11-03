@@ -1,0 +1,85 @@
+// [START declaration]
+syntax = "proto2";
+package seldon.protos;
+// [END declaration]
+
+import "k8s.io/apimachinery/pkg/apis/meta/v1/generated.proto";
+
+// [START java_declaration]
+option java_package = "io.seldon.protos";
+option java_outer_classname = "DeploymentProtos";
+// [END java_declaration]
+
+// [START messages]
+
+message PredictiveUnitDef {
+
+  enum PredictiveUnitType {
+    UNKNOWN_TYPE = 0;
+    ROUTER = 1;
+    COMBINER = 2;
+    MODEL = 3;
+    TRANSFORMER = 4;
+  }
+
+  enum PredictiveUnitSubType {
+    UNKNOWN_SUBTYPE = 0;
+    MICROSERVICE = 1;
+    SIMPLE_MODEL = 2;
+    SIMPLE_ROUTER = 3;
+    RANDOM_ABTEST = 4;
+    AVERAGE_COMBINER = 5;
+  }
+
+    enum EndpointType {
+        REST = 0;
+        GRPC = 1;
+    }
+
+  required string nodeId;
+  repeated string childrenNodeIds = 1;
+  required PredictiveUnitType type = 8;
+  optional PredictiveUnitSubType subtype = 7;
+  optional EndpointType protocol = 3;
+  optional k8s.io.apimachinery.pkg.apis.v1.Container spec;
+}
+
+message PredictorDef {
+  optional k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta metadata = 1;
+  optional k8s.io.apimachinery.pkg.apis.v1.ContainerPort port = 2; //needed ?
+  repeated k8s.io.apimachinery.pkg.apis.v1.LocalObjectReference imagePullSecrets = 3;
+  repeated PredictiveUnitDef predictiveUnits = 4;
+  optional int32 replicas = 5;
+  optional string rootNodeId = 6;//needed - can be found?
+}
+
+message DeploymentDef {
+  optional string name = 2;
+  repeated PredictorDef predictors = 4;
+  optional string oauth_key = 6;
+  optional string oauth_secret = 7;
+  map<string,string> annotations = 9;
+}
+
+
+message PredictorStatus {
+  required string name;
+  required string state; 
+}
+
+message DeploymentStatus {
+  required string state; 
+
+}
+
+message MLDeployment {
+  required string apiVersion = 1;
+  required string kind = 2;
+  optional k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta metadata = 3;
+  required DeploymentDef spec = 4;
+  optional DeploymentStatus status = 5;
+}
+
+
+// [END messages]
+

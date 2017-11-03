@@ -105,15 +105,6 @@ message DeploymentDef {
   map<string,string> annotations = 9;
 }
 
-message KubeMeta {
-  optional string name = 1;
-  optional string resourceVersion = 2;
-  optional string uid = 3;
-  map<string,string> labels = 4;
-  map<string,string> annotations = 5;
-  optional string namespace = 6;
-}
-
 message MLDeployment {
   required string apiVersion = 1;
   required string kind = 2;
