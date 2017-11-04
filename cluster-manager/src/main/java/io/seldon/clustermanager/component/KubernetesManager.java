@@ -11,8 +11,4 @@ public interface KubernetesManager extends AppComponent {
 
     public DeploymentDef createOrReplaceSeldonDeployment(MLDeployment mldeployment);
 
-    public DeploymentDef getSeldonDeployment(DeploymentDef deploymentDef);
-
-    public void deleteSeldonDeployment(DeploymentDef deploymentDef);
-
 }

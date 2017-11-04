@@ -49,7 +49,6 @@ public class KM_DeleteDeploymentExample {
             e.printStackTrace();
         }
 
-        kubernetesManager.deleteSeldonDeployment(exampleDeploymentDef);
 
         ctx.close();
     }

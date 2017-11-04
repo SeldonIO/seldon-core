@@ -52,6 +52,9 @@ public class DeploymentUtils {
         public final String trackLabelName = "seldon-track";
         public final String trackLabelValue;
         public final boolean serviceNeeded;
+        public final static String seldonLabelName = "seldon-type";
+        public final static String seldonLabelMlDepValue = "mldeployment";
+        
 
         public ServiceSelectorDetails(String seldonDeploymentId, boolean isCanary) {
             //@formatter:off
@@ -382,11 +385,19 @@ public class DeploymentUtils {
 
         //@formatter:off
         Deployment deployment = new DeploymentBuilder()
-            .withNewMetadata().withName(kubernetesDeploymentId).addToLabels("seldon-deployment-id", seldonDeploymentId).withOwnerReferences(orefList).endMetadata()
+            .withNewMetadata()
+            	.withName(kubernetesDeploymentId)
+            	.addToLabels(serviceSelectorDetails.appLabelName, serviceSelectorDetails.appLabelValue)            	
+            	.addToLabels("seldon-deployment-id", seldonDeploymentId)
+            	.addToLabels("app", serviceSelectorDetails.appLabelValue)            	
+            	.addToLabels("version", predictorDef.getVersion())                    	            	
+            	.addToLabels(ServiceSelectorDetails.seldonLabelName, ServiceSelectorDetails.seldonLabelMlDepValue)
+            	.withOwnerReferences(orefList)
+            .endMetadata()
             .withNewSpec().withReplicas(replica_number)
                 .withNewTemplate()
                     .withNewMetadata()
-                    	.addToLabels(serviceSelectorDetails.appLabelName, serviceSelectorDetails.appLabelValue)
+                	.addToLabels(serviceSelectorDetails.appLabelName, serviceSelectorDetails.appLabelValue)
                     	.addToLabels("app", serviceSelectorDetails.appLabelValue)
                     	.addToLabels("version", predictorDef.getVersion())                    	
                         .addToLabels(serviceSelectorDetails.trackLabelName, serviceSelectorDetails.trackLabelValue)
@@ -482,36 +493,6 @@ public class DeploymentUtils {
             logger.debug(String.format("Deleted kubernetes replicaSet [%s]", rsmsg));
         }
 
-    }
-
-    public static DeploymentDef getDeployments(KubernetesClient kubernetesClient, String namespace_name, DeploymentDef deploymentDef) {
-
-        DeploymentDef.Builder resultingDeploymentDefBuilder = DeploymentDef.newBuilder(deploymentDef);
-
-        final String seldonDeploymentId = deploymentDef.getId();
-
-        Consumer<Boolean> updateReplicasReady = (isCanary) -> {
-            final String kubernetesDeploymentId = getKubernetesDeploymentId(seldonDeploymentId, isCanary);
-            int replicasReady = 0;
-            Deployment deployment = kubernetesClient.extensions().deployments().inNamespace(namespace_name).withName(kubernetesDeploymentId).get();
-            if (deployment != null) {
-                Integer readyReplicasValue = (Integer) deployment.getStatus().getAdditionalProperties().get("readyReplicas");
-                if (readyReplicasValue != null) {
-                    replicasReady = readyReplicasValue;
-                }
-            }
-
-            PredictorDef.Builder predictorDefBuilder = (isCanary) ? resultingDeploymentDefBuilder.getPredictorCanaryBuilder()
-                    : resultingDeploymentDefBuilder.getPredictorBuilder();
-            predictorDefBuilder.setReplicasReady(replicasReady);
-        };
-
-        updateReplicasReady.accept(false); // for main predictor
-        if (deploymentDef.hasField(deploymentDef.getDescriptorForType().findFieldByNumber(DeploymentDef.PREDICTOR_CANARY_FIELD_NUMBER))) {
-            updateReplicasReady.accept(true); // for canary predictor
-        }
-
-        return resultingDeploymentDefBuilder.build();
     }
 
     private static String extractPredictiveUnitParametersAsJson(PredictiveUnitDef predictiveUnitDef) {
