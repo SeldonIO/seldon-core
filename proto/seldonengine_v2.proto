@@ -4,6 +4,7 @@ package seldon.protos;
 // [END declaration]
 
 import "k8s.io/apimachinery/pkg/apis/meta/v1/generated.proto";
+import "v1.proto";
 
 // [START java_declaration]
 option java_package = "io.seldon.protos";
@@ -12,7 +13,8 @@ option java_outer_classname = "DeploymentProtos";
 
 // [START messages]
 
-message PredictiveUnitDef {
+
+message PredictionGraph {
 
   enum PredictiveUnitType {
     UNKNOWN_TYPE = 0;
@@ -36,40 +38,53 @@ message PredictiveUnitDef {
         GRPC = 1;
     }
 
-  required string nodeId;
-  repeated string childrenNodeIds = 1;
-  required PredictiveUnitType type = 8;
-  optional PredictiveUnitSubType subtype = 7;
-  optional EndpointType protocol = 3;
-  optional k8s.io.apimachinery.pkg.apis.v1.Container spec;
+  required string name = 1;//must match container name of component if subtype microservice
+  repeated PredictionGraph children = 2;
+  required PredictiveUnitType type = 3;
+  required PredictiveUnitSubType subtype = 4;
+  optional EndpointType protocol = 5;
 }
 
+message EndpointDef {
+
+  enum EndpointType {
+    REST = 0;
+    GRPC = 1;
+  }
+
+  optional string service_host = 1;
+  optional int32 service_port = 2;
+  optional EndpointType type = 3;
+}
+
+
 message PredictorDef {
-  optional k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta metadata = 1;
-  optional k8s.io.apimachinery.pkg.apis.v1.ContainerPort port = 2; //needed ?
-  repeated k8s.io.apimachinery.pkg.apis.v1.LocalObjectReference imagePullSecrets = 3;
-  repeated PredictiveUnitDef predictiveUnits = 4;
+  required string name = 1;
+  required PredictionGraph graphSpec = 2;
+  optional k8s.io.api.core.v1.PodTemplateSpec componentSpec = 3;
+  optional EndpointDef endpoint = 4;
   optional int32 replicas = 5;
-  optional string rootNodeId = 6;//needed - can be found?
 }
 
 message DeploymentDef {
-  optional string name = 2;
-  repeated PredictorDef predictors = 4;
-  optional string oauth_key = 6;
-  optional string oauth_secret = 7;
-  map<string,string> annotations = 9;
+  optional string name = 1;
+  repeated PredictorDef predictors = 2;
+  optional string oauth_key = 3;
+  optional string oauth_secret = 4;
+  map<string,string> annotations = 5;
 }
 
 
 message PredictorStatus {
-  required string name;
-  required string state; 
+  required string name = 1;
+  required string status = 2; 
+  optional string description = 3; 
 }
 
 message DeploymentStatus {
-  required string state; 
-
+  required string state = 1; 
+  optional string description = 2; 
+  repeated PredictorStatus predictorStatus = 3;
 }
 
 message MLDeployment {
