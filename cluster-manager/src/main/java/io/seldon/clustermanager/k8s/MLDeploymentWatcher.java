@@ -75,11 +75,11 @@ public class MLDeploymentWatcher  {
 	
 	private void processWatch(MLDeployment mldep,String action) throws InvalidProtocolBufferException
 	{
-		MLDeployment mlDepUpdated = addStatusIfNeeded(mldep);
 		switch(action)
 		{
 		case "ADDED":
 		case "MODIFIED":
+			MLDeployment mlDepUpdated = addStatusIfNeeded(mldep);
 			mlCache.put(mlDepUpdated);
 			kubernetesManager.createOrReplaceSeldonDeployment(mlDepUpdated);
 			break;
