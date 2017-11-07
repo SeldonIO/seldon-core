@@ -32,7 +32,7 @@ public class APIException extends RuntimeException {
 		ENGINE_MICROSERVICE_ERROR(203,"Microservice error",500),
 		ENGINE_INVALID_ABTEST(204,"No Running Deployment",500),
 		ENGINE_INVALID_COMBINER_RESPONSE(204,"Invalid number of predictions from combiner",500),
-		ENGINE_INTERTUPTED(205,"API call interrupted",500),
+		ENGINE_INTERRUPTED(205,"API call interrupted",500),
 		ENGINE_EXECUTION_FAILURE(206,"Execution failure",500);		
 		
 		int id;

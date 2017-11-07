@@ -85,7 +85,7 @@ public class RestClientController {
 
 	
 	@RequestMapping(value = "/api/v0.1/predictions", method = RequestMethod.POST, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
-    public ResponseEntity<String> predictions(RequestEntity<String> requestEntity) 
+    public ResponseEntity<String> predictions(RequestEntity<String> requestEntity)
 	{
 		PredictionRequestDef request;
 		try
@@ -107,9 +107,15 @@ public class RestClientController {
 			return new ResponseEntity<String>(json,HttpStatus.OK);
 		}
 		 catch (InterruptedException e) {
-			throw new APIException(ApiExceptionType.ENGINE_INTERTUPTED,e.getMessage());
+			throw new APIException(ApiExceptionType.ENGINE_INTERRUPTED,e.getMessage());
 		} catch (ExecutionException e) {
-			throw new APIException(ApiExceptionType.ENGINE_EXECUTION_FAILURE,e.getMessage());
+			if (e.getCause().getClass() == APIException.class){
+				throw (APIException) e.getCause();
+			}
+			else
+			{
+				throw new APIException(ApiExceptionType.ENGINE_EXECUTION_FAILURE,e.getMessage());
+			}
 		} catch (InvalidProtocolBufferException e) {
 			throw new APIException(ApiExceptionType.ENGINE_INVALID_JSON,"");
 		} 
@@ -152,7 +158,7 @@ public class RestClientController {
 			predictionService.sendFeedback(feedback);
 		}
 		 catch (InterruptedException e) {
-			throw new APIException(ApiExceptionType.ENGINE_INTERTUPTED,e.getMessage());
+			throw new APIException(ApiExceptionType.ENGINE_INTERRUPTED,e.getMessage());
 		} catch (ExecutionException e) {
 			throw new APIException(ApiExceptionType.ENGINE_EXECUTION_FAILURE,e.getMessage());
 		}
