@@ -88,9 +88,8 @@ message PredictorDef {
   repeated string imagePullSecrets = 6;
   repeated PredictiveUnitDef predictiveUnits = 7;
   optional int32 replicas = 8;
-  optional int32 replicasReady = 9;
-  optional string root = 10;
-  map<string,string> annotations = 11;
+  optional string root = 9;
+  map<string,string> annotations = 10;
 }
 
 message DeploymentDef {
@@ -105,11 +104,17 @@ message DeploymentDef {
   map<string,string> annotations = 9;
 }
 
+message MLDeploymentStatus {
+  optional int32 predictorReplicasReady = 1;
+  optional int32 canaryReplicasReady = 2;
+}
+
 message MLDeployment {
   required string apiVersion = 1;
   required string kind = 2;
   optional k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta metadata = 3;
   required DeploymentDef spec = 4;
+  optional MLDeploymentStatus status = 5;
 }
 
 

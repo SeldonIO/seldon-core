@@ -48,22 +48,7 @@ public class KM_GetDeploymentExample {
             e.printStackTrace();
         }
 
-        DeploymentDef resultingDeploymentDef = kubernetesManager.getSeldonDeployment(exampleDeploymentDef);
-        try {
-            System.out.println("-------------------------------------------------------------------------------");
-            System.out.println("resultingDeploymentDef:");
-            String s = ProtoBufUtils.toJson(resultingDeploymentDef, true);
-            System.out.println(s);
-            for (PredictiveUnitDef predictiveUnitDef : resultingDeploymentDef.getPredictor().getPredictiveUnitsList()) {
-                ClusterResourcesDef clusterResourcesDef = predictiveUnitDef.getClusterResources();
-                String cr = ProtoBufUtils.toJson(clusterResourcesDef, true);
-                System.out.println(cr);
-
-            }
-            System.out.println("-------------------------------------------------------------------------------");
-        } catch (InvalidProtocolBufferException e) {
-            e.printStackTrace();
-        }
+        
 
         ctx.close();
     }
