@@ -14,9 +14,9 @@ import com.google.protobuf.Value;
 import io.seldon.engine.exception.APIException;
 import io.seldon.protos.PredictionProtos.DefaultDataDef;
 import io.seldon.protos.PredictionProtos.DefaultDataDef.DataOneofCase;
-import io.seldon.protos.PredictionProtos.PredictionResponseDef;
-import io.seldon.protos.PredictionProtos.PredictionRequestDef;
-import io.seldon.protos.PredictionProtos.PredictionResponseMetaDef;
+import io.seldon.protos.PredictionProtos.ResponseDef;
+import io.seldon.protos.PredictionProtos.RequestDef;
+import io.seldon.protos.PredictionProtos.MetaDef;
 import io.seldon.protos.PredictionProtos.Tensor;
 
 import io.seldon.engine.predictors.PredictorUtils;
@@ -27,7 +27,7 @@ public class AverageCombinerUnit extends CombinerUnit{
 	public AverageCombinerUnit() {}
 
 	@Override
-	public PredictionResponseDef backwardPass(List<PredictionResponseDef> inputs, PredictionRequestDef request, PredictiveUnitState state){
+	public ResponseDef backwardPass(List<ResponseDef> inputs, RequestDef request, PredictiveUnitState state){
 		
 		if (inputs.size()==0){
 			throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_COMBINER_RESPONSE, String.format("Combiner received no inputs"));
@@ -44,9 +44,9 @@ public class AverageCombinerUnit extends CombinerUnit{
 		}
 		
 		INDArray currentSum = Nd4j.zeros(shape[0],shape[1]);
-		PredictionResponseDef.Builder respBuilder = PredictionResponseDef.newBuilder();
+		ResponseDef.Builder respBuilder = ResponseDef.newBuilder();
 		
-		for (Iterator<PredictionResponseDef> i = inputs.iterator(); i.hasNext();)
+		for (Iterator<ResponseDef> i = inputs.iterator(); i.hasNext();)
 		{
 			DefaultDataDef inputData = i.next().getResponse();
 			int[] inputShape = PredictorUtils.getShape(inputData);
@@ -75,7 +75,7 @@ public class AverageCombinerUnit extends CombinerUnit{
 		return respBuilder.build();
 	}
 	
-	public PredictionResponseDef backwardPassOld(List<PredictionResponseDef> inputs, PredictionRequestDef request, PredictiveUnitState state){
+	public ResponseDef backwardPassOld(List<ResponseDef> inputs, RequestDef request, PredictiveUnitState state){
 		
 		Integer batchLength = 0;
 		Integer valuesLength = 0;
@@ -84,10 +84,10 @@ public class AverageCombinerUnit extends CombinerUnit{
 		Double[] averages = null;
 		DataOneofCase dataType = DataOneofCase.DATAONEOF_NOT_SET;
 		
-		PredictionResponseDef.Builder respBuilder = PredictionResponseDef.newBuilder();
-		PredictionResponseMetaDef.Builder metaBuilder = PredictionResponseMetaDef.newBuilder();
+		ResponseDef.Builder respBuilder = ResponseDef.newBuilder();
+		MetaDef.Builder metaBuilder = MetaDef.newBuilder();
 		DefaultDataDef.Builder dataBuilder = DefaultDataDef.newBuilder();
-		for (PredictionResponseDef predRet : inputs){
+		for (ResponseDef predRet : inputs){
 //			metaBuilder.addAllModel(predRet.getMeta().getModelList());
 			int bLength = 0;
 			int vLength = 0;
@@ -118,7 +118,7 @@ public class AverageCombinerUnit extends CombinerUnit{
 				averages = new Double[batchLength*valuesLength];
 				Arrays.fill(averages, 0.);
 				respBuilder.setMeta(predRet.getMeta()).setStatus(predRet.getStatus());
-				dataBuilder.addAllFeatures(predRet.getResponse().getFeaturesList());
+				dataBuilder.addAllNames(predRet.getResponse().getNamesList());
 				initialised = true;
 			}
 			else

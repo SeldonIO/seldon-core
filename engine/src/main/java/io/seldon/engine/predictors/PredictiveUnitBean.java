@@ -17,10 +17,10 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Tag;
 import io.seldon.engine.service.InternalPredictionService;
-import io.seldon.protos.PredictionProtos.PredictionFeedbackDef;
-import io.seldon.protos.PredictionProtos.PredictionRequestDef;
-import io.seldon.protos.PredictionProtos.PredictionResponseDef;
-import io.seldon.protos.PredictionProtos.PredictionResponseMetaDef;
+import io.seldon.protos.PredictionProtos.FeedbackDef;
+import io.seldon.protos.PredictionProtos.RequestDef;
+import io.seldon.protos.PredictionProtos.ResponseDef;
+import io.seldon.protos.PredictionProtos.MetaDef;
 
 @Component
 public abstract class PredictiveUnitBean {
@@ -35,7 +35,7 @@ public abstract class PredictiveUnitBean {
 	}
 	
 	@Async
-	public void sendFeedback(PredictionFeedbackDef feedback, PredictiveUnitState state){
+	public void sendFeedback(FeedbackDef feedback, PredictiveUnitState state){
 		System.out.println("NODE " + state.name + ": entered feedback");
 		List<PredictiveUnitState> children = state.children;
 		if (feedback.getResponse().getMeta().getRoutingMap().get(state.id)!=null){
@@ -49,20 +49,20 @@ public abstract class PredictiveUnitBean {
 		}
 	}
 	
-	protected void doSendFeedback(PredictionFeedbackDef feedback, PredictiveUnitState state){
+	protected void doSendFeedback(FeedbackDef feedback, PredictiveUnitState state){
 		return;
 	}
 	
-	protected void doStoreFeedbackMetrics(PredictionFeedbackDef feedback, PredictiveUnitState state){
+	protected void doStoreFeedbackMetrics(FeedbackDef feedback, PredictiveUnitState state){
 		return;
 	}
 	
 	
-	public PredictionResponseDef predict(PredictionRequestDef request, PredictiveUnitState state) throws InterruptedException, ExecutionException{
+	public ResponseDef predict(RequestDef request, PredictiveUnitState state) throws InterruptedException, ExecutionException{
 		Map<String,Integer> routingDict = new HashMap<String,Integer>();
-		Future<PredictionResponseDef> ret = state.predictiveUnitBean.predict(request, state, routingDict);
-		PredictionResponseDef response = ret.get();
-//		PredictionResponseMetaDef meta = response.getMeta();
+		Future<ResponseDef> ret = state.predictiveUnitBean.predict(request, state, routingDict);
+		ResponseDef response = ret.get();
+//		MetaDef meta = response.getMeta();
 //		Map<String, Integer> currentRouting = meta.getRoutingMap();
 //		Iterator<Entry<String,Integer>> it = routingDict.entrySet().iterator();
 //	    while (it.hasNext()) {
@@ -70,23 +70,23 @@ public abstract class PredictiveUnitBean {
 //	        currentRouting.put(pair.getKey(), pair.getValue());
 //	        it.remove(); // avoids a ConcurrentModificationException
 //	    }
-//	    FieldDescriptor field = PredictionResponseMetaDef.getDescriptor().findFieldByNumber(PredictionResponseMetaDef.ROUTING_FIELD_NUMBER);
-		PredictionResponseDef.Builder builder = PredictionResponseDef
+//	    FieldDescriptor field = MetaDef.getDescriptor().findFieldByNumber(MetaDef.ROUTING_FIELD_NUMBER);
+		ResponseDef.Builder builder = ResponseDef
 	    		.newBuilder(response)
-	    		.setMeta(PredictionResponseMetaDef
+	    		.setMeta(MetaDef
 	    				.newBuilder(response.getMeta()).putAllRouting(routingDict));
 		return builder.build();
 	}
 	
 	@Async
-	protected Future<PredictionResponseDef> predict(PredictionRequestDef request, PredictiveUnitState state, Map<String,Integer> routingDict) throws InterruptedException, ExecutionException{
+	protected Future<ResponseDef> predict(RequestDef request, PredictiveUnitState state, Map<String,Integer> routingDict) throws InterruptedException, ExecutionException{
 		System.out.println("NODE " + state.name + ": entered predict");
 		List<PredictiveUnitState> routing = forwardPass(request,state,routingDict);
 		System.out.println("NODE " + state.name + ": got routing");
 		
-		List<PredictionResponseDef> inputs = new ArrayList<>();
+		List<ResponseDef> inputs = new ArrayList<>();
 		
-		List<Future<PredictionResponseDef>> futureInputs = new ArrayList<>();
+		List<Future<ResponseDef>> futureInputs = new ArrayList<>();
 			
 		for (PredictiveUnitState route : routing)
 		{
@@ -95,7 +95,7 @@ public abstract class PredictiveUnitBean {
 		}
 		System.out.println("NODE " + state.name + ": called child futures");
 		
-		for (Future<PredictionResponseDef> futureInput : futureInputs)
+		for (Future<ResponseDef> futureInput : futureInputs)
 		{
 			inputs.add(futureInput.get());
 		}
@@ -105,11 +105,11 @@ public abstract class PredictiveUnitBean {
 		return new AsyncResult<>(backwardPass(inputs,request,state));
 	}
 	
-	protected List<PredictiveUnitState> forwardPass(PredictionRequestDef request, PredictiveUnitState data, Map<String,Integer> routingDict){
+	protected List<PredictiveUnitState> forwardPass(RequestDef request, PredictiveUnitState data, Map<String,Integer> routingDict){
 		return null;
 	}
 	
-	protected PredictionResponseDef backwardPass(List<PredictionResponseDef> inputs, PredictionRequestDef request, PredictiveUnitState data){
+	protected ResponseDef backwardPass(List<ResponseDef> inputs, RequestDef request, PredictiveUnitState data){
 		return null;
 	}
 }

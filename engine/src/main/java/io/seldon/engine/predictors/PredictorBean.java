@@ -12,9 +12,9 @@ import org.springframework.stereotype.Component;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
 import io.seldon.protos.DeploymentProtos.PredictiveUnitDef;
 import io.seldon.protos.DeploymentProtos.PredictorDef;
-import io.seldon.protos.PredictionProtos.PredictionFeedbackDef;
-import io.seldon.protos.PredictionProtos.PredictionRequestDef;
-import io.seldon.protos.PredictionProtos.PredictionResponseDef;
+import io.seldon.protos.PredictionProtos.FeedbackDef;
+import io.seldon.protos.PredictionProtos.RequestDef;
+import io.seldon.protos.PredictionProtos.ResponseDef;
 
 
 @Component
@@ -42,13 +42,13 @@ public class PredictorBean {
     }
    
 	
-	public PredictionResponseDef predict(PredictionRequestDef request, PredictorState predictorState) throws InterruptedException, ExecutionException
+	public ResponseDef predict(RequestDef request, PredictorState predictorState) throws InterruptedException, ExecutionException
 	{
 		PredictiveUnitState rootState = predictorState.rootState;
 		return rootState.predictiveUnitBean.predict(request, rootState);
 	}
 	
-	public void sendFeedback(PredictionFeedbackDef feedback, PredictorState predictorState) throws InterruptedException, ExecutionException
+	public void sendFeedback(FeedbackDef feedback, PredictorState predictorState) throws InterruptedException, ExecutionException
 	{
 		PredictiveUnitState rootState = predictorState.rootState;
 		rootState.predictiveUnitBean.sendFeedback(feedback, rootState);

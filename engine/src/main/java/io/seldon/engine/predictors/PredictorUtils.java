@@ -26,8 +26,8 @@ public class PredictorUtils {
 			DefaultDataDef.Builder dataBuilder = DefaultDataDef.newBuilder();
 					
 			int index=0;
-			for (Iterator<String> i = data.getFeaturesList().iterator(); i.hasNext();){
-				dataBuilder.setFeatures(index, i.next());
+			for (Iterator<String> i = data.getNamesList().iterator(); i.hasNext();){
+				dataBuilder.setNames(index, i.next());
 				index++;
 			}
 			
@@ -66,8 +66,8 @@ public class PredictorUtils {
 			Tensor.Builder tBuilder = Tensor.newBuilder().addShape(bLength).addShape(vLength);
 			
 			int index=0;
-			for (Iterator<String> i = data.getFeaturesList().iterator(); i.hasNext();){
-				dataBuilder.setFeatures(index, i.next());
+			for (Iterator<String> i = data.getNamesList().iterator(); i.hasNext();){
+				dataBuilder.setNames(index, i.next());
 				index++;
 			}
 			
@@ -150,7 +150,7 @@ public class PredictorUtils {
 	public static DefaultDataDef updateData(DefaultDataDef oldData, INDArray newData){
 		DefaultDataDef.Builder dataBuilder = DefaultDataDef.newBuilder();
 		
-		dataBuilder.addAllFeatures(oldData.getFeaturesList());
+		dataBuilder.addAllNames(oldData.getNamesList());
 		
 //		int index=0;
 //		for (Iterator<String> i = oldData.getFeaturesList().iterator(); i.hasNext();){
