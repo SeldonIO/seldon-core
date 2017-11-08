@@ -52,7 +52,7 @@ message RequestDef {
 // [START Meta]
 
 message MetaDef {
-  stringn puid = 1; 
+  string puid = 1; 
   map<string,google.protobuf.Value> tags = 2;
   map<string,int32> routing = 3;
   OutlierStatus outlierStatus = 4;  
@@ -66,7 +66,7 @@ message MetaDef {
 message ResponseDef {
 
   StatusDef status = 1;
-  ResponseMetaDef meta = 2;
+  MetaDef meta = 2;
   oneof response_oneof {
     DefaultDataDef response = 3;
     bytes binResponse = 4;
