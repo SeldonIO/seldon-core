@@ -54,8 +54,8 @@ message RequestDef {
 message MetaDef {
   stringn puid = 1; 
   map<string,google.protobuf.Value> tags = 2;
-  map<string,int32> routing = 2;
-  OutlierStatus outlierStatus = 3;  
+  map<string,int32> routing = 3;
+  OutlierStatus outlierStatus = 4;  
 }
 
 // [END Meta]
