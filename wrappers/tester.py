@@ -44,7 +44,7 @@ def generate_batch(contract,n):
 def gen_REST_request(batch,features,tensor=True):
     if tensor:
         datadef = {
-            "features":features,
+            "names":features,
             "tensor":{
                     "shape":batch.shape,
                     "values":batch.ravel().tolist()
@@ -52,7 +52,7 @@ def gen_REST_request(batch,features,tensor=True):
             }
     else:
         datadef = {
-            "features":features,
+            "names":features,
             "ndarray":batch.tolist()
             }
         
@@ -66,7 +66,7 @@ def gen_REST_request(batch,features,tensor=True):
 def gen_GRPC_request(batch,features,tensor=True):
     if tensor:
         datadef = prediction_pb2.DefaultDataDef(
-            features=features,
+            names = features,
             tensor = prediction_pb2.Tensor(
                 shape = batch.shape,
                 values = batch.ravel().tolist()
@@ -74,10 +74,10 @@ def gen_GRPC_request(batch,features,tensor=True):
             )
     else:
         datadef = prediction_pb2.DefaultDataDef(
-            features = features,
-            ndarray=batch.tolist()
+            names = features,
+            ndarray = batch.tolist()
             )
-    request = prediction_pb2.PredictionRequestDef(
+    request = prediction_pb2.RequestDef(
         request = datadef
         )
     return request
