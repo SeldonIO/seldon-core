@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import org.springframework.stereotype.Component;
 
 import io.seldon.protos.PredictionProtos.PredictionResponseDef;
+import io.seldon.engine.exception.APIException;
 import io.seldon.protos.PredictionProtos.PredictionFeedbackDef;
 import io.seldon.protos.PredictionProtos.PredictionRequestDef;
 import io.seldon.protos.PredictionProtos.PredictionRequestMetaDef;
@@ -31,6 +32,7 @@ public class RouterUnit extends PredictiveUnitBean{
 		boolean  isPossible = sanityCheckRouting(branchIndex, state);
 		if (!isPossible){
 			//TODO: Add some sort of exception throwing
+			throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_ROUTING,"Router that caused the exception: id="+state.id+" name="+state.name);
 		}
 		populateRoutingDict(branchIndex, routingDict, state);
 		

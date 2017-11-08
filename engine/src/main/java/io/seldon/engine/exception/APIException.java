@@ -30,10 +30,11 @@ public class APIException extends RuntimeException {
 		ENGINE_INVALID_JSON(201,"Invalid JSON",500),
 		ENGINE_INVALID_ENDPOINT_URL(202,"Invalid Endpoint URL",500),	
 		ENGINE_MICROSERVICE_ERROR(203,"Microservice error",500),
-		ENGINE_INVALID_ABTEST(204,"No Running Deployment",500),
+		ENGINE_INVALID_ABTEST(204,"Error happened in AB Test Routing",500),
 		ENGINE_INVALID_COMBINER_RESPONSE(204,"Invalid number of predictions from combiner",500),
 		ENGINE_INTERRUPTED(205,"API call interrupted",500),
-		ENGINE_EXECUTION_FAILURE(206,"Execution failure",500);		
+		ENGINE_EXECUTION_FAILURE(206,"Execution failure",500),
+		ENGINE_INVALID_ROUTING(207,"Invalid Routing",500);
 		
 		int id;
 		String message;
