@@ -5,7 +5,7 @@ import numpy as np
 import threading
 import time
 
-CORE_ROOT = "/home/maximux/git/int/seldon-core"
+CORE_ROOT = "../.."
 
 TESTS_DIR = CORE_ROOT + "/tests"
 CM_DIR = CORE_ROOT + "/cluster-manager"
