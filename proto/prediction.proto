@@ -38,10 +38,10 @@ message DefaultDataDef {
 message RequestDef {
 
   MetaDef meta = 1;
-  oneof request_oneof {
-    DefaultDataDef request = 2;
-    bytes binRequest = 3;
-    string strRequest = 4;
+  oneof data_oneof {
+    DefaultDataDef data = 2;
+    bytes binData = 3;
+    string strData = 4;
   }
 
 }
@@ -67,10 +67,10 @@ message ResponseDef {
 
   StatusDef status = 1;
   MetaDef meta = 2;
-  oneof response_oneof {
-    DefaultDataDef response = 3;
-    bytes binResponse = 4;
-    string strResponse = 5;
+  oneof data_oneof {
+    DefaultDataDef data = 3;
+    bytes binData = 4;
+    string strData = 5;
   }
 }
 
@@ -128,6 +128,11 @@ message OutlierStatus{
 
 service Model {
   rpc Predict(RequestDef) returns (ResponseDef) {};
+  rpc Feedback(FeedbackDef) returns (ResponseDef) {};
+ }
+
+service Router {
+  rpc Route(RequestDef) returns (ResponseDef) {};
   rpc Feedback(FeedbackDef) returns (ResponseDef) {};
  }
 

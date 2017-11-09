@@ -1,21 +1,18 @@
-from flask import Flask, Blueprint, render_template, jsonify, current_app
-from flask import request
+from proto import prediction_pb2
+
+from flask import Flask, Blueprint, request
 import argparse
+import numpy as np
 import os
 import importlib
 import json
-import numpy as np
-import pandas as pd
-from concurrent import futures
-import grpc
 import time
 
-from proto import prediction_pb2
-from seldon_model import SeldonModel
+PARAMETERS_ENV_NAME = "PREDICTIVE_UNIT_PARAMETERS"
+SERVICE_PORT_ENV_NAME = "PREDICTIVE_UNIT_SERVICE_PORT"
+DEFAULT_PORT = 5000
 
-predict_blueprint = Blueprint('predict',__name__)
-
-class DataContractException(Exception):
+class SeldonMicroserviceException(Exception):
     status_code = 400
 
     def __init__(self, message, status_code= None, payload=None):
@@ -29,71 +26,78 @@ class DataContractException(Exception):
         rv = {"status":{"status":1,"info":self.message,"code":-1,"reason":"MICROSERVICE_BAD_DATA"}}
         return rv
 
-@predict_blueprint.errorhandler(DataContractException)
-def handle_invalid_usage(error):
-    response = jsonify(error.to_dict())
-    response.status_code = 400
-    return response
-
-def sanity_check(data):
+def sanity_check_request(req):
+    if not type(req) == dict:
+        raise SeldonMicroserviceException("Request must be a dictionary")
+    data = req.get("data")
+    if data is None:
+        raise SeldonMicroserviceException("Request must contain Default Data")
     if not type(data) == dict:
-        raise DataContractException("Data must be a dictionary")
+        raise SeldonMicroserviceException("Data must be a dictionary")
     if data.get('ndarray') is None and data.get('tensor') is None:
-        raise DataContractException("Data dictionary has no 'ndarray' or 'tensor' keyword.")
+        raise SeldonMicroserviceException("Data dictionary has no 'ndarray' or 'tensor' keyword.")
     # TODO: Should we check more things? Like shape not being None or empty for a tensor?
 
-def extract_input():
+def extract_request():
     jStr = request.form.get("json")
-    is_default = request.form.get("isDefault")
     if jStr:
-        data = json.loads(jStr)
+        req = json.loads(jStr)
     else:
-        raise DataContractException("Empty json parameter in data")
-    if data is None or data.get('request') is None:
-        raise DataContractException("Data format invalid")
-    return data['request'], is_default
-
-@predict_blueprint.route('/predict',methods=['GET','POST'])
-def do_predict():
-    """Prediction endpoint"""
-    data,is_default = extract_input()
-    model =  current_app.config["seldon_model"]
-    if is_default:
-        sanity_check(data)
-    response = model.predict_rest(data,is_default)
-    json_ret = jsonify(response)
-    return json_ret
-        
-
-def get_rest_microservice(seldon_model,model_name):
-    app = Flask(__name__)
+        raise SeldonMicroserviceException("Empty json parameter in data")
+    if req is None or req.get("data") is None:
+        raise SeldonMicroserviceException("Invalid Data Format")
+    return req
     
-    app.config['seldon_model'] = seldon_model
-    app.config['seldon_model_name'] = model_name
-    app.config['seldon_ready'] = True
+def rest_datadef_to_array(datadef):
+    if datadef.get("tensor") is not None:
+        features = np.array(datadef.get("tensor").get("values")).reshape(datadef.get("tensor").get("shape"))
+    elif datadef.get("ndarray") is not None:
+        features = np.array(datadef.get("ndarray"))
+    return features
 
-    app.register_blueprint(predict_blueprint)
+def array_to_rest_datadef(array,names,original_datadef):
+    datadef = {"names":names}
+    if original_datadef.get("tensor") is not None:
+        datadef["tensor"] = {
+            "shape":array.shape,
+            "values":array.ravel().tolist()
+        }
+    elif original_datadef.get("ndarray") is not None:
+        datadef["ndarray"] = array.tolist()
+    return datadef
 
-    return app
+def grpc_datadef_to_array(datadef):
+    data_type = datadef.WhichOneof("data_oneof")
+    if data_type == "tensor":
+        features = np.array(datadef.tensor.values).reshape(datadef.tensor.shape)
+    elif data_type == "ndarray":
+        features = np.array(datadef.ndarray)
+    return features
 
-def get_grpc_server(seldon_model):
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    prediction_pb2.add_ModelServicer_to_server(seldon_model, server)
+def array_to_grpc_datadef(array,names,data_type):
+    if data_type == "tensor":
+        datadef = prediction_pb2.DefaultDataDef(
+            names = names,
+            tensor = prediction_pb2.Tensor(
+                shape = array.shape,
+                values = array.ravel().tolist()
+            )
+        )
+    elif data_type == "ndarray":
+        datadef = prediction_pb2.DefaultDataDef(
+            names = names,
+            ndarray = array.tolist()
+        )
 
-    return server
-
-type_dict = {
-    "INT":int,
-    "FLOAT":float,
-    "DOUBLE":float,
-    "STRING":str
-    }
-
-PARAMETERS_ENV_NAME = "PREDICTIVE_UNIT_PARAMETERS"
-SERVICE_PORT_ENV_NAME = "PREDICTIVE_UNIT_SERVICE_PORT"
-DEFAULT_PORT = 5000
+    return datadef
                           
 def parse_parameters(parameters):
+    type_dict = {
+        "INT":int,
+        "FLOAT":float,
+        "DOUBLE":float,
+        "STRING":str
+    }
     parsed_parameters = {}
     for param in parameters:
         name = param.get("name")
@@ -101,35 +105,37 @@ def parse_parameters(parameters):
         type_ = param.get("type")
         parsed_parameters[name] = type_dict[type_](value)
     return parsed_parameters
-
                           
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("model_name",type=str,help="Name of the model.")
+    parser.add_argument("interface_name",type=str,help="Name of the user interface.")
     parser.add_argument("api_type",type=str,choices=["REST","GRPC"])
+    parser.add_argument("--microservice_type",type=str,choices=["MODEL","ROUTER"],default="MODEL")
     parser.add_argument("--parameters",type=str,default=os.environ.get(PARAMETERS_ENV_NAME,"[]"))
     args = parser.parse_args()
     
     parameters = parse_parameters(json.loads(args.parameters))
     
-    model_file = importlib.import_module(args.model_name)
-    model_class = getattr(model_file,args.model_name)
+    interface_file = importlib.import_module(args.interface_name)
+    user_class = getattr(interface_file,args.interface_name)
+    user_object = user_class(**parameters)
 
-    seldon_model = SeldonModel(model_class,parameters)
+    if args.microservice_type == "MODEL":
+        import model_microservice as seldon_microservice
+    elif args.microservice_type == "ROUTER":
+        import router_microservice as seldon_microservice
 
     port = os.environ.get(SERVICE_PORT_ENV_NAME,DEFAULT_PORT)
     
     if args.api_type == "REST":
-        app = get_rest_microservice(seldon_model,args.model_name)
+        app = seldon_microservice.get_rest_microservice(user_object)
         app.run(host='0.0.0.0', port=port)
         
     elif args.api_type=="GRPC":
-        server = get_grpc_server(seldon_model)
+        server = seldon_microservice.get_grpc_server(user_object)
         server.add_insecure_port("0.0.0.0:{}".format(port))
         server.start()
         
         print "GRPC Microservice Running on port {}".format(port)
         while True:
             time.sleep(1000)
-
-

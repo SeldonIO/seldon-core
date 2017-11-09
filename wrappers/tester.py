@@ -58,7 +58,7 @@ def gen_REST_request(batch,features,tensor=True):
         
     request = {
         "meta":{},
-        "request":datadef
+        "data":datadef
         }
 
     return request
@@ -78,7 +78,7 @@ def gen_GRPC_request(batch,features,tensor=True):
             ndarray = batch.tolist()
             )
     request = prediction_pb2.RequestDef(
-        request = datadef
+        data = datadef
         )
     return request
 

@@ -19,7 +19,7 @@ def wrap_model(repo,model_folder,model_name,version,REST=True,out_folder=None,fo
             shutil.rmtree(build_folder)
     shutil.copytree(model_folder,build_folder)
     shutil.copy2('./microservice.py',build_folder)
-    shutil.copy2('./seldon_model.py',build_folder)
+    shutil.copy2('./model_microservice.py',build_folder)
     shutil.copy2("./seldon_requirements.txt",build_folder)
     shutil.copytree('./proto',build_folder+'/proto')
     populate_template(
