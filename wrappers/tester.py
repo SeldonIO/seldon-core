@@ -5,6 +5,7 @@ import requests
 import urllib
 from python.proto import prediction_pb2
 from python.proto import prediction_pb2_grpc
+from python.microservice import array_to_list_value
 import grpc
 
 def gen_continuous(range,n):
@@ -75,7 +76,7 @@ def gen_GRPC_request(batch,features,tensor=True):
     else:
         datadef = prediction_pb2.DefaultDataDef(
             names = features,
-            ndarray = batch.tolist()
+            ndarray = array_to_list_value(batch)
             )
     request = prediction_pb2.RequestDef(
         data = datadef

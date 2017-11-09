@@ -8,6 +8,8 @@ import importlib
 import json
 import time
 
+from google.protobuf.struct_pb2 import ListValue
+
 PARAMETERS_ENV_NAME = "PREDICTIVE_UNIT_PARAMETERS"
 SERVICE_PORT_ENV_NAME = "PREDICTIVE_UNIT_SERVICE_PORT"
 DEFAULT_PORT = 5000
@@ -47,7 +49,18 @@ def extract_request():
     if req is None or req.get("data") is None:
         raise SeldonMicroserviceException("Invalid Data Format")
     return req
-    
+
+def array_to_list_value(array,lv=None):
+    if lv is None:
+        lv = ListValue()
+    if len(array.shape) == 1:
+        lv.extend(array)
+    else:
+        for sub_array in array:
+            sub_lv = lv.add_list()
+            array_to_list_value(sub_array,sub_lv)
+    return lv
+
 def rest_datadef_to_array(datadef):
     if datadef.get("tensor") is not None:
         features = np.array(datadef.get("tensor").get("values")).reshape(datadef.get("tensor").get("shape"))
@@ -86,7 +99,7 @@ def array_to_grpc_datadef(array,names,data_type):
     elif data_type == "ndarray":
         datadef = prediction_pb2.DefaultDataDef(
             names = names,
-            ndarray = array.tolist()
+            ndarray = array_to_list_value(array)
         )
 
     return datadef
