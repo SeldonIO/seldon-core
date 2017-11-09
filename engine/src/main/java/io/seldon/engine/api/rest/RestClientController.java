@@ -160,7 +160,13 @@ public class RestClientController {
 		 catch (InterruptedException e) {
 			throw new APIException(ApiExceptionType.ENGINE_INTERRUPTED,e.getMessage());
 		} catch (ExecutionException e) {
-			throw new APIException(ApiExceptionType.ENGINE_EXECUTION_FAILURE,e.getMessage());
+			if (e.getCause().getClass() == APIException.class){
+				throw (APIException) e.getCause();
+			}
+			else
+			{
+				throw new APIException(ApiExceptionType.ENGINE_EXECUTION_FAILURE,e.getMessage());
+			}
 		}
 		return;
     }
