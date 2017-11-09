@@ -109,6 +109,11 @@
 					<pluginId>grpc-java</pluginId>
 					<pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
 					<clearOutputDirectory>false</clearOutputDirectory>
+					<checkStaleness>true</checkStaleness>
+					<excludes>
+						<exclude>k8s.io/**/*.proto</exclude>
+						<exclude>**/v1.proto</exclude>
+					</excludes>
 				</configuration>
 				<executions>
 					<execution>
