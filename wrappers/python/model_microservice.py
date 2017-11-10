@@ -1,5 +1,5 @@
 from proto import prediction_pb2, prediction_pb2_grpc
-from microservice import extract_request, sanity_check_request, rest_datadef_to_array, \
+from microservice import extract_message, sanity_check_request, rest_datadef_to_array, \
     array_to_rest_datadef, grpc_datadef_to_array, array_to_grpc_datadef, \
     SeldonMicroserviceException
 import grpc
@@ -14,6 +14,9 @@ import numpy as np
 
 def predict(user_model,features,feature_names):
     return user_model.predict(features,feature_names)
+
+def do_feedback(user_model,features,feature_names,truth,reward):
+    return user_model.feedback(features,feature_names,truth,reward)
 
 def get_class_names(user_model,n_targets):
     if hasattr(user_model,"class_names"):
@@ -39,7 +42,7 @@ def get_rest_microservice(user_model):
 
     @app.route("/predict",methods=["GET","POST"])
     def Predict():
-        request = extract_request()
+        request = extract_message()
         sanity_check_request(request)
         
         datadef = request.get("data")
@@ -55,6 +58,15 @@ def get_rest_microservice(user_model):
 
     @app.route("/feedback",methods=["GET","POST"])
     def Feedback():
+        feedback = extract_message()
+        
+        datadef_request = feedback.get("request").get("data")
+        features = rest_datadef_to_array(datadef)
+        
+        truth = rest_datadef_to_array(feedback.get("truth"))
+        reward = feedback.get("reward")
+
+        do_feedback(features,datadef_request.get("names"),truth,reward)
         return jsonify({})
 
     return app
@@ -81,6 +93,14 @@ class SeldonModelGRPC(object):
         return prediction_pb2.ResponseDef(data=data)
 
     def Feedback(self,feedback,context):
+        datadef_request = feedback.request.data
+        features = grpc_datadef_to_array(datadef_request)
+        
+        truth = grpc_datadef_to_array(feedback.truth)
+        reward = feedback.reward
+
+        do_feedback(features,datadef_request.names,truth,reward)
+
         return prediction_pb2.ResponseDef()
     
 def get_grpc_server(user_model):

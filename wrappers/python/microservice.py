@@ -40,15 +40,15 @@ def sanity_check_request(req):
         raise SeldonMicroserviceException("Data dictionary has no 'ndarray' or 'tensor' keyword.")
     # TODO: Should we check more things? Like shape not being None or empty for a tensor?
 
-def extract_request():
+def extract_message():
     jStr = request.form.get("json")
     if jStr:
-        req = json.loads(jStr)
+        message = json.loads(jStr)
     else:
         raise SeldonMicroserviceException("Empty json parameter in data")
-    if req is None or req.get("data") is None:
+    if message is None:
         raise SeldonMicroserviceException("Invalid Data Format")
-    return req
+    return message
 
 def array_to_list_value(array,lv=None):
     if lv is None:
