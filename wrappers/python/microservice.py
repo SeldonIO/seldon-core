@@ -124,6 +124,7 @@ if __name__ == "__main__":
     parser.add_argument("interface_name",type=str,help="Name of the user interface.")
     parser.add_argument("api_type",type=str,choices=["REST","GRPC"])
     parser.add_argument("--microservice_type",type=str,choices=["MODEL","ROUTER"],default="MODEL")
+    parser.add_argument("--persistence",action="store_true")
     parser.add_argument("--parameters",type=str,default=os.environ.get(PARAMETERS_ENV_NAME,"[]"))
     args = parser.parse_args()
     
@@ -131,7 +132,12 @@ if __name__ == "__main__":
     
     interface_file = importlib.import_module(args.interface_name)
     user_class = getattr(interface_file,args.interface_name)
-    user_object = user_class(**parameters)
+
+    if args.persistence:
+        user_object = persistence.restore(user_class,parameters)
+        persistence.persist(user_object,parameters.get("push_frequency"))
+    else:
+        user_object = user_class(**parameters)
 
     if args.microservice_type == "MODEL":
         import model_microservice as seldon_microservice
