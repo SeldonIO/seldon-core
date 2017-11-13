@@ -9,6 +9,7 @@ import java.util.concurrent.Future;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.seldon.engine.exception.APIException;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
 import io.seldon.protos.DeploymentProtos.PredictiveUnitDef;
 import io.seldon.protos.DeploymentProtos.PredictorDef;
@@ -42,13 +43,13 @@ public class PredictorBean {
     }
    
 	
-	public PredictionResponseDef predict(PredictionRequestDef request, PredictorState predictorState) throws InterruptedException, ExecutionException
+	public PredictionResponseDef predict(PredictionRequestDef request, PredictorState predictorState) throws InterruptedException, ExecutionException, APIException
 	{
 		PredictiveUnitState rootState = predictorState.rootState;
 		return rootState.predictiveUnitBean.predict(request, rootState);
 	}
 	
-	public void sendFeedback(PredictionFeedbackDef feedback, PredictorState predictorState) throws InterruptedException, ExecutionException
+	public void sendFeedback(PredictionFeedbackDef feedback, PredictorState predictorState) throws InterruptedException, ExecutionException, APIException
 	{
 		PredictiveUnitState rootState = predictorState.rootState;
 		rootState.predictiveUnitBean.sendFeedback(feedback, rootState);
