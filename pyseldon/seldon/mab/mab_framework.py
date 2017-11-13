@@ -7,6 +7,7 @@ import grpc
 from concurrent import futures
 
 import seldon.proto.prediction_pb2 as prediction_pb2
+import seldon.proto.prediction_pb2_grpc as prediction_pb2_grpc
 
 DEFAULT_REDIS_HOST = '127.0.0.1'
 DEFAULT_REDIS_PORT = 6379
@@ -48,7 +49,7 @@ class SavedDict(dict):
         return inner
 
 
-class MAB(prediction_pb2.MABServicer):
+class MAB(prediction_pb2_grpc.MABServicer):
     def __init__(self,id,deployment_key,n_branches,redis_host,push_frequency=300,**kwargs):
 
         self.id = id
@@ -109,7 +110,7 @@ class MABServiceFactory(object):
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         mab_servicer = mab_class(mab_id, deployment_key, n_branches, redis_host, push_frequency, **kwargs)
 
-        prediction_pb2.add_MABServicer_to_server(mab_servicer, server)
+        prediction_pb2_grpc.add_MABServicer_to_server(mab_servicer, server)
 
         #TODO: make secure
         server.add_insecure_port('{}:{}'.format(grpc_host,grpc_port))

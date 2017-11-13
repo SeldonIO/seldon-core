@@ -11,7 +11,8 @@ import io.seldon.protos.PredictionProtos.ResponseDef;
 import io.seldon.protos.PredictionProtos.FeedbackDef;
 import io.seldon.protos.PredictionProtos.RequestDef;
 import io.seldon.protos.PredictionProtos.MetaDef;
-import io.seldon.protos.PredictionProtos.ResponseDef;
+import io.seldon.engine.exception.APIException;
+
 
 @Component
 public class RouterUnit extends PredictiveUnitBean{
@@ -30,7 +31,7 @@ public class RouterUnit extends PredictiveUnitBean{
 		Integer branchIndex = forwardPass(request, state);
 		boolean  isPossible = sanityCheckRouting(branchIndex, state);
 		if (!isPossible){
-			//TODO: Add some sort of exception throwing
+			throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_ROUTING,"Router that caused the exception: id="+state.id+" name="+state.name);
 		}
 		populateRoutingDict(branchIndex, routingDict, state);
 		

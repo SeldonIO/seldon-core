@@ -9,6 +9,7 @@ import java.util.concurrent.Future;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.seldon.engine.exception.APIException;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
 import io.seldon.protos.DeploymentProtos.PredictiveUnitDef;
 import io.seldon.protos.DeploymentProtos.PredictorDef;
@@ -41,14 +42,15 @@ public class PredictorBean {
     	nodeClassMap.put(PredictiveUnitDef.PredictiveUnitType.ROUTER.toString() + "_" + PredictiveUnitDef.PredictiveUnitSubType.RANDOM_ABTEST.toString(), randomABTestUnit);
     }
    
-	
 	public ResponseDef predict(RequestDef request, PredictorState predictorState) throws InterruptedException, ExecutionException
+
 	{
 		PredictiveUnitState rootState = predictorState.rootState;
 		return rootState.predictiveUnitBean.predict(request, rootState);
 	}
 	
 	public void sendFeedback(FeedbackDef feedback, PredictorState predictorState) throws InterruptedException, ExecutionException
+
 	{
 		PredictiveUnitState rootState = predictorState.rootState;
 		rootState.predictiveUnitBean.sendFeedback(feedback, rootState);

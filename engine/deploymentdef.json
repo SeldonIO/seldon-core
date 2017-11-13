@@ -1,0 +1,54 @@
+{
+    "enabled": true,
+    "id": "0",
+    "imagePullSecrets": [],
+    "name": "my-predictor",
+    "predictiveUnits": [
+        {
+            "children": ["1","2"],
+            "cluster_resources": {},
+            "endpoint": {
+                "service_host": "localhost",
+                "service_port": 9000,
+                "type": "GRPC"
+            },
+            "id": "0",
+            "name": "router",
+            "parameters": [],
+            "subtype": "MICROSERVICE",
+            "type": "ROUTER"
+        },
+	{
+            "children": [],
+            "cluster_resources": {},
+            "endpoint": {
+                "service_host": "localhost",
+                "service_port": 5000,
+                "type": "REST"
+            },
+            "id": "1",
+            "name": "model1",
+            "parameters": [],
+            "subtype": "MICROSERVICE",
+            "type": "MODEL"
+        },
+	{
+            "children": [],
+            "cluster_resources": {},
+            "endpoint": {
+                "service_host": "localhost",
+                "service_port": 5001,
+                "type": "REST"
+            },
+            "id": "2",
+            "name": "model2",
+            "parameters": [],
+            "subtype": "MICROSERVICE",
+            "type": "MODEL"
+        }
+    ],
+    "replicas": 1,
+    "replicasReady": 0,
+    "root": "0"
+}
+

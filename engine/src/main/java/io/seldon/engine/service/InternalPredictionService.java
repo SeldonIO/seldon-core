@@ -25,6 +25,7 @@ import com.google.protobuf.util.JsonFormat;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.StatusRuntimeException;
 import io.seldon.engine.exception.APIException;
 import io.seldon.engine.pb.ProtoBufUtils;
 import io.seldon.engine.predictors.PredictiveUnitState;
@@ -128,9 +129,16 @@ public class InternalPredictionService {
 	
 	private ResponseDef getRoutingGRPC(RequestDef request, EndpointDef endpoint){
 		ManagedChannel channel = ManagedChannelBuilder.forAddress(endpoint.getServiceHost(), endpoint.getServicePort()).usePlaintext(true).build();
+
 		RouterBlockingStub stub =  RouterGrpc.newBlockingStub(channel).withDeadlineAfter(5, TimeUnit.SECONDS);
+		ResponseDef routing;
+		try {
+			routing = stub.route(request);
+		} catch (StatusRuntimeException e) 
+		{
+			throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_ENDPOINT_URL,"Host: "+endpoint.getServiceHost()+" port:"+endpoint.getServicePort());
+		}
 		
-		ResponseDef routing = stub.route(request);
 		return routing;
 	}
 	
