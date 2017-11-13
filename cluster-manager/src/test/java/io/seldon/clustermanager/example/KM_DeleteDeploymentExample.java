@@ -42,7 +42,7 @@ public class KM_DeleteDeploymentExample {
         try {
             System.out.println("-------------------------------------------------------------------------------");
             System.out.println("exampleDeploymentDef:");
-            String s = ProtoBufUtils.toJson(exampleDeploymentDef, true);
+            String s = ProtoBufUtils.toJson(exampleDeploymentDef, true,false);
             System.out.println(s);
             System.out.println("-------------------------------------------------------------------------------");
         } catch (InvalidProtocolBufferException e) {

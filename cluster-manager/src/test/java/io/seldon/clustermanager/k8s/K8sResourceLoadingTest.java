@@ -1,6 +1,5 @@
 package io.seldon.clustermanager.k8s;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -9,7 +8,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,10 +19,11 @@ import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.seldon.protos.DeploymentProtos.MLDeployment;
 
 
-public class K8sResourceLoadTest   {
-	private final static Logger logger = LoggerFactory.getLogger(K8sResourceLoadTest.class);
+public class K8sResourceLoadingTest   {
+	private final static Logger logger = LoggerFactory.getLogger(K8sResourceLoadingTest.class);
 	
 	final String json = "{\"kind\": \"Deployment\",\"apiVersion\": \"extensions/v1beta1\",\"metadata\": {\"name\": \"kubectl-tester\"},\"spec\": {\"template\":{\"spec\":{\"containers\": [{\"name\": \"bb\",\"image\": \"gcr.io/google_containers/busybox\"}]}}}}";
 	@Test
@@ -51,12 +50,11 @@ public class K8sResourceLoadTest   {
 			}	
 	
 	@Test
-	public void ProtoTest() throws IOException
+	public void ProtoLoadTest() throws IOException
 	{
 		String json = readFile("src/test/resources/mldeployment_1.json",StandardCharsets.UTF_8);
-		MLDeploymentUtils.jsonToMLDeployment(json);	
+		MLDeployment mldep = MLDeploymentUtils.jsonToMLDeployment(json);	
 		logger.info(json);
-		
 	}
 	
 	 public List<String> getNamespaceList(KubernetesClient kubernetesClient) {

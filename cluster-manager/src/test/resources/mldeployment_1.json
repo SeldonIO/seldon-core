@@ -1,96 +1,53 @@
 {
     "apiVersion": "machinelearning.seldon.io/v1alpha1",
-    "componentSpec": {
-        "replicas": 3,
-        "revisionHistoryLimit": 2,
-        "selector": {
-            "matchLabels": {
-                "app": "nginx"
-            }
-        },
-        "strategy": {
-            "rollingUpdate": {
-                "maxSurge": 1,
-                "maxUnavailable": 1
-            },
-            "type": "RollingUpdate"
-        },
-        "template": {
-            "metadata": {
-                "creationTimestamp": null,
-                "labels": {
-                    "app": "nginx"
-                }
-            },
-            "spec": {
-                "containers": [
-                    {
-                        "image": "nginx:1.10",
-                        "imagePullPolicy": "IfNotPresent",
-                        "name": "nginx",
-                        "resources": {},
-                        "terminationMessagePath": "/dev/termination-log",
-                        "terminationMessagePolicy": "File"
-                    }
-                ],
-                "dnsPolicy": "ClusterFirst",
-                "restartPolicy": "Always",
-                "schedulerName": "default-scheduler",
-                "securityContext": {},
-                "terminationGracePeriodSeconds": 30
-            }
-        }
-    },
     "kind": "MLDeployment",
     "metadata": {
         "labels": {
             "app": "seldon"
         },
-        "name": "mldeployment-example"
+        "name": "mldeployment-example",
+	"uid":"1234"
     },
     "spec": {
         "annotations": {
             "project_name": "FX Market Prediction"
         },
-        "cluster": {},
-        "id": "1",
-        "name": "test deployment",
+        "name": "test-deployment",
         "oauth_key": "oauth-key",
         "oauth_secret": "oauth-secret",
-        "predictor": {
-            "annotations": {
-                "project_name": "FX Market Prediction"
-            },
-            "enabled": true,
-            "id": "0",
-            "imagePullSecrets": [],
-            "name": "FX Market Predictor",
-            "predictiveUnits": [
-                {
+        "predictors": [
+            {
+                "componentSpec": {
+                    "metadata": {
+                        "labels": {
+                            "app": "seldon"
+                        }
+                    },
+                    "spec": {
+                        "containers": [
+                            {
+                                "image": "nginx:1.10",
+                                "imagePullPolicy": "IfNotPresent",
+                                "name": "nginx",
+                                "resources": {},
+                                "terminationMessagePath": "/dev/termination-log",
+                                "terminationMessagePolicy": "File"
+                            }
+                        ],
+                        "dnsPolicy": "ClusterFirst",
+                        "restartPolicy": "Always",
+                        "schedulerName": "default-scheduler",
+                        "securityContext": {},
+                        "terminationGracePeriodSeconds": 30
+                    }
+                },
+                "graphSpec": {
                     "children": [],
-                    "cluster_resources": {
-                        "cpu": "",
-                        "gpu": "",
-                        "id": "2",
-                        "image": "seldonio/mean_classifier",
-                        "memory": "",
-                        "version": "0.5"
-                    },
-                    "endpoint": {
-                        "service_host": "-",
-                        "service_port": 0,
-                        "type": "REST"
-                    },
-                    "id": "0",
-                    "name": "Simple FX Model",
-                    "parameters": [],
-                    "subtype": "MICROSERVICE",
-                    "type": "MODEL"
-                }
-            ],
-            "replicas": 1,
-            "root": "0",
-            "version": "v1"
-        }
+                    "name": "nginx"
+                },
+                "name": "fx-market-predictor",
+                "replicas": 1
+            }
+        ]
     }
 }

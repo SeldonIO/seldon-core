@@ -21,19 +21,21 @@ public class ProtoBufUtils {
      * @return json string
      * @throws InvalidProtocolBufferException
      */
-    public static String toJson(Message message, boolean omittingInsignificantWhitespace) throws InvalidProtocolBufferException {
+    public static String toJson(Message message, boolean omittingInsignificantWhitespace, boolean defaultingFields) throws InvalidProtocolBufferException {
         String json = null;
         // json = JsonFormat.printer().includingDefaultValueFields().preservingProtoFieldNames().print(message);
         // json =
         // JsonFormat.printer().includingDefaultValueFields().preservingProtoFieldNames().omittingInsignificantWhitespace().print(message);
 
-        Printer jsonPrinter = JsonFormat.printer().includingDefaultValueFields().preservingProtoFieldNames();
+        Printer jsonPrinter = JsonFormat.printer().preservingProtoFieldNames();
         if (omittingInsignificantWhitespace) {
             jsonPrinter = jsonPrinter.omittingInsignificantWhitespace();
         }
+        if (defaultingFields)
+        	jsonPrinter = jsonPrinter.includingDefaultValueFields();
         return jsonPrinter.print(message);
     }
-
+    
     /**
      * Serialize a protobuf message to JSON, allowing the inclusion of whitespace.
      * 
@@ -43,8 +45,9 @@ public class ProtoBufUtils {
      * @throws InvalidProtocolBufferException
      */
     public static String toJson(Message message) throws InvalidProtocolBufferException {
-        boolean omittingInsignificantWhitespace = false;
-        return toJson(message, omittingInsignificantWhitespace);
+    	boolean omittingInsignificantWhitespace = false;
+    	boolean defaultingFields = false;
+        return toJson(message, omittingInsignificantWhitespace,defaultingFields);
     }
 
     public static <T extends Message.Builder> void updateMessageBuilderFromJson(T messageBuilder, String json) throws InvalidProtocolBufferException {

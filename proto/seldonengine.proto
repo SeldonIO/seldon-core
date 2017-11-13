@@ -13,39 +13,8 @@ option java_outer_classname = "DeploymentProtos";
 
 // [START messages]
 
-message ClusterDef {}
 
-message EndpointDef {
-
-    enum EndpointType {
-        REST = 0;
-        GRPC = 1;
-    }
-
-    optional string service_host = 1;
-    optional int32 service_port = 2;
-    optional EndpointType type = 3;
-}
-
-message ClusterResourcesDef {
-
-    optional string cpu = 1;
-    optional string gpu = 2;
-    optional string id = 3;
-    optional string image = 4;
-    optional string memory = 5;
-    optional string version = 6;
-}
-
-message PredictiveUnitDef {
-
-    enum ParamType {
-      UNKNOWN_PARAMTYPE = 0;
-      INT = 1;
-      FLOAT = 2;
-      DOUBLE = 3;
-      STRING = 4;
-    }
+message PredictionGraph {
 
   enum PredictiveUnitType {
     UNKNOWN_TYPE = 0;
@@ -64,50 +33,64 @@ message PredictiveUnitDef {
     AVERAGE_COMBINER = 5;
   }
 
-  message ParamDef {
-    optional string name = 1;
-    optional ParamType type = 2;
-    optional string value = 3;
-  }
+    enum EndpointType {
+        REST = 0;
+        GRPC = 1;
+    }
 
-  repeated string children = 1;
-  optional ClusterResourcesDef cluster_resources = 2;
-  optional EndpointDef endpoint = 3;
-  optional string name = 4;
-  optional string id = 5;
-  repeated ParamDef parameters = 6;
-  optional PredictiveUnitSubType subtype = 7;
-  optional PredictiveUnitType type = 8;
+  required string name = 1;//must match container name of component if subtype microservice
+  repeated PredictionGraph children = 2;
+  optional PredictiveUnitType type = 3;
+  optional PredictiveUnitSubType subtype = 4;
+  optional EndpointType protocol = 5;
 }
 
+message EndpointDef {
+
+  enum EndpointType {
+    REST = 0;
+    GRPC = 1;
+  }
+
+  optional string service_host = 1;
+  optional int32 service_port = 2;
+  optional EndpointType type = 3;
+}
+
+
 message PredictorDef {
-  optional string id = 1;
-  optional string name = 2;
-  optional string version = 3;
-  optional bool enabled = 4;
-  optional EndpointDef endpoint = 5;
-  repeated string imagePullSecrets = 6;
-  repeated PredictiveUnitDef predictiveUnits = 7;
-  optional int32 replicas = 8;
-  optional string root = 9;
-  map<string,string> annotations = 10;
+  enum PredictorType {
+    NORMAL = 0;
+    CANARY = 1;
+  }
+
+  required string name = 1;
+  optional PredictorType type = 2;
+  required PredictionGraph graphSpec = 3;
+  required k8s.io.api.core.v1.PodTemplateSpec componentSpec = 4;
+  optional int32 replicas = 5;
 }
 
 message DeploymentDef {
-  optional ClusterDef cluster = 1;
-  optional string id = 2;
-  optional string name = 3;
-  optional PredictorDef predictor = 4;
-  optional string uniqueName = 5;
-  optional string oauth_key = 6;
-  optional string oauth_secret = 7;
-  optional PredictorDef predictor_canary = 8;
-  map<string,string> annotations = 9;
+  optional string name = 1;
+  repeated PredictorDef predictors = 2;
+  optional EndpointDef endpoint = 3;
+  optional string oauth_key = 4;
+  optional string oauth_secret = 5;
+  map<string,string> annotations = 6;
 }
 
-message MLDeploymentStatus {
-  optional int32 predictorReplicasReady = 1;
-  optional int32 canaryReplicasReady = 2;
+
+message PredictorStatus {
+  required string name = 1;
+  required string status = 2; 
+  optional string description = 3; 
+}
+
+message DeploymentStatus {
+  required string state = 1; 
+  optional string description = 2; 
+  repeated PredictorStatus predictorStatus = 3;
 }
 
 message MLDeployment {
@@ -115,8 +98,7 @@ message MLDeployment {
   required string kind = 2;
   optional k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta metadata = 3;
   required DeploymentDef spec = 4;
-  optional MLDeploymentStatus status = 5;
-  optional k8s.io.api.core.v1.PodTemplateSpec componentSpec = 6;
+  optional DeploymentStatus status = 5;
 }
 
 

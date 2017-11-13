@@ -81,7 +81,7 @@
 		<dependency>
     		<groupId>io.kubernetes</groupId>
     		<artifactId>client-java</artifactId>
-    		<version>0.2</version>
+    		<version>1.0.0-beta1</version>
     		<scope>compile</scope>
 		</dependency>
 		
@@ -90,6 +90,8 @@
 
 	<build>
 		<finalName>${project.artifactId}</finalName>
+
+
 
 		<extensions>
 			<extension>
@@ -100,6 +102,14 @@
 		</extensions>
 
 		<plugins>
+
+			<plugin>
+    			<artifactId>maven-compiler-plugin</artifactId>
+    			<configuration>
+       			 <compilerArgument>-Xlint:deprecation</compilerArgument>
+    			</configuration>
+			</plugin>
+
 			<plugin>
 				<groupId>org.xolstice.maven.plugins</groupId>
 				<artifactId>protobuf-maven-plugin</artifactId>
