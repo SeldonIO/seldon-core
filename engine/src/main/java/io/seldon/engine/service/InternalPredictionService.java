@@ -32,9 +32,11 @@ import io.seldon.protos.DeploymentProtos.ClusterResourcesDef;
 import io.seldon.protos.DeploymentProtos.EndpointDef;
 import io.seldon.protos.ModelGrpc;
 import io.seldon.protos.ModelGrpc.ModelBlockingStub;
+import io.seldon.protos.RouterGrpc;
+import io.seldon.protos.RouterGrpc.RouterBlockingStub;
 import io.seldon.protos.PredictionProtos.FeedbackDef;
 import io.seldon.protos.PredictionProtos.RequestDef;
-import io.seldon.protos.PredictionProtos.RequestDef.RequestOneofCase;
+import io.seldon.protos.PredictionProtos.RequestDef.DataOneofCase;
 import io.seldon.protos.PredictionProtos.ResponseDef;
 
 @Service
@@ -65,7 +67,7 @@ public class InternalPredictionService {
 			case REST:
 				String dataString = ProtoBufUtils.toJson(request);
 				boolean isDefault = false;
-				if (request.getRequestOneofCase() == RequestOneofCase.REQUEST)
+				if (request.getDataOneofCase() == DataOneofCase.DATA)
 					isDefault = true;
 				return getPredictionREST(dataString, state, endpoint, isDefault);
 				
@@ -96,6 +98,16 @@ public class InternalPredictionService {
 		return;
 	}
 	
+	public void sendFeedbackRouter(FeedbackDef feedback, EndpointDef endpoint){
+		switch (endpoint.getType()){
+			case REST:
+				throw new NotImplementedException();
+			case GRPC:
+				sendFeedbackRouterGRPC(feedback, endpoint);
+		}
+		return;
+	}
+	
 	private void sendFeedbackGRPC(FeedbackDef feedback, EndpointDef endpoint){
 		ManagedChannel channel = ManagedChannelBuilder.forAddress(endpoint.getServiceHost(), endpoint.getServicePort()).usePlaintext(true).build();
 		ModelBlockingStub stub =  ModelGrpc.newBlockingStub(channel).withDeadlineAfter(5, TimeUnit.SECONDS);
@@ -105,11 +117,20 @@ public class InternalPredictionService {
 		return;
 	}
 	
+	private void sendFeedbackRouterGRPC(FeedbackDef feedback, EndpointDef endpoint){
+		ManagedChannel channel = ManagedChannelBuilder.forAddress(endpoint.getServiceHost(), endpoint.getServicePort()).usePlaintext(true).build();
+		RouterBlockingStub stub =  RouterGrpc.newBlockingStub(channel).withDeadlineAfter(5, TimeUnit.SECONDS);
+		
+		stub.feedback(feedback);
+		
+		return;
+	}
+	
 	private ResponseDef getRoutingGRPC(RequestDef request, EndpointDef endpoint){
 		ManagedChannel channel = ManagedChannelBuilder.forAddress(endpoint.getServiceHost(), endpoint.getServicePort()).usePlaintext(true).build();
-		ModelBlockingStub stub =  ModelGrpc.newBlockingStub(channel).withDeadlineAfter(5, TimeUnit.SECONDS);
+		RouterBlockingStub stub =  RouterGrpc.newBlockingStub(channel).withDeadlineAfter(5, TimeUnit.SECONDS);
 		
-		ResponseDef routing = stub.predict(request);
+		ResponseDef routing = stub.route(request);
 		return routing;
 	}
 	

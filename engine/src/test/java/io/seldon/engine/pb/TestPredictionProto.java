@@ -39,7 +39,7 @@ public class TestPredictionProto {
 		ProtoBufUtils.updateMessageBuilderFromJson(builder, json);
 		RequestDef request = builder.build();
 		
-		Assert.assertEquals(2, request.getRequest().getNdarray().getValuesCount());
+		Assert.assertEquals(2, request.getData().getNdarray().getValuesCount());
 		
 		String json2 = ProtoBufUtils.toJson(request);
 		
@@ -54,7 +54,7 @@ public class TestPredictionProto {
 		ProtoBufUtils.updateMessageBuilderFromJson(builder, json);
 		RequestDef request = builder.build();
 		
-		Assert.assertEquals(2, request.getRequest().getNdarray().getValuesCount());
+		Assert.assertEquals(2, request.getData().getNdarray().getValuesCount());
 		
 		String json2 = ProtoBufUtils.toJson(request);
 		
@@ -89,7 +89,7 @@ public class TestPredictionProto {
 		Value v;
 		Value v1 = Value.newBuilder().setNumberValue(1.0).build();
 		
-		b.setRequest(defB.build()).setMeta(MetaDef.newBuilder().putTags("key", v1).build());
+		b.setData(defB.build()).setMeta(MetaDef.newBuilder().putTags("key", v1).build());
 		RequestDef request = b.build();
 		
 		String json = ProtoBufUtils.toJson(request);
@@ -114,7 +114,7 @@ public class TestPredictionProto {
 	{
 		String customData = "{\"c\":1.0}";
 		RequestDef.Builder b = RequestDef.newBuilder();
-		b.setBinRequest(ByteString.copyFrom(customData.getBytes()));
+		b.setBinData(ByteString.copyFrom(customData.getBytes()));
 		RequestDef request = b.build();
 		
 		String json = ProtoBufUtils.toJson(request);
@@ -125,7 +125,7 @@ public class TestPredictionProto {
 		ProtoBufUtils.updateMessageBuilderFromJson(b2, json);
 		
 		RequestDef request2 = b2.build();
-		String custom = request2.getBinRequest().toString(StandardCharsets.UTF_8);
+		String custom = request2.getBinData().toString(StandardCharsets.UTF_8);
 		System.out.println(custom);
 		
 		String json2 = ProtoBufUtils.toJson(request2);
@@ -140,7 +140,7 @@ public class TestPredictionProto {
 	{
 		String customData = "{\"c\":1.0}";
 		RequestDef.Builder b = RequestDef.newBuilder();
-		b.setStrRequest(customData);
+		b.setStrData(customData);
 		RequestDef request = b.build();
 		
 		String json = ProtoBufUtils.toJson(request);

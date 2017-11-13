@@ -33,7 +33,7 @@ public class AverageCombinerUnit extends CombinerUnit{
 			throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_COMBINER_RESPONSE, String.format("Combiner received no inputs"));
 		}
 		
-		int[] shape = PredictorUtils.getShape(inputs.get(0).getResponse());
+		int[] shape = PredictorUtils.getShape(inputs.get(0).getData());
 		
 		if (shape == null){
 			throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_COMBINER_RESPONSE, String.format("Combiner cannot extract data shape"));
@@ -48,7 +48,7 @@ public class AverageCombinerUnit extends CombinerUnit{
 		
 		for (Iterator<ResponseDef> i = inputs.iterator(); i.hasNext();)
 		{
-			DefaultDataDef inputData = i.next().getResponse();
+			DefaultDataDef inputData = i.next().getData();
 			int[] inputShape = PredictorUtils.getShape(inputData);
 			if (inputShape == null){
 				throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_COMBINER_RESPONSE, String.format("Combiner cannot extract data shape"));
@@ -67,8 +67,8 @@ public class AverageCombinerUnit extends CombinerUnit{
 		}
 		currentSum = currentSum.div((float)inputs.size());
 		
-		DefaultDataDef newData = PredictorUtils.updateData(inputs.get(0).getResponse(), currentSum);
-		respBuilder.setResponse(newData);
+		DefaultDataDef newData = PredictorUtils.updateData(inputs.get(0).getData(), currentSum);
+		respBuilder.setData(newData);
 		respBuilder.setMeta(inputs.get(0).getMeta());
 		respBuilder.setStatus(inputs.get(0).getStatus());
 		
@@ -91,9 +91,9 @@ public class AverageCombinerUnit extends CombinerUnit{
 //			metaBuilder.addAllModel(predRet.getMeta().getModelList());
 			int bLength = 0;
 			int vLength = 0;
-			if (predRet.getResponse().getDataOneofCase() == DataOneofCase.TENSOR)
+			if (predRet.getData().getDataOneofCase() == DataOneofCase.TENSOR)
 			{
-				Tensor tensor = predRet.getResponse().getTensor();
+				Tensor tensor = predRet.getData().getTensor();
 				if (tensor.getShapeCount() == 2)
 				{
 					bLength = tensor.getShape(0);
@@ -105,20 +105,20 @@ public class AverageCombinerUnit extends CombinerUnit{
 					vLength = tensor.getValuesCount();
 				}
 			}
-			else if (predRet.getResponse().getDataOneofCase() == DataOneofCase.NDARRAY)// nDArray
+			else if (predRet.getData().getDataOneofCase() == DataOneofCase.NDARRAY)// nDArray
 			{
-				ListValue list = predRet.getResponse().getNdarray();
+				ListValue list = predRet.getData().getNdarray();
 				bLength = list.getValuesCount();
 				vLength = list.getValues(0).getListValue().getValuesCount();
 			}
 			if (!initialised){
-				dataType = predRet.getResponse().getDataOneofCase();
+				dataType = predRet.getData().getDataOneofCase();
 				batchLength = bLength;
 				valuesLength = vLength;
 				averages = new Double[batchLength*valuesLength];
 				Arrays.fill(averages, 0.);
 				respBuilder.setMeta(predRet.getMeta()).setStatus(predRet.getStatus());
-				dataBuilder.addAllNames(predRet.getResponse().getNamesList());
+				dataBuilder.addAllNames(predRet.getData().getNamesList());
 				initialised = true;
 			}
 			else
@@ -134,10 +134,10 @@ public class AverageCombinerUnit extends CombinerUnit{
 			}
 			for (int i = 0; i < batchLength; ++i) {
 				for (int j = 0; j < valuesLength; j++){
-					if (predRet.getResponse().getDataOneofCase() == DataOneofCase.TENSOR)
-						averages[(i*valuesLength)+j] += predRet.getResponse().getTensor().getValues((i*valuesLength)+j);
-					else if (predRet.getResponse().getDataOneofCase() == DataOneofCase.NDARRAY)
-						averages[(i*valuesLength)+j] += predRet.getResponse().getNdarray().getValues(i).getListValue().getValues(j).getNumberValue();
+					if (predRet.getData().getDataOneofCase() == DataOneofCase.TENSOR)
+						averages[(i*valuesLength)+j] += predRet.getData().getTensor().getValues((i*valuesLength)+j);
+					else if (predRet.getData().getDataOneofCase() == DataOneofCase.NDARRAY)
+						averages[(i*valuesLength)+j] += predRet.getData().getNdarray().getValues(i).getListValue().getValues(j).getNumberValue();
 				}
 			}
 		}
@@ -167,7 +167,7 @@ public class AverageCombinerUnit extends CombinerUnit{
 				dataBuilder.setNdarray(b1.build());
 			}
 		}
-		respBuilder.setResponse(dataBuilder).setMeta(metaBuilder);
+		respBuilder.setData(dataBuilder).setMeta(metaBuilder);
 		
 		return respBuilder.build();
 	}

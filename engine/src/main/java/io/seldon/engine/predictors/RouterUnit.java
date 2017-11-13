@@ -42,12 +42,12 @@ public class RouterUnit extends PredictiveUnitBean{
 	
 	@Override
 	protected void doSendFeedback(FeedbackDef feedback, PredictiveUnitState state){
-		internalPredictionService.sendFeedback(feedback, state.endpoint);
+		internalPredictionService.sendFeedbackRouter(feedback, state.endpoint);
 	}
 	
 	protected Integer forwardPass(RequestDef request, PredictiveUnitState state){
 		ResponseDef ret = internalPredictionService.getRouting(request, state.endpoint);
-		int branchIndex = (int) ret.getResponse().getTensor().getValues(0);
+		int branchIndex = (int) ret.getData().getTensor().getValues(0);
 		return branchIndex;
 	}
 	

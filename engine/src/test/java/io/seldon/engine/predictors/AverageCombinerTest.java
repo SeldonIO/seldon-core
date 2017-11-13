@@ -32,21 +32,21 @@ public class AverageCombinerTest {
 		
 		Double[] values1 = {1.0,1.0};
 		predictorReturns.add(ResponseDef.newBuilder().setStatus(StatusDef.newBuilder().setStatus(StatusDef.Status.SUCCESS).build())
-				.setResponse(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
+				.setData(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
 						.setTensor(Tensor.newBuilder().addShape(1).addShape(2)
 						.addAllValues(Arrays.asList(values1)).build())
 						.build()).build());
 		
 		Double[] values2 = {1.0,0.5};
 		predictorReturns.add(ResponseDef.newBuilder().setStatus(StatusDef.newBuilder().setStatus(StatusDef.Status.SUCCESS).build())
-				.setResponse(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
+				.setData(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
 						.setTensor(Tensor.newBuilder().addShape(1).addShape(2)
 								.addAllValues(Arrays.asList(values2)).build())
 						.build()).build());
 		
 		Double[] values3 = {2.2,0.9};
 		predictorReturns.add(ResponseDef.newBuilder().setStatus(StatusDef.newBuilder().setStatus(StatusDef.Status.SUCCESS).build())
-				.setResponse(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
+				.setData(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
 						.setTensor(Tensor.newBuilder().addShape(1).addShape(2)
 								.addAllValues(Arrays.asList(values3)).build())
 						.build()).build());
@@ -57,10 +57,10 @@ public class AverageCombinerTest {
 		method.setAccessible(true);
 		ResponseDef average = (ResponseDef) method.invoke(averageCombinerUnit, predictorReturns, prd, null);
 		
-		Assert.assertThat(average.getResponse().getNamesList().get(0),is(names[0]));
+		Assert.assertThat(average.getData().getNamesList().get(0),is(names[0]));
 		
 		Double[][] expected_values = {{(1.0+1.0+2.2)/3,(1.0+0.5+0.9)/3}};
-		Assert.assertEquals(expected_values[0][0],average.getResponse().getTensor().getValuesList().get(0),1e-7);
+		Assert.assertEquals(expected_values[0][0],average.getData().getTensor().getValuesList().get(0),1e-7);
 	}
 	
 	@Test
@@ -70,21 +70,21 @@ public class AverageCombinerTest {
 		
 		Double[] values1 = {1.0,1.0};
 		predictorReturns.add(ResponseDef.newBuilder().setStatus(StatusDef.newBuilder().setStatus(StatusDef.Status.SUCCESS).build())
-				.setResponse(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
+				.setData(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
 						.setNdarray(ListValue.newBuilder().addValues(Value.newBuilder().setListValue(ListValue.newBuilder()
 								.addValues(Value.newBuilder().setNumberValue(values1[0]))
 								.addValues(Value.newBuilder().setNumberValue(values1[1])).build())).build()).build()).build());
 		
 		Double[] values2 = {1.0,0.5};
 		predictorReturns.add(ResponseDef.newBuilder().setStatus(StatusDef.newBuilder().setStatus(StatusDef.Status.SUCCESS).build())
-				.setResponse(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
+				.setData(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
 						.setNdarray(ListValue.newBuilder().addValues(Value.newBuilder().setListValue(ListValue.newBuilder()
 								.addValues(Value.newBuilder().setNumberValue(values2[0]))
 								.addValues(Value.newBuilder().setNumberValue(values2[1])).build())).build()).build()).build());
 		
 		Double[] values3 = {2.2,0.9};
 		predictorReturns.add(ResponseDef.newBuilder().setStatus(StatusDef.newBuilder().setStatus(StatusDef.Status.SUCCESS).build())
-				.setResponse(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
+				.setData(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
 						.setNdarray(ListValue.newBuilder().addValues(Value.newBuilder().setListValue(ListValue.newBuilder()
 								.addValues(Value.newBuilder().setNumberValue(values3[0]))
 								.addValues(Value.newBuilder().setNumberValue(values3[1])).build())).build()).build()).build());
@@ -94,10 +94,10 @@ public class AverageCombinerTest {
 		method.setAccessible(true);
 		ResponseDef average = (ResponseDef) method.invoke(averageCombinerUnit, predictorReturns, null, null);
 		
-		Assert.assertThat(average.getResponse().getNamesList().get(0),is(names[0]));
+		Assert.assertThat(average.getData().getNamesList().get(0),is(names[0]));
 		
 		Double[][] expected_values = {{(1.0+1.0+2.2)/3,(1.0+0.5+0.9)/3}};
-		Assert.assertEquals(expected_values[0][0],average.getResponse().getNdarray().getValues(0).getListValue().getValues(0).getNumberValue(),1e-7);
+		Assert.assertEquals(expected_values[0][0],average.getData().getNdarray().getValues(0).getListValue().getValues(0).getNumberValue(),1e-7);
 	}
 	
 	@Test
@@ -108,14 +108,14 @@ public class AverageCombinerTest {
 		
 		Double[] values1 = {1.0};
 		predictorReturns.add(ResponseDef.newBuilder().setStatus(StatusDef.newBuilder().setStatus(StatusDef.Status.SUCCESS).build())
-				.setResponse(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
+				.setData(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
 						.setTensor(Tensor.newBuilder().addShape(1).addShape(1)
 								.addAllValues(Arrays.asList(values1)).build())
 						.build()).build());
 		
 		Double[] values2 = {1.0};
 		predictorReturns.add(ResponseDef.newBuilder().setStatus(StatusDef.newBuilder().setStatus(StatusDef.Status.SUCCESS).build())
-				.setResponse(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
+				.setData(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
 						.setTensor(Tensor.newBuilder().addShape(1).addShape(1)
 								.addAllValues(Arrays.asList(values2)).build())
 						.build()).build());
@@ -125,10 +125,10 @@ public class AverageCombinerTest {
 		method.setAccessible(true);
 		ResponseDef average = (ResponseDef) method.invoke(averageCombinerUnit, predictorReturns, null, null);
 		
-		Assert.assertThat(average.getResponse().getNamesList().get(0),is(names[0]));
+		Assert.assertThat(average.getData().getNamesList().get(0),is(names[0]));
 
 		Double[][] expected_values = {{2.0/2}};
-		Assert.assertThat(average.getResponse().getTensor().getValuesList().get(0),is(expected_values[0][0]));
+		Assert.assertThat(average.getData().getTensor().getValuesList().get(0),is(expected_values[0][0]));
 	}
 	
 	@Test
@@ -139,7 +139,7 @@ public class AverageCombinerTest {
 		
 		Double[] values1 = {1.0,5.0,0.3};
 		predictorReturns.add(ResponseDef.newBuilder().setStatus(StatusDef.newBuilder().setStatus(StatusDef.Status.SUCCESS).build())
-				.setResponse(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
+				.setData(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
 						.setTensor(Tensor.newBuilder().addShape(1).addShape(3)
 								.addAllValues(Arrays.asList(values1)).build())
 						.build()).build());
@@ -150,10 +150,10 @@ public class AverageCombinerTest {
 		method.setAccessible(true);
 		ResponseDef average = (ResponseDef) method.invoke(averageCombinerUnit, predictorReturns, null, null);
 		
-		Assert.assertThat(average.getResponse().getNamesList().get(0),is(names[0]));
+		Assert.assertThat(average.getData().getNamesList().get(0),is(names[0]));
 
 		Double[][] expected_values = {{1.0,5.0,0.3}};
-		Assert.assertThat(average.getResponse().getTensor().getValuesList().get(0),is(expected_values[0][0]));
+		Assert.assertThat(average.getData().getTensor().getValuesList().get(0),is(expected_values[0][0]));
 	}
 	
 	@Test(expected = APIException.class)
@@ -181,11 +181,11 @@ public class AverageCombinerTest {
 		String[] names = {};
 		
 		predictorReturns.add(ResponseDef.newBuilder().setStatus(StatusDef.newBuilder().setStatus(StatusDef.Status.SUCCESS).build())
-				.setResponse(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
+				.setData(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
 						.build()).build());
 		
 		predictorReturns.add(ResponseDef.newBuilder().setStatus(StatusDef.newBuilder().setStatus(StatusDef.Status.SUCCESS).build())
-				.setResponse(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
+				.setData(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
 						.build()).build());
 		AverageCombinerUnit averageCombinerUnit = new AverageCombinerUnit();
 		Method method = AverageCombinerUnit.class.getDeclaredMethod("backwardPass",List.class,RequestDef.class,PredictiveUnitState.class);
@@ -207,21 +207,21 @@ public class AverageCombinerTest {
 		
 		Double[] values1 = {1.0,1.0};
 		predictorReturns.add(ResponseDef.newBuilder().setStatus(StatusDef.newBuilder().setStatus(StatusDef.Status.SUCCESS).build())
-				.setResponse(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
+				.setData(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
 						.setTensor(Tensor.newBuilder().addShape(1).addShape(2)
 								.addAllValues(Arrays.asList(values1)).build())
 						.build()).build());
 		
 		Double[] values2 = {1.0,0.5};
 		predictorReturns.add(ResponseDef.newBuilder().setStatus(StatusDef.newBuilder().setStatus(StatusDef.Status.SUCCESS).build())
-				.setResponse(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
+				.setData(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
 						.setTensor(Tensor.newBuilder().addShape(1).addShape(2)
 								.addAllValues(Arrays.asList(values2)).build())
 						.build()).build());
 		
 		Double[] values3 = {2.2,0.9,4.5};
 		predictorReturns.add(ResponseDef.newBuilder().setStatus(StatusDef.newBuilder().setStatus(StatusDef.Status.SUCCESS).build())
-				.setResponse(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
+				.setData(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(names))
 						.setTensor(Tensor.newBuilder().addShape(1).addShape(3)
 								.addAllValues(Arrays.asList(values3)).build())
 						.build()).build());

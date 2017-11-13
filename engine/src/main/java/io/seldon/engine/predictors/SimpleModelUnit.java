@@ -29,7 +29,7 @@ public class SimpleModelUnit extends ModelUnit {
 		ResponseDef ret = ResponseDef.newBuilder()
 				.setStatus(StatusDef.newBuilder().setStatus(StatusDef.Status.SUCCESS).build())
 				.setMeta(MetaDef.newBuilder())//.addModel(state.id))
-				.setResponse(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(classes))
+				.setData(DefaultDataDef.newBuilder().addAllNames(Arrays.asList(classes))
 					.setTensor(Tensor.newBuilder().addShape(1).addShape(values.length)
 					.addAllValues(Arrays.asList(values)))).build();
 		try {

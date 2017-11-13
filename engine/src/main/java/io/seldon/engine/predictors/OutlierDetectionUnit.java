@@ -30,8 +30,8 @@ public class OutlierDetectionUnit extends PredictiveUnitBean {
 			e.printStackTrace();
 		}
 		
-		Boolean isOutlier = outlierDetectionResponse.getResponse().getTensor().getValues(0) == 1.;
-		Double outlierScore = outlierDetectionResponse.getResponse().getTensor().getValues(1);
+		Boolean isOutlier = outlierDetectionResponse.getData().getTensor().getValues(0) == 1.;
+		Double outlierScore = outlierDetectionResponse.getData().getTensor().getValues(1);
 		
 		
 		ResponseDef.Builder builder = ResponseDef

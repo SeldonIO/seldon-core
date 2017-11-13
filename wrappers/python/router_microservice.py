@@ -9,20 +9,20 @@ from flask import jsonify, Flask
 import numpy as np
 
 # ---------------------------
-# Interaction with user model
+# Interaction with user router
 # ---------------------------
 
-def route(user_model,features,feature_names):
-    return user_model.predict(features,feature_names)
+def route(user_router,features,feature_names):
+    return user_router.route(features,feature_names)
 
-def do_feedback(user_model,features,feature_names,truth,reward):
-    return user_model.feedback(features,feature_names,truth,reward)
+def do_feedback(user_router,features,feature_names,truth,reward):
+    return user_router.feedback(features,feature_names,truth,reward)
 
 # ----------------------------
 # REST
 # ----------------------------
 
-def get_rest_microservice(user_model):
+def get_rest_microservice(user_router):
 
     app = Flask(__name__)
 
@@ -33,19 +33,19 @@ def get_rest_microservice(user_model):
         return response
 
 
-    @app.route("/predict",methods=["GET","POST"])
-    def Predict():
+    @app.route("/route",methods=["GET","POST"])
+    def Route():
         request = extract_message()
         sanity_check_request(request)
         
         datadef = request.get("data")
         features = rest_datadef_to_array(datadef)
 
-        predictions = np.array(predict(user_model,features,datadef.get("names")))
+        routing = np.array(route(user_router,features,datadef.get("names")))
         # TODO: check that predictions is 2 dimensional
-        class_names = get_class_names(user_model, predictions.shape[1])
+        class_names = []
 
-        data = array_to_rest_datadef(predictions, class_names, datadef)
+        data = array_to_rest_datadef(routing, class_names, datadef)
 
         return jsonify({"data":data})
 
@@ -59,7 +59,7 @@ def get_rest_microservice(user_model):
         truth = rest_datadef_to_array(feedback.get("truth"))
         reward = feedback.get("reward")
 
-        do_feedback(features,datadef_request.get("names"),truth,reward)
+        do_feedback(user_router,features,datadef_request.get("names"),truth,reward)
         return jsonify({})
 
     return app
@@ -74,15 +74,15 @@ class SeldonRouterGRPC(object):
     def __init__(self,user_model):
         self.user_model = user_model
 
-    def Predict(self,request,context):
+    def Route(self,request,context):
         datadef = request.data
         features = grpc_datadef_to_array(datadef)
 
-        predictions = np.array(predict(self.user_model,features,datadef.names))
+        routing = np.array(route(self.user_model,features,datadef.names))
         #TODO: check that predictions is 2 dimensional
-        class_names = get_class_names(self.user_model, predictions.shape[1])
+        class_names = []
 
-        data = array_to_grpc_datadef(predictions, class_names, request.data.WhichOneof("data_oneof"))
+        data = array_to_grpc_datadef(routing, class_names, request.data.WhichOneof("data_oneof"))
         return prediction_pb2.ResponseDef(data=data)
 
     def Feedback(self,feedback,context):
@@ -97,8 +97,8 @@ class SeldonRouterGRPC(object):
         return prediction_pb2.ResponseDef()
     
 def get_grpc_server(user_model):
-    seldon_model = SeldonModelGRPC(user_model)
+    seldon_router = SeldonRouterGRPC(user_model)
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    prediction_pb2_grpc.add_ModelServicer_to_server(seldon_model, server)
+    prediction_pb2_grpc.add_RouterServicer_to_server(seldon_router, server)
 
     return server

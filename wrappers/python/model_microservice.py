@@ -66,7 +66,7 @@ def get_rest_microservice(user_model):
         truth = rest_datadef_to_array(feedback.get("truth"))
         reward = feedback.get("reward")
 
-        do_feedback(features,datadef_request.get("names"),truth,reward)
+        do_feedback(user_model,features,datadef_request.get("names"),truth,reward)
         return jsonify({})
 
     return app
