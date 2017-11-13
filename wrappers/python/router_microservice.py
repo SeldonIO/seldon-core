@@ -7,6 +7,9 @@ from concurrent import futures
 
 from flask import jsonify, Flask
 import numpy as np
+import os
+
+PRED_UNIT_ID = os.environ.get("PREDICTIVE_UNIT_ID")
 
 # ---------------------------
 # Interaction with user router
@@ -15,8 +18,8 @@ import numpy as np
 def route(user_router,features,feature_names):
     return user_router.route(features,feature_names)
 
-def do_feedback(user_router,features,feature_names,truth,reward):
-    return user_router.feedback(features,feature_names,truth,reward)
+def do_feedback(user_router,features,feature_names,routing,reward,truth):
+    return user_router.feedback(features,feature_names,routing,reward,truth)
 
 # ----------------------------
 # REST
@@ -58,8 +61,9 @@ def get_rest_microservice(user_router):
         
         truth = rest_datadef_to_array(feedback.get("truth"))
         reward = feedback.get("reward")
+        routing = feedback.get("response").get("meta").get("routing").get(PRED_UNIT_ID)
 
-        do_feedback(user_router,features,datadef_request.get("names"),truth,reward)
+        do_feedback(user_router,features,datadef_request.get("names"),routing,reward,truth)
         return jsonify({})
 
     return app
@@ -91,8 +95,9 @@ class SeldonRouterGRPC(object):
         
         truth = grpc_datadef_to_array(feedback.truth)
         reward = feedback.reward
-
-        do_feedback(features,datadef_request.names,truth,reward)
+        routing = feedback.response.meta.routing.get(PRED_UNIT_ID)
+        
+        do_feedback(features,datadef_request.names,routing,reward,routing)
 
         return prediction_pb2.ResponseDef()
     
