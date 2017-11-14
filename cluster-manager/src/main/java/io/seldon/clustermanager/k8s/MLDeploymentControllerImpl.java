@@ -15,6 +15,7 @@ import io.kubernetes.client.models.ExtensionsV1beta1Deployment;
 import io.kubernetes.client.models.ExtensionsV1beta1DeploymentList;
 import io.seldon.clustermanager.k8s.MLDeploymentOperatorImpl.DeploymentResources;
 import io.seldon.clustermanager.k8s.client.K8sClientProvider;
+import io.seldon.clustermanager.pb.ProtoBufUtils;
 import io.seldon.protos.DeploymentProtos.MLDeployment;
 
 @Component
@@ -64,6 +65,7 @@ public class MLDeploymentControllerImpl implements MLDeploymentController {
 		{
 			mlDep = operator.defaulting(mlDep);
 			operator.validate(mlDep);
+			//logger.info(ProtoBufUtils.toJson(mlDep));
 			DeploymentResources resources = operator.createResources(mlDep);
 			ApiClient client = clientProvider.getClient();
 			createDeployments(client, resources.deployments);

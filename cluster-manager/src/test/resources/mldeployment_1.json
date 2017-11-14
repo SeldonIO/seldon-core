@@ -6,7 +6,7 @@
             "app": "seldon"
         },
         "name": "mldeployment-example",
-	"uid":"1234"
+        "uid": "1234"
     },
     "spec": {
         "annotations": {
@@ -18,32 +18,23 @@
         "predictors": [
             {
                 "componentSpec": {
-                    "metadata": {
-                        "labels": {
-                            "app": "seldon"
-                        }
-                    },
                     "spec": {
                         "containers": [
                             {
-                                "image": "nginx:1.10",
+                                "image": "seldonio/mean_classifier:0.5",
                                 "imagePullPolicy": "IfNotPresent",
-                                "name": "nginx",
-                                "resources": {},
-                                "terminationMessagePath": "/dev/termination-log",
-                                "terminationMessagePolicy": "File"
+                                "name": "mean-classifier"
                             }
                         ],
-                        "dnsPolicy": "ClusterFirst",
-                        "restartPolicy": "Always",
-                        "schedulerName": "default-scheduler",
-                        "securityContext": {},
-                        "terminationGracePeriodSeconds": 30
+                        "terminationGracePeriodSeconds": 0
                     }
                 },
                 "graphSpec": {
                     "children": [],
-                    "name": "nginx"
+                    "name": "mean-classifier",
+                    "protocol": "REST",
+                    "subtype": "SIMPLE_MODEL",
+                    "type": "MODEL"
                 },
                 "name": "fx-market-predictor",
                 "replicas": 1

@@ -31,6 +31,7 @@ import io.kubernetes.client.models.V1PodTemplateSpec;
 import io.kubernetes.client.models.V1Probe;
 import io.kubernetes.client.models.V1Service;
 import io.kubernetes.client.proto.IntStr.IntOrString;
+import io.kubernetes.client.proto.Meta.ObjectMeta;
 import io.kubernetes.client.proto.V1;
 import io.kubernetes.client.proto.V1.ContainerPort;
 import io.kubernetes.client.proto.V1.EnvVar;
@@ -178,6 +179,10 @@ public class MLDeploymentOperatorImpl implements MLDeploymentOperator {
 		int idx = 0;
 		for(PredictorDef p : mlDep.getSpec().getPredictorsList())
 		{
+			String serviceName = getKubernetesDeploymentId(mlDep.getSpec().getName(),p.getName(), false);
+			ObjectMeta.Builder metaBuilder = ObjectMeta.newBuilder(p.getComponentSpec().getMetadata())
+				.putLabels(LABEL_SELDON_APP, serviceName);
+			mlBuilder.getSpecBuilder().getPredictorsBuilder(idx).getComponentSpecBuilder().setMetadata(metaBuilder);
 			int cIdx = 0;
 			mlBuilder.getSpecBuilder().getPredictorsBuilder(idx).getComponentSpecBuilder().getSpecBuilder().clearContainers();
 			for(V1.Container c : p.getComponentSpec().getSpec().getContainersList())
@@ -226,6 +231,7 @@ public class MLDeploymentOperatorImpl implements MLDeploymentOperator {
 				podTemplate.getSpec().addContainersItem(engineContainer);
 				
 				String depName = getKubernetesDeploymentId(mlDep.getSpec().getName(),p.getName(), p.getType().equals(PredictorDef.PredictorType.CANARY));
+				String serviceLabel = getKubernetesDeploymentId(mlDep.getSpec().getName(),p.getName(), false);
 				ExtensionsV1beta1DeploymentSpec depSpec = new ExtensionsV1beta1DeploymentSpec()
 						.template(podTemplate)
 						.replicas(p.getReplicas());
@@ -233,7 +239,7 @@ public class MLDeploymentOperatorImpl implements MLDeploymentOperator {
 				 ExtensionsV1beta1Deployment dep = new ExtensionsV1beta1Deployment().apiVersion("extensions/v1beta1").kind("Deployment")
 						 	.metadata(new V1ObjectMeta()
 						 			.name(depName)
-						 			.putLabelsItem(LABEL_SELDON_APP, depName)
+						 			.putLabelsItem(LABEL_SELDON_APP, serviceLabel)
 						 			.putLabelsItem("seldon-deployment-id", mlDep.getSpec().getName())
 						 			.putLabelsItem("app", depName)
 						 			.putLabelsItem("version", "v1")  //FIXME
@@ -241,6 +247,7 @@ public class MLDeploymentOperatorImpl implements MLDeploymentOperator {
 						 			.addOwnerReferencesItem(ownerRef)
 						 			)
 						 	.spec(depSpec);
+				 logger.info(dep.toString());
 				 deployments.add(dep);
 			}
 			// Create service for deployment

@@ -8,14 +8,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.seldon.clustermanager.AppTest;
-import io.seldon.clustermanager.ClusterManagerProperites;
 import io.seldon.clustermanager.pb.ProtoBufUtils;
 import io.seldon.protos.DeploymentProtos.MLDeployment;
 
 public class MLDefploymentDefaultingTest extends AppTest {
 	private final static Logger logger = LoggerFactory.getLogger(MLDefploymentDefaultingTest.class);
-	
-	
 	
 	@Test
 	public void testDefaulting() throws IOException
