@@ -34,19 +34,36 @@ public abstract class PredictiveUnitBean {
 		this.internalPredictionService = internalPredictionService;
 	}
 	
+	public void sendFeedback(FeedbackDef feedback, PredictiveUnitState state) throws InterruptedException, ExecutionException{
+		Future<Boolean> ret = sendFeedbackAsync(feedback,state);
+		ret.get();
+	}
+	
 	@Async
-	public void sendFeedback(FeedbackDef feedback, PredictiveUnitState state){
+	public Future<Boolean> sendFeedbackAsync(FeedbackDef feedback, PredictiveUnitState state) throws InterruptedException, ExecutionException{
 		System.out.println("NODE " + state.name + ": entered feedback");
-		List<PredictiveUnitState> children = state.children;
+		List<PredictiveUnitState> children = state.children;	
+		List<Future<Boolean>> returns = new ArrayList<Future<Boolean>>();
+		
+		// First we call sendFeebackAsync on children
+		for (PredictiveUnitState child : children){
+			returns.add(child.predictiveUnitBean.sendFeedbackAsync(feedback,child));
+		}
+		
+		// Then we wait for our own feedback
 		if (feedback.getResponse().getMeta().getRoutingMap().get(state.id)!=null){
 			// If the response routing dictionary contains the current predictive unit key
 			doSendFeedback(feedback, state);
 			PredictiveUnitState chosenRoute = state.children.get(feedback.getResponse().getMeta().getRoutingMap().get(state.id));
 			chosenRoute.predictiveUnitBean.doStoreFeedbackMetrics(feedback, chosenRoute);
 		}
-		for (PredictiveUnitState child : children){
-			child.predictiveUnitBean.sendFeedback(feedback,child);
+		
+		//Then we wait for children feedback
+		for (Future<Boolean> ret : returns){
+			ret.get();
 		}
+		
+		return new AsyncResult<>(true);
 	}
 	
 	protected void doSendFeedback(FeedbackDef feedback, PredictiveUnitState state){
@@ -62,15 +79,6 @@ public abstract class PredictiveUnitBean {
 		Map<String,Integer> routingDict = new HashMap<String,Integer>();
 		Future<ResponseDef> ret = state.predictiveUnitBean.predict(request, state, routingDict);
 		ResponseDef response = ret.get();
-//		MetaDef meta = response.getMeta();
-//		Map<String, Integer> currentRouting = meta.getRoutingMap();
-//		Iterator<Entry<String,Integer>> it = routingDict.entrySet().iterator();
-//	    while (it.hasNext()) {
-//	        Entry<String,Integer> pair = (Entry<String,Integer>)it.next();
-//	        currentRouting.put(pair.getKey(), pair.getValue());
-//	        it.remove(); // avoids a ConcurrentModificationException
-//	    }
-//	    FieldDescriptor field = MetaDef.getDescriptor().findFieldByNumber(MetaDef.ROUTING_FIELD_NUMBER);
 		ResponseDef.Builder builder = ResponseDef
 	    		.newBuilder(response)
 	    		.setMeta(MetaDef

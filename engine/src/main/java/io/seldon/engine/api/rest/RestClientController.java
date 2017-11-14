@@ -137,8 +137,7 @@ public class RestClientController {
     */
 	
 	@RequestMapping(value= "/api/v0.1/feedback", method = RequestMethod.POST, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
-	@ResponseStatus(value = HttpStatus.OK)
-	public void feedback(RequestEntity<String> requestEntity) {
+	public ResponseEntity<String>  feedback(RequestEntity<String> requestEntity) {
 		FeedbackDef feedback;
 		
 		try
@@ -156,6 +155,8 @@ public class RestClientController {
 		try
 		{
 			predictionService.sendFeedback(feedback);
+			String json = "{}";
+			return new ResponseEntity<String>(json,HttpStatus.OK);
 		}
 		 catch (InterruptedException e) {
 			throw new APIException(ApiExceptionType.ENGINE_INTERRUPTED,e.getMessage());
@@ -168,7 +169,6 @@ public class RestClientController {
 				throw new APIException(ApiExceptionType.ENGINE_EXECUTION_FAILURE,e.getMessage());
 			}
 		}
-		return;
     }
 	
 	@RequestMapping("/api/v0.1/events")

@@ -1,4 +1,5 @@
 from proto import prediction_pb2
+import persistence
 
 from flask import Flask, Blueprint, request
 import argparse
@@ -66,6 +67,8 @@ def rest_datadef_to_array(datadef):
         features = np.array(datadef.get("tensor").get("values")).reshape(datadef.get("tensor").get("shape"))
     elif datadef.get("ndarray") is not None:
         features = np.array(datadef.get("ndarray"))
+    else:
+        features = array([])
     return features
 
 def array_to_rest_datadef(array,names,original_datadef):
@@ -85,6 +88,8 @@ def grpc_datadef_to_array(datadef):
         features = np.array(datadef.tensor.values).reshape(datadef.tensor.shape)
     elif data_type == "ndarray":
         features = np.array(datadef.ndarray)
+    else:
+        features = np.array([])
     return features
 
 def array_to_grpc_datadef(array,names,data_type):
@@ -101,6 +106,10 @@ def array_to_grpc_datadef(array,names,data_type):
             names = names,
             ndarray = array_to_list_value(array)
         )
+    else:
+        datadef = prediction_pb2.DefaultDataDef(
+            names = names
+            )
 
     return datadef
                           
@@ -123,7 +132,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("interface_name",type=str,help="Name of the user interface.")
     parser.add_argument("api_type",type=str,choices=["REST","GRPC"])
-    parser.add_argument("--microservice_type",type=str,choices=["MODEL","ROUTER"],default="MODEL")
+    parser.add_argument("--service-type",type=str,choices=["MODEL","ROUTER"],default="MODEL")
     parser.add_argument("--persistence",action="store_true")
     parser.add_argument("--parameters",type=str,default=os.environ.get(PARAMETERS_ENV_NAME,"[]"))
     args = parser.parse_args()
@@ -139,9 +148,9 @@ if __name__ == "__main__":
     else:
         user_object = user_class(**parameters)
 
-    if args.microservice_type == "MODEL":
+    if args.service_type == "MODEL":
         import model_microservice as seldon_microservice
-    elif args.microservice_type == "ROUTER":
+    elif args.service_type == "ROUTER":
         import router_microservice as seldon_microservice
 
     port = os.environ.get(SERVICE_PORT_ENV_NAME,DEFAULT_PORT)

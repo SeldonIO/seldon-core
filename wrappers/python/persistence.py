@@ -1,7 +1,7 @@
 import threading
 import os
 import time
-import pickle
+import cPickle as pickle
 import redis
 
 

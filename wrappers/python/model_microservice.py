@@ -99,7 +99,7 @@ class SeldonModelGRPC(object):
         truth = grpc_datadef_to_array(feedback.truth)
         reward = feedback.reward
 
-        do_feedback(features,datadef_request.names,truth,reward)
+        do_feedback(self.user_model,features,datadef_request.names,truth,reward)
 
         return prediction_pb2.ResponseDef()
     

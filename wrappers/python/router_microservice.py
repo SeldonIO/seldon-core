@@ -97,7 +97,7 @@ class SeldonRouterGRPC(object):
         reward = feedback.reward
         routing = feedback.response.meta.routing.get(PRED_UNIT_ID)
         
-        do_feedback(features,datadef_request.names,routing,reward,routing)
+        do_feedback(self.user_model,features,datadef_request.names,routing,reward,truth)
 
         return prediction_pb2.ResponseDef()
     
