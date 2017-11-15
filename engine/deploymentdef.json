@@ -14,7 +14,13 @@
             },
             "id": "0",
             "name": "router",
-            "parameters": [],
+            "parameters": [
+		{
+		    "name":"n_branches",
+		    "value":2,
+		    "type":"INT"
+		}
+	    ],
             "subtype": "MICROSERVICE",
             "type": "ROUTER"
         },

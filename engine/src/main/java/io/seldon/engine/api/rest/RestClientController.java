@@ -22,9 +22,9 @@ import io.seldon.engine.exception.APIException;
 import io.seldon.engine.exception.APIException.ApiExceptionType;
 import io.seldon.engine.pb.ProtoBufUtils;
 import io.seldon.engine.service.PredictionService;
-import io.seldon.protos.PredictionProtos.PredictionFeedbackDef;
-import io.seldon.protos.PredictionProtos.PredictionRequestDef;
-import io.seldon.protos.PredictionProtos.PredictionResponseDef;
+import io.seldon.protos.PredictionProtos.FeedbackDef;
+import io.seldon.protos.PredictionProtos.RequestDef;
+import io.seldon.protos.PredictionProtos.ResponseDef;
 
 @RestController
 public class RestClientController {
@@ -87,10 +87,10 @@ public class RestClientController {
 	@RequestMapping(value = "/api/v0.1/predictions", method = RequestMethod.POST, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
     public ResponseEntity<String> predictions(RequestEntity<String> requestEntity)
 	{
-		PredictionRequestDef request;
+		RequestDef request;
 		try
 		{
-			PredictionRequestDef.Builder builder = PredictionRequestDef.newBuilder();
+			RequestDef.Builder builder = RequestDef.newBuilder();
 			ProtoBufUtils.updateMessageBuilderFromJson(builder, requestEntity.getBody() );
 			request = builder.build();
 		} 
@@ -102,7 +102,7 @@ public class RestClientController {
 
 		try
 		{
-			PredictionResponseDef response = predictionService.predict(request);
+			ResponseDef response = predictionService.predict(request);
 			String json = ProtoBufUtils.toJson(response);
 			return new ResponseEntity<String>(json,HttpStatus.OK);
 		}
@@ -137,13 +137,12 @@ public class RestClientController {
     */
 	
 	@RequestMapping(value= "/api/v0.1/feedback", method = RequestMethod.POST, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
-	@ResponseStatus(value = HttpStatus.OK)
-	public void feedback(RequestEntity<String> requestEntity) {
-		PredictionFeedbackDef feedback;
+	public ResponseEntity<String>  feedback(RequestEntity<String> requestEntity) {
+		FeedbackDef feedback;
 		
 		try
 		{
-			PredictionFeedbackDef.Builder builder = PredictionFeedbackDef.newBuilder();
+			FeedbackDef.Builder builder = FeedbackDef.newBuilder();
 			ProtoBufUtils.updateMessageBuilderFromJson(builder, requestEntity.getBody() );
 			feedback = builder.build();
 		} 
@@ -156,6 +155,8 @@ public class RestClientController {
 		try
 		{
 			predictionService.sendFeedback(feedback);
+			String json = "{}";
+			return new ResponseEntity<String>(json,HttpStatus.OK);
 		}
 		 catch (InterruptedException e) {
 			throw new APIException(ApiExceptionType.ENGINE_INTERRUPTED,e.getMessage());
@@ -168,7 +169,6 @@ public class RestClientController {
 				throw new APIException(ApiExceptionType.ENGINE_EXECUTION_FAILURE,e.getMessage());
 			}
 		}
-		return;
     }
 	
 	@RequestMapping("/api/v0.1/events")

@@ -13,8 +13,8 @@ import io.seldon.protos.DeploymentProtos.PredictiveUnitDef;
 import io.seldon.protos.DeploymentProtos.PredictiveUnitDef.ParamDef;
 import io.seldon.protos.DeploymentProtos.PredictiveUnitDef.ParamType;
 import io.seldon.protos.DeploymentProtos.PredictorDef;
-import io.seldon.protos.PredictionProtos.PredictionRequestDef;
-import io.seldon.protos.PredictionProtos.PredictionResponseDef;
+import io.seldon.protos.PredictionProtos.RequestDef;
+import io.seldon.protos.PredictionProtos.ResponseDef;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -66,13 +66,13 @@ public class RandomABTestUnitTest {
 		PredictorState predictorState = predictorBean.predictorStateFromDeploymentDef(predictor);
 
 		
-		PredictionRequestDef p = PredictionRequestDef.newBuilder().build();
+		RequestDef p = RequestDef.newBuilder().build();
 			
-        PredictionResponseDef predictorReturn = predictorBean.predict(p,predictorState);
+        ResponseDef predictorReturn = predictorBean.predict(p,predictorState);
 		
-        Assert.assertEquals((double) SimpleModelUnit.values[0], predictorReturn.getResponse().getTensor().getValues(0),0);
-        Assert.assertEquals((double) SimpleModelUnit.values[1], predictorReturn.getResponse().getTensor().getValues(1),0);
-        Assert.assertEquals((double) SimpleModelUnit.values[2], predictorReturn.getResponse().getTensor().getValues(2),0);        
+        Assert.assertEquals((double) SimpleModelUnit.values[0], predictorReturn.getData().getTensor().getValues(0),0);
+        Assert.assertEquals((double) SimpleModelUnit.values[1], predictorReturn.getData().getTensor().getValues(1),0);
+        Assert.assertEquals((double) SimpleModelUnit.values[2], predictorReturn.getData().getTensor().getValues(2),0);        
 	
 	}
 }

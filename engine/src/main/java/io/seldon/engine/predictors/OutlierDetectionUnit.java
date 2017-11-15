@@ -6,9 +6,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import io.seldon.protos.PredictionProtos.PredictionRequestDef;
-import io.seldon.protos.PredictionProtos.PredictionResponseDef;
-import io.seldon.protos.PredictionProtos.PredictionResponseMetaDef;
+import io.seldon.protos.PredictionProtos.RequestDef;
+import io.seldon.protos.PredictionProtos.ResponseDef;
+import io.seldon.protos.PredictionProtos.MetaDef;
 import io.seldon.protos.PredictionProtos.OutlierStatus;
 
 public class OutlierDetectionUnit extends PredictiveUnitBean {
@@ -18,10 +18,10 @@ public class OutlierDetectionUnit extends PredictiveUnitBean {
 	}
 	
 	@Override
-	protected PredictionResponseDef backwardPass(List<PredictionResponseDef> inputs, PredictionRequestDef request, PredictiveUnitState state){
+	protected ResponseDef backwardPass(List<ResponseDef> inputs, RequestDef request, PredictiveUnitState state){
 		
-		PredictionResponseDef response = inputs.get(0);
-		PredictionResponseDef outlierDetectionResponse = null;
+		ResponseDef response = inputs.get(0);
+		ResponseDef outlierDetectionResponse = null;
 		
 		try {
 			outlierDetectionResponse = internalPredictionService.getPrediction(request, state);
@@ -30,13 +30,13 @@ public class OutlierDetectionUnit extends PredictiveUnitBean {
 			e.printStackTrace();
 		}
 		
-		Boolean isOutlier = outlierDetectionResponse.getResponse().getTensor().getValues(0) == 1.;
-		Double outlierScore = outlierDetectionResponse.getResponse().getTensor().getValues(1);
+		Boolean isOutlier = outlierDetectionResponse.getData().getTensor().getValues(0) == 1.;
+		Double outlierScore = outlierDetectionResponse.getData().getTensor().getValues(1);
 		
 		
-		PredictionResponseDef.Builder builder = PredictionResponseDef
+		ResponseDef.Builder builder = ResponseDef
 	    		.newBuilder(response)
-	    		.setMeta(PredictionResponseMetaDef
+	    		.setMeta(MetaDef
 	    				.newBuilder(response.getMeta()).setOutlierStatus(OutlierStatus.newBuilder().setIsOutlier(isOutlier).setScore(outlierScore)));
 		
 		return builder.build();
