@@ -1,0 +1,23 @@
+image: docker:latest
+services:
+  - docker:dind
+
+variables:
+  DOCKER_DRIVER: overlay
+  SPRING_PROFILES_ACTIVE: gitlab-ci
+
+stages:
+  - build
+
+maven-build:
+  image: maven:3-jdk-8
+  stage: build
+  script: "cd cluster-manager"
+  script: "pwd > out.txt"
+  artifacts:
+    paths:
+      - cluster-manager/out.txt
+      - target/*.jar
+  only:
+    - ci_test
+
