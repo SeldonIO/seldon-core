@@ -14,11 +14,12 @@ maven-build:
   stage: build
   script:
     - "cd cluster-manager"
-    - "pwd > out.txt"
+    - "pwd > build.txt"
+    - mvn package -B
   artifacts:
     paths:
-      - cluster-manager/out.txt
-      - target/*.jar
+      - cluster-manager/build.txt
+      - cluster-manager/target/*.jar
   only:
     - ci_test
 
