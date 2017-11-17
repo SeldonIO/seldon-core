@@ -65,7 +65,7 @@ public class MLDeploymentControllerImpl implements MLDeploymentController {
 		{
 			mlDep = operator.defaulting(mlDep);
 			operator.validate(mlDep);
-			//logger.info(ProtoBufUtils.toJson(mlDep));
+			logger.info(ProtoBufUtils.toJson(mlDep));
 			DeploymentResources resources = operator.createResources(mlDep);
 			ApiClient client = clientProvider.getClient();
 			createDeployments(client, resources.deployments);

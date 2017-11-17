@@ -42,6 +42,7 @@ public class MLDeploymentUtils {
 		 return (T) json.deserialize(ptsJson, type);
 	}
 	
+	/*
 	private static void updateProbe(V1Probe probe,Handler handler,int cidx) throws InvalidProtocolBufferException, MLDeploymentException
 	{
 		if (handler.hasHttpGet())
@@ -73,6 +74,7 @@ public class MLDeploymentUtils {
 			probe.setTcpSocket(tcpSocket);
 		}
 	}
+
 	
 	private static V1PodTemplateSpec fixProbes(PodTemplateSpec protoTemplateSpec,V1PodTemplateSpec spec) throws MLDeploymentException, InvalidProtocolBufferException
 	{
@@ -94,6 +96,7 @@ public class MLDeploymentUtils {
 		}
 		return spec;
 	}
+		*/
 	
 	public static V1PodTemplateSpec convertProtoToModel(PodTemplateSpec protoTemplateSpec) throws InvalidProtocolBufferException, MLDeploymentException
 	{
@@ -102,7 +105,8 @@ public class MLDeploymentUtils {
 		 JSON json = new JSON();
 		 Type returnType = new TypeToken<V1PodTemplateSpec>(){}.getType();
 		 V1PodTemplateSpec podTemplateSpec = (V1PodTemplateSpec) json.deserialize(ptsJson, returnType);
-		 return fixProbes(protoTemplateSpec, podTemplateSpec);
+		 //return fixProbes(protoTemplateSpec, podTemplateSpec);
+		 return podTemplateSpec;
 	}
 
 	

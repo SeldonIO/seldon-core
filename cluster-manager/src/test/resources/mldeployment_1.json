@@ -23,7 +23,12 @@
                             {
                                 "image": "seldonio/mean_classifier:0.5",
                                 "imagePullPolicy": "IfNotPresent",
-                                "name": "mean-classifier"
+                                "name": "mean-classifier",
+                                "resources": {
+                                    "requests": {
+                                        "memory": "1Mi"
+                                    }
+                                }
                             }
                         ],
                         "terminationGracePeriodSeconds": 0

@@ -2,10 +2,8 @@ package io.seldon.clustermanager.k8s;
 
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -23,15 +21,14 @@ import io.kubernetes.client.models.V1EnvVar;
 import io.kubernetes.client.models.V1ExecAction;
 import io.kubernetes.client.models.V1HTTPGetAction;
 import io.kubernetes.client.models.V1Handler;
-import io.kubernetes.client.models.V1LabelSelector;
 import io.kubernetes.client.models.V1Lifecycle;
 import io.kubernetes.client.models.V1ObjectMeta;
 import io.kubernetes.client.models.V1OwnerReference;
 import io.kubernetes.client.models.V1PodTemplateSpec;
 import io.kubernetes.client.models.V1Probe;
 import io.kubernetes.client.models.V1Service;
-import io.kubernetes.client.proto.IntStr.IntOrString;
 import io.kubernetes.client.proto.Meta.ObjectMeta;
+import io.kubernetes.client.proto.Resource.Quantity;
 import io.kubernetes.client.proto.V1;
 import io.kubernetes.client.proto.V1.ContainerPort;
 import io.kubernetes.client.proto.V1.EnvVar;
@@ -39,6 +36,7 @@ import io.kubernetes.client.proto.V1.ExecAction;
 import io.kubernetes.client.proto.V1.Handler;
 import io.kubernetes.client.proto.V1.Lifecycle;
 import io.kubernetes.client.proto.V1.Probe;
+import io.kubernetes.client.proto.V1.ResourceRequirements;
 import io.kubernetes.client.proto.V1.TCPSocketAction;
 import io.seldon.clustermanager.ClusterManagerProperites;
 import io.seldon.clustermanager.pb.ProtoBufUtils;
@@ -89,7 +87,7 @@ public class MLDeploymentOperatorImpl implements MLDeploymentOperator {
 							.addPortsItem(new V1ContainerPort().containerPort(clusterManagerProperites.getEngineContainerPort()))
 							.addPortsItem(new V1ContainerPort().containerPort(8082).name("admin"))
 							.readinessProbe(new V1Probe()
-									.httpGet(new V1HTTPGetAction().port("admin").path("/ready"))
+									.httpGet(new V1HTTPGetAction().port(new io.kubernetes.client.custom.IntOrString("admin")).path("/ready"))
 									.initialDelaySeconds(5)
 									.periodSeconds(5)
 									.failureThreshold(1)
@@ -97,7 +95,7 @@ public class MLDeploymentOperatorImpl implements MLDeploymentOperator {
 									.timeoutSeconds(2)
 									)
 							.livenessProbe(new V1Probe()
-									.httpGet(new V1HTTPGetAction().port("admin").path("/ping"))
+									.httpGet(new V1HTTPGetAction().port(new io.kubernetes.client.custom.IntOrString("admin")).path("/ping"))
 									.initialDelaySeconds(5)
 									.periodSeconds(5)
 									.failureThreshold(1)
@@ -139,11 +137,10 @@ public class MLDeploymentOperatorImpl implements MLDeploymentOperator {
 		if (!envNames.contains(ENV_PREDICTIVE_UNIT_SERVICE_PORT))
 			c2Builder.addEnv(EnvVar.newBuilder().setName(ENV_PREDICTIVE_UNIT_SERVICE_PORT).setValue(""+clusterManagerProperites.getEngineContainerPort()));
 				
-		
 		if (!c.hasLivenessProbe())
 		{
 			c2Builder.setLivenessProbe(Probe.newBuilder()
-					.setHandler(Handler.newBuilder().setTcpSocket(TCPSocketAction.newBuilder().setPort(IntOrString.newBuilder().setStrVal("http"))))
+					.setHandler(Handler.newBuilder().setTcpSocket(TCPSocketAction.newBuilder().setPort(io.kubernetes.client.proto.IntStr.IntOrString.newBuilder().setType(1).setStrVal("http"))))
 					.setInitialDelaySeconds(10)
 					.setPeriodSeconds(5)
 					);
@@ -152,7 +149,7 @@ public class MLDeploymentOperatorImpl implements MLDeploymentOperator {
 		if (!c.hasReadinessProbe())
 		{
 			c2Builder.setReadinessProbe(Probe.newBuilder()
-					.setHandler(Handler.newBuilder().setTcpSocket(TCPSocketAction.newBuilder().setPort(IntOrString.newBuilder().setStrVal("http"))))
+					.setHandler(Handler.newBuilder().setTcpSocket(TCPSocketAction.newBuilder().setPort(io.kubernetes.client.proto.IntStr.IntOrString.newBuilder().setType(1).setStrVal("http"))))
 					.setInitialDelaySeconds(10)
 					.setPeriodSeconds(5)
 					);
