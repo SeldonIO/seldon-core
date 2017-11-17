@@ -12,8 +12,9 @@ stages:
 maven-build:
   image: maven:3-jdk-8
   stage: build
-  script: "cd cluster-manager"
-  script: "pwd > out.txt"
+  script:
+    - "cd cluster-manager"
+    - "pwd > out.txt"
   artifacts:
     paths:
       - cluster-manager/out.txt
