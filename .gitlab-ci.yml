@@ -9,12 +9,13 @@ variables:
 stages:
   - build
 
-maven-build:
+cluster-manager-maven-build:
   image: maven:3-jdk-8
   stage: build
   script:
     - "cd cluster-manager"
     - "pwd > build.txt"
+    - cp -v ../proto/seldonengine.proto src/main/proto/
     - mvn package -B
   artifacts:
     paths:
