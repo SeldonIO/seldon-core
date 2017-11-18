@@ -15,20 +15,16 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.reflect.TypeToken;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
-import com.google.protobuf.util.JsonFormat;
-import com.google.protobuf.util.JsonFormat.Printer;
 
 import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.V1Container;
-import io.kubernetes.client.models.V1HTTPGetAction;
 import io.kubernetes.client.models.V1PodTemplateSpec;
-import io.kubernetes.client.models.V1Probe;
-import io.kubernetes.client.models.V1TCPSocketAction;
-import io.kubernetes.client.proto.V1.HTTPGetAction;
-import io.kubernetes.client.proto.V1.Handler;
+import io.kubernetes.client.proto.IntStr.IntOrString;
+import io.kubernetes.client.proto.Resource.Quantity;
 import io.kubernetes.client.proto.V1.PodTemplateSpec;
-import io.kubernetes.client.proto.V1.TCPSocketAction;
-import io.seldon.clustermanager.pb.ProtoBufUtils;
+import io.seldon.clustermanager.pb.IntOrStringUtils;
+import io.seldon.clustermanager.pb.JsonFormat;
+import io.seldon.clustermanager.pb.JsonFormat.Printer;
+import io.seldon.clustermanager.pb.QuantityUtils;
 import io.seldon.protos.DeploymentProtos.MLDeployment;
 
 public class MLDeploymentUtils {
@@ -42,61 +38,7 @@ public class MLDeploymentUtils {
 		 return (T) json.deserialize(ptsJson, type);
 	}
 	
-	/*
-	private static void updateProbe(V1Probe probe,Handler handler,int cidx) throws InvalidProtocolBufferException, MLDeploymentException
-	{
-		if (handler.hasHttpGet())
-		{
-			Type returnType = new TypeToken<V1HTTPGetAction>(){}.getType();
-			V1HTTPGetAction httpGet = convertProtoToModel(HTTPGetAction.newBuilder(handler.getHttpGet()).clearPort().build(), returnType);
-			HTTPGetAction protoHttpGet = handler.getHttpGet();	
-			if (protoHttpGet.hasPort())
-			{
-				if (protoHttpGet.getPort().hasStrVal())
-					httpGet.setPort(protoHttpGet.getPort().getStrVal());
-				else
-					throw new MLDeploymentException("Container "+cidx+" has integer http port liveness probe which is not supported by kubernetes Java client");
-			}
-			probe.setHttpGet(httpGet);
-		}
-		else if (handler.hasTcpSocket())
-		{
-			Type returnType = new TypeToken<V1TCPSocketAction>(){}.getType();
-			V1TCPSocketAction tcpSocket = convertProtoToModel(TCPSocketAction.newBuilder(handler.getTcpSocket()).clearPort().build(), returnType);
-			TCPSocketAction protoTcpGet = handler.getTcpSocket();	
-			if (protoTcpGet.hasPort())
-			{
-				if (protoTcpGet.getPort().hasStrVal())
-					tcpSocket.setPort(protoTcpGet.getPort().getStrVal());
-				else
-					throw new MLDeploymentException("Container "+cidx+" has integer tcp port liveness probe which is not supported by kubernetes Java client");
-			}
-			probe.setTcpSocket(tcpSocket);
-		}
-	}
-
 	
-	private static V1PodTemplateSpec fixProbes(PodTemplateSpec protoTemplateSpec,V1PodTemplateSpec spec) throws MLDeploymentException, InvalidProtocolBufferException
-	{
-		int cidx = 0;
-		for (V1Container c : spec.getSpec().getContainers())
-		{
-			if (c.getLivenessProbe() != null)
-			{
-				V1Probe probe = c.getLivenessProbe();
-				Handler handler = protoTemplateSpec.getSpec().getContainers(cidx).getLivenessProbe().getHandler();
-				updateProbe(probe, handler, cidx);
-			}
-			if (c.getReadinessProbe() != null)
-			{
-				V1Probe probe = c.getReadinessProbe();
-				Handler handler = protoTemplateSpec.getSpec().getContainers(cidx).getReadinessProbe().getHandler();
-				updateProbe(probe, handler, cidx);				
-			}
-		}
-		return spec;
-	}
-		*/
 	
 	public static V1PodTemplateSpec convertProtoToModel(PodTemplateSpec protoTemplateSpec) throws InvalidProtocolBufferException, MLDeploymentException
 	{
@@ -138,8 +80,20 @@ public class MLDeploymentUtils {
 	public static MLDeployment jsonToMLDeployment(String json) throws InvalidProtocolBufferException {
 		String jsonModified = removeCreationTimestampField(json);
 		MLDeployment.Builder mlBuilder = MLDeployment.newBuilder();
-		ProtoBufUtils.updateMessageBuilderFromJson(mlBuilder, jsonModified);
+		JsonFormat.parser().ignoringUnknownFields()
+			.usingTypeParser(IntOrString.getDescriptor().getFullName(), new IntOrStringUtils.IntOrStringParser())
+			.usingTypeParser(Quantity.getDescriptor().getFullName(), new QuantityUtils.QuantityParser())
+			.merge(jsonModified, mlBuilder);
 		return mlBuilder.build();
+	}
+	
+	public static String toJson(MLDeployment mlDep) throws InvalidProtocolBufferException
+	{
+		Printer jsonPrinter = JsonFormat.printer().preservingProtoFieldNames()
+				.usingTypeConverter(IntOrString.getDescriptor().getFullName(), new IntOrStringUtils.IntOrStringConverter())
+				.usingTypeConverter(Quantity.getDescriptor().getFullName(), new QuantityUtils.QuantityConverter());
+		return jsonPrinter.print(mlDep);
+				
 	}
 	
 }
