@@ -1,0 +1,10 @@
+build_jar: update_proto
+	mvn clean package -B
+
+clean:
+	mvn clean -B
+	rm -fv src/main/proto/seldonengine.proto
+
+update_proto:
+	cp -v ../proto/seldonengine.proto src/main/proto/
+
