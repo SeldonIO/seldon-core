@@ -60,6 +60,8 @@ update_version_txt:
 update_proto:
 	cp -v ../proto/seldonengine.proto src/main/proto/ 
 	cp -v ../proto/prediction.proto src/main/proto/ 
+	cp -vr ../proto/k8s/k8s.io src/main/proto
+	cp -v ../proto/k8s/v1.proto src/main/proto
 
 port_forward_api_server:
 	POD_NAME=$$(kubectl --namespace default get pod -l app=seldon-apiserver-container-app -o template --template="{{(index .items 0).metadata.name}}") && \

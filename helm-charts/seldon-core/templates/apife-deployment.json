@@ -39,7 +39,7 @@
                                     }
                                 ],
                                 "image": "seldonio/apife:{{ .Values.apife.image.tag }}",
-                                "imagePullPolicy": "IfNotPresent",
+                                "imagePullPolicy": "{{ .Values.apife.image.pull_policy }}",
                                 "name": "seldon-apiserver-container",
                                 "ports": [
                                     {

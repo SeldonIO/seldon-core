@@ -1,7 +1,10 @@
 // [START declaration]
-syntax = "proto3";
+syntax = "proto2";
 package seldon.protos;
 // [END declaration]
+
+import "k8s.io/apimachinery/pkg/apis/meta/v1/generated.proto";
+import "v1.proto";
 
 // [START java_declaration]
 option java_package = "io.seldon.protos";
@@ -10,42 +13,11 @@ option java_outer_classname = "DeploymentProtos";
 
 // [START messages]
 
-message ClusterDef {}
 
-message EndpointDef {
-
-    enum EndpointType {
-        REST = 0;
-        GRPC = 1;
-    }
-
-    string service_host = 1;
-    int32 service_port = 2;
-    EndpointType type = 3;
-}
-
-message ClusterResourcesDef {
-
-    string cpu = 1;
-    string gpu = 2;
-    string id = 3;
-    string image = 4;
-    string memory = 5;
-    string version = 6;
-}
-
-message PredictiveUnitDef {
-
-    enum ParamType {
-      UNKNOWN_PARAMTYPE = 0;
-      INT = 1;
-      FLOAT = 2;
-      DOUBLE = 3;
-      STRING = 4;
-    }
+message PredictionGraph {
 
   enum PredictiveUnitType {
-    UNKOWN_TYPE = 0;
+    UNKNOWN_TYPE = 0;
     ROUTER = 1;
     COMBINER = 2;
     MODEL = 3;
@@ -61,97 +33,74 @@ message PredictiveUnitDef {
     AVERAGE_COMBINER = 5;
   }
 
-    message ParamDef {
-        string name = 1;
-        ParamType type = 2;
-        string value = 3;
+    enum EndpointType {
+        REST = 0;
+        GRPC = 1;
     }
 
-    repeated string children = 1;
-    ClusterResourcesDef cluster_resources = 2;
-    EndpointDef endpoint = 3;
-    string name = 4;
-    string id = 5;
-    repeated ParamDef parameters = 6;
-    PredictiveUnitSubType subtype = 7;
-    PredictiveUnitType type = 8;
+  required string name = 1;//must match container name of component if subtype microservice
+  repeated PredictionGraph children = 2;
+  optional PredictiveUnitType type = 3;
+  optional PredictiveUnitSubType subtype = 4;
+  optional EndpointType protocol = 5;
 }
 
+message EndpointDef {
+
+  enum EndpointType {
+    REST = 0;
+    GRPC = 1;
+  }
+
+  optional string service_host = 1;
+  optional int32 service_port = 2;
+  optional EndpointType type = 3;
+}
+
+
 message PredictorDef {
-  string id = 1;
-  string name = 2;
-  string version = 3;
-  bool enabled = 4;
-  EndpointDef endpoint = 5;
-  repeated string imagePullSecrets = 6;
-  repeated PredictiveUnitDef predictiveUnits = 7;
-  int32 replicas = 8;
-  int32 replicasReady = 9;
-  string root = 10;
-  map<string,string> annotations = 11;
+  enum PredictorType {
+    NORMAL = 0;
+    CANARY = 1;
+  }
+
+  required string name = 1;
+  optional PredictorType type = 2;
+  required PredictionGraph graphSpec = 3;
+  required k8s.io.api.core.v1.PodTemplateSpec componentSpec = 4;
+  optional int32 replicas = 5;
 }
 
 message DeploymentDef {
-  ClusterDef cluster = 1;
-  string id = 2;
-  string name = 3;
-  PredictorDef predictor = 4;
-  string uniqueName = 5;
-  string oauth_key = 6;
-  string oauth_secret = 7;
-  PredictorDef predictor_canary = 8;
-  map<string,string> annotations = 9;
+  optional string name = 1;
+  repeated PredictorDef predictors = 2;
+  optional EndpointDef endpoint = 3;
+  optional string oauth_key = 4;
+  optional string oauth_secret = 5;
+  map<string,string> annotations = 6;
 }
 
-message DeploymentResultDef {
-    DeploymentDef deployment = 1;
+
+message PredictorStatus {
+  required string name = 1;
+  required string status = 2; 
+  optional string description = 3; 
 }
 
-message StringListDef {
-    repeated string items = 1;
+message DeploymentStatus {
+  required string state = 1; 
+  optional string description = 2; 
+  repeated PredictorStatus predictorStatus = 3;
 }
 
-message CMStatusDef {
-
-    enum Status {
-        SUCCESS = 0;
-        FAILURE = 1;
-    }
-
-    int32 code = 1;
-    string info = 2;
-    string reason = 3;
-    Status status = 4;
+message MLDeployment {
+  required string apiVersion = 1;
+  required string kind = 2;
+  optional k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta metadata = 3;
+  required DeploymentDef spec = 4;
+  optional DeploymentStatus status = 5;
 }
 
-message CMResultDef {
-
-    CMStatusDef cmstatus = 1;
-    oneof oneof_data {
-        DeploymentResultDef deployment_result = 2;
-        StringListDef string_list = 3;
-        string test_str = 4;
-        int32 test_num = 5;
-    }
-}
-
-message StringSecretDef {
-    string name = 1;
-    map<string, string> data = 2;
-    string type = 3;
-}
-
-message DockerRegistrySecretDef {
-
-    message DockerRegistryDetailsDef {
-        string url = 1;
-        string username = 2;
-        string password = 3;
-    }
-
-    string name = 1;
-    DockerRegistryDetailsDef dockerRegistryDetails = 2;
-}
 
 // [END messages]
 

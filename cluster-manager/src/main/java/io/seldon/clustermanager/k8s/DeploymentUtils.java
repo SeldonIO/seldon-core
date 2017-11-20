@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.slf4j.Logger;
@@ -20,9 +21,9 @@ import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.EnvVarBuilder;
-import io.fabric8.kubernetes.api.model.HTTPGetAction;
 import io.fabric8.kubernetes.api.model.HTTPGetActionBuilder;
 import io.fabric8.kubernetes.api.model.LocalObjectReference;
+import io.fabric8.kubernetes.api.model.OwnerReference;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.ServiceBuilder;
@@ -35,6 +36,7 @@ import io.seldon.protos.DeploymentProtos.ClusterResourcesDef;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
 import io.seldon.protos.DeploymentProtos.EndpointDef;
 import io.seldon.protos.DeploymentProtos.EndpointDef.EndpointType;
+import io.seldon.protos.DeploymentProtos.MLDeployment;
 import io.seldon.protos.DeploymentProtos.PredictiveUnitDef;
 import io.seldon.protos.DeploymentProtos.PredictiveUnitDef.ParamDef;
 import io.seldon.protos.DeploymentProtos.PredictiveUnitDef.PredictiveUnitSubType;
@@ -50,6 +52,9 @@ public class DeploymentUtils {
         public final String trackLabelName = "seldon-track";
         public final String trackLabelValue;
         public final boolean serviceNeeded;
+        public final static String seldonLabelName = "seldon-type";
+        public final static String seldonLabelMlDepValue = "mldeployment";
+        
 
         public ServiceSelectorDetails(String seldonDeploymentId, boolean isCanary) {
             //@formatter:off
@@ -85,15 +90,24 @@ public class DeploymentUtils {
 
     }
 
-    public static List<BuildDeploymentResult> buildDeployments(DeploymentDef deploymentDef, ClusterManagerProperites clusterManagerProperites) {
+    public static List<BuildDeploymentResult> buildDeployments(MLDeployment mldeployment, ClusterManagerProperites clusterManagerProperites) {
 
+    	final DeploymentDef deploymentDef = mldeployment.getSpec();
         final String seldonDeploymentId = deploymentDef.getId();
         List<BuildDeploymentResult> buildDeploymentResults = new ArrayList<>();
 
+        
+        final OwnerReference oref = new OwnerReference(
+				mldeployment.getApiVersion(), 
+				true, 
+				mldeployment.getKind(), 
+				mldeployment.getMetadata().getName(), 
+				mldeployment.getMetadata().getUid());
+        
         { // Add the main predictor
             PredictorDef mainPredictor = deploymentDef.getPredictor();
             boolean isCanary = false;
-            BuildDeploymentResult buildDeploymentResult = buildDeployment(seldonDeploymentId, mainPredictor, isCanary, clusterManagerProperites);
+            BuildDeploymentResult buildDeploymentResult = buildDeployment(seldonDeploymentId, mainPredictor, isCanary, clusterManagerProperites,oref);
             buildDeploymentResults.add(buildDeploymentResult);
         }
 
@@ -101,7 +115,7 @@ public class DeploymentUtils {
             if (deploymentDef.hasField(deploymentDef.getDescriptorForType().findFieldByNumber(DeploymentDef.PREDICTOR_CANARY_FIELD_NUMBER))) {
                 PredictorDef canaryPredictor = deploymentDef.getPredictorCanary();
                 boolean isCanary = true;
-                BuildDeploymentResult buildDeploymentResult = buildDeployment(seldonDeploymentId, canaryPredictor, isCanary, clusterManagerProperites);
+                BuildDeploymentResult buildDeploymentResult = buildDeployment(seldonDeploymentId, canaryPredictor, isCanary, clusterManagerProperites,oref);
                 buildDeploymentResults.add(buildDeploymentResult);
             }
         }
@@ -110,8 +124,15 @@ public class DeploymentUtils {
     }
 
     public static BuildDeploymentResult buildDeployment(String seldonDeploymentId, PredictorDef predictorDef, boolean isCanary,
-            ClusterManagerProperites clusterManagerProperites) {
+            ClusterManagerProperites clusterManagerProperites,OwnerReference oref) {
 
+    	// Create owner reference list if exists
+    	List<OwnerReference> orefList = null;
+        if (oref != null)
+        {
+        	orefList = new ArrayList<>();
+        	orefList.add(oref);
+        }
         PredictorDef.Builder resultingPredictorDefBuilder = PredictorDef.newBuilder(predictorDef);
 
         final EndpointType ENGINE_CONTAINER_ENDPOINT_TYPE = EndpointDef.EndpointType.REST;
@@ -154,10 +175,12 @@ public class DeploymentUtils {
 
             Map<String, Quantity> resource_requests = new HashMap<>();
             { // Add container resource requests
-                if (clusterResourcesDef.hasField(clusterResourcesDef.getDescriptorForType().findFieldByNumber(ClusterResourcesDef.CPU_FIELD_NUMBER))) {
+                if (clusterResourcesDef.hasField(clusterResourcesDef.getDescriptorForType().findFieldByNumber(ClusterResourcesDef.CPU_FIELD_NUMBER)) &&
+                		StringUtils.isNotEmpty(clusterResourcesDef.getCpu())) {
                     resource_requests.put("cpu", new Quantity(clusterResourcesDef.getCpu()));
                 }
-                if (clusterResourcesDef.hasField(clusterResourcesDef.getDescriptorForType().findFieldByNumber(ClusterResourcesDef.MEMORY_FIELD_NUMBER))) {
+                if (clusterResourcesDef.hasField(clusterResourcesDef.getDescriptorForType().findFieldByNumber(ClusterResourcesDef.MEMORY_FIELD_NUMBER)) &&
+                		StringUtils.isNotEmpty(clusterResourcesDef.getMemory())) {
                     resource_requests.put("memory", new Quantity(clusterResourcesDef.getMemory()));
                 }
             }
@@ -328,12 +351,14 @@ public class DeploymentUtils {
             int port = engine_service_port;
             int targetPort = engine_container_port;
 
+            
             //@formatter:off
             service = new ServiceBuilder()
                     .withNewMetadata()
                         .withName(serviceName)
                         .addToLabels("seldon-deployment-id", seldonDeploymentId)
                         .addToLabels("app", selectorValue)
+                        .withOwnerReferences(orefList)
                     .endMetadata()
                     .withNewSpec()
                         .addNewPort()
@@ -360,11 +385,19 @@ public class DeploymentUtils {
 
         //@formatter:off
         Deployment deployment = new DeploymentBuilder()
-            .withNewMetadata().withName(kubernetesDeploymentId).addToLabels("seldon-deployment-id", seldonDeploymentId).endMetadata()
+            .withNewMetadata()
+            	.withName(kubernetesDeploymentId)
+            	.addToLabels(serviceSelectorDetails.appLabelName, serviceSelectorDetails.appLabelValue)            	
+            	.addToLabels("seldon-deployment-id", seldonDeploymentId)
+            	.addToLabels("app", serviceSelectorDetails.appLabelValue)            	
+            	.addToLabels("version", predictorDef.getVersion())                    	            	
+            	.addToLabels(ServiceSelectorDetails.seldonLabelName, ServiceSelectorDetails.seldonLabelMlDepValue)
+            	.withOwnerReferences(orefList)
+            .endMetadata()
             .withNewSpec().withReplicas(replica_number)
                 .withNewTemplate()
                     .withNewMetadata()
-                    	.addToLabels(serviceSelectorDetails.appLabelName, serviceSelectorDetails.appLabelValue)
+                	.addToLabels(serviceSelectorDetails.appLabelName, serviceSelectorDetails.appLabelValue)
                     	.addToLabels("app", serviceSelectorDetails.appLabelValue)
                     	.addToLabels("version", predictorDef.getVersion())                    	
                         .addToLabels(serviceSelectorDetails.trackLabelName, serviceSelectorDetails.trackLabelValue)
@@ -460,36 +493,6 @@ public class DeploymentUtils {
             logger.debug(String.format("Deleted kubernetes replicaSet [%s]", rsmsg));
         }
 
-    }
-
-    public static DeploymentDef getDeployments(KubernetesClient kubernetesClient, String namespace_name, DeploymentDef deploymentDef) {
-
-        DeploymentDef.Builder resultingDeploymentDefBuilder = DeploymentDef.newBuilder(deploymentDef);
-
-        final String seldonDeploymentId = deploymentDef.getId();
-
-        Consumer<Boolean> updateReplicasReady = (isCanary) -> {
-            final String kubernetesDeploymentId = getKubernetesDeploymentId(seldonDeploymentId, isCanary);
-            int replicasReady = 0;
-            Deployment deployment = kubernetesClient.extensions().deployments().inNamespace(namespace_name).withName(kubernetesDeploymentId).get();
-            if (deployment != null) {
-                Integer readyReplicasValue = (Integer) deployment.getStatus().getAdditionalProperties().get("readyReplicas");
-                if (readyReplicasValue != null) {
-                    replicasReady = readyReplicasValue;
-                }
-            }
-
-            PredictorDef.Builder predictorDefBuilder = (isCanary) ? resultingDeploymentDefBuilder.getPredictorCanaryBuilder()
-                    : resultingDeploymentDefBuilder.getPredictorBuilder();
-            predictorDefBuilder.setReplicasReady(replicasReady);
-        };
-
-        updateReplicasReady.accept(false); // for main predictor
-        if (deploymentDef.hasField(deploymentDef.getDescriptorForType().findFieldByNumber(DeploymentDef.PREDICTOR_CANARY_FIELD_NUMBER))) {
-            updateReplicasReady.accept(true); // for canary predictor
-        }
-
-        return resultingDeploymentDefBuilder.build();
     }
 
     private static String extractPredictiveUnitParametersAsJson(PredictiveUnitDef predictiveUnitDef) {

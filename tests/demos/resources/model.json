@@ -1,0 +1,56 @@
+{
+    "apiVersion": "machinelearning.seldon.io/v1alpha1",
+    "kind": "MLDeployment",
+    "metadata": {
+        "labels": {
+            "app": "seldon"
+        },
+        "name": "mldeployment-example"
+    },
+    "spec": {
+        "annotations": {
+            "project_name": "FX Market Prediction"
+        },
+        "cluster": {},
+        "id": "1",
+        "name": "test deployment",
+        "oauth_key": "oauth-key",
+        "oauth_secret": "oauth-secret",
+        "predictor": {
+            "annotations": {
+                "project_name": "FX Market Prediction"
+            },
+            "enabled": true,
+            "id": "0",
+            "imagePullSecrets": [],
+            "name": "FX Market Predictor",
+            "predictiveUnits": [
+                {
+                    "children": [],
+                    "cluster_resources": {
+                        "cpu": "",
+                        "gpu": "",
+                        "id": "2",
+                        "image": "seldonio/mean_classifier",
+                        "memory": "",
+                        "version": "0.5"
+                    },
+                    "endpoint": {
+                        "service_host": "-",
+                        "service_port": 0,
+                        "type": "REST"
+                    },
+                    "id": "0",
+                    "name": "Simple FX Model",
+                    "parameters": [],
+                    "subtype": "MICROSERVICE",
+                    "type": "MODEL"
+                }
+            ],
+            "replicas": 1,
+            "root": "0",
+            "version": "v1"
+        }
+
+}
+}
