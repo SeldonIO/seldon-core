@@ -29,7 +29,7 @@ def wrap_model(repo,model_folder,model_name,service_type,version,REST=True,out_f
         model_name=model_name,
         api_type="REST" if REST else "GRPC",
         service_type = service_type,
-        persistence = "--persistence" if persistence else ''
+        persistence = int(persistence)
     )
     populate_template(
         './Makefile.tmp',
