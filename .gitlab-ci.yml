@@ -38,11 +38,9 @@ api-frontend-maven-build:
   stage: build
   script:
     - cd api-frontend
-    - "#make -f Makefile.ci build_jar"
-    - pwd > build.txt
+    - make -f Makefile.ci build_jar
   artifacts:
     paths:
-      - api-frontend/build.txt
       - api-frontend/target/*.jar
   only:
     - ci_test
