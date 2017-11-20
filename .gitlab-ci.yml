@@ -10,13 +10,12 @@ stages:
   - build
 
 cluster-manager-maven-build:
-  image: maven:3-jdk-8
+  image: seldonio/core-builder
   stage: build
   script:
-    - "cd cluster-manager"
+    - cd cluster-manager
     - "pwd > build.txt"
-    - cp -v ../proto/seldonengine.proto src/main/proto/
-    - mvn package -B
+    - make -f Makefile.ci build_jar
   artifacts:
     paths:
       - cluster-manager/build.txt
