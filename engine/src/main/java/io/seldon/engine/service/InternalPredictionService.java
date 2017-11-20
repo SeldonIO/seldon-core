@@ -26,6 +26,7 @@ import com.google.protobuf.util.JsonFormat;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
+import io.kubernetes.client.proto.V1.PodTemplateSpec;
 import io.seldon.engine.exception.APIException;
 import io.seldon.engine.pb.ProtoBufUtils;
 import io.seldon.engine.predictors.PredictiveUnitState;
@@ -39,6 +40,7 @@ import io.seldon.protos.PredictionProtos.FeedbackDef;
 import io.seldon.protos.PredictionProtos.RequestDef;
 import io.seldon.protos.PredictionProtos.RequestDef.DataOneofCase;
 import io.seldon.protos.PredictionProtos.ResponseDef;
+import io.seldon.protos.DeploymentProtos.PredictorDef;
 
 @Service
 public class InternalPredictionService {
@@ -175,7 +177,7 @@ public class InternalPredictionService {
     			headers.add(MODEL_NAME_HEADER, state.name);
     			headers.add(MODEL_IMAGE_HEADER, state.clusterResources.getImage());
     			headers.add(MODEL_VERSION_HEADER, state.clusterResources.getVersion());
-
+    			
     			MultiValueMap<String, String> map= new LinkedMultiValueMap<String, String>();
     			map.add("json", dataString);
     			map.add("isDefault", Boolean.toString(isDefault));

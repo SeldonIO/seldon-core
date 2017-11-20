@@ -16,8 +16,6 @@ cache_dependencies:
 	mvn -Dmaven.repo.local=./.m2 dependency:resolve
 	mvn -Dmaven.repo.local=./.m2 verify
 
-
-
 engine.json: engine.json.in Makefile
 	@cat engine.json.in | sed \
 		-e  "s|%ENGINE_IMAGE_VERSION%|$(ENGINE_IMAGE_VERSION)|" > $@ && echo "created $@"
@@ -34,3 +32,5 @@ update_version_txt:
 update_proto:
 	@cp -v ../proto/seldonengine.proto src/main/proto/
 	@cp -v ../proto/prediction.proto src/main/proto/
+	cp -vr ../proto/k8s/k8s.io src/main/proto
+	cp -v ../proto/k8s/v1.proto src/main/proto
