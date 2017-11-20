@@ -32,3 +32,18 @@ engine-maven-build:
       - engine/target/*.jar
   only:
     - ci_test
+
+api-frontend-maven-build:
+  image: seldonio/core-builder
+  stage: build
+  script:
+    - cd api-frontend
+    - "#make -f Makefile.ci build_jar"
+    - pwd > build.txt
+  artifacts:
+    paths:
+      - api-frontend/build.txt
+      - api-frontend/target/*.jar
+  only:
+    - ci_test
+
