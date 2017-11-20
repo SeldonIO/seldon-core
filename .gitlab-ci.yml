@@ -14,11 +14,9 @@ cluster-manager-maven-build:
   stage: build
   script:
     - cd cluster-manager
-    - "pwd > build.txt"
     - make -f Makefile.ci build_jar
   artifacts:
     paths:
-      - cluster-manager/build.txt
       - cluster-manager/target/*.jar
   only:
     - ci_test
