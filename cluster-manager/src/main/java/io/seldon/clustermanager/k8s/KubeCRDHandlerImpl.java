@@ -16,7 +16,6 @@ import io.kubernetes.client.ApiException;
 import io.kubernetes.client.apis.CustomObjectsApi;
 import io.kubernetes.client.proto.Meta.ObjectMeta;
 import io.kubernetes.client.util.Config;
-import io.seldon.clustermanager.pb.ProtoBufUtils;
 import io.seldon.protos.DeploymentProtos.MLDeployment;
 
 @Component

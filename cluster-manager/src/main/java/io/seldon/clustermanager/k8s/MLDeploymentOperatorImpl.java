@@ -13,31 +13,26 @@ import org.springframework.stereotype.Component;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
-import io.kubernetes.client.models.ExtensionsV1beta1Deployment;
-import io.kubernetes.client.models.ExtensionsV1beta1DeploymentSpec;
-import io.kubernetes.client.models.V1Container;
-import io.kubernetes.client.models.V1ContainerPort;
-import io.kubernetes.client.models.V1EnvVar;
-import io.kubernetes.client.models.V1ExecAction;
-import io.kubernetes.client.models.V1HTTPGetAction;
-import io.kubernetes.client.models.V1Handler;
-import io.kubernetes.client.models.V1Lifecycle;
-import io.kubernetes.client.models.V1ObjectMeta;
 import io.kubernetes.client.models.V1OwnerReference;
-import io.kubernetes.client.models.V1PodTemplateSpec;
-import io.kubernetes.client.models.V1Probe;
-import io.kubernetes.client.models.V1Service;
+import io.kubernetes.client.proto.IntStr.IntOrString;
 import io.kubernetes.client.proto.Meta.ObjectMeta;
-import io.kubernetes.client.proto.Resource.Quantity;
+import io.kubernetes.client.proto.Meta.OwnerReference;
 import io.kubernetes.client.proto.V1;
 import io.kubernetes.client.proto.V1.ContainerPort;
 import io.kubernetes.client.proto.V1.EnvVar;
 import io.kubernetes.client.proto.V1.ExecAction;
+import io.kubernetes.client.proto.V1.HTTPGetAction;
 import io.kubernetes.client.proto.V1.Handler;
 import io.kubernetes.client.proto.V1.Lifecycle;
+import io.kubernetes.client.proto.V1.PodTemplateSpec;
 import io.kubernetes.client.proto.V1.Probe;
-import io.kubernetes.client.proto.V1.ResourceRequirements;
+import io.kubernetes.client.proto.V1.Service;
+import io.kubernetes.client.proto.V1.ServicePort;
+import io.kubernetes.client.proto.V1.ServiceSpec;
 import io.kubernetes.client.proto.V1.TCPSocketAction;
+import io.kubernetes.client.proto.V1beta1Extensions;
+import io.kubernetes.client.proto.V1beta1Extensions.Deployment;
+import io.kubernetes.client.proto.V1beta1Extensions.DeploymentSpec;
 import io.seldon.clustermanager.ClusterManagerProperites;
 import io.seldon.clustermanager.pb.ProtoBufUtils;
 import io.seldon.protos.DeploymentProtos.MLDeployment;
@@ -76,7 +71,45 @@ public class MLDeploymentOperatorImpl implements MLDeploymentOperator {
 		return retVal;
 	}
 	
-	private V1Container createEngineContainer(PredictorDef predictorDef)
+	private V1.Container createEngineContainer(PredictorDef predictorDef)
+	{
+		V1.Container.Builder cBuilder = V1.Container.newBuilder();
+		cBuilder
+			.setName("seldon-container-engine")
+			.setImage(clusterManagerProperites.getEngineContainerImageAndVersion())
+			.addEnv(EnvVar.newBuilder().setName("ENGINE_PREDICTOR").setValue(getEnginePredictorEnvVarJson(predictorDef)))
+			.addEnv(EnvVar.newBuilder().setName("ENGINE_SERVER_PORT").setValue(""+clusterManagerProperites.getEngineContainerPort()))
+			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(clusterManagerProperites.getEngineContainerPort()))
+			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(8082).setName("admin"))
+			.setReadinessProbe(Probe.newBuilder().setHandler(Handler.newBuilder()
+					.setHttpGet(HTTPGetAction.newBuilder().setPort(IntOrString.newBuilder().setType(1).setStrVal("admin")).setPath("/ready")))
+					.setInitialDelaySeconds(5)
+					.setPeriodSeconds(5)
+					.setFailureThreshold(1)
+					.setSuccessThreshold(1)
+					.setTimeoutSeconds(2)
+					)
+			.setLivenessProbe(Probe.newBuilder().setHandler(Handler.newBuilder()
+					.setHttpGet(HTTPGetAction.newBuilder().setPort(IntOrString.newBuilder().setType(1).setStrVal("admin")).setPath("/ready")))
+					.setInitialDelaySeconds(5)
+					.setPeriodSeconds(5)
+					.setFailureThreshold(1)
+					.setSuccessThreshold(1)
+					.setTimeoutSeconds(2)
+					)
+			.setLifecycle(Lifecycle.newBuilder().setPreStop(Handler.newBuilder().setExec(
+					ExecAction.newBuilder()
+						.addCommand("/bin/bash")
+						.addCommand("-c")
+						.addCommand("curl 127.0.0.1:"+clusterManagerProperites.getEngineContainerPort()+"/pause && /bin/sleep 20"))));
+
+			
+			
+		return cBuilder.build();
+	}
+	
+	/*
+	private V1Container createEngineContainerOld(PredictorDef predictorDef)
 	{
 		//@formatter:off
 		V1Container c = new V1Container()
@@ -110,7 +143,7 @@ public class MLDeploymentOperatorImpl implements MLDeploymentOperator {
 		//@formatter:on
 		return c;
 	}
-	
+	*/
 	
 	private Set<String> getEnvNamesProto(List<EnvVar> envs)
 	{
@@ -123,7 +156,7 @@ public class MLDeploymentOperatorImpl implements MLDeploymentOperator {
 	private V1.Container updateContainer(V1.Container c,int idx)
 	{
 		V1.Container.Builder c2Builder = V1.Container.newBuilder(c);
-		int containerPort;
+		int containerPort = 9000;
 		if (c.getPortsCount() == 0)
 		{
 			c2Builder.addPorts(ContainerPort.newBuilder().setName("http").setContainerPort(clusterManagerProperites.getPuContainerPortBase() + idx));
@@ -135,7 +168,7 @@ public class MLDeploymentOperatorImpl implements MLDeploymentOperator {
 		final String ENV_PREDICTIVE_UNIT_SERVICE_PORT ="PREDICTIVE_UNIT_SERVICE_PORT";
 		Set<String> envNames = this.getEnvNamesProto(c.getEnvList());
 		if (!envNames.contains(ENV_PREDICTIVE_UNIT_SERVICE_PORT))
-			c2Builder.addEnv(EnvVar.newBuilder().setName(ENV_PREDICTIVE_UNIT_SERVICE_PORT).setValue(""+clusterManagerProperites.getEngineContainerPort()));
+			c2Builder.addEnv(EnvVar.newBuilder().setName(ENV_PREDICTIVE_UNIT_SERVICE_PORT).setValue(""+containerPort));
 				
 		if (!c.hasLivenessProbe())
 		{
@@ -174,9 +207,9 @@ public class MLDeploymentOperatorImpl implements MLDeploymentOperator {
 	public MLDeployment defaulting(MLDeployment mlDep) {
 		MLDeployment.Builder mlBuilder = MLDeployment.newBuilder(mlDep);
 		int idx = 0;
+		String serviceName = getKubernetesMLDeploymentId(mlDep.getSpec().getName(), false);
 		for(PredictorDef p : mlDep.getSpec().getPredictorsList())
 		{
-			String serviceName = getKubernetesDeploymentId(mlDep.getSpec().getName(),p.getName(), false);
 			ObjectMeta.Builder metaBuilder = ObjectMeta.newBuilder(p.getComponentSpec().getMetadata())
 				.putLabels(LABEL_SELDON_APP, serviceName);
 			mlBuilder.getSpecBuilder().getPredictorsBuilder(idx).getComponentSpecBuilder().setMetadata(metaBuilder);
@@ -199,11 +232,15 @@ public class MLDeploymentOperatorImpl implements MLDeploymentOperator {
 		
 	}
 	
+	private static String getKubernetesMLDeploymentId(String deploymentName, boolean isCanary) {
+		return "sd-" + deploymentName + "-" + ((isCanary) ? "c" : "p");
+	}
+
 	private static String getKubernetesDeploymentId(String deploymentName,String predictorName, boolean isCanary) {
 		return "sd-" + deploymentName + "-" + predictorName + "-" + ((isCanary) ? "c" : "p");
 	}
 	
-	private V1OwnerReference getOwnerReference(MLDeployment mlDep)
+	private V1OwnerReference getOwnerReferenceOld(MLDeployment mlDep)
 	{
 		return new V1OwnerReference()
 				.apiVersion(mlDep.getApiVersion())
@@ -212,19 +249,82 @@ public class MLDeploymentOperatorImpl implements MLDeploymentOperator {
 				.name(mlDep.getMetadata().getName())
 				.uid(mlDep.getMetadata().getUid());
 	}
+	private OwnerReference getOwnerReference(MLDeployment mlDep)
+	{
+		return OwnerReference.newBuilder()
+			.setApiVersion(mlDep.getApiVersion())
+			.setKind(mlDep.getKind())
+			.setController(true)
+			.setName(mlDep.getMetadata().getName())
+			.setUid(mlDep.getMetadata().getUid()).build();
+	}
 	 
 	@Override
 	public DeploymentResources createResources(MLDeployment mlDep) throws MLDeploymentException {
 		
+		OwnerReference ownerRef = getOwnerReference(mlDep);
+		List<Deployment> deployments = new ArrayList<>();
+		// for each predictor Create/replace deployment
+		String serviceLabel = getKubernetesMLDeploymentId(mlDep.getSpec().getName(), false);
+		for(PredictorDef p : mlDep.getSpec().getPredictorsList())
+		{
+			String depName = getKubernetesDeploymentId(mlDep.getSpec().getName(),p.getName(), p.getType().equals(PredictorDef.PredictorType.CANARY));
+			PodTemplateSpec.Builder podSpecBuilder = PodTemplateSpec.newBuilder(p.getComponentSpec());
+			podSpecBuilder.getSpecBuilder().addContainers(createEngineContainer(p));
+			Deployment deployment = V1beta1Extensions.Deployment.newBuilder()
+					.setMetadata(ObjectMeta.newBuilder()
+							.setName(depName)
+							.putLabels(MLDeploymentOperatorImpl.LABEL_SELDON_APP, serviceLabel)
+							.putLabels("seldon-deployment-id", mlDep.getSpec().getName())
+							.putLabels("app", depName)
+							.putLabels("version", "v1") //FIXME
+							.putLabels("seldon-type", "mldeployment")
+							.addOwnerReferences(ownerRef)
+							.putAnnotations("prometheus.io/path", "/prometheus")
+							.putAnnotations("prometheus.io/port",""+clusterManagerProperites.getEngineContainerPort())
+							.putAnnotations("prometheus.io/scrape", "true")
+							)
+					.setSpec(DeploymentSpec.newBuilder().setTemplate(podSpecBuilder.build())
+							.setReplicas(p.getReplicas()))
+					.build();
+			
+			deployments.add(deployment);
+		}
+		
+		Service s = Service.newBuilder()
+					.setMetadata(ObjectMeta.newBuilder()
+							.setName(mlDep.getSpec().getName())
+							.putLabels(MLDeploymentOperatorImpl.LABEL_SELDON_APP, serviceLabel)
+							.putLabels("seldon-deployment-id", mlDep.getSpec().getName())
+							)
+					.setSpec(ServiceSpec.newBuilder()
+							.addPorts(ServicePort.newBuilder()
+									.setProtocol("TCP")
+									.setPort(clusterManagerProperites.getEngineContainerPort())
+									.setTargetPort(IntOrString.newBuilder().setIntVal(clusterManagerProperites.getEngineContainerPort()))
+									.setName("http")
+									)
+							.setType("ClusterIP")
+							.putSelector(MLDeploymentOperatorImpl.LABEL_SELDON_APP,serviceLabel)
+							)
+				.build();
+		
+		// Create service for deployment
+		return new DeploymentResources(deployments, s);
+	}
+	
+	/*
+	public DeploymentResources createResourcesOld(MLDeployment mlDep) throws MLDeploymentException {
+		
 		try
 		{
-			V1OwnerReference ownerRef = getOwnerReference(mlDep);
+			V1OwnerReference ownerRef = getOwnerReferenceOld(mlDep);
 			List<ExtensionsV1beta1Deployment> deployments = new ArrayList<>();
 			// for each predictor Create/replace deployment
 			for(PredictorDef p : mlDep.getSpec().getPredictorsList())
 			{
 				V1PodTemplateSpec podTemplate = MLDeploymentUtils.convertProtoToModel(p.getComponentSpec());
-				V1Container engineContainer = createEngineContainer(p);
+				V1Container engineContainer = createEngineContainerOld(p);
 				podTemplate.getSpec().addContainersItem(engineContainer);
 				
 				String depName = getKubernetesDeploymentId(mlDep.getSpec().getName(),p.getName(), p.getType().equals(PredictorDef.PredictorType.CANARY));
@@ -255,14 +355,14 @@ public class MLDeploymentOperatorImpl implements MLDeploymentOperator {
 			throw new MLDeploymentException(e.getMessage());
 		}
 	}
-
+*/
 	
 	public static class DeploymentResources {
 		
-		List<ExtensionsV1beta1Deployment> deployments;
-		V1Service service;
+		List<Deployment> deployments;
+		Service service;
 		
-		public DeploymentResources(List<ExtensionsV1beta1Deployment> deployments, V1Service service) {
+		public DeploymentResources(List<Deployment> deployments, Service service) {
 			super();
 			this.deployments = deployments;
 			this.service = service;

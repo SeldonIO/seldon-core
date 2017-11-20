@@ -1,19 +1,16 @@
 package io.seldon.clustermanager.example;
 
-import java.util.List;
-
-import com.google.protobuf.InvalidProtocolBufferException;
-
-import io.seldon.clustermanager.ClusterManagerProperites;
-import io.seldon.clustermanager.k8s.DeploymentUtils;
-import io.seldon.clustermanager.k8s.DeploymentUtils.BuildDeploymentResult;
-import io.seldon.clustermanager.pb.ProtoBufUtils;
-import io.seldon.protos.DeploymentProtos.DeploymentDef;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
+
+import com.google.protobuf.InvalidProtocolBufferException;
+
+import io.seldon.clustermanager.ClusterManagerProperites;
+import io.seldon.clustermanager.pb.ProtoBufUtils;
+import io.seldon.protos.DeploymentProtos.DeploymentDef;
 
 
 public class DeploymentUtilsExample {

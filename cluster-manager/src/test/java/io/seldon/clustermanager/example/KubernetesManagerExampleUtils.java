@@ -4,9 +4,9 @@ import io.seldon.protos.DeploymentProtos.ClusterDef;
 import io.seldon.protos.DeploymentProtos.ClusterResourcesDef;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
 import io.seldon.protos.DeploymentProtos.EndpointDef;
+import io.seldon.protos.DeploymentProtos.PredictionGraph.PredictiveUnitSubType;
+import io.seldon.protos.DeploymentProtos.PredictionGraph.PredictiveUnitType;
 import io.seldon.protos.DeploymentProtos.PredictiveUnitDef;
-import io.seldon.protos.DeploymentProtos.PredictiveUnitDef.PredictiveUnitSubType;
-import io.seldon.protos.DeploymentProtos.PredictiveUnitDef.PredictiveUnitType;
 import io.seldon.protos.DeploymentProtos.PredictorDef;
 
 public class KubernetesManagerExampleUtils {

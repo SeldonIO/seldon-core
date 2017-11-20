@@ -7,8 +7,8 @@ import com.google.gson.JsonPrimitive;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
-import com.google.protobuf.MessageOrBuilder;
 import com.google.protobuf.Message.Builder;
+import com.google.protobuf.MessageOrBuilder;
 
 import io.kubernetes.client.proto.Resource.Quantity;
 import io.seldon.clustermanager.pb.JsonFormat.TypeConverter;

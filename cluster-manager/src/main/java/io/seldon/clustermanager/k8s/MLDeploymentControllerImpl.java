@@ -8,11 +8,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.fabric8.kubernetes.api.model.extensions.Deployment;
 import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.ApiException;
+import io.kubernetes.client.ProtoClient;
+import io.kubernetes.client.ProtoClient.ObjectOrStatus;
 import io.kubernetes.client.apis.ExtensionsV1beta1Api;
 import io.kubernetes.client.models.ExtensionsV1beta1Deployment;
-import io.kubernetes.client.models.ExtensionsV1beta1DeploymentList;
 import io.seldon.clustermanager.k8s.MLDeploymentOperatorImpl.DeploymentResources;
 import io.seldon.clustermanager.k8s.client.K8sClientProvider;
 import io.seldon.clustermanager.pb.ProtoBufUtils;
@@ -34,6 +36,7 @@ public class MLDeploymentControllerImpl implements MLDeploymentController {
 	}
 
 
+	
 	private void createDeployments(ApiClient client,List<ExtensionsV1beta1Deployment> deployments) throws ApiException
 	{
 		ExtensionsV1beta1Api api = new ExtensionsV1beta1Api(client);
@@ -55,7 +58,28 @@ public class MLDeploymentControllerImpl implements MLDeploymentController {
 			}
 		}
 	}
-
+	
+	
+	
+	private void createDeployments(ProtoClient client,List<Deployment> deployments) throws ApiException, IOException
+	{
+		String localVarPath = "/apis/extensions/v1beta1/namespaces/{namespace}/deployments"
+				.replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString("default"));
+		for(Deployment d : deployments)
+		{
+			//TODO need to check if existing deployment exists and do a PUT if so
+			logger.info("About to create "+ProtoBufUtils.toJson(d));
+			ObjectOrStatus os = client.create(d, localVarPath, "extensions/v1beta1", "Deployment");
+			if (os.status != null)
+			{
+				logger.info("Possible Error:"+ProtoBufUtils.toJson(os.status));
+			}
+			else
+			{
+				logger.info("Returned object:"+ProtoBufUtils.toJson(os.object));
+			}
+		}
+	}
 
 
 	@Override
@@ -67,7 +91,7 @@ public class MLDeploymentControllerImpl implements MLDeploymentController {
 			operator.validate(mlDep);
 			logger.info(ProtoBufUtils.toJson(mlDep));
 			DeploymentResources resources = operator.createResources(mlDep);
-			ApiClient client = clientProvider.getClient();
+			ProtoClient client = clientProvider.getProtoClient();
 			createDeployments(client, resources.deployments);
 			
 		} catch (MLDeploymentException e) {

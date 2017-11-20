@@ -37,9 +37,9 @@ import io.seldon.protos.DeploymentProtos.DeploymentDef;
 import io.seldon.protos.DeploymentProtos.EndpointDef;
 import io.seldon.protos.DeploymentProtos.EndpointDef.EndpointType;
 import io.seldon.protos.DeploymentProtos.MLDeployment;
+import io.seldon.protos.DeploymentProtos.PredictionGraph.PredictiveUnitSubType;
 import io.seldon.protos.DeploymentProtos.PredictiveUnitDef;
 import io.seldon.protos.DeploymentProtos.PredictiveUnitDef.ParamDef;
-import io.seldon.protos.DeploymentProtos.PredictiveUnitDef.PredictiveUnitSubType;
 import io.seldon.protos.DeploymentProtos.PredictorDef;
 
 public class DeploymentUtils {
