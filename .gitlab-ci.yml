@@ -21,3 +21,14 @@ cluster-manager-maven-build:
   only:
     - ci_test
 
+engine-maven-build:
+  image: seldonio/core-builder
+  stage: build
+  script:
+    - cd engine
+    - make -f Makefile.ci build_jar
+  artifacts:
+    paths:
+      - engine/target/*.jar
+  only:
+    - ci_test
