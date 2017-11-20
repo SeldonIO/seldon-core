@@ -44,4 +44,5 @@ api-frontend-maven-build:
       - api-frontend/target/*.jar
   only:
     - ci_test
+    - master
 
