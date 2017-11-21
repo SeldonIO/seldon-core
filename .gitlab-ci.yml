@@ -18,6 +18,7 @@ cluster-manager-maven-build:
   artifacts:
     paths:
       - cluster-manager/target/*.jar
+    expire_in: 1 week
   only:
     - ci_test
     - master
@@ -31,6 +32,7 @@ engine-maven-build:
   artifacts:
     paths:
       - engine/target/*.jar
+    expire_in: 1 week
   only:
     - ci_test
     - master
@@ -44,6 +46,7 @@ api-frontend-maven-build:
   artifacts:
     paths:
       - api-frontend/target/*.jar
+    expire_in: 1 week
   only:
     - ci_test
     - master
