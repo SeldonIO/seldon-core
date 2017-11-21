@@ -44,7 +44,7 @@ def get_rest_microservice(user_router):
         datadef = request.get("data")
         features = rest_datadef_to_array(datadef)
 
-        routing = np.array(route(user_router,features,datadef.get("names")))
+        routing = np.array([route(user_router,features,datadef.get("names"))])
         # TODO: check that predictions is 2 dimensional
         class_names = []
 
@@ -82,7 +82,7 @@ class SeldonRouterGRPC(object):
         datadef = request.data
         features = grpc_datadef_to_array(datadef)
 
-        routing = np.array(route(self.user_model,features,datadef.names))
+        routing = np.array([route(self.user_model,features,datadef.names)])
         #TODO: check that predictions is 2 dimensional
         class_names = []
 
