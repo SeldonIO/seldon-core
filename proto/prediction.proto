@@ -6,72 +6,75 @@ import "google/protobuf/struct.proto";
 package seldon.protos;
 // [END declaration]
 
+
 // [START java_declaration]
 option java_package = "io.seldon.protos";
 option java_outer_classname = "PredictionProtos";
 // [END java_declaration]
+
 
 // [START messages]
 
 // [START default data]
 
 message Tensor {
-  repeated int32 shape  = 2 [packed=true];
-  repeated double values = 3 [packed=true];
+  repeated int32 shape = 1 [packed=true];
+  repeated double values = 2 [packed=true];
 }
 
 message DefaultDataDef {
-  repeated string features = 1;
+  repeated string names = 1;
   oneof data_oneof {
     Tensor tensor = 2;
     google.protobuf.ListValue ndarray = 3;
   }
 }
 
-
 // [END default data]
 
 
-// [START Prediction Request]
+// [START Request]
 
-message PredictionRequestDef {
+message RequestDef {
 
-  PredictionRequestMetaDef meta = 1;
-  oneof request_oneof {
-    DefaultDataDef request = 2;
-    bytes binRequest = 3;
-    string strRequest = 4;
+  MetaDef meta = 1;
+  oneof data_oneof {
+    DefaultDataDef data = 2;
+    bytes binData = 3;
+    string strData = 4;
   }
 
 }
 
-message Tag{
-  repeated string value = 1;
-}
+// [END Request]
 
-message PredictionRequestMetaDef {
+
+// [START Meta]
+
+message MetaDef {
   string puid = 1; 
   map<string,google.protobuf.Value> tags = 2;
+  map<string,int32> routing = 3;
+  OutlierStatus outlierStatus = 4;  
 }
 
+// [END Meta]
 
-// [END Prediction Request]
 
+// [START Response]
 
-// [START Prediction Response]
+message ResponseDef {
 
-message PredictionResponseDef {
-
-  PredictionStatusDef status = 1;
-  PredictionResponseMetaDef meta = 2;
-  oneof response_oneof {
-    DefaultDataDef response = 3;
-    bytes binResponse = 4;
-    string strResponse = 5;
+  StatusDef status = 1;
+  MetaDef meta = 2;
+  oneof data_oneof {
+    DefaultDataDef data = 3;
+    bytes binData = 4;
+    string strData = 5;
   }
 }
 
-message PredictionStatusDef {
+message StatusDef {
 
     enum Status {
         SUCCESS = 0;
@@ -84,25 +87,14 @@ message PredictionStatusDef {
     Status status = 4;
 }
 
-message OutlierStatus{
-    bool isOutlier = 1;
-    double score = 2;
-}
+// [END Response]
 
-message PredictionResponseMetaDef {
-  string puid = 1; 
-  map<string,int32> routing = 2;
-  OutlierStatus outlierStatus = 3;
-}
-
-
-// [END Prediction Response]
 
 // [START Feedback]
 
-message PredictionFeedbackDef {
-  PredictionRequestDef request = 1;
-  PredictionResponseDef response = 2;
+message FeedbackDef {
+  RequestDef request = 1;
+  ResponseDef response = 2;
   float reward = 3;
   DefaultDataDef truth = 4;
 }
@@ -110,24 +102,38 @@ message PredictionFeedbackDef {
 // [END Feedback]
 
 
-message PredictionRequestResponseDef {
-  PredictionRequestDef request = 1;
-  PredictionResponseDef response = 2;
+// [START RequestResponse]
+
+message RequestResponseDef {
+  RequestDef request = 1;
+  ResponseDef response = 2;
 }
 
-service MAB {
-  rpc Route (PredictionRequestDef) returns (RouteResponseDef) {};
-  rpc Train (PredictionFeedbackDef) returns (PredictionFeedbackResponseDef) {};
+// [END RequestResponse]
+
+
+// [START Plugin Specific Messages]
+
+message OutlierStatus{
+    bool isOutlier = 1;
+    double score = 2;
 }
 
-message RouteResponseDef {
-	int32 branch = 1;
-}
+// [END Plugin Specific Messages]
 
-message PredictionFeedbackResponseDef {
-	bool success = 1;
-}
-	
+// [END Messages]
+
+
+// [START Services]
+
 service Model {
-  rpc Predict(PredictionRequestDef) returns (PredictionResponseDef) {};
+  rpc Predict(RequestDef) returns (ResponseDef) {};
+  rpc Feedback(FeedbackDef) returns (ResponseDef) {};
  }
+
+service Router {
+  rpc Route(RequestDef) returns (ResponseDef) {};
+  rpc Feedback(FeedbackDef) returns (ResponseDef) {};
+ }
+
+// [END Services]

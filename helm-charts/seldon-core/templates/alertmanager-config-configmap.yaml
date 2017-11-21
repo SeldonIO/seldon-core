@@ -1,6 +1,19 @@
 apiVersion: v1
 data:
+{{- if .Values.alertmanager.config.enabled }}
 {{ (.Files.Glob "files/alertmanager/config.yaml").AsConfig | indent 2 }}
+{{- else }}
+  config.yaml: |+
+    route:
+      receiver: 'slack_chatbots'
+      group_by: ['alertname']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 3h
+    receivers:
+    - name: 'slack_chatbots'
+      # Deliberately left empty to not deliver anywhere.
+{{- end }}
 kind: ConfigMap
 metadata:
   creationTimestamp: null

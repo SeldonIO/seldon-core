@@ -13,10 +13,11 @@ import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 import com.google.protobuf.util.JsonFormat.Printer;
 
-import io.seldon.protos.DeploymentProtos.PredictiveUnitDef;
-import io.seldon.protos.DeploymentProtos.PredictiveUnitDef.PredictiveUnitSubType;
-import io.seldon.protos.DeploymentProtos.PredictiveUnitDef.PredictiveUnitType;
-import io.seldon.protos.DeploymentProtos.PredictorDef;
+import io.kubernetes.client.proto.V1.PodTemplateSpec;
+import io.seldon.protos.DeploymentProtos.PredictiveUnit;
+import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitSubtype;
+import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitType;
+import io.seldon.protos.DeploymentProtos.PredictorSpec;
 
 
 
@@ -25,12 +26,12 @@ public class EnginePredictor {
     private final static Logger logger = LoggerFactory.getLogger(EnginePredictor.class);
     private final static String ENGINE_PREDICTOR_KEY = "ENGINE_PREDICTOR";
 
-    private PredictorDef predictorDef = null;
+    private PredictorSpec predictorSpec = null;
 
     public void init() throws Exception {
         logger.info("init");
 
-        { // setup the predictorDef using the env vars
+        { // setup the PredictorSpec using the env vars
             String enginePredictorBase64Encoded = System.getenv().get(ENGINE_PREDICTOR_KEY);
             if (enginePredictorBase64Encoded == null) {
             	String filePath = "./deploymentdef.json";
@@ -39,65 +40,64 @@ public class EnginePredictor {
             		logger.error("FAILED to find env var [{}], will use json file", ENGINE_PREDICTOR_KEY);
             		byte[] encoded = Files.readAllBytes(Paths.get(filePath));
             		String enginePredictorJson = new String(encoded);
-            		PredictorDef.Builder predictorDefBuilder = PredictorDef.newBuilder();
+            		PredictorSpec.Builder PredictorSpecBuilder = PredictorSpec.newBuilder();
 	                try {
-	                    updateMessageBuilderFromJson(predictorDefBuilder, enginePredictorJson);
+	                    updateMessageBuilderFromJson(PredictorSpecBuilder, enginePredictorJson);
 	                } catch (Exception e) {
-	                    logger.error("FAILED building predictorDef from file content", ENGINE_PREDICTOR_KEY,e);
+	                    logger.error("FAILED building PredictorSpec from file content", ENGINE_PREDICTOR_KEY,e);
 	                    throw e;
 	                }
-	                predictorDef = predictorDefBuilder.build();
+	                predictorSpec = PredictorSpecBuilder.build();
             	}
             	else {	
             		logger.error("FAILED to find env var [{}], will use defaults for engine predictor", ENGINE_PREDICTOR_KEY);
-            		predictorDef = buildDefaultPredictorDef();
+            		predictorSpec = buildDefaultPredictorSpec();
             	}
             } else {
                 logger.info("FOUND env var [{}], will use for engine predictor", ENGINE_PREDICTOR_KEY);
                 byte[] enginePredictorBytes = Base64.getDecoder().decode(enginePredictorBase64Encoded);
                 String enginePredictorJson = new String(enginePredictorBytes);
-                PredictorDef.Builder predictorDefBuilder = PredictorDef.newBuilder();
+                PredictorSpec.Builder PredictorSpecBuilder = PredictorSpec.newBuilder();
                 try {
-                    updateMessageBuilderFromJson(predictorDefBuilder, enginePredictorJson);
+                    updateMessageBuilderFromJson(PredictorSpecBuilder, enginePredictorJson);
                 } catch (Exception e) {
-                    logger.error("FAILED extracting predictorDef from env var [{}]", ENGINE_PREDICTOR_KEY,e);
+                    logger.error("FAILED extracting PredictorSpec from env var [{}]", ENGINE_PREDICTOR_KEY,e);
                     throw e;
                 }
-                predictorDef = predictorDefBuilder.build();
+                predictorSpec = PredictorSpecBuilder.build();
             }
         }
 
-        logger.info("Installed engine predictor: {}", toJson(predictorDef, true));
+        logger.info("Installed engine predictor: {}", toJson(predictorSpec, true));
     }
 
     public void cleanup() throws Exception {
         logger.info("cleanup");
     }
 
-    public PredictorDef getPredictorDef() {
-        return predictorDef;
+    public PredictorSpec getPredictorSpec() {
+        return predictorSpec;
     }
 
-    private static PredictorDef buildDefaultPredictorDef() {
+    private static PredictorSpec buildDefaultPredictorSpec() {
 
         //@formatter:off
-        PredictorDef.Builder predictorDefBuilder = PredictorDef.newBuilder()
+        PredictorSpec.Builder predictorSpecBuilder = PredictorSpec.newBuilder()
                 .setName("basic-predictor")
-                .setRoot("0");
+                .setComponentSpec(PodTemplateSpec.newBuilder());
         //@formatter:on
 
-        { // Add predictiveUnit
+        { // Add predictorGraph
             //@formatter:off
-            PredictiveUnitDef.Builder predictiveUnitDefBuilder = PredictiveUnitDef.newBuilder()
-                    .setId("0")
-                    .setName("basic-pu")
-                    .setType(PredictiveUnitType.MODEL)
-                    .setSubtype(PredictiveUnitSubType.SIMPLE_MODEL);
+        	PredictiveUnit.Builder PredictiveUnitBuilder = PredictiveUnit.newBuilder()
+        			.setName("basic-pu")
+        			.setType(PredictiveUnitType.MODEL)
+        			.setSubtype(PredictiveUnitSubtype.SIMPLE_MODEL);
             //@formatter:on
 
-            predictorDefBuilder.addPredictiveUnits(predictiveUnitDefBuilder);
+        	predictorSpecBuilder.setGraph(PredictiveUnitBuilder);
         }
-        return predictorDefBuilder.build();
+        return predictorSpecBuilder.build();
     }
 
     private static String toJson(Message message, boolean omittingInsignificantWhitespace) throws InvalidProtocolBufferException {

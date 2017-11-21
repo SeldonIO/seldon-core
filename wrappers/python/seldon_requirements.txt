@@ -1,4 +1,7 @@
 numpy==1.11.2
 pandas==0.18.1
 grpc==0.3.post19
+grpcio==1.1.3
+Flask==0.11.1
 futures
+redis==2.10.5

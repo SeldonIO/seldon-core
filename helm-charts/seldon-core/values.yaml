@@ -28,6 +28,12 @@ kube_apiserver:
   enabled: false
 
 
+alertmanager:
+  # config disabled by default, create file "/files/alertmanager/config.yaml" then enable
+  config:
+    enabled: false
+
+
 # set the cluster manager client secret
 #cluster_manager_client_secret:
 

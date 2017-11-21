@@ -5,8 +5,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
-import io.seldon.protos.PredictionProtos.PredictionFeedbackDef;
-import io.seldon.protos.PredictionProtos.PredictionRequestDef;
+import io.seldon.protos.PredictionProtos.FeedbackDef;
+import io.seldon.protos.PredictionProtos.RequestDef;
 
 @Component
 public class SimpleRouterUnit extends RouterUnit {
@@ -14,12 +14,12 @@ public class SimpleRouterUnit extends RouterUnit {
     public SimpleRouterUnit() {}
 
 	@Override
-	protected Integer forwardPass(PredictionRequestDef request, PredictiveUnitState state){
+	protected Integer forwardPass(RequestDef request, PredictiveUnitState state){
 		return 0;
 	} 
 	
 	@Override
-	protected void doSendFeedback(PredictionFeedbackDef feedback, PredictiveUnitState state){
+	protected void doSendFeedback(FeedbackDef feedback, PredictiveUnitState state){
 		return;
 	}
 

@@ -9,10 +9,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import io.seldon.protos.DeploymentProtos.PredictiveUnitDef;
-import io.seldon.protos.DeploymentProtos.PredictorDef;
-import io.seldon.protos.PredictionProtos.PredictionRequestDef;
-import io.seldon.protos.PredictionProtos.PredictionResponseDef;
+import io.kubernetes.client.proto.V1.PodTemplateSpec;
+import io.seldon.protos.DeploymentProtos.PredictiveUnit;
+import io.seldon.protos.DeploymentProtos.PredictorSpec;
+import io.seldon.protos.PredictionProtos.RequestDef;
+import io.seldon.protos.PredictionProtos.ResponseDef;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -24,32 +25,33 @@ public class SimpleModelUnitTest {
 	@Test
 	public void simpleTest() throws InterruptedException, ExecutionException
 	{
-		PredictorDef.Builder predictorDefBuilder = PredictorDef.newBuilder();
-		predictorDefBuilder.setEnabled(true);
+		PredictorSpec.Builder PredictorSpecBuilder = PredictorSpec.newBuilder();
+		// PredictorSpecBuilder.setEnabled(true);
 		
-		predictorDefBuilder.setId("p1");
-		predictorDefBuilder.setRoot("1");
-		predictorDefBuilder.setReplicas(1);
+		PredictorSpecBuilder.setName("p1");
+		// PredictorSpecBuilder.setRoot("1");
+		PredictorSpecBuilder.setReplicas(1);
+		PredictorSpecBuilder.setComponentSpec(PodTemplateSpec.newBuilder());
 		
-		PredictiveUnitDef.Builder predictiveUnitDefBuilder = PredictiveUnitDef.newBuilder();
-		predictiveUnitDefBuilder.setId("1");
-		predictiveUnitDefBuilder.setType(PredictiveUnitDef.PredictiveUnitType.MODEL);
-		predictiveUnitDefBuilder.setSubtype(PredictiveUnitDef.PredictiveUnitSubType.SIMPLE_MODEL);
+		PredictiveUnit.Builder PredictiveUnitBuilder = PredictiveUnit.newBuilder();
+		PredictiveUnitBuilder.setName("1");
+		PredictiveUnitBuilder.setType(PredictiveUnit.PredictiveUnitType.MODEL);
+		PredictiveUnitBuilder.setSubtype(PredictiveUnit.PredictiveUnitSubtype.SIMPLE_MODEL);
 		
-		predictorDefBuilder.addPredictiveUnits(predictiveUnitDefBuilder.build());
-		PredictorDef predictor = predictorDefBuilder.build();
+		PredictorSpecBuilder.setGraph(PredictiveUnitBuilder.build());
+		PredictorSpec predictor = PredictorSpecBuilder.build();
 
-		PredictorState predictorState = predictorBean.predictorStateFromDeploymentDef(predictor);
-
-		
-		PredictionRequestDef p = PredictionRequestDef.newBuilder().build();
+		PredictorState predictorState = predictorBean.predictorStateFromPredictorSpec(predictor);
 
 		
-        PredictionResponseDef predictorReturn = predictorBean.predict(p,predictorState);
+		RequestDef p = RequestDef.newBuilder().build();
+
+		
+        ResponseDef predictorReturn = predictorBean.predict(p,predictorState);
         
-        Assert.assertEquals((double) SimpleModelUnit.values[0], predictorReturn.getResponse().getTensor().getValues(0),0);
-        Assert.assertEquals((double) SimpleModelUnit.values[1], predictorReturn.getResponse().getTensor().getValues(1),0);
-        Assert.assertEquals((double) SimpleModelUnit.values[2], predictorReturn.getResponse().getTensor().getValues(2),0);   
+        Assert.assertEquals((double) SimpleModelUnit.values[0], predictorReturn.getData().getTensor().getValues(0),0);
+        Assert.assertEquals((double) SimpleModelUnit.values[1], predictorReturn.getData().getTensor().getValues(1),0);
+        Assert.assertEquals((double) SimpleModelUnit.values[2], predictorReturn.getData().getTensor().getValues(2),0);   
 		
         
 	}

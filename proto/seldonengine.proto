@@ -14,7 +14,23 @@ option java_outer_classname = "DeploymentProtos";
 // [START messages]
 
 
-message PredictionGraph {
+message Parameter {
+
+  enum ParameterType {
+    INT = 0;
+    FLOAT = 1;
+    DOUBLE = 2;
+    STRING = 3;
+    BOOL = 4;
+  }  
+
+  required string name = 1;
+  required string value = 2;
+  required ParameterType type = 3;
+
+}
+
+message PredictiveUnit {
 
   enum PredictiveUnitType {
     UNKNOWN_TYPE = 0;
@@ -24,7 +40,7 @@ message PredictionGraph {
     TRANSFORMER = 4;
   }
 
-  enum PredictiveUnitSubType {
+  enum PredictiveUnitSubtype {
     UNKNOWN_SUBTYPE = 0;
     MICROSERVICE = 1;
     SIMPLE_MODEL = 2;
@@ -33,19 +49,15 @@ message PredictionGraph {
     AVERAGE_COMBINER = 5;
   }
 
-    enum EndpointType {
-        REST = 0;
-        GRPC = 1;
-    }
-
   required string name = 1;//must match container name of component if subtype microservice
-  repeated PredictionGraph children = 2;
+  repeated PredictiveUnit children = 2;
   optional PredictiveUnitType type = 3;
-  optional PredictiveUnitSubType subtype = 4;
-  optional EndpointType protocol = 5;
+  optional PredictiveUnitSubtype subtype = 4;
+  optional Endpoint endpoint = 5;
+  repeated Parameter parameters = 6;
 }
 
-message EndpointDef {
+message Endpoint {
 
   enum EndpointType {
     REST = 0;
@@ -58,7 +70,7 @@ message EndpointDef {
 }
 
 
-message PredictorDef {
+message PredictorSpec {
   enum PredictorType {
     NORMAL = 0;
     CANARY = 1;
@@ -66,20 +78,21 @@ message PredictorDef {
 
   required string name = 1;
   optional PredictorType type = 2;
-  required PredictionGraph graphSpec = 3;
+  required PredictiveUnit graph = 3;
   required k8s.io.api.core.v1.PodTemplateSpec componentSpec = 4;
   optional int32 replicas = 5;
+  optional string version = 6;
+  map<string,string> annotations = 7;
 }
 
-message DeploymentDef {
+message DeploymentSpec {
   optional string name = 1;
-  repeated PredictorDef predictors = 2;
-  optional EndpointDef endpoint = 3;
+  repeated PredictorSpec predictors = 2;
+  optional Endpoint endpoint = 3;
   optional string oauth_key = 4;
   optional string oauth_secret = 5;
   map<string,string> annotations = 6;
 }
-
 
 message PredictorStatus {
   required string name = 1;
@@ -97,7 +110,7 @@ message MLDeployment {
   required string apiVersion = 1;
   required string kind = 2;
   optional k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta metadata = 3;
-  required DeploymentDef spec = 4;
+  required DeploymentSpec spec = 4;
   optional DeploymentStatus status = 5;
 }
 
