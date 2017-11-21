@@ -76,7 +76,7 @@ message Response {
 
 message Status {
 
-    enum Status {
+    enum StatusFlag {
         SUCCESS = 0;
         FAILURE = 1;
     }
@@ -84,7 +84,7 @@ message Status {
     int32 code = 1;
     string info = 2;
     string reason = 3;
-    Status status = 4;
+    StatusFlag status = 4;
 }
 
 // [END Response]
