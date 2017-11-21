@@ -128,12 +128,12 @@ message OutlierStatus{
 
 service Model {
   rpc Predict(Request) returns (Response) {};
-  rpc Feedback(Feedback) returns (Response) {};
+  rpc SendFeedback(Feedback) returns (Response) {};
  }
 
 service Router {
   rpc Route(Request) returns (Response) {};
-  rpc Feedback(Feedback) returns (Response) {};
+  rpc SendFeedback(Feedback) returns (Response) {};
  }
 
 // [END Services]
