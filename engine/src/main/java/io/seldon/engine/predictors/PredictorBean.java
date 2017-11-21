@@ -14,9 +14,9 @@ import io.seldon.protos.DeploymentProtos.PredictiveUnit;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitType;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitSubtype;
 import io.seldon.protos.DeploymentProtos.PredictorSpec;
-import io.seldon.protos.PredictionProtos.FeedbackDef;
-import io.seldon.protos.PredictionProtos.RequestDef;
-import io.seldon.protos.PredictionProtos.ResponseDef;
+import io.seldon.protos.PredictionProtos.Feedback;
+import io.seldon.protos.PredictionProtos.Request;
+import io.seldon.protos.PredictionProtos.Response;
 
 import io.kubernetes.client.proto.V1.Container;
 
@@ -55,14 +55,14 @@ public class PredictorBean {
         
     }
    
-	public ResponseDef predict(RequestDef request, PredictorState predictorState) throws InterruptedException, ExecutionException
+	public Response predict(Request request, PredictorState predictorState) throws InterruptedException, ExecutionException
 
 	{
 		PredictiveUnitState rootState = predictorState.rootState;
 		return rootState.predictiveUnitBean.predict(request, rootState);
 	}
 	
-	public void sendFeedback(FeedbackDef feedback, PredictorState predictorState) throws InterruptedException, ExecutionException
+	public void sendFeedback(Feedback feedback, PredictorState predictorState) throws InterruptedException, ExecutionException
 
 	{
 		PredictiveUnitState rootState = predictorState.rootState;
