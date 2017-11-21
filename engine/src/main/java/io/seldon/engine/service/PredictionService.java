@@ -49,7 +49,7 @@ public class PredictionService {
 	
 	public void sendFeedback(FeedbackDef feedback) throws InterruptedException, ExecutionException
 	{
-		PredictorState predictorState = predictorBean.predictorStateFromDeploymentDef(enginePredictor.getPredictorDef());
+		PredictorState predictorState = predictorBean.predictorStateFromPredictorSpec(enginePredictor.getPredictorSpec());
 
 		predictorBean.sendFeedback(feedback, predictorState);
 		
@@ -69,7 +69,7 @@ public class PredictionService {
 		}
 		String puid = request.getMeta().getPuid();
 		
-        PredictorState predictorState = predictorBean.predictorStateFromDeploymentDef(enginePredictor.getPredictorDef());
+        PredictorState predictorState = predictorBean.predictorStateFromPredictorSpec(enginePredictor.getPredictorSpec());
 
         ResponseDef predictorReturn = predictorBean.predict(request,predictorState);
 			

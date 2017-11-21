@@ -10,18 +10,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.seldon.engine.exception.APIException;
-import io.seldon.protos.DeploymentProtos.DeploymentDef;
-import io.seldon.protos.DeploymentProtos.PredictiveUnitDef;
-import io.seldon.protos.DeploymentProtos.PredictorDef;
+import io.seldon.protos.DeploymentProtos.PredictiveUnit;
+import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitType;
+import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitSubtype;
+import io.seldon.protos.DeploymentProtos.PredictorSpec;
 import io.seldon.protos.PredictionProtos.FeedbackDef;
 import io.seldon.protos.PredictionProtos.RequestDef;
 import io.seldon.protos.PredictionProtos.ResponseDef;
+
+import io.kubernetes.client.proto.V1.Container;
 
 
 @Component
 public class PredictorBean {
 
-    private final Map<String,PredictiveUnitBean> nodeClassMap;
+    public final Map<PredictiveUnitType,Map<PredictiveUnitSubtype,PredictiveUnitBean>> nodeClassMap;
 	
     @Autowired
 	public PredictorBean(
@@ -32,14 +35,24 @@ public class PredictorBean {
 			SimpleRouterUnit simpleRouterUnit,
 			AverageCombinerUnit averageCombinerUnit,
 			RandomABTestUnit randomABTestUnit) {
-        nodeClassMap = new HashMap<String,PredictiveUnitBean>();
-    	nodeClassMap.put(PredictiveUnitDef.PredictiveUnitType.MODEL.toString() + "_" + PredictiveUnitDef.PredictiveUnitSubType.MICROSERVICE.toString(), modelUnit);
-    	nodeClassMap.put(PredictiveUnitDef.PredictiveUnitType.MODEL.toString() + "_" + PredictiveUnitDef.PredictiveUnitSubType.SIMPLE_MODEL.toString(), simpleModelUnit);
-    	nodeClassMap.put(PredictiveUnitDef.PredictiveUnitType.ROUTER.toString() + "_" + PredictiveUnitDef.PredictiveUnitSubType.MICROSERVICE.toString(), routerUnit);
-    	nodeClassMap.put(PredictiveUnitDef.PredictiveUnitType.ROUTER.toString() + "_" + PredictiveUnitDef.PredictiveUnitSubType.SIMPLE_ROUTER.toString(), simpleRouterUnit);
-    	nodeClassMap.put(PredictiveUnitDef.PredictiveUnitType.COMBINER.toString() + "_" + PredictiveUnitDef.PredictiveUnitSubType.MICROSERVICE.toString(), combinerUnit);
-    	nodeClassMap.put(PredictiveUnitDef.PredictiveUnitType.COMBINER.toString() + "_" + PredictiveUnitDef.PredictiveUnitSubType.AVERAGE_COMBINER.toString(), averageCombinerUnit);
-    	nodeClassMap.put(PredictiveUnitDef.PredictiveUnitType.ROUTER.toString() + "_" + PredictiveUnitDef.PredictiveUnitSubType.RANDOM_ABTEST.toString(), randomABTestUnit);
+        nodeClassMap = new HashMap<PredictiveUnitType,Map<PredictiveUnitSubtype,PredictiveUnitBean>>();
+        
+        Map<PredictiveUnitSubtype,PredictiveUnitBean> modelsMap = new HashMap<PredictiveUnitSubtype,PredictiveUnitBean>();
+        modelsMap.put(PredictiveUnitSubtype.MICROSERVICE, modelUnit);
+        modelsMap.put(PredictiveUnitSubtype.SIMPLE_MODEL, simpleModelUnit);
+        nodeClassMap.put(PredictiveUnitType.MODEL, modelsMap);
+        
+        Map<PredictiveUnitSubtype,PredictiveUnitBean> routersMap = new HashMap<PredictiveUnitSubtype,PredictiveUnitBean>();
+        routersMap.put(PredictiveUnitSubtype.MICROSERVICE, routerUnit);
+        routersMap.put(PredictiveUnitSubtype.RANDOM_ABTEST, randomABTestUnit);
+        routersMap.put(PredictiveUnitSubtype.SIMPLE_ROUTER, simpleRouterUnit);
+        nodeClassMap.put(PredictiveUnitType.ROUTER, routersMap);
+        
+        Map<PredictiveUnitSubtype,PredictiveUnitBean> combinersMap = new HashMap<PredictiveUnitSubtype,PredictiveUnitBean>();
+        combinersMap.put(PredictiveUnitSubtype.MICROSERVICE, combinerUnit);
+        combinersMap.put(PredictiveUnitSubtype.AVERAGE_COMBINER, averageCombinerUnit);
+        nodeClassMap.put(PredictiveUnitType.COMBINER, combinersMap);
+        
     }
    
 	public ResponseDef predict(RequestDef request, PredictorState predictorState) throws InterruptedException, ExecutionException
@@ -58,53 +71,21 @@ public class PredictorBean {
 	}
 	
 	//TODO
-	public PredictorState predictorStateFromDeploymentDef(PredictorDef predictorDef){
-		String rootId = predictorDef.getRoot();
-        Boolean enabled = predictorDef.getEnabled();
-        List<PredictiveUnitDef> predictiveUnitDefList = predictorDef.getPredictiveUnitsList();
-        
-        Map<String,PredictiveUnitDef> predictiveUnitDefMap = new HashMap<>();
-        Map<String,PredictiveUnitState> predictiveUnitStateMap = new HashMap<>();
-     
-        // First we go through all the nodes, instantiate the PredictorNode objects and populate dictionaries
-        for (PredictiveUnitDef predictiveUnitDef : predictiveUnitDefList){
-        	
-        	String id = predictiveUnitDef.getId();
-            
-        	String typeSubtype = predictiveUnitDef.getType() + "_" + predictiveUnitDef.getSubtype();
-        	PredictiveUnitBean predictiveUnitBean = nodeClassMap.get(typeSubtype);
-        	
-        	PredictiveUnitState predictiveUnitState = new PredictiveUnitState(predictiveUnitDef);
-        	
-        	predictiveUnitState.setPredictiveUnitBean(predictiveUnitBean);
-        	
-        	predictiveUnitDefMap.put(id, predictiveUnitDef);
-        	predictiveUnitStateMap.put(id, predictiveUnitState);
-        }
-        
-        // Then we go through the json nodes again and add the children links
-        for (Map.Entry<String, PredictiveUnitDef> entry : predictiveUnitDefMap.entrySet()) {
-        	PredictiveUnitDef predictiveUnitDef = entry.getValue();
-        	PredictiveUnitState predictiveUnitState = predictiveUnitStateMap.get(entry.getKey());
-        	
-        	List<String> childIds = predictiveUnitDef.getChildrenList();
-       
-        	for (String childId : childIds)
-            {
-        		predictiveUnitState.addChild(childId, predictiveUnitStateMap.get(childId));
-            }
-        }
-        
-        // TODO: When predicting, the predictor will be stuck in a loop if the json is malformed 
-        // and the graph contains a cycle. Maybe add some code to check that the json is well formed
-        
-        return new PredictorState(rootId,predictiveUnitStateMap,enabled);
-	}
-	   
-	public PredictorState predictorStateFromDeploymentDef(DeploymentDef deploymentDef){
-		PredictorDef predictorDef = deploymentDef.getPredictor();
+	public PredictorState predictorStateFromPredictorSpec(PredictorSpec predictorSpec){
+
+        // Boolean enabled = PredictorSpec.getEnabled();
+		Boolean enabled = true;
+		PredictiveUnit rootUnit = predictorSpec.getGraph();
+		Map<String,Container> containersMap = new HashMap<String,Container>();
 		
-        return predictorStateFromDeploymentDef(predictorDef);
+		for (Container container : predictorSpec.getComponentSpec().getSpec().getContainersList()){
+			containersMap.put(container.getName(), container);
+		}
+		
+		PredictiveUnitState rootState = new PredictiveUnitState(rootUnit,containersMap,this.nodeClassMap);
+		
+		return new PredictorState(rootUnit.getName(),rootState, enabled);
+	
 	}
 	
 	
