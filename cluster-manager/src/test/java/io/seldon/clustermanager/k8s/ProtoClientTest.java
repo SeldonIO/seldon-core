@@ -116,8 +116,8 @@ public class ProtoClientTest extends AppTest {
 					            .replaceAll("\\{" + "name" + "\\}", apiClient.escapeString("dep"))
 					            .replaceAll("\\{" + "namespace" + "\\}", apiClient.escapeString("default"));
 						//Status status = pc.delete(Deployment.newBuilder(),localVarPath4);
-						//os = pc.delete(Deployment.newBuilder(),localVarPath4,deleteOptions);
-						os = pc.delete(Deployment.newBuilder(),localVarPath4,null);
+						os = pc.delete(Deployment.newBuilder(),localVarPath4,deleteOptions);
+						//os = pc.delete(Deployment.newBuilder(),localVarPath4,null);
 						//os = request(apiClient,Deployment.newBuilder(),localVarPath4,"DELETE",deleteOptions, "v1", "DeleteOptions");
 						if (os.status != null)
 							logger.info("Error during delete  "+ProtoBufUtils.toJson(os.status));
