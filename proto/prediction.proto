@@ -22,7 +22,7 @@ message Tensor {
   repeated double values = 2 [packed=true];
 }
 
-message DefaultDataDef {
+message DefaultData {
   repeated string names = 1;
   oneof data_oneof {
     Tensor tensor = 2;
@@ -35,11 +35,11 @@ message DefaultDataDef {
 
 // [START Request]
 
-message RequestDef {
+message Request {
 
-  MetaDef meta = 1;
+  Meta meta = 1;
   oneof data_oneof {
-    DefaultDataDef data = 2;
+    DefaultData data = 2;
     bytes binData = 3;
     string strData = 4;
   }
@@ -51,7 +51,7 @@ message RequestDef {
 
 // [START Meta]
 
-message MetaDef {
+message Meta {
   string puid = 1; 
   map<string,google.protobuf.Value> tags = 2;
   map<string,int32> routing = 3;
@@ -63,18 +63,18 @@ message MetaDef {
 
 // [START Response]
 
-message ResponseDef {
+message Response {
 
-  StatusDef status = 1;
-  MetaDef meta = 2;
+  Status status = 1;
+  Meta meta = 2;
   oneof data_oneof {
-    DefaultDataDef data = 3;
+    DefaultData data = 3;
     bytes binData = 4;
     string strData = 5;
   }
 }
 
-message StatusDef {
+message Status {
 
     enum Status {
         SUCCESS = 0;
@@ -92,11 +92,11 @@ message StatusDef {
 
 // [START Feedback]
 
-message FeedbackDef {
-  RequestDef request = 1;
-  ResponseDef response = 2;
+message Feedback {
+  Request request = 1;
+  Response response = 2;
   float reward = 3;
-  DefaultDataDef truth = 4;
+  DefaultData truth = 4;
 }
 
 // [END Feedback]
@@ -104,9 +104,9 @@ message FeedbackDef {
 
 // [START RequestResponse]
 
-message RequestResponseDef {
-  RequestDef request = 1;
-  ResponseDef response = 2;
+message RequestResponse {
+  Request request = 1;
+  Response response = 2;
 }
 
 // [END RequestResponse]
@@ -127,13 +127,13 @@ message OutlierStatus{
 // [START Services]
 
 service Model {
-  rpc Predict(RequestDef) returns (ResponseDef) {};
-  rpc Feedback(FeedbackDef) returns (ResponseDef) {};
+  rpc Predict(Request) returns (Response) {};
+  rpc Feedback(Feedback) returns (Response) {};
  }
 
 service Router {
-  rpc Route(RequestDef) returns (ResponseDef) {};
-  rpc Feedback(FeedbackDef) returns (ResponseDef) {};
+  rpc Route(Request) returns (Response) {};
+  rpc Feedback(Feedback) returns (Response) {};
  }
 
 // [END Services]
