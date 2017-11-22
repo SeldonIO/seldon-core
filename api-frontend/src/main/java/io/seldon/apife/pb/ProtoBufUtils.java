@@ -5,7 +5,7 @@ import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 import com.google.protobuf.util.JsonFormat.Printer;
 
-import io.seldon.protos.DeploymentProtos.DeploymentDef;
+import io.seldon.protos.DeploymentProtos.DeploymentSpec;
 
 public class ProtoBufUtils {
 

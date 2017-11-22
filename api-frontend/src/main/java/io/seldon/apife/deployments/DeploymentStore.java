@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.seldon.apife.api.oauth.InMemoryClientDetailsService;
-import io.seldon.protos.DeploymentProtos.DeploymentDef;
+import io.seldon.protos.DeploymentProtos.DeploymentSpec;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 @Component
@@ -19,7 +19,7 @@ public class DeploymentStore implements DeploymentsListener {
 	protected static Logger logger = LoggerFactory.getLogger(DeploymentStore.class.getName());
 	
 	//Oauth key to deployment def
-	private ConcurrentMap<String, DeploymentDef> deploymentStore = new ConcurrentHashMap<>();
+	private ConcurrentMap<String, DeploymentSpec> deploymentStore = new ConcurrentHashMap<>();
 	
 	private final DeploymentsHandler deploymentsHandler;
 	 
@@ -38,7 +38,7 @@ public class DeploymentStore implements DeploymentsListener {
 		deploymentsHandler.addListener(this);
 	}
 	 
-	 public DeploymentDef getDeployment(String clientId)
+	 public DeploymentSpec getDeployment(String clientId)
 	 {
 		 return deploymentStore.get(clientId);
 	 }
@@ -46,12 +46,12 @@ public class DeploymentStore implements DeploymentsListener {
 	 
 	 @Override
 	 public void deploymentAdded(SeldonDeployment mlDep) {
-		 final DeploymentDef deploymentDef = mlDep.getSpec();
+		 final DeploymentSpec deploymentDef = mlDep.getSpec();
 		 
 		 deploymentStore.put(deploymentDef.getOauthKey(), deploymentDef);
 		 clientDetailsService.addClient(deploymentDef.getOauthKey(), deploymentDef.getOauthSecret());
 
-		 logger.info("Succesfully added or updated deployment "+deploymentDef.getId());
+		 logger.info("Succesfully added or updated deployment "+deploymentDef.getName());
 	}
 	 
 	@Override
@@ -61,10 +61,10 @@ public class DeploymentStore implements DeploymentsListener {
 	
 	@Override
 	public void deploymentRemoved(SeldonDeployment mlDep) {
-		 final DeploymentDef deploymentDef = mlDep.getSpec();
+		 final DeploymentSpec deploymentDef = mlDep.getSpec();
 		 deploymentStore.remove(deploymentDef.getOauthKey());
 		 clientDetailsService.removeClient(deploymentDef.getOauthKey());
-		 logger.info("Removed deployment "+deploymentDef.getId());
+		 logger.info("Removed deployment "+deploymentDef.getName());
 	}
 		
 }
