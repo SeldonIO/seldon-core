@@ -22,9 +22,9 @@ import io.seldon.engine.exception.APIException;
 import io.seldon.engine.exception.APIException.ApiExceptionType;
 import io.seldon.engine.pb.ProtoBufUtils;
 import io.seldon.engine.service.PredictionService;
-import io.seldon.protos.PredictionProtos.FeedbackDef;
-import io.seldon.protos.PredictionProtos.RequestDef;
-import io.seldon.protos.PredictionProtos.ResponseDef;
+import io.seldon.protos.PredictionProtos.Feedback;
+import io.seldon.protos.PredictionProtos.Request;
+import io.seldon.protos.PredictionProtos.Response;
 
 @RestController
 public class RestClientController {
@@ -87,10 +87,10 @@ public class RestClientController {
 	@RequestMapping(value = "/api/v0.1/predictions", method = RequestMethod.POST, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
     public ResponseEntity<String> predictions(RequestEntity<String> requestEntity)
 	{
-		RequestDef request;
+		Request request;
 		try
 		{
-			RequestDef.Builder builder = RequestDef.newBuilder();
+			Request.Builder builder = Request.newBuilder();
 			ProtoBufUtils.updateMessageBuilderFromJson(builder, requestEntity.getBody() );
 			request = builder.build();
 		} 
@@ -102,7 +102,7 @@ public class RestClientController {
 
 		try
 		{
-			ResponseDef response = predictionService.predict(request);
+			Response response = predictionService.predict(request);
 			String json = ProtoBufUtils.toJson(response);
 			return new ResponseEntity<String>(json,HttpStatus.OK);
 		}
@@ -138,11 +138,11 @@ public class RestClientController {
 	
 	@RequestMapping(value= "/api/v0.1/feedback", method = RequestMethod.POST, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
 	public ResponseEntity<String>  feedback(RequestEntity<String> requestEntity) {
-		FeedbackDef feedback;
+		Feedback feedback;
 		
 		try
 		{
-			FeedbackDef.Builder builder = FeedbackDef.newBuilder();
+			Feedback.Builder builder = Feedback.newBuilder();
 			ProtoBufUtils.updateMessageBuilderFromJson(builder, requestEntity.getBody() );
 			feedback = builder.build();
 		} 

@@ -30,10 +30,10 @@ import io.seldon.apife.kafka.KafkaRequestResponseProducer;
 import io.seldon.apife.metrics.AuthorizedWebMvcTagsProvider;
 import io.seldon.apife.pb.ProtoBufUtils;
 import io.seldon.apife.service.PredictionService;
-import io.seldon.protos.PredictionProtos.PredictionFeedbackDef;
-import io.seldon.protos.PredictionProtos.PredictionRequestDef;
-import io.seldon.protos.PredictionProtos.PredictionRequestResponseDef;
-import io.seldon.protos.PredictionProtos.PredictionResponseDef;
+import io.seldon.protos.PredictionProtos.Feedback;
+import io.seldon.protos.PredictionProtos.Request;
+import io.seldon.protos.PredictionProtos.RequestResponse;
+import io.seldon.protos.PredictionProtos.Response;
 
 @RestController
 public class RestClientController {
@@ -115,10 +115,10 @@ public class RestClientController {
 		String json = requestEntity.getBody();
 		logger.info(String.format("[%s] [%s] [%s] [%s]", "POST", requestEntity.getUrl().getPath(), clientId, json));
 		
-		PredictionRequestDef request;
+		Request request;
 		try
 		{
-			PredictionRequestDef.Builder builder = PredictionRequestDef.newBuilder();
+			Request.Builder builder = Request.newBuilder();
 			ProtoBufUtils.updateMessageBuilderFromJson(builder, requestEntity.getBody() );
 			request = builder.build();
 		} 
@@ -133,10 +133,10 @@ public class RestClientController {
 		// At present passes JSON string. Could use gRPC?
 		String ret = predictionService.predict(json,clientId);
 		
-		PredictionResponseDef response;
+		Response response;
 		try
 		{
-			PredictionResponseDef.Builder builder = PredictionResponseDef.newBuilder();
+			Response.Builder builder = Response.newBuilder();
 			ProtoBufUtils.updateMessageBuilderFromJson(builder, ret);
 			response = builder.build();
 		}
@@ -146,7 +146,7 @@ public class RestClientController {
 			throw new APIException(ApiExceptionType.APIFE_INVALID_RESPONSE_JSON,requestEntity.getBody());
 		}
 		
-		kafkaProducer.send(clientId,PredictionRequestResponseDef.newBuilder().setRequest(request).setResponse(response).build());
+		kafkaProducer.send(clientId,RequestResponse.newBuilder().setRequest(request).setResponse(response).build());
 		
 		
 		HttpHeaders responseHeaders = new HttpHeaders();
@@ -163,10 +163,10 @@ public class RestClientController {
 	{
 		String clientId = principal.getName();
 		String json = requestEntity.getBody();
-		PredictionFeedbackDef feedback;
+		Feedback feedback;
 		try
 		{
-			PredictionFeedbackDef.Builder builder = PredictionFeedbackDef.newBuilder();
+			Feedback.Builder builder = Feedback.newBuilder();
 			ProtoBufUtils.updateMessageBuilderFromJson(builder, requestEntity.getBody() );
 			feedback = builder.build();
 			Iterable<Tag> tags = asList(tagsProvider.principal(clientId),tagsProvider.projectName(clientId),tagsProvider.predictorName(clientId),tagsProvider.version(clientId));
