@@ -81,7 +81,6 @@ message PredictorSpec {
   required PredictiveUnit graph = 3;
   required k8s.io.api.core.v1.PodTemplateSpec componentSpec = 4;
   optional int32 replicas = 5;
-  optional string version = 6;
   map<string,string> annotations = 7;
 }
 
