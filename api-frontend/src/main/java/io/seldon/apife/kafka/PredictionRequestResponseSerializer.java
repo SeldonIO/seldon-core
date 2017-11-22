@@ -2,12 +2,12 @@ package io.seldon.apife.kafka;
 
 import org.apache.kafka.common.serialization.Serializer;
 
-import io.seldon.protos.PredictionProtos.PredictionRequestResponseDef;
+import io.seldon.protos.PredictionProtos.RequestResponse;
 
-public class PredictionRequestResponseSerializer extends Adapter implements Serializer<PredictionRequestResponseDef> {
+public class RequestResponseSerializer extends Adapter implements Serializer<RequestResponse> {
 
 	@Override
-	public byte[] serialize(final String topic, final PredictionRequestResponseDef data) {
+	public byte[] serialize(final String topic, final RequestResponse data) {
 		return data.toByteArray();
 	}
 

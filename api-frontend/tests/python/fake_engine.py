@@ -19,8 +19,8 @@ def hello_world():
     print jStr
     j = json.loads(jStr)
 
-    meta = ppb.PredictionResponseMetaDef(puid="puid-1")
-    response = ppb.PredictionResponseDef(meta=meta)
+    meta = ppb.ResponseMeta(puid="puid-1")
+    response = ppb.Response(meta=meta)
     json_string = json_format.MessageToJson(response)
     print json_string
 
