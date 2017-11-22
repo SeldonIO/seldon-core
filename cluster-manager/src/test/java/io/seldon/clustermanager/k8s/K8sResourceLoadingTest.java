@@ -19,7 +19,7 @@ import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.seldon.protos.DeploymentProtos.MLDeployment;
+import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 
 public class K8sResourceLoadingTest   {
@@ -53,7 +53,7 @@ public class K8sResourceLoadingTest   {
 	public void ProtoLoadTest() throws IOException
 	{
 		String json = readFile("src/test/resources/mldeployment_1.json",StandardCharsets.UTF_8);
-		MLDeployment mldep = MLDeploymentUtils.jsonToMLDeployment(json);	
+		SeldonDeployment mldep = SeldonDeploymentUtils.jsonToMLDeployment(json);	
 		logger.info(json);
 	}
 	

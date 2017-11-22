@@ -18,7 +18,9 @@ import io.seldon.clustermanager.ClusterManagerProperites;
 import io.seldon.clustermanager.component.KubernetesManager;
 import io.seldon.clustermanager.k8s.DeploymentUtils.BuildDeploymentResult;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
+import io.seldon.protos.DeploymentProtos.DeploymentSpec;
 import io.seldon.protos.DeploymentProtos.MLDeployment;
+import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 public class KubernetesManagerImpl implements KubernetesManager {
 
@@ -89,10 +91,10 @@ public class KubernetesManagerImpl implements KubernetesManager {
     }
 
     @Override
-    public DeploymentDef createOrReplaceSeldonDeployment(MLDeployment mldeployment) {
-    	final DeploymentDef deploymentDef = mldeployment.getSpec();
-        DeploymentDef.Builder resultingDeploymentDefBuilder = DeploymentDef.newBuilder(deploymentDef);
-        final String seldonDeploymentId = mldeployment.getSpec().getId();
+    public DeploymentSpec createOrReplaceSeldonDeployment(SeldonDeployment mldeployment) {
+    	final DeploymentSpec deploymentDef = mldeployment.getSpec();
+        DeploymentSpec.Builder resultingDeploymentDefBuilder = DeploymentSpec.newBuilder(deploymentDef);
+        final String seldonDeploymentId = mldeployment.getSpec().getName();
         logger.debug(String.format("Creating Seldon Deployment id[%s]", seldonDeploymentId));
         final String namespace_name = getNamespaceName();
 

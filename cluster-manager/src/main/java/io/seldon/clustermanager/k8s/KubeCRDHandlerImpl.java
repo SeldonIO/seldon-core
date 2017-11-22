@@ -16,7 +16,7 @@ import io.kubernetes.client.ApiException;
 import io.kubernetes.client.apis.CustomObjectsApi;
 import io.kubernetes.client.proto.Meta.ObjectMeta;
 import io.kubernetes.client.util.Config;
-import io.seldon.protos.DeploymentProtos.MLDeployment;
+import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 @Component
 public class KubeCRDHandlerImpl implements KubeCRDHandler {
@@ -32,19 +32,19 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 	
 	
 	@Override
-	public void updateMLDeployment(MLDeployment mldep) {
+	public void updateSeldonDeployment(SeldonDeployment mldep) {
 		
 		try
 		{
 			// Need to remove resourceVersion from the representation used for last-applied-configuration otherwise you will errors subsequently using kubectl
-			MLDeployment mlDepTmp = MLDeployment.newBuilder(mldep).setMetadata(ObjectMeta.newBuilder(mldep.getMetadata()).clearResourceVersion()
+			SeldonDeployment mlDepTmp = SeldonDeployment.newBuilder(mldep).setMetadata(ObjectMeta.newBuilder(mldep.getMetadata()).clearResourceVersion()
 					.removeAnnotations("kubectl.kubernetes.io/last-applied-configuration").build()).build();
 			// Create string representation of JSON to add as annotation to allow declarative "kubectl apply" commands to work otherwise a replace
 			// would remove the last-applied-configuration that kubectl adds.
 			String json = JsonFormat.printer().omittingInsignificantWhitespace().preservingProtoFieldNames().print(mlDepTmp);
 			
 			// Create final version of deployment with annotation
-			MLDeployment mlDeployment = MLDeployment.newBuilder(mldep).setMetadata(ObjectMeta.newBuilder(mldep.getMetadata())
+			SeldonDeployment mlDeployment = SeldonDeployment.newBuilder(mldep).setMetadata(ObjectMeta.newBuilder(mldep.getMetadata())
 						.putAnnotations("kubectl.kubernetes.io/last-applied-configuration", json+"\n")).build();
 			
 			json = JsonFormat.printer().includingDefaultValueFields().preservingProtoFieldNames().print(mlDeployment);
@@ -64,7 +64,7 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 	}
 	
 	@Override
-	public MLDeployment getMlDeployment(String name) {
+	public SeldonDeployment getSeldonDeployment(String name) {
 		try
 		{
 			ApiClient client = Config.defaultClient();
@@ -74,7 +74,7 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
     		String json = gson.toJson(resp);
     		
     		try {
-    			return MLDeploymentUtils.jsonToMLDeployment(json);
+    			return SeldonDeploymentUtils.jsonToMLDeployment(json);
 			} catch (InvalidProtocolBufferException e) {
 				logger.error("Failed to parse "+json,e);
 				return null;

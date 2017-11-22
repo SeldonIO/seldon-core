@@ -32,7 +32,7 @@ api-frontend/src/main/proto/seldonengine.proto
 cluster-manager/cluster-manager-client-secret.txt
 cluster-manager/cluster-manager.json
 api-frontend/target/
-cluster-manager/src/main/proto/seldonengine.proto
+cluster-manager/src/main/proto/seldon_deployment.proto
 cluster-manager/target/
 cluster-manager/tests/CLUSTER_MANAGER_ENDPOINT
 cluster-manager/tests/out.log

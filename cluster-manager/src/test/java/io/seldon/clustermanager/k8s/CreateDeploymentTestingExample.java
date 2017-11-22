@@ -28,7 +28,7 @@ import io.kubernetes.client.models.V1ObjectMeta;
 import io.kubernetes.client.models.V1PodTemplateSpec;
 import io.kubernetes.client.proto.V1.PodTemplateSpec;
 import io.kubernetes.client.util.Config;
-import io.seldon.protos.DeploymentProtos.MLDeployment;
+import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 public class CreateDeploymentTestingExample {
 	private final static Logger logger = LoggerFactory.getLogger(CreateDeploymentTestingExample.class);
@@ -46,7 +46,7 @@ public class CreateDeploymentTestingExample {
 		 ExtensionsV1beta1Api api = new ExtensionsV1beta1Api(client);
 		 
 		 String jsonStr = readFile("src/test/resources/mldeployment_1.json",StandardCharsets.UTF_8);
-		 MLDeployment mldep = MLDeploymentUtils.jsonToMLDeployment(jsonStr);
+		 SeldonDeployment mldep = SeldonDeploymentUtils.jsonToMLDeployment(jsonStr);
 		 PodTemplateSpec protoTemplateSpec = mldep.getSpec().getPredictors(0).getComponentSpec();
 		 
 		 Printer jsonPrinter = JsonFormat.printer().preservingProtoFieldNames();

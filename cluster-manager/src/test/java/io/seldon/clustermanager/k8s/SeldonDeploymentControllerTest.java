@@ -7,17 +7,17 @@ import org.junit.Test;
 
 import io.seldon.clustermanager.AppTest;
 import io.seldon.clustermanager.k8s.client.K8sDefaultClientProvider;
-import io.seldon.protos.DeploymentProtos.MLDeployment;
+import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
-public class MLDeploymentControllerTest extends AppTest {
+public class SeldonDeploymentControllerTest extends AppTest {
 	
 	@Test
 	public void simpleTest() throws IOException
 	{
-		MLDeploymentOperator op = new MLDeploymentOperatorImpl(getProps());
-		MLDeploymentController controller = new MLDeploymentControllerImpl(op, new K8sDefaultClientProvider());
+		SeldonDeploymentOperator op = new SeldonDeploymentOperatorImpl(getProps());
+		SeldonDeploymentController controller = new SeldonDeploymentControllerImpl(op, new K8sDefaultClientProvider());
 		String jsonStr = readFile("src/test/resources/mldeployment_1.json",StandardCharsets.UTF_8);
-		MLDeployment mlDep = MLDeploymentUtils.jsonToMLDeployment(jsonStr);
+		SeldonDeployment mlDep = SeldonDeploymentUtils.jsonToMLDeployment(jsonStr);
 		controller.createOrReplaceMLDeployment(mlDep);
 	}
 	

@@ -35,17 +35,17 @@ import io.kubernetes.client.proto.V1beta1Extensions.Deployment;
 import io.kubernetes.client.proto.V1beta1Extensions.DeploymentSpec;
 import io.seldon.clustermanager.ClusterManagerProperites;
 import io.seldon.clustermanager.pb.ProtoBufUtils;
-import io.seldon.protos.DeploymentProtos.MLDeployment;
 import io.seldon.protos.DeploymentProtos.PredictorSpec;
+import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 @Component
-public class MLDeploymentOperatorImpl implements MLDeploymentOperator {
+public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 
-	private final static Logger logger = LoggerFactory.getLogger(MLDeploymentOperatorImpl.class);
+	private final static Logger logger = LoggerFactory.getLogger(SeldonDeploymentOperatorImpl.class);
 	private final ClusterManagerProperites clusterManagerProperites;
 	public static final String LABEL_SELDON_APP = "seldon-app";
 	@Autowired
-	public MLDeploymentOperatorImpl(ClusterManagerProperites clusterManagerProperites) {
+	public SeldonDeploymentOperatorImpl(ClusterManagerProperites clusterManagerProperites) {
 		super();
 		this.clusterManagerProperites = clusterManagerProperites;
 	}
@@ -204,8 +204,8 @@ public class MLDeploymentOperatorImpl implements MLDeploymentOperator {
 	}
 	
 	@Override
-	public MLDeployment defaulting(MLDeployment mlDep) {
-		MLDeployment.Builder mlBuilder = MLDeployment.newBuilder(mlDep);
+	public SeldonDeployment defaulting(SeldonDeployment mlDep) {
+		SeldonDeployment.Builder mlBuilder = SeldonDeployment.newBuilder(mlDep);
 		int idx = 0;
 		String serviceName = getKubernetesMLDeploymentId(mlDep.getSpec().getName(), false);
 		for(PredictorSpec p : mlDep.getSpec().getPredictorsList())
@@ -227,7 +227,7 @@ public class MLDeploymentOperatorImpl implements MLDeploymentOperator {
 	}
 
 	@Override
-	public void validate(MLDeployment mlDep) throws MLDeploymentException {
+	public void validate(SeldonDeployment mlDep) throws SeldonDeploymentException {
 		// TODO Auto-generated method stub
 		
 	}
@@ -240,7 +240,7 @@ public class MLDeploymentOperatorImpl implements MLDeploymentOperator {
 		return "sd-" + deploymentName + "-" + predictorName + "-" + ((isCanary) ? "c" : "p");
 	}
 	
-	private V1OwnerReference getOwnerReferenceOld(MLDeployment mlDep)
+	private V1OwnerReference getOwnerReferenceOld(SeldonDeployment mlDep)
 	{
 		return new V1OwnerReference()
 				.apiVersion(mlDep.getApiVersion())
@@ -249,7 +249,7 @@ public class MLDeploymentOperatorImpl implements MLDeploymentOperator {
 				.name(mlDep.getMetadata().getName())
 				.uid(mlDep.getMetadata().getUid());
 	}
-	private OwnerReference getOwnerReference(MLDeployment mlDep)
+	private OwnerReference getOwnerReference(SeldonDeployment mlDep)
 	{
 		return OwnerReference.newBuilder()
 			.setApiVersion(mlDep.getApiVersion())
@@ -260,7 +260,7 @@ public class MLDeploymentOperatorImpl implements MLDeploymentOperator {
 	}
 	 
 	@Override
-	public DeploymentResources createResources(MLDeployment mlDep) throws MLDeploymentException {
+	public DeploymentResources createResources(SeldonDeployment mlDep) throws SeldonDeploymentException {
 		
 		OwnerReference ownerRef = getOwnerReference(mlDep);
 		List<Deployment> deployments = new ArrayList<>();
@@ -274,7 +274,7 @@ public class MLDeploymentOperatorImpl implements MLDeploymentOperator {
 			Deployment deployment = V1beta1Extensions.Deployment.newBuilder()
 					.setMetadata(ObjectMeta.newBuilder()
 							.setName(depName)
-							.putLabels(MLDeploymentOperatorImpl.LABEL_SELDON_APP, serviceLabel)
+							.putLabels(SeldonDeploymentOperatorImpl.LABEL_SELDON_APP, serviceLabel)
 							.putLabels("seldon-deployment-id", mlDep.getSpec().getName())
 							.putLabels("app", depName)
 							.putLabels("version", "v1") //FIXME
@@ -294,7 +294,7 @@ public class MLDeploymentOperatorImpl implements MLDeploymentOperator {
 		Service s = Service.newBuilder()
 					.setMetadata(ObjectMeta.newBuilder()
 							.setName(mlDep.getSpec().getName())
-							.putLabels(MLDeploymentOperatorImpl.LABEL_SELDON_APP, serviceLabel)
+							.putLabels(SeldonDeploymentOperatorImpl.LABEL_SELDON_APP, serviceLabel)
 							.putLabels("seldon-deployment-id", mlDep.getSpec().getName())
 							)
 					.setSpec(ServiceSpec.newBuilder()
@@ -305,7 +305,7 @@ public class MLDeploymentOperatorImpl implements MLDeploymentOperator {
 									.setName("http")
 									)
 							.setType("ClusterIP")
-							.putSelector(MLDeploymentOperatorImpl.LABEL_SELDON_APP,serviceLabel)
+							.putSelector(SeldonDeploymentOperatorImpl.LABEL_SELDON_APP,serviceLabel)
 							)
 				.build();
 		

@@ -15,21 +15,21 @@ import io.kubernetes.client.ProtoClient.ObjectOrStatus;
 import io.kubernetes.client.apis.ExtensionsV1beta1Api;
 import io.kubernetes.client.models.ExtensionsV1beta1Deployment;
 import io.kubernetes.client.proto.V1beta1Extensions.Deployment;
-import io.seldon.clustermanager.k8s.MLDeploymentOperatorImpl.DeploymentResources;
+import io.seldon.clustermanager.k8s.SeldonDeploymentOperatorImpl.DeploymentResources;
 import io.seldon.clustermanager.k8s.client.K8sClientProvider;
 import io.seldon.clustermanager.pb.ProtoBufUtils;
-import io.seldon.protos.DeploymentProtos.MLDeployment;
+import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 @Component
-public class MLDeploymentControllerImpl implements MLDeploymentController {
+public class SeldonDeploymentControllerImpl implements SeldonDeploymentController {
 
-	private final static Logger logger = LoggerFactory.getLogger(MLDeploymentControllerImpl.class);
+	private final static Logger logger = LoggerFactory.getLogger(SeldonDeploymentControllerImpl.class);
 	
-	private final MLDeploymentOperator operator;
+	private final SeldonDeploymentOperator operator;
 	private final K8sClientProvider clientProvider;
 	
 	@Autowired
-	public MLDeploymentControllerImpl(MLDeploymentOperator operator, K8sClientProvider clientProvider) {
+	public SeldonDeploymentControllerImpl(SeldonDeploymentOperator operator, K8sClientProvider clientProvider) {
 		super();
 		this.operator = operator;
 		this.clientProvider = clientProvider;
@@ -83,7 +83,7 @@ public class MLDeploymentControllerImpl implements MLDeploymentController {
 
 
 	@Override
-	public void createOrReplaceMLDeployment(MLDeployment mlDep) {
+	public void createOrReplaceMLDeployment(SeldonDeployment mlDep) {
 		
 		try
 		{
@@ -94,7 +94,7 @@ public class MLDeploymentControllerImpl implements MLDeploymentController {
 			ProtoClient client = clientProvider.getProtoClient();
 			createDeployments(client, resources.deployments);
 			
-		} catch (MLDeploymentException e) {
+		} catch (SeldonDeploymentException e) {
 			logger.error("Failed to create deployment ",e);
 		} catch (ApiException e) {
 			//FIXME Parse response body to get enclosing message?

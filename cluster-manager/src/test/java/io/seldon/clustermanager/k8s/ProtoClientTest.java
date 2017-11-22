@@ -46,8 +46,8 @@ import io.kubernetes.client.proto.V1beta1Extensions.DeploymentSpec;
 import io.kubernetes.client.util.Config;
 import io.seldon.clustermanager.AppTest;
 import io.seldon.clustermanager.pb.ProtoBufUtils;
-import io.seldon.protos.DeploymentProtos.MLDeployment;
-import io.seldon.protos.DeploymentProtos.PredictorDef;
+import io.seldon.protos.DeploymentProtos.PredictorSpec;
+import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 
 public class ProtoClientTest extends AppTest {
@@ -64,18 +64,18 @@ public class ProtoClientTest extends AppTest {
 		ApiClient apiClient = Config.defaultClient();
 		ProtoClient pc = new ProtoClient(apiClient);
 		
-		MLDeploymentOperator op = new MLDeploymentOperatorImpl(getProps());
+		SeldonDeploymentOperator op = new SeldonDeploymentOperatorImpl(getProps());
 		String jsonStr = readFile("src/test/resources/mldeployment_1.json",StandardCharsets.UTF_8);
-		MLDeployment mlDep = MLDeploymentUtils.jsonToMLDeployment(jsonStr);
+		SeldonDeployment mlDep = SeldonDeploymentUtils.jsonToMLDeployment(jsonStr);
 		mlDep = op.defaulting(mlDep);
 		 String localVarPath = "/apis/extensions/v1beta1/namespaces/{namespace}/deployments"
 		            .replaceAll("\\{" + "namespace" + "\\}", apiClient.escapeString("default"));
-		for(PredictorDef p : mlDep.getSpec().getPredictorsList())
+		for(PredictorSpec p : mlDep.getSpec().getPredictorsList())
 		{
 
 			String serviceLabel = getKubernetesDeploymentId(mlDep.getSpec().getName(),p.getName(), false);
 			Deployment deployment = V1beta1Extensions.Deployment.newBuilder()
-				.setMetadata(ObjectMeta.newBuilder().setName("dep").putLabels(MLDeploymentOperatorImpl.LABEL_SELDON_APP, serviceLabel))
+				.setMetadata(ObjectMeta.newBuilder().setName("dep").putLabels(SeldonDeploymentOperatorImpl.LABEL_SELDON_APP, serviceLabel))
 				.setSpec(DeploymentSpec.newBuilder().setTemplate(p.getComponentSpec()).setReplicas(1)).build();
 			
 			// create path and map variables
@@ -222,7 +222,7 @@ public class ProtoClientTest extends AppTest {
 	        return new ObjectOrStatus((T) builder.mergeFrom(u.getRaw()).build(), null);
 	    }
 	
-	public static ExtensionsV1beta1Deployment convertProtoToModel(Deployment protoDeployment) throws InvalidProtocolBufferException, MLDeploymentException
+	public static ExtensionsV1beta1Deployment convertProtoToModel(Deployment protoDeployment) throws InvalidProtocolBufferException, SeldonDeploymentException
 	{
 		 Printer jsonPrinter = JsonFormat.printer().preservingProtoFieldNames();
 		 String ptsJson = jsonPrinter.print(protoDeployment);
@@ -234,17 +234,17 @@ public class ProtoClientTest extends AppTest {
 	}
 	
 	@Test @Ignore
-	public void convertTest() throws IOException, MLDeploymentException
+	public void convertTest() throws IOException, SeldonDeploymentException
 	{
-		MLDeploymentOperator op = new MLDeploymentOperatorImpl(getProps());
+		SeldonDeploymentOperator op = new SeldonDeploymentOperatorImpl(getProps());
 		String jsonStr = readFile("src/test/resources/mldeployment_1.json",StandardCharsets.UTF_8);
-		MLDeployment mlDep = MLDeploymentUtils.jsonToMLDeployment(jsonStr);
+		SeldonDeployment mlDep = SeldonDeploymentUtils.jsonToMLDeployment(jsonStr);
 		mlDep = op.defaulting(mlDep);
-		for(PredictorDef p : mlDep.getSpec().getPredictorsList())
+		for(PredictorSpec p : mlDep.getSpec().getPredictorsList())
 		{
 			String serviceLabel = getKubernetesDeploymentId(mlDep.getSpec().getName(),p.getName(), false);
 			Deployment deployment = V1beta1Extensions.Deployment.newBuilder()
-				.setMetadata(ObjectMeta.newBuilder().setName("dep").putLabels(MLDeploymentOperatorImpl.LABEL_SELDON_APP, serviceLabel))
+				.setMetadata(ObjectMeta.newBuilder().setName("dep").putLabels(SeldonDeploymentOperatorImpl.LABEL_SELDON_APP, serviceLabel))
 				.setSpec(DeploymentSpec.newBuilder().setTemplate(p.getComponentSpec()).setReplicas(1)).build();
 
 			logger.info(ProtoBufUtils.toJson(deployment));

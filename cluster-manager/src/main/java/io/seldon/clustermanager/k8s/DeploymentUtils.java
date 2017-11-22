@@ -34,13 +34,15 @@ import io.seldon.clustermanager.ClusterManagerProperites;
 import io.seldon.clustermanager.pb.ProtoBufUtils;
 import io.seldon.protos.DeploymentProtos.ClusterResourcesDef;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
+import io.seldon.protos.DeploymentProtos.DeploymentSpec;
+import io.seldon.protos.DeploymentProtos.Endpoint.EndpointType;
 import io.seldon.protos.DeploymentProtos.EndpointDef;
-import io.seldon.protos.DeploymentProtos.EndpointDef.EndpointType;
-import io.seldon.protos.DeploymentProtos.MLDeployment;
 import io.seldon.protos.DeploymentProtos.PredictionGraph.PredictiveUnitSubType;
 import io.seldon.protos.DeploymentProtos.PredictiveUnitDef;
 import io.seldon.protos.DeploymentProtos.PredictiveUnitDef.ParamDef;
 import io.seldon.protos.DeploymentProtos.PredictorDef;
+import io.seldon.protos.DeploymentProtos.PredictorSpec;
+import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 public class DeploymentUtils {
 
@@ -90,9 +92,9 @@ public class DeploymentUtils {
 
     }
 
-    public static List<BuildDeploymentResult> buildDeployments(MLDeployment mldeployment, ClusterManagerProperites clusterManagerProperites) {
+    public static List<BuildDeploymentResult> buildDeployments(SeldonDeployment mldeployment, ClusterManagerProperites clusterManagerProperites) {
 
-    	final DeploymentDef deploymentDef = mldeployment.getSpec();
+    	final DeploymentSpec deploymentDef = mldeployment.getSpec();
         final String seldonDeploymentId = deploymentDef.getId();
         List<BuildDeploymentResult> buildDeploymentResults = new ArrayList<>();
 
@@ -105,7 +107,7 @@ public class DeploymentUtils {
 				mldeployment.getMetadata().getUid());
         
         { // Add the main predictor
-            PredictorDef mainPredictor = deploymentDef.getPredictor();
+            PredictorSpec mainPredictor = deploymentDef.getPredictor();
             boolean isCanary = false;
             BuildDeploymentResult buildDeploymentResult = buildDeployment(seldonDeploymentId, mainPredictor, isCanary, clusterManagerProperites,oref);
             buildDeploymentResults.add(buildDeploymentResult);

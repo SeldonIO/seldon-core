@@ -25,10 +25,10 @@ import io.seldon.clustermanager.pb.IntOrStringUtils;
 import io.seldon.clustermanager.pb.JsonFormat;
 import io.seldon.clustermanager.pb.JsonFormat.Printer;
 import io.seldon.clustermanager.pb.QuantityUtils;
-import io.seldon.protos.DeploymentProtos.MLDeployment;
+import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
-public class MLDeploymentUtils {
-	private  static Logger logger = LoggerFactory.getLogger(MLDeploymentUtils.class.getName());
+public class SeldonDeploymentUtils {
+	private  static Logger logger = LoggerFactory.getLogger(SeldonDeploymentUtils.class.getName());
 	
 	private static <T> T convertProtoToModel(Message m,Type type) throws InvalidProtocolBufferException
 	{
@@ -40,7 +40,7 @@ public class MLDeploymentUtils {
 	
 	
 	
-	public static V1PodTemplateSpec convertProtoToModel(PodTemplateSpec protoTemplateSpec) throws InvalidProtocolBufferException, MLDeploymentException
+	public static V1PodTemplateSpec convertProtoToModel(PodTemplateSpec protoTemplateSpec) throws InvalidProtocolBufferException, SeldonDeploymentException
 	{
 		 Printer jsonPrinter = JsonFormat.printer().preservingProtoFieldNames();
 		 String ptsJson = jsonPrinter.print(protoTemplateSpec);
@@ -77,9 +77,9 @@ public class MLDeploymentUtils {
 		
 	}
 	
-	public static MLDeployment jsonToMLDeployment(String json) throws InvalidProtocolBufferException {
+	public static SeldonDeployment jsonToMLDeployment(String json) throws InvalidProtocolBufferException {
 		String jsonModified = removeCreationTimestampField(json);
-		MLDeployment.Builder mlBuilder = MLDeployment.newBuilder();
+		SeldonDeployment.Builder mlBuilder = SeldonDeployment.newBuilder();
 		JsonFormat.parser().ignoringUnknownFields()
 			.usingTypeParser(IntOrString.getDescriptor().getFullName(), new IntOrStringUtils.IntOrStringParser())
 			.usingTypeParser(Quantity.getDescriptor().getFullName(), new QuantityUtils.QuantityParser())
@@ -87,7 +87,7 @@ public class MLDeploymentUtils {
 		return mlBuilder.build();
 	}
 	
-	public static String toJson(MLDeployment mlDep) throws InvalidProtocolBufferException
+	public static String toJson(SeldonDeployment mlDep) throws InvalidProtocolBufferException
 	{
 		Printer jsonPrinter = JsonFormat.printer().preservingProtoFieldNames()
 				.usingTypeConverter(IntOrString.getDescriptor().getFullName(), new IntOrStringUtils.IntOrStringConverter())

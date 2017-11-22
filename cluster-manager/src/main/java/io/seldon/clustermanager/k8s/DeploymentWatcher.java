@@ -31,10 +31,10 @@ public class DeploymentWatcher {
 	private int resourceVersion = 0;
 	private int resourceVersionProcessed = 0;
 	
-	private final MLDeploymentStatusUpdater statusUpdater;
+	private final SeldonDeploymentStatusUpdater statusUpdater;
 	
 	@Autowired
-	public DeploymentWatcher(MLDeploymentStatusUpdater statusUpdater) throws IOException
+	public DeploymentWatcher(SeldonDeploymentStatusUpdater statusUpdater) throws IOException
 	{
 		this.statusUpdater = statusUpdater;
 	}
