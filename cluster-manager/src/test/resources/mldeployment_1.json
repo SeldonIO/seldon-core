@@ -1,12 +1,12 @@
 {
     "apiVersion": "machinelearning.seldon.io/v1alpha1",
-    "kind": "MLDeployment",
+    "kind": "SeldonDeployment",
     "metadata": {
         "labels": {
             "app": "seldon"
         },
-        "name": "mldeployment-example",
-        "uid": "1234"
+        "name": "seldon-deployment-example",
+	"uid": "1234"
     },
     "spec": {
         "annotations": {
@@ -34,10 +34,12 @@
                         "terminationGracePeriodSeconds": 0
                     }
                 },
-                "graphSpec": {
+                "graph": {
                     "children": [],
                     "name": "mean-classifier",
-                    "protocol": "REST",
+                    "endpoint": {
+			"type" : "REST"
+		    },
                     "subtype": "SIMPLE_MODEL",
                     "type": "MODEL"
                 },

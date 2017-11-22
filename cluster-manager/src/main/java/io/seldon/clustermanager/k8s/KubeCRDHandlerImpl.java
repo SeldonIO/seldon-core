@@ -74,7 +74,7 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
     		String json = gson.toJson(resp);
     		
     		try {
-    			return SeldonDeploymentUtils.jsonToMLDeployment(json);
+    			return SeldonDeploymentUtils.jsonToSeldonDeployment(json);
 			} catch (InvalidProtocolBufferException e) {
 				logger.error("Failed to parse "+json,e);
 				return null;

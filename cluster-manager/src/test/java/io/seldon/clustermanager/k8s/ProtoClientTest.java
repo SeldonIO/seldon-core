@@ -40,7 +40,11 @@ import io.kubernetes.client.proto.Meta.ObjectMeta;
 import io.kubernetes.client.proto.Meta.Status;
 import io.kubernetes.client.proto.Runtime.TypeMeta;
 import io.kubernetes.client.proto.Runtime.Unknown;
+import io.kubernetes.client.proto.V1.Service;
+import io.kubernetes.client.proto.V1.ServicePort;
+import io.kubernetes.client.proto.V1.ServiceSpec;
 import io.kubernetes.client.proto.V1beta1Extensions;
+import io.kubernetes.client.proto.IntStr.IntOrString;
 import io.kubernetes.client.proto.V1beta1Extensions.Deployment;
 import io.kubernetes.client.proto.V1beta1Extensions.DeploymentSpec;
 import io.kubernetes.client.util.Config;
@@ -54,6 +58,10 @@ public class ProtoClientTest extends AppTest {
 
 	private final static Logger logger = LoggerFactory.getLogger(ProtoClientTest.class);
 	
+	private static String getKubernetesSeldonDeploymentId(String deploymentName, boolean isCanary) {
+        return "sd-" + deploymentName + "-" + ((isCanary) ? "c" : "p");
+    }
+	
 	private static String getKubernetesDeploymentId(String deploymentName,String predictorName, boolean isCanary) {
 		return "sd-" + deploymentName + "-" + predictorName + "-" + ((isCanary) ? "c" : "p");
 	}
@@ -66,14 +74,15 @@ public class ProtoClientTest extends AppTest {
 		
 		SeldonDeploymentOperator op = new SeldonDeploymentOperatorImpl(getProps());
 		String jsonStr = readFile("src/test/resources/mldeployment_1.json",StandardCharsets.UTF_8);
-		SeldonDeployment mlDep = SeldonDeploymentUtils.jsonToMLDeployment(jsonStr);
+		SeldonDeployment mlDep = SeldonDeploymentUtils.jsonToSeldonDeployment(jsonStr);
 		mlDep = op.defaulting(mlDep);
-		 String localVarPath = "/apis/extensions/v1beta1/namespaces/{namespace}/deployments"
+		String localVarPath = "/apis/extensions/v1beta1/namespaces/{namespace}/deployments"
 		            .replaceAll("\\{" + "namespace" + "\\}", apiClient.escapeString("default"));
+		String serviceLabel = getKubernetesSeldonDeploymentId(mlDep.getSpec().getName(), false);
 		for(PredictorSpec p : mlDep.getSpec().getPredictorsList())
 		{
 
-			String serviceLabel = getKubernetesDeploymentId(mlDep.getSpec().getName(),p.getName(), false);
+
 			Deployment deployment = V1beta1Extensions.Deployment.newBuilder()
 				.setMetadata(ObjectMeta.newBuilder().setName("dep").putLabels(SeldonDeploymentOperatorImpl.LABEL_SELDON_APP, serviceLabel))
 				.setSpec(DeploymentSpec.newBuilder().setTemplate(p.getComponentSpec()).setReplicas(1)).build();
@@ -97,7 +106,7 @@ public class ProtoClientTest extends AppTest {
 					else
 					{
 						logger.info("Created deployment:"+ProtoBufUtils.toJson(os.object));
-					}
+					}					
 				}
 				else
 					logger.info("Error listing deployment:"+ProtoBufUtils.toJson(os.status));
@@ -162,6 +171,51 @@ public class ProtoClientTest extends AppTest {
 				
 			}
 		}
+		
+		Service s = Service.newBuilder()
+                .setMetadata(ObjectMeta.newBuilder()
+                        .setName(mlDep.getSpec().getName())
+                        .putLabels(SeldonDeploymentOperatorImpl.LABEL_SELDON_APP, serviceLabel)
+                        .putLabels("seldon-deployment-id", mlDep.getSpec().getName())
+                        )
+                .setSpec(ServiceSpec.newBuilder()
+                        .addPorts(ServicePort.newBuilder()
+                                .setProtocol("TCP")
+                                .setPort(9000)
+                                .setTargetPort(IntOrString.newBuilder().setIntVal(9000))
+                                .setName("http")
+                                )
+                        .setType("ClusterIP")
+                        .putSelector(SeldonDeploymentOperatorImpl.LABEL_SELDON_APP,serviceLabel)
+                        )
+            .build();
+
+		final String serviceApiPath = "/api/v1/namespaces/{namespace}/services/{name}"
+                .replaceAll("\\{" + "name" + "\\}", apiClient.escapeString(s.getMetadata().getName()))
+                .replaceAll("\\{" + "namespace" + "\\}", apiClient.escapeString("default"));
+
+            
+		ObjectOrStatus os = pc.list(Service.newBuilder(),serviceApiPath);     
+		if (os.status != null)
+		{
+		    if (os.status.getCode() == 404)
+		    {
+		        String serviceCreateApiPath = "/api/v1/namespaces/{namespace}/services"
+		                .replaceAll("\\{" + "namespace" + "\\}", apiClient.escapeString("default"));
+		        os = pc.create(s, serviceCreateApiPath, "v1", "Service");
+		        if (os.status != null)
+		        {
+		            logger.info("Possible error creating service "+ProtoBufUtils.toJson(os.status));
+		        }
+		        else
+		        {
+		            logger.info("Created service:"+ProtoBufUtils.toJson(os.object));
+		        }                   
+		    }
+		    else
+		        logger.info("Error listing service:"+ProtoBufUtils.toJson(os.status));
+		}
+		
 	}
 	 // This isn't really documented anywhere except the code, but
     // the proto-buf format is:
@@ -238,7 +292,7 @@ public class ProtoClientTest extends AppTest {
 	{
 		SeldonDeploymentOperator op = new SeldonDeploymentOperatorImpl(getProps());
 		String jsonStr = readFile("src/test/resources/mldeployment_1.json",StandardCharsets.UTF_8);
-		SeldonDeployment mlDep = SeldonDeploymentUtils.jsonToMLDeployment(jsonStr);
+		SeldonDeployment mlDep = SeldonDeploymentUtils.jsonToSeldonDeployment(jsonStr);
 		mlDep = op.defaulting(mlDep);
 		for(PredictorSpec p : mlDep.getSpec().getPredictorsList())
 		{

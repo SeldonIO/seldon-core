@@ -46,7 +46,7 @@ public class CreateDeploymentTestingExample {
 		 ExtensionsV1beta1Api api = new ExtensionsV1beta1Api(client);
 		 
 		 String jsonStr = readFile("src/test/resources/mldeployment_1.json",StandardCharsets.UTF_8);
-		 SeldonDeployment mldep = SeldonDeploymentUtils.jsonToMLDeployment(jsonStr);
+		 SeldonDeployment mldep = SeldonDeploymentUtils.jsonToSeldonDeployment(jsonStr);
 		 PodTemplateSpec protoTemplateSpec = mldep.getSpec().getPredictors(0).getComponentSpec();
 		 
 		 Printer jsonPrinter = JsonFormat.printer().preservingProtoFieldNames();

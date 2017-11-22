@@ -17,7 +17,7 @@ public class SeldonDeploymentControllerTest extends AppTest {
 		SeldonDeploymentOperator op = new SeldonDeploymentOperatorImpl(getProps());
 		SeldonDeploymentController controller = new SeldonDeploymentControllerImpl(op, new K8sDefaultClientProvider());
 		String jsonStr = readFile("src/test/resources/mldeployment_1.json",StandardCharsets.UTF_8);
-		SeldonDeployment mlDep = SeldonDeploymentUtils.jsonToMLDeployment(jsonStr);
+		SeldonDeployment mlDep = SeldonDeploymentUtils.jsonToSeldonDeployment(jsonStr);
 		controller.createOrReplaceMLDeployment(mlDep);
 	}
 	

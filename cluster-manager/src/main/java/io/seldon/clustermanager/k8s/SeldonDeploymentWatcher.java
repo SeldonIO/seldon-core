@@ -130,7 +130,7 @@ public class SeldonDeploymentWatcher  {
     	    		if (resourceVersionNew > maxResourceVersion)
         	    		maxResourceVersion = resourceVersionNew;
 
-    	    		this.processWatch(SeldonDeploymentUtils.jsonToMLDeployment(jsonInString), item.type);
+    	    		this.processWatch(SeldonDeploymentUtils.jsonToSeldonDeployment(jsonInString), item.type);
     	    	}
     	    }
         }

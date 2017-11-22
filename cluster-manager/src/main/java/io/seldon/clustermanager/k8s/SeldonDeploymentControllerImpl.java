@@ -8,12 +8,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.ApiException;
 import io.kubernetes.client.ProtoClient;
 import io.kubernetes.client.ProtoClient.ObjectOrStatus;
-import io.kubernetes.client.apis.ExtensionsV1beta1Api;
-import io.kubernetes.client.models.ExtensionsV1beta1Deployment;
+import io.kubernetes.client.proto.V1.Service;
 import io.kubernetes.client.proto.V1beta1Extensions.Deployment;
 import io.seldon.clustermanager.k8s.SeldonDeploymentOperatorImpl.DeploymentResources;
 import io.seldon.clustermanager.k8s.client.K8sClientProvider;
@@ -28,6 +26,8 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	private final SeldonDeploymentOperator operator;
 	private final K8sClientProvider clientProvider;
 	
+	private static final String DEPLOYMENT_API_VERSION = "extensions/v1beta1";
+	
 	@Autowired
 	public SeldonDeploymentControllerImpl(SeldonDeploymentOperator operator, K8sClientProvider clientProvider) {
 		super();
@@ -36,7 +36,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	}
 
 
-	
+	/*
 	private void createDeployments(ApiClient client,List<ExtensionsV1beta1Deployment> deployments) throws ApiException
 	{
 		ExtensionsV1beta1Api api = new ExtensionsV1beta1Api(client);
@@ -58,29 +58,83 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 			}
 		}
 	}
+	*/
 	
 	
 	
-	private void createDeployments(ProtoClient client,List<Deployment> deployments) throws ApiException, IOException
+	private void createDeployments(ProtoClient client,List<Deployment> deployments) throws ApiException, IOException, SeldonDeploymentException
 	{
-		String localVarPath = "/apis/extensions/v1beta1/namespaces/{namespace}/deployments"
-				.replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString("default"));
 		for(Deployment d : deployments)
 		{
-			//TODO need to check if existing deployment exists and do a PUT if so
-			logger.info("About to create "+ProtoBufUtils.toJson(d));
-			ObjectOrStatus os = client.create(d, localVarPath, "extensions/v1beta1", "Deployment");
-			if (os.status != null)
-			{
-				logger.info("Possible Error:"+ProtoBufUtils.toJson(os.status));
-			}
-			else
-			{
-				logger.info("Returned object:"+ProtoBufUtils.toJson(os.object));
-			}
+		    final String listApiPath = "/apis/"+DEPLOYMENT_API_VERSION+"/namespaces/{namespace}/deployments/{name}"
+	                .replaceAll("\\{" + "name" + "\\}", client.getApiClient().escapeString(d.getMetadata().getName()))
+	                .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString("default"));
+		    ObjectOrStatus<Deployment> os = client.list(Deployment.newBuilder(),listApiPath);       
+            if (os.status != null) {
+                if (os.status.getCode() == 404) { //Create
+                    logger.info("About to create "+ProtoBufUtils.toJson(d));
+                    final String createApiPath = "/apis/"+DEPLOYMENT_API_VERSION+"/namespaces/{namespace}/deployments"
+                            .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString("default"));
+
+                    os = client.create(d, createApiPath, DEPLOYMENT_API_VERSION, "Deployment");
+                    if (os.status != null) {
+                        logger.error("Error creating deployment:"+ProtoBufUtils.toJson(os.status));
+                        throw new SeldonDeploymentException("Failed to create deployment "+d.getMetadata().getName());
+                    }
+                    else {
+                        logger.debug("Created deployment:"+ProtoBufUtils.toJson(os.object));
+                    }
+                }
+                else {
+                    logger.error("Error listing deployment:"+ProtoBufUtils.toJson(os.status));
+                    throw new SeldonDeploymentException("Failed to list deployment "+d.getMetadata().getName());
+                }
+            }
+            else { // Update
+                os = client.update(d,listApiPath, DEPLOYMENT_API_VERSION, "Deployment");
+                if (os.status != null) {
+                    logger.error("Error updating deployment:"+ProtoBufUtils.toJson(os.status));
+                    throw new SeldonDeploymentException("Failed to update deployment "+d.getMetadata().getName());
+                }
+                else {
+                    logger.debug("Created deployment:"+ProtoBufUtils.toJson(os.object));
+                }
+            }
 		}
 	}
 
+	private void createService(ProtoClient client,Service service) throws ApiException, IOException, SeldonDeploymentException
+	{
+	    final String serviceApiPath = "/api/v1/namespaces/{namespace}/services/{name}"
+                .replaceAll("\\{" + "name" + "\\}", client.getApiClient().escapeString(service.getMetadata().getName()))
+                .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString("default"));
+        ObjectOrStatus os = client.list(Service.newBuilder(),serviceApiPath);     
+        if (os.status != null)
+        {
+            if (os.status.getCode() == 404)
+            {
+                String serviceCreateApiPath = "/api/v1/namespaces/{namespace}/services"
+                        .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString("default"));
+                os = client.create(service, serviceCreateApiPath, "v1", "Service");
+                if (os.status != null)
+                {
+                    logger.error("Error creating service "+ProtoBufUtils.toJson(os.status));
+                    throw new SeldonDeploymentException("Failed to create service "+service.getMetadata().getName());
+                }
+                else
+                {
+                    logger.debug("Created service:"+ProtoBufUtils.toJson(os.object));
+                }                   
+            }
+            else
+            {
+                logger.error("Error listing service:"+ProtoBufUtils.toJson(os.status));
+                throw new SeldonDeploymentException("Failed to list service "+service.getMetadata().getName());
+            }
+        }
+        else
+            logger.debug("No creating service as already exists "+service.getMetadata().getName());
+	}
 
 	@Override
 	public void createOrReplaceMLDeployment(SeldonDeployment mlDep) {
@@ -93,6 +147,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 			DeploymentResources resources = operator.createResources(mlDep);
 			ProtoClient client = clientProvider.getProtoClient();
 			createDeployments(client, resources.deployments);
+			createService(client,resources.service);
 			
 		} catch (SeldonDeploymentException e) {
 			logger.error("Failed to create deployment ",e);

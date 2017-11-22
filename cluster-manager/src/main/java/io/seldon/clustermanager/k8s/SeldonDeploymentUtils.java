@@ -77,7 +77,7 @@ public class SeldonDeploymentUtils {
 		
 	}
 	
-	public static SeldonDeployment jsonToMLDeployment(String json) throws InvalidProtocolBufferException {
+	public static SeldonDeployment jsonToSeldonDeployment(String json) throws InvalidProtocolBufferException {
 		String jsonModified = removeCreationTimestampField(json);
 		SeldonDeployment.Builder mlBuilder = SeldonDeployment.newBuilder();
 		JsonFormat.parser().ignoringUnknownFields()

@@ -53,7 +53,7 @@ public class K8sResourceLoadingTest   {
 	public void ProtoLoadTest() throws IOException
 	{
 		String json = readFile("src/test/resources/mldeployment_1.json",StandardCharsets.UTF_8);
-		SeldonDeployment mldep = SeldonDeploymentUtils.jsonToMLDeployment(json);	
+		SeldonDeployment mldep = SeldonDeploymentUtils.jsonToSeldonDeployment(json);	
 		logger.info(json);
 	}
 	

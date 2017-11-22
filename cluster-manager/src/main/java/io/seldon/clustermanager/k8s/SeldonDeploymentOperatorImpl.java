@@ -35,6 +35,7 @@ import io.kubernetes.client.proto.V1beta1Extensions.Deployment;
 import io.kubernetes.client.proto.V1beta1Extensions.DeploymentSpec;
 import io.seldon.clustermanager.ClusterManagerProperites;
 import io.seldon.clustermanager.pb.ProtoBufUtils;
+import io.seldon.protos.DeploymentProtos.PredictiveUnit;
 import io.seldon.protos.DeploymentProtos.PredictorSpec;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
@@ -203,11 +204,25 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		return c2Builder.build();
 	}
 	
+	//FIXME - need this???
+	private PredictiveUnit.Builder getPredictiveUnitBuilderByName(PredictiveUnit.Builder puBuilder,String name)
+	{
+	    for(int i=0;i<puBuilder.getChildrenCount();i++)
+	        if (puBuilder.getChildrenBuilder(i).getName().equals(name))
+	            return puBuilder.getChildrenBuilder(i);
+	        else {
+	            PredictiveUnit.Builder found = getPredictiveUnitBuilderByName(puBuilder.getChildrenBuilder(i),name);
+	            if (found != null)
+	                return found;
+	        }
+	    return null;
+	}
+	
 	@Override
 	public SeldonDeployment defaulting(SeldonDeployment mlDep) {
 		SeldonDeployment.Builder mlBuilder = SeldonDeployment.newBuilder(mlDep);
 		int idx = 0;
-		String serviceName = getKubernetesMLDeploymentId(mlDep.getSpec().getName(), false);
+		String serviceName = getKubernetesSeldonDeploymentId(mlDep.getSpec().getName(), false);
 		for(PredictorSpec p : mlDep.getSpec().getPredictorsList())
 		{
 			ObjectMeta.Builder metaBuilder = ObjectMeta.newBuilder(p.getComponentSpec().getMetadata())
@@ -218,7 +233,8 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			for(V1.Container c : p.getComponentSpec().getSpec().getContainersList())
 			{
 				V1.Container c2 = this.updateContainer(c, cIdx);
-				mlBuilder.getSpecBuilder().getPredictorsBuilder(idx).getComponentSpecBuilder().getSpecBuilder().addContainers(cIdx, c2);				
+				mlBuilder.getSpecBuilder().getPredictorsBuilder(idx).getComponentSpecBuilder().getSpecBuilder().addContainers(cIdx, c2);	
+				mlBuilder.getSpecBuilder().getPredictorsBuilder(idx).getGraphBuilder();
 				cIdx++;
 			}
 			idx++;
@@ -232,7 +248,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		
 	}
 	
-	private static String getKubernetesMLDeploymentId(String deploymentName, boolean isCanary) {
+	private static String getKubernetesSeldonDeploymentId(String deploymentName, boolean isCanary) {
 		return "sd-" + deploymentName + "-" + ((isCanary) ? "c" : "p");
 	}
 
@@ -265,7 +281,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		OwnerReference ownerRef = getOwnerReference(mlDep);
 		List<Deployment> deployments = new ArrayList<>();
 		// for each predictor Create/replace deployment
-		String serviceLabel = getKubernetesMLDeploymentId(mlDep.getSpec().getName(), false);
+		String serviceLabel = getKubernetesSeldonDeploymentId(mlDep.getSpec().getName(), false);
 		for(PredictorSpec p : mlDep.getSpec().getPredictorsList())
 		{
 			String depName = getKubernetesDeploymentId(mlDep.getSpec().getName(),p.getName(), p.getType().equals(PredictorSpec.PredictorType.CANARY));
