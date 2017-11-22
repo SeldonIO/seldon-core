@@ -1,22 +1,21 @@
 package io.seldon.engine.predictors;
 
 import java.util.Map;
+import io.kubernetes.client.proto.V1.Container;
 
 public class PredictorState {
 	
 	public PredictiveUnitState rootState;
-	public String rootId;
-	public Map<String,PredictiveUnitState> predictiveUnitStatesMap;
+	public String rootName;
 	public Boolean enabled;
 	
-	public PredictorState(String rootId, Map<String,PredictiveUnitState> predictiveUnitStatesMap, Boolean enabled){
-		this.rootId = rootId;
-		this.predictiveUnitStatesMap = predictiveUnitStatesMap;
+	public PredictorState(String rootName, PredictiveUnitState rootState, Boolean enabled){
+		this.rootName = rootName;
 		this.enabled = enabled;
-		this.rootState = predictiveUnitStatesMap.get(rootId);
+		this.rootState = rootState;
 	}
 	
-	public PredictiveUnitState getPredictiveUnitStatesMap(String nodeId){
-		return predictiveUnitStatesMap.get(nodeId);
+	public PredictiveUnitState getRootState(){
+		return this.rootState;
 	}
 }

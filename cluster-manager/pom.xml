@@ -4,7 +4,7 @@
 	<groupId>io.seldon.clustermanager</groupId>
 	<artifactId>seldon-cluster-manager</artifactId>
 	<packaging>jar</packaging>
-	<version>0.2.16</version>
+	<version>0.2.16_kubeapi</version>
 	<name>seldon-cluster-manager</name>
 	<url>http://maven.apache.org</url>
 
@@ -20,7 +20,6 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<grpc.version>1.0.0</grpc.version><!-- CURRENT_GRPC_VERSION -->
 		<start-class>io.seldon.clustermanager.Application</start-class>
-		<curator.version>2.7.1</curator.version>
 	</properties>
 
 	<repositories>
@@ -74,31 +73,25 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.apache.curator</groupId>
-			<artifactId>curator-framework</artifactId>
-			<version>${curator.version}</version>
-		</dependency>
-
-		<dependency>
 			<groupId>io.fabric8</groupId>
 			<artifactId>kubernetes-client</artifactId>
 			<version>2.0.0</version>
 		</dependency>
-
+		
 		<dependency>
-			<groupId>org.springframework.security.oauth</groupId>
-			<artifactId>spring-security-oauth2</artifactId>
+    		<groupId>io.kubernetes</groupId>
+    		<artifactId>client-java</artifactId>
+    		<version>1.0.0-beta2-SNAPSHOT</version>
+    		<scope>compile</scope>
 		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-redis</artifactId>
-		</dependency>
+		
 
 	</dependencies>
 
 	<build>
 		<finalName>${project.artifactId}</finalName>
+
+
 
 		<extensions>
 			<extension>
@@ -109,6 +102,14 @@
 		</extensions>
 
 		<plugins>
+
+			<plugin>
+    			<artifactId>maven-compiler-plugin</artifactId>
+    			<configuration>
+       			 <compilerArgument>-Xlint:deprecation</compilerArgument>
+    			</configuration>
+			</plugin>
+
 			<plugin>
 				<groupId>org.xolstice.maven.plugins</groupId>
 				<artifactId>protobuf-maven-plugin</artifactId>
@@ -118,6 +119,11 @@
 					<pluginId>grpc-java</pluginId>
 					<pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
 					<clearOutputDirectory>false</clearOutputDirectory>
+					<checkStaleness>true</checkStaleness>
+					<excludes>
+						<exclude>k8s.io/**/*.proto</exclude>
+						<exclude>**/v1.proto</exclude>
+					</excludes>
 				</configuration>
 				<executions>
 					<execution>

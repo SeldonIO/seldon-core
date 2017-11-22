@@ -36,7 +36,7 @@ public class DeploymentUtilsExample {
         try {
             System.out.println("-------------------------------------------------------------------------------");
             System.out.println("exampleDeploymentDef:");
-            String s = ProtoBufUtils.toJson(exampleDeploymentDef, true);
+            String s = ProtoBufUtils.toJson(exampleDeploymentDef, true,false);
             System.out.println(s);
             System.out.println("-------------------------------------------------------------------------------");
         } catch (InvalidProtocolBufferException e) {
@@ -44,8 +44,9 @@ public class DeploymentUtilsExample {
         }
 
         ClusterManagerProperites clusterManagerProperites = ctx.getBean(ClusterManagerProperites.class);
-        List<BuildDeploymentResult> buildDeploymentResults = DeploymentUtils.buildDeployments(exampleDeploymentDef, clusterManagerProperites);
-        System.out.println(buildDeploymentResults);
+        //FIXME
+        //List<BuildDeploymentResult> buildDeploymentResults = DeploymentUtils.buildDeployments(exampleDeploymentDef);
+        //System.out.println(buildDeploymentResults);
 
         ctx.close();
     }

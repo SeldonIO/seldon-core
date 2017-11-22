@@ -53,30 +53,30 @@ public class SeldonRestTemplateExchangeTagsProvider implements RestTemplateExcha
 				 predictorName(),
 				 predictorVersion(),
 				 modelName(state.name),
-				 modelImage(state.clusterResources.getImage()),
-				 modelVersion(state.clusterResources.getVersion()));
+				 modelImage(state.imageName),
+				 modelVersion(state.imageVersion));
 	}
 	
 	public Tag projectName()
 	{
-		return Tag.of("project_name",enginePredictor.getPredictorDef().getAnnotationsOrDefault(PROJECT_ANNOTATION_KEY, "unknown"));
+		return Tag.of("project_name",enginePredictor.getPredictorSpec().getAnnotationsOrDefault(PROJECT_ANNOTATION_KEY, "unknown"));
 	}
 	
 	
 	private Tag predictorName()
 	{
-		if (!StringUtils.hasText(enginePredictor.getPredictorDef().getName()))
+		if (!StringUtils.hasText(enginePredictor.getPredictorSpec().getName()))
 			return Tag.of(PREDICTOR_NAME_METRIC, "unknown");
 		else
-			return Tag.of(PREDICTOR_NAME_METRIC,enginePredictor.getPredictorDef().getName()); 
+			return Tag.of(PREDICTOR_NAME_METRIC,enginePredictor.getPredictorSpec().getName()); 
 	}
 	
 	private Tag predictorVersion()
 	{
-		if (!StringUtils.hasText(enginePredictor.getPredictorDef().getVersion()))
+		if (!StringUtils.hasText(enginePredictor.getPredictorSpec().getVersion()))
 			return Tag.of(PREDICTOR_VERSION_METRIC, "unknown");
 		else
-			return Tag.of(PREDICTOR_VERSION_METRIC, enginePredictor.getPredictorDef().getVersion());
+			return Tag.of(PREDICTOR_VERSION_METRIC, enginePredictor.getPredictorSpec().getVersion());
 	}
 
 	private Tag modelName(HttpRequest request)
