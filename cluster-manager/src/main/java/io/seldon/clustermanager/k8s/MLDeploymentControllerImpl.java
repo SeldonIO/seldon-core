@@ -8,13 +8,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import io.fabric8.kubernetes.api.model.extensions.Deployment;
 import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.ApiException;
 import io.kubernetes.client.ProtoClient;
 import io.kubernetes.client.ProtoClient.ObjectOrStatus;
 import io.kubernetes.client.apis.ExtensionsV1beta1Api;
 import io.kubernetes.client.models.ExtensionsV1beta1Deployment;
+import io.kubernetes.client.proto.V1beta1Extensions.Deployment;
 import io.seldon.clustermanager.k8s.MLDeploymentOperatorImpl.DeploymentResources;
 import io.seldon.clustermanager.k8s.client.K8sClientProvider;
 import io.seldon.clustermanager.pb.ProtoBufUtils;

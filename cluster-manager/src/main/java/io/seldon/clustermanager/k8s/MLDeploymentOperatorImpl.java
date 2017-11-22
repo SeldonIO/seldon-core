@@ -36,7 +36,7 @@ import io.kubernetes.client.proto.V1beta1Extensions.DeploymentSpec;
 import io.seldon.clustermanager.ClusterManagerProperites;
 import io.seldon.clustermanager.pb.ProtoBufUtils;
 import io.seldon.protos.DeploymentProtos.MLDeployment;
-import io.seldon.protos.DeploymentProtos.PredictorDef;
+import io.seldon.protos.DeploymentProtos.PredictorSpec;
 
 @Component
 public class MLDeploymentOperatorImpl implements MLDeploymentOperator {
@@ -58,7 +58,7 @@ public class MLDeploymentOperatorImpl implements MLDeploymentOperator {
 	}
 	*/
 	 
-	public static String getEnginePredictorEnvVarJson(PredictorDef predictorDef) {
+	public static String getEnginePredictorEnvVarJson(PredictorSpec predictorDef) {
 		String retVal;
 		try {
 			retVal = ProtoBufUtils.toJson(predictorDef, true,false);
@@ -71,7 +71,7 @@ public class MLDeploymentOperatorImpl implements MLDeploymentOperator {
 		return retVal;
 	}
 	
-	private V1.Container createEngineContainer(PredictorDef predictorDef)
+	private V1.Container createEngineContainer(PredictorSpec predictorDef)
 	{
 		V1.Container.Builder cBuilder = V1.Container.newBuilder();
 		cBuilder
@@ -208,7 +208,7 @@ public class MLDeploymentOperatorImpl implements MLDeploymentOperator {
 		MLDeployment.Builder mlBuilder = MLDeployment.newBuilder(mlDep);
 		int idx = 0;
 		String serviceName = getKubernetesMLDeploymentId(mlDep.getSpec().getName(), false);
-		for(PredictorDef p : mlDep.getSpec().getPredictorsList())
+		for(PredictorSpec p : mlDep.getSpec().getPredictorsList())
 		{
 			ObjectMeta.Builder metaBuilder = ObjectMeta.newBuilder(p.getComponentSpec().getMetadata())
 				.putLabels(LABEL_SELDON_APP, serviceName);
@@ -266,9 +266,9 @@ public class MLDeploymentOperatorImpl implements MLDeploymentOperator {
 		List<Deployment> deployments = new ArrayList<>();
 		// for each predictor Create/replace deployment
 		String serviceLabel = getKubernetesMLDeploymentId(mlDep.getSpec().getName(), false);
-		for(PredictorDef p : mlDep.getSpec().getPredictorsList())
+		for(PredictorSpec p : mlDep.getSpec().getPredictorsList())
 		{
-			String depName = getKubernetesDeploymentId(mlDep.getSpec().getName(),p.getName(), p.getType().equals(PredictorDef.PredictorType.CANARY));
+			String depName = getKubernetesDeploymentId(mlDep.getSpec().getName(),p.getName(), p.getType().equals(PredictorSpec.PredictorType.CANARY));
 			PodTemplateSpec.Builder podSpecBuilder = PodTemplateSpec.newBuilder(p.getComponentSpec());
 			podSpecBuilder.getSpecBuilder().addContainers(createEngineContainer(p));
 			Deployment deployment = V1beta1Extensions.Deployment.newBuilder()
