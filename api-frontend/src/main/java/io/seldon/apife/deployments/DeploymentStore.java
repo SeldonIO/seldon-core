@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 import io.seldon.apife.api.oauth.InMemoryClientDetailsService;
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
-import io.seldon.protos.DeploymentProtos.MLDeployment;
+import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 @Component
 public class DeploymentStore implements DeploymentsListener {
@@ -45,7 +45,7 @@ public class DeploymentStore implements DeploymentsListener {
 	 
 	 
 	 @Override
-	 public void deploymentAdded(MLDeployment mlDep) {
+	 public void deploymentAdded(SeldonDeployment mlDep) {
 		 final DeploymentDef deploymentDef = mlDep.getSpec();
 		 
 		 deploymentStore.put(deploymentDef.getOauthKey(), deploymentDef);
@@ -55,12 +55,12 @@ public class DeploymentStore implements DeploymentsListener {
 	}
 	 
 	@Override
-	public void deploymentUpdated(MLDeployment mlDep) {
+	public void deploymentUpdated(SeldonDeployment mlDep) {
 		deploymentAdded(mlDep);
 	}
 	
 	@Override
-	public void deploymentRemoved(MLDeployment mlDep) {
+	public void deploymentRemoved(SeldonDeployment mlDep) {
 		 final DeploymentDef deploymentDef = mlDep.getSpec();
 		 deploymentStore.remove(deploymentDef.getOauthKey());
 		 clientDetailsService.removeClient(deploymentDef.getOauthKey());

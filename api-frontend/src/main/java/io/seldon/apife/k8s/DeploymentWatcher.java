@@ -32,7 +32,7 @@ import io.kubernetes.client.util.Watch;
 import io.seldon.apife.deployments.DeploymentsHandler;
 import io.seldon.apife.deployments.DeploymentsListener;
 import io.seldon.apife.pb.ProtoBufUtils;
-import io.seldon.protos.DeploymentProtos.MLDeployment;
+import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 @Component
 public class DeploymentWatcher  implements DeploymentsHandler{
@@ -51,7 +51,7 @@ public class DeploymentWatcher  implements DeploymentsHandler{
 		Configuration.setDefaultApiClient(client);
 	}
 	
-	private void processWatch(MLDeployment mlDep,String action)
+	private void processWatch(SeldonDeployment mlDep,String action)
 	{
 		if (action.equals("ADDED"))
 			for(DeploymentsListener listener: listeners)
@@ -94,7 +94,7 @@ public class DeploymentWatcher  implements DeploymentsHandler{
 		
 	}
 	
-	public int watchSeldonMLDeployments(int resourceVersion,int resourceVersionProcessed) throws ApiException, JsonProcessingException, IOException
+	public int watchSeldonSeldonDeployments(int resourceVersion,int resourceVersionProcessed) throws ApiException, JsonProcessingException, IOException
 	{
 		String rs = null;
 		if (resourceVersion > 0)
@@ -134,7 +134,7 @@ public class DeploymentWatcher  implements DeploymentsHandler{
         	    		maxResourceVersion = resourceVersionNew;
 
     	    		String jsonModified = removeCreationTimestampField(jsonInString);
-    	    		MLDeployment.Builder mlBuilder = MLDeployment.newBuilder();
+    	    		SeldonDeployment.Builder mlBuilder = SeldonDeployment.newBuilder();
     	    		ProtoBufUtils.updateMessageBuilderFromJson(mlBuilder, jsonModified);
     	    		
     	    		this.processWatch(mlBuilder.build(), item.type);
@@ -157,7 +157,7 @@ public class DeploymentWatcher  implements DeploymentsHandler{
 	@Scheduled(fixedDelay = 5000)
     public void watch() throws JsonProcessingException, ApiException, IOException {
 		 logger.info("The time is now {}", dateFormat.format(new Date()));
-		 this.resourceVersion = this.watchSeldonMLDeployments(this.resourceVersion,this.resourceVersionProcessed);
+		 this.resourceVersion = this.watchSeldonSeldonDeployments(this.resourceVersion,this.resourceVersionProcessed);
 		 if (this.resourceVersion > this.resourceVersionProcessed)
 		 {
 			 logger.info("Updating processed resource version to "+resourceVersion);

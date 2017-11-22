@@ -106,7 +106,7 @@ message DeploymentStatus {
   repeated PredictorStatus predictorStatus = 3;
 }
 
-message MLDeployment {
+message SeldonDeployment {
   required string apiVersion = 1;
   required string kind = 2;
   optional k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta metadata = 3;

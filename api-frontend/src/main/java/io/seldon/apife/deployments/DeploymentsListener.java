@@ -1,6 +1,6 @@
 package io.seldon.apife.deployments;
 
-import io.seldon.protos.DeploymentProtos.MLDeployment;
+import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 public interface DeploymentsListener {
 	 /**
@@ -10,7 +10,7 @@ public interface DeploymentsListener {
      * @param configKey
      * @param configValue
      */
-	void deploymentAdded(MLDeployment resource);
-	void deploymentUpdated(MLDeployment resource);
-	void deploymentRemoved(MLDeployment resource);
+	void deploymentAdded(SeldonDeployment resource);
+	void deploymentUpdated(SeldonDeployment resource);
+	void deploymentRemoved(SeldonDeployment resource);
 }
