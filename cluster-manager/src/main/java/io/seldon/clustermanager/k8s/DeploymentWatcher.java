@@ -16,12 +16,11 @@ import com.google.gson.reflect.TypeToken;
 
 import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.ApiException;
-import io.kubernetes.client.apis.AppsV1beta1Api;
+import io.kubernetes.client.apis.ExtensionsV1beta1Api;
 import io.kubernetes.client.models.AppsV1beta1Deployment;
 import io.kubernetes.client.models.V1OwnerReference;
 import io.kubernetes.client.util.Config;
 import io.kubernetes.client.util.Watch;
-import io.seldon.clustermanager.k8s.DeploymentUtils.ServiceSelectorDetails;
 
 @Component
 public class DeploymentWatcher {
@@ -49,12 +48,12 @@ public class DeploymentWatcher {
 		int maxResourceVersion = resourceVersion;		
 		try{
 			ApiClient client = Config.defaultClient();
-			AppsV1beta1Api api = new AppsV1beta1Api(client);
+			ExtensionsV1beta1Api api = new ExtensionsV1beta1Api(client);
 
 			//TODO can we use labelSelector to limit to seldon resources
 			Watch<AppsV1beta1Deployment> watch = Watch.createWatch(
 	                client,
-	        		api.listNamespacedDeploymentCall("default", null, null, ServiceSelectorDetails.seldonLabelName+"="+ServiceSelectorDetails.seldonLabelMlDepValue, rs, 10, true,null,null),
+	        		api.listNamespacedDeploymentCall("default", null, null, null,false,SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_KEY+"="+SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_VAL, null,rs, 10, true,null,null),
 	        		new TypeToken<Watch.Response<AppsV1beta1Deployment>>(){}.getType());
 
 			for (Watch.Response<AppsV1beta1Deployment> item : watch) {

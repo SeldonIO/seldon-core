@@ -22,17 +22,27 @@ import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 public class SeldonDeploymentControllerImpl implements SeldonDeploymentController {
 
 	private final static Logger logger = LoggerFactory.getLogger(SeldonDeploymentControllerImpl.class);
-	
+	private final static String SELDON_CLUSTER_MANAGER_POD_NAMESPACE_KEY = "SELDON_CLUSTER_MANAGER_POD_NAMESPACE";
 	private final SeldonDeploymentOperator operator;
 	private final K8sClientProvider clientProvider;
 	
 	private static final String DEPLOYMENT_API_VERSION = "extensions/v1beta1";
-	
+	private String seldonClusterNamespaceName = "UNKOWN_NAMESPACE";
+
 	@Autowired
 	public SeldonDeploymentControllerImpl(SeldonDeploymentOperator operator, K8sClientProvider clientProvider) {
 		super();
 		this.operator = operator;
 		this.clientProvider = clientProvider;
+		
+		 { // set the namespace to use
+	            seldonClusterNamespaceName = System.getenv().get(SELDON_CLUSTER_MANAGER_POD_NAMESPACE_KEY);
+	            if (seldonClusterNamespaceName == null) {
+	                logger.info(String.format("FAILED to find env var [%s]", SELDON_CLUSTER_MANAGER_POD_NAMESPACE_KEY));
+	                seldonClusterNamespaceName = "default";
+	            }
+	            logger.info(String.format("Setting cluster manager namespace as [%s]", seldonClusterNamespaceName));
+	        }
 	}
 
 
@@ -137,7 +147,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	}
 
 	@Override
-	public void createOrReplaceMLDeployment(SeldonDeployment mlDep) {
+	public void createOrReplaceSeldonDeployment(SeldonDeployment mlDep) {
 		
 		try
 		{

@@ -3,23 +3,23 @@ package io.seldon.clustermanager.k8s;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import org.junit.Test;
-
 import io.seldon.clustermanager.AppTest;
 import io.seldon.clustermanager.k8s.client.K8sDefaultClientProvider;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
-public class SeldonDeploymentControllerTest extends AppTest {
+public class SeldonDeploymentControllerExample extends AppTest {
 	
-	@Test
-	public void simpleTest() throws IOException
+    public void run() throws IOException
 	{
 		SeldonDeploymentOperator op = new SeldonDeploymentOperatorImpl(getProps());
 		SeldonDeploymentController controller = new SeldonDeploymentControllerImpl(op, new K8sDefaultClientProvider());
 		String jsonStr = readFile("src/test/resources/mldeployment_1.json",StandardCharsets.UTF_8);
 		SeldonDeployment mlDep = SeldonDeploymentUtils.jsonToSeldonDeployment(jsonStr);
-		controller.createOrReplaceMLDeployment(mlDep);
+		controller.createOrReplaceSeldonDeployment(mlDep);
 	}
 	
-	
+    public static void main(String[] args) throws IOException {
+        SeldonDeploymentControllerExample e = new SeldonDeploymentControllerExample();
+        e.run();
+    }
 }

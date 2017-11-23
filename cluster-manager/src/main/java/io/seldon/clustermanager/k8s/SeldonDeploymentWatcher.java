@@ -26,45 +26,35 @@ import io.kubernetes.client.ApiException;
 import io.kubernetes.client.apis.CustomObjectsApi;
 import io.kubernetes.client.util.Config;
 import io.kubernetes.client.util.Watch;
-import io.seldon.clustermanager.component.KubernetesManager;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 @Component
 public class SeldonDeploymentWatcher  {
 	protected static Logger logger = LoggerFactory.getLogger(SeldonDeploymentWatcher.class.getName());
 	
-	private final KubernetesManager kubernetesManager;
+	private final SeldonDeploymentController seldonDeploymentController;
 	private final SeldonDeploymentCache mlCache;
 	
 	private int resourceVersion = 0;
 	private int resourceVersionProcessed = 0;
 	
 	@Autowired
-	public SeldonDeploymentWatcher(KubernetesManager kubernetesManager,SeldonDeploymentCache mlCache) throws IOException
+	public SeldonDeploymentWatcher(SeldonDeploymentController seldonDeploymentController,SeldonDeploymentCache mlCache) throws IOException
 	{
-		this.kubernetesManager = kubernetesManager;
+		this.seldonDeploymentController = seldonDeploymentController;
 		this.mlCache = mlCache;
 	}
 	
+	//FIXME
 	private SeldonDeployment addStatusIfNeeded(SeldonDeployment mldep)
 	{
 		if (mldep.hasStatus())
 		{
-			if (!mldep.getSpec().hasPredictorCanary() && mldep.getStatus().getCanaryReplicasReady() > 0)
-				return SeldonDeployment.newBuilder(mldep).setStatus(SeldonDeploymentStatus.newBuilder(mldep.getStatus()).setCanaryReplicasReady(0)).build();
-			else
-				return mldep;
+			return mldep;
 		}
 		else
 		{
-			SeldonDeployment current = mlCache.get(mldep.getMetadata().getName());
-			if (current != null)
-				if (!mldep.getSpec().hasPredictorCanary() && current.getStatus().getCanaryReplicasReady() > 0)
-					return SeldonDeployment.newBuilder(mldep).setStatus(SeldonDeploymentStatus.newBuilder(current.getStatus()).setCanaryReplicasReady(0)).build();
-				else
-					return SeldonDeployment.newBuilder(mldep).setStatus(current.getStatus()).build();
-			else
-				return SeldonDeployment.newBuilder(mldep).setStatus(SeldonDeploymentStatus.newBuilder().setCanaryReplicasReady(0).setPredictorReplicasReady(0).build()).build();
+			return mldep;
 		}
 	}
 	
@@ -76,7 +66,7 @@ public class SeldonDeploymentWatcher  {
 		case "MODIFIED":
 			SeldonDeployment mlDepUpdated = addStatusIfNeeded(mldep);
 			mlCache.put(mlDepUpdated);
-			kubernetesManager.createOrReplaceSeldonDeployment(mlDepUpdated);
+			seldonDeploymentController.createOrReplaceSeldonDeployment(mldep);
 			break;
 		case "DELETED":
 			mlCache.remove(mldep.getMetadata().getName());
@@ -100,7 +90,7 @@ public class SeldonDeploymentWatcher  {
 		CustomObjectsApi api = new CustomObjectsApi(client);
 		Watch<Object> watch = Watch.createWatch(
 				client,
-                api.listNamespacedCustomObjectCall("machinelearning.seldon.io", "v1alpha1", "default", "mldeployments", null, null, rs, true, null, null),
+                api.listNamespacedCustomObjectCall("machinelearning.seldon.io", "v1alpha1", "default", "seldondeployments", null, null, rs, true, null, null),
                 new TypeToken<Watch.Response<Object>>(){}.getType());
 		
 		int maxResourceVersion = resourceVersion;

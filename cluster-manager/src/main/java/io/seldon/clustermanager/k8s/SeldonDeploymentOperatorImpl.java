@@ -5,6 +5,7 @@ import java.util.Base64;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.StringJoiner;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +37,7 @@ import io.kubernetes.client.proto.V1beta1Extensions.DeploymentSpec;
 import io.seldon.clustermanager.ClusterManagerProperites;
 import io.seldon.clustermanager.pb.ProtoBufUtils;
 import io.seldon.protos.DeploymentProtos.Endpoint;
+import io.seldon.protos.DeploymentProtos.Parameter;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit;
 import io.seldon.protos.DeploymentProtos.PredictorSpec;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
@@ -46,6 +48,8 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 	private final static Logger logger = LoggerFactory.getLogger(SeldonDeploymentOperatorImpl.class);
 	private final ClusterManagerProperites clusterManagerProperites;
 	public static final String LABEL_SELDON_APP = "seldon-app";
+    public static final String LABEL_SELDON_TYPE_KEY = "seldon-type";
+    public static final String LABEL_SELDON_TYPE_VAL = "deployment";
 	@Autowired
 	public SeldonDeploymentOperatorImpl(ClusterManagerProperites clusterManagerProperites) {
 		super();
@@ -164,7 +168,36 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 	    return null;
 	}
 	
-	private V1.Container updateContainer(V1.Container c,int idx)
+	private String extractPredictiveUnitParametersAsJson(PredictiveUnit predictiveUnit) {
+        StringJoiner sj = new StringJoiner(",", "[", "]");
+        List<Parameter> parameters = predictiveUnit.getParametersList();
+        for (Parameter parameter : parameters) {
+            try {
+                String j = ProtoBufUtils.toJson(parameter, true,false);
+                sj.add(j);
+            } catch (InvalidProtocolBufferException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return sj.toString();
+    }
+	
+	private PredictiveUnit findPredictiveUnitForContainer(PredictiveUnit unit,String name)
+	{
+	    if (unit.getName().equals(name))
+	        return unit;
+	    else {
+	        for(PredictiveUnit child : unit.getChildrenList())
+	        {
+	            PredictiveUnit found = findPredictiveUnitForContainer(child,name);
+	            if (found != null)
+	                return found;
+	        }
+	        return null;
+	    }
+	}
+	
+	private V1.Container updateContainer(V1.Container c,PredictiveUnit pu,int idx)
 	{
 		V1.Container.Builder c2Builder = V1.Container.newBuilder(c);
         
@@ -182,6 +215,9 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		if (!envNames.contains(ENV_PREDICTIVE_UNIT_SERVICE_PORT))
 			c2Builder.addEnv(EnvVar.newBuilder().setName(ENV_PREDICTIVE_UNIT_SERVICE_PORT).setValue(""+containerPort));
 				
+		final String ENV_PREDICTIVE_UNIT_PARAMETERS = "PREDICTIVE_UNIT_PARAMETERS";
+		c2Builder.addEnv(EnvVar.newBuilder().setName(ENV_PREDICTIVE_UNIT_PARAMETERS).setValue(extractPredictiveUnitParametersAsJson(pu)));
+		
 		if (!c.hasLivenessProbe())
 		{
 			c2Builder.setLivenessProbe(Probe.newBuilder()
@@ -255,7 +291,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			mlBuilder.getSpecBuilder().getPredictorsBuilder(idx).getComponentSpecBuilder().getSpecBuilder().clearContainers();
 			for(V1.Container c : p.getComponentSpec().getSpec().getContainersList())
 			{
-				V1.Container c2 = this.updateContainer(c, cIdx);
+				V1.Container c2 = this.updateContainer(c, findPredictiveUnitForContainer(mlDep.getSpec().getPredictors(idx).getGraph(),c.getName()),cIdx);
 				mlBuilder.getSpecBuilder().getPredictorsBuilder(idx).getComponentSpecBuilder().getSpecBuilder().addContainers(cIdx, c2);	
 				updatePredictiveUnitBuilderByName(mlBuilder.getSpecBuilder().getPredictorsBuilder(idx).getGraphBuilder(),c2);
 				cIdx++;
@@ -317,7 +353,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 							.putLabels("seldon-deployment-id", mlDep.getSpec().getName())
 							.putLabels("app", depName)
 							.putLabels("version", "v1") //FIXME
-							.putLabels("seldon-type", "mldeployment")
+							.putLabels(SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_KEY, SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_VAL)
 							.addOwnerReferences(ownerRef)
 							.putAnnotations("prometheus.io/path", "/prometheus")
 							.putAnnotations("prometheus.io/port",""+clusterManagerProperites.getEngineContainerPort())
@@ -335,6 +371,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 							.setName(mlDep.getSpec().getName())
 							.putLabels(SeldonDeploymentOperatorImpl.LABEL_SELDON_APP, serviceLabel)
 							.putLabels("seldon-deployment-id", mlDep.getSpec().getName())
+							.addOwnerReferences(ownerRef)
 							)
 					.setSpec(ServiceSpec.newBuilder()
 							.addPorts(ServicePort.newBuilder()
