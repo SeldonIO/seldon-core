@@ -72,7 +72,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 		    ObjectOrStatus<Deployment> os = client.list(Deployment.newBuilder(),listApiPath);       
             if (os.status != null) {
                 if (os.status.getCode() == 404) { //Create
-                    logger.info("About to create "+ProtoBufUtils.toJson(d));
+                    logger.debug("About to create "+ProtoBufUtils.toJson(d));
                     final String createApiPath = "/apis/"+DEPLOYMENT_API_VERSION+"/namespaces/{namespace}/deployments"
                             .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString("default"));
 

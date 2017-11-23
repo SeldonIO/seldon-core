@@ -35,6 +35,7 @@ import io.kubernetes.client.proto.V1beta1Extensions.Deployment;
 import io.kubernetes.client.proto.V1beta1Extensions.DeploymentSpec;
 import io.seldon.clustermanager.ClusterManagerProperites;
 import io.seldon.clustermanager.pb.ProtoBufUtils;
+import io.seldon.protos.DeploymentProtos.Endpoint;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit;
 import io.seldon.protos.DeploymentProtos.PredictorSpec;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
@@ -154,14 +155,24 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		return s;
 	}
 	
+	private Integer getPort(List<ContainerPort> ports)
+	{
+	    if (ports != null)
+	        for(ContainerPort p : ports)
+	            if ("http".equals(p.getName()) || "grpc".equals(p.getName()))
+	                return p.getContainerPort();
+	    return null;
+	}
+	
 	private V1.Container updateContainer(V1.Container c,int idx)
 	{
 		V1.Container.Builder c2Builder = V1.Container.newBuilder(c);
-		int containerPort = 9000;
-		if (c.getPortsCount() == 0)
+        
+		Integer containerPort = getPort(c.getPortsList());
+		if (containerPort == null)
 		{
 			c2Builder.addPorts(ContainerPort.newBuilder().setName("http").setContainerPort(clusterManagerProperites.getPuContainerPortBase() + idx));
-			containerPort = clusterManagerProperites.getPuContainerPortBase() + idx;
+            containerPort = clusterManagerProperites.getPuContainerPortBase() + idx;
 		}
 		else
 			containerPort = c.getPorts(0).getContainerPort();
@@ -204,18 +215,30 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		return c2Builder.build();
 	}
 	
-	//FIXME - need this???
-	private PredictiveUnit.Builder getPredictiveUnitBuilderByName(PredictiveUnit.Builder puBuilder,String name)
+	private void updatePredictiveUnitBuilderByName(PredictiveUnit.Builder puBuilder,V1.Container container)
 	{
-	    for(int i=0;i<puBuilder.getChildrenCount();i++)
-	        if (puBuilder.getChildrenBuilder(i).getName().equals(name))
-	            return puBuilder.getChildrenBuilder(i);
-	        else {
-	            PredictiveUnit.Builder found = getPredictiveUnitBuilderByName(puBuilder.getChildrenBuilder(i),name);
-	            if (found != null)
-	                return found;
-	        }
-	    return null;
+	    if (puBuilder.getName().equals(container.getName()))
+        {
+            Endpoint.Builder b = puBuilder.getEndpointBuilder();
+            for(ContainerPort p : container.getPortsList())
+            {
+                if ("http".equals(p.getName())) //first found will be used
+                {
+                    b.setServicePort(p.getContainerPort());
+                    b.setType(Endpoint.EndpointType.REST);
+                    //assumes localhost at present
+                    return;
+                } else if ("grpc".equals(p.getName())) {
+                    b.setServicePort(p.getContainerPort());
+                    b.setType(Endpoint.EndpointType.GRPC);
+                    //assumes localhost at present
+                    return;
+                }
+            }
+        } else {
+            for(int i=0;i<puBuilder.getChildrenCount();i++)
+	            updatePredictiveUnitBuilderByName(puBuilder.getChildrenBuilder(i),container);
+        }
 	}
 	
 	@Override
@@ -234,7 +257,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			{
 				V1.Container c2 = this.updateContainer(c, cIdx);
 				mlBuilder.getSpecBuilder().getPredictorsBuilder(idx).getComponentSpecBuilder().getSpecBuilder().addContainers(cIdx, c2);	
-				mlBuilder.getSpecBuilder().getPredictorsBuilder(idx).getGraphBuilder();
+				updatePredictiveUnitBuilderByName(mlBuilder.getSpecBuilder().getPredictorsBuilder(idx).getGraphBuilder(),c2);
 				cIdx++;
 			}
 			idx++;
