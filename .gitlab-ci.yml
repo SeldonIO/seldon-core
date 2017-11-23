@@ -1,0 +1,53 @@
+image: docker:latest
+services:
+  - docker:dind
+
+variables:
+  DOCKER_DRIVER: overlay
+  SPRING_PROFILES_ACTIVE: gitlab-ci
+
+stages:
+  - build
+
+cluster-manager-maven-build:
+  image: seldonio/core-builder
+  stage: build
+  script:
+    - cd cluster-manager
+    - make -f Makefile.ci build_jar
+  artifacts:
+    paths:
+      - cluster-manager/target/*.jar
+    expire_in: 1 week
+  only:
+    - ci_test
+    - master
+
+engine-maven-build:
+  image: seldonio/core-builder
+  stage: build
+  script:
+    - cd engine
+    - make -f Makefile.ci build_jar
+  artifacts:
+    paths:
+      - engine/target/*.jar
+    expire_in: 1 week
+  only:
+    - ci_test
+    - master
+
+api-frontend-maven-build:
+  image: seldonio/core-builder
+  stage: build
+  script:
+    - cd api-frontend
+    - make -f Makefile.ci build_jar
+  artifacts:
+    paths:
+      - api-frontend/target/*.jar
+    expire_in: 1 week
+  only:
+    - ci_test
+    - master
+

@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import io.seldon.protos.PredictionProtos.PredictionRequestResponseDef;
+import io.seldon.protos.PredictionProtos.RequestResponse;
 
 @Component
 public class KafkaRequestResponseProducer {
@@ -21,7 +21,7 @@ public class KafkaRequestResponseProducer {
     final private static String ENV_VAR_SELDON_KAFKA_SERVER = "SELDON_ENGINE_KAFKA_SERVER";
 
     
-    private KafkaProducer<String, PredictionRequestResponseDef > producer;
+    private KafkaProducer<String, RequestResponse > producer;
     
     private boolean enabled = false;
     
@@ -44,13 +44,13 @@ public class KafkaRequestResponseProducer {
 		    props.put(ProducerConfig.RETRY_BACKOFF_MS_CONFIG, "1000");
 		    props.put(ProducerConfig.RECONNECT_BACKOFF_MS_CONFIG, "1000");
 		    props.put(ProducerConfig.MAX_BLOCK_MS_CONFIG,"20"); //NB need to investigate issues of Kafka not able to get metadata
-		    producer = new KafkaProducer<>(props, new StringSerializer(), new PredictionRequestResponseSerializer());
+		    producer = new KafkaProducer<>(props, new StringSerializer(), new RequestResponseSerializer());
 		}
 		else
 			logger.warn("Kafka not enabled");
 	}
 	
-	public void send(String clientId, PredictionRequestResponseDef data)
+	public void send(String clientId, RequestResponse data)
 	{
 		if (enabled)
 			producer.send(new ProducerRecord<>(clientId,

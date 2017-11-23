@@ -35,10 +35,10 @@ import io.seldon.protos.ModelGrpc;
 import io.seldon.protos.ModelGrpc.ModelBlockingStub;
 import io.seldon.protos.RouterGrpc;
 import io.seldon.protos.RouterGrpc.RouterBlockingStub;
-import io.seldon.protos.PredictionProtos.FeedbackDef;
-import io.seldon.protos.PredictionProtos.RequestDef;
-import io.seldon.protos.PredictionProtos.RequestDef.DataOneofCase;
-import io.seldon.protos.PredictionProtos.ResponseDef;
+import io.seldon.protos.PredictionProtos.Feedback;
+import io.seldon.protos.PredictionProtos.Request;
+import io.seldon.protos.PredictionProtos.Request.DataOneofCase;
+import io.seldon.protos.PredictionProtos.Response;
 
 @Service
 public class InternalPredictionService {
@@ -61,7 +61,7 @@ public class InternalPredictionService {
     	
     }
 		
-	public ResponseDef getPrediction(RequestDef request, PredictiveUnitState state) throws JsonProcessingException, IOException{
+	public Response getPrediction(Request request, PredictiveUnitState state) throws JsonProcessingException, IOException{
 
 		final Endpoint endpoint = state.endpoint;
 		switch (endpoint.getType()){
@@ -78,7 +78,7 @@ public class InternalPredictionService {
 		throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,"no service available");
 	}
 	
-	public ResponseDef getRouting(RequestDef request, Endpoint endpoint){
+	public Response getRouting(Request request, Endpoint endpoint){
 		switch (endpoint.getType()){
 			case REST:
 				throw new NotImplementedException();
@@ -89,7 +89,7 @@ public class InternalPredictionService {
 		return null;
 	}
 	
-	public void sendFeedback(FeedbackDef feedback, Endpoint endpoint){
+	public void sendFeedback(Feedback feedback, Endpoint endpoint){
 		switch (endpoint.getType()){
 			case REST:
 				throw new NotImplementedException();
@@ -99,7 +99,7 @@ public class InternalPredictionService {
 		return;
 	}
 	
-	public void sendFeedbackRouter(FeedbackDef feedback, Endpoint endpoint){
+	public void sendFeedbackRouter(Feedback feedback, Endpoint endpoint){
 		switch (endpoint.getType()){
 			case REST:
 				throw new NotImplementedException();
@@ -109,29 +109,29 @@ public class InternalPredictionService {
 		return;
 	}
 	
-	private void sendFeedbackGRPC(FeedbackDef feedback, Endpoint endpoint){
+	private void sendFeedbackGRPC(Feedback feedback, Endpoint endpoint){
 		ManagedChannel channel = ManagedChannelBuilder.forAddress(endpoint.getServiceHost(), endpoint.getServicePort()).usePlaintext(true).build();
 		ModelBlockingStub stub =  ModelGrpc.newBlockingStub(channel).withDeadlineAfter(5, TimeUnit.SECONDS);
 		
-		stub.feedback(feedback);
+		stub.sendFeedback(feedback);
 		
 		return;
 	}
 	
-	private void sendFeedbackRouterGRPC(FeedbackDef feedback, Endpoint endpoint){
+	private void sendFeedbackRouterGRPC(Feedback feedback, Endpoint endpoint){
 		ManagedChannel channel = ManagedChannelBuilder.forAddress(endpoint.getServiceHost(), endpoint.getServicePort()).usePlaintext(true).build();
 		RouterBlockingStub stub =  RouterGrpc.newBlockingStub(channel).withDeadlineAfter(5, TimeUnit.SECONDS);
 		
-		stub.feedback(feedback);
+		stub.sendFeedback(feedback);
 		
 		return;
 	}
 	
-	private ResponseDef getRoutingGRPC(RequestDef request, Endpoint endpoint){
+	private Response getRoutingGRPC(Request request, Endpoint endpoint){
 		ManagedChannel channel = ManagedChannelBuilder.forAddress(endpoint.getServiceHost(), endpoint.getServicePort()).usePlaintext(true).build();
 
 		RouterBlockingStub stub =  RouterGrpc.newBlockingStub(channel).withDeadlineAfter(5, TimeUnit.SECONDS);
-		ResponseDef routing;
+		Response routing;
 		try {
 			routing = stub.route(request);
 		} catch (StatusRuntimeException e) 
@@ -142,17 +142,17 @@ public class InternalPredictionService {
 		return routing;
 	}
 	
-	public ResponseDef getPredictionGRPC(RequestDef request, PredictiveUnitState state, Endpoint endpoint){
+	public Response getPredictionGRPC(Request request, PredictiveUnitState state, Endpoint endpoint){
 		ManagedChannel channel = ManagedChannelBuilder.forAddress(endpoint.getServiceHost(), endpoint.getServicePort()).usePlaintext(true).build();
 		ModelBlockingStub stub =  ModelGrpc.newBlockingStub(channel).withDeadlineAfter(5, TimeUnit.SECONDS);
 			
-		ResponseDef response = stub.predict(request);
+		Response response = stub.predict(request);
 		return response;
 	}
 	
 	
 	
-	public ResponseDef getPredictionREST(String dataString, PredictiveUnitState state, Endpoint endpoint, boolean isDefault){
+	public Response getPredictionREST(String dataString, PredictiveUnitState state, Endpoint endpoint, boolean isDefault){
 		{
     		long timeNow = System.currentTimeMillis();
     		URI uri;
@@ -189,7 +189,7 @@ public class InternalPredictionService {
     			{
     				if(httpResponse.getStatusCode().is2xxSuccessful()) 
     				{
-    				    ResponseDef.Builder builder = ResponseDef.newBuilder();
+    				    Response.Builder builder = Response.newBuilder();
     				    String response = httpResponse.getBody();
     				    logger.info(response);
     				    JsonFormat.parser().ignoringUnknownFields().merge(response, builder);

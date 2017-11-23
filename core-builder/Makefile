@@ -1,0 +1,8 @@
+DOCKER_IMAGE_NAME=seldonio/core-builder
+DOCKER_IMAGE_VERSION=latest
+
+build_docker_image:
+	docker build --force-rm=true -t $(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VERSION) .
+push_to_registry:
+	docker push $(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VERSION)
+

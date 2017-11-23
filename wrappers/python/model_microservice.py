@@ -15,8 +15,8 @@ import numpy as np
 def predict(user_model,features,feature_names):
     return user_model.predict(features,feature_names)
 
-def do_feedback(user_model,features,feature_names,truth,reward):
-    return user_model.feedback(features,feature_names,truth,reward)
+def send_feedback(user_model,features,feature_names,truth,reward):
+    return user_model.send_feedback(features,feature_names,truth,reward)
 
 def get_class_names(user_model,n_targets):
     if hasattr(user_model,"class_names"):
@@ -56,8 +56,8 @@ def get_rest_microservice(user_model):
 
         return jsonify({"data":data})
 
-    @app.route("/feedback",methods=["GET","POST"])
-    def Feedback():
+    @app.route("/send-feedback",methods=["GET","POST"])
+    def SendFeedback():
         feedback = extract_message()
         
         datadef_request = feedback.get("request").get("data")
@@ -66,7 +66,7 @@ def get_rest_microservice(user_model):
         truth = rest_datadef_to_array(feedback.get("truth"))
         reward = feedback.get("reward")
 
-        do_feedback(user_model,features,datadef_request.get("names"),truth,reward)
+        send_feedback(user_model,features,datadef_request.get("names"),truth,reward)
         return jsonify({})
 
     return app
@@ -90,18 +90,18 @@ class SeldonModelGRPC(object):
         class_names = get_class_names(self.user_model, predictions.shape[1])
 
         data = array_to_grpc_datadef(predictions, class_names, request.data.WhichOneof("data_oneof"))
-        return prediction_pb2.ResponseDef(data=data)
+        return prediction_pb2.Response(data=data)
 
-    def Feedback(self,feedback,context):
+    def SendFeedback(self,feedback,context):
         datadef_request = feedback.request.data
         features = grpc_datadef_to_array(datadef_request)
         
         truth = grpc_datadef_to_array(feedback.truth)
         reward = feedback.reward
 
-        do_feedback(self.user_model,features,datadef_request.names,truth,reward)
+        send_feedback(self.user_model,features,datadef_request.names,truth,reward)
 
-        return prediction_pb2.ResponseDef()
+        return prediction_pb2.Response()
     
 def get_grpc_server(user_model):
     seldon_model = SeldonModelGRPC(user_model)

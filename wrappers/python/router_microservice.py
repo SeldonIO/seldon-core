@@ -18,8 +18,8 @@ PRED_UNIT_ID = os.environ.get("PREDICTIVE_UNIT_ID")
 def route(user_router,features,feature_names):
     return user_router.route(features,feature_names)
 
-def do_feedback(user_router,features,feature_names,routing,reward,truth):
-    return user_router.feedback(features,feature_names,routing,reward,truth)
+def send_feedback(user_router,features,feature_names,routing,reward,truth):
+    return user_router.send_feedback(features,feature_names,routing,reward,truth)
 
 # ----------------------------
 # REST
@@ -52,8 +52,8 @@ def get_rest_microservice(user_router):
 
         return jsonify({"data":data})
 
-    @app.route("/feedback",methods=["GET","POST"])
-    def Feedback():
+    @app.route("/send-feedback",methods=["GET","POST"])
+    def SendFeedback():
         feedback = extract_message()
         
         datadef_request = feedback.get("request").get("data")
@@ -63,7 +63,7 @@ def get_rest_microservice(user_router):
         reward = feedback.get("reward")
         routing = feedback.get("response").get("meta").get("routing").get(PRED_UNIT_ID)
 
-        do_feedback(user_router,features,datadef_request.get("names"),routing,reward,truth)
+        send_feedback(user_router,features,datadef_request.get("names"),routing,reward,truth)
         return jsonify({})
 
     return app
@@ -87,9 +87,9 @@ class SeldonRouterGRPC(object):
         class_names = []
 
         data = array_to_grpc_datadef(routing, class_names, request.data.WhichOneof("data_oneof"))
-        return prediction_pb2.ResponseDef(data=data)
+        return prediction_pb2.Response(data=data)
 
-    def Feedback(self,feedback,context):
+    def SendFeedback(self,feedback,context):
         datadef_request = feedback.request.data
         features = grpc_datadef_to_array(datadef_request)
         
@@ -97,9 +97,9 @@ class SeldonRouterGRPC(object):
         reward = feedback.reward
         routing = feedback.response.meta.routing.get(PRED_UNIT_ID)
         
-        do_feedback(self.user_model,features,datadef_request.names,routing,reward,truth)
+        send_feedback(self.user_model,features,datadef_request.names,routing,reward,truth)
 
-        return prediction_pb2.ResponseDef()
+        return prediction_pb2.Response()
     
 def get_grpc_server(user_model):
     seldon_router = SeldonRouterGRPC(user_model)
