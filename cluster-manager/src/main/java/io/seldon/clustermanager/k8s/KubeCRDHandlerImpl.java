@@ -27,8 +27,8 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 	public static final String VERSION = "v1alpha1";
 	//TODO make namespace configurable
 	public static final String NAMESPACE = "default";
-	public static final String KIND_PLURAL = "mldeployments";
-	public static final String KIND = "MLDeployment";
+	public static final String KIND_PLURAL = "seldondeployments";
+	public static final String KIND = "SeldonDeployment";
 	
 	
 	@Override
@@ -41,13 +41,13 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 					.removeAnnotations("kubectl.kubernetes.io/last-applied-configuration").build()).build();
 			// Create string representation of JSON to add as annotation to allow declarative "kubectl apply" commands to work otherwise a replace
 			// would remove the last-applied-configuration that kubectl adds.
-			String json = JsonFormat.printer().omittingInsignificantWhitespace().preservingProtoFieldNames().print(mlDepTmp);
+			String json = SeldonDeploymentUtils.toJson(mlDepTmp,true);
 			
 			// Create final version of deployment with annotation
 			SeldonDeployment mlDeployment = SeldonDeployment.newBuilder(mldep).setMetadata(ObjectMeta.newBuilder(mldep.getMetadata())
 						.putAnnotations("kubectl.kubernetes.io/last-applied-configuration", json+"\n")).build();
 			
-			json = JsonFormat.printer().includingDefaultValueFields().preservingProtoFieldNames().print(mlDeployment);
+			json = SeldonDeploymentUtils.toJson(mlDeployment,false);
 			
 			logger.debug(json);
 			ApiClient client = Config.defaultClient();

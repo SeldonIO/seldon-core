@@ -25,15 +25,17 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	private final static String SELDON_CLUSTER_MANAGER_POD_NAMESPACE_KEY = "SELDON_CLUSTER_MANAGER_POD_NAMESPACE";
 	private final SeldonDeploymentOperator operator;
 	private final K8sClientProvider clientProvider;
+	private final KubeCRDHandler crdHandler;
 	
 	private static final String DEPLOYMENT_API_VERSION = "extensions/v1beta1";
 	private String seldonClusterNamespaceName = "UNKOWN_NAMESPACE";
 
 	@Autowired
-	public SeldonDeploymentControllerImpl(SeldonDeploymentOperator operator, K8sClientProvider clientProvider) {
+	public SeldonDeploymentControllerImpl(SeldonDeploymentOperator operator, K8sClientProvider clientProvider,KubeCRDHandler crdHandler) {
 		super();
 		this.operator = operator;
 		this.clientProvider = clientProvider;
+		this.crdHandler = crdHandler;
 		
 		 { // set the namespace to use
 	            seldonClusterNamespaceName = System.getenv().get(SELDON_CLUSTER_MANAGER_POD_NAMESPACE_KEY);
@@ -44,33 +46,6 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	            logger.info(String.format("Setting cluster manager namespace as [%s]", seldonClusterNamespaceName));
 	        }
 	}
-
-
-	/*
-	private void createDeployments(ApiClient client,List<ExtensionsV1beta1Deployment> deployments) throws ApiException
-	{
-		ExtensionsV1beta1Api api = new ExtensionsV1beta1Api(client);
-		for (ExtensionsV1beta1Deployment d : deployments)
-		{
-			try
-			{
-				api.readNamespacedDeployment(d.getMetadata().getName(), "default", null, null, null);
-				api.replaceNamespacedDeployment(d.getMetadata().getName(), "default", d, null);
-			} 
-			catch (ApiException e) 
-			{
-				if (e.getCode() == 404)//Not Found
-				{
-					api.createNamespacedDeployment("default", d, null);	
-				}
-				else
-					throw e;
-			}
-		}
-	}
-	*/
-	
-	
 	
 	private void createDeployments(ProtoClient client,List<Deployment> deployments) throws ApiException, IOException, SeldonDeploymentException
 	{
@@ -151,13 +126,20 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 		
 		try
 		{
-			mlDep = operator.defaulting(mlDep);
-			operator.validate(mlDep);
-			logger.info(ProtoBufUtils.toJson(mlDep));
-			DeploymentResources resources = operator.createResources(mlDep);
+			SeldonDeployment mlDep2 = operator.defaulting(mlDep);
+			operator.validate(mlDep2);
+			logger.info(ProtoBufUtils.toJson(mlDep2));
+			DeploymentResources resources = operator.createResources(mlDep2);
 			ProtoClient client = clientProvider.getProtoClient();
 			createDeployments(client, resources.deployments);
 			createService(client,resources.service);
+			if (!mlDep.getSpec().equals(mlDep2.getSpec()))
+			{
+			    logger.info("Pushing updated SeldonDeployment "+mlDep2.getMetadata().getName()+" back to kubectl");
+			    crdHandler.updateSeldonDeployment(mlDep2);
+			}
+			else
+			    logger.info("Not updating SeldonDeployment "+mlDep2.getMetadata().getName());
 			
 		} catch (SeldonDeploymentException e) {
 			logger.error("Failed to create deployment ",e);

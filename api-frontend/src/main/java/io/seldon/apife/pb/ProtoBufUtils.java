@@ -4,6 +4,8 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 
 import io.kubernetes.client.proto.IntStr.IntOrString;
+import io.kubernetes.client.proto.Meta.Time;
+import io.kubernetes.client.proto.Meta.Timestamp;
 import io.kubernetes.client.proto.Resource.Quantity;
 import io.seldon.apife.pb.JsonFormat.Printer;
 
@@ -52,6 +54,8 @@ public class ProtoBufUtils {
         JsonFormat.parser().ignoringUnknownFields()
         .usingTypeParser(IntOrString.getDescriptor().getFullName(), new IntOrStringUtils.IntOrStringParser())
         .usingTypeParser(Quantity.getDescriptor().getFullName(), new QuantityUtils.QuantityParser())
+        .usingTypeParser(Time.getDescriptor().getFullName(), new TimeUtils.TimeParser())
+        .usingTypeParser(Timestamp.getDescriptor().getFullName(), new TimeUtils.TimeParser()) 
         .merge(json, messageBuilder);
     }
 

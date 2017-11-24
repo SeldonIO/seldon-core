@@ -56,13 +56,6 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		this.clusterManagerProperites = clusterManagerProperites;
 	}
 
-	/*
-	@Autowired
-	public void setClusterManagerProperites(ClusterManagerProperites clusterManagerProperites) {
-		logger.info(String.format("injecting %s", clusterManagerProperites.toString()));
-		this.clusterManagerProperites = clusterManagerProperites;
-	}
-	*/
 	 
 	public static String getEnginePredictorEnvVarJson(PredictorSpec predictorDef) {
 		String retVal;
@@ -114,42 +107,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		return cBuilder.build();
 	}
 	
-	/*
-	private V1Container createEngineContainerOld(PredictorDef predictorDef)
-	{
-		//@formatter:off
-		V1Container c = new V1Container()
-							.name("seldon-container-engine")
-							.image(clusterManagerProperites.getEngineContainerImageAndVersion())
-							.addEnvItem(new V1EnvVar().name("ENGINE_PREDICTOR").value(getEnginePredictorEnvVarJson(predictorDef)))
-							.addEnvItem(new V1EnvVar().name("ENGINE_SERVER_PORT").value(""+clusterManagerProperites.getEngineContainerPort()))
-							.addPortsItem(new V1ContainerPort().containerPort(clusterManagerProperites.getEngineContainerPort()))
-							.addPortsItem(new V1ContainerPort().containerPort(8082).name("admin"))
-							.readinessProbe(new V1Probe()
-									.httpGet(new V1HTTPGetAction().port(new io.kubernetes.client.custom.IntOrString("admin")).path("/ready"))
-									.initialDelaySeconds(5)
-									.periodSeconds(5)
-									.failureThreshold(1)
-									.successThreshold(1)
-									.timeoutSeconds(2)
-									)
-							.livenessProbe(new V1Probe()
-									.httpGet(new V1HTTPGetAction().port(new io.kubernetes.client.custom.IntOrString("admin")).path("/ping"))
-									.initialDelaySeconds(5)
-									.periodSeconds(5)
-									.failureThreshold(1)
-									.successThreshold(1)
-									.timeoutSeconds(2)									
-									)
-							.lifecycle(new V1Lifecycle()
-									.preStop(new V1Handler()
-											.exec(new V1ExecAction().addCommandItem("/bin/bash").addCommandItem("-c").addCommandItem("curl 127.0.0.1:"+clusterManagerProperites.getEngineContainerPort()+"/pause && /bin/sleep 20"))
-											)
-									);
-		//@formatter:on
-		return c;
-	}
-	*/
+	
 	
 	private Set<String> getEnvNamesProto(List<EnvVar> envs)
 	{
@@ -216,7 +174,8 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			c2Builder.addEnv(EnvVar.newBuilder().setName(ENV_PREDICTIVE_UNIT_SERVICE_PORT).setValue(""+containerPort));
 				
 		final String ENV_PREDICTIVE_UNIT_PARAMETERS = "PREDICTIVE_UNIT_PARAMETERS";
-		c2Builder.addEnv(EnvVar.newBuilder().setName(ENV_PREDICTIVE_UNIT_PARAMETERS).setValue(extractPredictiveUnitParametersAsJson(pu)));
+		if (!envNames.contains(ENV_PREDICTIVE_UNIT_PARAMETERS))
+		    c2Builder.addEnv(EnvVar.newBuilder().setName(ENV_PREDICTIVE_UNIT_PARAMETERS).setValue(extractPredictiveUnitParametersAsJson(pu)));
 		
 		if (!c.hasLivenessProbe())
 		{
@@ -281,7 +240,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 	public SeldonDeployment defaulting(SeldonDeployment mlDep) {
 		SeldonDeployment.Builder mlBuilder = SeldonDeployment.newBuilder(mlDep);
 		int idx = 0;
-		String serviceName = getKubernetesSeldonDeploymentId(mlDep.getSpec().getName(), false);
+		String serviceName = mlDep.getSpec().getName();
 		for(PredictorSpec p : mlDep.getSpec().getPredictorsList())
 		{
 			ObjectMeta.Builder metaBuilder = ObjectMeta.newBuilder(p.getComponentSpec().getMetadata())
@@ -307,12 +266,8 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		
 	}
 	
-	private static String getKubernetesSeldonDeploymentId(String deploymentName, boolean isCanary) {
-		return "sd-" + deploymentName + "-" + ((isCanary) ? "c" : "p");
-	}
-
-	private static String getKubernetesDeploymentId(String deploymentName,String predictorName, boolean isCanary) {
-		return "sd-" + deploymentName + "-" + predictorName + "-" + ((isCanary) ? "c" : "p");
+	private static String getKubernetesDeploymentId(String deploymentName,String predictorName) {
+		return deploymentName + "-" + predictorName;
 	}
 	
 	private V1OwnerReference getOwnerReferenceOld(SeldonDeployment mlDep)
@@ -340,10 +295,10 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		OwnerReference ownerRef = getOwnerReference(mlDep);
 		List<Deployment> deployments = new ArrayList<>();
 		// for each predictor Create/replace deployment
-		String serviceLabel = getKubernetesSeldonDeploymentId(mlDep.getSpec().getName(), false);
+		String serviceLabel = mlDep.getSpec().getName();
 		for(PredictorSpec p : mlDep.getSpec().getPredictorsList())
 		{
-			String depName = getKubernetesDeploymentId(mlDep.getSpec().getName(),p.getName(), p.getType().equals(PredictorSpec.PredictorType.CANARY));
+			String depName = getKubernetesDeploymentId(mlDep.getSpec().getName(),p.getName());
 			PodTemplateSpec.Builder podSpecBuilder = PodTemplateSpec.newBuilder(p.getComponentSpec());
 			podSpecBuilder.getSpecBuilder().addContainers(createEngineContainer(p));
 			Deployment deployment = V1beta1Extensions.Deployment.newBuilder()
@@ -389,50 +344,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		return new DeploymentResources(deployments, s);
 	}
 	
-	/*
-	public DeploymentResources createResourcesOld(MLDeployment mlDep) throws MLDeploymentException {
-		
-		try
-		{
-			V1OwnerReference ownerRef = getOwnerReferenceOld(mlDep);
-			List<ExtensionsV1beta1Deployment> deployments = new ArrayList<>();
-			// for each predictor Create/replace deployment
-			for(PredictorDef p : mlDep.getSpec().getPredictorsList())
-			{
-				V1PodTemplateSpec podTemplate = MLDeploymentUtils.convertProtoToModel(p.getComponentSpec());
-				V1Container engineContainer = createEngineContainerOld(p);
-				podTemplate.getSpec().addContainersItem(engineContainer);
-				
-				String depName = getKubernetesDeploymentId(mlDep.getSpec().getName(),p.getName(), p.getType().equals(PredictorDef.PredictorType.CANARY));
-				String serviceLabel = getKubernetesDeploymentId(mlDep.getSpec().getName(),p.getName(), false);
-				ExtensionsV1beta1DeploymentSpec depSpec = new ExtensionsV1beta1DeploymentSpec()
-						.template(podTemplate)
-						.replicas(p.getReplicas());
-						//.selector(new V1LabelSelector().putMatchLabelsItem("seldon-app", depName));
-				 ExtensionsV1beta1Deployment dep = new ExtensionsV1beta1Deployment().apiVersion("extensions/v1beta1").kind("Deployment")
-						 	.metadata(new V1ObjectMeta()
-						 			.name(depName)
-						 			.putLabelsItem(LABEL_SELDON_APP, serviceLabel)
-						 			.putLabelsItem("seldon-deployment-id", mlDep.getSpec().getName())
-						 			.putLabelsItem("app", depName)
-						 			.putLabelsItem("version", "v1")  //FIXME
-						 			.putLabelsItem("seldon-type", "mldeployment")
-						 			.addOwnerReferencesItem(ownerRef)
-						 			)
-						 	.spec(depSpec);
-				 logger.info(dep.toString());
-				 deployments.add(dep);
-			}
-			// Create service for deployment
-			return new DeploymentResources(deployments, null);
-			
-		} catch (InvalidProtocolBufferException e) {
-			logger.error("Failed to reconcile ",e);
-			throw new MLDeploymentException(e.getMessage());
-		}
-	}
-*/
-	
+
 	public static class DeploymentResources {
 		
 		List<Deployment> deployments;
