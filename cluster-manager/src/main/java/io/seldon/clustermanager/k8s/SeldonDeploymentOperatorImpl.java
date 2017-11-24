@@ -37,6 +37,7 @@ import io.kubernetes.client.proto.V1beta1Extensions.DeploymentSpec;
 import io.seldon.clustermanager.ClusterManagerProperites;
 import io.seldon.clustermanager.pb.ProtoBufUtils;
 import io.seldon.protos.DeploymentProtos.Endpoint;
+import io.seldon.protos.DeploymentProtos.Endpoint.EndpointType;
 import io.seldon.protos.DeploymentProtos.Parameter;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit;
 import io.seldon.protos.DeploymentProtos.PredictorSpec;
@@ -84,7 +85,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 					.setHttpGet(HTTPGetAction.newBuilder().setPort(IntOrString.newBuilder().setType(1).setStrVal("admin")).setPath("/ready")))
 					.setInitialDelaySeconds(5)
 					.setPeriodSeconds(5)
-					.setFailureThreshold(1)
+					.setFailureThreshold(3)
 					.setSuccessThreshold(1)
 					.setTimeoutSeconds(2)
 					)
@@ -92,7 +93,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 					.setHttpGet(HTTPGetAction.newBuilder().setPort(IntOrString.newBuilder().setType(1).setStrVal("admin")).setPath("/ready")))
 					.setInitialDelaySeconds(5)
 					.setPeriodSeconds(5)
-					.setFailureThreshold(1)
+					.setFailureThreshold(3)
 					.setSuccessThreshold(1)
 					.setTimeoutSeconds(2)
 					)
@@ -257,6 +258,10 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			}
 			idx++;
 		}
+		mlBuilder.getSpecBuilder().getEndpointBuilder()
+		    .setType(EndpointType.REST)
+		    .setServiceHost(serviceName)
+		    .setServicePort(clusterManagerProperites.getEngineContainerPort());
 		return mlBuilder.build();
 	}
 
