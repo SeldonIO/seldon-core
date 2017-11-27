@@ -1,5 +1,24 @@
+VERSION_FILE=target/version.txt
+
 build_jar: update_proto
 	mvn clean package -B
+
+write_version:
+	ls target/seldon-cluster-manager-*.jar | sed -n 's/target\/seldon-cluster-manager-\(.*\).jar$$/\1/p' > $(VERSION_FILE) && cat $(VERSION_FILE)
+
+build_image:
+	docker build --build-arg APP_VERSION=$$(cat $(VERSION_FILE)) -t seldonio/seldon-cluster-manager:latest .
+	docker tag seldonio/seldon-cluster-manager:latest seldonio/seldon-cluster-manager:$$(cat $(VERSION_FILE))
+
+repo_login:
+	if [ ! -z "${DOCKER_HUB_USER}" ] && [ ! -z "${DOCKER_HUB_PASSWORD}" ]; then \
+		docker login -u ${DOCKER_HUB_USER} -p ${DOCKER_HUB_PASSWORD}; \
+	else \
+		echo "Missing credentials!"; \
+	fi
+
+push_image:
+	docker push seldonio/seldon-cluster-manager
 
 clean:
 	mvn clean -B

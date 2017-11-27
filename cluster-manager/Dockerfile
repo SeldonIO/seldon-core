@@ -1,31 +1,8 @@
-FROM openjdk:8u141-jdk
+FROM openjdk:8u131-jre-alpine
 
-# Install maven
-RUN apt-get update
-RUN apt-get install -y maven
-RUN update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
+ARG APP_VERSION=UNKOWN_VERSION
 
-WORKDIR /work
+ADD /target/seldon-cluster-manager-${APP_VERSION}.jar app.jar
 
-ADD .m2 /work/.m2
-ADD version.txt /work/version.txt
-
-# Prepare by downloading dependencies
-ADD pom.xml /work/pom.xml
-RUN ["mvn", "-Dmaven.repo.local=./.m2", "dependency:resolve"]
-RUN ["mvn", "-Dmaven.repo.local=./.m2", "verify"]
-
-# Adding source, compile and package
-ADD src /work/src
-RUN ["mvn", "-Dmaven.repo.local=./.m2", "clean", "package"]
-
-RUN \
-    mv /work/target/seldon-cluster-manager.jar /work/ && \
-    rm -rf /work/target && \
-    rm -rf /work/src && \
-    rm -rf /work/.m2 && \
-    rm -rf /work/pom.xml
-
-EXPOSE 8080
-ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -jar /work/seldon-cluster-manager.jar $SPRING_OPTS" ]
+ENTRYPOINT [ "sh", "-c", "java -Djava.security.egd=file:/dev/./urandom $JAVA_OPTS -jar app.jar $SPRING_OPTS" ]
 
