@@ -42,6 +42,7 @@ pipeline {
                         }
                     }
                     steps {
+                        sh 'cd cluster-manager && make -f Makefile.ci repo_login'
                         sh 'cd cluster-manager && make -f Makefile.ci push_image'
                     }
                 }
