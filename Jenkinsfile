@@ -9,8 +9,7 @@ pipeline {
                 }
             }
             steps {
-                sh 'cd cluster-manager && echo ok>my.txt'
-                sh 'ls > r.txt'
+                sh 'cd cluster-manager && make -f Makefile.ci clean build_jar'
             }
         }
     }
