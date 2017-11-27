@@ -10,8 +10,8 @@ pipeline {
             }
             steps {
                 sh 'cd cluster-manager && make -f Makefile.ci clean build_jar'
-                sh 'cd cluster-manager && make -f Makefile.ci clean write_version'
-                sh 'cd cluster-manager && make -f Makefile.ci clean build_image'
+                sh 'cd cluster-manager && make -f Makefile.ci write_version'
+                sh 'cd cluster-manager && make -f Makefile.ci build_image'
             }
         }
     }
