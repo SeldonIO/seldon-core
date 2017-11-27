@@ -31,7 +31,21 @@ pipeline {
                     }
                 }
             }
-
+        }
+        stage('publish-image') {
+            parallel {
+                stage('cluster-manager-publish-image') {
+                    agent {
+                        docker {
+                            image 'seldonio/core-builder'
+                            args '-v /root/.m2:/root/.m2'
+                        }
+                    }
+                    steps {
+                        sh 'cd cluster-manager && make -f Makefile.ci push_image'
+                    }
+                }
+            }
         }
     }
 }
