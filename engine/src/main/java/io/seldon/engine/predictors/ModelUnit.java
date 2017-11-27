@@ -16,9 +16,9 @@ import org.springframework.stereotype.Component;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Metrics;
 import io.seldon.engine.metrics.SeldonRestTemplateExchangeTagsProvider;
-import io.seldon.protos.PredictionProtos.FeedbackDef;
-import io.seldon.protos.PredictionProtos.RequestDef;
-import io.seldon.protos.PredictionProtos.ResponseDef;
+import io.seldon.protos.PredictionProtos.Feedback;
+import io.seldon.protos.PredictionProtos.Request;
+import io.seldon.protos.PredictionProtos.Response;
 
 @Component
 public class ModelUnit extends PredictiveUnitBean{
@@ -30,12 +30,12 @@ public class ModelUnit extends PredictiveUnitBean{
 		super();
 	}
 	
-	private ResponseDef doPredict(RequestDef request, PredictiveUnitState state)
+	private Response doPredict(Request request, PredictiveUnitState state)
 	{
-		ResponseDef ret = null;
+		Response ret = null;
 		try {
 			ret = internalPredictionService.getPrediction(request, state);
-//			ret = ResponseDef.newBuilder(ret).setMeta(MetaDef.newBuilder(ret.getMeta()).addModel(state.id)).build();
+//			ret = Response.newBuilder(ret).setMeta(Meta.newBuilder(ret.getMeta()).addModel(state.id)).build();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -44,7 +44,7 @@ public class ModelUnit extends PredictiveUnitBean{
 	}
 	
 	@Override
-	protected void doStoreFeedbackMetrics(FeedbackDef feedback, PredictiveUnitState state){
+	protected void doStoreFeedbackMetrics(Feedback feedback, PredictiveUnitState state){
 
 		Counter.builder("seldon_api_model_feedback_reward").tags(tagsProvider.getModelMetrics(state)).register(Metrics.globalRegistry).increment(feedback.getReward());
 		Counter.builder("seldon_api_model_feedback").tags(tagsProvider.getModelMetrics(state)).register(Metrics.globalRegistry).increment();
@@ -52,12 +52,12 @@ public class ModelUnit extends PredictiveUnitBean{
 
 	@Override
 	@Async
-	protected Future<ResponseDef> predict(RequestDef request, PredictiveUnitState state, Map<String,Integer> routingDict) throws InterruptedException, ExecutionException{
+	protected Future<Response> predict(Request request, PredictiveUnitState state, Map<String,Integer> routingDict) throws InterruptedException, ExecutionException{
 		return new AsyncResult<>(doPredict(request,state));
 	}
 
 	@Override
-	protected List<PredictiveUnitState> forwardPass(RequestDef request, PredictiveUnitState state, Map<String,Integer> routingDict){
+	protected List<PredictiveUnitState> forwardPass(Request request, PredictiveUnitState state, Map<String,Integer> routingDict){
 		return new ArrayList<PredictiveUnitState>(Arrays.asList(state));
 	}
 	

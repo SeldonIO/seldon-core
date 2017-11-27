@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 import io.seldon.apife.deployments.DeploymentStore;
 import io.seldon.apife.exception.APIException;
-import io.seldon.protos.DeploymentProtos.DeploymentDef;
+import io.seldon.protos.DeploymentProtos.DeploymentSpec;
 
 
 @Service
@@ -24,18 +24,18 @@ public class PredictionService {
 
 	public String predict(String request,String clientId)  {
 
-		DeploymentDef deployment = deploymentStore.getDeployment(clientId);
+		DeploymentSpec deployment = deploymentStore.getDeployment(clientId);
 		if (deployment != null)
-			return internalPredictionService.getPrediction(request, deployment.getPredictor().getEndpoint());
+			return internalPredictionService.getPrediction(request, deployment.getEndpoint());
 		else
 			throw new APIException(APIException.ApiExceptionType.APIFE_NO_RUNNING_DEPLOYMENT,"no deployment with id "+clientId);
 
 	}
 	
 	public void sendFeedback(String feedback, String deploymentId){
-		DeploymentDef deployment = deploymentStore.getDeployment(deploymentId);
+		DeploymentSpec deployment = deploymentStore.getDeployment(deploymentId);
 		if (deployment != null)
-			internalPredictionService.sendFeedback(feedback, deployment.getPredictor().getEndpoint());
+			internalPredictionService.sendFeedback(feedback, deployment.getEndpoint());
 		else
 			throw new APIException(APIException.ApiExceptionType.APIFE_NO_RUNNING_DEPLOYMENT,"no deployment with id "+deploymentId);
 

@@ -15,11 +15,11 @@ import org.springframework.stereotype.Service;
 import io.seldon.engine.predictors.EnginePredictor;
 import io.seldon.engine.predictors.PredictorBean;
 import io.seldon.engine.predictors.PredictorState;
-import io.seldon.protos.PredictionProtos.FeedbackDef;
-import io.seldon.protos.PredictionProtos.RequestDef;
-import io.seldon.protos.PredictionProtos.MetaDef;
-import io.seldon.protos.PredictionProtos.ResponseDef;
-import io.seldon.protos.PredictionProtos.MetaDef;
+import io.seldon.protos.PredictionProtos.Feedback;
+import io.seldon.protos.PredictionProtos.Request;
+import io.seldon.protos.PredictionProtos.Meta;
+import io.seldon.protos.PredictionProtos.Response;
+import io.seldon.protos.PredictionProtos.Meta;
 
 @Service
 public class PredictionService {
@@ -47,21 +47,21 @@ public class PredictionService {
 	    }
 	}
 	
-	public void sendFeedback(FeedbackDef feedback) throws InterruptedException, ExecutionException
+	public void sendFeedback(Feedback feedback) throws InterruptedException, ExecutionException
 	{
-		PredictorState predictorState = predictorBean.predictorStateFromDeploymentDef(enginePredictor.getPredictorDef());
+		PredictorState predictorState = predictorBean.predictorStateFromPredictorSpec(enginePredictor.getPredictorSpec());
 
 		predictorBean.sendFeedback(feedback, predictorState);
 		
 		return;
 	}
 	
-	public ResponseDef predict(RequestDef request) throws InterruptedException, ExecutionException
+	public Response predict(Request request) throws InterruptedException, ExecutionException
 	{
 
 		if (!request.hasMeta())
 		{
-			request = request.toBuilder().setMeta(MetaDef.newBuilder().setPuid(puidGenerator.nextPuidId()).build()).build();
+			request = request.toBuilder().setMeta(Meta.newBuilder().setPuid(puidGenerator.nextPuidId()).build()).build();
 		}
 		else if (StringUtils.isEmpty(request.getMeta().getPuid()))
 		{
@@ -69,11 +69,11 @@ public class PredictionService {
 		}
 		String puid = request.getMeta().getPuid();
 		
-        PredictorState predictorState = predictorBean.predictorStateFromDeploymentDef(enginePredictor.getPredictorDef());
+        PredictorState predictorState = predictorBean.predictorStateFromPredictorSpec(enginePredictor.getPredictorSpec());
 
-        ResponseDef predictorReturn = predictorBean.predict(request,predictorState);
+        Response predictorReturn = predictorBean.predict(request,predictorState);
 			
-        ResponseDef.Builder builder = ResponseDef.newBuilder(predictorReturn).setMeta(MetaDef.newBuilder(predictorReturn.getMeta()).setPuid(puid));
+        Response.Builder builder = Response.newBuilder(predictorReturn).setMeta(Meta.newBuilder(predictorReturn.getMeta()).setPuid(puid));
 
         return builder.build();
 		

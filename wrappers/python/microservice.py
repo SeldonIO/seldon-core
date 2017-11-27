@@ -94,7 +94,7 @@ def grpc_datadef_to_array(datadef):
 
 def array_to_grpc_datadef(array,names,data_type):
     if data_type == "tensor":
-        datadef = prediction_pb2.DefaultDataDef(
+        datadef = prediction_pb2.DefaultData(
             names = names,
             tensor = prediction_pb2.Tensor(
                 shape = array.shape,
@@ -102,12 +102,12 @@ def array_to_grpc_datadef(array,names,data_type):
             )
         )
     elif data_type == "ndarray":
-        datadef = prediction_pb2.DefaultDataDef(
+        datadef = prediction_pb2.DefaultData(
             names = names,
             ndarray = array_to_list_value(array)
         )
     else:
-        datadef = prediction_pb2.DefaultDataDef(
+        datadef = prediction_pb2.DefaultData(
             names = names
             )
 

@@ -9,7 +9,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 
 import io.seldon.engine.exception.APIException;
 import io.seldon.engine.pb.ProtoBufUtils;
-import io.seldon.protos.PredictionProtos.StatusDef;
+import io.seldon.protos.PredictionProtos.Status;
 
 
 @ControllerAdvice
@@ -19,13 +19,13 @@ public class ExceptionControllerAdvice {
 	public ResponseEntity<String> handleUnauthorizedException(APIException exception) throws InvalidProtocolBufferException {
 
 		
-		StatusDef.Builder statusBuilder = StatusDef.newBuilder();
+		Status.Builder statusBuilder = Status.newBuilder();
 		statusBuilder.setCode(exception.getApiExceptionType().getId());
 		statusBuilder.setReason(exception.getApiExceptionType().getMessage());
 		statusBuilder.setInfo(exception.getInfo());
-		statusBuilder.setStatus(StatusDef.Status.FAILURE);		
+		statusBuilder.setStatus(Status.StatusFlag.FAILURE);		
 		
-		StatusDef status = statusBuilder.build();
+		Status status = statusBuilder.build();
 		String json;
 		json = ProtoBufUtils.toJson(status);
 		return new ResponseEntity<String>(json,HttpStatus.valueOf(exception.getApiExceptionType().getHttpCode())); 

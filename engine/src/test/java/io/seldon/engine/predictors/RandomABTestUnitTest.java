@@ -9,12 +9,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import io.seldon.protos.DeploymentProtos.PredictiveUnitDef;
-import io.seldon.protos.DeploymentProtos.PredictiveUnitDef.ParamDef;
-import io.seldon.protos.DeploymentProtos.PredictiveUnitDef.ParamType;
-import io.seldon.protos.DeploymentProtos.PredictorDef;
-import io.seldon.protos.PredictionProtos.RequestDef;
-import io.seldon.protos.PredictionProtos.ResponseDef;
+import io.seldon.protos.DeploymentProtos.PredictiveUnit;
+import io.kubernetes.client.proto.V1.PodTemplateSpec;
+import io.seldon.protos.DeploymentProtos.Parameter;
+import io.seldon.protos.DeploymentProtos.Parameter.ParameterType;
+import io.seldon.protos.DeploymentProtos.PredictorSpec;
+import io.seldon.protos.PredictionProtos.Request;
+import io.seldon.protos.PredictionProtos.Response;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -25,50 +26,49 @@ public class RandomABTestUnitTest {
 	@Test
 	public void simpleTest() throws InterruptedException, ExecutionException
 	{
-		PredictorDef.Builder predictorDefBuilder = PredictorDef.newBuilder();
-		predictorDefBuilder.setEnabled(true);
+		PredictorSpec.Builder PredictorSpecBuilder = PredictorSpec.newBuilder();
+		// PredictorSpecBuilder.setEnabled(true);
 		
-		predictorDefBuilder.setId("p1");
-		predictorDefBuilder.setRoot("3");
-		predictorDefBuilder.setReplicas(1);
+		PredictorSpecBuilder.setName("p1");
+		// PredictorSpecBuilder.setRoot("3");
+		PredictorSpecBuilder.setReplicas(1);
+		PredictorSpecBuilder.setComponentSpec(PodTemplateSpec.newBuilder());
 
-		PredictiveUnitDef.Builder predictiveUnitDefBuilder = PredictiveUnitDef.newBuilder();
-		predictiveUnitDefBuilder.setId("1");
-		predictiveUnitDefBuilder.setType(PredictiveUnitDef.PredictiveUnitType.MODEL);
-		predictiveUnitDefBuilder.setSubtype(PredictiveUnitDef.PredictiveUnitSubType.SIMPLE_MODEL);
-		PredictiveUnitDef pu1 = predictiveUnitDefBuilder.build();
+		PredictiveUnit.Builder PredictiveUnitBuilder = PredictiveUnit.newBuilder();
+		PredictiveUnitBuilder.setName("1");
+		PredictiveUnitBuilder.setType(PredictiveUnit.PredictiveUnitType.MODEL);
+		PredictiveUnitBuilder.setSubtype(PredictiveUnit.PredictiveUnitSubtype.SIMPLE_MODEL);
+		PredictiveUnit pu1 = PredictiveUnitBuilder.build();
 		
-		predictiveUnitDefBuilder = PredictiveUnitDef.newBuilder();
-		predictiveUnitDefBuilder.setId("2");
-		predictiveUnitDefBuilder.setType(PredictiveUnitDef.PredictiveUnitType.MODEL);
-		predictiveUnitDefBuilder.setSubtype(PredictiveUnitDef.PredictiveUnitSubType.SIMPLE_MODEL);
-		PredictiveUnitDef pu2 = predictiveUnitDefBuilder.build();
-		
-		
-		predictiveUnitDefBuilder = PredictiveUnitDef.newBuilder();
-		predictiveUnitDefBuilder.setId("3");
-		predictiveUnitDefBuilder.setType(PredictiveUnitDef.PredictiveUnitType.ROUTER);
-		predictiveUnitDefBuilder.setSubtype(PredictiveUnitDef.PredictiveUnitSubType.RANDOM_ABTEST);
-		predictiveUnitDefBuilder.addChildren("1");
-		predictiveUnitDefBuilder.addChildren("2");		
-		ParamDef.Builder pBuilder = ParamDef.newBuilder().setName("ratioA").setValue("0.5").setType(ParamType.FLOAT);
-		predictiveUnitDefBuilder.addParameters(pBuilder.build());
-		PredictiveUnitDef pu3 = predictiveUnitDefBuilder.build();
+		PredictiveUnitBuilder = PredictiveUnit.newBuilder();
+		PredictiveUnitBuilder.setName("2");
+		PredictiveUnitBuilder.setType(PredictiveUnit.PredictiveUnitType.MODEL);
+		PredictiveUnitBuilder.setSubtype(PredictiveUnit.PredictiveUnitSubtype.SIMPLE_MODEL);
+		PredictiveUnit pu2 = PredictiveUnitBuilder.build();
 		
 		
-		predictorDefBuilder.addPredictiveUnits(pu1);
-		predictorDefBuilder.addPredictiveUnits(pu2);
-		predictorDefBuilder.addPredictiveUnits(pu3);
+		PredictiveUnitBuilder = PredictiveUnit.newBuilder();
+		PredictiveUnitBuilder.setName("3");
+		PredictiveUnitBuilder.setType(PredictiveUnit.PredictiveUnitType.ROUTER);
+		PredictiveUnitBuilder.setSubtype(PredictiveUnit.PredictiveUnitSubtype.RANDOM_ABTEST);
+		PredictiveUnitBuilder.addChildren(pu1);
+		PredictiveUnitBuilder.addChildren(pu2);
+		Parameter.Builder pBuilder = Parameter.newBuilder().setName("ratioA").setValue("0.5").setType(ParameterType.FLOAT);
+		PredictiveUnitBuilder.addParameters(pBuilder.build());
+		PredictiveUnit pu3 = PredictiveUnitBuilder.build();
+		
+		
+		PredictorSpecBuilder.setGraph(pu3);
 
 
-		PredictorDef predictor = predictorDefBuilder.build();
+		PredictorSpec predictor = PredictorSpecBuilder.build();
 
-		PredictorState predictorState = predictorBean.predictorStateFromDeploymentDef(predictor);
+		PredictorState predictorState = predictorBean.predictorStateFromPredictorSpec(predictor);
 
 		
-		RequestDef p = RequestDef.newBuilder().build();
+		Request p = Request.newBuilder().build();
 			
-        ResponseDef predictorReturn = predictorBean.predict(p,predictorState);
+        Response predictorReturn = predictorBean.predict(p,predictorState);
 		
         Assert.assertEquals((double) SimpleModelUnit.values[0], predictorReturn.getData().getTensor().getValues(0),0);
         Assert.assertEquals((double) SimpleModelUnit.values[1], predictorReturn.getData().getTensor().getValues(1),0);

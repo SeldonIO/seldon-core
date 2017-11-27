@@ -7,10 +7,10 @@ import java.util.ArrayList;
 
 import org.springframework.stereotype.Component;
 
-import io.seldon.protos.PredictionProtos.ResponseDef;
-import io.seldon.protos.PredictionProtos.FeedbackDef;
-import io.seldon.protos.PredictionProtos.RequestDef;
-import io.seldon.protos.PredictionProtos.MetaDef;
+import io.seldon.protos.PredictionProtos.Response;
+import io.seldon.protos.PredictionProtos.Feedback;
+import io.seldon.protos.PredictionProtos.Request;
+import io.seldon.protos.PredictionProtos.Meta;
 import io.seldon.engine.exception.APIException;
 
 
@@ -22,16 +22,16 @@ public class RouterUnit extends PredictiveUnitBean{
     }
 
 	@Override
-	protected ResponseDef backwardPass(List<ResponseDef> inputs, RequestDef request, PredictiveUnitState state){
+	protected Response backwardPass(List<Response> inputs, Request request, PredictiveUnitState state){
 		return inputs.get(0);
 	}
 	
 	@Override
-	public List<PredictiveUnitState> forwardPass(RequestDef request, PredictiveUnitState state, Map<String,Integer> routingDict){
+	public List<PredictiveUnitState> forwardPass(Request request, PredictiveUnitState state, Map<String,Integer> routingDict){
 		Integer branchIndex = forwardPass(request, state);
 		boolean  isPossible = sanityCheckRouting(branchIndex, state);
 		if (!isPossible){
-			throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_ROUTING,"Router that caused the exception: id="+state.id+" name="+state.name);
+			throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_ROUTING,"Router that caused the exception: id="+state.name+" name="+state.name);
 		}
 		populateRoutingDict(branchIndex, routingDict, state);
 		
@@ -42,18 +42,18 @@ public class RouterUnit extends PredictiveUnitBean{
 	}
 	
 	@Override
-	protected void doSendFeedback(FeedbackDef feedback, PredictiveUnitState state){
+	protected void doSendFeedback(Feedback feedback, PredictiveUnitState state){
 		internalPredictionService.sendFeedbackRouter(feedback, state.endpoint);
 	}
 	
-	protected Integer forwardPass(RequestDef request, PredictiveUnitState state){
-		ResponseDef ret = internalPredictionService.getRouting(request, state.endpoint);
+	protected Integer forwardPass(Request request, PredictiveUnitState state){
+		Response ret = internalPredictionService.getRouting(request, state.endpoint);
 		int branchIndex = (int) ret.getData().getTensor().getValues(0);
 		return branchIndex;
 	}
 	
 	private void populateRoutingDict(Integer branchIndex, Map<String, Integer> routingDict, PredictiveUnitState state){
-		routingDict.put(state.id, branchIndex);
+		routingDict.put(state.name, branchIndex);
 	}
 	
 	private boolean sanityCheckRouting(Integer branchIndex, PredictiveUnitState state){

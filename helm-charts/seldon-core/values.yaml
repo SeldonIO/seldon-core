@@ -3,11 +3,14 @@
 # Declare variables to be passed into your templates.
 
 cluster_manager:
+  enabled: true
   image:
     tag: "0.2.16"
+    pull_policy: "IfNotPresent"
 apife:
   image:
-    tag: "0.0.6"
+    tag: "0.0.7"
+    pull_policy: "IfNotPresent"
 engine:
   image:
     tag: "0.1.6"
@@ -21,6 +24,9 @@ zookeeper:
 redis:
   image:
     tag: "4.0.1"
+kube_apiserver:
+  enabled: false
+
 
 alertmanager:
   # config disabled by default, create file "/files/alertmanager/config.yaml" then enable

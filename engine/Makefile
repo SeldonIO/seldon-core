@@ -16,8 +16,6 @@ cache_dependencies:
 	mvn -Dmaven.repo.local=./.m2 dependency:resolve
 	mvn -Dmaven.repo.local=./.m2 verify
 
-
-
 engine.json: engine.json.in Makefile
 	@cat engine.json.in | sed \
 		-e  "s|%ENGINE_IMAGE_VERSION%|$(ENGINE_IMAGE_VERSION)|" > $@ && echo "created $@"
@@ -32,5 +30,7 @@ update_version_txt:
 	PROJECT_VERSION=$$(MAVEN_OPTS="-Dorg.slf4j.simpleLogger.defaultLogLevel=WARN -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugins.help=INFO" mvn help:evaluate -o -Dexpression=project.version | tail -1) && echo "$${PROJECT_VERSION}" > version.txt
 
 update_proto:
-	@cp -v ../proto/seldonengine.proto src/main/proto/
+	@cp -v ../proto/seldon_deployment.proto src/main/proto/
 	@cp -v ../proto/prediction.proto src/main/proto/
+	cp -vr ../proto/k8s/k8s.io src/main/proto
+	cp -v ../proto/k8s/v1.proto src/main/proto

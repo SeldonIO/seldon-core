@@ -1,8 +1,8 @@
 package io.seldon.engine.predictors;
 
 import io.seldon.protos.PredictionProtos.Tensor;
-import io.seldon.protos.PredictionProtos.DefaultDataDef.DataOneofCase;
-import io.seldon.protos.PredictionProtos.DefaultDataDef;
+import io.seldon.protos.PredictionProtos.DefaultData.DataOneofCase;
+import io.seldon.protos.PredictionProtos.DefaultData;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -17,13 +17,13 @@ import com.google.protobuf.Value;
 
 public class PredictorUtils {
 	
-	public static DefaultDataDef tensorToNDArray(DefaultDataDef data){
+	public static DefaultData tensorToNDArray(DefaultData data){
 		if (data.getDataOneofCase() == DataOneofCase.TENSOR)
 		{
 			List<Double> valuesList = data.getTensor().getValuesList();
 			List<Integer> shapeList = data.getTensor().getShapeList();
 			
-			DefaultDataDef.Builder dataBuilder = DefaultDataDef.newBuilder();
+			DefaultData.Builder dataBuilder = DefaultData.newBuilder();
 					
 			int index=0;
 			for (Iterator<String> i = data.getNamesList().iterator(); i.hasNext();){
@@ -51,7 +51,7 @@ public class PredictorUtils {
 		return null;
 	}
 	
-	public static DefaultDataDef nDArrayToTensor(DefaultDataDef data){
+	public static DefaultData nDArrayToTensor(DefaultData data){
 		if (data.getDataOneofCase() == DataOneofCase.TENSOR)
 		{
 			return data;
@@ -62,7 +62,7 @@ public class PredictorUtils {
 			int bLength = data.getNdarray().getValuesCount();
 			int vLength = data.getNdarray().getValues(0).getListValue().getValuesCount();
 			
-			DefaultDataDef.Builder dataBuilder = DefaultDataDef.newBuilder();
+			DefaultData.Builder dataBuilder = DefaultData.newBuilder();
 			Tensor.Builder tBuilder = Tensor.newBuilder().addShape(bLength).addShape(vLength);
 			
 			int index=0;
@@ -84,7 +84,7 @@ public class PredictorUtils {
 		return null;
 	}
 	
-	public static INDArray getINDArray(DefaultDataDef data){
+	public static INDArray getINDArray(DefaultData data){
 		
 		if (data.getDataOneofCase() == DataOneofCase.TENSOR)
 		{
@@ -127,7 +127,7 @@ public class PredictorUtils {
 		return null;
 	}
 	
-	public static int[] getShape(DefaultDataDef data){
+	public static int[] getShape(DefaultData data){
 		if (data.getDataOneofCase() == DataOneofCase.TENSOR){
 			List<Integer> shapeList = data.getTensor().getShapeList();
 			int[] shape = new int[shapeList.size()];
@@ -147,8 +147,8 @@ public class PredictorUtils {
 		return null;
 	}
 	
-	public static DefaultDataDef updateData(DefaultDataDef oldData, INDArray newData){
-		DefaultDataDef.Builder dataBuilder = DefaultDataDef.newBuilder();
+	public static DefaultData updateData(DefaultData oldData, INDArray newData){
+		DefaultData.Builder dataBuilder = DefaultData.newBuilder();
 		
 		dataBuilder.addAllNames(oldData.getNamesList());
 		
