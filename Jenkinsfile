@@ -6,7 +6,7 @@ pipeline {
     stages {
         stage('build-jar') {
             parallel {
-                stage('cluster-manager-build-jar') {
+                stage('build-jar_cluster-manager') {
                     agent {
                         docker {
                             image 'seldonio/core-builder'
@@ -21,7 +21,7 @@ pipeline {
         }
         stage('build-image') {
             parallel {
-                stage('cluster-manager-build-image') {
+                stage('build-image_cluster-manager') {
                     agent {
                         docker {
                             image 'seldonio/core-builder'
@@ -37,7 +37,7 @@ pipeline {
         }
         stage('publish-image') {
             parallel {
-                stage('cluster-manager-publish-image') {
+                stage('publish-image_cluster-manager') {
                     environment {
                         SELDON_CORE_DOCKER_HUB_USER = credentials('SELDON_CORE_DOCKER_HUB_USER')
                         SELDON_CORE_DOCKER_HUB_PASSWORD = credentials('SELDON_CORE_DOCKER_HUB_PASSWORD')
