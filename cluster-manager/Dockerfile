@@ -7,8 +7,13 @@ RUN update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/jav
 
 WORKDIR /work
 
+
 ADD .m2 /work/.m2
 ADD version.txt /work/version.txt
+
+RUN git clone -b updated_protos https://github.com/cliveseldon/java.git java_client && \
+    cd java_client && \
+    mvn -Dmaven.repo.local=../.m2 install 
 
 # Prepare by downloading dependencies
 ADD pom.xml /work/pom.xml

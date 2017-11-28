@@ -17,6 +17,10 @@ cluster-manager/.m2/
 _*.yaml
 _*.json
 
+api-frontend/src/main/proto/seldon_deployment.proto
+engine/src/main/proto/k8s.io/
+engine/src/main/proto/seldon_deployment.proto
+engine/src/main/proto/v1.proto
 api-frontend/settings.sh
 api-frontend/apife.json
 api-frontend/apife_istio.json
@@ -32,7 +36,7 @@ api-frontend/src/main/proto/seldonengine.proto
 cluster-manager/cluster-manager-client-secret.txt
 cluster-manager/cluster-manager.json
 api-frontend/target/
-cluster-manager/src/main/proto/seldonengine.proto
+cluster-manager/src/main/proto/seldon_deployment.proto
 cluster-manager/target/
 cluster-manager/tests/CLUSTER_MANAGER_ENDPOINT
 cluster-manager/tests/out.log

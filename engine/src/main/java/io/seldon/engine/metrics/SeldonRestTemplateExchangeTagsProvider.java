@@ -73,10 +73,10 @@ public class SeldonRestTemplateExchangeTagsProvider implements RestTemplateExcha
 	
 	private Tag predictorVersion()
 	{
-		if (!StringUtils.hasText(enginePredictor.getPredictorSpec().getVersion()))
+		if (!StringUtils.hasText(enginePredictor.getPredictorSpec().getAnnotationsOrDefault("version", "")))
 			return Tag.of(PREDICTOR_VERSION_METRIC, "unknown");
 		else
-			return Tag.of(PREDICTOR_VERSION_METRIC, enginePredictor.getPredictorSpec().getVersion());
+			return Tag.of(PREDICTOR_VERSION_METRIC, enginePredictor.getPredictorSpec().getAnnotationsOrDefault("version", ""));
 	}
 
 	private Tag modelName(HttpRequest request)

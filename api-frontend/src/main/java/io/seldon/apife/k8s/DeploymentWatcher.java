@@ -103,7 +103,7 @@ public class DeploymentWatcher  implements DeploymentsHandler{
 		CustomObjectsApi api = new CustomObjectsApi();
 		Watch<Object> watch = Watch.createWatch(
                 client,
-                api.listNamespacedCustomObjectCall("machinelearning.seldon.io", "v1alpha1", "default", "mldeployments", null, null, rs, true, null, null),
+                api.listNamespacedCustomObjectCall("machinelearning.seldon.io", "v1alpha1", "default", "seldondeployments", null, null, rs, true, null, null),
                 new TypeToken<Watch.Response<Object>>(){}.getType());
 		
 		int maxResourceVersion = resourceVersion;

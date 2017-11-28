@@ -2,8 +2,12 @@ package io.seldon.clustermanager.pb;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
-import com.google.protobuf.util.JsonFormat;
-import com.google.protobuf.util.JsonFormat.Printer;
+
+import io.kubernetes.client.proto.IntStr.IntOrString;
+import io.kubernetes.client.proto.Meta.Time;
+import io.kubernetes.client.proto.Meta.Timestamp;
+import io.kubernetes.client.proto.Resource.Quantity;
+import io.seldon.clustermanager.pb.JsonFormat.Printer;
 
 
 public class ProtoBufUtils {
@@ -27,7 +31,9 @@ public class ProtoBufUtils {
         // json =
         // JsonFormat.printer().includingDefaultValueFields().preservingProtoFieldNames().omittingInsignificantWhitespace().print(message);
 
-        Printer jsonPrinter = JsonFormat.printer().preservingProtoFieldNames();
+        Printer jsonPrinter = JsonFormat.printer().preservingProtoFieldNames()
+                .usingTypeConverter(IntOrString.getDescriptor().getFullName(), new IntOrStringUtils.IntOrStringConverter())
+                .usingTypeConverter(Quantity.getDescriptor().getFullName(), new QuantityUtils.QuantityConverter());
         if (omittingInsignificantWhitespace) {
             jsonPrinter = jsonPrinter.omittingInsignificantWhitespace();
         }
@@ -51,7 +57,12 @@ public class ProtoBufUtils {
     }
 
     public static <T extends Message.Builder> void updateMessageBuilderFromJson(T messageBuilder, String json) throws InvalidProtocolBufferException {
-        JsonFormat.parser().ignoringUnknownFields().merge(json, messageBuilder);
+        JsonFormat.parser().ignoringUnknownFields()
+            .usingTypeParser(IntOrString.getDescriptor().getFullName(), new IntOrStringUtils.IntOrStringParser())
+            .usingTypeParser(Quantity.getDescriptor().getFullName(), new QuantityUtils.QuantityParser())
+            .usingTypeParser(Time.getDescriptor().getFullName(), new TimeUtils.TimeParser())
+            .usingTypeParser(Timestamp.getDescriptor().getFullName(), new TimeUtils.TimeParser())            
+        .merge(json, messageBuilder);
 
     }
 

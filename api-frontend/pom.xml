@@ -10,7 +10,7 @@
 
 	<groupId>io.seldon.apife</groupId>
 	<artifactId>seldon-apife</artifactId>
-	<version>0.0.7_kubeapi</version>
+	<version>0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>api-frontend</name>

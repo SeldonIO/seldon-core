@@ -1,4 +1,4 @@
-package io.seldon.clustermanager.pb;
+package io.seldon.engine.pb;
 
 import java.io.IOException;
 
@@ -11,8 +11,8 @@ import com.google.protobuf.Message.Builder;
 import com.google.protobuf.MessageOrBuilder;
 
 import io.kubernetes.client.proto.Resource.Quantity;
-import io.seldon.clustermanager.pb.JsonFormat.TypeConverter;
-import io.seldon.clustermanager.pb.JsonFormat.TypeParser;
+import io.seldon.engine.pb.JsonFormat.TypeConverter;
+import io.seldon.engine.pb.JsonFormat.TypeParser;
 
 public class QuantityUtils {
 

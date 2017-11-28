@@ -12,12 +12,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -25,63 +23,50 @@ import com.google.protobuf.InvalidProtocolBufferException;
 
 import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.ApiException;
-import io.kubernetes.client.Configuration;
 import io.kubernetes.client.apis.CustomObjectsApi;
 import io.kubernetes.client.util.Config;
 import io.kubernetes.client.util.Watch;
-import io.seldon.clustermanager.component.KubernetesManager;
-import io.seldon.clustermanager.pb.ProtoBufUtils;
-import io.seldon.protos.DeploymentProtos.MLDeployment;
-import io.seldon.protos.DeploymentProtos.MLDeploymentStatus;
+import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 @Component
-public class MLDeploymentWatcher  {
-	protected static Logger logger = LoggerFactory.getLogger(MLDeploymentWatcher.class.getName());
+public class SeldonDeploymentWatcher  {
+	protected static Logger logger = LoggerFactory.getLogger(SeldonDeploymentWatcher.class.getName());
 	
-	private final KubernetesManager kubernetesManager;
-	private final MLDeploymentCache mlCache;
+	private final SeldonDeploymentController seldonDeploymentController;
+	private final SeldonDeploymentCache mlCache;
 	
 	private int resourceVersion = 0;
 	private int resourceVersionProcessed = 0;
 	
 	@Autowired
-	public MLDeploymentWatcher(KubernetesManager kubernetesManager,MLDeploymentCache mlCache) throws IOException
+	public SeldonDeploymentWatcher(SeldonDeploymentController seldonDeploymentController,SeldonDeploymentCache mlCache) throws IOException
 	{
-		this.kubernetesManager = kubernetesManager;
+		this.seldonDeploymentController = seldonDeploymentController;
 		this.mlCache = mlCache;
 	}
 	
-	private MLDeployment addStatusIfNeeded(MLDeployment mldep)
+	//FIXME
+	private SeldonDeployment addStatusIfNeeded(SeldonDeployment mldep)
 	{
 		if (mldep.hasStatus())
 		{
-			if (!mldep.getSpec().hasPredictorCanary() && mldep.getStatus().getCanaryReplicasReady() > 0)
-				return MLDeployment.newBuilder(mldep).setStatus(MLDeploymentStatus.newBuilder(mldep.getStatus()).setCanaryReplicasReady(0)).build();
-			else
-				return mldep;
+			return mldep;
 		}
 		else
 		{
-			MLDeployment current = mlCache.get(mldep.getMetadata().getName());
-			if (current != null)
-				if (!mldep.getSpec().hasPredictorCanary() && current.getStatus().getCanaryReplicasReady() > 0)
-					return MLDeployment.newBuilder(mldep).setStatus(MLDeploymentStatus.newBuilder(current.getStatus()).setCanaryReplicasReady(0)).build();
-				else
-					return MLDeployment.newBuilder(mldep).setStatus(current.getStatus()).build();
-			else
-				return MLDeployment.newBuilder(mldep).setStatus(MLDeploymentStatus.newBuilder().setCanaryReplicasReady(0).setPredictorReplicasReady(0).build()).build();
+			return mldep;
 		}
 	}
 	
-	private void processWatch(MLDeployment mldep,String action) throws InvalidProtocolBufferException
+	private void processWatch(SeldonDeployment mldep,String action) throws InvalidProtocolBufferException
 	{
 		switch(action)
 		{
 		case "ADDED":
 		case "MODIFIED":
-			MLDeployment mlDepUpdated = addStatusIfNeeded(mldep);
+			SeldonDeployment mlDepUpdated = addStatusIfNeeded(mldep);
 			mlCache.put(mlDepUpdated);
-			kubernetesManager.createOrReplaceSeldonDeployment(mlDepUpdated);
+			seldonDeploymentController.createOrReplaceSeldonDeployment(mldep);
 			break;
 		case "DELETED":
 			mlCache.remove(mldep.getMetadata().getName());
@@ -105,7 +90,7 @@ public class MLDeploymentWatcher  {
 		CustomObjectsApi api = new CustomObjectsApi(client);
 		Watch<Object> watch = Watch.createWatch(
 				client,
-                api.listNamespacedCustomObjectCall("machinelearning.seldon.io", "v1alpha1", "default", "mldeployments", null, null, rs, true, null, null),
+                api.listNamespacedCustomObjectCall("machinelearning.seldon.io", "v1alpha1", "default", "seldondeployments", null, null, rs, true, null, null),
                 new TypeToken<Watch.Response<Object>>(){}.getType());
 		
 		int maxResourceVersion = resourceVersion;
@@ -135,7 +120,7 @@ public class MLDeploymentWatcher  {
     	    		if (resourceVersionNew > maxResourceVersion)
         	    		maxResourceVersion = resourceVersionNew;
 
-    	    		this.processWatch(MLDeploymentUtils.jsonToMLDeployment(jsonInString), item.type);
+    	    		this.processWatch(SeldonDeploymentUtils.jsonToSeldonDeployment(jsonInString), item.type);
     	    	}
     	    }
         }

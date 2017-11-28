@@ -7,8 +7,8 @@ import com.google.gson.JsonPrimitive;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
-import com.google.protobuf.MessageOrBuilder;
 import com.google.protobuf.Message.Builder;
+import com.google.protobuf.MessageOrBuilder;
 
 import io.kubernetes.client.proto.IntStr.IntOrString;
 import io.seldon.clustermanager.pb.JsonFormat.TypeConverter;
@@ -45,12 +45,12 @@ public class IntOrStringUtils {
 		        JsonPrimitive primitive = (JsonPrimitive) json;
 		        if (primitive.isString())
 		        {
-		        	IntOrString.Builder b = IntOrString.newBuilder().setStrVal(primitive.getAsString());
+		        	IntOrString.Builder b = IntOrString.newBuilder().setType(1).setStrVal(primitive.getAsString());
 		        	builder.mergeFrom(b.build().toByteArray());
 		        }
 		        else if (primitive.isNumber())
 		        {
-		        	IntOrString.Builder b = IntOrString.newBuilder().setIntVal(primitive.getAsInt());
+		        	IntOrString.Builder b = IntOrString.newBuilder().setType(0).setIntVal(primitive.getAsInt());
 		        	builder.mergeFrom(b.build().toByteArray());
 		        }	
 		        }

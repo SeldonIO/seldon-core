@@ -2,10 +2,12 @@ package io.seldon.apife.pb;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
-import com.google.protobuf.util.JsonFormat;
-import com.google.protobuf.util.JsonFormat.Printer;
 
-import io.seldon.protos.DeploymentProtos.DeploymentSpec;
+import io.kubernetes.client.proto.IntStr.IntOrString;
+import io.kubernetes.client.proto.Meta.Time;
+import io.kubernetes.client.proto.Meta.Timestamp;
+import io.kubernetes.client.proto.Resource.Quantity;
+import io.seldon.apife.pb.JsonFormat.Printer;
 
 public class ProtoBufUtils {
 
@@ -49,7 +51,12 @@ public class ProtoBufUtils {
     }
 
     public static <T extends Message.Builder> void updateMessageBuilderFromJson(T messageBuilder, String json) throws InvalidProtocolBufferException {
-        JsonFormat.parser().ignoringUnknownFields().merge(json, messageBuilder);
+        JsonFormat.parser().ignoringUnknownFields()
+        .usingTypeParser(IntOrString.getDescriptor().getFullName(), new IntOrStringUtils.IntOrStringParser())
+        .usingTypeParser(Quantity.getDescriptor().getFullName(), new QuantityUtils.QuantityParser())
+        .usingTypeParser(Time.getDescriptor().getFullName(), new TimeUtils.TimeParser())
+        .usingTypeParser(Timestamp.getDescriptor().getFullName(), new TimeUtils.TimeParser()) 
+        .merge(json, messageBuilder);
     }
 
 }

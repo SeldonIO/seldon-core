@@ -1,4 +1,4 @@
-package io.seldon.clustermanager.pb;
+package io.seldon.engine.pb;
 
 import java.io.IOException;
 
@@ -10,13 +10,13 @@ import com.google.protobuf.Message;
 import com.google.protobuf.Message.Builder;
 import com.google.protobuf.MessageOrBuilder;
 
-import io.kubernetes.client.proto.Resource.Quantity;
-import io.seldon.clustermanager.pb.JsonFormat.TypeConverter;
-import io.seldon.clustermanager.pb.JsonFormat.TypeParser;
+import io.kubernetes.client.proto.IntStr.IntOrString;
+import io.seldon.engine.pb.JsonFormat.TypeConverter;
+import io.seldon.engine.pb.JsonFormat.TypeParser;
 
-public class QuantityUtils {
+public class IntOrStringUtils {
 
-	public static class QuantityConverter implements TypeConverter
+	public static class IntOrStringConverter implements TypeConverter
 	{
 		private ByteString toByteString(MessageOrBuilder message) {
 		      if (message instanceof Message) {
@@ -28,26 +28,33 @@ public class QuantityUtils {
 
 		@Override
 		public String convert(MessageOrBuilder message) throws IOException {
-			Quantity q = Quantity.parseFrom(toByteString(message));
-			return "\"" + q.getString() + "\"";
+			IntOrString is = IntOrString.parseFrom(toByteString(message));
+			if (is.hasStrVal())
+				return "\"" + is.getStrVal() + "\"";
+			else
+				return ""+is.getIntVal();
+			
 		}
 		
 	}
 	
-	public static class QuantityParser implements TypeParser {
-
+	public static class IntOrStringParser implements TypeParser {
 		@Override
 		public void merge(JsonElement json, Builder builder) throws InvalidProtocolBufferException {
 			if (json instanceof JsonPrimitive) {
 		        JsonPrimitive primitive = (JsonPrimitive) json;
 		        if (primitive.isString())
 		        {
-		        	Quantity.Builder b = Quantity.newBuilder().setString(primitive.getAsString());
+		        	IntOrString.Builder b = IntOrString.newBuilder().setType(1).setStrVal(primitive.getAsString());
 		        	builder.mergeFrom(b.build().toByteArray());
 		        }
-		        else throw new InvalidProtocolBufferException("Can't decode io.kubernetes.client.proto.resource.Quantity from "+json.toString());
-			}
+		        else if (primitive.isNumber())
+		        {
+		        	IntOrString.Builder b = IntOrString.newBuilder().setType(0).setIntVal(primitive.getAsInt());
+		        	builder.mergeFrom(b.build().toByteArray());
+		        }	
+		        }
+			else throw new InvalidProtocolBufferException("Can't decode io.kubernetes.client.proto.IntOrSting from "+json.toString());
 		}
-		
 	}
 }

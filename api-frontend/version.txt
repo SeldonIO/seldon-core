@@ -1,1 +1,1 @@
-0.0.7_kubeapi
+0.1-SNAPSHOT
