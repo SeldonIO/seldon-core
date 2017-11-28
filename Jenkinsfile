@@ -79,6 +79,22 @@ pipeline {
                         sh 'cd cluster-manager && make -f Makefile.ci push_image'
                     }
                 }
+                stage('publish-image_engine') {
+                    environment {
+                        SELDON_CORE_DOCKER_HUB_USER = credentials('SELDON_CORE_DOCKER_HUB_USER')
+                        SELDON_CORE_DOCKER_HUB_PASSWORD = credentials('SELDON_CORE_DOCKER_HUB_PASSWORD')
+                    }
+                    agent {
+                        docker {
+                            image 'seldonio/core-builder'
+                            args '-v /root/.m2:/root/.m2'
+                        }
+                    }
+                    steps {
+                        sh 'cd engine && make -f Makefile.ci repo_login'
+                        sh 'cd engine && make -f Makefile.ci push_image'
+                    }
+                }
             }
         }
     }
