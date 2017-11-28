@@ -32,23 +32,6 @@ message DefaultData {
 
 // [END default data]
 
-
-// [START Request]
-
-message Request {
-
-  Meta meta = 1;
-  oneof data_oneof {
-    DefaultData data = 2;
-    bytes binData = 3;
-    string strData = 4;
-  }
-
-}
-
-// [END Request]
-
-
 // [START Meta]
 
 message Meta {
@@ -61,9 +44,9 @@ message Meta {
 // [END Meta]
 
 
-// [START Response]
+// [START Message]
 
-message Response {
+message Message {
 
   Status status = 1;
   Meta meta = 2;
@@ -87,16 +70,16 @@ message Status {
     StatusFlag status = 4;
 }
 
-// [END Response]
+// [END Message]
 
 
 // [START Feedback]
 
 message Feedback {
-  Request request = 1;
-  Response response = 2;
+  Message request = 1;
+  Message response = 2;
   float reward = 3;
-  DefaultData truth = 4;
+  Message truth = 4;
 }
 
 // [END Feedback]
@@ -105,8 +88,8 @@ message Feedback {
 // [START RequestResponse]
 
 message RequestResponse {
-  Request request = 1;
-  Response response = 2;
+  Message request = 1;
+  Message response = 2;
 }
 
 // [END RequestResponse]
@@ -127,17 +110,17 @@ message OutlierStatus{
 // [START Services]
 
 service Model {
-  rpc Predict(Request) returns (Response) {};
-  rpc SendFeedback(Feedback) returns (Response) {};
+  rpc Predict(Message) returns (Message) {};
+  rpc SendFeedback(Message) returns (Message) {};
  }
 
 service Router {
-  rpc Route(Request) returns (Response) {};
-  rpc SendFeedback(Feedback) returns (Response) {};
+  rpc Route(Message) returns (Message) {};
+  rpc SendFeedback(Feedback) returns (Message) {};
  }
 
 service Transformer {
-  rpc Transform(Request) returns (Request) {};
+  rpc Transform(Message) returns (Message) {};
  }
 
 // [END Services]
