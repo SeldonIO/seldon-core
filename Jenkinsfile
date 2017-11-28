@@ -59,6 +59,9 @@ pipeline {
             }
         }
         stage('publish-image') {
+            when {
+                expression { return params.IS_IMAGE_BEING_PUBLISHED }
+            }
             parallel {
                 stage('publish-image_cluster-manager') {
                     environment {
@@ -70,9 +73,6 @@ pipeline {
                             image 'seldonio/core-builder'
                             args '-v /root/.m2:/root/.m2'
                         }
-                    }
-                    when {
-                        expression { return params.IS_IMAGE_BEING_PUBLISHED }
                     }
                     steps {
                         sh 'cd cluster-manager && make -f Makefile.ci repo_login'
