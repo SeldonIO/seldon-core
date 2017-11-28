@@ -3,24 +3,12 @@ package io.seldon.clustermanager.component;
 import java.util.List;
 
 import io.seldon.protos.DeploymentProtos.DeploymentDef;
-import io.seldon.protos.DeploymentProtos.DockerRegistrySecretDef;
-import io.seldon.protos.DeploymentProtos.StringSecretDef;
+import io.seldon.protos.DeploymentProtos.MLDeployment;
 
 public interface KubernetesManager extends AppComponent {
 
     public List<String> getNamespaceList();
 
-    public DeploymentDef createOrReplaceSeldonDeployment(DeploymentDef deploymentDef);
+    public DeploymentDef createOrReplaceSeldonDeployment(MLDeployment mldeployment);
 
-    public DeploymentDef getSeldonDeployment(DeploymentDef deploymentDef);
-
-    public void deleteSeldonDeployment(DeploymentDef deploymentDef);
-
-    public void createOrReplaceStringSecret(StringSecretDef stringSecretDef);
-
-    public void deleteStringSecret(String name);
-
-    public void createOrReplaceDockerRegistrySecret(DockerRegistrySecretDef dockerRegistrySecretDef);
-
-    public void deleteDockerRegistrySecret(String name);
 }

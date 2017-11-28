@@ -26,7 +26,6 @@ public class KubernetesManagerExampleUtils {
             predictorDefBuilder.setId("0");
             predictorDefBuilder.setName("my_fantastic_predictor");
             predictorDefBuilder.setReplicas(3);
-            predictorDefBuilder.setReplicasReady(0);
             predictorDefBuilder.addImagePullSecrets("my-registry-secret1");
             predictorDefBuilder.addImagePullSecrets("my-registry-secret2");
 

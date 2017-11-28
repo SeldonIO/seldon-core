@@ -2,6 +2,8 @@
 /target/
 cluster-manager/.m2/
 
+.ipynb_checkpoints
+
 # eclipse
 .classpath
 .settings/
@@ -24,6 +26,9 @@ api-frontend/tests/api-client-key.txt
 api-frontend/tests/api-client-secret.txt
 api-frontend/tests/python/prediction_pb2.py
 api-frontend/tests/python/seldonengine_pb2.py
+api-frontend/src/main/proto/k8s.io/
+api-frontend/src/main/proto/v1.proto
+api-frontend/src/main/proto/seldonengine.proto
 cluster-manager/cluster-manager-client-secret.txt
 cluster-manager/cluster-manager.json
 api-frontend/target/
@@ -31,6 +36,8 @@ cluster-manager/src/main/proto/seldonengine.proto
 cluster-manager/target/
 cluster-manager/tests/CLUSTER_MANAGER_ENDPOINT
 cluster-manager/tests/out.log
+cluster-manager/src/main/proto/k8s.io
+cluster-manager/src/main/proto/v1.proto
 engine/src/main/proto/prediction.proto
 engine/src/main/proto/seldonengine.proto
 pyseldon/build/
@@ -48,9 +55,10 @@ kafka/tests/src/seldonengine_pb2.py
 monitoring/alertmanager/config.yml
 monitoring/grafana/auth/grafana-prom-admin-password.txt
 monitoring/glusterfs-volume/_glusterfs.json
-
 *pb2.py
 *pb2_grpc.py
 wrappers/**/*.proto
 pyseldon/**/*.proto
 **/*/.ipynb_checkpoints
+proto/k8s/k8s.io/
+proto/k8s/v1.proto

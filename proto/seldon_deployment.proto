@@ -1,0 +1,118 @@
+// [START declaration]
+syntax = "proto2";
+package seldon.protos;
+// [END declaration]
+
+import "k8s.io/apimachinery/pkg/apis/meta/v1/generated.proto";
+import "v1.proto";
+
+// [START java_declaration]
+option java_package = "io.seldon.protos";
+option java_outer_classname = "DeploymentProtos";
+// [END java_declaration]
+
+// [START messages]
+
+
+message Parameter {
+
+  enum ParameterType {
+    INT = 0;
+    FLOAT = 1;
+    DOUBLE = 2;
+    STRING = 3;
+    BOOL = 4;
+  }  
+
+  required string name = 1;
+  required string value = 2;
+  required ParameterType type = 3;
+
+}
+
+message PredictiveUnit {
+
+  enum PredictiveUnitType {
+    UNKNOWN_TYPE = 0;
+    ROUTER = 1;
+    COMBINER = 2;
+    MODEL = 3;
+    TRANSFORMER = 4;
+  }
+
+  enum PredictiveUnitSubtype {
+    UNKNOWN_SUBTYPE = 0;
+    MICROSERVICE = 1;
+    SIMPLE_MODEL = 2;
+    SIMPLE_ROUTER = 3;
+    RANDOM_ABTEST = 4;
+    AVERAGE_COMBINER = 5;
+  }
+
+  required string name = 1;//must match container name of component if subtype microservice
+  repeated PredictiveUnit children = 2;
+  optional PredictiveUnitType type = 3;
+  optional PredictiveUnitSubtype subtype = 4;
+  optional Endpoint endpoint = 5;
+  repeated Parameter parameters = 6;
+}
+
+message Endpoint {
+
+  enum EndpointType {
+    REST = 0;
+    GRPC = 1;
+  }
+
+  optional string service_host = 1;
+  optional int32 service_port = 2;
+  optional EndpointType type = 3;
+}
+
+
+message PredictorSpec {
+  enum PredictorType {
+    NORMAL = 0;
+    CANARY = 1;
+  }
+
+  required string name = 1;
+  optional PredictorType type = 2;
+  required PredictiveUnit graph = 3;
+  required k8s.io.api.core.v1.PodTemplateSpec componentSpec = 4;
+  optional int32 replicas = 5;
+  map<string,string> annotations = 7;
+}
+
+message DeploymentSpec {
+  optional string name = 1;
+  repeated PredictorSpec predictors = 2;
+  optional Endpoint endpoint = 3;
+  optional string oauth_key = 4;
+  optional string oauth_secret = 5;
+  map<string,string> annotations = 6;
+}
+
+message PredictorStatus {
+  required string name = 1;
+  required string status = 2; 
+  optional string description = 3; 
+}
+
+message DeploymentStatus {
+  required string state = 1; 
+  optional string description = 2; 
+  repeated PredictorStatus predictorStatus = 3;
+}
+
+message SeldonDeployment {
+  required string apiVersion = 1;
+  required string kind = 2;
+  optional k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta metadata = 3;
+  required DeploymentSpec spec = 4;
+  optional DeploymentStatus status = 5;
+}
+
+
+// [END messages]
+

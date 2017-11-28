@@ -245,7 +245,7 @@ public class AverageCombinerTest {
     	
     	RequestDef p = RequestDef.newBuilder().build();
     	
-    	PredictiveUnitState state = new PredictiveUnitState("1","Cool_name",null,null,null);
+    	PredictiveUnitState state = new PredictiveUnitState("Cool_name",null,null,new ArrayList<PredictiveUnitState>(),null,null,null);
     	
     	AverageCombinerUnit averageCombinerUnit = new AverageCombinerUnit();
     	

@@ -1,7 +1,6 @@
 package io.seldon.engine.predictors;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,9 +12,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.Metrics;
-import io.micrometer.core.instrument.Tag;
 import io.seldon.engine.service.InternalPredictionService;
 import io.seldon.protos.PredictionProtos.FeedbackDef;
 import io.seldon.protos.PredictionProtos.RequestDef;
@@ -51,10 +47,10 @@ public abstract class PredictiveUnitBean {
 		}
 		
 		// Then we wait for our own feedback
-		if (feedback.getResponse().getMeta().getRoutingMap().get(state.id)!=null){
+		if (feedback.getResponse().getMeta().getRoutingMap().get(state.name)!=null){
 			// If the response routing dictionary contains the current predictive unit key
 			doSendFeedback(feedback, state);
-			PredictiveUnitState chosenRoute = state.children.get(feedback.getResponse().getMeta().getRoutingMap().get(state.id));
+			PredictiveUnitState chosenRoute = state.children.get(feedback.getResponse().getMeta().getRoutingMap().get(state.name));
 			chosenRoute.predictiveUnitBean.doStoreFeedbackMetrics(feedback, chosenRoute);
 		}
 		

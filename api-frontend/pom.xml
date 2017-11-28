@@ -10,7 +10,7 @@
 
 	<groupId>io.seldon.apife</groupId>
 	<artifactId>seldon-apife</artifactId>
-	<version>0.0.6</version>
+	<version>0.0.7_kubeapi</version>
 	<packaging>jar</packaging>
 
 	<name>api-frontend</name>
@@ -85,17 +85,6 @@
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 			<version>1.2.17</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.curator</groupId>
-			<artifactId>curator-framework</artifactId>
-			<version>2.7.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.curator</groupId>
-			<artifactId>curator-recipes</artifactId>
-			<version>2.7.1</version>
-			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
@@ -206,6 +195,12 @@
   			<version>${micrometer.version}</version>
 		</dependency>
 
+		<dependency>
+    		<groupId>io.kubernetes</groupId>
+    		<artifactId>client-java</artifactId>
+    		<version>0.2</version>
+    		<scope>compile</scope>
+		</dependency>
 		
 	</dependencies>
 

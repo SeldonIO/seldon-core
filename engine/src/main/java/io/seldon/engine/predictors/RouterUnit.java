@@ -31,7 +31,7 @@ public class RouterUnit extends PredictiveUnitBean{
 		Integer branchIndex = forwardPass(request, state);
 		boolean  isPossible = sanityCheckRouting(branchIndex, state);
 		if (!isPossible){
-			throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_ROUTING,"Router that caused the exception: id="+state.id+" name="+state.name);
+			throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_ROUTING,"Router that caused the exception: id="+state.name+" name="+state.name);
 		}
 		populateRoutingDict(branchIndex, routingDict, state);
 		
@@ -53,7 +53,7 @@ public class RouterUnit extends PredictiveUnitBean{
 	}
 	
 	private void populateRoutingDict(Integer branchIndex, Map<String, Integer> routingDict, PredictiveUnitState state){
-		routingDict.put(state.id, branchIndex);
+		routingDict.put(state.name, branchIndex);
 	}
 	
 	private boolean sanityCheckRouting(Integer branchIndex, PredictiveUnitState state){
