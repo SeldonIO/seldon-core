@@ -1,10 +1,14 @@
-build_jar: update_proto
+build_jar: update_proto k8s_java_client
 	mvn clean package -B
 
 clean:
 	mvn clean -B
-	rm -fv src/main/proto/seldonengine.proto
+	rm -fv src/main/proto/seldon_deployment.proto
 
 update_proto:
-	cp -v ../proto/seldonengine.proto src/main/proto/
+	cp -v ../proto/seldon_deployment.proto src/main/proto/
 
+k8s_java_client:
+	git clone -b updated_protos https://github.com/cliveseldon/java.git java_client && \
+    	cd java_client && \
+    	mvn install 
