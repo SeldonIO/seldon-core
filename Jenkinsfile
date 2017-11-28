@@ -1,5 +1,8 @@
 pipeline {
     agent none
+    parameters {
+        booleanParam(name: 'IS_IMAGE_BEING_PUBLISHED', defaultValue: false, description: '')
+    }
     stages {
         stage('build-jar') {
             parallel {
@@ -35,9 +38,6 @@ pipeline {
         stage('publish-image') {
             parallel {
                 stage('cluster-manager-publish-image') {
-                    parameters {
-                        booleanParam(name: 'IS_IMAGE_BEING_PUBLISHED', defaultValue: false, description: '')
-                    }
                     environment {
                         SELDON_CORE_DOCKER_HUB_USER = credentials('SELDON_CORE_DOCKER_HUB_USER')
                         SELDON_CORE_DOCKER_HUB_PASSWORD = credentials('SELDON_CORE_DOCKER_HUB_PASSWORD')
