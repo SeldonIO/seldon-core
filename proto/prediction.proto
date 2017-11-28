@@ -111,7 +111,7 @@ message OutlierStatus{
 
 service Model {
   rpc Predict(Message) returns (Message) {};
-  rpc SendFeedback(Message) returns (Message) {};
+  rpc SendFeedback(Feedback) returns (Message) {};
  }
 
 service Router {
