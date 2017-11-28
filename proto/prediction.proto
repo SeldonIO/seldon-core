@@ -136,4 +136,8 @@ service Router {
   rpc SendFeedback(Feedback) returns (Response) {};
  }
 
+service Transformer {
+  rpc Transform(Request) returns (Request) {};
+ }
+
 // [END Services]
