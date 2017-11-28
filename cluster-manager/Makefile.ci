@@ -4,9 +4,16 @@ build_jar: update_proto k8s_java_client
 clean:
 	mvn clean -B
 	rm -fv src/main/proto/seldon_deployment.proto
+	rm -fvr src/main/proto/k8s
+	rm -fv src/main/proto/v1.proto
 
-update_proto:
+download_protos:
+	cd ../proto/k8s ; make create_protos
+
+update_proto: download_protos
 	cp -v ../proto/seldon_deployment.proto src/main/proto/
+	cp -vr ../proto/k8s/k8s.io src/main/proto
+	cp -v ../proto/k8s/v1.proto src/main/proto
 
 k8s_java_client:
 	git clone -b updated_protos https://github.com/cliveseldon/java.git java_client && \
