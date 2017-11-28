@@ -17,6 +17,17 @@ pipeline {
                         sh 'cd cluster-manager && make -f Makefile.ci clean build_jar'
                     }
                 }
+                stage('build-jar_engine') {
+                    agent {
+                        docker {
+                            image 'seldonio/core-builder'
+                            args '-v /root/.m2:/root/.m2'
+                        }
+                    }
+                    steps {
+                        sh 'cd engine && make -f Makefile.ci clean build_jar'
+                    }
+                }
             }
         }
         stage('build-image') {
