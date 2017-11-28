@@ -1,7 +1,9 @@
 package io.seldon.clustermanager.k8s;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +13,11 @@ import org.springframework.stereotype.Component;
 import io.kubernetes.client.ApiException;
 import io.kubernetes.client.ProtoClient;
 import io.kubernetes.client.ProtoClient.ObjectOrStatus;
+import io.kubernetes.client.auth.ApiKeyAuth;
+import io.kubernetes.client.auth.Authentication;
+import io.kubernetes.client.models.ExtensionsV1beta1Deployment;
+import io.kubernetes.client.models.ExtensionsV1beta1DeploymentList;
+import io.kubernetes.client.proto.Meta.DeleteOptions;
 import io.kubernetes.client.proto.V1.Service;
 import io.kubernetes.client.proto.V1beta1Extensions.Deployment;
 import io.seldon.clustermanager.k8s.SeldonDeploymentOperatorImpl.DeploymentResources;
@@ -51,10 +58,20 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	{
 		for(Deployment d : deployments)
 		{
-		    final String listApiPath = "/apis/"+DEPLOYMENT_API_VERSION+"/namespaces/{namespace}/deployments/{name}"
-	                .replaceAll("\\{" + "name" + "\\}", client.getApiClient().escapeString(d.getMetadata().getName()))
-	                .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString("default"));
-		    ObjectOrStatus<Deployment> os = client.list(Deployment.newBuilder(),listApiPath);       
+            final String listApiPath = "/apis/"+DEPLOYMENT_API_VERSION+"/namespaces/{namespace}/deployments/{name}"
+                    .replaceAll("\\{" + "name" + "\\}", client.getApiClient().escapeString(d.getMetadata().getName()))
+                    .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString("default"));
+            logger.info("Will try to call "+listApiPath);
+            logger.info(client.getApiClient().getAuthentications().toString());
+            logger.info(client.getApiClient().getBasePath());
+            for (Authentication auth : client.getApiClient().getAuthentications().values()) {
+                if (auth instanceof ApiKeyAuth) {
+                    logger.info("APIKEY"+((ApiKeyAuth) auth).getApiKey());
+                }
+            }
+
+
+            ObjectOrStatus<Deployment> os = client.list(Deployment.newBuilder(),listApiPath);       
             if (os.status != null) {
                 if (os.status.getCode() == 404) { //Create
                     logger.debug("About to create "+ProtoBufUtils.toJson(d));
@@ -88,6 +105,38 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 		}
 	}
 
+	private Set<String> getDeploymentNames(List<Deployment> deployments)
+	{
+	    Set<String> names = new HashSet<>();
+	    for(Deployment d : deployments)
+	        names.add(d.getMetadata().getName());
+	    return names;
+	}
+	
+	private void removeDeployments(ProtoClient client,SeldonDeployment seldonDeployment,List<Deployment> deployments) throws ApiException, IOException, SeldonDeploymentException
+	{
+	    Set<String> names = getDeploymentNames(deployments);
+	    ExtensionsV1beta1DeploymentList depList = crdHandler.getOwnedDeployments(seldonDeployment.getSpec().getName());
+	    for (ExtensionsV1beta1Deployment d : depList.getItems())
+	    {
+	        if (!names.contains(d.getMetadata().getName()))
+	        {
+	            final String deleteApiPath = "/apis/"+DEPLOYMENT_API_VERSION+"/namespaces/{namespace}/deployments/{name}"
+	                    .replaceAll("\\{" + "name" + "\\}", client.getApiClient().escapeString(d.getMetadata().getName()))
+	                    .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString("default"));
+	            DeleteOptions options = DeleteOptions.newBuilder().setPropagationPolicy("Foreground").build();
+	            ObjectOrStatus<Deployment> os = client.delete(Deployment.newBuilder(),deleteApiPath,options);
+	            if (os.status != null) {
+                    logger.error("Error deleting deployment:"+ProtoBufUtils.toJson(os.status));
+                    throw new SeldonDeploymentException("Failed to delete deployment "+d.getMetadata().getName());
+                }
+                else {
+                    logger.debug("Deleted deployment:"+ProtoBufUtils.toJson(os.object));
+                }
+	        }
+	    }
+	}
+	
 	private void createService(ProtoClient client,Service service) throws ApiException, IOException, SeldonDeploymentException
 	{
 	    final String serviceApiPath = "/api/v1/namespaces/{namespace}/services/{name}"
@@ -132,6 +181,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 			DeploymentResources resources = operator.createResources(mlDep2);
 			ProtoClient client = clientProvider.getProtoClient();
 			createDeployments(client, resources.deployments);
+			removeDeployments(client,mlDep2,resources.deployments);
 			createService(client,resources.service);
 			if (!mlDep.getSpec().equals(mlDep2.getSpec()))
 			{

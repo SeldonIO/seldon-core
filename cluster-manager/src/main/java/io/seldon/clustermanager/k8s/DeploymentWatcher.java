@@ -30,10 +30,10 @@ public class DeploymentWatcher {
 	private int resourceVersion = 0;
 	private int resourceVersionProcessed = 0;
 	
-	private final SeldonDeploymentStatusUpdater statusUpdater;
+	private final SeldonDeploymentStatusUpdateImpl statusUpdater;
 	
 	@Autowired
-	public DeploymentWatcher(SeldonDeploymentStatusUpdater statusUpdater) throws IOException
+	public DeploymentWatcher(SeldonDeploymentStatusUpdateImpl statusUpdater)
 	{
 		this.statusUpdater = statusUpdater;
 	}
@@ -50,15 +50,12 @@ public class DeploymentWatcher {
 			ApiClient client = Config.defaultClient();
 			ExtensionsV1beta1Api api = new ExtensionsV1beta1Api(client);
 
-			//TODO can we use labelSelector to limit to seldon resources
 			Watch<AppsV1beta1Deployment> watch = Watch.createWatch(
 	                client,
 	        		api.listNamespacedDeploymentCall("default", null, null, null,false,SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_KEY+"="+SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_VAL, null,rs, 10, true,null,null),
 	        		new TypeToken<Watch.Response<AppsV1beta1Deployment>>(){}.getType());
 
 			for (Watch.Response<AppsV1beta1Deployment> item : watch) {
-				logger.info(String.format("%s\n : %s %d%n", item.type, item.object.getMetadata().getName(),item.object.getStatus().getReadyReplicas()));
-	    	
 				int resourceVersionNew = Integer.parseInt(item.object.getMetadata().getResourceVersion());
 				if (resourceVersionNew <= resourceVersionProcessed)
 				{
@@ -70,19 +67,28 @@ public class DeploymentWatcher {
 						maxResourceVersion = resourceVersionNew;
 					switch(item.type)
 					{
+					case "ADDED":
 					case "MODIFIED":
 						for (V1OwnerReference ownerRef : item.object.getMetadata().getOwnerReferences())
 						{
-							if (ownerRef.getKind().equals(KubeCRDHandlerImpl.KIND) && item.object.getStatus() != null && item.object.getStatus().getReadyReplicas() != null)
+							if (ownerRef.getKind().equals(KubeCRDHandlerImpl.KIND) && item.object.getStatus() != null)
 							{
 								String mlDepName = ownerRef.getName();
 								String depName = item.object.getMetadata().getName();
-								statusUpdater.updateStatus(mlDepName, depName, item.object.getStatus().getReadyReplicas());
+								statusUpdater.updateStatus(mlDepName, depName, item.object.getStatus().getReplicas(),item.object.getStatus().getReadyReplicas());
 							}
 						}
 						break;
-					case "ADDED":
 					case "DELETED":
+					    for (V1OwnerReference ownerRef : item.object.getMetadata().getOwnerReferences())
+                        {
+                            if (ownerRef.getKind().equals(KubeCRDHandlerImpl.KIND) && item.object.getStatus() != null)
+                            {
+                                String mlDepName = ownerRef.getName();
+                                String depName = item.object.getMetadata().getName();
+                                statusUpdater.removeStatus(mlDepName,depName);
+                            }
+                        }
 						break;
 					default:
 						logger.error("Unknown type "+item.type);
@@ -91,7 +97,10 @@ public class DeploymentWatcher {
 					//get the MLDeployment from API or local cache and update status
 					// put this logic in new class
 				}
+				
 			}
+			
+
 		}
 		catch(RuntimeException e)
 		{

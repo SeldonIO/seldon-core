@@ -51,6 +51,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 	public static final String LABEL_SELDON_APP = "seldon-app";
     public static final String LABEL_SELDON_TYPE_KEY = "seldon-type";
     public static final String LABEL_SELDON_TYPE_VAL = "deployment";
+   
 	@Autowired
 	public SeldonDeploymentOperatorImpl(ClusterManagerProperites clusterManagerProperites) {
 		super();
@@ -271,7 +272,8 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		
 	}
 	
-	private static String getKubernetesDeploymentId(String deploymentName,String predictorName) {
+	@Override
+	public String getKubernetesDeploymentName(String deploymentName,String predictorName) {
 		return deploymentName + "-" + predictorName;
 	}
 	
@@ -303,14 +305,14 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		String serviceLabel = mlDep.getSpec().getName();
 		for(PredictorSpec p : mlDep.getSpec().getPredictorsList())
 		{
-			String depName = getKubernetesDeploymentId(mlDep.getSpec().getName(),p.getName());
+			String depName = getKubernetesDeploymentName(mlDep.getSpec().getName(),p.getName());
 			PodTemplateSpec.Builder podSpecBuilder = PodTemplateSpec.newBuilder(p.getComponentSpec());
 			podSpecBuilder.getSpecBuilder().addContainers(createEngineContainer(p));
 			Deployment deployment = V1beta1Extensions.Deployment.newBuilder()
 					.setMetadata(ObjectMeta.newBuilder()
 							.setName(depName)
 							.putLabels(SeldonDeploymentOperatorImpl.LABEL_SELDON_APP, serviceLabel)
-							.putLabels("seldon-deployment-id", mlDep.getSpec().getName())
+							.putLabels(Constants.LABEL_SELDON_ID, mlDep.getSpec().getName())
 							.putLabels("app", depName)
 							.putLabels("version", "v1") //FIXME
 							.putLabels(SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_KEY, SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_VAL)

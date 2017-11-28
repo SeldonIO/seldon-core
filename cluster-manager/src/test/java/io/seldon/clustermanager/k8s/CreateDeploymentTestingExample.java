@@ -68,7 +68,7 @@ public class CreateDeploymentTestingExample {
 		 try
 		 {
 			 ExtensionsV1beta1Deployment depRead = api.readNamespacedDeployment("mydep", "default", null, null, null);
-			 ExtensionsV1beta1DeploymentList l =  api.listNamespacedDeployment("default", null, null, null, false, "app=myapp", 1, null, null, false);
+             ExtensionsV1beta1DeploymentList l =  api.listNamespacedDeployment("default", null, null, null, false, "app=myapp", 1, null, null, false);
 			 if (l.getItems().size() == 0)
 			 {
 				 logger.info("Creating");

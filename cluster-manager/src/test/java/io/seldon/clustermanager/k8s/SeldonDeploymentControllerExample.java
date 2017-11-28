@@ -12,7 +12,7 @@ public class SeldonDeploymentControllerExample extends AppTest {
     public void run() throws IOException
 	{
 		SeldonDeploymentOperator op = new SeldonDeploymentOperatorImpl(getProps());
-		SeldonDeploymentController controller = new SeldonDeploymentControllerImpl(op, new K8sDefaultClientProvider());
+		SeldonDeploymentController controller = new SeldonDeploymentControllerImpl(op, new K8sDefaultClientProvider(), new KubeCRDHandlerImpl());
 		String jsonStr = readFile("src/test/resources/mldeployment_1.json",StandardCharsets.UTF_8);
 		SeldonDeployment mlDep = SeldonDeploymentUtils.jsonToSeldonDeployment(jsonStr);
 		controller.createOrReplaceSeldonDeployment(mlDep);

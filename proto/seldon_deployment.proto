@@ -89,12 +89,14 @@ message DeploymentSpec {
 
 message PredictorStatus {
   required string name = 1;
-  required string status = 2; 
+  optional string status = 2; 
   optional string description = 3; 
+  optional int32 replicas = 4;
+  optional int32 replicasAvailable = 5;
 }
 
 message DeploymentStatus {
-  required string state = 1; 
+  optional string state = 1; 
   optional string description = 2; 
   repeated PredictorStatus predictorStatus = 3;
 }
