@@ -1,56 +1,50 @@
 {
     "apiVersion": "machinelearning.seldon.io/v1alpha1",
-    "kind": "MLDeployment",
+    "kind": "SeldonDeployment",
     "metadata": {
         "labels": {
             "app": "seldon"
         },
-        "name": "mldeployment-example"
+        "name": "seldon-deployment-example"
     },
     "spec": {
         "annotations": {
             "project_name": "FX Market Prediction"
         },
-        "cluster": {},
-        "id": "1",
-        "name": "test deployment",
+        "name": "test-deployment",
         "oauth_key": "oauth-key",
         "oauth_secret": "oauth-secret",
-        "predictor": {
-            "annotations": {
-                "project_name": "FX Market Prediction"
-            },
-            "enabled": true,
-            "id": "0",
-            "imagePullSecrets": [],
-            "name": "FX Market Predictor",
-            "predictiveUnits": [
-                {
+        "predictors": [
+            {
+                "componentSpec": {
+                    "spec": {
+                        "containers": [
+                            {
+                                "image": "seldonio/mean_classifier:0.5",
+                                "imagePullPolicy": "IfNotPresent",
+                                "name": "mean-classifier",
+                                "resources": {
+                                    "requests": {
+                                        "memory": "1Mi"
+                                    }
+                                }
+                            }
+                        ],
+                        "terminationGracePeriodSeconds": 0
+                    }
+                },
+                "graph": {
                     "children": [],
-                    "cluster_resources": {
-                        "cpu": "",
-                        "gpu": "",
-                        "id": "2",
-                        "image": "seldonio/mean_classifier",
-                        "memory": "",
-                        "version": "0.5"
-                    },
+                    "name": "mean-classifier",
                     "endpoint": {
-                        "service_host": "-",
-                        "service_port": 0,
-                        "type": "REST"
-                    },
-                    "id": "0",
-                    "name": "Simple FX Model",
-                    "parameters": [],
-                    "subtype": "MICROSERVICE",
+			"type" : "REST"
+		    },
+                    "subtype": "SIMPLE_MODEL",
                     "type": "MODEL"
-                }
-            ],
-            "replicas": 1,
-            "root": "0",
-            "version": "v1"
-        }
-
-}
+                },
+                "name": "fx-market-predictor",
+                "replicas": 1
+            }
+        ]
+    }
 }

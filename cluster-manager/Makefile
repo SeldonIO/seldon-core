@@ -6,7 +6,7 @@ DOCKER_IMAGE_VERSION=$(PROJECT_VERSION)
 CLUSTER_MANAGER_IMAGE_VERSION=$(PROJECT_VERSION)
 
 build_docker_image: update_proto update_version_txt
-	mkdir -p .m2 && docker build --force-rm=true -t $(PRIVATE_REPO)$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VERSION) .
+	mkdir -p .m2 && docker build --no-cache --force-rm=true -t $(PRIVATE_REPO)$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VERSION) .
 push_to_registry:
 	docker push $(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VERSION)
 

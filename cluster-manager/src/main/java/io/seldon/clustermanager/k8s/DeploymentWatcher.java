@@ -16,13 +16,11 @@ import com.google.gson.reflect.TypeToken;
 
 import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.ApiException;
-import io.kubernetes.client.Configuration;
-import io.kubernetes.client.apis.AppsV1beta1Api;
+import io.kubernetes.client.apis.ExtensionsV1beta1Api;
 import io.kubernetes.client.models.AppsV1beta1Deployment;
 import io.kubernetes.client.models.V1OwnerReference;
 import io.kubernetes.client.util.Config;
 import io.kubernetes.client.util.Watch;
-import io.seldon.clustermanager.k8s.DeploymentUtils.ServiceSelectorDetails;
 
 @Component
 public class DeploymentWatcher {
@@ -32,10 +30,10 @@ public class DeploymentWatcher {
 	private int resourceVersion = 0;
 	private int resourceVersionProcessed = 0;
 	
-	private final MLDeploymentStatusUpdater statusUpdater;
+	private final SeldonDeploymentStatusUpdateImpl statusUpdater;
 	
 	@Autowired
-	public DeploymentWatcher(MLDeploymentStatusUpdater statusUpdater) throws IOException
+	public DeploymentWatcher(SeldonDeploymentStatusUpdateImpl statusUpdater)
 	{
 		this.statusUpdater = statusUpdater;
 	}
@@ -50,17 +48,14 @@ public class DeploymentWatcher {
 		int maxResourceVersion = resourceVersion;		
 		try{
 			ApiClient client = Config.defaultClient();
-			AppsV1beta1Api api = new AppsV1beta1Api(client);
+			ExtensionsV1beta1Api api = new ExtensionsV1beta1Api(client);
 
-			//TODO can we use labelSelector to limit to seldon resources
 			Watch<AppsV1beta1Deployment> watch = Watch.createWatch(
 	                client,
-	        		api.listNamespacedDeploymentCall("default", null, null, ServiceSelectorDetails.seldonLabelName+"="+ServiceSelectorDetails.seldonLabelMlDepValue, rs, 10, true,null,null),
+	        		api.listNamespacedDeploymentCall("default", null, null, null,false,SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_KEY+"="+SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_VAL, null,rs, 10, true,null,null),
 	        		new TypeToken<Watch.Response<AppsV1beta1Deployment>>(){}.getType());
 
 			for (Watch.Response<AppsV1beta1Deployment> item : watch) {
-				logger.info(String.format("%s\n : %s %d%n", item.type, item.object.getMetadata().getName(),item.object.getStatus().getReadyReplicas()));
-	    	
 				int resourceVersionNew = Integer.parseInt(item.object.getMetadata().getResourceVersion());
 				if (resourceVersionNew <= resourceVersionProcessed)
 				{
@@ -72,19 +67,28 @@ public class DeploymentWatcher {
 						maxResourceVersion = resourceVersionNew;
 					switch(item.type)
 					{
+					case "ADDED":
 					case "MODIFIED":
 						for (V1OwnerReference ownerRef : item.object.getMetadata().getOwnerReferences())
 						{
-							if (ownerRef.getKind().equals(KubeCRDHandlerImpl.KIND) && item.object.getStatus() != null && item.object.getStatus().getReadyReplicas() != null)
+							if (ownerRef.getKind().equals(KubeCRDHandlerImpl.KIND) && item.object.getStatus() != null)
 							{
 								String mlDepName = ownerRef.getName();
 								String depName = item.object.getMetadata().getName();
-								statusUpdater.updateStatus(mlDepName, depName, item.object.getStatus().getReadyReplicas());
+								statusUpdater.updateStatus(mlDepName, depName, item.object.getStatus().getReplicas(),item.object.getStatus().getReadyReplicas());
 							}
 						}
 						break;
-					case "ADDED":
 					case "DELETED":
+					    for (V1OwnerReference ownerRef : item.object.getMetadata().getOwnerReferences())
+                        {
+                            if (ownerRef.getKind().equals(KubeCRDHandlerImpl.KIND) && item.object.getStatus() != null)
+                            {
+                                String mlDepName = ownerRef.getName();
+                                String depName = item.object.getMetadata().getName();
+                                statusUpdater.removeStatus(mlDepName,depName);
+                            }
+                        }
 						break;
 					default:
 						logger.error("Unknown type "+item.type);
@@ -93,7 +97,10 @@ public class DeploymentWatcher {
 					//get the MLDeployment from API or local cache and update status
 					// put this logic in new class
 				}
+				
 			}
+			
+
 		}
 		catch(RuntimeException e)
 		{

@@ -24,7 +24,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.seldon.apife.exception.APIException;
-import io.seldon.protos.DeploymentProtos.EndpointDef;
+import io.seldon.protos.DeploymentProtos.Endpoint;
 
 @Service
 public class InternalPredictionService {
@@ -58,17 +58,17 @@ public class InternalPredictionService {
                 .build();
     }
 		
-	public String getPrediction(String request, EndpointDef endpoint) {
+	public String getPrediction(String request, Endpoint endpoint) {
 		
 		return predictREST(request, endpoint);
 				
 	}
 	
-	public void sendFeedback(String feedback, EndpointDef endpoint) {
+	public void sendFeedback(String feedback, Endpoint endpoint) {
 		sendFeedbackREST(feedback, endpoint);
 	}
 	
-	public void sendFeedbackREST(String feedback, EndpointDef endpoint) {
+	public void sendFeedbackREST(String feedback, Endpoint endpoint) {
 		long timeNow = System.currentTimeMillis();
 		URI uri;
 		try {
@@ -123,7 +123,7 @@ public class InternalPredictionService {
 	}
 	
 	
-	public String predictREST(String dataString, EndpointDef endpoint){
+	public String predictREST(String dataString, Endpoint endpoint){
 		{
     		long timeNow = System.currentTimeMillis();
     		URI uri;

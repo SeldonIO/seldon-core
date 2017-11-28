@@ -53,7 +53,7 @@ if __name__ == '__main__':
         d = json.load(json_data)
 
     # check json parses
-    deployment = spb.DeploymentDef()
+    deployment = spb.DeploymentSpec()
     json_format.ParseDict(d,deployment)
     json_string = json_format.MessageToJson(deployment)
 

@@ -59,18 +59,18 @@ public class AuthorizedWebMvcTagsProvider extends DefaultWebMvcTagsProvider {
 	 
 	 public Tag version(String principalName)
 	 {
-		 if (principalName == null || !StringUtils.hasText(deploymentStore.getDeployment(principalName).getPredictor().getVersion()))
+		 if (principalName == null || !StringUtils.hasText(deploymentStore.getDeployment(principalName).getAnnotationsOrDefault("version", "")))
 			 return Tag.of(PREDICTOR_VERSION_METRIC, "None");
 		 else
-			 return Tag.of(PREDICTOR_VERSION_METRIC,deploymentStore.getDeployment(principalName).getPredictor().getVersion());
+			 return Tag.of(PREDICTOR_VERSION_METRIC,deploymentStore.getDeployment(principalName).getAnnotationsOrDefault("version", ""));
 	 }
 
 	 public Tag predictorName(String principalName)
 	 {
-		 if (principalName == null || !StringUtils.hasText(deploymentStore.getDeployment(principalName).getPredictor().getName()))
+		 if (principalName == null || !StringUtils.hasText(deploymentStore.getDeployment(principalName).getName()))
 			 return Tag.of(PREDICTOR_NAME_METRIC, "None");
 		 else
-			 return Tag.of(PREDICTOR_NAME_METRIC,deploymentStore.getDeployment(principalName).getPredictor().getName());
+			 return Tag.of(PREDICTOR_NAME_METRIC,deploymentStore.getDeployment(principalName).getName());
 	 }
 
 	

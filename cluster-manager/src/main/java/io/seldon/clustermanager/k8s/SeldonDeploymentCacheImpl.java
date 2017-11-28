@@ -9,29 +9,29 @@ import org.springframework.stereotype.Component;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
-import io.seldon.protos.DeploymentProtos.MLDeployment;
+import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 @Component
-public class MLDeploymentCacheImpl implements MLDeploymentCache {
+public class SeldonDeploymentCacheImpl implements SeldonDeploymentCache {
 
-	Cache<String, MLDeployment> cache = CacheBuilder.newBuilder()
+	Cache<String, SeldonDeployment> cache = CacheBuilder.newBuilder()
 		    .maximumSize(1000)
 		    .build();	
 	
 	private final KubeCRDHandler crdHandler;
 	
 	@Autowired
-	public MLDeploymentCacheImpl(KubeCRDHandler crdHandler)
+	public SeldonDeploymentCacheImpl(KubeCRDHandler crdHandler)
 	{
 		this.crdHandler = crdHandler;
 	}
 	
-	public MLDeployment get(String name) {
+	public SeldonDeployment get(String name) {
 		try {
-			return cache.get(name, new Callable<MLDeployment>() {
+			return cache.get(name, new Callable<SeldonDeployment>() {
 			    @Override
-			    public MLDeployment call() throws ExecutionException {
-			      MLDeployment mlDep = MLDeploymentCacheImpl.this.crdHandler.getMlDeployment(name);
+			    public SeldonDeployment call() throws ExecutionException {
+			      SeldonDeployment mlDep = SeldonDeploymentCacheImpl.this.crdHandler.getSeldonDeployment(name);
 			      if (mlDep == null)
 			    	  throw new ExecutionException(null);
 			      else
@@ -43,7 +43,7 @@ public class MLDeploymentCacheImpl implements MLDeploymentCache {
 		}
 	}
 	
-	public void put(MLDeployment dep) {
+	public void put(SeldonDeployment dep) {
 		cache.put(dep.getMetadata().getName(), dep);
 	}
 

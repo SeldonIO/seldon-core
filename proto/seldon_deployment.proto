@@ -71,17 +71,11 @@ message Endpoint {
 
 
 message PredictorSpec {
-  enum PredictorType {
-    NORMAL = 0;
-    CANARY = 1;
-  }
-
   required string name = 1;
-  optional PredictorType type = 2;
-  required PredictiveUnit graph = 3;
-  required k8s.io.api.core.v1.PodTemplateSpec componentSpec = 4;
-  optional int32 replicas = 5;
-  map<string,string> annotations = 7;
+  required PredictiveUnit graph = 2;
+  required k8s.io.api.core.v1.PodTemplateSpec componentSpec = 3;
+  optional int32 replicas = 4;
+  map<string,string> annotations = 5;
 }
 
 message DeploymentSpec {
@@ -95,12 +89,14 @@ message DeploymentSpec {
 
 message PredictorStatus {
   required string name = 1;
-  required string status = 2; 
+  optional string status = 2; 
   optional string description = 3; 
+  optional int32 replicas = 4;
+  optional int32 replicasAvailable = 5;
 }
 
 message DeploymentStatus {
-  required string state = 1; 
+  optional string state = 1; 
   optional string description = 2; 
   repeated PredictorStatus predictorStatus = 3;
 }
