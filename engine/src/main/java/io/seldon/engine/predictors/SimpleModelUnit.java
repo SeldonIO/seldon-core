@@ -9,9 +9,9 @@ import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 
 import io.seldon.protos.PredictionProtos.DefaultData;
-import io.seldon.protos.PredictionProtos.Request;
+import io.seldon.protos.PredictionProtos.Message;
 import io.seldon.protos.PredictionProtos.Meta;
-import io.seldon.protos.PredictionProtos.Response;
+import io.seldon.protos.PredictionProtos.Message;
 import io.seldon.protos.PredictionProtos.Meta;
 import io.seldon.protos.PredictionProtos.Status;
 import io.seldon.protos.PredictionProtos.Tensor;
@@ -24,9 +24,9 @@ public class SimpleModelUnit extends ModelUnit {
 	public static final Double[] values = {0.1,0.9,0.5};		
 	public static final String[] classes = {"class0","class1","class2"};
 	
-	private Response doPredict(Request request, PredictiveUnitState state)
+	private Message doPredict(Message request, PredictiveUnitState state)
 	{
-		Response ret = Response.newBuilder()
+		Message ret = Message.newBuilder()
 				.setStatus(Status.newBuilder().setStatus(Status.StatusFlag.SUCCESS).build())
 				.setMeta(Meta.newBuilder())//.addModel(state.id))
 				.setData(DefaultData.newBuilder().addAllNames(Arrays.asList(classes))
@@ -43,7 +43,7 @@ public class SimpleModelUnit extends ModelUnit {
 	}
 	
 	@Override
-	protected Future<Response> predict(Request request, PredictiveUnitState state, Map<String, Integer> routingDict) throws InterruptedException, ExecutionException{
+	protected Future<Message> predict(Message request, PredictiveUnitState state, Map<String, Integer> routingDict) throws InterruptedException, ExecutionException{
 		System.out.println("Model " + state.name + " starting computations");
 		
 		return new AsyncResult<>(doPredict(request,state));

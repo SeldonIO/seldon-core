@@ -6,8 +6,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import io.seldon.protos.PredictionProtos.Request;
-import io.seldon.protos.PredictionProtos.Response;
+import io.seldon.protos.PredictionProtos.Message;
+import io.seldon.protos.PredictionProtos.Message;
 import io.seldon.protos.PredictionProtos.Meta;
 import io.seldon.protos.PredictionProtos.OutlierStatus;
 
@@ -18,10 +18,10 @@ public class OutlierDetectionUnit extends PredictiveUnitBean {
 	}
 	
 	@Override
-	protected Response backwardPass(List<Response> inputs, Request request, PredictiveUnitState state){
+	protected Message backwardPass(List<Message> inputs, Message request, PredictiveUnitState state){
 		
-		Response response = inputs.get(0);
-		Response outlierDetectionResponse = null;
+		Message response = inputs.get(0);
+		Message outlierDetectionResponse = null;
 		
 		try {
 			outlierDetectionResponse = internalPredictionService.getPrediction(request, state);
@@ -34,7 +34,7 @@ public class OutlierDetectionUnit extends PredictiveUnitBean {
 		Double outlierScore = outlierDetectionResponse.getData().getTensor().getValues(1);
 		
 		
-		Response.Builder builder = Response
+		Message.Builder builder = Message
 	    		.newBuilder(response)
 	    		.setMeta(Meta
 	    				.newBuilder(response.getMeta()).setOutlierStatus(OutlierStatus.newBuilder().setIsOutlier(isOutlier).setScore(outlierScore)));

@@ -11,14 +11,14 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import io.seldon.engine.exception.APIException;
-import io.seldon.protos.PredictionProtos.Request;
+import io.seldon.protos.PredictionProtos.Message;
 
 public class RandomABTestUnitInternalTest {
 
 	@Test
 	public void simpleCase() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		
-		Request request = Request.newBuilder().build();
+		Message request = Message.newBuilder().build();
 		
 		PredictiveUnitParameter<Float> ratioParam = new PredictiveUnitParameter<Float>(0.5F);
     	Map<String,PredictiveUnitParameterInterface> params = new HashMap<>();
@@ -37,7 +37,7 @@ public class RandomABTestUnitInternalTest {
 
 		
 		RandomABTestUnit randomABTestUnit = new RandomABTestUnit();
-		Method method = RandomABTestUnit.class.getDeclaredMethod("forwardPass", Request.class, PredictiveUnitState.class);
+		Method method = RandomABTestUnit.class.getDeclaredMethod("forwardPass", Message.class, PredictiveUnitState.class);
 		method.setAccessible(true);
 
 		// The following values are from random seed 1337
@@ -57,7 +57,7 @@ public class RandomABTestUnitInternalTest {
 	@Test(expected=APIException.class)
 	public void failureOneChild() throws Throwable{
 		
-		Request request = Request.newBuilder().build();
+		Message request = Message.newBuilder().build();
 		
 		PredictiveUnitParameter<Float> ratioParam = new PredictiveUnitParameter<Float>(0.5F);
     	Map<String,PredictiveUnitParameterInterface> params = new HashMap<>();
@@ -72,7 +72,7 @@ public class RandomABTestUnitInternalTest {
 //		Map<String,Integer> emptyDict = new HashMap<String, Integer>();
 		
 		RandomABTestUnit randomABTestUnit = new RandomABTestUnit();
-		Method method = RandomABTestUnit.class.getDeclaredMethod("forwardPass", Request.class, PredictiveUnitState.class);
+		Method method = RandomABTestUnit.class.getDeclaredMethod("forwardPass", Message.class, PredictiveUnitState.class);
 		method.setAccessible(true);
 
 		// The following should return an error

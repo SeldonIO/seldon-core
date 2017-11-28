@@ -17,8 +17,8 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Metrics;
 import io.seldon.engine.metrics.SeldonRestTemplateExchangeTagsProvider;
 import io.seldon.protos.PredictionProtos.Feedback;
-import io.seldon.protos.PredictionProtos.Request;
-import io.seldon.protos.PredictionProtos.Response;
+import io.seldon.protos.PredictionProtos.Message;
+import io.seldon.protos.PredictionProtos.Message;
 
 @Component
 public class ModelUnit extends PredictiveUnitBean{
@@ -30,12 +30,12 @@ public class ModelUnit extends PredictiveUnitBean{
 		super();
 	}
 	
-	private Response doPredict(Request request, PredictiveUnitState state)
+	private Message doPredict(Message request, PredictiveUnitState state)
 	{
-		Response ret = null;
+		Message ret = null;
 		try {
 			ret = internalPredictionService.getPrediction(request, state);
-//			ret = Response.newBuilder(ret).setMeta(Meta.newBuilder(ret.getMeta()).addModel(state.id)).build();
+//			ret = Message.newBuilder(ret).setMeta(Meta.newBuilder(ret.getMeta()).addModel(state.id)).build();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -52,12 +52,12 @@ public class ModelUnit extends PredictiveUnitBean{
 
 	@Override
 	@Async
-	protected Future<Response> predict(Request request, PredictiveUnitState state, Map<String,Integer> routingDict) throws InterruptedException, ExecutionException{
+	protected Future<Message> predict(Message request, PredictiveUnitState state, Map<String,Integer> routingDict) throws InterruptedException, ExecutionException{
 		return new AsyncResult<>(doPredict(request,state));
 	}
 
 	@Override
-	protected List<PredictiveUnitState> forwardPass(Request request, PredictiveUnitState state, Map<String,Integer> routingDict){
+	protected List<PredictiveUnitState> forwardPass(Message request, PredictiveUnitState state, Map<String,Integer> routingDict){
 		return new ArrayList<PredictiveUnitState>(Arrays.asList(state));
 	}
 	

@@ -20,7 +20,7 @@ def hello_world():
     j = json.loads(jStr)
 
     meta = ppb.ResponseMeta(puid="puid-1")
-    response = ppb.Response(meta=meta)
+    response = ppb.Message(meta=meta)
     json_string = json_format.MessageToJson(response)
     print json_string
 

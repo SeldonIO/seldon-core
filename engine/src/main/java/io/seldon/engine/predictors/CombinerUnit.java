@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
-import io.seldon.protos.PredictionProtos.Request;
+import io.seldon.protos.PredictionProtos.Message;
 
 @Component
 public class CombinerUnit extends PredictiveUnitBean{
@@ -16,7 +16,7 @@ public class CombinerUnit extends PredictiveUnitBean{
 	}
 
 	@Override
-	protected List<PredictiveUnitState> forwardPass(Request request, PredictiveUnitState state, Map<String,Integer> routingDict){
+	protected List<PredictiveUnitState> forwardPass(Message request, PredictiveUnitState state, Map<String,Integer> routingDict){
 		return state.children;
 	}
 

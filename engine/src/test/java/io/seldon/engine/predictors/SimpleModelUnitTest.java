@@ -12,8 +12,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import io.kubernetes.client.proto.V1.PodTemplateSpec;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit;
 import io.seldon.protos.DeploymentProtos.PredictorSpec;
-import io.seldon.protos.PredictionProtos.Request;
-import io.seldon.protos.PredictionProtos.Response;
+import io.seldon.protos.PredictionProtos.Message;
+import io.seldon.protos.PredictionProtos.Message;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -44,10 +44,10 @@ public class SimpleModelUnitTest {
 		PredictorState predictorState = predictorBean.predictorStateFromPredictorSpec(predictor);
 
 		
-		Request p = Request.newBuilder().build();
+		Message p = Message.newBuilder().build();
 
 		
-        Response predictorReturn = predictorBean.predict(p,predictorState);
+        Message predictorReturn = predictorBean.predict(p,predictorState);
         
         Assert.assertEquals((double) SimpleModelUnit.values[0], predictorReturn.getData().getTensor().getValues(0),0);
         Assert.assertEquals((double) SimpleModelUnit.values[1], predictorReturn.getData().getTensor().getValues(1),0);

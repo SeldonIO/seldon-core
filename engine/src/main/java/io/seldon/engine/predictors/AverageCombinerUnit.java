@@ -14,8 +14,8 @@ import com.google.protobuf.Value;
 import io.seldon.engine.exception.APIException;
 import io.seldon.protos.PredictionProtos.DefaultData;
 import io.seldon.protos.PredictionProtos.DefaultData.DataOneofCase;
-import io.seldon.protos.PredictionProtos.Response;
-import io.seldon.protos.PredictionProtos.Request;
+import io.seldon.protos.PredictionProtos.Message;
+import io.seldon.protos.PredictionProtos.Message;
 import io.seldon.protos.PredictionProtos.Meta;
 import io.seldon.protos.PredictionProtos.Tensor;
 
@@ -27,7 +27,7 @@ public class AverageCombinerUnit extends CombinerUnit{
 	public AverageCombinerUnit() {}
 
 	@Override
-	public Response backwardPass(List<Response> inputs, Request request, PredictiveUnitState state){
+	public Message backwardPass(List<Message> inputs, Message request, PredictiveUnitState state){
 		
 		if (inputs.size()==0){
 			throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_COMBINER_RESPONSE, String.format("Combiner received no inputs"));
@@ -44,9 +44,9 @@ public class AverageCombinerUnit extends CombinerUnit{
 		}
 		
 		INDArray currentSum = Nd4j.zeros(shape[0],shape[1]);
-		Response.Builder respBuilder = Response.newBuilder();
+		Message.Builder respBuilder = Message.newBuilder();
 		
-		for (Iterator<Response> i = inputs.iterator(); i.hasNext();)
+		for (Iterator<Message> i = inputs.iterator(); i.hasNext();)
 		{
 			DefaultData inputData = i.next().getData();
 			int[] inputShape = PredictorUtils.getShape(inputData);
@@ -75,7 +75,7 @@ public class AverageCombinerUnit extends CombinerUnit{
 		return respBuilder.build();
 	}
 	
-	public Response backwardPassOld(List<Response> inputs, Request request, PredictiveUnitState state){
+	public Message backwardPassOld(List<Message> inputs, Message request, PredictiveUnitState state){
 		
 		Integer batchLength = 0;
 		Integer valuesLength = 0;
@@ -84,10 +84,10 @@ public class AverageCombinerUnit extends CombinerUnit{
 		Double[] averages = null;
 		DataOneofCase dataType = DataOneofCase.DATAONEOF_NOT_SET;
 		
-		Response.Builder respBuilder = Response.newBuilder();
+		Message.Builder respBuilder = Message.newBuilder();
 		Meta.Builder metaBuilder = Meta.newBuilder();
 		DefaultData.Builder dataBuilder = DefaultData.newBuilder();
-		for (Response predRet : inputs){
+		for (Message predRet : inputs){
 //			metaBuilder.addAllModel(predRet.getMeta().getModelList());
 			int bLength = 0;
 			int vLength = 0;

@@ -7,9 +7,9 @@ import java.util.ArrayList;
 
 import org.springframework.stereotype.Component;
 
-import io.seldon.protos.PredictionProtos.Response;
+import io.seldon.protos.PredictionProtos.Message;
 import io.seldon.protos.PredictionProtos.Feedback;
-import io.seldon.protos.PredictionProtos.Request;
+import io.seldon.protos.PredictionProtos.Message;
 import io.seldon.protos.PredictionProtos.Meta;
 import io.seldon.engine.exception.APIException;
 
@@ -22,12 +22,12 @@ public class RouterUnit extends PredictiveUnitBean{
     }
 
 	@Override
-	protected Response backwardPass(List<Response> inputs, Request request, PredictiveUnitState state){
+	protected Message backwardPass(List<Message> inputs, Message request, PredictiveUnitState state){
 		return inputs.get(0);
 	}
 	
 	@Override
-	public List<PredictiveUnitState> forwardPass(Request request, PredictiveUnitState state, Map<String,Integer> routingDict){
+	public List<PredictiveUnitState> forwardPass(Message request, PredictiveUnitState state, Map<String,Integer> routingDict){
 		Integer branchIndex = forwardPass(request, state);
 		boolean  isPossible = sanityCheckRouting(branchIndex, state);
 		if (!isPossible){
@@ -46,8 +46,8 @@ public class RouterUnit extends PredictiveUnitBean{
 		internalPredictionService.sendFeedbackRouter(feedback, state.endpoint);
 	}
 	
-	protected Integer forwardPass(Request request, PredictiveUnitState state){
-		Response ret = internalPredictionService.getRouting(request, state.endpoint);
+	protected Integer forwardPass(Message request, PredictiveUnitState state){
+		Message ret = internalPredictionService.getRouting(request, state.endpoint);
 		int branchIndex = (int) ret.getData().getTensor().getValues(0);
 		return branchIndex;
 	}
