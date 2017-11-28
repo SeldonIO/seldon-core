@@ -11,8 +11,8 @@ build_image:
 	docker tag seldonio/seldon-cluster-manager:latest seldonio/seldon-cluster-manager:$$(cat $(VERSION_FILE))
 
 repo_login:
-	if [ ! -z "${DOCKER_HUB_USER}" ] && [ ! -z "${DOCKER_HUB_PASSWORD}" ]; then \
-		docker login -u ${DOCKER_HUB_USER} -p ${DOCKER_HUB_PASSWORD}; \
+	if [ ! -z "${SELDON_CORE_DOCKER_HUB_USER}" ] && [ ! -z "${SELDON_CORE_DOCKER_HUB_PASSWORD}" ]; then \
+		docker login -u ${SELDON_CORE_DOCKER_HUB_USER} -p ${SELDON_CORE_DOCKER_HUB_PASSWORD}; \
 	else \
 		echo "Missing credentials!"; \
 	fi
