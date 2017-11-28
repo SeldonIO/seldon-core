@@ -19,7 +19,7 @@ repo_login:
 	fi
 
 push_image:
-	docker push seldonio/$(IMAGE_NAME)
+	docker push seldonio/$(IMAGE_NAME):$$(cat $(VERSION_FILE))
 
 clean:
 	mvn clean -B
