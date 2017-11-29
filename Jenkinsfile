@@ -75,8 +75,8 @@ pipeline {
                         }
                     }
                     steps {
-                        sh 'cd engine && make -f Makefile.ci write_version'
-                        sh 'cd engine && make -f Makefile.ci build_image'
+                        sh 'cd api-frontend && make -f Makefile.ci write_version'
+                        sh 'cd api-frontend && make -f Makefile.ci build_image'
                     }
                 }
             }
