@@ -28,6 +28,17 @@ pipeline {
                         sh 'cd engine && make -f Makefile.ci clean build_jar'
                     }
                 }
+                stage('build-jar_api-frontend') {
+                    agent {
+                        docker {
+                            image 'seldonio/core-builder:0.1'
+                            args '-v /root/.m2:/root/.m2'
+                        }
+                    }
+                    steps {
+                        sh 'cd api-frontend && make -f Makefile.ci clean build_jar'
+                    }
+                }
             }
         }
         stage('build-image') {
