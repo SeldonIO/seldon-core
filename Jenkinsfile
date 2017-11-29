@@ -67,6 +67,18 @@ pipeline {
                         sh 'cd engine && make -f Makefile.ci build_image'
                     }
                 }
+                stage('build-image_api-frontend') {
+                    agent {
+                        docker {
+                            image 'seldonio/core-builder:0.1'
+                            args '-v /root/.m2:/root/.m2'
+                        }
+                    }
+                    steps {
+                        sh 'cd engine && make -f Makefile.ci write_version'
+                        sh 'cd engine && make -f Makefile.ci build_image'
+                    }
+                }
             }
         }
         stage('publish-image') {
