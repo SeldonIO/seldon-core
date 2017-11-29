@@ -41,21 +41,6 @@ items:
           ports:
           - containerPort: 8080
             protocol: TCP
-- apiVersion: v1
-  kind: Service
-  metadata:
-    name: seldon-cluster-manager
-  spec:
-    ports:
-    - name: client
-      nodePort: 30030
-      port: 8080
-      protocol: TCP
-      targetPort: 8080
-    selector:
-      app: seldon-cluster-manager-server
-    sessionAffinity: None
-    type: {{ .Values.cluster_manager_service_type }}
 kind: List
 metadata: {}
 {{- end }}

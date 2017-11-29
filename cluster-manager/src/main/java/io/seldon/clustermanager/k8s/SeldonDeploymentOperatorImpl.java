@@ -223,12 +223,12 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
                 {
                     b.setServicePort(p.getContainerPort());
                     b.setType(Endpoint.EndpointType.REST);
-                    //assumes localhost at present
+                    b.setServiceHost("0.0.0.0"); //assumes localhost at present
                     return;
                 } else if ("grpc".equals(p.getName())) {
                     b.setServicePort(p.getContainerPort());
                     b.setType(Endpoint.EndpointType.GRPC);
-                    //assumes localhost at present
+                    b.setServiceHost("0.0.0.0"); //assumes localhost at present                    
                     return;
                 }
             }
@@ -308,6 +308,11 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			String depName = getKubernetesDeploymentName(mlDep.getSpec().getName(),p.getName());
 			PodTemplateSpec.Builder podSpecBuilder = PodTemplateSpec.newBuilder(p.getComponentSpec());
 			podSpecBuilder.getSpecBuilder().addContainers(createEngineContainer(p));
+			podSpecBuilder.getMetadataBuilder()
+			    .putAnnotations("prometheus.io/path", "/prometheus")
+			    .putAnnotations("prometheus.io/port",""+clusterManagerProperites.getEngineContainerPort())
+			    .putAnnotations("prometheus.io/scrape", "true");
+
 			Deployment deployment = V1beta1Extensions.Deployment.newBuilder()
 					.setMetadata(ObjectMeta.newBuilder()
 							.setName(depName)
@@ -317,9 +322,6 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 							.putLabels("version", "v1") //FIXME
 							.putLabels(SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_KEY, SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_VAL)
 							.addOwnerReferences(ownerRef)
-							.putAnnotations("prometheus.io/path", "/prometheus")
-							.putAnnotations("prometheus.io/port",""+clusterManagerProperites.getEngineContainerPort())
-							.putAnnotations("prometheus.io/scrape", "true")
 							)
 					.setSpec(DeploymentSpec.newBuilder().setTemplate(podSpecBuilder.build())
 							.setReplicas(p.getReplicas()))
