@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
 
+import org.nd4j.linalg.api.ndarray.INDArray;
 import org.springframework.stereotype.Component;
 
 import io.seldon.protos.PredictionProtos.Message;
@@ -12,6 +13,7 @@ import io.seldon.protos.PredictionProtos.Feedback;
 import io.seldon.protos.PredictionProtos.Message;
 import io.seldon.protos.PredictionProtos.Meta;
 import io.seldon.engine.exception.APIException;
+import io.seldon.engine.predictors.PredictorUtils;
 
 
 @Component
@@ -48,12 +50,25 @@ public class RouterUnit extends PredictiveUnitBean{
 	
 	protected Integer forwardPass(Message request, PredictiveUnitState state){
 		Message ret = internalPredictionService.getRouting(request, state.endpoint);
-		int branchIndex = (int) ret.getData().getTensor().getValues(0);
+		int branchIndex = getBranchIndex(ret,state);
 		return branchIndex;
 	}
 	
 	private void populateRoutingDict(Integer branchIndex, Map<String, Integer> routingDict, PredictiveUnitState state){
 		routingDict.put(state.name, branchIndex);
+	}
+	
+	private int getBranchIndex(Message routerReturn, PredictiveUnitState state){
+		int branchIndex = 0;
+		try {
+			INDArray dataArray = PredictorUtils.getINDArray(routerReturn.getData());
+			branchIndex = (int) dataArray.getInt(0);
+			// branchIndex = (int) routerReturn.getData().getTensor().getValues(0);
+		}
+		catch (IndexOutOfBoundsException e) {
+			throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_ROUTING,"Router that caused the exception: id="+state.name+" name="+state.name);
+		}
+		return branchIndex;
 	}
 	
 	private boolean sanityCheckRouting(Integer branchIndex, PredictiveUnitState state){

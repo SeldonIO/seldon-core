@@ -66,7 +66,7 @@ def gen_REST_request(batch,features,tensor=True):
 
 def gen_GRPC_request(batch,features,tensor=True):
     if tensor:
-        datadef = prediction_pb2.DefaultDataDef(
+        datadef = prediction_pb2.DefaultData(
             names = features,
             tensor = prediction_pb2.Tensor(
                 shape = batch.shape,
@@ -74,11 +74,11 @@ def gen_GRPC_request(batch,features,tensor=True):
                 )
             )
     else:
-        datadef = prediction_pb2.DefaultDataDef(
+        datadef = prediction_pb2.DefaultData(
             names = features,
             ndarray = array_to_list_value(batch)
             )
-    request = prediction_pb2.RequestDef(
+    request = prediction_pb2.Message(
         data = datadef
         )
     return request
