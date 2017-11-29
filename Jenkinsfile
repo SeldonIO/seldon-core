@@ -9,7 +9,7 @@ pipeline {
                 stage('build-jar_cluster-manager') {
                     agent {
                         docker {
-                            image 'seldonio/core-builder'
+                            image 'seldonio/core-builder:0.1'
                             args '-v /root/.m2:/root/.m2'
                         }
                     }
@@ -20,7 +20,7 @@ pipeline {
                 stage('build-jar_engine') {
                     agent {
                         docker {
-                            image 'seldonio/core-builder'
+                            image 'seldonio/core-builder:0.1'
                             args '-v /root/.m2:/root/.m2'
                         }
                     }
@@ -35,7 +35,7 @@ pipeline {
                 stage('build-image_cluster-manager') {
                     agent {
                         docker {
-                            image 'seldonio/core-builder'
+                            image 'seldonio/core-builder:0.1'
                             args '-v /root/.m2:/root/.m2'
                         }
                     }
@@ -47,7 +47,7 @@ pipeline {
                 stage('build-image_engine') {
                     agent {
                         docker {
-                            image 'seldonio/core-builder'
+                            image 'seldonio/core-builder:0.1'
                             args '-v /root/.m2:/root/.m2'
                         }
                     }
@@ -70,7 +70,7 @@ pipeline {
                     }
                     agent {
                         docker {
-                            image 'seldonio/core-builder'
+                            image 'seldonio/core-builder:0.1'
                             args '-v /root/.m2:/root/.m2'
                         }
                     }
@@ -86,7 +86,7 @@ pipeline {
                     }
                     agent {
                         docker {
-                            image 'seldonio/core-builder'
+                            image 'seldonio/core-builder:0.1'
                             args '-v /root/.m2:/root/.m2'
                         }
                     }
