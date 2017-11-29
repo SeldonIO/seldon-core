@@ -1,19 +1,39 @@
+IMAGE_NAME=seldonio/apife
+VERSION_FILE=target/version.txt
+
 build_jar: update_proto
 	mvn clean package -B
+
+write_version:
+	ls target/seldon-apife-*.jar | sed -n 's/target\/seldon-apife-\(.*\).jar$$/\1/p' > $(VERSION_FILE) && cat $(VERSION_FILE)
+
+build_image:
+	docker build --build-arg APP_VERSION=$$(cat $(VERSION_FILE)) -t seldonio/$(IMAGE_NAME):latest .
+	docker tag seldonio/$(IMAGE_NAME):latest seldonio/$(IMAGE_NAME):$$(cat $(VERSION_FILE))
+
+repo_login:
+	if [ ! -z "${SELDON_CORE_DOCKER_HUB_USER}" ] && [ ! -z "${SELDON_CORE_DOCKER_HUB_PASSWORD}" ]; then \
+		docker login -u ${SELDON_CORE_DOCKER_HUB_USER} -p ${SELDON_CORE_DOCKER_HUB_PASSWORD}; \
+	else \
+		echo "Missing credentials!"; \
+	fi
+
+push_image:
+	docker push seldonio/$(IMAGE_NAME):$$(cat $(VERSION_FILE))
 
 clean:
 	mvn clean -B
 	rm -fv src/main/proto/seldon_deployment.proto
 	rm -fv src/main/proto/prediction.proto
-	rm -fvr src/main/proto/k8s
+	rm -fvr src/main/proto/k8s.io
 	rm -fv src/main/proto/v1.proto
 
 download_protos:
 	cd ../proto/k8s ; make create_protos
 
 update_proto: download_protos
-	cp -v ../proto/seldon_deployment.proto src/main/proto/ 
-	cp -v ../proto/prediction.proto src/main/proto/ 
+	cp -v ../proto/seldon_deployment.proto src/main/proto/
+	cp -v ../proto/prediction.proto src/main/proto/
 	cp -vr ../proto/k8s/k8s.io src/main/proto
 	cp -v ../proto/k8s/v1.proto src/main/proto
 
