@@ -1,5 +1,25 @@
+IMAGE_NAME=seldonio/apife
+VERSION_FILE=target/version.txt
+
 build_jar: update_proto
 	mvn clean package -B
+
+write_version:
+	ls target/seldon-apife-*.jar | sed -n 's/target\/seldon-apife-\(.*\).jar$$/\1/p' > $(VERSION_FILE) && cat $(VERSION_FILE)
+
+build_image:
+	docker build --build-arg APP_VERSION=$$(cat $(VERSION_FILE)) -t seldonio/$(IMAGE_NAME):latest .
+	docker tag seldonio/$(IMAGE_NAME):latest seldonio/$(IMAGE_NAME):$$(cat $(VERSION_FILE))
+
+repo_login:
+	if [ ! -z "${SELDON_CORE_DOCKER_HUB_USER}" ] && [ ! -z "${SELDON_CORE_DOCKER_HUB_PASSWORD}" ]; then \
+		docker login -u ${SELDON_CORE_DOCKER_HUB_USER} -p ${SELDON_CORE_DOCKER_HUB_PASSWORD}; \
+	else \
+		echo "Missing credentials!"; \
+	fi
+
+push_image:
+	docker push seldonio/$(IMAGE_NAME):$$(cat $(VERSION_FILE))
 
 clean:
 	mvn clean -B
