@@ -10,7 +10,7 @@ stages:
   - build
 
 cluster-manager-maven-build:
-  image: seldonio/core-builder
+  image: seldonio/core-builder:0.1
   stage: build
   script:
     - cd cluster-manager
@@ -24,7 +24,7 @@ cluster-manager-maven-build:
     - master
 
 engine-maven-build:
-  image: seldonio/core-builder
+  image: seldonio/core-builder:0.1
   stage: build
   script:
     - cd engine
@@ -38,7 +38,7 @@ engine-maven-build:
     - master
 
 api-frontend-maven-build:
-  image: seldonio/core-builder
+  image: seldonio/core-builder:0.1
   stage: build
   script:
     - cd api-frontend
