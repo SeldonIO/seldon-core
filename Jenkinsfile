@@ -15,6 +15,7 @@ pipeline {
                     }
                     steps {
                         sh 'cd cluster-manager && make -f Makefile.ci clean build_jar'
+						stash name: 'cluster-manager-jar', includes: 'cluster-manager/target/*.jar'
                     }
                 }
                 stage('build-jar_engine') {
