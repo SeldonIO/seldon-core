@@ -15,7 +15,7 @@ pipeline {
                     }
                     steps {
                         sh 'cd cluster-manager && make -f Makefile.ci clean build_jar'
-						stash name: 'cluster-manager-jar', includes: 'cluster-manager/target/*.jar'
+                        stash name: 'cluster-manager-jar', includes: 'cluster-manager/target/*.jar'
                     }
                 }
                 stage('build-jar_engine') {
@@ -27,6 +27,7 @@ pipeline {
                     }
                     steps {
                         sh 'cd engine && make -f Makefile.ci clean build_jar'
+                        stash name: 'engine-jar', includes: 'engine/target/*.jar'
                     }
                 }
                 stage('build-jar_api-frontend') {
@@ -38,6 +39,7 @@ pipeline {
                     }
                     steps {
                         sh 'cd api-frontend && make -f Makefile.ci clean build_jar'
+                        stash name: 'api-frontend-jar', includes: 'api-frontend/target/*.jar'
                     }
                 }
             }
@@ -52,6 +54,7 @@ pipeline {
                         }
                     }
                     steps {
+                        unstash 'cluster-manager-jar'
                         sh 'cd cluster-manager && make -f Makefile.ci write_version'
                         sh 'cd cluster-manager && make -f Makefile.ci build_image'
                     }
@@ -64,6 +67,7 @@ pipeline {
                         }
                     }
                     steps {
+                        unstash 'engine-jar'
                         sh 'cd engine && make -f Makefile.ci write_version'
                         sh 'cd engine && make -f Makefile.ci build_image'
                     }
@@ -76,6 +80,7 @@ pipeline {
                         }
                     }
                     steps {
+                        unstash 'api-frontend-jar'
                         sh 'cd api-frontend && make -f Makefile.ci write_version'
                         sh 'cd api-frontend && make -f Makefile.ci build_image'
                     }
