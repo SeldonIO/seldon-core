@@ -97,7 +97,8 @@ public abstract class PredictiveUnitBean {
 		List<Future<Boolean>> returns = new ArrayList<Future<Boolean>>();
 		
 		// First we determine children we will send feedback to according to routingDict info
-		int routing = feedback.getResponse().getMeta().getRoutingMap().getOrDefault(state.name, null);
+		int routing = feedback.getResponse().getMeta().getRoutingMap().getOrDefault(state.name, -1);
+		
 		// TODO: Throw exception if routing is invalid (<-1 or > n_children)
 		if (routing == -1){
 			children = state.children;
