@@ -115,10 +115,6 @@ public abstract class PredictiveUnitBean {
 		// Then we wait for our own feedback
 		state.predictiveUnitBean.doSendFeedback(feedback, state);
 		
-		// ?? Why was this called on the chosenRoute only ?
-//		PredictiveUnitState chosenRoute = state.children.get(routing);
-//		chosenRoute.predictiveUnitBean.doStoreFeedbackMetrics(feedback, chosenRoute);
-
 		//Then we wait for children feedback
 		for (Future<Boolean> ret : returns){
 			ret.get();
