@@ -18,18 +18,11 @@ import io.seldon.engine.predictors.PredictorState;
 import io.seldon.protos.PredictionProtos.Feedback;
 import io.seldon.protos.PredictionProtos.Message;
 import io.seldon.protos.PredictionProtos.Meta;
-import io.seldon.protos.PredictionProtos.Message;
-import io.seldon.protos.PredictionProtos.Meta;
 
 @Service
 public class PredictionService {
 	
 	private static Logger logger = LoggerFactory.getLogger(PredictionService.class.getName());
-	
-	private final ExecutorService pool = Executors.newFixedThreadPool(50);
-	
-//	@Autowired
-//	PredictorsStore predictorsStore;
 	
 	@Autowired
 	PredictorBean predictorBean;

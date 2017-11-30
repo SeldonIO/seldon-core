@@ -26,7 +26,6 @@ import com.google.protobuf.util.JsonFormat;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
-import io.kubernetes.client.proto.V1.PodTemplateSpec;
 import io.seldon.engine.exception.APIException;
 import io.seldon.engine.pb.ProtoBufUtils;
 import io.seldon.engine.predictors.PredictiveUnitState;
@@ -38,7 +37,6 @@ import io.seldon.protos.RouterGrpc.RouterBlockingStub;
 import io.seldon.protos.PredictionProtos.Feedback;
 import io.seldon.protos.PredictionProtos.Message;
 import io.seldon.protos.PredictionProtos.Message.DataOneofCase;
-import io.seldon.protos.PredictionProtos.Message;
 
 @Service
 public class InternalPredictionService {

@@ -1,8 +1,5 @@
 package io.seldon.engine.predictors;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.springframework.stereotype.Component;
 
 import io.seldon.protos.PredictionProtos.Feedback;
@@ -14,7 +11,7 @@ public class SimpleRouterUnit extends RouterUnit {
     public SimpleRouterUnit() {}
 
 	@Override
-	protected Integer forwardPass(Message request, PredictiveUnitState state){
+	protected int route(Message input, PredictiveUnitState state){
 		return 0;
 	} 
 	

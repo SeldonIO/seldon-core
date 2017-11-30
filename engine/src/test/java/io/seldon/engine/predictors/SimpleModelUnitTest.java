@@ -13,7 +13,6 @@ import io.kubernetes.client.proto.V1.PodTemplateSpec;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit;
 import io.seldon.protos.DeploymentProtos.PredictorSpec;
 import io.seldon.protos.PredictionProtos.Message;
-import io.seldon.protos.PredictionProtos.Message;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest

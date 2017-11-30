@@ -1,21 +1,17 @@
 package io.seldon.engine.predictors;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import io.seldon.engine.exception.APIException;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitType;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitSubtype;
 import io.seldon.protos.DeploymentProtos.PredictorSpec;
 import io.seldon.protos.PredictionProtos.Feedback;
-import io.seldon.protos.PredictionProtos.Message;
 import io.seldon.protos.PredictionProtos.Message;
 
 import io.kubernetes.client.proto.V1.Container;
@@ -59,7 +55,7 @@ public class PredictorBean {
 
 	{
 		PredictiveUnitState rootState = predictorState.rootState;
-		return rootState.predictiveUnitBean.predict(request, rootState);
+		return rootState.predictiveUnitBean.getOutput(request, rootState);
 	}
 	
 	public void sendFeedback(Feedback feedback, PredictorState predictorState) throws InterruptedException, ExecutionException

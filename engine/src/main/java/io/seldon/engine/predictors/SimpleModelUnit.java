@@ -1,16 +1,10 @@
 package io.seldon.engine.predictors;
 
 import java.util.Arrays;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
-import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 
 import io.seldon.protos.PredictionProtos.DefaultData;
-import io.seldon.protos.PredictionProtos.Message;
-import io.seldon.protos.PredictionProtos.Meta;
 import io.seldon.protos.PredictionProtos.Message;
 import io.seldon.protos.PredictionProtos.Meta;
 import io.seldon.protos.PredictionProtos.Status;
@@ -24,9 +18,9 @@ public class SimpleModelUnit extends ModelUnit {
 	public static final Double[] values = {0.1,0.9,0.5};		
 	public static final String[] classes = {"class0","class1","class2"};
 	
-	private Message doPredict(Message request, PredictiveUnitState state)
-	{
-		Message ret = Message.newBuilder()
+	@Override
+	protected Message transformInput(Message input, PredictiveUnitState state){
+		Message output = Message.newBuilder()
 				.setStatus(Status.newBuilder().setStatus(Status.StatusFlag.SUCCESS).build())
 				.setMeta(Meta.newBuilder())//.addModel(state.id))
 				.setData(DefaultData.newBuilder().addAllNames(Arrays.asList(classes))
@@ -39,15 +33,6 @@ public class SimpleModelUnit extends ModelUnit {
 			e.printStackTrace();
 		}
 		System.out.println("Model " + state.name + " finishing computations");
-		return ret;
+		return output;
 	}
-	
-	@Override
-	protected Future<Message> predict(Message request, PredictiveUnitState state, Map<String, Integer> routingDict) throws InterruptedException, ExecutionException{
-		System.out.println("Model " + state.name + " starting computations");
-		
-		return new AsyncResult<>(doPredict(request,state));
-	}
-	
-	
 }

@@ -15,7 +15,6 @@ import io.seldon.protos.DeploymentProtos.Parameter;
 import io.seldon.protos.DeploymentProtos.Parameter.ParameterType;
 import io.seldon.protos.DeploymentProtos.PredictorSpec;
 import io.seldon.protos.PredictionProtos.Message;
-import io.seldon.protos.PredictionProtos.Message;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest

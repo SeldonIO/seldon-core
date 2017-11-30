@@ -1,7 +1,5 @@
 package io.seldon.engine.predictors;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 import org.springframework.stereotype.Component;
@@ -17,8 +15,7 @@ public class RandomABTestUnit extends RouterUnit {
 	Random rand = new Random(1337);
 
 	@Override
-	protected Integer forwardPass(Message request, PredictiveUnitState state){
-		
+	protected int route(Message input, PredictiveUnitState state){
 		@SuppressWarnings("unchecked")
 		PredictiveUnitParameter<Float> parameter = (PredictiveUnitParameter<Float>) state.parameters.get("ratioA");
 		
@@ -41,7 +38,7 @@ public class RandomABTestUnit extends RouterUnit {
 		else{
 			return 1;
 		}
-	} 
+	}
 	
 	@Override
 	protected void doSendFeedback(Feedback feedback, PredictiveUnitState state){

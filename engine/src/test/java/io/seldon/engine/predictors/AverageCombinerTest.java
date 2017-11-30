@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -18,7 +17,6 @@ import com.google.protobuf.Value;
 
 import io.seldon.engine.exception.APIException;
 import io.seldon.protos.PredictionProtos.DefaultData;
-import io.seldon.protos.PredictionProtos.Message;
 import io.seldon.protos.PredictionProtos.Message;
 import io.seldon.protos.PredictionProtos.Status;
 import io.seldon.protos.PredictionProtos.Tensor;
@@ -52,10 +50,9 @@ public class AverageCombinerTest {
 						.build()).build());
 		
 		AverageCombinerUnit averageCombinerUnit = new AverageCombinerUnit();
-		Message prd = Message.newBuilder().build();
-		Method method = AverageCombinerUnit.class.getDeclaredMethod("backwardPass",List.class,Message.class,PredictiveUnitState.class);
+		Method method = AverageCombinerUnit.class.getDeclaredMethod("aggregateOutputs",List.class,PredictiveUnitState.class);
 		method.setAccessible(true);
-		Message average = (Message) method.invoke(averageCombinerUnit, predictorReturns, prd, null);
+		Message average = (Message) method.invoke(averageCombinerUnit, predictorReturns, null);
 		
 		Assert.assertThat(average.getData().getNamesList().get(0),is(names[0]));
 		
@@ -90,9 +87,9 @@ public class AverageCombinerTest {
 								.addValues(Value.newBuilder().setNumberValue(values3[1])).build())).build()).build()).build());
 		
 		AverageCombinerUnit averageCombinerUnit = new AverageCombinerUnit();
-		Method method = AverageCombinerUnit.class.getDeclaredMethod("backwardPass",List.class,Message.class,PredictiveUnitState.class);
+		Method method = AverageCombinerUnit.class.getDeclaredMethod("aggregateOutputs",List.class,PredictiveUnitState.class);
 		method.setAccessible(true);
-		Message average = (Message) method.invoke(averageCombinerUnit, predictorReturns, null, null);
+		Message average = (Message) method.invoke(averageCombinerUnit, predictorReturns, null);
 		
 		Assert.assertThat(average.getData().getNamesList().get(0),is(names[0]));
 		
@@ -121,9 +118,9 @@ public class AverageCombinerTest {
 						.build()).build());
 		
 		AverageCombinerUnit averageCombinerUnit = new AverageCombinerUnit();
-		Method method = AverageCombinerUnit.class.getDeclaredMethod("backwardPass",List.class,Message.class,PredictiveUnitState.class);
+		Method method = AverageCombinerUnit.class.getDeclaredMethod("aggregateOutputs",List.class,PredictiveUnitState.class);
 		method.setAccessible(true);
-		Message average = (Message) method.invoke(averageCombinerUnit, predictorReturns, null, null);
+		Message average = (Message) method.invoke(averageCombinerUnit, predictorReturns, null);
 		
 		Assert.assertThat(average.getData().getNamesList().get(0),is(names[0]));
 
@@ -146,9 +143,9 @@ public class AverageCombinerTest {
 		
 		
 		AverageCombinerUnit averageCombinerUnit = new AverageCombinerUnit();
-		Method method = AverageCombinerUnit.class.getDeclaredMethod("backwardPass",List.class,Message.class,PredictiveUnitState.class);
+		Method method = AverageCombinerUnit.class.getDeclaredMethod("aggregateOutputs",List.class,PredictiveUnitState.class);
 		method.setAccessible(true);
-		Message average = (Message) method.invoke(averageCombinerUnit, predictorReturns, null, null);
+		Message average = (Message) method.invoke(averageCombinerUnit, predictorReturns, null);
 		
 		Assert.assertThat(average.getData().getNamesList().get(0),is(names[0]));
 
@@ -162,11 +159,11 @@ public class AverageCombinerTest {
 		List<Message> predictorReturns = new ArrayList<>();
 		
 		AverageCombinerUnit averageCombinerUnit = new AverageCombinerUnit();
-		Method method = AverageCombinerUnit.class.getDeclaredMethod("backwardPass",List.class,Message.class,PredictiveUnitState.class);
+		Method method = AverageCombinerUnit.class.getDeclaredMethod("aggregateOutputs",List.class,PredictiveUnitState.class);
 		method.setAccessible(true);
 		
 		try{
-			Message average = (Message) method.invoke(averageCombinerUnit, predictorReturns, null, null);
+			method.invoke(averageCombinerUnit, predictorReturns, null);
 		}
 		catch( InvocationTargetException e){
 			Throwable targetException = e.getTargetException();
@@ -188,11 +185,11 @@ public class AverageCombinerTest {
 				.setData(DefaultData.newBuilder().addAllNames(Arrays.asList(names))
 						.build()).build());
 		AverageCombinerUnit averageCombinerUnit = new AverageCombinerUnit();
-		Method method = AverageCombinerUnit.class.getDeclaredMethod("backwardPass",List.class,Message.class,PredictiveUnitState.class);
+		Method method = AverageCombinerUnit.class.getDeclaredMethod("aggregateOutputs",List.class,PredictiveUnitState.class);
 		method.setAccessible(true);
 		
 		try{
-			Message average = (Message) method.invoke(averageCombinerUnit, predictorReturns, null, null);
+			method.invoke(averageCombinerUnit, predictorReturns, null);
 		}
 		catch( InvocationTargetException e){
 			Throwable targetException = e.getTargetException();
@@ -227,11 +224,11 @@ public class AverageCombinerTest {
 						.build()).build());
 		
 		AverageCombinerUnit averageCombinerUnit = new AverageCombinerUnit();
-		Method method = AverageCombinerUnit.class.getDeclaredMethod("backwardPass",List.class,Message.class,PredictiveUnitState.class);
+		Method method = AverageCombinerUnit.class.getDeclaredMethod("aggregateOutputs",List.class,PredictiveUnitState.class);
 		method.setAccessible(true);
 		
 		try{
-			Message average = (Message) method.invoke(averageCombinerUnit, predictorReturns, null, null);
+			method.invoke(averageCombinerUnit, predictorReturns, null);
 		}
 		catch( InvocationTargetException e){
 			Throwable targetException = e.getTargetException();
@@ -240,7 +237,7 @@ public class AverageCombinerTest {
 			
 	}
 	
-    @Test(expected = APIException.class)
+    @Test
 	public void testPredictNoChildren() throws InterruptedException, ExecutionException{
     	
     	Message p = Message.newBuilder().build();
@@ -251,11 +248,7 @@ public class AverageCombinerTest {
     	
     	state.predictiveUnitBean = averageCombinerUnit;
 
-    	Future<Message> futurePred = averageCombinerUnit.predict(p, state, null);
-    	
-    	Message average = futurePred.get();
-		
-    	
+    	averageCombinerUnit.getOutput(p, state);
 	}
     
 }

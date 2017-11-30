@@ -4,7 +4,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.junit.Assert;
@@ -31,27 +30,24 @@ public class RandomABTestUnitInternalTest {
 		
 		state.addChild(childA);
 		state.addChild(childB);
-//		
-//		Map<String,Integer> emptyDict = new HashMap<String, Integer>();
-//		Class<Map<String,Integer>> clazz = (Class<Map<String,Integer>>)(Class)Map.class;
 
 		
 		RandomABTestUnit randomABTestUnit = new RandomABTestUnit();
-		Method method = RandomABTestUnit.class.getDeclaredMethod("forwardPass", Message.class, PredictiveUnitState.class);
+		Method method = RandomABTestUnit.class.getDeclaredMethod("route", Message.class, PredictiveUnitState.class);
 		method.setAccessible(true);
 
 		// The following values are from random seed 1337
-		Integer routing1 = (Integer) method.invoke(randomABTestUnit, request, state);
+		int routing1 = (int) method.invoke(randomABTestUnit, request, state);
 
-		Assert.assertEquals((Integer)1,routing1); 
+		Assert.assertEquals(1,routing1); 
 		
-		Integer routing2 = (Integer) method.invoke(randomABTestUnit, request, state);
+		int routing2 = (int) method.invoke(randomABTestUnit, request, state);
 
-		Assert.assertEquals((Integer)0,routing2);
+		Assert.assertEquals(0,routing2);
 		
-		Integer routing3 = (Integer) method.invoke(randomABTestUnit, request, state);
+		int routing3 = (int) method.invoke(randomABTestUnit, request, state);
 
-		Assert.assertEquals((Integer)1,routing3);
+		Assert.assertEquals(1,routing3);
 	}
 	
 	@Test(expected=APIException.class)
@@ -69,15 +65,13 @@ public class RandomABTestUnitInternalTest {
 		
 		state.addChild(childA);
 		
-//		Map<String,Integer> emptyDict = new HashMap<String, Integer>();
-		
 		RandomABTestUnit randomABTestUnit = new RandomABTestUnit();
-		Method method = RandomABTestUnit.class.getDeclaredMethod("forwardPass", Message.class, PredictiveUnitState.class);
+		Method method = RandomABTestUnit.class.getDeclaredMethod("route", Message.class, PredictiveUnitState.class);
 		method.setAccessible(true);
 
 		// The following should return an error
 		try{
-			Integer routing1 = (Integer) method.invoke(randomABTestUnit, request, state);
+			method.invoke(randomABTestUnit, request, state);
 		}
 		catch( InvocationTargetException e){
 			Throwable targetException = e.getTargetException();
