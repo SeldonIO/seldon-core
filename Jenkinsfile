@@ -20,6 +20,10 @@ pipeline {
             when {
                 expression { return params.IS_DISABLED_APIFE_BUILD == false }
             }
+            environment {
+                SELDON_CORE_DOCKER_HUB_USER = credentials('SELDON_CORE_DOCKER_HUB_USER')
+                SELDON_CORE_DOCKER_HUB_PASSWORD = credentials('SELDON_CORE_DOCKER_HUB_PASSWORD')
+            }
             steps {
                 echo "Build Jar"
                 sh 'cd api-frontend && make -f Makefile.ci clean build_jar'
