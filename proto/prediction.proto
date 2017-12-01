@@ -120,7 +120,8 @@ service Router {
  }
 
 service Transformer {
-  rpc Transform(Message) returns (Message) {};
+  rpc TransformInput(Message) returns (Message) {};
+  rpc TransformOutput(Message) returns (Message) {};
  }
 
 // [END Services]

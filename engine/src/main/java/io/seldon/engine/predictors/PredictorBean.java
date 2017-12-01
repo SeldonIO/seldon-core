@@ -30,6 +30,7 @@ public class PredictorBean {
 			SimpleModelUnit simpleModelUnit, 
 			SimpleRouterUnit simpleRouterUnit,
 			AverageCombinerUnit averageCombinerUnit,
+			TransformerUnit transformerUnit,
 			RandomABTestUnit randomABTestUnit) {
         nodeClassMap = new HashMap<PredictiveUnitType,Map<PredictiveUnitSubtype,PredictiveUnitBean>>();
         
@@ -48,6 +49,10 @@ public class PredictorBean {
         combinersMap.put(PredictiveUnitSubtype.MICROSERVICE, combinerUnit);
         combinersMap.put(PredictiveUnitSubtype.AVERAGE_COMBINER, averageCombinerUnit);
         nodeClassMap.put(PredictiveUnitType.COMBINER, combinersMap);
+        
+        Map<PredictiveUnitSubtype,PredictiveUnitBean> transformersMap = new HashMap<PredictiveUnitSubtype,PredictiveUnitBean>();
+        transformersMap.put(PredictiveUnitSubtype.MICROSERVICE, transformerUnit);
+        nodeClassMap.put(PredictiveUnitType.TRANSFORMER, transformersMap);
         
     }
    

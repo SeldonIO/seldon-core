@@ -3,6 +3,8 @@ package io.seldon.engine.predictors;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.springframework.stereotype.Component;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+
 import io.seldon.protos.PredictionProtos.Message;
 import io.seldon.protos.PredictionProtos.Feedback;
 import io.seldon.engine.exception.APIException;
@@ -18,14 +20,25 @@ public class RouterUnit extends PredictiveUnitBean{
 	
 	@Override
 	protected int route(Message input, PredictiveUnitState state){
-		Message ret = internalPredictionService.getRouting(input, state.endpoint);
+		Message ret = null;
+		try {
+			ret = internalPredictionService.route(input, state);
+		} catch (InvalidProtocolBufferException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		int branchIndex = getBranchIndex(ret,state);
 		return branchIndex;
 	}
 	
 	@Override
 	protected void doSendFeedback(Feedback feedback, PredictiveUnitState state){
-		internalPredictionService.sendFeedbackRouter(feedback, state.endpoint);
+		try {
+			internalPredictionService.sendFeedback(feedback, state);
+		} catch (InvalidProtocolBufferException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	private int getBranchIndex(Message routerReturn, PredictiveUnitState state){

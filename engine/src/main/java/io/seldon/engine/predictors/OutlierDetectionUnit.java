@@ -17,7 +17,7 @@ public class OutlierDetectionUnit extends PredictiveUnitBean {
 		Message outlierDetectionResponse = null;
 		
 		try {
-			outlierDetectionResponse = internalPredictionService.getPrediction(input, state);
+			outlierDetectionResponse = internalPredictionService.predict(input, state);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

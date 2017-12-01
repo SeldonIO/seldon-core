@@ -32,7 +32,7 @@ public class ModelUnit extends PredictiveUnitBean{
 	protected Message transformInput(Message input, PredictiveUnitState state){
 		Message output = null;
 		try {
-			output = internalPredictionService.getPrediction(input, state);
+			output = internalPredictionService.predict(input, state);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -21,6 +21,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 
 import io.grpc.ManagedChannel;
@@ -34,6 +35,8 @@ import io.seldon.protos.ModelGrpc;
 import io.seldon.protos.ModelGrpc.ModelBlockingStub;
 import io.seldon.protos.RouterGrpc;
 import io.seldon.protos.RouterGrpc.RouterBlockingStub;
+import io.seldon.protos.TransformerGrpc;
+import io.seldon.protos.TransformerGrpc.TransformerBlockingStub;
 import io.seldon.protos.PredictionProtos.Feedback;
 import io.seldon.protos.PredictionProtos.Message;
 import io.seldon.protos.PredictionProtos.Message.DataOneofCase;
@@ -45,7 +48,9 @@ public class InternalPredictionService {
 
 	public static final String MODEL_NAME_HEADER = "Seldon-model-name"; 
 	public static final String MODEL_IMAGE_HEADER = "Seldon-model-image"; 
-	public static final String MODEL_VERSION_HEADER = "Seldon-model-version"; 
+	public static final String MODEL_VERSION_HEADER = "Seldon-model-version";
+	
+	public static final int TIMEOUT = 5;
 	
     ObjectMapper mapper = new ObjectMapper();
     
@@ -58,168 +63,168 @@ public class InternalPredictionService {
     	this.restTemplate = restTemplate;
     	
     }
-		
-	public Message getPrediction(Message request, PredictiveUnitState state) throws JsonProcessingException, IOException{
-
-		final Endpoint endpoint = state.endpoint;
+    
+    public Message predict(Message input, PredictiveUnitState state) throws InvalidProtocolBufferException
+    {
+    	final Endpoint endpoint = state.endpoint;
 		switch (endpoint.getType()){
 			case REST:
-				String dataString = ProtoBufUtils.toJson(request);
-				boolean isDefault = false;
-				if (request.getDataOneofCase() == DataOneofCase.DATA)
-					isDefault = true;
-				return getPredictionREST(dataString, state, endpoint, isDefault);
+				String dataString = ProtoBufUtils.toJson(input);
+				return queryREST("predict", dataString, state, endpoint, isDefaultData(input));
 				
 			case GRPC:
-				return getPredictionGRPC(request,state,endpoint);
+				ModelBlockingStub stub =  ModelGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
+				return stub.predict(input);
 		}
 		throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,"no service available");
-	}
-	
-	public Message getRouting(Message request, Endpoint endpoint){
+    }
+    
+    public Message route(Message input, PredictiveUnitState state) throws InvalidProtocolBufferException
+    {
+    	final Endpoint endpoint = state.endpoint;
 		switch (endpoint.getType()){
 			case REST:
-				throw new NotImplementedException();
-			case GRPC:
-				return getRoutingGRPC(request, endpoint);
+				String dataString = ProtoBufUtils.toJson(input);
+				return queryREST("route", dataString, state, endpoint, isDefaultData(input));
 				
+			case GRPC:
+				RouterBlockingStub stub =  RouterGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
+				return stub.route(input);
 		}
-		return null;
-	}
-	
-	public void sendFeedback(Feedback feedback, Endpoint endpoint){
+		throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,"no service available");
+    }
+    
+    public Message sendFeedback(Feedback feedback, PredictiveUnitState state) throws InvalidProtocolBufferException
+    {
+    	final Endpoint endpoint = state.endpoint;
 		switch (endpoint.getType()){
 			case REST:
-				throw new NotImplementedException();
+				String dataString = ProtoBufUtils.toJson(feedback);
+				return queryREST("send-feedback", dataString, state, endpoint, true);
+				
 			case GRPC:
-				sendFeedbackGRPC(feedback, endpoint);
+				switch (state.type){
+					case MODEL:
+						ModelBlockingStub modelStub =  ModelGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
+						return modelStub.sendFeedback(feedback);
+					case ROUTER:
+						RouterBlockingStub routerStub =  RouterGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
+						return routerStub.sendFeedback(feedback);
+				}
 		}
-		return;
-	}
-	
-	public void sendFeedbackRouter(Feedback feedback, Endpoint endpoint){
+		throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,"no service available");
+    }
+    
+    public Message transformInput(Message input, PredictiveUnitState state) throws InvalidProtocolBufferException
+    {
+    	final Endpoint endpoint = state.endpoint;
 		switch (endpoint.getType()){
 			case REST:
-				throw new NotImplementedException();
+				String dataString = ProtoBufUtils.toJson(input);
+				return queryREST("predict", dataString, state, endpoint, isDefaultData(input));
+				
 			case GRPC:
-				sendFeedbackRouterGRPC(feedback, endpoint);
+				TransformerBlockingStub stub =  TransformerGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
+				return stub.transformInput(input);
 		}
-		return;
+		throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,"no service available");
+    }
+    
+    public Message transformOutput(Message output, PredictiveUnitState state) throws InvalidProtocolBufferException
+    {
+    	final Endpoint endpoint = state.endpoint;
+		switch (endpoint.getType()){
+			case REST:
+				String dataString = ProtoBufUtils.toJson(output);
+				return queryREST("predict", dataString, state, endpoint, isDefaultData(output));
+				
+			case GRPC:
+				TransformerBlockingStub stub =  TransformerGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
+				return stub.transformOutput(output);
+		}
+		throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,"no service available");
+    }
+		
+    private boolean isDefaultData(Message message){
+    	if (message.getDataOneofCase() == DataOneofCase.DATA)
+			return true;
+    	return false;
+    }
+    
+	private ManagedChannel getChannel(Endpoint endpoint){
+		ManagedChannel channel = ManagedChannelBuilder.forAddress(endpoint.getServiceHost(), endpoint.getServicePort()).usePlaintext(true).build();
+		return channel;
 	}
 	
-	private void sendFeedbackGRPC(Feedback feedback, Endpoint endpoint){
-		ManagedChannel channel = ManagedChannelBuilder.forAddress(endpoint.getServiceHost(), endpoint.getServicePort()).usePlaintext(true).build();
-		ModelBlockingStub stub =  ModelGrpc.newBlockingStub(channel).withDeadlineAfter(5, TimeUnit.SECONDS);
-		
-		stub.sendFeedback(feedback);
-		
-		return;
-	}
-	
-	private void sendFeedbackRouterGRPC(Feedback feedback, Endpoint endpoint){
-		ManagedChannel channel = ManagedChannelBuilder.forAddress(endpoint.getServiceHost(), endpoint.getServicePort()).usePlaintext(true).build();
-		RouterBlockingStub stub =  RouterGrpc.newBlockingStub(channel).withDeadlineAfter(5, TimeUnit.SECONDS);
-		
-		stub.sendFeedback(feedback);
-		
-		return;
-	}
-	
-	private Message getRoutingGRPC(Message request, Endpoint endpoint){
-		ManagedChannel channel = ManagedChannelBuilder.forAddress(endpoint.getServiceHost(), endpoint.getServicePort()).usePlaintext(true).build();
-
-		RouterBlockingStub stub =  RouterGrpc.newBlockingStub(channel).withDeadlineAfter(5, TimeUnit.SECONDS);
-		Message routing;
+	private Message queryREST(String path, String dataString, PredictiveUnitState state, Endpoint endpoint, boolean isDefault)
+	{
+		long timeNow = System.currentTimeMillis();
+		URI uri;
 		try {
-			routing = stub.route(request);
-		} catch (StatusRuntimeException e) 
+			URIBuilder builder = new URIBuilder().setScheme("http")
+					.setHost(endpoint.getServiceHost())
+					.setPort(endpoint.getServicePort())
+					.setPath("/"+path);
+
+			uri = builder.build();
+		} catch (URISyntaxException e) 
 		{
 			throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_ENDPOINT_URL,"Host: "+endpoint.getServiceHost()+" port:"+endpoint.getServicePort());
 		}
 		
-		return routing;
-	}
-	
-	public Message getPredictionGRPC(Message request, PredictiveUnitState state, Endpoint endpoint){
-		ManagedChannel channel = ManagedChannelBuilder.forAddress(endpoint.getServiceHost(), endpoint.getServicePort()).usePlaintext(true).build();
-		ModelBlockingStub stub =  ModelGrpc.newBlockingStub(channel).withDeadlineAfter(5, TimeUnit.SECONDS);
-			
-		Message response = stub.predict(request);
-		return response;
-	}
-	
-	
-	
-	public Message getPredictionREST(String dataString, PredictiveUnitState state, Endpoint endpoint, boolean isDefault){
+		try  
 		{
-    		long timeNow = System.currentTimeMillis();
-    		URI uri;
-			try {
-    			URIBuilder builder = new URIBuilder().setScheme("http")
-    					.setHost(endpoint.getServiceHost())
-    					.setPort(endpoint.getServicePort())
-    					.setPath("/predict");
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+			headers.add(MODEL_NAME_HEADER, state.name);
+			headers.add(MODEL_IMAGE_HEADER, state.imageName);
+			headers.add(MODEL_VERSION_HEADER, state.imageVersion);
+			
+			MultiValueMap<String, String> map= new LinkedMultiValueMap<String, String>();
+			map.add("json", dataString);
+			map.add("isDefault", Boolean.toString(isDefault));
 
-    			uri = builder.build();
-    		} catch (URISyntaxException e) 
-    		{
-    			throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_ENDPOINT_URL,"Host: "+endpoint.getServiceHost()+" port:"+endpoint.getServicePort());
-    		}
-    		
-    		try  
-    		{
-    			HttpHeaders headers = new HttpHeaders();
-    			headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-    			headers.add(MODEL_NAME_HEADER, state.name);
-    			headers.add(MODEL_IMAGE_HEADER, state.imageName);
-    			headers.add(MODEL_VERSION_HEADER, state.imageVersion);
-    			
-    			MultiValueMap<String, String> map= new LinkedMultiValueMap<String, String>();
-    			map.add("json", dataString);
-    			map.add("isDefault", Boolean.toString(isDefault));
+			HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(map, headers);
 
-    			HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(map, headers);
-
-    			logger.info("Requesting " + uri.toString());
-    			ResponseEntity<String> httpResponse = restTemplate.postForEntity( uri, request , String.class );
-    			
-    			try
-    			{
-    				if(httpResponse.getStatusCode().is2xxSuccessful()) 
-    				{
-    				    Message.Builder builder = Message.newBuilder();
-    				    String response = httpResponse.getBody();
-    				    logger.info(response);
-    				    JsonFormat.parser().ignoringUnknownFields().merge(response, builder);
-    				    return builder.build();
-    				} 
-    				else 
-    				{
-    					logger.error("Couldn't retrieve prediction from external prediction server -- bad http return code: " + httpResponse.getStatusCode());
-    					throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,String.format("Bad return code %d", httpResponse.getStatusCode()));
-    				}
-    			}
-    			finally
-    			{
-    				if (logger.isDebugEnabled())
-    					logger.debug("External prediction server took "+(System.currentTimeMillis()-timeNow) + "ms");
-    			}
-    		} 
-    		catch (IOException e) 
-    		{
-    			logger.error("Couldn't retrieve prediction from external prediction server - ", e);
-    			throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,e.toString());
-    		}
-    		catch (Exception e)
-            {
-    			logger.error("Couldn't retrieve prediction from external prediction server - ", e);
-    			throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,e.toString());
-            }
-    		finally
-    		{
-    			
-    		}
-
-    }
+			logger.info("Requesting " + uri.toString());
+			ResponseEntity<String> httpResponse = restTemplate.postForEntity( uri, request , String.class );
+			
+			try
+			{
+				if(httpResponse.getStatusCode().is2xxSuccessful()) 
+				{
+				    Message.Builder builder = Message.newBuilder();
+				    String response = httpResponse.getBody();
+				    logger.info(response);
+				    JsonFormat.parser().ignoringUnknownFields().merge(response, builder);
+				    return builder.build();
+				} 
+				else 
+				{
+					logger.error("Couldn't retrieve prediction from external prediction server -- bad http return code: " + httpResponse.getStatusCode());
+					throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,String.format("Bad return code %d", httpResponse.getStatusCode()));
+				}
+			}
+			finally
+			{
+				if (logger.isDebugEnabled())
+					logger.debug("External prediction server took "+(System.currentTimeMillis()-timeNow) + "ms");
+			}
+		} 
+		catch (IOException e) 
+		{
+			logger.error("Couldn't retrieve prediction from external prediction server - ", e);
+			throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,e.toString());
+		}
+		catch (Exception e)
+        {
+			logger.error("Couldn't retrieve prediction from external prediction server - ", e);
+			throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,e.toString());
+        }
+		finally
+		{
+			
+		}
 	}
+
 }
