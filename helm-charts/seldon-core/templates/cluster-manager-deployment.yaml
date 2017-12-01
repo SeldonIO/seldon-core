@@ -19,8 +19,6 @@ items:
             value: {{ .Values.java_opts }}
           - name: SPRING_OPTS
             value: {{ .Values.spring_opts }}
-          - name: SELDON_CLUSTER_MANAGER_ZK_SERVERS
-            value: zookeeper-1:2181,zookeeper-2:2181,zookeeper-3:2181
           - name: SELDON_CLUSTER_MANAGER_REDIS_HOST
             value: redis
           - name: ENGINE_CONTAINER_IMAGE_AND_VERSION

@@ -1,14 +1,21 @@
 SHELL=/bin/bash
 
-DOCKER_IMAGE_NAME=seldonio/apife
-PROJECT_VERSION:=`cat version.txt`
-DOCKER_IMAGE_VERSION=$(PROJECT_VERSION)
-APIFE_IMAGE_VERSION=$(PROJECT_VERSION)
+IMAGE_NAME=apife
+VERSION_FILE=target/version.txt
 
-build_docker_image: update_proto
-	mkdir -p .m2 && docker build --force-rm=true -t $(PRIVATE_REPO)$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VERSION) .
+write_version:
+	ls target/seldon-apife-*.jar | sed -n 's/target\/seldon-apife-\(.*\).jar$$/\1/p' > $(VERSION_FILE) && cat $(VERSION_FILE)
+
+build_jar: update_proto
+	mvn clean package -B
+
+build_image: build_jar write_version
+	mkdir -p .m2 && docker build --build-arg APP_VERSION=$$(cat $(VERSION_FILE)) -t seldonio/$(IMAGE_NAME):latest .
+	docker tag seldonio/$(IMAGE_NAME):latest seldonio/$(IMAGE_NAME):$$(cat $(VERSION_FILE))
+
+
 push_to_registry:
-	docker push $(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VERSION)
+	docker push seldonio/$(IMAGE_NAME):$$(cat $(VERSION_FILE)
 
 clean:
 	@mvn clean
@@ -22,25 +29,6 @@ cache_dependencies:
 
 FORCE:
 
-apife.json: FORCE
-	@ \
-	if [ ! -f settings.sh ]; then \
-		cp -v settings.sh.default settings.sh; \
-	fi && \
-	source settings.sh && cat apife.json.in | sed \
-		-e  "s|%SELDON_APIFE_SERVICE_TYPE%|$${SELDON_APIFE_SERVICE_TYPE}|" \
-		-e  "s|%JAVA_OPTS%|$${JAVA_OPTS}|" \
-		-e  "s|%APIFE_IMAGE_VERSION%|$(APIFE_IMAGE_VERSION)|" > $@ && echo "created $@"
-
-apife_istio.json: FORCE
-	@ \
-	if [ ! -f settings.sh ]; then \
-		cp -v settings.sh.default settings.sh; \
-	fi && \
-	source settings.sh && cat apife_istio.json.in | sed \
-		-e  "s|%SELDON_APIFE_SERVICE_TYPE%|$${SELDON_APIFE_SERVICE_TYPE}|" \
-		-e  "s|%JAVA_OPTS%|$${JAVA_OPTS}|" \
-		-e  "s|%APIFE_IMAGE_VERSION%|$(APIFE_IMAGE_VERSION)|" > $@ && echo "created $@"
 
 start_apife: apife.json
 	kubectl apply -f apife.json
@@ -53,9 +41,6 @@ start_apife_istio: apife_istio.json
 stop_apife_istio: apife_istio.json
 	kubectl delete --ignore-not-found=true -f apife_istio.json
 
-
-update_version_txt:
-	PROJECT_VERSION=$$(MAVEN_OPTS="-Dorg.slf4j.simpleLogger.defaultLogLevel=WARN -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugins.help=INFO" mvn help:evaluate -o -Dexpression=project.version | tail -1) && echo "$${PROJECT_VERSION}" > version.txt
 
 update_proto:
 	cp -v ../proto/seldon_deployment.proto src/main/proto/ 

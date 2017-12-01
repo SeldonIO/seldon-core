@@ -1,7 +1,7 @@
 SHELL:=/bin/bash
 
 DOCKER_IMAGE_NAME=seldonio/locust-core
-DOCKER_IMAGE_VERSION=0.2
+DOCKER_IMAGE_VERSION=0.3
 
 build_docker_image: 
 	docker build --force-rm=true -t $(PRIVATE_REPO)$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VERSION) .

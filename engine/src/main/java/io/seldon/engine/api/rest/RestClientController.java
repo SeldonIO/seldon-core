@@ -74,12 +74,14 @@ public class RestClientController {
 	@RequestMapping("/pause")
     String pause() {	    
 		ready = false;
+        logger.warn("App Paused");
         return "paused";
     }
 	
 	@RequestMapping("/unpause")
     String unpause() {	    
 		ready = true;
+        logger.warn("App UnPaused");		
         return "unpaused";
     }
 

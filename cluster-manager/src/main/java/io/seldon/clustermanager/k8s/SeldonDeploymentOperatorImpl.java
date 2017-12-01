@@ -100,7 +100,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 					)
 			.setLifecycle(Lifecycle.newBuilder().setPreStop(Handler.newBuilder().setExec(
 					ExecAction.newBuilder()
-						.addCommand("/bin/bash")
+						.addCommand("/bin/sh")
 						.addCommand("-c")
 						.addCommand("curl 127.0.0.1:"+clusterManagerProperites.getEngineContainerPort()+"/pause && /bin/sleep 20"))));
 
@@ -204,7 +204,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			if (!c.getLifecycle().hasPreStop())
 			{
 				c2Builder.setLifecycle(Lifecycle.newBuilder(c.getLifecycle()).setPreStop(Handler.newBuilder().setExec(
-						ExecAction.newBuilder().addCommand("/bin/bash").addCommand("-c").addCommand("/bin/sleep 20"))));
+						ExecAction.newBuilder().addCommand("/bin/sh").addCommand("-c").addCommand("/bin/sleep 20"))));
 			}
 		}
 
@@ -307,7 +307,9 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		{
 			String depName = getKubernetesDeploymentName(mlDep.getSpec().getName(),p.getName());
 			PodTemplateSpec.Builder podSpecBuilder = PodTemplateSpec.newBuilder(p.getComponentSpec());
-			podSpecBuilder.getSpecBuilder().addContainers(createEngineContainer(p));
+			podSpecBuilder.getSpecBuilder()
+			    .addContainers(createEngineContainer(p))
+			    .setTerminationGracePeriodSeconds(20);
 			podSpecBuilder.getMetadataBuilder()
 			    .putAnnotations("prometheus.io/path", "/prometheus")
 			    .putAnnotations("prometheus.io/port",""+clusterManagerProperites.getEngineContainerPort())

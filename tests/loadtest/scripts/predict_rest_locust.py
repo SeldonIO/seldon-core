@@ -126,7 +126,7 @@ class SeldonJsLocust(TaskSet):
     def getPrediction(self):
         fake_data = [[round(random(),2) for i in range(0,self.data_size)]]
         features = ["f"+str(i) for i in range (0,self.data_size)]
-        j = {"request":{"features":features,"ndarray":fake_data}}
+        j = {"data":{"names":features,"ndarray":fake_data}}
         jStr = json.dumps(j)
         print jStr
         r = self.client.request("POST","/api/v0.1/predictions",headers={"Content-Type":"application/json","Accept":"application/json","Authorization":"Bearer "+self.access_token},name="predictions",data=jStr)
