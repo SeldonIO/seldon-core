@@ -98,10 +98,6 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
                 }
             }
             else { // Update
-                //ExtensionsV1beta1Api api = new ExtensionsV1beta1Api(client.getApiClient());
-                //Type returnType = new TypeToken<ExtensionsV1beta1Deployment>(){}.getType();
-                //ExtensionsV1beta1Deployment dModel = ProtoBufUtils.convertProtoToModel(d,returnType);
-                //api.patchNamespacedDeployment(client.getApiClient().escapeString(d.getMetadata().getName()),"default",dModel,null);
                 os = client.update(d,listApiPath, DEPLOYMENT_API_VERSION, "Deployment");
                 if (os.status != null) {
                     logger.error("Error updating deployment:"+ProtoBufUtils.toJson(os.status));
