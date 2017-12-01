@@ -11,10 +11,6 @@ pipeline {
         booleanParam(name: 'IS_DISABLED_CLUSTERMANAGER_BUILD', defaultValue: false, description: '')
         booleanParam(name: 'IS_IMAGE_BEING_PUBLISHED', defaultValue: false, description: '')
     }
-    environment {
-        SELDON_CORE_DOCKER_HUB_USER = credentials('SELDON_CORE_DOCKER_HUB_USER')
-        SELDON_CORE_DOCKER_HUB_PASSWORD = credentials('SELDON_CORE_DOCKER_HUB_PASSWORD')
-    }
     stages {
         stage('build-api-frontend') {
             when {
@@ -25,6 +21,10 @@ pipeline {
                 SELDON_CORE_DOCKER_HUB_PASSWORD = credentials('SELDON_CORE_DOCKER_HUB_PASSWORD')
             }
             steps {
+                echo "*** TESTING ***"
+                sh "echo ${SELDON_CORE_DOCKER_HUB_USER}"
+                sh "echo ${SELDON_CORE_DOCKER_HUB_PASSWORD}"
+                echo "*** TESTING ***"
                 echo "Build Jar"
                 sh 'cd api-frontend && make -f Makefile.ci clean build_jar'
                 echo "Build Image"
