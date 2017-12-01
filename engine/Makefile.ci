@@ -1,11 +1,31 @@
+IMAGE_NAME=engine
+VERSION_FILE=target/version.txt
+
 build_jar: update_proto
 	mvn clean package -B
+
+write_version:
+	ls target/seldon-engine-*.jar | sed -n 's/target\/seldon-engine-\(.*\).jar$$/\1/p' > $(VERSION_FILE) && cat $(VERSION_FILE)
+
+build_image:
+	docker build --build-arg APP_VERSION=$$(cat $(VERSION_FILE)) -t seldonio/$(IMAGE_NAME):latest .
+	docker tag seldonio/$(IMAGE_NAME):latest seldonio/$(IMAGE_NAME):$$(cat $(VERSION_FILE))
+
+repo_login:
+	if [ ! -z "${SELDON_CORE_DOCKER_HUB_USER}" ] && [ ! -z "${SELDON_CORE_DOCKER_HUB_PASSWORD}" ]; then \
+		docker login -u ${SELDON_CORE_DOCKER_HUB_USER} -p ${SELDON_CORE_DOCKER_HUB_PASSWORD}; \
+	else \
+		echo "Missing credentials!"; \
+	fi
+
+push_image:
+	docker push seldonio/$(IMAGE_NAME):$$(cat $(VERSION_FILE))
 
 clean:
 	mvn clean -B
 	rm -fv src/main/proto/seldon_deployment.proto
 	rm -fv src/main/proto/prediction.proto
-	rm -fvr src/main/proto/k8s
+	rm -fvr src/main/proto/k8s.io
 	rm -fv src/main/proto/v1.proto
 
 download_protos:

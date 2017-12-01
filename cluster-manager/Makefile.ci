@@ -1,11 +1,32 @@
+IMAGE_NAME=cluster-manager
+VERSION_FILE=target/version.txt
+
 build_jar: update_proto k8s_java_client
 	mvn clean package -B
+
+write_version:
+	ls target/seldon-cluster-manager-*.jar | sed -n 's/target\/seldon-cluster-manager-\(.*\).jar$$/\1/p' > $(VERSION_FILE) && cat $(VERSION_FILE)
+
+build_image:
+	docker build --build-arg APP_VERSION=$$(cat $(VERSION_FILE)) -t seldonio/$(IMAGE_NAME):latest .
+	docker tag seldonio/$(IMAGE_NAME):latest seldonio/$(IMAGE_NAME):$$(cat $(VERSION_FILE))
+
+repo_login:
+	if [ ! -z "${SELDON_CORE_DOCKER_HUB_USER}" ] && [ ! -z "${SELDON_CORE_DOCKER_HUB_PASSWORD}" ]; then \
+		docker login -u ${SELDON_CORE_DOCKER_HUB_USER} -p ${SELDON_CORE_DOCKER_HUB_PASSWORD}; \
+	else \
+		echo "Missing credentials!"; \
+	fi
+
+push_image:
+	docker push seldonio/$(IMAGE_NAME):$$(cat $(VERSION_FILE))
 
 clean:
 	mvn clean -B
 	rm -fv src/main/proto/seldon_deployment.proto
-	rm -fvr src/main/proto/k8s
+	rm -fvr src/main/proto/k8s.io
 	rm -fv src/main/proto/v1.proto
+	rm -rfv java_client
 
 download_protos:
 	cd ../proto/k8s ; make create_protos
@@ -17,5 +38,6 @@ update_proto: download_protos
 
 k8s_java_client:
 	git clone -b updated_protos https://github.com/cliveseldon/java.git java_client && \
-    	cd java_client && \
-    	mvn install 
+		cd java_client && \
+		mvn install
+

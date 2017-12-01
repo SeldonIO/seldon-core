@@ -48,10 +48,6 @@ java_opts: ""
 #spring_opts: "--io.seldon.clustermanager.engine-container-image-and-version=seldonio/engine:0.1.5 --io.seldon.clustermanager.istio-enabled=false"
 spring_opts: "--io.seldon.clustermanager.istio-enabled=false"
 
-# Set the type of service for Cluster Manager
-#seldon_cluster_manager_service_type: LoadBalancer
-cluster_manager_service_type: NodePort
-
 # Set the type of service for Grafana Prom
 #grafana_prom_service_type: LoadBalancer
 grafana_prom_service_type: NodePort
