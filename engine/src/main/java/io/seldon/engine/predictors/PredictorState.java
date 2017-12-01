@@ -1,8 +1,5 @@
 package io.seldon.engine.predictors;
 
-import java.util.Map;
-import io.kubernetes.client.proto.V1.Container;
-
 public class PredictorState {
 	
 	public PredictiveUnitState rootState;

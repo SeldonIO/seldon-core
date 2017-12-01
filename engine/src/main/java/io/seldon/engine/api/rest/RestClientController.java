@@ -13,7 +13,6 @@ import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -23,8 +22,7 @@ import io.seldon.engine.exception.APIException.ApiExceptionType;
 import io.seldon.engine.pb.ProtoBufUtils;
 import io.seldon.engine.service.PredictionService;
 import io.seldon.protos.PredictionProtos.Feedback;
-import io.seldon.protos.PredictionProtos.Request;
-import io.seldon.protos.PredictionProtos.Response;
+import io.seldon.protos.PredictionProtos.SeldonMessage;
 
 @RestController
 public class RestClientController {
@@ -89,10 +87,10 @@ public class RestClientController {
 	@RequestMapping(value = "/api/v0.1/predictions", method = RequestMethod.POST, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
     public ResponseEntity<String> predictions(RequestEntity<String> requestEntity)
 	{
-		Request request;
+		SeldonMessage request;
 		try
 		{
-			Request.Builder builder = Request.newBuilder();
+			SeldonMessage.Builder builder = SeldonMessage.newBuilder();
 			ProtoBufUtils.updateMessageBuilderFromJson(builder, requestEntity.getBody() );
 			request = builder.build();
 		} 
@@ -104,7 +102,7 @@ public class RestClientController {
 
 		try
 		{
-			Response response = predictionService.predict(request);
+			SeldonMessage response = predictionService.predict(request);
 			String json = ProtoBufUtils.toJson(response);
 			return new ResponseEntity<String>(json,HttpStatus.OK);
 		}
@@ -123,20 +121,6 @@ public class RestClientController {
 		} 
 
 	}
-	
-	
-	/*
-	@RequestMapping(value="/api/v0.1/predictions", method = RequestMethod.POST)
-    public @ResponseBody
-    PredictionServiceReturn predictions(@RequestBody PredictionServiceRequest request, HttpServletRequest req) throws InterruptedException, ExecutionException {
-
-        //TODO: Check authentication here
-		
-		
-		return predictionService.predict(request);
-		
-    }
-    */
 	
 	@RequestMapping(value= "/api/v0.1/feedback", method = RequestMethod.POST, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
 	public ResponseEntity<String>  feedback(RequestEntity<String> requestEntity) {
@@ -175,6 +159,6 @@ public class RestClientController {
 	
 	@RequestMapping("/api/v0.1/events")
     String events() {
-        return "Hello World!";
+        return "Not Implemented";
     }
 }

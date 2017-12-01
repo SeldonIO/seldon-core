@@ -25,6 +25,7 @@ public class PredictiveUnitState {
 	public Map<String,PredictiveUnitParameterInterface>  parameters;
 	public String imageName;
 	public String imageVersion;
+	public PredictiveUnitType type;
 	
 	@Autowired
 	public PredictorBean predictorBean;
@@ -38,7 +39,8 @@ public class PredictiveUnitState {
 			List<PredictiveUnitState> children,
 			Map<String,PredictiveUnitParameterInterface> parameters,
 			String imageName,
-			String imageVersion
+			String imageVersion,
+			PredictiveUnitType type
 			){
 		this.name = name;
 		this.predictiveUnitBean = predictiveUnitBean;
@@ -47,6 +49,8 @@ public class PredictiveUnitState {
 		this.parameters = parameters;
 		this.imageName = imageName;
 		this.imageVersion = imageVersion;
+		this.type = type;
+		
 	}
 	
 	public PredictiveUnitState(
@@ -71,6 +75,7 @@ public class PredictiveUnitState {
 		}
 		
 		this.predictiveUnitBean = beanMap.get(predictiveUnit.getType()).get(predictiveUnit.getSubtype());
+		this.type = predictiveUnit.getType();
 	}
 	
 	public static Map<String,PredictiveUnitParameterInterface> deserializeParameters(List<Parameter> Parameters){

@@ -80,6 +80,8 @@ def array_to_rest_datadef(array,names,original_datadef):
         }
     elif original_datadef.get("ndarray") is not None:
         datadef["ndarray"] = array.tolist()
+    else:
+        datadef["ndarray"] = array.tolist()
     return datadef
 
 def grpc_datadef_to_array(datadef):
@@ -108,8 +110,9 @@ def array_to_grpc_datadef(array,names,data_type):
         )
     else:
         datadef = prediction_pb2.DefaultData(
-            names = names
-            )
+            names = names,
+            ndarray = array_to_list_value(array)
+        )
 
     return datadef
                           

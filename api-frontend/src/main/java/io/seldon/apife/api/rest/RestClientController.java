@@ -31,9 +31,9 @@ import io.seldon.apife.metrics.AuthorizedWebMvcTagsProvider;
 import io.seldon.apife.pb.ProtoBufUtils;
 import io.seldon.apife.service.PredictionService;
 import io.seldon.protos.PredictionProtos.Feedback;
-import io.seldon.protos.PredictionProtos.Request;
+import io.seldon.protos.PredictionProtos.SeldonMessage;
 import io.seldon.protos.PredictionProtos.RequestResponse;
-import io.seldon.protos.PredictionProtos.Response;
+import io.seldon.protos.PredictionProtos.SeldonMessage;
 
 @RestController
 public class RestClientController {
@@ -115,10 +115,10 @@ public class RestClientController {
 		String json = requestEntity.getBody();
 		logger.info(String.format("[%s] [%s] [%s] [%s]", "POST", requestEntity.getUrl().getPath(), clientId, json));
 		
-		Request request;
+		SeldonMessage request;
 		try
 		{
-			Request.Builder builder = Request.newBuilder();
+			SeldonMessage.Builder builder = SeldonMessage.newBuilder();
 			ProtoBufUtils.updateMessageBuilderFromJson(builder, requestEntity.getBody() );
 			request = builder.build();
 		} 
@@ -133,10 +133,10 @@ public class RestClientController {
 		// At present passes JSON string. Could use gRPC?
 		String ret = predictionService.predict(json,clientId);
 		
-		Response response;
+		SeldonMessage response;
 		try
 		{
-			Response.Builder builder = Response.newBuilder();
+			SeldonMessage.Builder builder = SeldonMessage.newBuilder();
 			ProtoBufUtils.updateMessageBuilderFromJson(builder, ret);
 			response = builder.build();
 		}

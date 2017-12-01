@@ -3,7 +3,7 @@ Use wrappers to create docker image for a model
 1 Clone seldon-core and install grpc tools (if not done before) 
 
     git clone seldon-core
-    python -m pip install grpcio-tools
+    python -m pip install grpcio-tools==1.1.3
        
 2 Build the protos. You only have to do this once (?)
 

@@ -36,6 +36,8 @@ def get_rest_microservice(user_model):
     @app.errorhandler(SeldonMicroserviceException)
     def handle_invalid_usage(error):
         response = jsonify(error.to_dict())
+        print "ERROR:"
+        print error.to_dict()
         response.status_code = 400
         return response
 
@@ -90,7 +92,7 @@ class SeldonModelGRPC(object):
         class_names = get_class_names(self.user_model, predictions.shape[1])
 
         data = array_to_grpc_datadef(predictions, class_names, request.data.WhichOneof("data_oneof"))
-        return prediction_pb2.Response(data=data)
+        return prediction_pb2.SeldonMessage(data=data)
 
     def SendFeedback(self,feedback,context):
         datadef_request = feedback.request.data
@@ -101,7 +103,7 @@ class SeldonModelGRPC(object):
 
         send_feedback(self.user_model,features,datadef_request.names,truth,reward)
 
-        return prediction_pb2.Response()
+        return prediction_pb2.SeldonMessage()
     
 def get_grpc_server(user_model):
     seldon_model = SeldonModelGRPC(user_model)

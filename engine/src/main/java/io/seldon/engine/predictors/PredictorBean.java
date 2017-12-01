@@ -1,22 +1,18 @@
 package io.seldon.engine.predictors;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import io.seldon.engine.exception.APIException;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitType;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitSubtype;
 import io.seldon.protos.DeploymentProtos.PredictorSpec;
 import io.seldon.protos.PredictionProtos.Feedback;
-import io.seldon.protos.PredictionProtos.Request;
-import io.seldon.protos.PredictionProtos.Response;
+import io.seldon.protos.PredictionProtos.SeldonMessage;
 
 import io.kubernetes.client.proto.V1.Container;
 
@@ -34,6 +30,7 @@ public class PredictorBean {
 			SimpleModelUnit simpleModelUnit, 
 			SimpleRouterUnit simpleRouterUnit,
 			AverageCombinerUnit averageCombinerUnit,
+			TransformerUnit transformerUnit,
 			RandomABTestUnit randomABTestUnit) {
         nodeClassMap = new HashMap<PredictiveUnitType,Map<PredictiveUnitSubtype,PredictiveUnitBean>>();
         
@@ -53,13 +50,17 @@ public class PredictorBean {
         combinersMap.put(PredictiveUnitSubtype.AVERAGE_COMBINER, averageCombinerUnit);
         nodeClassMap.put(PredictiveUnitType.COMBINER, combinersMap);
         
+        Map<PredictiveUnitSubtype,PredictiveUnitBean> transformersMap = new HashMap<PredictiveUnitSubtype,PredictiveUnitBean>();
+        transformersMap.put(PredictiveUnitSubtype.MICROSERVICE, transformerUnit);
+        nodeClassMap.put(PredictiveUnitType.TRANSFORMER, transformersMap);
+        
     }
    
-	public Response predict(Request request, PredictorState predictorState) throws InterruptedException, ExecutionException
+	public SeldonMessage predict(SeldonMessage request, PredictorState predictorState) throws InterruptedException, ExecutionException
 
 	{
 		PredictiveUnitState rootState = predictorState.rootState;
-		return rootState.predictiveUnitBean.predict(request, rootState);
+		return rootState.predictiveUnitBean.getOutput(request, rootState);
 	}
 	
 	public void sendFeedback(Feedback feedback, PredictorState predictorState) throws InterruptedException, ExecutionException

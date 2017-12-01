@@ -16,20 +16,13 @@ import io.seldon.engine.predictors.EnginePredictor;
 import io.seldon.engine.predictors.PredictorBean;
 import io.seldon.engine.predictors.PredictorState;
 import io.seldon.protos.PredictionProtos.Feedback;
-import io.seldon.protos.PredictionProtos.Request;
-import io.seldon.protos.PredictionProtos.Meta;
-import io.seldon.protos.PredictionProtos.Response;
+import io.seldon.protos.PredictionProtos.SeldonMessage;
 import io.seldon.protos.PredictionProtos.Meta;
 
 @Service
 public class PredictionService {
 	
 	private static Logger logger = LoggerFactory.getLogger(PredictionService.class.getName());
-	
-	private final ExecutorService pool = Executors.newFixedThreadPool(50);
-	
-//	@Autowired
-//	PredictorsStore predictorsStore;
 	
 	@Autowired
 	PredictorBean predictorBean;
@@ -56,7 +49,7 @@ public class PredictionService {
 		return;
 	}
 	
-	public Response predict(Request request) throws InterruptedException, ExecutionException
+	public SeldonMessage predict(SeldonMessage request) throws InterruptedException, ExecutionException
 	{
 
 		if (!request.hasMeta())
@@ -71,9 +64,9 @@ public class PredictionService {
 		
         PredictorState predictorState = predictorBean.predictorStateFromPredictorSpec(enginePredictor.getPredictorSpec());
 
-        Response predictorReturn = predictorBean.predict(request,predictorState);
+        SeldonMessage predictorReturn = predictorBean.predict(request,predictorState);
 			
-        Response.Builder builder = Response.newBuilder(predictorReturn).setMeta(Meta.newBuilder(predictorReturn.getMeta()).setPuid(puid));
+        SeldonMessage.Builder builder = SeldonMessage.newBuilder(predictorReturn).setMeta(Meta.newBuilder(predictorReturn.getMeta()).setPuid(puid));
 
         return builder.build();
 		

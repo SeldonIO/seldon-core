@@ -32,23 +32,6 @@ message DefaultData {
 
 // [END default data]
 
-
-// [START Request]
-
-message Request {
-
-  Meta meta = 1;
-  oneof data_oneof {
-    DefaultData data = 2;
-    bytes binData = 3;
-    string strData = 4;
-  }
-
-}
-
-// [END Request]
-
-
 // [START Meta]
 
 message Meta {
@@ -61,9 +44,9 @@ message Meta {
 // [END Meta]
 
 
-// [START Response]
+// [START SeldonMessage]
 
-message Response {
+message SeldonMessage {
 
   Status status = 1;
   Meta meta = 2;
@@ -87,16 +70,16 @@ message Status {
     StatusFlag status = 4;
 }
 
-// [END Response]
+// [END SeldonMessage]
 
 
 // [START Feedback]
 
 message Feedback {
-  Request request = 1;
-  Response response = 2;
+  SeldonMessage request = 1;
+  SeldonMessage response = 2;
   float reward = 3;
-  DefaultData truth = 4;
+  SeldonMessage truth = 4;
 }
 
 // [END Feedback]
@@ -105,8 +88,8 @@ message Feedback {
 // [START RequestResponse]
 
 message RequestResponse {
-  Request request = 1;
-  Response response = 2;
+  SeldonMessage request = 1;
+  SeldonMessage response = 2;
 }
 
 // [END RequestResponse]
@@ -127,13 +110,18 @@ message OutlierStatus{
 // [START Services]
 
 service Model {
-  rpc Predict(Request) returns (Response) {};
-  rpc SendFeedback(Feedback) returns (Response) {};
+  rpc Predict(SeldonMessage) returns (SeldonMessage) {};
+  rpc SendFeedback(Feedback) returns (SeldonMessage) {};
  }
 
 service Router {
-  rpc Route(Request) returns (Response) {};
-  rpc SendFeedback(Feedback) returns (Response) {};
+  rpc Route(SeldonMessage) returns (SeldonMessage) {};
+  rpc SendFeedback(Feedback) returns (SeldonMessage) {};
+ }
+
+service Transformer {
+  rpc TransformInput(SeldonMessage) returns (SeldonMessage) {};
+  rpc TransformOutput(SeldonMessage) returns (SeldonMessage) {};
  }
 
 // [END Services]
