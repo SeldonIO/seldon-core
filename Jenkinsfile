@@ -22,10 +22,6 @@ pipeline {
                 SELDON_CORE_DOCKER_HUB_PASSWORD = credentials('SELDON_CORE_DOCKER_HUB_PASSWORD')
             }
             steps {
-                echo "*** TESTING ***"
-                sh "echo ${SELDON_CORE_DOCKER_HUB_USER}"
-                sh "echo ${SELDON_CORE_DOCKER_HUB_PASSWORD}"
-                echo "*** TESTING ***"
                 echo "Build Jar"
                 sh 'cd api-frontend && make -f Makefile.ci clean build_jar'
                 echo "Build Image"
@@ -51,6 +47,10 @@ pipeline {
                     image 'seldonio/core-builder:0.1'
                     args '-v /root/.m2:/root/.m2'
                 }
+            }
+            environment {
+                SELDON_CORE_DOCKER_HUB_USER = credentials('SELDON_CORE_DOCKER_HUB_USER')
+                SELDON_CORE_DOCKER_HUB_PASSWORD = credentials('SELDON_CORE_DOCKER_HUB_PASSWORD')
             }
             steps {
                 echo "Build Jar"
@@ -78,6 +78,10 @@ pipeline {
                     image 'seldonio/core-builder:0.1'
                     args '-v /root/.m2:/root/.m2'
                 }
+            }
+            environment {
+                SELDON_CORE_DOCKER_HUB_USER = credentials('SELDON_CORE_DOCKER_HUB_USER')
+                SELDON_CORE_DOCKER_HUB_PASSWORD = credentials('SELDON_CORE_DOCKER_HUB_PASSWORD')
             }
             steps {
                 echo "Build Jar"
