@@ -78,7 +78,7 @@ def gen_GRPC_request(batch,features,tensor=True):
             names = features,
             ndarray = array_to_list_value(batch)
             )
-    request = prediction_pb2.Message(
+    request = prediction_pb2.SeldonMessage(
         data = datadef
         )
     return request

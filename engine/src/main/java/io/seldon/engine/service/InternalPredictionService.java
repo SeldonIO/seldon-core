@@ -38,8 +38,8 @@ import io.seldon.protos.RouterGrpc.RouterBlockingStub;
 import io.seldon.protos.TransformerGrpc;
 import io.seldon.protos.TransformerGrpc.TransformerBlockingStub;
 import io.seldon.protos.PredictionProtos.Feedback;
-import io.seldon.protos.PredictionProtos.Message;
-import io.seldon.protos.PredictionProtos.Message.DataOneofCase;
+import io.seldon.protos.PredictionProtos.SeldonMessage;
+import io.seldon.protos.PredictionProtos.SeldonMessage.DataOneofCase;
 
 @Service
 public class InternalPredictionService {
@@ -64,7 +64,7 @@ public class InternalPredictionService {
     	
     }
     
-    public Message predict(Message input, PredictiveUnitState state) throws InvalidProtocolBufferException
+    public SeldonMessage predict(SeldonMessage input, PredictiveUnitState state) throws InvalidProtocolBufferException
     {
     	final Endpoint endpoint = state.endpoint;
 		switch (endpoint.getType()){
@@ -79,7 +79,7 @@ public class InternalPredictionService {
 		throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,"no service available");
     }
     
-    public Message route(Message input, PredictiveUnitState state) throws InvalidProtocolBufferException
+    public SeldonMessage route(SeldonMessage input, PredictiveUnitState state) throws InvalidProtocolBufferException
     {
     	final Endpoint endpoint = state.endpoint;
 		switch (endpoint.getType()){
@@ -94,7 +94,7 @@ public class InternalPredictionService {
 		throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,"no service available");
     }
     
-    public Message sendFeedback(Feedback feedback, PredictiveUnitState state) throws InvalidProtocolBufferException
+    public SeldonMessage sendFeedback(Feedback feedback, PredictiveUnitState state) throws InvalidProtocolBufferException
     {
     	final Endpoint endpoint = state.endpoint;
 		switch (endpoint.getType()){
@@ -115,7 +115,7 @@ public class InternalPredictionService {
 		throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,"no service available");
     }
     
-    public Message transformInput(Message input, PredictiveUnitState state) throws InvalidProtocolBufferException
+    public SeldonMessage transformInput(SeldonMessage input, PredictiveUnitState state) throws InvalidProtocolBufferException
     {
     	final Endpoint endpoint = state.endpoint;
 		switch (endpoint.getType()){
@@ -130,7 +130,7 @@ public class InternalPredictionService {
 		throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,"no service available");
     }
     
-    public Message transformOutput(Message output, PredictiveUnitState state) throws InvalidProtocolBufferException
+    public SeldonMessage transformOutput(SeldonMessage output, PredictiveUnitState state) throws InvalidProtocolBufferException
     {
     	final Endpoint endpoint = state.endpoint;
 		switch (endpoint.getType()){
@@ -145,7 +145,7 @@ public class InternalPredictionService {
 		throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,"no service available");
     }
 		
-    private boolean isDefaultData(Message message){
+    private boolean isDefaultData(SeldonMessage message){
     	if (message.getDataOneofCase() == DataOneofCase.DATA)
 			return true;
     	return false;
@@ -156,7 +156,7 @@ public class InternalPredictionService {
 		return channel;
 	}
 	
-	private Message queryREST(String path, String dataString, PredictiveUnitState state, Endpoint endpoint, boolean isDefault)
+	private SeldonMessage queryREST(String path, String dataString, PredictiveUnitState state, Endpoint endpoint, boolean isDefault)
 	{
 		long timeNow = System.currentTimeMillis();
 		URI uri;
@@ -193,7 +193,7 @@ public class InternalPredictionService {
 			{
 				if(httpResponse.getStatusCode().is2xxSuccessful()) 
 				{
-				    Message.Builder builder = Message.newBuilder();
+				    SeldonMessage.Builder builder = SeldonMessage.newBuilder();
 				    String response = httpResponse.getBody();
 				    logger.info(response);
 				    JsonFormat.parser().ignoringUnknownFields().merge(response, builder);

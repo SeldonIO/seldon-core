@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
-import io.seldon.protos.PredictionProtos.Message;
+import io.seldon.protos.PredictionProtos.SeldonMessage;
 import io.seldon.protos.PredictionProtos.Feedback;
 import io.seldon.engine.exception.APIException;
 import io.seldon.engine.predictors.PredictorUtils;
@@ -19,8 +19,8 @@ public class RouterUnit extends PredictiveUnitBean{
     }
 	
 	@Override
-	protected int route(Message input, PredictiveUnitState state){
-		Message ret = null;
+	protected int route(SeldonMessage input, PredictiveUnitState state){
+		SeldonMessage ret = null;
 		try {
 			ret = internalPredictionService.route(input, state);
 		} catch (InvalidProtocolBufferException e) {
@@ -41,7 +41,7 @@ public class RouterUnit extends PredictiveUnitBean{
 		}
 	}
 
-	private int getBranchIndex(Message routerReturn, PredictiveUnitState state){
+	private int getBranchIndex(SeldonMessage routerReturn, PredictiveUnitState state){
 		int branchIndex = 0;
 		try {
 			INDArray dataArray = PredictorUtils.getINDArray(routerReturn.getData());

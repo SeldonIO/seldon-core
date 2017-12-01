@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import org.springframework.stereotype.Component;
 
-import io.seldon.protos.PredictionProtos.Message;
+import io.seldon.protos.PredictionProtos.SeldonMessage;
 
 @Component
 public class TransformerUnit extends PredictiveUnitBean {
@@ -14,8 +14,8 @@ public class TransformerUnit extends PredictiveUnitBean {
 	}
 	
 	@Override
-	protected Message transformInput(Message input, PredictiveUnitState state){
-		Message transformedInput = null;
+	protected SeldonMessage transformInput(SeldonMessage input, PredictiveUnitState state){
+		SeldonMessage transformedInput = null;
 		try {
 			transformedInput = internalPredictionService.transformInput(input, state);
 		} catch (IOException e) {
@@ -26,8 +26,8 @@ public class TransformerUnit extends PredictiveUnitBean {
 	}
 	
 	@Override
-	protected Message transformOutput(Message output, PredictiveUnitState state){
-		Message transformedOutput = null;
+	protected SeldonMessage transformOutput(SeldonMessage output, PredictiveUnitState state){
+		SeldonMessage transformedOutput = null;
 		try {
 			transformedOutput = internalPredictionService.transformOutput(output, state);
 		} catch(IOException e) {

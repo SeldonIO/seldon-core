@@ -87,7 +87,7 @@ class SeldonRouterGRPC(object):
         class_names = []
 
         data = array_to_grpc_datadef(routing, class_names, request.data.WhichOneof("data_oneof"))
-        return prediction_pb2.Message(data=data)
+        return prediction_pb2.SeldonMessage(data=data)
 
     def SendFeedback(self,feedback,context):
         datadef_request = feedback.request.data
@@ -99,7 +99,7 @@ class SeldonRouterGRPC(object):
         
         send_feedback(self.user_model,features,datadef_request.names,routing,reward,truth)
 
-        return prediction_pb2.Message()
+        return prediction_pb2.SeldonMessage()
     
 def get_grpc_server(user_model):
     seldon_router = SeldonRouterGRPC(user_model)

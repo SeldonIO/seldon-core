@@ -22,7 +22,7 @@ import io.seldon.engine.exception.APIException.ApiExceptionType;
 import io.seldon.engine.pb.ProtoBufUtils;
 import io.seldon.engine.service.PredictionService;
 import io.seldon.protos.PredictionProtos.Feedback;
-import io.seldon.protos.PredictionProtos.Message;
+import io.seldon.protos.PredictionProtos.SeldonMessage;
 
 @RestController
 public class RestClientController {
@@ -87,10 +87,10 @@ public class RestClientController {
 	@RequestMapping(value = "/api/v0.1/predictions", method = RequestMethod.POST, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
     public ResponseEntity<String> predictions(RequestEntity<String> requestEntity)
 	{
-		Message request;
+		SeldonMessage request;
 		try
 		{
-			Message.Builder builder = Message.newBuilder();
+			SeldonMessage.Builder builder = SeldonMessage.newBuilder();
 			ProtoBufUtils.updateMessageBuilderFromJson(builder, requestEntity.getBody() );
 			request = builder.build();
 		} 
@@ -102,7 +102,7 @@ public class RestClientController {
 
 		try
 		{
-			Message response = predictionService.predict(request);
+			SeldonMessage response = predictionService.predict(request);
 			String json = ProtoBufUtils.toJson(response);
 			return new ResponseEntity<String>(json,HttpStatus.OK);
 		}

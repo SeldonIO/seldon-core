@@ -10,14 +10,14 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import io.seldon.engine.exception.APIException;
-import io.seldon.protos.PredictionProtos.Message;
+import io.seldon.protos.PredictionProtos.SeldonMessage;
 
 public class RandomABTestUnitInternalTest {
 
 	@Test
 	public void simpleCase() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		
-		Message request = Message.newBuilder().build();
+		SeldonMessage request = SeldonMessage.newBuilder().build();
 		
 		PredictiveUnitParameter<Float> ratioParam = new PredictiveUnitParameter<Float>(0.5F);
     	Map<String,PredictiveUnitParameterInterface> params = new HashMap<>();
@@ -33,7 +33,7 @@ public class RandomABTestUnitInternalTest {
 
 		
 		RandomABTestUnit randomABTestUnit = new RandomABTestUnit();
-		Method method = RandomABTestUnit.class.getDeclaredMethod("route", Message.class, PredictiveUnitState.class);
+		Method method = RandomABTestUnit.class.getDeclaredMethod("route", SeldonMessage.class, PredictiveUnitState.class);
 		method.setAccessible(true);
 
 		// The following values are from random seed 1337
@@ -53,7 +53,7 @@ public class RandomABTestUnitInternalTest {
 	@Test(expected=APIException.class)
 	public void failureOneChild() throws Throwable{
 		
-		Message request = Message.newBuilder().build();
+		SeldonMessage request = SeldonMessage.newBuilder().build();
 		
 		PredictiveUnitParameter<Float> ratioParam = new PredictiveUnitParameter<Float>(0.5F);
     	Map<String,PredictiveUnitParameterInterface> params = new HashMap<>();
@@ -66,7 +66,7 @@ public class RandomABTestUnitInternalTest {
 		state.addChild(childA);
 		
 		RandomABTestUnit randomABTestUnit = new RandomABTestUnit();
-		Method method = RandomABTestUnit.class.getDeclaredMethod("route", Message.class, PredictiveUnitState.class);
+		Method method = RandomABTestUnit.class.getDeclaredMethod("route", SeldonMessage.class, PredictiveUnitState.class);
 		method.setAccessible(true);
 
 		// The following should return an error

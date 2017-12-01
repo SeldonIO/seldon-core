@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 import io.seldon.engine.exception.APIException;
 import io.seldon.protos.PredictionProtos.DefaultData;
-import io.seldon.protos.PredictionProtos.Message;
+import io.seldon.protos.PredictionProtos.SeldonMessage;
 
 import io.seldon.engine.predictors.PredictorUtils;
 
@@ -19,7 +19,7 @@ public class AverageCombinerUnit extends CombinerUnit{
 	public AverageCombinerUnit() {}
 
 	@Override
-	public Message aggregateOutputs(List<Message> outputs, PredictiveUnitState state){
+	public SeldonMessage aggregateOutputs(List<SeldonMessage> outputs, PredictiveUnitState state){
 		
 		if (outputs.size()==0){
 			throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_COMBINER_RESPONSE, String.format("Combiner received no inputs"));
@@ -36,9 +36,9 @@ public class AverageCombinerUnit extends CombinerUnit{
 		}
 		
 		INDArray currentSum = Nd4j.zeros(shape[0],shape[1]);
-		Message.Builder respBuilder = Message.newBuilder();
+		SeldonMessage.Builder respBuilder = SeldonMessage.newBuilder();
 		
-		for (Iterator<Message> i = outputs.iterator(); i.hasNext();)
+		for (Iterator<SeldonMessage> i = outputs.iterator(); i.hasNext();)
 		{
 			DefaultData inputData = i.next().getData();
 			int[] inputShape = PredictorUtils.getShape(inputData);

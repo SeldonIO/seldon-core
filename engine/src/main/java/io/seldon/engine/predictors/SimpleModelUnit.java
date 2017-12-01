@@ -5,7 +5,7 @@ import java.util.Arrays;
 import org.springframework.stereotype.Component;
 
 import io.seldon.protos.PredictionProtos.DefaultData;
-import io.seldon.protos.PredictionProtos.Message;
+import io.seldon.protos.PredictionProtos.SeldonMessage;
 import io.seldon.protos.PredictionProtos.Meta;
 import io.seldon.protos.PredictionProtos.Status;
 import io.seldon.protos.PredictionProtos.Tensor;
@@ -19,8 +19,8 @@ public class SimpleModelUnit extends ModelUnit {
 	public static final String[] classes = {"class0","class1","class2"};
 	
 	@Override
-	protected Message transformInput(Message input, PredictiveUnitState state){
-		Message output = Message.newBuilder()
+	protected SeldonMessage transformInput(SeldonMessage input, PredictiveUnitState state){
+		SeldonMessage output = SeldonMessage.newBuilder()
 				.setStatus(Status.newBuilder().setStatus(Status.StatusFlag.SUCCESS).build())
 				.setMeta(Meta.newBuilder())//.addModel(state.id))
 				.setData(DefaultData.newBuilder().addAllNames(Arrays.asList(classes))

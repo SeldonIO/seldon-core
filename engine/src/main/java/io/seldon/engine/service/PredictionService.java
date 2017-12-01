@@ -16,7 +16,7 @@ import io.seldon.engine.predictors.EnginePredictor;
 import io.seldon.engine.predictors.PredictorBean;
 import io.seldon.engine.predictors.PredictorState;
 import io.seldon.protos.PredictionProtos.Feedback;
-import io.seldon.protos.PredictionProtos.Message;
+import io.seldon.protos.PredictionProtos.SeldonMessage;
 import io.seldon.protos.PredictionProtos.Meta;
 
 @Service
@@ -49,7 +49,7 @@ public class PredictionService {
 		return;
 	}
 	
-	public Message predict(Message request) throws InterruptedException, ExecutionException
+	public SeldonMessage predict(SeldonMessage request) throws InterruptedException, ExecutionException
 	{
 
 		if (!request.hasMeta())
@@ -64,9 +64,9 @@ public class PredictionService {
 		
         PredictorState predictorState = predictorBean.predictorStateFromPredictorSpec(enginePredictor.getPredictorSpec());
 
-        Message predictorReturn = predictorBean.predict(request,predictorState);
+        SeldonMessage predictorReturn = predictorBean.predict(request,predictorState);
 			
-        Message.Builder builder = Message.newBuilder(predictorReturn).setMeta(Meta.newBuilder(predictorReturn.getMeta()).setPuid(puid));
+        SeldonMessage.Builder builder = SeldonMessage.newBuilder(predictorReturn).setMeta(Meta.newBuilder(predictorReturn.getMeta()).setPuid(puid));
 
         return builder.build();
 		

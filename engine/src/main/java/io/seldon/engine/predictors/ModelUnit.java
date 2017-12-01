@@ -9,7 +9,7 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Metrics;
 import io.seldon.engine.metrics.SeldonRestTemplateExchangeTagsProvider;
 import io.seldon.protos.PredictionProtos.Feedback;
-import io.seldon.protos.PredictionProtos.Message;
+import io.seldon.protos.PredictionProtos.SeldonMessage;
 
 @Component
 public class ModelUnit extends PredictiveUnitBean{
@@ -29,8 +29,8 @@ public class ModelUnit extends PredictiveUnitBean{
 	}
 	
 	@Override
-	protected Message transformInput(Message input, PredictiveUnitState state){
-		Message output = null;
+	protected SeldonMessage transformInput(SeldonMessage input, PredictiveUnitState state){
+		SeldonMessage output = null;
 		try {
 			output = internalPredictionService.predict(input, state);
 		} catch (IOException e) {

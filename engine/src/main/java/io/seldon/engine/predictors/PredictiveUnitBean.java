@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 import io.seldon.engine.exception.APIException;
 import io.seldon.engine.service.InternalPredictionService;
 import io.seldon.protos.PredictionProtos.Feedback;
-import io.seldon.protos.PredictionProtos.Message;
+import io.seldon.protos.PredictionProtos.SeldonMessage;
 import io.seldon.protos.PredictionProtos.Meta;
 
 @Component
@@ -30,10 +30,10 @@ public abstract class PredictiveUnitBean {
 		this.internalPredictionService = internalPredictionService;
 	}
 	
-	public Message getOutput(Message request, PredictiveUnitState state) throws InterruptedException, ExecutionException{
+	public SeldonMessage getOutput(SeldonMessage request, PredictiveUnitState state) throws InterruptedException, ExecutionException{
 		Map<String,Integer> routingDict = new HashMap<String,Integer>();
-		Message response = state.predictiveUnitBean.getOutputAsync(request, state, routingDict).get();
-		Message.Builder builder = Message
+		SeldonMessage response = state.predictiveUnitBean.getOutputAsync(request, state, routingDict).get();
+		SeldonMessage.Builder builder = SeldonMessage
 	    		.newBuilder(response)
 	    		.setMeta(Meta
 	    				.newBuilder(response.getMeta()).putAllRouting(routingDict));
@@ -41,18 +41,18 @@ public abstract class PredictiveUnitBean {
 	}
 	
 	@Async
-	protected Future<Message> getOutputAsync(Message input, PredictiveUnitState state, Map<String,Integer> routingDict) throws InterruptedException, ExecutionException{
+	protected Future<SeldonMessage> getOutputAsync(SeldonMessage input, PredictiveUnitState state, Map<String,Integer> routingDict) throws InterruptedException, ExecutionException{
 		
 		// Compute the transformed Input
-		Message transformedInput = state.predictiveUnitBean.transformInput(input, state);
+		SeldonMessage transformedInput = state.predictiveUnitBean.transformInput(input, state);
 		if (state.children.isEmpty()){
 			// If this unit has no children, the transformed input becomes the output
 			return new AsyncResult<>(transformedInput);
 		}
 		
 		List<PredictiveUnitState> selectedChildren = new ArrayList<PredictiveUnitState>();
-		List<Future<Message>> deferredChildrenOutputs = new ArrayList<Future<Message>>();
-		List<Message> childrenOutputs = new ArrayList<Message>();
+		List<Future<SeldonMessage>> deferredChildrenOutputs = new ArrayList<Future<SeldonMessage>>();
+		List<SeldonMessage> childrenOutputs = new ArrayList<SeldonMessage>();
 		
 		// Get the routing. -1 means all children
 		int routing = state.predictiveUnitBean.route(transformedInput, state);
@@ -74,13 +74,13 @@ public abstract class PredictiveUnitBean {
 		for (PredictiveUnitState childState : selectedChildren){
 			deferredChildrenOutputs.add(childState.predictiveUnitBean.getOutputAsync(transformedInput,childState,routingDict));
 		}
-		for (Future<Message> deferredOutput : deferredChildrenOutputs){
+		for (Future<SeldonMessage> deferredOutput : deferredChildrenOutputs){
 			childrenOutputs.add(deferredOutput.get());
 		}
 		
 		// Compute the backward transformation of all children outputs
-		Message aggregatedOutput = state.predictiveUnitBean.aggregateOutputs(childrenOutputs, state);
-		Message transformedOutput = state.predictiveUnitBean.transformOutput(aggregatedOutput, state);
+		SeldonMessage aggregatedOutput = state.predictiveUnitBean.aggregateOutputs(childrenOutputs, state);
+		SeldonMessage transformedOutput = state.predictiveUnitBean.transformOutput(aggregatedOutput, state);
 		
 		return new AsyncResult<>(transformedOutput);
 		
@@ -126,18 +126,18 @@ public abstract class PredictiveUnitBean {
 		return new AsyncResult<>(true);
 	}
 	
-	protected Message transformOutput(Message output, PredictiveUnitState state){
+	protected SeldonMessage transformOutput(SeldonMessage output, PredictiveUnitState state){
 		// Transforms the aggregated output into a new message.
 		return output;
 	}
 	
-	protected Message transformInput(Message input, PredictiveUnitState state){
+	protected SeldonMessage transformInput(SeldonMessage input, PredictiveUnitState state){
 		// Transforms the input of a predictive unit into a new message. 
 		// The result will become the input of the children, or the output if no children
 		return input;
 	}
 	
-	protected Message aggregateOutputs(List<Message> outputs, PredictiveUnitState state){
+	protected SeldonMessage aggregateOutputs(List<SeldonMessage> outputs, PredictiveUnitState state){
 		// Aggregates the outputs of all children into a new message. 
 		// If there are several outputs, this implementation needs to be overridden.
 		
@@ -145,7 +145,7 @@ public abstract class PredictiveUnitBean {
 		return outputs.get(0);
 	}
 	
-	protected int route(Message request, PredictiveUnitState state){
+	protected int route(SeldonMessage request, PredictiveUnitState state){
 		return -1;
 	}
 	

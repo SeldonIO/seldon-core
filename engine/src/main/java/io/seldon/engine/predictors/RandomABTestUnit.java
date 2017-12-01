@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 import io.seldon.engine.exception.APIException;
 import io.seldon.protos.PredictionProtos.Feedback;
-import io.seldon.protos.PredictionProtos.Message;
+import io.seldon.protos.PredictionProtos.SeldonMessage;
 
 
 @Component
@@ -15,7 +15,7 @@ public class RandomABTestUnit extends RouterUnit {
 	Random rand = new Random(1337);
 
 	@Override
-	protected int route(Message input, PredictiveUnitState state){
+	protected int route(SeldonMessage input, PredictiveUnitState state){
 		@SuppressWarnings("unchecked")
 		PredictiveUnitParameter<Float> parameter = (PredictiveUnitParameter<Float>) state.parameters.get("ratioA");
 		

@@ -107,7 +107,7 @@ class SeldonTransformerGRPC(object):
         feature_names = get_feature_names(self.user_model, datadef.names)
 
         data = array_to_grpc_datadef(predictions, feature_names, request.data.WhichOneof("data_oneof"))
-        return prediction_pb2.Message(data=data)
+        return prediction_pb2.SeldonMessage(data=data)
 
     def TransformOutput(self,request,context):
         datadef = request.data
@@ -118,7 +118,7 @@ class SeldonTransformerGRPC(object):
         class_names = get_class_names(self.user_model, datadef.names)
 
         data = array_to_grpc_datadef(predictions, class_names, request.data.WhichOneof("data_oneof"))
-        return prediction_pb2.Message(data=data)
+        return prediction_pb2.SeldonMessage(data=data)
     
 def get_grpc_server(user_model):
     seldon_model = SeldonTransformerGRPC(user_model)
