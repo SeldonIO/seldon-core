@@ -4,47 +4,16 @@
     "componentSpec":{},
     "type":"NORMAL",
     "graph":{
-	"name":"0",
-	"type":"ROUTER",
-	"subtype":"MICROSERVICE",
-	"endpoint": {
+        "children": [],
+        "name": "mean-classifier",
+	"parameters": [],
+        "endpoint": {
+	    "type" : "REST",
 	    "service_host":"localhost",
-	    "service_port":5000,
-	    "type":"GRPC"
+	    "service_port":5001
 	},
-	"parameters": [
-	    {
-		"name":"n_branches",
-		"value":2,
-		"type":"INT"
-	    }
-	],
-	"children":[
-	    {
-		"name":"1",
-		"type":"MODEL",
-		"subtype":"MICROSERVICE",
-		"endpoint": {
-		    "service_host":"localhost",
-		    "service_port":5001,
-		    "type":"REST"
-		},
-		"parameters": [],
-		"children": []
-	    },
-	    {
-		"name":"3",
-		"type":"MODEL",
-		"subtype":"MICROSERVICE",
-		"endpoint": {
-		    "service_host":"localhost",
-		    "service_port":5002,
-		    "type":"REST"
-		},
-		"parameters":[],
-		"children":[]
-	    }
-	]
+        "subtype": "MICROSERVICE",
+        "type": "MODEL"
     }
 }
 		

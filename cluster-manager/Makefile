@@ -1,14 +1,20 @@
 SHELL=/bin/bash
 
-DOCKER_IMAGE_NAME=seldonio/cluster-manager
-PROJECT_VERSION=$(shell cat version.txt)
-DOCKER_IMAGE_VERSION=$(PROJECT_VERSION)
-CLUSTER_MANAGER_IMAGE_VERSION=$(PROJECT_VERSION)
+IMAGE_NAME=cluster-manager
+VERSION_FILE=target/version.txt
 
-build_docker_image: update_proto update_version_txt
-	mkdir -p .m2 && docker build --no-cache --force-rm=true -t $(PRIVATE_REPO)$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VERSION) .
+build_jar: update_proto 
+	mvn clean package -B
+
+write_version:
+	ls target/seldon-cluster-manager-*.jar | sed -n 's/target\/seldon-cluster-manager-\(.*\).jar$$/\1/p' > $(VERSION_FILE) && cat $(VERSION_FILE)
+
+build_image: build_jar write_version
+	docker build --build-arg APP_VERSION=$$(cat $(VERSION_FILE)) -t seldonio/$(IMAGE_NAME):latest .
+	docker tag seldonio/$(IMAGE_NAME):latest seldonio/$(IMAGE_NAME):$$(cat $(VERSION_FILE))
+
 push_to_registry:
-	docker push $(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VERSION)
+	docker push seldonio/$(IMAGE_NAME):$$(cat $(VERSION_FILE)
 
 clean:
 	@mvn clean
@@ -17,31 +23,6 @@ clean:
 cache_dependencies:
 	mvn -Dmaven.repo.local=./.m2 dependency:resolve
 	mvn -Dmaven.repo.local=./.m2 verify
-
-FORCE:
-
-cluster-manager.json: FORCE
-	@ \
-	if [ ! -f settings.sh ]; then \
-		cp -v settings.sh.default settings.sh; \
-	fi && \
-	source settings.sh && cat cluster-manager.json.in | sed \
-		-e  "s|%SELDON_CLUSTER_MANAGER_SERVICE_TYPE%|$${SELDON_CLUSTER_MANAGER_SERVICE_TYPE}|" \
-		-e  "s|%JAVA_OPTS%|$${JAVA_OPTS}|" \
-		-e  "s|%SPRING_OPTS%|$${SPRING_OPTS}|" \
-		-e  "s|%CLUSTER_MANAGER_IMAGE_VERSION%|$(CLUSTER_MANAGER_IMAGE_VERSION)|" > $@ && echo "created $@"
-
-start_cluster_manager: cluster-manager.json cluster-manager-client-secret.txt
-	@CLUSTER_MANAGER_CLIENT_SECRET="$$(cat cluster-manager-client-secret.txt)" && \
-			kubectl delete secret cluster-manager-client-secret  > /dev/null 2>&1 || : && \
-			kubectl create secret generic cluster-manager-client-secret --from-literal=cluster-manager-client-secret.txt="$${CLUSTER_MANAGER_CLIENT_SECRET}"
-	@kubectl apply -f cluster-manager.json
-stop_cluster_manager: cluster-manager.json
-	@kubectl delete --ignore-not-found=true -f cluster-manager.json
-
-
-update_version_txt:
-	PROJECT_VERSION=$$(MAVEN_OPTS="-Dorg.slf4j.simpleLogger.defaultLogLevel=WARN -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugins.help=INFO" mvn help:evaluate -o -Dexpression=project.version | tail -1) && echo "$${PROJECT_VERSION}" > version.txt && cat version.txt
 
 update_proto:
 	cp -v ../proto/seldon_deployment.proto src/main/proto/

@@ -20,7 +20,7 @@
                     "spec": {
                         "containers": [
                             {
-                                "image": "seldonio/mean_classifier:0.5",
+                                "image": "seldonio/mean_classifier:0.6",
                                 "imagePullPolicy": "IfNotPresent",
                                 "name": "mean-classifier",
                                 "resources": {
@@ -30,7 +30,7 @@
                                 }
                             }
                         ],
-                        "terminationGracePeriodSeconds": 0
+                        "terminationGracePeriodSeconds": 20
                     }
                 },
                 "graph": {
@@ -39,7 +39,7 @@
                     "endpoint": {
 			"type" : "REST"
 		    },
-                    "subtype": "SIMPLE_MODEL",
+                    "subtype": "MICROSERVICE",
                     "type": "MODEL"
                 },
                 "name": "fx-market-predictor",

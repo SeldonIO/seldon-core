@@ -1,12 +1,18 @@
-DOCKER_IMAGE_NAME=seldonio/engine
-PROJECT_VERSION:=`cat version.txt`
-DOCKER_IMAGE_VERSION=$(PROJECT_VERSION)
-ENGINE_IMAGE_VERSION=$(PROJECT_VERSION)
+IMAGE_NAME=engine
+VERSION_FILE=target/version.txt
 
-build_docker_image: update_proto update_version_txt
-	mkdir -p .m2 && docker build --force-rm=true -t $(PRIVATE_REPO)$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VERSION) .
+build_jar: update_proto
+	mvn clean package -B
+
+write_version:
+	ls target/seldon-engine-*.jar | sed -n 's/target\/seldon-engine-\(.*\).jar$$/\1/p' > $(VERSION_FILE) && cat $(VERSION_FILE)
+
+build_image: build_jar write_version
+	docker build --build-arg APP_VERSION=$$(cat $(VERSION_FILE)) -t seldonio/$(IMAGE_NAME):latest .
+	docker tag seldonio/$(IMAGE_NAME):latest seldonio/$(IMAGE_NAME):$$(cat $(VERSION_FILE))
+
 push_to_registry:
-	docker push $(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VERSION)
+	docker push seldonio/$(IMAGE_NAME):$$(cat $(VERSION_FILE)
 
 clean:
 	@mvn clean
@@ -25,9 +31,6 @@ start_engine: engine.json
 stop_engine: engine.json
 	kubectl delete --ignore-not-found=true -f engine.json
 
-
-update_version_txt:
-	PROJECT_VERSION=$$(MAVEN_OPTS="-Dorg.slf4j.simpleLogger.defaultLogLevel=WARN -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugins.help=INFO" mvn help:evaluate -o -Dexpression=project.version | tail -1) && echo "$${PROJECT_VERSION}" > version.txt
 
 update_proto:
 	@cp -v ../proto/seldon_deployment.proto src/main/proto/
