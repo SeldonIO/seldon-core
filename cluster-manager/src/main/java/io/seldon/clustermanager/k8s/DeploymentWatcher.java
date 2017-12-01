@@ -65,37 +65,44 @@ public class DeploymentWatcher {
 				{
 					if (resourceVersionNew > maxResourceVersion)
 						maxResourceVersion = resourceVersionNew;
-					switch(item.type)
+					if (item.object.getMetadata().getOwnerReferences() == null)
 					{
-					case "ADDED":
-					case "MODIFIED":
-						for (V1OwnerReference ownerRef : item.object.getMetadata().getOwnerReferences())
-						{
-							if (ownerRef.getKind().equals(KubeCRDHandlerImpl.KIND) && item.object.getStatus() != null)
-							{
-								String mlDepName = ownerRef.getName();
-								String depName = item.object.getMetadata().getName();
-								statusUpdater.updateStatus(mlDepName, depName, item.object.getStatus().getReplicas(),item.object.getStatus().getReadyReplicas());
-							}
-						}
-						break;
-					case "DELETED":
-					    for (V1OwnerReference ownerRef : item.object.getMetadata().getOwnerReferences())
-                        {
-                            if (ownerRef.getKind().equals(KubeCRDHandlerImpl.KIND) && item.object.getStatus() != null)
-                            {
-                                String mlDepName = ownerRef.getName();
-                                String depName = item.object.getMetadata().getName();
-                                statusUpdater.removeStatus(mlDepName,depName);
-                            }
-                        }
-						break;
-					default:
-						logger.error("Unknown type "+item.type);
+					    logger.warn("Found possible seldon controlled deployment which has no owner reference. Ignoring.");
 					}
-					//for modified get owner reference and determine which predictor it is
-					//get the MLDeployment from API or local cache and update status
-					// put this logic in new class
+					else
+					{
+	                    switch(item.type)
+	                    {
+	                    case "ADDED":
+	                    case "MODIFIED":
+	                        for (V1OwnerReference ownerRef : item.object.getMetadata().getOwnerReferences())
+	                        {
+	                            if (ownerRef.getKind().equals(KubeCRDHandlerImpl.KIND) && item.object.getStatus() != null)
+	                            {
+	                                String mlDepName = ownerRef.getName();
+	                                String depName = item.object.getMetadata().getName();
+	                                statusUpdater.updateStatus(mlDepName, depName, item.object.getStatus().getReplicas(),item.object.getStatus().getReadyReplicas());
+	                            }
+	                        }
+	                        break;
+	                    case "DELETED":
+	                        for (V1OwnerReference ownerRef : item.object.getMetadata().getOwnerReferences())
+	                        {
+	                            if (ownerRef.getKind().equals(KubeCRDHandlerImpl.KIND) && item.object.getStatus() != null)
+	                            {
+	                                String mlDepName = ownerRef.getName();
+	                                String depName = item.object.getMetadata().getName();
+	                                statusUpdater.removeStatus(mlDepName,depName);
+	                            }
+	                        }
+	                        break;
+	                    default:
+	                        logger.error("Unknown type "+item.type);
+	                    }
+	                    //for modified get owner reference and determine which predictor it is
+	                    //get the MLDeployment from API or local cache and update status
+	                    // put this logic in new class
+					}
 				}
 				
 			}

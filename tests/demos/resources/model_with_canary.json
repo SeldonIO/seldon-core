@@ -29,8 +29,7 @@
                                     }
                                 }
                             }
-                        ],
-                        "terminationGracePeriodSeconds": 20
+                        ]
                     }
                 },
                 "graph": {
@@ -59,8 +58,7 @@
                                     }
                                 }
                             }
-                        ],
-                        "terminationGracePeriodSeconds": 0
+                        ]
                     }
                 },
                 "graph": {

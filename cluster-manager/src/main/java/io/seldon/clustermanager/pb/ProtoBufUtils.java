@@ -1,12 +1,19 @@
 package io.seldon.clustermanager.pb;
 
+import java.lang.reflect.Type;
+
+import com.google.gson.reflect.TypeToken;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 
+import io.kubernetes.client.JSON;
+import io.kubernetes.client.models.V1PodTemplateSpec;
 import io.kubernetes.client.proto.IntStr.IntOrString;
 import io.kubernetes.client.proto.Meta.Time;
 import io.kubernetes.client.proto.Meta.Timestamp;
 import io.kubernetes.client.proto.Resource.Quantity;
+import io.kubernetes.client.proto.V1.PodTemplateSpec;
+import io.seldon.clustermanager.k8s.SeldonDeploymentException;
 import io.seldon.clustermanager.pb.JsonFormat.Printer;
 
 
@@ -26,14 +33,11 @@ public class ProtoBufUtils {
      * @throws InvalidProtocolBufferException
      */
     public static String toJson(Message message, boolean omittingInsignificantWhitespace, boolean defaultingFields) throws InvalidProtocolBufferException {
-        String json = null;
-        // json = JsonFormat.printer().includingDefaultValueFields().preservingProtoFieldNames().print(message);
-        // json =
-        // JsonFormat.printer().includingDefaultValueFields().preservingProtoFieldNames().omittingInsignificantWhitespace().print(message);
-
         Printer jsonPrinter = JsonFormat.printer().preservingProtoFieldNames()
                 .usingTypeConverter(IntOrString.getDescriptor().getFullName(), new IntOrStringUtils.IntOrStringConverter())
-                .usingTypeConverter(Quantity.getDescriptor().getFullName(), new QuantityUtils.QuantityConverter());
+                .usingTypeConverter(Quantity.getDescriptor().getFullName(), new QuantityUtils.QuantityConverter())
+                .usingTypeConverter(Time.getDescriptor().getFullName(), new TimeUtils.TimeConverter())
+                .usingTypeConverter(Timestamp.getDescriptor().getFullName(), new TimeUtils.TimeConverter());
         if (omittingInsignificantWhitespace) {
             jsonPrinter = jsonPrinter.omittingInsignificantWhitespace();
         }
@@ -64,6 +68,24 @@ public class ProtoBufUtils {
             .usingTypeParser(Timestamp.getDescriptor().getFullName(), new TimeUtils.TimeParser())            
         .merge(json, messageBuilder);
 
+    }
+    
+    public static <T> T convertProtoToModel(Message m,Type type) throws InvalidProtocolBufferException
+    {
+         JSON json = new JSON();
+         return (T) json.deserialize(toJson(m), type);
+    }
+    
+    
+    public static V1PodTemplateSpec convertProtoToModel(PodTemplateSpec protoTemplateSpec) throws InvalidProtocolBufferException, SeldonDeploymentException
+    {
+         Printer jsonPrinter = JsonFormat.printer().preservingProtoFieldNames();
+         String ptsJson = jsonPrinter.print(protoTemplateSpec);
+         JSON json = new JSON();
+         Type returnType = new TypeToken<V1PodTemplateSpec>(){}.getType();
+         V1PodTemplateSpec podTemplateSpec = (V1PodTemplateSpec) json.deserialize(ptsJson, returnType);
+         //return fixProbes(protoTemplateSpec, podTemplateSpec);
+         return podTemplateSpec;
     }
 
 }

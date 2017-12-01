@@ -34,6 +34,8 @@ import io.kubernetes.client.proto.V1.TCPSocketAction;
 import io.kubernetes.client.proto.V1beta1Extensions;
 import io.kubernetes.client.proto.V1beta1Extensions.Deployment;
 import io.kubernetes.client.proto.V1beta1Extensions.DeploymentSpec;
+import io.kubernetes.client.proto.V1beta1Extensions.DeploymentStrategy;
+import io.kubernetes.client.proto.V1beta1Extensions.RollingUpdateDeployment;
 import io.seldon.clustermanager.ClusterManagerProperites;
 import io.seldon.clustermanager.pb.ProtoBufUtils;
 import io.seldon.protos.DeploymentProtos.Endpoint;
@@ -84,16 +86,16 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(8082).setName("admin"))
 			.setReadinessProbe(Probe.newBuilder().setHandler(Handler.newBuilder()
 					.setHttpGet(HTTPGetAction.newBuilder().setPort(IntOrString.newBuilder().setType(1).setStrVal("admin")).setPath("/ready")))
-					.setInitialDelaySeconds(5)
-					.setPeriodSeconds(5)
+					.setInitialDelaySeconds(10)
+					.setPeriodSeconds(10)
 					.setFailureThreshold(3)
 					.setSuccessThreshold(1)
 					.setTimeoutSeconds(2)
 					)
 			.setLivenessProbe(Probe.newBuilder().setHandler(Handler.newBuilder()
 					.setHttpGet(HTTPGetAction.newBuilder().setPort(IntOrString.newBuilder().setType(1).setStrVal("admin")).setPath("/ready")))
-					.setInitialDelaySeconds(5)
-					.setPeriodSeconds(5)
+					.setInitialDelaySeconds(10)
+					.setPeriodSeconds(10)
 					.setFailureThreshold(3)
 					.setSuccessThreshold(1)
 					.setTimeoutSeconds(2)
@@ -102,7 +104,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 					ExecAction.newBuilder()
 						.addCommand("/bin/sh")
 						.addCommand("-c")
-						.addCommand("curl 127.0.0.1:"+clusterManagerProperites.getEngineContainerPort()+"/pause && /bin/sleep 20"))));
+						.addCommand("curl 127.0.0.1:"+clusterManagerProperites.getEngineContainerPort()+"/pause && /bin/sleep 5"))));
 
 			
 			
@@ -204,7 +206,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			if (!c.getLifecycle().hasPreStop())
 			{
 				c2Builder.setLifecycle(Lifecycle.newBuilder(c.getLifecycle()).setPreStop(Handler.newBuilder().setExec(
-						ExecAction.newBuilder().addCommand("/bin/sh").addCommand("-c").addCommand("/bin/sleep 20"))));
+						ExecAction.newBuilder().addCommand("/bin/sh").addCommand("-c").addCommand("/bin/sleep 5"))));
 			}
 		}
 
@@ -325,7 +327,9 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 							.putLabels(SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_KEY, SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_VAL)
 							.addOwnerReferences(ownerRef)
 							)
-					.setSpec(DeploymentSpec.newBuilder().setTemplate(podSpecBuilder.build())
+					.setSpec(DeploymentSpec.newBuilder()
+					        .setTemplate(podSpecBuilder.build())
+					        .setStrategy(DeploymentStrategy.newBuilder().setRollingUpdate(RollingUpdateDeployment.newBuilder().setMaxUnavailable(IntOrString.newBuilder().setType(1).setStrVal("10%"))))
 							.setReplicas(p.getReplicas()))
 					.build();
 			

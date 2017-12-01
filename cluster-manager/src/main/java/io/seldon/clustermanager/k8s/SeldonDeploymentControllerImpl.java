@@ -1,6 +1,7 @@
 package io.seldon.clustermanager.k8s;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -10,13 +11,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.google.gson.reflect.TypeToken;
+
 import io.kubernetes.client.ApiException;
 import io.kubernetes.client.ProtoClient;
 import io.kubernetes.client.ProtoClient.ObjectOrStatus;
+import io.kubernetes.client.apis.ExtensionsV1beta1Api;
 import io.kubernetes.client.auth.ApiKeyAuth;
 import io.kubernetes.client.auth.Authentication;
 import io.kubernetes.client.models.ExtensionsV1beta1Deployment;
 import io.kubernetes.client.models.ExtensionsV1beta1DeploymentList;
+import io.kubernetes.client.models.V1PodTemplateSpec;
 import io.kubernetes.client.proto.Meta.DeleteOptions;
 import io.kubernetes.client.proto.V1.Service;
 import io.kubernetes.client.proto.V1beta1Extensions.Deployment;
@@ -93,6 +98,10 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
                 }
             }
             else { // Update
+                //ExtensionsV1beta1Api api = new ExtensionsV1beta1Api(client.getApiClient());
+                //Type returnType = new TypeToken<ExtensionsV1beta1Deployment>(){}.getType();
+                //ExtensionsV1beta1Deployment dModel = ProtoBufUtils.convertProtoToModel(d,returnType);
+                //api.patchNamespacedDeployment(client.getApiClient().escapeString(d.getMetadata().getName()),"default",dModel,null);
                 os = client.update(d,listApiPath, DEPLOYMENT_API_VERSION, "Deployment");
                 if (os.status != null) {
                     logger.error("Error updating deployment:"+ProtoBufUtils.toJson(os.status));
