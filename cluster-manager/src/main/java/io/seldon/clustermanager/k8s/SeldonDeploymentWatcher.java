@@ -45,27 +45,12 @@ public class SeldonDeploymentWatcher  {
 		this.mlCache = mlCache;
 	}
 	
-	//FIXME
-	private SeldonDeployment addStatusIfNeeded(SeldonDeployment mldep)
-	{
-		if (mldep.hasStatus())
-		{
-			return mldep;
-		}
-		else
-		{
-			return mldep;
-		}
-	}
-	
 	private void processWatch(SeldonDeployment mldep,String action) throws InvalidProtocolBufferException
 	{
 		switch(action)
 		{
 		case "ADDED":
 		case "MODIFIED":
-			SeldonDeployment mlDepUpdated = addStatusIfNeeded(mldep);
-			mlCache.put(mlDepUpdated);
 			seldonDeploymentController.createOrReplaceSeldonDeployment(mldep);
 			break;
 		case "DELETED":
@@ -85,7 +70,7 @@ public class SeldonDeploymentWatcher  {
 		String rs = null;
 		if (resourceVersion > 0)
 			rs = ""+resourceVersion;
-		logger.info("Watching with rs "+rs);
+		logger.debug("Watching with rs "+rs);
 		ApiClient client = Config.defaultClient();
 		CustomObjectsApi api = new CustomObjectsApi(client);
 		Watch<Object> watch = Watch.createWatch(
@@ -98,7 +83,7 @@ public class SeldonDeploymentWatcher  {
         for (Watch.Response<Object> item : watch) {
         	Gson gson = new GsonBuilder().create();
     		String jsonInString = gson.toJson(item.object);
-	    	logger.info(String.format("%s\n : %s%n", item.type, jsonInString));
+	    	logger.debug(String.format("%s\n : %s%n", item.type, jsonInString));
     		ObjectMapper mapper = new ObjectMapper();
     	    JsonFactory factory = mapper.getFactory();
     	    JsonParser parser = factory.createParser(jsonInString);
@@ -139,16 +124,16 @@ public class SeldonDeploymentWatcher  {
 	
 	@Scheduled(fixedDelay = 5000)
     public void watch() throws JsonProcessingException, ApiException, IOException {
-        logger.info("The time is now {}", dateFormat.format(new Date()));
+        logger.debug("The time is now {}", dateFormat.format(new Date()));
         this.resourceVersion = this.watchSeldonMLDeployments(this.resourceVersion,this.resourceVersionProcessed);
         if (this.resourceVersion > this.resourceVersionProcessed)
         {
-        	logger.info("Updating processed resource version to "+resourceVersion);
+        	logger.debug("Updating processed resource version to "+resourceVersion);
         	this.resourceVersionProcessed = this.resourceVersion;
         }
         else
         {
-        	logger.info("Not updating resourceVersion - current:"+this.resourceVersion+" Processed:"+this.resourceVersionProcessed);
+        	logger.debug("Not updating resourceVersion - current:"+this.resourceVersion+" Processed:"+this.resourceVersionProcessed);
         }
     }
 

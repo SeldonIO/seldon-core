@@ -1,7 +1,6 @@
 package io.seldon.clustermanager.k8s;
 
 import java.io.IOException;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,8 +31,7 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 	public static final String KIND_PLURAL = "seldondeployments";
 	public static final String KIND = "SeldonDeployment";
 	
-	
-	@Override
+    @Override
 	public void updateSeldonDeployment(SeldonDeployment mldep) {
 		
 		try
@@ -48,10 +46,9 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 			// Create final version of deployment with annotation
 			SeldonDeployment mlDeployment = SeldonDeployment.newBuilder(mldep).setMetadata(ObjectMeta.newBuilder(mldep.getMetadata())
 						.putAnnotations("kubectl.kubernetes.io/last-applied-configuration", json+"\n")).build();
-			
 			json = SeldonDeploymentUtils.toJson(mlDeployment,false);
 			
-			logger.debug(json);
+			logger.debug("Updating seldondeployment "+mlDeployment.getMetadata().getName());
 			ApiClient client = Config.defaultClient();
 			CustomObjectsApi api = new CustomObjectsApi(client);
 			api.replaceNamespacedCustomObject(GROUP, VERSION, NAMESPACE, KIND_PLURAL, mlDeployment.getMetadata().getName(),json.getBytes());

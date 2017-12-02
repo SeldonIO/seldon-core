@@ -43,7 +43,7 @@ public class DeploymentWatcher {
 		String rs = null;
 		if (resourceVersion > 0)
 			rs = ""+resourceVersion;
-		logger.info("Watching with rs "+rs);
+		logger.debug("Watching with rs "+rs);
 		
 		int maxResourceVersion = resourceVersion;		
 		try{
@@ -123,16 +123,16 @@ public class DeploymentWatcher {
 	
 	@Scheduled(fixedDelay = 5000)
     public void watch() throws JsonProcessingException, ApiException, IOException {
-        logger.info("The time is now {}", dateFormat.format(new Date()));
+        logger.debug("The time is now {}", dateFormat.format(new Date()));
         this.resourceVersion = this.watchDeployments(this.resourceVersion,this.resourceVersionProcessed);
         if (this.resourceVersion > this.resourceVersionProcessed)
         {
-        	logger.info("Updating processed resource version to "+resourceVersion);
+        	logger.debug("Updating processed resource version to "+resourceVersion);
         	this.resourceVersionProcessed = this.resourceVersion;
         }
         else
         {
-        	logger.info("Not updating resourceVersion - current:"+this.resourceVersion+" Processed:"+this.resourceVersionProcessed);
+        	logger.debug("Not updating resourceVersion - current:"+this.resourceVersion+" Processed:"+this.resourceVersionProcessed);
         }
     }
 		

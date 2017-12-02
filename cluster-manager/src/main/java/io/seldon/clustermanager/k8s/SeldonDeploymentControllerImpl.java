@@ -38,16 +38,18 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	private final SeldonDeploymentOperator operator;
 	private final K8sClientProvider clientProvider;
 	private final KubeCRDHandler crdHandler;
+	private final SeldonDeploymentCache mlCache;
 	
 	private static final String DEPLOYMENT_API_VERSION = "extensions/v1beta1";
 	private String seldonClusterNamespaceName = "UNKOWN_NAMESPACE";
 
 	@Autowired
-	public SeldonDeploymentControllerImpl(SeldonDeploymentOperator operator, K8sClientProvider clientProvider,KubeCRDHandler crdHandler) {
+	public SeldonDeploymentControllerImpl(SeldonDeploymentOperator operator, K8sClientProvider clientProvider,KubeCRDHandler crdHandler,SeldonDeploymentCache mlCache) {
 		super();
 		this.operator = operator;
 		this.clientProvider = clientProvider;
 		this.crdHandler = crdHandler;
+		this.mlCache = mlCache;
 		
 		 { // set the namespace to use
 	            seldonClusterNamespaceName = System.getenv().get(SELDON_CLUSTER_MANAGER_POD_NAMESPACE_KEY);
@@ -66,20 +68,11 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
             final String listApiPath = "/apis/"+DEPLOYMENT_API_VERSION+"/namespaces/{namespace}/deployments/{name}"
                     .replaceAll("\\{" + "name" + "\\}", client.getApiClient().escapeString(d.getMetadata().getName()))
                     .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString("default"));
-            logger.info("Will try to call "+listApiPath);
-            logger.info(client.getApiClient().getAuthentications().toString());
-            logger.info(client.getApiClient().getBasePath());
-            for (Authentication auth : client.getApiClient().getAuthentications().values()) {
-                if (auth instanceof ApiKeyAuth) {
-                    logger.info("APIKEY"+((ApiKeyAuth) auth).getApiKey());
-                }
-            }
-
-
+            logger.debug("Will try to call LIST "+listApiPath);
             ObjectOrStatus<Deployment> os = client.list(Deployment.newBuilder(),listApiPath);       
             if (os.status != null) {
                 if (os.status.getCode() == 404) { //Create
-                    logger.debug("About to create "+ProtoBufUtils.toJson(d));
+                    logger.debug("About to CREATE "+ProtoBufUtils.toJson(d));
                     final String createApiPath = "/apis/"+DEPLOYMENT_API_VERSION+"/namespaces/{namespace}/deployments"
                             .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString("default"));
 
@@ -98,13 +91,14 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
                 }
             }
             else { // Update
+                logger.debug("About to UPDATE "+ProtoBufUtils.toJson(d));
                 os = client.update(d,listApiPath, DEPLOYMENT_API_VERSION, "Deployment");
                 if (os.status != null) {
                     logger.error("Error updating deployment:"+ProtoBufUtils.toJson(os.status));
                     throw new SeldonDeploymentException("Failed to update deployment "+d.getMetadata().getName());
                 }
                 else {
-                    logger.debug("Created deployment:"+ProtoBufUtils.toJson(os.object));
+                    logger.debug("Updated deployment:"+ProtoBufUtils.toJson(os.object));
                 }
             }
 		}
@@ -180,21 +174,31 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 		
 		try
 		{
-			SeldonDeployment mlDep2 = operator.defaulting(mlDep);
-			operator.validate(mlDep2);
-			logger.info(ProtoBufUtils.toJson(mlDep2));
-			DeploymentResources resources = operator.createResources(mlDep2);
-			ProtoClient client = clientProvider.getProtoClient();
-			createDeployments(client, resources.deployments);
-			removeDeployments(client,mlDep2,resources.deployments);
-			createService(client,resources.service);
-			if (!mlDep.getSpec().equals(mlDep2.getSpec()))
-			{
-			    logger.info("Pushing updated SeldonDeployment "+mlDep2.getMetadata().getName()+" back to kubectl");
-			    crdHandler.updateSeldonDeployment(mlDep2);
-			}
-			else
-			    logger.info("Not updating SeldonDeployment "+mlDep2.getMetadata().getName());
+		    SeldonDeployment existing = mlCache.get(mlDep.getMetadata().getName());
+		    if (existing == null || !existing.getSpec().equals(mlDep.getSpec()))
+		    {
+		        logger.debug("Running updates for "+mlDep.getMetadata().getName());
+		        SeldonDeployment mlDep2 = operator.defaulting(mlDep);
+		        operator.validate(mlDep2);
+		        mlCache.put(mlDep2);
+		        DeploymentResources resources = operator.createResources(mlDep2);
+		        ProtoClient client = clientProvider.getProtoClient();
+		        createDeployments(client, resources.deployments);
+		        removeDeployments(client,mlDep2,resources.deployments);
+		        createService(client,resources.service);
+		        if (!mlDep.getSpec().equals(mlDep2.getSpec()))
+		        {
+		            logger.debug("Pushing updated SeldonDeployment "+mlDep2.getMetadata().getName()+" back to kubectl");
+		            crdHandler.updateSeldonDeployment(mlDep2);
+		        }
+		        else
+		            logger.debug("Not pushing an update as no change to spec for SeldonDeployment "+mlDep2.getMetadata().getName());
+		    }
+		    else
+		    {
+		        mlCache.put(mlDep);
+		        logger.debug("Only updated cache for "+mlDep.getMetadata().getName());
+		    }
 			
 		} catch (SeldonDeploymentException e) {
 			logger.error("Failed to create deployment ",e);

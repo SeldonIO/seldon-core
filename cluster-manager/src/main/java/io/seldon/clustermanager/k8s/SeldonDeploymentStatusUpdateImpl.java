@@ -11,13 +11,10 @@ import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 @Component
 public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusUpdate {
     protected static Logger logger = LoggerFactory.getLogger(SeldonDeploymentStatusUpdateImpl.class.getName());
-	private final SeldonDeploymentCache mlCache;
 	private final KubeCRDHandler crdHandler;
 	
 	@Autowired
-	public SeldonDeploymentStatusUpdateImpl(SeldonDeploymentCache mlCache, KubeCRDHandler crdHandler) {
-		super();
-		this.mlCache = mlCache;
+	public SeldonDeploymentStatusUpdateImpl(KubeCRDHandler crdHandler) {
 		this.crdHandler = crdHandler;
 	}
 
@@ -40,7 +37,7 @@ public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusU
         else
         {
             logger.info(String.format("UPDATE %s : %s %d %d",mlDepName,depName,replicas,replicasAvailable));
-            SeldonDeployment mlDep = mlCache.get(mlDepName);
+            SeldonDeployment mlDep = crdHandler.getSeldonDeployment(mlDepName);
             if (mlDep != null)
             {
                 SeldonDeployment.Builder mlBuilder = SeldonDeployment.newBuilder(mlDep);
@@ -61,10 +58,10 @@ public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusU
                    update(b,replicas,replicasAvailable);
                    mlBuilder.getStatusBuilder().addPredictorStatus(b);
                }
-
-               mlCache.remove(mlDepName);
                crdHandler.updateSeldonDeployment(mlBuilder.build());
             }
+            else
+                logger.error("Can't find seldondeployment "+mlDepName+" to update "+depName);
         }
         
     }
@@ -72,22 +69,23 @@ public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusU
     @Override
     public void removeStatus(String mlDepName, String depName) {
         logger.info(String.format("DELETE %s : %s",mlDepName,depName));
-        SeldonDeployment mlDep = mlCache.get(mlDepName);
+        SeldonDeployment mlDep = crdHandler.getSeldonDeployment(mlDepName);
         if (mlDep != null)
         {
             SeldonDeployment.Builder mlBuilder = SeldonDeployment.newBuilder(mlDep);
             int idx = 0;
             for (PredictorStatus.Builder b : mlBuilder.getStatusBuilder().getPredictorStatusBuilderList())
-           {
-              if (b.getName().equals(depName))
-              {
-                  mlBuilder.getStatusBuilder().removePredictorStatus(idx);
-                  break;
-              }
-           }
-           mlCache.remove(mlDepName);
-           crdHandler.updateSeldonDeployment(mlBuilder.build());
+            {
+                if (b.getName().equals(depName))
+                {
+                    mlBuilder.getStatusBuilder().removePredictorStatus(idx);
+                    break;
+                }
+            }
+            crdHandler.updateSeldonDeployment(mlBuilder.build());
         }
+        else
+            logger.error("Can't find seldondeployment "+mlDepName+" to remove "+depName);
     }
 	
 }

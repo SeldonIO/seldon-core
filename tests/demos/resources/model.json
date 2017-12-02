@@ -9,7 +9,8 @@
     },
     "spec": {
         "annotations": {
-            "project_name": "FX Market Prediction"
+            "project_name": "FX Market Prediction",
+            "deployment_version": "v1"
         },
         "name": "test-deployment",
         "oauth_key": "oauth-key",
@@ -43,7 +44,10 @@
                     "type": "MODEL"
                 },
                 "name": "fx-market-predictor",
-                "replicas": 1
+                "replicas": 1,
+		"annotations": {
+		    "predictor_version" : "v1"
+		}
             }
         ]
     }

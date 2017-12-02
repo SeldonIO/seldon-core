@@ -18,8 +18,8 @@ import io.seldon.apife.deployments.DeploymentStore;
 public class AuthorizedWebMvcTagsProvider extends DefaultWebMvcTagsProvider {
 
 	private final static String PROJECT_ANNOTATION_KEY = "project_name";
-	private final static String PREDICTOR_NAME_METRIC = "predictor_name";
-	private final static String PREDICTOR_VERSION_METRIC = "predictor_version";
+	private final static String DEPLOYMENT_NAME_METRIC = "deployment_name";
+	private final static String DEPLOYMENT_VERSION_METRIC = "deployment_version";
 	private final static String PRINCIPAL_METRIC = "principal";
 	
 	@Autowired
@@ -36,9 +36,11 @@ public class AuthorizedWebMvcTagsProvider extends DefaultWebMvcTagsProvider {
 
 		return asList(WebMvcTags.method(request), WebMvcTags.uri(request), WebMvcTags.exception(ex), WebMvcTags.status(response),
 				principal(principalName),
-				version(principalName),
-				predictorName(principalName),
-				projectName(principalName));
+                projectName(principalName),
+				deploymentName(principalName),
+                deploymentVersion(principalName)
+                );
+
 		
 	}
 	
@@ -57,20 +59,20 @@ public class AuthorizedWebMvcTagsProvider extends DefaultWebMvcTagsProvider {
 			 return Tag.of(PROJECT_ANNOTATION_KEY, "None");
 	 }
 	 
-	 public Tag version(String principalName)
+	 public Tag deploymentVersion(String principalName)
 	 {
-		 if (principalName == null || !StringUtils.hasText(deploymentStore.getDeployment(principalName).getAnnotationsOrDefault("version", "")))
-			 return Tag.of(PREDICTOR_VERSION_METRIC, "None");
+		 if (principalName == null || !StringUtils.hasText(deploymentStore.getDeployment(principalName).getAnnotationsOrDefault(DEPLOYMENT_VERSION_METRIC, "")))
+			 return Tag.of(DEPLOYMENT_VERSION_METRIC, "None");
 		 else
-			 return Tag.of(PREDICTOR_VERSION_METRIC,deploymentStore.getDeployment(principalName).getAnnotationsOrDefault("version", ""));
+			 return Tag.of(DEPLOYMENT_VERSION_METRIC,deploymentStore.getDeployment(principalName).getAnnotationsOrDefault(DEPLOYMENT_VERSION_METRIC, ""));
 	 }
 
-	 public Tag predictorName(String principalName)
+	 public Tag deploymentName(String principalName)
 	 {
 		 if (principalName == null || !StringUtils.hasText(deploymentStore.getDeployment(principalName).getName()))
-			 return Tag.of(PREDICTOR_NAME_METRIC, "None");
+			 return Tag.of(DEPLOYMENT_NAME_METRIC, "None");
 		 else
-			 return Tag.of(PREDICTOR_NAME_METRIC,deploymentStore.getDeployment(principalName).getName());
+			 return Tag.of(DEPLOYMENT_NAME_METRIC,deploymentStore.getDeployment(principalName).getName());
 	 }
 
 	

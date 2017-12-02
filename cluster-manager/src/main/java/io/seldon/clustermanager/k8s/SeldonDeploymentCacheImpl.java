@@ -26,7 +26,13 @@ public class SeldonDeploymentCacheImpl implements SeldonDeploymentCache {
 		this.crdHandler = crdHandler;
 	}
 	
-	public SeldonDeployment get(String name) {
+	@Override
+    public SeldonDeployment get(String name) {
+       return cache.getIfPresent(name);
+    }
+	
+	@Override
+	public SeldonDeployment getOrLoad(String name) {
 		try {
 			return cache.get(name, new Callable<SeldonDeployment>() {
 			    @Override
@@ -43,6 +49,7 @@ public class SeldonDeploymentCacheImpl implements SeldonDeploymentCache {
 		}
 	}
 	
+	@Override
 	public void put(SeldonDeployment dep) {
 		cache.put(dep.getMetadata().getName(), dep);
 	}
@@ -52,4 +59,6 @@ public class SeldonDeploymentCacheImpl implements SeldonDeploymentCache {
 		cache.invalidate(name);
 		
 	}
+
+    
 }

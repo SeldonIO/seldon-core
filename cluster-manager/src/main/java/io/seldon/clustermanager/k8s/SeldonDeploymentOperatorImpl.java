@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Message;
 
 import io.kubernetes.client.models.V1OwnerReference;
 import io.kubernetes.client.proto.IntStr.IntOrString;
@@ -61,26 +62,25 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 	}
 
 	 
-	public static String getEnginePredictorEnvVarJson(PredictorSpec predictorDef) {
+	private static String getEngineEnvVarJson(Message protoMessage) throws SeldonDeploymentException {
 		String retVal;
 		try {
-			retVal = ProtoBufUtils.toJson(predictorDef, true,false);
+            retVal = ProtoBufUtils.toJson(protoMessage, true,false);
+            retVal = new String(Base64.getEncoder().encode(retVal.getBytes()));
+            return retVal;
 		} catch (InvalidProtocolBufferException e) {
-			retVal = e.getMessage();
-		}
-
-		retVal = new String(Base64.getEncoder().encode(retVal.getBytes()));
-		 
-		return retVal;
+           throw new SeldonDeploymentException("Failed to parse protobuf",e);
+        }
 	}
 	
-	private V1.Container createEngineContainer(PredictorSpec predictorDef)
+	private V1.Container createEngineContainer(SeldonDeployment dep,PredictorSpec predictorDef) throws SeldonDeploymentException
 	{
 		V1.Container.Builder cBuilder = V1.Container.newBuilder();
 		cBuilder
 			.setName("seldon-container-engine")
 			.setImage(clusterManagerProperites.getEngineContainerImageAndVersion())
-			.addEnv(EnvVar.newBuilder().setName("ENGINE_PREDICTOR").setValue(getEnginePredictorEnvVarJson(predictorDef)))
+			.addEnv(EnvVar.newBuilder().setName("ENGINE_PREDICTOR").setValue(getEngineEnvVarJson(predictorDef)))
+			.addEnv(EnvVar.newBuilder().setName("ENGINE_SELDON_DEPLOYMENT").setValue(getEngineEnvVarJson(dep)))
 			.addEnv(EnvVar.newBuilder().setName("ENGINE_SERVER_PORT").setValue(""+clusterManagerProperites.getEngineContainerPort()))
 			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(clusterManagerProperites.getEngineContainerPort()))
 			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(8082).setName("admin"))
@@ -310,7 +310,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			String depName = getKubernetesDeploymentName(mlDep.getSpec().getName(),p.getName());
 			PodTemplateSpec.Builder podSpecBuilder = PodTemplateSpec.newBuilder(p.getComponentSpec());
 			podSpecBuilder.getSpecBuilder()
-			    .addContainers(createEngineContainer(p))
+			    .addContainers(createEngineContainer(mlDep,p))
 			    .setTerminationGracePeriodSeconds(20);
 			podSpecBuilder.getMetadataBuilder()
 			    .putAnnotations("prometheus.io/path", "/prometheus")
