@@ -1,27 +1,21 @@
 package io.seldon.clustermanager.k8s;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.google.gson.reflect.TypeToken;
-
 import io.kubernetes.client.ApiException;
 import io.kubernetes.client.ProtoClient;
 import io.kubernetes.client.ProtoClient.ObjectOrStatus;
-import io.kubernetes.client.apis.ExtensionsV1beta1Api;
-import io.kubernetes.client.auth.ApiKeyAuth;
-import io.kubernetes.client.auth.Authentication;
 import io.kubernetes.client.models.ExtensionsV1beta1Deployment;
 import io.kubernetes.client.models.ExtensionsV1beta1DeploymentList;
-import io.kubernetes.client.models.V1PodTemplateSpec;
 import io.kubernetes.client.proto.Meta.DeleteOptions;
 import io.kubernetes.client.proto.V1.Service;
 import io.kubernetes.client.proto.V1beta1Extensions.Deployment;
@@ -34,14 +28,12 @@ import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 public class SeldonDeploymentControllerImpl implements SeldonDeploymentController {
 
 	private final static Logger logger = LoggerFactory.getLogger(SeldonDeploymentControllerImpl.class);
-	private final static String SELDON_CLUSTER_MANAGER_POD_NAMESPACE_KEY = "SELDON_CLUSTER_MANAGER_POD_NAMESPACE";
 	private final SeldonDeploymentOperator operator;
 	private final K8sClientProvider clientProvider;
 	private final KubeCRDHandler crdHandler;
 	private final SeldonDeploymentCache mlCache;
 	
 	private static final String DEPLOYMENT_API_VERSION = "extensions/v1beta1";
-	private String seldonClusterNamespaceName = "UNKOWN_NAMESPACE";
 
 	@Autowired
 	public SeldonDeploymentControllerImpl(SeldonDeploymentOperator operator, K8sClientProvider clientProvider,KubeCRDHandler crdHandler,SeldonDeploymentCache mlCache) {
@@ -50,31 +42,22 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 		this.clientProvider = clientProvider;
 		this.crdHandler = crdHandler;
 		this.mlCache = mlCache;
-		
-		 { // set the namespace to use
-	            seldonClusterNamespaceName = System.getenv().get(SELDON_CLUSTER_MANAGER_POD_NAMESPACE_KEY);
-	            if (seldonClusterNamespaceName == null) {
-	                logger.info(String.format("FAILED to find env var [%s]", SELDON_CLUSTER_MANAGER_POD_NAMESPACE_KEY));
-	                seldonClusterNamespaceName = "default";
-	            }
-	            logger.info(String.format("Setting cluster manager namespace as [%s]", seldonClusterNamespaceName));
-	        }
 	}
 	
-	private void createDeployments(ProtoClient client,List<Deployment> deployments) throws ApiException, IOException, SeldonDeploymentException
+	private void createDeployments(ProtoClient client,String namespace,List<Deployment> deployments) throws ApiException, IOException, SeldonDeploymentException
 	{
 		for(Deployment d : deployments)
 		{
             final String listApiPath = "/apis/"+DEPLOYMENT_API_VERSION+"/namespaces/{namespace}/deployments/{name}"
                     .replaceAll("\\{" + "name" + "\\}", client.getApiClient().escapeString(d.getMetadata().getName()))
-                    .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString("default"));
+                    .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString(namespace));
             logger.debug("Will try to call LIST "+listApiPath);
             ObjectOrStatus<Deployment> os = client.list(Deployment.newBuilder(),listApiPath);       
             if (os.status != null) {
                 if (os.status.getCode() == 404) { //Create
                     logger.debug("About to CREATE "+ProtoBufUtils.toJson(d));
                     final String createApiPath = "/apis/"+DEPLOYMENT_API_VERSION+"/namespaces/{namespace}/deployments"
-                            .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString("default"));
+                            .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString(namespace));
 
                     os = client.create(d, createApiPath, DEPLOYMENT_API_VERSION, "Deployment");
                     if (os.status != null) {
@@ -112,7 +95,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	    return names;
 	}
 	
-	private void removeDeployments(ProtoClient client,SeldonDeployment seldonDeployment,List<Deployment> deployments) throws ApiException, IOException, SeldonDeploymentException
+	private void removeDeployments(ProtoClient client,String namespace,SeldonDeployment seldonDeployment,List<Deployment> deployments) throws ApiException, IOException, SeldonDeploymentException
 	{
 	    Set<String> names = getDeploymentNames(deployments);
 	    ExtensionsV1beta1DeploymentList depList = crdHandler.getOwnedDeployments(seldonDeployment.getSpec().getName());
@@ -122,7 +105,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	        {
 	            final String deleteApiPath = "/apis/"+DEPLOYMENT_API_VERSION+"/namespaces/{namespace}/deployments/{name}"
 	                    .replaceAll("\\{" + "name" + "\\}", client.getApiClient().escapeString(d.getMetadata().getName()))
-	                    .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString("default"));
+	                    .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString(namespace));
 	            DeleteOptions options = DeleteOptions.newBuilder().setPropagationPolicy("Foreground").build();
 	            ObjectOrStatus<Deployment> os = client.delete(Deployment.newBuilder(),deleteApiPath,options);
 	            if (os.status != null) {
@@ -136,18 +119,18 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	    }
 	}
 	
-	private void createService(ProtoClient client,Service service) throws ApiException, IOException, SeldonDeploymentException
+	private void createService(ProtoClient client,String namespace,Service service) throws ApiException, IOException, SeldonDeploymentException
 	{
 	    final String serviceApiPath = "/api/v1/namespaces/{namespace}/services/{name}"
                 .replaceAll("\\{" + "name" + "\\}", client.getApiClient().escapeString(service.getMetadata().getName()))
-                .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString("default"));
+                .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString(namespace));
         ObjectOrStatus os = client.list(Service.newBuilder(),serviceApiPath);     
         if (os.status != null)
         {
             if (os.status.getCode() == 404)
             {
                 String serviceCreateApiPath = "/api/v1/namespaces/{namespace}/services"
-                        .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString("default"));
+                        .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString(namespace));
                 os = client.create(service, serviceCreateApiPath, "v1", "Service");
                 if (os.status != null)
                 {
@@ -169,6 +152,14 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
             logger.debug("No creating service as already exists "+service.getMetadata().getName());
 	}
 
+	private String getNamespace(SeldonDeployment d)
+	{
+	    if (StringUtils.isEmpty(d.getMetadata().getNamespace()))
+	        return "default";
+	    else
+	        return d.getMetadata().getNamespace();
+	}
+	
 	@Override
 	public void createOrReplaceSeldonDeployment(SeldonDeployment mlDep) {
 		
@@ -183,9 +174,10 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 		        mlCache.put(mlDep2);
 		        DeploymentResources resources = operator.createResources(mlDep2);
 		        ProtoClient client = clientProvider.getProtoClient();
-		        createDeployments(client, resources.deployments);
-		        removeDeployments(client,mlDep2,resources.deployments);
-		        createService(client,resources.service);
+		        String namespace = getNamespace(mlDep2);
+		        createDeployments(client, namespace, resources.deployments);
+		        removeDeployments(client, namespace, mlDep2, resources.deployments);
+		        createService(client, namespace, resources.service);
 		        if (!mlDep.getSpec().equals(mlDep2.getSpec()))
 		        {
 		            logger.debug("Pushing updated SeldonDeployment "+mlDep2.getMetadata().getName()+" back to kubectl");
