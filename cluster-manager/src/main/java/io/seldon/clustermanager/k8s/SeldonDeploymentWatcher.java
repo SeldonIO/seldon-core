@@ -117,6 +117,9 @@ public class SeldonDeploymentWatcher  {
 			else
 				throw e;
 		}
+		finally {
+		    watch.close();
+		}
 		return maxResourceVersion;
 	}
 	

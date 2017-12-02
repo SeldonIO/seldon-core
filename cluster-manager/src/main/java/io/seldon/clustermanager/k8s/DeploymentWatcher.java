@@ -46,77 +46,80 @@ public class DeploymentWatcher {
 		logger.debug("Watching with rs "+rs);
 		
 		int maxResourceVersion = resourceVersion;		
-		try{
-			ApiClient client = Config.defaultClient();
-			ExtensionsV1beta1Api api = new ExtensionsV1beta1Api(client);
 
-			Watch<AppsV1beta1Deployment> watch = Watch.createWatch(
-	                client,
-	        		api.listNamespacedDeploymentCall("default", null, null, null,false,SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_KEY+"="+SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_VAL, null,rs, 10, true,null,null),
-	        		new TypeToken<Watch.Response<AppsV1beta1Deployment>>(){}.getType());
+		ApiClient client = Config.defaultClient();
+		ExtensionsV1beta1Api api = new ExtensionsV1beta1Api(client);
 
-			for (Watch.Response<AppsV1beta1Deployment> item : watch) {
-				int resourceVersionNew = Integer.parseInt(item.object.getMetadata().getResourceVersion());
-				if (resourceVersionNew <= resourceVersionProcessed)
-				{
-					logger.warn("Looking at already processed request - skipping");
-				}
-				else
-				{
-					if (resourceVersionNew > maxResourceVersion)
-						maxResourceVersion = resourceVersionNew;
-					if (item.object.getMetadata().getOwnerReferences() == null)
-					{
-					    logger.warn("Found possible seldon controlled deployment which has no owner reference. Ignoring.");
-					}
-					else
-					{
-	                    switch(item.type)
-	                    {
-	                    case "ADDED":
-	                    case "MODIFIED":
-	                        for (V1OwnerReference ownerRef : item.object.getMetadata().getOwnerReferences())
-	                        {
-	                            if (ownerRef.getKind().equals(KubeCRDHandlerImpl.KIND) && item.object.getStatus() != null)
-	                            {
-	                                String mlDepName = ownerRef.getName();
-	                                String depName = item.object.getMetadata().getName();
-	                                statusUpdater.updateStatus(mlDepName, depName, item.object.getStatus().getReplicas(),item.object.getStatus().getReadyReplicas());
-	                            }
-	                        }
-	                        break;
-	                    case "DELETED":
-	                        for (V1OwnerReference ownerRef : item.object.getMetadata().getOwnerReferences())
-	                        {
-	                            if (ownerRef.getKind().equals(KubeCRDHandlerImpl.KIND) && item.object.getStatus() != null)
-	                            {
-	                                String mlDepName = ownerRef.getName();
-	                                String depName = item.object.getMetadata().getName();
-	                                statusUpdater.removeStatus(mlDepName,depName);
-	                            }
-	                        }
-	                        break;
-	                    default:
-	                        logger.error("Unknown type "+item.type);
-	                    }
-	                    //for modified get owner reference and determine which predictor it is
-	                    //get the MLDeployment from API or local cache and update status
-	                    // put this logic in new class
-					}
-				}
-				
-			}
-			
+		Watch<AppsV1beta1Deployment> watch = Watch.createWatch(
+		        client,
+		        api.listNamespacedDeploymentCall("default", null, null, null,false,SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_KEY+"="+SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_VAL, null,rs, 10, true,null,null),
+		        new TypeToken<Watch.Response<AppsV1beta1Deployment>>(){}.getType());
 
-		}
-		catch(RuntimeException e)
+		try
 		{
-			if (e.getCause() instanceof SocketTimeoutException)
-				return maxResourceVersion;
-			else
-				throw e;
-		} 
-		return maxResourceVersion;
+		    for (Watch.Response<AppsV1beta1Deployment> item : watch) {
+                int resourceVersionNew = Integer.parseInt(item.object.getMetadata().getResourceVersion());
+                if (resourceVersionNew <= resourceVersionProcessed)
+                {
+                    logger.warn("Looking at already processed request - skipping");
+                }
+                else
+                {
+                    if (resourceVersionNew > maxResourceVersion)
+                        maxResourceVersion = resourceVersionNew;
+                    if (item.object.getMetadata().getOwnerReferences() == null)
+                    {
+                        logger.warn("Found possible seldon controlled deployment which has no owner reference. Ignoring.");
+                    }
+                    else
+                    {
+                        switch(item.type)
+                        {
+                        case "ADDED":
+                        case "MODIFIED":
+                            for (V1OwnerReference ownerRef : item.object.getMetadata().getOwnerReferences())
+                            {
+                                if (ownerRef.getKind().equals(KubeCRDHandlerImpl.KIND) && item.object.getStatus() != null)
+                                {
+                                    String mlDepName = ownerRef.getName();
+                                    String depName = item.object.getMetadata().getName();
+                                    statusUpdater.updateStatus(mlDepName, depName, item.object.getStatus().getReplicas(),item.object.getStatus().getReadyReplicas());
+                                }
+                            }
+                            break;
+                        case "DELETED":
+                            for (V1OwnerReference ownerRef : item.object.getMetadata().getOwnerReferences())
+                            {
+                                if (ownerRef.getKind().equals(KubeCRDHandlerImpl.KIND) && item.object.getStatus() != null)
+                                {
+                                    String mlDepName = ownerRef.getName();
+                                    String depName = item.object.getMetadata().getName();
+                                    statusUpdater.removeStatus(mlDepName,depName);
+                                }
+                            }
+                            break;
+                        default:
+                            logger.error("Unknown type "+item.type);
+                        }
+                        //for modified get owner reference and determine which predictor it is
+                        //get the MLDeployment from API or local cache and update status
+                        // put this logic in new class
+                    }
+                }
+                
+            }
+        }
+        catch(RuntimeException e)
+        {
+            if (e.getCause() instanceof SocketTimeoutException)
+                return maxResourceVersion;
+            else
+                throw e;
+        } 
+        finally {
+            watch.close();
+        }
+        return maxResourceVersion;
 	}
 		
 	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
