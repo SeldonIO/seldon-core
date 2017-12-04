@@ -1,0 +1,66 @@
+{
+    "apiVersion": "apiextensions.k8s.io/v1beta1",
+    "kind": "CustomResourceDefinition",
+    "metadata": {
+        "name": "seldondeployments.machinelearning.seldon.io"
+    },
+    "spec": {
+        "group": "machinelearning.seldon.io",
+        "names": {
+            "kind": "SeldonDeployment",
+            "plural": "seldondeployments",
+            "shortNames": [
+                "sdep"
+            ],
+            "singular": "seldondeployment"
+        },
+        "scope": "Namespaced",
+        "validation": {
+            "openAPIV3Schema": {
+                "properties": {
+                    "spec": {
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+			    "annotations": {
+				"description": "The annotations to be updated to a deployment",
+				"type": "object"
+			    },
+                            "oauth_key": {
+                                "type": "string"
+                            },
+                            "oauth_secret": {
+                                "type": "string"
+                            },
+                            "predictors": {
+                                "description": "List of predictors belonging to the deployment",
+                                "items": {
+                                    "properties" : {
+					"name": {
+					    "type": "string"
+					},
+					"replicas" : {
+					    "type" : "integer"
+					},
+					"annotations": {
+					    "description": "The annotations to be updated to a predictor",
+					    "type": "object"
+					},
+					"graph": {
+					    "type": "object"
+					},
+					"componentSpec":
+					{{ include "podTemplateSpec" . }}
+				    }
+                                },
+                                "type": "array"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "version": "v1alpha1"
+    }
+}
