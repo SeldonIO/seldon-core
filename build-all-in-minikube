@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+eval $(minikube docker-env) && \
+    docker run --rm -it \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -v /home/docker/.m2:/root/.m2 \
+        -v $(pwd):/work \
+        seldonio/core-builder:0.1 bash -c 'make -f Makefile.ci build'
+
