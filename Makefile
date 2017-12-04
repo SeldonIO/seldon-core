@@ -12,3 +12,12 @@ run_core_builder:
 		-v $$(pwd):/work \
 		seldonio/core-builder:0.1 bash
 
+
+run_core_builder_in_minikube:
+	eval $$(minikube docker-env) && \
+		docker run --rm -it \
+			-v /var/run/docker.sock:/var/run/docker.sock \
+			-v /home/docker/.m2:/root/.m2 \
+			-v $$(pwd):/work \
+			seldonio/core-builder:0.1 bash
+

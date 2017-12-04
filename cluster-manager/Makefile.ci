@@ -1,13 +1,17 @@
 IMAGE_NAME=seldonio/cluster-manager
 VERSION_FILE=target/version.txt
 
+# clean and build image
+build: clean build_image
+
+
 build_jar: update_proto k8s_java_client
 	mvn clean package -B
 
-write_version:
+write_version: build_jar
 	ls target/seldon-cluster-manager-*.jar | sed -n 's/target\/seldon-cluster-manager-\(.*\).jar$$/\1/p' > $(VERSION_FILE) && cat $(VERSION_FILE)
 
-build_image:
+build_image: write_version
 	docker build --build-arg APP_VERSION=$$(cat $(VERSION_FILE)) -t $(IMAGE_NAME):latest .
 	docker tag $(IMAGE_NAME):latest $(IMAGE_NAME):$$(cat $(VERSION_FILE))
 

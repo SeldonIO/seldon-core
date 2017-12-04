@@ -1,0 +1,12 @@
+.PHONY: build
+build:
+	cd cluster-manager && make -f Makefile.ci $@
+	cd api-frontend && make -f Makefile.ci $@
+	cd engine && make -f Makefile.ci clean $@
+
+.PHONY: clean
+clean:
+	cd cluster-manager && make -f Makefile.ci $@
+	cd api-frontend && make -f Makefile.ci $@
+	cd engine && make -f Makefile.ci clean $@
+
