@@ -43,6 +43,8 @@ import io.seldon.protos.DeploymentProtos.Endpoint;
 import io.seldon.protos.DeploymentProtos.Endpoint.EndpointType;
 import io.seldon.protos.DeploymentProtos.Parameter;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit;
+import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitSubtype;
+import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitType;
 import io.seldon.protos.DeploymentProtos.PredictorSpec;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
@@ -268,10 +270,42 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		return mlBuilder.build();
 	}
 
+	private void checkGraphMicroservicesInContainers(SeldonDeployment mlDep) throws SeldonDeploymentException
+	{
+        for(PredictorSpec p : mlDep.getSpec().getPredictorsList())
+        {
+            for(PredictiveUnit pu :  p.getGraph().getChildrenList())
+            {
+                if (pu.hasType() &&
+                        pu.hasSubtype() && 
+                        pu.getType() == PredictiveUnitType.MODEL && 
+                        pu.getSubtype() == PredictiveUnitSubtype.MICROSERVICE)
+                {
+                    boolean found = false;
+                    for(V1.Container c : p.getComponentSpec().getSpec().getContainersList())
+                    {
+                        if (c.getName().equals(pu.getName()))
+                        {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found)
+                    {
+                        throw new SeldonDeploymentException("Can't find container for predictive unit with name "+pu.getName());    
+                    }
+                }
+                  
+            }
+        }
+	    
+	}
+	
 	@Override
 	public void validate(SeldonDeployment mlDep) throws SeldonDeploymentException {
-		// TODO Auto-generated method stub
-		
+
+        checkGraphMicroservicesInContainers(mlDep);
+        
 	}
 	
 	@Override
