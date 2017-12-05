@@ -21,11 +21,8 @@ pipeline {
                 expression { return params.IS_DISABLED_APIFE_BUILD == false }
             }
             steps {
-                echo "Build Jar"
-                sh 'cd api-frontend && make -f Makefile.ci clean build_jar'
                 echo "Build Image"
-                sh 'cd api-frontend && make -f Makefile.ci write_version'
-                sh 'cd api-frontend && make -f Makefile.ci build_image'
+                sh 'cd api-frontend && make -f Makefile.ci build'
                 script {
                     if (params.IS_IMAGE_BEING_PUBLISHED == true) {
                         echo "Publish Image"
@@ -42,11 +39,8 @@ pipeline {
                 expression { return params.IS_DISABLED_ENGINE_BUILD == false }
             }
             steps {
-                echo "Build Jar"
-                sh 'cd engine && make -f Makefile.ci clean build_jar'
                 echo "Build Image"
-                sh 'cd engine && make -f Makefile.ci write_version'
-                sh 'cd engine && make -f Makefile.ci build_image'
+                sh 'cd engine && make -f Makefile.ci build'
                 script {
                     if (params.IS_IMAGE_BEING_PUBLISHED == true) {
                         echo "Publish Image"
@@ -63,11 +57,8 @@ pipeline {
                 expression { return params.IS_DISABLED_CLUSTERMANAGER_BUILD == false }
             }
             steps {
-                echo "Build Jar"
-                sh 'cd cluster-manager && make -f Makefile.ci clean build_jar'
                 echo "Build Image"
-                sh 'cd cluster-manager && make -f Makefile.ci write_version'
-                sh 'cd cluster-manager && make -f Makefile.ci build_image'
+                sh 'cd cluster-manager && make -f Makefile.ci build'
                 script {
                     if (params.IS_IMAGE_BEING_PUBLISHED == true) {
                         echo "Publish Image"
