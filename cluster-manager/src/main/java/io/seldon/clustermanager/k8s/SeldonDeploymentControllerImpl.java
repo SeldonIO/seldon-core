@@ -166,7 +166,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	{
         SeldonDeployment.Builder mlBuilder = SeldonDeployment.newBuilder(mlDep);
         mlBuilder.getStatusBuilder().setState(FAILED_STATE_MSG).setDescription(e.getMessage());
-        crdHandler.updateSeldonDeployment(mlDep);
+        crdHandler.updateSeldonDeployment(mlBuilder.build());
 	}
 	
 	@Override

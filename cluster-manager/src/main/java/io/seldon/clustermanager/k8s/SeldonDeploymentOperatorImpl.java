@@ -133,6 +133,8 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 	}
 	
 	private String extractPredictiveUnitParametersAsJson(PredictiveUnit predictiveUnit) {
+	    if (predictiveUnit == null)
+	        return "";
         StringJoiner sj = new StringJoiner(",", "[", "]");
         List<Parameter> parameters = predictiveUnit.getParametersList();
         for (Parameter parameter : parameters) {
@@ -269,34 +271,38 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		    .setServicePort(clusterManagerProperites.getEngineContainerPort());
 		return mlBuilder.build();
 	}
+	
+	
+	private void checkPredictiveUnitsMicroservices(PredictiveUnit pu,PredictorSpec p) throws SeldonDeploymentException
+	{
+        if (pu.hasType() &&
+                pu.hasSubtype() && 
+                pu.getType() == PredictiveUnitType.MODEL && 
+                pu.getSubtype() == PredictiveUnitSubtype.MICROSERVICE)
+        {
+            boolean found = false;
+            for(V1.Container c : p.getComponentSpec().getSpec().getContainersList())
+            {
+                if (c.getName().equals(pu.getName()))
+                {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                throw new SeldonDeploymentException("Can't find container for predictive unit with name "+pu.getName());    
+            }
+        }
+        for(PredictiveUnit child :  pu.getChildrenList())
+            checkPredictiveUnitsMicroservices(child,p);
+	}
 
 	private void checkGraphMicroservicesInContainers(SeldonDeployment mlDep) throws SeldonDeploymentException
 	{
         for(PredictorSpec p : mlDep.getSpec().getPredictorsList())
         {
-            for(PredictiveUnit pu :  p.getGraph().getChildrenList())
-            {
-                if (pu.hasType() &&
-                        pu.hasSubtype() && 
-                        pu.getType() == PredictiveUnitType.MODEL && 
-                        pu.getSubtype() == PredictiveUnitSubtype.MICROSERVICE)
-                {
-                    boolean found = false;
-                    for(V1.Container c : p.getComponentSpec().getSpec().getContainersList())
-                    {
-                        if (c.getName().equals(pu.getName()))
-                        {
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (!found)
-                    {
-                        throw new SeldonDeploymentException("Can't find container for predictive unit with name "+pu.getName());    
-                    }
-                }
-                  
-            }
+            checkPredictiveUnitsMicroservices(p.getGraph(),p);
         }
 	    
 	}
