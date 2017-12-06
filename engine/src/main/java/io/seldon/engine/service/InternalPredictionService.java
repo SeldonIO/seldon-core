@@ -121,7 +121,7 @@ public class InternalPredictionService {
 		switch (endpoint.getType()){
 			case REST:
 				String dataString = ProtoBufUtils.toJson(input);
-				return queryREST("predict", dataString, state, endpoint, isDefaultData(input));
+				return queryREST("transform-input", dataString, state, endpoint, isDefaultData(input));
 				
 			case GRPC:
 				TransformerBlockingStub stub =  TransformerGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
@@ -136,7 +136,7 @@ public class InternalPredictionService {
 		switch (endpoint.getType()){
 			case REST:
 				String dataString = ProtoBufUtils.toJson(output);
-				return queryREST("predict", dataString, state, endpoint, isDefaultData(output));
+				return queryREST("transform-output", dataString, state, endpoint, isDefaultData(output));
 				
 			case GRPC:
 				TransformerBlockingStub stub =  TransformerGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);

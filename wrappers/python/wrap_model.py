@@ -48,7 +48,7 @@ if __name__ == "__main__":
     parser.add_argument("repo",type=str)
     parser.add_argument("--grpc",action="store_true")
     parser.add_argument("--out-folder",type=str,default=None)
-    parser.add_argument("--service-type",type=str,choices=["MODEL","ROUTER"],default="MODEL")
+    parser.add_argument("--service-type",type=str,choices=["MODEL","ROUTER","TRANSFORMER"],default="MODEL")
     parser.add_argument("-f","--force",action="store_true")
     parser.add_argument("-p","--persistence",action="store_true",help="Use redis to make the model persistent")
 

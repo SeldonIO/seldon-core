@@ -106,7 +106,7 @@ class SeldonTransformerGRPC(object):
         #TODO: check that predictions is 2 dimensional
         feature_names = get_feature_names(self.user_model, datadef.names)
 
-        data = array_to_grpc_datadef(predictions, feature_names, request.data.WhichOneof("data_oneof"))
+        data = array_to_grpc_datadef(transformed, feature_names, request.data.WhichOneof("data_oneof"))
         return prediction_pb2.SeldonMessage(data=data)
 
     def TransformOutput(self,request,context):
@@ -117,7 +117,7 @@ class SeldonTransformerGRPC(object):
         #TODO: check that predictions is 2 dimensional
         class_names = get_class_names(self.user_model, datadef.names)
 
-        data = array_to_grpc_datadef(predictions, class_names, request.data.WhichOneof("data_oneof"))
+        data = array_to_grpc_datadef(transformed, class_names, request.data.WhichOneof("data_oneof"))
         return prediction_pb2.SeldonMessage(data=data)
     
 def get_grpc_server(user_model):

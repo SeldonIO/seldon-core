@@ -115,7 +115,7 @@ def array_to_grpc_datadef(array,names,data_type):
         )
 
     return datadef
-                          
+
 def parse_parameters(parameters):
     type_dict = {
         "INT":int,
@@ -135,7 +135,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("interface_name",type=str,help="Name of the user interface.")
     parser.add_argument("api_type",type=str,choices=["REST","GRPC"])
-    parser.add_argument("--service-type",type=str,choices=["MODEL","ROUTER"],default="MODEL")
+    parser.add_argument("--service-type",type=str,choices=["MODEL","ROUTER","TRANSFORMER"],default="MODEL")
     parser.add_argument("--persistence",nargs='?',default=0,const=1,type=int)
     parser.add_argument("--parameters",type=str,default=os.environ.get(PARAMETERS_ENV_NAME,"[]"))
     args = parser.parse_args()
@@ -155,6 +155,8 @@ if __name__ == "__main__":
         import model_microservice as seldon_microservice
     elif args.service_type == "ROUTER":
         import router_microservice as seldon_microservice
+    elif args.service_type == "TRANSFORMER":
+        import transformer_microservice as seldon_microservice
 
     port = os.environ.get(SERVICE_PORT_ENV_NAME,DEFAULT_PORT)
     
