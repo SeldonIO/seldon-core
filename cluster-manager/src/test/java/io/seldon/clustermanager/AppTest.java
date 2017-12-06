@@ -14,7 +14,7 @@ public class AppTest
 		 return new String(encoded, encoding);
 	 }	
 	
-	protected ClusterManagerProperites getProps()
+	protected ClusterManagerProperites getClusterManagerprops()
 	{
 		ClusterManagerProperites c = new ClusterManagerProperites();
 		c.setEngineContainerPort(9000);

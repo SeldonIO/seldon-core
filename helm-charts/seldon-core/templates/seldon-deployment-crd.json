@@ -20,13 +20,13 @@
                 "properties": {
                     "spec": {
                         "properties": {
+                            "annotations": {
+                                "description": "The annotations to be updated to a deployment",
+                                "type": "object"
+                            },
                             "name": {
                                 "type": "string"
                             },
-			    "annotations": {
-				"description": "The annotations to be updated to a deployment",
-				"type": "object"
-			    },
                             "oauth_key": {
                                 "type": "string"
                             },
@@ -36,26 +36,162 @@
                             "predictors": {
                                 "description": "List of predictors belonging to the deployment",
                                 "items": {
-                                    "properties" : {
-					"name": {
-					    "type": "string"
-					},
-					"replicas" : {
-					    "type" : "integer"
-					},
-					"annotations": {
-					    "description": "The annotations to be updated to a predictor",
-					    "type": "object"
-					},
-					"graph": {
-					    "type": "object"
-					},
-					"componentSpec":
-					{{ include "podTemplateSpec" . }}
-				    }
+                                    "properties": {
+                                        "annotations": {
+                                            "description": "The annotations to be updated to a predictor",
+                                            "type": "object"
+                                        },
+                                        "graph": {
+                                            "properties": {
+                                                "children": {
+                                                    "items": {
+                                                        "properties": {
+                                                            "children": {
+                                                                "items": {
+                                                                    "properties": {
+                                                                        "children": {
+                                                                            "items": {},
+                                                                            "type": "array"
+                                                                        },
+                                                                        "endpoint": {
+                                                                            "properties": {
+                                                                                "service_host": {
+                                                                                    "type": "string"
+                                                                                },
+                                                                                "service_port": {
+                                                                                    "type": "integer"
+                                                                                },
+                                                                                "type": {
+                                                                                    "enum": [
+                                                                                        "REST",
+                                                                                        "GRPC"
+                                                                                    ],
+                                                                                    "type": "string"
+                                                                                }
+                                                                            }
+                                                                        },
+                                                                        "name": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "subtype": {
+                                                                            "enum": [
+                                                                                "MICROSERVICE",
+                                                                                "SIMPLE_MODEL",
+                                                                                "SIMPLE_ROUTER",
+                                                                                "RANDOM_ABTEST",
+                                                                                "AVERAGE_COMBINER"
+                                                                            ],
+                                                                            "type": "string"
+                                                                        },
+                                                                        "type": {
+                                                                            "enum": [
+                                                                                "ROUTER",
+                                                                                "COMBINER",
+                                                                                "MODEL",
+                                                                                "TRANSFORMER"
+                                                                            ],
+                                                                            "type": "string"
+                                                                        }
+                                                                    }
+                                                                },
+                                                                "type": "array"
+                                                            },
+                                                            "endpoint": {
+                                                                "properties": {
+                                                                    "service_host": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "service_port": {
+                                                                        "type": "integer"
+                                                                    },
+                                                                    "type": {
+                                                                        "enum": [
+                                                                            "REST",
+                                                                            "GRPC"
+                                                                        ],
+                                                                        "type": "string"
+                                                                    }
+                                                                }
+                                                            },
+                                                            "name": {
+                                                                "type": "string"
+                                                            },
+                                                            "subtype": {
+                                                                "enum": [
+                                                                    "MICROSERVICE",
+                                                                    "SIMPLE_MODEL",
+                                                                    "SIMPLE_ROUTER",
+                                                                    "RANDOM_ABTEST",
+                                                                    "AVERAGE_COMBINER"
+                                                                ],
+                                                                "type": "string"
+                                                            },
+                                                            "type": {
+                                                                "enum": [
+                                                                    "ROUTER",
+                                                                    "COMBINER",
+                                                                    "MODEL",
+                                                                    "TRANSFORMER"
+                                                                ],
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    },
+                                                    "type": "array"
+                                                },
+                                                "endpoint": {
+                                                    "properties": {
+                                                        "service_host": {
+                                                            "type": "string"
+                                                        },
+                                                        "service_port": {
+                                                            "type": "integer"
+                                                        },
+                                                        "type": {
+                                                            "enum": [
+                                                                "REST",
+                                                                "GRPC"
+                                                            ],
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "subtype": {
+                                                    "enum": [
+                                                        "MICROSERVICE",
+                                                        "SIMPLE_MODEL",
+                                                        "SIMPLE_ROUTER",
+                                                        "RANDOM_ABTEST",
+                                                        "AVERAGE_COMBINER"
+                                                    ],
+                                                    "type": "string"
+                                                },
+                                                "type": {
+                                                    "enum": [
+                                                        "ROUTER",
+                                                        "COMBINER",
+                                                        "MODEL",
+                                                        "TRANSFORMER"
+                                                    ],
+                                                    "type": "string"
+                                                }
+                                            }
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "replicas": {
+                                            "type": "integer"
+                                        }
+                                    }
                                 },
                                 "type": "array"
-                            }
+                            },
+			    "componentSpec":
+			    {{ include "podTemplateSpec" . }}
                         }
                     }
                 }

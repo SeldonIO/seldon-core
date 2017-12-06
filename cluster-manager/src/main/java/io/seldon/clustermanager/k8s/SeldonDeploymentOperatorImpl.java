@@ -170,8 +170,19 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		Integer containerPort = getPort(c.getPortsList());
 		if (containerPort == null)
 		{
-			c2Builder.addPorts(ContainerPort.newBuilder().setName("http").setContainerPort(clusterManagerProperites.getPuContainerPortBase() + idx));
-            containerPort = clusterManagerProperites.getPuContainerPortBase() + idx;
+		    if (pu != null)
+		    {
+		        if (pu.getEndpoint().getType() == Endpoint.EndpointType.REST)
+		        {
+		            c2Builder.addPorts(ContainerPort.newBuilder().setName("http").setContainerPort(clusterManagerProperites.getPuContainerPortBase() + idx));
+		            containerPort = clusterManagerProperites.getPuContainerPortBase() + idx;
+		        }
+		        else
+		        {
+		            c2Builder.addPorts(ContainerPort.newBuilder().setName("grpc").setContainerPort(clusterManagerProperites.getPuContainerPortBase() + idx));
+		            containerPort = clusterManagerProperites.getPuContainerPortBase() + idx;		        
+		        }
+		    }
 		}
 		else
 			containerPort = c.getPorts(0).getContainerPort();
@@ -297,20 +308,25 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
         for(PredictiveUnit child :  pu.getChildrenList())
             checkPredictiveUnitsMicroservices(child,p);
 	}
-
-	private void checkGraphMicroservicesInContainers(SeldonDeployment mlDep) throws SeldonDeploymentException
-	{
-        for(PredictorSpec p : mlDep.getSpec().getPredictorsList())
-        {
-            checkPredictiveUnitsMicroservices(p.getGraph(),p);
-        }
-	    
-	}
 	
+	private void checkTypeAndSubType(PredictiveUnit pu) throws SeldonDeploymentException
+	{
+        if (!pu.hasType())
+            throw new SeldonDeploymentException(String.format("Predictive unit %s has no type",pu.getName()));    
+        if (!pu.hasSubtype())
+            throw new SeldonDeploymentException(String.format("Predictive unit %s has no subtype",pu.getName()));  
+        for(PredictiveUnit child :  pu.getChildrenList())
+            checkTypeAndSubType(child); 
+	}
+
 	@Override
 	public void validate(SeldonDeployment mlDep) throws SeldonDeploymentException {
 
-        checkGraphMicroservicesInContainers(mlDep);
+	    for(PredictorSpec p : mlDep.getSpec().getPredictorsList())
+        {
+	        checkPredictiveUnitsMicroservices(p.getGraph(),p);
+	        checkTypeAndSubType(p.getGraph());
+        }
         
 	}
 	
