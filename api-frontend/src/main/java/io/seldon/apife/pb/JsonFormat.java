@@ -562,19 +562,21 @@ public class JsonFormat {
     }
 
     void print(MessageOrBuilder message) throws IOException {
-      WellKnownTypePrinter specialPrinter =
+        if (typeConverters.containsKey(message.getDescriptorForType().getFullName()))
+        {
+            String msg = typeConverters.get(message.getDescriptorForType().getFullName()).convert(message);
+            generator.print(msg);
+            return;  
+        } 
+            
+        WellKnownTypePrinter specialPrinter =
           wellKnownTypePrinters.get(message.getDescriptorForType().getFullName());
-      if (specialPrinter != null) {
-        specialPrinter.print(this, message);
-        return;
-      }
-      else if (typeConverters.containsKey(message.getDescriptorForType().getFullName()))
-      {
-    	  String msg = typeConverters.get(message.getDescriptorForType().getFullName()).convert(message);
-    	  generator.print(msg);
-    	  return;  
-      }
-      print(message, null);
+        if (specialPrinter != null) {
+            specialPrinter.print(this, message);
+            return;
+        }
+      
+        print(message, null);
     }
 
     private interface WellKnownTypePrinter {
@@ -932,7 +934,13 @@ public class JsonFormat {
         case INT64:
         case SINT64:
         case SFIXED64:
-          generator.print("\"" + ((Long) value).toString() + "\"");
+          if (alwaysWithQuotes) {
+                generator.print("\"");
+          }
+          generator.print(((Long) value).toString());
+          if (alwaysWithQuotes) {
+                generator.print("\"");
+          }
           break;
 
         case BOOL:
@@ -1212,18 +1220,21 @@ public class JsonFormat {
 
     private void merge(JsonElement json, Message.Builder builder)
         throws InvalidProtocolBufferException {
-      WellKnownTypeParser specialParser =
-          wellKnownTypeParsers.get(builder.getDescriptorForType().getFullName());
-      if (specialParser != null) {
-        specialParser.merge(this, json, builder);
-        return;
-      }
-      else if (typeParsers.containsKey(builder.getDescriptorForType().getFullName()))
-      {
-    	  typeParsers.get(builder.getDescriptorForType().getFullName()).merge(json, builder);
-    	  return;
-      }
-      mergeMessage(json, builder, false);
+        
+        if (typeParsers.containsKey(builder.getDescriptorForType().getFullName()))
+        {
+            typeParsers.get(builder.getDescriptorForType().getFullName()).merge(json, builder);
+            return;
+        }
+        
+        WellKnownTypeParser specialParser =
+                wellKnownTypeParsers.get(builder.getDescriptorForType().getFullName());
+        if (specialParser != null) {
+            specialParser.merge(this, json, builder);
+            return;
+        }
+      
+        mergeMessage(json, builder, false);
     }
 
     // Maps from camel-case field names to FieldDescriptor.

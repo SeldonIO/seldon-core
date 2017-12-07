@@ -5,12 +5,12 @@
         "labels": {
             "app": "seldon"
         },
-        "name": "seldon-deployment-example",
-	"uid": "1234"
+        "name": "seldon-deployment-example"
     },
     "spec": {
         "annotations": {
-            "project_name": "FX Market Prediction"
+            "project_name": "FX Market Prediction",
+            "deployment_version": "v1"
         },
         "name": "test-deployment",
         "oauth_key": "oauth-key",
@@ -21,7 +21,7 @@
                     "spec": {
                         "containers": [
                             {
-                                "image": "seldonio/mean_classifier:0.5",
+                                "image": "seldonio/mean_classifier:0.6",
                                 "imagePullPolicy": "IfNotPresent",
                                 "name": "mean-classifier",
                                 "resources": {
@@ -31,7 +31,7 @@
                                 }
                             }
                         ],
-                        "terminationGracePeriodSeconds": 0
+                        "terminationGracePeriodSeconds": 20
                     }
                 },
                 "graph": {
@@ -40,11 +40,13 @@
                     "endpoint": {
 			"type" : "REST"
 		    },
-                    "subtype": "SIMPLE_MODEL",
                     "type": "MODEL"
                 },
                 "name": "fx-market-predictor",
-                "replicas": 1
+                "replicas": 1,
+		"annotations": {
+		    "predictor_version" : "v1"
+		}
             }
         ]
     }

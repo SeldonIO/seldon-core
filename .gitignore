@@ -17,6 +17,9 @@ cluster-manager/.m2/
 _*.yaml
 _*.json
 
+util/custom-resource-definitions/pod-template-spec-validation.tpl
+util/custom-resource-definitions/pod-template-spec.json
+util/custom-resource-definitions/swagger.json
 api-frontend/src/main/proto/seldon_deployment.proto
 engine/src/main/proto/k8s.io/
 engine/src/main/proto/seldon_deployment.proto
@@ -42,6 +45,7 @@ cluster-manager/tests/CLUSTER_MANAGER_ENDPOINT
 cluster-manager/tests/out.log
 cluster-manager/src/main/proto/k8s.io
 cluster-manager/src/main/proto/v1.proto
+cluster-manager/java_client/
 engine/src/main/proto/prediction.proto
 engine/src/main/proto/seldonengine.proto
 pyseldon/build/

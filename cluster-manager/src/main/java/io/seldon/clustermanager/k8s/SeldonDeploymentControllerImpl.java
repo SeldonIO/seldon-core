@@ -33,6 +33,8 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	private final KubeCRDHandler crdHandler;
 	private final SeldonDeploymentCache mlCache;
 	
+	private static final String FAILED_STATE_MSG = "FAILED";
+	
 	private static final String DEPLOYMENT_API_VERSION = "extensions/v1beta1";
 
 	@Autowired
@@ -160,9 +162,21 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	        return d.getMetadata().getNamespace();
 	}
 	
+	private void failDeployment(SeldonDeployment mlDep,Exception e)
+	{
+        SeldonDeployment.Builder mlBuilder = SeldonDeployment.newBuilder(mlDep);
+        mlBuilder.getStatusBuilder().setState(FAILED_STATE_MSG).setDescription(e.getMessage());
+        crdHandler.updateSeldonDeployment(mlBuilder.build());
+	}
+	
 	@Override
 	public void createOrReplaceSeldonDeployment(SeldonDeployment mlDep) {
-		
+
+	    if (mlDep.hasStatus() && mlDep.getStatus().hasState() && mlDep.getStatus().getState().equals(FAILED_STATE_MSG))
+	    {
+	        logger.warn("Ignoring failed deployment "+mlDep.getMetadata().getName());
+	        return;
+	    }
 		try
 		{
 		    SeldonDeployment existing = mlCache.get(mlDep.getMetadata().getName());
@@ -194,14 +208,14 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 			
 		} catch (SeldonDeploymentException e) {
 			logger.error("Failed to create deployment ",e);
+			failDeployment(mlDep,e);
 		} catch (ApiException e) {
-			//FIXME Parse response body to get enclosing message?
 			logger.error("Kubernetes API exception deploying code:"+e.getCode()+ "message:"+e.getResponseBody(),e);
+			failDeployment(mlDep,e);
 		} catch (IOException e) {
-			logger.error("Failed to get API Client ",e);
+			logger.error("IOException during createReplace ",e);
+			failDeployment(mlDep,e);
 		}
-		finally {}
-		
 	}
 
 }
