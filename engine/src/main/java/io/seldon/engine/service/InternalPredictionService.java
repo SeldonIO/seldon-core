@@ -37,6 +37,8 @@ import io.seldon.protos.RouterGrpc;
 import io.seldon.protos.RouterGrpc.RouterBlockingStub;
 import io.seldon.protos.TransformerGrpc;
 import io.seldon.protos.TransformerGrpc.TransformerBlockingStub;
+import io.seldon.protos.OutlierDetectorGrpc;
+import io.seldon.protos.OutlierDetectorGrpc.OutlierDetectorBlockingStub;
 import io.seldon.protos.PredictionProtos.Feedback;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
 import io.seldon.protos.PredictionProtos.SeldonMessage.DataOneofCase;
@@ -141,6 +143,21 @@ public class InternalPredictionService {
 			case GRPC:
 				TransformerBlockingStub stub =  TransformerGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
 				return stub.transformOutput(output);
+		}
+		throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,"no service available");
+    }
+    
+    public SeldonMessage scoreOutlier(SeldonMessage input, PredictiveUnitState state) throws InvalidProtocolBufferException
+    {
+    	final Endpoint endpoint = state.endpoint;
+		switch (endpoint.getType()){
+			case REST:
+				String dataString = ProtoBufUtils.toJson(input);
+				return queryREST("score", dataString, state, endpoint, isDefaultData(input));
+				
+			case GRPC:
+				OutlierDetectorBlockingStub stub =  OutlierDetectorGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
+				return stub.score(input);
 		}
 		throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,"no service available");
     }

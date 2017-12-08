@@ -38,6 +38,7 @@ message PredictiveUnit {
     COMBINER = 2;
     MODEL = 3;
     TRANSFORMER = 4;
+    OUTLIER_DETECTOR = 5;
   }
 
   enum PredictiveUnitSubtype {

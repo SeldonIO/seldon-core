@@ -38,7 +38,6 @@ message Meta {
   string puid = 1; 
   map<string,google.protobuf.Value> tags = 2;
   map<string,int32> routing = 3;
-  OutlierStatus outlierStatus = 4;  
 }
 
 // [END Meta]
@@ -95,15 +94,6 @@ message RequestResponse {
 // [END RequestResponse]
 
 
-// [START Plugin Specific Messages]
-
-message OutlierStatus{
-    bool isOutlier = 1;
-    double score = 2;
-}
-
-// [END Plugin Specific Messages]
-
 // [END Messages]
 
 
@@ -123,5 +113,9 @@ service Transformer {
   rpc TransformInput(SeldonMessage) returns (SeldonMessage) {};
   rpc TransformOutput(SeldonMessage) returns (SeldonMessage) {};
  }
+
+service OutlierDetector {
+  rpc Score(SeldonMessage) returns (SeldonMessage) {};
+ } 
 
 // [END Services]

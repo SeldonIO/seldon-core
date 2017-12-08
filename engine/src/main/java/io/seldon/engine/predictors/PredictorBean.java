@@ -31,7 +31,8 @@ public class PredictorBean {
 			SimpleRouterUnit simpleRouterUnit,
 			AverageCombinerUnit averageCombinerUnit,
 			TransformerUnit transformerUnit,
-			RandomABTestUnit randomABTestUnit) {
+			RandomABTestUnit randomABTestUnit,
+			OutlierDetectionUnit outlierDetectionUnit) {
         nodeClassMap = new HashMap<PredictiveUnitType,Map<PredictiveUnitSubtype,PredictiveUnitBean>>();
         
         Map<PredictiveUnitSubtype,PredictiveUnitBean> modelsMap = new HashMap<PredictiveUnitSubtype,PredictiveUnitBean>();
@@ -53,6 +54,10 @@ public class PredictorBean {
         Map<PredictiveUnitSubtype,PredictiveUnitBean> transformersMap = new HashMap<PredictiveUnitSubtype,PredictiveUnitBean>();
         transformersMap.put(PredictiveUnitSubtype.MICROSERVICE, transformerUnit);
         nodeClassMap.put(PredictiveUnitType.TRANSFORMER, transformersMap);
+        
+        Map<PredictiveUnitSubtype,PredictiveUnitBean> outlierDetectorsMap = new HashMap<PredictiveUnitSubtype,PredictiveUnitBean>();
+        outlierDetectorsMap.put(PredictiveUnitSubtype.MICROSERVICE, outlierDetectionUnit);
+        nodeClassMap.put(PredictiveUnitType.OUTLIER_DETECTOR, outlierDetectorsMap);
         
     }
    

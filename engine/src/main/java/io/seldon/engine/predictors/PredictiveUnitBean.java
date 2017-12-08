@@ -40,11 +40,37 @@ public abstract class PredictiveUnitBean {
 		return builder.build();
 	}
 	
+//	private Meta mergeMetas(List<Meta> metas){
+//		Meta.Builder metaBuilder = Meta.newBuilder();
+//		for (Meta meta : metas){
+//			metaBuilder.putAllTags(meta.getTagsMap());
+//		}
+//		return metaBuilder.build();
+//	}
+//	
+	private SeldonMessage mergeMeta(SeldonMessage message, List<SeldonMessage> messages) {
+		Meta.Builder metaBuilder = Meta.newBuilder(message.getMeta());
+		for (SeldonMessage originalMessage : messages){
+			metaBuilder.putAllTags(originalMessage.getMeta().getTagsMap());
+		}
+		return SeldonMessage.newBuilder(message).setMeta(metaBuilder).build();
+	}
+	
+	private SeldonMessage mergeMeta(SeldonMessage message, Meta meta) {
+		Meta.Builder metaBuilder = Meta.newBuilder(message.getMeta());
+		metaBuilder.putAllTags(meta.getTagsMap());
+		return SeldonMessage.newBuilder(message).setMeta(metaBuilder).build();
+	}
+	
 	@Async
 	protected Future<SeldonMessage> getOutputAsync(SeldonMessage input, PredictiveUnitState state, Map<String,Integer> routingDict) throws InterruptedException, ExecutionException{
 		
 		// Compute the transformed Input
 		SeldonMessage transformedInput = state.predictiveUnitBean.transformInput(input, state);
+		
+		// Preserve the original metadata
+		transformedInput = mergeMeta(transformedInput,input.getMeta());
+		
 		if (state.children.isEmpty()){
 			// If this unit has no children, the transformed input becomes the output
 			return new AsyncResult<>(transformedInput);
@@ -80,11 +106,15 @@ public abstract class PredictiveUnitBean {
 		
 		// Compute the backward transformation of all children outputs
 		SeldonMessage aggregatedOutput = state.predictiveUnitBean.aggregateOutputs(childrenOutputs, state);
+		// Merge all the outputs metadata
+		aggregatedOutput = mergeMeta(aggregatedOutput,childrenOutputs);
 		SeldonMessage transformedOutput = state.predictiveUnitBean.transformOutput(aggregatedOutput, state);
+		// Preserve metadata
+		transformedOutput = mergeMeta(transformedOutput,aggregatedOutput.getMeta());
 		
 		return new AsyncResult<>(transformedOutput);
 		
-	}
+	}	
 	
 	public void sendFeedback(Feedback feedback, PredictiveUnitState state) throws InterruptedException, ExecutionException{
 		sendFeedbackAsync(feedback,state).get();

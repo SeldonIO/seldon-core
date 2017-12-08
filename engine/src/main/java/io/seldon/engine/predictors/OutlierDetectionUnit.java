@@ -1,10 +1,15 @@
 package io.seldon.engine.predictors;
 
 import java.io.IOException;
+
+import org.springframework.stereotype.Component;
+
+import com.google.protobuf.Value;
+
 import io.seldon.protos.PredictionProtos.SeldonMessage;
 import io.seldon.protos.PredictionProtos.Meta;
-import io.seldon.protos.PredictionProtos.OutlierStatus;
 
+@Component
 public class OutlierDetectionUnit extends PredictiveUnitBean {
 
 	public OutlierDetectionUnit() {
@@ -17,19 +22,21 @@ public class OutlierDetectionUnit extends PredictiveUnitBean {
 		SeldonMessage outlierDetectionResponse = null;
 		
 		try {
-			outlierDetectionResponse = internalPredictionService.predict(input, state);
+			outlierDetectionResponse = internalPredictionService.scoreOutlier(input, state);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
-		Boolean isOutlier = outlierDetectionResponse.getData().getTensor().getValues(0) == 1.;
-		Double outlierScore = outlierDetectionResponse.getData().getTensor().getValues(1);
+		Double outlierScore = outlierDetectionResponse.getData().getTensor().getValues(0);
+		
+		Value outlierScoreValue = Value.newBuilder().setNumberValue(outlierScore).build();
 		
 		SeldonMessage.Builder builder = SeldonMessage
 	    		.newBuilder(input)
 	    		.setMeta(Meta
-	    				.newBuilder(input.getMeta()).setOutlierStatus(OutlierStatus.newBuilder().setIsOutlier(isOutlier).setScore(outlierScore)));
+	    				.newBuilder(input.getMeta()).putTags("outlierScore", outlierScoreValue)
+	    				);
 		
 		return builder.build();
 	}
