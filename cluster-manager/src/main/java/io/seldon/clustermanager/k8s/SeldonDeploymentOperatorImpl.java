@@ -43,6 +43,8 @@ import io.seldon.protos.DeploymentProtos.Endpoint;
 import io.seldon.protos.DeploymentProtos.Endpoint.EndpointType;
 import io.seldon.protos.DeploymentProtos.Parameter;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit;
+import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitSubtype;
+import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitType;
 import io.seldon.protos.DeploymentProtos.PredictorSpec;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
@@ -131,6 +133,8 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 	}
 	
 	private String extractPredictiveUnitParametersAsJson(PredictiveUnit predictiveUnit) {
+	    if (predictiveUnit == null)
+	        return "";
         StringJoiner sj = new StringJoiner(",", "[", "]");
         List<Parameter> parameters = predictiveUnit.getParametersList();
         for (Parameter parameter : parameters) {
@@ -166,8 +170,19 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		Integer containerPort = getPort(c.getPortsList());
 		if (containerPort == null)
 		{
-			c2Builder.addPorts(ContainerPort.newBuilder().setName("http").setContainerPort(clusterManagerProperites.getPuContainerPortBase() + idx));
-            containerPort = clusterManagerProperites.getPuContainerPortBase() + idx;
+		    if (pu != null)
+		    {
+		        if (pu.getEndpoint().getType() == Endpoint.EndpointType.REST)
+		        {
+		            c2Builder.addPorts(ContainerPort.newBuilder().setName("http").setContainerPort(clusterManagerProperites.getPuContainerPortBase() + idx));
+		            containerPort = clusterManagerProperites.getPuContainerPortBase() + idx;
+		        }
+		        else
+		        {
+		            c2Builder.addPorts(ContainerPort.newBuilder().setName("grpc").setContainerPort(clusterManagerProperites.getPuContainerPortBase() + idx));
+		            containerPort = clusterManagerProperites.getPuContainerPortBase() + idx;		        
+		        }
+		    }
 		}
 		else
 			containerPort = c.getPorts(0).getContainerPort();
@@ -267,11 +282,52 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		    .setServicePort(clusterManagerProperites.getEngineContainerPort());
 		return mlBuilder.build();
 	}
+	
+	
+	private void checkPredictiveUnitsMicroservices(PredictiveUnit pu,PredictorSpec p) throws SeldonDeploymentException
+	{
+        if (pu.hasType() &&
+                pu.hasSubtype() && 
+                pu.getType() == PredictiveUnitType.MODEL && 
+                pu.getSubtype() == PredictiveUnitSubtype.MICROSERVICE)
+        {
+            boolean found = false;
+            for(V1.Container c : p.getComponentSpec().getSpec().getContainersList())
+            {
+                if (c.getName().equals(pu.getName()))
+                {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                throw new SeldonDeploymentException("Can't find container for predictive unit with name "+pu.getName());    
+            }
+        }
+        for(PredictiveUnit child :  pu.getChildrenList())
+            checkPredictiveUnitsMicroservices(child,p);
+	}
+	
+	private void checkTypeAndSubType(PredictiveUnit pu) throws SeldonDeploymentException
+	{
+        if (!pu.hasType())
+            throw new SeldonDeploymentException(String.format("Predictive unit %s has no type",pu.getName()));    
+        if (!pu.hasSubtype())
+            throw new SeldonDeploymentException(String.format("Predictive unit %s has no subtype",pu.getName()));  
+        for(PredictiveUnit child :  pu.getChildrenList())
+            checkTypeAndSubType(child); 
+	}
 
 	@Override
 	public void validate(SeldonDeployment mlDep) throws SeldonDeploymentException {
-		// TODO Auto-generated method stub
-		
+
+	    for(PredictorSpec p : mlDep.getSpec().getPredictorsList())
+        {
+	        checkPredictiveUnitsMicroservices(p.getGraph(),p);
+	        checkTypeAndSubType(p.getGraph());
+        }
+        
 	}
 	
 	@Override

@@ -36,7 +36,7 @@ public class SeldonDeploymentUtils {
 				.usingTypeConverter(IntOrString.getDescriptor().getFullName(), new IntOrStringUtils.IntOrStringConverter())
 				.usingTypeConverter(Quantity.getDescriptor().getFullName(), new QuantityUtils.QuantityConverter())
 				.usingTypeConverter(Time.getDescriptor().getFullName(), new TimeUtils.TimeConverter())
-				.usingTypeConverter(Timestamp.getDescriptor().getFullName(), new TimeUtils.TimeConverter());
+                .usingTypeConverter(Timestamp.getDescriptor().getFullName(), new TimeUtils.TimeConverter());
 		if (omittingWhitespace)
 		    jsonPrinter = jsonPrinter.omittingInsignificantWhitespace();
 		return jsonPrinter.print(mlDep);

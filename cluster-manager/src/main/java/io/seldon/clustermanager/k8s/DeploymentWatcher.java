@@ -30,10 +30,10 @@ public class DeploymentWatcher {
 	private int resourceVersion = 0;
 	private int resourceVersionProcessed = 0;
 	
-	private final SeldonDeploymentStatusUpdateImpl statusUpdater;
+	private final SeldonDeploymentStatusUpdate statusUpdater;
 	
 	@Autowired
-	public DeploymentWatcher(SeldonDeploymentStatusUpdateImpl statusUpdater)
+	public DeploymentWatcher(SeldonDeploymentStatusUpdate statusUpdater)
 	{
 		this.statusUpdater = statusUpdater;
 	}
