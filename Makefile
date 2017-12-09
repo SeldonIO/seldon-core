@@ -43,3 +43,12 @@ show_paths:
 	@echo "local: $(SELDON_CORE_LOCAL_DIR)"
 	@echo "   vm: $(SELDON_CORE_VM_DIR)"
 
+
+tmp/seldon_deployment.md:
+	docker run --rm \
+		-v $(PWD)/tmp:/out \
+		-v $(PWD)/cluster-manager/src/main/proto:/protos \
+		 pseudomuto/protoc-gen-doc \
+		-I/protos \
+		--doc_opt=markdown,seldon_deployment.md \
+		/protos/seldon_deployment.proto

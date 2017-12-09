@@ -1,5 +1,6 @@
 # build
 /target/
+/public
 cluster-manager/.m2/
 
 .ipynb_checkpoints

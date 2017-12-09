@@ -8,6 +8,7 @@ variables:
 
 stages:
   - build
+  - deploy
 
 cluster-manager-maven-build:
   image: seldonio/core-builder:0.1
@@ -51,3 +52,13 @@ api-frontend-maven-build:
     - ci_test
     - master
 
+
+
+pages:
+  image: publysher/hugo
+  stage: deploy
+  script:
+  - hugo -s=docs/ -d ../public
+  artifacts:
+    paths:
+    - public
