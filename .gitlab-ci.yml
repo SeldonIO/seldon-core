@@ -55,7 +55,7 @@ api-frontend-maven-build:
 
 
 pages:
-  image: publysher/hugo
+  image: monachus/hugo
   stage: deploy
   script:
   - hugo -s=docs/ -d ../public
