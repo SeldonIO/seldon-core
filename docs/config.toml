@@ -1,4 +1,4 @@
-baseURL = "http://seldon.io/"
+baseURL = "https://seldon-dev.gitlab.io/seldon-core/"
 languageCode = "en-us"
 title = "Seldon Core Documentation"
 
