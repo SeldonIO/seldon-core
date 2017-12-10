@@ -58,7 +58,7 @@ pages:
   image: monachus/hugo
   stage: deploy
   script:
-  - hugo -b https://seldon-dev.gitlab.io/seldon-core/ -s=docs/ -d ../public
+  - hugo -b "https://seldon-dev.gitlab.io/seldon-core/" -s=docs/ -d ../public
   artifacts:
     paths:
     - public
