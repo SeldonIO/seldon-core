@@ -3,6 +3,8 @@ baseURL = "http://localhost"
 languageCode = "en-us"
 title = "Seldon Core Documentation"
 
+canonifyURLs = true
+
 # Change the default theme to be use when building the site with Hugo
 theme = "hugo-theme-learn"
 
