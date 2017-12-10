@@ -1,6 +1,7 @@
 ---
 title: "Seldon Deployment"
 date: 2017-12-09T17:49:41Z
+weight: 10
 ---
 
 ## Seldon Deployment
@@ -12,7 +13,7 @@ A SeldonDeployment is defined as a custom resource definition within Kubernetes.
 
 ### Design
 
-![graph](seldon-deployment-sketch.png)
+![graph](/seldon-deployment-sketch.png)
 
 
 ### Definition
