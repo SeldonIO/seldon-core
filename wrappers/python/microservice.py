@@ -158,7 +158,7 @@ if __name__ == "__main__":
     elif args.service_type == "TRANSFORMER":
         import transformer_microservice as seldon_microservice
 
-    port = os.environ.get(SERVICE_PORT_ENV_NAME,DEFAULT_PORT)
+    port = int(os.environ.get(SERVICE_PORT_ENV_NAME,DEFAULT_PORT))
     
     if args.api_type == "REST":
         app = seldon_microservice.get_rest_microservice(user_object)
