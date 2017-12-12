@@ -10,9 +10,9 @@ Clone seldon-core, install grpc tools and buld the protobuffers (if not done bef
 
 ### Wrap model
 
-* Run ```cd python && python wrap_model.py <your_path_to_model_folder> <your_model_name> <your_model_version> <your_docker_repo> --base-image <your_base_image>```
+* Run ```cd python && python wrap_model.py <path_to_your_model_folder> <your_model_name> <your_model_version> <your_docker_repo> --base-image <your_base_image>```
 
-* Run ```cd <your_path_to_model_folder>/build && make build_docker_image```. This will  build a docker image of your model locally ready to be deployed with seldon-core
+* Run ```cd <path_to_your_model_folder>/build && make build_docker_image```. This will  build a docker image of your model locally ready to be deployed with seldon-core
 
     
 ### Notes:
