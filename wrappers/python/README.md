@@ -18,7 +18,7 @@ Clone seldon-core, install grpc tools and buld the protobuffers (if not done bef
 ### Notes:
 
 
-*   \<your_path_to_model_folder>: is your local path to the folder with your model. In the model  folder you need the files
+*   \<your_path_to_model_folder>: Your local path to the folder with your model. In the model  folder you need the files
 
 	* \<your_model_name>.py: Needs to include a python class having the same name as the file, i,e. \<your_model_name>, and implementing the  methods \__init__  and predict.
 	The following example show the content of a model file model_name.py that load a keras model previusly saved in h5 format.
@@ -38,12 +38,16 @@ Clone seldon-core, install grpc tools and buld the protobuffers (if not done bef
 		    keras==2.0.6 
 		    h5py
  	    	
-	* saved_model.h5: the file with your saved model. The format of the file depends on the tool you used to create, train and saved the model. In this case is a h5 model crated with keras 
+	* saved_model.h5: The file with your saved model. The format of the file depends on the tool you used to create, train and saved the model. In this case is a h5 model crated with keras.
 	
+* \<your_model_name>: The name of the .py file with your model. Has to me the same as the name of the python class implemented in the file, e.g MnistClassifier.
 
-*   \<your_model_version> is the version of your model, e.g.  0.0
+* \<your_model_version>: The version of your model, e.g.  0.0.
 
-*   \<your_docker_repo> is the repository for the image. e.g. seldonio
+* \<your_docker_repo>: The repository for the image, e.g. seldonio.
+
+* \<your_base_image>: THe base image for the model, default is Python:2.
+
 
 # Example of usage.
 
