@@ -5,13 +5,8 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.grpc.ForwardingServerCall.SimpleForwardingServerCall;
-import io.grpc.Metadata;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
-import io.grpc.ServerCall;
-import io.grpc.ServerCallHandler;
-import io.grpc.ServerInterceptor;
 import io.grpc.ServerInterceptors;
 import io.seldon.protos.ModelGrpc;
 import io.seldon.protos.PredictionProtos.DefaultData;
@@ -23,7 +18,8 @@ public class ModelGrpcServer  {
 	
 	  private final int port;
 	  private final Server server;
-
+	  ThreadLocal<String> principalThreadLocal = new ThreadLocal<String>();  
+	  
 	  public ModelGrpcServer(int port)
 	  {
 		  this(ServerBuilder.forPort(port), port);
@@ -33,8 +29,13 @@ public class ModelGrpcServer  {
 	  public ModelGrpcServer(ServerBuilder<?> serverBuilder, int port) {
 	    this.port = port;
 	    server = serverBuilder
-	    		.addService(ServerInterceptors.intercept(new ModelService(), new HeaderServerInterceptor()))
+	    		.addService(ServerInterceptors.intercept(new ModelService(this), new HeaderServerInterceptor(this)))
 	        .build();
+	  }
+	  
+	  public void setPrincipal(String principal)
+	  {
+	      this.principalThreadLocal.set(principal);
 	  }
 
 	  /** Start serving requests. */
@@ -80,40 +81,23 @@ public class ModelGrpcServer  {
 	  
 	private static class ModelService extends ModelGrpc.ModelImplBase {
 		
-		 public void predict(io.seldon.protos.PredictionProtos.SeldonMessage request,
+	    private ModelGrpcServer server;
+	    
+	    public ModelService(ModelGrpcServer server) {
+            super();
+            this.server = server;
+        }
+
+	    public void predict(io.seldon.protos.PredictionProtos.SeldonMessage request,
 			        io.grpc.stub.StreamObserver<io.seldon.protos.PredictionProtos.SeldonMessage> responseObserver) {
 			 SeldonMessage response = SeldonMessage.newBuilder().setData(DefaultData.newBuilder().setTensor(Tensor.newBuilder().addValues(2.0).addShape(1))).build();
-			 logger.info("Received request");
+			 logger.info("Received request "+server.principalThreadLocal.get());
 			 responseObserver.onNext(response);
 			 responseObserver.onCompleted();
 		 }
 		
 	}
 	
-	/**
-	 * A interceptor to handle server header.
-	 */
-	public class HeaderServerInterceptor implements ServerInterceptor {
-
-
-	  final Metadata.Key<String> CUSTOM_HEADER_KEY =
-	      Metadata.Key.of("custom_server_header_key", Metadata.ASCII_STRING_MARSHALLER);
-
-
-	  @Override
-	  public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(
-	      ServerCall<ReqT, RespT> call,
-	      final Metadata requestHeaders,
-	      ServerCallHandler<ReqT, RespT> next) {
-	    logger.info("header received from client:" + requestHeaders);
-	    return next.startCall(new SimpleForwardingServerCall<ReqT, RespT>(call) {
-	      @Override
-	      public void sendHeaders(Metadata responseHeaders) {
-	        responseHeaders.put(CUSTOM_HEADER_KEY, "customRespondValue");
-	        super.sendHeaders(responseHeaders);
-	      }
-	    }, requestHeaders);
-	  }
-	}
+	
 	
 }
