@@ -1,50 +1,11 @@
-// [START declaration]
 syntax = "proto3";
 
 import "google/protobuf/struct.proto";
 
 package seldon.protos;
-// [END declaration]
 
-
-// [START java_declaration]
 option java_package = "io.seldon.protos";
 option java_outer_classname = "PredictionProtos";
-// [END java_declaration]
-
-
-// [START messages]
-
-// [START default data]
-
-message Tensor {
-  repeated int32 shape = 1 [packed=true];
-  repeated double values = 2 [packed=true];
-}
-
-message DefaultData {
-  repeated string names = 1;
-  oneof data_oneof {
-    Tensor tensor = 2;
-    google.protobuf.ListValue ndarray = 3;
-  }
-}
-
-// [END default data]
-
-// [START Meta]
-
-message Meta {
-  string puid = 1; 
-  map<string,google.protobuf.Value> tags = 2;
-  map<string,int32> routing = 3;
-  OutlierStatus outlierStatus = 4;  
-}
-
-// [END Meta]
-
-
-// [START SeldonMessage]
 
 message SeldonMessage {
 
@@ -55,6 +16,26 @@ message SeldonMessage {
     bytes binData = 4;
     string strData = 5;
   }
+}
+
+message DefaultData {
+  repeated string names = 1;
+  oneof data_oneof {
+    Tensor tensor = 2;
+    google.protobuf.ListValue ndarray = 3;
+  }
+}
+
+message Tensor {
+  repeated int32 shape = 1 [packed=true];
+  repeated double values = 2 [packed=true];
+}
+
+message Meta {
+  string puid = 1; 
+  map<string,google.protobuf.Value> tags = 2;
+  map<string,int32> routing = 3;
+  OutlierStatus outlierStatus = 4;  
 }
 
 message Status {
@@ -70,11 +51,6 @@ message Status {
     StatusFlag status = 4;
 }
 
-// [END SeldonMessage]
-
-
-// [START Feedback]
-
 message Feedback {
   SeldonMessage request = 1;
   SeldonMessage response = 2;
@@ -82,32 +58,16 @@ message Feedback {
   SeldonMessage truth = 4;
 }
 
-// [END Feedback]
-
-
-// [START RequestResponse]
-
 message RequestResponse {
   SeldonMessage request = 1;
   SeldonMessage response = 2;
 }
 
-// [END RequestResponse]
-
-
-// [START Plugin Specific Messages]
 
 message OutlierStatus{
     bool isOutlier = 1;
     double score = 2;
 }
-
-// [END Plugin Specific Messages]
-
-// [END Messages]
-
-
-// [START Services]
 
 service Model {
   rpc Predict(SeldonMessage) returns (SeldonMessage) {};
@@ -124,4 +84,3 @@ service Transformer {
   rpc TransformOutput(SeldonMessage) returns (SeldonMessage) {};
  }
 
-// [END Services]

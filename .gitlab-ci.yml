@@ -8,6 +8,7 @@ variables:
 
 stages:
   - build
+  - deploy
 
 cluster-manager-maven-build:
   image: seldonio/core-builder:0.1
@@ -51,3 +52,15 @@ api-frontend-maven-build:
     - ci_test
     - master
 
+
+
+pages:
+  image: monachus/hugo
+  stage: deploy
+  script:
+  - hugo -b "https://seldon-dev.gitlab.io/seldon-core/" -s=docs/ -d ../public
+  artifacts:
+    paths:
+    - public
+  only:
+    - master
