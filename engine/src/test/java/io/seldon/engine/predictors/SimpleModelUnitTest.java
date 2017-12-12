@@ -35,7 +35,7 @@ public class SimpleModelUnitTest {
 		PredictiveUnit.Builder PredictiveUnitBuilder = PredictiveUnit.newBuilder();
 		PredictiveUnitBuilder.setName("1");
 		PredictiveUnitBuilder.setType(PredictiveUnit.PredictiveUnitType.MODEL);
-		PredictiveUnitBuilder.setSubtype(PredictiveUnit.PredictiveUnitSubtype.SIMPLE_MODEL);
+		PredictiveUnitBuilder.setImplementation(PredictiveUnit.PredictiveUnitImplementation.SIMPLE_MODEL);
 		
 		PredictorSpecBuilder.setGraph(PredictiveUnitBuilder.build());
 		PredictorSpec predictor = PredictorSpecBuilder.build();

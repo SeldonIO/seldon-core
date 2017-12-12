@@ -38,22 +38,20 @@ message PredictiveUnit {
     COMBINER = 2;
     MODEL = 3;
     TRANSFORMER = 4;
-    OUTLIER_DETECTOR = 5;
   }
 
-  enum PredictiveUnitSubtype {
-    UNKNOWN_SUBTYPE = 0;
-    MICROSERVICE = 1;
-    SIMPLE_MODEL = 2;
-    SIMPLE_ROUTER = 3;
-    RANDOM_ABTEST = 4;
-    AVERAGE_COMBINER = 5;
+  enum PredictiveUnitImplementation {
+    UNKNOWN_IMPLEMENTATION = 0;
+    SIMPLE_MODEL = 1;
+    SIMPLE_ROUTER = 2;
+    RANDOM_ABTEST = 3;
+    AVERAGE_COMBINER = 4;
   }
 
   required string name = 1;//must match container name of component if subtype microservice
   repeated PredictiveUnit children = 2;
   optional PredictiveUnitType type = 3;
-  optional PredictiveUnitSubtype subtype = 4;
+  optional PredictiveUnitImplementation implementation = 4;
   optional Endpoint endpoint = 5;
   repeated Parameter parameters = 6;
 }

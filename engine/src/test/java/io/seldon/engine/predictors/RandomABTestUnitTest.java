@@ -36,20 +36,20 @@ public class RandomABTestUnitTest {
 		PredictiveUnit.Builder PredictiveUnitBuilder = PredictiveUnit.newBuilder();
 		PredictiveUnitBuilder.setName("1");
 		PredictiveUnitBuilder.setType(PredictiveUnit.PredictiveUnitType.MODEL);
-		PredictiveUnitBuilder.setSubtype(PredictiveUnit.PredictiveUnitSubtype.SIMPLE_MODEL);
+		PredictiveUnitBuilder.setImplementation(PredictiveUnit.PredictiveUnitImplementation.SIMPLE_MODEL);
 		PredictiveUnit pu1 = PredictiveUnitBuilder.build();
 		
 		PredictiveUnitBuilder = PredictiveUnit.newBuilder();
 		PredictiveUnitBuilder.setName("2");
 		PredictiveUnitBuilder.setType(PredictiveUnit.PredictiveUnitType.MODEL);
-		PredictiveUnitBuilder.setSubtype(PredictiveUnit.PredictiveUnitSubtype.SIMPLE_MODEL);
+		PredictiveUnitBuilder.setImplementation(PredictiveUnit.PredictiveUnitImplementation.SIMPLE_MODEL);
 		PredictiveUnit pu2 = PredictiveUnitBuilder.build();
 		
 		
 		PredictiveUnitBuilder = PredictiveUnit.newBuilder();
 		PredictiveUnitBuilder.setName("3");
 		PredictiveUnitBuilder.setType(PredictiveUnit.PredictiveUnitType.ROUTER);
-		PredictiveUnitBuilder.setSubtype(PredictiveUnit.PredictiveUnitSubtype.RANDOM_ABTEST);
+		PredictiveUnitBuilder.setImplementation(PredictiveUnit.PredictiveUnitImplementation.RANDOM_ABTEST);
 		PredictiveUnitBuilder.addChildren(pu1);
 		PredictiveUnitBuilder.addChildren(pu2);
 		Parameter.Builder pBuilder = Parameter.newBuilder().setName("ratioA").setValue("0.5").setType(ParameterType.FLOAT);

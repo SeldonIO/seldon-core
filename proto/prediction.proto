@@ -114,8 +114,4 @@ service Transformer {
   rpc TransformOutput(SeldonMessage) returns (SeldonMessage) {};
  }
 
-service OutlierDetector {
-  rpc Score(SeldonMessage) returns (SeldonMessage) {};
- } 
-
 // [END Services]

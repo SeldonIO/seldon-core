@@ -12,7 +12,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.kubernetes.client.proto.V1.Container;
 import io.seldon.protos.DeploymentProtos.Endpoint;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit;
-import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitSubtype;
+import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitImplementation;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitType;
 import io.seldon.protos.DeploymentProtos.Parameter;
 
@@ -56,7 +56,8 @@ public class PredictiveUnitState {
 	public PredictiveUnitState(
 			PredictiveUnit predictiveUnit, 
 			Map<String,Container> containersMap, 
-			Map<PredictiveUnitType,Map<PredictiveUnitSubtype,PredictiveUnitBean>> beanMap){
+			Map<PredictiveUnitType,PredictiveUnitBean> beanTypeMap,
+			Map<PredictiveUnitImplementation,PredictiveUnitBean> beanImplementationMap){
 		this.name = predictiveUnit.getName();
 		this.endpoint = predictiveUnit.getEndpoint();
 		this.parameters = deserializeParameters(predictiveUnit.getParametersList());
@@ -71,10 +72,15 @@ public class PredictiveUnitState {
 		this.children = new ArrayList<PredictiveUnitState>();
 		
 		for (PredictiveUnit childUnit : predictiveUnit.getChildrenList()){
-			this.children.add(new PredictiveUnitState(childUnit,containersMap,beanMap));
+			this.children.add(new PredictiveUnitState(childUnit,containersMap,beanTypeMap,beanImplementationMap));
 		}
 		
-		this.predictiveUnitBean = beanMap.get(predictiveUnit.getType()).get(predictiveUnit.getSubtype());
+		if ( predictiveUnit.hasImplementation()) {
+			this.predictiveUnitBean = beanImplementationMap.get(predictiveUnit.getImplementation());
+		}
+		else {
+			this.predictiveUnitBean = beanTypeMap.get(predictiveUnit.getType());
+		}
 		this.type = predictiveUnit.getType();
 	}
 	
