@@ -6,12 +6,11 @@ title = "Seldon Core Documentation"
 canonifyURLs = true
 
 # Change the default theme to be use when building the site with Hugo
-theme = "hugo-theme-learn"
+theme = "hugo-theme-docdock"
 
 # For search functionnality
 [outputs]
 home = [ "HTML", "RSS", "JSON"]
 
 [params]
-  # Change default color scheme with a variant one. Can be "red", "blue", "green".
-  themeVariant = "green"
+themeVariant = "gold"
