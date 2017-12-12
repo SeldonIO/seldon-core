@@ -1,4 +1,4 @@
-# Use seldon wrappers 
+# How to use seldon wrappers 
 
 ### Preliminary steps 
 
@@ -15,7 +15,7 @@ Clone seldon-core, install grpc tools and buld the protobuffers (if not done bef
 * Run ```cd <your_path_to_model_folder>/build && make build_docker_image```. This will  build a docker image of your model locally ready to be deployed with seldon-core
 
     
-# Notes:
+### Notes:
 
 
 *   <your_model_folder> is the folder with your model. In the folder you need the files
@@ -44,20 +44,25 @@ Clone seldon-core, install grpc tools and buld the protobuffers (if not done bef
 
 *   <your_docker_repo> is the repository for the image. e.g. seldonio
 
-### Example of usage from scratch with seldon example keras_mnist:
+# Example of usage.
+
+Here we include a step-by-step guide to train, save and wrap a mnist classifier from scratch. The model is in ```seldon-core-plugins/keras_mnist``` and it is builded using keras.
+
+### Preliminary steps
 
 * Have seldon-core and seldon-core-plugins folders in the same directory and install grpc tools (if not done before).
+* Run ```git clone seldon-core```
+* Run ```git clone seldon-core-plugins```
+* Run ```python -m pip install grpcio-tools==1.1.3```
 
-	* Run ```git clone seldon-core```
-	* Run ```git clone seldon-core-plugins```
-    * Run ```python -m pip install grpcio-tools==1.1.3```
+### Train and save keras mnist classifier
 
 * Run ```cd seldon-core-plugins/keras_mnist && python train_mnist.py```. This will train a keras convolutional neural network on mnist dataset for 2 epochs and save the model in the same folder.
 
+### Wrap saved model
+
 * Run ```cd ../../seldon-core/wrappers && make build_protos``` (if not done before).
 
-
 * Run ```cd python && python wrap_model.py ../../../seldon-core-plugins/keras_mnist MnistClassifier 0.0 seldonio```. This will create the folder build in keras_mnist. The --base-image argument is not specified and the wrapper will use the default base image Python:2.
-
 
 * Run ```cd ../../../seldon-core-plugins/keras_mnist/build/ && make build_docker_image```. This will create the docker image ```seldonio/mnistclassifier:0.0``` which is ready for deployment with seldon-core.
