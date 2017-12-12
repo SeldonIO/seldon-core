@@ -57,7 +57,7 @@ Clone seldon-core, install grpc tools and buld the protobuffers (if not done bef
 * Run ```cd ../../seldon-core/wrappers && make build_protos``` (if not done before).
 
 
-* Run ```cd python && python wrap_model.py ../../../seldon-core-plugins/keras_mnist MnistClassifier 0.0 seldonio```. This will create the folder build in the keras_mnist. The --base-image argument is not specified and the wrapper will use the default base image Python:2.
+* Run ```cd python && python wrap_model.py ../../../seldon-core-plugins/keras_mnist MnistClassifier 0.0 seldonio```. This will create the folder build in keras_mnist. The --base-image argument is not specified and the wrapper will use the default base image Python:2.
 
 
 * Run ```cd ../../../seldon-core-plugins/keras_mnist/build/ && make build_docker_image```. This will create the docker image ```seldonio/mnistclassifier:0.0``` which is ready for deployment with seldon-core.
