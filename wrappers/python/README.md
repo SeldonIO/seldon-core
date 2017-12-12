@@ -18,7 +18,7 @@ Clone seldon-core, install grpc tools and buld the protobuffers (if not done bef
 ### Notes:
 
 
-*   \<your_path_to_model_folder>: Your local path to the folder with your model. In the model  folder you need the files
+*   \<path_to_your_model_folder>: Your local path to the folder with your model. In the model  folder you need the files
 
 	* \<your_model_name>.py: Needs to include a python class having the same name as the file, i,e. \<your_model_name>, and implementing the  methods \__init__  and predict.
 	The following example show the content of a model file model_name.py that load a keras model previusly saved in h5 format.
