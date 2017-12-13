@@ -43,13 +43,11 @@ Clone seldon-core, install grpc tools and buld the protobuffers (if not done bef
 
 
 *   \<path_to_your_model_folder>: Your local path to the \<your_model_folder>. The model folder must include the following 3 files:
-
 	1. \<your_model_name>.py: Needs to include a python class having the same name as the file, i,e. \<your_model_name>, and implementing the  methods \__init__  and predict.
 	The following template shows the structure of the file:
-	
 		* General template:
-	
-	    		from <your_python_loading_library> import <your_loading_function>
+		
+				from <your_python_loading_library> import <your_loading_function>
 	
 	    		class <your_model_name>(object):
 
@@ -57,7 +55,7 @@ Clone seldon-core, install grpc tools and buld the protobuffers (if not done bef
                     	self.model = <your_loading_function>(<your_saved_model>) 
 
 		        	def predict(self,X,features_names):
-		            	return self.model.predict(X) 
+		            	return self.model.predict(X)
 		            	
 		* Keras mnist example:
 	
@@ -76,12 +74,12 @@ Clone seldon-core, install grpc tools and buld the protobuffers (if not done bef
         				return self.model.predict(X)
 
 
-	* requirements.txt: List of the packages required by your model. Such packages must be installable through ```pip install```. For example,   the requirements.txt file for the keras example presented in the next session is:
+	2. requirements.txt: List of the packages required by your model. Such packages must be installable through ```pip install```. For example,   the requirements.txt file for the keras example presented in the next session is:
 	
 		    keras==2.0.6 
 		    h5py
  	    	
-	* \<your_saved_model>: The file with your saved model. Must be loadable with <your_loading_function>. For example, in the keras example presented in the next session this file is "saved_model.h5".
+	3. \<your_saved_model>: The file with your saved model. Must be loadable with <your_loading_function>. For example, in the keras example presented in the next session this file is "saved_model.h5".
 	
 * \<your_model_name>: The name of the .py file with your model. Has to be the same as the name of the python class implemented in the file, e.g MnistClassifier.
 
