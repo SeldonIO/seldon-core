@@ -73,7 +73,14 @@ Clone seldon-core, install grpc tools and buld the protobuffers (if not done bef
 
 # Example of usage.
 
-Here we include a step-by-step guide to train, save and wrap a mnist classifier from scratch. The model is in ```seldon-core-plugins/keras_mnist``` and it is builded using keras.
+Here we include a step-by-step guide to train, save and wrap a mnist classifier from scratch. The model is in ```seldon-core-plugins/keras_mnist``` and it is builded using keras. In reference to the session above and for the sake of clarity, in this example we have:
+
+* \<your_model_folder> = keras_mnist
+* \<path_to_your_model_folder> = ../../../seldon-core-plugins/keras_mnist
+* \<your_model_name> = MnistClassifier
+* \<your_model_version> = 0.0
+* \<your_docker_repo> = seldonio
+* \<your_base_image> = Python:2
 
 ### Preliminary steps
 
