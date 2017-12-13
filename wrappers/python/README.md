@@ -1,4 +1,6 @@
-# How to use seldon wrappers 
+# How to use seldon python wrappers 
+
+In order to deploy a model using seldon-core the model must be packaged into a docker image. In this guide, we explain how to build a docker-image of your model which is ready to be [deployed with seldon-core](link_to_deployment_docs) using seldon python wrappers. The python wrappers are suitable to wrap any saved model that can be loaded and queried  using python functions.
 
 ### Preliminary steps 
 
@@ -12,13 +14,13 @@ Clone seldon-core, install grpc tools and buld the protobuffers (if not done bef
 
 	```cd seldon-core/wrappers```
 	
-* Install grpc tools and Build the protos. You only have to do this once, you can skip this step if already done it before:  
+* You can skip this step if already done it before. Install grpc tools and build the protobuffers. You only have to do this only once:  
 
 	```python -m pip install grpcio-tools==1.1.3```
 	
 	```make build_protos```
 
-### Wrap python model
+### Wrap a model
 
 * Enter the python directory and run the wrap_model script 
 
@@ -34,33 +36,52 @@ Clone seldon-core, install grpc tools and buld the protobuffers (if not done bef
 	
 	```make build_docker_image``` 
 	
-	This will  build a docker image of your model locally ready to be deployed with seldon-core.
+	This will  build a docker image of your model locally ready to be [deployed with seldon-core](link_to_deployment_docs).
 
     
 ### Notes:
 
 
-*   \<path_to_your_model_folder>: Your local path to the folder with your model. In the model  folder you need the files
+*   \<path_to_your_model_folder>: Your local path to the \<your_model_folder>. The model folder must include the following 3 files:
 
-	* \<your_model_name>.py: Needs to include a python class having the same name as the file, i,e. \<your_model_name>, and implementing the  methods \__init__  and predict.
-	The following example show the content of a model file model_name.py that load a keras model previusly saved in h5 format.
+	1. \<your_model_name>.py: Needs to include a python class having the same name as the file, i,e. \<your_model_name>, and implementing the  methods \__init__  and predict.
+	The following template shows the structure of the file:
 	
-	    	from keras.models import load_model
+		* General template:
 	
-	    	class model_name(object):
+	    		from <your_python_loading_library> import <your_loading_function>
+	
+	    		class <your_model_name>(object):
 
-	        	def __init__(self):
-                    self.model = load_model('saved_model_folder/saved_model.h5) 
+	        		def __init__(self):
+                    	self.model = <your_loading_function>(<your_saved_model>) 
 
-		        def predict(self,X,features_names):
-		            return self.model.predict(X) #return predictions for batch X
+		        	def predict(self,X,features_names):
+		            	return self.model.predict(X) 
+		            	
+		* Keras mnist example:
+	
+	    		from keras.models import load_model
 
-	* requirements.txt: Lists the requirements needed fot you model. For the keras model above the requirements.txt file would be:
+				class MnistClassifier(object):
+
+    				def __init__(self):
+        				self.model = load_model('MnistClassifier.h5')
+
+    				def predict(self,X,features_names):
+        				if X.shape[0]==784:
+            				X = X.reshape(1,28,28,1)
+        				else:
+            				X = X.reshape(X.shape[0],28,28,1)
+        				return self.model.predict(X)
+
+
+	* requirements.txt: List of the packages required by your model. Such packages must be installable through ```pip install```. For example,   the requirements.txt file for the keras example presented in the next session is:
 	
 		    keras==2.0.6 
 		    h5py
  	    	
-	* saved_model.h5: The file with your saved model. The format of the file depends on the tool you used to create, train and saved the model. In this case is a h5 model crated with keras.
+	* \<your_saved_model>: The file with your saved model. Must be loadable with <your_loading_function>. For example, in the keras example presented in the next session this file is "saved_model.h5".
 	
 * \<your_model_name>: The name of the .py file with your model. Has to be the same as the name of the python class implemented in the file, e.g MnistClassifier.
 
