@@ -1,8 +1,8 @@
 ---
-title: "H2o bad loan predictor example"
+title: "How to wrap a h2o model"
 date: 2017-12-09T17:49:41Z
 ---
-## General use
+
 
 In this readme we outline the steps needed to wrap any h2o model using seldon python wrappers into a docker image deployable with seldon core. 
 
@@ -10,23 +10,24 @@ The file H2oModel.py is a template to use in order to wrap a h2o model. The only
 
 We also provide a script to train and save a prebuilded h2o model predicting bad loans. 
 
-The session "General steps" explain how to use the wrapper with any saved h2o model.
+The session "General use" explain how to use the wrapper with any saved h2o model.
 
 The session "Example of usage" provides a step-by-step guide for training, deploying and wrap the prebuilded h2o model for bad loans predictions as an example.
 
+## General use
 
 ### Preliminary steps
 
 1. It is assumed you have already trained a h2o model and saved it in a file \<your_file_name> using the ```h2o.save_model()``` python function.
 * You have cloned the latest version of seldon-core git repository.
 * You have a python+java docker image avaliable to use as base-image. One way to build a suitable base-image locally is by using the [Dockerfile provided by h2o](https://h2o-release.s3.amazonaws.com/h2o/rel-turing/1/docs-website/h2o-docs/docker.html):
-	* Make sure you have docker deamon runnin	
+	* Make sure you have docker deamon running.	
 	* Download the [Dockerfile provided by h2o](https://h2o-release.s3.amazonaws.com/h2o/rel-turing/1/docs-website/h2o-docs/docker.html) in any folder.
 	* Create the base docker image:
 
 		``` docker build --force-rm=true -t <your_base_image> .```
 
-		it may take several minutes.
+		Building the image may take several minutes.
 
 ### Wrap:
 
@@ -57,10 +58,9 @@ You can now deploy the model as a docker image ```<your_docker_repo>/h2omodel:<y
 
 ## Example of usage
 
-Here we give an example of usage step by step in which we will train and save a [h2o model for bad loan predictions](https://github.com/h2oai/h2o-tutorials/blob/master/h2o-open-tour-2016/chicago/intro-to-h2o.ipynb). We will create a base image supporting h2o named "none/h2obase:0.0" and  we will use seldon wrappers to build model  docker image ready to be deployed with seldon-core. 
+Here we give an example of usage step by step in which we will train and save a [h2o model for bad loan predictions](https://github.com/h2oai/h2o-tutorials/blob/master/h2o-open-tour-2016/chicago/intro-to-h2o.ipynb), we will create a base image supporting h2o named "none/h2obase:0.0" and  we will use seldon wrappers to build  dockererized version of the model ready to be deployed with seldon-core. 
 
-### Preliminary step:
-The first step is to build locally your base image:
+### Preliminary step: build  your base image locally
 
 1. Make sure you have docker deamon running
 * Download the [Dockerfile provided by h2o](https://h2o-release.s3.amazonaws.com/h2o/rel-turing/1/docs-website/h2o-docs/docker.html) in any directory.
