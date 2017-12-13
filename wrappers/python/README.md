@@ -43,8 +43,7 @@ Clone seldon-core, install grpc tools and buld the protobuffers (if not done bef
 
 
 *   \<path_to_your_model_folder>: Your local path to the \<your_model_folder>. The model folder must include the following 3 files:
-	1. \<your_model_name>.py: Needs to include a python class having the same name as the file, i,e. \<your_model_name>, and implementing the  methods \__init__  and predict.
-	The following template shows the structure of the file:
+	1. \<your_model_name>.py: Needs to include a python class having the same name as the file, i,e. \<your_model_name>, and implementing the  methods \__init__  and predict. The following template shows the structure of the file:
 		* General template:
 		
 				from <your_python_loading_library> import <your_loading_function>
@@ -57,8 +56,9 @@ Clone seldon-core, install grpc tools and buld the protobuffers (if not done bef
 		        	def predict(self,X,features_names):
 		            	return self.model.predict(X)
 		            	
+		            	
 		* Keras mnist example:
-	
+		
 	    		from keras.models import load_model
 
 				class MnistClassifier(object):
