@@ -7,10 +7,10 @@ import io.grpc.ServerCall.Listener;
 public class MessagePrincipalListener <R> extends ForwardingServerCallListener<R>
 {
     ServerCall.Listener<R> delegate;
-    ModelGrpcServer server;
+    SeldonGrpcServer server;
     String principal;
     
-    public MessagePrincipalListener(ServerCall.Listener<R> delegate,String principal,ModelGrpcServer server) {
+    public MessagePrincipalListener(ServerCall.Listener<R> delegate,String principal,SeldonGrpcServer server) {
         this.delegate = delegate;
         this.server = server;
         this.principal = principal;

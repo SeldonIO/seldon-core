@@ -15,9 +15,9 @@ public class HeaderServerInterceptor implements ServerInterceptor {
     final Metadata.Key<String> CUSTOM_HEADER_KEY =
         Metadata.Key.of("custom_server_header_key", Metadata.ASCII_STRING_MARSHALLER);
 
-    private ModelGrpcServer server;
+    private SeldonGrpcServer server;
     
-    public HeaderServerInterceptor(ModelGrpcServer server) {
+    public HeaderServerInterceptor(SeldonGrpcServer server) {
       super();
       this.server = server;
   }

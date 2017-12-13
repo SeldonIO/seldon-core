@@ -20,32 +20,30 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.seldon.apife.pb.ProtoBufUtils;
-import io.seldon.protos.ModelGrpc;
 import io.seldon.protos.PredictionProtos.DefaultData;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
 import io.seldon.protos.PredictionProtos.Tensor;
+import io.seldon.protos.SeldonGrpc;
 
-public class ModelClientExample {
-	protected static Logger logger = LoggerFactory.getLogger(ModelClientExample.class.getName());
+public class SeldonClientExample {
+	protected static Logger logger = LoggerFactory.getLogger(SeldonClientExample.class.getName());
 	
 	 private final ManagedChannel channel;
-	  private final ModelGrpc.ModelBlockingStub blockingStub;
-	  private final ModelGrpc.ModelStub asyncStub;
-
-	  private Random random = new Random();
+	  private final SeldonGrpc.SeldonBlockingStub blockingStub;
+	  private final SeldonGrpc.SeldonStub asyncStub;
 
 	  /** Construct client for accessing RouteGuide server at {@code host:port}. */
-	  public ModelClientExample(String host, int port) {
+	  public SeldonClientExample(String host, int port) {
 	    this(ManagedChannelBuilder.forAddress(host, port).usePlaintext(true));
 	  }
 
 	  /** Construct client for accessing RouteGuide server using the existing channel. */
-	  public ModelClientExample(ManagedChannelBuilder<?> channelBuilder) {
+	  public SeldonClientExample(ManagedChannelBuilder<?> channelBuilder) {
 		  ClientInterceptor interceptor = new HeaderClientInterceptor();
 	    channel = channelBuilder.build();
 	    Channel interceptChannel = ClientInterceptors.intercept(channel, interceptor);
-	    blockingStub = ModelGrpc.newBlockingStub(interceptChannel);
-	    asyncStub = ModelGrpc.newStub(interceptChannel);
+	    blockingStub = SeldonGrpc.newBlockingStub(interceptChannel);
+	    asyncStub = SeldonGrpc.newStub(interceptChannel);
 	  }
 
 	  public void shutdown() throws InterruptedException {
@@ -65,7 +63,7 @@ public class ModelClientExample {
 	 * @throws InvalidProtocolBufferException */
 	  public static void main(String[] args) throws InterruptedException, InvalidProtocolBufferException {
 
-	    ModelClientExample client = new ModelClientExample("localhost", 8980);
+	    SeldonClientExample client = new SeldonClientExample("localhost", 8980);
 	    try {
 	    	
 	    	client.predict();
