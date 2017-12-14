@@ -19,27 +19,25 @@ Seldon core uses [helm](https://github.com/kubernetes/helm) charts to start and 
         ```eval $(minikube docker-env)```
 * It is assume that you have installed and initialized helm. If not, you have to
     * [Install helm](https://github.com/kubernetes/helm/blob/master/docs/install.md)
-    * To initialize Helm, type on command line: 
+    * To initialize helm, type on command line: 
     
         ```helm init```
 
 ### Starting seldon-core
 
-1. The first step is to get seldon-core up and running on your minikube cluster. To  install seldon-core using helm, type on command line:
-      	
-    ```<get_helm_charts>```
+1. The first step is to get seldon-core up and running on your minikube cluster.
 
-    ```helm install <path_to_your_helm_charts_directory>/seldon-core --name seldon-core --set cluster_manager.image.tag=0.3-SNAPSHOT --set apife.image.tag=0.1-SNAPSHOT --set engine.image.tag=0.2-SNAPSHOT```
+    * To get the seldon core helm charts, type on command line:
+
+        ```<get_helm_charts>```
+
+    * To  install seldon-core using helm, type on command line:
+
+        ```helm install <path_to_your_helm_charts_directory>/seldon-core --name seldon-core --set cluster_manager.image.tag=0.3-SNAPSHOT --set apife.image.tag=0.1-SNAPSHOT --set engine.image.tag=0.2-SNAPSHOT```
 	
-    Seldon-core should now be running on your cluster. You can verify if all the pods are up and running typing on command line:
+    Seldon-core should now be running on your cluster. You can verify if all the pods are up and running typing on command line ```helm status seldon-core``` or ```kubectl get pods```
 
-    ```helm status seldon-core```
-
-    or
-
-    ```kubectl get pods```
-
-2. You can now wrap one of seldon-example models using [seldon wrappers](link_to_wrappers_docs):
+2. You can now wrap one of [seldon-examples](link_to_seldon_examples) models using [seldon wrappers](link_to_wrappers_docs):
 
     * ...
 
