@@ -13,10 +13,12 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.ServerInterceptors;
+import io.seldon.apife.api.oauth.InMemoryClientDetailsService;
 import io.seldon.apife.deployments.DeploymentStore;
 import io.seldon.apife.exception.SeldonAPIException;
 import io.seldon.protos.DeploymentProtos.DeploymentSpec;
 import io.seldon.protos.DeploymentProtos.Endpoint;
+import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 @Component
 public class SeldonGrpcServer  {
@@ -121,8 +123,19 @@ public class SeldonGrpcServer  {
 	   * Main method.  This comment makes the linter happy.
 	   */
 	  public static void main(String[] args) throws Exception {
-	    SeldonGrpcServer server = new SeldonGrpcServer(null,8980);
-	    server.start();
-	    server.blockUntilShutdown();
+	      DeploymentStore store = new DeploymentStore(null,new InMemoryClientDetailsService());
+	      SeldonDeployment dep = SeldonDeployment.newBuilder()
+	              .setApiVersion("v1alpha1")
+	              .setKind("SeldonDeplyment")
+	              .setSpec(DeploymentSpec.newBuilder()
+	                  .setOauthKey("principal")
+	                  .setOauthSecret("secret")
+	                  .setEndpoint(Endpoint.newBuilder()
+	                          .setServiceHost("0.0.0.0")
+	                          .setServicePort(FakeEngineServer.PORT))).build();   
+	      store.deploymentAdded(dep);
+	      SeldonGrpcServer server = new SeldonGrpcServer(store,8980);
+	      server.start();
+	      server.blockUntilShutdown();
 	}
 }
