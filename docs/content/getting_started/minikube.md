@@ -25,15 +25,9 @@ Seldon core uses [helm](https://github.com/kubernetes/helm) charts to start and 
 
 ### Starting seldon-core
 
-1. The first step is to get seldon-core up and running on your minikube cluster.
+1. The first step is to get seldon-core up and running on your minikube cluster. To  install seldon-core using helm, type on command line:
 
-    * To get the seldon core helm charts, type on command line:
-
-        ```<get_helm_charts>```
-
-    * To  install seldon-core using helm, type on command line:
-
-        ```helm install <path_to_your_helm_charts_directory>/seldon-core --name seldon-core --set cluster_manager.image.tag=0.3-SNAPSHOT --set apife.image.tag=0.1-SNAPSHOT --set engine.image.tag=0.2-SNAPSHOT```
+    ```helm install <seldon_core_helm_charts>```
 	
     Seldon-core should now be running on your cluster. You can verify if all the pods are up and running typing on command line ```helm status seldon-core``` or ```kubectl get pods```
 
@@ -41,29 +35,36 @@ Seldon core uses [helm](https://github.com/kubernetes/helm) charts to start and 
 
     * ...
 
-    You should now have a local docker image named \<seldonio/\<image_name>:\<image_version>. You can verify typing on command line:
-
-    ```docker images```
+    You should now have a local docker image named \<seldonio/\<image_name>:\<image_version>. You can verify typing ```docker images``` on command line
 
 3. Deploy your wrapped model with seldon-core:
 
-    * Open seldon json [deployment template](link_to_json_template) with your favorite editor and modify the "image" and "name" fields as follow:
+    * Open seldon json [deployment template](link_to_json_template) with your favorite editor and modify the "oauth_key", "oauth_secret", "image" and "name" fields as follow:
+
 
         ```json
 	{
-	    ...
-	    
-	    "containers": [
-	        {
-	            "image": "<seldonio/<image_name>:<image_version>",
-	            "imagePullPolicy": "IfNotPresent",
-	            "name": "your-model-name",
-	            ...
-	        }
-	    ]
-
-        ...
-	}
+            ...
+            "spec": {
+                ...,
+                "oauth_key": "<your-oauth-key>",
+                "oauth_secret": "<your-oauth-secret>",
+                "predictors": [
+                    {
+                        ...
+                        "containers": [
+                            {
+                                "image": "seldonio/<image_name>:<image_version>",
+                                ...
+                                "name": "<your-model-name>",
+                                ...
+                            }
+                        ],
+                        ...
+                    }
+                ]
+            }
+        }
         ```
 
     * Save the json file as \<your_file_name>.json. To deploy it on seldon core, type on command line:
@@ -73,8 +74,7 @@ Seldon core uses [helm](https://github.com/kubernetes/helm) charts to start and 
 4. Query and test your model:
 
     * ....
+        
 
-    * ....
-    
 
 
