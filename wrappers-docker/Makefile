@@ -1,5 +1,5 @@
 IMAGE_NAME=docker.io/seldonio/core-pyhton-wrapper
-IMAGE_VERSION=0.1
+IMAGE_VERSION=0.2
 
 SELDON_CORE_DIR=..
 
