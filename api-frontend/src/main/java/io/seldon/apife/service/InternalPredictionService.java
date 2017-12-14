@@ -38,8 +38,6 @@ public class InternalPredictionService {
     private static final int DEFAULT_CON_TIMEOUT = 500;
     private static final int DEFAULT_SOCKET_TIMEOUT = 2000;
 
-    ObjectMapper mapper = new ObjectMapper();
-    
     @Autowired
     public InternalPredictionService(){
         connectionManager = new PoolingHttpClientConnectionManager();

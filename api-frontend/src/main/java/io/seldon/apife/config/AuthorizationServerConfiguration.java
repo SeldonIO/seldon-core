@@ -28,7 +28,8 @@ import io.seldon.apife.api.oauth.InMemoryClientDetailsService;
 class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
 
     private final static Logger logger = LoggerFactory.getLogger(AuthorizationServerConfiguration.class);
-    private final static String SELDON_CLUSTER_MANAGER_CLIENT_SECRET_KEY = "SELDON_CLUSTER_MANAGER_CLIENT_SECRET";
+    private final static String TEST_CLIENT_KEY = "TEST_CLIENT_KEY";
+    private final static String TEST_CLIENT_SECRET = "TEST_CLIENT_SECRET";
    
 
     @Autowired
@@ -51,6 +52,11 @@ class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdap
         return new RedisTokenStore(redisConnectionFactory);
     }
     
+    public AuthenticationManager getAuthenticationManager()
+    {
+        return authenticationManager;
+    }
+    
     
     /*
     @Bean
@@ -66,23 +72,7 @@ class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdap
 
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-
-        final String client_id = "client";
-        String client_secret = null;
-        { // setup the client_secret using the env vars
-            client_secret = System.getenv().get(SELDON_CLUSTER_MANAGER_CLIENT_SECRET_KEY);
-            if (client_secret == null) {
-                //client_secret = generateRandomString();
-            	client_secret="pw1";
-                logger.error(String.format("FAILED to find env var [%s]", SELDON_CLUSTER_MANAGER_CLIENT_SECRET_KEY));
-                logger.error(String.format("generating client_secret[%s]", client_secret));
-            } else {
-                logger.info(String.format("using client_secret from env var [%s]", SELDON_CLUSTER_MANAGER_CLIENT_SECRET_KEY));
-            }
-        }
-        logger.info(String.format("setting up auth using client credentials, client_id[%s]", client_id));
-
-        // @formatter:off
+        
         clients.withClientDetails(clientDetailsService);
         /*
          		.jdbc(dataSource());
@@ -99,7 +89,12 @@ class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdap
                 */
         // @formatter:on
         
-        
+        String client_key = System.getenv().get(TEST_CLIENT_KEY);
+        if (client_key != null)
+        {
+            String client_secret = System.getenv().get(TEST_CLIENT_SECRET);
+            clientDetailsService.addClient(client_key,client_secret);
+        }
     }
 
     private static String generateRandomString() {

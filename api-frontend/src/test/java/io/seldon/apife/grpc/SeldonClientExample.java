@@ -1,8 +1,11 @@
 package io.seldon.apife.grpc;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.http.client.ClientProtocolException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,8 +83,8 @@ public class SeldonClientExample {
 
 		  protected static Logger logger = LoggerFactory.getLogger(HeaderClientInterceptor.class.getName());
 	    
-	    static final Metadata.Key<String> CUSTOM_HEADER_KEY =
-	        Metadata.Key.of("custom_client_header_key", Metadata.ASCII_STRING_MARSHALLER);
+	    static final Metadata.Key<String> OAUTH_KEY =
+	        Metadata.Key.of(HeaderServerInterceptor.OAUTH_TOKEN_HEADER, Metadata.ASCII_STRING_MARSHALLER);
 
 	    @Override
 	    public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(MethodDescriptor<ReqT, RespT> method,
@@ -91,19 +94,36 @@ public class SeldonClientExample {
 	        @Override
 	        public void start(Listener<RespT> responseListener, Metadata headers) {
 	          /* put custom header */
-	          headers.put(CUSTOM_HEADER_KEY, "customRequestValue");
-	          super.start(new SimpleForwardingClientCallListener<RespT>(responseListener) {
-	            @Override
-	            public void onHeaders(Metadata headers) {
-	              /**
-	               * if you don't need receive header from server,
-	               * you can use {@link io.grpc.stub.MetadataUtils#attachHeaders}
-	               * directly to send header
-	               */
-	              logger.info("header received from server:" + headers);
-	              super.onHeaders(headers);
-	            }
-	          }, headers);
+	          OauthTokenProvider p = new OauthTokenProvider();
+	          String token;
+            try {
+                token = p.getToken();
+                headers.put(OAUTH_KEY, token);
+                super.start(new SimpleForwardingClientCallListener<RespT>(responseListener) {
+                  @Override
+                  public void onHeaders(Metadata headers) {
+                    /**
+                     * if you don't need receive header from server,
+                     * you can use {@link io.grpc.stub.MetadataUtils#attachHeaders}
+                     * directly to send header
+                     */
+                    logger.info("header received from server:" + headers);
+                    super.onHeaders(headers);
+                  }
+                }, headers);
+                
+                
+            } catch (ClientProtocolException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (URISyntaxException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+	          
 	        }
 	      };
 	    }

@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.stereotype.Component;
 
 import io.grpc.ManagedChannel;
@@ -29,23 +30,26 @@ public class SeldonGrpcServer  {
 	  ThreadLocal<String> principalThreadLocal = new ThreadLocal<String>();  
 	  ConcurrentHashMap<String,ManagedChannel> channelStore = new ConcurrentHashMap<>();
 	  
-	  final DeploymentStore deploymentStore;
+	  private final DeploymentStore deploymentStore;
+	  
+	  private final TokenStore tokenStore;
 	  
 	  @Autowired
-	  public SeldonGrpcServer(DeploymentStore deploymentStore)
+	  public SeldonGrpcServer(DeploymentStore deploymentStore,TokenStore tokenStore)
 	  {
-	      this(deploymentStore,5000);
+	      this(deploymentStore,tokenStore,5000);
 	  }
 	  
-	  public SeldonGrpcServer(DeploymentStore deploymentStore,int port)
+	  public SeldonGrpcServer(DeploymentStore deploymentStore,TokenStore tokenStore,int port)
 	  {
-		  this(deploymentStore,ServerBuilder.forPort(port), port);
+		  this(deploymentStore,tokenStore,ServerBuilder.forPort(port), port);
 	  }
 	  
 	
-	  public SeldonGrpcServer(DeploymentStore deploymentStore,ServerBuilder<?> serverBuilder, int port) 
+	  public SeldonGrpcServer(DeploymentStore deploymentStore,TokenStore tokenStore,ServerBuilder<?> serverBuilder, int port) 
 	  {
 	      this.deploymentStore = deploymentStore;
+	      this.tokenStore = tokenStore;
 	      this.port = port;
 	      server = serverBuilder
 	    		.addService(ServerInterceptors.intercept(new SeldonService(this), new HeaderServerInterceptor(this)))
@@ -61,6 +65,11 @@ public class SeldonGrpcServer  {
 	  private String getPrincipal()
 	  {
 	      return this.principalThreadLocal.get();
+	  }
+	  
+	  public TokenStore getTokenStore()
+	  {
+	      return tokenStore;
 	  }
 	  
 	  
@@ -128,13 +137,13 @@ public class SeldonGrpcServer  {
 	              .setApiVersion("v1alpha1")
 	              .setKind("SeldonDeplyment")
 	              .setSpec(DeploymentSpec.newBuilder()
-	                  .setOauthKey("principal")
+	                  .setOauthKey("key")
 	                  .setOauthSecret("secret")
 	                  .setEndpoint(Endpoint.newBuilder()
 	                          .setServiceHost("0.0.0.0")
 	                          .setServicePort(FakeEngineServer.PORT))).build();   
 	      store.deploymentAdded(dep);
-	      SeldonGrpcServer server = new SeldonGrpcServer(store,8980);
+	      SeldonGrpcServer server = new SeldonGrpcServer(store,null,8980);
 	      server.start();
 	      server.blockUntilShutdown();
 	}
