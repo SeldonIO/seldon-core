@@ -56,6 +56,10 @@ message SeldonMessage {
   }
 }
 
+message SeldonMessageList {
+  repeated SeldonMessage seldonMessages = 1;
+}
+
 message Status {
 
     enum StatusFlag {
@@ -99,9 +103,16 @@ message RequestResponse {
 
 // [START Services]
 
+service Generic {
+  rpc TransformInput(SeldonMessage) returns (SeldonMessage) {};
+  rpc TransformOutput(SeldonMessage) returns (SeldonMessage) {};
+  rpc Route(SeldonMessage) returns (SeldonMessage) {};
+  rpc Aggregate(SeldonMessageList) returns (SeldonMessage) {};
+  rpc SendFeedback(Feedback) returns (SeldonMessage) {};
+}
+
 service Model {
   rpc Predict(SeldonMessage) returns (SeldonMessage) {};
-  rpc SendFeedback(Feedback) returns (SeldonMessage) {};
  }
 
 service Router {
@@ -111,7 +122,14 @@ service Router {
 
 service Transformer {
   rpc TransformInput(SeldonMessage) returns (SeldonMessage) {};
+}
+
+service OutputTransformer {
   rpc TransformOutput(SeldonMessage) returns (SeldonMessage) {};
- }
+}
+
+service Combiner {
+  rpc Aggregate(SeldonMessageList) returns (SeldonMessage) {};
+}
 
 // [END Services]

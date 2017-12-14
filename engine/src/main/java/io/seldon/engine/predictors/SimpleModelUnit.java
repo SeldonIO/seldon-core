@@ -11,7 +11,7 @@ import io.seldon.protos.PredictionProtos.Status;
 import io.seldon.protos.PredictionProtos.Tensor;
 
 @Component
-public class SimpleModelUnit extends ModelUnit {
+public class SimpleModelUnit extends PredictiveUnitBean {
 	
 	public SimpleModelUnit() {}
 
@@ -19,7 +19,7 @@ public class SimpleModelUnit extends ModelUnit {
 	public static final String[] classes = {"class0","class1","class2"};
 	
 	@Override
-	protected SeldonMessage transformInput(SeldonMessage input, PredictiveUnitState state){
+	public SeldonMessage transformInput(SeldonMessage input, PredictiveUnitState state){
 		SeldonMessage output = SeldonMessage.newBuilder()
 				.setStatus(Status.newBuilder().setStatus(Status.StatusFlag.SUCCESS).build())
 				.setMeta(Meta.newBuilder())//.addModel(state.id))

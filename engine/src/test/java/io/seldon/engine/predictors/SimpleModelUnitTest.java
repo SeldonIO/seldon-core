@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+
 import io.kubernetes.client.proto.V1.PodTemplateSpec;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit;
 import io.seldon.protos.DeploymentProtos.PredictorSpec;
@@ -22,7 +24,7 @@ public class SimpleModelUnitTest {
 	PredictorBean predictorBean;
 	
 	@Test
-	public void simpleTest() throws InterruptedException, ExecutionException
+	public void simpleTest() throws InterruptedException, ExecutionException, InvalidProtocolBufferException
 	{
 		PredictorSpec.Builder PredictorSpecBuilder = PredictorSpec.newBuilder();
 		// PredictorSpecBuilder.setEnabled(true);

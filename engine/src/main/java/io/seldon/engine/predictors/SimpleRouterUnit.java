@@ -6,18 +6,12 @@ import io.seldon.protos.PredictionProtos.Feedback;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
 
 @Component
-public class SimpleRouterUnit extends RouterUnit {
+public class SimpleRouterUnit extends PredictiveUnitBean {
 
     public SimpleRouterUnit() {}
 
 	@Override
-	protected int route(SeldonMessage input, PredictiveUnitState state){
+	public int route(SeldonMessage input, PredictiveUnitState state){
 		return 0;
-	} 
-	
-	@Override
-	protected void doSendFeedback(Feedback feedback, PredictiveUnitState state){
-		return;
 	}
-
 }

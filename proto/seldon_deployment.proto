@@ -33,14 +33,17 @@ message Parameter {
 message PredictiveUnit {
 
   enum PredictiveUnitType {
+    // Each one of these defines a default combination of Predictive Unit Methods
     UNKNOWN_TYPE = 0;
-    ROUTER = 1;
-    COMBINER = 2;
-    MODEL = 3;
-    TRANSFORMER = 4;
+    ROUTER = 1; // Route + send feedback
+    COMBINER = 2; // Aggregate
+    MODEL = 3; // Transform input
+    TRANSFORMER = 4; // Transform input (alias)
+    OUTPUT_TRANSFORMER = 5; // Transform output
   }
 
   enum PredictiveUnitImplementation {
+    // Each one of these are hardcoded in the engine, no microservice is used
     UNKNOWN_IMPLEMENTATION = 0;
     SIMPLE_MODEL = 1;
     SIMPLE_ROUTER = 2;
@@ -48,12 +51,21 @@ message PredictiveUnit {
     AVERAGE_COMBINER = 4;
   }
 
-  required string name = 1;//must match container name of component if subtype microservice
+  enum PredictiveUnitMethod {
+    TRANSFORM_INPUT = 0;
+    TRANSFORM_OUTPUT = 1;
+    ROUTE = 2;
+    AGGREGATE = 3;
+    SEND_FEEDBACK = 4;
+  }
+
+  required string name = 1; //must match container name of component if no implementation
   repeated PredictiveUnit children = 2;
   optional PredictiveUnitType type = 3;
   optional PredictiveUnitImplementation implementation = 4;
-  optional Endpoint endpoint = 5;
-  repeated Parameter parameters = 6;
+  repeated PredictiveUnitMethod methods = 5;
+  optional Endpoint endpoint = 6;
+  repeated Parameter parameters = 7;
 }
 
 message Endpoint {
