@@ -54,7 +54,9 @@ You can now wrap the model using seldon python wrappers.
 
 ### Deploy in seldon-core:
 
-You can now deploy the model as a docker image ```<your_docker_repo>/h2omodel:<your_model_version>``` using [seldon-core](link).
+You can now deploy the model as a docker image ```<your_docker_repo>/h2omodel:<your_model_version>``` using [seldon-core](../../api/seldon-deployment).
+
+
 
 ## Example of usage
 
