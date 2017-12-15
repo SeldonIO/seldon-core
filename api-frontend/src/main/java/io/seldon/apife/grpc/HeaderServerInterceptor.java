@@ -15,6 +15,11 @@ import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 
+/**
+ * Validate a gRPC request from an oauth token.
+ * @author clive
+ *
+ */
 public class HeaderServerInterceptor implements ServerInterceptor {
 
     protected static Logger logger = LoggerFactory.getLogger(HeaderServerInterceptor.class.getName());
@@ -36,10 +41,10 @@ public class HeaderServerInterceptor implements ServerInterceptor {
         final Metadata requestHeaders,
         ServerCallHandler<ReqT, RespT> next) {
       String token = requestHeaders.get(authKey);
+      String principal = null;
       if (StringUtils.isEmpty(token))
       {
-          
-
+          logger.warn("Failed to find token");
       }
       else
       {
@@ -47,10 +52,16 @@ public class HeaderServerInterceptor implements ServerInterceptor {
           tokenParams.put(OAuth2AccessToken.ACCESS_TOKEN,token);
           OAuth2AccessToken otoken = DefaultOAuth2AccessToken.valueOf(tokenParams);
           OAuth2Authentication auth = server.getTokenStore().readAuthentication(otoken);
-          
+          if (auth != null && auth.isAuthenticated())
+          {
+              logger.debug("Principal:"+auth.getPrincipal());
+              principal = auth.getPrincipal().toString();
+          }
+          else
+          {
+              logger.warn("Failed to authenticate token "+token);
+          }
       }
-
-      logger.info("header received from client:" + requestHeaders);
-      return new MessagePrincipalListener<ReqT>(next.startCall(call, requestHeaders),"principal",server);
+      return new MessagePrincipalListener<ReqT>(next.startCall(call, requestHeaders),principal,server);
     }
   }

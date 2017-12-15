@@ -66,7 +66,7 @@ public class SeldonClientExample {
 	 * @throws InvalidProtocolBufferException */
 	  public static void main(String[] args) throws InterruptedException, InvalidProtocolBufferException {
 
-	    SeldonClientExample client = new SeldonClientExample("localhost", 8980);
+	    SeldonClientExample client = new SeldonClientExample("localhost", SeldonGrpcServer.SERVER_PORT);
 	    try {
 	    	
 	    	client.predict();

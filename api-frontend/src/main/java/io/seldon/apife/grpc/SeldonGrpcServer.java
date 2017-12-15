@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.stereotype.Component;
 
@@ -23,128 +24,142 @@ import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 @Component
 public class SeldonGrpcServer  {
-	protected static Logger logger = LoggerFactory.getLogger(SeldonGrpcServer.class.getName());
+    protected static Logger logger = LoggerFactory.getLogger(SeldonGrpcServer.class.getName());
 	
-	  private final int port;
-	  private final Server server;
-	  ThreadLocal<String> principalThreadLocal = new ThreadLocal<String>();  
-	  ConcurrentHashMap<String,ManagedChannel> channelStore = new ConcurrentHashMap<>();
+    public static final int SERVER_PORT = 5000;
+    
+    private final int port;
+    private final Server server;
+    ThreadLocal<String> principalThreadLocal = new ThreadLocal<String>();  
+    ConcurrentHashMap<String,ManagedChannel> channelStore = new ConcurrentHashMap<>();
 	  
-	  private final DeploymentStore deploymentStore;
+    private final DeploymentStore deploymentStore;
 	  
-	  private final TokenStore tokenStore;
+    private final TokenStore tokenStore;
 	  
-	  @Autowired
-	  public SeldonGrpcServer(DeploymentStore deploymentStore,TokenStore tokenStore)
-	  {
-	      this(deploymentStore,tokenStore,5000);
-	  }
-	  
-	  public SeldonGrpcServer(DeploymentStore deploymentStore,TokenStore tokenStore,int port)
-	  {
-		  this(deploymentStore,tokenStore,ServerBuilder.forPort(port), port);
-	  }
-	  
-	
-	  public SeldonGrpcServer(DeploymentStore deploymentStore,TokenStore tokenStore,ServerBuilder<?> serverBuilder, int port) 
-	  {
-	      this.deploymentStore = deploymentStore;
-	      this.tokenStore = tokenStore;
-	      this.port = port;
-	      server = serverBuilder
-	    		.addService(ServerInterceptors.intercept(new SeldonService(this), new HeaderServerInterceptor(this)))
-	        .build();
-	  }
-	  
-	  public void setPrincipal(String principal)
-	  {
-	      this.principalThreadLocal.set(principal);
-	  }
-	  
-	  
-	  private String getPrincipal()
-	  {
-	      return this.principalThreadLocal.get();
-	  }
-	  
-	  public TokenStore getTokenStore()
-	  {
-	      return tokenStore;
-	  }
-	  
-	  
-
-	  public ManagedChannel getChannel() {
-	      final String principal = getPrincipal();
-          if (principal == null )
-          {
-              throw new SeldonAPIException(SeldonAPIException.ApiExceptionType.APIFE_GRPC_NO_PRINCIPAL_FOUND,"");
-          }
-
-	      final DeploymentSpec deploymentSpec = deploymentStore.getDeployment(principal);
-	      if (deploymentSpec == null)
-	      {
-	          throw new SeldonAPIException(SeldonAPIException.ApiExceptionType.APIFE_NO_RUNNING_DEPLOYMENT,"");
-	      }
-	      
-	      ManagedChannel channel = channelStore.get(principal);
-	      if (channel == null)
-	      {
-	          Endpoint endPoint = deploymentSpec.getEndpoint();
-              channel = ManagedChannelBuilder.forAddress(endPoint.getServiceHost(), endPoint.getServicePort()).usePlaintext(true).build();
-	          channelStore.putIfAbsent(principal,channel);
-	      }
-	      return channel;
+    @Autowired
+    public SeldonGrpcServer(DeploymentStore deploymentStore,TokenStore tokenStore)
+    {
+        this(deploymentStore,tokenStore,SERVER_PORT);  
+    }    
+    
+    public SeldonGrpcServer(DeploymentStore deploymentStore,TokenStore tokenStore,int port)
+    {
+        this(deploymentStore,tokenStore,ServerBuilder.forPort(port), port);
+    }
+    
+  
+    public SeldonGrpcServer(DeploymentStore deploymentStore,TokenStore tokenStore,ServerBuilder<?> serverBuilder, int port) 
+    {
+        this.deploymentStore = deploymentStore;
+        this.tokenStore = tokenStore;
+        this.port = port;
+        server = serverBuilder
+              .addService(ServerInterceptors.intercept(new SeldonService(this), new HeaderServerInterceptor(this)))
+          .build();
+    }
+    
+    public void setPrincipal(String principal)
+    {
+        this.principalThreadLocal.set(principal);
+    }
+    
+    
+    private String getPrincipal()
+    {
+        return this.principalThreadLocal.get();
+    }
+    
+    public TokenStore getTokenStore()
+    {
+        return tokenStore;
     }
 
-    /** Start serving requests. */
-	  public void start() throws IOException {
-	    server.start();
-	    logger.info("Server started, listening on " + port);
-	    Runtime.getRuntime().addShutdownHook(new Thread() {
-	      @Override
-	      public void run() {
-	        // Use stderr here since the logger may has been reset by its JVM shutdown hook.
-	        System.err.println("*** shutting down gRPC server since JVM is shutting down");
-	        SeldonGrpcServer.this.stop();
-	        System.err.println("*** server shut down");
-	      }
-	    });
-	  }
+    /**
+     * Using the principal from authorization return a client gRPC channel to connect to the engine running the prediction graph.
+     * @return ManagedChannel
+     */
+    public ManagedChannel getChannel() {
+        final String principal = getPrincipal();
+        if (principal == null )
+        {
+            throw new SeldonAPIException(SeldonAPIException.ApiExceptionType.APIFE_GRPC_NO_PRINCIPAL_FOUND,"");
+        }
 
-	  /** Stop serving requests and shutdown resources. */
-	  public void stop() {
-	    if (server != null) {
-	      server.shutdown();
-	    }
-	  }
+        final DeploymentSpec deploymentSpec = deploymentStore.getDeployment(principal);
+        if (deploymentSpec == null)
+        {
+            throw new SeldonAPIException(SeldonAPIException.ApiExceptionType.APIFE_NO_RUNNING_DEPLOYMENT,"Principal is "+principal);
+        }
+        
+        ManagedChannel channel = channelStore.get(principal);
+        if (channel == null)
+        {
+            Endpoint endPoint = deploymentSpec.getEndpoint();
+            channel = ManagedChannelBuilder.forAddress(endPoint.getServiceHost(), endPoint.getServicePort()).usePlaintext(true).build();
+            channelStore.putIfAbsent(principal,channel);
+        }
+        return channel;
+    }
 
-	  /**
-	   * Await termination on the main thread since the grpc library uses daemon threads.
-	   */
-	  private void blockUntilShutdown() throws InterruptedException {
-	    if (server != null) {
-	      server.awaitTermination();
-	    }
-	  }
+    @Async
+    public void runServer() throws InterruptedException, IOException
+    {
+        logger.info("Starting grpc server");
+        start();
+        blockUntilShutdown();
+    }
+    
+    /** 
+     * Start serving requests. 
+     */
+    public void start() throws IOException {
+      server.start();
+      logger.info("Server started, listening on " + port);
+      Runtime.getRuntime().addShutdownHook(new Thread() {
+        @Override
+        public void run() {
+          // Use stderr here since the logger may has been reset by its JVM shutdown hook.
+          System.err.println("*** shutting down gRPC server since JVM is shutting down");
+          SeldonGrpcServer.this.stop();
+          System.err.println("*** server shut down");
+        }
+      });
+    }
 
-	  /**
-	   * Main method.  This comment makes the linter happy.
-	   */
-	  public static void main(String[] args) throws Exception {
-	      DeploymentStore store = new DeploymentStore(null,new InMemoryClientDetailsService());
-	      SeldonDeployment dep = SeldonDeployment.newBuilder()
-	              .setApiVersion("v1alpha1")
-	              .setKind("SeldonDeplyment")
-	              .setSpec(DeploymentSpec.newBuilder()
-	                  .setOauthKey("key")
-	                  .setOauthSecret("secret")
-	                  .setEndpoint(Endpoint.newBuilder()
-	                          .setServiceHost("0.0.0.0")
-	                          .setServicePort(FakeEngineServer.PORT))).build();   
-	      store.deploymentAdded(dep);
-	      SeldonGrpcServer server = new SeldonGrpcServer(store,null,8980);
-	      server.start();
-	      server.blockUntilShutdown();
-	}
+    /** Stop serving requests and shutdown resources. */
+    public void stop() {
+      if (server != null) {
+        server.shutdown();
+      }
+    }
+
+    /**
+     * Await termination on the main thread since the grpc library uses daemon threads.
+     */
+    private void blockUntilShutdown() throws InterruptedException {
+      if (server != null) {
+        server.awaitTermination();
+      }
+    }
+
+    /**
+     * Main method for basic testing.
+     */
+    public static void main(String[] args) throws Exception {
+        DeploymentStore store = new DeploymentStore(null,new InMemoryClientDetailsService());
+        SeldonDeployment dep = SeldonDeployment.newBuilder()
+                .setApiVersion("v1alpha1")
+                .setKind("SeldonDeplyment")
+                .setSpec(DeploymentSpec.newBuilder()
+                    .setOauthKey("key")
+                    .setOauthSecret("secret")
+                    .setEndpoint(Endpoint.newBuilder()
+                            .setServiceHost("0.0.0.0")
+                            .setServicePort(FakeEngineServer.PORT))).build();   
+        store.deploymentAdded(dep);
+        SeldonGrpcServer server = new SeldonGrpcServer(store,null,SERVER_PORT);
+        server.start();
+        server.blockUntilShutdown();
+  }
 }

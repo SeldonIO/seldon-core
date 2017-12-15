@@ -1,17 +1,11 @@
 package io.seldon.apife.config;
 
-import java.math.BigInteger;
-import java.security.SecureRandom;
-
-import javax.sql.DataSource;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
@@ -20,8 +14,12 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Aut
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.redis.RedisTokenStore;
 
-import io.seldon.apife.api.oauth.ClientBuilder;
 import io.seldon.apife.api.oauth.InMemoryClientDetailsService;
+import io.seldon.apife.deployments.DeploymentStore;
+import io.seldon.apife.grpc.FakeEngineServer;
+import io.seldon.protos.DeploymentProtos.DeploymentSpec;
+import io.seldon.protos.DeploymentProtos.Endpoint;
+import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 @Configuration
 @EnableAuthorizationServer
@@ -40,6 +38,9 @@ class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdap
 
     @Autowired
     private InMemoryClientDetailsService clientDetailsService;
+
+    @Autowired
+    private DeploymentStore deploymentStore;
     
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
@@ -57,48 +58,27 @@ class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdap
         return authenticationManager;
     }
     
-    
-    /*
-    @Bean
-    public DataSource dataSource() {
-        final DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName("com.mysql.jdbc.Driver");
-        dataSource.setUrl("jdbc:mysql://localhost/oauth_client");
-        dataSource.setUsername("user1");
-        dataSource.setPassword("mypass");
-        return dataSource;
-	}
-	*/
-
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
         
         clients.withClientDetails(clientDetailsService);
-        /*
-         		.jdbc(dataSource());
-         */
-        /*
-                .inMemory()
-                .withClient(client_id)
-                .authorizedGrantTypes("client_credentials", "password")
-                .authorities("ROLE_CLIENT")
-                .scopes("read","write")
-                .resourceIds("cluster-manger-api")
-                .accessTokenValiditySeconds(ACCESS_TOKEN_VALIDITY_SECONDS)
-                .secret(client_secret);
-                */
-        // @formatter:on
-        
+ 
         String client_key = System.getenv().get(TEST_CLIENT_KEY);
+        //Create Fake seldon deployment for testing
         if (client_key != null)
         {
             String client_secret = System.getenv().get(TEST_CLIENT_SECRET);
             clientDetailsService.addClient(client_key,client_secret);
+            SeldonDeployment dep = SeldonDeployment.newBuilder()
+                    .setApiVersion("v1alpha1")
+                    .setKind("SeldonDeplyment")
+                    .setSpec(DeploymentSpec.newBuilder()
+                        .setOauthKey(client_key)
+                        .setOauthSecret(client_secret)
+                        .setEndpoint(Endpoint.newBuilder()
+                                .setServiceHost("0.0.0.0")
+                                .setServicePort(FakeEngineServer.PORT))).build();   
+            deploymentStore.deploymentAdded(dep);
         }
-    }
-
-    private static String generateRandomString() {
-        SecureRandom random = new SecureRandom();
-        return new BigInteger(130, random).toString(32);
     }
 }
