@@ -15,6 +15,7 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.ServerInterceptors;
+import io.seldon.apife.AppProperties;
 import io.seldon.apife.api.oauth.InMemoryClientDetailsService;
 import io.seldon.apife.deployments.DeploymentStore;
 import io.seldon.apife.exception.SeldonAPIException;
@@ -34,23 +35,24 @@ public class SeldonGrpcServer  {
     ConcurrentHashMap<String,ManagedChannel> channelStore = new ConcurrentHashMap<>();
 	  
     private final DeploymentStore deploymentStore;
-	  
     private final TokenStore tokenStore;
+    private final AppProperties appProperties;
 	  
     @Autowired
-    public SeldonGrpcServer(DeploymentStore deploymentStore,TokenStore tokenStore)
+    public SeldonGrpcServer(AppProperties appProperties,DeploymentStore deploymentStore,TokenStore tokenStore)
     {
-        this(deploymentStore,tokenStore,SERVER_PORT);  
+        this(appProperties,deploymentStore,tokenStore,SERVER_PORT);  
     }    
     
-    public SeldonGrpcServer(DeploymentStore deploymentStore,TokenStore tokenStore,int port)
+    public SeldonGrpcServer(AppProperties appProperties,DeploymentStore deploymentStore,TokenStore tokenStore,int port)
     {
-        this(deploymentStore,tokenStore,ServerBuilder.forPort(port), port);
+        this(appProperties,deploymentStore,tokenStore,ServerBuilder.forPort(port), port);
     }
     
   
-    public SeldonGrpcServer(DeploymentStore deploymentStore,TokenStore tokenStore,ServerBuilder<?> serverBuilder, int port) 
+    public SeldonGrpcServer(AppProperties appProperties,DeploymentStore deploymentStore,TokenStore tokenStore,ServerBuilder<?> serverBuilder, int port) 
     {
+        this.appProperties = appProperties;
         this.deploymentStore = deploymentStore;
         this.tokenStore = tokenStore;
         this.port = port;
@@ -95,8 +97,7 @@ public class SeldonGrpcServer  {
         ManagedChannel channel = channelStore.get(principal);
         if (channel == null)
         {
-            Endpoint endPoint = deploymentSpec.getEndpoint();
-            channel = ManagedChannelBuilder.forAddress(endPoint.getServiceHost(), endPoint.getServicePort()).usePlaintext(true).build();
+            channel = ManagedChannelBuilder.forAddress(deploymentSpec.getName(), appProperties.getEngineGrpcContainerPort()).usePlaintext(true).build();
             channelStore.putIfAbsent(principal,channel);
         }
         return channel;
@@ -152,13 +153,14 @@ public class SeldonGrpcServer  {
                 .setApiVersion("v1alpha1")
                 .setKind("SeldonDeplyment")
                 .setSpec(DeploymentSpec.newBuilder()
+                    .setName("0.0.0.0")
                     .setOauthKey("key")
                     .setOauthSecret("secret")
-                    .setEndpoint(Endpoint.newBuilder()
-                            .setServiceHost("0.0.0.0")
-                            .setServicePort(FakeEngineServer.PORT))).build();   
+                    ).build();   
+        AppProperties appProperties = new AppProperties();
+        appProperties.setEngineGrpcContainerPort(5000);
         store.deploymentAdded(dep);
-        SeldonGrpcServer server = new SeldonGrpcServer(store,null,SERVER_PORT);
+        SeldonGrpcServer server = new SeldonGrpcServer(appProperties,store,null,SERVER_PORT);
         server.start();
         server.blockUntilShutdown();
   }

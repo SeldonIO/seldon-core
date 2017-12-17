@@ -26,7 +26,7 @@ public class PredictionService {
 
 		DeploymentSpec deployment = deploymentStore.getDeployment(clientId);
 		if (deployment != null)
-			return internalPredictionService.getPrediction(request, deployment.getEndpoint());
+			return internalPredictionService.getPrediction(request, deployment.getName());
 		else
 			throw new SeldonAPIException(SeldonAPIException.ApiExceptionType.APIFE_NO_RUNNING_DEPLOYMENT,"no deployment with id "+clientId);
 
@@ -35,7 +35,7 @@ public class PredictionService {
 	public void sendFeedback(String feedback, String deploymentId){
 		DeploymentSpec deployment = deploymentStore.getDeployment(deploymentId);
 		if (deployment != null)
-			internalPredictionService.sendFeedback(feedback, deployment.getEndpoint());
+			internalPredictionService.sendFeedback(feedback, deployment.getName());
 		else
 			throw new SeldonAPIException(SeldonAPIException.ApiExceptionType.APIFE_NO_RUNNING_DEPLOYMENT,"no deployment with id "+deploymentId);
 

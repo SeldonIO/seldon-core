@@ -14,7 +14,7 @@ import io.seldon.protos.SeldonGrpc;
 
 public class FakeEngineServer {
     protected static Logger logger = LoggerFactory.getLogger(SeldonGrpcServer.class.getName());
-    public static final int PORT = 9001;
+    public static final int PORT = 5001;
     private final Server server;
   
     public FakeEngineServer() 

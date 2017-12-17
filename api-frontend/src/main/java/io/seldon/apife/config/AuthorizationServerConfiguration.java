@@ -16,9 +16,7 @@ import org.springframework.security.oauth2.provider.token.store.redis.RedisToken
 
 import io.seldon.apife.api.oauth.InMemoryClientDetailsService;
 import io.seldon.apife.deployments.DeploymentStore;
-import io.seldon.apife.grpc.FakeEngineServer;
 import io.seldon.protos.DeploymentProtos.DeploymentSpec;
-import io.seldon.protos.DeploymentProtos.Endpoint;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 @Configuration
@@ -41,7 +39,7 @@ class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdap
 
     @Autowired
     private DeploymentStore deploymentStore;
-    
+       
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
         endpoints.tokenStore(tokenStore()).authenticationManager(authenticationManager);
@@ -73,11 +71,10 @@ class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdap
                     .setApiVersion("v1alpha1")
                     .setKind("SeldonDeplyment")
                     .setSpec(DeploymentSpec.newBuilder()
+                            .setName("localhost")
                         .setOauthKey(client_key)
                         .setOauthSecret(client_secret)
-                        .setEndpoint(Endpoint.newBuilder()
-                                .setServiceHost("0.0.0.0")
-                                .setServicePort(FakeEngineServer.PORT))).build();   
+                        ).build();   
             deploymentStore.deploymentAdded(dep);
         }
     }
