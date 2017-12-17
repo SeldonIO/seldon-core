@@ -41,6 +41,10 @@
                                     {
                                         "containerPort": 8080,
                                         "protocol": "TCP"
+                                    },
+                                    {
+                                        "containerPort": 5000,
+                                        "protocol": "TCP"
                                     }
                                 ]
                             }
@@ -66,6 +70,13 @@
                         "port": 8080,
                         "protocol": "TCP",
                         "targetPort": 8080
+                    },
+                    {
+                        "name": "grpc",
+                        "nodePort": 30033,
+                        "port": 5000,
+                        "protocol": "TCP",
+                        "targetPort": 5000
                     }
                 ],
                 "selector": {
