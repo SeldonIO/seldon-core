@@ -6,16 +6,25 @@ weight: 1
 
 Seldon core uses [helm](https://github.com/kubernetes/helm) charts to start and runs on [kubernetes](https://kubernetes.io/) clusters. It can then run on a local minikube cluster. 
 
-### Before starting
+### Prerequisites
 
-To start a minikube cluster lacally in your machine, you have to
+The following packages need to be installed on your machine in order to train the keras mnist example 
 
-* [Install minikube](https://kubernetes.io/docs/tasks/tools/install-minikube/)
-* To start a minibuke local cluster, type on command line:
-    
+* python2.7 (we recommend [anconda distribution](link))
+* grpcio-tools==1.1.3
+* [sklearn==0.19.0](link)
+* [minikube installed](https://kubernetes.io/docs/tasks/tools/install-minikube/)
+* [helm installed](https://github.com/kubernetes/helm/blob/master/docs/install.md)
+
+### Before starting: run a minikube cluster locally
+
+Before starting, you need to have [minikube installed](https://kubernetes.io/docs/tasks/tools/install-minikube/) on your machine.
+
+1. To start a minibuke local cluster, type on command line:
+
         minikube start --memory=8000
 
-* Starting minikube should automatically point your kubectl cli to the minikube cluster, but not your docker cli. To  make sure your docker cli is pointing at the minikube cluster, type on command line:
+3. Starting minikube should automatically point your kubectl cli to the minikube cluster, but not your docker cli. To  make sure your docker cli is pointing at the minikube cluster, type on command line:
 	
         eval $(minikube docker-env)
 
@@ -23,16 +32,21 @@ To start a minikube cluster lacally in your machine, you have to
 
 You can now start seldon core in your minikube cluster.
 
-1. To use seldon core, you need helm installed and initialized:
 
-    * [Install helm](https://github.com/kubernetes/helm/blob/master/docs/install.md)
-    * Initialize helm. Type on command line: 
+1. Seldon core uses helm charts to start. To use seldon core, you need [helm installed](https://github.com/kubernetes/helm/blob/master/docs/install.md) in your machine. To Initialize helm, type on command line: 
 
-            helm init
-* To  install seldon-core using helm, type on command line:
+         helm init
 
-        helm install <seldon_core_helm_charts>
-	
+1. Clone seldon-core git repository and build all the required docker images locally using the provided bash script "build-all-in-minikube":
+
+        git clone seldon-core
+
+        cd seldon-core && ./build-all-in-minikube
+
+1. Seldon-core repository include helm charts to start seldon-core. To start seldon-core using helm
+
+        helm install helm-charts/seldon-core --name seldon-core --set grafana_prom_admin_password=password --set persistence.enabled=false --set cluster_manager.image.tag=0.3-SNAPSHOT --set apife.image.tag=0.1-SNAPSHOT --set engine.image.tag=0.2-SNAPSHOT
+
 
 Seldon-core should now be running on your cluster. You can verify if all the pods are up and running typing on command line ```helm status seldon-core``` or ```kubectl get pods```
 
@@ -40,24 +54,22 @@ Seldon-core should now be running on your cluster. You can verify if all the pod
 
 In this session, we show how to wrap the keras mnist classifier in the [seldon-core-example](link) repository using seldon-core python wrappers. 
 
-1. Clone seldon-core and seldon-core-examples repositories in the same directory: 
+1. Clone seldon-core-examples repositories in the same directory as seldon-core: 
 
-        git clone seldon-core 
-
-        git clone seldon-core-examples
+        cd ../ && git clone seldon-core-examples
 
 2. Train and save the keras mnist classifier example model using the provided scipt "train_mnist.py":
 
-        cd seldon-core-examples/keras_mnist
+        cd seldon-core-examples/models/sklearn_iris/
 
-        python train_mnist.py
+        python train_iris.py
 
     This will train a keras convolutional neural network on mnist dataset for 2 epochs and save the model in the same folder.
 
 
 3. Build protobuffers (this step requires grpc tools installed and has to be done only once. You can skip this step if done it before):
 
-         cd ../../seldon-core/wrappers
+         cd ../../../seldon-core/wrappers
 
          make build_protos
     
@@ -65,23 +77,23 @@ In this session, we show how to wrap the keras mnist classifier in the [seldon-c
 
         cd python
 
-        python wrap_model.py ../../../seldon-core-examples/keras_mnist MnistClassifier 0.0 seldonio
+        python wrap_model.py ../../../seldon-core-examples/models/sklearn_iris IrisClassifier 0.0 seldonio --force
 	
     This will create the folder build in keras_mnist. The --base-image argument is not specified and the wrapper will use the default base image Python:2.
 
 5. Build a docker image of your model ready to deploy with seldon-core
 
-	    cd ../../../seldon-core-plugins/keras_mnist/build/
+	    cd ../../../seldon-core-examples/models/sklearn_iris/build/
 	
 	    make build_docker_image
-    This will create the docker image ```seldonio/mnistclassifier:0.0``` which is ready for [deployment with seldon-core](../../api/seldon-deployment).
+    This will create the docker image ```seldonio/irisclassifier:0.0``` which is ready for [deployment with seldon-core](../../api/seldon-deployment).
 
 
-### Deploy and serve your model
+### Deploy your model
 
-1. Open seldon json [deployment template](../../api/seldon-deployment) and enter your deployment specifications. For the keras mnist example the deployment json file should look like this
+The docker image version of your model is deployed through a json configuration file. A general template for the configuration can be found  [here](https://gitlab.com/seldon-dev/seldon-core-examples/blob/master/models/sklearn_iris/sklearn_iris_deployment.json). For the sklearn iris example, we have already created a deployment file "sklearn_iris_deployment.json":
 
-    ```json
+
     {
         "apiVersion": "machinelearning.seldon.io/v1alpha1",
         "kind": "SeldonDeployment",
@@ -93,10 +105,10 @@ In this session, we show how to wrap the keras mnist classifier in the [seldon-c
         },
         "spec": {
             "annotations": {
-                "project_name": "Keras MNIST classifier",
+                "project_name": "Iris classification",
                 "deployment_version": "0.0"
             },
-            "name": "test-deployment",
+            "name": "sklearn-iris-deployment",
             "oauth_key": "oauth-key",
             "oauth_secret": "oauth-secret",
             "predictors": [
@@ -105,9 +117,9 @@ In this session, we show how to wrap the keras mnist classifier in the [seldon-c
                         "spec": {
                             "containers": [
                                 {
-                                    "image": "seldonio/mnistclassifier:0.0",
+                                    "image": "seldonio/irisclassifier:0.0",
                                     "imagePullPolicy": "IfNotPresent",
-                                    "name": "keras-mnist-classifier",
+                                    "name": "sklearn-iris-classifier",
                                     "resources": {
                                         "requests": {
                                             "memory": "1Mi"
@@ -120,14 +132,14 @@ In this session, we show how to wrap the keras mnist classifier in the [seldon-c
                     },
                     "graph": {
                         "children": [],
-                        "name": "keras-mnist-classifier",
+                        "name": "sklearn-iris-classifier",
                         "endpoint": {
                             "type" : "REST"
                         },
                         "subtype": "MICROSERVICE",
                         "type": "MODEL"
                     },
-                    "name": "keras-mnist-classifier",
+                    "name": "sklearn-iris-predictor",
                     "replicas": 1,
     	    	    "annotations": {
     	    	        "predictor_version" : "0.0"
@@ -136,8 +148,38 @@ In this session, we show how to wrap the keras mnist classifier in the [seldon-c
             ]
         }
     }
-    ```
 
-2. Save the json file as deployment_keras_mnist.json. To deploy it on seldon core, type on command line:
 
-        kubectl apply -f <path_to_your_deployments_folder>/deployment_keras_mnist.json
+1. To deploy the model  in seldon core, type on command line:
+
+        kubectl apply -f ../sklearn_iris_deployment.json
+	
+### Serve your  model:
+
+1. Set the server host and port
+
+        SERVER=192.168.99.100:30032
+
+2. Get the authorization token:
+
+        TOKEN=`curl -s -H "Accept: application/json" oauth-key:oauth-secret@${SERVER}/oauth/token -d grant_type=client_credentials | jq -r '.access_token'`
+
+3. Send request prediction:
+
+        curl -s -H "Content-Type:application/json" -H "Accept: application/json" -H "Authorization: Bearer $TOKEN" ${SERVER}/api/v0.1/predictions -d '{"data":{"names":["sepal length (cm)","sepal width (cm)", "petal length (cm)","petal width (cm)"],"ndarray":[[5.1,3.5,1.4,0.2]]}}'
+
+You should see a response like
+
+    {
+         "meta": {
+             "puid": "lhq41l3q736q7tnrij8o3lod8u",
+             "tags": {
+             },
+             "routing": {
+             }
+         },
+         "data": {
+             "names": ["t:0", "t:1", "t:2"],
+             "ndarray": [[0.8796816489561845, 0.12030753790659003, 1.0813137225507727E-5]]
+        }
+    }
