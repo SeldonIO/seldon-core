@@ -23,6 +23,7 @@ cluster-manager-maven-build:
   only:
     - ci_test
     - master
+    - release-0.1
 
 engine-maven-build:
   image: seldonio/core-builder:0.1
@@ -37,6 +38,7 @@ engine-maven-build:
   only:
     - ci_test
     - master
+    - release-0.1
 
 api-frontend-maven-build:
   image: seldonio/core-builder:0.1
@@ -51,6 +53,7 @@ api-frontend-maven-build:
   only:
     - ci_test
     - master
+    - release-0.1
 
 
 
@@ -64,3 +67,4 @@ pages:
     - public
   only:
     - master
+
