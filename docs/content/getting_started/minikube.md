@@ -1,6 +1,7 @@
 ---
 title: "Getting started on minikube"
 date: 2017-12-09T17:49:41Z
+weight: 1
 ---
 
 Seldon core uses [helm](https://github.com/kubernetes/helm) charts to start and runs on [kubernetes](https://kubernetes.io/) clusters. It can then run on a local minikube cluster. 
@@ -78,29 +79,65 @@ In this session, we show how to wrap the keras mnist classifier in the [seldon-c
 
 ### Deploy and serve your model
 
-1. Open seldon json [deployment template](../../api/seldon-deployment) with your favorite editor and modify the "oauth_key", "oauth_secret", "image" and "name" fields as follow:
+1. Open seldon json [deployment template](../../api/seldon-deployment) and enter your deployment specifications. For the keras mnist example the deployment json file should look like this
+
     ```json
     {
-        ...
+        "apiVersion": "machinelearning.seldon.io/v1alpha1",
+        "kind": "SeldonDeployment",
+        "metadata": {
+            "labels": {
+                "app": "seldon"
+            },
+            "name": "seldon-deployment-example"
+        },
         "spec": {
-            ...,
-            "oauth_key": "<your-oauth-key>",
-            "oauth_secret": "<your-oauth-secret>",
-            ...,                 
-                    
-                    "containers": [
-                        {
-                            "image": "seldonio/<image_name>:<image_version>",
-                            ...,
-                            "name": "<your-model-name>",
-                            ...,
+            "annotations": {
+                "project_name": "Keras MNIST classifier",
+                "deployment_version": "0.0"
+            },
+            "name": "test-deployment",
+            "oauth_key": "oauth-key",
+            "oauth_secret": "oauth-secret",
+            "predictors": [
+                {
+                    "componentSpec": {
+                        "spec": {
+                            "containers": [
+                                {
+                                    "image": "seldonio/mnistclassifier:0.0",
+                                    "imagePullPolicy": "IfNotPresent",
+                                    "name": "keras-mnist-classifier",
+                                    "resources": {
+                                        "requests": {
+                                            "memory": "1Mi"
+                                        }
+                                    }
+                                }
+                            ],
+                            "terminationGracePeriodSeconds": 20
                         }
-                    ],
-                    ...,
-    
+                    },
+                    "graph": {
+                        "children": [],
+                        "name": "keras-mnist-classifier",
+                        "endpoint": {
+                            "type" : "REST"
+                        },
+                        "subtype": "MICROSERVICE",
+                        "type": "MODEL"
+                    },
+                    "name": "keras-mnist-classifier",
+                    "replicas": 1,
+    	    	    "annotations": {
+    	    	        "predictor_version" : "0.0"
+                    }
+                }
+            ]
         }
     }
     ```
-2. Save the json file as \<your_file_name>.json. To deploy it on seldon core, type on command line:
 
-        kubectl apply -f <path_to_your_deployments_folder>/<your_file_name>.json
+2. Save the json file as deployment_keras_mnist.json. To deploy it on seldon core, type on command line:
+
+        kubectl apply -f <path_to_your_deployments_folder>/deployment_keras_mnist.json
