@@ -39,7 +39,7 @@ You can now start seldon core in your minikube cluster.
 
 1. Clone seldon-core git repository and build all the required docker images locally using the provided bash script "build-all-in-minikube":
 
-        git clone seldon-core
+        git clone git@gitlab.com:seldon-dev/seldon-core.git
 
         cd seldon-core && ./build-all-in-minikube
 
@@ -56,7 +56,7 @@ In this session, we show how to wrap the keras mnist classifier in the [seldon-c
 
 1. Clone seldon-core-examples repositories in the same directory as seldon-core: 
 
-        cd ../ && git clone seldon-core-examples
+        cd ../ && git clone git@gitlab.com:seldon-dev/seldon-core-examples.git
 
 2. Train and save the keras mnist classifier example model using the provided scipt "train_mnist.py":
 
