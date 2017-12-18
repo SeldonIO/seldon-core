@@ -17,6 +17,11 @@
 		"name":"n_branches",
 		"value":2,
 		"type":"INT"
+	    },
+	    {
+		"name":"verbose",
+		"value":true,
+		"type":"BOOL"
 	    }
 	],
 	"children":[

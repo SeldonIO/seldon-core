@@ -5,25 +5,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Component;
-
 import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitImplementation;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitMethod;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitType;
 
-@Component
 public class PredictorConfigBean {
     public final Map<PredictiveUnitType,List<PredictiveUnitMethod>> typeMethodsMap;
     public final Map<PredictiveUnitImplementation,PredictiveUnitBean> nodeImplementationMap;
     
-    @Autowired
 	public PredictorConfigBean(
-			@Lazy SimpleModelUnit simpleModelUnit, 
-			@Lazy SimpleRouterUnit simpleRouterUnit,
-			@Lazy AverageCombinerUnit averageCombinerUnit,
-			@Lazy RandomABTestUnit randomABTestUnit) {
+			SimpleModelUnit simpleModelUnit, 
+			SimpleRouterUnit simpleRouterUnit,
+			AverageCombinerUnit averageCombinerUnit,
+			RandomABTestUnit randomABTestUnit) {
         
         // ---------------------------
         // DEFINITION OF DEFAULT TYPES

@@ -121,7 +121,8 @@ def parse_parameters(parameters):
         "INT":int,
         "FLOAT":float,
         "DOUBLE":float,
-        "STRING":str
+        "STRING":str,
+        "BOOL":bool
     }
     parsed_parameters = {}
     for param in parameters:

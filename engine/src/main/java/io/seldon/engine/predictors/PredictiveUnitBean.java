@@ -34,15 +34,18 @@ public class PredictiveUnitBean {
 	@Autowired
 	private SeldonRestTemplateExchangeTagsProvider tagsProvider;
 	
-	
-	@Autowired
 	PredictorConfigBean predictorConfig;
 	
-	public PredictiveUnitBean() {}
+	public PredictiveUnitBean(){}
 	
-//	public PredictiveUnitBean(InternalPredictionService internalPredictionService){
-//		this.internalPredictionService = internalPredictionService;
-//	}
+	@Autowired
+	public PredictiveUnitBean(
+			SimpleModelUnit simpleModelUnit, 
+			SimpleRouterUnit simpleRouterUnit,
+			AverageCombinerUnit averageCombinerUnit,
+			RandomABTestUnit randomABTestUnit) {
+		this.predictorConfig = new PredictorConfigBean(simpleModelUnit,simpleRouterUnit,averageCombinerUnit,randomABTestUnit);
+	}
 	
 	public SeldonMessage getOutput(SeldonMessage request, PredictiveUnitState state) throws InterruptedException, ExecutionException, InvalidProtocolBufferException{
 		Map<String,Integer> routingDict = new HashMap<String,Integer>();
