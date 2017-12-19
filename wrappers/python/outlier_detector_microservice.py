@@ -44,10 +44,12 @@ def get_rest_microservice(user_model):
         outlier_score = score(user_model,features,datadef.get("names"))
         # TODO: check that predictions is 2 dimensional
 
-        request["meta"]["tags"]["outlierScore"] = outlierScore
+        request["meta"].setdefault("tags",{})
+        request["meta"]["tags"]["outlierScore"] = outlier_score
 
         return jsonify(request)
-
+        
+    return app
 
 
 # ----------------------------

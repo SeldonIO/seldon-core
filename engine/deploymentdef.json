@@ -1,3 +1,4 @@
+
 {
     "name":"my-predictor",
     "replicas":1,
@@ -27,7 +28,7 @@
 	"children":[
 	    {
 		"name":"1",
-		"type":"MODEL",
+		"type":"TRANSFORMER",
 		"subtype":"MICROSERVICE",
 		"endpoint": {
 		    "service_host":"localhost",
@@ -35,7 +36,20 @@
 		    "type":"REST"
 		},
 		"parameters": [],
-		"children": []
+		"children": [
+		    {
+			"name":"2",
+			"type":"MODEL",
+			"subtype":"MICROSERVICE",
+			"endpoint": {
+			    "service_host":"localhost",
+			    "service_port":5002,
+			    "type":"REST"
+			},
+			"parameters": [],
+			"children": []
+		    }
+		]
 	    },
 	    {
 		"name":"3",
@@ -43,7 +57,7 @@
 		"subtype":"MICROSERVICE",
 		"endpoint": {
 		    "service_host":"localhost",
-		    "service_port":5002,
+		    "service_port":5003,
 		    "type":"REST"
 		},
 		"parameters":[],
