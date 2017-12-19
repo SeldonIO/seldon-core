@@ -136,7 +136,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("interface_name",type=str,help="Name of the user interface.")
     parser.add_argument("api_type",type=str,choices=["REST","GRPC"])
-    parser.add_argument("--service-type",type=str,choices=["MODEL","ROUTER","TRANSFORMER","OUTLIER_DETECTOR"],default="MODEL")
+
+    parser.add_argument("--service-type",type=str,choices=["MODEL","ROUTER","TRANSFORMER","COMBINER","OUTLIER_DETECTOR"],default="MODEL")
     parser.add_argument("--persistence",nargs='?',default=0,const=1,type=int)
     parser.add_argument("--parameters",type=str,default=os.environ.get(PARAMETERS_ENV_NAME,"[]"))
     args = parser.parse_args()
