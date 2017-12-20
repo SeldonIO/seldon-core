@@ -6,6 +6,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 public class ClusterManagerProperites {
 
     private int engineContainerPort;
+    private int engineGrpcContainerPort;
     private String engineContainerImageAndVersion;
     private int puContainerPortBase;
     private boolean istioEnabled;
@@ -16,6 +17,14 @@ public class ClusterManagerProperites {
 
     public void setEngineContainerPort(int engineContainerPort) {
         this.engineContainerPort = engineContainerPort;
+    }
+
+    public int getEngineGrpcContainerPort() {
+        return engineGrpcContainerPort;
+    }
+
+    public void setEngineGrpcContainerPort(int engineGrpcContainerPort) {
+        this.engineGrpcContainerPort = engineGrpcContainerPort;
     }
 
     public String getEngineContainerImageAndVersion() {

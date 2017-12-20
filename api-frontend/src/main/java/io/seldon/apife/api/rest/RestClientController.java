@@ -24,8 +24,8 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Tag;
-import io.seldon.apife.exception.APIException;
-import io.seldon.apife.exception.APIException.ApiExceptionType;
+import io.seldon.apife.exception.SeldonAPIException;
+import io.seldon.apife.exception.SeldonAPIException.ApiExceptionType;
 import io.seldon.apife.kafka.KafkaRequestResponseProducer;
 import io.seldon.apife.metrics.AuthorizedWebMvcTagsProvider;
 import io.seldon.apife.pb.ProtoBufUtils;
@@ -125,7 +125,7 @@ public class RestClientController {
 		catch (InvalidProtocolBufferException e) 
 		{
 			logger.error("Bad request",e);
-			throw new APIException(ApiExceptionType.APIFE_INVALID_JSON,requestEntity.getBody());
+			throw new SeldonAPIException(ApiExceptionType.APIFE_INVALID_JSON,requestEntity.getBody());
 		}
 		
 		HttpStatus httpStatus = HttpStatus.OK;
@@ -143,7 +143,7 @@ public class RestClientController {
 		catch (InvalidProtocolBufferException e) 
 		{
 			logger.error("Bad response",e);
-			throw new APIException(ApiExceptionType.APIFE_INVALID_RESPONSE_JSON,requestEntity.getBody());
+			throw new SeldonAPIException(ApiExceptionType.APIFE_INVALID_RESPONSE_JSON,requestEntity.getBody());
 		}
 		
 		kafkaProducer.send(clientId,RequestResponse.newBuilder().setRequest(request).setResponse(response).build());
@@ -176,7 +176,7 @@ public class RestClientController {
 		catch (InvalidProtocolBufferException e) 
 		{
 			logger.error("Bad request",e);
-			throw new APIException(ApiExceptionType.APIFE_INVALID_RESPONSE_JSON,requestEntity.getBody());
+			throw new SeldonAPIException(ApiExceptionType.APIFE_INVALID_RESPONSE_JSON,requestEntity.getBody());
 		}
 		
 		predictionService.sendFeedback(json,clientId);
