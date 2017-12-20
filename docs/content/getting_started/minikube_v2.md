@@ -65,7 +65,7 @@ In this session, we show how to wrap the sklearn iris classifier in the [seldon-
 
         ./wrap-model-in-minikube models/sklearn_iris IrisClassifier 0.1 seldonio --force
 
-    This will create the docker image ```seldonio/irisclassifier:0.0``` inside the minikube cluster  which is ready for deployment with seldon-core.
+    This will create the docker image ```seldonio/irisclassifier:0.1``` inside the minikube cluster  which is ready for deployment with seldon-core.
 
 
 ### Deploy your model
