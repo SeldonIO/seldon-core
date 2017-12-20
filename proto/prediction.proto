@@ -84,3 +84,9 @@ service Transformer {
   rpc TransformOutput(SeldonMessage) returns (SeldonMessage) {};
  }
 
+
+service Seldon {
+  rpc Predict(SeldonMessage) returns (SeldonMessage) {};
+  rpc SendFeedback(Feedback) returns (SeldonMessage) {};
+ }
+

@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
-import io.seldon.apife.exception.APIException;
+import io.seldon.apife.exception.SeldonAPIException;
 import io.seldon.apife.pb.ProtoBufUtils;
 import io.seldon.protos.PredictionProtos.Status;
 
@@ -18,8 +18,8 @@ import io.seldon.protos.PredictionProtos.Status;
 public class ExceptionControllerAdvice {
 
 
-	@ExceptionHandler(APIException.class)
-	public ResponseEntity<String> handleUnauthorizedException(APIException exception) throws InvalidProtocolBufferException {
+	@ExceptionHandler(SeldonAPIException.class)
+	public ResponseEntity<String> handleUnauthorizedException(SeldonAPIException exception) throws InvalidProtocolBufferException {
 
 		
 		Status.Builder statusBuilder = Status.newBuilder();

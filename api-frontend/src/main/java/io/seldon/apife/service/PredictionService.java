@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.seldon.apife.deployments.DeploymentStore;
-import io.seldon.apife.exception.APIException;
+import io.seldon.apife.exception.SeldonAPIException;
 import io.seldon.protos.DeploymentProtos.DeploymentSpec;
 
 
@@ -26,18 +26,18 @@ public class PredictionService {
 
 		DeploymentSpec deployment = deploymentStore.getDeployment(clientId);
 		if (deployment != null)
-			return internalPredictionService.getPrediction(request, deployment.getEndpoint());
+			return internalPredictionService.getPrediction(request, deployment.getName());
 		else
-			throw new APIException(APIException.ApiExceptionType.APIFE_NO_RUNNING_DEPLOYMENT,"no deployment with id "+clientId);
+			throw new SeldonAPIException(SeldonAPIException.ApiExceptionType.APIFE_NO_RUNNING_DEPLOYMENT,"no deployment with id "+clientId);
 
 	}
 	
 	public void sendFeedback(String feedback, String deploymentId){
 		DeploymentSpec deployment = deploymentStore.getDeployment(deploymentId);
 		if (deployment != null)
-			internalPredictionService.sendFeedback(feedback, deployment.getEndpoint());
+			internalPredictionService.sendFeedback(feedback, deployment.getName());
 		else
-			throw new APIException(APIException.ApiExceptionType.APIFE_NO_RUNNING_DEPLOYMENT,"no deployment with id "+deploymentId);
+			throw new SeldonAPIException(SeldonAPIException.ApiExceptionType.APIFE_NO_RUNNING_DEPLOYMENT,"no deployment with id "+deploymentId);
 
 	}
 }

@@ -40,7 +40,6 @@ import io.kubernetes.client.proto.V1beta1Extensions.RollingUpdateDeployment;
 import io.seldon.clustermanager.ClusterManagerProperites;
 import io.seldon.clustermanager.pb.ProtoBufUtils;
 import io.seldon.protos.DeploymentProtos.Endpoint;
-import io.seldon.protos.DeploymentProtos.Endpoint.EndpointType;
 import io.seldon.protos.DeploymentProtos.Parameter;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitSubtype;
@@ -84,6 +83,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			.addEnv(EnvVar.newBuilder().setName("ENGINE_PREDICTOR").setValue(getEngineEnvVarJson(predictorDef)))
 			.addEnv(EnvVar.newBuilder().setName("ENGINE_SELDON_DEPLOYMENT").setValue(getEngineEnvVarJson(dep)))
 			.addEnv(EnvVar.newBuilder().setName("ENGINE_SERVER_PORT").setValue(""+clusterManagerProperites.getEngineContainerPort()))
+			.addEnv(EnvVar.newBuilder().setName("ENGINE_SERVER_GRPC_PORT").setValue(""+clusterManagerProperites.getEngineGrpcContainerPort()))			
 			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(clusterManagerProperites.getEngineContainerPort()))
 			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(8082).setName("admin"))
 			.setReadinessProbe(Probe.newBuilder().setHandler(Handler.newBuilder()
@@ -276,10 +276,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			}
 			idx++;
 		}
-		mlBuilder.getSpecBuilder().getEndpointBuilder()
-		    .setType(EndpointType.REST)
-		    .setServiceHost(serviceName)
-		    .setServicePort(clusterManagerProperites.getEngineContainerPort());
+		
 		return mlBuilder.build();
 	}
 	
@@ -400,12 +397,18 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 							.addOwnerReferences(ownerRef)
 							)
 					.setSpec(ServiceSpec.newBuilder()
-							.addPorts(ServicePort.newBuilder()
-									.setProtocol("TCP")
-									.setPort(clusterManagerProperites.getEngineContainerPort())
-									.setTargetPort(IntOrString.newBuilder().setIntVal(clusterManagerProperites.getEngineContainerPort()))
-									.setName("http")
-									)
+                            .addPorts(ServicePort.newBuilder()
+                                    .setProtocol("TCP")
+                                    .setPort(clusterManagerProperites.getEngineContainerPort())
+                                    .setTargetPort(IntOrString.newBuilder().setIntVal(clusterManagerProperites.getEngineContainerPort()))
+                                    .setName("http")
+                                    )
+                            .addPorts(ServicePort.newBuilder()
+                                    .setProtocol("TCP")
+                                    .setPort(clusterManagerProperites.getEngineGrpcContainerPort())
+                                    .setTargetPort(IntOrString.newBuilder().setIntVal(clusterManagerProperites.getEngineGrpcContainerPort()))
+                                    .setName("grpc")
+                                    )
 							.setType("ClusterIP")
 							.putSelector(SeldonDeploymentOperatorImpl.LABEL_SELDON_APP,serviceLabel)
 							)
