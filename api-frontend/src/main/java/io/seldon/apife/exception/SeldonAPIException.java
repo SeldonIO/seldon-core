@@ -23,7 +23,7 @@
 
 package io.seldon.apife.exception;
 
-public class APIException extends RuntimeException {
+public class SeldonAPIException extends RuntimeException {
 
 	public enum ApiExceptionType { 
 		
@@ -31,7 +31,8 @@ public class APIException extends RuntimeException {
 		APIFE_INVALID_ENDPOINT_URL(102,"Invalid Endpoint URL",500),	
 		APIFE_MICROSERVICE_ERROR(103,"Microservice error",500),
 		APIFE_NO_RUNNING_DEPLOYMENT(104,"No Running Deployment",500),
-		APIFE_INVALID_RESPONSE_JSON(105,"Invalid Response JSON",400);
+		APIFE_INVALID_RESPONSE_JSON(105,"Invalid Response JSON",400),
+		APIFE_GRPC_NO_PRINCIPAL_FOUND(105,"No OAuth principal found",400);
 		
 		int id;
 		String message;
@@ -61,7 +62,7 @@ public class APIException extends RuntimeException {
    ApiExceptionType apiExceptionType;
    String info;
 
-   public APIException(ApiExceptionType apiExceptionType,String info) {
+   public SeldonAPIException(ApiExceptionType apiExceptionType,String info) {
 	   super();
 	   this.apiExceptionType = apiExceptionType;
 	   this.info = info;

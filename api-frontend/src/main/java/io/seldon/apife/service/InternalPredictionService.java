@@ -21,9 +21,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import io.seldon.apife.exception.APIException;
+import io.seldon.apife.AppProperties;
+import io.seldon.apife.exception.SeldonAPIException;
 import io.seldon.protos.DeploymentProtos.Endpoint;
 
 @Service
@@ -33,15 +32,15 @@ public class InternalPredictionService {
 
 	private PoolingHttpClientConnectionManager connectionManager;
     private CloseableHttpClient httpClient;
-    
+    private final AppProperties appProperties;
+ 
     private static final int DEFAULT_REQ_TIMEOUT = 200;
     private static final int DEFAULT_CON_TIMEOUT = 500;
     private static final int DEFAULT_SOCKET_TIMEOUT = 2000;
 
-    ObjectMapper mapper = new ObjectMapper();
-    
     @Autowired
-    public InternalPredictionService(){
+    public InternalPredictionService(AppProperties appProperties){
+        this.appProperties = appProperties;
         connectionManager = new PoolingHttpClientConnectionManager();
         connectionManager.setMaxTotal(150);
         connectionManager.setDefaultMaxPerRoute(150);
@@ -58,29 +57,29 @@ public class InternalPredictionService {
                 .build();
     }
 		
-	public String getPrediction(String request, Endpoint endpoint) {
+	public String getPrediction(String request,String serviceName) {
 		
-		return predictREST(request, endpoint);
+		return predictREST(request,serviceName);
 				
 	}
 	
-	public void sendFeedback(String feedback, Endpoint endpoint) {
-		sendFeedbackREST(feedback, endpoint);
+	public void sendFeedback(String feedback,String serviceName) {
+		sendFeedbackREST(feedback,serviceName);
 	}
 	
-	public void sendFeedbackREST(String feedback, Endpoint endpoint) {
+	public void sendFeedbackREST(String feedback,String serviceName) {
 		long timeNow = System.currentTimeMillis();
 		URI uri;
 		try {
 			URIBuilder builder = new URIBuilder().setScheme("http")
-					.setHost(endpoint.getServiceHost())
-					.setPort(endpoint.getServicePort())
+					.setHost(serviceName)
+					.setPort(appProperties.getEngineContainerPort())
 					.setPath("/api/v0.1/feedback");
 
 			uri = builder.build();
 		} catch (URISyntaxException e) 
 		{
-			throw new APIException(APIException.ApiExceptionType.APIFE_INVALID_ENDPOINT_URL,"Host: "+endpoint.getServiceHost()+" port:"+endpoint.getServicePort());
+			throw new SeldonAPIException(SeldonAPIException.ApiExceptionType.APIFE_INVALID_ENDPOINT_URL,"Host: "+serviceName+" port:"+appProperties.getEngineContainerPort());
 		}
 		
 		StringEntity requestEntity = new StringEntity(feedback,ContentType.APPLICATION_JSON);
@@ -109,12 +108,12 @@ public class InternalPredictionService {
 		catch (IOException e) 
 		{
 			logger.error("Couldn't retrieve prediction from external prediction server - ", e);
-			throw new APIException(APIException.ApiExceptionType.APIFE_MICROSERVICE_ERROR,e.toString());
+			throw new SeldonAPIException(SeldonAPIException.ApiExceptionType.APIFE_MICROSERVICE_ERROR,e.toString());
 		}
 		catch (Exception e)
         {
 			logger.error("Couldn't retrieve prediction from external prediction server - ", e);
-			throw new APIException(APIException.ApiExceptionType.APIFE_MICROSERVICE_ERROR,e.toString());
+			throw new SeldonAPIException(SeldonAPIException.ApiExceptionType.APIFE_MICROSERVICE_ERROR,e.toString());
         }
 		finally
 		{
@@ -123,20 +122,20 @@ public class InternalPredictionService {
 	}
 	
 	
-	public String predictREST(String dataString, Endpoint endpoint){
+	public String predictREST(String dataString, String serviceName){
 		{
     		long timeNow = System.currentTimeMillis();
     		URI uri;
 			try {
     			URIBuilder builder = new URIBuilder().setScheme("http")
-    					.setHost(endpoint.getServiceHost())
-    					.setPort(endpoint.getServicePort())
+    					.setHost(serviceName)
+    					.setPort(appProperties.getEngineContainerPort())
     					.setPath("/api/v0.1/predictions");
 
     			uri = builder.build();
     		} catch (URISyntaxException e) 
     		{
-    			throw new APIException(APIException.ApiExceptionType.APIFE_INVALID_ENDPOINT_URL,"Host: "+endpoint.getServiceHost()+" port:"+endpoint.getServicePort());
+    			throw new SeldonAPIException(SeldonAPIException.ApiExceptionType.APIFE_INVALID_ENDPOINT_URL,"Host: "+serviceName+" port:"+appProperties.getEngineContainerPort());
     		}
 			
 			StringEntity requestEntity = new StringEntity(dataString,ContentType.APPLICATION_JSON);
@@ -154,7 +153,7 @@ public class InternalPredictionService {
     				if (resp.getStatusLine().getStatusCode() != 200)
     				{
         				logger.warn("Received response with code "+resp.getStatusLine().getStatusCode()+" with reason "+resp.getStatusLine().getReasonPhrase());
-        				throw new APIException(APIException.ApiExceptionType.APIFE_MICROSERVICE_ERROR,String.format("Status code: %s Reason: %s", resp.getStatusLine().getStatusCode(),resp.getStatusLine().getReasonPhrase()));
+        				throw new SeldonAPIException(SeldonAPIException.ApiExceptionType.APIFE_MICROSERVICE_ERROR,String.format("Status code: %s Reason: %s", resp.getStatusLine().getStatusCode(),resp.getStatusLine().getReasonPhrase()));
 
     				}
     				else
@@ -174,7 +173,7 @@ public class InternalPredictionService {
     		catch (IOException e) 
     		{
     			logger.error("Couldn't retrieve prediction from external prediction server - ", e);
-    			throw new APIException(APIException.ApiExceptionType.APIFE_MICROSERVICE_ERROR,e.toString());
+    			throw new SeldonAPIException(SeldonAPIException.ApiExceptionType.APIFE_MICROSERVICE_ERROR,e.toString());
     		}
     		finally
     		{
