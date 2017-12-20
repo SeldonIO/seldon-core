@@ -1,49 +1,13 @@
-// [START declaration]
 syntax = "proto3";
 
 import "google/protobuf/struct.proto";
 
 package seldon.protos;
-// [END declaration]
 
-
-// [START java_declaration]
 option java_package = "io.seldon.protos";
 option java_outer_classname = "PredictionProtos";
-// [END java_declaration]
 
-
-// [START messages]
-
-// [START default data]
-
-message Tensor {
-  repeated int32 shape = 1 [packed=true];
-  repeated double values = 2 [packed=true];
-}
-
-message DefaultData {
-  repeated string names = 1;
-  oneof data_oneof {
-    Tensor tensor = 2;
-    google.protobuf.ListValue ndarray = 3;
-  }
-}
-
-// [END default data]
-
-// [START Meta]
-
-message Meta {
-  string puid = 1; 
-  map<string,google.protobuf.Value> tags = 2;
-  map<string,int32> routing = 3;
-}
-
-// [END Meta]
-
-
-// [START SeldonMessage]
+// [START Messages]
 
 message SeldonMessage {
 
@@ -54,6 +18,25 @@ message SeldonMessage {
     bytes binData = 4;
     string strData = 5;
   }
+}
+
+message DefaultData {
+  repeated string names = 1;
+  oneof data_oneof {
+    Tensor tensor = 2;
+    google.protobuf.ListValue ndarray = 3;
+  }
+}
+
+message Tensor {
+  repeated int32 shape = 1 [packed=true];
+  repeated double values = 2 [packed=true];
+}
+
+message Meta {
+  string puid = 1; 
+  map<string,google.protobuf.Value> tags = 2;
+  map<string,int32> routing = 3;
 }
 
 message SeldonMessageList {
@@ -73,11 +56,6 @@ message Status {
     StatusFlag status = 4;
 }
 
-// [END SeldonMessage]
-
-
-// [START Feedback]
-
 message Feedback {
   SeldonMessage request = 1;
   SeldonMessage response = 2;
@@ -85,18 +63,10 @@ message Feedback {
   SeldonMessage truth = 4;
 }
 
-// [END Feedback]
-
-
-// [START RequestResponse]
-
 message RequestResponse {
   SeldonMessage request = 1;
   SeldonMessage response = 2;
 }
-
-// [END RequestResponse]
-
 
 // [END Messages]
 
@@ -131,5 +101,11 @@ service OutputTransformer {
 service Combiner {
   rpc Aggregate(SeldonMessageList) returns (SeldonMessage) {};
 }
+
+
+service Seldon {
+  rpc Predict(SeldonMessage) returns (SeldonMessage) {};
+  rpc SendFeedback(Feedback) returns (SeldonMessage) {};
+ }
 
 // [END Services]

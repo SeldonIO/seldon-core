@@ -7,7 +7,7 @@ def populate_template(template,file_out,**kwargs):
         with open(file_out,'w') as fout:
             fout.write(ftmp.read().format(**kwargs))
 
-def wrap_model(repo,model_folder,model_name,service_type,version,REST=True,out_folder=None,force_erase=False,persistence=False):
+def wrap_model(repo,model_folder,base_image,model_name,service_type,version,REST=True,out_folder=None,force_erase=False,persistence=False):
     if out_folder is None:
         out_folder = model_folder
     build_folder = out_folder+'/build'
@@ -26,6 +26,7 @@ def wrap_model(repo,model_folder,model_name,service_type,version,REST=True,out_f
     populate_template(
         './Dockerfile.tmp',
         build_folder+'/Dockerfile',
+        base_image=base_image,
         model_name=model_name,
         api_type="REST" if REST else "GRPC",
         service_type = service_type,
@@ -49,6 +50,7 @@ if __name__ == "__main__":
     parser.add_argument("--grpc",action="store_true")
     parser.add_argument("--out-folder",type=str,default=None)
     parser.add_argument("--service-type",type=str,choices=["MODEL","ROUTER","TRANSFORMER","COMBINER","OUTLIER_DETECTOR"],default="MODEL")
+
     parser.add_argument("--base-image",type=str,default="python:2")
     parser.add_argument("-f","--force",action="store_true")
     parser.add_argument("-p","--persistence",action="store_true",help="Use redis to make the model persistent")
@@ -58,6 +60,7 @@ if __name__ == "__main__":
     wrap_model(
         args.repo,
         args.model_folder,
+        args.base_image,
         args.model_name,
         args.service_type,
         args.version,

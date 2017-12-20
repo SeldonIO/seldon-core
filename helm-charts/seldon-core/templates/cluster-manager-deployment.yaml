@@ -16,9 +16,9 @@ items:
         containers:
         - env:
           - name: JAVA_OPTS
-            value: {{ .Values.java_opts }}
+            value: {{ .Values.cluster_manager.java_opts }}
           - name: SPRING_OPTS
-            value: {{ .Values.spring_opts }}
+            value: {{ .Values.cluster_manager.spring_opts }}
           - name: SELDON_CLUSTER_MANAGER_REDIS_HOST
             value: redis
           - name: ENGINE_CONTAINER_IMAGE_AND_VERSION
@@ -28,11 +28,6 @@ items:
               fieldRef:
                 apiVersion: v1
                 fieldPath: metadata.namespace
-          - name: SELDON_CLUSTER_MANAGER_CLIENT_SECRET
-            valueFrom:
-              secretKeyRef:
-                key: cluster-manager-client-secret.txt
-                name: cluster-manager-client-secret
           image: seldonio/cluster-manager:{{ .Values.cluster_manager.image.tag }}
           imagePullPolicy: {{ .Values.cluster_manager.image.pull_policy }}
           name: seldon-cluster-manager-container
