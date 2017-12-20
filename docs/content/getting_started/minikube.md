@@ -77,7 +77,7 @@ In this session, we show how to wrap the sklearn iris classifier in the [seldon-
 
         cd python
 
-        python wrap_model.py ../../../seldon-core-examples/models/sklearn_iris IrisClassifier 0.0 seldonio --force
+        python wrap_model.py ../../../seldon-core-examples/models/sklearn_iris IrisClassifier 0.1 seldonio --force
 	
     This will create the sub-folder ```build``` in the  ```sklearn_iris``` folder.
 
@@ -86,7 +86,7 @@ In this session, we show how to wrap the sklearn iris classifier in the [seldon-
 	    cd ../../../seldon-core-examples/models/sklearn_iris/build/
 	
 	    make build_docker_image
-    This will create the docker image ```seldonio/irisclassifier:0.0``` which is ready for deployment with seldon-core.
+    This will create the docker image ```seldonio/irisclassifier:0.1``` which is ready for deployment with seldon-core.
 
 
 ### Deploy your model
@@ -106,7 +106,7 @@ The docker image version of your model is deployed through a json configuration 
         "spec": {
             "annotations": {
                 "project_name": "Iris classification",
-                "deployment_version": "0.0"
+                "deployment_version": "0.1"
             },
             "name": "sklearn-iris-deployment",
             "oauth_key": "oauth-key",
@@ -117,7 +117,7 @@ The docker image version of your model is deployed through a json configuration 
                         "spec": {
                             "containers": [
                                 {
-                                    "image": "seldonio/irisclassifier:0.0",
+                                    "image": "seldonio/irisclassifier:0.1",
                                     "imagePullPolicy": "IfNotPresent",
                                     "name": "sklearn-iris-classifier",
                                     "resources": {
@@ -142,7 +142,7 @@ The docker image version of your model is deployed through a json configuration 
                     "name": "sklearn-iris-predictor",
                     "replicas": 1,
     	    	    "annotations": {
-    	    	        "predictor_version" : "0.0"
+    	    	        "predictor_version" : "0.1"
                     }
                 }
             ]
