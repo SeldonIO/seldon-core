@@ -2,7 +2,7 @@
  * Seldon -- open source prediction engine
  * =======================================
  *
- * Copyright 2011-2015 Seldon Technologies Ltd and Rummble Ltd (http://www.seldon.io/)
+ * Copyright 2011-2017 Seldon Technologies Ltd and Rummble Ltd (http://www.seldon.io/)
  *
  * ********************************************************************************************
  *
