@@ -12,5 +12,5 @@ Seldon Core is an open source framework for deploying machine learning models on
 
 ## Overview
 
-[Overview](./docs/readme.md)
+[APIs](./docs/api/readme.md)
 

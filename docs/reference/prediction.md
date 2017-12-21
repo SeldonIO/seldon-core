@@ -1,21 +1,19 @@
----
-title: "Prediction API"
-date: 2017-12-09T17:49:41Z
-weight: 1
----
-
-## Prediction API
+# Prediction API
 
 
- * [Design]({{< ref "#design" >}})
- * [Definiton]({{< ref "#definition" >}})
+ * [APIs](api)
+ * [Design](#payload-design)
+ * [Definiton](#proto-buffer-definition)
 
-### Design
+
+## API
+
+## Payload Design
 
 ![graph](./prediction.png)
 
 
-### Definition
+## Proto Buffer Definition
 
 ```js
 syntax = "proto3";
