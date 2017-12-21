@@ -82,7 +82,7 @@ In this session, we show how to wrap the sklearn iris classifier in the [seldon-
 
 ### Deploy your model
 
-The docker image version of your model is deployed through a json configuration file. A general template for the configuration can be found  [here](https://gitlab.com/seldon-dev/seldon-core-examples/blob/master/models/sklearn_iris/sklearn_iris_deployment.json). For the sklearn iris example, we have already created a deployment file ```sklearn_iris_deployment.json``` in the ```sklearn_iris``` folder:
+The docker image version of your model is deployed through a json configuration file. A general template for the configuration can be found  [here](https://github.com/SeldonIO/seldon-core-examples/blob/master/models/sklearn_iris/sklearn_iris_deployment.json). For the sklearn iris example, we have already created a deployment file ```sklearn_iris_deployment.json``` in the ```sklearn_iris``` folder:
 
 ```json
 {
@@ -148,6 +148,10 @@ The docker image version of your model is deployed through a json configuration 
     ```
 
 2. The deployment will take a few seconds to be ready. To check if your deployment is ready:
+
+    ```bash
+    kubectl describe seldondeployments seldon-deployment-example
+    ```
 
         
 	
