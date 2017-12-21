@@ -1,61 +1,77 @@
-# Packaging a model for seldon wrappers
+# Packaging a model for seldon core
+In this guide, we illustrate the steps needed to wrap your own model in a docker image ready for deployment with seldon-core. 
+The steps are general and can be used to package your own model for seldon wrappers.
 
-Seldon python wrappers are designed to load a saved model and package it into a docker image. In order to use the wrappers, the saved model file need to be placed in a dedicated folder \<your_model_folder>. Moreover, you will need a base docker image  \<your_base_image>, a docker repository, a name and a version for the model image, respectivly  \<your_docker_repo>,  \<your_model_name>,  \<your_model_version> .
+## Create a model folder
 
-Here we illustrate the content of the ```keras_mnist``` model folder which can be found in ["seldon-core-example/models/keras_mnist](link to github). In this example we have:
+Seldon python wrappers are designed to load a saved model and package it into a docker image. In order to use the wrappers, the loadable file containing your model need to be placed in a dedicated folder \<your_model_folder>.
 
-* \<your_model_folder> = seldon-core-examples/models/keras_mnist
-* \<your_model_name> = MnistClassifier
-* \<your_model_version> = 0.0
-* \<your_docker_repo> = seldonio
-* \<your_base_image> = Python:2
+Here we illustrate the content of the ```keras_mnist``` model folder which can be found in [seldon-core-example/models/](link_to_github). In this example we have \<your_model_folder> = seldon-core-examples/models/keras_mnist.
 
-The steps are general and can be used to package your own model for seldon wrappers
-
-# Keras mnist classifier
-
-1.  seldon-core-examples/models/keras_mnist:  The model folder must include the following 3 files:
-    * MnistClassifier.py: Needs to include a python class having the same name as the file, i,e. MnistClassifier, and implementing the  methods \__init__()  and predict(). The following template shows the structure of the file:
-        * General template:
-            ```python
-	        from <your_python_loading_library> import <your_loading_function>
+Any model folder must include the following 3 files (if you build your own model, rename the files where appropriate):
+1. MnistClassifier.py: Needs to include a python class having the same name as the file, in this case MnistClassifier, and implementing the  methods \__init__()  and predict(). The following template shows the structure of the file:
+    * General template:
+        ```pytho
+        from <your_python_loading_library> import <your_loading_function>
             
-            class <your_model_name>(object):
+        class <your_model_name>(object):
 
-                def __init__(self):
-                    self.model = <your_loading_function>(<your_saved_model>)
-					  
-                def predict(self,X,features_names):
-                    return self.model.predict(X)
-            ```
-        * Keras mnist example:
-            ```python
-	        from keras.models import load_model
+            def __init__(self):
+                self.model = <your_loading_function>(<your_saved_model>)
+				  
+            def predict(self,X,features_names):
+                return self.model.predict(X)
+        ```
+    * Keras mnist example:
+        ```python
+        from keras.models import load_model
 	    
-            class MnistClassifier(object):
+        class MnistClassifier(object):
 	    
-                def __init__(self):
-                    self.model = load_model('MnistClassifier.h5')
+            def __init__(self):
+                self.model = load_model('MnistClassifier.h5')
 		    
-                def predict(self,X,features_names):
-                    if X.shape[0]==784:
-                        X = X.reshape(1,28,28,1)
-                    else:
-                        X = X.reshape(X.shape[0],28,28,1)
-                    return self.model.predict(X)
-            ```
+            def predict(self,X,features_names):
+                if X.shape[0]==784:
+                    X = X.reshape(1,28,28,1)
+                else:
+                    X = X.reshape(X.shape[0],28,28,1)
+                return self.model.predict(X)
+        ```
+2. requirements.txt: List of the packages required by your model. Such packages must be installable through ```pip install```. For example,   the requirements.txt file for the keras example presented in the next session is:
 	
-	* requirements.txt: List of the packages required by your model. Such packages must be installable through ```pip install```. For example,   the requirements.txt file for the keras example presented in the next session is:
-	
-		    keras==2.0.6 
-		    h5py
+        keras==2.0.6 
+        h5py
  	    	
-	* MnistClassifier.h5: The file with your saved model, loadable with load_model() function. 
+3. MnistClassifier.h5: The file with your saved model, loadable with load_model() function. 
+
+## Wrap the model
+
+After you have copied the required files in your model folder, you can use seldon wrappers to create a docker image of your model. The seldon wrapper script requires  a model name, a model version, a docker repository and a base docker image as parameters. In our example: 
 	
-2. MnistClassifier: The name of the model.  The .py file in your model folder and the class implemented in it have to be called both \<your_model_name>, e.g MnistClassifier.
+* \<your_model_name> = MnistClassifier: 
 
-3. 0.0: The version of your model, e.g.  0.0.
+    The name of the model.  The .py file in your model folder and the class implemented in it have to be called both \<your_model_name>, e.g MnistClassifier.
 
-4. seldonio: The repository for the image, e.g. seldonio.
+* \<your_model_version> = 0.1: 
 
-5. Python:2: The base image for the model, default is Python:2.
+    The version of your model, e.g.  0.1.
+
+* \<your_docker_repo> = seldonio: 
+
+    The repository for the image, e.g. seldonio.
+
+* \<your_base_image> = Python:2: 
+    
+    The base image for the model, default is Python:2.
+
+If you are using Minikube, the wrapping can be done as in the [getting started on Minikube session](link)
+
+```bash
+ git clone https://github.com/SeldonIO/seldon-core-examples && cd seldon-core-example 
+```
+```bash 
+./wrap-model-in-minikube models/keras_mnist MnistClassifier 0.1 seldonio --force
+```
+
+This will create a docker image ```seldonio/mnistclassifier:0.1``` which is ready for deployment on seldon-core.
