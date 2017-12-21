@@ -9,7 +9,7 @@
 	"type":"ROUTER",
 	"endpoint": {
 	    "service_host":"localhost",
-	    "service_port":5000,
+	    "service_port":5004,
 	    "type":"GRPC"
 	},
 	"parameters": [
