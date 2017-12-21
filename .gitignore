@@ -49,9 +49,6 @@ cluster-manager/src/main/proto/v1.proto
 cluster-manager/java_client/
 engine/src/main/proto/prediction.proto
 engine/src/main/proto/seldonengine.proto
-pyseldon/build/
-pyseldon/dist/
-pyseldon/seldon.egg-info/
 redis-memonly/redis-memonly.json
 tests/API_ENDPOINT
 tests/CLUSTER_MANAGER_ENDPOINT
@@ -71,3 +68,7 @@ proto/k8s/k8s.io/
 proto/k8s/v1.proto
 wrappers/python/proto/prediction_pb2.py
 wrappers/python/proto/prediction_pb2_grpc.py
+
+notebooks/**/*.proto
+*pb2.py
+*pb2_grpc.py
