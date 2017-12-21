@@ -9,9 +9,11 @@ import io.seldon.protos.PredictionProtos.SeldonMessage;
 
 
 @Component
-public class RandomABTestUnit extends PredictiveUnitBean {
+public class RandomABTestUnit extends PredictiveUnitImpl{
 	
 	Random rand = new Random(1337);
+	
+	public RandomABTestUnit() {}
 
 	@Override
 	public int route(SeldonMessage input, PredictiveUnitState state){

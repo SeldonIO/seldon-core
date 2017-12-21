@@ -7,7 +7,6 @@
     "graph":{
 	"name":"0",
 	"type":"ROUTER",
-	"subtype":"MICROSERVICE",
 	"endpoint": {
 	    "service_host":"localhost",
 	    "service_port":5000,
@@ -29,7 +28,6 @@
 	    {
 		"name":"1",
 		"type":"TRANSFORMER",
-		"subtype":"MICROSERVICE",
 		"endpoint": {
 		    "service_host":"localhost",
 		    "service_port":5001,
@@ -54,7 +52,6 @@
 	    {
 		"name":"3",
 		"type":"MODEL",
-		"subtype":"MICROSERVICE",
 		"endpoint": {
 		    "service_host":"localhost",
 		    "service_port":5003,

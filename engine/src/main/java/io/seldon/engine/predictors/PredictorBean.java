@@ -36,7 +36,7 @@ public class PredictorBean {
 
 	{
 		PredictiveUnitState rootState = predictorState.rootState;
-		return predictiveUnitBean.getOutput(request, rootState);
+		return this.predictiveUnitBean.getOutput(request, rootState);
 	}
 	
 	public void sendFeedback(Feedback feedback, PredictorState predictorState) throws InterruptedException, ExecutionException, InvalidProtocolBufferException

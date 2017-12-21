@@ -6,7 +6,7 @@ import io.seldon.protos.PredictionProtos.Feedback;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
 
 @Component
-public class SimpleRouterUnit extends PredictiveUnitBean {
+public class SimpleRouterUnit extends PredictiveUnitImpl {
 
     public SimpleRouterUnit() {}
 

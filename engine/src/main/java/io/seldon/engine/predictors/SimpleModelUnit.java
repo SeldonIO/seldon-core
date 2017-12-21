@@ -11,7 +11,7 @@ import io.seldon.protos.PredictionProtos.Status;
 import io.seldon.protos.PredictionProtos.Tensor;
 
 @Component
-public class SimpleModelUnit extends PredictiveUnitBean {
+public class SimpleModelUnit extends PredictiveUnitImpl {
 	
 	public SimpleModelUnit() {}
 

@@ -5,14 +5,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitImplementation;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitMethod;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitType;
 
+@Component
 public class PredictorConfigBean {
     public final Map<PredictiveUnitType,List<PredictiveUnitMethod>> typeMethodsMap;
-    public final Map<PredictiveUnitImplementation,PredictiveUnitBean> nodeImplementationMap;
+    public final Map<PredictiveUnitImplementation,PredictiveUnitImpl> nodeImplementationMap;
     
+    @Autowired
 	public PredictorConfigBean(
 			SimpleModelUnit simpleModelUnit, 
 			SimpleRouterUnit simpleRouterUnit,
@@ -53,14 +58,14 @@ public class PredictorConfigBean {
         // -------------------------
         // HARDCODED IMPLEMENTATIONS
         // -------------------------
-        nodeImplementationMap = new HashMap<PredictiveUnitImplementation,PredictiveUnitBean>();
+        nodeImplementationMap = new HashMap<PredictiveUnitImplementation,PredictiveUnitImpl>();
         nodeImplementationMap.put(PredictiveUnitImplementation.AVERAGE_COMBINER, averageCombinerUnit);
         nodeImplementationMap.put(PredictiveUnitImplementation.SIMPLE_MODEL, simpleModelUnit);
         nodeImplementationMap.put(PredictiveUnitImplementation.SIMPLE_ROUTER, simpleRouterUnit);
         nodeImplementationMap.put(PredictiveUnitImplementation.RANDOM_ABTEST, randomABTestUnit);
     }
     
-    public PredictiveUnitBean getImplementation(PredictiveUnitState state){
+    public PredictiveUnitImpl getImplementation(PredictiveUnitState state){
     	if (state.implementation != PredictiveUnitImplementation.UNKNOWN_IMPLEMENTATION){
     		return nodeImplementationMap.get(state.implementation);
     	}

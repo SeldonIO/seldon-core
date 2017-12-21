@@ -26,7 +26,7 @@ import io.seldon.protos.PredictionProtos.SeldonMessage;
 import io.seldon.protos.PredictionProtos.Meta;
 
 @Component
-public class PredictiveUnitBean {
+public class PredictiveUnitBean extends PredictiveUnitImpl {
 
 	@Autowired
 	InternalPredictionService internalPredictionService;
@@ -34,18 +34,11 @@ public class PredictiveUnitBean {
 	@Autowired
 	private SeldonRestTemplateExchangeTagsProvider tagsProvider;
 	
-	PredictorConfigBean predictorConfig;
+	@Autowired
+	public PredictorConfigBean predictorConfig;
 	
 	public PredictiveUnitBean(){}
 	
-	@Autowired
-	public PredictiveUnitBean(
-			SimpleModelUnit simpleModelUnit, 
-			SimpleRouterUnit simpleRouterUnit,
-			AverageCombinerUnit averageCombinerUnit,
-			RandomABTestUnit randomABTestUnit) {
-		this.predictorConfig = new PredictorConfigBean(simpleModelUnit,simpleRouterUnit,averageCombinerUnit,randomABTestUnit);
-	}
 	
 	public SeldonMessage getOutput(SeldonMessage request, PredictiveUnitState state) throws InterruptedException, ExecutionException, InvalidProtocolBufferException{
 		Map<String,Integer> routingDict = new HashMap<String,Integer>();
@@ -61,7 +54,7 @@ public class PredictiveUnitBean {
 	private Future<SeldonMessage> getOutputAsync(SeldonMessage input, PredictiveUnitState state, Map<String,Integer> routingDict) throws InterruptedException, ExecutionException, InvalidProtocolBufferException{
 		
 		// Getting the actual implementation (microservice or hardcoded? )
-		PredictiveUnitBean implementation = predictorConfig.getImplementation(state);
+		PredictiveUnitImpl implementation = predictorConfig.getImplementation(state);
 		if (implementation == null){ implementation = this; }
 		
 		// Compute the transformed Input
@@ -126,7 +119,7 @@ public class PredictiveUnitBean {
 		List<Future<Boolean>> returns = new ArrayList<Future<Boolean>>();
 		
 		// Getting the actual implementation (microservice or hardcoded? )
-		PredictiveUnitBean implementation = predictorConfig.getImplementation(state);
+		PredictiveUnitImpl implementation = predictorConfig.getImplementation(state);
 		if (implementation == null){ implementation = this; }
 				
 		// First we determine children we will send feedback to according to routingDict info
@@ -154,7 +147,7 @@ public class PredictiveUnitBean {
 		}
 		
 		// Finally we store the feedback metrics
-		implementation.doStoreFeedbackMetrics(feedback,state);
+		doStoreFeedbackMetrics(feedback,state);
 		
 		return new AsyncResult<>(true);
 	}

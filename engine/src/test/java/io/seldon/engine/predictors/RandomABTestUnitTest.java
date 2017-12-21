@@ -28,10 +28,8 @@ public class RandomABTestUnitTest {
 	public void simpleTest() throws InterruptedException, ExecutionException, InvalidProtocolBufferException
 	{
 		PredictorSpec.Builder predictorSpecBuilder = PredictorSpec.newBuilder();
-		// PredictorSpecBuilder.setEnabled(true);
 		
 		predictorSpecBuilder.setName("p1");
-		// PredictorSpecBuilder.setRoot("3");
 		predictorSpecBuilder.setReplicas(1);
 		predictorSpecBuilder.setComponentSpec(PodTemplateSpec.newBuilder());
 
@@ -57,10 +55,8 @@ public class RandomABTestUnitTest {
 		Parameter.Builder pBuilder = Parameter.newBuilder().setName("ratioA").setValue("0.5").setType(ParameterType.FLOAT);
 		predictiveUnitBuilder.addParameters(pBuilder.build());
 		PredictiveUnit pu3 = predictiveUnitBuilder.build();
-		
-		
-		predictorSpecBuilder.setGraph(pu3);
 
+		predictorSpecBuilder.setGraph(pu3);
 
 		PredictorSpec predictor = predictorSpecBuilder.build();
 

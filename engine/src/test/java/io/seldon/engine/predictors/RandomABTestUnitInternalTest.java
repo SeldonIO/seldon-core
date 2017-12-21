@@ -32,7 +32,7 @@ public class RandomABTestUnitInternalTest {
 		state.addChild(childA);
 		state.addChild(childB);
 		
-		PredictiveUnitBean predictiveUnit = new RandomABTestUnit();
+		PredictiveUnitImpl predictiveUnit = new RandomABTestUnit();
 		
 		// The following values are from random seed 1337
 		int routing1 = (int) predictiveUnit.route(request, state);
@@ -63,7 +63,7 @@ public class RandomABTestUnitInternalTest {
 		
 		state.addChild(childA);
 		
-		PredictiveUnitBean predictiveUnit = new RandomABTestUnit();
+		PredictiveUnitImpl predictiveUnit = new RandomABTestUnit();
 
 		predictiveUnit.route(request,state);
 	}

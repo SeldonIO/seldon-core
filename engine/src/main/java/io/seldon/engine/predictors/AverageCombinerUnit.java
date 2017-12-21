@@ -14,7 +14,7 @@ import io.seldon.protos.PredictionProtos.SeldonMessage;
 import io.seldon.engine.predictors.PredictorUtils;
 
 @Component
-public class AverageCombinerUnit extends PredictiveUnitBean{
+public class AverageCombinerUnit extends PredictiveUnitImpl {
 	
 	public AverageCombinerUnit() {}
 

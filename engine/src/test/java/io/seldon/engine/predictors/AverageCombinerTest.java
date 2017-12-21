@@ -229,10 +229,6 @@ public class AverageCombinerTest {
     			randomABTest);
     	
     	predictiveUnit.predictorConfig = predictorConfig;
-    	simpleModel.predictorConfig = predictorConfig;
-    	simpleRouterUnit.predictorConfig = predictorConfig;
-    	averageCombiner.predictorConfig = predictorConfig;
-    	randomABTest.predictorConfig = predictorConfig;
 
     	predictiveUnit.getOutput(p, state);
 	}
