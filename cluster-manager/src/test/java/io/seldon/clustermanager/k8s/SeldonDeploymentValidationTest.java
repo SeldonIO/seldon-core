@@ -39,13 +39,4 @@ public class SeldonDeploymentValidationTest extends AppTest {
         op.validate(mlDep2);
     }
 
-    @Test(expected = SeldonDeploymentException.class)
-    public void testNoSubType() throws IOException, SeldonDeploymentException
-    {
-        SeldonDeploymentOperator op = new SeldonDeploymentOperatorImpl(getClusterManagerprops());
-        String jsonStr = readFile("src/test/resources/model_invalid_no_subtype.json",StandardCharsets.UTF_8);
-        SeldonDeployment mlDep = SeldonDeploymentUtils.jsonToSeldonDeployment(jsonStr);
-        SeldonDeployment mlDep2 = op.defaulting(mlDep);
-        op.validate(mlDep2);
-    }
 }
