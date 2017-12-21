@@ -5,6 +5,8 @@ import java.util.concurrent.ExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+
 import io.seldon.protos.PredictionProtos.SeldonMessage;
 import io.seldon.protos.SeldonGrpc;
 
@@ -35,7 +37,9 @@ public class SeldonService extends SeldonGrpc.SeldonImplBase {
             responseObserver.onError(e);
         } catch (ExecutionException e) {
             responseObserver.onError(e);
-        }
+        } catch (InvalidProtocolBufferException e) {
+        	responseObserver.onError(e);
+		}
         finally {}
         responseObserver.onCompleted();
      }
@@ -52,7 +56,9 @@ public class SeldonService extends SeldonGrpc.SeldonImplBase {
             responseObserver.onError(e);
         } catch (ExecutionException e) {
             responseObserver.onError(e);
-        }
+        } catch (InvalidProtocolBufferException e) {
+        	responseObserver.onError(e);
+		}
         finally {}
         responseObserver.onCompleted();
     }

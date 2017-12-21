@@ -2,8 +2,6 @@ package io.seldon.engine.predictors;
 
 import static org.hamcrest.CoreMatchers.is;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -12,10 +10,12 @@ import java.util.concurrent.ExecutionException;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 
 import io.seldon.engine.exception.APIException;
+import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitImplementation;
 import io.seldon.protos.PredictionProtos.DefaultData;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
 import io.seldon.protos.PredictionProtos.Status;
@@ -24,7 +24,7 @@ import io.seldon.protos.PredictionProtos.Tensor;
 public class AverageCombinerTest {
 	
 	@Test
-	public void testSimpleTensorCase() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
+	public void testSimpleTensorCase() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException {
 		List<SeldonMessage> predictorReturns = new ArrayList<>();
 		String[] names = {"c","d"};
 		
@@ -50,9 +50,8 @@ public class AverageCombinerTest {
 						.build()).build());
 		
 		AverageCombinerUnit averageCombinerUnit = new AverageCombinerUnit();
-		Method method = AverageCombinerUnit.class.getDeclaredMethod("aggregateOutputs",List.class,PredictiveUnitState.class);
-		method.setAccessible(true);
-		SeldonMessage average = (SeldonMessage) method.invoke(averageCombinerUnit, predictorReturns, null);
+
+		SeldonMessage average = averageCombinerUnit.aggregate(predictorReturns,null);
 		
 		Assert.assertThat(average.getData().getNamesList().get(0),is(names[0]));
 		
@@ -61,7 +60,7 @@ public class AverageCombinerTest {
 	}
 	
 	@Test
-	public void testSimpleNDArrayCase() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
+	public void testSimpleNDArrayCase() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException {
 		List<SeldonMessage> predictorReturns = new ArrayList<>();
 		String[] names = {"c","d"};
 		
@@ -87,9 +86,8 @@ public class AverageCombinerTest {
 								.addValues(Value.newBuilder().setNumberValue(values3[1])).build())).build()).build()).build());
 		
 		AverageCombinerUnit averageCombinerUnit = new AverageCombinerUnit();
-		Method method = AverageCombinerUnit.class.getDeclaredMethod("aggregateOutputs",List.class,PredictiveUnitState.class);
-		method.setAccessible(true);
-		SeldonMessage average = (SeldonMessage) method.invoke(averageCombinerUnit, predictorReturns, null);
+
+		SeldonMessage average = averageCombinerUnit.aggregate(predictorReturns, null);
 		
 		Assert.assertThat(average.getData().getNamesList().get(0),is(names[0]));
 		
@@ -98,7 +96,7 @@ public class AverageCombinerTest {
 	}
 	
 	@Test
-	public void testUniqueValue() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
+	public void testUniqueValue() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException {
 
 		List<SeldonMessage> predictorReturns = new ArrayList<>();
 		String[] names = {"c"};
@@ -118,9 +116,8 @@ public class AverageCombinerTest {
 						.build()).build());
 		
 		AverageCombinerUnit averageCombinerUnit = new AverageCombinerUnit();
-		Method method = AverageCombinerUnit.class.getDeclaredMethod("aggregateOutputs",List.class,PredictiveUnitState.class);
-		method.setAccessible(true);
-		SeldonMessage average = (SeldonMessage) method.invoke(averageCombinerUnit, predictorReturns, null);
+
+		SeldonMessage average = averageCombinerUnit.aggregate(predictorReturns,null);
 		
 		Assert.assertThat(average.getData().getNamesList().get(0),is(names[0]));
 
@@ -129,7 +126,7 @@ public class AverageCombinerTest {
 	}
 	
 	@Test
-	public void testUniqueInput() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
+	public void testUniqueInput() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException {
 
 		List<SeldonMessage> predictorReturns = new ArrayList<>();
 		String[] names = {"c"};
@@ -143,9 +140,8 @@ public class AverageCombinerTest {
 		
 		
 		AverageCombinerUnit averageCombinerUnit = new AverageCombinerUnit();
-		Method method = AverageCombinerUnit.class.getDeclaredMethod("aggregateOutputs",List.class,PredictiveUnitState.class);
-		method.setAccessible(true);
-		SeldonMessage average = (SeldonMessage) method.invoke(averageCombinerUnit, predictorReturns, null);
+
+		SeldonMessage average = averageCombinerUnit.aggregate(predictorReturns,null);
 		
 		Assert.assertThat(average.getData().getNamesList().get(0),is(names[0]));
 
@@ -154,25 +150,17 @@ public class AverageCombinerTest {
 	}
 	
 	@Test(expected = APIException.class)
-	public void testNoInput() throws Throwable, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
+	public void testNoInput() throws Throwable, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException {
 
 		List<SeldonMessage> predictorReturns = new ArrayList<>();
 		
 		AverageCombinerUnit averageCombinerUnit = new AverageCombinerUnit();
-		Method method = AverageCombinerUnit.class.getDeclaredMethod("aggregateOutputs",List.class,PredictiveUnitState.class);
-		method.setAccessible(true);
 		
-		try{
-			method.invoke(averageCombinerUnit, predictorReturns, null);
-		}
-		catch( InvocationTargetException e){
-			Throwable targetException = e.getTargetException();
-			throw targetException;
-		}
+		averageCombinerUnit.aggregate(predictorReturns,null);
 	}
 	
 	@Test(expected = APIException.class)
-	public void testNoValues() throws Throwable, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
+	public void testNoValues() throws Throwable, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException {
 
 		List<SeldonMessage> predictorReturns = new ArrayList<>();
 		String[] names = {};
@@ -185,16 +173,8 @@ public class AverageCombinerTest {
 				.setData(DefaultData.newBuilder().addAllNames(Arrays.asList(names))
 						.build()).build());
 		AverageCombinerUnit averageCombinerUnit = new AverageCombinerUnit();
-		Method method = AverageCombinerUnit.class.getDeclaredMethod("aggregateOutputs",List.class,PredictiveUnitState.class);
-		method.setAccessible(true);
 		
-		try{
-			method.invoke(averageCombinerUnit, predictorReturns, null);
-		}
-		catch( InvocationTargetException e){
-			Throwable targetException = e.getTargetException();
-			throw targetException;
-		}
+		averageCombinerUnit.aggregate(predictorReturns, null);
 	}
 
     @Test(expected = APIException.class)
@@ -224,31 +204,33 @@ public class AverageCombinerTest {
 						.build()).build());
 		
 		AverageCombinerUnit averageCombinerUnit = new AverageCombinerUnit();
-		Method method = AverageCombinerUnit.class.getDeclaredMethod("aggregateOutputs",List.class,PredictiveUnitState.class);
-		method.setAccessible(true);
 		
-		try{
-			method.invoke(averageCombinerUnit, predictorReturns, null);
-		}
-		catch( InvocationTargetException e){
-			Throwable targetException = e.getTargetException();
-			throw targetException;
-		}
+		averageCombinerUnit.aggregate(predictorReturns, null);
 			
 	}
 	
     @Test
-	public void testPredictNoChildren() throws InterruptedException, ExecutionException{
+	public void testGetOutputNoChildren() throws InterruptedException, ExecutionException, InvalidProtocolBufferException{
     	
     	SeldonMessage p = SeldonMessage.newBuilder().build();
     	
-    	PredictiveUnitState state = new PredictiveUnitState("Cool_name",null,null,new ArrayList<PredictiveUnitState>(),null,null,null,null);
+    	PredictiveUnitState state = new PredictiveUnitState("Cool_name",null,new ArrayList<PredictiveUnitState>(),null,null,null,null,PredictiveUnitImplementation.AVERAGE_COMBINER);
     	
-    	AverageCombinerUnit averageCombinerUnit = new AverageCombinerUnit();
+    	PredictiveUnitBean predictiveUnit = new PredictiveUnitBean();
+    	SimpleModelUnit simpleModel = new SimpleModelUnit();
+    	SimpleRouterUnit simpleRouterUnit = new SimpleRouterUnit();
+    	AverageCombinerUnit averageCombiner = new AverageCombinerUnit();
+    	RandomABTestUnit randomABTest = new RandomABTestUnit();
     	
-    	state.predictiveUnitBean = averageCombinerUnit;
+    	PredictorConfigBean predictorConfig = new PredictorConfigBean(
+    			simpleModel,
+    			simpleRouterUnit,
+    			averageCombiner,
+    			randomABTest);
+    	
+    	predictiveUnit.predictorConfig = predictorConfig;
 
-    	averageCombinerUnit.getOutput(p, state);
+    	predictiveUnit.getOutput(p, state);
 	}
     
 }

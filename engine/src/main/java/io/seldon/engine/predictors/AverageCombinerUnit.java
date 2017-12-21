@@ -14,12 +14,12 @@ import io.seldon.protos.PredictionProtos.SeldonMessage;
 import io.seldon.engine.predictors.PredictorUtils;
 
 @Component
-public class AverageCombinerUnit extends CombinerUnit{
+public class AverageCombinerUnit extends PredictiveUnitImpl {
 	
 	public AverageCombinerUnit() {}
 
 	@Override
-	public SeldonMessage aggregateOutputs(List<SeldonMessage> outputs, PredictiveUnitState state){
+	public SeldonMessage aggregate(List<SeldonMessage> outputs, PredictiveUnitState state){
 		
 		if (outputs.size()==0){
 			throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_COMBINER_RESPONSE, String.format("Combiner received no inputs"));

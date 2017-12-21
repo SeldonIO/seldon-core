@@ -3,9 +3,11 @@ package io.seldon.engine.service;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,27 +21,34 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import io.grpc.StatusRuntimeException;
 import io.seldon.engine.exception.APIException;
 import io.seldon.engine.pb.ProtoBufUtils;
 import io.seldon.engine.predictors.PredictiveUnitState;
+import io.seldon.protos.CombinerGrpc;
+import io.seldon.protos.CombinerGrpc.CombinerBlockingStub;
 import io.seldon.protos.DeploymentProtos.Endpoint;
+import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitType;
+import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitMethod;
+import io.seldon.protos.GenericGrpc;
+import io.seldon.protos.GenericGrpc.GenericBlockingStub;
 import io.seldon.protos.ModelGrpc;
 import io.seldon.protos.ModelGrpc.ModelBlockingStub;
 import io.seldon.protos.RouterGrpc;
 import io.seldon.protos.RouterGrpc.RouterBlockingStub;
 import io.seldon.protos.TransformerGrpc;
 import io.seldon.protos.TransformerGrpc.TransformerBlockingStub;
+import io.seldon.protos.OutputTransformerGrpc;
+import io.seldon.protos.OutputTransformerGrpc.OutputTransformerBlockingStub;
 import io.seldon.protos.PredictionProtos.Feedback;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
 import io.seldon.protos.PredictionProtos.SeldonMessage.DataOneofCase;
+import io.seldon.protos.PredictionProtos.SeldonMessageList;
 
 @Service
 public class InternalPredictionService {
@@ -61,22 +70,6 @@ public class InternalPredictionService {
     @Autowired
     public InternalPredictionService(RestTemplate restTemplate){
     	this.restTemplate = restTemplate;
-    	
-    }
-    
-    public SeldonMessage predict(SeldonMessage input, PredictiveUnitState state) throws InvalidProtocolBufferException
-    {
-    	final Endpoint endpoint = state.endpoint;
-		switch (endpoint.getType()){
-			case REST:
-				String dataString = ProtoBufUtils.toJson(input);
-				return queryREST("predict", dataString, state, endpoint, isDefaultData(input));
-				
-			case GRPC:
-				ModelBlockingStub stub =  ModelGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
-				return stub.predict(input);
-		}
-		throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,"no service available");
     }
     
     public SeldonMessage route(SeldonMessage input, PredictiveUnitState state) throws InvalidProtocolBufferException
@@ -88,8 +81,14 @@ public class InternalPredictionService {
 				return queryREST("route", dataString, state, endpoint, isDefaultData(input));
 				
 			case GRPC:
-				RouterBlockingStub stub =  RouterGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
-				return stub.route(input);
+				if (state.type==PredictiveUnitType.UNKNOWN_TYPE){
+					GenericBlockingStub stub =  GenericGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
+					return stub.route(input);
+				}
+				else {
+					RouterBlockingStub stub =  RouterGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
+					return stub.route(input);
+				}
 		}
 		throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,"no service available");
     }
@@ -103,13 +102,13 @@ public class InternalPredictionService {
 				return queryREST("send-feedback", dataString, state, endpoint, true);
 				
 			case GRPC:
-				switch (state.type){
-					case MODEL:
-						ModelBlockingStub modelStub =  ModelGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
-						return modelStub.sendFeedback(feedback);
-					case ROUTER:
-						RouterBlockingStub routerStub =  RouterGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
-						return routerStub.sendFeedback(feedback);
+				if (state.type==PredictiveUnitType.UNKNOWN_TYPE){
+					GenericBlockingStub stub =  GenericGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
+					return stub.sendFeedback(feedback);
+				}
+				else {
+					RouterBlockingStub routerStub =  RouterGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
+					return routerStub.sendFeedback(feedback);
 				}
 		}
 		throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,"no service available");
@@ -121,11 +120,27 @@ public class InternalPredictionService {
 		switch (endpoint.getType()){
 			case REST:
 				String dataString = ProtoBufUtils.toJson(input);
-				return queryREST("transform-input", dataString, state, endpoint, isDefaultData(input));
+				if (state.type == PredictiveUnitType.MODEL) {
+					return queryREST("predict", dataString, state, endpoint, isDefaultData(input));
+				}
+				else {
+					return queryREST("transform-input", dataString, state, endpoint, isDefaultData(input));
+				}
 				
 			case GRPC:
-				TransformerBlockingStub stub =  TransformerGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
-				return stub.transformInput(input);
+				switch (state.type){
+					case UNKNOWN_TYPE:
+						GenericBlockingStub genStub = GenericGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
+						return genStub.transformInput(input);
+					case MODEL:
+						ModelBlockingStub modelStub = ModelGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
+						return modelStub.predict(input);
+					case TRANSFORMER:
+						TransformerBlockingStub transformerStub = TransformerGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
+						return transformerStub.transformInput(input);
+					default:
+						throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,"Unhandled type");
+				}
 		}
 		throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,"no service available");
     }
@@ -139,8 +154,35 @@ public class InternalPredictionService {
 				return queryREST("transform-output", dataString, state, endpoint, isDefaultData(output));
 				
 			case GRPC:
-				TransformerBlockingStub stub =  TransformerGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
-				return stub.transformOutput(output);
+				if (state.type==PredictiveUnitType.UNKNOWN_TYPE){
+					GenericBlockingStub stub =  GenericGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
+					return stub.transformOutput(output);
+				}
+				else {
+					OutputTransformerBlockingStub stub =  OutputTransformerGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
+					return stub.transformOutput(output);
+				}
+		}
+		throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,"no service available");
+    }
+    
+    public SeldonMessage aggregate(List<SeldonMessage> outputs, PredictiveUnitState state) throws InvalidProtocolBufferException{
+    	final Endpoint endpoint = state.endpoint;
+    	SeldonMessageList outputsList = SeldonMessageList.newBuilder().addAllSeldonMessages(outputs).build();
+		switch (endpoint.getType()){
+			case REST:
+				String dataString = ProtoBufUtils.toJson(outputsList);
+				return queryREST("aggregate", dataString, state, endpoint, true);
+				
+			case GRPC:
+				if (state.type==PredictiveUnitType.UNKNOWN_TYPE){
+					GenericBlockingStub stub =  GenericGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
+					return stub.aggregate(outputsList);
+				}
+				else {
+					CombinerBlockingStub stub = CombinerGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
+					return stub.aggregate(outputsList);
+				}
 		}
 		throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,"no service available");
     }

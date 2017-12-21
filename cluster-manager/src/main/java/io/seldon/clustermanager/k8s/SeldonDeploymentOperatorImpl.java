@@ -57,7 +57,7 @@ import io.seldon.clustermanager.pb.ProtoBufUtils;
 import io.seldon.protos.DeploymentProtos.Endpoint;
 import io.seldon.protos.DeploymentProtos.Parameter;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit;
-import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitSubtype;
+import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitImplementation;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitType;
 import io.seldon.protos.DeploymentProtos.PredictorSpec;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
@@ -299,9 +299,8 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 	private void checkPredictiveUnitsMicroservices(PredictiveUnit pu,PredictorSpec p) throws SeldonDeploymentException
 	{
         if (pu.hasType() &&
-                pu.hasSubtype() && 
-                pu.getType() == PredictiveUnitType.MODEL && 
-                pu.getSubtype() == PredictiveUnitSubtype.MICROSERVICE)
+                pu.getType() == PredictiveUnitType.MODEL &&
+                pu.getImplementation() == PredictiveUnitImplementation.UNKNOWN_IMPLEMENTATION)
         {
             boolean found = false;
             for(V1.Container c : p.getComponentSpec().getSpec().getContainersList())
@@ -324,9 +323,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 	private void checkTypeAndSubType(PredictiveUnit pu) throws SeldonDeploymentException
 	{
         if (!pu.hasType())
-            throw new SeldonDeploymentException(String.format("Predictive unit %s has no type",pu.getName()));    
-        if (!pu.hasSubtype())
-            throw new SeldonDeploymentException(String.format("Predictive unit %s has no subtype",pu.getName()));  
+            throw new SeldonDeploymentException(String.format("Predictive unit %s has no type",pu.getName()));     
         for(PredictiveUnit child :  pu.getChildrenList())
             checkTypeAndSubType(child); 
 	}

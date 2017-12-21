@@ -154,7 +154,9 @@ public class RestClientController {
 			{
 				throw new APIException(ApiExceptionType.ENGINE_EXECUTION_FAILURE,e.getMessage());
 			}
-		}
+		} catch (InvalidProtocolBufferException e) {
+			throw new APIException(ApiExceptionType.ENGINE_INVALID_JSON,"");
+		} 
     }
 	
 	@RequestMapping("/api/v0.1/events")
