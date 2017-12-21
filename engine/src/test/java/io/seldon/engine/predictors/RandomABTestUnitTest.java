@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+
 import io.seldon.protos.DeploymentProtos.PredictiveUnit;
 import io.kubernetes.client.proto.V1.PodTemplateSpec;
 import io.seldon.protos.DeploymentProtos.Parameter;
@@ -23,44 +25,40 @@ public class RandomABTestUnitTest {
 	PredictorBean predictorBean;
 	
 	@Test
-	public void simpleTest() throws InterruptedException, ExecutionException
+	public void simpleTest() throws InterruptedException, ExecutionException, InvalidProtocolBufferException
 	{
-		PredictorSpec.Builder PredictorSpecBuilder = PredictorSpec.newBuilder();
-		// PredictorSpecBuilder.setEnabled(true);
+		PredictorSpec.Builder predictorSpecBuilder = PredictorSpec.newBuilder();
 		
-		PredictorSpecBuilder.setName("p1");
-		// PredictorSpecBuilder.setRoot("3");
-		PredictorSpecBuilder.setReplicas(1);
-		PredictorSpecBuilder.setComponentSpec(PodTemplateSpec.newBuilder());
+		predictorSpecBuilder.setName("p1");
+		predictorSpecBuilder.setReplicas(1);
+		predictorSpecBuilder.setComponentSpec(PodTemplateSpec.newBuilder());
 
-		PredictiveUnit.Builder PredictiveUnitBuilder = PredictiveUnit.newBuilder();
-		PredictiveUnitBuilder.setName("1");
-		PredictiveUnitBuilder.setType(PredictiveUnit.PredictiveUnitType.MODEL);
-		PredictiveUnitBuilder.setSubtype(PredictiveUnit.PredictiveUnitSubtype.SIMPLE_MODEL);
-		PredictiveUnit pu1 = PredictiveUnitBuilder.build();
+		PredictiveUnit.Builder predictiveUnitBuilder = PredictiveUnit.newBuilder();
+		predictiveUnitBuilder.setName("1");
+		predictiveUnitBuilder.setType(PredictiveUnit.PredictiveUnitType.MODEL);
+		predictiveUnitBuilder.setImplementation(PredictiveUnit.PredictiveUnitImplementation.SIMPLE_MODEL);
+		PredictiveUnit pu1 = predictiveUnitBuilder.build();
 		
-		PredictiveUnitBuilder = PredictiveUnit.newBuilder();
-		PredictiveUnitBuilder.setName("2");
-		PredictiveUnitBuilder.setType(PredictiveUnit.PredictiveUnitType.MODEL);
-		PredictiveUnitBuilder.setSubtype(PredictiveUnit.PredictiveUnitSubtype.SIMPLE_MODEL);
-		PredictiveUnit pu2 = PredictiveUnitBuilder.build();
+		predictiveUnitBuilder = PredictiveUnit.newBuilder();
+		predictiveUnitBuilder.setName("2");
+		predictiveUnitBuilder.setType(PredictiveUnit.PredictiveUnitType.MODEL);
+		predictiveUnitBuilder.setImplementation(PredictiveUnit.PredictiveUnitImplementation.SIMPLE_MODEL);
+		PredictiveUnit pu2 = predictiveUnitBuilder.build();
 		
 		
-		PredictiveUnitBuilder = PredictiveUnit.newBuilder();
-		PredictiveUnitBuilder.setName("3");
-		PredictiveUnitBuilder.setType(PredictiveUnit.PredictiveUnitType.ROUTER);
-		PredictiveUnitBuilder.setSubtype(PredictiveUnit.PredictiveUnitSubtype.RANDOM_ABTEST);
-		PredictiveUnitBuilder.addChildren(pu1);
-		PredictiveUnitBuilder.addChildren(pu2);
+		predictiveUnitBuilder = PredictiveUnit.newBuilder();
+		predictiveUnitBuilder.setName("3");
+		predictiveUnitBuilder.setType(PredictiveUnit.PredictiveUnitType.ROUTER);
+		predictiveUnitBuilder.setImplementation(PredictiveUnit.PredictiveUnitImplementation.RANDOM_ABTEST);
+		predictiveUnitBuilder.addChildren(pu1);
+		predictiveUnitBuilder.addChildren(pu2);
 		Parameter.Builder pBuilder = Parameter.newBuilder().setName("ratioA").setValue("0.5").setType(ParameterType.FLOAT);
-		PredictiveUnitBuilder.addParameters(pBuilder.build());
-		PredictiveUnit pu3 = PredictiveUnitBuilder.build();
-		
-		
-		PredictorSpecBuilder.setGraph(pu3);
+		predictiveUnitBuilder.addParameters(pBuilder.build());
+		PredictiveUnit pu3 = predictiveUnitBuilder.build();
 
+		predictorSpecBuilder.setGraph(pu3);
 
-		PredictorSpec predictor = PredictorSpecBuilder.build();
+		PredictorSpec predictor = predictorSpecBuilder.build();
 
 		PredictorState predictorState = predictorBean.predictorStateFromPredictorSpec(predictor);
 

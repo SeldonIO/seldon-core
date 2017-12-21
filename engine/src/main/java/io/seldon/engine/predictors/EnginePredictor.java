@@ -22,8 +22,8 @@ import io.seldon.engine.pb.JsonFormat.Printer;
 import io.seldon.engine.pb.QuantityUtils;
 import io.seldon.engine.pb.TimeUtils;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit;
-import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitSubtype;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitType;
+import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitImplementation;
 import io.seldon.protos.DeploymentProtos.PredictorSpec;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
@@ -126,7 +126,7 @@ public class EnginePredictor {
         	PredictiveUnit.Builder PredictiveUnitBuilder = PredictiveUnit.newBuilder()
         			.setName("basic-pu")
         			.setType(PredictiveUnitType.MODEL)
-        			.setSubtype(PredictiveUnitSubtype.SIMPLE_MODEL);
+        			.setImplementation(PredictiveUnitImplementation.SIMPLE_MODEL);
             //@formatter:on
 
         	predictorSpecBuilder.setGraph(PredictiveUnitBuilder);

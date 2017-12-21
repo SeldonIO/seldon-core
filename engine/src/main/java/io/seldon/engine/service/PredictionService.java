@@ -12,6 +12,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+
 import io.seldon.engine.predictors.EnginePredictor;
 import io.seldon.engine.predictors.PredictorBean;
 import io.seldon.engine.predictors.PredictorState;
@@ -40,7 +42,7 @@ public class PredictionService {
 	    }
 	}
 	
-	public void sendFeedback(Feedback feedback) throws InterruptedException, ExecutionException
+	public void sendFeedback(Feedback feedback) throws InterruptedException, ExecutionException, InvalidProtocolBufferException
 	{
 		PredictorState predictorState = predictorBean.predictorStateFromPredictorSpec(enginePredictor.getPredictorSpec());
 
@@ -49,7 +51,7 @@ public class PredictionService {
 		return;
 	}
 	
-	public SeldonMessage predict(SeldonMessage request) throws InterruptedException, ExecutionException
+	public SeldonMessage predict(SeldonMessage request) throws InterruptedException, ExecutionException, InvalidProtocolBufferException
 	{
 
 		if (!request.hasMeta())
