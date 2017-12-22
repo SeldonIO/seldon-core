@@ -1,104 +1,77 @@
----
-title: "Wrapping a model "
-date: 2017-12-09T17:49:41Z
-weight: 1
----
+# Packaging a python  model for seldon core
+In this guide, we illustrate the steps needed to wrap your own python  model in a docker image ready for deployment with seldon-core. 
+The steps are general and can be used to package any model laodable through a python function (either a pure python function or python API function) for seldon wrappers.
 
+## Create a model folder
 
-In order to deploy a model using seldon-core the model must be packaged into a docker image. In this guide, we explain how to build a docker-image of your model which is ready to be [deployed with seldon-core](../../api/seldon-deployment) using seldon python wrappers. The python wrappers are suitable to wrap any saved model that can be loaded and queried  using python functions.
+Seldon python wrappers are designed to load a saved model and package it into a docker image. In order to use the wrappers, the loadable file containing your model need to be placed in a dedicated folder \<your_model_folder>.
 
-### Preliminary steps 
+Here we illustrate the content of the ```keras_mnist``` model folder which can be found in [seldon-core-example/models/](link_to_github). In this example we have \<your_model_folder> = seldon-core-examples/models/keras_mnist.
 
-Clone seldon-core, install grpc tools and buld the protobuffers (if not done before) 
+Any model folder must include the following 3 files (if you build your own model, rename the files where appropriate):
+1. MnistClassifier.py: Needs to include a python class having the same name as the file, in this case MnistClassifier, and implementing the  methods \__init__()  and predict(). The following template shows the structure of the file:
+    * General template:
+        ```python
+        from <your_python_loading_library> import <your_loading_function>
+            
+        class <your_model_name>(object): #Must be the same as the name of the module
 
-* Clone the latest version of seldon-core git repository: 
-
-    ```git clone seldon-core```
+            def __init__(self):
+                self.model = <your_loading_function>(<your_saved_model>)
+				  
+            def predict(self,X,features_names):
+                return self.model.predict(X)
+        ```
+    * Keras mnist example:
+        ```python
+        from keras.models import load_model
+	    
+        class MnistClassifier(object): #Must be the same as the name of the module
+	    
+            def __init__(self):
+                self.model = load_model('MnistClassifier.h5')
+		    
+            def predict(self,X,features_names):
+                if X.shape[0]==784:
+                    X = X.reshape(1,28,28,1)
+                else:
+                    X = X.reshape(X.shape[0],28,28,1)
+                return self.model.predict(X)
+        ```
+2. requirements.txt: List of the packages required by your model. Such packages must be installable through ```pip install```. For example,   the requirements.txt file for the keras example presented in the next session is:
 	
-* Enter the seldon wrappers directory: 
+        keras==2.0.6 
+        h5py
+ 	    	
+3. MnistClassifier.h5: The file with your saved model, loadable with load_model() function. 
 
-    ```cd seldon-core/wrappers```
+## Wrap the model
+
+After you have copied the required files in your model folder, you can use seldon wrappers to create a docker image of your model. The seldon wrapper script requires  a model name, a model version, a docker repository and a base docker image as parameters. In our example: 
 	
-* You can skip this step if already done it before. Install grpc tools and build the protobuffers. You only have to do this only once:  
+* \<your_model_name> = MnistClassifier: 
 
-    ```python -m pip install grpcio-tools==1.1.3```
-	
-    ```make build_protos```
+    The name of the model.  The .py file in your model folder and the class implemented in it have to be called both \<your_model_name>, e.g MnistClassifier.
 
-### Wrap a model
+* \<your_model_version> = 0.1: 
 
-In order to wrap your saved model, you'll need a model folder \d<your_model_folder> containing at least the 3 files described in the [model preparation](../model_template) session.
+    The version of your model, e.g.  0.1.
 
-* Enter the python directory and run the wrap_model script 
+* \<your_docker_repo> = seldonio: 
 
-    ```cd python```
-	
-    ```python wrap_model.py <path_to_your_model_folder> <your_model_name> <your_model_version> <your_docker_repo> --base-image <your_base_image>```
-		 
-    This will create a "build" directory in \<your_model_folder>.
+    The repository for the image, e.g. seldonio.
 
-* Enter  \<your_model_folder> and build your model docker image 
-
-    ```cd <path_to_your_model_folder>/build``` 
-	
-    ```make build_docker_image``` 
-	
-    This will  build a docker image of your model locally ready to be [deployed with seldon-core](../../api/seldon-deployment).
-
+* \<your_base_image> = Python:2: 
     
+    The base image for the model, default is Python:2.
 
+If you are using Minikube, the wrapping can be done as in the [getting started on Minikube session](link)
 
-## Example of usage.
+```bash
+ git clone https://github.com/SeldonIO/seldon-core-examples && cd seldon-core-example 
+```
+```bash 
+./wrap-model-in-minikube models/keras_mnist MnistClassifier 0.1 seldonio --force
+```
 
-Here we include a step-by-step guide to train, save and wrap a mnist classifier from scratch. The model is in "seldon-core-plugins/keras_mnist" and it is builded using keras. In reference to the session above and for the sake of clarity, in this example we have:
-
-* \<your_model_folder> = keras_mnist
-* \<path_to_your_model_folder> = ../../../seldon-core-plugins/keras_mnist
-* \<your_model_name> = MnistClassifier
-* \<your_model_version> = 0.0
-* \<your_docker_repo> = seldonio
-* \<your_base_image> = Python:2
-
-### Preliminary steps
-
-* Have seldon-core and seldon-core-plugins folders in the same directory and install grpc tools (if not done before).
-* Run ```git clone seldon-core```
-* Run ```git clone seldon-core-plugins```
-
-### Train and save keras mnist classifier
-
-* Run 
-
-	```cd seldon-core-plugins/keras_mnist```
-	
-	```python train_mnist.py```
-
-	This will train a keras convolutional neural network on mnist dataset for 2 epochs and save the model in the same folder.
-
-### Wrap saved model
-
-* If not done before, run 
-
-	```python -m pip install grpcio-tools==1.1.3```
-
-	```cd ../../seldon-core/wrappers``` 
-	
-	```make build_protos```
-
-* Run 
-
-	```cd python``` 
-	
-	```python wrap_model.py ../../../seldon-core-plugins/keras_mnist MnistClassifier 0.0 seldonio```
-	
-	This will create the folder build in keras_mnist. The --base-image argument is not specified and the wrapper will use the default base image Python:2.
-
-* Run 
-
-	```cd ../../../seldon-core-plugins/keras_mnist/build/``` 
-	
-	```make build_docker_image``` 
-	
-	This will create the docker image ```seldonio/mnistclassifier:0.0``` which is ready for [deployment with seldon-core](../../api/seldon-deployment).
-
-
+This will create a docker image ```seldonio/mnistclassifier:0.1``` which is ready for deployment on seldon-core.
