@@ -9,15 +9,15 @@ cluster_manager:
   #java_opts: "-agentlib:jdwp=transport=dt_socket,address=127.0.0.1:8000,server=y,suspend=n"
   java_opts: ""
   image:
-    tag: "0.2.16"
+    tag: "0.3"
     pull_policy: "IfNotPresent"
 apife:
   image:
-    tag: "0.0.7"
+    tag: "0.1"
     pull_policy: "IfNotPresent"
 engine:
   image:
-    tag: "0.1.6"
+    tag: "0.2"
 
 kafka_core:
   image:
