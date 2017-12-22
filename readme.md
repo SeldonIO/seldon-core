@@ -2,16 +2,10 @@
 
 Seldon Core is an open source framework for deploying machine learning models on Kubernetes.
 
-<!-- TOC depthFrom:2 -->
-
-- [Overview](#overview)
+- [Goals](#goals)
 - [Quick Start](#quick-start)
-
-<!-- /TOC -->
-
-
-
-
+- [Deployment guide](#deployment-guide)
+- [Reference](#reference)
 
 ## Goals
 
