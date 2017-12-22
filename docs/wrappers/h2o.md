@@ -17,7 +17,7 @@ It is assumed you have already trained a h2o model and saved it in a file \<your
 In order to wrap an H2o model with the python wrappers, you need  a python+java docker image avaliable to use as base-image. One way to build a suitable base-image locally is by using the [Dockerfile provided by h2o](https://h2o-release.s3.amazonaws.com/h2o/rel-turing/1/docs-website/h2o-docs/docker.html):
 
 * Make sure you have docker deamon running.
-* Download the [Dockerfile provided by h2o](https://h2o-release.s3.amazonaws.com/h2o/rel-turing/1/docs-website/h2o-docs/docker.html) in any folder.
+* Download the [Dockerfile provided by h2o](https://github.com/h2oai/h2o-3/blob/master/Dockerfile) in any folder.
 * Create the base docker image:
 
     ```bash
@@ -59,7 +59,7 @@ Here we give an example of usage step by step in which we will train and save a 
 ### Preliminary step: build  your base image locally
 
 1. Make sure you have docker deamon running
-* Download the [Dockerfile provided by h2o](https://h2o-release.s3.amazonaws.com/h2o/rel-turing/1/docs-website/h2o-docs/docker.html) in any directory.
+* Download the [Dockerfile provided by h2o](https://github.com/h2oai/h2o-3/blob/master/Dockerfile) in any directory.
 * Run ``` docker build --force-rm=true -t none/h2obase:0.0 .``` in the same directory. This will create the base image "none/h2obase:0.0" locally (may take several minutes).
 
 ### Train and wrap the model
