@@ -1,5 +1,6 @@
 
 # Getting Started
 
- - Getting Started on Minikube
+ - [Quick Start using Minikube](./minikube.md)
+
 
