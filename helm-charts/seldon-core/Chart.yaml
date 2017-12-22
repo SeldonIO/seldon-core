@@ -2,3 +2,8 @@ apiVersion: v1
 description: Seldon Core helm chart for Kubernetes
 name: seldon-core
 version: 0.1
+keywords:
+- kubernetes
+- machine-learning
+sources:
+- https://github.com/SeldonIO/seldon-core

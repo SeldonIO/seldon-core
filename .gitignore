@@ -18,6 +18,7 @@ cluster-manager/.m2/
 _*.yaml
 _*.json
 
+helm-charts/build
 util/custom-resource-definitions/pod-template-spec-validation.tpl
 util/custom-resource-definitions/pod-template-spec.json
 util/custom-resource-definitions/swagger.json
