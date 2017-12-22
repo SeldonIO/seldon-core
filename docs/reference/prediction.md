@@ -1,4 +1,7 @@
 # Prediction API
+
+![API](./api.png)
+
 The Seldon Core prediction API intends to be a generic API to cover many machine learning prediction models. It presently provides prediction and feedback endpoints for querying your runtime machine learning graph and supplying feedback on the success of predictions.
 
  * [APIs](api)
