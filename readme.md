@@ -36,7 +36,7 @@ Seldon Core goals:
 
 ## Deployment Guide
 
- - Wrap your runtime prediction model.
+ - [Wrap your runtime prediction model](./docs/wrappers/readme.md).
  - Define your runtime inference graph in a seldon deployment custom resource.
  - Deploy.
 
