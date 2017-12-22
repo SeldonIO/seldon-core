@@ -1,21 +1,47 @@
 # Prediction API
-
+The Seldon Core prediction API intends to be a generic API to cover many machine learning prediction models. It presently provides prediction and feedback endpoints for querying your runtime machine learning graph and supplying feedback on the success of predictions.
 
  * [APIs](api)
  * [Design](#payload-design)
- * [Definiton](#proto-buffer-definition)
+ * [Definiton](#proto-buffer-and-grpc-definition)
 
 
 ## API
+
+### REST API
+
+#### Prediction
+
+ - endpoint : POST /api/v0.1/predictions
+ - payload : JSON representation of ```SeldonMessage``` - see proto definition below
+ - example : 
+   ```json
+   {"data":{"names":["a","b"],"tensor":{"shape":[2,2],"values":[0,0,1,1]}}}
+   ```
+#### Feedback 
+
+ - endpoint : POST /api/v0.1/feedback
+ - payload : JSON representation of ```Feedback``` - see proto definition below
+
+### gRPC
+
+```
+service Seldon {
+  rpc Predict(SeldonMessage) returns (SeldonMessage) {};
+  rpc SendFeedback(Feedback) returns (SeldonMessage) {};
+ }
+``` 
+
+For proto buffer definitions see below.
 
 ## Payload Design
 
 ![graph](./prediction.png)
 
 
-## Proto Buffer Definition
+## Proto Buffer and gRPC Definition
 
-```js
+```proto
 syntax = "proto3";
 
 import "google/protobuf/struct.proto";
@@ -24,6 +50,8 @@ package seldon.protos;
 
 option java_package = "io.seldon.protos";
 option java_outer_classname = "PredictionProtos";
+
+// [START Messages]
 
 message SeldonMessage {
 
@@ -53,7 +81,10 @@ message Meta {
   string puid = 1; 
   map<string,google.protobuf.Value> tags = 2;
   map<string,int32> routing = 3;
-  OutlierStatus outlierStatus = 4;  
+}
+
+message SeldonMessageList {
+  repeated SeldonMessage seldonMessages = 1;
 }
 
 message Status {
@@ -81,15 +112,21 @@ message RequestResponse {
   SeldonMessage response = 2;
 }
 
+// [END Messages]
 
-message OutlierStatus{
-    bool isOutlier = 1;
-    double score = 2;
+
+// [START Services]
+
+service Generic {
+  rpc TransformInput(SeldonMessage) returns (SeldonMessage) {};
+  rpc TransformOutput(SeldonMessage) returns (SeldonMessage) {};
+  rpc Route(SeldonMessage) returns (SeldonMessage) {};
+  rpc Aggregate(SeldonMessageList) returns (SeldonMessage) {};
+  rpc SendFeedback(Feedback) returns (SeldonMessage) {};
 }
 
 service Model {
   rpc Predict(SeldonMessage) returns (SeldonMessage) {};
-  rpc SendFeedback(Feedback) returns (SeldonMessage) {};
  }
 
 service Router {
@@ -99,9 +136,22 @@ service Router {
 
 service Transformer {
   rpc TransformInput(SeldonMessage) returns (SeldonMessage) {};
+}
+
+service OutputTransformer {
   rpc TransformOutput(SeldonMessage) returns (SeldonMessage) {};
+}
+
+service Combiner {
+  rpc Aggregate(SeldonMessageList) returns (SeldonMessage) {};
+}
+
+
+service Seldon {
+  rpc Predict(SeldonMessage) returns (SeldonMessage) {};
+  rpc SendFeedback(Feedback) returns (SeldonMessage) {};
  }
 
-
+// [END Services]
 ```
 
