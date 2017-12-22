@@ -58,7 +58,8 @@ Here we give an example of usage step by step in which we will train and save a 
 
 ### Preliminary step: build  your base image locally
 
-1. Make sure you have docker deamon running
+1. Have [h2o](http://docs.h2o.ai/h2o/latest-stable/h2o-docs/downloading.html) installed on your machine (h2o is only required to train the example. Seldon-core and seldon wrappers do not require h2o installed on your machine)
+1. Make sure you have a  docker deamon running
 * Download the [Dockerfile provided by h2o](https://github.com/h2oai/h2o-3/blob/master/Dockerfile) in any directory.
 * Run ``` docker build --force-rm=true -t none/h2obase:0.0 .``` in the same directory. This will create the base image "none/h2obase:0.0" locally (may take several minutes).
 
@@ -87,7 +88,7 @@ Here we give an example of usage step by step in which we will train and save a 
     ```
        
     ```bash 
-    ./wrap-model-in-minikub models/h2o_example H2oModel 0.1 seldonio --base-image none/h2obase:0.0 --force
+    ./wrap-model-in-minikube models/h2o_example H2oModel 0.1 seldonio --base-image none/h2obase:0.0 --force
     ``` 
 
     This will create a docker image "seldonio/h2omodel:0.1", which is ready to be deployed in seldon-core.
