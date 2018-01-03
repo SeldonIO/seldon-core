@@ -45,98 +45,126 @@
                                             "properties": {
                                                 "children": {
                                                     "items": {
-                                                        "properties": {
-                                                            "children": {
-                                                                "items": {
-                                                                    "properties": {
-                                                                        "children": {
-                                                                            "items": {},
-                                                                            "type": "array"
-                                                                        },
-                                                                        "endpoint": {
-                                                                            "properties": {
-                                                                                "service_host": {
-                                                                                    "type": "string"
-                                                                                },
-                                                                                "service_port": {
-                                                                                    "type": "integer"
-                                                                                },
-                                                                                "type": {
-                                                                                    "enum": [
-                                                                                        "REST",
-                                                                                        "GRPC"
-                                                                                    ],
-                                                                                    "type": "string"
-                                                                                }
-                                                                            }
-                                                                        },
-                                                                        "name": {
-                                                                            "type": "string"
-                                                                        },
-                                                                        "subtype": {
-                                                                            "enum": [
-                                                                                "MICROSERVICE",
-                                                                                "SIMPLE_MODEL",
-                                                                                "SIMPLE_ROUTER",
-                                                                                "RANDOM_ABTEST",
-                                                                                "AVERAGE_COMBINER"
-                                                                            ],
-                                                                            "type": "string"
-                                                                        },
-                                                                        "type": {
-                                                                            "enum": [
-                                                                                "ROUTER",
-                                                                                "COMBINER",
-                                                                                "MODEL",
-                                                                                "TRANSFORMER"
-                                                                            ],
-                                                                            "type": "string"
-                                                                        }
-                                                                    }
-                                                                },
-                                                                "type": "array"
-                                                            },
-                                                            "endpoint": {
-                                                                "properties": {
-                                                                    "service_host": {
-                                                                        "type": "string"
-                                                                    },
-                                                                    "service_port": {
-                                                                        "type": "integer"
-                                                                    },
-                                                                    "type": {
-                                                                        "enum": [
-                                                                            "REST",
-                                                                            "GRPC"
-                                                                        ],
-                                                                        "type": "string"
-                                                                    }
-                                                                }
-                                                            },
-                                                            "name": {
-                                                                "type": "string"
-                                                            },
-                                                            "subtype": {
-                                                                "enum": [
-                                                                    "MICROSERVICE",
-                                                                    "SIMPLE_MODEL",
-                                                                    "SIMPLE_ROUTER",
-                                                                    "RANDOM_ABTEST",
-                                                                    "AVERAGE_COMBINER"
-                                                                ],
-                                                                "type": "string"
-                                                            },
-                                                            "type": {
-                                                                "enum": [
-                                                                    "ROUTER",
-                                                                    "COMBINER",
-                                                                    "MODEL",
-                                                                    "TRANSFORMER"
-                                                                ],
-                                                                "type": "string"
-                                                            }
-                                                        }
-                                                    },
+							"properties": {
+							    "children": {
+								"items": {
+								    "properties": {
+									"children": {
+									    "items": {},
+									    "type": "array"
+									},
+									"endpoint": {
+									    "properties": {
+										"service_host": {
+										    "type": "string"
+										},
+										"service_port": {
+										    "type": "integer"
+										},
+										"type": {
+										    "enum": [
+											"REST",
+											"GRPC"
+										    ],
+										    "type": "string"
+										}
+									    }
+									},
+									"name": {
+									    "type": "string"
+									},
+									"implementation": {
+									    "enum": [
+										"UNKNOWN_IMPLEMENTATION",
+										"SIMPLE_MODEL",
+										"SIMPLE_ROUTER",
+										"RANDOM_ABTEST",
+										"AVERAGE_COMBINER"
+									    ],
+									    "type": "string"
+									},
+									"type": {
+									    "enum": [
+										"UNKNOWN_TYPE",
+										"ROUTER",
+										"COMBINER",
+										"MODEL",
+										"TRANSFORMER",
+										"OUTPUT_TRANSFORMER"
+									    ],
+									    "type": "string"
+									},
+									"methods": {
+									    "type":"array",
+									    "items":{
+										"enum": [
+										    "TRANSFORM_INPUT",
+										    "TRANSFORM_OUTPUT",
+										    "ROUTE",
+										    "AGGREGATE",
+										    "SEND_FEEDBACK"],
+										"type": "string"
+									    }
+									}
+								    }
+								},
+								"type": "array"
+							    },
+							    "endpoint": {
+								"properties": {
+								    "service_host": {
+									"type": "string"
+								    },
+								    "service_port": {
+									"type": "integer"
+								    },
+								    "type": {
+									"enum": [
+									    "REST",
+									    "GRPC"
+									],
+									"type": "string"
+								    }
+								}
+							    },
+							    "name": {
+								"type": "string"
+							    },
+							    "implementation": {
+								"enum": [
+								    "UNKNOWN_IMPLEMENTATION",
+								    "SIMPLE_MODEL",
+								    "SIMPLE_ROUTER",
+								    "RANDOM_ABTEST",
+								    "AVERAGE_COMBINER"
+								],
+								"type": "string"
+							    },
+							    "type": {
+								"enum": [
+								    "UNKNOWN_TYPE",
+								    "ROUTER",
+								    "COMBINER",
+								    "MODEL",
+								    "TRANSFORMER",
+								    "OUTPUT_TRANSFORMER"
+								],
+								"type": "string"
+							    },
+							    "methods": {
+								"type":"array",
+								"items":{
+								    "enum": [
+									"TRANSFORM_INPUT",
+									"TRANSFORM_OUTPUT",
+									"ROUTE",
+									"AGGREGATE",
+									"SEND_FEEDBACK"],
+								    "type": "string"
+								}
+							    }
+							}
+						    },
                                                     "type": "array"
                                                 },
                                                 "endpoint": {
@@ -159,9 +187,9 @@
                                                 "name": {
                                                     "type": "string"
                                                 },
-                                                "subtype": {
+                                                "implementation": {
                                                     "enum": [
-                                                        "MICROSERVICE",
+							"UNKNOWN_IMPLEMENTATION",
                                                         "SIMPLE_MODEL",
                                                         "SIMPLE_ROUTER",
                                                         "RANDOM_ABTEST",
@@ -171,13 +199,27 @@
                                                 },
                                                 "type": {
                                                     "enum": [
+							"UNKNOWN_TYPE",
                                                         "ROUTER",
                                                         "COMBINER",
                                                         "MODEL",
-                                                        "TRANSFORMER"
+                                                        "TRANSFORMER",
+							"OUTPUT_TRANSFORMER"
                                                     ],
                                                     "type": "string"
-                                                }
+                                                },
+						"methods": {
+						    "type":"array",
+						    "items":{
+							"enum": [
+							    "TRANSFORM_INPUT",
+							    "TRANSFORM_OUTPUT",
+							    "ROUTE",
+							    "AGGREGATE",
+							    "SEND_FEEDBACK"],
+							"type": "string"
+						    }
+						}
                                             }
                                         },
                                         "name": {
