@@ -1,0 +1,183 @@
+{
+    "apiVersion": "machinelearning.seldon.io/v1alpha1",
+    "kind": "SeldonDeployment",
+    "metadata": {
+	"labels": {
+	    "app": "seldon"
+	},
+	"name": "seldon-deployment-example"
+    },
+    "spec": {
+	"annotations": {
+	    "project-name":"FX Market Prediction",
+	    "deployment_version": "v1"
+	},
+	"name": "test-deployment-complex",
+	"oauth_key": "oauth-key",
+	"oauth_secret": "oauth-secret",
+	"predictors": [
+	    {
+		"componentSpec": {
+		    "spec": {
+			"containers": [
+			    {
+				"image": "seldonio/mean_classifier:0.6",
+				"imagePullPolicy": "IfNotPresent",
+				"name": "mean-classifier-1",
+				"resources": {
+				    "requests": {
+					"memory": "1Mi"
+				    }
+				}
+			    },
+			    {
+				"image": "seldonio/mean_classifier:0.6",
+				"imagePullPolicy": "IfNotPresent",
+				"name": "mean-classifier-2",
+				"resources": {
+				    "requests": {
+					"memory": "1Mi"
+				    }
+				}
+			    },
+			    {
+				"image": "seldonio/mean_classifier:0.6",
+				"imagePullPolicy": "IfNotPresent",
+				"name": "mean-classifier-3",
+				"resources": {
+				    "requests": {
+					"memory": "1Mi"
+				    }
+				}
+			    },
+			    {
+				"image": "seldonio/outlier_detector:0.1",
+				"imagePullPolicy": "IfNotPresent",
+				"name": "outlier-detector",
+				"resources": {
+				    "requests": {
+					"memory": "1Mi"
+				    }
+				}
+			    },
+			    {
+				"image": "seldonio/meantransformer:0.1",
+				"imagePullPolicy": "IfNotPresent",
+				"name": "mean-transformer",
+				"resources": {
+				    "requests": {
+					"memory": "1Mi"
+				    }
+				}
+			    }
+			],
+			"terminationGracePeriodSeconds": 20
+		    }
+		},
+		"name": "fx-market-predictor",
+		"replicas": 1,
+		"annotations": {
+		    "predictor_version": "v1"
+		},
+		"graph": {
+		    "name": "outlier-detector",
+		    "type": "TRANSFORMER",
+		    "endpoint": {
+			"type": "GRPC"
+		    },
+		    "children": [
+			{
+			    "name": "random-abtest",
+			    "implementation": "RANDOM_ABTEST",
+			    "type": "UNKNOWN_TYPE",
+			    "children": [
+				{
+				    "name": "mean-transformer",
+				    "type": "TRANSFORMER",
+				    "endpoint": {
+					"type": "GRPC"
+				    },
+				    "children": [
+					{
+					    "name": "mean-classifier-1",
+					    "type": "MODEL",
+					    "endpoint": {
+						"type": "REST"
+					    }
+					}
+				    ]
+				},
+				{
+				    "name": "ensemble",
+				    "type": "UNKNOWN_TYPE",
+				    "implementation": "AVERAGE_COMBINER",
+				    "children": [
+					{
+					    "name": "mean-classifier-2",
+					    "type": "MODEL",
+					    "endpoint": {
+						"type": "REST"
+					    }
+					},
+					{
+					    "name": "mean-classifier-3",
+					    "type": "MODEL",
+					    "endpoint": {
+						"type": "REST"
+					    }
+					}
+				    ]
+				}
+			    ]
+			}
+		    ]
+		}
+	    },
+	    {
+		"componentSpec": {
+		    "spec": {
+			"containers": [
+			    {
+				"image": "seldonio/mean_classifier:0.6",
+				"imagePullPolicy": "IfNotPresent",
+				"name": "mean-classifier",
+				"resources": {
+				    "requests": {
+					"memory": "1Mi"
+				    }
+				}
+			    },
+			    {
+				"image": "seldonio/meantransformer:0.1",
+				"imagePullPolicy": "IfNotPresent",
+				"name": "mean-transformer",
+				"resources": {
+				    "requests": {
+					"memory": "1Mi"
+				    }
+				}
+			    }
+			],
+			"terminationGracePeriodSeconds": 20
+		    }
+		},
+		"graph": {
+		    "name": "transformer",
+		    "type": "TRANSFORMER",
+		    "endpoint": {
+			"type": "REST"
+		    },
+		    "children": [
+			{
+			    "name": "mean-classifier",
+			    "endpoint": {
+				"type": "REST"
+			    },
+			    "type": "MODEL"
+			}
+		    ]
+		}
+	    }	    
+	]
+    }
+}

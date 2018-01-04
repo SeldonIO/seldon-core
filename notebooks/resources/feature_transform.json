@@ -1,0 +1,63 @@
+{
+    "apiVersion": "machinelearning.seldon.io/v1alpha1",
+    "kind": "SeldonDeployment",
+    "metadata": {
+	"labels": {
+	    "app": "seldon"
+	},
+	"name": "seldon-deployment-example"
+    },
+    "spec": {
+	"annotations": {
+	    "project-name": "FX Market Prediction",
+	    "deployment_version": "v1"
+	},
+	"name": "test-deployment-transformer",
+	"oauth_key": "oauth-key",
+	"oauth_secret": "oauth-secret",
+	"predictors": [
+	    {
+		"componentSpec": {
+		    "spec": {
+			"containers": [
+			    {
+				"image": "seldonio/mean_classifier:0.6",
+				"imagePullPolicy": "IfNotPresent",
+				"name": "mean-classifier",
+				"resources": {
+				    "requests": {
+					"memory": "1Mi"
+				    }
+				}
+			    },
+			    {
+				"image": "seldonio/meantransformer:0.1",
+				"imagePullPolicy": "IfNotPresent",
+				"name": "transformer",
+				"resources": {
+				    "requests": {
+					"memory": "1Mi"
+				    }
+				}
+			    }
+			],
+			"terminationGracePeriodSeconds": 20
+		    }
+		},
+		"graph": {
+		    "name": "transformer",
+		    "type": "TRANSFORMER",
+		    "children": [
+			{
+			    "name": "mean-classifier",
+			    "endpoint": {
+				"type": "REST"
+			    },
+			    "type": "MODEL"
+			}
+		    ]
+		}
+	    }
+	]
+    }
+}
