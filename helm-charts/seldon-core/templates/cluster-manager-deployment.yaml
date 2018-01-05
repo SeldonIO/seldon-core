@@ -13,6 +13,9 @@ items:
         labels:
           app: seldon-cluster-manager-server
       spec:
+{{- if .Values.cluster_manager.rbac }}
+        serviceAccountName: seldon
+{{- end }}
         containers:
         - env:
           - name: JAVA_OPTS
