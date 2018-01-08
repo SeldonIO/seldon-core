@@ -32,7 +32,8 @@ Seldon Core goals:
 ## Quick Start
 
  - [Quick Start using Minikube](./docs/getting_started/minikube.md)
- - [Jupyter Notebook showing deployment of prebuilt model](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_minikube.ipynb)
+ - [Jupyter Notebook showing deployment of prebuilt model using Minikube](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_minikube.ipynb)
+ - [Jupyter Notebook showing deployment of prebuilt model using GCP cluster](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_gcp.ipynb)
 
 ## Deployment Guide
 
