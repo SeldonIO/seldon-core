@@ -11,8 +11,12 @@ jobs:
 
     steps:
       - checkout
-
-      - run "cd api-frontend && make -f Makefile.ci build"
+      - run:
+          shell: /bin/sh
+          command: |
+            echo Building api-frontend
+            cd api-frontend
+            make -f Makefile.ci build"
 
 workflows:
   version: 2
