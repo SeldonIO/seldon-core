@@ -17,13 +17,13 @@ Seldon Core goals:
      - Sklearn models
    - Spark Models
    - H2O Models
- - Expose machine learning models via REST and gRPC automatically when deployed.
- - Allow complex runtime inference graphs to be deployed as microservices. These graphs will be composed of:
+ - Expose machine learning models via REST and gRPC automatically when deployed for easy integration into business apps that need predictions.
+ - Allow complex runtime inference graphs to be deployed as microservices. These graphs can be composed of:
    - Models - runtime inference executable for machine learning models
    - Routers - route API requests to sub-graphs. Examples: AB Tests, Multi-Armed Bandits.
    - Combiners - combine the responses from sub-graphs. Examples: ensembles of models
    - Transformers - transform request or responses. Example: transform feature requests.
- - Handle full lifecycle management of the deploy model
+ - Handle full lifecycle management of the deployed model:
     - Updating the runtime graph with no downtime
     - Scaling
     - Monitoring
