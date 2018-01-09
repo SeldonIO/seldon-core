@@ -41,7 +41,6 @@ public class SeldonService extends SeldonGrpc.SeldonImplBase {
     @Override
     public void predict(io.seldon.protos.PredictionProtos.SeldonMessage request,
                 io.grpc.stub.StreamObserver<io.seldon.protos.PredictionProtos.SeldonMessage> responseObserver) {
-        logger.debug("Received predict request for "+server.principalThreadLocal.get());
         try
         {
             ManagedChannel channel = server.getChannel();
@@ -58,7 +57,6 @@ public class SeldonService extends SeldonGrpc.SeldonImplBase {
     @Override
     public void sendFeedback(io.seldon.protos.PredictionProtos.Feedback request,
             io.grpc.stub.StreamObserver<io.seldon.protos.PredictionProtos.SeldonMessage> responseObserver) {
-        logger.debug("Received feedback request for "+server.principalThreadLocal.get());
         try
         {
             ManagedChannel channel = server.getChannel();

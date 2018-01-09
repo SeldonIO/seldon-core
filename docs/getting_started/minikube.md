@@ -9,8 +9,8 @@ In this guide, we will show how to create, deploy and serve a iris classificatio
 
 The following packages need to be installed on your machine.
 
-* [minikube](https://kubernetes.io/docs/tasks/tools/install-minikube/)> version v0.24.0 or greater.
-* [helm](https://github.com/kubernetes/helm/blob/master/docs/install.md) version v2.7.0 or greater.
+* [minikube](https://kubernetes.io/docs/tasks/tools/install-minikube/) >= 0.24.0
+* [helm](https://github.com/kubernetes/helm/blob/master/docs/install.md) >= 2.7.0
 
 * [sklearn](http://scikit-learn.org/stable/) 
   - Sklearn is needed only to train the iris classifier example below. Seldon-core doesn't not require sklearn installed on your machine  to run.
