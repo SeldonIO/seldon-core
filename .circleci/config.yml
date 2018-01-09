@@ -1,0 +1,16 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: seldonio/core-builder:0.1
+
+    working_directory: /work
+
+    environment:
+      TESTVAR: OK
+
+    steps:
+      - checkout
+
+      - run: "echo ok"
+
