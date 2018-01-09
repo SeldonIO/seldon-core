@@ -6,9 +6,6 @@ jobs:
 
     working_directory: /work
 
-    environment:
-      TESTVAR: OK
-
     steps:
       - checkout
 
@@ -22,9 +19,29 @@ jobs:
             cd api-frontend
             make -f Makefile.ci build
 
+  build-engine:
+    docker:
+      - image: seldonio/core-builder:0.1
+
+    working_directory: /work
+
+    steps:
+      - checkout
+
+      - setup_remote_docker:
+          docker_layer_caching: true
+
+      - run:
+          shell: /bin/sh
+          command: |
+            echo Building engine
+            cd engine
+            make -f Makefile.ci build
+
 workflows:
   version: 2
   build:
     jobs:
       - build-api-frontend
+      - build-engine
 
