@@ -9,4 +9,9 @@ branches:
 
 script:
   - echo ok
+  - pwd
+  - ls
+  - docker version
+  - env
+
 
