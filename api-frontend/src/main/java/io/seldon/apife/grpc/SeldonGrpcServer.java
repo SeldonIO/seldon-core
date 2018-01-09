@@ -18,6 +18,8 @@ package io.seldon.apife.grpc;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,47 +35,60 @@ import io.grpc.ServerInterceptors;
 import io.seldon.apife.AppProperties;
 import io.seldon.apife.api.oauth.InMemoryClientDetailsService;
 import io.seldon.apife.deployments.DeploymentStore;
+import io.seldon.apife.deployments.DeploymentsHandler;
+import io.seldon.apife.deployments.DeploymentsListener;
 import io.seldon.apife.exception.SeldonAPIException;
 import io.seldon.protos.DeploymentProtos.DeploymentSpec;
 import io.seldon.protos.DeploymentProtos.Endpoint;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 @Component
-public class SeldonGrpcServer  {
+public class SeldonGrpcServer    {
     protected static Logger logger = LoggerFactory.getLogger(SeldonGrpcServer.class.getName());
 	
     public static final int SERVER_PORT = 5000;
     
     private final int port;
     private final Server server;
-    ThreadLocal<String> principalThreadLocal = new ThreadLocal<String>();  
-    ConcurrentHashMap<String,ManagedChannel> channelStore = new ConcurrentHashMap<>();
+    private ThreadLocal<String> principalThreadLocal = new ThreadLocal<String>();  
+    private ConcurrentHashMap<String,ManagedChannel> channelStore = new ConcurrentHashMap<>();
 	  
     private final DeploymentStore deploymentStore;
     private final TokenStore tokenStore;
     private final AppProperties appProperties;
-	  
+    private final grpcDeploymentsListener grpcDeploymentsListener;
+    private final DeploymentsHandler deploymentsHandler;
+    
     @Autowired
-    public SeldonGrpcServer(AppProperties appProperties,DeploymentStore deploymentStore,TokenStore tokenStore)
+    public SeldonGrpcServer(AppProperties appProperties,DeploymentStore deploymentStore,TokenStore tokenStore,DeploymentsHandler deploymentsHandler)
     {
-        this(appProperties,deploymentStore,tokenStore,SERVER_PORT);  
+        this(appProperties,deploymentStore,tokenStore,deploymentsHandler,SERVER_PORT);  
     }    
     
-    public SeldonGrpcServer(AppProperties appProperties,DeploymentStore deploymentStore,TokenStore tokenStore,int port)
+    public SeldonGrpcServer(AppProperties appProperties,DeploymentStore deploymentStore,TokenStore tokenStore,DeploymentsHandler deploymentsHandler,int port)
     {
-        this(appProperties,deploymentStore,tokenStore,ServerBuilder.forPort(port), port);
+        this(appProperties,deploymentStore,tokenStore,ServerBuilder.forPort(port), deploymentsHandler, port);
     }
     
   
-    public SeldonGrpcServer(AppProperties appProperties,DeploymentStore deploymentStore,TokenStore tokenStore,ServerBuilder<?> serverBuilder, int port) 
+    public SeldonGrpcServer(AppProperties appProperties,DeploymentStore deploymentStore,TokenStore tokenStore,ServerBuilder<?> serverBuilder,DeploymentsHandler deploymentsHandler, int port) 
     {
         this.appProperties = appProperties;
         this.deploymentStore = deploymentStore;
         this.tokenStore = tokenStore;
+        this.grpcDeploymentsListener = new grpcDeploymentsListener(this);
+        this.deploymentsHandler = deploymentsHandler;
+        deploymentsHandler.addListener(this.grpcDeploymentsListener);
         this.port = port;
         server = serverBuilder
               .addService(ServerInterceptors.intercept(new SeldonService(this), new HeaderServerInterceptor(this)))
           .build();
+    }
+  
+    @PostConstruct
+    private void init() throws Exception{
+        logger.info("Initializing...");
+        deploymentsHandler.addListener(this.grpcDeploymentsListener);
     }
     
     public void setPrincipal(String principal)
@@ -112,8 +127,7 @@ public class SeldonGrpcServer  {
         ManagedChannel channel = channelStore.get(principal);
         if (channel == null)
         {
-            channel = ManagedChannelBuilder.forAddress(deploymentSpec.getName(), appProperties.getEngineGrpcContainerPort()).usePlaintext(true).build();
-            channelStore.putIfAbsent(principal,channel);
+            throw new SeldonAPIException(SeldonAPIException.ApiExceptionType.APIFE_GRPC_NO_GRPC_CHANNEL_FOUND,"Principal is "+principal);
         }
         return channel;
     }
@@ -175,8 +189,18 @@ public class SeldonGrpcServer  {
         AppProperties appProperties = new AppProperties();
         appProperties.setEngineGrpcContainerPort(5000);
         store.deploymentAdded(dep);
-        SeldonGrpcServer server = new SeldonGrpcServer(appProperties,store,null,SERVER_PORT);
+        SeldonGrpcServer server = new SeldonGrpcServer(appProperties,store,null,null,SERVER_PORT);
         server.start();
         server.blockUntilShutdown();
   }
+
+    public void deploymentAdded(SeldonDeployment resource) {
+        ManagedChannel channel = ManagedChannelBuilder.forAddress(resource.getSpec().getName(), appProperties.getEngineGrpcContainerPort()).usePlaintext(true).build();
+        channelStore.put(resource.getSpec().getOauthKey(),channel);        
+    }
+
+    public void deploymentRemoved(SeldonDeployment resource) {
+       channelStore.remove(resource.getSpec().getOauthKey());
+    }
+   
 }
