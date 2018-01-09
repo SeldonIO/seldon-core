@@ -1,38 +1,15 @@
 # Prediction API
-The Seldon Core prediction API intends to be a generic API to cover many machine learning prediction models. It presently provides prediction and feedback endpoints for querying your runtime machine learning graph and supplying feedback on the success of predictions.
 
- * [APIs](api)
+Seldon Core uses REST and gRPC APIs exposed externally for business applications to connect to and also internally for microservices to implement models, routers, combiners and transformers.
+
+ - [External Prediction API](external-prediction.md)
+   - Read this if you want to connect external business applications
+ - [Internal Prediction API](internal-api.md)
+   - Read this if you want to build a microservice to wrap a model or build another type of component such as a router, combiner or transformer
+
  * [Design](#payload-design)
  * [Definiton](#proto-buffer-and-grpc-definition)
 
-
-## API
-
-### REST API
-
-#### Prediction
-
- - endpoint : POST /api/v0.1/predictions
- - payload : JSON representation of ```SeldonMessage``` - see proto definition below
- - example : 
-   ```json
-   {"data":{"names":["a","b"],"tensor":{"shape":[2,2],"values":[0,0,1,1]}}}
-   ```
-#### Feedback 
-
- - endpoint : POST /api/v0.1/feedback
- - payload : JSON representation of ```Feedback``` - see proto definition below
-
-### gRPC
-
-```
-service Seldon {
-  rpc Predict(SeldonMessage) returns (SeldonMessage) {};
-  rpc SendFeedback(Feedback) returns (SeldonMessage) {};
- }
-``` 
-
-For proto buffer definitions see below.
 
 ## Payload Design
 
