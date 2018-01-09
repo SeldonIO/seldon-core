@@ -1,0 +1,12 @@
+sudo: required
+
+services:
+  - docker
+
+branches:
+  only:
+    - master
+
+script:
+  - echo ok
+
