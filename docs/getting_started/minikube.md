@@ -50,7 +50,7 @@ Seldon-core should now be running on your cluster. You can verify if all the pod
 
 ### Wrap your model
 
-In this session, we show how to wrap the sklearn iris classifier in the [seldon-core-example](link) repository using seldon-core python wrappers. The example consist of a logistic regression model trained on the  [iris dataset](link_iris).
+In this session, we show how to wrap the sklearn iris classifier in the [seldon-core-example](https://github.com/SeldonIO/seldon-core-examples) repository using seldon-core python wrappers. The example consist of a logistic regression model trained on the  [iris dataset](http://scikit-learn.org/stable/auto_examples/datasets/plot_iris_dataset.html).
 
 1. Clone seldon-core-examples repository:
 
@@ -200,9 +200,9 @@ The response from the server should be a json object of this type:
 The response contains:
 
 * a "meta" dictionary: This dictionary contains various metadata:
-    * "puid": A unique identifier for the prediction
-    * "tags": Optional tags. Empty in this case
-    * "routing": This field is relevant when the deployment contain a more complex graph (see [A/B test example](link)). In this case is empty since we are deploying a single model
+    * "puid": A unique identifier for the prediction.
+    * "tags": Optional tags. Empty in this case.
+    * "routing": This field is relevant when the deployment contain a more complex graph. In this case is empty since we are deploying a single model.
 * "data" dictionary: This dictionary contains the predictions for your model classes
     * "names": The names of your classes.
-    * "ndarray": The predicted  probabilities for each class
+    * "ndarray": The predicted  probabilities for each class.
