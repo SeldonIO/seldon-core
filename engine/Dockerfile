@@ -1,8 +1,6 @@
-FROM openjdk:8u131-jre-alpine
+FROM deeplearning4j/dl4j-devkit
 
 ARG APP_VERSION=UNKOWN_VERSION
-
-RUN apk update && apk add curl
 
 ADD /target/seldon-engine-${APP_VERSION}.jar app.jar
 
