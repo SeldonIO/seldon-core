@@ -15,5 +15,5 @@
 
 ## Reference
 
- - [Prediction API](.reference/prediction.md)
+ - [Prediction API](./reference/prediction.md)
  - [Seldon Deployment Custom Resource](./reference/seldon-deployment.md)

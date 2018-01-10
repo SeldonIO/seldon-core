@@ -22,6 +22,9 @@
                         }
                     },
                     "spec": {
+{{- if .Values.cluster_manager.rbac }}
+			"serviceAccountName": "seldon",
+{{- end }}
                         "containers": [
                             {
                                 "env": [
