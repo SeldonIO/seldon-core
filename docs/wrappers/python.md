@@ -1,10 +1,10 @@
 # Packaging a python  model for seldon core
 In this guide, we illustrate the steps needed to wrap your own python  model in a docker image ready for deployment with seldon-core. 
-The steps are general and can be used to package any model laodable through a python function (either a pure python function or python API function) for seldon wrappers.
+The steps are general and can be used to package any model that can be loaded in python (either via a pure python function or python API function) for seldon wrappers.
 
 ## Create a model folder
 
-Seldon python wrappers are designed to load a saved model and package it into a docker image. In order to use the wrappers, the loadable file containing your model need to be placed in a dedicated folder \<your_model_folder>.
+Seldon python wrappers are designed to load a saved model and package it into a docker image. In order to use the wrappers, the loadable containing your model needs to be placed in a dedicated folder \<your_model_folder>.
 
 Here we illustrate the content of the ```keras_mnist``` model folder which can be found in [seldon-core-example/models/](link_to_github). In this example we have \<your_model_folder> = seldon-core-examples/models/keras_mnist.
 
