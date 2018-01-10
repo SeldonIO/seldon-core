@@ -183,6 +183,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		V1.Container.Builder c2Builder = V1.Container.newBuilder(c);
         
 		Integer containerPort = getPort(c.getPortsList());
+		// Add container port and liveness and readiness probes if no container ports are specified
 		if (containerPort == null)
 		{
 		    if (pu != null)
@@ -191,46 +192,66 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		        {
 		            c2Builder.addPorts(ContainerPort.newBuilder().setName("http").setContainerPort(clusterManagerProperites.getPuContainerPortBase() + idx));
 		            containerPort = clusterManagerProperites.getPuContainerPortBase() + idx;
+		            
+		            if (!c.hasLivenessProbe())
+		            {
+		                c2Builder.setLivenessProbe(Probe.newBuilder()
+		                        .setHandler(Handler.newBuilder().setTcpSocket(TCPSocketAction.newBuilder().setPort(io.kubernetes.client.proto.IntStr.IntOrString.newBuilder().setType(1).setStrVal("http"))))
+		                        .setInitialDelaySeconds(10)
+		                        .setPeriodSeconds(5)
+		                        );
+		            }
+		            if (!c.hasReadinessProbe())
+		            {
+		                
+		                c2Builder.setReadinessProbe(Probe.newBuilder()
+		                        .setHandler(Handler.newBuilder().setTcpSocket(TCPSocketAction.newBuilder().setPort(io.kubernetes.client.proto.IntStr.IntOrString.newBuilder().setType(1).setStrVal("http"))))
+		                        .setInitialDelaySeconds(10)
+		                        .setPeriodSeconds(5)
+		                        );
+		            }
 		        }
 		        else
 		        {
 		            c2Builder.addPorts(ContainerPort.newBuilder().setName("grpc").setContainerPort(clusterManagerProperites.getPuContainerPortBase() + idx));
-		            containerPort = clusterManagerProperites.getPuContainerPortBase() + idx;		        
+		            containerPort = clusterManagerProperites.getPuContainerPortBase() + idx;		
+		            
+		            if (!c.hasLivenessProbe())
+                    {
+                        c2Builder.setLivenessProbe(Probe.newBuilder()
+                                .setHandler(Handler.newBuilder().setTcpSocket(TCPSocketAction.newBuilder().setPort(io.kubernetes.client.proto.IntStr.IntOrString.newBuilder().setType(1).setStrVal("grpc"))))
+                                .setInitialDelaySeconds(10)
+                                .setPeriodSeconds(5)
+                                );
+                    }
+                    if (!c.hasReadinessProbe())
+                    {
+                        
+                        c2Builder.setReadinessProbe(Probe.newBuilder()
+                                .setHandler(Handler.newBuilder().setTcpSocket(TCPSocketAction.newBuilder().setPort(io.kubernetes.client.proto.IntStr.IntOrString.newBuilder().setType(1).setStrVal("grpc"))))
+                                .setInitialDelaySeconds(10)
+                                .setPeriodSeconds(5)
+                                );
+                        
+                    }
 		        }
 		    }
 		}
 		else
 			containerPort = c.getPorts(0).getContainerPort();
 		
+		// Add environment variable for the port used in case the model needs to access it
 		final String ENV_PREDICTIVE_UNIT_SERVICE_PORT ="PREDICTIVE_UNIT_SERVICE_PORT";
 		Set<String> envNames = this.getEnvNamesProto(c.getEnvList());
 		if (!envNames.contains(ENV_PREDICTIVE_UNIT_SERVICE_PORT))
 			c2Builder.addEnv(EnvVar.newBuilder().setName(ENV_PREDICTIVE_UNIT_SERVICE_PORT).setValue(""+containerPort));
 				
+		//Add environment variable for the parameters passed in case the model needs to access it
 		final String ENV_PREDICTIVE_UNIT_PARAMETERS = "PREDICTIVE_UNIT_PARAMETERS";
 		if (!envNames.contains(ENV_PREDICTIVE_UNIT_PARAMETERS))
 		    c2Builder.addEnv(EnvVar.newBuilder().setName(ENV_PREDICTIVE_UNIT_PARAMETERS).setValue(extractPredictiveUnitParametersAsJson(pu)));
-		
-		if (!c.hasLivenessProbe())
-		{
-			c2Builder.setLivenessProbe(Probe.newBuilder()
-					.setHandler(Handler.newBuilder().setTcpSocket(TCPSocketAction.newBuilder().setPort(io.kubernetes.client.proto.IntStr.IntOrString.newBuilder().setType(1).setStrVal("http"))))
-					.setInitialDelaySeconds(10)
-					.setPeriodSeconds(5)
-					);
-		}
-		
-		if (!c.hasReadinessProbe())
-		{
-			c2Builder.setReadinessProbe(Probe.newBuilder()
-					.setHandler(Handler.newBuilder().setTcpSocket(TCPSocketAction.newBuilder().setPort(io.kubernetes.client.proto.IntStr.IntOrString.newBuilder().setType(1).setStrVal("http"))))
-					.setInitialDelaySeconds(10)
-					.setPeriodSeconds(5)
-					);
-			
-		}
-		
-		
+
+		// Add a default lifecycle pre-stop if non exists
 		if (!c.hasLifecycle())
 		{
 			if (!c.getLifecycle().hasPreStop())
@@ -239,7 +260,6 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 						ExecAction.newBuilder().addCommand("/bin/sh").addCommand("-c").addCommand("/bin/sleep 5"))));
 			}
 		}
-
 		
 		return c2Builder.build();
 	}
