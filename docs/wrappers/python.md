@@ -6,7 +6,7 @@ The steps are general and can be used to package any model that can be loaded in
 
 Seldon python wrappers are designed to load a saved model and package it into a docker image. In order to use the wrappers, the loadable containing your model needs to be placed in a dedicated folder \<your_model_folder>.
 
-Here we illustrate the content of the ```keras_mnist``` model folder which can be found in [seldon-core-example/models/](link_to_github). In this example we have \<your_model_folder> = seldon-core-examples/models/keras_mnist.
+Here we illustrate the content of the ```keras_mnist``` model folder which can be found in [seldon-core-example/models/](https://github.com/SeldonIO/seldon-core-examples). In this example we have \<your_model_folder> = seldon-core-examples/models/keras_mnist.
 
 Any model folder must include the following 3 files (if you build your own model, rename the files where appropriate):
 1. MnistClassifier.py: Needs to include a python class having the same name as the file, in this case MnistClassifier, and implementing the  methods \__init__()  and predict(). The following template shows the structure of the file:
@@ -65,7 +65,7 @@ After you have copied the required files in your model folder, you can use seldo
     
     The base image for the model, default is Python:2.
 
-If you are using Minikube, the wrapping can be done as in the [getting started on Minikube session](link)
+If you are using Minikube, the wrapping can be done as in the [getting started on Minikube session](../getting_started/minikube.md)
 
 ```bash
  git clone https://github.com/SeldonIO/seldon-core-examples && cd seldon-core-example 
