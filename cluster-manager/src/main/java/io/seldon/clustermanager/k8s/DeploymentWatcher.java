@@ -32,7 +32,7 @@ import com.google.gson.reflect.TypeToken;
 import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.ApiException;
 import io.kubernetes.client.apis.ExtensionsV1beta1Api;
-import io.kubernetes.client.models.AppsV1beta1Deployment;
+import io.kubernetes.client.models.ExtensionsV1beta1Deployment;
 import io.kubernetes.client.models.V1OwnerReference;
 import io.kubernetes.client.util.Config;
 import io.kubernetes.client.util.Watch;
@@ -65,14 +65,14 @@ public class DeploymentWatcher {
 		ApiClient client = Config.defaultClient();
 		ExtensionsV1beta1Api api = new ExtensionsV1beta1Api(client);
 
-		Watch<AppsV1beta1Deployment> watch = Watch.createWatch(
+		Watch<ExtensionsV1beta1Deployment> watch = Watch.createWatch(
 		        client,
 		        api.listNamespacedDeploymentCall("default", null, null, null,false,SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_KEY+"="+SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_VAL, null,rs, 10, true,null,null),
-		        new TypeToken<Watch.Response<AppsV1beta1Deployment>>(){}.getType());
+		        new TypeToken<Watch.Response<ExtensionsV1beta1Deployment>>(){}.getType());
 
 		try
 		{
-		    for (Watch.Response<AppsV1beta1Deployment> item : watch) {
+		    for (Watch.Response<ExtensionsV1beta1Deployment> item : watch) {
                 int resourceVersionNew = Integer.parseInt(item.object.getMetadata().getResourceVersion());
                 if (resourceVersionNew <= resourceVersionProcessed)
                 {

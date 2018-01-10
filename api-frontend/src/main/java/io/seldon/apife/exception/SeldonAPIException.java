@@ -32,7 +32,8 @@ public class SeldonAPIException extends RuntimeException {
 		APIFE_MICROSERVICE_ERROR(103,"Microservice error",500),
 		APIFE_NO_RUNNING_DEPLOYMENT(104,"No Running Deployment",500),
 		APIFE_INVALID_RESPONSE_JSON(105,"Invalid Response JSON",400),
-		APIFE_GRPC_NO_PRINCIPAL_FOUND(105,"No OAuth principal found",400);
+		APIFE_GRPC_NO_PRINCIPAL_FOUND(105,"No OAuth principal found",400),
+	    APIFE_GRPC_NO_GRPC_CHANNEL_FOUND(106,"No Managed Channel found",400);
 		
 		int id;
 		String message;
