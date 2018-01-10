@@ -54,7 +54,7 @@ You can now wrap the model using seldon python wrappers.
 
 ## Example of usage
 
-Here we give an example of usage step by step in which we will train and save a [h2o model for bad loan predictions](https://github.com/h2oai/h2o-tutorials/blob/master/h2o-open-tour-2016/chicago/intro-to-h2o.ipynb), we will create a base image supporting h2o named "none/h2obase:0.0" and  we will use seldon wrappers to build  dockererized version of the model ready to be deployed with seldon-core. 
+Here we give an example of usage step by step in which we will train and save a [h2o model for bad loan predictions](https://github.com/h2oai/h2o-tutorials/blob/master/h2o-open-tour-2016/chicago/intro-to-h2o.ipynb), we will create a base image supporting h2o named "seldonio/h2obase:0.1" and  we will use seldon wrappers to build  dockererized version of the model ready to be deployed with seldon-core. 
 
 ### Preliminary step: build  your base image locally
 
