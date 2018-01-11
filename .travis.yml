@@ -20,10 +20,7 @@ jobs:
               -v ${HOME}/.m2:/root/.m2 \
               -v $(pwd):/work \
               seldonio/core-builder:0.1 bash -c 'cd api-frontend && make -f Makefile.ci build'
+        - docker images | grep 'seldonio/apife'
     - # same stage
       script: echo item 2
-
-    - stage: check-images
-      script:
-        - docker images | grep 'seldonio/apife'
 
