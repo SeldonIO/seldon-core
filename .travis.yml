@@ -17,7 +17,7 @@ jobs:
           set -x && \
           docker run --rm -it \
               -v /var/run/docker.sock:/var/run/docker.sock \
-              -v ${HOME}/.m2:/home/travis/.m2 \
+              -v ${HOME}/.m2:/root/.m2 \
               -v $(pwd):/work \
               seldonio/core-builder:0.1 bash -c 'cd api-frontend && make -f Makefile.ci build'
     - # same stage
