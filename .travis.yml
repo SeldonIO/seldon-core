@@ -23,3 +23,7 @@ jobs:
     - # same stage
       script: echo item 2
 
+    - stage: check-images
+      script:
+        - docker images | grep 'seldonio/apife'
+
