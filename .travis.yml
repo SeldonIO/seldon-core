@@ -31,5 +31,5 @@ jobs:
               -v ${HOME}/.m2:/root/.m2 \
               -v $(pwd):/work \
               seldonio/core-builder:0.1 bash -c 'cd engine && make -f Makefile.ci build'
-        - docker images | grep 'seldonio/engine
+        - docker images | grep 'seldonio/engine'
 
