@@ -8,7 +8,7 @@ The runtime inference graph for a machine learning deployment is described as a 
 
 The full specification can be found [here](../reference/seldon-deployment.md). Below we highlight various parts and describe their intent.
 
-The core goal is to describe your runtime inference graph(s) and deploy the with appropriate resources and scale. Exxample illustrative graphs are shown below:
+The core goal is to describe your runtime inference graph(s) and deploy it with appropriate resources and scale. Example illustrative graphs are shown below:
 
 ![graph](../reference/graph.png)
 
@@ -32,7 +32,7 @@ For each predictor you should at a minimum specify:
  * A unique name
  * A PredictiveUnit graph that presents the tree of components to deploy.
  * A componentSpec which describes the set of images for parts of your container graph that will be instigated as microservice containers. These containers will have been wrapped to work within the [internal API](../reference/internal-api.md). This component spec is a standard [PodTemplateSpec](https://kubernetes.io/docs/api-reference/extensions/v1beta1/definitions/#_v1_podtemplatespec).
-     * If you leave the ports empty for each container they will be added automatically and matched to the ports in the graph specification. If you decide to specify the ports manually they should match the port specified for the matching component in the grph specification.
+     * If you leave the ports empty for each container they will be added automatically and matched to the ports in the graph specification. If you decide to specify the ports manually they should match the port specified for the matching component in the graph specification.
  * the number of replicas of this predictor to deploy
 
 ```proto
@@ -51,13 +51,13 @@ The predictive unit graph is a tree. Each node is of a particular type with the 
 
 For each node in the graph:
 
- * A unique name. If the node describes a mircoservice then it must match a named container with the componentSpec
+ * A unique name. If the node describes a microservice then it must match a named container with the componentSpec.
  * The children nodes.
- * The type of the predictive unit : MODEL, ROUTER, COMBINER etc
- * The implementation. This can be left blank if it will be a microserice as this is the default otherwise choose from the avilable appropriate implementions provided internally.
+ * The type of the predictive unit : MODEL, ROUTER, COMBINER, TRANSFORMER or OUTPUT_TRANSFORMER.
+ * The implementation. This can be left blank if it will be a microserice as this is the default otherwise choose from the available appropriate implementations provided internally.
  * Methods. This can be left blank if you wish to follow the standard methods for your PredictiveNode type : see [here](../reference/seldon-deployment.md). 
  * Endpoint. In here you should minimally if this a microservice specify whether the PredictiveUnit will use REST or gRPC. Ports will be defined automatically if not specified.
- * Parameters. Specify any parameters you wish to pass to the PredictiveUnit. These will be passed as added environment variables as a JSON list of key:value pairs with the name PREDICTIVE_UNIT_PARAMETERS.
+ * Parameters. Specify any parameters you wish to pass to the PredictiveUnit. These will be passed in an environment variable called PREDICTIVE_UNIT_PARAMETERS as a JSON list.
 
 ```proto
 
