@@ -19,13 +19,15 @@ RUN \
     apt-get update && \
     apt-get install -y docker-ce
 
+
+
 RUN python -m pip install grpcio-tools==1.1.3
 RUN cd /wrappers && make build_protos
 
 # deps to get tester.py to work
 RUN pip install numpy requests redis flask
 
-WORKDIR /work
+WORKDIR /wrappers/python
 
-CMD ["sh"]
-
+ENTRYPOINT ["python","wrap_model.py"]
+CMD []
