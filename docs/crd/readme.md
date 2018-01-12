@@ -47,7 +47,7 @@ message PredictorSpec {
 
 ```
 
-The predictive unit graph is a tree. Each node is of a particular type with the leaf nodes being models. If the implementation is not specified then a microservice is assumed and you must define a matching named container within the componentSpec above. Each type of PredictiveUnit has a standard set of methods it is expected to manage, see [here](../reference/seldon-deployment.md). 
+The predictive unit graph is a tree. Each node is of a particular type. If the implementation is not specified then a microservice is assumed and you must define a matching named container within the componentSpec above. Each type of PredictiveUnit has a standard set of methods it is expected to manage, see [here](../reference/seldon-deployment.md). 
 
 For each node in the graph:
 
