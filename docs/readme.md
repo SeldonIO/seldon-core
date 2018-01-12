@@ -10,8 +10,8 @@
 ![API](./deploy.png)
 
  - [Wrap your runtime prediction model](./wrappers/readme.md).
- - Define your runtime inference graph in a seldon deployment custom resource.
- - Deploy.
+ - [Define your runtime inference graph in a seldon deployment custom resource](./crd/readme.md).
+ - [Deploying ML inference graphs](./deploying.md).
 
 ## Reference
 
