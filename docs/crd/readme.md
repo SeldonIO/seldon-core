@@ -2,14 +2,18 @@
 
 ## Seldon Deployment
 
-The runtime inference graph for a machine learning deployment is described as a SeldonDeployment Kubernetes resourse. The structure of this manifest is defined as a [proto buffer](../reference/seldon-deployment.md). This doc will describe the SeldonDeployment resource in general and how to create one for your runtime inference graph.
+The runtime inference graph for a machine learning deployment is described as a SeldonDeployment Kubernetes resource. The structure of this manifest is defined as a [proto buffer](../reference/seldon-deployment.md). This doc will describe the SeldonDeployment resource in general and how to create one for your runtime inference graph.
 
 ## Creating your resource definition
 
 The full specification can be found [here](../reference/seldon-deployment.md). Below we highlight various parts and describe their intent.
 
+The core goal is to describe your runtime inference graph(s) and deploy the with appropriate resources and scale. Exxample illustrative graphs are shown below:
 
-The core deployment spec consists of a set of ```predictors```. Each predictor represents a seperate runtime serving graph. To allow an OAuth API to be provision you should specify an OAuth key and secret.
+![graph](../reference/graph.png)
+
+
+The core deployment spec consists of a set of ```predictors```. Each predictor represents a seperate runtime serving graph. To allow an OAuth API to be provisioned you should specify an OAuth key and secret.
 
 ```proto
 
@@ -25,8 +29,8 @@ message DeploymentSpec {
 
 For each predictor you should at a minimum specify:
 
- * a unique name
- * a PredictiveUnit graph that presents the tree of components to deploy.
+ * A unique name
+ * A PredictiveUnit graph that presents the tree of components to deploy.
  * A componentSpec which describes the set of images for parts of your container graph that will be instigated as microservice containers. These containers will have been wrapped to work within the [internal API](../reference/internal-api.md). This component spec is a standard [PodTemplateSpec](https://kubernetes.io/docs/api-reference/extensions/v1beta1/definitions/#_v1_podtemplatespec).
      * If you leave the ports empty for each container they will be added automatically and matched to the ports in the graph specification. If you decide to specify the ports manually they should match the port specified for the matching component in the grph specification.
  * the number of replicas of this predictor to deploy
@@ -43,15 +47,17 @@ message PredictorSpec {
 
 ```
 
-The predictive unit graph is a tree. Each node is of a particular type with the leaf nodes being models. If not implementation is specified then a microservice is assumed and you must define a matching named container within the componentSpec above. Each type of PredictiveUnit has a standard set of methods it is expected to manage, see [here](../reference/seldon-deployment.md). T
+The predictive unit graph is a tree. Each node is of a particular type with the leaf nodes being models. If the implementation is not specified then a microservice is assumed and you must define a matching named container within the componentSpec above. Each type of PredictiveUnit has a standard set of methods it is expected to manage, see [here](../reference/seldon-deployment.md). 
 
 For each node in the graph:
 
  * A unique name. If the node describes a mircoservice then it must match a named container with the componentSpec
  * The children nodes.
  * The type of the predictive unit : MODEL, ROUTER, COMBINER etc
- * The implementation. This can be left blank if it will be a microserice as this is the default otherwise choose from the avilable apropriate implementions.
-
+ * The implementation. This can be left blank if it will be a microserice as this is the default otherwise choose from the avilable appropriate implementions provided internally.
+ * Methods. This can be left blank if you wish to follow the standard methods for your PredictiveNode type : see [here](../reference/seldon-deployment.md). 
+ * Endpoint. In here you should minimally if this a microservice specify whether the PredictiveUnit will use REST or gRPC. Ports will be defined automatically if not specified.
+ * Parameters. Specify any parameters you wish to pass to the PredictiveUnit. These will be passed as added environment variables as a JSON list of key:value pairs with the name PREDICTIVE_UNIT_PARAMETERS.
 
 ```proto
 
@@ -65,35 +71,6 @@ message PredictiveUnit {
   repeated PredictiveUnitMethod methods = 5;
   optional Endpoint endpoint = 6; // The exposed endpoint for this unit.
   repeated Parameter parameters = 7; // Customer parameter to pass to the unit.
-}
-
-
-message Endpoint {
-
-  enum EndpointType {
-    REST = 0; // REST endpoints with JSON payloads
-    GRPC = 1; // gRPC endpoints
-  }
-
-  optional string service_host = 1; // Hostname for endpoint.
-  optional int32 service_port = 2; // The port to connect to the service.
-  optional EndpointType type = 3; // The protocol handled by the endpoint.
-}
-
-message Parameter {
-
-  enum ParameterType {
-    INT = 0;
-    FLOAT = 1;
-    DOUBLE = 2;
-    STRING = 3;
-    BOOL = 4;
-  }  
-
-  required string name = 1;
-  required string value = 2;
-  required ParameterType type = 3;
-
 }
 
 
