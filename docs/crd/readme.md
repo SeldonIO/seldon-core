@@ -12,8 +12,21 @@ The core goal is to describe your runtime inference graph(s) and deploy it with 
 
 ![graph](../reference/graph.png)
 
+The top level SeldonDeployment has standard Kubernetes meta data and consists of a spec which is defined by the user and a status which will be set by the system to represent the current state of the SeldonDeployment.
 
-The core deployment spec consists of a set of ```predictors```. Each predictor represents a seperate runtime serving graph. To allow an OAuth API to be provisioned you should specify an OAuth key and secret.
+```proto
+message SeldonDeployment {
+  required string apiVersion = 1;
+  required string kind = 2;
+  optional k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta metadata = 3;
+  required DeploymentSpec spec = 4;
+  optional DeploymentStatus status = 5;
+}
+```
+
+The core deployment spec consists of a set of ```predictors```. Each predictor represents a seperate runtime serving graph. The set of predictors will serve request as controlled by a load balancer. At present the share of traffic will be in relation to the number of replicas each predictor has. A use case for two predictors would be a main deployment and a canary, with the main deployment having 9 replicas and the canary 1, so the canary receives 10% of the overall traffic. Each predictor will be a seperately managed deployment with Kubernetes so it is safe to add and remove predictors without affecting existing predictors.
+
+To allow an OAuth API to be provisioned you should specify an OAuth key and secret.
 
 ```proto
 
