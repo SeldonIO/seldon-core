@@ -41,5 +41,5 @@ jobs:
 
 notifications:
   slack:
-    secure: ${NOTIFICATIONS_SLACK_SECURE}
+    secure: $NOTIFICATIONS_SLACK_SECURE
 
