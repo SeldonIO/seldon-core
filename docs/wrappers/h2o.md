@@ -1,12 +1,12 @@
 # Packaging a H2o model for seldon core
 
-In this readme we outline the steps needed to wrap any h2o model using seldon python wrappers into a docker image deployable with seldon core. 
-The file H2oModel.py is a template to use in order to wrap a h2o model. The only modification  required on the user side consists of setting the MODEL_PATH variable at the top of the file.
-We also provide a example of usage to train and save a prebuilded h2o model predicting bad loans. 
+In this readme we outline the steps needed to wrap any H2O model using seldon python wrappers into a docker image deployable with seldon core. 
+The file H2oModel.py is a template to use in order to wrap a H2O model. The only modification  required on the user side consists of setting the MODEL_PATH variable at the top of the file.
+We also provide a example of usage to train and save a prebuilt h2o model predicting bad loans. 
 
-The session "General use" explain how to use the wrapper with any saved h2o model.
+The session "General use" explains how to use the wrapper with any saved H2O model.
 
-The session "Example of usage" provides a step-by-step guide for training, deploying and wrap the prebuilded h2o model for bad loans predictions as an example.
+The session "Example of use" provides a step-by-step guide for training, deploying and wrapping the prebuilt h2o model for bad loans predictions as an example.
 
 ## General use
 
@@ -14,10 +14,10 @@ It is assumed you have already trained a h2o model and saved it in a file \<your
 
 ### Preliminary steps
 
-In order to wrap an H2o model with the python wrappers, you need  a python+java docker image avaliable to use as base-image. One way to build a suitable base-image locally is by using the [Dockerfile provided by h2o](https://h2o-release.s3.amazonaws.com/h2o/rel-turing/1/docs-website/h2o-docs/docker.html):
+In order to wrap an H2O model with the python wrappers, you need a python+java docker image available to use as base-image. One way to build a suitable base-image locally is by using the [Dockerfile provided by H2O](https://h2o-release.s3.amazonaws.com/h2o/rel-turing/1/docs-website/h2o-docs/docker.html):
 
 * Make sure you have docker deamon running.
-* Download the [Dockerfile provided by h2o](https://github.com/h2oai/h2o-3/blob/master/Dockerfile) in any folder.
+* Download the [Dockerfile provided by H2O](https://github.com/h2oai/h2o-3/blob/master/Dockerfile) in any folder.
 * Create the base docker image:
 
     ```bash
