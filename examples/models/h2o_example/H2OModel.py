@@ -1,22 +1,21 @@
 import numpy as np
-import pandas as pd
 import h2o
 from h2o.frame import H2OFrame
 
-MODEL_PATH='/microservice/glm_fit1'
+MODEL_PATH='./glm_fit1'
 
-def _to_frame(X,features_names):
-    """Create H2OFrame object from lists
+def _to_frame(X,feature_names):
+    """Create H2OFrame object from received features.
     """
-    return H2OFrame(X,column_names=features_names)
+    return H2OFrame(X,column_names=feature_names)
 
 def _from_frame(frame):
-    """Create numpy array with probabilities from H2OFrame object
+    """Create numpy array from H2OFrame object
     """
     preds = h2o.as_list(frame,use_pandas=False); preds.pop(0); [r.pop(0) for r in preds]
     return np.asarray(preds,dtype=np.float)
 
-class H2oModel():
+class H2OModel():
     
     def __init__(self):
         
@@ -28,8 +27,8 @@ class H2oModel():
         self.model = h2o.load_model(MODEL_PATH)
         print 'Model Loaded'
             
-    def predict(self,X,features_names):
-        return _from_frame(self.model.predict(_to_frame(X,features_names)))
+    def predict(self,X,feature_names):
+        return _from_frame(self.model.predict(_to_frame(X,feature_names)))
 
 
 
