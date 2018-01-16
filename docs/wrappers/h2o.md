@@ -69,16 +69,16 @@ Here we give a step by step example in which we will train and save a [H2O model
 
 ### Train and wrap the model
 
-1. Clone the seldon-core-examples git repository
+1. Clone the Seldon Core git repository
 
     ```bash
-    git clone https://github.com/SeldonIO/seldon-core-examples
+    git clone https://github.com/SeldonIO/seldon-core
     ```
     
 2. Train and save the H2O model for bad loans prediction:
 
     ```bash
-    cd seldon-core-examples/models/h2o_example/
+    cd seldon-core/examples/models/h2o_example/
     python train_model.py
     ```
 
