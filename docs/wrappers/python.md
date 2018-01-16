@@ -1,5 +1,5 @@
-# Packaging a python  model for seldon core
-In this guide, we illustrate the steps needed to wrap your own python model in a docker image ready for deployment with seldon-core, using the Seldon wrapper script. This script is designed to take your python model and turn it into a dockerised microservice that conforms to Seldon's internal API, thus avoiding the hassle to write your own dockerised microservice.
+# Packaging a python model for Seldon Core
+In this guide, we illustrate the steps needed to wrap your own python model in a docker image ready for deployment with Seldon Core, using the Seldon wrapper script. This script is designed to take your python model and turn it into a dockerised microservice that conforms to Seldon's internal API, thus avoiding the hassle to write your own dockerised microservice.
 
 You can use these wrappers with any model that offers a python API. Some examples are:
 * Scikit-learn
@@ -125,4 +125,4 @@ cd /path/to/model/dir/build
 ./push_image.sh
 ```
 
-And voila, the docker image for your model is now available in your docker repository, and seldon-core can deploy it into production.
+And voila, the docker image for your model is now available in your docker repository, and Seldon Core can deploy it into production.
