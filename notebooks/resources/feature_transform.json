@@ -31,7 +31,7 @@
 				}
 			    },
 			    {
-				"image": "seldonio/meantransformer:0.1",
+				"image": "seldonio/mock_transformer:1.0",
 				"imagePullPolicy": "IfNotPresent",
 				"name": "transformer",
 				"resources": {
