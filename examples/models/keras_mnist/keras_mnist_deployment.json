@@ -1,0 +1,54 @@
+{
+    "apiVersion": "machinelearning.seldon.io/v1alpha1",
+    "kind": "SeldonDeployment",
+    "metadata": {
+        "labels": {
+            "app": "seldon"
+        },
+        "name": "seldon-deployment-example"
+    },
+    "spec": {
+        "annotations": {
+            "project_name": "Digits classification",
+            "deployment_version": "0.0"
+        },
+        "name": "keras-mnist-deployment",
+        "oauth_key": "oauth-key",
+        "oauth_secret": "oauth-secret",
+        "predictors": [
+            {
+                "componentSpec": {
+                    "spec": {
+                        "containers": [
+                            {
+                                "image": "seldonio/mnistclassifier:0.0",
+                                "imagePullPolicy": "IfNotPresent",
+                                "name": "keras-mnist-classifier",
+                                "resources": {
+                                    "requests": {
+                                        "memory": "1Mi"
+                                    }
+                                }
+                            }
+                        ],
+                        "terminationGracePeriodSeconds": 20
+                    }
+                },
+                "graph": {
+                    "children": [],
+                    "name": "keras-mnist-classifier",
+                    "endpoint": {
+                        "type" : "REST"
+                    },
+                    "subtype": "MICROSERVICE",
+                    "type": "MODEL"
+                },
+                "name": "keras-mnist-predictor",
+                "replicas": 1,
+                "annotations": {
+                "predictor_version" : "0.0"
+                }
+            }
+        ]
+    }
+}

@@ -1,0 +1,54 @@
+{
+    "apiVersion": "machinelearning.seldon.io/v1alpha1",
+    "kind": "SeldonDeployment",
+    "metadata": {
+        "labels": {
+            "app": "seldon"
+        },
+        "name": "<your-deployment-name>"
+    },
+    "spec": {
+        "annotations": {
+            "project_name": "<your project name>",
+            "deployment_version": "<your-deployment-version>"
+        },
+        "name": "<your-deployment-name>",
+        "oauth_key": "<oauth-key>",
+        "oauth_secret": "<oauth-secret>",
+        "predictors": [
+            {
+                "componentSpec": {
+                    "spec": {
+                        "containers": [
+                            {
+                                "image": "your-docker-image",
+                                "imagePullPolicy": "IfNotPresent",
+                                "name": "<your-model-name>",
+                                "resources": {
+                                    "requests": {
+                                        "memory": "<>"
+                                    }
+                                }
+                            }
+                        ],
+                        "terminationGracePeriodSeconds": <>
+                    }
+                },
+                "graph": {
+                    "children": [],
+                    "name": "<your-model-name>",
+                    "endpoint": {
+			"type" : "<your-endpoint-type>" #REST or GRPS
+		    },
+                    "subtype": "MICROSERVICE",
+                    "type": "MODEL"
+                },
+                "name": "<your-model-name>",
+                "replicas": <>, #number of replicas
+		"annotations": {
+		    "predictor_version" : "<your-model-version>"
+		}
+            }
+        ]
+    }
+}

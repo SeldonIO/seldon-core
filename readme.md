@@ -35,15 +35,35 @@ Seldon Core goals:
  - [Jupyter Notebook showing deployment of prebuilt model using Minikube](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_minikube.ipynb)
  - [Jupyter Notebook showing deployment of prebuilt model using GCP cluster](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_gcp.ipynb)
 
+## Installation
+
+Official releases can be installed via helm from the repository https://storage.googleapis.com/seldon-charts.
+For example:
+
+```
+helm install seldon-core --name seldon-core \
+    --set grafana_prom_admin_password=password \
+    --set persistence.enabled=false \
+    --repo https://storage.googleapis.com/seldon-charts
+```
+
 ## Deployment Guide
 
 ![API](./docs/deploy.png)
 
- - [Wrap your runtime prediction model](./docs/wrappers/readme.md).
- - Define your runtime inference graph in a seldon deployment custom resource.
- - Deploy.
+Three steps:
+
+ 1. [Wrap your runtime prediction model](./docs/wrappers/readme.md).
+ 1. [Define your runtime inference graph in a seldon deployment custom resource](./docs/crd/readme.md).
+ 1. [Deploy the graph](./docs/deploying.md).
 
 ## Reference
 
  - [Prediction API](./docs/reference/prediction.md)
  - [Seldon Deployment Custom Resource](./docs/reference/seldon-deployment.md)
+
+
+## Developer
+
+ - [CHANGELOG](CHANGELOG.md)
+ - [Developer Guide](./docs/developer/readme.md)
