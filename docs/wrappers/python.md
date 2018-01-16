@@ -23,7 +23,7 @@ To wrap a model, there are 2 requirements:
 
 Additionally, if you are making use of specific python libraries, you need to list them in a requirements.txt file that will be used by pip to install the packages in the docker image.
 
-Here we illustrate the content of the ```keras_mnist``` model folder which can be found in [seldon-core-example/models/](https://github.com/SeldonIO/seldon-core-examples).
+Here we illustrate the content of the ```keras_mnist``` model folder which can be found in [seldon-core/examples/models/](https://github.com/SeldonIO/seldon-core/tree/master/examples).
 
 This folder contains the following 3 files: 
 
