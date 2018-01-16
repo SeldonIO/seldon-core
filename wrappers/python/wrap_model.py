@@ -31,6 +31,7 @@ def wrap_model(
         else:
             shutil.rmtree(build_folder)
     shutil.copytree(model_folder,build_folder)
+    shutil.copy2("./Makefile",build_folder)
     shutil.copy2('./microservice.py',build_folder)
     shutil.copy2("./persistence.py",build_folder)
     shutil.copy2('./{}_microservice.py'.format(service_type.lower()),build_folder)
@@ -46,12 +47,23 @@ def wrap_model(
         persistence = int(persistence)
     )
     populate_template(
-        './Makefile.tmp',
-        build_folder+'/Makefile',
+        "./build_image.sh.tmp",
+        build_folder+"/build_image.sh",
         docker_repo=repo,
         docker_image_name=image_name,
-        version=version)
-    
+        docker_image_version=version)
+    populate_template(
+        "./push_image.sh.tmp",
+        build_folder+"/push_image.sh",
+        docker_repo=repo,
+        docker_image_name=image_name,
+        docker_image_version=version)
+
+    # Make the files executable
+    st = os.stat(build_folder+"/build_image.sh")
+    os.chmod(build_folder+"/build_image.sh", st.st_mode | 0111)
+    st = os.stat(build_folder+"/push_image.sh")
+    os.chmod(build_folder+"/push_image.sh", st.st_mode | 0111)
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Utility script to wrap a python model into a docker build. The scipt will generate build folder that contains a Makefile that can be used to build and publish a Docker Image.")
