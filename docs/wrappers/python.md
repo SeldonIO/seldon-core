@@ -1,5 +1,5 @@
-# Packaging a python  model for seldon core
-In this guide, we illustrate the steps needed to wrap your own python model in a docker image ready for deployment with seldon-core, using the Seldon wrapper script. This script is designed to take your python model and turn it into a dockerised microservice that conforms to Seldon's internal API, thus avoiding the hassle to write your own dockerised microservice.
+# Packaging a python model for Seldon Core
+In this guide, we illustrate the steps needed to wrap your own python model in a docker image ready for deployment with Seldon Core, using the Seldon wrapper script. This script is designed to take your python model and turn it into a dockerised microservice that conforms to Seldon's internal API, thus avoiding the hassle to write your own dockerised microservice.
 
 You can use these wrappers with any model that offers a python API. Some examples are:
 * Scikit-learn
@@ -23,7 +23,7 @@ To wrap a model, there are 2 requirements:
 
 Additionally, if you are making use of specific python libraries, you need to list them in a requirements.txt file that will be used by pip to install the packages in the docker image.
 
-Here we illustrate the content of the ```keras_mnist``` model folder which can be found in [seldon-core-example/models/](https://github.com/SeldonIO/seldon-core-examples).
+Here we illustrate the content of the ```keras_mnist``` model folder which can be found in [seldon-core/examples/models/](https://github.com/SeldonIO/seldon-core/tree/master/examples).
 
 This folder contains the following 3 files: 
 
@@ -44,7 +44,9 @@ This folder contains the following 3 files:
 			This methods needs to return a numpy array of predictions."""
             return self.model.predict(X)
     ```
+	
 2. requirements.txt: List of the packages required by your model, that will be installed via ```pip install```.
+
    ```
    keras==2.0.6 
    h5py==2.7.0
@@ -114,12 +116,13 @@ Note also that you could use the python script directly if you feel so enclined,
 ## Build and push the Docker image
 
 A folder named "build" should have appeared in your model directory. It contains all the files needed to build and publish your model's docker image.
+
 To do so, run:
 
 ```
 cd /path/to/model/dir/build
-make build_image
-make publish_image
+./build_image.sh
+./push_image.sh
 ```
 
-And voila, the docker image for your model is now available in your docker repository, and seldon-core can deploy it into production.
+And voila, the docker image for your model is now available in your docker repository, and Seldon Core can deploy it into production.
