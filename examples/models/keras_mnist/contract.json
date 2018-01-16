@@ -1,0 +1,24 @@
+{
+    "features":[
+	{
+	    "name":"loan_amnt",
+	    "dtype":"STRING",
+	    "ftype":"",
+	    "range":[0,1,
+	    "repeat":784
+	}
+    ],
+
+    
+
+    
+    "targets":[
+	{
+	    "name":"proba",
+	    "dtype":"FLOAT",
+	    "ftype":"continuous",
+	    "values":[0,1],
+	    "repeat":2
+	}
+    ]
+}
