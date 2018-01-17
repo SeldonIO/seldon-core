@@ -46,6 +46,9 @@
 		},
 		"graph": {
 		    "name": "transformer",
+		    "endpoint": {
+			"type":"REST"
+		    },
 		    "type": "TRANSFORMER",
 		    "children": [
 			{
@@ -56,6 +59,11 @@
 			    "type": "MODEL"
 			}
 		    ]
+		},
+		"name": "fx-market-predictor",
+		"replicas": 1,
+		"annotations": {
+		    "predictor_version": "v1"
 		}
 	    }
 	]
