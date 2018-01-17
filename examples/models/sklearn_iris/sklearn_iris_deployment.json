@@ -40,7 +40,6 @@
                     "endpoint": {
                         "type" : "REST"
                     },
-                    "subtype": "MICROSERVICE",
                     "type": "MODEL"
                 },
                 "name": "sklearn-iris-predictor",
