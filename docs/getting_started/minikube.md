@@ -2,7 +2,7 @@
 # Getting started on Minikube
 
 
-In this guide, we will show how to create, deploy and serve a iris classification model using seldon-core running on a Minikube cluster. Seldon-core uses [helm](https://github.com/kubernetes/helm) charts to start and runs on [kubernetes](https://kubernetes.io/) clusters. Minikube is a tool that makes it easy to run Kubernetes locally,  and runs a single-node Kubernetes cluster inside a VM on your laptop. 
+In this guide, we will show how to create, deploy and serve an Iris classification model using Seldon Core running on a Minikube cluster. Seldon Core uses [helm](https://github.com/kubernetes/helm) charts to start and runs on [kubernetes](https://kubernetes.io/) clusters. Minikube is a tool that makes it easy to run Kubernetes locally,  and runs a single-node Kubernetes cluster inside a virtual machine on your laptop. 
 
 
 ### Prerequisites
@@ -13,7 +13,7 @@ The following packages need to be installed on your machine.
 * [helm](https://github.com/kubernetes/helm/blob/master/docs/install.md) >= 2.7.0
 
 * [sklearn](http://scikit-learn.org/stable/) 
-  - Sklearn is needed only to train the iris classifier example below. Seldon-core doesn't not require sklearn installed on your machine  to run.
+  - Sklearn is needed only to train the iris classifier example below. Seldon Core doesn't not require sklearn installed on your machine  to run.
 
 
 ### Before starting: run a Minikube cluster locally
@@ -30,38 +30,38 @@ Once the cluster is created, Minikube should automatically point your kubectl cl
 
 ### Start seldon-core
 
-You can now start seldon-core in your minikube cluster.
+You can now start Seldon Core in your minikube cluster.
 
 
-1. Seldon-core uses helm charts to start. To use seldon-core, you need [helm installed](https://github.com/kubernetes/helm/blob/master/docs/install.md) in your machine. To Initialize helm, type on command line:
+1. Seldon Core uses helm charts to start. To use Seldon Core, you need [helm installed](https://github.com/kubernetes/helm/blob/master/docs/install.md) in your machine. To Initialize helm, type on command line:
 
     ```bash
     helm init
     ```
 
-1. Seldon-core uses helm charts to start which are stored in google storage. To start seldon-core using helm:
+1. Seldon Core uses helm charts to start which are stored in google storage. To start Seldon Core using helm:
 
     ```bash
      helm install seldon-core --name seldon-core \
      --repo https://storage.googleapis.com/seldon-charts
     ```
 
-Seldon-core should now be running on your cluster. You can verify if all the pods are up and running typing on command line ```helm status seldon-core``` or ```kubectl get pods```
+Seldon Core should now be running on your cluster. You can verify if all the pods are up and running typing on command line ```helm status seldon-core``` or ```kubectl get pods```
 
 ### Wrap your model
 
-In this session, we show how to wrap the sklearn iris classifier in the [seldon-core-example](https://github.com/SeldonIO/seldon-core-examples) repository using seldon-core python wrappers. The example consist of a logistic regression model trained on the  [iris dataset](http://scikit-learn.org/stable/auto_examples/datasets/plot_iris_dataset.html).
+In this session, we show how to wrap the sklearn iris classifier in the [seldon-core](https://github.com/SeldonIO/seldon-core) repository using Seldon Core python wrappers. The example consists of a logistic regression model trained on the  [Iris dataset](http://scikit-learn.org/stable/auto_examples/datasets/plot_iris_dataset.html).
 
-1. Clone seldon-core-examples repository:
+1. Clone the seldon-core repository:
 
     ```bash
-    git clone https://github.com/SeldonIO/seldon-core-examples
+    git clone https://github.com/SeldonIO/seldon-core
     ```
 
 2. Train and save the sklearn iris classifier example model using the provided script ```train_iris.py```:
 
     ```bash
-    cd seldon-core-examples/models/sklearn_iris/
+    cd seldon-core/examples/models/sklearn_iris/
     ```
     ```bash
     python train_iris.py
@@ -70,20 +70,22 @@ In this session, we show how to wrap the sklearn iris classifier in the [seldon-
     This will train a simple logistic regression model on the iris dataset and save the model in the same folder.
 
 
-3. Wrap your saved model using the bash script wrap-model-in-minikube in ```seldon-core-examples```::
+3. Wrap your saved model using the core-python-wrapper docker image:
     ```bash
-    cd ../../
-    ```
-    ```bash
-    ./wrap-model-in-minikube models/sklearn_iris IrisClassifier 0.1 seldonio --force
+    docker run -v $(pwd):/model seldonio/core-python-wrapper:0.4 /model IrisClassifier 0.1 seldonio --force
     ```
     
-    This will create the docker image ```seldonio/irisclassifier:0.1``` inside the minikube cluster  which is ready for deployment with seldon-core.
+4. Build the docker image locally
+    ```bash
+    cd build
+    ./build_image.sh
+    ```
+    This will create the docker image ```seldonio/irisclassifier:0.1``` inside the minikube cluster which is ready for deployment with Seldon Core.
 
 
 ### Deploy your model
 
-The docker image version of your model is deployed through a json configuration file. A general template for the configuration can be found  [here](https://github.com/SeldonIO/seldon-core-examples/blob/master/models/sklearn_iris/sklearn_iris_deployment.json). For the sklearn iris example, we have already created a deployment file ```sklearn_iris_deployment.json``` in the ```sklearn_iris``` folder:
+The docker image version of your model is deployed through a json configuration file. A general template for the configuration can be found  [here](https://github.com/SeldonIO/seldon-core/blob/master/examples/models/sklearn_iris/sklearn_iris_deployment.json). For the sklearn iris example, we have already created a deployment file ```sklearn_iris_deployment.json``` in the ```sklearn_iris``` folder:
 
 ```json
 {
@@ -128,7 +130,6 @@ The docker image version of your model is deployed through a json configuration 
                     "endpoint": {
                         "type" : "REST"
                     },
-                    "subtype": "MICROSERVICE",
                     "type": "MODEL"
                 },
                 "name": "sklearn-iris-predictor",
@@ -142,10 +143,10 @@ The docker image version of your model is deployed through a json configuration 
 }
 ```
 
-1. To deploy the model  in seldon core, type on command line:
+1. To deploy the model in seldon core, type on command line (from the that contains the sklearn_iris_deployment.json file):
 
     ```bash
-    kubectl apply -f models/sklearn_iris/sklearn_iris_deployment.json
+    kubectl apply -f sklearn_iris_deployment.json
     ```
 
 2. The deployment will take a few seconds to be ready. To check if your deployment is ready:
@@ -158,7 +159,7 @@ The docker image version of your model is deployed through a json configuration 
 	
 ### Serve your  model:
 
-In order to send a prediction request to your model, you need to query the seldon-core api server and obtain an authentication token from your model key and secret (in this example key and secret are set to "oauth-key" and "oauth-secret" for simplicity). The api server is running on minikube with default port 30032. To query your model you need to
+In order to send a prediction request to your model, you need to query the Seldon Core api server and obtain an authentication token from your model key and secret (in this example key and secret are set to "oauth-key" and "oauth-secret" for simplicity). The api server is running on minikube with default port 30032. To query your model you need to
 
 1. Set the api server IP and port:
 
