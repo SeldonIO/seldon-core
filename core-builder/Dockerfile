@@ -25,6 +25,13 @@ RUN \
     update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java && \
     apt-get remove -y --auto-remove && apt-get clean -y && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+# dependencies for release script
+RUN \
+    apt-get update -y && \
+    apt-get install -y python-pip && \
+    pip install pyyaml && \
+    apt-get remove -y --auto-remove && apt-get clean -y && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
 WORKDIR /work
 
 # Define default command.
