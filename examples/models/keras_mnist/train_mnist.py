@@ -101,7 +101,7 @@ class MnistFfnn(object):
 class MnistConv(object):
 
     def __init__(self,
-                 input_shape=(28,28,1),
+                 input_shape=(784,),
                  nb_labels=10,
                  optimizer='Adam',
                  run_dir='tensorboardlogs_test',
@@ -116,9 +116,9 @@ class MnistConv(object):
         self.build_graph()
 
     def build_graph(self):
-                            
+                                                                
         inp = Input(shape=self.input_shape,name='input_part')
-        
+        inp2 = Reshape((28,28,1))(inp)      
         #keras layers
         with tf.name_scope('conv') as scope:
             conv = Convolution2D(32, 3, 3,
