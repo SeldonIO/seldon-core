@@ -194,11 +194,8 @@ y_train = mnist.train.labels
 X_test = mnist.test.images
 y_test = mnist.test.labels
 
-X_train = X_train.reshape((len(X_train),28,28,1))
-X_test = X_test.reshape((len(X_test),28,28,1))
-
 def main():
-    mc = MnistConv((28,28,1),10)
+    mc = MnistConv()
     mc.fit(X_train,y=y_train,
            X_test=X_test,y_test=y_test)
 
