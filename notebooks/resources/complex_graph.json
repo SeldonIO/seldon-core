@@ -26,7 +26,8 @@
 				"name": "mean-classifier-1",
 				"resources": {
 				    "requests": {
-					"memory": "1Mi"
+					"memory": "1Mi",
+					"cpu": "0.1"
 				    }
 				}
 			    },
@@ -36,7 +37,8 @@
 				"name": "mean-classifier-2",
 				"resources": {
 				    "requests": {
-					"memory": "1Mi"
+					"memory": "1Mi",
+					"cpu": "0.1"
 				    }
 				}
 			    },
@@ -46,27 +48,30 @@
 				"name": "mean-classifier-3",
 				"resources": {
 				    "requests": {
-					"memory": "1Mi"
+					"memory": "1Mi",
+					"cpu": "0.1"
 				    }
 				}
 			    },
 			    {
-				"image": "seldonio/outlier_detector:0.1",
+				"image": "seldonio/mock_outlier_detector:1.0",
 				"imagePullPolicy": "IfNotPresent",
 				"name": "outlier-detector",
 				"resources": {
 				    "requests": {
-					"memory": "1Mi"
+					"memory": "1Mi",
+					"cpu": "0.1"
 				    }
 				}
 			    },
 			    {
-				"image": "seldonio/meantransformer:0.1",
+				"image": "seldonio/mock_transformer:1.0",
 				"imagePullPolicy": "IfNotPresent",
 				"name": "mean-transformer",
 				"resources": {
 				    "requests": {
-					"memory": "1Mi"
+					"memory": "1Mi",
+					"cpu": "0.1"
 				    }
 				}
 			    }
@@ -83,7 +88,7 @@
 		    "name": "outlier-detector",
 		    "type": "TRANSFORMER",
 		    "endpoint": {
-			"type": "GRPC"
+			"type": "REST"
 		    },
 		    "children": [
 			{
@@ -95,7 +100,7 @@
 				    "name": "mean-transformer",
 				    "type": "TRANSFORMER",
 				    "endpoint": {
-					"type": "GRPC"
+					"type": "REST"
 				    },
 				    "children": [
 					{
@@ -143,17 +148,19 @@
 				"name": "mean-classifier",
 				"resources": {
 				    "requests": {
-					"memory": "1Mi"
+					"memory": "1Mi",
+					"cpu": "0.1"
 				    }
 				}
 			    },
 			    {
-				"image": "seldonio/meantransformer:0.1",
+				"image": "seldonio/mock_transformer:1.0",
 				"imagePullPolicy": "IfNotPresent",
 				"name": "mean-transformer",
 				"resources": {
 				    "requests": {
-					"memory": "1Mi"
+					"memory": "1Mi",
+					"cpu": "0.1"
 				    }
 				}
 			    }
@@ -161,8 +168,13 @@
 			"terminationGracePeriodSeconds": 20
 		    }
 		},
+		"name": "fx-market-predictor-canary",
+		"replicas": 1,
+		"annotations": {
+		    "predictor_version": "v1"
+		},
 		"graph": {
-		    "name": "transformer",
+		    "name": "mean-transformer",
 		    "type": "TRANSFORMER",
 		    "endpoint": {
 			"type": "REST"
