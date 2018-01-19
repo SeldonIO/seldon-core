@@ -144,7 +144,59 @@
 			}
 		    ]
 		}
-	    }
+	    },
+	    {
+		"componentSpec": {
+		    "spec": {
+			"containers": [
+			    {
+				"image": "seldonio/mean_classifier:0.6",
+				"imagePullPolicy": "IfNotPresent",
+				"name": "mean-classifier",
+				"resources": {
+				    "requests": {
+					"memory": "1Mi",
+					"cpu": "0.1"
+				    }
+				}
+			    },
+			    {
+				"image": "seldonio/mock_transformer:1.0",
+				"imagePullPolicy": "IfNotPresent",
+				"name": "mean-transformer",
+				"resources": {
+				    "requests": {
+					"memory": "1Mi",
+					"cpu": "0.1"
+				    }
+				}
+			    }
+			],
+			"terminationGracePeriodSeconds": 20
+		    }
+		},
+		"name": "fx-market-predictor-canary",
+		"replicas": 1,
+		"annotations": {
+		    "predictor_version": "v1"
+		},
+		"graph": {
+		    "name": "mean-transformer",
+		    "type": "TRANSFORMER",
+		    "endpoint": {
+			"type": "REST"
+		    },
+		    "children": [
+			{
+			    "name": "mean-classifier",
+			    "endpoint": {
+				"type": "REST"
+			    },
+			    "type": "MODEL"
+			}
+		    ]
+		}
+	    }	    
 	]
     }
 }
