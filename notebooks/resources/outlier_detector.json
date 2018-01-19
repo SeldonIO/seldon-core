@@ -43,31 +43,9 @@
 				}
 			    },
 			    {
-				"image": "seldonio/mean_classifier:0.6",
-				"imagePullPolicy": "IfNotPresent",
-				"name": "mean-classifier-3",
-				"resources": {
-				    "requests": {
-					"memory": "1Mi",
-					"cpu": "0.1"
-				    }
-				}
-			    },
-			    {
 				"image": "seldonio/mock_outlier_detector:1.0",
 				"imagePullPolicy": "IfNotPresent",
 				"name": "outlier-detector",
-				"resources": {
-				    "requests": {
-					"memory": "1Mi",
-					"cpu": "0.1"
-				    }
-				}
-			    },
-			    {
-				"image": "seldonio/mock_transformer:1.0",
-				"imagePullPolicy": "IfNotPresent",
-				"name": "mean-transformer",
 				"resources": {
 				    "requests": {
 					"memory": "1Mi",
@@ -95,7 +73,7 @@
 			    "name": "random-abtest",
 			    "implementation": "RANDOM_ABTEST",
 			    "type": "UNKNOWN_TYPE",
-			    "parameters":[
+			    "parameters": [
 				{
 				    "name":"ratioA",
 				    "value":"0.5",
@@ -104,41 +82,18 @@
 			    ],
 			    "children": [
 				{
-				    "name": "mean-transformer",
-				    "type": "TRANSFORMER",
+				    "name": "mean-classifier-1",
+				    "type": "MODEL",
 				    "endpoint": {
 					"type": "REST"
-				    },
-				    "children": [
-					{
-					    "name": "mean-classifier-1",
-					    "type": "MODEL",
-					    "endpoint": {
-						"type": "REST"
-					    }
-					}
-				    ]
+				    }
 				},
 				{
-				    "name": "ensemble",
-				    "type": "UNKNOWN_TYPE",
-				    "implementation": "AVERAGE_COMBINER",
-				    "children": [
-					{
-					    "name": "mean-classifier-2",
-					    "type": "MODEL",
-					    "endpoint": {
-						"type": "REST"
-					    }
-					},
-					{
-					    "name": "mean-classifier-3",
-					    "type": "MODEL",
-					    "endpoint": {
-						"type": "REST"
-					    }
-					}
-				    ]
+				    "name": "mean-classifier-2",
+				    "type": "MODEL",
+				    "endpoint": {
+					"type": "REST"
+				    }
 				}
 			    ]
 			}
