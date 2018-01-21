@@ -55,12 +55,8 @@ public class QuantityUtils {
 		public void merge(JsonElement json, Builder builder) throws InvalidProtocolBufferException {
 			if (json instanceof JsonPrimitive) {
 		        JsonPrimitive primitive = (JsonPrimitive) json;
-		        if (primitive.isString())
-		        {
-		        	Quantity.Builder b = Quantity.newBuilder().setString(primitive.getAsString());
-		        	builder.mergeFrom(b.build().toByteArray());
-		        }
-		        else throw new InvalidProtocolBufferException("Can't decode io.kubernetes.client.proto.resource.Quantity from "+json.toString());
+		        Quantity.Builder b = Quantity.newBuilder().setString(primitive.getAsString());
+		        builder.mergeFrom(b.build().toByteArray());
 			}
 		}
 		
