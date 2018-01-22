@@ -21,7 +21,7 @@
 		    "spec": {
 			"containers": [
 			    {
-				"image": "seldonio/mean_classifier:0.6",
+				"image": "seldonio/mock_classifier:1.0",
 				"imagePullPolicy": "IfNotPresent",
 				"name": "mean-classifier-1",
 				"resources": {
@@ -32,7 +32,7 @@
 				}
 			    },
 			    {
-				"image": "seldonio/mean_classifier:0.6",
+				"image": "seldonio/mock_classifier:1.0",
 				"imagePullPolicy": "IfNotPresent",
 				"name": "mean-classifier-2",
 				"resources": {
@@ -43,7 +43,7 @@
 				}
 			    },
 			    {
-				"image": "seldonio/mean_classifier:0.6",
+				"image": "seldonio/mock_classifier:1.0",
 				"imagePullPolicy": "IfNotPresent",
 				"name": "mean-classifier-3",
 				"resources": {
@@ -150,7 +150,7 @@
 		    "spec": {
 			"containers": [
 			    {
-				"image": "seldonio/mean_classifier:0.6",
+				"image": "seldonio/mock_classifier:1.0",
 				"imagePullPolicy": "IfNotPresent",
 				"name": "mean-classifier",
 				"resources": {

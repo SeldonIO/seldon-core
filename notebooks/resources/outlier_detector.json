@@ -21,9 +21,9 @@
 		    "spec": {
 			"containers": [
 			    {
-				"image": "seldonio/mean_classifier:0.6",
+				"image": "seldonio/mock_classifier:1.0",
 				"imagePullPolicy": "IfNotPresent",
-				"name": "mean-classifier-1",
+				"name": "classifier-1",
 				"resources": {
 				    "requests": {
 					"memory": "1Mi",
@@ -32,9 +32,9 @@
 				}
 			    },
 			    {
-				"image": "seldonio/mean_classifier:0.6",
+				"image": "seldonio/mock_classifier:1.0",
 				"imagePullPolicy": "IfNotPresent",
-				"name": "mean-classifier-2",
+				"name": "classifier-2",
 				"resources": {
 				    "requests": {
 					"memory": "1Mi",
@@ -82,14 +82,14 @@
 			    ],
 			    "children": [
 				{
-				    "name": "mean-classifier-1",
+				    "name": "classifier-1",
 				    "type": "MODEL",
 				    "endpoint": {
 					"type": "REST"
 				    }
 				},
 				{
-				    "name": "mean-classifier-2",
+				    "name": "classifier-2",
 				    "type": "MODEL",
 				    "endpoint": {
 					"type": "REST"
