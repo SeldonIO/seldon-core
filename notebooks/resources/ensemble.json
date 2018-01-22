@@ -21,9 +21,9 @@
 		    "spec": {
 			"containers": [
 			    {
-				"image": "seldonio/mean_classifier:0.6",
+				"image": "seldonio/mock_classifier:1.0",
 				"imagePullPolicy": "IfNotPresent",
-				"name": "mean-classifier-1",
+				"name": "classifier-1",
 				"resources": {
 				    "requests": {
 					"memory": "1Mi"
@@ -31,9 +31,9 @@
 				}
 			    },
 			    {
-				"image": "seldonio/mean_classifier:0.6",
+				"image": "seldonio/mock_classifier:1.0",
 				"imagePullPolicy": "IfNotPresent",
-				"name": "mean-classifier-2",
+				"name": "classifier-2",
 				"resources": {
 				    "requests": {
 					"memory": "1Mi"
@@ -41,9 +41,9 @@
 				}
 			    },
 			    {
-				"image": "seldonio/mean_classifier:0.6",
+				"image": "seldonio/mock_classifier:1.0",
 				"imagePullPolicy": "IfNotPresent",
-				"name": "mean-classifier-3",
+				"name": "classifier-3",
 				"resources": {
 				    "requests": {
 					"memory": "1Mi"
@@ -65,21 +65,21 @@
 		    "type": "UNKNOWN_TYPE",
 		    "children": [
 			{
-			    "name": "mean-classifier-1",
+			    "name": "classifier-1",
 			    "endpoint": {
 				"type": "REST"
 			    },
 			    "type": "MODEL"
 			},
 			{
-			    "name": "mean-classifier-2",
+			    "name": "classifier-2",
 			    "endpoint": {
 				"type": "REST"
 			    },
 			    "type": "MODEL"
 			},
 			{
-			    "name": "mean-classifier-3",
+			    "name": "classifier-3",
 			    "endpoint": {
 				"type": "REST"
 			    },
