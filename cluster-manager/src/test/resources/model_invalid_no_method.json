@@ -39,8 +39,7 @@
                     "name": "mean-classifier",
                     "endpoint": {
 			"type" : "REST"
-		    },
-                    "subtype": "MICROSERVICE"
+		    }
                 },
                 "name": "fx-market-predictor",
                 "replicas": 1,
