@@ -4,19 +4,19 @@ alertmanager:
 apife:
   image:
     pull_policy: IfNotPresent
-    tag: 0.1.1
+    tag: 0.1.2
 apife_service_type: NodePort
 cluster_manager:
   enabled: true
   image:
     pull_policy: IfNotPresent
-    tag: 0.3.1
+    tag: 0.1.2
   java_opts: ''
   rbac: false
   spring_opts: ''
 engine:
   image:
-    tag: 0.2.1
+    tag: 0.1.2
 grafana_prom_service_type: NodePort
 kafka_core:
   image:
