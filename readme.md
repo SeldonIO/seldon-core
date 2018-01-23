@@ -1,5 +1,10 @@
 # Seldon Core
 
+| Branch      | Status |
+|-------------|-------|
+| master      | [![Build Status](https://travis-ci.org/SeldonIO/seldon-core.svg?branch=master)](https://travis-ci.org/SeldonIO/seldon-core) |
+| release-0.1 | [![Build Status](https://travis-ci.org/SeldonIO/seldon-core.svg?branch=release-0.1)](https://travis-ci.org/SeldonIO/seldon-core) |
+
 Seldon Core is an open source framework for deploying machine learning models on Kubernetes.
 
 - [Goals](#goals)
