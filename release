@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+docker run --rm -it \
+    -v ${HOME}/.m2:/root/.m2 \
+    -v "${STARTUP_DIR}":/work \
+    seldonio/core-builder:0.2 python release.py "$@"
+
