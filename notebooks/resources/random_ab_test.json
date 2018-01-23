@@ -52,7 +52,6 @@
 		"graph": {
 		    "name": "random-ab-test",
 		    "endpoint":{},
-		    "type":"UNKNOWN_TYPE",
 		    "implementation":"RANDOM_ABTEST",
 		    "parameters": [
 			{

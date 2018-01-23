@@ -94,7 +94,6 @@
 			{
 			    "name": "random-abtest",
 			    "implementation": "RANDOM_ABTEST",
-			    "type": "UNKNOWN_TYPE",
 			    "parameters":[
 				{
 				    "name":"ratioA",
@@ -121,7 +120,6 @@
 				},
 				{
 				    "name": "ensemble",
-				    "type": "UNKNOWN_TYPE",
 				    "implementation": "AVERAGE_COMBINER",
 				    "children": [
 					{
