@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+MODEL_DIR=$1
+shift
+WRAP_MODEL_PARAMS="$@"
+
+cd $MODEL_DIR
+BASE_LOCAL_DIR=$(pwd)
+
+UNAME_S=$(uname -s)
+
+BASE_VM_DIR=UNKOWN
+if [ ${UNAME_S} = "Darwin" ]; then
+	BASE_VM_DIR=${BASE_LOCAL_DIR}
+fi
+if [ ${UNAME_S} = "Linux" ]; then
+	BASE_VM_DIR=$(echo ${BASE_LOCAL_DIR}|sed -e 's|^/home/|/hosthome/|')
+fi
+
+set -x
+eval $(minikube docker-env)
+docker run --rm -it \
+    -v ${BASE_VM_DIR}:/work seldonio/core-python-wrapper:0.3 \
+    bash -c "rm -rfv /work/build && cd /wrappers/python && python wrap_model.py /work $WRAP_MODEL_PARAMS && ls -1 /work/build"
+set +x
+cd build && make build_docker_image
+

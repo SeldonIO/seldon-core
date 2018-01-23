@@ -1,77 +1,128 @@
-# Packaging a python  model for seldon core
-In this guide, we illustrate the steps needed to wrap your own python  model in a docker image ready for deployment with seldon-core. 
-The steps are general and can be used to package any model laodable through a python function (either a pure python function or python API function) for seldon wrappers.
+# Packaging a python model for Seldon Core
+In this guide, we illustrate the steps needed to wrap your own python model in a docker image ready for deployment with Seldon Core, using the Seldon wrapper script. This script is designed to take your python model and turn it into a dockerised microservice that conforms to Seldon's internal API, thus avoiding the hassle to write your own dockerised microservice.
+
+You can use these wrappers with any model that offers a python API. Some examples are:
+* Scikit-learn
+* Keras
+* statsmodels
+* Tensorflow
+* XGBoost
+
+The global process is as follows:
+* Regroup your files under a single directory and create a standard python class that will be used as an entrypoint
+* Run the wrapper script that will package your model for docker
+* Build and publish a docker image from the generated files
+
 
 ## Create a model folder
 
-Seldon python wrappers are designed to load a saved model and package it into a docker image. In order to use the wrappers, the loadable file containing your model need to be placed in a dedicated folder \<your_model_folder>.
+The Seldon python wrappers are designed to take your model and turn it into a dockerised microservice that conforms to Seldon's internal API. 
+To wrap a model, there are 2 requirements:
+* All the files that will be used at runtime need to be put into a single directory;
+* You need a file that contains a standardised python class that will serve as an entrypoint for runtime predictions.
 
-Here we illustrate the content of the ```keras_mnist``` model folder which can be found in [seldon-core-example/models/](https://github.com/SeldonIO/seldon-core-examples). In this example we have \<your_model_folder> = seldon-core-examples/models/keras_mnist.
+Additionally, if you are making use of specific python libraries, you need to list them in a requirements.txt file that will be used by pip to install the packages in the docker image.
 
-Any model folder must include the following 3 files (if you build your own model, rename the files where appropriate):
-1. MnistClassifier.py: Needs to include a python class having the same name as the file, in this case MnistClassifier, and implementing the  methods \__init__()  and predict(). The following template shows the structure of the file:
-    * General template:
-        ```python
-        from <your_python_loading_library> import <your_loading_function>
-            
-        class <your_model_name>(object): #Must be the same as the name of the module
+Here we illustrate the content of the ```keras_mnist``` model folder which can be found in [seldon-core/examples/models/](https://github.com/SeldonIO/seldon-core/tree/master/examples).
 
-            def __init__(self):
-                self.model = <your_loading_function>(<your_saved_model>)
-				  
-            def predict(self,X,features_names):
-                return self.model.predict(X)
-        ```
-    * Keras mnist example:
-        ```python
-        from keras.models import load_model
-	    
-        class MnistClassifier(object): #Must be the same as the name of the module
-	    
-            def __init__(self):
-                self.model = load_model('MnistClassifier.h5')
-		    
-            def predict(self,X,features_names):
-                if X.shape[0]==784:
-                    X = X.reshape(1,28,28,1)
-                else:
-                    X = X.reshape(X.shape[0],28,28,1)
-                return self.model.predict(X)
-        ```
-2. requirements.txt: List of the packages required by your model. Such packages must be installable through ```pip install```. For example,   the requirements.txt file for the keras example presented in the next session is:
+This folder contains the following 3 files: 
+
+1. MnistClassifier.py: This is the entrypoint for the model. It needs to include a python class having the same name as the file, in this case MnistClassifier, that implements a method called predict that takes as arguments a multi-dimensional numpy array (X) and a list of strings (feature_names), and returns a numpy array of predictions. 
+
 	
-        keras==2.0.6 
-        h5py
+    ```python
+    from keras.models import load_model
+	    
+    class MnistClassifier(object): # The file is called MnistClassifier.py
+	    
+        def __init__(self):
+			""" You can load your pre-trained model in here. The instance will be created once when the docker container starts running on the cluster. """
+            self.model = load_model('MnistClassifier.h5')
+		    
+        def predict(self,X,feature_names):
+			""" X is a 2-dimensional numpy array, feature_names is a list of strings. 
+			This methods needs to return a numpy array of predictions."""
+            return self.model.predict(X)
+    ```
+	
+2. requirements.txt: List of the packages required by your model, that will be installed via ```pip install```.
+
+   ```
+   keras==2.0.6 
+   h5py==2.7.0
+   ```
  	    	
-3. MnistClassifier.h5: The file with your saved model, loadable with load_model() function. 
+3. MnistClassifier.h5: This hdf file contains the saved keras model. 
 
 ## Wrap the model
 
-After you have copied the required files in your model folder, you can use seldon wrappers to create a docker image of your model. The seldon wrapper script requires  a model name, a model version, a docker repository and a base docker image as parameters. In our example: 
-	
-* \<your_model_name> = MnistClassifier: 
+After you have copied the required files in your model folder, you run the Seldon wrapper script to turn your model into a dockerised microservice. The wrapper script requires as arguments the path to your model directory, the model name, a version for the docker image, and the name of a docker repository. It will generate a "build" directory that contains the microservice, Dockerfile, etc.
 
-    The name of the model.  The .py file in your model folder and the class implemented in it have to be called both \<your_model_name>, e.g MnistClassifier.
+In order to make things even simpler (and because we love Docker!) we have dockerised the wrapper script so that you don't need to install anything on your machine to run it - except Docker.
 
-* \<your_model_version> = 0.1: 
-
-    The version of your model, e.g.  0.1.
-
-* \<your_docker_repo> = seldonio: 
-
-    The repository for the image, e.g. seldonio.
-
-* \<your_base_image> = Python:2: 
-    
-    The base image for the model, default is Python:2.
-
-If you are using Minikube, the wrapping can be done as in the [getting started on Minikube session](../getting_started/minikube.md)
-
-```bash
- git clone https://github.com/SeldonIO/seldon-core-examples && cd seldon-core-example 
 ```
-```bash 
-./wrap-model-in-minikube models/keras_mnist MnistClassifier 0.1 seldonio --force
+docker run -v /path/to/model/dir:/my_model seldonio/core-python-wrapper:0.4 /my_model MnistClassifier 0.1 seldonio
 ```
 
-This will create a docker image ```seldonio/mnistclassifier:0.1``` which is ready for deployment on seldon-core.
+Let's explain each piece of this command in more details.
+
+
+``` docker run seldonio/core-python-wrapper:0.4 ``` : run the core-python-wrapper container (version 0.4)
+
+``` -v /path/to/model/dir:/my_model ``` : Tells docker to mount your local folder to /my_model in the container. This is used to access your files and generate the wrapped model files. 
+
+``` /my_model MnistClassifier 0.1 seldonio ``` : These are the command line arguments that are passed to the script. The bare minimum, as in this example, are the path where your model folder has been mounted in the container, the model name, the docker image version and the docker hub repository.
+
+For reference, here is the complete list of arguments that can be passed to the script.
+
+```
+docker run -v /path:<model_path> seldonio/core-python-wrapper:0.4 
+	<model_path>
+	<model_name>
+	<image_version>
+	<docker_repo>
+	--out-folder=<out_folder>
+	--service-type=<service_type>
+	--base-image=<base_image>
+	--image-name=<image_name>
+	--force
+	--persistence
+	--grpc
+```
+
+Required:
+* model_path: The path to the model folder inside the container - the same as the mount you have chosen, in our above example my_model
+* model_name: The name of your model class and file, as defined abobe. In our example, MnistClassifier
+* image_version: The version of the docker image you will create. By default the name of the image will be the name of your model in lowercase (more on how to change this later). In our example 0.1
+* docker_repo: The name of your dockerhub repository. In our example seldonio.
+
+Optional:
+* out_folder: The folder that will be created to contain the output files. Defaults to ./build
+* service_type: The type of Seldon Service API the model will use. Defaults to MODEL. Other options are ROUTER, COMBINER, TRANSFORMER, OUTPUT_TRANSFORMER
+* base_image: The docker image your docker container will inherit from. Defaults to python:2.
+* image_name: The name of your docker image. Defaults to model_name in lowercase
+* force: When this flag is present, the build folder will be overwritten if it already exists. The wrapping is aborted by default.
+* persistence: When this flag is present, the model will be made persistent, its state being saved at a regular interval on redis.
+* grpc: When this flag is present, the model will expose a GRPC API rather than the default REST API
+
+Note that you can access the command line help of the script by using the -h or --help argument as follows:
+
+```
+docker run seldonio/core-python-wrapper:0.4 -h
+```
+
+Note also that you could use the python script directly if you feel so enclined, but you would have to check out seldon-core and install some python libraries on your local machine - by using the docker image you don't have to care about these dependencies.
+
+## Build and push the Docker image
+
+A folder named "build" should have appeared in your model directory. It contains all the files needed to build and publish your model's docker image.
+
+To do so, run:
+
+```
+cd /path/to/model/dir/build
+./build_image.sh
+./push_image.sh
+```
+
+And voila, the docker image for your model is now available in your docker repository, and Seldon Core can deploy it into production.
