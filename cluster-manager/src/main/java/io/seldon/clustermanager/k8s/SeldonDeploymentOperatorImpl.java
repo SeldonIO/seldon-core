@@ -34,6 +34,7 @@ import io.kubernetes.client.models.V1OwnerReference;
 import io.kubernetes.client.proto.IntStr.IntOrString;
 import io.kubernetes.client.proto.Meta.ObjectMeta;
 import io.kubernetes.client.proto.Meta.OwnerReference;
+import io.kubernetes.client.proto.Resource.Quantity;
 import io.kubernetes.client.proto.V1;
 import io.kubernetes.client.proto.V1.ContainerPort;
 import io.kubernetes.client.proto.V1.EnvVar;
@@ -95,6 +96,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		cBuilder
 			.setName("seldon-container-engine")
 			.setImage(clusterManagerProperites.getEngineContainerImageAndVersion())
+			.setResources(V1.ResourceRequirements.newBuilder().putRequests("cpu", Quantity.newBuilder().setString("0.1").build()))
 			.addEnv(EnvVar.newBuilder().setName("ENGINE_PREDICTOR").setValue(getEngineEnvVarJson(predictorDef)))
 			.addEnv(EnvVar.newBuilder().setName("ENGINE_SELDON_DEPLOYMENT").setValue(getEngineEnvVarJson(dep)))
 			.addEnv(EnvVar.newBuilder().setName("ENGINE_SERVER_PORT").setValue(""+clusterManagerProperites.getEngineContainerPort()))
