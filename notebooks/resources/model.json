@@ -21,9 +21,9 @@
                     "spec": {
                         "containers": [
                             {
-                                "image": "seldonio/mean_classifier:0.6",
+                                "image": "seldonio/mock_classifier:1.0",
                                 "imagePullPolicy": "IfNotPresent",
-                                "name": "mean-classifier",
+                                "name": "classifier",
                                 "resources": {
                                     "requests": {
                                         "memory": "1Mi"
@@ -36,7 +36,7 @@
                 },
                 "graph": {
                     "children": [],
-                    "name": "mean-classifier",
+                    "name": "classifier",
                     "endpoint": {
 			"type" : "REST"
 		    },
