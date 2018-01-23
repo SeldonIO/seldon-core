@@ -26,7 +26,7 @@
 				"name": "classifier-1",
 				"resources": {
 				    "requests": {
-					"memory": "1Mi",,
+					"memory": "1Mi",
 					"cpu": "0.1"
 				    }
 				}
