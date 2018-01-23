@@ -53,10 +53,9 @@ message PredictorStatus {
 message DeploymentSpec {
   optional string name = 1; // A unique name within the namespace.
   repeated PredictorSpec predictors = 2; // A list of 1 or more predictors describing runtime machine learning deployment graphs.
-  optional Endpoint endpoint = 3; // An endpoint for this deployment to be exposed on within the cluster.
-  optional string oauth_key = 4; // The oauth key for external users to use this deployment via an API.
-  optional string oauth_secret = 5; // The oauth secret for external users to use this deployment via an API.
-  map<string,string> annotations = 6; // Arbitrary annotations.
+  optional string oauth_key = 6; // The oauth key for external users to use this deployment via an API.
+  optional string oauth_secret = 7; // The oauth secret for external users to use this deployment via an API.
+  map<string,string> annotations = 8; // Arbitrary annotations.
 }
 
 message PredictorSpec {
@@ -77,31 +76,39 @@ message PredictiveUnit {
    * The main type of the predictive unit. Routers decide where requests are sent, e.g. AB Tests and Multi-Armed Bandits. Combiners ensemble responses from their children. Models are leaft nodes in the predictive tree and provide request/reponse functionality encapsulating a machine learning model. Transformers alter the request features.
    */
   enum PredictiveUnitType {
-    UNKNOWN_TYPE = 0; // Default unknown type for case when unset.
-    ROUTER = 1; // A router decides to which child unit a request will be sent.
-    COMBINER = 2; // A Combiner combines multiple responses from it children into a single response.
-    MODEL = 3; // A leaf node in a graph that takes a request and returns a response using a machine learning model.
-    TRANSFORMER = 4; // A transform modifies the request to create a new request.
+    // Each one of these defines a default combination of Predictive Unit Methods
+    UNKNOWN_TYPE = 0;
+    ROUTER = 1; // Route + send feedback
+    COMBINER = 2; // Aggregate
+    MODEL = 3; // Transform input
+    TRANSFORMER = 4; // Transform input (alias)
+    OUTPUT_TRANSFORMER = 5; // Transform output
   }
 
-  /**
-   * The subtype for this predictive unit. Microservices are individual containers than provide a core piece of functionality not contained with the Seldon engine. The other types represent core functionality built into the Seldon engine that processes requests.
-   */
-  enum PredictiveUnitSubtype {
-    UNKNOWN_SUBTYPE = 0; // Default unknown type for case when unset.
-    MICROSERVICE = 1; // A microservice is a self contained docker image with exposed API endpoints.
-    SIMPLE_MODEL = 2; // An internal model stub for testing.
-    SIMPLE_ROUTER = 3; // An internal router for testing.
-    RANDOM_ABTEST = 4; // A A-B test that sends traffic 50% to each child randomly.
-    AVERAGE_COMBINER = 5; // A default combiner that returns the average of its children responses.
+  enum PredictiveUnitImplementation {
+    // Each one of these are hardcoded in the engine, no microservice is used
+    UNKNOWN_IMPLEMENTATION = 0; // No implementation (microservice used)
+    SIMPLE_MODEL = 1; // An internal model stub for testing.
+    SIMPLE_ROUTER = 2; // An internal router for testing.
+    RANDOM_ABTEST = 3; // A A-B test that sends traffic 50% to each child randomly.
+    AVERAGE_COMBINER = 4; // A default combiner that returns the average of its children responses.
   }
 
-  required string name = 1; // Must match container name of component if subtype microservice.
+  enum PredictiveUnitMethod {
+    TRANSFORM_INPUT = 0;
+    TRANSFORM_OUTPUT = 1;
+    ROUTE = 2;
+    AGGREGATE = 3;
+    SEND_FEEDBACK = 4;
+  }
+
+  required string name = 1; //must match container name of component if no implementation
   repeated PredictiveUnit children = 2; // The child predictive units.
-  optional PredictiveUnitType type = 3; // The type of the unit.
-  optional PredictiveUnitSubtype subtype = 4; // The subtype of the unit.
-  optional Endpoint endpoint = 5; // The exposed endpoint for this unit.
-  repeated Parameter parameters = 6; // Customer parameter to pass to the unit.
+  optional PredictiveUnitType type = 3;
+  optional PredictiveUnitImplementation implementation = 4;
+  repeated PredictiveUnitMethod methods = 5;
+  optional Endpoint endpoint = 6; // The exposed endpoint for this unit.
+  repeated Parameter parameters = 7; // Customer parameter to pass to the unit.
 }
 
 message Endpoint {
@@ -183,7 +190,6 @@ message Parameter {
                     "endpoint": {
 			"type" : "REST"
 		    },
-                    "subtype": "MICROSERVICE",
                     "type": "MODEL"
                 },
                 "name": "fx-market-predictor",
@@ -195,5 +201,4 @@ message Parameter {
         ]
     }
 }
-
 ```
