@@ -45,10 +45,10 @@ public class SeldonDeploymentValidationTest extends AppTest {
     }
 
     @Test(expected = SeldonDeploymentException.class)
-    public void testNoType() throws IOException, SeldonDeploymentException
+    public void testNoMethod() throws IOException, SeldonDeploymentException
     {
         SeldonDeploymentOperator op = new SeldonDeploymentOperatorImpl(getClusterManagerprops());
-        String jsonStr = readFile("src/test/resources/model_invalid_no_type.json",StandardCharsets.UTF_8);
+        String jsonStr = readFile("src/test/resources/model_invalid_no_method.json",StandardCharsets.UTF_8);
         SeldonDeployment mlDep = SeldonDeploymentUtils.jsonToSeldonDeployment(jsonStr);
         SeldonDeployment mlDep2 = op.defaulting(mlDep);
         op.validate(mlDep2);
