@@ -342,12 +342,21 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
             checkPredictiveUnitsMicroservices(child,p);
 	}
 	
-	private void checkTypeAndSubType(PredictiveUnit pu) throws SeldonDeploymentException
+	/*
+	 * If implementation is specified, ignore the rest
+	 * if not, implementation defaults to UNKNOWN_IMPLEMENTATION and
+	 * if type is specified ignore the rest
+	 * if not, type defaults to UNKNOWN_TYPE and
+	 * if methods is not specified, raise an error (we are in the case when none of implementation, type, methods has been specified)
+	 */
+	private void checkTypeMethodAndImpl(PredictiveUnit pu) throws SeldonDeploymentException
 	{
-        if (!pu.hasType())
-            throw new SeldonDeploymentException(String.format("Predictive unit %s has no type",pu.getName()));     
+        if ((!pu.hasImplementation() || pu.getImplementation().getNumber() == PredictiveUnitImplementation.UNKNOWN_IMPLEMENTATION_VALUE) &&
+                (!pu.hasType() || pu.getType().getNumber() == PredictiveUnitType.UNKNOWN_TYPE_VALUE) &&
+                pu.getMethodsCount() == 0) 
+            throw new SeldonDeploymentException(String.format("Predictive unit %s has no methods specified",pu.getName()));     
         for(PredictiveUnit child :  pu.getChildrenList())
-            checkTypeAndSubType(child); 
+            checkTypeMethodAndImpl(child); 
 	}
 
 	@Override
@@ -356,7 +365,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 	    for(PredictorSpec p : mlDep.getSpec().getPredictorsList())
         {
 	        checkPredictiveUnitsMicroservices(p.getGraph(),p);
-	        checkTypeAndSubType(p.getGraph());
+	        checkTypeMethodAndImpl(p.getGraph());
         }
         
 	}

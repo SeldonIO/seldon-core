@@ -36,11 +36,10 @@
                 },
                 "graph": {
                     "children": [],
-                    "name": "mean-classifier_",
+                    "name": "mean-classifier",
                     "endpoint": {
 			"type" : "REST"
-		    },
-                    "type": "MODEL"
+		    }
                 },
                 "name": "fx-market-predictor",
                 "replicas": 1,
