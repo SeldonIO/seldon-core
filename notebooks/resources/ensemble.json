@@ -62,7 +62,6 @@
 		"graph": {
 		    "name":"ensemble",
 		    "implementation": "AVERAGE_COMBINER",
-		    "type": "UNKNOWN_TYPE",
 		    "children": [
 			{
 			    "name": "classifier-1",

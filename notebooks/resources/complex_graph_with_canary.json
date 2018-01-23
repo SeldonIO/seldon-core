@@ -23,7 +23,7 @@
 			    {
 				"image": "seldonio/mock_classifier:1.0",
 				"imagePullPolicy": "IfNotPresent",
-				"name": "mean-classifier-1",
+				"name": "classifier-1",
 				"resources": {
 				    "requests": {
 					"memory": "1Mi",
@@ -34,7 +34,7 @@
 			    {
 				"image": "seldonio/mock_classifier:1.0",
 				"imagePullPolicy": "IfNotPresent",
-				"name": "mean-classifier-2",
+				"name": "classifier-2",
 				"resources": {
 				    "requests": {
 					"memory": "1Mi",
@@ -45,7 +45,7 @@
 			    {
 				"image": "seldonio/mock_classifier:1.0",
 				"imagePullPolicy": "IfNotPresent",
-				"name": "mean-classifier-3",
+				"name": "classifier-3",
 				"resources": {
 				    "requests": {
 					"memory": "1Mi",
@@ -67,7 +67,7 @@
 			    {
 				"image": "seldonio/mock_transformer:1.0",
 				"imagePullPolicy": "IfNotPresent",
-				"name": "mean-transformer",
+				"name": "transformer",
 				"resources": {
 				    "requests": {
 					"memory": "1Mi",
@@ -94,7 +94,6 @@
 			{
 			    "name": "random-abtest",
 			    "implementation": "RANDOM_ABTEST",
-			    "type": "UNKNOWN_TYPE",
 			    "parameters":[
 				{
 				    "name":"ratioA",
@@ -104,14 +103,14 @@
 			    ],
 			    "children": [
 				{
-				    "name": "mean-transformer",
+				    "name": "transformer",
 				    "type": "TRANSFORMER",
 				    "endpoint": {
 					"type": "REST"
 				    },
 				    "children": [
 					{
-					    "name": "mean-classifier-1",
+					    "name": "classifier-1",
 					    "type": "MODEL",
 					    "endpoint": {
 						"type": "REST"
@@ -121,18 +120,17 @@
 				},
 				{
 				    "name": "ensemble",
-				    "type": "UNKNOWN_TYPE",
 				    "implementation": "AVERAGE_COMBINER",
 				    "children": [
 					{
-					    "name": "mean-classifier-2",
+					    "name": "classifier-2",
 					    "type": "MODEL",
 					    "endpoint": {
 						"type": "REST"
 					    }
 					},
 					{
-					    "name": "mean-classifier-3",
+					    "name": "classifier-3",
 					    "type": "MODEL",
 					    "endpoint": {
 						"type": "REST"
@@ -152,7 +150,7 @@
 			    {
 				"image": "seldonio/mock_classifier:1.0",
 				"imagePullPolicy": "IfNotPresent",
-				"name": "mean-classifier",
+				"name": "classifier",
 				"resources": {
 				    "requests": {
 					"memory": "1Mi",
@@ -163,7 +161,7 @@
 			    {
 				"image": "seldonio/mock_transformer:1.0",
 				"imagePullPolicy": "IfNotPresent",
-				"name": "mean-transformer",
+				"name": "transformer",
 				"resources": {
 				    "requests": {
 					"memory": "1Mi",
@@ -181,14 +179,14 @@
 		    "predictor_version": "v1"
 		},
 		"graph": {
-		    "name": "mean-transformer",
+		    "name": "transformer",
 		    "type": "TRANSFORMER",
 		    "endpoint": {
 			"type": "REST"
 		    },
 		    "children": [
 			{
-			    "name": "mean-classifier",
+			    "name": "classifier",
 			    "endpoint": {
 				"type": "REST"
 			    },
