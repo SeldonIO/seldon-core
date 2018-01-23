@@ -9,10 +9,10 @@
     },
     "spec": {
         "annotations": {
-            "project_name": "FX Market Prediction",
-            "deployment_version": "v1"
+            "project_name": "Iris classification",
+            "deployment_version": "0.1"
         },
-        "name": "test-deployment",
+        "name": "sklearn-iris-deployment",
         "oauth_key": "oauth-key",
         "oauth_secret": "oauth-secret",
         "predictors": [
@@ -21,9 +21,9 @@
                     "spec": {
                         "containers": [
                             {
-                                "image": "seldonio/mean_classifier:0.6",
+                                "image": "seldonio/irisclassifier:0.1",
                                 "imagePullPolicy": "IfNotPresent",
-                                "name": "mean-classifier",
+                                "name": "sklearn-iris-classifier",
                                 "resources": {
                                     "requests": {
                                         "memory": "1Mi"
@@ -36,17 +36,17 @@
                 },
                 "graph": {
                     "children": [],
-                    "name": "mean-classifier",
+                    "name": "sklearn-iris-classifier",
                     "endpoint": {
-			"type" : "REST"
-		    },
-                    "subtype": "MICROSERVICE"
+                        "type" : "REST"
+                    },
+                    "type": "MODEL"
                 },
-                "name": "fx-market-predictor",
+                "name": "sklearn-iris-predictor",
                 "replicas": 1,
-		"annotations": {
-		    "predictor_version" : "v1"
-		}
+                "annotations": {
+                "predictor_version" : "0.1"
+                }
             }
         ]
     }

@@ -51,11 +51,19 @@ helm install seldon-core --name seldon-core \
 
 ![API](./docs/deploy.png)
 
- - [Wrap your runtime prediction model](./docs/wrappers/readme.md).
- - Define your runtime inference graph in a seldon deployment custom resource.
- - Deploy.
+Three steps:
+
+ 1. [Wrap your runtime prediction model](./docs/wrappers/readme.md).
+ 1. [Define your runtime inference graph in a seldon deployment custom resource](./docs/crd/readme.md).
+ 1. [Deploy the graph](./docs/deploying.md).
 
 ## Reference
 
  - [Prediction API](./docs/reference/prediction.md)
  - [Seldon Deployment Custom Resource](./docs/reference/seldon-deployment.md)
+
+
+## Developer
+
+ - [CHANGELOG](CHANGELOG.md)
+ - [Developer Guide](./docs/developer/readme.md)

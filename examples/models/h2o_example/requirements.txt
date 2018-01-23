@@ -1,0 +1,14 @@
+numpy==1.11.2
+pandas==0.18.1
+grpc==0.3.post19
+grpcio==1.1.3
+Flask==0.11.1
+futures
+redis==2.10.5
+
+requests
+tabulate
+scikit-learn
+colorama
+http://h2o-release.s3.amazonaws.com/h2o/rel-wheeler/2/Python/h2o-3.16.0.2-py2.py3-none-any.whl
+

@@ -119,8 +119,16 @@ public class SeldonDeploymentWatcher  {
     	    	{
     	    		if (resourceVersionNew > maxResourceVersion)
         	    		maxResourceVersion = resourceVersionNew;
-
-    	    		this.processWatch(SeldonDeploymentUtils.jsonToSeldonDeployment(jsonInString), item.type);
+    	    		
+    	    		try
+    	    		{
+    	    		    this.processWatch(SeldonDeploymentUtils.jsonToSeldonDeployment(jsonInString), item.type);
+    	    		}
+    	    		catch (InvalidProtocolBufferException e)
+    	    		{
+    	    		    //TODO : update status of seldondeployment to show error
+    	    		    logger.warn("Failed to parse SeldonDelployment " + jsonInString, e);
+    	    		}
     	    	}
     	    }
         }
