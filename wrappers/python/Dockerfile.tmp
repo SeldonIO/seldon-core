@@ -1,5 +1,5 @@
 FROM {{ base_image }}
-{% for key,value in labels.iteritems() %}
+{% for key,value in kwargs.iteritems() %}
 LABEL "{{ key }}"="{{ value }}"{% endfor %}
 
 RUN apt-get update -y

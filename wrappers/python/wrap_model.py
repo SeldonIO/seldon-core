@@ -6,31 +6,21 @@ import jinja2
 def populate_template(filename,build_folder,**kwargs):
     with open("./{}.tmp".format(filename),'r') as ftmp:
         with open("{}/{}".format(build_folder,filename),'w') as fout:
-            fout.write(jinja2.Template(ftmp.read()).render(**kwargs))
+            fout.write(jinja2.Template(ftmp.read()).render(kwargs=kwargs,**kwargs))
 
 def wrap_model(
-        repo,
         model_folder,
-        base_image,
-        model_name,
-        service_type,
-        version,
-        REST=True,
-        out_folder=None,
+        build_folder,
         force_erase=False,
-        persistence=False,
-        image_name=None):
-    if out_folder is None:
-        out_folder = model_folder
-    if image_name is None:
-        image_name = model_name.lower()
-    build_folder = out_folder+'/build'
+        **wrapping_arguments):
     if os.path.isdir(build_folder):
         if not force_erase:
             print "Build folder already exists. To force erase, use --force argument"
             exit(0)
         else:
             shutil.rmtree(build_folder)
+    service_type = wrapping_arguments.get("service_type")
+    
     shutil.copytree(model_folder,build_folder)
     shutil.copy2("./Makefile",build_folder)
     shutil.copy2('./microservice.py',build_folder)
@@ -39,35 +29,22 @@ def wrap_model(
     shutil.copy2("./seldon_requirements.txt",build_folder)
     shutil.copytree('./proto',build_folder+'/proto')
 
-    all_args = {
-        "base_image": base_image,
-        "model_name": model_name,
-        "api_type": "REST" if REST else "GRPC",
-        "service_type": service_type,
-        "persistence": int(persistence),
-        "docker_repo": repo,
-        "docker_image_name": image_name,
-        "docker_image_version": version
-    }
-        
     populate_template(
         'Dockerfile',
         build_folder,
-        labels=all_args,
-        **all_args)
+        **wrapping_arguments)
     populate_template(
         "build_image.sh",
         build_folder,
-        **all_args)
+        **wrapping_arguments)
     populate_template(
         "push_image.sh",
         build_folder,
-        **all_args)
+        **wrapping_arguments)
     populate_template(
         "README.md",
         build_folder,
-        parameters=all_args,
-        **all_args)
+        **wrapping_arguments)
      
     # Make the files executable
     st = os.stat(build_folder+"/build_image.sh")
@@ -83,7 +60,7 @@ if __name__ == "__main__":
     parser.add_argument("version", type=str, help="Version string that will be given to the model docker image")
     parser.add_argument("repo", type=str, help="Name of the docker repository to publish the image on")
     parser.add_argument("--grpc", action="store_true", help="When this flag is present the model will be wrapped as a GRPC microservice. By default the model is wrapped as a REST microservice.")
-    parser.add_argument("--out-folder", type=str, default=None, help="Path to the folder where the pre-wrapped model will be created. Defaults to a 'build' folder in the model directory.")
+    parser.add_argument("--out-folder", type=str, default=None, help="Path to the folder where the build folder containing the pre-wrapped model will be created. Defaults to the model directory.")
     parser.add_argument("--service-type", type=str, choices=["MODEL","ROUTER","TRANSFORMER","COMBINER","OUTLIER_DETECTOR"], default="MODEL", help="The type of Seldon API the wrapped model will use. Defaults to MODEL.")
     parser.add_argument("--base-image", type=str, default="python:2", help="The base docker image to inherit from. Defaults to python:2. Caution: this must be a debian based image.")
     parser.add_argument("-f", "--force", action="store_true", help="When this flag is present the script will overwrite the contents of the output folder even if it already exists. By default the script would abort.")
@@ -91,16 +68,18 @@ if __name__ == "__main__":
     parser.add_argument("--image-name",type=str,default=None,help="Name to give to the model's docker image. Defaults to the model name in lowercase.")
 
     args = parser.parse_args()
+    if args.out_folder is None:
+        args.out_folder = args.model_folder
 
     wrap_model(
-        args.repo,
         args.model_folder,
-        args.base_image,
-        args.model_name,
-        args.service_type,
-        args.version,
-        REST = not args.grpc,
-        out_folder = args.out_folder,
+        args.out_folder+"/build",
         force_erase = args.force,
-        persistence = args.persistence,
-        image_name = args.image_name)
+        docker_repo = args.repo,
+        base_image = args.base_image,
+        model_name = args.model_name,
+        api_type = "REST" if not args.grpc else "GRPC",
+        service_type = args.service_type,
+        docker_image_version = args.version,
+        docker_image_name = args.image_name,
+        persistence = int(args.persistence))

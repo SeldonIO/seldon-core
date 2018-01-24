@@ -3,5 +3,5 @@ Seldon Microservice: {{ model_name }}
 This microservice was wrapped using the Seldon Core Wrappers.
 
 Wrapping Parameters:
-{% for key,value in parameters.iteritems() %} - {{ key }}: {{ value }}
+{% for key,value in kwargs.iteritems() %} - {{ key }}: {{ value }}
 {% endfor %}
