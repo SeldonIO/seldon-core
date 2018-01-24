@@ -1,11 +1,12 @@
 import os
 import shutil
 import argparse
+import jinja2
 
-def populate_template(template,file_out,**kwargs):
-    with open(template,'r') as ftmp:
-        with open(file_out,'w') as fout:
-            fout.write(ftmp.read().format(**kwargs))
+def populate_template(filename,build_folder,**kwargs):
+    with open("./{}.tmp".format(filename),'r') as ftmp:
+        with open("{}/{}".format(build_folder,filename),'w') as fout:
+            fout.write(jinja2.Template(ftmp.read()).render(**kwargs))
 
 def wrap_model(
         repo,
@@ -37,28 +38,37 @@ def wrap_model(
     shutil.copy2('./{}_microservice.py'.format(service_type.lower()),build_folder)
     shutil.copy2("./seldon_requirements.txt",build_folder)
     shutil.copytree('./proto',build_folder+'/proto')
-    populate_template(
-        './Dockerfile.tmp',
-        build_folder+'/Dockerfile',
-        base_image=base_image,
-        model_name=model_name,
-        api_type="REST" if REST else "GRPC",
-        service_type = service_type,
-        persistence = int(persistence)
-    )
-    populate_template(
-        "./build_image.sh.tmp",
-        build_folder+"/build_image.sh",
-        docker_repo=repo,
-        docker_image_name=image_name,
-        docker_image_version=version)
-    populate_template(
-        "./push_image.sh.tmp",
-        build_folder+"/push_image.sh",
-        docker_repo=repo,
-        docker_image_name=image_name,
-        docker_image_version=version)
 
+    all_args = {
+        "base_image": base_image,
+        "model_name": model_name,
+        "api_type": "REST" if REST else "GRPC",
+        "service_type": service_type,
+        "persistence": int(persistence),
+        "docker_repo": repo,
+        "docker_image_name": image_name,
+        "docker_image_version": version
+    }
+        
+    populate_template(
+        'Dockerfile',
+        build_folder,
+        labels=all_args,
+        **all_args)
+    populate_template(
+        "build_image.sh",
+        build_folder,
+        **all_args)
+    populate_template(
+        "push_image.sh",
+        build_folder,
+        **all_args)
+    populate_template(
+        "README.md",
+        build_folder,
+        parameters=all_args,
+        **all_args)
+     
     # Make the files executable
     st = os.stat(build_folder+"/build_image.sh")
     os.chmod(build_folder+"/build_image.sh", st.st_mode | 0111)

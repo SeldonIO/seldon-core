@@ -1,4 +1,6 @@
-FROM {base_image}
+FROM {{ base_image }}
+{% for key,value in labels.iteritems() %}
+LABEL "{{ key }}"="{{ value }}"{% endfor %}
 
 RUN apt-get update -y
 RUN apt-get install -y python-pip python-dev build-essential
@@ -14,4 +16,4 @@ COPY ./ /microservice/
 WORKDIR /microservice
 
 EXPOSE 5000
-CMD ["python","microservice.py","{model_name}","{api_type}","--service-type","{service_type}","--persistence","{persistence}"]
+CMD ["python","microservice.py","{{ model_name }}","{{ api_type }}","--service-type","{{ service_type }}","--persistence","{{ persistence }}"]
