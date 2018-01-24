@@ -67,7 +67,7 @@ docker run -v /path/to/model/dir:/my_model seldonio/core-python-wrapper:0.5 /my_
 Let's explain each piece of this command in more details.
 
 
-``` docker run seldonio/core-python-wrapper:0.5 ``` : run the core-python-wrapper container (version 0.4)
+``` docker run seldonio/core-python-wrapper:0.5 ``` : run the core-python-wrapper container (version 0.5)
 
 ``` -v /path/to/model/dir:/my_model ``` : Tells docker to mount your local folder to /my_model in the container. This is used to access your files and generate the wrapped model files. 
 
