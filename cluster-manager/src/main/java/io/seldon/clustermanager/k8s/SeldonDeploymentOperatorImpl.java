@@ -93,10 +93,10 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 	private V1.Container createEngineContainer(SeldonDeployment dep,PredictorSpec predictorDef) throws SeldonDeploymentException
 	{
 		V1.Container.Builder cBuilder = V1.Container.newBuilder();
+		
 		cBuilder
 			.setName("seldon-container-engine")
 			.setImage(clusterManagerProperites.getEngineContainerImageAndVersion())
-			.setResources(V1.ResourceRequirements.newBuilder().putRequests("cpu", Quantity.newBuilder().setString("0.1").build()))
 			.addEnv(EnvVar.newBuilder().setName("ENGINE_PREDICTOR").setValue(getEngineEnvVarJson(predictorDef)))
 			.addEnv(EnvVar.newBuilder().setName("ENGINE_SELDON_DEPLOYMENT").setValue(getEngineEnvVarJson(dep)))
 			.addEnv(EnvVar.newBuilder().setName("ENGINE_SERVER_PORT").setValue(""+clusterManagerProperites.getEngineContainerPort()))
@@ -125,7 +125,11 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 						.addCommand("-c")
 						.addCommand("curl 127.0.0.1:"+clusterManagerProperites.getEngineContainerPort()+"/pause && /bin/sleep 5"))));
 
-			
+		// Add engine resources if specified
+		if (predictorDef.hasEngineResources())
+		    cBuilder.setResources(predictorDef.getEngineResources());
+		else // set default resource requests for cpu
+		    cBuilder.setResources(V1.ResourceRequirements.newBuilder().putRequests("cpu", Quantity.newBuilder().setString("0.1").build()));
 			
 		return cBuilder.build();
 	}
