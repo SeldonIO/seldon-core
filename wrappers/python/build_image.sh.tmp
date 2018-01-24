@@ -1,1 +1,1 @@
-docker build --force-rm=true -t {docker_repo}/{docker_image_name}:{docker_image_version} .
+docker build --force-rm=true -t {{ docker_repo }}/{{ docker_image_name }}:{{ docker_image_version }} .
