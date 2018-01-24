@@ -47,6 +47,7 @@ message PredictorSpec {
   required k8s.io.api.core.v1.PodTemplateSpec componentSpec = 3; // A description of the set of containers used by the graph. One for each microservice defined in the graph.
   optional int32 replicas = 4; // The number of replicas of the predictor to create.
   map<string,string> annotations = 5; // Arbitrary annotations.
+  optional k8s.io.api.core.v1.ResourceRequirements engineResources = 6; // Optional set of resources for the Seldon engine which is added to each Predictor graph to manage the request/response flow
 }
 
 
