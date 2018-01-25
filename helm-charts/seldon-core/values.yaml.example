@@ -29,28 +29,8 @@ zookeeper:
 redis:
   image:
     tag: "4.0.1"
-kube_apiserver:
-  enabled: false
-
-
-alertmanager:
-  # config disabled by default, create file "/files/alertmanager/config.yaml" then enable
-  config:
-    enabled: false
-
-
-# set the grafana admin password
-#grafana_prom_admin_password:
-
-# Set the type of service for Grafana Prom
-#grafana_prom_service_type: LoadBalancer
-grafana_prom_service_type: NodePort
 
 # Set the type of service for apife
 #apife_service_type: LoadBalancer
 apife_service_type: NodePort
-
-# Persist data to a persitent volume
-persistence:
-  enabled: true
 
