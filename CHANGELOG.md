@@ -1,13 +1,5 @@
 # Change Log
 
-## [Unreleased](https://github.com/SeldonIO/seldon-core/tree/HEAD)
-
-[Full Changelog](https://github.com/SeldonIO/seldon-core/compare/v0.1.2...HEAD)
-
-**Merged pull requests:**
-
-- Release v0.1.2 prep [\#66](https://github.com/SeldonIO/seldon-core/pull/66) ([gsunner](https://github.com/gsunner))
-
 ## [v0.1.2](https://github.com/SeldonIO/seldon-core/tree/v0.1.2) (2018-01-23)
 [Full Changelog](https://github.com/SeldonIO/seldon-core/compare/v0.1.1...v0.1.2)
 
