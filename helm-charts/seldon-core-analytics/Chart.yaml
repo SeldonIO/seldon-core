@@ -1,0 +1,12 @@
+apiVersion: v1
+description: Seldon Core Analytics
+keywords:
+- seldon-core
+- kubernetes
+- machine-learning
+- prometheus
+- grafana
+name: seldon-core-analytics
+sources:
+- https://github.com/SeldonIO/seldon-core
+version: 0.1
