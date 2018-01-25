@@ -40,17 +40,24 @@ Seldon Core goals:
  - [Jupyter Notebook showing deployment of prebuilt model using Minikube](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_minikube.ipynb)
  - [Jupyter Notebook showing deployment of prebuilt model using GCP cluster](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_gcp.ipynb)
 
-## Installation
+## Install
 
 Official releases can be installed via helm from the repository https://storage.googleapis.com/seldon-charts.
-For example:
+
+To install seldon-core:
+
+```
+helm install seldon-core --name seldon-core --repo https://storage.googleapis.com/seldon-charts
+```
+
+To install the optional analytics components including Prometheus and Grafana with a built-in dashboard for monitoring the running ML deployments run:
 
 ```
 helm install seldon-core --name seldon-core \
     --set grafana_prom_admin_password=password \
     --set persistence.enabled=false \
     --repo https://storage.googleapis.com/seldon-charts
-```
+``` 
 
 ## Deployment Guide
 
