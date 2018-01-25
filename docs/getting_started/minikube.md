@@ -72,7 +72,7 @@ In this session, we show how to wrap the sklearn iris classifier in the [seldon-
 
 3. Wrap your saved model using the core-python-wrapper docker image:
     ```bash
-    docker run -v $(pwd):/model seldonio/core-python-wrapper:0.4 /model IrisClassifier 0.1 seldonio --force
+    docker run -v $(pwd):/model seldonio/core-python-wrapper:0.5 /model IrisClassifier 0.1 seldonio --force
     ```
     
 4. Build the docker image locally
