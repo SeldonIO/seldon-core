@@ -1,4 +1,4 @@
-CHARTS=seldon-core seldon-core-loadtesting
+CHARTS=seldon-core seldon-core-analytics seldon-core-kafka seldon-core-loadtesting
 
 
 build_all:

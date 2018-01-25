@@ -5,10 +5,11 @@
 | master      | [![Build Status](https://travis-ci.org/SeldonIO/seldon-core.svg?branch=master)](https://travis-ci.org/SeldonIO/seldon-core) |
 | release-0.1 | [![Build Status](https://travis-ci.org/SeldonIO/seldon-core.svg?branch=release-0.1)](https://travis-ci.org/SeldonIO/seldon-core) |
 
-Seldon Core is an open source framework for deploying machine learning models on Kubernetes.
+Seldon Core is an open source platform for deploying machine learning models on Kubernetes.
 
 - [Goals](#goals)
 - [Quick Start](#quick-start)
+- [Install](#install)
 - [Deployment guide](#deployment-guide)
 - [Reference](#reference)
 
@@ -40,17 +41,24 @@ Seldon Core goals:
  - [Jupyter Notebook showing deployment of prebuilt model using Minikube](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_minikube.ipynb)
  - [Jupyter Notebook showing deployment of prebuilt model using GCP cluster](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_gcp.ipynb)
 
-## Installation
+## Install
 
 Official releases can be installed via helm from the repository https://storage.googleapis.com/seldon-charts.
-For example:
+
+To install seldon-core:
+
+```
+helm install seldon-core --name seldon-core --repo https://storage.googleapis.com/seldon-charts
+```
+
+To install the optional analytics components including Prometheus and Grafana with a built-in dashboard for monitoring the running ML deployments run:
 
 ```
 helm install seldon-core --name seldon-core \
     --set grafana_prom_admin_password=password \
     --set persistence.enabled=false \
     --repo https://storage.googleapis.com/seldon-charts
-```
+``` 
 
 ## Deployment Guide
 
