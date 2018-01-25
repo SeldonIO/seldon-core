@@ -1,6 +1,3 @@
-alertmanager:
-  config:
-    enabled: false
 apife:
   image:
     pull_policy: IfNotPresent
@@ -17,17 +14,6 @@ cluster_manager:
 engine:
   image:
     tag: 0.1.3-SNAPSHOT
-grafana_prom_service_type: NodePort
-kafka_core:
-  image:
-    tag: '0.1'
-kube_apiserver:
-  enabled: false
-persistence:
-  enabled: true
 redis:
   image:
     tag: 4.0.1
-zookeeper:
-  image:
-    tag: '1.0'
