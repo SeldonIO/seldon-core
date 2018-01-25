@@ -44,7 +44,7 @@ Detailed steps:
 3. Run the python wrapping scripts, with the additional ````--base-image``` argument:
 
 	```bash
-	docker run -v /path/to/your/model/folder:/model seldonio/core-python-wrapper:0.4 /model H2OModel 0.1 myrepo --base-image=H2OBase:1.0
+	docker run -v /path/to/your/model/folder:/model seldonio/core-python-wrapper:0.5 /model H2OModel 0.1 myrepo --base-image=H2OBase:1.0
 	```
 	
 	"0.1" is the version of the docker image that will be created. "myrepo" is the name of your dockerhub repository.
@@ -88,7 +88,7 @@ Here we give a step by step example in which we will train and save a [H2O model
 
     ```bash
     cd ../../
-	docker run -v models/h2o_example:my_model seldonio/core-python-wrapper:0.4 my_model H2OModel 0.1 myrepo --base-image=H2OBase:1.0
+	docker run -v models/h2o_example:my_model seldonio/core-python-wrapper:0.5 my_model H2OModel 0.1 myrepo --base-image=H2OBase:1.0
     ``` 
 
     This will create a docker image "seldonio/h2omodel:0.1", which is ready to be deployed in seldon-core.

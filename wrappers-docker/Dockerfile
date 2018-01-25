@@ -24,6 +24,9 @@ RUN \
 RUN python -m pip install grpcio-tools==1.1.3
 RUN cd /wrappers && make build_protos
 
+# wrapper python dependency
+RUN pip install jinja2
+
 # deps to get tester.py to work
 RUN pip install numpy requests redis flask
 
