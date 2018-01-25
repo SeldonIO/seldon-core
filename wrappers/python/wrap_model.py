@@ -70,6 +70,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.out_folder is None:
         args.out_folder = args.model_folder
+    if args.image_name is None:
+        args.image_name = args.model_name.lower()
 
     wrap_model(
         args.model_folder,
