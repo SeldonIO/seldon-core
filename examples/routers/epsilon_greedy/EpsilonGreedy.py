@@ -1,6 +1,8 @@
 import random
 import numpy as np
 
+__version__ = "v1.1"
+
 def n_success_failures(features,reward):
     n_predictions = features.shape[0]
     n_success = int(reward*n_predictions)
@@ -10,6 +12,7 @@ def n_success_failures(features,reward):
 class EpsilonGreedy(object):
     
     def __init__(self,n_branches=None,epsilon=0.1,verbose=False):
+        print "Starting Epsilon Greedy Microservice, version {}".format(__version__)
         if n_branches is None:
             raise Exception("n_branches parameter must be given")
         self.verbose = verbose
