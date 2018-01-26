@@ -15,7 +15,8 @@ Seldon Core is an open source platform for deploying machine learning models on 
 
 ## Goals
 
-Seldon Core goals:
+Machine learning deployment has many [challenges](./docs/challenges.md). Seldon Core intends to help with these challenges. Its high level goals are:
+
 
  - Allow data scientists to create models using any machine learning toolkit or programming language. We plan to initially cover the tools/languages below:
    - Python based models including
