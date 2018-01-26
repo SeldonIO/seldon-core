@@ -4,7 +4,7 @@
   <groupId>io.seldon.clustermanager</groupId>
   <artifactId>seldon-cluster-manager</artifactId>
   <packaging>jar</packaging>
-  <version>0.1.3-SNAPSHOT</version>
+  <version>0.1.3</version>
   <name>seldon-cluster-manager</name>
   <url>http://maven.apache.org</url>
 
