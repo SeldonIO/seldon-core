@@ -2,15 +2,18 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 image:
-  release: 0.3
+  release: 0.4
 replicaCount: 1
 loadtest:
   id: 1
+  sendFeedback: 0
 locust:
   script : predict_rest_locust.py
   host : http://seldon-apiserver:8080
   hatchRate: 1
   clients: 10
+  minWait: 990
+  maxWait: 1100
 oauth:
   key: key
   secret: secret

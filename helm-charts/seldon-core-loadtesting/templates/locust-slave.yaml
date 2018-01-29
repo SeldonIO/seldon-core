@@ -34,6 +34,12 @@ spec:
           value: '{{ .Values.oauth.secret }}'
         - name: DATA_SIZE
           value: '{{ .Values.data.size }}'
+        - name: SEND_FEEDBACK
+          value: '{{ .Values.loadtest.sendFeedback }}'
+        - name: MIN_WAIT
+          value: '{{ .Values.locust.minWait }}'
+        - name: MAX_WAIT
+          value: '{{ .Values.locust.maxWait }}'
         image: seldonio/locust-core:{{ .Values.image.release }}
         imagePullPolicy: IfNotPresent
         name: locust-slave-{{ .Values.loadtest.id }}
@@ -46,4 +52,4 @@ spec:
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
-      terminationGracePeriodSeconds: 30
+      terminationGracePeriodSeconds: 5
