@@ -61,14 +61,15 @@ print 'RLIMIT_NOFILE soft limit starts as  :', soft
 soft, hard = resource.getrlimit(rsrc)
 print 'RLIMIT_NOFILE soft limit changed to :', soft
 
+def getEnviron(key,default):
+    if key in os.environ:
+        return os.environ[key]
+    else:
+        return default
+
 
 class SeldonJsLocust(TaskSet):
 
-    def getEnviron(self,key,default):
-        if key in os.environ:
-            return os.environ[key]
-        else:
-            return default
 
     def get_token(self):
         print "Getting access token"
@@ -84,9 +85,10 @@ class SeldonJsLocust(TaskSet):
 
     def on_start(self):
         print "on_start"
-        self.oauth_key = self.getEnviron('OAUTH_KEY',"key")
-        self.oauth_secret = self.getEnviron('OAUTH_SECRET',"secret")
-        self.data_size = int(self.getEnviron('DATA_SIZE',"1"))
+        self.oauth_key = getEnviron('OAUTH_KEY',"key")
+        self.oauth_secret = getEnviron('OAUTH_SECRET',"secret")
+        self.data_size = int(getEnviron('DATA_SIZE',"1"))
+        self.send_feedback = int(getEnviron('SEND_FEEDBACK',"1"))
         self.get_token()
         self.rewardProbas = [0.5,0.2,0.9,0.3,0.7]
         self.routeRewards = {}
@@ -133,7 +135,8 @@ class SeldonJsLocust(TaskSet):
         if r.status_code == 200:
             j = json.loads(r.content)
             print r.content
-            self.sendFeedback(j)
+            if self.send_feedback == 1:
+                self.sendFeedback(j)
         else:
             print "Failed prediction request "+str(r.status_code)
             if r.status_code == 401:
@@ -144,8 +147,8 @@ class SeldonJsLocust(TaskSet):
 
 class WebsiteUser(HttpLocust):
     task_set = SeldonJsLocust
-    min_wait=900    # Min time between requests of each user
-    max_wait=1100    # Max time between requests of each user
+    min_wait=int(getEnviron('MIN_WAIT',"900"))    # Min time between requests of each user
+    max_wait=int(getEnviron('MAX_WAIT',"1100"))   # Max time between requests of each user
     stop_timeout= 1000000  # Stopping time
 
 
