@@ -25,7 +25,7 @@ def send_feedback(user_router,features,feature_names,routing,reward,truth):
 # REST
 # ----------------------------
 
-def get_rest_microservice(user_router):
+def get_rest_microservice(user_router,debug=False):
 
     app = Flask(__name__)
 
@@ -38,7 +38,14 @@ def get_rest_microservice(user_router):
 
     @app.route("/route",methods=["GET","POST"])
     def Route():
+            
         request = extract_message()
+
+        if debug:
+            print("SELDON DEBUGGING")
+            print("Request received: ")
+            print(request)
+            
         sanity_check_request(request)
         
         datadef = request.get("data")
@@ -55,9 +62,14 @@ def get_rest_microservice(user_router):
     @app.route("/send-feedback",methods=["GET","POST"])
     def SendFeedback():
         feedback = extract_message()
+
+        if debug:
+            print("SELDON DEBUGGING")
+            print("Feedback received: ")
+            print(feedback)
         
         datadef_request = feedback.get("request").get("data")
-        features = rest_datadef_to_array(datadef)
+        features = rest_datadef_to_array(datadef_request)
         
         truth = rest_datadef_to_array(feedback.get("truth"))
         reward = feedback.get("reward")
@@ -101,7 +113,7 @@ class SeldonRouterGRPC(object):
 
         return prediction_pb2.SeldonMessage()
     
-def get_grpc_server(user_model):
+def get_grpc_server(user_model,debug=False):
     seldon_router = SeldonRouterGRPC(user_model)
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     prediction_pb2_grpc.add_RouterServicer_to_server(seldon_router, server)
