@@ -15,6 +15,9 @@ PARAMETERS_ENV_NAME = "PREDICTIVE_UNIT_PARAMETERS"
 SERVICE_PORT_ENV_NAME = "PREDICTIVE_UNIT_SERVICE_PORT"
 DEFAULT_PORT = 5000
 
+DEBUG_PARAMETER = "SELDON_DEBUG"
+DEBUG = False
+
 class SeldonMicroserviceException(Exception):
     status_code = 400
 
@@ -68,7 +71,7 @@ def rest_datadef_to_array(datadef):
     elif datadef.get("ndarray") is not None:
         features = np.array(datadef.get("ndarray"))
     else:
-        features = array([])
+        features = np.array([])
     return features
 
 def array_to_rest_datadef(array,names,original_datadef):
@@ -143,6 +146,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     parameters = parse_parameters(json.loads(args.parameters))
+
+    if parameters.get(DEBUG_PARAMETER):
+        parameters.pop(DEBUG_PARAMETER)
+        DEBUG = True
     
     interface_file = importlib.import_module(args.interface_name)
     user_class = getattr(interface_file,args.interface_name)
@@ -165,11 +172,11 @@ if __name__ == "__main__":
     port = int(os.environ.get(SERVICE_PORT_ENV_NAME,DEFAULT_PORT))
     
     if args.api_type == "REST":
-        app = seldon_microservice.get_rest_microservice(user_object)
+        app = seldon_microservice.get_rest_microservice(user_object,debug=DEBUG)
         app.run(host='0.0.0.0', port=port)
         
     elif args.api_type=="GRPC":
-        server = seldon_microservice.get_grpc_server(user_object)
+        server = seldon_microservice.get_grpc_server(user_object,debug=DEBUG)
         server.add_insecure_port("0.0.0.0:{}".format(port))
         server.start()
         
