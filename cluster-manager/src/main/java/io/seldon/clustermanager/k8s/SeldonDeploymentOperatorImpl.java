@@ -257,6 +257,11 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		if (!envNames.contains(ENV_PREDICTIVE_UNIT_PARAMETERS))
 		    c2Builder.addEnv(EnvVar.newBuilder().setName(ENV_PREDICTIVE_UNIT_PARAMETERS).setValue(extractPredictiveUnitParametersAsJson(pu)));
 
+		//Add environment variable for the predictive unit ID
+		final String ENV_PREDICTIVE_UNIT_ID = "PREDICTIVE_UNIT_ID";
+		if (!envNames.contains(ENV_PREDICTIVE_UNIT_ID))
+			c2Builder.addEnv(EnvVar.newBuilder().setName(ENV_PREDICTIVE_UNIT_ID).setValue(pu.getName()));
+		
 		// Add a default lifecycle pre-stop if non exists
 		if (!c.hasLifecycle())
 		{
