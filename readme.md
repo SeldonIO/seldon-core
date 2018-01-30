@@ -78,7 +78,7 @@ Three steps:
 
 ## Community
 
- * [Slack Channel](https://join.slack.com/t/seldondev/shared_invite/enQtMzA2MzIxNzM0NzM4LWE4YmZiMGZjNDNhYThlYjQzODMwOGM5YmQ0ZTliYTdmZGNiNWQ2ODZmMjY2ZDYwNWE1NjJkZDdmYjVmYjQ3NTk)
+ * [Slack Channel](https://join.slack.com/t/seldondev/shared_invite/enQtMzA2Mzk1Mzg0NjczLWQzMGFkNmRjN2UxZmFmMWJmNWIzMTM5Y2UxNGY1ODE5ZmI2NDdkMmNiMmUxYjZhZGYxOTllMDQwM2NkNDQ1MGI)
 
 ## Developer
 
