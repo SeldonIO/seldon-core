@@ -76,6 +76,9 @@ Three steps:
  - [Prediction API](./docs/reference/prediction.md)
  - [Seldon Deployment Custom Resource](./docs/reference/seldon-deployment.md)
 
+## Community
+
+ * [Slack Channel](https://join.slack.com/t/seldondev/shared_invite/enQtMzA2MzIxNzM0NzM4LWE4YmZiMGZjNDNhYThlYjQzODMwOGM5YmQ0ZTliYTdmZGNiNWQ2ODZmMjY2ZDYwNWE1NjJkZDdmYjVmYjQ3NTk)
 
 ## Developer
 
