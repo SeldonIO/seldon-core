@@ -1,19 +1,19 @@
 apife:
   image:
     pull_policy: IfNotPresent
-    tag: 0.1.3-SNAPSHOT
+    tag: 0.1.4-SNAPSHOT
 apife_service_type: NodePort
 cluster_manager:
   enabled: true
   image:
     pull_policy: IfNotPresent
-    tag: 0.1.3-SNAPSHOT
+    tag: 0.1.4-SNAPSHOT
   java_opts: ''
   rbac: false
   spring_opts: ''
 engine:
   image:
-    tag: 0.1.3-SNAPSHOT
+    tag: 0.1.4-SNAPSHOT
 redis:
   image:
     tag: 4.0.1
