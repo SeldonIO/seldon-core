@@ -33,7 +33,7 @@
 				"name": "classifier-3"
 			    },
 			    {
-				"image": "seldonio/mab_epsilon_greedy_grpc:0.1",
+				"image": "seldonio/mab_epsilon_greedy:1.0",
 				"name": "eg-router"
 			    }
 			],
@@ -47,9 +47,6 @@
 		},
 		"graph": {
 		    "name": "eg-router",
-		    "endpoint": {
-			"type": "GRPC"
-		    },
 		    "type":"ROUTER",
 		    "parameters": [
 			{
@@ -64,11 +61,6 @@
 			},
 			{
 			    "name": "verbose",
-			    "value": "1",
-			    "type": "BOOL"
-			},
-			{
-			    "name": "SELDON_DEBUG",
 			    "value": "1",
 			    "type": "BOOL"
 			}
