@@ -4,14 +4,14 @@
 // @shortDescription Seldon Core components.
 // @param name string Name seldon-core to give seldon-core
 // @optionalParam namespace string default Namespace
-// @optionalParam apifeImage string seldonio/apife:0.1.4-SNAPSHOT Default image for API Front End
-// @optionalParam serviceType string LoadBalancer API Front End Service Type
-// @optionalParam engineImage string seldonio/engine:0.1.4-SNAPSHOT Seldon engine image version
-// @optionalParam clusterManagerImage string seldonio/cluster-manager:0.1.4-SNAPSHOT Seldon cluster manager image version
-// @optionalParam springOpts string null cluster manager spring opts
-// @optionalParam javaOpts string null cluster manager java opts
 // @optionalParam withRbac string false Whether to include RBAC setup
 // @optionalParam withApife string true Whether to include builtin API Oauth fornt end server for ingress
+// @optionalParam apifeImage string seldonio/apife:0.1.4-SNAPSHOT Default image for API Front End
+// @optionalParam apifeServiceType string LoadBalancer API Front End Service Type
+// @optionalParam operatorImage string seldonio/cluster-manager:0.1.4-SNAPSHOT Seldon cluster manager image version
+// @optionalParam operatorSpringOpts string null cluster manager spring opts
+// @optionalParam operatorJavaOpts string null cluster manager java opts
+// @optionalParam engineImage string seldonio/engine:0.1.4-SNAPSHOT Seldon engine image version
 
 // TODO(https://github.com/ksonnet/ksonnet/issues/222): We have to add namespace as an explicit parameter
 // because ksonnet doesn't support inheriting it from the environment yet.
@@ -21,46 +21,47 @@ local core = import "seldon-core/seldon-core/core.libsonnet";
 
 local name = import 'param://name';
 local namespace = import 'param://namespace';
-local apifeImage = import 'param://apifeImage';
-local serviceType = import 'param://serviceType';
 local withRbac = import 'param://withRbac';
 local withApife = import 'param://withApife';
 
+// APIFE
+local apifeImage = import 'param://apifeImage';
+local apifeServiceType = import 'param://apifeServiceType';
+
+// Cluster Manager (The CRD Operator)
+local operatorImage = import 'param://operatorImage';
+local operatorSpringOptsParam = import 'param://operatorSpringOpts';
+local operatorSpringOpts = if operatorSpringOptsParam != "null" then operatorSpringOptsParam else "";
+local operatorJavaOptsParam = import 'param://operatorJavaOpts';
+local operatorJavaOpts = if operatorJavaOptsParam != "null" then operatorJavaOptsParam else "";
+
+// Engine
 local engineImage = import 'param://engineImage';
-local clusterManagerImage = import 'param://clusterManagerImage';
-local springOptsParam = import 'param://springOpts';
-local springOpts = if springOptsParam != "null" then springOptsParam else null;
-local javaOptsParam = import 'param://javaOpts';
-local javaOpts = if javaOptsParam != "null" then javaOptsParam else null;
 
-//std.prune(k.core.v1.list.new(
+// APIFE
+local apife = [
+  core.parts(namespace).apife(apifeImage, withRbac),
+  core.parts(namespace).apifeService(apifeServiceType),
+];
 
-  // seldon-core components
-local apife = if withRbac == "true" then
-       [core.parts(namespace).apifeWithRbac(apifeImage),core.parts(namespace).apifeService(serviceType),core.parts(namespace).rbacServiceAccount(),core.parts(namespace).rbacClusterRoleBinding()]
-    else
-       [core.parts(namespace).apife(apifeImage),core.parts(namespace).apifeService(serviceType)];
+local rbac = [
+  core.parts(namespace).rbacServiceAccount(),
+  core.parts(namespace).rbacClusterRoleBinding(),
+];
 
-
-local coreComponents =  [
-  core.parts(namespace).deploymentOperator(engineImage, clusterManagerImage, springOpts, javaOpts),
-  core.parts(namespace).redisDeployment(),  
+// Core
+local coreComponents = [
+  core.parts(namespace).deploymentOperator(engineImage, operatorImage, operatorSpringOpts, operatorJavaOpts, withRbac),
+  core.parts(namespace).redisDeployment(),
   core.parts(namespace).redisService(),
   core.parts(namespace).crd(),
 ];
 
-
-
-if withApife == "true" then
+if withRbac == "true" && withApife == "true" then
+k.core.v1.list.new(apife + rbac + coreComponents)
+else if withRbac == "true" && withApife == "false" then
+k.core.v1.list.new(rbac + coreComponents)
+else if withRbac == "false" && withApife == "true" then
 k.core.v1.list.new(apife + coreComponents)
-else
+else if withRbac == "false" && withApife == "false" then
 k.core.v1.list.new(coreComponents)
-
-//k.core.v1.list.new([
-//  apife,
-//  k.core.v1.list.new([
-//    core.parts(namespace).apifeService(serviceType),
-//    core.parts(namespace).deploymentOperator(engineImage, clusterManagerImage, springOpts, javaOpts),
-//    core.parts(namespace).redisDeployment(),  
-//    core.parts(namespace).redisService(),])
-//])
