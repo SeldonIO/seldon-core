@@ -155,7 +155,7 @@ if __name__ == "__main__":
     user_class = getattr(interface_file,args.interface_name)
 
     if args.persistence:
-        user_object = persistence.restore(user_class,parameters)
+        user_object = persistence.restore(user_class,parameters,debug=DEBUG)
         persistence.persist(user_object,parameters.get("push_frequency"))
     else:
         user_object = user_class(**parameters)

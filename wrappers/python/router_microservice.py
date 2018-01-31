@@ -71,7 +71,7 @@ def get_rest_microservice(user_router,debug=False):
         datadef_request = feedback.get("request").get("data")
         features = rest_datadef_to_array(datadef_request)
         
-        truth = rest_datadef_to_array(feedback.get("truth"))
+        truth = rest_datadef_to_array(feedback.get("truth",{}))
         reward = feedback.get("reward")
         routing = feedback.get("response").get("meta").get("routing").get(PRED_UNIT_ID)
 
