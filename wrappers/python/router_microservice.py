@@ -67,19 +67,23 @@ def get_rest_microservice(user_router,debug=False):
             print("SELDON DEBUGGING")
             print("Feedback received: ")
             print(feedback)
+
         
-        datadef_request = feedback.get("request").get("data")
+        datadef_request = feedback.get("request",{}).get("data",{})
         features = rest_datadef_to_array(datadef_request)
         
         truth = rest_datadef_to_array(feedback.get("truth",{}))
         reward = feedback.get("reward")
-        routing = feedback.get("response").get("meta").get("routing").get(PRED_UNIT_ID)
+
+        try:
+            routing = feedback.get("response").get("meta").get("routing").get(PRED_UNIT_ID)
+        except AttributeError:
+            raise SeldonMicroserviceException("Router feedback must contain a routing dictionary in the response metadata")
 
         send_feedback(user_router,features,datadef_request.get("names"),routing,reward,truth)
         return jsonify({})
 
     return app
-
 
 
 # ----------------------------
