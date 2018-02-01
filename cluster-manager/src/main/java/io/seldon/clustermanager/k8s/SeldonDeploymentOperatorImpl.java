@@ -128,14 +128,15 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		// Add engine resources if specified
 		if (predictorDef.hasEngineResources())
 		    cBuilder.setResources(predictorDef.getEngineResources());
-		else // set default resource requests for cpu
-		    cBuilder.setResources(V1.ResourceRequirements.newBuilder().putRequests("cpu", Quantity.newBuilder().setString("0.1").build()));
-			
+		else {// set default resource requests for cpu
+			final String DEFAULT_ENGINE_CPU_REQUEST = "0.1";
+		    cBuilder.setResources(V1.ResourceRequirements.newBuilder().putRequests("cpu", Quantity.newBuilder().setString(DEFAULT_ENGINE_CPU_REQUEST).build()));
+		}
 		return cBuilder.build();
 	}
 	
 	
-	
+	;
 	private Set<String> getEnvNamesProto(List<EnvVar> envs)
 	{
 		Set<String> s = new HashSet<>();
@@ -184,7 +185,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 	    }
 	}
 	
-	private V1.Container updateContainer(V1.Container c,PredictiveUnit pu,int idx)
+	private V1.Container updateContainer(V1.Container c,PredictiveUnit pu,int idx,String deploymentName,String predictorName)
 	{
 		V1.Container.Builder c2Builder = V1.Container.newBuilder(c);
         
@@ -257,6 +258,17 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		if (!envNames.contains(ENV_PREDICTIVE_UNIT_PARAMETERS))
 		    c2Builder.addEnv(EnvVar.newBuilder().setName(ENV_PREDICTIVE_UNIT_PARAMETERS).setValue(extractPredictiveUnitParametersAsJson(pu)));
 
+		//Add environment variable for the predictive unit ID, the predictor ID and the Deployment ID
+		final String ENV_PREDICTIVE_UNIT_ID = "PREDICTIVE_UNIT_ID";
+		final String ENV_PREDICTOR_ID = "PREDICTOR_ID";
+		final String ENV_SELDON_DEPLOYMENT_ID = "SELDON_DEPLOYMENT_ID";
+		if (!envNames.contains(ENV_PREDICTIVE_UNIT_ID))
+			c2Builder.addEnv(EnvVar.newBuilder().setName(ENV_PREDICTIVE_UNIT_ID).setValue(c.getName()));
+		if (!envNames.contains(ENV_PREDICTOR_ID))
+			c2Builder.addEnv(EnvVar.newBuilder().setName(ENV_PREDICTOR_ID).setValue(predictorName));
+		if (!envNames.contains(ENV_SELDON_DEPLOYMENT_ID))
+			c2Builder.addEnv(EnvVar.newBuilder().setName(ENV_SELDON_DEPLOYMENT_ID).setValue(deploymentName));
+		
 		// Add a default lifecycle pre-stop if non exists
 		if (!c.hasLifecycle())
 		{
@@ -301,6 +313,8 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		SeldonDeployment.Builder mlBuilder = SeldonDeployment.newBuilder(mlDep);
 		int idx = 0;
 		String serviceName = mlDep.getSpec().getName();
+		String deploymentName = mlDep.getMetadata().getName();
+		
 		for(PredictorSpec p : mlDep.getSpec().getPredictorsList())
 		{
 			ObjectMeta.Builder metaBuilder = ObjectMeta.newBuilder(p.getComponentSpec().getMetadata())
@@ -308,9 +322,10 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			mlBuilder.getSpecBuilder().getPredictorsBuilder(idx).getComponentSpecBuilder().setMetadata(metaBuilder);
 			int cIdx = 0;
 			mlBuilder.getSpecBuilder().getPredictorsBuilder(idx).getComponentSpecBuilder().getSpecBuilder().clearContainers();
+			String predictorName = p.getName();
 			for(V1.Container c : p.getComponentSpec().getSpec().getContainersList())
 			{
-				V1.Container c2 = this.updateContainer(c, findPredictiveUnitForContainer(mlDep.getSpec().getPredictors(idx).getGraph(),c.getName()),cIdx);
+				V1.Container c2 = this.updateContainer(c, findPredictiveUnitForContainer(mlDep.getSpec().getPredictors(idx).getGraph(),c.getName()),cIdx,deploymentName,predictorName);
 				mlBuilder.getSpecBuilder().getPredictorsBuilder(idx).getComponentSpecBuilder().getSpecBuilder().addContainers(cIdx, c2);	
 				updatePredictiveUnitBuilderByName(mlBuilder.getSpecBuilder().getPredictorsBuilder(idx).getGraphBuilder(),c2);
 				cIdx++;
