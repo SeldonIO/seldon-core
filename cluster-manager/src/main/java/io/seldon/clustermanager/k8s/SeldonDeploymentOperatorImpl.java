@@ -398,6 +398,27 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			.setUid(mlDep.getMetadata().getUid()).build();
 	}
 	 
+	private String getAmbassadorAnnotation(SeldonDeployment mlDep,String serviceName)
+	{
+        final String restMapping = "---\n"+
+                "apiVersion: ambassador/v0\n" +
+                "kind:  Mapping\n" +
+                "name:  "+mlDep.getMetadata().getName()+"_rest_mapping\n" +
+                "prefix: /"+mlDep.getMetadata().getName()+"/rest/\n" +
+                "service: "+serviceName+":"+clusterManagerProperites.getEngineContainerPort()+"\n";
+        final String grpcMapping = "---\n"+
+                "apiVersion: ambassador/v0\n" +
+                "kind:  Mapping\n" +
+                "name:  "+mlDep.getMetadata().getName()+"_grpc_mapping\n" +
+                "grpc: true\n" +
+                "prefix: /seldon.protos.Seldon/\n" +                
+                "rewrite: /seldon.protos.Seldon/\n" + 
+                "headers:\n"+
+                 "  seldon: "+mlDep.getMetadata().getName() + "\n" +
+                "service: "+serviceName+":"+clusterManagerProperites.getEngineGrpcContainerPort()+"\n";
+	    return restMapping + grpcMapping;
+	}
+	
 	@Override
 	public DeploymentResources createResources(SeldonDeployment mlDep) throws SeldonDeploymentException {
 		
@@ -436,12 +457,15 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			deployments.add(deployment);
 		}
 		
+		final String serviceName = mlDep.getSpec().getName();
+		
 		Service s = Service.newBuilder()
 					.setMetadata(ObjectMeta.newBuilder()
-							.setName(mlDep.getSpec().getName())
+							.setName(serviceName)
 							.putLabels(SeldonDeploymentOperatorImpl.LABEL_SELDON_APP, serviceLabel)
 							.putLabels("seldon-deployment-id", mlDep.getSpec().getName())
 							.addOwnerReferences(ownerRef)
+							.putAnnotations("getambassador.io/config",getAmbassadorAnnotation(mlDep,serviceName))
 							)
 					.setSpec(ServiceSpec.newBuilder()
                             .addPorts(ServicePort.newBuilder()
