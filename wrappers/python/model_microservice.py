@@ -29,7 +29,7 @@ def get_class_names(user_model,n_targets):
 # REST
 # ----------------------------
 
-def get_rest_microservice(user_model):
+def get_rest_microservice(user_model,debug=False):
 
     app = Flask(__name__)
 
@@ -105,7 +105,7 @@ class SeldonModelGRPC(object):
 
         return prediction_pb2.SeldonMessage()
     
-def get_grpc_server(user_model):
+def get_grpc_server(user_model,debug=False):
     seldon_model = SeldonModelGRPC(user_model)
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     prediction_pb2_grpc.add_ModelServicer_to_server(seldon_model, server)

@@ -38,7 +38,7 @@ public class SeldonDeploymentDefaultingTest extends AppTest {
         Assert.assertTrue(mlDep2.getSpec().getPredictors(0).getComponentSpec().getSpec().getContainers(0).hasLivenessProbe());
         Assert.assertTrue(mlDep2.getSpec().getPredictors(0).getComponentSpec().getSpec().getContainers(0).hasReadinessProbe());
         Assert.assertTrue(mlDep2.getSpec().getPredictors(0).getComponentSpec().getSpec().getContainers(0).hasLifecycle());
-        Assert.assertEquals(2,mlDep2.getSpec().getPredictors(0).getComponentSpec().getSpec().getContainers(0).getEnvCount());
+        Assert.assertEquals("Incorrect number of environment variables in container",5,mlDep2.getSpec().getPredictors(0).getComponentSpec().getSpec().getContainers(0).getEnvCount());
         Assert.assertEquals(1,mlDep2.getSpec().getPredictors(0).getComponentSpec().getSpec().getContainers(0).getPortsCount());
         Assert.assertEquals("http",mlDep2.getSpec().getPredictors(0).getComponentSpec().getSpec().getContainers(0).getPorts(0).getName());
         Assert.assertEquals(Endpoint.EndpointType.REST_VALUE,mlDep2.getSpec().getPredictors(0).getGraph().getEndpoint().getType().getNumber());
@@ -56,7 +56,7 @@ public class SeldonDeploymentDefaultingTest extends AppTest {
         Assert.assertTrue(mlDep2.getSpec().getPredictors(0).getComponentSpec().getSpec().getContainers(0).hasLivenessProbe());
         Assert.assertTrue(mlDep2.getSpec().getPredictors(0).getComponentSpec().getSpec().getContainers(0).hasReadinessProbe());
         Assert.assertTrue(mlDep2.getSpec().getPredictors(0).getComponentSpec().getSpec().getContainers(0).hasLifecycle());
-        Assert.assertEquals(2,mlDep2.getSpec().getPredictors(0).getComponentSpec().getSpec().getContainers(0).getEnvCount());
+        Assert.assertEquals("Incorrect number of environment variables in container",5,mlDep2.getSpec().getPredictors(0).getComponentSpec().getSpec().getContainers(0).getEnvCount());
         Assert.assertEquals(1,mlDep2.getSpec().getPredictors(0).getComponentSpec().getSpec().getContainers(0).getPortsCount());
         Assert.assertEquals("grpc",mlDep2.getSpec().getPredictors(0).getComponentSpec().getSpec().getContainers(0).getPorts(0).getName());
         Assert.assertEquals(Endpoint.EndpointType.GRPC_VALUE,mlDep2.getSpec().getPredictors(0).getGraph().getEndpoint().getType().getNumber());
