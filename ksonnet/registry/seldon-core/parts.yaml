@@ -12,7 +12,7 @@
    ],
    "repository": {
       "type": "git",
-      "url": "https://github.com/SeldonIO/seldon-core"
+      "url": "https://github.com/SeldonIO/seldon-core/ksonnet/registry"
    },
    "bugs": {
       "url": "https://github.com/SeldonIO/seldon-core/issues"
