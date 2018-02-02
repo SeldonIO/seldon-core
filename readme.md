@@ -76,6 +76,11 @@ Three steps:
  - [Prediction API](./docs/reference/prediction.md)
  - [Seldon Deployment Custom Resource](./docs/reference/seldon-deployment.md)
 
+## Advanced Tutorials
+
+ * [Epsilon-greedy multi-armed bandits for real time optimization of models](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/epsilon_greedy_gcp.ipynb)
+ * [Advanced graphs](https://github.com/cliveseldon/seldon-core/blob/master/notebooks/advanced_graphs.ipynb) showing the various types of runtime prediction graphs that can be built.
+
 ## Experimental
 
  * [ksonnet](https://ksonnet.io/) registry at : https://github.com/SeldonIO/seldon-core/tree/master/seldon-core
