@@ -418,8 +418,8 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
         final String restMapping = "---\n"+
                 "apiVersion: ambassador/v0\n" +
                 "kind:  Mapping\n" +
-                "name:  "+mlDep.getMetadata().getName()+"_rest_mapping\n" +
-                "prefix: /"+mlDep.getMetadata().getName()+"/rest/\n" +
+                "name:  seldon_"+mlDep.getMetadata().getName()+"_rest_mapping\n" +
+                "prefix: /seldon/"+mlDep.getMetadata().getName()+"/\n" +
                 "service: "+serviceName+":"+clusterManagerProperites.getEngineContainerPort()+"\n";
         final String grpcMapping = "---\n"+
                 "apiVersion: ambassador/v0\n" +

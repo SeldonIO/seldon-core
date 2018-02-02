@@ -1,0 +1,23 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: example-auth
+  annotations:
+    getambassador.io/config: |
+      
+      ---
+      apiVersion: ambassador/v0
+      kind:  Module
+      name:  authentication
+      config:
+        auth_service: "example-auth:3000"
+        path_prefix: "/extauth"
+spec:
+  type: ClusterIP
+  selector:
+    app: example-auth
+  ports:
+  - port: 3000
+    name: http-example-auth
+    targetPort: http-api
