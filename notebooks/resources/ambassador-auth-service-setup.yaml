@@ -1,0 +1,38 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: example-auth
+spec:
+  type: ClusterIP
+  selector:
+    app: example-auth
+  ports:
+  - port: 3000
+    name: http-example-auth
+    targetPort: http-api
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: example-auth
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: example-auth
+    spec:
+      containers:
+      - name: example-auth
+        image: seldonio/ambassador-auth-service:1.1.1
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http-api
+          containerPort: 3000
+        resources:
+          limits:
+            cpu: "0.1"
+            memory: 100Mi

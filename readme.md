@@ -76,6 +76,11 @@ Three steps:
  - [Prediction API](./docs/reference/prediction.md)
  - [Seldon Deployment Custom Resource](./docs/reference/seldon-deployment.md)
 
+## Experimental
+
+ * [ksonnet](https://ksonnet.io/) registry at : https://github.com/SeldonIO/seldon-core/tree/master/seldon-core
+ * [Jupyter notebook to create seldon-core with ksonnet and expose APIs using Ambassador.](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/ksonnet_ambassador_minikube.ipynb)
+
 ## Community
 
  * [Slack Channel](https://join.slack.com/t/seldondev/shared_invite/enQtMzA2Mzk1Mzg0NjczLWQzMGFkNmRjN2UxZmFmMWJmNWIzMTM5Y2UxNGY1ODE5ZmI2NDdkMmNiMmUxYjZhZGYxOTllMDQwM2NkNDQ1MGI)
