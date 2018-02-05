@@ -6,12 +6,12 @@
 // @optionalParam namespace string default Namespace
 // @optionalParam withRbac string false Whether to include RBAC setup
 // @optionalParam withApife string true Whether to include builtin API Oauth fornt end server for ingress
-// @optionalParam apifeImage string seldonio/apife:0.1.4-SNAPSHOT Default image for API Front End
+// @optionalParam apifeImage string seldonio/apife:0.1.4 Default image for API Front End
 // @optionalParam apifeServiceType string LoadBalancer API Front End Service Type
-// @optionalParam operatorImage string seldonio/cluster-manager:0.1.4-SNAPSHOT Seldon cluster manager image version
+// @optionalParam operatorImage string seldonio/cluster-manager:0.1.4 Seldon cluster manager image version
 // @optionalParam operatorSpringOpts string null cluster manager spring opts
 // @optionalParam operatorJavaOpts string null cluster manager java opts
-// @optionalParam engineImage string seldonio/engine:0.1.4-SNAPSHOT Seldon engine image version
+// @optionalParam engineImage string seldonio/engine:0.1.4 Seldon engine image version
 
 // TODO(https://github.com/ksonnet/ksonnet/issues/222): We have to add namespace as an explicit parameter
 // because ksonnet doesn't support inheriting it from the environment yet.
