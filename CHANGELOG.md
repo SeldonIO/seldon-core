@@ -1,5 +1,13 @@
 # Change Log
 
+## [v0.1.4](https://github.com/SeldonIO/seldon-core/tree/v0.1.4) (2018-02-05)
+[Full Changelog](https://github.com/SeldonIO/seldon-core/compare/v0.1.3...v0.1.4)
+
+**Closed issues:**
+
+- Create KSonnet prototypes for core [\#76](https://github.com/SeldonIO/seldon-core/issues/76)
+- Add automatically generated README to wrapped models [\#57](https://github.com/SeldonIO/seldon-core/issues/57)
+
 ## [v0.1.3](https://github.com/SeldonIO/seldon-core/tree/v0.1.3) (2018-01-26)
 [Full Changelog](https://github.com/SeldonIO/seldon-core/compare/v0.1.2...v0.1.3)
 
