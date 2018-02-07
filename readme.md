@@ -8,6 +8,7 @@
 Seldon Core is an open source platform for deploying machine learning models on Kubernetes.
 
 - [Goals](#goals)
+- [Prerequisites](#prerequisites)
 - [Quick Start](#quick-start)
 - [Install](#install)
 - [Deployment guide](#deployment-guide)
@@ -36,6 +37,11 @@ Machine learning deployment has many [challenges](./docs/challenges.md). Seldon 
     - Monitoring
     - Security
 
+## Prerequisites
+
+  A [Kubernetes](https://kubernetes.io/) Cluster.  
+  Kubernetes can be deployed into many environments, both in cloud and on-premise.
+
 ## Quick Start
 
  - [Quick Start using Minikube](./docs/getting_started/minikube.md)
@@ -59,7 +65,7 @@ helm install seldon-core --name seldon-core \
     --set grafana_prom_admin_password=password \
     --set persistence.enabled=false \
     --repo https://storage.googleapis.com/seldon-charts
-``` 
+```
 
 ## Deployment Guide
 
