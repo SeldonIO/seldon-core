@@ -1,10 +1,10 @@
 apife:
+  enabled: true
   image:
     pull_policy: IfNotPresent
     tag: 0.1.5-SNAPSHOT
 apife_service_type: NodePort
 cluster_manager:
-  enabled: true
   image:
     pull_policy: IfNotPresent
     tag: 0.1.5-SNAPSHOT
