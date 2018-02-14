@@ -1,3 +1,4 @@
+import math
 
 class OutlierZscore(object):
     def __init__(self):
@@ -26,6 +27,12 @@ class OutlierZscore(object):
 
         # Computing mean and variance
         mean = self.mean
+        std = math.sqrt(self.square_diff_sum/float(self.n-1))
+
+        # Computing z-scores
+        z = features - self.mean
+
+        # We get one z-score per dimension. We now need to consolidate this into a single measurement
         
         
             
