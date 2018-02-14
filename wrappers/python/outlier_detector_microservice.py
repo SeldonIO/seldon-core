@@ -27,8 +27,8 @@ def get_rest_microservice(user_model,debug=False):
     @app.errorhandler(SeldonMicroserviceException)
     def handle_invalid_usage(error):
         response = jsonify(error.to_dict())
-        print "ERROR:"
-        print error.to_dict()
+        print("ERROR:")
+        print(error.to_dict())
         response.status_code = 400
         return response
 
@@ -67,7 +67,7 @@ class SeldonTransformerGRPC(object):
         outlier_score = score(self.user_model,features,datadef.names)
 
         request.meta.tags["outlierScore"] = outlier_score
-
+        
         return request
     
 def get_grpc_server(user_model,debug=False):
