@@ -15,7 +15,7 @@ def wrap_model(
         **wrapping_arguments):
     if os.path.isdir(build_folder):
         if not force_erase:
-            print "Build folder already exists. To force erase, use --force argument"
+            print("Build folder already exists. To force erase, use --force argument")
             exit(0)
         else:
             shutil.rmtree(build_folder)

@@ -1,7 +1,12 @@
 import threading
 import os
 import time
-import cPickle as pickle
+try:
+    # python 2
+    import cPickle as pickle
+except ImportError:
+    # python 3
+    import pickle
 import redis
 
 
