@@ -97,10 +97,10 @@ Required:
 * docker_repo: The name of your dockerhub repository. In our example seldonio.
 
 Optional:
-* out_folder: The folder that will be created to contain the output files. Defaults to ./build
-* service_type: The type of Seldon Service API the model will use. Defaults to MODEL. Other options are ROUTER, COMBINER, TRANSFORMER, OUTPUT_TRANSFORMER
-* base_image: The docker image your docker container will inherit from. Defaults to python:2.
-* image_name: The name of your docker image. Defaults to model_name in lowercase
+* out-folder: The folder that will be created to contain the output files. Defaults to ./build
+* service-type: The type of Seldon Service API the model will use. Defaults to MODEL. Other options are ROUTER, COMBINER, TRANSFORMER, OUTPUT_TRANSFORMER
+* base-image: The docker image your docker container will inherit from. Defaults to python:2.
+* image-name: The name of your docker image. Defaults to model_name in lowercase
 * force: When this flag is present, the build folder will be overwritten if it already exists. The wrapping is aborted by default.
 * persistence: When this flag is present, the model will be made persistent, its state being saved at a regular interval on redis.
 * grpc: When this flag is present, the model will expose a GRPC API rather than the default REST API
