@@ -61,13 +61,13 @@ After you have copied the required files in your model folder, you run the Seldo
 In order to make things even simpler (and because we love Docker!) we have dockerised the wrapper script so that you don't need to install anything on your machine to run it - except Docker.
 
 ```
-docker run -v /path/to/model/dir:/my_model seldonio/core-python-wrapper:0.6 /my_model MnistClassifier 0.1 seldonio
+docker run -v /path/to/model/dir:/my_model seldonio/core-python-wrapper:0.7 /my_model MnistClassifier 0.1 seldonio
 ```
 
 Let's explain each piece of this command in more details.
 
 
-``` docker run seldonio/core-python-wrapper:0.6 ``` : run the core-python-wrapper container (version 0.6)
+``` docker run seldonio/core-python-wrapper:0.7 ``` : run the core-python-wrapper container.
 
 ``` -v /path/to/model/dir:/my_model ``` : Tells docker to mount your local folder to /my_model in the container. This is used to access your files and generate the wrapped model files. 
 
@@ -76,7 +76,7 @@ Let's explain each piece of this command in more details.
 For reference, here is the complete list of arguments that can be passed to the script.
 
 ```
-docker run -v /path:<model_path> seldonio/core-python-wrapper:0.6 
+docker run -v /path:<model_path> seldonio/core-python-wrapper:0.7 
 	<model_path>
 	<model_name>
 	<image_version>
@@ -97,10 +97,10 @@ Required:
 * docker_repo: The name of your dockerhub repository. In our example seldonio.
 
 Optional:
-* out_folder: The folder that will be created to contain the output files. Defaults to ./build
-* service_type: The type of Seldon Service API the model will use. Defaults to MODEL. Other options are ROUTER, COMBINER, TRANSFORMER, OUTPUT_TRANSFORMER
-* base_image: The docker image your docker container will inherit from. Defaults to python:2.
-* image_name: The name of your docker image. Defaults to model_name in lowercase
+* out-folder: The folder that will be created to contain the output files. Defaults to ./build
+* service-type: The type of Seldon Service API the model will use. Defaults to MODEL. Other options are ROUTER, COMBINER, TRANSFORMER, OUTPUT_TRANSFORMER
+* base-image: The docker image your docker container will inherit from. Defaults to python:2.
+* image-name: The name of your docker image. Defaults to model_name in lowercase
 * force: When this flag is present, the build folder will be overwritten if it already exists. The wrapping is aborted by default.
 * persistence: When this flag is present, the model will be made persistent, its state being saved at a regular interval on redis.
 * grpc: When this flag is present, the model will expose a GRPC API rather than the default REST API
@@ -108,7 +108,7 @@ Optional:
 Note that you can access the command line help of the script by using the -h or --help argument as follows:
 
 ```
-docker run seldonio/core-python-wrapper:0.6 -h
+docker run seldonio/core-python-wrapper:0.7 -h
 ```
 
 Note also that you could use the python script directly if you feel so enclined, but you would have to check out seldon-core and install some python libraries on your local machine - by using the docker image you don't have to care about these dependencies.

@@ -36,8 +36,8 @@ def get_rest_microservice(user_model,debug=False):
     @app.errorhandler(SeldonMicroserviceException)
     def handle_invalid_usage(error):
         response = jsonify(error.to_dict())
-        print "ERROR:"
-        print error.to_dict()
+        print("ERROR:")
+        print(error.to_dict())
         response.status_code = 400
         return response
 
