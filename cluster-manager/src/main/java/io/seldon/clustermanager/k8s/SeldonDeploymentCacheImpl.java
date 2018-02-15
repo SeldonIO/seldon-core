@@ -18,12 +18,14 @@ package io.seldon.clustermanager.k8s;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
+import io.seldon.clustermanager.ClusterManagerProperites;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 @Component
@@ -36,7 +38,7 @@ public class SeldonDeploymentCacheImpl implements SeldonDeploymentCache {
 	private final KubeCRDHandler crdHandler;
 	
 	@Autowired
-	public SeldonDeploymentCacheImpl(KubeCRDHandler crdHandler)
+	public SeldonDeploymentCacheImpl(ClusterManagerProperites clusterManagerProperites,KubeCRDHandler crdHandler)
 	{
 		this.crdHandler = crdHandler;
 	}
