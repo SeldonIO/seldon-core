@@ -123,13 +123,13 @@ def run(args):
     for i in range(args.n_requests):
         batch = generate_batch(contract,args.batch_size)
         if args.prnt:
-            print '-'*40
-            print "SENDING NEW REQUEST:"
+            print('-'*40)
+            print("SENDING NEW REQUEST:")
         
         if not args.grpc:
             REST_request = gen_REST_request(batch,features=feature_names,tensor=args.tensor)
             if args.prnt:
-                print REST_request
+                print(REST_request)
             
             response = requests.post(
                 REST_url,
@@ -137,22 +137,22 @@ def run(args):
             jresp = response.json()
 
             if args.prnt:
-                print "RECEIVED RESPONSE:"
-                print jresp
-                print
+                print("RECEIVED RESPONSE:")
+                print(jresp)
+                print()
         else:
             GRPC_request = gen_GRPC_request(batch,features=feature_names,tensor=args.tensor)
             if args.prnt:
-                print GRPC_request
+                print(GRPC_request)
 
             channel = grpc.insecure_channel('{}:{}'.format(args.host,args.port))
             stub = prediction_pb2_grpc.ModelStub(channel)
             response = stub.Predict(GRPC_request)
             
             if args.prnt:
-                print "RECEIVED RESPONSE:"
-                print response
-                print
+                print("RECEIVED RESPONSE:")
+                print(response)
+                print()
     
 
 if __name__ == "__main__":

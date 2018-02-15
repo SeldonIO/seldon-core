@@ -180,6 +180,6 @@ if __name__ == "__main__":
         server.add_insecure_port("0.0.0.0:{}".format(port))
         server.start()
         
-        print "GRPC Microservice Running on port {}".format(port)
+        print("GRPC Microservice Running on port {}".format(port))
         while True:
             time.sleep(1000)
