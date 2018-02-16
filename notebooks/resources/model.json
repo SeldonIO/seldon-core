@@ -5,7 +5,8 @@
         "labels": {
             "app": "seldon"
         },
-        "name": "seldon-deployment-example"
+        "name": "seldon-deployment-example",
+	"namespace": "test-seldon"
     },
     "spec": {
         "annotations": {

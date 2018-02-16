@@ -2,7 +2,8 @@
     "apiVersion": "batch/v1",
     "kind": "Job",
     "metadata": {
-        "name": "grafana-prom-import-dashboards"
+        "name": "grafana-prom-import-dashboards",
+        "namespace": "{{ .Release.Namespace }}"
     },
     "spec": {
         "template": {

@@ -22,7 +22,7 @@ public class AppProperties {
 
     private int engineContainerPort;
     private int engineGrpcContainerPort;
-    
+    private String namespace;
     
     public int getEngineContainerPort() {
         return engineContainerPort;
@@ -36,8 +36,13 @@ public class AppProperties {
     public void setEngineGrpcContainerPort(int engineGrpcContainerPort) {
         this.engineGrpcContainerPort = engineGrpcContainerPort;
     }
-
     
+    public String getNamespace() {
+        return namespace;
+    }
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
+    }
     @Override
     public String toString() {
         return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);

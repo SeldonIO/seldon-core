@@ -37,6 +37,15 @@
                                     {
                                         "name": "SELDON_CLUSTER_MANAGER_REDIS_HOST",
                                         "value": "redis"
+                                    },
+                                    {
+                                        "name": "SELDON_CLUSTER_MANAGER_POD_NAMESPACE",
+                                         "valueFrom": {
+					     "fieldRef": {
+						 "apiVersion": "v1",
+						 "fieldPath": "metadata.namespace"
+					     }
+					 }
                                     }
                                 ],
                                 "image": "seldonio/apife:{{ .Values.apife.image.tag }}",
