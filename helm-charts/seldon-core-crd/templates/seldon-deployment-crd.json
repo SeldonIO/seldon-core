@@ -3,7 +3,6 @@
     "kind": "CustomResourceDefinition",
     "metadata": {
         "name": "seldondeployments.machinelearning.seldon.io",
-	"namespace" : "{{ .Release.Namespace }}"
     },
     "spec": {
         "group": "machinelearning.seldon.io",

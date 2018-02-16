@@ -5,3 +5,4 @@ kind: ConfigMap
 metadata:
   creationTimestamp: null
   name: prometheus-rules
+  namespace: {{ .Release.Namespace }}
