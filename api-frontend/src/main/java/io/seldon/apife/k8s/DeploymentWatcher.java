@@ -22,8 +22,10 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -47,6 +49,7 @@ import io.kubernetes.client.util.Watch;
 import io.seldon.apife.deployments.DeploymentsHandler;
 import io.seldon.apife.deployments.DeploymentsListener;
 import io.seldon.apife.pb.ProtoBufUtils;
+import io.seldon.apife.AppProperties;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 @Component
@@ -58,12 +61,15 @@ public class DeploymentWatcher  implements DeploymentsHandler{
 	private int resourceVersion = 0;
 	private int resourceVersionProcessed = 0;
 	private final Set<DeploymentsListener> listeners;
+	private final String namespace;
 	
-	public DeploymentWatcher() throws IOException
+	@Autowired
+	public DeploymentWatcher(AppProperties clusterManagerProperites) throws IOException
 	{
 		this.client = Config.defaultClient();
 		this.listeners = new HashSet<>();
 		Configuration.setDefaultApiClient(client);
+		this.namespace = StringUtils.isEmpty(clusterManagerProperites.getNamespace()) ? "default" : clusterManagerProperites.getNamespace();
 	}
 	
 	private void processWatch(SeldonDeployment mlDep,String action)
@@ -118,7 +124,7 @@ public class DeploymentWatcher  implements DeploymentsHandler{
 		CustomObjectsApi api = new CustomObjectsApi();
 		Watch<Object> watch = Watch.createWatch(
                 client,
-                api.listNamespacedCustomObjectCall("machinelearning.seldon.io", "v1alpha1", "default", "seldondeployments", null, null, rs, true, null, null),
+                api.listNamespacedCustomObjectCall("machinelearning.seldon.io", "v1alpha1", namespace, "seldondeployments", null, null, rs, true, null, null),
                 new TypeToken<Watch.Response<Object>>(){}.getType());
 		
 		int maxResourceVersion = resourceVersion;

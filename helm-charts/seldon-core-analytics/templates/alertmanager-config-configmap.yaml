@@ -18,3 +18,4 @@ kind: ConfigMap
 metadata:
   creationTimestamp: null
   name: alertmanager-server-conf
+  namespace: {{ .Release.Namespace }}
