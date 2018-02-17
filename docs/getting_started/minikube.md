@@ -39,9 +39,10 @@ You can now start Seldon Core in your minikube cluster.
     helm init
     ```
 
-1. Seldon Core uses helm charts to start which are stored in google storage. To start Seldon Core using helm:
+1. Seldon Core uses helm charts to start which are stored in google storage. To start Seldon Core using helm install the CRD and then the core components:
 
     ```bash
+     helm install seldon-core-crd --name seldon-core-crd --repo https://storage.googleapis.com/seldon-charts
      helm install seldon-core --name seldon-core \
      --repo https://storage.googleapis.com/seldon-charts
     ```
