@@ -160,12 +160,12 @@ The docker image version of your model is deployed through a json configuration 
 	
 ### Serve your  model:
 
-In order to send a prediction request to your model, you need to query the Seldon Core api server and obtain an authentication token from your model key and secret (in this example key and secret are set to "oauth-key" and "oauth-secret" for simplicity). The api server is running on minikube with default port 30032. To query your model you need to
+In order to send a prediction request to your model, you need to query the Seldon Core api server and obtain an authentication token from your model key and secret (in this example key and secret are set to "oauth-key" and "oauth-secret" for simplicity). The api server is running on minikube. To query your model you need to
 
 1. Set the api server IP and port:
 
     ```bash
-     SERVER=$(minikube ip):30032
+    SERVER=$(minikube ip):$(kubectl get svc -l app=seldon-apiserver-container-app -o jsonpath='{.items[0].spec.ports[0].nodePort}')
     ```
 
 2. Get the authorization token using your key ("oauth-key" here) and secret ("oauth-secret"):
@@ -208,3 +208,13 @@ The response contains:
 * "data" dictionary: This dictionary contains the predictions for your model classes
     * "names": The names of your classes.
     * "ndarray": The predicted  probabilities for each class.
+
+## Next Steps
+
+ * You can run several notebooks that show various examples on minikube and Google cloud platform
+   *  [Jupyter Notebook showing deployment of prebuilt model using Minikube](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_minikube.ipynb)
+   * [Jupyter Notebook showing deployment of prebuilt model using GCP cluster](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_gcp.ipynb)
+   * [Epsilon-greedy multi-armed bandits for real time optimization of models](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/epsilon_greedy_gcp.ipynb)
+   * [Advanced graphs showing the various types of runtime prediction graphs that can be built](https://github.com/cliveseldon/seldon-core/blob/master/notebooks/advanced_graphs.ipynb) 
+   * [Jupyter notebook to create seldon-core with ksonnet and expose APIs using Ambassador.](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/ksonnet_ambassador_minikube.ipynb)
+
