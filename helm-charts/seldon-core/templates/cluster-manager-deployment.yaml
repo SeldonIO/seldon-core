@@ -5,6 +5,7 @@ items:
   kind: Deployment
   metadata:
     name: seldon-cluster-manager
+    namespace: {{ .Release.Namespace }}
   spec:
     replicas: 1
     template:

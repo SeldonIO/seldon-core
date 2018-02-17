@@ -55,6 +55,7 @@ Official releases can be installed via helm from the repository https://storage.
 To install seldon-core:
 
 ```
+helm install seldon-core-crd --name seldon-core-crd --repo https://storage.googleapis.com/seldon-charts
 helm install seldon-core --name seldon-core --repo https://storage.googleapis.com/seldon-charts
 ```
 

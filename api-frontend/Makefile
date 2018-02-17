@@ -15,7 +15,7 @@ build_image: build_jar write_version
 
 
 push_to_registry:
-	docker push seldonio/$(IMAGE_NAME):$$(cat $(VERSION_FILE)
+	docker push seldonio/$(IMAGE_NAME):$$(cat $(VERSION_FILE))
 
 clean:
 	@mvn clean
