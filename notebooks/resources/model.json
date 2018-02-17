@@ -6,7 +6,7 @@
             "app": "seldon"
         },
         "name": "seldon-deployment-example",
-	"namespace": "test-seldon"
+	"namespace": "seldon"
     },
     "spec": {
         "annotations": {
