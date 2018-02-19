@@ -1,5 +1,23 @@
 # Change Log
 
+## [v0.1.5](https://github.com/SeldonIO/seldon-core/tree/v0.1.5) (2018-02-19)
+[Full Changelog](https://github.com/SeldonIO/seldon-core/compare/v0.1.4...v0.1.5)
+
+**Closed issues:**
+
+- Make CRD namespaced [\#95](https://github.com/SeldonIO/seldon-core/issues/95)
+- Allow Helm deployment without API Front end [\#92](https://github.com/SeldonIO/seldon-core/issues/92)
+- Support deployment of a Python 3 model [\#88](https://github.com/SeldonIO/seldon-core/issues/88)
+- Create a Slack channel for project [\#43](https://github.com/SeldonIO/seldon-core/issues/43)
+
+**Merged pull requests:**
+
+- ksonnet updates for namespaces and RBAC [\#98](https://github.com/SeldonIO/seldon-core/pull/98) ([cliveseldon](https://github.com/cliveseldon))
+- Handle namespaced deployments [\#97](https://github.com/SeldonIO/seldon-core/pull/97) ([cliveseldon](https://github.com/cliveseldon))
+- 88 python 3 compatibility [\#94](https://github.com/SeldonIO/seldon-core/pull/94) ([Maximophone](https://github.com/Maximophone))
+- allow apife to be optional in helm install [\#93](https://github.com/SeldonIO/seldon-core/pull/93) ([cliveseldon](https://github.com/cliveseldon))
+- remove redundant assignment [\#87](https://github.com/SeldonIO/seldon-core/pull/87) ([mjlodge](https://github.com/mjlodge))
+
 ## [v0.1.4](https://github.com/SeldonIO/seldon-core/tree/v0.1.4) (2018-02-05)
 [Full Changelog](https://github.com/SeldonIO/seldon-core/compare/v0.1.3...v0.1.4)
 
@@ -31,6 +49,7 @@
 - Split Helm scripts into 3 - core, analytics and kafka [\#75](https://github.com/SeldonIO/seldon-core/pull/75) ([cliveseldon](https://github.com/cliveseldon))
 - add engine resources to proto and modify cluster manager [\#72](https://github.com/SeldonIO/seldon-core/pull/72) ([cliveseldon](https://github.com/cliveseldon))
 - 57 wrapping auto docs [\#68](https://github.com/SeldonIO/seldon-core/pull/68) ([Maximophone](https://github.com/Maximophone))
+- Release v0.1.2 prep [\#66](https://github.com/SeldonIO/seldon-core/pull/66) ([gsunner](https://github.com/gsunner))
 
 ## [v0.1.2](https://github.com/SeldonIO/seldon-core/tree/v0.1.2) (2018-01-23)
 [Full Changelog](https://github.com/SeldonIO/seldon-core/compare/v0.1.1...v0.1.2)
@@ -49,6 +68,7 @@
 **Merged pull requests:**
 
 - add travis build status [\#64](https://github.com/SeldonIO/seldon-core/pull/64) ([gsunner](https://github.com/gsunner))
+- updates into Release 0.1 [\#63](https://github.com/SeldonIO/seldon-core/pull/63) ([gsunner](https://github.com/gsunner))
 - add current release branch to travis builds [\#62](https://github.com/SeldonIO/seldon-core/pull/62) ([gsunner](https://github.com/gsunner))
 - Complex graphs [\#61](https://github.com/SeldonIO/seldon-core/pull/61) ([Maximophone](https://github.com/Maximophone))
 - change validation to handle no method check [\#60](https://github.com/SeldonIO/seldon-core/pull/60) ([cliveseldon](https://github.com/cliveseldon))
@@ -83,6 +103,7 @@
 
 **Merged pull requests:**
 
+- Release 0.1 branch merge [\#22](https://github.com/SeldonIO/seldon-core/pull/22) ([gsunner](https://github.com/gsunner))
 - version 0.1.1 prep [\#21](https://github.com/SeldonIO/seldon-core/pull/21) ([gsunner](https://github.com/gsunner))
 - Health checks grpc [\#19](https://github.com/SeldonIO/seldon-core/pull/19) ([cliveseldon](https://github.com/cliveseldon))
 - ci updates [\#18](https://github.com/SeldonIO/seldon-core/pull/18) ([gsunner](https://github.com/gsunner))
