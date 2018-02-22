@@ -36,7 +36,7 @@ class OutlierMahalanobis(object):
         # Projecting features on the principal components subspace
         proj_features = np.matmul(features,eigvects)
 
-        # Outlier detection is the PC subspace
+        # Outlier detection in the PC subspace
         roll_partial_means = proj_features.cumsum(axis=0)/(np.arange(nb)+1).reshape((nb,1))
         coefs = (np.arange(nb)+1.)/(np.arange(nb)+self.n+1.)
         new_means = self.mean + coefs.reshape((nb,1))*(roll_partial_means-self.mean)
