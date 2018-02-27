@@ -58,6 +58,9 @@ Machine learning deployment has many [challenges](./docs/challenges.md). Seldon 
  * [Epsilon-greedy multi-armed bandits for real time optimization of models](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/epsilon_greedy_gcp.ipynb)
  * [Advanced graphs](https://github.com/cliveseldon/seldon-core/blob/master/notebooks/advanced_graphs.ipynb) showing the various types of runtime prediction graphs that can be built.
 
+## Integrations
+
+ * seldon-core can be installed as part of the [kubeflow](https://github.com/kubeflow/kubeflow) project. A detailed [end-to-end example](https://github.com/kubeflow/example-seldon) provides a complete workflow for training various models and deploying them using seldon-core.
 
 ## Install
 
