@@ -5,3 +5,4 @@ kind: ConfigMap
 metadata:
   creationTimestamp: null
   name: prometheus-server-conf
+  namespace: {{ .Release.Namespace }}

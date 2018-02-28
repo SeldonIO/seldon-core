@@ -94,7 +94,6 @@ class SeldonJsLocust(TaskSet):
 
     def sendFeedback(self,response):
         route = json.dumps(response["meta"]["routing"], sort_keys=True)
-        rewardProba = 0.5
         if not route in self.routeRewards:
             if len(self.routesSeen) < len(self.rewardProbas):
                 self.routesSeen.append(route)
