@@ -8,6 +8,7 @@ items:
       name: locust-master-{{ .Values.loadtest.id }}
       service: seldon
     name: locust-master-{{ .Values.loadtest.id }}
+    namespace: {{ .Release.Namespace }}    
   spec:
     replicas: 1
     selector:

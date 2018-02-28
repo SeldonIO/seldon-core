@@ -41,15 +41,15 @@ def get_class_names(user_model,original):
 # REST
 # ----------------------------
 
-def get_rest_microservice(user_model):
+def get_rest_microservice(user_model,debug=False):
 
     app = Flask(__name__)
 
     @app.errorhandler(SeldonMicroserviceException)
     def handle_invalid_usage(error):
         response = jsonify(error.to_dict())
-        print "ERROR:"
-        print error.to_dict()
+        print("ERROR:")
+        print(error.to_dict())
         response.status_code = 400
         return response
 
@@ -120,7 +120,7 @@ class SeldonTransformerGRPC(object):
         data = array_to_grpc_datadef(transformed, class_names, request.data.WhichOneof("data_oneof"))
         return prediction_pb2.SeldonMessage(data=data)
     
-def get_grpc_server(user_model):
+def get_grpc_server(user_model,debug=False):
     seldon_model = SeldonTransformerGRPC(user_model)
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     prediction_pb2_grpc.add_ModelServicer_to_server(seldon_model, server)

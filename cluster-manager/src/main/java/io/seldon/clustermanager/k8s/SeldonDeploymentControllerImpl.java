@@ -52,6 +52,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	
 	private static final String DEPLOYMENT_API_VERSION = "extensions/v1beta1";
 
+	
 	@Autowired
 	public SeldonDeploymentControllerImpl(SeldonDeploymentOperator operator, K8sClientProvider clientProvider,KubeCRDHandler crdHandler,SeldonDeploymentCache mlCache) {
 		super();

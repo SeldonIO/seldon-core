@@ -1,3 +1,4 @@
+{{- if .Values.apife.enabled }}
 {
     "apiVersion": "v1",
     "items": [
@@ -5,7 +6,8 @@
             "apiVersion": "extensions/v1beta1",
             "kind": "Deployment",
             "metadata": {
-                "name": "seldon-apiserver"
+                "name": "seldon-apiserver",
+		"namespace" : "{{ .Release.Namespace }}"
             },
             "spec": {
                 "replicas": 1,
@@ -35,6 +37,15 @@
                                     {
                                         "name": "SELDON_CLUSTER_MANAGER_REDIS_HOST",
                                         "value": "redis"
+                                    },
+                                    {
+                                        "name": "SELDON_CLUSTER_MANAGER_POD_NAMESPACE",
+                                         "valueFrom": {
+					     "fieldRef": {
+						 "apiVersion": "v1",
+						 "fieldPath": "metadata.namespace"
+					     }
+					 }
                                     }
                                 ],
                                 "image": "seldonio/apife:{{ .Values.apife.image.tag }}",
@@ -69,14 +80,12 @@
                 "ports": [
                     {
                         "name": "http",
-                        "nodePort": 30032,
                         "port": 8080,
                         "protocol": "TCP",
                         "targetPort": 8080
                     },
                     {
                         "name": "grpc",
-                        "nodePort": 30033,
                         "port": 5000,
                         "protocol": "TCP",
                         "targetPort": 5000
@@ -96,3 +105,4 @@
     "kind": "List",
     "metadata": {}
 }
+{{- end }}

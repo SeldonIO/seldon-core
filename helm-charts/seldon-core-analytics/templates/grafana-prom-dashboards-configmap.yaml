@@ -5,4 +5,4 @@ kind: ConfigMap
 metadata:
   creationTimestamp: null
   name: grafana-import-dashboards
-
+  namespace: {{ .Release.Namespace }}

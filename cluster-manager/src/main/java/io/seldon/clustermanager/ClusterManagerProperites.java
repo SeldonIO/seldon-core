@@ -24,7 +24,7 @@ public class ClusterManagerProperites {
     private int engineGrpcContainerPort;
     private String engineContainerImageAndVersion;
     private int puContainerPortBase;
-    private boolean istioEnabled;
+    private String namespace;
 
     public int getEngineContainerPort() {
         return engineContainerPort;
@@ -58,12 +58,12 @@ public class ClusterManagerProperites {
         this.puContainerPortBase = puContainerPortBase;
     }
     
-    public boolean isIstioEnabled() {
-		return istioEnabled;
+	public String getNamespace() {
+		return namespace;
 	}
 
-	public void setIstioEnabled(boolean istioEnabled) {
-		this.istioEnabled = istioEnabled;
+	public void setNamespace(String namespace) {
+		this.namespace = namespace;
 	}
 
 	@Override
