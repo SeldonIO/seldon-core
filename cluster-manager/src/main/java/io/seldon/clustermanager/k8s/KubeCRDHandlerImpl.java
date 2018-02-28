@@ -17,8 +17,10 @@ package io.seldon.clustermanager.k8s;
 
 import java.io.IOException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.google.gson.Gson;
@@ -32,6 +34,7 @@ import io.kubernetes.client.apis.ExtensionsV1beta1Api;
 import io.kubernetes.client.models.ExtensionsV1beta1DeploymentList;
 import io.kubernetes.client.proto.Meta.ObjectMeta;
 import io.kubernetes.client.util.Config;
+import io.seldon.clustermanager.ClusterManagerProperites;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 @Component
@@ -41,12 +44,17 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 	
 	public static final String GROUP = "machinelearning.seldon.io";
 	public static final String VERSION = "v1alpha1";
-	//TODO make namespace configurable
-	public static final String NAMESPACE = "default";
 	public static final String KIND_PLURAL = "seldondeployments";
 	public static final String KIND = "SeldonDeployment";
 	
-    @Override
+	private final String namespace;
+	
+	@Autowired
+    public KubeCRDHandlerImpl(ClusterManagerProperites clusterManagerProperites) {
+		this.namespace = StringUtils.isEmpty(clusterManagerProperites.getNamespace()) ? "default" : clusterManagerProperites.getNamespace();
+	}
+
+	@Override
 	public void updateSeldonDeployment(SeldonDeployment mldep) {
 		
 		try
@@ -66,7 +74,7 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 			logger.debug("Updating seldondeployment "+mlDeployment.getMetadata().getName());
 			ApiClient client = Config.defaultClient();
 			CustomObjectsApi api = new CustomObjectsApi(client);
-			api.replaceNamespacedCustomObject(GROUP, VERSION, NAMESPACE, KIND_PLURAL, mlDeployment.getMetadata().getName(),json.getBytes());
+			api.replaceNamespacedCustomObject(GROUP, VERSION, namespace, KIND_PLURAL, mlDeployment.getMetadata().getName(),json.getBytes());
 		} catch (InvalidProtocolBufferException e) {
 			logger.error("Failed to update deployment in kubernetes ",e);
 		} catch (ApiException e) {
@@ -83,7 +91,7 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 		{
 			ApiClient client = Config.defaultClient();
 			CustomObjectsApi api = new CustomObjectsApi(client);
-			Object resp = api.getNamespacedCustomObject(GROUP, VERSION, NAMESPACE, KIND_PLURAL, name);
+			Object resp = api.getNamespacedCustomObject(GROUP, VERSION, namespace, KIND_PLURAL, name);
 			Gson gson = new GsonBuilder().create();
     		String json = gson.toJson(resp);
     		
@@ -107,7 +115,7 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
         {
             ApiClient client = Config.defaultClient();
             ExtensionsV1beta1Api api = new ExtensionsV1beta1Api(client);
-            ExtensionsV1beta1DeploymentList l =  api.listNamespacedDeployment("default", null, null, null, false, Constants.LABEL_SELDON_ID+"="+seldonDeploymentName, 1, null, null, false);
+            ExtensionsV1beta1DeploymentList l =  api.listNamespacedDeployment(namespace, null, null, null, false, Constants.LABEL_SELDON_ID+"="+seldonDeploymentName, 1, null, null, false);
             return l;
         } catch (IOException e) {
             logger.error("Failed to get deployment list for "+seldonDeploymentName,e);

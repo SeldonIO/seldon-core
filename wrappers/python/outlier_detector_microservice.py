@@ -20,15 +20,15 @@ def score(user_model,features,feature_names):
 # REST
 # ----------------------------
 
-def get_rest_microservice(user_model):
+def get_rest_microservice(user_model,debug=False):
 
     app = Flask(__name__)
 
     @app.errorhandler(SeldonMicroserviceException)
     def handle_invalid_usage(error):
         response = jsonify(error.to_dict())
-        print "ERROR:"
-        print error.to_dict()
+        print("ERROR:")
+        print(error.to_dict())
         response.status_code = 400
         return response
 
@@ -67,10 +67,10 @@ class SeldonTransformerGRPC(object):
         outlier_score = score(self.user_model,features,datadef.names)
 
         request.meta.tags["outlierScore"] = outlier_score
-
+        
         return request
     
-def get_grpc_server(user_model):
+def get_grpc_server(user_model,debug=False):
     seldon_model = SeldonTransformerGRPC(user_model)
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     prediction_pb2_grpc.add_ModelServicer_to_server(seldon_model, server)

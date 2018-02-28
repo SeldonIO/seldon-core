@@ -73,3 +73,6 @@ wrappers/python/proto/prediction_pb2_grpc.py
 notebooks/**/*.proto
 *pb2.py
 *pb2_grpc.py
+examples/models/keras_mnist/build/
+examples/models/mean_classifier/build/
+notebooks/my-ml-deployment/

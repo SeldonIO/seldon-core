@@ -20,6 +20,7 @@ import java.net.SocketTimeoutException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,7 @@ import io.kubernetes.client.models.ExtensionsV1beta1Deployment;
 import io.kubernetes.client.models.V1OwnerReference;
 import io.kubernetes.client.util.Config;
 import io.kubernetes.client.util.Watch;
+import io.seldon.clustermanager.ClusterManagerProperites;
 
 @Component
 public class DeploymentWatcher {
@@ -46,11 +48,13 @@ public class DeploymentWatcher {
 	private int resourceVersionProcessed = 0;
 	
 	private final SeldonDeploymentStatusUpdate statusUpdater;
+	private final String namespace;
 	
 	@Autowired
-	public DeploymentWatcher(SeldonDeploymentStatusUpdate statusUpdater)
+	public DeploymentWatcher(ClusterManagerProperites clusterManagerProperites,SeldonDeploymentStatusUpdate statusUpdater)
 	{
 		this.statusUpdater = statusUpdater;
+		this.namespace = StringUtils.isEmpty(clusterManagerProperites.getNamespace()) ? "default" : clusterManagerProperites.getNamespace();
 	}
 	
 	public int watchDeployments(int resourceVersion,int resourceVersionProcessed) throws ApiException, IOException 
@@ -67,7 +71,7 @@ public class DeploymentWatcher {
 
 		Watch<ExtensionsV1beta1Deployment> watch = Watch.createWatch(
 		        client,
-		        api.listNamespacedDeploymentCall("default", null, null, null,false,SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_KEY+"="+SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_VAL, null,rs, 10, true,null,null),
+		        api.listNamespacedDeploymentCall(namespace, null, null, null,false,SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_KEY+"="+SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_VAL, null,rs, 10, true,null,null),
 		        new TypeToken<Watch.Response<ExtensionsV1beta1Deployment>>(){}.getType());
 
 		try

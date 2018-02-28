@@ -1,4 +1,3 @@
-{{- if .Values.cluster_manager.enabled }}
 ---
 apiVersion: v1
 items:
@@ -6,6 +5,7 @@ items:
   kind: Deployment
   metadata:
     name: seldon-cluster-manager
+    namespace: {{ .Release.Namespace }}
   spec:
     replicas: 1
     template:
@@ -39,4 +39,3 @@ items:
             protocol: TCP
 kind: List
 metadata: {}
-{{- end }}

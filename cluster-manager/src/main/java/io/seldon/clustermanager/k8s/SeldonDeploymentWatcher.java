@@ -20,6 +20,7 @@ import java.net.SocketTimeoutException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,7 @@ import io.kubernetes.client.ApiException;
 import io.kubernetes.client.apis.CustomObjectsApi;
 import io.kubernetes.client.util.Config;
 import io.kubernetes.client.util.Watch;
+import io.seldon.clustermanager.ClusterManagerProperites;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 @Component
@@ -49,15 +51,17 @@ public class SeldonDeploymentWatcher  {
 	
 	private final SeldonDeploymentController seldonDeploymentController;
 	private final SeldonDeploymentCache mlCache;
+	private final ClusterManagerProperites clusterManagerProperites;
 	
 	private int resourceVersion = 0;
 	private int resourceVersionProcessed = 0;
 	
 	@Autowired
-	public SeldonDeploymentWatcher(SeldonDeploymentController seldonDeploymentController,SeldonDeploymentCache mlCache) throws IOException
+	public SeldonDeploymentWatcher(ClusterManagerProperites clusterManagerProperites,SeldonDeploymentController seldonDeploymentController,SeldonDeploymentCache mlCache) throws IOException
 	{
 		this.seldonDeploymentController = seldonDeploymentController;
 		this.mlCache = mlCache;
+		this.clusterManagerProperites = clusterManagerProperites;
 	}
 	
 	private void processWatch(SeldonDeployment mldep,String action) throws InvalidProtocolBufferException
@@ -85,12 +89,13 @@ public class SeldonDeploymentWatcher  {
 		String rs = null;
 		if (resourceVersion > 0)
 			rs = ""+resourceVersion;
-		logger.debug("Watching with rs "+rs);
 		ApiClient client = Config.defaultClient();
 		CustomObjectsApi api = new CustomObjectsApi(client);
+		String namespace = StringUtils.isEmpty(this.clusterManagerProperites.getNamespace()) ? "default" : this.clusterManagerProperites.getNamespace();
+		logger.debug("Watching with rs "+rs+" in namespace "+namespace);
 		Watch<Object> watch = Watch.createWatch(
 				client,
-                api.listNamespacedCustomObjectCall("machinelearning.seldon.io", "v1alpha1", "default", "seldondeployments", null, null, rs, true, null, null),
+                api.listNamespacedCustomObjectCall("machinelearning.seldon.io", "v1alpha1", namespace, "seldondeployments", null, null, rs, true, null, null),
                 new TypeToken<Watch.Response<Object>>(){}.getType());
 		
 		int maxResourceVersion = resourceVersion;

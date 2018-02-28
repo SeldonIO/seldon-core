@@ -97,18 +97,18 @@ def update_values_yaml_file(fpath, seldon_core_version, debug=False):
 
     print "updated {fpath}".format(**locals())
 
-def set_version(seldon_core_version, pom_files, chart_yaml_file, values_yaml_file, debug=False):
+def set_version(seldon_core_version, pom_files, chart_yaml_files, values_yaml_file, debug=False):
     # Normalize file paths
     pom_files_realpaths = [os.path.realpath(x) for x in pom_files]
-    chart_yaml_file_realpath = os.path.realpath(chart_yaml_file) if chart_yaml_file != None else None
+    chart_yaml_file_realpaths = [os.path.realpath(x) for x in chart_yaml_files]
     values_yaml_file_realpath = os.path.realpath(values_yaml_file) if values_yaml_file != None else None
 
     # update the pom files
     for fpath in pom_files_realpaths:
         update_pom_file(fpath, seldon_core_version, debug)
 
-    # update the helm chart file
-    if chart_yaml_file != None:
+    # update the helm chart files
+    for chart_yaml_file_realpath in chart_yaml_file_realpaths:
         update_chart_yaml_file(chart_yaml_file_realpath, seldon_core_version, debug)
 
     # update the helm values file
@@ -117,13 +117,13 @@ def set_version(seldon_core_version, pom_files, chart_yaml_file, values_yaml_fil
 
 def main(argv):
     POM_FILES = ['engine/pom.xml', 'api-frontend/pom.xml', 'cluster-manager/pom.xml']
-    CHART_YAML_FILE = 'helm-charts/seldon-core/Chart.yaml'
+    CHART_YAML_FILES = ['helm-charts/seldon-core/Chart.yaml','helm-charts/seldon-core-crd/Chart.yaml']
     VALUES_YAML_FILE = 'helm-charts/seldon-core/values.yaml'
 
     opts = getOpts(argv[1:])
     if opts.debug:
         pp(opts)
-    set_version(opts.seldon_core_version, POM_FILES, CHART_YAML_FILE, VALUES_YAML_FILE, opts.debug)
+    set_version(opts.seldon_core_version, POM_FILES, CHART_YAML_FILES, VALUES_YAML_FILE, opts.debug)
     print "done"
 
 if __name__ == "__main__":
