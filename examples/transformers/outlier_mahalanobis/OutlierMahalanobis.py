@@ -20,7 +20,6 @@ class OutlierMahalanobis(object):
             n = min(self.n,self.max_n) # n can never be above max_n
         else:
             n = self.n
-            
 
         # Tracking the mean and covariance matrix
         roll_partial_means = features.cumsum(axis=0)/(np.arange(nb)+1).reshape((nb,1))
@@ -77,4 +76,4 @@ class OutlierMahalanobis(object):
         feat_diff = proj_features-proj_means
         outlier_scores = np.matmul(feat_diff[:,None,:],np.matmul(all_C_inv,feat_diff[:,:,None])).reshape(nb)
 
-        return list(outlier_scores)
+        return outlier_scores
