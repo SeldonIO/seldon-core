@@ -85,11 +85,15 @@ class SeldonJsLocust(TaskSet):
 
     def on_start(self):
         print "on_start"
+        self.oauth_enabled = getEnviron('OAUTH_ENABLED',"true")
         self.oauth_key = getEnviron('OAUTH_KEY',"key")
         self.oauth_secret = getEnviron('OAUTH_SECRET',"secret")
         self.data_size = int(getEnviron('DATA_SIZE',"1"))
         self.send_feedback = int(getEnviron('SEND_FEEDBACK',"1"))
-        self.get_token()
+        if self.oauth_enabled == "true":
+            self.get_token()
+        else:
+            self.access_token = "NONE"
         self.rewardProbas = [0.5,0.2,0.9,0.3,0.7]
         self.routeRewards = {}
         self.routesSeen = []
@@ -117,7 +121,8 @@ class SeldonJsLocust(TaskSet):
         else:
             print "Failed feedback request "+str(r.status_code)
             if r.status_code == 401:
-                self.get_token()
+                if self.oauth_enabled == "true":
+                    self.get_token()
             else:
                 print r.headers
                 r.raise_for_status()
@@ -139,7 +144,8 @@ class SeldonJsLocust(TaskSet):
         else:
             print "Failed prediction request "+str(r.status_code)
             if r.status_code == 401:
-                self.get_token()
+                if self.oauth_enabled == "true":
+                    self.get_token()
             else:
                 print r.headers
                 r.raise_for_status()

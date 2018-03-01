@@ -8,7 +8,7 @@ metadata:
   name: locust-slave-{{ .Values.loadtest.id }}
   namespace: {{ .Release.Namespace }}      
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicaCount }}
   selector:
     name: locust-slave-{{ .Values.loadtest.id }}
   template:
@@ -41,6 +41,8 @@ spec:
           value: '{{ .Values.locust.minWait }}'
         - name: MAX_WAIT
           value: '{{ .Values.locust.maxWait }}'
+        - name: OAUTH_ENABLED
+          value: '{{ .Values.oauth.enabled }}'
         image: seldonio/locust-core:{{ .Values.image.release }}
         imagePullPolicy: IfNotPresent
         name: locust-slave-{{ .Values.loadtest.id }}
