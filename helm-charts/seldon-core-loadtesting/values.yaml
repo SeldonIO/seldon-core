@@ -15,6 +15,7 @@ locust:
   minWait: 990
   maxWait: 1100
 oauth:
+  enabled: true
   key: key
   secret: secret
 data:

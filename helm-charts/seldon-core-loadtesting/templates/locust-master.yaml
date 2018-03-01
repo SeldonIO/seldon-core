@@ -34,7 +34,7 @@ items:
           - --master
           - --no-web
           - --expect-slaves
-          - '1'
+          - '{{ .Values.replicaCount }}'
           env:
           - name: OAUTH_KEY
             value: '{{ .Values.oauth.key }}'
@@ -42,6 +42,8 @@ items:
             value: '{{ .Values.oauth.secret }}'
           - name: DATA_SIZE
             value: '{{ .Values.data.size }}'
+          - name: OAUTH_ENABLED
+            value: '{{ .Values.oauth.enabled }}'
           image: seldonio/locust-core:{{ .Values.image.release }}
           imagePullPolicy: IfNotPresent
           name: locust-master-{{ .Values.loadtest.id }}
