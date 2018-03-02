@@ -23,8 +23,9 @@ Machine learning deployment has many [challenges](./docs/challenges.md). Seldon 
    - Python based models including
      - Tensorflow models
      - Sklearn models
-   - Spark Models
-   - H2O Models
+   - Spark models
+   - H2O models
+   - R models
  - Expose machine learning models via REST and gRPC automatically when deployed for easy integration into business apps that need predictions.
  - Allow complex runtime inference graphs to be deployed as microservices. These graphs can be composed of:
    - Models - runtime inference executable for machine learning models
