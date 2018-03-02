@@ -55,8 +55,18 @@ Machine learning deployment has many [challenges](./docs/challenges.md). Seldon 
 
 ## Advanced Tutorials
 
- * [Epsilon-greedy multi-armed bandits for real time optimization of models](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/epsilon_greedy_gcp.ipynb)
  * [Advanced graphs](https://github.com/cliveseldon/seldon-core/blob/master/notebooks/advanced_graphs.ipynb) showing the various types of runtime prediction graphs that can be built.
+
+### Example Components
+Seldon-core allows various types of components to be built and plugged into the runtime prediction graph. These include [routers, transformers and combiners](docs/reference/internal-api.md). Some components that are available as part of the project are:
+
+ * Multi-Armed bandits
+    * [Epsilon-greedy multi-armed bandits for real time optimization of models](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/epsilon_greedy_gcp.ipynb)
+    * Contextual bandits. (coming soon).
+ * Outlier Detection
+    * [Mahalanobis distance outlier detection](https://github.com/SeldonIO/seldon-core/blob/master/examples/transformers/outlier_mahalanobis/outlier_documentation.ipynb). Example usage can be found in the [Advanced graphs notebook](https://github.com/cliveseldon/seldon-core/blob/master/notebooks/advanced_graphs.ipynb)
+ * Model explainers (coming soon).
+
 
 ## Integrations
 
