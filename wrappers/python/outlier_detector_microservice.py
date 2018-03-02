@@ -13,7 +13,7 @@ import numpy as np
 # ---------------------------
 
 def score(user_model,features,feature_names):
-    # Returns a single float that corresponds to the outlier score
+    # Returns a numpy array of floats that corresponds to the outlier scores for each point in the batch
     return user_model.score(features,feature_names)
     
 # ----------------------------
@@ -41,11 +41,11 @@ def get_rest_microservice(user_model,debug=False):
         datadef = request.get("data")
         features = rest_datadef_to_array(datadef)
 
-        outlier_score = score(user_model,features,datadef.get("names"))
+        outlier_scores = score(user_model,features,datadef.get("names"))
         # TODO: check that predictions is 2 dimensional
 
         request["meta"].setdefault("tags",{})
-        request["meta"]["tags"]["outlierScore"] = outlier_score
+        request["meta"]["tags"]["outlierScore"] = list(outlier_scores)
 
         return jsonify(request)
         
@@ -64,10 +64,10 @@ class SeldonTransformerGRPC(object):
         datadef = request.data
         features = grpc_datadef_to_array(datadef)
 
-        outlier_score = score(self.user_model,features,datadef.names)
+        outlier_scores = score(self.user_model,features,datadef.names)
 
-        request.meta.tags["outlierScore"] = outlier_score
-        
+        request.meta.tags["outlierScore"] = list(outlier_scores)
+
         return request
     
 def get_grpc_server(user_model,debug=False):

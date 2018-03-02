@@ -43,7 +43,7 @@
 				}
 			    },
 			    {
-				"image": "seldonio/mock_outlier_detector:1.0",
+				"image": "seldonio/outlier_mahalanobis:0.2",
 				"imagePullPolicy": "IfNotPresent",
 				"name": "outlier-detector",
 				"resources": {
