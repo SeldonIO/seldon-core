@@ -114,11 +114,8 @@ class SeldonJsLocust(TaskSet):
         else:
             j = {"response":response,"reward":0}
         jStr = json.dumps(j)
-        print jStr
         r = self.client.request("POST","/api/v0.1/feedback",headers={"Content-Type":"application/json","Accept":"application/json","Authorization":"Bearer "+self.access_token},name="feedback",data=jStr)
-        if r.status_code == 200:
-            print "Successful feedback"
-        else:
+        if not r.status_code == 200:
             print "Failed feedback request "+str(r.status_code)
             if r.status_code == 401:
                 if self.oauth_enabled == "true":
@@ -134,12 +131,10 @@ class SeldonJsLocust(TaskSet):
         features = ["f"+str(i) for i in range (0,self.data_size)]
         j = {"data":{"names":features,"ndarray":fake_data}}
         jStr = json.dumps(j)
-        print jStr
         r = self.client.request("POST","/api/v0.1/predictions",headers={"Content-Type":"application/json","Accept":"application/json","Authorization":"Bearer "+self.access_token},name="predictions",data=jStr)
         if r.status_code == 200:
-            j = json.loads(r.content)
-            print r.content
             if self.send_feedback == 1:
+                j = json.loads(r.content)
                 self.sendFeedback(j)
         else:
             print "Failed prediction request "+str(r.status_code)
