@@ -34,7 +34,7 @@
 		    "implementation": "SIMPLE_MODEL"
                 },
                 "name": "loadtest",
-                "replicas": 2,
+                "replicas": 1,
 		"annotations": {
 		    "predictor_version" : "v1"
 		}
