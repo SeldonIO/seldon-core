@@ -32,6 +32,7 @@ items:
           - --host
           - '{{ .Values.locust.host }}'
           - --master
+          - --csv=stats
           - --no-web
           - --expect-slaves
           - '{{ .Values.replicaCount }}'
