@@ -1,66 +1,23 @@
-
 {
-    "name":"my-predictor",
-    "replicas":1,
-    "componentSpec":{},
-    "type":"NORMAL",
-    "graph":{
-	"name":"0",
-	"type":"ROUTER",
-	"endpoint": {
-	    "service_host":"localhost",
-	    "service_port":5004,
-	    "type":"GRPC"
+    "componentSpec": {
+        "spec": {
+            "containers": [
+            ],
+            "terminationGracePeriodSeconds": 20
+        }
+    },
+    "graph": {
+        "children": [],
+        "name": "stub",
+        "endpoint": {
+	    "type" : "REST"
 	},
-	"parameters": [
-	    {
-		"name":"n_branches",
-		"value":2,
-		"type":"INT"
-	    },
-	    {
-		"name":"verbose",
-		"value":true,
-		"type":"BOOL"
-	    }
-	],
-	"children":[
-	    {
-		"name":"1",
-		"type":"TRANSFORMER",
-		"endpoint": {
-		    "service_host":"localhost",
-		    "service_port":5001,
-		    "type":"REST"
-		},
-		"parameters": [],
-		"children": [
-		    {
-			"name":"2",
-			"type":"MODEL",
-			"subtype":"MICROSERVICE",
-			"endpoint": {
-			    "service_host":"localhost",
-			    "service_port":5002,
-			    "type":"REST"
-			},
-			"parameters": [],
-			"children": []
-		    }
-		]
-	    },
-	    {
-		"name":"3",
-		"type":"MODEL",
-		"endpoint": {
-		    "service_host":"localhost",
-		    "service_port":5003,
-		    "type":"REST"
-		},
-		"parameters":[],
-		"children":[]
-	    }
-	]
+        "type": "MODEL",
+	"implementation": "SIMPLE_MODEL"
+    },
+    "name": "loadtest",
+    "replicas": 2,
+    "annotations": {
+	"predictor_version" : "v1"
     }
 }
-		
