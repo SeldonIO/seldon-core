@@ -41,12 +41,6 @@ public class SimpleModelUnit extends PredictiveUnitImpl {
 				.setData(DefaultData.newBuilder().addAllNames(Arrays.asList(classes))
 					.setTensor(Tensor.newBuilder().addShape(1).addShape(values.length)
 					.addAllValues(Arrays.asList(values)))).build();
-		try {
-			Thread.sleep(20);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		System.out.println("Model " + state.name + " finishing computations");
 		return output;
 	}
