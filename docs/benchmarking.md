@@ -26,14 +26,14 @@ This test will illustrate the maximum number of requests that can be pushed thro
 
 We will use cordened off kubernetes nodes running locust so the latency from node to node prediction calls on GCP will also be part of the returned statistics.
 
-A [notebook](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_gcp_loadtest.ipynb) provides the end to end test for reproducability.
+A [notebook](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/benchmark_simple_model.ipynb) provides the end to end test for reproducability.
 
 We use:
 
    * 1 replica of the stub model running on 1 n1-standard-16 GCP node
    * We use 3 nodes to run 64 locust slaves with a total of 256 clients calling as fast as they can.
 
-See [notebook](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_gcp_loadtest.ipynb) for details.
+See [notebook](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/benchmark_simple_model.ipynb) for details.
 
 ### REST Results
 
