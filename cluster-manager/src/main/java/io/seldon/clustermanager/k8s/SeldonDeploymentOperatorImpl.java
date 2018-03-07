@@ -90,6 +90,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
         }
 	}
 	
+	static final String ENGINE_JAVA_OPTS="-Dcom.sun.management.jmxremote.rmi.port=9090 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9090 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.local.only=false -Djava.rmi.server.hostname=127.0.0.1";
 	private V1.Container createEngineContainer(SeldonDeployment dep,PredictorSpec predictorDef) throws SeldonDeploymentException
 	{
 		V1.Container.Builder cBuilder = V1.Container.newBuilder();
@@ -101,8 +102,10 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			.addEnv(EnvVar.newBuilder().setName("ENGINE_SELDON_DEPLOYMENT").setValue(getEngineEnvVarJson(dep)))
 			.addEnv(EnvVar.newBuilder().setName("ENGINE_SERVER_PORT").setValue(""+clusterManagerProperites.getEngineContainerPort()))
 			.addEnv(EnvVar.newBuilder().setName("ENGINE_SERVER_GRPC_PORT").setValue(""+clusterManagerProperites.getEngineGrpcContainerPort()))			
+			.addEnv(EnvVar.newBuilder().setName("JAVA_OPTS").setValue(ENGINE_JAVA_OPTS))						
 			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(clusterManagerProperites.getEngineContainerPort()))
 			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(8082).setName("admin"))
+			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(9090).setName("jmx"))
 			.setReadinessProbe(Probe.newBuilder().setHandler(Handler.newBuilder()
 					.setHttpGet(HTTPGetAction.newBuilder().setPort(IntOrString.newBuilder().setType(1).setStrVal("admin")).setPath("/ready")))
 					.setInitialDelaySeconds(10)
