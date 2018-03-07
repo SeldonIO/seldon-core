@@ -97,6 +97,10 @@ Three steps:
  - [Prediction API](./docs/reference/prediction.md)
  - [Seldon Deployment Custom Resource](./docs/reference/seldon-deployment.md)
 
+## Testing
+
+ - [Benchmarking seldon-core](docs/benchmarking.md)
+
 ## Community
 
  * [Slack Channel](https://join.slack.com/t/seldondev/shared_invite/enQtMzA2Mzk1Mzg0NjczLWQzMGFkNmRjN2UxZmFmMWJmNWIzMTM5Y2UxNGY1ODE5ZmI2NDdkMmNiMmUxYjZhZGYxOTllMDQwM2NkNDQ1MGI)
