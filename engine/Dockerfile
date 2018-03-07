@@ -6,5 +6,5 @@ RUN apt-get update && apt-get install -y curl libblas-dev
 
 ADD /target/seldon-engine-${APP_VERSION}.jar app.jar
 
-ENTRYPOINT [ "sh", "-c", "java -Djava.security.egd=file:/dev/./urandom -jar app.jar" ]
+ENTRYPOINT [ "sh", "-c", "java -Djava.security.egd=file:/dev/./urandom $JAVA_OPTS -jar app.jar" ]
 
