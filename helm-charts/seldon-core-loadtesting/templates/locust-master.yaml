@@ -32,9 +32,10 @@ items:
           - --host
           - '{{ .Values.locust.host }}'
           - --master
+          - --csv=stats
           - --no-web
           - --expect-slaves
-          - '1'
+          - '{{ .Values.replicaCount }}'
           env:
           - name: OAUTH_KEY
             value: '{{ .Values.oauth.key }}'
@@ -42,6 +43,8 @@ items:
             value: '{{ .Values.oauth.secret }}'
           - name: DATA_SIZE
             value: '{{ .Values.data.size }}'
+          - name: OAUTH_ENABLED
+            value: '{{ .Values.oauth.enabled }}'
           image: seldonio/locust-core:{{ .Values.image.release }}
           imagePullPolicy: IfNotPresent
           name: locust-master-{{ .Values.loadtest.id }}
@@ -54,7 +57,7 @@ items:
         restartPolicy: Always
         schedulerName: default-scheduler
         securityContext: {}
-        terminationGracePeriodSeconds: 30
+        terminationGracePeriodSeconds: 5
 - apiVersion: v1
   kind: Service
   metadata:
