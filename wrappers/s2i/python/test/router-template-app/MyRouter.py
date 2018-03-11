@@ -26,5 +26,5 @@ class MyRouter(object):
         """
         Handle feedback for your routings. Optional.
         """
-        print "Received feedback"
+        print("Received feedback")
 
