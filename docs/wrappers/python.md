@@ -1,128 +1,153 @@
 # Packaging a python model for Seldon Core
-In this guide, we illustrate the steps needed to wrap your own python model in a docker image ready for deployment with Seldon Core, using the Seldon wrapper script. This script is designed to take your python model and turn it into a dockerised microservice that conforms to Seldon's internal API, thus avoiding the hassle to write your own dockerised microservice.
+In this guide, we illustrate the steps needed to wrap your own python model in a docker image ready for deployment with Seldon Core using s2i. 
 
 You can use these wrappers with any model that offers a python API. Some examples are:
 * Scikit-learn
 * Keras
-* statsmodels
 * Tensorflow
 * XGBoost
 
-The global process is as follows:
-* Regroup your files under a single directory and create a standard python class that will be used as an entrypoint
-* Run the wrapper script that will package your model for docker
-* Build and publish a docker image from the generated files
+# Step 1 - Install s2i
 
+ [Download and install s2i](https://github.com/openshift/source-to-image#installation)
 
-## Create a model folder
+ * Prequisites for using s2i are:
+   * Docker
+   * Git (if building from a remote git repo)
 
-The Seldon python wrappers are designed to take your model and turn it into a dockerised microservice that conforms to Seldon's internal API. 
-To wrap a model, there are 2 requirements:
-* All the files that will be used at runtime need to be put into a single directory;
-* You need a file that contains a standardised python class that will serve as an entrypoint for runtime predictions.
+# Step 2 - Create your source code
 
-Additionally, if you are making use of specific python libraries, you need to list them in a requirements.txt file that will be used by pip to install the packages in the docker image.
+To use our s2i builder image to package your python model you will need:
 
-Here we illustrate the content of the ```keras_mnist``` model folder which can be found in [seldon-core/examples/models/](https://github.com/SeldonIO/seldon-core/tree/master/examples).
+ * A python file with a class that runs your model
+ * requirements.txt  or setup.py
+ * .s2i/environment - model definitions used by the s2i builder to correctly wrap your model
 
-This folder contains the following 3 files: 
+We will go into detail for each of these steps:
 
-1. MnistClassifier.py: This is the entrypoint for the model. It needs to include a python class having the same name as the file, in this case MnistClassifier, that implements a method called predict that takes as arguments a multi-dimensional numpy array (X) and a list of strings (feature_names), and returns a numpy array of predictions. 
+## Python file
+Your source code should contain a python file which defines a class of the same name as the file. For example, looking at our skeleton python model file at ```wrappers/s2i/python/test/model-template-app/MyModel.py```:
 
-	
-    ```python
-    from keras.models import load_model
-	    
-    class MnistClassifier(object): # The file is called MnistClassifier.py
-	    
-        def __init__(self):
-			""" You can load your pre-trained model in here. The instance will be created once when the docker container starts running on the cluster. """
-            self.model = load_model('MnistClassifier.h5')
-		    
-        def predict(self,X,feature_names):
-			""" X is a 2-dimensional numpy array, feature_names is a list of strings. 
-			This methods needs to return a numpy array of predictions."""
-            return self.model.predict(X)
-    ```
-	
-2. requirements.txt: List of the packages required by your model, that will be installed via ```pip install```.
+```python
+class MyModel(object):
+    """
+    Model template. You can load your model parameters in __init__ from a location accessible at runtime
+    """
+    
+    def __init__(self):
+        """
+        Add any initialization parameters. These will be passed at runtime from the graph definition parameters defined in your seldondeployment kubernetes resource manifest.
+        """
+        print("Initializing")
 
-   ```
-   keras==2.0.6 
-   h5py==2.7.0
-   ```
- 	    	
-3. MnistClassifier.h5: This hdf file contains the saved keras model. 
+    def predict(self,X,features_names):
+        """
+        Return a prediction.
 
-## Wrap the model
-
-After you have copied the required files in your model folder, you run the Seldon wrapper script to turn your model into a dockerised microservice. The wrapper script requires as arguments the path to your model directory, the model name, a version for the docker image, and the name of a docker repository. It will generate a "build" directory that contains the microservice, Dockerfile, etc.
-
-In order to make things even simpler (and because we love Docker!) we have dockerised the wrapper script so that you don't need to install anything on your machine to run it - except Docker.
-
-```
-docker run -v /path/to/model/dir:/my_model seldonio/core-python-wrapper:0.7 /my_model MnistClassifier 0.1 seldonio
+        Parameters
+        ----------
+        X : array-like
+        feature_names : array of feature names (optional)
+        """
+        print("Predict called - will run idenity function")
+        return X
 ```
 
-Let's explain each piece of this command in more details.
+ * The file is call MyModel.py and it defines a class MyModel
+ * The class contains a predict method that takes an array (numpy) X and feature_names and returns an array of predictions.
+ * You can add any required initialization inside the class init method.
 
+## requirements.txt
+Populate a requirements.txt with any software dependencies your code requires. These will be installled via pip when creating the image.
 
-``` docker run seldonio/core-python-wrapper:0.7 ``` : run the core-python-wrapper container.
+## .s2i/environment
 
-``` -v /path/to/model/dir:/my_model ``` : Tells docker to mount your local folder to /my_model in the container. This is used to access your files and generate the wrapped model files. 
+Define the core parametehttps://github.com/SeldonIO/seldon-core/tree/master/examples/transformersrs needed by our python builder image to wrap your model. An example is:
 
-``` /my_model MnistClassifier 0.1 seldonio ``` : These are the command line arguments that are passed to the script. The bare minimum, as in this example, are the path where your model folder has been mounted in the container, the model name, the docker image version and the docker hub repository.
-
-For reference, here is the complete list of arguments that can be passed to the script.
-
-```
-docker run -v /path:<model_path> seldonio/core-python-wrapper:0.7 
-	<model_path>
-	<model_name>
-	<image_version>
-	<docker_repo>
-	--out-folder=<out_folder>
-	--service-type=<service_type>
-	--base-image=<base_image>
-	--image-name=<image_name>
-	--force
-	--persistence
-	--grpc
+```bash
+MODEL_NAME=MyModel
+API_TYPE=REST
+SERVICE_TYPE=MODEL
+PERSISTENCE=0
 ```
 
-Required:
-* model_path: The path to the model folder inside the container - the same as the mount you have chosen, in our above example my_model
-* model_name: The name of your model class and file, as defined abobe. In our example, MnistClassifier
-* image_version: The version of the docker image you will create. By default the name of the image will be the name of your model in lowercase (more on how to change this later). In our example 0.1
-* docker_repo: The name of your dockerhub repository. In our example seldonio.
+# Step 3 - Build your image
+Use ```s2i build``` to create your Docker image from source code. You will need Docker installed on the machine and optionally git if your source code is in a public git repo. You can choose from two python builder images
 
-Optional:
-* out-folder: The folder that will be created to contain the output files. Defaults to ./build
-* service-type: The type of Seldon Service API the model will use. Defaults to MODEL. Other options are ROUTER, COMBINER, TRANSFORMER, OUTPUT_TRANSFORMER
-* base-image: The docker image your docker container will inherit from. Defaults to python:2.
-* image-name: The name of your docker image. Defaults to model_name in lowercase
-* force: When this flag is present, the build folder will be overwritten if it already exists. The wrapping is aborted by default.
-* persistence: When this flag is present, the model will be made persistent, its state being saved at a regular interval on redis.
-* grpc: When this flag is present, the model will expose a GRPC API rather than the default REST API
+ * Python 2 : seldonio/seldon-core-s2i-python2
+ * Python 3 : seldonio/seldon-core-s2i-python3
 
-Note that you can access the command line help of the script by using the -h or --help argument as follows:
+An example invocation is:
 
-```
-docker run seldonio/core-python-wrapper:0.7 -h
+```bash
+s2i build https://github.com/seldonio/seldon-core.git --context-dir=wrappers/s2i/python/test/model-template-app seldonio/seldon-core-s2i-python2 seldon-core-template-model
 ```
 
-Note also that you could use the python script directly if you feel so enclined, but you would have to check out seldon-core and install some python libraries on your local machine - by using the docker image you don't have to care about these dependencies.
+The above s2i build invocation:
 
-## Build and push the Docker image
+ * uses the GitHub repo: https://github.com/seldonio/seldon-core.git and the directory ```wrappers/s2i/python/test/model-template-app``` inside that repo.
+ * uses the builder image ```seldonio/seldon-core-s2i-python2```
+ * creates a docker image ```seldon-core-template-model```
 
-A folder named "build" should have appeared in your model directory. It contains all the files needed to build and publish your model's docker image.
-
-To do so, run:
+For more help see:
 
 ```
-cd /path/to/model/dir/build
-./build_image.sh
-./push_image.sh
+s2i usage seldonio/seldon-core-s2i-python2
 ```
 
-And voila, the docker image for your model is now available in your docker repository, and Seldon Core can deploy it into production.
+and
+
+```
+s2i build --help
+```
+
+# Reference
+
+## Environment Variables
+The required environment variables understood by the builder image are explained below. You can provide them in the ```.s2i/enviroment``` file or on the ```s2i build``` command line.
+
+
+### MODEL_NAME
+The name of the class containing the model. Also the name of the python file which will be imported.
+
+### API_TYPE
+
+API type to create. Can be REST or GRPC
+
+### SERVICE_TYPE
+
+The service type being created. Available options are:
+
+ * MODEL
+ * ROUTER
+ * TRANSFORMER
+ * COMBINER
+ * OUTLIER_DETECTOR
+
+### PERSISTENCE
+
+Set either to 0 or 1. Default is 0. If set to 1 then your model will be saved periodically to redis and loaded from redis (if exists) or created fresh if not.
+
+
+## Creating different service types
+
+### MODEL
+
+ * [A minimal skeleton for model source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/python/test/model-template-app)
+ * [Example models](https://github.com/SeldonIO/seldon-core/tree/master/examples/models)
+
+### ROUTER
+
+ * [A minimal skeleton for router source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/python/test/router-template-app)
+ * [Example routers](https://github.com/SeldonIO/seldon-core/tree/master/examples/routers)
+
+### TRANSFORMER
+
+ * [A minimal skeleton for transformer source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/python/test/transformer-template-app)
+ * [Example transformers](https://github.com/SeldonIO/seldon-core/tree/master/examples/routers)
+
+## Deprecated
+
+ [A previous method to wrap models using a docker image](python-docker.md).
+
+
