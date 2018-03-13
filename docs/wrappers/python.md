@@ -6,6 +6,7 @@ You can use these wrappers with any model that offers a python API. Some example
 * Keras
 * Tensorflow
 * XGBoost
+* StatsModels
 
 # Step 1 - Install s2i
 
@@ -49,11 +50,11 @@ class MyModel(object):
         X : array-like
         feature_names : array of feature names (optional)
         """
-        print("Predict called - will run idenity function")
+        print("Predict called - will run identity function")
         return X
 ```
 
- * The file is call MyModel.py and it defines a class MyModel
+ * The file is called MyModel.py and it defines a class MyModel
  * The class contains a predict method that takes an array (numpy) X and feature_names and returns an array of predictions.
  * You can add any required initialization inside the class init method.
 
@@ -62,7 +63,7 @@ Populate a requirements.txt with any software dependencies your code requires. T
 
 ## .s2i/environment
 
-Define the core parametehttps://github.com/SeldonIO/seldon-core/tree/master/examples/transformersrs needed by our python builder image to wrap your model. An example is:
+Define the core parameters needed by our python builder image to wrap your model. An example is:
 
 ```bash
 MODEL_NAME=MyModel
@@ -71,7 +72,7 @@ SERVICE_TYPE=MODEL
 PERSISTENCE=0
 ```
 
-These values can also be provided or overrriden on the command line when building the image.
+These values can also be provided or overriden on the command line when building the image.
 
 # Step 3 - Build your image
 Use ```s2i build``` to create your Docker image from source code. You will need Docker installed on the machine and optionally git if your source code is in a public git repo. You can choose from two python builder images
