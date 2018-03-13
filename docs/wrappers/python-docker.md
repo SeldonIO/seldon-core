@@ -1,12 +1,14 @@
-# Packaging a python model for Seldon Core
+# Packaging a python model for Seldon Core using Seldon Wrapper
 In this guide, we illustrate the steps needed to wrap your own python model in a docker image ready for deployment with Seldon Core, using the Seldon wrapper script. This script is designed to take your python model and turn it into a dockerised microservice that conforms to Seldon's internal API, thus avoiding the hassle to write your own dockerised microservice.
 
 You can use these wrappers with any model that offers a python API. Some examples are:
-* Scikit-learn
-* Keras
-* statsmodels
-* Tensorflow
-* XGBoost
+
+ * [TensorFlow](https://www.tensorflow.org/)
+ * [Keras](https://keras.io/)
+ * [pyTorch](http://pytorch.org/)
+ * [StatsModels](http://www.statsmodels.org/stable/index.html)
+ * [Scikit-learn](http://scikit-learn.org/stable/)
+ * [XGBoost](https://github.com/dmlc/xgboost)
 
 The global process is as follows:
 * Regroup your files under a single directory and create a standard python class that will be used as an entrypoint

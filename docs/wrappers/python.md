@@ -1,12 +1,10 @@
-# Packaging a python model for Seldon Core
-In this guide, we illustrate the steps needed to wrap your own python model in a docker image ready for deployment with Seldon Core using s2i. 
+# Packaging a python model for Seldon Core using s2i
 
-You can use these wrappers with any model that offers a python API. Some examples are:
-* Scikit-learn
-* Keras
-* Tensorflow
-* XGBoost
-* StatsModels
+
+In this guide, we illustrate the steps needed to wrap your own python model in a docker image ready for deployment with Seldon Core using [source-to-image app s2i](https://github.com/openshift/source-to-image).
+
+If you are not familar with s2i you can read [general instructions on using s2i](./s2i.md) and then follow the steps below.
+
 
 # Step 1 - Install s2i
 
@@ -80,7 +78,16 @@ Use ```s2i build``` to create your Docker image from source code. You will need 
  * Python 2 : seldonio/seldon-core-s2i-python2
  * Python 3 : seldonio/seldon-core-s2i-python3
 
-Using s2i you can build directly from a git repo or from a local source folder. See the [s2i docs](https://github.com/openshift/source-to-image/blob/master/docs/cli.md#s2i-build) for further details. An example invocation for a git repo is:
+Using s2i you can build directly from a git repo or from a local source folder. See the [s2i docs](https://github.com/openshift/source-to-image/blob/master/docs/cli.md#s2i-build) for further details. The general format is:
+
+```bash
+s2i build <git-repo> seldonio/seldon-core-s2i-python2 <my-image-name>
+s2i build <src-folder> seldonio/seldon-core-s2i-python2 <my-image-name>
+```
+
+Change to seldonio/seldon-core-s2i-python3 if using python 3.
+
+An example invocation using the test template model inside seldon-core:
 
 ```bash
 s2i build https://github.com/seldonio/seldon-core.git --context-dir=wrappers/s2i/python/test/model-template-app seldonio/seldon-core-s2i-python2 seldon-core-template-model
@@ -92,15 +99,20 @@ The above s2i build invocation:
  * uses the builder image ```seldonio/seldon-core-s2i-python2```
  * creates a docker image ```seldon-core-template-model```
 
+
+For building from a local source folder, an example where we clone the seldon-core repo:
+
+```bash
+git clone https://github.com/seldonio/seldon-core.git
+cd seldon-core
+s2i build wrappers/s2i/python/test/model-template-app seldonio/seldon-core-s2i-python2 seldon-core-template-model
+```
+
 For more help see:
 
 ```
 s2i usage seldonio/seldon-core-s2i-python2
-```
-
-and
-
-```
+s2i usage seldonio/seldon-core-s2i-python3
 s2i build --help
 ```
 
@@ -149,8 +161,7 @@ Set either to 0 or 1. Default is 0. If set to 1 then your model will be saved pe
  * [A minimal skeleton for transformer source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/python/test/transformer-template-app)
  * [Example transformers](https://github.com/SeldonIO/seldon-core/tree/master/examples/routers)
 
-## Deprecated
 
- [A previous method to wrap models using a docker image](python-docker.md).
+
 
 
