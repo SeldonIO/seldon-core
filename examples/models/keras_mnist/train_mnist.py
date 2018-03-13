@@ -10,7 +10,7 @@ from keras import backend
 from keras.models import Model,load_model
 from keras.layers import Dense,Input
 from keras.layers import Dropout
-from keras.layers import Flatten
+from keras.layers import Flatten, Reshape
 from keras.constraints import maxnorm
 from keras.layers.convolutional import Convolution2D
 from keras.layers.convolutional import MaxPooling2D
@@ -125,7 +125,7 @@ class MnistConv(object):
                                  input_shape=(32, 32, 3),
                                  border_mode='same',
                                  activation='relu',
-                                 W_constraint=maxnorm(3))(inp)
+                                 W_constraint=maxnorm(3))(inp2)
             drop_conv = Dropout(0.2)(conv)
             max_pool = MaxPooling2D(pool_size=(2, 2))(drop_conv)
 

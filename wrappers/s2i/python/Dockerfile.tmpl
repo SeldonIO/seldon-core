@@ -1,0 +1,22 @@
+FROM python:%PYTHON_VERSION%
+
+LABEL io.openshift.s2i.scripts-url="image:///s2i/bin"
+
+RUN apt-get update -y
+RUN apt-get install -y python-pip python-dev build-essential
+
+RUN mkdir microservice
+WORKDIR /microservice
+
+COPY _wrappers/python /microservice
+
+RUN cd /microservice && \
+    pip install --no-cache-dir -r seldon_requirements.txt
+
+RUN python -m pip install grpcio-tools==1.1.3
+RUN cd /microservice && \
+    python -m grpc.tools.protoc -I./ --python_out=./ --grpc_python_out=./ ./proto/prediction.proto
+
+COPY ./s2i/bin/ /s2i/bin
+
+EXPOSE 5000
