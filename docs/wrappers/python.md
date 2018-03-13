@@ -58,7 +58,7 @@ class MyModel(object):
  * You can add any required initialization inside the class init method.
 
 ## requirements.txt
-Populate a requirements.txt with any software dependencies your code requires. These will be installled via pip when creating the image.
+Populate a requirements.txt with any software dependencies your code requires. These will be installled via pip when creating the image. You can instead provide a setup.py if you prefer.
 
 ## .s2i/environment
 
@@ -70,6 +70,8 @@ API_TYPE=REST
 SERVICE_TYPE=MODEL
 PERSISTENCE=0
 ```
+
+These values can also be provided or overrriden on the command line when building the image.
 
 # Step 3 - Build your image
 Use ```s2i build``` to create your Docker image from source code. You will need Docker installed on the machine and optionally git if your source code is in a public git repo. You can choose from two python builder images
