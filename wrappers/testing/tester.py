@@ -3,10 +3,20 @@ import numpy as np
 import json
 import requests
 import urllib
-from python.proto import prediction_pb2
-from python.proto import prediction_pb2_grpc
-from python.microservice import array_to_list_value
+from proto import prediction_pb2
+from proto import prediction_pb2_grpc
 import grpc
+
+def array_to_list_value(array,lv=None):
+    if lv is None:
+        lv = ListValue()
+    if len(array.shape) == 1:
+        lv.extend(array)
+    else:
+        for sub_array in array:
+            sub_lv = lv.add_list()
+            array_to_list_value(sub_array,sub_lv)
+    return lv
 
 def gen_continuous(range,n):
     if range[0] == "inf" and range[1] == "inf":
