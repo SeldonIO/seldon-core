@@ -5,7 +5,7 @@
 	    "dtype":"FLOAT",
 	    "ftype":"continuous",
 	    "range":[0,1],
-	    "repeat":784
+	    "repeat":4
 	}
     ],
     "targets":[
@@ -14,7 +14,7 @@
 	    "dtype":"FLOAT",
 	    "ftype":"continuous",
 	    "range":[0,1],
-	    "repeat":10
+	    "repeat":3
 	}
     ]
 }
