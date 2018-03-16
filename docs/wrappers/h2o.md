@@ -1,6 +1,6 @@
 # Packaging a H2O model for Seldon Core
 
-This document outlines the steps needed to wrap any H2O model using Seldon's python wrappers into a docker image ready for deployment with Seldon Core. The process is nearly identical to [wrapping a python model](python.md), so be sure to read the documentation on this process first. 
+This document outlines the steps needed to wrap any H2O model using Seldon's python wrappers into a docker image ready for deployment with Seldon Core. The process is nearly identical to [wrapping a python model with the seldon wrapper](python-docker.md), so be sure to read the documentation on this process first. 
 The main differences are:
 * The data sent to the model needs to be transformed from numpy arrays into H2O Frames and back;
 * The base docker image has to be changed, because H2O needs a Java Virtual Machine installed in the container.
