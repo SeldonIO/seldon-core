@@ -63,7 +63,7 @@ class MnistFfnn(object):
                                optimizer='Adam',
                                metrics=['accuracy'])
             
-        print 'graph builded'
+        print('graph builded')
 
     def fit(self,X,y=None,
             X_test=None,y_test=None,
@@ -150,7 +150,7 @@ class MnistConv(object):
                                optimizer='Adam',
                                metrics=['accuracy'])
             
-        print 'graph builded'
+        print('graph builded')
 
     def fit(self,X,y=None,
             X_test=None,y_test=None,
