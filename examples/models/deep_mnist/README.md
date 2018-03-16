@@ -1,5 +1,11 @@
-# Deep MNIST
+# Tensorflow MNIST
 A TensorFlow model for MNIST classification.
+
+## Dependencies
+
+```bash
+pip install tensorflow
+```
 
 ## Train locally
 
