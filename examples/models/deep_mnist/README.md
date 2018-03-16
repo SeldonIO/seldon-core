@@ -21,6 +21,12 @@ Run under docker.
 docker run --rm -p 5000:5000 deep-mnist
 ```
 
+Ensure test grpc modules compiled.
+
+```bash
+pushd ../../../wrappers/testing ; make build_protos ; popd
+```
+
 Send a data request using the wrapper tester.
 
 ```bash
