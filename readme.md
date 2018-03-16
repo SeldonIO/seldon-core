@@ -61,6 +61,9 @@ Machine learning deployment has many [challenges](./docs/challenges.md). Seldon 
 ### Example Components
 Seldon-core allows various types of components to be built and plugged into the runtime prediction graph. These include [routers, transformers and combiners](docs/reference/internal-api.md). Some components that are available as part of the project are:
 
+ * Models : example that illustrate simple machine learning models to help you build your own integrations
+   * [Tensorflow MNIST Classifier](./examples/models/deep_mnist/README.md)
+
  * Multi-Armed bandits
     * [Epsilon-greedy multi-armed bandits for real time optimization of models](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/epsilon_greedy_gcp.ipynb)
     * Contextual bandits. (coming soon).
@@ -80,6 +83,7 @@ Official releases can be installed via helm from the repository https://storage.
 To install seldon-core:
 
 ```
+helm init
 helm install seldon-core-crd --name seldon-core-crd --repo https://storage.googleapis.com/seldon-charts
 helm install seldon-core --name seldon-core --repo https://storage.googleapis.com/seldon-charts
 ```
