@@ -79,9 +79,17 @@ public class PredictiveUnitState {
 		
 		if (containersMap.containsKey(name)){
 			String image = containersMap.get(name).getImage();
-			String[] parts = image.split(":");
-			this.imageName = parts[0];
-			this.imageVersion = parts[1];
+			if (image.contains(":"))
+			{
+				String[] parts = image.split(":");
+				this.imageName = parts[0];
+				this.imageVersion = parts[1];
+			}
+			else
+			{
+				this.imageName = image;
+				this.imageVersion = "";
+			}
 		}
 		
 		this.children = new ArrayList<PredictiveUnitState>();
