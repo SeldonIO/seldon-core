@@ -5,14 +5,14 @@
         "labels": {
             "app": "seldon"
         },
-        "name": "seldon-deployment-example"
+        "name": "deep-mnist"
     },
     "spec": {
         "annotations": {
-            "project_name": "Iris classification",
-            "deployment_version": "0.1"
+            "project_name": "Tensorflow MNIST",
+            "deployment_version": "v1"
         },
-        "name": "sklearn-iris-deployment",
+        "name": "deep-mnist",
         "oauth_key": "oauth-key",
         "oauth_secret": "oauth-secret",
         "predictors": [
@@ -21,9 +21,9 @@
                     "spec": {
                         "containers": [
                             {
-                                "image": "sklearn-iris:0.1",
+                                "image": "deep-mnist:latest",
                                 "imagePullPolicy": "IfNotPresent",
-                                "name": "sklearn-iris-classifier",
+                                "name": "classifier",
                                 "resources": {
                                     "requests": {
                                         "memory": "1Mi"
@@ -36,17 +36,17 @@
                 },
                 "graph": {
                     "children": [],
-                    "name": "sklearn-iris-classifier",
+                    "name": "classifier",
                     "endpoint": {
-                        "type" : "REST"
-                    },
+			"type" : "REST"
+		    },
                     "type": "MODEL"
                 },
-                "name": "sklearn-iris-predictor",
+                "name": "single-model",
                 "replicas": 1,
-                "annotations": {
-                "predictor_version" : "0.1"
-                }
+		"annotations": {
+		    "predictor_version" : "v1"
+		}
             }
         ]
     }

@@ -1,12 +1,25 @@
 import argparse
+import requests
+from requests.auth import HTTPBasicAuth
 import numpy as np
 import json
 import requests
 import urllib
-from python.proto import prediction_pb2
-from python.proto import prediction_pb2_grpc
-from python.microservice import array_to_list_value
+from proto import prediction_pb2
+from proto import prediction_pb2_grpc
 import grpc
+import sys
+
+def array_to_list_value(array,lv=None):
+    if lv is None:
+        lv = ListValue()
+    if len(array.shape) == 1:
+        lv.extend(array)
+    else:
+        for sub_array in array:
+            sub_lv = lv.add_list()
+            array_to_list_value(sub_array,sub_lv)
+    return lv
 
 def gen_continuous(range,n):
     if range[0] == "inf" and range[1] == "inf":
@@ -113,6 +126,16 @@ def unfold_contract(contract):
     return unfolded_contract
                 
 
+def get_token(args):
+    payload = {'grant_type': 'client_credentials'}
+    response = requests.post(
+                "http://"+args.host+":"+str(args.port)+"/oauth/token",
+                auth=HTTPBasicAuth('oauth-key', 'oauth-secret'),
+                data=payload)
+    print(response.text)
+    token =  response.json()["access_token"]
+    return token
+
 def run(args):
     contract = json.load(open(args.contract,'r'))
     contract = unfold_contract(contract)
@@ -127,13 +150,20 @@ def run(args):
             print("SENDING NEW REQUEST:")
         
         if not args.grpc:
+            headers = {}
             REST_request = gen_REST_request(batch,features=feature_names,tensor=args.tensor)
             if args.prnt:
                 print(REST_request)
-            
-            response = requests.post(
-                REST_url,
-                data={"json":json.dumps(REST_request),"isDefault":True})
+
+            if args.oauth_key:
+                token = get_token(args)
+                headers = {'Authorization': 'Bearer '+token}
+                response = requests.post(
+                    "http://"+args.host+":"+str(args.port)+"/api/v0.1/predictions",
+                    json=REST_request,
+                    headers=headers
+                )
+
             jresp = response.json()
 
             if args.prnt:
@@ -154,7 +184,6 @@ def run(args):
                 print(response)
                 print()
     
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("contract",type=str,help="File that contains the data contract")
@@ -165,6 +194,8 @@ if __name__ == "__main__":
     parser.add_argument("--grpc",action="store_true")
     parser.add_argument("-t","--tensor",action="store_true")
     parser.add_argument("-p","--prnt",action="store_true",help="Prints requests and responses")
+    parser.add_argument("--oauth-key")
+    parser.add_argument("--oauth-secret")
 
     args = parser.parse_args()
 
