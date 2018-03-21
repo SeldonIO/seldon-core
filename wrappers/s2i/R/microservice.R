@@ -17,6 +17,26 @@ validate_json <- function(jdf) {
   }
 }
 
+validate_feedback <- function(jdf) {
+  if (!"request" %in% names(jdf))
+  {
+    return("request field is missing")
+  }
+  else if (!"reward" %in% names(jdf))
+  {
+    return("reward field is missing")
+  }
+  else if (!"data" %in% names(jdf$request)) {
+    return("data request field is missing")
+  }
+  else if (!("ndarray" %in% names(jdf$request$data) || "tensor" %in% names(jdf$request$data)) ) {
+    return("data field must contain ndarray or tensor field")
+  }
+  else{
+    return("OK")
+  }
+}
+
 extract_data <- function(jdf) {
   if ("ndarray" %in% names(jdf$data)){
     jdf$data$ndarray
@@ -50,18 +70,92 @@ create_response <- function(req_df,res_df){
   }
 }
 
+create_dataframe <- function(jdf) {
+  data = extract_data(jdf)
+  names = extract_names(jdf)
+  df <- data.frame(data)
+  colnames(df) <- names
+  df
+}
 
 predict_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
   write("Predict called", stdout())
   jdf <- fromJSON(json)
   valid_input <- validate_json(jdf)
   if (valid_input[1] == "OK") {
-    data = extract_data(jdf)
-    names = extract_names(jdf)
-    df <- data.frame(data)
-    colnames(df) <- names
+    df <- create_dataframe(jdf)
     scores <- predict(user_model,newdata=df)
     res_json = create_response(jdf,scores)
+    res$body <- res_json
+    res
+  } else {
+    res$status <- 400 # Bad request
+    list(error=jsonlite::unbox(valid_input))
+  }
+}
+
+send_feedback_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
+  write("Send feedback called", stdout())
+  jdf <- fromJSON(json)
+  valid_input <- validate_feedback(jdf)
+  if (valid_input[1] == "OK") {
+    request <- create_dataframe(jdf$request)
+    if ("truth" %in% names(jdf)){
+      truth <- create_dataframe(jdf$truth)
+    } else {
+      truth <- NULL
+    }
+    #reward <- jdf$reward
+    send_feedback(user_model,request=request,reward=1,truth=truth)
+    res$body <- "{}"
+    res
+  } else {
+    res$status <- 400 # Bad request
+    list(error=jsonlite::unbox(valid_input))
+  }
+}
+
+
+transform_input_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
+  write("Predict called", stdout())
+  jdf <- fromJSON(json)
+  valid_input <- validate_json(jdf)
+  if (valid_input[1] == "OK") {
+    df <- create_dataframe(jdf)
+    trans <- transform_input(user_model,newdata=df)
+    res_json = create_response(jdf,trans)
+    res$body <- res_json
+    res
+  } else {
+    res$status <- 400 # Bad request
+    list(error=jsonlite::unbox(valid_input))
+  }
+}
+
+transform_output_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
+  write("Predict called", stdout())
+  jdf <- fromJSON(json)
+  valid_input <- validate_json(jdf)
+  if (valid_input[1] == "OK") {
+    df <- create_dataframe(jdf)
+    trans <- transform_output(user_model,newdata=df)
+    res_json = create_response(jdf,trans)
+    res$body <- res_json
+    res
+  } else {
+    res$status <- 400 # Bad request
+    list(error=jsonlite::unbox(valid_input))
+  }
+}
+
+route_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
+  write("Route called", stdout())
+  jdf <- fromJSON(json)
+  valid_input <- validate_json(jdf)
+  if (valid_input[1] == "OK") {
+    df <- create_dataframe(jdf)
+    routing <- route(user_model,data=df)
+    res_json = create_response(jdf,data.frame(list(routing)))
     res$body <- res_json
     res
   } else {
@@ -148,14 +242,27 @@ source(args$model)
 user_model <- initialise_seldon(params)
 
 # Setup generics
+# Predict already exists in base R
 send_feedback <- function(x,...) UseMethod("send_feedback", x)
 route <- function(x,...) UseMethod("route",x)
-
+transform_input <- function(x,...) UseMethod("transform_input",x)
+transform_output <- function(x,...) UseMethod("transform_output",x)
 
 serve_model <- plumber$new()
 if (args$service == "MODEL") {
   serve_model$handle("POST", "/predict",predict_endpoint)
   serve_model$handle("GET", "/predict",predict_endpoint)
+} else if (args$service == "ROUTER") {
+  serve_model$handle("POST", "/route",route_endpoint)
+  serve_model$handle("GET", "/route",route_endpoint)
+  serve_model$handle("POST", "/send-feedback",send_feedback_endpoint)
+  serve_model$handle("GET", "/send-feedback",send_feedback_endpoint)
+}  else if (args$service == "TRANSFORMER") {  
+  serve_model$handle("POST", "/transform-output",transform_output_endpoint)
+  serve_model$handle("GET", "/transform-output",transform_output_endpoint)
+  serve_model$handle("POST", "/transform-input",transform_input_endpoint)
+  serve_model$handle("GET", "/transform-input",transform_input_endpoint)
+  
 } else
 {
   v("Unknown service type [%s]\n",args$service)
