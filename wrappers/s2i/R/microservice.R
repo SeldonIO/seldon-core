@@ -1,6 +1,6 @@
 library(plumber)
 library(jsonlite)
-library("optparse")
+library(optparse)
 library(methods)
 
 v <- function(...) cat(sprintf(...), sep='', file=stdout())
@@ -174,6 +174,8 @@ parse_commandline <- function() {
                        help="Service type", metavar = "service", default = "MODEL")
   parser <- add_option(parser, c("-a", "--api"), type="character",
                        help="API type - REST", metavar = "api", default = "REST")
+  parser <- add_option(parser, c("-e", "--persistence"), type="integer",
+                       help="Persistence", metavar = "persistence", default = 0)
   args <- parse_args(parser, args = commandArgs(trailingOnly = TRUE),
                      convert_hyphens_to_underscores = TRUE)
   
@@ -268,4 +270,4 @@ if (args$service == "MODEL") {
   v("Unknown service type [%s]\n",args$service)
   quit(status=1)
 }
-serve_model$run(port = 8000)
+serve_model$run(host="0.0.0.0", port = 5000)
