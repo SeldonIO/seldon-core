@@ -117,7 +117,7 @@ send_feedback_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
 
 
 transform_input_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
-  write("Predict called", stdout())
+  write("Transform input called", stdout())
   jdf <- fromJSON(json)
   valid_input <- validate_json(jdf)
   if (valid_input[1] == "OK") {
@@ -133,7 +133,7 @@ transform_input_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
 }
 
 transform_output_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
-  write("Predict called", stdout())
+  write("Transform output called", stdout())
   jdf <- fromJSON(json)
   valid_input <- validate_json(jdf)
   if (valid_input[1] == "OK") {
