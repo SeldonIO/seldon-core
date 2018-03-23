@@ -2,6 +2,44 @@ library(plumber)
 library(jsonlite)
 library(optparse)
 library(methods)
+library(urltools)
+library(stringi)
+
+parseQS <- function(qs){
+  if (is.null(qs) || length(qs) == 0 || qs == "") {
+    return(list())
+  }
+  if (stri_startswith_fixed(qs, "?")) {
+    qs <- substr(qs, 2, nchar(qs))
+  }
+  
+  parts <- strsplit(qs, "&", fixed = TRUE)[[1]]
+  kv <- strsplit(parts, "=", fixed = TRUE)
+  kv <- kv[sapply(kv, length) == 2] # Ignore incompletes
+  
+  keys <- sapply(kv, "[[", 1)
+  keys <- unname(sapply(keys, url_decode))
+  
+  vals <- sapply(kv, "[[", 2)
+  vals[is.na(vals)] <- ""
+  vals <- unname(sapply(vals, url_decode))
+  
+  ret <- as.list(vals)
+  names(ret) <- keys
+  
+  # If duplicates, combine
+  combine_elements <- function(name){
+    unname(unlist(ret[names(ret)==name]))
+  }
+  
+  unique_names <- unique(names(ret))
+  
+  ret <- lapply(unique_names, combine_elements)
+  names(ret) <- unique_names
+  
+  ret
+}
+
 
 v <- function(...) cat(sprintf(...), sep='', file=stdout())
 
@@ -78,8 +116,21 @@ create_dataframe <- function(jdf) {
   df
 }
 
+# See https://github.com/trestletech/plumber/issues/105
+parse_data <- function(req){
+  parsed <- parseQS(req$postBody)
+  if (is.null(parsed$json))
+  {
+    parsed <- parseQS(req$QUERY_STRING)
+  }
+  parsed$json
+}
+
 predict_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
-  write("Predict called", stdout())
+  #for ( obj in ls(req) ) { 
+  #  print(c(obj,get(obj,envir = req))) 
+  #}
+  json <- parse_data(req) # Hack as Plumber using URLDecode which doesn't decode +
   jdf <- fromJSON(json)
   valid_input <- validate_json(jdf)
   if (valid_input[1] == "OK") {
@@ -95,7 +146,7 @@ predict_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
 }
 
 send_feedback_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
-  write("Send feedback called", stdout())
+  json <- parse_data(req)
   jdf <- fromJSON(json)
   valid_input <- validate_feedback(jdf)
   if (valid_input[1] == "OK") {
@@ -117,7 +168,7 @@ send_feedback_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
 
 
 transform_input_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
-  write("Transform input called", stdout())
+  json <- parse_data(req)
   jdf <- fromJSON(json)
   valid_input <- validate_json(jdf)
   if (valid_input[1] == "OK") {
@@ -133,7 +184,7 @@ transform_input_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
 }
 
 transform_output_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
-  write("Transform output called", stdout())
+  json <- parse_data(req)
   jdf <- fromJSON(json)
   valid_input <- validate_json(jdf)
   if (valid_input[1] == "OK") {
@@ -149,7 +200,7 @@ transform_output_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
 }
 
 route_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
-  write("Route called", stdout())
+  json <- parse_data(req)
   jdf <- fromJSON(json)
   valid_input <- validate_json(jdf)
   if (valid_input[1] == "OK") {
@@ -270,4 +321,11 @@ if (args$service == "MODEL") {
   v("Unknown service type [%s]\n",args$service)
   quit(status=1)
 }
-serve_model$run(host="0.0.0.0", port = 5000)
+
+port <- Sys.getenv("PREDICTIVE_UNIT_SERVICE_PORT")
+if (port == ''){
+  port <- 5000
+} else {
+  port <- as.integer(port)
+}
+serve_model$run(host="0.0.0.0", port = port)
