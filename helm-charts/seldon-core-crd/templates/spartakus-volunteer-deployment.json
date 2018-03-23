@@ -29,7 +29,7 @@
                                 "valueFrom": {
                                     "configMapKeyRef": {
                                         "key": "spartakus.volunteer.clusterid",
-                                        "name": "spartakus-config"
+                                        "name": "seldon-spartakus-config"
                                     }
                                 }
                             },
@@ -38,7 +38,7 @@
                                 "valueFrom": {
                                     "configMapKeyRef": {
                                         "key": "spartakus.volunteer.database",
-                                        "name": "spartakus-config"
+                                        "name": "seldon-spartakus-config"
                                     }
                                 }
                             }
@@ -48,7 +48,7 @@
                         "volumeMounts": [
                             {
                                 "mountPath": "/etc/config",
-                                "name": "spartakus-config-volume"
+                                "name": "seldon-spartakus-config-volume"
                             }
                         ]
                     }
@@ -57,9 +57,9 @@
                 "volumes": [
                     {
                         "configMap": {
-                            "name": "spartakus-config"
+                            "name": "seldon-spartakus-config"
                         },
-                        "name": "spartakus-config-volume"
+                        "name": "seldon-spartakus-config-volume"
                     }
                 ]
             }
