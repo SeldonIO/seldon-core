@@ -8,7 +8,7 @@
     },
     "kind": "ConfigMap",
     "metadata": {
-        "name": "spartakus-config",
+        "name": "seldon-spartakus-config",
         "namespace": "kube-system"
     }
 }
