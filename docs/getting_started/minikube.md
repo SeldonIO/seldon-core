@@ -39,12 +39,15 @@ You can now start Seldon Core in your minikube cluster.
     helm init
     ```
 
-1. Seldon Core uses helm charts to start which are stored in google storage. To start Seldon Core using helm install the CRD and then the core components:
+2. Seldon Core uses helm charts to start, which are stored in google storage. 
+Use the charts to install the CRD and then the core components. Collection of anonymous usage metrics is optional and only enabled using "--set usage_metrics.enabled=true" on the seldon-core-crd chart via [Spartakus](https://github.com/kubernetes-incubator/spartakus).
+
 
     ```bash
-     helm install seldon-core-crd --name seldon-core-crd --repo https://storage.googleapis.com/seldon-charts
+     helm install seldon-core-crd --name seldon-core-crd \
+            --repo https://storage.googleapis.com/seldon-charts --set usage_metrics.enabled=true
      helm install seldon-core --name seldon-core \
-     --repo https://storage.googleapis.com/seldon-charts
+            --repo https://storage.googleapis.com/seldon-charts
     ```
 
 Seldon Core should now be running on your cluster. You can verify if all the pods are up and running typing on command line ```helm status seldon-core``` or ```kubectl get pods```
