@@ -40,7 +40,7 @@ You can now start Seldon Core in your minikube cluster.
     ```
 
 2. Seldon Core uses helm charts to start, which are stored in google storage. 
-Use the charts to install the CRD and then the core components. Collection of anonymous usage metrics is optional and only enabled using "--set usage_metrics.enabled=true" on the seldon-core-crd chart via [Spartakus](https://github.com/kubernetes-incubator/spartakus).
+Use the charts to install the CRD and then the core components. Enabling reporting of anonymous usage metrics is optional, see [Usage Reporting](/docs/developer/readme.md#usage-reporting).
 
 
     ```bash
