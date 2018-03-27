@@ -14,6 +14,12 @@ If you are not familar with s2i you can read [general instructions on using s2i]
    * Docker
    * Git (if building from a remote git repo)
 
+To check everything is working you can run
+
+```bash
+s2i usage seldonio/seldon-core-s2i-r
+```
+
 # Step 2 - Create your source code
 
 To use our s2i builder image to package your R model you will need:
@@ -25,7 +31,7 @@ To use our s2i builder image to package your R model you will need:
 We will go into detail for each of these steps:
 
 ## R Runtime Model file
-Your source code should contain an R file which defines an S3 class for your model. For example, looking at our skeleton python model file at ```wrappers/s2i/R/test/model-template-app/MyModel.R```:
+Your source code should contain an R file which defines an S3 class for your model. For example, looking at our skeleton R model file at ```wrappers/s2i/R/test/model-template-app/MyModel.R```:
 
 ```R
 library(methods)

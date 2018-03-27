@@ -14,6 +14,13 @@ If you are not familar with s2i you can read [general instructions on using s2i]
    * Docker
    * Git (if building from a remote git repo)
 
+To check everything is working you can run
+
+```bash
+s2i usage seldonio/seldon-core-s2i-python3
+```
+
+
 # Step 2 - Create your source code
 
 To use our s2i builder image to package your python model you will need:
