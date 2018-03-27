@@ -17,8 +17,4 @@ The general work flow is:
 At present we have s2i builder images for
 
  * [python (python2 or python3)](./python.md) : use this for Tensorflow, Keras, pyTorch or sklearn models.
-
-We plan on also supporting other base languages such as:
-
- * R
- * Java
+ * [R](r.md)
