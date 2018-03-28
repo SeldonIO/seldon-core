@@ -140,7 +140,7 @@ def run(args):
             REST_request = gen_REST_request(batch,features=feature_names,tensor=args.tensor)
             if args.prnt:
                 print(REST_request)
-            
+
             response = requests.post(
                 REST_url,
                 data={"json":json.dumps(REST_request),"isDefault":True})
