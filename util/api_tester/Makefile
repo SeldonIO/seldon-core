@@ -1,5 +1,7 @@
 .PHONY: update_protos
 update_protos:
+	mkdir -p ./proto
+	touch ./proto/__init__.py
 	cp ../../proto/prediction.proto ./proto
 
 .PHONY: build_protos
