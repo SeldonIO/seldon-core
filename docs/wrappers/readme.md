@@ -16,14 +16,12 @@ You can use either:
    * [Source-to-image (s2i) tool](./python.md)
    * [Seldon Docker wrapper application](./python-docker.md)
 
+
+## R
+
+   * [R models can be wrapped using source-to-image](r.md)
+
 ## H2O
 
    * [H2O models](./h2o.md)
 
-## Future
-
-Future languages:
-
- * R based models
- * Java based models
- * Go based models
