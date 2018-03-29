@@ -9,7 +9,6 @@ cluster_manager:
     pull_policy: IfNotPresent
     tag: 0.1.6_SNAPSHOT
   java_opts: ''
-  rbac: false
   spring_opts: ''
 engine:
   image:
@@ -17,3 +16,5 @@ engine:
 redis:
   image:
     tag: 4.0.1
+rbac:
+  enabled: true

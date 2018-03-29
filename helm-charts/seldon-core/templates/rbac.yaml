@@ -1,4 +1,4 @@
-{{- if .Values.cluster_manager.rbac }}
+{{- if .Values.rbac.enabled }}
 ---
 apiVersion: v1
 items:
