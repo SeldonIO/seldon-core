@@ -53,7 +53,9 @@
                         ]
                     }
                 ],
+{{- if .Values.rbac.enabled }}
                 "serviceAccountName": "seldon-spartakus-volunteer",
+{{- end }}
                 "volumes": [
                     {
                         "configMap": {
