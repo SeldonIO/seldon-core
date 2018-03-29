@@ -21,6 +21,9 @@
                         }
                     },
                     "spec": {
+			{{- if .Values.rbac.enabled }}
+			"serviceAccountName": "seldon",
+			{{- end }}
                         "containers": [
                             {
                                 "args": [

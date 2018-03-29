@@ -1,4 +1,5 @@
 {{- if .Values.usage_metrics.enabled }}
+{{- if .Values.rbac.enabled }}
 {
     "apiVersion": "v1",
     "items": [
@@ -53,5 +54,6 @@
     "kind": "List",
     "metadata": {}
 }
+{{- end }}
 {{- end }}
 

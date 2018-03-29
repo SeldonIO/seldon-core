@@ -5,3 +5,5 @@ grafana_prom_service_type: NodePort
 grafana_prom_admin_password: admin
 persistence:
   enabled: true
+rbac:
+  enabled: true

@@ -21,7 +21,5 @@
 *.tmproj
 
 
-spartakus-config-map.json
-spartakus-rbac.json
-spartakus-volunteer-deployment.json
+
 

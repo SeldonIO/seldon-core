@@ -48,7 +48,8 @@ Machine learning deployment has many [challenges](./docs/challenges.md). Seldon 
  - [Quick Start tutorial using Minikube](./docs/getting_started/minikube.md)
  - Jupyter notebooks showing worked examples:
     * Minikube:
-         *  [Jupyter Notebook showing deployment of prebuilt model using Minikube](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_minikube.ipynb)
+         *  [Jupyter Notebook showing deployment of prebuilt model using Minikube - with RBAC](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_minikube_rbac.ipynb)
+         *  [Jupyter Notebook showing deployment of prebuilt model using Minikube - no RBAC](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_minikube.ipynb)
          * [Jupyter notebook to create seldon-core with ksonnet and expose APIs using Ambassador on Minikube.](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/ksonnet_ambassador_minikube.ipynb)
     * GCP:
          * [Jupyter Notebook showing deployment of prebuilt model using GCP cluster](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_gcp.ipynb)
@@ -78,7 +79,7 @@ Seldon-core allows various types of components to be built and plugged into the 
 
 Official releases can be installed via helm from the repository https://storage.googleapis.com/seldon-charts.
 
-To install seldon-core, with optional [usage reporting](/docs/developer/readme.md#usage-reporting):
+To install seldon-core, with optional [usage reporting](/docs/developer/readme.md#usage-reporting) on an RBAC enabled cluster:
 
 ```
 helm init
