@@ -79,7 +79,7 @@ Seldon-core allows various types of components to be built and plugged into the 
 
 Official releases can be installed via helm from the repository https://storage.googleapis.com/seldon-charts.
 
-To install seldon-core, with optional [usage reporting](/docs/developer/readme.md#usage-reporting):
+To install seldon-core, with optional [usage reporting](/docs/developer/readme.md#usage-reporting) on an RBAC enabled cluster:
 
 ```
 helm init
