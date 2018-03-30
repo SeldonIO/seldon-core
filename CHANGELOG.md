@@ -1,5 +1,36 @@
 # Change Log
 
+## [v0.1.6](https://github.com/SeldonIO/seldon-core/tree/v0.1.6) (2018-03-29)
+[Full Changelog](https://github.com/SeldonIO/seldon-core/compare/v0.1.5...v0.1.6)
+
+**Closed issues:**
+
+- Support RBAC by default [\#126](https://github.com/SeldonIO/seldon-core/issues/126)
+- Engine requires images to have versions [\#117](https://github.com/SeldonIO/seldon-core/issues/117)
+- `hostPath` type volume gets mounted as `emptyDir` [\#116](https://github.com/SeldonIO/seldon-core/issues/116)
+- Investigate OpenShift source-to-image for wrapping models [\#113](https://github.com/SeldonIO/seldon-core/issues/113)
+- Add docs for analytics persistence [\#112](https://github.com/SeldonIO/seldon-core/issues/112)
+- Issue in deployments of multiple models  [\#103](https://github.com/SeldonIO/seldon-core/issues/103)
+- Missing dependencies in notebooks/kubectl\_demo\_minikube.ipynb [\#101](https://github.com/SeldonIO/seldon-core/issues/101)
+- Add usage metrics collector [\#99](https://github.com/SeldonIO/seldon-core/issues/99)
+- Running  test model on seldon core  [\#90](https://github.com/SeldonIO/seldon-core/issues/90)
+- Deploying seldon models to multiple namespaces [\#89](https://github.com/SeldonIO/seldon-core/issues/89)
+- Generate load tests analytics [\#58](https://github.com/SeldonIO/seldon-core/issues/58)
+- Create wrapper for R models [\#23](https://github.com/SeldonIO/seldon-core/issues/23)
+
+**Merged pull requests:**
+
+- Rbac fixes [\#127](https://github.com/SeldonIO/seldon-core/pull/127) ([cliveseldon](https://github.com/cliveseldon))
+- Anonymous usage metrics collection [\#125](https://github.com/SeldonIO/seldon-core/pull/125) ([gsunner](https://github.com/gsunner))
+- R wrappers [\#124](https://github.com/SeldonIO/seldon-core/pull/124) ([cliveseldon](https://github.com/cliveseldon))
+- Fix parsing of image version in engine [\#119](https://github.com/SeldonIO/seldon-core/pull/119) ([cliveseldon](https://github.com/cliveseldon))
+- S2i examples [\#118](https://github.com/SeldonIO/seldon-core/pull/118) ([cliveseldon](https://github.com/cliveseldon))
+- S2i integration [\#115](https://github.com/SeldonIO/seldon-core/pull/115) ([cliveseldon](https://github.com/cliveseldon))
+- change benchmark notebook name [\#111](https://github.com/SeldonIO/seldon-core/pull/111) ([cliveseldon](https://github.com/cliveseldon))
+- Benchmarking seldon-core [\#110](https://github.com/SeldonIO/seldon-core/pull/110) ([cliveseldon](https://github.com/cliveseldon))
+- 55 outlier detection [\#105](https://github.com/SeldonIO/seldon-core/pull/105) ([Maximophone](https://github.com/Maximophone))
+- Made notebooks compatible with python 3 [\#102](https://github.com/SeldonIO/seldon-core/pull/102) ([Maximophone](https://github.com/Maximophone))
+
 ## [v0.1.5](https://github.com/SeldonIO/seldon-core/tree/v0.1.5) (2018-02-19)
 [Full Changelog](https://github.com/SeldonIO/seldon-core/compare/v0.1.4...v0.1.5)
 
