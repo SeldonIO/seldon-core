@@ -1,0 +1,21 @@
+#!/bin/bash -e
+#
+# S2I run script for the 'seldon-core-s2i-python' image.
+# The run script executes the server that runs your application.
+#
+# For more information see the documentation:
+#	https://github.com/openshift/source-to-image/blob/master/docs/builder_image.md
+#
+
+#check environment vars
+if [[ -z "$API_TYPE" || -z "$SERVICE_TYPE" ]]; then
+
+    echo "Failed to find required env vars API_TYPE, SERVICE_TYPE"
+    exit 1
+
+else
+    cd /microservice
+    echo "starting microservice"
+    exec java -Djava.security.egd=file:/dev/./urandom $JAVA_OPTS -jar app.jar --seldon.api.model.enabled=true --server.port=5000 $SPRING_OPTS 
+fi
+
