@@ -31,8 +31,8 @@ def run_command(args, debug=False):
     err, out = None, None
     if debug:
         print "cwd[{}]".format(os.getcwd())
-        print "Executing: "+repr(args)
-    p = Popen(args,stdout=PIPE,stderr=PIPE)
+        print "Executing: " + repr(args)
+    p = Popen(args, stdout=PIPE, stderr=PIPE)
     if p.wait() == 0:
         out = p.stdout.read()
         out = out.strip()
@@ -52,7 +52,7 @@ def update_pom_file(fpath, seldon_core_version, debug=False):
         print "processing [{}]".format(fpath)
     comp_dir_path = os.path.dirname(fpath)
     os.chdir(comp_dir_path)
-    args = ["mvn","versions:set","-DnewVersion={seldon_core_version}".format(**locals())]
+    args = ["mvn", "versions:set", "-DnewVersion={seldon_core_version}".format(**locals())]
     err, out = run_command(args, debug)
     ##pp(out)
     ##pp(err)
@@ -117,7 +117,7 @@ def set_version(seldon_core_version, pom_files, chart_yaml_files, values_yaml_fi
 
 def main(argv):
     POM_FILES = ['engine/pom.xml', 'api-frontend/pom.xml', 'cluster-manager/pom.xml']
-    CHART_YAML_FILES = ['helm-charts/seldon-core/Chart.yaml','helm-charts/seldon-core-crd/Chart.yaml']
+    CHART_YAML_FILES = ['helm-charts/seldon-core/Chart.yaml', 'helm-charts/seldon-core-crd/Chart.yaml']
     VALUES_YAML_FILE = 'helm-charts/seldon-core/values.yaml'
 
     opts = getOpts(argv[1:])
