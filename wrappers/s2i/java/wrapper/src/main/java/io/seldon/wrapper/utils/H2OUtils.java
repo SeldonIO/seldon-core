@@ -1,4 +1,4 @@
-package io.seldon.example.h2o.model;
+package io.seldon.wrapper.utils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,18 +18,27 @@ import io.seldon.protos.PredictionProtos.DefaultData;
 import io.seldon.protos.PredictionProtos.Tensor;
 import io.seldon.protos.PredictionProtos.DefaultData.DataOneofCase;
 
+/**
+ * Utilities for working with H2O models
+ * 
+ * @author clive
+ *
+ */
 public class H2OUtils {
-	public static List<RowData> convertSeldonMessage(DefaultData data)
-	{
+	
+	/**
+	 * Convert a Seldon Default Data into H2O RowData
+	 * @param data Seldon protobuf data
+	 * @return List of H2O RowData
+	 */
+	public static List<RowData> convertSeldonMessage(DefaultData data) {
 		List<RowData> out = new ArrayList<>();
-		if (data.getDataOneofCase() == DataOneofCase.TENSOR)
-		{
-			
+		if (data.getDataOneofCase() == DataOneofCase.TENSOR) {
+
 			List<Double> valuesList = data.getTensor().getValuesList();
 			List<Integer> shapeList = data.getTensor().getShapeList();
-			
-			if (shapeList.size() > 2) 
-			{
+
+			if (shapeList.size() > 2) {
 				return null;
 			}
 
@@ -39,117 +48,111 @@ public class H2OUtils {
 			else
 				cols = shapeList.get(1);
 			RowData row = new RowData();
-			for(int i = 0; i< valuesList.size(); i++)
-			{
-				if (i>0 && i % cols == 0)
-				{
+			for (int i = 0; i < valuesList.size(); i++) {
+				if (i > 0 && i % cols == 0) {
 					out.add(row);
 					row = new RowData();
 				}
-				String name = data.getNamesCount() > 0 ? data.getNames(i % cols) : ""+(i % cols);
+				String name = data.getNamesCount() > 0 ? data.getNames(i % cols) : "" + (i % cols);
 				row.put(name, valuesList.get(i));
 			}
 			out.add(row);
-			
+
 			return out;
-		}
-		else if (data.getDataOneofCase() == DataOneofCase.NDARRAY)
-		{
+		} else if (data.getDataOneofCase() == DataOneofCase.NDARRAY) {
 			ListValue list = data.getNdarray();
 			int rows = list.getValuesCount();
 			int cols = list.getValues(0).getListValue().getValuesCount();
-			
+
 			for (int i = 0; i < rows; ++i) {
 				RowData row = new RowData();
-				for (int j = 0; j < cols; j++){
-					String name = data.getNamesCount() > 0 ? data.getNames(j % cols) : ""+(j % cols);
+				for (int j = 0; j < cols; j++) {
+					String name = data.getNamesCount() > 0 ? data.getNames(j % cols) : "" + (j % cols);
 					Double value = list.getValues(i).getListValue().getValues(j).getNumberValue();
 					row.put(name, value);
 				}
 				out.add(row);
 			}
 			return out;
-		}
-		else
+		} else
 			return null;
 	}
-	
-	public static DefaultData convertH2OPrediction(List<AbstractPrediction> predictions,DefaultData input)
-	{
-		if (input.getDataOneofCase() == DataOneofCase.TENSOR)
-		{
+
+	/**
+	 * Convert a prediction result from H2O to Seldon protobuf DefaultData with same type as input
+	 * @param predictions The H2O predictions
+	 * @param input The original input
+	 * @return A seldon DefaultData protobuf message
+	 */
+	public static DefaultData convertH2OPrediction(List<AbstractPrediction> predictions, DefaultData input) {
+		if (input == null || input.getDataOneofCase() == DataOneofCase.TENSOR) {
 			int rows = predictions.size();
 			Tensor.Builder tBuilder = Tensor.newBuilder();
-			for(AbstractPrediction p : predictions)
-			{
+			for (AbstractPrediction p : predictions) {
 				if (p instanceof BinomialModelPrediction) {
 					BinomialModelPrediction bp = (BinomialModelPrediction) p;
-					for (int i =0 ; i < bp.classProbabilities.length;i++)
+					for (int i = 0; i < bp.classProbabilities.length; i++)
 						tBuilder.addValues(bp.classProbabilities[i]);
 				} else if (p instanceof MultinomialModelPrediction) {
 					MultinomialModelPrediction mp = (MultinomialModelPrediction) p;
-					for (int i =0 ; i < mp.classProbabilities.length;i++)
-						tBuilder.addValues(mp.classProbabilities[i]);					
+					for (int i = 0; i < mp.classProbabilities.length; i++)
+						tBuilder.addValues(mp.classProbabilities[i]);
 				} else if (p instanceof OrdinalModelPrediction) {
 					OrdinalModelPrediction op = (OrdinalModelPrediction) p;
-					for (int i =0 ; i < op.classProbabilities.length;i++)
+					for (int i = 0; i < op.classProbabilities.length; i++)
 						tBuilder.addValues(op.classProbabilities[i]);
 				} else if (p instanceof ClusteringModelPrediction) {
 					ClusteringModelPrediction cp = (ClusteringModelPrediction) p;
-					for (int i =0 ; i < cp.distances.length;i++)
+					for (int i = 0; i < cp.distances.length; i++)
 						tBuilder.addValues(cp.distances[i]);
 				} else if (p instanceof RegressionModelPrediction) {
 					RegressionModelPrediction r = (RegressionModelPrediction) p;
 					tBuilder.addValues(r.value);
-				}else if (p instanceof DimReductionModelPrediction) {
+				} else if (p instanceof DimReductionModelPrediction) {
 					DimReductionModelPrediction cp = (DimReductionModelPrediction) p;
-					for (int i =0 ; i < cp.dimensions.length;i++)
+					for (int i = 0; i < cp.dimensions.length; i++)
 						tBuilder.addValues(cp.dimensions[i]);
-				}
-				else
+				} else
 					return null;
 			}
 			DefaultData.Builder dataBuilder = DefaultData.newBuilder();
 			dataBuilder.setTensor(tBuilder);
 			return dataBuilder.build();
-		} else if (input.getDataOneofCase() == DataOneofCase.NDARRAY){
+		} else if (input.getDataOneofCase() == DataOneofCase.NDARRAY) {
 			ListValue.Builder rows = ListValue.newBuilder();
-			for(AbstractPrediction p : predictions)
-			{
+			for (AbstractPrediction p : predictions) {
 				ListValue.Builder row = ListValue.newBuilder();
 				if (p instanceof BinomialModelPrediction) {
 					BinomialModelPrediction bp = (BinomialModelPrediction) p;
-					for (int i =0 ; i < bp.classProbabilities.length;i++)
+					for (int i = 0; i < bp.classProbabilities.length; i++)
 						row.addValues(Value.newBuilder().setNumberValue(bp.classProbabilities[i]));
 				} else if (p instanceof MultinomialModelPrediction) {
 					MultinomialModelPrediction mp = (MultinomialModelPrediction) p;
-					for (int i =0 ; i < mp.classProbabilities.length;i++)
-						row.addValues(Value.newBuilder().setNumberValue(mp.classProbabilities[i]));					
+					for (int i = 0; i < mp.classProbabilities.length; i++)
+						row.addValues(Value.newBuilder().setNumberValue(mp.classProbabilities[i]));
 				} else if (p instanceof OrdinalModelPrediction) {
 					OrdinalModelPrediction op = (OrdinalModelPrediction) p;
-					for (int i =0 ; i < op.classProbabilities.length;i++)
+					for (int i = 0; i < op.classProbabilities.length; i++)
 						row.addValues(Value.newBuilder().setNumberValue(op.classProbabilities[i]));
 				} else if (p instanceof ClusteringModelPrediction) {
 					ClusteringModelPrediction cp = (ClusteringModelPrediction) p;
-					for (int i =0 ; i < cp.distances.length;i++)
+					for (int i = 0; i < cp.distances.length; i++)
 						row.addValues(Value.newBuilder().setNumberValue(cp.distances[i]));
 				} else if (p instanceof RegressionModelPrediction) {
 					RegressionModelPrediction r = (RegressionModelPrediction) p;
 					row.addValues(Value.newBuilder().setNumberValue(r.value));
-				}else if (p instanceof DimReductionModelPrediction) {
+				} else if (p instanceof DimReductionModelPrediction) {
 					DimReductionModelPrediction cp = (DimReductionModelPrediction) p;
-					for (int i =0 ; i < cp.dimensions.length;i++)
+					for (int i = 0; i < cp.dimensions.length; i++)
 						row.addValues(Value.newBuilder().setNumberValue(cp.dimensions[i]));
-				}
-				else
+				} else
 					return null;
 				rows.addValues(Value.newBuilder().setListValue(row.build()));
 			}
 			DefaultData.Builder dataBuilder = DefaultData.newBuilder();
 			dataBuilder.setNdarray(rows.build());
 			return dataBuilder.build();
-		}
-		else
+		} else
 			return null;
 	}
 }

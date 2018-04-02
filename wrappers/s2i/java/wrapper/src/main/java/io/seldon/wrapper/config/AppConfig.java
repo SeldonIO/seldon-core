@@ -18,7 +18,11 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.context.event.ContextClosedEvent;
 
 
-
+/**
+ * Spring REST config 
+ * @author clive
+ *
+ */
 public class AppConfig {
 
     @Bean
@@ -47,6 +51,11 @@ public class AppConfig {
         };
     }
 
+    /**
+     * Ensure a graceful shutdown of Tomcat to allow requests in process to complete.
+     * @author clive
+     *
+     */
     private static class GracefulShutdown implements TomcatConnectorCustomizer,
             ApplicationListener<ContextClosedEvent> {
 

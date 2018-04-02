@@ -23,6 +23,11 @@
 
 package io.seldon.wrapper.exception;
 
+/**
+ * API Exceptions
+ * @author clive
+ *
+ */
 public class APIException extends RuntimeException {
 
 	public enum ApiExceptionType { 

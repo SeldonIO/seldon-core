@@ -22,6 +22,7 @@ import hex.genmodel.easy.prediction.BinomialModelPrediction;
 import io.seldon.protos.PredictionProtos.DefaultData;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
 import io.seldon.protos.PredictionProtos.Tensor;
+import io.seldon.wrapper.utils.H2OUtils;
 
 public class TestModel {
 
