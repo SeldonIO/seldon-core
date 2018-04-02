@@ -21,6 +21,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.embedded.ConfigurableEmbeddedServletContainer;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
 
+/**
+ * Customization of the Tomcat embedded servlet engne
+ * @author clive
+ *
+ */
 public class CustomizationBean implements EmbeddedServletContainerCustomizer {
 
     private final static Logger logger = LoggerFactory.getLogger(CustomizationBean.class);

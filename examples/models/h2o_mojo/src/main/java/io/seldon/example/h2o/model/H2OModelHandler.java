@@ -20,6 +20,7 @@ import hex.genmodel.easy.prediction.BinomialModelPrediction;
 import io.seldon.protos.PredictionProtos.DefaultData;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
 import io.seldon.wrapper.api.model.SeldonModelHandler;
+import io.seldon.wrapper.utils.H2OUtils;
 
 @Component
 public class H2OModelHandler implements SeldonModelHandler {

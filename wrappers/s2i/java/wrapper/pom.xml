@@ -168,7 +168,16 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
-		
+		<dependency>
+    		<groupId>ai.h2o</groupId>
+    		<artifactId>h2o-genmodel</artifactId>
+    		<version>3.18.0.5</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.nd4j</groupId>
+		    <artifactId>nd4j-native-platform</artifactId>
+		    <version>0.9.1</version>
+		</dependency>
 		
 	</dependencies>
 </project>
