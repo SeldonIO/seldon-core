@@ -20,12 +20,12 @@ import hex.genmodel.easy.prediction.AbstractPrediction;
 import hex.genmodel.easy.prediction.BinomialModelPrediction;
 import io.seldon.protos.PredictionProtos.DefaultData;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
-import io.seldon.wrapper.api.model.SeldonModelHandler;
+import io.seldon.wrapper.api.SeldonPredictionService;
 import io.seldon.wrapper.utils.H2OUtils;
 
 @Component
 @Primary
-public class H2OModelHandler implements SeldonModelHandler {
+public class H2OModelHandler implements SeldonPredictionService {
 	private static Logger logger = LoggerFactory.getLogger(H2OModelHandler.class.getName());
 	EasyPredictModelWrapper model;
 	

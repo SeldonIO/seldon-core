@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import io.seldon.protos.PredictionProtos.SeldonMessage;
+import io.seldon.wrapper.api.SeldonPredictionService;
 import io.seldon.wrapper.exception.APIException;
 import io.seldon.wrapper.exception.APIException.ApiExceptionType;
 import io.seldon.wrapper.pb.ProtoBufUtils;
@@ -26,7 +27,7 @@ public class ModelRestController {
 	
 
 	@Autowired
-	SeldonModelHandler modelHandler;
+	SeldonPredictionService predictionService;
 	
 	@RequestMapping(value = "/predict", method = {RequestMethod.GET, RequestMethod.POST}, produces = "application/json; charset=utf-8")
     public ResponseEntity<String> predictions( @RequestParam("json") String json)
@@ -46,7 +47,7 @@ public class ModelRestController {
 
 		try
 		{
-			SeldonMessage response = modelHandler.predict(request);
+			SeldonMessage response = predictionService.predict(request);
 			String res = ProtoBufUtils.toJson(response);
 			return new ResponseEntity<String>(res,HttpStatus.OK);
 		}

@@ -16,6 +16,6 @@ if [[ -z "$API_TYPE" || -z "$SERVICE_TYPE" ]]; then
 else
     cd /microservice
     echo "starting microservice"
-    exec java -Djava.security.egd=file:/dev/./urandom $JAVA_OPTS -jar app.jar --seldon.api.model.enabled=true --server.port=5000 $SPRING_OPTS 
+    exec java -Djava.security.egd=file:/dev/./urandom $JAVA_OPTS -jar app.jar ab --seldon.api.model.enabled=true --grpc.port=5001 --server.port=5000  $SPRING_OPTS 
 fi
 
