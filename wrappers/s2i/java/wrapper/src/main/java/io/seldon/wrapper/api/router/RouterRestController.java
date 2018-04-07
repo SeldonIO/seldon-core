@@ -15,6 +15,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 
 import io.seldon.protos.PredictionProtos.Feedback;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
+import io.seldon.wrapper.api.SeldonPredictionService;
 import io.seldon.wrapper.exception.APIException;
 import io.seldon.wrapper.exception.APIException.ApiExceptionType;
 import io.seldon.wrapper.pb.ProtoBufUtils;
@@ -26,7 +27,7 @@ public class RouterRestController {
 	private static Logger logger = LoggerFactory.getLogger(RouterRestController.class.getName());
 
 	@Autowired
-	SeldonRouterHandler routerHandler;
+	SeldonPredictionService predictionService;
 
 	@RequestMapping(value = "/route", method = {RequestMethod.GET, RequestMethod.POST}, produces = "application/json; charset=utf-8")
     public ResponseEntity<String> route( @RequestParam("json") String json)
@@ -46,7 +47,7 @@ public class RouterRestController {
 
 		try
 		{
-			SeldonMessage response = routerHandler.route(request);
+			SeldonMessage response = predictionService.route(request);
 			String res = ProtoBufUtils.toJson(response);
 			return new ResponseEntity<String>(res,HttpStatus.OK);
 		}
@@ -73,7 +74,7 @@ public class RouterRestController {
 
 		try
 		{
-			SeldonMessage response = routerHandler.sendFeedback(request);
+			SeldonMessage response = predictionService.sendFeedback(request);
 			String res = ProtoBufUtils.toJson(response);
 			return new ResponseEntity<String>(res,HttpStatus.OK);
 		}

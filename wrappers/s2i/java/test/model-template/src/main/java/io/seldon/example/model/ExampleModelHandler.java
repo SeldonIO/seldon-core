@@ -6,11 +6,11 @@ import org.springframework.stereotype.Component;
 import io.seldon.protos.PredictionProtos.DefaultData;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
 import io.seldon.protos.PredictionProtos.Tensor;
-import io.seldon.wrapper.api.model.SeldonModelHandler;
+import io.seldon.wrapper.api.SeldonPredictionService;
 
 @Component
 @Primary
-public class ExampleModelHandler implements SeldonModelHandler {
+public class ExampleModelHandler implements SeldonPredictionService {
 
 	@Override
 	public SeldonMessage predict(SeldonMessage payload) {
