@@ -57,7 +57,12 @@ public class SeldonGrpcServer  {
         this.predictionService = predictionService;
         server = ServerBuilder
                 .forPort(port)
-                .addService(new SeldonService(this))
+                .addService(new ModelService(this))
+                .addService(new RouterService(this))
+                .addService(new TransformerService(this))
+                .addService(new OutputTransformerService(this))
+                .addService(new CombinerService(this))
+                .addService(new GenericService(this))
           .build();
     }
    

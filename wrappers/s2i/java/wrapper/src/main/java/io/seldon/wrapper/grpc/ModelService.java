@@ -15,28 +15,23 @@
  *******************************************************************************/
 package io.seldon.wrapper.grpc;
 
-import java.util.concurrent.ExecutionException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.protobuf.InvalidProtocolBufferException;
-
-import io.seldon.protos.PredictionProtos.SeldonMessage;
-import io.seldon.protos.SeldonGrpc;
+import io.seldon.protos.ModelGrpc;
 
 /**
  * Passes gRPC requests on to the engine.
  * @author clive
  *
  */
-public class SeldonService extends SeldonGrpc.SeldonImplBase {
+public class ModelService extends ModelGrpc.ModelImplBase  {
     
-    protected static Logger logger = LoggerFactory.getLogger(SeldonService.class.getName());
+    protected static Logger logger = LoggerFactory.getLogger(ModelService.class.getName());
     
     private SeldonGrpcServer server;
     
-    public SeldonService(SeldonGrpcServer server) {
+    public ModelService(SeldonGrpcServer server) {
         super();
         this.server = server;
     }
@@ -49,13 +44,5 @@ public class SeldonService extends SeldonGrpc.SeldonImplBase {
         responseObserver.onNext(server.getPredictionService().predict(request));
         responseObserver.onCompleted();
      }
-    
-    @Override
-    public void sendFeedback(io.seldon.protos.PredictionProtos.Feedback request,
-            io.grpc.stub.StreamObserver<io.seldon.protos.PredictionProtos.SeldonMessage> responseObserver) {
-        logger.debug("Received feedback request");
-        responseObserver.onNext(server.getPredictionService().sendFeedback(request));
-        responseObserver.onCompleted();
-    }
     
 }
