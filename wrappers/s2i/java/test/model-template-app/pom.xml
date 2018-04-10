@@ -1,27 +1,28 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>io.seldon.example</groupId>
-  <artifactId>seldon-core-model-template</artifactId>
-  <packaging>jar</packaging>
-  <version>0.0.1-SNAPSHOT</version>
-  <name>Seldon Core Model Template</name>
-  <url>http://maven.apache.org</url>
-  
-  <parent>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-parent</artifactId>
-    <version>1.5.1.RELEASE</version>
-  </parent>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>io.seldon.example</groupId>
+	<artifactId>seldon-core-model-template</artifactId>
+	<packaging>jar</packaging>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>Seldon Core Model Template</name>
+	<url>http://maven.apache.org</url>
 
-  <properties>
-    <java.version>1.8</java.version>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <grpc.version>1.0.0</grpc.version><!-- CURRENT_GRPC_VERSION -->
-    <micrometer.version>1.0.0-rc.1</micrometer.version>
-    <start-class>io.seldon.example.App</start-class>
-  </properties>
-  
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>1.5.1.RELEASE</version>
+	</parent>
+
+	<properties>
+		<java.version>1.8</java.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<grpc.version>1.0.0</grpc.version><!-- CURRENT_GRPC_VERSION -->
+		<micrometer.version>1.0.0-rc.1</micrometer.version>
+		<start-class>io.seldon.example.App</start-class>
+	</properties>
+
 	<build>
 		<finalName>${project.artifactId}-${project.version}</finalName>
 		<extensions>
@@ -47,8 +48,8 @@
 			</plugin>
 		</plugins>
 	</build>
-  
-  	<dependencies>
+
+	<dependencies>
 		<!-- https://mvnrepository.com/artifact/org.nd4j/nd4j-native -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -64,16 +65,16 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
-		
+
 		<dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
 		<dependency>
-            <groupId>io.seldon.wrapper</groupId>
-            <artifactId>seldon-core-wrapper</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-		
+			<groupId>io.seldon.wrapper</groupId>
+			<artifactId>seldon-core-wrapper</artifactId>
+			<version>0.1.0</version>
+		</dependency>
+
 	</dependencies>
 </project>

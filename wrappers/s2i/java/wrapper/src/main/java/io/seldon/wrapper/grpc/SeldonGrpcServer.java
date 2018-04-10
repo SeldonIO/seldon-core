@@ -32,7 +32,6 @@ import io.seldon.wrapper.api.SeldonPredictionService;
 public class SeldonGrpcServer  {
     protected static Logger logger = LoggerFactory.getLogger(SeldonGrpcServer.class.getName());
 	
-    private final static String SERVER_PORT_KEY = "GRPC_PORT";
     public static final int SERVER_PORT = 5001;
     
     private final int port;
@@ -44,16 +43,9 @@ public class SeldonGrpcServer  {
     public SeldonGrpcServer(SeldonPredictionService predictionService,@Value("${grpc.port}") Integer grpcPort)
     {
     	logger.info("grpc port {}",grpcPort);
-        { // setup the server port using the env vars
-            String engineServerPortString = System.getenv().get(SERVER_PORT_KEY);
-            if (engineServerPortString == null) {
-                logger.error("FAILED to find env var [{}], will use default {} for server port", SERVER_PORT_KEY,grpcPort);
-                port = grpcPort;
-            } else {
-                port = Integer.parseInt(engineServerPortString);
-                logger.info("FOUND env var [{}], will use engine server port {}", SERVER_PORT_KEY,port);
-            }
-        }
+        
+    	port = grpcPort;
+          
         this.predictionService = predictionService;
         server = ServerBuilder
                 .forPort(port)

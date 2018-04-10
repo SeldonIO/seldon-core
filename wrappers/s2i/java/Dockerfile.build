@@ -2,12 +2,6 @@ FROM seldonio/core-builder:0.1
 
 LABEL io.openshift.s2i.scripts-url="image:///s2i/bin"
 
-## TEMP - REMOVE WHEN PUBLISHED TO MAVEN CENTRAL
-COPY ./wrapper /wrapper
-
-RUN cd /wrapper && \
-    mvn install
-
 COPY ./s2i/bin/ /s2i/bin
 
 WORKDIR /build
