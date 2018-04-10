@@ -1,0 +1,42 @@
+{
+    "features":[
+	{
+	    "name":"AGE",
+	    "dtype":"FLOAT",
+	    "ftype":"continuous",
+	    "range":[20,80]
+	},
+	{
+	    "name":"RACE",
+	    "ftype":"categorical",
+	    "values":[0,1,2]
+	},
+	{
+	    "name":"DCAPS",
+	    "ftype":"categorical",
+	    "values":[0,1,2]
+	},
+	{
+	    "name":"VOL",
+	    "ftype":"categorical",
+	    "values":[0,1,2]
+	},
+	{
+	    "name":"GLEASON",
+	    "dtype":"FLOAT",
+	    "ftype":"continuous",
+	    "range":[0,10]
+	}
+    ],
+    "targets":[
+	{
+	    "name":"class",
+	    "dtype":"FLOAT",
+	    "ftype":"continuous",
+	    "range":[0,1],
+	    "repeat":2
+	}
+    ]
+}
+
+    

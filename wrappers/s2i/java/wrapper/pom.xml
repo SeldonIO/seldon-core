@@ -4,7 +4,7 @@
 	<groupId>io.seldon.wrapper</groupId>
 	<artifactId>seldon-core-wrapper</artifactId>
 	<packaging>jar</packaging>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.1.0</version>
 	<name>Seldon Core Java Wrapper</name>
 	<url>http://maven.apache.org</url>
 	<description>Wrapper for seldon-core Java prediction models. Allows easy creation of a Spring Boot app with Tomcat and gRPC servers for handling the microservice APIs for seldon-core.</description>
@@ -164,7 +164,7 @@
 				<artifactId>maven-gpg-plugin</artifactId>
 				<version>1.5</version>
 				<configuration>
-					<keyname>SeldonDev</keyname>
+					<keyname>Seldon Dev Team</keyname>
 				</configuration>
 				<executions>
 					<execution>

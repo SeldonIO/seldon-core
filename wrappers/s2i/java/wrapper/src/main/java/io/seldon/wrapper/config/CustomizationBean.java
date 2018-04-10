@@ -29,7 +29,6 @@ import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomi
 public class CustomizationBean implements EmbeddedServletContainerCustomizer {
 
     private final static Logger logger = LoggerFactory.getLogger(CustomizationBean.class);
-    private final static String SERVER_PORT_KEY = "SERVER_PORT";
 
     @Value("${server.port}")
     private Integer defaultServerPort;
@@ -39,16 +38,7 @@ public class CustomizationBean implements EmbeddedServletContainerCustomizer {
         logger.info("Customizing EmbeddedServlet");
         
         Integer serverPort;
-        { // setup the server port using the env vars
-            String serverPortString = System.getenv().get(SERVER_PORT_KEY);
-            if (serverPortString == null) {
-                logger.error("FAILED to find env var [{}], will use default {} for server port", SERVER_PORT_KEY,defaultServerPort);
-                serverPort = defaultServerPort;
-            } else {
-                logger.info("FOUND env var [{}], will use for server port", SERVER_PORT_KEY);
-                serverPort = Integer.parseInt(serverPortString);
-            }
-        }
+        serverPort = defaultServerPort;
 
         logger.info("setting serverPort[{}]", serverPort);
         container.setPort(serverPort);
