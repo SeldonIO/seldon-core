@@ -35,9 +35,24 @@ else
     else
 	MODEL_ACTIVE=false
     fi
+    if [[ "$SERVICE_TYPE" = "ROUTER" ]]; then	
+	ROUTER_ACTIVE=true
+    else
+	ROUTER_ACTIVE=false
+    fi
+    if [[ "$SERVICE_TYPE" = "TRANSFORMER" ]]; then	
+	TRANSFORMER_ACTIVE=true
+    else
+	TRANSFORMER_ACTIVE=false
+    fi
+    if [[ "$SERVICE_TYPE" = "COMBINER" ]]; then	
+	COMBINER_ACTIVE=true
+    else
+	COMBINER_ACTIVE=false
+    fi
 
     cd /microservice
     echo "starting microservice"
-    exec java -Djava.security.egd=file:/dev/./urandom $JAVA_OPTS -jar app.jar --seldon.api.model.enabled=${MODEL_ACTIVE} --grpc.port=${GRPC_PORT} --server.port=${REST_PORT}  $SPRING_OPTS 
+    exec java -Djava.security.egd=file:/dev/./urandom $JAVA_OPTS -jar app.jar --seldon.api.model.enabled=${MODEL_ACTIVE} --seldon.api.router.enabled=${ROUTER_ACTIVE} --seldon.api.transformer.enabled=${TRANSFORMER_ACTIVE} --seldon.api.combiner.enabled=${COMBINER_ACTIVE} --grpc.port=${GRPC_PORT} --server.port=${REST_PORT}  $SPRING_OPTS 
 fi
 

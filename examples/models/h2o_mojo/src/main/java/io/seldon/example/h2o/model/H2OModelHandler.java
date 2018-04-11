@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 import hex.genmodel.ModelMojoReader;
@@ -24,7 +23,6 @@ import io.seldon.wrapper.api.SeldonPredictionService;
 import io.seldon.wrapper.utils.H2OUtils;
 
 @Component
-@Primary
 public class H2OModelHandler implements SeldonPredictionService {
 	private static Logger logger = LoggerFactory.getLogger(H2OModelHandler.class.getName());
 	EasyPredictModelWrapper model;

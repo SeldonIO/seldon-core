@@ -20,7 +20,7 @@ import io.seldon.wrapper.exception.APIException.ApiExceptionType;
 import io.seldon.wrapper.pb.ProtoBufUtils;
 
 @RestController
-@ConditionalOnExpression("${seldon.api.route.enabled:false}")
+@ConditionalOnExpression("${seldon.api.router.enabled:false}")
 public class RouterRestController {
 
 	private static Logger logger = LoggerFactory.getLogger(RouterRestController.class.getName());

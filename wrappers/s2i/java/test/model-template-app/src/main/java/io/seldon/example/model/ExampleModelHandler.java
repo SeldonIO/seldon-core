@@ -1,6 +1,5 @@
 package io.seldon.example.model;
 
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 import io.seldon.protos.PredictionProtos.DefaultData;
@@ -9,7 +8,6 @@ import io.seldon.protos.PredictionProtos.Tensor;
 import io.seldon.wrapper.api.SeldonPredictionService;
 
 @Component
-@Primary
 public class ExampleModelHandler implements SeldonPredictionService {
 
 	@Override
