@@ -1,9 +1,9 @@
 # Using Openshift Source-to-Image to facilitate Machine Learning Deployment
 
-Seldon-Core is an open source project that provides scalable machine learning deployment running on Kubernetes. One of Seldon-Core’s goals is to allow data scientists to continue to build their training and inference components using any of the many available machine learning toolkits, be that python based (e.g., TensorFlow, sklearn), R or Java (e.g., Spark, H2O) amongst many popular options. Seldon-Core will then allow them easily to package and run their runtime prediction modules on Kubernetes. To achieve this goal we need to make it easy for data scientists to take their source code and package it as a Docker container in the correct form such that it can be managed as part of a runtime microservice graph on Kubernetes by Seldon-Core. For this we utilize OpenShift’s Source-to-Image open source library to allow any code to be package in the correct format with minimal requirements from the data scientist.
+[Seldon-Core](https://github.com/SeldonIO/seldon-core) is an open source project that provides scalable machine learning deployment running on [Kubernetes](https://kubernetes.io/). One of Seldon-Core’s goals is to allow data scientists to continue to construct their training and inference components using any of the many available machine learning toolkits, be that python based (e.g., TensorFlow, sklearn), R or Java (e.g., Spark, H2O) amongst many popular options. Seldon-Core will then allow them easily to package and run their runtime prediction modules on Kubernetes. To achieve this goal we need to make it easy for data scientists to take their source code and package it as a Docker container in the correct form such that it can be managed as part of a runtime microservice graph on Kubernetes by Seldon-Core. For this we utilize Openshift’s Source-to-Image open source library to allow any code to be packaged in the correct format with minimal requirements from the data scientist.
 
 # Seldon-Core Overview
-Seldon-core provides scalabale machine learning deployment running on Kubernetes. To deploy their models data scientist follow the steps as shown below:
+Seldon-core provides scalebale machine learning deployments running on Kubernetes. To deploy their models data scientists follow the steps as shown below:
 
 ![API](../deploy.png)
 
@@ -11,9 +11,9 @@ Seldon-core provides scalabale machine learning deployment running on Kubernetes
  1. Describe their runtime graph as a kubernetes resource
  1. Deploy to kubernetes using standard tools such as kubectl, Helm, ksonnet.
 
-Once running their deployment can be updated as new image release are created for the runtime model as well as updates to the runtime graph.
+Once running their deployment can be updated as new image releases are created for the runtime model as well as updates to the runtime graph.
 
-The components of the runtie graph can be of various types. The most typical is a model which will provide predictions given some input features. Typically the data scientist will have trained a model and saved the model parameters for use by a runtime component that will be previde new predictions at runtime. However, Seldon-Core allows a range of components to be created that can be joined together as building blocks to create more complex runtime graphs as show below:
+The components of the runtime graph can be of various types. The most typical is a model which will provide predictions given some input features. Typically, the data scientist will have trained a model and saved the model parameters for use by a runtime component that will be provide new predictions at runtime. However, Seldon-Core allows a range of components to be created that can be joined together as building blocks to create more complex runtime graphs as show below:
 
 ![graphs](graphs.png)
 
@@ -24,26 +24,26 @@ The types of component you can create can include:
  * Combiners - e.g., Model ensemblers
  * Transformers - e.g., Feature normalization, Outlier detection, concept drift
 
-As the above diagram shows these need to be fitted into the microservice API of seldon-core either via REST or gRPC services. 
+As the above diagram shows these need to be fitted into the microservice API of seldon-core either as REST or gRPC services. 
 
 # Source-to-Image integration
-To integrate your component into seldon-core you need to accomplish two things as shown:
+To integrate a component into seldon-core the data scientist needs to accomplish two things:
 
  1. Create a Docker image from your source code
  1. Wrap your component as a service that exposes REST or gRPC endpoints that follow the seldon-core miroserice API.
 
 ![wrap](wrap.png)
 
-To accomplish this we use OpenShift's source-to-image (s2i) open source tool. S2i allows data scientist to wrap their code using a single command line call that can easily be embedded into a continuous integration pipeline. Seldon provide s2i builder images that contain middleware code to wrap the data scinetist component within a REST or gRPC server that respect the seldon-core microservice API. All that is needed is for the data scientist to follow a few conventions when creating their component in various languages as will be illustrated below.
+To accomplish this we use Openshift's [source-to-image (s2i)](https://github.com/openshift/source-to-image) open source tool. S2i allows data scientists to wrap their code using a single command line call that can easily be embedded into a continuous integration pipeline. Seldon provides s2i builder images that contain middleware code to wrap the data scientist's component within a REST or gRPC server that respects the seldon-core microservice API. All that is needed is for the data scientist to follow a few conventions when creating their component in various languages as will be illustrated below.
 
 ## Python
-There are many popular machine learning libraries in python including Tensorflow, keras, sklean, pyTorch, Statsmodels amongst many others. To use our s2i builder image to package a python model the data scientist simply needs to provide:
+There are many popular machine learning libraries in python including Tensorflow, keras, sklearn, pyTorch and Statsmodels amongst many others. To use the Seldon-Core s2i builder image to package a python model the data scientist simply needs to provide:
 
  * A python file with a class that runs your model
  * optional requirements.txt  or setup.py
  * .s2i/environment - model definitions used by the s2i builder to correctly wrap your model
 
-The data scinetist's source code should contain a python file which defines a class of the same name as the file. For example:
+The data scientist's source code should contain a python file which defines a class of the same name as the file. For example:
 
 ```python
 class MyModel(object):
@@ -74,7 +74,7 @@ class MyModel(object):
  * The class contains a predict method that takes an array (numpy) X and feature_names and returns an array of predictions.
  * Any required initialization can be put inside the class init method.
 
-An optional requirements.txt can detail any software dependencies your code requires. 
+An optional requirements.txt can detail any software dependencies the code requires. 
 
 To allow the s2i builder image to correctly package the component the data scinetist needs to provide a few environment variables either in an .s2i/environment file in the source code folder or on the command line. An example is:
 
@@ -84,7 +84,7 @@ API_TYPE=REST
 SERVICE_TYPE=MODEL
 ```
 
-Finally we Use ```s2i build``` to create your Docker image from source code. Examples for python2 code are:
+Finally we Use ```s2i build``` to create the Docker image from source code. Examples for python2 code are:
 
 ```bash
 s2i build <git-repo> seldonio/seldon-core-s2i-python2 <my-image-name>
@@ -96,7 +96,7 @@ R is a popular statistical langiage which provides many machine learning related
 
 To use the seldon s2i builder image to package an R model the requirements are:
 
- * An R file which provides an S3 class for your model via an ```initialise_seldon``` function and that has appropriate generics for your component, e.g. predict for a model.
+ * An R file which provides an S3 class for your model via an ```initialise_seldon``` function and that has appropriate generics for the component, e.g. predict for a model.
  * An optional install.R to be run to install any libraries needed
  * .s2i/environment - model definitions used by the s2i builder to correctly wrap your model
 
@@ -121,7 +121,7 @@ initialise_seldon <- function(params) {
 
 The above contains:
 
- * A ```seldon_initialise``` function creates an S3 class for my model via a constructor ```new_mymodel```. This will be called on startup and you can use this to load any parameters your model needs.
+ * A ```seldon_initialise``` function that creates an S3 class for the model via a constructor ```new_mymodel```. This will be called on startup and you can run any configuration the model needs.
  * A generic ```predict``` function is created for my model class. This will be called with a ```newdata``` field with the ```data.frame``` to be predicted.
 
 An ```install.R``` with any software dependencies required. For example:
@@ -138,7 +138,7 @@ API_TYPE=REST
 SERVICE_TYPE=MODEL
 ```
 
-These values can also be provided or overriden on the command line when building the image.
+These values can also be provided in an .s2i/environment file with the source code or overriden on the command line when building the image.
 
 Once these steps are done we can use ```s2i build``` to create the Docker image from the source code. 
 
@@ -154,4 +154,18 @@ s2i build https://github.com/seldonio/seldon-core.git --context-dir=wrappers/s2i
 ```
 
 ## Java
-There are several popular machine learning libraries in Java including Spark, H2O and DL4J. Seldon-core also provides builder images for Java. To accomplish this we provide a Java library seldon-core-wrappers that can be included in a Maven Sprng project to allow a Java component to be easily wrapped.
+There are several popular machine learning libraries in Java including Spark, H2O and DL4J. Seldon-core also provides builder images for Java. To accomplish this we provide a Java library seldon-core-wrappers that can be included in a Maven Spring project to allow a Java component to be easily wrapped.
+
+To use teh Seldon-Core s2i builder image to package a Java model the data scientist will need:
+
+ * A Maven project that depends on the ```io.seldon.wrapper``` library
+ * A Spring Boot configuration class
+ * A class that implements ```io.seldon.wrapper.SeldonPredictionService``` for the type of component you are creating
+ * An optional .s2i/environment - model definitions used by the s2i builder to correctly wrap your model
+
+More details can be found in the seldon-core docs
+
+# Summary
+
+By utilizing Openshift's source-to-image tool data scientists can easily build Docker images for their runtime components to be deployed at scale using seldon-core. This allows data science teams to use the best machine learning tool for the task and deploy the resulting model in a consistent manner. The seldon-core project is working on providing full Openshift integration in the near future so that Enterprise customers can easily utilize machine learning models within their organisation.
+
