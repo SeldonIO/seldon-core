@@ -114,6 +114,10 @@ Three steps:
  - [Prediction API](./docs/reference/prediction.md)
  - [Seldon Deployment Custom Resource](./docs/reference/seldon-deployment.md)
 
+## Articles
+
+ - [Overview of Openshift source-to-image use in Seldon-Core](./docs/articles/openshift_s2i.md)
+
 ## Testing
 
  - [Benchmarking seldon-core](docs/benchmarking.md)
