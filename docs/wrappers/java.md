@@ -22,58 +22,123 @@ s2i usage seldonio/seldon-core-s2i-java-build
 
 # Step 2 - Create your source code
 
-To use our s2i builder image to package your R model you will need:
+To use our s2i builder image to package your Java model you will need:
 
- * An R file which provides an S3 class for your model via an ```initialise_seldon``` function and that has appropriate generics for your component, e.g. predict for a model.
- * An optional install.R to be run to install any libraries needed
+ * A Maven project that depends on ```io.seldon.wrapper``` library
+ * A Spring Boot configuration class
+ * A class that implements ```io.seldon.wrapper.SeldonPredictionService``` for the type of component you are creating
  * .s2i/environment - model definitions used by the s2i builder to correctly wrap your model
 
 We will go into detail for each of these steps:
 
-## R Runtime Model file
-Your source code should contain an R file which defines an S3 class for your model. For example, looking at our skeleton R model file at ```wrappers/s2i/R/test/model-template-app/MyModel.R```:
+## Maven Project
+Create a Spring Boot Maven project and include the dependency:
 
-```R
-library(methods)
+```XML
+<dependency>
+	<groupId>io.seldon.wrapper</groupId>
+	<artifactId>seldon-core-wrapper</artifactId>
+	<version>0.1.0</version>
+</dependency>
+```
 
-predict.mymodel <- function(mymodel,newdata=list()) {
-  write("MyModel predict called", stdout())
-  newdata
-}
+A full example can be found at ```wrappers/s2i/java/test/model-template-app/pom.xml```.
 
+## Spring Boot Intialization
 
-new_mymodel <- function() {
-  structure(list(), class = "mymodel")
-}
+Create a main App class:
+  * Add @EnableAsync annotation (to allow the embedded gRPC server to start at Spring Boot startup)
+  * include the ```io.seldon.wrapper``` in the scan base packages list along with your App's package, in the example below the Apps's package is ```io.seldon.example```.
+  * Import the config class at ```io.seldon.wrapper.config.AppConfig.class```
 
+For example:
 
-initialise_seldon <- function(params) {
-  new_mymodel()
+```java
+@EnableAsync
+@SpringBootApplication(scanBasePackages = {"io.seldon.wrapper","io.seldon.example"})
+@Import({ io.seldon.wrapper.config.AppConfig.class })
+public class App {
+    public static void main(String[] args) throws Exception {
+            SpringApplication.run(App.class, args);
+	    }
 }
 ```
 
- * A ```seldon_initialise``` function creates an S3 class for my model via a constructor ```new_mymodel```. This will be called on startup and you can use this to load any parameters your model needs.
- * A generic ```predict``` function is created for my model class. This will be called with a ```newdata``` field with the ```data.frame``` to be predicted.
+## Prediction Class
+To handle requests to your model or other component you need to implement one or more of the methods in ```io.seldon.wrapper.SeldonPredictionService```, in particular:
 
-There are similar templates for ROUTERS and TRANSFORMERS.
- 
-
-## install.R
-Populate an ```install.R``` with any software dependencies your code requires. For example:
-
-```R
-install.packages('rpart')
+```java
+default public SeldonMessage predict(SeldonMessage request);
+default public SeldonMessage route(SeldonMessage request);
+default public SeldonMessage sendFeedback(Feedback request);
+default public SeldonMessage transformInput(SeldonMessage request);
+default public SeldonMessage transformOutput(SeldonMessage request);
+default public SeldonMessage aggregate(SeldonMessageList request);
 ```
+
+Your implementing class should be created as a Spring Component so it will be managed by Spring. There is a full H2O example in ```examples/models/h2o_mojo/src/main/java/io/seldon/example/h2o/model```, whose implmentation is show below:
+
+```java
+@Component
+public class H2OModelHandler implements SeldonPredictionService {
+	private static Logger logger = LoggerFactory.getLogger(H2OModelHandler.class.getName());
+	EasyPredictModelWrapper model;
+	
+	public H2OModelHandler() throws IOException {
+		MojoReaderBackend reader =
+                MojoReaderBackendFactory.createReaderBackend(
+                  getClass().getClassLoader().getResourceAsStream(
+                     "model.zip"), 
+                      MojoReaderBackendFactory.CachingStrategy.MEMORY);
+		MojoModel modelMojo = ModelMojoReader.readFrom(reader);
+		model = new EasyPredictModelWrapper(modelMojo);
+		logger.info("Loaded model");
+	}
+	
+	@Override
+	public SeldonMessage predict(SeldonMessage payload) {
+		List<RowData> rows = H2OUtils.convertSeldonMessage(payload.getData());
+		List<AbstractPrediction> predictions = new ArrayList<>();
+		for(RowData row : rows)
+		{
+			try
+			{
+				BinomialModelPrediction p = model.predictBinomial(row);
+				predictions.add(p);
+			} catch (PredictException e) {
+				logger.info("Error in prediction ",e);
+			}
+		}
+        DefaultData res = H2OUtils.convertH2OPrediction(predictions, payload.getData());
+
+		return SeldonMessage.newBuilder().setData(res).build();
+	}
+
+}
+
+```
+
+The above code:
+
+  * loads a model from the local resources folder on startup
+  * Converts the proto buffer message into H2O RowData using provided utility classes.
+  * Runs a BionomialModel prediction and converts the result back into a ```SeldonMessage``` for return
+
+### H2O Helper Classes
+
+We provide H2O utility class ```io.seldon.wrapper.utils.H2OUtils``` in seldon-core-wrapper to convert to and from the seldon-core proto buffer message types.
+
+### DL4J Helper Classes
+
+We provide a DL4J utility class ```io.seldon.wrapper.utils.DL4JUtils``` in seldon-core-wrapper to convert to and from the seldon-core proto buffer message types.
 
 ## .s2i/environment
 
 Define the core parameters needed by our R builder image to wrap your model. An example is:
 
 ```bash
-MODEL_NAME=MyModel
 API_TYPE=REST
 SERVICE_TYPE=MODEL
-PERSISTENCE=0
 ```
 
 These values can also be provided or overriden on the command line when building the image.
@@ -84,20 +149,21 @@ Use ```s2i build``` to create your Docker image from source code. You will need 
 Using s2i you can build directly from a git repo or from a local source folder. See the [s2i docs](https://github.com/openshift/source-to-image/blob/master/docs/cli.md#s2i-build) for further details. The general format is:
 
 ```bash
-s2i build <git-repo> seldonio/seldon-core-s2i-r <my-image-name>
-s2i build <src-folder> seldonio/seldon-core-s2i-r <my-image-name>
+s2i build <git-repo> seldonio/seldon-core-s2i-java-build <my-image-name> --runtime-image seldonio/seldon-core-s2i-java-runtime
+s2i build <src-folder> seldonio/seldon-core-s2i-java-build <my-image-name> --runtime-image seldonio/seldon-core-s2i-java-runtime 
 ```
 
 An example invocation using the test template model inside seldon-core:
 
 ```bash
-s2i build https://github.com/seldonio/seldon-core.git --context-dir=wrappers/s2i/R/test/model-template-app seldonio/seldon-core-s2i-r seldon-core-template-model
+s2i build https://github.com/seldonio/seldon-core.git --context-dir=wrappers/s2i/python/test/model-template-app seldonio/seldon-core-s2i-java-build h2o-test:0.1 --runtime-image seldonio/seldon-core-s2i-java-runtime
 ```
 
 The above s2i build invocation:
 
  * uses the GitHub repo: https://github.com/seldonio/seldon-core.git and the directory ```wrappers/s2i/R/test/model-template-app``` inside that repo.
- * uses the builder image ```seldonio/seldon-core-s2i-r```
+ * uses the builder image ```seldonio/seldon-core-s2i-java-build```
+ * uses the runtime image ```seldonio/seldon-core-s2i-java-runtime```
  * creates a docker image ```seldon-core-template-model```
 
 
@@ -106,13 +172,13 @@ For building from a local source folder, an example where we clone the seldon-co
 ```bash
 git clone https://github.com/seldonio/seldon-core.git
 cd seldon-core
-s2i build wrappers/s2i/R/test/model-template-app seldonio/seldon-core-s2i-r seldon-core-template-model
+s2i build wrappers/s2i/R/test/model-template-app seldonio/seldon-core-s2i-java-build h2o-test:0.1 --runtime-image seldonio/seldon-core-s2i-java-runtime
 ```
 
 For more help see:
 
 ```
-s2i usage seldonio/seldon-core-s2i-r
+s2i usage seldonio/seldon-core-s2i-java-build
 s2i build --help
 ```
 
@@ -122,12 +188,9 @@ s2i build --help
 The required environment variables understood by the builder image are explained below. You can provide them in the ```.s2i/enviroment``` file or on the ```s2i build``` command line.
 
 
-### MODEL_NAME
-The name of the R file containing the model. 
-
 ### API_TYPE
 
-API type to create. Can be REST only at present.
+API type to create. Can be REST or GRPC.
 
 ### SERVICE_TYPE
 
@@ -136,26 +199,16 @@ The service type being created. Available options are:
  * MODEL
  * ROUTER
  * TRANSFORMER
-
-### PERSISTENCE
-
-Can only by 0 at present. In future, will allow the state of the component to be saved periodically.
+ * COMBINER
 
 
 ## Creating different service types
 
 ### MODEL
 
- * [A minimal skeleton for model source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/R/test/model-template-app)
- * [Example models](https://github.com/SeldonIO/seldon-core/tree/master/examples/models)
+ * [A minimal skeleton for model source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/java/test/model-template-app)
+ * [Example H2O MOJO](https://github.com/SeldonIO/seldon-core/tree/master/examples/models/h2o-mojo/README.md)
 
-### ROUTER
-
- * [A minimal skeleton for router source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/R/test/router-template-app)
-
-### TRANSFORMER
-
- * [A minimal skeleton for transformer source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/R/test/transformer-template-app)
 
 
 
