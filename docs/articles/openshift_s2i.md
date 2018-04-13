@@ -1,13 +1,15 @@
 # Using Openshift Source-to-Image to facilitate Machine Learning Deployment
 
-[Seldon-Core](https://github.com/SeldonIO/seldon-core) is an open source project that provides scalable machine learning deployment running on [Kubernetes](https://kubernetes.io/). One of Seldon-Core’s goals is to allow data scientists to continue to construct their training and inference components using any of the many available machine learning toolkits, be that python based (e.g., TensorFlow, sklearn), R or Java (e.g., Spark, H2O) amongst many popular options. Seldon-Core will then allow them easily to package and run their runtime prediction modules on Kubernetes. To achieve this goal we need to make it easy for data scientists to take their source code and package it as a Docker container in the correct form such that it can be managed as part of a runtime microservice graph on Kubernetes by Seldon-Core. For this we utilize Openshift’s Source-to-Image open source library to allow any code to be packaged in the correct format with minimal requirements from the data scientist.
+Seldon aims to help oraganisations put their data science projects into production so they can decrease the time to get return on investment. By helping data scientists take their data science models and place them into production, scale them, get analytics and modify them Seldon allows data scientists to bridge the gap from development to production and use current dev-ops best practices in machine learning. Our core products run on top of Kubernetes and can be deployed on-cloud on on-premise. Integrating with enterprise ready Kubernetes distributions such as Openshift allows us to provide a solid foundation in which to supply our products for use in demanding verticals such as the FinTech sector.
+
+[Seldon-Core](https://github.com/SeldonIO/seldon-core) is an open source project that provides scalable machine learning deployment running on [Kubernetes](https://kubernetes.io/). One of Seldon-Core’s goals is to allow data scientists to continue to construct their training and inference components using any of the many available machine learning toolkits, be that python based (e.g., TensorFlow, sklearn), R or Java (e.g., Spark, H2O) amongst many popular options. Seldon-Core will then allow them easily to package and run their runtime prediction modules on Kubernetes. To achieve this goal we need to make it easy for data scientists to take their source code and package it as a Docker-formatted container in the correct form such that it can be managed as part of a runtime microservice graph on Kubernetes by Seldon-Core. For this we utilize Openshift’s Source-to-Image open source library to allow any code to be packaged in the correct format with minimal requirements from the data scientist.
 
 # Seldon-Core Overview
 Seldon-core provides scalebale machine learning deployments running on Kubernetes. To deploy their models data scientists follow the steps as shown below:
 
 ![API](../deploy.png)
 
- 1. Package their runtime model as a Docker image
+ 1. Package their runtime model as a Docker-formatted image
  1. Describe their runtime graph as a kubernetes resource
  1. Deploy to kubernetes using standard tools such as kubectl, Helm, ksonnet.
 
@@ -29,12 +31,12 @@ As the above diagram shows these need to be fitted into the microservice API of 
 # Source-to-Image integration
 To integrate a component into seldon-core the data scientist needs to accomplish two things:
 
- 1. Create a Docker image from your source code
+ 1. Create a Docker-formatted image from your source code
  1. Wrap your component as a service that exposes REST or gRPC endpoints that follow the seldon-core miroserice API.
 
 ![wrap](wrap.png)
 
-To accomplish this we use Openshift's [source-to-image (s2i)](https://github.com/openshift/source-to-image) open source tool. S2i allows data scientists to wrap their code using a single command line call that can easily be embedded into a continuous integration pipeline. Seldon provides s2i builder images that contain middleware code to wrap the data scientist's component within a REST or gRPC server that respects the seldon-core microservice API. All that is needed is for the data scientist to follow a few conventions when creating their component in various languages as will be illustrated below.
+To accomplish this we use Openshift's [source-to-image (s2i)](https://github.com/openshift/source-to-image) open source tool. S2i allows data scientists to wrap their code using a single command line call that can easily be embedded into a continuous integration pipeline. Seldon provides s2i builder images that contain middleware code to wrap the data scientist's component within a REST or gRPC server that respects the seldon-core microservice API. All that is needed is for the data scientist to follow a few conventions when creating their component in various languages as will be illustrated below. The growing set of  source-to-image builder images can be found [here](https://github.com/SeldonIO/seldon-core/tree/master/wrappers/s2i).
 
 ## Python
 There are many popular machine learning libraries in python including Tensorflow, keras, sklearn, pyTorch and Statsmodels amongst many others. To use the Seldon-Core s2i builder image to package a python model the data scientist simply needs to provide:
@@ -84,7 +86,7 @@ API_TYPE=REST
 SERVICE_TYPE=MODEL
 ```
 
-Finally we Use ```s2i build``` to create the Docker image from source code. Examples for python2 code are:
+Finally we Use ```s2i build``` to create the Docker-formatted image from source code. Examples for python2 code are:
 
 ```bash
 s2i build <git-repo> seldonio/seldon-core-s2i-python2 <my-image-name>
@@ -140,7 +142,7 @@ SERVICE_TYPE=MODEL
 
 These values can also be provided in an .s2i/environment file with the source code or overriden on the command line when building the image.
 
-Once these steps are done we can use ```s2i build``` to create the Docker image from the source code. 
+Once these steps are done we can use ```s2i build``` to create the Docker-formatted image from the source code. 
 
 ```bash
 s2i build <git-repo> seldonio/seldon-core-s2i-r <my-image-name>
@@ -167,5 +169,10 @@ More details can be found in the seldon-core docs
 
 # Summary
 
-By utilizing Openshift's source-to-image tool data scientists can easily build Docker images for their runtime components to be deployed at scale using seldon-core. This allows data science teams to use the best machine learning tool for the task and deploy the resulting model in a consistent manner. The seldon-core project is working on providing full Openshift integration in the near future so that Enterprise customers can easily utilize machine learning models within their organisation.
+By utilizing Openshift's source-to-image tool data scientists can easily build Docker-formatted images for their runtime components to be deployed at scale using seldon-core. This allows data science teams to use the best machine learning tool for the task and deploy the resulting model in a consistent manner. The seldon-core project is working on providing full Openshift integration in the near future so that Enterprise customers can easily utilize machine learning models within their organisation.
+
+Seldon will be joining Openshift Commons and will be present at [Kubecon Europe 2018](https://events.linuxfoundation.org/events/kubecon-cloudnativecon-europe-2018/) and the OpenShift Kubecon Europe event on Tues 1st May. Feel free to contact us to discuss Seldon-Core and Openshift and how they can work together to help data scientists put machine learning into production.
+
+
+
 
