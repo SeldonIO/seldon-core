@@ -103,7 +103,7 @@ def unfold_contract(contract):
             for i in range(feature.get("repeat")):
                 new_feature = {}
                 new_feature.update(feature)
-                new_feature["name"] = feature["name"]+':'+str(i)
+                new_feature["name"] = feature["name"]+str(i+1)
                 del new_feature["repeat"]
                 unfolded_contract["features"].append(new_feature)
         else:

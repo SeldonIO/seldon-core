@@ -46,7 +46,12 @@ python ../../../wrappers/testing/tester.py contract.json 0.0.0.0 5000 -p
 minikube start --memory 4096
 ```
 
-[Install seldon core](/readme.md#install)
+Install seldon core
+
+```
+helm install seldon-core-crd --name seldon-core-crd --repo https://storage.googleapis.com/seldon-charts --set usage_metrics.enabled=true --set rbac.enabled=false
+helm install seldon-core --name seldon-core --repo https://storage.googleapis.com/seldon-charts --set rbac.enabled=false
+```
 
 Connect to Minikube Docker daemon
 
@@ -69,7 +74,7 @@ kubectl create -f keras_mnist_deployment.json
 Port forward API server
 
 ```bash
-kubectl port-forward $(kubectl get pods -n seldon -l app=seldon-apiserver-container-app -o jsonpath='{.items[0].metadata.name}') -n seldon 8080:8080
+kubectl port-forward $(kubectl get pods -l app=seldon-apiserver-container-app -o jsonpath='{.items[0].metadata.name}') 8080:8080
 ```
 
 Ensure tester gRPC modules compiled. 
