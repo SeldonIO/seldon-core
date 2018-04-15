@@ -48,7 +48,7 @@ def parse_arguments():
     print(args)
     if args.slave:
         print("Sleeping 10 secs hack")
-        #time.sleep(10)
+        time.sleep(10)
         connect_to_master(args.master_host,args.master_port)
     return args.host, args.clients, args.hatch_rate
 
@@ -115,8 +115,10 @@ class SeldonJsLocust(TaskSet):
     def getPrediction(self):
         batch_xs, batch_ys = self.mnist.train.next_batch(1)
         data = batch_xs[0].reshape((1,784))
-        features = ["f"+str(i) for i in range (0,self.data_size)]
-        request = {"data":{"names":features,"ndarray":data.tolist()}}
+        data = np.around(data,decimals=2)
+        features = ["X"+str(i+1) for i in range (0,self.data_size)]
+        #request = {"data":{"names":features,"ndarray":data.tolist()}}
+        request = {"data":{"ndarray":data.tolist()}}
         jStr = json.dumps(request)
         r = self.client.request("POST","/api/v0.1/predictions",headers={"Content-Type":"application/json","Accept":"application/json","Authorization":"Bearer "+self.access_token},name="predictions",data=jStr)
         if r.status_code == 200:

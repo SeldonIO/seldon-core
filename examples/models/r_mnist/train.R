@@ -62,7 +62,7 @@ cv = inTrain[-trainIndex,]
 
 # SVM. 95/94.
 #fit <- train(y ~ ., data = head(training, 1000), method = 'svmRadial', tuneGrid = data.frame(sigma=0.0107249, C=1))
-fit <- train(y ~ ., data = head(training, 1000), method = 'rpart2')
+fit <- train(y ~ ., data = head(training, 1000), method = 'pls')
 results <- predict(fit, newdata = head(cv, 1000), type='prob')
 #confusionMatrix(results, head(cv$y, 1000))
 saveRDS(fit, file = "model.Rds", compress = TRUE)

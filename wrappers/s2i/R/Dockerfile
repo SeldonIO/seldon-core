@@ -12,6 +12,7 @@ RUN Rscript -e "install.packages('plumber')"
 RUN Rscript -e "install.packages('optparse')"
 RUN Rscript -e "install.packages('jsonlite')"
 RUN Rscript -e "install.packages('urltools')"
+RUN Rscript -e "install.packages('caret')"
 
 RUN mkdir microservice
 WORKDIR /microservice
