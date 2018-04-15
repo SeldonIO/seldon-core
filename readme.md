@@ -90,14 +90,6 @@ helm install seldon-core-crd --name seldon-core-crd \
 helm install seldon-core --name seldon-core --repo https://storage.googleapis.com/seldon-charts
 ```
 
-To install the optional analytics components including Prometheus and Grafana with a built-in dashboard for monitoring the running ML deployments run:
-
-```
-helm install seldon-core --name seldon-core \
-    --set grafana_prom_admin_password=password \
-    --set persistence.enabled=false \
-    --repo https://storage.googleapis.com/seldon-charts
-```
 
 ## Deployment Guide
 
