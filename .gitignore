@@ -79,3 +79,5 @@ notebooks/my-ml-deployment/
 
 wrappers/s2i/python/Dockerfile
 wrappers/s2i/python/_wrappers
+
+.Rhistory

@@ -1,11 +1,9 @@
-# Tensorflow MNIST
-A TensorFlow model for MNIST classification.
+# Deep MNIST
+An R MNIST model.
 
-## Dependencies
+## Depenencies
 
-```bash
-pip install tensorflow
-```
+R
 
 ## Train locally
 
@@ -16,7 +14,7 @@ make train
 ## Wrap using [s2i](https://github.com/openshift/source-to-image#installation).
 
 ```bash
-s2i build . seldonio/seldon-core-s2i-python2 deep-mnist
+s2i build . seldonio/seldon-core-s2i-r r-mnist:0.1
 ```
 
 ## Local Docker Smoke Test
@@ -24,7 +22,7 @@ s2i build . seldonio/seldon-core-s2i-python2 deep-mnist
 Run under docker.
 
 ```bash
-docker run --rm -p 5000:5000 deep-mnist
+docker run --rm -p 5000:5000 r-mnist:0.1
 ```
 
 Ensure test grpc modules compiled.
@@ -61,13 +59,13 @@ eval $(minikube docker-env)
 Build image using minikube docker daemon.
 
 ```bash
-s2i build . seldonio/seldon-core-s2i-python2 deep-mnist
+s2i build . seldonio/seldon-core-s2i-r r-mnist:0.1
 ```
 
 Launch deployment
 
 ```bash
-kubectl create -f deep_mnist.json
+kubectl create -f r_mnist_deployment.json -n seldon
 ```
 
 Port forward API server
@@ -76,7 +74,7 @@ Port forward API server
 kubectl port-forward $(kubectl get pods -l app=seldon-apiserver-container-app -o jsonpath='{.items[0].metadata.name}') 8080:8080
 ```
 
-Ensure tester gRPC modules compiled. You will need to install grpc-tools module.
+Ensure tester gRPC modules compiled. 
 
 ```bash
 pushd ../../../util/api_tester ; make build_protos ; popd

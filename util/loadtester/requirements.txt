@@ -10,3 +10,6 @@ requests>=2.18.1
 requests_mock>=1.3.0
 wget==3.2
 grpcio==1.1.3
+numpy>=1.14.0
+tensorflow>=1.0.1
+

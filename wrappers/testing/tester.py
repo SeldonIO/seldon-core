@@ -6,6 +6,7 @@ import urllib
 from proto import prediction_pb2
 from proto import prediction_pb2_grpc
 import grpc
+from time import time
 
 def array_to_list_value(array,lv=None):
     if lv is None:
@@ -46,6 +47,7 @@ def generate_batch(contract,n):
             else:
                 range = ["inf","inf"]
             batch = gen_continuous(range,n)
+            batch = np.around(batch,decimals=3)
             batch = reconciliate_cont_type(batch,feature_def["dtype"])
         elif feature_def["ftype"] == "categorical":
             batch = gen_categorical(feature_def["values"],n)
@@ -103,7 +105,7 @@ def unfold_contract(contract):
             for i in range(feature.get("repeat")):
                 new_feature = {}
                 new_feature.update(feature)
-                new_feature["name"] = feature["name"]+':'+str(i)
+                new_feature["name"] = feature["name"]+str(i+1)
                 del new_feature["repeat"]
                 unfolded_contract["features"].append(new_feature)
         else:
@@ -141,15 +143,18 @@ def run(args):
             if args.prnt:
                 print(REST_request)
 
+            t1 = time()
             response = requests.post(
                 REST_url,
                 data={"json":json.dumps(REST_request),"isDefault":True})
+            t2 = time()
             jresp = response.json()
 
             if args.prnt:
                 print("RECEIVED RESPONSE:")
                 print(jresp)
                 print()
+                print("Time "+str(t2-t1))
         else:
             GRPC_request = gen_GRPC_request(batch,features=feature_names,tensor=args.tensor)
             if args.prnt:
