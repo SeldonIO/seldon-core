@@ -106,7 +106,7 @@ def unfold_contract(contract):
             for i in range(feature.get("repeat")):
                 new_feature = {}
                 new_feature.update(feature)
-                new_feature["name"] = feature["name"]+':'+str(i)
+                new_feature["name"] = feature["name"]+str(i+1)
                 del new_feature["repeat"]
                 unfolded_contract["features"].append(new_feature)
         else:
@@ -117,7 +117,7 @@ def unfold_contract(contract):
             for i in range(target.get("repeat")):
                 new_target = {}
                 new_target.update(target)
-                new_target["name"] = target["name"]+":"+str(i)
+                new_target["name"] = target["name"]+str(i+1)
                 del new_target["repeat"]
                 unfolded_contract["targets"].append(new_target)
         else:
