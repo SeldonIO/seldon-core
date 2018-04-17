@@ -21,7 +21,16 @@ You can use either:
 
    * [R models can be wrapped using source-to-image](r.md)
 
-## H2O
+## Java
 
-   * [H2O models](./h2o.md)
+Java based models including, [H2O](https://www.h2o.ai/), [Deep Learning 4J](https://deeplearning4j.org/), Spark (standalone exported models).
+
+  * [Java models wrapped using source-to-image](java.md)
+
+
+## H2O
+H2O models can be wrapped either from Java or Python.
+
+  * [Java models wrapped using source-to-image](java.md)
+  * [H2O models saved and called from python](./h2o.md)
 
