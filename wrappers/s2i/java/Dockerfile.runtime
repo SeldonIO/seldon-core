@@ -1,0 +1,17 @@
+FROM openjdk:8u131-jre-alpine
+
+RUN apk update && apk add bash
+
+#RUN apk add --no-cache bash
+
+RUN mkdir /build
+
+LABEL io.openshift.s2i.scripts-url="image:///s2i/bin"
+LABEL io.openshift.s2i.assemble-input-files="/build"
+
+COPY ./s2i/bin/ /s2i/bin
+
+WORKDIR /microservice
+
+EXPOSE 5000
+

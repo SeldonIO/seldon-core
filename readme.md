@@ -98,6 +98,7 @@ helm install seldon-core --name seldon-core --repo https://storage.googleapis.co
 Three steps:
 
  1. [Wrap your runtime prediction model](./docs/wrappers/readme.md).
+    * We provide easy to use wrappers for [python](./docs/wrappers/python.md), [R](./docs/wrappers/r.md) and [Java](./docs/wrappers/java.md)
  1. [Define your runtime inference graph in a seldon deployment custom resource](./docs/crd/readme.md).
  1. [Deploy the graph](./docs/deploying.md).
 
