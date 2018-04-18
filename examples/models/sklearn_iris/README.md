@@ -1,4 +1,4 @@
-# Deep MNIST
+# SKLearn Iris
 A scikit-learn Iris model.
 
 ## Depenencies
