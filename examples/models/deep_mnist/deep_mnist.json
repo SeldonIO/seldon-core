@@ -21,7 +21,7 @@
                     "spec": {
                         "containers": [
                             {
-                                "image": "deep-mnist:latest",
+                                "image": "deep-mnist:0.1",
                                 "imagePullPolicy": "IfNotPresent",
                                 "name": "classifier",
                                 "resources": {
