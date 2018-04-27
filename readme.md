@@ -64,9 +64,15 @@ Machine learning deployment has many [challenges](./docs/challenges.md). Seldon 
 Seldon-core allows various types of components to be built and plugged into the runtime prediction graph. These include [models, routers, transformers and combiners](docs/reference/internal-api.md). Some example components that are available as part of the project are:
 
  * **Models** : example that illustrate simple machine learning models to help you build your own integrations
-   * [Tensorflow MNIST Classifier](./examples/models/deep_mnist/README.md)
-   * [Keras MNIST Classifier](./examples/models/keras_mnist/README.md)
-   * [scikit-learn Iris Classifier](./examples/models/sklearn_iris/README.md)
+   * Python
+      * [Tensorflow MNIST Classifier](./examples/models/deep_mnist/deep_mnist.ipynb)
+      * [Keras MNIST Classifier](./examples/models/keras_mnist/keras_mnist.ipynb)
+      * [scikit-learn Iris Classifier](./examples/models/sklearn_iris/sklearn_iris.ipynb)
+   * R
+      * [R MNIST Classifier](./examples/models/r_mnist/r_mnist.ipynb)
+      * [R Iris Classifier](./examples/models/r_iris/r_iris.ipynb)
+   * Java
+      * [H2O Classifier](./examples/models/h2o_mojo/h2o_model.ipynb)
  * **routers**
    * [Epsilon-greedy multi-armed bandits for real time optimization of models](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/epsilon_greedy_gcp.ipynb)
  * **transformers**
