@@ -16,7 +16,7 @@ make train
 ## Wrap using [s2i](https://github.com/openshift/source-to-image#installation).
 
 ```bash
-s2i build . seldonio/seldon-core-s2i-python2 deep-mnist
+s2i build . seldonio/seldon-core-s2i-python2 deep-mnist:0.1
 ```
 
 ## Local Docker Smoke Test
@@ -61,7 +61,7 @@ eval $(minikube docker-env)
 Build image using minikube docker daemon.
 
 ```bash
-s2i build . seldonio/seldon-core-s2i-python2 deep-mnist
+s2i build . seldonio/seldon-core-s2i-python2 deep-mnist:0.1
 ```
 
 Launch deployment
