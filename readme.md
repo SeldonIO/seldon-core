@@ -48,7 +48,7 @@ Machine learning deployment has many [challenges](./docs/challenges.md). Seldon 
  - [Quick Start tutorial using Minikube](./docs/getting_started/minikube.md)
  - Jupyter notebooks showing worked examples:
     * Minikube:
-         *  [Jupyter Notebook showing deployment of prebuilt model using Minikube - with RBAC](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_minikube_rbac.ipynb)
+         * [Jupyter Notebook showing deployment of prebuilt model using Minikube - with RBAC](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_minikube_rbac.ipynb)
          * [Jupyter notebook to create seldon-core with ksonnet and expose APIs using Ambassador on Minikube.](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/ksonnet_ambassador_minikube.ipynb)
     * GCP:
          * [Jupyter Notebook showing deployment of prebuilt model using GCP cluster](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_gcp.ipynb)
@@ -67,7 +67,7 @@ Seldon-core allows various types of components to be built and plugged into the 
    * Python
       * [Tensorflow MNIST Classifier](./examples/models/deep_mnist/deep_mnist.ipynb)
       * [Keras MNIST Classifier](./examples/models/keras_mnist/keras_mnist.ipynb)
-      * [scikit-learn Iris Classifier](./examples/models/sklearn_iris/sklearn_iris.ipynb)
+      * [Scikit-learn Iris Classifier](./examples/models/sklearn_iris/sklearn_iris.ipynb)
    * R
       * [R MNIST Classifier](./examples/models/r_mnist/r_mnist.ipynb)
       * [R Iris Classifier](./examples/models/r_iris/r_iris.ipynb)
