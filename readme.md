@@ -45,7 +45,6 @@ Machine learning deployment has many [challenges](./docs/challenges.md). Seldon 
 
 ## Quick Start
 
- - [Quick Start tutorial using Minikube](./docs/getting_started/minikube.md)
  - Jupyter notebooks showing worked examples:
     * Minikube:
          * [Jupyter Notebook showing deployment of prebuilt model using Minikube - with RBAC](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_minikube_rbac.ipynb)
