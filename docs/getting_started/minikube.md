@@ -23,7 +23,7 @@ Before starting, you need to have [minikube installed](https://kubernetes.io/doc
 1. Start a Kubernetes local cluster in your machine using Minikube with RBAC enabled:
 
     ```bash
-    minikube start --memory=8000 --feature-gates=CustomResourceValidation=true
+    minikube start --memory=8000 --feature-gates=CustomResourceValidation=true --extra-config=apiserver.Authorization.Mode=RBAC
     ```
     
 Once the cluster is created, Minikube should automatically point your kubectl cli to the minikube cluster.
@@ -46,11 +46,9 @@ Use the charts to install the CRD and then the core components. Enabling reporti
     ```bash
      helm install seldon-core-crd --name seldon-core-crd \
             --repo https://storage.googleapis.com/seldon-charts \
-	    --set usage_metrics.enabled=true \
-	    --set rbac.enabled=false
+	    --set usage_metrics.enabled=true
      helm install seldon-core --name seldon-core \
-            --repo https://storage.googleapis.com/seldon-charts \
-	    --set rbac.enabled=false
+            --repo https://storage.googleapis.com/seldon-charts 
     ```
 
 Seldon Core should now be running on your cluster. You can verify if all the pods are up and running typing on command line ```helm status seldon-core``` or ```kubectl get pods```
