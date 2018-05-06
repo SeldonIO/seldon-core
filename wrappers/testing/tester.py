@@ -5,6 +5,7 @@ import requests
 import urllib
 from proto import prediction_pb2
 from proto import prediction_pb2_grpc
+from google.protobuf import json_format
 import grpc
 from time import time
 
@@ -86,10 +87,8 @@ def gen_GRPC_request(batch,features,tensor=True):
                 )
             )
     else:
-        datadef = prediction_pb2.DefaultData(
-            names = features,
-            ndarray = array_to_list_value(batch)
-            )
+        v = '{"names":'+json.dumps(features)+',"ndarray":'+json.dumps(batch.tolist())+'}'
+        datadef = json_format.Parse(v,prediction_pb2.DefaultData())
     request = prediction_pb2.SeldonMessage(
         data = datadef
         )
