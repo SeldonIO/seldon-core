@@ -40,7 +40,7 @@ public class TransformerRestController {
 		catch (InvalidProtocolBufferException e) 
 		{
 			logger.error("Bad request",e);
-			throw new APIException(ApiExceptionType.ENGINE_INVALID_JSON,json);
+			throw new APIException(ApiExceptionType.WRAPPER_INVALID_MESSAGE,json);
 		}
 
 		try
@@ -50,7 +50,7 @@ public class TransformerRestController {
 			return new ResponseEntity<String>(res,HttpStatus.OK);
 		}
 		catch (InvalidProtocolBufferException e) {
-			throw new APIException(ApiExceptionType.ENGINE_INVALID_JSON,"");
+			throw new APIException(ApiExceptionType.WRAPPER_INVALID_MESSAGE,"");
 		} 
 	}
 	
@@ -67,7 +67,7 @@ public class TransformerRestController {
 		catch (InvalidProtocolBufferException e) 
 		{
 			logger.error("Bad request",e);
-			throw new APIException(ApiExceptionType.ENGINE_INVALID_JSON,json);
+			throw new APIException(ApiExceptionType.WRAPPER_INVALID_MESSAGE,json);
 		}
 
 		try
@@ -77,7 +77,7 @@ public class TransformerRestController {
 			return new ResponseEntity<String>(res,HttpStatus.OK);
 		}
 		catch (InvalidProtocolBufferException e) {
-			throw new APIException(ApiExceptionType.ENGINE_INVALID_JSON,"");
+			throw new APIException(ApiExceptionType.WRAPPER_INVALID_MESSAGE,"");
 		} 
 	}
 }
