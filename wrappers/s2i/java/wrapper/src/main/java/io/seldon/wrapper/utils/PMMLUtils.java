@@ -82,7 +82,6 @@ public class PMMLUtils {
 		MiningFunction miningFunction = evaluator.getMiningFunction();
 		TargetField targetField = targetFields.get(0); 
 		switch(miningFunction){
-		case REGRESSION:
 		case CLASSIFICATION:
 			FieldName targetFieldName = targetField.getName();
         	Object targetFieldValue = result.get(targetFieldName);
@@ -100,8 +99,9 @@ public class PMMLUtils {
         	}
         	else
         		throw new IllegalArgumentException("Expected probability distribution");
+		case REGRESSION:        	
 		default:
-			throw new IllegalArgumentException("Expected a regression or classification model, got " + miningFunction);
+			throw new IllegalArgumentException("Expected a classification model, got " + miningFunction);
 		} 
 	}
 	
@@ -187,7 +187,7 @@ public class PMMLUtils {
 			return dataBuilder.build();
 		} 
 		else
-			throw new UnsupportedOperationException("NDArray not supported at present");
+			throw new UnsupportedOperationException("Only Tensor or NDArray is supported");
 	}
 	
 }
