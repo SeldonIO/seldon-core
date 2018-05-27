@@ -163,6 +163,13 @@ def run(args):
                     json=REST_request,
                     headers=headers
                 )
+            else:
+                response = requests.post(
+                    "http://"+args.host+":"+str(args.port)+args.ambassador_path+"/api/v0.1/predictions",
+                    json=REST_request,
+                    headers=headers
+                )
+                
 
             jresp = response.json()
 
@@ -196,6 +203,7 @@ if __name__ == "__main__":
     parser.add_argument("-p","--prnt",action="store_true",help="Prints requests and responses")
     parser.add_argument("--oauth-key")
     parser.add_argument("--oauth-secret")
+    parser.add_argument("--ambassador-path")    
 
     args = parser.parse_args()
 
