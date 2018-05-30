@@ -83,17 +83,7 @@ Seldon-core allows various types of components to be built and plugged into the 
 
 ## Install
 
-Official releases can be installed via helm from the repository https://storage.googleapis.com/seldon-charts.
-
-To install seldon-core, with optional [usage reporting](/docs/developer/readme.md#usage-reporting) on an RBAC enabled cluster:
-
-```
-helm init
-helm install seldon-core-crd --name seldon-core-crd \
-        --repo https://storage.googleapis.com/seldon-charts --set usage_metrics.enabled=true
-helm install seldon-core --name seldon-core --repo https://storage.googleapis.com/seldon-charts
-```
-
+Follow the [install guide](docs/install.md) for details on ways to install seldon onto your Kubernetes cluster.
 
 ## Deployment Guide
 
