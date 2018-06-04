@@ -72,6 +72,8 @@ Seldon-core allows various types of components to be built and plugged into the 
       * [R Iris Classifier](./examples/models/r_iris/r_iris.ipynb)
    * Java
       * [H2O Classifier](./examples/models/h2o_mojo/h2o_model.ipynb)
+   * PMML
+      * [pySpark MNIST Classifier](./examples/models/pyspark_pmml/mnist.ipynb)
  * **routers**
    * [Epsilon-greedy multi-armed bandits for real time optimization of models](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/epsilon_greedy_gcp.ipynb)
  * **transformers**
@@ -79,21 +81,14 @@ Seldon-core allows various types of components to be built and plugged into the 
 
 ## Integrations
 
- * seldon-core can be installed as part of the [kubeflow](https://github.com/kubeflow/kubeflow) project. A detailed [end-to-end example](https://github.com/kubeflow/example-seldon) provides a complete workflow for training various models and deploying them using seldon-core.
+ * [kubeflow](https://github.com/kubeflow/kubeflow)
+    * Seldon-core can be installed as part of the kubeflow project. A detailed [end-to-end example](https://github.com/kubeflow/example-seldon) provides a complete workflow for training various models and deploying them using seldon-core.
+ * [IBM's Fabric for Deep Learning](https://github.com/IBM/FfDL)
+    * Seldon-core can be used to [serve deep learning models trained using FfDL](https://github.com/IBM/FfDL/blob/master/community/FfDL-Seldon/README.md).
 
 ## Install
 
-Official releases can be installed via helm from the repository https://storage.googleapis.com/seldon-charts.
-
-To install seldon-core, with optional [usage reporting](/docs/developer/readme.md#usage-reporting) on an RBAC enabled cluster:
-
-```
-helm init
-helm install seldon-core-crd --name seldon-core-crd \
-        --repo https://storage.googleapis.com/seldon-charts --set usage_metrics.enabled=true
-helm install seldon-core --name seldon-core --repo https://storage.googleapis.com/seldon-charts
-```
-
+Follow the [install guide](docs/install.md) for details on ways to install seldon onto your Kubernetes cluster.
 
 ## Deployment Guide
 
