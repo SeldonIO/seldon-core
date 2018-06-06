@@ -37,11 +37,13 @@ def reconciliate_cont_type(feature,dtype):
 
 def gen_categorical(values,n):
     vals = np.random.randint(len(values),size=n)
-    return np.array(values)[vals].astype(float)
+    return np.array(values)[vals]
 
 def generate_batch(contract,n):
     feature_batches = []
+    ty_set = set()
     for feature_def in contract['features']:
+        ty_set.add(feature_def["ftype"])
         if feature_def["ftype"] == "continuous":
             if "range" in feature_def:
                 range = feature_def["range"]
@@ -53,7 +55,11 @@ def generate_batch(contract,n):
         elif feature_def["ftype"] == "categorical":
             batch = gen_categorical(feature_def["values"],n)
         feature_batches.append(batch[:,None])
-    return np.concatenate(feature_batches,axis=1)
+    if len(ty_set) == 1:
+        return np.concatenate(feature_batches,axis=1)
+    else:
+        out = np.empty((n,len(contract['features'])),dtype=object)
+        return np.concatenate(feature_batches,axis=1,out=out)                       
 
 def gen_REST_request(batch,features,tensor=True):
     if tensor:
