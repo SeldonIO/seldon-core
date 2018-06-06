@@ -9,17 +9,17 @@
 	{
 	    "name":"RACE",
 	    "ftype":"categorical",
-	    "values":[0,1,2]
+	    "values":["0","1","2"]
 	},
 	{
 	    "name":"DCAPS",
 	    "ftype":"categorical",
-	    "values":[0,1,2]
+	    "values":["0","1","2"]
 	},
 	{
 	    "name":"VOL",
 	    "ftype":"categorical",
-	    "values":[0,1,2]
+	    "values":["0","1","2"]
 	},
 	{
 	    "name":"GLEASON",
