@@ -27,9 +27,10 @@ RUN \
 
 # dependencies for release script
 RUN \
+    # install env for python3
     apt-get update -y && \
-    apt-get install -y python-pip && \
-    pip install pyyaml && \
+    apt-get install -y python3-pip && \
+    pip3 install pyyaml && \
     apt-get remove -y --auto-remove && apt-get clean -y && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 WORKDIR /work
