@@ -9,6 +9,8 @@ from subprocess import Popen, PIPE
 import os
 import sys
 import argparse
+import re
+import shutil
 
 def pp(o):
     pprinter = pprint.PrettyPrinter(indent=4)
@@ -97,11 +99,42 @@ def update_values_yaml_file(fpath, seldon_core_version, debug=False):
 
     print "updated {fpath}".format(**locals())
 
-def set_version(seldon_core_version, pom_files, chart_yaml_files, values_yaml_file, debug=False):
+def update_core_jsonnet(fpath, seldon_core_version, debug=False):
+    # eg.
+    # raw_line = // @optionalParam apifeImage string seldonio/apife:0.1.6 Default image for API Front End
+    # srch_str = seldonio/apife
+    # seldon_core_version = 1.2.3
+    # return   = // @optionalParam apifeImage string seldonio/apife:1.2.3 Default image for API Front End
+    def get_output_line(raw_line, srch_str):
+        if raw_line.find('%s:' % srch_str) > 0:
+            return re.sub( r" (%s):.*? " % srch_str, r" \1:%s " % seldon_core_version, raw_line)
+        else:
+            return raw_line
+
+    fpath = os.path.realpath(fpath)
+    if debug:
+        print "processing [{}]".format(fpath)
+
+    tmpfpath = fpath+'.tmp'
+    with open(fpath, 'r') as f:
+        with open(tmpfpath, 'w') as ftmp:
+            for raw_line in f:
+                output_line = raw_line
+                for srch_str in ['seldonio/apife','seldonio/cluster-manager', 'seldonio/engine']:
+                    if raw_line.find(srch_str + ':') > 0:
+                        output_line = get_output_line(raw_line, srch_str)
+                ftmp.write(output_line)
+        if debug:
+            print "created {tmpfpath}".format(**locals())
+    shutil.move(tmpfpath, fpath) # move created tmp file to original file
+    print "updated {fpath}".format(**locals())
+
+def set_version(seldon_core_version, pom_files, chart_yaml_files, values_yaml_file, core_jsonnet_file, debug=False):
     # Normalize file paths
     pom_files_realpaths = [os.path.realpath(x) for x in pom_files]
     chart_yaml_file_realpaths = [os.path.realpath(x) for x in chart_yaml_files]
     values_yaml_file_realpath = os.path.realpath(values_yaml_file) if values_yaml_file != None else None
+    core_jsonnet_file_realpath = os.path.realpath(core_jsonnet_file) if core_jsonnet_file != None else None
 
     # update the pom files
     for fpath in pom_files_realpaths:
@@ -115,15 +148,19 @@ def set_version(seldon_core_version, pom_files, chart_yaml_files, values_yaml_fi
     if values_yaml_file != None:
         update_values_yaml_file(values_yaml_file_realpath, seldon_core_version, debug)
 
+    # update the jsonnet file
+    update_core_jsonnet(core_jsonnet_file_realpath, seldon_core_version, debug)
+
 def main(argv):
     POM_FILES = ['engine/pom.xml', 'api-frontend/pom.xml', 'cluster-manager/pom.xml']
     CHART_YAML_FILES = ['helm-charts/seldon-core/Chart.yaml', 'helm-charts/seldon-core-crd/Chart.yaml']
     VALUES_YAML_FILE = 'helm-charts/seldon-core/values.yaml'
+    CORE_JSONNET_FILE = 'seldon-core/seldon-core/prototypes/core.jsonnet'
 
     opts = getOpts(argv[1:])
     if opts.debug:
         pp(opts)
-    set_version(opts.seldon_core_version, POM_FILES, CHART_YAML_FILES, VALUES_YAML_FILE, opts.debug)
+    set_version(opts.seldon_core_version, POM_FILES, CHART_YAML_FILES, VALUES_YAML_FILE, CORE_JSONNET_FILE, opts.debug)
     print "done"
 
 if __name__ == "__main__":
