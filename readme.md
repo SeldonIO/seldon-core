@@ -106,8 +106,10 @@ Three steps:
  - [Prediction API](./docs/reference/prediction.md)
  - [Seldon Deployment Custom Resource](./docs/reference/seldon-deployment.md)
 
-## Articles
+## Articles/Blogs/Videos
 
+ - [Kubecon Europe 2018 - Serving Machine Learning Models at Scale with Kubeflow and Seldon](https://www.youtube.com/watch?v=pDlapGtecbY)
+ - [Openshift Commons ML SIG - Openshift S2I Helping ML Deployment with Seldon-Core](https://www.youtube.com/watch?v=1uZPBcfYxlM)
  - [Overview of Openshift source-to-image use in Seldon-Core](./docs/articles/openshift_s2i.md)
 
 ## Testing
