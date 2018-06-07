@@ -3,6 +3,8 @@ package io.seldon.wrapper.utils;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.nd4j.linalg.dataset.api.iterator.CachingDataSetIterator;
+
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 
@@ -68,7 +70,30 @@ public class H2OUtils {
 				RowData row = new RowData();
 				for (int j = 0; j < cols; j++) {
 					String name = data.getNamesCount() > 0 ? data.getNames(j % cols) : "" + (j % cols);
-					Double value = list.getValues(i).getListValue().getValues(j).getNumberValue();
+					Object value;
+					Value listValue = list.getValues(i).getListValue().getValues(j);
+					switch(listValue.getKindCase()) {
+					case NUMBER_VALUE:
+						value = listValue.getNumberValue();
+						break;
+					case STRING_VALUE:
+						value = listValue.getStringValue();
+						break;
+					case BOOL_VALUE:
+						//Get value as String
+						value = listValue.getStringValue();
+						break;
+					case NULL_VALUE:
+						// Treat Nulls as 0
+						value = 0.0;
+						break;
+					case LIST_VALUE:
+						throw new UnsupportedOperationException("Only 2-D arrays unsupported for H2O conversion");
+					case STRUCT_VALUE:
+						throw new UnsupportedOperationException("Struct in NDArray unsupported for H2O conversion");
+					default:
+						throw new UnsupportedOperationException("Unknown kind in NDArray");
+					}
 					row.put(name, value);
 				}
 				out.add(row);
