@@ -3,7 +3,7 @@
 #
 
 import yaml
-import StringIO
+from io import StringIO
 import pprint
 from subprocess import Popen, PIPE
 import os
@@ -27,13 +27,13 @@ def dict_to_yaml(d):
     return yaml.dump(d, default_flow_style=False)
 
 def yaml_to_dict(yaml_data):
-    return yaml.load(StringIO.StringIO(yaml_data))
+    return yaml.load(StringIO(yaml_data))
 
 def run_command(args, debug=False):
     err, out = None, None
     if debug:
-        print "cwd[{}]".format(os.getcwd())
-        print "Executing: " + repr(args)
+        print("cwd[{}]".format(os.getcwd()))
+        print("Executing: " + repr(args))
     p = Popen(args, stdout=PIPE, stderr=PIPE)
     if p.wait() == 0:
         out = p.stdout.read()
@@ -51,7 +51,7 @@ def run_command(args, debug=False):
 def update_pom_file(fpath, seldon_core_version, debug=False):
     fpath = os.path.realpath(fpath)
     if debug:
-        print "processing [{}]".format(fpath)
+        print("processing [{}]".format(fpath))
     comp_dir_path = os.path.dirname(fpath)
     os.chdir(comp_dir_path)
     args = ["mvn", "versions:set", "-DnewVersion={seldon_core_version}".format(**locals())]
@@ -59,15 +59,15 @@ def update_pom_file(fpath, seldon_core_version, debug=False):
     ##pp(out)
     ##pp(err)
     if err == None:
-        print "updated {fpath}".format(**locals())
+        print("updated {fpath}".format(**locals()))
     else:
-        print "error {fpath}".format(**locals())
-        print err
+        print("error {fpath}".format(**locals()))
+        print(err)
 
 def update_chart_yaml_file(fpath, seldon_core_version, debug=False):
     fpath = os.path.realpath(fpath)
     if debug:
-        print "processing [{}]".format(fpath)
+        print("processing [{}]".format(fpath))
     f = open(fpath)
     yaml_data = f.read()
     f.close()
@@ -78,13 +78,13 @@ def update_chart_yaml_file(fpath, seldon_core_version, debug=False):
     with open(fpath, 'w') as f:
         f.write(dict_to_yaml(d))
 
-    print "updated {fpath}".format(**locals())
+    print("updated {fpath}".format(**locals()))
 
 
 def update_values_yaml_file(fpath, seldon_core_version, debug=False):
     fpath = os.path.realpath(fpath)
     if debug:
-        print "processing [{}]".format(fpath)
+        print("processing [{}]".format(fpath))
     f = open(fpath)
     yaml_data = f.read()
     f.close()
@@ -97,7 +97,7 @@ def update_values_yaml_file(fpath, seldon_core_version, debug=False):
     with open(fpath, 'w') as f:
         f.write(dict_to_yaml(d))
 
-    print "updated {fpath}".format(**locals())
+    print("updated {fpath}".format(**locals()))
 
 def update_core_jsonnet(fpath, seldon_core_version, debug=False):
     # eg.
@@ -113,7 +113,7 @@ def update_core_jsonnet(fpath, seldon_core_version, debug=False):
 
     fpath = os.path.realpath(fpath)
     if debug:
-        print "processing [{}]".format(fpath)
+        print("processing [{}]".format(fpath))
 
     tmpfpath = fpath+'.tmp'
     with open(fpath, 'r') as f:
@@ -125,9 +125,9 @@ def update_core_jsonnet(fpath, seldon_core_version, debug=False):
                         output_line = get_output_line(raw_line, srch_str)
                 ftmp.write(output_line)
         if debug:
-            print "created {tmpfpath}".format(**locals())
+            print("created {tmpfpath}".format(**locals()))
     shutil.move(tmpfpath, fpath) # move created tmp file to original file
-    print "updated {fpath}".format(**locals())
+    print("updated {fpath}".format(**locals()))
 
 def set_version(seldon_core_version, pom_files, chart_yaml_files, values_yaml_file, core_jsonnet_file, debug=False):
     # Normalize file paths
@@ -161,7 +161,7 @@ def main(argv):
     if opts.debug:
         pp(opts)
     set_version(opts.seldon_core_version, POM_FILES, CHART_YAML_FILES, VALUES_YAML_FILE, CORE_JSONNET_FILE, opts.debug)
-    print "done"
+    print("done")
 
 if __name__ == "__main__":
     main(sys.argv)
