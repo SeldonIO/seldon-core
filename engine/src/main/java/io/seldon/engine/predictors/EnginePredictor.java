@@ -133,7 +133,7 @@ public class EnginePredictor {
         //@formatter:off
         PredictorSpec.Builder predictorSpecBuilder = PredictorSpec.newBuilder()
                 .setName("basic-predictor")
-                .setComponentSpec(PodTemplateSpec.newBuilder());
+                .addComponentSpecs(PodTemplateSpec.newBuilder());
         //@formatter:on
 
         { // Add predictorGraph

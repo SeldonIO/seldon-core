@@ -29,9 +29,11 @@ import com.google.protobuf.InvalidProtocolBufferException;
 
 import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.ApiException;
+import io.kubernetes.client.apis.CoreV1Api;
 import io.kubernetes.client.apis.CustomObjectsApi;
 import io.kubernetes.client.apis.ExtensionsV1beta1Api;
 import io.kubernetes.client.models.ExtensionsV1beta1DeploymentList;
+import io.kubernetes.client.models.V1ServiceList;
 import io.kubernetes.client.proto.Meta.ObjectMeta;
 import io.kubernetes.client.util.Config;
 import io.seldon.clustermanager.ClusterManagerProperites;
@@ -115,7 +117,7 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
         {
             ApiClient client = Config.defaultClient();
             ExtensionsV1beta1Api api = new ExtensionsV1beta1Api(client);
-            ExtensionsV1beta1DeploymentList l =  api.listNamespacedDeployment(namespace, null, null, null, false, Constants.LABEL_SELDON_ID+"="+seldonDeploymentName, 1, null, null, false);
+            ExtensionsV1beta1DeploymentList l =  api.listNamespacedDeployment(namespace, null, null, null, false, Constants.LABEL_SELDON_ID+"="+seldonDeploymentName, null, null, null, false);
             return l;
         } catch (IOException e) {
             logger.error("Failed to get deployment list for "+seldonDeploymentName,e);
@@ -125,6 +127,25 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
             return null;
         }
     }
+
+	@Override
+	public V1ServiceList getOwnedServices(String seldonDeploymentName) {
+		try
+		{
+			ApiClient client = Config.defaultClient();
+			io.kubernetes.client.apis.CoreV1Api api = new CoreV1Api(client);
+			V1ServiceList l = api.listNamespacedService(namespace, null, null, null, false, Constants.LABEL_SELDON_ID+"="+seldonDeploymentName, null, null, null, null);
+			return l;
+		} catch (IOException e) {
+            logger.error("Failed to get deployment list for "+seldonDeploymentName,e);
+            return null;
+        } catch (ApiException e) {
+            logger.error("Failed to get deployment list for "+seldonDeploymentName,e);
+            return null;
+        }
+	}
+    
+    
 	
 
 }
