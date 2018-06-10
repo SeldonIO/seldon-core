@@ -17,7 +17,7 @@
         "oauth_secret": "oauth-secret",
         "predictors": [
             {
-                "componentSpec": {
+                "componentSpecs": [{
                     "spec": {
                         "containers": [
                             {
@@ -33,7 +33,7 @@
                         ],
                         "terminationGracePeriodSeconds": 20
                     }
-                },
+                }],
                 "graph": {
                     "children": [],
                     "name": "mean-classifier",
