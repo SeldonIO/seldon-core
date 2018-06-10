@@ -78,12 +78,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		this.clusterManagerProperites = clusterManagerProperites;
 	}
 
-	//private String getContainerServiceName(SeldonDeployment dep,PredictorSpec p,String containerName)
-	//{
-	//	return dep.getSpec().getName() + "_" + p.getName() + "_" + containerName;
-	//}
-	
-	 
+
 	private static String getEngineEnvVarJson(Message protoMessage) throws SeldonDeploymentException {
 		String retVal;
 		try {
@@ -317,8 +312,14 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 	
 	private String getPredictorServiceName(SeldonDeployment mlDep,int predictorIdx,int podTemplateIdx)
 	{
-		return  mlDep.getSpec().getName()+"_"+predictorIdx+"_"+podTemplateIdx;
+		return  mlDep.getSpec().getName()+"-"+predictorIdx+"-"+podTemplateIdx;
 	}
+	
+	@Override
+	public String getKubernetesDeploymentName(String deploymentName,String predictorName,int podTemplateIdx) {
+		return deploymentName + "-" + predictorName+"-"+podTemplateIdx;
+	}
+	
 	
 	@Override
 	public SeldonDeployment defaulting(SeldonDeployment mlDep) {
@@ -353,7 +354,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 				{
 					V1.Container c2 = this.updateContainer(c, findPredictiveUnitForContainer(mlDep.getSpec().getPredictors(pbIdx).getGraph(),c.getName()),cIdx,deploymentName,predictorName);
 					mlBuilder.getSpecBuilder().getPredictorsBuilder(pbIdx).getComponentSpecsBuilder(ptsIdx).getSpecBuilder().addContainers(cIdx, c2);	
-					String containerHostName = ptsIdx > 0 ? "0.0.0.0" : serviceName ;
+					String containerHostName = ptsIdx == 0 ? "0.0.0.0" : serviceName ;
 					updatePredictiveUnitBuilderByName(mlBuilder.getSpecBuilder().getPredictorsBuilder(pbIdx).getGraphBuilder(),c2,containerHostName); 
 					cIdx++;
 				}
@@ -417,10 +418,6 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
         
 	}
 	
-	@Override
-	public String getKubernetesDeploymentName(String deploymentName,String predictorName) {
-		return deploymentName + "-" + predictorName;
-	}
 	
 	
 	
@@ -481,7 +478,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			}
 		}
 		for(int i=0;i<pu.getChildrenCount();i++)
-			addServicePorts(pu, serviceName,svcSpecBuilder);
+			addServicePorts(pu.getChildren(i), serviceName,svcSpecBuilder);
 	}
 	
 	@Override
@@ -499,7 +496,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			for(int ptsIdx=0;ptsIdx<p.getComponentSpecsCount();ptsIdx++)
 			{
 				V1.PodTemplateSpec spec = p.getComponentSpecs(ptsIdx);
-				String depName = getKubernetesDeploymentName(mlDep.getSpec().getName(),p.getName());
+				String depName = getKubernetesDeploymentName(mlDep.getSpec().getName(),p.getName(),ptsIdx);
 				PodTemplateSpec.Builder podSpecBuilder = PodTemplateSpec.newBuilder(spec);
 				String depServiceLabelValue;
 				if (ptsIdx == 0) // Deployment containing engine

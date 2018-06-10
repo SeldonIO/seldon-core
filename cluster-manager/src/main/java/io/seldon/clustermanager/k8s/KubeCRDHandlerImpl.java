@@ -45,7 +45,7 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 	private final static Logger logger = LoggerFactory.getLogger(KubeCRDHandlerImpl.class);
 	
 	public static final String GROUP = "machinelearning.seldon.io";
-	public static final String VERSION = "v1alpha1";
+	public static final String VERSION = "v1alpha2";
 	public static final String KIND_PLURAL = "seldondeployments";
 	public static final String KIND = "SeldonDeployment";
 	
