@@ -32,9 +32,14 @@
 			    }],
 			"terminationGracePeriodSeconds": 20
 		    }},
-				   {
-				   "spec":{
-				       "containers":[
+	        {
+		    "metadata":{
+			"labels":{
+			    "version":"v2"
+			}
+		    },    
+			"spec":{
+			    "containers":[
 			    {
 				"image": "seldonio/mock_classifier:1.0",
 				"imagePullPolicy": "IfNotPresent",
