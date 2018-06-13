@@ -10,6 +10,8 @@ Seldon Core is an open source platform for deploying machine learning models on 
 - [Goals](#goals)
 - [Prerequisites](#prerequisites)
 - [Quick Start](#quick-start)
+- [Example Components](#example-components)
+- [Integrations](#integrations)
 - [Install](#install)
 - [Deployment guide](#deployment-guide)
 - [Reference](#reference)
@@ -85,6 +87,9 @@ Seldon-core allows various types of components to be built and plugged into the 
     * Seldon-core can be installed as part of the kubeflow project. A detailed [end-to-end example](https://github.com/kubeflow/example-seldon) provides a complete workflow for training various models and deploying them using seldon-core.
  * [IBM's Fabric for Deep Learning](https://github.com/IBM/FfDL)
     * Seldon-core can be used to [serve deep learning models trained using FfDL](https://github.com/IBM/FfDL/blob/master/community/FfDL-Seldon/README.md).
+       * [Train and deploy a Tensorflow MNIST classififer using FfDL and Seldon.](https://github.com/IBM/FfDL/blob/master/community/FfDL-Seldon/tf-model/README.md)
+       * [Train and deploy a PyTorch MNIST classififer using FfDL and Seldon.](https://github.com/IBM/FfDL/blob/master/community/FfDL-Seldon/pytorch-model/README.md)
+	
 
 ## Install
 
