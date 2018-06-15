@@ -315,19 +315,20 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
         }
 	}
 	
+	/*
 	private String getPredictorServiceNameValue(SeldonDeployment mlDep,String predictorName,String containerName)
 	{
 		return  mlDep.getSpec().getName()+"-"+predictorName+"-"+containerName;
 	}
-	
+	*/
 	private String getPredictorServiceNameKey(String containerName)
 	{
 		return LABEL_SELDON_APP+"-"+containerName;
 	}
 	
 	@Override
-	public String getKubernetesDeploymentName(String deploymentName,String predictorName,int podTemplateIdx) {
-		return deploymentName + "-" + predictorName+"-"+podTemplateIdx;
+	public String getSeldonServiceName(SeldonDeployment dep,PredictorSpec pred,String key) {
+		return dep.getSpec().getName() + "-" + pred.getName()+"-"+key;
 	}
 	
 	
@@ -352,7 +353,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 				{
 					V1.Container c = spec.getSpec().getContainers(cIdx);
 					String containerServiceKey = getPredictorServiceNameKey(c.getName());
-					String containerServiceValue = getPredictorServiceNameValue(mlDep, p.getName(), c.getName());
+					String containerServiceValue = getSeldonServiceName(mlDep, p, c.getName());
 					metaBuilder.putLabels(containerServiceKey, containerServiceValue); 
 					
 					int portNum;
@@ -527,18 +528,21 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			    	.putAnnotations("prometheus.io/path", "/prometheus")
 			    	.putAnnotations("prometheus.io/port",""+clusterManagerProperites.getEngineContainerPort())
 			    	.putAnnotations("prometheus.io/scrape", "true");
-				String depName = getKubernetesDeploymentName(mlDep.getSpec().getName(),p.getName(),0);
+				String depName = getSeldonServiceName(mlDep,p,"svc-orch");
 				ObjectMeta.Builder depMetaBuilder = ObjectMeta.newBuilder()
 						.setName(depName)
 						.putLabels(SeldonDeploymentOperatorImpl.LABEL_SELDON_APP, serviceLabel)
 						.putLabels(Constants.LABEL_SELDON_ID, mlDep.getSpec().getName())
 						.putLabels("app", depName)
-						.putLabels("version", "v1") //FIXME
+						.putLabels("version", "v1")
 						.putLabels(SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_KEY, SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_VAL)
 						.addOwnerReferences(ownerRef);
-				depMetaBuilder.putAllLabels(p.getLabelsMap());
+
+				// Add default version number then overwrite with any labels
 				podSpecBuilder.getMetadataBuilder().putLabels("version", "v1");
+				depMetaBuilder.putAllLabels(p.getLabelsMap());
 				podSpecBuilder.getMetadataBuilder().putAllLabels(p.getLabelsMap());
+
 				Deployment deployment = V1beta1Extensions.Deployment.newBuilder()
 						.setMetadata(depMetaBuilder)
 						.setSpec(DeploymentSpec.newBuilder()
@@ -554,23 +558,23 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			for(int ptsIdx=0;ptsIdx<p.getComponentSpecsCount();ptsIdx++)
 			{
 				V1.PodTemplateSpec spec = p.getComponentSpecs(ptsIdx);
-				String depName = getKubernetesDeploymentName(mlDep.getSpec().getName(),p.getName(),ptsIdx+1);
+				String depName = getSeldonServiceName(mlDep,p,spec.getSpec().getContainers(0).getName()+"-"+ptsIdx);
 				PodTemplateSpec.Builder podSpecBuilder = PodTemplateSpec.newBuilder(spec);
 				ObjectMeta.Builder depMetaBuilder = ObjectMeta.newBuilder()
 						.setName(depName)
-						.putLabels(SeldonDeploymentOperatorImpl.LABEL_SELDON_APP, serviceLabel)
 						.putLabels(Constants.LABEL_SELDON_ID, mlDep.getSpec().getName())
 						.putLabels("app", depName)
-						.putLabels("version", "v1") //FIXME
+						.putLabels("version", "v1")
 						.putLabels(SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_KEY, SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_VAL)
 						.addOwnerReferences(ownerRef);
 				
+				//Overwrite labels
 				depMetaBuilder.putAllLabels(spec.getMetadata().getLabelsMap());
 				
 				for(V1.Container c : spec.getSpec().getContainersList())
 				{
 					String containerServiceKey = getPredictorServiceNameKey(c.getName());
-					String containerServiceValue = getPredictorServiceNameValue(mlDep, p.getName(), c.getName());
+					String containerServiceValue = getSeldonServiceName(mlDep, p, c.getName());
 
 					podSpecBuilder.getSpecBuilder()
 			    	.setTerminationGracePeriodSeconds(20);
