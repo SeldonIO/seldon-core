@@ -17,7 +17,7 @@
         "oauth_secret": "oauth-secret",
         "predictors": [
             {
-                "componentSpec": [{
+                "componentSpecs": [{
                     "spec": {
                         "containers": [
                             {

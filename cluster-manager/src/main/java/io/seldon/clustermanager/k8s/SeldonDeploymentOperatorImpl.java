@@ -250,7 +250,9 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		    }
 		}
 		else
-			throw new UnsupportedOperationException(String.format("Found container port already set with http or grpc label. This is not presently allowed. Found port {}",containerPort));
+		{
+			//throw new UnsupportedOperationException(String.format("Found container port already set with http or grpc label. This is not presently allowed. Found port {}",containerPort));
+		}
 		
 		// Add environment variable for the port used in case the model needs to access it
 		final String ENV_PREDICTIVE_UNIT_SERVICE_PORT ="PREDICTIVE_UNIT_SERVICE_PORT";
@@ -366,7 +368,6 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 					mlBuilder.getSpecBuilder().getPredictorsBuilder(pbIdx).getComponentSpecsBuilder(ptsIdx).getSpecBuilder().addContainers(cIdx, c2);	
 					updatePredictiveUnitBuilderByName(mlBuilder.getSpecBuilder().getPredictorsBuilder(pbIdx).getGraphBuilder(),c2,containerServiceValue); 
 				}
-				System.out.println("pbIdx"+pbIdx+" ptsIdx "+ptsIdx);
 				mlBuilder.getSpecBuilder().getPredictorsBuilder(pbIdx).getComponentSpecsBuilder(ptsIdx).setMetadata(metaBuilder);
 			}
 		}	
@@ -479,13 +480,24 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			Endpoint e = pu.getEndpoint();
 			if (e.getServiceHost().equals(serviceName))
 			{
-				svcSpecBuilder.addPorts(ServicePort.newBuilder()
-                        .setProtocol("TCP")
-                        .setPort(e.getServicePort())
-                        .setTargetPort(IntOrString.newBuilder().setIntVal(e.getServicePort()))
-                        //.setName("http")
-                        );
-				return;
+				switch(e.getType())
+				{
+				case REST:
+					svcSpecBuilder.addPorts(ServicePort.newBuilder()
+							.setProtocol("TCP")
+							.setPort(e.getServicePort())
+							.setTargetPort(IntOrString.newBuilder().setIntVal(e.getServicePort()))
+							.setName("http")
+							);
+					return;
+				case GRPC:
+					svcSpecBuilder.addPorts(ServicePort.newBuilder()
+							.setProtocol("TCP")
+							.setPort(e.getServicePort())
+							.setTargetPort(IntOrString.newBuilder().setIntVal(e.getServicePort()))
+							.setName("grpc")
+							);					
+				}
 			}
 		}
 		for(int i=0;i<pu.getChildrenCount();i++)
@@ -524,6 +536,9 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 						.putLabels("version", "v1") //FIXME
 						.putLabels(SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_KEY, SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_VAL)
 						.addOwnerReferences(ownerRef);
+				depMetaBuilder.putAllLabels(p.getLabelsMap());
+				podSpecBuilder.getMetadataBuilder().putLabels("version", "v1");
+				podSpecBuilder.getMetadataBuilder().putAllLabels(p.getLabelsMap());
 				Deployment deployment = V1beta1Extensions.Deployment.newBuilder()
 						.setMetadata(depMetaBuilder)
 						.setSpec(DeploymentSpec.newBuilder()
@@ -551,10 +566,6 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 						.addOwnerReferences(ownerRef);
 				
 				depMetaBuilder.putAllLabels(spec.getMetadata().getLabelsMap());
-				//for(Entry<String,String> podLabel : spec.getMetadata().getLabelsMap().entrySet())
-				//{
-				//	depMetaBuilder.put
-				//}
 				
 				for(V1.Container c : spec.getSpec().getContainersList())
 				{
