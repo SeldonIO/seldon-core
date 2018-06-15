@@ -69,7 +69,10 @@
                     "type": "MODEL"
                 },
                 "name": "fx-market-predictor-canary",
-                "replicas": 1
+                "replicas": 1,
+		"labels":{
+		    "version":"v2"
+		}
             }
         ]
     }

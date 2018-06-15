@@ -40,7 +40,6 @@
                     "endpoint": {
 			"type" : "GRPC"
 		    },
-                    "subtype": "MICROSERVICE",
                     "type": "MODEL"
                 },
                 "name": "fx-market-predictor",

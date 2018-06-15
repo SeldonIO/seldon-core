@@ -232,8 +232,12 @@
                                 },
                                 "type": "array"
                             },
-			    "componentSpec":
-			    {{ include "podTemplateSpec" . }}
+			    "componentSpecs":
+			    {
+				"description": "List of pods belonging to the predictor",
+				"type" : "array",
+				"items": {{ include "podTemplateSpec" . }}
+			    }
                         }
                     }
                 }

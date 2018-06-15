@@ -48,6 +48,7 @@ message PredictorSpec {
   optional int32 replicas = 4; // The number of replicas of the predictor to create.
   map<string,string> annotations = 5; // Arbitrary annotations.
   optional k8s.io.api.core.v1.ResourceRequirements engineResources = 6; // Optional set of resources for the Seldon engine which is added to each Predictor graph to manage the request/response flow
+  map<string,string> labels = 7; // labels to be attached to entry deplyment for this predictor
 }
 
 

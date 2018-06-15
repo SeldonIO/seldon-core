@@ -36,7 +36,7 @@ public class SeldonDeploymentUtils {
 	
 	public static SeldonDeployment jsonToSeldonDeployment(String json) throws InvalidProtocolBufferException {
 		SeldonDeployment.Builder mlBuilder = SeldonDeployment.newBuilder();
-		JsonFormat.parser().ignoringUnknownFields()
+		JsonFormat.parser()//.ignoringUnknownFields()
 			.usingTypeParser(IntOrString.getDescriptor().getFullName(), new IntOrStringUtils.IntOrStringParser())
 			.usingTypeParser(Quantity.getDescriptor().getFullName(), new QuantityUtils.QuantityParser())
             .usingTypeParser(Time.getDescriptor().getFullName(), new TimeUtils.TimeParser())
