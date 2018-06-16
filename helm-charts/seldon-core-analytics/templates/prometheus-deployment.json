@@ -22,7 +22,7 @@
                     },
                     "spec": {
 			{{- if .Values.rbac.enabled }}
-			"serviceAccountName": "seldon",
+			"serviceAccountName": "prometheus",
 			{{- end }}
                         "containers": [
                             {
