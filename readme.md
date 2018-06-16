@@ -50,7 +50,7 @@ Machine learning deployment has many [challenges](./docs/challenges.md). Seldon 
  - Jupyter notebooks showing worked examples:
     * Minikube:
          * [Jupyter Notebook showing deployment of prebuilt model using Minikube - with RBAC](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_minikube_rbac.ipynb)
-         * [Jupyter notebook to create seldon-core with ksonnet and expose APIs using Ambassador on Minikube.](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/ksonnet_ambassador_minikube.ipynb)
+         * [Jupyter notebook to create seldon-core with ksonnet and expose APIs using Ambassador on Minikube with RBAC.](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/ksonnet_ambassador_minikube.ipynb)
     * GCP:
          * [Jupyter Notebook showing deployment of prebuilt model using GCP cluster](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_gcp.ipynb)
          * [Jupyter notebook to create seldon-core with ksonnet and expose APIs using Ambassador on GCP.](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/ksonnet_ambassador_gcp.ipynb)
