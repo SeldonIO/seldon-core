@@ -497,7 +497,8 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 							.setPort(e.getServicePort())
 							.setTargetPort(IntOrString.newBuilder().setIntVal(e.getServicePort()))
 							.setName("grpc")
-							);					
+							);	
+					return;
 				}
 			}
 		}
@@ -523,12 +524,14 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 				podSpecBuilder.getSpecBuilder()
 		    	.addContainers(createEngineContainer(mlDep,p))
 		    	.setTerminationGracePeriodSeconds(20);
+				String depName = getSeldonServiceName(mlDep,p,"svc-orch");
 				podSpecBuilder.getMetadataBuilder()
 					.putLabels(LABEL_SELDON_APP, mlDep.getSpec().getName()) 
+					.putLabels("app", depName)
 			    	.putAnnotations("prometheus.io/path", "/prometheus")
 			    	.putAnnotations("prometheus.io/port",""+clusterManagerProperites.getEngineContainerPort())
 			    	.putAnnotations("prometheus.io/scrape", "true");
-				String depName = getSeldonServiceName(mlDep,p,"svc-orch");
+
 				ObjectMeta.Builder depMetaBuilder = ObjectMeta.newBuilder()
 						.setName(depName)
 						.putLabels(SeldonDeploymentOperatorImpl.LABEL_SELDON_APP, serviceLabel)
@@ -568,8 +571,10 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 						.putLabels(SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_KEY, SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_VAL)
 						.addOwnerReferences(ownerRef);
 				
-				//Overwrite labels
+				// Add default version number then overwrite with any labels
+				podSpecBuilder.getMetadataBuilder().putLabels("version", "v1");
 				depMetaBuilder.putAllLabels(spec.getMetadata().getLabelsMap());
+				podSpecBuilder.getMetadataBuilder().putAllLabels(spec.getMetadata().getLabelsMap());
 				
 				for(V1.Container c : spec.getSpec().getContainersList())
 				{
