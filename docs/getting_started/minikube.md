@@ -213,12 +213,4 @@ The response contains:
     * "names": The names of your classes.
     * "ndarray": The predicted  probabilities for each class.
 
-## Next Steps
-
- * You can run several notebooks that show various examples on minikube and Google cloud platform
-   *  [Jupyter Notebook showing deployment of prebuilt model using Minikube](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_minikube.ipynb)
-   * [Jupyter Notebook showing deployment of prebuilt model using GCP cluster](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_gcp.ipynb)
-   * [Epsilon-greedy multi-armed bandits for real time optimization of models](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/epsilon_greedy_gcp.ipynb)
-   * [Advanced graphs showing the various types of runtime prediction graphs that can be built](https://github.com/cliveseldon/seldon-core/blob/master/notebooks/advanced_graphs.ipynb) 
-   * [Jupyter notebook to create seldon-core with ksonnet and expose APIs using Ambassador.](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/ksonnet_ambassador_minikube.ipynb)
 
