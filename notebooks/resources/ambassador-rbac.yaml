@@ -1,19 +1,4 @@
 ---
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    service: ambassador-admin
-  name: ambassador-admin
-spec:
-  type: NodePort
-  ports:
-  - name: ambassador-admin
-    port: 8877
-    targetPort: 8877
-  selector:
-    service: ambassador
----
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
 metadata:
@@ -48,23 +33,60 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: ambassador
-  namespace: seldon
+  namespace: seldon  
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    service: ambassador
+  name: ambassador
+spec:
+  selector:
+    service: ambassador
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 80
+  type: NodePort
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    service: ambassador-admin
+  name: ambassador-admin
+spec:
+  ports:
+  - name: ambassador-admin
+    port: 8877
+    targetPort: 8877
+  selector:
+    service: ambassador
+  type: NodePort
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: ambassador
 spec:
-  replicas: 3
+  replicas: 1
   template:
     metadata:
+      annotations:
+        sidecar.istio.io/inject: 'false'
       labels:
         service: ambassador
     spec:
-      serviceAccountName: ambassador
       containers:
-      - name: ambassador
-        image: quay.io/datawire/ambassador:0.26.0
+      - image: quay.io/datawire/ambassador:0.34.1
+        name: ambassador
+        env:
+        - name: AMBASSADOR_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
         resources:
           limits:
             cpu: 1
@@ -72,23 +94,7 @@ spec:
           requests:
             cpu: 200m
             memory: 100Mi
-        env:
-        - name: AMBASSADOR_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace          
-        livenessProbe:
-          httpGet:
-            path: /ambassador/v0/check_alive
-            port: 8877
-          initialDelaySeconds: 3
-          periodSeconds: 3
-        readinessProbe:
-          httpGet:
-            path: /ambassador/v0/check_ready
-            port: 8877
-          initialDelaySeconds: 3
-          periodSeconds: 3
-      - name: statsd
-        image: quay.io/datawire/statsd:0.26.0
+      - image: quay.io/datawire/statsd:0.34.1
+        name: statsd
       restartPolicy: Always
+      serviceAccountName: ambassador
