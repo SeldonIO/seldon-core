@@ -36,9 +36,9 @@ message PredictorStatus {
 message DeploymentSpec {
   optional string name = 1; // A unique name within the namespace.
   repeated PredictorSpec predictors = 2; // A list of 1 or more predictors describing runtime machine learning deployment graphs.
-  optional string oauth_key = 6; // The oauth key for external users to use this deployment via an API.
-  optional string oauth_secret = 7; // The oauth secret for external users to use this deployment via an API.
-  map<string,string> annotations = 8; // Arbitrary annotations.
+  optional string oauth_key = 3; // The oauth key for external users to use this deployment via an API.
+  optional string oauth_secret = 4; // The oauth secret for external users to use this deployment via an API.
+  map<string,string> annotations = 5; // Arbitrary annotations.
 }
 
 message PredictorSpec {
