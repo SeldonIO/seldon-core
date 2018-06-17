@@ -94,7 +94,7 @@ The docker image version of your model is deployed through a json configuration 
 
 ```json
 {
-    "apiVersion": "machinelearning.seldon.io/v1alpha1",
+    "apiVersion": "machinelearning.seldon.io/v1alpha2",
     "kind": "SeldonDeployment",
     "metadata": {
         "labels": {
@@ -112,7 +112,7 @@ The docker image version of your model is deployed through a json configuration 
         "oauth_secret": "oauth-secret",
         "predictors": [
             {
-                "componentSpec": {
+                "componentSpecs": [{
                     "spec": {
                         "containers": [
                             {
@@ -128,7 +128,7 @@ The docker image version of your model is deployed through a json configuration 
                         ],
                         "terminationGracePeriodSeconds": 20
                     }
-                },
+                }],
                 "graph": {
                     "children": [],
                     "name": "sklearn-iris-classifier",
