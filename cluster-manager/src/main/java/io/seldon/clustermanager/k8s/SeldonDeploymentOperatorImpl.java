@@ -21,10 +21,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringJoiner;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -326,9 +326,17 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		return LABEL_SELDON_APP+"-"+containerName;
 	}
 	
+	private String hash(String key)  {
+	    return DigestUtils.md5Hex(key).toLowerCase();
+	}
+	
 	@Override
 	public String getSeldonServiceName(SeldonDeployment dep,PredictorSpec pred,String key) {
-		return dep.getSpec().getName() + "-" + pred.getName()+"-"+key;
+		String svcName =  dep.getSpec().getName() + "-" + pred.getName()+"-"+key;
+		if (svcName.length() > 63)
+			return "seldon-"+hash(svcName);
+		else
+			return svcName;
 	}
 	
 	
