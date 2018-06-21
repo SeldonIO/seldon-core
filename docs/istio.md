@@ -1,0 +1,8 @@
+# Istio and Seldon
+
+[Istio](https://istio.io/) provides service mesh functionality and can be a useful addition to Seldon to provide extra traffic management, end-to-end security and policy enforcement in your runtime machine learning deployment graph. Seldon-core can be seen as  providing a service graph for machine learning deployments. As part of that it provdes an Operator which takes your ML deployment graph definition described as a SeldonDeployment kubernetes resource and deploys and manages it on a kubernetes cluster so you can connect your business applications that need to access machine learning services. Data scientists can focus on building pluggable docker containers for parts of their runtime machine learning graph, such as runtime inference, transformations, outlier detection, ensemblers etc. These can be composed together as needed to satisfy your runtime ML functionality. To allow modules to be built without knowing what service graph they will exist in means Seldon also deploys a Service Orchestrator as part of each deployment which manages the request/reponse flow to satisfy the defined ML service graph for multi-component graphs.
+
+Out of the box Seldon provides rolling updates to SeldonDeployment service graphs provided by the underlying kubernetes functionality. However, there are cases where you want to manage updates to your ML deployments in a more controlled way with fine grained traffic management including canary updates, blue-green deployments and shadowing. This is where Istio can help in combination with Seldon.
+
+[An example step-by-step guide to canary deployemts using Istio and Seldon is provided](../examples/istio/canary_update/canary.ipynb).
+
