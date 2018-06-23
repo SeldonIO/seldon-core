@@ -149,6 +149,11 @@ message Parameter {
 
 ## Single Model
 
+ * The model is contained in the image ```seldonio/mock_classifier:1.0```
+ * The model requests 1 MB of memory
+ * The model defines oauth key and secret for use with seldon-core's built in API gateway.
+ * The model supports a REST API
+ 
 ```json
 {
     "apiVersion": "machinelearning.seldon.io/v1alpha2",

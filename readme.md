@@ -58,6 +58,8 @@ It is possible to deploy Seldon with two operators that can handle both v1alpha1
 
 ## Quick Start
 
+Read the [overview to using seldon-core](./docs/gettings_started/readme.md)..
+
  - Jupyter notebooks showing worked examples:
     * Minikube:
          * [Jupyter Notebook showing deployment of prebuilt model using Minikube - with RBAC](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_minikube_rbac.ipynb)
