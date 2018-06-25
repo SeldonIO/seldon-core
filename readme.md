@@ -75,7 +75,8 @@ Seldon-core allows various types of components to be built and plugged into the 
    * Java
       * [H2O Classifier](./examples/models/h2o_mojo/h2o_model.ipynb)
    * PMML
-      * [pySpark MNIST Classifier](./examples/models/pyspark_pmml/mnist.ipynb)
+      * [PySpark MNIST Classifier](https://github.com/SeldonIO/JPMML-utils/blob/master/examples/pyspark_pmml/mnist.ipynb)
+
  * **routers**
    * [Epsilon-greedy multi-armed bandits for real time optimization of models](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/epsilon_greedy_gcp.ipynb)
  * **transformers**
