@@ -18,15 +18,13 @@ package io.seldon.engine.predictors;
 import java.util.Iterator;
 import java.util.List;
 
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.factory.Nd4j;
+import org.ojalgo.matrix.BasicMatrix;
+import org.ojalgo.matrix.PrimitiveMatrix;
 import org.springframework.stereotype.Component;
 
 import io.seldon.engine.exception.APIException;
 import io.seldon.protos.PredictionProtos.DefaultData;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
-
-import io.seldon.engine.predictors.PredictorUtils;
 
 @Component
 public class AverageCombinerUnit extends PredictiveUnitImpl {
@@ -49,8 +47,8 @@ public class AverageCombinerUnit extends PredictiveUnitImpl {
 		if (shape.length!=2){
 			throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_COMBINER_RESPONSE, String.format("Combiner received data that is not 2 dimensional"));
 		}
-		
-		INDArray currentSum = Nd4j.zeros(shape[0],shape[1]);
+		BasicMatrix.Factory<PrimitiveMatrix> matrixFactory = PrimitiveMatrix.FACTORY;
+		PrimitiveMatrix currentSum = matrixFactory.makeZero(shape[0], shape[1]);
 		SeldonMessage.Builder respBuilder = SeldonMessage.newBuilder();
 		
 		for (Iterator<SeldonMessage> i = outputs.iterator(); i.hasNext();)
@@ -69,10 +67,10 @@ public class AverageCombinerUnit extends PredictiveUnitImpl {
 			if (inputShape[1] != shape[1]){
 				throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_COMBINER_RESPONSE, String.format("Expected batch length %d but found %d",shape[1],inputShape[1]));
 			}
-			INDArray inputArr = PredictorUtils.getINDArray(inputData);
+			PrimitiveMatrix inputArr = PredictorUtils.getOJMatrix(inputData);
 			currentSum = currentSum.add(inputArr);
 		}
-		currentSum = currentSum.div((float)outputs.size());
+		currentSum = currentSum.divide((float)outputs.size());
 		
 		DefaultData newData = PredictorUtils.updateData(outputs.get(0).getData(), currentSum);
 		respBuilder.setData(newData);

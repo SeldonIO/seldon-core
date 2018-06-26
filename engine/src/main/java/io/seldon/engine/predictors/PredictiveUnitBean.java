@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import org.nd4j.linalg.api.ndarray.INDArray;
+import org.ojalgo.matrix.PrimitiveMatrix;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
@@ -37,8 +37,8 @@ import io.seldon.engine.metrics.SeldonRestTemplateExchangeTagsProvider;
 import io.seldon.engine.service.InternalPredictionService;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitMethod;
 import io.seldon.protos.PredictionProtos.Feedback;
-import io.seldon.protos.PredictionProtos.SeldonMessage;
 import io.seldon.protos.PredictionProtos.Meta;
+import io.seldon.protos.PredictionProtos.SeldonMessage;
 
 @Component
 public class PredictiveUnitBean extends PredictiveUnitImpl {
@@ -227,8 +227,8 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 	private int getBranchIndex(SeldonMessage routerReturn, PredictiveUnitState state){
 		int branchIndex = 0;
 		try {
-			INDArray dataArray = PredictorUtils.getINDArray(routerReturn.getData());
-			branchIndex = (int) dataArray.getInt(0);
+			PrimitiveMatrix dataArray = PredictorUtils.getOJMatrix(routerReturn.getData());
+			branchIndex = dataArray.get(0).intValue();
 		}
 		catch (IndexOutOfBoundsException e) {
 			throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_ROUTING,"Router that caused the exception: id="+state.name+" name="+state.name);
