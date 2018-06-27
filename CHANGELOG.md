@@ -1,5 +1,27 @@
 # Change Log
 
+## [v0.1.8](https://github.com/SeldonIO/seldon-core/tree/v0.1.8) (2018-06-27)
+[Full Changelog](https://github.com/SeldonIO/seldon-core/compare/v0.1.7...v0.1.8)
+
+**Closed issues:**
+
+- Prediction analytics dashboard not capturing prediction API calls [\#168](https://github.com/SeldonIO/seldon-core/issues/168)
+- Ambassador + Minikube doc needs to be updated per RBAC [\#165](https://github.com/SeldonIO/seldon-core/issues/165)
+- configmap type volume gets mounted as EmptyDir [\#162](https://github.com/SeldonIO/seldon-core/issues/162)
+- Java Wrapper H2OUtils doesn't check type in NDArray proto message conversion [\#158](https://github.com/SeldonIO/seldon-core/issues/158)
+- Release Java wrappers library 0.1.1 [\#157](https://github.com/SeldonIO/seldon-core/issues/157)
+- Automate update of ksonnet versions in release process [\#132](https://github.com/SeldonIO/seldon-core/issues/132)
+
+**Merged pull requests:**
+
+- Remove java wrapper library from code base [\#172](https://github.com/SeldonIO/seldon-core/pull/172) ([cliveseldon](https://github.com/cliveseldon))
+- Remove nd4j and replace with oj matrix library [\#171](https://github.com/SeldonIO/seldon-core/pull/171) ([cliveseldon](https://github.com/cliveseldon))
+- Fix prometheus helm install [\#169](https://github.com/SeldonIO/seldon-core/pull/169) ([cliveseldon](https://github.com/cliveseldon))
+- Update notebooks for minikube and ambassador [\#166](https://github.com/SeldonIO/seldon-core/pull/166) ([cliveseldon](https://github.com/cliveseldon))
+- Release script python3 compatibility [\#163](https://github.com/SeldonIO/seldon-core/pull/163) ([gsunner](https://github.com/gsunner))
+- Updates to 0.1.1 wrapper. H2O fixes. [\#161](https://github.com/SeldonIO/seldon-core/pull/161) ([cliveseldon](https://github.com/cliveseldon))
+- add update to core.jsonnet when setting version [\#159](https://github.com/SeldonIO/seldon-core/pull/159) ([gsunner](https://github.com/gsunner))
+
 ## [v0.1.7](https://github.com/SeldonIO/seldon-core/tree/v0.1.7) (2018-06-04)
 [Full Changelog](https://github.com/SeldonIO/seldon-core/compare/v0.1.6...v0.1.7)
 
