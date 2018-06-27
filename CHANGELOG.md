@@ -1,5 +1,34 @@
 # Change Log
 
+## [v0.1.7](https://github.com/SeldonIO/seldon-core/tree/v0.1.7) (2018-06-04)
+[Full Changelog](https://github.com/SeldonIO/seldon-core/compare/v0.1.6...v0.1.7)
+
+**Closed issues:**
+
+- Quickstart problem [\#153](https://github.com/SeldonIO/seldon-core/issues/153)
+- NameError: global name 'ListValue' is not defined [\#148](https://github.com/SeldonIO/seldon-core/issues/148)
+- bad credentials error with get\_token function [\#144](https://github.com/SeldonIO/seldon-core/issues/144)
+- Make CRD Namespaced scoped [\#141](https://github.com/SeldonIO/seldon-core/issues/141)
+- Create wrappers for Java based models [\#137](https://github.com/SeldonIO/seldon-core/issues/137)
+- Update ksonnet prototypes for latest image version [\#130](https://github.com/SeldonIO/seldon-core/issues/130)
+- Create demo notebook for Azure [\#129](https://github.com/SeldonIO/seldon-core/issues/129)
+- Grafana Dashboard  [\#109](https://github.com/SeldonIO/seldon-core/issues/109)
+- Multiple helm seldon-core installs on separate namespaces fails [\#106](https://github.com/SeldonIO/seldon-core/issues/106)
+
+**Merged pull requests:**
+
+- Add install guide [\#156](https://github.com/SeldonIO/seldon-core/pull/156) ([cliveseldon](https://github.com/cliveseldon))
+- WIP : PySpark and PMML example [\#155](https://github.com/SeldonIO/seldon-core/pull/155) ([cliveseldon](https://github.com/cliveseldon))
+- Fix gRPC tests for wrappers and update sklearn iris example to show use [\#150](https://github.com/SeldonIO/seldon-core/pull/150) ([cliveseldon](https://github.com/cliveseldon))
+- Minikube RBAC updates and Notebooks for Model examples [\#147](https://github.com/SeldonIO/seldon-core/pull/147) ([cliveseldon](https://github.com/cliveseldon))
+- change ClusterRoleBinding to RoleBinding [\#146](https://github.com/SeldonIO/seldon-core/pull/146) ([gsunner](https://github.com/gsunner))
+- MNIST loadtest [\#143](https://github.com/SeldonIO/seldon-core/pull/143) ([cliveseldon](https://github.com/cliveseldon))
+- Openshift article on using s2i in seldon-core [\#140](https://github.com/SeldonIO/seldon-core/pull/140) ([cliveseldon](https://github.com/cliveseldon))
+- Java wrappers [\#138](https://github.com/SeldonIO/seldon-core/pull/138) ([cliveseldon](https://github.com/cliveseldon))
+- add notebook for azure demo [\#135](https://github.com/SeldonIO/seldon-core/pull/135) ([gsunner](https://github.com/gsunner))
+- update ksonnet defaults to 0.1.6 [\#131](https://github.com/SeldonIO/seldon-core/pull/131) ([cliveseldon](https://github.com/cliveseldon))
+- Typos fix [\#128](https://github.com/SeldonIO/seldon-core/pull/128) ([LevineHuang](https://github.com/LevineHuang))
+
 ## [v0.1.6](https://github.com/SeldonIO/seldon-core/tree/v0.1.6) (2018-03-29)
 [Full Changelog](https://github.com/SeldonIO/seldon-core/compare/v0.1.5...v0.1.6)
 

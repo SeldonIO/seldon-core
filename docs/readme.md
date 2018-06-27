@@ -1,10 +1,5 @@
 # Seldon Documentation
 
-## Quick Start
-
- - [Quick Start using Minikube](./getting_started/minikube.md)
- - [Jupyter Notebook showing deployment of prebuilt model](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_minikube.ipynb)
-
 ## Deployment Guide
 
 ![API](./deploy.png)
