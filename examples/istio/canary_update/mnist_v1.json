@@ -5,14 +5,13 @@
         "labels": {
             "app": "seldon"
         },
-        "name": "seldon-deployment-example"
+        "name": "mnist-classifier"
     },
     "spec": {
         "annotations": {
-            "project_name": "Bad loans prediction",
-            "deployment_version": "0.1"
+            "project_name": "Mnist classification"
         },
-        "name": "h2o-bad-loans-deployment",
+        "name": "mnist-deployment",
         "oauth_key": "oauth-key",
         "oauth_secret": "oauth-secret",
         "predictors": [
@@ -21,9 +20,9 @@
                     "spec": {
                         "containers": [
                             {
-                                "image": "seldonio/h2omodel:0.1",
+                                "image": "seldonio/r-mnist:0.1",
                                 "imagePullPolicy": "IfNotPresent",
-                                "name": "h2o-bad-loans-classifier",
+                                "name": "r-mnist-classifier",
                                 "resources": {
                                     "requests": {
                                         "memory": "1Mi"
@@ -36,18 +35,17 @@
                 }],
                 "graph": {
                     "children": [],
-                    "name": "h2o-bad-loans-classifier",
+                    "name": "r-mnist-classifier",
                     "endpoint": {
                         "type" : "REST"
                     },
-                    "subtype": "MICROSERVICE",
                     "type": "MODEL"
                 },
-                "name": "h2o-bad-loans-predictor",
+                "name": "r-mnist-predictor",
                 "replicas": 1,
-                "annotations": {
-                "predictor_version" : "0.1"
-                }
+		"labels":{
+		    "version":"v1"
+		}
             }
         ]
     }

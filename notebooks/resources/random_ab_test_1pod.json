@@ -29,17 +29,7 @@
 					"memory": "1Mi"
 				    }
 				}
-			    }],
-			"terminationGracePeriodSeconds": 20
-		    }},
-	        {
-		    "metadata":{
-			"labels":{
-			    "version":"v2"
-			}
-		    },    
-			"spec":{
-			    "containers":[
+			    },
 			    {
 				"image": "seldonio/mock_classifier:1.0",
 				"imagePullPolicy": "IfNotPresent",

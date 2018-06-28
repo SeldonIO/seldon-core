@@ -31,6 +31,8 @@ import io.kubernetes.client.ProtoClient;
 import io.kubernetes.client.ProtoClient.ObjectOrStatus;
 import io.kubernetes.client.models.ExtensionsV1beta1Deployment;
 import io.kubernetes.client.models.ExtensionsV1beta1DeploymentList;
+import io.kubernetes.client.models.V1Service;
+import io.kubernetes.client.models.V1ServiceList;
 import io.kubernetes.client.proto.Meta.DeleteOptions;
 import io.kubernetes.client.proto.V1.Service;
 import io.kubernetes.client.proto.V1beta1Extensions.Deployment;
@@ -107,7 +109,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 
 	private Set<String> getDeploymentNames(List<Deployment> deployments)
 	{
-	    Set<String> names = new HashSet<>();
+		Set<String> names = new HashSet<>();
 	    for(Deployment d : deployments)
 	        names.add(d.getMetadata().getName());
 	    return names;
@@ -137,37 +139,72 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	    }
 	}
 	
-	private void createService(ProtoClient client,String namespace,Service service) throws ApiException, IOException, SeldonDeploymentException
+	private void removeServices(ProtoClient client,String namespace,SeldonDeployment seldonDeployment,List<Service> services) throws ApiException, IOException, SeldonDeploymentException
 	{
-	    final String serviceApiPath = "/api/v1/namespaces/{namespace}/services/{name}"
-                .replaceAll("\\{" + "name" + "\\}", client.getApiClient().escapeString(service.getMetadata().getName()))
-                .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString(namespace));
-        ObjectOrStatus os = client.list(Service.newBuilder(),serviceApiPath);     
-        if (os.status != null)
-        {
-            if (os.status.getCode() == 404)
-            {
-                String serviceCreateApiPath = "/api/v1/namespaces/{namespace}/services"
-                        .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString(namespace));
-                os = client.create(service, serviceCreateApiPath, "v1", "Service");
-                if (os.status != null)
-                {
-                    logger.error("Error creating service "+ProtoBufUtils.toJson(os.status));
-                    throw new SeldonDeploymentException("Failed to create service "+service.getMetadata().getName());
+		Set<String> names = getServiceNames(services);
+		V1ServiceList svcList = crdHandler.getOwnedServices(seldonDeployment.getSpec().getName());
+		for(V1Service s : svcList.getItems())
+		{
+			if (!names.contains(s.getMetadata().getName()))
+			{	
+				final String deleteApiPath = "/apis/v1/namespaces/{namespace}/services/{name}"
+	                    .replaceAll("\\{" + "name" + "\\}", client.getApiClient().escapeString(s.getMetadata().getName()))
+	                    .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString(namespace));
+	            DeleteOptions options = DeleteOptions.newBuilder().setPropagationPolicy("Foreground").build();
+	            ObjectOrStatus<Deployment> os = client.delete(Deployment.newBuilder(),deleteApiPath,options);
+	            if (os.status != null) {
+                    logger.error("Error deleting deployment:"+ProtoBufUtils.toJson(os.status));
+                    throw new SeldonDeploymentException("Failed to delete service "+s.getMetadata().getName());
                 }
-                else
-                {
-                    logger.debug("Created service:"+ProtoBufUtils.toJson(os.object));
-                }                   
-            }
-            else
-            {
-                logger.error("Error listing service:"+ProtoBufUtils.toJson(os.status));
-                throw new SeldonDeploymentException("Failed to list service "+service.getMetadata().getName());
-            }
-        }
-        else
-            logger.debug("No creating service as already exists "+service.getMetadata().getName());
+                else {
+                    logger.debug("Deleted deployment:"+ProtoBufUtils.toJson(os.object));
+                }
+			}
+		}
+	}
+	
+	private Set<String> getServiceNames(List<Service> services)
+	{
+		Set<String> names = new HashSet<>();
+		for(Service s : services)
+			names.add(s.getMetadata().getName());
+		return names;
+	}
+	
+	private void createServices(ProtoClient client,String namespace,List<Service> services) throws ApiException, IOException, SeldonDeploymentException
+	{
+		for(Service service : services)
+		{
+		    final String serviceApiPath = "/api/v1/namespaces/{namespace}/services/{name}"
+	                .replaceAll("\\{" + "name" + "\\}", client.getApiClient().escapeString(service.getMetadata().getName()))
+	                .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString(namespace));
+	        ObjectOrStatus os = client.list(Service.newBuilder(),serviceApiPath);     
+	        if (os.status != null)
+	        {
+	            if (os.status.getCode() == 404)
+	            {
+	                String serviceCreateApiPath = "/api/v1/namespaces/{namespace}/services"
+	                        .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString(namespace));
+	                os = client.create(service, serviceCreateApiPath, "v1", "Service");
+	                if (os.status != null)
+	                {
+	                    logger.error("Error creating service "+ProtoBufUtils.toJson(os.status));
+	                    throw new SeldonDeploymentException("Failed to create service "+service.getMetadata().getName());
+	                }
+	                else
+	                {
+	                    logger.debug("Created service:"+ProtoBufUtils.toJson(os.object));
+	                }                   
+	            }
+	            else
+	            {
+	                logger.error("Error listing service:"+ProtoBufUtils.toJson(os.status));
+	                throw new SeldonDeploymentException("Failed to list service "+service.getMetadata().getName());
+	            }
+	        }
+	        else
+	            logger.debug("No creating service as already exists "+service.getMetadata().getName());
+		}
 	}
 
 	private String getNamespace(SeldonDeployment d)
@@ -207,7 +244,8 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 		        String namespace = getNamespace(mlDep2);
 		        createDeployments(client, namespace, resources.deployments);
 		        removeDeployments(client, namespace, mlDep2, resources.deployments);
-		        createService(client, namespace, resources.service);
+		        createServices(client, namespace, resources.services);
+		        removeServices(client,namespace, mlDep2, resources.services);
 		        if (!mlDep.getSpec().equals(mlDep2.getSpec()))
 		        {
 		            logger.debug("Pushing updated SeldonDeployment "+mlDep2.getMetadata().getName()+" back to kubectl");

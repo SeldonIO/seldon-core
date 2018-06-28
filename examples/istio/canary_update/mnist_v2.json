@@ -5,13 +5,13 @@
         "labels": {
             "app": "seldon"
         },
-        "name": "seldon-deployment-example"
+        "name": "mnist-classifier"
     },
     "spec": {
         "annotations": {
-            "project_name": "FX Market Prediction"
+            "project_name": "Mnist classification"
         },
-        "name": "test-deployment",
+        "name": "mnist-deployment",
         "oauth_key": "oauth-key",
         "oauth_secret": "oauth-secret",
         "predictors": [
@@ -20,60 +20,66 @@
                     "spec": {
                         "containers": [
                             {
-                                "image": "seldonio/mean_classifier:0.6",
+                                "image": "seldonio/r-mnist:0.1",
                                 "imagePullPolicy": "IfNotPresent",
-                                "name": "mean-classifier",
+                                "name": "r-mnist-classifier",
                                 "resources": {
                                     "requests": {
                                         "memory": "1Mi"
                                     }
                                 }
                             }
-                        ]
+                        ],
+                        "terminationGracePeriodSeconds": 20
                     }
                 }],
                 "graph": {
                     "children": [],
-                    "name": "mean-classifier",
+                    "name": "r-mnist-classifier",
                     "endpoint": {
-			"type" : "REST"
-		    },
+                        "type" : "REST"
+                    },
                     "type": "MODEL"
                 },
-                "name": "fx-market-predictor",
-                "replicas": 1
+                "name": "r-mnist-predictor",
+                "replicas": 1,
+		"labels":{
+		    "version":"v1"
+		}
             },
             {
                 "componentSpecs": [{
                     "spec": {
                         "containers": [
                             {
-                                "image": "seldonio/mean_classifier:0.6",
+                                "image": "seldonio/deep-mnist:0.1",
                                 "imagePullPolicy": "IfNotPresent",
-                                "name": "mean-classifier",
+                                "name": "tf-mnist-classifier",
                                 "resources": {
                                     "requests": {
                                         "memory": "1Mi"
                                     }
                                 }
                             }
-                        ]
+                        ],
+                        "terminationGracePeriodSeconds": 20
                     }
                 }],
                 "graph": {
                     "children": [],
-                    "name": "mean-classifier",
+                    "name": "tf-mnist-classifier",
                     "endpoint": {
-			"type" : "REST"
-		    },
+                        "type" : "REST"
+                    },
                     "type": "MODEL"
                 },
-                "name": "fx-market-predictor-canary",
+                "name": "tf-mnist-predictor",
                 "replicas": 1,
 		"labels":{
 		    "version":"v2"
 		}
             }
+	    
         ]
     }
 }

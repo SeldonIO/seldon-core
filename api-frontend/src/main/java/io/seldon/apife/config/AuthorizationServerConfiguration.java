@@ -31,6 +31,7 @@ import org.springframework.security.oauth2.provider.token.store.redis.RedisToken
 
 import io.seldon.apife.api.oauth.InMemoryClientDetailsService;
 import io.seldon.apife.deployments.DeploymentStore;
+import io.seldon.apife.k8s.DeploymentWatcher;
 import io.seldon.protos.DeploymentProtos.DeploymentSpec;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
@@ -83,7 +84,7 @@ class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdap
             String client_secret = System.getenv().get(TEST_CLIENT_SECRET);
             clientDetailsService.addClient(client_key,client_secret);
             SeldonDeployment dep = SeldonDeployment.newBuilder()
-                    .setApiVersion("v1alpha1")
+                    .setApiVersion(DeploymentWatcher.VERSION)
                     .setKind("SeldonDeplyment")
                     .setSpec(DeploymentSpec.newBuilder()
                             .setName("localhost")

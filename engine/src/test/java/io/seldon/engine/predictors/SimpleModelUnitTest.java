@@ -49,7 +49,7 @@ public class SimpleModelUnitTest {
 		PredictorSpecBuilder.setName("p1");
 		// PredictorSpecBuilder.setRoot("1");
 		PredictorSpecBuilder.setReplicas(1);
-		PredictorSpecBuilder.setComponentSpec(PodTemplateSpec.newBuilder());
+		PredictorSpecBuilder.addComponentSpecs(PodTemplateSpec.newBuilder());
 		
 		PredictiveUnit.Builder PredictiveUnitBuilder = PredictiveUnit.newBuilder();
 		PredictiveUnitBuilder.setName("1");
@@ -88,7 +88,7 @@ public class SimpleModelUnitTest {
 		final String imageName = "myimage";
 		PodTemplateSpec.Builder ptsBuilder = PodTemplateSpec.newBuilder().setSpec(PodSpec.newBuilder().addContainers(Container.newBuilder().setImage(imageName).setName("1")));
 		
-		PredictorSpecBuilder.setComponentSpec(ptsBuilder);
+		PredictorSpecBuilder.addComponentSpecs(ptsBuilder);
 		
 		PredictiveUnit.Builder PredictiveUnitBuilder = PredictiveUnit.newBuilder();
 		PredictiveUnitBuilder.setName("1");
@@ -129,7 +129,7 @@ public class SimpleModelUnitTest {
 		final String imageVersion = "0.1";
 		PodTemplateSpec.Builder ptsBuilder = PodTemplateSpec.newBuilder().setSpec(PodSpec.newBuilder().addContainers(Container.newBuilder().setImage(imageName+":"+imageVersion).setName("1")));
 		
-		PredictorSpecBuilder.setComponentSpec(ptsBuilder);
+		PredictorSpecBuilder.addComponentSpecs(ptsBuilder);
 		
 		PredictiveUnit.Builder PredictiveUnitBuilder = PredictiveUnit.newBuilder();
 		PredictiveUnitBuilder.setName("1");
