@@ -5,7 +5,7 @@ VERSION_FILE=target/version.txt
 build: clean build_image
 
 
-build_jar: update_proto k8s_java_client
+build_jar: update_proto 
 	mvn clean package -B
 
 write_version: build_jar
@@ -40,8 +40,4 @@ update_proto: download_protos
 	cp -vr ../proto/k8s/k8s.io src/main/proto
 	cp -v ../proto/k8s/v1.proto src/main/proto
 
-k8s_java_client:
-	git clone -b updated_protos https://github.com/cliveseldon/java.git java_client && \
-		cd java_client && \
-		mvn install
 

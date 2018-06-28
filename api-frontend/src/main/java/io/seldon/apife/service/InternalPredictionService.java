@@ -18,6 +18,7 @@ package io.seldon.apife.service;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -56,7 +57,7 @@ public class InternalPredictionService {
     @Autowired
     public InternalPredictionService(AppProperties appProperties){
         this.appProperties = appProperties;
-        connectionManager = new PoolingHttpClientConnectionManager();
+        connectionManager = new PoolingHttpClientConnectionManager(10,TimeUnit.SECONDS);
         connectionManager.setMaxTotal(150);
         connectionManager.setDefaultMaxPerRoute(150);
         

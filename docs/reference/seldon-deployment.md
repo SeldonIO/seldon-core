@@ -53,17 +53,19 @@ message PredictorStatus {
 message DeploymentSpec {
   optional string name = 1; // A unique name within the namespace.
   repeated PredictorSpec predictors = 2; // A list of 1 or more predictors describing runtime machine learning deployment graphs.
-  optional string oauth_key = 6; // The oauth key for external users to use this deployment via an API.
-  optional string oauth_secret = 7; // The oauth secret for external users to use this deployment via an API.
-  map<string,string> annotations = 8; // Arbitrary annotations.
+  optional string oauth_key = 3; // The oauth key for external users to use this deployment via an API.
+  optional string oauth_secret = 4; // The oauth secret for external users to use this deployment via an API.
+  map<string,string> annotations = 5; // Arbitrary annotations.
 }
 
 message PredictorSpec {
   required string name = 1; // A unique name not used by any other predictor in the deployment.
   required PredictiveUnit graph = 2; // A graph describing how the predictive units are connected together.
-  required k8s.io.api.core.v1.PodTemplateSpec componentSpec = 3; // A description of the set of containers used by the graph. One for each microservice defined in the graph.
+  repeated k8s.io.api.core.v1.PodTemplateSpec componentSpecs = 3; // A description of the set of containers used by the graph. One for each microservice defined in the graph. Can be split over 1 or more PodTemplateSpecs.
   optional int32 replicas = 4; // The number of replicas of the predictor to create.
   map<string,string> annotations = 5; // Arbitrary annotations.
+  optional k8s.io.api.core.v1.ResourceRequirements engineResources = 6; // Optional set of resources for the Seldon engine which is added to each Predictor graph to manage the request/response flow
+  map<string,string> labels = 7; // labels to be attached to entry deplyment for this predictor
 }
 
 
@@ -147,9 +149,14 @@ message Parameter {
 
 ## Single Model
 
+ * The model is contained in the image ```seldonio/mock_classifier:1.0```
+ * The model requests 1 MB of memory
+ * The model defines oauth key and secret for use with seldon-core's built in API gateway.
+ * The model supports a REST API
+ 
 ```json
 {
-    "apiVersion": "machinelearning.seldon.io/v1alpha1",
+    "apiVersion": "machinelearning.seldon.io/v1alpha2",
     "kind": "SeldonDeployment",
     "metadata": {
         "labels": {
@@ -167,13 +174,13 @@ message Parameter {
         "oauth_secret": "oauth-secret",
         "predictors": [
             {
-                "componentSpec": {
+                "componentSpecs": [{
                     "spec": {
                         "containers": [
                             {
-                                "image": "seldonio/mean_classifier:0.6",
+                                "image": "seldonio/mock_classifier:1.0",
                                 "imagePullPolicy": "IfNotPresent",
-                                "name": "mean-classifier",
+                                "name": "classifier",
                                 "resources": {
                                     "requests": {
                                         "memory": "1Mi"
@@ -183,10 +190,10 @@ message Parameter {
                         ],
                         "terminationGracePeriodSeconds": 20
                     }
-                },
+                }],
                 "graph": {
                     "children": [],
-                    "name": "mean-classifier",
+                    "name": "classifier",
                     "endpoint": {
 			"type" : "REST"
 		    },

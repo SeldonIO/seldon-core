@@ -1,5 +1,5 @@
 {
-    "apiVersion": "machinelearning.seldon.io/v1alpha1",
+    "apiVersion": "machinelearning.seldon.io/v1alpha2",
     "kind": "SeldonDeployment",
     "metadata": {
         "labels": {
@@ -17,7 +17,7 @@
         "oauth_secret": "oauth-secret",
         "predictors": [
             {
-                "componentSpec": {
+                "componentSpecs":[{
                     "spec": {
                         "containers": [
                             {
@@ -33,14 +33,13 @@
                         ],
                         "terminationGracePeriodSeconds": 20
                     }
-                },
+                }],
                 "graph": {
                     "children": [],
                     "name": "mean-classifier",
                     "endpoint": {
 			"type" : "GRPC"
 		    },
-                    "subtype": "MICROSERVICE",
                     "type": "MODEL"
                 },
                 "name": "fx-market-predictor",
