@@ -4,5 +4,5 @@
 
 Out of the box Seldon provides rolling updates to SeldonDeployment service graphs provided by the underlying kubernetes functionality. However, there are cases where you want to manage updates to your ML deployments in a more controlled way with fine grained traffic management including canary updates, blue-green deployments and shadowing. This is where Istio can help in combination with Seldon.
 
-[An example step-by-step guide to canary deployemts using Istio and Seldon is provided](../examples/istio/canary_update/canary.ipynb).
+[An example step-by-step guide to canary deployments using Istio and Seldon is provided](../examples/istio/canary_update/canary.ipynb).
 
