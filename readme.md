@@ -58,7 +58,7 @@ It is possible to deploy Seldon with two operators that can handle both v1alpha1
 
 ## Quick Start
 
-Read the [overview to using seldon-core](./docs/gettings_started/readme.md)..
+Read the [overview to using seldon-core](./docs/getting_started/readme.md).
 
  - Jupyter notebooks showing worked examples:
     * Minikube:
