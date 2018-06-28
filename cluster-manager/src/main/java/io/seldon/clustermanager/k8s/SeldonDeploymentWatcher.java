@@ -57,11 +57,13 @@ public class SeldonDeploymentWatcher  {
 	private int resourceVersionProcessed = 0;
 	
 	@Autowired
-	public SeldonDeploymentWatcher(ClusterManagerProperites clusterManagerProperites,SeldonDeploymentController seldonDeploymentController,SeldonDeploymentCache mlCache) throws IOException
+	public SeldonDeploymentWatcher(ClusterManagerProperites clusterManagerProperites,SeldonDeploymentController seldonDeploymentController,SeldonDeploymentCache mlCache) throws IOException, ApiException
 	{
 		this.seldonDeploymentController = seldonDeploymentController;
 		this.mlCache = mlCache;
 		this.clusterManagerProperites = clusterManagerProperites;
+		CRDCreator crdCreator = new CRDCreator();
+		crdCreator.createCRD();
 	}
 	
 	private void processWatch(SeldonDeployment mldep,String action) throws InvalidProtocolBufferException
