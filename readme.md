@@ -54,7 +54,7 @@ Machine learning deployment has many [challenges](./docs/challenges.md). Seldon 
  * **0.2** releases will now respect the v1alpha2 API.
  * **0.1** releases respect the v1alpha1 API and will not be worked on further.
 
-It is possible to deploy Seldon with two operators that can handle both v1alpha1 resouces and v1alpha2 resources though this is not part of our standard deployment docs. If you need this please get in touch.
+It is possible to deploy Seldon with two operators that can handle both v1alpha1 resources and v1alpha2 resources though this is not part of our standard deployment docs. If you need this please get in touch.
 
 ## Quick Start
 
