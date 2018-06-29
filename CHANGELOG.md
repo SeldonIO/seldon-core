@@ -1,5 +1,18 @@
 # Change Log
 
+## [v0.2.0](https://github.com/SeldonIO/seldon-core/tree/v0.2.0) (2018-06-29)
+[Full Changelog](https://github.com/SeldonIO/seldon-core/compare/v0.1.8...v0.2.0)
+
+**Closed issues:**
+
+- PREDICTIVE\_UNIT\_PARAMETERS: not able to set them up correctly [\#170](https://github.com/SeldonIO/seldon-core/issues/170)
+- Add docs page for Helm [\#71](https://github.com/SeldonIO/seldon-core/issues/71)
+
+**Merged pull requests:**
+
+- fix crd.libsonnet error [\#177](https://github.com/SeldonIO/seldon-core/pull/177) ([fisache](https://github.com/fisache))
+- Distributed deployment and Istio [\#173](https://github.com/SeldonIO/seldon-core/pull/173) ([cliveseldon](https://github.com/cliveseldon))
+
 ## [v0.1.8](https://github.com/SeldonIO/seldon-core/tree/v0.1.8) (2018-06-27)
 [Full Changelog](https://github.com/SeldonIO/seldon-core/compare/v0.1.7...v0.1.8)
 
