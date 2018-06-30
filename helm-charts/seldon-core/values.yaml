@@ -21,3 +21,5 @@ rbac:
 redis:
   image:
     name: redis:4.0.1
+application:
+  enabled: false
