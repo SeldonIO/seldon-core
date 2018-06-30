@@ -1,4 +1,5 @@
 {{- if .Values.rbac.enabled }}
+{{- if .Values.rbac.service_account.create }}  
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: Role
@@ -27,7 +28,6 @@ rules:
   resources:
   - customresourcedefinitions
   verbs: ["create"]
-{{- if .Values.rbac.service_account.create }}
 ---
 apiVersion: v1
 kind: ServiceAccount
