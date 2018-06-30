@@ -1,39 +1,49 @@
 ---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels: &Labels
+    app.kubernetes.io/name: {{ .Release.Name }}
+    app.kubernetes.io/component: seldon-core-redis
+    app: {{ .Release.Name }}-redis-app
+    chart: {{ template "seldon.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    component: seldon-core
+  name: {{ .Release.Name }}-redis
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: *Labels  
+  template:
+    metadata:
+      labels: *Labels
+    spec:
+      containers:
+      - image: {{ .Values.redis.image.name }}
+        name: redis-container
+        ports:
+        - containerPort: 6379
+          protocol: TCP
+---
 apiVersion: v1
-items:
-- apiVersion: extensions/v1beta1
-  kind: Deployment
-  metadata:
-    name: redis
-    namespace: {{ .Release.Namespace }}
-  spec:
-    replicas: 1
-    template:
-      metadata:
-        labels:
-          app: redis-app
-      spec:
-        containers:
-        - image: redis:{{ .Values.redis.image.tag }}
-          name: redis-container
-          ports:
-          - containerPort: 6379
-            protocol: TCP
-- apiVersion: v1
-  kind: Service
-  metadata:
-    name: redis
-  spec:
-    ports:
-    - port: 6379
-      protocol: TCP
-      targetPort: 6379
-    selector:
-      app: redis-app
-    sessionAffinity: None
-    type: ClusterIP
-  status:
-    loadBalancer: {}
-kind: List
-metadata: {}
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/name: {{ .Release.Name }}
+    app.kubernetes.io/component: seldon-core-redis
+  name: {{ .Release.Name }}-redis
+spec:
+  ports:
+  - port: 6379
+    protocol: TCP
+    targetPort: 6379
+  selector:
+    app: {{ .Release.Name }}-redis-app
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
+
 

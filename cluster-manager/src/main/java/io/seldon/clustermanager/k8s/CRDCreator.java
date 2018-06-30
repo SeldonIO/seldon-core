@@ -1,6 +1,9 @@
 package io.seldon.clustermanager.k8s;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -29,7 +32,7 @@ public class CRDCreator {
 	protected static Logger logger = LoggerFactory.getLogger(CRDCreator.class.getName());
 	public void createCRD() throws IOException, ApiException
 	{
-		String jsonStr = readFile("src/main/resources/crd.json",StandardCharsets.UTF_8);
+		String jsonStr = readFileFromClasspath("crd.json");
 		ApiClient client = Config.defaultClient();
 		try {
 			createCustomResourceDefinition(client,jsonStr.getBytes(),null);
@@ -39,12 +42,34 @@ public class CRDCreator {
 			{
 				logger.info("CRD already exists - ignoring.");
 			}
+			else if (e.getCode() == 403)// Forbidden - Maybe CRD exists, but we don't know
+			{
+				logger.warn("No auth to create CRD. Hopefully, one exists.",e); // Hopefully a cluster-wide CRD has been created for us
+			}
 			else
 			{
-				logger.error("Failed to create CRD",e);
+				logger.warn("Unexpected error trying to create CRD",e);
 				throw e;
 			}
 		}
+	}
+	private String readFromInputStream(InputStream inputStream)
+			  throws IOException {
+			    StringBuilder resultStringBuilder = new StringBuilder();
+			    try (BufferedReader br
+			      = new BufferedReader(new InputStreamReader(inputStream))) {
+			        String line;
+			        while ((line = br.readLine()) != null) {
+			            resultStringBuilder.append(line).append("\n");
+			        }
+			    }
+			  return resultStringBuilder.toString();
+			}
+	private String readFileFromClasspath(String name) throws IOException
+	{
+		InputStream in = this.getClass().getClassLoader().getResourceAsStream(name);
+		String data = readFromInputStream(in);
+		return data;
 	}
 	
 	private String readFile(String path, Charset encoding) 
