@@ -255,4 +255,4 @@ local podTemplateValidation = import 'json/pod-template-spec-validation.json';
     },
 },
 
-},
+}
