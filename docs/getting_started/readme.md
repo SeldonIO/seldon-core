@@ -1,14 +1,13 @@
 
 # Getting started Seldon Core
 
-There are 4 steps to using seldon-core.
+There are 3 steps to using seldon-core.
 
- * Install seldon-core onto a kubernetes cluster
- * Wrap your components (usually runtime model servers) as Docker containers that respect the internal Seldon microservice API.
- * Define your runtime service graph as a SeldonDeployment resource
- * Deploy your model and serve predictions
+ 1. Install seldon-core onto a kubernetes cluster
+ 1. Wrap your components (usually runtime model servers) as Docker containers that respect the internal Seldon microservice API.
+ 1. Define your runtime service graph as a SeldonDeployment resource and deploy your model and serve predictions
 
-[IMAGE steps]
+![steps](./steps.png)
 
 # Install Seldon Core
 
@@ -24,8 +23,7 @@ To allow users to easily wrap machine learning components built using different 
 
 To run your machine learning graph on Kubernetes you need to define how the components you created in the last step fit together to represent a service graph. This is defined inside a [SeldonDeployment Kubernetes Custom resource](../reference/seldon-deployment.md). A [guide to constructing this custom resource service graph is provided](../crd/readme.md).
 
-
-[IMAGE graph]
+![graph](./graph.png)
 
 # Deploy and Serve Predictions
 

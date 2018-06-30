@@ -2,17 +2,17 @@ apife:
   enabled: true
   image:
     pull_policy: IfNotPresent
-    name: seldonio/apife:0.2.0-SNAPSHOT
+    name: seldonio/apife:0.2.1-SNAPSHOT
 apife_service_type: NodePort
 cluster_manager:
   image:
     pull_policy: IfNotPresent
-    name: seldonio/cluster-manager:0.2.0-SNAPSHOT
+    name: seldonio/cluster-manager:0.2.1-SNAPSHOT
   java_opts: ''
   spring_opts: ''
 engine:
   image:
-    name: seldonio/engine:0.2.0-SNAPSHOT
+    name: seldonio/engine:0.2.1-SNAPSHOT
 rbac:
   enabled: true
   service_account:
