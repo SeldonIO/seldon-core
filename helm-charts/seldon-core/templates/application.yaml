@@ -32,16 +32,6 @@ spec:
   componentKinds:
   - group: extensions/v1beta1
     kind: Deployment
-  - group: rbac.authorization.k8s.io/v1
-    kind: Role
-  - group: rbac.authorization.k8s.io/v1
-    kind: ClusterRole
-  - group: rbac.authorization.k8s.io/v1
-    kind: RoleBinding
-  - group: rbac.authorization.k8s.io/v1
-    kind: ClusterRoleBinding
   - group: v1
     kind: Service
-  - group: v1
-    kind: ServiceAccount
 {{- end }}
