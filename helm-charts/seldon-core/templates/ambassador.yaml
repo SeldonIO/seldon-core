@@ -1,0 +1,68 @@
+{{- if .Values.ambassador.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    service: ambassador
+  name: ambassador
+spec:
+  selector:
+    service: ambassador
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 80
+  type: NodePort
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    service: ambassador-admin
+  name: ambassador-admin
+spec:
+  ports:
+  - name: ambassador-admin
+    port: 8877
+    targetPort: 8877
+  selector:
+    service: ambassador
+  type: NodePort
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ambassador
+spec:
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: 'false'
+      labels:
+        service: ambassador
+    spec:
+      containers:
+      - image: {{ .Values.ambassador.image.name }}
+        name: ambassador
+        env:
+        - name: AMBASSADOR_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        resources:
+          limits:
+            cpu: 1
+            memory: 400Mi
+          requests:
+            cpu: 200m
+            memory: 100Mi
+      - image: {{ .Values.ambassador.statsd.image.name }}
+        name: statsd
+      restartPolicy: Always
+{{- if .Values.rbac.enabled }}
+      serviceAccountName: {{ .Values.rbac.service_account.name }}
+{{- end }}
+{{- end }}

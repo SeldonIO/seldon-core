@@ -1,6 +1,14 @@
 {{- if .Values.rbac.enabled }}
 {{- if .Values.rbac.service_account.create }}  
 ---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ .Values.rbac.service_account.name }}
+  namespace: {{ .Release.Namespace }}
+{{- end }}
+{{- if .Values.rbac.rolebinding.create }}
+---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: Role
 metadata:
@@ -29,12 +37,6 @@ rules:
   - customresourcedefinitions
   verbs: ["create"]
 ---
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: {{ .Values.rbac.service_account.name }}
-  namespace: {{ .Release.Namespace }}
----
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -62,5 +64,36 @@ subjects:
   - kind: ServiceAccount
     name: {{ .Values.rbac.service_account.name }}
     namespace: {{ .Release.Namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: ambassador
+rules:
+- apiGroups: [""]
+  resources:
+  - services
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources:
+  - configmaps
+  verbs: ["create", "update", "patch", "get", "list", "watch"]
+- apiGroups: [""]
+  resources:
+  - secrets
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: ambassador
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: ambassador
+subjects:
+- kind: ServiceAccount
+  name: {{ .Values.rbac.service_account.name }}
+  namespace: {{ .Release.Namespace }}    
 {{- end }}
 {{- end }}
