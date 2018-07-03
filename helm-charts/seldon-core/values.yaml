@@ -17,9 +17,18 @@ engine:
     name: seldonio/engine:0.2.1-SNAPSHOT-CRD
 rbac:
   enabled: true
+  rolebinding:
+    create: true
   service_account:
     create: true
     name: seldon
 redis:
   image:
     name: redis:4.0.1
+ambassador:
+  enabled: false
+  image:
+    name: quay.io/datawire/ambassador:0.34.1
+  statsd:
+    image:
+      name: quay.io/datawire/statsd:0.34.1
