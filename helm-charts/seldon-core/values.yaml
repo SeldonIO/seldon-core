@@ -3,7 +3,7 @@ apife:
   image:
     name: seldonio/apife:0.2.1-SNAPSHOT-CRD
     pull_policy: IfNotPresent
-apife_service_type: NodePort
+  service_type: NodePort
 application:
   enabled: false
 cluster_manager:
@@ -27,8 +27,9 @@ redis:
     name: redis:4.0.1
 ambassador:
   enabled: false
+  service_type: NodePort
   image:
-    name: quay.io/datawire/ambassador:0.34.1
+    name: quay.io/datawire/ambassador:0.35.1
   statsd:
     image:
-      name: quay.io/datawire/statsd:0.34.1
+      name: datawire/prom-statsd-exporter:0.6.0

@@ -6,15 +6,23 @@ metadata:
   labels:
     service: ambassador
   name: ambassador
+  annotations:
+    getambassador.io/config: |
+      ---
+      apiVersion: ambassador/v0
+      kind:  Module
+      name:  ambassador
+      config:
+        service_port: 8080
 spec:
   selector:
     service: ambassador
   ports:
     - name: http
       protocol: TCP
-      port: 80
-      targetPort: 80
-  type: NodePort
+      port: 8080
+      targetPort: 8080
+  type: {{ .Values.ambassador.service_type }}
 ---
 apiVersion: v1
 kind: Service
@@ -48,6 +56,8 @@ spec:
       - image: {{ .Values.ambassador.image.name }}
         name: ambassador
         env:
+        - name: AMBASSADOR_SINGLE_NAMESPACE
+          value: 'true'
         - name: AMBASSADOR_NAMESPACE
           valueFrom:
             fieldRef:
@@ -58,11 +68,35 @@ spec:
             memory: 400Mi
           requests:
             cpu: 200m
-            memory: 100Mi
+            memory: 101Mi
+        ports:
+           - name: http
+             containerPort: 8080
+           - name: https
+             containerPort: 443
+           - name: admin
+             containerPort: 8877
+        livenessProbe:
+          httpGet:
+            path: /ambassador/v0/check_alive
+            port: admin
+          initialDelaySeconds: 30
+          periodSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /ambassador/v0/check_ready
+            port: admin
+          initialDelaySeconds: 30
+          periodSeconds: 3
       - image: {{ .Values.ambassador.statsd.image.name }}
         name: statsd
+        ports:
+        - name: metrics
+          containerPort: 9102
       restartPolicy: Always
 {{- if .Values.rbac.enabled }}
       serviceAccountName: {{ .Values.rbac.service_account.name }}
 {{- end }}
+      securityContext:
+        runAsUser: 8888
 {{- end }}

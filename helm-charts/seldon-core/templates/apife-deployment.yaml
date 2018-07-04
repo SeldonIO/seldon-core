@@ -72,7 +72,7 @@ spec:
   selector:
     app: seldon-apiserver-container-app
   sessionAffinity: None
-  type: {{ .Values.apife_service_type }}
+  type: {{ .Values.apife.service_type }}
 status:
   loadBalancer: {}
 {{- end }}
