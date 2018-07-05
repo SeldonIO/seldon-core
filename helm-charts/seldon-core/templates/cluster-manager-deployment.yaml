@@ -23,6 +23,8 @@ spec:
 {{- if .Values.rbac.enabled }}
       serviceAccountName: {{ .Values.rbac.service_account.name }}
 {{- end }}
+      securityContext:
+        runAsUser: 8888
       containers:
       - env:
         - name: JAVA_OPTS
