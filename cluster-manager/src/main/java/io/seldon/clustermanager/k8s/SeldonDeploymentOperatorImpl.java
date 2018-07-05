@@ -45,6 +45,7 @@ import io.kubernetes.client.proto.V1.ExecAction;
 import io.kubernetes.client.proto.V1.HTTPGetAction;
 import io.kubernetes.client.proto.V1.Handler;
 import io.kubernetes.client.proto.V1.Lifecycle;
+import io.kubernetes.client.proto.V1.PodSecurityContext;
 import io.kubernetes.client.proto.V1.PodTemplateSpec;
 import io.kubernetes.client.proto.V1.Probe;
 import io.kubernetes.client.proto.V1.Service;
@@ -531,7 +532,9 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 				PodTemplateSpec.Builder podSpecBuilder = PodTemplateSpec.newBuilder();
 				podSpecBuilder.getSpecBuilder()
 		    	.addContainers(createEngineContainer(mlDep,p))
+		    	.setSecurityContext(PodSecurityContext.newBuilder().setRunAsUser(8888).build())
 		    	.setTerminationGracePeriodSeconds(20);
+			
 				String depName = getSeldonServiceName(mlDep,p,"svc-orch");
 				podSpecBuilder.getMetadataBuilder()
 					.putLabels(LABEL_SELDON_APP, mlDep.getSpec().getName()) 
