@@ -33,3 +33,19 @@ ambassador:
   statsd:
     image:
       name: datawire/prom-statsd-exporter:0.6.0
+  annotations:
+    getambassador.io/config: |
+      ---
+      apiVersion: ambassador/v0
+      kind:  Module
+      name:  ambassador
+      config:
+        service_port: 8080
+  resources: 
+    limits:
+      cpu: 1
+      memory: 400Mi
+    requests:
+      cpu: 200m
+      memory: 128Mi
+      

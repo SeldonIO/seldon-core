@@ -6,14 +6,10 @@ metadata:
   labels:
     service: ambassador
   name: ambassador
+{{- with .Values.ambassador.annotations }}
   annotations:
-    getambassador.io/config: |
-      ---
-      apiVersion: ambassador/v0
-      kind:  Module
-      name:  ambassador
-      config:
-        service_port: 8080
+{{ toYaml . | indent 4 }}
+{{- end }}
 spec:
   selector:
     service: ambassador
@@ -63,12 +59,7 @@ spec:
             fieldRef:
               fieldPath: metadata.namespace
         resources:
-          limits:
-            cpu: 1
-            memory: 400Mi
-          requests:
-            cpu: 200m
-            memory: 101Mi
+{{ toYaml .Values.ambassador.resources | indent 10 }}
         ports:
            - name: http
              containerPort: 8080
