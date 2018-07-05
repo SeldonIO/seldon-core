@@ -26,13 +26,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.ApiException;
 import io.kubernetes.client.ProtoClient;
 import io.kubernetes.client.ProtoClient.ObjectOrStatus;
+import io.kubernetes.client.apis.CoreV1Api;
 import io.kubernetes.client.models.ExtensionsV1beta1Deployment;
 import io.kubernetes.client.models.ExtensionsV1beta1DeploymentList;
 import io.kubernetes.client.models.V1Service;
 import io.kubernetes.client.models.V1ServiceList;
+import io.kubernetes.client.models.V1Status;
 import io.kubernetes.client.proto.Meta.DeleteOptions;
 import io.kubernetes.client.proto.V1.Service;
 import io.kubernetes.client.proto.V1beta1Extensions.Deployment;
@@ -139,6 +142,38 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	    }
 	}
 	
+	private void removeServices(ApiClient client,String namespace,SeldonDeployment seldonDeployment,List<Service> services) throws ApiException, IOException, SeldonDeploymentException
+	{
+		Set<String> names = getServiceNames(services);
+		V1ServiceList svcList = crdHandler.getOwnedServices(seldonDeployment.getSpec().getName());
+		for(V1Service s : svcList.getItems())
+		{
+			if (!names.contains(s.getMetadata().getName()))
+			{	
+				CoreV1Api api = new CoreV1Api(client);
+				V1Status status = api.deleteNamespacedService(s.getMetadata().getName(), namespace, null);
+				if (!"Success".equals(status.getStatus()))
+				{
+					logger.error("Failed to delete service "+s.getMetadata().getName());
+					throw new SeldonDeploymentException("Failed to delete service "+s.getMetadata().getName());
+				}
+				else
+					logger.debug("Deleted deployment "+s.getMetadata().getName());
+				
+			}
+		}
+	}
+	
+	/**
+	 * Currently Not used as issue with proto client needs further investigation
+	 * @param client
+	 * @param namespace
+	 * @param seldonDeployment
+	 * @param services
+	 * @throws ApiException
+	 * @throws IOException
+	 * @throws SeldonDeploymentException
+	 */
 	private void removeServices(ProtoClient client,String namespace,SeldonDeployment seldonDeployment,List<Service> services) throws ApiException, IOException, SeldonDeploymentException
 	{
 		Set<String> names = getServiceNames(services);
@@ -151,9 +186,9 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	                    .replaceAll("\\{" + "name" + "\\}", client.getApiClient().escapeString(s.getMetadata().getName()))
 	                    .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString(namespace));
 	            DeleteOptions options = DeleteOptions.newBuilder().setPropagationPolicy("Foreground").build();
-	            ObjectOrStatus<Deployment> os = client.delete(Deployment.newBuilder(),deleteApiPath,options);
+	            ObjectOrStatus<Deployment> os = client.delete(Service.newBuilder(),deleteApiPath,options);
 	            if (os.status != null) {
-                    logger.error("Error deleting deployment:"+ProtoBufUtils.toJson(os.status));
+                    logger.error("Error deleting service:"+ProtoBufUtils.toJson(os.status));
                     throw new SeldonDeploymentException("Failed to delete service "+s.getMetadata().getName());
                 }
                 else {
@@ -245,7 +280,9 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 		        createDeployments(client, namespace, resources.deployments);
 		        removeDeployments(client, namespace, mlDep2, resources.deployments);
 		        createServices(client, namespace, resources.services);
-		        removeServices(client,namespace, mlDep2, resources.services);
+		        //removeServices(client,namespace, mlDep2, resources.services); //Proto Client not presently working for deletion
+		        ApiClient client2 = clientProvider.getClient();
+		        removeServices(client2,namespace, mlDep2, resources.services);
 		        if (!mlDep.getSpec().equals(mlDep2.getSpec()))
 		        {
 		            logger.debug("Pushing updated SeldonDeployment "+mlDep2.getMetadata().getName()+" back to kubectl");

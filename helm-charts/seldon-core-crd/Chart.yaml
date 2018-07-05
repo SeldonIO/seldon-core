@@ -6,4 +6,4 @@ keywords:
 name: seldon-core-crd
 sources:
 - https://github.com/SeldonIO/seldon-core
-version: 0.2.1-SNAPSHOT
+version: 0.2.1-SNAPSHOT-CRD
