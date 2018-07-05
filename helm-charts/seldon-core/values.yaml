@@ -1,20 +1,51 @@
 apife:
   enabled: true
   image:
+    name: seldonio/apife:0.2.1-SNAPSHOT-CRD
     pull_policy: IfNotPresent
-    tag: 0.2.1-SNAPSHOT
-apife_service_type: NodePort
+  service_type: NodePort
+application:
+  enabled: false
 cluster_manager:
   image:
+    name: seldonio/cluster-manager:0.2.1-SNAPSHOT-CRD
     pull_policy: IfNotPresent
-    tag: 0.2.1-SNAPSHOT
   java_opts: ''
   spring_opts: ''
 engine:
   image:
-    tag: 0.2.1-SNAPSHOT
+    name: seldonio/engine:0.2.1-SNAPSHOT-CRD
 rbac:
   enabled: true
+  rolebinding:
+    create: true
+  service_account:
+    create: true
+    name: seldon
 redis:
   image:
-    tag: 4.0.1
+    name: redis:4.0.1
+ambassador:
+  enabled: false
+  service_type: NodePort
+  image:
+    name: quay.io/datawire/ambassador:0.35.1
+  statsd:
+    image:
+      name: datawire/prom-statsd-exporter:0.6.0
+  annotations:
+    getambassador.io/config: |
+      ---
+      apiVersion: ambassador/v0
+      kind:  Module
+      name:  ambassador
+      config:
+        service_port: 8080
+  resources: 
+    limits:
+      cpu: 1
+      memory: 400Mi
+    requests:
+      cpu: 200m
+      memory: 128Mi
+      

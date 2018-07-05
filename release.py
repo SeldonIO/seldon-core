@@ -90,9 +90,9 @@ def update_values_yaml_file(fpath, seldon_core_version, debug=False):
     f.close()
 
     d = yaml_to_dict(yaml_data)
-    d['apife']['image']['tag'] = seldon_core_version
-    d['cluster_manager']['image']['tag'] = seldon_core_version
-    d['engine']['image']['tag'] = seldon_core_version
+    d['apife']['image']['name'] = d['apife']['image']['name'].split(":")[0] + ":" + seldon_core_version
+    d['cluster_manager']['image']['name'] = d['cluster_manager']['image']['name'].split(":")[0] + ":" + seldon_core_version
+    d['engine']['image']['name'] = d['engine']['image']['name'].split(":")[0] + ":" + seldon_core_version
 
     with open(fpath, 'w') as f:
         f.write(dict_to_yaml(d))
