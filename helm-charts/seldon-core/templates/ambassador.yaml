@@ -5,7 +5,7 @@ kind: Service
 metadata:
   labels:
     service: ambassador
-  name: ambassador
+  name: {{ .Release.Name }}-ambassador
 {{- with .Values.ambassador.annotations }}
   annotations:
 {{ toYaml . | indent 4 }}
@@ -25,7 +25,7 @@ kind: Service
 metadata:
   labels:
     service: ambassador-admin
-  name: ambassador-admin
+  name: {{ .Release.Name }}-ambassador-admin
 spec:
   ports:
   - name: ambassador-admin
@@ -38,7 +38,7 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: ambassador
+  name: {{ .Release.Name }}-ambassador
 spec:
   replicas: 1
   template:
