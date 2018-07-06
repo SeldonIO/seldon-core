@@ -4,8 +4,6 @@ apife:
     name: seldonio/apife:0.2.1-SNAPSHOT-CRD
     pull_policy: IfNotPresent
   service_type: NodePort
-application:
-  enabled: false
 cluster_manager:
   image:
     name: seldonio/cluster-manager:0.2.1-SNAPSHOT-CRD
