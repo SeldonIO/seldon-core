@@ -49,12 +49,16 @@ def generate_batch(contract,n):
                 range = feature_def["range"]
             else:
                 range = ["inf","inf"]
-            batch = gen_continuous(range,n)
+            if "shape" in feature_def:
+                shape = [n] + feature_def["shape"]
+            else:
+                shape = [n,1]
+            batch = gen_continuous(range,shape)
             batch = np.around(batch,decimals=3)
             batch = reconciliate_cont_type(batch,feature_def["dtype"])
         elif feature_def["ftype"] == "categorical":
             batch = gen_categorical(feature_def["values"],n)
-        feature_batches.append(batch[:,None])
+        feature_batches.append(batch)
     if len(ty_set) == 1:
         return np.concatenate(feature_batches,axis=1)
     else:
