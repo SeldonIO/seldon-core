@@ -24,7 +24,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import io.grpc.Server;
-import io.grpc.ServerBuilder;
+import io.grpc.netty.NettyServerBuilder;
 import io.seldon.engine.service.PredictionService;
 
 @Component
@@ -53,7 +53,7 @@ public class SeldonGrpcServer  {
             }
         }
         this.predictionService = predictionService;
-        server = ServerBuilder
+        server = NettyServerBuilder
                 .forPort(port)
                 .addService(new SeldonService(this))
           .build();
