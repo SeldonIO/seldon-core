@@ -62,6 +62,7 @@ class MyModel(object):
  * The file is called MyModel.py and it defines a class MyModel
  * The class contains a predict method that takes an array (numpy) X and feature_names and returns an array of predictions.
  * You can add any required initialization inside the class init method.
+ * Your return array should be at least 2-dimensional.
 
 ## requirements.txt
 Populate a requirements.txt with any software dependencies your code requires. These will be installled via pip when creating the image. You can instead provide a setup.py if you prefer.
