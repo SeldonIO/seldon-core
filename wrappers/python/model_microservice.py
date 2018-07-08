@@ -54,7 +54,7 @@ def get_rest_microservice(user_model,debug=False):
         features = rest_datadef_to_array(datadef)
 
         predictions = np.array(predict(user_model,features,datadef.get("names")))
-        # TODO: check that predictions is 2 dimensional
+        # TODO: check that predictions is at least 2 dimensional
         class_names = get_class_names(user_model, predictions.shape[1])
 
         data = array_to_rest_datadef(predictions, class_names, datadef)
@@ -91,7 +91,7 @@ class SeldonModelGRPC(object):
         features = grpc_datadef_to_array(datadef)
 
         predictions = np.array(predict(self.user_model,features,datadef.names))
-        #TODO: check that predictions is 2 dimensional
+        #TODO: check that predictions is at least 2 dimensional
         class_names = get_class_names(self.user_model, predictions.shape[1])
 
         data = array_to_grpc_datadef(predictions, class_names, request.data.WhichOneof("data_oneof"))
