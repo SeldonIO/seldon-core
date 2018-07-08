@@ -4,6 +4,8 @@ apife:
     name: seldonio/apife:0.2.1-SNAPSHOT-CRD
     pull_policy: IfNotPresent
   service_type: NodePort
+  annotations: {}
+    #seldon.io/grpc-max-message-size: "10000000"
 cluster_manager:
   image:
     name: seldonio/cluster-manager:0.2.1-SNAPSHOT-CRD

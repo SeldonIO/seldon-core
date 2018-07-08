@@ -1,4 +1,5 @@
 import tensorflow as tf
+import numpy as np
 
 class DeepMnist(object):
     def __init__(self):
@@ -13,6 +14,6 @@ class DeepMnist(object):
 
     def predict(self,X,feature_names):
         predictions = self.sess.run(self.y,feed_dict={self.x:X})
-        return predictions
+        return predictions.astype(np.float64)
 
     

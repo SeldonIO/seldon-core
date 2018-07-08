@@ -25,6 +25,7 @@ import org.springframework.stereotype.Component;
 
 import io.grpc.Server;
 import io.grpc.netty.NettyServerBuilder;
+import io.seldon.engine.config.AnnotationsConfig;
 import io.seldon.engine.service.PredictionService;
 
 @Component
@@ -34,13 +35,15 @@ public class SeldonGrpcServer  {
     private final static String ENGINE_SERVER_PORT_KEY = "ENGINE_SERVER_GRPC_PORT";
     public static final int SERVER_PORT = 5000;
     
+    private final String ANNOTATION_MAX_MESSAGE_SIZE = "seldon.io/grpc-max-message-size";
+    
     private final int port;
     private final Server server;
 	  
     private final PredictionService predictionService;
     
     @Autowired
-    public SeldonGrpcServer(PredictionService predictionService)
+    public SeldonGrpcServer(PredictionService predictionService,AnnotationsConfig annotations)
     {
         { // setup the server port using the env vars
             String engineServerPortString = System.getenv().get(ENGINE_SERVER_PORT_KEY);
@@ -53,10 +56,23 @@ public class SeldonGrpcServer  {
             }
         }
         this.predictionService = predictionService;
-        server = NettyServerBuilder
+        NettyServerBuilder builder = NettyServerBuilder
                 .forPort(port)
-                .addService(new SeldonService(this))
-          .build();
+                .addService(new SeldonService(this));
+        if (annotations.has(ANNOTATION_MAX_MESSAGE_SIZE))
+        {
+        	try 
+        	{
+        		int maxMessageSize =Integer.parseInt(annotations.get(ANNOTATION_MAX_MESSAGE_SIZE));
+        		logger.info("Setting max message to {}",maxMessageSize);
+        		builder.maxMessageSize(maxMessageSize);
+        	}
+        	catch(NumberFormatException e)
+        	{
+        		logger.warn("Failed to parse {} with value {}",ANNOTATION_MAX_MESSAGE_SIZE,annotations.get(ANNOTATION_MAX_MESSAGE_SIZE),e);
+        	}
+        }
+        server = builder.build();
     }
    
     
@@ -105,14 +121,4 @@ public class SeldonGrpcServer  {
         server.awaitTermination();
       }
     }
-
-    /**
-     * Main method for basic testing.
-     */
-    public static void main(String[] args) throws Exception {
-        
-        SeldonGrpcServer server = new SeldonGrpcServer(null);
-        server.start();
-        server.blockUntilShutdown();
-  }
 }
