@@ -70,9 +70,15 @@ class SeldonTransformerGRPC(object):
 
         return request
     
-def get_grpc_server(user_model,debug=False):
+def get_grpc_server(user_model,debug=False,annotations={}):
     seldon_model = SeldonTransformerGRPC(user_model)
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    options = []
+    if ANNOTATION_GRPC_MAX_MSG_SIZE in annotations:
+        max_msg = int(annotations[ANNOTATION_GRPC_MAX_MSG_SIZE])
+        logger.info("Setting grpc max message to %d",max_msg)
+        options.append(('grpc.max_message_length', max_msg ))
+
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10),options=options)
     prediction_pb2_grpc.add_ModelServicer_to_server(seldon_model, server)
 
     return server

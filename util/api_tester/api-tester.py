@@ -7,6 +7,8 @@ import requests
 import urllib
 from proto import prediction_pb2
 from proto import prediction_pb2_grpc
+from google.protobuf import json_format
+from google.protobuf.struct_pb2 import ListValue
 import grpc
 import sys
 
@@ -90,7 +92,7 @@ def gen_GRPC_request(batch,features,tensor=True):
         datadef = prediction_pb2.DefaultData(
             names = features,
             ndarray = array_to_list_value(batch)
-            )
+        )
     request = prediction_pb2.SeldonMessage(
         data = datadef
         )
@@ -128,8 +130,14 @@ def unfold_contract(contract):
 
 def get_token(args):
     payload = {'grant_type': 'client_credentials'}
+    if "oauth_port" in args:
+        port = args.oauth_port
+    else:
+        port = args.port
+    url =  "http://"+args.host+":"+str(port)+"/oauth/token"
+    print("Getting token from "+url)
     response = requests.post(
-                "http://"+args.host+":"+str(args.port)+"/oauth/token",
+                url,        
                 auth=HTTPBasicAuth('oauth-key', 'oauth-secret'),
                 data=payload)
     print(response.text)
@@ -183,9 +191,15 @@ def run(args):
                 print(GRPC_request)
 
             channel = grpc.insecure_channel('{}:{}'.format(args.host,args.port))
-            stub = prediction_pb2_grpc.ModelStub(channel)
-            response = stub.Predict(GRPC_request)
-            
+            stub = prediction_pb2_grpc.SeldonStub(channel)
+
+            if args.oauth_key:
+                token = get_token(args)
+                metadata = [('oauth_token', token)]
+                response = stub.Predict(request=GRPC_request,metadata=metadata)
+            else:
+                response = stub.Predict(request=GRPC_request)
+                
             if args.prnt:
                 print("RECEIVED RESPONSE:")
                 print(response)
@@ -201,6 +215,7 @@ if __name__ == "__main__":
     parser.add_argument("--grpc",action="store_true")
     parser.add_argument("-t","--tensor",action="store_true")
     parser.add_argument("-p","--prnt",action="store_true",help="Prints requests and responses")
+    parser.add_argument("--oauth-port",type=int)    
     parser.add_argument("--oauth-key")
     parser.add_argument("--oauth-secret")
     parser.add_argument("--ambassador-path")    
