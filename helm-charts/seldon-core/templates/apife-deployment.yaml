@@ -20,7 +20,9 @@ spec:
   template:
     metadata:
       annotations:
+{{ if .Values.apife.annotations }}        
 {{ toYaml .Values.apife.annotations | indent 8 }}
+{{ end }}
         prometheus.io/path: /prometheus
         prometheus.io/port: "8080"
         prometheus.io/scrape: "true"
