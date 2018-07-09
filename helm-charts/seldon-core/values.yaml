@@ -19,18 +19,18 @@ ambassador:
 apife:
   enabled: true
   image:
-    name: seldonio/apife:0.2.1-SNAPSHOT
+    name: seldonio/apife:0.2.2-SNAPSHOT
     pull_policy: IfNotPresent
   service_type: NodePort
 cluster_manager:
   image:
-    name: seldonio/cluster-manager:0.2.1-SNAPSHOT
+    name: seldonio/cluster-manager:0.2.2-SNAPSHOT
     pull_policy: IfNotPresent
   java_opts: ''
   spring_opts: ''
 engine:
   image:
-    name: seldonio/engine:0.2.1-SNAPSHOT
+    name: seldonio/engine:0.2.2-SNAPSHOT
 rbac:
   enabled: true
   rolebinding:
