@@ -45,9 +45,9 @@ import io.kubernetes.client.proto.V1.ExecAction;
 import io.kubernetes.client.proto.V1.HTTPGetAction;
 import io.kubernetes.client.proto.V1.Handler;
 import io.kubernetes.client.proto.V1.Lifecycle;
-import io.kubernetes.client.proto.V1.PodSecurityContext;
 import io.kubernetes.client.proto.V1.PodTemplateSpec;
 import io.kubernetes.client.proto.V1.Probe;
+import io.kubernetes.client.proto.V1.SecurityContext;
 import io.kubernetes.client.proto.V1.Service;
 import io.kubernetes.client.proto.V1.ServicePort;
 import io.kubernetes.client.proto.V1.ServiceSpec;
@@ -110,6 +110,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(clusterManagerProperites.getEngineContainerPort()))
 			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(8082).setName("admin"))
 			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(9090).setName("jmx"))
+			.setSecurityContext(SecurityContext.newBuilder().setRunAsUser(8888).build())
 			.setReadinessProbe(Probe.newBuilder().setHandler(Handler.newBuilder()
 					.setHttpGet(HTTPGetAction.newBuilder().setPort(IntOrString.newBuilder().setType(1).setStrVal("admin")).setPath("/ready")))
 					.setInitialDelaySeconds(10)
@@ -532,7 +533,6 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 				PodTemplateSpec.Builder podSpecBuilder = PodTemplateSpec.newBuilder();
 				podSpecBuilder.getSpecBuilder()
 		    	.addContainers(createEngineContainer(mlDep,p))
-		    	.setSecurityContext(PodSecurityContext.newBuilder().setRunAsUser(8888).build())
 		    	.setTerminationGracePeriodSeconds(20);
 			
 				String depName = getSeldonServiceName(mlDep,p,"svc-orch");
