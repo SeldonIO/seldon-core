@@ -1,41 +1,48 @@
 ---
-apiVersion: v1
-items:
-- apiVersion: extensions/v1beta1
-  kind: Deployment
-  metadata:
-    name: seldon-cluster-manager
-    namespace: {{ .Release.Namespace }}
-  spec:
-    replicas: 1
-    template:
-      metadata:
-        labels:
-          app: seldon-cluster-manager-server
-      spec:
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels: &Labels
+    app.kubernetes.io/name: {{ .Release.Name }}
+    app.kubernetes.io/component: seldon-core-operator
+    app: seldon-cluster-manager-server    
+    chart: {{ template "seldon.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    component: seldon-core
+  name: {{ .Release.Name }}-seldon-cluster-manager
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: *Labels
+  template:
+    metadata:
+      labels: *Labels
+    spec:
 {{- if .Values.rbac.enabled }}
-        serviceAccountName: seldon
+      serviceAccountName: {{ .Values.rbac.service_account.name }}
 {{- end }}
-        containers:
-        - env:
-          - name: JAVA_OPTS
-            value: {{ .Values.cluster_manager.java_opts }}
-          - name: SPRING_OPTS
-            value: {{ .Values.cluster_manager.spring_opts }}
-          - name: SELDON_CLUSTER_MANAGER_REDIS_HOST
-            value: redis
-          - name: ENGINE_CONTAINER_IMAGE_AND_VERSION
-            value: seldonio/engine:{{ .Values.engine.image.tag }}
-          - name: SELDON_CLUSTER_MANAGER_POD_NAMESPACE
-            valueFrom:
-              fieldRef:
-                apiVersion: v1
-                fieldPath: metadata.namespace
-          image: seldonio/cluster-manager:{{ .Values.cluster_manager.image.tag }}
-          imagePullPolicy: {{ .Values.cluster_manager.image.pull_policy }}
-          name: seldon-cluster-manager-container
-          ports:
-          - containerPort: 8080
-            protocol: TCP
-kind: List
-metadata: {}
+      securityContext:
+        runAsUser: 8888
+      containers:
+      - env:
+        - name: JAVA_OPTS
+          value: {{ .Values.cluster_manager.java_opts }}
+        - name: SPRING_OPTS
+          value: {{ .Values.cluster_manager.spring_opts }}
+        - name: SELDON_CLUSTER_MANAGER_REDIS_HOST
+          value: redis
+        - name: ENGINE_CONTAINER_IMAGE_AND_VERSION
+          value: {{ .Values.engine.image.name }}
+        - name: SELDON_CLUSTER_MANAGER_POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        image: {{ .Values.cluster_manager.image.name }}
+        imagePullPolicy: {{ .Values.cluster_manager.image.pull_policy }}
+        name: seldon-cluster-manager-container
+        ports:
+        - containerPort: 8080
+          protocol: TCP

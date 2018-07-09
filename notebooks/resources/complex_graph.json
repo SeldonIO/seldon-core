@@ -1,5 +1,5 @@
 {
-    "apiVersion": "machinelearning.seldon.io/v1alpha1",
+    "apiVersion": "machinelearning.seldon.io/v1alpha2",
     "kind": "SeldonDeployment",
     "metadata": {
 	"labels": {
@@ -17,7 +17,7 @@
 	"oauth_secret": "oauth-secret",
 	"predictors": [
 	    {
-		"componentSpec": {
+		"componentSpecs": [{
 		    "spec": {
 			"containers": [
 			    {
@@ -30,7 +30,10 @@
 					"cpu": "0.1"
 				    }
 				}
-			    },
+			    }]}},
+		    {
+		    "spec": {
+			"containers": [				   
 			    {
 				"image": "seldonio/mock_classifier:1.0",
 				"imagePullPolicy": "IfNotPresent",
@@ -41,7 +44,10 @@
 					"cpu": "0.1"
 				    }
 				}
-			    },
+			    }]}},
+		     {
+		    "spec": {
+			"containers": [				   
 			    {
 				"image": "seldonio/mock_classifier:1.0",
 				"imagePullPolicy": "IfNotPresent",
@@ -52,7 +58,10 @@
 					"cpu": "0.1"
 				    }
 				}
-			    },
+			    }]}},
+		    {
+		    "spec": {
+			"containers": [				   
 			    {
 				"image": "seldonio/mock_outlier_detector:1.0",
 				"imagePullPolicy": "IfNotPresent",
@@ -63,7 +72,10 @@
 					"cpu": "0.1"
 				    }
 				}
-			    },
+			    }]}},
+		{
+		    "spec": {
+			"containers": [				   
 			    {
 				"image": "seldonio/mock_transformer:1.0",
 				"imagePullPolicy": "IfNotPresent",
@@ -78,7 +90,7 @@
 			],
 			"terminationGracePeriodSeconds": 20
 		    }
-		},
+		}],
 		"name": "fx-market-predictor",
 		"replicas": 1,
 		"annotations": {

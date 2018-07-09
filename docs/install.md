@@ -17,7 +17,6 @@ Follow one of the methods below:
 ## With Helm
 
  * [Install Helm](https://docs.helm.sh)
- * [Optionally, Install Ambassador](https://www.getambassador.io)
  * Install Seldon CRD. Set:
     * ```usage_metrics.enabled``` as appropriate.
 
@@ -28,10 +27,12 @@ helm install seldon-core-crd --name seldon-core-crd --repo https://storage.googl
  * Install seldon-core components. Set
     * ```apife.enabled``` : (default true) set to ```false``` if you have installed Ambassador.
     * ```rbac.enabled``` : (default true) set to ```false``` if running an old Kubernetes cluster without RBAC.
+    * ```ambassador.enabled``` : (default false) set to ```true``` if you want to run with an Ambassador reverse proxy.
 ```    
 helm install seldon-core --name seldon-core --repo https://storage.googleapis.com/seldon-charts \
      --set apife.enabled=<true|false> \
-     --set rbac.enabled=<true|false>
+     --set rbac.enabled=<true|false> \
+     --set ambassador.enabled=<true|false> 
 ```
 
 Notes
@@ -70,3 +71,4 @@ Notes
 ### Install with kubeflow
 
   * [Install Seldon as part of kubeflow.](https://github.com/kubeflow/kubeflow/blob/master/user_guide.md)
+     * Kubeflow presently runs 0.1 version of seldon-core. This will be updated to 0.2 in the near future.

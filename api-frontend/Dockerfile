@@ -1,4 +1,4 @@
-FROM openjdk:8u131-jre-alpine
+FROM openjdk:8u171-jre-alpine3.7
 
 ARG APP_VERSION=UNKOWN_VERSION
 

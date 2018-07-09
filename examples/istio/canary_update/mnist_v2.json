@@ -1,0 +1,85 @@
+{
+    "apiVersion": "machinelearning.seldon.io/v1alpha2",
+    "kind": "SeldonDeployment",
+    "metadata": {
+        "labels": {
+            "app": "seldon"
+        },
+        "name": "mnist-classifier"
+    },
+    "spec": {
+        "annotations": {
+            "project_name": "Mnist classification"
+        },
+        "name": "mnist-deployment",
+        "oauth_key": "oauth-key",
+        "oauth_secret": "oauth-secret",
+        "predictors": [
+            {
+                "componentSpecs": [{
+                    "spec": {
+                        "containers": [
+                            {
+                                "image": "seldonio/r-mnist:0.1",
+                                "imagePullPolicy": "IfNotPresent",
+                                "name": "r-mnist-classifier",
+                                "resources": {
+                                    "requests": {
+                                        "memory": "1Mi"
+                                    }
+                                }
+                            }
+                        ],
+                        "terminationGracePeriodSeconds": 20
+                    }
+                }],
+                "graph": {
+                    "children": [],
+                    "name": "r-mnist-classifier",
+                    "endpoint": {
+                        "type" : "REST"
+                    },
+                    "type": "MODEL"
+                },
+                "name": "r-mnist-predictor",
+                "replicas": 1,
+		"labels":{
+		    "version":"v1"
+		}
+            },
+            {
+                "componentSpecs": [{
+                    "spec": {
+                        "containers": [
+                            {
+                                "image": "seldonio/deep-mnist:0.1",
+                                "imagePullPolicy": "IfNotPresent",
+                                "name": "tf-mnist-classifier",
+                                "resources": {
+                                    "requests": {
+                                        "memory": "1Mi"
+                                    }
+                                }
+                            }
+                        ],
+                        "terminationGracePeriodSeconds": 20
+                    }
+                }],
+                "graph": {
+                    "children": [],
+                    "name": "tf-mnist-classifier",
+                    "endpoint": {
+                        "type" : "REST"
+                    },
+                    "type": "MODEL"
+                },
+                "name": "tf-mnist-predictor",
+                "replicas": 1,
+		"labels":{
+		    "version":"v2"
+		}
+            }
+	    
+        ]
+    }
+}

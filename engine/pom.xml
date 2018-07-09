@@ -10,7 +10,7 @@
 
 	<groupId>io.seldon.engine</groupId>
 	<artifactId>seldon-engine</artifactId>
-	<version>0.1.8-SNAPSHOT</version>
+	<version>0.2.1-SNAPSHOT-CRD</version>
 	<packaging>jar</packaging>
 
 	<name>engine</name>
@@ -129,9 +129,9 @@
 	<dependencies>
 		<!-- https://mvnrepository.com/artifact/org.nd4j/nd4j-native -->
 		<dependency>
-		    <groupId>org.nd4j</groupId>
-		    <artifactId>nd4j-native-platform</artifactId>
-		    <version>0.9.1</version>
+   			<groupId>org.ojalgo</groupId>
+    		<artifactId>ojalgo</artifactId>
+    		<version>45.1.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

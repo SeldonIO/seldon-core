@@ -15,56 +15,22 @@
  *******************************************************************************/
 package io.seldon.engine.predictors;
 
-import io.seldon.protos.PredictionProtos.Tensor;
-import io.seldon.protos.PredictionProtos.DefaultData.DataOneofCase;
-import io.seldon.protos.PredictionProtos.DefaultData;
-
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.factory.Nd4j;
+import org.ojalgo.matrix.BasicMatrix;
+import org.ojalgo.matrix.PrimitiveMatrix;
 
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 
+import io.seldon.protos.PredictionProtos.DefaultData;
+import io.seldon.protos.PredictionProtos.DefaultData.DataOneofCase;
+import io.seldon.protos.PredictionProtos.Tensor;
+
 public class PredictorUtils {
 	
-	public static DefaultData tensorToNDArray(DefaultData data){
-		if (data.getDataOneofCase() == DataOneofCase.TENSOR)
-		{
-			List<Double> valuesList = data.getTensor().getValuesList();
-			List<Integer> shapeList = data.getTensor().getShapeList();
-			
-			DefaultData.Builder dataBuilder = DefaultData.newBuilder();
-					
-			int index=0;
-			for (Iterator<String> i = data.getNamesList().iterator(); i.hasNext();){
-				dataBuilder.setNames(index, i.next());
-				index++;
-			}
-			
-			ListValue.Builder b1 = ListValue.newBuilder();
-			for (int i = 0; i < shapeList.get(0); ++i) {
-				ListValue.Builder b2 = ListValue.newBuilder();
-				for (int j = 0; j < shapeList.get(1); j++){
-					b2.addValues(Value.newBuilder().setNumberValue(valuesList.get(i*shapeList.get(1))+j));
-				}
-				b1.addValues(Value.newBuilder().setListValue(b2.build()));
-			}
-			dataBuilder.setNdarray(b1.build());
-			
-			return dataBuilder.build();
-			
-		}
-		else if (data.getDataOneofCase() == DataOneofCase.NDARRAY)
-		{
-			return data;
-		}
-		return null;
-	}
+	
 	
 	public static DefaultData nDArrayToTensor(DefaultData data){
 		if (data.getDataOneofCase() == DataOneofCase.TENSOR)
@@ -98,49 +64,45 @@ public class PredictorUtils {
 		}
 		return null;
 	}
-	
-	public static INDArray getINDArray(DefaultData data){
-		
+
+	public static PrimitiveMatrix getOJMatrix(DefaultData data){
+		BasicMatrix.Factory<PrimitiveMatrix> matrixFactory = PrimitiveMatrix.FACTORY;
 		if (data.getDataOneofCase() == DataOneofCase.TENSOR)
 		{
 			
 			List<Double> valuesList = data.getTensor().getValuesList();
 			List<Integer> shapeList = data.getTensor().getShapeList();
 			
-			double[] values = new double[valuesList.size()];
-			int[] shape = new int[shapeList.size()];
-			for (int i = 0; i < values.length; i++) {
-				values[i] = valuesList.get(i);
-			 }
-			for (int i = 0; i < shape.length; i++) {
-				shape[i] = shapeList.get(i);
-			 }
-			 		 
-			INDArray newArr = Nd4j.create(values,shape,'c');
+			int rows = shapeList.get(0);
+			int columns = shapeList.get(1);
 			
-			return newArr;
+			double[][] values = new double[rows][columns];
+			for (int i = 0; i < rows*columns; i++) {
+				values[i/columns][i%columns] = valuesList.get(i);
+			 }
+			
+			return matrixFactory.rows(values);
 		}
 		else if (data.getDataOneofCase() == DataOneofCase.NDARRAY)
 		{
 			ListValue list = data.getNdarray();
-			int bLength = list.getValuesCount();
-			int vLength = list.getValues(0).getListValue().getValuesCount();
+			int rows = list.getValuesCount();
+			int cols = list.getValues(0).getListValue().getValuesCount();
 			
-			double[] values = new double[bLength*vLength];
-			int[] shape = {bLength,vLength};
-			
-			for (int i = 0; i < bLength; ++i) {
-				for (int j = 0; j < vLength; j++){
-					values[i*bLength+j] = list.getValues(i).getListValue().getValues(j).getNumberValue();
+			double[][] values = new double[rows][cols];
+			for (int i = 0; i < rows; ++i) {
+				for (int j = 0; j < cols; j++){
+					values[i][j] = list.getValues(i).getListValue().getValues(j).getNumberValue();
 				}
 			}
 			
-			INDArray newArr = Nd4j.create(values,shape,'c');
-			
-			return newArr;
+			return matrixFactory.rows(values);
 		}
 		return null;
 	}
+
+	
+
 	
 	public static int[] getShape(DefaultData data){
 		if (data.getDataOneofCase() == DataOneofCase.TENSOR){
@@ -162,7 +124,7 @@ public class PredictorUtils {
 		return null;
 	}
 	
-	public static DefaultData updateData(DefaultData oldData, INDArray newData){
+	public static DefaultData updateData(DefaultData oldData, PrimitiveMatrix newData){
 		DefaultData.Builder dataBuilder = DefaultData.newBuilder();
 		
 		dataBuilder.addAllNames(oldData.getNamesList());
@@ -175,12 +137,13 @@ public class PredictorUtils {
 		
 		if (oldData.getDataOneofCase() == DataOneofCase.TENSOR){
 			Tensor.Builder tBuilder = Tensor.newBuilder();
-			List<Integer> shapeList = Arrays.stream(newData.shape()).boxed().collect(Collectors.toList());
-			tBuilder.addAllShape(shapeList);
+
+			tBuilder.addShape((int)newData.countRows());
+			tBuilder.addShape((int)newData.countColumns());
 			
-			for (int i=0; i<shapeList.get(0); ++i){
-				for (int j=0; j<shapeList.get(1); ++j){
-					tBuilder.addValues(newData.getDouble(i,j));
+			for (int i=0; i<newData.countRows(); ++i){
+				for (int j=0; j<newData.countColumns(); ++j){
+					tBuilder.addValues(newData.get(i,j));
 				}
 			}
 			dataBuilder.setTensor(tBuilder);
@@ -188,10 +151,10 @@ public class PredictorUtils {
 		}
 		else if (oldData.getDataOneofCase() == DataOneofCase.NDARRAY){
 			ListValue.Builder b1 = ListValue.newBuilder();
-			for (int i = 0; i < newData.shape()[0]; ++i) {
+			for (int i = 0; i < newData.countRows(); ++i) {
 				ListValue.Builder b2 = ListValue.newBuilder();
-				for (int j = 0; j < newData.shape()[1]; j++){
-					b2.addValues(Value.newBuilder().setNumberValue(newData.getDouble(i,j)));
+				for (int j = 0; j < newData.countColumns(); j++){
+					b2.addValues(Value.newBuilder().setNumberValue(newData.get(i,j)));
 				}
 				b1.addValues(Value.newBuilder().setListValue(b2.build()));
 			}
@@ -201,6 +164,7 @@ public class PredictorUtils {
 		return null;
 		
 	}
+
 
 }
 

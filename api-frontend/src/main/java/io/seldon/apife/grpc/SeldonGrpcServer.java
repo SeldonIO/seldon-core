@@ -38,6 +38,7 @@ import io.seldon.apife.deployments.DeploymentStore;
 import io.seldon.apife.deployments.DeploymentsHandler;
 import io.seldon.apife.deployments.DeploymentsListener;
 import io.seldon.apife.exception.SeldonAPIException;
+import io.seldon.apife.k8s.DeploymentWatcher;
 import io.seldon.protos.DeploymentProtos.DeploymentSpec;
 import io.seldon.protos.DeploymentProtos.Endpoint;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
@@ -179,7 +180,7 @@ public class SeldonGrpcServer    {
     public static void main(String[] args) throws Exception {
         DeploymentStore store = new DeploymentStore(null,new InMemoryClientDetailsService());
         SeldonDeployment dep = SeldonDeployment.newBuilder()
-                .setApiVersion("v1alpha1")
+                .setApiVersion(DeploymentWatcher.VERSION)
                 .setKind("SeldonDeplyment")
                 .setSpec(DeploymentSpec.newBuilder()
                     .setName("0.0.0.0")

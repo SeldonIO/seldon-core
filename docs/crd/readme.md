@@ -24,9 +24,9 @@ message SeldonDeployment {
 }
 ```
 
-The core deployment spec consists of a set of ```predictors```. Each predictor represents a seperate runtime serving graph. The set of predictors will serve request as controlled by a load balancer. At present the share of traffic will be in relation to the number of replicas each predictor has. A use case for two predictors would be a main deployment and a canary, with the main deployment having 9 replicas and the canary 1, so the canary receives 10% of the overall traffic. Each predictor will be a seperately managed deployment with Kubernetes so it is safe to add and remove predictors without affecting existing predictors.
+The core deployment spec consists of a set of ```predictors```. Each predictor represents a seperate runtime serving graph. The set of predictors will serve request as controlled by a load balancer. At present the share of traffic will be in relation to the number of replicas each predictor has. A use case for two predictors would be a main deployment and a canary, with the main deployment having 9 replicas and the canary 1, so the canary receives 10% of the overall traffic. Each predictor will be a seperately set of managed deployments with Kubernetes so it is safe to add and remove predictors without affecting existing predictors.
 
-To allow an OAuth API to be provisioned you should specify an OAuth key and secret.
+To allow an OAuth API to be provisioned you should specify an OAuth key and secret. If you are using Ambassador you will not need this as you can plug in your own external authentication using Ambassador.
 
 ```proto
 
@@ -44,18 +44,19 @@ For each predictor you should at a minimum specify:
 
  * A unique name
  * A PredictiveUnit graph that presents the tree of components to deploy.
- * A componentSpec which describes the set of images for parts of your container graph that will be instigated as microservice containers. These containers will have been wrapped to work within the [internal API](../reference/internal-api.md). This component spec is a standard [PodTemplateSpec](https://kubernetes.io/docs/api-reference/extensions/v1beta1/definitions/#_v1_podtemplatespec).
+ * One or more componentSpecs which describes the set of images for parts of your container graph that will be instigated as microservice containers. These containers will have been wrapped to work within the [internal API](../reference/internal-api.md). This component spec is a standard [PodTemplateSpec](https://kubernetes.io/docs/api-reference/extensions/v1beta1/definitions/#_v1_podtemplatespec). For complex grahs you can decide to use several componentSpecs so as to separate your components into separate Pods each with their own resource requirements.
      * If you leave the ports empty for each container they will be added automatically and matched to the ports in the graph specification. If you decide to specify the ports manually they should match the port specified for the matching component in the graph specification.
  * the number of replicas of this predictor to deploy
 
 ```proto
-
 message PredictorSpec {
   required string name = 1; // A unique name not used by any other predictor in the deployment.
   required PredictiveUnit graph = 2; // A graph describing how the predictive units are connected together.
-  required k8s.io.api.core.v1.PodTemplateSpec componentSpec = 3; // A description of the set of containers used by the graph. One for each microservice defined in the graph.
+  repeated k8s.io.api.core.v1.PodTemplateSpec componentSpecs = 3; // A description of the set of containers used by the graph. One for each microservice defined in the graph. Can be split over 1 or more PodTemplateSpecs.
   optional int32 replicas = 4; // The number of replicas of the predictor to create.
   map<string,string> annotations = 5; // Arbitrary annotations.
+  optional k8s.io.api.core.v1.ResourceRequirements engineResources = 6; // Optional set of resources for the Seldon engine which is added to each Predictor graph to manage the request/response flow
+  map<string,string> labels = 7; // labels to be attached to entry deplyment for this predictor
 }
 
 ```

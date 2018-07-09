@@ -45,11 +45,25 @@ Machine learning deployment has many [challenges](./docs/challenges.md). Seldon 
   A [Kubernetes](https://kubernetes.io/) Cluster.  
   Kubernetes can be deployed into many environments, both in cloud and on-premise.
 
+## Important: V1Alpha2 Update
+
+ **We have updated our core API to v1alpha2 which has a breaking change from v1alpha1 in the SeldonDeployments CRD**
+
+[Read details of how to update your kubernetes SeldonDeployment resources](./docs/v1alpha2_update.md).
+
+ * **0.2** releases will now respect the v1alpha2 API.
+ * **0.1** releases respect the v1alpha1 API and will not be worked on further.
+
+It is possible to deploy Seldon with two operators that can handle both v1alpha1 resources and v1alpha2 resources though this is not part of our standard deployment docs. If you need this please get in touch.
+
 ## Quick Start
+
+Read the [overview to using seldon-core](./docs/getting_started/readme.md).
 
  - Jupyter notebooks showing worked examples:
     * Minikube:
-         * [Jupyter Notebook showing deployment of prebuilt model using Minikube - with RBAC](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_minikube_rbac.ipynb)
+         * [Jupyter Notebook showing deployment of prebuilt model using Minikube and Helm](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_minikube_rbac.ipynb)
+         * [Jupyter Notebook showing deployment of prebuilt model using Minikube, Helm and Ambassador reverse proxy](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/helm_minikube_ambassador.ipynb)	 
          * [Jupyter notebook to create seldon-core with ksonnet and expose APIs using Ambassador on Minikube with RBAC.](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/ksonnet_ambassador_minikube.ipynb)
     * GCP:
          * [Jupyter Notebook showing deployment of prebuilt model using GCP cluster](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_gcp.ipynb)
@@ -75,7 +89,8 @@ Seldon-core allows various types of components to be built and plugged into the 
    * Java
       * [H2O Classifier](./examples/models/h2o_mojo/h2o_model.ipynb)
    * PMML
-      * [pySpark MNIST Classifier](./examples/models/pyspark_pmml/mnist.ipynb)
+      * [PySpark MNIST Classifier](https://github.com/SeldonIO/JPMML-utils/blob/master/examples/pyspark_pmml/mnist.ipynb)
+
  * **routers**
    * [Epsilon-greedy multi-armed bandits for real time optimization of models](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/epsilon_greedy_gcp.ipynb)
  * **transformers**
@@ -89,6 +104,8 @@ Seldon-core allows various types of components to be built and plugged into the 
     * Seldon-core can be used to [serve deep learning models trained using FfDL](https://github.com/IBM/FfDL/blob/master/community/FfDL-Seldon/README.md).
        * [Train and deploy a Tensorflow MNIST classififer using FfDL and Seldon.](https://github.com/IBM/FfDL/blob/master/community/FfDL-Seldon/tf-model/README.md)
        * [Train and deploy a PyTorch MNIST classififer using FfDL and Seldon.](https://github.com/IBM/FfDL/blob/master/community/FfDL-Seldon/pytorch-model/README.md)
+ * [Istio and Seldon](./docs/istio.md)
+   * [Canary deployemts using Istio and Seldon.](../examples/istio/canary_update/canary.ipynb).
 	
 
 ## Install
