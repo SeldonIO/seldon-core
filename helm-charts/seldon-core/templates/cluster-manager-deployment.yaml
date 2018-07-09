@@ -23,8 +23,6 @@ spec:
 {{- if .Values.rbac.enabled }}
       serviceAccountName: {{ .Values.rbac.service_account.name }}
 {{- end }}
-      securityContext:
-        runAsUser: 8888
       containers:
       - env:
         - name: JAVA_OPTS
@@ -43,6 +41,8 @@ spec:
         image: {{ .Values.cluster_manager.image.name }}
         imagePullPolicy: {{ .Values.cluster_manager.image.pull_policy }}
         name: seldon-cluster-manager-container
+        securityContext:
+          runAsUser: 8888
         ports:
         - containerPort: 8080
           protocol: TCP

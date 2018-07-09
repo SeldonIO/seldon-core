@@ -39,6 +39,8 @@ spec:
         image: {{ .Values.apife.image.name }}
         imagePullPolicy: {{ .Values.apife.image.pull_policy }}
         name: seldon-apiserver-container
+        securityContext:
+          runAsUser: 8888
         ports:
         - containerPort: 8080
           protocol: TCP
@@ -48,8 +50,6 @@ spec:
 {{- if .Values.rbac.enabled }}
       serviceAccountName: {{ .Values.rbac.service_account.name }}
 {{- end }}
-      securityContext:
-        runAsUser: 8888
       terminationGracePeriodSeconds: 30
 ---
 apiVersion: v1
