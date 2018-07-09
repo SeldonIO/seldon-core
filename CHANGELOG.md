@@ -1,5 +1,22 @@
 # Change Log
 
+## [v0.2.1](https://github.com/SeldonIO/seldon-core/tree/v0.2.1) (2018-07-09)
+[Full Changelog](https://github.com/SeldonIO/seldon-core/compare/v0.2.0...v0.2.1)
+
+**Closed issues:**
+
+- "/s2i/bin/assemble: line 59:  10 Killed"  when using S2I to build PyTorch container  [\#180](https://github.com/SeldonIO/seldon-core/issues/180)
+- Getting timeout error using S2I to package PyTorch model  [\#179](https://github.com/SeldonIO/seldon-core/issues/179)
+- Make Operator Create CRD on StartUp [\#174](https://github.com/SeldonIO/seldon-core/issues/174)
+
+**Merged pull requests:**
+
+- Licences generation in poms [\#185](https://github.com/SeldonIO/seldon-core/pull/185) ([cliveseldon](https://github.com/cliveseldon))
+- Update api testing utils to allow shape parameter [\#184](https://github.com/SeldonIO/seldon-core/pull/184) ([cliveseldon](https://github.com/cliveseldon))
+- Ensure ambassador names are unique in resources created [\#182](https://github.com/SeldonIO/seldon-core/pull/182) ([cliveseldon](https://github.com/cliveseldon))
+- Remove Application from helm chart [\#181](https://github.com/SeldonIO/seldon-core/pull/181) ([cliveseldon](https://github.com/cliveseldon))
+- Updated Helm Chart and auto create of CRD [\#178](https://github.com/SeldonIO/seldon-core/pull/178) ([cliveseldon](https://github.com/cliveseldon))
+
 ## [v0.2.0](https://github.com/SeldonIO/seldon-core/tree/v0.2.0) (2018-06-29)
 [Full Changelog](https://github.com/SeldonIO/seldon-core/compare/v0.1.8...v0.2.0)
 
