@@ -1,5 +1,5 @@
 {
-    "apiVersion": "machinelearning.seldon.io/v1alpha1",
+    "apiVersion": "machinelearning.seldon.io/v1alpha2",
     "kind": "SeldonDeployment",
     "metadata": {
         "labels": {
@@ -16,7 +16,7 @@
         "oauth_secret": "oauth-secret",
         "predictors": [
             {
-                "componentSpec": {
+                "componentSpecs": [{
                     "spec": {
                         "containers": [
                             {
@@ -31,7 +31,7 @@
                             }
                         ]
                     }
-                },
+                }],
                 "graph": {
                     "children": [],
                     "name": "mean-classifier",
@@ -44,7 +44,7 @@
                 "replicas": 1
             },
             {
-                "componentSpec": {
+                "componentSpecs": [{
                     "spec": {
                         "containers": [
                             {
@@ -59,7 +59,7 @@
                             }
                         ]
                     }
-                },
+                }],
                 "graph": {
                     "children": [],
                     "name": "mean-classifier",
@@ -69,7 +69,10 @@
                     "type": "MODEL"
                 },
                 "name": "fx-market-predictor-canary",
-                "replicas": 1
+                "replicas": 1,
+		"labels":{
+		    "version":"v2"
+		}
             }
         ]
     }

@@ -57,6 +57,11 @@ public class DeploymentWatcher  implements DeploymentsHandler{
 	
 	protected static Logger logger = LoggerFactory.getLogger(DeploymentWatcher.class.getName());
 	
+	public static final String GROUP = "machinelearning.seldon.io";
+	public static final String VERSION = "v1alpha2";
+	public static final String KIND_PLURAL = "seldondeployments";
+	public static final String KIND = "SeldonDeployment";
+	
 	private ApiClient client;
 	private int resourceVersion = 0;
 	private int resourceVersionProcessed = 0;
@@ -124,7 +129,7 @@ public class DeploymentWatcher  implements DeploymentsHandler{
 		CustomObjectsApi api = new CustomObjectsApi();
 		Watch<Object> watch = Watch.createWatch(
                 client,
-                api.listNamespacedCustomObjectCall("machinelearning.seldon.io", "v1alpha1", namespace, "seldondeployments", null, null, rs, true, null, null),
+                api.listNamespacedCustomObjectCall(GROUP, VERSION, namespace, KIND_PLURAL, null, null, rs, true, null, null),
                 new TypeToken<Watch.Response<Object>>(){}.getType());
 		
 		int maxResourceVersion = resourceVersion;

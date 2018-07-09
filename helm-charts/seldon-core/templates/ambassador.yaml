@@ -1,0 +1,93 @@
+{{- if .Values.ambassador.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    service: ambassador
+  name: {{ .Release.Name }}-ambassador
+{{- with .Values.ambassador.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+  selector:
+    service: ambassador
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: {{ .Values.ambassador.service_type }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    service: ambassador-admin
+  name: {{ .Release.Name }}-ambassador-admin
+spec:
+  ports:
+  - name: ambassador-admin
+    port: 8877
+    targetPort: 8877
+  selector:
+    service: ambassador
+  type: NodePort
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-ambassador
+spec:
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: 'false'
+      labels:
+        service: ambassador
+    spec:
+      containers:
+      - image: {{ .Values.ambassador.image.name }}
+        name: ambassador
+        env:
+        - name: AMBASSADOR_SINGLE_NAMESPACE
+          value: 'true'
+        - name: AMBASSADOR_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        resources:
+{{ toYaml .Values.ambassador.resources | indent 10 }}
+        ports:
+           - name: http
+             containerPort: 8080
+           - name: https
+             containerPort: 443
+           - name: admin
+             containerPort: 8877
+        livenessProbe:
+          httpGet:
+            path: /ambassador/v0/check_alive
+            port: admin
+          initialDelaySeconds: 30
+          periodSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /ambassador/v0/check_ready
+            port: admin
+          initialDelaySeconds: 30
+          periodSeconds: 3
+      - image: {{ .Values.ambassador.statsd.image.name }}
+        name: statsd
+        ports:
+        - name: metrics
+          containerPort: 9102
+      restartPolicy: Always
+{{- if .Values.rbac.enabled }}
+      serviceAccountName: {{ .Values.rbac.service_account.name }}
+{{- end }}
+      securityContext:
+        runAsUser: 8888
+{{- end }}

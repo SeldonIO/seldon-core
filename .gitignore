@@ -87,3 +87,4 @@ examples/models/pyspark_pmml/derby.log
 examples/models/pyspark_pmml/mnist_train.csv
 examples/models/pyspark_pmml/src/main/resources/model.pmml
 examples/models/pyspark_pmml/.gitignore
+examples/models/h2o_mojo/src/main/resources/model.zip

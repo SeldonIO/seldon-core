@@ -46,7 +46,7 @@ public class RandomABTestUnitTest {
 		
 		predictorSpecBuilder.setName("p1");
 		predictorSpecBuilder.setReplicas(1);
-		predictorSpecBuilder.setComponentSpec(PodTemplateSpec.newBuilder());
+		predictorSpecBuilder.addComponentSpecs(PodTemplateSpec.newBuilder());
 
 		PredictiveUnit.Builder predictiveUnitBuilder = PredictiveUnit.newBuilder();
 		predictiveUnitBuilder.setName("1");

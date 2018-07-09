@@ -4,7 +4,7 @@
   <groupId>io.seldon.clustermanager</groupId>
   <artifactId>seldon-cluster-manager</artifactId>
   <packaging>jar</packaging>
-  <version>0.1.8-SNAPSHOT</version>
+  <version>0.2.1-SNAPSHOT-CRD</version>
   <name>seldon-cluster-manager</name>
   <url>http://maven.apache.org</url>
 
@@ -81,7 +81,7 @@
     <dependency>
       <groupId>io.kubernetes</groupId>
       <artifactId>client-java</artifactId>
-      <version>1.0.0-beta2-SNAPSHOT</version>
+      <version>1.0.0</version>
       <scope>compile</scope>
     </dependency>
     
