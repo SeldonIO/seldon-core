@@ -5,8 +5,8 @@ VERSION_FILE=target/version.txt
 build: clean build_image
 
 
-build_jar: update_proto 
-	mvn clean package -B
+build_jar: update_proto
+	@set -x && mvn clean verify -Dlicense.useMissingFile -B
 
 write_version: build_jar
 	ls target/seldon-cluster-manager-*.jar | sed -n 's/target\/seldon-cluster-manager-\(.*\).jar$$/\1/p' > $(VERSION_FILE) && cat $(VERSION_FILE)
