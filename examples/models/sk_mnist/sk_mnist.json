@@ -5,13 +5,14 @@
         "labels": {
             "app": "seldon"
         },
-        "name": "mnist-classifier"
+        "name": "sk-mnist"
     },
     "spec": {
         "annotations": {
-            "project_name": "Mnist classification"
+            "project_name": "Tensorflow MNIST",
+            "deployment_version": "v1"
         },
-        "name": "mnist-deployment",
+        "name": "sk-mnist",
         "oauth_key": "oauth-key",
         "oauth_secret": "oauth-secret",
         "predictors": [
@@ -20,9 +21,9 @@
                     "spec": {
                         "containers": [
                             {
-                                "image": "seldonio/sk-mnist:0.1",
+                                "image": "sk-mnist:0.1",
                                 "imagePullPolicy": "IfNotPresent",
-                                "name": "sk-mnist-classifier",
+                                "name": "classifier",
                                 "resources": {
                                     "requests": {
                                         "memory": "1Mi"
@@ -35,16 +36,16 @@
                 }],
                 "graph": {
                     "children": [],
-                    "name": "sk-mnist-classifier",
+                    "name": "classifier",
                     "endpoint": {
-                        "type" : "REST"
-                    },
+			"type" : "REST"
+		    },
                     "type": "MODEL"
                 },
-                "name": "sk-mnist-predictor",
+                "name": "single-model",
                 "replicas": 1,
-		"labels":{
-		    "version":"v1"
+		"annotations": {
+		    "predictor_version" : "v1"
 		}
             }
         ]
