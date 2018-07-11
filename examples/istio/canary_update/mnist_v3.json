@@ -20,38 +20,6 @@
                     "spec": {
                         "containers": [
                             {
-                                "image": "seldonio/sk-mnist:0.1",
-                                "imagePullPolicy": "IfNotPresent",
-                                "name": "sk-mnist-classifier",
-                                "resources": {
-                                    "requests": {
-                                        "memory": "1Mi"
-                                    }
-                                }
-                            }
-                        ],
-                        "terminationGracePeriodSeconds": 20
-                    }
-                }],
-                "graph": {
-                    "children": [],
-                    "name": "sk-mnist-classifier",
-                    "endpoint": {
-                        "type" : "REST"
-                    },
-                    "type": "MODEL"
-                },
-                "name": "sk-mnist-predictor",
-                "replicas": 1,
-		"labels":{
-		    "version":"v1"
-		}
-            },
-            {
-                "componentSpecs": [{
-                    "spec": {
-                        "containers": [
-                            {
                                 "image": "seldonio/deep-mnist:0.1",
                                 "imagePullPolicy": "IfNotPresent",
                                 "name": "tf-mnist-classifier",
