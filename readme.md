@@ -82,6 +82,7 @@ Seldon-core allows various types of components to be built and plugged into the 
    * Python
       * [Tensorflow MNIST Classifier](./examples/models/deep_mnist/deep_mnist.ipynb)
       * [Keras MNIST Classifier](./examples/models/keras_mnist/keras_mnist.ipynb)
+      * [Scikit-learn MNIST Classifier](./examples/models/sk_mnist/skmnist.ipynb)
       * [Scikit-learn Iris Classifier](./examples/models/sklearn_iris/sklearn_iris.ipynb)
    * R
       * [R MNIST Classifier](./examples/models/r_mnist/r_mnist.ipynb)
