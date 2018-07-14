@@ -21,8 +21,12 @@ local getRedisService(x) = x.metadata.name == 'RELEASE-NAME-redis' && x.kind == 
 local getServiceAccount(x) = x.kind == "ServiceAccount";
 local getClusterRole(x) = x.kind == "ClusterRole";
 local getClusterRoleBinding(x) = x.kind == "ClusterRoleBinding";
-local getRoleBinding(x) = x.kind == "RoleBinding";
-local getRole(x) = x.kind == "Role";
+local getRoleBinding(x) = x.kind == "RoleBinding" && x.roleRef.name == "seldon-local";
+local getAmbassadorRoleBinding(x) = x.kind == "RoleBinding" && x.roleRef.name == "ambassador";
+local getSeldonRole(x) = x.metadata.name == "seldon-local" && x.kind == "Role";
+local getAmbassadorRole(x) = x.metadata.name == "ambassador" && x.kind == "Role";
+local getAmbassadorDeployment(x) = x.metadata.name == "RELEASE-NAME-ambassador" && x.kind == "Deployment";
+local getAmbassadorService(x) = x.metadata.name == 'RELEASE-NAME-ambassador' && x.kind == "Service";
 local getEnvNotRedis(x) = x.name != "SELDON_CLUSTER_MANAGER_REDIS_HOST";
 
 {
@@ -169,7 +173,15 @@ local getEnvNotRedis(x) = x.name != "SELDON_CLUSTER_MANAGER_REDIS_HOST";
 
     rbacRole():
 
-      local role = std.filter(getRole,seldonTemplate.items)[0];
+      local role = std.filter(getSeldonRole,seldonTemplate.items)[0];
+
+      role +
+      roleMixin.metadata.withNamespace(namespace),
+
+
+    rbacAmbassadorRole():
+    
+      local role = std.filter(getAmbassadorRole,seldonTemplate.items)[0];
 
       role +
       roleMixin.metadata.withNamespace(namespace),
@@ -196,6 +208,34 @@ local getEnvNotRedis(x) = x.name != "SELDON_CLUSTER_MANAGER_REDIS_HOST";
       rbacRoleBinding +
       roleBindingMixin.metadata.withNamespace(namespace) +
       roleBinding.withSubjects([subject]),
+
+    rbacAmbassadorRoleBinding():
+
+      local rbacRoleBinding = std.filter(getAmbassadorRoleBinding,seldonTemplate.items)[0];
+
+      local subject = rbacRoleBinding.subjects[0]
+                      { namespace: namespace };
+
+      rbacRoleBinding +
+      roleBindingMixin.metadata.withNamespace(namespace) +
+      roleBinding.withSubjects([subject]),
+
+    ambassadorDeployment():
+
+      local ambassadorDeployment = std.filter(getAmbassadorDeployment,seldonTemplate.items)[0];
+
+      ambassadorDeployment +
+      	      deployment.mixin.metadata.withName(name+"-ambassador") +       
+      	      deployment.mixin.metadata.withNamespace(namespace),
+
+
+    ambassadorService():
+
+      local ambassadorService = std.filter(getAmbassadorService,seldonTemplate.items)[0];
+
+      ambassadorService +
+      service.metadata.withName(name+"-ambassador") +
+      service.metadata.withNamespace(namespace),
 
     crd():
 
