@@ -5,8 +5,8 @@
 // @param name string seldon Name to give seldon
 // @optionalParam namespace string null Namespace to use for the components. It is automatically inherited from the environment if not set.
 // @optionalParam withRbac string true Whether to include RBAC setup
-// @optionalParam withApife string true Whether to include builtin API Oauth fornt end server for ingress
-// @optionalParam withAmbassador string true Whether to include Ambassador reverse proxy
+// @optionalParam withApife string true Whether to include builtin API OAuth gateway server for ingress
+// @optionalParam withAmbassador string false Whether to include Ambassador reverse proxy
 // @optionalParam apifeImage string seldonio/apife:0.2.1 Default image for API Front End
 // @optionalParam apifeServiceType string NodePort API Front End Service Type
 // @optionalParam operatorImage string seldonio/cluster-manager:0.2.1 Seldon cluster manager image version
