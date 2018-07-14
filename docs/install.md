@@ -42,13 +42,13 @@ Notes
 ## With Ksonnet
 
  * [install Ksonnet](https://ksonnet.io/)
- * [Optionally, Install Ambassador](https://www.getambassador.io) 
  * Create a seldon ksonnet app
  ```
  ks init my-ml-deployment --api-spec=version:v1.8.0
  ```
  * Install seldon-core. Set:
    * ```withApife``` set to ```false``` if you are using Ambassador
+   * ```withAmbassador``` set to ```true``` if you want to use Ambassador reverse proxy
    * ```withRbac``` set to ```true``` if your cluster has RBAC enabled
 ```
 cd my-ml-deployment && \
@@ -56,6 +56,7 @@ cd my-ml-deployment && \
     ks pkg install seldon-core/seldon-core@master && \
     ks generate seldon-core seldon-core \
        --withApife=<true|false> \
+       --withAmbassador=<true|false> \
        --withRbac=<true|false> 
 ```
  * Launch components onto cluster
