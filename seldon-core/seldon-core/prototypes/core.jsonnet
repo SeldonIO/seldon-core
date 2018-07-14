@@ -5,7 +5,8 @@
 // @param name string seldon Name to give seldon
 // @optionalParam namespace string null Namespace to use for the components. It is automatically inherited from the environment if not set.
 // @optionalParam withRbac string true Whether to include RBAC setup
-// @optionalParam withApife string false Whether to include builtin API Oauth fornt end server for ingress
+// @optionalParam withApife string true Whether to include builtin API Oauth fornt end server for ingress
+// @optionalParam withAmbassador string true Whether to include Ambassador reverse proxy
 // @optionalParam apifeImage string seldonio/apife:0.2.1 Default image for API Front End
 // @optionalParam apifeServiceType string NodePort API Front End Service Type
 // @optionalParam operatorImage string seldonio/cluster-manager:0.2.1 Seldon cluster manager image version
@@ -26,6 +27,7 @@ local name = import "param://name";
 local namespace = updatedParams.namespace;
 local withRbac = import "param://withRbac";
 local withApife = import "param://withApife";
+local withAmbassador = import "param://withAmbassador";
 
 // APIFE
 local apifeImage = import "param://apifeImage";
@@ -55,6 +57,7 @@ local rbac = [
   core.parts(name,namespace).rbacClusterRoleBinding(),
 ];
 
+
 // Core
 local coreComponents = [
   core.parts(name,namespace).deploymentOperator(engineImage, operatorImage, operatorSpringOpts, operatorJavaOpts, withRbac),
@@ -63,11 +66,21 @@ local coreComponents = [
   core.parts(name,namespace).crd(),
 ];
 
-if withRbac == "true" && withApife == "true" then
-  k.core.v1.list.new(apife + rbac + coreComponents)
-else if withRbac == "true" && withApife == "false" then
-  k.core.v1.list.new(rbac + coreComponents)
-else if withRbac == "false" && withApife == "true" then
-  k.core.v1.list.new(apife + coreComponents)
-else if withRbac == "false" && withApife == "false" then
-  k.core.v1.list.new(coreComponents)
+
+//Ambassador
+local ambassadorRbac = [
+  core.parts(name,namespace).rbacAmbassadorRole(),
+  core.parts(name,namespace).rbacAmbassadorRoleBinding(),  
+];
+
+local ambassador = [
+  core.parts(name,namespace).ambassadorDeployment(),
+  core.parts(name,namespace).ambassadorService(),  
+];
+
+local l1 = if withRbac == "true" then rbac + coreComponents else coreComponents;
+local l2 = if withApife == "true" then l1 + apife else l1;
+local l3 = if withAmbassador == "true" && withRbac == "true" then l2 + ambassadorRbac else l2;
+local l4 = if withAmbassador == "true" then l3 + ambassador else l3;
+
+l4
