@@ -1,4 +1,4 @@
-# Seldon Core
+# Seldon Core ![API](./docs/seldon.png)
 
 | Branch      | Status |
 |-------------|-------|
