@@ -7,12 +7,12 @@
 // @optionalParam withRbac string true Whether to include RBAC setup
 // @optionalParam withApife string true Whether to include builtin API OAuth gateway server for ingress
 // @optionalParam withAmbassador string false Whether to include Ambassador reverse proxy
-// @optionalParam apifeImage string seldonio/apife:0.2.1 Default image for API Front End
+// @optionalParam apifeImage string seldonio/apife:0.2.2 Default image for API Front End
 // @optionalParam apifeServiceType string NodePort API Front End Service Type
-// @optionalParam operatorImage string seldonio/cluster-manager:0.2.1 Seldon cluster manager image version
+// @optionalParam operatorImage string seldonio/cluster-manager:0.2.2 Seldon cluster manager image version
 // @optionalParam operatorSpringOpts string null cluster manager spring opts
 // @optionalParam operatorJavaOpts string null cluster manager java opts
-// @optionalParam engineImage string seldonio/engine:0.2.1 Seldon engine image version
+// @optionalParam engineImage string seldonio/engine:0.2.2 Seldon engine image version
 
 local k = import "k.libsonnet";
 local core = import "seldon-core/seldon-core/core.libsonnet";
