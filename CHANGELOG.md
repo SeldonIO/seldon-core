@@ -1,5 +1,17 @@
 # Change Log
 
+## [v0.2.2](https://github.com/SeldonIO/seldon-core/tree/v0.2.2) (2018-07-18)
+[Full Changelog](https://github.com/SeldonIO/seldon-core/compare/v0.2.1...v0.2.2)
+
+**Merged pull requests:**
+
+- Ksonnet update [\#191](https://github.com/SeldonIO/seldon-core/pull/191) ([cliveseldon](https://github.com/cliveseldon))
+- Remove ambassador role and rolebinding from helm script [\#190](https://github.com/SeldonIO/seldon-core/pull/190) ([cliveseldon](https://github.com/cliveseldon))
+- Update istio example [\#189](https://github.com/SeldonIO/seldon-core/pull/189) ([cliveseldon](https://github.com/cliveseldon))
+- Update maven goals to generate licences [\#188](https://github.com/SeldonIO/seldon-core/pull/188) ([cliveseldon](https://github.com/cliveseldon))
+- Fix typo [\#187](https://github.com/SeldonIO/seldon-core/pull/187) ([otakuto](https://github.com/otakuto))
+- Istio updates [\#186](https://github.com/SeldonIO/seldon-core/pull/186) ([cliveseldon](https://github.com/cliveseldon))
+
 ## [v0.2.1](https://github.com/SeldonIO/seldon-core/tree/v0.2.1) (2018-07-09)
 [Full Changelog](https://github.com/SeldonIO/seldon-core/compare/v0.2.0...v0.2.1)
 
