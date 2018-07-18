@@ -2,7 +2,7 @@
 
 To install seldon-core on a Kubernetes cluster you have several choices:
 
- * If you have a Google Cloud Platform account you can install via the [GCP MarketPlace](https://console.cloud.google.com/marketplace/details/seldon-portal/seldon-core).
+ * If you have a Google Cloud Platform account you can install via the [GCP Marketplace](https://console.cloud.google.com/marketplace/details/seldon-portal/seldon-core).
 
 For CLI installs:
  
