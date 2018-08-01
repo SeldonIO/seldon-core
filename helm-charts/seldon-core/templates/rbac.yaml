@@ -64,6 +64,7 @@ subjects:
   - kind: ServiceAccount
     name: {{ .Values.rbac.service_account.name }}
     namespace: {{ .Release.Namespace }}
+{{- if .Values.ambassador.enabled }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: Role
@@ -94,6 +95,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: {{ .Values.rbac.service_account.name }}
-  namespace: {{ .Release.Namespace }}    
+  namespace: {{ .Release.Namespace }}
+{{- end }}  
 {{- end }}
 {{- end }}

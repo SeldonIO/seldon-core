@@ -23,8 +23,6 @@ spec:
 {{- if .Values.rbac.enabled }}
       serviceAccountName: {{ .Values.rbac.service_account.name }}
 {{- end }}
-      securityContext:
-        runAsUser: 8888
       containers:
       - env:
         - name: JAVA_OPTS
@@ -32,7 +30,7 @@ spec:
         - name: SPRING_OPTS
           value: {{ .Values.cluster_manager.spring_opts }}
         - name: SELDON_CLUSTER_MANAGER_REDIS_HOST
-          value: redis
+          value: {{ .Release.Name }}-redis
         - name: ENGINE_CONTAINER_IMAGE_AND_VERSION
           value: {{ .Values.engine.image.name }}
         - name: SELDON_CLUSTER_MANAGER_POD_NAMESPACE
@@ -43,6 +41,8 @@ spec:
         image: {{ .Values.cluster_manager.image.name }}
         imagePullPolicy: {{ .Values.cluster_manager.image.pull_policy }}
         name: seldon-cluster-manager-container
+        securityContext:
+          runAsUser: 8888
         ports:
         - containerPort: 8080
           protocol: TCP

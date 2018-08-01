@@ -40,7 +40,6 @@
                     "endpoint": {
 			"type" : "<your-endpoint-type>" #REST or GRPS
 		    },
-                    "subtype": "MICROSERVICE",
                     "type": "MODEL"
                 },
                 "name": "<your-model-name>",

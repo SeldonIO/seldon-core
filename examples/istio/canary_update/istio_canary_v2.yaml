@@ -11,11 +11,11 @@ spec:
     - destination:
         host: mnist-deployment
         subset: v1
-      weight: 80
+      weight: 70
     - destination:
         host: mnist-deployment
         subset: v2
-      weight: 20      
+      weight: 30      
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule

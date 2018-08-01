@@ -25,7 +25,7 @@ clean:
 	rm -rfv ./models/mean_classifier/build
 
 
-run_core_pyhton_wrapper:
+run_core_python_wrapper:
 	docker run --rm -it \
 			-v /var/run/docker.sock:/var/run/docker.sock \
 			-v "$$(pwd):/work" \
