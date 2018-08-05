@@ -12,8 +12,6 @@
             "project_name": "Mnist classification"
         },
         "name": "mnist-deployment",
-        "oauth_key": "oauth-key",
-        "oauth_secret": "oauth-secret",
         "predictors": [
             {
                 "componentSpecs": [{
@@ -30,7 +28,7 @@
                                 }
                             }
                         ],
-                        "terminationGracePeriodSeconds": 20
+                        "terminationGracePeriodSeconds": 1
                     }
                 }],
                 "graph": {
@@ -62,7 +60,7 @@
                                 }
                             }
                         ],
-                        "terminationGracePeriodSeconds": 20
+                        "terminationGracePeriodSeconds": 1
                     }
                 }],
                 "graph": {
