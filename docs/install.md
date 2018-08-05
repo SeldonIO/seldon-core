@@ -75,5 +75,5 @@ Notes
 
 ### Install with kubeflow
 
-  * [Install Seldon as part of kubeflow.](https://github.com/kubeflow/kubeflow/blob/master/user_guide.md)
+  * [Install Seldon as part of kubeflow.](https://www.kubeflow.org/docs/guides/components/seldon/#seldon-serving)
      * Kubeflow presently runs 0.1 version of seldon-core. This will be updated to 0.2 in the near future.

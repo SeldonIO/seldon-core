@@ -100,7 +100,7 @@ Seldon-core allows various types of components to be built and plugged into the 
 ## Integrations
 
  * [kubeflow](https://github.com/kubeflow/kubeflow)
-    * Seldon-core can be installed as part of the kubeflow project. A detailed [end-to-end example](https://github.com/kubeflow/example-seldon) provides a complete workflow for training various models and deploying them using seldon-core.
+    * Seldon-core can be [installed as part of the kubeflow project](https://www.kubeflow.org/docs/guides/components/seldon/#seldon-serving). A detailed [end-to-end example](https://github.com/kubeflow/example-seldon) provides a complete workflow for training various models and deploying them using seldon-core.
  * [IBM's Fabric for Deep Learning](https://github.com/IBM/FfDL)
     * Seldon-core can be used to [serve deep learning models trained using FfDL](https://github.com/IBM/FfDL/blob/master/community/FfDL-Seldon/README.md).
        * [Train and deploy a Tensorflow MNIST classififer using FfDL and Seldon.](https://github.com/IBM/FfDL/blob/master/community/FfDL-Seldon/tf-model/README.md)
