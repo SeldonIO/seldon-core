@@ -8,6 +8,13 @@ from concurrent import futures
 from flask import jsonify, Flask
 import numpy as np
 
+from tornado.tcpserver import TCPServer
+from tornado.iostream import StreamClosedError
+from tornado import gen
+import tornado.ioloop
+from seldon_flatbuffers import SeldonRPCToNumpyArray,NumpyArrayToSeldonRPC
+import struct
+
 # ---------------------------
 # Interaction with user model
 # ---------------------------
@@ -111,3 +118,37 @@ def get_grpc_server(user_model,debug=False):
     prediction_pb2_grpc.add_ModelServicer_to_server(seldon_model, server)
 
     return server
+
+
+# ----------------------------
+# Flatbuffers (experimental)
+# ----------------------------
+
+class SeldonFlatbuffersServer(TCPServer):
+    #def __init__(self,user_model):
+    #    self.user_model = user_model
+
+    def set_user_model(self,user_model):
+        self.user_model = user_model
+    
+    async def handle_stream(self, stream, address):
+        while True:
+            try:
+                data = await stream.read_bytes(4)
+                obj = struct.unpack('<i',data)
+                len_msg = obj[0]
+                print("Message length",len_msg)
+                data = await stream.read_bytes(len_msg)
+                print(len(data))
+                features = SeldonRPCToNumpyArray(data)
+                predictions = np.array(predict(self.user_model,features,None))
+                outData = NumpyArrayToSeldonRPC(predictions)
+                await stream.write(outData)
+            except StreamClosedError:
+                break
+        
+def run_flatbuffers_server(user_model,debug=False):
+    server = SeldonFlatbuffersServer()
+    server.set_user_model(user_model)
+    server.listen(8843)
+    tornado.ioloop.IOLoop.current().start()
