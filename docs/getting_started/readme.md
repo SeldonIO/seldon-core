@@ -34,4 +34,3 @@ You can use ```kubectl``` to deploy your ML service like any other Kubernetes re
  * [Jupyter notebooks showing worked examples](../../readme.md#quick-start)
  * [Integration with other machine learning frameworks](../../readme.md#integrations)
 
-# Production 
