@@ -1,4 +1,5 @@
-IMAGE_NAME = docker.io/seldonio/seldon-core-s2i-r
+VERSION=0.1
+IMAGE_NAME = docker.io/seldonio/seldon-core-s2i-r:${VERSION}
 
 SELDON_CORE_DIR=../../..
 
@@ -8,7 +9,7 @@ build:
 	docker build -t $(IMAGE_NAME) .
 
 push_to_dockerhub:
-	docker push $(IMAGE_NAME):latest
+	docker push $(IMAGE_NAME)
 
 
 .PHONY: test
