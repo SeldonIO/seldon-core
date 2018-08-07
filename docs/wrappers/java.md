@@ -17,7 +17,7 @@ If you are not familar with s2i you can read [general instructions on using s2i]
 To check everything is working you can run
 
 ```bash
-s2i usage seldonio/seldon-core-s2i-java-build
+s2i usage seldonio/seldon-core-s2i-java-build:0.1
 ```
 
 # Step 2 - Create your source code
@@ -149,14 +149,14 @@ Use ```s2i build``` to create your Docker image from source code. You will need 
 Using s2i you can build directly from a git repo or from a local source folder. See the [s2i docs](https://github.com/openshift/source-to-image/blob/master/docs/cli.md#s2i-build) for further details. The general format is:
 
 ```bash
-s2i build <git-repo> seldonio/seldon-core-s2i-java-build <my-image-name> --runtime-image seldonio/seldon-core-s2i-java-runtime
-s2i build <src-folder> seldonio/seldon-core-s2i-java-build <my-image-name> --runtime-image seldonio/seldon-core-s2i-java-runtime 
+s2i build <git-repo> seldonio/seldon-core-s2i-java-build:0.1 <my-image-name> --runtime-image seldonio/seldon-core-s2i-java-runtime:0.1
+s2i build <src-folder> seldonio/seldon-core-s2i-java-build:0.1 <my-image-name> --runtime-image seldonio/seldon-core-s2i-java-runtime:0.1 
 ```
 
 An example invocation using the test template model inside seldon-core:
 
 ```bash
-s2i build https://github.com/seldonio/seldon-core.git --context-dir=wrappers/s2i/python/test/model-template-app seldonio/seldon-core-s2i-java-build h2o-test:0.1 --runtime-image seldonio/seldon-core-s2i-java-runtime
+s2i build https://github.com/seldonio/seldon-core.git --context-dir=wrappers/s2i/python/test/model-template-app seldonio/seldon-core-s2i-java-build:0.1 h2o-test:0.1 --runtime-image seldonio/seldon-core-s2i-java-runtime:0.1
 ```
 
 The above s2i build invocation:
@@ -172,13 +172,13 @@ For building from a local source folder, an example where we clone the seldon-co
 ```bash
 git clone https://github.com/seldonio/seldon-core.git
 cd seldon-core
-s2i build wrappers/s2i/R/test/model-template-app seldonio/seldon-core-s2i-java-build h2o-test:0.1 --runtime-image seldonio/seldon-core-s2i-java-runtime
+s2i build wrappers/s2i/R/test/model-template-app seldonio/seldon-core-s2i-java-build:0.1 h2o-test:0.1 --runtime-image seldonio/seldon-core-s2i-java-runtime:0.1
 ```
 
 For more help see:
 
 ```
-s2i usage seldonio/seldon-core-s2i-java-build
+s2i usage seldonio/seldon-core-s2i-java-build:0.1
 s2i build --help
 ```
 
