@@ -58,9 +58,11 @@ def get_rest_microservice(user_model,debug=False):
         features = rest_datadef_to_array(datadef)
 
         predictions = np.array(predict(user_model,features,datadef.get("names")))
-        # TODO: check that predictions is at least 2 dimensional
-        class_names = get_class_names(user_model, predictions.shape[1])
-
+        if len(predictions.shape)>1:
+            class_names = get_class_names(user_model, predictions.shape[1])
+        else:
+            class_names = []
+            
         data = array_to_rest_datadef(predictions, class_names, datadef)
 
         return jsonify({"data":data})
@@ -95,8 +97,10 @@ class SeldonModelGRPC(object):
         features = grpc_datadef_to_array(datadef)
 
         predictions = np.array(predict(self.user_model,features,datadef.names))
-        #TODO: check that predictions is at least 2 dimensional
-        class_names = get_class_names(self.user_model, predictions.shape[1])
+        if len(predictions.shape)>1:
+            class_names = get_class_names(self.user_model, predictions.shape[1])
+        else:
+            class_names = []
 
         data = array_to_grpc_datadef(predictions, class_names, request.data.WhichOneof("data_oneof"))
         return prediction_pb2.SeldonMessage(data=data)
@@ -125,30 +129,31 @@ def get_grpc_server(user_model,debug=False):
 # ----------------------------
 
 class SeldonFlatbuffersServer(TCPServer):
-    #def __init__(self,user_model):
-    #    self.user_model = user_model
-
-    def set_user_model(self,user_model):
+    def __init__(self,user_model):
+        super(SeldonFlatbuffersServer, self).__init__()
         self.user_model = user_model
-    
+
     async def handle_stream(self, stream, address):
         while True:
             try:
                 data = await stream.read_bytes(4)
                 obj = struct.unpack('<i',data)
                 len_msg = obj[0]
-                print("Message length",len_msg)
                 data = await stream.read_bytes(len_msg)
-                print(len(data))
-                features = SeldonRPCToNumpyArray(data)
-                predictions = np.array(predict(self.user_model,features,None))
-                outData = NumpyArrayToSeldonRPC(predictions)
+                features,names = SeldonRPCToNumpyArray(data)
+                predictions = np.array(predict(self.user_model,features,names))
+                if len(predictions.shape)>1:
+                    print(predictions.shape)
+                    class_names = get_class_names(self.user_model, predictions.shape[1])
+                else:
+                    class_names = []
+                outData = NumpyArrayToSeldonRPC(predictions,class_names)
                 await stream.write(outData)
             except StreamClosedError:
                 break
         
-def run_flatbuffers_server(user_model,debug=False):
-    server = SeldonFlatbuffersServer()
-    server.set_user_model(user_model)
-    server.listen(8843)
+def run_flatbuffers_server(user_model,port,debug=False):
+    server = SeldonFlatbuffersServer(user_model)
+    server.listen(port)
+    print("Tornando Server listening on port",port)
     tornado.ioloop.IOLoop.current().start()
