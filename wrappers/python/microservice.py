@@ -185,4 +185,4 @@ if __name__ == "__main__":
             time.sleep(1000)
 
     elif args.api_type=="FBS":
-        seldon_microservice.run_flatbuffers_server(user_object)
+        seldon_microservice.run_flatbuffers_server(user_object,port)
