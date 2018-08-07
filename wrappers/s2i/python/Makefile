@@ -1,6 +1,7 @@
 PYTHON_VERSION=2
+IMAGE_PYTHON_VERSION=`echo -n $(PYTHON_VERSION) | cut -d. -f1`
 IMAGE_VERSION=0.2
-IMAGE_NAME = docker.io/seldonio/seldon-core-s2i-python${PYTHON_VERSION}
+IMAGE_NAME = docker.io/seldonio/seldon-core-s2i-python${IMAGE_PYTHON_VERSION}
 
 SELDON_CORE_DIR=../../..
 

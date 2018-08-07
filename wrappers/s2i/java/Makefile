@@ -1,5 +1,6 @@
-IMAGE_NAME_BUILD = docker.io/seldonio/seldon-core-s2i-java-build
-IMAGE_NAME_RUNTIME = docker.io/seldonio/seldon-core-s2i-java-runtime
+VERSION=0.1
+IMAGE_NAME_BUILD = docker.io/seldonio/seldon-core-s2i-java-build:${VERSION}
+IMAGE_NAME_RUNTIME = docker.io/seldonio/seldon-core-s2i-java-runtime:${VERSION}
 
 SELDON_CORE_DIR=../../..
 
@@ -10,8 +11,8 @@ build:
 	docker build -f Dockerfile.runtime -t $(IMAGE_NAME_RUNTIME) .
 
 push_to_dockerhub:
-	docker push $(IMAGE_NAME_BUILD):latest
-	docker push $(IMAGE_NAME_RUNTIME):latest
+	docker push $(IMAGE_NAME_BUILD)
+	docker push $(IMAGE_NAME_RUNTIME)
 
 
 .PHONY: test
