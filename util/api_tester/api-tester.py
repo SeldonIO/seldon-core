@@ -55,7 +55,7 @@ def generate_batch(contract,n):
             batch = gen_continuous(range,shape)
             batch = reconciliate_cont_type(batch,feature_def["dtype"])
         elif feature_def["ftype"] == "categorical":
-            batch = gen_categorical(feature_def["values"],n)
+            batch = gen_categorical(feature_def["values"],[n,1])
         feature_batches.append(batch)
     return np.concatenate(feature_batches,axis=1)
 

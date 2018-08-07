@@ -1,5 +1,7 @@
 PYTHON_VERSION=2
-IMAGE_NAME = docker.io/seldonio/seldon-core-s2i-python${PYTHON_VERSION}
+IMAGE_PYTHON_VERSION=`echo -n $(PYTHON_VERSION) | cut -d. -f1`
+IMAGE_VERSION=0.1
+IMAGE_NAME = docker.io/seldonio/seldon-core-s2i-python${IMAGE_PYTHON_VERSION}
 
 SELDON_CORE_DIR=../../..
 
@@ -17,10 +19,10 @@ get_wrappers_and_protos:
 .PHONY: build
 build: get_wrappers_and_protos
 	cat Dockerfile.tmpl | sed  -e "s|%PYTHON_VERSION%|$(PYTHON_VERSION)|" > Dockerfile 
-	docker build -t $(IMAGE_NAME) .
+	docker build -t $(IMAGE_NAME):$(IMAGE_VERSION) .
 
 push_to_dockerhub:
-	docker push $(IMAGE_NAME):latest
+	docker push $(IMAGE_NAME):$(IMAGE_VERSION)
 
 
 .PHONY: test
