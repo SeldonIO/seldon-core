@@ -12,8 +12,9 @@ from tornado.tcpserver import TCPServer
 from tornado.iostream import StreamClosedError
 from tornado import gen
 import tornado.ioloop
-from seldon_flatbuffers import SeldonRPCToNumpyArray,NumpyArrayToSeldonRPC
+from seldon_flatbuffers import SeldonRPCToNumpyArray,NumpyArrayToSeldonRPC,CreateErrorMsg
 import struct
+import traceback
 
 # ---------------------------
 # Interaction with user model
@@ -140,16 +141,28 @@ class SeldonFlatbuffersServer(TCPServer):
                 obj = struct.unpack('<i',data)
                 len_msg = obj[0]
                 data = await stream.read_bytes(len_msg)
-                features,names = SeldonRPCToNumpyArray(data)
-                predictions = np.array(predict(self.user_model,features,names))
-                if len(predictions.shape)>1:
-                    print(predictions.shape)
-                    class_names = get_class_names(self.user_model, predictions.shape[1])
-                else:
-                    class_names = []
-                outData = NumpyArrayToSeldonRPC(predictions,class_names)
-                await stream.write(outData)
+                try:
+                    features,names = SeldonRPCToNumpyArray(data)
+                    predictions = np.array(predict(self.user_model,features,names))
+                    if len(predictions.shape)>1:
+                        print(predictions.shape)
+                        class_names = get_class_names(self.user_model, predictions.shape[1])
+                    else:
+                        class_names = []
+                    outData = NumpyArrayToSeldonRPC(predictions,class_names)
+                    await stream.write(outData)
+                except StreamClosedError:
+                    print("Stream closed during processing:",address)
+                    break
+                except Exception:
+                    tb = traceback.format_exc()
+                    print("Caught exception during processing:",address,tb)
+                    outData = CreateErrorMsg(tb)
+                    await stream.write(outData)
+                    stream.close()
+                    break;
             except StreamClosedError:
+                print("Stream closed during data inputstream read:",address)
                 break
         
 def run_flatbuffers_server(user_model,port,debug=False):
