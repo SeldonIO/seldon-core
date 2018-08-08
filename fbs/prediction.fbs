@@ -1,0 +1,64 @@
+namespace io.seldon.seldonmarketpredictor.fbs.prediction;
+
+enum StatusValue : byte { SUCCESS = 0, FAILURE = 1 }
+
+union Data { DefaultData, ByteData, StrData }
+
+enum SeldonMethod : byte { PREDICT = 0 }
+
+enum SeldonProtocolNumber : int32 { V1 = 134361921 } 
+
+union SeldonPayload { SeldonMessage }
+
+table SeldonRPC {
+  protocol:SeldonProtocolNumber = V1;
+  method:SeldonMethod;
+  message:SeldonPayload;
+}
+
+table SeldonMessage {
+ status:Status;
+ meta:Meta;
+ data:Data;
+}
+
+table ByteData {
+ binData:[byte];
+}
+
+table StrData {
+ strData:string;
+}
+
+table DefaultData {
+ names:[string];
+ tensor:Tensor;
+}
+
+table Tensor {
+  shape:[int32];
+  values:[double];
+}
+
+table Meta {
+ puid:string;
+ tags:TagMap;
+ routing:Routing;
+}
+
+table TagMap {
+ key:string;
+ value:string;
+}
+
+table Routing {
+ id:string;
+ route:int32;
+ }
+
+table Status {
+ code:int32;
+ info:string;
+ reason:string;
+ status:StatusValue;
+}
