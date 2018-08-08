@@ -11,38 +11,63 @@ from fbs.SeldonRPC import *
 from fbs.SeldonPayload import *
 from fbs.Status import *
 from fbs.StatusValue import *
+from fbs.SeldonProtocolNumber import *
 
 import sys
 import numpy as np
 
+class FlatbuffersInvalidMessage(Exception):
+    def __init__(self, msg=None):
+        super(FlatbuffersInvalidMessage, self).__init__(msg)
+
 def SeldonRPCToNumpyArray(data):
     seldon_rpc = SeldonRPC.GetRootAsSeldonRPC(data,0)
-    if seldon_rpc.MessageType() == SeldonPayload.SeldonMessage:
-        seldon_msg = SeldonMessage()
-        seldon_msg.Init(seldon_rpc.Message().Bytes,seldon_rpc.Message().Pos)
-        if seldon_msg.DataType() == Data.DefaultData:
-            defData = DefaultData()
-            defData.Init(seldon_msg.Data().Bytes,seldon_msg.Data().Pos)
-            names = []
-            for i in range(defData.NamesLength()):
-                names.append(defData.Names(i))
-            tensor = defData.Tensor()
-            shape = []
-            for i in range(tensor.ShapeLength()):
-                shape.append(tensor.Shape(i))
-                print(shape)
-            values = tensor.ValuesAsNumpy()
-            values = values.reshape(shape)
-            return (values,names)
+    if seldon_rpc.Protocol() == SeldonProtocolNumber.V1:
+        if seldon_rpc.MessageType() == SeldonPayload.SeldonMessage:
+            seldon_msg = SeldonMessage()
+            seldon_msg.Init(seldon_rpc.Message().Bytes,seldon_rpc.Message().Pos)
+            if seldon_msg.DataType() == Data.DefaultData:
+                defData = DefaultData()
+                defData.Init(seldon_msg.Data().Bytes,seldon_msg.Data().Pos)
+                names = []
+                for i in range(defData.NamesLength()):
+                    names.append(defData.Names(i))
+                tensor = defData.Tensor()
+                shape = []
+                for i in range(tensor.ShapeLength()):
+                    shape.append(tensor.Shape(i))
+                    print(shape)
+                values = tensor.ValuesAsNumpy()
+                values = values.reshape(shape)
+                return (values,names)
+            else:
+                raise FlatbuffersInvalidMessage("Message is not of type DefaultData")
         else:
-            return None
+            raise FlatbuffersInvalidMessage("Message is not a SeldonMessage")
     else:
-        return None
+        raise FlatbuffersInvalidMessage("Message does not have correct protocol: "+str(seldon_rpc.Protocol()))        
 
+def CreateErrorMsg(msg):
+    builder = flatbuffers.Builder(4096)
+
+    msg_offset = builder.CreateString(msg)
+    
+    StatusStart(builder)
+    StatusAddCode(builder,500)
+    StatusAddInfo(builder,msg_offset)
+    StatusAddStatus(builder,StatusValue.FAILURE)
+    status = StatusEnd(builder)
+    
+    SeldonMessageStart(builder)
+    SeldonMessageAddStatus(builder,status)
+    seldonMessage = SeldonMessageEnd(builder)
+    builder.FinishSizePrefixed(seldonMessage)
+    return builder.Output()
+    
+    
 # Take a numpy array and create a SeldonRPC message
 # Creates a local flat buffers builder
 def NumpyArrayToSeldonRPC(arr,names):
-
     builder = flatbuffers.Builder(32768)
     if len(names)>0:
         str_offsets = []
