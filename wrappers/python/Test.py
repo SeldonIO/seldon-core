@@ -19,4 +19,5 @@ class Test(object):
         feature_names : array of feature names (optional)
         """
         print("Predict called - will run identity function")
+        print(X)
         return X

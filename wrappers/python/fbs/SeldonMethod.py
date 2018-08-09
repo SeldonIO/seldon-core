@@ -4,4 +4,5 @@
 
 class SeldonMethod(object):
     PREDICT = 0
+    RESPONSE = 1
 

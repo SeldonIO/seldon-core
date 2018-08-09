@@ -4,19 +4,19 @@ enum StatusValue : byte { SUCCESS = 0, FAILURE = 1 }
 
 union Data { DefaultData, ByteData, StrData }
 
-enum SeldonMethod : byte { PREDICT = 0 }
+enum SeldonMethod : byte { PREDICT = 0, RESPONSE = 1 }
 
-enum SeldonProtocolNumber : int32 { V1 = 134361921 } 
+enum SeldonProtocolVersion : int32 { V1 = 134361921 } 
 
 union SeldonPayload { SeldonMessage }
 
 table SeldonRPC {
-  protocol:SeldonProtocolNumber = V1;
   method:SeldonMethod;
   message:SeldonPayload;
 }
 
 table SeldonMessage {
+ protocol:SeldonProtocolVersion = V1;
  status:Status;
  meta:Meta;
  data:Data;

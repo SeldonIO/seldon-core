@@ -2,6 +2,6 @@
 
 # namespace: prediction
 
-class SeldonProtocolNumber(object):
+class SeldonProtocolVersion(object):
     V1 = 134361921
 
