@@ -109,3 +109,6 @@ examples/models/sk_mnist/sk.pkl
 
 # api tester created proto folder
 util/api_tester/proto/
+
+#flatbuffers
+wrappers/testing/fbs/

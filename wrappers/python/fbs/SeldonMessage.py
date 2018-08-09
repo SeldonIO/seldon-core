@@ -19,8 +19,15 @@ class SeldonMessage(object):
         self._tab = flatbuffers.table.Table(buf, pos)
 
     # SeldonMessage
-    def Status(self):
+    def Protocol(self):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(4))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Int32Flags, o + self._tab.Pos)
+        return 134361921
+
+    # SeldonMessage
+    def Status(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
         if o != 0:
             x = self._tab.Indirect(o + self._tab.Pos)
             from .Status import Status
@@ -31,7 +38,7 @@ class SeldonMessage(object):
 
     # SeldonMessage
     def Meta(self):
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(8))
         if o != 0:
             x = self._tab.Indirect(o + self._tab.Pos)
             from .Meta import Meta
@@ -42,14 +49,14 @@ class SeldonMessage(object):
 
     # SeldonMessage
     def DataType(self):
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(8))
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
         if o != 0:
             return self._tab.Get(flatbuffers.number_types.Uint8Flags, o + self._tab.Pos)
         return 0
 
     # SeldonMessage
     def Data(self):
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(12))
         if o != 0:
             from flatbuffers.table import Table
             obj = Table(bytearray(), 0)
@@ -57,9 +64,10 @@ class SeldonMessage(object):
             return obj
         return None
 
-def SeldonMessageStart(builder): builder.StartObject(4)
-def SeldonMessageAddStatus(builder, status): builder.PrependUOffsetTRelativeSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(status), 0)
-def SeldonMessageAddMeta(builder, meta): builder.PrependUOffsetTRelativeSlot(1, flatbuffers.number_types.UOffsetTFlags.py_type(meta), 0)
-def SeldonMessageAddDataType(builder, dataType): builder.PrependUint8Slot(2, dataType, 0)
-def SeldonMessageAddData(builder, data): builder.PrependUOffsetTRelativeSlot(3, flatbuffers.number_types.UOffsetTFlags.py_type(data), 0)
+def SeldonMessageStart(builder): builder.StartObject(5)
+def SeldonMessageAddProtocol(builder, protocol): builder.PrependInt32Slot(0, protocol, 134361921)
+def SeldonMessageAddStatus(builder, status): builder.PrependUOffsetTRelativeSlot(1, flatbuffers.number_types.UOffsetTFlags.py_type(status), 0)
+def SeldonMessageAddMeta(builder, meta): builder.PrependUOffsetTRelativeSlot(2, flatbuffers.number_types.UOffsetTFlags.py_type(meta), 0)
+def SeldonMessageAddDataType(builder, dataType): builder.PrependUint8Slot(3, dataType, 0)
+def SeldonMessageAddData(builder, data): builder.PrependUOffsetTRelativeSlot(4, flatbuffers.number_types.UOffsetTFlags.py_type(data), 0)
 def SeldonMessageEnd(builder): return builder.EndObject()

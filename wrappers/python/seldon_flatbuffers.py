@@ -11,7 +11,8 @@ from fbs.SeldonRPC import *
 from fbs.SeldonPayload import *
 from fbs.Status import *
 from fbs.StatusValue import *
-from fbs.SeldonProtocolNumber import *
+from fbs.SeldonProtocolVersion import *
+from fbs.SeldonRPC import *
 
 import sys
 import numpy as np
@@ -22,10 +23,10 @@ class FlatbuffersInvalidMessage(Exception):
 
 def SeldonRPCToNumpyArray(data):
     seldon_rpc = SeldonRPC.GetRootAsSeldonRPC(data,0)
-    if seldon_rpc.Protocol() == SeldonProtocolNumber.V1:
-        if seldon_rpc.MessageType() == SeldonPayload.SeldonMessage:
-            seldon_msg = SeldonMessage()
-            seldon_msg.Init(seldon_rpc.Message().Bytes,seldon_rpc.Message().Pos)
+    if seldon_rpc.MessageType() == SeldonPayload.SeldonMessage:
+        seldon_msg = SeldonMessage()
+        seldon_msg.Init(seldon_rpc.Message().Bytes,seldon_rpc.Message().Pos)
+        if seldon_msg.Protocol() == SeldonProtocolVersion.V1:
             if seldon_msg.DataType() == Data.DefaultData:
                 defData = DefaultData()
                 defData.Init(seldon_msg.Data().Bytes,seldon_msg.Data().Pos)
@@ -43,9 +44,9 @@ def SeldonRPCToNumpyArray(data):
             else:
                 raise FlatbuffersInvalidMessage("Message is not of type DefaultData")
         else:
-            raise FlatbuffersInvalidMessage("Message is not a SeldonMessage")
+            raise FlatbuffersInvalidMessage("Message does not have correct protocol: "+str(seldon_rpc.Protocol()))
     else:
-        raise FlatbuffersInvalidMessage("Message does not have correct protocol: "+str(seldon_rpc.Protocol()))        
+        raise FlatbuffersInvalidMessage("Message is not a SeldonMessage")
 
 def CreateErrorMsg(msg):
     builder = flatbuffers.Builder(4096)
@@ -100,11 +101,13 @@ def NumpyArrayToSeldonRPC(arr,names):
     StatusAddCode(builder,200)
     StatusAddStatus(builder,StatusValue.SUCCESS)
     status = StatusEnd(builder)
-    
+   
     SeldonMessageStart(builder)
+    SeldonMessageAddProtocol(builder,SeldonProtocolVersion.V1)
     SeldonMessageAddStatus(builder,status)
     SeldonMessageAddDataType(builder,Data.DefaultData)
     SeldonMessageAddData(builder,defData)
     seldonMessage = SeldonMessageEnd(builder)
+
     builder.FinishSizePrefixed(seldonMessage)
     return builder.Output()
