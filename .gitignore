@@ -113,3 +113,4 @@ util/api_tester/proto/
 
 #flatbuffers
 wrappers/testing/fbs/
+wrappers/python/fbs/
