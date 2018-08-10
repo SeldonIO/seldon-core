@@ -8,97 +8,6 @@ from proto import prediction_pb2_grpc
 from google.protobuf import json_format
 import grpc
 from time import time
-import struct
-
-# TODO move these inside if statement
-import socket
-import flatbuffers
-from fbs.SeldonMessage import *
-from fbs.Data import *
-from fbs.DefaultData import *
-from fbs.Tensor import *
-from fbs.SeldonRPC import *
-from fbs.SeldonPayload import *
-from fbs.Status import *
-from fbs.StatusValue import *
-from fbs.SeldonProtocolVersion import *
-from fbs.SeldonMethod import *
-from fbs.SeldonPayload import *
-
-def NumpyArrayToSeldonRPC(arr,names):
-    builder = flatbuffers.Builder(32768)
-    if len(names)>0:
-        str_offsets = []
-        for i in range(len(names)):
-            str_offsets.append(builder.CreateString(names[i]))
-        DefaultDataStartNamesVector(builder,len(str_offsets))
-        for i in reversed(range(len(str_offsets))):
-            builder.PrependUOffsetTRelative(str_offsets[i])
-        namesOffset = builder.EndVector(len(str_offsets))        
-    TensorStartShapeVector(builder,len(arr.shape))
-    for i in reversed(range(len(arr.shape))):
-        builder.PrependInt32(arr.shape[i])
-    sOffset = builder.EndVector(len(arr.shape))
-    arr = arr.flatten()
-    TensorStartValuesVector(builder,len(arr))
-    for i in reversed(range(len(arr))):
-        builder.PrependFloat64(arr[i])
-    vOffset = builder.EndVector(len(arr))
-    TensorStart(builder)
-    TensorAddShape(builder,sOffset)
-    TensorAddValues(builder,vOffset)
-    tensor = TensorEnd(builder)
-
-    DefaultDataStart(builder)
-    DefaultDataAddTensor(builder,tensor)
-    DefaultDataAddNames(builder,namesOffset)
-    defData = DefaultDataEnd(builder)
-
-    StatusStart(builder)
-    StatusAddCode(builder,200)
-    StatusAddStatus(builder,StatusValue.SUCCESS)
-    status = StatusEnd(builder)
-   
-    SeldonMessageStart(builder)
-    SeldonMessageAddProtocol(builder,SeldonProtocolVersion.V1)
-    SeldonMessageAddStatus(builder,status)
-    SeldonMessageAddDataType(builder,Data.DefaultData)
-    SeldonMessageAddData(builder,defData)
-    seldonMessage = SeldonMessageEnd(builder)
-
-    SeldonRPCStart(builder)
-    SeldonRPCAddMethod(builder,SeldonMethod.PREDICT)
-    SeldonRPCAddMessageType(builder,SeldonPayload.SeldonMessage)
-    SeldonRPCAddMessage(builder, seldonMessage)
-    seldonRPC = SeldonRPCEnd(builder)
-
-    print(seldonRPC)
-    builder.FinishSizePrefixed(seldonRPC)
-    return builder.Output()
-
-
-def SeldonRPCToNumpyArray(data):
-    seldon_msg = SeldonMessage.GetRootAsSeldonMessage(data,0)
-    if seldon_msg.Protocol() == SeldonProtocolVersion.V1:
-        if seldon_msg.DataType() == Data.DefaultData:
-            defData = DefaultData()
-            defData.Init(seldon_msg.Data().Bytes,seldon_msg.Data().Pos)
-            names = []
-            for i in range(defData.NamesLength()):
-                names.append(defData.Names(i))
-            tensor = defData.Tensor()
-            shape = []
-            for i in range(tensor.ShapeLength()):
-                shape.append(tensor.Shape(i))
-                print(shape)
-            values = tensor.ValuesAsNumpy()
-            values = values.reshape(shape)
-            return (values,names)
-        else:
-            raise FlatbuffersInvalidMessage("Message is not of type DefaultData")
-    else:
-        raise FlatbuffersInvalidMessage("Message does not have correct protocol: "+str(seldon_msg.Protocol()))
-
 
 def array_to_list_value(array,lv=None):
     if lv is None:
@@ -269,12 +178,15 @@ def run(args):
                 print(response)
                 print()
         elif args.fbs:
+            import socket
+            import struct
+            from tester_flatbuffers import NumpyArrayToSeldonRPC,SeldonRPCToNumpyArray
             data = NumpyArrayToSeldonRPC(batch,feature_names)
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.connect((args.host, args.port))
             totalsent = 0
             MSGLEN = len(data)
-            print(MSGLEN)
+            print("Will send",MSGLEN,"bytes")
             while totalsent < MSGLEN:
                 sent = s.send(data[totalsent:])
                 if sent == 0:
