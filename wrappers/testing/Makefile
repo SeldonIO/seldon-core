@@ -9,8 +9,7 @@ build_protos: clean update_protos
 .PHONY: build_fbs
 build_fbs: 
 	flatc --python -o fbs ../../fbs/prediction.fbs
-	mv fbs/io/seldon/seldonmarketpredictor/fbs/prediction/* fbs
-	rm -rf fbs/io
+	touch fbs/__init__.py
 
 .PHONY: clean
 clean:
