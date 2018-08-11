@@ -13,6 +13,7 @@ from fbs.Status import *
 from fbs.StatusValue import *
 from fbs.SeldonProtocolVersion import *
 from fbs.SeldonRPC import *
+from flatbuffers.number_types import (UOffsetTFlags, SOffsetTFlags, VOffsetTFlags)
 
 import sys
 import numpy as np
@@ -83,10 +84,13 @@ def NumpyArrayToSeldonRPC(arr,names):
         builder.PrependInt32(arr.shape[i])
     sOffset = builder.EndVector(len(arr.shape))
     arr = arr.flatten()
-    TensorStartValuesVector(builder,len(arr))
-    for i in reversed(range(len(arr))):
-        builder.PrependFloat64(arr[i])
-    vOffset = builder.EndVector(len(arr))
+    
+    #TensorStartValuesVector(builder,len(arr))
+    #for i in reversed(range(len(arr))):
+    #    builder.PrependFloat64(arr[i])
+    #vOffset = builder.EndVector(len(arr))
+    vOffset = CreateNumpyVector(builder,arr)
+    
     TensorStart(builder)
     TensorAddShape(builder,sOffset)
     TensorAddValues(builder,vOffset)
@@ -94,7 +98,8 @@ def NumpyArrayToSeldonRPC(arr,names):
 
     DefaultDataStart(builder)
     DefaultDataAddTensor(builder,tensor)
-    DefaultDataAddNames(builder,namesOffset)
+    if len(names)>0:
+        DefaultDataAddNames(builder,namesOffset)
     defData = DefaultDataEnd(builder)
 
     StatusStart(builder)
@@ -111,3 +116,39 @@ def NumpyArrayToSeldonRPC(arr,names):
 
     builder.FinishSizePrefixed(seldonMessage)
     return builder.Output()
+
+
+
+
+def CreateNumpyVector(builder, x):
+    """CreateNumpyVector writes a numpy array into the buffer."""
+
+    if np is None:
+        # Numpy is required for this feature
+        raise NumpyRequiredForThisFeature("Numpy was not found.")
+
+    if not isinstance(x, np.ndarray):
+        raise TypeError("non-numpy-ndarray passed to CreateNumpyVector")
+
+    if x.data.ndim > 1:
+        raise TypeError("multidimensional-ndarray passed to CreateNumpyVector")
+
+    builder.StartVector(x.itemsize, x.size, x.dtype.alignment)
+
+    # Ensure little endian byte ordering
+    if x.dtype.str[0] == "<":
+        x_lend = x
+    else:
+        x_lend = x.byteswap()
+
+    # Calculate total length
+    l = UOffsetTFlags.py_type(x_lend.itemsize * x_lend.size)
+    ## @cond FLATBUFFERS_INTERNAL
+    builder.head = UOffsetTFlags.py_type(builder.Head() - l)
+    ## @endcond
+
+    # tobytes ensures c_contiguous ordering
+    builder.Bytes[builder.Head():builder.Head()+l] = x_lend.tobytes(order='C')
+        
+    return builder.EndVector(x.size)
+
