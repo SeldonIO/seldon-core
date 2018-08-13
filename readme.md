@@ -141,6 +141,7 @@ Three steps:
  - [Openshift Commons ML SIG - Openshift S2I Helping ML Deployment with Seldon-Core](https://www.youtube.com/watch?v=1uZPBcfYxlM)
  - [Overview of Openshift source-to-image use in Seldon-Core](./docs/articles/openshift_s2i.md)
  - [IBM Framework for Deep Learning and Seldon-Core](https://developer.ibm.com/code/2018/06/12/serve-it-hot-deploy-your-ffdl-trained-models-using-seldon/)
+ - [CartPole game by Reinforcement Learning, a journey from training to inference ](https://github.com/hypnosapos/cartpole-rl-remote/)
  
 ## Testing
 
