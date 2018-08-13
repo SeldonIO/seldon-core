@@ -4,7 +4,7 @@ IMAGE_NAME=cluster-manager
 VERSION_FILE=target/version.txt
 
 build_jar: update_proto 
-	mvn clean package -B
+	mvn clean verify -Dlicense.useMissingFile -B
 
 write_version:
 	ls target/seldon-cluster-manager-*.jar | sed -n 's/target\/seldon-cluster-manager-\(.*\).jar$$/\1/p' > $(VERSION_FILE) && cat $(VERSION_FILE)

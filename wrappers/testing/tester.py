@@ -147,7 +147,7 @@ def run(args):
             print('-'*40)
             print("SENDING NEW REQUEST:")
         
-        if not args.grpc:
+        if not args.grpc and not args.fbs:
             REST_request = gen_REST_request(batch,features=feature_names,tensor=args.tensor)
             if args.prnt:
                 print(REST_request)
@@ -164,7 +164,7 @@ def run(args):
                 print(jresp)
                 print()
                 print("Time "+str(t2-t1))
-        else:
+        elif args.grpc:
             GRPC_request = gen_GRPC_request(batch,features=feature_names,tensor=args.tensor)
             if args.prnt:
                 print(GRPC_request)
@@ -177,8 +177,28 @@ def run(args):
                 print("RECEIVED RESPONSE:")
                 print(response)
                 print()
-    
-
+        elif args.fbs:
+            import socket
+            import struct
+            from tester_flatbuffers import NumpyArrayToSeldonRPC,SeldonRPCToNumpyArray
+            data = NumpyArrayToSeldonRPC(batch,feature_names)
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.connect((args.host, args.port))
+            totalsent = 0
+            MSGLEN = len(data)
+            print("Will send",MSGLEN,"bytes")
+            while totalsent < MSGLEN:
+                sent = s.send(data[totalsent:])
+                if sent == 0:
+                    raise RuntimeError("socket connection broken")
+                totalsent = totalsent + sent
+            data = s.recv(4)
+            obj = struct.unpack('<i',data)
+            len_msg = obj[0]
+            data = s.recv(len_msg)
+            arr = SeldonRPCToNumpyArray(data)
+            print(arr)
+            
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("contract",type=str,help="File that contains the data contract")
@@ -187,6 +207,7 @@ if __name__ == "__main__":
     parser.add_argument("-b","--batch-size",type=int,default=1)
     parser.add_argument("-n","--n-requests",type=int,default=1)
     parser.add_argument("--grpc",action="store_true")
+    parser.add_argument("--fbs",action="store_true")    
     parser.add_argument("-t","--tensor",action="store_true")
     parser.add_argument("-p","--prnt",action="store_true",help="Prints requests and responses")
 

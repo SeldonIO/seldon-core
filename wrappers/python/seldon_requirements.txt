@@ -4,3 +4,4 @@ grpcio==1.14.0
 Flask==1.0.2
 futures
 redis==2.10.5
+tornado==4.5.3
