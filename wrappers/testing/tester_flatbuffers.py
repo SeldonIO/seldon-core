@@ -74,7 +74,6 @@ def SeldonRPCToNumpyArray(data):
             shape = []
             for i in range(tensor.ShapeLength()):
                 shape.append(tensor.Shape(i))
-                print(shape)
             values = tensor.ValuesAsNumpy()
             values = values.reshape(shape)
             return (values,names)
