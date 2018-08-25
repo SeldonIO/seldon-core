@@ -134,23 +134,23 @@ class SeldonFlatbuffersServer(TCPServer):
         super(SeldonFlatbuffersServer, self).__init__()
         self.user_model = user_model
 
-    async def handle_stream(self, stream, address):
+    @gen.coroutine
+    def handle_stream(self, stream, address):
         while True:
             try:
-                data = await stream.read_bytes(4)
+                data = yield stream.read_bytes(4)
                 obj = struct.unpack('<i',data)
                 len_msg = obj[0]
-                data = await stream.read_bytes(len_msg)
+                data = yield stream.read_bytes(len_msg)
                 try:
                     features,names = SeldonRPCToNumpyArray(data)
                     predictions = np.array(predict(self.user_model,features,names))
                     if len(predictions.shape)>1:
-                        print(predictions.shape)
                         class_names = get_class_names(self.user_model, predictions.shape[1])
                     else:
                         class_names = []
                     outData = NumpyArrayToSeldonRPC(predictions,class_names)
-                    await stream.write(outData)
+                    yield stream.write(outData)
                 except StreamClosedError:
                     print("Stream closed during processing:",address)
                     break
@@ -158,7 +158,7 @@ class SeldonFlatbuffersServer(TCPServer):
                     tb = traceback.format_exc()
                     print("Caught exception during processing:",address,tb)
                     outData = CreateErrorMsg(tb)
-                    await stream.write(outData)
+                    yield stream.write(outData)
                     stream.close()
                     break;
             except StreamClosedError:

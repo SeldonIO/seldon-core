@@ -38,7 +38,6 @@ def SeldonRPCToNumpyArray(data):
                 shape = []
                 for i in range(tensor.ShapeLength()):
                     shape.append(tensor.Shape(i))
-                    print(shape)
                 values = tensor.ValuesAsNumpy()
                 values = values.reshape(shape)
                 return (values,names)
@@ -130,7 +129,7 @@ def CreateNumpyVector(builder, x):
     if not isinstance(x, np.ndarray):
         raise TypeError("non-numpy-ndarray passed to CreateNumpyVector")
 
-    if x.data.ndim > 1:
+    if x.ndim > 1:
         raise TypeError("multidimensional-ndarray passed to CreateNumpyVector")
 
     builder.StartVector(x.itemsize, x.size, x.dtype.alignment)
@@ -139,7 +138,7 @@ def CreateNumpyVector(builder, x):
     if x.dtype.str[0] == "<":
         x_lend = x
     else:
-        x_lend = x.byteswap()
+        x_lend = x.byteswap(inplace=False)
 
     # Calculate total length
     l = UOffsetTFlags.py_type(x_lend.itemsize * x_lend.size)
