@@ -3,18 +3,23 @@
 | Branch      | Status |
 |-------------|-------|
 | master      | [![Build Status](https://travis-ci.org/SeldonIO/seldon-core.svg?branch=master)](https://travis-ci.org/SeldonIO/seldon-core) |
+| release-0.2 | [![Build Status](https://travis-ci.org/SeldonIO/seldon-core.svg?branch=release-0.2)](https://travis-ci.org/SeldonIO/seldon-core) |
 | release-0.1 | [![Build Status](https://travis-ci.org/SeldonIO/seldon-core.svg?branch=release-0.1)](https://travis-ci.org/SeldonIO/seldon-core) |
+
 
 Seldon Core is an open source platform for deploying machine learning models on Kubernetes.
 
 - [Goals](#goals)
-- [Prerequisites](#prerequisites)
 - [Quick Start](#quick-start)
 - [Example Components](#example-components)
 - [Integrations](#integrations)
 - [Install](#install)
 - [Deployment guide](#deployment-guide)
 - [Reference](#reference)
+- [Article/Blogs/Videos](#articlesblogsvideos)
+- [Community](#community)
+- [Developer](#developer)
+- [Latest Seldon Images](#latest-seldon-images)
 
 ## Goals
 
@@ -73,7 +78,7 @@ Read the [overview to using seldon-core](./docs/getting_started/readme.md).
 
 ## Advanced Tutorials
 
- * [Advanced graphs](https://github.com/cliveseldon/seldon-core/blob/master/notebooks/advanced_graphs.ipynb) showing the various types of runtime prediction graphs that can be built.
+ * [Advanced graphs](https://github.com/seldonio/seldon-core/blob/master/notebooks/advanced_graphs.ipynb) showing the various types of runtime prediction graphs that can be built.
 
 ### Example Components
 Seldon-core allows various types of components to be built and plugged into the runtime prediction graph. These include [models, routers, transformers and combiners](docs/reference/internal-api.md). Some example components that are available as part of the project are:
@@ -100,13 +105,13 @@ Seldon-core allows various types of components to be built and plugged into the 
 ## Integrations
 
  * [kubeflow](https://github.com/kubeflow/kubeflow)
-    * Seldon-core can be installed as part of the kubeflow project. A detailed [end-to-end example](https://github.com/kubeflow/example-seldon) provides a complete workflow for training various models and deploying them using seldon-core.
+    * Seldon-core can be [installed as part of the kubeflow project](https://www.kubeflow.org/docs/guides/components/seldon/#seldon-serving). A detailed [end-to-end example](https://github.com/kubeflow/example-seldon) provides a complete workflow for training various models and deploying them using seldon-core.
  * [IBM's Fabric for Deep Learning](https://github.com/IBM/FfDL)
     * Seldon-core can be used to [serve deep learning models trained using FfDL](https://github.com/IBM/FfDL/blob/master/community/FfDL-Seldon/README.md).
        * [Train and deploy a Tensorflow MNIST classififer using FfDL and Seldon.](https://github.com/IBM/FfDL/blob/master/community/FfDL-Seldon/tf-model/README.md)
        * [Train and deploy a PyTorch MNIST classififer using FfDL and Seldon.](https://github.com/IBM/FfDL/blob/master/community/FfDL-Seldon/pytorch-model/README.md)
  * [Istio and Seldon](./docs/istio.md)
-   * [Canary deployemts using Istio and Seldon.](../examples/istio/canary_update/canary.ipynb).
+   * [Canary deployemts using Istio and Seldon.](examples/istio/canary_update/canary.ipynb).
 	
 
 ## Install
@@ -132,13 +137,19 @@ Three steps:
 ## Articles/Blogs/Videos
 
  - [Kubecon Europe 2018 - Serving Machine Learning Models at Scale with Kubeflow and Seldon](https://www.youtube.com/watch?v=pDlapGtecbY)
+ - [Istio Weekly Community Meeting - Seldon-core with Istio](https://www.youtube.com/watch?v=ydculT4e7FQ&feature=youtu.be&t=7m48s)
  - [Openshift Commons ML SIG - Openshift S2I Helping ML Deployment with Seldon-Core](https://www.youtube.com/watch?v=1uZPBcfYxlM)
  - [Overview of Openshift source-to-image use in Seldon-Core](./docs/articles/openshift_s2i.md)
  - [IBM Framework for Deep Learning and Seldon-Core](https://developer.ibm.com/code/2018/06/12/serve-it-hot-deploy-your-ffdl-trained-models-using-seldon/)
+ - [CartPole game by Reinforcement Learning, a journey from training to inference ](https://github.com/hypnosapos/cartpole-rl-remote/)
  
 ## Testing
 
  - [Benchmarking seldon-core](docs/benchmarking.md)
+
+## Production
+
+ - [Notes for running in production](./docs/production.md).
 
 ## Community
 
@@ -148,3 +159,25 @@ Three steps:
 
  - [CHANGELOG](CHANGELOG.md)
  - [Developer Guide](./docs/developer/readme.md)
+
+## Latest Seldon Images
+
+|Description | Image URL | Version | 
+|------------|-----------|---------|
+| Seldon Operator | [seldonio/cluster-manager](https://hub.docker.com/r/seldonio/cluster-manager/tags/) | 0.2.2 |
+| Seldon Service Orchestrator | [seldonio/engine](https://hub.docker.com/r/seldonio/engine/tags/) | 0.2.2 | 
+| Seldon API Gateway | [seldonio/apife](https://hub.docker.com/r/seldonio/apife/tags/) | 0.2.2 | 
+| [Seldon Python 3 Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python3](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3/tags/) | 0.1 |
+| [Seldon Python 2 Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python2](https://hub.docker.com/r/seldonio/seldon-core-s2i-python2/tags/) | 0.1 |
+| [Seldon Core Python Wrapper](docs/wrappers/python-docker.md) | [seldonio/core-python-wrapper](https://hub.docker.com/r/seldonio/core-python-wrapper/tags/) | 0.7 | 
+| [Seldon Java Build Wrapper for S2I](docs/wrappers/java.md) | [seldonio/seldon-core-s2i-java-build](https://hub.docker.com/r/seldonio/seldon-core-s2i-java-build/tags/) | 0.1 |
+| [Seldon Java Runtime Wrapper for S2I](docs/wrappers/java.md) | [seldonio/seldon-core-s2i-java-runtime](https://hub.docker.com/r/seldonio/seldon-core-s2i-java-runtime/tags/) | 0.1 | 
+| [Seldon R Wrapper for S2I](docs/wrappers/r.md) | [seldonio/seldon-core-s2i-r](https://hub.docker.com/r/seldonio/seldon-core-s2i-r) | 0.1 | 
+
+#### Java Packages
+
+| Description | Package | Version |
+|-------------|---------|---------|
+| [Seldon Core Wrapper](https://github.com/SeldonIO/seldon-java-wrapper) | [seldon-core-wrapper](https://mvnrepository.com/artifact/io.seldon.wrapper/seldon-core-wrapper) | 0.1.2 |
+| [Seldon Core JPMML](https://github.com/SeldonIO/JPMML-utils) | [seldon-core-jpmml](https://mvnrepository.com/artifact/io.seldon.wrapper/seldon-core-jpmml) | 0.0.1 |
+

@@ -5,22 +5,25 @@
         "labels": {
             "app": "seldon"
         },
-        "name": "mnist-classifier"
+        "name": "iris"
     },
     "spec": {
         "annotations": {
-            "project_name": "Mnist classification"
+            "project_name": "Iris classification",
+            "deployment_version": "0.1"
         },
-        "name": "mnist-deployment",
+        "name": "sk-iris",
+        "oauth_key": "oauth-key",
+        "oauth_secret": "oauth-secret",
         "predictors": [
             {
                 "componentSpecs": [{
                     "spec": {
                         "containers": [
                             {
-                                "image": "seldonio/deep-mnist:0.1",
+                                "image": "sklearn-iris:0.1",
                                 "imagePullPolicy": "IfNotPresent",
-                                "name": "tf-mnist-classifier",
+                                "name": "fbs-iris",
                                 "resources": {
                                     "requests": {
                                         "memory": "1Mi"
@@ -28,24 +31,23 @@
                                 }
                             }
                         ],
-                        "terminationGracePeriodSeconds": 1
+                        "terminationGracePeriodSeconds": 20
                     }
                 }],
                 "graph": {
                     "children": [],
-                    "name": "tf-mnist-classifier",
+                    "name": "fbs-iris",
                     "endpoint": {
                         "type" : "REST"
                     },
                     "type": "MODEL"
                 },
-                "name": "tf-mnist-predictor",
+                "name": "predictor",
                 "replicas": 1,
-		"labels":{
-		    "version":"v2"
-		}
+                "annotations": {
+                "predictor_version" : "0.1"
+                }
             }
-	    
         ]
     }
 }

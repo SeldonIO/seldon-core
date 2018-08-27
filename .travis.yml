@@ -4,7 +4,7 @@ services:
 branches:
   only:
   - master
-  - release-0.1
+  - release-0.2
   - travis-update
 jobs:
   include:

@@ -2,7 +2,7 @@ IMAGE_NAME=engine
 VERSION_FILE=target/version.txt
 
 build_jar: update_proto
-	mvn clean package -B
+	mvn clean verify -Dlicense.useMissingFile -B
 
 write_version:
 	ls target/seldon-engine-*.jar | sed -n 's/target\/seldon-engine-\(.*\).jar$$/\1/p' > $(VERSION_FILE) && cat $(VERSION_FILE)
