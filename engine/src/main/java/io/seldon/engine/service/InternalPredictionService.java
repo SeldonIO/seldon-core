@@ -18,9 +18,7 @@ package io.seldon.engine.service;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.http.client.utils.URIBuilder;
@@ -43,27 +41,27 @@ import com.google.protobuf.util.JsonFormat;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.seldon.engine.exception.APIException;
+import io.seldon.engine.grpc.SeldonGrpcServer;
 import io.seldon.engine.pb.ProtoBufUtils;
 import io.seldon.engine.predictors.PredictiveUnitState;
 import io.seldon.protos.CombinerGrpc;
 import io.seldon.protos.CombinerGrpc.CombinerBlockingStub;
 import io.seldon.protos.DeploymentProtos.Endpoint;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitType;
-import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitMethod;
 import io.seldon.protos.GenericGrpc;
 import io.seldon.protos.GenericGrpc.GenericBlockingStub;
 import io.seldon.protos.ModelGrpc;
 import io.seldon.protos.ModelGrpc.ModelBlockingStub;
-import io.seldon.protos.RouterGrpc;
-import io.seldon.protos.RouterGrpc.RouterBlockingStub;
-import io.seldon.protos.TransformerGrpc;
-import io.seldon.protos.TransformerGrpc.TransformerBlockingStub;
 import io.seldon.protos.OutputTransformerGrpc;
 import io.seldon.protos.OutputTransformerGrpc.OutputTransformerBlockingStub;
 import io.seldon.protos.PredictionProtos.Feedback;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
 import io.seldon.protos.PredictionProtos.SeldonMessage.DataOneofCase;
 import io.seldon.protos.PredictionProtos.SeldonMessageList;
+import io.seldon.protos.RouterGrpc;
+import io.seldon.protos.RouterGrpc.RouterBlockingStub;
+import io.seldon.protos.TransformerGrpc;
+import io.seldon.protos.TransformerGrpc.TransformerBlockingStub;
 
 @Service
 public class InternalPredictionService {
@@ -79,12 +77,13 @@ public class InternalPredictionService {
     ObjectMapper mapper = new ObjectMapper();
     
     RestTemplate restTemplate;
-    
+    SeldonGrpcServer grpcServer;
     
     
     @Autowired
-    public InternalPredictionService(RestTemplate restTemplate){
+    public InternalPredictionService(RestTemplate restTemplate,SeldonGrpcServer grpcServer){
     	this.restTemplate = restTemplate;
+    	this.grpcServer = grpcServer;
     }
     
     public SeldonMessage route(SeldonMessage input, PredictiveUnitState state) throws InvalidProtocolBufferException
@@ -97,11 +96,17 @@ public class InternalPredictionService {
 				
 			case GRPC:
 				if (state.type==PredictiveUnitType.UNKNOWN_TYPE){
-					GenericBlockingStub stub =  GenericGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
+					GenericBlockingStub stub =  GenericGrpc.newBlockingStub(getChannel(endpoint))
+							.withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS)
+							.withMaxInboundMessageSize(grpcServer.getMaxMessageSize())
+							.withMaxOutboundMessageSize(grpcServer.getMaxMessageSize());
 					return stub.route(input);
 				}
 				else {
-					RouterBlockingStub stub =  RouterGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
+					RouterBlockingStub stub =  RouterGrpc.newBlockingStub(getChannel(endpoint))
+							.withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS)
+							.withMaxInboundMessageSize(grpcServer.getMaxMessageSize())
+							.withMaxOutboundMessageSize(grpcServer.getMaxMessageSize());
 					return stub.route(input);
 				}
 		}
@@ -118,11 +123,17 @@ public class InternalPredictionService {
 				
 			case GRPC:
 				if (state.type==PredictiveUnitType.UNKNOWN_TYPE){
-					GenericBlockingStub stub =  GenericGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
+					GenericBlockingStub stub =  GenericGrpc.newBlockingStub(getChannel(endpoint))
+							.withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS)
+							.withMaxInboundMessageSize(grpcServer.getMaxMessageSize())
+							.withMaxOutboundMessageSize(grpcServer.getMaxMessageSize());
 					return stub.sendFeedback(feedback);
 				}
 				else {
-					RouterBlockingStub routerStub =  RouterGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
+					RouterBlockingStub routerStub =  RouterGrpc.newBlockingStub(getChannel(endpoint))
+							.withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS)
+							.withMaxInboundMessageSize(grpcServer.getMaxMessageSize())
+							.withMaxOutboundMessageSize(grpcServer.getMaxMessageSize());
 					return routerStub.sendFeedback(feedback);
 				}
 		}
@@ -145,13 +156,22 @@ public class InternalPredictionService {
 			case GRPC:
 				switch (state.type){
 					case UNKNOWN_TYPE:
-						GenericBlockingStub genStub = GenericGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
+						GenericBlockingStub genStub = GenericGrpc.newBlockingStub(getChannel(endpoint))
+							.withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS)
+							.withMaxInboundMessageSize(grpcServer.getMaxMessageSize())
+							.withMaxOutboundMessageSize(grpcServer.getMaxMessageSize());
 						return genStub.transformInput(input);
 					case MODEL:
-						ModelBlockingStub modelStub = ModelGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
+						ModelBlockingStub modelStub = ModelGrpc.newBlockingStub(getChannel(endpoint))
+							.withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS)
+							.withMaxInboundMessageSize(grpcServer.getMaxMessageSize())
+							.withMaxOutboundMessageSize(grpcServer.getMaxMessageSize());
 						return modelStub.predict(input);
 					case TRANSFORMER:
-						TransformerBlockingStub transformerStub = TransformerGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
+						TransformerBlockingStub transformerStub = TransformerGrpc.newBlockingStub(getChannel(endpoint))
+						.withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS)
+						.withMaxInboundMessageSize(grpcServer.getMaxMessageSize())
+						.withMaxOutboundMessageSize(grpcServer.getMaxMessageSize());
 						return transformerStub.transformInput(input);
 					default:
 						throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,"Unhandled type");
@@ -170,11 +190,17 @@ public class InternalPredictionService {
 				
 			case GRPC:
 				if (state.type==PredictiveUnitType.UNKNOWN_TYPE){
-					GenericBlockingStub stub =  GenericGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
+					GenericBlockingStub stub =  GenericGrpc.newBlockingStub(getChannel(endpoint))
+							.withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS)
+							.withMaxInboundMessageSize(grpcServer.getMaxMessageSize())
+							.withMaxOutboundMessageSize(grpcServer.getMaxMessageSize());
 					return stub.transformOutput(output);
 				}
 				else {
-					OutputTransformerBlockingStub stub =  OutputTransformerGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
+					OutputTransformerBlockingStub stub =  OutputTransformerGrpc.newBlockingStub(getChannel(endpoint))
+							.withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS)
+							.withMaxInboundMessageSize(grpcServer.getMaxMessageSize())
+							.withMaxOutboundMessageSize(grpcServer.getMaxMessageSize());
 					return stub.transformOutput(output);
 				}
 		}
@@ -191,11 +217,17 @@ public class InternalPredictionService {
 				
 			case GRPC:
 				if (state.type==PredictiveUnitType.UNKNOWN_TYPE){
-					GenericBlockingStub stub =  GenericGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
+					GenericBlockingStub stub =  GenericGrpc.newBlockingStub(getChannel(endpoint))
+							.withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS)
+							.withMaxInboundMessageSize(grpcServer.getMaxMessageSize())
+							.withMaxOutboundMessageSize(grpcServer.getMaxMessageSize());
 					return stub.aggregate(outputsList);
 				}
 				else {
-					CombinerBlockingStub stub = CombinerGrpc.newBlockingStub(getChannel(endpoint)).withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS);
+					CombinerBlockingStub stub = CombinerGrpc.newBlockingStub(getChannel(endpoint))
+							.withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS)
+							.withMaxInboundMessageSize(grpcServer.getMaxMessageSize())
+							.withMaxOutboundMessageSize(grpcServer.getMaxMessageSize());
 					return stub.aggregate(outputsList);
 				}
 		}

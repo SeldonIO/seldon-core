@@ -61,6 +61,8 @@ public class SeldonGrpcServer    {
     private final grpcDeploymentsListener grpcDeploymentsListener;
     private final DeploymentsHandler deploymentsHandler;
     
+    private int maxMessageSize = io.grpc.internal.GrpcUtil.DEFAULT_MAX_MESSAGE_SIZE;
+    
     @Autowired
     public SeldonGrpcServer(AppProperties appProperties,DeploymentStore deploymentStore,TokenStore tokenStore,DeploymentsHandler deploymentsHandler,AnnotationsConfig annotations)
     {
@@ -89,13 +91,13 @@ public class SeldonGrpcServer    {
         {
         	try 
         	{
-        		int maxMessageSize =Integer.parseInt(annotations.get(ANNOTATION_MAX_MESSAGE_SIZE));
+        		maxMessageSize =Integer.parseInt(annotations.get(ANNOTATION_MAX_MESSAGE_SIZE));
         		logger.info("Setting max message to {}",maxMessageSize);
         		builder.maxMessageSize(maxMessageSize);
         	}
         	catch(NumberFormatException e)
         	{
-        		logger.warn("Failed to parse {} with value {}",ANNOTATION_MAX_MESSAGE_SIZE,annotations.get(ANNOTATION_MAX_MESSAGE_SIZE),e);
+        		logger.warn("Failed to parse {} with value {}",ANNOTATION_MAX_MESSAGE_SIZE,annotations.get(ANNOTATION_MAX_MESSAGE_SIZE),e);        		
         	}
         }
         server = builder.build();
@@ -218,5 +220,11 @@ public class SeldonGrpcServer    {
     public void deploymentRemoved(SeldonDeployment resource) {
        channelStore.remove(resource.getSpec().getOauthKey());
     }
+
+	public int getMaxMessageSize() {
+		return maxMessageSize;
+	}
+    
+    
    
 }

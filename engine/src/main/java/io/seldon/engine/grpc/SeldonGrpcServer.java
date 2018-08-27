@@ -41,6 +41,8 @@ public class SeldonGrpcServer  {
     private final Server server;
 	  
     private final PredictionService predictionService;
+
+    private int maxMessageSize = io.grpc.internal.GrpcUtil.DEFAULT_MAX_MESSAGE_SIZE;
     
     @Autowired
     public SeldonGrpcServer(PredictionService predictionService,AnnotationsConfig annotations)
@@ -63,7 +65,7 @@ public class SeldonGrpcServer  {
         {
         	try 
         	{
-        		int maxMessageSize =Integer.parseInt(annotations.get(ANNOTATION_MAX_MESSAGE_SIZE));
+        		maxMessageSize =Integer.parseInt(annotations.get(ANNOTATION_MAX_MESSAGE_SIZE));
         		logger.info("Setting max message to {}",maxMessageSize);
         		builder.maxMessageSize(maxMessageSize);
         	}
@@ -121,4 +123,8 @@ public class SeldonGrpcServer  {
         server.awaitTermination();
       }
     }
+    
+    public int getMaxMessageSize() {
+		return maxMessageSize;
+	}
 }

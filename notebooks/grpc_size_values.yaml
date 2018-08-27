@@ -1,0 +1,3 @@
+apife:
+  annotations:
+    seldon.io/grpc-max-message-size: "10000000"
