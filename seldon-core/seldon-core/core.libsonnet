@@ -32,7 +32,7 @@ local getEnvNotRedis(x) = x.name != "SELDON_CLUSTER_MANAGER_REDIS_HOST";
 {
   parts(name,namespace):: {
 
-    apife(apifeImage, withRbac)::
+    apife(apifeImage, withRbac, grpcMaxMessageSize)::
 
       local baseApife = std.filter(getApifeDeployment,seldonTemplate.items)[0];
 
@@ -57,13 +57,16 @@ local getEnvNotRedis(x) = x.name != "SELDON_CLUSTER_MANAGER_REDIS_HOST";
         baseApife +
 	deployment.mixin.metadata.withName(name+"-seldon-apiserver") +
         deployment.mixin.metadata.withNamespace(namespace) +
-	deployment.mixin.metadata.withLabelsMixin(labels) +	
+	deployment.mixin.metadata.withLabelsMixin(labels) +
         deployment.mixin.spec.template.spec.withContainers([c]);
+
+      local extraAnnotations = {"seldon.io/grpc-max-message-size" : grpcMaxMessageSize};
 
       // Ensure labels copied to enclosed parts
       local apiFeBase = apiFeBase1 +
               deployment.mixin.spec.selector.withMatchLabels(apiFeBase1.metadata.labels) + 
-              deployment.mixin.spec.template.metadata.withLabels(apiFeBase1.metadata.labels);
+              deployment.mixin.spec.template.metadata.withLabels(apiFeBase1.metadata.labels) +
+	      deployment.mixin.spec.template.metadata.withAnnotationsMixin(extraAnnotations);
 
 
       if withRbac == "true" then
