@@ -40,11 +40,15 @@ import io.kubernetes.client.proto.Meta.OwnerReference;
 import io.kubernetes.client.proto.Resource.Quantity;
 import io.kubernetes.client.proto.V1;
 import io.kubernetes.client.proto.V1.ContainerPort;
+import io.kubernetes.client.proto.V1.DownwardAPIVolumeFile;
+import io.kubernetes.client.proto.V1.DownwardAPIVolumeSource;
 import io.kubernetes.client.proto.V1.EnvVar;
 import io.kubernetes.client.proto.V1.ExecAction;
 import io.kubernetes.client.proto.V1.HTTPGetAction;
 import io.kubernetes.client.proto.V1.Handler;
 import io.kubernetes.client.proto.V1.Lifecycle;
+import io.kubernetes.client.proto.V1.ObjectFieldSelector;
+import io.kubernetes.client.proto.V1.PodSecurityContext;
 import io.kubernetes.client.proto.V1.PodTemplateSpec;
 import io.kubernetes.client.proto.V1.Probe;
 import io.kubernetes.client.proto.V1.SecurityContext;
@@ -52,6 +56,9 @@ import io.kubernetes.client.proto.V1.Service;
 import io.kubernetes.client.proto.V1.ServicePort;
 import io.kubernetes.client.proto.V1.ServiceSpec;
 import io.kubernetes.client.proto.V1.TCPSocketAction;
+import io.kubernetes.client.proto.V1.Volume;
+import io.kubernetes.client.proto.V1.VolumeMount;
+import io.kubernetes.client.proto.V1.VolumeSource;
 import io.kubernetes.client.proto.V1beta1Extensions;
 import io.kubernetes.client.proto.V1beta1Extensions.Deployment;
 import io.kubernetes.client.proto.V1beta1Extensions.DeploymentSpec;
@@ -75,6 +82,8 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 	public static final String LABEL_SELDON_APP = "seldon-app";
     public static final String LABEL_SELDON_TYPE_KEY = "seldon-type";
     public static final String LABEL_SELDON_TYPE_VAL = "deployment";
+    public static final String PODINFO_VOLUME_NAME = "podinfo";
+    public static final String PODINFO_VOLUME_PATH = "/etc/podinfo";
    
 	@Autowired
 	public SeldonDeploymentOperatorImpl(ClusterManagerProperites clusterManagerProperites) {
@@ -102,6 +111,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		cBuilder
 			.setName("seldon-container-engine")
 			.setImage(clusterManagerProperites.getEngineContainerImageAndVersion())
+			.addVolumeMounts(VolumeMount.newBuilder().setName(PODINFO_VOLUME_NAME).setMountPath(PODINFO_VOLUME_PATH).setReadOnly(true))
 			.addEnv(EnvVar.newBuilder().setName("ENGINE_PREDICTOR").setValue(getEngineEnvVarJson(predictorDef)))
 			.addEnv(EnvVar.newBuilder().setName("ENGINE_SELDON_DEPLOYMENT").setValue(getEngineEnvVarJson(dep)))
 			.addEnv(EnvVar.newBuilder().setName("ENGINE_SERVER_PORT").setValue(""+clusterManagerProperites.getEngineContainerPort()))
@@ -196,6 +206,9 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 	{
 		V1.Container.Builder c2Builder = V1.Container.newBuilder(c);
         
+		//Add volume to get at pod annotations
+		c2Builder.addVolumeMounts(VolumeMount.newBuilder().setName(PODINFO_VOLUME_NAME).setMountPath(PODINFO_VOLUME_PATH).setReadOnly(true));
+		
 		Integer containerPort = getPort(c.getPortsList());
 		// Add container port and liveness and readiness probes if no container ports are specified
 		if (containerPort == null)
@@ -533,12 +546,20 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 				PodTemplateSpec.Builder podSpecBuilder = PodTemplateSpec.newBuilder();
 				podSpecBuilder.getSpecBuilder()
 		    	.addContainers(createEngineContainer(mlDep,p))
-		    	.setTerminationGracePeriodSeconds(20);
+		    	.setSecurityContext(PodSecurityContext.newBuilder().setRunAsUser(8888).build())
+		    	.setTerminationGracePeriodSeconds(20)
+		    	.addVolumes(Volume.newBuilder() // Add downwardAPI volume for annotations
+		    			.setName(PODINFO_VOLUME_NAME)
+		    			.setVolumeSource(VolumeSource.newBuilder().setDownwardAPI(DownwardAPIVolumeSource.newBuilder()
+		    			.addItems(DownwardAPIVolumeFile.newBuilder().setPath("annotations")
+		    					.setFieldRef(ObjectFieldSelector.newBuilder().setFieldPath("metadata.annotations"))))));
 			
 				String depName = getSeldonServiceName(mlDep,p,"svc-orch");
 				podSpecBuilder.getMetadataBuilder()
 					.putLabels(LABEL_SELDON_APP, mlDep.getSpec().getName()) 
 					.putLabels("app", depName)
+					.putAllAnnotations(mlDep.getSpec().getAnnotationsMap()) // Add all spec annotations first
+					.putAllAnnotations(p.getAnnotationsMap()) // ...then add those for predictor overwriting any from spec above
 			    	.putAnnotations("prometheus.io/path", "/prometheus")
 			    	.putAnnotations("prometheus.io/port",""+clusterManagerProperites.getEngineContainerPort())
 			    	.putAnnotations("prometheus.io/scrape", "true");
@@ -585,15 +606,21 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 				// Add default version number then overwrite with any labels
 				podSpecBuilder.getMetadataBuilder().putLabels("version", "v1");
 				depMetaBuilder.putAllLabels(spec.getMetadata().getLabelsMap());
-				podSpecBuilder.getMetadataBuilder().putAllLabels(spec.getMetadata().getLabelsMap());
-				
+				podSpecBuilder.getMetadataBuilder()
+					.putAllLabels(spec.getMetadata().getLabelsMap())
+					.putAllAnnotations(mlDep.getSpec().getAnnotationsMap()) // Add all spec annotations first
+					.putAllAnnotations(p.getAnnotationsMap()); // ...then add those for predictor overwriting any from spec above
+				podSpecBuilder.getSpecBuilder()
+		    	.setTerminationGracePeriodSeconds(20)
+		    	.addVolumes(Volume.newBuilder() // Add downwardAPI volume for annotations
+		    			.setName(PODINFO_VOLUME_NAME)
+		    			.setVolumeSource(VolumeSource.newBuilder().setDownwardAPI(DownwardAPIVolumeSource.newBuilder()
+		    			.addItems(DownwardAPIVolumeFile.newBuilder().setPath("annotations")
+		    					.setFieldRef(ObjectFieldSelector.newBuilder().setFieldPath("metadata.annotations"))))));
 				for(V1.Container c : spec.getSpec().getContainersList())
 				{
 					String containerServiceKey = getPredictorServiceNameKey(c.getName());
 					String containerServiceValue = getSeldonServiceName(mlDep, p, c.getName());
-
-					podSpecBuilder.getSpecBuilder()
-			    	.setTerminationGracePeriodSeconds(20);
 					
 					if (!createdServices.contains(containerServiceValue))
 					{
