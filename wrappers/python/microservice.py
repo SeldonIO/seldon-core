@@ -8,6 +8,9 @@ import os
 import importlib
 import json
 import time
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 from google.protobuf.struct_pb2 import ListValue
 
@@ -17,6 +20,8 @@ DEFAULT_PORT = 5000
 
 DEBUG_PARAMETER = "SELDON_DEBUG"
 DEBUG = False
+
+ANNOTATIONS_FILE = "/etc/podinfo/annotations"
 
 class SeldonMicroserviceException(Exception):
     status_code = 400
@@ -134,7 +139,26 @@ def parse_parameters(parameters):
         type_ = param.get("type")
         parsed_parameters[name] = type_dict[type_](value)
     return parsed_parameters
-                          
+
+def load_annotations():
+    annotations = {}
+    try:
+        if os.path.isfile(ANNOTATIONS_FILE):
+            with open(ANNOTATIONS_FILE, "r") as ins:
+                for line in ins:
+                    line = line.rstrip()
+                    parts = line.split("=")
+                    if len(parts) == 2:
+                        value = parts[1]
+                        value = parts[1][1:-1]
+                        logger.info("Found annotation %s:%s ",parts[0],value)
+                        annotations[parts[0]] = value
+                    else:
+                        logger.info("bad annotation [%s]",line)
+    except:
+        logger.error("Failed to open annotations file %s",ANNOTATIONS_FILE)
+    return annotations
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("interface_name",type=str,help="Name of the user interface.")
@@ -150,6 +174,9 @@ if __name__ == "__main__":
     if parameters.get(DEBUG_PARAMETER):
         parameters.pop(DEBUG_PARAMETER)
         DEBUG = True
+
+    annotations = load_annotations()
+    logger.info("Annotations %s",annotations)
     
     interface_file = importlib.import_module(args.interface_name)
     user_class = getattr(interface_file,args.interface_name)
@@ -176,7 +203,7 @@ if __name__ == "__main__":
         app.run(host='0.0.0.0', port=port)
         
     elif args.api_type=="GRPC":
-        server = seldon_microservice.get_grpc_server(user_object,debug=DEBUG)
+        server = seldon_microservice.get_grpc_server(user_object,debug=DEBUG,annotations=annotations)
         server.add_insecure_port("0.0.0.0:{}".format(port))
         server.start()
         

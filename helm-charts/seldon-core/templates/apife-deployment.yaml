@@ -20,6 +20,9 @@ spec:
   template:
     metadata:
       annotations:
+{{ if .Values.apife.annotations }}        
+{{ toYaml .Values.apife.annotations | indent 8 }}
+{{ end }}
         prometheus.io/path: /prometheus
         prometheus.io/port: "8080"
         prometheus.io/scrape: "true"
@@ -39,6 +42,10 @@ spec:
         image: {{ .Values.apife.image.name }}
         imagePullPolicy: {{ .Values.apife.image.pull_policy }}
         name: seldon-apiserver-container
+        volumeMounts:
+          - name: podinfo
+            mountPath: /etc/podinfo
+            readOnly: false
         securityContext:
           runAsUser: 8888
         ports:
@@ -51,6 +58,13 @@ spec:
       serviceAccountName: {{ .Values.rbac.service_account.name }}
 {{- end }}
       terminationGracePeriodSeconds: 30
+      volumes:
+        - name: podinfo
+          downwardAPI:
+            items:
+              - path: "annotations"
+                fieldRef:
+                  fieldPath: metadata.annotations
 ---
 apiVersion: v1
 kind: Service

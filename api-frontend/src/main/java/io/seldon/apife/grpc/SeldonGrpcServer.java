@@ -32,15 +32,15 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.ServerInterceptors;
+import io.grpc.netty.NettyServerBuilder;
 import io.seldon.apife.AppProperties;
 import io.seldon.apife.api.oauth.InMemoryClientDetailsService;
+import io.seldon.apife.config.AnnotationsConfig;
 import io.seldon.apife.deployments.DeploymentStore;
 import io.seldon.apife.deployments.DeploymentsHandler;
-import io.seldon.apife.deployments.DeploymentsListener;
 import io.seldon.apife.exception.SeldonAPIException;
 import io.seldon.apife.k8s.DeploymentWatcher;
 import io.seldon.protos.DeploymentProtos.DeploymentSpec;
-import io.seldon.protos.DeploymentProtos.Endpoint;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 @Component
@@ -48,6 +48,7 @@ public class SeldonGrpcServer    {
     protected static Logger logger = LoggerFactory.getLogger(SeldonGrpcServer.class.getName());
 	
     public static final int SERVER_PORT = 5000;
+    private final String ANNOTATION_MAX_MESSAGE_SIZE = "seldon.io/grpc-max-message-size";
     
     private final int port;
     private final Server server;
@@ -60,19 +61,21 @@ public class SeldonGrpcServer    {
     private final grpcDeploymentsListener grpcDeploymentsListener;
     private final DeploymentsHandler deploymentsHandler;
     
+    private int maxMessageSize = io.grpc.internal.GrpcUtil.DEFAULT_MAX_MESSAGE_SIZE;
+    
     @Autowired
-    public SeldonGrpcServer(AppProperties appProperties,DeploymentStore deploymentStore,TokenStore tokenStore,DeploymentsHandler deploymentsHandler)
+    public SeldonGrpcServer(AppProperties appProperties,DeploymentStore deploymentStore,TokenStore tokenStore,DeploymentsHandler deploymentsHandler,AnnotationsConfig annotations)
     {
-        this(appProperties,deploymentStore,tokenStore,deploymentsHandler,SERVER_PORT);  
+        this(appProperties,deploymentStore,tokenStore,deploymentsHandler,annotations,SERVER_PORT);  
     }    
     
-    public SeldonGrpcServer(AppProperties appProperties,DeploymentStore deploymentStore,TokenStore tokenStore,DeploymentsHandler deploymentsHandler,int port)
+    public SeldonGrpcServer(AppProperties appProperties,DeploymentStore deploymentStore,TokenStore tokenStore,DeploymentsHandler deploymentsHandler,AnnotationsConfig annotations,int port)
     {
-        this(appProperties,deploymentStore,tokenStore,ServerBuilder.forPort(port), deploymentsHandler, port);
+        this(appProperties,deploymentStore,tokenStore,ServerBuilder.forPort(port), deploymentsHandler, annotations, port);
     }
     
   
-    public SeldonGrpcServer(AppProperties appProperties,DeploymentStore deploymentStore,TokenStore tokenStore,ServerBuilder<?> serverBuilder,DeploymentsHandler deploymentsHandler, int port) 
+    public SeldonGrpcServer(AppProperties appProperties,DeploymentStore deploymentStore,TokenStore tokenStore,ServerBuilder<?> serverBuilder,DeploymentsHandler deploymentsHandler, AnnotationsConfig annotations, int port) 
     {
         this.appProperties = appProperties;
         this.deploymentStore = deploymentStore;
@@ -81,9 +84,23 @@ public class SeldonGrpcServer    {
         this.deploymentsHandler = deploymentsHandler;
         deploymentsHandler.addListener(this.grpcDeploymentsListener);
         this.port = port;
-        server = serverBuilder
-              .addService(ServerInterceptors.intercept(new SeldonService(this), new HeaderServerInterceptor(this)))
-          .build();
+        NettyServerBuilder builder = NettyServerBuilder
+                .forPort(port)
+                .addService(ServerInterceptors.intercept(new SeldonService(this), new HeaderServerInterceptor(this)));
+        if (annotations != null && annotations.has(ANNOTATION_MAX_MESSAGE_SIZE))
+        {
+        	try 
+        	{
+        		maxMessageSize =Integer.parseInt(annotations.get(ANNOTATION_MAX_MESSAGE_SIZE));
+        		logger.info("Setting max message to {}",maxMessageSize);
+        		builder.maxMessageSize(maxMessageSize);
+        	}
+        	catch(NumberFormatException e)
+        	{
+        		logger.warn("Failed to parse {} with value {}",ANNOTATION_MAX_MESSAGE_SIZE,annotations.get(ANNOTATION_MAX_MESSAGE_SIZE),e);        		
+        	}
+        }
+        server = builder.build();
     }
   
     @PostConstruct
@@ -190,7 +207,7 @@ public class SeldonGrpcServer    {
         AppProperties appProperties = new AppProperties();
         appProperties.setEngineGrpcContainerPort(5000);
         store.deploymentAdded(dep);
-        SeldonGrpcServer server = new SeldonGrpcServer(appProperties,store,null,null,SERVER_PORT);
+        SeldonGrpcServer server = new SeldonGrpcServer(appProperties,store,null,null,null,SERVER_PORT);
         server.start();
         server.blockUntilShutdown();
   }
@@ -203,5 +220,11 @@ public class SeldonGrpcServer    {
     public void deploymentRemoved(SeldonDeployment resource) {
        channelStore.remove(resource.getSpec().getOauthKey());
     }
+
+	public int getMaxMessageSize() {
+		return maxMessageSize;
+	}
+    
+    
    
 }

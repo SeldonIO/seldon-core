@@ -76,9 +76,6 @@ Read the [overview to using seldon-core](./docs/getting_started/readme.md).
     * Azure
          * [Jupyter Notebook showing deployment of prebuilt model using Azure cluster](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_azure.ipynb)
 
-## Advanced Tutorials
-
- * [Advanced graphs](https://github.com/seldonio/seldon-core/blob/master/notebooks/advanced_graphs.ipynb) showing the various types of runtime prediction graphs that can be built.
 
 ### Example Components
 Seldon-core allows various types of components to be built and plugged into the runtime prediction graph. These include [models, routers, transformers and combiners](docs/reference/internal-api.md). Some example components that are available as part of the project are:
@@ -129,6 +126,11 @@ Three steps:
  1. [Define your runtime inference graph in a seldon deployment custom resource](./docs/crd/readme.md).
  1. [Deploy the graph](./docs/deploying.md).
 
+## Advanced Tutorials
+
+ * [Advanced graphs](https://github.com/seldonio/seldon-core/blob/master/notebooks/advanced_graphs.ipynb) showing the various types of runtime prediction graphs that can be built.
+ * [Handling large gRPC messages](./notebooks/max_grpc_msg_size.ipynb). Showing how you can add annotations to increase the gRPC max message size.
+
 ## Reference
 
  - [Prediction API](./docs/reference/prediction.md)
@@ -147,9 +149,12 @@ Three steps:
 
  - [Benchmarking seldon-core](docs/benchmarking.md)
 
-## Production
+## Configuration
 
+ - [Annotation based configuration](./docs/annotations.md).
  - [Notes for running in production](./docs/production.md).
+ - [Helm configuration](./docs/helm.md)
+ - [ksonnet configuration](./docs/ksonnet.md)
 
 ## Community
 
