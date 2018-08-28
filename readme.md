@@ -149,9 +149,12 @@ Three steps:
 
  - [Benchmarking seldon-core](docs/benchmarking.md)
 
-## Production
+## Configuration
 
+ - [Annotation based configuration](./docs/annotations.md).
  - [Notes for running in production](./docs/production.md).
+ - [Helm configuration](./docs/helm.md)
+ - [ksonnet configuration](./docs/ksonnet.md)
 
 ## Community
 
