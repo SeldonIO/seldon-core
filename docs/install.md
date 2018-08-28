@@ -42,7 +42,8 @@ helm install seldon-core --name seldon-core --repo https://storage.googleapis.co
 Notes
 
  * You can use ```--namespace``` to install seldon-core to a particular namespace
-
+ * For full configuration options see [here](helm.md)
+ 
 ## With Ksonnet
 
  * [install Ksonnet](https://ksonnet.io/)
