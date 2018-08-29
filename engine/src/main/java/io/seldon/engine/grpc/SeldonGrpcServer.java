@@ -35,7 +35,7 @@ public class SeldonGrpcServer  {
     private final static String ENGINE_SERVER_PORT_KEY = "ENGINE_SERVER_GRPC_PORT";
     public static final int SERVER_PORT = 5000;
     
-    private final String ANNOTATION_MAX_MESSAGE_SIZE = "seldon.io/grpc-max-message-size";
+    public final static String ANNOTATION_MAX_MESSAGE_SIZE = "seldon.io/grpc-max-message-size";
     
     private final int port;
     private final Server server;
@@ -124,7 +124,4 @@ public class SeldonGrpcServer  {
       }
     }
     
-    public int getMaxMessageSize() {
-		return maxMessageSize;
-	}
 }
