@@ -49,6 +49,7 @@ public class SeldonGrpcServer    {
 	
     public static final int SERVER_PORT = 5000;
     private final String ANNOTATION_MAX_MESSAGE_SIZE = "seldon.io/grpc-max-message-size";
+    private final String ANNOTATION_GRPC_READ_TIMEOUT = "seldon.io/grpc-read-timeout";
     
     private final int port;
     private final Server server;
@@ -60,9 +61,11 @@ public class SeldonGrpcServer    {
     private final AppProperties appProperties;
     private final grpcDeploymentsListener grpcDeploymentsListener;
     private final DeploymentsHandler deploymentsHandler;
-    
+
+    public static final int DEFAULT_GRPC_READ_TIMEOUT = 5000;    
     public static final int TIMEOUT = 5;
     private int maxMessageSize = io.grpc.internal.GrpcUtil.DEFAULT_MAX_MESSAGE_SIZE;
+    private int grpcReadTimeout = DEFAULT_GRPC_READ_TIMEOUT;
     
     @Autowired
     public SeldonGrpcServer(AppProperties appProperties,DeploymentStore deploymentStore,TokenStore tokenStore,DeploymentsHandler deploymentsHandler,AnnotationsConfig annotations)
@@ -101,6 +104,20 @@ public class SeldonGrpcServer    {
         		logger.warn("Failed to parse {} with value {}",ANNOTATION_MAX_MESSAGE_SIZE,annotations.get(ANNOTATION_MAX_MESSAGE_SIZE),e);        		
         	}
         }
+    	if (annotations.has(ANNOTATION_GRPC_READ_TIMEOUT))
+        {
+        	try 
+        	{
+        		grpcReadTimeout = Integer.parseInt(annotations.get(ANNOTATION_GRPC_READ_TIMEOUT));
+        		logger.info("Setting grpc read timeout to {}ms",grpcReadTimeout);
+        	}
+        	catch(NumberFormatException e)
+        	{
+        		logger.error("Failed to parse {} with value {}",ANNOTATION_GRPC_READ_TIMEOUT,annotations.get(ANNOTATION_GRPC_READ_TIMEOUT),e);
+        	}
+        }
+    	logger.info("gRPC read timeout set to {}",grpcReadTimeout);
+
         server = builder.build();
     }
   
@@ -226,6 +243,8 @@ public class SeldonGrpcServer    {
 		return maxMessageSize;
 	}
     
-    
+    public int getReadTimeout() {
+    	return grpcReadTimeout;
+    }
    
 }
