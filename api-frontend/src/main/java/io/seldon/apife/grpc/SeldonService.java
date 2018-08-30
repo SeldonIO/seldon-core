@@ -15,6 +15,8 @@
  *******************************************************************************/
 package io.seldon.apife.grpc;
 
+import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +46,10 @@ public class SeldonService extends SeldonGrpc.SeldonImplBase {
         try
         {
             ManagedChannel channel = server.getChannel();
-            final SeldonGrpc.SeldonBlockingStub blockingStub = SeldonGrpc.newBlockingStub(channel);
+            final SeldonGrpc.SeldonBlockingStub blockingStub = SeldonGrpc.newBlockingStub(channel)
+            		.withDeadlineAfter(SeldonGrpcServer.TIMEOUT, TimeUnit.SECONDS)
+					.withMaxInboundMessageSize(server.getMaxMessageSize())
+					.withMaxOutboundMessageSize(server.getMaxMessageSize());
             responseObserver.onNext(blockingStub.predict(request));
         }
         catch (SeldonAPIException e)
