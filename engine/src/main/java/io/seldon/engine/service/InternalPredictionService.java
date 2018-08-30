@@ -76,17 +76,19 @@ public class InternalPredictionService {
 	
     public final static String ANNOTATION_REST_CONNECTION_TIMEOUT = "seldon.io/rest-connection-timeout";
     public final static String ANNOTATION_REST_READ_TIMEOUT = "seldon.io/rest-read-timeout";
+    public final static String ANNOTATION_GRPC_READ_TIMEOUT = "seldon.io/grpc-read-timeout";
 
 	private static final int DEFAULT_CONNECTION_TIMEOUT = 5000;
 	private static final int DEFAULT_READ_TIMEOUT = 10000;
 	
-	public static final int TIMEOUT = 5;
+	public static final int DEFAULT_GRPC_READ_TIMEOUT = 5000;
 	
     ObjectMapper mapper = new ObjectMapper();
     
     RestTemplate restTemplate;
         
-    private int maxMessageSize = io.grpc.internal.GrpcUtil.DEFAULT_MAX_MESSAGE_SIZE;
+    private int grpcMaxMessageSize = io.grpc.internal.GrpcUtil.DEFAULT_MAX_MESSAGE_SIZE;
+    private int grpcReadTimeout = DEFAULT_GRPC_READ_TIMEOUT;
     
     @Autowired
     public InternalPredictionService(RestTemplateBuilder restTemplateBuilder,AnnotationsConfig annotations){
@@ -95,6 +97,7 @@ public class InternalPredictionService {
     	{
     		try
     		{
+    			logger.info("Setting REST connection timeout from annotation {}",ANNOTATION_REST_CONNECTION_TIMEOUT);
     			connectionTimeout = Integer.parseInt(annotations.get(ANNOTATION_REST_CONNECTION_TIMEOUT));
     		}
     		catch(NumberFormatException e)
@@ -102,18 +105,21 @@ public class InternalPredictionService {
     			logger.error("Failed to parse REST connection timeout annotation {} with value {}",ANNOTATION_REST_CONNECTION_TIMEOUT,annotations.get(ANNOTATION_REST_CONNECTION_TIMEOUT));
     		}
     	}
+    	logger.info("REST Connection timeout set to {}",connectionTimeout);
     	int readTimeout = DEFAULT_READ_TIMEOUT;
     	if (annotations.has(ANNOTATION_REST_READ_TIMEOUT))
     	{
     		try
     		{
-    			connectionTimeout = Integer.parseInt(annotations.get(ANNOTATION_REST_READ_TIMEOUT));
+    			logger.info("Setting REST read timeout from annotation {}",ANNOTATION_REST_READ_TIMEOUT);
+    			readTimeout = Integer.parseInt(annotations.get(ANNOTATION_REST_READ_TIMEOUT));
     		}
     		catch(NumberFormatException e)
     		{
     			logger.error("Failed to parse REST read timeout annotation {} with value {}",ANNOTATION_REST_READ_TIMEOUT,annotations.get(ANNOTATION_REST_READ_TIMEOUT));
     		}
     	}
+    	logger.info("REST read timeout set to {}",readTimeout);
     	this.restTemplate = restTemplateBuilder
     	           .setConnectTimeout(connectionTimeout)
     	           .setReadTimeout(readTimeout)
@@ -122,14 +128,28 @@ public class InternalPredictionService {
         {
         	try 
         	{
-        		maxMessageSize =Integer.parseInt(annotations.get(SeldonGrpcServer.ANNOTATION_MAX_MESSAGE_SIZE));
-        		logger.info("Setting max message to {}",maxMessageSize);
+        		grpcMaxMessageSize =Integer.parseInt(annotations.get(SeldonGrpcServer.ANNOTATION_MAX_MESSAGE_SIZE));
+        		logger.info("Setting max message to {} bytes",grpcMaxMessageSize);
         	}
         	catch(NumberFormatException e)
         	{
         		logger.error("Failed to parse {} with value {}",SeldonGrpcServer.ANNOTATION_MAX_MESSAGE_SIZE,annotations.get(SeldonGrpcServer.ANNOTATION_MAX_MESSAGE_SIZE),e);
         	}
         }
+    	logger.info("gRPC max message size set to {}",grpcMaxMessageSize);
+    	if (annotations.has(ANNOTATION_GRPC_READ_TIMEOUT))
+        {
+        	try 
+        	{
+        		grpcReadTimeout = Integer.parseInt(annotations.get(ANNOTATION_GRPC_READ_TIMEOUT));
+        		logger.info("Setting grpc read timeout to {}ms",grpcReadTimeout);
+        	}
+        	catch(NumberFormatException e)
+        	{
+        		logger.error("Failed to parse {} with value {}",ANNOTATION_GRPC_READ_TIMEOUT,annotations.get(ANNOTATION_GRPC_READ_TIMEOUT),e);
+        	}
+        }
+    	logger.info("gRPC read timeout set to {}",grpcReadTimeout);
     }
     
     public SeldonMessage route(SeldonMessage input, PredictiveUnitState state) throws InvalidProtocolBufferException
@@ -143,16 +163,16 @@ public class InternalPredictionService {
 			case GRPC:
 				if (state.type==PredictiveUnitType.UNKNOWN_TYPE){
 					GenericBlockingStub stub =  GenericGrpc.newBlockingStub(getChannel(endpoint))
-							.withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS)
-							.withMaxInboundMessageSize(maxMessageSize)
-							.withMaxOutboundMessageSize(maxMessageSize);
+							.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
+							.withMaxInboundMessageSize(grpcMaxMessageSize)
+							.withMaxOutboundMessageSize(grpcMaxMessageSize);
 					return stub.route(input);
 				}
 				else {
 					RouterBlockingStub stub =  RouterGrpc.newBlockingStub(getChannel(endpoint))
-							.withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS)
-							.withMaxInboundMessageSize(maxMessageSize)
-							.withMaxOutboundMessageSize(maxMessageSize);
+							.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
+							.withMaxInboundMessageSize(grpcMaxMessageSize)
+							.withMaxOutboundMessageSize(grpcMaxMessageSize);
 					return stub.route(input);
 				}
 		}
@@ -170,16 +190,16 @@ public class InternalPredictionService {
 			case GRPC:
 				if (state.type==PredictiveUnitType.UNKNOWN_TYPE){
 					GenericBlockingStub stub =  GenericGrpc.newBlockingStub(getChannel(endpoint))
-							.withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS)
-							.withMaxInboundMessageSize(maxMessageSize)
-							.withMaxOutboundMessageSize(maxMessageSize);
+							.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
+							.withMaxInboundMessageSize(grpcMaxMessageSize)
+							.withMaxOutboundMessageSize(grpcMaxMessageSize);
 					return stub.sendFeedback(feedback);
 				}
 				else {
 					RouterBlockingStub routerStub =  RouterGrpc.newBlockingStub(getChannel(endpoint))
-							.withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS)
-							.withMaxInboundMessageSize(maxMessageSize)
-							.withMaxOutboundMessageSize(maxMessageSize);
+							.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
+							.withMaxInboundMessageSize(grpcMaxMessageSize)
+							.withMaxOutboundMessageSize(grpcMaxMessageSize);
 					return routerStub.sendFeedback(feedback);
 				}
 		}
@@ -203,21 +223,21 @@ public class InternalPredictionService {
 				switch (state.type){
 					case UNKNOWN_TYPE:
 						GenericBlockingStub genStub = GenericGrpc.newBlockingStub(getChannel(endpoint))
-							.withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS)
-							.withMaxInboundMessageSize(maxMessageSize)
-							.withMaxOutboundMessageSize(maxMessageSize);
+							.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
+							.withMaxInboundMessageSize(grpcMaxMessageSize)
+							.withMaxOutboundMessageSize(grpcMaxMessageSize);
 						return genStub.transformInput(input);
 					case MODEL:
 						ModelBlockingStub modelStub = ModelGrpc.newBlockingStub(getChannel(endpoint))
-							.withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS)
-							.withMaxInboundMessageSize(maxMessageSize)
-							.withMaxOutboundMessageSize(maxMessageSize);
+							.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
+							.withMaxInboundMessageSize(grpcMaxMessageSize)
+							.withMaxOutboundMessageSize(grpcMaxMessageSize);
 						return modelStub.predict(input);
 					case TRANSFORMER:
 						TransformerBlockingStub transformerStub = TransformerGrpc.newBlockingStub(getChannel(endpoint))
-						.withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS)
-						.withMaxInboundMessageSize(maxMessageSize)
-						.withMaxOutboundMessageSize(maxMessageSize);
+						.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
+						.withMaxInboundMessageSize(grpcMaxMessageSize)
+						.withMaxOutboundMessageSize(grpcMaxMessageSize);
 						return transformerStub.transformInput(input);
 					default:
 						throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,"Unhandled type");
@@ -237,16 +257,16 @@ public class InternalPredictionService {
 			case GRPC:
 				if (state.type==PredictiveUnitType.UNKNOWN_TYPE){
 					GenericBlockingStub stub =  GenericGrpc.newBlockingStub(getChannel(endpoint))
-							.withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS)
-							.withMaxInboundMessageSize(maxMessageSize)
-							.withMaxOutboundMessageSize(maxMessageSize);
+							.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
+							.withMaxInboundMessageSize(grpcMaxMessageSize)
+							.withMaxOutboundMessageSize(grpcMaxMessageSize);
 					return stub.transformOutput(output);
 				}
 				else {
 					OutputTransformerBlockingStub stub =  OutputTransformerGrpc.newBlockingStub(getChannel(endpoint))
-							.withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS)
-							.withMaxInboundMessageSize(maxMessageSize)
-							.withMaxOutboundMessageSize(maxMessageSize);
+							.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
+							.withMaxInboundMessageSize(grpcMaxMessageSize)
+							.withMaxOutboundMessageSize(grpcMaxMessageSize);
 					return stub.transformOutput(output);
 				}
 		}
@@ -264,16 +284,16 @@ public class InternalPredictionService {
 			case GRPC:
 				if (state.type==PredictiveUnitType.UNKNOWN_TYPE){
 					GenericBlockingStub stub =  GenericGrpc.newBlockingStub(getChannel(endpoint))
-							.withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS)
-							.withMaxInboundMessageSize(maxMessageSize)
-							.withMaxOutboundMessageSize(maxMessageSize);
+							.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
+							.withMaxInboundMessageSize(grpcMaxMessageSize)
+							.withMaxOutboundMessageSize(grpcMaxMessageSize);
 					return stub.aggregate(outputsList);
 				}
 				else {
 					CombinerBlockingStub stub = CombinerGrpc.newBlockingStub(getChannel(endpoint))
-							.withDeadlineAfter(TIMEOUT, TimeUnit.SECONDS)
-							.withMaxInboundMessageSize(maxMessageSize)
-							.withMaxOutboundMessageSize(maxMessageSize);
+							.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
+							.withMaxInboundMessageSize(grpcMaxMessageSize)
+							.withMaxOutboundMessageSize(grpcMaxMessageSize);
 					return stub.aggregate(outputsList);
 				}
 		}

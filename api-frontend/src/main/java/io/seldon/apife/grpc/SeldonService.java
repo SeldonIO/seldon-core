@@ -47,7 +47,7 @@ public class SeldonService extends SeldonGrpc.SeldonImplBase {
         {
             ManagedChannel channel = server.getChannel();
             final SeldonGrpc.SeldonBlockingStub blockingStub = SeldonGrpc.newBlockingStub(channel)
-            		.withDeadlineAfter(SeldonGrpcServer.TIMEOUT, TimeUnit.SECONDS)
+            		.withDeadlineAfter(server.getReadTimeout(), TimeUnit.MILLISECONDS)
 					.withMaxInboundMessageSize(server.getMaxMessageSize())
 					.withMaxOutboundMessageSize(server.getMaxMessageSize());
             responseObserver.onNext(blockingStub.predict(request));
@@ -65,7 +65,10 @@ public class SeldonService extends SeldonGrpc.SeldonImplBase {
         try
         {
             ManagedChannel channel = server.getChannel();
-            final SeldonGrpc.SeldonBlockingStub blockingStub = SeldonGrpc.newBlockingStub(channel);
+            final SeldonGrpc.SeldonBlockingStub blockingStub = SeldonGrpc.newBlockingStub(channel)
+            		.withDeadlineAfter(server.getReadTimeout(), TimeUnit.MILLISECONDS)
+					.withMaxInboundMessageSize(server.getMaxMessageSize())
+					.withMaxOutboundMessageSize(server.getMaxMessageSize());
             responseObserver.onNext(blockingStub.sendFeedback(request));
         }
         catch (SeldonAPIException e)
