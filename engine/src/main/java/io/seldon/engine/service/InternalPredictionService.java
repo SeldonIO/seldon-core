@@ -25,6 +25,7 @@ import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -73,6 +74,12 @@ public class InternalPredictionService {
 	public static final String MODEL_IMAGE_HEADER = "Seldon-model-image"; 
 	public static final String MODEL_VERSION_HEADER = "Seldon-model-version";
 	
+    public final static String ANNOTATION_REST_CONNECTION_TIMEOUT = "seldon.io/rest-connection-timeout";
+    public final static String ANNOTATION_REST_READ_TIMEOUT = "seldon.io/rest-read-timeout";
+
+	private static final int DEFAULT_CONNECTION_TIMEOUT = 5000;
+	private static final int DEFAULT_READ_TIMEOUT = 10000;
+	
 	public static final int TIMEOUT = 5;
 	
     ObjectMapper mapper = new ObjectMapper();
@@ -82,8 +89,35 @@ public class InternalPredictionService {
     private int maxMessageSize = io.grpc.internal.GrpcUtil.DEFAULT_MAX_MESSAGE_SIZE;
     
     @Autowired
-    public InternalPredictionService(RestTemplate restTemplate,AnnotationsConfig annotations){
-    	this.restTemplate = restTemplate;
+    public InternalPredictionService(RestTemplateBuilder restTemplateBuilder,AnnotationsConfig annotations){
+    	int connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
+    	if (annotations.has(ANNOTATION_REST_CONNECTION_TIMEOUT))
+    	{
+    		try
+    		{
+    			connectionTimeout = Integer.parseInt(annotations.get(ANNOTATION_REST_CONNECTION_TIMEOUT));
+    		}
+    		catch(NumberFormatException e)
+    		{
+    			logger.error("Failed to parse REST connection timeout annotation {} with value {}",ANNOTATION_REST_CONNECTION_TIMEOUT,annotations.get(ANNOTATION_REST_CONNECTION_TIMEOUT));
+    		}
+    	}
+    	int readTimeout = DEFAULT_READ_TIMEOUT;
+    	if (annotations.has(ANNOTATION_REST_READ_TIMEOUT))
+    	{
+    		try
+    		{
+    			connectionTimeout = Integer.parseInt(annotations.get(ANNOTATION_REST_READ_TIMEOUT));
+    		}
+    		catch(NumberFormatException e)
+    		{
+    			logger.error("Failed to parse REST read timeout annotation {} with value {}",ANNOTATION_REST_READ_TIMEOUT,annotations.get(ANNOTATION_REST_READ_TIMEOUT));
+    		}
+    	}
+    	this.restTemplate = restTemplateBuilder
+    	           .setConnectTimeout(connectionTimeout)
+    	           .setReadTimeout(readTimeout)
+    	           .build();
     	if (annotations.has(SeldonGrpcServer.ANNOTATION_MAX_MESSAGE_SIZE))
         {
         	try 
@@ -93,7 +127,7 @@ public class InternalPredictionService {
         	}
         	catch(NumberFormatException e)
         	{
-        		logger.warn("Failed to parse {} with value {}",SeldonGrpcServer.ANNOTATION_MAX_MESSAGE_SIZE,annotations.get(SeldonGrpcServer.ANNOTATION_MAX_MESSAGE_SIZE),e);
+        		logger.error("Failed to parse {} with value {}",SeldonGrpcServer.ANNOTATION_MAX_MESSAGE_SIZE,annotations.get(SeldonGrpcServer.ANNOTATION_MAX_MESSAGE_SIZE),e);
         	}
         }
     }

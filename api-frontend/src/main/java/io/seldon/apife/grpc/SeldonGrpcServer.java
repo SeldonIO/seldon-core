@@ -61,6 +61,7 @@ public class SeldonGrpcServer    {
     private final grpcDeploymentsListener grpcDeploymentsListener;
     private final DeploymentsHandler deploymentsHandler;
     
+    public static final int TIMEOUT = 5;
     private int maxMessageSize = io.grpc.internal.GrpcUtil.DEFAULT_MAX_MESSAGE_SIZE;
     
     @Autowired
