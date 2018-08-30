@@ -11,7 +11,9 @@
         "annotations": {
             "project_name": "FX Market Prediction",
             "deployment_version": "v1",
-	    "seldon.io/rest-read-timeout":"10000"
+	    "seldon.io/rest-read-timeout":"10000",
+	    "seldon.io/rest-connection-timeout":"10000",	    
+	    "seldon.io/grpc-read-timeout":"10000",	    
         },
         "name": "test-deployment",
         "oauth_key": "oauth-key",
