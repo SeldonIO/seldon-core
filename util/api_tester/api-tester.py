@@ -134,7 +134,7 @@ def unfold_contract(contract):
 
 def get_token(args):
     payload = {'grant_type': 'client_credentials'}
-    if "oauth_port" in args:
+    if "oauth_port" in args and not args.oauth_port is None:
         port = args.oauth_port
     else:
         port = args.port
