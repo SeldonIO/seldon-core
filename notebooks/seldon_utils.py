@@ -6,8 +6,8 @@ import grpc
 import numpy as np
 
 def create_random_data(data_size):
-    shape = [1,data_size]
-    arr = np.random.rand(data_size)
+    shape = [2,data_size]
+    arr = np.random.rand(2*data_size)
     return (shape,arr)
 
 def get_token(oauth_key,oauth_secret,endpoint):
