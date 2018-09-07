@@ -51,7 +51,7 @@ public class EnginePredictor {
     private final static String ENGINE_SELDON_DEPLOYMENT_KEY = "ENGINE_SELDON_DEPLOYMENT";
 
     private PredictorSpec predictorSpec = null;
-    private SeldonDeployment seldonDeployment = null;
+    //private SeldonDeployment seldonDeployment = null;
 
     public void init() throws Exception {
         logger.info("init");
@@ -91,26 +91,6 @@ public class EnginePredictor {
                 }
                 predictorSpec = PredictorSpecBuilder.build();
             }
-            
-            //Get overall deployment
-            {
-                String engineDeploymentBase64Encoded = System.getenv().get(ENGINE_SELDON_DEPLOYMENT_KEY);
-                if (engineDeploymentBase64Encoded != null)
-                {
-                    byte[] engineDeploymentBytes = Base64.getDecoder().decode(engineDeploymentBase64Encoded);
-                    String engineDeploymentJson = new String(engineDeploymentBytes);
-                    SeldonDeployment.Builder depBuilder = SeldonDeployment.newBuilder();
-                    try {
-                        updateMessageBuilderFromJson(depBuilder, engineDeploymentJson);
-                    } catch (Exception e) {
-                        logger.error("FAILED extracting SeldonDeployment from env var [{}]", ENGINE_SELDON_DEPLOYMENT_KEY,e);
-                        throw e;
-                    }
-                    seldonDeployment = depBuilder.build();
-                }
-                else
-                    logger.warn("Failed to find SeldonDeployment in [{}]",ENGINE_SELDON_DEPLOYMENT_KEY);
-            }
         }
 
         logger.info("Installed engine predictor: {}", toJson(predictorSpec, true));
@@ -124,9 +104,7 @@ public class EnginePredictor {
         return predictorSpec;
     }
 
-    public SeldonDeployment getSeldonDeployment() {
-        return seldonDeployment;
-    }
+   
 
     private static PredictorSpec buildDefaultPredictorSpec() {
 

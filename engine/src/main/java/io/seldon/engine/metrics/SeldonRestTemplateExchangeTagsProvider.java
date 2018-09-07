@@ -33,14 +33,11 @@ import io.seldon.engine.service.InternalPredictionService;
 @Component
 public class SeldonRestTemplateExchangeTagsProvider implements RestTemplateExchangeTagsProvider {
 
-	private final static String PROJECT_ANNOTATION_KEY = "project_name";
 	private final static String PREDICTOR_NAME_METRIC = "predictor_name";
 	private final static String PREDICTOR_VERSION_METRIC = "predictor_version";
 	private final static String MODEL_NAME_METRIC = "model_name";
 	private final static String MODEL_IMAGE_METRIC = "model_image";
 	private final static String MODEL_VERSION_METRIC = "model_version";
-	private final static String DEPLOYMENT_NAME_METRIC = "deployment_name";
-	private final static String DEPLOYMENT_VERSION_METRIC = "deployment_version";
 
 	@Autowired
 	EnginePredictor enginePredictor;
@@ -58,19 +55,13 @@ public class SeldonRestTemplateExchangeTagsProvider implements RestTemplateExcha
 	            modelName(request),
 	            modelImage(request),
 	            modelVersion(request),
-	            projectName(),
-	            deploymentName(),
-	            deploymentVersion(),
-	            predictorName(),
+		        predictorName(),
 	            predictorVersion());
 	}
 	
 	public Iterable<Tag> getModelMetrics(PredictiveUnitState state)
 	{
 		return Arrays.asList(
-				 projectName(),
-				 deploymentName(),
-				 deploymentVersion(),
 				 predictorName(),
 				 predictorVersion(),
 				 modelName(state.name),
@@ -78,29 +69,7 @@ public class SeldonRestTemplateExchangeTagsProvider implements RestTemplateExcha
 				 modelVersion(state.imageVersion));
 	}
 	
-	private Tag projectName()
-	{
-        if (enginePredictor.getSeldonDeployment() == null)
-            return Tag.of(DEPLOYMENT_NAME_METRIC, "None");
-        else
-            return Tag.of(PROJECT_ANNOTATION_KEY,enginePredictor.getSeldonDeployment().getSpec().getAnnotationsOrDefault(PROJECT_ANNOTATION_KEY, "unknown"));
-	}
 	
-	private Tag deploymentName()
-	{
-        if (enginePredictor.getSeldonDeployment() == null)
-            return Tag.of(DEPLOYMENT_NAME_METRIC, "None");
-        else
-            return Tag.of(DEPLOYMENT_NAME_METRIC,enginePredictor.getSeldonDeployment().getSpec().getName());
-	}
-	
-    private Tag deploymentVersion()
-    {
-        if (enginePredictor.getSeldonDeployment() == null)
-            return Tag.of(DEPLOYMENT_VERSION_METRIC, "None");
-        else
-            return Tag.of(DEPLOYMENT_VERSION_METRIC,enginePredictor.getSeldonDeployment().getSpec().getAnnotationsOrDefault(DEPLOYMENT_VERSION_METRIC, "None"));
-    }
 
 	
 	
@@ -114,10 +83,10 @@ public class SeldonRestTemplateExchangeTagsProvider implements RestTemplateExcha
 	
 	private Tag predictorVersion()
 	{
-		if (!StringUtils.hasText(enginePredictor.getPredictorSpec().getAnnotationsOrDefault(PREDICTOR_VERSION_METRIC, "")))
+		if (!StringUtils.hasText(enginePredictor.getPredictorSpec().getLabelsOrDefault("version", "")))
 			return Tag.of(PREDICTOR_VERSION_METRIC, "unknown");
 		else
-			return Tag.of(PREDICTOR_VERSION_METRIC, enginePredictor.getPredictorSpec().getAnnotationsOrDefault(PREDICTOR_VERSION_METRIC, ""));
+			return Tag.of(PREDICTOR_VERSION_METRIC, enginePredictor.getPredictorSpec().getLabelsOrDefault("version", ""));
 	}
 
 	private Tag modelName(HttpRequest request)
