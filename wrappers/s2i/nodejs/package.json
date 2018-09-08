@@ -1,0 +1,19 @@
+{
+  "name": "nodejs",
+  "version": "1.0.0",
+  "description": "A seldon-core wrapper for nodejs models",
+  "main": "microservice.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "SachinVarghese",
+  "license": "ISC",
+  "dependencies": {
+    "argparse": "1.0.10",
+    "body-parser": "1.18.3",
+    "express": "4.16.3"
+  }
+}
