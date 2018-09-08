@@ -141,6 +141,7 @@ Three steps:
 
  - [Kubecon Europe 2018 - Serving Machine Learning Models at Scale with Kubeflow and Seldon](https://www.youtube.com/watch?v=pDlapGtecbY)
  - [AI on Kubernetes - O'Reilly Tutorial](https://github.com/dwhitena/oreilly-ai-k8s-tutorial)
+ - [Scalable Data Science - The State of DevOps/MLOps in 2018](https://axsauze.github.io/scalable-data-science/#/)
  - [Istio Weekly Community Meeting - Seldon-core with Istio](https://www.youtube.com/watch?v=ydculT4e7FQ&feature=youtu.be&t=7m48s)
  - [Openshift Commons ML SIG - Openshift S2I Helping ML Deployment with Seldon-Core](https://www.youtube.com/watch?v=1uZPBcfYxlM)
  - [Overview of Openshift source-to-image use in Seldon-Core](./docs/articles/openshift_s2i.md)
