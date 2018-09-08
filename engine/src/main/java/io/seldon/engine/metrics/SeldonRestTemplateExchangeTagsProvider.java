@@ -33,6 +33,7 @@ import io.seldon.engine.service.InternalPredictionService;
 @Component
 public class SeldonRestTemplateExchangeTagsProvider implements RestTemplateExchangeTagsProvider {
 
+	private final static String DEPLOYMENT_NAME_METRIC = "deployment_name";
 	private final static String PREDICTOR_NAME_METRIC = "predictor_name";
 	private final static String PREDICTOR_VERSION_METRIC = "predictor_version";
 	private final static String MODEL_NAME_METRIC = "model_name";
@@ -52,6 +53,7 @@ public class SeldonRestTemplateExchangeTagsProvider implements RestTemplateExcha
 		return Arrays.asList(RestTemplateExchangeTags.method(request), uriTag,
 				RestTemplateExchangeTags.status(response),
 	            RestTemplateExchangeTags.clientName(request),
+	            deploymentName(),
 	            modelName(request),
 	            modelImage(request),
 	            modelVersion(request),
@@ -62,6 +64,7 @@ public class SeldonRestTemplateExchangeTagsProvider implements RestTemplateExcha
 	public Iterable<Tag> getModelMetrics(PredictiveUnitState state)
 	{
 		return Arrays.asList(
+				 deploymentName(),
 				 predictorName(),
 				 predictorVersion(),
 				 modelName(state.name),
@@ -70,7 +73,10 @@ public class SeldonRestTemplateExchangeTagsProvider implements RestTemplateExcha
 	}
 	
 	
-
+    private Tag deploymentName()
+    {
+    	return Tag.of(DEPLOYMENT_NAME_METRIC, enginePredictor.getDeploymentName());
+    }
 	
 	
 	private Tag predictorName()

@@ -136,7 +136,8 @@ Three steps:
 
  - [Prediction API](./docs/reference/prediction.md)
  - [Seldon Deployment Custom Resource](./docs/reference/seldon-deployment.md)
-
+ - [Analytics](./docs/analytics.md)
+ 
 ## Articles/Blogs/Videos
 
  - [Kubecon Europe 2018 - Serving Machine Learning Models at Scale with Kubeflow and Seldon](https://www.youtube.com/watch?v=pDlapGtecbY)

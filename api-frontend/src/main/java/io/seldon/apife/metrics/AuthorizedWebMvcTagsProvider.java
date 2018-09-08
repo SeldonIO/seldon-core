@@ -32,9 +32,7 @@ import io.seldon.apife.deployments.DeploymentStore;
 @Component
 public class AuthorizedWebMvcTagsProvider extends DefaultWebMvcTagsProvider {
 
-	private final static String PROJECT_ANNOTATION_KEY = "project_name";
 	private final static String DEPLOYMENT_NAME_METRIC = "deployment_name";
-	private final static String DEPLOYMENT_VERSION_METRIC = "deployment_version";
 	private final static String PRINCIPAL_METRIC = "principal";
 	
 	@Autowired
@@ -51,12 +49,8 @@ public class AuthorizedWebMvcTagsProvider extends DefaultWebMvcTagsProvider {
 
 		return asList(WebMvcTags.method(request), WebMvcTags.uri(request), WebMvcTags.exception(ex), WebMvcTags.status(response),
 				principal(principalName),
-                projectName(principalName),
-				deploymentName(principalName),
-                deploymentVersion(principalName)
+				deploymentName(principalName)
                 );
-
-		
 	}
 	
 	 public Tag principal(String principalName) {
@@ -64,22 +58,6 @@ public class AuthorizedWebMvcTagsProvider extends DefaultWebMvcTagsProvider {
 			 return Tag.of(PRINCIPAL_METRIC, "None");
 		 else
 			 return Tag.of(PRINCIPAL_METRIC, principalName);
-	 }
-
-	 public Tag projectName(String principalName)
-	 {
-		 if (principalName != null)
-			 return Tag.of(PROJECT_ANNOTATION_KEY,deploymentStore.getDeployment(principalName).getAnnotationsOrDefault(PROJECT_ANNOTATION_KEY, "unknown"));
-		 else
-			 return Tag.of(PROJECT_ANNOTATION_KEY, "None");
-	 }
-	 
-	 public Tag deploymentVersion(String principalName)
-	 {
-		 if (principalName == null || !StringUtils.hasText(deploymentStore.getDeployment(principalName).getAnnotationsOrDefault(DEPLOYMENT_VERSION_METRIC, "")))
-			 return Tag.of(DEPLOYMENT_VERSION_METRIC, "None");
-		 else
-			 return Tag.of(DEPLOYMENT_VERSION_METRIC,deploymentStore.getDeployment(principalName).getAnnotationsOrDefault(DEPLOYMENT_VERSION_METRIC, ""));
 	 }
 
 	 public Tag deploymentName(String principalName)
