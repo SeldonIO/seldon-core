@@ -106,7 +106,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 	}
 	
 	static final String ENGINE_JAVA_OPTS="-Dcom.sun.management.jmxremote.rmi.port=9090 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9090 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.local.only=false -Djava.rmi.server.hostname=127.0.0.1";
-	private V1.Container createEngineContainer(PredictorSpec predictorDef) throws SeldonDeploymentException
+	private V1.Container createEngineContainer(SeldonDeployment mlDep,PredictorSpec predictorDef) throws SeldonDeploymentException
 	{
 		V1.Container.Builder cBuilder = V1.Container.newBuilder();
 		
@@ -115,6 +115,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			.setImage(clusterManagerProperites.getEngineContainerImageAndVersion())
 			.addVolumeMounts(VolumeMount.newBuilder().setName(PODINFO_VOLUME_NAME).setMountPath(PODINFO_VOLUME_PATH).setReadOnly(true))
 			.addEnv(EnvVar.newBuilder().setName("ENGINE_PREDICTOR").setValue(getEngineEnvVarJson(predictorDef)))
+			.addEnv(EnvVar.newBuilder().setName("DEPLOYMENT_NAME").setValue(mlDep.getSpec().getName()))		
 			.addEnv(EnvVar.newBuilder().setName("ENGINE_SERVER_PORT").setValue(""+clusterManagerProperites.getEngineContainerPort()))
 			.addEnv(EnvVar.newBuilder().setName("ENGINE_SERVER_GRPC_PORT").setValue(""+clusterManagerProperites.getEngineGrpcContainerPort()))			
 			.addEnv(EnvVar.newBuilder().setName("JAVA_OPTS").setValue(ENGINE_JAVA_OPTS))						
@@ -546,7 +547,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			{//Deployment for engine service orchestrator
 				PodTemplateSpec.Builder podSpecBuilder = PodTemplateSpec.newBuilder();
 				podSpecBuilder.getSpecBuilder()
-		    	.addContainers(createEngineContainer(p))
+		    	.addContainers(createEngineContainer(mlDep,p))
 		    	.setTerminationGracePeriodSeconds(20)
 		    	.addVolumes(Volume.newBuilder() // Add downwardAPI volume for annotations
 		    			.setName(PODINFO_VOLUME_NAME)

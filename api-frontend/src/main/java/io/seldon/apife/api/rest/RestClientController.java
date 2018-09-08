@@ -184,7 +184,7 @@ public class RestClientController {
 			Feedback.Builder builder = Feedback.newBuilder();
 			ProtoBufUtils.updateMessageBuilderFromJson(builder, requestEntity.getBody() );
 			feedback = builder.build();
-			Iterable<Tag> tags = asList(tagsProvider.principal(clientId),tagsProvider.projectName(clientId),tagsProvider.deploymentName(clientId),tagsProvider.deploymentVersion(clientId));
+			Iterable<Tag> tags = asList(tagsProvider.principal(clientId),tagsProvider.deploymentName(clientId));
 			Counter.builder("seldon_api_ingress_server_feedback_reward").tags(tags).register(Metrics.globalRegistry).increment(feedback.getReward());
 			Counter.builder("seldon_api_ingress_server_feedback").tags(tags).register(Metrics.globalRegistry).increment();
 		} 

@@ -49,9 +49,10 @@ public class EnginePredictor {
     private final static Logger logger = LoggerFactory.getLogger(EnginePredictor.class);
     private final static String ENGINE_PREDICTOR_KEY = "ENGINE_PREDICTOR";
     private final static String ENGINE_SELDON_DEPLOYMENT_KEY = "ENGINE_SELDON_DEPLOYMENT";
+    private final static String DEPLOYMENT_NAME_KEY = "DEPLOYMENT_NAME";
 
     private PredictorSpec predictorSpec = null;
-    //private SeldonDeployment seldonDeployment = null;
+    private String deploymentName = "None";
 
     public void init() throws Exception {
         logger.info("init");
@@ -91,6 +92,15 @@ public class EnginePredictor {
                 }
                 predictorSpec = PredictorSpecBuilder.build();
             }
+            
+            String depName = System.getenv().get(DEPLOYMENT_NAME_KEY);
+            if (depName != null)
+            {
+            	this.deploymentName = depName;
+            	logger.info("Setting deployment name to {}",deploymentName);
+            }
+            else
+            	logger.warn("No deployment name found in environment!");
         }
 
         logger.info("Installed engine predictor: {}", toJson(predictorSpec, true));
@@ -104,9 +114,11 @@ public class EnginePredictor {
         return predictorSpec;
     }
 
-   
+    public String getDeploymentName() {
+		return deploymentName;
+	}
 
-    private static PredictorSpec buildDefaultPredictorSpec() {
+	private static PredictorSpec buildDefaultPredictorSpec() {
 
         //@formatter:off
         PredictorSpec.Builder predictorSpecBuilder = PredictorSpec.newBuilder()
