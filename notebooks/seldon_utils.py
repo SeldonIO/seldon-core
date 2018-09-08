@@ -5,9 +5,9 @@ from proto import prediction_pb2_grpc
 import grpc
 import numpy as np
 
-def create_random_data(data_size):
-    shape = [2,data_size]
-    arr = np.random.rand(2*data_size)
+def create_random_data(data_size,rows=1):
+    shape = [rows,data_size]
+    arr = np.random.rand(rows*data_size)
     return (shape,arr)
 
 def get_token(oauth_key,oauth_secret,endpoint):
@@ -21,9 +21,9 @@ def get_token(oauth_key,oauth_secret,endpoint):
     return token
 
     
-def rest_request_api_gateway(oauth_key,oauth_secret,endpoint="localhost:8002",data_size=5):
+def rest_request_api_gateway(oauth_key,oauth_secret,endpoint="localhost:8002",data_size=5,rows=1):
     token = get_token(oauth_key,oauth_secret,endpoint)
-    shape, arr = create_random_data(data_size)
+    shape, arr = create_random_data(data_size,rows)
     headers = {'Authorization': 'Bearer '+token}
     payload = {"data":{"tensor":{"shape":shape,"values":arr.tolist()}}}
     response = requests.post(
@@ -32,9 +32,9 @@ def rest_request_api_gateway(oauth_key,oauth_secret,endpoint="localhost:8002",da
                 json=payload)
     print(response.text)
 
-def grpc_request_api_gateway(oauth_key,oauth_secret,rest_endpoint="localhost:8002",grpc_endpoint="localhost:8003",data_size=5):
+def grpc_request_api_gateway(oauth_key,oauth_secret,rest_endpoint="localhost:8002",grpc_endpoint="localhost:8003",data_size=5,rows=1):
     token = get_token(oauth_key,oauth_secret,rest_endpoint)
-    shape, arr = create_random_data(data_size)
+    shape, arr = create_random_data(data_size,rows)
     datadef = prediction_pb2.DefaultData(
             tensor = prediction_pb2.Tensor(
                 shape = shape,
@@ -48,8 +48,8 @@ def grpc_request_api_gateway(oauth_key,oauth_secret,rest_endpoint="localhost:800
     response = stub.Predict(request=request,metadata=metadata)
     print(response)
 
-def rest_request_ambassador(deploymentName,endpoint="localhost:8003",data_size=5):
-        shape, arr = create_random_data(data_size)
+def rest_request_ambassador(deploymentName,endpoint="localhost:8003",data_size=5,rows=1):
+        shape, arr = create_random_data(data_size,rows)
         payload = {"data":{"names":["a","b"],"tensor":{"shape":shape,"values":arr.tolist()}}}
         response = requests.post(
             "http://"+endpoint+"/seldon/"+deploymentName+"/api/v0.1/predictions",
@@ -57,8 +57,8 @@ def rest_request_ambassador(deploymentName,endpoint="localhost:8003",data_size=5
         print(response.status_code)
         print(response.text)
 
-def rest_request_ambassador_auth(deploymentName,username,password,endpoint="localhost:8003",data_size=5):
-    shape, arr = create_random_data(data_size)    
+def rest_request_ambassador_auth(deploymentName,username,password,endpoint="localhost:8003",data_size=5,rows=1):
+    shape, arr = create_random_data(data_size,rows)    
     payload = {"data":{"names":["a","b"],"tensor":{"shape":shape,"values":arr.tolist()}}}
     response = requests.post(
         "http://"+endpoint+"/seldon/"+deploymentName+"/api/v0.1/predictions",
@@ -68,8 +68,8 @@ def rest_request_ambassador_auth(deploymentName,username,password,endpoint="loca
     print(response.text)
                     
         
-def grpc_request_ambassador(deploymentName,endpoint="localhost:8004",data_size=5):
-    shape, arr = create_random_data(data_size)
+def grpc_request_ambassador(deploymentName,endpoint="localhost:8004",data_size=5,rows=1):
+    shape, arr = create_random_data(data_size,rows)
     datadef = prediction_pb2.DefaultData(
             tensor = prediction_pb2.Tensor(
                 shape = shape,
