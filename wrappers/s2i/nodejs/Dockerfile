@@ -2,22 +2,14 @@ FROM node:latest
 
 LABEL io.openshift.s2i.scripts-url="image:///s2i/bin"
 
-RUN apt-get update -qq && apt-get install -y \
-      git-core \
-      libssl-dev \
-      libcurl4-gnutls-dev
-
-RUN Rscript -e "install.packages('devtools')"
-RUN Rscript -e "install.packages('plumber')"
-RUN Rscript -e "install.packages('optparse')"
-RUN Rscript -e "install.packages('jsonlite')"
-RUN Rscript -e "install.packages('urltools')"
-RUN Rscript -e "install.packages('caret')"
-
 RUN mkdir microservice
 WORKDIR /microservice
 
 COPY microservice.js /microservice
+
+COPY package.json /microservice
+
+RUN npm install
 
 COPY ./s2i/bin/ /s2i/bin
 

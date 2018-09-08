@@ -1,7 +1,7 @@
 const tf = require("@tensorflow/tfjs");
 require("@tensorflow/tfjs-node");
 const path = require("path");
-const model_path = "/models/model.json";
+const model_path = "/model.json";
 
 let MyModel = function() {};
 
@@ -10,9 +10,9 @@ MyModel.prototype.init = async function() {
   this.model.compile({ optimizer: "sgd", loss: "meanSquaredError" });
 };
 
-MyModel.prototype.predict = function(data) {
+MyModel.prototype.predict = function(data, names) {
   console.log("Predicting ...");
-  return this.model.predict(tf.tensor2d(data));
+  return this.model.predict(tf.tensor(data.values, data.shape));
 };
 
 module.exports = MyModel;
