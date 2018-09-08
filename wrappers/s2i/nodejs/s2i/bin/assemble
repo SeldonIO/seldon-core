@@ -1,6 +1,6 @@
 #!/bin/bash -e
 #
-# S2I assemble script for the 'seldon-core-s2i-python' image.
+# S2I assemble script for the 'seldon-core-s2i-nodejs' image.
 # The 'assemble' script builds your application source so that it is ready to run.
 #
 # For more information refer to the documentation:
@@ -39,6 +39,7 @@ fi
 
 
 cd /microservice
+mkdir model
 
 # Restore artifacts from the previous build (if they exist).
 #
@@ -48,10 +49,11 @@ if [ "$(ls /tmp/artifacts/ 2>/dev/null)" ]; then
 fi
 
 echo "---> Installing application source..."
-cp -Rf /tmp/src/. ./
+cp -Rf /tmp/src/. ./model/
 
-if [[ -f install.R ]]; then
+if [[ -f package.json ]]; then
   echo "---> Installing dependencies ..."
-  Rscript install.R
+  cd model
+  npm install
 fi
 

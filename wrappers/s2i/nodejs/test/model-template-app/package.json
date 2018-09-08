@@ -5,7 +5,7 @@
   "main": "predict.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node predict.js"
+    "start": "node train.js"
   },
   "engines": {
     "node": ">=8.11.0"
