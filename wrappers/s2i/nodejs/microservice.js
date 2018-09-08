@@ -34,7 +34,7 @@ parser.addArgument("--service", {
   type: "string",
   help: "Service type"
 });
-parser.addArgument("--persistance", {
+parser.addArgument("--persistence", {
   type: "int",
   defaultValue: 0,
   help: "Persistance present or not"
