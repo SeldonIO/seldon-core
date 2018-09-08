@@ -5,8 +5,7 @@ const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
 
 loadModel = async function(model) {
-  // model = "./model/" + model;
-  model = "/media/sachin/Docs/nodejs/test/model-template-app/" + model;
+  model = "./model/" + model;
 
   try {
     const MyModel = require(model);
