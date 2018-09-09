@@ -52,20 +52,18 @@ module.exports = MyModel;
 Also the model could be an ES6 class as follows
 
 ```js
-const randomWord = require("random-word");
-
-class classifier {
+class MyModel {
   async init() {
     // A mandatory init method for the class to load run-time dependancies
-    this.model = "My Awesome model";
+    this.model = "My Awesome ES6 model";
   }
   predict(newdata, feature_names) {
     //A mandatory predict function for the model predictions
-    console.log("ES6 Predicting ..." + randomWord());
+    console.log("ES6 Predicting ...");
     return newdata;
   }
 }
-module.exports = classifier;
+module.exports = MyModel;
 ```
 
 - A `init` method for the model object. This will be called on startup and you can use this to load any parameters your model needs. This function may also be an async,for example in case if it has to load the model weights from a remote location.
