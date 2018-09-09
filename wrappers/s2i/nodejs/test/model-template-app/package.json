@@ -5,7 +5,8 @@
   "main": "predict.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node train.js"
+    "start": "node train.js",
+    "predict": "node predict.js"
   },
   "engines": {
     "node": ">=8.11.0"
@@ -13,15 +14,5 @@
   "dependencies": {
     "@tensorflow/tfjs": "0.12.7",
     "@tensorflow/tfjs-node": "0.1.15"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/SachinVarghese/node_tensorflow.git"
-  },
-  "author": "SachinVarghese",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/SachinVarghese/node_tensorflow/issues"
-  },
-  "homepage": "https://github.com/SachinVarghese/node_tensorflow#readme"
+  }
 }
