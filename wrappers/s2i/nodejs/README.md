@@ -6,18 +6,18 @@
 
 - An example model is created at seldon-core/wrappers/s2i/nodejs/test/model-template-app/MyModel.js
 
-```
+```js
 let MyModel = function() {};
 
 MyModel.prototype.init = async function() {
   // A mandatory init method for the class to load run-time dependancies
-  this.model = "My Awesome model"
+  this.model = "My Awesome model";
 };
 
 MyModel.prototype.predict = function(data, names) {
   //A mandatory predict function for the model predictions
   console.log("Predicting ...");
-  return data
+  return data;
 };
 
 module.exports = MyModel;

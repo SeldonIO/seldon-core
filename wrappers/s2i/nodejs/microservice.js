@@ -59,12 +59,7 @@ if (args.service === "MODEL" && args.api === "REST") {
     );
     if (predict) {
       result = predict(body.tensor, body.names);
-      data = await result.data();
-      console.log(result);
-      result.print();
-      res.status(200).send({
-        data: { names: [], tensor: { values: data, shape: result.shape } }
-      });
+      res.status(200).send(result);
     } else {
       res.status(500).send(args.model + " Not Found");
     }
