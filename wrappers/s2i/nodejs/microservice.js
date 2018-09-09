@@ -3,7 +3,7 @@ const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
-
+let predict = null;
 loadModel = async function(model) {
   model = "./model/" + model;
 
@@ -37,11 +37,11 @@ parser.addArgument("--service", {
 parser.addArgument("--persistence", {
   type: "int",
   defaultValue: 0,
-  help: "Persistance present or not"
+  help: "Persistence present or not"
 });
 const args = parser.parseArgs();
 
-console.log(args.model, args.api, args.service, args.persistance);
+console.log(args.model, args.api, args.service, args.persistence);
 
 if (args.service === "MODEL" && args.api === "REST") {
   app.post("/predict", async (req, res) => {
@@ -51,13 +51,7 @@ if (args.service === "MODEL" && args.api === "REST") {
     } catch (msg) {
       res.status(500).send("Cannot parse predict input json " + req.body.json);
     }
-    const predict = await loadModel(
-      args.model,
-      args.api,
-      args.service,
-      args.persistance
-    );
-    if (predict) {
+    if (predict && typeof predict === "function") {
       result = predict(body.tensor, body.names);
       res.status(200).send(result);
     } else {
@@ -66,6 +60,12 @@ if (args.service === "MODEL" && args.api === "REST") {
   });
 }
 
-app.listen(5000, () =>
-  console.log("NodeJs Microservice listening on port 5000!")
-);
+app.listen(5000, async () => {
+  predict = await loadModel(
+    args.model,
+    args.api,
+    args.service,
+    args.persistence
+  );
+  console.log("NodeJs Microservice listening on port 5000!");
+});
