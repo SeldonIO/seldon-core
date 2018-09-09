@@ -5,13 +5,9 @@
         "labels": {
             "app": "seldon"
         },
-        "name": "seldon-deployment-example"
+        "name": "seldon-model"
     },
     "spec": {
-        "annotations": {
-            "project_name": "FX Market Prediction",
-            "deployment_version": "v1"
-        },
         "name": "test-deployment",
         "oauth_key": "oauth-key",
         "oauth_secret": "oauth-secret",
@@ -31,7 +27,7 @@
                                 }
                             }
                         ],
-                        "terminationGracePeriodSeconds": 20
+                        "terminationGracePeriodSeconds": 1
                     }
                 }],
                 "graph": {
@@ -42,10 +38,10 @@
 		    },
                     "type": "MODEL"
                 },
-                "name": "fx-market-predictor",
+                "name": "example",
                 "replicas": 1,
-		"annotations": {
-		    "predictor_version" : "v1"
+		"labels": {
+		    "version" : "v1"
 		}
             }
         ]
