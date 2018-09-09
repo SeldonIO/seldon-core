@@ -43,10 +43,29 @@ MyModel.prototype.init = async function() {
 MyModel.prototype.predict = function(newdata, feature_names) {
   //A mandatory predict function for the model predictions
   console.log("Predicting ...");
-  return data;
+  return newdata;
 };
 
 module.exports = MyModel;
+```
+
+Also the model could be an ES6 class as follows
+
+```js
+const randomWord = require("random-word");
+
+class classifier {
+  async init() {
+    // A mandatory init method for the class to load run-time dependancies
+    this.model = "My Awesome model";
+  }
+  predict(newdata, feature_names) {
+    //A mandatory predict function for the model predictions
+    console.log("ES6 Predicting ..." + randomWord());
+    return newdata;
+  }
+}
+module.exports = classifier;
 ```
 
 - A `init` method for the model object. This will be called on startup and you can use this to load any parameters your model needs. This function may also be an async,for example in case if it has to load the model weights from a remote location.
