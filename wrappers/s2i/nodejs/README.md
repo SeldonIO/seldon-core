@@ -69,3 +69,11 @@ curl  -d 'json={"data":{"names":[],"tensor":{"shape":[1,10],"values":[0,0,1,1,5,
 ```
 
 This command can be utilized to test the internal API of the model component
+
+### Testing the image
+
+```
+cd test/model-template-app && make train && cd ../../
+make test
+cd test/model-template-app && make clean && cd ../../
+```
