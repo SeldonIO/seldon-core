@@ -33,6 +33,7 @@ cluster_manager:
 engine:
   image:
     name: seldonio/engine:0.2.3-SNAPSHOT
+    pull_policy: IfNotPresent
 rbac:
   enabled: true
   rolebinding:

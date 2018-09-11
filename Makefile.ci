@@ -1,8 +1,14 @@
 .PHONY: build
 build:
-	cd cluster-manager && make -f Makefile.ci $@
-	cd api-frontend && make -f Makefile.ci $@
-	cd engine && make -f Makefile.ci clean $@
+	@set -x && cd cluster-manager && make -f Makefile.ci $@
+	@set -x && cd api-frontend && make -f Makefile.ci $@
+	@set -x && cd engine && make -f Makefile.ci clean $@
+
+.PHONY: push_images_private_repo
+push_images_private_repo:
+	@set -x && cd cluster-manager && make -f Makefile.ci push_image_private_repo
+	@set -x && cd api-frontend && make -f Makefile.ci push_image_private_repo
+	@set -x && cd engine && make -f Makefile.ci push_image_private_repo
 
 .PHONY: clean
 clean:
