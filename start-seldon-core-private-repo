@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+set -o xtrace
+
+STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+NAMESPACE=default
+if [[ $# > 0 ]]; then
+    NAMESPACE=$1
+fi
+
+APIFE_VERSION=$(cat ${STARTUP_DIR}/api-frontend/target/version.txt)
+APIFE_IMAGE_NAME=127.0.0.1:5000/seldonio/apife:${APIFE_VERSION}
+
+CLUSTER_MANAGER_VERSION=$(cat ${STARTUP_DIR}/cluster-manager/target/version.txt)
+CLUSTER_MANAGER_IMAGE_NAME=127.0.0.1:5000/seldonio/cluster-manager:${CLUSTER_MANAGER_VERSION}
+
+ENGINE_VERSION=$(cat ${STARTUP_DIR}/engine/target/version.txt)
+ENGINE_IMAGE_NAME=127.0.0.1:5000/seldonio/engine:${ENGINE_VERSION}
+
+helm install "${STARTUP_DIR}/helm-charts/seldon-core-crd" --name seldon-core-crd --set usage_metrics.enabled=true
+helm install "${STARTUP_DIR}/helm-charts/seldon-core" --name seldon-core \
+    --set apife_service_type=LoadBalancer \
+    --set apife.image.pull_policy=Always \
+    --set apife.image.name=$APIFE_IMAGE_NAME \
+    --set cluster_manager.image.pull_policy=Always \
+    --set cluster_manager.image.name=$CLUSTER_MANAGER_IMAGE_NAME \
+    --set engine.image.pull_policy=Always \
+    --set engine.image.name=$ENGINE_IMAGE_NAME \
+    --namespace "${NAMESPACE}"
+
