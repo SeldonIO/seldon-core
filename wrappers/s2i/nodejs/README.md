@@ -72,8 +72,8 @@ This command can be utilized to test the internal API of the model component
 
 ### Testing the image
 
+Make sure the current user can run npm commands.
+
 ```
-cd test/model-template-app && make train && cd ../../
 make test
-cd test/model-template-app && make clean && cd ../../
 ```
