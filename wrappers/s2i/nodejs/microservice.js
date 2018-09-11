@@ -2,11 +2,11 @@ const argparse = require("argparse");
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
+const nj = require("numjs");
 app.use(bodyParser.urlencoded({ extended: true }));
 let predict = null;
 loadModel = async function(model) {
   model = "./model/" + model;
-
   try {
     const MyModel = require(model);
     console.log("Loading Model", model);
@@ -14,8 +14,47 @@ loadModel = async function(model) {
     await x.init();
     return x.predict.bind(x);
   } catch (msg) {
-    return null;
+    return msg;
   }
+};
+
+const get_predict_classNames = function(size) {
+  let className = [];
+  if (size) {
+    for (let i = 0; i < size; i++) {
+      className[i] = "t" + i;
+    }
+  }
+  return className;
+};
+
+const rest_data_to_array = function(data) {
+  if (data["tensor"]) {
+    features = nj
+      .array(data["tensor"]["values"])
+      .reshape(data["tensor"]["shape"]);
+  } else if (data["ndarray"]) {
+    features = nj.array(data["ndarray"]);
+  } else {
+    features = nj.array([]);
+  }
+  return features.tolist();
+};
+
+const array_to_rest_data = function(array, original_datadef) {
+  array = nj.array(array);
+  let data = { names: get_predict_classNames(array.shape[1]) };
+  if (original_datadef["tensor"]) {
+    data["tensor"] = {
+      shape: array.shape.length > 1 ? array.shape : [],
+      values: array.flatten().tolist()
+    };
+  } else if (original_datadef["ndarray"]) {
+    data["ndarray"] = array.tolist();
+  } else {
+    data["ndarray"] = array.tolist();
+  }
+  return data;
 };
 
 const parser = new argparse.ArgumentParser({
@@ -52,10 +91,11 @@ if (args.service === "MODEL" && args.api === "REST") {
       res.status(500).send("Cannot parse predict input json " + req.body.json);
     }
     if (predict && typeof predict === "function") {
-      result = predict(body.tensor, body.names);
+      result = predict(rest_data_to_array(body), body.names);
+      result = array_to_rest_data(result, body);
       res.status(200).send(result);
     } else {
-      res.status(500).send(args.model + " Not Found");
+      res.status(500).send(predict);
     }
   });
 }
