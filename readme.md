@@ -20,6 +20,7 @@ Seldon Core is an open source platform for deploying machine learning models on 
 - [Community](#community)
 - [Developer](#developer)
 - [Latest Seldon Images](#latest-seldon-images)
+- [Usage Reporting](#usage-reporting)
 
 ## Goals
 
@@ -190,4 +191,9 @@ Three steps:
 |-------------|---------|---------|
 | [Seldon Core Wrapper](https://github.com/SeldonIO/seldon-java-wrapper) | [seldon-core-wrapper](https://mvnrepository.com/artifact/io.seldon.wrapper/seldon-core-wrapper) | 0.1.2 |
 | [Seldon Core JPMML](https://github.com/SeldonIO/JPMML-utils) | [seldon-core-jpmml](https://mvnrepository.com/artifact/io.seldon.wrapper/seldon-core-jpmml) | 0.0.1 |
+
+## Usage Reporting
+
+Tools that help the development of Seldon Core from anonymous usage.
+* [Usage Reporting with Spartakus](docs/usage-reporting.md)
 
