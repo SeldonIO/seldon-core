@@ -23,6 +23,7 @@ public class ClusterManagerProperites {
     private int engineContainerPort;
     private int engineGrpcContainerPort;
     private String engineContainerImageAndVersion;
+    private String engineContainerImagePullPolicy;
     private int puContainerPortBase;
     private String namespace;
 
@@ -50,6 +51,14 @@ public class ClusterManagerProperites {
         this.engineContainerImageAndVersion = engineContainerImageAndVersion;
     }
 
+    public String getEngineContainerImagePullPolicy() {
+        return engineContainerImagePullPolicy;
+    }
+
+    public void setEngineContainerImagePullPolicy(String engineContainerImagePullPolicy) {
+        this.engineContainerImagePullPolicy = engineContainerImagePullPolicy;
+    }
+    
     public int getPuContainerPortBase() {
         return puContainerPortBase;
     }
