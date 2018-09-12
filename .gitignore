@@ -114,3 +114,7 @@ util/api_tester/proto/
 #flatbuffers
 wrappers/testing/fbs/
 wrappers/python/fbs/
+
+#ONNX example
+examples/models/onnx_resnet50/cpu_codegen/Function_0_codegen.cpp
+examples/models/onnx_resnet50/resnet.onnx
