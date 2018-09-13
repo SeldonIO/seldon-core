@@ -5,7 +5,8 @@ const bodyParser = require("body-parser");
 const nj = require("numjs");
 app.use(bodyParser.urlencoded({ extended: true }));
 let predict = null;
-loadModel = async function(model) {
+const port = process.env.PREDICTIVE_UNIT_SERVICE_PORT || 5000;
+const loadModel = async function(model) {
   model = "./model/" + model;
   try {
     const MyModel = require(model);
@@ -100,7 +101,7 @@ if (args.service === "MODEL" && args.api === "REST") {
   });
 }
 
-app.listen(5000, async () => {
+app.listen(port, async () => {
   predict = await loadModel(
     args.model,
     args.api,
