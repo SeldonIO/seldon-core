@@ -1,5 +1,5 @@
 {
-  "name": "node_tensorflow",
+  "name": "nodejs_tensorflow",
   "version": "1.0.0",
   "description": "",
   "main": "predict.js",
