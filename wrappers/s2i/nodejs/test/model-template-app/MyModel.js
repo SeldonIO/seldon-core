@@ -10,12 +10,19 @@ MyModel.prototype.init = async function() {
   this.model.compile({ optimizer: "sgd", loss: "meanSquaredError" });
 };
 
-MyModel.prototype.predict = function(data, names) {
-  console.log("Predicting ...", data);
-  let result = this.model.predict(tf.tensor2d(data));
+MyModel.prototype.predict = function(X, names) {
+  console.log("Predicting ...");
+  try {
+    X = tf.tensor(X);
+  } catch (msg) {
+    console.log("Predict input may be a Tensor already");
+  }
+  let result = this.model.predict(X);
   let obj = result.dataSync();
   let values = Object.keys(obj).map(key => obj[key]);
-  return values;
+  var newValues = [];
+  while (values.length) newValues.push(values.splice(0, 1));
+  return newValues;
 };
 
 module.exports = MyModel;
