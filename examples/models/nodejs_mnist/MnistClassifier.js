@@ -18,11 +18,17 @@ class MnistClassifier {
 
   predict(X, feature_names) {
     console.log("Predicting ...");
-    let image = tf.tensor4d(X[0], [1, 28, 28, 1]);
-    const result = this.model.predict(image);
+    try {
+      X = tf.tensor(X);
+    } catch (msg) {
+      console.log("Predict input may be a Tensor already");
+    }
+    const result = this.model.predict(X);
     let obj = result.dataSync();
     let values = Object.keys(obj).map(key => obj[key]);
-    return values;
+    var newValues = [];
+    while (values.length) newValues.push(values.splice(0, 10));
+    return newValues;
   }
 }
 
