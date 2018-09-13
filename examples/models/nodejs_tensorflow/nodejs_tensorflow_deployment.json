@@ -1,0 +1,55 @@
+{
+  "apiVersion": "machinelearning.seldon.io/v1alpha2",
+  "kind": "SeldonDeployment",
+  "metadata": {
+    "labels": {
+      "app": "seldon"
+    },
+    "name": "seldon-deployment-example"
+  },
+  "spec": {
+    "annotations": {
+      "project_name": "Nodejs Tensorflow Prediction",
+      "deployment_version": "0.1"
+    },
+    "name": "nodejs-tensorflow-deployment",
+    "oauth_key": "oauth-key",
+    "oauth_secret": "oauth-secret",
+    "predictors": [
+      {
+        "componentSpecs": [
+          {
+            "spec": {
+              "containers": [
+                {
+                  "image": "node-s2i-model-image:0.1",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "nodejs-tensorflow-predictor",
+                  "resources": {
+                    "requests": {
+                      "memory": "1Mi"
+                    }
+                  }
+                }
+              ],
+              "terminationGracePeriodSeconds": 20
+            }
+          }
+        ],
+        "graph": {
+          "children": [],
+          "name": "nodejs-tensorflow-predictor",
+          "endpoint": {
+            "type": "REST"
+          },
+          "type": "MODEL"
+        },
+        "name": "nodejs-tensorflow-predictor",
+        "replicas": 1,
+        "annotations": {
+          "predictor_version": "0.1"
+        }
+      }
+    ]
+  }
+}
