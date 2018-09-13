@@ -20,6 +20,7 @@ Seldon Core is an open source platform for deploying machine learning models on 
 - [Community](#community)
 - [Developer](#developer)
 - [Latest Seldon Images](#latest-seldon-images)
+- [Usage Reporting](#usage-reporting)
 
 ## Goals
 
@@ -91,6 +92,8 @@ Seldon-core allows various types of components to be built and plugged into the 
       * [R Iris Classifier](./examples/models/r_iris/r_iris.ipynb)
    * Java
       * [H2O Classifier](./examples/models/h2o_mojo/h2o_model.ipynb)
+   * ONNX
+      * [ResNet ONNX Classifier using Intel nGraph](./examples/models/onnx_resnet50/onnx_resnet50.ipynb)
    * PMML
       * [PySpark MNIST Classifier](https://github.com/SeldonIO/JPMML-utils/blob/master/examples/pyspark_pmml/mnist.ipynb)
 
@@ -177,8 +180,9 @@ Three steps:
 | Seldon Operator | [seldonio/cluster-manager](https://hub.docker.com/r/seldonio/cluster-manager/tags/) | 0.2.2 | 0.2.3-SNAPSHOT |
 | Seldon Service Orchestrator | [seldonio/engine](https://hub.docker.com/r/seldonio/engine/tags/) | 0.2.2 | 0.2.3-SNAPSHOT |
 | Seldon API Gateway | [seldonio/apife](https://hub.docker.com/r/seldonio/apife/tags/) | 0.2.2 | 0.2.3-SNAPSHOT |
-| [Seldon Python 3 Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python3](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3/tags/) | 0.1 | 0.2-SNAPSHOT |
-| [Seldon Python 2 Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python2](https://hub.docker.com/r/seldonio/seldon-core-s2i-python2/tags/) | 0.1 | 0.2-SNAPSHOT |
+| [Seldon Python 3 Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python3](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3/tags/) | 0.2 |  |
+| [Seldon Python 2 Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python2](https://hub.docker.com/r/seldonio/seldon-core-s2i-python2/tags/) | 0.2 |  |
+| [Seldon Python ONNX Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python3-ngraph-onnx](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3-ngraph-onnx/tags/) | 0.1  |   |
 | [Seldon Core Python Wrapper](docs/wrappers/python-docker.md) | [seldonio/core-python-wrapper](https://hub.docker.com/r/seldonio/core-python-wrapper/tags/) | 0.7 | |
 | [Seldon Java Build Wrapper for S2I](docs/wrappers/java.md) | [seldonio/seldon-core-s2i-java-build](https://hub.docker.com/r/seldonio/seldon-core-s2i-java-build/tags/) | 0.1 | |
 | [Seldon Java Runtime Wrapper for S2I](docs/wrappers/java.md) | [seldonio/seldon-core-s2i-java-runtime](https://hub.docker.com/r/seldonio/seldon-core-s2i-java-runtime/tags/) | 0.1 | | 
@@ -190,4 +194,9 @@ Three steps:
 |-------------|---------|---------|
 | [Seldon Core Wrapper](https://github.com/SeldonIO/seldon-java-wrapper) | [seldon-core-wrapper](https://mvnrepository.com/artifact/io.seldon.wrapper/seldon-core-wrapper) | 0.1.2 |
 | [Seldon Core JPMML](https://github.com/SeldonIO/JPMML-utils) | [seldon-core-jpmml](https://mvnrepository.com/artifact/io.seldon.wrapper/seldon-core-jpmml) | 0.0.1 |
+
+## Usage Reporting
+
+Tools that help the development of Seldon Core from anonymous usage.
+* [Usage Reporting with Spartakus](docs/usage-reporting.md)
 
