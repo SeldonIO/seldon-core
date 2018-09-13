@@ -5,7 +5,7 @@
       "dtype": "FLOAT",
       "ftype": "continuous",
       "range": [0, 1],
-      "repeat": 784
+      "shape": [28, 28, 1]
     }
   ],
   "targets": [

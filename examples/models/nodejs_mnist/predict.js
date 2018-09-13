@@ -17,20 +17,9 @@ async function run() {
   await data.loadData();
   const { images: testImages, labels: testLabels } = data.getTestData();
   let predict = await loadModel("./MnistClassifier");
-  result = predict([
-    testImages
-      .flatten()
-      .slice([0], [784])
-      .dataSync()
-  ]);
-  console.log("Predicted Result\n", result);
-  console.log(
-    "Actual Result\n",
-    testLabels
-      .flatten()
-      .slice([0], [10])
-      .dataSync()
-  );
+  result = predict(testImages);
+  console.log("Predicted Result Size\n", result.length);
+  console.log("Actual Result Size\n", testLabels.dataSync().length);
 }
 
 run();
