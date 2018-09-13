@@ -45,7 +45,7 @@ The available parameters are:
 Once running you can expose the Grafana dashboard with:
 
 ```
-kubectl port-forward $(kubectl get pods -l app=grafana-om-server -o jsonpath='{.items[0].metadata.name}') 3000:3000
+kubectl port-forward $(kubectl get pods -l app=grafana-prom-server -o jsonpath='{.items[0].metadata.name}') 3000:3000
 ```
 
 You can then view the dashboard at http://localhost:3000/dashboard/db/prediction-analytics?refresh=5s&orgId=1
