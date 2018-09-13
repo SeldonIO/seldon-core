@@ -15,7 +15,7 @@ push_to_dockerhub:
 .PHONY: test
 test:
 	docker build -t $(IMAGE_NAME)-candidate .
-	cd test/model-template-app && make train && cd ../../
+	cd test/model-template-app && make train && make clean_build && cd ../../
 	IMAGE_NAME=$(IMAGE_NAME)-candidate test/run
 	cd test/model-template-app && make clean && cd ../../
 
