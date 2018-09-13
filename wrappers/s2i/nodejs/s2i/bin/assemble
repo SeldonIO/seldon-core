@@ -54,6 +54,8 @@ cp -Rf /tmp/src/. ./model/
 if [[ -f package.json ]]; then
   echo "---> Installing dependencies ..."
   cd model
+  rm -rf node_modules
+  rm -f package-lock.json
   npm install
 fi
 
