@@ -89,13 +89,15 @@ if (args.service === "MODEL" && args.api === "REST") {
       body = JSON.parse(req.body.json);
       body = body.data;
     } catch (msg) {
-      res.status(500).send("Cannot parse predict input json " + req.body.json);
+      console.log(msg);
+      res.status(500).send("Cannot parse predict input json " + req.body);
     }
     if (predict && typeof predict === "function") {
       result = predict(rest_data_to_array(body), body.names);
       result = { data: array_to_rest_data(result, body) };
       res.status(200).send(result);
     } else {
+      console.log("Predict function not Found");
       res.status(500).send(predict);
     }
   });
