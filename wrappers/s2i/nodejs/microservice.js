@@ -23,7 +23,7 @@ const get_predict_classNames = function(size) {
   let className = [];
   if (size) {
     for (let i = 0; i < size; i++) {
-      className[i] = "t" + i;
+      className[i] = "t:" + i;
     }
   }
   return className;
@@ -108,5 +108,5 @@ app.listen(port, async () => {
     args.service,
     args.persistence
   );
-  console.log("NodeJs Microservice listening on port 5000!");
+  console.log(`NodeJs Microservice listening on port ${port}!`);
 });
