@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -55,6 +56,25 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
     public KubeCRDHandlerImpl(ClusterManagerProperites clusterManagerProperites) {
 		this.namespace = StringUtils.isEmpty(clusterManagerProperites.getNamespace()) ? "default" : clusterManagerProperites.getNamespace();
 	}
+	
+	@Override
+	public void updateRaw(String json,String seldonDeploymentName) {
+		try
+		{
+			logger.info(json);
+			ApiClient client = Config.defaultClient();
+			CustomObjectsApi api = new CustomObjectsApi(client);
+			api.replaceNamespacedCustomObject(GROUP, VERSION, namespace, KIND_PLURAL, seldonDeploymentName,json.getBytes());
+		} catch (InvalidProtocolBufferException e) {
+			logger.error("Failed to update deployment in kubernetes ",e);
+		} catch (ApiException e) {
+			logger.error("Failed to update deployment in kubernetes : {}",e.getResponseBody());
+		} catch (IOException e) {
+			logger.error("Failed to get client ",e);
+		}
+		
+		
+	}
 
 	@Override
 	public void updateSeldonDeployment(SeldonDeployment mldep) {
@@ -84,7 +104,7 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 		} catch (IOException e) {
 			logger.error("Failed to get client ",e);
 		}
-		finally{}
+	
 	}
 	
 	@Override
@@ -144,6 +164,8 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
             return null;
         }
 	}
+
+	
     
     
 	

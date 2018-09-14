@@ -399,6 +399,11 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			}
 		}	
 		
+		if (!mlBuilder.hasStatus())
+		{
+			mlBuilder.getStatusBuilder().setState(Constants.STATE_CREATING);
+		}
+		
 		return mlBuilder.build();
 	}
 	
