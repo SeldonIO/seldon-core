@@ -1,0 +1,72 @@
+{
+  "features": [
+    {
+      "name": "feature_1",
+      "dtype": "FLOAT",
+      "ftype": "continuous",
+      "range": [0, 10]
+    },
+    {
+      "name": "feature_2",
+      "dtype": "FLOAT",
+      "ftype": "continuous",
+      "range": [0, 10]
+    },
+    {
+      "name": "feature_3",
+      "dtype": "FLOAT",
+      "ftype": "continuous",
+      "range": [0, 10]
+    },
+    {
+      "name": "feature_4",
+      "dtype": "FLOAT",
+      "ftype": "continuous",
+      "range": [0, 10]
+    },
+    {
+      "name": "feature_5",
+      "dtype": "FLOAT",
+      "ftype": "continuous",
+      "range": [0, 10]
+    },
+    {
+      "name": "feature_6",
+      "dtype": "FLOAT",
+      "ftype": "continuous",
+      "range": [0, 10]
+    },
+    {
+      "name": "feature_7",
+      "dtype": "FLOAT",
+      "ftype": "continuous",
+      "range": [0, 10]
+    },
+    {
+      "name": "feature_8",
+      "dtype": "FLOAT",
+      "ftype": "continuous",
+      "range": [0, 10]
+    },
+    {
+      "name": "feature_9",
+      "dtype": "FLOAT",
+      "ftype": "continuous",
+      "range": [0, 10]
+    },
+    {
+      "name": "feature_10",
+      "dtype": "FLOAT",
+      "ftype": "continuous",
+      "range": [0, 10]
+    }
+  ],
+  "targets": [
+    {
+      "name": "output_class",
+      "dtype": "FLOAT",
+      "ftype": "continuous",
+      "range": [0, 10]
+    }
+  ]
+}

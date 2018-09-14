@@ -92,6 +92,8 @@ Seldon-core allows various types of components to be built and plugged into the 
       * [R Iris Classifier](./examples/models/r_iris/r_iris.ipynb)
    * Java
       * [H2O Classifier](./examples/models/h2o_mojo/h2o_model.ipynb)
+   * NodeJS
+      * [Tensorflow MNIST Classifier](./examples/models/nodejs_mnist/nodejs_mnist.ipynb)
    * ONNX
       * [ResNet ONNX Classifier using Intel nGraph](./examples/models/onnx_resnet50/onnx_resnet50.ipynb)
    * PMML
@@ -199,4 +201,5 @@ Three steps:
 
 Tools that help the development of Seldon Core from anonymous usage.
 * [Usage Reporting with Spartakus](docs/usage-reporting.md)
+
 
