@@ -93,7 +93,7 @@ if (args.service === "MODEL" && args.api === "REST") {
     }
     if (predict && typeof predict === "function") {
       result = predict(rest_data_to_array(body), body.names);
-      result = array_to_rest_data(result, body);
+      result = { data: array_to_rest_data(result, body) };
       res.status(200).send(result);
     } else {
       res.status(500).send(predict);
