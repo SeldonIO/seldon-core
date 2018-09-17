@@ -9,6 +9,10 @@ COPY microservice.js /microservice
 
 COPY package.json /microservice
 
+COPY prediction_grpc_pb.js /microservice
+
+COPY prediction_pb.js /microservice
+
 RUN npm install
 
 COPY ./s2i/bin/ /s2i/bin
