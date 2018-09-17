@@ -1,5 +1,39 @@
 # Change Log
 
+## [v0.2.3](https://github.com/SeldonIO/seldon-core/tree/v0.2.3) (2018-09-17)
+[Full Changelog](https://github.com/SeldonIO/seldon-core/compare/v0.2.2...v0.2.3)
+
+**Closed issues:**
+
+- R wrapper s2i environment documentation missing Model file extension [\#219](https://github.com/SeldonIO/seldon-core/issues/219)
+- Provide example using ONNX via Intel nGraph for inference [\#214](https://github.com/SeldonIO/seldon-core/issues/214)
+- how to explore grafana dashboard for seldon-core  in  web ui [\#209](https://github.com/SeldonIO/seldon-core/issues/209)
+- APPLICATION FAILED TO START - Example python notebook \(fx-market-predictor\) [\#208](https://github.com/SeldonIO/seldon-core/issues/208)
+- dev guide doc: develop/test changes locally? [\#202](https://github.com/SeldonIO/seldon-core/issues/202)
+- Service orchestrator updated when surrounding deployment changed [\#199](https://github.com/SeldonIO/seldon-core/issues/199)
+- UnknownHostException: seldon-deployment [\#194](https://github.com/SeldonIO/seldon-core/issues/194)
+- grafana dashboard [\#192](https://github.com/SeldonIO/seldon-core/issues/192)
+- Add image versions to all wrapper images [\#136](https://github.com/SeldonIO/seldon-core/issues/136)
+- Status is not created in Custom Resource on initial create or update [\#74](https://github.com/SeldonIO/seldon-core/issues/74)
+
+**Merged pull requests:**
+
+- Update SeldonDeployment status for lifecycle conditions [\#223](https://github.com/SeldonIO/seldon-core/pull/223) ([cliveseldon](https://github.com/cliveseldon))
+- Update use of python wrappers to version 0.2 [\#222](https://github.com/SeldonIO/seldon-core/pull/222) ([cliveseldon](https://github.com/cliveseldon))
+- Support for ONNX exported models for inference [\#221](https://github.com/SeldonIO/seldon-core/pull/221) ([cliveseldon](https://github.com/cliveseldon))
+- Private repo build and run [\#220](https://github.com/SeldonIO/seldon-core/pull/220) ([gsunner](https://github.com/gsunner))
+- Nodejs s2i wrapper for JavaScript models [\#218](https://github.com/SeldonIO/seldon-core/pull/218) ([SachinVarghese](https://github.com/SachinVarghese))
+- Update seldon metrics [\#217](https://github.com/SeldonIO/seldon-core/pull/217) ([cliveseldon](https://github.com/cliveseldon))
+- fix oauth\_port check in api-tester [\#213](https://github.com/SeldonIO/seldon-core/pull/213) ([cliveseldon](https://github.com/cliveseldon))
+- Add configurable timeouts for REST and gRPC [\#211](https://github.com/SeldonIO/seldon-core/pull/211) ([cliveseldon](https://github.com/cliveseldon))
+- Config circular bug [\#210](https://github.com/SeldonIO/seldon-core/pull/210) ([cliveseldon](https://github.com/cliveseldon))
+- Update for flatbuffers python wrappers [\#205](https://github.com/SeldonIO/seldon-core/pull/205) ([cliveseldon](https://github.com/cliveseldon))
+- Experimental Flatbuffers based protocol for python wrapper [\#204](https://github.com/SeldonIO/seldon-core/pull/204) ([cliveseldon](https://github.com/cliveseldon))
+- Change wrappers to be versioned and update examples and docs [\#201](https://github.com/SeldonIO/seldon-core/pull/201) ([cliveseldon](https://github.com/cliveseldon))
+- Update istio example notebook [\#200](https://github.com/SeldonIO/seldon-core/pull/200) ([cliveseldon](https://github.com/cliveseldon))
+- Allow Annotations to allow customizations [\#197](https://github.com/SeldonIO/seldon-core/pull/197) ([cliveseldon](https://github.com/cliveseldon))
+- Removed subtype from deployment example [\#195](https://github.com/SeldonIO/seldon-core/pull/195) ([hanneshapke](https://github.com/hanneshapke))
+
 ## [v0.2.2](https://github.com/SeldonIO/seldon-core/tree/v0.2.2) (2018-07-18)
 [Full Changelog](https://github.com/SeldonIO/seldon-core/compare/v0.2.1...v0.2.2)
 
