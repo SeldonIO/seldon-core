@@ -45,6 +45,16 @@ public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusU
 	        b.setReplicasAvailable(0);
 	}
 	
+	private boolean isAvailable(SeldonDeployment.Builder mlBuilder)
+	{
+		for (PredictorStatus.Builder b : mlBuilder.getStatusBuilder().getPredictorStatusBuilderList())
+        {
+			if (b.getReplicas() != b.getReplicasAvailable())
+				return false;
+        }
+		return true;
+	}
+	
     @Override
     public void updateStatus(String mlDepName, String depName, Integer replicas, Integer replicasAvailable) {
         if (replicas == null || replicas == 0)
@@ -72,6 +82,10 @@ public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusU
                    PredictorStatus.Builder b = PredictorStatus.newBuilder().setName(depName);
                    update(b,replicas,replicasAvailable);
                    mlBuilder.getStatusBuilder().addPredictorStatus(b);
+               }
+               if (isAvailable(mlBuilder))
+               {
+            	   mlBuilder.getStatusBuilder().setState(Constants.STATE_AVAILABLE);
                }
                crdHandler.updateSeldonDeployment(mlBuilder.build());
             }
