@@ -17,20 +17,22 @@ ambassador:
     image:
       name: datawire/prom-statsd-exporter:0.6.0
 apife:
+  annotations: null
   enabled: true
   image:
-    name: seldonio/apife:0.2.2
+    name: seldonio/apife:0.2.3
     pull_policy: IfNotPresent
   service_type: NodePort
 cluster_manager:
   image:
-    name: seldonio/cluster-manager:0.2.2
+    name: seldonio/cluster-manager:0.2.3
     pull_policy: IfNotPresent
   java_opts: ''
   spring_opts: ''
 engine:
   image:
-    name: seldonio/engine:0.2.2
+    name: seldonio/engine:0.2.3
+    pull_policy: IfNotPresent
 rbac:
   enabled: true
   rolebinding:

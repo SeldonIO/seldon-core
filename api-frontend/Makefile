@@ -7,7 +7,7 @@ write_version:
 	ls target/seldon-apife-*.jar | sed -n 's/target\/seldon-apife-\(.*\).jar$$/\1/p' > $(VERSION_FILE) && cat $(VERSION_FILE)
 
 build_jar: update_proto
-	mvn clean package -B
+	mvn clean verify -Dlicense.useMissingFile -B
 
 build_image: build_jar write_version
 	mkdir -p .m2 && docker build --build-arg APP_VERSION=$$(cat $(VERSION_FILE)) -t seldonio/$(IMAGE_NAME):latest .

@@ -10,7 +10,7 @@
 
 	<groupId>io.seldon.engine</groupId>
 	<artifactId>seldon-engine</artifactId>
-	<version>0.2.2</version>
+	<version>0.2.3</version>
 	<packaging>jar</packaging>
 
 	<name>engine</name>
@@ -19,7 +19,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>1.8</java.version>
-		<grpc.version>1.5.0</grpc.version>
+		<grpc.version>1.14.0</grpc.version>
 		<micrometer.version>1.0.0-rc.1</micrometer.version>
 		<start-class>io.seldon.engine.App</start-class>
 	</properties>

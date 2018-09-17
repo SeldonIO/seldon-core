@@ -17,7 +17,7 @@ If you are not familar with s2i you can read [general instructions on using s2i]
 To check everything is working you can run
 
 ```bash
-s2i usage seldonio/seldon-core-s2i-python3
+s2i usage seldonio/seldon-core-s2i-python3:0.2
 ```
 
 
@@ -81,16 +81,17 @@ PERSISTENCE=0
 These values can also be provided or overriden on the command line when building the image.
 
 # Step 3 - Build your image
-Use ```s2i build``` to create your Docker image from source code. You will need Docker installed on the machine and optionally git if your source code is in a public git repo. You can choose from two python builder images
+Use ```s2i build``` to create your Docker image from source code. You will need Docker installed on the machine and optionally git if your source code is in a public git repo. You can choose from three python builder images
 
- * Python 2 : seldonio/seldon-core-s2i-python2
- * Python 3 : seldonio/seldon-core-s2i-python3
+ * Python 2 : seldonio/seldon-core-s2i-python2:0.2
+ * Python 3 : seldonio/seldon-core-s2i-python3:0.2
+ * Python 3 plus ONNX support via [Intel nGraph](https://github.com/NervanaSystems/ngraph) : seldonio/seldon-core-s2i-python3-ngraph-onnx:0.1
 
 Using s2i you can build directly from a git repo or from a local source folder. See the [s2i docs](https://github.com/openshift/source-to-image/blob/master/docs/cli.md#s2i-build) for further details. The general format is:
 
 ```bash
-s2i build <git-repo> seldonio/seldon-core-s2i-python2 <my-image-name>
-s2i build <src-folder> seldonio/seldon-core-s2i-python2 <my-image-name>
+s2i build <git-repo> seldonio/seldon-core-s2i-python2:0.2 <my-image-name>
+s2i build <src-folder> seldonio/seldon-core-s2i-python2:0.2 <my-image-name>
 ```
 
 Change to seldonio/seldon-core-s2i-python3 if using python 3.
@@ -98,7 +99,7 @@ Change to seldonio/seldon-core-s2i-python3 if using python 3.
 An example invocation using the test template model inside seldon-core:
 
 ```bash
-s2i build https://github.com/seldonio/seldon-core.git --context-dir=wrappers/s2i/python/test/model-template-app seldonio/seldon-core-s2i-python2 seldon-core-template-model
+s2i build https://github.com/seldonio/seldon-core.git --context-dir=wrappers/s2i/python/test/model-template-app seldonio/seldon-core-s2i-python2:0.2 seldon-core-template-model
 ```
 
 The above s2i build invocation:
@@ -113,14 +114,14 @@ For building from a local source folder, an example where we clone the seldon-co
 ```bash
 git clone https://github.com/seldonio/seldon-core.git
 cd seldon-core
-s2i build wrappers/s2i/python/test/model-template-app seldonio/seldon-core-s2i-python2 seldon-core-template-model
+s2i build wrappers/s2i/python/test/model-template-app seldonio/seldon-core-s2i-python2:0.2 seldon-core-template-model
 ```
 
 For more help see:
 
 ```
-s2i usage seldonio/seldon-core-s2i-python2
-s2i usage seldonio/seldon-core-s2i-python3
+s2i usage seldonio/seldon-core-s2i-python2:0.2
+s2i usage seldonio/seldon-core-s2i-python3:0.2
 s2i build --help
 ```
 

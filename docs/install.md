@@ -2,6 +2,10 @@
 
 To install seldon-core on a Kubernetes cluster you have several choices:
 
+ * If you have a Google Cloud Platform account you can install via the [GCP Marketplace](https://console.cloud.google.com/marketplace/details/seldon-portal/seldon-core).
+
+For CLI installs:
+ 
  * Decide on which package manager to use, we support:
    * Helm
    * Ksonnet
@@ -38,7 +42,8 @@ helm install seldon-core --name seldon-core --repo https://storage.googleapis.co
 Notes
 
  * You can use ```--namespace``` to install seldon-core to a particular namespace
-
+ * For full configuration options see [here](helm.md)
+ 
 ## With Ksonnet
 
  * [install Ksonnet](https://ksonnet.io/)
@@ -71,5 +76,5 @@ Notes
 
 ### Install with kubeflow
 
-  * [Install Seldon as part of kubeflow.](https://github.com/kubeflow/kubeflow/blob/master/user_guide.md)
+  * [Install Seldon as part of kubeflow.](https://www.kubeflow.org/docs/guides/components/seldon/#seldon-serving)
      * Kubeflow presently runs 0.1 version of seldon-core. This will be updated to 0.2 in the near future.

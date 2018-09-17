@@ -38,6 +38,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.seldon.apife.AppProperties;
+import io.seldon.apife.config.AnnotationsConfig;
 import io.seldon.apife.exception.SeldonAPIException;
 import io.seldon.protos.DeploymentProtos.Endpoint;
 
@@ -50,21 +51,56 @@ public class InternalPredictionService {
     private CloseableHttpClient httpClient;
     private final AppProperties appProperties;
  
-    private static final int DEFAULT_REQ_TIMEOUT = 200;
-    private static final int DEFAULT_CON_TIMEOUT = 500;
-    private static final int DEFAULT_SOCKET_TIMEOUT = 2000;
+    public final static String ANNOTATION_REST_CONNECTION_TIMEOUT = "seldon.io/rest-connection-timeout";
+    public final static String ANNOTATION_REST_READ_TIMEOUT = "seldon.io/rest-read-timeout";
+    public final static String ANNOTATION_GRPC_READ_TIMEOUT = "seldon.io/grpc-read-timeout";
+
+	private static final int DEFAULT_CONNECTION_TIMEOUT = 5000;
+	private static final int DEFAULT_READ_TIMEOUT = 10000;
+    
+
 
     @Autowired
-    public InternalPredictionService(AppProperties appProperties){
+    public InternalPredictionService(AppProperties appProperties, AnnotationsConfig annotations){
+    	int connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
+    	if (annotations.has(ANNOTATION_REST_CONNECTION_TIMEOUT))
+    	{
+    		try
+    		{
+    			logger.info("Setting REST connection timeout from annotation {}",ANNOTATION_REST_CONNECTION_TIMEOUT);
+    			connectionTimeout = Integer.parseInt(annotations.get(ANNOTATION_REST_CONNECTION_TIMEOUT));
+    		}
+    		catch(NumberFormatException e)
+    		{
+    			logger.error("Failed to parse REST connection timeout annotation {} with value {}",ANNOTATION_REST_CONNECTION_TIMEOUT,annotations.get(ANNOTATION_REST_CONNECTION_TIMEOUT));
+    		}
+    	}
+    	logger.info("REST Connection timeout set to {}",connectionTimeout);
+    	int readTimeout = DEFAULT_READ_TIMEOUT;
+    	if (annotations.has(ANNOTATION_REST_READ_TIMEOUT))
+    	{
+    		try
+    		{
+    			logger.info("Setting REST read timeout from annotation {}",ANNOTATION_REST_READ_TIMEOUT);
+    			readTimeout = Integer.parseInt(annotations.get(ANNOTATION_REST_READ_TIMEOUT));
+    		}
+    		catch(NumberFormatException e)
+    		{
+    			logger.error("Failed to parse REST read timeout annotation {} with value {}",ANNOTATION_REST_READ_TIMEOUT,annotations.get(ANNOTATION_REST_READ_TIMEOUT));
+    		}
+    	}
+    	logger.info("REST read timeout set to {}",readTimeout);
+    	
+    	
         this.appProperties = appProperties;
         connectionManager = new PoolingHttpClientConnectionManager(10,TimeUnit.SECONDS);
         connectionManager.setMaxTotal(150);
         connectionManager.setDefaultMaxPerRoute(150);
         
         RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectionRequestTimeout(DEFAULT_REQ_TIMEOUT)
-                .setConnectTimeout(DEFAULT_CON_TIMEOUT)
-                .setSocketTimeout(DEFAULT_SOCKET_TIMEOUT).build();
+                .setConnectionRequestTimeout(connectionTimeout)
+                .setConnectTimeout(connectionTimeout)
+                .setSocketTimeout(readTimeout).build();
         
         httpClient = HttpClients.custom()
                 .setConnectionManager(connectionManager)

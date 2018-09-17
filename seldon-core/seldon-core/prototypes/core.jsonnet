@@ -7,12 +7,13 @@
 // @optionalParam withRbac string true Whether to include RBAC setup
 // @optionalParam withApife string true Whether to include builtin API OAuth gateway server for ingress
 // @optionalParam withAmbassador string false Whether to include Ambassador reverse proxy
-// @optionalParam apifeImage string seldonio/apife:0.2.2 Default image for API Front End
+// @optionalParam apifeImage string seldonio/apife:0.2.3 Default image for API Front End
 // @optionalParam apifeServiceType string NodePort API Front End Service Type
-// @optionalParam operatorImage string seldonio/cluster-manager:0.2.2 Seldon cluster manager image version
+// @optionalParam operatorImage string seldonio/cluster-manager:0.2.3 Seldon cluster manager image version
 // @optionalParam operatorSpringOpts string null cluster manager spring opts
 // @optionalParam operatorJavaOpts string null cluster manager java opts
-// @optionalParam engineImage string seldonio/engine:0.2.2 Seldon engine image version
+// @optionalParam engineImage string seldonio/engine:0.2.3 Seldon engine image version
+// @optionalParam grpcMaxMessageSize string 4194304 Max gRPC message size
 
 local k = import "k.libsonnet";
 local core = import "seldon-core/seldon-core/core.libsonnet";
@@ -32,6 +33,7 @@ local withAmbassador = import "param://withAmbassador";
 // APIFE
 local apifeImage = import "param://apifeImage";
 local apifeServiceType = import "param://apifeServiceType";
+local grpcMaxMessageSize = import "param://grpcMaxMessageSize";
 
 // Cluster Manager (The CRD Operator)
 local operatorImage = import "param://operatorImage";
@@ -45,7 +47,7 @@ local engineImage = import "param://engineImage";
 
 // APIFE
 local apife = [
-  core.parts(name,namespace).apife(apifeImage, withRbac),
+  core.parts(name,namespace).apife(apifeImage, withRbac, grpcMaxMessageSize),
   core.parts(name,namespace).apifeService(apifeServiceType),
 ];
 

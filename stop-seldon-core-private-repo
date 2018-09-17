@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+helm delete seldon-core --purge
+helm delete seldon-core-crd --purge
+

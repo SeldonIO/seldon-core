@@ -33,6 +33,8 @@ spec:
           value: {{ .Release.Name }}-redis
         - name: ENGINE_CONTAINER_IMAGE_AND_VERSION
           value: {{ .Values.engine.image.name }}
+        - name: ENGINE_CONTAINER_IMAGE_PULL_POLICY
+          value: {{ .Values.engine.image.pull_policy }}
         - name: SELDON_CLUSTER_MANAGER_POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -46,3 +48,4 @@ spec:
         ports:
         - containerPort: 8080
           protocol: TCP
+      terminationGracePeriodSeconds: 1

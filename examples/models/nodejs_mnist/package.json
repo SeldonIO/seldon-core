@@ -1,0 +1,20 @@
+{
+  "name": "nodejs_mnist",
+  "version": "1.0.0",
+  "description": "This is a node tensorflow model to run train and predict on mnist data",
+  "main": "predict.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node train.js --epoch 1 --batch_size 128 --model_save_path /",
+    "predict": "node predict.js"
+  },
+  "engines": {
+    "node": ">=8.11.0"
+  },
+  "dependencies": {
+    "@tensorflow/tfjs": "0.12.7",
+    "@tensorflow/tfjs-node": "0.1.15",
+    "argparse": "1.0.10",
+    "progress": "2.0.0"
+  }
+}

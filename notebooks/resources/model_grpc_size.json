@@ -1,0 +1,52 @@
+{
+    "apiVersion": "machinelearning.seldon.io/v1alpha2",
+    "kind": "SeldonDeployment",
+    "metadata": {
+        "labels": {
+            "app": "seldon"
+        },
+        "name": "seldon-model"
+    },
+    "spec": {
+        "annotations": {
+	    "seldon.io/grpc-max-message-size":"10000000"
+        },
+        "name": "test-deployment",
+        "oauth_key": "oauth-key",
+        "oauth_secret": "oauth-secret",
+        "predictors": [
+            {
+                "componentSpecs": [{
+                    "spec": {
+                        "containers": [
+                            {
+                                "image": "seldonio/mock_classifier_grpc:1.0",
+                                "imagePullPolicy": "IfNotPresent",
+                                "name": "classifier",
+                                "resources": {
+                                    "requests": {
+                                        "memory": "1Mi"
+                                    }
+                                }
+                            }
+                        ],
+                        "terminationGracePeriodSeconds": 20
+                    }
+                }],
+                "graph": {
+                    "children": [],
+                    "name": "classifier",
+                    "endpoint": {
+			"type" : "GRPC"
+		    },
+                    "type": "MODEL"
+                },
+                "name": "grpc-size",
+                "replicas": 1,
+		"annotations": {
+		    "predictor_version" : "v1"
+		}
+            }
+        ]
+    }
+}
