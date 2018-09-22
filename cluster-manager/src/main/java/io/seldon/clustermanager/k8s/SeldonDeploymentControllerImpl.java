@@ -53,8 +53,6 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	private final KubeCRDHandler crdHandler;
 	private final SeldonDeploymentCache mlCache;
 	
-	private static final String FAILED_STATE_MSG = "FAILED";
-	
 	private static final String DEPLOYMENT_API_VERSION = "extensions/v1beta1";
 
 	
@@ -253,14 +251,14 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	private void failDeployment(SeldonDeployment mlDep,Exception e)
 	{
         SeldonDeployment.Builder mlBuilder = SeldonDeployment.newBuilder(mlDep);
-        mlBuilder.getStatusBuilder().setState(FAILED_STATE_MSG).setDescription(e.getMessage());
+        mlBuilder.getStatusBuilder().setState(Constants.STATE_FAILED).setDescription(e.getMessage());
         crdHandler.updateSeldonDeployment(mlBuilder.build());
 	}
 	
 	@Override
 	public void createOrReplaceSeldonDeployment(SeldonDeployment mlDep) {
 
-	    if (mlDep.hasStatus() && mlDep.getStatus().hasState() && mlDep.getStatus().getState().equals(FAILED_STATE_MSG))
+	    if (mlDep.hasStatus() && mlDep.getStatus().hasState() && mlDep.getStatus().getState().equals(Constants.STATE_FAILED))
 	    {
 	        logger.warn("Ignoring failed deployment "+mlDep.getMetadata().getName());
 	        return;

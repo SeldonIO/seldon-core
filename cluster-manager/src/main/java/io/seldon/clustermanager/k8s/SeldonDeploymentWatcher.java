@@ -28,10 +28,12 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -43,6 +45,9 @@ import io.kubernetes.client.apis.CustomObjectsApi;
 import io.kubernetes.client.util.Config;
 import io.kubernetes.client.util.Watch;
 import io.seldon.clustermanager.ClusterManagerProperites;
+import io.seldon.clustermanager.pb.JsonFormat;
+import io.seldon.clustermanager.pb.JsonFormat.Printer;
+import io.seldon.protos.DeploymentProtos.DeploymentStatus;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 @Component
@@ -52,16 +57,18 @@ public class SeldonDeploymentWatcher  {
 	private final SeldonDeploymentController seldonDeploymentController;
 	private final SeldonDeploymentCache mlCache;
 	private final ClusterManagerProperites clusterManagerProperites;
+	private final KubeCRDHandler crdHandler;
 	
 	private int resourceVersion = 0;
 	private int resourceVersionProcessed = 0;
 	
 	@Autowired
-	public SeldonDeploymentWatcher(ClusterManagerProperites clusterManagerProperites,SeldonDeploymentController seldonDeploymentController,SeldonDeploymentCache mlCache) throws IOException, ApiException
+	public SeldonDeploymentWatcher(ClusterManagerProperites clusterManagerProperites,SeldonDeploymentController seldonDeploymentController,SeldonDeploymentCache mlCache,KubeCRDHandler crdHandler) throws IOException, ApiException
 	{
 		this.seldonDeploymentController = seldonDeploymentController;
 		this.mlCache = mlCache;
 		this.clusterManagerProperites = clusterManagerProperites;
+		this.crdHandler = crdHandler;
 		CRDCreator crdCreator = new CRDCreator();
 		crdCreator.createCRD();
 	}
@@ -84,7 +91,33 @@ public class SeldonDeploymentWatcher  {
 		}
 	}
 	
-	
+	private void failDeployment(JsonNode mlDep,Exception e)
+	{
+		try
+		{
+			//Create status message
+			DeploymentStatus.Builder statusBuilder = DeploymentStatus.newBuilder(); 
+			statusBuilder.setState(Constants.STATE_FAILED).setDescription(e.getMessage());
+			//Get JSON for status message
+			Printer jsonPrinter = JsonFormat.printer().preservingProtoFieldNames();
+			ObjectMapper mapper = new ObjectMapper();
+			JsonFactory factory = mapper.getFactory();
+			JsonParser parser = factory.createParser(jsonPrinter.print(statusBuilder));
+			JsonNode statusObj = mapper.readTree(parser);
+			//Update deployment json with status
+			((ObjectNode) mlDep).set("status", statusObj);
+			String json = mapper.writeValueAsString(mlDep);
+			String name = mlDep.get("metadata").get("name").asText();
+			//Update seldon deployment
+			crdHandler.updateRaw(json, name);
+		} catch (JsonParseException e1) {
+			logger.error("Fasile to create status for failed parse",e);
+		} catch (InvalidProtocolBufferException e1) {
+			logger.error("Fasile to create status for failed parse",e);
+		} catch (IOException e1) {
+			logger.error("Fasile to create status for failed parse",e);
+		}
+	}
 	
 	public int watchSeldonMLDeployments(int resourceVersion,int resourceVersionProcessed) throws ApiException, JsonProcessingException, IOException
 	{
@@ -133,8 +166,11 @@ public class SeldonDeploymentWatcher  {
     	    		}
     	    		catch (InvalidProtocolBufferException e)
     	    		{
-    	    		    //TODO : update status of seldondeployment to show error
-    	    		    logger.warn("Failed to parse SeldonDelployment " + jsonInString, e);
+    	    			if ("ADDED".equals(item.type))
+    	    			{
+    	    				failDeployment(actualObj, e);
+    	    				logger.warn("Failed to parse SeldonDelployment " + jsonInString, e);
+    	    			}
     	    		}
     	    	}
     	    }
