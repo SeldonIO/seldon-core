@@ -378,22 +378,26 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 				for(int cIdx = 0;cIdx < spec.getSpec().getContainersCount();cIdx++)
 				{
 					V1.Container c = spec.getSpec().getContainers(cIdx);
-					String containerServiceKey = getPredictorServiceNameKey(c.getName());
-					String containerServiceValue = getSeldonServiceName(mlDep, p, c.getName());
-					metaBuilder.putLabels(containerServiceKey, containerServiceValue); 
-					
-					int portNum;
-					if (servicePortMap.containsKey(c.getName()))
-						portNum = servicePortMap.get(c.getName());
-					else
+					// Only update graph and container if container is referenced in the inference graph
+					if(isContainerInGraph(p.getGraph(), c))
 					{
-						portNum = currentServicePortNum;
-						servicePortMap.put(c.getName(), portNum);
-						currentServicePortNum++;
+						String containerServiceKey = getPredictorServiceNameKey(c.getName());
+						String containerServiceValue = getSeldonServiceName(mlDep, p, c.getName());
+						metaBuilder.putLabels(containerServiceKey, containerServiceValue); 
+					
+						int portNum;
+						if (servicePortMap.containsKey(c.getName()))
+							portNum = servicePortMap.get(c.getName());
+						else
+						{
+							portNum = currentServicePortNum;
+							servicePortMap.put(c.getName(), portNum);
+							currentServicePortNum++;
+						}
+						V1.Container c2 = this.updateContainer(c, findPredictiveUnitForContainer(mlDep.getSpec().getPredictors(pbIdx).getGraph(),c.getName()),portNum,deploymentName,predictorName);
+						mlBuilder.getSpecBuilder().getPredictorsBuilder(pbIdx).getComponentSpecsBuilder(ptsIdx).getSpecBuilder().addContainers(cIdx, c2);	
+						updatePredictiveUnitBuilderByName(mlBuilder.getSpecBuilder().getPredictorsBuilder(pbIdx).getGraphBuilder(),c2,containerServiceValue); 
 					}
-					V1.Container c2 = this.updateContainer(c, findPredictiveUnitForContainer(mlDep.getSpec().getPredictors(pbIdx).getGraph(),c.getName()),portNum,deploymentName,predictorName);
-					mlBuilder.getSpecBuilder().getPredictorsBuilder(pbIdx).getComponentSpecsBuilder(ptsIdx).getSpecBuilder().addContainers(cIdx, c2);	
-					updatePredictiveUnitBuilderByName(mlBuilder.getSpecBuilder().getPredictorsBuilder(pbIdx).getGraphBuilder(),c2,containerServiceValue); 
 				}
 				mlBuilder.getSpecBuilder().getPredictorsBuilder(pbIdx).getComponentSpecsBuilder(ptsIdx).setMetadata(metaBuilder);
 			}
@@ -499,6 +503,26 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 	    return restMapping + grpcMapping;
 	}
 	
+	/**
+	 * 
+	 * @param pu - A predictiveUnit
+	 * @param container - a container
+	 * @return True if container name can be found in graph of pu
+	 */
+	private boolean isContainerInGraph(PredictiveUnit pu,V1.Container container)
+	{
+		 if (pu.getName().equals(container.getName()))
+		 {
+	       return true;
+		 }
+		 else 
+		 {
+			 for(int i=0;i<pu.getChildrenCount();i++)
+				 if (isContainerInGraph(pu.getChildren(i),container))
+					 return true;
+		 }
+		 return false;
+	}
 	
 	private void addServicePort(PredictiveUnit pu,String serviceName,ServiceSpec.Builder svcSpecBuilder)
 	{
@@ -646,7 +670,8 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 					final String containerServiceKey = getPredictorServiceNameKey(c.getName());
 					final String containerServiceValue = getSeldonServiceName(mlDep, p, c.getName());
 					
-					if (!createdServices.contains(containerServiceValue))
+					// Only add a Service if container is a Seldon component in graph and we haven't already created a service for this container name
+					if (isContainerInGraph(p.getGraph(), c) && !createdServices.contains(containerServiceValue))
 					{
 						//Add service
 						Service.Builder s = Service.newBuilder()
