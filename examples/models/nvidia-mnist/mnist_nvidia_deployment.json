@@ -110,7 +110,7 @@
 				{
 				    "name":"url",
 				    "type":"STRING",
-				    "value":"0.0.0.0:8000"
+				    "value":"127.0.0.1:8000"
 				},
 				{
 				    "name":"model_name",
