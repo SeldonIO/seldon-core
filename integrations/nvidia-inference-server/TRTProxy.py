@@ -62,6 +62,7 @@ class TRTProxy(object):
             self.grpc = False
         self.model_name = model_name
         self.input_name, self.output_name, self.dtype, self.input_dims = parse_model(url, self.protocol_id, model_name,1 , False)
+        self.ctx = InferContext(self.url, self.protocol_id,self.model_name, self.model_version, False)
 
         
     
@@ -72,8 +73,7 @@ class TRTProxy(object):
         else:
             if len(X.shape) == len(self.input_dims):
                 X = [X]
-            ctx = InferContext(self.url, self.protocol_id,self.model_name, self.model_version, False)
-            results = ctx.run(
+            results = self.ctx.run(
                 { self.input_name : X },
                 { self.output_name : InferContext.ResultFormat.RAW },
                 1)
