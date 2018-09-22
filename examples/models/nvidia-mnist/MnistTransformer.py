@@ -10,12 +10,13 @@ class MnistTransformer(object):
         
     def preProcessMNIST(self,X):
         '''
-        Example single mnist transform. Move to separate component.
+        Convert values assumed to be in 0-1 range to a value in 0-255.
+        The remove the training mean needed by the Caffe2 model.
+        Finally reshape the output to that expected by the model
         '''
         X = X * 255
         X = 255 - X
         X = (X.reshape(784) - MEANS).reshape(28,28,1)
-        #X = X.astype(self.dtype)
         X = np.transpose(X, (2, 0, 1))
         return X
 
