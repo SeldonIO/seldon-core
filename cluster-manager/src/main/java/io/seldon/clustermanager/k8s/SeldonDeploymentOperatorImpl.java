@@ -379,6 +379,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 				{
 					V1.Container c = spec.getSpec().getContainers(cIdx);
 					// Only update graph and container if container is referenced in the inference graph
+					V1.Container c2;
 					if(isContainerInGraph(p.getGraph(), c))
 					{
 						String containerServiceKey = getPredictorServiceNameKey(c.getName());
@@ -394,10 +395,12 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 							servicePortMap.put(c.getName(), portNum);
 							currentServicePortNum++;
 						}
-						V1.Container c2 = this.updateContainer(c, findPredictiveUnitForContainer(mlDep.getSpec().getPredictors(pbIdx).getGraph(),c.getName()),portNum,deploymentName,predictorName);
-						mlBuilder.getSpecBuilder().getPredictorsBuilder(pbIdx).getComponentSpecsBuilder(ptsIdx).getSpecBuilder().addContainers(cIdx, c2);	
+						c2 = this.updateContainer(c, findPredictiveUnitForContainer(mlDep.getSpec().getPredictors(pbIdx).getGraph(),c.getName()),portNum,deploymentName,predictorName);
 						updatePredictiveUnitBuilderByName(mlBuilder.getSpecBuilder().getPredictorsBuilder(pbIdx).getGraphBuilder(),c2,containerServiceValue); 
 					}
+					else
+						c2 = c;
+					mlBuilder.getSpecBuilder().getPredictorsBuilder(pbIdx).getComponentSpecsBuilder(ptsIdx).getSpecBuilder().addContainers(cIdx, c2);	
 				}
 				mlBuilder.getSpecBuilder().getPredictorsBuilder(pbIdx).getComponentSpecsBuilder(ptsIdx).setMetadata(metaBuilder);
 			}
