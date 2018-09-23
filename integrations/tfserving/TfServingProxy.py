@@ -47,6 +47,8 @@ class TfServingProxy(object):
             result = self.stub.Predict(request)
             print(result)
             response = numpy.array(result.outputs[self.model_output].float_val)
+            if len(response.shape) == 1:
+                response = numpy.expand_dims(response, axis=0)
             return response
         else:
             print(self.rest_endpoint)
@@ -59,6 +61,8 @@ class TfServingProxy(object):
                 data = json.dumps(data))
             if response.status_code == 200:
                 result = numpy.array(response.json()["predictions"])
+                if len(result.shape) == 1:
+                    result = numpy.expand_dims(result, axis=0)
                 return result
             else:
                 print("Error from server:",response)
