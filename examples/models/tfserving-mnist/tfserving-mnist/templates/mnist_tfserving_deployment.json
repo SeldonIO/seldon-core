@@ -5,7 +5,8 @@
         "labels": {
             "app": "seldon"
         },
-        "name": "tfserving-mnist"
+        "name": "tfserving-mnist",
+	"namespace": "{{ .Release.Namespace }}"	
     },
     "spec": {
         "name": "tf-mnist",
