@@ -1,27 +1,9 @@
 const argparse = require("argparse");
-const express = require("express");
-const app = express();
-const bodyParser = require("body-parser");
 const nj = require("numjs");
-const grpc = require("grpc");
 const grpc_messages = require("./prediction_pb");
-const grpc_services = require("./prediction_grpc_pb");
 const process = require("process");
-let predict = null;
 const port = process.env.PREDICTIVE_UNIT_SERVICE_PORT || 5000;
-
-const loadModel = async function(model) {
-  model = "./model/" + model;
-  try {
-    const MyModel = require(model);
-    console.log("Loading Model", model);
-    let x = new MyModel();
-    await x.init();
-    return x.predict.bind(x);
-  } catch (msg) {
-    return msg;
-  }
-};
+let user_model = null;
 
 const get_predict_classNames = function(size) {
   let className = [];
@@ -34,6 +16,7 @@ const get_predict_classNames = function(size) {
 };
 
 const rest_data_to_array = function(data) {
+  let features = null;
   if (data["tensor"]) {
     features = nj
       .array(data["tensor"]["values"])
@@ -82,6 +65,13 @@ const array_to_grpc_data = function(array, original_datadef) {
   return data;
 };
 
+const dataFunctions = [
+  rest_data_to_array,
+  array_to_rest_data,
+  array_to_grpc_data,
+  get_predict_classNames
+];
+
 const parser = new argparse.ArgumentParser({
   description: "Seldon-core nodejs microservice builder",
   addHelp: true
@@ -105,70 +95,45 @@ parser.addArgument("--persistence", {
 });
 const args = parser.parseArgs();
 
-const getPredictFunction = async () => {
-  predict = await loadModel(
+const loadModel = async function(model) {
+  model = "./model/" + model;
+  try {
+    const MyModel = require(model);
+    console.log("Loading Model", model);
+    let x = new MyModel();
+    await x.init();
+    return x;
+  } catch (msg) {
+    return msg;
+  }
+};
+
+const createServer = () => {
+  if (args.service === "MODEL") {
+    require("./model_microservice.js")(
+      user_model,
+      args.api,
+      port,
+      ...dataFunctions
+    );
+  }
+};
+
+const getModelFunction = async () => {
+  user_model = await loadModel(
     args.model,
     args.api,
     args.service,
     args.persistence
   );
-  if (predict && typeof predict === "function") {
-    console.log("Predict function loaded successfully");
+  if (user_model) {
+    console.log("Model Class loaded successfully");
     createServer();
   } else {
-    console.log("Predict function not Found ", predict);
+    console.log("Model Class could not be loaded ", user_model);
     process.exit(1);
   }
 };
+
+getModelFunction();
 console.log(args.model, args.api, args.service, args.persistence);
-getPredictFunction();
-
-const createServer = () => {
-  if (args.service === "MODEL" && args.api === "REST") {
-    app.use(bodyParser.urlencoded({ extended: true }));
-    app.post("/predict", (req, res) => {
-      try {
-        body = JSON.parse(req.body.json);
-        body = body.data;
-      } catch (msg) {
-        console.log(msg);
-        res.status(500).send("Cannot parse predict input json " + req.body);
-      }
-      if (predict && typeof predict === "function") {
-        result = predict(rest_data_to_array(body), body.names);
-        result = { data: array_to_rest_data(result, body) };
-        res.status(200).send(result);
-      } else {
-        console.log("Predict function not Found");
-        res.status(500).send(predict);
-      }
-    });
-    app.listen(port, () => {
-      console.log(`NodeJs REST Microservice listening on port ${port}!`);
-    });
-  }
-
-  if (args.service === "MODEL" && args.api === "GRPC") {
-    function predictEndpoint(call, callback) {
-      let data = call.request.getData();
-      let body = { names: data.getNamesList() };
-
-      if (data.hasTensor()) {
-        data = data.getTensor();
-        body["tensor"] = {
-          shape: data.getShapeList(),
-          values: data.getValuesList()
-        };
-      } else {
-        body["ndarray"] = data.getNdarray();
-      }
-      result = predict(rest_data_to_array(body), body.names);
-      callback(null, array_to_grpc_data(result, body));
-    }
-    var server = new grpc.Server();
-    server.addService(grpc_services.ModelService, { predict: predictEndpoint });
-    server.bind("0.0.0.0:" + port, grpc.ServerCredentials.createInsecure());
-    server.start();
-    console.log(`NodeJs GRPC Microservice listening on port ${port}!`);
-  }
-};
