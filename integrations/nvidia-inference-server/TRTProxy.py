@@ -28,7 +28,7 @@ def model_dtype_to_np(model_dtype):
         return np.float64
     return None
 
-def parse_model(url, protocol, model_name, batch_size, verbose=False):
+def parse_model(url, protocol, model_name, verbose=False):
     ctx = ServerStatusContext(url, protocol, model_name, verbose)
     server_status = ctx.get_server_status()
 
