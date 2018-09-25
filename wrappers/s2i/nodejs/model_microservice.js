@@ -15,7 +15,7 @@ module.exports = (
   if (user_model.predict && typeof user_model.predict === "function") {
     console.log("Predict function loaded successfully");
   } else {
-    console.log("Predict function not Found ", predict);
+    console.log("Predict function not Found");
     process.exit(1);
   }
   let predict = user_model.predict.bind(user_model);
@@ -36,7 +36,7 @@ module.exports = (
         res.status(200).send(result);
       } else {
         console.log("Predict function not Found");
-        res.status(500).send(predict);
+        res.status(500).send(null);
       }
     });
     app.listen(port, () => {
