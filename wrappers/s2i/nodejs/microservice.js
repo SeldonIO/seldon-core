@@ -117,6 +117,14 @@ const createServer = () => {
       ...dataFunctions
     );
   }
+  if (args.service === "TRANSFORMER") {
+    require("./transformer_microservice.js")(
+      user_model,
+      args.api,
+      port,
+      ...dataFunctions
+    );
+  }
 };
 
 const getModelFunction = async () => {
