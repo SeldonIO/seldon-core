@@ -3,6 +3,7 @@ TRANSFORMER_IMAGE=seldonio/mnist-caffe2-transformer:0.1
 clean:
 	rm -f rm -f tensorrt_mnist/1/model.plan
 	rm -rf MNIST_data
+	rm -f mnist.json
 
 build_transformer:
 	s2i build . seldonio/seldon-core-s2i-python3:0.2 ${TRANSFORMER_IMAGE}
