@@ -61,7 +61,7 @@ class TRTProxy(object):
         else:
             self.grpc = False
         self.model_name = model_name
-        self.input_name, self.output_name, self.dtype, self.input_dims = parse_model(url, self.protocol_id, model_name,1 , False)
+        self.input_name, self.output_name, self.dtype, self.input_dims = parse_model(url, self.protocol_id, model_name, False)
         self.ctx = InferContext(self.url, self.protocol_id,self.model_name, self.model_version, False)
 
         
