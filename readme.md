@@ -114,7 +114,8 @@ Seldon-core allows various types of components to be built and plugged into the 
        * [Train and deploy a PyTorch MNIST classififer using FfDL and Seldon.](https://github.com/IBM/FfDL/blob/master/community/FfDL-Seldon/pytorch-model/README.md)
  * [Istio and Seldon](./docs/istio.md)
    * [Canary deployemts using Istio and Seldon.](examples/istio/canary_update/canary.ipynb).
-	
+ * [NVIDIA TensorRT and DL Inference Server](./integrations/nvidia-inference-server/README.md)
+ * [Tensorflow Serving](./integrations/tfserving/README.md)	
 
 ## Install
 
@@ -190,7 +191,8 @@ Three steps:
 | [Seldon Java Runtime Wrapper for S2I](docs/wrappers/java.md) | [seldonio/seldon-core-s2i-java-runtime](https://hub.docker.com/r/seldonio/seldon-core-s2i-java-runtime/tags/) | 0.1 | | 
 | [Seldon R Wrapper for S2I](docs/wrappers/r.md) | [seldonio/seldon-core-s2i-r](https://hub.docker.com/r/seldonio/seldon-core-s2i-r/tags/) | 0.1 | |
 | [Seldon NodeJS Wrapper for S2I](docs/wrappers/nodejs.md) | [seldonio/seldon-core-s2i-nodejs](https://hub.docker.com/r/seldonio/seldon-core-s2i-nodejs/tags/) | 0.1 | |
-
+| [Seldon Tensorflow Serving proxy](integrations/tfserving/README.md) | [seldonio/tfserving-proxy](https://hub.docker.com/r/seldonio/tfserving-proxy/tags/) | 0.1 | 
+| [Seldon NVIDIA inference server proxy](integrations/nvidia-inference-server/README.md) | [seldonio/nvidia-inference-server-proxy](https://hub.docker.com/r/seldonio/nvidia-inference-server-proxy/tags/) | 0.1 | 
 #### Java Packages
 
 | Description | Package | Version |

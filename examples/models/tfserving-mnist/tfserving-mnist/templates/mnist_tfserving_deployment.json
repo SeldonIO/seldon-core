@@ -1,0 +1,94 @@
+{
+    "apiVersion": "machinelearning.seldon.io/v1alpha2",
+    "kind": "SeldonDeployment",
+    "metadata": {
+        "labels": {
+            "app": "seldon"
+        },
+        "name": "tfserving-mnist",
+	"namespace": "{{ .Release.Namespace }}"	
+    },
+    "spec": {
+        "name": "tf-mnist",
+        "predictors": [
+            {
+                "componentSpecs": [{
+                    "spec": {
+                        "containers": [
+                            {
+                                "image": "seldonio/tfserving-proxy:0.1",
+                                "name": "tfserving-proxy"
+                            },
+			    {
+				"args": [
+				    "/usr/bin/tensorflow_model_server",
+				    "--port={{ .Values.tfserving.port }}",
+				    "--model_name=mnist-model",
+				    "--model_base_path={{ .Values.tfserving.model_base_path }}"
+				],
+				"image": "gcr.io/kubeflow-images-public/tensorflow-serving-1.7:v20180604-0da89b8a",
+				"name": "mnist-model",
+				"ports": [
+				    {
+					"containerPort": {{ .Values.tfserving.port }},
+					"protocol": "TCP"
+				    }
+				],
+				"resources": {
+				    "limits": {
+					"cpu": "4",
+					"memory": "4Gi"
+				    },
+				    "requests": {
+					"cpu": "1",
+					"memory": "1Gi"
+				    }
+				},
+				"securityContext": {
+				    "runAsUser": 1000
+				}
+			    }
+			],
+			"terminationGracePeriodSeconds": 1
+		    }
+		}],
+                "graph": {
+		    "name": "tfserving-proxy",
+		    "endpoint": { "type" : "REST" },
+		    "type": "MODEL",
+		    "children": [],
+		    "parameters":
+		    [
+			{
+			    "name":"grpc_endpoint",
+			    "type":"STRING",
+			    "value":"localhost:{{ .Values.tfserving.port }}"
+			},
+			{
+			    "name":"model_name",
+			    "type":"STRING",
+			    "value":"mnist-model"
+			},
+			{
+			    "name":"model_output",
+			    "type":"STRING",
+			    "value":"scores"
+			},
+			{
+			    "name":"model_input",
+			    "type":"STRING",
+			    "value":"images"
+			},
+			{
+			    "name":"signature_name",
+			    "type":"STRING",
+			    "value":"predict_images"
+			}
+		    ]
+		},
+                "name": "mnist-tfserving",
+                "replicas": 1
+            }
+        ]
+    }
+}
