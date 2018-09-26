@@ -21,6 +21,7 @@ import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 public interface SeldonDeploymentOperator {
 	
+	public SeldonDeployment updateStatus(SeldonDeployment mlDep);
 	public SeldonDeployment defaulting(SeldonDeployment mlDep);
 	public void validate(SeldonDeployment mlDep) throws SeldonDeploymentException;
 	public DeploymentResources createResources(SeldonDeployment mlDep) throws SeldonDeploymentException;
