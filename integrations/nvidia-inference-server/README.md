@@ -8,7 +8,7 @@ The Nvidia Proxy takes several parameters:
 
  | Parameter | Type | Value | Example |
  |-----------|------|-------|---------|
- | url | STRING | URL to Nvidia Infernce Server endpoint | 127.0.0.1:8000 |
+ | url | STRING | URL to Nvidia Inference Server endpoint | 127.0.0.1:8000 |
  | model_name | STRING | model name | tensorrt_mnist |
  | protocol | STRING | API protocol to use: HTTP or GRPC | HTTP |
 
@@ -164,4 +164,4 @@ An example SeldonDeployment Kubernetes resource taken from the MNIST demo is sho
 
 Examples: 
 
- * [MNIST with Nvidia Inference Server](../examples/models/nvidia-mnist/nvidia_mnist.ipynb).
+ * [MNIST with Nvidia Inference Server](../../examples/models/nvidia-mnist/nvidia_mnist.ipynb).
