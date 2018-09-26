@@ -119,4 +119,4 @@ An example resource with the proxy and a Tensorflow Serving server is shown belo
 
 Examples:
 
- * [MNIST with TensorFlow Serving Proxy](../examples/models/tfserving-mnist/tfserving-mnist.ipynb).
+ * [MNIST with TensorFlow Serving Proxy](../../examples/models/tfserving-mnist/tfserving-mnist.ipynb).
