@@ -269,6 +269,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 		    if (existing == null || !existing.getSpec().equals(mlDep.getSpec()))
 		    {
 		        logger.debug("Running updates for "+mlDep.getMetadata().getName());
+		        SeldonDeployment mlDepStatusUpdated = operator.updateStatus(mlDep);
 		        SeldonDeployment mlDep2 = operator.defaulting(mlDep);
 		        operator.validate(mlDep2);
 		        mlCache.put(mlDep2);
@@ -281,13 +282,13 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 		        //removeServices(client,namespace, mlDep2, resources.services); //Proto Client not presently working for deletion
 		        ApiClient client2 = clientProvider.getClient();
 		        removeServices(client2,namespace, mlDep2, resources.services);
-		        if (!mlDep.getSpec().equals(mlDep2.getSpec()))
+		        if (!mlDep.getSpec().equals(mlDepStatusUpdated.getSpec()))
 		        {
-		            logger.debug("Pushing updated SeldonDeployment "+mlDep2.getMetadata().getName()+" back to kubectl");
-		            crdHandler.updateSeldonDeployment(mlDep2);
+		            logger.debug("Pushing updated SeldonDeployment "+mlDepStatusUpdated.getMetadata().getName()+" back to kubectl");
+		            crdHandler.updateSeldonDeployment(mlDepStatusUpdated);
 		        }
 		        else
-		            logger.debug("Not pushing an update as no change to spec for SeldonDeployment "+mlDep2.getMetadata().getName());
+		            logger.debug("Not pushing an update as no change to status for SeldonDeployment "+mlDep2.getMetadata().getName());
 		    }
 		    else
 		    {

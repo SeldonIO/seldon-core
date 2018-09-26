@@ -356,7 +356,19 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		else
 			return svcName;
 	}
-	
+
+	@Override
+	public SeldonDeployment updateStatus(SeldonDeployment mlDep) {
+		SeldonDeployment.Builder mlBuilder = SeldonDeployment.newBuilder(mlDep);
+		
+		if (!mlBuilder.hasStatus())
+		{
+			mlBuilder.getStatusBuilder().setState(Constants.STATE_CREATING);
+		}
+		
+		return mlBuilder.build();
+	}
+
 	
 	@Override
 	public SeldonDeployment defaulting(SeldonDeployment mlDep) {
@@ -405,11 +417,6 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 				mlBuilder.getSpecBuilder().getPredictorsBuilder(pbIdx).getComponentSpecsBuilder(ptsIdx).setMetadata(metaBuilder);
 			}
 		}	
-		
-		if (!mlBuilder.hasStatus())
-		{
-			mlBuilder.getStatusBuilder().setState(Constants.STATE_CREATING);
-		}
 		
 		return mlBuilder.build();
 	}
@@ -770,6 +777,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		
 
 	}
+
 
 
 	
