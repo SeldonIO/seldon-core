@@ -136,13 +136,14 @@ The name of the JS file containing the model.
 
 ### API_TYPE
 
-API type to create. Can be REST only at present.
+API type to create. Can be REST or GRPC.
 
 ### SERVICE_TYPE
 
 The service type being created. Available options are:
 
 - MODEL
+- TRANSFORMER
 
 ### PERSISTENCE
 
