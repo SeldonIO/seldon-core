@@ -69,9 +69,15 @@ module.exports = (
         res.status(500).send(null);
       }
     });
-    app.listen(port, () => {
+    var server = app.listen(port, () => {
       console.log(`NodeJs REST Microservice listening on port ${port}!`);
     });
+    function stopServer(code) {
+      server.close();
+      console.log(`About to exit with code: ${code}`);
+    }
+    process.on("SIGINT", stopServer.bind(this));
+    process.on("SIGTERM", stopServer.bind(this));
   }
 
   if (api === "GRPC") {
