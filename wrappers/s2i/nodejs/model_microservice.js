@@ -20,7 +20,7 @@ module.exports = (
   ) {
     console.log("Send feedback function loaded successfully");
   } else {
-    console.log("Predict function not Found");
+    console.log(user_model);
     process.exit(1);
   }
   let predict = user_model.predict ? user_model.predict.bind(user_model) : null;
@@ -139,5 +139,11 @@ module.exports = (
     server.bind("0.0.0.0:" + port, grpc.ServerCredentials.createInsecure());
     server.start();
     console.log(`NodeJs GRPC Microservice listening on port ${port}!`);
+    function stopServer(code) {
+      server.forceShutdown();
+      console.log(`About to exit with code: ${code}`);
+    }
+    process.on("SIGINT", stopServer.bind(this));
+    process.on("SIGTERM", stopServer.bind(this));
   }
 };
