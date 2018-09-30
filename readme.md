@@ -154,7 +154,10 @@ Three steps:
  - [Overview of Openshift source-to-image use in Seldon-Core](./docs/articles/openshift_s2i.md)
  - [IBM Framework for Deep Learning and Seldon-Core](https://developer.ibm.com/code/2018/06/12/serve-it-hot-deploy-your-ffdl-trained-models-using-seldon/)
  - [CartPole game by Reinforcement Learning, a journey from training to inference ](https://github.com/hypnosapos/cartpole-rl-remote/)
- 
+
+### Release Highlights
+
+ * [0.2.3 Release Highlights](docs/articles/release-0.2.3.md)
 
 ## Testing
 
