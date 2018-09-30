@@ -1,0 +1,9 @@
+apiVersion: v1
+description: Seldon Core single model template
+keywords:
+- kubernetes
+- machine-learning
+name: seldon-single-model
+sources:
+- https://github.com/SeldonIO/seldon-core
+version: 0.1
