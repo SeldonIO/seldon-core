@@ -21,7 +21,7 @@ To allow users to easily wrap machine learning components built using different 
 
 # Define Runtime Service Graph
 
-To run your machine learning graph on Kubernetes you need to define how the components you created in the last step fit together to represent a service graph. This is defined inside a [SeldonDeployment Kubernetes Custom resource](../reference/seldon-deployment.md). A [guide to constructing this custom resource service graph is provided](../crd/readme.md).
+To run your machine learning graph on Kubernetes you need to define how the components you created in the last step fit together to represent a service graph. This is defined inside a [SeldonDeployment Kubernetes Custom resource](../reference/seldon-deployment.md). A [guide to constructing this custom resource service graph is provided](../inference-graph.md).
 
 ![graph](./graph.png)
 
@@ -29,8 +29,12 @@ To run your machine learning graph on Kubernetes you need to define how the comp
 
 You can use ```kubectl``` to deploy your ML service like any other Kubernetes resource. This is discussed [here](../deploying.md).
 
-# Worked Examples
+# Next Steps
 
  * [Jupyter notebooks showing worked examples](../../readme.md#quick-start)
+ * Templated Helm Charts:
+   * [Single Model with optional Outlier Detector](../../helm-charts/seldon-single-model/README.md)
+   * [AB Test between two models](../../helm-charts/seldon-abtest/README.md)
+   * [Multi-Armed Bandit of two models](../../helm-charts/seldon-mab/README.md)   
  * [Integration with other machine learning frameworks](../../readme.md#integrations)
 
