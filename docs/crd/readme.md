@@ -24,7 +24,7 @@ message SeldonDeployment {
 }
 ```
 
-The core deployment spec consists of a set of ```predictors```. Each predictor represents a seperate runtime serving graph. The set of predictors will serve request as controlled by a load balancer. At present the share of traffic will be in relation to the number of replicas each predictor has. A use case for two predictors would be a main deployment and a canary, with the main deployment having 9 replicas and the canary 1, so the canary receives 10% of the overall traffic. Each predictor will be a seperately set of managed deployments with Kubernetes so it is safe to add and remove predictors without affecting existing predictors.
+The core deployment spec consists of a set of ```predictors```. Each predictor represents a separate runtime serving graph. The set of predictors will serve request as controlled by a load balancer. At present the share of traffic will be in relation to the number of replicas each predictor has. A use case for two predictors would be a main deployment and a canary, with the main deployment having 9 replicas and the canary 1, so the canary receives 10% of the overall traffic. Each predictor will be a separately set of managed deployments with Kubernetes so it is safe to add and remove predictors without affecting existing predictors.
 
 To allow an OAuth API to be provisioned you should specify an OAuth key and secret. If you are using Ambassador you will not need this as you can plug in your own external authentication using Ambassador.
 
@@ -44,7 +44,7 @@ For each predictor you should at a minimum specify:
 
  * A unique name
  * A PredictiveUnit graph that presents the tree of components to deploy.
- * One or more componentSpecs which describes the set of images for parts of your container graph that will be instigated as microservice containers. These containers will have been wrapped to work within the [internal API](../reference/internal-api.md). This component spec is a standard [PodTemplateSpec](https://kubernetes.io/docs/api-reference/extensions/v1beta1/definitions/#_v1_podtemplatespec). For complex grahs you can decide to use several componentSpecs so as to separate your components into separate Pods each with their own resource requirements.
+ * One or more componentSpecs which describes the set of images for parts of your container graph that will be instigated as microservice containers. These containers will have been wrapped to work within the [internal API](../reference/internal-api.md). This component spec is a standard [PodTemplateSpec](https://kubernetes.io/docs/api-reference/extensions/v1beta1/definitions/#_v1_podtemplatespec). For complex graphs you can decide to use several componentSpecs so as to separate your components into separate Pods each with their own resource requirements.
      * If you leave the ports empty for each container they will be added automatically and matched to the ports in the graph specification. If you decide to specify the ports manually they should match the port specified for the matching component in the graph specification.
  * the number of replicas of this predictor to deploy
 
@@ -56,20 +56,20 @@ message PredictorSpec {
   optional int32 replicas = 4; // The number of replicas of the predictor to create.
   map<string,string> annotations = 5; // Arbitrary annotations.
   optional k8s.io.api.core.v1.ResourceRequirements engineResources = 6; // Optional set of resources for the Seldon engine which is added to each Predictor graph to manage the request/response flow
-  map<string,string> labels = 7; // labels to be attached to entry deplyment for this predictor
+  map<string,string> labels = 7; // labels to be attached to entry deployment for this predictor
 }
 
 ```
 
-The predictive unit graph is a tree. Each node is of a particular type. If the implementation is not specified then a microservice is assumed and you must define a matching named container within the componentSpec above. Each type of PredictiveUnit has a standard set of methods it is expected to manage, see [here](../reference/seldon-deployment.md). 
+The predictive unit graph is a tree. Each node is of a particular type. If the implementation is not specified then a microservice is assumed and you must define a matching named container within the componentSpec above. Each type of PredictiveUnit has a standard set of methods it is expected to manage, see [here](../reference/seldon-deployment.md).
 
 For each node in the graph:
 
  * A unique name. If the node describes a microservice then it must match a named container with the componentSpec.
  * The children nodes.
  * The type of the predictive unit : MODEL, ROUTER, COMBINER, TRANSFORMER or OUTPUT_TRANSFORMER.
- * The implementation. This can be left blank if it will be a microserice as this is the default otherwise choose from the available appropriate implementations provided internally.
- * Methods. This can be left blank if you wish to follow the standard methods for your PredictiveNode type : see [here](../reference/seldon-deployment.md). 
+ * The implementation. This can be left blank if it will be a microservice as this is the default otherwise choose from the available appropriate implementations provided internally.
+ * Methods. This can be left blank if you wish to follow the standard methods for your PredictiveNode type : see [here](../reference/seldon-deployment.md).
  * Endpoint. In here you should minimally if this a microservice specify whether the PredictiveUnit will use REST or gRPC. Ports will be defined automatically if not specified.
  * Parameters. Specify any parameters you wish to pass to the PredictiveUnit. These will be passed in an environment variable called PREDICTIVE_UNIT_PARAMETERS as a JSON list.
 

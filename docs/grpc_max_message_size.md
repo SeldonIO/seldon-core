@@ -1,6 +1,6 @@
 # GRPC Max Message Size
 
-GRPC has a default max message size of 4MB. If you need to run models whose input features or output predictions are larger than this you can congifure Seldon Core to run with gRPC server/clients that handle a larger mesage size with annotations.
+GRPC has a default max message size of 4MB. If you need to run models whose input features or output predictions are larger than this you can configure Seldon Core to run with gRPC server/clients that handle a larger message size with annotations.
 
 Add the annotation ```seldon.io/grpc-max-message-size``` with the number of bytes of the largest expected message. For example the SeldonDeployment resource below sets this to 10MB:
 

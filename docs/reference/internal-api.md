@@ -13,7 +13,7 @@ To add microservice components to a runtime prediction graph users need to creat
 
 ## Model
 
-A service to return predictions. 
+A service to return predictions.
 
 ### REST API
 
@@ -25,7 +25,7 @@ A service to return predictions.
  | Request | JSON representation of [```SeldonMessage```](./prediction.md/#proto-buffer-and-grpc-definition) |
  | Response | JSON representation of [```SeldonMessage```](./prediction.md/#proto-buffer-and-grpc-definition) |
 
-Example request payload: 
+Example request payload:
 
 ```json
 {"data":{"names":["a","b"],"tensor":{"shape":[2,2],"values":[0,0,1,1]}}}
@@ -37,7 +37,7 @@ Example request payload:
 service Model {
   rpc Predict(SeldonMessage) returns (SeldonMessage) {};
  }
-``` 
+```
 
 See full [proto definition](./prediction.md/#proto-buffer-and-grpc-definition).
 
@@ -55,7 +55,7 @@ A service to route requests to one of its children and receive feedback rewards 
  | Request | JSON representation of [```SeldonMessage```](./prediction.md/#proto-buffer-and-grpc-definition) |
  | Response | JSON representation of [```SeldonMessage```](./prediction.md/#proto-buffer-and-grpc-definition) |
 
-Example request payload: 
+Example request payload:
 
 ```json
 {"data":{"names":["a","b"],"tensor":{"shape":[2,2],"values":[0,0,1,1]}}}
@@ -69,7 +69,7 @@ Example request payload:
  | Request | JSON representation of [```Feedback```](./prediction.md/#proto-buffer-and-grpc-definition) |
  | Response | JSON representation of [```SeldonMessage```](./prediction.md/#proto-buffer-and-grpc-definition) |
 
-Example request payload: 
+Example request payload:
 
 ```json
     "request": {
@@ -102,13 +102,13 @@ service Router {
   rpc Route(SeldonMessage) returns (SeldonMessage) {};
   rpc SendFeedback(Feedback) returns (SeldonMessage) {};
  }
-``` 
+```
 
 See full [proto definition](./prediction.md/#proto-buffer-and-grpc-definition).
 
 ## Combiner
 
-A service to combine reponses from its children into a single response. 
+A service to combine responses from its children into a single response.
 
 ### REST API
 
@@ -127,7 +127,7 @@ A service to combine reponses from its children into a single response.
 service Combiner {
   rpc Aggregate(SeldonMessageList) returns (SeldonMessage) {};
 }
-``` 
+```
 
 See full [proto definition](./prediction.md/#proto-buffer-and-grpc-definition).
 
@@ -147,7 +147,7 @@ A service to transform its input.
  | Request | JSON representation of [```SeldonMessage```](./prediction.md/#proto-buffer-and-grpc-definition) |
  | Response | JSON representation of [```SeldonMessage```](./prediction.md/#proto-buffer-and-grpc-definition) |
 
-Example request payload: 
+Example request payload:
 
 ```json
 {"data":{"names":["a","b"],"tensor":{"shape":[2,2],"values":[0,0,1,1]}}}
@@ -159,7 +159,7 @@ Example request payload:
 service Transformer {
   rpc TransformInput(SeldonMessage) returns (SeldonMessage) {};
 }
-``` 
+```
 
 See full [proto definition](./prediction.md/#proto-buffer-and-grpc-definition).
 
@@ -179,7 +179,7 @@ A service to transform the response from its child.
  | Request | JSON representation of [```SeldonMessage```](./prediction.md/#proto-buffer-and-grpc-definition) |
  | Response | JSON representation of [```SeldonMessage```](./prediction.md/#proto-buffer-and-grpc-definition) |
 
-Example request payload: 
+Example request payload:
 
 ```json
 {"data":{"names":["a","b"],"tensor":{"shape":[2,2],"values":[0,0,1,1]}}}
@@ -191,7 +191,7 @@ Example request payload:
 service OutputTransformer {
   rpc TransformOutput(SeldonMessage) returns (SeldonMessage) {};
 }
-``` 
+```
 
 See full [proto definition](./prediction.md/#proto-buffer-and-grpc-definition).
 
