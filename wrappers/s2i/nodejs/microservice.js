@@ -1,23 +1,9 @@
 const argparse = require("argparse");
-const express = require("express");
-const app = express();
-const bodyParser = require("body-parser");
 const nj = require("numjs");
-app.use(bodyParser.urlencoded({ extended: true }));
-let predict = null;
+const grpc_messages = require("./prediction_pb");
+const process = require("process");
 const port = process.env.PREDICTIVE_UNIT_SERVICE_PORT || 5000;
-const loadModel = async function(model) {
-  model = "./model/" + model;
-  try {
-    const MyModel = require(model);
-    console.log("Loading Model", model);
-    let x = new MyModel();
-    await x.init();
-    return x.predict.bind(x);
-  } catch (msg) {
-    return msg;
-  }
-};
+let user_model = null;
 
 const get_predict_classNames = function(size) {
   let className = [];
@@ -30,6 +16,7 @@ const get_predict_classNames = function(size) {
 };
 
 const rest_data_to_array = function(data) {
+  let features = null;
   if (data["tensor"]) {
     features = nj
       .array(data["tensor"]["values"])
@@ -58,6 +45,33 @@ const array_to_rest_data = function(array, original_datadef) {
   return data;
 };
 
+const array_to_grpc_data = function(array, original_datadef) {
+  array = nj.array(array);
+
+  var defdata = new grpc_messages.DefaultData();
+  defdata.setNamesList(get_predict_classNames(array.shape[1]));
+  if (original_datadef["tensor"]) {
+    var tensorData = new grpc_messages.Tensor();
+    tensorData.setShapeList(array.shape.length > 1 ? array.shape : []);
+    tensorData.setValuesList(array.flatten().tolist());
+    defdata.setTensor(tensorData);
+  } else if (original_datadef["ndarray"]) {
+    datadef.setNdarray(array.tolist());
+  } else {
+    datadef.setNdarray(array.tolist());
+  }
+  var data = new grpc_messages.SeldonMessage();
+  data.setData(defdata);
+  return data;
+};
+
+const dataFunctions = [
+  rest_data_to_array,
+  array_to_rest_data,
+  array_to_grpc_data,
+  get_predict_classNames
+];
+
 const parser = new argparse.ArgumentParser({
   description: "Seldon-core nodejs microservice builder",
   addHelp: true
@@ -81,34 +95,53 @@ parser.addArgument("--persistence", {
 });
 const args = parser.parseArgs();
 
-console.log(args.model, args.api, args.service, args.persistence);
+const loadModel = async function(model) {
+  model = "./model/" + model;
+  try {
+    const MyModel = require(model);
+    console.log("Loading Model", model);
+    let x = new MyModel();
+    await x.init();
+    return x;
+  } catch (msg) {
+    return msg;
+  }
+};
 
-if (args.service === "MODEL" && args.api === "REST") {
-  app.post("/predict", async (req, res) => {
-    try {
-      body = JSON.parse(req.body.json);
-      body = body.data;
-    } catch (msg) {
-      console.log(msg);
-      res.status(500).send("Cannot parse predict input json " + req.body);
-    }
-    if (predict && typeof predict === "function") {
-      result = predict(rest_data_to_array(body), body.names);
-      result = { data: array_to_rest_data(result, body) };
-      res.status(200).send(result);
-    } else {
-      console.log("Predict function not Found");
-      res.status(500).send(predict);
-    }
-  });
-}
+const createServer = () => {
+  if (args.service === "MODEL") {
+    require("./model_microservice.js")(
+      user_model,
+      args.api,
+      port,
+      ...dataFunctions
+    );
+  }
+  if (args.service === "TRANSFORMER") {
+    require("./transformer_microservice.js")(
+      user_model,
+      args.api,
+      port,
+      ...dataFunctions
+    );
+  }
+};
 
-app.listen(port, async () => {
-  predict = await loadModel(
+const getModelFunction = async () => {
+  user_model = await loadModel(
     args.model,
     args.api,
     args.service,
     args.persistence
   );
-  console.log(`NodeJs Microservice listening on port ${port}!`);
-});
+  if (user_model) {
+    console.log("Model Class loaded successfully");
+    createServer();
+  } else {
+    console.log("Model Class could not be loaded ", user_model);
+    process.exit(1);
+  }
+};
+
+getModelFunction();
+console.log(args.model, args.api, args.service, args.persistence);

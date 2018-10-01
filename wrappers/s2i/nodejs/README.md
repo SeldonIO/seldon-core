@@ -57,7 +57,7 @@ This builds the base wrapper image needed for any nodejs model to be deployed on
 ### Building s2i nodejs model Image
 
 ```
-s2i build test/model-template-app seldonio/seldon-core-s2i-nodejs seldon-core-template-model
+s2i build -E ./test/model-template-app/.s2i/environment test/model-template-app seldonio/seldon-core-s2i-nodejs seldon-core-template-model
 ```
 
 This creates the actual nodejs model image as a seldon component
@@ -76,4 +76,23 @@ Make sure the current user can run npm commands.
 
 ```
 make test
+```
+
+### GRPC code-generated Proto JS Files
+
+This is the code pre-generated using protoc and the Node gRPC protoc plugin, and the generated code can be found in various `*_pb.js` files.
+The creation of the grpc srevice assumes these files to be present.
+
+```
+cd ../../../proto/
+npm install -g grpc-tools
+grpc_tools_node_protoc --js_out=import_style=commonjs,binary:../wrappers/s2i/nodejs/ --grpc_out=../wrappers/s2i/nodejs --plugin=protoc-gen-grpc=`which grpc_tools_node_protoc_plugin` prediction.proto
+cd ../wrappers/s2i/nodejs/
+```
+
+### Test using GRPC client
+
+```
+npm i
+node grpc_client.js
 ```

@@ -1,4 +1,4 @@
-## NodeJs tensorflow example
+## NodeJs model example
 
 This model example takes an input of 10 different features and predicts a out for the same.
 For the training part it uses a random normally distributed input set of 100 rows i.e a data set of [100,10] and trains it for another random normally distributed data set of size [100,1].
