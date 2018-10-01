@@ -1,5 +1,5 @@
 {
-  "name": "node_tensorflow",
+  "name": "model-template-app",
   "version": "1.0.0",
   "description": "",
   "main": "predict.js",
