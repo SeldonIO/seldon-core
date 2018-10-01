@@ -7,6 +7,7 @@ outlier_detection:
   enabled: false
   image:
     name: seldonio/outlier_mahalanobis:0.2
+  n_components: 2
   name: outlier-detector
 replicas: 1
 # Add oauth key and secret if using the default API Oauth Gateway for ingress
