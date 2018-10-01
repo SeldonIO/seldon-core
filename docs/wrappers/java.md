@@ -3,14 +3,14 @@
 
 In this guide, we illustrate the steps needed to wrap your own Java model in a docker image ready for deployment with Seldon Core using [source-to-image app s2i](https://github.com/openshift/source-to-image).
 
-If you are not familar with s2i you can read [general instructions on using s2i](./s2i.md) and then follow the steps below.
+If you are not familiar with s2i you can read [general instructions on using s2i](./s2i.md) and then follow the steps below.
 
 
 # Step 1 - Install s2i
 
  [Download and install s2i](https://github.com/openshift/source-to-image#installation)
 
- * Prequisites for using s2i are:
+ * Prerequisites for using s2i are:
    * Docker
    * Git (if building from a remote git repo)
 
@@ -76,25 +76,25 @@ default public SeldonMessage transformOutput(SeldonMessage request);
 default public SeldonMessage aggregate(SeldonMessageList request);
 ```
 
-Your implementing class should be created as a Spring Component so it will be managed by Spring. There is a full H2O example in ```examples/models/h2o_mojo/src/main/java/io/seldon/example/h2o/model```, whose implmentation is show below:
+Your implementing class should be created as a Spring Component so it will be managed by Spring. There is a full H2O example in ```examples/models/h2o_mojo/src/main/java/io/seldon/example/h2o/model```, whose implementation is shown below:
 
 ```java
 @Component
 public class H2OModelHandler implements SeldonPredictionService {
 	private static Logger logger = LoggerFactory.getLogger(H2OModelHandler.class.getName());
 	EasyPredictModelWrapper model;
-	
+
 	public H2OModelHandler() throws IOException {
 		MojoReaderBackend reader =
                 MojoReaderBackendFactory.createReaderBackend(
                   getClass().getClassLoader().getResourceAsStream(
-                     "model.zip"), 
+                     "model.zip"),
                       MojoReaderBackendFactory.CachingStrategy.MEMORY);
 		MojoModel modelMojo = ModelMojoReader.readFrom(reader);
 		model = new EasyPredictModelWrapper(modelMojo);
 		logger.info("Loaded model");
 	}
-	
+
 	@Override
 	public SeldonMessage predict(SeldonMessage payload) {
 		List<RowData> rows = H2OUtils.convertSeldonMessage(payload.getData());
@@ -141,16 +141,16 @@ API_TYPE=REST
 SERVICE_TYPE=MODEL
 ```
 
-These values can also be provided or overriden on the command line when building the image.
+These values can also be provided or overridden on the command line when building the image.
 
 # Step 3 - Build your image
-Use ```s2i build``` to create your Docker image from source code. You will need Docker installed on the machine and optionally git if your source code is in a public git repo. 
+Use ```s2i build``` to create your Docker image from source code. You will need Docker installed on the machine and optionally git if your source code is in a public git repo.
 
 Using s2i you can build directly from a git repo or from a local source folder. See the [s2i docs](https://github.com/openshift/source-to-image/blob/master/docs/cli.md#s2i-build) for further details. The general format is:
 
 ```bash
 s2i build <git-repo> seldonio/seldon-core-s2i-java-build:0.1 <my-image-name> --runtime-image seldonio/seldon-core-s2i-java-runtime:0.1
-s2i build <src-folder> seldonio/seldon-core-s2i-java-build:0.1 <my-image-name> --runtime-image seldonio/seldon-core-s2i-java-runtime:0.1 
+s2i build <src-folder> seldonio/seldon-core-s2i-java-build:0.1 <my-image-name> --runtime-image seldonio/seldon-core-s2i-java-runtime:0.1
 ```
 
 An example invocation using the test template model inside seldon-core:
@@ -185,7 +185,7 @@ s2i build --help
 # Reference
 
 ## Environment Variables
-The required environment variables understood by the builder image are explained below. You can provide them in the ```.s2i/enviroment``` file or on the ```s2i build``` command line.
+The required environment variables understood by the builder image are explained below. You can provide them in the ```.s2i/environment``` file or on the ```s2i build``` command line.
 
 
 ### API_TYPE

@@ -3,14 +3,14 @@
 
 In this guide, we illustrate the steps needed to wrap your own python model in a docker image ready for deployment with Seldon Core using [source-to-image app s2i](https://github.com/openshift/source-to-image).
 
-If you are not familar with s2i you can read [general instructions on using s2i](./s2i.md) and then follow the steps below.
+If you are not familiar with s2i you can read [general instructions on using s2i](./s2i.md) and then follow the steps below.
 
 
 # Step 1 - Install s2i
 
  [Download and install s2i](https://github.com/openshift/source-to-image#installation)
 
- * Prequisites for using s2i are:
+ * Prerequisites for using s2i are:
    * Docker
    * Git (if building from a remote git repo)
 
@@ -39,7 +39,7 @@ class MyModel(object):
     """
     Model template. You can load your model parameters in __init__ from a location accessible at runtime
     """
-    
+
     def __init__(self):
         """
         Add any initialization parameters. These will be passed at runtime from the graph definition parameters defined in your seldondeployment kubernetes resource manifest.
@@ -65,7 +65,7 @@ class MyModel(object):
  * Your return array should be at least 2-dimensional.
 
 ## requirements.txt
-Populate a requirements.txt with any software dependencies your code requires. These will be installled via pip when creating the image. You can instead provide a setup.py if you prefer.
+Populate a requirements.txt with any software dependencies your code requires. These will be installed via pip when creating the image. You can instead provide a setup.py if you prefer.
 
 ## .s2i/environment
 
@@ -78,7 +78,7 @@ SERVICE_TYPE=MODEL
 PERSISTENCE=0
 ```
 
-These values can also be provided or overriden on the command line when building the image.
+These values can also be provided or overridden on the command line when building the image.
 
 # Step 3 - Build your image
 Use ```s2i build``` to create your Docker image from source code. You will need Docker installed on the machine and optionally git if your source code is in a public git repo. You can choose from three python builder images
@@ -128,7 +128,7 @@ s2i build --help
 # Reference
 
 ## Environment Variables
-The required environment variables understood by the builder image are explained below. You can provide them in the ```.s2i/enviroment``` file or on the ```s2i build``` command line.
+The required environment variables understood by the builder image are explained below. You can provide them in the ```.s2i/environment``` file or on the ```s2i build``` command line.
 
 
 ### MODEL_NAME

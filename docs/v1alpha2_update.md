@@ -1,9 +1,9 @@
 # V1Alpha2 Update
 
-  * The ```PredictorSpec componentSpec``` is now ```componentSpecs``` and takes a list of ```PodTemplateSpecs``` allowing you to split your runtime graph into separate Kubernetes Deployments as needed. See the new [proto definiton](./proto/seldon_deployment.proto). To update existing resources:
+  * The ```PredictorSpec componentSpec``` is now ```componentSpecs``` and takes a list of ```PodTemplateSpecs``` allowing you to split your runtime graph into separate Kubernetes Deployments as needed. See the new [proto definition](./proto/seldon_deployment.proto). To update existing resources:
       * Change ```    "apiVersion": "machinelearning.seldon.io/v1alpha1"``` to ```    "apiVersion": "machinelearning.seldon.io/v1alpha2"```
       * Change ```componentSpec``` -> ```componentSpecs``` and enclose the existing ```PodTemplateSpec``` in a single element list
-    
+
 For example change:
 
 ```
