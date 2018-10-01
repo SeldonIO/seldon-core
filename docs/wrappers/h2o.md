@@ -1,6 +1,6 @@
 # Packaging a H2O model for Seldon Core
 
-This document outlines the steps needed to wrap any H2O model using Seldon's python wrappers into a docker image ready for deployment with Seldon Core. The process is nearly identical to [wrapping a python model with the seldon wrapper](python-docker.md), so be sure to read the documentation on this process first. 
+This document outlines the steps needed to wrap any H2O model using Seldon's python wrappers into a docker image ready for deployment with Seldon Core. The process is nearly identical to [wrapping a python model with the seldon wrapper](python-docker.md), so be sure to read the documentation on this process first.
 The main differences are:
 * The data sent to the model needs to be transformed from numpy arrays into H2O Frames and back;
 * The base docker image has to be changed, because H2O needs a Java Virtual Machine installed in the container.
@@ -14,7 +14,7 @@ You will find below explanations for:
 
 In order to wrap a H2O model with the python wrappers, you need a python+java docker image available to use as base image. One way to build a suitable base image locally is by using the [Dockerfile provided by H2O](https://h2o-release.s3.amazonaws.com/h2o/rel-turing/1/docs-website/h2o-docs/docker.html):
 
-* Make sure you have docker deamon running.
+* Make sure you have docker daemon running.
 * Download the [Dockerfile provided by H2O](https://github.com/h2oai/h2o-3/blob/master/Dockerfile) in any folder.
 * Create the base docker image (we will call it H2OBase:1.0 in this example):
 
@@ -31,24 +31,24 @@ It is assumed you have already trained a H2O model and saved it in a file (calle
 
 You can now wrap the model using Seldon's python wrappers. This is similar to the general python model wrapping process except that you need to specify the H2O base image as an argument when calling the wrapping script.
 
-We provide a file [H2OModel.py](https://github.com/SeldonIO/seldon-core/blob/master/examples/models/h2o_example/H2OModel.py) as a template for the model entrypoint, which handles loading the H2OModel and transforming the data between numpy and H2O Frames.  In what follows we assume you are using this template. The H2O model is loaded in the class constructor and the numpy arrays are turned into H2O Frames when received in the predict method. 
+We provide a file [H2OModel.py](https://github.com/SeldonIO/seldon-core/blob/master/examples/models/h2o_example/H2OModel.py) as a template for the model entry point, which handles loading the H2OModel and transforming the data between numpy and H2O Frames.  In what follows we assume you are using this template. The H2O model is loaded in the class constructor and the numpy arrays are turned into H2O Frames when received in the predict method.
 
 Detailed steps:
 1. Put the files H2OModel.py, requirements.txt and SavedModel.h2o in a directory created for this purpose.
-2. Open the file H2OModel.py with your favorite text editor and set the variable MODEL_PATH to:
+2. Open the file H2OModel.py with your favourite text editor and set the variable MODEL_PATH to:
 
     ```python
     MODEL_PATH=./SavedModel.h2o
     ```
-       
+
 3. Run the python wrapping scripts, with the additional ````--base-image``` argument:
 
 	```bash
 	docker run -v /path/to/your/model/folder:/model seldonio/core-python-wrapper:0.7 /model H2OModel 0.1 myrepo --base-image=H2OBase:1.0
 	```
-	
+
 	"0.1" is the version of the docker image that will be created. "myrepo" is the name of your dockerhub repository.
-	
+
 4. CD into the newly generated "build" directory and run:
 
    ```bash
@@ -74,7 +74,7 @@ Here we give a step by step example in which we will train and save a [H2O model
     ```bash
     git clone https://github.com/SeldonIO/seldon-core
     ```
-    
+
 2. Train and save the H2O model for bad loans prediction:
 
     ```bash
@@ -89,6 +89,6 @@ Here we give a step by step example in which we will train and save a [H2O model
     ```bash
     cd ../../
 	docker run -v models/h2o_example:my_model seldonio/core-python-wrapper:0.7 my_model H2OModel 0.1 myrepo --base-image=H2OBase:1.0
-    ``` 
+    ```
 
     This will create a docker image "seldonio/h2omodel:0.1", which is ready to be deployed in seldon-core.

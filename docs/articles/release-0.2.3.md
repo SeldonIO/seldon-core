@@ -44,7 +44,7 @@ spec:
 
 We have an external contribution by @SachinVarghese that provides an initial Seldon Core wrapper for NodeJS allowing you to take advantage of the emerging machine learning tools within the Javascript ecosystem. Thanks Sachin!
 
-An example notebook for an [MNIST Tensorflow model](https://github.com/SeldonIO/seldon-core/blob/master/examples/models/nodejs_tensorflow/nodejs_tensorflow.ipynb) is provided which has the following javascript inference code:
+An example notebook for an [MNIST Tensorflow model](https://github.com/SeldonIO/seldon-core/blob/master/examples/models/nodejs_tensorflow/nodejs_tensorflow.ipynb) is provided which has the following Javascript inference code:
 
 ```
 const tf = require("@tensorflow/tfjs");

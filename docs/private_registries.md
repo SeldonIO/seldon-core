@@ -1,6 +1,6 @@
 # Pulling from Private Docker Registries
 
-To pull images from private Docker registries simply add imagePullSecrets to the podTemplateSpecs for your SeldonDeployment resources. For example, show below is a simple model which uses a private image ```private-docker-repo/my-image```.  You will need to have created the kubernetes docker registry secret ```myreposecret``` before applying the resource to your cluster.
+To pull images from private Docker registries simply add imagePullSecrets to the podTemplateSpecs for your SeldonDeployment resources. For example, show below is a simple model which uses a private image ```private-docker-repo/my-image```.  You will need to have created the Kubernetes docker registry secret ```myreposecret``` before applying the resource to your cluster.
 
 ```
 {

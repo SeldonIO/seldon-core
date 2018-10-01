@@ -22,7 +22,7 @@ Each metric has the following key value pairs for further filtering which will b
   * predictor_version
     * This will be derived from the predictor metadata labels
   * model_name
-  * model_image  
+  * model_image
   * model_image
 
 
@@ -39,8 +39,8 @@ helm install seldon-core-analytics --name seldon-core-analytics \
 
 The available parameters are:
 
- * ```grafana_prom_admin_password``` : The admin user grafana password to use.
- * ```persistence.enabled``` : Whether prometheus persistence is enabled.
+ * ```grafana_prom_admin_password``` : The admin user Grafana password to use.
+ * ```persistence.enabled``` : Whether Prometheus persistence is enabled.
 
 Once running you can expose the Grafana dashboard with:
 
