@@ -147,6 +147,7 @@ Three steps:
 ## Articles/Blogs/Videos
 
  - [Kubecon Europe 2018 - Serving Machine Learning Models at Scale with Kubeflow and Seldon](https://www.youtube.com/watch?v=pDlapGtecbY)
+ - [Using PyTorch 1.0 and ONNX with Fabric for Deep Learning](https://developer.ibm.com/blogs/2018/10/01/announcing-pytorch-1-support-in-fabric-for-deep-learning/)
  - [AI on Kubernetes - O'Reilly Tutorial](https://github.com/dwhitena/oreilly-ai-k8s-tutorial)
  - [Scalable Data Science - The State of DevOps/MLOps in 2018](https://axsauze.github.io/scalable-data-science/#/)
  - [Istio Weekly Community Meeting - Seldon-core with Istio](https://www.youtube.com/watch?v=ydculT4e7FQ&feature=youtu.be&t=7m48s)
