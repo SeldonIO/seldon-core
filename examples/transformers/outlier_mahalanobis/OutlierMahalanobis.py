@@ -21,6 +21,8 @@ class OutlierMahalanobis(object):
         else:
             n = self.n
 
+        print("n=",n,"nb=",nb,"p=",p,"n_components=",self.n_components)
+            
         # Tracking the mean and covariance matrix
         roll_partial_means = features.cumsum(axis=0)/(np.arange(nb)+1).reshape((nb,1))
         coefs = (np.arange(nb)+1.)/(np.arange(nb)+n+1.)
@@ -31,7 +33,7 @@ class OutlierMahalanobis(object):
 
         coefs = ((n+np.arange(nb))/(n+np.arange(nb)+1.)).reshape((nb,1,1))
         B = coefs*np.matmul((features - new_means_offset)[:,:,None],(features - new_means_offset)[:,None,:])
-        cov_batch = (n-1.)/(n+nb-1.)*self.C + 1./(n+nb-1.)*B.sum(axis=0)
+        cov_batch = (n-1.)/(n+max(1,nb-1.))*self.C + 1./(n+max(1,nb-1.))*B.sum(axis=0)
 
         # PCA
         eigvals, eigvects = eigh(cov_batch,eigvals=(p-n_components,p-1))
