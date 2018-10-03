@@ -57,6 +57,13 @@
 		 {
 		    "name": "{{ .Values.outlier_detection.name }}",
 		    "type": "TRANSFORMER",
+		    "parameters": [
+			{
+			    "name": "n_components",
+			    "value": "{{ .Values.outlier_detection.n_components }}",
+			    "type": "INT"
+			}
+		    ],
 		    "endpoint": {
 			"type": "REST"
 		    },
