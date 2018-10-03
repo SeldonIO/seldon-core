@@ -57,16 +57,20 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 	
 	public SeldonMessage getOutput(SeldonMessage request, PredictiveUnitState state) throws InterruptedException, ExecutionException, InvalidProtocolBufferException{
 		Map<String,Integer> routingDict = new HashMap<String,Integer>();
-		SeldonMessage response = getOutputAsync(request, state, routingDict).get();
+		Map<String,String> requestPathDict = new HashMap<String,String>();
+		SeldonMessage response = getOutputAsync(request, state, routingDict,requestPathDict).get();
 		SeldonMessage.Builder builder = SeldonMessage
 	    		.newBuilder(response)
 	    		.setMeta(Meta
-	    				.newBuilder(response.getMeta()).putAllRouting(routingDict));
+	    				.newBuilder(response.getMeta()).putAllRouting(routingDict).putAllRequestPath(requestPathDict));
 		return builder.build();
 	}
 	
 	@Async
-	private Future<SeldonMessage> getOutputAsync(SeldonMessage input, PredictiveUnitState state, Map<String,Integer> routingDict) throws InterruptedException, ExecutionException, InvalidProtocolBufferException{
+	private Future<SeldonMessage> getOutputAsync(SeldonMessage input, PredictiveUnitState state, Map<String,Integer> routingDict,Map<String,String> requestPathDict) throws InterruptedException, ExecutionException, InvalidProtocolBufferException{
+		
+		// This element to the request path
+		requestPathDict.put(state.name, state.image);
 		
 		// Getting the actual implementation (microservice or hardcoded? )
 		PredictiveUnitImpl implementation = predictorConfig.getImplementation(state);
@@ -105,7 +109,7 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 		
 		// Get all the children outputs asynchronously
 		for (PredictiveUnitState childState : selectedChildren){
-			deferredChildrenOutputs.add(getOutputAsync(transformedInput,childState,routingDict));
+			deferredChildrenOutputs.add(getOutputAsync(transformedInput,childState,routingDict,requestPathDict));
 		}
 		for (Future<SeldonMessage> deferredOutput : deferredChildrenOutputs){
 			childrenOutputs.add(deferredOutput.get());
