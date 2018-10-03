@@ -20,17 +20,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import io.kubernetes.client.proto.V1.Container;
 import io.seldon.protos.DeploymentProtos.Endpoint;
+import io.seldon.protos.DeploymentProtos.Parameter;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitImplementation;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitMethod;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitType;
-import io.seldon.protos.DeploymentProtos.Parameter;
 
 @JsonIgnoreProperties({"children","cluster_resources","id","subtype","type"})
 public class PredictiveUnitState {
@@ -38,6 +39,7 @@ public class PredictiveUnitState {
 	public Endpoint endpoint;
 	public List<PredictiveUnitState> children = new ArrayList<>();
 	public Map<String,PredictiveUnitParameterInterface>  parameters;
+	public String image = "";
 	public String imageName;
 	public String imageVersion;
 	public PredictiveUnitType type;
@@ -65,6 +67,12 @@ public class PredictiveUnitState {
 		this.parameters = parameters;
 		this.imageName = imageName;
 		this.imageVersion = imageVersion;
+		if (!StringUtils.isEmpty(imageName) && !StringUtils.isEmpty(imageVersion))
+			this.image = imageName + ":" + imageVersion;
+		else if (!StringUtils.isEmpty(imageName))
+			this.image = imageName;
+		else
+			this.image = "";
 		this.type = type;
 		this.implementation = implementation;
 		
@@ -78,7 +86,7 @@ public class PredictiveUnitState {
 		this.parameters = deserializeParameters(predictiveUnit.getParametersList());
 		
 		if (containersMap.containsKey(name)){
-			String image = containersMap.get(name).getImage();
+			this.image = containersMap.get(name).getImage();
 			if (image.contains(":"))
 			{
 				String[] parts = image.split(":");
@@ -114,6 +122,5 @@ public class PredictiveUnitState {
 	public void addChild(PredictiveUnitState predictiveUnitState){
 		this.children.add(predictiveUnitState);
 	}
-	
 }
  
