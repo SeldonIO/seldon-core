@@ -6,10 +6,10 @@
 	"labels": {
 	    "app": "seldon"
 	},
-	"name": "seldon-deployment-example"
+	"name": "{{ .Release.Name }}"
     },
     "spec": {
-	"name": "{{ .Values.name }}",
+	"name": "{{ .Release.Name }}",
 {{- if .Values.oauth.key }}        
         "oauth_key": "{{ .Values.oauth.key }}",
         "oauth_secret": "{{ .Values.oauth.secret }}",
@@ -46,7 +46,7 @@
 				   }
 				   }],
 		"graph": {
-		    "name": "random-ab-test",
+		    "name": "{{ .Release.Name }}",
 		    "endpoint":{},
 		    "implementation":"RANDOM_ABTEST",
 		    "parameters": [
