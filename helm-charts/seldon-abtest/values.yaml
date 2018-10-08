@@ -1,5 +1,4 @@
 separate_pods: true
-name: my-abtest
 modela:
   image:
     name: seldonio/mock_classifier:1.0

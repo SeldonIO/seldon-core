@@ -11,13 +11,14 @@ local roleMixin = k.rbac.v1beta1.role.mixin;
 local serviceAccount = k.core.v1.serviceAccount;
 
 local crdDefn = import "crd.libsonnet";
-local seldonTemplate = import "json/template.json";
+local seldonTemplate2 = import "json/template_0.2.json";
+local seldonTemplate1 = import "json/template_0.1.json";
 
-local getOperatorDeployment(x) = x.metadata.name == 'RELEASE-NAME-seldon-cluster-manager';
-local getApifeDeployment(x) = x.metadata.name == 'RELEASE-NAME-seldon-apiserver' && x.kind == "Deployment";
-local getApifeService(x) = x.metadata.name == 'RELEASE-NAME-seldon-apiserver' && x.kind == "Service";
-local getRedisDeployment(x) = x.metadata.name == 'RELEASE-NAME-redis' && x.kind == "Deployment";
-local getRedisService(x) = x.metadata.name == 'RELEASE-NAME-redis' && x.kind == "Service";
+local getOperatorDeployment(x) = std.endsWith(x.metadata.name, "seldon-cluster-manager");
+local getApifeDeployment(x) = std.endsWith(x.metadata.name, "seldon-apiserver") && x.kind == "Deployment";
+local getApifeService(x) = std.endsWith(x.metadata.name, "seldon-apiserver") && x.kind == "Service";
+local getRedisDeployment(x) = std.endsWith(x.metadata.name, "redis") && x.kind == "Deployment";
+local getRedisService(x) = std.endsWith(x.metadata.name, "redis") && x.kind == "Service";
 local getServiceAccount(x) = x.kind == "ServiceAccount";
 local getClusterRole(x) = x.kind == "ClusterRole";
 local getClusterRoleBinding(x) = x.kind == "ClusterRoleBinding";
@@ -25,225 +26,231 @@ local getRoleBinding(x) = x.kind == "RoleBinding" && x.roleRef.name == "seldon-l
 local getAmbassadorRoleBinding(x) = x.kind == "RoleBinding" && x.roleRef.name == "ambassador";
 local getSeldonRole(x) = x.metadata.name == "seldon-local" && x.kind == "Role";
 local getAmbassadorRole(x) = x.metadata.name == "ambassador" && x.kind == "Role";
-local getAmbassadorDeployment(x) = x.metadata.name == "RELEASE-NAME-ambassador" && x.kind == "Deployment";
-local getAmbassadorService(x) = x.metadata.name == 'RELEASE-NAME-ambassador' && x.kind == "Service";
+local getAmbassadorDeployment(x) = std.endsWith(x.metadata.name, "ambassador") && x.kind == "Deployment";
+local getAmbassadorService(x) = std.endsWith(x.metadata.name, "ambassador") && x.kind == "Service";
 local getEnvNotRedis(x) = x.name != "SELDON_CLUSTER_MANAGER_REDIS_HOST";
 
 {
-  parts(name,namespace):: {
+  parts(name, namespace, seldonVersion)::
 
-    apife(apifeImage, withRbac, grpcMaxMessageSize)::
+    local seldonTemplate = if std.startsWith(seldonVersion, "0.1") then seldonTemplate1 else seldonTemplate2;
 
-      local baseApife = std.filter(getApifeDeployment,seldonTemplate.items)[0];
+    {
+      apife(apifeImage, withRbac, grpcMaxMessageSize)::
 
-      local env = [
-        { name: "SELDON_CLUSTER_MANAGER_REDIS_HOST", value: name+"-redis" },
-      ];
+        local baseApife = std.filter(getApifeDeployment, seldonTemplate.items)[0];
 
-      local env2 = std.filter(getEnvNotRedis,baseApife.spec.template.spec.containers[0].env);
+        local env = [
+          { name: "SELDON_CLUSTER_MANAGER_REDIS_HOST", value: name + "-redis" },
+        ];
 
-      local c = baseApife.spec.template.spec.containers[0] +
-                container.withImage(apifeImage) +
-                container.withEnv(env+env2) +		
-		container.withImagePullPolicy("IfNotPresent");
+        local env2 = std.filter(getEnvNotRedis, baseApife.spec.template.spec.containers[0].env);
 
-      local labels = { "app.kubernetes.io/name" : name,
-      		       "heritage" : "ksonnet",
-      	    	       "release" : name
-      	    };
+        local c = baseApife.spec.template.spec.containers[0] +
+                  container.withImage(apifeImage) +
+                  container.withEnv(env + env2) +
+                  container.withImagePullPolicy("IfNotPresent");
 
+        local labels = {
+          "app.kubernetes.io/name": name,
+          heritage: "ksonnet",
+          release: name,
+        };
 
-      local apiFeBase1 =
-        baseApife +
-	deployment.mixin.metadata.withName(name+"-seldon-apiserver") +
-        deployment.mixin.metadata.withNamespace(namespace) +
-	deployment.mixin.metadata.withLabelsMixin(labels) +
-        deployment.mixin.spec.template.spec.withContainers([c]);
 
-      local extraAnnotations = {"seldon.io/grpc-max-message-size" : grpcMaxMessageSize};
+        local apiFeBase1 =
+          baseApife +
+          deployment.mixin.metadata.withName(name + "-seldon-apiserver") +
+          deployment.mixin.metadata.withNamespace(namespace) +
+          deployment.mixin.metadata.withLabelsMixin(labels) +
+          deployment.mixin.spec.template.spec.withContainers([c]);
 
-      // Ensure labels copied to enclosed parts
-      local apiFeBase = apiFeBase1 +
-              deployment.mixin.spec.selector.withMatchLabels(apiFeBase1.metadata.labels) + 
-              deployment.mixin.spec.template.metadata.withLabels(apiFeBase1.metadata.labels) +
-	      deployment.mixin.spec.template.metadata.withAnnotationsMixin(extraAnnotations);
+        local extraAnnotations = { "seldon.io/grpc-max-message-size": grpcMaxMessageSize };
 
+        // Ensure labels copied to enclosed parts
+        local apiFeBase = apiFeBase1 +
+                          deployment.mixin.spec.selector.withMatchLabels(apiFeBase1.metadata.labels) +
+                          deployment.mixin.spec.template.metadata.withLabels(apiFeBase1.metadata.labels) +
+                          deployment.mixin.spec.template.metadata.withAnnotationsMixin(extraAnnotations);
 
-      if withRbac == "true" then
-        apiFeBase +
-        deployment.mixin.spec.template.spec.withServiceAccountName("seldon")
-      else
-        apiFeBase,
 
+        if withRbac == "true" then
+          apiFeBase +
+          deployment.mixin.spec.template.spec.withServiceAccountName("seldon")
+        else
+          apiFeBase,
 
-    apifeService(serviceType)::
 
-      local apifeService = std.filter(getApifeService,seldonTemplate.items)[0];
+      apifeService(serviceType)::
 
-      local labels = { "app.kubernetes.io/name" : name };
+        local apifeService = std.filter(getApifeService, seldonTemplate.items)[0];
 
-      apifeService +
-      service.metadata.withName(name+"-seldon-apiserver") +
-      service.metadata.withNamespace(namespace) +
-      service.metadata.withLabelsMixin(labels) +	
-      service.spec.withType(serviceType),
+        local labels = { "app.kubernetes.io/name": name };
 
-    deploymentOperator(engineImage, clusterManagerImage, springOpts, javaOpts, withRbac):
+        apifeService +
+        service.metadata.withName(name + "-seldon-apiserver") +
+        service.metadata.withNamespace(namespace) +
+        service.metadata.withLabelsMixin(labels) +
+        service.spec.withType(serviceType),
 
-      local op = std.filter(getOperatorDeployment,seldonTemplate.items)[0];
+      deploymentOperator(engineImage, clusterManagerImage, springOpts, javaOpts, withRbac):
 
-      local env = [
-        { name: "JAVA_OPTS", value: javaOpts },
-        { name: "SPRING_OPTS", value: springOpts },
-        { name: "ENGINE_CONTAINER_IMAGE_AND_VERSION", value: engineImage },
-        { name: "ENGINE_CONTAINER_IMAGE_PULL_POLICY", value: "IfNotPresent" },
-        { name: "SELDON_CLUSTER_MANAGER_REDIS_HOST", value: name+"-redis" },
-        { name: "SELDON_CLUSTER_MANAGER_POD_NAMESPACE", valueFrom: {fieldRef:{apiVersion: "v1",fieldPath: "metadata.namespace"}}},
-      ];
+        local op = std.filter(getOperatorDeployment, seldonTemplate.items)[0];
 
-      local c = op.spec.template.spec.containers[0] +
-                container.withImage(clusterManagerImage) +
-                container.withEnv(env) +
-                container.withImagePullPolicy("IfNotPresent");
+        local env = [
+          { name: "JAVA_OPTS", value: javaOpts },
+          { name: "SPRING_OPTS", value: springOpts },
+          { name: "ENGINE_CONTAINER_IMAGE_AND_VERSION", value: engineImage },
+          { name: "ENGINE_CONTAINER_IMAGE_PULL_POLICY", value: "IfNotPresent" },
+          { name: "SELDON_CLUSTER_MANAGER_REDIS_HOST", value: name + "-redis" },
+          { name: "SELDON_CLUSTER_MANAGER_POD_NAMESPACE", valueFrom: { fieldRef: { apiVersion: "v1", fieldPath: "metadata.namespace" } } },
+        ];
 
+        local c = op.spec.template.spec.containers[0] +
+                  container.withImage(clusterManagerImage) +
+                  container.withEnv(env) +
+                  container.withImagePullPolicy("IfNotPresent");
 
-      local labels = { "app.kubernetes.io/name" : name,
-      		       "heritage" : "ksonnet",
-      	    	       "release" : name
-      	    };
 
-      local depOp1 = op +
-      	            deployment.mixin.metadata.withName(name+"-seldon-cluster-manager") + 
-                    deployment.mixin.metadata.withNamespace(namespace) +
-		    deployment.mixin.metadata.withLabelsMixin(labels) +
-                    deployment.mixin.spec.template.spec.withContainers([c]);
+        local labels = {
+          "app.kubernetes.io/name": name,
+          heritage: "ksonnet",
+          release: name,
+        };
 
-      // Ensure labels copied to enclosed parts
-      local depOp = depOp1 +
-              deployment.mixin.spec.selector.withMatchLabels(depOp1.metadata.labels) + 
-              deployment.mixin.spec.template.metadata.withLabels(depOp1.metadata.labels);
-	      
- 
-      if withRbac == "true" then
-        depOp +
-        deployment.mixin.spec.template.spec.withServiceAccountName("seldon")
-      else
-        depOp,
+        local depOp1 = op +
+                       deployment.mixin.metadata.withName(name + "-seldon-cluster-manager") +
+                       deployment.mixin.metadata.withNamespace(namespace) +
+                       deployment.mixin.metadata.withLabelsMixin(labels) +
+                       deployment.mixin.spec.template.spec.withContainers([c]);
 
-    redisDeployment():
+        // Ensure labels copied to enclosed parts
+        local depOp = depOp1 +
+                      deployment.mixin.spec.selector.withMatchLabels(depOp1.metadata.labels) +
+                      deployment.mixin.spec.template.metadata.withLabels(depOp1.metadata.labels);
 
-      local redisDeployment = std.filter(getRedisDeployment,seldonTemplate.items)[0];
 
-      local labels = { "app" : name+"-redis-app",
-      	    	       "app.kubernetes.io/name" : name,
-      		       "heritage" : "ksonnet",
-      	    	       "release" : name
-      	    };
+        if withRbac == "true" then
+          depOp +
+          deployment.mixin.spec.template.spec.withServiceAccountName("seldon")
+        else
+          depOp,
 
-      local redisDeployment1 = redisDeployment +
-      	      deployment.mixin.metadata.withName(name+"-redis") +       
-      	      deployment.mixin.metadata.withNamespace(namespace) +
-      	      deployment.mixin.metadata.withLabelsMixin(labels);
+      redisDeployment():
 
-      redisDeployment1 +
-              deployment.mixin.spec.selector.withMatchLabels(redisDeployment1.metadata.labels) + 
-              deployment.mixin.spec.template.metadata.withLabels(redisDeployment1.metadata.labels),
+        local redisDeployment = std.filter(getRedisDeployment, seldonTemplate.items)[0];
 
-    redisService():
+        local labels = {
+          app: name + "-redis-app",
+          "app.kubernetes.io/name": name,
+          heritage: "ksonnet",
+          release: name,
+        };
 
-      local redisService = std.filter(getRedisService,seldonTemplate.items)[0];
+        local redisDeployment1 = redisDeployment +
+                                 deployment.mixin.metadata.withName(name + "-redis") +
+                                 deployment.mixin.metadata.withNamespace(namespace) +
+                                 deployment.mixin.metadata.withLabelsMixin(labels);
 
-      local labels = { "app.kubernetes.io/name" : name };
+        redisDeployment1 +
+        deployment.mixin.spec.selector.withMatchLabels(redisDeployment1.metadata.labels) +
+        deployment.mixin.spec.template.metadata.withLabels(redisDeployment1.metadata.labels),
 
-      redisService +
-      service.metadata.withName(name+"-redis") +
-      service.metadata.withNamespace(namespace) +
-      service.metadata.withLabelsMixin(labels) +
-      service.spec.withSelector({"app":name+"-redis-app"}),
+      redisService():
 
-    rbacServiceAccount():
+        local redisService = std.filter(getRedisService, seldonTemplate.items)[0];
 
-      local rbacServiceAccount = std.filter(getServiceAccount,seldonTemplate.items)[0];
+        local labels = { "app.kubernetes.io/name": name };
 
-      rbacServiceAccount +
-      serviceAccountMixin.metadata.withNamespace(namespace),
+        redisService +
+        service.metadata.withName(name + "-redis") +
+        service.metadata.withNamespace(namespace) +
+        service.metadata.withLabelsMixin(labels) +
+        service.spec.withSelector({ app: name + "-redis-app" }),
 
+      rbacServiceAccount():
 
-    rbacClusterRole():
+        local rbacServiceAccount = std.filter(getServiceAccount, seldonTemplate.items)[0];
 
-      local clusterRole = std.filter(getClusterRole,seldonTemplate.items)[0];
+        rbacServiceAccount +
+        serviceAccountMixin.metadata.withNamespace(namespace),
 
-      clusterRole,
 
-    rbacRole():
+      rbacClusterRole():
 
-      local role = std.filter(getSeldonRole,seldonTemplate.items)[0];
+        local clusterRole = std.filter(getClusterRole, seldonTemplate.items)[0];
 
-      role +
-      roleMixin.metadata.withNamespace(namespace),
+        clusterRole,
 
+      rbacRole():
 
-    rbacAmbassadorRole():
-    
-      local role = std.filter(getAmbassadorRole,seldonTemplate.items)[0];
+        local role = std.filter(getSeldonRole, seldonTemplate.items)[0];
 
-      role +
-      roleMixin.metadata.withNamespace(namespace),
+        role +
+        roleMixin.metadata.withNamespace(namespace),
 
 
-    rbacClusterRoleBinding():
+      rbacAmbassadorRole():
 
-      local rbacClusterRoleBinding = std.filter(getClusterRoleBinding,seldonTemplate.items)[0];
+        local role = std.filter(getAmbassadorRole, seldonTemplate.items)[0];
 
-      local subject = rbacClusterRoleBinding.subjects[0]
-                      { namespace: namespace };
+        role +
+        roleMixin.metadata.withNamespace(namespace),
 
-      rbacClusterRoleBinding +
-      clusterRoleBindingMixin.metadata.withNamespace(namespace) +
-      clusterRoleBinding.withSubjects([subject]),
 
-    rbacRoleBinding():
+      rbacClusterRoleBinding():
 
-      local rbacRoleBinding = std.filter(getRoleBinding,seldonTemplate.items)[0];
+        local rbacClusterRoleBinding = std.filter(getClusterRoleBinding, seldonTemplate.items)[0];
 
-      local subject = rbacRoleBinding.subjects[0]
-                      { namespace: namespace };
+        local subject = rbacClusterRoleBinding.subjects[0]
+                        { namespace: namespace };
 
-      rbacRoleBinding +
-      roleBindingMixin.metadata.withNamespace(namespace) +
-      roleBinding.withSubjects([subject]),
+        rbacClusterRoleBinding +
+        clusterRoleBindingMixin.metadata.withNamespace(namespace) +
+        clusterRoleBinding.withSubjects([subject]),
 
-    rbacAmbassadorRoleBinding():
+      rbacRoleBinding():
 
-      local rbacRoleBinding = std.filter(getAmbassadorRoleBinding,seldonTemplate.items)[0];
+        local rbacRoleBinding = std.filter(getRoleBinding, seldonTemplate.items)[0];
 
-      local subject = rbacRoleBinding.subjects[0]
-                      { namespace: namespace };
+        local subject = rbacRoleBinding.subjects[0]
+                        { namespace: namespace };
 
-      rbacRoleBinding +
-      roleBindingMixin.metadata.withNamespace(namespace) +
-      roleBinding.withSubjects([subject]),
+        rbacRoleBinding +
+        roleBindingMixin.metadata.withNamespace(namespace) +
+        roleBinding.withSubjects([subject]),
 
-    ambassadorDeployment():
+      rbacAmbassadorRoleBinding():
 
-      local ambassadorDeployment = std.filter(getAmbassadorDeployment,seldonTemplate.items)[0];
+        local rbacRoleBinding = std.filter(getAmbassadorRoleBinding, seldonTemplate.items)[0];
 
-      ambassadorDeployment +
-      	      deployment.mixin.metadata.withName(name+"-ambassador") +       
-      	      deployment.mixin.metadata.withNamespace(namespace),
+        local subject = rbacRoleBinding.subjects[0]
+                        { namespace: namespace };
 
+        rbacRoleBinding +
+        roleBindingMixin.metadata.withNamespace(namespace) +
+        roleBinding.withSubjects([subject]),
 
-    ambassadorService():
+      ambassadorDeployment():
 
-      local ambassadorService = std.filter(getAmbassadorService,seldonTemplate.items)[0];
+        local ambassadorDeployment = std.filter(getAmbassadorDeployment, seldonTemplate.items)[0];
 
-      ambassadorService +
-      service.metadata.withName(name+"-ambassador") +
-      service.metadata.withNamespace(namespace),
+        ambassadorDeployment +
+        deployment.mixin.metadata.withName(name + "-ambassador") +
+        deployment.mixin.metadata.withNamespace(namespace),
 
-    crd():
 
-      crdDefn.crd(),
+      ambassadorService():
 
-  },  // parts
+        local ambassadorService = std.filter(getAmbassadorService, seldonTemplate.items)[0];
+
+        ambassadorService +
+        service.metadata.withName(name + "-ambassador") +
+        service.metadata.withNamespace(namespace),
+
+      crd():
+
+        if std.startsWith(seldonVersion, "0.1") then crdDefn.crd1() else crdDefn.crd2(),
+
+    },  // parts
 }
