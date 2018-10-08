@@ -20,4 +20,8 @@ public class Constants {
     public static final String STATE_CREATING = "Creating";
     public static final String STATE_FAILED = "Failed";
     public static final String STATE_AVAILABLE = "Available";
+    
+    public static final String ENGINE_JAVA_OPTS_ANNOTATION = "seldon.io/engine-java-opts";
+    public static final String REST_READ_TIMEOUT_ANNOTATION = "seldon.io/rest-read-timeout";
+    public static final String GRPC_READ_TIMEOUT_ANNOTATION = "seldon.io/grpc-read-timeout";
 }
