@@ -22,7 +22,7 @@ import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 public interface KubeCRDHandler {
 
 	public void updateRaw(String json,String seldonDeploymentName);
-	public void updateSeldonDeployment(SeldonDeployment mlDep);
+	public void updateSeldonDeploymentStatus(SeldonDeployment mlDep);
 	public SeldonDeployment getSeldonDeployment(String name);
 	public ExtensionsV1beta1DeploymentList getOwnedDeployments(String seldonDeploymentName);
 	public V1ServiceList getOwnedServices(String seldonDeploymentName);
