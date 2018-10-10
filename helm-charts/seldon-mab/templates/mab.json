@@ -5,10 +5,10 @@
 	"labels": {
 	    "app": "seldon"
 	},
-	"name": "seldon-deployment"
+	"name": "{{ .Release.Name }}"
     },
     "spec": {
-	"name": "{{ .Values.name }}",
+	"name": "{{ .Release.Name }}",
 {{- if .Values.oauth.key }}        
         "oauth_key": "{{ .Values.oauth.key }}",
         "oauth_secret": "{{ .Values.oauth.secret }}",

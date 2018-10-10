@@ -78,3 +78,8 @@ Notes
 
   * [Install Seldon as part of Kubeflow.](https://www.kubeflow.org/docs/guides/components/seldon/#seldon-serving)
      * Kubeflow presently runs 0.1 version of seldon-core. This will be updated to 0.2 in the near future.
+
+
+# Next Steps
+
+ * [Jupyter notebooks showing worked examples](../readme.md#quick-start)

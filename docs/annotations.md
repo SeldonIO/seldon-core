@@ -23,6 +23,12 @@ You can configure aspects of Seldon Core via annotations in the SeldonDeployment
    * Locations : SeldonDeployment.spec.annotations
    * [Example](../notebooks/resources/model_long_timeouts.json)
 
+### Service Orchestrator
+
+  * ```seldon.io/engine-java-opts``` : Java Opts for Service Orchestrator
+    * Locations : SeldonDeployment.spec.predictors.annotations
+    * [Example](../notebooks/resources/model_engine_java_opts.json)
+    
 ## API OAuth Gateway Annotations
 The API OAuth Gateway, if used, can also have the following annotations:
 

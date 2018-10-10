@@ -1,4 +1,3 @@
-name: my-mab
 modela:
   image:
     name: seldonio/mock_classifier:1.0

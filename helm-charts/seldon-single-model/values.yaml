@@ -6,7 +6,7 @@ model:
 outlier_detection:
   enabled: false
   image:
-    name: seldonio/outlier_mahalanobis:0.2
+    name: seldonio/outlier_mahalanobis:0.3
   n_components: 2
   name: outlier-detector
 replicas: 1

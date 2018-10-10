@@ -32,9 +32,4 @@ You can use ```kubectl``` to deploy your ML service like any other Kubernetes re
 # Next Steps
 
  * [Jupyter notebooks showing worked examples](../../readme.md#quick-start)
- * Templated Helm Charts:
-   * [Single Model with optional Outlier Detector](https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-single-model)
-   * [AB Test between two models](https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-abtest)
-   * [Multi-Armed Bandit of two models](https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-mab)
- * [Integration with other machine learning frameworks](../../readme.md#integrations)
 
