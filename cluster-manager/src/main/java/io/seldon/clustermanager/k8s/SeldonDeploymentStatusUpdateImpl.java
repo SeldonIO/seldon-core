@@ -87,7 +87,7 @@ public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusU
                {
             	   mlBuilder.getStatusBuilder().setState(Constants.STATE_AVAILABLE);
                }
-               crdHandler.updateSeldonDeployment(mlBuilder.build());
+               crdHandler.updateSeldonDeploymentStatus(mlBuilder.build());
             }
             else
                 logger.error("Can't find seldondeployment "+mlDepName+" to update "+depName);
@@ -111,7 +111,7 @@ public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusU
                     break;
                 }
             }
-            crdHandler.updateSeldonDeployment(mlBuilder.build());
+            crdHandler.updateSeldonDeploymentStatus(mlBuilder.build());
         }
         else
             logger.error("Can't find seldondeployment "+mlDepName+" to remove "+depName);

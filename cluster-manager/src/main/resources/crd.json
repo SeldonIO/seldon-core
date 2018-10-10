@@ -1,6 +1,4 @@
 {
-    
-    
     "metadata": {
         "name": "seldondeployments.machinelearning.seldon.io"
     },
@@ -3579,8 +3577,9 @@
                 }
             }
         },
-        "version": "v1alpha2"
+        "version": "v1alpha2",
+	"subresources": {
+	    "status": {}
+	}
     }
 }
-
-

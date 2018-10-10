@@ -52,6 +52,8 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 	
 	private final String namespace;
 	
+	private boolean replaceStatusResource = true; // Whether to use the status CR endpoint (available from k8s 1.10 (alpha) 1.11 (beta)
+	
 	@Autowired
     public KubeCRDHandlerImpl(ClusterManagerProperites clusterManagerProperites) {
 		this.namespace = StringUtils.isEmpty(clusterManagerProperites.getNamespace()) ? "default" : clusterManagerProperites.getNamespace();
@@ -75,9 +77,9 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 		
 		
 	}
-
+	
 	@Override
-	public void updateSeldonDeployment(SeldonDeployment mldep) {
+	public void updateSeldonDeploymentStatus(SeldonDeployment mldep) {
 		
 		try
 		{
@@ -96,7 +98,18 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 			logger.debug("Updating seldondeployment "+mlDeployment.getMetadata().getName());
 			ApiClient client = Config.defaultClient();
 			CustomObjectsApi api = new CustomObjectsApi(client);
-			api.replaceNamespacedCustomObject(GROUP, VERSION, namespace, KIND_PLURAL, mlDeployment.getMetadata().getName(),json.getBytes());
+			if (replaceStatusResource)
+			{
+				try 
+				{
+					api.replaceNamespacedCustomObjectStatus(GROUP, VERSION, namespace, KIND_PLURAL, mlDeployment.getMetadata().getName(),json.getBytes());
+				} catch (ApiException e) {
+					replaceStatusResource = false; // Stop using the /status endpoint (maybe because the k8s version does not have this <1.10)
+					logger.error("Failed to update deployment in kubernetes ",e);
+				}
+			}
+			if (!replaceStatusResource)
+				api.replaceNamespacedCustomObject(GROUP, VERSION, namespace, KIND_PLURAL, mlDeployment.getMetadata().getName(),json.getBytes());
 		} catch (InvalidProtocolBufferException e) {
 			logger.error("Failed to update deployment in kubernetes ",e);
 		} catch (ApiException e) {
