@@ -48,34 +48,16 @@ Machine learning deployment has many [challenges](./docs/challenges.md). Seldon 
 
 ## Prerequisites
 
-  A [Kubernetes](https://kubernetes.io/) Cluster.  
-  Kubernetes can be deployed into many environments, both in cloud and on-premise.
+  A [Kubernetes](https://kubernetes.io/) Cluster. Kubernetes can be deployed into many environments, both on cloud and on-premise.
 
-## Important: V1Alpha2 Update
-
- **We have updated our core API to v1alpha2 which has a breaking change from v1alpha1 in the SeldonDeployments CRD**
-
-[Read details of how to update your kubernetes SeldonDeployment resources](./docs/v1alpha2_update.md).
-
- * **0.2** releases will now respect the v1alpha2 API.
- * **0.1** releases respect the v1alpha1 API and will not be worked on further.
-
-It is possible to deploy Seldon with two operators that can handle both v1alpha1 resources and v1alpha2 resources though this is not part of our standard deployment docs. If you need this please get in touch.
 
 ## Quick Start
 
 Read the [overview to using seldon-core](./docs/getting_started/readme.md).
 
- - Jupyter notebooks showing worked examples:
-    * Minikube:
-         * [Jupyter Notebook showing deployment of prebuilt model using Minikube and Helm](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_minikube_rbac.ipynb)
-         * [Jupyter Notebook showing deployment of prebuilt model using Minikube, Helm and Ambassador reverse proxy](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/helm_minikube_ambassador.ipynb)	 
-         * [Jupyter notebook to create seldon-core with ksonnet and expose APIs using Ambassador on Minikube with RBAC.](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/ksonnet_ambassador_minikube.ipynb)
-    * GCP:
-         * [Jupyter Notebook showing deployment of prebuilt model using GCP cluster](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_gcp.ipynb)
-         * [Jupyter notebook to create seldon-core with ksonnet and expose APIs using Ambassador on GCP.](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/ksonnet_ambassador_gcp.ipynb)
-    * Azure
-         * [Jupyter Notebook showing deployment of prebuilt model using Azure cluster](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_azure.ipynb)
+ - Jupyter notebooks showing examples:
+   - [Seldon Core Deployments using Helm](./notebooks/helm_examples.ipynb)
+   - [Seldon Core Deployments using Ksonnet](./notebooks/ksonnet_examples.ipynb)
 
 
 ### Example Components

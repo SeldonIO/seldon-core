@@ -5,10 +5,10 @@
         "labels": {
             "app": "seldon"
         },
-        "name": "seldon-model"
+        "name": "{{ .Release.Name }}"
     },
     "spec": {
-        "name": "test-deployment",
+        "name": "{{ .Release.Name }}",
 {{- if .Values.oauth.key }}        
         "oauth_key": "{{ .Values.oauth.key }}",
         "oauth_secret": "{{ .Values.oauth.secret }}",
@@ -80,7 +80,7 @@
 {{- if .Values.outlier_detection.enabled }}
 		     ]}
 {{- end }},			 			 
-                "name": "{{ .Values.name }}",
+                "name": "{{ .Release.Name }}",
                 "replicas": {{ .Values.replicas }},
 		"labels": {
 		    "version" : "v1"

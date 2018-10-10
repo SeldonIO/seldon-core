@@ -105,7 +105,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
         }
 	}
 	
-	static final String ENGINE_JAVA_OPTS="-Dcom.sun.management.jmxremote.rmi.port=9090 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9090 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.local.only=false -Djava.rmi.server.hostname=127.0.0.1";
+	static final String DEFAULT_ENGINE_JAVA_OPTS="-Dcom.sun.management.jmxremote.rmi.port=9090 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9090 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.local.only=false -Djava.rmi.server.hostname=127.0.0.1";
 	private V1.Container createEngineContainer(SeldonDeployment mlDep,PredictorSpec predictorDef) throws SeldonDeploymentException
 	{
 		V1.Container.Builder cBuilder = V1.Container.newBuilder();
@@ -119,7 +119,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			.addEnv(EnvVar.newBuilder().setName("DEPLOYMENT_NAME").setValue(mlDep.getSpec().getName()))		
 			.addEnv(EnvVar.newBuilder().setName("ENGINE_SERVER_PORT").setValue(""+clusterManagerProperites.getEngineContainerPort()))
 			.addEnv(EnvVar.newBuilder().setName("ENGINE_SERVER_GRPC_PORT").setValue(""+clusterManagerProperites.getEngineGrpcContainerPort()))			
-			.addEnv(EnvVar.newBuilder().setName("JAVA_OPTS").setValue(ENGINE_JAVA_OPTS))						
+			.addEnv(EnvVar.newBuilder().setName("JAVA_OPTS").setValue(predictorDef.getAnnotationsOrDefault(Constants.ENGINE_JAVA_OPTS_ANNOTATION, DEFAULT_ENGINE_JAVA_OPTS)))						
 			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(clusterManagerProperites.getEngineContainerPort()))
 			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(8082).setName("admin"))
 			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(9090).setName("jmx"))
@@ -504,7 +504,8 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
                 "kind:  Mapping\n" +
                 "name:  seldon_"+mlDep.getMetadata().getName()+"_rest_mapping\n" +
                 "prefix: /seldon/"+mlDep.getMetadata().getName()+"/\n" +
-                "service: "+serviceName+":"+clusterManagerProperites.getEngineContainerPort()+"\n";
+                "service: "+serviceName+":"+clusterManagerProperites.getEngineContainerPort()+"\n" +
+                "timeout_ms: " + mlDep.getSpec().getAnnotationsOrDefault(Constants.REST_READ_TIMEOUT_ANNOTATION, "3000") + "\n";
         final String grpcMapping = "---\n"+
                 "apiVersion: ambassador/v0\n" +
                 "kind:  Mapping\n" +
@@ -514,7 +515,8 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
                 "rewrite: /seldon.protos.Seldon/\n" + 
                 "headers:\n"+
                  "  seldon: "+mlDep.getMetadata().getName() + "\n" +
-                "service: "+serviceName+":"+clusterManagerProperites.getEngineGrpcContainerPort()+"\n";
+                "service: "+serviceName+":"+clusterManagerProperites.getEngineGrpcContainerPort()+"\n" +
+                "timeout_ms: " + mlDep.getSpec().getAnnotationsOrDefault(Constants.GRPC_READ_TIMEOUT_ANNOTATION, "3000") + "\n";
 	    return restMapping + grpcMapping;
 	}
 	
