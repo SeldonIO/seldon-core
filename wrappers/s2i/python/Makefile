@@ -1,3 +1,5 @@
+SHELL:=/bin/bash
+
 PYTHON_VERSION=2
 IMAGE_PYTHON_VERSION=`echo -n $(PYTHON_VERSION) | cut -d. -f1`
 IMAGE_VERSION=0.3-SNAPSHOT
@@ -22,8 +24,8 @@ get_wrappers_and_protos:
 
 .PHONY: build
 build: get_wrappers_and_protos
-	cat Dockerfile.tmpl | sed  -e "s|%PYTHON_VERSION%|$(PYTHON_VERSION)|" > Dockerfile 
-	docker build -t $(IMAGE_NAME):$(IMAGE_VERSION) .
+	cat Dockerfile.tmpl | sed  -e "s|%PYTHON_VERSION%|$(PYTHON_VERSION)|" > Dockerfile
+	set -x && docker build -t $(IMAGE_NAME):$(IMAGE_VERSION) .
 
 push_to_dockerhub:
 	docker push $(IMAGE_NAME):$(IMAGE_VERSION)
@@ -31,7 +33,7 @@ push_to_dockerhub:
 
 .PHONY: test
 test:
-	cat Dockerfile.tmpl | sed  -e "s|%PYTHON_VERSION%|$(PYTHON_VERSION)|" > Dockerfile 
+	cat Dockerfile.tmpl | sed  -e "s|%PYTHON_VERSION%|$(PYTHON_VERSION)|" > Dockerfile
 	docker build -t $(IMAGE_NAME)-candidate .
 	IMAGE_NAME=$(IMAGE_NAME)-candidate test/run
 
