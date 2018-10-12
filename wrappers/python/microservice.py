@@ -9,6 +9,7 @@ import importlib
 import json
 import time
 import logging
+import multiprocessing as mp
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -22,6 +23,18 @@ DEBUG_PARAMETER = "SELDON_DEBUG"
 DEBUG = False
 
 ANNOTATIONS_FILE = "/etc/podinfo/annotations"
+
+def startServers(target1, target2):
+    p1 = mp.Process(target=target1)
+    p1.deamon = True
+    p1.start()
+
+    p2 = mp.Process(target=target2)
+    p2.deamon = True
+    p2.start()
+
+    p1.join()
+    p2.join()
 
 class SeldonMicroserviceException(Exception):
     status_code = 400
@@ -199,17 +212,37 @@ if __name__ == "__main__":
     port = int(os.environ.get(SERVICE_PORT_ENV_NAME,DEFAULT_PORT))
     
     if args.api_type == "REST":
-        app = seldon_microservice.get_rest_microservice(user_object,debug=DEBUG)
-        app.run(host='0.0.0.0', port=port)
+        def rest_prediction_server():
+            print("Staring REST prediction server")
+            app = seldon_microservice.get_rest_microservice(user_object,debug=DEBUG)
+            app.run(host='0.0.0.0', port=port)
         
+        server1_func=rest_prediction_server
+
     elif args.api_type=="GRPC":
-        server = seldon_microservice.get_grpc_server(user_object,debug=DEBUG,annotations=annotations)
-        server.add_insecure_port("0.0.0.0:{}".format(port))
-        server.start()
-        
-        print("GRPC Microservice Running on port {}".format(port))
-        while True:
-            time.sleep(1000)
+        def grpc_prediction_server():
+            server = seldon_microservice.get_grpc_server(user_object,debug=DEBUG,annotations=annotations)
+            server.add_insecure_port("0.0.0.0:{}".format(port))
+            server.start()
+            
+            print("GRPC Microservice Running on port {}".format(port))
+            while True:
+                time.sleep(1000)
+
+        server1_func=grpc_prediction_server
 
     elif args.api_type=="FBS":
-        seldon_microservice.run_flatbuffers_server(user_object,port)
+        def fbs_prediction_server():
+            seldon_microservice.run_flatbuffers_server(user_object,port)
+
+        server1_func=fbs_prediction_server
+
+    else:
+        server1_func = None
+
+    if hasattr(user_object, 'custom_service') and callable(getattr(user_object, 'custom_service')):
+        server2_func = user_object.custom_service
+    else:
+        server2_func = None
+
+    startServers(server1_func, server2_func)
