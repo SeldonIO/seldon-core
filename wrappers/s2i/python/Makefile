@@ -2,7 +2,7 @@ SHELL:=/bin/bash
 
 PYTHON_VERSION=2
 IMAGE_PYTHON_VERSION=`echo -n $(PYTHON_VERSION) | cut -d. -f1`
-IMAGE_VERSION=0.3
+IMAGE_VERSION=0.3-SNAPSHOT
 IMAGE_NAME = docker.io/seldonio/seldon-core-s2i-python${IMAGE_PYTHON_VERSION}
 
 SELDON_CORE_DIR=../../..
