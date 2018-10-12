@@ -21,3 +21,17 @@ class MyModel(object):
         """
         print("Predict called - will run idenity function")
         return X
+
+    def send_feedback(self,features,feature_names,reward,truth):
+        """
+        Handle feedback
+
+        Parameters
+        ----------
+        features : array - the features sent in the original predict request
+        feature_names : array of feature names. May be None if not available.
+        reward : float - the reward
+        truth : array with correct value (optional)
+        """
+        print("Send feedback called")
+        return []
