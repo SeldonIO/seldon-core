@@ -11,7 +11,7 @@
 // @optionalParam operatorSpringOpts string null cluster manager spring opts
 // @optionalParam operatorJavaOpts string null cluster manager java opts
 // @optionalParam grpcMaxMessageSize string 4194304 Max gRPC message size
-// @optionalParam seldonVersion string 0.2.3 Seldon version
+// @optionalParam seldonVersion string 0.2.4-SNAPSHOT Seldon version
 
 local k = import "k.libsonnet";
 local core = import "seldon-core/seldon-core/core.libsonnet";
