@@ -110,7 +110,8 @@ Follow the [install guide](docs/install.md) for details on ways to install seldo
 Three steps:
 
  1. [Wrap your runtime prediction model](./docs/wrappers/readme.md).
-    * We provide easy to use wrappers for [python](./docs/wrappers/python.md), [R](./docs/wrappers/r.md) and [Java](./docs/wrappers/java.md)
+    * We provide easy to use wrappers for [python](./docs/wrappers/python.md), [R](./docs/wrappers/r.md), [Java](./docs/wrappers/java.md) and [NodeJS](./docs/wrappers/nodejs.md).
+    * We have [tools to test your wrapped components](./docs/api-testing.md).
  1. [Define your runtime inference graph in a seldon deployment custom resource](./docs/inference-graph.md).
  1. [Deploy the graph](./docs/deploying.md).
 
