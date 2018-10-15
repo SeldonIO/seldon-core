@@ -189,6 +189,8 @@ do
     if [ "$i" = "model" ]; then
 	test_seldonMessage "/predict"
 	check_result $?
+	test_feedback "/send-feedback"
+	check_result $?
     elif [ "$i" = "router" ]; then
 	test_seldonMessage "/route"
 	check_result $?
