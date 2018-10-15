@@ -39,10 +39,10 @@ def gen_categorical(values,n):
     vals = np.random.randint(len(values),size=n)
     return np.array(values)[vals]
 
-def generate_batch(contract,n):
+def generate_batch(contract,n,field):
     feature_batches = []
     ty_set = set()
-    for feature_def in contract['features']:
+    for feature_def in contract[field]:
         ty_set.add(feature_def["ftype"])
         if feature_def["ftype"] == "continuous":
             if "range" in feature_def:
@@ -135,9 +135,63 @@ def unfold_contract(contract):
              unfolded_contract["targets"].append(target)   
 
     return unfolded_contract
-                
 
-def run(args):
+def run_send_feedback(args):
+    contract = json.load(open(args.contract,'r'))
+    contract = unfold_contract(contract)
+    feature_names = [feature["name"] for feature in contract["features"]]
+    response_names = [feature["name"] for feature in contract["targets"]]
+
+    REST_url = "http://"+args.host+":"+str(args.port)+"/send-feedback"
+
+    for i in range(args.n_requests):
+        batch = generate_batch(contract,args.batch_size,'features')
+        response = generate_batch(contract,args.batch_size,'targets')
+        if args.prnt:
+            print('-'*40)
+            print("SENDING NEW REQUEST:")
+        
+        if not args.grpc and not args.fbs:
+            REST_request = gen_REST_request(batch,features=feature_names,tensor=args.tensor)
+            REST_response = gen_REST_request(response,features=response_names,tensor=args.tensor)
+            reward = 1.0
+            REST_feedback = {"request":REST_request,"response":REST_response,"reward":reward}
+            if args.prnt:
+                print(REST_feedback)
+
+            t1 = time()
+            response = requests.post(
+                REST_url,
+                data={"json":json.dumps(REST_feedback)})
+            t2 = time()
+
+            if args.prnt:
+                print("Time "+str(t2-t1))
+                print(response)
+        elif args.grpc:
+            GRPC_request = gen_GRPC_request(batch,features=feature_names,tensor=args.tensor)
+            GRPC_response = gen_GRPC_request(response,features=response_names,tensor=args.tensor)
+            reward = 1.0
+            GRPC_feedback = prediction_pb2.Feedback(
+                request = GRPC_request,
+                response = GRPC_response,
+                reward = reward
+            )
+
+            if args.prnt:
+                print(GRPC_feedback)
+
+            channel = grpc.insecure_channel('{}:{}'.format(args.host,args.port))
+            stub = prediction_pb2_grpc.ModelStub(channel)
+            response = stub.SendFeedback(GRPC_feedback)
+            
+            if args.prnt:
+                print("RECEIVED RESPONSE:")
+                print()
+
+
+
+def run_predict(args):
     contract = json.load(open(args.contract,'r'))
     contract = unfold_contract(contract)
     feature_names = [feature["name"] for feature in contract["features"]]
@@ -145,7 +199,7 @@ def run(args):
     REST_url = "http://"+args.host+":"+str(args.port)+"/predict"
 
     for i in range(args.n_requests):
-        batch = generate_batch(contract,args.batch_size)
+        batch = generate_batch(contract,args.batch_size,'features')
         if args.prnt:
             print('-'*40)
             print("SENDING NEW REQUEST:")
@@ -207,6 +261,7 @@ if __name__ == "__main__":
     parser.add_argument("contract",type=str,help="File that contains the data contract")
     parser.add_argument("host",type=str)
     parser.add_argument("port",type=int)
+    parser.add_argument("--endpoint",type=str,choices=["predict","send-feedback"],default="predict")
     parser.add_argument("-b","--batch-size",type=int,default=1)
     parser.add_argument("-n","--n-requests",type=int,default=1)
     parser.add_argument("--grpc",action="store_true")
@@ -216,4 +271,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    run(args)
+    if args.endpoint == "predict":
+        run_predict(args)
+    elif args.endpoint == "send-feedback":
+        run_send_feedback(args)

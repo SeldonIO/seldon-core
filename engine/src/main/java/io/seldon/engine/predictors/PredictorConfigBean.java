@@ -47,6 +47,7 @@ public class PredictorConfigBean {
         // MODEL -> TRANSFORM INPUT
         List<PredictiveUnitMethod> modelMethods = new ArrayList<PredictiveUnitMethod>();
         modelMethods.add(PredictiveUnitMethod.TRANSFORM_INPUT);
+        modelMethods.add(PredictiveUnitMethod.SEND_FEEDBACK);        
         typeMethodsMap.put(PredictiveUnitType.MODEL, modelMethods);
         
         // TRANSFORMER -> TRANSFORM INPUT
