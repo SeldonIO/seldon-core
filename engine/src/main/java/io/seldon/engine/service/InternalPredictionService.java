@@ -195,6 +195,14 @@ public class InternalPredictionService {
 							.withMaxOutboundMessageSize(grpcMaxMessageSize);
 					return stub.sendFeedback(feedback);
 				}
+				else if (state.type == PredictiveUnitType.MODEL)
+				{
+					ModelBlockingStub modelStub = ModelGrpc.newBlockingStub(getChannel(endpoint))
+							.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
+							.withMaxInboundMessageSize(grpcMaxMessageSize)
+							.withMaxOutboundMessageSize(grpcMaxMessageSize);
+						return modelStub.sendFeedback(feedback);
+				}
 				else {
 					RouterBlockingStub routerStub =  RouterGrpc.newBlockingStub(getChannel(endpoint))
 							.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
