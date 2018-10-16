@@ -99,7 +99,7 @@
                 "selector": {
                     "app": "prometheus-server"
                 },
-                "type": "ClusterIP"
+                "type": "{{ .Values.prometheus.service_type }}"
             }
         }
     ],
