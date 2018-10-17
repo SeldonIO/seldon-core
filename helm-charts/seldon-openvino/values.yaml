@@ -1,0 +1,10 @@
+openvino:
+  image: ie-serving-py:0.1
+  model:
+    path: /opt/ml/squeezenet
+    name: squeezenet1.1
+    input: data
+    output: prob
+  port: 8000
+  model_volume: hostPath
+    
