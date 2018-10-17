@@ -96,8 +96,10 @@ Seldon-core allows various types of components to be built and plugged into the 
        * [Train and deploy a PyTorch MNIST classififer using FfDL and Seldon.](https://github.com/IBM/FfDL/blob/master/community/FfDL-Seldon/pytorch-model/README.md)
  * [Istio and Seldon](./docs/istio.md)
    * [Canary deployemts using Istio and Seldon.](examples/istio/canary_update/canary.ipynb).
- * [NVIDIA TensorRT and DL Inference Server](./integrations/nvidia-inference-server/README.md)
- * [Tensorflow Serving](./integrations/tfserving/README.md)	
+ * [NVIDIA TensorRT and DL Inference Server](./integrations/nvidia-inference-server)
+ * [Tensorflow Serving](./integrations/tfserving)
+ * [Intel OpenVINO](https://software.intel.com/en-us/openvino-toolkit)
+   * A [Helm chart](./helm-charts/seldon-openvino) for easy integration and an [example notebook](./examples/models/openvino/openvino-squeezenet.ipynb) using OpenVINO to serve imagenet model within Seldon Core.
 
 ## Install
 
