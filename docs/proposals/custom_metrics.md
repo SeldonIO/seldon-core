@@ -2,7 +2,7 @@
 
 ## Summary
 
-Allow users to easily add custom metrics to their Seldon Core components. For example, pass back extra metrics from a wrapped python model that can be collected by Prometheus and displayed om Grafana dashboards.
+Allow users to easily add custom metrics to their Seldon Core components. For example, pass back extra metrics from a wrapped python model that can be collected by Prometheus and displayed on Grafana dashboards.
 
 ## Proposal
 
