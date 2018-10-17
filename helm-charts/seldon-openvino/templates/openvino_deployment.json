@@ -1,0 +1,107 @@
+{
+    "apiVersion": "machinelearning.seldon.io/v1alpha2",
+    "kind": "SeldonDeployment",
+    "metadata": {
+        "labels": {
+            "app": "seldon"
+        },
+        "name": "openvino-model",
+	"namespace": "{{ .Release.Namespace }}"	
+    },
+    "spec": {
+        "name": "openvino",
+        "predictors": [
+            {
+                "componentSpecs": [{
+                    "spec": {
+                        "containers": [
+                            {
+                                "image": "seldonio/tfserving-proxy:0.1",
+                                "name": "tfserving-proxy"
+                            },
+			    {
+                        "name": "openvino-model-server",
+                        "image": "{{ .Values.openvino.image }}",
+                        "command": [
+                            "/ie-serving-py/start_server.sh"
+                        ],
+                        "args": [
+                            "ie_serving",
+                            "model",
+                            "--model_path",
+                            "{{ .Values.openvino.model.path }}",
+                            "--model_name",
+                            "{{ .Values.openvino.model.name }}",
+                            "--port",
+                            "{{ .Values.openvino.port }}"
+                        ],
+                        "ports": [
+                            {
+                                "name": "grpc",
+                                "containerPort": {{ .Values.openvino.port }},
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "env": [
+                            {
+                                "name": "LOG_LEVEL",
+                                "value": "DEBUG"
+                            }
+                        ],
+                        "resources": {},
+                        "volumeMounts": [
+                            {
+                                "name": "modelstore",
+                                "mountPath": "/opt/ml"
+                            }
+                        ]
+			    }
+			],
+			"terminationGracePeriodSeconds": 1,
+			"volumes": [
+			    {
+				"name": "modelstore",
+				"volumeSource": {
+				    "persistentVolumeClaim": {
+					"claimName": "model-store-pvc"
+				    }
+				}
+			    }
+			]
+		    }
+		}],
+                "graph": {
+		    "name": "tfserving-proxy",
+		    "endpoint": { "type" : "REST" },
+		    "type": "MODEL",
+		    "children": [],
+		    "parameters":
+		    [
+			{
+			    "name":"grpc_endpoint",
+			    "type":"STRING",
+			    "value":"localhost:{{ .Values.openvino.port }}"
+			},
+			{
+			    "name":"model_name",
+			    "type":"STRING",
+			    "value":"{{ .Values.openvino.model.name }}"
+			},
+			{
+			    "name":"model_output",
+			    "type":"STRING",
+			    "value":"{{ .Values.openvino.model.output }}"
+			},
+			{
+			    "name":"model_input",
+			    "type":"STRING",
+			    "value":"{{ .Values.openvino.model.input }}"
+			}
+		    ]
+		},
+                "name": "openvino",
+                "replicas": 1
+            }
+        ]
+    }
+}
