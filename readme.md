@@ -98,7 +98,7 @@ Seldon-core allows various types of components to be built and plugged into the 
    * [Canary deployemts using Istio and Seldon.](examples/istio/canary_update/canary.ipynb).
  * [NVIDIA TensorRT and DL Inference Server](./integrations/nvidia-inference-server)
  * [Tensorflow Serving](./integrations/tfserving)
- * [Intel OpenVINO](https://software.intel.com/en-us/openvino-toolkit)
+ * [Intel OpenVINO](./examples/models/openvino)
    * A [Helm chart](./helm-charts/seldon-openvino) for easy integration and an [example notebook](./examples/models/openvino/openvino-squeezenet.ipynb) using OpenVINO to serve imagenet model within Seldon Core.
 
 ## Install
@@ -132,6 +132,8 @@ Three steps:
 ## Articles/Blogs/Videos
 
  - [Kubecon Europe 2018 - Serving Machine Learning Models at Scale with Kubeflow and Seldon](https://www.youtube.com/watch?v=pDlapGtecbY)
+ - [Polyaxon, Argo and Seldon for model training, package and deployment in Kubernetes](https://danielfrg.com/blog/2018/10/model-management-polyaxon-argo-seldon/)
+ - [Manage ML Deployments Like A Boss: Deploy Your First AB Test With Sklearn, Kubernetes and Seldon-core using Only Your Web Browser & Google Cloud](https://medium.com/analytics-vidhya/manage-ml-deployments-like-a-boss-deploy-your-first-ab-test-with-sklearn-kubernetes-and-b10ae0819dfe)
  - [Using PyTorch 1.0 and ONNX with Fabric for Deep Learning](https://developer.ibm.com/blogs/2018/10/01/announcing-pytorch-1-support-in-fabric-for-deep-learning/)
  - [AI on Kubernetes - O'Reilly Tutorial](https://github.com/dwhitena/oreilly-ai-k8s-tutorial)
  - [Scalable Data Science - The State of DevOps/MLOps in 2018](https://axsauze.github.io/scalable-data-science/#/)
