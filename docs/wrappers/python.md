@@ -168,7 +168,7 @@ Set either to 0 or 1. Default is 0. If set to 1 then your model will be saved pe
 ### TRANSFORMER
 
  * [A minimal skeleton for transformer source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/python/test/transformer-template-app)
- * [Example transformers](https://github.com/SeldonIO/seldon-core/tree/master/examples/routers)
+ * [Example transformers](https://github.com/SeldonIO/seldon-core/tree/master/examples/transformers)
 
 
 
