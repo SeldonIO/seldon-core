@@ -1,0 +1,311 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Seldon External API",
+        "version": "0.1",
+        "contact": {
+            "name": "Seldon Core",
+            "url": "https://github.com/SeldonIO/seldon-core"
+        }
+    },
+    "externalDocs": {
+        "description": "Seldon Core Documentation",
+        "url": "https://github.com/SeldonIO/seldon-core"
+    },
+    "servers": [
+        {
+            "url": "http://{host}:{port}",
+            "variables": {
+                "host": {
+                    "default": "localhost",
+                    "description": "host running seldon core"
+                },
+                "port": {
+                    "default": "443"
+                }
+            }
+        }
+    ],
+    "paths": {
+        "/seldon/{deployment}/api/v0.1/predictions": {
+            "post": {
+                "operationId": "Predict",
+                "responses": {
+                    "200": {
+                        "description": "A successful response.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SeldonMessage"
+                                }
+                            }
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "deployment",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "tags": [
+                    "External Ambassador API"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SeldonMessage"
+                            },
+                            "example": {
+                                "data": {
+                                    "names": [
+                                        "feature2"
+                                    ],
+                                    "tensor": {
+                                        "shape": [
+                                            1,
+                                            1
+                                        ],
+                                        "values": [
+                                            1
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/seldon/{deployment}/api/v0.1/feedback": {
+            "post": {
+                "operationId": "SendFeedback",
+                "responses": {
+                    "200": {
+                        "description": "A successful response.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SeldonMessage"
+                                }
+                            }
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "deployment",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "tags": [
+                    "External Ambassador API"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Feedback"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "StatusStatusFlag": {
+                "type": "string",
+                "enum": [
+                    "SUCCESS",
+                    "FAILURE"
+                ],
+                "default": "SUCCESS"
+            },
+            "AnyValue": {
+                "description": "Can be anything: string, number, array, object, etc."
+            },
+            "DefaultData": {
+                "type": "object",
+                "properties": {
+                    "names": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "tensor": {
+                        "$ref": "#/components/schemas/Tensor"
+                    },
+                    "ndarry": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AnyValue"
+                        }
+                    }
+                }
+            },
+            "Feedback": {
+                "type": "object",
+                "properties": {
+                    "request": {
+                        "$ref": "#/components/schemas/SeldonMessage"
+                    },
+                    "response": {
+                        "$ref": "#/components/schemas/SeldonMessage"
+                    },
+                    "reward": {
+                        "type": "number",
+                        "format": "float"
+                    },
+                    "truth": {
+                        "$ref": "#/components/schemas/SeldonMessage"
+                    }
+                }
+            },
+            "Meta": {
+                "type": "object",
+                "properties": {
+                    "puid": {
+                        "type": "string"
+                    },
+                    "tags": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/AnyValue"
+                        },
+                        "example": {
+                            "mytag": "myvalue"
+                        }
+                    },
+                    "routing": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "integer",
+                            "format": "int32"
+                        },
+                        "example": {
+                            "router1": 1
+                        }
+                    },
+                    "requestPath": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
+                        },
+                        "example": {
+                            "classifier": "seldonio/mock_classifier:1.0"
+                        }
+                    }
+                }
+            },
+            "SeldonMessage": {
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "$ref": "#/components/schemas/Status"
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/Meta"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/DefaultData"
+                    },
+                    "binData": {
+                        "type": "string",
+                        "format": "byte"
+                    },
+                    "strData": {
+                        "type": "string"
+                    }
+                }
+            },
+            "SeldonMessageList": {
+                "type": "object",
+                "properties": {
+                    "seldonMessages": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SeldonMessage"
+                        }
+                    }
+                }
+            },
+            "Status": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "info": {
+                        "type": "string"
+                    },
+                    "reason": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/StatusStatusFlag"
+                    }
+                }
+            },
+            "Tensor": {
+                "type": "object",
+                "properties": {
+                    "shape": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    },
+                    "values": {
+                        "type": "array",
+                        "items": {
+                            "type": "number",
+                            "format": "double"
+                        }
+                    }
+                }
+            }
+        },
+        "securitySchemes": {
+            "ApiKeyAuth": {
+                "type": "apiKey",
+                "name": "Authorization",
+                "in": "header"
+            },
+            "OAuth2": {
+                "type": "oauth2",
+                "flows": {
+                    "authorizationCode": {
+                        "tokenUrl": "/oauth/token",
+                        "scopes": {
+                            "read": "Grants read access",
+                            "write": "Grants write access"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "security": [
+        {
+            "OAuth2": [
+                "read"
+            ]
+        }
+    ]
+}

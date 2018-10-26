@@ -1,0 +1,28 @@
+{
+    "security": [
+        {
+            "OAuth2": [
+                "read"
+            ]
+        }
+    ],
+    "securitySchemes": {
+        "ApiKeyAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        },
+        "OAuth2": {
+            "type": "oauth2",
+            "flows": {
+                "authorizationCode": {
+                    "tokenUrl": "/oauth/token",
+                    "scopes": {
+                        "read": "Grants read access",
+                        "write": "Grants write access"
+                    }
+                }
+            }
+        }
+    }
+}
