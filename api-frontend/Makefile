@@ -6,7 +6,7 @@ VERSION_FILE=target/version.txt
 write_version:
 	ls target/seldon-apife-*.jar | sed -n 's/target\/seldon-apife-\(.*\).jar$$/\1/p' > $(VERSION_FILE) && cat $(VERSION_FILE)
 
-build_jar: update_proto
+build_jar: update_proto update_swagger
 	mvn clean verify -Dlicense.useMissingFile -B
 
 build_image: build_jar write_version
@@ -52,3 +52,5 @@ port_forward_api_server:
 	POD_NAME=$$(kubectl --namespace default get pod -l app=seldon-apiserver-container-app -o template --template="{{(index .items 0).metadata.name}}") && \
 		kubectl port-forward $${POD_NAME} 8080:8080
 
+update_swagger:
+	cp -v ../openapi/apife.oa3.json src/main/resources/static/seldon.json
