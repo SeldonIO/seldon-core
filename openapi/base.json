@@ -1,0 +1,29 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Seldon External API",
+        "version": "0.1",
+        "contact": {
+            "name": "Seldon Core",
+            "url": "https://github.com/SeldonIO/seldon-core"
+        }
+    },
+    "externalDocs": {
+        "description": "Seldon Core Documentation",
+        "url": "https://github.com/SeldonIO/seldon-core"
+    },
+    "servers": [
+        {
+            "url": "http://{host}:{port}",
+            "variables": {
+                "host": {
+                    "default": "localhost",
+                    "description": "host running seldon core"
+                },
+                "port": {
+                    "default": "443"
+                }
+            }
+        }
+    ]
+}

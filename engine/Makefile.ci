@@ -7,7 +7,7 @@ LOCAL_PRIVATE_REPO=127.0.0.1:5000
 build: clean build_image
 
 
-build_jar: update_proto
+build_jar: update_proto update_swagger
 	@set -x && mvn clean verify -Dlicense.useMissingFile -B
 
 write_version: build_jar
@@ -47,3 +47,5 @@ update_proto: download_protos
 	cp -vr ../proto/k8s/k8s.io src/main/proto
 	cp -v ../proto/k8s/v1.proto src/main/proto
 
+update_swagger:
+	cp -v ../openapi/engine.oa3.json src/main/resources/static/seldon.swagger.json
