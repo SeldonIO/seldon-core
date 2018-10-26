@@ -64,7 +64,7 @@
                             "example": {
                                 "data": {
                                     "names": [
-                                        "feature2"
+                                        "feature1"
                                     ],
                                     "tensor": {
                                         "shape": [

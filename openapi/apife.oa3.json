@@ -27,7 +27,7 @@
         }
     ],
     "paths": {
-        "/seldon/{deployment}/api/v0.1/predictions": {
+        "/api/v0.1/predictions": {
             "post": {
                 "operationId": "Predict",
                 "responses": {
@@ -42,18 +42,8 @@
                         }
                     }
                 },
-                "parameters": [
-                    {
-                        "name": "deployment",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
                 "tags": [
-                    "External Ambassador API"
+                    "External OAUTH API"
                 ],
                 "requestBody": {
                     "content": {
@@ -64,7 +54,7 @@
                             "example": {
                                 "data": {
                                     "names": [
-                                        "feature2"
+                                        "feature1"
                                     ],
                                     "tensor": {
                                         "shape": [
@@ -83,7 +73,7 @@
                 }
             }
         },
-        "/seldon/{deployment}/api/v0.1/feedback": {
+        "/api/v0.1/feedback": {
             "post": {
                 "operationId": "SendFeedback",
                 "responses": {
@@ -98,18 +88,8 @@
                         }
                     }
                 },
-                "parameters": [
-                    {
-                        "name": "deployment",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
                 "tags": [
-                    "External Ambassador API"
+                    "External OAUTH API"
                 ],
                 "requestBody": {
                     "content": {

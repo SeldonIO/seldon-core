@@ -39,4 +39,4 @@ update_proto:
 	cp -v ../proto/k8s/v1.proto src/main/proto
 
 update_swagger:
-	cp -v ../openapi/engine.oa3.json src/main/resources/static/seldon.swagger.json
+	cp -v ../openapi/engine.oa3.json src/main/resources/static/seldon.json

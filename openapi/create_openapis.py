@@ -6,7 +6,9 @@ if __name__ == "__main__":
     with open('base.json') as f:
         base = json.load(f)
     with open('paths-ambassador.json') as f:
-        paths_external = json.load(f)
+        paths_ambassador = json.load(f)
+    with open('paths-apife.json') as f:
+        paths_apife = json.load(f)
     with open('components.json') as f:
         components = json.load(f)
     with open('paths-internal.json') as f:
@@ -17,7 +19,7 @@ if __name__ == "__main__":
     #
     # Create engine.oa3.json
     #        
-    base["paths"] = paths_external["paths"]
+    base["paths"] = paths_ambassador["paths"]
     base["components"] = components["components"]
 
     with open('engine.oa3.json', 'w') as outfile:
@@ -42,7 +44,7 @@ if __name__ == "__main__":
     with open('base.json') as f:
         base = json.load(f)
         
-    base["paths"] = paths_external["paths"]
+    base["paths"] = paths_apife["paths"]
     base["components"] = components["components"]    
     base["components"]["securitySchemes"] = security["securitySchemes"]
     base["security"] = security["security"]    
