@@ -1,0 +1,294 @@
+{
+  "paths": {
+    "/aggregate": {
+      "get": {
+        "operationId": "Aggregate2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/components/SeldonMessage"
+            }
+          }
+        },
+        "tags": [
+          "Internal"
+        ]
+      },
+      "post": {
+        "operationId": "Aggregate",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/components/SeldonMessage"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/SeldonMessageList"
+            }
+          }
+        ],
+        "tags": [
+          "Internal"
+        ]
+      }
+    },
+    "/predict": {
+      "get": {
+        "operationId": "TransformInput4",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/components/SeldonMessage"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "json",
+            "in": "query",
+            "required": true,
+	    "schema": {
+              "$ref": "#/components/SeldonMessage"
+            }
+          }
+        ],
+        "tags": [
+          "Internal"
+        ]
+      },
+      "post": {
+        "operationId": "TransformInput3",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/components/SeldonMessage"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/SeldonMessage"
+            }
+          }
+        ],
+        "tags": [
+          "Internal"
+        ]
+      }
+    },
+    "/route": {
+      "get": {
+        "operationId": "Route2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/components/SeldonMessage"
+            }
+          }
+        },
+          "parameters": [
+          {
+            "name": "json",
+            "in": "query",
+            "required": true,
+	    "schema": {
+              "$ref": "#/components/SeldonMessage"
+            }
+          }
+        ],
+        "tags": [
+          "Internal"
+        ]
+      },
+      "post": {
+        "operationId": "Route",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/components/SeldonMessage"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/SeldonMessage"
+            }
+          }
+        ],
+        "tags": [
+          "Internal"
+        ]
+      }
+    },
+    "/send-feedback": {
+      "get": {
+        "operationId": "SendFeedback2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/components/SeldonMessage"
+            }
+          }
+        },
+          "parameters": [
+          {
+            "name": "json",
+            "in": "query",
+            "required": true,
+	    "schema": {
+              "$ref": "#/components/Feedback"
+            }
+          }
+        ],
+        "tags": [
+          "Internal"
+        ]
+      },
+      "post": {
+        "operationId": "SendFeedback",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/components/SeldonMessage"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/Feedback"
+            }
+          }
+        ],
+        "tags": [
+          "Internal"
+        ]
+      }
+    },
+    "/transform-input": {
+      "get": {
+        "operationId": "TransformInput2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/components/SeldonMessage"
+            }
+          }
+        },
+          "parameters": [
+          {
+            "name": "json",
+            "in": "query",
+            "required": true,
+	    "schema": {
+              "$ref": "#/components/SeldonMessage"
+            }
+          }
+        ],
+        "tags": [
+          "Internal"
+        ]
+      },
+      "post": {
+        "operationId": "TransformInput",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/components/SeldonMessage"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/SeldonMessage"
+            }
+          }
+        ],
+        "tags": [
+          "Internal"
+        ]
+      }
+    },
+    "/transform-output": {
+      "get": {
+        "operationId": "TransformOutput2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/components/SeldonMessage"
+            }
+          }
+        },
+          "parameters": [
+          {
+            "name": "json",
+            "in": "query",
+            "required": true,
+	    "schema": {
+              "$ref": "#/components/SeldonMessage"
+            }
+          }
+        ],
+        "tags": [
+          "Internal"
+        ]
+      },
+      "post": {
+        "operationId": "TransformOutput",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/components/SeldonMessage"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/SeldonMessage"
+            }
+          }
+        ],
+        "tags": [
+          "Internal"
+        ]
+      }
+    }
+  }
+}

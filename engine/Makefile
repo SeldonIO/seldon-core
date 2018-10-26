@@ -1,7 +1,7 @@
 IMAGE_NAME=engine
 VERSION_FILE=target/version.txt
 
-build_jar: update_proto
+build_jar: update_proto update_swagger
 	mvn clean verify -Dlicense.useMissingFile -B
 
 write_version:
@@ -37,3 +37,6 @@ update_proto:
 	@cp -v ../proto/prediction.proto src/main/proto/
 	cp -vr ../proto/k8s/k8s.io src/main/proto
 	cp -v ../proto/k8s/v1.proto src/main/proto
+
+update_swagger:
+	cp -v ../openapi/engine.oa3.json src/main/resources/static/seldon.swagger.json

@@ -26,6 +26,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -98,7 +99,7 @@ public class RestClientController {
         return "unpaused";
     }
 
-	
+	@CrossOrigin(origins = "*")
 	@RequestMapping(value = "/api/v0.1/predictions", method = RequestMethod.POST, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
     public ResponseEntity<String> predictions(RequestEntity<String> requestEntity)
 	{
@@ -137,6 +138,7 @@ public class RestClientController {
 
 	}
 	
+	@CrossOrigin(origins = "*")
 	@RequestMapping(value= "/api/v0.1/feedback", method = RequestMethod.POST, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
 	public ResponseEntity<String>  feedback(RequestEntity<String> requestEntity) {
 		Feedback feedback;
@@ -173,9 +175,5 @@ public class RestClientController {
 			throw new APIException(ApiExceptionType.ENGINE_INVALID_JSON,"");
 		} 
     }
-	
-	@RequestMapping("/api/v0.1/events")
-    String events() {
-        return "Not Implemented";
-    }
+
 }
