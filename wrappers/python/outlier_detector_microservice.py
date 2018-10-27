@@ -6,6 +6,7 @@ import grpc
 from concurrent import futures
 
 from flask import jsonify, Flask
+from flask_cors import CORS
 import numpy as np
 
 # ---------------------------
@@ -23,7 +24,8 @@ def score(user_model,features,feature_names):
 def get_rest_microservice(user_model,debug=False):
 
     app = Flask(__name__)
-
+    CORS(app)
+    
     @app.errorhandler(SeldonMicroserviceException)
     def handle_invalid_usage(error):
         response = jsonify(error.to_dict())

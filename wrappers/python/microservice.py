@@ -67,7 +67,11 @@ def extract_message():
     if jStr:
         message = json.loads(jStr)
     else:
-        raise SeldonMicroserviceException("Empty json parameter in data")
+        jStr = request.args.get('json')
+        if jStr:
+            message = json.loads(jStr)
+        else:
+            raise SeldonMicroserviceException("Empty json parameter in data")
     if message is None:
         raise SeldonMicroserviceException("Invalid Data Format")
     return message

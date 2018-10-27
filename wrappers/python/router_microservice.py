@@ -6,6 +6,7 @@ import grpc
 from concurrent import futures
 
 from flask import jsonify, Flask
+from flask_cors import CORS
 import numpy as np
 import os
 
@@ -28,7 +29,8 @@ def send_feedback(user_router,features,feature_names,routing,reward,truth):
 def get_rest_microservice(user_router,debug=False):
 
     app = Flask(__name__)
-
+    CORS(app)
+    
     @app.errorhandler(SeldonMicroserviceException)
     def handle_invalid_usage(error):
         response = jsonify(error.to_dict())
