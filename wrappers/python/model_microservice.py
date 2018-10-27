@@ -18,6 +18,9 @@ import tornado.ioloop
 from seldon_flatbuffers import SeldonRPCToNumpyArray,NumpyArrayToSeldonRPC,CreateErrorMsg
 import struct
 import traceback
+import os
+
+PRED_UNIT_ID = os.environ.get("PREDICTIVE_UNIT_ID")
 
 # ---------------------------
 # Interaction with user model
@@ -26,8 +29,9 @@ import traceback
 def predict(user_model,features,feature_names):
     return user_model.predict(features,feature_names)
 
-def send_feedback(user_model,features,feature_names,truth,reward):
-    return user_model.send_feedback(features,feature_names,truth,reward)
+def send_feedback(user_model,features,feature_names,reward,truth):
+    if hasattr(user_model,"send_feedback"):
+        user_model.send_feedback(features,feature_names,reward,truth)
 
 def get_class_names(user_model,n_targets):
     if hasattr(user_model,"class_names"):
@@ -74,14 +78,14 @@ def get_rest_microservice(user_model,debug=False):
     @app.route("/send-feedback",methods=["GET","POST"])
     def SendFeedback():
         feedback = extract_message()
+
+        datadef_request = feedback.get("request",{}).get("data",{})
+        features = rest_datadef_to_array(datadef_request)
         
-        datadef_request = feedback.get("request").get("data")
-        features = rest_datadef_to_array(datadef)
-        
-        truth = rest_datadef_to_array(feedback.get("truth"))
+        truth = rest_datadef_to_array(feedback.get("truth",{}))
         reward = feedback.get("reward")
 
-        send_feedback(user_model,features,datadef_request.get("names"),truth,reward)
+        send_feedback(user_model,features,datadef_request.get("names"),reward,truth)        
         return jsonify({})
 
     return app

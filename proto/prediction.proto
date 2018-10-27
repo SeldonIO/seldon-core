@@ -84,6 +84,7 @@ service Generic {
 
 service Model {
   rpc Predict(SeldonMessage) returns (SeldonMessage) {};
+  rpc SendFeedback(Feedback) returns (SeldonMessage) {};  
  }
 
 service Router {
