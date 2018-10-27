@@ -6,6 +6,7 @@ import grpc
 from concurrent import futures
 
 from flask import jsonify, Flask
+from flask_cors import CORS
 import numpy as np
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -47,7 +48,8 @@ def get_class_names(user_model,n_targets):
 def get_rest_microservice(user_model,debug=False):
 
     app = Flask(__name__)
-
+    CORS(app)
+    
     @app.errorhandler(SeldonMicroserviceException)
     def handle_invalid_usage(error):
         response = jsonify(error.to_dict())
