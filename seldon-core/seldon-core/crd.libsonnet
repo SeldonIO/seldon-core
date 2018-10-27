@@ -249,6 +249,9 @@ local k = import "k.libsonnet";
           },
         },
         version: "v1alpha1",
+	subresources: {
+              status: {},
+	 },
       },
     },
 
@@ -503,6 +506,9 @@ local k = import "k.libsonnet";
           },
         },
         version: "v1alpha2",
+	subresources: {
+              status: {},
+	 },	
       },
     },
 
