@@ -1,10 +1,15 @@
 ambassador:
   annotations:
-    getambassador.io/config: "---\napiVersion: ambassador/v0\nkind:  Module\nname:\
-      \  ambassador\nconfig:\n  service_port: 8080\n"
+    getambassador.io/config: |
+      ---
+      apiVersion: ambassador/v0
+      kind: Module
+      name: ambassador
+      config:
+        service_port: 8080
   enabled: false
   image:
-    name: quay.io/datawire/ambassador:0.35.1
+    name: quay.io/datawire/ambassador:0.40.0
   resources:
     limits:
       cpu: 1
@@ -12,10 +17,12 @@ ambassador:
     requests:
       cpu: 200m
       memory: 128Mi
-  service_type: NodePort
-  statsd:
-    image:
-      name: datawire/prom-statsd-exporter:0.6.0
+  service:
+    targetPorts:
+      http: 8080
+      https: 8443
+    type: NodePort
+  replicas: 1
 apife:
   annotations: null
   enabled: true

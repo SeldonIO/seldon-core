@@ -16,9 +16,13 @@ spec:
   ports:
     - name: http
       protocol: TCP
-      port: 8080
-      targetPort: 8080
-  type: {{ .Values.ambassador.service_type }}
+      port: 80
+      targetPort: {{ .Values.ambassador.service.targetPorts.http }}
+    - name: https
+      protocol: TCP
+      port: 443
+      targetPort: {{ .Values.ambassador.service.targetPorts.https }}
+  type: {{ .Values.ambassador.service.type }}
 ---
 apiVersion: v1
 kind: Service
@@ -40,7 +44,7 @@ kind: Deployment
 metadata:
   name: {{ .Release.Name }}-ambassador
 spec:
-  replicas: 1
+  replicas: {{ .Values.ambassador.replicas }}
   template:
     metadata:
       annotations:
@@ -62,9 +66,9 @@ spec:
 {{ toYaml .Values.ambassador.resources | indent 10 }}
         ports:
            - name: http
-             containerPort: 8080
+             containerPort: {{ .Values.ambassador.service.targetPorts.http }}
            - name: https
-             containerPort: 443
+             containerPort: {{ .Values.ambassador.service.targetPorts.https }}
            - name: admin
              containerPort: 8877
         livenessProbe:
@@ -79,11 +83,6 @@ spec:
             port: admin
           initialDelaySeconds: 30
           periodSeconds: 3
-      - image: {{ .Values.ambassador.statsd.image.name }}
-        name: statsd
-        ports:
-        - name: metrics
-          containerPort: 9102
       restartPolicy: Always
 {{- if .Values.rbac.enabled }}
       serviceAccountName: {{ .Values.rbac.service_account.name }}
