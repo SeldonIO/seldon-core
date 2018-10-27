@@ -21,9 +21,13 @@
                     "description": "host running seldon core"
                 },
                 "port": {
-                    "default": "443"
+                    "default": "80"
                 }
             }
+        },
+        {
+            "url": "http://localhost:8002",
+            "description": "fixed host as swagger UI has bug with variables for auth"
         }
     ],
     "paths": {
@@ -262,15 +266,15 @@
             }
         },
         "securitySchemes": {
-            "ApiKeyAuth": {
-                "type": "apiKey",
-                "name": "Authorization",
-                "in": "header"
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
             },
-            "OAuth2": {
+            "oAuth2ClientCredentials": {
                 "type": "oauth2",
                 "flows": {
-                    "authorizationCode": {
+                    "clientCredentials": {
                         "tokenUrl": "/oauth/token",
                         "scopes": {
                             "read": "Grants read access",
@@ -283,9 +287,7 @@
     },
     "security": [
         {
-            "OAuth2": [
-                "read"
-            ]
+            "bearerAuth": []
         }
     ]
 }
