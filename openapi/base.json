@@ -21,9 +21,14 @@
                     "description": "host running seldon core"
                 },
                 "port": {
-                    "default": "443"
+                    "default": "80"
                 }
             }
+        },
+	{
+            "url": "http://localhost:8002",
+	    "description": "fixed host as swagger UI has bug with variables for auth"
         }
+
     ]
 }

@@ -21,44 +21,76 @@
                     "description": "host running seldon core"
                 },
                 "port": {
-                    "default": "443"
+                    "default": "80"
                 }
             }
+        },
+        {
+            "url": "http://localhost:8002",
+            "description": "fixed host as swagger UI has bug with variables for auth"
         }
     ],
     "paths": {
         "/aggregate": {
-            "get": {
+            "post": {
                 "operationId": "Aggregate2",
                 "responses": {
                     "200": {
                         "description": "A successful response.",
-                        "schema": {
-                            "$ref": "#/components/SeldonMessage"
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SeldonMessage"
+                                }
+                            }
                         }
                     }
                 },
                 "tags": [
                     "Internal"
-                ]
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "json": {
+                                        "$ref": "#/components/schemas/SeldonMessageList"
+                                    }
+                                }
+                            },
+                            "encoding": {
+                                "json": {
+                                    "contentType": "application/json"
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                }
             },
-            "post": {
+            "get": {
                 "operationId": "Aggregate",
                 "responses": {
                     "200": {
                         "description": "A successful response.",
-                        "schema": {
-                            "$ref": "#/components/SeldonMessage"
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SeldonMessage"
+                                }
+                            }
                         }
                     }
                 },
                 "parameters": [
                     {
                         "name": "body",
-                        "in": "body",
+                        "in": "query",
                         "required": true,
                         "schema": {
-                            "$ref": "#/components/SeldonMessageList"
+                            "$ref": "#/components/schemas/SeldonMessageList"
                         }
                     }
                 ],
@@ -73,8 +105,12 @@
                 "responses": {
                     "200": {
                         "description": "A successful response.",
-                        "schema": {
-                            "$ref": "#/components/SeldonMessage"
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SeldonMessage"
+                                }
+                            }
                         }
                     }
                 },
@@ -84,7 +120,10 @@
                         "in": "query",
                         "required": true,
                         "schema": {
-                            "$ref": "#/components/SeldonMessage"
+                            "$ref": "#/components/schemas/SeldonMessage"
+                        },
+                        "example": {
+                            "json": "{\"data\":{\"names\" : [\"feature1\"],\"tensor\" : {\"shape\": [1,1],\"values\": [1]}}}"
                         }
                     }
                 ],
@@ -97,24 +136,38 @@
                 "responses": {
                     "200": {
                         "description": "A successful response.",
-                        "schema": {
-                            "$ref": "#/components/SeldonMessage"
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SeldonMessage"
+                                }
+                            }
                         }
                     }
                 },
-                "parameters": [
-                    {
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/components/SeldonMessage"
-                        }
-                    }
-                ],
                 "tags": [
                     "Internal"
-                ]
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "json": {
+                                        "$ref": "#/components/schemas/SeldonMessage"
+                                    }
+                                }
+                            },
+                            "encoding": {
+                                "json": {
+                                    "contentType": "application/json"
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                }
             }
         },
         "/route": {
@@ -123,8 +176,12 @@
                 "responses": {
                     "200": {
                         "description": "A successful response.",
-                        "schema": {
-                            "$ref": "#/components/SeldonMessage"
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SeldonMessage"
+                                }
+                            }
                         }
                     }
                 },
@@ -134,7 +191,7 @@
                         "in": "query",
                         "required": true,
                         "schema": {
-                            "$ref": "#/components/SeldonMessage"
+                            "$ref": "#/components/schemas/SeldonMessage"
                         }
                     }
                 ],
@@ -147,24 +204,38 @@
                 "responses": {
                     "200": {
                         "description": "A successful response.",
-                        "schema": {
-                            "$ref": "#/components/SeldonMessage"
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SeldonMessage"
+                                }
+                            }
                         }
                     }
                 },
-                "parameters": [
-                    {
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/components/SeldonMessage"
-                        }
-                    }
-                ],
                 "tags": [
                     "Internal"
-                ]
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "json": {
+                                        "$ref": "#/components/schemas/SeldonMessage"
+                                    }
+                                }
+                            },
+                            "encoding": {
+                                "json": {
+                                    "contentType": "application/json"
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                }
             }
         },
         "/send-feedback": {
@@ -173,8 +244,12 @@
                 "responses": {
                     "200": {
                         "description": "A successful response.",
-                        "schema": {
-                            "$ref": "#/components/SeldonMessage"
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SeldonMessage"
+                                }
+                            }
                         }
                     }
                 },
@@ -184,7 +259,7 @@
                         "in": "query",
                         "required": true,
                         "schema": {
-                            "$ref": "#/components/Feedback"
+                            "$ref": "#/components/schemas/Feedback"
                         }
                     }
                 ],
@@ -197,24 +272,38 @@
                 "responses": {
                     "200": {
                         "description": "A successful response.",
-                        "schema": {
-                            "$ref": "#/components/SeldonMessage"
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SeldonMessage"
+                                }
+                            }
                         }
                     }
                 },
-                "parameters": [
-                    {
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/components/Feedback"
-                        }
-                    }
-                ],
                 "tags": [
                     "Internal"
-                ]
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "json": {
+                                        "$ref": "#/components/schemas/Feedback"
+                                    }
+                                }
+                            },
+                            "encoding": {
+                                "json": {
+                                    "contentType": "application/json"
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                }
             }
         },
         "/transform-input": {
@@ -223,8 +312,12 @@
                 "responses": {
                     "200": {
                         "description": "A successful response.",
-                        "schema": {
-                            "$ref": "#/components/SeldonMessage"
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SeldonMessage"
+                                }
+                            }
                         }
                     }
                 },
@@ -234,7 +327,7 @@
                         "in": "query",
                         "required": true,
                         "schema": {
-                            "$ref": "#/components/SeldonMessage"
+                            "$ref": "#/components/schemas/SeldonMessage"
                         }
                     }
                 ],
@@ -247,24 +340,38 @@
                 "responses": {
                     "200": {
                         "description": "A successful response.",
-                        "schema": {
-                            "$ref": "#/components/SeldonMessage"
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SeldonMessage"
+                                }
+                            }
                         }
                     }
                 },
-                "parameters": [
-                    {
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/components/SeldonMessage"
-                        }
-                    }
-                ],
                 "tags": [
                     "Internal"
-                ]
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "json": {
+                                        "$ref": "#/components/schemas/SeldonMessage"
+                                    }
+                                }
+                            },
+                            "encoding": {
+                                "json": {
+                                    "contentType": "application/json"
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                }
             }
         },
         "/transform-output": {
@@ -273,8 +380,12 @@
                 "responses": {
                     "200": {
                         "description": "A successful response.",
-                        "schema": {
-                            "$ref": "#/components/SeldonMessage"
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SeldonMessage"
+                                }
+                            }
                         }
                     }
                 },
@@ -284,7 +395,7 @@
                         "in": "query",
                         "required": true,
                         "schema": {
-                            "$ref": "#/components/SeldonMessage"
+                            "$ref": "#/components/schemas/SeldonMessage"
                         }
                     }
                 ],
@@ -297,24 +408,38 @@
                 "responses": {
                     "200": {
                         "description": "A successful response.",
-                        "schema": {
-                            "$ref": "#/components/SeldonMessage"
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SeldonMessage"
+                                }
+                            }
                         }
                     }
                 },
-                "parameters": [
-                    {
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/components/SeldonMessage"
-                        }
-                    }
-                ],
                 "tags": [
                     "Internal"
-                ]
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "json": {
+                                        "$ref": "#/components/schemas/SeldonMessage"
+                                    }
+                                }
+                            },
+                            "encoding": {
+                                "json": {
+                                    "contentType": "application/json"
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                }
             }
         }
     },
