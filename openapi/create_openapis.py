@@ -17,12 +17,12 @@ if __name__ == "__main__":
         security = json.load(f)
 
     #
-    # Create engine.oa3.json
+    # Create engine.oas3.json
     #        
     base["paths"] = paths_ambassador["paths"]
     base["components"] = components["components"]
 
-    with open('engine.oa3.json', 'w') as outfile:
+    with open('engine.oas3.json', 'w') as outfile:
             json.dump(base, outfile, indent=4)
 
             
@@ -35,7 +35,7 @@ if __name__ == "__main__":
     base["paths"] = paths_internal["paths"]
     base["components"] = components["components"]    
 
-    with open('wrapper.oa3.json', 'w') as outfile:
+    with open('wrapper.oas3.json', 'w') as outfile:
             json.dump(base, outfile, indent=4)
 
     #
@@ -49,5 +49,5 @@ if __name__ == "__main__":
     base["components"]["securitySchemes"] = security["securitySchemes"]
     base["security"] = security["security"]    
 
-    with open('apife.oa3.json', 'w') as outfile:
+    with open('apife.oas3.json', 'w') as outfile:
             json.dump(base, outfile, indent=4)
