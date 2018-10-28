@@ -125,7 +125,9 @@ Three steps:
 
 ## Reference
 
- - [Prediction API](./docs/reference/prediction.md)
+ - Prediction API
+    - [Proto Buffer Definitions](./docs/reference/prediction.md)
+    - [Open API Definitions](./openapi/README.md)
  - [Seldon Deployment Custom Resource](./docs/reference/seldon-deployment.md)
  - [Analytics](./docs/analytics.md)
  
