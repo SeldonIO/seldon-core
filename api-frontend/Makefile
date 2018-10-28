@@ -53,4 +53,4 @@ port_forward_api_server:
 		kubectl port-forward $${POD_NAME} 8080:8080
 
 update_swagger:
-	cp -v ../openapi/apife.oa3.json src/main/resources/static/seldon.json
+	cp -v ../openapi/apife.oas3.json src/main/resources/static/seldon.json
