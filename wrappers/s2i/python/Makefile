@@ -21,6 +21,7 @@ get_wrappers_and_protos:
 	flatc --python -o _wrappers/python/fbs ../../../fbs/prediction.fbs
 	touch _wrappers/python/proto/__init__.py
 	touch _wrappers/python/fbs/__init__.py
+	cp $(SELDON_CORE_DIR)/openapi/wrapper.oas3.json _wrappers/python/seldon.json
 
 .PHONY: build
 build: get_wrappers_and_protos
