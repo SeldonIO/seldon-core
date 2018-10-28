@@ -105,7 +105,7 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 					api.replaceNamespacedCustomObjectStatus(GROUP, VERSION, namespace, KIND_PLURAL, mlDeployment.getMetadata().getName(),json.getBytes());
 				} catch (ApiException e) {
 					replaceStatusResource = false; // Stop using the /status endpoint (maybe because the k8s version does not have this <1.10)
-					logger.error("Failed to update deployment in kubernetes ",e);
+					logger.warn("Failed to update deployment in kubernetes ",e);
 				}
 			}
 			if (!replaceStatusResource)
