@@ -29,6 +29,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -122,7 +123,7 @@ public class RestClientController {
         return "pong";
     }
 	
-	
+	@CrossOrigin(origins = "*")
 	@RequestMapping(value = "/api/v0.1/predictions", method = RequestMethod.POST, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
 	    public ResponseEntity<String> prediction(RequestEntity<String> requestEntity,Principal principal) {
 		
@@ -172,6 +173,7 @@ public class RestClientController {
 
 	}
 
+	@CrossOrigin(origins = "*")
 	@RequestMapping(value = "/api/v0.1/feedback", method = RequestMethod.POST, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
 	@ResponseStatus(value = HttpStatus.OK)
 	public void feedback(RequestEntity<String> requestEntity, Principal principal) 
