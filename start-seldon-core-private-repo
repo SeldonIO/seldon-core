@@ -30,5 +30,6 @@ helm install "${STARTUP_DIR}/helm-charts/seldon-core" --name seldon-core \
     --set cluster_manager.image.name=$CLUSTER_MANAGER_IMAGE_NAME \
     --set engine.image.pull_policy=Always \
     --set engine.image.name=$ENGINE_IMAGE_NAME \
+    --set ambassador.enabled=true \
     --namespace "${NAMESPACE}"
 
