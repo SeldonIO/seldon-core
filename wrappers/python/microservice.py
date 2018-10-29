@@ -89,7 +89,11 @@ def array_to_list_value(array,lv=None):
 
 def rest_datadef_to_array(datadef):
     if datadef.get("tensor") is not None:
-        features = np.array(datadef.get("tensor").get("values")).reshape(datadef.get("tensor").get("shape"))
+        sz = np.prod(datadef.tensor.shape) # get number of float64 entries
+        c = datadef.tensor.SerializeToString() # get bytes
+        # create array from packed entries which are at end of bytes - assumes same endianness
+        features =  np.frombuffer(memoryview(c[-(sz*8):]), dtype=np.float64, count=sz, offset=0)
+        #features = np.array(datadef.get("tensor").get("values")).reshape(datadef.get("tensor").get("shape"))
     elif datadef.get("ndarray") is not None:
         features = np.array(datadef.get("ndarray"))
     else:
