@@ -284,7 +284,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 		        //removeServices(client,namespace, mlDep2, resources.services); //Proto Client not presently working for deletion
 		        ApiClient client2 = clientProvider.getClient();
 		        removeServices(client2,namespace, mlDep2, resources.services);
-		        if (!mlDep.getSpec().equals(mlDepStatusUpdated.getSpec()))
+		        if (existing == null || !mlDep.getSpec().equals(mlDepStatusUpdated.getSpec()))
 		        {
 		           logger.debug("Pushing updated SeldonDeployment "+mlDepStatusUpdated.getMetadata().getName()+" back to kubectl");
 		           crdHandler.updateSeldonDeploymentStatus(mlDepStatusUpdated);
