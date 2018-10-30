@@ -87,6 +87,10 @@ public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusU
                {
             	   mlBuilder.getStatusBuilder().setState(Constants.STATE_AVAILABLE);
                }
+               else
+               {
+            	   mlBuilder.getStatusBuilder().setState(Constants.STATE_CREATING);
+               }
                crdHandler.updateSeldonDeploymentStatus(mlBuilder.build());
             }
             else
