@@ -1,6 +1,5 @@
 import random
 import numpy as np
-import sys
 
 __version__ = "v1.3"
 

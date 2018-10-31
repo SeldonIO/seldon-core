@@ -22,6 +22,5 @@ def test_statistics():
     eg = EpsilonGreedy(n_branches=3, epsilon=0.1, seed=1, best_branch=0)
     routes = [eg.route(features=None,feature_names=None) for _ in range(100000)]
     counter = Counter(routes)
-    print(eg.epsilon)
     assert np.isclose(counter[0]/100000, 1-eg.epsilon, atol=0, rtol=0.01)
 
