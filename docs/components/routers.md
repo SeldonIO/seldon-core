@@ -1,0 +1,21 @@
+# Routers in Seldon Core
+
+## Definitions
+A router is one of the pre-defined types of [predictive units](../reference/seldon-deployment.md#proto-buffer-definition) in Seldon Core. It is a microservice to route requests to one of its children and optionally receive feedback rewards for making the routing choices. The REST and gRPC internal APIs that the router components must conform to are covered in the [internal API](../reference/internal-api.md#router) reference.
+
+## Implementing custom routers
+A router component must implement a ```Route``` method which will return one of the children that the router component is connected to for routing an incoming request. Optionally a ```SendFeedback``` method can be implemented to provide a mechanism for informing the router on the quality of its decisions. This would be used in adaptive routers such as multi-armed bandits, refer to the [epsilon-greedy](../../examples/routers/epsilon_greedy) example for more detail.
+
+As an example, consider writing a custom A/B/C... testing component with a user-specified number of children and routing probabilities (two-model routing is already supported in Seldon Core: [RANDOM_ABTEST](../reference/seldon-deployment.md#proto-buffer-definition)). In this scenario because the routing logic is static there is no need to implement ```SendFeedback``` as we will not be dynamically changing the routing by providing feedback for its routing choices. On the other hand, an adaptive router whose routing is required to change dynamically by providing feedback will need to implement the ```SendFeedback``` method.
+
+Because routers are generic components that only need to implement the ```Route``` method, there is considerable flexibility in designing the routing logic. Some example concepts going beyond random testing and multi-armed bandits:
+* Routing depending on external conditions, e.g. use the time of day to route traffic to a model that has been known to perform best during a particular time period.
+* Model as a router: use a predictive model within a router component to first determine a higher level class membership (e.g. cat vs dog) and according to the decision route traffic to more specific models (e.g. dog-specific model to infer a breed).
+
+
+### Language specific templates
+A reference template for custom router components written in several languages are available:
+* [Python](../../wrappers/s2i/python/test/router-template-app/MyRouter.py)
+* [R](../../wrappers/s2i/R/test/router-template-app/MyRouter.R)
+
+Additionally, the [wrappers](../../wrappers/s2i) provide guidelines for implementing the router components in other languages.
