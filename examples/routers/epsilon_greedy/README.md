@@ -41,7 +41,10 @@ The reward is interpreted as the proportion of successes in the batch of data sa
 A basic test suite is provided in ```test_EpsilonGreedy.py```. Run with ```pytest```.
 
 ## Wrap using s2i
+### Persistence
+For routers like multi-armed bandits it can be important to save the state after some learning has been done to avoid cold starts when re-deploying an inference graph. This can be achieved by setting ```PERSISTENCE=1``` in the ```.s2i/environment``` file before wrapping the source code. This will use redis to periodically save state of the component on the Seldon Core cluster.
 
+### Wrap
 ```bash
 make build
 ```
@@ -67,6 +70,8 @@ Send a feedback request:
 data='{"request":{"data":{"names":["a","b"],"ndarray":[[1.0,2.0]]}},"response":{"meta":{"routing":{"eg":2}},"data":{"names":["a","b"],"ndarray":[[1.0,2.0]]}},"reward":1}'
 curl -d "json=${data}" http://0.0.0.0:5000/send-feedback
 ```
+
+For more comprehensive testing refer to the [API testers](https://github.com/SeldonIO/seldon-core/blob/master/docs/api-testing.md).
 
 ## Running on Seldon
 An end-to-end example running an epsilon-greedy router on GCP to route traffic to 3 models in parallel is available [here](
