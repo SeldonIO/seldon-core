@@ -142,7 +142,7 @@ def get_token(args):
     print("Getting token from "+url)
     response = requests.post(
                 url,        
-                auth=HTTPBasicAuth('oauth-key', 'oauth-secret'),
+                auth=HTTPBasicAuth(args.oauth_key, args.oauth_secret),
                 data=payload)
     print(response.text)
     token =  response.json()["access_token"]
