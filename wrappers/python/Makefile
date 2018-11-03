@@ -11,6 +11,9 @@ build_proto:
 seldon.json:
 	cp ../../openapi/wrapper.oas3.json seldon.json
 
+test:
+	PYTHONPATH=. pytest 
+
 clean:
 	rm -f proto/prediction.proto
 	rm -f proto/prediction_pb2_grpc.py
