@@ -19,4 +19,5 @@ import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 public interface SeldonDeploymentController {
 	public void createOrReplaceSeldonDeployment(SeldonDeployment mlDep);
+	public void removeUnusedResources(SeldonDeployment mlDep);
 }

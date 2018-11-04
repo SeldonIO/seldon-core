@@ -86,7 +86,8 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
     public static final String LABEL_SELDON_TYPE_VAL = "deployment";
     public static final String PODINFO_VOLUME_NAME = "podinfo";
     public static final String PODINFO_VOLUME_PATH = "/etc/podinfo";
-   
+    private final SeldonNameCreator seldonNameCreator = new SeldonNameCreator();
+    
 	@Autowired
 	public SeldonDeploymentOperatorImpl(ClusterManagerProperites clusterManagerProperites) {
 		super();
@@ -127,16 +128,16 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			.setReadinessProbe(Probe.newBuilder().setHandler(Handler.newBuilder()
 					.setHttpGet(HTTPGetAction.newBuilder().setPort(IntOrString.newBuilder().setType(1).setStrVal("admin")).setPath("/ready")))
 					.setInitialDelaySeconds(10)
-					.setPeriodSeconds(10)
-					.setFailureThreshold(3)
+					.setPeriodSeconds(5)
+					.setFailureThreshold(1)
 					.setSuccessThreshold(1)
 					.setTimeoutSeconds(2)
 					)
 			.setLivenessProbe(Probe.newBuilder().setHandler(Handler.newBuilder()
 					.setHttpGet(HTTPGetAction.newBuilder().setPort(IntOrString.newBuilder().setType(1).setStrVal("admin")).setPath("/ready")))
 					.setInitialDelaySeconds(10)
-					.setPeriodSeconds(10)
-					.setFailureThreshold(3)
+					.setPeriodSeconds(5)
+					.setFailureThreshold(1)
 					.setSuccessThreshold(1)
 					.setTimeoutSeconds(2)
 					)
@@ -144,7 +145,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 					ExecAction.newBuilder()
 						.addCommand("/bin/sh")
 						.addCommand("-c")
-						.addCommand("curl 127.0.0.1:"+clusterManagerProperites.getEngineContainerPort()+"/pause && /bin/sleep 5"))));
+						.addCommand("curl 127.0.0.1:"+clusterManagerProperites.getEngineContainerPort()+"/pause && /bin/sleep 1"))));
 
 		// Add engine resources if specified
 		if (predictorDef.hasEngineResources())
@@ -344,18 +345,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		return LABEL_SELDON_APP+"-"+containerName;
 	}
 	
-	private String hash(String key)  {
-	    return DigestUtils.md5Hex(key).toLowerCase();
-	}
-	
-	@Override
-	public String getSeldonServiceName(SeldonDeployment dep,PredictorSpec pred,String key) {
-		String svcName =  dep.getSpec().getName() + "-" + pred.getName()+"-"+key;
-		if (svcName.length() > 63)
-			return "seldon-"+hash(svcName);
-		else
-			return svcName;
-	}
+
 
 	@Override
 	public SeldonDeployment updateStatus(SeldonDeployment mlDep) {
@@ -395,7 +385,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 					if(isContainerInGraph(p.getGraph(), c))
 					{
 						String containerServiceKey = getPredictorServiceNameKey(c.getName());
-						String containerServiceValue = getSeldonServiceName(mlDep, p, c.getName());
+						String containerServiceValue = seldonNameCreator.getSeldonServiceName(mlDep, p, c);
 						metaBuilder.putLabels(containerServiceKey, containerServiceValue); 
 					
 						int portNum;
@@ -597,7 +587,8 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		    			.addItems(DownwardAPIVolumeFile.newBuilder().setPath("annotations")
 		    					.setFieldRef(ObjectFieldSelector.newBuilder().setFieldPath("metadata.annotations"))))));
 			
-				String depName = getSeldonServiceName(mlDep,p,"svc-orch");
+				String depName = seldonNameCreator.getServiceOrchestratorName(mlDep, p);
+				//final String depName = seldonNameCreator.getSeldonDeploymentName(mlDep,p,spec);
 				podSpecBuilder.getMetadataBuilder()
 					.putAllAnnotations(mlDep.getSpec().getAnnotationsMap()) // Add all spec annotations first
 					.putAllAnnotations(p.getAnnotationsMap()) // ...then add those for predictor overwriting any from spec above
@@ -606,13 +597,12 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			    	.putAnnotations("prometheus.io/scrape", "true");
 
 				ObjectMeta.Builder depMetaBuilder = ObjectMeta.newBuilder()
-						.setName(depName)
-						
+						.setName(depName)					
 						.addOwnerReferences(ownerRef);
 
 				// LABELS - START
 				podSpecBuilder.getMetadataBuilder()
-					.putLabels(LABEL_SELDON_APP, serviceLabel) 
+					.putLabels(LABEL_SELDON_APP, serviceLabel) // key label for entry point to whole graphn- see service below
 					.putLabels("app", depName);
 				depMetaBuilder
 					.putLabels(LABEL_SELDON_APP, serviceLabel)
@@ -648,7 +638,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			for(int ptsIdx=0;ptsIdx<p.getComponentSpecsCount();ptsIdx++)
 			{
 				V1.PodTemplateSpec spec = p.getComponentSpecs(ptsIdx);
-				final String depName = getSeldonServiceName(mlDep,p,spec.getSpec().getContainers(0).getName()+"-"+ptsIdx);
+				final String depName = seldonNameCreator.getSeldonDeploymentName(mlDep,p,spec);
 				PodTemplateSpec.Builder podSpecBuilder = PodTemplateSpec.newBuilder(spec);
 				ObjectMeta.Builder depMetaBuilder = ObjectMeta.newBuilder()
 						.setName(depName)
@@ -685,7 +675,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 				for(V1.Container c : spec.getSpec().getContainersList())
 				{
 					final String containerServiceKey = getPredictorServiceNameKey(c.getName());
-					final String containerServiceValue = getSeldonServiceName(mlDep, p, c.getName());
+					final String containerServiceValue = seldonNameCreator.getSeldonServiceName(mlDep, p, c);
 					
 					// Only add a Service if container is a Seldon component in graph and we haven't already created a service for this container name
 					if (isContainerInGraph(p.getGraph(), c) && !createdServices.contains(containerServiceValue))
@@ -704,12 +694,14 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 
 						// LABELS - START
 						// Add the service selector label to both deployment, pod and Service Selector
+						// Deployment labels must remain the same so need to be aware of this for rolling updates to a deployment
 						depMetaBuilder.putLabels(containerServiceKey, containerServiceValue);
 						podSpecBuilder.getMetadataBuilder().putLabels(containerServiceKey, containerServiceValue);
 						labelSelector.putMatchLabels(containerServiceKey, containerServiceValue);
 						// LABELS - END
 						s.setSpec(svcSpecBuilder);
 						services.add(s.build());
+						createdServices.add(containerServiceValue);
 					}
 				}
 				
@@ -779,8 +771,4 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		
 
 	}
-
-
-
-	
 }

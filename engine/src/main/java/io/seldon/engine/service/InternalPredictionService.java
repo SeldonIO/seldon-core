@@ -319,6 +319,49 @@ public class InternalPredictionService {
 		return channel;
 	}
 	
+	public boolean checkReady(Endpoint endpoint)
+	{
+		long timeNow = System.currentTimeMillis();
+		URI uri;
+		try {
+			URIBuilder builder = new URIBuilder().setScheme("http")
+					.setHost(endpoint.getServiceHost())
+					.setPort(endpoint.getServicePort())
+					.setPath("/ready");
+
+			uri = builder.build();
+		} catch (URISyntaxException e) 
+		{
+			throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_ENDPOINT_URL,"Host: "+endpoint.getServiceHost()+" port:"+endpoint.getServicePort());
+		}
+		
+		
+		logger.info("Requesting " + uri.toString());
+		ResponseEntity<String> httpResponse = restTemplate.getForEntity(uri, String.class);
+			
+		try
+		{
+			if(httpResponse.getStatusCode().is2xxSuccessful()) 
+			{
+				SeldonMessage.Builder builder = SeldonMessage.newBuilder();
+				String response = httpResponse.getBody();
+				logger.info(response);
+				return true;
+			} 
+			else 
+			{
+				return false;
+			}
+		}
+		finally
+		{
+			if (logger.isDebugEnabled())
+				logger.debug("Ready Check: External prediction server took "+(System.currentTimeMillis()-timeNow) + "ms");
+		}
+		
+		
+	}
+	
 	private SeldonMessage queryREST(String path, String dataString, PredictiveUnitState state, Endpoint endpoint, boolean isDefault)
 	{
 		long timeNow = System.currentTimeMillis();

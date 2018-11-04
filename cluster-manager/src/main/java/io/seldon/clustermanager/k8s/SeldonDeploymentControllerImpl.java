@@ -258,6 +258,28 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	}
 	
 	@Override
+	public void removeUnusedResources(SeldonDeployment mlDep) {
+		logger.info("Removing unused resources");
+		try
+		{
+			SeldonDeployment mlDep2 = operator.defaulting(mlDep);
+			DeploymentResources resources = operator.createResources(mlDep2);
+			ProtoClient client = clientProvider.getProtoClient();
+			String namespace = getNamespace(mlDep2);
+			removeDeployments(client, namespace, mlDep2, resources.deployments);
+			ApiClient client2 = clientProvider.getClient();
+			removeServices(client2,namespace, mlDep2, resources.services);
+		} catch (SeldonDeploymentException e) {
+			logger.error("Failed to cleanup deployment ",e);
+		} catch (ApiException e) {
+			logger.error("Kubernetes API exception cleaning up code:"+e.getCode()+ "message:"+e.getResponseBody(),e);
+		} catch (IOException e) {
+			logger.error("IOException during cleanup ",e);
+		}
+	}
+
+	
+	@Override
 	public void createOrReplaceSeldonDeployment(SeldonDeployment mlDep) {
 
 	    if (mlDep.hasStatus() && mlDep.getStatus().hasState() && mlDep.getStatus().getState().equals(Constants.STATE_FAILED))
@@ -279,12 +301,12 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 		        ProtoClient client = clientProvider.getProtoClient();
 		        String namespace = getNamespace(mlDep2);
 		        createDeployments(client, namespace, resources.deployments);
-		        removeDeployments(client, namespace, mlDep2, resources.deployments);
+		        //removeDeployments(client, namespace, mlDep2, resources.deployments);
 		        createServices(client, namespace, resources.services);
 		        //removeServices(client,namespace, mlDep2, resources.services); //Proto Client not presently working for deletion
-		        ApiClient client2 = clientProvider.getClient();
-		        removeServices(client2,namespace, mlDep2, resources.services);
-		        if (existing == null || !mlDep.getSpec().equals(mlDepStatusUpdated.getSpec()))
+		        //ApiClient client2 = clientProvider.getClient();
+		        //removeServices(client2,namespace, mlDep2, resources.services);
+		        if (!mlDep.hasStatus())
 		        {
 		           logger.debug("Pushing updated SeldonDeployment "+mlDepStatusUpdated.getMetadata().getName()+" back to kubectl");
 		           crdHandler.updateSeldonDeploymentStatus(mlDepStatusUpdated);
@@ -310,4 +332,5 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 		}
 	}
 
+	
 }
