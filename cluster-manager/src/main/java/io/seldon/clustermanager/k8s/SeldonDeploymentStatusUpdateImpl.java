@@ -15,11 +15,17 @@
  *******************************************************************************/
 package io.seldon.clustermanager.k8s;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.kubernetes.client.proto.V1;
+import io.seldon.clustermanager.ClusterManagerProperites;
+import io.seldon.protos.DeploymentProtos.PredictorSpec;
 import io.seldon.protos.DeploymentProtos.PredictorStatus;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
@@ -27,10 +33,14 @@ import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusUpdate {
     protected static Logger logger = LoggerFactory.getLogger(SeldonDeploymentStatusUpdateImpl.class.getName());
 	private final KubeCRDHandler crdHandler;
-	
+	private final SeldonDeploymentController seldonDeploymentController;
+	private final SeldonNameCreator seldonNameCreator = new SeldonNameCreator();
+	private final ClusterManagerProperites clusterManagerProperites;
 	@Autowired
-	public SeldonDeploymentStatusUpdateImpl(KubeCRDHandler crdHandler) {
+	public SeldonDeploymentStatusUpdateImpl(KubeCRDHandler crdHandler,SeldonDeploymentController seldonDeploymentController,ClusterManagerProperites clusterManagerProperites) {
 		this.crdHandler = crdHandler;
+		this.seldonDeploymentController = seldonDeploymentController;
+		this.clusterManagerProperites = clusterManagerProperites;
 	}
 
 	private void update(PredictorStatus.Builder b,Integer replicas, Integer replicasAvailable)
@@ -45,14 +55,37 @@ public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusU
 	        b.setReplicasAvailable(0);
 	}
 	
-	private boolean isAvailable(SeldonDeployment.Builder mlBuilder)
+	private boolean isAvailable(SeldonDeployment.Builder mlBuilder,SeldonDeployment mlDep)
 	{
+		Set<String> names = getDeploymentNames(mlDep);
+		if (mlBuilder.getStatusBuilder().getPredictorStatusBuilderList().isEmpty())
+			return false;
 		for (PredictorStatus.Builder b : mlBuilder.getStatusBuilder().getPredictorStatusBuilderList())
         {
 			if (b.getReplicas() != b.getReplicasAvailable())
 				return false;
+			names.remove(b.getName());
         }
-		return true;
+		if (names.isEmpty())
+			return true;
+		else
+			return false;
+	}
+	
+	public Set<String> getDeploymentNames(SeldonDeployment mlDep)
+	{
+		Set<String> names = new HashSet<>();
+		for(int pbIdx=0;pbIdx<mlDep.getSpec().getPredictorsCount();pbIdx++)
+		{
+			PredictorSpec p = mlDep.getSpec().getPredictors(pbIdx);
+			names.add(seldonNameCreator.getServiceOrchestratorName(mlDep, p));
+			for(int ptsIdx=0;ptsIdx<p.getComponentSpecsCount();ptsIdx++)
+			{
+				V1.PodTemplateSpec spec = p.getComponentSpecs(ptsIdx);
+				names.add(seldonNameCreator.getSeldonDeploymentName(mlDep,p,spec));
+			}
+		}
+		return names;
 	}
 	
     @Override
@@ -83,9 +116,10 @@ public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusU
                    update(b,replicas,replicasAvailable);
                    mlBuilder.getStatusBuilder().addPredictorStatus(b);
                }
-               if (isAvailable(mlBuilder))
+               if (isAvailable(mlBuilder,mlDep))
                {
             	   mlBuilder.getStatusBuilder().setState(Constants.STATE_AVAILABLE);
+            	   seldonDeploymentController.removeUnusedResources(mlDep);
                }
                else
                {

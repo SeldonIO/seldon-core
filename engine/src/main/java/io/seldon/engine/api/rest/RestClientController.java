@@ -48,6 +48,9 @@ public class RestClientController {
 	@Autowired
 	private PredictionService predictionService;
 	
+	@Autowired
+	SeldonGraphReadyChecker readyChecker;
+	
 	private boolean ready = false;
 	
 	 @PostConstruct
@@ -71,7 +74,7 @@ public class RestClientController {
 		HttpHeaders responseHeaders = new HttpHeaders();
 		HttpStatus httpStatus;
 		String ret;
-		if (ready)
+		if (ready && readyChecker.getReady())
 		{
 			httpStatus = HttpStatus.OK;
 			ret = "ready";

@@ -66,6 +66,7 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 		return builder.build();
 	}
 	
+	
 	@Async
 	private Future<SeldonMessage> getOutputAsync(SeldonMessage input, PredictiveUnitState state, Map<String,Integer> routingDict,Map<String,String> requestPathDict) throws InterruptedException, ExecutionException, InvalidProtocolBufferException{
 		
