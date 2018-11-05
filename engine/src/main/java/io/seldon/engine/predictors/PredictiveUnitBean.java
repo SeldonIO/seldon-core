@@ -41,10 +41,12 @@ import io.seldon.engine.metrics.CustomMetricsManager;
 import io.seldon.engine.metrics.SeldonRestTemplateExchangeTagsProvider;
 import io.seldon.engine.service.InternalPredictionService;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitMethod;
+import io.seldon.protos.PredictionProtos.DefaultData;
 import io.seldon.protos.PredictionProtos.Feedback;
 import io.seldon.protos.PredictionProtos.Meta;
 import io.seldon.protos.PredictionProtos.Metric;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
+import io.seldon.protos.PredictionProtos.Tensor;
 
 @Component
 public class PredictiveUnitBean extends PredictiveUnitImpl {
@@ -107,8 +109,14 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 		List<SeldonMessage> childrenOutputs = new ArrayList<SeldonMessage>();
 		
 		// Get the routing. -1 means all children
-		int routing = implementation.route(transformedInput, state);
-		sanityCheckRouting(routing, state);
+		SeldonMessage routingMessage = implementation.route(transformedInput, state);
+		int routing;
+		if (routingMessage != null) {
+			routing = getBranchIndex(routingMessage, state);
+			sanityCheckRouting(routing, state);
+		} else {
+			routing = -1;
+		}
 		// Update the routing dictionary
 		routingDict.put(state.name, routing);
 		
@@ -226,14 +234,15 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 		return outputs.get(0);
 	}
 	
-	public int route(SeldonMessage input, PredictiveUnitState state) throws InvalidProtocolBufferException{
-		// Returns a branch number
+	public SeldonMessage route(SeldonMessage input, PredictiveUnitState state) throws InvalidProtocolBufferException{
+		// Returns a branch number in SeldonMessage
 		
 		if (predictorConfig.hasMethod(PredictiveUnitMethod.ROUTE, state)){
-			SeldonMessage routerReturn = internalPredictionService.route(input, state);
-			return getBranchIndex(routerReturn, state);
+			return internalPredictionService.route(input, state);
 		}
-		return -1;
+		
+		// Return default routing
+		return null;
 	}
 	
 	public void doSendFeedback(Feedback feedback, PredictiveUnitState state) throws InvalidProtocolBufferException{
@@ -249,7 +258,7 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 	//
 	// -------------------------------------------
 	
-	private int getBranchIndex(SeldonMessage routerReturn, PredictiveUnitState state){
+	protected static int getBranchIndex(SeldonMessage routerReturn, PredictiveUnitState state){
 		int branchIndex = 0;
 		try {
 			PrimitiveMatrix dataArray = PredictorUtils.getOJMatrix(routerReturn.getData());

@@ -20,7 +20,9 @@ import java.util.Random;
 import org.springframework.stereotype.Component;
 
 import io.seldon.engine.exception.APIException;
+import io.seldon.protos.PredictionProtos.DefaultData;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
+import io.seldon.protos.PredictionProtos.Tensor;
 
 
 @Component
@@ -31,7 +33,7 @@ public class RandomABTestUnit extends PredictiveUnitImpl{
 	public RandomABTestUnit() {}
 
 	@Override
-	public int route(SeldonMessage input, PredictiveUnitState state){
+	public SeldonMessage route(SeldonMessage input, PredictiveUnitState state){
 		@SuppressWarnings("unchecked")
 		PredictiveUnitParameter<Float> parameter = (PredictiveUnitParameter<Float>) state.parameters.get("ratioA");
 		
@@ -49,10 +51,10 @@ public class RandomABTestUnit extends PredictiveUnitImpl{
 		//FIXME Possible bug : keySet is not ordered as per the definition of the AB test
 		if (comparator<=ratioA){
 			// We select model A
-			return 0;
+			return SeldonMessage.newBuilder().setData(DefaultData.newBuilder().setTensor(Tensor.newBuilder().addValues(0).addShape(1).addShape(1))).build();
 		}
 		else{
-			return 1;
+			return SeldonMessage.newBuilder().setData(DefaultData.newBuilder().setTensor(Tensor.newBuilder().addValues(1).addShape(1).addShape(1))).build();
 		}
 	}
 }
