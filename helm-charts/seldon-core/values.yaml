@@ -40,6 +40,8 @@ engine:
   image:
     name: seldonio/engine:0.2.4-SNAPSHOT
     pull_policy: IfNotPresent
+  service_account:
+    name: default
 rbac:
   enabled: true
   rolebinding:
