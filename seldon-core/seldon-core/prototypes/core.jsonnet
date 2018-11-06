@@ -12,6 +12,7 @@
 // @optionalParam operatorJavaOpts string null cluster manager java opts
 // @optionalParam grpcMaxMessageSize string 4194304 Max gRPC message size
 // @optionalParam seldonVersion string 0.2.4-SNAPSHOT Seldon version
+// @optionalParam engineServiceAccount string default Service account for Seldon Service Orchestrator Engine
 
 local k = import "k.libsonnet";
 local core = import "seldon-core/seldon-core/core.libsonnet";
@@ -44,6 +45,7 @@ local operatorJavaOpts = if operatorJavaOptsParam != "null" then operatorJavaOpt
 
 // Engine
 local engineImage = "seldonio/engine:" + seldonVersion;
+local engineServiceAccount = import "param://engineServiceAccount";
 
 // APIFE
 local apife = [
@@ -68,7 +70,7 @@ local rbac = if std.startsWith(seldonVersion, "0.1") then rbac1 else rbac2;
 
 // Core
 local coreComponents = [
-  core.parts(name, namespace, seldonVersion).deploymentOperator(engineImage, operatorImage, operatorSpringOpts, operatorJavaOpts, withRbac),
+  core.parts(name, namespace, seldonVersion).deploymentOperator(engineImage, operatorImage, operatorSpringOpts, operatorJavaOpts, withRbac, engineServiceAccount),
   core.parts(name, namespace, seldonVersion).redisDeployment(),
   core.parts(name, namespace, seldonVersion).redisService(),
   core.parts(name, namespace, seldonVersion).crd(),

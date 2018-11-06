@@ -594,6 +594,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 				podSpecBuilder.getSpecBuilder()
 		    	.addContainers(createEngineContainer(mlDep,p))
 		    	.setTerminationGracePeriodSeconds(20)
+		    	.setServiceAccountName(clusterManagerProperites.getEngineContainerServiceAccountName())
 		    	.addVolumes(Volume.newBuilder() // Add downwardAPI volume for annotations
 		    			.setName(PODINFO_VOLUME_NAME)
 		    			.setVolumeSource(VolumeSource.newBuilder().setDownwardAPI(DownwardAPIVolumeSource.newBuilder()
