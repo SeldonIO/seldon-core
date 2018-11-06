@@ -80,6 +80,15 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 		return builder.build();
 	}
 	
+	private void addMetrics(SeldonMessage msg,PredictiveUnitState state,List<Metric> metrics)
+	{
+		if (msg.hasMeta())
+		{
+			addCustomMetrics(msg.getMeta().getMetricsList(),state);
+			metrics.addAll(msg.getMeta().getMetricsList());
+		}
+	}
+	
 		
 	@Async
 	private Future<SeldonMessage> getOutputAsync(SeldonMessage input, PredictiveUnitState state, Map<String,Integer> routingDict,Map<String,String> requestPathDict,List<Metric> metrics) throws InterruptedException, ExecutionException, InvalidProtocolBufferException{
@@ -96,8 +105,7 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 		
 		// Preserve the original metadata
 		transformedInput = mergeMeta(transformedInput,input.getMeta());
-		addCustomMetrics(transformedInput.getMeta().getMetricsList(),state);
-		metrics.addAll(transformedInput.getMeta().getMetricsList());
+		addMetrics(transformedInput,state,metrics);
 		
 		if (state.children.isEmpty()){
 			// If this unit has no children, the transformed input becomes the output
@@ -119,6 +127,7 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 		}
 		// Update the routing dictionary
 		routingDict.put(state.name, routing);
+		addMetrics(routingMessage,state,metrics);
 		
 		if (routing == -1){
 			// No routing, propagate to all children
@@ -137,8 +146,7 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 		for (Future<SeldonMessage> deferredOutput : deferredChildrenOutputs){
 			SeldonMessage m = deferredOutput.get();
 			childrenOutputs.add(m);
-			addCustomMetrics(m.getMeta().getMetricsList(),state);
-			metrics.addAll(m.getMeta().getMetricsList());			
+			addMetrics(m,state,metrics);
 		}
 		
 		// Compute the backward transformation of all children outputs
@@ -149,8 +157,7 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 		SeldonMessage transformedOutput = implementation.transformOutput(aggregatedOutput, state);
 		// Preserve metadata
 		transformedOutput = mergeMeta(transformedOutput,aggregatedOutput.getMeta());
-		addCustomMetrics(transformedOutput.getMeta().getMetricsList(),state);
-		metrics.addAll(transformedOutput.getMeta().getMetricsList());
+		addMetrics(transformedOutput,state,metrics);
 		
 		return new AsyncResult<>(transformedOutput);
 		

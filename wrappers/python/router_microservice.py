@@ -1,7 +1,8 @@
 from proto import prediction_pb2, prediction_pb2_grpc
 from microservice import extract_message, sanity_check_request, rest_datadef_to_array, \
     array_to_rest_datadef, grpc_datadef_to_array, array_to_grpc_datadef, \
-    SeldonMicroserviceException
+    SeldonMicroserviceException, get_custom_tags
+from metrics import get_custom_metrics
 import grpc
 from concurrent import futures
 
@@ -63,7 +64,14 @@ def get_rest_microservice(user_router,debug=False):
 
         data = array_to_rest_datadef(routing, class_names, datadef)
 
-        return jsonify({"data":data})
+        response = {"data":data,"meta":{}}
+        tags = get_custom_tags(user_router)
+        if tags:
+            response["meta"]["tags"] = tags
+        metrics = get_custom_metrics(user_router)
+        if metrics:
+            response["meta"]["metrics"] = metrics
+        return jsonify(response)
 
     @app.route("/send-feedback",methods=["GET","POST"])
     def SendFeedback():
@@ -109,7 +117,19 @@ class SeldonRouterGRPC(object):
         class_names = []
 
         data = array_to_grpc_datadef(routing, class_names, request.data.WhichOneof("data_oneof"))
-        return prediction_pb2.SeldonMessage(data=data)
+
+        # Construct meta data
+        meta = prediction_pb2.Meta()
+        metaJson = {}
+        tags = get_custom_tags(self.user_model)
+        if tags:
+            metaJson["tags"] = tags
+        metrics = get_custom_metrics(self.user_model)
+        if metrics:
+            metaJson["metrics"] = metrics
+        json_format.ParseDict(metaJson,meta)
+
+        return prediction_pb2.SeldonMessage(data=data,meta=meta)        
 
     def SendFeedback(self,feedback,context):
         datadef_request = feedback.request.data
