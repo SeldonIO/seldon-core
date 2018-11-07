@@ -118,6 +118,12 @@ public class EnginePredictor {
 		return deploymentName;
 	}
 
+    
+    
+	public void setPredictorSpec(PredictorSpec predictorSpec) {
+		this.predictorSpec = predictorSpec;
+	}
+
 	private static PredictorSpec buildDefaultPredictorSpec() {
 
         //@formatter:off
