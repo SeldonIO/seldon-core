@@ -1,15 +1,11 @@
 ambassador:
   annotations:
-    getambassador.io/config: |
-      ---
-      apiVersion: ambassador/v0
-      kind: Module
-      name: ambassador
-      config:
-        service_port: 8080
+    getambassador.io/config: "---\napiVersion: ambassador/v0\nkind: Module\nname:\
+      \ ambassador\nconfig:\n  service_port: 8080\n"
   enabled: false
   image:
     name: quay.io/datawire/ambassador:0.40.0
+  replicas: 1
   resources:
     limits:
       cpu: 1
@@ -22,23 +18,22 @@ ambassador:
       http: 8080
       https: 8443
     type: NodePort
-  replicas: 1
 apife:
   annotations: null
   enabled: true
   image:
-    name: seldonio/apife:0.2.4-SNAPSHOT
+    name: seldonio/apife:0.2.4
     pull_policy: IfNotPresent
   service_type: NodePort
 cluster_manager:
   image:
-    name: seldonio/cluster-manager:0.2.4-SNAPSHOT
+    name: seldonio/cluster-manager:0.2.4
     pull_policy: IfNotPresent
   java_opts: ''
   spring_opts: ''
 engine:
   image:
-    name: seldonio/engine:0.2.4-SNAPSHOT
+    name: seldonio/engine:0.2.4
     pull_policy: IfNotPresent
   service_account:
     name: default
