@@ -1,0 +1,37 @@
+{
+	"componentSpecs": [
+		{
+			"spec": {
+				"containers": [
+					{
+						"image": "seldonio/mean_classifier:0.6",
+						"imagePullPolicy": "IfNotPresent",
+						"name": "mean-classifier",
+						"resources": {
+							"requests": {
+								"memory": "1Mi"
+							}
+						}
+					}
+				],
+				"terminationGracePeriodSeconds": 20
+			}
+		}
+	],
+	"graph": {
+		"children": [
+		],
+		"name": "mean-classifier",
+		"endpoint": {
+			"type": "REST",
+			"service_host": "somehost",
+			"service_port": 9000
+		},
+		"type": "MODEL"
+	},
+	"name": "fx-market-predictor",
+	"replicas": 1,
+	"annotations": {
+		"predictor_version": "v1"
+	}
+}

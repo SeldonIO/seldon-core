@@ -390,4 +390,8 @@ public class InternalPredictionService {
 		}
 	}
 
+	public void setRestTemplate(RestTemplate restTemplate) {
+		this.restTemplate = restTemplate;
+	}
+
 }

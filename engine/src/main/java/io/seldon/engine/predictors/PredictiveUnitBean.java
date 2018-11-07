@@ -76,7 +76,7 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 		SeldonMessage.Builder builder = SeldonMessage
 	    		.newBuilder(response)
 	    		.setMeta(Meta
-	    				.newBuilder(response.getMeta()).putAllRouting(routingDict).putAllRequestPath(requestPathDict));
+	    				.newBuilder(response.getMeta()).putAllRouting(routingDict).putAllRequestPath(requestPathDict).addAllMetrics(metrics));
 		return builder.build();
 	}
 	
@@ -103,9 +103,10 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 		// Compute the transformed Input
 		SeldonMessage transformedInput = implementation.transformInput(input, state);
 		
-		// Preserve the original metadata
-		transformedInput = mergeMeta(transformedInput,input.getMeta());
 		addMetrics(transformedInput,state,metrics);
+		// Preserve the original metadata except metrics
+		transformedInput = mergeMeta(transformedInput,input.getMeta());
+
 		
 		if (state.children.isEmpty()){
 			// If this unit has no children, the transformed input becomes the output
@@ -122,12 +123,13 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 		if (routingMessage != null) {
 			routing = getBranchIndex(routingMessage, state);
 			sanityCheckRouting(routing, state);
+			addMetrics(routingMessage,state,metrics);
 		} else {
 			routing = -1;
 		}
 		// Update the routing dictionary
 		routingDict.put(state.name, routing);
-		addMetrics(routingMessage,state,metrics);
+		
 		
 		if (routing == -1){
 			// No routing, propagate to all children
@@ -155,9 +157,10 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 		// Merge all the outputs metadata
 		aggregatedOutput = mergeMeta(aggregatedOutput,childrenOutputs);
 		SeldonMessage transformedOutput = implementation.transformOutput(aggregatedOutput, state);
-		// Preserve metadata
-		transformedOutput = mergeMeta(transformedOutput,aggregatedOutput.getMeta());
 		addMetrics(transformedOutput,state,metrics);
+		// Preserve metadata except metrics
+		transformedOutput = mergeMeta(transformedOutput,aggregatedOutput.getMeta());
+
 		
 		return new AsyncResult<>(transformedOutput);
 		
@@ -290,7 +293,7 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 			switch(metric.getType())
 			{
 			case COUNTER:
-				logger.debug("Adding counter {} for {}",metric.getKey(),state.name);
+				logger.info("Adding counter {} for {}",metric.getKey(),state.name);
 				Counter.builder(metric.getKey()).tags(tagsProvider.getModelMetrics(state)).register(Metrics.globalRegistry).increment(metric.getValue());
 				break;
 			case GAUGE:
@@ -320,13 +323,14 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 		for (SeldonMessage originalMessage : messages){
 			metaBuilder.putAllTags(originalMessage.getMeta().getTagsMap());
 		}
+		metaBuilder.clearMetrics();
 		return SeldonMessage.newBuilder(message).setMeta(metaBuilder).build();
 	}
 	
 	private SeldonMessage mergeMeta(SeldonMessage message, Meta meta) {
 		Meta.Builder metaBuilder = Meta.newBuilder(message.getMeta());
 		metaBuilder.putAllTags(meta.getTagsMap());
-
+		metaBuilder.clearMetrics();
 		return SeldonMessage.newBuilder(message).setMeta(metaBuilder).build();
 	}
 
