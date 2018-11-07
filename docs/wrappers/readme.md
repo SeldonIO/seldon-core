@@ -1,11 +1,13 @@
 # Wrapping Your Model
 
-To allow your component (model, router etc) to be managed by seldon-core it needs
+To allow your component (model, router etc.) to be managed by seldon-core it needs
 
 1.  To be built into a Docker container
-1.  To expose the approripiate [service APIs over REST or gRPC](../reference/internal-api.md).
+1.  To expose the appropriate [service APIs over REST or gRPC](../reference/internal-api.md).
 
 To wrap your model follow the instructions for your chosen language or toolkit.
+
+To test a wrapped components you can use one of our [testing scripts](../api-testing.md).
 
 ## Python
 

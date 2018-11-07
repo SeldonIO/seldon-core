@@ -1,0 +1,91 @@
+{
+    "apiVersion": "machinelearning.seldon.io/v1alpha2",
+    "kind": "SeldonDeployment",
+    "metadata": {
+        "labels": {
+            "app": "seldon"
+        },
+        "name": "{{ .Release.Name }}"
+    },
+    "spec": {
+        "name": "{{ .Release.Name }}",
+{{- if .Values.oauth.key }}        
+        "oauth_key": "{{ .Values.oauth.key }}",
+        "oauth_secret": "{{ .Values.oauth.secret }}",
+{{- end }}
+        "predictors": [
+            {
+                "componentSpecs": [{
+                    "spec": {
+                        "containers": [
+                            {
+                                "image": "{{ .Values.model.image.name }}",
+                                "imagePullPolicy": "IfNotPresent",
+                                "name": "{{ .Values.model.name }}",
+                                "resources": {
+                                    "requests": {
+                                        "memory": "1Mi"
+                                    }
+                                }
+                            }
+                        ],
+                        "terminationGracePeriodSeconds": 1
+                    }}
+{{- if .Values.outlier_detection.enabled }}        				   
+		    ,
+		    {
+		    "spec": {
+			"containers": [
+			    {
+				"image": "{{ .Values.outlier_detection.image.name }}",
+				"imagePullPolicy": "IfNotPresent",
+				"name": "{{ .Values.outlier_detection.name }}",
+				"resources": {
+				    "requests": {
+					"memory": "1Mi"
+				    }
+				}
+			    }
+			],
+			"terminationGracePeriodSeconds": 20
+		    }
+		    }
+{{- end }}				   
+	        ],
+                "graph":
+{{- if .Values.outlier_detection.enabled }}
+		 {
+		    "name": "{{ .Values.outlier_detection.name }}",
+		    "type": "TRANSFORMER",
+		    "parameters": [
+			{
+			    "name": "n_components",
+			    "value": "{{ .Values.outlier_detection.n_components }}",
+			    "type": "INT"
+			}
+		    ],
+		    "endpoint": {
+			"type": "REST"
+		    },
+		     "children": [
+{{- end }}			 
+		{
+                    "children": [],
+                    "name": "{{ .Values.model.name }}",
+                    "endpoint": {
+			"type" : "REST"
+		    },
+                    "type": "MODEL"
+                }
+{{- if .Values.outlier_detection.enabled }}
+		     ]}
+{{- end }},			 			 
+                "name": "{{ .Release.Name }}",
+                "replicas": {{ .Values.replicas }},
+		"labels": {
+		    "version" : "v1"
+		}
+            }
+        ]
+    }
+}

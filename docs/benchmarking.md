@@ -1,6 +1,6 @@
 # Seldon-core Benchmarking
 
-This page is a work in progress to provide benchmarking stats for  seldon-core. Please add further ideas and suggestions as an issue. 
+This page is a work in progress to provide benchmarking stats for  seldon-core. Please add further ideas and suggestions as an issue.
 
 ## Goals
 
@@ -11,7 +11,7 @@ This page is a work in progress to provide benchmarking stats for  seldon-core. 
 ## Components
 
  * We use [locust](https://locust.io/) as our benchmarking tool.
- * We use Google Cloud Platform for the infrastructure to run kubernetes.
+ * We use Google Cloud Platform for the infrastructure to run Kubernetes.
 
 
 # Tests
@@ -22,11 +22,11 @@ To gauge the maximum throughput we will:
  * Call the seldon engine component directly thereby ignoring the additional latency that would be introduced by an external reverse proxy (Ambassador) or using the built in seldon API Front-End Oauth2 component.
  * Utilize a "stub" model that does nothing but return a hard-wired result from inside the engine.
 
-This test will illustrate the maximum number of requests that can be pushed through seldon-core engine (which controls the request-response flow) as well as the added latency for the processing of REST and gRPC requests, e.g. serialization / deserialization.
+This test will illustrate the maximum number of requests that can be pushed through seldon-core engine (which controls the request-response flow) as well as the added latency for the processing of REST and gRPC requests, e.g. serialization/deserialization.
 
-We will use cordened off kubernetes nodes running locust so the latency from node to node prediction calls on GCP will also be part of the returned statistics.
+We will use cordoned off Kubernetes nodes running locust so the latency from node to node prediction calls on GCP will also be part of the returned statistics.
 
-A [notebook](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/benchmark_simple_model.ipynb) provides the end to end test for reproducability.
+A [notebook](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/benchmark_simple_model.ipynb) provides the end to end test for reproducibility.
 
 We use:
 

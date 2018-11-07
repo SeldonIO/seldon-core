@@ -37,6 +37,7 @@ message Meta {
   string puid = 1; 
   map<string,google.protobuf.Value> tags = 2;
   map<string,int32> routing = 3;
+  map<string,string> requestPath = 4;
 }
 
 message SeldonMessageList {
@@ -83,6 +84,7 @@ service Generic {
 
 service Model {
   rpc Predict(SeldonMessage) returns (SeldonMessage) {};
+  rpc SendFeedback(Feedback) returns (SeldonMessage) {};  
  }
 
 service Router {

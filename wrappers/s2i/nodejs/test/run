@@ -171,7 +171,7 @@ test_feedback() {
 
 # Build the application image twice to ensure the 'save-artifacts' and
 # 'restore-artifacts' scripts are working properly
-array=( 'model' )
+array=( 'model' 'transformer' )
 for i in "${array[@]}"
 do
     cid_file=$($MKTEMP_EXEC -u --suffix=.cid)

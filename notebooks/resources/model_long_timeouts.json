@@ -13,7 +13,7 @@
             "deployment_version": "v1",
 	    "seldon.io/rest-read-timeout":"10000",
 	    "seldon.io/rest-connection-timeout":"10000",	    
-	    "seldon.io/grpc-read-timeout":"10000",	    
+	    "seldon.io/grpc-read-timeout":"10000"
         },
         "name": "test-deployment",
         "oauth_key": "oauth-key",
@@ -24,7 +24,7 @@
                     "spec": {
                         "containers": [
                             {
-                                "image": "seldonio/mock_classifier_rest:1.0",
+                                "image": "seldonio/mock_classifier:1.0",
                                 "imagePullPolicy": "IfNotPresent",
                                 "name": "classifier",
                                 "resources": {

@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.StringJoiner;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -105,7 +106,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
         }
 	}
 	
-	static final String ENGINE_JAVA_OPTS="-Dcom.sun.management.jmxremote.rmi.port=9090 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9090 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.local.only=false -Djava.rmi.server.hostname=127.0.0.1";
+	static final String DEFAULT_ENGINE_JAVA_OPTS="-Dcom.sun.management.jmxremote.rmi.port=9090 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9090 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.local.only=false -Djava.rmi.server.hostname=127.0.0.1";
 	private V1.Container createEngineContainer(SeldonDeployment mlDep,PredictorSpec predictorDef) throws SeldonDeploymentException
 	{
 		V1.Container.Builder cBuilder = V1.Container.newBuilder();
@@ -119,7 +120,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			.addEnv(EnvVar.newBuilder().setName("DEPLOYMENT_NAME").setValue(mlDep.getSpec().getName()))		
 			.addEnv(EnvVar.newBuilder().setName("ENGINE_SERVER_PORT").setValue(""+clusterManagerProperites.getEngineContainerPort()))
 			.addEnv(EnvVar.newBuilder().setName("ENGINE_SERVER_GRPC_PORT").setValue(""+clusterManagerProperites.getEngineGrpcContainerPort()))			
-			.addEnv(EnvVar.newBuilder().setName("JAVA_OPTS").setValue(ENGINE_JAVA_OPTS))						
+			.addEnv(EnvVar.newBuilder().setName("JAVA_OPTS").setValue(predictorDef.getAnnotationsOrDefault(Constants.ENGINE_JAVA_OPTS_ANNOTATION, DEFAULT_ENGINE_JAVA_OPTS)))						
 			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(clusterManagerProperites.getEngineContainerPort()))
 			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(8082).setName("admin"))
 			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(9090).setName("jmx"))
@@ -356,7 +357,19 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		else
 			return svcName;
 	}
-	
+
+	@Override
+	public SeldonDeployment updateStatus(SeldonDeployment mlDep) {
+		SeldonDeployment.Builder mlBuilder = SeldonDeployment.newBuilder(mlDep);
+		
+		if (!mlBuilder.hasStatus())
+		{
+			mlBuilder.getStatusBuilder().setState(Constants.STATE_CREATING);
+		}
+		
+		return mlBuilder.build();
+	}
+
 	
 	@Override
 	public SeldonDeployment defaulting(SeldonDeployment mlDep) {
@@ -378,31 +391,33 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 				for(int cIdx = 0;cIdx < spec.getSpec().getContainersCount();cIdx++)
 				{
 					V1.Container c = spec.getSpec().getContainers(cIdx);
-					String containerServiceKey = getPredictorServiceNameKey(c.getName());
-					String containerServiceValue = getSeldonServiceName(mlDep, p, c.getName());
-					metaBuilder.putLabels(containerServiceKey, containerServiceValue); 
-					
-					int portNum;
-					if (servicePortMap.containsKey(c.getName()))
-						portNum = servicePortMap.get(c.getName());
-					else
+					// Only update graph and container if container is referenced in the inference graph
+					V1.Container c2;
+					if(isContainerInGraph(p.getGraph(), c))
 					{
-						portNum = currentServicePortNum;
-						servicePortMap.put(c.getName(), portNum);
-						currentServicePortNum++;
+						String containerServiceKey = getPredictorServiceNameKey(c.getName());
+						String containerServiceValue = getSeldonServiceName(mlDep, p, c.getName());
+						metaBuilder.putLabels(containerServiceKey, containerServiceValue); 
+					
+						int portNum;
+						if (servicePortMap.containsKey(c.getName()))
+							portNum = servicePortMap.get(c.getName());
+						else
+						{
+							portNum = currentServicePortNum;
+							servicePortMap.put(c.getName(), portNum);
+							currentServicePortNum++;
+						}
+						c2 = this.updateContainer(c, findPredictiveUnitForContainer(mlDep.getSpec().getPredictors(pbIdx).getGraph(),c.getName()),portNum,deploymentName,predictorName);
+						updatePredictiveUnitBuilderByName(mlBuilder.getSpecBuilder().getPredictorsBuilder(pbIdx).getGraphBuilder(),c2,containerServiceValue); 
 					}
-					V1.Container c2 = this.updateContainer(c, findPredictiveUnitForContainer(mlDep.getSpec().getPredictors(pbIdx).getGraph(),c.getName()),portNum,deploymentName,predictorName);
+					else
+						c2 = c;
 					mlBuilder.getSpecBuilder().getPredictorsBuilder(pbIdx).getComponentSpecsBuilder(ptsIdx).getSpecBuilder().addContainers(cIdx, c2);	
-					updatePredictiveUnitBuilderByName(mlBuilder.getSpecBuilder().getPredictorsBuilder(pbIdx).getGraphBuilder(),c2,containerServiceValue); 
 				}
 				mlBuilder.getSpecBuilder().getPredictorsBuilder(pbIdx).getComponentSpecsBuilder(ptsIdx).setMetadata(metaBuilder);
 			}
 		}	
-		
-		if (!mlBuilder.hasStatus())
-		{
-			mlBuilder.getStatusBuilder().setState(Constants.STATE_CREATING);
-		}
 		
 		return mlBuilder.build();
 	}
@@ -485,12 +500,15 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 	 
 	private String getAmbassadorAnnotation(SeldonDeployment mlDep,String serviceName)
 	{
+		String namespace = (StringUtils.isEmpty(mlDep.getMetadata().getNamespace())) ? "default" : mlDep.getMetadata().getNamespace();
+
         final String restMapping = "---\n"+
                 "apiVersion: ambassador/v0\n" +
                 "kind:  Mapping\n" +
                 "name:  seldon_"+mlDep.getMetadata().getName()+"_rest_mapping\n" +
                 "prefix: /seldon/"+mlDep.getMetadata().getName()+"/\n" +
-                "service: "+serviceName+":"+clusterManagerProperites.getEngineContainerPort()+"\n";
+                "service: "+serviceName+"."+namespace+":"+clusterManagerProperites.getEngineContainerPort()+"\n" +
+                "timeout_ms: " + mlDep.getSpec().getAnnotationsOrDefault(Constants.REST_READ_TIMEOUT_ANNOTATION, "3000") + "\n";
         final String grpcMapping = "---\n"+
                 "apiVersion: ambassador/v0\n" +
                 "kind:  Mapping\n" +
@@ -500,10 +518,31 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
                 "rewrite: /seldon.protos.Seldon/\n" + 
                 "headers:\n"+
                  "  seldon: "+mlDep.getMetadata().getName() + "\n" +
-                "service: "+serviceName+":"+clusterManagerProperites.getEngineGrpcContainerPort()+"\n";
+                "service: "+serviceName+"."+namespace+":"+clusterManagerProperites.getEngineGrpcContainerPort()+"\n" +
+                "timeout_ms: " + mlDep.getSpec().getAnnotationsOrDefault(Constants.GRPC_READ_TIMEOUT_ANNOTATION, "3000") + "\n";
 	    return restMapping + grpcMapping;
 	}
 	
+	/**
+	 * 
+	 * @param pu - A predictiveUnit
+	 * @param container - a container
+	 * @return True if container name can be found in graph of pu
+	 */
+	private boolean isContainerInGraph(PredictiveUnit pu,V1.Container container)
+	{
+		 if (pu.getName().equals(container.getName()))
+		 {
+	       return true;
+		 }
+		 else 
+		 {
+			 for(int i=0;i<pu.getChildrenCount();i++)
+				 if (isContainerInGraph(pu.getChildren(i),container))
+					 return true;
+		 }
+		 return false;
+	}
 	
 	private void addServicePort(PredictiveUnit pu,String serviceName,ServiceSpec.Builder svcSpecBuilder)
 	{
@@ -555,6 +594,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 				podSpecBuilder.getSpecBuilder()
 		    	.addContainers(createEngineContainer(mlDep,p))
 		    	.setTerminationGracePeriodSeconds(20)
+		    	.setServiceAccountName(clusterManagerProperites.getEngineContainerServiceAccountName())
 		    	.addVolumes(Volume.newBuilder() // Add downwardAPI volume for annotations
 		    			.setName(PODINFO_VOLUME_NAME)
 		    			.setVolumeSource(VolumeSource.newBuilder().setDownwardAPI(DownwardAPIVolumeSource.newBuilder()
@@ -651,7 +691,8 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 					final String containerServiceKey = getPredictorServiceNameKey(c.getName());
 					final String containerServiceValue = getSeldonServiceName(mlDep, p, c.getName());
 					
-					if (!createdServices.contains(containerServiceValue))
+					// Only add a Service if container is a Seldon component in graph and we haven't already created a service for this container name
+					if (isContainerInGraph(p.getGraph(), c) && !createdServices.contains(containerServiceValue))
 					{
 						//Add service
 						Service.Builder s = Service.newBuilder()
@@ -742,6 +783,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		
 
 	}
+
 
 
 	

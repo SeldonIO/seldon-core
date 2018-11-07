@@ -1,6 +1,8 @@
+SHELL:=/bin/bash
+
 PYTHON_VERSION=2
 IMAGE_PYTHON_VERSION=`echo -n $(PYTHON_VERSION) | cut -d. -f1`
-IMAGE_VERSION=0.2
+IMAGE_VERSION=0.3-SNAPSHOT
 IMAGE_NAME = docker.io/seldonio/seldon-core-s2i-python${IMAGE_PYTHON_VERSION}
 
 SELDON_CORE_DIR=../../..
@@ -19,11 +21,12 @@ get_wrappers_and_protos:
 	flatc --python -o _wrappers/python/fbs ../../../fbs/prediction.fbs
 	touch _wrappers/python/proto/__init__.py
 	touch _wrappers/python/fbs/__init__.py
+	cp $(SELDON_CORE_DIR)/openapi/wrapper.oas3.json _wrappers/python/seldon.json
 
 .PHONY: build
 build: get_wrappers_and_protos
-	cat Dockerfile.tmpl | sed  -e "s|%PYTHON_VERSION%|$(PYTHON_VERSION)|" > Dockerfile 
-	docker build -t $(IMAGE_NAME):$(IMAGE_VERSION) .
+	cat Dockerfile.tmpl | sed  -e "s|%PYTHON_VERSION%|$(PYTHON_VERSION)|" > Dockerfile
+	set -x && docker build -t $(IMAGE_NAME):$(IMAGE_VERSION) .
 
 push_to_dockerhub:
 	docker push $(IMAGE_NAME):$(IMAGE_VERSION)
@@ -31,7 +34,7 @@ push_to_dockerhub:
 
 .PHONY: test
 test:
-	cat Dockerfile.tmpl | sed  -e "s|%PYTHON_VERSION%|$(PYTHON_VERSION)|" > Dockerfile 
+	cat Dockerfile.tmpl | sed  -e "s|%PYTHON_VERSION%|$(PYTHON_VERSION)|" > Dockerfile
 	docker build -t $(IMAGE_NAME)-candidate .
 	IMAGE_NAME=$(IMAGE_NAME)-candidate test/run
 

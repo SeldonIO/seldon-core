@@ -21,16 +21,11 @@ def get_graph(filename,predictor=0):
     deployment = json.load(open(filename,'r'))
     predictors = deployment.get("spec").get("predictors")
     dot = graphviz.Digraph()
-    
-    with dot.subgraph(name="cluster_0") as pdot:
-        graph = predictors[0].get("graph")
-        _populate_graph(pdot, graph, suffix='0')
-        pdot.attr(label="predictor")
-        
-    if len(predictors)>1:
-        with dot.subgraph(name="cluster_1") as cdot:
-            graph = predictors[1].get("graph")
-            _populate_graph(cdot, graph, suffix='1')
-            cdot.attr(label="canary")
-        
+
+    for idx in range(len(predictors)):
+        with dot.subgraph(name="cluster_"+str(idx)) as pdot:
+            graph = predictors[idx].get("graph")
+            _populate_graph(pdot, graph, suffix=str(idx))
+            pdot.attr(label="predictor-"+str(idx))
     return dot
+

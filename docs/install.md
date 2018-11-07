@@ -5,16 +5,16 @@ To install seldon-core on a Kubernetes cluster you have several choices:
  * If you have a Google Cloud Platform account you can install via the [GCP Marketplace](https://console.cloud.google.com/marketplace/details/seldon-portal/seldon-core).
 
 For CLI installs:
- 
+
  * Decide on which package manager to use, we support:
    * Helm
    * Ksonnet
  * Decide on how you wish APIs to be exposed, we support:
    * Ambassador reverse proxy
-   * Seldon's builtin OAuth API Gateway
+   * Seldon's built-in OAuth API Gateway
  * Decide on whether you wish to contribute anonymous usage metrics. We encourage you to allow anonymous usage metrics to help us improve the project by understanding the deployment environments. More details can be found [here](/docs/developer/readme.md#usage-reporting)
-  * Does your kubernetes cluster have RBAC enabled?
-    * If not then disable seldon RBAC setup
+  * Does your Kubernetes cluster have RBAC enabled?
+    * If not then disable Seldon RBAC setup
 
 Follow one of the methods below:
 
@@ -32,18 +32,18 @@ helm install seldon-core-crd --name seldon-core-crd --repo https://storage.googl
     * ```apife.enabled``` : (default true) set to ```false``` if you have installed Ambassador.
     * ```rbac.enabled``` : (default true) set to ```false``` if running an old Kubernetes cluster without RBAC.
     * ```ambassador.enabled``` : (default false) set to ```true``` if you want to run with an Ambassador reverse proxy.
-```    
+```
 helm install seldon-core --name seldon-core --repo https://storage.googleapis.com/seldon-charts \
      --set apife.enabled=<true|false> \
      --set rbac.enabled=<true|false> \
-     --set ambassador.enabled=<true|false> 
+     --set ambassador.enabled=<true|false>
 ```
 
 Notes
 
  * You can use ```--namespace``` to install seldon-core to a particular namespace
  * For full configuration options see [here](helm.md)
- 
+
 ## With Ksonnet
 
  * [install Ksonnet](https://ksonnet.io/)
@@ -62,7 +62,7 @@ cd my-ml-deployment && \
     ks generate seldon-core seldon-core \
        --withApife=<true|false> \
        --withAmbassador=<true|false> \
-       --withRbac=<true|false> 
+       --withRbac=<true|false>
 ```
  * Launch components onto cluster
  ```
@@ -74,7 +74,12 @@ Notes
 
 ## Other Options
 
-### Install with kubeflow
+### Install with Kubeflow
 
-  * [Install Seldon as part of kubeflow.](https://www.kubeflow.org/docs/guides/components/seldon/#seldon-serving)
+  * [Install Seldon as part of Kubeflow.](https://www.kubeflow.org/docs/guides/components/seldon/#seldon-serving)
      * Kubeflow presently runs 0.1 version of seldon-core. This will be updated to 0.2 in the near future.
+
+
+# Next Steps
+
+ * [Jupyter notebooks showing worked examples](../readme.md#quick-start)

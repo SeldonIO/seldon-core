@@ -1,0 +1,95 @@
+{{- if .Values.separate_pods }}
+{
+    "apiVersion": "machinelearning.seldon.io/v1alpha2",
+    "kind": "SeldonDeployment",
+    "metadata": {
+	"labels": {
+	    "app": "seldon"
+	},
+	"name": "{{ .Release.Name }}"
+    },
+    "spec": {
+	"name": "{{ .Release.Name }}",
+{{- if .Values.oauth.key }}        
+        "oauth_key": "{{ .Values.oauth.key }}",
+        "oauth_secret": "{{ .Values.oauth.secret }}",
+{{- end }}
+	"predictors": [
+	    {
+		"name": "abtest",
+		"replicas": 1,
+		"componentSpecs": [{
+		    "spec": {
+			"containers": [
+			    {
+				"image": "{{ .Values.modelb.image.name }}",
+				"imagePullPolicy": "IfNotPresent",
+				"name": "{{ .Values.modela.name }}",
+				"resources": {
+				    "requests": {
+					"memory": "1Mi"
+				    }
+				}
+			    }],
+			"terminationGracePeriodSeconds": 20
+		    }},
+	        {
+		    "metadata":{
+			"labels":{
+			    "version":"v2"
+			}
+		    },    
+			"spec":{
+			    "containers":[
+			    {
+				"image": "{{ .Values.modelb.image.name }}",
+				"imagePullPolicy": "IfNotPresent",
+				"name": "{{ .Values.modelb.name }}",
+				"resources": {
+				    "requests": {
+					"memory": "1Mi"
+				    }
+				}
+			    }
+			],
+			"terminationGracePeriodSeconds": 20
+				   }
+				   }],
+		"graph": {
+		    "name": "{{ .Release.Name }}",
+		    "endpoint":{},
+		    "implementation":"RANDOM_ABTEST",
+		    "parameters": [
+			{
+			    "name":"ratioA",
+			    "value":"0.5",
+			    "type":"FLOAT"
+			}
+		    ],
+		    "children": [
+			{
+			    "name": "{{ .Values.modela.name }}",
+			    "endpoint":{
+				"type":"REST"
+			    },
+			    "type":"MODEL",
+			    "children":[]
+			},
+			{
+			    "name": "{{ .Values.modelb.name }}",
+			    "endpoint":{
+				"type":"REST"
+			    },
+			    "type":"MODEL",
+			    "children":[]
+			}   
+		    ]
+		}
+	    }
+	]
+    }
+}
+{{- end }}		
+		
+
+ 

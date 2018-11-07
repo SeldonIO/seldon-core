@@ -2,13 +2,13 @@
 
 In this guide, we illustrate the steps needed to wrap your own JS model running on a node engine in a docker image ready for deployment with Seldon Core using [source-to-image app s2i](https://github.com/openshift/source-to-image).
 
-If you are not familar with s2i you can read [general instructions on using s2i](./s2i.md) and then follow the steps below.
+If you are not familiar with s2i you can read [general instructions on using s2i](./s2i.md) and then follow the steps below.
 
 # Step 1 - Install s2i
 
 [Download and install s2i](https://github.com/openshift/source-to-image#installation)
 
-- Prequisites for using s2i are:
+- Prerequisites for using s2i are:
   - Docker
   - Git (if building from a remote git repo)
 
@@ -22,8 +22,8 @@ s2i usage seldonio/seldon-core-s2i-r:0.1
 
 To use our s2i builder image to package your NodeJS model you will need:
 
-- An JS file which provides an ES5 Function object or an ES6 class for your model and that has appropriate generics for your component, i.e an `init` and a `predict` for the model.
-- A package.json that contains all the dependancies and meta data for the model
+- An JS file which provides an ES5 Function object or an ES6 class for your model and that has appropriate generics for your component, i.e. an `init` and a `predict` for the model.
+- A package.json that contains all the dependencies and meta data for the model
 - .s2i/environment - model definitions used by the s2i builder to correctly wrap your model
 
 We will go into detail for each of these steps:
@@ -36,7 +36,7 @@ Your source code should which provides an ES5 Function object or an ES6 class fo
 let MyModel = function() {};
 
 MyModel.prototype.init = async function() {
-  // A mandatory init method for the class to load run-time dependancies
+  // A mandatory init method for the class to load run-time dependencies
   this.model = "My Awesome model";
 };
 
@@ -54,7 +54,7 @@ Also the model could be an ES6 class as follows
 ```js
 class MyModel {
   async init() {
-    // A mandatory init method for the class to load run-time dependancies
+    // A mandatory init method for the class to load run-time dependencies
     this.model = "My Awesome ES6 model";
   }
   predict(newdata, feature_names) {
@@ -71,7 +71,7 @@ module.exports = MyModel;
 
 ## package.json
 
-Populate an `package.json` with any software dependencies your code requires using an `npm init` command and save your depedancies to the file.
+Populate an `package.json` with any software dependencies your code requires using an `npm init` command and save your dependencies to the file.
 
 ## .s2i/environment
 
@@ -84,7 +84,7 @@ SERVICE_TYPE=MODEL
 PERSISTENCE=0
 ```
 
-These values can also be provided or overriden on the command line when building the image.
+These values can also be provided or overridden on the command line when building the image.
 
 # Step 3 - Build your image
 
@@ -128,7 +128,7 @@ s2i build --help
 
 ## Environment Variables
 
-The required environment variables understood by the builder image are explained below. You can provide them in the `.s2i/enviroment` file or on the `s2i build` command line.
+The required environment variables understood by the builder image are explained below. You can provide them in the `.s2i/environment` file or on the `s2i build` command line.
 
 ### MODEL_NAME
 
@@ -136,13 +136,14 @@ The name of the JS file containing the model.
 
 ### API_TYPE
 
-API type to create. Can be REST only at present.
+API type to create. Can be REST or GRPC.
 
 ### SERVICE_TYPE
 
 The service type being created. Available options are:
 
 - MODEL
+- TRANSFORMER
 
 ### PERSISTENCE
 

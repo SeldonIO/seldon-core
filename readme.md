@@ -48,34 +48,16 @@ Machine learning deployment has many [challenges](./docs/challenges.md). Seldon 
 
 ## Prerequisites
 
-  A [Kubernetes](https://kubernetes.io/) Cluster.  
-  Kubernetes can be deployed into many environments, both in cloud and on-premise.
+  A [Kubernetes](https://kubernetes.io/) Cluster. Kubernetes can be deployed into many environments, both on cloud and on-premise.
 
-## Important: V1Alpha2 Update
-
- **We have updated our core API to v1alpha2 which has a breaking change from v1alpha1 in the SeldonDeployments CRD**
-
-[Read details of how to update your kubernetes SeldonDeployment resources](./docs/v1alpha2_update.md).
-
- * **0.2** releases will now respect the v1alpha2 API.
- * **0.1** releases respect the v1alpha1 API and will not be worked on further.
-
-It is possible to deploy Seldon with two operators that can handle both v1alpha1 resources and v1alpha2 resources though this is not part of our standard deployment docs. If you need this please get in touch.
 
 ## Quick Start
 
 Read the [overview to using seldon-core](./docs/getting_started/readme.md).
 
- - Jupyter notebooks showing worked examples:
-    * Minikube:
-         * [Jupyter Notebook showing deployment of prebuilt model using Minikube and Helm](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_minikube_rbac.ipynb)
-         * [Jupyter Notebook showing deployment of prebuilt model using Minikube, Helm and Ambassador reverse proxy](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/helm_minikube_ambassador.ipynb)	 
-         * [Jupyter notebook to create seldon-core with ksonnet and expose APIs using Ambassador on Minikube with RBAC.](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/ksonnet_ambassador_minikube.ipynb)
-    * GCP:
-         * [Jupyter Notebook showing deployment of prebuilt model using GCP cluster](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_gcp.ipynb)
-         * [Jupyter notebook to create seldon-core with ksonnet and expose APIs using Ambassador on GCP.](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/ksonnet_ambassador_gcp.ipynb)
-    * Azure
-         * [Jupyter Notebook showing deployment of prebuilt model using Azure cluster](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/kubectl_demo_azure.ipynb)
+ - Jupyter notebooks showing examples:
+   - [Seldon Core Deployments using Helm](./notebooks/helm_examples.ipynb)
+   - [Seldon Core Deployments using Ksonnet](./notebooks/ksonnet_examples.ipynb)
 
 
 ### Example Components
@@ -114,7 +96,10 @@ Seldon-core allows various types of components to be built and plugged into the 
        * [Train and deploy a PyTorch MNIST classififer using FfDL and Seldon.](https://github.com/IBM/FfDL/blob/master/community/FfDL-Seldon/pytorch-model/README.md)
  * [Istio and Seldon](./docs/istio.md)
    * [Canary deployemts using Istio and Seldon.](examples/istio/canary_update/canary.ipynb).
-	
+ * [NVIDIA TensorRT and DL Inference Server](./integrations/nvidia-inference-server)
+ * [Tensorflow Serving](./integrations/tfserving)
+ * [Intel OpenVINO](./examples/models/openvino)
+   * A [Helm chart](./helm-charts/seldon-openvino) for easy integration and an [example notebook](./examples/models/openvino/openvino-squeezenet.ipynb) using OpenVINO to serve imagenet model within Seldon Core.
 
 ## Install
 
@@ -127,8 +112,9 @@ Follow the [install guide](docs/install.md) for details on ways to install seldo
 Three steps:
 
  1. [Wrap your runtime prediction model](./docs/wrappers/readme.md).
-    * We provide easy to use wrappers for [python](./docs/wrappers/python.md), [R](./docs/wrappers/r.md) and [Java](./docs/wrappers/java.md)
- 1. [Define your runtime inference graph in a seldon deployment custom resource](./docs/crd/readme.md).
+    * We provide easy to use wrappers for [python](./docs/wrappers/python.md), [R](./docs/wrappers/r.md), [Java](./docs/wrappers/java.md) and [NodeJS](./docs/wrappers/nodejs.md).
+    * We have [tools to test your wrapped components](./docs/api-testing.md).
+ 1. [Define your runtime inference graph in a seldon deployment custom resource](./docs/inference-graph.md).
  1. [Deploy the graph](./docs/deploying.md).
 
 ## Advanced Tutorials
@@ -139,13 +125,18 @@ Three steps:
 
 ## Reference
 
- - [Prediction API](./docs/reference/prediction.md)
+ - Prediction API
+    - [Proto Buffer Definitions](./docs/reference/prediction.md)
+    - [Open API Definitions](./openapi/README.md)
  - [Seldon Deployment Custom Resource](./docs/reference/seldon-deployment.md)
  - [Analytics](./docs/analytics.md)
  
 ## Articles/Blogs/Videos
 
  - [Kubecon Europe 2018 - Serving Machine Learning Models at Scale with Kubeflow and Seldon](https://www.youtube.com/watch?v=pDlapGtecbY)
+ - [Polyaxon, Argo and Seldon for model training, package and deployment in Kubernetes](https://danielfrg.com/blog/2018/10/model-management-polyaxon-argo-seldon/)
+ - [Manage ML Deployments Like A Boss: Deploy Your First AB Test With Sklearn, Kubernetes and Seldon-core using Only Your Web Browser & Google Cloud](https://medium.com/analytics-vidhya/manage-ml-deployments-like-a-boss-deploy-your-first-ab-test-with-sklearn-kubernetes-and-b10ae0819dfe)
+ - [Using PyTorch 1.0 and ONNX with Fabric for Deep Learning](https://developer.ibm.com/blogs/2018/10/01/announcing-pytorch-1-support-in-fabric-for-deep-learning/)
  - [AI on Kubernetes - O'Reilly Tutorial](https://github.com/dwhitena/oreilly-ai-k8s-tutorial)
  - [Scalable Data Science - The State of DevOps/MLOps in 2018](https://axsauze.github.io/scalable-data-science/#/)
  - [Istio Weekly Community Meeting - Seldon-core with Istio](https://www.youtube.com/watch?v=ydculT4e7FQ&feature=youtu.be&t=7m48s)
@@ -153,7 +144,10 @@ Three steps:
  - [Overview of Openshift source-to-image use in Seldon-Core](./docs/articles/openshift_s2i.md)
  - [IBM Framework for Deep Learning and Seldon-Core](https://developer.ibm.com/code/2018/06/12/serve-it-hot-deploy-your-ffdl-trained-models-using-seldon/)
  - [CartPole game by Reinforcement Learning, a journey from training to inference ](https://github.com/hypnosapos/cartpole-rl-remote/)
- 
+
+### Release Highlights
+
+ * [0.2.3 Release Highlights](docs/articles/release-0.2.3.md)
 
 ## Testing
 
@@ -179,18 +173,19 @@ Three steps:
 
 | Description | Image URL | Stable Version | Development | 
 |-------------|-----------|----------------|-----|
-| Seldon Operator | [seldonio/cluster-manager](https://hub.docker.com/r/seldonio/cluster-manager/tags/) | 0.2.2 | 0.2.3-SNAPSHOT |
-| Seldon Service Orchestrator | [seldonio/engine](https://hub.docker.com/r/seldonio/engine/tags/) | 0.2.2 | 0.2.3-SNAPSHOT |
-| Seldon API Gateway | [seldonio/apife](https://hub.docker.com/r/seldonio/apife/tags/) | 0.2.2 | 0.2.3-SNAPSHOT |
-| [Seldon Python 3 Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python3](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3/tags/) | 0.2 |  |
-| [Seldon Python 2 Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python2](https://hub.docker.com/r/seldonio/seldon-core-s2i-python2/tags/) | 0.2 |  |
+| Seldon Operator | [seldonio/cluster-manager](https://hub.docker.com/r/seldonio/cluster-manager/tags/) | 0.2.3 | 0.2.4-SNAPSHOT |
+| Seldon Service Orchestrator | [seldonio/engine](https://hub.docker.com/r/seldonio/engine/tags/) | 0.2.3 | 0.2.4-SNAPSHOT |
+| Seldon API Gateway | [seldonio/apife](https://hub.docker.com/r/seldonio/apife/tags/) | 0.2.3 | 0.2.4-SNAPSHOT |
+| [Seldon Python 3 Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python3](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3/tags/) | 0.2 | 0.3-SNAPSHOT |
+| [Seldon Python 2 Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python2](https://hub.docker.com/r/seldonio/seldon-core-s2i-python2/tags/) | 0.2 | 0.3-SNAPSHOT |
 | [Seldon Python ONNX Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python3-ngraph-onnx](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3-ngraph-onnx/tags/) | 0.1  |   |
 | [Seldon Core Python Wrapper](docs/wrappers/python-docker.md) | [seldonio/core-python-wrapper](https://hub.docker.com/r/seldonio/core-python-wrapper/tags/) | 0.7 | |
 | [Seldon Java Build Wrapper for S2I](docs/wrappers/java.md) | [seldonio/seldon-core-s2i-java-build](https://hub.docker.com/r/seldonio/seldon-core-s2i-java-build/tags/) | 0.1 | |
 | [Seldon Java Runtime Wrapper for S2I](docs/wrappers/java.md) | [seldonio/seldon-core-s2i-java-runtime](https://hub.docker.com/r/seldonio/seldon-core-s2i-java-runtime/tags/) | 0.1 | | 
 | [Seldon R Wrapper for S2I](docs/wrappers/r.md) | [seldonio/seldon-core-s2i-r](https://hub.docker.com/r/seldonio/seldon-core-s2i-r/tags/) | 0.1 | |
-| [Seldon NodeJS Wrapper for S2I](docs/wrappers/nodejs.md) | [seldonio/seldon-core-s2i-nodejs](https://hub.docker.com/r/seldonio/seldon-core-s2i-nodejs/tags/) | 0.1 | |
-
+| [Seldon NodeJS Wrapper for S2I](docs/wrappers/nodejs.md) | [seldonio/seldon-core-s2i-nodejs](https://hub.docker.com/r/seldonio/seldon-core-s2i-nodejs/tags/) | 0.1 | 0.2-SNAPSHOT |
+| [Seldon Tensorflow Serving proxy](integrations/tfserving/README.md) | [seldonio/tfserving-proxy](https://hub.docker.com/r/seldonio/tfserving-proxy/tags/) | 0.1 | 
+| [Seldon NVIDIA inference server proxy](integrations/nvidia-inference-server/README.md) | [seldonio/nvidia-inference-server-proxy](https://hub.docker.com/r/seldonio/nvidia-inference-server-proxy/tags/) | 0.1 | 
 #### Java Packages
 
 | Description | Package | Version |

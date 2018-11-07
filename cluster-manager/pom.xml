@@ -4,7 +4,7 @@
   <groupId>io.seldon.clustermanager</groupId>
   <artifactId>seldon-cluster-manager</artifactId>
   <packaging>jar</packaging>
-  <version>0.2.3</version>
+  <version>0.2.4</version>
   <name>seldon-cluster-manager</name>
   <url>http://maven.apache.org</url>
 
@@ -81,7 +81,7 @@
     <dependency>
       <groupId>io.kubernetes</groupId>
       <artifactId>client-java</artifactId>
-      <version>1.0.0</version>
+      <version>3.0.0</version>
       <scope>compile</scope>
     </dependency>
     
@@ -102,6 +102,26 @@
     </extensions>
 
     <plugins>
+			<plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.2</version>
+                <executions>
+                    <execution>
+                        <id>jacoco-initialize</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>jacoco-report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>    
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>license-maven-plugin</artifactId>

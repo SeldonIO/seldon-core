@@ -1,0 +1,111 @@
+{
+    "apiVersion": "machinelearning.seldon.io/v1alpha2",
+    "kind": "SeldonDeployment",
+    "metadata": {
+	"labels": {
+	    "app": "seldon"
+	},
+	"name": "{{ .Release.Name }}"
+    },
+    "spec": {
+	"name": "{{ .Release.Name }}",
+{{- if .Values.oauth.key }}        
+        "oauth_key": "{{ .Values.oauth.key }}",
+        "oauth_secret": "{{ .Values.oauth.secret }}",
+{{- end }}
+	"predictors": [
+	    {
+		"name": "abtest",
+		"replicas": {{ .Values.replicas }},
+		"componentSpecs": [{
+		    "spec": {
+			"containers": [
+			    {
+				"image": "{{ .Values.modelb.image.name }}",
+				"imagePullPolicy": "IfNotPresent",
+				"name": "{{ .Values.modela.name }}",
+				"resources": {
+				    "requests": {
+					"memory": "1Mi"
+				    }
+				}
+			    }],
+			"terminationGracePeriodSeconds": 20
+		    }},
+	        {
+		    "metadata":{
+			"labels":{
+			    "version":"v2"
+			}
+		    },    
+			"spec":{
+			    "containers":[
+			    {
+				"image": "{{ .Values.modelb.image.name }}",
+				"imagePullPolicy": "IfNotPresent",
+				"name": "{{ .Values.modelb.name }}",
+				"resources": {
+				    "requests": {
+					"memory": "1Mi"
+				    }
+				}
+			    }
+			],
+			"terminationGracePeriodSeconds": 20
+			}
+		},
+	        {
+		    "spec":{
+			"containers": [{
+			    "image": "{{ .Values.mab.image.name }}",
+			    "name": "{{ .Values.mab.name }}"
+			}],
+			"terminationGracePeriodSeconds": 20
+		    }}
+	        ],
+		"graph": {
+		    "name": "{{ .Values.mab.name }}",
+		    "type":"ROUTER",
+		    "parameters": [
+			{
+			    "name": "n_branches",
+			    "value": "{{ .Values.mab.branches }}",
+			    "type": "INT"
+			},
+			{
+			    "name": "epsilon",
+			    "value": "{{ .Values.mab.epsilon }}",
+			    "type": "FLOAT"
+			},
+			{
+			    "name": "verbose",
+			    "value": "{{ .Values.mab.verbose }}",
+			    "type": "BOOL"
+			}
+		    ],
+		    "children": [
+			{
+			    "name": "{{ .Values.modela.name }}",
+			    "endpoint":{
+				"type":"REST"
+			    },
+			    "type":"MODEL",
+			    "children":[]
+			},
+			{
+			    "name": "{{ .Values.modelb.name }}",
+			    "endpoint":{
+				"type":"REST"
+			    },
+			    "type":"MODEL",
+			    "children":[]
+			}   
+		    ]
+		}
+	    }
+	]
+    }
+}
+		
+
+ 

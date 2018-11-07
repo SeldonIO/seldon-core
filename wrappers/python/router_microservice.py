@@ -5,7 +5,8 @@ from microservice import extract_message, sanity_check_request, rest_datadef_to_
 import grpc
 from concurrent import futures
 
-from flask import jsonify, Flask
+from flask import jsonify, Flask, send_from_directory
+from flask_cors import CORS
 import numpy as np
 import os
 
@@ -27,13 +28,18 @@ def send_feedback(user_router,features,feature_names,routing,reward,truth):
 
 def get_rest_microservice(user_router,debug=False):
 
-    app = Flask(__name__)
-
+    app = Flask(__name__,static_url_path='')
+    CORS(app)
+    
     @app.errorhandler(SeldonMicroserviceException)
     def handle_invalid_usage(error):
         response = jsonify(error.to_dict())
         response.status_code = 400
         return response
+
+    @app.route("/seldon.json",methods=["GET"])
+    def openAPI():
+        return send_from_directory('', "seldon.json")
 
 
     @app.route("/route",methods=["GET","POST"])

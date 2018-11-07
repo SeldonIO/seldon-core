@@ -1,0 +1,23 @@
+modela:
+  image:
+    name: seldonio/mock_classifier:1.0
+  endpoint: REST
+  name: classifier-1
+modelb:
+  image:
+    name: seldonio/mock_classifier:1.0
+  endpoint: REST
+  name: classifier-2
+mab:
+  image:
+    name: seldonio/mab_epsilon_greedy:1.1
+  name: eg-router
+  branches: 2
+  epsilon: 0.2
+  verbose: 1
+replicas: 1
+# Add oauth key and secret if using the default API Oauth Gateway for ingress
+oauth:
+  key: 
+  secret:
+      

@@ -5,7 +5,8 @@ from microservice import extract_message, sanity_check_request, rest_datadef_to_
 import grpc
 from concurrent import futures
 
-from flask import jsonify, Flask
+from flask import jsonify, Flask, send_from_directory
+from flask_cors import CORS
 import numpy as np
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -18,6 +19,9 @@ import tornado.ioloop
 from seldon_flatbuffers import SeldonRPCToNumpyArray,NumpyArrayToSeldonRPC,CreateErrorMsg
 import struct
 import traceback
+import os
+
+PRED_UNIT_ID = os.environ.get("PREDICTIVE_UNIT_ID")
 
 # ---------------------------
 # Interaction with user model
@@ -26,8 +30,9 @@ import traceback
 def predict(user_model,features,feature_names):
     return user_model.predict(features,feature_names)
 
-def send_feedback(user_model,features,feature_names,truth,reward):
-    return user_model.send_feedback(features,feature_names,truth,reward)
+def send_feedback(user_model,features,feature_names,reward,truth):
+    if hasattr(user_model,"send_feedback"):
+        user_model.send_feedback(features,feature_names,reward,truth)
 
 def get_class_names(user_model,n_targets):
     if hasattr(user_model,"class_names"):
@@ -42,8 +47,9 @@ def get_class_names(user_model,n_targets):
 
 def get_rest_microservice(user_model,debug=False):
 
-    app = Flask(__name__)
-
+    app = Flask(__name__,static_url_path='')
+    CORS(app)
+    
     @app.errorhandler(SeldonMicroserviceException)
     def handle_invalid_usage(error):
         response = jsonify(error.to_dict())
@@ -52,6 +58,9 @@ def get_rest_microservice(user_model,debug=False):
         response.status_code = 400
         return response
 
+    @app.route("/seldon.json",methods=["GET"])
+    def openAPI():
+        return send_from_directory('', "seldon.json")
 
     @app.route("/predict",methods=["GET","POST"])
     def Predict():
@@ -74,14 +83,14 @@ def get_rest_microservice(user_model,debug=False):
     @app.route("/send-feedback",methods=["GET","POST"])
     def SendFeedback():
         feedback = extract_message()
+
+        datadef_request = feedback.get("request",{}).get("data",{})
+        features = rest_datadef_to_array(datadef_request)
         
-        datadef_request = feedback.get("request").get("data")
-        features = rest_datadef_to_array(datadef)
-        
-        truth = rest_datadef_to_array(feedback.get("truth"))
+        truth = rest_datadef_to_array(feedback.get("truth",{}))
         reward = feedback.get("reward")
 
-        send_feedback(user_model,features,datadef_request.get("names"),truth,reward)
+        send_feedback(user_model,features,datadef_request.get("names"),reward,truth)        
         return jsonify({})
 
     return app

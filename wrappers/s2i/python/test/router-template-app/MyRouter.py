@@ -25,6 +25,15 @@ class MyRouter(object):
     def send_feedback(self,features,feature_names,routing,reward,truth):
         """
         Handle feedback for your routings. Optional.
+
+        Parameters
+        ----------
+        features : array - the features sent in the original predict request
+        feature_names : array of feature names. May be None if not available.
+        routing: int - the route chosen by this router for this request
+        reward : float - the reward
+        truth : array with correct value (optional)
+
         """
         print("Received feedback")
 

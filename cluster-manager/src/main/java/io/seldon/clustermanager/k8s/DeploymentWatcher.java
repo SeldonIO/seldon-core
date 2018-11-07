@@ -125,7 +125,6 @@ public class DeploymentWatcher {
                         // put this logic in new class
                     }
                 }
-                
             }
         }
         catch(RuntimeException e)

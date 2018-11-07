@@ -7,3 +7,6 @@ persistence:
   enabled: true
 rbac:
   enabled: true
+prometheus:
+  service_type: ClusterIP
+

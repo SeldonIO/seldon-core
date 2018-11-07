@@ -33,6 +33,7 @@ import io.kubernetes.client.ProtoClient.ObjectOrStatus;
 import io.kubernetes.client.apis.CoreV1Api;
 import io.kubernetes.client.models.ExtensionsV1beta1Deployment;
 import io.kubernetes.client.models.ExtensionsV1beta1DeploymentList;
+import io.kubernetes.client.models.V1DeleteOptions;
 import io.kubernetes.client.models.V1Service;
 import io.kubernetes.client.models.V1ServiceList;
 import io.kubernetes.client.models.V1Status;
@@ -149,7 +150,8 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 			if (!names.contains(s.getMetadata().getName()))
 			{	
 				CoreV1Api api = new CoreV1Api(client);
-				V1Status status = api.deleteNamespacedService(s.getMetadata().getName(), namespace, null);
+				io.kubernetes.client.models.V1DeleteOptions options = new V1DeleteOptions();
+				V1Status status = api.deleteNamespacedService(s.getMetadata().getName(), namespace, options, null, null, null, null);
 				if (!"Success".equals(status.getStatus()))
 				{
 					logger.error("Failed to delete service "+s.getMetadata().getName());
@@ -252,7 +254,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	{
         SeldonDeployment.Builder mlBuilder = SeldonDeployment.newBuilder(mlDep);
         mlBuilder.getStatusBuilder().setState(Constants.STATE_FAILED).setDescription(e.getMessage());
-        crdHandler.updateSeldonDeployment(mlBuilder.build());
+        crdHandler.updateSeldonDeploymentStatus(mlBuilder.build());
 	}
 	
 	@Override
@@ -269,6 +271,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 		    if (existing == null || !existing.getSpec().equals(mlDep.getSpec()))
 		    {
 		        logger.debug("Running updates for "+mlDep.getMetadata().getName());
+		        SeldonDeployment mlDepStatusUpdated = operator.updateStatus(mlDep);
 		        SeldonDeployment mlDep2 = operator.defaulting(mlDep);
 		        operator.validate(mlDep2);
 		        mlCache.put(mlDep2);
@@ -281,13 +284,13 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 		        //removeServices(client,namespace, mlDep2, resources.services); //Proto Client not presently working for deletion
 		        ApiClient client2 = clientProvider.getClient();
 		        removeServices(client2,namespace, mlDep2, resources.services);
-		        if (!mlDep.getSpec().equals(mlDep2.getSpec()))
+		        if (existing == null || !mlDep.getSpec().equals(mlDepStatusUpdated.getSpec()))
 		        {
-		            logger.debug("Pushing updated SeldonDeployment "+mlDep2.getMetadata().getName()+" back to kubectl");
-		            crdHandler.updateSeldonDeployment(mlDep2);
+		           logger.debug("Pushing updated SeldonDeployment "+mlDepStatusUpdated.getMetadata().getName()+" back to kubectl");
+		           crdHandler.updateSeldonDeploymentStatus(mlDepStatusUpdated);
 		        }
 		        else
-		            logger.debug("Not pushing an update as no change to spec for SeldonDeployment "+mlDep2.getMetadata().getName());
+		            logger.debug("Not pushing an update as no change to status for SeldonDeployment "+mlDep2.getMetadata().getName());
 		    }
 		    else
 		    {

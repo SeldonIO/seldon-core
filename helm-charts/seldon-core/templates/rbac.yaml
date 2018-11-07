@@ -28,7 +28,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
 metadata:
-  name: seldon-crd
+  name: seldon-crd-{{ .Release.Namespace }}
   namespace: {{ .Release.Namespace }}    
 rules:
 - apiGroups:
@@ -54,12 +54,12 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: seldon
+  name: seldon-{{ .Release.Namespace }}
   namespace: {{ .Release.Namespace }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: seldon-crd
+  name: seldon-crd-{{ .Release.Namespace }}
 subjects:
   - kind: ServiceAccount
     name: {{ .Values.rbac.service_account.name }}
