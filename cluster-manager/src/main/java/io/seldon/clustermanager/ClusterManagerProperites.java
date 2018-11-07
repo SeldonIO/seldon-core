@@ -23,7 +23,8 @@ public class ClusterManagerProperites {
     private int engineContainerPort;
     private int engineGrpcContainerPort;
     private String engineContainerImageAndVersion;
-    private String engineContainerImagePullPolicy;
+    private String engineContainerImagePullPolicy = "IfNotPresent";
+    private String engineContainerServiceAccountName = "default";
     private int puContainerPortBase;
     private String namespace;
 
@@ -59,7 +60,15 @@ public class ClusterManagerProperites {
         this.engineContainerImagePullPolicy = engineContainerImagePullPolicy;
     }
     
-    public int getPuContainerPortBase() {
+    public String getEngineContainerServiceAccountName() {
+		return engineContainerServiceAccountName;
+	}
+
+	public void setEngineContainerServiceAccountName(String engineContainerServiceAccountName) {
+		this.engineContainerServiceAccountName = engineContainerServiceAccountName;
+	}
+
+	public int getPuContainerPortBase() {
         return puContainerPortBase;
     }
 
