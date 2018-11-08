@@ -190,6 +190,7 @@ class MyModel(object):
 
 For more details on custom metrics and the format of the metric dict see [here](../custom_metrics.md).
 
+There is an [example notebook illustrating a model with custom metrics in python](../../examples/models/template_model_with_metrics/modelWithMetrics.ipynb).
 
 ## Custom Meta Data
 ```from version 0.3```

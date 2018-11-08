@@ -59,3 +59,7 @@ At present the following Seldon Core wrappers provide integrations with custom m
 
  * [Python Wrapper](./wrappers/python.md#custom-metrics)
 
+
+# example
+
+There is an [example notebook illustrating a model with custom metrics in python](../examples/models/template_model_with_metrics/modelWithMetrics.ipynb).
