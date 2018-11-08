@@ -390,7 +390,11 @@ public class InternalPredictionService {
 		}
 	}
 
-	public void setRestTemplate(RestTemplate restTemplate) {
+	 /**
+     * Used only for testing. Should be replaced by better methods that use Spring and Mockito to create a Mock RestTemplate for testing
+     * @param predictorSpec
+     */
+	public void setRestTemplate(RestTemplate restTemplate) { // FIXME
 		this.restTemplate = restTemplate;
 	}
 
