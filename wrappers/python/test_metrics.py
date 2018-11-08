@@ -3,6 +3,7 @@ import pytest
 from microservice import SeldonMicroserviceException
 from google.protobuf import json_format
 from proto import prediction_pb2, prediction_pb2_grpc
+import json
 
 def test_create_counter():
     v = create_counter("k",1)
@@ -81,7 +82,16 @@ def test_proto_metrics():
 
 
 def test_proto_tags():
-    metric = {"tags":{"t1":"t2"},"metrics":[{"type":TIMER}]}
+    metric = {"tags":{"t1":"t2"},"metrics":[{"type":"COUNTER","key":"mycounter","value":1.2},{"type":"GAUGE","key":"mygauge","value":1.2},{"type":"TIMER","key":"mytimer","value":1.2}]}
     meta = prediction_pb2.Meta()
     json_format.ParseDict(metric,meta)
-    print(json_format.MessageToJson(meta))
+    jStr = json_format.MessageToJson(meta)
+    j = json.loads(jStr)
+    assert "mycounter" == j["metrics"][0]["key"]
+    assert 1.2 == pytest.approx(j["metrics"][0]["value"],0.01)
+    assert "GAUGE" == j["metrics"][1]["type"]
+    assert "mygauge" == j["metrics"][1]["key"]
+    assert 1.2 == pytest.approx(j["metrics"][1]["value"],0.01)
+    assert "TIMER" == j["metrics"][2]["type"]
+    assert "mytimer" == j["metrics"][2]["key"]
+    assert 1.2 == pytest.approx(j["metrics"][2]["value"],0.01)
