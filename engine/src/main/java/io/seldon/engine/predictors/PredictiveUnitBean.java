@@ -148,11 +148,11 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 		for (Future<SeldonMessage> deferredOutput : deferredChildrenOutputs){
 			SeldonMessage m = deferredOutput.get();
 			childrenOutputs.add(m);
-			addMetrics(m,state,metrics);
 		}
 		
 		// Compute the backward transformation of all children outputs
 		SeldonMessage aggregatedOutput = implementation.aggregate(childrenOutputs, state);
+		addMetrics(aggregatedOutput,state,metrics);
 		
 		// Merge all the outputs metadata
 		aggregatedOutput = mergeMeta(aggregatedOutput,childrenOutputs);
