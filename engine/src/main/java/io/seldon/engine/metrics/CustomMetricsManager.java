@@ -10,6 +10,12 @@ import io.micrometer.core.instrument.Metrics;
 import io.seldon.engine.predictors.PredictiveUnitState;
 import io.seldon.protos.PredictionProtos.Metric;
 
+/**
+ * 
+ * @author clive
+ * Handles the storage of gauges for custom metrics.
+ *
+ */
 @Component
 public class CustomMetricsManager {
 

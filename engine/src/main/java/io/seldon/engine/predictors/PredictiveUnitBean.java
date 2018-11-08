@@ -268,7 +268,7 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 	//
 	// -------------------------------------------
 	
-	protected static int getBranchIndex(SeldonMessage routerReturn, PredictiveUnitState state){
+	private int getBranchIndex(SeldonMessage routerReturn, PredictiveUnitState state){
 		int branchIndex = 0;
 		try {
 			PrimitiveMatrix dataArray = PredictorUtils.getOJMatrix(routerReturn.getData());
@@ -293,7 +293,7 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 			switch(metric.getType())
 			{
 			case COUNTER:
-				logger.info("Adding counter {} for {}",metric.getKey(),state.name);
+				logger.debug("Adding counter {} for {}",metric.getKey(),state.name);
 				Counter.builder(metric.getKey()).tags(tagsProvider.getModelMetrics(state)).register(Metrics.globalRegistry).increment(metric.getValue());
 				break;
 			case GAUGE:
