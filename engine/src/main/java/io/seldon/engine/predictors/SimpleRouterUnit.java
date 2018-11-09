@@ -17,8 +17,9 @@ package io.seldon.engine.predictors;
 
 import org.springframework.stereotype.Component;
 
-import io.seldon.protos.PredictionProtos.Feedback;
+import io.seldon.protos.PredictionProtos.DefaultData;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
+import io.seldon.protos.PredictionProtos.Tensor;
 
 @Component
 public class SimpleRouterUnit extends PredictiveUnitImpl {
@@ -26,7 +27,7 @@ public class SimpleRouterUnit extends PredictiveUnitImpl {
     public SimpleRouterUnit() {}
 
 	@Override
-	public int route(SeldonMessage input, PredictiveUnitState state){
-		return 0;
+	public SeldonMessage route(SeldonMessage input, PredictiveUnitState state){
+		return SeldonMessage.newBuilder().setData(DefaultData.newBuilder().setTensor(Tensor.newBuilder().addValues(0).addShape(1).addShape(1))).build();
 	}
 }
