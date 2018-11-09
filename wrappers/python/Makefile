@@ -22,3 +22,5 @@ clean:
 	rm -f proto/prediction.proto
 	rm -f proto/prediction_pb2_grpc.py
 	rm -f proto/prediction_pb2.py
+	rm -f fbs/*.py*
+	rm -f fbs/prediction.fbs
