@@ -39,15 +39,16 @@ def startServers(target1, target2):
 class SeldonMicroserviceException(Exception):
     status_code = 400
 
-    def __init__(self, message, status_code= None, payload=None):
+    def __init__(self, message, status_code= None, payload=None, reason="MICROSERVICE_BAD_DATA"):
         Exception.__init__(self)
         self.message = message
         if status_code is not None:
             self.status_code = status_code
         self.payload = payload
+        self.reason=reason
 
     def to_dict(self):
-        rv = {"status":{"status":1,"info":self.message,"code":-1,"reason":"MICROSERVICE_BAD_DATA"}}
+        rv = {"status":{"status":1,"info":self.message,"code":-1,"reason":self.reason}}
         return rv
 
 def sanity_check_request(req):
@@ -75,6 +76,13 @@ def extract_message():
     if message is None:
         raise SeldonMicroserviceException("Invalid Data Format")
     return message
+
+def get_custom_tags(component):
+    if hasattr(component,"tags"):
+        return component.tags()
+    else:
+        return None
+
 
 def array_to_list_value(array,lv=None):
     if lv is None:
