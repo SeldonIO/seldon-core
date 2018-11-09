@@ -1,0 +1,28 @@
+{
+	"meta": {
+		"metrics": [
+			{
+				"type": "COUNTER",
+				"key": "mycounter",
+				"value": 1.0
+			},
+			{
+				"type": "GAUGE",
+				"key": "mygauge",
+				"value": 22.0
+			},
+			{
+				"type": "TIMER",
+				"key": "mytimer",
+				"value": 1.0
+			}
+		]
+	},
+	"data": {
+		"ndarray": [
+			[
+				0
+			]
+		]
+	}
+}
