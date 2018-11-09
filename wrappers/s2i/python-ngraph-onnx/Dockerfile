@@ -1,4 +1,4 @@
-FROM seldonio/seldon-core-s2i-python3:0.2
+FROM seldonio/seldon-core-s2i-python3:0.3
 
 RUN apt-get update && apt-get install -y \
 	build-essential cmake clang-3.9 clang-format-3.9 \
@@ -29,7 +29,7 @@ RUN cd ngraph/python && \
     export PYBIND_HEADERS_PATH=$PWD/pybind11 && \
     export NGRAPH_CPP_BUILD_PATH=/home/ngraph_dist && \
     python3 setup.py bdist_wheel && \
-    pip install -U dist/ngraph-0.7.0-cp36-cp36m-linux_x86_64.whl && \
+    pip install -U dist/ngraph-0.9.0-cp36-cp36m-linux_x86_64.whl && \
     rm -rf build && rm -rf dist
 
 RUN pip install git+https://github.com/NervanaSystems/ngraph-onnx/
