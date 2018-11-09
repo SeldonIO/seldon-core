@@ -171,6 +171,43 @@ Set either to 0 or 1. Default is 0. If set to 1 then your model will be saved pe
  * [Example transformers](https://github.com/SeldonIO/seldon-core/tree/master/examples/transformers)
 
 
+# Advanced Usage
+
+## Custom Metrics
+```from version 0.3```
+
+To add custom metrics to your response you can define an optional method ```metrics``` in your class that returns a list of metric dicts. An example is shown below:
+
+```
+class MyModel(object):
+
+    def predict(self,X,features_names):
+        return X
+
+    def metrics(self):
+    	return [{"type":"COUNTER","key":"mycounter","value":1}]
+```
+
+For more details on custom metrics and the format of the metric dict see [here](../custom_metrics.md).
+
+There is an [example notebook illustrating a model with custom metrics in python](../../examples/models/template_model_with_metrics/modelWithMetrics.ipynb).
+
+## Custom Meta Data
+```from version 0.3```
+
+To add custom meta data you can add an optional method ```tags``` which can return a dict of custom meta tags as shown in the example below:
+
+```
+class UserObject(object):
+
+    def predict(self,X,features_names):
+        return X
+
+    def tags(self):
+        return {"mytag":1}
+```
+
+
 
 
 

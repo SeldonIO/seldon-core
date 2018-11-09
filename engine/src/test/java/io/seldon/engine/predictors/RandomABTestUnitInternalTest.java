@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.ojalgo.matrix.PrimitiveMatrix;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
@@ -30,6 +31,12 @@ import io.seldon.protos.PredictionProtos.SeldonMessage;
 
 public class RandomABTestUnitInternalTest {
 
+	private int getBranchIndex(SeldonMessage routerReturn) {
+		PrimitiveMatrix dataArray = PredictorUtils.getOJMatrix(routerReturn.getData());
+		return dataArray.get(0).intValue();
+	}
+	
+	
 	@Test
 	public void simpleCase() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvalidProtocolBufferException {
 		
@@ -50,15 +57,18 @@ public class RandomABTestUnitInternalTest {
 		PredictiveUnitImpl predictiveUnit = new RandomABTestUnit();
 		
 		// The following values are from random seed 1337
-		int routing1 = (int) predictiveUnit.route(request, state);
+		SeldonMessage msg1 = predictiveUnit.route(request, state);
+		int routing1 = getBranchIndex(msg1);
 
 		Assert.assertEquals(1,routing1); 
 		
-		int routing2 = (int) predictiveUnit.route(request, state);
+		SeldonMessage msg2 = predictiveUnit.route(request, state);
+		int routing2 = (int) getBranchIndex(msg2);
 
 		Assert.assertEquals(0,routing2);
 		
-		int routing3 = (int) predictiveUnit.route(request,state);
+		SeldonMessage msg3 = predictiveUnit.route(request,state);
+		int routing3 = (int) getBranchIndex(msg3);
 
 		Assert.assertEquals(1,routing3);
 	}

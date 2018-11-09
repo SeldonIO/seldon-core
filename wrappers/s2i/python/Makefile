@@ -18,6 +18,7 @@ get_wrappers_and_protos:
 	cp $(SELDON_CORE_DIR)/wrappers/python/__init__.py _wrappers/python
 	cp $(SELDON_CORE_DIR)/proto/prediction.proto _wrappers/python/proto
 	cp $(SELDON_CORE_DIR)/wrappers/python/seldon_flatbuffers.py _wrappers/python
+	cp $(SELDON_CORE_DIR)/wrappers/python/metrics.py _wrappers/python
 	flatc --python -o _wrappers/python/fbs ../../../fbs/prediction.fbs
 	touch _wrappers/python/proto/__init__.py
 	touch _wrappers/python/fbs/__init__.py
