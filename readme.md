@@ -133,6 +133,7 @@ Three steps:
  
 ## Articles/Blogs/Videos
 
+ - [Open Source Model Management Roundup Polyaxon, Argo and Seldon](https://www.anaconda.com/blog/developer-blog/open-source-model-management-roundup-polyaxon-argo-and-seldon/)
  - [Kubecon Europe 2018 - Serving Machine Learning Models at Scale with Kubeflow and Seldon](https://www.youtube.com/watch?v=pDlapGtecbY)
  - [Polyaxon, Argo and Seldon for model training, package and deployment in Kubernetes](https://danielfrg.com/blog/2018/10/model-management-polyaxon-argo-seldon/)
  - [Manage ML Deployments Like A Boss: Deploy Your First AB Test With Sklearn, Kubernetes and Seldon-core using Only Your Web Browser & Google Cloud](https://medium.com/analytics-vidhya/manage-ml-deployments-like-a-boss-deploy-your-first-ab-test-with-sklearn-kubernetes-and-b10ae0819dfe)
