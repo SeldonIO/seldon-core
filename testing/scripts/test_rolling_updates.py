@@ -11,9 +11,10 @@ def wait_for_rollout(deploymentName):
         ret = run("kubectl rollout status deploy/"+deploymentName, shell=True)
 
 # Test updating a model with a new image version as the only change
-@pytest.mark.skip
+#@pytest.mark.skip
 def test_rolling_update1():
-    run("kubectl delete sdep --all", shell=True, check=True)
+    run("kubectl delete sdep --all", shell=True)
+    print("sleeping 30 secs...")
     time.sleep(30)
     run("kubectl apply -f ../resources/graph1.json", shell=True, check=True)
     wait_for_rollout("mymodel-mymodel-svc-orch")
@@ -35,9 +36,10 @@ def test_rolling_update1():
     assert i < 100
 
 # test changing the image version and the name of its container
-@pytest.mark.skip
+#@pytest.mark.skip
 def test_rolling_update2():
-    run("kubectl delete sdep --all", shell=True, check=True)
+    run("kubectl delete sdep --all", shell=True)
+    print("sleeping 30 secs...")
     time.sleep(30)
     run("kubectl apply -f ../resources/graph1.json", shell=True, check=True)
     wait_for_rollout("mymodel-mymodel-svc-orch")
@@ -59,9 +61,10 @@ def test_rolling_update2():
     assert i < 100
 
 # Test updating a model with a new resource request but same image
-@pytest.mark.skip
+#@pytest.mark.skip
 def test_rolling_update3():
-    run("kubectl delete sdep --all", shell=True, check=True)
+    run("kubectl delete sdep --all", shell=True)
+    print("sleeping 30 secs...")
     time.sleep(30)
     run("kubectl apply -f ../resources/graph1.json", shell=True, check=True)
     wait_for_rollout("mymodel-mymodel-svc-orch")
@@ -83,7 +86,8 @@ def test_rolling_update3():
 
 # Test updating a model with a multi deployment new model
 def test_rolling_update4():
-    run("kubectl delete sdep --all", shell=True, check=True)
+    run("kubectl delete sdep --all", shell=True)
+    print("sleeping 30 secs...")
     time.sleep(30)
     run("kubectl apply -f ../resources/graph1.json", shell=True, check=True)
     wait_for_rollout("mymodel-mymodel-svc-orch")
