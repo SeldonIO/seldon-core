@@ -19,8 +19,10 @@ import java.util.List;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
+import io.seldon.protos.PredictionProtos.DefaultData;
 import io.seldon.protos.PredictionProtos.Feedback;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
+import io.seldon.protos.PredictionProtos.Tensor;
 
 public abstract class PredictiveUnitImpl {
 	
@@ -40,8 +42,8 @@ public abstract class PredictiveUnitImpl {
 		return outputs.get(0);
 	}
 	
-	public int route(SeldonMessage input, PredictiveUnitState state) throws InvalidProtocolBufferException{
-		return -1;
+	public SeldonMessage route(SeldonMessage input, PredictiveUnitState state) throws InvalidProtocolBufferException{
+		return SeldonMessage.newBuilder().setData(DefaultData.newBuilder().setTensor(Tensor.newBuilder().addValues(-1).addShape(1).addShape(1))).build();
 	}
 	
 	public void doSendFeedback(Feedback feedback, PredictiveUnitState state) throws InvalidProtocolBufferException{

@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.StringJoiner;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -489,12 +490,14 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 	 
 	private String getAmbassadorAnnotation(SeldonDeployment mlDep,String serviceName)
 	{
+		String namespace = (StringUtils.isEmpty(mlDep.getMetadata().getNamespace())) ? "default" : mlDep.getMetadata().getNamespace();
+
         final String restMapping = "---\n"+
                 "apiVersion: ambassador/v0\n" +
                 "kind:  Mapping\n" +
                 "name:  seldon_"+mlDep.getMetadata().getName()+"_rest_mapping\n" +
                 "prefix: /seldon/"+mlDep.getMetadata().getName()+"/\n" +
-                "service: "+serviceName+":"+clusterManagerProperites.getEngineContainerPort()+"\n" +
+                "service: "+serviceName+"."+namespace+":"+clusterManagerProperites.getEngineContainerPort()+"\n" +
                 "timeout_ms: " + mlDep.getSpec().getAnnotationsOrDefault(Constants.REST_READ_TIMEOUT_ANNOTATION, "3000") + "\n";
         final String grpcMapping = "---\n"+
                 "apiVersion: ambassador/v0\n" +
@@ -505,7 +508,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
                 "rewrite: /seldon.protos.Seldon/\n" + 
                 "headers:\n"+
                  "  seldon: "+mlDep.getMetadata().getName() + "\n" +
-                "service: "+serviceName+":"+clusterManagerProperites.getEngineGrpcContainerPort()+"\n" +
+                "service: "+serviceName+"."+namespace+":"+clusterManagerProperites.getEngineGrpcContainerPort()+"\n" +
                 "timeout_ms: " + mlDep.getSpec().getAnnotationsOrDefault(Constants.GRPC_READ_TIMEOUT_ANNOTATION, "3000") + "\n";
 	    return restMapping + grpcMapping;
 	}
@@ -581,6 +584,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 				podSpecBuilder.getSpecBuilder()
 		    	.addContainers(createEngineContainer(mlDep,p))
 		    	.setTerminationGracePeriodSeconds(20)
+		    	.setServiceAccountName(clusterManagerProperites.getEngineContainerServiceAccountName())
 		    	.addVolumes(Volume.newBuilder() // Add downwardAPI volume for annotations
 		    			.setName(PODINFO_VOLUME_NAME)
 		    			.setVolumeSource(VolumeSource.newBuilder().setDownwardAPI(DownwardAPIVolumeSource.newBuilder()

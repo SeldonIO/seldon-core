@@ -38,6 +38,18 @@ message Meta {
   map<string,google.protobuf.Value> tags = 2;
   map<string,int32> routing = 3;
   map<string,string> requestPath = 4;
+  repeated Metric metrics = 5;
+}
+
+message Metric {
+ enum MetricType {
+     COUNTER = 0;
+     GAUGE = 1;
+     TIMER = 2;
+ }
+ string key = 1;
+ MetricType type = 2;
+ float value = 3;
 }
 
 message SeldonMessageList {
