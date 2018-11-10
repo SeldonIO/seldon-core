@@ -1,4 +1,4 @@
-IMAGE_VERSION=0.1
+IMAGE_VERSION=0.2
 IMAGE_NAME = docker.io/seldonio/seldon-core-s2i-python3-ngraph-onnx
 
 SELDON_CORE_DIR=../../..
