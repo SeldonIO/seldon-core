@@ -1,6 +1,6 @@
 #!/bin/bash -e
 #
-# S2I run script for the 'seldon-core-s2i-python' image.
+# S2I run script for the 'seldon-core-s2i-nodejs' image.
 # The run script executes the server that runs your application.
 #
 # For more information see the documentation:

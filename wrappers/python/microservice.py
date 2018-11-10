@@ -25,15 +25,12 @@ DEBUG = False
 ANNOTATIONS_FILE = "/etc/podinfo/annotations"
 
 def startServers(target1, target2):
-    p1 = mp.Process(target=target1)
-    p1.deamon = True
-    p1.start()
-
     p2 = mp.Process(target=target2)
     p2.deamon = True
     p2.start()
 
-    p1.join()
+    target1()
+    
     p2.join()
 
 class SeldonMicroserviceException(Exception):
