@@ -21,8 +21,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.ojalgo.matrix.PrimitiveMatrix;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
@@ -32,17 +35,22 @@ import com.google.protobuf.InvalidProtocolBufferException;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.Timer;
 import io.seldon.engine.exception.APIException;
+import io.seldon.engine.metrics.CustomMetricsManager;
 import io.seldon.engine.metrics.SeldonRestTemplateExchangeTagsProvider;
 import io.seldon.engine.service.InternalPredictionService;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitMethod;
 import io.seldon.protos.PredictionProtos.Feedback;
 import io.seldon.protos.PredictionProtos.Meta;
+import io.seldon.protos.PredictionProtos.Metric;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
 
 @Component
 public class PredictiveUnitBean extends PredictiveUnitImpl {
 
+	private final static Logger logger = LoggerFactory.getLogger(PredictiveUnitBean.class);
+	
 	@Autowired
 	InternalPredictionService internalPredictionService;
 	
@@ -52,23 +60,35 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 	@Autowired
 	public PredictorConfigBean predictorConfig;
 	
+	@Autowired
+	private CustomMetricsManager customMetricsManager;
+	
 	public PredictiveUnitBean(){}
 	
 	
 	public SeldonMessage getOutput(SeldonMessage request, PredictiveUnitState state) throws InterruptedException, ExecutionException, InvalidProtocolBufferException{
 		Map<String,Integer> routingDict = new HashMap<String,Integer>();
 		Map<String,String> requestPathDict = new HashMap<String,String>();
-		SeldonMessage response = getOutputAsync(request, state, routingDict,requestPathDict).get();
+		List<Metric> metrics = new ArrayList<>();
+		SeldonMessage response = getOutputAsync(request, state, routingDict,requestPathDict,metrics).get();
 		SeldonMessage.Builder builder = SeldonMessage
 	    		.newBuilder(response)
 	    		.setMeta(Meta
-	    				.newBuilder(response.getMeta()).putAllRouting(routingDict).putAllRequestPath(requestPathDict));
+	    				.newBuilder(response.getMeta()).putAllRouting(routingDict).putAllRequestPath(requestPathDict).addAllMetrics(metrics));
 		return builder.build();
 	}
 	
+	private void addMetrics(SeldonMessage msg,PredictiveUnitState state,List<Metric> metrics)
+	{
+		if (msg.hasMeta())
+		{
+			addCustomMetrics(msg.getMeta().getMetricsList(),state);
+			metrics.addAll(msg.getMeta().getMetricsList());
+		}
+	}
 	
 	@Async
-	private Future<SeldonMessage> getOutputAsync(SeldonMessage input, PredictiveUnitState state, Map<String,Integer> routingDict,Map<String,String> requestPathDict) throws InterruptedException, ExecutionException, InvalidProtocolBufferException{
+	private Future<SeldonMessage> getOutputAsync(SeldonMessage input, PredictiveUnitState state, Map<String,Integer> routingDict,Map<String,String> requestPathDict,List<Metric> metrics) throws InterruptedException, ExecutionException, InvalidProtocolBufferException{
 		
 		// This element to the request path
 		requestPathDict.put(state.name, state.image);
@@ -80,8 +100,10 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 		// Compute the transformed Input
 		SeldonMessage transformedInput = implementation.transformInput(input, state);
 		
-		// Preserve the original metadata
+		addMetrics(transformedInput,state,metrics);
+		// Preserve the original metadata except metrics
 		transformedInput = mergeMeta(transformedInput,input.getMeta());
+
 		
 		if (state.children.isEmpty()){
 			// If this unit has no children, the transformed input becomes the output
@@ -93,10 +115,18 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 		List<SeldonMessage> childrenOutputs = new ArrayList<SeldonMessage>();
 		
 		// Get the routing. -1 means all children
-		int routing = implementation.route(transformedInput, state);
-		sanityCheckRouting(routing, state);
+		SeldonMessage routingMessage = implementation.route(transformedInput, state);
+		int routing;
+		if (routingMessage != null) {
+			routing = getBranchIndex(routingMessage, state);
+			sanityCheckRouting(routing, state);
+			addMetrics(routingMessage,state,metrics);
+		} else {
+			routing = -1;
+		}
 		// Update the routing dictionary
 		routingDict.put(state.name, routing);
+		
 		
 		if (routing == -1){
 			// No routing, propagate to all children
@@ -110,19 +140,24 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 		
 		// Get all the children outputs asynchronously
 		for (PredictiveUnitState childState : selectedChildren){
-			deferredChildrenOutputs.add(getOutputAsync(transformedInput,childState,routingDict,requestPathDict));
+			deferredChildrenOutputs.add(getOutputAsync(transformedInput,childState,routingDict,requestPathDict,metrics));
 		}
 		for (Future<SeldonMessage> deferredOutput : deferredChildrenOutputs){
-			childrenOutputs.add(deferredOutput.get());
+			SeldonMessage m = deferredOutput.get();
+			childrenOutputs.add(m);
 		}
 		
 		// Compute the backward transformation of all children outputs
 		SeldonMessage aggregatedOutput = implementation.aggregate(childrenOutputs, state);
+		addMetrics(aggregatedOutput,state,metrics);
+		
 		// Merge all the outputs metadata
 		aggregatedOutput = mergeMeta(aggregatedOutput,childrenOutputs);
 		SeldonMessage transformedOutput = implementation.transformOutput(aggregatedOutput, state);
-		// Preserve metadata
+		addMetrics(transformedOutput,state,metrics);
+		// Preserve metadata except metrics
 		transformedOutput = mergeMeta(transformedOutput,aggregatedOutput.getMeta());
+
 		
 		return new AsyncResult<>(transformedOutput);
 		
@@ -206,14 +241,15 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 		return outputs.get(0);
 	}
 	
-	public int route(SeldonMessage input, PredictiveUnitState state) throws InvalidProtocolBufferException{
-		// Returns a branch number
+	public SeldonMessage route(SeldonMessage input, PredictiveUnitState state) throws InvalidProtocolBufferException{
+		// Returns a branch number in SeldonMessage
 		
 		if (predictorConfig.hasMethod(PredictiveUnitMethod.ROUTE, state)){
-			SeldonMessage routerReturn = internalPredictionService.route(input, state);
-			return getBranchIndex(routerReturn, state);
+			return internalPredictionService.route(input, state);
 		}
-		return -1;
+		
+		// Return default routing
+		return null;
 	}
 	
 	public void doSendFeedback(Feedback feedback, PredictiveUnitState state) throws InvalidProtocolBufferException{
@@ -246,6 +282,31 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 		Counter.builder("seldon_api_model_feedback").tags(tagsProvider.getModelMetrics(state)).register(Metrics.globalRegistry).increment();
 	}
 	
+	private void addCustomMetrics(List<Metric> metrics, PredictiveUnitState state)
+	{
+		logger.debug("Add metrics");
+		for(Metric metric : metrics)
+		{
+			switch(metric.getType())
+			{
+			case COUNTER:
+				logger.debug("Adding counter {} for {}",metric.getKey(),state.name);
+				Counter.builder(metric.getKey()).tags(tagsProvider.getModelMetrics(state)).register(Metrics.globalRegistry).increment(metric.getValue());
+				break;
+			case GAUGE:
+				logger.debug("Adding gauge {} for {}",metric.getKey(),state.name);				
+				customMetricsManager.get(state, metric).set(metric.getValue());
+				break;
+			case TIMER:
+				logger.debug("Adding timer {} for {}",metric.getKey(),state.name);				
+				Timer.builder(metric.getKey()).tags(tagsProvider.getModelMetrics(state)).register(Metrics.globalRegistry).record((long) metric.getValue(), TimeUnit.MILLISECONDS);
+				break;
+			case UNRECOGNIZED:
+				break;
+			}
+		}
+	}		
+		
 	private void sanityCheckRouting(Integer branchIndex, PredictiveUnitState state){
 		if (branchIndex < -1 | branchIndex >= state.children.size()){
 			throw new APIException(
@@ -259,12 +320,14 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 		for (SeldonMessage originalMessage : messages){
 			metaBuilder.putAllTags(originalMessage.getMeta().getTagsMap());
 		}
+		metaBuilder.clearMetrics();
 		return SeldonMessage.newBuilder(message).setMeta(metaBuilder).build();
 	}
 	
 	private SeldonMessage mergeMeta(SeldonMessage message, Meta meta) {
 		Meta.Builder metaBuilder = Meta.newBuilder(message.getMeta());
 		metaBuilder.putAllTags(meta.getTagsMap());
+		metaBuilder.clearMetrics();
 		return SeldonMessage.newBuilder(message).setMeta(metaBuilder).build();
 	}
 

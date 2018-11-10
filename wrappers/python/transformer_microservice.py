@@ -1,7 +1,8 @@
 from proto import prediction_pb2, prediction_pb2_grpc
 from microservice import extract_message, sanity_check_request, rest_datadef_to_array, \
     array_to_rest_datadef, grpc_datadef_to_array, array_to_grpc_datadef, \
-    SeldonMicroserviceException
+    SeldonMicroserviceException, get_custom_tags
+from metrics import get_custom_metrics
 import grpc
 from concurrent import futures
 
@@ -73,7 +74,14 @@ def get_rest_microservice(user_model,debug=False):
 
         data = array_to_rest_datadef(transformed, new_feature_names, datadef)
 
-        return jsonify({"data":data})
+        response = {"data":data,"meta":{}}
+        tags = get_custom_tags(user_model)
+        if tags:
+            response["meta"]["tags"] = tags
+        metrics = get_custom_metrics(user_model)
+        if metrics:
+            response["meta"]["metrics"] = metrics
+        return jsonify(response)
 
     @app.route("/transform-output",methods=["GET","POST"])
     def TransformOutput():
@@ -89,7 +97,14 @@ def get_rest_microservice(user_model,debug=False):
 
         data = array_to_rest_datadef(transformed, new_class_names, datadef)
 
-        return jsonify({"data":data})
+        response = {"data":data,"meta":{}}
+        tags = get_custom_tags(user_model)
+        if tags:
+            response["meta"]["tags"] = tags
+        metrics = get_custom_metrics(user_model)
+        if metrics:
+            response["meta"]["metrics"] = metrics
+        return jsonify(response)
 
     return app
 
@@ -112,7 +127,19 @@ class SeldonTransformerGRPC(object):
         feature_names = get_feature_names(self.user_model, datadef.names)
 
         data = array_to_grpc_datadef(transformed, feature_names, request.data.WhichOneof("data_oneof"))
-        return prediction_pb2.SeldonMessage(data=data)
+
+        # Construct meta data
+        meta = prediction_pb2.Meta()
+        metaJson = {}
+        tags = get_custom_tags(self.user_model)
+        if tags:
+            metaJson["tags"] = tags
+        metrics = get_custom_metrics(self.user_model)
+        if metrics:
+            metaJson["metrics"] = metrics
+        json_format.ParseDict(metaJson,meta)
+
+        return prediction_pb2.SeldonMessage(data=data,meta=meta)
 
     def TransformOutput(self,request,context):
         datadef = request.data
@@ -123,7 +150,19 @@ class SeldonTransformerGRPC(object):
         class_names = get_class_names(self.user_model, datadef.names)
 
         data = array_to_grpc_datadef(transformed, class_names, request.data.WhichOneof("data_oneof"))
-        return prediction_pb2.SeldonMessage(data=data)
+
+        # Construct meta data
+        meta = prediction_pb2.Meta()
+        metaJson = {}
+        tags = get_custom_tags(self.user_model)
+        if tags:
+            metaJson["tags"] = tags
+        metrics = get_custom_metrics(self.user_model)
+        if metrics:
+            metaJson["metrics"] = metrics
+        json_format.ParseDict(metaJson,meta)
+
+        return prediction_pb2.SeldonMessage(data=data,meta=meta)
     
 def get_grpc_server(user_model,debug=False,annotations={}):
     seldon_model = SeldonTransformerGRPC(user_model)

@@ -141,6 +141,30 @@
             "AnyValue": {
                 "description": "Can be anything: string, number, array, object, etc."
             },
+            "MetricType": {
+                "type": "string",
+                "enum": [
+                    "COUNTER",
+                    "GAUGE",
+                    "TIMER"
+                ],
+                "default": "COUNTER"
+            },
+            "Metric": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "$ref": "#/components/schemas/MetricType"
+                    },
+                    "key": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "number",
+                        "format": "float"
+                    }
+                }
+            },
             "DefaultData": {
                 "type": "object",
                 "properties": {
@@ -211,6 +235,12 @@
                         },
                         "example": {
                             "classifier": "seldonio/mock_classifier:1.0"
+                        }
+                    },
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Metric"
                         }
                     }
                 }

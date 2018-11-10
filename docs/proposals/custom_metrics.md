@@ -12,8 +12,8 @@ Extend the SeldonMessage proto buffer to have a "metrics" element in the meta da
 {
 "meta" : {
   "metrics" : [
-    { "key" : "my_metric_1", "type" : "counter", "value" : 1 },
-    { "key" : "my_metric_2", "type" : "guage", "value" : 223 }
+    { "key" : "my_metric_1", "type" : "COUNTER", "value" : 1 },
+    { "key" : "my_metric_2", "type" : "GAUGE", "value" : 223 }
   ]
 }
 }
@@ -45,7 +45,6 @@ message Metric {
  string key = 1;
  MetricType type = 2;
  float value = 3;
- string graphId = 4;
 }
 ```
 
@@ -59,7 +58,7 @@ We use [Micrometer](https://micrometer.io) for exposing metrics. Counter and gau
 ## Engine Implementation
 
  1. For each component if there is a metrics section parse and expose via prometheus each metric of the appropriate type.
- 2. Merge all metrics into final set for returning externally adding graph id of the component that returned the metrics if missing.
+ 2. Merge all metrics into final set for returning externally 
 
 ## Wrapper Implementations
 
@@ -70,8 +69,8 @@ Add optional new function in class user defines
 ```
 def metrics(self):
   return [
-    { "key" : "my_metric_1", "type" : "counter", "value" : self.counter1 },
-    { "key" : "my_metric_2", "type" : "guage", "value" : self.guage1 }
+    { "key" : "my_metric_1", "type" : "COUNTER", "value" : self.counter1 },
+    { "key" : "my_metric_2", "type" : "GAUGE", "value" : self.guage1 }
   ]
 ```
 
