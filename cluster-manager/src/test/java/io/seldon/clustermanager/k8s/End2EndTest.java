@@ -42,25 +42,27 @@ import io.kubernetes.client.util.Watch;
 import io.seldon.clustermanager.AppTest;
 import io.seldon.clustermanager.ClusterManagerProperites;
 import io.seldon.clustermanager.k8s.client.K8sClientProvider;
+import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({Config.class,Watch.class,CustomObjectsApi.class,SeldonDeploymentWatcher.class})
+@PrepareForTest({Config.class,Watch.class,CustomObjectsApi.class,SeldonDeploymentWatcher.class,KubeCRDHandlerImpl.class})
 public class End2EndTest extends AppTest {
 
 	K8sClientProvider mockK8sClientProvider;
 	ProtoClient mockProtoClient;
-	KubeCRDHandler mockCrdHandler;
 	CRDCreator mockCrdCreator;
 	CustomObjectsApi mockCustomObjectsApi;
 	
+	KubeCRDHandler crdHandler;
 	ClusterManagerProperites props;
 	SeldonDeploymentCache mlCache;
 	SeldonDeploymentOperatorImpl operator;
 	SeldonDeploymentControllerImpl controller;
 	
 	
+	@SuppressWarnings("unchecked")
 	public void createMocks(String resourceFilename) throws Exception
 	{
 		ApiClient client = new ApiClient();
@@ -93,11 +95,14 @@ public class End2EndTest extends AppTest {
 		// Handle the call to CustomObjectsApi
 		mockCustomObjectsApi = mock(CustomObjectsApi.class);
 		whenNew(CustomObjectsApi.class).withAnyArguments().thenReturn(mockCustomObjectsApi);
+		// Use in watcher
 		when(mockCustomObjectsApi.listNamespacedCustomObjectCall(any(String.class), any(String.class), any(String.class), 
 				any(String.class), isNull(String.class), isNull(String.class), any(String.class), 
 				any(Boolean.class),isNull(ProgressListener.class),isNull(ProgressRequestListener.class))).thenReturn(null);
+		// Use in crdHandler
+		when(mockCustomObjectsApi.replaceNamespacedCustomObjectStatus(any(String.class), any(String.class), any(String.class), any(String.class), any(String.class), any(byte[].class))).thenThrow(ApiException.class);
+		when(mockCustomObjectsApi.replaceNamespacedCustomObject(any(String.class), any(String.class), any(String.class), any(String.class), any(String.class), any(byte[].class))).thenReturn(null);		
 		
-		mockCrdHandler = mock(KubeCRDHandler.class);
 		mockK8sClientProvider = mock(K8sClientProvider.class);
 		mockProtoClient = mock(ProtoClient.class);
 		Status status404 = Status.newBuilder().setCode(404).build();
@@ -113,9 +118,10 @@ public class End2EndTest extends AppTest {
 		props.setEngineContainerImageAndVersion("engine:0.1");
 		props.setEngineContainerImagePullPolicy("IfNotPresent");
 		props.setEngineContainerServiceAccountName("default");
-		mlCache = new SeldonDeploymentCacheImpl(props, mockCrdHandler);
+		crdHandler = new KubeCRDHandlerImpl(props);
+		mlCache = new SeldonDeploymentCacheImpl(props, crdHandler);
 		operator = new SeldonDeploymentOperatorImpl(props);
-		controller = new SeldonDeploymentControllerImpl(operator, mockK8sClientProvider, mockCrdHandler, mlCache);
+		controller = new SeldonDeploymentControllerImpl(operator, mockK8sClientProvider, crdHandler, mlCache);
 		
 	}
 	
@@ -124,10 +130,10 @@ public class End2EndTest extends AppTest {
 	public void testSimpleModel() throws Exception
 	{
 		createMocks("src/test/resources/model_simple.json");
-		SeldonDeploymentWatcher sdWatcher = new SeldonDeploymentWatcher(mockCrdCreator, props, controller, mlCache, mockCrdHandler);
+		SeldonDeploymentWatcher sdWatcher = new SeldonDeploymentWatcher(mockCrdCreator, props, controller, mlCache, crdHandler);
 		sdWatcher.watchSeldonMLDeployments(0, 0);
 
-		PowerMockito.verifyStatic(Config.class, Mockito.times(2));
+		PowerMockito.verifyStatic(Config.class, Mockito.times(3));
 		Config.defaultClient();
 		verify(mockCustomObjectsApi).listNamespacedCustomObjectCall(any(String.class), any(String.class), any(String.class), 
 				any(String.class), isNull(String.class), isNull(String.class), any(String.class), 
@@ -156,7 +162,7 @@ public class End2EndTest extends AppTest {
 	public void testIgnored() throws Exception
 	{
 		createMocks("src/test/resources/model_simple.json");
-		SeldonDeploymentWatcher sdWatcher = new SeldonDeploymentWatcher(mockCrdCreator, props, controller, mlCache, mockCrdHandler);
+		SeldonDeploymentWatcher sdWatcher = new SeldonDeploymentWatcher(mockCrdCreator, props, controller, mlCache, crdHandler);
 		sdWatcher.watchSeldonMLDeployments(1, 1); // version is higher than that in resource so should be ignored
 
 		PowerMockito.verifyStatic(Config.class, Mockito.times(2));
@@ -174,10 +180,10 @@ public class End2EndTest extends AppTest {
 	public void testRandomABTest() throws Exception
 	{
 		createMocks("src/test/resources/random_ab_test.json");
-		SeldonDeploymentWatcher sdWatcher = new SeldonDeploymentWatcher(mockCrdCreator, props, controller, mlCache, mockCrdHandler);
+		SeldonDeploymentWatcher sdWatcher = new SeldonDeploymentWatcher(mockCrdCreator, props, controller, mlCache, crdHandler);
 		sdWatcher.watchSeldonMLDeployments(0, 0);
 
-		PowerMockito.verifyStatic(Config.class, Mockito.times(2));
+		PowerMockito.verifyStatic(Config.class, Mockito.times(3));
 		Config.defaultClient();
 		verify(mockCustomObjectsApi).listNamespacedCustomObjectCall(any(String.class), any(String.class), any(String.class), 
 				any(String.class), isNull(String.class), isNull(String.class), any(String.class), 
@@ -192,10 +198,10 @@ public class End2EndTest extends AppTest {
 	public void testRandomABTest1Pod() throws Exception
 	{
 		createMocks("src/test/resources/random_ab_test_1pod.json");
-		SeldonDeploymentWatcher sdWatcher = new SeldonDeploymentWatcher(mockCrdCreator, props, controller, mlCache, mockCrdHandler);
+		SeldonDeploymentWatcher sdWatcher = new SeldonDeploymentWatcher(mockCrdCreator, props, controller, mlCache, crdHandler);
 		sdWatcher.watchSeldonMLDeployments(0, 0);
 
-		PowerMockito.verifyStatic(Config.class, Mockito.times(2));
+		PowerMockito.verifyStatic(Config.class, Mockito.times(3));
 		Config.defaultClient();
 		verify(mockCustomObjectsApi).listNamespacedCustomObjectCall(any(String.class), any(String.class), any(String.class), 
 				any(String.class), isNull(String.class), isNull(String.class), any(String.class), 
@@ -219,6 +225,31 @@ public class End2EndTest extends AppTest {
 		Assert.assertEquals(2, d.getSpec().getTemplate().getSpec().getContainersCount());
 		System.out.println(d.getMetadata().getName());
 
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testInvalidGraph() throws Exception
+	{
+		createMocks("src/test/resources/model_invalid_graph.json");
+		SeldonDeploymentWatcher sdWatcher = new SeldonDeploymentWatcher(mockCrdCreator, props, controller, mlCache, crdHandler);
+		sdWatcher.watchSeldonMLDeployments(0, 0); // version is higher than that in resource so should be ignored
+
+		PowerMockito.verifyStatic(Config.class, Mockito.times(3));
+		Config.defaultClient();
+		verify(mockCustomObjectsApi).listNamespacedCustomObjectCall(any(String.class), any(String.class), any(String.class), 
+				any(String.class), isNull(String.class), isNull(String.class), any(String.class), 
+				any(Boolean.class),isNull(ProgressListener.class),isNull(ProgressRequestListener.class));
+		verify(mockProtoClient,Mockito.never()).create(any(Message.class), any(String.class), any(String.class), any(String.class));
+		verify(mockProtoClient,Mockito.never()).create(any(Message.class), any(String.class), any(String.class), Mockito.matches("Service"));
+		verify(mockProtoClient,Mockito.never()).create(any(Message.class), any(String.class), any(String.class), Mockito.matches("Deployment"));
+		
+		ArgumentCaptor<byte[]> argument = ArgumentCaptor.forClass(byte[].class);
+		verify(mockCustomObjectsApi).replaceNamespacedCustomObject(any(String.class), any(String.class), any(String.class), any(String.class), any(String.class), argument.capture());
+		byte[] bytes = argument.getValue();
+		SeldonDeployment d = SeldonDeploymentUtils.jsonToSeldonDeployment(new String(bytes));
+		Assert.assertEquals("Failed", d.getStatus().getState());
+		
 	}
 	
 }
