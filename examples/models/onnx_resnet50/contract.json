@@ -14,7 +14,7 @@
 	    "dtype":"FLOAT",
 	    "ftype":"continuous",
 	    "range":[0,1],
-	    "shape":[100]
+	    "shape":[1000]
 	}
     ]
 }
