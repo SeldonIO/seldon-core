@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -16,6 +15,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import com.google.gson.reflect.TypeToken;
 
@@ -28,6 +28,7 @@ import io.kubernetes.client.ProgressResponseBody;
 import io.kubernetes.client.models.V1beta1CustomResourceDefinition;
 import io.kubernetes.client.util.Config;
 
+@Component
 public class CRDCreator {
 	protected static Logger logger = LoggerFactory.getLogger(CRDCreator.class.getName());
 	public void createCRD() throws IOException, ApiException
@@ -79,7 +80,7 @@ public class CRDCreator {
 		 return new String(encoded, encoding);
 	 }	
 
-	private V1beta1CustomResourceDefinition createCustomResourceDefinition(ApiClient apiClient,byte[] body, String pretty)
+	protected V1beta1CustomResourceDefinition createCustomResourceDefinition(ApiClient apiClient,byte[] body, String pretty)
 			throws ApiException {
 		ApiResponse<V1beta1CustomResourceDefinition> resp = createCustomResourceDefinitionWithHttpInfo(apiClient,body, pretty);
 		return resp.getData();

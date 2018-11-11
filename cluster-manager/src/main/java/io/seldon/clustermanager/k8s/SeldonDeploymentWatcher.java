@@ -63,13 +63,12 @@ public class SeldonDeploymentWatcher  {
 	private int resourceVersionProcessed = 0;
 	
 	@Autowired
-	public SeldonDeploymentWatcher(ClusterManagerProperites clusterManagerProperites,SeldonDeploymentController seldonDeploymentController,SeldonDeploymentCache mlCache,KubeCRDHandler crdHandler) throws IOException, ApiException
+	public SeldonDeploymentWatcher(CRDCreator crdCreator,ClusterManagerProperites clusterManagerProperites,SeldonDeploymentController seldonDeploymentController,SeldonDeploymentCache mlCache,KubeCRDHandler crdHandler) throws IOException, ApiException
 	{
 		this.seldonDeploymentController = seldonDeploymentController;
 		this.mlCache = mlCache;
 		this.clusterManagerProperites = clusterManagerProperites;
 		this.crdHandler = crdHandler;
-		CRDCreator crdCreator = new CRDCreator();
 		crdCreator.createCRD();
 	}
 	
