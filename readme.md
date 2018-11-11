@@ -177,9 +177,11 @@ Three steps:
 | Seldon Operator | [seldonio/cluster-manager](https://hub.docker.com/r/seldonio/cluster-manager/tags/) | 0.2.4 | 0.2.5-SNAPSHOT |
 | Seldon Service Orchestrator | [seldonio/engine](https://hub.docker.com/r/seldonio/engine/tags/) | 0.2.4 | 0.2.5-SNAPSHOT |
 | Seldon API Gateway | [seldonio/apife](https://hub.docker.com/r/seldonio/apife/tags/) | 0.2.4 | 0.2.5-SNAPSHOT |
-| [Seldon Python 3 Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python3](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3/tags/) | 0.2 | 0.3-SNAPSHOT |
-| [Seldon Python 2 Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python2](https://hub.docker.com/r/seldonio/seldon-core-s2i-python2/tags/) | 0.2 | 0.3-SNAPSHOT |
-| [Seldon Python ONNX Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python3-ngraph-onnx](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3-ngraph-onnx/tags/) | 0.1  |   |
+| [Seldon Python 3 (3.6) Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python3](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3/tags/) | 0.3 | 0.4-SNAPSHOT |
+| [Seldon Python 3.6 Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python36](https://hub.docker.com/r/seldonio/seldon-core-s2i-python36/tags/) | 0.3 | 0.4-SNAPSHOT |
+| [Seldon Python 3.7 Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python37](https://hub.docker.com/r/seldonio/seldon-core-s2i-python37/tags/) | 0.3 | 0.4-SNAPSHOT |
+| [Seldon Python 2 Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python2](https://hub.docker.com/r/seldonio/seldon-core-s2i-python2/tags/) | 0.3 | 0.4-SNAPSHOT |
+| [Seldon Python ONNX Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python3-ngraph-onnx](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3-ngraph-onnx/tags/) | 0.2  |   |
 | [Seldon Core Python Wrapper](docs/wrappers/python-docker.md) | [seldonio/core-python-wrapper](https://hub.docker.com/r/seldonio/core-python-wrapper/tags/) | 0.7 | |
 | [Seldon Java Build Wrapper for S2I](docs/wrappers/java.md) | [seldonio/seldon-core-s2i-java-build](https://hub.docker.com/r/seldonio/seldon-core-s2i-java-build/tags/) | 0.1 | |
 | [Seldon Java Runtime Wrapper for S2I](docs/wrappers/java.md) | [seldonio/seldon-core-s2i-java-runtime](https://hub.docker.com/r/seldonio/seldon-core-s2i-java-runtime/tags/) | 0.1 | | 
