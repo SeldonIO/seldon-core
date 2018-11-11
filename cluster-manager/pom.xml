@@ -20,6 +20,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <grpc.version>1.0.0</grpc.version><!-- CURRENT_GRPC_VERSION -->
     <start-class>io.seldon.clustermanager.Application</start-class>
+    <powermock.version>1.7.1</powermock.version>
   </properties>
 
   <repositories>
@@ -43,7 +44,20 @@
       <version>4.12</version>
       <scope>test</scope>
     </dependency>
-
+   <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-module-junit4</artifactId>
+      <version>${powermock.version}</version>
+      <scope>test</scope>
+   </dependency>
+   <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-api-mockito</artifactId>
+      <version>${powermock.version}</version>
+      <scope>test</scope>
+   </dependency>
+   
+   
     <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>grpc-protobuf</artifactId>
