@@ -44,6 +44,7 @@
       <version>4.12</version>
       <scope>test</scope>
     </dependency>
+    <!-- PowerMock requires Java 8 - should look for workaround to tests as project seems less well maintained -->
    <dependency>
       <groupId>org.powermock</groupId>
       <artifactId>powermock-module-junit4</artifactId>
@@ -228,6 +229,18 @@
 	<groupId>org.springframework.boot</groupId>
 	<artifactId>spring-boot-maven-plugin</artifactId>
       </plugin>
+      <plugin>
+            <!-- 
+      		Needed due to  https://issues.apache.org/jira/browse/SUREFIRE-1588
+      		Should be removed when fixed 
+      		-->
+      
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+                <useSystemClassLoader>false</useSystemClassLoader>
+            </configuration>
+        </plugin>
     </plugins>
   </build>
 
