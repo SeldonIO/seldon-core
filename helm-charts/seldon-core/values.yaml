@@ -31,6 +31,7 @@ cluster_manager:
     pull_policy: IfNotPresent
   java_opts: ''
   spring_opts: ''
+  cluster_wide: true
 engine:
   image:
     name: seldonio/engine:0.2.5-SNAPSHOT
