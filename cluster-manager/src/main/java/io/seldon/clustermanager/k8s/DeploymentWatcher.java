@@ -49,12 +49,14 @@ public class DeploymentWatcher {
 	
 	private final SeldonDeploymentStatusUpdate statusUpdater;
 	private final String namespace;
+	private final boolean clusterWide;
 	
 	@Autowired
 	public DeploymentWatcher(ClusterManagerProperites clusterManagerProperites,SeldonDeploymentStatusUpdate statusUpdater)
 	{
 		this.statusUpdater = statusUpdater;
 		this.namespace = StringUtils.isEmpty(clusterManagerProperites.getNamespace()) ? "default" : clusterManagerProperites.getNamespace();
+		this.clusterWide = clusterManagerProperites.isClusterWide();
 	}
 	
 	public int watchDeployments(int resourceVersion,int resourceVersionProcessed) throws ApiException, IOException 
@@ -69,10 +71,21 @@ public class DeploymentWatcher {
 		ApiClient client = Config.defaultClient();
 		ExtensionsV1beta1Api api = new ExtensionsV1beta1Api(client);
 
-		Watch<ExtensionsV1beta1Deployment> watch = Watch.createWatch(
-		        client,
-		        api.listNamespacedDeploymentCall(namespace, null, null, null,false,SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_KEY+"="+SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_VAL, null,rs, 10, true,null,null),
-		        new TypeToken<Watch.Response<ExtensionsV1beta1Deployment>>(){}.getType());
+		Watch<ExtensionsV1beta1Deployment> watch;
+		if (this.clusterWide)
+		{
+			watch = Watch.createWatch(
+					client,
+					api.listDeploymentForAllNamespacesCall(null, null, false, SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_KEY+"="+SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_VAL, null, null, rs, 10, true, null, null),
+					new TypeToken<Watch.Response<ExtensionsV1beta1Deployment>>(){}.getType());
+		}
+		else
+		{
+			watch = Watch.createWatch(
+					client,
+					api.listNamespacedDeploymentCall(namespace, null, null, null,false,SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_KEY+"="+SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_VAL, null,rs, 10, true,null,null),
+					new TypeToken<Watch.Response<ExtensionsV1beta1Deployment>>(){}.getType());
+		}
 
 		try
 		{
@@ -102,7 +115,8 @@ public class DeploymentWatcher {
                                 {
                                     String mlDepName = ownerRef.getName();
                                     String depName = item.object.getMetadata().getName();
-                                    statusUpdater.updateStatus(mlDepName, depName, item.object.getStatus().getReplicas(),item.object.getStatus().getReadyReplicas());
+                                    String namespace = StringUtils.isEmpty(item.object.getMetadata().getNamespace()) ? "default" : item.object.getMetadata().getNamespace();
+                                    statusUpdater.updateStatus(mlDepName, depName, item.object.getStatus().getReplicas(),item.object.getStatus().getReadyReplicas(),namespace);
                                 }
                             }
                             break;
@@ -113,7 +127,8 @@ public class DeploymentWatcher {
                                 {
                                     String mlDepName = ownerRef.getName();
                                     String depName = item.object.getMetadata().getName();
-                                    statusUpdater.removeStatus(mlDepName,depName);
+                                    String namespace = StringUtils.isEmpty(item.object.getMetadata().getNamespace()) ? "default" : item.object.getMetadata().getNamespace();
+                                    statusUpdater.removeStatus(mlDepName,depName,namespace);
                                 }
                             }
                             break;

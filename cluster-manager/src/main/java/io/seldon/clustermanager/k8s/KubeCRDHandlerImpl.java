@@ -50,17 +50,29 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 	public static final String KIND_PLURAL = "seldondeployments";
 	public static final String KIND = "SeldonDeployment";
 	
-	private final String namespace;
+	//private final String namespace;
+	private final boolean clusterWide;
 	
 	private boolean replaceStatusResource = true; // Whether to use the status CR endpoint (available from k8s 1.10 (alpha) 1.11 (beta)
 	
 	@Autowired
     public KubeCRDHandlerImpl(ClusterManagerProperites clusterManagerProperites) {
-		this.namespace = StringUtils.isEmpty(clusterManagerProperites.getNamespace()) ? "default" : clusterManagerProperites.getNamespace();
+		//this.namespace = StringUtils.isEmpty(clusterManagerProperites.getNamespace()) ? "default" : clusterManagerProperites.getNamespace();
+		this.clusterWide = clusterManagerProperites.isClusterWide();
+		logger.info("Starting with cluster wide {}",clusterWide);
 	}
 	
+	private String getNamespace(SeldonDeployment d)
+	{
+	    if (StringUtils.isEmpty(d.getMetadata().getNamespace()))
+	        return "default";
+	    else
+	        return d.getMetadata().getNamespace();
+	}
+	
+	
 	@Override
-	public void updateRaw(String json,String seldonDeploymentName) {
+	public void updateRaw(String json,String seldonDeploymentName,String namespace) {
 		try
 		{
 			logger.info(json);
@@ -98,6 +110,7 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 			logger.debug("Updating seldondeployment "+mlDeployment.getMetadata().getName());
 			ApiClient client = Config.defaultClient();
 			CustomObjectsApi api = new CustomObjectsApi(client);
+			String namespace = getNamespace(mldep);
 			if (replaceStatusResource)
 			{
 				try 
@@ -121,7 +134,7 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 	}
 	
 	@Override
-	public SeldonDeployment getSeldonDeployment(String name) {
+	public SeldonDeployment getSeldonDeployment(String name,String namespace) {
 		try
 		{
 			ApiClient client = Config.defaultClient();
@@ -145,7 +158,7 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 	}
 
     @Override
-    public ExtensionsV1beta1DeploymentList getOwnedDeployments(String seldonDeploymentName) {
+    public ExtensionsV1beta1DeploymentList getOwnedDeployments(String seldonDeploymentName,String namespace) {
         try
         {
             ApiClient client = Config.defaultClient();
@@ -162,7 +175,7 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
     }
 
 	@Override
-	public V1ServiceList getOwnedServices(String seldonDeploymentName) {
+	public V1ServiceList getOwnedServices(String seldonDeploymentName,String namespace) {
 		try
 		{
 			ApiClient client = Config.defaultClient();
