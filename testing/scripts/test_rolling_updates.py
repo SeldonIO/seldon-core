@@ -1,8 +1,26 @@
 import pytest
 import time
-from subprocess import run
+import subprocess
+from subprocess import run,Popen
 from seldon_utils import *
 API_AMBASSADOR="localhost:8003"
+
+@pytest.fixture(scope="session",autouse=True)
+def port_forward(request):
+    print("Setup: Port forward")
+    p = Popen("kubectl port-forward $(kubectl get pods -n seldon -l app=seldon-apiserver-container-app -o jsonpath='{.items[0].metadata.name}') -n seldon 8002:8080", shell=True)
+
+    def fin():
+        print("teardown port forward")
+        p.kill()
+
+    request.addfinalizer(fin)
+
+class TestDummy(object):
+
+    def test_dummy(self):
+        print("Dummy test")
+    
 
 def wait_for_rollout(deploymentName):
     ret = run("kubectl rollout status deploy/"+deploymentName, shell=True)
