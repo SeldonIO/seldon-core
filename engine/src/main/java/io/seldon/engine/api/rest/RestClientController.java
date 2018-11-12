@@ -16,6 +16,7 @@
 package io.seldon.engine.api.rest;
 
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.PostConstruct;
 
@@ -51,11 +52,11 @@ public class RestClientController {
 	@Autowired
 	SeldonGraphReadyChecker readyChecker;
 	
-	private boolean ready = false;
+	private AtomicBoolean ready = new AtomicBoolean(false);
 	
 	 @PostConstruct
 	 public void init(){
-		 ready = true;
+		 ready.set(true);;
 	 }	
 	
 	@RequestMapping("/")
@@ -74,7 +75,7 @@ public class RestClientController {
 		HttpHeaders responseHeaders = new HttpHeaders();
 		HttpStatus httpStatus;
 		String ret;
-		if (ready && readyChecker.getReady())
+		if (ready.get() && readyChecker.getReady())
 		{
 			httpStatus = HttpStatus.OK;
 			ret = "ready";
@@ -90,14 +91,14 @@ public class RestClientController {
 	
 	@RequestMapping("/pause")
     String pause() {	    
-		ready = false;
+		ready.set(false);
         logger.warn("App Paused");
         return "paused";
     }
 	
 	@RequestMapping("/unpause")
     String unpause() {	    
-		ready = true;
+		ready.set(true);
         logger.warn("App UnPaused");		
         return "unpaused";
     }
