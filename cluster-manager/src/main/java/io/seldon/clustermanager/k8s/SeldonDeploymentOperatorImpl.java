@@ -130,7 +130,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 					.setHttpGet(HTTPGetAction.newBuilder().setPort(IntOrString.newBuilder().setType(1).setStrVal("admin")).setPath("/ready")))
 					.setInitialDelaySeconds(20)
 					.setPeriodSeconds(5)
-					.setFailureThreshold(5)
+					.setFailureThreshold(1)
 					.setSuccessThreshold(1)
 					.setTimeoutSeconds(2)
 					)
@@ -138,7 +138,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 					.setHttpGet(HTTPGetAction.newBuilder().setPort(IntOrString.newBuilder().setType(1).setStrVal("admin")).setPath("/ready")))
 					.setInitialDelaySeconds(20)
 					.setPeriodSeconds(5)
-					.setFailureThreshold(1)
+					.setFailureThreshold(5)
 					.setSuccessThreshold(1)
 					.setTimeoutSeconds(2)
 					)
@@ -450,7 +450,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
         if ((!pu.hasImplementation() || pu.getImplementation().getNumber() == PredictiveUnitImplementation.UNKNOWN_IMPLEMENTATION_VALUE) &&
                 (!pu.hasType() || pu.getType().getNumber() == PredictiveUnitType.UNKNOWN_TYPE_VALUE) &&
                 pu.getMethodsCount() == 0) 
-            throw new SeldonDeploymentException(String.format("Predictive unit %s has no methods specified",pu.getName()));     
+        	throw new SeldonDeploymentException(String.format("Predictive unit %s has no methods specified",pu.getName()));     
         for(PredictiveUnit child :  pu.getChildrenList())
             checkTypeMethodAndImpl(child); 
 	}
@@ -458,8 +458,13 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 	@Override
 	public void validate(SeldonDeployment mlDep) throws SeldonDeploymentException {
 
+		Set<String> predictorNames = new HashSet<>();
 	    for(PredictorSpec p : mlDep.getSpec().getPredictorsList())
         {
+	    	if (predictorNames.contains(p.getName()))
+	    		throw new SeldonDeploymentException(String.format("Duplicate predictor name: %s",p.getName()));
+	    	else
+	    		predictorNames.add(p.getName());
 	        checkPredictiveUnitsMicroservices(p.getGraph(),p);
 	        checkTypeMethodAndImpl(p.getGraph());
         }
