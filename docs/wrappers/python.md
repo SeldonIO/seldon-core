@@ -161,7 +161,7 @@ Set either to 0 or 1. Default is 0. If set to 1 then your model will be saved pe
  * [Example models](https://github.com/SeldonIO/seldon-core/tree/master/examples/models)
 
 ### ROUTER
-
+ * [Description of routers in Seldon Core](../components/routers.md)
  * [A minimal skeleton for router source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/python/test/router-template-app)
  * [Example routers](https://github.com/SeldonIO/seldon-core/tree/master/examples/routers)
 

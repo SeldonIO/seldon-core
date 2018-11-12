@@ -149,6 +149,7 @@ Can only by 0 at present. In future, will allow the state of the component to be
 - [Example models](https://github.com/SeldonIO/seldon-core/tree/master/examples/models)
 
 ### ROUTER
+- [Description of routers in Seldon Core](../components/routers.md)
 
 - [A minimal skeleton for router source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/R/test/router-template-app)
 
