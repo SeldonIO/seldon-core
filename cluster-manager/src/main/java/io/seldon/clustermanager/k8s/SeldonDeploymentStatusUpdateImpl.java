@@ -151,7 +151,7 @@ public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusU
                     mlBuilder.getStatusBuilder().removePredictorStatus(idx);
                     break;
                 }
-            	idx++;
+                idx++;
             }
             crdHandler.updateSeldonDeploymentStatus(mlBuilder.build());
         }
