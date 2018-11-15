@@ -293,10 +293,10 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 		    if (existing == null || !existing.getSpec().equals(mlDep.getSpec()))
 		    {
 		        logger.debug("Running updates for "+mlDep.getMetadata().getName());
+		        mlCache.put(mlDep);
 		        SeldonDeployment mlDepStatusUpdated = operator.updateStatus(mlDep);
 		        SeldonDeployment mlDep2 = operator.defaulting(mlDep);
 		        operator.validate(mlDep2);
-		        mlCache.put(mlDep2);
 		        DeploymentResources resources = operator.createResources(mlDep2);
 		        ProtoClient client = clientProvider.getProtoClient();
 		        String namespace = getNamespace(mlDep2);

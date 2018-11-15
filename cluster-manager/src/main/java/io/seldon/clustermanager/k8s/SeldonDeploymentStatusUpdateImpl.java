@@ -91,7 +91,10 @@ public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusU
     @Override
     public void updateStatus(String mlDepName, String depName, Integer replicas, Integer replicasAvailable) {
         if (replicas == null || replicas == 0)
-            removeStatus(mlDepName,depName);
+        {
+        	logger.warn("Remove status for {} {} {} {}",mlDepName,depName,replicas,replicasAvailable);
+        	removeStatus(mlDepName,depName);
+        }
         else
         {
             logger.info(String.format("UPDATE %s : %s %d %d",mlDepName,depName,replicas,replicasAvailable));
@@ -148,6 +151,7 @@ public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusU
                     mlBuilder.getStatusBuilder().removePredictorStatus(idx);
                     break;
                 }
+            	idx++;
             }
             crdHandler.updateSeldonDeploymentStatus(mlBuilder.build());
         }

@@ -80,7 +80,6 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 	
 	@Override
 	public void updateSeldonDeploymentStatus(SeldonDeployment mldep) {
-		
 		try
 		{
 			// Need to remove resourceVersion from the representation used for last-applied-configuration otherwise you will errors subsequently using kubectl
@@ -95,7 +94,7 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 						.putAnnotations("kubectl.kubernetes.io/last-applied-configuration", json+"\n")).build();
 			json = SeldonDeploymentUtils.toJson(mlDeployment,false);
 			
-			logger.debug("Updating seldondeployment "+mlDeployment.getMetadata().getName());
+			logger.debug("Updating seldondeployment {} with status {}",mlDeployment.getMetadata().getName(),mlDeployment.getStatus());
 			ApiClient client = Config.defaultClient();
 			CustomObjectsApi api = new CustomObjectsApi(client);
 			if (replaceStatusResource)

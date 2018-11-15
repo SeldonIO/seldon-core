@@ -130,7 +130,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 					.setHttpGet(HTTPGetAction.newBuilder().setPort(IntOrString.newBuilder().setType(1).setStrVal("admin")).setPath("/ready")))
 					.setInitialDelaySeconds(20)
 					.setPeriodSeconds(5)
-					.setFailureThreshold(1)
+					.setFailureThreshold(3)
 					.setSuccessThreshold(1)
 					.setTimeoutSeconds(2)
 					)
@@ -138,7 +138,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 					.setHttpGet(HTTPGetAction.newBuilder().setPort(IntOrString.newBuilder().setType(1).setStrVal("admin")).setPath("/ready")))
 					.setInitialDelaySeconds(20)
 					.setPeriodSeconds(5)
-					.setFailureThreshold(5)
+					.setFailureThreshold(3)
 					.setSuccessThreshold(1)
 					.setTimeoutSeconds(2)
 					)
@@ -229,7 +229,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		            {
 		                c2Builder.setLivenessProbe(Probe.newBuilder()
 		                        .setHandler(Handler.newBuilder().setTcpSocket(TCPSocketAction.newBuilder().setPort(io.kubernetes.client.proto.IntStr.IntOrString.newBuilder().setType(1).setStrVal("http"))))
-		                        .setInitialDelaySeconds(10)
+		                        .setInitialDelaySeconds(60)
 		                        .setPeriodSeconds(5)
 		                        );
 		            }
@@ -238,7 +238,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		                
 		                c2Builder.setReadinessProbe(Probe.newBuilder()
 		                        .setHandler(Handler.newBuilder().setTcpSocket(TCPSocketAction.newBuilder().setPort(io.kubernetes.client.proto.IntStr.IntOrString.newBuilder().setType(1).setStrVal("http"))))
-		                        .setInitialDelaySeconds(10)
+		                        .setInitialDelaySeconds(20)
 		                        .setPeriodSeconds(5)
 		                        );
 		            }

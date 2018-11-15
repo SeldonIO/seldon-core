@@ -34,6 +34,7 @@ import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.ApiException;
 import io.kubernetes.client.apis.ExtensionsV1beta1Api;
 import io.kubernetes.client.models.ExtensionsV1beta1Deployment;
+import io.kubernetes.client.models.ExtensionsV1beta1DeploymentStatus;
 import io.kubernetes.client.models.V1OwnerReference;
 import io.kubernetes.client.util.Config;
 import io.kubernetes.client.util.Watch;
@@ -77,6 +78,11 @@ public class DeploymentWatcher {
 		try
 		{
 		    for (Watch.Response<ExtensionsV1beta1Deployment> item : watch) {
+		    	if (item.object == null)
+		    	{
+		    		logger.warn("Bad watch returned will reset resource version type:{} status:{} ",item.type,item.status.toString());
+		    		return 0;
+		    	}
                 int resourceVersionNew = Integer.parseInt(item.object.getMetadata().getResourceVersion());
                 if (resourceVersionNew <= resourceVersionProcessed)
                 {
@@ -102,6 +108,8 @@ public class DeploymentWatcher {
                                 {
                                     String mlDepName = ownerRef.getName();
                                     String depName = item.object.getMetadata().getName();
+                                    ExtensionsV1beta1DeploymentStatus status = item.object.getStatus();
+                                    logger.info("{} {} replicas:{} replicasAvailable(ready):{} replicasUnavilable:{} replicasReady(available):{}",mlDepName,depName,status.getReplicas(),status.getReadyReplicas(),status.getUnavailableReplicas(),status.getAvailableReplicas());
                                     statusUpdater.updateStatus(mlDepName, depName, item.object.getStatus().getReplicas(),item.object.getStatus().getReadyReplicas());
                                 }
                             }
