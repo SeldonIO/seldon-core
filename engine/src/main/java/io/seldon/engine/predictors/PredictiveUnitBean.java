@@ -287,21 +287,21 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 	
 	private void addCustomMetrics(List<Metric> metrics, PredictiveUnitState state)
 	{
-		logger.debug("Add metrics");
+		logger.info("Add metrics");
 		for(Metric metric : metrics)
 		{
 			switch(metric.getType())
 			{
 			case COUNTER:
-				logger.debug("Adding counter {} for {}",metric.getKey(),state.name);
+				logger.info("Adding counter {} for {}",metric.getKey(),state.name);
 				Counter.builder(metric.getKey()).tags(tagsProvider.getModelMetrics(state)).register(Metrics.globalRegistry).increment(metric.getValue());
 				break;
 			case GAUGE:
-				logger.debug("Adding gauge {} for {}",metric.getKey(),state.name);				
+				logger.info("Adding gauge {} for {}",metric.getKey(),state.name);				
 				customMetricsManager.get(tagsProvider.getModelMetrics(state), metric).set(metric.getValue());
 				break;
 			case TIMER:
-				logger.debug("Adding timer {} for {}",metric.getKey(),state.name);				
+				logger.info("Adding timer {} for {}",metric.getKey(),state.name);				
 				Timer.builder(metric.getKey()).tags(tagsProvider.getModelMetrics(state)).register(Metrics.globalRegistry).record((long) metric.getValue(), TimeUnit.MILLISECONDS);
 				break;
 			case UNRECOGNIZED:
