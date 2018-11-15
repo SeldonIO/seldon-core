@@ -298,7 +298,7 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 				break;
 			case GAUGE:
 				logger.debug("Adding gauge {} for {}",metric.getKey(),state.name);				
-				customMetricsManager.get(state, metric).set(metric.getValue());
+				customMetricsManager.get(tagsProvider.getModelMetrics(state), metric).set(metric.getValue());
 				break;
 			case TIMER:
 				logger.debug("Adding timer {} for {}",metric.getKey(),state.name);				
