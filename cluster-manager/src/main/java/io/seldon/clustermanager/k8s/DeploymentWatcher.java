@@ -39,6 +39,8 @@ import io.kubernetes.client.models.V1OwnerReference;
 import io.kubernetes.client.util.Config;
 import io.kubernetes.client.util.Watch;
 import io.seldon.clustermanager.ClusterManagerProperites;
+import io.seldon.clustermanager.k8s.client.K8sApiProvider;
+import io.seldon.clustermanager.k8s.client.K8sClientProvider;
 
 @Component
 public class DeploymentWatcher {
@@ -49,13 +51,17 @@ public class DeploymentWatcher {
 	private int resourceVersionProcessed = 0;
 	
 	private final SeldonDeploymentStatusUpdate statusUpdater;
+	private final K8sClientProvider k8sClientProvider;
+	private final K8sApiProvider k8sApiProvider;
 	private final String namespace;
 	
 	@Autowired
-	public DeploymentWatcher(ClusterManagerProperites clusterManagerProperites,SeldonDeploymentStatusUpdate statusUpdater)
+	public DeploymentWatcher(K8sApiProvider k8sApiProvider,K8sClientProvider k8sClientProvider,ClusterManagerProperites clusterManagerProperites,SeldonDeploymentStatusUpdate statusUpdater)
 	{
 		this.statusUpdater = statusUpdater;
 		this.namespace = StringUtils.isEmpty(clusterManagerProperites.getNamespace()) ? "default" : clusterManagerProperites.getNamespace();
+		this.k8sClientProvider = k8sClientProvider;
+		this.k8sApiProvider = k8sApiProvider;
 	}
 	
 	public int watchDeployments(int resourceVersion,int resourceVersionProcessed) throws ApiException, IOException 
@@ -67,8 +73,8 @@ public class DeploymentWatcher {
 		
 		int maxResourceVersion = resourceVersion;		
 
-		ApiClient client = Config.defaultClient();
-		ExtensionsV1beta1Api api = new ExtensionsV1beta1Api(client);
+		ApiClient client = k8sClientProvider.getClient();
+		ExtensionsV1beta1Api api = k8sApiProvider.getExtensionsV1beta1Api(client);
 
 		Watch<ExtensionsV1beta1Deployment> watch = Watch.createWatch(
 		        client,
