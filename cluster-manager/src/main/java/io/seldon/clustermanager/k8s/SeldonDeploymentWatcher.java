@@ -42,9 +42,10 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.ApiException;
 import io.kubernetes.client.apis.CustomObjectsApi;
-import io.kubernetes.client.util.Config;
 import io.kubernetes.client.util.Watch;
 import io.seldon.clustermanager.ClusterManagerProperites;
+import io.seldon.clustermanager.k8s.client.K8sApiProvider;
+import io.seldon.clustermanager.k8s.client.K8sClientProvider;
 import io.seldon.clustermanager.pb.JsonFormat;
 import io.seldon.clustermanager.pb.JsonFormat.Printer;
 import io.seldon.protos.DeploymentProtos.DeploymentStatus;
@@ -58,17 +59,21 @@ public class SeldonDeploymentWatcher  {
 	private final SeldonDeploymentCache mlCache;
 	private final ClusterManagerProperites clusterManagerProperites;
 	private final KubeCRDHandler crdHandler;
+	private final K8sClientProvider k8sClientProvider;
+	private final K8sApiProvider k8sApiProvider;
 	
 	private int resourceVersion = 0;
 	private int resourceVersionProcessed = 0;
 	
 	@Autowired
-	public SeldonDeploymentWatcher(CRDCreator crdCreator,ClusterManagerProperites clusterManagerProperites,SeldonDeploymentController seldonDeploymentController,SeldonDeploymentCache mlCache,KubeCRDHandler crdHandler) throws IOException, ApiException
+	public SeldonDeploymentWatcher(K8sApiProvider k8sApiProvider,K8sClientProvider k8sClientProvider,CRDCreator crdCreator,ClusterManagerProperites clusterManagerProperites,SeldonDeploymentController seldonDeploymentController,SeldonDeploymentCache mlCache,KubeCRDHandler crdHandler) throws IOException, ApiException
 	{
 		this.seldonDeploymentController = seldonDeploymentController;
 		this.mlCache = mlCache;
 		this.clusterManagerProperites = clusterManagerProperites;
 		this.crdHandler = crdHandler;
+		this.k8sClientProvider = k8sClientProvider;
+		this.k8sApiProvider = k8sApiProvider;
 		crdCreator.createCRD();
 	}
 	
@@ -123,8 +128,8 @@ public class SeldonDeploymentWatcher  {
 		String rs = null;
 		if (resourceVersion > 0)
 			rs = ""+resourceVersion;
-		ApiClient client = Config.defaultClient();
-		CustomObjectsApi api = new CustomObjectsApi(client);
+		ApiClient client = k8sClientProvider.getClient();
+		CustomObjectsApi api = k8sApiProvider.getCustomObjectsApi(client);
 		String namespace = StringUtils.isEmpty(this.clusterManagerProperites.getNamespace()) ? "default" : this.clusterManagerProperites.getNamespace();
 		logger.debug("Watching with rs "+rs+" in namespace "+namespace);
 		Watch<Object> watch = Watch.createWatch(
