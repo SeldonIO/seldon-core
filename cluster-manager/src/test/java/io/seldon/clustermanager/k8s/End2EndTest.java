@@ -45,9 +45,6 @@ import io.seldon.clustermanager.k8s.client.K8sClientProvider;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 
-
-//@RunWith(PowerMockRunner.class)
-//@PrepareForTest({CustomObjectsApi.class,KubeCRDHandlerImpl.class})
 public class End2EndTest extends AppTest {
 
 	K8sClientProvider mockK8sClientProvider;
@@ -67,34 +64,12 @@ public class End2EndTest extends AppTest {
 	public void createMocks(String resourceFilename) throws Exception
 	{
 		ApiClient client = new ApiClient();
-		
-		// Allow use to mock the API client that is created
-		//PowerMockito.mockStatic(Config.class);
-		//Mockito.when(Config.defaultClient()).thenReturn(client);
-		
+			
 		// Handle the CRD creator and make it show the CRD exists
 		ApiException k8sException = new ApiException(409, "hahaha");
 		mockCrdCreator = mock(CRDCreator.class);
 		Mockito.doNothing().when(mockCrdCreator).createCRD();
-		//when(mockCrdCreator.createCustomResourceDefinition(any(ApiClient.class),any(byte[].class), isNull(String.class))).thenThrow(k8sException);
-		//doCallRealMethod().when(mockCrdCreator).createCRD();
 		
-		// Handle watches
-		/*
-		Watch<Object> watch = mock(Watch.class);
-		PowerMockito.mockStatic(Watch.class);
-		Mockito.when(Watch.createWatch(any(ApiClient.class), any(Call.class), any(Type.class))).thenReturn(watch); //return our mock watch when asked
-		// Mock a watch response
-		Watch.Response<Object> watchResponse = mock(Watch.Response.class);
-		String jsonStr = readFile(resourceFilename,StandardCharsets.UTF_8);
-		Gson gson = new GsonBuilder().create();
-		watchResponse.object = gson.fromJson(jsonStr, LinkedTreeMap.class);
-		watchResponse.type = "ADDED";
-		// ensure its returned once
-		Mockito.when(watch.hasNext()).thenReturn(true,false);
-		Mockito.when(watch.next()).thenReturn(watchResponse);
-		Mockito.when(watch.iterator()).thenReturn(watch);
-		*/
 		
 		// Handle the call to CustomObjectsApi
 		mockCustomObjectsApi = mock(CustomObjectsApi.class);
@@ -125,6 +100,7 @@ public class End2EndTest extends AppTest {
 		watchResponse.object = gson.fromJson(jsonStr, LinkedTreeMap.class);
 		watchResponse.type = "ADDED";
 		
+		// Mock API Client setup - JSON is called from Watch
 		JSON mockJSON = mock(JSON.class);
 		when(mockJSON.deserialize(any(String.class), any(Type.class))).thenReturn(watchResponse);
 		ApiClient mockApiClient = mock(ApiClient.class);
