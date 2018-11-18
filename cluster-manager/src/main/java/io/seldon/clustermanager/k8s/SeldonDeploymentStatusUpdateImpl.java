@@ -78,7 +78,8 @@ public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusU
 		for(int pbIdx=0;pbIdx<mlDep.getSpec().getPredictorsCount();pbIdx++)
 		{
 			PredictorSpec p = mlDep.getSpec().getPredictors(pbIdx);
-			names.add(seldonNameCreator.getServiceOrchestratorName(mlDep, p));
+			if (SeldonDeploymentUtils.hasSeparateEnginePodAnnotation(mlDep))
+				names.add(seldonNameCreator.getServiceOrchestratorName(mlDep, p));
 			for(int ptsIdx=0;ptsIdx<p.getComponentSpecsCount();ptsIdx++)
 			{
 				V1.PodTemplateSpec spec = p.getComponentSpecs(ptsIdx);

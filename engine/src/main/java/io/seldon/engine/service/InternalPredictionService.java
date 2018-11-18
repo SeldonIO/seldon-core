@@ -33,6 +33,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -78,15 +79,16 @@ public class InternalPredictionService {
     public final static String ANNOTATION_REST_READ_TIMEOUT = "seldon.io/rest-read-timeout";
     public final static String ANNOTATION_GRPC_READ_TIMEOUT = "seldon.io/grpc-read-timeout";
 
-	private static final int DEFAULT_CONNECTION_TIMEOUT = 5000;
-	private static final int DEFAULT_READ_TIMEOUT = 10000;
+	private static final int DEFAULT_CONNECTION_TIMEOUT = 200;
+	private static final int DEFAULT_READ_TIMEOUT = 5000;
 	
 	public static final int DEFAULT_GRPC_READ_TIMEOUT = 5000;
+	public static final int DEFAULT_MAX_RETRIES = 3;
 	
     ObjectMapper mapper = new ObjectMapper();
     
     RestTemplate restTemplate;
-        
+    
     private int grpcMaxMessageSize = io.grpc.internal.GrpcUtil.DEFAULT_MAX_MESSAGE_SIZE;
     private int grpcReadTimeout = DEFAULT_GRPC_READ_TIMEOUT;
     
@@ -318,50 +320,7 @@ public class InternalPredictionService {
 		ManagedChannel channel = ManagedChannelBuilder.forAddress(endpoint.getServiceHost(), endpoint.getServicePort()).usePlaintext(true).build();
 		return channel;
 	}
-	
-	public boolean checkReady(Endpoint endpoint)
-	{
-		long timeNow = System.currentTimeMillis();
-		URI uri;
-		try {
-			URIBuilder builder = new URIBuilder().setScheme("http")
-					.setHost(endpoint.getServiceHost())
-					.setPort(endpoint.getServicePort())
-					.setPath("/ready");
-
-			uri = builder.build();
-		} catch (URISyntaxException e) 
-		{
-			throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_ENDPOINT_URL,"Host: "+endpoint.getServiceHost()+" port:"+endpoint.getServicePort());
-		}
 		
-		
-		logger.info("Requesting " + uri.toString());
-		ResponseEntity<String> httpResponse = restTemplate.getForEntity(uri, String.class);
-			
-		try
-		{
-			if(httpResponse.getStatusCode().is2xxSuccessful()) 
-			{
-				SeldonMessage.Builder builder = SeldonMessage.newBuilder();
-				String response = httpResponse.getBody();
-				logger.info(response);
-				return true;
-			} 
-			else 
-			{
-				return false;
-			}
-		}
-		finally
-		{
-			if (logger.isDebugEnabled())
-				logger.debug("Ready Check: External prediction server took "+(System.currentTimeMillis()-timeNow) + "ms");
-		}
-		
-		
-	}
-	
 	private SeldonMessage queryREST(String path, String dataString, PredictiveUnitState state, Endpoint endpoint, boolean isDefault)
 	{
 		long timeNow = System.currentTimeMillis();
@@ -378,59 +337,65 @@ public class InternalPredictionService {
 			throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_ENDPOINT_URL,"Host: "+endpoint.getServiceHost()+" port:"+endpoint.getServicePort());
 		}
 		
-		try  
+		
+		for(int i=0;i<DEFAULT_MAX_RETRIES;i++)
 		{
-			HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-			headers.add(MODEL_NAME_HEADER, state.name);
-			headers.add(MODEL_IMAGE_HEADER, state.imageName);
-			headers.add(MODEL_VERSION_HEADER, state.imageVersion);
-			
-			MultiValueMap<String, String> map= new LinkedMultiValueMap<String, String>();
-			map.add("json", dataString);
-			map.add("isDefault", Boolean.toString(isDefault));
-
-			HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(map, headers);
-
-			logger.info("Requesting " + uri.toString());
-			ResponseEntity<String> httpResponse = restTemplate.postForEntity( uri, request , String.class );
-			
-			try
+			try  
 			{
-				if(httpResponse.getStatusCode().is2xxSuccessful()) 
+				HttpHeaders headers = new HttpHeaders();
+				headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+				headers.add(MODEL_NAME_HEADER, state.name);
+				headers.add(MODEL_IMAGE_HEADER, state.imageName);
+				headers.add(MODEL_VERSION_HEADER, state.imageVersion);
+				
+				MultiValueMap<String, String> map= new LinkedMultiValueMap<String, String>();
+				map.add("json", dataString);
+				map.add("isDefault", Boolean.toString(isDefault));
+
+				HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(map, headers);
+
+				logger.info("Requesting " + uri.toString());
+				ResponseEntity<String> httpResponse = restTemplate.postForEntity( uri, request , String.class );
+				logger.info("Responded");
+				try
 				{
-				    SeldonMessage.Builder builder = SeldonMessage.newBuilder();
-				    String response = httpResponse.getBody();
-				    logger.info(response);
-				    JsonFormat.parser().ignoringUnknownFields().merge(response, builder);
-				    return builder.build();
-				} 
-				else 
-				{
-					logger.error("Couldn't retrieve prediction from external prediction server -- bad http return code: " + httpResponse.getStatusCode());
-					throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,String.format("Bad return code %d", httpResponse.getStatusCode()));
+					if(httpResponse.getStatusCode().is2xxSuccessful()) 
+					{
+					    SeldonMessage.Builder builder = SeldonMessage.newBuilder();
+					    String response = httpResponse.getBody();
+					    logger.info(response);
+					    JsonFormat.parser().ignoringUnknownFields().merge(response, builder);
+					    return builder.build();
+					} 
+					else 
+					{
+						logger.error("Couldn't retrieve prediction from external prediction server -- bad http return code: " + httpResponse.getStatusCode());
+						throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,String.format("Bad return code %d", httpResponse.getStatusCode()));
+					}
 				}
-			}
-			finally
+				finally
+				{
+					if (logger.isDebugEnabled())
+						logger.debug("External prediction server took "+(System.currentTimeMillis()-timeNow) + "ms");
+				}
+			} 
+			catch (ResourceAccessException e)
 			{
-				if (logger.isDebugEnabled())
-					logger.debug("External prediction server took "+(System.currentTimeMillis()-timeNow) + "ms");
+				logger.warn("Caught resource access exception ",e);
 			}
-		} 
-		catch (IOException e) 
-		{
-			logger.error("Couldn't retrieve prediction from external prediction server - ", e);
-			throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,e.toString());
+			catch (IOException e) 
+			{
+				logger.error("Couldn't retrieve prediction from external prediction server - ", e);
+				throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,e.toString());
+			}
+			catch (Exception e)
+	        {
+				logger.error("Couldn't retrieve prediction from external prediction server - ", e);
+				throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,e.toString());
+	        }
 		}
-		catch (Exception e)
-        {
-			logger.error("Couldn't retrieve prediction from external prediction server - ", e);
-			throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,e.toString());
-        }
-		finally
-		{
-			
-		}
+		logger.error("Failed to retrueve predictions after {} attempts",DEFAULT_MAX_RETRIES);
+		throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,String.format("Failed to retrieve predictions after %d attempts",DEFAULT_MAX_RETRIES));
 	}
 
 	 /**
