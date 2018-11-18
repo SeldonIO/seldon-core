@@ -45,95 +45,8 @@ import io.seldon.clustermanager.k8s.client.K8sClientProvider;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 
-public class End2EndTest extends AppTest {
+public class End2EndTest extends End2EndBase {
 
-	K8sClientProvider mockK8sClientProvider;
-	ProtoClient mockProtoClient;
-	CRDCreator mockCrdCreator;
-	CustomObjectsApi mockCustomObjectsApi;
-	K8sApiProvider mockK8sApiProvider;
-	
-	KubeCRDHandler crdHandler;
-	ClusterManagerProperites props;
-	SeldonDeploymentCache mlCache;
-	SeldonDeploymentOperatorImpl operator;
-	SeldonDeploymentControllerImpl controller;
-	
-	
-	@SuppressWarnings("unchecked")
-	public void createMocks(String resourceFilename) throws Exception
-	{
-		ApiClient client = new ApiClient();
-			
-		// Handle the CRD creator and make it show the CRD exists
-		ApiException k8sException = new ApiException(409, "hahaha");
-		mockCrdCreator = mock(CRDCreator.class);
-		Mockito.doNothing().when(mockCrdCreator).createCRD();
-		
-		
-		// Handle the call to CustomObjectsApi
-		mockCustomObjectsApi = mock(CustomObjectsApi.class);
-		//whenNew(CustomObjectsApi.class).withAnyArguments().thenReturn(mockCustomObjectsApi);
-		// Use in watcher
-		Request.Builder requestBuilder = new Request.Builder().url("http://0.0.0.0:8000");
-		Response.Builder responseBuilder = new Response.Builder();
-		String jsonStr = readFile(resourceFilename,StandardCharsets.UTF_8).replaceAll("\n", "") + "\n";
-		
-
-		ResponseBody responseBody = ResponseBody.create(MediaType.parse("Content-Type: application/json"), jsonStr);
-		Response response = responseBuilder.code(200).request(requestBuilder.build()).protocol(Protocol.HTTP_2).body(responseBody).build();
-		Call mockListNamespaceCall = mock(Call.class);
-		when(mockListNamespaceCall.execute()).thenReturn(response);
-		// use in watcher
-		when(mockCustomObjectsApi.listNamespacedCustomObjectCall(any(String.class), any(String.class), any(String.class), 
-				any(String.class), isNull(String.class), isNull(String.class), any(String.class), 
-				any(Boolean.class),isNull(ProgressListener.class),isNull(ProgressRequestListener.class))).thenReturn(mockListNamespaceCall);
-		// Use in crdHandler
-		when(mockCustomObjectsApi.replaceNamespacedCustomObjectStatus(any(String.class), any(String.class), any(String.class), any(String.class), any(String.class), any(byte[].class))).thenThrow(ApiException.class);
-		when(mockCustomObjectsApi.replaceNamespacedCustomObject(any(String.class), any(String.class), any(String.class), any(String.class), any(String.class), any(byte[].class))).thenReturn(null);		
-		
-		mockK8sApiProvider = mock(K8sApiProvider.class);
-		when(mockK8sApiProvider.getCustomObjectsApi(any(ApiClient.class))).thenReturn(mockCustomObjectsApi);
-		
-		Watch.Response<Object> watchResponse = mock(Watch.Response.class);
-		Gson gson = new GsonBuilder().create();
-		watchResponse.object = gson.fromJson(jsonStr, LinkedTreeMap.class);
-		watchResponse.type = "ADDED";
-		
-		// Mock API Client setup - JSON is called from Watch
-		JSON mockJSON = mock(JSON.class);
-		when(mockJSON.deserialize(any(String.class), any(Type.class))).thenReturn(watchResponse);
-		ApiClient mockApiClient = mock(ApiClient.class);
-		when(mockApiClient.getJSON()).thenReturn(mockJSON);
-		when(mockApiClient.escapeString(any(String.class))).thenCallRealMethod();
-
-		
-		mockProtoClient = mock(ProtoClient.class);
-		Status status404 = Status.newBuilder().setCode(404).build();
-		V1.Container dummyResponseObject = V1.Container.newBuilder().setName("DummyObject").build();
-		ObjectOrStatus objectOrstatus404 = new ObjectOrStatus(null,status404);
-		ObjectOrStatus objectOrstatusOk = new ObjectOrStatus(dummyResponseObject,null);
-		when(mockProtoClient.update(any(Message.class), any(String.class), any(String.class), any(String.class))).thenReturn(objectOrstatusOk);
-		when(mockProtoClient.create(any(Message.class), any(String.class), any(String.class), any(String.class))).thenReturn(objectOrstatusOk);
-		when(mockProtoClient.list(any(Builder.class), any(String.class))).thenReturn(objectOrstatus404);
-		when(mockProtoClient.getApiClient()).thenReturn(client);
-
-		
-		mockK8sClientProvider = mock(K8sClientProvider.class);
-		when(mockK8sClientProvider.getClient()).thenReturn(mockApiClient);
-		when(mockK8sClientProvider.getProtoClient()).thenReturn(mockProtoClient);
-
-		props = new ClusterManagerProperites();
-		props.setEngineContainerImageAndVersion("engine:0.1");
-		props.setEngineContainerImagePullPolicy("IfNotPresent");
-		props.setEngineContainerServiceAccountName("default");
-		crdHandler = new KubeCRDHandlerImpl(mockK8sApiProvider,mockK8sClientProvider,props);
-		mlCache = new SeldonDeploymentCacheImpl(props, crdHandler);
-		operator = new SeldonDeploymentOperatorImpl(props);
-		controller = new SeldonDeploymentControllerImpl(operator, mockK8sClientProvider, crdHandler, mlCache);
-		
-	}
-	
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testSimpleModel() throws Exception
@@ -145,22 +58,22 @@ public class End2EndTest extends AppTest {
 		verify(mockCustomObjectsApi).listNamespacedCustomObjectCall(any(String.class), any(String.class), any(String.class), 
 				any(String.class), isNull(String.class), isNull(String.class), any(String.class), 
 				any(Boolean.class),isNull(ProgressListener.class),isNull(ProgressRequestListener.class));
-		verify(mockProtoClient,Mockito.times(4)).create(any(Message.class), any(String.class), any(String.class), any(String.class));
+		verify(mockProtoClient,Mockito.times(3)).create(any(Message.class), any(String.class), any(String.class), any(String.class));
 		verify(mockProtoClient,Mockito.times(2)).create(any(Message.class), any(String.class), any(String.class), Mockito.matches("Service"));
-		verify(mockProtoClient,Mockito.times(2)).create(any(Message.class), any(String.class), any(String.class), Mockito.matches("Deployment"));
+		verify(mockProtoClient,Mockito.times(1)).create(any(Message.class), any(String.class), any(String.class), Mockito.matches("Deployment"));
 
 		// Check individual objects
 		ArgumentCaptor<Deployment> argument = ArgumentCaptor.forClass(Deployment.class);
-		verify(mockProtoClient,Mockito.times(2)).create(argument.capture(), any(String.class), any(String.class), Mockito.matches("Deployment"));
+		verify(mockProtoClient,Mockito.times(1)).create(argument.capture(), any(String.class), any(String.class), Mockito.matches("Deployment"));
 		
 		Deployment d = argument.getAllValues().get(0);
-		Assert.assertEquals("test-deployment-fx-market-predictor-svc-orch", d.getMetadata().getName());
+		//Assert.assertEquals("test-deployment-fx-market-predictor-svc-orch", d.getMetadata().getName());
 		Assert.assertEquals(1, d.getSpec().getReplicas());
-		Assert.assertEquals(1, d.getSpec().getTemplate().getSpec().getContainersCount());
-		d = argument.getAllValues().get(1);
+		Assert.assertEquals(2, d.getSpec().getTemplate().getSpec().getContainersCount());
+		d = argument.getAllValues().get(0);
 		Assert.assertTrue(d.getMetadata().getName().startsWith("test-deployment-fx-market-predictor"));
 		Assert.assertEquals(1, d.getSpec().getReplicas());
-		Assert.assertEquals(1, d.getSpec().getTemplate().getSpec().getContainersCount());
+		Assert.assertEquals(2, d.getSpec().getTemplate().getSpec().getContainersCount());
 		System.out.println(d.getMetadata().getName());
 	}
 	
@@ -191,9 +104,9 @@ public class End2EndTest extends AppTest {
 		verify(mockCustomObjectsApi).listNamespacedCustomObjectCall(any(String.class), any(String.class), any(String.class), 
 				any(String.class), isNull(String.class), isNull(String.class), any(String.class), 
 				any(Boolean.class),isNull(ProgressListener.class),isNull(ProgressRequestListener.class));
-		verify(mockProtoClient,Mockito.times(6)).create(any(Message.class), any(String.class), any(String.class), any(String.class));
+		verify(mockProtoClient,Mockito.times(5)).create(any(Message.class), any(String.class), any(String.class), any(String.class));
 		verify(mockProtoClient,Mockito.times(3)).create(any(Message.class), any(String.class), any(String.class), Mockito.matches("Service"));
-		verify(mockProtoClient,Mockito.times(3)).create(any(Message.class), any(String.class), any(String.class), Mockito.matches("Deployment"));
+		verify(mockProtoClient,Mockito.times(2)).create(any(Message.class), any(String.class), any(String.class), Mockito.matches("Deployment"));
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -207,23 +120,23 @@ public class End2EndTest extends AppTest {
 		verify(mockCustomObjectsApi).listNamespacedCustomObjectCall(any(String.class), any(String.class), any(String.class), 
 				any(String.class), isNull(String.class), isNull(String.class), any(String.class), 
 				any(Boolean.class),isNull(ProgressListener.class),isNull(ProgressRequestListener.class));
-		verify(mockProtoClient,Mockito.times(5)).create(any(Message.class), any(String.class), any(String.class), any(String.class));
+		verify(mockProtoClient,Mockito.times(4)).create(any(Message.class), any(String.class), any(String.class), any(String.class));
 		verify(mockProtoClient,Mockito.times(3)).create(any(Message.class), any(String.class), any(String.class), Mockito.matches("Service"));
-		verify(mockProtoClient,Mockito.times(2)).create(any(Message.class), any(String.class), any(String.class), Mockito.matches("Deployment"));
+		verify(mockProtoClient,Mockito.times(1)).create(any(Message.class), any(String.class), any(String.class), Mockito.matches("Deployment"));
 		
 		// Check individual objects
 		ArgumentCaptor<Deployment> argument = ArgumentCaptor.forClass(Deployment.class);
-		verify(mockProtoClient,Mockito.times(2)).create(argument.capture(), any(String.class), any(String.class), Mockito.matches("Deployment"));
+		verify(mockProtoClient,Mockito.times(1)).create(argument.capture(), any(String.class), any(String.class), Mockito.matches("Deployment"));
 		
 		Deployment d = argument.getAllValues().get(0);
 		System.out.println(d.getMetadata().getName());
-		Assert.assertEquals("test-deployment-abtest-fx-market-predictor-svc-orch", d.getMetadata().getName());
-		Assert.assertEquals(1, d.getSpec().getReplicas());
-		Assert.assertEquals(1, d.getSpec().getTemplate().getSpec().getContainersCount());
-		d = argument.getAllValues().get(1);
+		//Assert.assertEquals("test-deployment-abtest-fx-market-predictor-svc-orch", d.getMetadata().getName());
+		//Assert.assertEquals(1, d.getSpec().getReplicas());
+		//Assert.assertEquals(1, d.getSpec().getTemplate().getSpec().getContainersCount());
+		d = argument.getAllValues().get(0);
 		Assert.assertTrue(d.getMetadata().getName().startsWith("test-deployment-abtest-fx-market-predictor"));
 		Assert.assertEquals(1, d.getSpec().getReplicas());
-		Assert.assertEquals(2, d.getSpec().getTemplate().getSpec().getContainersCount());
+		Assert.assertEquals(3, d.getSpec().getTemplate().getSpec().getContainersCount());
 		System.out.println(d.getMetadata().getName());
 
 	}
