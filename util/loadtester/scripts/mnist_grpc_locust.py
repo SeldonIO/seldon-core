@@ -15,6 +15,10 @@ from socket import error as socket_error
 import errno
 from tensorflow.examples.tutorials.mnist import input_data
 import numpy as np
+from google.protobuf.json_format import MessageToJson
+from proto import prediction_pb2
+from proto import prediction_pb2_grpc
+import grpc
 
 def connect_to_master(host,port):
     success = False
@@ -86,16 +90,21 @@ class SeldonJsLocust(TaskSet):
 
     def on_start(self):
         print("on_start")
-        self.oauth_enabled = getEnviron('OAUTH_ENABLED',"true")
+        self.oauth_enabled = getEnviron('OAUTH_ENABLED',"false")
         self.oauth_key = getEnviron('OAUTH_KEY',"key")
         self.oauth_secret = getEnviron('OAUTH_SECRET',"secret")
         self.data_size = int(getEnviron('DATA_SIZE',"1"))
         self.send_feedback = int(getEnviron('SEND_FEEDBACK',"0"))
-        self.endpoint = getEnviron('API_ENDPOINT',"external")
+        self.endpoint = getEnviron('API_ENDPOINT',"external")        
         if self.oauth_enabled == "true":
             self.get_token()
         else:
             self.access_token = "NONE"
+        channel = grpc.insecure_channel(HOST)
+        if self.endpoint == "external":
+            self.stub = prediction_pb2_grpc.SeldonStub(channel)
+        else:
+            self.stub = prediction_pb2_grpc.ModelStub(channel)
         self.mnist = input_data.read_data_sets("MNIST_data/", one_hot = True)
 
     def sendFeedback(self,request,response,reward):
@@ -110,8 +119,7 @@ class SeldonJsLocust(TaskSet):
             else:
                 print(r.headers)
                 r.raise_for_status()
-        
-
+                
     @task
     def getPrediction(self):
         batch_xs, batch_ys = self.mnist.train.next_batch(1)
@@ -119,18 +127,22 @@ class SeldonJsLocust(TaskSet):
         data = np.around(data,decimals=2)
         features = ["X"+str(i+1) for i in range (0,self.data_size)]
         #request = {"data":{"names":features,"ndarray":data.tolist()}}
-        request = {"data":{"ndarray":data.tolist()}}
-        jStr = json.dumps(request)
-        if self.endpoint == "internal":
-            payload = {"json":jStr}
-            r = self.client.request("POST","/predict",headers={"Accept":"application/json"},name="predictions",data=payload)
-        else:
-            r = self.client.request("POST","/api/v0.1/predictions",headers={"Content-Type":"application/json","Accept":"application/json","Authorization":"Bearer "+self.access_token},name="predictions",data=jStr)
-        if r.status_code == 200:
+        datadef = prediction_pb2.DefaultData(
+            names = features,
+            tensor = prediction_pb2.Tensor(
+                shape = [1,784],
+                values = data.flatten()
+            )
+        )
+        request = prediction_pb2.SeldonMessage(data = datadef)
+        start_time = time.time()
+        try:
+            response = self.stub.Predict(request=request)
             if self.send_feedback == 1:
-                response = r.json()
+                response = MessageToJson(response)
+                response = json.loads(response)
                 route = response.get("meta").get("routing").get("eg-router")
-                proba = response["data"]["ndarray"][0]
+                proba = response["data"]["tensor"]["values"]
                 predicted = proba.index(max(proba))
                 correct = np.argmax(batch_ys[0])
                 j = json.loads(r.content)
@@ -139,16 +151,15 @@ class SeldonJsLocust(TaskSet):
                     print("Correct!")
                 else:
                     self.sendFeedback(request,j,0.0)
-                    print("Incorrect!")
+                    print("Incorrect!")                
+        except Exception as e:
+            total_time = int((time.time() - start_time) * 1000)            
+            print(e)
+            events.request_failure.fire(request_type="grpc", name=HOST, response_time=total_time, exception=e)
         else:
-            print("Failed prediction request "+str(r.status_code))
-            if r.status_code == 401:
-                if self.oauth_enabled == "true":
-                    self.get_token()
-            else:
-                print(r.headers)
-                r.raise_for_status()
-
+            total_time = int((time.time() - start_time) * 1000)
+            events.request_success.fire(request_type="grpc", name=HOST, response_time=total_time, response_length=0)
+                                        
 class WebsiteUser(HttpLocust):
     task_set = SeldonJsLocust
     min_wait=int(getEnviron('MIN_WAIT',"900"))    # Min time between requests of each user
