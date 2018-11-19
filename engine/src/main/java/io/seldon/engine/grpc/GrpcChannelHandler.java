@@ -25,4 +25,8 @@ public class GrpcChannelHandler {
 		}
 	}
 	
+	public int size() {
+		return store.size();
+	}
+	
 }
