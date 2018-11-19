@@ -125,7 +125,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(clusterManagerProperites.getEngineContainerPort()))
 			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(8082).setName("admin"))
 			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(9090).setName("jmx"))
-			.setSecurityContext(SecurityContext.newBuilder().setRunAsUser(8888).build())
+			.setSecurityContext(SecurityContext.newBuilder().setRunAsUser(clusterManagerProperites.getEngineUser()).build())
 			.setReadinessProbe(Probe.newBuilder().setHandler(Handler.newBuilder()
 					.setHttpGet(HTTPGetAction.newBuilder().setPort(IntOrString.newBuilder().setType(1).setStrVal("admin")).setPath("/ready")))
 					.setInitialDelaySeconds(20)
