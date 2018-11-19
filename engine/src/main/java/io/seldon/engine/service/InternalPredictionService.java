@@ -44,6 +44,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.seldon.engine.config.AnnotationsConfig;
 import io.seldon.engine.exception.APIException;
+import io.seldon.engine.grpc.GrpcChannelHandler;
 import io.seldon.engine.grpc.SeldonGrpcServer;
 import io.seldon.engine.pb.ProtoBufUtils;
 import io.seldon.engine.predictors.PredictiveUnitState;
@@ -94,8 +95,11 @@ public class InternalPredictionService {
     private int grpcReadTimeout = DEFAULT_GRPC_READ_TIMEOUT;
     private int restRetries = DEFAULT_MAX_RETRIES;
     
+    private final GrpcChannelHandler grpcChannelHandler;
+    
     @Autowired
-    public InternalPredictionService(RestTemplateBuilder restTemplateBuilder,AnnotationsConfig annotations){
+    public InternalPredictionService(RestTemplateBuilder restTemplateBuilder,AnnotationsConfig annotations,GrpcChannelHandler grpcChannelHandler){
+    	this.grpcChannelHandler = grpcChannelHandler;
     	int connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
     	if (annotations.has(ANNOTATION_REST_CONNECTION_TIMEOUT))
     	{
@@ -179,14 +183,14 @@ public class InternalPredictionService {
 				
 			case GRPC:
 				if (state.type==PredictiveUnitType.UNKNOWN_TYPE){
-					GenericBlockingStub stub =  GenericGrpc.newBlockingStub(getChannel(endpoint))
+					GenericBlockingStub stub =  GenericGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
 							.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
 							.withMaxInboundMessageSize(grpcMaxMessageSize)
 							.withMaxOutboundMessageSize(grpcMaxMessageSize);
 					return stub.route(input);
 				}
 				else {
-					RouterBlockingStub stub =  RouterGrpc.newBlockingStub(getChannel(endpoint))
+					RouterBlockingStub stub =  RouterGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
 							.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
 							.withMaxInboundMessageSize(grpcMaxMessageSize)
 							.withMaxOutboundMessageSize(grpcMaxMessageSize);
@@ -206,7 +210,7 @@ public class InternalPredictionService {
 				
 			case GRPC:
 				if (state.type==PredictiveUnitType.UNKNOWN_TYPE){
-					GenericBlockingStub stub =  GenericGrpc.newBlockingStub(getChannel(endpoint))
+					GenericBlockingStub stub =  GenericGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
 							.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
 							.withMaxInboundMessageSize(grpcMaxMessageSize)
 							.withMaxOutboundMessageSize(grpcMaxMessageSize);
@@ -214,14 +218,14 @@ public class InternalPredictionService {
 				}
 				else if (state.type == PredictiveUnitType.MODEL)
 				{
-					ModelBlockingStub modelStub = ModelGrpc.newBlockingStub(getChannel(endpoint))
+					ModelBlockingStub modelStub = ModelGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
 							.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
 							.withMaxInboundMessageSize(grpcMaxMessageSize)
 							.withMaxOutboundMessageSize(grpcMaxMessageSize);
 						return modelStub.sendFeedback(feedback);
 				}
 				else {
-					RouterBlockingStub routerStub =  RouterGrpc.newBlockingStub(getChannel(endpoint))
+					RouterBlockingStub routerStub =  RouterGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
 							.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
 							.withMaxInboundMessageSize(grpcMaxMessageSize)
 							.withMaxOutboundMessageSize(grpcMaxMessageSize);
@@ -247,19 +251,19 @@ public class InternalPredictionService {
 			case GRPC:
 				switch (state.type){
 					case UNKNOWN_TYPE:
-						GenericBlockingStub genStub = GenericGrpc.newBlockingStub(getChannel(endpoint))
+						GenericBlockingStub genStub = GenericGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
 							.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
 							.withMaxInboundMessageSize(grpcMaxMessageSize)
 							.withMaxOutboundMessageSize(grpcMaxMessageSize);
 						return genStub.transformInput(input);
 					case MODEL:
-						ModelBlockingStub modelStub = ModelGrpc.newBlockingStub(getChannel(endpoint))
+						ModelBlockingStub modelStub = ModelGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
 							.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
 							.withMaxInboundMessageSize(grpcMaxMessageSize)
 							.withMaxOutboundMessageSize(grpcMaxMessageSize);
 						return modelStub.predict(input);
 					case TRANSFORMER:
-						TransformerBlockingStub transformerStub = TransformerGrpc.newBlockingStub(getChannel(endpoint))
+						TransformerBlockingStub transformerStub = TransformerGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
 						.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
 						.withMaxInboundMessageSize(grpcMaxMessageSize)
 						.withMaxOutboundMessageSize(grpcMaxMessageSize);
@@ -281,14 +285,14 @@ public class InternalPredictionService {
 				
 			case GRPC:
 				if (state.type==PredictiveUnitType.UNKNOWN_TYPE){
-					GenericBlockingStub stub =  GenericGrpc.newBlockingStub(getChannel(endpoint))
+					GenericBlockingStub stub =  GenericGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
 							.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
 							.withMaxInboundMessageSize(grpcMaxMessageSize)
 							.withMaxOutboundMessageSize(grpcMaxMessageSize);
 					return stub.transformOutput(output);
 				}
 				else {
-					OutputTransformerBlockingStub stub =  OutputTransformerGrpc.newBlockingStub(getChannel(endpoint))
+					OutputTransformerBlockingStub stub =  OutputTransformerGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
 							.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
 							.withMaxInboundMessageSize(grpcMaxMessageSize)
 							.withMaxOutboundMessageSize(grpcMaxMessageSize);
@@ -308,14 +312,14 @@ public class InternalPredictionService {
 				
 			case GRPC:
 				if (state.type==PredictiveUnitType.UNKNOWN_TYPE){
-					GenericBlockingStub stub =  GenericGrpc.newBlockingStub(getChannel(endpoint))
+					GenericBlockingStub stub =  GenericGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
 							.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
 							.withMaxInboundMessageSize(grpcMaxMessageSize)
 							.withMaxOutboundMessageSize(grpcMaxMessageSize);
 					return stub.aggregate(outputsList);
 				}
 				else {
-					CombinerBlockingStub stub = CombinerGrpc.newBlockingStub(getChannel(endpoint))
+					CombinerBlockingStub stub = CombinerGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
 							.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
 							.withMaxInboundMessageSize(grpcMaxMessageSize)
 							.withMaxOutboundMessageSize(grpcMaxMessageSize);
@@ -330,11 +334,6 @@ public class InternalPredictionService {
 			return true;
     	return false;
     }
-    
-	private ManagedChannel getChannel(Endpoint endpoint){
-		ManagedChannel channel = ManagedChannelBuilder.forAddress(endpoint.getServiceHost(), endpoint.getServicePort()).usePlaintext(true).build();
-		return channel;
-	}
 		
 	private SeldonMessage queryREST(String path, String dataString, PredictiveUnitState state, Endpoint endpoint, boolean isDefault)
 	{
