@@ -77,6 +77,7 @@ public class InternalPredictionService {
 	
     public final static String ANNOTATION_REST_CONNECTION_TIMEOUT = "seldon.io/rest-connection-timeout";
     public final static String ANNOTATION_REST_READ_TIMEOUT = "seldon.io/rest-read-timeout";
+    public final static String ANNOTATION_REST_RETRIES = "seldon.io/rest-connect-retries";    
     public final static String ANNOTATION_GRPC_READ_TIMEOUT = "seldon.io/grpc-read-timeout";
 
 	private static final int DEFAULT_CONNECTION_TIMEOUT = 200;
@@ -91,6 +92,7 @@ public class InternalPredictionService {
     
     private int grpcMaxMessageSize = io.grpc.internal.GrpcUtil.DEFAULT_MAX_MESSAGE_SIZE;
     private int grpcReadTimeout = DEFAULT_GRPC_READ_TIMEOUT;
+    private int restRetries = DEFAULT_MAX_RETRIES;
     
     @Autowired
     public InternalPredictionService(RestTemplateBuilder restTemplateBuilder,AnnotationsConfig annotations){
@@ -152,6 +154,19 @@ public class InternalPredictionService {
         	}
         }
     	logger.info("gRPC read timeout set to {}",grpcReadTimeout);
+    	if (annotations.has(ANNOTATION_REST_RETRIES))
+        {
+        	try 
+        	{
+        		restRetries = Integer.parseInt(annotations.get(ANNOTATION_REST_RETRIES));
+        		logger.info("Setting rest retries to {}",restRetries);
+        	}
+        	catch(NumberFormatException e)
+        	{
+        		logger.error("Failed to parse {} with value {}",ANNOTATION_REST_RETRIES,annotations.get(ANNOTATION_REST_RETRIES),e);
+        	}
+        }
+    	logger.info("REST retries set to {}",restRetries);
     }
     
     public SeldonMessage route(SeldonMessage input, PredictiveUnitState state) throws InvalidProtocolBufferException
@@ -338,7 +353,7 @@ public class InternalPredictionService {
 		}
 		
 		
-		for(int i=0;i<DEFAULT_MAX_RETRIES;i++)
+		for(int i=0;i<restRetries;i++)
 		{
 			try  
 			{
@@ -394,8 +409,8 @@ public class InternalPredictionService {
 				throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,e.toString());
 	        }
 		}
-		logger.error("Failed to retrueve predictions after {} attempts",DEFAULT_MAX_RETRIES);
-		throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,String.format("Failed to retrieve predictions after %d attempts",DEFAULT_MAX_RETRIES));
+		logger.error("Failed to retrueve predictions after {} attempts",restRetries);
+		throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,String.format("Failed to retrieve predictions after %d attempts",restRetries));
 	}
 
 	 /**

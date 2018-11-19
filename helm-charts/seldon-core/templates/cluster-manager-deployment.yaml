@@ -37,6 +37,8 @@ spec:
           value: {{ .Values.engine.image.pull_policy }}
         - name: ENGINE_CONTAINER_SERVICE_ACCOUNT_NAME
           value: {{ .Values.engine.service_account.name }}
+        - name: ENGINE_CONTAINER_USER
+          value: '{{ .Values.engine.user }}'
         - name: SELDON_CLUSTER_MANAGER_POD_NAMESPACE
           valueFrom:
             fieldRef:
