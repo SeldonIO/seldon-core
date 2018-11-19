@@ -46,9 +46,9 @@ def parse_arguments():
     args, unknown = parser.parse_known_args() 
     #args = parser.parse_args()
     opts = vars(args)
-    print args
+    print(args)
     if args.slave:
-        print "Sleeping 10 secs hack"
+        print("Sleeping 10 secs hack")
         time.sleep(10)
         connect_to_master(args.master_host,args.master_port)
     return args.host, args.clients, args.hatch_rate
@@ -57,12 +57,12 @@ HOST, MAX_USERS_NUMBER, USERS_PER_SECOND = parse_arguments()
 
 rsrc = resource.RLIMIT_NOFILE
 soft, hard = resource.getrlimit(rsrc)
-print 'RLIMIT_NOFILE soft limit starts as  :', soft
+print('RLIMIT_NOFILE soft limit starts as  :', soft)
 
 #resource.setrlimit(rsrc, (65535, hard)) #limit to one kilobyte
 
 soft, hard = resource.getrlimit(rsrc)
-print 'RLIMIT_NOFILE soft limit changed to :', soft
+print('RLIMIT_NOFILE soft limit changed to :', soft)
 
 def getEnviron(key,default):
     if key in os.environ:
@@ -85,14 +85,14 @@ class ApiUser(GrpcLocust):
 
 
         def get_token(self):
-            print "Getting access token"
+            print("Getting access token")
             r = requests.post("POST","/oauth/token",headers={"Accept":"application/json"},data={"grant_type":"client_credentials"},auth=(self.oauth_key,self.oauth_secret))
             if r.status_code == 200:
                 j = json.loads(r.content)
                 self.access_token =  j["access_token"]
-                print "got access token "+self.access_token
+                print("got access token "+self.access_token)
             else:
-                print "failed to get access token"
+                print("failed to get access token")
                 sys.exit(1)
 
 
@@ -101,20 +101,24 @@ class ApiUser(GrpcLocust):
             get token
             :return:
             """
-            print "on start"
+            print("on start")
             self.oauth_enabled = getEnviron('OAUTH_ENABLED',"false")
             self.oauth_key = getEnviron('OAUTH_KEY',"key")
             self.oauth_secret = getEnviron('OAUTH_SECRET',"secret")
             self.data_size = int(getEnviron('DATA_SIZE',"1"))
             self.send_feedback = int(getEnviron('SEND_FEEDBACK',"1"))
             self.oauth_endpoint = getEnviron('OAUTH_ENDPOINT',"http://127.0.0.1:30015")
+            self.endpoint = getEnviron('API_ENDPOINT',"external")
             #self.grpc_endpoint = getEnviron('GRPC_ENDPOINT',"127.0.0.1:30017")
             if self.oauth_enabled == "true":
                 self.get_token()
             else:
                 self.access_token = "NONE"
-            channel = grpc.insecure_channel(HOST)                
-            self.stub = prediction_pb2_grpc.SeldonStub(channel)
+            channel = grpc.insecure_channel(HOST)
+            if self.endpoint == "external":
+                self.stub = prediction_pb2_grpc.SeldonStub(channel)
+            else:
+                self.stub = prediction_pb2_grpc.ModelStub(channel)
             self.rewardProbas = [0.5,0.2,0.9,0.3,0.7]
             self.routeRewards = {}
             self.routesSeen = []
