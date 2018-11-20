@@ -1,0 +1,634 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Seldon External API",
+        "version": "0.1",
+        "contact": {
+            "name": "Seldon Core",
+            "url": "https://github.com/SeldonIO/seldon-core"
+        }
+    },
+    "externalDocs": {
+        "description": "Seldon Core Documentation",
+        "url": "https://github.com/SeldonIO/seldon-core"
+    },
+    "servers": [
+        {
+            "url": "http://{host}:{port}",
+            "variables": {
+                "host": {
+                    "default": "localhost",
+                    "description": "host running seldon core"
+                },
+                "port": {
+                    "default": "80"
+                }
+            }
+        },
+        {
+            "url": "http://localhost:8002",
+            "description": "fixed host as swagger UI has bug with variables for auth"
+        }
+    ],
+    "paths": {
+        "/aggregate": {
+            "post": {
+                "operationId": "Aggregate2",
+                "responses": {
+                    "200": {
+                        "description": "A successful response.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SeldonMessage"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Internal"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "json": {
+                                        "$ref": "#/components/schemas/SeldonMessageList"
+                                    }
+                                }
+                            },
+                            "encoding": {
+                                "json": {
+                                    "contentType": "application/json"
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            },
+            "get": {
+                "operationId": "Aggregate",
+                "responses": {
+                    "200": {
+                        "description": "A successful response.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SeldonMessage"
+                                }
+                            }
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/schemas/SeldonMessageList"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Internal"
+                ]
+            }
+        },
+        "/predict": {
+            "get": {
+                "operationId": "TransformInput4",
+                "responses": {
+                    "200": {
+                        "description": "A successful response.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SeldonMessage"
+                                }
+                            }
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "json",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/schemas/SeldonMessage"
+                        },
+                        "example": {
+                            "json": "{\"data\":{\"names\" : [\"feature1\"],\"tensor\" : {\"shape\": [1,1],\"values\": [1]}}}"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Internal"
+                ]
+            },
+            "post": {
+                "operationId": "TransformInput3",
+                "responses": {
+                    "200": {
+                        "description": "A successful response.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SeldonMessage"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Internal"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "json": {
+                                        "$ref": "#/components/schemas/SeldonMessage"
+                                    }
+                                }
+                            },
+                            "encoding": {
+                                "json": {
+                                    "contentType": "application/json"
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/route": {
+            "get": {
+                "operationId": "Route2",
+                "responses": {
+                    "200": {
+                        "description": "A successful response.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SeldonMessage"
+                                }
+                            }
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "json",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/schemas/SeldonMessage"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Internal"
+                ]
+            },
+            "post": {
+                "operationId": "Route",
+                "responses": {
+                    "200": {
+                        "description": "A successful response.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SeldonMessage"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Internal"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "json": {
+                                        "$ref": "#/components/schemas/SeldonMessage"
+                                    }
+                                }
+                            },
+                            "encoding": {
+                                "json": {
+                                    "contentType": "application/json"
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/send-feedback": {
+            "get": {
+                "operationId": "SendFeedback2",
+                "responses": {
+                    "200": {
+                        "description": "A successful response.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SeldonMessage"
+                                }
+                            }
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "json",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/schemas/Feedback"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Internal"
+                ]
+            },
+            "post": {
+                "operationId": "SendFeedback",
+                "responses": {
+                    "200": {
+                        "description": "A successful response.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SeldonMessage"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Internal"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "json": {
+                                        "$ref": "#/components/schemas/Feedback"
+                                    }
+                                }
+                            },
+                            "encoding": {
+                                "json": {
+                                    "contentType": "application/json"
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/transform-input": {
+            "get": {
+                "operationId": "TransformInput2",
+                "responses": {
+                    "200": {
+                        "description": "A successful response.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SeldonMessage"
+                                }
+                            }
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "json",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/schemas/SeldonMessage"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Internal"
+                ]
+            },
+            "post": {
+                "operationId": "TransformInput",
+                "responses": {
+                    "200": {
+                        "description": "A successful response.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SeldonMessage"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Internal"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "json": {
+                                        "$ref": "#/components/schemas/SeldonMessage"
+                                    }
+                                }
+                            },
+                            "encoding": {
+                                "json": {
+                                    "contentType": "application/json"
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/transform-output": {
+            "get": {
+                "operationId": "TransformOutput2",
+                "responses": {
+                    "200": {
+                        "description": "A successful response.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SeldonMessage"
+                                }
+                            }
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "json",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/schemas/SeldonMessage"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Internal"
+                ]
+            },
+            "post": {
+                "operationId": "TransformOutput",
+                "responses": {
+                    "200": {
+                        "description": "A successful response.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SeldonMessage"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Internal"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "json": {
+                                        "$ref": "#/components/schemas/SeldonMessage"
+                                    }
+                                }
+                            },
+                            "encoding": {
+                                "json": {
+                                    "contentType": "application/json"
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "StatusStatusFlag": {
+                "type": "string",
+                "enum": [
+                    "SUCCESS",
+                    "FAILURE"
+                ],
+                "default": "SUCCESS"
+            },
+            "AnyValue": {
+                "description": "Can be anything: string, number, array, object, etc."
+            },
+            "MetricType": {
+                "type": "string",
+                "enum": [
+                    "COUNTER",
+                    "GAUGE",
+                    "TIMER"
+                ],
+                "default": "COUNTER"
+            },
+            "Metric": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "$ref": "#/components/schemas/MetricType"
+                    },
+                    "key": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "number",
+                        "format": "float"
+                    }
+                }
+            },
+            "DefaultData": {
+                "type": "object",
+                "properties": {
+                    "names": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "tensor": {
+                        "$ref": "#/components/schemas/Tensor"
+                    },
+                    "ndarry": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AnyValue"
+                        }
+                    }
+                }
+            },
+            "Feedback": {
+                "type": "object",
+                "properties": {
+                    "request": {
+                        "$ref": "#/components/schemas/SeldonMessage"
+                    },
+                    "response": {
+                        "$ref": "#/components/schemas/SeldonMessage"
+                    },
+                    "reward": {
+                        "type": "number",
+                        "format": "float"
+                    },
+                    "truth": {
+                        "$ref": "#/components/schemas/SeldonMessage"
+                    }
+                }
+            },
+            "Meta": {
+                "type": "object",
+                "properties": {
+                    "puid": {
+                        "type": "string"
+                    },
+                    "tags": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/AnyValue"
+                        },
+                        "example": {
+                            "mytag": "myvalue"
+                        }
+                    },
+                    "routing": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "integer",
+                            "format": "int32"
+                        },
+                        "example": {
+                            "router1": 1
+                        }
+                    },
+                    "requestPath": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
+                        },
+                        "example": {
+                            "classifier": "seldonio/mock_classifier:1.0"
+                        }
+                    },
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Metric"
+                        }
+                    }
+                }
+            },
+            "SeldonMessage": {
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "$ref": "#/components/schemas/Status"
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/Meta"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/DefaultData"
+                    },
+                    "binData": {
+                        "type": "string",
+                        "format": "byte"
+                    },
+                    "strData": {
+                        "type": "string"
+                    }
+                }
+            },
+            "SeldonMessageList": {
+                "type": "object",
+                "properties": {
+                    "seldonMessages": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SeldonMessage"
+                        }
+                    }
+                }
+            },
+            "Status": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "info": {
+                        "type": "string"
+                    },
+                    "reason": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/StatusStatusFlag"
+                    }
+                }
+            },
+            "Tensor": {
+                "type": "object",
+                "properties": {
+                    "shape": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    },
+                    "values": {
+                        "type": "array",
+                        "items": {
+                            "type": "number",
+                            "format": "double"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
