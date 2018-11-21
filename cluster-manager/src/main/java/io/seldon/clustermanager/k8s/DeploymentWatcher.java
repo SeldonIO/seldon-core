@@ -115,7 +115,7 @@ public class DeploymentWatcher {
                                     String mlDepName = ownerRef.getName();
                                     String depName = item.object.getMetadata().getName();
                                     ExtensionsV1beta1DeploymentStatus status = item.object.getStatus();
-                                    logger.info("{} {} replicas:{} replicasAvailable(ready):{} replicasUnavilable:{} replicasReady(available):{}",mlDepName,depName,status.getReplicas(),status.getReadyReplicas(),status.getUnavailableReplicas(),status.getAvailableReplicas());
+                                    logger.info("{} {} {} replicas:{} replicasAvailable(ready):{} replicasUnavilable:{} replicasReady(available):{}",item.type,mlDepName,depName,status.getReplicas(),status.getReadyReplicas(),status.getUnavailableReplicas(),status.getAvailableReplicas());
                                     statusUpdater.updateStatus(mlDepName, depName, item.object.getStatus().getReplicas(),item.object.getStatus().getReadyReplicas());
                                 }
                             }
@@ -127,6 +127,8 @@ public class DeploymentWatcher {
                                 {
                                     String mlDepName = ownerRef.getName();
                                     String depName = item.object.getMetadata().getName();
+                                    ExtensionsV1beta1DeploymentStatus status = item.object.getStatus();
+                                    logger.info("{} {} {} replicas:{} replicasAvailable(ready):{} replicasUnavilable:{} replicasReady(available):{}",item.type,mlDepName,depName,status.getReplicas(),status.getReadyReplicas(),status.getUnavailableReplicas(),status.getAvailableReplicas());
                                     statusUpdater.removeStatus(mlDepName,depName);
                                 }
                             }

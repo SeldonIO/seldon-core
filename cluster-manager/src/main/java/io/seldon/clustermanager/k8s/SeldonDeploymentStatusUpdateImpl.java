@@ -71,7 +71,7 @@ public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusU
 		else
 			return false;
 	}
-	
+
 	public Set<String> getDeploymentNames(SeldonDeployment mlDep)
 	{
 		Set<String> names = new HashSet<>();
@@ -94,7 +94,7 @@ public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusU
         if (replicas == null || replicas == 0)
         {
         	logger.warn("Remove status for {} {} {} {}",mlDepName,depName,replicas,replicasAvailable);
-        	removeStatus(mlDepName,depName);
+        	//removeStatus(mlDepName,depName);
         }
         else
         {
@@ -123,7 +123,7 @@ public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusU
                if (isAvailable(mlBuilder,mlDep))
                {
             	   mlBuilder.getStatusBuilder().setState(Constants.STATE_AVAILABLE);
-            	   seldonDeploymentController.removeUnusedResources(mlDep);
+            	   seldonDeploymentController.removeInitialUnusedResources(mlDep);
                }
                else
                {
@@ -154,6 +154,8 @@ public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusU
                 }
                 idx++;
             }
+            if (isAvailable(mlBuilder, mlDep))
+            	seldonDeploymentController.removeAllUnusedResources(mlDep);
             crdHandler.updateSeldonDeploymentStatus(mlBuilder.build());
         }
         else

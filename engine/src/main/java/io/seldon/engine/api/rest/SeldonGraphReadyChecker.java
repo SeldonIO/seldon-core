@@ -82,7 +82,7 @@ public class SeldonGraphReadyChecker extends PredictiveUnitImpl {
 			try 
 			{
 				socket = new Socket();
-	    		socket.connect(new InetSocketAddress(endpoint.getServiceHost(), endpoint.getServicePort()), 1000);
+	    		socket.connect(new InetSocketAddress(endpoint.getServiceHost(), endpoint.getServicePort()), 500);
 	    		socket.close();
 	    		socket = null;
 	    		return true;

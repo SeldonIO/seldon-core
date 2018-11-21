@@ -8,6 +8,9 @@
         "name": "mymodel"
     },
     "spec": {
+        "annotations": {
+	    "seldon.io/engine-separate-pod": "true"
+        },	
         "name": "mymodel",
         "oauth_key": "oauth-key",
         "oauth_secret": "oauth-secret",

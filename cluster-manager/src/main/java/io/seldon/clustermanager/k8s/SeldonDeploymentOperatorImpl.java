@@ -129,8 +129,8 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			.setReadinessProbe(Probe.newBuilder().setHandler(Handler.newBuilder()
 					.setHttpGet(HTTPGetAction.newBuilder().setPort(IntOrString.newBuilder().setType(1).setStrVal("admin")).setPath("/ready")))
 					.setInitialDelaySeconds(20)
-					.setPeriodSeconds(5)
-					.setFailureThreshold(3)
+					.setPeriodSeconds(1)
+					.setFailureThreshold(1)
 					.setSuccessThreshold(1)
 					.setTimeoutSeconds(2)
 					)
@@ -144,6 +144,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 					)
 			.setLifecycle(Lifecycle.newBuilder()
 					// Possible future fix for slow DNS lookups see https://blog.quentin-machu.fr/2018/06/24/5-15s-dns-lookups-on-kubernetes/
+					//  But only for non coreOS images
 					//.setPostStart(Handler.newBuilder().setExec(
 					//		ExecAction.newBuilder()
 					//		.addCommand("/bin/sh")
@@ -306,11 +307,12 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		// Add a default lifecycle pre-stop if non exists
 		if (!c.hasLifecycle())
 		{
-			if (!c.getLifecycle().hasPreStop())
-			{
-				c2Builder.setLifecycle(Lifecycle.newBuilder(c.getLifecycle()).setPreStop(Handler.newBuilder().setExec(
-						ExecAction.newBuilder().addCommand("/bin/sh").addCommand("-c").addCommand("/bin/sleep 5"))));
-			}
+			//if (!c.getLifecycle().hasPreStop())
+			//{
+			//	c2Builder.setLifecycle(Lifecycle.newBuilder(c.getLifecycle())
+			//			.setPreStop(Handler.newBuilder().setExec(
+			//					ExecAction.newBuilder().addCommand("/bin/sh").addCommand("-c").addCommand("/bin/sleep 60"))));
+			//}
 		}
 		
 		return c2Builder.build();
@@ -616,6 +618,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 				.putLabels("app", depName);
 			depMetaBuilder
 				.putLabels(LABEL_SELDON_APP, serviceLabel)
+				.putLabels(Constants.LABEL_SELDON_SVCORCH, "true")
 				.putLabels(Constants.LABEL_SELDON_ID, mlDep.getSpec().getName())
 				.putLabels("app", depName)
 				.putLabels("version", "v1") // Add default version
@@ -719,7 +722,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 				    	.putAnnotations("prometheus.io/scrape", "true");
 					// LABELS - START
 					podSpecBuilder.getMetadataBuilder().putLabels(LABEL_SELDON_APP, serviceLabel); // key label for entry point to whole graphn- see service below						
-					depMetaBuilder.putLabels(LABEL_SELDON_APP, serviceLabel);
+					depMetaBuilder.putLabels(LABEL_SELDON_APP, serviceLabel).putLabels(Constants.LABEL_SELDON_SVCORCH, "true");
 					labelSelector.putMatchLabels(LABEL_SELDON_APP, serviceLabel);
 					// LABELS - END
 				}
