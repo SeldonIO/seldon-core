@@ -8,6 +8,9 @@
         "name": "mymodel"
     },
     "spec": {
+        "annotations": {
+	    "seldon.io/engine-separate-pod": "true"
+        },	
         "name": "mymodel",
         "oauth_key": "oauth-key",
         "oauth_secret": "oauth-secret",
@@ -19,7 +22,7 @@
                             {
                                 "image": "seldonio/fixed-model:0.1",
                                 "imagePullPolicy": "IfNotPresent",
-                                "name": "complex-model",
+                                "name": "model1",
                                 "resources": {
                                     "requests": {
                                         "memory": "1Mi"
@@ -29,26 +32,14 @@
                         ],
                         "terminationGracePeriodSeconds": 1
                     }
-                }],
-                "graph": {
-                    "children": [],
-                    "name": "complex-model",
-                    "endpoint": {
-                        "type" : "REST"
-                    },
-		    "type": "MODEL"
                 },
-                "name": "mymodel",
-                "replicas": 1
-            },
-            {
-                "componentSpecs": [{
+		{
                     "spec": {
                         "containers": [
                             {
-                                "image": "seldonio/fixed-model:0.2",
+                                "image": "seldonio/fixed-model:0.1",
                                 "imagePullPolicy": "IfNotPresent",
-                                "name": "complex-model",
+                                "name": "model2",
                                 "resources": {
                                     "requests": {
                                         "memory": "1Mi"
@@ -60,17 +51,25 @@
                     }
                 }],
                 "graph": {
-                    "children": [],
-                    "name": "complex-model",
+                    "name": "model1",
                     "endpoint": {
                         "type" : "REST"
                     },
-		    "type": "MODEL"
+		    "type": "MODEL",
+		    "children":[
+			{
+			    "children": [],
+			    "name": "model2",
+			    "endpoint": {
+				"type" : "REST"
+			    },
+			    "type": "MODEL"
+			}
+			]
                 },
-                "name": "mymodel-canary",
+                "name": "mymodel",
                 "replicas": 1
             }
-	    
         ]
     }
 }

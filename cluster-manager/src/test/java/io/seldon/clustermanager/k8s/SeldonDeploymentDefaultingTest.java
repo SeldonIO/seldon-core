@@ -38,7 +38,7 @@ public class SeldonDeploymentDefaultingTest extends AppTest {
         
         Assert.assertTrue(mlDep2.getSpec().getPredictors(0).getComponentSpecs(0).getSpec().getContainers(0).hasLivenessProbe());
         Assert.assertTrue(mlDep2.getSpec().getPredictors(0).getComponentSpecs(0).getSpec().getContainers(0).hasReadinessProbe());
-        Assert.assertTrue(mlDep2.getSpec().getPredictors(0).getComponentSpecs(0).getSpec().getContainers(0).hasLifecycle());
+        //Assert.assertTrue(mlDep2.getSpec().getPredictors(0).getComponentSpecs(0).getSpec().getContainers(0).hasLifecycle());
         Assert.assertEquals("Incorrect number of environment variables in container",5,mlDep2.getSpec().getPredictors(0).getComponentSpecs(0).getSpec().getContainers(0).getEnvCount());
         Assert.assertEquals(1,mlDep2.getSpec().getPredictors(0).getComponentSpecs(0).getSpec().getContainers(0).getPortsCount());
         Assert.assertEquals("http",mlDep2.getSpec().getPredictors(0).getComponentSpecs(0).getSpec().getContainers(0).getPorts(0).getName());
@@ -57,7 +57,7 @@ public class SeldonDeploymentDefaultingTest extends AppTest {
         
         Assert.assertTrue(mlDep2.getSpec().getPredictors(0).getComponentSpecs(0).getSpec().getContainers(0).hasLivenessProbe());
         Assert.assertTrue(mlDep2.getSpec().getPredictors(0).getComponentSpecs(0).getSpec().getContainers(0).hasReadinessProbe());
-        Assert.assertTrue(mlDep2.getSpec().getPredictors(0).getComponentSpecs(0).getSpec().getContainers(0).hasLifecycle());
+        //Assert.assertTrue(mlDep2.getSpec().getPredictors(0).getComponentSpecs(0).getSpec().getContainers(0).hasLifecycle());
         Assert.assertEquals("Incorrect number of environment variables in container",5,mlDep2.getSpec().getPredictors(0).getComponentSpecs(0).getSpec().getContainers(0).getEnvCount());
         Assert.assertEquals(1,mlDep2.getSpec().getPredictors(0).getComponentSpecs(0).getSpec().getContainers(0).getPortsCount());
         Assert.assertEquals("grpc",mlDep2.getSpec().getPredictors(0).getComponentSpecs(0).getSpec().getContainers(0).getPorts(0).getName());
