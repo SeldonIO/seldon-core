@@ -1,4 +1,4 @@
-package io.seldon.engine.grpc;
+package io.seldon.engine.metrics;
 
 import java.util.Arrays;
 
