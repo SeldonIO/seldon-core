@@ -154,7 +154,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 							ExecAction.newBuilder()
 							.addCommand("/bin/sh")
 							.addCommand("-c")
-							.addCommand("curl 127.0.0.1:"+clusterManagerProperites.getEngineContainerPort()+"/pause && /bin/sleep 1"))));
+							.addCommand("curl 127.0.0.1:"+clusterManagerProperites.getEngineContainerPort()+"/pause && /bin/sleep 10"))));
 
 		// Add engine resources if specified
 		if (predictorDef.hasEngineResources())
@@ -307,12 +307,12 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		// Add a default lifecycle pre-stop if non exists
 		if (!c.hasLifecycle())
 		{
-			//if (!c.getLifecycle().hasPreStop())
-			//{
-			//	c2Builder.setLifecycle(Lifecycle.newBuilder(c.getLifecycle())
-			//			.setPreStop(Handler.newBuilder().setExec(
-			//					ExecAction.newBuilder().addCommand("/bin/sh").addCommand("-c").addCommand("/bin/sleep 60"))));
-			//}
+			if (!c.getLifecycle().hasPreStop())
+			{
+				c2Builder.setLifecycle(Lifecycle.newBuilder(c.getLifecycle())
+						.setPreStop(Handler.newBuilder().setExec(
+								ExecAction.newBuilder().addCommand("/bin/sh").addCommand("-c").addCommand("/bin/sleep 5"))));
+			}
 		}
 		
 		return c2Builder.build();
