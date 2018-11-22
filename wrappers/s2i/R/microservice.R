@@ -305,6 +305,8 @@ serve_model <- plumber$new()
 if (args$service == "MODEL") {
   serve_model$handle("POST", "/predict",predict_endpoint)
   serve_model$handle("GET", "/predict",predict_endpoint)
+  serve_model$handle("POST", "/send-feedback",send_feedback_endpoint)
+  serve_model$handle("GET", "/send-feedback",send_feedback_endpoint)
 } else if (args$service == "ROUTER") {
   serve_model$handle("POST", "/route",route_endpoint)
   serve_model$handle("GET", "/route",route_endpoint)
