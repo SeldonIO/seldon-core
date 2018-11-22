@@ -50,6 +50,7 @@ message Metric {
  string key = 1;
  MetricType type = 2;
  float value = 3;
+ map<string,string> tags = 4;
 }
 
 message SeldonMessageList {
