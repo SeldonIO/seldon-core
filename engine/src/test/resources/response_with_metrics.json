@@ -4,7 +4,8 @@
 			{
 				"type": "COUNTER",
 				"key": "mycounter",
-				"value": 1.0
+				"value": 1.0,
+				"tags": {"mytag1":"mytagval1"}
 			},
 			{
 				"type": "GAUGE",
