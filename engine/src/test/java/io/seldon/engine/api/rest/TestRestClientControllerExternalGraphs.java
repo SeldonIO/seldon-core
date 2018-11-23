@@ -42,6 +42,7 @@ import io.kubernetes.client.proto.IntStr.IntOrString;
 import io.kubernetes.client.proto.Meta.Time;
 import io.kubernetes.client.proto.Meta.Timestamp;
 import io.kubernetes.client.proto.Resource.Quantity;
+import io.micrometer.core.instrument.Metrics;
 import io.seldon.engine.pb.IntOrStringUtils;
 import io.seldon.engine.pb.JsonFormat;
 import io.seldon.engine.pb.QuantityUtils;
@@ -90,6 +91,7 @@ public class TestRestClientControllerExternalGraphs {
     
     @Before
 	public void setup() throws Exception {
+    
     	mvc = MockMvcBuilders
 				.webAppContextSetup(context)
 				.build();
@@ -104,6 +106,7 @@ public class TestRestClientControllerExternalGraphs {
     @Autowired
     private InternalPredictionService internalPredictionService;
 
+    
    
 
     @Test

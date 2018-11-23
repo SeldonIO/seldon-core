@@ -3,8 +3,10 @@ package io.seldon.engine.metrics;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.common.util.concurrent.AtomicDouble;
@@ -35,6 +37,18 @@ public class MetricsTest {
 		}
 	}
 	
+	@After
+	public void cleanMicrometerAfter()
+	{
+		for(;;)
+		{
+			if (Metrics.globalRegistry.getRegistries().size() > 0)
+				Metrics.removeRegistry(Metrics.globalRegistry.getRegistries().iterator().next());
+			else
+				break;
+		}
+	}
+	
 	@Test
 	public synchronized void testGauge()
 	{
@@ -52,9 +66,6 @@ public class MetricsTest {
 		Metric metric3 = Metric.newBuilder().setKey("gkey2").setValue(2.0f).setType(MetricType.GAUGE).build();
 		AtomicDouble v3 = m.getGaugeValue(tags, metric3);
 		Assert.assertNotEquals(v1, v3);
-		Iterable<Tag> tags2 = Arrays.asList(Tag.of("gtag2", "tag1value1"));
-		AtomicDouble v3b = m.getGaugeValue(tags2, metric1);
-		Assert.assertNotEquals(v1, v3b);
 		v2.set(metric2.getValue());
 		AtomicDouble v4 = m.getGaugeValue(tags, metric1);
 		Assert.assertEquals(2.0D, v4.get(),0.01);
@@ -101,7 +112,7 @@ public class MetricsTest {
 		}
 		finally {
 			Metrics.removeRegistry(reg);
-			Meter m = Metrics.globalRegistry.remove(counter1); //FIXME bug in micrometer doesn't remove meter
+			Meter m = Metrics.globalRegistry.remove(counter1); 
 		}
 	}
 	
@@ -122,7 +133,12 @@ public class MetricsTest {
 		Metric metric1 = Metric.newBuilder().setKey("ckey2").setValue(1.0f).setType(MetricType.COUNTER).build();
 	
 		Counter counter1 = m.getCounter(tags1, metric1);
-		//Exception throw here as Prometheus registry can't have same id with different length tags
-		Counter counter2 = m.getCounter(new ArrayList<>(), metric1);
+		try
+		{
+			//Exception throw here as Prometheus registry can't have same id with different length tags
+			Counter counter2 = m.getCounter(new ArrayList<>(), metric1);
+		}finally {
+			Meter met = Metrics.globalRegistry.remove(counter1);
+		}
 	}
 }
