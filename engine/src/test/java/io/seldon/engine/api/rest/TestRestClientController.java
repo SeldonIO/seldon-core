@@ -38,7 +38,7 @@ import io.seldon.protos.PredictionProtos.SeldonMessage;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-@AutoConfigureMockMvc
+//@AutoConfigureMockMvc
 public class TestRestClientController {
 	
 	@Autowired
