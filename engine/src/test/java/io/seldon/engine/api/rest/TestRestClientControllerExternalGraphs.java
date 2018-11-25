@@ -42,6 +42,7 @@ import io.kubernetes.client.proto.IntStr.IntOrString;
 import io.kubernetes.client.proto.Meta.Time;
 import io.kubernetes.client.proto.Meta.Timestamp;
 import io.kubernetes.client.proto.Resource.Quantity;
+import io.micrometer.core.instrument.Metrics;
 import io.seldon.engine.pb.IntOrStringUtils;
 import io.seldon.engine.pb.JsonFormat;
 import io.seldon.engine.pb.QuantityUtils;
@@ -90,6 +91,7 @@ public class TestRestClientControllerExternalGraphs {
     
     @Before
 	public void setup() throws Exception {
+    
     	mvc = MockMvcBuilders
 				.webAppContextSetup(context)
 				.build();
@@ -104,6 +106,7 @@ public class TestRestClientControllerExternalGraphs {
     @Autowired
     private InternalPredictionService internalPredictionService;
 
+    
    
 
     @Test
@@ -166,8 +169,9 @@ public class TestRestClientControllerExternalGraphs {
 	    MvcResult res2 = mvc.perform(MockMvcRequestBuilders.get("/prometheus")).andReturn();
 	    Assert.assertEquals(200, res2.getResponse().getStatus());
 	    response = res2.getResponse().getContentAsString();
-	    Assert.assertTrue(response.indexOf("mycounter_total{deployment_name=\"None\",model_image=\"seldonio/mean_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
-	    Assert.assertTrue(response.indexOf("mytimer_duration_seconds_count{deployment_name=\"None\",model_image=\"seldonio/mean_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
+	    System.out.println("response is ["+response+"]");
+	    Assert.assertTrue(response.indexOf("mycounter_total{deployment_name=\"None\",model_image=\"seldonio/mean_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
+	    Assert.assertTrue(response.indexOf("mytimer_seconds_count{deployment_name=\"None\",model_image=\"seldonio/mean_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
 	    Assert.assertTrue(response.indexOf("mygauge{deployment_name=\"None\",model_image=\"seldonio/mean_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 22.0")>-1);	    
     	System.out.println(response);
     	
@@ -200,8 +204,8 @@ public class TestRestClientControllerExternalGraphs {
 	    res2 = mvc.perform(MockMvcRequestBuilders.get("/prometheus")).andReturn();
 	    Assert.assertEquals(200, res2.getResponse().getStatus());
 	    response = res2.getResponse().getContentAsString();
-	    Assert.assertTrue(response.indexOf("mycounter_total{deployment_name=\"None\",model_image=\"seldonio/mean_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 2.0")>-1);
-	    Assert.assertTrue(response.indexOf("mytimer_duration_seconds_count{deployment_name=\"None\",model_image=\"seldonio/mean_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 2.0")>-1);
+	    Assert.assertTrue(response.indexOf("mycounter_total{deployment_name=\"None\",model_image=\"seldonio/mean_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 2.0")>-1);
+	    Assert.assertTrue(response.indexOf("mytimer_seconds_count{deployment_name=\"None\",model_image=\"seldonio/mean_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 2.0")>-1);
 	    Assert.assertTrue(response.indexOf("mygauge{deployment_name=\"None\",model_image=\"seldonio/mean_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 100.0")>-1);
     	System.out.println(response);
     }
@@ -256,8 +260,8 @@ public class TestRestClientControllerExternalGraphs {
 	    MvcResult res2 = mvc.perform(MockMvcRequestBuilders.get("/prometheus")).andReturn();
 	    Assert.assertEquals(200, res2.getResponse().getStatus());
 	    response = res2.getResponse().getContentAsString();
-	    Assert.assertTrue(response.indexOf("mycounter_total{deployment_name=\"None\",model_image=\"seldonio/transformer\",model_name=\"transformer\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
-	    Assert.assertTrue(response.indexOf("mytimer_duration_seconds_count{deployment_name=\"None\",model_image=\"seldonio/transformer\",model_name=\"transformer\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
+	    Assert.assertTrue(response.indexOf("mycounter_total{deployment_name=\"None\",model_image=\"seldonio/transformer\",model_name=\"transformer\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
+	    Assert.assertTrue(response.indexOf("mytimer_seconds_count{deployment_name=\"None\",model_image=\"seldonio/transformer\",model_name=\"transformer\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
     	System.out.println(response);
     }
     
@@ -312,8 +316,8 @@ public class TestRestClientControllerExternalGraphs {
 	    Assert.assertEquals(200, res2.getResponse().getStatus());
 	    response = res2.getResponse().getContentAsString();
     	System.out.println(response);
-	    Assert.assertTrue(response.indexOf("mycounter_total{deployment_name=\"None\",model_image=\"seldonio/transformer\",model_name=\"transform_output\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
-	    Assert.assertTrue(response.indexOf("mytimer_duration_seconds_count{deployment_name=\"None\",model_image=\"seldonio/transformer\",model_name=\"transform_output\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
+	    Assert.assertTrue(response.indexOf("mycounter_total{deployment_name=\"None\",model_image=\"seldonio/transformer\",model_name=\"transform_output\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
+	    Assert.assertTrue(response.indexOf("mytimer_seconds_count{deployment_name=\"None\",model_image=\"seldonio/transformer\",model_name=\"transform_output\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
 
     }
     
@@ -368,8 +372,8 @@ public class TestRestClientControllerExternalGraphs {
 	    Assert.assertEquals(200, res2.getResponse().getStatus());
 	    response = res2.getResponse().getContentAsString();
     	System.out.println(response);
-	    Assert.assertTrue(response.indexOf("mycounter_total{deployment_name=\"None\",model_image=\"seldonio/router\",model_name=\"router\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
-	    Assert.assertTrue(response.indexOf("mytimer_duration_seconds_count{deployment_name=\"None\",model_image=\"seldonio/router\",model_name=\"router\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
+	    Assert.assertTrue(response.indexOf("mycounter_total{deployment_name=\"None\",model_image=\"seldonio/router\",model_name=\"router\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
+	    Assert.assertTrue(response.indexOf("mytimer_seconds_count{deployment_name=\"None\",model_image=\"seldonio/router\",model_name=\"router\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
 
     }
     
@@ -423,9 +427,11 @@ public class TestRestClientControllerExternalGraphs {
 	    MvcResult res2 = mvc.perform(MockMvcRequestBuilders.get("/prometheus")).andReturn();
 	    Assert.assertEquals(200, res2.getResponse().getStatus());
 	    response = res2.getResponse().getContentAsString();
-    	System.out.println(response);
-	    Assert.assertTrue(response.indexOf("mycounter_total{deployment_name=\"None\",model_image=\"seldonio/combiner\",model_name=\"combiner\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
-	    Assert.assertTrue(response.indexOf("mytimer_duration_seconds_count{deployment_name=\"None\",model_image=\"seldonio/combiner\",model_name=\"combiner\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
+	    System.out.println("----------------------------------------");
+	    System.out.println("----------------------------------------");	    
+	    System.out.println(response);
+	    Assert.assertTrue(response.indexOf("mycounter_total{deployment_name=\"None\",model_image=\"seldonio/combiner\",model_name=\"combiner\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
+	    Assert.assertTrue(response.indexOf("mytimer_seconds_count{deployment_name=\"None\",model_image=\"seldonio/combiner\",model_name=\"combiner\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
 
     }
 
