@@ -30,7 +30,7 @@
                                         }
                                     }
                                 ],
-                                "image": "grafana/grafana:4.3.2",
+                                "image": "grafana/grafana:5.3.4",
                                 "name": "grafana",
                                 "ports": [
                                     {

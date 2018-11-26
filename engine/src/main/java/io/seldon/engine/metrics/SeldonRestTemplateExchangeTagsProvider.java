@@ -15,7 +15,9 @@
  *******************************************************************************/
 package io.seldon.engine.metrics;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpRequest;
@@ -59,6 +61,21 @@ public class SeldonRestTemplateExchangeTagsProvider implements RestTemplateExcha
 	            modelVersion(request),
 		        predictorName(),
 	            predictorVersion());
+	}
+	
+	public Iterable<Tag> getModelMetrics(PredictiveUnitState state, Map<String,String> customTags)
+	{
+		ArrayList<Tag> customTagsList = new ArrayList<>();
+		if (customTags != null)
+			for(Map.Entry<String, String> e : customTags.entrySet())
+			{
+				customTagsList.add(Tag.of(e.getKey(), e.getValue()));
+			}
+		for(Tag t : getModelMetrics(state))
+		{
+			customTagsList.add(t);
+		}
+		return customTagsList;
 	}
 	
 	public Iterable<Tag> getModelMetrics(PredictiveUnitState state)

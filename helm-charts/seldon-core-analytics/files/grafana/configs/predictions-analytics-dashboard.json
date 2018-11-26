@@ -133,7 +133,7 @@
           "tableColumn": "",
           "targets": [
             {
-              "expr": "round(sum(irate(seldon_api_engine_server_requests_duration_seconds_count[1m])), 0.001)",
+              "expr": "round(sum(irate(seldon_api_engine_server_requests_seconds_count[1m])), 0.001)",
               "format": "time_series",
               "intervalFactor": 2,
               "refId": "A",
@@ -209,7 +209,7 @@
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(rate(seldon_api_engine_server_requests_duration_seconds_count{status!~\"5.*\"}[1m])) / sum(rate(seldon_api_engine_server_requests_duration_seconds_count[1m]))",
+              "expr": "sum(rate(seldon_api_engine_server_requests_seconds_count{status!~\"5.*\"}[1m])) / sum(rate(seldon_api_engine_server_requests_seconds_count[1m]))",
               "format": "time_series",
               "intervalFactor": 2,
               "refId": "A",
@@ -285,7 +285,7 @@
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(irate(seldon_api_engine_server_requests_duration_seconds_count{status=~\"4.*\"}[1m])) ",
+              "expr": "sum(irate(seldon_api_engine_server_requests_seconds_count{status=~\"4.*\"}[1m])) ",
               "format": "time_series",
               "intervalFactor": 2,
               "refId": "A",
@@ -361,7 +361,7 @@
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(irate(seldon_api_engine_server_requests_duration_seconds_count{status=~\"5.*\"}[1m])) ",
+              "expr": "sum(irate(seldon_api_engine_server_requests_seconds_count{status=~\"5.*\"}[1m])) ",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -447,7 +447,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(seldon_api_engine_client_requests_duration_seconds_count{model_name=~\"$model_name\",model_version=~\"$model_version\",model_image=~\"$model_image\",predictor_name=~\"$predictor\",predictor_version=~\"$version\"}[1m])) by (model_name,predictor_name,predictor_version,model_image,model_version)",
+              "expr": "sum(rate(seldon_api_engine_client_requests_seconds_count{model_name=~\"$model_name\",model_version=~\"$model_version\",model_image=~\"$model_image\",predictor_name=~\"$predictor\",predictor_version=~\"$version\"}[1m])) by (model_name,predictor_name,predictor_version,model_image,model_version)",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -606,7 +606,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "histogram_quantile(0.5, sum(rate(seldon_api_engine_client_requests_duration_seconds_bucket{uri=\"predict\",model_image=~\"$model_image\",predictor_name=~\"$predictor\",predictor_version=~\"$version\",model_name=~\"$model_name\",model_version=~\"$model_version\"}[20s])) by (predictor_name,predictor_version,model_name,model_image,model_version,le))",
+              "expr": "histogram_quantile(0.5, sum(rate(seldon_api_engine_client_requests_seconds_bucket{uri=\"/predict\",model_image=~\"$model_image\",predictor_name=~\"$predictor\",predictor_version=~\"$version\",model_name=~\"$model_name\",model_version=~\"$model_version\"}[20s])) by (predictor_name,predictor_version,model_name,model_image,model_version,le))",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -616,7 +616,7 @@
               "step": 2
             },
             {
-              "expr": "histogram_quantile(0.75, sum(rate(seldon_api_engine_client_requests_duration_seconds_bucket{uri=\"predict\",model_image=~\"$model_image\",predictor_name=~\"$predictor\",predictor_version=~\"$version\",model_name=~\"$model_name\",model_version=~\"$model_version\"}[20s])) by (predictor_name,predictor_version,model_name,model_image,model_version,le))",
+              "expr": "histogram_quantile(0.75, sum(rate(seldon_api_engine_client_requests_seconds_bucket{uri=\"/predict\",model_image=~\"$model_image\",predictor_name=~\"$predictor\",predictor_version=~\"$version\",model_name=~\"$model_name\",model_version=~\"$model_version\"}[20s])) by (predictor_name,predictor_version,model_name,model_image,model_version,le))",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -626,7 +626,7 @@
               "step": 2
             },
             {
-              "expr": "histogram_quantile(0.9, sum(rate(seldon_api_engine_client_requests_duration_seconds_bucket{uri=\"predict\",model_image=~\"$model_image\",predictor_name=~\"$predictor\",predictor_version=~\"$version\",model_name=~\"$model_name\",model_version=~\"$model_version\"}[20s])) by (predictor_name,predictor_version,model_name,model_image,model_version,le))",
+              "expr": "histogram_quantile(0.9, sum(rate(seldon_api_engine_client_requests_seconds_bucket{uri=\"/predict\",model_image=~\"$model_image\",predictor_name=~\"$predictor\",predictor_version=~\"$version\",model_name=~\"$model_name\",model_version=~\"$model_version\"}[20s])) by (predictor_name,predictor_version,model_name,model_image,model_version,le))",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -636,7 +636,7 @@
               "step": 2
             },
             {
-              "expr": "histogram_quantile(0.95, sum(rate(seldon_api_engine_client_requests_duration_seconds_bucket{uri=\"predict\",model_image=~\"$model_image\",predictor_name=~\"$predictor\",predictor_version=~\"$version\",model_name=~\"$model_name\",model_version=~\"$model_version\"}[20s])) by (predictor_name,predictor_version,model_name,model_image,model_version,le))",
+              "expr": "histogram_quantile(0.95, sum(rate(seldon_api_engine_client_requests_seconds_bucket{uri=\"/predict\",model_image=~\"$model_image\",predictor_name=~\"$predictor\",predictor_version=~\"$version\",model_name=~\"$model_name\",model_version=~\"$model_version\"}[20s])) by (predictor_name,predictor_version,model_name,model_image,model_version,le))",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -646,7 +646,7 @@
               "step": 2
             },
             {
-              "expr": "histogram_quantile(0.99, sum(rate(seldon_api_engine_client_requests_duration_seconds_bucket{uri=\"predict\",model_image=~\"$model_image\",predictor_name=~\"$predictor\",predictor_version=~\"$version\",model_name=~\"$model_name\",model_version=~\"$model_version\"}[20s])) by (predictor_name,predictor_version,model_name,model_image,model_version,le))",
+              "expr": "histogram_quantile(0.99, sum(rate(seldon_api_engine_client_requests_seconds_bucket{uri=\"/predict\",model_image=~\"$model_image\",predictor_name=~\"$predictor\",predictor_version=~\"$version\",model_name=~\"$model_name\",model_version=~\"$model_version\"}[20s])) by (predictor_name,predictor_version,model_name,model_image,model_version,le))",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -716,7 +716,7 @@
         "multi": true,
         "name": "deployment",
         "options": [],
-        "query": "label_values(seldon_api_engine_client_requests_duration_seconds_count,deployment_name)",
+        "query": "label_values(seldon_api_engine_client_requests_seconds_count,deployment_name)",
         "refresh": 1,
         "regex": "",
         "sort": 0,
@@ -736,7 +736,7 @@
         "multi": true,
         "name": "predictor",
         "options": [],
-        "query": "label_values(seldon_api_engine_client_requests_duration_seconds_count,predictor_name)",
+        "query": "label_values(seldon_api_engine_client_requests_seconds_count,predictor_name)",
         "refresh": 1,
         "regex": "",
         "sort": 0,
@@ -756,7 +756,7 @@
         "multi": true,
         "name": "version",
         "options": [],
-        "query": "label_values(seldon_api_engine_client_requests_duration_seconds_count,predictor_version)",
+        "query": "label_values(seldon_api_engine_client_requests_seconds_count,predictor_version)",
         "refresh": 1,
         "regex": "",
         "sort": 0,
@@ -776,7 +776,7 @@
         "multi": true,
         "name": "model_name",
         "options": [],
-        "query": "label_values(seldon_api_engine_client_requests_duration_seconds_count,model_name)",
+        "query": "label_values(seldon_api_engine_client_requests_seconds_count,model_name)",
         "refresh": 1,
         "regex": "",
         "sort": 0,
@@ -796,7 +796,7 @@
         "multi": true,
         "name": "model_image",
         "options": [],
-        "query": "label_values(seldon_api_engine_client_requests_duration_seconds_count,model_image)",
+        "query": "label_values(seldon_api_engine_client_requests_seconds_count,model_image)",
         "refresh": 1,
         "regex": "",
         "sort": 0,
@@ -816,7 +816,7 @@
         "multi": true,
         "name": "model_version",
         "options": [],
-        "query": "label_values(seldon_api_engine_client_requests_duration_seconds_count,model_version)",
+        "query": "label_values(seldon_api_engine_client_requests_seconds_count,model_version)",
         "refresh": 1,
         "regex": "",
         "sort": 0,
