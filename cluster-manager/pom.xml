@@ -20,7 +20,6 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <grpc.version>1.0.0</grpc.version><!-- CURRENT_GRPC_VERSION -->
     <start-class>io.seldon.clustermanager.Application</start-class>
-    <powermock.version>1.7.1</powermock.version>
   </properties>
 
   <repositories>
