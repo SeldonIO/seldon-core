@@ -38,6 +38,7 @@ engine:
     pull_policy: IfNotPresent
   service_account:
     name: default
+  user: 8888
 rbac:
   enabled: true
   rolebinding:
@@ -46,5 +47,6 @@ rbac:
     create: true
     name: seldon
 redis:
+  enabled: true
   image:
     name: redis:4.0.1

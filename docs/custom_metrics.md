@@ -10,6 +10,7 @@ Seldon Core exposes basic metrics via Prometheus endpoints on its service orches
 				"type": "COUNTER",
 				"key": "mycounter",
 				"value": 1.0
+				"tags": {"mytag":"mytagvalue"}
 			},
 			{
 				"type": "GAUGE",
@@ -52,14 +53,18 @@ message Metric {
  string key = 1;
  MetricType type = 2;
  float value = 3;
+ map<string,string> tags = 4; 
 }
 ```
+
+
+As we expose the metrics via Prometheus, if ```tags``` are added they must appear in every metric response and always have the same set of keys as Prometheus does not allow metrics to have varying numbers of tags. This condition is enforced by the [micrometer](https://micrometer.io/) library we use to expose the metrics and exceptions will happen if violated.
 
 At present the following Seldon Core wrappers provide integrations with custom metrics:
 
  * [Python Wrapper](./wrappers/python.md#custom-metrics)
 
 
-# example
+# Example
 
 There is an [example notebook illustrating a model with custom metrics in python](../examples/models/template_model_with_metrics/modelWithMetrics.ipynb).

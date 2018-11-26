@@ -82,6 +82,7 @@ public class RestClientController {
 		}
 		else
 		{
+			logger.warn("Not ready graph checker {}, controller {}",readyChecker.getReady(),ready.get());
 			httpStatus = HttpStatus.SERVICE_UNAVAILABLE;
 			ret = "Service unavailable";
 		}

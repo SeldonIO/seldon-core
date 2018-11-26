@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -38,6 +37,8 @@ import io.kubernetes.client.models.V1ServiceList;
 import io.kubernetes.client.proto.Meta.ObjectMeta;
 import io.kubernetes.client.util.Config;
 import io.seldon.clustermanager.ClusterManagerProperites;
+import io.seldon.clustermanager.k8s.client.K8sApiProvider;
+import io.seldon.clustermanager.k8s.client.K8sClientProvider;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 @Component
@@ -50,13 +51,17 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 	public static final String KIND_PLURAL = "seldondeployments";
 	public static final String KIND = "SeldonDeployment";
 	
-	//private final String namespace;
 	private final boolean clusterWide;
 	
 	private boolean replaceStatusResource = true; // Whether to use the status CR endpoint (available from k8s 1.10 (alpha) 1.11 (beta)
 	
+	private final K8sClientProvider k8sClientProvider;
+	private final K8sApiProvider k8sApiProvider;
+	
 	@Autowired
-    public KubeCRDHandlerImpl(ClusterManagerProperites clusterManagerProperites) {
+    public KubeCRDHandlerImpl(K8sApiProvider k8sApiProvider,K8sClientProvider k8sClientProvider,ClusterManagerProperites clusterManagerProperites) {
+		this.k8sClientProvider= k8sClientProvider;
+		this.k8sApiProvider = k8sApiProvider;
 		//this.namespace = StringUtils.isEmpty(clusterManagerProperites.getNamespace()) ? "default" : clusterManagerProperites.getNamespace();
 		this.clusterWide = clusterManagerProperites.isClusterWide();
 		logger.info("Starting with cluster wide {}",clusterWide);
@@ -92,7 +97,6 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 	
 	@Override
 	public void updateSeldonDeploymentStatus(SeldonDeployment mldep) {
-		
 		try
 		{
 			// Need to remove resourceVersion from the representation used for last-applied-configuration otherwise you will errors subsequently using kubectl
@@ -107,10 +111,11 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 						.putAnnotations("kubectl.kubernetes.io/last-applied-configuration", json+"\n")).build();
 			json = SeldonDeploymentUtils.toJson(mlDeployment,false);
 			
-			logger.debug("Updating seldondeployment "+mlDeployment.getMetadata().getName());
-			ApiClient client = Config.defaultClient();
-			CustomObjectsApi api = new CustomObjectsApi(client);
+			logger.debug("Updating seldondeployment {} with status {}",mlDeployment.getMetadata().getName(),mlDeployment.getStatus());
+			ApiClient client = k8sClientProvider.getClient();
+			CustomObjectsApi api = k8sApiProvider.getCustomObjectsApi(client);
 			String namespace = getNamespace(mldep);
+
 			if (replaceStatusResource)
 			{
 				try 
@@ -137,8 +142,8 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 	public SeldonDeployment getSeldonDeployment(String name,String namespace) {
 		try
 		{
-			ApiClient client = Config.defaultClient();
-			CustomObjectsApi api = new CustomObjectsApi(client);
+			ApiClient client = k8sClientProvider.getClient();
+			CustomObjectsApi api = k8sApiProvider.getCustomObjectsApi(client);
 			Object resp = api.getNamespacedCustomObject(GROUP, VERSION, namespace, KIND_PLURAL, name);
 			Gson gson = new GsonBuilder().create();
     		String json = gson.toJson(resp);
@@ -161,7 +166,7 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
     public ExtensionsV1beta1DeploymentList getOwnedDeployments(String seldonDeploymentName,String namespace) {
         try
         {
-            ApiClient client = Config.defaultClient();
+            ApiClient client = k8sClientProvider.getClient();
             ExtensionsV1beta1Api api = new ExtensionsV1beta1Api(client);
             ExtensionsV1beta1DeploymentList l =  api.listNamespacedDeployment(namespace, null, null, null, false, Constants.LABEL_SELDON_ID+"="+seldonDeploymentName, null, null, null, false);
             return l;
@@ -178,7 +183,7 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 	public V1ServiceList getOwnedServices(String seldonDeploymentName,String namespace) {
 		try
 		{
-			ApiClient client = Config.defaultClient();
+			ApiClient client = k8sClientProvider.getClient();
 			io.kubernetes.client.apis.CoreV1Api api = new CoreV1Api(client);
 			V1ServiceList l = api.listNamespacedService(namespace, null, null, null, false, Constants.LABEL_SELDON_ID+"="+seldonDeploymentName, null, null, null, null);
 			return l;

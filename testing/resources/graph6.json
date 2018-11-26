@@ -67,7 +67,7 @@
                     },
 		    "type": "MODEL"
                 },
-                "name": "mymodel_canary",
+                "name": "mymodel-canary",
                 "replicas": 1
             }
 	    

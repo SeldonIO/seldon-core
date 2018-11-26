@@ -71,14 +71,15 @@ public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusU
 		else
 			return false;
 	}
-	
+
 	public Set<String> getDeploymentNames(SeldonDeployment mlDep)
 	{
 		Set<String> names = new HashSet<>();
 		for(int pbIdx=0;pbIdx<mlDep.getSpec().getPredictorsCount();pbIdx++)
 		{
 			PredictorSpec p = mlDep.getSpec().getPredictors(pbIdx);
-			names.add(seldonNameCreator.getServiceOrchestratorName(mlDep, p));
+			if (SeldonDeploymentUtils.hasSeparateEnginePodAnnotation(mlDep))
+				names.add(seldonNameCreator.getServiceOrchestratorName(mlDep, p));
 			for(int ptsIdx=0;ptsIdx<p.getComponentSpecsCount();ptsIdx++)
 			{
 				V1.PodTemplateSpec spec = p.getComponentSpecs(ptsIdx);
@@ -91,7 +92,10 @@ public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusU
     @Override
     public void updateStatus(String mlDepName, String depName, Integer replicas, Integer replicasAvailable,String namespace) {
         if (replicas == null || replicas == 0)
-            removeStatus(mlDepName,depName,namespace);
+        {
+        	logger.warn("Remove status for {} {} {} {}",mlDepName,depName,replicas,replicasAvailable);
+        	//removeStatus(mlDepName,depName);
+        }
         else
         {
             logger.info(String.format("UPDATE %s : %s %d %d",mlDepName,depName,replicas,replicasAvailable));
@@ -119,7 +123,7 @@ public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusU
                if (isAvailable(mlBuilder,mlDep))
                {
             	   mlBuilder.getStatusBuilder().setState(Constants.STATE_AVAILABLE);
-            	   seldonDeploymentController.removeUnusedResources(mlDep);
+            	   seldonDeploymentController.removeInitialUnusedResources(mlDep);
                }
                else
                {
@@ -148,7 +152,10 @@ public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusU
                     mlBuilder.getStatusBuilder().removePredictorStatus(idx);
                     break;
                 }
+                idx++;
             }
+            if (isAvailable(mlBuilder, mlDep))
+            	seldonDeploymentController.removeAllUnusedResources(mlDep);
             crdHandler.updateSeldonDeploymentStatus(mlBuilder.build());
         }
         else

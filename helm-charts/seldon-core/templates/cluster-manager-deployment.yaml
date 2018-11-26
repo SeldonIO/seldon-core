@@ -39,6 +39,8 @@ spec:
           value: {{ .Values.engine.service_account.name }}
         - name: SELDON_CLUSTER_MANAGER_CLUSTER_WIDE
           value: '{{ .Values.cluster_manager.cluster_wide }}'
+        - name: ENGINE_CONTAINER_USER
+          value: '{{ .Values.engine.user }}'
         - name: SELDON_CLUSTER_MANAGER_POD_NAMESPACE
           valueFrom:
             fieldRef:

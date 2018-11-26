@@ -16,9 +16,9 @@
 package io.seldon.engine.predictors;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -35,6 +35,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Timer;
 import io.seldon.engine.exception.APIException;
 import io.seldon.engine.metrics.CustomMetricsManager;
@@ -67,28 +68,31 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 	
 	
 	public SeldonMessage getOutput(SeldonMessage request, PredictiveUnitState state) throws InterruptedException, ExecutionException, InvalidProtocolBufferException{
-		Map<String,Integer> routingDict = new HashMap<String,Integer>();
-		Map<String,String> requestPathDict = new HashMap<String,String>();
-		List<Metric> metrics = new ArrayList<>();
+		Map<String,Integer> routingDict = new ConcurrentHashMap<String,Integer>();
+		Map<String,String> requestPathDict = new ConcurrentHashMap<String,String>();
+		Map<String,List<Metric>> metrics = new ConcurrentHashMap<String,List<Metric>>();
 		SeldonMessage response = getOutputAsync(request, state, routingDict,requestPathDict,metrics).get();
+		List<Metric> metricList = new ArrayList<>();
+		for(List<Metric> mlist: metrics.values())
+			metricList.addAll(mlist);
 		SeldonMessage.Builder builder = SeldonMessage
 	    		.newBuilder(response)
 	    		.setMeta(Meta
-	    				.newBuilder(response.getMeta()).putAllRouting(routingDict).putAllRequestPath(requestPathDict).addAllMetrics(metrics));
+	    				.newBuilder(response.getMeta()).putAllRouting(routingDict).putAllRequestPath(requestPathDict).addAllMetrics(metricList));
 		return builder.build();
 	}
 	
-	private void addMetrics(SeldonMessage msg,PredictiveUnitState state,List<Metric> metrics)
+	private void addMetrics(SeldonMessage msg,PredictiveUnitState state,Map<String,List<Metric>> metrics)
 	{
 		if (msg.hasMeta())
 		{
 			addCustomMetrics(msg.getMeta().getMetricsList(),state);
-			metrics.addAll(msg.getMeta().getMetricsList());
+			metrics.put(state.name,msg.getMeta().getMetricsList());
 		}
 	}
 	
 	@Async
-	private Future<SeldonMessage> getOutputAsync(SeldonMessage input, PredictiveUnitState state, Map<String,Integer> routingDict,Map<String,String> requestPathDict,List<Metric> metrics) throws InterruptedException, ExecutionException, InvalidProtocolBufferException{
+	private Future<SeldonMessage> getOutputAsync(SeldonMessage input, PredictiveUnitState state, Map<String,Integer> routingDict,Map<String,String> requestPathDict,Map<String,List<Metric>> metrics) throws InterruptedException, ExecutionException, InvalidProtocolBufferException{
 		
 		// This element to the request path
 		requestPathDict.put(state.name, state.image);
@@ -284,22 +288,25 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 	
 	private void addCustomMetrics(List<Metric> metrics, PredictiveUnitState state)
 	{
-		logger.debug("Add metrics");
+		logger.info("Add metrics");
 		for(Metric metric : metrics)
 		{
+			Iterable<Tag> tags = tagsProvider.getModelMetrics(state, metric.getTagsMap());
 			switch(metric.getType())
 			{
 			case COUNTER:
-				logger.debug("Adding counter {} for {}",metric.getKey(),state.name);
-				Counter.builder(metric.getKey()).tags(tagsProvider.getModelMetrics(state)).register(Metrics.globalRegistry).increment(metric.getValue());
+				logger.info("Adding counter {} for {}",metric.getKey(),state.name);
+				Counter counter = customMetricsManager.getCounter(tags, metric);
+				counter.increment(metric.getValue());
 				break;
 			case GAUGE:
-				logger.debug("Adding gauge {} for {}",metric.getKey(),state.name);				
-				customMetricsManager.get(state, metric).set(metric.getValue());
+				logger.info("Adding gauge {} for {}",metric.getKey(),state.name);		
+				customMetricsManager.getGaugeValue(tags, metric).set(metric.getValue());
 				break;
 			case TIMER:
-				logger.debug("Adding timer {} for {}",metric.getKey(),state.name);				
-				Timer.builder(metric.getKey()).tags(tagsProvider.getModelMetrics(state)).register(Metrics.globalRegistry).record((long) metric.getValue(), TimeUnit.MILLISECONDS);
+				logger.info("Adding timer {} for {}",metric.getKey(),state.name);
+				Timer timer = customMetricsManager.getTimer(tags, metric);
+				timer.record((long) metric.getValue(), TimeUnit.MILLISECONDS);
 				break;
 			case UNRECOGNIZED:
 				break;

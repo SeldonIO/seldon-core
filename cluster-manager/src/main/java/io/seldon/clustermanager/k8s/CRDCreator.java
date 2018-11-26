@@ -15,6 +15,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.google.gson.reflect.TypeToken;
@@ -26,15 +27,23 @@ import io.kubernetes.client.Pair;
 import io.kubernetes.client.ProgressRequestBody;
 import io.kubernetes.client.ProgressResponseBody;
 import io.kubernetes.client.models.V1beta1CustomResourceDefinition;
-import io.kubernetes.client.util.Config;
+import io.seldon.clustermanager.k8s.client.K8sClientProvider;
 
 @Component
 public class CRDCreator {
 	protected static Logger logger = LoggerFactory.getLogger(CRDCreator.class.getName());
+	
+	private final K8sClientProvider k8sClientProvider;
+
+	@Autowired
+	public CRDCreator(K8sClientProvider k8sClientProvider) {
+		super();
+		this.k8sClientProvider = k8sClientProvider;
+	}
 	public void createCRD() throws IOException, ApiException
 	{
 		String jsonStr = readFileFromClasspath("crd.json");
-		ApiClient client = Config.defaultClient();
+		ApiClient client = k8sClientProvider.getClient();
 		try {
 			createCustomResourceDefinition(client,jsonStr.getBytes(),null);
 			logger.info("Created CRD");

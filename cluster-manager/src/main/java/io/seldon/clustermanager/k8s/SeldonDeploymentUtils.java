@@ -67,4 +67,9 @@ public class SeldonDeploymentUtils {
 	        return d.getMetadata().getNamespace();
 	}
 	
+	public static boolean hasSeparateEnginePodAnnotation(SeldonDeployment mlDep)
+	{
+		return Boolean.parseBoolean(mlDep.getSpec().getAnnotationsOrDefault(Constants.ENGINE_SEPARATE_ANNOTATION, "false"));
+	}
+	
 }
