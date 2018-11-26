@@ -35,6 +35,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Timer;
 import io.seldon.engine.exception.APIException;
 import io.seldon.engine.metrics.CustomMetricsManager;
@@ -290,19 +291,22 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 		logger.info("Add metrics");
 		for(Metric metric : metrics)
 		{
+			Iterable<Tag> tags = tagsProvider.getModelMetrics(state, metric.getTagsMap());
 			switch(metric.getType())
 			{
 			case COUNTER:
 				logger.info("Adding counter {} for {}",metric.getKey(),state.name);
-				Counter.builder(metric.getKey()).tags(tagsProvider.getModelMetrics(state)).register(Metrics.globalRegistry).increment(metric.getValue());
+				Counter counter = customMetricsManager.getCounter(tags, metric);
+				counter.increment(metric.getValue());
 				break;
 			case GAUGE:
-				logger.info("Adding gauge {} for {}",metric.getKey(),state.name);				
-				customMetricsManager.get(tagsProvider.getModelMetrics(state), metric).set(metric.getValue());
+				logger.info("Adding gauge {} for {}",metric.getKey(),state.name);		
+				customMetricsManager.getGaugeValue(tags, metric).set(metric.getValue());
 				break;
 			case TIMER:
-				logger.info("Adding timer {} for {}",metric.getKey(),state.name);				
-				Timer.builder(metric.getKey()).tags(tagsProvider.getModelMetrics(state)).register(Metrics.globalRegistry).record((long) metric.getValue(), TimeUnit.MILLISECONDS);
+				logger.info("Adding timer {} for {}",metric.getKey(),state.name);
+				Timer timer = customMetricsManager.getTimer(tags, metric);
+				timer.record((long) metric.getValue(), TimeUnit.MILLISECONDS);
 				break;
 			case UNRECOGNIZED:
 				break;

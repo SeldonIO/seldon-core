@@ -153,7 +153,7 @@ def set_version(seldon_core_version, pom_files, chart_yaml_files, values_yaml_fi
 
 def main(argv):
     POM_FILES = ['engine/pom.xml', 'api-frontend/pom.xml', 'cluster-manager/pom.xml']
-    CHART_YAML_FILES = ['helm-charts/seldon-core/Chart.yaml', 'helm-charts/seldon-core-crd/Chart.yaml']
+    CHART_YAML_FILES = ['helm-charts/seldon-core/Chart.yaml', 'helm-charts/seldon-core-crd/Chart.yaml', 'helm-charts/seldon-core-analytics/Chart.yaml']
     VALUES_YAML_FILE = 'helm-charts/seldon-core/values.yaml'
     CORE_JSONNET_FILE = 'seldon-core/seldon-core/prototypes/core.jsonnet'
 
