@@ -75,22 +75,38 @@ public class SeldonGraphReadyChecker extends PredictiveUnitImpl {
 			return false;
 	}
 	
-	public static boolean pingHost(Endpoint endpoint) {
-	    try (Socket socket = new Socket()) {
-	        socket.connect(new InetSocketAddress(endpoint.getServiceHost(), endpoint.getServicePort()), 500);
-	        return true;
-	    } catch (IOException e) {
-	        return false; // Either timeout or unreachable or failed DNS lookup.
-	    }
+	private boolean pingHost(Endpoint endpoint) {
+		for(int i=0;i<3;i++)
+    	{
+			Socket socket = null;
+			try 
+			{
+				socket = new Socket();
+	    		socket.connect(new InetSocketAddress(endpoint.getServiceHost(), endpoint.getServicePort()), 500);
+	    		socket.close();
+	    		socket = null;
+	    		return true;
+			} catch (IOException e) {
+				logger.warn("Failed to connect to {}:{}",endpoint.getServiceHost(),endpoint.getServicePort());
+			}
+			finally {
+				if (socket != null)
+				{
+					try {
+						socket.close();
+					} catch (IOException e) {
+						logger.error("Failed to close socket",e);
+					}
+				}
+			}
+    	}
+		logger.warn("Failing {}:{}",endpoint.getServiceHost(),endpoint.getServicePort());
+		return false;
 	}
-	
-	
 	
 	public boolean getReady() {
 		return ready.get();
 	}
-
-
 
 	@Scheduled(fixedDelay = 5000)
     public void checkReady() {

@@ -125,11 +125,11 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(clusterManagerProperites.getEngineContainerPort()))
 			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(8082).setName("admin"))
 			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(9090).setName("jmx"))
-			.setSecurityContext(SecurityContext.newBuilder().setRunAsUser(8888).build())
+			.setSecurityContext(SecurityContext.newBuilder().setRunAsUser(clusterManagerProperites.getEngineUser()).build())
 			.setReadinessProbe(Probe.newBuilder().setHandler(Handler.newBuilder()
 					.setHttpGet(HTTPGetAction.newBuilder().setPort(IntOrString.newBuilder().setType(1).setStrVal("admin")).setPath("/ready")))
 					.setInitialDelaySeconds(20)
-					.setPeriodSeconds(5)
+					.setPeriodSeconds(1)
 					.setFailureThreshold(1)
 					.setSuccessThreshold(1)
 					.setTimeoutSeconds(2)
@@ -138,15 +138,23 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 					.setHttpGet(HTTPGetAction.newBuilder().setPort(IntOrString.newBuilder().setType(1).setStrVal("admin")).setPath("/ready")))
 					.setInitialDelaySeconds(20)
 					.setPeriodSeconds(5)
-					.setFailureThreshold(5)
+					.setFailureThreshold(3)
 					.setSuccessThreshold(1)
 					.setTimeoutSeconds(2)
 					)
-			.setLifecycle(Lifecycle.newBuilder().setPreStop(Handler.newBuilder().setExec(
-					ExecAction.newBuilder()
-						.addCommand("/bin/sh")
-						.addCommand("-c")
-						.addCommand("curl 127.0.0.1:"+clusterManagerProperites.getEngineContainerPort()+"/pause && /bin/sleep 1"))));
+			.setLifecycle(Lifecycle.newBuilder()
+					// Possible future fix for slow DNS lookups see https://blog.quentin-machu.fr/2018/06/24/5-15s-dns-lookups-on-kubernetes/
+					//  But only for non coreOS images
+					//.setPostStart(Handler.newBuilder().setExec(
+					//		ExecAction.newBuilder()
+					//		.addCommand("/bin/sh")
+					//		.addCommand("-c")							
+					//		.addCommand("/bin/echo 'options single-request-reopen' >> /etc/resolv.conf")))
+					.setPreStop(Handler.newBuilder().setExec(
+							ExecAction.newBuilder()
+							.addCommand("/bin/sh")
+							.addCommand("-c")
+							.addCommand("curl 127.0.0.1:"+clusterManagerProperites.getEngineContainerPort()+"/pause && /bin/sleep 10"))));
 
 		// Add engine resources if specified
 		if (predictorDef.hasEngineResources())
@@ -229,7 +237,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		            {
 		                c2Builder.setLivenessProbe(Probe.newBuilder()
 		                        .setHandler(Handler.newBuilder().setTcpSocket(TCPSocketAction.newBuilder().setPort(io.kubernetes.client.proto.IntStr.IntOrString.newBuilder().setType(1).setStrVal("http"))))
-		                        .setInitialDelaySeconds(10)
+		                        .setInitialDelaySeconds(60)
 		                        .setPeriodSeconds(5)
 		                        );
 		            }
@@ -238,7 +246,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		                
 		                c2Builder.setReadinessProbe(Probe.newBuilder()
 		                        .setHandler(Handler.newBuilder().setTcpSocket(TCPSocketAction.newBuilder().setPort(io.kubernetes.client.proto.IntStr.IntOrString.newBuilder().setType(1).setStrVal("http"))))
-		                        .setInitialDelaySeconds(10)
+		                        .setInitialDelaySeconds(20)
 		                        .setPeriodSeconds(5)
 		                        );
 		            }
@@ -301,8 +309,9 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		{
 			if (!c.getLifecycle().hasPreStop())
 			{
-				c2Builder.setLifecycle(Lifecycle.newBuilder(c.getLifecycle()).setPreStop(Handler.newBuilder().setExec(
-						ExecAction.newBuilder().addCommand("/bin/sh").addCommand("-c").addCommand("/bin/sleep 5"))));
+				c2Builder.setLifecycle(Lifecycle.newBuilder(c.getLifecycle())
+						.setPreStop(Handler.newBuilder().setExec(
+								ExecAction.newBuilder().addCommand("/bin/sh").addCommand("-c").addCommand("/bin/sleep 5"))));
 			}
 		}
 		
@@ -365,6 +374,8 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 	public SeldonDeployment defaulting(SeldonDeployment mlDep) {
 		SeldonDeployment.Builder mlBuilder = SeldonDeployment.newBuilder(mlDep);
 		String deploymentName = mlDep.getMetadata().getName();
+		final boolean separateEnginePod = SeldonDeploymentUtils.hasSeparateEnginePodAnnotation(mlDep);
+		final String namespace = (StringUtils.isEmpty(mlDep.getMetadata().getNamespace())) ? "default" : mlDep.getMetadata().getNamespace();
 		
 		for(int pbIdx=0;pbIdx<mlDep.getSpec().getPredictorsCount();pbIdx++)
 		{
@@ -399,7 +410,9 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 							currentServicePortNum++;
 						}
 						c2 = this.updateContainer(c, findPredictiveUnitForContainer(mlDep.getSpec().getPredictors(pbIdx).getGraph(),c.getName()),portNum,deploymentName,predictorName);
-						updatePredictiveUnitBuilderByName(mlBuilder.getSpecBuilder().getPredictorsBuilder(pbIdx).getGraphBuilder(),c2,containerServiceValue); 
+						// Use FQDN if not a local request: See https://github.com/weaveworks/weave/issues/3287#issuecomment-384881708
+						updatePredictiveUnitBuilderByName(mlBuilder.getSpecBuilder().getPredictorsBuilder(pbIdx).getGraphBuilder(),c2,
+								ptsIdx == 0 && !separateEnginePod ? "localhost" : (containerServiceValue+"."+namespace+".svc.cluster.local.")); 
 					}
 					else
 						c2 = c;
@@ -539,12 +552,12 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		 return false;
 	}
 	
-	private void addServicePort(PredictiveUnit pu,String serviceName,ServiceSpec.Builder svcSpecBuilder)
+	private void addServicePort(PredictiveUnit pu,String containerName,ServiceSpec.Builder svcSpecBuilder)
 	{
 		if (pu.hasEndpoint())
 		{
 			Endpoint e = pu.getEndpoint();
-			if (e.getServiceHost().equals(serviceName))
+			if (pu.getName().equals(containerName))
 			{
 				switch(e.getType())
 				{
@@ -568,8 +581,73 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			}
 		}
 		for(int i=0;i<pu.getChildrenCount();i++)
-			addServicePort(pu.getChildren(i), serviceName,svcSpecBuilder);
+			addServicePort(pu.getChildren(i), containerName,svcSpecBuilder);
 	}
+	
+	
+	private Deployment createEngineDeployment(SeldonDeployment mlDep,PredictorSpec p,OwnerReference ownerRef,String serviceLabel) throws SeldonDeploymentException
+	{
+		{//Deployment for engine service orchestrator
+			PodTemplateSpec.Builder podSpecBuilder = PodTemplateSpec.newBuilder();
+			podSpecBuilder.getSpecBuilder()
+	    	.addContainers(createEngineContainer(mlDep,p))
+	    	.setTerminationGracePeriodSeconds(20)
+	    	.setServiceAccountName(clusterManagerProperites.getEngineContainerServiceAccountName())
+	    	.addVolumes(Volume.newBuilder() // Add downwardAPI volume for annotations
+	    			.setName(PODINFO_VOLUME_NAME)
+	    			.setVolumeSource(VolumeSource.newBuilder().setDownwardAPI(DownwardAPIVolumeSource.newBuilder()
+	    			.addItems(DownwardAPIVolumeFile.newBuilder().setPath("annotations")
+	    					.setFieldRef(ObjectFieldSelector.newBuilder().setFieldPath("metadata.annotations"))))));
+		
+			String depName = seldonNameCreator.getServiceOrchestratorName(mlDep, p);
+			//final String depName = seldonNameCreator.getSeldonDeploymentName(mlDep,p,spec);
+			podSpecBuilder.getMetadataBuilder()
+				.putAllAnnotations(mlDep.getSpec().getAnnotationsMap()) // Add all spec annotations first
+				.putAllAnnotations(p.getAnnotationsMap()) // ...then add those for predictor overwriting any from spec above
+		    	.putAnnotations("prometheus.io/path", "/prometheus")
+		    	.putAnnotations("prometheus.io/port",""+clusterManagerProperites.getEngineContainerPort())
+		    	.putAnnotations("prometheus.io/scrape", "true");
+
+			ObjectMeta.Builder depMetaBuilder = ObjectMeta.newBuilder()
+					.setName(depName)					
+					.addOwnerReferences(ownerRef);
+
+			// LABELS - START
+			podSpecBuilder.getMetadataBuilder()
+				.putLabels(LABEL_SELDON_APP, serviceLabel) // key label for entry point to whole graphn- see service below
+				.putLabels("app", depName);
+			depMetaBuilder
+				.putLabels(LABEL_SELDON_APP, serviceLabel)
+				.putLabels(Constants.LABEL_SELDON_SVCORCH, "true")
+				.putLabels(Constants.LABEL_SELDON_ID, mlDep.getSpec().getName())
+				.putLabels("app", depName)
+				.putLabels("version", "v1") // Add default version
+				.putLabels(SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_KEY, SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_VAL);
+			// Add all labels from the predictor but don't allow overwriting of key label for deployment selector
+			for(Map.Entry<String, String> predictorLabel : p.getLabelsMap().entrySet())
+			{
+				if (!predictorLabel.getKey().equals(LABEL_SELDON_APP))
+				{
+					depMetaBuilder.putLabels(predictorLabel.getKey(), predictorLabel.getValue());
+					podSpecBuilder.getMetadataBuilder().putLabels(predictorLabel.getKey(), predictorLabel.getValue());
+				}
+			}
+			// LABELS - END
+			
+			Deployment deployment = V1beta1Extensions.Deployment.newBuilder()
+					.setMetadata(depMetaBuilder)
+					.setSpec(DeploymentSpec.newBuilder()
+					        .setTemplate(podSpecBuilder.build())
+					        .setStrategy(DeploymentStrategy.newBuilder().setRollingUpdate(RollingUpdateDeployment.newBuilder().setMaxUnavailable(IntOrString.newBuilder().setType(1).setStrVal("10%"))))
+							.setReplicas(p.getReplicas())
+							.setSelector(LabelSelector.newBuilder().putMatchLabels(SeldonDeploymentOperatorImpl.LABEL_SELDON_APP, serviceLabel))
+							)
+					.build();
+			
+			return deployment;
+		}
+	}
+	
 	
 	@Override
 	public DeploymentResources createResources(SeldonDeployment mlDep) throws SeldonDeploymentException {
@@ -584,69 +662,17 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		{
 			PredictorSpec p = mlDep.getSpec().getPredictors(pbIdx);
 
-			{//Deployment for engine service orchestrator
-				PodTemplateSpec.Builder podSpecBuilder = PodTemplateSpec.newBuilder();
-				podSpecBuilder.getSpecBuilder()
-		    	.addContainers(createEngineContainer(mlDep,p))
-		    	.setTerminationGracePeriodSeconds(20)
-		    	.setServiceAccountName(clusterManagerProperites.getEngineContainerServiceAccountName())
-		    	.addVolumes(Volume.newBuilder() // Add downwardAPI volume for annotations
-		    			.setName(PODINFO_VOLUME_NAME)
-		    			.setVolumeSource(VolumeSource.newBuilder().setDownwardAPI(DownwardAPIVolumeSource.newBuilder()
-		    			.addItems(DownwardAPIVolumeFile.newBuilder().setPath("annotations")
-		    					.setFieldRef(ObjectFieldSelector.newBuilder().setFieldPath("metadata.annotations"))))));
-			
-				String depName = seldonNameCreator.getServiceOrchestratorName(mlDep, p);
-				//final String depName = seldonNameCreator.getSeldonDeploymentName(mlDep,p,spec);
-				podSpecBuilder.getMetadataBuilder()
-					.putAllAnnotations(mlDep.getSpec().getAnnotationsMap()) // Add all spec annotations first
-					.putAllAnnotations(p.getAnnotationsMap()) // ...then add those for predictor overwriting any from spec above
-			    	.putAnnotations("prometheus.io/path", "/prometheus")
-			    	.putAnnotations("prometheus.io/port",""+clusterManagerProperites.getEngineContainerPort())
-			    	.putAnnotations("prometheus.io/scrape", "true");
-
-				ObjectMeta.Builder depMetaBuilder = ObjectMeta.newBuilder()
-						.setName(depName)					
-						.addOwnerReferences(ownerRef);
-
-				// LABELS - START
-				podSpecBuilder.getMetadataBuilder()
-					.putLabels(LABEL_SELDON_APP, serviceLabel) // key label for entry point to whole graphn- see service below
-					.putLabels("app", depName);
-				depMetaBuilder
-					.putLabels(LABEL_SELDON_APP, serviceLabel)
-					.putLabels(Constants.LABEL_SELDON_ID, mlDep.getSpec().getName())
-					.putLabels("app", depName)
-					.putLabels("version", "v1") // Add default version
-					.putLabels(SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_KEY, SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_VAL);
-				// Add all labels from the predictor but don't allow overwriting of key label for deployment selector
-				for(Map.Entry<String, String> predictorLabel : p.getLabelsMap().entrySet())
-				{
-					if (!predictorLabel.getKey().equals(LABEL_SELDON_APP))
-					{
-						depMetaBuilder.putLabels(predictorLabel.getKey(), predictorLabel.getValue());
-						podSpecBuilder.getMetadataBuilder().putLabels(predictorLabel.getKey(), predictorLabel.getValue());
-					}
-				}
-				// LABELS - END
-				
-				Deployment deployment = V1beta1Extensions.Deployment.newBuilder()
-						.setMetadata(depMetaBuilder)
-						.setSpec(DeploymentSpec.newBuilder()
-						        .setTemplate(podSpecBuilder.build())
-						        .setStrategy(DeploymentStrategy.newBuilder().setRollingUpdate(RollingUpdateDeployment.newBuilder().setMaxUnavailable(IntOrString.newBuilder().setType(1).setStrVal("10%"))))
-								.setReplicas(p.getReplicas())
-								.setSelector(LabelSelector.newBuilder().putMatchLabels(SeldonDeploymentOperatorImpl.LABEL_SELDON_APP, serviceLabel))
-								)
-						.build();
-				
-				deployments.add(deployment);
+			final boolean separateEnginePod = SeldonDeploymentUtils.hasSeparateEnginePodAnnotation(mlDep);
+			if (separateEnginePod)
+			{
+				deployments.add(createEngineDeployment(mlDep, p, ownerRef, serviceLabel));
 			}
 			
 			
 			for(int ptsIdx=0;ptsIdx<p.getComponentSpecsCount();ptsIdx++)
 			{
 				V1.PodTemplateSpec spec = p.getComponentSpecs(ptsIdx);
+				
 				final String depName = seldonNameCreator.getSeldonDeploymentName(mlDep,p,spec);
 				PodTemplateSpec.Builder podSpecBuilder = PodTemplateSpec.newBuilder(spec);
 				ObjectMeta.Builder depMetaBuilder = ObjectMeta.newBuilder()
@@ -654,10 +680,13 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 						.addOwnerReferences(ownerRef);
 				
 				// LABELS - START
-				depMetaBuilder.putLabels(Constants.LABEL_SELDON_ID, mlDep.getSpec().getName())
+				depMetaBuilder
+					.putLabels(Constants.LABEL_SELDON_ID, mlDep.getSpec().getName())
 					.putLabels("app", depName)
 					.putLabels(SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_KEY, SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_VAL);
-				podSpecBuilder.getMetadataBuilder().putLabels(Constants.LABEL_SELDON_ID, mlDep.getSpec().getName());
+				podSpecBuilder.getMetadataBuilder()
+					.putLabels("app", depName)
+					.putLabels(Constants.LABEL_SELDON_ID, mlDep.getSpec().getName());
 				// Add labels from the predictor for this deployment but not overwriting existing labels
 				for(Map.Entry<String, String> predictorLabel : p.getLabelsMap().entrySet())
 				{
@@ -681,6 +710,24 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		    					.setFieldRef(ObjectFieldSelector.newBuilder().setFieldPath("metadata.annotations"))))));
 				
 				LabelSelector.Builder labelSelector = LabelSelector.newBuilder();
+				
+				if (ptsIdx == 0 && !separateEnginePod)
+				{
+					podSpecBuilder.getSpecBuilder()
+			    	.addContainers(createEngineContainer(mlDep,p))
+			    	.setServiceAccountName(clusterManagerProperites.getEngineContainerServiceAccountName());
+					podSpecBuilder.getMetadataBuilder()
+				    	.putAnnotations("prometheus.io/path", "/prometheus")
+				    	.putAnnotations("prometheus.io/port",""+clusterManagerProperites.getEngineContainerPort())
+				    	.putAnnotations("prometheus.io/scrape", "true");
+					// LABELS - START
+					podSpecBuilder.getMetadataBuilder().putLabels(LABEL_SELDON_APP, serviceLabel); // key label for entry point to whole graphn- see service below						
+					depMetaBuilder.putLabels(LABEL_SELDON_APP, serviceLabel).putLabels(Constants.LABEL_SELDON_SVCORCH, "true");
+					labelSelector.putMatchLabels(LABEL_SELDON_APP, serviceLabel);
+					// LABELS - END
+				}
+
+				
 				for(V1.Container c : spec.getSpec().getContainersList())
 				{
 					final String containerServiceKey = getPredictorServiceNameKey(c.getName());
@@ -698,7 +745,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 										.addOwnerReferences(ownerRef)
 										);
 						ServiceSpec.Builder svcSpecBuilder = ServiceSpec.newBuilder();
-						addServicePort(p.getGraph(), containerServiceValue, svcSpecBuilder);
+						addServicePort(p.getGraph(), c.getName(), svcSpecBuilder);
 						svcSpecBuilder.setType("ClusterIP").putSelector(containerServiceKey,containerServiceValue);
 
 						// LABELS - START
@@ -766,7 +813,6 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		return new DeploymentResources(deployments, services);
 	}
 	
-
 	public static class DeploymentResources {
 		
 		List<Deployment> deployments;

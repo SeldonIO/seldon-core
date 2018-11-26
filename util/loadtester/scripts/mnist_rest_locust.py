@@ -90,7 +90,8 @@ class SeldonJsLocust(TaskSet):
         self.oauth_key = getEnviron('OAUTH_KEY',"key")
         self.oauth_secret = getEnviron('OAUTH_SECRET',"secret")
         self.data_size = int(getEnviron('DATA_SIZE',"1"))
-        self.send_feedback = int(getEnviron('SEND_FEEDBACK',"1"))
+        self.send_feedback = int(getEnviron('SEND_FEEDBACK',"0"))
+        self.endpoint = getEnviron('API_ENDPOINT',"external")
         if self.oauth_enabled == "true":
             self.get_token()
         else:
@@ -120,7 +121,11 @@ class SeldonJsLocust(TaskSet):
         #request = {"data":{"names":features,"ndarray":data.tolist()}}
         request = {"data":{"ndarray":data.tolist()}}
         jStr = json.dumps(request)
-        r = self.client.request("POST","/api/v0.1/predictions",headers={"Content-Type":"application/json","Accept":"application/json","Authorization":"Bearer "+self.access_token},name="predictions",data=jStr)
+        if self.endpoint == "internal":
+            payload = {"json":jStr}
+            r = self.client.request("POST","/predict",headers={"Accept":"application/json"},name="predictions",data=payload)
+        else:
+            r = self.client.request("POST","/api/v0.1/predictions",headers={"Content-Type":"application/json","Accept":"application/json","Authorization":"Bearer "+self.access_token},name="predictions",data=jStr)
         if r.status_code == 200:
             if self.send_feedback == 1:
                 response = r.json()

@@ -27,11 +27,10 @@
                         "containers": [
                             {
                                 "args": [
-                                    "-config.file=/etc/prometheus/conf/prometheus-config.yaml",
-                                    "-storage.local.path=/seldon-data/prometheus/data",
-                                    "-alertmanager.url=http://alertmanager/"
+                                    "--config.file=/etc/prometheus/conf/prometheus-config.yaml",
+                                    "--storage.tsdb.path=/seldon-data/prometheus/data"
                                 ],
-                                "image": "prom/prometheus:v1.7.1",
+                                "image": "prom/prometheus:v2.5.0",
                                 "name": "prometheus",
                                 "ports": [
                                     {

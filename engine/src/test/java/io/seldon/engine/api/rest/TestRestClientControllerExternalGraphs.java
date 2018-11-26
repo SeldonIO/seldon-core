@@ -11,10 +11,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -41,6 +42,7 @@ import io.kubernetes.client.proto.IntStr.IntOrString;
 import io.kubernetes.client.proto.Meta.Time;
 import io.kubernetes.client.proto.Meta.Timestamp;
 import io.kubernetes.client.proto.Resource.Quantity;
+import io.micrometer.core.instrument.Metrics;
 import io.seldon.engine.pb.IntOrStringUtils;
 import io.seldon.engine.pb.JsonFormat;
 import io.seldon.engine.pb.QuantityUtils;
@@ -89,6 +91,7 @@ public class TestRestClientControllerExternalGraphs {
     
     @Before
 	public void setup() throws Exception {
+    
     	mvc = MockMvcBuilders
 				.webAppContextSetup(context)
 				.build();
@@ -103,6 +106,7 @@ public class TestRestClientControllerExternalGraphs {
     @Autowired
     private InternalPredictionService internalPredictionService;
 
+    
    
 
     @Test
@@ -110,6 +114,7 @@ public class TestRestClientControllerExternalGraphs {
     {
     	String jsonStr = readFile("src/test/resources/model_simple.json",StandardCharsets.UTF_8);
     	String responseStr = readFile("src/test/resources/response_with_metrics.json",StandardCharsets.UTF_8);
+    	String responseStr2 = readFile("src/test/resources/response_with_metrics2.json",StandardCharsets.UTF_8);
     	PredictorSpec.Builder PredictorSpecBuilder = PredictorSpec.newBuilder();
     	updateMessageBuilderFromJson(PredictorSpecBuilder, jsonStr);
     	PredictorSpec predictorSpec = PredictorSpecBuilder.build();
@@ -120,9 +125,19 @@ public class TestRestClientControllerExternalGraphs {
     	enginePredictor.setPredictorSpec(predictorSpec);
     	
     	
-    	ResponseEntity<String> httpResponse = new ResponseEntity<String>(responseStr, null, HttpStatus.OK);
+    	ResponseEntity<String> httpResponse1 = new ResponseEntity<String>(responseStr, null, HttpStatus.OK);
+    	ResponseEntity<String> httpResponse2 = new ResponseEntity<String>(responseStr2, null, HttpStatus.OK);
     	Mockito.when(restTemplate.postForEntity(Matchers.<URI>any(), Matchers.<HttpEntity<MultiValueMap<String, String>>>any(), Matchers.<Class<String>>any()))
-    		.thenReturn(httpResponse);
+    		.thenAnswer(new Answer<ResponseEntity<String>>() {
+    		    private int count = 0;
+
+    		    public ResponseEntity<String> answer(InvocationOnMock invocation) {
+    		    	count++;
+    		        if (count == 1)
+    		            return httpResponse1;
+
+    		        return httpResponse2;
+    		    }});
     	internalPredictionService.setRestTemplate(restTemplate);
     	
     	MvcResult res = mvc.perform(MockMvcRequestBuilders.post("/api/v0.1/predictions")
@@ -154,8 +169,44 @@ public class TestRestClientControllerExternalGraphs {
 	    MvcResult res2 = mvc.perform(MockMvcRequestBuilders.get("/prometheus")).andReturn();
 	    Assert.assertEquals(200, res2.getResponse().getStatus());
 	    response = res2.getResponse().getContentAsString();
-	    Assert.assertTrue(response.indexOf("mycounter_total{deployment_name=\"None\",model_image=\"seldonio/mean_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
-	    Assert.assertTrue(response.indexOf("mytimer_duration_seconds_count{deployment_name=\"None\",model_image=\"seldonio/mean_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
+	    System.out.println("response is ["+response+"]");
+	    Assert.assertTrue(response.indexOf("mycounter_total{deployment_name=\"None\",model_image=\"seldonio/mean_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
+	    Assert.assertTrue(response.indexOf("mytimer_seconds_count{deployment_name=\"None\",model_image=\"seldonio/mean_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
+	    Assert.assertTrue(response.indexOf("mygauge{deployment_name=\"None\",model_image=\"seldonio/mean_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 22.0")>-1);	    
+    	System.out.println(response);
+    	
+    	res = mvc.perform(MockMvcRequestBuilders.post("/api/v0.1/predictions")
+    			.accept(MediaType.APPLICATION_JSON_UTF8)
+    			.content(predictJson)
+    			.contentType(MediaType.APPLICATION_JSON_UTF8)).andReturn();
+    	response = res.getResponse().getContentAsString();
+    	System.out.println(response);
+    	Assert.assertEquals(200, res.getResponse().getStatus());
+    	
+    	builder = SeldonMessage.newBuilder();
+	    JsonFormat.parser().ignoringUnknownFields().merge(response, builder);
+	    seldonMessage = builder.build();
+    
+    	 // Check for returned metrics
+	    Assert.assertEquals("COUNTER",seldonMessage.getMeta().getMetrics(0).getType().toString());
+	    Assert.assertEquals(1.0F,seldonMessage.getMeta().getMetrics(0).getValue(),0.0);
+	    Assert.assertEquals("mycounter",seldonMessage.getMeta().getMetrics(0).getKey());
+
+	    Assert.assertEquals("GAUGE",seldonMessage.getMeta().getMetrics(1).getType().toString());
+	    Assert.assertEquals(100.0F,seldonMessage.getMeta().getMetrics(1).getValue(),0.0);
+	    Assert.assertEquals("mygauge",seldonMessage.getMeta().getMetrics(1).getKey());
+
+	    Assert.assertEquals("TIMER",seldonMessage.getMeta().getMetrics(2).getType().toString());
+	    Assert.assertEquals(1.0F,seldonMessage.getMeta().getMetrics(2).getValue(),0.0);
+	    Assert.assertEquals("mytimer",seldonMessage.getMeta().getMetrics(2).getKey());
+	    
+	 // Check prometheus endpoint for metric
+	    res2 = mvc.perform(MockMvcRequestBuilders.get("/prometheus")).andReturn();
+	    Assert.assertEquals(200, res2.getResponse().getStatus());
+	    response = res2.getResponse().getContentAsString();
+	    Assert.assertTrue(response.indexOf("mycounter_total{deployment_name=\"None\",model_image=\"seldonio/mean_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 2.0")>-1);
+	    Assert.assertTrue(response.indexOf("mytimer_seconds_count{deployment_name=\"None\",model_image=\"seldonio/mean_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 2.0")>-1);
+	    Assert.assertTrue(response.indexOf("mygauge{deployment_name=\"None\",model_image=\"seldonio/mean_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 100.0")>-1);
     	System.out.println(response);
     }
     
@@ -209,8 +260,8 @@ public class TestRestClientControllerExternalGraphs {
 	    MvcResult res2 = mvc.perform(MockMvcRequestBuilders.get("/prometheus")).andReturn();
 	    Assert.assertEquals(200, res2.getResponse().getStatus());
 	    response = res2.getResponse().getContentAsString();
-	    Assert.assertTrue(response.indexOf("mycounter_total{deployment_name=\"None\",model_image=\"seldonio/transformer\",model_name=\"transformer\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
-	    Assert.assertTrue(response.indexOf("mytimer_duration_seconds_count{deployment_name=\"None\",model_image=\"seldonio/transformer\",model_name=\"transformer\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
+	    Assert.assertTrue(response.indexOf("mycounter_total{deployment_name=\"None\",model_image=\"seldonio/transformer\",model_name=\"transformer\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
+	    Assert.assertTrue(response.indexOf("mytimer_seconds_count{deployment_name=\"None\",model_image=\"seldonio/transformer\",model_name=\"transformer\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
     	System.out.println(response);
     }
     
@@ -265,8 +316,8 @@ public class TestRestClientControllerExternalGraphs {
 	    Assert.assertEquals(200, res2.getResponse().getStatus());
 	    response = res2.getResponse().getContentAsString();
     	System.out.println(response);
-	    Assert.assertTrue(response.indexOf("mycounter_total{deployment_name=\"None\",model_image=\"seldonio/transformer\",model_name=\"transform_output\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
-	    Assert.assertTrue(response.indexOf("mytimer_duration_seconds_count{deployment_name=\"None\",model_image=\"seldonio/transformer\",model_name=\"transform_output\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
+	    Assert.assertTrue(response.indexOf("mycounter_total{deployment_name=\"None\",model_image=\"seldonio/transformer\",model_name=\"transform_output\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
+	    Assert.assertTrue(response.indexOf("mytimer_seconds_count{deployment_name=\"None\",model_image=\"seldonio/transformer\",model_name=\"transform_output\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
 
     }
     
@@ -321,8 +372,8 @@ public class TestRestClientControllerExternalGraphs {
 	    Assert.assertEquals(200, res2.getResponse().getStatus());
 	    response = res2.getResponse().getContentAsString();
     	System.out.println(response);
-	    Assert.assertTrue(response.indexOf("mycounter_total{deployment_name=\"None\",model_image=\"seldonio/router\",model_name=\"router\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
-	    Assert.assertTrue(response.indexOf("mytimer_duration_seconds_count{deployment_name=\"None\",model_image=\"seldonio/router\",model_name=\"router\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
+	    Assert.assertTrue(response.indexOf("mycounter_total{deployment_name=\"None\",model_image=\"seldonio/router\",model_name=\"router\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
+	    Assert.assertTrue(response.indexOf("mytimer_seconds_count{deployment_name=\"None\",model_image=\"seldonio/router\",model_name=\"router\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
 
     }
     
@@ -376,9 +427,11 @@ public class TestRestClientControllerExternalGraphs {
 	    MvcResult res2 = mvc.perform(MockMvcRequestBuilders.get("/prometheus")).andReturn();
 	    Assert.assertEquals(200, res2.getResponse().getStatus());
 	    response = res2.getResponse().getContentAsString();
-    	System.out.println(response);
-	    Assert.assertTrue(response.indexOf("mycounter_total{deployment_name=\"None\",model_image=\"seldonio/combiner\",model_name=\"combiner\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
-	    Assert.assertTrue(response.indexOf("mytimer_duration_seconds_count{deployment_name=\"None\",model_image=\"seldonio/combiner\",model_name=\"combiner\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
+	    System.out.println("----------------------------------------");
+	    System.out.println("----------------------------------------");	    
+	    System.out.println(response);
+	    Assert.assertTrue(response.indexOf("mycounter_total{deployment_name=\"None\",model_image=\"seldonio/combiner\",model_name=\"combiner\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
+	    Assert.assertTrue(response.indexOf("mytimer_seconds_count{deployment_name=\"None\",model_image=\"seldonio/combiner\",model_name=\"combiner\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
 
     }
 

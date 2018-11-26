@@ -28,6 +28,7 @@ public class ClusterManagerProperites {
     private int puContainerPortBase;
     private String namespace;
     private boolean clusterWide = false;
+    private int engineUser = 8889;
 
     public int getEngineContainerPort() {
         return engineContainerPort;
@@ -91,6 +92,14 @@ public class ClusterManagerProperites {
 
 	public void setClusterWide(boolean clusterWide) {
 		this.clusterWide = clusterWide;
+	}
+
+	public int getEngineUser() {
+		return engineUser;
+	}
+
+	public void setEngineUser(int engineUser) {
+		this.engineUser = engineUser;
 	}
 
 	@Override

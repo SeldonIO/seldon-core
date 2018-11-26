@@ -2,13 +2,13 @@
 
 Whether you have wrapped your component using [our S2I wrappers](./wrappers/readme.md) or created your own wrapper you will want to test the Docker container standalone and also quickly within a running cluster. We have provided two python tools to allow you to easily do this
 
- * [Microservice API Tester](../util/api_tester)
-    * Allows you to test a docker component to check it respects the Seldon API
- * [Seldon-Core API Tester](../wrappers/testing)
+ * [Microservice API Tester](../wrappers/testing)
+    * Allows you to test a docker component to check it respects the Seldon  internal microservice API
+ * [Seldon-Core API Tester](../util/api_tester)
     * Allows you to test the external endpoints for a running Seldon Deployment graph.
 
 
-## Microservice API Tester
+## Seldon-Core API Tester
 
 Use this [script](../util/api_tester/api-tester.py) to test a Seldon graph deployed to a cluster.
 
@@ -50,7 +50,7 @@ python api-tester.py contract.json  0.0.0.0 8003 --oauth-key oauth-key --oauth-s
 
 You can find more exampes in the [example models folder notebooks](../examples/models).
 
-## Seldon API Tester
+## Microservice API Tester
 
 Use this [script](../wrappers/testing/tester.py) to test a packaged Docker microservice Seldon component.
 
@@ -83,7 +83,7 @@ python tester.py contract.json 0.0.0.0 5000 -p --grpc
 
 The above sends a predict call to a gRPC component exposed at 0.0.0.0:5000 using the contract.json to create a random request.
 
-You can find more exampes in the [example models folder notebooks](../examples/models).
+You can find more examples in the [example models folder notebooks](../examples/models).
 
 ## API Contract
 
@@ -149,4 +149,3 @@ Each section has a list of definitions. Each definition consists of:
   * ```range``` : list of two numbers : Optional for ftype CONTINUOUS : The range of values (inclusive) that a continuous value can take
   * ```repeat``` : integer : Optional value for how many times to repeat this value
   * ```shape``` : array of integers : Optional value for the shape of array to coerce the values
-
