@@ -16,9 +16,9 @@
 package io.seldon.engine.predictors;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -68,29 +68,31 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 	
 	
 	public SeldonMessage getOutput(SeldonMessage request, PredictiveUnitState state) throws InterruptedException, ExecutionException, InvalidProtocolBufferException{
-		Map<String,Integer> routingDict = new HashMap<String,Integer>();
-		Map<String,String> requestPathDict = new HashMap<String,String>();
-		List<Metric> metrics = new ArrayList<>();
+		Map<String,Integer> routingDict = new ConcurrentHashMap<String,Integer>();
+		Map<String,String> requestPathDict = new ConcurrentHashMap<String,String>();
+		Map<String,List<Metric>> metrics = new ConcurrentHashMap<String,List<Metric>>();
 		SeldonMessage response = getOutputAsync(request, state, routingDict,requestPathDict,metrics).get();
+		List<Metric> metricList = new ArrayList<>();
+		for(List<Metric> mlist: metrics.values())
+			metricList.addAll(mlist);
 		SeldonMessage.Builder builder = SeldonMessage
 	    		.newBuilder(response)
 	    		.setMeta(Meta
-	    				.newBuilder(response.getMeta()).putAllRouting(routingDict).putAllRequestPath(requestPathDict).addAllMetrics(metrics));
+	    				.newBuilder(response.getMeta()).putAllRouting(routingDict).putAllRequestPath(requestPathDict).addAllMetrics(metricList));
 		return builder.build();
 	}
 	
-	private void addMetrics(SeldonMessage msg,PredictiveUnitState state,List<Metric> metrics)
+	private void addMetrics(SeldonMessage msg,PredictiveUnitState state,Map<String,List<Metric>> metrics)
 	{
 		if (msg.hasMeta())
 		{
 			addCustomMetrics(msg.getMeta().getMetricsList(),state);
-			metrics.addAll(msg.getMeta().getMetricsList());
+			metrics.put(state.name,msg.getMeta().getMetricsList());
 		}
 	}
 	
-		
 	@Async
-	private Future<SeldonMessage> getOutputAsync(SeldonMessage input, PredictiveUnitState state, Map<String,Integer> routingDict,Map<String,String> requestPathDict,List<Metric> metrics) throws InterruptedException, ExecutionException, InvalidProtocolBufferException{
+	private Future<SeldonMessage> getOutputAsync(SeldonMessage input, PredictiveUnitState state, Map<String,Integer> routingDict,Map<String,String> requestPathDict,Map<String,List<Metric>> metrics) throws InterruptedException, ExecutionException, InvalidProtocolBufferException{
 		
 		// This element to the request path
 		requestPathDict.put(state.name, state.image);

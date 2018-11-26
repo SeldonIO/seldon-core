@@ -81,6 +81,10 @@ public class PredictorConfigBean {
         nodeImplementationMap.put(PredictiveUnitImplementation.RANDOM_ABTEST, randomABTestUnit);
     }
     
+    public boolean hasMethod(PredictiveUnitState state) {
+    	return (state.implementation == PredictiveUnitImplementation.UNKNOWN_IMPLEMENTATION);
+    }
+    
     public PredictiveUnitImpl getImplementation(PredictiveUnitState state){
     	if (state.implementation != PredictiveUnitImplementation.UNKNOWN_IMPLEMENTATION){
     		return nodeImplementationMap.get(state.implementation);

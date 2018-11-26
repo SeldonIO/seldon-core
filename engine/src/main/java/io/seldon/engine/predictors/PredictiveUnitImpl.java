@@ -25,6 +25,10 @@ import io.seldon.protos.PredictionProtos.SeldonMessage;
 import io.seldon.protos.PredictionProtos.Tensor;
 
 public abstract class PredictiveUnitImpl {
+	
+	public boolean ready(PredictiveUnitState state) {
+		return true;
+	}
 
 	public SeldonMessage transformInput(SeldonMessage input, PredictiveUnitState state) throws InvalidProtocolBufferException{
 		return input;

@@ -26,6 +26,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+
 import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.ApiException;
 import io.kubernetes.client.ProtoClient;
@@ -55,6 +58,10 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	private final SeldonDeploymentCache mlCache;
 	
 	private static final String DEPLOYMENT_API_VERSION = "extensions/v1beta1";
+	
+	Cache<String, Boolean> deletedCache = CacheBuilder.newBuilder()
+		    .maximumSize(1000)
+		    .build();
 
 	
 	@Autowired
@@ -117,14 +124,17 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	    return names;
 	}
 	
-	private void removeDeployments(ProtoClient client,String namespace,SeldonDeployment seldonDeployment,List<Deployment> deployments) throws ApiException, IOException, SeldonDeploymentException
+	private int removeDeployments(ProtoClient client,String namespace,SeldonDeployment seldonDeployment,List<Deployment> deployments,boolean svcOrchOnly) throws ApiException, IOException, SeldonDeploymentException
 	{
+		int deleteCount = 0;
 	    Set<String> names = getDeploymentNames(deployments);
 	    ExtensionsV1beta1DeploymentList depList = crdHandler.getOwnedDeployments(seldonDeployment.getSpec().getName());
 	    for (ExtensionsV1beta1Deployment d : depList.getItems())
 	    {
-	        if (!names.contains(d.getMetadata().getName()))
+	    	boolean okToDelete = !svcOrchOnly || (d.getMetadata().getLabels().containsKey(Constants.LABEL_SELDON_SVCORCH));
+	        if (okToDelete && !names.contains(d.getMetadata().getName()))
 	        {
+	        	deleteCount++;
 	            final String deleteApiPath = "/apis/"+DEPLOYMENT_API_VERSION+"/namespaces/{namespace}/deployments/{name}"
 	                    .replaceAll("\\{" + "name" + "\\}", client.getApiClient().escapeString(d.getMetadata().getName()))
 	                    .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString(namespace));
@@ -132,13 +142,16 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	            ObjectOrStatus<Deployment> os = client.delete(Deployment.newBuilder(),deleteApiPath,options);
 	            if (os.status != null) {
                     logger.error("Error deleting deployment:"+ProtoBufUtils.toJson(os.status));
-                    throw new SeldonDeploymentException("Failed to delete deployment "+d.getMetadata().getName());
+                    //throw new SeldonDeploymentException("Failed to delete deployment "+d.getMetadata().getName());
                 }
                 else {
                     logger.debug("Deleted deployment:"+ProtoBufUtils.toJson(os.object));
                 }
 	        }
+	        else
+	        	logger.info("Skipping deletion of {} svcOrchOnly:{}",d.getMetadata().getName(),svcOrchOnly);
 	    }
+	    return deleteCount;
 	}
 	
 	private void removeServices(ApiClient client,String namespace,SeldonDeployment seldonDeployment,List<Service> services) throws ApiException, IOException, SeldonDeploymentException
@@ -158,7 +171,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 					throw new SeldonDeploymentException("Failed to delete service "+s.getMetadata().getName());
 				}
 				else
-					logger.debug("Deleted deployment "+s.getMetadata().getName());
+					logger.debug("Deleted service "+s.getMetadata().getName());
 				
 			}
 		}
@@ -258,6 +271,60 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	}
 	
 	@Override
+	public void removeInitialUnusedResources(SeldonDeployment mlDep) {
+		logger.info("Removing initial unused Deployments for Seldon Deployment {}",mlDep.getSpec().getName());
+		try
+		{
+			SeldonDeployment mlDep2 = operator.defaulting(mlDep);
+			DeploymentResources resources = operator.createResources(mlDep2);
+			ProtoClient client = clientProvider.getProtoClient();
+			String namespace = getNamespace(mlDep2);
+			final String deploymentDeleteKey = mlDep.getMetadata().getUid()+":"+mlDep.getMetadata().getResourceVersion();
+			logger.info("Deployment delete cache key {}",deploymentDeleteKey);
+			if (deletedCache.getIfPresent(deploymentDeleteKey) == null)
+			{
+				int deleteCount = removeDeployments(client, namespace, mlDep2, resources.deployments,true);
+				if (deleteCount == 0)
+				{
+					logger.info("Failed to delete anything from first stage delete so will delete all unsed deployments for {}",mlDep.getSpec().getName());
+					removeDeployments(client, namespace, mlDep2, resources.deployments,false);
+				}
+				deletedCache.put(deploymentDeleteKey, true);
+			}
+			else
+				logger.info("Skipping initial delete for {}",mlDep.getSpec().getName());
+		} catch (SeldonDeploymentException e) {
+			logger.error("Failed to cleanup deployment ",e);
+		} catch (ApiException e) {
+			logger.error("Kubernetes API exception cleaning up code:"+e.getCode()+ "message:"+e.getResponseBody(),e);
+		} catch (IOException e) {
+			logger.error("IOException during cleanup ",e);
+		}
+	}
+
+	@Override
+	public void removeAllUnusedResources(SeldonDeployment mlDep) {
+		logger.info("Removing ALL UNUSED RESOURCES for Seldon Deployment {}",mlDep.getSpec().getName());
+		try
+		{
+			SeldonDeployment mlDep2 = operator.defaulting(mlDep);
+			DeploymentResources resources = operator.createResources(mlDep2);
+			ProtoClient client = clientProvider.getProtoClient();
+			String namespace = getNamespace(mlDep2);
+			removeDeployments(client, namespace, mlDep2, resources.deployments,false);
+			ApiClient client2 = clientProvider.getClient();
+			removeServices(client2,namespace, mlDep2, resources.services);
+		} catch (SeldonDeploymentException e) {
+			logger.error("Failed to cleanup deployment ",e);
+		} catch (ApiException e) {
+			logger.error("Kubernetes API exception cleaning up code:"+e.getCode()+ "message:"+e.getResponseBody(),e);
+		} catch (IOException e) {
+			logger.error("IOException during cleanup ",e);
+		}
+	}
+
+	
+	@Override
 	public void createOrReplaceSeldonDeployment(SeldonDeployment mlDep) {
 
 	    if (mlDep.hasStatus() && mlDep.getStatus().hasState() && mlDep.getStatus().getState().equals(Constants.STATE_FAILED))
@@ -271,20 +338,20 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 		    if (existing == null || !existing.getSpec().equals(mlDep.getSpec()))
 		    {
 		        logger.debug("Running updates for "+mlDep.getMetadata().getName());
+		        mlCache.put(mlDep);
 		        SeldonDeployment mlDepStatusUpdated = operator.updateStatus(mlDep);
 		        SeldonDeployment mlDep2 = operator.defaulting(mlDep);
 		        operator.validate(mlDep2);
-		        mlCache.put(mlDep2);
 		        DeploymentResources resources = operator.createResources(mlDep2);
 		        ProtoClient client = clientProvider.getProtoClient();
 		        String namespace = getNamespace(mlDep2);
 		        createDeployments(client, namespace, resources.deployments);
-		        removeDeployments(client, namespace, mlDep2, resources.deployments);
+		        //removeDeployments(client, namespace, mlDep2, resources.deployments);
 		        createServices(client, namespace, resources.services);
 		        //removeServices(client,namespace, mlDep2, resources.services); //Proto Client not presently working for deletion
-		        ApiClient client2 = clientProvider.getClient();
-		        removeServices(client2,namespace, mlDep2, resources.services);
-		        if (existing == null || !mlDep.getSpec().equals(mlDepStatusUpdated.getSpec()))
+		        //ApiClient client2 = clientProvider.getClient();
+		        //removeServices(client2,namespace, mlDep2, resources.services);
+		        if (!mlDep.hasStatus())
 		        {
 		           logger.debug("Pushing updated SeldonDeployment "+mlDepStatusUpdated.getMetadata().getName()+" back to kubectl");
 		           crdHandler.updateSeldonDeploymentStatus(mlDepStatusUpdated);
@@ -310,4 +377,5 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 		}
 	}
 
+	
 }

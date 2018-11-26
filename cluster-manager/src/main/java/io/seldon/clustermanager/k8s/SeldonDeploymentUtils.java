@@ -58,4 +58,9 @@ public class SeldonDeploymentUtils {
 				
 	}
 	
+	public static boolean hasSeparateEnginePodAnnotation(SeldonDeployment mlDep)
+	{
+		return Boolean.parseBoolean(mlDep.getSpec().getAnnotationsOrDefault(Constants.ENGINE_SEPARATE_ANNOTATION, "false"));
+	}
+	
 }
