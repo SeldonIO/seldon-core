@@ -37,6 +37,7 @@ engine:
     pull_policy: IfNotPresent
   service_account:
     name: default
+  user: 8888
 rbac:
   enabled: true
   rolebinding:
