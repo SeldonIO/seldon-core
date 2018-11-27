@@ -31,7 +31,7 @@ def get_rest_microservice(user_router,debug=False):
 
     app = Flask(__name__,static_url_path='')
     CORS(app)
-    
+
     @app.errorhandler(SeldonMicroserviceException)
     def handle_invalid_usage(error):
         response = jsonify(error.to_dict())
@@ -45,16 +45,16 @@ def get_rest_microservice(user_router,debug=False):
 
     @app.route("/route",methods=["GET","POST"])
     def Route():
-            
+
         request = extract_message()
 
         if debug:
             print("SELDON DEBUGGING")
             print("Request received: ")
             print(request)
-            
+
         sanity_check_request(request)
-        
+
         datadef = request.get("data")
         features = rest_datadef_to_array(datadef)
 
@@ -82,11 +82,13 @@ def get_rest_microservice(user_router,debug=False):
             print("Feedback received: ")
             print(feedback)
 
-        
+
         datadef_request = feedback.get("request",{}).get("data",{})
         features = rest_datadef_to_array(datadef_request)
-        
-        truth = rest_datadef_to_array(feedback.get("truth",{}))
+
+        datadef_truth = feedback.get("truth",{}).get("data",{})
+        truth = rest_datadef_to_array(datadef_truth)
+
         reward = feedback.get("reward")
 
         try:
@@ -129,20 +131,20 @@ class SeldonRouterGRPC(object):
             metaJson["metrics"] = metrics
         json_format.ParseDict(metaJson,meta)
 
-        return prediction_pb2.SeldonMessage(data=data,meta=meta)        
+        return prediction_pb2.SeldonMessage(data=data,meta=meta)
 
     def SendFeedback(self,feedback,context):
         datadef_request = feedback.request.data
         features = grpc_datadef_to_array(datadef_request)
-        
+
         truth = grpc_datadef_to_array(feedback.truth)
         reward = feedback.reward
         routing = feedback.response.meta.routing.get(PRED_UNIT_ID)
-        
+
         send_feedback(self.user_model,features,datadef_request.names,routing,reward,truth)
 
         return prediction_pb2.SeldonMessage()
-    
+
 def get_grpc_server(user_model,debug=False,annotations={}):
     seldon_router = SeldonRouterGRPC(user_model)
     options = []
