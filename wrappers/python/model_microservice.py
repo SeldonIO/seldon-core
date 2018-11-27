@@ -51,7 +51,7 @@ def get_rest_microservice(user_model,debug=False):
 
     app = Flask(__name__,static_url_path='')
     CORS(app)
-    
+
     @app.errorhandler(SeldonMicroserviceException)
     def handle_invalid_usage(error):
         response = jsonify(error.to_dict())
@@ -68,7 +68,7 @@ def get_rest_microservice(user_model,debug=False):
     def Predict():
         request = extract_message()
         sanity_check_request(request)
-        
+
         datadef = request.get("data")
         features = rest_datadef_to_array(datadef)
 
@@ -77,7 +77,7 @@ def get_rest_microservice(user_model,debug=False):
             class_names = get_class_names(user_model, predictions.shape[1])
         else:
             class_names = []
-            
+
         data = array_to_rest_datadef(predictions, class_names, datadef)
 
         response = {"data":data,"meta":{}}
@@ -95,11 +95,13 @@ def get_rest_microservice(user_model,debug=False):
 
         datadef_request = feedback.get("request",{}).get("data",{})
         features = rest_datadef_to_array(datadef_request)
-        
-        truth = rest_datadef_to_array(feedback.get("truth",{}))
+
+        datadef_truth = feedback.get("truth",{}).get("data",{})
+        truth = rest_datadef_to_array(datadef_truth)
+
         reward = feedback.get("reward")
 
-        send_feedback(user_model,features,datadef_request.get("names"),reward,truth)        
+        send_feedback(user_model,features,datadef_request.get("names"),reward,truth)
         return jsonify({})
 
     return app
@@ -142,7 +144,7 @@ class SeldonModelGRPC(object):
     def SendFeedback(self,feedback,context):
         datadef_request = feedback.request.data
         features = grpc_datadef_to_array(datadef_request)
-        
+
         truth = grpc_datadef_to_array(feedback.truth)
         reward = feedback.reward
 
@@ -151,7 +153,7 @@ class SeldonModelGRPC(object):
         return prediction_pb2.SeldonMessage()
 
 ANNOTATION_GRPC_MAX_MSG_SIZE = 'seldon.io/grpc-max-message-size'
-    
+
 def get_grpc_server(user_model,debug=False,annotations={}):
     seldon_model = SeldonModelGRPC(user_model)
     options = []
@@ -206,7 +208,7 @@ class SeldonFlatbuffersServer(TCPServer):
             except StreamClosedError:
                 print("Stream closed during data inputstream read:",address)
                 break
-        
+
 def run_flatbuffers_server(user_model,port,debug=False):
     server = SeldonFlatbuffersServer(user_model)
     server.listen(port)
