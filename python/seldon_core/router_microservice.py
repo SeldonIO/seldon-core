@@ -44,7 +44,7 @@ def get_rest_microservice(user_router, debug=False):
 
     @app.route("/seldon.json", methods=["GET"])
     def openAPI():
-        return send_from_directory('', "seldon.json")
+        return send_from_directory("openapi", "seldon.json")
 
     @app.route("/route", methods=["GET", "POST"])
     def Route():

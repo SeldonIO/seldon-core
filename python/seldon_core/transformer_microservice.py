@@ -63,7 +63,7 @@ def get_rest_microservice(user_model, debug=False):
 
     @app.route("/seldon.json", methods=["GET"])
     def openAPI():
-        return send_from_directory('', "seldon.json")
+        return send_from_directory("openapi", "seldon.json")
 
     @app.route("/transform-input", methods=["GET", "POST"])
     def TransformInput():
