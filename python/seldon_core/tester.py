@@ -255,7 +255,7 @@ def run_predict(args):
         elif args.fbs:
             import socket
             import struct
-            from tester_flatbuffers import NumpyArrayToSeldonRPC, SeldonRPCToNumpyArray
+            from seldon_core.tester_flatbuffers import NumpyArrayToSeldonRPC, SeldonRPCToNumpyArray
             data = NumpyArrayToSeldonRPC(batch, feature_names)
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.connect((args.host, args.port))
