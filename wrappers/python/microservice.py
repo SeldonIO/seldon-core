@@ -51,13 +51,14 @@ class SeldonMicroserviceException(Exception):
 def sanity_check_request(req):
     if not type(req) == dict:
         raise SeldonMicroserviceException("Request must be a dictionary")
-    data = req.get("data")
-    if data is None:
+    if "data" in req:
+        data = req.get("data")
+        if not type(data) == dict:
+            raise SeldonMicroserviceException("data field must be a dictionary")
+        if data.get('ndarray') is None and data.get('tensor') is None:
+            raise SeldonMicroserviceException("Data dictionary has no 'ndarray' or 'tensor' keyword.")
+    elif not ("binData" in req or "strData" in req):
         raise SeldonMicroserviceException("Request must contain Default Data")
-    if not type(data) == dict:
-        raise SeldonMicroserviceException("Data must be a dictionary")
-    if data.get('ndarray') is None and data.get('tensor') is None:
-        raise SeldonMicroserviceException("Data dictionary has no 'ndarray' or 'tensor' keyword.")
     # TODO: Should we check more things? Like shape not being None or empty for a tensor?
 
 def extract_message():
@@ -92,6 +93,20 @@ def array_to_list_value(array,lv=None):
             array_to_list_value(sub_array,sub_lv)
     return lv
 
+
+def get_data_from_json(message):
+    if "data" in message:
+        datadef = message.get("data")
+        return rest_datadef_to_array(datadef)
+    elif "binData" in message:
+        return message["binData"]
+    elif "strData" in message:
+        return message["strData"]
+    else:
+        strJson = json.dumps(message)
+        raise SeldonMicroserviceException("Can't find data in json: "+strJson)
+    
+
 def rest_datadef_to_array(datadef):
     if datadef.get("tensor") is not None:
         features = np.array(datadef.get("tensor").get("values")).reshape(datadef.get("tensor").get("shape"))
@@ -113,6 +128,19 @@ def array_to_rest_datadef(array,names,original_datadef):
     else:
         datadef["ndarray"] = array.tolist()
     return datadef
+
+
+def get_data_from_proto(request):
+    data_type = request.WhichOneof("data_oneof")
+    if data_type == "data":
+        datadef = request.data
+        return grpc_datadef_to_array(datadef)
+    elif data_type == "binData":
+        return request.binData
+    elif data_type == "strData":
+        return request.strData
+    else:
+        raise SeldonMicroserviceException("Unknown data in SeldonMessage")    
 
 def grpc_datadef_to_array(datadef):
     data_type = datadef.WhichOneof("data_oneof")
