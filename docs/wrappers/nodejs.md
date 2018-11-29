@@ -15,7 +15,7 @@ If you are not familiar with s2i you can read [general instructions on using s2i
 To check everything is working you can run
 
 ```bash
-s2i usage seldonio/seldon-core-s2i-r:0.1
+s2i usage seldonio/seldon-core-s2i-nodejs:0.1
 ```
 
 # Step 2 - Create your source code
