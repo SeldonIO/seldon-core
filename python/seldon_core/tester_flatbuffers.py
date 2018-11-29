@@ -11,7 +11,8 @@ import seldon_core.fbs.Status
 import seldon_core.fbs.StatusValue
 import seldon_core.fbs.SeldonProtocolVersion
 import seldon_core.fbs.SeldonMethod
-
+import seldon_core.fbs as fbs
+from seldon_core.seldon_flatbuffers import FlatbuffersInvalidMessage
 
 def NumpyArrayToSeldonRPC(arr, names):
     builder = flatbuffers.Builder(32768)
