@@ -466,7 +466,7 @@
           {
             "evaluator": {
               "params": [
-                10
+                30
               ],
               "type": "gt"
             },
@@ -488,7 +488,7 @@
           }
         ],
         "executionErrorState": "alerting",
-        "frequency": "1s",
+        "frequency": "3s",
         "handler": 1,
         "message": "At least 10 outliers detected over past 5min!",
         "name": "Outlier Prediction",
@@ -550,7 +550,7 @@
           "fill": true,
           "line": true,
           "op": "gt",
-          "value": 10
+          "value": 30
         }
       ],
       "timeFrom": null,
@@ -696,7 +696,7 @@
           {
             "evaluator": {
               "params": [
-                10
+                30
               ],
               "type": "gt"
             },
@@ -718,7 +718,7 @@
           }
         ],
         "executionErrorState": "alerting",
-        "frequency": "1s",
+        "frequency": "3s",
         "handler": 1,
         "name": "Outlier Labels",
         "noDataState": "no_data",
@@ -777,7 +777,7 @@
           "fill": true,
           "line": true,
           "op": "gt",
-          "value": 10
+          "value": 30
         }
       ],
       "timeFrom": null,
@@ -1947,5 +1947,5 @@
   "timezone": "browser",
   "title": "Outlier Detection",
   "uid": "bD3l8OLiz",
-  "version": 3
+  "version": 4
 }
