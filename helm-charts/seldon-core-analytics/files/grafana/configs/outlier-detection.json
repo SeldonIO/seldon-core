@@ -537,7 +537,7 @@
           "expr": "is_outlier",
           "format": "time_series",
           "instant": false,
-          "interval": "1s",
+          "interval": "3s",
           "intervalFactor": 1,
           "legendFormat": "",
           "refId": "A",
@@ -635,7 +635,7 @@
         {
           "expr": "mse",
           "format": "time_series",
-          "interval": "1s",
+          "interval": "3s",
           "intervalFactor": 1,
           "refId": "A",
           "step": 1
@@ -764,8 +764,9 @@
         {
           "expr": "label",
           "format": "time_series",
-          "interval": "1s",
+          "interval": "3s",
           "intervalFactor": 1,
+          "legendFormat": "",
           "refId": "A",
           "step": 1
         }
@@ -1946,5 +1947,5 @@
   "timezone": "browser",
   "title": "Outlier Detection",
   "uid": "bD3l8OLiz",
-  "version": 2
+  "version": 3
 }
