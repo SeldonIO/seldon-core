@@ -11,10 +11,11 @@ def get_kdd_data(target=['dos','r2l','u2r','probe'],
                             'same_srv_rate','diff_srv_rate','srv_diff_host_rate','dst_host_count','dst_host_srv_count',
                             'dst_host_same_srv_rate','dst_host_diff_srv_rate','dst_host_same_src_port_rate',
                             'dst_host_srv_diff_host_rate','dst_host_serror_rate','dst_host_srv_serror_rate',
-                            'dst_host_rerror_rate','dst_host_srv_rerror_rate','target']):
+                            'dst_host_rerror_rate','dst_host_srv_rerror_rate','target'],
+                percent10=False):
     """ Load KDD Cup 1999 data and return in dataframe. """
     
-    data_raw = fetch_kddcup99(subset=None, data_home=None, percent10=False)    
+    data_raw = fetch_kddcup99(subset=None, data_home=None, percent10=percent10)    
     
     # specify columns
     cols=['duration','protocol_type','service','flag','src_bytes','dst_bytes','land','wrong_fragment','urgent','hot',
