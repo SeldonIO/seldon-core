@@ -9,6 +9,7 @@ import importlib
 import json
 import time
 import logging
+import sys
 import multiprocessing as mp
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -117,13 +118,15 @@ def array_to_rest_datadef(array,names,original_datadef):
 def grpc_datadef_to_array(datadef):
     data_type = datadef.WhichOneof("data_oneof")
     if data_type == "tensor":
-        sz = np.prod(datadef.tensor.shape) # get number of float64 entries
-        c = datadef.tensor.SerializeToString() # get bytes
-        # create array from packed entries which are at end of bytes - assumes same endianness
-        features =  np.frombuffer(memoryview(c[-(sz*8):]), dtype=np.float64, count=sz, offset=0)
-        features = features.reshape(datadef.tensor.shape)
-        # Previous method which is slower
-        # features = np.array(datadef.tensor.values).reshape(datadef.tensor.shape)
+        if (sys.version_info >= (3, 0)):
+            sz = np.prod(datadef.tensor.shape) # get number of float64 entries
+            c = datadef.tensor.SerializeToString() # get bytes
+            # create array from packed entries which are at end of bytes - assumes same endianness
+            features =  np.frombuffer(memoryview(c[-(sz*8):]), dtype=np.float64, count=sz, offset=0)
+            features = features.reshape(datadef.tensor.shape)
+        else:
+            # Python 2 version which is slower
+            features = np.array(datadef.tensor.values).reshape(datadef.tensor.shape)
     elif data_type == "ndarray":
         features = np.array(datadef.ndarray)
     else:
