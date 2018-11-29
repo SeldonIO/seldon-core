@@ -129,7 +129,7 @@ Follow the [install guide](docs/install.md) for details on ways to install seldo
     - [Open API Definitions](./openapi/README.md)
  - [Seldon Deployment Custom Resource](./docs/reference/seldon-deployment.md)
  - [Analytics](./docs/analytics.md)
- 
+
 ## Articles/Blogs/Videos
 
  - [Open Source Model Management Roundup Polyaxon, Argo and Seldon](https://www.anaconda.com/blog/developer-blog/open-source-model-management-roundup-polyaxon-argo-and-seldon/)
@@ -171,7 +171,7 @@ Follow the [install guide](docs/install.md) for details on ways to install seldo
 
 ## Latest Seldon Images
 
-| Description | Image URL | Stable Version | Development | 
+| Description | Image URL | Stable Version | Development |
 |-------------|-----------|----------------|-----|
 | Seldon Operator | [seldonio/cluster-manager](https://hub.docker.com/r/seldonio/cluster-manager/tags/) | 0.2.4 | 0.2.5-SNAPSHOT |
 | Seldon Service Orchestrator | [seldonio/engine](https://hub.docker.com/r/seldonio/engine/tags/) | 0.2.4 | 0.2.5-SNAPSHOT |
@@ -181,13 +181,12 @@ Follow the [install guide](docs/install.md) for details on ways to install seldo
 | [Seldon Python 3.7 Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python37](https://hub.docker.com/r/seldonio/seldon-core-s2i-python37/tags/) | 0.3 | 0.4-SNAPSHOT |
 | [Seldon Python 2 Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python2](https://hub.docker.com/r/seldonio/seldon-core-s2i-python2/tags/) | 0.3 | 0.4-SNAPSHOT |
 | [Seldon Python ONNX Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python3-ngraph-onnx](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3-ngraph-onnx/tags/) | 0.2  |   |
-| [Seldon Core Python Wrapper](docs/wrappers/python-docker.md) | [seldonio/core-python-wrapper](https://hub.docker.com/r/seldonio/core-python-wrapper/tags/) | 0.7 | |
 | [Seldon Java Build Wrapper for S2I](docs/wrappers/java.md) | [seldonio/seldon-core-s2i-java-build](https://hub.docker.com/r/seldonio/seldon-core-s2i-java-build/tags/) | 0.1 | |
 | [Seldon Java Runtime Wrapper for S2I](docs/wrappers/java.md) | [seldonio/seldon-core-s2i-java-runtime](https://hub.docker.com/r/seldonio/seldon-core-s2i-java-runtime/tags/) | 0.1 | | 
 | [Seldon R Wrapper for S2I](docs/wrappers/r.md) | [seldonio/seldon-core-s2i-r](https://hub.docker.com/r/seldonio/seldon-core-s2i-r/tags/) | 0.2 | |
 | [Seldon NodeJS Wrapper for S2I](docs/wrappers/nodejs.md) | [seldonio/seldon-core-s2i-nodejs](https://hub.docker.com/r/seldonio/seldon-core-s2i-nodejs/tags/) | 0.1 | 0.2-SNAPSHOT |
-| [Seldon Tensorflow Serving proxy](integrations/tfserving/README.md) | [seldonio/tfserving-proxy](https://hub.docker.com/r/seldonio/tfserving-proxy/tags/) | 0.1 | 
-| [Seldon NVIDIA inference server proxy](integrations/nvidia-inference-server/README.md) | [seldonio/nvidia-inference-server-proxy](https://hub.docker.com/r/seldonio/nvidia-inference-server-proxy/tags/) | 0.1 | 
+| [Seldon Tensorflow Serving proxy](integrations/tfserving/README.md) | [seldonio/tfserving-proxy](https://hub.docker.com/r/seldonio/tfserving-proxy/tags/) | 0.1 |
+| [Seldon NVIDIA inference server proxy](integrations/nvidia-inference-server/README.md) | [seldonio/nvidia-inference-server-proxy](https://hub.docker.com/r/seldonio/nvidia-inference-server-proxy/tags/) | 0.1 |
 #### Java Packages
 
 | Description | Package | Version |
