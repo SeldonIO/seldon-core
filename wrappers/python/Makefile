@@ -16,7 +16,7 @@ seldon.json:
 	cp ../../openapi/wrapper.oas3.json seldon.json
 
 test:
-	PYTHONPATH=. pytest
+	PYTHONPATH=. pytest -W ignore
 
 clean:
 	rm -f proto/prediction.proto
