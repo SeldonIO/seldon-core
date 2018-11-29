@@ -1,0 +1,9 @@
+numpy==1.14.5
+pandas==0.23.4
+grpcio==1.14.0
+Flask==1.0.2
+flask-cors==3.0.3
+futures
+redis==2.10.5
+tornado==4.5.3
+flatbuffers==1.10
