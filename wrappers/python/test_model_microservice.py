@@ -4,6 +4,7 @@ import json
 import numpy as np
 from proto import prediction_pb2
 from google.protobuf import json_format
+import base64
 
 class UserObject(object):
     def __init__(self,metrics_ok=True,ret_nparray=False):
@@ -64,11 +65,16 @@ def test_model_bin_data():
     user_object = UserObject()
     app = get_rest_microservice(user_object,debug=True)
     client = app.test_client()
-    rv = client.get('/predict?json={"binData":"123"}')
+    bdata = b"123"
+    bdata_base64 = base64.b64encode(bdata).decode('utf-8')
+    rv = client.get('/predict?json={"binData":"'+bdata_base64+'"}')
     j = json.loads(rv.data)
+    sm = prediction_pb2.SeldonMessage()
+    # Check we can parse response
+    assert sm == json_format.Parse(rv.data, sm, ignore_unknown_fields=False)
     print(j)
     assert rv.status_code == 200
-    assert "binData" in j
+    assert j["binData"] == bdata_base64
     assert j["meta"]["tags"] == {"mytag":1}
     assert j["meta"]["metrics"] == user_object.metrics()
 
@@ -133,10 +139,11 @@ def test_proto_ok():
 def test_proto_bin_data():
     user_object = UserObject()    
     app = SeldonModelGRPC(user_object)
-    binData = b"\0\1"
-    request = prediction_pb2.SeldonMessage(binData = binData)
+    bdata = b"123"
+    bdata_base64 = base64.b64encode(bdata)
+    request = prediction_pb2.SeldonMessage(binData = bdata_base64)
     resp = app.Predict(request,None)
-    assert resp.binData == binData
+    assert resp.binData == bdata_base64
 
 def test_proto_bin_data_nparray():
     user_object = UserObject(ret_nparray=True)    
