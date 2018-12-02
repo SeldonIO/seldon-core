@@ -60,8 +60,8 @@ def sanity_check_request(req):
         data = req.get("data")
         if not type(data) == dict:
             raise SeldonMicroserviceException("data field must be a dictionary")
-        if data.get('ndarray') is None and data.get('tensor') is None:
-            raise SeldonMicroserviceException("Data dictionary has no 'ndarray' or 'tensor' keyword.")
+        if data.get('ndarray') is None and data.get('tensor') and data.get('tftensor') is None:
+            raise SeldonMicroserviceException("Data dictionary has no 'tensor', 'ndarray' or 'tftensor' keyword.")
     elif not ("binData" in req or "strData" in req):
         raise SeldonMicroserviceException("Request must contain Default Data")
     # TODO: Should we check more things? Like shape not being None or empty for a tensor?

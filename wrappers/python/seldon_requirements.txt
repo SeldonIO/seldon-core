@@ -6,3 +6,4 @@ flask-cors==3.0.3
 futures
 redis==2.10.5
 tornado==4.5.3
+tensorflow==1.10.1
