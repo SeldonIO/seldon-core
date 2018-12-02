@@ -6,7 +6,8 @@ push_to_registry:
 
 build_proto:
 	cp ../../proto/prediction.proto proto
-	python -m grpc.tools.protoc -I./ --python_out=./ --grpc_python_out=./ ./proto/prediction.proto
+	cp -vr ../../proto/tensorflow/tensorflow proto
+	cd proto && python -m grpc.tools.protoc -I./ --python_out=./ --grpc_python_out=./ ./prediction.proto
 
 build_fbs:
 	cp ../../fbs/prediction.fbs fbs

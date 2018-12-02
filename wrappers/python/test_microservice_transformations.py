@@ -1,9 +1,13 @@
 import pytest
-from microservice import get_data_from_json
+from microservice import get_data_from_json, array_to_grpc_datadef, grpc_datadef_to_array, rest_datadef_to_array, array_to_rest_datadef
 from microservice import SeldonMicroserviceException
 import json
 import numpy as np
 import pickle
+import tensorflow as tf
+from proto import prediction_pb2
+from google.protobuf import json_format
+from tensorflow.core.framework.tensor_pb2 import TensorProto
 
 def test_normal_data():
     data = {"data":{"tensor":{"shape":[1,1],"values":[1]}}}
@@ -33,4 +37,48 @@ def test_bad_data():
     with pytest.raises(SeldonMicroserviceException):
         data = {"foo":"bar"}
         arr = get_data_from_json(data)
-    
+
+
+def test_proto_array_to_tftensor():
+    arr = np.array([[1,2,3],[4,5,6]])
+    datadef = array_to_grpc_datadef(arr,[],"tftensor")
+    print(datadef)
+    assert datadef.tftensor.tensor_shape.dim[0].size == 2
+    assert datadef.tftensor.tensor_shape.dim[1].size == 3
+    assert datadef.tftensor.dtype == 9
+
+
+def test_proto_tftensor_to_array():
+    names = ["a","b"]
+    array = np.array([[1,2],[3,4]])
+    datadef = prediction_pb2.DefaultData(
+        names = names,
+        tftensor = tf.make_tensor_proto(array)
+    )
+    array2 = grpc_datadef_to_array(datadef)
+    assert array.shape == array2.shape
+    assert np.array_equal(array,array2)
+
+
+def test_json_tftensor_to_array():
+    names = ["a","b"]
+    array = np.array([[1,2],[3,4]])
+    datadef = prediction_pb2.DefaultData(
+        names = names,
+        tftensor = tf.make_tensor_proto(array)
+    )
+    jStr = json_format.MessageToJson(datadef)
+    j = json.loads(jStr)
+    array2 = rest_datadef_to_array(j)
+    assert np.array_equal(array,array2)
+
+
+def test_json_array_to_tftensor():
+    array = np.array([[1,2],[3,4]])
+    original_datadef = {"tftensor":{}}
+    datadef = array_to_rest_datadef(array,[],original_datadef)
+    assert "tftensor" in datadef
+    tfp = TensorProto()
+    json_format.ParseDict(datadef.get("tftensor"), tfp, ignore_unknown_fields=False)
+    array2 = tf.make_ndarray(tfp)        
+    assert np.array_equal(array,array2)
