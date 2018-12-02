@@ -5,6 +5,8 @@ import numpy as np
 from proto import prediction_pb2
 from google.protobuf import json_format
 import base64
+import tensorflow as tf
+from tensorflow.core.framework.tensor_pb2 import TensorProto
 
 class UserObject(object):
     def __init__(self,metrics_ok=True,ret_nparray=False):
@@ -50,6 +52,30 @@ def test_model_ok():
     assert j["meta"]["tags"] == {"mytag":1}
     assert j["meta"]["metrics"] == user_object.metrics()
 
+def test_model_tftensor_ok():
+    user_object = UserObject()
+    app = get_rest_microservice(user_object,debug=True)
+    client = app.test_client()
+    arr = np.array([1,2])    
+    datadef = prediction_pb2.DefaultData(
+        tftensor = tf.make_tensor_proto(arr)
+    )
+    request = prediction_pb2.SeldonMessage(data = datadef)
+    jStr = json_format.MessageToJson(request)
+    rv = client.get('/predict?json='+jStr)
+    j = json.loads(rv.data)
+    print(j)
+    assert rv.status_code == 200
+    assert j["meta"]["tags"] == {"mytag":1}
+    assert j["meta"]["metrics"] == user_object.metrics()
+    assert 'tftensor' in j['data']
+    tfp = TensorProto()
+    json_format.ParseDict(j['data'].get("tftensor"), tfp, ignore_unknown_fields=False)
+    arr2 = tf.make_ndarray(tfp)        
+    assert np.array_equal(arr,arr2)
+    
+    
+    
 def test_model_ok_with_names():
     user_object = UserObject()
     app = get_rest_microservice(user_object,debug=True)
@@ -136,6 +162,26 @@ def test_proto_ok():
     assert j["data"]["tensor"]["values"] == [1,2]
 
 
+def test_proto_tftensor_ok():
+    user_object = UserObject()    
+    app = SeldonModelGRPC(user_object)
+    arr = np.array([1,2])    
+    datadef = prediction_pb2.DefaultData(
+        tftensor = tf.make_tensor_proto(arr)
+    )
+    request = prediction_pb2.SeldonMessage(data = datadef)
+    resp = app.Predict(request,None)
+    jStr = json_format.MessageToJson(resp)
+    j = json.loads(jStr)
+    print(j)
+    assert j["meta"]["tags"] == {"mytag":1}
+    # add default type
+    j["meta"]["metrics"][0]["type"] = "COUNTER"
+    assert j["meta"]["metrics"] == user_object.metrics()
+    arr2 = tf.make_ndarray(resp.data.tftensor)
+    assert np.array_equal(arr,arr2)
+    
+    
 def test_proto_bin_data():
     user_object = UserObject()    
     app = SeldonModelGRPC(user_object)
