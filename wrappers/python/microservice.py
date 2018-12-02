@@ -11,6 +11,10 @@ import time
 import logging
 import sys
 import multiprocessing as mp
+import tensorflow as tf
+from tensorflow.core.framework.tensor_pb2 import TensorProto
+from google.protobuf import json_format
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -113,6 +117,10 @@ def rest_datadef_to_array(datadef):
         features = np.array(datadef.get("tensor").get("values")).reshape(datadef.get("tensor").get("shape"))
     elif datadef.get("ndarray") is not None:
         features = np.array(datadef.get("ndarray"))
+    elif datadef.get("tftensor") is not None:
+        tfp = TensorProto()
+        json_format.ParseDict(datadef.get("tftensor"), tfp, ignore_unknown_fields=False)
+        features = tf.make_ndarray(tfp)        
     else:
         features = np.array([])
     return features
@@ -126,6 +134,11 @@ def array_to_rest_datadef(array,names,original_datadef):
         }
     elif original_datadef.get("ndarray") is not None:
         datadef["ndarray"] = array.tolist()
+    elif original_datadef.get("tftensor") is not None:
+        tftensor = tf.make_tensor_proto(array)
+        jStrTensor = json_format.MessageToJson(tftensor)
+        jTensor = json.loads(jStrTensor)
+        datadef["tftensor"] = jTensor
     else:
         datadef["ndarray"] = array.tolist()
     return datadef
@@ -157,6 +170,8 @@ def grpc_datadef_to_array(datadef):
             features = np.array(datadef.tensor.values).reshape(datadef.tensor.shape)
     elif data_type == "ndarray":
         features = np.array(datadef.ndarray)
+    elif data_type == "tftensor":
+        features = tf.make_ndarray(datadef.tftensor)
     else:
         features = np.array([])
     return features
@@ -174,6 +189,11 @@ def array_to_grpc_datadef(array,names,data_type):
         datadef = prediction_pb2.DefaultData(
             names = names,
             ndarray = array_to_list_value(array)
+        )
+    elif data_type == "tftensor":
+        datadef = prediction_pb2.DefaultData(
+            names = names,
+            tftensor = tf.make_tensor_proto(array)
         )
     else:
         datadef = prediction_pb2.DefaultData(
