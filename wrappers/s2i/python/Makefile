@@ -18,6 +18,8 @@ get_wrappers_and_protos:
 	cp $(SELDON_CORE_DIR)/wrappers/python/persistence.py _wrappers/python
 	cp $(SELDON_CORE_DIR)/wrappers/python/seldon_requirements.txt _wrappers/python
 	cp $(SELDON_CORE_DIR)/wrappers/python/__init__.py _wrappers/python
+	cd $(SELDON_CORE_DIR)/proto/tensorflow && make create_protos
+	cp -vr $(SELDON_CORE_DIR)/proto/tensorflow/tensorflow _wrappers/python
 	cp $(SELDON_CORE_DIR)/proto/prediction.proto _wrappers/python/proto
 	cp $(SELDON_CORE_DIR)/wrappers/python/seldon_flatbuffers.py _wrappers/python
 	cp $(SELDON_CORE_DIR)/wrappers/python/metrics.py _wrappers/python
