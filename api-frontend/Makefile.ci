@@ -38,14 +38,18 @@ clean:
 	rm -fvr src/main/proto/k8s.io
 	rm -fv src/main/proto/v1.proto
 
-download_protos:
+download_protos_k8s:
 	cd ../proto/k8s ; make create_protos
 
-update_proto: download_protos
+download_protos_tensorflow:
+	cd ../proto/tensorflow ; make create_protos
+
+update_proto: download_protos_k8s download_protos_tensorflow
 	cp -v ../proto/seldon_deployment.proto src/main/proto/
 	cp -v ../proto/prediction.proto src/main/proto/
 	cp -vr ../proto/k8s/k8s.io src/main/proto
 	cp -v ../proto/k8s/v1.proto src/main/proto
-
+	cp -vr ../proto/tensorflow/tensorflow src/main/proto
+	
 update_swagger:
 	cp -v ../openapi/apife.oas3.json src/main/resources/static/seldon.json

@@ -6,6 +6,7 @@ push_to_registry:
 
 build_proto:
 	cp ../../proto/prediction.proto proto
+	cp -vr ../../proto/tensorflow/tensorflow .
 	python -m grpc.tools.protoc -I./ --python_out=./ --grpc_python_out=./ ./proto/prediction.proto
 
 build_fbs:
@@ -16,7 +17,7 @@ seldon.json:
 	cp ../../openapi/wrapper.oas3.json seldon.json
 
 test:
-	PYTHONPATH=. pytest
+	PYTHONPATH=. pytest -W ignore
 
 clean:
 	rm -f proto/prediction.proto
@@ -24,3 +25,4 @@ clean:
 	rm -f proto/prediction_pb2.py
 	rm -f fbs/*.py*
 	rm -f fbs/prediction.fbs
+	rm -rf tensorflow
