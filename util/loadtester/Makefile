@@ -5,6 +5,8 @@ DOCKER_IMAGE_VERSION=0.7
 
 build_proto:
 	cp ../../proto/prediction.proto scripts/proto
+	cd ../../proto/tensorflow && make create_protos
+	cp -vr ../../proto/tensorflow/tensorflow scripts
 	cd scripts && python -m grpc.tools.protoc -I./ --python_out=./ --grpc_python_out=./ ./proto/prediction.proto
 
 
