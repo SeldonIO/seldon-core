@@ -2,6 +2,8 @@
 update_protos:
 	mkdir -p ./proto
 	touch ./proto/__init__.py
+	cd ../../proto/tensorflow && make create_protos
+	cp -vr ../../proto/tensorflow/tensorflow scripts
 	cp ../../proto/prediction.proto ./proto
 
 .PHONY: build_protos

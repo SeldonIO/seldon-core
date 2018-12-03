@@ -1,6 +1,8 @@
 install_python_protos: update_protos build_protos
 
 update_protos:
+	cd ../proto/tensorflow && make create_protos
+	cp -vr ../proto/tensorflow/tensorflow scripts
 	cp ../proto/prediction.proto ./proto
 
 build_protos:
