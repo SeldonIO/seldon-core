@@ -35,7 +35,7 @@ def startServers(target1, target2):
     p2.start()
 
     target1()
-    
+
     p2.join()
 
 class SeldonMicroserviceException(Exception):
@@ -60,7 +60,7 @@ def sanity_check_request(req):
         data = req.get("data")
         if not type(data) == dict:
             raise SeldonMicroserviceException("data field must be a dictionary")
-        if data.get('ndarray') is None and data.get('tensor') and data.get('tftensor') is None:
+        if data.get('ndarray') is None and data.get('tensor') is None and data.get('tftensor') is None:
             raise SeldonMicroserviceException("Data dictionary has no 'tensor', 'ndarray' or 'tftensor' keyword.")
     elif not ("binData" in req or "strData" in req):
         raise SeldonMicroserviceException("Request must contain Default Data")
@@ -110,7 +110,7 @@ def get_data_from_json(message):
     else:
         strJson = json.dumps(message)
         raise SeldonMicroserviceException("Can't find data in json: "+strJson)
-    
+
 
 def rest_datadef_to_array(datadef):
     if datadef.get("tensor") is not None:
@@ -120,7 +120,7 @@ def rest_datadef_to_array(datadef):
     elif datadef.get("tftensor") is not None:
         tfp = TensorProto()
         json_format.ParseDict(datadef.get("tftensor"), tfp, ignore_unknown_fields=False)
-        features = tf.make_ndarray(tfp)        
+        features = tf.make_ndarray(tfp)
     else:
         features = np.array([])
     return features
@@ -154,7 +154,7 @@ def get_data_from_proto(request):
     elif data_type == "strData":
         return request.strData
     else:
-        raise SeldonMicroserviceException("Unknown data in SeldonMessage")    
+        raise SeldonMicroserviceException("Unknown data in SeldonMessage")
 
 def grpc_datadef_to_array(datadef):
     data_type = datadef.WhichOneof("data_oneof")
@@ -247,7 +247,7 @@ if __name__ == "__main__":
     parser.add_argument("--persistence",nargs='?',default=0,const=1,type=int)
     parser.add_argument("--parameters",type=str,default=os.environ.get(PARAMETERS_ENV_NAME,"[]"))
     args = parser.parse_args()
-    
+
     parameters = parse_parameters(json.loads(args.parameters))
 
     if parameters.get(DEBUG_PARAMETER):
@@ -256,7 +256,7 @@ if __name__ == "__main__":
 
     annotations = load_annotations()
     logger.info("Annotations %s",annotations)
-    
+
     interface_file = importlib.import_module(args.interface_name)
     user_class = getattr(interface_file,args.interface_name)
 
@@ -276,13 +276,13 @@ if __name__ == "__main__":
         import outlier_detector_microservice as seldon_microservice
 
     port = int(os.environ.get(SERVICE_PORT_ENV_NAME,DEFAULT_PORT))
-    
+
     if args.api_type == "REST":
         def rest_prediction_server():
             print("Staring REST prediction server")
             app = seldon_microservice.get_rest_microservice(user_object,debug=DEBUG)
             app.run(host='0.0.0.0', port=port)
-        
+
         server1_func=rest_prediction_server
 
     elif args.api_type=="GRPC":
@@ -290,7 +290,7 @@ if __name__ == "__main__":
             server = seldon_microservice.get_grpc_server(user_object,debug=DEBUG,annotations=annotations)
             server.add_insecure_port("0.0.0.0:{}".format(port))
             server.start()
-            
+
             print("GRPC Microservice Running on port {}".format(port))
             while True:
                 time.sleep(1000)
