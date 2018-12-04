@@ -44,7 +44,7 @@ def start_microservice(app_location):
         p = Popen(cmd, cwd=app_location, env=env_vars,)
 
         for q in range(10):
-            time.sleep(0.1)
+            time.sleep(1)
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             result = sock.connect_ex(("127.0.0.1", 5000))
             if result == 0:
