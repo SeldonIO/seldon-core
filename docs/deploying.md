@@ -1,21 +1,46 @@
 # Deployment
 
+
+ 1. Deploy your machine learning model inference graph
+ 1. Validate successful deployment
+
+
+# Deploy
+
+You can manage your deployment resource via the standard Kuberntes tools:
+
+## Kubectl
+
 You can manage your deployments via the standard Kubernetes CLI kubectl, e.g.
 
 ```bash
 kubectl apply -f my_ml_deployment.yaml
 ```
 
-# Production Integration
-For production settings you will want to incorporate your ML infrastructure and ML code into a continuous integration and deployment pipeline. One such realization of such a pipeline is shown below:
+## Helm
 
-![Production Pipelines](./cicd.png)
+You can use Helm to manage your deployment as illustrated in the [Helm examples notebook](../notebooks/helm_examples.ipynb).
 
-The pipeline consists of
+We have a selection of [templated helm charts](../helm-charts/README.md#seldon-core-inference-graph-templates) you can use as a basis for your deployments.
 
- * A model code repo (in Git) where training and runtime ML components are stored
- * A continuous integration pipeline that will train and test the model and wrap it (using Seldon built-in Wrappers or custom wrappers)
- * An image repository where the final runtime inference model image is stored.
- * A git repo for the infrastructure to store the ML deployment graph described as a SeldonDeployment
- * Some tool to either monitor the infrastructure repo and apply to the production Kubernetes changes or a tool to allow dev ops to push updated infrastructure manually.
+## Ksonnet
+
+You can use Ksonnet to manage your deployments as illustrated in the [Ksonnet examples notebook](../notebooks/ksonnet_examples.ipynb).
+
+We have a selection of [Ksonnet prototypes](../seldon-core/seldon-core/README.md) you can use as a basis for your deployments.
+
+
+# Validate
+
+You can check the status of the running deployments using kubectl
+
+For example:
+
+```
+kubectl get sdep -o jsonpath='{.items[].status}'
+```
+
+
+
+
 
