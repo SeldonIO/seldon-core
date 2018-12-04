@@ -1,6 +1,8 @@
 import collections
+import json
 import numpy as np
 import pandas as pd
+import requests
 from sklearn.datasets import fetch_kddcup99
 from sklearn.metrics import confusion_matrix, accuracy_score, f1_score, precision_score, recall_score, fbeta_score
 
@@ -138,3 +140,32 @@ def outlier_stats(y_true,y_pred,roll_window=100):
     y_true_tot = np.sum(y_true)
 
     return y_pred_roll, y_true_roll, y_pred_tot, y_true_tot
+
+def get_payload(arr):
+    features = ["srv_count","serror_rate","srv_serror_rate","rerror_rate","srv_rerror_rate","same_srv_rate",
+             "diff_srv_rate","srv_diff_host_rate","dst_host_count","dst_host_srv_count","dst_host_same_srv_rate",
+             "dst_host_diff_srv_rate","dst_host_same_src_port_rate","dst_host_srv_diff_host_rate",
+             "dst_host_serror_rate","dst_host_srv_serror_rate","dst_host_rerror_rate","dst_host_srv_rerror_rate"]
+    datadef = {"names":features,"ndarray":arr.tolist()}
+    payload = {"meta":{},"data":datadef}
+    return payload
+
+def rest_request_ambassador(deploymentName,request,endpoint="localhost:8003"):
+    response = requests.post(
+                "http://"+endpoint+"/seldon/"+deploymentName+"/api/v0.1/predictions",
+                json=request)
+    print(response.status_code)
+    print(response.text)
+    return response.json()
+
+def send_feedback_rest(deploymentName,request,response,reward,truth,endpoint="localhost:8003"):
+    feedback = {
+        "request": request,
+        "response": response,
+        "reward": reward,
+        "truth": {"data":{"ndarray":truth.tolist()}}
+    }
+    ret = requests.post(
+         "http://"+endpoint+"/seldon/"+deploymentName+"/api/v0.1/feedback",
+        json=feedback)
+    return
