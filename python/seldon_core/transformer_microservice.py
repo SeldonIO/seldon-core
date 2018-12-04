@@ -4,11 +4,12 @@ from concurrent import futures
 from flask import jsonify, Flask, send_from_directory
 from flask_cors import CORS
 import numpy as np
+from google.protobuf import json_format
 
 from seldon_core.proto import prediction_pb2, prediction_pb2_grpc
 from seldon_core.microservice import extract_message, sanity_check_request, rest_datadef_to_array, \
     array_to_rest_datadef, grpc_datadef_to_array, array_to_grpc_datadef, \
-    SeldonMicroserviceException, get_custom_tags
+    SeldonMicroserviceException, get_custom_tags, get_data_from_json, get_data_from_proto
 from seldon_core.metrics import get_custom_metrics
 
 # ---------------------------
@@ -63,24 +64,28 @@ def get_rest_microservice(user_model, debug=False):
 
     @app.route("/seldon.json", methods=["GET"])
     def openAPI():
-        return send_from_directory("openapi", "seldon.json")
+        return send_from_directory('', "seldon.json")
 
     @app.route("/transform-input", methods=["GET", "POST"])
     def TransformInput():
         request = extract_message()
         sanity_check_request(request)
 
-        datadef = request.get("data")
-        features = rest_datadef_to_array(datadef)
+        features = get_data_from_json(request)
+        names = request.get("data", {}).get("names")
 
-        transformed = np.array(transform_input(
-            user_model, features, datadef.get("names")))
-        # TODO: check that predictions is 2 dimensional
-        new_feature_names = get_feature_names(user_model, datadef.get("names"))
+        transformed = transform_input(user_model, features, names)
 
-        data = array_to_rest_datadef(transformed, new_feature_names, datadef)
+        # If predictions is an numpy array or we used the default data then return as numpy array
+        if isinstance(transformed, np.ndarray) or "data" in request:
+            new_feature_names = get_feature_names(user_model, names)
+            transformed = np.array(transformed)
+            data = array_to_rest_datadef(
+                transformed, new_feature_names, request.get("data", {}))
+            response = {"data": data, "meta": {}}
+        else:
+            response = {"binData": transformed, "meta": {}}
 
-        response = {"data": data, "meta": {}}
         tags = get_custom_tags(user_model)
         if tags:
             response["meta"]["tags"] = tags
@@ -94,17 +99,19 @@ def get_rest_microservice(user_model, debug=False):
         request = extract_message()
         sanity_check_request(request)
 
-        datadef = request.get("data")
-        features = rest_datadef_to_array(datadef)
+        features = get_data_from_json(request)
+        names = request.get("data", {}).get("names")
 
-        transformed = np.array(transform_output(
-            user_model, features, datadef.get("names")))
-        # TODO: check that predictions is 2 dimensional
-        new_class_names = get_class_names(user_model, datadef.get("names"))
+        transformed = transform_output(user_model, features, names)
 
-        data = array_to_rest_datadef(transformed, new_class_names, datadef)
+        if isinstance(transformed, np.ndarray) or "data" in request:
+            new_class_names = get_class_names(user_model, names)
+            data = array_to_rest_datadef(
+                transformed, new_class_names, request.get("data", {}))
+            response = {"data": data, "meta": {}}
+        else:
+            response = {"binData": transformed, "meta": {}}
 
-        response = {"data": data, "meta": {}}
         tags = get_custom_tags(user_model)
         if tags:
             response["meta"]["tags"] = tags
@@ -125,16 +132,11 @@ class SeldonTransformerGRPC(object):
         self.user_model = user_model
 
     def TransformInput(self, request, context):
+        features = get_data_from_proto(request)
         datadef = request.data
-        features = grpc_datadef_to_array(datadef)
+        data_type = request.WhichOneof("data_oneof")
 
-        transformed = np.array(transform_input(
-            self.user_model, features, datadef.names))
-        # TODO: check that predictions is 2 dimensional
-        feature_names = get_feature_names(self.user_model, datadef.names)
-
-        data = array_to_grpc_datadef(
-            transformed, feature_names, request.data.WhichOneof("data_oneof"))
+        transformed = transform_input(self.user_model, features, datadef.names)
 
         # Construct meta data
         meta = prediction_pb2.Meta()
@@ -147,19 +149,23 @@ class SeldonTransformerGRPC(object):
             metaJson["metrics"] = metrics
         json_format.ParseDict(metaJson, meta)
 
-        return prediction_pb2.SeldonMessage(data=data, meta=meta)
+        if isinstance(transformed, np.ndarray) or data_type == "data":
+            transformed = np.array(transformed)
+            feature_names = get_feature_names(self.user_model, datadef.names)
+            if data_type == "data":
+                default_data_type = request.data.WhichOneof("data_oneof")
+            else:
+                default_data_type = "tensor"
+            data = array_to_grpc_datadef(
+                transformed, feature_names, default_data_type)
+            return prediction_pb2.SeldonMessage(data=data, meta=meta)
+        else:
+            return prediction_pb2.SeldonMessage(binData=transformed, meta=meta)
 
     def TransformOutput(self, request, context):
+        features = get_data_from_proto(request)
         datadef = request.data
-        features = grpc_datadef_to_array(datadef)
-
-        transformed = np.array(transform_output(
-            self.user_model, features, datadef.names))
-        # TODO: check that predictions is 2 dimensional
-        class_names = get_class_names(self.user_model, datadef.names)
-
-        data = array_to_grpc_datadef(
-            transformed, class_names, request.data.WhichOneof("data_oneof"))
+        data_type = request.WhichOneof("data_oneof")
 
         # Construct meta data
         meta = prediction_pb2.Meta()
@@ -172,7 +178,21 @@ class SeldonTransformerGRPC(object):
             metaJson["metrics"] = metrics
         json_format.ParseDict(metaJson, meta)
 
-        return prediction_pb2.SeldonMessage(data=data, meta=meta)
+        transformed = transform_output(
+            self.user_model, features, datadef.names)
+
+        if isinstance(transformed, np.ndarray) or data_type == "data":
+            transformed = np.array(transformed)
+            class_names = get_class_names(self.user_model, datadef.names)
+            if data_type == "data":
+                default_data_type = request.data.WhichOneof("data_oneof")
+            else:
+                default_data_type = "tensor"
+            data = array_to_grpc_datadef(
+                transformed, class_names, default_data_type)
+            return prediction_pb2.SeldonMessage(data=data, meta=meta)
+        else:
+            return prediction_pb2.SeldonMessage(binData=transformed, meta=meta)
 
 
 def get_grpc_server(user_model, debug=False, annotations={}):

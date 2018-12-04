@@ -22,7 +22,8 @@ setup(name='seldon-core',
           'numpy',
           'flatbuffers',
           'protobuf',
-          'grpcio'
+          'grpcio',
+          'tensorflow'
       ],
       tests_require=[
           'pytest',

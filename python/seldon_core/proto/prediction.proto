@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import "google/protobuf/struct.proto";
+import "tensorflow/core/framework/tensor.proto";
 
 package seldon.protos;
 
@@ -25,6 +26,7 @@ message DefaultData {
   oneof data_oneof {
     Tensor tensor = 2;
     google.protobuf.ListValue ndarray = 3;
+    tensorflow.TensorProto tftensor = 4;
   }
 }
 
@@ -50,6 +52,7 @@ message Metric {
  string key = 1;
  MetricType type = 2;
  float value = 3;
+ map<string,string> tags = 4;
 }
 
 message SeldonMessageList {
