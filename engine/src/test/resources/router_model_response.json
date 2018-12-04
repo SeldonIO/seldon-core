@@ -3,18 +3,18 @@
 		"metrics": [
 			{
 				"type": "COUNTER",
-				"key": "myroutercounter",
+				"key": "myroutermodelcounter",
 				"value": 1.0,
 				"tags": {"mytag1":"mytagval1"}
 			},
 			{
 				"type": "GAUGE",
-				"key": "myroutergauge",
+				"key": "myroutermodelgauge",
 				"value": 22.0
 			},
 			{
 				"type": "TIMER",
-				"key": "myroutertimer",
+				"key": "myroutermodeltimer",
 				"value": 1.0
 			}
 		]
@@ -22,7 +22,8 @@
 	"data": {
 		"ndarray": [
 			[
-				0
+				1,
+				2
 			]
 		]
 	}
