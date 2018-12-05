@@ -6,8 +6,6 @@ from flask import jsonify, Flask, send_from_directory
 from flask_cors import CORS
 import numpy as np
 import logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 from tornado.tcpserver import TCPServer
 from tornado.iostream import StreamClosedError
@@ -25,6 +23,8 @@ from seldon_core.metrics import get_custom_metrics
 from seldon_core.seldon_flatbuffers import SeldonRPCToNumpyArray, NumpyArrayToSeldonRPC, CreateErrorMsg
 
 PRED_UNIT_ID = os.environ.get("PREDICTIVE_UNIT_ID")
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------
 # Interaction with user model
@@ -52,6 +52,7 @@ def get_class_names(user_model, n_targets):
 # ----------------------------
 
 def get_rest_microservice(user_model, debug=False):
+    logger = logging.getLogger(__name__ + '.get_rest_microservice')
 
     app = Flask(__name__, static_url_path='')
     CORS(app)
@@ -59,8 +60,7 @@ def get_rest_microservice(user_model, debug=False):
     @app.errorhandler(SeldonMicroserviceException)
     def handle_invalid_usage(error):
         response = jsonify(error.to_dict())
-        print("ERROR:")
-        print(error.to_dict())
+        logger.error("%s", error.to_dict())
         response.status_code = 400
         return response
 
@@ -71,12 +71,15 @@ def get_rest_microservice(user_model, debug=False):
     @app.route("/predict", methods=["GET", "POST"])
     def Predict():
         request = extract_message()
+        logger.debug("Request: %s", request)
+
         sanity_check_request(request)
 
         features = get_data_from_json(request)
         names = request.get("data", {}).get("names")
 
         predictions = predict(user_model, features, names)
+        logger.debug("Predictions: %s", predictions)
 
         # If predictions is an numpy array or we used the default data then return as numpy array
         if isinstance(predictions, np.ndarray) or "data" in request:
@@ -102,6 +105,7 @@ def get_rest_microservice(user_model, debug=False):
     @app.route("/send-feedback", methods=["GET", "POST"])
     def SendFeedback():
         feedback = extract_message()
+        logger.debug("Feedback received: %s", feedback)
 
         datadef_request = feedback.get("request", {}).get("data", {})
         features = rest_datadef_to_array(datadef_request)
@@ -223,22 +227,23 @@ class SeldonFlatbuffersServer(TCPServer):
                     outData = NumpyArrayToSeldonRPC(predictions, class_names)
                     yield stream.write(outData)
                 except StreamClosedError:
-                    print("Stream closed during processing:", address)
+                    logger.exception("Stream closed during processing:", address)
                     break
                 except Exception:
                     tb = traceback.format_exc()
-                    print("Caught exception during processing:", address, tb)
+                    logger.exception("Caught exception during processing:", address, tb)
                     outData = CreateErrorMsg(tb)
                     yield stream.write(outData)
                     stream.close()
                     break
             except StreamClosedError:
-                print("Stream closed during data inputstream read:", address)
+                logger.exception("Stream closed during data inputstream read:", address)
                 break
 
 
 def run_flatbuffers_server(user_model, port, debug=False):
+    logger = logging.getLogger(__name__ + '.run_flatbuffers_server')
     server = SeldonFlatbuffersServer(user_model)
     server.listen(port)
-    print("Tornando Server listening on port", port)
+    logger.info("Tornado Server listening on port %s", port)
     tornado.ioloop.IOLoop.current().start()

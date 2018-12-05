@@ -4,11 +4,14 @@ from concurrent import futures
 from flask import jsonify, Flask, send_from_directory
 from flask_cors import CORS
 import numpy as np
+import logging
 
 from seldon_core.proto import prediction_pb2, prediction_pb2_grpc
 from seldon_core.microservice import extract_message, sanity_check_request, rest_datadef_to_array, \
     array_to_rest_datadef, grpc_datadef_to_array, array_to_grpc_datadef, \
     SeldonMicroserviceException
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------
 # Interaction with user model
@@ -25,6 +28,7 @@ def score(user_model, features, feature_names):
 
 
 def get_rest_microservice(user_model, debug=False):
+    logger = logging.getLogger(__name__ + '.get_rest_microservice')
 
     app = Flask(__name__, static_url_path='')
     CORS(app)
@@ -32,8 +36,7 @@ def get_rest_microservice(user_model, debug=False):
     @app.errorhandler(SeldonMicroserviceException)
     def handle_invalid_usage(error):
         response = jsonify(error.to_dict())
-        print("ERROR:")
-        print(error.to_dict())
+        logger.error("%s", error.to_dict())
         response.status_code = 400
         return response
 

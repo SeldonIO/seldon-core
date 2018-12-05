@@ -5,6 +5,7 @@ from flask import jsonify, Flask, send_from_directory
 from flask_cors import CORS
 import numpy as np
 import os
+import logging
 
 from seldon_core.proto import prediction_pb2, prediction_pb2_grpc
 from seldon_core.microservice import extract_message, sanity_check_request, rest_datadef_to_array, \
@@ -13,6 +14,8 @@ from seldon_core.microservice import extract_message, sanity_check_request, rest
 from seldon_core.metrics import get_custom_metrics
 
 PRED_UNIT_ID = os.environ.get("PREDICTIVE_UNIT_ID")
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------
 # Interaction with user router
@@ -32,6 +35,7 @@ def send_feedback(user_router, features, feature_names, routing, reward, truth):
 
 
 def get_rest_microservice(user_router, debug=False):
+    logger = logging.getLogger(__name__ + '.get_rest_microservice')
 
     app = Flask(__name__, static_url_path='')
     CORS(app)
@@ -50,11 +54,7 @@ def get_rest_microservice(user_router, debug=False):
     def Route():
 
         request = extract_message()
-
-        if debug:
-            print("SELDON DEBUGGING")
-            print("Request received: ")
-            print(request)
+        logger.debug("Request: %s", request)
 
         sanity_check_request(request)
 
@@ -81,15 +81,12 @@ def get_rest_microservice(user_router, debug=False):
     def SendFeedback():
         feedback = extract_message()
 
-        if debug:
-            print("SELDON DEBUGGING")
-            print("Feedback received: ")
-            print(feedback)
+        logger.debug("Feedback received: %s", feedback)
 
         datadef_request = feedback.get("request", {}).get("data", {})
         features = rest_datadef_to_array(datadef_request)
 
-        datadef_truth = feedback.get("truth",{}).get("data",{})
+        datadef_truth = feedback.get("truth", {}).get("data", {})
         truth = rest_datadef_to_array(datadef_truth)
         reward = feedback.get("reward")
 

@@ -5,12 +5,15 @@ from flask import jsonify, Flask, send_from_directory
 from flask_cors import CORS
 import numpy as np
 from google.protobuf import json_format
+import logging
 
 from seldon_core.proto import prediction_pb2, prediction_pb2_grpc
 from seldon_core.microservice import extract_message, sanity_check_request, rest_datadef_to_array, \
     array_to_rest_datadef, grpc_datadef_to_array, array_to_grpc_datadef, \
     SeldonMicroserviceException, get_custom_tags, get_data_from_json, get_data_from_proto
 from seldon_core.metrics import get_custom_metrics
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------
 # Interaction with user model
@@ -50,6 +53,7 @@ def get_class_names(user_model, original):
 # ----------------------------
 
 def get_rest_microservice(user_model, debug=False):
+    logger = logging.getLogger(__name__ + '.get_rest_microservice')
 
     app = Flask(__name__, static_url_path='')
     CORS(app)
@@ -57,8 +61,7 @@ def get_rest_microservice(user_model, debug=False):
     @app.errorhandler(SeldonMicroserviceException)
     def handle_invalid_usage(error):
         response = jsonify(error.to_dict())
-        print("ERROR:")
-        print(error.to_dict())
+        logger.error("%s", error.to_dict())
         response.status_code = 400
         return response
 
@@ -69,12 +72,15 @@ def get_rest_microservice(user_model, debug=False):
     @app.route("/transform-input", methods=["GET", "POST"])
     def TransformInput():
         request = extract_message()
+        logger.debug("Request: %s", request)
+
         sanity_check_request(request)
 
         features = get_data_from_json(request)
         names = request.get("data", {}).get("names")
 
         transformed = transform_input(user_model, features, names)
+        logger.debug("Transformed: %s", transformed)
 
         # If predictions is an numpy array or we used the default data then return as numpy array
         if isinstance(transformed, np.ndarray) or "data" in request:
@@ -97,12 +103,15 @@ def get_rest_microservice(user_model, debug=False):
     @app.route("/transform-output", methods=["GET", "POST"])
     def TransformOutput():
         request = extract_message()
+        logger.debug("Request: %s", request)
+
         sanity_check_request(request)
 
         features = get_data_from_json(request)
         names = request.get("data", {}).get("names")
 
         transformed = transform_output(user_model, features, names)
+        logger.debug("Transformed: %s", transformed)
 
         if isinstance(transformed, np.ndarray) or "data" in request:
             new_class_names = get_class_names(user_model, names)
