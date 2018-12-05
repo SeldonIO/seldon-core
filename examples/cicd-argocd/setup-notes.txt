@@ -41,7 +41,8 @@ kubectl create clusterrolebinding user-cluster-admin-binding --clusterrole=clust
     # create app
     ./argocd/argocd-app-create
 
-
+    # get argocd-server url and login in browser
+    ./argocd/get-argocd-server-url
 
 
 
