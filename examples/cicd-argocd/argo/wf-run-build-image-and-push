@@ -21,5 +21,8 @@ MODEL_VERSION=v$1
 
 BUILD_WORKFLOW=${MODEL_SOURCE_FILES_DIR}/build-image-and-push-using-docksock-wf.json
 
-cat $BUILD_WORKFLOW | sed -e "s/%MODEL_VERSION%/${MODEL_VERSION}/" | ${KUBECTL} -n default create -f -
+cat $BUILD_WORKFLOW | sed \
+    -e "s/%MODEL_VERSION%/${MODEL_VERSION}/" \
+    -e "s/%GITHUB_USER%/${GITHUB_USER}/" \
+    -e "s/%GITHUB_TOKEN%/${GITHUB_TOKEN}/" | ${KUBECTL} -n default create -f -
 
