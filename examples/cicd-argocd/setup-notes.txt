@@ -24,11 +24,22 @@ kubectl create clusterrolebinding user-cluster-admin-binding --clusterrole=clust
 * Manually test argo jobs
 
     ./argo/wf-run-build-image-and-push M01
+    ./argo/wf-run-build-image-and-push M02
 
 
+* Setup argocd
 
+    ./argocd/get-initial-admin-password
 
+    argocd login <EXTERNAL-IP>
+        user: admin
+        password: see admin password
 
+    ./argocd/argocd-cluster-add
+    ./argocd/argocd-cluster-list
+
+    # create app
+    ./argocd/argocd-app-create
 
 
 
