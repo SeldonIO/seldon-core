@@ -1,4 +1,4 @@
-CHARTS=seldon-core-crd seldon-core seldon-core-analytics seldon-core-kafka seldon-core-loadtesting seldon-single-model seldon-abtest seldon-mab
+CHARTS=seldon-core-crd seldon-core seldon-core-analytics seldon-core-kafka seldon-core-loadtesting seldon-single-model seldon-abtest seldon-mab seldon-od-vae seldon-od-if
 
 
 build_all:
