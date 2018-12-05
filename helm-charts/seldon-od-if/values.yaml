@@ -1,10 +1,9 @@
-name: outlier-detector
+name: outlier-detector-if
 model:
   image:
-    name: seldonio/outlier-vae:0.1
-  name: outlier-vae
-  threshold: 10
-  reservoir_size: 50000
+    name: seldonio/outlier-if:0.1
+  name: outlier-if
+  threshold: 0
 replicas: 1
 # Add oauth key and secret if using the default API Oauth Gateway for ingress
 oauth:

@@ -61,6 +61,14 @@ def get_kdd_data(target=['dos','r2l','u2r','probe'],
     if drop_cols!=[]:
         data.drop(columns=drop_cols,inplace=True)
     
+    # apply OHE if necessary
+    cols_ohe = ['protocol_type','service','flag']
+    for col in cols_ohe:
+        if col in keep_cols:
+            col_ohe = pd.get_dummies(data[col],prefix=col)
+            data = data.join(col_ohe)
+            data.drop([col],axis=1,inplace=True)
+    
     return data
 
 
