@@ -25,10 +25,6 @@ kubectl create clusterrolebinding user-cluster-admin-binding --clusterrole=clust
 
     ./argo/wf-run-build-image-and-push M01
 
-* check rollout status of all deployments
-
-    ./watch-rollout-status
-
 
 
 

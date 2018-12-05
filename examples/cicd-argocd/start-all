@@ -19,6 +19,7 @@ main() {
     ${STARTUP_DIR}/jenkins/start-jenkins
     ${STARTUP_DIR}/k8s-local-docker-registry/start-docker-private-registry
     ${STARTUP_DIR}/argo/start-argo
+    ${STARTUP_DIR}/argocd/start-argocd
 }
 
 main "$@"
