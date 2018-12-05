@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+if [ ! -f "${STARTUP_DIR}/../settings.sh" ]; then
+    cp -v "${STARTUP_DIR}/../settings.sh.example" "${STARTUP_DIR}/../settings.sh"
+fi
+source ${STARTUP_DIR}/../settings.sh
+
+KUBECTL="kubectl --context=${KUBE_CONTEXT}"
+
+${KUBECTL} -n kube-system create sa tiller --dry-run -o yaml | ${KUBECTL} apply -f -
+${KUBECTL} create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller --dry-run -o yaml | ${KUBECTL} apply -f -
+helm init --kube-context="${KUBE_CONTEXT}" --service-account tiller
+
