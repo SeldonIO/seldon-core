@@ -12,5 +12,5 @@ KUBECTL="kubectl --context=${KUBE_CONTEXT}"
 
 EXTERNAL_IP=$(${KUBECTL} get svc -n jenkins jenkins -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 
-echo "https://${EXTERNAL_IP}:8080/"
+echo "http://${EXTERNAL_IP}:8080/"
 

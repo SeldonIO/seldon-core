@@ -29,6 +29,7 @@ kubectl create clusterrolebinding user-cluster-admin-binding --clusterrole=clust
 
 * Setup argocd
 
+    # make a note of the admin password
     ./argocd/get-initial-admin-password
 
     argocd login <EXTERNAL-IP>
@@ -44,8 +45,30 @@ kubectl create clusterrolebinding user-cluster-admin-binding --clusterrole=clust
     # get argocd-server url and login in browser
     ./argocd/get-argocd-server-url
 
+* Setup Jenkins
 
+    # make a note of the admin password (set to admin for the demo)
+    ./jenkins/get-initial-admin-password
 
+    # get jenkins url and login in browser
+    ./jenkins/get-jenkins-url
+
+    IMPORTANT: fix any plugin issues, eg. update pipeline-job plugin if necessary and Reboot
+
+    Manage Jenkins->Configure Global Security
+        Security Realm->Jenkins’ own user database
+            - "Allow users to sign up"
+
+    create a user:
+        id: drone
+        password: drone
+
+    # create rolebinding
+    kubectl create rolebinding jenkins-admin --clusterrole=admin --serviceaccount=jenkins:default --namespace=default
+
+* Import Jenkins jobs
+
+    ./jenkins/import-jobs
 
 
 
