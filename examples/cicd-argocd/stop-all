@@ -7,6 +7,7 @@ set -o pipefail
 STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
 
 main() {
+    ${STARTUP_DIR}/delete-secrets
     ${STARTUP_DIR}/seldon-core/delete-seldon-deployment
     ${STARTUP_DIR}/seldon-core/stop-seldon-core
     ${STARTUP_DIR}/activity-monitor/stop-activity-monitor
@@ -17,3 +18,4 @@ main() {
 }
 
 main "$@"
+

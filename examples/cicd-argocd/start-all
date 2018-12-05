@@ -14,6 +14,7 @@ check_settings() {
 
 main() {
     check_settings
+    ${STARTUP_DIR}/create-secrets
     ${STARTUP_DIR}/seldon-core/start-seldon-core
     ${STARTUP_DIR}/activity-monitor/start-activity-monitor
     ${STARTUP_DIR}/jenkins/start-jenkins
