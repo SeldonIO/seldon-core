@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+check_settings() {
+    if [ ! -f "${STARTUP_DIR}/settings.sh" ]; then
+        cp -v "${STARTUP_DIR}/settings.sh.example" "${STARTUP_DIR}/settings.sh"
+    fi
+}
+
+main() {
+    check_settings
+    ${STARTUP_DIR}/seldon-core/start-seldon-core
+    ${STARTUP_DIR}/activity-monitor/start-activity-monitor
+    ${STARTUP_DIR}/jenkins/start-jenkins
+    ${STARTUP_DIR}/k8s-local-docker-registry/start-docker-private-registry
+    ${STARTUP_DIR}/argo/start-argo
+}
+
+main "$@"
+
