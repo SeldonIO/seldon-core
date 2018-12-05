@@ -7,14 +7,6 @@ Seldon Core uses REST and gRPC APIs exposed externally for business applications
  - [Internal Prediction API](internal-api.md)
    - Read this if you want to build a microservice to wrap a model or build another type of component such as a router, combiner or transformer
 
- * [Design](#payload-design)
- * [Definiton](#proto-buffer-and-grpc-definition)
-
-
-## Payload Design
-
-![graph](./prediction.png)
-
 
 ## Proto Buffer and gRPC Definition
 
@@ -22,6 +14,7 @@ Seldon Core uses REST and gRPC APIs exposed externally for business applications
 syntax = "proto3";
 
 import "google/protobuf/struct.proto";
+import "tensorflow/core/framework/tensor.proto";
 
 package seldon.protos;
 
@@ -46,6 +39,7 @@ message DefaultData {
   oneof data_oneof {
     Tensor tensor = 2;
     google.protobuf.ListValue ndarray = 3;
+    tensorflow.TensorProto tftensor = 4;
   }
 }
 
@@ -58,6 +52,20 @@ message Meta {
   string puid = 1; 
   map<string,google.protobuf.Value> tags = 2;
   map<string,int32> routing = 3;
+  map<string,string> requestPath = 4;
+  repeated Metric metrics = 5;
+}
+
+message Metric {
+ enum MetricType {
+     COUNTER = 0;
+     GAUGE = 1;
+     TIMER = 2;
+ }
+ string key = 1;
+ MetricType type = 2;
+ float value = 3;
+ map<string,string> tags = 4;
 }
 
 message SeldonMessageList {
@@ -104,6 +112,7 @@ service Generic {
 
 service Model {
   rpc Predict(SeldonMessage) returns (SeldonMessage) {};
+  rpc SendFeedback(Feedback) returns (SeldonMessage) {};  
  }
 
 service Router {
