@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+set -o noclobber
+set -o noglob
+
+STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+for job_name in get-all-job build-model-images-job deploy-model-job; do
+    CRUMB=$(curl -s 'http://drone:drone@localhost:9090/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,":",//crumb)') && \
+        cat ${STARTUP_DIR}/jobs/${job_name}_config.xml |
+            curl -X POST -H $CRUMB "http:///drone:drone@localhost:9090/createItem?name=${job_name}" --header "Content-Type: application/xml" -d @-
+    echo "created: ${job_name}"
+done
+
