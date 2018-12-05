@@ -1,0 +1,50 @@
+* directory for the scripts
+
+    cd .../seldon-core/examples/cicd-argocd
+
+* Create cluster, at least Kubernetes 10
+
+* (if gcp) create-user-cluster-admin-binding
+
+kubectl create clusterrolebinding user-cluster-admin-binding --clusterrole=cluster-admin --user=$(gcloud config get-value account)
+
+
+* Install helm
+
+    ./seldon-core/install-helm
+
+* start all
+
+    ./start-all
+
+* check rollout status of all deployments
+
+    ./watch-rollout-status
+
+* Manually test argo jobs
+
+    ./argo/wf-run-build-image-and-push M01
+
+* check rollout status of all deployments
+
+    ./watch-rollout-status
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Clean Up
+
+* Remove helm
+
+    ./seldon-core/remove-helm
