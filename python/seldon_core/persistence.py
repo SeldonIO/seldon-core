@@ -1,6 +1,7 @@
 import threading
 import os
 import time
+import logging
 try:
     # python 2
     import cPickle as pickle
@@ -9,6 +10,7 @@ except ImportError:
     import pickle
 import redis
 
+logger = logging.getLogger(__name__)
 
 PRED_UNIT_ID = os.environ.get("PREDICTIVE_UNIT_ID", "0")
 PREDICTOR_ID = os.environ.get("PREDICTOR_ID", "0")
@@ -22,27 +24,31 @@ DEFAULT_PUSH_FREQUENCY = 60
 
 
 def restore(user_class, parameters, debug=False):
-    if debug:
-        print("Restoring saved model from redis")
+    logger = logging.getLogger(__name__ + '.restore')
+    logger.info("Restoring saved model from redis")
+
     redis_client = redis.StrictRedis(host=REDIS_HOST, port=REDIS_PORT)
     saved_state_binary = redis_client.get(REDIS_KEY)
     if saved_state_binary is None:
-        print("Saved state is empty, restoration aborted")
+        logger.info("Saved state is empty, restoration aborted")
         return user_class(**parameters)
     else:
         return pickle.loads(saved_state_binary)
 
 
 def persist(user_object, push_frequency=None, debug=False):
+    logger = logging.getLogger(__name__ + '.persist')
+
     if push_frequency is None:
         push_frequency = DEFAULT_PUSH_FREQUENCY
-    if debug:
-        print("Creating persistence thread, with frequency {}".format(push_frequency))
+    logger.info("Creating persistence thread, with frequency %s", push_frequency)
     persistence_thread = PersistenceThread(user_object, push_frequency)
     persistence_thread.start()
 
 
 class PersistenceThread(threading.Thread):
+    logger = logging.getLogger(__name__ + '.PersistenceThread')
+
     def __init__(self, user_object, push_frequency):
         self.user_object = user_object
         self.push_frequency = push_frequency
@@ -51,7 +57,7 @@ class PersistenceThread(threading.Thread):
         super(PersistenceThread, self).__init__()
 
     def stop(self):
-        print("Stopping Persistence Thread")
+        logger.info("Stopping Persistence Thread")
         self._stopped = True
 
     def run(self):
