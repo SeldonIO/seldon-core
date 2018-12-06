@@ -33,6 +33,11 @@ kubectl create clusterrolebinding user-cluster-admin-binding --clusterrole=clust
     ./argo/wf-run-build-image-and-push M01
     ./argo/wf-run-build-image-and-push M02
 
+* check images in the private registry
+
+    ./k8s-local-docker-registry/registry-images-list
+    ./k8s-local-docker-registry/registry-tags-list "gsunner/simple-model"
+
 
 * Setup argocd
 
