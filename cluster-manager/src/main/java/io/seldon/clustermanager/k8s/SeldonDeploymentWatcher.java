@@ -125,7 +125,7 @@ public class SeldonDeploymentWatcher  {
 	
 	private String getNamespace(JsonNode actualObj)
 	{
-		if (clusterManagerProperites.isClusterWide())
+		if (!clusterManagerProperites.isSingleNamespace())
 		{
 			if (actualObj.has("metadata") && actualObj.get("meta").has("namespace"))
 				return actualObj.get("metadata").get("namespace").asText();
@@ -144,7 +144,7 @@ public class SeldonDeploymentWatcher  {
 		ApiClient client = k8sClientProvider.getClient();
 		CustomObjectsApi api = k8sApiProvider.getCustomObjectsApi(client);
 		Watch<Object> watch;
-		if (clusterManagerProperites.isClusterWide())
+		if (!clusterManagerProperites.isSingleNamespace())
 		{
 			watch = Watch.createWatch(
 					client,

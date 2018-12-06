@@ -27,7 +27,7 @@ public class ClusterManagerProperites {
     private String engineContainerServiceAccountName = "default";
     private int puContainerPortBase;
     private String namespace;
-    private boolean clusterWide = false;
+    private boolean singleNamespace = true;
     private int engineUser = 8889;
 
     public int getEngineContainerPort() {
@@ -85,13 +85,13 @@ public class ClusterManagerProperites {
 	public void setNamespace(String namespace) {
 		this.namespace = namespace;
 	}
-
-	public boolean isClusterWide() {
-		return clusterWide;
+	
+	public boolean isSingleNamespace() {
+		return singleNamespace;
 	}
 
-	public void setClusterWide(boolean clusterWide) {
-		this.clusterWide = clusterWide;
+	public void setSingleNamespace(boolean singleNamespace) {
+		this.singleNamespace = singleNamespace;
 	}
 
 	public int getEngineUser() {

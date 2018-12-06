@@ -1,7 +1,13 @@
+single_namespace: true
 ambassador:
   annotations:
-    getambassador.io/config: "---\napiVersion: ambassador/v0\nkind: Module\nname:\
-      \ ambassador\nconfig:\n  service_port: 8080\n"
+    getambassador.io/config: |
+      ---
+      apiVersion: ambassador/v0
+      kind: Module
+      name: ambassador
+      config:
+        service_port: 8080
   enabled: false
   image:
     name: quay.io/datawire/ambassador:0.40.0
@@ -31,7 +37,6 @@ cluster_manager:
     pull_policy: IfNotPresent
   java_opts: ''
   spring_opts: ''
-  cluster_wide: true
 engine:
   image:
     name: seldonio/engine:0.2.5-SNAPSHOT
