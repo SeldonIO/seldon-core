@@ -4,6 +4,8 @@
 
 * Create cluster, at least Kubernetes 10
 
+* have "helm", "argo", "argocd" installed
+
 * (if gcp) create-user-cluster-admin-binding
 
 kubectl create clusterrolebinding user-cluster-admin-binding --clusterrole=cluster-admin --user=$(gcloud config get-value account)
@@ -20,6 +22,11 @@ kubectl create clusterrolebinding user-cluster-admin-binding --clusterrole=clust
 * check rollout status of all deployments
 
     ./watch-rollout-status
+
+* create tmux windows
+
+    # NOT FROM ANOTHER TMUX SESSION!
+    ./create-demo-tmux-session
 
 * Manually test argo jobs
 
@@ -62,9 +69,6 @@ kubectl create clusterrolebinding user-cluster-admin-binding --clusterrole=clust
     create a user:
         id: drone
         password: drone
-
-    # create rolebinding
-    kubectl create rolebinding jenkins-admin --clusterrole=admin --serviceaccount=jenkins:default --namespace=default
 
 * Import Jenkins jobs
 
