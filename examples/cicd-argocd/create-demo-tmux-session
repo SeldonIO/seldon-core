@@ -18,6 +18,10 @@ create_new_port_forward_window() {
     tmux select-pane -t 2
     tmux split-window -h
 
+    # port forward "k8s-local-docker-registry"
+    tmux select-pane -t 0
+    tmux send-keys "./k8s-local-docker-registry/port-forward-registry" C-m
+
     # port forward jenkins
     tmux select-pane -t 1
     tmux send-keys "./jenkins/port-forard-jenkins" C-m
