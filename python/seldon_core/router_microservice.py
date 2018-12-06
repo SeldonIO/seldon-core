@@ -35,7 +35,6 @@ def send_feedback(user_router, features, feature_names, routing, reward, truth):
 
 
 def get_rest_microservice(user_router, debug=False):
-    logger = logging.getLogger(__name__ + '.get_rest_microservice')
 
     app = Flask(__name__, static_url_path='')
     CORS(app)

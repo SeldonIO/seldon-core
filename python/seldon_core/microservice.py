@@ -236,7 +236,6 @@ def parse_parameters(parameters):
 
 
 def load_annotations():
-    logger = logging.getLogger(__name__ + '.load_annotations')
     annotations = {}
     try:
         if os.path.isfile(ANNOTATIONS_FILE):
@@ -257,10 +256,8 @@ def load_annotations():
 
 
 def main():
-    LOG_FORMAT = '%(asctime)s - %(name)s:%(lineno)s - %(levelname)s:  %(message)s'
+    LOG_FORMAT = '%(asctime)s - %(name)s:%(funcName)s:%(lineno)s - %(levelname)s:  %(message)s'
     logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
-
-    logger = logging.getLogger(__name__ + '.main')
     logger.info('Starting microservice.py:main')
 
     sys.path.append(os.getcwd())

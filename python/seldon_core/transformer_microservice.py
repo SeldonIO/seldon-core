@@ -53,7 +53,6 @@ def get_class_names(user_model, original):
 # ----------------------------
 
 def get_rest_microservice(user_model, debug=False):
-    logger = logging.getLogger(__name__ + '.get_rest_microservice')
 
     app = Flask(__name__, static_url_path='')
     CORS(app)
