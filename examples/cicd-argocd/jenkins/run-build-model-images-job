@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+set -o noclobber
+set -o noglob
+
+STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+CRUMB=$(curl -s 'http://drone:drone@localhost:9090/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,":",//crumb)') && \
+    curl -X POST -H $CRUMB "http://drone:drone@localhost:9090/job/build-model-images-job/build?TOKEN=RANDTOKEN"
+
