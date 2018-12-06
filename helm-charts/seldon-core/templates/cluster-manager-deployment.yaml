@@ -37,8 +37,8 @@ spec:
           value: {{ .Values.engine.image.pull_policy }}
         - name: ENGINE_CONTAINER_SERVICE_ACCOUNT_NAME
           value: {{ .Values.engine.service_account.name }}
-        - name: SELDON_CLUSTER_MANAGER_CLUSTER_WIDE
-          value: '{{ .Values.cluster_manager.cluster_wide }}'
+        - name: SELDON_CLUSTER_MANAGER_SINGLE_NAMESPACE
+          value: '{{ .Values.single_namespace }}'
         - name: ENGINE_CONTAINER_USER
           value: '{{ .Values.engine.user }}'
         - name: SELDON_CLUSTER_MANAGER_POD_NAMESPACE

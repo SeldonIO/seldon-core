@@ -55,7 +55,7 @@ def grpc_request_api_gateway(oauth_key,oauth_secret,rest_endpoint="localhost:800
     response = stub.Predict(request=request,metadata=metadata)
     return response
 
-def rest_request_ambassador(deploymentName,endpoint="localhost:8003",data_size=5,rows=1,data=None):
+def rest_request_ambassador(deploymentName,namespace,endpoint="localhost:8003",data_size=5,rows=1,data=None):
     if data is None:
         shape, arr = create_random_data(data_size,rows)
     else:
@@ -63,11 +63,11 @@ def rest_request_ambassador(deploymentName,endpoint="localhost:8003",data_size=5
         arr = data.flatten()
     payload = {"data":{"names":["a","b"],"tensor":{"shape":shape,"values":arr.tolist()}}}
     response = requests.post(
-        "http://"+endpoint+"/seldon/"+deploymentName+"/api/v0.1/predictions",
+        "http://"+endpoint+"/seldon/"+namespace+"/"+deploymentName+"/api/v0.1/predictions",
         json=payload)
     return response
 
-def rest_request_ambassador_auth(deploymentName,username,password,endpoint="localhost:8003",data_size=5,rows=1,data=None):
+def rest_request_ambassador_auth(deploymentName,namespace,username,password,endpoint="localhost:8003",data_size=5,rows=1,data=None):
     if data is None:
         shape, arr = create_random_data(data_size,rows)
     else:
@@ -75,12 +75,12 @@ def rest_request_ambassador_auth(deploymentName,username,password,endpoint="loca
         arr = data.flatten()        
     payload = {"data":{"names":["a","b"],"tensor":{"shape":shape,"values":arr.tolist()}}}
     response = requests.post(
-        "http://"+endpoint+"/seldon/"+deploymentName+"/api/v0.1/predictions",
+        "http://"+endpoint+"/seldon/"+namespace+"/"+deploymentName+"/api/v0.1/predictions",
         json=payload,
         auth=HTTPBasicAuth(username, password))
     return response
 
-def grpc_request_ambassador(deploymentName,endpoint="localhost:8004",data_size=5,rows=1,data=None):
+def grpc_request_ambassador(deploymentName,namespace,endpoint="localhost:8004",data_size=5,rows=1,data=None):
     if data is None:
         shape, arr = create_random_data(data_size,rows)
     else:
@@ -95,7 +95,7 @@ def grpc_request_ambassador(deploymentName,endpoint="localhost:8004",data_size=5
     request = prediction_pb2.SeldonMessage(data = datadef)
     channel = grpc.insecure_channel(endpoint)
     stub = prediction_pb2_grpc.SeldonStub(channel)
-    metadata = [('seldon',deploymentName)]
+    metadata = [('seldon',deploymentName),('namespace',namespace)]
     response = stub.Predict(request=request,metadata=metadata)
     return response
 

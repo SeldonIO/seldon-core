@@ -61,7 +61,7 @@ public class DeploymentWatcher {
 	{
 		this.statusUpdater = statusUpdater;
 		this.namespace = StringUtils.isEmpty(clusterManagerProperites.getNamespace()) ? "default" : clusterManagerProperites.getNamespace();
-		this.clusterWide = clusterManagerProperites.isClusterWide();
+		this.clusterWide = !clusterManagerProperites.isSingleNamespace();
 		this.k8sClientProvider = k8sClientProvider;
 		this.k8sApiProvider = k8sApiProvider;
 	}
