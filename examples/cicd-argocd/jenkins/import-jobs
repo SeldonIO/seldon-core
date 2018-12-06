@@ -8,10 +8,27 @@ set -o noglob
 
 STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
 
-for job_name in get-all-job build-model-images-job deploy-model-job; do
+source ${STARTUP_DIR}/../settings.sh
+
+import_job() {
+    local job_name=$1
+    echo "*** import job[${job_name}]"
+
+    job_xml_template_fpath="${STARTUP_DIR}/jobs/${job_name}_config.xml.template"
+    job_xml_fpath="${STARTUP_DIR}/jobs/${job_name}_config.xml.tmp"
+    export GITHUB_USER
+    rm -fv "${job_xml_fpath}"
+    cat "${job_xml_template_fpath}"|envsubst > "${job_xml_fpath}" && echo "created ${job_xml_fpath}"
     CRUMB=$(curl -s 'http://drone:drone@localhost:9090/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,":",//crumb)') && \
-        cat ${STARTUP_DIR}/jobs/${job_name}_config.xml |
+        cat "${job_xml_fpath}" |
             curl -X POST -H $CRUMB "http:///drone:drone@localhost:9090/createItem?name=${job_name}" --header "Content-Type: application/xml" -d @-
-    echo "created: ${job_name}"
-done
+    echo "imported ${job_name}"
+}
+
+main() {
+    import_job "get-all-job"
+    #import_job "build-model-images-job"
+}
+
+main "@$"
 
