@@ -52,7 +52,6 @@ def get_class_names(user_model, n_targets):
 # ----------------------------
 
 def get_rest_microservice(user_model, debug=False):
-    logger = logging.getLogger(__name__ + '.get_rest_microservice')
 
     app = Flask(__name__, static_url_path='')
     CORS(app)
@@ -227,22 +226,24 @@ class SeldonFlatbuffersServer(TCPServer):
                     outData = NumpyArrayToSeldonRPC(predictions, class_names)
                     yield stream.write(outData)
                 except StreamClosedError:
-                    logger.exception("Stream closed during processing:", address)
+                    logger.exception(
+                        "Stream closed during processing:", address)
                     break
                 except Exception:
                     tb = traceback.format_exc()
-                    logger.exception("Caught exception during processing:", address, tb)
+                    logger.exception(
+                        "Caught exception during processing:", address, tb)
                     outData = CreateErrorMsg(tb)
                     yield stream.write(outData)
                     stream.close()
                     break
             except StreamClosedError:
-                logger.exception("Stream closed during data inputstream read:", address)
+                logger.exception(
+                    "Stream closed during data inputstream read:", address)
                 break
 
 
 def run_flatbuffers_server(user_model, port, debug=False):
-    logger = logging.getLogger(__name__ + '.run_flatbuffers_server')
     server = SeldonFlatbuffersServer(user_model)
     server.listen(port)
     logger.info("Tornado Server listening on port %s", port)

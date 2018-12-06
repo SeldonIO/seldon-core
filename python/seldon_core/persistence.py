@@ -24,7 +24,6 @@ DEFAULT_PUSH_FREQUENCY = 60
 
 
 def restore(user_class, parameters, debug=False):
-    logger = logging.getLogger(__name__ + '.restore')
     logger.info("Restoring saved model from redis")
 
     redis_client = redis.StrictRedis(host=REDIS_HOST, port=REDIS_PORT)
@@ -37,7 +36,6 @@ def restore(user_class, parameters, debug=False):
 
 
 def persist(user_object, push_frequency=None, debug=False):
-    logger = logging.getLogger(__name__ + '.persist')
 
     if push_frequency is None:
         push_frequency = DEFAULT_PUSH_FREQUENCY
@@ -47,7 +45,6 @@ def persist(user_object, push_frequency=None, debug=False):
 
 
 class PersistenceThread(threading.Thread):
-    logger = logging.getLogger(__name__ + '.PersistenceThread')
 
     def __init__(self, user_object, push_frequency):
         self.user_object = user_object
