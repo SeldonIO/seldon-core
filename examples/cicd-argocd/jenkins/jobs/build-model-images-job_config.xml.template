@@ -8,7 +8,7 @@
       <configVersion>2</configVersion>
       <userRemoteConfigs>
         <hudson.plugins.git.UserRemoteConfig>
-          <url>http://drone:drone@gogs.default.svc.cluster.local:3000/drone/model-source-files.git</url>
+          <url>https://github.com/${GITHUB_USER}/cicd-demo-model-source-files.git</url>
         </hudson.plugins.git.UserRemoteConfig>
       </userRemoteConfigs>
       <branches>
