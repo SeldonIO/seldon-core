@@ -1,9 +1,22 @@
 <?xml version='1.1' encoding='UTF-8'?>
-<flow-definition plugin="workflow-job@2.26">
+<flow-definition plugin="workflow-job@2.24">
+  <actions/>
   <description></description>
   <keepDependencies>false</keepDependencies>
-  <properties/>
-  <definition class="org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition" plugin="workflow-cps@2.59">
+  <properties>
+    <com.coravy.hudson.plugins.github.GithubProjectProperty plugin="github@1.29.3">
+      <projectUrl>https://github.com/${GITHUB_USER}/cicd-demo-model-source-files/</projectUrl>
+      <displayName>cicd-demo-model-source-files</displayName>
+    </com.coravy.hudson.plugins.github.GithubProjectProperty>
+    <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+      <triggers>
+        <com.cloudbees.jenkins.GitHubPushTrigger plugin="github@1.29.3">
+          <spec></spec>
+        </com.cloudbees.jenkins.GitHubPushTrigger>
+      </triggers>
+    </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition" plugin="workflow-cps@2.61">
     <scm class="hudson.plugins.git.GitSCM" plugin="git@3.9.1">
       <configVersion>2</configVersion>
       <userRemoteConfigs>
@@ -27,3 +40,4 @@
   <authToken>RANDTOKEN</authToken>
   <disabled>false</disabled>
 </flow-definition>
+
