@@ -1,2 +1,9 @@
+ARGOCD_VERSION=v0.10.6
 KUBE_CONTEXT=
+
+MODEL_SOURCE_FILES_DIR=...pathto/cicd-demo-model-source-files
+K8S_MANIFEST_FILES_DIR=...pathto/cicd-demo-k8s-manifest-files
+
+GITHUB_USER=<github user id>
+GITHUB_TOKEN=<github personal token>
 
