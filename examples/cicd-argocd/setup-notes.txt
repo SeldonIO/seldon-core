@@ -67,6 +67,11 @@ kubectl create clusterrolebinding user-cluster-admin-binding --clusterrole=clust
 
     IMPORTANT: fix any plugin issues, eg. update pipeline-job plugin if necessary and Reboot
 
+	Install "Github" jenkins plugin
+	Manage jenkins->Manage Plugins->Available
+		Find the "Github" plugin
+		Install without restart
+
     Manage Jenkins->Configure Global Security
         Security Realm->Jenkins’ own user database
             - "Allow users to sign up"
@@ -78,6 +83,14 @@ kubectl create clusterrolebinding user-cluster-admin-binding --clusterrole=clust
 * Import Jenkins jobs
 
     ./jenkins/import-jobs
+
+* Run the jenkins jobs to test
+
+* Create Github Webhook
+
+	# get the webhook details to use
+	./jenkins/get-jenkins-github-webhook-details
+
 
 
 
