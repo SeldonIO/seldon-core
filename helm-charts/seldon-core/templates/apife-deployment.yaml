@@ -34,6 +34,8 @@ spec:
           value: kafka:9092
         - name: SELDON_CLUSTER_MANAGER_REDIS_HOST
           value: {{ .Release.Name }}-redis
+        - name: SELDON_SINGLE_NAMESPACE
+          value: '{{ .Values.single_namespace }}'
         - name: SELDON_CLUSTER_MANAGER_POD_NAMESPACE
           valueFrom:
             fieldRef:
