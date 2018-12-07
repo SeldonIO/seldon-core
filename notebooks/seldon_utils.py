@@ -35,8 +35,8 @@ def rest_request_api_gateway(oauth_key,oauth_secret,namespace,endpoint="localhos
                 json=payload)
     return response
 
-def grpc_request_api_gateway(oauth_key,oauth_secret,rest_endpoint="localhost:8002",grpc_endpoint="localhost:8003",data_size=5,rows=1,data=None):
-    token = get_token(oauth_key,oauth_secret,rest_endpoint)
+def grpc_request_api_gateway(oauth_key,oauth_secret,namespace,rest_endpoint="localhost:8002",grpc_endpoint="localhost:8003",data_size=5,rows=1,data=None):
+    token = get_token(oauth_key,oauth_secret,namespace,rest_endpoint)
     if data is None:
         shape, arr = create_random_data(data_size,rows)
     else:
