@@ -105,7 +105,7 @@ class EpsilonGreedy(object):
         return selected_branch
 
     def send_feedback(self, features, feature_names, routing, reward, truth):
-        loger.debug("Sending feedback with reward %s and truth %s",
+        logger.debug("Sending feedback with reward %s and truth %s",
                     reward, truth)
         logger.debug("Prev success # %s", self.branch_success)
         logger.debug("Prev tries # %s", self.branch_tries)
