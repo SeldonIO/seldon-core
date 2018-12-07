@@ -25,7 +25,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.seldon.apife.AppProperties;
 import io.seldon.apife.api.oauth.InMemoryClientDetailsService;
+import io.seldon.apife.k8s.KubernetesUtil;
 import io.seldon.protos.DeploymentProtos.DeploymentSpec;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
@@ -34,17 +36,19 @@ public class DeploymentStore implements DeploymentsListener {
 	protected static Logger logger = LoggerFactory.getLogger(DeploymentStore.class.getName());
 	
 	//Oauth key to deployment def
-	private ConcurrentMap<String, DeploymentSpec> deploymentStore = new ConcurrentHashMap<>();
+	private ConcurrentMap<String, SeldonDeployment> deploymentStore = new ConcurrentHashMap<>();
 	
 	private final DeploymentsHandler deploymentsHandler;
-	 
-	private InMemoryClientDetailsService clientDetailsService;
+	private final InMemoryClientDetailsService clientDetailsService;
+	private final AppProperties appProperties;
+	private final KubernetesUtil k8sUtil = new KubernetesUtil();
 	
 	@Autowired
-	public DeploymentStore(DeploymentsHandler deploymentsHandler,InMemoryClientDetailsService clientDetailsService)
+	public DeploymentStore(DeploymentsHandler deploymentsHandler,InMemoryClientDetailsService clientDetailsService,AppProperties appProperties)
 	{	
 		this.deploymentsHandler = deploymentsHandler;
 		this.clientDetailsService = clientDetailsService;
+		this.appProperties = appProperties;
 	}
 	 
 	@PostConstruct
@@ -53,18 +57,26 @@ public class DeploymentStore implements DeploymentsListener {
 		deploymentsHandler.addListener(this);
 	}
 	 
-	 public DeploymentSpec getDeployment(String clientId)
-	 {
-		 return deploymentStore.get(clientId);
-	 }
-	 
-	 
+	public SeldonDeployment getDeployment(String clientId)
+	{
+		return deploymentStore.get(clientId);
+	}
+	  
 	 @Override
 	 public void deploymentAdded(SeldonDeployment mlDep) {
 		 final DeploymentSpec deploymentDef = mlDep.getSpec();
+		 final String namespace = k8sUtil.getNamespace(mlDep);
 		 
-		 deploymentStore.put(deploymentDef.getOauthKey(), deploymentDef);
-		 clientDetailsService.addClient(deploymentDef.getOauthKey(), deploymentDef.getOauthSecret());
+		 if (appProperties.isSingleNamespace())
+		 {
+			 deploymentStore.put(deploymentDef.getOauthKey(), mlDep);
+			 clientDetailsService.addClient(deploymentDef.getOauthKey(), deploymentDef.getOauthSecret());
+		 }
+		 
+		 // Always add namespaced key
+		 final String namespacedKey = deploymentDef.getOauthKey() + namespace;
+		 deploymentStore.put(namespacedKey, mlDep);
+		 clientDetailsService.addClient(namespacedKey, deploymentDef.getOauthSecret());			 
 
 		 logger.info("Succesfully added or updated deployment "+deploymentDef.getName());
 	}

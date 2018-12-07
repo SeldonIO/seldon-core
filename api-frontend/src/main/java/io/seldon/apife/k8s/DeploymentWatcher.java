@@ -46,10 +46,10 @@ import io.kubernetes.client.Configuration;
 import io.kubernetes.client.apis.CustomObjectsApi;
 import io.kubernetes.client.util.Config;
 import io.kubernetes.client.util.Watch;
+import io.seldon.apife.AppProperties;
 import io.seldon.apife.deployments.DeploymentsHandler;
 import io.seldon.apife.deployments.DeploymentsListener;
 import io.seldon.apife.pb.ProtoBufUtils;
-import io.seldon.apife.AppProperties;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 @Component
@@ -67,14 +67,16 @@ public class DeploymentWatcher  implements DeploymentsHandler{
 	private int resourceVersionProcessed = 0;
 	private final Set<DeploymentsListener> listeners;
 	private final String namespace;
+	private final boolean clusterWide;
 	
 	@Autowired
-	public DeploymentWatcher(AppProperties clusterManagerProperites) throws IOException
+	public DeploymentWatcher(AppProperties appProperties) throws IOException
 	{
 		this.client = Config.defaultClient();
 		this.listeners = new HashSet<>();
 		Configuration.setDefaultApiClient(client);
-		this.namespace = StringUtils.isEmpty(clusterManagerProperites.getNamespace()) ? "default" : clusterManagerProperites.getNamespace();
+		this.namespace = StringUtils.isEmpty(appProperties.getNamespace()) ? "default" : appProperties.getNamespace();
+		this.clusterWide = !appProperties.isSingleNamespace();
 	}
 	
 	private void processWatch(SeldonDeployment mlDep,String action)
@@ -127,11 +129,21 @@ public class DeploymentWatcher  implements DeploymentsHandler{
 			rs = ""+resourceVersion;
 		logger.info("Watching with rs "+rs);
 		CustomObjectsApi api = new CustomObjectsApi();
-		Watch<Object> watch = Watch.createWatch(
+		Watch<Object> watch;
+		if (this.clusterWide)
+		{
+			watch = Watch.createWatch(
+					client,
+					api.listClusterCustomObjectCall(GROUP, VERSION,  KIND_PLURAL, null, null, rs, true, null, null),
+					new TypeToken<Watch.Response<Object>>(){}.getType());
+		}
+		else
+		{
+			watch = Watch.createWatch(
                 client,
                 api.listNamespacedCustomObjectCall(GROUP, VERSION, namespace, KIND_PLURAL, null, null, rs, true, null, null),
                 new TypeToken<Watch.Response<Object>>(){}.getType());
-		
+		}
 		int maxResourceVersion = resourceVersion;
 		try{
         for (Watch.Response<Object> item : watch) {

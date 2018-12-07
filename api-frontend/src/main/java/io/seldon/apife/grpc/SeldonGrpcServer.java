@@ -34,13 +34,10 @@ import io.grpc.ServerBuilder;
 import io.grpc.ServerInterceptors;
 import io.grpc.netty.NettyServerBuilder;
 import io.seldon.apife.AppProperties;
-import io.seldon.apife.api.oauth.InMemoryClientDetailsService;
 import io.seldon.apife.config.AnnotationsConfig;
 import io.seldon.apife.deployments.DeploymentStore;
 import io.seldon.apife.deployments.DeploymentsHandler;
 import io.seldon.apife.exception.SeldonAPIException;
-import io.seldon.apife.k8s.DeploymentWatcher;
-import io.seldon.protos.DeploymentProtos.DeploymentSpec;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 @Component
@@ -154,8 +151,8 @@ public class SeldonGrpcServer    {
             throw new SeldonAPIException(SeldonAPIException.ApiExceptionType.APIFE_GRPC_NO_PRINCIPAL_FOUND,"");
         }
 
-        final DeploymentSpec deploymentSpec = deploymentStore.getDeployment(principal);
-        if (deploymentSpec == null)
+        final SeldonDeployment mlDep = deploymentStore.getDeployment(principal);
+        if (mlDep == null)
         {
             throw new SeldonAPIException(SeldonAPIException.ApiExceptionType.APIFE_NO_RUNNING_DEPLOYMENT,"Principal is "+principal);
         }
@@ -208,27 +205,6 @@ public class SeldonGrpcServer    {
         server.awaitTermination();
       }
     }
-
-    /**
-     * Main method for basic testing.
-     */
-    public static void main(String[] args) throws Exception {
-        DeploymentStore store = new DeploymentStore(null,new InMemoryClientDetailsService());
-        SeldonDeployment dep = SeldonDeployment.newBuilder()
-                .setApiVersion(DeploymentWatcher.VERSION)
-                .setKind("SeldonDeplyment")
-                .setSpec(DeploymentSpec.newBuilder()
-                    .setName("0.0.0.0")
-                    .setOauthKey("key")
-                    .setOauthSecret("secret")
-                    ).build();   
-        AppProperties appProperties = new AppProperties();
-        appProperties.setEngineGrpcContainerPort(5000);
-        store.deploymentAdded(dep);
-        SeldonGrpcServer server = new SeldonGrpcServer(appProperties,store,null,null,null,SERVER_PORT);
-        server.start();
-        server.blockUntilShutdown();
-  }
 
     public void deploymentAdded(SeldonDeployment resource) {
         ManagedChannel channel = ManagedChannelBuilder.forAddress(resource.getSpec().getName(), appProperties.getEngineGrpcContainerPort()).usePlaintext(true).build();

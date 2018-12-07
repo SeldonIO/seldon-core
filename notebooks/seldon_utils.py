@@ -10,18 +10,18 @@ def create_random_data(data_size,rows=1):
     arr = np.random.rand(rows*data_size)
     return (shape,arr)
 
-def get_token(oauth_key,oauth_secret,endpoint):
+def get_token(oauth_key,oauth_secret,namespace,endpoint):
     payload = {'grant_type': 'client_credentials'}
     response = requests.post(
                 "http://"+endpoint+"/oauth/token",
-                auth=HTTPBasicAuth(oauth_key, oauth_secret),
+                auth=HTTPBasicAuth(oauth_key+namespace, oauth_secret),
                 data=payload)
     print(response.text)
     token =  response.json()["access_token"]
     return token
 
-def rest_request_api_gateway(oauth_key,oauth_secret,endpoint="localhost:8002",data_size=5,rows=1,data=None):
-    token = get_token(oauth_key,oauth_secret,endpoint)
+def rest_request_api_gateway(oauth_key,oauth_secret,namespace,endpoint="localhost:8002",data_size=5,rows=1,data=None):
+    token = get_token(oauth_key,oauth_secret,namespace,endpoint)
     if data is None:
         shape, arr = create_random_data(data_size,rows)
     else:
