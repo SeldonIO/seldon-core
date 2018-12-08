@@ -20,6 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -209,13 +210,20 @@ public class SeldonGrpcServer    {
     }
 
     public void deploymentAdded(SeldonDeployment resource) {
-    	final String namespace = k8sUtil.getNamespace(resource);
-    	final String endpoint = resource.getSpec().getName() + "." + namespace; 
-        final ManagedChannel channel = ManagedChannelBuilder.forAddress(endpoint, appProperties.getEngineGrpcContainerPort()).usePlaintext(true).build();
-        if (appProperties.isSingleNamespace())
-        	channelStore.put(resource.getSpec().getOauthKey(),channel);
-        final String namespacedKey = resource.getSpec().getOauthKey() + namespace;
-        channelStore.put(namespacedKey,channel);
+    	if (StringUtils.isEmpty(resource.getSpec().getOauthKey()))
+    	{
+    		logger.warn("Empty oauth key ignoring for {}",resource.getSpec().getName());
+    	}
+    	else
+    	{
+    		final String namespace = k8sUtil.getNamespace(resource);
+        	final String endpoint = resource.getSpec().getName() + "." + namespace; 
+            final ManagedChannel channel = ManagedChannelBuilder.forAddress(endpoint, appProperties.getEngineGrpcContainerPort()).usePlaintext(true).build();
+            if (appProperties.isSingleNamespace())
+            	channelStore.put(resource.getSpec().getOauthKey(),channel);
+            final String namespacedKey = resource.getSpec().getOauthKey() + namespace;
+            channelStore.put(namespacedKey,channel);
+    	}
     }
 
     public void deploymentRemoved(SeldonDeployment resource) {
