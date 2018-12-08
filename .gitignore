@@ -141,4 +141,5 @@ openapi/prediction.grpcapi.proto
 openapi/prediction.grpcapi.swagger.json
 openapi/tensorflow/
 proto/tensorflow/tensorflow/
-			
+
+util/loadtester/MNIST_data/
