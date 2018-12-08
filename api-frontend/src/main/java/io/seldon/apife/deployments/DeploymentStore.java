@@ -20,6 +20,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,18 +68,25 @@ public class DeploymentStore implements DeploymentsListener {
 		 final DeploymentSpec deploymentDef = mlDep.getSpec();
 		 final String namespace = k8sUtil.getNamespace(mlDep);
 		 
-		 if (appProperties.isSingleNamespace())
+		 if (StringUtils.isEmpty(deploymentDef.getOauthKey()))
 		 {
-			 deploymentStore.put(deploymentDef.getOauthKey(), mlDep);
-			 clientDetailsService.addClient(deploymentDef.getOauthKey(), deploymentDef.getOauthSecret());
+			 logger.warn("Deployment with empty oauth key - ignoring {}",deploymentDef.getName());
 		 }
-		 
-		 // Always add namespaced key
-		 final String namespacedKey = deploymentDef.getOauthKey() + namespace;
-		 deploymentStore.put(namespacedKey, mlDep);
-		 clientDetailsService.addClient(namespacedKey, deploymentDef.getOauthSecret());			 
+		 else
+		 {
+			 if (appProperties.isSingleNamespace())
+			 {
+				 deploymentStore.put(deploymentDef.getOauthKey(), mlDep);
+				 clientDetailsService.addClient(deploymentDef.getOauthKey(), deploymentDef.getOauthSecret());
+			 }
+			 
+			 // Always add namespaced key
+			 final String namespacedKey = deploymentDef.getOauthKey() + namespace;
+			 deploymentStore.put(namespacedKey, mlDep);
+			 clientDetailsService.addClient(namespacedKey, deploymentDef.getOauthSecret());			 
 
-		 logger.info("Succesfully added or updated deployment "+deploymentDef.getName());
+			 logger.info("Succesfully added or updated deployment "+deploymentDef.getName());
+		 }
 	}
 	 
 	@Override

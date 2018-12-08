@@ -72,6 +72,7 @@ subjects:
     name: {{ .Values.rbac.service_account.name }}
     namespace: {{ .Release.Namespace }}
 {{- end }}
+{{- if not .Values.single_namespace }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
@@ -98,6 +99,7 @@ subjects:
   - kind: ServiceAccount
     name: {{ .Values.rbac.service_account.name }}
     namespace: {{ .Release.Namespace }}
+{{- end }}    
 {{- if .Values.ambassador.enabled }}
 {{- if .Values.single_namespace }}
 ---
