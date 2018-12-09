@@ -3,54 +3,18 @@ import time
 import subprocess
 from subprocess import run,Popen
 from seldon_utils import *
-API_AMBASSADOR="localhost:8003"
-API_GATEWAY_REST="localhost:8002"
-API_GATEWAY_GRPC="localhost:8004"
-
-def create_seldon(request):
-    run("kubectl create namespace seldon", shell=True)
-    run("kubectl config set-context $(kubectl config current-context) --namespace=seldon", shell=True)    
-    run("kubectl create clusterrolebinding kube-system-cluster-admin --clusterrole=cluster-admin --serviceaccount=kube-system:default", shell=True)    
-    run("kubectl -n kube-system create sa tiller", shell=True)
-    run("kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller", shell=True)
-    run("helm init --service-account tiller", shell=True)
-    run("kubectl rollout status deploy/tiller-deploy -n kube-system", shell=True)        
-    run("helm install ../../helm-charts/seldon-core-crd --name seldon-core-crd --set usage_metrics.enabled=true", shell=True)
-    run("helm install ../../helm-charts/seldon-core --name seldon-core --namespace seldon  --set ambassador.enabled=true", shell=True)        
-    run('kubectl rollout status deploy/seldon-core-seldon-cluster-manager', shell=True)        
-    run('kubectl rollout status deploy/seldon-core-seldon-apiserver', shell=True)        
-    run('kubectl rollout status deploy/seldon-core-ambassador', shell=True)        
-
-
-def port_forward(request):
-    print("Setup: Port forward")
-    p1 = Popen("kubectl port-forward $(kubectl get pods -n seldon -l app=seldon-apiserver-container-app -o jsonpath='{.items[0].metadata.name}') -n seldon 8002:8080", shell=True)
-    p2 = Popen("kubectl port-forward $(kubectl get pods -n seldon -l service=ambassador -o jsonpath='{.items[0].metadata.name}') -n seldon 8003:8080", shell=True)
-    p3 = Popen("kubectl port-forward $(kubectl get pods -n seldon -l app=seldon-apiserver-container-app -o jsonpath='{.items[0].metadata.name}') -n seldon 8004:5000", shell=True)    
-    #, stdout=subprocess.PIPE
-    def fin():
-        print("teardown port forward")
-        p1.kill()
-        time.sleep(1)
-        p2.kill()
-        time.sleep(2)
-        p3.kill()
-        time.sleep(2)
-        
-    request.addfinalizer(fin)
+from k8s_utils import *
 
 @pytest.fixture(scope="session",autouse=True)
 def pre_test_setup(request):
-    create_seldon(request)
+    create_seldon_single_namespace(request)
     port_forward(request)
-
     
 def wait_for_shutdown(deploymentName):
     ret = run("kubectl get deploy/"+deploymentName, shell=True)
     while ret.returncode == 0:
         time.sleep(1)
         ret = run("kubectl get deploy/"+deploymentName, shell=True)
-
 
 def wait_for_rollout(deploymentName):
     ret = run("kubectl rollout status deploy/"+deploymentName, shell=True)
