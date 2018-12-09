@@ -5,11 +5,6 @@ from subprocess import run,Popen
 from seldon_utils import *
 from k8s_utils import *
 
-@pytest.fixture(scope="session",autouse=True)
-def pre_test_setup(request):
-    create_seldon_single_namespace(request)
-    port_forward(request)
-
 def wait_for_shutdown(deploymentName):
     ret = run("kubectl get deploy/"+deploymentName, shell=True)
     while ret.returncode == 0:
@@ -32,6 +27,7 @@ def initial_rest_request():
             r = rest_request_api_gateway("oauth-key","oauth-secret",None)
     return r
 
+@pytest.mark.usefixtures("single_namespace_seldon_helm")
 class TestRolling(object):
     
     # Test updating a model with a new image version as the only change
