@@ -6,11 +6,6 @@ import json
 from seldon_utils import *
 from k8s_utils import *
 
-@pytest.fixture(scope="session",autouse=True)
-def pre_test_setup(request):
-    create_seldon_single_namespace(request)
-
-
 def wait_for_status(name):
     for attempts in range(3):
         completedProcess = run("kubectl get sdep "+name+" -o json", shell=True, check=True, stdout=subprocess.PIPE)
@@ -21,7 +16,8 @@ def wait_for_status(name):
         else:
             print("Failed to find status - sleeping")
             time.sleep(5)
-    
+
+@pytest.mark.usefixtures("single_namespace_seldon_helm")    
 class TestBadGraphs(object):
     
     def test_duplicate_predictor_name(self):
