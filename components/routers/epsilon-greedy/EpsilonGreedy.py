@@ -2,7 +2,7 @@ import random
 import logging
 import numpy as np
 
-__version__ = "v1.3"
+__version__ = "1.3"
 logger = logging.getLogger(__name__)
 
 
@@ -106,7 +106,7 @@ class EpsilonGreedy(object):
 
     def send_feedback(self, features, feature_names, routing, reward, truth):
         logger.debug("Sending feedback with reward %s and truth %s",
-                    reward, truth)
+                     reward, truth)
         logger.debug("Prev success # %s", self.branch_success)
         logger.debug("Prev tries # %s", self.branch_tries)
         logger.debug("Prev best branch: %s", self.best_branch)
@@ -127,21 +127,6 @@ class EpsilonGreedy(object):
         logger.debug("New tries # %s", self.branch_tries)
         logger.debug("Branch values %s", self.branch_values)
         logger.debug("New best branch: %s", self.best_branch)
-
-    def metrics(self):
-        try:
-            tags = self.branch_names
-        except AttributeError:
-            tags = range(self.n_branches)
-
-        branch_values = [{"type": "GAUGE", "key": "branch_value", "value": self.branch_values[b], "tags":{
-            "branch_name": tag}} for (b, tag) in zip(range(self.n_branches), tags)]
-        branch_success = [{"type": "GAUGE", "key": "n_success_total", "value": self.branch_success[b], "tags":{
-            "branch_name": tag}} for (b, tag) in zip(range(self.n_branches), tags)]
-        branch_tries = [{"type": "GAUGE", "key": "n_tries_total", "value": self.branch_tries[b], "tags":{
-            "branch_name": tag}} for (b, tag) in zip(range(self.n_branches), tags)]
-
-        return branch_values + branch_success + branch_tries
 
     def n_success_failures(self, features, reward):
         n_predictions = features.shape[0]
