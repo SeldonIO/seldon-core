@@ -4,11 +4,11 @@
 
 * Create cluster, at least Kubernetes 10
 
-* have "helm", "argo", "argocd" installed
+* Have "helm", "argo", "argocd" installed
 
 * (if gcp) create-user-cluster-admin-binding
 
-kubectl create clusterrolebinding user-cluster-admin-binding --clusterrole=cluster-admin --user=$(gcloud config get-value account)
+    kubectl create clusterrolebinding user-cluster-admin-binding --clusterrole=cluster-admin --user=$(gcloud config get-value account)
 
 * Create "settings.sh" using "settings.sh.example"
 
@@ -16,15 +16,15 @@ kubectl create clusterrolebinding user-cluster-admin-binding --clusterrole=clust
 
     ./seldon-core/install-helm
 
-* start all
+* Start all
 
     ./start-all
 
-* check rollout status of all deployments
+* Check rollout status of all deployments
 
     ./watch-rollout-status
 
-* create tmux windows
+* Create tmux windows
 
     # NOT FROM ANOTHER TMUX SESSION!
     ./create-demo-tmux-session
@@ -34,7 +34,7 @@ kubectl create clusterrolebinding user-cluster-admin-binding --clusterrole=clust
     ./argo/wf-run-build-image-and-push M01
     ./argo/wf-run-build-image-and-push M02
 
-* check images in the private registry
+* Check images in the private registry
 
     ./k8s-local-docker-registry/registry-images-list
     ./k8s-local-docker-registry/registry-tags-list "gsunner/simple-model"
@@ -95,6 +95,16 @@ kubectl create clusterrolebinding user-cluster-admin-binding --clusterrole=clust
 
 Clean Up
 
+* Remove webhooks
+
+    # For CI, remove webhook from "cicd-demo-model-source-files" repo
+    # For CD, remove webhook from "cicd-demo-k8s-manifest-files" repo
+
+* Stop all
+
+    ./stop-all
+
 * Remove helm
 
     ./seldon-core/remove-helm
+
