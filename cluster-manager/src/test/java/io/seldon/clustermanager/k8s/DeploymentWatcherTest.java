@@ -92,7 +92,7 @@ public class DeploymentWatcherTest extends AppTest {
 		DeploymentWatcher watcher = new DeploymentWatcher(mockK8sApiProvider, mockK8sClientProvider, props, mockStatusUpdater);
 		watcher.watchDeployments(0, 0);
 		
-		verify(mockStatusUpdater).updateStatus(Mockito.matches("mymodel"), Mockito.matches("mymodel-mymodel-classifier-0"), Mockito.eq(1), Mockito.eq(1));
+		verify(mockStatusUpdater).updateStatus(Mockito.matches("mymodel"), Mockito.matches("mymodel-mymodel-classifier-0"), Mockito.eq(1), Mockito.eq(1),Mockito.anyString());
 	}
 	
 	@Test
@@ -102,7 +102,7 @@ public class DeploymentWatcherTest extends AppTest {
 		DeploymentWatcher watcher = new DeploymentWatcher(mockK8sApiProvider, mockK8sClientProvider, props, mockStatusUpdater);
 		watcher.watchDeployments(0, 0);
 		
-		verify(mockStatusUpdater).removeStatus(Mockito.matches("mymodel"), Mockito.matches("mymodel-mymodel-classifier-0"));
+		verify(mockStatusUpdater).removeStatus(Mockito.matches("mymodel"), Mockito.matches("mymodel-mymodel-classifier-0"),Mockito.anyString());
 	}
 	
 	@Test
@@ -112,6 +112,6 @@ public class DeploymentWatcherTest extends AppTest {
 		DeploymentWatcher watcher = new DeploymentWatcher(mockK8sApiProvider, mockK8sClientProvider, props, mockStatusUpdater);
 		watcher.watchDeployments(1, 1);
 		
-		verify(mockStatusUpdater,Mockito.never()).removeStatus(Mockito.matches("mymodel"), Mockito.matches("mymodel-mymodel-classifier-0"));
+		verify(mockStatusUpdater,Mockito.never()).removeStatus(Mockito.matches("mymodel"), Mockito.matches("mymodel-mymodel-classifier-0"),Mockito.anyString());
 	}
 }

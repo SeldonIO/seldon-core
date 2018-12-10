@@ -13,6 +13,8 @@
 // @optionalParam grpcMaxMessageSize string 4194304 Max gRPC message size
 // @optionalParam seldonVersion string 0.2.5-SNAPSHOT Seldon version
 // @optionalParam engineServiceAccount string default Service account for Seldon Service Orchestrator Engine
+// @optionalParam singleNamespace string true Whether to limit seldon to a single namespace
+// @optionalParam engineUser string 8888 User id to run service orchestrator engine
 
 local k = import "k.libsonnet";
 local core = import "seldon-core/seldon-core/core.libsonnet";
@@ -24,6 +26,7 @@ local updatedParams = params {
 };
 
 local seldonVersion = import "param://seldonVersion";
+local singleNamespace = import "param://singleNamespace";
 
 local name = import "param://name";
 local namespace = updatedParams.namespace;
@@ -46,50 +49,63 @@ local operatorJavaOpts = if operatorJavaOptsParam != "null" then operatorJavaOpt
 // Engine
 local engineImage = "seldonio/engine:" + seldonVersion;
 local engineServiceAccount = import "param://engineServiceAccount";
+local engineUser = import "param://engineUser";
 
 // APIFE
 local apife = [
-  core.parts(name, namespace, seldonVersion).apife(apifeImage, withRbac, grpcMaxMessageSize),
-  core.parts(name, namespace, seldonVersion).apifeService(apifeServiceType),
+  core.parts(name, namespace, seldonVersion, singleNamespace).apife(apifeImage, withRbac, grpcMaxMessageSize),
+  core.parts(name, namespace, seldonVersion, singleNamespace).apifeService(apifeServiceType),
 ];
 
-local rbac2 = [
-  core.parts(name, namespace, seldonVersion).rbacServiceAccount(),
-  core.parts(name, namespace, seldonVersion).rbacClusterRole(),
-  core.parts(name, namespace, seldonVersion).rbacRole(),
-  core.parts(name, namespace, seldonVersion).rbacRoleBinding(),
-  core.parts(name, namespace, seldonVersion).rbacClusterRoleBinding(),
+local rbac2_single_namespace = [
+  core.parts(name, namespace, seldonVersion, singleNamespace).rbacServiceAccount(),
+  core.parts(name, namespace, seldonVersion, singleNamespace).rbacRole(),
+  core.parts(name, namespace, seldonVersion, singleNamespace).rbacRoleBinding(),
+];
+
+local rbac2_cluster_wide = [
+  core.parts(name, namespace, seldonVersion, singleNamespace).rbacServiceAccount(),
+  core.parts(name, namespace, seldonVersion, singleNamespace).rbacClusterRole(),
+  core.parts(name, namespace, seldonVersion, singleNamespace).rbacClusterRoleBinding(),  
+  core.parts(name, namespace, seldonVersion, singleNamespace).rbacCRDClusterRole(),
+  core.parts(name, namespace, seldonVersion, singleNamespace).rbacCRDClusterRoleBinding(),  
 ];
 
 local rbac1 = [
-  core.parts(name, namespace, seldonVersion).rbacServiceAccount(),
-  core.parts(name, namespace, seldonVersion).rbacRoleBinding(),
+  core.parts(name, namespace, seldonVersion, singleNamespace).rbacServiceAccount(),
+  core.parts(name, namespace, seldonVersion, singleNamespace).rbacRoleBinding(),
 ];
 
-local rbac = if std.startsWith(seldonVersion, "0.1") then rbac1 else rbac2;
+local rbac = if std.startsWith(seldonVersion, "0.1") then rbac1 else if singleNamespace == "true" then rbac2_single_namespace else rbac2_cluster_wide;
 
 // Core
 local coreComponents = [
-  core.parts(name, namespace, seldonVersion).deploymentOperator(engineImage, operatorImage, operatorSpringOpts, operatorJavaOpts, withRbac, engineServiceAccount),
-  core.parts(name, namespace, seldonVersion).redisDeployment(),
-  core.parts(name, namespace, seldonVersion).redisService(),
-  core.parts(name, namespace, seldonVersion).crd(),
+  core.parts(name, namespace, seldonVersion, singleNamespace).deploymentOperator(engineImage, operatorImage, operatorSpringOpts, operatorJavaOpts, withRbac, engineServiceAccount, engineUser),
+  core.parts(name, namespace, seldonVersion, singleNamespace).redisDeployment(),
+  core.parts(name, namespace, seldonVersion, singleNamespace).redisService(),
+  core.parts(name, namespace, seldonVersion, singleNamespace).crd(),
 ];
 
 //Ambassador
-local ambassadorRbac = [
-  core.parts(name,namespace, seldonVersion).rbacAmbassadorRole(),
-  core.parts(name,namespace, seldonVersion).rbacAmbassadorRoleBinding(),  
+local ambassadorRbac_single_namespace = [
+  core.parts(name,namespace, seldonVersion, singleNamespace).rbacAmbassadorRole(),
+  core.parts(name,namespace, seldonVersion, singleNamespace).rbacAmbassadorRoleBinding(),  
+];
+
+local ambassadorRbac_cluster_wide = [
+  core.parts(name,namespace, seldonVersion, singleNamespace).rbacAmbassadorClusterRole(),
+  core.parts(name,namespace, seldonVersion, singleNamespace).rbacAmbassadorClusterRoleBinding(),  
 ];
 
 local ambassador = [
-  core.parts(name,namespace, seldonVersion).ambassadorDeployment(),
-  core.parts(name,namespace, seldonVersion).ambassadorService(),  
+  core.parts(name,namespace, seldonVersion, singleNamespace).ambassadorDeployment(),
+  core.parts(name,namespace, seldonVersion, singleNamespace).ambassadorService(),  
 ];
 
 local l1 = if withRbac == "true" then rbac + coreComponents else coreComponents;
 local l2 = if withApife == "true" then l1 + apife else l1;
-local l3 = if withAmbassador == "true" && withRbac == "true" then l2 + ambassadorRbac else l2;
-local l4 = if withAmbassador == "true" then l3 + ambassador else l3;
+local l3 = if withAmbassador == "true" && withRbac == "true" && singleNamespace == "true" then l2 + ambassadorRbac_single_namespace else l2;
+local l4 = if withAmbassador == "true" && withRbac == "true" && singleNamespace == "false" then l3 + ambassadorRbac_cluster_wide else l3;
+local l5 = if withAmbassador == "true" then l4 + ambassador else l4;
 
-l4
+l5

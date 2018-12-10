@@ -20,7 +20,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -128,7 +127,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	{
 		int deleteCount = 0;
 	    Set<String> names = getDeploymentNames(deployments);
-	    ExtensionsV1beta1DeploymentList depList = crdHandler.getOwnedDeployments(seldonDeployment.getSpec().getName());
+	    ExtensionsV1beta1DeploymentList depList = crdHandler.getOwnedDeployments(seldonDeployment.getSpec().getName(),namespace);
 	    for (ExtensionsV1beta1Deployment d : depList.getItems())
 	    {
 	    	boolean okToDelete = !svcOrchOnly || (d.getMetadata().getLabels().containsKey(Constants.LABEL_SELDON_SVCORCH));
@@ -157,7 +156,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	private void removeServices(ApiClient client,String namespace,SeldonDeployment seldonDeployment,List<Service> services) throws ApiException, IOException, SeldonDeploymentException
 	{
 		Set<String> names = getServiceNames(services);
-		V1ServiceList svcList = crdHandler.getOwnedServices(seldonDeployment.getSpec().getName());
+		V1ServiceList svcList = crdHandler.getOwnedServices(seldonDeployment.getSpec().getName(),namespace);
 		for(V1Service s : svcList.getItems())
 		{
 			if (!names.contains(s.getMetadata().getName()))
@@ -190,7 +189,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	private void removeServices(ProtoClient client,String namespace,SeldonDeployment seldonDeployment,List<Service> services) throws ApiException, IOException, SeldonDeploymentException
 	{
 		Set<String> names = getServiceNames(services);
-		V1ServiceList svcList = crdHandler.getOwnedServices(seldonDeployment.getSpec().getName());
+		V1ServiceList svcList = crdHandler.getOwnedServices(seldonDeployment.getSpec().getName(),namespace);
 		for(V1Service s : svcList.getItems())
 		{
 			if (!names.contains(s.getMetadata().getName()))
@@ -254,14 +253,6 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	            logger.debug("No creating service as already exists "+service.getMetadata().getName());
 		}
 	}
-
-	private String getNamespace(SeldonDeployment d)
-	{
-	    if (StringUtils.isEmpty(d.getMetadata().getNamespace()))
-	        return "default";
-	    else
-	        return d.getMetadata().getNamespace();
-	}
 	
 	private void failDeployment(SeldonDeployment mlDep,Exception e)
 	{
@@ -278,7 +269,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 			SeldonDeployment mlDep2 = operator.defaulting(mlDep);
 			DeploymentResources resources = operator.createResources(mlDep2);
 			ProtoClient client = clientProvider.getProtoClient();
-			String namespace = getNamespace(mlDep2);
+			String namespace = SeldonDeploymentUtils.getNamespace(mlDep2);
 			final String deploymentDeleteKey = mlDep.getMetadata().getUid()+":"+mlDep.getMetadata().getResourceVersion();
 			logger.info("Deployment delete cache key {}",deploymentDeleteKey);
 			if (deletedCache.getIfPresent(deploymentDeleteKey) == null)
@@ -310,7 +301,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 			SeldonDeployment mlDep2 = operator.defaulting(mlDep);
 			DeploymentResources resources = operator.createResources(mlDep2);
 			ProtoClient client = clientProvider.getProtoClient();
-			String namespace = getNamespace(mlDep2);
+			String namespace = SeldonDeploymentUtils.getNamespace(mlDep2);
 			removeDeployments(client, namespace, mlDep2, resources.deployments,false);
 			ApiClient client2 = clientProvider.getClient();
 			removeServices(client2,namespace, mlDep2, resources.services);
@@ -334,7 +325,8 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	    }
 		try
 		{
-		    SeldonDeployment existing = mlCache.get(mlDep.getMetadata().getName());
+	        String namespace = SeldonDeploymentUtils.getNamespace(mlDep);
+		    SeldonDeployment existing = mlCache.get(mlDep);
 		    if (existing == null || !existing.getSpec().equals(mlDep.getSpec()))
 		    {
 		        logger.debug("Running updates for "+mlDep.getMetadata().getName());
@@ -344,7 +336,6 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 		        operator.validate(mlDep2);
 		        DeploymentResources resources = operator.createResources(mlDep2);
 		        ProtoClient client = clientProvider.getProtoClient();
-		        String namespace = getNamespace(mlDep2);
 		        createDeployments(client, namespace, resources.deployments);
 		        //removeDeployments(client, namespace, mlDep2, resources.deployments);
 		        createServices(client, namespace, resources.services);
