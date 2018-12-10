@@ -10,6 +10,7 @@
 
 kubectl create clusterrolebinding user-cluster-admin-binding --clusterrole=cluster-admin --user=$(gcloud config get-value account)
 
+* Create "settings.sh" using "settings.sh.example"
 
 * Install helm
 

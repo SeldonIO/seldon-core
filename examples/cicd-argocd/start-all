@@ -8,7 +8,8 @@ STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
 
 check_settings() {
     if [ ! -f "${STARTUP_DIR}/settings.sh" ]; then
-        cp -v "${STARTUP_DIR}/settings.sh.example" "${STARTUP_DIR}/settings.sh"
+        echo "settings.sh not found!"
+        exit 1
     fi
 }
 
@@ -21,6 +22,9 @@ main() {
     ${STARTUP_DIR}/k8s-local-docker-registry/start-docker-private-registry
     ${STARTUP_DIR}/argo/start-argo
     ${STARTUP_DIR}/argocd/start-argocd
+
+    echo "*** check rollouts ***"
+    ${STARTUP_DIR}/watch-rollout-status
 }
 
 main "$@"
