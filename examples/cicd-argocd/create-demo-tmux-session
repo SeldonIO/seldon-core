@@ -20,19 +20,19 @@ create_new_port_forward_window() {
 
     # port forward "k8s-local-docker-registry"
     tmux select-pane -t 0
-    tmux send-keys "./k8s-local-docker-registry/port-forward-registry" C-m
+    tmux send-keys "${STARTUP_DIR}/k8s-local-docker-registry/port-forward-registry" C-m
 
     # port forward jenkins
     tmux select-pane -t 1
-    tmux send-keys "./jenkins/port-forard-jenkins" C-m
+    tmux send-keys "${STARTUP_DIR}/jenkins/port-forard-jenkins" C-m
 
     # port forward api server
     tmux select-pane -t 2
-    tmux send-keys "./seldon-core/port-forard-api-server" C-m
+    tmux send-keys "${STARTUP_DIR}/seldon-core/port-forard-api-server" C-m
 
     # port forward argo
     tmux select-pane -t 3
-    tmux send-keys "./argo/port-forard-argo" C-m
+    tmux send-keys "${STARTUP_DIR}/argo/port-forard-argo" C-m
 }
 
 create_new_dash_window() {
@@ -46,26 +46,32 @@ create_new_dash_window() {
     tmux split-window -h
     tmux select-pane -t 3
     tmux split-window -v
+    tmux select-pane -t 1
+    tmux split-window -v
 
 
     # watch cluster
     tmux select-pane -t 0
-    tmux send-keys "./watch-cluster" C-m
+    tmux send-keys "${STARTUP_DIR}/watch-cluster" C-m
 
     # show activity monitor logs
     tmux select-pane -t 1
-    tmux send-keys "clear && ./activity-monitor/show-activity-monitor-logs" C-m
+    tmux send-keys "clear && ${STARTUP_DIR}/activity-monitor/show-activity-monitor-logs" C-m
+
+    # show jenkins logs
+    tmux select-pane -t 2
+    tmux send-keys "clear && ${STARTUP_DIR}/jenkins/show-jenkins-logs" C-m
 
     # watch calls
-    tmux select-pane -t 2
-    tmux send-keys "./seldon-core/watch-calls" C-m
+    tmux select-pane -t 3
+    tmux send-keys "${STARTUP_DIR}/seldon-core/watch-calls" C-m
 
     # edit model
-    tmux select-pane -t 3
+    tmux select-pane -t 4
     tmux send-keys "cd ${MODEL_SOURCE_FILES_DIR}/models/simple-model && vim SimpleModel.py" C-m
 
     # git commit pane
-    tmux select-pane -t 4
+    tmux select-pane -t 5
     tmux send-keys "cd ${MODEL_SOURCE_FILES_DIR}/models/simple-model && clear && echo '#git commit -m '\'update value\'' SimpleModel.py && git push'" C-m
 }
 
