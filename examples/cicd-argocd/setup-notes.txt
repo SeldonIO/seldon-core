@@ -44,6 +44,9 @@ kubectl create clusterrolebinding user-cluster-admin-binding --clusterrole=clust
     # make a note of the admin password
     ./argocd/get-initial-admin-password
 
+    # use argocd external to login in from command-line
+    ./argocd/get-argocd-server-url
+
     argocd login <EXTERNAL-IP>
         user: admin
         password: see admin password
