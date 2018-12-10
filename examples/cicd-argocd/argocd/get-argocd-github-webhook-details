@@ -12,7 +12,10 @@ KUBECTL="kubectl --context=${KUBE_CONTEXT}"
 
 EXTERNAL_IP=$(${KUBECTL} get svc -n argocd argocd-server -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 
+echo ""
 echo "Payload URL: https://${EXTERNAL_IP}/api/webhook"
 echo "Content type: application/json"
 echo "Secret: RANDTOKEN"
+echo "SSL verification: Disable"
+echo ""
 

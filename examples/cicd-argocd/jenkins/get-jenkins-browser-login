@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+source ${STARTUP_DIR}/../settings.sh
+
+KUBECTL="kubectl --context=${KUBE_CONTEXT}"
+
+#printf $(${KUBECTL} get secret --namespace jenkins jenkins -o jsonpath="{.data.jenkins-admin-password}" | base64 --decode);echo
+
+EXTERNAL_IP=$(${KUBECTL} get svc -n jenkins jenkins -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+ADMIN_PASSWORD=$(printf $(${KUBECTL} get secret --namespace jenkins jenkins -o jsonpath="{.data.jenkins-admin-password}" | base64 --decode))
+
+echo ""
+echo "url: http://${EXTERNAL_IP}:8080/"
+echo "user: admin"
+echo "password: ${ADMIN_PASSWORD}"
+echo ""
+
