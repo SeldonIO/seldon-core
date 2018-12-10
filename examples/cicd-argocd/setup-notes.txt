@@ -41,24 +41,18 @@ kubectl create clusterrolebinding user-cluster-admin-binding --clusterrole=clust
 
 * Setup argocd
 
-    # make a note of the admin password
-    ./argocd/get-initial-admin-password
+    # get cmd-line login details, and use to login
+    ./argocd/get-argocd-cmd-line-login
 
-    # use argocd external to login in from command-line
-    ./argocd/get-argocd-server-url
-
-    argocd login <EXTERNAL-IP>
-        user: admin
-        password: see admin password
-
+    # add current cluster to list
     ./argocd/argocd-cluster-add
     ./argocd/argocd-cluster-list
 
     # create app
     ./argocd/argocd-app-create
 
-    # get argocd-server url and login in browser
-    ./argocd/get-argocd-server-url
+    # get browser login details, and use to login
+    ./argocd/get-argocd-browser-login
 
 * Setup Jenkins
 
