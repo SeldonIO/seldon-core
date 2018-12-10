@@ -21,7 +21,7 @@
             "spec": {
             "containers": [
                 {
-                "image": "seldonio/rf_model:1.0",
+                "image": "seldonio/credit_default_rf_model:0.1",
                 "name": "rf-model"
                 }
             ],
