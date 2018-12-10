@@ -49,18 +49,17 @@ create_new_dash_window() {
     tmux select-pane -t 1
     tmux split-window -v
 
-
     # watch cluster
     tmux select-pane -t 0
     tmux send-keys "${STARTUP_DIR}/watch-cluster" C-m
 
-    # show activity monitor logs
-    tmux select-pane -t 1
-    tmux send-keys "clear && ${STARTUP_DIR}/activity-monitor/show-activity-monitor-logs" C-m
-
     # show jenkins logs
-    tmux select-pane -t 2
+    tmux select-pane -t 1
     tmux send-keys "clear && ${STARTUP_DIR}/jenkins/show-jenkins-logs" C-m
+
+    # show argocd logs
+    tmux select-pane -t 2
+    tmux send-keys "clear && ${STARTUP_DIR}/argocd/show-argocd-logs" C-m
 
     # watch calls
     tmux select-pane -t 3
