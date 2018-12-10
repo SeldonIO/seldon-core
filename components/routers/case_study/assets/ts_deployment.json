@@ -21,15 +21,15 @@
             "spec": {
             "containers": [
                 {
-                "image": "seldonio/rf_model:1.0",
+                "image": "seldonio/credit_default_rf_model:0.1",
                 "name": "rf-model"
                 },
                 {
-                "image": "seldonio/xgb_model:1.0",
+                "image": "seldonio/credit_default_xgb_model:0.1",
                 "name": "xgb-model"
                 },
                 {
-                "image": "seldonio/mab_ts:1.0",
+                "image": "seldonio/mab_thomson_sampling:0.1",
                 "name": "ts-router"
                 }
             ],
