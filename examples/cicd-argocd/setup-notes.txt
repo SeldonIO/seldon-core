@@ -20,10 +20,6 @@
 
     ./start-all
 
-* Check rollout status of all deployments
-
-    ./watch-rollout-status
-
 * Create tmux windows
 
     # NOT FROM ANOTHER TMUX SESSION!
@@ -38,22 +34,6 @@
 
     ./k8s-local-docker-registry/registry-images-list
     ./k8s-local-docker-registry/registry-tags-list "gsunner/simple-model"
-
-
-* Setup argocd
-
-    # get cmd-line login details, and use to login
-    ./argocd/get-argocd-cmd-line-login
-
-    # add current cluster to list
-    ./argocd/argocd-cluster-add
-    ./argocd/argocd-cluster-list
-
-    # create app
-    ./argocd/argocd-app-create
-
-    # get browser login details, and use to login
-    ./argocd/get-argocd-browser-login
 
 * Setup Jenkins
 
@@ -80,6 +60,21 @@
     ./jenkins/import-jobs
 
 * Run the jenkins jobs to test
+
+* Setup argocd
+
+    # get cmd-line login details, and use to login
+    ./argocd/get-argocd-cmd-line-login
+
+    # add current cluster to list
+    ./argocd/argocd-cluster-add
+    ./argocd/argocd-cluster-list
+
+    # create app
+    ./argocd/argocd-app-create
+
+    # get browser login details, and use to login
+    ./argocd/get-argocd-browser-login
 
 * Create Github Webhooks
 
