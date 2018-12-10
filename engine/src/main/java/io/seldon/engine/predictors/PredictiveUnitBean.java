@@ -87,7 +87,11 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 		if (msg.hasMeta())
 		{
 			addCustomMetrics(msg.getMeta().getMetricsList(),state);
-			metrics.put(state.name,msg.getMeta().getMetricsList());
+			if (!metrics.containsKey(state.name))
+				metrics.putIfAbsent(state.name,new ArrayList<>());
+			List<Metric> current = metrics.get(state.name);
+			current.addAll(msg.getMeta().getMetricsList());
+			metrics.put(state.name,current);
 		}
 	}
 	

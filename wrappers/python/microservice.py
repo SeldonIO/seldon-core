@@ -11,6 +11,10 @@ import time
 import logging
 import sys
 import multiprocessing as mp
+import tensorflow as tf
+from tensorflow.core.framework.tensor_pb2 import TensorProto
+from google.protobuf import json_format
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -31,7 +35,7 @@ def startServers(target1, target2):
     p2.start()
 
     target1()
-    
+
     p2.join()
 
 class SeldonMicroserviceException(Exception):
@@ -52,13 +56,14 @@ class SeldonMicroserviceException(Exception):
 def sanity_check_request(req):
     if not type(req) == dict:
         raise SeldonMicroserviceException("Request must be a dictionary")
-    data = req.get("data")
-    if data is None:
+    if "data" in req:
+        data = req.get("data")
+        if not type(data) == dict:
+            raise SeldonMicroserviceException("data field must be a dictionary")
+        if data.get('ndarray') is None and data.get('tensor') is None and data.get('tftensor') is None:
+            raise SeldonMicroserviceException("Data dictionary has no 'tensor', 'ndarray' or 'tftensor' keyword.")
+    elif not ("binData" in req or "strData" in req):
         raise SeldonMicroserviceException("Request must contain Default Data")
-    if not type(data) == dict:
-        raise SeldonMicroserviceException("Data must be a dictionary")
-    if data.get('ndarray') is None and data.get('tensor') is None:
-        raise SeldonMicroserviceException("Data dictionary has no 'ndarray' or 'tensor' keyword.")
     # TODO: Should we check more things? Like shape not being None or empty for a tensor?
 
 def extract_message():
@@ -93,11 +98,29 @@ def array_to_list_value(array,lv=None):
             array_to_list_value(sub_array,sub_lv)
     return lv
 
+
+def get_data_from_json(message):
+    if "data" in message:
+        datadef = message.get("data")
+        return rest_datadef_to_array(datadef)
+    elif "binData" in message:
+        return message["binData"]
+    elif "strData" in message:
+        return message["strData"]
+    else:
+        strJson = json.dumps(message)
+        raise SeldonMicroserviceException("Can't find data in json: "+strJson)
+
+
 def rest_datadef_to_array(datadef):
     if datadef.get("tensor") is not None:
         features = np.array(datadef.get("tensor").get("values")).reshape(datadef.get("tensor").get("shape"))
     elif datadef.get("ndarray") is not None:
         features = np.array(datadef.get("ndarray"))
+    elif datadef.get("tftensor") is not None:
+        tfp = TensorProto()
+        json_format.ParseDict(datadef.get("tftensor"), tfp, ignore_unknown_fields=False)
+        features = tf.make_ndarray(tfp)
     else:
         features = np.array([])
     return features
@@ -111,9 +134,27 @@ def array_to_rest_datadef(array,names,original_datadef):
         }
     elif original_datadef.get("ndarray") is not None:
         datadef["ndarray"] = array.tolist()
+    elif original_datadef.get("tftensor") is not None:
+        tftensor = tf.make_tensor_proto(array)
+        jStrTensor = json_format.MessageToJson(tftensor)
+        jTensor = json.loads(jStrTensor)
+        datadef["tftensor"] = jTensor
     else:
         datadef["ndarray"] = array.tolist()
     return datadef
+
+
+def get_data_from_proto(request):
+    data_type = request.WhichOneof("data_oneof")
+    if data_type == "data":
+        datadef = request.data
+        return grpc_datadef_to_array(datadef)
+    elif data_type == "binData":
+        return request.binData
+    elif data_type == "strData":
+        return request.strData
+    else:
+        raise SeldonMicroserviceException("Unknown data in SeldonMessage")
 
 def grpc_datadef_to_array(datadef):
     data_type = datadef.WhichOneof("data_oneof")
@@ -129,6 +170,8 @@ def grpc_datadef_to_array(datadef):
             features = np.array(datadef.tensor.values).reshape(datadef.tensor.shape)
     elif data_type == "ndarray":
         features = np.array(datadef.ndarray)
+    elif data_type == "tftensor":
+        features = tf.make_ndarray(datadef.tftensor)
     else:
         features = np.array([])
     return features
@@ -146,6 +189,11 @@ def array_to_grpc_datadef(array,names,data_type):
         datadef = prediction_pb2.DefaultData(
             names = names,
             ndarray = array_to_list_value(array)
+        )
+    elif data_type == "tftensor":
+        datadef = prediction_pb2.DefaultData(
+            names = names,
+            tftensor = tf.make_tensor_proto(array)
         )
     else:
         datadef = prediction_pb2.DefaultData(
@@ -199,7 +247,7 @@ if __name__ == "__main__":
     parser.add_argument("--persistence",nargs='?',default=0,const=1,type=int)
     parser.add_argument("--parameters",type=str,default=os.environ.get(PARAMETERS_ENV_NAME,"[]"))
     args = parser.parse_args()
-    
+
     parameters = parse_parameters(json.loads(args.parameters))
 
     if parameters.get(DEBUG_PARAMETER):
@@ -208,7 +256,7 @@ if __name__ == "__main__":
 
     annotations = load_annotations()
     logger.info("Annotations %s",annotations)
-    
+
     interface_file = importlib.import_module(args.interface_name)
     user_class = getattr(interface_file,args.interface_name)
 
@@ -228,13 +276,13 @@ if __name__ == "__main__":
         import outlier_detector_microservice as seldon_microservice
 
     port = int(os.environ.get(SERVICE_PORT_ENV_NAME,DEFAULT_PORT))
-    
+
     if args.api_type == "REST":
         def rest_prediction_server():
             print("Staring REST prediction server")
             app = seldon_microservice.get_rest_microservice(user_object,debug=DEBUG)
             app.run(host='0.0.0.0', port=port)
-        
+
         server1_func=rest_prediction_server
 
     elif args.api_type=="GRPC":
@@ -242,7 +290,7 @@ if __name__ == "__main__":
             server = seldon_microservice.get_grpc_server(user_object,debug=DEBUG,annotations=annotations)
             server.add_insecure_port("0.0.0.0:{}".format(port))
             server.start()
-            
+
             print("GRPC Microservice Running on port {}".format(port))
             while True:
                 time.sleep(1000)
