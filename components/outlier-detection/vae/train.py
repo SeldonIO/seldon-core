@@ -14,6 +14,11 @@ random.seed(2018)
 # default args
 DATASET = 'kddcup99'
 SAMPLES = 50000
+COLS = str(['srv_count','serror_rate','srv_serror_rate','rerror_rate','srv_rerror_rate',
+            'same_srv_rate','diff_srv_rate','srv_diff_host_rate','dst_host_count','dst_host_srv_count',
+            'dst_host_same_srv_rate','dst_host_diff_srv_rate','dst_host_same_src_port_rate',
+            'dst_host_srv_diff_host_rate','dst_host_serror_rate','dst_host_srv_serror_rate',
+            'dst_host_rerror_rate','dst_host_srv_rerror_rate','target'])
 # VAE architecture
 HIDDEN_LAYERS = 2
 LATENT_DIM = 2
@@ -66,7 +71,8 @@ def run(args):
     
     print('\nLoad dataset')
     if args.dataset=='kddcup99':
-        data = get_kdd_data()
+        keep_cols = args.keep_cols[1:-1].replace("'","").replace(" ","").split(",")
+        data = get_kdd_data(keep_cols=keep_cols)
     else:
         raise ValueError('Only "kddcup99" dataset supported.')
     
@@ -87,6 +93,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Train VAE outlier detector.")
     parser.add_argument('--dataset',type=str,choices=DATASET,default=DATASET)
     parser.add_argument('--samples',type=int,default=SAMPLES)
+    parser.add_argument('--keep_cols',type=str,default=COLS)
     parser.add_argument('--hidden_layers',type=int,default=HIDDEN_LAYERS)
     parser.add_argument('--latent_dim',type=int,default=LATENT_DIM)
     parser.add_argument('--hidden_dim',type=int,nargs='+',default=HIDDEN_DIM)

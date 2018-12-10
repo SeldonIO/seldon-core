@@ -28,7 +28,10 @@ You can configure aspects of Seldon Core via annotations in the SeldonDeployment
   * ```seldon.io/engine-java-opts``` : Java Opts for Service Orchestrator
     * Locations : SeldonDeployment.spec.predictors.annotations
     * [Example](../notebooks/resources/model_engine_java_opts.json)
-    
+  * ```seldon.io/engine-separate-pod``` : Use a separate pod for the service orchestrator
+    * Locations : SeldonDeployment.spec.annotations
+    * [Example](../notebooks/resources/model_svcorch_sep.json)
+
 ## API OAuth Gateway Annotations
 The API OAuth Gateway, if used, can also have the following annotations:
 

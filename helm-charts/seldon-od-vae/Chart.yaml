@@ -3,7 +3,7 @@ description: Seldon Core outlier detection model template
 keywords:
 - kubernetes
 - machine-learning
-name: seldon-outlier-detection
+name: seldon-outlier-detection-vae
 sources:
 - https://github.com/SeldonIO/seldon-core
 version: 0.1
