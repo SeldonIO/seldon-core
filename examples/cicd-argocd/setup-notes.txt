@@ -56,18 +56,15 @@ kubectl create clusterrolebinding user-cluster-admin-binding --clusterrole=clust
 
 * Setup Jenkins
 
-    # make a note of the admin password (set to admin for the demo)
-    ./jenkins/get-initial-admin-password
-
-    # get jenkins url and login in browser
-    ./jenkins/get-jenkins-url
+    # get initial browser login details, and use top login
+    ./jenkins/get-jenkins-browser-login
 
     IMPORTANT: fix any plugin issues, eg. update pipeline-job plugin if necessary and Reboot
 
-	Install "Github" jenkins plugin
-	Manage jenkins->Manage Plugins->Available
-		Find the "Github" plugin
-		Install without restart
+    Install "Github" jenkins plugin
+    Manage jenkins->Manage Plugins->Available
+        Find the "Github" plugin
+        Install without restart
 
     Manage Jenkins->Configure Global Security
         Security Realm->Jenkins’ own user database
@@ -83,13 +80,15 @@ kubectl create clusterrolebinding user-cluster-admin-binding --clusterrole=clust
 
 * Run the jenkins jobs to test
 
-* Create Github Webhook
+* Create Github Webhooks
 
-	# get the webhook details to use
-	./jenkins/get-jenkins-github-webhook-details
+    # For CI, add webhook to "cicd-demo-model-source-files" repo
+    # get the webhook details to use
+    ./jenkins/get-jenkins-github-webhook-details
 
-
-
+    # For CD, add webhook to "cicd-demo-k8s-manifest-files" repo
+    # get the webhook details to use
+    ./argocd/get-argocd-github-webhook-details
 
 
 
