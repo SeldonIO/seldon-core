@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -52,7 +51,7 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 	public static final String KIND_PLURAL = "seldondeployments";
 	public static final String KIND = "SeldonDeployment";
 	
-	private final String namespace;
+	private final boolean clusterWide;
 	
 	private boolean replaceStatusResource = true; // Whether to use the status CR endpoint (available from k8s 1.10 (alpha) 1.11 (beta)
 	
@@ -61,13 +60,24 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 	
 	@Autowired
     public KubeCRDHandlerImpl(K8sApiProvider k8sApiProvider,K8sClientProvider k8sClientProvider,ClusterManagerProperites clusterManagerProperites) {
-		this.namespace = StringUtils.isEmpty(clusterManagerProperites.getNamespace()) ? "default" : clusterManagerProperites.getNamespace();
 		this.k8sClientProvider= k8sClientProvider;
 		this.k8sApiProvider = k8sApiProvider;
+		//this.namespace = StringUtils.isEmpty(clusterManagerProperites.getNamespace()) ? "default" : clusterManagerProperites.getNamespace();
+		this.clusterWide = !clusterManagerProperites.isSingleNamespace();
+		logger.info("Starting with cluster wide {}",clusterWide);
 	}
 	
+	private String getNamespace(SeldonDeployment d)
+	{
+	    if (StringUtils.isEmpty(d.getMetadata().getNamespace()))
+	        return "default";
+	    else
+	        return d.getMetadata().getNamespace();
+	}
+	
+	
 	@Override
-	public void updateRaw(String json,String seldonDeploymentName) {
+	public void updateRaw(String json,String seldonDeploymentName,String namespace) {
 		try
 		{
 			logger.info(json);
@@ -104,6 +114,8 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 			logger.debug("Updating seldondeployment {} with status {}",mlDeployment.getMetadata().getName(),mlDeployment.getStatus());
 			ApiClient client = k8sClientProvider.getClient();
 			CustomObjectsApi api = k8sApiProvider.getCustomObjectsApi(client);
+			String namespace = getNamespace(mldep);
+
 			if (replaceStatusResource)
 			{
 				try 
@@ -127,7 +139,7 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 	}
 	
 	@Override
-	public SeldonDeployment getSeldonDeployment(String name) {
+	public SeldonDeployment getSeldonDeployment(String name,String namespace) {
 		try
 		{
 			ApiClient client = k8sClientProvider.getClient();
@@ -151,7 +163,7 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 	}
 
     @Override
-    public ExtensionsV1beta1DeploymentList getOwnedDeployments(String seldonDeploymentName) {
+    public ExtensionsV1beta1DeploymentList getOwnedDeployments(String seldonDeploymentName,String namespace) {
         try
         {
             ApiClient client = k8sClientProvider.getClient();
@@ -168,7 +180,7 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
     }
 
 	@Override
-	public V1ServiceList getOwnedServices(String seldonDeploymentName) {
+	public V1ServiceList getOwnedServices(String seldonDeploymentName,String namespace) {
 		try
 		{
 			ApiClient client = k8sClientProvider.getClient();

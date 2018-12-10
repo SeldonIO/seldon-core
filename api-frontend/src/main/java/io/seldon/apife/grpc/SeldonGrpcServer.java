@@ -20,6 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,13 +35,11 @@ import io.grpc.ServerBuilder;
 import io.grpc.ServerInterceptors;
 import io.grpc.netty.NettyServerBuilder;
 import io.seldon.apife.AppProperties;
-import io.seldon.apife.api.oauth.InMemoryClientDetailsService;
 import io.seldon.apife.config.AnnotationsConfig;
 import io.seldon.apife.deployments.DeploymentStore;
 import io.seldon.apife.deployments.DeploymentsHandler;
 import io.seldon.apife.exception.SeldonAPIException;
-import io.seldon.apife.k8s.DeploymentWatcher;
-import io.seldon.protos.DeploymentProtos.DeploymentSpec;
+import io.seldon.apife.k8s.KubernetesUtil;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 @Component
@@ -66,6 +65,7 @@ public class SeldonGrpcServer    {
     public static final int TIMEOUT = 5;
     private int maxMessageSize = io.grpc.internal.GrpcUtil.DEFAULT_MAX_MESSAGE_SIZE;
     private int grpcReadTimeout = DEFAULT_GRPC_READ_TIMEOUT;
+    private final KubernetesUtil k8sUtil = new KubernetesUtil();
     
     @Autowired
     public SeldonGrpcServer(AppProperties appProperties,DeploymentStore deploymentStore,TokenStore tokenStore,DeploymentsHandler deploymentsHandler,AnnotationsConfig annotations)
@@ -154,8 +154,8 @@ public class SeldonGrpcServer    {
             throw new SeldonAPIException(SeldonAPIException.ApiExceptionType.APIFE_GRPC_NO_PRINCIPAL_FOUND,"");
         }
 
-        final DeploymentSpec deploymentSpec = deploymentStore.getDeployment(principal);
-        if (deploymentSpec == null)
+        final SeldonDeployment mlDep = deploymentStore.getDeployment(principal);
+        if (mlDep == null)
         {
             throw new SeldonAPIException(SeldonAPIException.ApiExceptionType.APIFE_NO_RUNNING_DEPLOYMENT,"Principal is "+principal);
         }
@@ -209,30 +209,21 @@ public class SeldonGrpcServer    {
       }
     }
 
-    /**
-     * Main method for basic testing.
-     */
-    public static void main(String[] args) throws Exception {
-        DeploymentStore store = new DeploymentStore(null,new InMemoryClientDetailsService());
-        SeldonDeployment dep = SeldonDeployment.newBuilder()
-                .setApiVersion(DeploymentWatcher.VERSION)
-                .setKind("SeldonDeplyment")
-                .setSpec(DeploymentSpec.newBuilder()
-                    .setName("0.0.0.0")
-                    .setOauthKey("key")
-                    .setOauthSecret("secret")
-                    ).build();   
-        AppProperties appProperties = new AppProperties();
-        appProperties.setEngineGrpcContainerPort(5000);
-        store.deploymentAdded(dep);
-        SeldonGrpcServer server = new SeldonGrpcServer(appProperties,store,null,null,null,SERVER_PORT);
-        server.start();
-        server.blockUntilShutdown();
-  }
-
     public void deploymentAdded(SeldonDeployment resource) {
-        ManagedChannel channel = ManagedChannelBuilder.forAddress(resource.getSpec().getName(), appProperties.getEngineGrpcContainerPort()).usePlaintext(true).build();
-        channelStore.put(resource.getSpec().getOauthKey(),channel);        
+    	if (StringUtils.isEmpty(resource.getSpec().getOauthKey()))
+    	{
+    		logger.warn("Empty oauth key ignoring for {}",resource.getSpec().getName());
+    	}
+    	else
+    	{
+    		final String namespace = k8sUtil.getNamespace(resource);
+        	final String endpoint = resource.getSpec().getName() + "." + namespace; 
+            final ManagedChannel channel = ManagedChannelBuilder.forAddress(endpoint, appProperties.getEngineGrpcContainerPort()).usePlaintext(true).build();
+            if (appProperties.isSingleNamespace())
+            	channelStore.put(resource.getSpec().getOauthKey(),channel);
+            final String namespacedKey = resource.getSpec().getOauthKey() + namespace;
+            channelStore.put(namespacedKey,channel);
+    	}
     }
 
     public void deploymentRemoved(SeldonDeployment resource) {

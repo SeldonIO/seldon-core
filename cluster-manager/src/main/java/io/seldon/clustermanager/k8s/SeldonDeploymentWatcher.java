@@ -86,7 +86,7 @@ public class SeldonDeploymentWatcher  {
 			seldonDeploymentController.createOrReplaceSeldonDeployment(mldep);
 			break;
 		case "DELETED":
-			mlCache.remove(mldep.getMetadata().getName());
+			mlCache.remove(mldep);
 			// kubernetes >=1.8 has CRD garbage collection
 			logger.info("Resource deleted - ignoring");
 			break;
@@ -95,7 +95,7 @@ public class SeldonDeploymentWatcher  {
 		}
 	}
 	
-	private void failDeployment(JsonNode mlDep,Exception e)
+	private void failDeployment(JsonNode mlDep,Exception e,String namespace)
 	{
 		try
 		{
@@ -113,7 +113,7 @@ public class SeldonDeploymentWatcher  {
 			String json = mapper.writeValueAsString(mlDep);
 			String name = mlDep.get("metadata").get("name").asText();
 			//Update seldon deployment
-			crdHandler.updateRaw(json, name);
+			crdHandler.updateRaw(json, name,namespace);
 		} catch (JsonParseException e1) {
 			logger.error("Fasile to create status for failed parse",e);
 		} catch (InvalidProtocolBufferException e1) {
@@ -123,6 +123,19 @@ public class SeldonDeploymentWatcher  {
 		}
 	}
 	
+	private String getNamespace(JsonNode actualObj)
+	{
+		if (!clusterManagerProperites.isSingleNamespace())
+		{
+			if (actualObj.has("metadata") && actualObj.get("meta").has("namespace"))
+				return actualObj.get("metadata").get("namespace").asText();
+			else
+				return "default";
+		}
+		else
+			return StringUtils.isEmpty(this.clusterManagerProperites.getNamespace()) ? "default" : this.clusterManagerProperites.getNamespace();
+	}
+	
 	public int watchSeldonMLDeployments(int resourceVersion,int resourceVersionProcessed) throws ApiException, JsonProcessingException, IOException
 	{
 		String rs = null;
@@ -130,12 +143,24 @@ public class SeldonDeploymentWatcher  {
 			rs = ""+resourceVersion;
 		ApiClient client = k8sClientProvider.getClient();
 		CustomObjectsApi api = k8sApiProvider.getCustomObjectsApi(client);
-		String namespace = StringUtils.isEmpty(this.clusterManagerProperites.getNamespace()) ? "default" : this.clusterManagerProperites.getNamespace();
-		logger.debug("Watching with rs "+rs+" in namespace "+namespace);
-		Watch<Object> watch = Watch.createWatch(
-				client,
-                api.listNamespacedCustomObjectCall(KubeCRDHandlerImpl.GROUP, KubeCRDHandlerImpl.VERSION, namespace,  KubeCRDHandlerImpl.KIND_PLURAL, null, null, rs, true, null, null),
-                new TypeToken<Watch.Response<Object>>(){}.getType());
+		Watch<Object> watch;
+		if (!clusterManagerProperites.isSingleNamespace())
+		{
+			watch = Watch.createWatch(
+					client,
+					api.listClusterCustomObjectCall(KubeCRDHandlerImpl.GROUP, KubeCRDHandlerImpl.VERSION,  KubeCRDHandlerImpl.KIND_PLURAL, null, null, rs, true, null, null),
+					new TypeToken<Watch.Response<Object>>(){}.getType());
+			
+		}
+		else
+		{
+			String namespace = StringUtils.isEmpty(this.clusterManagerProperites.getNamespace()) ? "default" : this.clusterManagerProperites.getNamespace();
+			logger.debug("Watching with rs "+rs+" in namespace "+namespace);
+			watch = Watch.createWatch(
+					client,
+					api.listNamespacedCustomObjectCall(KubeCRDHandlerImpl.GROUP, KubeCRDHandlerImpl.VERSION, namespace,  KubeCRDHandlerImpl.KIND_PLURAL, null, null, rs, true, null, null),
+					new TypeToken<Watch.Response<Object>>(){}.getType());
+		}
 		
 		int maxResourceVersion = resourceVersion;
 		try{
@@ -172,7 +197,7 @@ public class SeldonDeploymentWatcher  {
     	    		{
     	    			if ("ADDED".equals(item.type))
     	    			{
-    	    				failDeployment(actualObj, e);
+    	    				failDeployment(actualObj, e, getNamespace(actualObj));
     	    				logger.warn("Failed to parse SeldonDelployment " + jsonInString, e);
     	    			}
     	    		}
