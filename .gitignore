@@ -143,3 +143,9 @@ openapi/tensorflow/
 proto/tensorflow/tensorflow/
 
 util/loadtester/MNIST_data/
+
+# python build
+eggs/
+.eggs/
+*.egg-info/
+./pytest_cache

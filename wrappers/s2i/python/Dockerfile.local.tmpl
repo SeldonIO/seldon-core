@@ -8,7 +8,10 @@ RUN apt-get install -y python-pip python-dev build-essential
 RUN mkdir microservice
 WORKDIR /microservice
 
-RUN pip install seldon-core
+COPY _python /microservice
+
+RUN cd /microservice/python && \
+    pip install .
 
 COPY ./s2i/bin/ /s2i/bin
 
