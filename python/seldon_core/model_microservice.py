@@ -22,8 +22,6 @@ from seldon_core.microservice import extract_message, sanity_check_request, rest
 from seldon_core.metrics import get_custom_metrics
 from seldon_core.seldon_flatbuffers import SeldonRPCToNumpyArray, NumpyArrayToSeldonRPC, CreateErrorMsg
 
-PRED_UNIT_ID = os.environ.get("PREDICTIVE_UNIT_ID")
-
 logger = logging.getLogger(__name__)
 
 # ---------------------------
@@ -74,49 +72,55 @@ def get_rest_microservice(user_model, debug=False):
 
         sanity_check_request(request)
 
-        features = get_data_from_json(request)
-        names = request.get("data", {}).get("names")
-
-        predictions = predict(user_model, features, names)
-        logger.debug("Predictions: %s", predictions)
-
-        # If predictions is an numpy array or we used the default data then return as numpy array
-        if isinstance(predictions, np.ndarray) or "data" in request:
-            predictions = np.array(predictions)
-            if len(predictions.shape) > 1:
-                class_names = get_class_names(user_model, predictions.shape[1])
-            else:
-                class_names = []
-            data = array_to_rest_datadef(
-                predictions, class_names, request.get("data", {}))
-            response = {"data": data, "meta": {}}
+        if hasattr(user_model, "predict_rest"):
+            return jsonify(user_model.predict_rest(request))
         else:
-            response = {"binData": predictions, "meta": {}}
+            features = get_data_from_json(request)
+            names = request.get("data", {}).get("names")
 
-        tags = get_custom_tags(user_model)
-        if tags:
-            response["meta"]["tags"] = tags
-        metrics = get_custom_metrics(user_model)
-        if metrics:
-            response["meta"]["metrics"] = metrics
-        return jsonify(response)
+            predictions = predict(user_model, features, names)
+            logger.debug("Predictions: %s", predictions)
+
+            # If predictions is an numpy array or we used the default data then return as numpy array
+            if isinstance(predictions, np.ndarray) or "data" in request:
+                predictions = np.array(predictions)
+                if len(predictions.shape) > 1:
+                    class_names = get_class_names(user_model, predictions.shape[1])
+                else:
+                    class_names = []
+                data = array_to_rest_datadef(
+                    predictions, class_names, request.get("data", {}))
+                response = {"data": data, "meta": {}}
+            else:
+                response = {"binData": predictions, "meta": {}}
+
+            tags = get_custom_tags(user_model)
+            if tags:
+                response["meta"]["tags"] = tags
+            metrics = get_custom_metrics(user_model)
+            if metrics:
+                response["meta"]["metrics"] = metrics
+            return jsonify(response)
 
     @app.route("/send-feedback", methods=["GET", "POST"])
     def SendFeedback():
         feedback = extract_message()
         logger.debug("Feedback received: %s", feedback)
+        
+        if hasattr(user_model, "send_feedback_rest"):
+            return jsonify(user_model.send_feedback_rest(feedback))
+        else:
+            datadef_request = feedback.get("request", {}).get("data", {})
+            features = rest_datadef_to_array(datadef_request)
 
-        datadef_request = feedback.get("request", {}).get("data", {})
-        features = rest_datadef_to_array(datadef_request)
+            datadef_truth = feedback.get("truth", {}).get("data", {})
+            truth = rest_datadef_to_array(datadef_truth)
 
-        datadef_truth = feedback.get("truth", {}).get("data", {})
-        truth = rest_datadef_to_array(datadef_truth)
+            reward = feedback.get("reward")
 
-        reward = feedback.get("reward")
-
-        send_feedback(user_model, features,
-                      datadef_request.get("names"), reward, truth)
-        return jsonify({})
+            send_feedback(user_model, features,
+                          datadef_request.get("names"), reward, truth)
+            return jsonify({})
 
     return app
 
@@ -130,49 +134,55 @@ class SeldonModelGRPC(object):
         self.user_model = user_model
 
     def Predict(self, request, context):
-        features = get_data_from_proto(request)
-        datadef = request.data
-        data_type = request.WhichOneof("data_oneof")
-        predictions = predict(self.user_model, features, datadef.names)
-
-        # Construct meta data
-        meta = prediction_pb2.Meta()
-        metaJson = {}
-        tags = get_custom_tags(self.user_model)
-        if tags:
-            metaJson["tags"] = tags
-        metrics = get_custom_metrics(self.user_model)
-        if metrics:
-            metaJson["metrics"] = metrics
-        json_format.ParseDict(metaJson, meta)
-
-        if isinstance(predictions, np.ndarray) or data_type == "data":
-            predictions = np.array(predictions)
-            if len(predictions.shape) > 1:
-                class_names = get_class_names(
-                    self.user_model, predictions.shape[1])
-            else:
-                class_names = []
-
-            if data_type == "data":
-                default_data_type = request.data.WhichOneof("data_oneof")
-            else:
-                default_data_type = "tensor"
-            data = array_to_grpc_datadef(
-                predictions, class_names, default_data_type)
-            return prediction_pb2.SeldonMessage(data=data, meta=meta)
+        if hasattr(self.user_model, "predict_grpc"):
+            return self.user_model.predict_grpc(request)
         else:
-            return prediction_pb2.SeldonMessage(binData=predictions, meta=meta)
+            features = get_data_from_proto(request)
+            datadef = request.data
+            data_type = request.WhichOneof("data_oneof")
+            predictions = predict(self.user_model, features, datadef.names)
+
+            # Construct meta data
+            meta = prediction_pb2.Meta()
+            metaJson = {}
+            tags = get_custom_tags(self.user_model)
+            if tags:
+                metaJson["tags"] = tags
+            metrics = get_custom_metrics(self.user_model)
+            if metrics:
+                metaJson["metrics"] = metrics
+            json_format.ParseDict(metaJson, meta)
+
+            if isinstance(predictions, np.ndarray) or data_type == "data":
+                predictions = np.array(predictions)
+                if len(predictions.shape) > 1:
+                    class_names = get_class_names(
+                        self.user_model, predictions.shape[1])
+                else:
+                    class_names = []
+
+                if data_type == "data":
+                    default_data_type = request.data.WhichOneof("data_oneof")
+                else:
+                    default_data_type = "tensor"
+                data = array_to_grpc_datadef(
+                    predictions, class_names, default_data_type)
+                return prediction_pb2.SeldonMessage(data=data, meta=meta)
+            else:
+                return prediction_pb2.SeldonMessage(binData=predictions, meta=meta)
 
     def SendFeedback(self, feedback, context):
-        datadef_request = feedback.request.data
-        features = grpc_datadef_to_array(datadef_request)
+        if hasattr(self.user_model, "send_feedback_grpc"):
+            self.user_model.send_feedback_grpc(feedback)
+        else:
+            datadef_request = feedback.request.data
+            features = grpc_datadef_to_array(datadef_request)
 
-        truth = grpc_datadef_to_array(feedback.truth)
-        reward = feedback.reward
+            truth = grpc_datadef_to_array(feedback.truth)
+            reward = feedback.reward
 
-        send_feedback(self.user_model, features,
-                      datadef_request.names, truth, reward)
+            send_feedback(self.user_model, features,
+                          datadef_request.names, truth, reward)
 
         return prediction_pb2.SeldonMessage()
 

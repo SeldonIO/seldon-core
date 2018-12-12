@@ -6,6 +6,7 @@ from flask_cors import CORS
 import numpy as np
 import os
 import logging
+from google.protobuf import json_format
 
 from seldon_core.proto import prediction_pb2, prediction_pb2_grpc
 from seldon_core.microservice import extract_message, sanity_check_request, rest_datadef_to_array, \
@@ -13,7 +14,7 @@ from seldon_core.microservice import extract_message, sanity_check_request, rest
     SeldonMicroserviceException, get_custom_tags
 from seldon_core.metrics import get_custom_metrics
 
-PRED_UNIT_ID = os.environ.get("PREDICTIVE_UNIT_ID")
+PRED_UNIT_ID = os.environ.get("PREDICTIVE_UNIT_ID","0")
 
 logger = logging.getLogger(__name__)
 
@@ -57,24 +58,27 @@ def get_rest_microservice(user_router, debug=False):
 
         sanity_check_request(request)
 
-        datadef = request.get("data")
-        features = rest_datadef_to_array(datadef)
+        if hasattr(user_router, "route_rest"):
+            return jsonify(user_router.route_rest(request))
+        else:
+            datadef = request.get("data")
+            features = rest_datadef_to_array(datadef)
 
-        routing = np.array(
-            [[route(user_router, features, datadef.get("names"))]])
-        # TODO: check that predictions is 2 dimensional
-        class_names = []
+            routing = np.array(
+                [[route(user_router, features, datadef.get("names"))]])
+            # TODO: check that predictions is 2 dimensional
+            class_names = []
 
-        data = array_to_rest_datadef(routing, class_names, datadef)
+            data = array_to_rest_datadef(routing, class_names, datadef)
 
-        response = {"data": data, "meta": {}}
-        tags = get_custom_tags(user_router)
-        if tags:
-            response["meta"]["tags"] = tags
-        metrics = get_custom_metrics(user_router)
-        if metrics:
-            response["meta"]["metrics"] = metrics
-        return jsonify(response)
+            response = {"data": data, "meta": {}}
+            tags = get_custom_tags(user_router)
+            if tags:
+                response["meta"]["tags"] = tags
+            metrics = get_custom_metrics(user_router)
+            if metrics:
+                response["meta"]["metrics"] = metrics
+            return jsonify(response)
 
     @app.route("/send-feedback", methods=["GET", "POST"])
     def SendFeedback():
@@ -82,23 +86,26 @@ def get_rest_microservice(user_router, debug=False):
 
         logger.debug("Feedback received: %s", feedback)
 
-        datadef_request = feedback.get("request", {}).get("data", {})
-        features = rest_datadef_to_array(datadef_request)
+        if hasattr(user_router, "send_feedback_rest"):
+            return jsonify(user_router.send_feedback_rest(feedback))
+        else:
+            datadef_request = feedback.get("request", {}).get("data", {})
+            features = rest_datadef_to_array(datadef_request)
 
-        datadef_truth = feedback.get("truth", {}).get("data", {})
-        truth = rest_datadef_to_array(datadef_truth)
-        reward = feedback.get("reward")
+            datadef_truth = feedback.get("truth", {}).get("data", {})
+            truth = rest_datadef_to_array(datadef_truth)
+            reward = feedback.get("reward")
 
-        try:
-            routing = feedback.get("response").get(
-                "meta").get("routing").get(PRED_UNIT_ID)
-        except AttributeError:
-            raise SeldonMicroserviceException(
-                "Router feedback must contain a routing dictionary in the response metadata")
+            try:
+                routing = feedback.get("response").get(
+                    "meta").get("routing").get(PRED_UNIT_ID)
+            except AttributeError:
+                raise SeldonMicroserviceException(
+                    "Router feedback must contain a routing dictionary in the response metadata")
 
-        send_feedback(user_router, features, datadef_request.get(
-            "names"), routing, reward, truth)
-        return jsonify({})
+            send_feedback(user_router, features, datadef_request.get(
+                "names"), routing, reward, truth)
+            return jsonify({})
 
     return app
 
@@ -112,41 +119,47 @@ class SeldonRouterGRPC(object):
         self.user_model = user_model
 
     def Route(self, request, context):
-        datadef = request.data
-        features = grpc_datadef_to_array(datadef)
+        if hasattr(self.user_model, "route_grpc"):
+            return self.user_model.route_grpc(request)
+        else:
+            datadef = request.data
+            features = grpc_datadef_to_array(datadef)
 
-        routing = np.array([[route(self.user_model, features, datadef.names)]])
-        # TODO: check that predictions is 2 dimensional
-        class_names = []
+            routing = np.array([[route(self.user_model, features, datadef.names)]])
+            # TODO: check that predictions is 2 dimensional
+            class_names = []
 
-        data = array_to_grpc_datadef(
-            routing, class_names, request.data.WhichOneof("data_oneof"))
+            data = array_to_grpc_datadef(
+                routing, class_names, request.data.WhichOneof("data_oneof"))
 
-        # Construct meta data
-        meta = prediction_pb2.Meta()
-        metaJson = {}
-        tags = get_custom_tags(self.user_model)
-        if tags:
-            metaJson["tags"] = tags
-        metrics = get_custom_metrics(self.user_model)
-        if metrics:
-            metaJson["metrics"] = metrics
-        json_format.ParseDict(metaJson, meta)
+            # Construct meta data
+            meta = prediction_pb2.Meta()
+            metaJson = {}
+            tags = get_custom_tags(self.user_model)
+            if tags:
+                metaJson["tags"] = tags
+            metrics = get_custom_metrics(self.user_model)
+            if metrics:
+                metaJson["metrics"] = metrics
+            json_format.ParseDict(metaJson, meta)
 
-        return prediction_pb2.SeldonMessage(data=data, meta=meta)
+            return prediction_pb2.SeldonMessage(data=data, meta=meta)
 
     def SendFeedback(self, feedback, context):
-        datadef_request = feedback.request.data
-        features = grpc_datadef_to_array(datadef_request)
+        if hasattr(self.user_model, "send_feedback_grpc"):
+            self.user_model.send_feedback_grpc(feedback)
+        else:
+            datadef_request = feedback.request.data
+            features = grpc_datadef_to_array(datadef_request)
 
-        truth = grpc_datadef_to_array(feedback.truth)
-        reward = feedback.reward
-        routing = feedback.response.meta.routing.get(PRED_UNIT_ID)
+            truth = grpc_datadef_to_array(feedback.truth)
+            reward = feedback.reward
+            routing = feedback.response.meta.routing.get(PRED_UNIT_ID)
 
-        send_feedback(self.user_model, features,
-                      datadef_request.names, routing, reward, truth)
+            send_feedback(self.user_model, features,
+                          datadef_request.names, routing, reward, truth)
 
-        return prediction_pb2.SeldonMessage()
+            return prediction_pb2.SeldonMessage()
 
 
 def get_grpc_server(user_model, debug=False, annotations={}):

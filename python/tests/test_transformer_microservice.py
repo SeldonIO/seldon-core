@@ -39,6 +39,40 @@ class UserObject(object):
         else:
             return [{"type": "BAD", "key": "mycounter", "value": 1}]
 
+class UserObjectLowLevel(object):
+    def __init__(self, metrics_ok=True, ret_nparray=False):
+        self.metrics_ok = metrics_ok
+        self.ret_nparray = ret_nparray
+        self.nparray = np.array([1, 2, 3])
+
+    def transform_input_rest(self, X):
+        return {"data":{"ndarray":[9,9]}}
+
+    def transform_output_rest(self, X):
+        return {"data":{"ndarray":[9,9]}}
+
+    def transform_input_grpc(self, X):
+        arr = np.array([9, 9])
+        datadef = prediction_pb2.DefaultData(
+            tensor=prediction_pb2.Tensor(
+                shape=(2, 1),
+                values=arr
+            )
+        )
+        request = prediction_pb2.SeldonMessage(data=datadef)
+        return request
+
+    def transform_output_grpc(self, X):
+        arr = np.array([9, 9])
+        datadef = prediction_pb2.DefaultData(
+            tensor=prediction_pb2.Tensor(
+                shape=(2, 1),
+                values=arr
+            )
+        )
+        request = prediction_pb2.SeldonMessage(data=datadef)
+        return request
+
 
 def test_transformer_input_ok():
     user_object = UserObject()
@@ -51,6 +85,16 @@ def test_transformer_input_ok():
     assert j["meta"]["tags"] == {"mytag": 1}
     assert j["meta"]["metrics"] == user_object.metrics()
     assert j["data"]["ndarray"] == [1]
+
+def test_transformer_input_lowlevel_ok():
+    user_object = UserObjectLowLevel()
+    app = get_rest_microservice(user_object, debug=True)
+    client = app.test_client()
+    rv = client.get('/transform-input?json={"data":{"ndarray":[1]}}')
+    j = json.loads(rv.data)
+    print(j)
+    assert rv.status_code == 200
+    assert j["data"]["ndarray"] == [9, 9]
 
 
 def test_transformer_input_bin_data():
@@ -116,6 +160,17 @@ def test_transformer_output_ok():
     assert j["meta"]["tags"] == {"mytag": 1}
     assert j["meta"]["metrics"] == user_object.metrics()
     assert j["data"]["ndarray"] == [1]
+
+
+def test_transformer_output_lowlevel_ok():
+    user_object = UserObjectLowLevel()
+    app = get_rest_microservice(user_object, debug=True)
+    client = app.test_client()
+    rv = client.get('/transform-output?json={"data":{"ndarray":[1]}}')
+    j = json.loads(rv.data)
+    print(j)
+    assert rv.status_code == 200
+    assert j["data"]["ndarray"] == [9, 9]
 
 
 def test_transformer_output_bin_data():
@@ -193,6 +248,25 @@ def test_transform_input_proto_ok():
     assert j["data"]["tensor"]["shape"] == [2, 1]
     assert j["data"]["tensor"]["values"] == [1, 2]
 
+def test_transform_input_proto_lowlevel_ok():
+    user_object = UserObjectLowLevel()
+    app = SeldonTransformerGRPC(user_object)
+    arr = np.array([1, 2])
+    datadef = prediction_pb2.DefaultData(
+        tensor=prediction_pb2.Tensor(
+            shape=(2, 1),
+            values=arr
+        )
+    )
+    request = prediction_pb2.SeldonMessage(data=datadef)
+    resp = app.TransformInput(request, None)
+    jStr = json_format.MessageToJson(resp)
+    j = json.loads(jStr)
+    print(j)
+    assert j["data"]["tensor"]["shape"] == [2, 1]
+    assert j["data"]["tensor"]["values"] == [9, 9]
+
+    
 
 def test_transform_input_proto_bin_data():
     user_object = UserObject()
@@ -236,6 +310,24 @@ def test_transform_output_proto_ok():
     assert j["meta"]["metrics"] == user_object.metrics()
     assert j["data"]["tensor"]["shape"] == [2, 1]
     assert j["data"]["tensor"]["values"] == [1, 2]
+
+def test_transform_output_proto_lowlevel_ok():
+    user_object = UserObjectLowLevel()
+    app = SeldonTransformerGRPC(user_object)
+    arr = np.array([1, 2])
+    datadef = prediction_pb2.DefaultData(
+        tensor=prediction_pb2.Tensor(
+            shape=(2, 1),
+            values=arr
+        )
+    )
+    request = prediction_pb2.SeldonMessage(data=datadef)
+    resp = app.TransformOutput(request, None)
+    jStr = json_format.MessageToJson(resp)
+    j = json.loads(jStr)
+    print(j)
+    assert j["data"]["tensor"]["shape"] == [2, 1]
+    assert j["data"]["tensor"]["values"] == [9, 9]
 
 
 def test_transform_output_proto_bin_data():
