@@ -8,13 +8,13 @@ source:
   path: ../
 
 build:
+  noarch: python
   number: 0
-  script: "{{ PYTHON }} -m pip install . -vvv"
+  script: "{{ PYTHON }} -m pip install --no-deps . -vv"
   entry_points:
    - seldon-core-microservice = seldon_core.microservice:main
    - seldon-core-tester = seldon_core.tester:main
    - seldon-core-api-tester = seldon_core.api_tester:main
-   - seldon-core-wrapper = seldon_core.wrap_model:main
 
 requirements:
   host:
@@ -31,10 +31,12 @@ requirements:
     - tornado
     - requests
     - numpy
-    - flatbuffers
-
+    - python-flatbuffers
+    - tensorflow
 
 test:
+  imports:
+    - seldon_core
   requires:
     - pytest
   source_files:
@@ -43,7 +45,6 @@ test:
     - seldon-core-microservice --help
     - seldon-core-tester --help
     - seldon-core-api-tester --help
-    - seldon-core-wrapper --help
     - py.test tests
 
 about:
