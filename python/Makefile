@@ -35,6 +35,14 @@ update_package: get_apis build_apis update_version
 install:
 	pip install -e .
 
+.PHONY: install-dev
+install-dev:
+	pip install -e . -r requirements.txt
+
+.PHONY: uninstall
+uninstall:
+	pip uninstall seldon-core
+
 .PHONY: test
 test:
 	python setup.py test

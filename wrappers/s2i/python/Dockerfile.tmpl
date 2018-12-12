@@ -8,10 +8,7 @@ RUN apt-get install -y python-pip python-dev build-essential
 RUN mkdir microservice
 WORKDIR /microservice
 
-COPY seldon_requirements.txt /microservice
-
-RUN pip install --no-cache-dir -r /microservice/seldon_requirements.txt && \
-    pip install seldon-core
+RUN pip install seldon-core
 
 COPY ./s2i/bin/ /s2i/bin
 
