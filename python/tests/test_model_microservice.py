@@ -32,6 +32,9 @@ class UserObject(object):
             print(X)
             return X
 
+    def feedback(self,features, feature_names, reward, truth):
+        print("Feedback called")
+
     def tags(self):
         return {"mytag": 1}
 
@@ -41,6 +44,34 @@ class UserObject(object):
         else:
             return [{"type": "BAD", "key": "mycounter", "value": 1}]
 
+
+class UserObjectLowLevel(object):
+    def __init__(self, metrics_ok=True, ret_nparray=False):
+        self.metrics_ok = metrics_ok
+        self.ret_nparray = ret_nparray
+        self.nparray = np.array([1, 2, 3])
+
+    def predict_rest(self, request):
+        return {"data":{"ndarray":[9,9]}}
+
+    def predict_grpc(self, request):
+        arr = np.array([9, 9])
+        datadef = prediction_pb2.DefaultData(
+            tensor=prediction_pb2.Tensor(
+                shape=(2, 1),
+                values=arr
+            )
+        )
+        request = prediction_pb2.SeldonMessage(data=datadef)
+        return request
+
+
+    def send_feedback_rest(self,request):
+        print("Feedback called")
+
+    def send_feedback_grpc(self,request):
+        print("Feedback called")
+    
 
 def test_model_ok():
     user_object = UserObject()
@@ -53,6 +84,34 @@ def test_model_ok():
     assert j["meta"]["tags"] == {"mytag": 1}
     assert j["meta"]["metrics"] == user_object.metrics()
 
+def test_model_lowlevel_ok():
+    user_object = UserObjectLowLevel()
+    app = get_rest_microservice(user_object, debug=True)
+    client = app.test_client()
+    rv = client.get('/predict?json={"data":{"ndarray":[1,2]}}')
+    j = json.loads(rv.data)
+    print(j)
+    assert rv.status_code == 200
+    assert j["data"]["ndarray"] == [9, 9]
+
+def test_model_feedback_ok():
+    user_object = UserObject()
+    app = get_rest_microservice(user_object, debug=True)
+    client = app.test_client()
+    rv = client.get('/send-feedback?json={"request":{"data":{"ndarray":[]}},"reward":1.0}')
+    j = json.loads(rv.data)
+    print(j)
+    assert rv.status_code == 200
+
+def test_model_feedback_lowlevel_ok():
+    user_object = UserObjectLowLevel()
+    app = get_rest_microservice(user_object, debug=True)
+    client = app.test_client()
+    rv = client.get('/send-feedback?json={"request":{"data":{"ndarray":[]}},"reward":1.0}')
+    j = json.loads(rv.data)
+    print(j)
+    assert rv.status_code == 200
+    
 
 def test_model_tftensor_ok():
     user_object = UserObject()
@@ -165,6 +224,54 @@ def test_proto_ok():
     assert j["data"]["tensor"]["shape"] == [2, 1]
     assert j["data"]["tensor"]["values"] == [1, 2]
 
+def test_proto_lowlevel():
+    user_object = UserObjectLowLevel()
+    app = SeldonModelGRPC(user_object)
+    arr = np.array([1, 2])
+    datadef = prediction_pb2.DefaultData(
+        tensor=prediction_pb2.Tensor(
+            shape=(2, 1),
+            values=arr
+        )
+    )
+    request = prediction_pb2.SeldonMessage(data=datadef)
+    resp = app.Predict(request, None)
+    jStr = json_format.MessageToJson(resp)
+    j = json.loads(jStr)
+    print(j)
+    assert j["data"]["tensor"]["shape"] == [2, 1]
+    assert j["data"]["tensor"]["values"] == [9, 9]
+
+
+def test_proto_feedback():
+    user_object = UserObject()
+    app = SeldonModelGRPC(user_object)
+    arr = np.array([1, 2])
+    datadef = prediction_pb2.DefaultData(
+        tensor=prediction_pb2.Tensor(
+            shape=(2, 1),
+            values=arr
+        )
+    )
+    request = prediction_pb2.SeldonMessage(data=datadef)
+    feedback = prediction_pb2.Feedback(request=request,reward=1.0)
+    resp = app.SendFeedback(feedback, None)
+
+    
+def test_proto_feedback_custom():
+    user_object = UserObjectLowLevel()
+    app = SeldonModelGRPC(user_object)
+    arr = np.array([1, 2])
+    datadef = prediction_pb2.DefaultData(
+        tensor=prediction_pb2.Tensor(
+            shape=(2, 1),
+            values=arr
+        )
+    )
+    request = prediction_pb2.SeldonMessage(data=datadef)
+    feedback = prediction_pb2.Feedback(request=request,reward=1.0)
+    resp = app.SendFeedback(feedback, None)
+    
 
 def test_proto_tftensor_ok():
     user_object = UserObject()
