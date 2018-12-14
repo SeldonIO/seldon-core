@@ -26,7 +26,7 @@ DEBUG_PARAMETER = "SELDON_DEBUG"
 DEBUG = False
 
 ANNOTATIONS_FILE = "/etc/podinfo/annotations"
-
+ANNOTATION_GRPC_MAX_MSG_SIZE = 'seldon.io/grpc-max-message-size'            
 
 def startServers(target1, target2):
     p2 = mp.Process(target=target2)
@@ -67,7 +67,7 @@ def sanity_check_request(req):
             raise SeldonMicroserviceException(
                 "Data dictionary has no 'tensor', 'ndarray' or 'tftensor' keyword.")
     elif not ("binData" in req or "strData" in req):
-        raise SeldonMicroserviceException("Request must contain Default Data")
+        raise SeldonMicroserviceException("Request must contain Default Data or binData or strData")
     # TODO: Should we check more things? Like shape not being None or empty for a tensor?
 
 
