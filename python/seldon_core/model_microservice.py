@@ -18,7 +18,7 @@ import os
 from seldon_core.proto import prediction_pb2, prediction_pb2_grpc
 from seldon_core.microservice import extract_message, sanity_check_request, rest_datadef_to_array, \
     array_to_rest_datadef, grpc_datadef_to_array, array_to_grpc_datadef, \
-    SeldonMicroserviceException, get_custom_tags, get_data_from_json, get_data_from_proto
+    SeldonMicroserviceException, get_custom_tags, get_data_from_json, get_data_from_proto, ANNOTATION_GRPC_MAX_MSG_SIZE
 from seldon_core.metrics import get_custom_metrics
 from seldon_core.seldon_flatbuffers import SeldonRPCToNumpyArray, NumpyArrayToSeldonRPC, CreateErrorMsg
 
@@ -186,8 +186,6 @@ class SeldonModelGRPC(object):
 
         return prediction_pb2.SeldonMessage()
 
-
-ANNOTATION_GRPC_MAX_MSG_SIZE = 'seldon.io/grpc-max-message-size'
 
 
 def get_grpc_server(user_model, debug=False, annotations={}):
