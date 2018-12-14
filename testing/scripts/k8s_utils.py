@@ -34,6 +34,8 @@ def setup_finalizer_helm(request):
     def fin():
         run("helm delete seldon-core --purge", shell=True)
         run("helm delete seldon-core-crd --purge", shell=True)
+        run("kubectl delete namespace seldon", shell=True)
+        run("kubectl delete namespace test1", shell=True)    
     request.addfinalizer(fin)
 
 def setup_finalizer_ksonnet(request):
@@ -43,6 +45,8 @@ def setup_finalizer_ksonnet(request):
         wait_for_shutdown("seldon-core-seldon-apiserver")
         wait_for_shutdown("seldon-core-ambassador")        
         run('rm -rf my-ml-deployment', shell=True)
+        run("kubectl delete namespace seldon", shell=True)
+        run("kubectl delete namespace test1", shell=True)            
     request.addfinalizer(fin)
     
 def create_seldon_single_namespace_helm(request):
