@@ -48,27 +48,34 @@ def setup_finalizer_ksonnet(request):
         run("kubectl delete namespace seldon", shell=True)
         run("kubectl delete namespace test1", shell=True)            
     request.addfinalizer(fin)
+
+def get_seldon_version():
+    completedProcess = Popen("cat ../../cluster-manager/target/version.txt", shell=True, stdout=subprocess.PIPE)
+    output = completedProcess.stdout.readline()
+    version = output.decode('utf-8').rstrip()
+    return version
+
     
-def create_seldon_single_namespace_helm(request):
+def create_seldon_single_namespace_helm(request,version):
     setup_k8s()
     setup_helm()
     run("helm install ../../helm-charts/seldon-core-crd --name seldon-core-crd --set usage_metrics.enabled=true", shell=True)
-    run("helm install ../../helm-charts/seldon-core --name seldon-core --namespace seldon  --set ambassador.enabled=true", shell=True)
+    run("helm install ../../helm-charts/seldon-core --name seldon-core --namespace seldon  --set ambassador.enabled=true --set apife.image.name=127.0.0.1:5000/seldonio/apife:"+version+" --set cluster_manager.image.name=127.0.0.1:5000/seldonio/cluster-manager:"+version+" --set engine.image.name=127.0.0.1:5000/seldonio/engine:"+version, shell=True)
     wait_seldon_ready()
     setup_finalizer_helm(request)
 
-def create_seldon_clusterwide_helm(request):
+def create_seldon_clusterwide_helm(request,version):
     setup_k8s()
     setup_helm()    
     run("helm install ../../helm-charts/seldon-core-crd --name seldon-core-crd --set usage_metrics.enabled=true", shell=True)
-    run("helm install ../../helm-charts/seldon-core --name seldon-core --namespace seldon  --set single_namespace=false --set ambassador.enabled=true", shell=True)        
+    run("helm install ../../helm-charts/seldon-core --name seldon-core --namespace seldon  --set single_namespace=false --set ambassador.enabled=true --set apife.image.name=127.0.0.1:5000/seldonio/apife:"+version+" --set cluster_manager.image.name=127.0.0.1:5000/seldonio/cluster-manager:"+version+" --set engine.image.name=127.0.0.1:5000/seldonio/engine:"+version, shell=True)        
     wait_seldon_ready()
     setup_finalizer_helm(request)
 
 def create_seldon_single_namespace_ksonnet(request):
     setup_k8s()
     run('rm -rf my-ml-deployment && ks init my-ml-deployment ', shell=True)
-    run('cd my-ml-deployment &&     ks registry add seldon-core ../../../seldon-core &&     ks pkg install seldon-core/seldon-core@master &&     ks generate seldon-core seldon-core --withApife=true --withAmbassador=true --singleNamespace=true --namespace=seldon --withRbac=true', shell=True)
+    run('cd my-ml-deployment &&     ks registry add seldon-core ../../../seldon-core &&     ks pkg install seldon-core/seldon-core@master &&     ks generate seldon-core seldon-core --withApife=true --withAmbassador=true --singleNamespace=true --namespace=seldon --withRbac=true --registry=127.0.0.1:5000', shell=True)
     run('cd my-ml-deployment &&       ks apply default', shell=True)
     run('rm -rf my-model && ks init my-model --namespace seldon', shell=True)
     run('cd my-model && ks registry add seldon-core ../../../seldon-core && ks pkg install seldon-core/seldon-core@master', shell=True)
@@ -78,7 +85,7 @@ def create_seldon_single_namespace_ksonnet(request):
 def create_seldon_clusterwide_ksonnet(request):
     setup_k8s()
     run('rm -rf my-ml-deployment && ks init my-ml-deployment ', shell=True)
-    run('cd my-ml-deployment &&     ks registry add seldon-core ../../../seldon-core &&     ks pkg install seldon-core/seldon-core@master &&     ks generate seldon-core seldon-core --withApife=true --withAmbassador=true --singleNamespace=false --namespace=seldon --withRbac=true', shell=True)
+    run('cd my-ml-deployment &&     ks registry add seldon-core ../../../seldon-core &&     ks pkg install seldon-core/seldon-core@master &&     ks generate seldon-core seldon-core --withApife=true --withAmbassador=true --singleNamespace=false --namespace=seldon --withRbac=true --registry=127.0.0.1:5000', shell=True)
     run('cd my-ml-deployment &&       ks apply default', shell=True)
     run('rm -rf my-model && ks init my-model --namespace test1', shell=True)
     run('cd my-model && ks registry add seldon-core ../../../seldon-core && ks pkg install seldon-core/seldon-core@master', shell=True)
