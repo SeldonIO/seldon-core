@@ -1,0 +1,50 @@
+{
+    "apiVersion": "machinelearning.seldon.io/v1alpha2",
+    "kind": "SeldonDeployment",
+    "metadata": {
+        "name": "mytrans"
+    },
+    "spec": {
+        "name": "mytrans",
+        "oauth_key": "oauth-key",
+        "oauth_secret": "oauth-secret",
+        "predictors": [
+            {
+                "componentSpecs": [{
+                    "spec": {
+                        "containers": [
+                            {
+                                "image": "127.0.0.1:5000/seldonio/testmodel_rest:0.1",
+                                "imagePullPolicy": "Always",
+                                "name": "model"
+                            },
+                            {
+                                "image": "127.0.0.1:5000/seldonio/testtransformer_rest:0.1",
+                                "imagePullPolicy": "Always",
+                                "name": "transformer"
+                            }
+                        ],
+                        "terminationGracePeriodSeconds": 1
+                    }
+                }],
+                "graph": {
+                    "children": [{
+			"children": [],
+			"name": "model",
+			"endpoint": {
+                            "type" : "REST"
+			},
+			"type": "MODEL"
+                    }],
+                    "name": "transformer",
+                    "endpoint": {
+                        "type" : "REST"
+                    },
+		    "type": "OUTPUT_TRANSFORMER"
+                },
+                "name": "mytrans",
+                "replicas": 1
+            }
+        ]
+    }
+}
