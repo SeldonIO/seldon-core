@@ -103,10 +103,9 @@ def initial_rest_request():
             r = rest_request_api_gateway("oauth-key","oauth-secret",None,API_GATEWAY_REST)
     return r
         
-    
+@pytest.mark.usefixtures("seldon_java_images")    
 @pytest.mark.usefixtures("setup_python_s2i")
 @pytest.mark.usefixtures("s2i_python_version")
-@pytest.mark.usefixtures("setup_local_docker_repo")
 @pytest.mark.usefixtures("single_namespace_seldon_helm")
 class TestPythonS2iK8s(object):
 

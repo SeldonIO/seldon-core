@@ -27,6 +27,7 @@ def initial_rest_request():
             r = rest_request_api_gateway("oauth-key","oauth-secret",None,API_GATEWAY_REST)
     return r
 
+@pytest.mark.usefixtures("seldon_java_images")
 @pytest.mark.usefixtures("single_namespace_seldon_helm")
 class TestSingleNamespace(object):
     
