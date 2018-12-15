@@ -307,6 +307,8 @@ def main():
         import seldon_core.router_microservice as seldon_microservice
     elif args.service_type == "TRANSFORMER":
         import seldon_core.transformer_microservice as seldon_microservice
+    elif args.service_type == "COMBINER":
+        import seldon_core.combiner_microservice as seldon_microservice
     elif args.service_type == "OUTLIER_DETECTOR":
         import seldon_core.outlier_detector_microservice as seldon_microservice
 
@@ -318,7 +320,7 @@ def main():
                 user_object, debug=DEBUG)
             app.run(host='0.0.0.0', port=port)
 
-        logger.info(f"REST microservice running on port {port}")
+        logger.info("REST microservice running on port %i",port)
         server1_func = rest_prediction_server
 
     elif args.api_type == "GRPC":
@@ -328,7 +330,7 @@ def main():
             server.add_insecure_port("0.0.0.0:{}".format(port))
             server.start()
 
-            logger.info(f"GRPC microservice Running on port {port}")
+            logger.info("GRPC microservice Running on port %i",port)
             while True:
                 time.sleep(1000)
 
@@ -338,7 +340,7 @@ def main():
         def fbs_prediction_server():
             seldon_microservice.run_flatbuffers_server(user_object, port)
 
-        logger.info(f"FBS microservice Running on port {port}")
+        logger.info("FBS microservice Running on port %i",port)
         server1_func = fbs_prediction_server
 
     else:

@@ -102,7 +102,7 @@ def get_rest_microservice(user_model, debug=False):
                 new_feature_names = get_feature_names(user_model, names_list[0])
                 aggregated = np.array(aggregated)
                 data = array_to_rest_datadef(
-                    aggregated, new_feature_names, request.get("data", {}))
+                    aggregated, new_feature_names, request["seldonMessages"][0].get("data", {}))
                 response = {"data": data, "meta": {}}
             else:
                 response = {"binData": aggregated, "meta": {}}

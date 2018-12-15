@@ -100,3 +100,26 @@ def port_forward(request):
         
     request.addfinalizer(fin)
 
+def create_docker_repo(request):
+    run('kubectl apply -f ../resources/docker-private-registry.json -n default', shell=True)
+    run('kubectl rollout status deploy/docker-private-registry-deployment -n default', shell=True)
+    run('kubectl apply -f ../resources/docker-private-registry-proxy.json -n default', shell=True)
+
+    def fin():
+        run('kubectl delete -f ../resources/docker-private-registry.json --ignore-not-found=true -n default', shell=True)
+        run('kubectl delete -f ../resources/docker-private-registry-proxy.json --ignore-not-found=true -n default', shell=True)
+        
+    request.addfinalizer(fin)        
+
+
+def port_forward_docker_repo(request):
+    print("port-forward docker")
+    p1 = Popen("POD_NAME=$(kubectl get pods -l app=docker-private-registry -n default |sed -e '1d'|awk '{print $1}') && kubectl port-forward ${POD_NAME} 5000:5000 -n default",stdout=subprocess.PIPE,shell=True, preexec_fn=os.setsid)
+
+    def fin():
+        print("teardown port-foward docker")
+        os.killpg(os.getpgid(p1.pid), signal.SIGTERM)
+
+    request.addfinalizer(fin)
+
+    
