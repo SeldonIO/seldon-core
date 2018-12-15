@@ -15,6 +15,8 @@
 // @optionalParam engineServiceAccount string default Service account for Seldon Service Orchestrator Engine
 // @optionalParam singleNamespace string true Whether to limit seldon to a single namespace
 // @optionalParam engineUser string 8888 User id to run service orchestrator engine
+// @optionalParam registry string null The Docker registry to use
+// @optionalParam repository string seldonio The Docker repository to use
 
 local k = import "k.libsonnet";
 local core = import "seldon-core/seldon-core/core.libsonnet";
@@ -25,6 +27,8 @@ local updatedParams = params {
   namespace: if params.namespace == "null" then env.namespace else params.namespace,
 };
 
+local registry = import "param://registry";
+local repository = import "param://repository";
 local seldonVersion = import "param://seldonVersion";
 local singleNamespace = import "param://singleNamespace";
 
@@ -35,19 +39,19 @@ local withApife = import "param://withApife";
 local withAmbassador = import "param://withAmbassador";
 
 // APIFE
-local apifeImage = "seldonio/apife:" + seldonVersion;
+local apifeImage = if registry == "null" then repository + "/apife:" + seldonVersion else registry + "/" + repository + "/apife:" + seldonVersion;
 local apifeServiceType = import "param://apifeServiceType";
 local grpcMaxMessageSize = import "param://grpcMaxMessageSize";
 
 // Cluster Manager (The CRD Operator)
-local operatorImage = "seldonio/cluster-manager:" + seldonVersion;
+local operatorImage = if registry == "null" then repository + "/cluster-manager:" + seldonVersion else registry + "/" + repository + "/cluster-manager:" + seldonVersion;
 local operatorSpringOptsParam = import "param://operatorSpringOpts";
 local operatorSpringOpts = if operatorSpringOptsParam != "null" then operatorSpringOptsParam else "";
 local operatorJavaOptsParam = import "param://operatorJavaOpts";
 local operatorJavaOpts = if operatorJavaOptsParam != "null" then operatorJavaOptsParam else "";
 
 // Engine
-local engineImage = "seldonio/engine:" + seldonVersion;
+local engineImage = if registry == "null" then repository + "/engine:" + seldonVersion else registry + "/" + repository + "/engine:" + seldonVersion;
 local engineServiceAccount = import "param://engineServiceAccount";
 local engineUser = import "param://engineUser";
 

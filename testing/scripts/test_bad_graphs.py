@@ -17,6 +17,7 @@ def wait_for_status(name):
             print("Failed to find status - sleeping")
             time.sleep(5)
 
+@pytest.mark.usefixtures("seldon_java_images")
 @pytest.mark.usefixtures("single_namespace_seldon_helm")    
 class TestBadGraphs(object):
     

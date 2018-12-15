@@ -9,7 +9,7 @@ import logging
 from seldon_core.proto import prediction_pb2, prediction_pb2_grpc
 from seldon_core.microservice import extract_message, sanity_check_request, rest_datadef_to_array, \
     array_to_rest_datadef, grpc_datadef_to_array, array_to_grpc_datadef, \
-    SeldonMicroserviceException
+    SeldonMicroserviceException, ANNOTATION_GRPC_MAX_MSG_SIZE
 
 logger = logging.getLogger(__name__)
 

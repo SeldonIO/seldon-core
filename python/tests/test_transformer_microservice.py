@@ -4,7 +4,7 @@ import numpy as np
 from google.protobuf import json_format
 import base64
 
-from seldon_core.transformer_microservice import get_rest_microservice, SeldonTransformerGRPC
+from seldon_core.transformer_microservice import get_rest_microservice, SeldonTransformerGRPC, get_grpc_server
 from seldon_core.proto import prediction_pb2
 
 
@@ -349,3 +349,8 @@ def test_transform_output_proto_bin_data_nparray():
     j = json.loads(jStr)
     print(j)
     assert j["data"]["tensor"]["values"] == list(user_object.nparray.flatten())
+
+def test_get_grpc_server():
+    user_object = UserObject(ret_nparray=True)
+    server = get_grpc_server(user_object)
+    
