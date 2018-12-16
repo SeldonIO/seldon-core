@@ -3,7 +3,7 @@ description: Seldon Core isolation forest outlier detection model template
 keywords:
 - kubernetes
 - machine-learning
-name: seldon-outlier-detector-isolation-forest
+name: seldon-od-if
 sources:
 - https://github.com/SeldonIO/seldon-core
 version: 0.1
