@@ -81,11 +81,13 @@ Seldon-core allows various types of components to be built and plugged into the 
    * PMML
       * [PySpark MNIST Classifier](https://github.com/SeldonIO/JPMML-utils/blob/master/examples/pyspark_pmml/mnist.ipynb)
 
- * **routers**
+ * **Routers**
    * [Epsilon-greedy multi-armed bandits for real time optimization of models](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/epsilon_greedy_gcp.ipynb)
- * **transformers**
+ * **Transformers**
     * [Mahalanobis distance outlier detection](https://github.com/SeldonIO/seldon-core/blob/master/examples/transformers/outlier_mahalanobis/outlier_documentation.ipynb). Example usage can be found in the [Advanced graphs notebook](https://github.com/cliveseldon/seldon-core/blob/master/notebooks/advanced_graphs.ipynb)
-
+ * **Combiners**
+    * [MNIST Average Combiner](examples/combiners/mnist_combiner/mnist_combiner.ipynb) - ensembles sklearn and Tensorflow Models.
+    
 ## Integrations
 
  * [kubeflow](https://github.com/kubeflow/kubeflow)
@@ -109,13 +111,12 @@ Follow the [install guide](docs/install.md) for details on ways to install seldo
 
 ![API](./docs/deploy.png)
 
-Three steps:
-
  1. [Wrap your runtime prediction model](./docs/wrappers/readme.md).
     * We provide easy to use wrappers for [python](./docs/wrappers/python.md), [R](./docs/wrappers/r.md), [Java](./docs/wrappers/java.md) and [NodeJS](./docs/wrappers/nodejs.md).
     * We have [tools to test your wrapped components](./docs/api-testing.md).
  1. [Define your runtime inference graph in a seldon deployment custom resource](./docs/inference-graph.md).
  1. [Deploy the graph](./docs/deploying.md).
+ 1. [Serve Predictions](./docs/serving.md).
 
 ## Advanced Tutorials
 
@@ -130,9 +131,10 @@ Three steps:
     - [Open API Definitions](./openapi/README.md)
  - [Seldon Deployment Custom Resource](./docs/reference/seldon-deployment.md)
  - [Analytics](./docs/analytics.md)
- 
+
 ## Articles/Blogs/Videos
 
+ - [Open Source Model Management Roundup Polyaxon, Argo and Seldon](https://www.anaconda.com/blog/developer-blog/open-source-model-management-roundup-polyaxon-argo-and-seldon/)
  - [Kubecon Europe 2018 - Serving Machine Learning Models at Scale with Kubeflow and Seldon](https://www.youtube.com/watch?v=pDlapGtecbY)
  - [Polyaxon, Argo and Seldon for model training, package and deployment in Kubernetes](https://danielfrg.com/blog/2018/10/model-management-polyaxon-argo-seldon/)
  - [Manage ML Deployments Like A Boss: Deploy Your First AB Test With Sklearn, Kubernetes and Seldon-core using Only Your Web Browser & Google Cloud](https://medium.com/analytics-vidhya/manage-ml-deployments-like-a-boss-deploy-your-first-ab-test-with-sklearn-kubernetes-and-b10ae0819dfe)
@@ -171,21 +173,21 @@ Three steps:
 
 ## Latest Seldon Images
 
-| Description | Image URL | Stable Version | Development | 
+| Description | Image URL | Stable Version | Development |
 |-------------|-----------|----------------|-----|
-| Seldon Operator | [seldonio/cluster-manager](https://hub.docker.com/r/seldonio/cluster-manager/tags/) | 0.2.3 | 0.2.4-SNAPSHOT |
-| Seldon Service Orchestrator | [seldonio/engine](https://hub.docker.com/r/seldonio/engine/tags/) | 0.2.3 | 0.2.4-SNAPSHOT |
-| Seldon API Gateway | [seldonio/apife](https://hub.docker.com/r/seldonio/apife/tags/) | 0.2.3 | 0.2.4-SNAPSHOT |
-| [Seldon Python 3 Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python3](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3/tags/) | 0.2 | 0.3-SNAPSHOT |
-| [Seldon Python 2 Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python2](https://hub.docker.com/r/seldonio/seldon-core-s2i-python2/tags/) | 0.2 | 0.3-SNAPSHOT |
-| [Seldon Python ONNX Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python3-ngraph-onnx](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3-ngraph-onnx/tags/) | 0.1  |   |
-| [Seldon Core Python Wrapper](docs/wrappers/python-docker.md) | [seldonio/core-python-wrapper](https://hub.docker.com/r/seldonio/core-python-wrapper/tags/) | 0.7 | |
+| Seldon Operator | [seldonio/cluster-manager](https://hub.docker.com/r/seldonio/cluster-manager/tags/) | 0.2.4 | 0.2.5-SNAPSHOT |
+| Seldon Service Orchestrator | [seldonio/engine](https://hub.docker.com/r/seldonio/engine/tags/) | 0.2.4 | 0.2.5-SNAPSHOT |
+| Seldon API Gateway | [seldonio/apife](https://hub.docker.com/r/seldonio/apife/tags/) | 0.2.4 | 0.2.5-SNAPSHOT |
+| [Seldon Python 3 (3.6) Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python3](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3/tags/) | 0.3 | 0.4-SNAPSHOT |
+| [Seldon Python 3.6 Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python36](https://hub.docker.com/r/seldonio/seldon-core-s2i-python36/tags/) | 0.3 | 0.4-SNAPSHOT |
+| [Seldon Python 2 Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python2](https://hub.docker.com/r/seldonio/seldon-core-s2i-python2/tags/) | 0.3 | 0.4-SNAPSHOT |
+| [Seldon Python ONNX Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python3-ngraph-onnx](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3-ngraph-onnx/tags/) | 0.2  |   |
 | [Seldon Java Build Wrapper for S2I](docs/wrappers/java.md) | [seldonio/seldon-core-s2i-java-build](https://hub.docker.com/r/seldonio/seldon-core-s2i-java-build/tags/) | 0.1 | |
 | [Seldon Java Runtime Wrapper for S2I](docs/wrappers/java.md) | [seldonio/seldon-core-s2i-java-runtime](https://hub.docker.com/r/seldonio/seldon-core-s2i-java-runtime/tags/) | 0.1 | | 
-| [Seldon R Wrapper for S2I](docs/wrappers/r.md) | [seldonio/seldon-core-s2i-r](https://hub.docker.com/r/seldonio/seldon-core-s2i-r/tags/) | 0.1 | |
+| [Seldon R Wrapper for S2I](docs/wrappers/r.md) | [seldonio/seldon-core-s2i-r](https://hub.docker.com/r/seldonio/seldon-core-s2i-r/tags/) | 0.2 | |
 | [Seldon NodeJS Wrapper for S2I](docs/wrappers/nodejs.md) | [seldonio/seldon-core-s2i-nodejs](https://hub.docker.com/r/seldonio/seldon-core-s2i-nodejs/tags/) | 0.1 | 0.2-SNAPSHOT |
-| [Seldon Tensorflow Serving proxy](integrations/tfserving/README.md) | [seldonio/tfserving-proxy](https://hub.docker.com/r/seldonio/tfserving-proxy/tags/) | 0.1 | 
-| [Seldon NVIDIA inference server proxy](integrations/nvidia-inference-server/README.md) | [seldonio/nvidia-inference-server-proxy](https://hub.docker.com/r/seldonio/nvidia-inference-server-proxy/tags/) | 0.1 | 
+| [Seldon Tensorflow Serving proxy](integrations/tfserving/README.md) | [seldonio/tfserving-proxy](https://hub.docker.com/r/seldonio/tfserving-proxy/tags/) | 0.1 |
+| [Seldon NVIDIA inference server proxy](integrations/nvidia-inference-server/README.md) | [seldonio/nvidia-inference-server-proxy](https://hub.docker.com/r/seldonio/nvidia-inference-server-proxy/tags/) | 0.1 |
 #### Java Packages
 
 | Description | Package | Version |

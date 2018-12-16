@@ -124,3 +124,28 @@ engine/src/main/resources/static/seldon.json
 api-frontend/src/main/resources/static/seldon.json
 wrappers/python/seldon.json
 
+testing/notebooks/my-ml-deployment/
+testing/notebooks/my-model/
+testing/notebooks/proto/prediction.proto
+testing/notebooks/tensorflow/
+api-frontend/pom.xml.versionsBackup
+api-frontend/src/main/proto/tensorflow/
+cluster-manager/pom.xml.versionsBackup
+engine/pom.xml.versionsBackup
+engine/src/main/proto/tensorflow/
+
+seldon-core/seldon-core/json/template_0.2.yaml
+seldon-core/seldon-core/json/template_0.2_cluster_wide.yaml
+seldon-core/seldon-core/json/template_0.2_single_namespace.yaml
+openapi/prediction.grpcapi.proto
+openapi/prediction.grpcapi.swagger.json
+openapi/tensorflow/
+proto/tensorflow/tensorflow/
+
+util/loadtester/MNIST_data/
+
+# python build
+eggs/
+.eggs/
+*.egg-info/
+./pytest_cache

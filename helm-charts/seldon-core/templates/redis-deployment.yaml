@@ -1,3 +1,4 @@
+{{- if .Values.redis.enabled }}
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -45,5 +46,4 @@ spec:
   type: ClusterIP
 status:
   loadBalancer: {}
-
-
+{{- end }}

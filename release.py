@@ -100,17 +100,6 @@ def update_values_yaml_file(fpath, seldon_core_version, debug=False):
     print("updated {fpath}".format(**locals()))
 
 def update_core_jsonnet(fpath, seldon_core_version, debug=False):
-    # eg.
-    # raw_line = // @optionalParam apifeImage string seldonio/apife:0.1.6 Default image for API Front End
-    # srch_str = seldonio/apife
-    # seldon_core_version = 1.2.3
-    # return   = // @optionalParam apifeImage string seldonio/apife:1.2.3 Default image for API Front End
-    def get_output_line(raw_line, srch_str):
-        if raw_line.find('%s:' % srch_str) > 0:
-            return re.sub( r" (%s):.*? " % srch_str, r" \1:%s " % seldon_core_version, raw_line)
-        else:
-            return raw_line
-
     fpath = os.path.realpath(fpath)
     if debug:
         print("processing [{}]".format(fpath))
@@ -120,9 +109,8 @@ def update_core_jsonnet(fpath, seldon_core_version, debug=False):
         with open(tmpfpath, 'w') as ftmp:
             for raw_line in f:
                 output_line = raw_line
-                for srch_str in ['seldonio/apife','seldonio/cluster-manager', 'seldonio/engine']:
-                    if raw_line.find(srch_str + ':') > 0:
-                        output_line = get_output_line(raw_line, srch_str)
+                if output_line.startswith("// @optionalParam seldonVersion"):
+                    output_line = "// @optionalParam seldonVersion string "+seldon_core_version+" Seldon version\n"
                 ftmp.write(output_line)
         if debug:
             print("created {tmpfpath}".format(**locals()))
@@ -153,7 +141,7 @@ def set_version(seldon_core_version, pom_files, chart_yaml_files, values_yaml_fi
 
 def main(argv):
     POM_FILES = ['engine/pom.xml', 'api-frontend/pom.xml', 'cluster-manager/pom.xml']
-    CHART_YAML_FILES = ['helm-charts/seldon-core/Chart.yaml', 'helm-charts/seldon-core-crd/Chart.yaml']
+    CHART_YAML_FILES = ['helm-charts/seldon-core/Chart.yaml', 'helm-charts/seldon-core-crd/Chart.yaml', 'helm-charts/seldon-core-analytics/Chart.yaml']
     VALUES_YAML_FILE = 'helm-charts/seldon-core/values.yaml'
     CORE_JSONNET_FILE = 'seldon-core/seldon-core/prototypes/core.jsonnet'
 

@@ -25,6 +25,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.http.MediaType;
+import org.springframework.jmx.support.MetricType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -32,9 +33,12 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import io.seldon.engine.pb.ProtoBufUtils;
+import io.seldon.protos.PredictionProtos.SeldonMessage;
+
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-@AutoConfigureMockMvc
+//@AutoConfigureMockMvc
 public class TestRestClientController {
 	
 	@Autowired
@@ -68,7 +72,7 @@ public class TestRestClientController {
     
     
     @Test
-    public void testPredict_11dim() throws Exception
+    public void testPredict_11dim_ndarry() throws Exception
     {
         final String predictJson = "{" +
         	    "\"request\": {" + 
@@ -85,7 +89,7 @@ public class TestRestClientController {
     }
     	    
     @Test
-    public void testPredict_21dim() throws Exception
+    public void testPredict_21dim_ndarry() throws Exception
     {
         final String predictJson = "{" +
         	    "\"request\": {" + 
@@ -99,5 +103,36 @@ public class TestRestClientController {
     	String response = res.getResponse().getContentAsString();
     	System.out.println(response);
     	Assert.assertEquals(200, res.getResponse().getStatus());
+    	SeldonMessage.Builder builder = SeldonMessage.newBuilder();
+		ProtoBufUtils.updateMessageBuilderFromJson(builder, response );
+		SeldonMessage seldonMessage = builder.build();
+		Assert.assertEquals(3, seldonMessage.getMeta().getMetricsCount());
+		Assert.assertEquals("COUNTER", seldonMessage.getMeta().getMetrics(0).getType().toString());
+		Assert.assertEquals("GAUGE", seldonMessage.getMeta().getMetrics(1).getType().toString());
+		Assert.assertEquals("TIMER", seldonMessage.getMeta().getMetrics(2).getType().toString());
+    }
+    
+    @Test
+    public void testPredict_21dim_tensor() throws Exception
+    {
+        final String predictJson = "{" +
+        	    "\"request\": {" + 
+        	    "\"tensor\": {\"shape\":[2,1],\"values\":[1.0,2.0]}}" +
+        		"}";
+
+    	MvcResult res = mvc.perform(MockMvcRequestBuilders.post("/api/v0.1/predictions")
+    			.accept(MediaType.APPLICATION_JSON_UTF8)
+    			.content(predictJson)
+    			.contentType(MediaType.APPLICATION_JSON_UTF8)).andReturn();
+    	String response = res.getResponse().getContentAsString();
+    	System.out.println(response);
+    	Assert.assertEquals(200, res.getResponse().getStatus());
+    	SeldonMessage.Builder builder = SeldonMessage.newBuilder();
+		ProtoBufUtils.updateMessageBuilderFromJson(builder, response );
+		SeldonMessage seldonMessage = builder.build();
+		Assert.assertEquals(3, seldonMessage.getMeta().getMetricsCount());
+		Assert.assertEquals("COUNTER", seldonMessage.getMeta().getMetrics(0).getType().toString());
+		Assert.assertEquals("GAUGE", seldonMessage.getMeta().getMetrics(1).getType().toString());
+		Assert.assertEquals("TIMER", seldonMessage.getMeta().getMetrics(2).getType().toString());
     }
 }

@@ -1,0 +1,18 @@
+FROM python:%PYTHON_VERSION%
+
+LABEL io.openshift.s2i.scripts-url="image:///s2i/bin"
+
+RUN apt-get update -y
+RUN apt-get install -y python-pip python-dev build-essential
+
+RUN mkdir microservice
+WORKDIR /microservice
+
+COPY _python /microservice
+
+RUN cd /microservice/python && \
+    pip install .
+
+COPY ./s2i/bin/ /s2i/bin
+
+EXPOSE 5000

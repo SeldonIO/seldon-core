@@ -49,7 +49,7 @@ public class TestPredictionProto {
 	@Test
 	public void parse_custom_json() throws InvalidProtocolBufferException
 	{
-		String json = "{\"request\":{\"ndarray\":[[1.0,2.0],[3.0,4.0]]}}";
+		String json = "{\"data\":{\"ndarray\":[[1.0,2.0],[3.0,4.0]]}}";
 		SeldonMessage.Builder builder = SeldonMessage.newBuilder();
 		ProtoBufUtils.updateMessageBuilderFromJson(builder, json);
 		SeldonMessage request = builder.build();
@@ -64,7 +64,7 @@ public class TestPredictionProto {
 	@Test
 	public void parse_tags_array() throws InvalidProtocolBufferException
 	{
-		String json = "{\"meta\":{\"tags\":{\"user\":[\"a\",\"b\"],\"gender\":\"female\"}},\"request\":{\"ndarray\":[[1.0,2.0],[3.0,4.0]]}}";
+		String json = "{\"meta\":{\"tags\":{\"user\":[\"a\",\"b\"],\"gender\":\"female\"}},\"data\":{\"ndarray\":[[1.0,2.0],[3.0,4.0]]}}";
 		SeldonMessage.Builder builder = SeldonMessage.newBuilder();
 		ProtoBufUtils.updateMessageBuilderFromJson(builder, json);
 		SeldonMessage request = builder.build();

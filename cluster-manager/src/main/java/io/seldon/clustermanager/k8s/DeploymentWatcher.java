@@ -34,10 +34,13 @@ import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.ApiException;
 import io.kubernetes.client.apis.ExtensionsV1beta1Api;
 import io.kubernetes.client.models.ExtensionsV1beta1Deployment;
+import io.kubernetes.client.models.ExtensionsV1beta1DeploymentStatus;
 import io.kubernetes.client.models.V1OwnerReference;
 import io.kubernetes.client.util.Config;
 import io.kubernetes.client.util.Watch;
 import io.seldon.clustermanager.ClusterManagerProperites;
+import io.seldon.clustermanager.k8s.client.K8sApiProvider;
+import io.seldon.clustermanager.k8s.client.K8sClientProvider;
 
 @Component
 public class DeploymentWatcher {
@@ -48,13 +51,19 @@ public class DeploymentWatcher {
 	private int resourceVersionProcessed = 0;
 	
 	private final SeldonDeploymentStatusUpdate statusUpdater;
+	private final K8sClientProvider k8sClientProvider;
+	private final K8sApiProvider k8sApiProvider;
 	private final String namespace;
+	private final boolean clusterWide;
 	
 	@Autowired
-	public DeploymentWatcher(ClusterManagerProperites clusterManagerProperites,SeldonDeploymentStatusUpdate statusUpdater)
+	public DeploymentWatcher(K8sApiProvider k8sApiProvider,K8sClientProvider k8sClientProvider,ClusterManagerProperites clusterManagerProperites,SeldonDeploymentStatusUpdate statusUpdater)
 	{
 		this.statusUpdater = statusUpdater;
 		this.namespace = StringUtils.isEmpty(clusterManagerProperites.getNamespace()) ? "default" : clusterManagerProperites.getNamespace();
+		this.clusterWide = !clusterManagerProperites.isSingleNamespace();
+		this.k8sClientProvider = k8sClientProvider;
+		this.k8sApiProvider = k8sApiProvider;
 	}
 	
 	public int watchDeployments(int resourceVersion,int resourceVersionProcessed) throws ApiException, IOException 
@@ -66,17 +75,33 @@ public class DeploymentWatcher {
 		
 		int maxResourceVersion = resourceVersion;		
 
-		ApiClient client = Config.defaultClient();
-		ExtensionsV1beta1Api api = new ExtensionsV1beta1Api(client);
+		ApiClient client = k8sClientProvider.getClient();
+		ExtensionsV1beta1Api api = k8sApiProvider.getExtensionsV1beta1Api(client);
 
-		Watch<ExtensionsV1beta1Deployment> watch = Watch.createWatch(
-		        client,
-		        api.listNamespacedDeploymentCall(namespace, null, null, null,false,SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_KEY+"="+SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_VAL, null,rs, 10, true,null,null),
-		        new TypeToken<Watch.Response<ExtensionsV1beta1Deployment>>(){}.getType());
+		Watch<ExtensionsV1beta1Deployment> watch;
+		if (this.clusterWide)
+		{
+			watch = Watch.createWatch(
+					client,
+					api.listDeploymentForAllNamespacesCall(null, null, false, SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_KEY+"="+SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_VAL, null, null, rs, 10, true, null, null),
+					new TypeToken<Watch.Response<ExtensionsV1beta1Deployment>>(){}.getType());
+		}
+		else
+		{
+			watch = Watch.createWatch(
+					client,
+					api.listNamespacedDeploymentCall(namespace, null, null, null,false,SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_KEY+"="+SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_VAL, null,rs, 10, true,null,null),
+					new TypeToken<Watch.Response<ExtensionsV1beta1Deployment>>(){}.getType());
+		}
 
 		try
 		{
 		    for (Watch.Response<ExtensionsV1beta1Deployment> item : watch) {
+		    	if (item.object == null)
+		    	{
+		    		logger.warn("Bad watch returned will reset resource version type:{} status:{} ",item.type,item.status.toString());
+		    		return 0;
+		    	}
                 int resourceVersionNew = Integer.parseInt(item.object.getMetadata().getResourceVersion());
                 if (resourceVersionNew <= resourceVersionProcessed)
                 {
@@ -102,7 +127,10 @@ public class DeploymentWatcher {
                                 {
                                     String mlDepName = ownerRef.getName();
                                     String depName = item.object.getMetadata().getName();
-                                    statusUpdater.updateStatus(mlDepName, depName, item.object.getStatus().getReplicas(),item.object.getStatus().getReadyReplicas());
+                                    String namespace = StringUtils.isEmpty(item.object.getMetadata().getNamespace()) ? "default" : item.object.getMetadata().getNamespace();
+                                    ExtensionsV1beta1DeploymentStatus status = item.object.getStatus();
+                                    logger.info("{} {} {} replicas:{} replicasAvailable(ready):{} replicasUnavilable:{} replicasReady(available):{}",item.type,mlDepName,depName,status.getReplicas(),status.getReadyReplicas(),status.getUnavailableReplicas(),status.getAvailableReplicas());
+                                    statusUpdater.updateStatus(mlDepName, depName, item.object.getStatus().getReplicas(),item.object.getStatus().getReadyReplicas(),namespace);
                                 }
                             }
                             break;
@@ -113,7 +141,10 @@ public class DeploymentWatcher {
                                 {
                                     String mlDepName = ownerRef.getName();
                                     String depName = item.object.getMetadata().getName();
-                                    statusUpdater.removeStatus(mlDepName,depName);
+                                    ExtensionsV1beta1DeploymentStatus status = item.object.getStatus();
+                                    logger.info("{} {} {} replicas:{} replicasAvailable(ready):{} replicasUnavilable:{} replicasReady(available):{}",item.type,mlDepName,depName,status.getReplicas(),status.getReadyReplicas(),status.getUnavailableReplicas(),status.getAvailableReplicas());
+                                    String namespace = StringUtils.isEmpty(item.object.getMetadata().getNamespace()) ? "default" : item.object.getMetadata().getNamespace();
+                                    statusUpdater.removeStatus(mlDepName,depName,namespace);
                                 }
                             }
                             break;

@@ -10,7 +10,7 @@
 
 	<groupId>io.seldon.engine</groupId>
 	<artifactId>seldon-engine</artifactId>
-	<version>0.2.4</version>
+	<version>0.2.5</version>
 	<packaging>jar</packaging>
 
 	<name>engine</name>
@@ -20,7 +20,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>1.8</java.version>
 		<grpc.version>1.14.0</grpc.version>
-		<micrometer.version>1.0.0-rc.1</micrometer.version>
+		<micrometer.version>1.1.0</micrometer.version>
 		<start-class>io.seldon.engine.App</start-class>
 	</properties>
 
@@ -38,6 +38,12 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.2</version>
+                <configuration>
+       				<excludes>
+            			<exclude>**/io/seldon/protos/**/*.class</exclude>
+            			<exclude>**/org/tensorflow/framework/**/*.class</exclude>
+        			</excludes>
+    			</configuration>
                 <executions>
                     <execution>
                         <id>jacoco-initialize</id>
@@ -148,6 +154,19 @@
 					</execution>
 				</executions>
 			</plugin>
+     	 <plugin>
+            <!-- 
+                Needed due to  https://issues.apache.org/jira/browse/SUREFIRE-1588
+                Should be removed when fixed 
+                -->
+      
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+                <useSystemClassLoader>false</useSystemClassLoader>
+            </configuration>
+        </plugin>
+			
 		</plugins>
 	</build>
 	<dependencies>

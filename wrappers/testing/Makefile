@@ -1,6 +1,8 @@
 .PHONY: update_protos
 update_protos:
 	cp ../../proto/prediction.proto ./proto
+	cd ../../proto/tensorflow && make create_protos
+	cp -vr ../../proto/tensorflow/tensorflow .
 
 .PHONY: build_protos
 build_protos: clean update_protos

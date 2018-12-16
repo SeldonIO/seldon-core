@@ -1,36 +1,37 @@
 SHELL:=/bin/bash
 
 PYTHON_VERSION=2
-IMAGE_PYTHON_VERSION=`echo -n $(PYTHON_VERSION) | cut -d. -f1`
-IMAGE_VERSION=0.3-SNAPSHOT
+IMAGE_PYTHON_VERSION=`echo -n $(PYTHON_VERSION) | sed 's/\.//g'`
+BASE_IMAGE_PYTHON_VERSION=`echo -n $(PYTHON_VERSION) | cut -d. -f1`
+IMAGE_VERSION=0.4-SNAPSHOT
 IMAGE_NAME = docker.io/seldonio/seldon-core-s2i-python${IMAGE_PYTHON_VERSION}
+BASE_IMAGE_NAME = docker.io/seldonio/seldon-core-s2i-python${BASE_IMAGE_PYTHON_VERSION}
 
 SELDON_CORE_DIR=../../..
 
-.PHONY: get_wrappers_and_protos
-get_wrappers_and_protos:
-	mkdir -p _wrappers/python/proto
-	mkdir -p _wrappers/python/fbs
-	cp $(SELDON_CORE_DIR)/wrappers/python/*_microservice.py _wrappers/python
-	cp $(SELDON_CORE_DIR)/wrappers/python/microservice.py _wrappers/python
-	cp $(SELDON_CORE_DIR)/wrappers/python/persistence.py _wrappers/python
-	cp $(SELDON_CORE_DIR)/wrappers/python/seldon_requirements.txt _wrappers/python
-	cp $(SELDON_CORE_DIR)/wrappers/python/__init__.py _wrappers/python
-	cp $(SELDON_CORE_DIR)/proto/prediction.proto _wrappers/python/proto
-	cp $(SELDON_CORE_DIR)/wrappers/python/seldon_flatbuffers.py _wrappers/python
-	flatc --python -o _wrappers/python/fbs ../../../fbs/prediction.fbs
-	touch _wrappers/python/proto/__init__.py
-	touch _wrappers/python/fbs/__init__.py
-	cp $(SELDON_CORE_DIR)/openapi/wrapper.oas3.json _wrappers/python/seldon.json
+.PHONY: get_local_repo
+get_local_repo:
+	mkdir -p _python
+	cp -r $(SELDON_CORE_DIR)/python _python
 
 .PHONY: build
-build: get_wrappers_and_protos
+build:
 	cat Dockerfile.tmpl | sed  -e "s|%PYTHON_VERSION%|$(PYTHON_VERSION)|" > Dockerfile
 	set -x && docker build -t $(IMAGE_NAME):$(IMAGE_VERSION) .
 
+.PHONY: build_local
+build_local: get_local_repo
+	cat Dockerfile.local.tmpl | sed  -e "s|%PYTHON_VERSION%|$(PYTHON_VERSION)|" > Dockerfile
+	set -x && docker build -t $(IMAGE_NAME):$(IMAGE_VERSION) .
+
+tag_base_python:
+	docker tag $(IMAGE_NAME):$(IMAGE_VERSION) $(BASE_IMAGE_NAME):$(IMAGE_VERSION)
+
+push_to_dockerhub_base_python:
+	docker push $(BASE_IMAGE_NAME):$(IMAGE_VERSION)
+
 push_to_dockerhub:
 	docker push $(IMAGE_NAME):$(IMAGE_VERSION)
-
 
 .PHONY: test
 test:
@@ -38,9 +39,15 @@ test:
 	docker build -t $(IMAGE_NAME)-candidate .
 	IMAGE_NAME=$(IMAGE_NAME)-candidate test/run
 
+.PHONY: test_local
+test_local:
+	cat Dockerfile.local.tmpl | sed  -e "s|%PYTHON_VERSION%|$(PYTHON_VERSION)|" > Dockerfile
+	docker build -t $(IMAGE_NAME)-candidate .
+	IMAGE_NAME=$(IMAGE_NAME)-candidate test/run
+
 .PHONY: clean
 clean:
-	rm -rf _wrappers
+	rm -rf _python
 	rm -rf test/model-template-app/.git
 	rm -rf test/router-template-app/.git
 	rm -rf test/transformer-template-app/.git

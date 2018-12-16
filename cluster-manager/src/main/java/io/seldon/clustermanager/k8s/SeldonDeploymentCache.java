@@ -19,9 +19,9 @@ import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 public interface SeldonDeploymentCache {
 
-    public SeldonDeployment get(String name);
-    public SeldonDeployment getOrLoad(String name);
+    public SeldonDeployment get(SeldonDeployment dep);
+    //public SeldonDeployment getOrLoad(String name,String namespace);
 	public void put(SeldonDeployment dep);
-	public void remove(String name);
+	public void remove(SeldonDeployment name);
 	
 }
