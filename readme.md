@@ -175,9 +175,9 @@ Follow the [install guide](docs/install.md) for details on ways to install seldo
 
 | Description | Image URL | Stable Version | Development |
 |-------------|-----------|----------------|-----|
-| Seldon Operator | [seldonio/cluster-manager](https://hub.docker.com/r/seldonio/cluster-manager/tags/) | 0.2.4 | 0.2.5-SNAPSHOT |
-| Seldon Service Orchestrator | [seldonio/engine](https://hub.docker.com/r/seldonio/engine/tags/) | 0.2.4 | 0.2.5-SNAPSHOT |
-| Seldon API Gateway | [seldonio/apife](https://hub.docker.com/r/seldonio/apife/tags/) | 0.2.4 | 0.2.5-SNAPSHOT |
+| Seldon Operator | [seldonio/cluster-manager](https://hub.docker.com/r/seldonio/cluster-manager/tags/) | 0.2.5 | 0.2.6-SNAPSHOT |
+| Seldon Service Orchestrator | [seldonio/engine](https://hub.docker.com/r/seldonio/engine/tags/) | 0.2.5 | 0.2.6-SNAPSHOT |
+| Seldon API Gateway | [seldonio/apife](https://hub.docker.com/r/seldonio/apife/tags/) | 0.2.5 | 0.2.6-SNAPSHOT |
 | [Seldon Python 3 (3.6) Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python3](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3/tags/) | 0.3 | 0.4-SNAPSHOT |
 | [Seldon Python 3.6 Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python36](https://hub.docker.com/r/seldonio/seldon-core-s2i-python36/tags/) | 0.3 | 0.4-SNAPSHOT |
 | [Seldon Python 2 Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python2](https://hub.docker.com/r/seldonio/seldon-core-s2i-python2/tags/) | 0.3 | 0.4-SNAPSHOT |
