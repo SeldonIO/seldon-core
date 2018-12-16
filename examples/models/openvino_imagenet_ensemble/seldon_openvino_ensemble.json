@@ -1,0 +1,199 @@
+{
+    "apiVersion": "machinelearning.seldon.io/v1alpha2",
+    "kind": "SeldonDeployment",
+    "metadata": {
+        "labels": {
+            "app": "seldon"
+        },
+        "name": "openvino-model",
+	"namespace": "seldon"	
+    },
+    "spec": {
+        "name": "openvino",
+        "predictors": [
+            {
+                "componentSpecs": [{
+                    "spec": {
+                        "containers": [
+                            {
+                                "name": "imagenet-transformer",				
+                                "image": "seldonio/imagenet_transformer:0.1"
+                            },
+                            {
+                                "name": "imagenet-combiner",				
+                                "image": "seldonio/imagenet_combiner:0.1"
+                            },
+                            {
+                                "name": "tfserving-proxy1",				
+                                "image": "seldonio/tfserving-proxy:0.2"
+                            },
+                            {
+                                "name": "tfserving-proxy2",			
+                                "image": "seldonio/tfserving-proxy:0.2"
+                            },
+			    {
+				"name": "openvino-model-server1",
+				"image": "intelaipg/openvino-model-server:0.2",
+				"command": [
+				    "/ie-serving-py/start_server.sh"
+				],
+				"args": [
+				    "ie_serving",
+				    "model",
+				    "--model_path",
+				    "/opt/ml/squeezenet",
+				    "--model_name",
+				    "squeezenet1.1",
+				    "--port",
+				    "8001"
+				],
+				"ports": [
+				    {
+					"name": "grpc",
+					"containerPort": 8001,
+					"protocol": "TCP"
+				    }
+				],
+				"env": [
+				    {
+					"name": "LOG_LEVEL",
+					"value": "DEBUG"
+				    }
+				],
+				"resources": {},
+				"volumeMounts": [
+				    {
+					"name": "modelstore",
+					"mountPath": "/opt/ml"
+				    }
+				]
+			    },
+			    {
+				"name": "openvino-model-server2",
+				"image": "intelaipg/openvino-model-server:0.2",
+				"command": [
+				    "/ie-serving-py/start_server.sh"
+				],
+				"args": [
+				    "ie_serving",
+				    "model",
+				    "--model_path",
+				    "/opt/ml/squeezenet",
+				    "--model_name",
+				    "squeezenet1.1",
+				    "--port",
+				    "8002"
+				],
+				"ports": [
+				    {
+					"name": "grpc",
+					"containerPort": 8002,
+					"protocol": "TCP"
+				    }
+				],
+				"env": [
+				    {
+					"name": "LOG_LEVEL",
+					"value": "DEBUG"
+				    }
+				],
+				"resources": {},
+				"volumeMounts": [
+				    {
+					"name": "modelstore",
+					"mountPath": "/opt/ml"
+				    }
+				]
+			    }
+			],
+			"terminationGracePeriodSeconds": 1,
+			"volumes": [
+			    {
+				"name": "modelstore",
+				"volumeSource": {
+				    "persistentVolumeClaim": {
+					"claimName": "model-store-pvc"
+				    }
+				}
+			    }
+			]
+		    }
+		}],
+                "graph": {
+		    "name": "imagenet-transformer",
+		    "endpoint": { "type" : "GRPC" },
+		    "type": "TRANSFORMER",
+		    "children": [
+			{
+			    "name": "imagenet-combiner",
+			    "endpoint": { "type" : "GRPC" },
+			    "type": "COMBINER",
+			    "children": [
+				{
+				    "name": "tfserving-proxy1",
+				    "endpoint": { "type" : "GRPC" },
+				    "type": "MODEL",
+				    "children": [],
+				    "parameters":
+				    [
+					{
+					    "name":"grpc_endpoint",
+					    "type":"STRING",
+					    "value":"localhost:8001"
+					},
+					{
+					    "name":"model_name",
+					    "type":"STRING",
+					    "value":"squeezenet1.1"
+					},
+					{
+					    "name":"model_output",
+					    "type":"STRING",
+					    "value":"prob"
+					},
+					{
+					    "name":"model_input",
+					    "type":"STRING",
+					    "value":"data"
+					}
+				    ]
+				},
+				{
+				    "name": "tfserving-proxy2",
+				    "endpoint": { "type" : "GRPC" },
+				    "type": "MODEL",
+				    "children": [],
+				    "parameters":
+				    [
+					{
+					    "name":"grpc_endpoint",
+					    "type":"STRING",
+					    "value":"localhost:8002"
+					},
+					{
+					    "name":"model_name",
+					    "type":"STRING",
+					    "value":"squeezenet1.1"
+					},
+					{
+					    "name":"model_output",
+					    "type":"STRING",
+					    "value":"prob"
+					},
+					{
+					    "name":"model_input",
+					    "type":"STRING",
+					    "value":"data"
+					}
+				    ]
+				}			
+			    ]
+			}
+		    ]
+		},
+                "name": "openvino",
+                "replicas": 1
+            }
+        ]
+    }
+}
