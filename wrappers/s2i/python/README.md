@@ -13,6 +13,8 @@ e.g. from 0.3-SNAPSHOT to release 0.3 and create 0.4-SNAPSHOT
     ``` ./update_python_version.sh X X+1```, e.g ```./update_python_version.sh 0.2 0.3```
 
 
+ * building openvino python base image
+```docker build -f Dockerfile_openvino_base --build-arg http_proxy=$http_proxy --build-arg https_proxy=$https_proxy -t openvino_base:latest . ```
 
 
 
