@@ -16,7 +16,11 @@
                     "spec": {
                         "containers": [
                             {
-                                "name": "imagenet-transformer",				
+                                "name": "imagenet-itransformer",				
+                                "image": "seldonio/imagenet_transformer:0.1"
+                            },
+                            {
+                                "name": "imagenet-otransformer",				
                                 "image": "seldonio/imagenet_transformer:0.1"
                             },
                             {
@@ -120,7 +124,13 @@
 		    }
 		}],
                 "graph": {
-		    "name": "imagenet-transformer",
+		    "name": "imagenet-otransformer",
+		    "endpoint": { "type" : "GRPC" },
+		    "type": "OUTPUT_TRANSFORMER",
+		    "children": [
+			{
+
+		    "name": "imagenet-itransformer",
 		    "endpoint": { "type" : "GRPC" },
 		    "type": "TRANSFORMER",
 		    "children": [
@@ -188,6 +198,8 @@
 				    ]
 				}			
 			    ]
+			}
+		    ]
 			}
 		    ]
 		},
