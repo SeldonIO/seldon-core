@@ -84,9 +84,8 @@ These values can also be provided or overridden on the command line when buildin
 Use ```s2i build``` to create your Docker image from source code. You will need Docker installed on the machine and optionally git if your source code is in a public git repo. You can choose from three python builder images
 
  * Python 2 : seldonio/seldon-core-s2i-python2:0.4
- * Python 3.6 : seldonio/seldon-core-s2i-python36:0.4, seldonio/seldon-core-s2i-python3:0.4 
- * Python 3.7 : seldonio/seldon-core-s2i-python37:0.4
-   * Note there are [issues running TensorFlow under Python 3.7](https://github.com/tensorflow/tensorflow/issues/20444) (Nov 2018)
+ * Python 3.6 : seldonio/seldon-core-s2i-python36:0.4, seldonio/seldon-core-s2i-python3:0.4
+   * Note there are [issues running TensorFlow under Python 3.7](https://github.com/tensorflow/tensorflow/issues/20444) (Nov 2018) and Python 3.7 is not officially supported by TensorFlow (Dec 2018).
  * Python 3.6 plus ONNX support via [Intel nGraph](https://github.com/NervanaSystems/ngraph) : seldonio/seldon-core-s2i-python3-ngraph-onnx:0.1
 
 Using s2i you can build directly from a git repo or from a local source folder. See the [s2i docs](https://github.com/openshift/source-to-image/blob/master/docs/cli.md#s2i-build) for further details. The general format is:
