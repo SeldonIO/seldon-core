@@ -29,7 +29,7 @@
                 "name": "xgb-model"
                 },
                 {
-                "image": "seldonio/mab_thomson_sampling:0.1",
+                "image": "seldonio/mab_thompson_sampling:0.1",
                 "name": "ts-router"
                 }
             ],
