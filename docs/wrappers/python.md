@@ -174,6 +174,17 @@ Set either to 0 or 1. Default is 0. If set to 1 then your model will be saved pe
 
 # Advanced Usage
 
+## Local Python Dependencies
+```from version 0.5-SNAPSHOT```
+
+To use a private repository for installing Python dependencies use the following build command:
+
+```bash
+s2i build -i <python-wheel-folder>:/whl <src-folder> seldonio/seldon-core-s2i-python2:0.5-SNAPSHOT <my-image-name>
+```
+
+This command will look for local Python wheels in the ```<python-wheel-folder>``` and use these before searching PyPI.
+
 ## Custom Metrics
 ```from version 0.3```
 
