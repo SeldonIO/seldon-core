@@ -1,4 +1,4 @@
-# Packaging a python model for Seldon Core using s2i
+# Packaging a Python model for Seldon Core using s2i
 
 
 In this guide, we illustrate the steps needed to wrap your own python model in a docker image ready for deployment with Seldon Core using [source-to-image app s2i](https://github.com/openshift/source-to-image).
@@ -162,7 +162,7 @@ Set either to 0 or 1. Default is 0. If set to 1 then your model will be saved pe
  * [Example models](https://github.com/SeldonIO/seldon-core/tree/master/examples/models)
 
 ### ROUTER
-
+ * [Description of routers in Seldon Core](../../components/routers/README.md)
  * [A minimal skeleton for router source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/python/test/router-template-app)
  * [Example routers](https://github.com/SeldonIO/seldon-core/tree/master/examples/routers)
 
