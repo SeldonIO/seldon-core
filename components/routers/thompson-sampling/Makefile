@@ -1,5 +1,5 @@
-IMAGE_VERSION=0.7
-IMAGE_NAME = seldonio/mab_thomson_sampling
+IMAGE_VERSION=0.1
+IMAGE_NAME = seldonio/mab_thompson_sampling
 
 build:
     s2i build . seldonio/seldon-core-s2i-python3:0.4 $(IMAGE_NAME):$(IMAGE_VERSION)

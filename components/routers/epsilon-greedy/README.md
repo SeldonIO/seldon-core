@@ -23,7 +23,7 @@ This means that our version of the epsilon-greedy router solves the **Bernoulli*
 A basic test suite is provided in ```test_EpsilonGreedy.py```. Run with ```pytest```.
 
 ## Case Study
-You can find a case study comparing epsilon-greedy routing and Thomson sampling used as routers for models predicting credit card default [here](../case_study/credit_card_default.ipynb).
+You can find a case study comparing epsilon-greedy routing and Thompson sampling used as routers for models predicting credit card default [here](../case_study/credit_card_default.ipynb).
 
 ## Pre-wrapped image
 The latest version of the Epsilon Greedy Router available from Docker Hub is [```seldonio/mab_epsilon_greedy:1.3```](https://hub.docker.com/r/seldonio/mab_epsilon_greedy).

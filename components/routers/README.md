@@ -6,7 +6,7 @@ A router is one of the pre-defined types of [predictive units](../reference/seld
 ## Implementations
 Currently we provide two reference implementations of routers in Python. Both are instances of [multi-armed bandits](https://en.wikipedia.org/wiki/Multi-armed_bandit#Semi-uniform_strategies):
 * [Epsilon-greedy router](epsilon-greedy)
-* [Thomson Sampling](thomson-sampling)
+* [Thompson Sampling](thompson-sampling)
 
 ## Implementing custom routers
 A router component must implement a ```Route``` method which will return one of the children that the router component is connected to for routing an incoming request. Optionally a ```SendFeedback``` method can be implemented to provide a mechanism for informing the router on the quality of its decisions. This would be used in adaptive routers such as multi-armed bandits, refer to the [epsilon-greedy](epsilon-greedy) example for more detail.

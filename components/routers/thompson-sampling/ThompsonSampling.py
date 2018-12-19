@@ -6,10 +6,10 @@ __version__ = "0.1"
 logger = logging.getLogger(__name__)
 
 
-class ThomsonSampling(object):
-    """ Multi-armed bandit routing using Thomson Sampling strategy.
+class ThompsonSampling(object):
+    """ Multi-armed bandit routing using Thompson Sampling strategy.
 
-    This class implements Thomson Sampling for the Beta-Binomial model, i.e.
+    This class implements Thompson Sampling for the Beta-Binomial model, i.e.
     rewards are assumed to come from a Bernoulli distribution for which the
     conjugate prior is a Beta distribution.
 
