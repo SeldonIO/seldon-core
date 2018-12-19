@@ -15,7 +15,7 @@ This means that our version of the Thompson Sampling router implements the **Bet
 You can find a case study comparing epsilon-greedy routing and Thompson sampling used as routers for models predicting credit card default [here](../case_study/credit_card_default.ipynb).
 
 ## Pre-wrapped image
-The latest version of the Thompson Sampling Router available from Docker Hub is [```seldonio/mab_Thompson_sampling:0.7```](https://hub.docker.com/r/seldonio/mab_Thompson_sampling).
+The latest version of the Thompson Sampling Router available from Docker Hub is [```seldonio/mab_thompson_sampling:0.1```](https://hub.docker.com/r/seldonio/mab_thompson_sampling).
 
 ## Wrap using s2i
 ### Persistence
