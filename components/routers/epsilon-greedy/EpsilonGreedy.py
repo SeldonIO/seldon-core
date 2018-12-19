@@ -50,7 +50,8 @@ class EpsilonGreedy(object):
 
         try:
             n_branches = int(n_branches)
-        except (TypeError, ValueError) as e:
+            assert n_branches > 0
+        except (TypeError, ValueError, AssertionError) as e:
             logger.exception("n_branches parameter must be given")
             raise
 
