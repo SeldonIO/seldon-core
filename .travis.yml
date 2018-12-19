@@ -17,7 +17,7 @@ jobs:
           -v /var/run/docker.sock:/var/run/docker.sock \
           -v ${HOME}/.m2:/root/.m2 \
           -v $(pwd):/work \
-          seldonio/core-builder:0.2 bash -c 'cd api-frontend && make -f Makefile.ci build'
+          seldonio/core-builder:0.3 bash -c 'cd api-frontend && make -f Makefile.ci build'
     - docker images | grep 'seldonio/apife'
   - script:
     - echo Building engine
@@ -27,7 +27,7 @@ jobs:
           -v /var/run/docker.sock:/var/run/docker.sock \
           -v ${HOME}/.m2:/root/.m2 \
           -v $(pwd):/work \
-          seldonio/core-builder:0.2 bash -c 'cd engine && make -f Makefile.ci build'
+          seldonio/core-builder:0.3 bash -c 'cd engine && make -f Makefile.ci build'
     - docker images | grep 'seldonio/engine'
   - script:
     - echo Building cluster-manager
@@ -37,7 +37,7 @@ jobs:
           -v /var/run/docker.sock:/var/run/docker.sock \
           -v ${HOME}/.m2:/root/.m2 \
           -v $(pwd):/work \
-          seldonio/core-builder:0.2 bash -c 'cd cluster-manager && make -f Makefile.ci build'
+          seldonio/core-builder:0.3 bash -c 'cd cluster-manager && make -f Makefile.ci build'
     - docker images | grep 'seldonio/cluster-manager'
 
 notifications:
