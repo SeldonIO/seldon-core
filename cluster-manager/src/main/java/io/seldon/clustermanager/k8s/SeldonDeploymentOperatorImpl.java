@@ -124,6 +124,9 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			//FIXME - only add tracing when asked for
 			.addEnv(EnvVar.newBuilder().setName("TRACING").setValue("1"))						
 			.addEnv(EnvVar.newBuilder().setName("JAEGER_AGENT_HOST").setValue("jaeger-agent"))									
+			.addEnv(EnvVar.newBuilder().setName("JAEGER_AGENT_PORT").setValue("5775"))												
+			.addEnv(EnvVar.newBuilder().setName("JAEGER_SAMPLER_TYPE").setValue("const"))												
+			.addEnv(EnvVar.newBuilder().setName("JAEGER_SAMPLER_PARAM").setValue("1"))												
 			.addEnv(EnvVar.newBuilder().setName("JAVA_OPTS").setValue(predictorDef.getAnnotationsOrDefault(Constants.ENGINE_JAVA_OPTS_ANNOTATION, DEFAULT_ENGINE_JAVA_OPTS)))
 			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(clusterManagerProperites.getEngineContainerPort()))
 			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(8082).setName("admin"))

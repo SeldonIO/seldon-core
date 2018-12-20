@@ -37,10 +37,12 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Timer;
+import io.opentracing.Span;
 import io.seldon.engine.exception.APIException;
 import io.seldon.engine.metrics.CustomMetricsManager;
 import io.seldon.engine.metrics.SeldonRestTemplateExchangeTagsProvider;
 import io.seldon.engine.service.InternalPredictionService;
+import io.seldon.engine.tracing.TracingProvider;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitMethod;
 import io.seldon.protos.PredictionProtos.Feedback;
 import io.seldon.protos.PredictionProtos.Meta;
@@ -64,14 +66,26 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 	@Autowired
 	private CustomMetricsManager customMetricsManager;
 	
-	public PredictiveUnitBean(){}
+	@Autowired
+	private TracingProvider tracing;
 	
+	private PredictiveUnitBeanProxy predictiveUnitBeanProxy;
+	
+	public PredictiveUnitBean(){}
+
+	public void setProxy(PredictiveUnitBeanProxy proxy)
+	{
+		this.predictiveUnitBeanProxy = proxy;
+	}
 	
 	public SeldonMessage getOutput(SeldonMessage request, PredictiveUnitState state) throws InterruptedException, ExecutionException, InvalidProtocolBufferException{
 		Map<String,Integer> routingDict = new ConcurrentHashMap<String,Integer>();
 		Map<String,String> requestPathDict = new ConcurrentHashMap<String,String>();
 		Map<String,List<Metric>> metrics = new ConcurrentHashMap<String,List<Metric>>();
-		SeldonMessage response = getOutputAsync(request, state, routingDict,requestPathDict,metrics).get();
+		Span activeSpan = null;
+		if (tracing != null && tracing.isActive())
+			activeSpan = tracing.getTracer().activeSpan();
+		SeldonMessage response = predictiveUnitBeanProxy.getOutputAsync(request, state, routingDict,requestPathDict,metrics,activeSpan).get();
 		List<Metric> metricList = new ArrayList<>();
 		for(List<Metric> mlist: metrics.values())
 			metricList.addAll(mlist);
@@ -96,7 +110,10 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 	}
 	
 	@Async
-	private Future<SeldonMessage> getOutputAsync(SeldonMessage input, PredictiveUnitState state, Map<String,Integer> routingDict,Map<String,String> requestPathDict,Map<String,List<Metric>> metrics) throws InterruptedException, ExecutionException, InvalidProtocolBufferException{
+	public Future<SeldonMessage> getOutputAsync(SeldonMessage input, PredictiveUnitState state, Map<String,Integer> routingDict,Map<String,String> requestPathDict,Map<String,List<Metric>> metrics,Span activeSpan) throws InterruptedException, ExecutionException, InvalidProtocolBufferException{
+		
+		if (activeSpan != null && tracing != null)
+			tracing.getTracer().scopeManager().activate(activeSpan, true);
 		
 		// This element to the request path
 		requestPathDict.put(state.name, state.image);
@@ -147,12 +164,20 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 		}
 		
 		// Get all the children outputs asynchronously
+		int childIdx = 0;
 		for (PredictiveUnitState childState : selectedChildren){
-			deferredChildrenOutputs.add(getOutputAsync(transformedInput,childState,routingDict,requestPathDict,metrics));
+			logger.info("Starting child {} for {}",childIdx,state.name);
+			deferredChildrenOutputs.add(predictiveUnitBeanProxy.getOutputAsync(transformedInput,childState,routingDict,requestPathDict,metrics,activeSpan));
+			logger.info("Done Starting child {} for {}",childIdx,state.name);
+			childIdx++;
 		}
+		childIdx = 0;
 		for (Future<SeldonMessage> deferredOutput : deferredChildrenOutputs){
+			logger.info("Collect result for child {} for {}",childIdx,state.name);
 			SeldonMessage m = deferredOutput.get();
 			childrenOutputs.add(m);
+			logger.info("Done collecting result child {} for {}",childIdx,state.name);
+			childIdx++;
 		}
 		
 		// Compute the backward transformation of all children outputs
