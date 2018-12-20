@@ -17,15 +17,45 @@
                         "containers": [
                             {
                                 "name": "imagenet-itransformer",				
-                                "image": "seldonio/imagenet_transformer:0.1"
+                                "image": "seldonio/imagenet_transformer:0.1",
+				"env": [
+				    {
+					"name": "TRACING",
+					"value": "1"
+				    },
+				    {
+					"name": "JAEGER_AGENT_HOST",
+					"value": "jaeger-agent"
+				    }
+				]
                             },
                             {
                                 "name": "imagenet-otransformer",				
-                                "image": "seldonio/imagenet_transformer:0.1"
+                                "image": "seldonio/imagenet_transformer:0.1",
+				"env": [
+				    {
+					"name": "TRACING",
+					"value": "0"
+				    },
+				    {
+					"name": "JAEGER_AGENT_HOST",
+					"value": "jaeger-agent"
+				    }
+				]				
                             },
                             {
                                 "name": "imagenet-combiner",				
-                                "image": "seldonio/imagenet_combiner:0.1"
+                                "image": "seldonio/imagenet_combiner:0.1",
+				"env": [
+				    {
+					"name": "TRACING",
+					"value": "0"
+				    },
+				    {
+					"name": "JAEGER_AGENT_HOST",
+					"value": "jaeger-agent"
+				    }
+				]				
                             },
                             {
                                 "name": "tfserving-proxy1",				

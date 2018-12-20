@@ -25,8 +25,10 @@ import org.springframework.stereotype.Component;
 
 import io.grpc.Server;
 import io.grpc.netty.NettyServerBuilder;
+import io.opentracing.contrib.grpc.ServerTracingInterceptor;
 import io.seldon.engine.config.AnnotationsConfig;
 import io.seldon.engine.service.PredictionService;
+import io.seldon.engine.tracing.TracingProvider;
 
 @Component
 public class SeldonGrpcServer  {
@@ -39,14 +41,16 @@ public class SeldonGrpcServer  {
     
     private final int port;
     private final Server server;
-	  
+	
     private final PredictionService predictionService;
 
     private int maxMessageSize = io.grpc.internal.GrpcUtil.DEFAULT_MAX_MESSAGE_SIZE;
     
     @Autowired
-    public SeldonGrpcServer(PredictionService predictionService,AnnotationsConfig annotations)
+    public SeldonGrpcServer(PredictionService predictionService,AnnotationsConfig annotations,TracingProvider tracingProvider)
     {
+    	
+    	
         { // setup the server port using the env vars
             String engineServerPortString = System.getenv().get(ENGINE_SERVER_PORT_KEY);
             if (engineServerPortString == null) {
@@ -58,9 +62,21 @@ public class SeldonGrpcServer  {
             }
         }
         this.predictionService = predictionService;
-        NettyServerBuilder builder = NettyServerBuilder
-                .forPort(port)
-                .addService(new SeldonService(this));
+        SeldonService seldonService = new SeldonService(this);
+        NettyServerBuilder builder;
+        if (tracingProvider.isActive())
+        {
+        	ServerTracingInterceptor tracingInterceptor = new ServerTracingInterceptor(tracingProvider.getTracer());
+        	builder = NettyServerBuilder
+        			.forPort(port)
+        			.addService(tracingInterceptor.intercept(seldonService));
+        }
+        else
+        {
+        	builder = NettyServerBuilder
+        			.forPort(port)
+        			.addService(seldonService);        	
+        }
         if (annotations.has(ANNOTATION_MAX_MESSAGE_SIZE))
         {
         	try 
