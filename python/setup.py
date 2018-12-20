@@ -23,7 +23,10 @@ setup(name='seldon-core',
           'flatbuffers',
           'protobuf',
           'grpcio',
-          'tensorflow'
+          'tensorflow',
+          'Flask-OpenTracing==0.2.0',
+          'jaeger-client',
+          'grpcio-opentracing'
       ],
       tests_require=[
           'pytest',

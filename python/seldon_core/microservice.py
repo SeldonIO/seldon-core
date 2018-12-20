@@ -273,6 +273,9 @@ def main():
     parser.add_argument("--parameters", type=str,
                         default=os.environ.get(PARAMETERS_ENV_NAME, "[]"))
     parser.add_argument("--log-level", type=str, default='INFO')
+    parser.add_argument("--tracing", nargs='?',
+                        default=int(os.environ.get("TRACING", "0")), const=1, type=int)
+
     args = parser.parse_args()
 
     parameters = parse_parameters(json.loads(args.parameters))
@@ -314,10 +317,41 @@ def main():
 
     port = int(os.environ.get(SERVICE_PORT_ENV_NAME, DEFAULT_PORT))
 
+    if args.tracing:
+        from jaeger_client import Config
+
+        jaeger_serv = os.environ.get("JAEGER_AGENT_HOST","0.0.0.0")
+        logger.info("Jaeger service set to %s",jaeger_serv)
+        config = Config(
+            config={ # usually read from some yaml config
+                'sampler': {
+                    'type': 'const',
+                    'param': 1,
+                },
+                'local_agent': {
+                    'reporting_host': jaeger_serv,
+                    'reporting_port': 5775,
+                },
+                'logging': True,
+            },
+            service_name=args.interface_name,
+            validate=True,
+        )
+        # this call also sets opentracing.tracer
+        tracer = config.initialize_tracer()
+
+
+    
     if args.api_type == "REST":
+
         def rest_prediction_server():
             app = seldon_microservice.get_rest_microservice(
                 user_object, debug=DEBUG)
+
+            if args.tracing:
+                from flask_opentracing import FlaskTracer
+                tracing = FlaskTracer(tracer,True, app)
+                        
             app.run(host='0.0.0.0', port=port)
 
         logger.info("REST microservice running on port %i",port)
@@ -325,9 +359,19 @@ def main():
 
     elif args.api_type == "GRPC":
         def grpc_prediction_server():
+
+            if args.tracing:
+                from grpc_opentracing import open_tracing_server_interceptor
+                logger.info("Adding tracer")
+                interceptor = open_tracing_server_interceptor(tracer)
+            else:
+                interceptor = None
+                
             server = seldon_microservice.get_grpc_server(
-                user_object, debug=DEBUG, annotations=annotations)
+                user_object, debug=DEBUG, annotations=annotations, trace_interceptor=interceptor)
+            
             server.add_insecure_port("0.0.0.0:{}".format(port))
+
             server.start()
 
             logger.info("GRPC microservice Running on port %i",port)
