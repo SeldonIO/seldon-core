@@ -223,18 +223,11 @@
                                         "name": {
                                             "type": "string"
                                         },
-                                        "replicas": {
-                                            "type": "integer"
-                                        }
-                                    }
-                                },
-                                "type": "array"
-                            },
-			    "componentSpecs":
-			    {
-				"description": "List of pods belonging to the predictor",
-				"type" : "array",
-				"items": 
+					"componentSpecs":
+					{
+					    "description": "List of pods belonging to the predictor",
+					    "type" : "array",
+					    "items": 
 {
     "description": "PodTemplateSpec describes the data a pod should have when created from a template", 
     "properties": {
@@ -3571,7 +3564,18 @@
         }
     }
 }
-			    }
+					},
+                                        "replicas": {
+                                            "type": "integer"
+                                        },
+                                        "labels": {
+                                            "description": "labels to be attached to entry deplyment for this predictor",
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "array"
+                            }
                         }
                     }
                 }
