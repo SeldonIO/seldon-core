@@ -234,15 +234,18 @@ local k = import "k.libsonnet";
                         name: {
                           type: "string",
                         },
+			componentSpec: podTemplateValidation,			
                         replicas: {
                           type: "integer",
                         },
+                        labels: {
+                          description: "labels to be attached to entry deplyment for this predictor",
+                          type: "object",
+                        },			
                       },
                     },
                     type: "array",
                   },
-                  componentSpec: podTemplateValidation,
-
                 },
               },
             },
@@ -487,19 +490,23 @@ local k = import "k.libsonnet";
                         name: {
                           type: "string",
                         },
+			componentSpecs:
+                    	{
+			  description: "List of pods belonging to the predictor",
+                          type: "array",
+                          items: podTemplateValidation,
+                         },
                         replicas: {
                           type: "integer",
                         },
+                        labels: {
+                          description: "labels to be attached to entry deplyment for this predictor",
+                          type: "object",
+                        },			
                       },
                     },
                     type: "array",
                   },
-                  componentSpecs:
-                    {
-                      description: "List of pods belonging to the predictor",
-                      type: "array",
-                      items: podTemplateValidation,
-                    },
                 },
               },
             },
