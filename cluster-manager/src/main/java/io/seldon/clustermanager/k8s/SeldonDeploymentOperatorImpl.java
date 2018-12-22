@@ -121,12 +121,6 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			.addEnv(EnvVar.newBuilder().setName("DEPLOYMENT_NAME").setValue(mlDep.getSpec().getName()))		
 			.addEnv(EnvVar.newBuilder().setName("ENGINE_SERVER_PORT").setValue(""+clusterManagerProperites.getEngineContainerPort()))
 			.addEnv(EnvVar.newBuilder().setName("ENGINE_SERVER_GRPC_PORT").setValue(""+clusterManagerProperites.getEngineGrpcContainerPort()))		
-			//FIXME - only add tracing when asked for
-			.addEnv(EnvVar.newBuilder().setName("TRACING").setValue("1"))						
-			.addEnv(EnvVar.newBuilder().setName("JAEGER_AGENT_HOST").setValue("jaeger-agent"))									
-			.addEnv(EnvVar.newBuilder().setName("JAEGER_AGENT_PORT").setValue("5775"))												
-			.addEnv(EnvVar.newBuilder().setName("JAEGER_SAMPLER_TYPE").setValue("const"))												
-			.addEnv(EnvVar.newBuilder().setName("JAEGER_SAMPLER_PARAM").setValue("1"))												
 			.addEnv(EnvVar.newBuilder().setName("JAVA_OPTS").setValue(predictorDef.getAnnotationsOrDefault(Constants.ENGINE_JAVA_OPTS_ANNOTATION, DEFAULT_ENGINE_JAVA_OPTS)))
 			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(clusterManagerProperites.getEngineContainerPort()))
 			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(8082).setName("admin"))
@@ -162,9 +156,16 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 							.addCommand("-c")
 							.addCommand("curl 127.0.0.1:"+clusterManagerProperites.getEngineContainerPort()+"/pause && /bin/sleep 10"))));
 
-		// Add engine resources if specified
+		// Add engine resources if specified (deprecated - will be removed)
 		if (predictorDef.hasEngineResources())
 		    cBuilder.setResources(predictorDef.getEngineResources());
+		if (predictorDef.hasSvcOrchSpec())
+		{
+			if (predictorDef.getSvcOrchSpec().hasResources())
+				cBuilder.setResources(predictorDef.getSvcOrchSpec().getResources());
+			if (predictorDef.getSvcOrchSpec().getEnvCount() > 0)
+				cBuilder.addAllEnv(predictorDef.getSvcOrchSpec().getEnvList());
+		}
 		else {// set default resource requests for cpu
 			final String DEFAULT_ENGINE_CPU_REQUEST = "0.1";
 		    cBuilder.setResources(V1.ResourceRequirements.newBuilder().putRequests("cpu", Quantity.newBuilder().setString(DEFAULT_ENGINE_CPU_REQUEST).build()));
