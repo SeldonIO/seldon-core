@@ -21,7 +21,7 @@
                     "spec": {
                         "containers": [
                             {
-                                "image": "sssssssssssssssssssssssssssssseldonio/mean_classifier:0.6",
+                                "image": "sssssssssssssssssssssssssssssseldonio/mock_classifier:0.6",
                                 "imagePullPolicy": "IfNotPresent",
                                 "name": "mean-classifier",
                                 "resources": {
