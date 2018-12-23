@@ -25,6 +25,7 @@ setup(name='seldon-core',
           'grpcio',
           'tensorflow',
           'Flask-OpenTracing==0.2.0',
+          'opentracing>=1.2.2,<2',
           'jaeger-client',
           'grpcio-opentracing'
       ],
