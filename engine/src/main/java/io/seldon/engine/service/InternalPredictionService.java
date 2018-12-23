@@ -18,6 +18,7 @@ package io.seldon.engine.service;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -40,14 +41,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
+import io.opentracing.contrib.spring.web.client.TracingRestTemplateInterceptor;
 import io.seldon.engine.config.AnnotationsConfig;
 import io.seldon.engine.exception.APIException;
 import io.seldon.engine.grpc.GrpcChannelHandler;
 import io.seldon.engine.grpc.SeldonGrpcServer;
 import io.seldon.engine.pb.ProtoBufUtils;
 import io.seldon.engine.predictors.PredictiveUnitState;
+import io.seldon.engine.tracing.TracingProvider;
 import io.seldon.protos.CombinerGrpc;
 import io.seldon.protos.CombinerGrpc.CombinerBlockingStub;
 import io.seldon.protos.DeploymentProtos.Endpoint;
@@ -98,7 +99,7 @@ public class InternalPredictionService {
     private final GrpcChannelHandler grpcChannelHandler;
     
     @Autowired
-    public InternalPredictionService(RestTemplateBuilder restTemplateBuilder,AnnotationsConfig annotations,GrpcChannelHandler grpcChannelHandler){
+    public InternalPredictionService(RestTemplateBuilder restTemplateBuilder,AnnotationsConfig annotations,GrpcChannelHandler grpcChannelHandler,TracingProvider tracingProvider){
     	this.grpcChannelHandler = grpcChannelHandler;
     	int connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
     	if (annotations.has(ANNOTATION_REST_CONNECTION_TIMEOUT))
@@ -132,6 +133,10 @@ public class InternalPredictionService {
     	           .setConnectTimeout(connectionTimeout)
     	           .setReadTimeout(readTimeout)
     	           .build();
+    	if (tracingProvider.isActive())
+    	{
+    		restTemplate.setInterceptors(Collections.singletonList(new TracingRestTemplateInterceptor(tracingProvider.getTracer())));
+    	}
     	if (annotations.has(SeldonGrpcServer.ANNOTATION_MAX_MESSAGE_SIZE))
         {
         	try 
