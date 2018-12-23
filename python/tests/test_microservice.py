@@ -8,10 +8,15 @@ import socket
 from subprocess import Popen
 import time
 import requests
-
+import pytest
+from seldon_core.proto import prediction_pb2
+from seldon_core.proto import prediction_pb2_grpc
+import grpc
+import numpy as np
+import signal
 
 @contextmanager
-def start_microservice(app_location):
+def start_microservice(app_location,tracing=False,grpc=False):
     p = None
     try:
         # PYTHONUNBUFFERED=x
@@ -31,6 +36,8 @@ def start_microservice(app_location):
                     key, value = key.strip(), value.strip()
                     if key and value:
                         env_vars[key] = value
+        if grpc:
+            env_vars["API_TYPE"] = "GRPC"
         cmd = (
             "seldon-core-microservice",
             env_vars["MODEL_NAME"],
@@ -38,13 +45,15 @@ def start_microservice(app_location):
             "--service-type", env_vars["SERVICE_TYPE"],
             "--persistence", env_vars["PERSISTENCE"],
         )
+        if tracing:
+            cmd = cmd + ("--tracing",)
         print("starting:", " ".join(cmd))
         print("cwd:", app_location)
         # stdout=PIPE, stderr=PIPE,
-        p = Popen(cmd, cwd=app_location, env=env_vars,)
+        p = Popen(cmd, cwd=app_location, env=env_vars, preexec_fn=os.setsid)
 
         for q in range(10):
-            time.sleep(1)
+            time.sleep(2)
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             result = sock.connect_ex(("127.0.0.1", 5000))
             if result == 0:
@@ -54,11 +63,14 @@ def start_microservice(app_location):
         yield
     finally:
         if p:
-            p.terminate()
+            os.killpg(os.getpgid(p.pid), signal.SIGTERM)
 
 
-def test_model_template_app():
-    with start_microservice(join(dirname(__file__), "model-template-app")):
+@pytest.mark.parametrize(
+        'tracing', [(False), (True)]
+    )
+def test_model_template_app_rest(tracing):
+    with start_microservice(join(dirname(__file__), "model-template-app"),tracing=tracing):
         data = '{"data":{"names":["a","b"],"ndarray":[[1.0,2.0]]}}'
         response = requests.get(
             "http://127.0.0.1:5000/predict", params="json=%s" % data)
@@ -74,31 +86,35 @@ def test_model_template_app():
         response.raise_for_status()
         assert response.json() == {}
 
-
-def test_tester_model_template_app():
-    # python api-tester.py contract.json  0.0.0.0 8003 --oauth-key oauth-key --oauth-secret oauth-secret -p --grpc --oauth-port 8002 --endpoint send-feedback
-    # python tester.py contract.json 0.0.0.0 5000 -p --grpc
-    with start_microservice(join(dirname(__file__), "model-template-app")):
-        env_vars = dict(os.environ)
-        cmd = (
-            "seldon-core-tester",
-            join(dirname(__file__), "model-template-app", "contract.json"),
-            "127.0.0.1",
-            "5000",
-            "--prnt",
+@pytest.mark.parametrize(
+        'tracing', [(False), (True)]
+    )
+def test_model_template_app_grpc(tracing):
+    with start_microservice(join(dirname(__file__), "model-template-app"),tracing=tracing,grpc=True):
+        data = np.array([[1,2]])
+        datadef = prediction_pb2.DefaultData(
+            tensor = prediction_pb2.Tensor(
+                shape = data.shape,
+                values = data.flatten()
+            )
         )
-        print("starting:", " ".join(cmd))
-        p = Popen(cmd, env=env_vars,)  # stdout=PIPE, stderr=PIPE,
-        p.wait()
-        assert p.returncode == 0
+        request = prediction_pb2.SeldonMessage(data = datadef)
+        channel = grpc.insecure_channel("0.0.0.0:5000")
+        stub = prediction_pb2_grpc.ModelStub(channel)
+        response = stub.Predict(request=request)
+        assert response.data.tensor.shape[0] == 1
+        assert response.data.tensor.shape[1] == 2
+        assert response.data.tensor.values[0] == 1
+        assert response.data.tensor.values[1] == 2
 
-    """
-    starting: seldon-core-tester tests/model-template-app/contract.json 127.0.0.1 5000 --prnt
-    ----------------------------------------
-    SENDING NEW REQUEST:
-    {'meta': {}, 'data': {'names': ['sepal_length', 'sepal_width', 'petal_length', 'petal_width'], 'ndarray': [[5.627, 2.239, 9.407, 2.604]]}}
-    RECEIVED RESPONSE:
-    {'data': {'names': ['t:0', 't:1', 't:2', 't:3'], 'ndarray': [[5.627, 2.239, 9.407, 2.604]]}}
-
-    Time 0.010219097137451172
-    """
+        arr = np.array([1, 2])
+        datadef = prediction_pb2.DefaultData(
+            tensor=prediction_pb2.Tensor(
+                shape=(2, 1),
+                values=arr
+            )
+        )
+        request = prediction_pb2.SeldonMessage(data=datadef)
+        feedback = prediction_pb2.Feedback(request=request,reward=1.0)
+        response = stub.SendFeedback(request=request)
+        
