@@ -1,0 +1,19 @@
+{
+    "features":[
+	{
+	    "name":"feat",
+	    "dtype":"FLOAT",
+	    "ftype":"continuous",
+	    "range":["inf","inf"],
+	    "repeat":3
+	}
+    ],
+    "targets":[
+	{
+	    "name":"proba",
+	    "dtype":"FLOAT",
+	    "ftype":"continuous",
+	    "values":[0,1]
+	}
+    ]
+}
