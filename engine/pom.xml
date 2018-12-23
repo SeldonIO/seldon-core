@@ -311,6 +311,11 @@
     		<artifactId>opentracing-grpc</artifactId>
     		<version>0.0.10</version>
 		</dependency>
-		
+	
+		<dependency>
+  			<groupId>io.opentracing.contrib</groupId>
+  			<artifactId>opentracing-spring-cloud-starter</artifactId>
+  			<version>0.2.2</version>
+		</dependency>
 	</dependencies>
 </project>
