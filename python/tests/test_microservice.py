@@ -16,12 +16,13 @@ import numpy as np
 import signal
 
 @contextmanager
-def start_microservice(app_location,tracing=False,grpc=False):
+def start_microservice(app_location,tracing=False,grpc=False,envs={}):
     p = None
     try:
         # PYTHONUNBUFFERED=x
         # exec python -u microservice.py $MODEL_NAME $API_TYPE --service-type $SERVICE_TYPE --persistence $PERSISTENCE
         env_vars = dict(os.environ)
+        env_vars.update(envs)
         env_vars.update({
             "PYTHONUNBUFFERED": "x",
             "PYTHONPATH": app_location,
@@ -118,3 +119,20 @@ def test_model_template_app_grpc(tracing):
         feedback = prediction_pb2.Feedback(request=request,reward=1.0)
         response = stub.SendFeedback(request=request)
         
+def test_model_template_app_tracing_config():
+    envs = {"JAEGER_CONFIG_PATH":join(dirname(__file__), "tracing_config/tracing.yaml")}
+    with start_microservice(join(dirname(__file__), "model-template-app"),tracing=True,envs=envs):
+        data = '{"data":{"names":["a","b"],"ndarray":[[1.0,2.0]]}}'
+        response = requests.get(
+            "http://127.0.0.1:5000/predict", params="json=%s" % data)
+        response.raise_for_status()
+        assert response.json() == {
+            'data': {'names': ['t:0', 't:1'], 'ndarray': [[1.0, 2.0]]}, 'meta': {}}
+
+        data = ('{"request":{"data":{"names":["a","b"],"ndarray":[[1.0,2.0]]}},'
+                '"response":{"meta":{"routing":{"router":0}},"data":{"names":["a","b"],'
+                '"ndarray":[[1.0,2.0]]}},"reward":1}')
+        response = requests.get(
+            "http://127.0.0.1:5000/send-feedback", params="json=%s" % data)
+        response.raise_for_status()
+        assert response.json() == {}

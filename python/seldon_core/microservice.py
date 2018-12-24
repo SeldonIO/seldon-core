@@ -318,25 +318,38 @@ def main():
     port = int(os.environ.get(SERVICE_PORT_ENV_NAME, DEFAULT_PORT))
 
     if args.tracing:
+        logger.info("Initializing tracing")
         from jaeger_client import Config
 
         jaeger_serv = os.environ.get("JAEGER_AGENT_HOST","0.0.0.0")
-        logger.info("Jaeger service set to %s",jaeger_serv)
-        config = Config(
-            config={ # usually read from some yaml config
-                'sampler': {
-                    'type': 'const',
-                    'param': 1,
+        jaeger_config = os.environ.get("JAEGER_CONFIG_PATH",None)
+        if jaeger_config is None:
+            logger.info("Using default tracing config")
+            config = Config(
+                config={ # usually read from some yaml config
+                    'sampler': {
+                        'type': 'const',
+                        'param': 1,
+                    },
+                    'local_agent': {
+                        'reporting_host': jaeger_serv,
+                        'reporting_port': 5775,
+                    },
+                    'logging': True,
                 },
-                'local_agent': {
-                    'reporting_host': jaeger_serv,
-                    'reporting_port': 5775,
-                },
-                'logging': True,
-            },
-            service_name=args.interface_name,
-            validate=True,
-        )
+                service_name=args.interface_name,
+                validate=True,
+            )
+        else:
+            logger.info("Loading tracing config from %s",jaeger_config)
+            import yaml
+            with open(jaeger_config, 'r') as stream:
+                config_dict = yaml.load(stream)
+                config = Config(
+                    config=config_dict,
+                    service_name=args.interface_name,
+                    validate=True,                    
+                )
         # this call also sets opentracing.tracer
         tracer = config.initialize_tracer()
 

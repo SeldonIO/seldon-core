@@ -26,13 +26,38 @@
 					"value": "1"
 				    },
 				    {
-					"name": "JAEGER_AGENT_HOST",
-					"value": "jaeger-agent"
+					"name": "JAEGER_CONFIG_PATH",
+					"value": "/etc/tracing/config/tracing.yml"
+				    }
+				],
+				"volumeMounts": [
+				    {
+					"mountPath": "/etc/tracing/config",
+					"name": "tracing-config"
 				    }
 				]
                             }
 			],
-			"terminationGracePeriodSeconds": 1
+			"terminationGracePeriodSeconds": 1,
+			"volumes": [
+			    {
+				"name": "tracing-config",
+				"volumeSource" : {
+				    "configMap": {
+					"localObjectReference" :
+					{
+					    "name": "tracing-config"
+					},
+					"items": [
+					    {
+						"key": "tracing.yml",
+						"path":  "tracing.yml"
+					    }
+					]
+				    }
+				}
+			    }
+			]
 		    }
 		}],
                 "graph": {
