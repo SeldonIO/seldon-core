@@ -314,8 +314,8 @@
 	
 		<dependency>
   			<groupId>io.opentracing.contrib</groupId>
-  			<artifactId>opentracing-spring-cloud-starter</artifactId>
-  			<version>0.2.2</version>
+  			<artifactId>opentracing-spring-web</artifactId>
+  			<version>0.3.4</version>
 		</dependency>
 	</dependencies>
 </project>
