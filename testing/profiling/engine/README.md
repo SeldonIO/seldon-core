@@ -1,4 +1,4 @@
-# Profiling Service Orchestrator
+# Profiling/Debugging Service Orchestrator
 
 # YourKit Profiler
 
@@ -22,7 +22,7 @@
   1. Run [visualvm](https://visualvm.github.io/) and attach to process in list
 
 
-# Interactive Debug
+# Remote Interactive Debug
 
   1. Annotate Seldon Deployment with ```"seldon.io/engine-java-opts" : "-agentlib:jdwp=transport=dt_socket,address=9090,server=y,suspend=n"```
   1. Apply SeldonDeployment
@@ -82,4 +82,62 @@ Example deployment:
         ]
     }
 }
+```
+
+# Local Interactive Debug
+
+ 1. Change ```engine/deploymentdef.json``` as needed. This is default Seldon Deployment that will be run.
+ 1. Run Engine in Eclipse and debug
+
+To Run with local Model, for example:
+
+Use mean_classifier from examples and run locally:
+
+ ```
+ PREDICTIVE_UNIT_SERVICE_PORT=5001 seldon-core-microservice MeanClassifier REST --service-type MODEL
+ ```
+
+Change ```engine/deploymentdef.json``` to:
+
+```
+           {
+                "componentSpecs": [{
+                    "spec": {
+                        "containers": [
+                            {
+                                "image": "seldonio/mock_classifier_rest:1.0",
+                                "imagePullPolicy": "IfNotPresent",
+                                "name": "classifier",
+                                "resources": {
+                                    "requests": {
+                                        "memory": "1Mi"
+                                    }
+                                }
+                            }
+                        ],
+                        "terminationGracePeriodSeconds": 1
+                    }
+                }],
+                "graph": {
+                    "children": [],
+                    "name": "classifier",
+                    "endpoint": {
+			"type" : "REST",
+			"service_host" : "0.0.0.0",
+			"service_port" : 5001
+		    },
+                    "type": "MODEL"
+                },
+                "name": "example",
+                "replicas": 1,
+		"labels": {
+		    "version" : "v1"
+		}
+            }
+```
+
+Send requests:
+
+```
+curl 0.0.0.0:8081/api/v0.1/predictions -d '{"data":{"names":["a","b"],"ndarray":[[1,2]]}}}' -H "Content-Type: application/json"
 ```
