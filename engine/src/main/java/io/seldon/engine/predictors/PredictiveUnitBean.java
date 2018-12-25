@@ -166,17 +166,13 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 		// Get all the children outputs asynchronously
 		int childIdx = 0;
 		for (PredictiveUnitState childState : selectedChildren){
-			logger.info("Starting child {} for {}",childIdx,state.name);
 			deferredChildrenOutputs.add(predictiveUnitBeanProxy.getOutputAsync(transformedInput,childState,routingDict,requestPathDict,metrics,activeSpan));
-			logger.info("Done Starting child {} for {}",childIdx,state.name);
 			childIdx++;
 		}
 		childIdx = 0;
 		for (Future<SeldonMessage> deferredOutput : deferredChildrenOutputs){
-			logger.info("Collect result for child {} for {}",childIdx,state.name);
 			SeldonMessage m = deferredOutput.get();
 			childrenOutputs.add(m);
-			logger.info("Done collecting result child {} for {}",childIdx,state.name);
 			childIdx++;
 		}
 		
@@ -317,23 +313,23 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 	
 	private void addCustomMetrics(List<Metric> metrics, PredictiveUnitState state)
 	{
-		logger.info("Add metrics");
+		logger.debug("Add metrics");
 		for(Metric metric : metrics)
 		{
 			Iterable<Tag> tags = tagsProvider.getModelMetrics(state, metric.getTagsMap());
 			switch(metric.getType())
 			{
 			case COUNTER:
-				logger.info("Adding counter {} for {}",metric.getKey(),state.name);
+				logger.debug("Adding counter {} for {}",metric.getKey(),state.name);
 				Counter counter = customMetricsManager.getCounter(tags, metric);
 				counter.increment(metric.getValue());
 				break;
 			case GAUGE:
-				logger.info("Adding gauge {} for {}",metric.getKey(),state.name);		
+				logger.debug("Adding gauge {} for {}",metric.getKey(),state.name);		
 				customMetricsManager.getGaugeValue(tags, metric).set(metric.getValue());
 				break;
 			case TIMER:
-				logger.info("Adding timer {} for {}",metric.getKey(),state.name);
+				logger.debug("Adding timer {} for {}",metric.getKey(),state.name);
 				Timer timer = customMetricsManager.getTimer(tags, metric);
 				timer.record((long) metric.getValue(), TimeUnit.MILLISECONDS);
 				break;

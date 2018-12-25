@@ -113,6 +113,7 @@ public class RestClientController {
 	@RequestMapping(value = "/api/v0.1/predictions", method = RequestMethod.POST, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
     public ResponseEntity<String> predictions(RequestEntity<String> requestEntity)
 	{
+		logger.debug("Received predict request");
 		Scope tracingScope = null;
 		if (tracingProvider.isActive())
 			tracingScope = tracingProvider.getTracer().buildSpan("/api/v0.1/predictions").startActive(true);
@@ -162,6 +163,7 @@ public class RestClientController {
 	@CrossOrigin(origins = "*")
 	@RequestMapping(value= "/api/v0.1/feedback", method = RequestMethod.POST, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
 	public ResponseEntity<String>  feedback(RequestEntity<String> requestEntity) {
+		logger.debug("Received feedback request");
 		Scope tracingScope = null;
 		if (tracingProvider.isActive())
 			tracingScope = tracingProvider.getTracer().buildSpan("/api/v0.1/feedback").startActive(true);
