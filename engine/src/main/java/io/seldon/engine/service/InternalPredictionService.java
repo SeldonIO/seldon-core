@@ -373,16 +373,16 @@ public class InternalPredictionService {
 
 				HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(map, headers);
 
-				logger.info("Requesting " + uri.toString());
+				if (logger.isDebugEnabled())
+					logger.debug("Requesting {}",uri.toString());
 				ResponseEntity<String> httpResponse = restTemplate.postForEntity( uri, request , String.class );
-				logger.info("Responded");
 				try
 				{
 					if(httpResponse.getStatusCode().is2xxSuccessful()) 
 					{
 					    SeldonMessage.Builder builder = SeldonMessage.newBuilder();
 					    String response = httpResponse.getBody();
-					    logger.info(response);
+					    logger.debug(response);
 					    JsonFormat.parser().ignoringUnknownFields().merge(response, builder);
 					    return builder.build();
 					} 

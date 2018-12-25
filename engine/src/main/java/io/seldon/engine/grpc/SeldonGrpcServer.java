@@ -54,7 +54,7 @@ public class SeldonGrpcServer  {
         { // setup the server port using the env vars
             String engineServerPortString = System.getenv().get(ENGINE_SERVER_PORT_KEY);
             if (engineServerPortString == null) {
-                logger.error("FAILED to find env var [{}], will use defaults for engine server port {}", ENGINE_SERVER_PORT_KEY,SERVER_PORT);
+                logger.warn("FAILED to find env var [{}], will use defaults for engine server port {}", ENGINE_SERVER_PORT_KEY,SERVER_PORT);
                 port = SERVER_PORT;
             } else {
                 port = Integer.parseInt(engineServerPortString);
@@ -112,7 +112,7 @@ public class SeldonGrpcServer  {
      */
     public void start() throws IOException {
       server.start();
-      logger.info("Server started, listening on " + port);
+      logger.info("Server started, listening on {}",port);
       Runtime.getRuntime().addShutdownHook(new Thread() {
         @Override
         public void run() {

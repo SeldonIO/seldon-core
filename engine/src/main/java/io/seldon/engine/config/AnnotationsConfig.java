@@ -63,7 +63,7 @@ public class AnnotationsConfig {
 				}
 			}
 			} catch (IOException e) {
-				logger.error("Failed to load annotations file "+ANNOTATIONS_FILE,e);
+				logger.error("Failed to load annotations file {}",ANNOTATIONS_FILE,e);
 			}
 		logger.info("Annotations {}",annotations);
 	}
