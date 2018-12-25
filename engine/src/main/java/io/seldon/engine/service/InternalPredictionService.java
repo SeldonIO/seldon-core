@@ -20,6 +20,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.http.client.utils.URIBuilder;
@@ -97,6 +99,9 @@ public class InternalPredictionService {
     private int restRetries = DEFAULT_MAX_RETRIES;
     
     private final GrpcChannelHandler grpcChannelHandler;
+    
+    private final Map<String,HttpHeaders> headersCache = new ConcurrentHashMap<>();
+    private final Map<Endpoint,URI> uriCache = new ConcurrentHashMap<>();
     
     @Autowired
     public InternalPredictionService(RestTemplateBuilder restTemplateBuilder,AnnotationsConfig annotations,GrpcChannelHandler grpcChannelHandler,TracingProvider tracingProvider){
@@ -344,13 +349,19 @@ public class InternalPredictionService {
 	{
 		long timeNow = System.currentTimeMillis();
 		URI uri;
-		try {
-			URIBuilder builder = new URIBuilder().setScheme("http")
-					.setHost(endpoint.getServiceHost())
-					.setPort(endpoint.getServicePort())
-					.setPath("/"+path);
-
-			uri = builder.build();
+		try 
+		{
+			if (uriCache.containsKey(endpoint))
+				uri = uriCache.get(endpoint);
+			else
+			{
+				URIBuilder builder = new URIBuilder().setScheme("http")
+						.setHost(endpoint.getServiceHost())
+						.setPort(endpoint.getServicePort())
+						.setPath("/"+path);
+				uri = builder.build();
+				uriCache.put(endpoint, uri);
+			}
 		} catch (URISyntaxException e) 
 		{
 			throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_ENDPOINT_URL,"Host: "+endpoint.getServiceHost()+" port:"+endpoint.getServicePort());
@@ -361,11 +372,18 @@ public class InternalPredictionService {
 		{
 			try  
 			{
-				HttpHeaders headers = new HttpHeaders();
-				headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-				headers.add(MODEL_NAME_HEADER, state.name);
-				headers.add(MODEL_IMAGE_HEADER, state.imageName);
-				headers.add(MODEL_VERSION_HEADER, state.imageVersion);
+				HttpHeaders headers;
+				if (headersCache.containsKey(state.name))
+					headers = headersCache.get(state.name);
+				else
+				{
+					headers = new HttpHeaders();
+					headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+					headers.add(MODEL_NAME_HEADER, state.name);
+					headers.add(MODEL_IMAGE_HEADER, state.imageName);
+					headers.add(MODEL_VERSION_HEADER, state.imageVersion);
+					headersCache.put(state.name, headers);
+				}
 				
 				MultiValueMap<String, String> map= new LinkedMultiValueMap<String, String>();
 				map.add("json", dataString);
