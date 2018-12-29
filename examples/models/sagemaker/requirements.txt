@@ -1,0 +1,3 @@
+sagemaker
+sagemaker-containers
+pandas
