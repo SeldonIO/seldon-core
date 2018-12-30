@@ -162,7 +162,7 @@ class SeldonRouterGRPC(object):
             return prediction_pb2.SeldonMessage()
 
 
-def get_grpc_server(user_model, debug=False, annotations={}):
+def get_grpc_server(user_model, debug=False, annotations={}, trace_interceptor=None):
     seldon_router = SeldonRouterGRPC(user_model)
     options = []
     if ANNOTATION_GRPC_MAX_MSG_SIZE in annotations:
@@ -172,6 +172,10 @@ def get_grpc_server(user_model, debug=False, annotations={}):
 
     server = grpc.server(futures.ThreadPoolExecutor(
         max_workers=10), options=options)
+    if trace_interceptor:
+        from grpc_opentracing.grpcext import intercept_server
+        server = intercept_server(server, trace_interceptor)
+
     prediction_pb2_grpc.add_RouterServicer_to_server(seldon_router, server)
 
     return server
