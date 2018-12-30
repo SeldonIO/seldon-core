@@ -37,7 +37,7 @@ public class CustomizationBean implements EmbeddedServletContainerCustomizer {
         { // setup the server port using the env vars
             String engineServerPortString = System.getenv().get(ENGINE_SERVER_PORT_KEY);
             if (engineServerPortString == null) {
-                logger.error("FAILED to find env var [{}], will use defaults for engine server port", ENGINE_SERVER_PORT_KEY);
+                logger.warn("FAILED to find env var [{}], will use defaults for engine server port", ENGINE_SERVER_PORT_KEY);
                 serverPort = defaultServerPort;
             } else {
                 logger.info("FOUND env var [{}], will use for engine server port", ENGINE_SERVER_PORT_KEY);

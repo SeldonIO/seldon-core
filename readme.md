@@ -124,6 +124,7 @@ Follow the [install guide](docs/install.md) for details on ways to install seldo
  * [Advanced graphs](https://github.com/seldonio/seldon-core/blob/master/notebooks/advanced_graphs.ipynb) showing the various types of runtime prediction graphs that can be built.
  * [Handling large gRPC messages](./notebooks/max_grpc_msg_size.ipynb). Showing how you can add annotations to increase the gRPC max message size.
  * [Handling REST timeouts](./notebooks/timeouts.ipynb). Showing how you can add annotations to set the REST (and gRPC) timeouts.
+ * [Distributed Tracing](./docs/distributed-tracing.md)
 
 ## Reference
 
