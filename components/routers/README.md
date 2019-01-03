@@ -1,7 +1,7 @@
 # Routers in Seldon Core
 
 ## Definitions
-A router is one of the pre-defined types of [predictive units](../reference/seldon-deployment.md#proto-buffer-definition) in Seldon Core. It is a microservice to route requests to one of its children and optionally receive feedback rewards for making the routing choices. The REST and gRPC internal APIs that the router components must conform to are covered in the [internal API](../reference/internal-api.md#router) reference.
+A router is one of the pre-defined types of [predictive units](../../docs/reference/seldon-deployment.md#proto-buffer-definition) in Seldon Core. It is a microservice to route requests to one of its children and optionally receive feedback rewards for making the routing choices. The REST and gRPC internal APIs that the router components must conform to are covered in the [internal API](../reference/internal-api.md#router) reference.
 
 ## Implementations
 Currently we provide two reference implementations of routers in Python. Both are instances of [multi-armed bandits](https://en.wikipedia.org/wiki/Multi-armed_bandit#Semi-uniform_strategies):
@@ -11,7 +11,7 @@ Currently we provide two reference implementations of routers in Python. Both ar
 ## Implementing custom routers
 A router component must implement a ```Route``` method which will return one of the children that the router component is connected to for routing an incoming request. Optionally a ```SendFeedback``` method can be implemented to provide a mechanism for informing the router on the quality of its decisions. This would be used in adaptive routers such as multi-armed bandits, refer to the [epsilon-greedy](epsilon-greedy) example for more detail.
 
-As an example, consider writing a custom A/B/C... testing component with a user-specified number of children and routing probabilities (two-model routing is already supported in Seldon Core: [RANDOM_ABTEST](../reference/seldon-deployment.md#proto-buffer-definition)). In this scenario because the routing logic is static there is no need to implement ```SendFeedback``` as we will not be dynamically changing the routing by providing feedback for its routing choices. On the other hand, an adaptive router whose routing is required to change dynamically by providing feedback will need to implement the ```SendFeedback``` method.
+As an example, consider writing a custom A/B/C... testing component with a user-specified number of children and routing probabilities (two-model routing is already supported in Seldon Core: [RANDOM_ABTEST](../../docs/reference/seldon-deployment.md#proto-buffer-definition)). In this scenario because the routing logic is static there is no need to implement ```SendFeedback``` as we will not be dynamically changing the routing by providing feedback for its routing choices. On the other hand, an adaptive router whose routing is required to change dynamically by providing feedback will need to implement the ```SendFeedback``` method.
 
 Because routers are generic components that only need to implement the ```Route``` method, there is considerable flexibility in designing the routing logic. Some example concepts going beyond random testing and multi-armed bandits:
 * Routing depending on external conditions, e.g. use the time of day to route traffic to a model that has been known to perform best during a particular time period.
