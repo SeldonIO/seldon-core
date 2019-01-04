@@ -22,6 +22,8 @@ One of the aims of Seldon Core is to allow machine learning models to be deploye
 ### Outlier Detection
 The ability to identify unexpected input feature payloads to a machine learning model is an important feature for production deployments. As part of this release we have added outlier detection modules as a plug-and-play component in Seldon Core. The training and deployment of the implemented deep learning and tree based algorithms ([Variational Auto-Encoders](https://github.com/SeldonIO/seldon-core/tree/master/components/outlier-detection/vae) and [Isolation Forests](https://github.com/SeldonIO/seldon-core/tree/master/components/outlier-detection/isolation-forest) are illustrated by detecting computer network intrusions in real time.
 
+![outlier-detection-dashboard](./outlier-detection-dashboard.png)
+
 ### Multi-Armed Bandits
 
 The problem of deciding how to route requests to competing machine learning model so that one determines which model is the best in the shortest amount of time can be treated as a [Multi-Armed Bandit Problem](https://en.wikipedia.org/wiki/Multi-armed_bandit). Seldon Core has extended the available components you can use with Thomson Sampling and a case study comparing it to the more basic Epsilon Greedy strategy.
