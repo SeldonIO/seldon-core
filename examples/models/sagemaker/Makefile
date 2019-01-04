@@ -1,13 +1,21 @@
+BUCKET=seldon-sagemaker-testing
+
+scikit_learn_iris_code.tar.gz:
+	cd scikit_learn_iris && tar -cvf ../scikit_learn_iris_code.tar .
+	gzip -f scikit_learn_iris_code.tar
+
+.PHONY: upload_scikit_code
+upload_scikit_code:
+	aws s3 cp scikit_learn_iris_code.tar.gz s3://${BUCKET}/scikit_learn_iris_code.tar.gz
 
 
-train_local:
-	SM_OUTPUT_DATA_DIR="X" SM_MODEL_DIR="X" SM_CHANNEL_TRAIN="X" python scikit_learn_iris.py --model-dir model --train data
+#Need to build sklearn image
+
+docker_serve:
+	docker run -it --rm -p 8080:8080 -e SAGEMAKER_MODEL_DIRECTORY="s3://seldon-sagemaker-testing/scikit_learn_iris/sagemaker-scikit-learn-2019-01-04-19-26-40-470/output/model.tar.gz" -e SAGEMAKER_SUBMIT_DIRECTORY="s3://seldon-sagemaker-testing/scikit_learn_iris_code.tar.gz"  -e SAGEMAKER_PROGRAM="scikit_learn_iris.py" -v ~/.aws:/root/.aws sklearn-final:0.20.0-cpu-py3 serve
 
 
-build_image:
-	docker build -t seldonio/sagemaker:0.1 .
+clean:
+	rm -f scikit_learn_iris_code.tar.gz
 
-serve_local:
-	#docker run -it --rm -p 8080:8080 -e SAGEMAKER_SERVING_MODULE="serving:main" -e SAGEMAKER_PROGRAM="scikit_learn_iris.py" -e SAGEMAKER_SUBMIT_DIR="file:///module" seldonio/sagemaker:0.1 serve
-	docker run -it --rm -p 8080:8080 -e SAGEMAKER_SERVING_MODULE="serving:main" -e SAGEMAKER_PROGRAM="scikit_learn_iris.py" seldonio/sagemaker:0.1 serve
 

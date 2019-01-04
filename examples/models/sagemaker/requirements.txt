@@ -1,3 +1,0 @@
-sagemaker
-sagemaker-containers
-pandas
