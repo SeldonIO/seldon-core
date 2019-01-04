@@ -2,7 +2,7 @@
 
 A summary of the main contributions to the [Seldon Core release 0.2.5](https://github.com/SeldonIO/seldon-core/releases/tag/v0.2.5).
 
-## PyPy Python Module
+## PyPI Python Module
 
 When packaging components to run under Seldon Core we provide easy integration via [S2I](https://github.com/openshift/source-to-image) builder images. The core functionality for our Python S2I image has now been packaged as a Python module which can be easily installed via pip with:
 
@@ -20,13 +20,13 @@ The module contains:
 One of the aims of Seldon Core is to allow machine learning models to be deployed in production with the appropriate metrics and optimisation to give the required compliance and observability guarantees needed. We have recently extended Seldon Core with Outlier Detection and Multi-Armed Bandit components as discussed below.
 
 ### Outlier Detection
-The ability to identify unexpected input feature payloads to a machine learning model is an important feature for production deployments. As part of this release we have added outlier detection modules as a plug-and-play component in Seldon Core. The training and deployment of the implemented deep learning and tree based algorithms ([Variational Auto-Encoders](https://github.com/SeldonIO/seldon-core/tree/master/components/outlier-detection/vae) and [Isolation Forests](https://github.com/SeldonIO/seldon-core/tree/master/components/outlier-detection/isolation-forest) are illustrated by detecting computer network intrusions in real time.
+The ability to identify unexpected input feature payloads to a machine learning model is an important feature for production deployments. As part of this release we have added outlier detection modules as a plug-and-play component in Seldon Core. The training and deployment of the implemented deep learning and tree based algorithms ([Variational Auto-Encoders](https://github.com/SeldonIO/seldon-core/tree/master/components/outlier-detection/vae) and [Isolation Forests](https://github.com/SeldonIO/seldon-core/tree/master/components/outlier-detection/isolation-forest)) are illustrated by detecting computer network intrusions in real time.
 
 ![outlier-detection-dashboard](./outlier-detection-dashboard.png)
 
 ### Multi-Armed Bandits
 
-The problem of deciding how to route requests to competing machine learning model so that one determines which model is the best in the shortest amount of time can be treated as a [Multi-Armed Bandit Problem](https://en.wikipedia.org/wiki/Multi-armed_bandit). Seldon Core has extended the available components you can use with Thomson Sampling and a case study comparing it to the more basic Epsilon Greedy strategy.
+The problem of deciding how to route requests to competing machine learning model so that one determines which model is the best in the shortest amount of time can be treated as a [Multi-Armed Bandit Problem](https://en.wikipedia.org/wiki/Multi-armed_bandit). Seldon Core has extended the available components you can use with [Thompson Sampling](https://github.com/SeldonIO/seldon-core/tree/master/components/routers/thompson-sampling) and a [case study](https://github.com/SeldonIO/seldon-core/blob/master/components/routers/case_study/credit_card_default.ipynb) comparing it to the more basic [Epsilon Greedy](https://github.com/SeldonIO/seldon-core/tree/master/components/routers/epsilon-greedy) strategy.
 
 ## Cluster Wide Operations
 Seldon Core can now be installed in two ways:
