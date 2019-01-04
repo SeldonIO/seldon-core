@@ -101,7 +101,7 @@ public class InternalPredictionService {
     private final GrpcChannelHandler grpcChannelHandler;
     
     private final Map<String,HttpHeaders> headersCache = new ConcurrentHashMap<>();
-    private final Map<Endpoint,URI> uriCache = new ConcurrentHashMap<>();
+    private final Map<String,URI> uriCache = new ConcurrentHashMap<>();
     
     @Autowired
     public InternalPredictionService(RestTemplateBuilder restTemplateBuilder,AnnotationsConfig annotations,GrpcChannelHandler grpcChannelHandler,TracingProvider tracingProvider){
@@ -344,6 +344,12 @@ public class InternalPredictionService {
 			return true;
     	return false;
     }
+    
+    public static String getUriKey(Endpoint endpoint,String path)
+    {
+    	StringBuilder sb = new StringBuilder();
+    	return sb.append(endpoint.getServiceHost()).append(":").append(endpoint.getServicePort()).append(path).toString();
+    }
 		
 	private SeldonMessage queryREST(String path, String dataString, PredictiveUnitState state, Endpoint endpoint, boolean isDefault)
 	{
@@ -351,8 +357,9 @@ public class InternalPredictionService {
 		URI uri;
 		try 
 		{
-			if (uriCache.containsKey(endpoint))
-				uri = uriCache.get(endpoint);
+			final String uriKey = getUriKey(endpoint, path);
+			if (uriCache.containsKey(uriKey))
+				uri = uriCache.get(uriKey);
 			else
 			{
 				URIBuilder builder = new URIBuilder().setScheme("http")
@@ -360,7 +367,7 @@ public class InternalPredictionService {
 						.setPort(endpoint.getServicePort())
 						.setPath("/"+path);
 				uri = builder.build();
-				uriCache.put(endpoint, uri);
+				uriCache.put(uriKey, uri);
 			}
 		} catch (URISyntaxException e) 
 		{
