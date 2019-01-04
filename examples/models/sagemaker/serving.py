@@ -51,3 +51,4 @@ def main(environ, start_response):
         user_module_transformer.initialize()
         app = worker.Worker(transform_fn=user_module_transformer.transform,module_name=serving_env.module_name)
     return app(environ, start_response)
+
