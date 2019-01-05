@@ -194,7 +194,7 @@ Follow the [install guide](docs/install.md) for details on ways to install seldo
 
 | Description | Package | Version |
 |-------------|---------|---------|
-| [Seldon Core Wrapper](https://github.com/SeldonIO/seldon-java-wrapper) | [seldon-core-wrapper](https://mvnrepository.com/artifact/io.seldon.wrapper/seldon-core-wrapper) | 0.1.2 |
+| [Seldon Core Wrapper](https://github.com/SeldonIO/seldon-java-wrapper) | [seldon-core-wrapper](https://mvnrepository.com/artifact/io.seldon.wrapper/seldon-core-wrapper) | 0.1.3 |
 | [Seldon Core JPMML](https://github.com/SeldonIO/JPMML-utils) | [seldon-core-jpmml](https://mvnrepository.com/artifact/io.seldon.wrapper/seldon-core-jpmml) | 0.0.1 |
 
 ## Usage Reporting
