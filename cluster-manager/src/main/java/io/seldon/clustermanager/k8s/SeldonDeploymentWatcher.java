@@ -127,7 +127,7 @@ public class SeldonDeploymentWatcher  {
 	{
 		if (!clusterManagerProperites.isSingleNamespace())
 		{
-			if (actualObj.has("metadata") && actualObj.get("meta").has("namespace"))
+			if (actualObj.has("metadata") && actualObj.get("metadata").has("namespace"))
 				return actualObj.get("metadata").get("namespace").asText();
 			else
 				return "default";
