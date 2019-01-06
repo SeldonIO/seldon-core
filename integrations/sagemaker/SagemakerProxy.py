@@ -1,10 +1,5 @@
-import grpc
 import numpy
-
 import requests
-import json
-import numpy as np
-
 from sagemaker_containers.beta.framework import (content_types, encoders)
 
 class SagemakerServerError(Exception):
