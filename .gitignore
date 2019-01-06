@@ -149,3 +149,6 @@ eggs/
 .eggs/
 *.egg-info/
 ./pytest_cache
+
+#go example
+examples/wrappers/go/.idea
