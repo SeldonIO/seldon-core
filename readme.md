@@ -80,6 +80,8 @@ Seldon-core allows various types of components to be built and plugged into the 
       * [ResNet ONNX Classifier using Intel nGraph](./examples/models/onnx_resnet50/onnx_resnet50.ipynb)
    * PMML
       * [PySpark MNIST Classifier](https://github.com/SeldonIO/JPMML-utils/blob/master/examples/pyspark_pmml/mnist.ipynb)
+   * MlFlow
+      * [MlFlow sklearn classififer](./examples/models/mlflow_model/mlflow.ipynb)
 
  * **Routers**
    * [Epsilon-greedy multi-armed bandits for real time optimization of models](components/routers/epsilon-greedy) ([GCP example](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/epsilon_greedy_gcp.ipynb), [Kubeflow example](https://github.com/kubeflow/example-seldon))
@@ -103,6 +105,7 @@ Seldon-core allows various types of components to be built and plugged into the 
  * [Tensorflow Serving](./integrations/tfserving)
  * [Intel OpenVINO](./examples/models/openvino)
    * A [Helm chart](./helm-charts/seldon-openvino) for easy integration and an [example notebook](./examples/models/openvino/openvino-squeezenet.ipynb) using OpenVINO to serve imagenet model within Seldon Core.
+ * [MLFlow](./examples/models/mlflow_model/mlflow.ipynb)
 
 ## Install
 
