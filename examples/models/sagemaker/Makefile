@@ -17,5 +17,6 @@ docker_serve:
 
 clean:
 	rm -f scikit_learn_iris_code.tar.gz
+	rm -rf sagemaker-scikit-learn-container
 
 
