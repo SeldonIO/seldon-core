@@ -80,6 +80,8 @@ Seldon-core allows various types of components to be built and plugged into the 
       * [ResNet ONNX Classifier using Intel nGraph](./examples/models/onnx_resnet50/onnx_resnet50.ipynb)
    * PMML
       * [PySpark MNIST Classifier](https://github.com/SeldonIO/JPMML-utils/blob/master/examples/pyspark_pmml/mnist.ipynb)
+   * MlFlow : Train with [MLFlow](https://mlflow.org/) and deploy with Seldon Core
+      * [MlFlow sklearn classififer](./examples/models/mlflow_model/mlflow.ipynb)
 
  * **Routers**
    * [Epsilon-greedy multi-armed bandits for real time optimization of models](components/routers/epsilon-greedy) ([GCP example](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/epsilon_greedy_gcp.ipynb), [Kubeflow example](https://github.com/kubeflow/example-seldon))
@@ -103,6 +105,7 @@ Seldon-core allows various types of components to be built and plugged into the 
  * [Tensorflow Serving](./integrations/tfserving)
  * [Intel OpenVINO](./examples/models/openvino)
    * A [Helm chart](./helm-charts/seldon-openvino) for easy integration and an [example notebook](./examples/models/openvino/openvino-squeezenet.ipynb) using OpenVINO to serve imagenet model within Seldon Core.
+ * [MLFlow](./examples/models/mlflow_model/mlflow.ipynb)
 
 ## Install
 
@@ -113,7 +116,7 @@ Follow the [install guide](docs/install.md) for details on ways to install seldo
 ![API](./docs/deploy.png)
 
  1. [Wrap your runtime prediction model](./docs/wrappers/readme.md).
-    * We provide easy to use wrappers for [python](./docs/wrappers/python.md), [R](./docs/wrappers/r.md), [Java](./docs/wrappers/java.md) and [NodeJS](./docs/wrappers/nodejs.md).
+    * We provide easy to use wrappers for [python](./docs/wrappers/python.md), [R](./docs/wrappers/r.md), [Java](./docs/wrappers/java.md), [NodeJS](./docs/wrappers/nodejs.md) and [Go](./examples/wrappers/go/README.md).
     * We have [tools to test your wrapped components](./docs/api-testing.md).
  1. [Define your runtime inference graph in a seldon deployment custom resource](./docs/inference-graph.md).
  1. [Deploy the graph](./docs/deploying.md).

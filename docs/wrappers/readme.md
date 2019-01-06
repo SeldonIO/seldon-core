@@ -28,3 +28,9 @@ Java based models including, [H2O](https://www.h2o.ai/), [Deep Learning 4J](http
 ## NodeJS
 
 - [Javascript models wrapped using source-to-image](nodejs.md)
+
+
+## Go (Alpha)
+
+- [Example Go integration](../../examples/wrappers/go/README.md)
+
