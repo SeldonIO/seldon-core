@@ -115,11 +115,11 @@ public class SeldonDeploymentWatcher  {
 			//Update seldon deployment
 			crdHandler.updateRaw(json, name,namespace);
 		} catch (JsonParseException e1) {
-			logger.error("Fasile to create status for failed parse",e);
+			logger.error("Failed to create status for failed parse",e);
 		} catch (InvalidProtocolBufferException e1) {
-			logger.error("Fasile to create status for failed parse",e);
+			logger.error("Failed to create status for failed parse",e);
 		} catch (IOException e1) {
-			logger.error("Fasile to create status for failed parse",e);
+			logger.error("Failed to create status for failed parse",e);
 		}
 	}
 	
