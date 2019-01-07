@@ -150,5 +150,11 @@ eggs/
 *.egg-info/
 ./pytest_cache
 
+examples/models/sagemaker/sagemaker-scikit-learn-container
+examples/models/sagemaker/aws-config-secret.yaml
+examples/models/sagemaker/scikit_learn_iris_code.tar.gz
+examples/models/sagemaker/scikit_learn_iris_deployment.json
+
 #go example
 examples/wrappers/go/.idea
+
