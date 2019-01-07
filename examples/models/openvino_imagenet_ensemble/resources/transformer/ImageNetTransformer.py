@@ -4,6 +4,8 @@ from keras.preprocessing import image
 from seldon_core.proto import prediction_pb2
 import tensorflow as tf
 import logging
+import sys
+import io
 
 logger = logging.getLogger(__name__)
 
@@ -14,8 +16,10 @@ class ImageNetTransformer(object):
         self.cnames = eval(f.read())
         
     def transform_input_grpc(self, request):
-        logger.info("Transform called")
-        X = tf.make_ndarray(request.data.tftensor)
+        logger.debug("Transform called")
+        b = io.BytesIO(request.binData)
+        img = image.load_img(b, target_size=(227, 227))
+        X = image.img_to_array(img)
         X = np.expand_dims(X, axis=0)
         X = preprocess_input(X)
         X = X.transpose((0,3,1,2))
@@ -27,7 +31,7 @@ class ImageNetTransformer(object):
         return request
 
     def transform_output_grpc(self, request):
-        print("Transform output called")
+        logger.debug("Transform output called")
         result = tf.make_ndarray(request.data.tftensor)
         result = result.reshape(1,1000)
 
