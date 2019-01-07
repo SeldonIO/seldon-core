@@ -81,7 +81,7 @@ Seldon-core allows various types of components to be built and plugged into the 
    * PMML
       * [PySpark MNIST Classifier](https://github.com/SeldonIO/JPMML-utils/blob/master/examples/pyspark_pmml/mnist.ipynb)
    * MLFlow 
-      * [MlFlow sklearn classififer](https://github.com/SeldonIO/seldon-core/blob/master/examples/models/mlflow_model/mlflow.ipynb)
+      * [MLFlow sklearn classifier](https://github.com/SeldonIO/seldon-core/blob/master/examples/models/mlflow_model/mlflow.ipynb)
    * AWS SageMaker 
       * [SageMaker sklearn example](https://github.com/SeldonIO/seldon-core/blob/master/examples/models/sagemaker/sagemaker_seldon_scikit_iris_example.ipynb)
 
@@ -108,6 +108,7 @@ Seldon-core allows various types of components to be built and plugged into the 
  * [Intel OpenVINO](./examples/models/openvino)
    * A [Helm chart](./helm-charts/seldon-openvino) for easy integration and an [example notebook](./examples/models/openvino/openvino-squeezenet.ipynb) using OpenVINO to serve imagenet model within Seldon Core.
  * [MLFlow](./examples/models/mlflow_model/mlflow.ipynb)
+ * [SageMaker](./integrations/sagemaker)
 
 ## Install
 
