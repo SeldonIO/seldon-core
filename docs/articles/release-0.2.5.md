@@ -30,6 +30,10 @@ The ability to identify unexpected input feature payloads to a machine learning 
 
 The problem of deciding how to route requests to competing machine learning model so that one determines which model is the best in the shortest amount of time can be treated as a [Multi-Armed Bandit Problem](https://en.wikipedia.org/wiki/Multi-armed_bandit). Seldon Core has extended the available components you can use with [Thompson Sampling](https://github.com/SeldonIO/seldon-core/tree/master/components/routers/thompson-sampling) and a [case study](https://github.com/SeldonIO/seldon-core/blob/master/components/routers/case_study/credit_card_default.ipynb) comparing it to the more basic [Epsilon Greedy](https://github.com/SeldonIO/seldon-core/tree/master/components/routers/epsilon-greedy) strategy.
 
+<p align="center">
+<img src="./mab-dashboard.png">
+</p>
+
 ## Cluster Wide Operations
 Seldon Core can now be installed in two ways:
 
