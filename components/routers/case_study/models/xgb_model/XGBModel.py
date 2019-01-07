@@ -40,7 +40,8 @@ class XGBModel(object):
         self.value = self.success / self.tries
 
         logger.debug(self.cm)
-        logger.debug(self.tries, self.success, self.value)
+        logger.debug("Tries: %s, successes: %s, values: %s", self.tries,
+                     self.success, self.value)
 
     def metrics(self):
         tp = {"type": "GAUGE", "key": "true_pos_total",
