@@ -154,6 +154,7 @@ Follow the [install guide](docs/install.md) for details on ways to install seldo
 
 ### Release Highlights
 
+ * [0.2.5 Release Highlights](docs/articles/release-0.2.5.md)
  * [0.2.3 Release Highlights](docs/articles/release-0.2.3.md)
 
 ## Testing
