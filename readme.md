@@ -80,8 +80,10 @@ Seldon-core allows various types of components to be built and plugged into the 
       * [ResNet ONNX Classifier using Intel nGraph](./examples/models/onnx_resnet50/onnx_resnet50.ipynb)
    * PMML
       * [PySpark MNIST Classifier](https://github.com/SeldonIO/JPMML-utils/blob/master/examples/pyspark_pmml/mnist.ipynb)
-   * MlFlow : Train with [MLFlow](https://mlflow.org/) and deploy with Seldon Core
-      * [MlFlow sklearn classififer](./examples/models/mlflow_model/mlflow.ipynb)
+   * MLFlow 
+      * [MlFlow sklearn classififer](https://github.com/SeldonIO/seldon-core/blob/master/examples/models/mlflow_model/mlflow.ipynb)
+   * AWS SageMaker 
+      * [SageMaker sklearn example](https://github.com/SeldonIO/seldon-core/blob/master/examples/models/sagemaker/sagemaker_seldon_scikit_iris_example.ipynb)
 
  * **Routers**
    * [Epsilon-greedy multi-armed bandits for real time optimization of models](components/routers/epsilon-greedy) ([GCP example](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/epsilon_greedy_gcp.ipynb), [Kubeflow example](https://github.com/kubeflow/example-seldon))
