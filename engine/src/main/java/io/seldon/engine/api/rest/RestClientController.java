@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
+import io.micrometer.core.annotation.Timed;
 import io.opentracing.Scope;
 import io.seldon.engine.exception.APIException;
 import io.seldon.engine.exception.APIException.ApiExceptionType;
@@ -109,6 +110,7 @@ public class RestClientController {
         return "unpaused";
     }
 
+	@Timed
 	@CrossOrigin(origins = "*")
 	@RequestMapping(value = "/api/v0.1/predictions", method = RequestMethod.POST, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
     public ResponseEntity<String> predictions(RequestEntity<String> requestEntity)
@@ -160,6 +162,7 @@ public class RestClientController {
 
 	}
 	
+	@Timed
 	@CrossOrigin(origins = "*")
 	@RequestMapping(value= "/api/v0.1/feedback", method = RequestMethod.POST, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
 	public ResponseEntity<String>  feedback(RequestEntity<String> requestEntity) {
