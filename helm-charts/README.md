@@ -26,6 +26,11 @@ A set of charts to provide example templates for creating particular inference g
    * Serve a multi-armed bandit between two models.
  * seldon-openvino
    * Deploy a single model with Intel OpenVINO model server.
+ * seldon-od-if, seldon-od-vae, seldon-od-s2s-lstm
+   * Serve one of the following Outlier Detector components:
+     * [Isolation Forest](../components/outlier-detection/isolation-forest)
+     * [Variational Auto-Encoder](../components/outlier-detection/vae)
+     * [Sequence-to-Sequence-LSTM](../components/outlier-detection/seq2seq-lstm)
 
 For examples of using some of the above charts see [here](../notebooks/helm_examples.ipynb).
 
