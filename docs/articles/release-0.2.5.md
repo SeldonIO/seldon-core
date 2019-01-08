@@ -52,3 +52,9 @@ We have ensured its now possible to use the ```binData``` and ```strData``` payl
 
 The Seldon Core Service Orchestrator component that manages the request/response flow through a user's deployment graph already exposes Prometheus metrics for each of the API calls to the underling components in the graph (e.g. Models, Transformers etc). However, users can now pass back their own custom metrics in the returned ```SeldonMessage``` response from their components. Presently available are Counters, Gauges and Timers. Full documentation can be found [here](https://github.com/SeldonIO/seldon-core/blob/master/docs/custom_metrics.md).
 
+## Distributed Tracing
+We have integrated distributed tracing via [Jaeger](https://www.jaegertracing.io/) into the Service Orchestrator and Python wrappers. This will allow you to get tracing information as shown below for REST and gRPC requests through your Seldon Deployment. For more details see the [full documentation](../distributed-tracing.md).
+
+<p align="center">
+<img src="./dist-tracing.png">
+</p>
