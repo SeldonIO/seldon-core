@@ -155,6 +155,7 @@ public class SeldonDeploymentWatcherTest extends AppTest {
     public void testModifiedSeldonMLDeploymentsForMultiNamespaceCluster() throws Exception {
         createMocks("src/test/resources/model_simple.json", "MODIFIED",false);
         SeldonDeploymentWatcher watcher = new SeldonDeploymentWatcher(mockK8sApiProvider, mockK8sClientProvider, mockCRDCreator, props, mockSeldonDeploymentController, mockMLCache, mockCRDHandler);
+        watcher.watchSeldonMLDeployments(0,0);
         verify(mockSeldonDeploymentController,times(1)).createOrReplaceSeldonDeployment(any(DeploymentProtos.SeldonDeployment.class));
 
     }
