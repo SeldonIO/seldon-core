@@ -198,7 +198,7 @@ public class SeldonDeploymentWatcher  {
     	    			if ("ADDED".equals(item.type))
     	    			{
     	    				failDeployment(actualObj, e, getNamespace(actualObj));
-    	    				logger.warn("Failed to parse SeldonDelployment " + jsonInString, e);
+    	    				logger.warn("Failed to parse SeldonDeployment " + jsonInString, e);
     	    			}
     	    		}
     	    	}
