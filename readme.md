@@ -142,6 +142,7 @@ Follow the [install guide](docs/install.md) for details on ways to install seldo
 
 ## Articles/Blogs/Videos
 
+ - [GDG DevFest 2018 - Intro to Seldon and Outlier Detection](https://youtu.be/064_cf5JlbM?t=13537)
  - [Open Source Model Management Roundup Polyaxon, Argo and Seldon](https://www.anaconda.com/blog/developer-blog/open-source-model-management-roundup-polyaxon-argo-and-seldon/)
  - [Kubecon Europe 2018 - Serving Machine Learning Models at Scale with Kubeflow and Seldon](https://www.youtube.com/watch?v=pDlapGtecbY)
  - [Polyaxon, Argo and Seldon for model training, package and deployment in Kubernetes](https://danielfrg.com/blog/2018/10/model-management-polyaxon-argo-seldon/)
