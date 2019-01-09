@@ -4,52 +4,57 @@
     "metadata": {},
     "items": [
         {
-            "kind": "ServiceAccount",
             "apiVersion": "v1",
+            "kind": "ServiceAccount",
             "metadata": {
                 "name": "seldon",
-                "creationTimestamp": null
+                "namespace": "seldon"
             }
         },
         {
-            "kind": "ClusterRole",
             "apiVersion": "rbac.authorization.k8s.io/v1",
+            "kind": "ClusterRole",
             "metadata": {
                 "name": "seldon-wide",
-                "creationTimestamp": null
+                "namespace": "seldon"
             },
             "rules": [
                 {
-                    "verbs": [
-                        "*"
-                    ],
                     "apiGroups": [
                         "*"
                     ],
                     "resources": [
                         "deployments",
                         "services"
+                    ],
+                    "verbs": [
+                        "*"
                     ]
                 },
                 {
-                    "verbs": [
-                        "*"
-                    ],
                     "apiGroups": [
                         "machinelearning.seldon.io"
                     ],
                     "resources": [
                         "*"
+                    ],
+                    "verbs": [
+                        "*"
                     ]
                 }
             ]
         },
         {
-            "kind": "ClusterRoleBinding",
             "apiVersion": "rbac.authorization.k8s.io/v1",
+            "kind": "ClusterRoleBinding",
             "metadata": {
                 "name": "seldon",
-                "creationTimestamp": null
+                "namespace": "seldon"
+            },
+            "roleRef": {
+                "apiGroup": "rbac.authorization.k8s.io",
+                "kind": "ClusterRole",
+                "name": "seldon-wide"
             },
             "subjects": [
                 {
@@ -57,40 +62,40 @@
                     "name": "seldon",
                     "namespace": "seldon"
                 }
-            ],
-            "roleRef": {
-                "apiGroup": "rbac.authorization.k8s.io",
-                "kind": "ClusterRole",
-                "name": "seldon-wide"
-            }
+            ]
         },
         {
-            "kind": "ClusterRole",
             "apiVersion": "rbac.authorization.k8s.io/v1",
+            "kind": "ClusterRole",
             "metadata": {
                 "name": "seldon-crd-seldon",
-                "creationTimestamp": null
+                "namespace": "seldon"
             },
             "rules": [
                 {
-                    "verbs": [
-                        "create"
-                    ],
                     "apiGroups": [
                         "apiextensions.k8s.io"
                     ],
                     "resources": [
                         "customresourcedefinitions"
+                    ],
+                    "verbs": [
+                        "create"
                     ]
                 }
             ]
         },
         {
-            "kind": "ClusterRoleBinding",
             "apiVersion": "rbac.authorization.k8s.io/v1",
+            "kind": "ClusterRoleBinding",
             "metadata": {
                 "name": "seldon-seldon",
-                "creationTimestamp": null
+                "namespace": "seldon"
+            },
+            "roleRef": {
+                "apiGroup": "rbac.authorization.k8s.io",
+                "kind": "ClusterRole",
+                "name": "seldon-crd-seldon"
             },
             "subjects": [
                 {
@@ -98,35 +103,35 @@
                     "name": "seldon",
                     "namespace": "seldon"
                 }
-            ],
-            "roleRef": {
-                "apiGroup": "rbac.authorization.k8s.io",
-                "kind": "ClusterRole",
-                "name": "seldon-crd-seldon"
-            }
+            ]
         },
         {
-            "kind": "ClusterRole",
             "apiVersion": "rbac.authorization.k8s.io/v1",
+            "kind": "ClusterRole",
             "metadata": {
-                "name": "ambassador",
-                "creationTimestamp": null
+                "name": "ambassador"
             },
             "rules": [
                 {
-                    "verbs": [
-                        "get",
-                        "list",
-                        "watch"
-                    ],
                     "apiGroups": [
                         ""
                     ],
                     "resources": [
                         "services"
+                    ],
+                    "verbs": [
+                        "get",
+                        "list",
+                        "watch"
                     ]
                 },
                 {
+                    "apiGroups": [
+                        ""
+                    ],
+                    "resources": [
+                        "configmaps"
+                    ],
                     "verbs": [
                         "create",
                         "update",
@@ -134,35 +139,33 @@
                         "get",
                         "list",
                         "watch"
-                    ],
-                    "apiGroups": [
-                        ""
-                    ],
-                    "resources": [
-                        "configmaps"
                     ]
                 },
                 {
-                    "verbs": [
-                        "get",
-                        "list",
-                        "watch"
-                    ],
                     "apiGroups": [
                         ""
                     ],
                     "resources": [
                         "secrets"
+                    ],
+                    "verbs": [
+                        "get",
+                        "list",
+                        "watch"
                     ]
                 }
             ]
         },
         {
-            "kind": "ClusterRoleBinding",
             "apiVersion": "rbac.authorization.k8s.io/v1",
+            "kind": "ClusterRoleBinding",
             "metadata": {
-                "name": "ambassador",
-                "creationTimestamp": null
+                "name": "ambassador"
+            },
+            "roleRef": {
+                "apiGroup": "rbac.authorization.k8s.io",
+                "kind": "ClusterRole",
+                "name": "ambassador"
             },
             "subjects": [
                 {
@@ -170,27 +173,24 @@
                     "name": "seldon",
                     "namespace": "seldon"
                 }
-            ],
-            "roleRef": {
-                "apiGroup": "rbac.authorization.k8s.io",
-                "kind": "ClusterRole",
-                "name": "ambassador"
-            }
+            ]
         },
         {
-            "kind": "Service",
             "apiVersion": "v1",
+            "kind": "Service",
             "metadata": {
-                "name": "RELEASE-NAME-ambassador",
-                "creationTimestamp": null,
                 "labels": {
                     "service": "ambassador"
                 },
+                "name": "RELEASE-NAME-ambassador",
                 "annotations": {
                     "getambassador.io/config": "---\napiVersion: ambassador/v0\nkind: Module\nname: ambassador\nconfig:\n  service_port: 8080\n"
                 }
             },
             "spec": {
+                "selector": {
+                    "service": "ambassador"
+                },
                 "ports": [
                     {
                         "name": "http",
@@ -205,32 +205,22 @@
                         "targetPort": 8443
                     }
                 ],
-                "selector": {
-                    "service": "ambassador"
-                },
-                "type": "NodePort",
-                "sessionAffinity": "None",
-                "externalTrafficPolicy": "Cluster"
-            },
-            "status": {
-                "loadBalancer": {}
+                "type": "NodePort"
             }
         },
         {
-            "kind": "Service",
             "apiVersion": "v1",
+            "kind": "Service",
             "metadata": {
-                "name": "RELEASE-NAME-ambassador-admin",
-                "creationTimestamp": null,
                 "labels": {
                     "service": "ambassador-admin"
-                }
+                },
+                "name": "RELEASE-NAME-ambassador-admin"
             },
             "spec": {
                 "ports": [
                     {
                         "name": "ambassador-admin",
-                        "protocol": "TCP",
                         "port": 8877,
                         "targetPort": 8877
                     }
@@ -238,69 +228,36 @@
                 "selector": {
                     "service": "ambassador"
                 },
-                "type": "NodePort",
-                "sessionAffinity": "None",
-                "externalTrafficPolicy": "Cluster"
-            },
-            "status": {
-                "loadBalancer": {}
+                "type": "NodePort"
             }
         },
         {
+            "apiVersion": "extensions/v1beta1",
             "kind": "Deployment",
-            "apiVersion": "apps/v1",
             "metadata": {
-                "name": "RELEASE-NAME-ambassador",
-                "creationTimestamp": null,
-                "labels": {
-                    "service": "ambassador"
-                }
+                "name": "RELEASE-NAME-ambassador"
             },
             "spec": {
                 "replicas": 1,
-                "selector": {
-                    "matchLabels": {
-                        "service": "ambassador"
-                    }
-                },
                 "template": {
                     "metadata": {
-                        "creationTimestamp": null,
-                        "labels": {
-                            "service": "ambassador"
-                        },
                         "annotations": {
                             "sidecar.istio.io/inject": "false"
+                        },
+                        "labels": {
+                            "service": "ambassador"
                         }
                     },
                     "spec": {
                         "containers": [
                             {
-                                "name": "ambassador",
                                 "image": "quay.io/datawire/ambassador:0.40.0",
-                                "ports": [
-                                    {
-                                        "name": "http",
-                                        "containerPort": 8080,
-                                        "protocol": "TCP"
-                                    },
-                                    {
-                                        "name": "https",
-                                        "containerPort": 8443,
-                                        "protocol": "TCP"
-                                    },
-                                    {
-                                        "name": "admin",
-                                        "containerPort": 8877,
-                                        "protocol": "TCP"
-                                    }
-                                ],
+                                "name": "ambassador",
                                 "env": [
                                     {
                                         "name": "AMBASSADOR_NAMESPACE",
                                         "valueFrom": {
                                             "fieldRef": {
-                                                "apiVersion": "v1",
                                                 "fieldPath": "metadata.namespace"
                                             }
                                         }
@@ -308,7 +265,7 @@
                                 ],
                                 "resources": {
                                     "limits": {
-                                        "cpu": "1",
+                                        "cpu": 1,
                                         "memory": "400Mi"
                                     },
                                     "requests": {
@@ -316,136 +273,96 @@
                                         "memory": "128Mi"
                                     }
                                 },
+                                "ports": [
+                                    {
+                                        "name": "http",
+                                        "containerPort": 8080
+                                    },
+                                    {
+                                        "name": "https",
+                                        "containerPort": 8443
+                                    },
+                                    {
+                                        "name": "admin",
+                                        "containerPort": 8877
+                                    }
+                                ],
                                 "livenessProbe": {
                                     "httpGet": {
                                         "path": "/ambassador/v0/check_alive",
-                                        "port": "admin",
-                                        "scheme": "HTTP"
+                                        "port": "admin"
                                     },
                                     "initialDelaySeconds": 30,
-                                    "timeoutSeconds": 1,
-                                    "periodSeconds": 3,
-                                    "successThreshold": 1,
-                                    "failureThreshold": 3
+                                    "periodSeconds": 3
                                 },
                                 "readinessProbe": {
                                     "httpGet": {
                                         "path": "/ambassador/v0/check_ready",
-                                        "port": "admin",
-                                        "scheme": "HTTP"
+                                        "port": "admin"
                                     },
                                     "initialDelaySeconds": 30,
-                                    "timeoutSeconds": 1,
-                                    "periodSeconds": 3,
-                                    "successThreshold": 1,
-                                    "failureThreshold": 3
-                                },
-                                "terminationMessagePath": "/dev/termination-log",
-                                "terminationMessagePolicy": "File",
-                                "imagePullPolicy": "IfNotPresent"
+                                    "periodSeconds": 3
+                                }
                             }
                         ],
                         "restartPolicy": "Always",
-                        "terminationGracePeriodSeconds": 30,
-                        "dnsPolicy": "ClusterFirst",
                         "serviceAccountName": "seldon",
-                        "serviceAccount": "seldon",
                         "securityContext": {
                             "runAsUser": 8888
-                        },
-                        "schedulerName": "default-scheduler"
+                        }
                     }
-                },
-                "strategy": {
-                    "type": "RollingUpdate",
-                    "rollingUpdate": {
-                        "maxUnavailable": 1,
-                        "maxSurge": 1
-                    }
-                },
-                "progressDeadlineSeconds": 2147483647
-            },
-            "status": {}
+                }
+            }
         },
         {
+            "apiVersion": "apps/v1beta1",
             "kind": "Deployment",
-            "apiVersion": "apps/v1",
             "metadata": {
-                "name": "RELEASE-NAME-seldon-apiserver",
-                "creationTimestamp": null,
                 "labels": {
-                    "app": "seldon-apiserver-container-app",
-                    "app.kubernetes.io/component": "seldon-core-apiserver",
                     "app.kubernetes.io/name": "RELEASE-NAME",
-                    "chart": "seldon-core-0.2.5",
-                    "component": "seldon-core",
+                    "app.kubernetes.io/component": "seldon-core-apiserver",
+                    "app": "seldon-apiserver-container-app",
+                    "chart": "seldon-core-0.2.6-SNAPSHOT",
+                    "release": "RELEASE-NAME",
                     "heritage": "Tiller",
-                    "release": "RELEASE-NAME"
-                }
+                    "component": "seldon-core"
+                },
+                "name": "RELEASE-NAME-seldon-apiserver",
+                "namespace": "seldon"
             },
             "spec": {
                 "replicas": 1,
                 "selector": {
                     "matchLabels": {
-                        "app": "seldon-apiserver-container-app",
-                        "app.kubernetes.io/component": "seldon-core-apiserver",
                         "app.kubernetes.io/name": "RELEASE-NAME",
-                        "chart": "seldon-core-0.2.5",
-                        "component": "seldon-core",
+                        "app.kubernetes.io/component": "seldon-core-apiserver",
+                        "app": "seldon-apiserver-container-app",
+                        "chart": "seldon-core-0.2.6-SNAPSHOT",
+                        "release": "RELEASE-NAME",
                         "heritage": "Tiller",
-                        "release": "RELEASE-NAME"
+                        "component": "seldon-core"
                     }
                 },
                 "template": {
                     "metadata": {
-                        "creationTimestamp": null,
-                        "labels": {
-                            "app": "seldon-apiserver-container-app",
-                            "app.kubernetes.io/component": "seldon-core-apiserver",
-                            "app.kubernetes.io/name": "RELEASE-NAME",
-                            "chart": "seldon-core-0.2.5",
-                            "component": "seldon-core",
-                            "heritage": "Tiller",
-                            "release": "RELEASE-NAME"
-                        },
                         "annotations": {
                             "prometheus.io/path": "/prometheus",
                             "prometheus.io/port": "8080",
                             "prometheus.io/scrape": "true"
+                        },
+                        "labels": {
+                            "app.kubernetes.io/name": "RELEASE-NAME",
+                            "app.kubernetes.io/component": "seldon-core-apiserver",
+                            "app": "seldon-apiserver-container-app",
+                            "chart": "seldon-core-0.2.6-SNAPSHOT",
+                            "release": "RELEASE-NAME",
+                            "heritage": "Tiller",
+                            "component": "seldon-core"
                         }
                     },
                     "spec": {
-                        "volumes": [
-                            {
-                                "name": "podinfo",
-                                "downwardAPI": {
-                                    "items": [
-                                        {
-                                            "path": "annotations",
-                                            "fieldRef": {
-                                                "apiVersion": "v1",
-                                                "fieldPath": "metadata.annotations"
-                                            }
-                                        }
-                                    ],
-                                    "defaultMode": 420
-                                }
-                            }
-                        ],
                         "containers": [
                             {
-                                "name": "seldon-apiserver-container",
-                                "image": "seldonio/apife:0.2.5",
-                                "ports": [
-                                    {
-                                        "containerPort": 8080,
-                                        "protocol": "TCP"
-                                    },
-                                    {
-                                        "containerPort": 5000,
-                                        "protocol": "TCP"
-                                    }
-                                ],
                                 "env": [
                                     {
                                         "name": "SELDON_ENGINE_KAFKA_SERVER",
@@ -469,140 +386,143 @@
                                         }
                                     }
                                 ],
-                                "resources": {},
+                                "image": "seldonio/apife:0.2.6-SNAPSHOT",
+                                "imagePullPolicy": "IfNotPresent",
+                                "name": "seldon-apiserver-container",
                                 "volumeMounts": [
                                     {
                                         "name": "podinfo",
-                                        "mountPath": "/etc/podinfo"
+                                        "mountPath": "/etc/podinfo",
+                                        "readOnly": false
                                     }
                                 ],
-                                "terminationMessagePath": "/dev/termination-log",
-                                "terminationMessagePolicy": "File",
-                                "imagePullPolicy": "IfNotPresent",
                                 "securityContext": {
-                                    "runAsUser": 8888,
-                                    "procMount": null
-                                }
+                                    "runAsUser": 8888
+                                },
+                                "ports": [
+                                    {
+                                        "containerPort": 8080,
+                                        "protocol": "TCP"
+                                    },
+                                    {
+                                        "containerPort": 5000,
+                                        "protocol": "TCP"
+                                    }
+                                ]
                             }
                         ],
-                        "restartPolicy": "Always",
-                        "terminationGracePeriodSeconds": 30,
                         "dnsPolicy": "ClusterFirst",
                         "serviceAccountName": "seldon",
-                        "serviceAccount": "seldon",
-                        "securityContext": {},
-                        "schedulerName": "default-scheduler"
+                        "terminationGracePeriodSeconds": 30,
+                        "volumes": [
+                            {
+                                "name": "podinfo",
+                                "downwardAPI": {
+                                    "items": [
+                                        {
+                                            "path": "annotations",
+                                            "fieldRef": {
+                                                "fieldPath": "metadata.annotations"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
                     }
-                },
-                "strategy": {
-                    "type": "RollingUpdate",
-                    "rollingUpdate": {
-                        "maxUnavailable": "25%",
-                        "maxSurge": "25%"
-                    }
-                },
-                "revisionHistoryLimit": 2,
-                "progressDeadlineSeconds": 600
-            },
-            "status": {}
+                }
+            }
         },
         {
-            "kind": "Service",
             "apiVersion": "v1",
+            "kind": "Service",
             "metadata": {
-                "name": "RELEASE-NAME-seldon-apiserver",
                 "creationTimestamp": null,
                 "labels": {
-                    "app": "seldon-apiserver-container-app",
+                    "app.kubernetes.io/name": "RELEASE-NAME",
                     "app.kubernetes.io/component": "seldon-core-apiserver",
-                    "app.kubernetes.io/name": "RELEASE-NAME"
-                }
+                    "app": "seldon-apiserver-container-app"
+                },
+                "name": "RELEASE-NAME-seldon-apiserver"
             },
             "spec": {
                 "ports": [
                     {
                         "name": "http",
-                        "protocol": "TCP",
                         "port": 8080,
+                        "protocol": "TCP",
                         "targetPort": 8080
                     },
                     {
                         "name": "grpc",
-                        "protocol": "TCP",
                         "port": 5000,
+                        "protocol": "TCP",
                         "targetPort": 5000
                     }
                 ],
                 "selector": {
                     "app": "seldon-apiserver-container-app"
                 },
-                "type": "NodePort",
                 "sessionAffinity": "None",
-                "externalTrafficPolicy": "Cluster"
+                "type": "NodePort"
             },
             "status": {
                 "loadBalancer": {}
             }
         },
         {
+            "apiVersion": "extensions/v1beta1",
             "kind": "Deployment",
-            "apiVersion": "apps/v1",
             "metadata": {
-                "name": "RELEASE-NAME-seldon-cluster-manager",
-                "creationTimestamp": null,
                 "labels": {
-                    "app": "seldon-cluster-manager-server",
-                    "app.kubernetes.io/component": "seldon-core-operator",
                     "app.kubernetes.io/name": "RELEASE-NAME",
-                    "chart": "seldon-core-0.2.5",
-                    "component": "seldon-core",
+                    "app.kubernetes.io/component": "seldon-core-operator",
+                    "app": "seldon-cluster-manager-server",
+                    "chart": "seldon-core-0.2.6-SNAPSHOT",
+                    "release": "RELEASE-NAME",
                     "heritage": "Tiller",
-                    "release": "RELEASE-NAME"
-                }
+                    "component": "seldon-core"
+                },
+                "name": "RELEASE-NAME-seldon-cluster-manager",
+                "namespace": "seldon"
             },
             "spec": {
                 "replicas": 1,
                 "selector": {
                     "matchLabels": {
-                        "app": "seldon-cluster-manager-server",
-                        "app.kubernetes.io/component": "seldon-core-operator",
                         "app.kubernetes.io/name": "RELEASE-NAME",
-                        "chart": "seldon-core-0.2.5",
-                        "component": "seldon-core",
+                        "app.kubernetes.io/component": "seldon-core-operator",
+                        "app": "seldon-cluster-manager-server",
+                        "chart": "seldon-core-0.2.6-SNAPSHOT",
+                        "release": "RELEASE-NAME",
                         "heritage": "Tiller",
-                        "release": "RELEASE-NAME"
+                        "component": "seldon-core"
                     }
                 },
                 "template": {
                     "metadata": {
-                        "creationTimestamp": null,
                         "labels": {
-                            "app": "seldon-cluster-manager-server",
-                            "app.kubernetes.io/component": "seldon-core-operator",
                             "app.kubernetes.io/name": "RELEASE-NAME",
-                            "chart": "seldon-core-0.2.5",
-                            "component": "seldon-core",
+                            "app.kubernetes.io/component": "seldon-core-operator",
+                            "app": "seldon-cluster-manager-server",
+                            "chart": "seldon-core-0.2.6-SNAPSHOT",
+                            "release": "RELEASE-NAME",
                             "heritage": "Tiller",
-                            "release": "RELEASE-NAME"
+                            "component": "seldon-core"
                         }
                     },
                     "spec": {
+                        "serviceAccountName": "seldon",
                         "containers": [
                             {
-                                "name": "seldon-cluster-manager-container",
-                                "image": "seldonio/cluster-manager:0.2.5",
-                                "ports": [
-                                    {
-                                        "containerPort": 8080,
-                                        "protocol": "TCP"
-                                    }
-                                ],
                                 "env": [
                                     {
-                                        "name": "JAVA_OPTS"
+                                        "name": "JAVA_OPTS",
+                                        "value": null
                                     },
                                     {
-                                        "name": "SPRING_OPTS"
+                                        "name": "SPRING_OPTS",
+                                        "value": null
                                     },
                                     {
                                         "name": "SELDON_CLUSTER_MANAGER_REDIS_HOST",
@@ -610,7 +530,7 @@
                                     },
                                     {
                                         "name": "ENGINE_CONTAINER_IMAGE_AND_VERSION",
-                                        "value": "seldonio/engine:0.2.5"
+                                        "value": "seldonio/engine:0.2.6-SNAPSHOT"
                                     },
                                     {
                                         "name": "ENGINE_CONTAINER_IMAGE_PULL_POLICY",
@@ -638,137 +558,106 @@
                                         }
                                     }
                                 ],
-                                "resources": {},
-                                "terminationMessagePath": "/dev/termination-log",
-                                "terminationMessagePolicy": "File",
+                                "image": "seldonio/cluster-manager:0.2.6-SNAPSHOT",
                                 "imagePullPolicy": "IfNotPresent",
+                                "name": "seldon-cluster-manager-container",
                                 "securityContext": {
-                                    "runAsUser": 8888,
-                                    "procMount": null
-                                }
+                                    "runAsUser": 8888
+                                },
+                                "ports": [
+                                    {
+                                        "containerPort": 8080,
+                                        "protocol": "TCP"
+                                    }
+                                ]
                             }
                         ],
-                        "restartPolicy": "Always",
-                        "terminationGracePeriodSeconds": 1,
-                        "dnsPolicy": "ClusterFirst",
-                        "serviceAccountName": "seldon",
-                        "serviceAccount": "seldon",
-                        "securityContext": {},
-                        "schedulerName": "default-scheduler"
+                        "terminationGracePeriodSeconds": 1
                     }
-                },
-                "strategy": {
-                    "type": "RollingUpdate",
-                    "rollingUpdate": {
-                        "maxUnavailable": 1,
-                        "maxSurge": 1
-                    }
-                },
-                "progressDeadlineSeconds": 2147483647
-            },
-            "status": {}
+                }
+            }
         },
         {
+            "apiVersion": "extensions/v1beta1",
             "kind": "Deployment",
-            "apiVersion": "apps/v1",
             "metadata": {
-                "name": "RELEASE-NAME-redis",
-                "creationTimestamp": null,
                 "labels": {
-                    "app": "RELEASE-NAME-redis-app",
-                    "app.kubernetes.io/component": "seldon-core-redis",
                     "app.kubernetes.io/name": "RELEASE-NAME",
-                    "chart": "seldon-core-0.2.5",
-                    "component": "seldon-core",
+                    "app.kubernetes.io/component": "seldon-core-redis",
+                    "app": "RELEASE-NAME-redis-app",
+                    "chart": "seldon-core-0.2.6-SNAPSHOT",
+                    "release": "RELEASE-NAME",
                     "heritage": "Tiller",
-                    "release": "RELEASE-NAME"
-                }
+                    "component": "seldon-core"
+                },
+                "name": "RELEASE-NAME-redis",
+                "namespace": "seldon"
             },
             "spec": {
                 "replicas": 1,
                 "selector": {
                     "matchLabels": {
-                        "app": "RELEASE-NAME-redis-app",
-                        "app.kubernetes.io/component": "seldon-core-redis",
                         "app.kubernetes.io/name": "RELEASE-NAME",
-                        "chart": "seldon-core-0.2.5",
-                        "component": "seldon-core",
+                        "app.kubernetes.io/component": "seldon-core-redis",
+                        "app": "RELEASE-NAME-redis-app",
+                        "chart": "seldon-core-0.2.6-SNAPSHOT",
+                        "release": "RELEASE-NAME",
                         "heritage": "Tiller",
-                        "release": "RELEASE-NAME"
+                        "component": "seldon-core"
                     }
                 },
                 "template": {
                     "metadata": {
-                        "creationTimestamp": null,
                         "labels": {
-                            "app": "RELEASE-NAME-redis-app",
-                            "app.kubernetes.io/component": "seldon-core-redis",
                             "app.kubernetes.io/name": "RELEASE-NAME",
-                            "chart": "seldon-core-0.2.5",
-                            "component": "seldon-core",
+                            "app.kubernetes.io/component": "seldon-core-redis",
+                            "app": "RELEASE-NAME-redis-app",
+                            "chart": "seldon-core-0.2.6-SNAPSHOT",
+                            "release": "RELEASE-NAME",
                             "heritage": "Tiller",
-                            "release": "RELEASE-NAME"
+                            "component": "seldon-core"
                         }
                     },
                     "spec": {
                         "containers": [
                             {
-                                "name": "redis-container",
                                 "image": "redis:4.0.1",
+                                "name": "redis-container",
                                 "ports": [
                                     {
                                         "containerPort": 6379,
                                         "protocol": "TCP"
                                     }
-                                ],
-                                "resources": {},
-                                "terminationMessagePath": "/dev/termination-log",
-                                "terminationMessagePolicy": "File",
-                                "imagePullPolicy": "IfNotPresent"
+                                ]
                             }
-                        ],
-                        "restartPolicy": "Always",
-                        "terminationGracePeriodSeconds": 30,
-                        "dnsPolicy": "ClusterFirst",
-                        "securityContext": {},
-                        "schedulerName": "default-scheduler"
+                        ]
                     }
-                },
-                "strategy": {
-                    "type": "RollingUpdate",
-                    "rollingUpdate": {
-                        "maxUnavailable": 1,
-                        "maxSurge": 1
-                    }
-                },
-                "progressDeadlineSeconds": 2147483647
-            },
-            "status": {}
+                }
+            }
         },
         {
-            "kind": "Service",
             "apiVersion": "v1",
+            "kind": "Service",
             "metadata": {
-                "name": "RELEASE-NAME-redis",
-                "creationTimestamp": null,
                 "labels": {
-                    "app.kubernetes.io/component": "seldon-core-redis",
-                    "app.kubernetes.io/name": "RELEASE-NAME"
-                }
+                    "app.kubernetes.io/name": "RELEASE-NAME",
+                    "app.kubernetes.io/component": "seldon-core-redis"
+                },
+                "name": "RELEASE-NAME-redis"
             },
             "spec": {
                 "ports": [
                     {
-                        "protocol": "TCP",
                         "port": 6379,
+                        "protocol": "TCP",
                         "targetPort": 6379
                     }
                 ],
                 "selector": {
                     "app": "RELEASE-NAME-redis-app"
                 },
-                "type": "ClusterIP",
-                "sessionAffinity": "None"
+                "sessionAffinity": "None",
+                "type": "ClusterIP"
             },
             "status": {
                 "loadBalancer": {}
