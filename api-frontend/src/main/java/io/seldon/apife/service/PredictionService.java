@@ -22,7 +22,8 @@ import org.springframework.stereotype.Service;
 
 import io.seldon.apife.deployments.DeploymentStore;
 import io.seldon.apife.exception.SeldonAPIException;
-import io.seldon.protos.DeploymentProtos.DeploymentSpec;
+import io.seldon.apife.k8s.KubernetesUtil;
+import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 
 @Service
@@ -36,21 +37,28 @@ public class PredictionService {
 	@Autowired
 	InternalPredictionService internalPredictionService;
 	
+	private final KubernetesUtil k8sUtil = new KubernetesUtil();
 
 	public String predict(String request,String clientId)  {
 
-		DeploymentSpec deployment = deploymentStore.getDeployment(clientId);
+		SeldonDeployment deployment = deploymentStore.getDeployment(clientId);
 		if (deployment != null)
-			return internalPredictionService.getPrediction(request, deployment.getName());
+		{
+			final String endpoint = deployment.getSpec().getName() + "." + k8sUtil.getNamespace(deployment);
+			return internalPredictionService.getPrediction(request, endpoint);
+		}
 		else
 			throw new SeldonAPIException(SeldonAPIException.ApiExceptionType.APIFE_NO_RUNNING_DEPLOYMENT,"no deployment with id "+clientId);
 
 	}
 	
 	public void sendFeedback(String feedback, String deploymentId){
-		DeploymentSpec deployment = deploymentStore.getDeployment(deploymentId);
+		SeldonDeployment deployment = deploymentStore.getDeployment(deploymentId);
 		if (deployment != null)
-			internalPredictionService.sendFeedback(feedback, deployment.getName());
+		{
+			final String endpoint = deployment.getSpec().getName() + "." + k8sUtil.getNamespace(deployment);
+			internalPredictionService.sendFeedback(feedback, endpoint);
+		}
 		else
 			throw new SeldonAPIException(SeldonAPIException.ApiExceptionType.APIFE_NO_RUNNING_DEPLOYMENT,"no deployment with id "+deploymentId);
 

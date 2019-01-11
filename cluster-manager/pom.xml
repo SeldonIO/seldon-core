@@ -4,7 +4,7 @@
   <groupId>io.seldon.clustermanager</groupId>
   <artifactId>seldon-cluster-manager</artifactId>
   <packaging>jar</packaging>
-  <version>0.2.5-SNAPSHOT</version>
+  <version>0.2.6-SNAPSHOT</version>
   <name>seldon-cluster-manager</name>
   <url>http://maven.apache.org</url>
 
@@ -58,12 +58,12 @@
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
-      <version>3.2.0</version>
+      <version>3.6.1</version>
     </dependency>
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java-util</artifactId>
-      <version>3.2.0rc2</version>
+      <version>3.6.1</version>
     </dependency>
 
     <dependency>
@@ -104,6 +104,11 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.2</version>
+               <configuration>
+       				<excludes>
+            			<exclude>**/io/seldon/protos/**/*.class</exclude>
+        			</excludes>
+    			</configuration>                
                 <executions>
                     <execution>
                         <id>jacoco-initialize</id>

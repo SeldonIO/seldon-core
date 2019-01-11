@@ -54,12 +54,14 @@ public class DeploymentWatcher {
 	private final K8sClientProvider k8sClientProvider;
 	private final K8sApiProvider k8sApiProvider;
 	private final String namespace;
+	private final boolean clusterWide;
 	
 	@Autowired
 	public DeploymentWatcher(K8sApiProvider k8sApiProvider,K8sClientProvider k8sClientProvider,ClusterManagerProperites clusterManagerProperites,SeldonDeploymentStatusUpdate statusUpdater)
 	{
 		this.statusUpdater = statusUpdater;
 		this.namespace = StringUtils.isEmpty(clusterManagerProperites.getNamespace()) ? "default" : clusterManagerProperites.getNamespace();
+		this.clusterWide = !clusterManagerProperites.isSingleNamespace();
 		this.k8sClientProvider = k8sClientProvider;
 		this.k8sApiProvider = k8sApiProvider;
 	}
@@ -76,10 +78,21 @@ public class DeploymentWatcher {
 		ApiClient client = k8sClientProvider.getClient();
 		ExtensionsV1beta1Api api = k8sApiProvider.getExtensionsV1beta1Api(client);
 
-		Watch<ExtensionsV1beta1Deployment> watch = Watch.createWatch(
-		        client,
-		        api.listNamespacedDeploymentCall(namespace, null, null, null,false,SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_KEY+"="+SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_VAL, null,rs, 10, true,null,null),
-		        new TypeToken<Watch.Response<ExtensionsV1beta1Deployment>>(){}.getType());
+		Watch<ExtensionsV1beta1Deployment> watch;
+		if (this.clusterWide)
+		{
+			watch = Watch.createWatch(
+					client,
+					api.listDeploymentForAllNamespacesCall(null, null, false, SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_KEY+"="+SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_VAL, null, null, rs, 10, true, null, null),
+					new TypeToken<Watch.Response<ExtensionsV1beta1Deployment>>(){}.getType());
+		}
+		else
+		{
+			watch = Watch.createWatch(
+					client,
+					api.listNamespacedDeploymentCall(namespace, null, null, null,false,SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_KEY+"="+SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_VAL, null,rs, 10, true,null,null),
+					new TypeToken<Watch.Response<ExtensionsV1beta1Deployment>>(){}.getType());
+		}
 
 		try
 		{
@@ -114,9 +127,10 @@ public class DeploymentWatcher {
                                 {
                                     String mlDepName = ownerRef.getName();
                                     String depName = item.object.getMetadata().getName();
+                                    String namespace = StringUtils.isEmpty(item.object.getMetadata().getNamespace()) ? "default" : item.object.getMetadata().getNamespace();
                                     ExtensionsV1beta1DeploymentStatus status = item.object.getStatus();
                                     logger.info("{} {} {} replicas:{} replicasAvailable(ready):{} replicasUnavilable:{} replicasReady(available):{}",item.type,mlDepName,depName,status.getReplicas(),status.getReadyReplicas(),status.getUnavailableReplicas(),status.getAvailableReplicas());
-                                    statusUpdater.updateStatus(mlDepName, depName, item.object.getStatus().getReplicas(),item.object.getStatus().getReadyReplicas());
+                                    statusUpdater.updateStatus(mlDepName, depName, item.object.getStatus().getReplicas(),item.object.getStatus().getReadyReplicas(),namespace);
                                 }
                             }
                             break;
@@ -129,7 +143,8 @@ public class DeploymentWatcher {
                                     String depName = item.object.getMetadata().getName();
                                     ExtensionsV1beta1DeploymentStatus status = item.object.getStatus();
                                     logger.info("{} {} {} replicas:{} replicasAvailable(ready):{} replicasUnavilable:{} replicasReady(available):{}",item.type,mlDepName,depName,status.getReplicas(),status.getReadyReplicas(),status.getUnavailableReplicas(),status.getAvailableReplicas());
-                                    statusUpdater.removeStatus(mlDepName,depName);
+                                    String namespace = StringUtils.isEmpty(item.object.getMetadata().getNamespace()) ? "default" : item.object.getMetadata().getNamespace();
+                                    statusUpdater.removeStatus(mlDepName,depName,namespace);
                                 }
                             }
                             break;

@@ -90,7 +90,7 @@ public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusU
 	}
 	
     @Override
-    public void updateStatus(String mlDepName, String depName, Integer replicas, Integer replicasAvailable) {
+    public void updateStatus(String mlDepName, String depName, Integer replicas, Integer replicasAvailable,String namespace) {
         if (replicas == null || replicas == 0)
         {
         	logger.warn("Remove status for {} {} {} {}",mlDepName,depName,replicas,replicasAvailable);
@@ -99,7 +99,7 @@ public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusU
         else
         {
             logger.info(String.format("UPDATE %s : %s %d %d",mlDepName,depName,replicas,replicasAvailable));
-            SeldonDeployment mlDep = crdHandler.getSeldonDeployment(mlDepName);
+            SeldonDeployment mlDep = crdHandler.getSeldonDeployment(mlDepName,namespace);
             if (mlDep != null)
             {
                 SeldonDeployment.Builder mlBuilder = SeldonDeployment.newBuilder(mlDep);
@@ -138,9 +138,9 @@ public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusU
     }
 
     @Override
-    public void removeStatus(String mlDepName, String depName) {
+    public void removeStatus(String mlDepName, String depName,String namespace) {
         logger.info(String.format("DELETE %s : %s",mlDepName,depName));
-        SeldonDeployment mlDep = crdHandler.getSeldonDeployment(mlDepName);
+        SeldonDeployment mlDep = crdHandler.getSeldonDeployment(mlDepName,namespace);
         if (mlDep != null)
         {
             SeldonDeployment.Builder mlBuilder = SeldonDeployment.newBuilder(mlDep);

@@ -1,0 +1,106 @@
+{
+    "apiVersion": "machinelearning.seldon.io/v1alpha2",
+    "kind": "SeldonDeployment",
+    "metadata": {
+        "labels": {
+            "app": "seldon"
+        },
+        "name": "sklearn-sagemaker"
+    },
+    "spec": {
+        "name": "sklearn-sagemaker",
+        "oauth_key": "oauth-key",
+        "oauth_secret": "oauth-secret",	
+        "predictors": [
+            {
+                "componentSpecs": [{
+                    "spec": {
+                        "containers": [
+                            {
+                                "image": "seldonio/sagemaker-proxy:0.1",
+                                "name": "sagemaker-proxy"
+                            },
+			    {
+				"args": [
+				    "serve"
+				],
+				"image": "sklearn-final:0.20.0-cpu-py3",
+				"name": "sagemaker-predictor",
+				"ports": [
+				    {
+					"containerPort": 8080,
+					"protocol": "TCP"
+				    }
+				],
+				"env": [
+				    {
+					"name":"SAGEMAKER_MODEL_DIRECTORY",
+					"value": "{SAGEMAKER_MODEL_DIRECTORY}"
+				    },
+				    {
+					"name":"SAGEMAKER_SUBMIT_DIRECTORY",
+					"value": "{SAGEMAKER_SUBMIT_DIRECTORY}"
+				    },
+				    {
+					"name":"SAGEMAKER_PROGRAM",
+					"value": "scikit_learn_iris.py"
+				    },
+				    {
+					"name":"AWS_ACCESS_KEY_ID",
+					"valueFrom": {
+					    "secretKeyRef": {
+						"localObjectReference": {
+							"name": "aws-config"
+						     	},
+						"key": "aws_access_key_id"
+					    }
+					}
+				    },
+				    {
+					"name":"AWS_SECRET_ACCESS_KEY",
+					"valueFrom": {
+					    "secretKeyRef": {
+						"localObjectReference": {
+							"name": "aws-config"
+							},
+						"key": "aws_secret_access_key"
+					    }
+					}
+				    },
+				    {
+					"name":"AWS_DEFAULT_REGION",
+					"valueFrom": {
+					    "secretKeyRef": {
+						"localObjectReference": {
+							"name": "aws-config"
+							},
+						"key": "region"
+					    }
+					}
+				    }
+				]
+			    }
+			],
+			"terminationGracePeriodSeconds": 1
+		    }
+		}],
+                "graph": {
+		    "name": "sagemaker-proxy",
+		    "endpoint": { "type" : "REST" },
+		    "type": "MODEL",
+		    "children": [],
+		    "parameters":
+		    [
+			{
+			    "name":"endpoint",
+			    "type":"STRING",
+			    "value":"http://localhost:8080"
+			}
+		    ]
+		},
+                "name": "iris-sagemaker",
+                "replicas": 1
+            }
+        ]
+    }
+}
