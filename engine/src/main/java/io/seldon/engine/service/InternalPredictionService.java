@@ -18,7 +18,10 @@ package io.seldon.engine.service;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.http.client.utils.URIBuilder;
@@ -33,19 +36,21 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
+import io.opentracing.contrib.spring.web.client.TracingRestTemplateInterceptor;
 import io.seldon.engine.config.AnnotationsConfig;
 import io.seldon.engine.exception.APIException;
+import io.seldon.engine.grpc.GrpcChannelHandler;
 import io.seldon.engine.grpc.SeldonGrpcServer;
 import io.seldon.engine.pb.ProtoBufUtils;
 import io.seldon.engine.predictors.PredictiveUnitState;
+import io.seldon.engine.tracing.TracingProvider;
 import io.seldon.protos.CombinerGrpc;
 import io.seldon.protos.CombinerGrpc.CombinerBlockingStub;
 import io.seldon.protos.DeploymentProtos.Endpoint;
@@ -76,22 +81,31 @@ public class InternalPredictionService {
 	
     public final static String ANNOTATION_REST_CONNECTION_TIMEOUT = "seldon.io/rest-connection-timeout";
     public final static String ANNOTATION_REST_READ_TIMEOUT = "seldon.io/rest-read-timeout";
+    public final static String ANNOTATION_REST_RETRIES = "seldon.io/rest-connect-retries";    
     public final static String ANNOTATION_GRPC_READ_TIMEOUT = "seldon.io/grpc-read-timeout";
 
-	private static final int DEFAULT_CONNECTION_TIMEOUT = 5000;
-	private static final int DEFAULT_READ_TIMEOUT = 10000;
+	private static final int DEFAULT_CONNECTION_TIMEOUT = 200;
+	private static final int DEFAULT_READ_TIMEOUT = 5000;
 	
 	public static final int DEFAULT_GRPC_READ_TIMEOUT = 5000;
+	public static final int DEFAULT_MAX_RETRIES = 3;
 	
     ObjectMapper mapper = new ObjectMapper();
     
     RestTemplate restTemplate;
-        
+    
     private int grpcMaxMessageSize = io.grpc.internal.GrpcUtil.DEFAULT_MAX_MESSAGE_SIZE;
     private int grpcReadTimeout = DEFAULT_GRPC_READ_TIMEOUT;
+    private int restRetries = DEFAULT_MAX_RETRIES;
+    
+    private final GrpcChannelHandler grpcChannelHandler;
+    
+    private final Map<String,HttpHeaders> headersCache = new ConcurrentHashMap<>();
+    private final Map<String,URI> uriCache = new ConcurrentHashMap<>();
     
     @Autowired
-    public InternalPredictionService(RestTemplateBuilder restTemplateBuilder,AnnotationsConfig annotations){
+    public InternalPredictionService(RestTemplateBuilder restTemplateBuilder,AnnotationsConfig annotations,GrpcChannelHandler grpcChannelHandler,TracingProvider tracingProvider){
+    	this.grpcChannelHandler = grpcChannelHandler;
     	int connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
     	if (annotations.has(ANNOTATION_REST_CONNECTION_TIMEOUT))
     	{
@@ -124,6 +138,10 @@ public class InternalPredictionService {
     	           .setConnectTimeout(connectionTimeout)
     	           .setReadTimeout(readTimeout)
     	           .build();
+    	if (tracingProvider.isActive())
+    	{
+    		restTemplate.setInterceptors(Collections.singletonList(new TracingRestTemplateInterceptor(tracingProvider.getTracer())));
+    	}
     	if (annotations.has(SeldonGrpcServer.ANNOTATION_MAX_MESSAGE_SIZE))
         {
         	try 
@@ -150,6 +168,19 @@ public class InternalPredictionService {
         	}
         }
     	logger.info("gRPC read timeout set to {}",grpcReadTimeout);
+    	if (annotations.has(ANNOTATION_REST_RETRIES))
+        {
+        	try 
+        	{
+        		restRetries = Integer.parseInt(annotations.get(ANNOTATION_REST_RETRIES));
+        		logger.info("Setting rest retries to {}",restRetries);
+        	}
+        	catch(NumberFormatException e)
+        	{
+        		logger.error("Failed to parse {} with value {}",ANNOTATION_REST_RETRIES,annotations.get(ANNOTATION_REST_RETRIES),e);
+        	}
+        }
+    	logger.info("REST retries set to {}",restRetries);
     }
     
     public SeldonMessage route(SeldonMessage input, PredictiveUnitState state) throws InvalidProtocolBufferException
@@ -162,14 +193,14 @@ public class InternalPredictionService {
 				
 			case GRPC:
 				if (state.type==PredictiveUnitType.UNKNOWN_TYPE){
-					GenericBlockingStub stub =  GenericGrpc.newBlockingStub(getChannel(endpoint))
+					GenericBlockingStub stub =  GenericGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
 							.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
 							.withMaxInboundMessageSize(grpcMaxMessageSize)
 							.withMaxOutboundMessageSize(grpcMaxMessageSize);
 					return stub.route(input);
 				}
 				else {
-					RouterBlockingStub stub =  RouterGrpc.newBlockingStub(getChannel(endpoint))
+					RouterBlockingStub stub =  RouterGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
 							.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
 							.withMaxInboundMessageSize(grpcMaxMessageSize)
 							.withMaxOutboundMessageSize(grpcMaxMessageSize);
@@ -189,7 +220,7 @@ public class InternalPredictionService {
 				
 			case GRPC:
 				if (state.type==PredictiveUnitType.UNKNOWN_TYPE){
-					GenericBlockingStub stub =  GenericGrpc.newBlockingStub(getChannel(endpoint))
+					GenericBlockingStub stub =  GenericGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
 							.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
 							.withMaxInboundMessageSize(grpcMaxMessageSize)
 							.withMaxOutboundMessageSize(grpcMaxMessageSize);
@@ -197,14 +228,14 @@ public class InternalPredictionService {
 				}
 				else if (state.type == PredictiveUnitType.MODEL)
 				{
-					ModelBlockingStub modelStub = ModelGrpc.newBlockingStub(getChannel(endpoint))
+					ModelBlockingStub modelStub = ModelGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
 							.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
 							.withMaxInboundMessageSize(grpcMaxMessageSize)
 							.withMaxOutboundMessageSize(grpcMaxMessageSize);
 						return modelStub.sendFeedback(feedback);
 				}
 				else {
-					RouterBlockingStub routerStub =  RouterGrpc.newBlockingStub(getChannel(endpoint))
+					RouterBlockingStub routerStub =  RouterGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
 							.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
 							.withMaxInboundMessageSize(grpcMaxMessageSize)
 							.withMaxOutboundMessageSize(grpcMaxMessageSize);
@@ -230,19 +261,19 @@ public class InternalPredictionService {
 			case GRPC:
 				switch (state.type){
 					case UNKNOWN_TYPE:
-						GenericBlockingStub genStub = GenericGrpc.newBlockingStub(getChannel(endpoint))
+						GenericBlockingStub genStub = GenericGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
 							.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
 							.withMaxInboundMessageSize(grpcMaxMessageSize)
 							.withMaxOutboundMessageSize(grpcMaxMessageSize);
 						return genStub.transformInput(input);
 					case MODEL:
-						ModelBlockingStub modelStub = ModelGrpc.newBlockingStub(getChannel(endpoint))
+						ModelBlockingStub modelStub = ModelGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
 							.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
 							.withMaxInboundMessageSize(grpcMaxMessageSize)
 							.withMaxOutboundMessageSize(grpcMaxMessageSize);
 						return modelStub.predict(input);
 					case TRANSFORMER:
-						TransformerBlockingStub transformerStub = TransformerGrpc.newBlockingStub(getChannel(endpoint))
+						TransformerBlockingStub transformerStub = TransformerGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
 						.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
 						.withMaxInboundMessageSize(grpcMaxMessageSize)
 						.withMaxOutboundMessageSize(grpcMaxMessageSize);
@@ -264,14 +295,14 @@ public class InternalPredictionService {
 				
 			case GRPC:
 				if (state.type==PredictiveUnitType.UNKNOWN_TYPE){
-					GenericBlockingStub stub =  GenericGrpc.newBlockingStub(getChannel(endpoint))
+					GenericBlockingStub stub =  GenericGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
 							.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
 							.withMaxInboundMessageSize(grpcMaxMessageSize)
 							.withMaxOutboundMessageSize(grpcMaxMessageSize);
 					return stub.transformOutput(output);
 				}
 				else {
-					OutputTransformerBlockingStub stub =  OutputTransformerGrpc.newBlockingStub(getChannel(endpoint))
+					OutputTransformerBlockingStub stub =  OutputTransformerGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
 							.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
 							.withMaxInboundMessageSize(grpcMaxMessageSize)
 							.withMaxOutboundMessageSize(grpcMaxMessageSize);
@@ -291,14 +322,14 @@ public class InternalPredictionService {
 				
 			case GRPC:
 				if (state.type==PredictiveUnitType.UNKNOWN_TYPE){
-					GenericBlockingStub stub =  GenericGrpc.newBlockingStub(getChannel(endpoint))
+					GenericBlockingStub stub =  GenericGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
 							.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
 							.withMaxInboundMessageSize(grpcMaxMessageSize)
 							.withMaxOutboundMessageSize(grpcMaxMessageSize);
 					return stub.aggregate(outputsList);
 				}
 				else {
-					CombinerBlockingStub stub = CombinerGrpc.newBlockingStub(getChannel(endpoint))
+					CombinerBlockingStub stub = CombinerGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
 							.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
 							.withMaxInboundMessageSize(grpcMaxMessageSize)
 							.withMaxOutboundMessageSize(grpcMaxMessageSize);
@@ -314,80 +345,101 @@ public class InternalPredictionService {
     	return false;
     }
     
-	private ManagedChannel getChannel(Endpoint endpoint){
-		ManagedChannel channel = ManagedChannelBuilder.forAddress(endpoint.getServiceHost(), endpoint.getServicePort()).usePlaintext(true).build();
-		return channel;
-	}
-	
+    public static String getUriKey(Endpoint endpoint,String path)
+    {
+    	StringBuilder sb = new StringBuilder();
+    	return sb.append(endpoint.getServiceHost()).append(":").append(endpoint.getServicePort()).append(path).toString();
+    }
+		
 	private SeldonMessage queryREST(String path, String dataString, PredictiveUnitState state, Endpoint endpoint, boolean isDefault)
 	{
 		long timeNow = System.currentTimeMillis();
 		URI uri;
-		try {
-			URIBuilder builder = new URIBuilder().setScheme("http")
-					.setHost(endpoint.getServiceHost())
-					.setPort(endpoint.getServicePort())
-					.setPath("/"+path);
-
-			uri = builder.build();
+		try 
+		{
+			final String uriKey = getUriKey(endpoint, path);
+			if (uriCache.containsKey(uriKey))
+				uri = uriCache.get(uriKey);
+			else
+			{
+				URIBuilder builder = new URIBuilder().setScheme("http")
+						.setHost(endpoint.getServiceHost())
+						.setPort(endpoint.getServicePort())
+						.setPath("/"+path);
+				uri = builder.build();
+				uriCache.put(uriKey, uri);
+			}
 		} catch (URISyntaxException e) 
 		{
 			throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_ENDPOINT_URL,"Host: "+endpoint.getServiceHost()+" port:"+endpoint.getServicePort());
 		}
 		
-		try  
+		
+		for(int i=0;i<restRetries;i++)
 		{
-			HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-			headers.add(MODEL_NAME_HEADER, state.name);
-			headers.add(MODEL_IMAGE_HEADER, state.imageName);
-			headers.add(MODEL_VERSION_HEADER, state.imageVersion);
-			
-			MultiValueMap<String, String> map= new LinkedMultiValueMap<String, String>();
-			map.add("json", dataString);
-			map.add("isDefault", Boolean.toString(isDefault));
-
-			HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(map, headers);
-
-			logger.info("Requesting " + uri.toString());
-			ResponseEntity<String> httpResponse = restTemplate.postForEntity( uri, request , String.class );
-			
-			try
+			try  
 			{
-				if(httpResponse.getStatusCode().is2xxSuccessful()) 
+				HttpHeaders headers;
+				if (headersCache.containsKey(state.name))
+					headers = headersCache.get(state.name);
+				else
 				{
-				    SeldonMessage.Builder builder = SeldonMessage.newBuilder();
-				    String response = httpResponse.getBody();
-				    logger.info(response);
-				    JsonFormat.parser().ignoringUnknownFields().merge(response, builder);
-				    return builder.build();
-				} 
-				else 
-				{
-					logger.error("Couldn't retrieve prediction from external prediction server -- bad http return code: " + httpResponse.getStatusCode());
-					throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,String.format("Bad return code %d", httpResponse.getStatusCode()));
+					headers = new HttpHeaders();
+					headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+					headers.add(MODEL_NAME_HEADER, state.name);
+					headers.add(MODEL_IMAGE_HEADER, state.imageName);
+					headers.add(MODEL_VERSION_HEADER, state.imageVersion);
+					headersCache.put(state.name, headers);
 				}
-			}
-			finally
-			{
+				
+				MultiValueMap<String, String> map= new LinkedMultiValueMap<String, String>();
+				map.add("json", dataString);
+				map.add("isDefault", Boolean.toString(isDefault));
+
+				HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(map, headers);
+
 				if (logger.isDebugEnabled())
-					logger.debug("External prediction server took "+(System.currentTimeMillis()-timeNow) + "ms");
+					logger.debug("Requesting {}",uri.toString());
+				ResponseEntity<String> httpResponse = restTemplate.postForEntity( uri, request , String.class );
+				try
+				{
+					if(httpResponse.getStatusCode().is2xxSuccessful()) 
+					{
+					    SeldonMessage.Builder builder = SeldonMessage.newBuilder();
+					    String response = httpResponse.getBody();
+					    logger.debug(response);
+					    JsonFormat.parser().ignoringUnknownFields().merge(response, builder);
+					    return builder.build();
+					} 
+					else 
+					{
+						logger.error("Couldn't retrieve prediction from external prediction server -- bad http return code: " + httpResponse.getStatusCode());
+						throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,String.format("Bad return code %d", httpResponse.getStatusCode()));
+					}
+				}
+				finally
+				{
+					if (logger.isDebugEnabled())
+						logger.debug("External prediction server took "+(System.currentTimeMillis()-timeNow) + "ms");
+				}
+			} 
+			catch (ResourceAccessException e)
+			{
+				logger.warn("Caught resource access exception ",e);
 			}
-		} 
-		catch (IOException e) 
-		{
-			logger.error("Couldn't retrieve prediction from external prediction server - ", e);
-			throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,e.toString());
+			catch (IOException e) 
+			{
+				logger.error("Couldn't retrieve prediction from external prediction server - ", e);
+				throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,e.toString());
+			}
+			catch (Exception e)
+	        {
+				logger.error("Couldn't retrieve prediction from external prediction server - ", e);
+				throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,e.toString());
+	        }
 		}
-		catch (Exception e)
-        {
-			logger.error("Couldn't retrieve prediction from external prediction server - ", e);
-			throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,e.toString());
-        }
-		finally
-		{
-			
-		}
+		logger.error("Failed to retrueve predictions after {} attempts",restRetries);
+		throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,String.format("Failed to retrieve predictions after %d attempts",restRetries));
 	}
 
 	 /**

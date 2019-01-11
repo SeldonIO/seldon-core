@@ -1,9 +1,11 @@
 install_python_protos: update_protos build_protos
 
 update_protos:
+	cd ../proto/tensorflow && make create_protos
+	cp -vr ../proto/tensorflow/tensorflow .
 	cp ../proto/prediction.proto ./proto
 
-build_protos:
+build_protos: update_protos
 	python -m grpc.tools.protoc -I. --python_out=. --grpc_python_out=. ./proto/prediction.proto
 
 

@@ -56,8 +56,10 @@ spec:
       - image: {{ .Values.ambassador.image.name }}
         name: ambassador
         env:
+{{- if .Values.single_namespace }}          
         - name: AMBASSADOR_SINGLE_NAMESPACE
-          value: 'true'
+          value: '{{ .Values.single_namespace }}'
+{{- end }}
         - name: AMBASSADOR_NAMESPACE
           valueFrom:
             fieldRef:

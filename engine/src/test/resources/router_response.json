@@ -3,17 +3,18 @@
 		"metrics": [
 			{
 				"type": "COUNTER",
-				"key": "mycounter",
-				"value": 1.0
+				"key": "myroutercounter",
+				"value": 1.0,
+				"tags": {"mytag1":"mytagval1"}
 			},
 			{
 				"type": "GAUGE",
-				"key": "mygauge",
+				"key": "myroutergauge",
 				"value": 22.0
 			},
 			{
 				"type": "TIMER",
-				"key": "mytimer",
+				"key": "myroutertimer",
 				"value": 1.0
 			}
 		]

@@ -15,6 +15,7 @@
  *******************************************************************************/
 package io.seldon.clustermanager.k8s;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,6 +57,19 @@ public class SeldonDeploymentUtils {
 		    jsonPrinter = jsonPrinter.omittingInsignificantWhitespace();
 		return jsonPrinter.print(mlDep);
 				
+	}
+	
+	public static String getNamespace(SeldonDeployment d)
+	{
+	    if (StringUtils.isEmpty(d.getMetadata().getNamespace()))
+	        return "default";
+	    else
+	        return d.getMetadata().getNamespace();
+	}
+	
+	public static boolean hasSeparateEnginePodAnnotation(SeldonDeployment mlDep)
+	{
+		return Boolean.parseBoolean(mlDep.getSpec().getAnnotationsOrDefault(Constants.ENGINE_SEPARATE_ANNOTATION, "false"));
 	}
 	
 }

@@ -1,24 +1,27 @@
 # Testing Your Seldon Components
 
-Whether you have wrapped your component using [our S2I wrappers](./wrappers/readme.md) or created your own wrapper you will want to test the Docker container standalone and also quickly within a running cluster. We have provided two python tools to allow you to easily do this
+Whether you have wrapped your component using [our S2I wrappers](./wrappers/readme.md) or created your own wrapper you will want to test the Docker container standalone and also quickly within a running cluster. We have provided two python console scripts within the [seldon-core Python package](../python) to allow you to easily do this:
 
- * [Microservice API Tester](../util/api_tester)
-    * Allows you to test a docker component to check it respects the Seldon API
- * [Seldon-Core API Tester](../wrappers/testing)
+ * ```seldon-core-tester```
+    * Allows you to test a docker component to check it respects the Seldon  internal microservice API.
+ * ```seldon-core-api-tester```
     * Allows you to test the external endpoints for a running Seldon Deployment graph.
 
+To use these, install the seldon-core package with ```pip install seldon-core```.
 
-## Microservice API Tester
+## Seldon-Core API Tester
 
-Use this [script](../util/api_tester/api-tester.py) to test a Seldon graph deployed to a cluster.
+Use the ```seldon-core-api-tester``` script to test a Seldon graph deployed to a cluster.
 
 ```
-usage: api-tester.py [-h] [--endpoint {predict,send-feedback}] [-b BATCH_SIZE]
-                     [-n N_REQUESTS] [--grpc] [-t] [-p]
-                     [--oauth-port OAUTH_PORT] [--oauth-key OAUTH_KEY]
-                     [--oauth-secret OAUTH_SECRET]
-                     [--ambassador-path AMBASSADOR_PATH]
-                     contract host port
+usage: seldon-core-api-tester [-h] [--endpoint {predict,send-feedback}]
+                              [-b BATCH_SIZE] [-n N_REQUESTS] [--grpc] [-t]
+                              [-p] [--oauth-port OAUTH_PORT]
+                              [--oauth-key OAUTH_KEY]
+                              [--oauth-secret OAUTH_SECRET]
+                              [--ambassador-path AMBASSADOR_PATH]
+                              contract host port
+
 
 positional arguments:
   contract              File that contains the data contract
@@ -43,21 +46,22 @@ optional arguments:
 Example:
 
 ```
-python api-tester.py contract.json  0.0.0.0 8003 --oauth-key oauth-key --oauth-secret oauth-secret -p --grpc --oauth-port 8002 --endpoint send-feedback
+seldon-core-api-tester contract.json  0.0.0.0 8003 --oauth-key oauth-key --oauth-secret oauth-secret -p --grpc --oauth-port 8002 --endpoint send-feedback
 ```
 
  The above sends a gRPC send-feedback request to 0.0.0.0:8003 using the given oauth key/secret (assumes you are using the Seldon API Gateway) with the REST oauth-port at 8002 and use the contract.json file to create a random request. In this example you would have port-forwarded the Seldon api-server to local ports.
 
 You can find more exampes in the [example models folder notebooks](../examples/models).
 
-## Seldon API Tester
+## Microservice API Tester
 
-Use this [script](../wrappers/testing/tester.py) to test a packaged Docker microservice Seldon component.
+Use the ```seldon-core-tester``` script to test a packaged Docker microservice Seldon component.
 
 ```
-usage: tester.py [-h] [--endpoint {predict,send-feedback}] [-b BATCH_SIZE]
-                 [-n N_REQUESTS] [--grpc] [--fbs] [-t] [-p]
-                 contract host port
+usage: seldon-core-tester [-h] [--endpoint {predict,send-feedback}]
+                          [-b BATCH_SIZE] [-n N_REQUESTS] [--grpc] [--fbs]
+                          [-t] [-p]
+                          contract host port
 
 positional arguments:
   contract              File that contains the data contract
@@ -78,16 +82,16 @@ optional arguments:
 Example:
 
 ```
-python tester.py contract.json 0.0.0.0 5000 -p --grpc
+seldon-core-tester contract.json 0.0.0.0 5000 -p --grpc
 ```
 
 The above sends a predict call to a gRPC component exposed at 0.0.0.0:5000 using the contract.json to create a random request.
 
-You can find more exampes in the [example models folder notebooks](../examples/models).
+You can find more examples in the [example models folder notebooks](../examples/models).
 
 ## API Contract
 
-Both test programs require you to provide a contract.json file defining the data you intend to send in a request and the response you expect back.
+Both tester scripts require you to provide a contract.json file defining the data you intend to send in a request and the response you expect back.
 
 An example for the example Iris classification model is shown below:
 
@@ -149,4 +153,3 @@ Each section has a list of definitions. Each definition consists of:
   * ```range``` : list of two numbers : Optional for ftype CONTINUOUS : The range of values (inclusive) that a continuous value can take
   * ```repeat``` : integer : Optional value for how many times to repeat this value
   * ```shape``` : array of integers : Optional value for the shape of array to coerce the values
-

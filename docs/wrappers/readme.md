@@ -13,14 +13,11 @@ To test a wrapped components you can use one of our [testing scripts](../api-tes
 
 Python based models, including [TensorFlow](https://www.tensorflow.org/), [Keras](https://keras.io/), [pyTorch](http://pytorch.org/), [StatsModels](http://www.statsmodels.org/stable/index.html), [XGBoost](https://github.com/dmlc/xgboost) and [Scikit-learn](http://scikit-learn.org/stable/) based models.
 
-You can use either:
-
-- [Source-to-image (s2i) tool](./python.md)
-- [Seldon Docker wrapper application](./python-docker.md)
+- [Python models wrapped using source-to-image](./python.md)
 
 ## R
 
-- [R models can be wrapped using source-to-image](r.md)
+- [R models wrapped using source-to-image](r.md)
 
 ## Java
 
@@ -28,13 +25,12 @@ Java based models including, [H2O](https://www.h2o.ai/), [Deep Learning 4J](http
 
 - [Java models wrapped using source-to-image](java.md)
 
-## H2O
-
-H2O models can be wrapped either from Java or Python.
-
-- [Java models wrapped using source-to-image](java.md)
-- [H2O models saved and called from python](./h2o.md)
-
 ## NodeJS
 
-- [Javascript models can be wrapped using source-to-image](nodejs.md)
+- [Javascript models wrapped using source-to-image](nodejs.md)
+
+
+## Go (Alpha)
+
+- [Example Go integration](../../examples/wrappers/go/README.md)
+

@@ -63,7 +63,7 @@ public class EnginePredictor {
             	String filePath = "./deploymentdef.json";
             	File deploymentFile = new File(filePath);
             	if (deploymentFile.exists()){
-            		logger.error("FAILED to find env var [{}], will use json file", ENGINE_PREDICTOR_KEY);
+            		logger.warn("FAILED to find env var [{}], will use json file", ENGINE_PREDICTOR_KEY);
             		byte[] encoded = Files.readAllBytes(Paths.get(filePath));
             		String enginePredictorJson = new String(encoded);
             		PredictorSpec.Builder PredictorSpecBuilder = PredictorSpec.newBuilder();
@@ -76,7 +76,7 @@ public class EnginePredictor {
 	                predictorSpec = PredictorSpecBuilder.build();
             	}
             	else {	
-            		logger.error("FAILED to find env var [{}], will use defaults for engine predictor", ENGINE_PREDICTOR_KEY);
+            		logger.warn("FAILED to find env var [{}], will use defaults for engine predictor", ENGINE_PREDICTOR_KEY);
             		predictorSpec = buildDefaultPredictorSpec();
             	}
             } else {

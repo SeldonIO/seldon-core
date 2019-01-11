@@ -42,9 +42,10 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.ApiException;
 import io.kubernetes.client.apis.CustomObjectsApi;
-import io.kubernetes.client.util.Config;
 import io.kubernetes.client.util.Watch;
 import io.seldon.clustermanager.ClusterManagerProperites;
+import io.seldon.clustermanager.k8s.client.K8sApiProvider;
+import io.seldon.clustermanager.k8s.client.K8sClientProvider;
 import io.seldon.clustermanager.pb.JsonFormat;
 import io.seldon.clustermanager.pb.JsonFormat.Printer;
 import io.seldon.protos.DeploymentProtos.DeploymentStatus;
@@ -58,18 +59,21 @@ public class SeldonDeploymentWatcher  {
 	private final SeldonDeploymentCache mlCache;
 	private final ClusterManagerProperites clusterManagerProperites;
 	private final KubeCRDHandler crdHandler;
+	private final K8sClientProvider k8sClientProvider;
+	private final K8sApiProvider k8sApiProvider;
 	
 	private int resourceVersion = 0;
 	private int resourceVersionProcessed = 0;
 	
 	@Autowired
-	public SeldonDeploymentWatcher(ClusterManagerProperites clusterManagerProperites,SeldonDeploymentController seldonDeploymentController,SeldonDeploymentCache mlCache,KubeCRDHandler crdHandler) throws IOException, ApiException
+	public SeldonDeploymentWatcher(K8sApiProvider k8sApiProvider,K8sClientProvider k8sClientProvider,CRDCreator crdCreator,ClusterManagerProperites clusterManagerProperites,SeldonDeploymentController seldonDeploymentController,SeldonDeploymentCache mlCache,KubeCRDHandler crdHandler) throws IOException, ApiException
 	{
 		this.seldonDeploymentController = seldonDeploymentController;
 		this.mlCache = mlCache;
 		this.clusterManagerProperites = clusterManagerProperites;
 		this.crdHandler = crdHandler;
-		CRDCreator crdCreator = new CRDCreator();
+		this.k8sClientProvider = k8sClientProvider;
+		this.k8sApiProvider = k8sApiProvider;
 		crdCreator.createCRD();
 	}
 	
@@ -82,7 +86,7 @@ public class SeldonDeploymentWatcher  {
 			seldonDeploymentController.createOrReplaceSeldonDeployment(mldep);
 			break;
 		case "DELETED":
-			mlCache.remove(mldep.getMetadata().getName());
+			mlCache.remove(mldep);
 			// kubernetes >=1.8 has CRD garbage collection
 			logger.info("Resource deleted - ignoring");
 			break;
@@ -91,7 +95,7 @@ public class SeldonDeploymentWatcher  {
 		}
 	}
 	
-	private void failDeployment(JsonNode mlDep,Exception e)
+	private void failDeployment(JsonNode mlDep,Exception e,String namespace)
 	{
 		try
 		{
@@ -109,14 +113,27 @@ public class SeldonDeploymentWatcher  {
 			String json = mapper.writeValueAsString(mlDep);
 			String name = mlDep.get("metadata").get("name").asText();
 			//Update seldon deployment
-			crdHandler.updateRaw(json, name);
+			crdHandler.updateRaw(json, name,namespace);
 		} catch (JsonParseException e1) {
-			logger.error("Fasile to create status for failed parse",e);
+			logger.error("Failed to create status for failed parse",e);
 		} catch (InvalidProtocolBufferException e1) {
-			logger.error("Fasile to create status for failed parse",e);
+			logger.error("Failed to create status for failed parse",e);
 		} catch (IOException e1) {
-			logger.error("Fasile to create status for failed parse",e);
+			logger.error("Failed to create status for failed parse",e);
 		}
+	}
+	
+	private String getNamespace(JsonNode actualObj)
+	{
+		if (!clusterManagerProperites.isSingleNamespace())
+		{
+			if (actualObj.has("metadata") && actualObj.get("metadata").has("namespace"))
+				return actualObj.get("metadata").get("namespace").asText();
+			else
+				return "default";
+		}
+		else
+			return StringUtils.isEmpty(this.clusterManagerProperites.getNamespace()) ? "default" : this.clusterManagerProperites.getNamespace();
 	}
 	
 	public int watchSeldonMLDeployments(int resourceVersion,int resourceVersionProcessed) throws ApiException, JsonProcessingException, IOException
@@ -124,14 +141,26 @@ public class SeldonDeploymentWatcher  {
 		String rs = null;
 		if (resourceVersion > 0)
 			rs = ""+resourceVersion;
-		ApiClient client = Config.defaultClient();
-		CustomObjectsApi api = new CustomObjectsApi(client);
-		String namespace = StringUtils.isEmpty(this.clusterManagerProperites.getNamespace()) ? "default" : this.clusterManagerProperites.getNamespace();
-		logger.debug("Watching with rs "+rs+" in namespace "+namespace);
-		Watch<Object> watch = Watch.createWatch(
-				client,
-                api.listNamespacedCustomObjectCall(KubeCRDHandlerImpl.GROUP, KubeCRDHandlerImpl.VERSION, namespace,  KubeCRDHandlerImpl.KIND_PLURAL, null, null, rs, true, null, null),
-                new TypeToken<Watch.Response<Object>>(){}.getType());
+		ApiClient client = k8sClientProvider.getClient();
+		CustomObjectsApi api = k8sApiProvider.getCustomObjectsApi(client);
+		Watch<Object> watch;
+		if (!clusterManagerProperites.isSingleNamespace())
+		{
+			watch = Watch.createWatch(
+					client,
+					api.listClusterCustomObjectCall(KubeCRDHandlerImpl.GROUP, KubeCRDHandlerImpl.VERSION,  KubeCRDHandlerImpl.KIND_PLURAL, null, null, rs, true, null, null),
+					new TypeToken<Watch.Response<Object>>(){}.getType());
+			
+		}
+		else
+		{
+			String namespace = StringUtils.isEmpty(this.clusterManagerProperites.getNamespace()) ? "default" : this.clusterManagerProperites.getNamespace();
+			logger.debug("Watching with rs "+rs+" in namespace "+namespace);
+			watch = Watch.createWatch(
+					client,
+					api.listNamespacedCustomObjectCall(KubeCRDHandlerImpl.GROUP, KubeCRDHandlerImpl.VERSION, namespace,  KubeCRDHandlerImpl.KIND_PLURAL, null, null, rs, true, null, null),
+					new TypeToken<Watch.Response<Object>>(){}.getType());
+		}
 		
 		int maxResourceVersion = resourceVersion;
 		try{
@@ -168,8 +197,8 @@ public class SeldonDeploymentWatcher  {
     	    		{
     	    			if ("ADDED".equals(item.type))
     	    			{
-    	    				failDeployment(actualObj, e);
-    	    				logger.warn("Failed to parse SeldonDelployment " + jsonInString, e);
+    	    				failDeployment(actualObj, e, getNamespace(actualObj));
+    	    				logger.warn("Failed to parse SeldonDeployment " + jsonInString, e);
     	    			}
     	    		}
     	    	}
