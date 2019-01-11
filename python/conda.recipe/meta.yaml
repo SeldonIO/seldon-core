@@ -1,0 +1,56 @@
+{% set data = load_setup_py_data() %}
+
+package:
+  name: python-seldon-core
+  version: {{ data.version }}
+
+source:
+  path: ../
+
+build:
+  noarch: python
+  number: 0
+  script: "{{ PYTHON }} -m pip install --no-deps . -vv"
+  entry_points:
+   - seldon-core-microservice = seldon_core.microservice:main
+   - seldon-core-tester = seldon_core.tester:main
+   - seldon-core-api-tester = seldon_core.api_tester:main
+
+requirements:
+  host:
+    - python
+    - pip
+    - setuptools
+  run:
+    - python
+    - grpcio
+    - protobuf
+    - flask
+    - flask-cors
+    - redis-py
+    - tornado
+    - requests
+    - numpy
+    - python-flatbuffers
+    - tensorflow
+
+test:
+  imports:
+    - seldon_core
+  requires:
+    - pytest
+  source_files:
+    - tests/*
+  commands:
+    - seldon-core-microservice --help
+    - seldon-core-tester --help
+    - seldon-core-api-tester --help
+    - py.test tests
+
+about:
+  home: https://github.com/SeldonIO/seldon-core
+  dev_url: https://github.com/SeldonIO/seldon-core
+  license: Apache 2.0
+  license_family: Apache
+  license_file: LICENSE
+  summary: Seldon Core client and microservice wrapper

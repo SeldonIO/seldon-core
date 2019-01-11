@@ -120,8 +120,8 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			.addEnv(EnvVar.newBuilder().setName("ENGINE_PREDICTOR").setValue(getEngineEnvVarJson(predictorDef)))
 			.addEnv(EnvVar.newBuilder().setName("DEPLOYMENT_NAME").setValue(mlDep.getSpec().getName()))		
 			.addEnv(EnvVar.newBuilder().setName("ENGINE_SERVER_PORT").setValue(""+clusterManagerProperites.getEngineContainerPort()))
-			.addEnv(EnvVar.newBuilder().setName("ENGINE_SERVER_GRPC_PORT").setValue(""+clusterManagerProperites.getEngineGrpcContainerPort()))			
-			.addEnv(EnvVar.newBuilder().setName("JAVA_OPTS").setValue(predictorDef.getAnnotationsOrDefault(Constants.ENGINE_JAVA_OPTS_ANNOTATION, DEFAULT_ENGINE_JAVA_OPTS)))						
+			.addEnv(EnvVar.newBuilder().setName("ENGINE_SERVER_GRPC_PORT").setValue(""+clusterManagerProperites.getEngineGrpcContainerPort()))		
+			.addEnv(EnvVar.newBuilder().setName("JAVA_OPTS").setValue(predictorDef.getAnnotationsOrDefault(Constants.ENGINE_JAVA_OPTS_ANNOTATION, DEFAULT_ENGINE_JAVA_OPTS)))
 			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(clusterManagerProperites.getEngineContainerPort()))
 			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(8082).setName("admin"))
 			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(9090).setName("jmx"))
@@ -156,9 +156,16 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 							.addCommand("-c")
 							.addCommand("curl 127.0.0.1:"+clusterManagerProperites.getEngineContainerPort()+"/pause && /bin/sleep 10"))));
 
-		// Add engine resources if specified
+		// Add engine resources if specified (deprecated - will be removed)
 		if (predictorDef.hasEngineResources())
 		    cBuilder.setResources(predictorDef.getEngineResources());
+		if (predictorDef.hasSvcOrchSpec())
+		{
+			if (predictorDef.getSvcOrchSpec().hasResources())
+				cBuilder.setResources(predictorDef.getSvcOrchSpec().getResources());
+			if (predictorDef.getSvcOrchSpec().getEnvCount() > 0)
+				cBuilder.addAllEnv(predictorDef.getSvcOrchSpec().getEnvList());
+		}
 		else {// set default resource requests for cpu
 			final String DEFAULT_ENGINE_CPU_REQUEST = "0.1";
 		    cBuilder.setResources(V1.ResourceRequirements.newBuilder().putRequests("cpu", Quantity.newBuilder().setString(DEFAULT_ENGINE_CPU_REQUEST).build()));
@@ -508,9 +515,9 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 	 
 	private String getAmbassadorAnnotation(SeldonDeployment mlDep,String serviceName)
 	{
-		String namespace = (StringUtils.isEmpty(mlDep.getMetadata().getNamespace())) ? "default" : mlDep.getMetadata().getNamespace();
+		final String namespace = (StringUtils.isEmpty(mlDep.getMetadata().getNamespace())) ? "default" : mlDep.getMetadata().getNamespace();
 
-        final String restMapping = "---\n"+
+		final String restMapping = "---\n"+
                 "apiVersion: ambassador/v0\n" +
                 "kind:  Mapping\n" +
                 "name:  seldon_"+mlDep.getMetadata().getName()+"_rest_mapping\n" +
@@ -528,7 +535,31 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
                  "  seldon: "+mlDep.getMetadata().getName() + "\n" +
                 "service: "+serviceName+"."+namespace+":"+clusterManagerProperites.getEngineGrpcContainerPort()+"\n" +
                 "timeout_ms: " + mlDep.getSpec().getAnnotationsOrDefault(Constants.GRPC_READ_TIMEOUT_ANNOTATION, "3000") + "\n";
-	    return restMapping + grpcMapping;
+
+		final String restMappingNamespaced = "---\n"+
+                "apiVersion: ambassador/v0\n" +
+                "kind:  Mapping\n" +
+                "name:  seldon_"+namespace+"_"+mlDep.getMetadata().getName()+"_rest_mapping\n" +
+                "prefix: /seldon/"+namespace+"/"+mlDep.getMetadata().getName()+"/\n" +
+                "service: "+serviceName+"."+namespace+":"+clusterManagerProperites.getEngineContainerPort()+"\n" +
+                "timeout_ms: " + mlDep.getSpec().getAnnotationsOrDefault(Constants.REST_READ_TIMEOUT_ANNOTATION, "3000") + "\n";
+        final String grpcMappingNamespaced = "---\n"+
+                "apiVersion: ambassador/v0\n" +
+                "kind:  Mapping\n" +
+                "name:  "+namespace+"_"+mlDep.getMetadata().getName()+"_grpc_mapping\n" +
+                "grpc: true\n" +
+                "prefix: /seldon.protos.Seldon/\n" +                
+                "rewrite: /seldon.protos.Seldon/\n" + 
+                "headers:\n"+
+                "  seldon: "+mlDep.getMetadata().getName() + "\n" +
+                "  namespace: "+namespace + "\n" +
+                "service: "+serviceName+"."+namespace+":"+clusterManagerProperites.getEngineGrpcContainerPort()+"\n" +
+                "timeout_ms: " + mlDep.getSpec().getAnnotationsOrDefault(Constants.GRPC_READ_TIMEOUT_ANNOTATION, "3000") + "\n";
+        
+        if (clusterManagerProperites.isSingleNamespace())
+        	return restMapping + grpcMapping + restMappingNamespaced + grpcMappingNamespaced;
+        else
+        	return restMappingNamespaced + grpcMappingNamespaced;
 	}
 	
 	/**

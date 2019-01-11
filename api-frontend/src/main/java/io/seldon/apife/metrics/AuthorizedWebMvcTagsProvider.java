@@ -28,6 +28,7 @@ import io.micrometer.core.instrument.Tag;
 import io.micrometer.spring.web.servlet.DefaultWebMvcTagsProvider;
 import io.micrometer.spring.web.servlet.WebMvcTags;
 import io.seldon.apife.deployments.DeploymentStore;
+import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 @Component
 public class AuthorizedWebMvcTagsProvider extends DefaultWebMvcTagsProvider {
@@ -62,10 +63,11 @@ public class AuthorizedWebMvcTagsProvider extends DefaultWebMvcTagsProvider {
 
 	 public Tag deploymentName(String principalName)
 	 {
-		 if (principalName == null || !StringUtils.hasText(deploymentStore.getDeployment(principalName).getName()))
+		 SeldonDeployment mlDep = deploymentStore.getDeployment(principalName);
+		 if (principalName == null || mlDep == null || !StringUtils.hasText(mlDep.getSpec().getName()))
 			 return Tag.of(DEPLOYMENT_NAME_METRIC, "None");
 		 else
-			 return Tag.of(DEPLOYMENT_NAME_METRIC,deploymentStore.getDeployment(principalName).getName());
+			 return Tag.of(DEPLOYMENT_NAME_METRIC,mlDep.getSpec().getName());
 	 }
 
 	

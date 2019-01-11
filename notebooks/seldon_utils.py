@@ -1,7 +1,7 @@
 import requests
 from requests.auth import HTTPBasicAuth
-from proto import prediction_pb2
-from proto import prediction_pb2_grpc
+from seldon_core.proto import prediction_pb2
+from seldon_core.proto import prediction_pb2_grpc
 import grpc
 import numpy as np
 
@@ -10,18 +10,22 @@ def create_random_data(data_size,rows=1):
     arr = np.random.rand(rows*data_size)
     return (shape,arr)
 
-def get_token(oauth_key,oauth_secret,endpoint):
+def get_token(oauth_key,oauth_secret,namespace,endpoint):
     payload = {'grant_type': 'client_credentials'}
+    if namespace is None:
+        key = oauth_key
+    else:
+        key = oauth_key+namespace
     response = requests.post(
                 "http://"+endpoint+"/oauth/token",
-                auth=HTTPBasicAuth(oauth_key, oauth_secret),
+                auth=HTTPBasicAuth(key, oauth_secret),
                 data=payload)
     print(response.text)
     token =  response.json()["access_token"]
     return token
 
-def rest_request_api_gateway(oauth_key,oauth_secret,endpoint="localhost:8002",data_size=5,rows=1,data=None):
-    token = get_token(oauth_key,oauth_secret,endpoint)
+def rest_request_api_gateway(oauth_key,oauth_secret,namespace,endpoint="localhost:8002",data_size=5,rows=1,data=None):
+    token = get_token(oauth_key,oauth_secret,namespace,endpoint)
     if data is None:
         shape, arr = create_random_data(data_size,rows)
     else:
@@ -35,8 +39,8 @@ def rest_request_api_gateway(oauth_key,oauth_secret,endpoint="localhost:8002",da
                 json=payload)
     return response
 
-def grpc_request_api_gateway(oauth_key,oauth_secret,rest_endpoint="localhost:8002",grpc_endpoint="localhost:8003",data_size=5,rows=1,data=None):
-    token = get_token(oauth_key,oauth_secret,rest_endpoint)
+def grpc_request_api_gateway(oauth_key,oauth_secret,namespace,rest_endpoint="localhost:8002",grpc_endpoint="localhost:8003",data_size=5,rows=1,data=None):
+    token = get_token(oauth_key,oauth_secret,namespace,rest_endpoint)
     if data is None:
         shape, arr = create_random_data(data_size,rows)
     else:
@@ -55,37 +59,48 @@ def grpc_request_api_gateway(oauth_key,oauth_secret,rest_endpoint="localhost:800
     response = stub.Predict(request=request,metadata=metadata)
     return response
 
-def rest_request_ambassador(deploymentName,endpoint="localhost:8003",data_size=5,rows=1,data=None):
+def rest_request_ambassador(deploymentName,namespace,endpoint="localhost:8003",data_size=5,rows=1,data=None):
     if data is None:
         shape, arr = create_random_data(data_size,rows)
     else:
         shape = data.shape
         arr = data.flatten()
     payload = {"data":{"names":["a","b"],"tensor":{"shape":shape,"values":arr.tolist()}}}
-    response = requests.post(
-        "http://"+endpoint+"/seldon/"+deploymentName+"/api/v0.1/predictions",
-        json=payload)
+    if namespace is None:
+        response = requests.post(
+            "http://"+endpoint+"/seldon/"+deploymentName+"/api/v0.1/predictions",
+            json=payload)
+    else:
+        response = requests.post(
+            "http://"+endpoint+"/seldon/"+namespace+"/"+deploymentName+"/api/v0.1/predictions",
+            json=payload)
     return response
 
-def rest_request_ambassador_auth(deploymentName,username,password,endpoint="localhost:8003",data_size=5,rows=1,data=None):
+def rest_request_ambassador_auth(deploymentName,namespace,username,password,endpoint="localhost:8003",data_size=5,rows=1,data=None):
     if data is None:
         shape, arr = create_random_data(data_size,rows)
     else:
         shape = data.shape
-        arr = data.flatten()        
+        arr = data.flatten()
     payload = {"data":{"names":["a","b"],"tensor":{"shape":shape,"values":arr.tolist()}}}
-    response = requests.post(
-        "http://"+endpoint+"/seldon/"+deploymentName+"/api/v0.1/predictions",
-        json=payload,
-        auth=HTTPBasicAuth(username, password))
+    if namespace is None:
+        response = requests.post(
+            "http://"+endpoint+"/seldon/"+deploymentName+"/api/v0.1/predictions",
+            json=payload,
+            auth=HTTPBasicAuth(username, password))
+    else:
+        response = requests.post(
+            "http://"+endpoint+"/seldon/"+namespace+"/"+deploymentName+"/api/v0.1/predictions",
+            json=payload,
+            auth=HTTPBasicAuth(username, password))
     return response
 
-def grpc_request_ambassador(deploymentName,endpoint="localhost:8004",data_size=5,rows=1,data=None):
+def grpc_request_ambassador(deploymentName,namespace,endpoint="localhost:8004",data_size=5,rows=1,data=None):
     if data is None:
         shape, arr = create_random_data(data_size,rows)
     else:
         shape = data.shape
-        arr = data.flatten()    
+        arr = data.flatten()
     datadef = prediction_pb2.DefaultData(
             tensor = prediction_pb2.Tensor(
                 shape = shape,
@@ -95,7 +110,10 @@ def grpc_request_ambassador(deploymentName,endpoint="localhost:8004",data_size=5
     request = prediction_pb2.SeldonMessage(data = datadef)
     channel = grpc.insecure_channel(endpoint)
     stub = prediction_pb2_grpc.SeldonStub(channel)
-    metadata = [('seldon',deploymentName)]
+    if namespace is None:
+        metadata = [('seldon',deploymentName)]
+    else:
+        metadata = [('seldon',deploymentName),('namespace',namespace)]
     response = stub.Predict(request=request,metadata=metadata)
     return response
 
