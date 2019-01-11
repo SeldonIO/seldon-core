@@ -16,6 +16,7 @@
 package io.seldon.engine.api.rest;
 
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.PostConstruct;
 
@@ -33,10 +34,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
+import io.micrometer.core.annotation.Timed;
+import io.opentracing.Scope;
 import io.seldon.engine.exception.APIException;
 import io.seldon.engine.exception.APIException.ApiExceptionType;
 import io.seldon.engine.pb.ProtoBufUtils;
 import io.seldon.engine.service.PredictionService;
+import io.seldon.engine.tracing.TracingProvider;
 import io.seldon.protos.PredictionProtos.Feedback;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
 
@@ -48,11 +52,17 @@ public class RestClientController {
 	@Autowired
 	private PredictionService predictionService;
 	
-	private boolean ready = false;
+	@Autowired
+	SeldonGraphReadyChecker readyChecker;
+	
+	@Autowired
+	TracingProvider tracingProvider;
+	
+	private AtomicBoolean ready = new AtomicBoolean(false);
 	
 	 @PostConstruct
 	 public void init(){
-		 ready = true;
+		 ready.set(true);;
 	 }	
 	
 	@RequestMapping("/")
@@ -71,13 +81,14 @@ public class RestClientController {
 		HttpHeaders responseHeaders = new HttpHeaders();
 		HttpStatus httpStatus;
 		String ret;
-		if (ready)
+		if (ready.get() && readyChecker.getReady())
 		{
 			httpStatus = HttpStatus.OK;
 			ret = "ready";
 		}
 		else
 		{
+			logger.warn("Not ready graph checker {}, controller {}",readyChecker.getReady(),ready.get());
 			httpStatus = HttpStatus.SERVICE_UNAVAILABLE;
 			ret = "Service unavailable";
 		}
@@ -87,22 +98,29 @@ public class RestClientController {
 	
 	@RequestMapping("/pause")
     String pause() {	    
-		ready = false;
+		ready.set(false);
         logger.warn("App Paused");
         return "paused";
     }
 	
 	@RequestMapping("/unpause")
     String unpause() {	    
-		ready = true;
+		ready.set(true);
         logger.warn("App UnPaused");		
         return "unpaused";
     }
 
+	@Timed
 	@CrossOrigin(origins = "*")
 	@RequestMapping(value = "/api/v0.1/predictions", method = RequestMethod.POST, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
     public ResponseEntity<String> predictions(RequestEntity<String> requestEntity)
 	{
+		logger.debug("Received predict request");
+		Scope tracingScope = null;
+		if (tracingProvider.isActive())
+			tracingScope = tracingProvider.getTracer().buildSpan("/api/v0.1/predictions").startActive(true);
+		try
+		{
 		SeldonMessage request;
 		try
 		{
@@ -135,14 +153,26 @@ public class RestClientController {
 		} catch (InvalidProtocolBufferException e) {
 			throw new APIException(ApiExceptionType.ENGINE_INVALID_JSON,"");
 		} 
+		}
+		finally
+		{
+			if (tracingScope != null)
+				tracingScope.close();
+		}
 
 	}
 	
+	@Timed
 	@CrossOrigin(origins = "*")
 	@RequestMapping(value= "/api/v0.1/feedback", method = RequestMethod.POST, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
 	public ResponseEntity<String>  feedback(RequestEntity<String> requestEntity) {
-		Feedback feedback;
-		
+		logger.debug("Received feedback request");
+		Scope tracingScope = null;
+		if (tracingProvider.isActive())
+			tracingScope = tracingProvider.getTracer().buildSpan("/api/v0.1/feedback").startActive(true);
+		try
+		{
+		Feedback feedback;	
 		try
 		{
 			Feedback.Builder builder = Feedback.newBuilder();
@@ -174,6 +204,13 @@ public class RestClientController {
 		} catch (InvalidProtocolBufferException e) {
 			throw new APIException(ApiExceptionType.ENGINE_INVALID_JSON,"");
 		} 
+		}
+		finally
+		{
+			if (tracingScope != null)
+				tracingScope.close();
+		}
+
     }
 
 }

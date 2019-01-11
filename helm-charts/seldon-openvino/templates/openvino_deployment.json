@@ -16,7 +16,7 @@
                     "spec": {
                         "containers": [
                             {
-                                "image": "seldonio/tfserving-proxy:0.1",
+                                "image": "{{ .Values.tfserving_proxy.image }}",
                                 "name": "tfserving-proxy"
                             },
 			    {
@@ -72,7 +72,7 @@
 		}],
                 "graph": {
 		    "name": "tfserving-proxy",
-		    "endpoint": { "type" : "REST" },
+		    "endpoint": { "type" : "GRPC" },
 		    "type": "MODEL",
 		    "children": [],
 		    "parameters":

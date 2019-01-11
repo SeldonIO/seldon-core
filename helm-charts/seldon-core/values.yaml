@@ -22,21 +22,22 @@ apife:
   annotations: null
   enabled: true
   image:
-    name: seldonio/apife:0.2.5-SNAPSHOT
+    name: seldonio/apife:0.2.6-SNAPSHOT
     pull_policy: IfNotPresent
   service_type: NodePort
 cluster_manager:
   image:
-    name: seldonio/cluster-manager:0.2.5-SNAPSHOT
+    name: seldonio/cluster-manager:0.2.6-SNAPSHOT
     pull_policy: IfNotPresent
   java_opts: ''
   spring_opts: ''
 engine:
   image:
-    name: seldonio/engine:0.2.5-SNAPSHOT
+    name: seldonio/engine:0.2.6-SNAPSHOT
     pull_policy: IfNotPresent
   service_account:
     name: default
+  user: 8888
 rbac:
   enabled: true
   rolebinding:
@@ -45,5 +46,7 @@ rbac:
     create: true
     name: seldon
 redis:
+  enabled: true
   image:
     name: redis:4.0.1
+single_namespace: true

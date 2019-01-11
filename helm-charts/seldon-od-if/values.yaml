@@ -1,0 +1,11 @@
+name: outlier-detector-if
+model:
+  image:
+    name: seldonio/outlier-if:0.1
+  name: outlier-if
+  threshold: 0
+replicas: 1
+# Add oauth key and secret if using the default API Oauth Gateway for ingress
+oauth:
+  key: 
+  secret: 

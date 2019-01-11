@@ -234,4 +234,9 @@ public class InternalPredictionService {
 
     }
 	}
+	
+	public void setHttpClient(CloseableHttpClient client)
+	{
+		this.httpClient = client;
+	}
 }

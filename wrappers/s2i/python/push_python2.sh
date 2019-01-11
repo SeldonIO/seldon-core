@@ -1,1 +1,0 @@
-make push_to_dockerhub

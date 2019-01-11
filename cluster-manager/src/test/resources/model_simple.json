@@ -5,7 +5,8 @@
         "labels": {
             "app": "seldon"
         },
-        "name": "seldon-deployment-example"
+        "name": "seldon-deployment-example",
+        "resourceVersion":"1"        
     },
     "spec": {
         "annotations": {
@@ -21,7 +22,7 @@
                     "spec": {
                         "containers": [
                             {
-                                "image": "seldonio/mean_classifier:0.6",
+                                "image": "seldonio/mock_classifier:0.6",
                                 "imagePullPolicy": "IfNotPresent",
                                 "name": "mean-classifier",
                                 "resources": {

@@ -7,7 +7,7 @@ pipeline {
     }
     agent {
         docker {
-            image 'seldonio/core-builder:0.1'
+            image 'seldonio/core-builder:0.3'
             args '-v /root/.m2:/root/.m2'
         }
     }

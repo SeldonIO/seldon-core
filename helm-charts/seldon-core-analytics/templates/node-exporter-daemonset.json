@@ -24,7 +24,7 @@
                     "spec": {
                         "containers": [
                             {
-                                "image": "prom/node-exporter:v0.14.0",
+                                "image": "prom/node-exporter:v0.16.0",
                                 "name": "prometheus-node-exporter",
                                 "ports": [
                                     {
