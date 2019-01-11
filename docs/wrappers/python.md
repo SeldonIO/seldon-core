@@ -174,6 +174,58 @@ Set either to 0 or 1. Default is 0. If set to 1 then your model will be saved pe
 
 # Advanced Usage
 
+## Model Class Arguments
+You can add arguments to your component which will be populated from the ```parameters``` defined in the SeldonDeloyment when you deploy your image on Kubernetes. For example, our [Python TFServing proxy](https://github.com/SeldonIO/seldon-core/tree/master/integrations/tfserving) has the class init method signature defined as below:
+
+```
+class TfServingProxy(object):
+
+def __init__(self,rest_endpoint=None,grpc_endpoint=None,model_name=None,signature_name=None,model_input=None,model_output=None):
+```
+
+These arguments can be set when deploying in a Seldon Deployment. An example can be found in the [MNIST TFServing example](https://github.com/SeldonIO/seldon-core/blob/master/examples/models/tfserving-mnist/tfserving-mnist.ipynb) where the arguments are defined in the [SeldonDeployment](https://github.com/SeldonIO/seldon-core/blob/master/examples/models/tfserving-mnist/mnist_tfserving_deployment.json.template)  which is partly show below:
+
+```
+ "graph": {
+		    "name": "tfserving-proxy",
+		    "endpoint": { "type" : "REST" },
+		    "type": "MODEL",
+		    "children": [],
+		    "parameters":
+		    [
+			{
+			    "name":"grpc_endpoint",
+			    "type":"STRING",
+			    "value":"localhost:8000"
+			},
+			{
+			    "name":"model_name",
+			    "type":"STRING",
+			    "value":"mnist-model"
+			},
+			{
+			    "name":"model_output",
+			    "type":"STRING",
+			    "value":"scores"
+			},
+			{
+			    "name":"model_input",
+			    "type":"STRING",
+			    "value":"images"
+			},
+			{
+			    "name":"signature_name",
+			    "type":"STRING",
+			    "value":"predict_images"
+			}
+		    ]
+},
+```
+
+
+The allowable ```type``` values for the parameters are defined in the [proto buffer definition](https://github.com/SeldonIO/seldon-core/blob/44f7048efd0f6be80a857875058d23efc4221205/proto/seldon_deployment.proto#L117-L131).
+
+
 ## Local Python Dependencies
 ```from version 0.5-SNAPSHOT```
 
