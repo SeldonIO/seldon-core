@@ -1,0 +1,12 @@
+name: outlier-detector-s2s-lstm
+model:
+  image:
+    name: seldonio/outlier-s2s-lstm:0.1
+  name: outlier-s2s-lstm
+  threshold: 0.003
+  reservoir_size: 50000
+replicas: 1
+# Add oauth key and secret if using the default API Oauth Gateway for ingress
+oauth:
+  key: 
+  secret: 

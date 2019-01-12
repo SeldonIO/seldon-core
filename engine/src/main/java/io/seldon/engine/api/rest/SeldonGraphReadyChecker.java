@@ -113,7 +113,7 @@ public class SeldonGraphReadyChecker extends PredictiveUnitImpl {
 		PredictorState predictorState = predictorBean.predictorStateFromPredictorSpec(enginePredictor.getPredictorSpec());
 		PredictiveUnitState state = predictorState.rootState; 
 		boolean graphReady = checkReady(state);
-		logger.info("Seldon graph ready: {}",ready);
+		logger.debug("Seldon graph ready: {}",ready);
 		ready.set(graphReady);
 	}
 }

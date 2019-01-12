@@ -26,7 +26,7 @@ DEBUG_PARAMETER = "SELDON_DEBUG"
 DEBUG = False
 
 ANNOTATIONS_FILE = "/etc/podinfo/annotations"
-
+ANNOTATION_GRPC_MAX_MSG_SIZE = 'seldon.io/grpc-max-message-size'            
 
 def startServers(target1, target2):
     p2 = mp.Process(target=target2)
@@ -67,7 +67,7 @@ def sanity_check_request(req):
             raise SeldonMicroserviceException(
                 "Data dictionary has no 'tensor', 'ndarray' or 'tftensor' keyword.")
     elif not ("binData" in req or "strData" in req):
-        raise SeldonMicroserviceException("Request must contain Default Data")
+        raise SeldonMicroserviceException("Request must contain Default Data or binData or strData")
     # TODO: Should we check more things? Like shape not being None or empty for a tensor?
 
 
@@ -273,6 +273,9 @@ def main():
     parser.add_argument("--parameters", type=str,
                         default=os.environ.get(PARAMETERS_ENV_NAME, "[]"))
     parser.add_argument("--log-level", type=str, default='INFO')
+    parser.add_argument("--tracing", nargs='?',
+                        default=int(os.environ.get("TRACING", "0")), const=1, type=int)
+
     args = parser.parse_args()
 
     parameters = parse_parameters(json.loads(args.parameters))
@@ -307,28 +310,84 @@ def main():
         import seldon_core.router_microservice as seldon_microservice
     elif args.service_type == "TRANSFORMER":
         import seldon_core.transformer_microservice as seldon_microservice
+    elif args.service_type == "COMBINER":
+        import seldon_core.combiner_microservice as seldon_microservice
     elif args.service_type == "OUTLIER_DETECTOR":
         import seldon_core.outlier_detector_microservice as seldon_microservice
 
     port = int(os.environ.get(SERVICE_PORT_ENV_NAME, DEFAULT_PORT))
 
+    if args.tracing:
+        logger.info("Initializing tracing")
+        from jaeger_client import Config
+
+        jaeger_serv = os.environ.get("JAEGER_AGENT_HOST","0.0.0.0")
+        jaeger_config = os.environ.get("JAEGER_CONFIG_PATH",None)
+        if jaeger_config is None:
+            logger.info("Using default tracing config")
+            config = Config(
+                config={ # usually read from some yaml config
+                    'sampler': {
+                        'type': 'const',
+                        'param': 1,
+                    },
+                    'local_agent': {
+                        'reporting_host': jaeger_serv,
+                        'reporting_port': 5775,
+                    },
+                    'logging': True,
+                },
+                service_name=args.interface_name,
+                validate=True,
+            )
+        else:
+            logger.info("Loading tracing config from %s",jaeger_config)
+            import yaml
+            with open(jaeger_config, 'r') as stream:
+                config_dict = yaml.load(stream)
+                config = Config(
+                    config=config_dict,
+                    service_name=args.interface_name,
+                    validate=True,                    
+                )
+        # this call also sets opentracing.tracer
+        tracer = config.initialize_tracer()
+
+
+    
     if args.api_type == "REST":
+
         def rest_prediction_server():
             app = seldon_microservice.get_rest_microservice(
                 user_object, debug=DEBUG)
+
+            if args.tracing:
+                from flask_opentracing import FlaskTracer
+                tracing = FlaskTracer(tracer,True, app)
+                        
             app.run(host='0.0.0.0', port=port)
 
-        logger.info(f"REST microservice running on port {port}")
+        logger.info("REST microservice running on port %i",port)
         server1_func = rest_prediction_server
 
     elif args.api_type == "GRPC":
         def grpc_prediction_server():
+
+            if args.tracing:
+                from grpc_opentracing import open_tracing_server_interceptor
+                logger.info("Adding tracer")
+                interceptor = open_tracing_server_interceptor(tracer)
+            else:
+                interceptor = None
+                
             server = seldon_microservice.get_grpc_server(
-                user_object, debug=DEBUG, annotations=annotations)
+                user_object, debug=DEBUG, annotations=annotations, trace_interceptor=interceptor)
+            
             server.add_insecure_port("0.0.0.0:{}".format(port))
+
             server.start()
 
-            logger.info(f"GRPC microservice Running on port {port}")
+            logger.info("GRPC microservice Running on port %i",port)
             while True:
                 time.sleep(1000)
 
@@ -338,7 +397,7 @@ def main():
         def fbs_prediction_server():
             seldon_microservice.run_flatbuffers_server(user_object, port)
 
-        logger.info(f"FBS microservice Running on port {port}")
+        logger.info("FBS microservice Running on port %i",port)
         server1_func = fbs_prediction_server
 
     else:

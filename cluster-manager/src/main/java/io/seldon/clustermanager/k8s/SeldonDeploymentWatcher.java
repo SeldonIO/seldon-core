@@ -115,11 +115,11 @@ public class SeldonDeploymentWatcher  {
 			//Update seldon deployment
 			crdHandler.updateRaw(json, name,namespace);
 		} catch (JsonParseException e1) {
-			logger.error("Fasile to create status for failed parse",e);
+			logger.error("Failed to create status for failed parse",e);
 		} catch (InvalidProtocolBufferException e1) {
-			logger.error("Fasile to create status for failed parse",e);
+			logger.error("Failed to create status for failed parse",e);
 		} catch (IOException e1) {
-			logger.error("Fasile to create status for failed parse",e);
+			logger.error("Failed to create status for failed parse",e);
 		}
 	}
 	
@@ -127,7 +127,7 @@ public class SeldonDeploymentWatcher  {
 	{
 		if (!clusterManagerProperites.isSingleNamespace())
 		{
-			if (actualObj.has("metadata") && actualObj.get("meta").has("namespace"))
+			if (actualObj.has("metadata") && actualObj.get("metadata").has("namespace"))
 				return actualObj.get("metadata").get("namespace").asText();
 			else
 				return "default";
@@ -198,7 +198,7 @@ public class SeldonDeploymentWatcher  {
     	    			if ("ADDED".equals(item.type))
     	    			{
     	    				failDeployment(actualObj, e, getNamespace(actualObj));
-    	    				logger.warn("Failed to parse SeldonDelployment " + jsonInString, e);
+    	    				logger.warn("Failed to parse SeldonDeployment " + jsonInString, e);
     	    			}
     	    		}
     	    	}
