@@ -72,10 +72,10 @@ public class PredictorUtils {
             List<Integer> shapeList = data.getTensor().getShapeList();
 
             int rows = shapeList.get(0);
-            int columns = shapeList.get(1);
+            int cols = shapeList.get(1);
 
-            for (int i = 0; i < rows * columns; i++) {
-                receiver.add(i / columns, i % columns, valuesList.get(i));
+            for (int i = 0; i < rows * cols; i++) {
+                receiver.add(i / cols, i % cols, valuesList.get(i));
             }
 
         } else if (data.getDataOneofCase() == DataOneofCase.NDARRAY) {
