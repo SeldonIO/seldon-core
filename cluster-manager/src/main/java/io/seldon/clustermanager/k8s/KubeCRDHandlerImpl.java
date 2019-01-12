@@ -83,7 +83,18 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 			logger.info(json);
 			ApiClient client = Config.defaultClient();
 			CustomObjectsApi api = new CustomObjectsApi(client);
-			api.replaceNamespacedCustomObject(GROUP, VERSION, namespace, KIND_PLURAL, seldonDeploymentName,json.getBytes());
+			if (replaceStatusResource)
+			{
+				try 
+				{
+					api.replaceNamespacedCustomObjectStatus(GROUP, VERSION, namespace, KIND_PLURAL, seldonDeploymentName,json.getBytes());
+				} catch (ApiException e) {
+					replaceStatusResource = false; // Stop using the /status endpoint (maybe because the k8s version does not have this <1.10)
+					logger.warn("Failed to update deployment in kubernetes ",e);
+				}
+			}
+			if (!replaceStatusResource)
+				api.replaceNamespacedCustomObject(GROUP, VERSION, namespace, KIND_PLURAL, seldonDeploymentName,json.getBytes());
 		} catch (InvalidProtocolBufferException e) {
 			logger.error("Failed to update deployment in kubernetes ",e);
 		} catch (ApiException e) {

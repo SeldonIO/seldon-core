@@ -1,0 +1,50 @@
+{
+    "apiVersion": "machinelearning.seldon.io/v1alpha2",
+    "kind": "SeldonDeployment",
+    "metadata": {
+        "name": "mycombiner"
+    },
+    "spec": {
+        "name": "mycombiner",
+        "oauth_key": "oauth-key",
+        "oauth_secret": "oauth-secret",
+        "predictors": [
+            {
+                "componentSpecs": [{
+                    "spec": {
+                        "containers": [
+                            {
+                                "image": "127.0.0.1:5000/seldonio/testmodel_rest:0.1",
+                                "imagePullPolicy": "Always",
+                                "name": "model"
+                            },
+                            {
+                                "image": "127.0.0.1:5000/seldonio/testcombiner_rest:0.1",
+                                "imagePullPolicy": "Always",
+                                "name": "combiner"
+                            }
+                        ],
+                        "terminationGracePeriodSeconds": 1
+                    }
+                }],
+                "graph": {
+                    "children": [{
+			"children": [],
+			"name": "model",
+			"endpoint": {
+                            "type" : "REST"
+			},
+			"type": "MODEL"
+                    }],
+                    "name": "combiner",
+                    "endpoint": {
+                        "type" : "REST"
+                    },
+		    "type": "COMBINER"
+                },
+                "name": "mycombiner",
+                "replicas": 1
+            }
+        ]
+    }
+}

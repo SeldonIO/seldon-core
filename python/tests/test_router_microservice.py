@@ -5,7 +5,7 @@ from google.protobuf import json_format
 import base64
 import tensorflow as tf
 
-from seldon_core.router_microservice import get_rest_microservice, SeldonRouterGRPC
+from seldon_core.router_microservice import get_rest_microservice, SeldonRouterGRPC, get_grpc_server
 from seldon_core.proto import prediction_pb2
 
 class UserObject(object):
@@ -181,3 +181,6 @@ def test_proto_feedback():
     feedback = prediction_pb2.Feedback(request=request,response=response,reward=1.0)
     resp = app.SendFeedback(feedback, None)
 
+def test_get_grpc_server():
+    user_object = UserObject()
+    server = get_grpc_server(user_object)

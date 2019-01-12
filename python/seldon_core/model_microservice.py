@@ -2,7 +2,7 @@ import grpc
 from concurrent import futures
 from google.protobuf import json_format
 
-from flask import jsonify, Flask, send_from_directory
+from flask import jsonify, Flask, send_from_directory, request
 from flask_cors import CORS
 import numpy as np
 import logging
@@ -18,7 +18,7 @@ import os
 from seldon_core.proto import prediction_pb2, prediction_pb2_grpc
 from seldon_core.microservice import extract_message, sanity_check_request, rest_datadef_to_array, \
     array_to_rest_datadef, grpc_datadef_to_array, array_to_grpc_datadef, \
-    SeldonMicroserviceException, get_custom_tags, get_data_from_json, get_data_from_proto
+    SeldonMicroserviceException, get_custom_tags, get_data_from_json, get_data_from_proto, ANNOTATION_GRPC_MAX_MSG_SIZE
 from seldon_core.metrics import get_custom_metrics
 from seldon_core.seldon_flatbuffers import SeldonRPCToNumpyArray, NumpyArrayToSeldonRPC, CreateErrorMsg
 
@@ -50,8 +50,8 @@ def get_class_names(user_model, n_targets):
 # ----------------------------
 
 def get_rest_microservice(user_model, debug=False):
-
     app = Flask(__name__, static_url_path='')
+
     CORS(app)
 
     @app.errorhandler(SeldonMicroserviceException)
@@ -187,10 +187,8 @@ class SeldonModelGRPC(object):
         return prediction_pb2.SeldonMessage()
 
 
-ANNOTATION_GRPC_MAX_MSG_SIZE = 'seldon.io/grpc-max-message-size'
 
-
-def get_grpc_server(user_model, debug=False, annotations={}):
+def get_grpc_server(user_model, debug=False, annotations={}, trace_interceptor=None):
     seldon_model = SeldonModelGRPC(user_model)
     options = []
     if ANNOTATION_GRPC_MAX_MSG_SIZE in annotations:
@@ -202,6 +200,11 @@ def get_grpc_server(user_model, debug=False, annotations={}):
 
     server = grpc.server(futures.ThreadPoolExecutor(
         max_workers=10), options=options)
+
+    if trace_interceptor:
+        from grpc_opentracing.grpcext import intercept_server
+        server = intercept_server(server, trace_interceptor)
+            
     prediction_pb2_grpc.add_ModelServicer_to_server(seldon_model, server)
 
     return server

@@ -10,7 +10,7 @@ metadata:
 {{- if .Values.rbac.rolebinding.create }}
 {{- if .Values.single_namespace }}
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: seldon-local
@@ -42,7 +42,7 @@ subjects:
 {{- end }}
 {{- if not .Values.single_namespace }}
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: seldon-wide
@@ -74,7 +74,7 @@ subjects:
 {{- end }}
 {{- if not .Values.single_namespace }}
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: seldon-crd-{{ .Release.Namespace }}
@@ -103,7 +103,7 @@ subjects:
 {{- if .Values.ambassador.enabled }}
 {{- if .Values.single_namespace }}
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: ambassador
@@ -121,7 +121,7 @@ rules:
   - secrets
   verbs: ["get", "list", "watch"]
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: ambassador
@@ -136,7 +136,7 @@ subjects:
 {{- end }}
 {{- if not .Values.single_namespace }}
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: ambassador
@@ -154,7 +154,7 @@ rules:
   - secrets
   verbs: ["get", "list", "watch"]
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: ambassador

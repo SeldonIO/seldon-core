@@ -32,11 +32,13 @@ helm install seldon-core-crd --name seldon-core-crd --repo https://storage.googl
     * ```apife.enabled``` : (default true) set to ```false``` if you have installed Ambassador.
     * ```rbac.enabled``` : (default true) set to ```false``` if running an old Kubernetes cluster without RBAC.
     * ```ambassador.enabled``` : (default false) set to ```true``` if you want to run with an Ambassador reverse proxy.
-```
+    * ```single_namespace``` : (default true) if set to ```true``` then Seldon Core's permissions are restricted to the single namespace it is created within. If set to ```false``` then RBAC cluster roles will be created to allow a single Seldon Core installation to control all namespaces. The installer must have permissions to create the appropriate RBAC roles. (>=0.2.5)
+``` 
 helm install seldon-core --name seldon-core --repo https://storage.googleapis.com/seldon-charts \
      --set apife.enabled=<true|false> \
      --set rbac.enabled=<true|false> \
      --set ambassador.enabled=<true|false>
+     --set single_namespace=<true|false>
 ```
 
 Notes
@@ -55,6 +57,8 @@ Notes
    * ```withApife``` set to ```false``` if you are using Ambassador
    * ```withAmbassador``` set to ```true``` if you want to use Ambassador reverse proxy
    * ```withRbac``` set to ```true``` if your cluster has RBAC enabled
+   * ```singleNamespace``` (default true) if set to ```true``` then Seldon Core's permissions are restricted to the single namespace it is created within. If set to ```false``` then RBAC cluster roles will be created to allow a single Seldon Core installation to control all namespaces. The installer must have permissions to create the appropriate RBAC roles. (>=0.2.5)
+
 ```
 cd my-ml-deployment && \
     ks registry add seldon-core github.com/SeldonIO/seldon-core/tree/master/seldon-core && \
@@ -62,7 +66,8 @@ cd my-ml-deployment && \
     ks generate seldon-core seldon-core \
        --withApife=<true|false> \
        --withAmbassador=<true|false> \
-       --withRbac=<true|false>
+       --withRbac=<true|false> \
+       --singleNamespace=<true|false>
 ```
  * Launch components onto cluster
  ```

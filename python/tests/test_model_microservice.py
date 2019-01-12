@@ -6,7 +6,7 @@ import base64
 import tensorflow as tf
 from tensorflow.core.framework.tensor_pb2 import TensorProto
 
-from seldon_core.model_microservice import get_rest_microservice, SeldonModelGRPC
+from seldon_core.model_microservice import get_rest_microservice, SeldonModelGRPC, get_grpc_server
 from seldon_core.proto import prediction_pb2
 
 
@@ -313,3 +313,8 @@ def test_proto_bin_data_nparray():
     j = json.loads(jStr)
     print(j)
     assert j["data"]["tensor"]["values"] == list(user_object.nparray.flatten())
+
+def test_get_grpc_server():
+    user_object = UserObject(ret_nparray=True)
+    server = get_grpc_server(user_object)
+    

@@ -10,7 +10,7 @@ import logging
 from seldon_core.proto import prediction_pb2, prediction_pb2_grpc
 from seldon_core.microservice import extract_message, sanity_check_request, rest_datadef_to_array, \
     array_to_rest_datadef, grpc_datadef_to_array, array_to_grpc_datadef, \
-    SeldonMicroserviceException, get_custom_tags, get_data_from_json, get_data_from_proto
+    SeldonMicroserviceException, get_custom_tags, get_data_from_json, get_data_from_proto, ANNOTATION_GRPC_MAX_MSG_SIZE
 from seldon_core.metrics import get_custom_metrics
 
 logger = logging.getLogger(__name__)
@@ -215,7 +215,8 @@ class SeldonTransformerGRPC(object):
                 return prediction_pb2.SeldonMessage(binData=transformed, meta=meta)
 
 
-def get_grpc_server(user_model, debug=False, annotations={}):
+
+def get_grpc_server(user_model, debug=False, annotations={}, trace_interceptor=None):
     seldon_model = SeldonTransformerGRPC(user_model)
     options = []
     if ANNOTATION_GRPC_MAX_MSG_SIZE in annotations:
@@ -225,6 +226,11 @@ def get_grpc_server(user_model, debug=False, annotations={}):
 
     server = grpc.server(futures.ThreadPoolExecutor(
         max_workers=10), options=options)
-    prediction_pb2_grpc.add_ModelServicer_to_server(seldon_model, server)
+    if trace_interceptor:
+        from grpc_opentracing.grpcext import intercept_server
+        server = intercept_server(server, trace_interceptor)
+
+    prediction_pb2_grpc.add_TransformerServicer_to_server(seldon_model, server)
+    prediction_pb2_grpc.add_OutputTransformerServicer_to_server(seldon_model, server)    
 
     return server

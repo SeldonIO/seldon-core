@@ -10,7 +10,7 @@
 
 	<groupId>io.seldon.engine</groupId>
 	<artifactId>seldon-engine</artifactId>
-	<version>0.2.5-SNAPSHOT</version>
+	<version>0.2.6-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>engine</name>
@@ -22,6 +22,7 @@
 		<grpc.version>1.14.0</grpc.version>
 		<micrometer.version>1.1.0</micrometer.version>
 		<start-class>io.seldon.engine.App</start-class>
+		<jaeger.version>0.32.0</jaeger.version>
 	</properties>
 
 	<build>
@@ -299,6 +300,22 @@
     		<scope>compile</scope>
 		</dependency>
 		
+		<dependency>
+    		<groupId>io.jaegertracing</groupId>
+    		<artifactId>jaeger-client</artifactId>
+    		<version>${jaeger.version}</version>
+		</dependency>
 		
+		<dependency>
+    		<groupId>io.opentracing.contrib</groupId>
+    		<artifactId>opentracing-grpc</artifactId>
+    		<version>0.0.10</version>
+		</dependency>
+	
+		<dependency>
+  			<groupId>io.opentracing.contrib</groupId>
+  			<artifactId>opentracing-spring-web</artifactId>
+  			<version>0.3.4</version>
+		</dependency>
 	</dependencies>
 </project>
