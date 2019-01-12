@@ -18,8 +18,9 @@ package io.seldon.engine.predictors;
 import java.util.Iterator;
 import java.util.List;
 
-import org.ojalgo.matrix.BasicMatrix;
+import static org.ojalgo.function.PrimitiveFunction.*;
 import org.ojalgo.matrix.PrimitiveMatrix;
+import org.ojalgo.matrix.PrimitiveMatrix.DenseReceiver;
 import org.springframework.stereotype.Component;
 
 import io.seldon.engine.exception.APIException;
@@ -47,8 +48,7 @@ public class AverageCombinerUnit extends PredictiveUnitImpl {
 		if (shape.length!=2){
 			throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_COMBINER_RESPONSE, String.format("Combiner received data that is not 2 dimensional"));
 		}
-		BasicMatrix.Factory<PrimitiveMatrix> matrixFactory = PrimitiveMatrix.FACTORY;
-		PrimitiveMatrix currentSum = matrixFactory.makeZero(shape[0], shape[1]);
+        DenseReceiver currentSum = PrimitiveMatrix.FACTORY.makeDense(shape[0], shape[1]);
 		SeldonMessage.Builder respBuilder = SeldonMessage.newBuilder();
 		
 		for (Iterator<SeldonMessage> i = outputs.iterator(); i.hasNext();)
@@ -67,12 +67,11 @@ public class AverageCombinerUnit extends PredictiveUnitImpl {
 			if (inputShape[1] != shape[1]){
 				throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_COMBINER_RESPONSE, String.format("Expected batch length %d but found %d",shape[1],inputShape[1]));
 			}
-			PrimitiveMatrix inputArr = PredictorUtils.getOJMatrix(inputData);
-			currentSum = currentSum.add(inputArr);
+            PredictorUtils.add(inputData, currentSum);
 		}
-		currentSum = currentSum.divide((float)outputs.size());
+        currentSum.modifyAll(DIVIDE.by(outputs.size()));
 		
-		DefaultData newData = PredictorUtils.updateData(outputs.get(0).getData(), currentSum);
+        DefaultData newData = PredictorUtils.updateData(outputs.get(0).getData(), currentSum.get());
 		respBuilder.setData(newData);
 		respBuilder.setMeta(outputs.get(0).getMeta());
 		respBuilder.setStatus(outputs.get(0).getStatus());
