@@ -20,7 +20,6 @@ import java.util.List;
 
 import static org.ojalgo.function.PrimitiveFunction.*;
 import org.ojalgo.matrix.PrimitiveMatrix;
-import org.ojalgo.matrix.PrimitiveMatrix.DenseReceiver;
 import org.springframework.stereotype.Component;
 
 import io.seldon.engine.exception.APIException;
