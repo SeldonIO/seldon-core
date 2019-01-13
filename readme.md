@@ -26,26 +26,20 @@ Seldon Core is an open source platform for deploying machine learning models on 
 
 Machine learning deployment has many [challenges](./docs/challenges.md). Seldon Core intends to help with these challenges. Its high level goals are:
 
-
- - Allow data scientists to create models using any machine learning toolkit or programming language. We plan to initially cover the tools/languages below:
-   - Python based models including
-     - Tensorflow models
-     - Sklearn models
-   - Spark models
-   - H2O models
-   - R models
- - Expose machine learning models via REST and gRPC automatically when deployed for easy integration into business apps that need predictions.
- - Allow complex runtime inference graphs to be deployed as microservices. These graphs can be composed of:
-   - Models - runtime inference executable for machine learning models
-   - Routers - route API requests to sub-graphs. Examples: AB Tests, Multi-Armed Bandits.
-   - Combiners - combine the responses from sub-graphs. Examples: ensembles of models
-   - Transformers - transform request or responses. Example: transform feature requests.
+ - Allow organisations to run and manage machine learning models built using any machine learning toolkit. Any model that can be run inside a Docker container can run in Seldon Core.
+ - Provide a production ready machine learning deployment system on top of Kubernetes and integrating well with other Cloud Native tools.
+ - Provide the tools to allow complex metrics, optimization and proper compliance of machine learning models in production.
+   - Optimize your models using multi-armed bandit solvers
+   - Run Outlier Detection models
+   - Get alerts on Concept Drift
+   - Provide black-box model explanations of running models
+ - Automatically expose REST and gRPC endpoints to allow business application to easily call your machine learning models.   
  - Handle full lifecycle management of the deployed model:
     - Updating the runtime graph with no downtime
     - Scaling
     - Monitoring
     - Security
-
+   
 ## Prerequisites
 
   A [Kubernetes](https://kubernetes.io/) Cluster. Kubernetes can be deployed into many environments, both on cloud and on-premise.
@@ -61,7 +55,7 @@ Read the [overview to using seldon-core](./docs/getting_started/readme.md).
 
 
 ### Example Components
-Seldon-core allows various types of components to be built and plugged into the runtime prediction graph. These include [models, routers, transformers and combiners](docs/reference/internal-api.md). Some example components that are available as part of the project are:
+Seldon-core allows various types of components to be built and plugged into the runtime prediction graph. These include generic components such as [models, routers, transformers and combiners](docs/reference/internal-api.md). Some example components that are available as part of the project are:
 
  * **Models** : example that illustrate simple machine learning models to help you build your own integrations
    * Python
@@ -85,12 +79,17 @@ Seldon-core allows various types of components to be built and plugged into the 
    * AWS SageMaker 
       * [SageMaker sklearn example](https://github.com/SeldonIO/seldon-core/blob/master/examples/models/sagemaker/sagemaker_seldon_scikit_iris_example.ipynb)
 
- * **Routers**
+Seldon allows you to build up runtime inference graphs that provide powerful optimization and metrics for your running models. Example components that help ensure you provide a compliant production machine learning system are available:
+
+ * **Multi-Armed Bandits** 
    * [Epsilon-greedy multi-armed bandits for real time optimization of models](components/routers/epsilon-greedy) ([GCP example](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/epsilon_greedy_gcp.ipynb), [Kubeflow example](https://github.com/kubeflow/example-seldon))
    * [Thompson sampling multi-armed bandit](components/routers/thompson-sampling) ([Credit card default case study](components/routers/case_study/credit_card_default.ipynb))
- * **Transformers**
-    * [Mahalanobis distance outlier detection](https://github.com/SeldonIO/seldon-core/blob/master/examples/transformers/outlier_mahalanobis/outlier_documentation.ipynb). Example usage can be found in the [Advanced graphs notebook](https://github.com/cliveseldon/seldon-core/blob/master/notebooks/advanced_graphs.ipynb)
- * **Combiners**
+ * **Outlier Detection**
+    * [Variational Auto-Encoder (VAE) Outlier Detector](https://github.com/SeldonIO/seldon-core/tree/master/components/outlier-detection/vae)
+    * [Sequence-to-Sequence LSTM (seq2seq-LSTM) Outlier Detector](https://github.com/SeldonIO/seldon-core/tree/master/components/outlier-detection/seq2seq-lstm)
+    * [Isolation Forest Outlier Detector](https://github.com/SeldonIO/seldon-core/tree/master/components/outlier-detection/isolation-forest)
+    * [Mahalanobis distance outlier detection](https://github.com/SeldonIO/seldon-core/blob/master/examples/transformers/outlier_mahalanobis/outlier_documentation.ipynb). 
+ * **Ensembles**
     * [MNIST Average Combiner](examples/combiners/mnist_combiner/mnist_combiner.ipynb) - ensembles sklearn and Tensorflow Models.
 
 ## Integrations
