@@ -10,6 +10,7 @@ class OutlierMahalanobis(object):
         - threshold: (float): Mahalanobis distance threshold used to classify outliers
         - n_components (int): number of principal components used
         - n_stdev (float): stdev used for feature-wise clipping of observations
+        - start_clip (int): number of observations before clipping is applied
         - max_n (int): algorithm behaves as if it has seen at most max_n points
      
     Functions:
