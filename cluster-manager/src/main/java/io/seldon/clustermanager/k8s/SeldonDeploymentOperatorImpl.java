@@ -382,6 +382,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		SeldonDeployment.Builder mlBuilder = SeldonDeployment.newBuilder(mlDep);
 		String deploymentName = mlDep.getMetadata().getName();
 		final boolean separateEnginePod = SeldonDeploymentUtils.hasSeparateEnginePodAnnotation(mlDep);
+		
 		final String namespace = (StringUtils.isEmpty(mlDep.getMetadata().getNamespace())) ? "default" : mlDep.getMetadata().getNamespace();
 		
 		for(int pbIdx=0;pbIdx<mlDep.getSpec().getPredictorsCount();pbIdx++)
@@ -810,7 +811,8 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			}
 		}
 		
-		Service s = Service.newBuilder()
+		final boolean headlessSvc = SeldonDeploymentUtils.hasHeadlessSvcAnnotation(mlDep);
+		Service.Builder svcBuilder = Service.newBuilder()
 					.setMetadata(ObjectMeta.newBuilder()
 							.setName(serviceLabel)
 							.putLabels(LABEL_SELDON_APP, serviceLabel)
@@ -831,12 +833,15 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
                                     .setTargetPort(IntOrString.newBuilder().setIntVal(clusterManagerProperites.getEngineGrpcContainerPort()))
                                     .setName("grpc")
                                     )
-							.setType("ClusterIP")
 							.putSelector(SeldonDeploymentOperatorImpl.LABEL_SELDON_APP,serviceLabel)
-							)
-				.build();
-		
-		services.add(s);
+							);
+		if (headlessSvc)
+		{
+			logger.info("Creating headless service for ",mlDep.getSpec().getName());
+			svcBuilder.getSpecBuilder().setClusterIP("None");
+		}
+
+		services.add(svcBuilder.build());
 		
 
 		
