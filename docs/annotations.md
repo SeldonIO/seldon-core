@@ -31,6 +31,9 @@ You can configure aspects of Seldon Core via annotations in the SeldonDeployment
   * ```seldon.io/engine-separate-pod``` : Use a separate pod for the service orchestrator
     * Locations : SeldonDeployment.spec.annotations
     * [Example](../notebooks/resources/model_svcorch_sep.json)
+  * ```seldon.io/headless-svc``` : Run main endpoint as headless kubernetes service. This is required for gRPC load balancing via Ambassador.
+    * Locations : SeldonDeployment.spec.annotations
+    * [Example](../notebooks/resources/grpc_load_balancing_ambassador.json)
 
 ## API OAuth Gateway Annotations
 The API OAuth Gateway, if used, can also have the following annotations:
