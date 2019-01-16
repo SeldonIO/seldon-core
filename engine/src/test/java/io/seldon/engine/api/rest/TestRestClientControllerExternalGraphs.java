@@ -42,12 +42,10 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.io.IOException;
 import java.net.URI;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+
+import static io.seldon.engine.util.TestUtils.readFile;
 
 @RunWith(SpringRunner.class)
 @ActiveProfiles("test")
@@ -58,11 +56,6 @@ import java.nio.file.Paths;
 })
 public class TestRestClientControllerExternalGraphs {
 
-	protected String readFile(String path, Charset encoding)
-			throws IOException {
-		byte[] encoded = Files.readAllBytes(Paths.get(path));
-		return new String(encoded, encoding);
-	}
 
 	private <T extends Message.Builder> void updateMessageBuilderFromJson(T messageBuilder, String json) throws InvalidProtocolBufferException {
 		JsonFormat.parser().ignoringUnknownFields()
