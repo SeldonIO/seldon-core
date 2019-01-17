@@ -52,24 +52,24 @@ import static io.seldon.engine.util.TestUtils.readFile;
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @TestPropertySource(properties = {
-        "management.security.enabled=false",
-})
+	    "management.security.enabled=false",
+	})
 public class TestRandomABTest {
 
-    private <T extends Message.Builder> void updateMessageBuilderFromJson(T messageBuilder, String json) throws InvalidProtocolBufferException {
+	private <T extends Message.Builder> void updateMessageBuilderFromJson(T messageBuilder, String json) throws InvalidProtocolBufferException {
         JsonFormat.parser().ignoringUnknownFields()
-                .usingTypeParser(IntOrString.getDescriptor().getFullName(), new IntOrStringUtils.IntOrStringParser())
-                .usingTypeParser(Quantity.getDescriptor().getFullName(), new QuantityUtils.QuantityParser())
-                .usingTypeParser(Time.getDescriptor().getFullName(), new TimeUtils.TimeParser())
-                .usingTypeParser(Timestamp.getDescriptor().getFullName(), new TimeUtils.TimeParser())
-                .merge(json, messageBuilder);
+        .usingTypeParser(IntOrString.getDescriptor().getFullName(), new IntOrStringUtils.IntOrStringParser())
+        .usingTypeParser(Quantity.getDescriptor().getFullName(), new QuantityUtils.QuantityParser())
+        .usingTypeParser(Time.getDescriptor().getFullName(), new TimeUtils.TimeParser())
+        .usingTypeParser(Timestamp.getDescriptor().getFullName(), new TimeUtils.TimeParser())
+        .merge(json, messageBuilder);
     }
 
-    @Autowired
-    private WebApplicationContext context;
+	@Autowired
+	private WebApplicationContext context;
 
-    @Autowired
-    private EnginePredictor enginePredictor;
+	@Autowired
+	private EnginePredictor enginePredictor;
 
 
     //@Autowired
@@ -79,11 +79,11 @@ public class TestRandomABTest {
     private RestClientController restController;
 
     @Before
-    public void setup() throws Exception {
-        mvc = MockMvcBuilders
-                .webAppContextSetup(context)
-                .build();
-    }
+	public void setup() throws Exception {
+    	mvc = MockMvcBuilders
+				.webAppContextSetup(context)
+				.build();
+	}
 
     @LocalServerPort
     private int port;
@@ -99,47 +99,49 @@ public class TestRandomABTest {
     @Test
     public void testModelMetrics() throws Exception
     {
-        String jsonStr = readFile("src/test/resources/abtest.json",StandardCharsets.UTF_8);
-        String responseStr = readFile("src/test/resources/response_with_metrics.json",StandardCharsets.UTF_8);
-        ResponseEntity<String> httpResponse = new ResponseEntity<>(responseStr, null, HttpStatus.OK);
-        Mockito.when(testRestTemplate.getRestTemplate().postForEntity(Matchers.<URI>any(), Matchers.<HttpEntity<MultiValueMap<String, String>>>any(), Matchers.<Class<String>>any()))
-                .thenReturn(httpResponse);
-        PredictorSpec.Builder PredictorSpecBuilder = PredictorSpec.newBuilder();
-        updateMessageBuilderFromJson(PredictorSpecBuilder, jsonStr);
-        PredictorSpec predictorSpec = PredictorSpecBuilder.build();
-        final String predictJson = "{" +
-                "\"request\": {" +
-                "\"ndarray\": [[1.0]]}" +
-                "}";
-        enginePredictor.setPredictorSpec(predictorSpec);
+    	String jsonStr = readFile("src/test/resources/abtest.json",StandardCharsets.UTF_8);
+    	String responseStr = readFile("src/test/resources/response_with_metrics.json",StandardCharsets.UTF_8);
+    	PredictorSpec.Builder PredictorSpecBuilder = PredictorSpec.newBuilder();
+    	updateMessageBuilderFromJson(PredictorSpecBuilder, jsonStr);
+    	PredictorSpec predictorSpec = PredictorSpecBuilder.build();
+    	final String predictJson = "{" +
+         	    "\"request\": {" +
+         	    "\"ndarray\": [[1.0]]}" +
+         		"}";
+    	enginePredictor.setPredictorSpec(predictorSpec);
 
-        int routeACount = 0;
-        int routeBCount = 1;
 
-        for(int i=0;i<100;i++)
-        {
-            MvcResult res = mvc.perform(MockMvcRequestBuilders.post("/api/v0.1/predictions")
-                    .accept(MediaType.APPLICATION_JSON_UTF8)
-                    .content(predictJson)
-                    .contentType(MediaType.APPLICATION_JSON_UTF8)).andReturn();
-            String response = res.getResponse().getContentAsString();
-            System.out.println(response);
-            Assert.assertEquals(200, res.getResponse().getStatus());
+    	ResponseEntity<String> httpResponse = new ResponseEntity<String>(responseStr, null, HttpStatus.OK);
+    	Mockito.when(testRestTemplate.getRestTemplate().postForEntity(Matchers.<URI>any(), Matchers.<HttpEntity<MultiValueMap<String, String>>>any(), Matchers.<Class<String>>any()))
+    		.thenReturn(httpResponse);
 
-            SeldonMessage.Builder builder = SeldonMessage.newBuilder();
-            JsonFormat.parser().ignoringUnknownFields().merge(response, builder);
-            SeldonMessage seldonMessage = builder.build();
+    	int routeACount = 0;
+    	int routeBCount = 1;
 
-            Assert.assertTrue(seldonMessage.getMeta().getRoutingMap().get("abtest") >= 0);
-            if (seldonMessage.getMeta().getRoutingMap().get("abtest") == 0)
-                routeACount++;
-            else
-                routeBCount++;
-        }
-        double split = routeACount /(double)(routeACount + routeBCount);
-        System.out.println(routeACount);
-        System.out.println(routeBCount);
-        Assert.assertEquals(0.5, split,0.2);
+    	for(int i=0;i<100;i++)
+    	{
+    		MvcResult res = mvc.perform(MockMvcRequestBuilders.post("/api/v0.1/predictions")
+        			.accept(MediaType.APPLICATION_JSON_UTF8)
+        			.content(predictJson)
+        			.contentType(MediaType.APPLICATION_JSON_UTF8)).andReturn();
+        	String response = res.getResponse().getContentAsString();
+        	System.out.println(response);
+        	Assert.assertEquals(200, res.getResponse().getStatus());
+
+        	SeldonMessage.Builder builder = SeldonMessage.newBuilder();
+    	    JsonFormat.parser().ignoringUnknownFields().merge(response, builder);
+    	    SeldonMessage seldonMessage = builder.build();
+
+    	    Assert.assertTrue(seldonMessage.getMeta().getRoutingMap().get("abtest") >= 0);
+    	    if (seldonMessage.getMeta().getRoutingMap().get("abtest") == 0)
+    	    	routeACount++;
+    	    else
+    	    	routeBCount++;
+    	}
+    	double split = routeACount /(double)(routeACount + routeBCount);
+ 	    System.out.println(routeACount);
+ 	    System.out.println(routeBCount);
+ 	    Assert.assertEquals(0.5, split,0.2);
 
 
 
