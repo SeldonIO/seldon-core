@@ -1,19 +1,7 @@
 package io.seldon.engine.api.rest;
 
-import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.Message;
-import io.kubernetes.client.proto.IntStr.IntOrString;
-import io.kubernetes.client.proto.Meta.Time;
-import io.kubernetes.client.proto.Meta.Timestamp;
-import io.kubernetes.client.proto.Resource.Quantity;
-import io.seldon.engine.pb.IntOrStringUtils;
-import io.seldon.engine.pb.JsonFormat;
-import io.seldon.engine.pb.QuantityUtils;
-import io.seldon.engine.pb.TimeUtils;
-import io.seldon.engine.predictors.EnginePredictor;
-import io.seldon.engine.service.InternalPredictionService;
-import io.seldon.protos.DeploymentProtos.PredictorSpec;
-import io.seldon.protos.PredictionProtos.SeldonMessage;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,8 +30,21 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Message;
+
+import io.kubernetes.client.proto.IntStr.IntOrString;
+import io.kubernetes.client.proto.Meta.Time;
+import io.kubernetes.client.proto.Meta.Timestamp;
+import io.kubernetes.client.proto.Resource.Quantity;
+import io.seldon.engine.pb.IntOrStringUtils;
+import io.seldon.engine.pb.JsonFormat;
+import io.seldon.engine.pb.QuantityUtils;
+import io.seldon.engine.pb.TimeUtils;
+import io.seldon.engine.predictors.EnginePredictor;
+import io.seldon.engine.service.InternalPredictionService;
+import io.seldon.protos.DeploymentProtos.PredictorSpec;
+import io.seldon.protos.PredictionProtos.SeldonMessage;
 
 import static io.seldon.engine.util.TestUtils.readFile;
 
@@ -55,7 +56,6 @@ import static io.seldon.engine.util.TestUtils.readFile;
 		"management.security.enabled=false",
 })
 public class TestRestClientControllerExternalGraphs {
-
 
 	private <T extends Message.Builder> void updateMessageBuilderFromJson(T messageBuilder, String json) throws InvalidProtocolBufferException {
 		JsonFormat.parser().ignoringUnknownFields()
@@ -97,11 +97,14 @@ public class TestRestClientControllerExternalGraphs {
 	private InternalPredictionService internalPredictionService;
 
 
+
+
 	@Test
-	public void testModelMetrics() throws Exception {
-		String jsonStr = readFile("src/test/resources/model_simple.json", StandardCharsets.UTF_8);
-		String responseStr = readFile("src/test/resources/response_with_metrics.json", StandardCharsets.UTF_8);
-		String responseStr2 = readFile("src/test/resources/response_with_metrics2.json", StandardCharsets.UTF_8);
+	public void testModelMetrics() throws Exception
+	{
+		String jsonStr = readFile("src/test/resources/model_simple.json",StandardCharsets.UTF_8);
+		String responseStr = readFile("src/test/resources/response_with_metrics.json",StandardCharsets.UTF_8);
+		String responseStr2 = readFile("src/test/resources/response_with_metrics2.json",StandardCharsets.UTF_8);
 		PredictorSpec.Builder PredictorSpecBuilder = PredictorSpec.newBuilder();
 		updateMessageBuilderFromJson(PredictorSpecBuilder, jsonStr);
 		PredictorSpec predictorSpec = PredictorSpecBuilder.build();
@@ -124,8 +127,7 @@ public class TestRestClientControllerExternalGraphs {
 							return httpResponse1;
 
 						return httpResponse2;
-					}
-				});
+					}});
 
 		MvcResult res = mvc.perform(MockMvcRequestBuilders.post("/api/v0.1/predictions")
 				.accept(MediaType.APPLICATION_JSON_UTF8)
@@ -140,26 +142,26 @@ public class TestRestClientControllerExternalGraphs {
 		SeldonMessage seldonMessage = builder.build();
 
 		// Check for returned metrics
-		Assert.assertEquals("COUNTER", seldonMessage.getMeta().getMetrics(0).getType().toString());
-		Assert.assertEquals(1.0F, seldonMessage.getMeta().getMetrics(0).getValue(), 0.0);
-		Assert.assertEquals("mycounter", seldonMessage.getMeta().getMetrics(0).getKey());
+		Assert.assertEquals("COUNTER",seldonMessage.getMeta().getMetrics(0).getType().toString());
+		Assert.assertEquals(1.0F,seldonMessage.getMeta().getMetrics(0).getValue(),0.0);
+		Assert.assertEquals("mycounter",seldonMessage.getMeta().getMetrics(0).getKey());
 
-		Assert.assertEquals("GAUGE", seldonMessage.getMeta().getMetrics(1).getType().toString());
-		Assert.assertEquals(22.0F, seldonMessage.getMeta().getMetrics(1).getValue(), 0.0);
-		Assert.assertEquals("mygauge", seldonMessage.getMeta().getMetrics(1).getKey());
+		Assert.assertEquals("GAUGE",seldonMessage.getMeta().getMetrics(1).getType().toString());
+		Assert.assertEquals(22.0F,seldonMessage.getMeta().getMetrics(1).getValue(),0.0);
+		Assert.assertEquals("mygauge",seldonMessage.getMeta().getMetrics(1).getKey());
 
-		Assert.assertEquals("TIMER", seldonMessage.getMeta().getMetrics(2).getType().toString());
-		Assert.assertEquals(1.0F, seldonMessage.getMeta().getMetrics(2).getValue(), 0.0);
-		Assert.assertEquals("mytimer", seldonMessage.getMeta().getMetrics(2).getKey());
+		Assert.assertEquals("TIMER",seldonMessage.getMeta().getMetrics(2).getType().toString());
+		Assert.assertEquals(1.0F,seldonMessage.getMeta().getMetrics(2).getValue(),0.0);
+		Assert.assertEquals("mytimer",seldonMessage.getMeta().getMetrics(2).getKey());
 
 		// Check prometheus endpoint for metric
 		MvcResult res2 = mvc.perform(MockMvcRequestBuilders.get("/prometheus")).andReturn();
 		Assert.assertEquals(200, res2.getResponse().getStatus());
 		response = res2.getResponse().getContentAsString();
-		System.out.println("response is [" + response + "]");
-		Assert.assertTrue(response.indexOf("mycounter_total{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0") > -1);
-		Assert.assertTrue(response.indexOf("mytimer_seconds_count{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0") > -1);
-		Assert.assertTrue(response.indexOf("mygauge{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 22.0") > -1);
+		System.out.println("response is ["+response+"]");
+		Assert.assertTrue(response.indexOf("mycounter_total{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
+		Assert.assertTrue(response.indexOf("mytimer_seconds_count{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
+		Assert.assertTrue(response.indexOf("mygauge{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 22.0")>-1);
 		System.out.println(response);
 
 		res = mvc.perform(MockMvcRequestBuilders.post("/api/v0.1/predictions")
@@ -175,33 +177,34 @@ public class TestRestClientControllerExternalGraphs {
 		seldonMessage = builder.build();
 
 		// Check for returned metrics
-		Assert.assertEquals("COUNTER", seldonMessage.getMeta().getMetrics(0).getType().toString());
-		Assert.assertEquals(1.0F, seldonMessage.getMeta().getMetrics(0).getValue(), 0.0);
-		Assert.assertEquals("mycounter", seldonMessage.getMeta().getMetrics(0).getKey());
+		Assert.assertEquals("COUNTER",seldonMessage.getMeta().getMetrics(0).getType().toString());
+		Assert.assertEquals(1.0F,seldonMessage.getMeta().getMetrics(0).getValue(),0.0);
+		Assert.assertEquals("mycounter",seldonMessage.getMeta().getMetrics(0).getKey());
 
-		Assert.assertEquals("GAUGE", seldonMessage.getMeta().getMetrics(1).getType().toString());
-		Assert.assertEquals(100.0F, seldonMessage.getMeta().getMetrics(1).getValue(), 0.0);
-		Assert.assertEquals("mygauge", seldonMessage.getMeta().getMetrics(1).getKey());
+		Assert.assertEquals("GAUGE",seldonMessage.getMeta().getMetrics(1).getType().toString());
+		Assert.assertEquals(100.0F,seldonMessage.getMeta().getMetrics(1).getValue(),0.0);
+		Assert.assertEquals("mygauge",seldonMessage.getMeta().getMetrics(1).getKey());
 
-		Assert.assertEquals("TIMER", seldonMessage.getMeta().getMetrics(2).getType().toString());
-		Assert.assertEquals(1.0F, seldonMessage.getMeta().getMetrics(2).getValue(), 0.0);
-		Assert.assertEquals("mytimer", seldonMessage.getMeta().getMetrics(2).getKey());
+		Assert.assertEquals("TIMER",seldonMessage.getMeta().getMetrics(2).getType().toString());
+		Assert.assertEquals(1.0F,seldonMessage.getMeta().getMetrics(2).getValue(),0.0);
+		Assert.assertEquals("mytimer",seldonMessage.getMeta().getMetrics(2).getKey());
 
 		// Check prometheus endpoint for metric
 		res2 = mvc.perform(MockMvcRequestBuilders.get("/prometheus")).andReturn();
 		Assert.assertEquals(200, res2.getResponse().getStatus());
 		response = res2.getResponse().getContentAsString();
-		Assert.assertTrue(response.indexOf("mycounter_total{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 2.0") > -1);
-		Assert.assertTrue(response.indexOf("mytimer_seconds_count{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 2.0") > -1);
-		Assert.assertTrue(response.indexOf("mygauge{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 100.0") > -1);
+		Assert.assertTrue(response.indexOf("mycounter_total{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 2.0")>-1);
+		Assert.assertTrue(response.indexOf("mytimer_seconds_count{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 2.0")>-1);
+		Assert.assertTrue(response.indexOf("mygauge{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 100.0")>-1);
 		System.out.println(response);
 	}
 
 
 	@Test
-	public void testInputTransformInputMetrics() throws Exception {
-		String jsonStr = readFile("src/test/resources/transformer_simple.json", StandardCharsets.UTF_8);
-		String responseStr = readFile("src/test/resources/response_with_metrics.json", StandardCharsets.UTF_8);
+	public void testInputTransformInputMetrics() throws Exception
+	{
+		String jsonStr = readFile("src/test/resources/transformer_simple.json",StandardCharsets.UTF_8);
+		String responseStr = readFile("src/test/resources/response_with_metrics.json",StandardCharsets.UTF_8);
 		PredictorSpec.Builder PredictorSpecBuilder = PredictorSpec.newBuilder();
 		updateMessageBuilderFromJson(PredictorSpecBuilder, jsonStr);
 		PredictorSpec predictorSpec = PredictorSpecBuilder.build();
@@ -229,32 +232,33 @@ public class TestRestClientControllerExternalGraphs {
 		SeldonMessage seldonMessage = builder.build();
 
 		// Check for returned metrics
-		Assert.assertEquals("COUNTER", seldonMessage.getMeta().getMetrics(0).getType().toString());
-		Assert.assertEquals(1.0F, seldonMessage.getMeta().getMetrics(0).getValue(), 0.0);
-		Assert.assertEquals("mycounter", seldonMessage.getMeta().getMetrics(0).getKey());
+		Assert.assertEquals("COUNTER",seldonMessage.getMeta().getMetrics(0).getType().toString());
+		Assert.assertEquals(1.0F,seldonMessage.getMeta().getMetrics(0).getValue(),0.0);
+		Assert.assertEquals("mycounter",seldonMessage.getMeta().getMetrics(0).getKey());
 
-		Assert.assertEquals("GAUGE", seldonMessage.getMeta().getMetrics(1).getType().toString());
-		Assert.assertEquals(22.0F, seldonMessage.getMeta().getMetrics(1).getValue(), 0.0);
-		Assert.assertEquals("mygauge", seldonMessage.getMeta().getMetrics(1).getKey());
+		Assert.assertEquals("GAUGE",seldonMessage.getMeta().getMetrics(1).getType().toString());
+		Assert.assertEquals(22.0F,seldonMessage.getMeta().getMetrics(1).getValue(),0.0);
+		Assert.assertEquals("mygauge",seldonMessage.getMeta().getMetrics(1).getKey());
 
-		Assert.assertEquals("TIMER", seldonMessage.getMeta().getMetrics(2).getType().toString());
-		Assert.assertEquals(1.0F, seldonMessage.getMeta().getMetrics(2).getValue(), 0.0);
-		Assert.assertEquals("mytimer", seldonMessage.getMeta().getMetrics(2).getKey());
+		Assert.assertEquals("TIMER",seldonMessage.getMeta().getMetrics(2).getType().toString());
+		Assert.assertEquals(1.0F,seldonMessage.getMeta().getMetrics(2).getValue(),0.0);
+		Assert.assertEquals("mytimer",seldonMessage.getMeta().getMetrics(2).getKey());
 
 		// Check prometheus endpoint for metric
 		MvcResult res2 = mvc.perform(MockMvcRequestBuilders.get("/prometheus")).andReturn();
 		Assert.assertEquals(200, res2.getResponse().getStatus());
 		response = res2.getResponse().getContentAsString();
-		Assert.assertTrue(response.indexOf("mycounter_total{deployment_name=\"None\",model_image=\"seldonio/transformer\",model_name=\"transformer\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0") > -1);
-		Assert.assertTrue(response.indexOf("mytimer_seconds_count{deployment_name=\"None\",model_image=\"seldonio/transformer\",model_name=\"transformer\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0") > -1);
+		Assert.assertTrue(response.indexOf("mycounter_total{deployment_name=\"None\",model_image=\"seldonio/transformer\",model_name=\"transformer\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
+		Assert.assertTrue(response.indexOf("mytimer_seconds_count{deployment_name=\"None\",model_image=\"seldonio/transformer\",model_name=\"transformer\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
 		System.out.println(response);
 	}
 
 
 	@Test
-	public void testTransformOutputMetrics() throws Exception {
-		String jsonStr = readFile("src/test/resources/transform_output_simple.json", StandardCharsets.UTF_8);
-		String responseStr = readFile("src/test/resources/response_with_metrics.json", StandardCharsets.UTF_8);
+	public void testTransformOutputMetrics() throws Exception
+	{
+		String jsonStr = readFile("src/test/resources/transform_output_simple.json",StandardCharsets.UTF_8);
+		String responseStr = readFile("src/test/resources/response_with_metrics.json",StandardCharsets.UTF_8);
 		PredictorSpec.Builder PredictorSpecBuilder = PredictorSpec.newBuilder();
 		updateMessageBuilderFromJson(PredictorSpecBuilder, jsonStr);
 		PredictorSpec predictorSpec = PredictorSpecBuilder.build();
@@ -282,34 +286,35 @@ public class TestRestClientControllerExternalGraphs {
 		SeldonMessage seldonMessage = builder.build();
 
 		// Check for returned metrics
-		Assert.assertEquals("COUNTER", seldonMessage.getMeta().getMetrics(0).getType().toString());
-		Assert.assertEquals(1.0F, seldonMessage.getMeta().getMetrics(0).getValue(), 0.0);
-		Assert.assertEquals("mycounter", seldonMessage.getMeta().getMetrics(0).getKey());
+		Assert.assertEquals("COUNTER",seldonMessage.getMeta().getMetrics(0).getType().toString());
+		Assert.assertEquals(1.0F,seldonMessage.getMeta().getMetrics(0).getValue(),0.0);
+		Assert.assertEquals("mycounter",seldonMessage.getMeta().getMetrics(0).getKey());
 
-		Assert.assertEquals("GAUGE", seldonMessage.getMeta().getMetrics(1).getType().toString());
-		Assert.assertEquals(22.0F, seldonMessage.getMeta().getMetrics(1).getValue(), 0.0);
-		Assert.assertEquals("mygauge", seldonMessage.getMeta().getMetrics(1).getKey());
+		Assert.assertEquals("GAUGE",seldonMessage.getMeta().getMetrics(1).getType().toString());
+		Assert.assertEquals(22.0F,seldonMessage.getMeta().getMetrics(1).getValue(),0.0);
+		Assert.assertEquals("mygauge",seldonMessage.getMeta().getMetrics(1).getKey());
 
-		Assert.assertEquals("TIMER", seldonMessage.getMeta().getMetrics(2).getType().toString());
-		Assert.assertEquals(1.0F, seldonMessage.getMeta().getMetrics(2).getValue(), 0.0);
-		Assert.assertEquals("mytimer", seldonMessage.getMeta().getMetrics(2).getKey());
+		Assert.assertEquals("TIMER",seldonMessage.getMeta().getMetrics(2).getType().toString());
+		Assert.assertEquals(1.0F,seldonMessage.getMeta().getMetrics(2).getValue(),0.0);
+		Assert.assertEquals("mytimer",seldonMessage.getMeta().getMetrics(2).getKey());
 
 		// Check prometheus endpoint for metric
 		MvcResult res2 = mvc.perform(MockMvcRequestBuilders.get("/prometheus")).andReturn();
 		Assert.assertEquals(200, res2.getResponse().getStatus());
 		response = res2.getResponse().getContentAsString();
 		System.out.println(response);
-		Assert.assertTrue(response.indexOf("mycounter_total{deployment_name=\"None\",model_image=\"seldonio/transformer\",model_name=\"transform_output\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0") > -1);
-		Assert.assertTrue(response.indexOf("mytimer_seconds_count{deployment_name=\"None\",model_image=\"seldonio/transformer\",model_name=\"transform_output\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0") > -1);
+		Assert.assertTrue(response.indexOf("mycounter_total{deployment_name=\"None\",model_image=\"seldonio/transformer\",model_name=\"transform_output\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
+		Assert.assertTrue(response.indexOf("mytimer_seconds_count{deployment_name=\"None\",model_image=\"seldonio/transformer\",model_name=\"transform_output\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
 
 	}
 
 
 	@Test
-	public void testRouterMetrics() throws Exception {
-		String jsonStr = readFile("src/test/resources/router_simple.json", StandardCharsets.UTF_8);
-		String responseStrRouter = readFile("src/test/resources/router_response.json", StandardCharsets.UTF_8);
-		String responseStrModel = readFile("src/test/resources/router_model_response.json", StandardCharsets.UTF_8);
+	public void testRouterMetrics() throws Exception
+	{
+		String jsonStr = readFile("src/test/resources/router_simple.json",StandardCharsets.UTF_8);
+		String responseStrRouter = readFile("src/test/resources/router_response.json",StandardCharsets.UTF_8);
+		String responseStrModel = readFile("src/test/resources/router_model_response.json",StandardCharsets.UTF_8);
 		PredictorSpec.Builder PredictorSpecBuilder = PredictorSpec.newBuilder();
 		updateMessageBuilderFromJson(PredictorSpecBuilder, jsonStr);
 		PredictorSpec predictorSpec = PredictorSpecBuilder.build();
@@ -332,8 +337,7 @@ public class TestRestClientControllerExternalGraphs {
 							return httpResponse1;
 
 						return httpResponse2;
-					}
-				});
+					}});
 
 		MvcResult res = mvc.perform(MockMvcRequestBuilders.post("/api/v0.1/predictions")
 				.accept(MediaType.APPLICATION_JSON_UTF8)
@@ -348,47 +352,48 @@ public class TestRestClientControllerExternalGraphs {
 		SeldonMessage seldonMessage = builder.build();
 
 		// Check for returned metrics
-		Assert.assertEquals("COUNTER", seldonMessage.getMeta().getMetrics(0).getType().toString());
-		Assert.assertEquals(1.0F, seldonMessage.getMeta().getMetrics(0).getValue(), 0.0);
-		Assert.assertEquals("myroutercounter", seldonMessage.getMeta().getMetrics(0).getKey());
+		Assert.assertEquals("COUNTER",seldonMessage.getMeta().getMetrics(0).getType().toString());
+		Assert.assertEquals(1.0F,seldonMessage.getMeta().getMetrics(0).getValue(),0.0);
+		Assert.assertEquals("myroutercounter",seldonMessage.getMeta().getMetrics(0).getKey());
 
-		Assert.assertEquals("GAUGE", seldonMessage.getMeta().getMetrics(1).getType().toString());
-		Assert.assertEquals(22.0F, seldonMessage.getMeta().getMetrics(1).getValue(), 0.0);
-		Assert.assertEquals("myroutergauge", seldonMessage.getMeta().getMetrics(1).getKey());
+		Assert.assertEquals("GAUGE",seldonMessage.getMeta().getMetrics(1).getType().toString());
+		Assert.assertEquals(22.0F,seldonMessage.getMeta().getMetrics(1).getValue(),0.0);
+		Assert.assertEquals("myroutergauge",seldonMessage.getMeta().getMetrics(1).getKey());
 
-		Assert.assertEquals("TIMER", seldonMessage.getMeta().getMetrics(2).getType().toString());
-		Assert.assertEquals(1.0F, seldonMessage.getMeta().getMetrics(2).getValue(), 0.0);
-		Assert.assertEquals("myroutertimer", seldonMessage.getMeta().getMetrics(2).getKey());
+		Assert.assertEquals("TIMER",seldonMessage.getMeta().getMetrics(2).getType().toString());
+		Assert.assertEquals(1.0F,seldonMessage.getMeta().getMetrics(2).getValue(),0.0);
+		Assert.assertEquals("myroutertimer",seldonMessage.getMeta().getMetrics(2).getKey());
 
-		Assert.assertEquals("COUNTER", seldonMessage.getMeta().getMetrics(3).getType().toString());
-		Assert.assertEquals(1.0F, seldonMessage.getMeta().getMetrics(3).getValue(), 0.0);
-		Assert.assertEquals("myroutermodelcounter", seldonMessage.getMeta().getMetrics(3).getKey());
+		Assert.assertEquals("COUNTER",seldonMessage.getMeta().getMetrics(3).getType().toString());
+		Assert.assertEquals(1.0F,seldonMessage.getMeta().getMetrics(3).getValue(),0.0);
+		Assert.assertEquals("myroutermodelcounter",seldonMessage.getMeta().getMetrics(3).getKey());
 
-		Assert.assertEquals("GAUGE", seldonMessage.getMeta().getMetrics(4).getType().toString());
-		Assert.assertEquals(22.0F, seldonMessage.getMeta().getMetrics(4).getValue(), 0.0);
-		Assert.assertEquals("myroutermodelgauge", seldonMessage.getMeta().getMetrics(4).getKey());
+		Assert.assertEquals("GAUGE",seldonMessage.getMeta().getMetrics(4).getType().toString());
+		Assert.assertEquals(22.0F,seldonMessage.getMeta().getMetrics(4).getValue(),0.0);
+		Assert.assertEquals("myroutermodelgauge",seldonMessage.getMeta().getMetrics(4).getKey());
 
-		Assert.assertEquals("TIMER", seldonMessage.getMeta().getMetrics(5).getType().toString());
-		Assert.assertEquals(1.0F, seldonMessage.getMeta().getMetrics(5).getValue(), 0.0);
-		Assert.assertEquals("myroutermodeltimer", seldonMessage.getMeta().getMetrics(5).getKey());
+		Assert.assertEquals("TIMER",seldonMessage.getMeta().getMetrics(5).getType().toString());
+		Assert.assertEquals(1.0F,seldonMessage.getMeta().getMetrics(5).getValue(),0.0);
+		Assert.assertEquals("myroutermodeltimer",seldonMessage.getMeta().getMetrics(5).getKey());
 
 		// Check prometheus endpoint for metric
 		MvcResult res2 = mvc.perform(MockMvcRequestBuilders.get("/prometheus")).andReturn();
 		Assert.assertEquals(200, res2.getResponse().getStatus());
 		response = res2.getResponse().getContentAsString();
 		System.out.println(response);
-		Assert.assertTrue(response.indexOf("myroutercounter_total{deployment_name=\"None\",model_image=\"seldonio/router\",model_name=\"router\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0") > -1);
-		Assert.assertTrue(response.indexOf("myroutertimer_seconds_count{deployment_name=\"None\",model_image=\"seldonio/router\",model_name=\"router\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0") > -1);
-		Assert.assertTrue(response.indexOf("myroutermodelcounter_total{deployment_name=\"None\",model_image=\"seldonio/model\",model_name=\"model\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0") > -1);
-		Assert.assertTrue(response.indexOf("myroutermodeltimer_seconds_count{deployment_name=\"None\",model_image=\"seldonio/model\",model_name=\"model\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0") > -1);
+		Assert.assertTrue(response.indexOf("myroutercounter_total{deployment_name=\"None\",model_image=\"seldonio/router\",model_name=\"router\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
+		Assert.assertTrue(response.indexOf("myroutertimer_seconds_count{deployment_name=\"None\",model_image=\"seldonio/router\",model_name=\"router\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
+		Assert.assertTrue(response.indexOf("myroutermodelcounter_total{deployment_name=\"None\",model_image=\"seldonio/model\",model_name=\"model\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
+		Assert.assertTrue(response.indexOf("myroutermodeltimer_seconds_count{deployment_name=\"None\",model_image=\"seldonio/model\",model_name=\"model\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
 
 	}
 
 
 	@Test
-	public void testCombinerMetrics() throws Exception {
-		String jsonStr = readFile("src/test/resources/combiner_simple.json", StandardCharsets.UTF_8);
-		String responseStr = readFile("src/test/resources/response_with_metrics.json", StandardCharsets.UTF_8);
+	public void testCombinerMetrics() throws Exception
+	{
+		String jsonStr = readFile("src/test/resources/combiner_simple.json",StandardCharsets.UTF_8);
+		String responseStr = readFile("src/test/resources/response_with_metrics.json",StandardCharsets.UTF_8);
 		PredictorSpec.Builder PredictorSpecBuilder = PredictorSpec.newBuilder();
 		updateMessageBuilderFromJson(PredictorSpecBuilder, jsonStr);
 		PredictorSpec predictorSpec = PredictorSpecBuilder.build();
@@ -416,17 +421,17 @@ public class TestRestClientControllerExternalGraphs {
 		SeldonMessage seldonMessage = builder.build();
 
 		// Check for returned metrics
-		Assert.assertEquals("COUNTER", seldonMessage.getMeta().getMetrics(0).getType().toString());
-		Assert.assertEquals(1.0F, seldonMessage.getMeta().getMetrics(0).getValue(), 0.0);
-		Assert.assertEquals("mycounter", seldonMessage.getMeta().getMetrics(0).getKey());
+		Assert.assertEquals("COUNTER",seldonMessage.getMeta().getMetrics(0).getType().toString());
+		Assert.assertEquals(1.0F,seldonMessage.getMeta().getMetrics(0).getValue(),0.0);
+		Assert.assertEquals("mycounter",seldonMessage.getMeta().getMetrics(0).getKey());
 
-		Assert.assertEquals("GAUGE", seldonMessage.getMeta().getMetrics(1).getType().toString());
-		Assert.assertEquals(22.0F, seldonMessage.getMeta().getMetrics(1).getValue(), 0.0);
-		Assert.assertEquals("mygauge", seldonMessage.getMeta().getMetrics(1).getKey());
+		Assert.assertEquals("GAUGE",seldonMessage.getMeta().getMetrics(1).getType().toString());
+		Assert.assertEquals(22.0F,seldonMessage.getMeta().getMetrics(1).getValue(),0.0);
+		Assert.assertEquals("mygauge",seldonMessage.getMeta().getMetrics(1).getKey());
 
-		Assert.assertEquals("TIMER", seldonMessage.getMeta().getMetrics(2).getType().toString());
-		Assert.assertEquals(1.0F, seldonMessage.getMeta().getMetrics(2).getValue(), 0.0);
-		Assert.assertEquals("mytimer", seldonMessage.getMeta().getMetrics(2).getKey());
+		Assert.assertEquals("TIMER",seldonMessage.getMeta().getMetrics(2).getType().toString());
+		Assert.assertEquals(1.0F,seldonMessage.getMeta().getMetrics(2).getValue(),0.0);
+		Assert.assertEquals("mytimer",seldonMessage.getMeta().getMetrics(2).getKey());
 
 		// Check prometheus endpoint for metric
 		MvcResult res2 = mvc.perform(MockMvcRequestBuilders.get("/prometheus")).andReturn();
@@ -435,17 +440,18 @@ public class TestRestClientControllerExternalGraphs {
 		System.out.println("----------------------------------------");
 		System.out.println("----------------------------------------");
 		System.out.println(response);
-		Assert.assertTrue(response.indexOf("mycounter_total{deployment_name=\"None\",model_image=\"seldonio/combiner\",model_name=\"combiner\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0") > -1);
-		Assert.assertTrue(response.indexOf("mytimer_seconds_count{deployment_name=\"None\",model_image=\"seldonio/combiner\",model_name=\"combiner\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0") > -1);
+		Assert.assertTrue(response.indexOf("mycounter_total{deployment_name=\"None\",model_image=\"seldonio/combiner\",model_name=\"combiner\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
+		Assert.assertTrue(response.indexOf("mytimer_seconds_count{deployment_name=\"None\",model_image=\"seldonio/combiner\",model_name=\"combiner\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
 
 	}
 
 
 	@Test
-	public void testModelStrData() throws Exception {
-		String jsonStr = readFile("src/test/resources/model_simple.json", StandardCharsets.UTF_8);
-		String responseStr = readFile("src/test/resources/response_strdata.json", StandardCharsets.UTF_8);
-		String responseStr2 = readFile("src/test/resources/response_strdata2.json", StandardCharsets.UTF_8);
+	public void testModelStrData() throws Exception
+	{
+		String jsonStr = readFile("src/test/resources/model_simple.json",StandardCharsets.UTF_8);
+		String responseStr = readFile("src/test/resources/response_strdata.json",StandardCharsets.UTF_8);
+		String responseStr2 = readFile("src/test/resources/response_strdata2.json",StandardCharsets.UTF_8);
 		PredictorSpec.Builder PredictorSpecBuilder = PredictorSpec.newBuilder();
 		updateMessageBuilderFromJson(PredictorSpecBuilder, jsonStr);
 		PredictorSpec predictorSpec = PredictorSpecBuilder.build();
@@ -466,8 +472,7 @@ public class TestRestClientControllerExternalGraphs {
 							return httpResponse1;
 
 						return httpResponse2;
-					}
-				});
+					}});
 
 		MvcResult res = mvc.perform(MockMvcRequestBuilders.post("/api/v0.1/predictions")
 				.accept(MediaType.APPLICATION_JSON_UTF8)
@@ -482,26 +487,26 @@ public class TestRestClientControllerExternalGraphs {
 		SeldonMessage seldonMessage = builder.build();
 
 		// Check for returned metrics
-		Assert.assertEquals("COUNTER", seldonMessage.getMeta().getMetrics(0).getType().toString());
-		Assert.assertEquals(1.0F, seldonMessage.getMeta().getMetrics(0).getValue(), 0.0);
-		Assert.assertEquals("mycounter1", seldonMessage.getMeta().getMetrics(0).getKey());
+		Assert.assertEquals("COUNTER",seldonMessage.getMeta().getMetrics(0).getType().toString());
+		Assert.assertEquals(1.0F,seldonMessage.getMeta().getMetrics(0).getValue(),0.0);
+		Assert.assertEquals("mycounter1",seldonMessage.getMeta().getMetrics(0).getKey());
 
-		Assert.assertEquals("GAUGE", seldonMessage.getMeta().getMetrics(1).getType().toString());
-		Assert.assertEquals(22.0F, seldonMessage.getMeta().getMetrics(1).getValue(), 0.0);
-		Assert.assertEquals("mygauge1", seldonMessage.getMeta().getMetrics(1).getKey());
+		Assert.assertEquals("GAUGE",seldonMessage.getMeta().getMetrics(1).getType().toString());
+		Assert.assertEquals(22.0F,seldonMessage.getMeta().getMetrics(1).getValue(),0.0);
+		Assert.assertEquals("mygauge1",seldonMessage.getMeta().getMetrics(1).getKey());
 
-		Assert.assertEquals("TIMER", seldonMessage.getMeta().getMetrics(2).getType().toString());
-		Assert.assertEquals(1.0F, seldonMessage.getMeta().getMetrics(2).getValue(), 0.0);
-		Assert.assertEquals("mytimer1", seldonMessage.getMeta().getMetrics(2).getKey());
+		Assert.assertEquals("TIMER",seldonMessage.getMeta().getMetrics(2).getType().toString());
+		Assert.assertEquals(1.0F,seldonMessage.getMeta().getMetrics(2).getValue(),0.0);
+		Assert.assertEquals("mytimer1",seldonMessage.getMeta().getMetrics(2).getKey());
 
 		// Check prometheus endpoint for metric
 		MvcResult res2 = mvc.perform(MockMvcRequestBuilders.get("/prometheus")).andReturn();
 		Assert.assertEquals(200, res2.getResponse().getStatus());
 		response = res2.getResponse().getContentAsString();
-		System.out.println("response is [" + response + "]");
-		Assert.assertTrue(response.indexOf("mycounter1_total{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0") > -1);
-		Assert.assertTrue(response.indexOf("mytimer1_seconds_count{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0") > -1);
-		Assert.assertTrue(response.indexOf("mygauge1{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 22.0") > -1);
+		System.out.println("response is ["+response+"]");
+		Assert.assertTrue(response.indexOf("mycounter1_total{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
+		Assert.assertTrue(response.indexOf("mytimer1_seconds_count{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
+		Assert.assertTrue(response.indexOf("mygauge1{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 22.0")>-1);
 		System.out.println(response);
 
 		res = mvc.perform(MockMvcRequestBuilders.post("/api/v0.1/predictions")
@@ -517,34 +522,35 @@ public class TestRestClientControllerExternalGraphs {
 		seldonMessage = builder.build();
 
 		// Check for returned metrics
-		Assert.assertEquals("COUNTER", seldonMessage.getMeta().getMetrics(0).getType().toString());
-		Assert.assertEquals(1.0F, seldonMessage.getMeta().getMetrics(0).getValue(), 0.0);
-		Assert.assertEquals("mycounter1", seldonMessage.getMeta().getMetrics(0).getKey());
+		Assert.assertEquals("COUNTER",seldonMessage.getMeta().getMetrics(0).getType().toString());
+		Assert.assertEquals(1.0F,seldonMessage.getMeta().getMetrics(0).getValue(),0.0);
+		Assert.assertEquals("mycounter1",seldonMessage.getMeta().getMetrics(0).getKey());
 
-		Assert.assertEquals("GAUGE", seldonMessage.getMeta().getMetrics(1).getType().toString());
-		Assert.assertEquals(100.0F, seldonMessage.getMeta().getMetrics(1).getValue(), 0.0);
-		Assert.assertEquals("mygauge1", seldonMessage.getMeta().getMetrics(1).getKey());
+		Assert.assertEquals("GAUGE",seldonMessage.getMeta().getMetrics(1).getType().toString());
+		Assert.assertEquals(100.0F,seldonMessage.getMeta().getMetrics(1).getValue(),0.0);
+		Assert.assertEquals("mygauge1",seldonMessage.getMeta().getMetrics(1).getKey());
 
-		Assert.assertEquals("TIMER", seldonMessage.getMeta().getMetrics(2).getType().toString());
-		Assert.assertEquals(1.0F, seldonMessage.getMeta().getMetrics(2).getValue(), 0.0);
-		Assert.assertEquals("mytimer1", seldonMessage.getMeta().getMetrics(2).getKey());
+		Assert.assertEquals("TIMER",seldonMessage.getMeta().getMetrics(2).getType().toString());
+		Assert.assertEquals(1.0F,seldonMessage.getMeta().getMetrics(2).getValue(),0.0);
+		Assert.assertEquals("mytimer1",seldonMessage.getMeta().getMetrics(2).getKey());
 
 		// Check prometheus endpoint for metric
 		res2 = mvc.perform(MockMvcRequestBuilders.get("/prometheus")).andReturn();
 		Assert.assertEquals(200, res2.getResponse().getStatus());
 		response = res2.getResponse().getContentAsString();
-		Assert.assertTrue(response.indexOf("mycounter1_total{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 2.0") > -1);
-		Assert.assertTrue(response.indexOf("mytimer1_seconds_count{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 2.0") > -1);
-		Assert.assertTrue(response.indexOf("mygauge1{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 100.0") > -1);
+		Assert.assertTrue(response.indexOf("mycounter1_total{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 2.0")>-1);
+		Assert.assertTrue(response.indexOf("mytimer1_seconds_count{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 2.0")>-1);
+		Assert.assertTrue(response.indexOf("mygauge1{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 100.0")>-1);
 		System.out.println(response);
 	}
 
 
 	@Test
-	public void testModelBinData() throws Exception {
-		String jsonStr = readFile("src/test/resources/model_simple.json", StandardCharsets.UTF_8);
-		String responseStr = readFile("src/test/resources/response_bindata.json", StandardCharsets.UTF_8);
-		String responseStr2 = readFile("src/test/resources/response_bindata2.json", StandardCharsets.UTF_8);
+	public void testModelBinData() throws Exception
+	{
+		String jsonStr = readFile("src/test/resources/model_simple.json",StandardCharsets.UTF_8);
+		String responseStr = readFile("src/test/resources/response_bindata.json",StandardCharsets.UTF_8);
+		String responseStr2 = readFile("src/test/resources/response_bindata2.json",StandardCharsets.UTF_8);
 		PredictorSpec.Builder PredictorSpecBuilder = PredictorSpec.newBuilder();
 		updateMessageBuilderFromJson(PredictorSpecBuilder, jsonStr);
 		PredictorSpec predictorSpec = PredictorSpecBuilder.build();
@@ -565,8 +571,7 @@ public class TestRestClientControllerExternalGraphs {
 							return httpResponse1;
 
 						return httpResponse2;
-					}
-				});
+					}});
 
 		MvcResult res = mvc.perform(MockMvcRequestBuilders.post("/api/v0.1/predictions")
 				.accept(MediaType.APPLICATION_JSON_UTF8)
@@ -581,26 +586,26 @@ public class TestRestClientControllerExternalGraphs {
 		SeldonMessage seldonMessage = builder.build();
 
 		// Check for returned metrics
-		Assert.assertEquals("COUNTER", seldonMessage.getMeta().getMetrics(0).getType().toString());
-		Assert.assertEquals(1.0F, seldonMessage.getMeta().getMetrics(0).getValue(), 0.0);
-		Assert.assertEquals("mycounter2", seldonMessage.getMeta().getMetrics(0).getKey());
+		Assert.assertEquals("COUNTER",seldonMessage.getMeta().getMetrics(0).getType().toString());
+		Assert.assertEquals(1.0F,seldonMessage.getMeta().getMetrics(0).getValue(),0.0);
+		Assert.assertEquals("mycounter2",seldonMessage.getMeta().getMetrics(0).getKey());
 
-		Assert.assertEquals("GAUGE", seldonMessage.getMeta().getMetrics(1).getType().toString());
-		Assert.assertEquals(22.0F, seldonMessage.getMeta().getMetrics(1).getValue(), 0.0);
-		Assert.assertEquals("mygauge2", seldonMessage.getMeta().getMetrics(1).getKey());
+		Assert.assertEquals("GAUGE",seldonMessage.getMeta().getMetrics(1).getType().toString());
+		Assert.assertEquals(22.0F,seldonMessage.getMeta().getMetrics(1).getValue(),0.0);
+		Assert.assertEquals("mygauge2",seldonMessage.getMeta().getMetrics(1).getKey());
 
-		Assert.assertEquals("TIMER", seldonMessage.getMeta().getMetrics(2).getType().toString());
-		Assert.assertEquals(1.0F, seldonMessage.getMeta().getMetrics(2).getValue(), 0.0);
-		Assert.assertEquals("mytimer2", seldonMessage.getMeta().getMetrics(2).getKey());
+		Assert.assertEquals("TIMER",seldonMessage.getMeta().getMetrics(2).getType().toString());
+		Assert.assertEquals(1.0F,seldonMessage.getMeta().getMetrics(2).getValue(),0.0);
+		Assert.assertEquals("mytimer2",seldonMessage.getMeta().getMetrics(2).getKey());
 
 		// Check prometheus endpoint for metric
 		MvcResult res2 = mvc.perform(MockMvcRequestBuilders.get("/prometheus")).andReturn();
 		Assert.assertEquals(200, res2.getResponse().getStatus());
 		response = res2.getResponse().getContentAsString();
-		System.out.println("response is [" + response + "]");
-		Assert.assertTrue(response.indexOf("mycounter2_total{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0") > -1);
-		Assert.assertTrue(response.indexOf("mytimer2_seconds_count{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0") > -1);
-		Assert.assertTrue(response.indexOf("mygauge2{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 22.0") > -1);
+		System.out.println("response is ["+response+"]");
+		Assert.assertTrue(response.indexOf("mycounter2_total{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
+		Assert.assertTrue(response.indexOf("mytimer2_seconds_count{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")>-1);
+		Assert.assertTrue(response.indexOf("mygauge2{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 22.0")>-1);
 		System.out.println(response);
 
 		res = mvc.perform(MockMvcRequestBuilders.post("/api/v0.1/predictions")
@@ -616,25 +621,25 @@ public class TestRestClientControllerExternalGraphs {
 		seldonMessage = builder.build();
 
 		// Check for returned metrics
-		Assert.assertEquals("COUNTER", seldonMessage.getMeta().getMetrics(0).getType().toString());
-		Assert.assertEquals(1.0F, seldonMessage.getMeta().getMetrics(0).getValue(), 0.0);
-		Assert.assertEquals("mycounter2", seldonMessage.getMeta().getMetrics(0).getKey());
+		Assert.assertEquals("COUNTER",seldonMessage.getMeta().getMetrics(0).getType().toString());
+		Assert.assertEquals(1.0F,seldonMessage.getMeta().getMetrics(0).getValue(),0.0);
+		Assert.assertEquals("mycounter2",seldonMessage.getMeta().getMetrics(0).getKey());
 
-		Assert.assertEquals("GAUGE", seldonMessage.getMeta().getMetrics(1).getType().toString());
-		Assert.assertEquals(100.0F, seldonMessage.getMeta().getMetrics(1).getValue(), 0.0);
-		Assert.assertEquals("mygauge2", seldonMessage.getMeta().getMetrics(1).getKey());
+		Assert.assertEquals("GAUGE",seldonMessage.getMeta().getMetrics(1).getType().toString());
+		Assert.assertEquals(100.0F,seldonMessage.getMeta().getMetrics(1).getValue(),0.0);
+		Assert.assertEquals("mygauge2",seldonMessage.getMeta().getMetrics(1).getKey());
 
-		Assert.assertEquals("TIMER", seldonMessage.getMeta().getMetrics(2).getType().toString());
-		Assert.assertEquals(1.0F, seldonMessage.getMeta().getMetrics(2).getValue(), 0.0);
-		Assert.assertEquals("mytimer2", seldonMessage.getMeta().getMetrics(2).getKey());
+		Assert.assertEquals("TIMER",seldonMessage.getMeta().getMetrics(2).getType().toString());
+		Assert.assertEquals(1.0F,seldonMessage.getMeta().getMetrics(2).getValue(),0.0);
+		Assert.assertEquals("mytimer2",seldonMessage.getMeta().getMetrics(2).getKey());
 
 		// Check prometheus endpoint for metric
 		res2 = mvc.perform(MockMvcRequestBuilders.get("/prometheus")).andReturn();
 		Assert.assertEquals(200, res2.getResponse().getStatus());
 		response = res2.getResponse().getContentAsString();
-		Assert.assertTrue(response.indexOf("mycounter2_total{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 2.0") > -1);
-		Assert.assertTrue(response.indexOf("mytimer2_seconds_count{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 2.0") > -1);
-		Assert.assertTrue(response.indexOf("mygauge2{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 100.0") > -1);
+		Assert.assertTrue(response.indexOf("mycounter2_total{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 2.0")>-1);
+		Assert.assertTrue(response.indexOf("mytimer2_seconds_count{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 2.0")>-1);
+		Assert.assertTrue(response.indexOf("mygauge2{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 100.0")>-1);
 		System.out.println(response);
 	}
 
