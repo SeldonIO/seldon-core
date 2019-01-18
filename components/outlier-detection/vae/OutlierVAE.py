@@ -19,7 +19,7 @@ class OutlierVAE(object):
         - send_feedback: add target labels as part of the feedback loop
         - metrics: return custom metrics
     """
-    def __init__(self,threshold=10,reservoir_size=50000,load_path='./models/'):
+    def __init__(self,threshold=10,reservoir_size=50000,model_name='vae',load_path='./models/'):
         
         self.threshold = threshold
         self.reservoir_size = reservoir_size
@@ -27,17 +27,24 @@ class OutlierVAE(object):
         self.N = 0 # total sample count up until now for reservoir sampling
         
         # load model architecture parameters
-        with open(load_path + 'model.pickle', 'rb') as f:
-            n_features, hidden_layers, latent_dim, hidden_dim = pickle.load(f)
+        with open(load_path + model_name + '.pickle', 'rb') as f:
+            n_features, hidden_layers, latent_dim, hidden_dim, output_activation = pickle.load(f)
             
         # instantiate model
-        self.vae = model(n_features,hidden_layers=hidden_layers,latent_dim=latent_dim,hidden_dim=hidden_dim)
-        self.vae.load_weights(load_path + 'vae_weights.h5') # load pretrained model weights
+        self.vae = model(n_features,hidden_layers=hidden_layers,latent_dim=latent_dim,
+                         hidden_dim=hidden_dim,output_activation=output_activation)
+        self.vae.load_weights(load_path + model_name + '_weights.h5') # load pretrained model weights
         self.vae._make_predict_function()
         
-        # load mu and sigma vectors for each feature
-        with open(load_path + 'mu_sigma.pickle', 'rb') as f:
-            self.mu, self.sigma = pickle.load(f)
+        # load data preprocessing info
+        with open(load_path + 'preprocess_' + model_name + '.pickle', 'rb') as f:
+            preprocess = pickle.load(f)
+        self.preprocess, self.clip, self.axis = preprocess[:3]
+        if self.preprocess=='minmax':
+            self.xmin, self.xmax = preprocess[3:5]
+            self.min, self.max = preprocess[5:]
+        elif self.preprocess=='standardized':
+            self.mu, self.sigma = preprocess[3:]
         
         self._predictions = []
         self._labels = []
@@ -57,9 +64,13 @@ class OutlierVAE(object):
                 if s < self.reservoir_size:
                     self.batch[s] = item
         
-        if update_stand: # update mu and sigma
-            self.mu = np.mean(self.batch,axis=0)
-            self.sigma = np.std(self.batch,axis=0)
+        if update_stand:
+            if self.preprocess=='minmax':
+                self.xmin = np.array(self.batch).min(axis=self.axis)
+                self.xmax = np.array(self.batch).max(axis=self.axis)
+            elif self.preprocess=='standardized':
+                self.mu = np.array(self.batch).mean(axis=self.axis)
+                self.sigma = np.array(self.batch).std(axis=self.axis)
         return
 
     
@@ -71,6 +82,9 @@ class OutlierVAE(object):
             - feature_names
         """
         
+        # clip data per feature
+        X = np.clip(X,[-c for c in self.clip],self.clip)
+    
         if self.N < self.reservoir_size:
             update_stand = False
         else:
@@ -78,7 +92,11 @@ class OutlierVAE(object):
             
         self.reservoir_sampling(X,update_stand=update_stand)
         
-        X_scaled = (X - self.mu) / (self.sigma + 1e-10) # standardize input variables
+        # apply scaling
+        if self.preprocess=='minmax':
+            X_scaled = ((X - self.xmin) / (self.xmax - self.xmin)) * (self.max - self.min) + self.min
+        elif self.preprocess=='standardized':
+            X_scaled = (X - self.mu) / (self.sigma + 1e-10)
         
         # sample latent variables and calculate reconstruction errors
         N = 10
