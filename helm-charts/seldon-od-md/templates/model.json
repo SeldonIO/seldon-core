@@ -30,21 +30,50 @@
                             }
                         ],
                         "terminationGracePeriodSeconds": 1
-                    }}
-                                  ],
-                "graph":
-                {
+                    }}			   
+	        ],
+                "graph":		 
+		{
                     "children": [],
                     "name": "{{ .Values.model.name }}",
-                    "type": "MODEL",
                     "endpoint": {
-                        "type": "REST"
-                    }},
+			"type" : "REST"
+		    },
+                    "type": "MODEL",
+                    "parameters": [
+			{
+			    "name": "threshold",
+			    "value": "{{ .Values.model.threshold }}",
+			    "type": "FLOAT"
+			},
+			{
+			    "name": "n_components",
+			    "value": "{{ .Values.model.n_components }}",
+			    "type": "INT"
+			},
+			{
+			    "name": "n_stdev",
+			    "value": "{{ .Values.model.n_stdev }}",
+			    "type": "FLOAT"
+			},
+			{
+			    "name": "start_clip",
+			    "value": "{{ .Values.model.start_clip }}",
+			    "type": "INT"
+			},
+			{
+			    "name": "max_n",
+			    "value": "{{ .Values.model.max_n }}",
+			    "type": "INT"
+			}
+
+		    ],
+                },		 			 
                 "name": "{{ .Release.Name }}",
                 "replicas": {{ .Values.replicas }},
-            "labels": {
-            "version" : "v1"
-            }
+		"labels": {
+		    "version" : "v1"
+		}
             }
         ]
     }
