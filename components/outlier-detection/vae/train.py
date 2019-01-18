@@ -19,28 +19,53 @@ COLS = str(['srv_count','serror_rate','srv_serror_rate','rerror_rate','srv_rerro
             'dst_host_same_srv_rate','dst_host_diff_srv_rate','dst_host_same_src_port_rate',
             'dst_host_srv_diff_host_rate','dst_host_serror_rate','dst_host_srv_serror_rate',
             'dst_host_rerror_rate','dst_host_srv_rerror_rate','target'])
-# VAE architecture
+MODEL_NAME = 'vae'
+SAVE_PATH = './models/'
+
+# data preprocessing
+STANDARDIZED = False
+MINMAX = False
+CLIP = [99999]
+
+# architecture
 HIDDEN_LAYERS = 2
 LATENT_DIM = 2
 HIDDEN_DIM = [15,7]
-# VAE training
+OUTPUT_ACTIVATION = 'sigmoid'
+
+# training
 EPOCHS = 20
 BATCH_SIZE = 32
-SAVE = True
-SAVE_PATH = './models/'
+LEARNING_RATE = .001
+SAVE = False
 PRINT_PROGRESS = False
-STANDARDIZED = True
+CONTINUE_TRAINING = False
+LOAD_PATH = SAVE_PATH
 
 def train(model,X,args):
     """ Train VAE. """
-
+    
+    # clip data per feature
+    X = np.clip(X,[-c for c in args.clip],args.clip)
+    
+    # apply scaling and save data preprocessing method
+    axis = 0
     if args.standardized:
-        mu = np.mean(X,axis=0)
-        sigma = np.std(X,axis=0)
-        # save mu and sigma
-        with open(args.save_path + 'mu_sigma.pickle', 'wb') as f:
-            pickle.dump([mu,sigma], f)
-        X = (X - mu) / (sigma + 1e-10) # standardize input variables
+        print('\nStandardizing data')
+        mu, sigma = np.mean(X,axis=axis), np.std(X,axis=axis)
+        X = (X - mu) / (sigma + 1e-10)
+        
+        with open(args.save_path + 'preprocess_' + args.model_name + '.pickle', 'wb') as f:
+            pickle.dump(['standardized',args.clip,axis,mu,sigma], f)
+    
+    if args.minmax:
+        print('\nMinmax scaling of data')
+        xmin, xmax = X.min(axis=axis), X.max(axis=axis)
+        min, max = 0, 1
+        X = ((X - xmin) / (xmax - xmin)) * (max - min) + min
+        
+        with open(args.save_path + 'preprocess_' + args.model_name + '.pickle', 'wb') as f:
+            pickle.dump(['minmax',args.clip,axis,xmin,xmax,min,max], f)
 
     # set training arguments
     if args.print_progress:
@@ -56,16 +81,17 @@ def train(model,X,args):
     kwargs['verbose'] = verbose
 
     if args.save: # create callback
-        checkpointer = ModelCheckpoint(filepath=args.save_path + 'vae_weights.h5',verbose=0,
+        checkpointer = ModelCheckpoint(filepath=args.save_path + args.model_name + '_weights.h5',verbose=0,
                                        save_best_only=True,save_weights_only=True)
         kwargs['callbacks'] = [checkpointer]
-        
+            
         # save model architecture
-        with open(args.save_path + 'model.pickle', 'wb') as f:
-            pickle.dump([X.shape[1],args.hidden_layers,args.latent_dim,args.hidden_dim],f)
+        with open(args.save_path + args.model_name + '.pickle', 'wb') as f:
+            pickle.dump([X.shape[1],args.hidden_layers,args.latent_dim,
+                         args.hidden_dim,args.output_activation],f)
 
     model.fit(X,**kwargs)
-
+    
 def run(args):
     """ Load data, generate training batch, initiate model and train VAE. """
     
@@ -81,7 +107,13 @@ def run(args):
     
     print('\nInitiate outlier detector model')
     n_features = data.shape[1]-1 # nb of features
-    vae = model(n_features,hidden_layers=args.hidden_layers,latent_dim=args.latent_dim,hidden_dim=args.hidden_dim)
+    vae = model(n_features,hidden_layers=args.hidden_layers,latent_dim=args.latent_dim,hidden_dim=args.hidden_dim,
+                output_activation=args.output_activation,learning_rate=args.learning_rate)
+    
+    if args.continue_training:
+        print('\nLoad pre-trained model')
+        vae.load_weights(args.load_path + args.model_name + '_weights.h5') # load pretrained model weights
+        
     if args.print_progress:
         vae.summary()
     
@@ -97,12 +129,19 @@ if __name__ == '__main__':
     parser.add_argument('--hidden_layers',type=int,default=HIDDEN_LAYERS)
     parser.add_argument('--latent_dim',type=int,default=LATENT_DIM)
     parser.add_argument('--hidden_dim',type=int,nargs='+',default=HIDDEN_DIM)
+    parser.add_argument('--output_activation',type=str,default=OUTPUT_ACTIVATION)
     parser.add_argument('--epochs',type=int,default=EPOCHS)
     parser.add_argument('--batch_size',type=int,default=BATCH_SIZE)
-    parser.add_argument('--standardized', default=STANDARDIZED, action='store_false')
+    parser.add_argument('--learning_rate',type=float,default=LEARNING_RATE)
+    parser.add_argument('--clip',type=float,nargs='+',default=CLIP)
+    parser.add_argument('--standardized', default=STANDARDIZED, action='store_true')
+    parser.add_argument('--minmax', default=MINMAX, action='store_true')
     parser.add_argument('--print_progress', default=PRINT_PROGRESS, action='store_true')
-    parser.add_argument('--save', default=SAVE, action='store_false')
+    parser.add_argument('--save', default=SAVE, action='store_true')
     parser.add_argument('--save_path',type=str,default=SAVE_PATH)
+    parser.add_argument('--load_path',type=str,default=LOAD_PATH)
+    parser.add_argument('--model_name',type=str,default=MODEL_NAME)
+    parser.add_argument('--continue_training', default=CONTINUE_TRAINING, action='store_true')
     args = parser.parse_args()
 
     run(args)
