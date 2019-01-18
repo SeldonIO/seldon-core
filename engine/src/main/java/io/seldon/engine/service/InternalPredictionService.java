@@ -441,13 +441,4 @@ public class InternalPredictionService {
 		logger.error("Failed to retrueve predictions after {} attempts",restRetries);
 		throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,String.format("Failed to retrieve predictions after %d attempts",restRetries));
 	}
-
-	 /**
-     * Used only for testing. Should be replaced by better methods that use Spring and Mockito to create a Mock RestTemplate for testing
-     * @param predictorSpec
-     */
-	public void setRestTemplate(RestTemplate restTemplate) { // FIXME
-		this.restTemplate = restTemplate;
-	}
-
 }
