@@ -1,4 +1,5 @@
-KSONNET_FOLDER=../../seldon-core/seldon-core/json
+SC_KSONNET_FOLDER=../../seldon-core/seldon-core/json
+SCA_KSONNET_FOLDER=../../seldon-core/seldon-core-analytics/json
 
 .PHONY: start-minikube
 start-minikube:
@@ -29,14 +30,27 @@ template_0.1.yaml: seldon-core-release-0.1
 template_0.1.json: template_0.1.yaml kubectl
 	./kubectl convert -f template_0.1.yaml -o json > template_0.1.json
 
+
+template_analytics.txt:
+	helm template ../../helm-charts/seldon-core-analytics > template_analytics.txt
+
+analytics.json: template_analytics.txt
+	python yj2j.py template_analytics.txt > analytics.json
+
+######
+
 .PHONY: build
 build: template_0.2_single_namespace.json template_0.2_cluster_wide.json template_0.1.json
 
+.PHONY: release_analytics
+release_analytics:
+	cp analytics.json ${SCA_KSONNET_FOLDER}
+
 .PHONY: release
 release:
-	cp template_0.2_single_namespace.json ${KSONNET_FOLDER}
-	cp template_0.2_cluster_wide.json ${KSONNET_FOLDER}
-	cp template_0.1.json ${KSONNET_FOLDER}
+	cp template_0.2_single_namespace.json ${SC_KSONNET_FOLDER}
+	cp template_0.2_cluster_wide.json ${SC_KSONNET_FOLDER}
+	cp template_0.1.json ${SC_KSONNET_FOLDER}
 
 .PHONY: clean
 clean:
@@ -44,3 +58,6 @@ clean:
 	rm -f *.yaml
 	rm -rf seldon-core-release-0.1
 	rm -f kubectl
+	rm -f template_analytics.txt
+	rm -f analytics.json
+
