@@ -322,6 +322,7 @@ def main():
         from jaeger_client import Config
 
         jaeger_serv = os.environ.get("JAEGER_AGENT_HOST","0.0.0.0")
+        jaeger_port = os.environ.get("JAEGER_AGENT_PORT", 5775)
         jaeger_config = os.environ.get("JAEGER_CONFIG_PATH",None)
         if jaeger_config is None:
             logger.info("Using default tracing config")
@@ -333,7 +334,7 @@ def main():
                     },
                     'local_agent': {
                         'reporting_host': jaeger_serv,
-                        'reporting_port': 5775,
+                        'reporting_port': jaeger_port,
                     },
                     'logging': True,
                 },
