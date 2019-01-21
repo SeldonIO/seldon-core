@@ -87,6 +87,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
     public static final String LABEL_SELDON_TYPE_VAL = "deployment";
     public static final String PODINFO_VOLUME_NAME = "podinfo";
     public static final String PODINFO_VOLUME_PATH = "/etc/podinfo";
+	public static final String DEFAULT_ENGINE_CPU_REQUEST = "0.1";
     private final SeldonNameCreator seldonNameCreator = new SeldonNameCreator();
     
 	@Autowired
@@ -156,9 +157,6 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 							.addCommand("-c")
 							.addCommand("curl 127.0.0.1:"+clusterManagerProperites.getEngineContainerPort()+"/pause && /bin/sleep 10"))));
 
-		// Add engine resources if specified (deprecated - will be removed)
-		if (predictorDef.hasEngineResources())
-		    cBuilder.setResources(predictorDef.getEngineResources());
 		if (predictorDef.hasSvcOrchSpec())
 		{
 			if (predictorDef.getSvcOrchSpec().hasResources())
@@ -166,8 +164,9 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			if (predictorDef.getSvcOrchSpec().getEnvCount() > 0)
 				cBuilder.addAllEnv(predictorDef.getSvcOrchSpec().getEnvList());
 		}
-		else {// set default resource requests for cpu
-			final String DEFAULT_ENGINE_CPU_REQUEST = "0.1";
+		else if (predictorDef.hasEngineResources()) // Add engine resources if specified (deprecated - will be removed)
+		    cBuilder.setResources(predictorDef.getEngineResources());
+		else {// set just default resource requests for cpu
 		    cBuilder.setResources(V1.ResourceRequirements.newBuilder().putRequests("cpu", Quantity.newBuilder().setString(DEFAULT_ENGINE_CPU_REQUEST).build()));
 		}
 		return cBuilder.build();
