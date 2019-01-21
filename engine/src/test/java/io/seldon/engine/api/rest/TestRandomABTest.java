@@ -84,13 +84,13 @@ public class TestRandomABTest {
     	String jsonStr = readFile("src/test/resources/abtest.json",StandardCharsets.UTF_8);
     	String responseStr = readFile("src/test/resources/response_with_metrics.json",StandardCharsets.UTF_8);
     	PredictorSpec.Builder PredictorSpecBuilder = PredictorSpec.newBuilder();
-		enginePredictor.updateMessageBuilderFromJson(PredictorSpecBuilder, jsonStr);
+    	EnginePredictor.updateMessageBuilderFromJson(PredictorSpecBuilder, jsonStr);
     	PredictorSpec predictorSpec = PredictorSpecBuilder.build();
     	final String predictJson = "{" +
          	    "\"request\": {" +
          	    "\"ndarray\": [[1.0]]}" +
          		"}";
-		ReflectionTestUtils.setField(enginePredictor,"predictorSpec",predictorSpec);
+    	ReflectionTestUtils.setField(enginePredictor,"predictorSpec",predictorSpec);
 
     	ResponseEntity<String> httpResponse = new ResponseEntity<String>(responseStr, null, HttpStatus.OK);
     	Mockito.when(testRestTemplate.getRestTemplate().postForEntity(Matchers.<URI>any(), Matchers.<HttpEntity<MultiValueMap<String, String>>>any(), Matchers.<Class<String>>any()))

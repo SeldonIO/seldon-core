@@ -89,13 +89,13 @@ public class TestRestClientControllerExternalGraphs {
     	String responseStr = readFile("src/test/resources/response_with_metrics.json",StandardCharsets.UTF_8);
     	String responseStr2 = readFile("src/test/resources/response_with_metrics2.json",StandardCharsets.UTF_8);
     	PredictorSpec.Builder PredictorSpecBuilder = PredictorSpec.newBuilder();
-		enginePredictor.updateMessageBuilderFromJson(PredictorSpecBuilder, jsonStr);
+    	EnginePredictor.updateMessageBuilderFromJson(PredictorSpecBuilder, jsonStr);
     	PredictorSpec predictorSpec = PredictorSpecBuilder.build();
     	final String predictJson = "{" +
          	    "\"data\": {" +
          	    "\"ndarray\": [[1.0]]}" +
          		"}";
-		ReflectionTestUtils.setField(enginePredictor,"predictorSpec",predictorSpec);
+    	ReflectionTestUtils.setField(enginePredictor,"predictorSpec",predictorSpec);
 
 
     	ResponseEntity<String> httpResponse1 = new ResponseEntity<String>(responseStr, null, HttpStatus.OK);
@@ -189,13 +189,13 @@ public class TestRestClientControllerExternalGraphs {
     	String jsonStr = readFile("src/test/resources/transformer_simple.json",StandardCharsets.UTF_8);
     	String responseStr = readFile("src/test/resources/response_with_metrics.json",StandardCharsets.UTF_8);
     	PredictorSpec.Builder PredictorSpecBuilder = PredictorSpec.newBuilder();
-		enginePredictor.updateMessageBuilderFromJson(PredictorSpecBuilder, jsonStr);
+    	EnginePredictor.updateMessageBuilderFromJson(PredictorSpecBuilder, jsonStr);
     	PredictorSpec predictorSpec = PredictorSpecBuilder.build();
     	final String predictJson = "{" +
          	    "\"data\": {" +
          	    "\"ndarray\": [[1.0]]}" +
          		"}";
-		ReflectionTestUtils.setField(enginePredictor,"predictorSpec",predictorSpec);
+    	ReflectionTestUtils.setField(enginePredictor,"predictorSpec",predictorSpec);
 
 
     	ResponseEntity<String> httpResponse = new ResponseEntity<String>(responseStr, null, HttpStatus.OK);
@@ -243,13 +243,13 @@ public class TestRestClientControllerExternalGraphs {
     	String jsonStr = readFile("src/test/resources/transform_output_simple.json",StandardCharsets.UTF_8);
     	String responseStr = readFile("src/test/resources/response_with_metrics.json",StandardCharsets.UTF_8);
     	PredictorSpec.Builder PredictorSpecBuilder = PredictorSpec.newBuilder();
-		enginePredictor.updateMessageBuilderFromJson(PredictorSpecBuilder, jsonStr);
+    	EnginePredictor.updateMessageBuilderFromJson(PredictorSpecBuilder, jsonStr);
     	PredictorSpec predictorSpec = PredictorSpecBuilder.build();
     	final String predictJson = "{" +
          	    "\"data\": {" +
          	    "\"ndarray\": [[1.0]]}" +
          		"}";
-		ReflectionTestUtils.setField(enginePredictor,"predictorSpec",predictorSpec);
+    	ReflectionTestUtils.setField(enginePredictor,"predictorSpec",predictorSpec);
 
 
     	ResponseEntity<String> httpResponse = new ResponseEntity<String>(responseStr, null, HttpStatus.OK);
@@ -299,13 +299,13 @@ public class TestRestClientControllerExternalGraphs {
     	String responseStrRouter = readFile("src/test/resources/router_response.json",StandardCharsets.UTF_8);
     	String responseStrModel = readFile("src/test/resources/router_model_response.json",StandardCharsets.UTF_8);
     	PredictorSpec.Builder PredictorSpecBuilder = PredictorSpec.newBuilder();
-		enginePredictor.updateMessageBuilderFromJson(PredictorSpecBuilder, jsonStr);
+    	EnginePredictor.updateMessageBuilderFromJson(PredictorSpecBuilder, jsonStr);
     	PredictorSpec predictorSpec = PredictorSpecBuilder.build();
     	final String predictJson = "{" +
          	    "\"data\": {" +
          	    "\"ndarray\": [[1.0]]}" +
          		"}";
-		ReflectionTestUtils.setField(enginePredictor,"predictorSpec",predictorSpec);
+    	ReflectionTestUtils.setField(enginePredictor,"predictorSpec",predictorSpec);
 
 
     	ResponseEntity<String> httpResponse1 = new ResponseEntity<String>(responseStrRouter, null, HttpStatus.OK);
@@ -378,13 +378,13 @@ public class TestRestClientControllerExternalGraphs {
     	String jsonStr = readFile("src/test/resources/combiner_simple.json",StandardCharsets.UTF_8);
     	String responseStr = readFile("src/test/resources/response_with_metrics.json",StandardCharsets.UTF_8);
     	PredictorSpec.Builder PredictorSpecBuilder = PredictorSpec.newBuilder();
-		enginePredictor.updateMessageBuilderFromJson(PredictorSpecBuilder, jsonStr);
+    	EnginePredictor.updateMessageBuilderFromJson(PredictorSpecBuilder, jsonStr);
     	PredictorSpec predictorSpec = PredictorSpecBuilder.build();
     	final String predictJson = "{" +
          	    "\"data\": {" +
          	    "\"ndarray\": [[1.0]]}" +
          		"}";
-		ReflectionTestUtils.setField(enginePredictor,"predictorSpec",predictorSpec);
+    	ReflectionTestUtils.setField(enginePredictor,"predictorSpec",predictorSpec);
 
 
     	ResponseEntity<String> httpResponse = new ResponseEntity<String>(responseStr, null, HttpStatus.OK);
@@ -436,12 +436,12 @@ public class TestRestClientControllerExternalGraphs {
     	String responseStr = readFile("src/test/resources/response_strdata.json",StandardCharsets.UTF_8);
     	String responseStr2 = readFile("src/test/resources/response_strdata2.json",StandardCharsets.UTF_8);
     	PredictorSpec.Builder PredictorSpecBuilder = PredictorSpec.newBuilder();
-		enginePredictor.updateMessageBuilderFromJson(PredictorSpecBuilder, jsonStr);
+    	EnginePredictor.updateMessageBuilderFromJson(PredictorSpecBuilder, jsonStr);
     	PredictorSpec predictorSpec = PredictorSpecBuilder.build();
     	final String predictJson = "{" +
          	    "\"strData\": \"my string data\"" +
          		"}";
-		ReflectionTestUtils.setField(enginePredictor,"predictorSpec",predictorSpec);
+    	ReflectionTestUtils.setField(enginePredictor,"predictorSpec",predictorSpec);
 
     	ResponseEntity<String> httpResponse1 = new ResponseEntity<String>(responseStr, null, HttpStatus.OK);
     	ResponseEntity<String> httpResponse2 = new ResponseEntity<String>(responseStr2, null, HttpStatus.OK);
@@ -535,12 +535,12 @@ public class TestRestClientControllerExternalGraphs {
     	String responseStr = readFile("src/test/resources/response_bindata.json",StandardCharsets.UTF_8);
     	String responseStr2 = readFile("src/test/resources/response_bindata2.json",StandardCharsets.UTF_8);
     	PredictorSpec.Builder PredictorSpecBuilder = PredictorSpec.newBuilder();
-		enginePredictor.updateMessageBuilderFromJson(PredictorSpecBuilder, jsonStr);
+    	EnginePredictor.updateMessageBuilderFromJson(PredictorSpecBuilder, jsonStr);
     	PredictorSpec predictorSpec = PredictorSpecBuilder.build();
     	final String predictJson = "{" +
          	    "\"binData\": \"MTIz\"" +
          		"}";
-		ReflectionTestUtils.setField(enginePredictor,"predictorSpec",predictorSpec);
+    	ReflectionTestUtils.setField(enginePredictor,"predictorSpec",predictorSpec);
 
     	ResponseEntity<String> httpResponse1 = new ResponseEntity<String>(responseStr, null, HttpStatus.OK);
     	ResponseEntity<String> httpResponse2 = new ResponseEntity<String>(responseStr2, null, HttpStatus.OK);
