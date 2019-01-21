@@ -88,3 +88,6 @@ Notes
 # Next Steps
 
  * [Jupyter notebooks showing worked examples](../readme.md#quick-start)
+ * Seldon Core Analytics (example Prometheus and Grafana)
+   * [Helm Chart](../helm-charts/seldon-core-analytics)
+   * [Ksonnet Package](../seldon-core/seldon-core-analytics)
