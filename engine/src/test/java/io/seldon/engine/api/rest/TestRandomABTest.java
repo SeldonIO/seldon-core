@@ -22,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -29,17 +30,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.context.WebApplicationContext;
 
-import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.Message;
-
-import io.kubernetes.client.proto.IntStr.IntOrString;
-import io.kubernetes.client.proto.Meta.Time;
-import io.kubernetes.client.proto.Meta.Timestamp;
-import io.kubernetes.client.proto.Resource.Quantity;
-import io.seldon.engine.pb.IntOrStringUtils;
 import io.seldon.engine.pb.JsonFormat;
-import io.seldon.engine.pb.QuantityUtils;
-import io.seldon.engine.pb.TimeUtils;
 import io.seldon.engine.predictors.EnginePredictor;
 import io.seldon.engine.service.InternalPredictionService;
 import io.seldon.protos.DeploymentProtos.PredictorSpec;
@@ -55,15 +46,6 @@ import static io.seldon.engine.util.TestUtils.readFile;
 	    "management.security.enabled=false",
 	})
 public class TestRandomABTest {
-
-	private <T extends Message.Builder> void updateMessageBuilderFromJson(T messageBuilder, String json) throws InvalidProtocolBufferException {
-        JsonFormat.parser().ignoringUnknownFields()
-        .usingTypeParser(IntOrString.getDescriptor().getFullName(), new IntOrStringUtils.IntOrStringParser())
-        .usingTypeParser(Quantity.getDescriptor().getFullName(), new QuantityUtils.QuantityParser())
-        .usingTypeParser(Time.getDescriptor().getFullName(), new TimeUtils.TimeParser())
-        .usingTypeParser(Timestamp.getDescriptor().getFullName(), new TimeUtils.TimeParser())
-        .merge(json, messageBuilder);
-    }
 
 	@Autowired
 	private WebApplicationContext context;
@@ -102,14 +84,13 @@ public class TestRandomABTest {
     	String jsonStr = readFile("src/test/resources/abtest.json",StandardCharsets.UTF_8);
     	String responseStr = readFile("src/test/resources/response_with_metrics.json",StandardCharsets.UTF_8);
     	PredictorSpec.Builder PredictorSpecBuilder = PredictorSpec.newBuilder();
-    	updateMessageBuilderFromJson(PredictorSpecBuilder, jsonStr);
+    	EnginePredictor.updateMessageBuilderFromJson(PredictorSpecBuilder, jsonStr);
     	PredictorSpec predictorSpec = PredictorSpecBuilder.build();
     	final String predictJson = "{" +
          	    "\"request\": {" +
          	    "\"ndarray\": [[1.0]]}" +
          		"}";
-    	enginePredictor.setPredictorSpec(predictorSpec);
-
+    	ReflectionTestUtils.setField(enginePredictor,"predictorSpec",predictorSpec);
 
     	ResponseEntity<String> httpResponse = new ResponseEntity<String>(responseStr, null, HttpStatus.OK);
     	Mockito.when(testRestTemplate.getRestTemplate().postForEntity(Matchers.<URI>any(), Matchers.<HttpEntity<MultiValueMap<String, String>>>any(), Matchers.<Class<String>>any()))
