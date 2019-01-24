@@ -55,6 +55,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	private final K8sClientProvider clientProvider;
 	private final KubeCRDHandler crdHandler;
 	private final SeldonDeploymentCache mlCache;
+	private final SeldonNameCreator seldonNameCreator = new SeldonNameCreator();
 	
 	private static final String DEPLOYMENT_API_VERSION = "extensions/v1beta1";
 	
@@ -127,7 +128,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	{
 		int deleteCount = 0;
 	    Set<String> names = getDeploymentNames(deployments);
-	    ExtensionsV1beta1DeploymentList depList = crdHandler.getOwnedDeployments(seldonDeployment.getSpec().getName(),namespace);
+	    ExtensionsV1beta1DeploymentList depList = crdHandler.getOwnedDeployments(seldonNameCreator.getSeldonId(seldonDeployment),namespace);
 	    for (ExtensionsV1beta1Deployment d : depList.getItems())
 	    {
 	    	boolean okToDelete = !svcOrchOnly || (d.getMetadata().getLabels().containsKey(Constants.LABEL_SELDON_SVCORCH));
@@ -156,7 +157,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	private void removeServices(ApiClient client,String namespace,SeldonDeployment seldonDeployment,List<Service> services) throws ApiException, IOException, SeldonDeploymentException
 	{
 		Set<String> names = getServiceNames(services);
-		V1ServiceList svcList = crdHandler.getOwnedServices(seldonDeployment.getSpec().getName(),namespace);
+		V1ServiceList svcList = crdHandler.getOwnedServices(seldonNameCreator.getSeldonId(seldonDeployment),namespace);
 		for(V1Service s : svcList.getItems())
 		{
 			if (!names.contains(s.getMetadata().getName()))
@@ -189,7 +190,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	private void removeServices(ProtoClient client,String namespace,SeldonDeployment seldonDeployment,List<Service> services) throws ApiException, IOException, SeldonDeploymentException
 	{
 		Set<String> names = getServiceNames(services);
-		V1ServiceList svcList = crdHandler.getOwnedServices(seldonDeployment.getSpec().getName(),namespace);
+		V1ServiceList svcList = crdHandler.getOwnedServices(seldonNameCreator.getSeldonId(seldonDeployment),namespace);
 		for(V1Service s : svcList.getItems())
 		{
 			if (!names.contains(s.getMetadata().getName()))
