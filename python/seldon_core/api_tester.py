@@ -297,7 +297,15 @@ def run_predict(args):
                 response = stub.Predict(
                     request=GRPC_request, metadata=metadata)
             else:
-                response = stub.Predict(request=GRPC_request)
+                # ambassador path
+                split = args.ambassador_path.split("/")
+                try:
+                    _, seldon, namespace, deploymentName = split
+                    metadata = [('seldon', deploymentName), ('namespace', namespace)]
+                except ValueError:
+                    _, seldon, deploymentName = split
+                    metadata = [('seldon', deploymentName)]
+                response = stub.Predict(request=GRPC_request, metadata=metadata)
 
             if args.prnt:
                 print("RECEIVED RESPONSE:")
