@@ -34,4 +34,5 @@ public class Constants {
     public static final String AMBASSADOR_SHADOW_ANNOTATION = "seldon.io/ambassador-shadow";    
     public static final String AMBASSADOR_HEADER_ANNOTATION = "seldon.io/ambassador-header";        
     public static final String AMBASSADOR_REGEX_HEADER_ANNOTATION = "seldon.io/ambassador-regex-header";        
+    public static final String AMBASSADOR_CONFIG_ANNOTATION = "seldon.io/ambassador-config";        
 }
