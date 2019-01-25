@@ -28,7 +28,7 @@ curl -v 0.0.0.0:8003/seldon/mymodel/api/v0.1/predictions -d '{"data":{"names":["
 
 ## Canary Deployments
 
-Canary rollouts are available where you wish to push a certain percentage of traffic to a new model to test whether it works ok in production. You simply need to add some annotations to your Seldon Deployment resource for your canary definition.
+Canary rollouts are available where you wish to push a certain percentage of traffic to a new model to test whether it works ok in production. You simply need to add some annotations to your Seldon Deployment resource for your canary deployment.
 
   * `seldon.io/ambassador-weight`:`<weight_value>` : The weight (a value between 0 and 100) to be applied to this deployment.
      * Example: `"seldon.io/ambassador-weight":"25"`
@@ -41,9 +41,17 @@ To understand more about the Ambassador configuration for this see [their docs](
 
 ## Shadow Deployments
 
-Shadow deployments allow you to send duplicate requests to a parallel deployment but throw away the response. This allows you to test machine learning models under load and compare the results to the live deployment.
+Shadow deployments allow you to send duplicate requests to a parallel deployment but throw away the response. This allows you to test machine learning models under load and compare the results to the live deployment. 
 
+You simply need to add some annotations to your Seldon Deployment resource for your shadow deployment.
 
+  * `seldon.io/ambassador-shadow`:`true` : Flag to mark this deployment as a Shadow deployment in Ambassador.
+  * `seldon.io/ambassador-service-name`:`<existing_deployment_name>` : The name of the existing Seldon you want to attach to as a shadow.
+     * Example: "seldon.io/ambassador-service-name":"example"
+
+A worked example notebook can be found [here](https://github.com/SeldonIO/seldon-core/blob/master/examples/ambassador/shadow/ambassador_shadow.ipynb)
+
+To understand more about the Ambassador configuration for this see [their docs](https://www.getambassador.io/reference/shadowing/).
 
 ## Header based Routing
 
