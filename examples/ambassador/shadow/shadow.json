@@ -1,0 +1,44 @@
+{
+    "apiVersion": "machinelearning.seldon.io/v1alpha2",
+    "kind": "SeldonDeployment",
+    "metadata": {
+        "labels": {
+            "app": "seldon"
+        },
+        "name": "example-shadow"
+    },
+    "spec": {
+        "name": "shadow-model",
+	"annotations": {
+	    "seldon.io/ambassador-service-name":"example",
+	    "seldon.io/ambassador-shadow":"true"	    
+	},	
+        "predictors": [
+            {
+                "componentSpecs": [{
+                    "spec": {
+                        "containers": [
+                            {
+                                "image": "seldonio/mock_classifier_rest:1.1",
+                                "imagePullPolicy": "IfNotPresent",
+                                "name": "classifier"
+                            }
+                        ],
+                        "terminationGracePeriodSeconds": 1
+                    }}
+                                  ],
+                "graph":
+                {
+                    "children": [],
+                    "name": "classifier",
+                    "type": "MODEL",
+                    "endpoint": {
+                        "type": "REST"
+                    }},
+                "name": "single",
+                "replicas": 1
+            }
+        ]
+    }
+}
+
