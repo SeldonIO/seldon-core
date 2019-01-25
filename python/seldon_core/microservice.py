@@ -26,7 +26,7 @@ DEBUG_PARAMETER = "SELDON_DEBUG"
 DEBUG = False
 
 ANNOTATIONS_FILE = "/etc/podinfo/annotations"
-ANNOTATION_GRPC_MAX_MSG_SIZE = 'seldon.io/grpc-max-message-size'            
+ANNOTATION_GRPC_MAX_MSG_SIZE = 'seldon.io/grpc-max-message-size'
 
 def startServers(target1, target2):
     p2 = mp.Process(target=target2)
@@ -119,6 +119,13 @@ def get_data_from_json(message):
             "Can't find data in json: " + strJson)
 
 
+def get_meta_from_json(message):
+    if "meta" in message:
+        return message.get("meta")
+    else:
+        return {}
+
+
 def rest_datadef_to_array(datadef):
     if datadef.get("tensor") is not None:
         features = np.array(datadef.get("tensor").get("values")).reshape(
@@ -165,6 +172,11 @@ def get_data_from_proto(request):
         return request.strData
     else:
         raise SeldonMicroserviceException("Unknown data in SeldonMessage")
+
+
+def get_meta_from_proto(request):
+    meta = json_format.MessageToDict(request.meta)
+    return meta
 
 
 def grpc_datadef_to_array(datadef):
@@ -272,7 +284,7 @@ def main():
                         default=0, const=1, type=int)
     parser.add_argument("--parameters", type=str,
                         default=os.environ.get(PARAMETERS_ENV_NAME, "[]"))
-    parser.add_argument("--log-level", type=str, default='INFO')
+    parser.add_argument("--log-level", type=str, default="INFO")
     parser.add_argument("--tracing", nargs='?',
                         default=int(os.environ.get("TRACING", "0")), const=1, type=int)
 
@@ -285,6 +297,7 @@ def main():
     if not isinstance(log_level_num, int):
         raise ValueError('Invalid log level: %s', args.log_level)
     logger.setLevel(log_level_num)
+    logger.debug("Log level set to %s:%s", args.log_level, log_level_num)
 
     DEBUG = False
     if parameters.get(DEBUG_PARAMETER):
@@ -314,6 +327,9 @@ def main():
         import seldon_core.combiner_microservice as seldon_microservice
     elif args.service_type == "OUTLIER_DETECTOR":
         import seldon_core.outlier_detector_microservice as seldon_microservice
+
+    # set log level for the imported microservice type
+    seldon_microservice.logger.setLevel(log_level_num)
 
     port = int(os.environ.get(SERVICE_PORT_ENV_NAME, DEFAULT_PORT))
 
@@ -349,13 +365,13 @@ def main():
                 config = Config(
                     config=config_dict,
                     service_name=args.interface_name,
-                    validate=True,                    
+                    validate=True,
                 )
         # this call also sets opentracing.tracer
         tracer = config.initialize_tracer()
 
 
-    
+
     if args.api_type == "REST":
 
         def rest_prediction_server():
@@ -365,7 +381,7 @@ def main():
             if args.tracing:
                 from flask_opentracing import FlaskTracer
                 tracing = FlaskTracer(tracer,True, app)
-                        
+
             app.run(host='0.0.0.0', port=port)
 
         logger.info("REST microservice running on port %i",port)
@@ -380,10 +396,10 @@ def main():
                 interceptor = open_tracing_server_interceptor(tracer)
             else:
                 interceptor = None
-                
+
             server = seldon_microservice.get_grpc_server(
                 user_object, debug=DEBUG, annotations=annotations, trace_interceptor=interceptor)
-            
+
             server.add_insecure_port("0.0.0.0:{}".format(port))
 
             server.start()
