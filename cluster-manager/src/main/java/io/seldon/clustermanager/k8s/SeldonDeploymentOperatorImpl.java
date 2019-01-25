@@ -512,7 +512,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			.setName(mlDep.getMetadata().getName())
 			.setUid(mlDep.getMetadata().getUid()).build();
 	}
-	 
+	
 	private String getAmbassadorAnnotation(SeldonDeployment mlDep,String serviceName)
 	{
 		final String customConfig = mlDep.getSpec().getAnnotationsOrDefault(Constants.AMBASSADOR_CONFIG_ANNOTATION, null);
