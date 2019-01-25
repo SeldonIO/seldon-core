@@ -518,7 +518,9 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		final String namespace = (StringUtils.isEmpty(mlDep.getMetadata().getNamespace())) ? "default" : mlDep.getMetadata().getNamespace();
 		final String weight = mlDep.getSpec().getAnnotationsOrDefault(Constants.AMBASSADOR_WEIGHT_ANNOTATION, null);	
 		final String shadowing = mlDep.getSpec().getAnnotationsOrDefault(Constants.AMBASSADOR_SHADOW_ANNOTATION, null);	
-		final String serviceNameExternal = mlDep.getSpec().getAnnotationsOrDefault(Constants.AMBASSADOR_SERVICE_ANNOTATION, mlDep.getMetadata().getName());			
+		final String serviceNameExternal = mlDep.getSpec().getAnnotationsOrDefault(Constants.AMBASSADOR_SERVICE_ANNOTATION, mlDep.getMetadata().getName());
+		final String customHeader = mlDep.getSpec().getAnnotationsOrDefault(Constants.AMBASSADOR_HEADER_ANNOTATION, null);
+		final String customRegexHeader = mlDep.getSpec().getAnnotationsOrDefault(Constants.AMBASSADOR_REGEX_HEADER_ANNOTATION, null);
 		
 		final String restMapping = "---\n"+
                 "apiVersion: ambassador/v0\n" +
@@ -527,6 +529,8 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
                 "prefix: /seldon/"+serviceNameExternal+"/\n" +
                 "service: "+serviceName+"."+namespace+":"+clusterManagerProperites.getEngineContainerPort()+"\n" +
                 "timeout_ms: " + mlDep.getSpec().getAnnotationsOrDefault(Constants.REST_READ_TIMEOUT_ANNOTATION, "3000") + "\n" +
+                (StringUtils.isNotEmpty(customHeader) ? ("headers:\n" + "  "+customHeader+"\n") : "") +  
+                (StringUtils.isNotEmpty(customRegexHeader) ? ("regex_headers:\n" + "  "+customRegexHeader+"\n") : "") +  
                 (StringUtils.isNotEmpty(weight) ? ("weight: "+ weight + "\n") : "") +  
 				(StringUtils.isNotEmpty(shadowing) ? ("shadow: true\n") : ""); 
         final String grpcMapping = "---\n"+
@@ -537,7 +541,9 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
                 "prefix: /seldon.protos.Seldon/\n" +                
                 "rewrite: /seldon.protos.Seldon/\n" + 
                 "headers:\n"+
-                 "  seldon: "+serviceNameExternal + "\n" +
+                "  seldon: "+serviceNameExternal + "\n" +
+                (StringUtils.isNotEmpty(customHeader) ? ("  "+customHeader+"\n") : "") +  
+                (StringUtils.isNotEmpty(customRegexHeader) ? ("regex_headers:\n" + "  "+customRegexHeader+"\n") : "") +  
                 "service: "+serviceName+"."+namespace+":"+clusterManagerProperites.getEngineGrpcContainerPort()+"\n" +
                 "timeout_ms: " + mlDep.getSpec().getAnnotationsOrDefault(Constants.GRPC_READ_TIMEOUT_ANNOTATION, "3000") + "\n" +
                 (StringUtils.isNotEmpty(weight) ? ("weight: "+ weight + "\n") : "") +
@@ -550,6 +556,8 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
                 "prefix: /seldon/"+namespace+"/"+serviceNameExternal+"/\n" +
                 "service: "+serviceName+"."+namespace+":"+clusterManagerProperites.getEngineContainerPort()+"\n" +
                 "timeout_ms: " + mlDep.getSpec().getAnnotationsOrDefault(Constants.REST_READ_TIMEOUT_ANNOTATION, "3000") + "\n" +
+                (StringUtils.isNotEmpty(customHeader) ? ("headers:\n" + "  "+customHeader+"\n") : "") +  
+                (StringUtils.isNotEmpty(customRegexHeader) ? ("regex_headers:\n" + "  "+customRegexHeader+"\n") : "") +  
                 (StringUtils.isNotEmpty(weight) ? ("weight: "+ weight + "\n") : "") +
 				(StringUtils.isNotEmpty(shadowing) ? ("shadow: true\n") : ""); 
 		
@@ -563,6 +571,8 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
                 "headers:\n"+
                 "  seldon: "+serviceNameExternal + "\n" +
                 "  namespace: "+namespace + "\n" +
+                (StringUtils.isNotEmpty(customHeader) ? ("  "+customHeader+"\n") : "") +  
+                (StringUtils.isNotEmpty(customRegexHeader) ? ("regex_headers:\n" + "  "+customRegexHeader+"\n") : "") +  
                 "service: "+serviceName+"."+namespace+":"+clusterManagerProperites.getEngineGrpcContainerPort()+"\n" +
                 "timeout_ms: " + mlDep.getSpec().getAnnotationsOrDefault(Constants.GRPC_READ_TIMEOUT_ANNOTATION, "3000") + "\n" +
                 (StringUtils.isNotEmpty(weight) ? ("weight: "+ weight + "\n") : "") +

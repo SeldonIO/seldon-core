@@ -59,7 +59,7 @@ def grpc_request_api_gateway(oauth_key,oauth_secret,namespace,rest_endpoint="loc
     response = stub.Predict(request=request,metadata=metadata)
     return response
 
-def rest_request_ambassador(deploymentName,namespace,endpoint="localhost:8003",data_size=5,rows=1,data=None):
+def rest_request_ambassador(deploymentName,namespace,endpoint="localhost:8003",data_size=5,rows=1,data=None,headers=None):
     if data is None:
         shape, arr = create_random_data(data_size,rows)
     else:
@@ -69,11 +69,13 @@ def rest_request_ambassador(deploymentName,namespace,endpoint="localhost:8003",d
     if namespace is None:
         response = requests.post(
             "http://"+endpoint+"/seldon/"+deploymentName+"/api/v0.1/predictions",
-            json=payload)
+            json=payload,
+            headers=headers)
     else:
         response = requests.post(
             "http://"+endpoint+"/seldon/"+namespace+"/"+deploymentName+"/api/v0.1/predictions",
-            json=payload)
+            json=payload,
+            headers=headers)
     return response
 
 def rest_request_ambassador_auth(deploymentName,namespace,username,password,endpoint="localhost:8003",data_size=5,rows=1,data=None):
@@ -95,7 +97,7 @@ def rest_request_ambassador_auth(deploymentName,namespace,username,password,endp
             auth=HTTPBasicAuth(username, password))
     return response
 
-def grpc_request_ambassador(deploymentName,namespace,endpoint="localhost:8004",data_size=5,rows=1,data=None):
+def grpc_request_ambassador(deploymentName,namespace,endpoint="localhost:8004",data_size=5,rows=1,data=None,headers=None):
     if data is None:
         shape, arr = create_random_data(data_size,rows)
     else:
@@ -114,6 +116,9 @@ def grpc_request_ambassador(deploymentName,namespace,endpoint="localhost:8004",d
         metadata = [('seldon',deploymentName)]
     else:
         metadata = [('seldon',deploymentName),('namespace',namespace)]
+    if not headers is None:
+        for k in headers:
+            metadata.append((k,headers[k]))
     response = stub.Predict(request=request,metadata=metadata)
     return response
 
