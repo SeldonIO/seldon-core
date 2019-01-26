@@ -47,9 +47,9 @@ class TestClusterWide(object):
         print(res)
         assert r.status_code == 200
         assert len(r.json()["data"]["tensor"]["values"]) == 1
-        r = grpc_request_ambassador("mymodel","test1",API_AMBASSADOR)        
+        r = grpc_request_api_gateway2("oauth-key","oauth-secret","test1",rest_endpoint=API_GATEWAY_REST,grpc_endpoint=API_GATEWAY_GRPC)
         print(r)
-        r = grpc_request_api_gateway("oauth-key","oauth-secret","test1",rest_endpoint=API_GATEWAY_REST,grpc_endpoint=API_GATEWAY_GRPC)
+        r = grpc_request_ambassador2("mymodel","test1",API_AMBASSADOR)
         print(r)
         run("helm delete mymodel --purge", shell=True)        
 
@@ -70,9 +70,9 @@ class TestClusterWide(object):
         print(res)
         assert r.status_code == 200
         assert len(r.json()["data"]["tensor"]["values"]) == 1
-        r = grpc_request_ambassador("myabtest","test1",API_AMBASSADOR)        
+        r = grpc_request_api_gateway2("oauth-key","oauth-secret","test1",rest_endpoint=API_GATEWAY_REST,grpc_endpoint=API_GATEWAY_GRPC)
         print(r)
-        r = grpc_request_api_gateway("oauth-key","oauth-secret","test1",rest_endpoint=API_GATEWAY_REST,grpc_endpoint=API_GATEWAY_GRPC)
+        r = grpc_request_ambassador2("myabtest","test1",API_AMBASSADOR)
         print(r)
         run("helm delete myabtest --purge", shell=True)        
 
@@ -94,9 +94,9 @@ class TestClusterWide(object):
         print(res)
         assert r.status_code == 200
         assert len(r.json()["data"]["tensor"]["values"]) == 1
-        r = grpc_request_ambassador("mymab","test1",API_AMBASSADOR)        
+        r = grpc_request_api_gateway2("oauth-key","oauth-secret","test1",rest_endpoint=API_GATEWAY_REST,grpc_endpoint=API_GATEWAY_GRPC)
         print(r)
-        r = grpc_request_api_gateway("oauth-key","oauth-secret","test1",rest_endpoint=API_GATEWAY_REST,grpc_endpoint=API_GATEWAY_GRPC)
+        r = grpc_request_ambassador2("mymab","test1",API_AMBASSADOR)
         print(r)
         run("helm delete mymab --purge", shell=True)        
         
