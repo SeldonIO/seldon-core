@@ -176,40 +176,6 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 		}
 	}
 	
-	/**
-	 * Currently Not used as issue with proto client needs further investigation
-	 * @param client
-	 * @param namespace
-	 * @param seldonDeployment
-	 * @param services
-	 * @throws ApiException
-	 * @throws IOException
-	 * @throws SeldonDeploymentException
-	 */
-	private void removeServices(ProtoClient client,String namespace,SeldonDeployment seldonDeployment,List<Service> services) throws ApiException, IOException, SeldonDeploymentException
-	{
-		Set<String> names = getServiceNames(services);
-		V1ServiceList svcList = crdHandler.getOwnedServices(seldonDeployment.getSpec().getName(),namespace);
-		for(V1Service s : svcList.getItems())
-		{
-			if (!names.contains(s.getMetadata().getName()))
-			{	
-				final String deleteApiPath = "/apis/v1/namespaces/{namespace}/services/{name}"
-	                    .replaceAll("\\{" + "name" + "\\}", client.getApiClient().escapeString(s.getMetadata().getName()))
-	                    .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString(namespace));
-	            DeleteOptions options = DeleteOptions.newBuilder().setPropagationPolicy("Foreground").build();
-	            ObjectOrStatus<Deployment> os = client.delete(Service.newBuilder(),deleteApiPath,options);
-	            if (os.status != null) {
-                    logger.error("Error deleting service:"+ProtoBufUtils.toJson(os.status));
-                    throw new SeldonDeploymentException("Failed to delete service "+s.getMetadata().getName());
-                }
-                else {
-                    logger.debug("Deleted deployment:"+ProtoBufUtils.toJson(os.object));
-                }
-			}
-		}
-	}
-	
 	private Set<String> getServiceNames(List<Service> services)
 	{
 		Set<String> names = new HashSet<>();
