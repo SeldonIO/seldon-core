@@ -39,7 +39,9 @@ Machine learning deployment has many [challenges](./docs/challenges.md). Seldon 
     - Scaling
     - Monitoring
     - Security
-   
+
+ **We have a [roadmap](docs/proposals/roadmap.md) which we welcome feedback.**
+
 ## Prerequisites
 
   A [Kubernetes](https://kubernetes.io/) Cluster. Kubernetes can be deployed into many environments, both on cloud and on-premise.
