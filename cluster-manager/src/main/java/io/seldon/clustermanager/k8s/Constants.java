@@ -27,4 +27,12 @@ public class Constants {
     public static final String REST_READ_TIMEOUT_ANNOTATION = "seldon.io/rest-read-timeout";
     public static final String GRPC_READ_TIMEOUT_ANNOTATION = "seldon.io/grpc-read-timeout";
     public static final String HEADLESS_SVC_ANNOTATION = "seldon.io/headless-svc";
+    
+    /* Ambassador annotations */
+    public static final String AMBASSADOR_WEIGHT_ANNOTATION = "seldon.io/ambassador-weight";
+    public static final String AMBASSADOR_SERVICE_ANNOTATION = "seldon.io/ambassador-service-name";    
+    public static final String AMBASSADOR_SHADOW_ANNOTATION = "seldon.io/ambassador-shadow";    
+    public static final String AMBASSADOR_HEADER_ANNOTATION = "seldon.io/ambassador-header";        
+    public static final String AMBASSADOR_REGEX_HEADER_ANNOTATION = "seldon.io/ambassador-regex-header";        
+    public static final String AMBASSADOR_CONFIG_ANNOTATION = "seldon.io/ambassador-config";        
 }
