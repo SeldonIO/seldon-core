@@ -62,6 +62,11 @@ public class SeldonNameCreator {
 		else
 			return svcName;
 	}
+	
+	public String getSeldonId(SeldonDeployment mlDep)
+	{
+		return mlDep.getSpec().getName() + "-" + mlDep.getMetadata().getName();
+	}
 
 /*	
 	public String getSeldonServiceName(SeldonDeployment dep,PredictorSpec pred,String containerName) {
