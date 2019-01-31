@@ -4,7 +4,7 @@ ambassador:
       \ ambassador\nconfig:\n  service_port: 8080\n"
   enabled: false
   image:
-    name: quay.io/datawire/ambassador:0.40.0
+    name: quay.io/datawire/ambassador:0.40.2
   replicas: 1
   resources:
     limits:
