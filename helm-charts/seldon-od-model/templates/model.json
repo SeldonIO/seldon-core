@@ -1,3 +1,13 @@
+{{- if eq .Values.model.type "vae"}}
+{{- $dummy := set . "detector" .Values.model.vae -}}
+{{- else if eq .Values.model.type "mahalanobis"}}
+{{- $dummy := set . "detector" .Values.model.mahalanobis -}}
+{{- else if eq .Values.model.type "seq2seq"}}
+{{- $dummy := set . "detector" .Values.model.seq2seq -}}
+{{- else if eq .Values.model.type "isolationforest"}}
+{{- $dummy := set . "detector" .Values.model.isolationforest -}}
+{{- end }}  
+{{- $type := .Values.model.parameterTypes -}}
 {
     "apiVersion": "machinelearning.seldon.io/v1alpha2",
     "kind": "SeldonDeployment",
@@ -19,7 +29,7 @@
                     "spec": {
                         "containers": [
                             {
-                                "image": "{{ .Values.model.image.name }}",
+                                "image": {{ .detector.image.name | quote }},
                                 "imagePullPolicy": "IfNotPresent",
                                 "name": "{{ .Values.model.name }}",
                                 "resources": {
@@ -32,7 +42,7 @@
                         "terminationGracePeriodSeconds": 1
                     }}			   
 	        ],
-                "graph":		 
+                "graph":
 		{
                     "children": [],
                     "name": "{{ .Values.model.name }}",
@@ -40,35 +50,17 @@
 			"type" : "REST"
 		    },
                     "type": "MODEL",
-                    "parameters": [
+		    "parameters": [
+{{- $lastKey := last (keys (unset .detector "image") | sortAlpha) -}}
+{{- range $key, $val := .detector }}
 			{
-			    "name": "threshold",
-			    "value": "{{ .Values.model.threshold }}",
-			    "type": "FLOAT"
-			},
-			{
-			    "name": "n_components",
-			    "value": "{{ .Values.model.n_components }}",
-			    "type": "INT"
-			},
-			{
-			    "name": "n_stdev",
-			    "value": "{{ .Values.model.n_stdev }}",
-			    "type": "FLOAT"
-			},
-			{
-			    "name": "start_clip",
-			    "value": "{{ .Values.model.start_clip }}",
-			    "type": "INT"
-			},
-			{
-			    "name": "max_n",
-			    "value": "{{ .Values.model.max_n }}",
-			    "type": "INT"
-			}
-
-		    ],
-                },		 			 
+				"name": {{ $key | quote }},
+				"value": {{ $val | quote }},
+				"type": {{ index $type $key | quote }}
+			}{{- if ne $key $lastKey -}}, {{ end }}
+{{- end }}
+		]
+                },			 			 
                 "name": "{{ .Release.Name }}",
                 "replicas": {{ .Values.replicas }},
 		"labels": {
