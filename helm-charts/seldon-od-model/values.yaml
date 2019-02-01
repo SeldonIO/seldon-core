@@ -1,0 +1,46 @@
+name: seldon-od-model
+model:
+  name: outlier-vae
+  type: vae
+  vae:
+    threshold: 10
+    reservoir_size: 50000
+    model_name: vae
+    load_path: ./models/
+    image:
+      name: seldonio/outlier-vae-model:0.1
+  mahalanobis:
+    threshold: 25
+    n_components: 3
+    n_stdev: 3
+    start_clip: 50
+    max_n: -1
+    image:
+      name: seldonio/outlier-mahalanobis-model:0.1
+  seq2seq:
+    threshold: 0.003
+    reservoir_size: 50000
+    model_name: seq2seq
+    load_path: ./models/
+    image:
+      name: seldonio/outlier-s2s-lstm-model:0.1
+  isolationforest:
+    threshold: 0
+    model_name: if
+    load_path: ./models/
+    image:
+      name: seldonio/outlier-if-model:0.1
+  parameterTypes:
+    threshold: FLOAT
+    reservoir_size: INT
+    model_name: STRING
+    load_path: STRING
+    n_components: INT
+    n_stdev: FLOAT
+    start_clip: INT
+    max_n: INT
+replicas: 1
+# Add oauth key and secret if using the default API Oauth Gateway for ingress
+oauth:
+  key: 
+  secret: 
