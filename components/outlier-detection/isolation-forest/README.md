@@ -6,7 +6,7 @@
 
 ## Implementation
 
-The Isolation Forest is trained by running the ```train.py``` script. The ```OutlierIsolationForest``` class loads a pre-trained model and makes predictions on new data.
+The Isolation Forest is trained by running the ```train.py``` script. The ```OutlierIsolationForest``` class inherits from ```CoreIsolationForest``` which loads a pre-trained model and can make predictions on new data. 
 
 A detailed explanation of the implementation and usage of Isolation Forests as outlier detectors can be found in the [isolation forest doc](./doc.md).
 
