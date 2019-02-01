@@ -8,7 +8,7 @@ The Mahalanobis online outlier detector aims to predict anomalies in tabular dat
 
 ## Implementation
 
-The algorithm is implemented in the ```OutlierMahalanobis``` class and a detailed explanation of the implementation and usage of the algorithm to spot anomalies can be found in the [mahalanobis doc](./doc.ipynb).
+The algorithm is implemented in the ```CoreOutlierMahalanobis``` class and a detailed explanation of the implementation and usage of the algorithm to spot anomalies can be found in the [mahalanobis doc](./doc.ipynb).
 
 ## Running on Seldon
 
