@@ -2,7 +2,8 @@ syntax = "proto2";
 package seldon.protos;
 
 import "k8s.io/apimachinery/pkg/apis/meta/v1/generated.proto";
-import "v1.proto";
+import "k8s.io/api/core/v1/generated.proto";
+import "k8s.io/api/autoscaling/v2beta1/generated.proto";
 
 option java_package = "io.seldon.protos";
 option java_outer_classname = "DeploymentProtos";
@@ -50,6 +51,7 @@ message PredictorSpec {
   optional k8s.io.api.core.v1.ResourceRequirements engineResources = 6 [deprecated=true]; // Optional set of resources for the Seldon engine which is added to each Predictor graph to manage the request/response flow
   map<string,string> labels = 7; // labels to be attached to entry deplyment for this predictor
   optional SvcOrchSpec svcOrchSpec = 8; // Service Orchestrator configuration
+  repeated k8s.io.api.autoscaling.v2beta1.HorizontalPodAutoscalerSpec hpaSpecs = 9;
 }
 
 message SvcOrchSpec {

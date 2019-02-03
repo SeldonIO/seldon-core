@@ -26,11 +26,16 @@ public class SeldonNameCreator {
 	}
 	
 	public String getSeldonDeploymentName(SeldonDeployment dep,PredictorSpec pred,V1.PodTemplateSpec spec) {
-		String svcName =  dep.getSpec().getName() + "-" + pred.getName()+"-"+createContainerHash(spec);
-		if (svcName.length() > 63)
-			return "seldon-"+hash(svcName);
+		if (spec.getMetadata().hasName())
+			return spec.getMetadata().getName();
 		else
-			return svcName;
+		{
+			String svcName =  dep.getSpec().getName() + "-" + pred.getName()+"-"+createContainerHash(spec);
+			if (svcName.length() > 63)
+				return "seldon-"+hash(svcName);
+			else
+				return svcName;
+		}
 	}
 	
 	protected static String cleanContainerImageName(String name)

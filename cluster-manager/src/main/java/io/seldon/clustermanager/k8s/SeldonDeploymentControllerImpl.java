@@ -32,6 +32,7 @@ import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.ApiException;
 import io.kubernetes.client.ProtoClient;
 import io.kubernetes.client.ProtoClient.ObjectOrStatus;
+import io.kubernetes.client.apis.AutoscalingV2beta1Api;
 import io.kubernetes.client.apis.CoreV1Api;
 import io.kubernetes.client.models.ExtensionsV1beta1Deployment;
 import io.kubernetes.client.models.ExtensionsV1beta1DeploymentList;
@@ -39,9 +40,12 @@ import io.kubernetes.client.models.V1DeleteOptions;
 import io.kubernetes.client.models.V1Service;
 import io.kubernetes.client.models.V1ServiceList;
 import io.kubernetes.client.models.V1Status;
+import io.kubernetes.client.models.V2beta1HorizontalPodAutoscaler;
+import io.kubernetes.client.models.V2beta1HorizontalPodAutoscalerList;
 import io.kubernetes.client.proto.Meta.DeleteOptions;
 import io.kubernetes.client.proto.V1.Service;
 import io.kubernetes.client.proto.V1beta1Extensions.Deployment;
+import io.kubernetes.client.proto.V2beta1Autoscaling.HorizontalPodAutoscaler;
 import io.seldon.clustermanager.k8s.SeldonDeploymentOperatorImpl.DeploymentResources;
 import io.seldon.clustermanager.k8s.client.K8sClientProvider;
 import io.seldon.clustermanager.pb.ProtoBufUtils;
@@ -58,6 +62,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	private final SeldonNameCreator seldonNameCreator = new SeldonNameCreator();
 	
 	private static final String DEPLOYMENT_API_VERSION = "extensions/v1beta1";
+	private static final String AUTOSCALER_API_VERSION = "autoscaling/v2beta1";
 	
 	Cache<String, Boolean> deletedCache = CacheBuilder.newBuilder()
 		    .maximumSize(1000)
@@ -71,6 +76,49 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 		this.clientProvider = clientProvider;
 		this.crdHandler = crdHandler;
 		this.mlCache = mlCache;
+	}
+	
+	private void createHPAs(ProtoClient client,String namespace,List<HorizontalPodAutoscaler> hpas) throws ApiException, IOException, SeldonDeploymentException
+	{
+		for(HorizontalPodAutoscaler hpa : hpas)
+		{
+			 final String listApiPath = "/apis/"+AUTOSCALER_API_VERSION+"/namespaces/{namespace}/deployments/{name}"
+	                    .replaceAll("\\{" + "name" + "\\}", client.getApiClient().escapeString(hpa.getMetadata().getName()))
+	                    .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString(namespace));
+	            logger.debug("Will try to call LIST "+listApiPath);
+	            ObjectOrStatus<HorizontalPodAutoscaler> os = client.list(HorizontalPodAutoscaler.newBuilder(),listApiPath);       
+	            if (os.status != null) {
+	                if (os.status.getCode() == 404) { //Create
+	                    logger.debug("About to CREATE "+ProtoBufUtils.toJson(hpa));
+	                    final String createApiPath = "/apis/"+AUTOSCALER_API_VERSION+"/namespaces/{namespace}/deployments"
+	                            .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString(namespace));
+
+	                    os = client.create(hpa, createApiPath, AUTOSCALER_API_VERSION, "HorizontalPodAutoscaler");
+	                    if (os.status != null) {
+	                        logger.error("Error creating HPA:"+ProtoBufUtils.toJson(os.status));
+	                        throw new SeldonDeploymentException("Failed to create HPA "+hpa.getMetadata().getName());
+	                    }
+	                    else {
+	                        logger.debug("Created HPA:"+ProtoBufUtils.toJson(os.object));
+	                    }
+	                }
+	                else {
+	                    logger.error("Error listing HPAs:"+ProtoBufUtils.toJson(os.status));
+	                    throw new SeldonDeploymentException("Failed to list HPA "+hpa.getMetadata().getName());
+	                }
+	            }
+	            else { // Update
+	                logger.debug("About to UPDATE "+ProtoBufUtils.toJson(hpa));
+	                os = client.update(hpa,listApiPath, AUTOSCALER_API_VERSION, "HorizontalPodAutoscaler");
+	                if (os.status != null) {
+	                    logger.error("Error updating HPA:"+ProtoBufUtils.toJson(os.status));
+	                    throw new SeldonDeploymentException("Failed to update HPA "+hpa.getMetadata().getName());
+	                }
+	                else {
+	                    logger.debug("Updated HPA:"+ProtoBufUtils.toJson(os.object));
+	                }
+	            }
+		}
 	}
 	
 	private void createDeployments(ProtoClient client,String namespace,List<Deployment> deployments) throws ApiException, IOException, SeldonDeploymentException
@@ -172,6 +220,37 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 				}
 				else
 					logger.debug("Deleted service "+s.getMetadata().getName());
+				
+			}
+		}
+	}
+	
+	private Set<String> getHpaNames(List<HorizontalPodAutoscaler> hpas)
+	{
+		Set<String> names = new HashSet<>();
+	    for(HorizontalPodAutoscaler hpa : hpas)
+	        names.add(hpa.getMetadata().getName());
+	    return names;
+	}
+	
+	private void removeHPAs(ApiClient client,String namespace,SeldonDeployment seldonDeployment,List<HorizontalPodAutoscaler> hpas) throws ApiException, IOException, SeldonDeploymentException
+	{
+		Set<String> names = getHpaNames(hpas);
+		V2beta1HorizontalPodAutoscalerList hpaList = crdHandler.getOwnedHPAs(seldonNameCreator.getSeldonId(seldonDeployment),namespace);
+		for(V2beta1HorizontalPodAutoscaler hpa : hpaList.getItems())
+		{
+			if (!names.contains(hpa.getMetadata().getName()))
+			{	
+				AutoscalingV2beta1Api api = new AutoscalingV2beta1Api(client);
+				io.kubernetes.client.models.V1DeleteOptions options = new V1DeleteOptions();
+				V1Status status = api.deleteNamespacedHorizontalPodAutoscaler(hpa.getMetadata().getName(), namespace, options, null, null, null, null);
+				if (!"Success".equals(status.getStatus()))
+				{
+					logger.error("Failed to delete HPA "+hpa.getMetadata().getName());
+					throw new SeldonDeploymentException("Failed to delete HPA "+hpa.getMetadata().getName());
+				}
+				else
+					logger.debug("Deleted HPA "+hpa.getMetadata().getName());
 				
 			}
 		}
@@ -306,6 +385,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 			removeDeployments(client, namespace, mlDep2, resources.deployments,false);
 			ApiClient client2 = clientProvider.getClient();
 			removeServices(client2,namespace, mlDep2, resources.services);
+			removeHPAs(client2, namespace, mlDep2, resources.hpas);
 		} catch (SeldonDeploymentException e) {
 			logger.error("Failed to cleanup deployment ",e);
 		} catch (ApiException e) {
@@ -338,11 +418,8 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 		        DeploymentResources resources = operator.createResources(mlDep2);
 		        ProtoClient client = clientProvider.getProtoClient();
 		        createDeployments(client, namespace, resources.deployments);
-		        //removeDeployments(client, namespace, mlDep2, resources.deployments);
 		        createServices(client, namespace, resources.services);
-		        //removeServices(client,namespace, mlDep2, resources.services); //Proto Client not presently working for deletion
-		        //ApiClient client2 = clientProvider.getClient();
-		        //removeServices(client2,namespace, mlDep2, resources.services);
+		        createHPAs(client, namespace, resources.hpas);
 		        if (!mlDep.hasStatus())
 		        {
 		           logger.debug("Pushing updated SeldonDeployment "+mlDepStatusUpdated.getMetadata().getName()+" back to kubectl");
