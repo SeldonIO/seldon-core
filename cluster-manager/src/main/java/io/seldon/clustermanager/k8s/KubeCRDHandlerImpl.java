@@ -34,7 +34,9 @@ import io.kubernetes.client.apis.CustomObjectsApi;
 import io.kubernetes.client.apis.ExtensionsV1beta1Api;
 import io.kubernetes.client.models.ExtensionsV1beta1DeploymentList;
 import io.kubernetes.client.models.V1ServiceList;
+import io.kubernetes.client.models.V2beta1HorizontalPodAutoscalerList;
 import io.kubernetes.client.proto.Meta.ObjectMeta;
+import io.kubernetes.client.proto.V2beta1Autoscaling;
 import io.kubernetes.client.util.Config;
 import io.seldon.clustermanager.ClusterManagerProperites;
 import io.seldon.clustermanager.k8s.client.K8sApiProvider;
@@ -203,6 +205,23 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
             return null;
         } catch (ApiException e) {
             logger.error("Failed to get deployment list for "+seldonDeploymentName,e);
+            return null;
+        }
+	}
+
+	@Override
+	public V2beta1HorizontalPodAutoscalerList getOwnedHPAs(String seldonDeploymentName, String namespace) {
+		try
+		{
+			ApiClient client = k8sClientProvider.getClient();
+			io.kubernetes.client.apis.AutoscalingV2beta1Api api = k8sApiProvider.getAutoScalingApi(client);
+			V2beta1HorizontalPodAutoscalerList l = api.listNamespacedHorizontalPodAutoscaler(namespace, null, null, null, false, Constants.LABEL_SELDON_ID+"="+seldonDeploymentName, null, null, null, null);
+			return l;
+		} catch (IOException e) {
+            logger.error("Failed to get HPA list for "+seldonDeploymentName,e);
+            return null;
+        } catch (ApiException e) {
+            logger.error("Failed to get HPA list for "+seldonDeploymentName,e);
             return null;
         }
 	}

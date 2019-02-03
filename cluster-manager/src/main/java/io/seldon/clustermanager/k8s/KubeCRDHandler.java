@@ -17,6 +17,7 @@ package io.seldon.clustermanager.k8s;
 
 import io.kubernetes.client.models.ExtensionsV1beta1DeploymentList;
 import io.kubernetes.client.models.V1ServiceList;
+import io.kubernetes.client.models.V2beta1HorizontalPodAutoscalerList;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 public interface KubeCRDHandler {
@@ -26,4 +27,5 @@ public interface KubeCRDHandler {
 	public SeldonDeployment getSeldonDeployment(String name,String namespace);
 	public ExtensionsV1beta1DeploymentList getOwnedDeployments(String seldonDeploymentName,String namespace);
 	public V1ServiceList getOwnedServices(String seldonDeploymentName,String namespace);
+	public V2beta1HorizontalPodAutoscalerList getOwnedHPAs(String seldonDeploymentName,String namespace);
 }
