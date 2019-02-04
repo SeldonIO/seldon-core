@@ -2,14 +2,8 @@
 
 A SeldonDeployment is defined as a custom resource definition within Kubernetes.
 
- * [Design](#design)
  * [Proto Buffer Definiton](#definition)
  * [Examples](#examples)
-
-## Design
-
-![graph](./seldon-deployment-sketch.png)
-
 
 ## Proto Buffer Definition
 The Seldon Deployment Custom Resource is defined using Proto Buffers.
@@ -64,8 +58,14 @@ message PredictorSpec {
   repeated k8s.io.api.core.v1.PodTemplateSpec componentSpecs = 3; // A description of the set of containers used by the graph. One for each microservice defined in the graph. Can be split over 1 or more PodTemplateSpecs.
   optional int32 replicas = 4; // The number of replicas of the predictor to create.
   map<string,string> annotations = 5; // Arbitrary annotations.
-  optional k8s.io.api.core.v1.ResourceRequirements engineResources = 6; // Optional set of resources for the Seldon engine which is added to each Predictor graph to manage the request/response flow
-  map<string,string> labels = 7; // labels to be attached to entry deployment for this predictor
+  optional k8s.io.api.core.v1.ResourceRequirements engineResources = 6 [deprecated=true]; // Optional set of resources for the Seldon engine which is added to each Predictor graph to manage the request/response flow
+  map<string,string> labels = 7; // labels to be attached to entry deplyment for this predictor
+  optional SvcOrchSpec svcOrchSpec = 8; // Service Orchestrator configuration
+}
+
+message SvcOrchSpec {
+  optional k8s.io.api.core.v1.ResourceRequirements resources = 1;
+  repeated k8s.io.api.core.v1.EnvVar env = 2;
 }
 
 
@@ -75,7 +75,7 @@ message PredictorSpec {
 message PredictiveUnit {
 
   /**
-   * The main type of the predictive unit. Routers decide where requests are sent, e.g. AB Tests and Multi-Armed Bandits. Combiners ensemble responses from their children. Models are leaf nodes in the predictive tree and provide request/response functionality encapsulating a machine learning model. Transformers alter the request features.
+   * The main type of the predictive unit. Routers decide where requests are sent, e.g. AB Tests and Multi-Armed Bandits. Combiners ensemble responses from their children. Models are leaft nodes in the predictive tree and provide request/reponse functionality encapsulating a machine learning model. Transformers alter the request features.
    */
   enum PredictiveUnitType {
     // Each one of these defines a default combination of Predictive Unit Methods
@@ -88,7 +88,7 @@ message PredictiveUnit {
   }
 
   enum PredictiveUnitImplementation {
-    // Each one of these are hard-coded in the engine, no microservice is used
+    // Each one of these are hardcoded in the engine, no microservice is used
     UNKNOWN_IMPLEMENTATION = 0; // No implementation (microservice used)
     SIMPLE_MODEL = 1; // An internal model stub for testing.
     SIMPLE_ROUTER = 2; // An internal router for testing.
@@ -133,7 +133,7 @@ message Parameter {
     DOUBLE = 2;
     STRING = 3;
     BOOL = 4;
-  }
+  }  
 
   required string name = 1;
   required string value = 2;

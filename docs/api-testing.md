@@ -9,9 +9,75 @@ Whether you have wrapped your component using [our S2I wrappers](./wrappers/read
 
 To use these, install the seldon-core package with ```pip install seldon-core```.
 
-## Seldon-Core API Tester
+## Run your Wrapped Model
 
-Use the ```seldon-core-api-tester``` script to test a Seldon graph deployed to a cluster.
+To test your model microservice you need to run it. If you have wrapped your model into a Docker container then you should run it and expose the ports. There are many examples in the notebooks in the [examples folders](https://github.com/SeldonIO/seldon-core/tree/master/examples/models) but essential if your model is wrapped in an image `myimage:0.1` then run:
+
+```
+docker run --name "my_model" -d --rm -p 5000:5000 myimage:0.1
+```
+
+Alternatively, if your component is a Python module you can run it directly from python using the core tool ```seldon-core-microservice``` (installed as part of the pip package `seldon-core`). This tool takes the name of the Python module as first argument and the API type REST or GRPC as second argument, for example if you have a file IrisClassifier.py in the current folder you could run:
+
+```
+seldon-core-microservice IrisClassifier REST
+```
+
+To get full details about this tool run `seldon-core-microservice --help`.
+
+Next either use the [Microservce API tester](#microservice-api-tester) or testdirectly via [curl](#microservice-api-test-via-curl).
+
+## Microservice API Tester
+
+Use the ```seldon-core-tester``` script to test a packaged Docker microservice Seldon component.
+
+```
+usage: seldon-core-tester [-h] [--endpoint {predict,send-feedback}]
+                          [-b BATCH_SIZE] [-n N_REQUESTS] [--grpc] [--fbs]
+                          [-t] [-p]
+                          contract host port
+
+positional arguments:
+  contract              File that contains the data contract
+  host
+  port
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --endpoint {predict,send-feedback}
+  -b BATCH_SIZE, --batch-size BATCH_SIZE
+  -n N_REQUESTS, --n-requests N_REQUESTS
+  --grpc
+  --fbs
+  -t, --tensor
+  -p, --prnt            Prints requests and responses
+```
+
+Example:
+
+```
+seldon-core-tester contract.json 0.0.0.0 5000 -p --grpc
+```
+
+The above sends a predict call to a gRPC component exposed at 0.0.0.0:5000 using the contract.json to create a random request.
+
+You can find more examples in the [example models folder notebooks](../examples/models).
+
+To understand the format of the contract.json see details [below](#api-contract).
+
+
+## Microservice API Test via Curl
+You can also test your component if run via Docker or from the command line via curl. An example for [Iris Classifier](http://localhost:8888/notebooks/sklearn_iris.ipynb) might be:
+
+```
+curl -g http://localhost:5000/predict --data-urlencode 'json={"data": {"names": ["sepal_length", "sepal_width", "petal_length", "petal_width"], "ndarray": [[7.233, 4.652, 7.39, 0.324]]}}'
+```
+
+
+
+# Seldon-Core API Tester for the External API 
+
+Use the ```seldon-core-api-tester``` script to test a Seldon graph deployed to a kubernetes cluster.
 
 ```
 usage: seldon-core-api-tester [-h] [--endpoint {predict,send-feedback}]
@@ -53,41 +119,7 @@ seldon-core-api-tester contract.json  0.0.0.0 8003 --oauth-key oauth-key --oauth
 
 You can find more exampes in the [example models folder notebooks](../examples/models).
 
-## Microservice API Tester
-
-Use the ```seldon-core-tester``` script to test a packaged Docker microservice Seldon component.
-
-```
-usage: seldon-core-tester [-h] [--endpoint {predict,send-feedback}]
-                          [-b BATCH_SIZE] [-n N_REQUESTS] [--grpc] [--fbs]
-                          [-t] [-p]
-                          contract host port
-
-positional arguments:
-  contract              File that contains the data contract
-  host
-  port
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --endpoint {predict,send-feedback}
-  -b BATCH_SIZE, --batch-size BATCH_SIZE
-  -n N_REQUESTS, --n-requests N_REQUESTS
-  --grpc
-  --fbs
-  -t, --tensor
-  -p, --prnt            Prints requests and responses
-```
-
-Example:
-
-```
-seldon-core-tester contract.json 0.0.0.0 5000 -p --grpc
-```
-
-The above sends a predict call to a gRPC component exposed at 0.0.0.0:5000 using the contract.json to create a random request.
-
-You can find more examples in the [example models folder notebooks](../examples/models).
+To understand the format of the contract.json see details [below](#api-contract).
 
 ## API Contract
 
@@ -153,3 +185,4 @@ Each section has a list of definitions. Each definition consists of:
   * ```range``` : list of two numbers : Optional for ftype CONTINUOUS : The range of values (inclusive) that a continuous value can take
   * ```repeat``` : integer : Optional value for how many times to repeat this value
   * ```shape``` : array of integers : Optional value for the shape of array to coerce the values
+

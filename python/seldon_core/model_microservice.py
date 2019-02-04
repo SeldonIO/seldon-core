@@ -18,7 +18,8 @@ import os
 from seldon_core.proto import prediction_pb2, prediction_pb2_grpc
 from seldon_core.microservice import extract_message, sanity_check_request, rest_datadef_to_array, \
     array_to_rest_datadef, grpc_datadef_to_array, array_to_grpc_datadef, \
-    SeldonMicroserviceException, get_custom_tags, get_data_from_json, get_data_from_proto, ANNOTATION_GRPC_MAX_MSG_SIZE
+    SeldonMicroserviceException, get_custom_tags, get_data_from_json, get_data_from_proto, \
+    get_meta_from_json, get_meta_from_proto, ANNOTATION_GRPC_MAX_MSG_SIZE
 from seldon_core.metrics import get_custom_metrics
 from seldon_core.seldon_flatbuffers import SeldonRPCToNumpyArray, NumpyArrayToSeldonRPC, CreateErrorMsg
 
@@ -29,8 +30,11 @@ logger = logging.getLogger(__name__)
 # ---------------------------
 
 
-def predict(user_model, features, feature_names):
-    return user_model.predict(features, feature_names)
+def predict(user_model, features, feature_names, **kwargs):
+    try:
+        return user_model.predict(features, feature_names, **kwargs)
+    except TypeError:
+        return user_model.predict(features, feature_names)
 
 
 def send_feedback(user_model, features, feature_names, reward, truth):
@@ -77,8 +81,9 @@ def get_rest_microservice(user_model, debug=False):
         else:
             features = get_data_from_json(request)
             names = request.get("data", {}).get("names")
+            meta = get_meta_from_json(request)
 
-            predictions = predict(user_model, features, names)
+            predictions = predict(user_model, features, names, meta=meta)
             logger.debug("Predictions: %s", predictions)
 
             # If predictions is an numpy array or we used the default data then return as numpy array
@@ -106,7 +111,7 @@ def get_rest_microservice(user_model, debug=False):
     def SendFeedback():
         feedback = extract_message()
         logger.debug("Feedback received: %s", feedback)
-        
+
         if hasattr(user_model, "send_feedback_rest"):
             return jsonify(user_model.send_feedback_rest(feedback))
         else:
@@ -138,9 +143,10 @@ class SeldonModelGRPC(object):
             return self.user_model.predict_grpc(request)
         else:
             features = get_data_from_proto(request)
+            meta = get_meta_from_proto(request)
             datadef = request.data
             data_type = request.WhichOneof("data_oneof")
-            predictions = predict(self.user_model, features, datadef.names)
+            predictions = predict(self.user_model, features, datadef.names, meta=meta)
 
             # Construct meta data
             meta = prediction_pb2.Meta()
@@ -204,7 +210,7 @@ def get_grpc_server(user_model, debug=False, annotations={}, trace_interceptor=N
     if trace_interceptor:
         from grpc_opentracing.grpcext import intercept_server
         server = intercept_server(server, trace_interceptor)
-            
+
     prediction_pb2_grpc.add_ModelServicer_to_server(seldon_model, server)
 
     return server

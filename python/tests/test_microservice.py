@@ -54,7 +54,7 @@ def start_microservice(app_location,tracing=False,grpc=False,envs={}):
         p = Popen(cmd, cwd=app_location, env=env_vars, preexec_fn=os.setsid)
 
         for q in range(10):
-            time.sleep(2)
+            time.sleep(5)
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             result = sock.connect_ex(("127.0.0.1", 5000))
             if result == 0:
@@ -118,7 +118,7 @@ def test_model_template_app_grpc(tracing):
         request = prediction_pb2.SeldonMessage(data=datadef)
         feedback = prediction_pb2.Feedback(request=request,reward=1.0)
         response = stub.SendFeedback(request=request)
-        
+
 def test_model_template_app_tracing_config():
     envs = {"JAEGER_CONFIG_PATH":join(dirname(__file__), "tracing_config/tracing.yaml")}
     with start_microservice(join(dirname(__file__), "model-template-app"),tracing=True,envs=envs):
