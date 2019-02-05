@@ -64,6 +64,7 @@ import io.kubernetes.client.proto.V1beta1Extensions.Deployment;
 import io.kubernetes.client.proto.V1beta1Extensions.DeploymentSpec;
 import io.kubernetes.client.proto.V1beta1Extensions.DeploymentStrategy;
 import io.kubernetes.client.proto.V1beta1Extensions.RollingUpdateDeployment;
+import io.kubernetes.client.proto.V2beta1Autoscaling.CrossVersionObjectReference;
 import io.kubernetes.client.proto.V2beta1Autoscaling.HorizontalPodAutoscaler;
 import io.kubernetes.client.proto.V2beta1Autoscaling.HorizontalPodAutoscalerSpec;
 import io.seldon.clustermanager.ClusterManagerProperites;
@@ -473,6 +474,34 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
         for(PredictiveUnit child :  pu.getChildrenList())
             checkTypeMethodAndImpl(child); 
 	}
+	
+	
+	private void checkHPAReferencesExist(PredictorSpec p) throws SeldonDeploymentException
+	{
+		int idx = 0;
+		for(HorizontalPodAutoscalerSpec hpaSpec : p.getHpaSpecsList())
+		{
+			if (!hpaSpec.hasScaleTargetRef())
+			{
+				throw new SeldonDeploymentException(String.format("HorizontalPodAutoscalerSpec %s has no target reference",idx)); 
+			}
+			final String name = hpaSpec.getScaleTargetRef().getName();
+			boolean found = false;
+			for(PodTemplateSpec pts : p.getComponentSpecsList())
+			{
+				if (pts.hasMetadata() && pts.getMetadata().hasName() && pts.getMetadata().getName().equals(name))
+				{
+					found = true;
+					break;
+				}
+			}
+			if (!found)
+			{
+				throw new SeldonDeploymentException(String.format("HorizontalPodAutoscalerSpec %s references unknown deployment with name %s",idx,name)); 
+			}
+			idx++;
+		}
+	}
 
 	@Override
 	public void validate(SeldonDeployment mlDep) throws SeldonDeploymentException {
@@ -486,6 +515,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 	    		predictorNames.add(p.getName());
 	        checkPredictiveUnitsMicroservices(p.getGraph(),p);
 	        checkTypeMethodAndImpl(p.getGraph());
+	        checkHPAReferencesExist(p);
         }
         
 	}
@@ -877,13 +907,18 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		List<HorizontalPodAutoscaler> hpas = new ArrayList<>();
 		for(HorizontalPodAutoscalerSpec spec : p.getHpaSpecsList())
 		{
-			HorizontalPodAutoscaler hpa = HorizontalPodAutoscaler.newBuilder().setSpec(spec)
+			HorizontalPodAutoscaler.Builder hpaBuilder = HorizontalPodAutoscaler.newBuilder()
+					.setSpec(spec)
 					.setMetadata(ObjectMeta.newBuilder().setName(spec.getScaleTargetRef().getName())
 							.addOwnerReferences(ownerRef)
 							.putLabels(Constants.LABEL_SELDON_ID, seldonId)
-							)
-					.build();
-			hpas.add(hpa);
+							);
+			//Ensure kind and apiVersion are as expected.
+			hpaBuilder.getSpecBuilder().setScaleTargetRef(CrossVersionObjectReference.newBuilder(hpaBuilder.getSpec().getScaleTargetRef())
+					.setApiVersion(SeldonDeploymentControllerImpl.DEPLOYMENT_API_VERSION)
+					.setKind("Deployment"));
+				
+			hpas.add(hpaBuilder.build());
 		}
 		return hpas;
 	}
