@@ -397,7 +397,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 
 	
 	@Override
-	public void createOrReplaceSeldonDeployment(SeldonDeployment mlDep) {
+	public void createOrReplaceSeldonDeployment(SeldonDeployment mlDep,boolean added) {
 
 	    if (mlDep.hasStatus() && mlDep.getStatus().hasState() && mlDep.getStatus().getState().equals(Constants.STATE_FAILED))
 	    {
@@ -408,7 +408,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 		{
 	        String namespace = SeldonDeploymentUtils.getNamespace(mlDep);
 		    SeldonDeployment existing = mlCache.get(mlDep);
-		    if (existing == null || !existing.getSpec().equals(mlDep.getSpec()))
+		    if (added || existing == null || !existing.getSpec().equals(mlDep.getSpec()))
 		    {
 		        logger.debug("Running updates for "+mlDep.getMetadata().getName());
 		        mlCache.put(mlDep);
