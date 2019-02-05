@@ -86,7 +86,7 @@ Seldon allows you to build up runtime inference graphs that provide powerful opt
  * **Multi-Armed Bandits** 
    * [Epsilon-greedy multi-armed bandits for real time optimization of models](components/routers/epsilon-greedy) ([GCP example](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/epsilon_greedy_gcp.ipynb), [Kubeflow example](https://github.com/kubeflow/example-seldon))
    * [Thompson sampling multi-armed bandit](components/routers/thompson-sampling) ([Credit card default case study](components/routers/case_study/credit_card_default.ipynb))
- * **Outlier Detection**
+ * [**Outlier Detection**](components/outlier-detection/README.md)
     * [Variational Auto-Encoder (VAE) Outlier Detector](https://github.com/SeldonIO/seldon-core/tree/master/components/outlier-detection/vae)
     * [Sequence-to-Sequence LSTM (seq2seq-LSTM) Outlier Detector](https://github.com/SeldonIO/seldon-core/tree/master/components/outlier-detection/seq2seq-lstm)
     * [Isolation Forest Outlier Detector](https://github.com/SeldonIO/seldon-core/tree/master/components/outlier-detection/isolation-forest)
