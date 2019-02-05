@@ -1,8 +1,0 @@
-MODEL_NAME=Prediction
-API_TYPE=GRPC
-SERVICE_TYPE=MODEL
-XML_PATH=gs://inference-eu/models_zoo/resnet_V1_50/frozen_resnet_V1_50.xml
-BIN_PATH=gs://inference-eu/models_zoo/resnet_V1_50/frozen_resnet_V1_50.bin
-GOOGLE_APPLICATION_CREDENTIALS=/etc/gcp.json
-PERSISTENCE=0
-

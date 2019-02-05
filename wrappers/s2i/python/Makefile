@@ -44,10 +44,6 @@ test_local:
 	cat Dockerfile.local.tmpl | sed  -e "s|%PYTHON_VERSION%|$(PYTHON_VERSION)|" > Dockerfile
 	docker build -t $(IMAGE_NAME)-candidate .
 	IMAGE_NAME=$(IMAGE_NAME)-candidate test/run
-.PHONY: build_python_openvino
-build_python_openvino:
-	docker build -f Dockerfile_openvino_base --build-arg http_proxy=$http_proxy --build-arg https_proxy=$https_proxy -t openvino_base:latest .
-	docker build -f Dockerfile_model_openvino --build-arg http_proxy=$http_proxy --build-arg https_proxy=$https_proxy -t seldon_model_openvino .	
 
 .PHONY: clean
 clean:
