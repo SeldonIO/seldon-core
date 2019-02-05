@@ -61,8 +61,8 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	private final SeldonDeploymentCache mlCache;
 	private final SeldonNameCreator seldonNameCreator = new SeldonNameCreator();
 	
-	private static final String DEPLOYMENT_API_VERSION = "extensions/v1beta1";
-	private static final String AUTOSCALER_API_VERSION = "autoscaling/v2beta1";
+	static final String DEPLOYMENT_API_VERSION = "extensions/v1beta1";
+	static final String AUTOSCALER_API_VERSION = "autoscaling/v2beta1";
 	
 	Cache<String, Boolean> deletedCache = CacheBuilder.newBuilder()
 		    .maximumSize(1000)
@@ -82,7 +82,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	{
 		for(HorizontalPodAutoscaler hpa : hpas)
 		{
-			 final String listApiPath = "/apis/"+AUTOSCALER_API_VERSION+"/namespaces/{namespace}/deployments/{name}"
+			 final String listApiPath = "/apis/"+AUTOSCALER_API_VERSION+"/namespaces/{namespace}/horizontalpodautoscalers/{name}"
 	                    .replaceAll("\\{" + "name" + "\\}", client.getApiClient().escapeString(hpa.getMetadata().getName()))
 	                    .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString(namespace));
 	            logger.debug("Will try to call LIST "+listApiPath);
@@ -90,7 +90,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	            if (os.status != null) {
 	                if (os.status.getCode() == 404) { //Create
 	                    logger.debug("About to CREATE "+ProtoBufUtils.toJson(hpa));
-	                    final String createApiPath = "/apis/"+AUTOSCALER_API_VERSION+"/namespaces/{namespace}/deployments"
+	                    final String createApiPath = "/apis/"+AUTOSCALER_API_VERSION+"/namespaces/{namespace}/horizontalpodautoscalers"
 	                            .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString(namespace));
 
 	                    os = client.create(hpa, createApiPath, AUTOSCALER_API_VERSION, "HorizontalPodAutoscaler");
