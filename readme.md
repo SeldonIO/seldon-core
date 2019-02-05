@@ -148,6 +148,8 @@ Follow the [install guide](docs/install.md) for details on ways to install seldo
 
 ## Articles/Blogs/Videos
 
+External content:
+
  - [GDG DevFest 2018 - Intro to Seldon and Outlier Detection](https://youtu.be/064_cf5JlbM?t=13537)
  - [Open Source Model Management Roundup Polyaxon, Argo and Seldon](https://www.anaconda.com/blog/developer-blog/open-source-model-management-roundup-polyaxon-argo-and-seldon/)
  - [Kubecon Europe 2018 - Serving Machine Learning Models at Scale with Kubeflow and Seldon](https://www.youtube.com/watch?v=pDlapGtecbY)
@@ -161,6 +163,13 @@ Follow the [install guide](docs/install.md) for details on ways to install seldo
  - [Overview of Openshift source-to-image use in Seldon-Core](./docs/articles/openshift_s2i.md)
  - [IBM Framework for Deep Learning and Seldon-Core](https://developer.ibm.com/code/2018/06/12/serve-it-hot-deploy-your-ffdl-trained-models-using-seldon/)
  - [CartPole game by Reinforcement Learning, a journey from training to inference ](https://github.com/hypnosapos/cartpole-rl-remote/)
+
+Internal Tutorials:
+
+ - [Seldon Tech Overview](https://www.youtube.com/watch?v=TCeGARP_lAk)
+   - Overview of Seldon Core technology.
+ - [Seldon Core with Kubeflow Demo](https://www.youtube.com/watch?v=BG3_bJr98BE)
+   - End to end demo of hetrogeneous models trained within Kubeflow and deployed with Seldon. Shows continuous deployment from single model to A/B test to multi-armed bandit.
 
 ### Release Highlights
 
