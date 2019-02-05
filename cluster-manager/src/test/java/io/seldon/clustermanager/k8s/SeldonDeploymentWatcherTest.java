@@ -109,7 +109,7 @@ public class SeldonDeploymentWatcherTest extends AppTest {
 
         Assert.assertEquals("Expected and Actual resource versions do not match !!!",
                 1, watcher.watchSeldonMLDeployments(0, 0));
-        verify(mockSeldonDeploymentController,times(1)).createOrReplaceSeldonDeployment(any(DeploymentProtos.SeldonDeployment.class));
+        verify(mockSeldonDeploymentController,times(1)).createOrReplaceSeldonDeployment(any(DeploymentProtos.SeldonDeployment.class),any(Boolean.class));
     }
 
     @Test
@@ -119,7 +119,7 @@ public class SeldonDeploymentWatcherTest extends AppTest {
         props.setSingleNamespace(true);
         SeldonDeploymentWatcher watcher = new SeldonDeploymentWatcher(mockK8sApiProvider, mockK8sClientProvider, mockCRDCreator, props, mockSeldonDeploymentController, mockMLCache, mockCRDHandler);
         watcher.watchSeldonMLDeployments(0, 0);
-        verify(mockSeldonDeploymentController,times(1)).createOrReplaceSeldonDeployment(any(DeploymentProtos.SeldonDeployment.class));
+        verify(mockSeldonDeploymentController,times(1)).createOrReplaceSeldonDeployment(any(DeploymentProtos.SeldonDeployment.class),any(Boolean.class));
     }
 
     @Test
@@ -147,7 +147,7 @@ public class SeldonDeploymentWatcherTest extends AppTest {
         SeldonDeploymentWatcher watcher = new SeldonDeploymentWatcher(mockK8sApiProvider, mockK8sClientProvider, mockCRDCreator, props, mockSeldonDeploymentController, mockMLCache, mockCRDHandler);
         Assert.assertEquals("Expected and Actual resource versions do not match !!!",
                 1, watcher.watchSeldonMLDeployments(0, 0));
-        verify(mockSeldonDeploymentController,times(1)).createOrReplaceSeldonDeployment(any(DeploymentProtos.SeldonDeployment.class));
+        verify(mockSeldonDeploymentController,times(1)).createOrReplaceSeldonDeployment(any(DeploymentProtos.SeldonDeployment.class),any(Boolean.class));
 
     }
 
@@ -156,7 +156,7 @@ public class SeldonDeploymentWatcherTest extends AppTest {
         createMocks("src/test/resources/model_simple.json", "MODIFIED",false);
         SeldonDeploymentWatcher watcher = new SeldonDeploymentWatcher(mockK8sApiProvider, mockK8sClientProvider, mockCRDCreator, props, mockSeldonDeploymentController, mockMLCache, mockCRDHandler);
         watcher.watchSeldonMLDeployments(0,0);
-        verify(mockSeldonDeploymentController,times(1)).createOrReplaceSeldonDeployment(any(DeploymentProtos.SeldonDeployment.class));
+        verify(mockSeldonDeploymentController,times(1)).createOrReplaceSeldonDeployment(any(DeploymentProtos.SeldonDeployment.class),any(Boolean.class));
 
     }
 
