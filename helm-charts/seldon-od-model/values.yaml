@@ -1,6 +1,6 @@
 name: seldon-od-model
 model:
-  name: outlier-vae
+  name: outlier-detector
   type: vae
   vae:
     threshold: 10
