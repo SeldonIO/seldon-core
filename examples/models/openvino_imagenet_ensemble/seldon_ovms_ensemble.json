@@ -87,7 +87,7 @@
                             },
 			    {
 				"name": "openvino-model-server1",
-				"image": "intelaipg/openvino-model-server:0.2",
+				"image": "intelaipg/openvino-model-server:latest",
 				"command": [
 				    "/ie-serving-py/start_server.sh"
 				],
@@ -124,7 +124,7 @@
 			    },
 			    {
 				"name": "openvino-model-server2",
-				"image": "intelaipg/openvino-model-server:0.2",
+				"image": "intelaipg/openvino-model-server:latest",
 				"command": [
 				    "/ie-serving-py/start_server.sh"
 				],
