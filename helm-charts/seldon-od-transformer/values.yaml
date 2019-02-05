@@ -5,8 +5,8 @@ model:
   name: classifier
 outlierDetection:
   enabled: true
-  name: outlier-s2s
-  type: seq2seq
+  name: outlier-detector
+  type: vae
   vae:
     threshold: 10
     reservoir_size: 50000
