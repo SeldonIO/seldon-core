@@ -48,9 +48,9 @@ class TestSingleNamespace(object):
         print(res)
         assert r.status_code == 200
         assert len(r.json()["data"]["tensor"]["values"]) == 1
-        r = grpc_request_ambassador("mymodel",None,API_AMBASSADOR)        
+        r = grpc_request_ambassador2("mymodel",None,API_AMBASSADOR)        
         print(r)
-        r = grpc_request_api_gateway("oauth-key","oauth-secret",None,rest_endpoint=API_GATEWAY_REST,grpc_endpoint=API_GATEWAY_GRPC)
+        r = grpc_request_api_gateway2("oauth-key","oauth-secret",None,rest_endpoint=API_GATEWAY_REST,grpc_endpoint=API_GATEWAY_GRPC)
         print(r)
         run('cd my-model && ks delete default -c mymodel && ks component rm mymodel', shell=True)        
 
@@ -72,9 +72,9 @@ class TestSingleNamespace(object):
         print(res)
         assert r.status_code == 200
         assert len(r.json()["data"]["tensor"]["values"]) == 1
-        r = grpc_request_ambassador("myabtest",None,API_AMBASSADOR)        
+        r = grpc_request_ambassador2("myabtest",None,API_AMBASSADOR)        
         print(r)
-        r = grpc_request_api_gateway("oauth-key","oauth-secret",None,rest_endpoint=API_GATEWAY_REST,grpc_endpoint=API_GATEWAY_GRPC)
+        r = grpc_request_api_gateway2("oauth-key","oauth-secret",None,rest_endpoint=API_GATEWAY_REST,grpc_endpoint=API_GATEWAY_GRPC)
         print(r)
         run('cd my-model &&     ks delete default -c myabtest &&  ks component rm myabtest', shell=True)
 
@@ -97,9 +97,9 @@ class TestSingleNamespace(object):
         print(res)
         assert r.status_code == 200
         assert len(r.json()["data"]["tensor"]["values"]) == 1
-        r = grpc_request_ambassador("mymab",None,API_AMBASSADOR)        
+        r = grpc_request_ambassador2("mymab",None,API_AMBASSADOR)        
         print(r)
-        r = grpc_request_api_gateway("oauth-key","oauth-secret",None,rest_endpoint=API_GATEWAY_REST,grpc_endpoint=API_GATEWAY_GRPC)
+        r = grpc_request_api_gateway2("oauth-key","oauth-secret",None,rest_endpoint=API_GATEWAY_REST,grpc_endpoint=API_GATEWAY_GRPC)
         print(r)
         run('cd my-model && ks delete default && ks component rm mymab', shell=True)        
         

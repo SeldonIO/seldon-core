@@ -18,7 +18,7 @@ package io.seldon.clustermanager.k8s;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
 public interface SeldonDeploymentController {
-	public void createOrReplaceSeldonDeployment(SeldonDeployment mlDep);
+	public void createOrReplaceSeldonDeployment(SeldonDeployment mlDep,boolean added);
 	public void removeInitialUnusedResources(SeldonDeployment mlDep);	
 	public void removeAllUnusedResources(SeldonDeployment mlDep);
 }
