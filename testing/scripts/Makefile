@@ -8,7 +8,7 @@ build_protos:
 
 .PHONY: test
 test: build_protos
-	PYTHONPATH=../../notebooks pytest -s -W ignore > run.log 2>&1
+	pytest -s -W ignore > run.log 2>&1
 
 .PHONY: clean
 clean:
