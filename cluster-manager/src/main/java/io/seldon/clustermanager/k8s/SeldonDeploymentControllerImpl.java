@@ -350,6 +350,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 			DeploymentResources resources = operator.createResources(mlDep2);
 			ProtoClient client = clientProvider.getProtoClient();
 			String namespace = SeldonDeploymentUtils.getNamespace(mlDep2);
+			removeHPAs(clientProvider.getClient(), namespace, mlDep2, resources.hpas);
 			final String deploymentDeleteKey = mlDep.getMetadata().getUid()+":"+mlDep.getMetadata().getResourceVersion();
 			logger.info("Deployment delete cache key {}",deploymentDeleteKey);
 			if (deletedCache.getIfPresent(deploymentDeleteKey) == null)
@@ -385,7 +386,6 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 			removeDeployments(client, namespace, mlDep2, resources.deployments,false);
 			ApiClient client2 = clientProvider.getClient();
 			removeServices(client2,namespace, mlDep2, resources.services);
-			removeHPAs(client2, namespace, mlDep2, resources.hpas);
 		} catch (SeldonDeploymentException e) {
 			logger.error("Failed to cleanup deployment ",e);
 		} catch (ApiException e) {
