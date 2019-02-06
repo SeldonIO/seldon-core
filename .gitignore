@@ -158,3 +158,4 @@ examples/models/sagemaker/scikit_learn_iris_deployment.json
 #go example
 examples/wrappers/go/.idea
 
+util/custom-resource-definitions/hpa-spec.json

@@ -1,4 +1,5 @@
 local podTemplateValidation = import "json/pod-template-spec-validation.json";
+local hpaValidation = import "json/hpa-validation.json";
 local k = import "k.libsonnet";
 
 {
@@ -495,6 +496,12 @@ local k = import "k.libsonnet";
                             description: "List of pods belonging to the predictor",
                             type: "array",
                             items: podTemplateValidation,
+                          },
+                        hpaSpecs:
+                          {
+                            description: "List of HPA specs related to the PodTemplatesSpecs",
+                            type: "array",
+                            items: hpaValidation,
                           },
                         replicas: {
                           type: "integer",

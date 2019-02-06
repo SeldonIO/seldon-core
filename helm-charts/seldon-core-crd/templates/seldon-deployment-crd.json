@@ -231,6 +231,12 @@
 					    "type" : "array",
 					    "items": {{ include "podTemplateSpec" . }}
 					},
+					"hpaSpecs":
+					{
+					    "description": "List of HPA specs associated with the predictors",
+					    "type" : "array",
+					    "items": {{ include "hpaSpec" . }}
+					},
                                         "replicas": {
                                             "type": "integer"
                                         },

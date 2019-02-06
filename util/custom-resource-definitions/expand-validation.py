@@ -45,4 +45,4 @@ if __name__ == '__main__':
     root = data["definitions"][args.root]
     expandedRoot = expand(root,data)
     simplifyAdditionalProperties(expandedRoot)
-    print json.dumps(expandedRoot,indent=4)
+    print(json.dumps(expandedRoot,indent=4))
