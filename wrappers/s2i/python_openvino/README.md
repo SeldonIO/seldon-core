@@ -3,9 +3,7 @@
 ## Building
 ```bash
 
-cp ../python/s2i .
-docker build -f Dockerfile_openvino_base --build-arg http_proxy=$http_proxy --build-arg https_proxy=$https_proxy \
--t seldon_openvino_base:latest .
+make build
 ```
 ## Usage
 
