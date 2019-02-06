@@ -1,0 +1,79 @@
+FROM intelpython/intelpython3_core as DEV
+RUN apt-get update && apt-get install -y \
+            curl \
+            ca-certificates \
+            libgfortran3 \
+            vim \
+            build-essential \
+            cmake \
+            curl \
+            wget \
+            libssl-dev \
+            ca-certificates \
+            git \
+            libboost-regex-dev \
+            gcc-multilib \
+            g++-multilib \
+            libgtk2.0-dev \
+            pkg-config \
+            unzip \
+            automake \
+            libtool \
+            autoconf \
+            libpng-dev \
+            libcairo2-dev \
+            libpango1.0-dev \
+            libglib2.0-dev \
+            libgtk2.0-dev \
+            libswscale-dev \
+            libavcodec-dev \
+            libavformat-dev \
+            libgstreamer1.0-0 \
+            gstreamer1.0-plugins-base \
+            libusb-1.0-0-dev \
+            libopenblas-dev
+
+ARG DLDT_DIR=/dldt-2018_R5
+RUN git clone --depth=1 -b 2018_R5 https://github.com/opencv/dldt.git ${DLDT_DIR} && \
+    cd ${DLDT_DIR} && git submodule init && git submodule update --recursive && \
+    rm -Rf .git && rm -Rf model-optimizer
+
+WORKDIR ${DLDT_DIR}
+RUN curl -L -o ${DLDT_DIR}/mklml_lnx_2019.0.1.20180928.tgz https://github.com/intel/mkl-dnn/releases/download/v0.17.2/mklml_lnx_2019.0.1.20180928.tgz && \
+    tar -xzf ${DLDT_DIR}/mklml_lnx_2019.0.1.20180928.tgz && rm ${DLDT_DIR}/mklml_lnx_2019.0.1.20180928.tgz
+WORKDIR ${DLDT_DIR}/inference-engine
+RUN mkdir build && cd build && cmake -DGEMM=MKL  -DMKLROOT=${DLDT_DIR}/mklml_lnx_2019.0.1.20180928 -DENABLE_MKL_DNN=ON  -DCMAKE_BUILD_TYPE=Release ..
+RUN cd build && make -j4
+RUN pip install cython numpy && mkdir ie_bridges/python/build && cd ie_bridges/python/build && \
+    cmake -DInferenceEngine_DIR=${DLDT_DIR}/inference-engine/build -DPYTHON_EXECUTABLE=`which python` -DPYTHON_LIBRARY=/opt/conda/lib/libpython3.6m.so -DPYTHON_INCLUDE_DIR=/opt/conda/include/python3.6m .. && \
+    make -j4
+
+FROM intelpython/intelpython3_core as PROD
+
+LABEL io.openshift.s2i.scripts-url="image:///s2i/bin"
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+            curl \
+            ca-certificates \
+            build-essential \
+            python3-setuptools \
+            vim
+
+COPY --from=DEV /dldt-2018_R5/inference-engine/bin/intel64/Release/lib/*.so /usr/local/lib/
+COPY --from=DEV /dldt-2018_R5/inference-engine/ie_bridges/python/bin/intel64/Release/python_api/python3.6/openvino/ /usr/local/lib/openvino/
+COPY --from=DEV /dldt-2018_R5/mklml_lnx_2019.0.1.20180928/lib/lib*.so /usr/local/lib/
+ENV LD_LIBRARY_PATH=/usr/local/lib
+ENV PYTHONPATH=/usr/local/lib
+
+RUN conda create --name myenv -y
+ENV PATH /opt/conda/envs/myenv/bin:$PATH
+RUN conda install -y tensorflow opencv && conda clean -a -y
+WORKDIR /microservice
+
+RUN pip install wheel
+RUN pip install seldon-core
+RUN pip install --upgrade setuptools
+
+COPY ./s2i/bin/ /s2i/bin
+
+EXPOSE 5000
