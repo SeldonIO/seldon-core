@@ -71,11 +71,11 @@
                 "env": [
                   {
                     "name": "XML_PATH",
-                    "value": "gs://inference-eu/serving/densenet_169_int8/1/densenet_169_i8.xml"
+                    "value": "gs://intelai_public_models/densenet_169/1/densenet_169_i8.xml"
                   },
                   {
                     "name": "BIN_PATH",
-                    "value": "gs://inference-eu/serving/densenet_169_int8/1/densenet_169_i8.bin"
+                    "value": "gs://intelai_public_models/densenet_169/1/densenet_169_i8.bin"
                   },
                   {
                     "name": "KMP_SETTINGS",
@@ -122,14 +122,14 @@
                     "cpu": "32"
                   }
                 },
-                "env": [
+                  "env": [
                   {
                     "name": "XML_PATH",
-                    "value": "gs://inference-eu/serving/resnet_50_int8/1/resnet_50_i8.xml"
+                    "value": "gs://intelai_public_models/resnet_50_i8/1/resnet_50_i8.xml"
                   },
                   {
                     "name": "BIN_PATH",
-                    "value": "gs://inference-eu/serving/resnet_50_int8/1/resnet_50_i8.bin"
+                    "value": "gs://intelai_public_models/resnet_50_i8/1/resnet_50_i8.bin"
                   },
                   {
                     "name": "KMP_SETTINGS",
