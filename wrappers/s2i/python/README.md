@@ -14,5 +14,3 @@ e.g. from 0.3-SNAPSHOT to release 0.3 and create 0.4-SNAPSHOT
 
 
 
-
-
