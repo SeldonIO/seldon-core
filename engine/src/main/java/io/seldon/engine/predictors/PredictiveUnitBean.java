@@ -351,6 +351,7 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 		Meta.Builder metaBuilder = Meta.newBuilder(message.getMeta());
 		for (SeldonMessage originalMessage : messages){
 			metaBuilder.putAllTags(originalMessage.getMeta().getTagsMap());
+			metaBuilder.setPuid(originalMessage.getMeta().getPuid());
 		}
 		metaBuilder.clearMetrics();
 		return SeldonMessage.newBuilder(message).setMeta(metaBuilder).build();
@@ -358,6 +359,7 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 	
 	private SeldonMessage mergeMeta(SeldonMessage message, Meta meta) {
 		Meta.Builder metaBuilder = Meta.newBuilder(message.getMeta());
+		metaBuilder.setPuid(meta.getPuid());
 		metaBuilder.putAllTags(meta.getTagsMap());
 		metaBuilder.clearMetrics();
 		return SeldonMessage.newBuilder(message).setMeta(metaBuilder).build();
