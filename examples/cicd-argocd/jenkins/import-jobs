@@ -19,9 +19,9 @@ import_job() {
     export GITHUB_USER
     rm -fv "${job_xml_fpath}"
     cat "${job_xml_template_fpath}"|envsubst > "${job_xml_fpath}" && echo "created ${job_xml_fpath}"
-    CRUMB=$(curl -s 'http://drone:drone@localhost:9090/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,":",//crumb)') && \
+    CRUMB=$(curl -s -u ${JENKINS_USER_NAME}:${JENKINS_USER_PASSWORD} 'http://localhost:9090/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,":",//crumb)') && \
         cat "${job_xml_fpath}" |
-            curl -X POST -H $CRUMB "http:///drone:drone@localhost:9090/createItem?name=${job_name}" --header "Content-Type: application/xml" -d @-
+            curl -X POST -H $CRUMB "http:///${JENKINS_USER_NAME}:${JENKINS_USER_PASSWORD}@localhost:9090/createItem?name=${job_name}" --header "Content-Type: application/xml" -d @-
 
     echo "imported ${job_name}"
 }

@@ -14,8 +14,8 @@ delete_job() {
     local job_name=$1
     echo "*** deleting job[${job_name}] ***"
 
-    CRUMB=$(curl -s 'http://drone:drone@localhost:9090/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,":",//crumb)') && \
-        curl -X POST -H $CRUMB "http:///drone:drone@localhost:9090/job/${job_name}/doDelete" --header "Content-Type: application/xml" -d "dummy"
+    CRUMB=$(curl -s -u ${JENKINS_USER_NAME}:${JENKINS_USER_PASSWORD} 'http://localhost:9090/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,":",//crumb)') && \
+        curl -X POST -H $CRUMB "http:///${JENKINS_USER_NAME}:${JENKINS_USER_PASSWORD}@localhost:9090/job/${job_name}/doDelete" --header "Content-Type: application/xml" -d "dummy"
 
     echo "deleted ${job_name}"
 }
