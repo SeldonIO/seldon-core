@@ -17,7 +17,7 @@
             "containers": [
               {
                 "name": "imagenet-itransformer",
-                "image": "seldon/imagenet_transformer:0.1",
+                "image": "seldonio/imagenet_transformer:0.1",
                 "env": [
                   {
                     "name": "TRACING",
@@ -31,7 +31,7 @@
               },
               {
                 "name": "imagenet-otransformer",
-                "image": "seldon/imagenet_transformer:0.1",
+                "image": "seldonio/imagenet_transformer:0.1",
                 "env": [
                   {
                     "name": "TRACING",
@@ -45,7 +45,7 @@
               },
               {
                 "name": "imagenet-combiner",
-                "image": "seldon/imagenet_combiner:0.1",
+                "image": "seldonio/imagenet_combiner:0.1",
                 "env": [
                   {
                     "name": "TRACING",
@@ -59,7 +59,7 @@
               },
               {
                 "name": "prediction1",
-                "image": "seldon/seldon-openvino-prediction:0.1",
+                "image": "seldonio/seldon-openvino-prediction:0.1",
                 "resources": {
                   "requests": {
                     "cpu": "1"
@@ -71,11 +71,11 @@
                 "env": [
                   {
                     "name": "XML_PATH",
-                    "value": "gs://inference-eu/serving/densenet_169_int8/1/densenet_169_i8.xml"
+                    "value": "gs://intelai_public_models/densenet_169/1/densenet_169_i8.xml"
                   },
                   {
                     "name": "BIN_PATH",
-                    "value": "gs://inference-eu/serving/densenet_169_int8/1/densenet_169_i8.bin"
+                    "value": "gs://intelai_public_models/densenet_169/1/densenet_169_i8.bin"
                   },
                   {
                     "name": "KMP_SETTINGS",
@@ -113,7 +113,7 @@
               },
               {
                 "name": "prediction2",
-                "image": "seldon/seldon-openvino-prediction:0.1",
+                "image": "seldonio/seldon-openvino-prediction:0.1",
                 "resources": {
                   "requests": {
                     "cpu": "1"
@@ -122,14 +122,14 @@
                     "cpu": "32"
                   }
                 },
-                "env": [
+                  "env": [
                   {
                     "name": "XML_PATH",
-                    "value": "gs://inference-eu/serving/resnet_50_int8/1/resnet_50_i8.xml"
+                    "value": "gs://intelai_public_models/resnet_50_i8/1/resnet_50_i8.xml"
                   },
                   {
                     "name": "BIN_PATH",
-                    "value": "gs://inference-eu/serving/resnet_50_int8/1/resnet_50_i8.bin"
+                    "value": "gs://intelai_public_models/resnet_50_i8/1/resnet_50_i8.bin"
                   },
                   {
                     "name": "KMP_SETTINGS",
@@ -204,7 +204,7 @@
           ]
         },
         "name": "openvino",
-        "replicas": 0,
+        "replicas": 1,
         "svcOrchSpec" : {
           "env": [
             {
