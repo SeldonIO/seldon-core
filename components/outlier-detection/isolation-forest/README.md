@@ -6,10 +6,17 @@
 
 ## Implementation
 
-The Isolation Forest is trained by running the ```train.py``` script. The ```OutlierIsolationForest``` class loads a pre-trained model and makes predictions on new data.
+The Isolation Forest is trained by running the ```train.py``` script. The ```OutlierIsolationForest``` class inherits from ```CoreIsolationForest``` which loads a pre-trained model and can make predictions on new data. 
 
-A detailed explanation of the implementation and usage of Isolation Forests as outlier detectors can be found in the [isolation_forest_doc](./isolation_forest_doc.ipynb) notebook.
+A detailed explanation of the implementation and usage of Isolation Forests as outlier detectors can be found in the [isolation forest doc](./doc.md).
 
 ## Running on Seldon
 
 An end-to-end example running an Isolation Forest outlier detector on GCP or Minikube using Seldon to identify computer network intrusions is available [here](./isolation_forest.ipynb).
+
+Docker images to use the generic Isolation Forest outlier detector as a model or transformer can be found on Docker Hub:
+* [seldonio/outlier-if-model](https://hub.docker.com/r/seldonio/outlier-if-model)
+* [seldonio/outlier-if-transformer](https://hub.docker.com/r/seldonio/outlier-if-transformer)
+
+A model docker image specific for the demo is also available:
+* [seldonio/outlier-if-model-demo](https://hub.docker.com/r/seldonio/outlier-if-model-demo)

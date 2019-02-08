@@ -159,3 +159,4 @@ examples/models/sagemaker/scikit_learn_iris_deployment.json
 examples/wrappers/go/.idea
 
 util/custom-resource-definitions/hpa-spec.json
+wrappers/s2i/python_openvino/s2i

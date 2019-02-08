@@ -1,9 +1,0 @@
-apiVersion: v1
-description: Seldon Core outlier detection model template
-keywords:
-- kubernetes
-- machine-learning
-name: seldon-od-md
-sources:
-- https://github.com/SeldonIO/seldon-core
-version: 0.1

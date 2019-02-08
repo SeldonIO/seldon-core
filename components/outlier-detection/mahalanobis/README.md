@@ -8,8 +8,15 @@ The Mahalanobis online outlier detector aims to predict anomalies in tabular dat
 
 ## Implementation
 
-The algorithm is implemented in the ```OutlierMahalanobis``` class and a detailed explanation of the implementation and usage of the algorithm to spot anomalies can be found in the [outlier_mahalanobis_doc](./outlier_mahalanobis_doc.ipynb) notebook.
+The algorithm is implemented in the ```CoreOutlierMahalanobis``` class and a detailed explanation of the implementation and usage of the algorithm to spot anomalies can be found in the [mahalanobis doc](./doc.ipynb).
 
 ## Running on Seldon
 
 An end-to-end example running a Mahalanobis outlier detector on GCP or Minikube using Seldon to identify computer network intrusions is available [here](./outlier_mahalanobis.ipynb).
+
+Docker images to use the generic Mahalanobis outlier detector as a model or transformer can be found on Docker Hub:
+* [seldonio/outlier-mahalanobis-model](https://hub.docker.com/r/seldonio/outlier-mahalanobis-model)
+* [seldonio/outlier-mahalanobis-transformer](https://hub.docker.com/r/seldonio/outlier-mahalanobis-transformer)
+
+A model docker image specific for the demo is also available:
+* [seldonio/outlier-mahalanobis-model-demo](https://hub.docker.com/r/seldonio/outlier-mahalanobis-model-demo)
