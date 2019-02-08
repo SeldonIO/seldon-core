@@ -44,7 +44,7 @@ public class PredictionService {
 		SeldonDeployment deployment = deploymentStore.getDeployment(clientId);
 		if (deployment != null)
 		{
-			final String endpoint = deployment.getSpec().getName() + "." + k8sUtil.getNamespace(deployment);
+			final String endpoint = k8sUtil.getSeldonId(deployment) + "." + k8sUtil.getNamespace(deployment);
 			return internalPredictionService.getPrediction(request, endpoint);
 		}
 		else
@@ -56,7 +56,7 @@ public class PredictionService {
 		SeldonDeployment deployment = deploymentStore.getDeployment(deploymentId);
 		if (deployment != null)
 		{
-			final String endpoint = deployment.getSpec().getName() + "." + k8sUtil.getNamespace(deployment);
+			final String endpoint = k8sUtil.getSeldonId(deployment) + "." + k8sUtil.getNamespace(deployment);
 			internalPredictionService.sendFeedback(feedback, endpoint);
 		}
 		else
