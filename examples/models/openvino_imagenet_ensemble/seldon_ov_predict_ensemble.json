@@ -1,0 +1,235 @@
+{
+  "apiVersion": "machinelearning.seldon.io/v1alpha2",
+  "kind": "SeldonDeployment",
+  "metadata": {
+    "labels": {
+      "app": "seldon"
+    },
+    "name": "openvino-model",
+    "namespace": "seldon"
+  },
+  "spec": {
+    "name": "openvino",
+    "predictors": [
+      {
+        "componentSpecs": [{
+          "spec": {
+            "containers": [
+              {
+                "name": "imagenet-itransformer",
+                "image": "seldonio/imagenet_transformer:0.1",
+                "env": [
+                  {
+                    "name": "TRACING",
+                    "value": "1"
+                  },
+                  {
+                    "name": "JAEGER_AGENT_HOST",
+                    "value": "jaeger-agent"
+                  }
+                ]
+              },
+              {
+                "name": "imagenet-otransformer",
+                "image": "seldonio/imagenet_transformer:0.1",
+                "env": [
+                  {
+                    "name": "TRACING",
+                    "value": "1"
+                  },
+                  {
+                    "name": "JAEGER_AGENT_HOST",
+                    "value": "jaeger-agent"
+                  }
+                ]
+              },
+              {
+                "name": "imagenet-combiner",
+                "image": "seldonio/imagenet_combiner:0.1",
+                "env": [
+                  {
+                    "name": "TRACING",
+                    "value": "1"
+                  },
+                  {
+                    "name": "JAEGER_AGENT_HOST",
+                    "value": "jaeger-agent"
+                  }
+                ]
+              },
+              {
+                "name": "prediction1",
+                "image": "seldonio/seldon-openvino-prediction:0.1",
+                "resources": {
+                  "requests": {
+                    "cpu": "1"
+                  },
+                  "limits": {
+                    "cpu": "32"
+                  }
+                },
+                "env": [
+                  {
+                    "name": "XML_PATH",
+                    "value": "gs://intelai_public_models/densenet_169/1/densenet_169_i8.xml"
+                  },
+                  {
+                    "name": "BIN_PATH",
+                    "value": "gs://intelai_public_models/densenet_169/1/densenet_169_i8.bin"
+                  },
+                  {
+                    "name": "KMP_SETTINGS",
+                    "value": "1"
+                  },
+                  {
+                    "name": "KMP_AFFINITY",
+                    "value": "granularity=fine,verbose,compact,1,0"
+                  },
+                  {
+                    "name": "KMP_BLOCKTIME",
+                    "value": "1"
+                  },
+                  {
+                    "name": "OMP_NUM_THREADS",
+                    "value": "16"
+                  },
+                  {
+                    "name": "http_proxy",
+                    "value": ""
+                  },
+                  {
+                    "name": "https_proxy",
+                    "value": ""
+                  },
+                  {
+                    "name": "TRACING",
+                    "value": "1"
+                  },
+                  {
+                    "name": "JAEGER_AGENT_HOST",
+                    "value": "jaeger-agent"
+                  }
+                ]
+              },
+              {
+                "name": "prediction2",
+                "image": "seldonio/seldon-openvino-prediction:0.1",
+                "resources": {
+                  "requests": {
+                    "cpu": "1"
+                  },
+                  "limits": {
+                    "cpu": "32"
+                  }
+                },
+                  "env": [
+                  {
+                    "name": "XML_PATH",
+                    "value": "gs://intelai_public_models/resnet_50_i8/1/resnet_50_i8.xml"
+                  },
+                  {
+                    "name": "BIN_PATH",
+                    "value": "gs://intelai_public_models/resnet_50_i8/1/resnet_50_i8.bin"
+                  },
+                  {
+                    "name": "KMP_SETTINGS",
+                    "value": "1"
+                  },
+                  {
+                    "name": "KMP_AFFINITY",
+                    "value": "granularity=fine,verbose,compact,1,0"
+                  },
+                  {
+                    "name": "KMP_BLOCKTIME",
+                    "value": "1"
+                  },
+                  {
+                    "name": "OMP_NUM_THREADS",
+                    "value": "16"
+                  },
+                  {
+                    "name": "http_proxy",
+                    "value": ""
+                  },
+                  {
+                    "name": "https_proxy",
+                    "value": ""
+                  },
+                  {
+                    "name": "TRACING",
+                    "value": "1"
+                  },
+                  {
+                    "name": "JAEGER_AGENT_HOST",
+                    "value": "jaeger-agent"
+                  }
+                ]
+              }
+            ],
+            "terminationGracePeriodSeconds": 1
+          }
+        }],
+        "graph": {
+          "name": "imagenet-otransformer",
+          "endpoint": { "type" : "GRPC" },
+          "type": "OUTPUT_TRANSFORMER",
+          "children": [
+            {
+
+              "name": "imagenet-itransformer",
+              "endpoint": { "type" : "GRPC" },
+              "type": "TRANSFORMER",
+              "children": [
+                {
+                  "name": "imagenet-combiner",
+                  "endpoint": { "type" : "GRPC" },
+                  "type": "COMBINER",
+                  "children": [
+                    {
+                      "name": "prediction1",
+                      "endpoint": { "type" : "GRPC" },
+                      "type": "MODEL",
+                      "children": []
+                    },
+                    {
+                      "name": "prediction2",
+                      "endpoint": { "type" : "GRPC" },
+                      "type": "MODEL",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "name": "openvino",
+        "replicas": 1,
+        "svcOrchSpec" : {
+          "env": [
+            {
+              "name": "TRACING",
+              "value": "1"
+            },
+            {
+              "name": "JAEGER_AGENT_HOST",
+              "value": "jaeger-agent"
+            },
+            {
+              "name": "JAEGER_AGENT_PORT",
+              "value": "5775"
+            },
+            {
+              "name": "JAEGER_SAMPLER_TYPE",
+              "value": "const"
+            },
+            {
+              "name": "JAEGER_SAMPLER_PARAM",
+              "value": "1"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

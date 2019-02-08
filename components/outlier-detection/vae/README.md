@@ -8,8 +8,15 @@
 
 The architecture of the VAE is defined in ```model.py``` and the model is trained by running the ```train.py``` script. The ```OutlierVAE``` class loads a pre-trained model and makes predictions on new data.
 
-A detailed explanation of the implementation and usage of the Variational Auto-Encoder as an outlier detector can be found in the [outlier_vae_doc](./outlier_vae_doc.ipynb) notebook.
+A detailed explanation of the implementation and usage of the Variational Auto-Encoder as an outlier detector can be found in the [VAE documentation](./doc.md). 
 
 ## Running on Seldon
 
 An end-to-end example running a VAE outlier detector on GCP or Minikube using Seldon to identify computer network intrusions is available [here](./outlier_vae.ipynb).
+
+Docker images to use the generic VAE outlier detector as a model or transformer can be found on Docker Hub:
+* [seldonio/outlier-vae-model](https://hub.docker.com/r/seldonio/outlier-vae-model)
+* [seldonio/outlier-vae-transformer](https://hub.docker.com/r/seldonio/outlier-vae-transformer)
+
+A model docker image specific for the demo is also available:
+* [seldonio/outlier-vae-model-demo](https://hub.docker.com/r/seldonio/outlier-vae-model-demo)

@@ -336,18 +336,15 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
                     b.setServicePort(p.getContainerPort());
                     b.setType(Endpoint.EndpointType.REST);
                     b.setServiceHost(containerHostName);
-                    return;
                 } else if ("grpc".equals(p.getName())) {
                     b.setServicePort(p.getContainerPort());
                     b.setType(Endpoint.EndpointType.GRPC);
                     b.setServiceHost(containerHostName);
-                    return;
                 }
             }
-        } else {
-            for(int i=0;i<puBuilder.getChildrenCount();i++)
-	            updatePredictiveUnitBuilderByName(puBuilder.getChildrenBuilder(i),container,containerHostName);
         }
+      for(int i=0;i<puBuilder.getChildrenCount();i++)
+        updatePredictiveUnitBuilderByName(puBuilder.getChildrenBuilder(i),container,containerHostName);
 	}
 	
 	/*
