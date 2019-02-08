@@ -847,17 +847,18 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 				}
 				
 				
+				DeploymentSpec.Builder deploymentSpecBuilder = DeploymentSpec.newBuilder()
+		        .setTemplate(podSpecBuilder.build())
+		        .setStrategy(DeploymentStrategy.newBuilder().setRollingUpdate(RollingUpdateDeployment.newBuilder().setMaxUnavailable(IntOrString.newBuilder().setType(1).setStrVal("10%"))))
+				.setSelector(labelSelector.build());
 				
+				// only add replicas if there is NOT an HPA spec
+				if (!existsHpa(p,depMetaBuilder.getName()))
+					deploymentSpecBuilder.setReplicas(p.getReplicas());
 				
 				Deployment deployment = V1beta1Extensions.Deployment.newBuilder()
 						.setMetadata(depMetaBuilder)
-						.setSpec(DeploymentSpec.newBuilder()
-						        .setTemplate(podSpecBuilder.build())
-						        .setStrategy(DeploymentStrategy.newBuilder().setRollingUpdate(RollingUpdateDeployment.newBuilder().setMaxUnavailable(IntOrString.newBuilder().setType(1).setStrVal("10%"))))
-								.setReplicas(p.getReplicas())
-								.setSelector(labelSelector.build())
-								)
-								
+						.setSpec(deploymentSpecBuilder)
 						.build();
 				
 				deployments.add(deployment);
@@ -901,6 +902,23 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		// Create service for deployment
 		return new DeploymentResources(deployments, services,hpas);
 	}
+	
+	/**
+	 * 
+	 * @param p Predictor
+	 * @param name Deployment name
+	 * @return true if hpa spec exists for deployment else false
+	 */
+	private boolean existsHpa(PredictorSpec p,String name)
+	{
+		for(HorizontalPodAutoscalerSpec spec : p.getHpaSpecsList())
+		{
+			if (spec.getScaleTargetRef().getName().equals(name))
+				return true;
+		}
+		return false;
+	}
+	
 	
 	private List<HorizontalPodAutoscaler> createHPAs(PredictorSpec p,OwnerReference ownerRef,String seldonId)
 	{
