@@ -136,6 +136,14 @@ Follow the [install guide](docs/install.md) for details on ways to install seldo
  * [Handling large gRPC messages](./notebooks/max_grpc_msg_size.ipynb). Showing how you can add annotations to increase the gRPC max message size.
  * [Handling REST timeouts](./notebooks/timeouts.ipynb). Showing how you can add annotations to set the REST (and gRPC) timeouts.
  * [Distributed Tracing](./docs/distributed-tracing.md)
+ * [Autoscaling](./docs/autoscaling.md)
+ 
+## Configuration
+
+ - [Annotation based configuration](./docs/annotations.md).
+ - [Notes for running in production](./docs/production.md).
+ - [Helm configuration](./docs/helm.md)
+ - [ksonnet configuration](./docs/ksonnet.md)
 
 
 ## Reference
@@ -180,12 +188,6 @@ Internal Tutorials:
 
  - [Benchmarking seldon-core](docs/benchmarking.md)
 
-## Configuration
-
- - [Annotation based configuration](./docs/annotations.md).
- - [Notes for running in production](./docs/production.md).
- - [Helm configuration](./docs/helm.md)
- - [ksonnet configuration](./docs/ksonnet.md)
 
 ## Community
 

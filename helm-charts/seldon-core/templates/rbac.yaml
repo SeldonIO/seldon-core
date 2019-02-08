@@ -20,6 +20,7 @@ rules:
   resources:
   - deployments
   - services
+  - horizontalpodautoscalers
   verbs: ["*"]
 - apiGroups:
   - machinelearning.seldon.io
@@ -52,6 +53,7 @@ rules:
   resources:
   - deployments
   - services
+  - horizontalpodautoscalers
   verbs: ["*"]
 - apiGroups:
   - machinelearning.seldon.io
