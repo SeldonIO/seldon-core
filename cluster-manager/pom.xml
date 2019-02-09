@@ -201,7 +201,6 @@
 	  <checkStaleness>true</checkStaleness>
 	  <excludes>
 	    <exclude>k8s.io/**/*.proto</exclude>
-	    <exclude>**/v1.proto</exclude>
 	  </excludes>
 	</configuration>
 	<executions>
