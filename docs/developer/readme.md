@@ -14,4 +14,4 @@ To be completed.
 ## Building Seldon Core
 
 * [Build using private repository](build-using-private-repo.md)
-
+* [Kubernetes Client](kubernetes-client.md)

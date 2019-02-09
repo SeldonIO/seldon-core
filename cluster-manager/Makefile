@@ -19,6 +19,8 @@ push_to_registry:
 clean:
 	@mvn clean
 	@rm -fv cluster-manager.json
+	@rm -fv src/main/proto/seldon_deployment.proto
+	@rm -fvr src/main/proto/k8s.io
 
 cache_dependencies:
 	mvn -Dmaven.repo.local=./.m2 dependency:resolve

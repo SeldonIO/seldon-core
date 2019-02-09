@@ -35,7 +35,6 @@ clean:
 	mvn clean -B
 	rm -fv src/main/proto/seldon_deployment.proto
 	rm -fvr src/main/proto/k8s.io
-	rm -fv src/main/proto/v1.proto
 	rm -rfv java_client
 
 download_protos:
