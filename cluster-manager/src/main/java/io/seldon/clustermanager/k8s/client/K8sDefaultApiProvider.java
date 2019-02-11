@@ -3,6 +3,7 @@ package io.seldon.clustermanager.k8s.client;
 import org.springframework.stereotype.Component;
 
 import io.kubernetes.client.ApiClient;
+import io.kubernetes.client.apis.CoreV1Api;
 import io.kubernetes.client.apis.CustomObjectsApi;
 import io.kubernetes.client.apis.ExtensionsV1beta1Api;
 
@@ -17,6 +18,11 @@ public class K8sDefaultApiProvider implements K8sApiProvider {
 	@Override
 	public ExtensionsV1beta1Api getExtensionsV1beta1Api(ApiClient client) {
 		return new ExtensionsV1beta1Api(client);
+	}
+
+	@Override
+	public CoreV1Api getCoreV1Api(ApiClient client) {
+		return new CoreV1Api(client);
 	}
 
 }

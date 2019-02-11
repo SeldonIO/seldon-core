@@ -1,0 +1,3 @@
+dog.jpeg 248
+zebra.jpeg 340
+pelican.jpeg 144

@@ -158,3 +158,5 @@ examples/models/sagemaker/scikit_learn_iris_deployment.json
 #go example
 examples/wrappers/go/.idea
 
+wrappers/s2i/python_openvino/s2i
+

@@ -118,15 +118,6 @@ public class EnginePredictor {
 		return deploymentName;
 	}
 
-    
-    /**
-     * Used only for testing. Should be replaced by better methods that use Spring and Mockito to create a PredictorSpec for testing
-     * @param predictorSpec
-     */
-	public void setPredictorSpec(PredictorSpec predictorSpec) { //FIXME
-		this.predictorSpec = predictorSpec;
-	}
-
 	private static PredictorSpec buildDefaultPredictorSpec() {
 
         //@formatter:off
@@ -156,7 +147,7 @@ public class EnginePredictor {
         return jsonPrinter.print(message);
     }
 
-    private static <T extends Message.Builder> void updateMessageBuilderFromJson(T messageBuilder, String json) throws InvalidProtocolBufferException {
+    public static <T extends Message.Builder> void updateMessageBuilderFromJson(T messageBuilder, String json) throws InvalidProtocolBufferException {
         JsonFormat.parser().ignoringUnknownFields()
         .usingTypeParser(IntOrString.getDescriptor().getFullName(), new IntOrStringUtils.IntOrStringParser())
         .usingTypeParser(Quantity.getDescriptor().getFullName(), new QuantityUtils.QuantityParser())

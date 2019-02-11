@@ -25,6 +25,9 @@ def initial_rest_request():
         if not r.status_code == 200:
             time.sleep(5)
             r = rest_request_api_gateway("oauth-key","oauth-secret",None)
+            if not r.status_code == 200:
+                time.sleep(10)
+                r = rest_request_api_gateway("oauth-key","oauth-secret",None)
     return r
 
 @pytest.mark.usefixtures("single_namespace_seldon_helm")

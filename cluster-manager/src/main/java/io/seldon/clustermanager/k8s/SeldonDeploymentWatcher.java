@@ -82,8 +82,10 @@ public class SeldonDeploymentWatcher  {
 		switch(action)
 		{
 		case "ADDED":
+			seldonDeploymentController.createOrReplaceSeldonDeployment(mldep,true);
+			break;
 		case "MODIFIED":
-			seldonDeploymentController.createOrReplaceSeldonDeployment(mldep);
+			seldonDeploymentController.createOrReplaceSeldonDeployment(mldep,false);
 			break;
 		case "DELETED":
 			mlCache.remove(mldep);

@@ -55,6 +55,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	private final K8sClientProvider clientProvider;
 	private final KubeCRDHandler crdHandler;
 	private final SeldonDeploymentCache mlCache;
+	private final SeldonNameCreator seldonNameCreator = new SeldonNameCreator();
 	
 	private static final String DEPLOYMENT_API_VERSION = "extensions/v1beta1";
 	
@@ -127,7 +128,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	{
 		int deleteCount = 0;
 	    Set<String> names = getDeploymentNames(deployments);
-	    ExtensionsV1beta1DeploymentList depList = crdHandler.getOwnedDeployments(seldonDeployment.getSpec().getName(),namespace);
+	    ExtensionsV1beta1DeploymentList depList = crdHandler.getOwnedDeployments(seldonNameCreator.getSeldonId(seldonDeployment),namespace);
 	    for (ExtensionsV1beta1Deployment d : depList.getItems())
 	    {
 	    	boolean okToDelete = !svcOrchOnly || (d.getMetadata().getLabels().containsKey(Constants.LABEL_SELDON_SVCORCH));
@@ -156,7 +157,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	private void removeServices(ApiClient client,String namespace,SeldonDeployment seldonDeployment,List<Service> services) throws ApiException, IOException, SeldonDeploymentException
 	{
 		Set<String> names = getServiceNames(services);
-		V1ServiceList svcList = crdHandler.getOwnedServices(seldonDeployment.getSpec().getName(),namespace);
+		V1ServiceList svcList = crdHandler.getOwnedServices(seldonNameCreator.getSeldonId(seldonDeployment),namespace);
 		for(V1Service s : svcList.getItems())
 		{
 			if (!names.contains(s.getMetadata().getName()))
@@ -172,40 +173,6 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 				else
 					logger.debug("Deleted service "+s.getMetadata().getName());
 				
-			}
-		}
-	}
-	
-	/**
-	 * Currently Not used as issue with proto client needs further investigation
-	 * @param client
-	 * @param namespace
-	 * @param seldonDeployment
-	 * @param services
-	 * @throws ApiException
-	 * @throws IOException
-	 * @throws SeldonDeploymentException
-	 */
-	private void removeServices(ProtoClient client,String namespace,SeldonDeployment seldonDeployment,List<Service> services) throws ApiException, IOException, SeldonDeploymentException
-	{
-		Set<String> names = getServiceNames(services);
-		V1ServiceList svcList = crdHandler.getOwnedServices(seldonDeployment.getSpec().getName(),namespace);
-		for(V1Service s : svcList.getItems())
-		{
-			if (!names.contains(s.getMetadata().getName()))
-			{	
-				final String deleteApiPath = "/apis/v1/namespaces/{namespace}/services/{name}"
-	                    .replaceAll("\\{" + "name" + "\\}", client.getApiClient().escapeString(s.getMetadata().getName()))
-	                    .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString(namespace));
-	            DeleteOptions options = DeleteOptions.newBuilder().setPropagationPolicy("Foreground").build();
-	            ObjectOrStatus<Deployment> os = client.delete(Service.newBuilder(),deleteApiPath,options);
-	            if (os.status != null) {
-                    logger.error("Error deleting service:"+ProtoBufUtils.toJson(os.status));
-                    throw new SeldonDeploymentException("Failed to delete service "+s.getMetadata().getName());
-                }
-                else {
-                    logger.debug("Deleted deployment:"+ProtoBufUtils.toJson(os.object));
-                }
 			}
 		}
 	}
@@ -316,7 +283,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 
 	
 	@Override
-	public void createOrReplaceSeldonDeployment(SeldonDeployment mlDep) {
+	public void createOrReplaceSeldonDeployment(SeldonDeployment mlDep,boolean added) {
 
 	    if (mlDep.hasStatus() && mlDep.getStatus().hasState() && mlDep.getStatus().getState().equals(Constants.STATE_FAILED))
 	    {
@@ -327,7 +294,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 		{
 	        String namespace = SeldonDeploymentUtils.getNamespace(mlDep);
 		    SeldonDeployment existing = mlCache.get(mlDep);
-		    if (existing == null || !existing.getSpec().equals(mlDep.getSpec()))
+		    if (added || existing == null || !existing.getSpec().equals(mlDep.getSpec()))
 		    {
 		        logger.debug("Running updates for "+mlDep.getMetadata().getName());
 		        mlCache.put(mlDep);
