@@ -1,10 +1,11 @@
 import logging
+import numpy as np
 logger = logging.getLogger(__name__)
 
 class ImageNetCombiner(object):
 
     def aggregate(self, Xs, features_names):
         print("ImageNet Combiner aggregate called")
-        logger.info(Xs)
-        return (Xs[0]+Xs[1])/2.0
+        logger.debug(Xs)
+        return (np.reshape(Xs[0],(1,-1)) + np.reshape(Xs[1], (1,-1)))/2.0
 

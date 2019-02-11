@@ -71,7 +71,7 @@ public class End2EndBase extends AppTest {
 		Request.Builder requestBuilder = new Request.Builder().url("http://0.0.0.0:8000");
 		Response.Builder responseBuilder = new Response.Builder();
 		String jsonStr = readFile(resourceFilename,StandardCharsets.UTF_8).replaceAll("\n", "") + "\n";
-		
+		Gson gson = new GsonBuilder().create();
 
 		ResponseBody responseBody = ResponseBody.create(MediaType.parse("Content-Type: application/json"), jsonStr);
 		Response response = responseBuilder.code(200).request(requestBuilder.build()).protocol(Protocol.HTTP_2).body(responseBody).build();
@@ -83,13 +83,14 @@ public class End2EndBase extends AppTest {
 				any(Boolean.class),isNull(ProgressListener.class),isNull(ProgressRequestListener.class))).thenReturn(mockListNamespaceCall);
 		// Use in crdHandler
 		when(mockCustomObjectsApi.replaceNamespacedCustomObjectStatus(any(String.class), any(String.class), any(String.class), any(String.class), any(String.class), any(byte[].class))).thenThrow(ApiException.class);
-		when(mockCustomObjectsApi.replaceNamespacedCustomObject(any(String.class), any(String.class), any(String.class), any(String.class), any(String.class), any(byte[].class))).thenReturn(null);		
-		
+		when(mockCustomObjectsApi.replaceNamespacedCustomObject(any(String.class), any(String.class), any(String.class), any(String.class), any(String.class), any(byte[].class))).thenReturn(null);
+		// Can use this for get Custom Object
+		Object coObject = gson.fromJson(jsonStr, LinkedTreeMap.class);
+		when(mockCustomObjectsApi.getNamespacedCustomObject(any(String.class), any(String.class), any(String.class), any(String.class), any(String.class))).thenReturn(coObject);
 		mockK8sApiProvider = mock(K8sApiProvider.class);
 		when(mockK8sApiProvider.getCustomObjectsApi(any(ApiClient.class))).thenReturn(mockCustomObjectsApi);
 		
 		Watch.Response<Object> watchResponse = mock(Watch.Response.class);
-		Gson gson = new GsonBuilder().create();
 		watchResponse.object = gson.fromJson(jsonStr, LinkedTreeMap.class);
 		watchResponse.type = "ADDED";
 		

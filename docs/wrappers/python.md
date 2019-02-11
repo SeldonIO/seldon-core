@@ -126,6 +126,10 @@ s2i usage seldonio/seldon-core-s2i-python3:0.4
 s2i build --help
 ```
 
+# Using with Keras/Tensorflow Models
+
+To ensure Keras models with the Tensorflow backend work correctly you may need to call `_make_predict_function()` on your model after it is loaded. This is because Flask may call the prediction request in a separate thread from the one that initialised your model. See [here](https://github.com/keras-team/keras/issues/6462) for further discussion.
+
 # Reference
 
 ## Environment Variables

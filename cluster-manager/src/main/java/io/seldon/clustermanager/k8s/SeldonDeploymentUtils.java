@@ -72,4 +72,9 @@ public class SeldonDeploymentUtils {
 		return Boolean.parseBoolean(mlDep.getSpec().getAnnotationsOrDefault(Constants.ENGINE_SEPARATE_ANNOTATION, "false"));
 	}
 	
+	public static boolean hasHeadlessSvcAnnotation(SeldonDeployment mlDep)
+	{
+		return Boolean.parseBoolean(mlDep.getSpec().getAnnotationsOrDefault(Constants.HEADLESS_SVC_ANNOTATION, "false"));
+	}
+	
 }

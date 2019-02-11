@@ -13,7 +13,7 @@
                 "template": {
                     "metadata": {
                         "annotations": {
-                            "checksum/config-1": {{ include (print $.Template.BasePath "/alertmanager-config-configmap.yaml") . | sha256sum | quote }},
+                            "checksum/config-1": {{ include (print $.Template.BasePath "/alertmanager-config-configmap.yaml") . | sha256sum | quote }}
                         },
                         "labels": {
                             "app": "alertmanager-server"

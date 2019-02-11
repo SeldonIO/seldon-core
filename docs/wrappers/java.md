@@ -38,7 +38,7 @@ Create a Spring Boot Maven project and include the dependency:
 <dependency>
 	<groupId>io.seldon.wrapper</groupId>
 	<artifactId>seldon-core-wrapper</artifactId>
-	<version>0.1.1</version>
+	<version>0.1.3</version>
 </dependency>
 ```
 
