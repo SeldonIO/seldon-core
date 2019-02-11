@@ -17,7 +17,7 @@
             "containers": [
               {
                 "name": "imagenet-itransformer",
-                "image": "seldonio/imagenet_transformer:0.1",
+                "image": "seldonio/openvino-demo-transformer:0.1",
                 "env": [
                   {
                     "name": "TRACING",
@@ -31,7 +31,7 @@
               },
               {
                 "name": "imagenet-otransformer",
-                "image": "seldonio/imagenet_transformer:0.1",
+                "image": "seldonio/openvino-demo-transformer:0.1",
                 "env": [
                   {
                     "name": "TRACING",
@@ -45,7 +45,7 @@
               },
               {
                 "name": "imagenet-combiner",
-                "image": "seldonio/imagenet_combiner:0.1",
+                "image": "seldonio/openvino-demo-combiner:0.1",
                 "env": [
                   {
                     "name": "TRACING",
@@ -59,7 +59,7 @@
               },
               {
                 "name": "prediction1",
-                "image": "seldonio/seldon-openvino-prediction:0.1",
+                "image": "seldonio/openvino-demo-prediction:0.1",
                 "resources": {
                   "requests": {
                     "cpu": "1"
@@ -113,7 +113,7 @@
               },
               {
                 "name": "prediction2",
-                "image": "seldonio/seldon-openvino-prediction:0.1",
+                "image": "seldonio/openvino-demo-prediction:0.1",
                 "resources": {
                   "requests": {
                     "cpu": "1"

@@ -1,5 +1,5 @@
 IMAGE_VERSION=0.1
-IMAGE_NAME=docker.io/seldonio/openvino-demo-transformer
+IMAGE_NAME=docker.io/seldonio/openvino-demo-prediction
 
 build:
 	s2i build -E environment_grpc . seldonio/seldon-core-s2i-openvino:0.1 $(IMAGE_NAME):$(IMAGE_VERSION)
