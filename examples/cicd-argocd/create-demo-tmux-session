@@ -28,7 +28,7 @@ create_new_port_forward_window() {
 
     # port forward api server
     tmux select-pane -t 2
-    tmux send-keys "${STARTUP_DIR}/seldon-core/port-forard-api-server" C-m
+    tmux send-keys "${STARTUP_DIR}/seldon-core/port-forard-ambassador" C-m
 
     # port forward argo
     tmux select-pane -t 3

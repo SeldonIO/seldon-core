@@ -6,5 +6,9 @@ set -o pipefail
 set -o noclobber
 set -o noglob
 
-argo delete --all
+STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+source ${STARTUP_DIR}/../settings.sh
+
+argo delete --context "${KUBE_CONTEXT}" --all
 

@@ -47,13 +47,14 @@
         Find the "Github" plugin
         Install without restart
 
+    # setup security to use "Jenkins’ own user database"
     Manage Jenkins->Configure Global Security
-        Security Realm->Jenkins’ own user database
-            - "Allow users to sign up"
+            - select "Jenkins’ own user database"
+            - Make sure "Allow users to sign up" is unchecked
+            - save
 
-    create a user:
-        id: drone
-        password: drone
+    Jenkins will ask to "Create First Admin User"
+            - use the JENKINS_USER_NAME and JENKINS_USER_PASSWORD in the "settings.sh" file
 
 * Import Jenkins jobs
 
