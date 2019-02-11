@@ -1,41 +1,20 @@
 #!/usr/bin/env python
 
 import requests
-from requests.auth import HTTPBasicAuth
-import pprint
+import json
 
-try:
-    from commands import getoutput # python 2
-except ImportError:
-    from subprocess import getoutput # python 3
-
-NAMESPACE="seldon"
-SELDON_API_IP="localhost"
-
-def pp(o):
-    pprinter = pprint.PrettyPrinter(indent=4)
-    pprinter.pprint(o)
-
-def get_token():
-    payload = {'grant_type': 'client_credentials'}
-    url="http://{}:8080/oauth/token".format(SELDON_API_IP)
+def rest_request_ambassador(deploymentName, request, endpoint="localhost:8003"):
     response = requests.post(
-                url,
-                auth=HTTPBasicAuth('oauth-key', 'oauth-secret'),
-                data=payload)
-    token =  response.json()["access_token"]
-    return token
+        "http://" + endpoint + "/seldon/" + deploymentName + "/api/v0.1/predictions",
+        json=request)
+    return response.json()
 
 def rest_request():
-    token = get_token()
-    headers = {'Authorization': 'Bearer '+token}
     payload = {"data":{"names":["a","b"],"tensor":{"shape":[2,2],"values":[0,0,1,1]}}}
-    response = requests.post(
-                "http://{}:8080/api/v0.1/predictions".format(SELDON_API_IP),
-                headers=headers,
-                json=payload)
-    print(response.text)
-    
+    response_dict=rest_request_ambassador("seldon-deployment-example", payload, endpoint="localhost:8080")
+    response_json=json.dumps(response_dict, sort_keys=True, indent=4, separators=(',', ': '))
+    print(response_json)
+
 def main():
     rest_request()
 
