@@ -24,6 +24,9 @@ ambassador:
     https:
       targetPort: 8443
     type: LoadBalancer
+  rbac:
+    create: true
+    namespaced: true
 apife:
   annotations: null
   enabled: true
