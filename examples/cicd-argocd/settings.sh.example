@@ -1,9 +1,14 @@
-ARGOCD_VERSION=v0.10.6
+# leave empty for default context, or use a particular context
 KUBE_CONTEXT=
 
-MODEL_SOURCE_FILES_DIR=...pathto/cicd-demo-model-source-files
-K8S_MANIFEST_FILES_DIR=...pathto/cicd-demo-k8s-manifest-files
+MODEL_SOURCE_FILES_DIR=/pathto/cicd-demo-model-source-files
+K8S_MANIFEST_FILES_DIR=/pathto/cicd-demo-k8s-manifest-files
 
 GITHUB_USER=<github user id>
 GITHUB_TOKEN=<github personal token>
+
+ARGOCD_VERSION=v0.10.6
+
+JENKINS_USER_NAME=<jenkins user id>
+JENKINS_USER_PASSWORD=<jenkins password>
 
