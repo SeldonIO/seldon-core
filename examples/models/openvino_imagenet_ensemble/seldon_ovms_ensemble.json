@@ -1,179 +1,161 @@
 {
-    "apiVersion": "machinelearning.seldon.io/v1alpha2",
-    "kind": "SeldonDeployment",
-    "metadata": {
-        "labels": {
-            "app": "seldon"
-        },
-        "name": "openvino-model",
+  "apiVersion": "machinelearning.seldon.io/v1alpha2",
+  "kind": "SeldonDeployment",
+  "metadata": {
+    "labels": {
+      "app": "seldon"
+      },
+      "name": "openvino-model",
 	"namespace": "seldon"	
     },
     "spec": {
-        "name": "openvino",
-        "predictors": [
-            {
-                "componentSpecs": [{
-                    "spec": {
-                        "containers": [
-                            {
-                                "name": "imagenet-itransformer",				
-                                "image": "seldonio/imagenet_transformer:0.1",
-				"env": [
+      "name": "openvino",
+      "predictors": [
+        {
+          "componentSpecs": [{
+            "spec": {
+              "containers": [
+                {
+                  "name": "imagenet-itransformer",
+                  "image": "seldonio/openvino-demo-transformer:0.1",
+				  "env": [
 				    {
-					"name": "TRACING",
-					"value": "1"
+					  "name": "TRACING",
+					  "value": "1"
 				    },
 				    {
-					"name": "JAEGER_AGENT_HOST",
-					"value": "jaeger-agent"
-				    }
-				]
-                            },
-                            {
-                                "name": "imagenet-otransformer",				
-                                "image": "seldonio/imagenet_transformer:0.1",
-				"env": [
+					  "name": "JAEGER_AGENT_HOST",
+					  "value": "jaeger-agent"
+				    },
+					{
+					  "name": "DTYPE",
+					  "value": "float32"
+					}
+				  ]
+                },
+                {
+                  "name": "imagenet-otransformer",
+                  "image": "seldonio/openvino-demo-transformer:0.1",
+				  "env": [
 				    {
-					"name": "TRACING",
-					"value": "1"
+					  "name": "TRACING",
+					  "value": "1"
 				    },
 				    {
-					"name": "JAEGER_AGENT_HOST",
-					"value": "jaeger-agent"
+					  "name": "JAEGER_AGENT_HOST",
+					  "value": "jaeger-agent"
 				    }
-				]				
-                            },
-                            {
-                                "name": "imagenet-combiner",				
-                                "image": "seldonio/imagenet_combiner:0.1",
-				"env": [
+				  ]
+				},
+                {
+                  "name": "imagenet-combiner",
+                  "image": "seldonio/openvino-demo-combiner:0.1",
+				  "env": [
 				    {
-					"name": "TRACING",
-					"value": "1"
+					  "name": "TRACING",
+					  "value": "1"
 				    },
 				    {
-					"name": "JAEGER_AGENT_HOST",
-					"value": "jaeger-agent"
+					  "name": "JAEGER_AGENT_HOST",
+					  "value": "jaeger-agent"
 				    }
-				]				
-                            },
-                            {
-                                "name": "tfserving-proxy1",				
-                                "image": "seldonio/tfserving-proxy:0.2",
-				"env": [
-				    {
-					"name": "TRACING",
-					"value": "1"
-				    },
-				    {
-					"name": "JAEGER_AGENT_HOST",
-					"value": "jaeger-agent"
-				    }
-				]								
-                            },
-                            {
-                                "name": "tfserving-proxy2",			
-                                "image": "seldonio/tfserving-proxy:0.2",
-				"env": [
-				    {
-					"name": "TRACING",
-					"value": "1"
-				    },
-				    {
-					"name": "JAEGER_AGENT_HOST",
-					"value": "jaeger-agent"
-				    }
-				]								
-                            },
-			    {
-				"name": "openvino-model-server1",
-				"image": "intelaipg/openvino-model-server:latest",
-				"command": [
-				    "/ie-serving-py/start_server.sh"
-				],
-				"args": [
-				    "ie_serving",
-				    "model",
-				    "--model_path",
-				    "/opt/ml/squeezenet",
-				    "--model_name",
-				    "squeezenet1.1",
-				    "--port",
-				    "8001"
-				],
-				"ports": [
-				    {
-					"name": "grpc",
-					"containerPort": 8001,
-					"protocol": "TCP"
-				    }
-				],
-				"env": [
-				    {
-					"name": "LOG_LEVEL",
-					"value": "DEBUG"
-				    }
-				],
-				"resources": {},
-				"volumeMounts": [
-				    {
-					"name": "modelstore",
-					"mountPath": "/opt/ml"
-				    }
-				]
-			    },
-			    {
-				"name": "openvino-model-server2",
-				"image": "intelaipg/openvino-model-server:latest",
-				"command": [
-				    "/ie-serving-py/start_server.sh"
-				],
-				"args": [
-				    "ie_serving",
-				    "model",
-				    "--model_path",
-				    "/opt/ml/squeezenet",
-				    "--model_name",
-				    "squeezenet1.1",
-				    "--port",
-				    "8002"
-				],
-				"ports": [
-				    {
-					"name": "grpc",
-					"containerPort": 8002,
-					"protocol": "TCP"
-				    }
-				],
-				"env": [
-				    {
-					"name": "LOG_LEVEL",
-					"value": "DEBUG"
-				    }
-				],
-				"resources": {},
-				"volumeMounts": [
-				    {
-					"name": "modelstore",
-					"mountPath": "/opt/ml"
-				    }
-				]
-			    }
-			],
-			"terminationGracePeriodSeconds": 1,
-			"volumes": [
-			    {
-				"name": "modelstore",
-				"volumeSource": {
-				    "persistentVolumeClaim": {
-					"claimName": "model-store-pvc"
-				    }
-				}
-			    }
-			]
-		    }
-		}],
-                "graph": {
+				  ]
+                  },
+                  {
+                    "name": "tfserving-proxy1",
+                    "image": "seldonio/tfserving-proxy:0.2",
+				    "env": [
+				      {
+					    "name": "TRACING",
+					    "value": "1"
+				      },
+				      {
+					    "name": "JAEGER_AGENT_HOST",
+					    "value": "jaeger-agent"
+				      }
+				    ]
+                    },
+                    {
+                      "name": "tfserving-proxy2",
+                      "image": "seldonio/tfserving-proxy:0.2",
+				      "env": [
+				        {
+					      "name": "TRACING",
+					      "value": "1"
+				        },
+				        {
+					      "name": "JAEGER_AGENT_HOST",
+					      "value": "jaeger-agent"
+				        }
+				      ]
+					},
+			    	{
+					  "name": "openvino-model-server1",
+				      "image": "intelaipg/openvino-model-server:latest",
+				      "command": [
+				        "/ie-serving-py/start_server.sh"
+					  ],
+					  "args": [
+				    	"ie_serving",
+				    	"model",
+				    	"--model_path",
+				    	"gs://intelai_public_models/densenet_169",
+				    	"--model_name",
+				    	"densenet169",
+				    	"--port",
+				    	"8001"
+					  ],
+					  "ports": [
+				    	{
+						  "name": "grpc",
+						  "containerPort": 8001,
+						  "protocol": "TCP"
+				    	}
+					  ],
+					  "env": [
+				    	{
+						  "name": "LOG_LEVEL",
+						  "value": "DEBUG"
+				    	}
+					  ],
+					  "resources": {}
+					},
+			    	{
+					  "name": "openvino-model-server2",
+					  "image": "intelaipg/openvino-model-server:latest",
+					  "command": [
+				    	"/ie-serving-py/start_server.sh"
+					  ],
+					  "args": [
+				    	"ie_serving",
+				    	"model",
+				    	"--model_path",
+				    	"gs://intelai_public_models/resnet_50_i8",
+				    	"--model_name",
+				    	"resnet50",
+				    	"--port",
+				    	"8002"
+					  ],
+					  "ports": [
+				    	{
+						  "name": "grpc",
+						  "containerPort": 8002,
+						  "protocol": "TCP"
+				    	}
+					  ],
+					  "env": [
+				    	{
+						  "name": "LOG_LEVEL",
+						  "value": "DEBUG"
+				    	}
+					  ],
+					  "resources": {}
+			    	}
+			      ],
+				  "terminationGracePeriodSeconds": 1
+		    	}
+		  }],
+          "graph": {
 		    "name": "imagenet-otransformer",
 		    "endpoint": { "type" : "GRPC" },
 		    "type": "OUTPUT_TRANSFORMER",
@@ -204,12 +186,12 @@
 					{
 					    "name":"model_name",
 					    "type":"STRING",
-					    "value":"squeezenet1.1"
+					    "value":"densenet169"
 					},
 					{
 					    "name":"model_output",
 					    "type":"STRING",
-					    "value":"prob"
+					    "value":"classifier"
 					},
 					{
 					    "name":"model_input",
@@ -233,7 +215,7 @@
 					{
 					    "name":"model_name",
 					    "type":"STRING",
-					    "value":"squeezenet1.1"
+					    "value":"resnet50"
 					},
 					{
 					    "name":"model_output",
@@ -253,8 +235,8 @@
 			}
 		    ]
 		},
-                "name": "openvino",
-                "replicas": 1,
+        "name": "openvino",
+        "replicas": 1,
 		"svcOrchSpec" : {
 		    "env": [
 			{
@@ -279,7 +261,7 @@
 			}
 		    ]				
 		}
-            }
-        ]
+        }
+	  ]
     }
 }
