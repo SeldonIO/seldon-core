@@ -20,7 +20,7 @@ spec:
   template:
     metadata:
       annotations:
-{{ if .Values.apife.annotations }}        
+{{ if .Values.apife.annotations }}
 {{ toYaml .Values.apife.annotations | indent 8 }}
 {{ end }}
         prometheus.io/path: /prometheus
@@ -35,14 +35,14 @@ spec:
         - name: SELDON_CLUSTER_MANAGER_REDIS_HOST
           value: {{ .Release.Name }}-redis
         - name: SELDON_SINGLE_NAMESPACE
-          value: '{{ .Values.single_namespace }}'
+          value: '{{ .Values.singleNamespace }}'
         - name: SELDON_CLUSTER_MANAGER_POD_NAMESPACE
           valueFrom:
             fieldRef:
               apiVersion: v1
               fieldPath: metadata.namespace
-        image: {{ .Values.apife.image.name }}
-        imagePullPolicy: {{ .Values.apife.image.pull_policy }}
+        image: "{{ .Values.apife.image.repository }}:{{ .Values.apife.image.tag }}"
+        imagePullPolicy: {{ .Values.apife.image.pullPolicy }}
         name: seldon-apiserver-container
         volumeMounts:
           - name: podinfo
@@ -57,7 +57,7 @@ spec:
           protocol: TCP
       dnsPolicy: ClusterFirst
 {{- if .Values.rbac.enabled }}
-      serviceAccountName: {{ .Values.rbac.service_account.name }}
+      serviceAccountName: {{ .Values.rbac.serviceAccount.name }}
 {{- end }}
       terminationGracePeriodSeconds: 30
       volumes:
@@ -90,7 +90,7 @@ spec:
   selector:
     app: seldon-apiserver-container-app
   sessionAffinity: None
-  type: {{ .Values.apife.service_type }}
+  type: {{ .Values.apife.service.type }}
 status:
   loadBalancer: {}
 {{- end }}

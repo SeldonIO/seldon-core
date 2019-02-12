@@ -16,13 +16,13 @@ metadata:
 spec:
   replicas: 1
   selector:
-    matchLabels: *Labels  
+    matchLabels: *Labels
   template:
     metadata:
       labels: *Labels
     spec:
       containers:
-      - image: {{ .Values.redis.image.name }}
+      - image: "{{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}"
         name: redis-container
         ports:
         - containerPort: 6379

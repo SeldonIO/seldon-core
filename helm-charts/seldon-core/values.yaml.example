@@ -2,20 +2,20 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-cluster_manager:
+clusterManager:
   enabled: true
   rbac: false
-  spring_opts: ""
+  springOpts: ""
   # set the JAVA_OPTS
-  #java_opts: "-agentlib:jdwp=transport=dt_socket,address=127.0.0.1:8000,server=y,suspend=n"
-  java_opts: ""
+  #javaOpts: "-agentlib:jdwp=transport=dt_socket,address=127.0.0.1:8000,server=y,suspend=n"
+  javaOpts: ""
   image:
     tag: "0.3.1"
-    pull_policy: "IfNotPresent"
+    pullPolicy: "IfNotPresent"
 apife:
   image:
     tag: "0.1.1"
-    pull_policy: "IfNotPresent"
+    pullPolicy: "IfNotPresent"
 engine:
   image:
     tag: "0.2.1"
@@ -31,6 +31,6 @@ redis:
     tag: "4.0.1"
 
 # Set the type of service for apife
-#apife_service_type: LoadBalancer
-apife_service_type: NodePort
+#apife.service.type: LoadBalancer
+apife.service.type: NodePort
 

@@ -5,7 +5,7 @@ metadata:
   labels: &Labels
     app.kubernetes.io/name: {{ .Release.Name }}
     app.kubernetes.io/component: seldon-core-operator
-    app: seldon-cluster-manager-server    
+    app: seldon-cluster-manager-server
     chart: {{ template "seldon.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
@@ -21,24 +21,24 @@ spec:
       labels: *Labels
     spec:
 {{- if .Values.rbac.enabled }}
-      serviceAccountName: {{ .Values.rbac.service_account.name }}
+      serviceAccountName: {{ .Values.rbac.serviceAccount.name }}
 {{- end }}
       containers:
       - env:
         - name: JAVA_OPTS
-          value: {{ .Values.cluster_manager.java_opts }}
+          value: {{ .Values.clusterManager.javaOpts }}
         - name: SPRING_OPTS
-          value: {{ .Values.cluster_manager.spring_opts }}
+          value: {{ .Values.clusterManager.springOpts }}
         - name: SELDON_CLUSTER_MANAGER_REDIS_HOST
           value: {{ .Release.Name }}-redis
         - name: ENGINE_CONTAINER_IMAGE_AND_VERSION
-          value: {{ .Values.engine.image.name }}
+          value: "{{ .Values.engine.image.repository }}:{{ .Values.engine.image.tag }}"
         - name: ENGINE_CONTAINER_IMAGE_PULL_POLICY
-          value: {{ .Values.engine.image.pull_policy }}
+          value: {{ .Values.engine.image.pullPolicy }}
         - name: ENGINE_CONTAINER_SERVICE_ACCOUNT_NAME
-          value: {{ .Values.engine.service_account.name }}
+          value: {{ .Values.engine.serviceAccount.name }}
         - name: SELDON_CLUSTER_MANAGER_SINGLE_NAMESPACE
-          value: '{{ .Values.single_namespace }}'
+          value: '{{ .Values.singleNamespace }}'
         - name: ENGINE_CONTAINER_USER
           value: '{{ .Values.engine.user }}'
         - name: SELDON_CLUSTER_MANAGER_POD_NAMESPACE
@@ -46,8 +46,8 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: metadata.namespace
-        image: {{ .Values.cluster_manager.image.name }}
-        imagePullPolicy: {{ .Values.cluster_manager.image.pull_policy }}
+        image: "{{ .Values.clusterManager.image.repository }}:{{ .Values.clusterManager.image.tag }}"
+        imagePullPolicy: {{ .Values.clusterManager.image.pullPolicy }}
         name: seldon-cluster-manager-container
         securityContext:
           runAsUser: 8888

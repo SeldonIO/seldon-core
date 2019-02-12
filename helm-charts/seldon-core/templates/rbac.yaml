@@ -1,14 +1,14 @@
 {{- if .Values.rbac.enabled }}
-{{- if .Values.rbac.service_account.create }}
+{{- if .Values.rbac.serviceAccount.create }}
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: {{ .Values.rbac.service_account.name }}
+  name: {{ .Values.rbac.serviceAccount.name }}
   namespace: {{ .Release.Namespace }}
 {{- end }}
 {{- if .Values.rbac.rolebinding.create }}
-{{- if .Values.single_namespace }}
+{{- if .Values.singleNamespace }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -37,10 +37,10 @@ roleRef:
   name: seldon-local
 subjects:
   - kind: ServiceAccount
-    name: {{ .Values.rbac.service_account.name }}
+    name: {{ .Values.rbac.serviceAccount.name }}
     namespace: {{ .Release.Namespace }}
 {{- end }}
-{{- if not .Values.single_namespace }}
+{{- if not .Values.singleNamespace }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -69,10 +69,10 @@ roleRef:
   name: seldon-wide
 subjects:
   - kind: ServiceAccount
-    name: {{ .Values.rbac.service_account.name }}
+    name: {{ .Values.rbac.serviceAccount.name }}
     namespace: {{ .Release.Namespace }}
 {{- end }}
-{{- if not .Values.single_namespace }}
+{{- if not .Values.singleNamespace }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -97,7 +97,7 @@ roleRef:
   name: seldon-crd-{{ .Release.Namespace }}
 subjects:
   - kind: ServiceAccount
-    name: {{ .Values.rbac.service_account.name }}
+    name: {{ .Values.rbac.serviceAccount.name }}
     namespace: {{ .Release.Namespace }}
 {{- end }}
 {{- end }}
