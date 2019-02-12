@@ -48,5 +48,5 @@ rbac:
 redis:
   enabled: true
   image:
-    name: redis:4.0.1
+    name: redis:5.0.3
 single_namespace: true
