@@ -10,7 +10,7 @@ This example uses the following components to setup a demo "gitops" pipleline th
 * Local Docker Registry
 * Seldon Core
 
-![alt text](https://raw.githubusercontent.com/SeldonIO/seldon-core/master/examples/cicd-argocd/cicd-demo.png "Seldon Code CICD demo")
+![missing cicd image](https://raw.githubusercontent.com/SeldonIO/seldon-core/master/examples/cicd-argocd/cicd-demo.png "Seldon Code CICD demo")
 
 ## Setup
 
