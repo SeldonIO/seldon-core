@@ -12,5 +12,5 @@ source ${STARTUP_DIR}/settings.sh
 
 KUBECTL="kubectl --context=${KUBE_CONTEXT}"
 
-watch "${KUBECTL} get pods -n default"
+watch -t -n 1 "echo 'Every 1s: Watching Pods in default namespace' && echo '' && ${KUBECTL} get pods -n default"
 

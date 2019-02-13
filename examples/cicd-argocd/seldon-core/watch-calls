@@ -6,5 +6,5 @@ set -o pipefail
 
 STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
 
-watch -n 1 "${STARTUP_DIR}/do-rest-request-LOCALHOST.py"
+watch -t -n 1 "echo 'Every 1s: Watching Prediction call result' && echo '' && ${STARTUP_DIR}/do-rest-request-LOCALHOST.py"
 
