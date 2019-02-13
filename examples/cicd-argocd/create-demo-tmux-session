@@ -51,7 +51,7 @@ create_new_dash_window() {
 
     # watch cluster
     tmux select-pane -t 0
-    tmux send-keys "${STARTUP_DIR}/watch-cluster" C-m
+    tmux send-keys "${STARTUP_DIR}/watch-cluster-pods" C-m
 
     # show jenkins logs
     tmux select-pane -t 1
