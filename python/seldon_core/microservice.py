@@ -12,6 +12,7 @@ from tensorflow.core.framework.tensor_pb2 import TensorProto
 from google.protobuf import json_format
 from google.protobuf.struct_pb2 import ListValue
 import sys
+from distutils.util import strtobool
 
 from seldon_core.proto import prediction_pb2
 import seldon_core.persistence as persistence
@@ -243,7 +244,10 @@ def parse_parameters(parameters):
         name = param.get("name")
         value = param.get("value")
         type_ = param.get("type")
-        parsed_parameters[name] = type_dict[type_](value)
+        if type_ == "BOOL":
+            parsed_parameters[name] = bool(strtobool(value))
+        else:
+            parsed_parameters[name] = type_dict[type_](value)
     return parsed_parameters
 
 
