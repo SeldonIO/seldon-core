@@ -38,13 +38,3 @@ def validate_metrics(metrics):
     return True
 
 
-def get_custom_metrics(component):
-    if hasattr(component, "metrics"):
-        metrics = component.metrics()
-        if not validate_metrics(metrics):
-            jStr = json.dumps(metrics)
-            raise SeldonMicroserviceException(
-                "Bad metric created during request: " + jStr, reason="MICROSERVICE_BAD_METRIC")
-        return metrics
-    else:
-        return None

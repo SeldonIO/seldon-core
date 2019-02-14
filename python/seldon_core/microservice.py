@@ -287,7 +287,8 @@ def main():
     parser.add_argument("--log-level", type=str, default="INFO")
     parser.add_argument("--tracing", nargs='?',
                         default=int(os.environ.get("TRACING", "0")), const=1, type=int)
-
+    parser.add_argument("--version",type=int,default=1)
+    
     args = parser.parse_args()
 
     parameters = parse_parameters(json.loads(args.parameters))
@@ -317,16 +318,20 @@ def main():
     else:
         user_object = user_class(**parameters)
 
-    if args.service_type == "MODEL":
-        import seldon_core.model_microservice as seldon_microservice
-    elif args.service_type == "ROUTER":
-        import seldon_core.router_microservice as seldon_microservice
-    elif args.service_type == "TRANSFORMER":
-        import seldon_core.transformer_microservice as seldon_microservice
-    elif args.service_type == "COMBINER":
-        import seldon_core.combiner_microservice as seldon_microservice
-    elif args.service_type == "OUTLIER_DETECTOR":
-        import seldon_core.outlier_detector_microservice as seldon_microservice
+    if args.version == 2:
+        import seldon_core.wrapper as seldon_microservice
+        logger.info("Will use version 2 of python wrapper")
+    else:
+        if args.service_type == "MODEL":
+            import seldon_core.model_microservice as seldon_microservice
+        elif args.service_type == "ROUTER":
+            import seldon_core.router_microservice as seldon_microservice
+        elif args.service_type == "TRANSFORMER":
+            import seldon_core.transformer_microservice as seldon_microservice
+        elif args.service_type == "COMBINER":
+            import seldon_core.combiner_microservice as seldon_microservice
+        elif args.service_type == "OUTLIER_DETECTOR":
+            import seldon_core.outlier_detector_microservice as seldon_microservice
 
     # set log level for the imported microservice type
     seldon_microservice.logger.setLevel(log_level_num)
