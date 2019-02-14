@@ -1,6 +1,11 @@
+1. [Introduction](#introduction)
+1. [Setup](#setup)
+1. [Operation](#operation)
+1. [Clean Up](#clean-up)
+
 ## Introduction
 
-This example uses the following components to setup a demo "gitops" pipleline thats deploys a dummy ML model.
+This example uses the following components to setup a demo "gitops" pipleline that deploys a dummy ML model.
 
 * Jenkins
 * Argo
@@ -10,7 +15,7 @@ This example uses the following components to setup a demo "gitops" pipleline th
 * Local Docker Registry
 * Seldon Core
 
-![missing cicd image](https://raw.githubusercontent.com/SeldonIO/seldon-core/master/examples/cicd-argocd/cicd-demo.png "Seldon Code CICD demo")
+![missing cicd image](https://raw.githubusercontent.com/SeldonIO/seldon-core/master/examples/cicd-argocd/cicd-demo.png "Seldon Core CICD demo")
 
 ## Setup
 
@@ -113,7 +118,22 @@ Jenkins will ask to "Create First Admin User"
 # get the webhook details to use
 ./argocd/get-argocd-github-webhook-details
 ```
+## Operation
 
+After the setup, use the created tmux session to operate the demo.  
+This session has a port forwarding window and a window that is a view on the operation of the demo shown below.
+
+![missing cicd session image](https://raw.githubusercontent.com/SeldonIO/seldon-core/master/examples/cicd-argocd/seldon-core-cicd-demo-tmux-session.png "Seldon Core CICD demo session")
+
+Here the source of the dummy model can be committed and pushed to the remote Github repo. If the web hooks are setup it will trigger an auto build of the image.
+
+This creates a new docker image which is a new version of the model. Also the seldon deployment manifest is updated and pushed to the remote repo.  
+At this this point argocd will show the deployment is out sync. The new version of the model can now be manually deployed by getting argocd to 'sync' the updates.
+
+The deployment of the new model will be seen as a rolling update in the session view.  Once the new model is ready the predictions will chnage to reflect the new version of the chnages.
+
+Argocd can also the set to 'auto-sync' the changes. This will automate the full pipeline.  
+Now changes to model that are committed and pushed will trigger the auto build and auto deploy the new version of the model. 
 
 ## Clean Up
 
