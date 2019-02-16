@@ -23,7 +23,7 @@ REDIS_PORT = os.environ.get("REDIS_SERVICE_PORT", 6379)
 DEFAULT_PUSH_FREQUENCY = 60
 
 
-def restore(user_class, parameters, debug=False):
+def restore(user_class, parameters):
     logger.info("Restoring saved model from redis")
 
     redis_client = redis.StrictRedis(host=REDIS_HOST, port=REDIS_PORT)

@@ -3,7 +3,7 @@ from concurrent import futures
 from flask import jsonify, Flask, send_from_directory, request
 from flask_cors import CORS
 import logging
-from seldon_core.utils import json_to_seldon_message, seldonMessage_to_json, json_to_feedback, json_to_seldon_messages
+from seldon_core.utils import json_to_seldon_message, seldon_message_to_json, json_to_feedback, json_to_seldon_messages
 from seldon_core.flask_utils import get_request
 import seldon_core.seldon_methods
 from seldon_core.microservice import SeldonMicroserviceException, ANNOTATION_GRPC_MAX_MSG_SIZE
@@ -14,9 +14,8 @@ logger = logging.getLogger(__name__)
 
 PRED_UNIT_ID = os.environ.get("PREDICTIVE_UNIT_ID","0")
 
-def get_rest_microservice(user_model, debug=False):
+def get_rest_microservice(user_model):
     app = Flask(__name__, static_url_path='')
-
     CORS(app)
 
     @app.errorhandler(SeldonMicroserviceException)
@@ -37,7 +36,7 @@ def get_rest_microservice(user_model, debug=False):
         requestProto = json_to_seldon_message(requestJson)
         logger.debug("Proto Request: %s", requestProto)
         responseProto = seldon_core.seldon_methods.predict(user_model, requestProto)
-        jsonDict = seldonMessage_to_json(responseProto)
+        jsonDict = seldon_message_to_json(responseProto)
         return jsonify(jsonDict)
 
     @app.route("/send-feedback", methods=["GET", "POST"])
@@ -47,7 +46,7 @@ def get_rest_microservice(user_model, debug=False):
         requestProto = json_to_feedback(requestJson)
         logger.debug("Proto Request: %s", requestProto)
         responseProto = seldon_core.seldon_methods.send_feedback(user_model, requestProto, PRED_UNIT_ID)
-        jsonDict = seldonMessage_to_json(responseProto)
+        jsonDict = seldon_message_to_json(responseProto)
         return jsonify(jsonDict)
 
     @app.route("/transform-input", methods=["GET", "POST"])
@@ -57,7 +56,7 @@ def get_rest_microservice(user_model, debug=False):
         requestProto = json_to_seldon_message(requestJson)
         logger.debug("Proto Request: %s", request)
         responseProto = seldon_core.seldon_methods.transform_input(user_model, requestProto)
-        jsonDict = seldonMessage_to_json(responseProto)
+        jsonDict = seldon_message_to_json(responseProto)
         return jsonify(jsonDict)
 
     @app.route("/transform-output", methods=["GET", "POST"])
@@ -67,7 +66,7 @@ def get_rest_microservice(user_model, debug=False):
         requestProto = json_to_seldon_message(requestJson)
         logger.debug("Proto Request: %s", request)
         responseProto = seldon_core.seldon_methods.transform_output(user_model, requestProto)
-        jsonDict = seldonMessage_to_json(responseProto)
+        jsonDict = seldon_message_to_json(responseProto)
         return jsonify(jsonDict)
 
     @app.route("/route", methods=["GET", "POST"])
@@ -77,7 +76,7 @@ def get_rest_microservice(user_model, debug=False):
         requestProto = json_to_seldon_message(requestJson)
         logger.debug("Proto Request: %s", request)
         responseProto = seldon_core.seldon_methods.route(user_model, requestProto)
-        jsonDict = seldonMessage_to_json(responseProto)
+        jsonDict = seldon_message_to_json(responseProto)
         return jsonify(jsonDict)
 
     @app.route("/aggregate", methods=["GET", "POST"])
@@ -87,7 +86,7 @@ def get_rest_microservice(user_model, debug=False):
         requestProto = json_to_seldon_messages(requestJson)
         logger.debug("Proto Request: %s", request)
         responseProto = seldon_core.seldon_methods.aggregate(user_model, requestProto)
-        jsonDict = seldonMessage_to_json(responseProto)
+        jsonDict = seldon_message_to_json(responseProto)
         return jsonify(jsonDict)
 
 
@@ -119,7 +118,8 @@ class SeldonModelGRPC(object):
     def Aggregate(self, request_grpc, context):
         return seldon_core.seldon_methods.aggregate(self.user_model, request_grpc)
 
-def get_grpc_server(user_model, debug=False, annotations={}, trace_interceptor=None):
+
+def get_grpc_server(user_model, annotations={}, trace_interceptor=None):
     seldon_model = SeldonModelGRPC(user_model)
     options = []
     if ANNOTATION_GRPC_MAX_MSG_SIZE in annotations:

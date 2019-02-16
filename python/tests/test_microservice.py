@@ -44,8 +44,7 @@ def start_microservice(app_location,tracing=False,grpc=False,envs={}):
             env_vars["MODEL_NAME"],
             env_vars["API_TYPE"],
             "--service-type", env_vars["SERVICE_TYPE"],
-            "--persistence", env_vars["PERSISTENCE"],
-            "--version","2"
+            "--persistence", env_vars["PERSISTENCE"]
         )
         if tracing:
             cmd = cmd + ("--tracing",)
