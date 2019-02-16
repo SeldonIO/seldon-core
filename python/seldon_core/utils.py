@@ -1,5 +1,4 @@
 import json
-from flask import request
 from google.protobuf import json_format
 from seldon_core.proto import prediction_pb2
 from seldon_core.microservice import SeldonMicroserviceException
@@ -11,23 +10,18 @@ from seldon_core.user_model import client_class_names, client_custom_metrics, cl
 from typing import Tuple, Dict
 
 
-def get_request():
-    """ Parse a REST request into a SeldonMessage proto buffer
+def json_to_seldon_message(messageJson: Dict) -> prediction_pb2.SeldonMessage:
     """
-    jStr = request.form.get("json")
-    if jStr:
-        message = json.loads(jStr)
-    else:
-        jStr = request.args.get('json')
-        if jStr:
-            message = json.loads(jStr)
-        else:
-            raise SeldonMicroserviceException("Empty json parameter in data")
-    if message is None:
-        raise SeldonMicroserviceException("Invalid Data Format")
-    return message
+    Parses JSON input to a SeldonMessage proto
+    Parameters
+    ----------
+    messageJson
+       JSON input
 
-def json_to_seldonMessage(messageJson):
+    Returns
+    -------
+      SeldonMessage
+    """
     if messageJson is None:
         messageJson = {}
     messageProto = prediction_pb2.SeldonMessage()
@@ -37,7 +31,18 @@ def json_to_seldonMessage(messageJson):
     except json_format.ParseError as pbExc:
         raise SeldonMicroserviceException("Invalid JSON: "+str(pbExc)) 
 
-def json_to_feedback(messageJson):
+
+def json_to_feedback(messageJson: Dict) -> prediction_pb2.Feedback:
+    '''
+    Parse a JSON message to a Feedback proto
+    Parameters
+    ----------
+    messageJson
+       Input json message
+    Returns
+    -------
+       A SeldonMessage
+    '''
     messageProto = prediction_pb2.Feedback()
     try:
         json_format.ParseDict(messageJson, messageProto)
@@ -46,13 +51,43 @@ def json_to_feedback(messageJson):
         raise SeldonMicroserviceException("Invalid JSON: "+str(pbExc))
 
 
-def seldonMessage_to_json(messageProto):
+def json_to_seldon_messages(messageJson: Dict) -> prediction_pb2.SeldonMessageList:
+    messageProto = prediction_pb2.SeldonMessageList()
+    try:
+        json_format.ParseDict(messageJson, messageProto)
+        return messageProto
+    except json_format.ParseError as pbExc:
+        raise SeldonMicroserviceException("Invalid JSON: "+str(pbExc))
+
+def seldonMessage_to_json(messageProto: prediction_pb2.SeldonMessage) -> Dict:
+    '''
+    Convert a SeldonMessage proto to JSON Dict
+    Parameters
+    ----------
+    messageProto
+       SeldonMessage proto
+    Returns
+    -------
+       JSON Dict
+    '''
     messageJson = json_format.MessageToJson(messageProto)
     messageDict = json.loads(messageJson)
     return messageDict
 
 
 def get_data_from_proto(request: prediction_pb2.SeldonMessage) -> object:
+    '''
+    Extract the data payload from the SeldonMessage
+    Parameters
+    ----------
+    request
+       SeldonMessage
+
+    Returns
+    -------
+       Data payload as numpy array or the raw message format. Numpy array will be returned if the "data" field was used.
+
+    '''
     data_type = request.WhichOneof("data_oneof")
     if data_type == "data":
         datadef = request.data
@@ -64,7 +99,20 @@ def get_data_from_proto(request: prediction_pb2.SeldonMessage) -> object:
     else:
         raise SeldonMicroserviceException("Unknown data in SeldonMessage")
 
-def grpc_datadef_to_array(datadef):
+
+def grpc_datadef_to_array(datadef: prediction_pb2.DefaultData) -> np.ndarray:
+    '''
+    Convert a SeldonMessage DefaultData to a numpy array.
+    Parameters
+    ----------
+    datadef
+       SeldonMessage DefaultData
+
+    Returns
+    -------
+       A numpy array
+
+    '''
     data_type = datadef.WhichOneof("data_oneof")
     if data_type == "tensor":
         if (sys.version_info >= (3, 0)):
@@ -87,12 +135,40 @@ def grpc_datadef_to_array(datadef):
     return features
 
 
-def get_meta_from_proto(request):
+def get_meta_from_proto(request: prediction_pb2.SeldonMessage) -> Dict:
+    '''
+    Convert SeldonMessage proto meta into Dict
+    Parameters
+    ----------
+    request
+       SeldonMessage proto
+
+    Returns
+    -------
+       Dict
+
+    '''
     meta = json_format.MessageToDict(request.meta)
     return meta
 
 
-def array_to_grpc_datadef(array, names, data_type):
+def array_to_grpc_datadef(array: np.ndarray, names: np.ndarray, data_type: str) -> prediction_pb2.DefaultData:
+    '''
+    Convert numpy array and optional column names into a SeldonMessage DefaultData proto
+    Parameters
+    ----------
+    array
+       numpy array
+    names
+       column names
+    data_type
+       The SeldonMessage type to convert to
+
+    Returns
+    -------
+       SeldonMessage DefaultData
+
+    '''
     if data_type == "tensor":
         datadef = prediction_pb2.DefaultData(
             names=names,
@@ -119,11 +195,23 @@ def array_to_grpc_datadef(array, names, data_type):
 
     return datadef
 
-def array_to_list_value(array, lv=None):
+
+def array_to_list_value(array: np.ndarray, lv: ListValue = None) -> ListValue:
+    '''
+    Construct a proto ListValue from numpy array
+    Parameters
+    ----------
+    array
+    lv
+
+    Returns
+    -------
+
+    '''
     if lv is None:
         lv = ListValue()
     if len(array.shape) == 1:
-        lv.extend(array)
+        lv.extend(array.tolist())
     else:
         for sub_array in array:
             sub_lv = lv.add_list()
@@ -181,7 +269,7 @@ def construct_response(user_model: object, is_request: bool, client_request: pre
             return prediction_pb2.SeldonMessage(binData=client_raw_response, meta=meta)
 
 
-def extract_request_parts(request: prediction_pb2.SeldonMessage) -> Tuple[object,Dict,object,str]:
+def extract_request_parts(request: prediction_pb2.SeldonMessage) -> Tuple[object, Dict, object, str]:
     '''
 
     Parameters
@@ -201,7 +289,19 @@ def extract_request_parts(request: prediction_pb2.SeldonMessage) -> Tuple[object
     return (features,meta,datadef,data_type)
 
 
-def extract_feedback_request_parts(request: prediction_pb2.Feedback) -> Tuple[object,np.ndarray,prediction_pb2.SeldonMessage,float]:
+def extract_feedback_request_parts(request: prediction_pb2.Feedback) -> Tuple[object, np.ndarray, prediction_pb2.SeldonMessage, float]:
+    '''
+    Extract key parts of the Feedback Message
+    Parameters
+    ----------
+    request
+       Feedback proto
+
+    Returns
+    -------
+       Tuple of parts including extracted payloads
+
+    '''
     datadef_request = request.request.data
     features = grpc_datadef_to_array(datadef_request)
     truth = grpc_datadef_to_array(request.truth)

@@ -9,20 +9,14 @@ get_apis:
 	cp -r $(SELDON_CORE_DIR)/proto/tensorflow/tensorflow seldon_core/
 	$(MAKE) -C ../proto/tensorflow clean
 
-	# Flatbuffers
-	cp $(SELDON_CORE_DIR)/fbs/prediction.fbs seldon_core/fbs/
-
 	# OpenAPI
 	cp $(SELDON_CORE_DIR)/openapi/wrapper.oas3.json seldon_core/openapi/seldon.json
 
 .PHONY: build_apis
-build_apis:
+build_apis: get_apis
 	# Protobuf
-	cd seldon_core && python -m grpc.tools.protoc -I./ --python_out=./ --grpc_python_out=./ ./proto/prediction.proto
+	cd seldon_core && python -m grpc.tools.protoc -I./ --python_out=./ --grpc_python_out=./ --mypy_out=./ ./proto/prediction.proto
 	sed -i "s/from proto/from seldon_core.proto/g" seldon_core/proto/prediction_pb2_grpc.py
-
-	# Flatbuffers
-	flatc --python -o seldon_core/fbs seldon_core/fbs/prediction.fbs
 
 .PHONY: update_version
 update_version:

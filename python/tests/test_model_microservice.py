@@ -106,13 +106,15 @@ def test_model_ok():
     user_object = UserObject()
     app = get_rest_microservice(user_object, debug=True)
     client = app.test_client()
-    rv = client.get('/predict?json={"data":{"ndarray":[]}}')
+    rv = client.get('/predict?json={"data":{"names":["a","b"],"ndarray":[[1,2]]}}')
     j = json.loads(rv.data)
     print(j)
     assert rv.status_code == 200
     assert j["meta"]["tags"] == {"mytag": 1}
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
     assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
+    assert j["data"]["names"] == ["t:0","t:1"]
+    assert j["data"]["ndarray"] == [[1.0,2.0]]
 
 def test_model_lowlevel_ok():
     user_object = UserObjectLowLevel()
