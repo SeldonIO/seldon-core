@@ -23,9 +23,9 @@ def predict(user_model: object, request: prediction_pb2.SeldonMessage) -> predic
     """
     if hasattr(user_model, "predict_rest"):
         logger.warning("predict_rest is deprecated. Please use predict_raw")
-        requestJson = json_format.MessageToJson(request)
-        responseJson = user_model.predict_rest(requestJson)
-        return json_to_seldon_message(responseJson)
+        request_json = json_format.MessageToJson(request)
+        response_json = user_model.predict_rest(request_json)
+        return json_to_seldon_message(response_json)
     elif hasattr(user_model, "predict_grpc"):
         logger.warning("predict_grpc is deprecated. Please use predict_raw")
         return user_model.predict_grpc(request)
@@ -44,7 +44,11 @@ def send_feedback(user_model: object, request: prediction_pb2.Feedback, predicti
     Parameters
     ----------
     user_model
+       A Seldon user model
     request
+       SeldonMesage proto
+    predictive_unit_id
+       The ID of the enclosing container predictive unit. Will be taken from environment.
 
     Returns
     -------
@@ -52,18 +56,18 @@ def send_feedback(user_model: object, request: prediction_pb2.Feedback, predicti
     """
     if hasattr(user_model, "send_feedback_rest"):
         logger.warning("send_feedback_rest is deprecated. Please use send_feedback_raw")
-        requestJson = json_format.MessageToJson(request)
-        responseJson = user_model.send_feedback_rest(requestJson)
-        return json_to_seldon_message(responseJson)
+        request_json = json_format.MessageToJson(request)
+        response_json = user_model.send_feedback_rest(request_json)
+        return json_to_seldon_message(response_json)
     elif hasattr(user_model, "send_feedback_grpc"):
         logger.warning("send_feedback_grpc is deprecated. Please use send_feedback_raw")
-        responseJson = user_model.send_feedback_grpc(request)
-        return json_to_seldon_message(responseJson)
+        response_json = user_model.send_feedback_grpc(request)
+        return json_to_seldon_message(response_json)
     elif hasattr(user_model, "send_feedback_raw"):
-        responseJson = user_model.send_feedback_raw(request)
-        return json_to_seldon_message(responseJson)
+        response_json = user_model.send_feedback_raw(request)
+        return json_to_seldon_message(response_json)
     else:
-        (datadef_request,features,truth,reward) = extract_feedback_request_parts(request)
+        (datadef_request, features, truth, reward) = extract_feedback_request_parts(request)
         routing = request.response.meta.routing.get(predictive_unit_id)
         client_response = client_send_feedback(user_model, features, datadef_request.names, reward, truth, routing)
 
@@ -91,9 +95,9 @@ def transform_input(user_model: object, request: prediction_pb2.SeldonMessage) -
     """
     if hasattr(user_model, "transform_input_rest"):
         logger.warning("transform_input_rest is deprecated. Please use transform_input_raw")
-        requestJson = json_format.MessageToJson(request)
-        responseJson = user_model.transform_input_rest(requestJson)
-        return json_to_seldon_message(responseJson)
+        request_json = json_format.MessageToJson(request)
+        response_json = user_model.transform_input_rest(request_json)
+        return json_to_seldon_message(response_json)
     if hasattr(user_model, "transform_input_grpc"):
         logger.warning("transform_input_grpc is deprecated. Please use transform_input_raw")
         return user_model.transform_input_grpc(request)
@@ -103,7 +107,7 @@ def transform_input(user_model: object, request: prediction_pb2.SeldonMessage) -
         (features, meta, datadef, data_type) = extract_request_parts(request)
         client_response = client_transform_input(user_model, features, datadef.names, meta=meta)
 
-        return construct_response(user_model, True, request,client_response)
+        return construct_response(user_model, True, request, client_response)
 
 
 def transform_output(user_model: object, request: prediction_pb2.SeldonMessage) -> prediction_pb2.SeldonMessage:
@@ -123,9 +127,9 @@ def transform_output(user_model: object, request: prediction_pb2.SeldonMessage) 
     """
     if hasattr(user_model, "transform_output_rest"):
         logger.warning("transform_input_rest is deprecated. Please use transform_input_raw")
-        requestJson = json_format.MessageToJson(request)
-        responseJson = user_model.transform_output_rest(requestJson)
-        return json_to_seldon_message(responseJson)
+        request_json = json_format.MessageToJson(request)
+        response_json = user_model.transform_output_rest(request_json)
+        return json_to_seldon_message(response_json)
     if hasattr(user_model, "transform_output_grpc"):
         logger.warning("transform_input_grpc is deprecated. Please use transform_input_raw")
         return user_model.transform_output_grpc(request)
@@ -143,17 +147,18 @@ def route(user_model: object, request: prediction_pb2.SeldonMessage) -> predicti
     Parameters
     ----------
     user_model
+       A Seldon user model
     request
-
+       A SelodonMessage proto
     Returns
     -------
 
     """
     if hasattr(user_model, "route_rest"):
         logger.warning("route_rest is deprecated. Please use route_raw")
-        requestJson = json_format.MessageToJson(request)
-        responseJson = user_model.route_rest(requestJson)
-        return json_to_seldon_message(responseJson)
+        request_json = json_format.MessageToJson(request)
+        response_json = user_model.route_rest(request_json)
+        return json_to_seldon_message(response_json)
     elif hasattr(user_model, "route_grpc"):
         logger.warning("route_grpc is deprecated. Please use route_raw")
         return user_model.route_grpc(request)
@@ -161,19 +166,33 @@ def route(user_model: object, request: prediction_pb2.SeldonMessage) -> predicti
         return user_model.route_raw(request)
     else:
         (features, meta, datadef, _) = extract_request_parts(request)
-        client_response = client_route(user_model,features,datadef.names)
-        if not isinstance(client_response, int) :
+        client_response = client_route(user_model, features, datadef.names)
+        if not isinstance(client_response, int):
             raise SeldonMicroserviceException("Routing response must be int but got "+str(client_response))
         client_response_arr = np.array([[client_response]])
         return construct_response(user_model, True, request, client_response_arr)
 
 
-def aggregate(user_model,request):
+def aggregate(user_model: object, request: prediction_pb2.SeldonMessageList) -> prediction_pb2.SeldonMessage:
+    """
+    Aggregate a list of payloads
+    Parameters
+    ----------
+    user_model
+       A Seldon user model
+    request
+       SeldonMessage proto
+
+    Returns
+    -------
+       Aggregated SeldonMessage proto
+
+    """
     if hasattr(user_model, "aggregate_rest"):
         logger.warning("aggregate_rest is deprecated. Please use aggregate_raw")
-        requestJson = json_format.MessageToJson(request)
-        responseJson = user_model.aggregate_rest(requestJson)
-        return json_to_seldon_message(responseJson)
+        request_json = json_format.MessageToJson(request)
+        response_json = user_model.aggregate_rest(request_json)
+        return json_to_seldon_message(response_json)
     if hasattr(user_model, "aggregate_grpc"):
         logger.warning("aggregate_grpc is deprecated. Please use aggregate_raw")
         return user_model.aggregate_grpc(request)
@@ -188,5 +207,5 @@ def aggregate(user_model,request):
             features_list.append(features)
             names_list.append(datadef.names)
 
-        client_response =client_aggregate(user_model,features_list,names_list)
+        client_response = client_aggregate(user_model, features_list, names_list)
         return construct_response(user_model, False, request.seldonMessages[0], client_response)

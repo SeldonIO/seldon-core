@@ -1,19 +1,11 @@
-from flask import Flask, Blueprint, request
 import argparse
-import numpy as np
 import os
 import importlib
 import json
 import time
 import logging
 import multiprocessing as mp
-import tensorflow as tf
-from tensorflow.core.framework.tensor_pb2 import TensorProto
-from google.protobuf import json_format
-from google.protobuf.struct_pb2 import ListValue
 import sys
-
-from seldon_core.proto import prediction_pb2
 import seldon_core.persistence as persistence
 
 logger = logging.getLogger(__name__)
@@ -112,7 +104,6 @@ def main():
     parser.add_argument("--log-level", type=str, default="INFO")
     parser.add_argument("--tracing", nargs='?',
                         default=int(os.environ.get("TRACING", "0")), const=1, type=int)
-    parser.add_argument("--version",type=int,default=1)
     
     args = parser.parse_args()
 
@@ -125,11 +116,6 @@ def main():
     logger.setLevel(log_level_num)
     logger.debug("Log level set to %s:%s", args.log_level, log_level_num)
 
-    DEBUG = False
-    if parameters.get(DEBUG_PARAMETER):
-        parameters.pop(DEBUG_PARAMETER)
-        DEBUG = True
-
     annotations = load_annotations()
     logger.info("Annotations: %s", annotations)
 
@@ -138,25 +124,12 @@ def main():
 
     if args.persistence:
         logger.info('Restoring persisted component')
-        user_object = persistence.restore(user_class, parameters, debug=DEBUG)
+        user_object = persistence.restore(user_class, parameters)
         persistence.persist(user_object, parameters.get("push_frequency"))
     else:
         user_object = user_class(**parameters)
 
-    if args.version == 2:
-        import seldon_core.wrapper as seldon_microservice
-        logger.info("Will use version 2 of python wrapper")
-    else:
-        if args.service_type == "MODEL":
-            import seldon_core.model_microservice as seldon_microservice
-        elif args.service_type == "ROUTER":
-            import seldon_core.router_microservice as seldon_microservice
-        elif args.service_type == "TRANSFORMER":
-            import seldon_core.transformer_microservice as seldon_microservice
-        elif args.service_type == "COMBINER":
-            import seldon_core.combiner_microservice as seldon_microservice
-        elif args.service_type == "OUTLIER_DETECTOR":
-            import seldon_core.outlier_detector_microservice as seldon_microservice
+    import seldon_core.wrapper as seldon_microservice
 
     # set log level for the imported microservice type
     seldon_microservice.logger.setLevel(log_level_num)
@@ -205,8 +178,7 @@ def main():
     if args.api_type == "REST":
 
         def rest_prediction_server():
-            app = seldon_microservice.get_rest_microservice(
-                user_object, debug=DEBUG)
+            app = seldon_microservice.get_rest_microservice(user_object)
 
             if args.tracing:
                 from flask_opentracing import FlaskTracer
@@ -228,7 +200,7 @@ def main():
                 interceptor = None
 
             server = seldon_microservice.get_grpc_server(
-                user_object, debug=DEBUG, annotations=annotations, trace_interceptor=interceptor)
+                user_object, annotations=annotations, trace_interceptor=interceptor)
 
             server.add_insecure_port("0.0.0.0:{}".format(port))
 
@@ -239,13 +211,6 @@ def main():
                 time.sleep(1000)
 
         server1_func = grpc_prediction_server
-
-    elif args.api_type == "FBS":
-        def fbs_prediction_server():
-            seldon_microservice.run_flatbuffers_server(user_object, port)
-
-        logger.info("FBS microservice Running on port %i",port)
-        server1_func = fbs_prediction_server
 
     else:
         server1_func = None
