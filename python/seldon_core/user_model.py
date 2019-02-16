@@ -23,11 +23,11 @@ def client_class_names(user_model, predictions):
     -------
        Class names
     '''
-    n_targets = predictions.shape[1]
     if len(predictions.shape) > 1:
         if hasattr(user_model, "class_names"):
             return user_model.class_names
         else:
+            n_targets = predictions.shape[1]
             return ["t:{}".format(i) for i in range(n_targets)]
     else:
         return []
@@ -77,7 +77,19 @@ def client_feature_names(user_model: object, original: prediction_pb2.SeldonMess
         return original
 
 
-def client_send_feedback(user_model, features, feature_names, reward, truth):
+def client_send_feedback(user_model, features, feature_names, reward, truth, routing):
     if hasattr(user_model, "send_feedback"):
-        user_model.send_feedback(features, feature_names, reward, truth)
+        return user_model.send_feedback(features, feature_names, reward, truth, routing=routing)
 
+
+def client_route(user_model, features, feature_names):
+    if hasattr(user_model, "route"):
+        return user_model.route(features, feature_names)
+    else:
+        return -1
+
+def client_aggregate(user_model, features_list, feature_names_list):
+    if hasattr(user_model, "aggregate"):
+        return user_model.aggregate(features_list, feature_names_list)
+    else:
+        return features_list[0]

@@ -3,13 +3,16 @@ from concurrent import futures
 from flask import jsonify, Flask, send_from_directory, request
 from flask_cors import CORS
 import logging
-from seldon_core.utils import get_request, json_to_seldonMessage, seldonMessage_to_json, json_to_feedback
+from seldon_core.utils import json_to_seldon_message, seldonMessage_to_json, json_to_feedback, json_to_seldon_messages
+from seldon_core.flask_utils import get_request
 import seldon_core.seldon_methods
 from seldon_core.microservice import SeldonMicroserviceException, ANNOTATION_GRPC_MAX_MSG_SIZE
 from seldon_core.proto import prediction_pb2_grpc
+import os
 
 logger = logging.getLogger(__name__)
 
+PRED_UNIT_ID = os.environ.get("PREDICTIVE_UNIT_ID","0")
 
 def get_rest_microservice(user_model, debug=False):
     app = Flask(__name__, static_url_path='')
@@ -31,7 +34,7 @@ def get_rest_microservice(user_model, debug=False):
     def Predict():
         requestJson = get_request()
         logger.debug("REST Request: %s", request)
-        requestProto = json_to_seldonMessage(requestJson)
+        requestProto = json_to_seldon_message(requestJson)
         logger.debug("Proto Request: %s", requestProto)
         responseProto = seldon_core.seldon_methods.predict(user_model, requestProto)
         jsonDict = seldonMessage_to_json(responseProto)
@@ -43,7 +46,7 @@ def get_rest_microservice(user_model, debug=False):
         logger.debug("REST Request: %s", request)
         requestProto = json_to_feedback(requestJson)
         logger.debug("Proto Request: %s", requestProto)
-        responseProto = seldon_core.seldon_methods.send_feedback(user_model, requestProto)
+        responseProto = seldon_core.seldon_methods.send_feedback(user_model, requestProto, PRED_UNIT_ID)
         jsonDict = seldonMessage_to_json(responseProto)
         return jsonify(jsonDict)
 
@@ -51,7 +54,7 @@ def get_rest_microservice(user_model, debug=False):
     def TransformInput():
         requestJson = get_request()
         logger.debug("REST Request: %s", request)
-        requestProto = json_to_seldonMessage(requestJson)
+        requestProto = json_to_seldon_message(requestJson)
         logger.debug("Proto Request: %s", request)
         responseProto = seldon_core.seldon_methods.transform_input(user_model, requestProto)
         jsonDict = seldonMessage_to_json(responseProto)
@@ -61,11 +64,32 @@ def get_rest_microservice(user_model, debug=False):
     def TransformOutput():
         requestJson = get_request()
         logger.debug("REST Request: %s", request)
-        requestProto = json_to_seldonMessage(requestJson)
+        requestProto = json_to_seldon_message(requestJson)
         logger.debug("Proto Request: %s", request)
         responseProto = seldon_core.seldon_methods.transform_output(user_model, requestProto)
         jsonDict = seldonMessage_to_json(responseProto)
         return jsonify(jsonDict)
+
+    @app.route("/route", methods=["GET", "POST"])
+    def Route():
+        requestJson = get_request()
+        logger.debug("REST Request: %s", request)
+        requestProto = json_to_seldon_message(requestJson)
+        logger.debug("Proto Request: %s", request)
+        responseProto = seldon_core.seldon_methods.route(user_model, requestProto)
+        jsonDict = seldonMessage_to_json(responseProto)
+        return jsonify(jsonDict)
+
+    @app.route("/aggregate", methods=["GET", "POST"])
+    def Aggregate():
+        requestJson = get_request()
+        logger.debug("REST Request: %s", request)
+        requestProto = json_to_seldon_messages(requestJson)
+        logger.debug("Proto Request: %s", request)
+        responseProto = seldon_core.seldon_methods.aggregate(user_model, requestProto)
+        jsonDict = seldonMessage_to_json(responseProto)
+        return jsonify(jsonDict)
+
 
     return app
 
@@ -77,13 +101,23 @@ class SeldonModelGRPC(object):
     def __init__(self, user_model):
         self.user_model = user_model
 
-    def Predict(self, request, context):
-        return seldon_core.seldon_methods.predict(self.user_model,request)
+    def Predict(self, request_grpc, context):
+        return seldon_core.seldon_methods.predict(self.user_model, request_grpc)
 
-    def SendFeedback(self, feedback, context):
-       return seldon_core.seldon_methods.send_feedback(self.user_model,feedback)
+    def SendFeedback(self, feedback_grpc, context):
+       return seldon_core.seldon_methods.send_feedback(self.user_model, feedback_grpc, PRED_UNIT_ID)
 
+    def TransformInput(self, request_grpc, context):
+        return seldon_core.seldon_methods.transform_input(self.user_model, request_grpc)
 
+    def TransformOutput(self, request_grpc, context):
+        return seldon_core.seldon_methods.transform_output(self.user_model, request_grpc)
+
+    def Route(self, request_grpc, context):
+        return seldon_core.seldon_methods.route(self.user_model, request_grpc)
+
+    def Aggregate(self, request_grpc, context):
+        return seldon_core.seldon_methods.aggregate(self.user_model, request_grpc)
 
 def get_grpc_server(user_model, debug=False, annotations={}, trace_interceptor=None):
     seldon_model = SeldonModelGRPC(user_model)
@@ -102,7 +136,8 @@ def get_grpc_server(user_model, debug=False, annotations={}, trace_interceptor=N
         from grpc_opentracing.grpcext import intercept_server
         server = intercept_server(server, trace_interceptor)
 
-    prediction_pb2_grpc.add_ModelServicer_to_server(seldon_model, server)
+    prediction_pb2_grpc.add_GenericServicer_to_server(seldon_model,server)
+    prediction_pb2_grpc.add_ModelServicer_to_server(seldon_model,server)
 
     return server
 
