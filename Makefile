@@ -52,3 +52,9 @@ tmp/seldon_deployment.md:
 		-I/protos \
 		--doc_opt=markdown,seldon_deployment.md \
 		/protos/seldon_deployment.proto
+
+run_python_builder:
+	docker run --rm -it \
+		-v $(SELDON_CORE_LOCAL_DIR):/work \
+		seldonio/python-builder bash
+
