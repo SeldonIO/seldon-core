@@ -7,7 +7,7 @@ import sys
 import tensorflow as tf
 from google.protobuf.struct_pb2 import ListValue
 from seldon_core.user_model import client_class_names, client_custom_metrics, client_custom_tags, client_feature_names
-from typing import Tuple, Dict, Union
+from typing import Tuple, Dict, Union, List
 
 
 def json_to_seldon_message(message_json: Dict) -> prediction_pb2.SeldonMessage:
@@ -75,6 +75,35 @@ def seldon_message_to_json(message_proto: prediction_pb2.SeldonMessage) -> Dict:
     message_dict = json.loads(message_json)
     return message_dict
 
+def seldon_messages_to_json(message_protos: prediction_pb2.SeldonMessageList) -> Dict:
+    """
+    Convert a SeldonMessage proto list to JSON Dict
+    Parameters
+    ----------
+    message_protos
+       SeldonMessage protos
+    Returns
+    -------
+       JSON Dict
+    """
+    message_json = json_format.MessageToJson(message_protos)
+    message_dict = json.loads(message_json)
+    return message_dict
+
+def feedback_to_json(message_proto: prediction_pb2.Feedback) -> Dict:
+    """
+    Convert a SeldonMessage proto to JSON Dict
+    Parameters
+    ----------
+    message_proto
+       SeldonMessage proto
+    Returns
+    -------
+       JSON Dict
+    """
+    message_json = json_format.MessageToJson(message_proto)
+    message_dict = json.loads(message_json)
+    return message_dict
 
 def get_data_from_proto(request: prediction_pb2.SeldonMessage) -> Union[np.ndarray,str,bytes]:
     """
@@ -153,7 +182,38 @@ def get_meta_from_proto(request: prediction_pb2.SeldonMessage) -> Dict:
     return meta
 
 
-def array_to_grpc_datadef(array: np.ndarray, names: np.ndarray, data_type: str) -> prediction_pb2.DefaultData:
+def array_to_rest_datadef(data_type: str, array: np.ndarray, names: List[str] = []) -> Dict:
+    """
+    Construct a payload Dict from a numpy array
+    Parameters
+    ----------
+    data_type
+    array
+    names
+
+    Returns
+    -------
+       Dict representing Seldon payload
+
+    """
+    datadef = {"names": names}
+    if data_type == "tensor":
+        datadef["tensor"] = {
+            "shape": array.shape,
+            "values": array.ravel().tolist()
+        }
+    elif data_type == "ndarray":
+        datadef["ndarray"] = array.tolist()
+    elif data_type == "tftensor":
+        tftensor = tf.make_tensor_proto(array)
+        jStrTensor = json_format.MessageToJson(tftensor)
+        jTensor = json.loads(jStrTensor)
+        datadef["tftensor"] = jTensor
+    else:
+        datadef["ndarray"] = array.tolist()
+    return datadef
+
+def array_to_grpc_datadef(data_type: str, array: np.ndarray, names: List[str] = []) -> prediction_pb2.DefaultData:
     """
     Convert numpy array and optional column names into a SeldonMessage DefaultData proto
     Parameters
@@ -220,7 +280,7 @@ def array_to_list_value(array: np.ndarray, lv: ListValue = None) -> ListValue:
     return lv
 
 
-def construct_response(user_model: object, is_request: bool, client_request: prediction_pb2.SeldonMessage, client_raw_response: object) -> prediction_pb2.SeldonMessage:
+def construct_response(user_model: object, is_request: bool, client_request: prediction_pb2.SeldonMessage, client_raw_response: Union[np.ndarray,str,bytes]) -> prediction_pb2.SeldonMessage:
     """
 
     Parameters
@@ -249,24 +309,31 @@ def construct_response(user_model: object, is_request: bool, client_request: pre
     if metrics:
         meta_json["metrics"] = metrics
     json_format.ParseDict(meta_json, meta)
-    if isinstance(client_raw_response, np.ndarray) or data_type == "data":
+    if isinstance(client_raw_response, np.ndarray) or isinstance(client_raw_response,list):
         client_raw_response = np.array(client_raw_response)
         if is_request:
             names = client_feature_names(user_model, client_request.data.names)
         else:
             names = client_class_names(user_model, client_raw_response)
-        if data_type == "data":
-            default_data_type = client_request.data.WhichOneof("data_oneof")
-        else:
-            default_data_type = "tensor"
-        data = array_to_grpc_datadef(
-            client_raw_response, names, default_data_type)
+        if data_type == "data": # If request is using defaultdata then return what was sent if is numeric response else ndarray
+            if np.issubdtype(client_raw_response.dtype, np.number):
+                default_data_type = client_request.data.WhichOneof("data_oneof")
+            else:
+                default_data_type = "ndarray"
+        else: # If numeric response return as tensor else return as ndarray
+            if np.issubdtype(client_raw_response.dtype, np.number):
+                default_data_type = "tensor"
+            else:
+                default_data_type = "ndarray"
+        data = array_to_grpc_datadef(default_data_type, client_raw_response, names)
         return prediction_pb2.SeldonMessage(data=data, meta=meta)
+    elif isinstance(client_raw_response, str):
+        return prediction_pb2.SeldonMessage(strData=client_raw_response, meta=meta)
+    elif isinstance(client_raw_response, (bytes, bytearray)):
+        return prediction_pb2.SeldonMessage(binData=client_raw_response, meta=meta)
     else:
-        if isinstance(client_raw_response, str):
-            return prediction_pb2.SeldonMessage(strData=client_raw_response, meta=meta)
-        else:
-            return prediction_pb2.SeldonMessage(binData=client_raw_response, meta=meta)
+        raise SeldonMicroserviceException("Unknown data type returned as payload:"+client_raw_response)
+
 
 
 def extract_request_parts(request: prediction_pb2.SeldonMessage) -> Tuple[Union[np.ndarray,str,bytes], Dict, prediction_pb2.DefaultData, str]:
