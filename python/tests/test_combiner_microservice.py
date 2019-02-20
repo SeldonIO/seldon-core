@@ -148,7 +148,21 @@ def test_aggreate_ok_bindata():
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
     assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
     assert j["binData"] == bdata_base64
-    
+
+def test_aggreate_ok_strdata():
+    user_object = UserObject()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+    rv = client.get('/aggregate?json={"seldonMessages":[{"strData":"123"},{"strData":"456"}]}')
+    print(rv)
+    j = json.loads(rv.data)
+    print(j)
+    assert rv.status_code == 200
+    assert j["meta"]["tags"] == {"mytag": 1}
+    assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
+    assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
+    assert j["strData"] == "123"
+
 def test_aggregate_bad_metrics():
     user_object = UserObject(metrics_ok=False)
     app = get_rest_microservice(user_object)
