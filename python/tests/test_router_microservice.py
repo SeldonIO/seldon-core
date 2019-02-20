@@ -77,7 +77,7 @@ class UserObjectLowLevelGrpc(object):
 
 def test_router_ok():
     user_object = UserObject()
-    app = get_rest_microservice(user_object, debug=True)
+    app = get_rest_microservice(user_object)
     client = app.test_client()
     rv = client.get('/route?json={"data":{"ndarray":[2]}}')
     j = json.loads(rv.data)
@@ -90,7 +90,7 @@ def test_router_ok():
 
 def test_router_lowlevel_ok():
     user_object = UserObjectLowLevel()
-    app = get_rest_microservice(user_object, debug=True)
+    app = get_rest_microservice(user_object)
     client = app.test_client()
     rv = client.get('/route?json={"data":{"ndarray":[2]}}')
     j = json.loads(rv.data)
@@ -101,7 +101,7 @@ def test_router_lowlevel_ok():
 
 def test_router_no_json():
     user_object = UserObject()
-    app = get_rest_microservice(user_object, debug=True)
+    app = get_rest_microservice(user_object)
     client = app.test_client()
     uo = UserObject()
     rv = client.get('/route?')
@@ -112,7 +112,7 @@ def test_router_no_json():
 
 def test_router_bad_metrics():
     user_object = UserObject(metrics_ok=False)
-    app = get_rest_microservice(user_object, debug=True)
+    app = get_rest_microservice(user_object)
     client = app.test_client()
     rv = client.get('/route?json={"data":{"ndarray":[]}}')
     j = json.loads(rv.data)
@@ -121,7 +121,7 @@ def test_router_bad_metrics():
 
 def test_router_feedback_ok():
     user_object = UserObject()
-    app = get_rest_microservice(user_object, debug=True)
+    app = get_rest_microservice(user_object)
     client = app.test_client()
     rv = client.get('/send-feedback?json={"request":{"data":{"ndarray":[]}},"response":{"meta":{"routing":{"1":1}}},"reward":1.0}')
     j = json.loads(rv.data)
@@ -130,7 +130,7 @@ def test_router_feedback_ok():
 
 def test_router_feedback_lowlevel_ok():
     user_object = UserObjectLowLevel()
-    app = get_rest_microservice(user_object, debug=True)
+    app = get_rest_microservice(user_object)
     client = app.test_client()
     rv = client.get('/send-feedback?json={"request":{"data":{"ndarray":[]}},"reward":1.0}')
     j = json.loads(rv.data)

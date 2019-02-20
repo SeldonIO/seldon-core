@@ -10,6 +10,107 @@ from seldon_core.proto import prediction_pb2
 from seldon_core.microservice import SeldonMicroserviceException
 import seldon_core.utils as scu
 
+class UserObject(object):
+    def __init__(self, metrics_ok=True, ret_nparray=False, ret_meta=False):
+        self.metrics_ok = metrics_ok
+        self.ret_nparray = ret_nparray
+        self.nparray = np.array([1, 2, 3])
+        self.ret_meta = ret_meta
+
+    def predict(self, X, features_names, **kwargs):
+        """
+        Return a prediction.
+
+        Parameters
+        ----------
+        X : array-like
+        feature_names : array of feature names (optional)
+        """
+        if self.ret_meta:
+            self.inc_meta = kwargs.get("meta")
+        if self.ret_nparray:
+            return self.nparray
+        else:
+            print("Predict called - will run identity function")
+            print(X)
+            return X
+
+    def feedback(self, features, feature_names, reward, truth):
+        print("Feedback called")
+
+    def tags(self):
+        if self.ret_meta:
+            return {"inc_meta": self.inc_meta}
+        else:
+            return {"mytag": 1}
+
+    def metrics(self):
+        if self.metrics_ok:
+            return [{"type": "COUNTER", "key": "mycounter", "value": 1}]
+        else:
+            return [{"type": "BAD", "key": "mycounter", "value": 1}]
+
+
+def test_create_reponse_nparray():
+    user_model = UserObject()
+    request = prediction_pb2.SeldonMessage()
+    raw_response = np.array([[1,2,3]])
+    sm = scu.construct_response(user_model, True, request, raw_response)
+    assert sm.data.WhichOneof("data_oneof") == "tensor"
+    assert sm.data.tensor.values == [1, 2, 3]
+
+
+def test_create_reponse_ndarray():
+    user_model = UserObject()
+    request_data = np.array([[5,6,7]])
+    datadef = scu.array_to_grpc_datadef("ndarray",request_data)
+    request = prediction_pb2.SeldonMessage(data=datadef)
+    raw_response = np.array([[1,2,3]])
+    sm = scu.construct_response(user_model, True, request, raw_response)
+    assert sm.data.WhichOneof("data_oneof") == "ndarray"
+
+
+def test_create_reponse_tensor():
+    user_model = UserObject()
+    request_data = np.array([[5,6,7]])
+    datadef = scu.array_to_grpc_datadef("tensor",request_data)
+    request = prediction_pb2.SeldonMessage(data=datadef)
+    raw_response = np.array([[1,2,3]])
+    sm = scu.construct_response(user_model, True, request, raw_response)
+    assert sm.data.WhichOneof("data_oneof") == "tensor"
+
+
+def test_create_response_strdata():
+    user_model = UserObject()
+    request_data = np.array([[5,6,7]])
+    datadef = scu.array_to_grpc_datadef("ndarray",request_data)
+    request = prediction_pb2.SeldonMessage(data=datadef)
+    raw_response = "hello world"
+    sm = scu.construct_response(user_model, True, request, raw_response)
+    assert sm.data.WhichOneof("data_oneof") == None
+    assert len(sm.strData) > 0
+
+
+def test_create_reponse_list():
+    user_model = UserObject()
+    request_data = np.array([[5,6,7]])
+    datadef = scu.array_to_grpc_datadef("tensor",request_data)
+    request = prediction_pb2.SeldonMessage(data=datadef)
+    raw_response = ["one","two","three"]
+    sm = scu.construct_response(user_model, True, request, raw_response)
+    assert sm.data.WhichOneof("data_oneof") == "ndarray"
+
+
+def test_create_reponse_binary():
+    user_model = UserObject()
+    request_data = np.array([[5,6,7]])
+    datadef = scu.array_to_grpc_datadef("tensor",request_data)
+    request = prediction_pb2.SeldonMessage(data=datadef)
+    raw_response = b"binary"
+    sm = scu.construct_response(user_model, True, request, raw_response)
+    assert sm.data.WhichOneof("data_oneof") == None
+    assert len(sm.strData) == 0
+    assert len(sm.binData) > 0
 
 def test_json_to_seldon_message_normal_data():
     data = {"data": {"tensor": {"shape": [1, 1], "values": [1]}}}
@@ -142,7 +243,7 @@ def test_get_data_from_proto_tftensor():
 
 def test_proto_array_to_tftensor():
     arr = np.array([[1, 2, 3], [4, 5, 6]])
-    datadef = scu.array_to_grpc_datadef(arr, [], "tftensor")
+    datadef = scu.array_to_grpc_datadef("tftensor", arr, [])
     print(datadef)
     assert datadef.tftensor.tensor_shape.dim[0].size == 2
     assert datadef.tftensor.tensor_shape.dim[1].size == 3

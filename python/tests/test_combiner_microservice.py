@@ -70,7 +70,7 @@ class UserObjectLowLevelGrpc(object):
 
 def test_aggreate_ok():
     user_object = UserObject()
-    app = get_rest_microservice(user_object, debug=True)
+    app = get_rest_microservice(user_object)
     client = app.test_client()
     rv = client.get('/aggregate?json={"seldonMessages":[{"data":{"ndarray":[1]}}]}')
     print(rv)
@@ -85,7 +85,7 @@ def test_aggreate_ok():
 
 def test_aggreate_invalid_message():
     user_object = UserObject()
-    app = get_rest_microservice(user_object, debug=True)
+    app = get_rest_microservice(user_object)
     client = app.test_client()
     rv = client.get('/aggregate?json={"wrong":[{"data":{"ndarray":[1]}}]}')
     assert rv.status_code == 400
@@ -97,7 +97,7 @@ def test_aggreate_invalid_message():
 
 def test_aggreate_no_list():
     user_object = UserObject()
-    app = get_rest_microservice(user_object, debug=True)
+    app = get_rest_microservice(user_object)
     client = app.test_client()
     rv = client.get('/aggregate?json={"seldonMessages":{"data":{"ndarray":[1]}}}')
     assert rv.status_code == 400
@@ -109,7 +109,7 @@ def test_aggreate_no_list():
 
 def test_aggreate_bad_messages():
     user_object = UserObject()
-    app = get_rest_microservice(user_object, debug=True)
+    app = get_rest_microservice(user_object)
     client = app.test_client()
     rv = client.get('/aggregate?json={"seldonMessages":[{"data2":{"ndarray":[1]}}]}')
     assert rv.status_code == 400
@@ -121,7 +121,7 @@ def test_aggreate_bad_messages():
 
 def test_aggreate_ok_2messages():
     user_object = UserObject()
-    app = get_rest_microservice(user_object, debug=True)
+    app = get_rest_microservice(user_object)
     client = app.test_client()
     rv = client.get('/aggregate?json={"seldonMessages":[{"data":{"ndarray":[1]}},{"data":{"ndarray":[2]}}]}')
     print(rv)
@@ -135,7 +135,7 @@ def test_aggreate_ok_2messages():
     
 def test_aggreate_ok_bindata():
     user_object = UserObject()
-    app = get_rest_microservice(user_object, debug=True)
+    app = get_rest_microservice(user_object)
     client = app.test_client()
     bdata = b"123"
     bdata_base64 = base64.b64encode(bdata).decode('utf-8')
@@ -151,7 +151,7 @@ def test_aggreate_ok_bindata():
     
 def test_aggregate_bad_metrics():
     user_object = UserObject(metrics_ok=False)
-    app = get_rest_microservice(user_object, debug=True)
+    app = get_rest_microservice(user_object)
     client = app.test_client()
     rv = client.get('/aggregate?json={"seldonMessages":[{"data":{"ndarray":[1]}},{"data":{"ndarray":[2]}}]}')
     j = json.loads(rv.data)
@@ -161,7 +161,7 @@ def test_aggregate_bad_metrics():
 
 def test_aggreate_ok_lowlevel():
     user_object = UserObjectLowLevel()
-    app = get_rest_microservice(user_object, debug=True)
+    app = get_rest_microservice(user_object)
     client = app.test_client()
     rv = client.get('/aggregate?json={"seldonMessages":[{"data":{"ndarray":[1]}},{"data":{"ndarray":[2]}}]}')
     print(rv)
