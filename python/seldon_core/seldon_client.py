@@ -9,7 +9,9 @@ import requests
 from requests.auth import HTTPBasicAuth
 from typing import Tuple, Dict, Union, List
 import json
+import logging
 
+logger = logging.getLogger(__name__)
 
 class SeldonClientException(Exception):
     """
@@ -92,6 +94,7 @@ class SeldonClient(object):
         """
         self.config = locals()
         del self.config["self"]
+        logging.debug("Configuration:"+str(self.config))
 
     def _gather_args(self, gateway: str = None, transport: str = None, namespace: str = None, deployment_name: str = None,
                      payload_type: str = None, oauth_key: str = None, oauth_secret: str = None,
@@ -106,13 +109,13 @@ class SeldonClient(object):
         config = locals()
         del config["self"]
         c2 = {**self.config}
-        c2.update({k: v for k, v in config.items() if v})
+        c2.update({k: v for k, v in config.items() if v is not None})
         return c2
 
-    def predict(self, gateway: str = "ambassador", transport: str = "rest", deployment_name: str = None,
-                payload_type: str = "tensor", oauth_key: str = None, oauth_secret: str = None,
-                seldon_rest_endpoint: str = "localhost:8002", seldon_grpc_endpoint: str = "localhost:8004",
-                ambassador_endpoint: str = "localhost:8003", microservice_endpoint: str = "localhost:5000",
+    def predict(self, gateway: str =  None, transport: str = None, deployment_name: str = None,
+                payload_type: str = None, oauth_key: str = None, oauth_secret: str = None,
+                seldon_rest_endpoint: str = None, seldon_grpc_endpoint: str = None,
+                ambassador_endpoint: str = None, microservice_endpoint: str = None,
                 method: str = None, shape: Tuple = (1, 1), namespace: str = None, data: np.ndarray = None,
                 bin_data: Union[bytes, bytearray] = None, str_data: str = None) -> SeldonClientPrediction:
         """
@@ -166,10 +169,10 @@ class SeldonClient(object):
 
     def feedback(self, prediction_request: prediction_pb2.SeldonMessage = None,
                  prediction_response: prediction_pb2.SeldonMessage = None, reward: float = 0,
-                 gateway: str = "ambassador", transport: str = "rest", deployment_name: str = None,
-                 payload_type: str = "tensor", oauth_key: str = None, oauth_secret: str = None,
-                 seldon_rest_endpoint: str = "localhost:8002", seldon_grpc_endpoint: str = "localhost:8004",
-                 ambassador_endpoint: str = "localhost:8003", microservice_endpoint: str = "localhost:5000",
+                 gateway: str =  None, transport: str = None, deployment_name: str = None,
+                 payload_type: str = None, oauth_key: str = None, oauth_secret: str = None,
+                 seldon_rest_endpoint: str = None, seldon_grpc_endpoint: str = None,
+                 ambassador_endpoint: str = None, microservice_endpoint: str = None,
                  method: str = None, shape: Tuple = (1, 1), namespace: str = None) -> SeldonClientFeedback:
         """
 
@@ -219,10 +222,10 @@ class SeldonClient(object):
         else:
             raise SeldonClientException("Unknown gateway " + k["gateway"])
 
-    def microservice(self, gateway: str = "ambassador", transport: str = "rest", deployment_name: str = None,
-                     payload_type: str = "tensor", oauth_key: str = None, oauth_secret: str = None,
-                     seldon_rest_endpoint: str = "localhost:8002", seldon_grpc_endpoint: str = "localhost:8004",
-                     ambassador_endpoint: str = "localhost:8003", microservice_endpoint: str = "localhost:5000",
+    def microservice(self, gateway: str = None, transport: str = None, deployment_name: str = None,
+                     payload_type: str = None, oauth_key: str = None, oauth_secret: str = None,
+                     seldon_rest_endpoint: str = None, seldon_grpc_endpoint: str = None,
+                     ambassador_endpoint: str = None, microservice_endpoint: str = None,
                      method: str = None, shape: Tuple = (1, 1), namespace: str = None, data: np.ndarray = None,
                      datas: List[np.ndarray] = None, ndatas: int = None, bin_data: Union[bytes, bytearray] = None,
                      str_data: str = None) -> Union[SeldonClientPrediction, SeldonClientCombine]:
@@ -282,12 +285,12 @@ class SeldonClient(object):
 
     def microservice_feedback(self, prediction_request: prediction_pb2.SeldonMessage = None,
                               prediction_response: prediction_pb2.SeldonMessage = None, reward: float = 0,
-                              gateway: str = "ambassador", transport: str = "rest", deployment_name: str = None,
-                              payload_type: str = "tensor", oauth_key: str = None, oauth_secret: str = None,
-                              seldon_rest_endpoint: str = "localhost:8002",
-                              seldon_grpc_endpoint: str = "localhost:8004",
-                              ambassador_endpoint: str = "localhost:8003",
-                              microservice_endpoint: str = "localhost:5000",
+                              gateway: str = None, transport: str = None, deployment_name: str = None,
+                              payload_type: str = None, oauth_key: str = None, oauth_secret: str = None,
+                              seldon_rest_endpoint: str = None,
+                              seldon_grpc_endpoint: str = None,
+                              ambassador_endpoint: str = None,
+                              microservice_endpoint: str = None,
                               method: str = None, shape: Tuple = (1, 1), namespace: str = None) -> SeldonClientFeedback:
         """
 

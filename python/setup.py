@@ -37,7 +37,7 @@ setup(name='seldon-core',
       entry_points={
           'console_scripts': [
               'seldon-core-microservice = seldon_core.microservice:main',
-              'seldon-core-tester = seldon_core.tester:main',
+              'seldon-core-tester = seldon_core.microservice_tester:main',
               'seldon-core-api-tester = seldon_core.api_tester:main',
           ],
       },
