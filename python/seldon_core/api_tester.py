@@ -28,7 +28,7 @@ def get_seldon_client(args) -> SeldonClient:
                           oauth_key=args.oauth_key, oauth_secret=args.oauth_secret)
     else:
         ambassador_endpoint = endpoint
-        sc = SeldonClient(gateway="ambassador",ambassador_endpoint=ambassador_endpoint, deployment_name=args.deployment_name)
+        sc = SeldonClient(gateway="ambassador",ambassador_endpoint=ambassador_endpoint, deployment_name=args.deployment,namespace=args.namespace)
     return sc
 
 
@@ -50,7 +50,7 @@ def run_send_feedback(args):
 
     for i in range(args.n_requests):
         batch = generate_batch(contract, args.batch_size, 'features')
-        response_predict = sc.predict(data=batch, deployment_name=args.deployment_name)
+        response_predict = sc.predict(data=batch, deployment_name=args.deployment)
         response_feedback = sc.feedback(prediction_request=response_predict.request, prediction_response=response_predict.response, reward=1.0,deployment_name=args.deployment,transport=transport)
         if args.prnt:
             print("RECEIVED RESPONSE:")
@@ -99,6 +99,7 @@ def main():
     parser.add_argument("-t", "--tensor", action="store_true")
     parser.add_argument("-p", "--prnt", action="store_true", help="Prints requests and responses")
     parser.add_argument("--log-level", type=str, choices=["DEBUG","INFO","ERROR"], default="ERROR")
+    parser.add_argument("--namespace", type=str)
     parser.add_argument("--oauth-port", type=int)
     parser.add_argument("--oauth-key")
     parser.add_argument("--oauth-secret")

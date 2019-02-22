@@ -29,7 +29,7 @@ class SeldonClientPrediction(object):
     Data class to return from Seldon Client
     """
 
-    def __init__(self, request: prediction_pb2.SeldonMessage, response: Union[prediction_pb2.SeldonMessage, None],
+    def __init__(self, request: Union[prediction_pb2.SeldonMessage, None], response: Union[prediction_pb2.SeldonMessage, None],
                  success: bool = True, msg: str = ""):
         self.request = request
         self.response = response
@@ -42,7 +42,7 @@ class SeldonClientPrediction(object):
 
 
 class SeldonClientFeedback(object):
-    def __init__(self, request: prediction_pb2.Feedback, response: Union[prediction_pb2.SeldonMessage, None],
+    def __init__(self, request: Union[prediction_pb2.Feedback, None], response: Union[prediction_pb2.SeldonMessage, None],
                  success: bool = True,
                  msg: str = ""):
         self.request = request
@@ -56,7 +56,7 @@ class SeldonClientFeedback(object):
 
 
 class SeldonClientCombine(object):
-    def __init__(self, request: prediction_pb2.SeldonMessageList, response: Union[prediction_pb2.SeldonMessage, None],
+    def __init__(self, request: Union[prediction_pb2.SeldonMessageList,None], response: Union[prediction_pb2.SeldonMessage, None],
                  success: bool = True, msg: str = ""):
         self.request = request
         self.response = response
@@ -96,21 +96,25 @@ class SeldonClient(object):
         del self.config["self"]
         logging.debug("Configuration:"+str(self.config))
 
-    def _gather_args(self, gateway: str = None, transport: str = None, namespace: str = None, deployment_name: str = None,
-                     payload_type: str = None, oauth_key: str = None, oauth_secret: str = None,
-                     seldon_rest_endpoint: str = None, seldon_grpc_endpoint: str = None,
-                     ambassador_endpoint: str = None, microservice_endpoint: str = None,
-                     method: str = None, shape: Tuple = None, data: np.ndarray = None,
-                     datas: List[np.ndarray] = None, ndatas: int = None, bin_data: Union[bytes, bytearray] = None,
-                     str_data: str = None, prediction_request: prediction_pb2.SeldonMessage = None,
-                     prediction_response: prediction_pb2.SeldonMessage = None,
-                     reward: float = None, ):
+    def _gather_args(self, **kwargs):
 
-        config = locals()
-        del config["self"]
         c2 = {**self.config}
-        c2.update({k: v for k, v in config.items() if v is not None})
+        c2.update({k: v for k, v in kwargs.items() if v is not None})
         return c2
+
+    def _validate_args(self,gateway: str = None, transport: str = None,
+                     method: str = None, data: np.ndarray = None, **kwargs):
+        if not (gateway == "ambassador" or gateway == "seldon"):
+            raise SeldonClientException("Valid values for gateway are 'ambassador' or 'seldon'")
+        if not (transport == "rest" or transport == "grpc"):
+            raise SeldonClientException("Valid values for transport are 'rest' or 'grpc'")
+        if not (method == "predict" or method == "route"  or method == "aggregate" or method == "transform-input" or
+            method == "transform-output" or method == "send-feedback" or method is None):
+            raise SeldonClientException(
+                "Valid values for method are 'predict', 'route', 'transform-input', 'transform-output', 'aggregate' or None")
+        if not (data is None or isinstance(data, np.ndarray)):
+            raise SeldonClientException("Valid values for data are None or numpy array")
+
 
     def predict(self, gateway: str =  None, transport: str = None, deployment_name: str = None,
                 payload_type: str = None, oauth_key: str = None, oauth_secret: str = None,
@@ -150,6 +154,7 @@ class SeldonClient(object):
                               microservice_endpoint=microservice_endpoint, method=method, shape=shape,
                               namespace=namespace,
                               data=data, bin_data=bin_data, str_data=str_data)
+        self._validate_args(**k)
         if k["gateway"] == "ambassador":
             if k["transport"] == "rest":
                 return rest_predict_ambassador(**k)
@@ -205,6 +210,7 @@ class SeldonClient(object):
                               ,seldon_grpc_endpoint=seldon_grpc_endpoint, ambassador_endpoint=ambassador_endpoint,
                               microservice_endpoint=microservice_endpoint, method=method, shape=shape,
                               namespace=namespace)
+        self._validate_args(**k)
         if k["gateway"] == "ambassador":
             if k["transport"] == "rest":
                 return rest_feedback_ambassador(prediction_request, prediction_response, reward, **k)
@@ -256,7 +262,6 @@ class SeldonClient(object):
         -------
 
         """
-
         k = self._gather_args(gateway=gateway, transport=transport, deployment_name=deployment_name,
                               payload_type=payload_type, oauth_key=oauth_key,
                               oauth_secret=oauth_secret, seldon_rest_endpoint=seldon_rest_endpoint,
@@ -264,6 +269,7 @@ class SeldonClient(object):
                               microservice_endpoint=microservice_endpoint, method=method, shape=shape,
                               namespace=namespace, datas=datas, ndatas=ndatas,
                               data=data, bin_data=bin_data, str_data=str_data)
+        self._validate_args(**k)
         if k["transport"] == "rest":
             if k["method"] == "predict" or k["method"] == "transform-input" or k["method"] == "transform-output" or k[
                 "method"] == "route":
@@ -323,6 +329,7 @@ class SeldonClient(object):
                               , seldon_grpc_endpoint=seldon_grpc_endpoint, ambassador_endpoint=ambassador_endpoint,
                               microservice_endpoint=microservice_endpoint, method=method, shape=shape,
                               namespace=namespace)
+        self._validate_args(**k)
         if k["transport"] == "rest":
             return microservice_api_rest_feedback(prediction_request, prediction_response, reward, **k)
         else:
@@ -669,12 +676,18 @@ def rest_predict_seldon_oauth(oauth_key: str, oauth_secret: str, namespace: str 
         msg = ""
     else:
         success = False
-        msg = response_raw.reason
+        msg = str(response_raw.status_code) + ":"+response_raw.reason
     try:
-        response = json_to_seldon_message(response_raw.json())
+        if len(response_raw.text) > 0:
+            try:
+                response = json_to_seldon_message(response_raw.json())
+            except:
+                response = None
+        else:
+            response = None
         return SeldonClientPrediction(request, response, success, msg)
     except Exception as e:
-        return SeldonClientPrediction(request, None, success, str(e))
+        return SeldonClientPrediction(request, None, False, str(e))
 
 
 def grpc_predict_seldon_oauth(oauth_key: str, oauth_secret: str, namespace: str = None,
@@ -781,12 +794,18 @@ def rest_predict_ambassador(deployment_name: str, namespace: str = None, ambassa
         msg = ""
     else:
         success = False
-        msg = response_raw.reason
+        msg = str(response_raw.status_code) + ":" + response_raw.reason
     try:
-        response = json_to_seldon_message(response_raw.json())
+        if len(response_raw.text) > 0:
+            try:
+                response = json_to_seldon_message(response_raw.json())
+            except:
+                response = None
+        else:
+            response = None
         return SeldonClientPrediction(request, response, success, msg)
     except Exception as e:
-        return SeldonClientPrediction(request, None, success, str(e))
+        return SeldonClientPrediction(request, None, False, str(e))
 
 
 def rest_predict_ambassador_basicauth(deployment_name: str, username: str, password: str, namespace: str = None,
@@ -838,12 +857,18 @@ def rest_predict_ambassador_basicauth(deployment_name: str, username: str, passw
         msg = ""
     else:
         success = False
-        msg = response_raw.reason
+        msg = str(response_raw.status_code) + ":"+response_raw.reason
     try:
-        response = json_to_seldon_message(response_raw.json())
+        if len(response_raw.text) > 0:
+            try:
+                response = json_to_seldon_message(response_raw.json())
+            except:
+                response = None
+        else:
+            response = None
         return SeldonClientPrediction(request, response, success, msg)
     except Exception as e:
-        return SeldonClientPrediction(request, None, success, str(e))
+        return SeldonClientPrediction(request, None, False, str(e))
 
 
 def grpc_predict_ambassador(deployment_name: str, namespace: str = None, ambassador_endpoint: str = "localhost:8003",
@@ -931,15 +956,18 @@ def rest_feedback_seldon_oauth(prediction_request: prediction_pb2.SeldonMessage 
         msg = ""
     else:
         success = False
-        msg = response_raw.reason
+        msg = str(response_raw.status_code) + ":"+response_raw.reason
     try:
         if len(response_raw.text)>0:
-            response = json_to_seldon_message(response_raw.json())
+            try:
+                response = json_to_seldon_message(response_raw.json())
+            except:
+                response = None
         else:
             response = None
-        return SeldonClientFeedback(request, response, success, "")
+        return SeldonClientFeedback(request, response, success, msg)
     except Exception as e:
-        return SeldonClientFeedback(request, None, success, str(e))
+        return SeldonClientFeedback(request, None, False, str(e))
 
 
 def grpc_feedback_seldon_oauth(prediction_request: prediction_pb2.SeldonMessage = None,
@@ -1024,15 +1052,18 @@ def rest_feedback_ambassador(prediction_request: prediction_pb2.SeldonMessage = 
         msg = ""
     else:
         success = False
-        msg = response_raw.reason
+        msg = str(response_raw.status_code) + ":"+response_raw.reason
     try:
         if len(response_raw.text)>0:
-            response = json_to_seldon_message(response_raw.json())
+            try:
+                response = json_to_seldon_message(response_raw.json())
+            except:
+                response = None
         else:
             response = None
         return SeldonClientFeedback(request, response, success, msg)
     except Exception as e:
-        return SeldonClientFeedback(request, None, success, str(e))
+        return SeldonClientFeedback(request, None, False, str(e))
 
 
 def grpc_feedback_ambassador(prediction_request: prediction_pb2.SeldonMessage = None,
