@@ -1,4 +1,3 @@
-import pytest
 import json
 import numpy as np
 from google.protobuf import json_format

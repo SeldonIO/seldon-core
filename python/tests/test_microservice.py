@@ -1,7 +1,4 @@
-from __future__ import absolute_import, division, print_function
-
 from contextlib import contextmanager
-import json
 import os
 from os.path import dirname, join
 import socket
