@@ -236,7 +236,7 @@ The allowable ```type``` values for the parameters are defined in the [proto buf
 To use a private repository for installing Python dependencies use the following build command:
 
 ```bash
-s2i build -i <python-wheel-folder>:/whl <src-folder> seldonio/seldon-core-s2i-python2:0.5-SNAPSHOT <my-image-name>
+s2i build -i <python-wheel-folder>:/whl <src-folder> seldonio/seldon-core-s2i-python2:0.6-SNAPSHOT <my-image-name>
 ```
 
 This command will look for local Python wheels in the ```<python-wheel-folder>``` and use these before searching PyPI.
