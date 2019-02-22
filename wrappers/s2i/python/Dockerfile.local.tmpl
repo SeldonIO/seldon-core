@@ -11,7 +11,7 @@ WORKDIR /microservice
 COPY _python /microservice
 
 RUN cd /microservice/python && \
-    pip install .
+    make install
 
 COPY ./s2i/bin/ /s2i/bin
 

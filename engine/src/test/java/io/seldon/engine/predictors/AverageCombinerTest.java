@@ -232,6 +232,8 @@ public class AverageCombinerTest {
     	PredictiveUnitState state = new PredictiveUnitState("Cool_name",null,new ArrayList<PredictiveUnitState>(),null,null,null,null,PredictiveUnitImplementation.AVERAGE_COMBINER);
     	
     	PredictiveUnitBean predictiveUnit = new PredictiveUnitBean();
+    	PredictiveUnitBeanProxy proxy = new PredictiveUnitBeanProxy(predictiveUnit);
+    	predictiveUnit.setProxy(proxy);
     	SimpleModelUnit simpleModel = new SimpleModelUnit();
     	SimpleRouterUnit simpleRouterUnit = new SimpleRouterUnit();
     	AverageCombinerUnit averageCombiner = new AverageCombinerUnit();

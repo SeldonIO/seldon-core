@@ -26,25 +26,21 @@ Seldon Core is an open source platform for deploying machine learning models on 
 
 Machine learning deployment has many [challenges](./docs/challenges.md). Seldon Core intends to help with these challenges. Its high level goals are:
 
-
- - Allow data scientists to create models using any machine learning toolkit or programming language. We plan to initially cover the tools/languages below:
-   - Python based models including
-     - Tensorflow models
-     - Sklearn models
-   - Spark models
-   - H2O models
-   - R models
- - Expose machine learning models via REST and gRPC automatically when deployed for easy integration into business apps that need predictions.
- - Allow complex runtime inference graphs to be deployed as microservices. These graphs can be composed of:
-   - Models - runtime inference executable for machine learning models
-   - Routers - route API requests to sub-graphs. Examples: AB Tests, Multi-Armed Bandits.
-   - Combiners - combine the responses from sub-graphs. Examples: ensembles of models
-   - Transformers - transform request or responses. Example: transform feature requests.
+ - Allow organisations to run and manage machine learning models built using any machine learning toolkit. Any model that can be run inside a Docker container can run in Seldon Core.
+ - Provide a production ready machine learning deployment system on top of Kubernetes and integrating well with other Cloud Native tools.
+ - Provide the tools to allow complex metrics, optimization and proper compliance of machine learning models in production.
+   - Optimize your models using multi-armed bandit solvers
+   - Run Outlier Detection models
+   - Get alerts on Concept Drift
+   - Provide black-box model explanations of running models
+ - Automatically expose REST and gRPC endpoints to allow business application to easily call your machine learning models.   
  - Handle full lifecycle management of the deployed model:
     - Updating the runtime graph with no downtime
     - Scaling
     - Monitoring
     - Security
+
+ **We have a [roadmap](docs/proposals/roadmap.md) which we welcome feedback.**
 
 ## Prerequisites
 
@@ -61,7 +57,7 @@ Read the [overview to using seldon-core](./docs/getting_started/readme.md).
 
 
 ### Example Components
-Seldon-core allows various types of components to be built and plugged into the runtime prediction graph. These include [models, routers, transformers and combiners](docs/reference/internal-api.md). Some example components that are available as part of the project are:
+Seldon-core allows various types of components to be built and plugged into the runtime prediction graph. These include generic components such as [models, routers, transformers and combiners](docs/reference/internal-api.md). Some example components that are available as part of the project are:
 
  * **Models** : example that illustrate simple machine learning models to help you build your own integrations
    * Python
@@ -80,14 +76,24 @@ Seldon-core allows various types of components to be built and plugged into the 
       * [ResNet ONNX Classifier using Intel nGraph](./examples/models/onnx_resnet50/onnx_resnet50.ipynb)
    * PMML
       * [PySpark MNIST Classifier](https://github.com/SeldonIO/JPMML-utils/blob/master/examples/pyspark_pmml/mnist.ipynb)
+   * MLFlow 
+      * [MLFlow sklearn classifier](https://github.com/SeldonIO/seldon-core/blob/master/examples/models/mlflow_model/mlflow.ipynb)
+   * AWS SageMaker 
+      * [SageMaker sklearn example](https://github.com/SeldonIO/seldon-core/blob/master/examples/models/sagemaker/sagemaker_seldon_scikit_iris_example.ipynb)
 
- * **Routers**
-   * [Epsilon-greedy multi-armed bandits for real time optimization of models](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/epsilon_greedy_gcp.ipynb)
- * **Transformers**
-    * [Mahalanobis distance outlier detection](https://github.com/SeldonIO/seldon-core/blob/master/examples/transformers/outlier_mahalanobis/outlier_documentation.ipynb). Example usage can be found in the [Advanced graphs notebook](https://github.com/cliveseldon/seldon-core/blob/master/notebooks/advanced_graphs.ipynb)
- * **Combiners**
+Seldon allows you to build up runtime inference graphs that provide powerful optimization and metrics for your running models. Example components that help ensure you provide a compliant production machine learning system are available:
+
+ * **Multi-Armed Bandits** 
+   * [Epsilon-greedy multi-armed bandits for real time optimization of models](components/routers/epsilon-greedy) ([GCP example](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/epsilon_greedy_gcp.ipynb), [Kubeflow example](https://github.com/kubeflow/example-seldon))
+   * [Thompson sampling multi-armed bandit](components/routers/thompson-sampling) ([Credit card default case study](components/routers/case_study/credit_card_default.ipynb))
+ * [**Outlier Detection**](components/outlier-detection/README.md)
+    * [Variational Auto-Encoder (VAE) Outlier Detector](https://github.com/SeldonIO/seldon-core/tree/master/components/outlier-detection/vae)
+    * [Sequence-to-Sequence LSTM (seq2seq-LSTM) Outlier Detector](https://github.com/SeldonIO/seldon-core/tree/master/components/outlier-detection/seq2seq-lstm)
+    * [Isolation Forest Outlier Detector](https://github.com/SeldonIO/seldon-core/tree/master/components/outlier-detection/isolation-forest)
+    * [Mahalanobis distance outlier detection](https://github.com/SeldonIO/seldon-core/blob/master/examples/transformers/outlier_mahalanobis/outlier_documentation.ipynb). 
+ * **Ensembles**
     * [MNIST Average Combiner](examples/combiners/mnist_combiner/mnist_combiner.ipynb) - ensembles sklearn and Tensorflow Models.
-    
+
 ## Integrations
 
  * [kubeflow](https://github.com/kubeflow/kubeflow)
@@ -102,6 +108,8 @@ Seldon-core allows various types of components to be built and plugged into the 
  * [Tensorflow Serving](./integrations/tfserving)
  * [Intel OpenVINO](./examples/models/openvino)
    * A [Helm chart](./helm-charts/seldon-openvino) for easy integration and an [example notebook](./examples/models/openvino/openvino-squeezenet.ipynb) using OpenVINO to serve imagenet model within Seldon Core.
+ * [MLFlow](./examples/models/mlflow_model/mlflow.ipynb)
+ * [SageMaker](./integrations/sagemaker)
 
 ## Install
 
@@ -112,7 +120,7 @@ Follow the [install guide](docs/install.md) for details on ways to install seldo
 ![API](./docs/deploy.png)
 
  1. [Wrap your runtime prediction model](./docs/wrappers/readme.md).
-    * We provide easy to use wrappers for [python](./docs/wrappers/python.md), [R](./docs/wrappers/r.md), [Java](./docs/wrappers/java.md) and [NodeJS](./docs/wrappers/nodejs.md).
+    * We provide easy to use wrappers for [Python](./docs/wrappers/python.md), [R](./docs/wrappers/r.md), [Java](./docs/wrappers/java.md), [NodeJS](./docs/wrappers/nodejs.md) and [Go](./examples/wrappers/go/README.md).
     * We have [tools to test your wrapped components](./docs/api-testing.md).
  1. [Define your runtime inference graph in a seldon deployment custom resource](./docs/inference-graph.md).
  1. [Deploy the graph](./docs/deploying.md).
@@ -120,9 +128,15 @@ Follow the [install guide](docs/install.md) for details on ways to install seldo
 
 ## Advanced Tutorials
 
+ * [Ambassador Configuration](./docs/ambassador.md) including:
+   * [Canary deployments](./docs/ambassador.md#canary-deployments)
+   * [Shadow deployments](./docs/ambassador.md#shadow-deployments)
+   * [Header-based Routing to deployments](./docs/ambassador.md#header-based-routing)
  * [Advanced graphs](https://github.com/seldonio/seldon-core/blob/master/notebooks/advanced_graphs.ipynb) showing the various types of runtime prediction graphs that can be built.
  * [Handling large gRPC messages](./notebooks/max_grpc_msg_size.ipynb). Showing how you can add annotations to increase the gRPC max message size.
  * [Handling REST timeouts](./notebooks/timeouts.ipynb). Showing how you can add annotations to set the REST (and gRPC) timeouts.
+ * [Distributed Tracing](./docs/distributed-tracing.md)
+
 
 ## Reference
 
@@ -134,6 +148,9 @@ Follow the [install guide](docs/install.md) for details on ways to install seldo
 
 ## Articles/Blogs/Videos
 
+External content:
+
+ - [GDG DevFest 2018 - Intro to Seldon and Outlier Detection](https://youtu.be/064_cf5JlbM?t=13537)
  - [Open Source Model Management Roundup Polyaxon, Argo and Seldon](https://www.anaconda.com/blog/developer-blog/open-source-model-management-roundup-polyaxon-argo-and-seldon/)
  - [Kubecon Europe 2018 - Serving Machine Learning Models at Scale with Kubeflow and Seldon](https://www.youtube.com/watch?v=pDlapGtecbY)
  - [Polyaxon, Argo and Seldon for model training, package and deployment in Kubernetes](https://danielfrg.com/blog/2018/10/model-management-polyaxon-argo-seldon/)
@@ -147,8 +164,16 @@ Follow the [install guide](docs/install.md) for details on ways to install seldo
  - [IBM Framework for Deep Learning and Seldon-Core](https://developer.ibm.com/code/2018/06/12/serve-it-hot-deploy-your-ffdl-trained-models-using-seldon/)
  - [CartPole game by Reinforcement Learning, a journey from training to inference ](https://github.com/hypnosapos/cartpole-rl-remote/)
 
+Internal Tutorials:
+
+ - [Seldon Tech Overview](https://www.youtube.com/watch?v=TCeGARP_lAk)
+   - Overview of Seldon Core technology.
+ - [Seldon Core with Kubeflow Demo](https://www.youtube.com/watch?v=BG3_bJr98BE)
+   - End to end demo of hetrogeneous models trained within Kubeflow and deployed with Seldon. Shows continuous deployment from single model to A/B test to multi-armed bandit.
+
 ### Release Highlights
 
+ * [0.2.5 Release Highlights](docs/articles/release-0.2.5.md)
  * [0.2.3 Release Highlights](docs/articles/release-0.2.3.md)
 
 ## Testing
@@ -175,24 +200,25 @@ Follow the [install guide](docs/install.md) for details on ways to install seldo
 
 | Description | Image URL | Stable Version | Development |
 |-------------|-----------|----------------|-----|
-| Seldon Operator | [seldonio/cluster-manager](https://hub.docker.com/r/seldonio/cluster-manager/tags/) | 0.2.4 | 0.2.5-SNAPSHOT |
-| Seldon Service Orchestrator | [seldonio/engine](https://hub.docker.com/r/seldonio/engine/tags/) | 0.2.4 | 0.2.5-SNAPSHOT |
-| Seldon API Gateway | [seldonio/apife](https://hub.docker.com/r/seldonio/apife/tags/) | 0.2.4 | 0.2.5-SNAPSHOT |
-| [Seldon Python 3 (3.6) Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python3](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3/tags/) | 0.3 | 0.4-SNAPSHOT |
-| [Seldon Python 3.6 Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python36](https://hub.docker.com/r/seldonio/seldon-core-s2i-python36/tags/) | 0.3 | 0.4-SNAPSHOT |
-| [Seldon Python 2 Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python2](https://hub.docker.com/r/seldonio/seldon-core-s2i-python2/tags/) | 0.3 | 0.4-SNAPSHOT |
-| [Seldon Python ONNX Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python3-ngraph-onnx](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3-ngraph-onnx/tags/) | 0.2  |   |
+| Seldon Operator | [seldonio/cluster-manager](https://hub.docker.com/r/seldonio/cluster-manager/tags/) | 0.2.5 | 0.2.6-SNAPSHOT |
+| Seldon Service Orchestrator | [seldonio/engine](https://hub.docker.com/r/seldonio/engine/tags/) | 0.2.5 | 0.2.6-SNAPSHOT |
+| Seldon API Gateway | [seldonio/apife](https://hub.docker.com/r/seldonio/apife/tags/) | 0.2.5 | 0.2.6-SNAPSHOT |
+| [Seldon Python 3 (3.6) Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python3](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3/tags/) | 0.4 | 0.5-SNAPSHOT |
+| [Seldon Python 3.6 Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python36](https://hub.docker.com/r/seldonio/seldon-core-s2i-python36/tags/) | 0.4 | 0.5-SNAPSHOT |
+| [Seldon Python 2 Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python2](https://hub.docker.com/r/seldonio/seldon-core-s2i-python2/tags/) | 0.4 | 0.5-SNAPSHOT |
+| [Seldon Python ONNX Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python3-ngraph-onnx](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3-ngraph-onnx/tags/) | 0.3  |   |
 | [Seldon Java Build Wrapper for S2I](docs/wrappers/java.md) | [seldonio/seldon-core-s2i-java-build](https://hub.docker.com/r/seldonio/seldon-core-s2i-java-build/tags/) | 0.1 | |
-| [Seldon Java Runtime Wrapper for S2I](docs/wrappers/java.md) | [seldonio/seldon-core-s2i-java-runtime](https://hub.docker.com/r/seldonio/seldon-core-s2i-java-runtime/tags/) | 0.1 | | 
+| [Seldon Java Runtime Wrapper for S2I](docs/wrappers/java.md) | [seldonio/seldon-core-s2i-java-runtime](https://hub.docker.com/r/seldonio/seldon-core-s2i-java-runtime/tags/) | 0.1 | |
 | [Seldon R Wrapper for S2I](docs/wrappers/r.md) | [seldonio/seldon-core-s2i-r](https://hub.docker.com/r/seldonio/seldon-core-s2i-r/tags/) | 0.2 | |
 | [Seldon NodeJS Wrapper for S2I](docs/wrappers/nodejs.md) | [seldonio/seldon-core-s2i-nodejs](https://hub.docker.com/r/seldonio/seldon-core-s2i-nodejs/tags/) | 0.1 | 0.2-SNAPSHOT |
 | [Seldon Tensorflow Serving proxy](integrations/tfserving/README.md) | [seldonio/tfserving-proxy](https://hub.docker.com/r/seldonio/tfserving-proxy/tags/) | 0.1 |
 | [Seldon NVIDIA inference server proxy](integrations/nvidia-inference-server/README.md) | [seldonio/nvidia-inference-server-proxy](https://hub.docker.com/r/seldonio/nvidia-inference-server-proxy/tags/) | 0.1 |
+| [Seldon AWS SageMaker proxy](integrations/sagemaker/README.md) | [seldonio/sagemaker-proxy](https://hub.docker.com/r/seldonio/sagemaker-proxy/tags/) | 0.1 |
 #### Java Packages
 
 | Description | Package | Version |
 |-------------|---------|---------|
-| [Seldon Core Wrapper](https://github.com/SeldonIO/seldon-java-wrapper) | [seldon-core-wrapper](https://mvnrepository.com/artifact/io.seldon.wrapper/seldon-core-wrapper) | 0.1.2 |
+| [Seldon Core Wrapper](https://github.com/SeldonIO/seldon-java-wrapper) | [seldon-core-wrapper](https://mvnrepository.com/artifact/io.seldon.wrapper/seldon-core-wrapper) | 0.1.3 |
 | [Seldon Core JPMML](https://github.com/SeldonIO/JPMML-utils) | [seldon-core-jpmml](https://mvnrepository.com/artifact/io.seldon.wrapper/seldon-core-jpmml) | 0.0.1 |
 
 ## Usage Reporting

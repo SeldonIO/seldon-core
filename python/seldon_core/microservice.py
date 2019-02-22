@@ -12,6 +12,7 @@ from tensorflow.core.framework.tensor_pb2 import TensorProto
 from google.protobuf import json_format
 from google.protobuf.struct_pb2 import ListValue
 import sys
+from distutils.util import strtobool
 
 from seldon_core.proto import prediction_pb2
 import seldon_core.persistence as persistence
@@ -26,7 +27,7 @@ DEBUG_PARAMETER = "SELDON_DEBUG"
 DEBUG = False
 
 ANNOTATIONS_FILE = "/etc/podinfo/annotations"
-ANNOTATION_GRPC_MAX_MSG_SIZE = 'seldon.io/grpc-max-message-size'            
+ANNOTATION_GRPC_MAX_MSG_SIZE = 'seldon.io/grpc-max-message-size'
 
 def startServers(target1, target2):
     p2 = mp.Process(target=target2)
@@ -119,6 +120,13 @@ def get_data_from_json(message):
             "Can't find data in json: " + strJson)
 
 
+def get_meta_from_json(message):
+    if "meta" in message:
+        return message.get("meta")
+    else:
+        return {}
+
+
 def rest_datadef_to_array(datadef):
     if datadef.get("tensor") is not None:
         features = np.array(datadef.get("tensor").get("values")).reshape(
@@ -165,6 +173,11 @@ def get_data_from_proto(request):
         return request.strData
     else:
         raise SeldonMicroserviceException("Unknown data in SeldonMessage")
+
+
+def get_meta_from_proto(request):
+    meta = json_format.MessageToDict(request.meta)
+    return meta
 
 
 def grpc_datadef_to_array(datadef):
@@ -231,7 +244,10 @@ def parse_parameters(parameters):
         name = param.get("name")
         value = param.get("value")
         type_ = param.get("type")
-        parsed_parameters[name] = type_dict[type_](value)
+        if type_ == "BOOL":
+            parsed_parameters[name] = bool(strtobool(value))
+        else:
+            parsed_parameters[name] = type_dict[type_](value)
     return parsed_parameters
 
 
@@ -272,7 +288,10 @@ def main():
                         default=0, const=1, type=int)
     parser.add_argument("--parameters", type=str,
                         default=os.environ.get(PARAMETERS_ENV_NAME, "[]"))
-    parser.add_argument("--log-level", type=str, default='INFO')
+    parser.add_argument("--log-level", type=str, default="INFO")
+    parser.add_argument("--tracing", nargs='?',
+                        default=int(os.environ.get("TRACING", "0")), const=1, type=int)
+
     args = parser.parse_args()
 
     parameters = parse_parameters(json.loads(args.parameters))
@@ -282,6 +301,7 @@ def main():
     if not isinstance(log_level_num, int):
         raise ValueError('Invalid log level: %s', args.log_level)
     logger.setLevel(log_level_num)
+    logger.debug("Log level set to %s:%s", args.log_level, log_level_num)
 
     DEBUG = False
     if parameters.get(DEBUG_PARAMETER):
@@ -312,12 +332,60 @@ def main():
     elif args.service_type == "OUTLIER_DETECTOR":
         import seldon_core.outlier_detector_microservice as seldon_microservice
 
+    # set log level for the imported microservice type
+    seldon_microservice.logger.setLevel(log_level_num)
+
     port = int(os.environ.get(SERVICE_PORT_ENV_NAME, DEFAULT_PORT))
 
+    if args.tracing:
+        logger.info("Initializing tracing")
+        from jaeger_client import Config
+
+        jaeger_serv = os.environ.get("JAEGER_AGENT_HOST","0.0.0.0")
+        jaeger_port = os.environ.get("JAEGER_AGENT_PORT", 5775)
+        jaeger_config = os.environ.get("JAEGER_CONFIG_PATH",None)
+        if jaeger_config is None:
+            logger.info("Using default tracing config")
+            config = Config(
+                config={ # usually read from some yaml config
+                    'sampler': {
+                        'type': 'const',
+                        'param': 1,
+                    },
+                    'local_agent': {
+                        'reporting_host': jaeger_serv,
+                        'reporting_port': jaeger_port,
+                    },
+                    'logging': True,
+                },
+                service_name=args.interface_name,
+                validate=True,
+            )
+        else:
+            logger.info("Loading tracing config from %s",jaeger_config)
+            import yaml
+            with open(jaeger_config, 'r') as stream:
+                config_dict = yaml.load(stream)
+                config = Config(
+                    config=config_dict,
+                    service_name=args.interface_name,
+                    validate=True,
+                )
+        # this call also sets opentracing.tracer
+        tracer = config.initialize_tracer()
+
+
+
     if args.api_type == "REST":
+
         def rest_prediction_server():
             app = seldon_microservice.get_rest_microservice(
                 user_object, debug=DEBUG)
+
+            if args.tracing:
+                from flask_opentracing import FlaskTracer
+                tracing = FlaskTracer(tracer,True, app)
+
             app.run(host='0.0.0.0', port=port)
 
         logger.info("REST microservice running on port %i",port)
@@ -325,9 +393,19 @@ def main():
 
     elif args.api_type == "GRPC":
         def grpc_prediction_server():
+
+            if args.tracing:
+                from grpc_opentracing import open_tracing_server_interceptor
+                logger.info("Adding tracer")
+                interceptor = open_tracing_server_interceptor(tracer)
+            else:
+                interceptor = None
+
             server = seldon_microservice.get_grpc_server(
-                user_object, debug=DEBUG, annotations=annotations)
+                user_object, debug=DEBUG, annotations=annotations, trace_interceptor=interceptor)
+
             server.add_insecure_port("0.0.0.0:{}".format(port))
+
             server.start()
 
             logger.info("GRPC microservice Running on port %i",port)

@@ -18,7 +18,10 @@ package io.seldon.engine.service;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.http.client.utils.URIBuilder;
@@ -40,14 +43,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
+import io.opentracing.contrib.spring.web.client.TracingRestTemplateInterceptor;
 import io.seldon.engine.config.AnnotationsConfig;
 import io.seldon.engine.exception.APIException;
 import io.seldon.engine.grpc.GrpcChannelHandler;
 import io.seldon.engine.grpc.SeldonGrpcServer;
 import io.seldon.engine.pb.ProtoBufUtils;
 import io.seldon.engine.predictors.PredictiveUnitState;
+import io.seldon.engine.tracing.TracingProvider;
 import io.seldon.protos.CombinerGrpc;
 import io.seldon.protos.CombinerGrpc.CombinerBlockingStub;
 import io.seldon.protos.DeploymentProtos.Endpoint;
@@ -97,8 +100,11 @@ public class InternalPredictionService {
     
     private final GrpcChannelHandler grpcChannelHandler;
     
+    private final Map<String,HttpHeaders> headersCache = new ConcurrentHashMap<>();
+    private final Map<String,URI> uriCache = new ConcurrentHashMap<>();
+    
     @Autowired
-    public InternalPredictionService(RestTemplateBuilder restTemplateBuilder,AnnotationsConfig annotations,GrpcChannelHandler grpcChannelHandler){
+    public InternalPredictionService(RestTemplateBuilder restTemplateBuilder,AnnotationsConfig annotations,GrpcChannelHandler grpcChannelHandler,TracingProvider tracingProvider){
     	this.grpcChannelHandler = grpcChannelHandler;
     	int connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
     	if (annotations.has(ANNOTATION_REST_CONNECTION_TIMEOUT))
@@ -132,6 +138,10 @@ public class InternalPredictionService {
     	           .setConnectTimeout(connectionTimeout)
     	           .setReadTimeout(readTimeout)
     	           .build();
+    	if (tracingProvider.isActive())
+    	{
+    		restTemplate.setInterceptors(Collections.singletonList(new TracingRestTemplateInterceptor(tracingProvider.getTracer())));
+    	}
     	if (annotations.has(SeldonGrpcServer.ANNOTATION_MAX_MESSAGE_SIZE))
         {
         	try 
@@ -334,18 +344,31 @@ public class InternalPredictionService {
 			return true;
     	return false;
     }
+    
+    public static String getUriKey(Endpoint endpoint,String path)
+    {
+    	StringBuilder sb = new StringBuilder();
+    	return sb.append(endpoint.getServiceHost()).append(":").append(endpoint.getServicePort()).append(path).toString();
+    }
 		
 	private SeldonMessage queryREST(String path, String dataString, PredictiveUnitState state, Endpoint endpoint, boolean isDefault)
 	{
 		long timeNow = System.currentTimeMillis();
 		URI uri;
-		try {
-			URIBuilder builder = new URIBuilder().setScheme("http")
-					.setHost(endpoint.getServiceHost())
-					.setPort(endpoint.getServicePort())
-					.setPath("/"+path);
-
-			uri = builder.build();
+		try 
+		{
+			final String uriKey = getUriKey(endpoint, path);
+			if (uriCache.containsKey(uriKey))
+				uri = uriCache.get(uriKey);
+			else
+			{
+				URIBuilder builder = new URIBuilder().setScheme("http")
+						.setHost(endpoint.getServiceHost())
+						.setPort(endpoint.getServicePort())
+						.setPath("/"+path);
+				uri = builder.build();
+				uriCache.put(uriKey, uri);
+			}
 		} catch (URISyntaxException e) 
 		{
 			throw new APIException(APIException.ApiExceptionType.ENGINE_INVALID_ENDPOINT_URL,"Host: "+endpoint.getServiceHost()+" port:"+endpoint.getServicePort());
@@ -356,11 +379,18 @@ public class InternalPredictionService {
 		{
 			try  
 			{
-				HttpHeaders headers = new HttpHeaders();
-				headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-				headers.add(MODEL_NAME_HEADER, state.name);
-				headers.add(MODEL_IMAGE_HEADER, state.imageName);
-				headers.add(MODEL_VERSION_HEADER, state.imageVersion);
+				HttpHeaders headers;
+				if (headersCache.containsKey(state.name))
+					headers = headersCache.get(state.name);
+				else
+				{
+					headers = new HttpHeaders();
+					headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+					headers.add(MODEL_NAME_HEADER, state.name);
+					headers.add(MODEL_IMAGE_HEADER, state.imageName);
+					headers.add(MODEL_VERSION_HEADER, state.imageVersion);
+					headersCache.put(state.name, headers);
+				}
 				
 				MultiValueMap<String, String> map= new LinkedMultiValueMap<String, String>();
 				map.add("json", dataString);
@@ -368,16 +398,16 @@ public class InternalPredictionService {
 
 				HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(map, headers);
 
-				logger.info("Requesting " + uri.toString());
+				if (logger.isDebugEnabled())
+					logger.debug("Requesting {}",uri.toString());
 				ResponseEntity<String> httpResponse = restTemplate.postForEntity( uri, request , String.class );
-				logger.info("Responded");
 				try
 				{
 					if(httpResponse.getStatusCode().is2xxSuccessful()) 
 					{
 					    SeldonMessage.Builder builder = SeldonMessage.newBuilder();
 					    String response = httpResponse.getBody();
-					    logger.info(response);
+					    logger.debug(response);
 					    JsonFormat.parser().ignoringUnknownFields().merge(response, builder);
 					    return builder.build();
 					} 
@@ -411,13 +441,4 @@ public class InternalPredictionService {
 		logger.error("Failed to retrueve predictions after {} attempts",restRetries);
 		throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,String.format("Failed to retrieve predictions after %d attempts",restRetries));
 	}
-
-	 /**
-     * Used only for testing. Should be replaced by better methods that use Spring and Mockito to create a Mock RestTemplate for testing
-     * @param predictorSpec
-     */
-	public void setRestTemplate(RestTemplate restTemplate) { // FIXME
-		this.restTemplate = restTemplate;
-	}
-
 }

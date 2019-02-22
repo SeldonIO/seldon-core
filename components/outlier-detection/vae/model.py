@@ -20,7 +20,8 @@ def sampling(args):
     epsilon = K.random_normal(shape=(batch, dim)) # by default, random_normal has mean=0 and std=1.0
     return z_mean + K.exp(0.5 * z_log_var) * epsilon # mean + stdev * eps
         
-def model(n_features,hidden_layers=1,latent_dim=2,hidden_dim=[]):
+def model(n_features, hidden_layers=1, latent_dim=2, hidden_dim=[], 
+          output_activation='sigmoid', learning_rate=0.001):
     """ Build VAE model. 
     
     Arguments:
@@ -28,6 +29,8 @@ def model(n_features,hidden_layers=1,latent_dim=2,hidden_dim=[]):
         - hidden_layers (int): number of hidden layers used in encoder/decoder
         - latent_dim (int): dimension of latent variable
         - hidden_dim (list): list with dimension of each hidden layer
+        - output_activation (str): activation type for last dense layer in the decoder
+        - learning_rate (float): learning rate used during training
     """
     
     # set dimensions hidden layers
@@ -66,7 +69,7 @@ def model(n_features,hidden_layers=1,latent_dim=2,hidden_dim=[]):
         dec_hidden = Dense(hidden_dim[-i],activation='relu',name='decoder_hidden_'+str(i-1))(dec_hidden)
         i+=1
 
-    outputs = Dense(n_features, activation='sigmoid', name='decoder_output')(dec_hidden)
+    outputs = Dense(n_features, activation=output_activation, name='decoder_output')(dec_hidden)
     # instantiate decoder model
     decoder = Model(latent_inputs, outputs, name='decoder')
 
@@ -83,7 +86,7 @@ def model(n_features,hidden_layers=1,latent_dim=2,hidden_dim=[]):
     vae_loss = K.mean(reconstruction_loss + kl_loss)
     vae.add_loss(vae_loss)
     
-    optimizer = Adam(lr=.001)
+    optimizer = Adam(lr=learning_rate)
     vae.compile(optimizer=optimizer)
     
     return vae

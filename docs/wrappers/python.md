@@ -1,4 +1,4 @@
-# Packaging a python model for Seldon Core using s2i
+# Packaging a Python model for Seldon Core using s2i
 
 
 In this guide, we illustrate the steps needed to wrap your own python model in a docker image ready for deployment with Seldon Core using [source-to-image app s2i](https://github.com/openshift/source-to-image).
@@ -17,7 +17,7 @@ If you are not familiar with s2i you can read [general instructions on using s2i
 To check everything is working you can run
 
 ```bash
-s2i usage seldonio/seldon-core-s2i-python3:0.3
+s2i usage seldonio/seldon-core-s2i-python3:0.4
 ```
 
 
@@ -83,17 +83,16 @@ These values can also be provided or overridden on the command line when buildin
 # Step 3 - Build your image
 Use ```s2i build``` to create your Docker image from source code. You will need Docker installed on the machine and optionally git if your source code is in a public git repo. You can choose from three python builder images
 
- * Python 2 : seldonio/seldon-core-s2i-python2:0.3
- * Python 3.6 : seldonio/seldon-core-s2i-python36:0.3, seldonio/seldon-core-s2i-python3:0.3 
- * Python 3.7 : seldonio/seldon-core-s2i-python37:0.3
-   * Note there are [issues running TensorFlow under Python 3.7](https://github.com/tensorflow/tensorflow/issues/20444) (Nov 2018)
+ * Python 2 : seldonio/seldon-core-s2i-python2:0.4
+ * Python 3.6 : seldonio/seldon-core-s2i-python36:0.4, seldonio/seldon-core-s2i-python3:0.4
+   * Note there are [issues running TensorFlow under Python 3.7](https://github.com/tensorflow/tensorflow/issues/20444) (Nov 2018) and Python 3.7 is not officially supported by TensorFlow (Dec 2018).
  * Python 3.6 plus ONNX support via [Intel nGraph](https://github.com/NervanaSystems/ngraph) : seldonio/seldon-core-s2i-python3-ngraph-onnx:0.1
 
 Using s2i you can build directly from a git repo or from a local source folder. See the [s2i docs](https://github.com/openshift/source-to-image/blob/master/docs/cli.md#s2i-build) for further details. The general format is:
 
 ```bash
-s2i build <git-repo> seldonio/seldon-core-s2i-python2:0.3 <my-image-name>
-s2i build <src-folder> seldonio/seldon-core-s2i-python2:0.3 <my-image-name>
+s2i build <git-repo> seldonio/seldon-core-s2i-python2:0.4 <my-image-name>
+s2i build <src-folder> seldonio/seldon-core-s2i-python2:0.4 <my-image-name>
 ```
 
 Change to seldonio/seldon-core-s2i-python3 if using python 3.
@@ -101,7 +100,7 @@ Change to seldonio/seldon-core-s2i-python3 if using python 3.
 An example invocation using the test template model inside seldon-core:
 
 ```bash
-s2i build https://github.com/seldonio/seldon-core.git --context-dir=wrappers/s2i/python/test/model-template-app seldonio/seldon-core-s2i-python2:0.3 seldon-core-template-model
+s2i build https://github.com/seldonio/seldon-core.git --context-dir=wrappers/s2i/python/test/model-template-app seldonio/seldon-core-s2i-python2:0.4 seldon-core-template-model
 ```
 
 The above s2i build invocation:
@@ -116,16 +115,20 @@ For building from a local source folder, an example where we clone the seldon-co
 ```bash
 git clone https://github.com/seldonio/seldon-core.git
 cd seldon-core
-s2i build wrappers/s2i/python/test/model-template-app seldonio/seldon-core-s2i-python2:0.3 seldon-core-template-model
+s2i build wrappers/s2i/python/test/model-template-app seldonio/seldon-core-s2i-python2:0.4 seldon-core-template-model
 ```
 
 For more help see:
 
 ```
-s2i usage seldonio/seldon-core-s2i-python2:0.3
-s2i usage seldonio/seldon-core-s2i-python3:0.3
+s2i usage seldonio/seldon-core-s2i-python2:0.4
+s2i usage seldonio/seldon-core-s2i-python3:0.4
 s2i build --help
 ```
+
+# Using with Keras/Tensorflow Models
+
+To ensure Keras models with the Tensorflow backend work correctly you may need to call `_make_predict_function()` on your model after it is loaded. This is because Flask may call the prediction request in a separate thread from the one that initialised your model. See [here](https://github.com/keras-team/keras/issues/6462) for further discussion.
 
 # Reference
 
@@ -163,7 +166,7 @@ Set either to 0 or 1. Default is 0. If set to 1 then your model will be saved pe
  * [Example models](https://github.com/SeldonIO/seldon-core/tree/master/examples/models)
 
 ### ROUTER
-
+ * [Description of routers in Seldon Core](../../components/routers/README.md)
  * [A minimal skeleton for router source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/python/test/router-template-app)
  * [Example routers](https://github.com/SeldonIO/seldon-core/tree/master/examples/routers)
 
@@ -174,6 +177,69 @@ Set either to 0 or 1. Default is 0. If set to 1 then your model will be saved pe
 
 
 # Advanced Usage
+
+## Model Class Arguments
+You can add arguments to your component which will be populated from the ```parameters``` defined in the SeldonDeloyment when you deploy your image on Kubernetes. For example, our [Python TFServing proxy](https://github.com/SeldonIO/seldon-core/tree/master/integrations/tfserving) has the class init method signature defined as below:
+
+```
+class TfServingProxy(object):
+
+def __init__(self,rest_endpoint=None,grpc_endpoint=None,model_name=None,signature_name=None,model_input=None,model_output=None):
+```
+
+These arguments can be set when deploying in a Seldon Deployment. An example can be found in the [MNIST TFServing example](https://github.com/SeldonIO/seldon-core/blob/master/examples/models/tfserving-mnist/tfserving-mnist.ipynb) where the arguments are defined in the [SeldonDeployment](https://github.com/SeldonIO/seldon-core/blob/master/examples/models/tfserving-mnist/mnist_tfserving_deployment.json.template)  which is partly show below:
+
+```
+ "graph": {
+		    "name": "tfserving-proxy",
+		    "endpoint": { "type" : "REST" },
+		    "type": "MODEL",
+		    "children": [],
+		    "parameters":
+		    [
+			{
+			    "name":"grpc_endpoint",
+			    "type":"STRING",
+			    "value":"localhost:8000"
+			},
+			{
+			    "name":"model_name",
+			    "type":"STRING",
+			    "value":"mnist-model"
+			},
+			{
+			    "name":"model_output",
+			    "type":"STRING",
+			    "value":"scores"
+			},
+			{
+			    "name":"model_input",
+			    "type":"STRING",
+			    "value":"images"
+			},
+			{
+			    "name":"signature_name",
+			    "type":"STRING",
+			    "value":"predict_images"
+			}
+		    ]
+},
+```
+
+
+The allowable ```type``` values for the parameters are defined in the [proto buffer definition](https://github.com/SeldonIO/seldon-core/blob/44f7048efd0f6be80a857875058d23efc4221205/proto/seldon_deployment.proto#L117-L131).
+
+
+## Local Python Dependencies
+```from version 0.5-SNAPSHOT```
+
+To use a private repository for installing Python dependencies use the following build command:
+
+```bash
+s2i build -i <python-wheel-folder>:/whl <src-folder> seldonio/seldon-core-s2i-python2:0.5-SNAPSHOT <my-image-name>
+```
+
+This command will look for local Python wheels in the ```<python-wheel-folder>``` and use these before searching PyPI.
 
 ## Custom Metrics
 ```from version 0.3```

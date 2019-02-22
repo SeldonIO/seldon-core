@@ -10,7 +10,8 @@ import logging
 from seldon_core.proto import prediction_pb2, prediction_pb2_grpc
 from seldon_core.microservice import extract_message, sanity_check_request, rest_datadef_to_array, \
     array_to_rest_datadef, grpc_datadef_to_array, array_to_grpc_datadef, \
-    SeldonMicroserviceException, get_custom_tags, get_data_from_json, get_data_from_proto, ANNOTATION_GRPC_MAX_MSG_SIZE
+    SeldonMicroserviceException, get_custom_tags, get_data_from_json, get_data_from_proto, \
+    get_meta_from_json, get_meta_from_proto, ANNOTATION_GRPC_MAX_MSG_SIZE
 from seldon_core.metrics import get_custom_metrics
 
 logger = logging.getLogger(__name__)
@@ -20,16 +21,22 @@ logger = logging.getLogger(__name__)
 # ---------------------------
 
 
-def transform_input(user_model, features, feature_names):
+def transform_input(user_model, features, feature_names, **kwargs):
     if hasattr(user_model, "transform_input"):
-        return user_model.transform_input(features, feature_names)
+        try:
+            return user_model.transform_input(features, feature_names, **kwargs)
+        except TypeError:
+            return user_model.transform_input(features, feature_names)
     else:
         return features
 
 
-def transform_output(user_model, features, feature_names):
+def transform_output(user_model, features, feature_names, **kwargs):
     if hasattr(user_model, "transform_output"):
-        return user_model.transform_output(features, feature_names)
+        try:
+            return user_model.transform_output(features, feature_names, **kwargs)
+        except TypeError:
+            return user_model.transform_output(features, feature_names)
     else:
         return features
 
@@ -80,8 +87,9 @@ def get_rest_microservice(user_model, debug=False):
         else:
             features = get_data_from_json(request)
             names = request.get("data", {}).get("names")
+            meta = get_meta_from_json(request)
 
-            transformed = transform_input(user_model, features, names)
+            transformed = transform_input(user_model, features, names, meta=meta)
             logger.debug("Transformed: %s", transformed)
 
             # If predictions is an numpy array or we used the default data then return as numpy array
@@ -114,8 +122,9 @@ def get_rest_microservice(user_model, debug=False):
         else:
             features = get_data_from_json(request)
             names = request.get("data", {}).get("names")
+            meta = get_meta_from_json(request)
 
-            transformed = transform_output(user_model, features, names)
+            transformed = transform_output(user_model, features, names, meta=meta)
             logger.debug("Transformed: %s", transformed)
 
             if isinstance(transformed, np.ndarray) or "data" in request:
@@ -150,10 +159,11 @@ class SeldonTransformerGRPC(object):
             return self.user_model.transform_input_grpc(request)
         else:
             features = get_data_from_proto(request)
+            meta = get_meta_from_proto(request)
             datadef = request.data
             data_type = request.WhichOneof("data_oneof")
 
-            transformed = transform_input(self.user_model, features, datadef.names)
+            transformed = transform_input(self.user_model, features, datadef.names, meta=meta)
 
             # Construct meta data
             meta = prediction_pb2.Meta()
@@ -184,8 +194,12 @@ class SeldonTransformerGRPC(object):
             return self.user_model.transform_output_grpc(request)
         else:
             features = get_data_from_proto(request)
+            meta = get_meta_from_proto(request)
             datadef = request.data
             data_type = request.WhichOneof("data_oneof")
+
+            transformed = transform_output(
+                self.user_model, features, datadef.names, meta=meta)
 
             # Construct meta data
             meta = prediction_pb2.Meta()
@@ -198,8 +212,6 @@ class SeldonTransformerGRPC(object):
                 metaJson["metrics"] = metrics
             json_format.ParseDict(metaJson, meta)
 
-            transformed = transform_output(
-                self.user_model, features, datadef.names)
 
             if isinstance(transformed, np.ndarray) or data_type == "data":
                 transformed = np.array(transformed)
@@ -216,7 +228,7 @@ class SeldonTransformerGRPC(object):
 
 
 
-def get_grpc_server(user_model, debug=False, annotations={}):
+def get_grpc_server(user_model, debug=False, annotations={}, trace_interceptor=None):
     seldon_model = SeldonTransformerGRPC(user_model)
     options = []
     if ANNOTATION_GRPC_MAX_MSG_SIZE in annotations:
@@ -226,7 +238,11 @@ def get_grpc_server(user_model, debug=False, annotations={}):
 
     server = grpc.server(futures.ThreadPoolExecutor(
         max_workers=10), options=options)
+    if trace_interceptor:
+        from grpc_opentracing.grpcext import intercept_server
+        server = intercept_server(server, trace_interceptor)
+
     prediction_pb2_grpc.add_TransformerServicer_to_server(seldon_model, server)
-    prediction_pb2_grpc.add_OutputTransformerServicer_to_server(seldon_model, server)    
+    prediction_pb2_grpc.add_OutputTransformerServicer_to_server(seldon_model, server)
 
     return server

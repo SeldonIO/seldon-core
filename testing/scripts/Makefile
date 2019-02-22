@@ -4,7 +4,12 @@ build_protos:
 	cd ../../proto/tensorflow && make create_protos
 	cp -vr ../../proto/tensorflow/tensorflow .
 	python -m grpc.tools.protoc -I. --python_out=. --grpc_python_out=. ./proto/prediction.proto
+	cd ../../notebooks && make build_protos
 
 .PHONY: test
-test:
-	PYTHONPATH=../../notebooks pytest -s -W ignore
+test: build_protos
+	pytest -s -W ignore > run.log 2>&1
+
+.PHONY: clean
+clean:
+	rm -f proto/prediction*

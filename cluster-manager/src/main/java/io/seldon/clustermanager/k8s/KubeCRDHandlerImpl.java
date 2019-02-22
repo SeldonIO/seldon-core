@@ -26,6 +26,7 @@ import org.springframework.stereotype.Component;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.UninitializedMessageException;
 
 import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.ApiException;
@@ -83,7 +84,18 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 			logger.info(json);
 			ApiClient client = Config.defaultClient();
 			CustomObjectsApi api = new CustomObjectsApi(client);
-			api.replaceNamespacedCustomObject(GROUP, VERSION, namespace, KIND_PLURAL, seldonDeploymentName,json.getBytes());
+			if (replaceStatusResource)
+			{
+				try 
+				{
+					api.replaceNamespacedCustomObjectStatus(GROUP, VERSION, namespace, KIND_PLURAL, seldonDeploymentName,json.getBytes());
+				} catch (ApiException e) {
+					replaceStatusResource = false; // Stop using the /status endpoint (maybe because the k8s version does not have this <1.10)
+					logger.warn("Failed to update deployment in kubernetes ",e);
+				}
+			}
+			if (!replaceStatusResource)
+				api.replaceNamespacedCustomObject(GROUP, VERSION, namespace, KIND_PLURAL, seldonDeploymentName,json.getBytes());
 		} catch (InvalidProtocolBufferException e) {
 			logger.error("Failed to update deployment in kubernetes ",e);
 		} catch (ApiException e) {
@@ -154,6 +166,11 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 				logger.error("Failed to parse "+json,e);
 				return null;
 			}
+    		catch (UninitializedMessageException e)
+    		{
+    			logger.error("Failed to parse "+json,e);
+				return null;
+    		}
 		} catch (ApiException e) {
 			return null;
 		} catch (IOException e) {
@@ -167,7 +184,7 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
         try
         {
             ApiClient client = k8sClientProvider.getClient();
-            ExtensionsV1beta1Api api = new ExtensionsV1beta1Api(client);
+            ExtensionsV1beta1Api api = k8sApiProvider.getExtensionsV1beta1Api(client);
             ExtensionsV1beta1DeploymentList l =  api.listNamespacedDeployment(namespace, null, null, null, false, Constants.LABEL_SELDON_ID+"="+seldonDeploymentName, null, null, null, false);
             return l;
         } catch (IOException e) {
@@ -184,7 +201,7 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 		try
 		{
 			ApiClient client = k8sClientProvider.getClient();
-			io.kubernetes.client.apis.CoreV1Api api = new CoreV1Api(client);
+			io.kubernetes.client.apis.CoreV1Api api = k8sApiProvider.getCoreV1Api(client);
 			V1ServiceList l = api.listNamespacedService(namespace, null, null, null, false, Constants.LABEL_SELDON_ID+"="+seldonDeploymentName, null, null, null, null);
 			return l;
 		} catch (IOException e) {

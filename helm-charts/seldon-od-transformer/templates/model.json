@@ -1,0 +1,104 @@
+{{- if eq .Values.outlierDetection.type "vae"}}
+{{- $dummy := set . "detector" .Values.outlierDetection.vae -}}
+{{- else if eq .Values.outlierDetection.type "mahalanobis"}}
+{{- $dummy := set . "detector" .Values.outlierDetection.mahalanobis -}}
+{{- else if eq .Values.outlierDetection.type "seq2seq"}}
+{{- $dummy := set . "detector" .Values.outlierDetection.seq2seq -}}
+{{- else if eq .Values.outlierDetection.type "isolationforest"}}
+{{- $dummy := set . "detector" .Values.outlierDetection.isolationforest -}}
+{{- end }}
+{{- $type := .Values.outlierDetection.parameterTypes -}}
+{
+    "apiVersion": "machinelearning.seldon.io/v1alpha2",
+    "kind": "SeldonDeployment",
+    "metadata": {
+        "labels": {
+            "app": "seldon"
+        },
+        "name": "{{ .Release.Name }}"
+    },
+    "spec": {
+        "name": "{{ .Release.Name }}",
+{{- if .Values.oauth.key }}        
+        "oauth_key": "{{ .Values.oauth.key }}",
+        "oauth_secret": "{{ .Values.oauth.secret }}",
+{{- end }}
+        "predictors": [
+            {
+                "componentSpecs": [{
+                    "spec": {
+                        "containers": [
+                            {
+                                "image": "{{ .Values.model.image.name }}",
+                                "imagePullPolicy": "IfNotPresent",
+                                "name": "{{ .Values.model.name }}",
+                                "resources": {
+                                    "requests": {
+                                        "memory": "1Mi"
+                                    }
+                                }
+                            }
+                        ],
+                        "terminationGracePeriodSeconds": 1
+                    }}
+{{- if .Values.outlierDetection.enabled }}   				   
+		    ,
+		    {
+		    "spec": {
+			"containers": [
+			    {
+				"image": {{ .detector.image.name | quote }},
+				"imagePullPolicy": "IfNotPresent",
+				"name": "{{ .Values.outlierDetection.name }}",
+				"resources": {
+				    "requests": {
+					"memory": "1Mi"
+				    }
+				}
+			    }
+			],
+			"terminationGracePeriodSeconds": 20
+		    }
+		    }
+{{- end }}				   
+	        ],
+                "graph":
+{{- if .Values.outlierDetection.enabled }}
+		 {
+		    "name": "{{ .Values.outlierDetection.name }}",
+		    "type": "TRANSFORMER",
+		    "parameters": [
+{{- $lastKey := last (keys (unset .detector "image") | sortAlpha) -}}
+{{- range $key, $val := .detector }}
+			{
+			    "name": {{ $key | quote }},
+			    "value": {{ $val | quote }},
+			    "type": {{ index $type $key | quote }}
+			}{{- if ne $key $lastKey -}}, {{ end }}
+{{- end }}
+		    ],
+		    "endpoint": {
+			"type": "REST"
+		    },
+		     "children": [
+{{- end }}			 
+		{
+                    "children": [],
+                    "name": "{{ .Values.model.name }}",
+                    "endpoint": {
+			"type" : "REST"
+		    },
+                    "type": "MODEL"
+                }
+{{- if .Values.outlierDetection.enabled }}
+		     ]}
+{{- end }},			 			 
+                "name": "{{ .Release.Name }}",
+                "replicas": {{ .Values.replicas }},
+		"labels": {
+		    "version" : "v1"
+		}
+            }
+        ]
+    }
+}
