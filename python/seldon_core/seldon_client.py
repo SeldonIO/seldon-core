@@ -76,13 +76,15 @@ class SeldonClient(object):
     def __init__(self, gateway: str = "ambassador", transport: str = "rest", namespace: str = None, deployment_name: str = None,
                  payload_type: str = "tensor", oauth_key: str = None, oauth_secret: str = None,
                  seldon_rest_endpoint: str = "localhost:8002", seldon_grpc_endpoint: str = "localhost:8004",
-                 ambassador_endpoint: str = "localhost:8003", microservice_endpoint: str = "localhost:5000"):
+                 ambassador_endpoint: str = "localhost:8003", microservice_endpoint: str = "localhost:5000",
+                 grpc_max_send_message_length=4 * 1024 * 1024, grpc_max_receive_message_length=4 * 1024 * 1024):
         """
 
         Parameters
         ----------
         gateway
         transport
+        namespace
         deployment_name
         payload_type
         oauth_key
@@ -91,6 +93,8 @@ class SeldonClient(object):
         seldon_grpc_endpoint
         ambassador_endpoint
         microservice_endpoint
+        grpc_max_send_message_length
+        grpc_max_receive_message_length
         """
         self.config = locals()
         del self.config["self"]
@@ -478,6 +482,7 @@ def microservice_api_grpc_seldon_message(method: str = "predict", microservice_e
                                          shape: Tuple = (1, 1),
                                          data: object = None, payload_type: str = "tensor",
                                          bin_data: Union[bytes, bytearray] = None, str_data: str = None,
+                                         grpc_max_send_message_length=4 * 1024 * 1024, grpc_max_receive_message_length=4 * 1024 * 1024,
                                          **kwargs) -> SeldonClientPrediction:
     """
     Call Seldon microservice gRPC API
@@ -505,7 +510,9 @@ def microservice_api_grpc_seldon_message(method: str = "predict", microservice_e
             data = np.random.rand(*shape)
         datadef = array_to_grpc_datadef(payload_type, data)
         request = prediction_pb2.SeldonMessage(data=datadef)
-    channel = grpc.insecure_channel(microservice_endpoint)
+    channel = grpc.insecure_channel(microservice_endpoint, options=[
+          ('grpc.max_send_message_length', grpc_max_send_message_length),
+          ('grpc.max_receive_message_length', grpc_max_receive_message_length)])
     try:
         if method == "predict":
             stub = prediction_pb2_grpc.ModelStub(channel)
@@ -530,6 +537,7 @@ def microservice_api_grpc_seldon_message(method: str = "predict", microservice_e
 def microservice_api_grpc_aggregate(microservice_endpoint: str = "localhost:5000",
                                     shape: Tuple = (1, 1),
                                     datas: List[np.ndarray] = None, ndatas: int = None, payload_type: str = "tensor",
+                                    grpc_max_send_message_length=4 * 1024 * 1024, grpc_max_receive_message_length=4 * 1024 * 1024,
                                     **kwargs) -> SeldonClientCombine:
     """
     Call Seldon microservice gRPC API aggregate
@@ -563,7 +571,9 @@ def microservice_api_grpc_aggregate(microservice_endpoint: str = "localhost:5000
             msgs.append(prediction_pb2.SeldonMessage(data=datadef))
     request = prediction_pb2.SeldonMessageList(seldonMessages=msgs)
     try:
-        channel = grpc.insecure_channel(microservice_endpoint)
+        channel = grpc.insecure_channel(microservice_endpoint, options=[
+          ('grpc.max_send_message_length', grpc_max_send_message_length),
+          ('grpc.max_receive_message_length', grpc_max_receive_message_length)])
         stub = prediction_pb2_grpc.GenericStub(channel)
         response = stub.Aggregate(request=request)
         return SeldonClientCombine(request, response, True, "")
@@ -573,7 +583,9 @@ def microservice_api_grpc_aggregate(microservice_endpoint: str = "localhost:5000
 
 def microservice_api_grpc_feedback(prediction_request: prediction_pb2.SeldonMessage = None,
                                    prediction_response: prediction_pb2.SeldonMessage = None, reward: float = 0,
-                                   microservice_endpoint: str = None, **kwargs) -> SeldonClientFeedback:
+                                   microservice_endpoint: str = None,
+                                   grpc_max_send_message_length=4 * 1024 * 1024, grpc_max_receive_message_length=4 * 1024 * 1024,
+                                   **kwargs) -> SeldonClientFeedback:
     """
     Call Seldon gRPC
     Parameters
@@ -590,7 +602,9 @@ def microservice_api_grpc_feedback(prediction_request: prediction_pb2.SeldonMess
     """
     request = prediction_pb2.Feedback(request=prediction_request, response=prediction_response, reward=reward)
     try:
-        channel = grpc.insecure_channel(microservice_endpoint)
+        channel = grpc.insecure_channel(microservice_endpoint, options=[
+          ('grpc.max_send_message_length', grpc_max_send_message_length),
+          ('grpc.max_receive_message_length', grpc_max_receive_message_length)])
         stub = prediction_pb2_grpc.GenericStub(channel)
         response = stub.SendFeedback(request=request)
         return SeldonClientFeedback(request, response, True, "")
@@ -695,6 +709,7 @@ def grpc_predict_seldon_oauth(oauth_key: str, oauth_secret: str, namespace: str 
                               seldpon_grpc_endpoint: str = "localhost:8004", shape: Tuple[int] = (1, 1),
                               data: np.ndarray = None, payload_type: str = "tensor",
                               bin_data: Union[bytes, bytearray] = None, str_data: str = None,
+                              grpc_max_send_message_length=4 * 1024 * 1024, grpc_max_receive_message_length=4 * 1024 * 1024,
                               **kwargs) -> SeldonClientPrediction:
     """
     Call Seldon gRPC API Gateway endpoint
@@ -726,7 +741,9 @@ def grpc_predict_seldon_oauth(oauth_key: str, oauth_secret: str, namespace: str 
             data = np.random.rand(*shape)
         datadef = array_to_grpc_datadef(payload_type, data)
         request = prediction_pb2.SeldonMessage(data=datadef)
-    channel = grpc.insecure_channel(seldpon_grpc_endpoint)
+    channel = grpc.insecure_channel(seldpon_grpc_endpoint, options=[
+          ('grpc.max_send_message_length', grpc_max_send_message_length),
+          ('grpc.max_receive_message_length', grpc_max_receive_message_length)])
     stub = prediction_pb2_grpc.SeldonStub(channel)
     metadata = [('oauth_token', token)]
     try:
@@ -876,6 +893,7 @@ def grpc_predict_ambassador(deployment_name: str, namespace: str = None, ambassa
                             data: np.ndarray = None,
                             headers: Dict = None, payload_type: str = "tensor",
                             bin_data: Union[bytes, bytearray] = None, str_data: str = None,
+                            grpc_max_send_message_length=4 * 1024 * 1024, grpc_max_receive_message_length=4 * 1024 * 1024,
                             **kwargs) -> SeldonClientPrediction:
     """
     gRPC request to Seldon Ambassador Ingress
@@ -906,7 +924,9 @@ def grpc_predict_ambassador(deployment_name: str, namespace: str = None, ambassa
             data = np.random.rand(*shape)
         datadef = array_to_grpc_datadef(payload_type, data)
         request = prediction_pb2.SeldonMessage(data=datadef)
-    channel = grpc.insecure_channel(ambassador_endpoint)
+    channel = grpc.insecure_channel(ambassador_endpoint, options=[
+          ('grpc.max_send_message_length', grpc_max_send_message_length),
+          ('grpc.max_receive_message_length', grpc_max_receive_message_length)])
     stub = prediction_pb2_grpc.SeldonStub(channel)
     if namespace is None:
         metadata = [('seldon', deployment_name)]
@@ -974,7 +994,9 @@ def grpc_feedback_seldon_oauth(prediction_request: prediction_pb2.SeldonMessage 
                                prediction_response: prediction_pb2.SeldonMessage = None, reward: float = 0,
                                oauth_key: str = "", oauth_secret: str = "", namespace: str = None,
                                seldon_rest_endpoint: str = "localhost:8002",
-                               seldpon_grpc_endpoint: str = "localhost:8004", **kwargs) -> SeldonClientFeedback:
+                               seldpon_grpc_endpoint: str = "localhost:8004",
+                               grpc_max_send_message_length=4 * 1024 * 1024, grpc_max_receive_message_length=4 * 1024 * 1024,
+                               **kwargs) -> SeldonClientFeedback:
     """
     Send feedback to Seldon API gateway via gRPC
     Parameters
@@ -995,7 +1017,9 @@ def grpc_feedback_seldon_oauth(prediction_request: prediction_pb2.SeldonMessage 
     """
     token = get_token(oauth_key, oauth_secret, namespace, seldon_rest_endpoint)
     request = prediction_pb2.Feedback(request=prediction_request, response=prediction_response, reward=reward)
-    channel = grpc.insecure_channel(seldpon_grpc_endpoint)
+    channel = grpc.insecure_channel(seldpon_grpc_endpoint, options=[
+          ('grpc.max_send_message_length', grpc_max_send_message_length),
+          ('grpc.max_receive_message_length', grpc_max_receive_message_length)])
     stub = prediction_pb2_grpc.SeldonStub(channel)
     metadata = [('oauth_token', token)]
     try:
@@ -1070,7 +1094,9 @@ def grpc_feedback_ambassador(prediction_request: prediction_pb2.SeldonMessage = 
                              prediction_response: prediction_pb2.SeldonMessage = None, reward: float = 0,
                              deployment_name: str = "", namespace: str = None,
                              ambassador_endpoint: str = "localhost:8003",
-                             headers: Dict = None, **kwargs) -> SeldonClientFeedback:
+                             headers: Dict = None,
+                             grpc_max_send_message_length=4 * 1024 * 1024, grpc_max_receive_message_length=4 * 1024 * 1024,
+                             **kwargs) -> SeldonClientFeedback:
     """
 
     Parameters
@@ -1089,7 +1115,9 @@ def grpc_feedback_ambassador(prediction_request: prediction_pb2.SeldonMessage = 
 
     """
     request = prediction_pb2.Feedback(request=prediction_request, response=prediction_response, reward=reward)
-    channel = grpc.insecure_channel(ambassador_endpoint)
+    channel = grpc.insecure_channel(ambassador_endpoint, options=[
+          ('grpc.max_send_message_length', grpc_max_send_message_length),
+          ('grpc.max_receive_message_length', grpc_max_receive_message_length)])
     stub = prediction_pb2_grpc.SeldonStub(channel)
     if namespace is None:
         metadata = [('seldon', deployment_name)]
