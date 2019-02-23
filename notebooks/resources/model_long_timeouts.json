@@ -5,17 +5,16 @@
         "labels": {
             "app": "seldon"
         },
-        "name": "seldon-deployment-example"
+        "name": "model-long-timeout"
     },
     "spec": {
         "annotations": {
-            "project_name": "FX Market Prediction",
             "deployment_version": "v1",
-	    "seldon.io/rest-read-timeout":"10000",
-	    "seldon.io/rest-connection-timeout":"10000",	    
-	    "seldon.io/grpc-read-timeout":"10000"
+	    "seldon.io/rest-read-timeout":"100000",
+	    "seldon.io/rest-connection-timeout":"100000",	    
+	    "seldon.io/grpc-read-timeout":"100000"
         },
-        "name": "test-deployment",
+        "name": "long-to",
         "oauth_key": "oauth-key",
         "oauth_secret": "oauth-secret",
         "predictors": [
@@ -45,7 +44,7 @@
 		    },
                     "type": "MODEL"
                 },
-                "name": "fx-market-predictor",
+                "name": "test",
                 "replicas": 1,
 		"annotations": {
 		    "predictor_version" : "v1"
