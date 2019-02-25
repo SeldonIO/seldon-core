@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+watch -t -n 1 "echo 'Every 1s: Watching Prediction call result' && echo '' && ${STARTUP_DIR}/do-rest-request-LOCALHOST.py"
+
