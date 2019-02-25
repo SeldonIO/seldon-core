@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+source ${STARTUP_DIR}/../settings.sh
+
+KUBECTL="kubectl --context=${KUBE_CONTEXT}"
+
+EXTERNAL_IP=$(${KUBECTL} get svc -n argocd argocd-server -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+ADMIN_PASSWORD=$(${KUBECTL} get pods -n argocd -l app=argocd-server -o name | cut -d'/' -f 2)
+
+echo ""
+echo "argocd login ${EXTERNAL_IP} --name ${KUBE_CONTEXT} --username admin --password ${ADMIN_PASSWORD}"
+echo ""
+
