@@ -32,6 +32,7 @@ setup(name='seldon-core',
       ],
       tests_require=[
           'pytest',
+          'pytest-cov'
       ],
       test_suite='tests',
       entry_points={
