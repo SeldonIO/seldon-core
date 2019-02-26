@@ -173,6 +173,7 @@ Internal Tutorials:
 
 ### Release Highlights
 
+ * [0.2.6 Release Highlights](docs/articles/release-0.2.6.md)
  * [0.2.5 Release Highlights](docs/articles/release-0.2.5.md)
  * [0.2.3 Release Highlights](docs/articles/release-0.2.3.md)
 
@@ -218,7 +219,7 @@ Internal Tutorials:
 
 | Description | Package | Version |
 |-------------|---------|---------|
-| [Seldon Core Wrapper](https://github.com/SeldonIO/seldon-java-wrapper) | [seldon-core-wrapper](https://mvnrepository.com/artifact/io.seldon.wrapper/seldon-core-wrapper) | 0.1.3 |
+| [Seldon Core Wrapper](https://github.com/SeldonIO/seldon-java-wrapper) | [seldon-core-wrapper](https://mvnrepository.com/artifact/io.seldon.wrapper/seldon-core-wrapper) | 0.1.5 |
 | [Seldon Core JPMML](https://github.com/SeldonIO/JPMML-utils) | [seldon-core-jpmml](https://mvnrepository.com/artifact/io.seldon.wrapper/seldon-core-jpmml) | 0.0.1 |
 
 ## Usage Reporting
