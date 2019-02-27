@@ -1,10 +1,14 @@
 from setuptools import find_packages, setup
-from seldon_core import __version__
+import os
+version = {}
+dir_path = os.path.dirname(os.path.realpath(__file__))
+with open(os.path.join(dir_path,"seldon_core/version.py")) as fp:
+    exec(fp.read(), version)
 
 setup(name='seldon-core',
       author='Seldon Technologies Ltd.',
       author_email='hello@seldon.io',
-      version=__version__,
+      version=version['__version__'],
       description='Seldon Core client and microservice wrapper',
       url='https://github.com/SeldonIO/seldon-core',
       license='Apache 2.0',

@@ -1,8 +1,7 @@
-import tensorflow as tf
 from seldon_core.proto import prediction_pb2
 from seldon_core.proto import prediction_pb2_grpc
-from seldon_core.utils import array_to_grpc_datadef, array_to_rest_datadef, seldon_message_to_json, \
-    json_to_seldon_message, json_to_feedback, feedback_to_json, seldon_messages_to_json
+from seldon_core.utils import array_to_grpc_datadef, seldon_message_to_json, \
+    json_to_seldon_message, feedback_to_json, seldon_messages_to_json
 import numpy as np
 import grpc
 import requests
