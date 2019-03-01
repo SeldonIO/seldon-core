@@ -3,11 +3,9 @@ import json
 import numpy as np
 import pickle
 import tensorflow as tf
-from google.protobuf import json_format
-from tensorflow.core.framework.tensor_pb2 import TensorProto
 import base64
 from seldon_core.proto import prediction_pb2
-from seldon_core.microservice import SeldonMicroserviceException
+from seldon_core.flask_utils import SeldonMicroserviceException
 import seldon_core.utils as scu
 
 class UserObject(object):

@@ -7,6 +7,9 @@ import logging
 import multiprocessing as mp
 import sys
 import seldon_core.persistence as persistence
+from distutils.util import strtobool
+from seldon_core.flask_utils import ANNOTATIONS_FILE
+import seldon_core.wrapper as seldon_microservice
 
 logger = logging.getLogger(__name__)
 
@@ -17,10 +20,18 @@ DEFAULT_PORT = 5000
 DEBUG_PARAMETER = "SELDON_DEBUG"
 DEBUG = False
 
-ANNOTATIONS_FILE = "/etc/podinfo/annotations"
-ANNOTATION_GRPC_MAX_MSG_SIZE = 'seldon.io/grpc-max-message-size'
 
 def startServers(target1, target2):
+    """
+    Start servers
+    Parameters
+    ----------
+    target1
+       Main flask process
+    target2
+       Auxilary flask process
+
+    """
     p2 = mp.Process(target=target2)
     p2.deamon = True
     p2.start()
@@ -30,24 +41,17 @@ def startServers(target1, target2):
     p2.join()
 
 
-class SeldonMicroserviceException(Exception):
-    status_code = 400
-
-    def __init__(self, message, status_code=None, payload=None, reason="MICROSERVICE_BAD_DATA"):
-        Exception.__init__(self)
-        self.message = message
-        if status_code is not None:
-            self.status_code = status_code
-        self.payload = payload
-        self.reason = reason
-
-    def to_dict(self):
-        rv = {"status": {"status": 1, "info": self.message,
-                         "code": -1, "reason": self.reason}}
-        return rv
-
-
 def parse_parameters(parameters):
+    """
+    Parse the user object parameters
+    Parameters
+    ----------
+    parameters
+
+    Returns
+    -------
+
+    """
     type_dict = {
         "INT": int,
         "FLOAT": float,
@@ -68,6 +72,12 @@ def parse_parameters(parameters):
 
 
 def load_annotations():
+    """
+    Attempt to load annotations
+    Returns
+    -------
+
+    """
     annotations = {}
     try:
         if os.path.isfile(ANNOTATIONS_FILE):
@@ -132,7 +142,6 @@ def main():
     else:
         user_object = user_class(**parameters)
 
-    import seldon_core.wrapper as seldon_microservice
 
     # set log level for the imported microservice type
     seldon_microservice.logger.setLevel(log_level_num)

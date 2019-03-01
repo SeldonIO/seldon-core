@@ -1,19 +1,21 @@
 import argparse
 import numpy as np
 import json
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Tuple
 from numpy.core.multiarray import ndarray
 from seldon_core.seldon_client import SeldonClient
 import logging
 
 
-def gen_continuous(range: List, n: int) -> np.ndarray:
+def gen_continuous(range: Tuple[Union[float,str],Union[float,str]], n: int) -> np.ndarray:
     """
     Create a continuous feature basedon given range
     Parameters
     ----------
     range
+       A range tuple
     n
+       The number of feature values to create
 
     Returns
     -------
@@ -34,7 +36,9 @@ def reconciliate_cont_type(feature: np.ndarray, dtype) -> np.ndarray:
     Parameters
     ----------
     feature
+       Feature values
     dtype
+       The required type in the contract
 
     Returns
     -------
@@ -53,7 +57,9 @@ def gen_categorical(values:List[str], n: List[int]) -> np.ndarray:
     Parameters
     ----------
     values
+      The list of categorical values
     n
+      The number of features to create
 
     Returns
     -------
@@ -97,6 +103,7 @@ def unfold_contract(contract: Dict) -> Dict:
     Parameters
     ----------
     contract
+       The Seldon Contract
 
     Returns
     -------
@@ -138,6 +145,7 @@ def run_send_feedback(args):
     Parameters
     ----------
     args
+       Command line args
 
     """
     contract = json.load(open(args.contract, 'r'))
@@ -175,6 +183,7 @@ def run_predict(args):
     Parameters
     ----------
     args
+       Command line args
 
     """
     contract = json.load(open(args.contract, 'r'))

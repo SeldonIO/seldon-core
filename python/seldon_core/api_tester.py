@@ -10,6 +10,8 @@ def get_seldon_client(args) -> SeldonClient:
     Parameters
     ----------
     args
+       Command line args
+
 
     Returns
     -------
@@ -38,6 +40,7 @@ def run_send_feedback(args):
     Parameters
     ----------
     args
+       Command line args
 
     """
     contract = json.load(open(args.contract, 'r'))
@@ -64,6 +67,7 @@ def run_predict(args):
     Parameters
     ----------
     args
+       Command line args
 
     """
     contract = json.load(open(args.contract, 'r'))

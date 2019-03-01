@@ -2,7 +2,7 @@ import pytest
 from google.protobuf import json_format
 import json
 
-from seldon_core.microservice import SeldonMicroserviceException
+from seldon_core.flask_utils import SeldonMicroserviceException
 from seldon_core.proto import prediction_pb2, prediction_pb2_grpc
 from seldon_core.metrics import *
 from seldon_core.user_model import client_custom_metrics
