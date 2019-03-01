@@ -1,13 +1,13 @@
 import json
 from google.protobuf import json_format
 from seldon_core.proto import prediction_pb2
-from seldon_core.microservice import SeldonMicroserviceException
+from seldon_core.flask_utils import SeldonMicroserviceException
 import numpy as np
 import sys
 import tensorflow as tf
 from google.protobuf.struct_pb2 import ListValue
 from seldon_core.user_model import client_class_names, client_custom_metrics, client_custom_tags, client_feature_names
-from typing import Tuple, Dict, Union, List
+from typing import Tuple, Dict, Union, List, Optional
 
 
 def json_to_seldon_message(message_json: Dict) -> prediction_pb2.SeldonMessage:
@@ -182,7 +182,7 @@ def get_meta_from_proto(request: prediction_pb2.SeldonMessage) -> Dict:
     return meta
 
 
-def array_to_rest_datadef(data_type: str, array: np.ndarray, names: List[str] = []) -> Dict:
+def array_to_rest_datadef(data_type: str, array: np.ndarray, names: Optional[List[str]] = []) -> Dict:
     """
     Construct a payload Dict from a numpy array
     Parameters
@@ -213,7 +213,7 @@ def array_to_rest_datadef(data_type: str, array: np.ndarray, names: List[str] = 
         datadef["ndarray"] = array.tolist()
     return datadef
 
-def array_to_grpc_datadef(data_type: str, array: np.ndarray, names: List[str] = []) -> prediction_pb2.DefaultData:
+def array_to_grpc_datadef(data_type: str, array: np.ndarray, names: Optional[List[str]] = []) -> prediction_pb2.DefaultData:
     """
     Convert numpy array and optional column names into a SeldonMessage DefaultData proto
     Parameters
@@ -257,13 +257,15 @@ def array_to_grpc_datadef(data_type: str, array: np.ndarray, names: List[str] = 
     return datadef
 
 
-def array_to_list_value(array: np.ndarray, lv: ListValue = None) -> ListValue:
+def array_to_list_value(array: np.ndarray, lv: Optional[ListValue] = None) -> ListValue:
     """
     Construct a proto ListValue from numpy array
     Parameters
     ----------
     array
+       Numpy array
     lv
+       Proto buffer ListValue to extend
 
     Returns
     -------

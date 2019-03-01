@@ -2,12 +2,7 @@ import threading
 import os
 import time
 import logging
-try:
-    # python 2
-    import cPickle as pickle
-except ImportError:
-    # python 3
-    import pickle
+import pickle
 import redis
 
 logger = logging.getLogger(__name__)
@@ -24,6 +19,20 @@ DEFAULT_PUSH_FREQUENCY = 60
 
 
 def restore(user_class, parameters):
+    """
+    Restore sdaved state from Redis
+    Parameters
+    ----------
+    user_class
+       User class
+    parameters
+       The parameters for the class
+
+    Returns
+    -------
+       A restored class or a new one
+
+    """
     logger.info("Restoring saved model from redis")
 
     redis_client = redis.StrictRedis(host=REDIS_HOST, port=REDIS_PORT)
@@ -35,14 +44,23 @@ def restore(user_class, parameters):
         return pickle.loads(saved_state_binary)
 
 
-def persist(user_object, push_frequency=None, debug=False):
+def persist(user_object, push_frequency=None):
+    """
+    Start a thread to oersist a user class to Redis
+    Parameters
+    ----------
+    user_object
+       A user class object
+    push_frequency
+       How often to save state (secs)
+
+    """
 
     if push_frequency is None:
         push_frequency = DEFAULT_PUSH_FREQUENCY
     logger.info("Creating persistence thread, with frequency %s", push_frequency)
     persistence_thread = PersistenceThread(user_object, push_frequency)
     persistence_thread.start()
-
 
 class PersistenceThread(threading.Thread):
 

@@ -1,7 +1,7 @@
 from seldon_core.api_tester import run_predict, run_send_feedback
 from unittest import mock
 from seldon_core.utils import array_to_grpc_datadef, seldon_message_to_json
-from seldon_core.proto import prediction_pb2, prediction_pb2_grpc
+from seldon_core.proto import prediction_pb2
 import numpy as np
 from os.path import dirname, join
 

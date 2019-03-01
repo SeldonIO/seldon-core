@@ -1,7 +1,6 @@
 from seldon_core.metrics import validate_metrics
-from seldon_core.microservice import SeldonMicroserviceException
+from seldon_core.flask_utils import SeldonMicroserviceException
 import json
-from seldon_core.proto import prediction_pb2
 from typing import Dict, List, Union
 import numpy as np
 

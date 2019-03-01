@@ -6,7 +6,7 @@ import numpy as np
 import grpc
 import requests
 from requests.auth import HTTPBasicAuth
-from typing import Tuple, Dict, Union, List
+from typing import Tuple, Dict, Union, List, Optional
 import json
 import logging
 
@@ -28,7 +28,7 @@ class SeldonClientPrediction(object):
     Data class to return from Seldon Client
     """
 
-    def __init__(self, request: Union[prediction_pb2.SeldonMessage, None], response: Union[prediction_pb2.SeldonMessage, None],
+    def __init__(self, request: Optional[prediction_pb2.SeldonMessage], response: Optional[prediction_pb2.SeldonMessage],
                  success: bool = True, msg: str = ""):
         self.request = request
         self.response = response
@@ -41,7 +41,10 @@ class SeldonClientPrediction(object):
 
 
 class SeldonClientFeedback(object):
-    def __init__(self, request: Union[prediction_pb2.Feedback, None], response: Union[prediction_pb2.SeldonMessage, None],
+    """
+    Data class to return from Seldon Client for feedback calls
+    """
+    def __init__(self, request: Union[prediction_pb2.Feedback], response: Union[prediction_pb2.SeldonMessage],
                  success: bool = True,
                  msg: str = ""):
         self.request = request
@@ -55,7 +58,10 @@ class SeldonClientFeedback(object):
 
 
 class SeldonClientCombine(object):
-    def __init__(self, request: Union[prediction_pb2.SeldonMessageList,None], response: Union[prediction_pb2.SeldonMessage, None],
+    """
+    Data class to return from Seldon Client for aggregate calls
+    """
+    def __init__(self, request: Optional[prediction_pb2.SeldonMessageList], response: Optional[prediction_pb2.SeldonMessage],
                  success: bool = True, msg: str = ""):
         self.request = request
         self.response = response
@@ -76,24 +82,37 @@ class SeldonClient(object):
                  payload_type: str = "tensor", oauth_key: str = None, oauth_secret: str = None,
                  seldon_rest_endpoint: str = "localhost:8002", seldon_grpc_endpoint: str = "localhost:8004",
                  ambassador_endpoint: str = "localhost:8003", microservice_endpoint: str = "localhost:5000",
-                 grpc_max_send_message_length=4 * 1024 * 1024, grpc_max_receive_message_length=4 * 1024 * 1024):
+                 grpc_max_send_message_length: int =4 * 1024 * 1024, grpc_max_receive_message_length: int =4 * 1024 * 1024):
         """
 
         Parameters
         ----------
         gateway
+           API Gateway - either ambassador or seldon
         transport
+           API transport - grpc or rest
         namespace
+           k8s namespace of running deployment
         deployment_name
+           name of seldon deployment
         payload_type
+           pyalod - tensor, ndarray or tftensor
         oauth_key
+           OAUTH key (if using seldon api server)
         oauth_secret
+           OAUTH secret (if using seldon api server)
         seldon_rest_endpoint
+           REST endpoint to seldon api server
         seldon_grpc_endpoint
+           gRPC endpoint to seldon api server
         ambassador_endpoint
+           Ambassador endpoint
         microservice_endpoint
+           Running microservice endpoint
         grpc_max_send_message_length
+           Max grpc send message size in bytes
         grpc_max_receive_message_length
+           Max grpc receive message size in bytes
         """
         self.config = locals()
         del self.config["self"]
@@ -107,6 +126,24 @@ class SeldonClient(object):
 
     def _validate_args(self,gateway: str = None, transport: str = None,
                      method: str = None, data: np.ndarray = None, **kwargs):
+        """
+        Internal method to validate parameters
+        Parameters
+        ----------
+        gateway
+           API gateway
+        transport
+           API transport
+        method
+           The method to call
+        data
+           Numpy data to send
+        kwargs
+
+        Returns
+        -------
+
+        """
         if not (gateway == "ambassador" or gateway == "seldon"):
             raise SeldonClientException("Valid values for gateway are 'ambassador' or 'seldon'")
         if not (transport == "rest" or transport == "grpc"):
@@ -130,21 +167,37 @@ class SeldonClient(object):
         Parameters
         ----------
         gateway
+           API Gateway - either ambassador or seldon
         transport
-        deployment_name
-        payload_type
-        oauth_key
-        oauth_secret
-        seldon_rest_endpoint
-        seldon_grpc_endpoint
-        ambassador_endpoint
-        microservice_endpoint
-        method
-        shape
+           API transport - grpc or rest
         namespace
+           k8s namespace of running deployment
+        deployment_name
+           name of seldon deployment
+        payload_type
+           pyalod - tensor, ndarray or tftensor
+        oauth_key
+           OAUTH key (if using seldon api server)
+        oauth_secret
+           OAUTH secret (if using seldon api server)
+        seldon_rest_endpoint
+           REST endpoint to seldon api server
+        seldon_grpc_endpoint
+           gRPC endpoint to seldon api server
+        ambassador_endpoint
+           Ambassador endpoint
+        microservice_endpoint
+           Running microservice endpoint
+        grpc_max_send_message_length
+           Max grpc send message size in bytes
+        grpc_max_receive_message_length
+           Max grpc receive message size in bytes
         data
+           Numpy Array Payload to send
         bin_data
+           Binary payload to send - will override data
         str_data
+           String payload to send - will override data
 
         Returns
         -------
@@ -187,21 +240,41 @@ class SeldonClient(object):
         Parameters
         ----------
         prediction_request
+           Previous prediction request
         prediction_response
+           Previous prediction response
         reward
+           A reward to send in feedback
         gateway
+           API Gateway - either ambassador or seldon
         transport
+           API transport - grpc or rest
         deployment_name
+           name of seldon deployment
         payload_type
+           payload - tensor, ndarray or tftensor
         oauth_key
+           OAUTH key (if using seldon api server)
         oauth_secret
+           OAUTH secret (if using seldon api server)
         seldon_rest_endpoint
+           REST endpoint to seldon api server
         seldon_grpc_endpoint
+           gRPC endpoint to seldon api server
         ambassador_endpoint
+           Ambassador endpoint
         microservice_endpoint
+           Running microservice endpoint
+        grpc_max_send_message_length
+           Max grpc send message size in bytes
+        grpc_max_receive_message_length
+           Max grpc receive message size in bytes
         method
+           The microservice method to call
         shape
+           The shape of the data to send
         namespace
+           k8s namespace of running deployment
 
         Returns
         -------
@@ -243,26 +316,51 @@ class SeldonClient(object):
         Parameters
         ----------
         gateway
+           API Gateway - either ambassador or seldon
         transport
+           API transport - grpc or rest
         deployment_name
+           name of seldon deployment
         payload_type
+           payload - tensor, ndarray or tftensor
         oauth_key
+           OAUTH key (if using seldon api server)
         oauth_secret
+           OAUTH secret (if using seldon api server)
         seldon_rest_endpoint
+           REST endpoint to seldon api server
         seldon_grpc_endpoint
+           gRPC endpoint to seldon api server
         ambassador_endpoint
+           Ambassador endpoint
         microservice_endpoint
+           Running microservice endpoint
+        grpc_max_send_message_length
+           Max grpc send message size in bytes
+        grpc_max_receive_message_length
+           Max grpc receive message size in bytes
         method
+           The microservice method to call
         shape
+           The shape of the data to send
         namespace
+           k8s namespace of running deployment
         data
-        datas
-        ndatas
+           Numpy Array Payload to send
         bin_data
+           Binary payload to send - will override data
         str_data
+           String payload to send - will override data
+        ndatas
+           Multiple numpy arrays to send for aggregation
+        bin_data
+           Binary data payload
+        str_data
+           String data payload
 
         Returns
         -------
+           A prediction result
 
         """
         k = self._gather_args(gateway=gateway, transport=transport, deployment_name=deployment_name,
@@ -306,24 +404,45 @@ class SeldonClient(object):
         Parameters
         ----------
         prediction_request
+           Previous prediction request
         prediction_response
+           Previous prediction response
         reward
+           A reward to send in feedback
         gateway
+           API Gateway - either ambassador or seldon
         transport
+           API transport - grpc or rest
         deployment_name
+           name of seldon deployment
         payload_type
+           payload - tensor, ndarray or tftensor
         oauth_key
+           OAUTH key (if using seldon api server)
         oauth_secret
+           OAUTH secret (if using seldon api server)
         seldon_rest_endpoint
+           REST endpoint to seldon api server
         seldon_grpc_endpoint
+           gRPC endpoint to seldon api server
         ambassador_endpoint
+           Ambassador endpoint
         microservice_endpoint
+           Running microservice endpoint
+        grpc_max_send_message_length
+           Max grpc send message size in bytes
+        grpc_max_receive_message_length
+           Max grpc receive message size in bytes
         method
+           The microservice method to call
         shape
+           The shape of the data to send
         namespace
+           k8s namespace of running deployment
 
         Returns
         -------
+           A client response
 
         """
         k = self._gather_args(gateway=gateway, transport=transport, deployment_name=deployment_name,
@@ -349,12 +468,29 @@ def microservice_api_rest_seldon_message(method: str = "predict", microservice_e
     Parameters
     ----------
     method
+       The microservice method to call
     microservice_endpoint
+       Running microservice endpoint
+    grpc_max_send_message_length
+       Max grpc send message size in bytes
+    grpc_max_receive_message_length
+       Max grpc receive message size in bytes
+    method
+       The microservice method to call
     shape
+       The shape of the data to send
+    namespace
+       k8s namespace of running deployment
+    shape
+       Shape of the data to send
     data
+       Numpy array data to send
     payload_type
+       payload - tensor, ndarray or tftensor
     bin_data
+       Binary data payload
     str_data
+       String data payload
     kwargs
 
     Returns
@@ -387,7 +523,7 @@ def microservice_api_rest_seldon_message(method: str = "predict", microservice_e
         return SeldonClientPrediction(request, None, success, str(e))
 
 
-def microservice_api_rest_aggregate(method: str = "predict", microservice_endpoint: str = "localhost:5000",
+def microservice_api_rest_aggregate(microservice_endpoint: str = "localhost:5000",
                                     shape: Tuple = (1, 1),
                                     datas: List[np.ndarray] = None, ndatas: int = None, payload_type: str = "tensor",
                                     **kwargs) -> SeldonClientCombine:
@@ -395,14 +531,16 @@ def microservice_api_rest_aggregate(method: str = "predict", microservice_endpoi
     Call Seldon microservice REST API aggregate endpoint
     Parameters
     ----------
-    method
     microservice_endpoint
+       Running microservice endpoint
     shape
+       The shape of the data to send
     datas
+       List of Numpy array data to send
     ndatas
+       Multiple numpy arrays to send for aggregation
     payload_type
-    bin_data
-    str_data
+       payload - tensor, ndarray or tftensor
     kwargs
 
     Returns
@@ -450,9 +588,13 @@ def microservice_api_rest_feedback(prediction_request: prediction_pb2.SeldonMess
     Parameters
     ----------
     prediction_request
+       Previous prediction request
     prediction_response
+       Previous prediction response
     reward
+       A reward to send in feedback
     microservice_endpoint
+       Running microservice endpoint
     kwargs
 
     Returns
@@ -481,19 +623,30 @@ def microservice_api_grpc_seldon_message(method: str = "predict", microservice_e
                                          shape: Tuple = (1, 1),
                                          data: object = None, payload_type: str = "tensor",
                                          bin_data: Union[bytes, bytearray] = None, str_data: str = None,
-                                         grpc_max_send_message_length=4 * 1024 * 1024, grpc_max_receive_message_length=4 * 1024 * 1024,
+                                         grpc_max_send_message_length: int = 4 * 1024 * 1024, grpc_max_receive_message_length: int = 4 * 1024 * 1024,
                                          **kwargs) -> SeldonClientPrediction:
     """
     Call Seldon microservice gRPC API
     Parameters
     ----------
     method
+       Method to call
     microservice_endpoint
+       Running microservice endpoint
     shape
+       The shape of the data to send
     data
+       Numpy array data to send
     payload_type
+       payload - tensor, ndarray or tftensor
     bin_data
+       Binary data to send
     str_data
+       String data to send
+    grpc_max_send_message_length
+       Max grpc send message size in bytes
+    grpc_max_receive_message_length
+       Max grpc receive message size in bytes
     kwargs
 
     Returns
@@ -536,17 +689,26 @@ def microservice_api_grpc_seldon_message(method: str = "predict", microservice_e
 def microservice_api_grpc_aggregate(microservice_endpoint: str = "localhost:5000",
                                     shape: Tuple = (1, 1),
                                     datas: List[np.ndarray] = None, ndatas: int = None, payload_type: str = "tensor",
-                                    grpc_max_send_message_length=4 * 1024 * 1024, grpc_max_receive_message_length=4 * 1024 * 1024,
+                                    grpc_max_send_message_length: int = 4 * 1024 * 1024, grpc_max_receive_message_length: int = 4 * 1024 * 1024,
                                     **kwargs) -> SeldonClientCombine:
     """
     Call Seldon microservice gRPC API aggregate
     Parameters
     ----------
     microservice_endpoint
+       Microservice API endpoint
     shape
+       Shape of the data to send
     datas
+       List of Numpy array data to send
     ndatas
+       Multiple numpy arrays to send for aggregation
     payload_type
+       payload - tensor, ndarray or tftensor
+    grpc_max_send_message_length
+       Max grpc send message size in bytes
+    grpc_max_receive_message_length
+       Max grpc receive message size in bytes
     kwargs
 
     Returns
@@ -583,16 +745,20 @@ def microservice_api_grpc_aggregate(microservice_endpoint: str = "localhost:5000
 def microservice_api_grpc_feedback(prediction_request: prediction_pb2.SeldonMessage = None,
                                    prediction_response: prediction_pb2.SeldonMessage = None, reward: float = 0,
                                    microservice_endpoint: str = None,
-                                   grpc_max_send_message_length=4 * 1024 * 1024, grpc_max_receive_message_length=4 * 1024 * 1024,
+                                   grpc_max_send_message_length:int = 4 * 1024 * 1024, grpc_max_receive_message_length: int = 4 * 1024 * 1024,
                                    **kwargs) -> SeldonClientFeedback:
     """
     Call Seldon gRPC
     Parameters
     ----------
     prediction_request
+       Previous prediction request
     prediction_response
+       Previous prediction response
     reward
+       A reward to send in feedback
     microservice_endpoint
+       Running microservice endpoint
     kwargs
 
     Returns
@@ -622,10 +788,13 @@ def get_token(oauth_key: str = "", oauth_secret: str = "", namespace: str = None
     Parameters
     ----------
     oauth_key
+       OAUTH key
     oauth_secret
+       OAUTH secret
     namespace
+       k8s namespace of running deployment
     endpoint
-
+       The host:port of the endpoint for the OAUTH API server
     Returns
     -------
        The OAUTH token
@@ -654,18 +823,28 @@ def rest_predict_seldon_oauth(oauth_key: str, oauth_secret: str, namespace: str 
     Parameters
     ----------
     oauth_key
+       OAUTH key
     oauth_secret
+       OAUTH secret
     namespace
+       k8s namespace of running deployment
     seldon_rest_endpoint
+       Endpoint of REST endpoint
     shape
+       Shape of endpoint
     data
+       Data to send
     payload_type
+       payload - tensor, ndarray or tftensor
     bin_data
+       Binary data to send
     str_data
+       String data to send
     kwargs
 
     Returns
     -------
+       Seldon Client Prediction
 
     """
     token = get_token(oauth_key, oauth_secret, namespace, seldon_rest_endpoint)
@@ -708,22 +887,35 @@ def grpc_predict_seldon_oauth(oauth_key: str, oauth_secret: str, namespace: str 
                               seldpon_grpc_endpoint: str = "localhost:8004", shape: Tuple[int] = (1, 1),
                               data: np.ndarray = None, payload_type: str = "tensor",
                               bin_data: Union[bytes, bytearray] = None, str_data: str = None,
-                              grpc_max_send_message_length=4 * 1024 * 1024, grpc_max_receive_message_length=4 * 1024 * 1024,
+                              grpc_max_send_message_length:int = 4 * 1024 * 1024, grpc_max_receive_message_length:int = 4 * 1024 * 1024,
                               **kwargs) -> SeldonClientPrediction:
     """
     Call Seldon gRPC API Gateway endpoint
     Parameters
     ----------
     oauth_key
+       OAUTH key
     oauth_secret
+       OAUTH secret
     namespace
+       k8s namespace of running deployment
     seldon_rest_endpoint
-    seldpon_grpc_endpoint
+       Endpoint of REST endpoint
     shape
+       Shape of endpoint
     data
+       Data to send
     payload_type
+       payload - tensor, ndarray or tftensor
     bin_data
+       Binary data to send
     str_data
+       String data to send
+    grpc_max_send_message_length
+       Max grpc send message size in bytes
+    grpc_max_receive_message_length
+       Max grpc receive message size in bytes
+    kwargs
 
     Returns
     -------
@@ -763,15 +955,25 @@ def rest_predict_ambassador(deployment_name: str, namespace: str = None, ambassa
     Parameters
     ----------
     deployment_name
+       The name of the Seldon Deployment
     namespace
+       k8s namespace of running deployment
     ambassador_endpoint
+       The host:port of Ambassador
     shape
+       The shape of the data to send
     data
+       The numpy data to send
     headers
+       Headers to add to request
     prefix
+       The prefix path to add to the request
     payload_type
+       payload - tensor, ndarray or tftensor
     bin_data
+       Binary data to send
     str_data
+       String data to send
 
     Returns
     -------
@@ -834,14 +1036,23 @@ def rest_predict_ambassador_basicauth(deployment_name: str, username: str, passw
     Parameters
     ----------
     deployment_name
+       The name of the running deployment
     username
+       Username for basic auth
     password
+       Password for basic auth
     namespace
+       The namespace of the running deployment
     ambassador_endpoint
+       The host:port of ambassador
     shape
+       The shape of data
     data
+       The numpy data to send
     payload_type
+       payload - tensor, ndarray or tftensor
     bin_data
+       Binary data to send
     str_data
 
     Returns
@@ -892,22 +1103,34 @@ def grpc_predict_ambassador(deployment_name: str, namespace: str = None, ambassa
                             data: np.ndarray = None,
                             headers: Dict = None, payload_type: str = "tensor",
                             bin_data: Union[bytes, bytearray] = None, str_data: str = None,
-                            grpc_max_send_message_length=4 * 1024 * 1024, grpc_max_receive_message_length=4 * 1024 * 1024,
+                            grpc_max_send_message_length: int = 4 * 1024 * 1024, grpc_max_receive_message_length: int = 4 * 1024 * 1024,
                             **kwargs) -> SeldonClientPrediction:
     """
     gRPC request to Seldon Ambassador Ingress
     Parameters
     ----------
     deployment_name
+       Deployment name of Seldon Deployment
     namespace
+       The namespace the Seldon Deployment is running in
     ambassador_endpoint
+       The endpoint for Ambassador
     shape
+       The shape of the data
     data
+       The numpy array data to send
     headers
       A Dict of key value pairs to add to gRPC HTTP Headers
     payload_type
+       payload - tensor, ndarray or tftensor
     bin_data
+       Binary data to send
     str_data
+       String data to send
+    grpc_max_send_message_length
+       Max grpc send message size in bytes
+    grpc_max_receive_message_length
+       Max grpc receive message size in bytes
 
     Returns
     -------
@@ -950,12 +1173,19 @@ def rest_feedback_seldon_oauth(prediction_request: prediction_pb2.SeldonMessage 
     Parameters
     ----------
     prediction_request
+       Previous prediction request
     prediction_response
+       Previous prediction response
     reward
+       A reward to send in feedback
     oauth_key
+       OAUTH key
     oauth_secret
+       OAUTH secret
     namespace
+       k8s namespace of running deployment
     seldon_rest_endpoint
+       Endpoint of REST endpoint
     kwargs
 
     Returns
@@ -994,20 +1224,32 @@ def grpc_feedback_seldon_oauth(prediction_request: prediction_pb2.SeldonMessage 
                                oauth_key: str = "", oauth_secret: str = "", namespace: str = None,
                                seldon_rest_endpoint: str = "localhost:8002",
                                seldpon_grpc_endpoint: str = "localhost:8004",
-                               grpc_max_send_message_length=4 * 1024 * 1024, grpc_max_receive_message_length=4 * 1024 * 1024,
+                               grpc_max_send_message_length: int = 4 * 1024 * 1024, grpc_max_receive_message_length: int = 4 * 1024 * 1024,
                                **kwargs) -> SeldonClientFeedback:
     """
     Send feedback to Seldon API gateway via gRPC
     Parameters
     ----------
     prediction_request
+       Previous prediction request
     prediction_response
+       Previous prediction response
     reward
+       A reward to send in feedback
     oauth_key
+       OAUTH key
     oauth_secret
+       OAUTH secret
     namespace
+       k8s namespace of running deployment
     seldon_rest_endpoint
+       Endpoint of REST endpoint
     seldpon_grpc_endpoint
+       Endpoint for Seldon grpc
+    grpc_max_send_message_length
+       Max grpc send message size in bytes
+    grpc_max_receive_message_length
+       Max grpc receive message size in bytes
     kwargs
 
     Returns
@@ -1038,17 +1280,26 @@ def rest_feedback_ambassador(prediction_request: prediction_pb2.SeldonMessage = 
     Parameters
     ----------
     prediction_request
+       Previous prediction request
     prediction_response
+       Previous prediction response
     reward
+       A reward to send in feedback
     deployment_name
+       The name of the running Seldon deployment
     namespace
+       k8s namespace of running deployment
     ambassador_endpoint
+       The ambassador host:port endpoint
     headers
+       Headers to add to the request
     prefix
+      The prefix to add to the request path for Ambassador
     kwargs
 
     Returns
     -------
+      A Seldon Feedback Response
 
     """
     request = prediction_pb2.Feedback(request=prediction_request, response=prediction_response, reward=reward)
@@ -1094,19 +1345,30 @@ def grpc_feedback_ambassador(prediction_request: prediction_pb2.SeldonMessage = 
                              deployment_name: str = "", namespace: str = None,
                              ambassador_endpoint: str = "localhost:8003",
                              headers: Dict = None,
-                             grpc_max_send_message_length=4 * 1024 * 1024, grpc_max_receive_message_length=4 * 1024 * 1024,
+                             grpc_max_send_message_length: int = 4 * 1024 * 1024, grpc_max_receive_message_length: int = 4 * 1024 * 1024,
                              **kwargs) -> SeldonClientFeedback:
     """
 
     Parameters
     ----------
     prediction_request
+       Previous prediction request
     prediction_response
+       Previous prediction response
     reward
+       A reward to send in feedback
     deployment_name
+       The name of the running Seldon deployment
     namespace
+       k8s namespace of running deployment
     ambassador_endpoint
+       The ambassador host:port endpoint
     headers
+       Headers to add to the request
+    grpc_max_send_message_length
+       Max grpc send message size in bytes
+    grpc_max_receive_message_length
+       Max grpc receive message size in bytes
     kwargs
 
     Returns

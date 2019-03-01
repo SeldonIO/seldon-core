@@ -6,7 +6,7 @@ import logging
 from seldon_core.utils import json_to_seldon_message, seldon_message_to_json, json_to_feedback, json_to_seldon_messages
 from seldon_core.flask_utils import get_request
 import seldon_core.seldon_methods
-from seldon_core.microservice import SeldonMicroserviceException, ANNOTATION_GRPC_MAX_MSG_SIZE
+from seldon_core.flask_utils import SeldonMicroserviceException, ANNOTATION_GRPC_MAX_MSG_SIZE
 from seldon_core.proto import prediction_pb2_grpc
 import os
 
