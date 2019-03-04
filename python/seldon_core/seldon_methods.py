@@ -39,7 +39,8 @@ def predict(user_model: SeldonComponent, request: prediction_pb2.SeldonMessage) 
             return construct_response(user_model, False, request, client_response)
 
 
-def send_feedback(user_model: SeldonComponent, request: prediction_pb2.Feedback, predictive_unit_id: str) -> prediction_pb2.SeldonMessage:
+def send_feedback(user_model: SeldonComponent, request: prediction_pb2.Feedback,
+                  predictive_unit_id: str) -> prediction_pb2.SeldonMessage:
     """
 
     Parameters
@@ -112,7 +113,8 @@ def transform_input(user_model: SeldonComponent, request: prediction_pb2.SeldonM
             return construct_response(user_model, True, request, client_response)
 
 
-def transform_output(user_model: SeldonComponent, request: prediction_pb2.SeldonMessage) -> prediction_pb2.SeldonMessage:
+def transform_output(user_model: SeldonComponent,
+                     request: prediction_pb2.SeldonMessage) -> prediction_pb2.SeldonMessage:
     """
 
     Parameters
@@ -172,7 +174,7 @@ def route(user_model: SeldonComponent, request: prediction_pb2.SeldonMessage) ->
             (features, meta, datadef, _) = extract_request_parts(request)
             client_response = client_route(user_model, features, datadef.names)
             if not isinstance(client_response, int):
-                raise SeldonMicroserviceException("Routing response must be int but got "+str(client_response))
+                raise SeldonMicroserviceException("Routing response must be int but got " + str(client_response))
             client_response_arr = np.array([[client_response]])
             return construct_response(user_model, True, request, client_response_arr)
 

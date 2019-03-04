@@ -12,7 +12,8 @@ import os
 
 logger = logging.getLogger(__name__)
 
-PRED_UNIT_ID = os.environ.get("PREDICTIVE_UNIT_ID","0")
+PRED_UNIT_ID = os.environ.get("PREDICTIVE_UNIT_ID", "0")
+
 
 def get_rest_microservice(user_model):
     app = Flask(__name__, static_url_path='')
@@ -89,8 +90,8 @@ def get_rest_microservice(user_model):
         jsonDict = seldon_message_to_json(responseProto)
         return jsonify(jsonDict)
 
-
     return app
+
 
 # ----------------------------
 # GRPC
@@ -104,7 +105,7 @@ class SeldonModelGRPC(object):
         return seldon_core.seldon_methods.predict(self.user_model, request_grpc)
 
     def SendFeedback(self, feedback_grpc, context):
-       return seldon_core.seldon_methods.send_feedback(self.user_model, feedback_grpc, PRED_UNIT_ID)
+        return seldon_core.seldon_methods.send_feedback(self.user_model, feedback_grpc, PRED_UNIT_ID)
 
     def TransformInput(self, request_grpc, context):
         return seldon_core.seldon_methods.transform_input(self.user_model, request_grpc)
@@ -136,8 +137,7 @@ def get_grpc_server(user_model, annotations={}, trace_interceptor=None):
         from grpc_opentracing.grpcext import intercept_server
         server = intercept_server(server, trace_interceptor)
 
-    prediction_pb2_grpc.add_GenericServicer_to_server(seldon_model,server)
-    prediction_pb2_grpc.add_ModelServicer_to_server(seldon_model,server)
+    prediction_pb2_grpc.add_GenericServicer_to_server(seldon_model, server)
+    prediction_pb2_grpc.add_ModelServicer_to_server(seldon_model, server)
 
     return server
-

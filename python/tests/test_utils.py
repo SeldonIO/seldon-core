@@ -8,6 +8,7 @@ from seldon_core.proto import prediction_pb2
 from seldon_core.flask_utils import SeldonMicroserviceException
 import seldon_core.utils as scu
 
+
 class UserObject(object):
     def __init__(self, metrics_ok=True, ret_nparray=False, ret_meta=False):
         self.metrics_ok = metrics_ok
@@ -52,7 +53,7 @@ class UserObject(object):
 def test_create_reponse_nparray():
     user_model = UserObject()
     request = prediction_pb2.SeldonMessage()
-    raw_response = np.array([[1,2,3]])
+    raw_response = np.array([[1, 2, 3]])
     sm = scu.construct_response(user_model, True, request, raw_response)
     assert sm.data.WhichOneof("data_oneof") == "tensor"
     assert sm.data.tensor.values == [1, 2, 3]
@@ -60,28 +61,28 @@ def test_create_reponse_nparray():
 
 def test_create_reponse_ndarray():
     user_model = UserObject()
-    request_data = np.array([[5,6,7]])
-    datadef = scu.array_to_grpc_datadef("ndarray",request_data)
+    request_data = np.array([[5, 6, 7]])
+    datadef = scu.array_to_grpc_datadef("ndarray", request_data)
     request = prediction_pb2.SeldonMessage(data=datadef)
-    raw_response = np.array([[1,2,3]])
+    raw_response = np.array([[1, 2, 3]])
     sm = scu.construct_response(user_model, True, request, raw_response)
     assert sm.data.WhichOneof("data_oneof") == "ndarray"
 
 
 def test_create_reponse_tensor():
     user_model = UserObject()
-    request_data = np.array([[5,6,7]])
-    datadef = scu.array_to_grpc_datadef("tensor",request_data)
+    request_data = np.array([[5, 6, 7]])
+    datadef = scu.array_to_grpc_datadef("tensor", request_data)
     request = prediction_pb2.SeldonMessage(data=datadef)
-    raw_response = np.array([[1,2,3]])
+    raw_response = np.array([[1, 2, 3]])
     sm = scu.construct_response(user_model, True, request, raw_response)
     assert sm.data.WhichOneof("data_oneof") == "tensor"
 
 
 def test_create_response_strdata():
     user_model = UserObject()
-    request_data = np.array([[5,6,7]])
-    datadef = scu.array_to_grpc_datadef("ndarray",request_data)
+    request_data = np.array([[5, 6, 7]])
+    datadef = scu.array_to_grpc_datadef("ndarray", request_data)
     request = prediction_pb2.SeldonMessage(data=datadef)
     raw_response = "hello world"
     sm = scu.construct_response(user_model, True, request, raw_response)
@@ -91,24 +92,25 @@ def test_create_response_strdata():
 
 def test_create_reponse_list():
     user_model = UserObject()
-    request_data = np.array([[5,6,7]])
-    datadef = scu.array_to_grpc_datadef("tensor",request_data)
+    request_data = np.array([[5, 6, 7]])
+    datadef = scu.array_to_grpc_datadef("tensor", request_data)
     request = prediction_pb2.SeldonMessage(data=datadef)
-    raw_response = ["one","two","three"]
+    raw_response = ["one", "two", "three"]
     sm = scu.construct_response(user_model, True, request, raw_response)
     assert sm.data.WhichOneof("data_oneof") == "ndarray"
 
 
 def test_create_reponse_binary():
     user_model = UserObject()
-    request_data = np.array([[5,6,7]])
-    datadef = scu.array_to_grpc_datadef("tensor",request_data)
+    request_data = np.array([[5, 6, 7]])
+    datadef = scu.array_to_grpc_datadef("tensor", request_data)
     request = prediction_pb2.SeldonMessage(data=datadef)
     raw_response = b"binary"
     sm = scu.construct_response(user_model, True, request, raw_response)
     assert sm.data.WhichOneof("data_oneof") == None
     assert len(sm.strData) == 0
     assert len(sm.binData) > 0
+
 
 def test_json_to_seldon_message_normal_data():
     data = {"data": {"tensor": {"shape": [1, 1], "values": [1]}}}
@@ -165,12 +167,13 @@ def test_json_to_seldon_message_bad_data():
         requestProto = scu.json_to_seldon_message(data)
 
 
-
 def test_json_to_feedback():
-    data = {"request":{"data": {"tensor": {"shape": [1, 1], "values": [1]}}},"response":{"data":{"tensor":{"shape":[1, 1],"values":[2]}}},"reward":1.0}
+    data = {"request": {"data": {"tensor": {"shape": [1, 1], "values": [1]}}},
+            "response": {"data": {"tensor": {"shape": [1, 1], "values": [2]}}}, "reward": 1.0}
     requestProto = scu.json_to_feedback(data)
     assert requestProto.request.data.tensor.values == [1.0]
     assert requestProto.response.data.tensor.values == [2.0]
+
 
 def test_json_to_feedback_bad_data():
     with pytest.raises(SeldonMicroserviceException):
@@ -180,7 +183,8 @@ def test_json_to_feedback_bad_data():
 
 
 def test_json_to_seldon_messages():
-    data = {"seldonMessages":[{"data": {"tensor": {"shape": [1, 1], "values": [1]}}},{"data": {"tensor": {"shape": [1, 1], "values": [2]}}}]}
+    data = {"seldonMessages": [{"data": {"tensor": {"shape": [1, 1], "values": [1]}}},
+                               {"data": {"tensor": {"shape": [1, 1], "values": [2]}}}]}
     requestProto = scu.json_to_seldon_messages(data)
     assert requestProto.seldonMessages[0].data.tensor.values == [1]
     assert requestProto.seldonMessages[1].data.tensor.values == [2]
@@ -198,6 +202,7 @@ def test_seldon_message_to_json():
     request = prediction_pb2.SeldonMessage(data=datadef)
     dict = scu.seldon_message_to_json(request)
     assert dict["data"]["tensor"]["values"] == [1, 2]
+
 
 def test_get_data_from_proto_tensor():
     arr = np.array([1, 2])

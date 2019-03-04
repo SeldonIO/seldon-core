@@ -9,6 +9,7 @@ from seldon_core.wrapper import get_rest_microservice, SeldonModelGRPC, get_grpc
 from seldon_core.proto import prediction_pb2
 from seldon_core.user_model import SeldonComponent
 
+
 class UserObject(SeldonComponent):
     def __init__(self, metrics_ok=True, ret_nparray=False, ret_meta=False):
         self.metrics_ok = metrics_ok

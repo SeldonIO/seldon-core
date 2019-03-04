@@ -1,10 +1,11 @@
 from flask import request
 import json
+from typing import Dict
 
 
-def get_request():
+def get_request() -> Dict:
     """
-    Parse a request to get JSOn dict
+    Parse a request to get JSON dict
 
     Returns
     -------

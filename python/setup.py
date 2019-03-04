@@ -1,8 +1,9 @@
 from setuptools import find_packages, setup
 import os
+
 version = {}
 dir_path = os.path.dirname(os.path.realpath(__file__))
-with open(os.path.join(dir_path,"seldon_core/version.py")) as fp:
+with open(os.path.join(dir_path, "seldon_core/version.py")) as fp:
     exec(fp.read(), version)
 
 setup(name='seldon-core',
@@ -17,6 +18,7 @@ setup(name='seldon-core',
       setup_requires=[
           'pytest-runner'
       ],
+      python_requires='>3.4',
       install_requires=[
           'flask',
           'flask-cors',
@@ -42,7 +44,7 @@ setup(name='seldon-core',
       entry_points={
           'console_scripts': [
               'seldon-core-microservice = seldon_core.microservice:main',
-              'seldon-core-tester = seldon_core.microservice_tester:main',              
+              'seldon-core-tester = seldon_core.microservice_tester:main',
               'seldon-core-microservice-tester = seldon_core.microservice_tester:main',
               'seldon-core-api-tester = seldon_core.api_tester:main',
           ],

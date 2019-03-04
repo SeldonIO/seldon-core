@@ -4,6 +4,7 @@ from seldon_core.seldon_client import SeldonClient
 from seldon_core.microservice_tester import unfold_contract, generate_batch
 import logging
 
+
 def get_seldon_client(args) -> SeldonClient:
     """
     Get the appropriate Seldon Client basedon args
@@ -26,11 +27,13 @@ def get_seldon_client(args) -> SeldonClient:
         else:
             seldon_grpc_endpoint = None
             seldon_rest_endpoint = endpoint
-        sc = SeldonClient(gateway="seldon",seldon_rest_endpoint=seldon_rest_endpoint, seldon_grpc_endpoint=seldon_grpc_endpoint,
+        sc = SeldonClient(gateway="seldon", seldon_rest_endpoint=seldon_rest_endpoint,
+                          seldon_grpc_endpoint=seldon_grpc_endpoint,
                           oauth_key=args.oauth_key, oauth_secret=args.oauth_secret)
     else:
         ambassador_endpoint = endpoint
-        sc = SeldonClient(gateway="ambassador",ambassador_endpoint=ambassador_endpoint, deployment_name=args.deployment,namespace=args.namespace)
+        sc = SeldonClient(gateway="ambassador", ambassador_endpoint=ambassador_endpoint,
+                          deployment_name=args.deployment, namespace=args.namespace)
     return sc
 
 
@@ -54,7 +57,9 @@ def run_send_feedback(args):
     for i in range(args.n_requests):
         batch = generate_batch(contract, args.batch_size, 'features')
         response_predict = sc.predict(data=batch, deployment_name=args.deployment)
-        response_feedback = sc.feedback(prediction_request=response_predict.request, prediction_response=response_predict.response, reward=1.0,deployment_name=args.deployment,transport=transport)
+        response_feedback = sc.feedback(prediction_request=response_predict.request,
+                                        prediction_response=response_predict.response, reward=1.0,
+                                        deployment_name=args.deployment, transport=transport)
         if args.prnt:
             print("RECEIVED RESPONSE:")
             print(response_feedback)
@@ -102,7 +107,7 @@ def main():
     parser.add_argument("--grpc", action="store_true")
     parser.add_argument("-t", "--tensor", action="store_true")
     parser.add_argument("-p", "--prnt", action="store_true", help="Prints requests and responses")
-    parser.add_argument("--log-level", type=str, choices=["DEBUG","INFO","ERROR"], default="ERROR")
+    parser.add_argument("--log-level", type=str, choices=["DEBUG", "INFO", "ERROR"], default="ERROR")
     parser.add_argument("--namespace", type=str)
     parser.add_argument("--oauth-port", type=int)
     parser.add_argument("--oauth-key")
@@ -117,8 +122,6 @@ def main():
     else:
         log_level = logging.ERROR
     logging.basicConfig(level=log_level, format=LOG_FORMAT)
-
-
 
     if args.endpoint == "predict":
         run_predict(args)
