@@ -41,6 +41,10 @@ uninstall:
 test:
 	python setup.py test
 
+.PHONY: type_check
+type_check:
+	mypy --ignore-missing-imports --no-strict-optional seldon_core
+
 .PHONY: build_pypi
 build_pypi:
 	python setup.py sdist bdist_wheel

@@ -110,14 +110,14 @@ def unfold_contract(contract: Dict) -> Dict:
        Full contract
 
     """
-    unfolded_contract = {}
+    unfolded_contract : Dict = {}
     unfolded_contract["targets"] = []
     unfolded_contract["features"] = []
 
     for feature in contract["features"]:
         if feature.get("repeat") is not None:
             for i in range(feature.get("repeat")):
-                new_feature = {}
+                new_feature: Dict = {}
                 new_feature.update(feature)
                 new_feature["name"] = feature["name"] + str(i + 1)
                 del new_feature["repeat"]
@@ -128,7 +128,7 @@ def unfold_contract(contract: Dict) -> Dict:
     for target in contract["targets"]:
         if target.get("repeat") is not None:
             for i in range(target.get("repeat")):
-                new_target = {}
+                new_target: Dict = {}
                 new_target.update(target)
                 new_target["name"] = target["name"] + ":" + str(i)
                 del new_target["repeat"]

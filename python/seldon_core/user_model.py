@@ -1,10 +1,83 @@
 from seldon_core.metrics import validate_metrics
 from seldon_core.flask_utils import SeldonMicroserviceException
 import json
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Iterable
 import numpy as np
+from seldon_core.proto import prediction_pb2
 
-def client_custom_tags(user_model: object) -> Dict:
+
+class SeldonComponent(object):
+
+    def __init__(self):
+        """
+        Set deprecated methods
+        """
+        self.predict_rest = None
+        self.predict_grpc = None
+        self.route_rest = None
+        self.route_grpc = None
+        self.transform_input_rest = None
+        self.transform_input_grpc = None
+        self.transform_output_rest = None
+        self.transform_output_grpc = None
+        self.aggregate_rest = None
+        self.aggregate_grpc = None
+        self.send_feedback_rest = None
+        self.send_feedback_grpc = None
+
+    def tags(self) -> Dict:
+        raise NotImplementedError
+
+    def class_names(self) -> Iterable[str]:
+        raise NotImplementedError
+
+    def predict(self, X: np.ndarray, names: Iterable[str], meta: Dict = None):
+        raise NotImplementedError
+
+    def predict_raw(self, msg: prediction_pb2.SeldonMessage) -> prediction_pb2.SeldonMessage:
+        raise NotImplementedError
+
+    def send_feedback_raw(self, feedback: prediction_pb2.Feedback) -> prediction_pb2.SeldonMessage:
+        raise NotImplementedError
+
+    def transform_input(self, X: np.ndarray, names: Iterable[str], meta: Dict = None):
+        raise NotImplementedError
+
+    def transform_input_raw(self, msg: prediction_pb2.SeldonMessage) -> prediction_pb2.SeldonMessage:
+        raise NotImplementedError
+
+    def transform_output(self, X: np.ndarray, names: Iterable[str], meta: Dict = None):
+        raise NotImplementedError
+
+    def transform_output_raw(self, msg: prediction_pb2.SeldonMessage) -> prediction_pb2.SeldonMessage:
+        raise NotImplementedError
+
+    def metrics(self) -> List[Dict]:
+        raise NotImplementedError
+
+    def feature_names(self) -> Iterable[str]:
+        raise NotImplementedError
+
+    def send_feedback(self, features: Union[np.ndarray, str, bytes], feature_names: Iterable[str], reward: float,
+                      truth: Union[np.ndarray, str, bytes], routing: Union[int, None]) -> Union[
+        np.ndarray, List, str, bytes, None]:
+        raise NotImplementedError
+
+    def route(self, features: Union[np.ndarray, str, bytes], feature_names: Iterable[str]) -> int:
+        raise NotImplementedError
+
+    def route_raw(self, msg: prediction_pb2.SeldonMessage) -> prediction_pb2.SeldonMessage:
+        raise NotImplementedError
+
+    def aggregate(self, features_list: List[Union[np.ndarray, str, bytes]], feature_names_list: List) -> Union[
+        np.ndarray, List, str, bytes]:
+        raise NotImplementedError
+
+    def aggregate_raw(self, msgs: prediction_pb2.SeldonMessageList) -> prediction_pb2.SeldonMessage:
+        raise NotImplementedError
+
+
+def client_custom_tags(user_model: SeldonComponent) -> Dict:
     """
     Get tags from user model
     Parameters
@@ -16,13 +89,13 @@ def client_custom_tags(user_model: object) -> Dict:
        Dictionary of key value pairs
 
     """
-    if hasattr(user_model, "tags"):
+    try:
         return user_model.tags()
-    else:
+    except (NotImplementedError, AttributeError):
         return {}
 
 
-def client_class_names(user_model: object, predictions: np.ndarray) -> List[str]:
+def client_class_names(user_model: SeldonComponent, predictions: np.ndarray) -> Iterable[str]:
     '''
     Get class names from user model
     Parameters
@@ -36,16 +109,17 @@ def client_class_names(user_model: object, predictions: np.ndarray) -> List[str]
        Class names
     '''
     if len(predictions.shape) > 1:
-        if hasattr(user_model, "class_names"):
-            return user_model.class_names
-        else:
+        try:
+            return user_model.class_names()
+        except (NotImplementedError, AttributeError):
             n_targets = predictions.shape[1]
             return ["t:{}".format(i) for i in range(n_targets)]
     else:
         return []
 
 
-def client_predict(user_model: object, features: Union[np.ndarray,str,bytes], feature_names: List, **kwargs: Dict) -> Union[np.ndarray,List,str,bytes]:
+def client_predict(user_model: SeldonComponent, features: Union[np.ndarray, str, bytes], feature_names:Iterable[str],
+                   **kwargs: Dict) -> Union[np.ndarray, List, str, bytes]:
     """
     Get prediction from user model
     Parameters
@@ -62,16 +136,17 @@ def client_predict(user_model: object, features: Union[np.ndarray,str,bytes], fe
     -------
        A prediction from the user model
     """
-    if hasattr(user_model,"predict"):
+    try:
         try:
             return user_model.predict(features, feature_names, **kwargs)
         except TypeError:
             return user_model.predict(features, feature_names)
-    else:
+    except (NotImplementedError, AttributeError):
         return []
 
 
-def client_transform_input(user_model: object, features: Union[np.ndarray,str,bytes], feature_names: List, **kwargs: Dict) -> Union[np.ndarray,List,str,bytes]:
+def client_transform_input(user_model: SeldonComponent, features: Union[np.ndarray, str, bytes],
+                           feature_names: Iterable[str], **kwargs: Dict) -> Union[np.ndarray, List, str, bytes]:
     """
     Transform data with user model
     Parameters
@@ -90,16 +165,17 @@ def client_transform_input(user_model: object, features: Union[np.ndarray,str,by
        Transformed data
 
     """
-    if hasattr(user_model, "transform_input"):
+    try:
         try:
             return user_model.transform_input(features, feature_names, **kwargs)
         except TypeError:
             return user_model.transform_input(features, feature_names)
-    else:
+    except (NotImplementedError, AttributeError):
         return features
 
 
-def client_transform_output(user_model: object, features: Union[np.ndarray,str,bytes], feature_names: List, **kwargs: Dict) -> Union[np.ndarray,List,str,bytes]:
+def client_transform_output(user_model: SeldonComponent, features: Union[np.ndarray, str, bytes],
+                            feature_names: Iterable[str], **kwargs: Dict) -> Union[np.ndarray, List, str, bytes]:
     """
     Transform output
     Parameters
@@ -117,16 +193,16 @@ def client_transform_output(user_model: object, features: Union[np.ndarray,str,b
        Transformed data
 
     """
-    if hasattr(user_model, "transform_output"):
+    try:
         try:
             return user_model.transform_output(features, feature_names, **kwargs)
         except TypeError:
             return user_model.transform_output(features, feature_names)
-    else:
+    except (NotImplementedError, AttributeError):
         return features
 
 
-def client_custom_metrics(user_model: object) -> List[Dict]:
+def client_custom_metrics(user_model: SeldonComponent) -> List[Dict]:
     """
     Get custom metrics
     Parameters
@@ -139,18 +215,18 @@ def client_custom_metrics(user_model: object) -> List[Dict]:
        A list of custom metrics
 
     """
-    if hasattr(user_model, "metrics"):
+    try:
         metrics = user_model.metrics()
         if not validate_metrics(metrics):
-            jStr = json.dumps(metrics)
+            j_str = json.dumps(metrics)
             raise SeldonMicroserviceException(
-                "Bad metric created during request: " + jStr, reason="MICROSERVICE_BAD_METRIC")
+                "Bad metric created during request: " + j_str, reason="MICROSERVICE_BAD_METRIC")
         return metrics
-    else:
+    except (NotImplementedError, AttributeError):
         return []
 
 
-def client_feature_names(user_model: object, original: List) -> List:
+def client_feature_names(user_model: SeldonComponent, original: Iterable[str]) -> Iterable[str]:
     """
     Get feature names for user model
     Parameters
@@ -163,13 +239,15 @@ def client_feature_names(user_model: object, original: List) -> List:
     -------
        A list if feature names
     """
-    if hasattr(user_model, "feature_names"):
-        return user_model.feature_names
-    else:
+    try:
+        return user_model.feature_names()
+    except (NotImplementedError, AttributeError):
         return original
 
 
-def client_send_feedback(user_model: object, features: Union[np.ndarray,str,bytes], feature_names: List, reward: float, truth: Union[np.ndarray,str,bytes], routing: Union[int,None]) -> Union[np.ndarray,List,str,bytes,None]:
+def client_send_feedback(user_model: SeldonComponent, features: Union[np.ndarray, str, bytes], feature_names: Iterable[str],
+                         reward: float, truth: Union[np.ndarray, str, bytes], routing: Union[int, None]) \
+        -> Union[np.ndarray, List, str, bytes, None]:
     """
     Feedback to user model
     Parameters
@@ -192,11 +270,13 @@ def client_send_feedback(user_model: object, features: Union[np.ndarray,str,byte
        Optional payload
 
     """
-    if hasattr(user_model, "send_feedback"):
+    try:
         return user_model.send_feedback(features, feature_names, reward, truth, routing=routing)
+    except (NotImplementedError, AttributeError):
+        return None
 
 
-def client_route(user_model: object, features: Union[np.ndarray,str,bytes], feature_names: List) -> int:
+def client_route(user_model: SeldonComponent, features: Union[np.ndarray, str, bytes], feature_names: Iterable[str]) -> int:
     """
     Gte routing from user model
     Parameters
@@ -212,13 +292,14 @@ def client_route(user_model: object, features: Union[np.ndarray,str,bytes], feat
     -------
        Routing index for one of children
     """
-    if hasattr(user_model, "route"):
+    try:
         return user_model.route(features, feature_names)
-    else:
+    except (NotImplementedError, AttributeError):
         return -1
 
 
-def client_aggregate(user_model: object, features_list: List[Union[np.ndarray,str,bytes]], feature_names_list: List) -> Union[np.ndarray,List,str,bytes]:
+def client_aggregate(user_model: SeldonComponent, features_list: List[Union[np.ndarray, str, bytes]],
+                     feature_names_list: List) -> Union[np.ndarray, List, str, bytes]:
     """
     Aggregate payloads
     Parameters
@@ -233,7 +314,7 @@ def client_aggregate(user_model: object, features_list: List[Union[np.ndarray,st
     -------
        An aggrehated payload
     """
-    if hasattr(user_model, "aggregate"):
+    try:
         return user_model.aggregate(features_list, feature_names_list)
-    else:
+    except (NotImplementedError, AttributeError):
         return features_list[0]
