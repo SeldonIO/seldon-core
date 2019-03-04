@@ -44,7 +44,7 @@ class SeldonClientFeedback(object):
     """
     Data class to return from Seldon Client for feedback calls
     """
-    def __init__(self, request: Union[prediction_pb2.Feedback], response: Union[prediction_pb2.SeldonMessage],
+    def __init__(self, request: Optional[prediction_pb2.Feedback], response: Optional[prediction_pb2.SeldonMessage],
                  success: bool = True,
                  msg: str = ""):
         self.request = request
@@ -667,8 +667,8 @@ def microservice_api_grpc_seldon_message(method: str = "predict", microservice_e
           ('grpc.max_receive_message_length', grpc_max_receive_message_length)])
     try:
         if method == "predict":
-            stub = prediction_pb2_grpc.ModelStub(channel)
-            response = stub.Predict(request=request)
+            stub_model = prediction_pb2_grpc.ModelStub(channel)
+            response = stub_model.Predict(request=request)
         elif method == "transform-input":
             stub = prediction_pb2_grpc.GenericStub(channel)
             response = stub.TransformInput(request=request)
@@ -884,7 +884,7 @@ def rest_predict_seldon_oauth(oauth_key: str, oauth_secret: str, namespace: str 
 
 def grpc_predict_seldon_oauth(oauth_key: str, oauth_secret: str, namespace: str = None,
                               seldon_rest_endpoint: str = "localhost:8002",
-                              seldpon_grpc_endpoint: str = "localhost:8004", shape: Tuple[int] = (1, 1),
+                              seldpon_grpc_endpoint: str = "localhost:8004", shape: Tuple[int,int] = (1, 1),
                               data: np.ndarray = None, payload_type: str = "tensor",
                               bin_data: Union[bytes, bytearray] = None, str_data: str = None,
                               grpc_max_send_message_length:int = 4 * 1024 * 1024, grpc_max_receive_message_length:int = 4 * 1024 * 1024,
@@ -945,7 +945,7 @@ def grpc_predict_seldon_oauth(oauth_key: str, oauth_secret: str, namespace: str 
 
 
 def rest_predict_ambassador(deployment_name: str, namespace: str = None, ambassador_endpoint: str = "localhost:8003",
-                            shape: Tuple[int] = (1, 1),
+                            shape: Tuple[int,int] = (1, 1),
                             data: np.ndarray = None, headers: Dict = None, prefix: str = None,
                             payload_type: str = "tensor",
                             bin_data: Union[bytes, bytearray] = None, str_data: str = None,
@@ -1028,7 +1028,7 @@ def rest_predict_ambassador(deployment_name: str, namespace: str = None, ambassa
 
 def rest_predict_ambassador_basicauth(deployment_name: str, username: str, password: str, namespace: str = None,
                                       ambassador_endpoint: str = "localhost:8003",
-                                      shape: Tuple[int] = (1, 1), data: np.ndarray = None, payload_type: str = "tensor",
+                                      shape: Tuple[int,int] = (1, 1), data: np.ndarray = None, payload_type: str = "tensor",
                                       bin_data: Union[bytes, bytearray] = None, str_data: str = None,
                                       **kwargs) -> SeldonClientPrediction:
     """
@@ -1099,7 +1099,7 @@ def rest_predict_ambassador_basicauth(deployment_name: str, username: str, passw
 
 
 def grpc_predict_ambassador(deployment_name: str, namespace: str = None, ambassador_endpoint: str = "localhost:8003",
-                            shape: Tuple[int] = (1, 1),
+                            shape: Tuple[int,int] = (1, 1),
                             data: np.ndarray = None,
                             headers: Dict = None, payload_type: str = "tensor",
                             bin_data: Union[bytes, bytearray] = None, str_data: str = None,

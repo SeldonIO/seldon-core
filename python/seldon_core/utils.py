@@ -6,8 +6,8 @@ import numpy as np
 import sys
 import tensorflow as tf
 from google.protobuf.struct_pb2 import ListValue
-from seldon_core.user_model import client_class_names, client_custom_metrics, client_custom_tags, client_feature_names
-from typing import Tuple, Dict, Union, List, Optional
+from seldon_core.user_model import client_class_names, client_custom_metrics, client_custom_tags, client_feature_names, SeldonComponent
+from typing import Tuple, Dict, Union, List, Optional, Iterable
 
 
 def json_to_seldon_message(message_json: Dict) -> prediction_pb2.SeldonMessage:
@@ -196,7 +196,7 @@ def array_to_rest_datadef(data_type: str, array: np.ndarray, names: Optional[Lis
        Dict representing Seldon payload
 
     """
-    datadef = {"names": names}
+    datadef: Dict = {"names": names}
     if data_type == "tensor":
         datadef["tensor"] = {
             "shape": array.shape,
@@ -213,7 +213,7 @@ def array_to_rest_datadef(data_type: str, array: np.ndarray, names: Optional[Lis
         datadef["ndarray"] = array.tolist()
     return datadef
 
-def array_to_grpc_datadef(data_type: str, array: np.ndarray, names: Optional[List[str]] = []) -> prediction_pb2.DefaultData:
+def array_to_grpc_datadef(data_type: str, array: np.ndarray, names: Optional[Iterable[str]] = []) -> prediction_pb2.DefaultData:
     """
     Convert numpy array and optional column names into a SeldonMessage DefaultData proto
     Parameters
@@ -282,7 +282,7 @@ def array_to_list_value(array: np.ndarray, lv: Optional[ListValue] = None) -> Li
     return lv
 
 
-def construct_response(user_model: object, is_request: bool, client_request: prediction_pb2.SeldonMessage, client_raw_response: Union[np.ndarray,str,bytes]) -> prediction_pb2.SeldonMessage:
+def construct_response(user_model: SeldonComponent, is_request: bool, client_request: prediction_pb2.SeldonMessage, client_raw_response: Union[np.ndarray,str,bytes]) -> prediction_pb2.SeldonMessage:
     """
 
     Parameters
@@ -303,7 +303,7 @@ def construct_response(user_model: object, is_request: bool, client_request: pre
     """
     data_type = client_request.WhichOneof("data_oneof")
     meta = prediction_pb2.Meta()
-    meta_json = {}
+    meta_json: Dict = {}
     tags = client_custom_tags(user_model)
     if tags:
         meta_json["tags"] = tags

@@ -71,6 +71,27 @@ class UserObjectLowLevelGrpc(object):
     def send_feedback_grpc(self, request):
         print("Feedback called")
 
+
+class UserObjectLowLevelRaw(object):
+    def __init__(self, metrics_ok=True, ret_nparray=False):
+        self.metrics_ok = metrics_ok
+        self.ret_nparray = ret_nparray
+        self.nparray = np.array([1, 2, 3])
+
+    def route_raw(self, request):
+        arr = np.array([1])
+        datadef = prediction_pb2.DefaultData(
+            tensor=prediction_pb2.Tensor(
+                shape=(1, 1),
+                values=arr
+            )
+        )
+        request = prediction_pb2.SeldonMessage(data=datadef)
+        return request
+
+    def send_feedback_raw(self, request):
+        print("Feedback called")
+
 def test_router_ok():
     user_object = UserObject()
     app = get_rest_microservice(user_object)
@@ -93,6 +114,16 @@ def test_router_lowlevel_ok():
     print(j)
     assert rv.status_code == 200
     assert j["data"]["ndarray"] == [[1]]
+
+def test_router_lowlevel_raw_ok():
+    user_object = UserObjectLowLevelRaw()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+    rv = client.get('/route?json={"data":{"ndarray":[2]}}')
+    j = json.loads(rv.data)
+    print(j)
+    assert rv.status_code == 200
+    assert j["data"]["tensor"]["values"] == [1]
 
 
 def test_router_no_json():
@@ -174,7 +205,25 @@ def test_router_proto_lowlevel_ok():
     print(j)
     assert j["data"]["tensor"]["shape"] == [1, 1]    
     assert j["data"]["tensor"]["values"] == [1]
-    
+
+
+def test_router_proto_lowlevel_raw_ok():
+    user_object = UserObjectLowLevelRaw()
+    app = SeldonModelGRPC(user_object)
+    arr = np.array([1, 2])
+    datadef = prediction_pb2.DefaultData(
+        tensor=prediction_pb2.Tensor(
+            shape=(2, 1),
+            values=arr
+        )
+    )
+    request = prediction_pb2.SeldonMessage(data=datadef)
+    resp = app.Route(request, None)
+    jStr = json_format.MessageToJson(resp)
+    j = json.loads(jStr)
+    print(j)
+    assert j["data"]["tensor"]["shape"] == [1, 1]
+    assert j["data"]["tensor"]["values"] == [1]
     
 def test_proto_feedback():
     user_object = UserObject()

@@ -7,9 +7,9 @@ from tensorflow.core.framework.tensor_pb2 import TensorProto
 
 from seldon_core.wrapper import get_rest_microservice, SeldonModelGRPC, get_grpc_server
 from seldon_core.proto import prediction_pb2
+from seldon_core.user_model import SeldonComponent
 
-
-class UserObject(object):
+class UserObject(SeldonComponent):
     def __init__(self, metrics_ok=True, ret_nparray=False, ret_meta=False):
         self.metrics_ok = metrics_ok
         self.ret_nparray = ret_nparray
@@ -50,7 +50,7 @@ class UserObject(object):
             return [{"type": "BAD", "key": "mycounter", "value": 1}]
 
 
-class UserObjectLowLevel(object):
+class UserObjectLowLevel(SeldonComponent):
     def __init__(self, metrics_ok=True, ret_nparray=False):
         self.metrics_ok = metrics_ok
         self.ret_nparray = ret_nparray
@@ -77,7 +77,7 @@ class UserObjectLowLevel(object):
         print("Feedback called")
 
 
-class UserObjectLowLevelGrpc(object):
+class UserObjectLowLevelGrpc(SeldonComponent):
     def __init__(self, metrics_ok=True, ret_nparray=False):
         self.metrics_ok = metrics_ok
         self.ret_nparray = ret_nparray
