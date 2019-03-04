@@ -100,7 +100,7 @@ def main():
                         help="File that contains the data contract")
     parser.add_argument("host", type=str)
     parser.add_argument("port", type=int)
-    parser.add_argument("deployment", type=str)
+    parser.add_argument("deployment", type=str, nargs='?', default="mymodel")
     parser.add_argument("--endpoint", type=str, choices=["predict", "send-feedback"], default="predict")
     parser.add_argument("-b", "--batch-size", type=int, default=1)
     parser.add_argument("-n", "--n-requests", type=int, default=1)
