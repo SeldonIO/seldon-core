@@ -7,12 +7,17 @@ from seldon_core.seldon_client import SeldonClient
 import logging
 
 
-def gen_continuous(range: Tuple[Union[float,str],Union[float,str]], n: int) -> np.ndarray:
+class SeldonTesterException(Exception):
+    def __init__(self, message):
+        super().__init__(message)
+
+
+def gen_continuous(f_range: Tuple[Union[float, str], Union[float, str]], n: int) -> np.ndarray:
     """
     Create a continuous feature basedon given range
     Parameters
     ----------
-    range
+    f_range
        A range tuple
     n
        The number of feature values to create
@@ -21,16 +26,16 @@ def gen_continuous(range: Tuple[Union[float,str],Union[float,str]], n: int) -> n
     -------
 
     """
-    if range[0] == "inf" and range[1] == "inf":
+    if f_range[0] == "inf" and f_range[1] == "inf":
         return np.random.normal(size=n)
-    if range[0] == "inf":
-        return range[1] - np.random.lognormal(size=n)
-    if range[1] == "inf":
-        return range[0] + np.random.lognormal(size=n)
-    return np.random.uniform(range[0], range[1], size=n)
+    if f_range[0] == "inf":
+        return f_range[1] - np.random.lognormal(size=n)
+    if f_range[1] == "inf":
+        return f_range[0] + np.random.lognormal(size=n)
+    return np.random.uniform(f_range[0], f_range[1], size=n)
 
 
-def reconciliate_cont_type(feature: np.ndarray, dtype) -> np.ndarray:
+def reconciliate_cont_type(feature: np.ndarray, dtype: str) -> np.ndarray:
     """
     Ensure numpy arrays are always of type float
     Parameters
@@ -47,11 +52,13 @@ def reconciliate_cont_type(feature: np.ndarray, dtype) -> np.ndarray:
     """
     if dtype == "FLOAT":
         return feature
-    if dtype == "INT":
+    elif dtype == "INT":
         return (feature + 0.5).astype(int).astype(float)
+    else:
+        raise SeldonTesterException(f"Unknown dtype in reconciliate_cont_type {dtype}")
 
 
-def gen_categorical(values:List[str], n: List[int]) -> np.ndarray:
+def gen_categorical(values: List[str], n: List[int]) -> np.ndarray:
     """
     Generate a random categorical feature
     Parameters
@@ -77,18 +84,20 @@ def generate_batch(contract: Dict, n: int, field: str) -> np.ndarray:
         ty_set.add(feature_def["ftype"])
         if feature_def["ftype"] == "continuous":
             if "range" in feature_def:
-                range = feature_def["range"]
+                f_range = feature_def["range"]
             else:
-                range = ["inf", "inf"]
+                f_range = ["inf", "inf"]
             if "shape" in feature_def:
                 shape = [n] + feature_def["shape"]
             else:
                 shape = [n, 1]
-            batch = gen_continuous(range, shape)
+            batch = gen_continuous(f_range, shape)
             batch = np.around(batch, decimals=3)
             batch = reconciliate_cont_type(batch, feature_def["dtype"])
         elif feature_def["ftype"] == "categorical":
             batch = gen_categorical(feature_def["values"], [n, 1])
+        else:
+            raise SeldonTesterException(f"Unknown feature type {feature_def['ftype']}")
         feature_batches.append(batch)
     if len(ty_set) == 1:
         return np.concatenate(feature_batches, axis=1)
@@ -110,7 +119,7 @@ def unfold_contract(contract: Dict) -> Dict:
        Full contract
 
     """
-    unfolded_contract : Dict = {}
+    unfolded_contract: Dict = {}
     unfolded_contract["targets"] = []
     unfolded_contract["features"] = []
 
@@ -169,12 +178,12 @@ def run_send_feedback(args):
         else:
             payload_type = "ndarray"
 
-        response_predict = sc.microservice(data=batch, transport="rest",payload_type=payload_type,method="predict")
-        response_feedback = sc.microservice_feedback(prediction_request=response_predict.request,prediction_response=response_predict.response,reward=1.0,transport=transport)
+        response_predict = sc.microservice(data=batch, transport="rest", payload_type=payload_type, method="predict")
+        response_feedback = sc.microservice_feedback(prediction_request=response_predict.request,
+                                                     prediction_response=response_predict.response, reward=1.0,
+                                                     transport=transport)
         if args.prnt:
-            print("RECEIVED RESPONSE:")
-            print(response_feedback)
-            print()
+            print(f"RECEIVED RESPONSE:\n{response_feedback}\n")
 
 
 def run_predict(args):
@@ -188,33 +197,23 @@ def run_predict(args):
     """
     contract = json.load(open(args.contract, 'r'))
     contract = unfold_contract(contract)
-    feature_names = [feature["name"] for feature in contract["features"]]
 
-    endpoint = args.host + ":" + str(args.port)
+    endpoint = f"{args.host}:{args.port}"
     sc = SeldonClient(microservice_endpoint=endpoint)
 
     for i in range(args.n_requests):
         batch: ndarray = generate_batch(contract, args.batch_size, 'features')
         if args.prnt:
-            print('-' * 40)
-            print("SENDING NEW REQUEST:")
+            print(f"{'-' * 40}\nSENDING NEW REQUEST:")
 
-        if not args.grpc:
-            transport = "rest"
-        else:
-            transport = "grpc"
+        transport = "grpc" if args.grpc else "rest"
+        payload_type = "tensor" if args.tensor else "ndarray"
 
-        if args.tensor:
-            payload_type = "tensor"
-        else:
-            payload_type = "ndarray"
-
-        response = sc.microservice(data=batch,transport=transport,method="predict",payload_type=payload_type)
+        response = sc.microservice(data=batch, transport=transport, method="predict", payload_type=payload_type)
 
         if args.prnt:
-            print("RECEIVED RESPONSE:")
-            print(response)
-            print()
+            print(f"RECEIVED RESPONSE:\n{response}\n")
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -228,8 +227,8 @@ def main():
     parser.add_argument("-n", "--n-requests", type=int, default=1)
     parser.add_argument("--grpc", action="store_true")
     parser.add_argument("-t", "--tensor", action="store_true")
-    parser.add_argument("-p", "--prnt", action="store_true",help="Prints requests and responses")
-    parser.add_argument("--log-level", type=str, choices=["DEBUG","INFO","ERROR"], default="ERROR")
+    parser.add_argument("-p", "--prnt", action="store_true", help="Prints requests and responses")
+    parser.add_argument("--log-level", type=str, choices=["DEBUG", "INFO", "ERROR"], default="ERROR")
 
     args = parser.parse_args()
 

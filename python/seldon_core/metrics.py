@@ -5,7 +5,7 @@ GAUGE = "GAUGE"
 TIMER = "TIMER"
 
 
-def create_counter(key, value):
+def create_counter(key: str, value: float):
     """
     Utility method to create a counter metric
     Parameters
@@ -87,5 +87,3 @@ def validate_metrics(metrics: List[Dict]) -> bool:
     else:
         return False
     return True
-
-

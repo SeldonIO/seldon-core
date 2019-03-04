@@ -10,6 +10,7 @@ import seldon_core.persistence as persistence
 from distutils.util import strtobool
 from seldon_core.flask_utils import ANNOTATIONS_FILE
 import seldon_core.wrapper as seldon_microservice
+from typing import Dict, Callable
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +22,7 @@ DEBUG_PARAMETER = "SELDON_DEBUG"
 DEBUG = False
 
 
-def startServers(target1, target2):
+def start_servers(target1: Callable, target2: Callable) -> None:
     """
     Start servers
     Parameters
@@ -33,7 +34,7 @@ def startServers(target1, target2):
 
     """
     p2 = mp.Process(target=target2)
-    p2.deamon = True
+    p2.daemon = True
     p2.start()
 
     target1()
@@ -41,7 +42,7 @@ def startServers(target1, target2):
     p2.join()
 
 
-def parse_parameters(parameters):
+def parse_parameters(parameters: Dict) -> Dict:
     """
     Parse the user object parameters
     Parameters
@@ -71,7 +72,7 @@ def parse_parameters(parameters):
     return parsed_parameters
 
 
-def load_annotations():
+def load_annotations() -> Dict:
     """
     Attempt to load annotations
     Returns
@@ -86,7 +87,6 @@ def load_annotations():
                     line = line.rstrip()
                     parts = line.split("=")
                     if len(parts) == 2:
-                        value = parts[1]
                         value = parts[1][1:-1]
                         logger.info("Found annotation %s:%s ", parts[0], value)
                         annotations[parts[0]] = value
@@ -95,6 +95,44 @@ def load_annotations():
     except:
         logger.error("Failed to open annotations file %s", ANNOTATIONS_FILE)
     return annotations
+
+
+def setup_tracing(interface_name: str) -> object:
+    logger.info("Initializing tracing")
+    from jaeger_client import Config
+
+    jaeger_serv = os.environ.get("JAEGER_AGENT_HOST", "0.0.0.0")
+    jaeger_port = os.environ.get("JAEGER_AGENT_PORT", 5775)
+    jaeger_config = os.environ.get("JAEGER_CONFIG_PATH", None)
+    if jaeger_config is None:
+        logger.info("Using default tracing config")
+        config = Config(
+            config={  # usually read from some yaml config
+                'sampler': {
+                    'type': 'const',
+                    'param': 1,
+                },
+                'local_agent': {
+                    'reporting_host': jaeger_serv,
+                    'reporting_port': jaeger_port,
+                },
+                'logging': True,
+            },
+            service_name=interface_name,
+            validate=True,
+        )
+    else:
+        logger.info("Loading tracing config from %s", jaeger_config)
+        import yaml
+        with open(jaeger_config, 'r') as stream:
+            config_dict = yaml.load(stream)
+            config = Config(
+                config=config_dict,
+                service_name=interface_name,
+                validate=True,
+            )
+    # this call also sets opentracing.tracer
+    return config.initialize_tracer()
 
 
 def main():
@@ -109,7 +147,7 @@ def main():
     parser.add_argument("api_type", type=str, choices=["REST", "GRPC", "FBS"])
 
     parser.add_argument("--service-type", type=str, choices=[
-                        "MODEL", "ROUTER", "TRANSFORMER", "COMBINER", "OUTLIER_DETECTOR"], default="MODEL")
+        "MODEL", "ROUTER", "TRANSFORMER", "COMBINER", "OUTLIER_DETECTOR"], default="MODEL")
     parser.add_argument("--persistence", nargs='?',
                         default=0, const=1, type=int)
     parser.add_argument("--parameters", type=str,
@@ -117,7 +155,7 @@ def main():
     parser.add_argument("--log-level", type=str, default="INFO")
     parser.add_argument("--tracing", nargs='?',
                         default=int(os.environ.get("TRACING", "0")), const=1, type=int)
-    
+
     args = parser.parse_args()
 
     parameters = parse_parameters(json.loads(args.parameters))
@@ -142,50 +180,13 @@ def main():
     else:
         user_object = user_class(**parameters)
 
-
     # set log level for the imported microservice type
     seldon_microservice.logger.setLevel(log_level_num)
 
     port = int(os.environ.get(SERVICE_PORT_ENV_NAME, DEFAULT_PORT))
 
     if args.tracing:
-        logger.info("Initializing tracing")
-        from jaeger_client import Config
-
-        jaeger_serv = os.environ.get("JAEGER_AGENT_HOST","0.0.0.0")
-        jaeger_port = os.environ.get("JAEGER_AGENT_PORT", 5775)
-        jaeger_config = os.environ.get("JAEGER_CONFIG_PATH",None)
-        if jaeger_config is None:
-            logger.info("Using default tracing config")
-            config = Config(
-                config={ # usually read from some yaml config
-                    'sampler': {
-                        'type': 'const',
-                        'param': 1,
-                    },
-                    'local_agent': {
-                        'reporting_host': jaeger_serv,
-                        'reporting_port': jaeger_port,
-                    },
-                    'logging': True,
-                },
-                service_name=args.interface_name,
-                validate=True,
-            )
-        else:
-            logger.info("Loading tracing config from %s",jaeger_config)
-            import yaml
-            with open(jaeger_config, 'r') as stream:
-                config_dict = yaml.load(stream)
-                config = Config(
-                    config=config_dict,
-                    service_name=args.interface_name,
-                    validate=True,
-                )
-        # this call also sets opentracing.tracer
-        tracer = config.initialize_tracer()
-
-
+        tracer = setup_tracing(args.interface_name)
 
     if args.api_type == "REST":
 
@@ -194,11 +195,11 @@ def main():
 
             if args.tracing:
                 from flask_opentracing import FlaskTracer
-                tracing = FlaskTracer(tracer,True, app)
+                tracing = FlaskTracer(tracer, True, app)
 
             app.run(host='0.0.0.0', port=port)
 
-        logger.info("REST microservice running on port %i",port)
+        logger.info("REST microservice running on port %i", port)
         server1_func = rest_prediction_server
 
     elif args.api_type == "GRPC":
@@ -214,11 +215,11 @@ def main():
             server = seldon_microservice.get_grpc_server(
                 user_object, annotations=annotations, trace_interceptor=interceptor)
 
-            server.add_insecure_port("0.0.0.0:{}".format(port))
+            server.add_insecure_port(f"0.0.0.0:{port}")
 
             server.start()
 
-            logger.info("GRPC microservice Running on port %i",port)
+            logger.info("GRPC microservice Running on port %i", port)
             while True:
                 time.sleep(1000)
 
@@ -233,7 +234,7 @@ def main():
         server2_func = None
 
         logger.info('Starting servers')
-    startServers(server1_func, server2_func)
+    start_servers(server1_func, server2_func)
 
 
 if __name__ == "__main__":

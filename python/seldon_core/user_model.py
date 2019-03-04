@@ -1,29 +1,29 @@
 from seldon_core.metrics import validate_metrics
 from seldon_core.flask_utils import SeldonMicroserviceException
 import json
-from typing import Dict, List, Union, Iterable
+from typing import Dict, List, Union, Iterable, Callable, Optional
 import numpy as np
 from seldon_core.proto import prediction_pb2
 
 
 class SeldonComponent(object):
 
-    def __init__(self):
+    def __init__(self, **kwargs) -> None:
         """
         Set deprecated methods
         """
-        self.predict_rest = None
-        self.predict_grpc = None
-        self.route_rest = None
-        self.route_grpc = None
-        self.transform_input_rest = None
-        self.transform_input_grpc = None
-        self.transform_output_rest = None
-        self.transform_output_grpc = None
-        self.aggregate_rest = None
-        self.aggregate_grpc = None
-        self.send_feedback_rest = None
-        self.send_feedback_grpc = None
+        self.predict_rest: Optional[Callable] = None
+        self.predict_grpc: Optional[Callable] = None
+        self.route_rest: Optional[Callable] = None
+        self.route_grpc: Optional[Callable] = None
+        self.transform_input_rest: Optional[Callable] = None
+        self.transform_input_grpc: Optional[Callable] = None
+        self.transform_output_rest: Optional[Callable] = None
+        self.transform_output_grpc: Optional[Callable] = None
+        self.aggregate_rest: Optional[Callable] = None
+        self.aggregate_grpc: Optional[Callable] = None
+        self.send_feedback_rest: Optional[Callable] = None
+        self.send_feedback_grpc: Optional[Callable] = None
 
     def tags(self) -> Dict:
         raise NotImplementedError
@@ -96,7 +96,7 @@ def client_custom_tags(user_model: SeldonComponent) -> Dict:
 
 
 def client_class_names(user_model: SeldonComponent, predictions: np.ndarray) -> Iterable[str]:
-    '''
+    """
     Get class names from user model
     Parameters
     ----------
@@ -107,7 +107,7 @@ def client_class_names(user_model: SeldonComponent, predictions: np.ndarray) -> 
     Returns
     -------
        Class names
-    '''
+    """
     if len(predictions.shape) > 1:
         try:
             return user_model.class_names()
@@ -118,7 +118,7 @@ def client_class_names(user_model: SeldonComponent, predictions: np.ndarray) -> 
         return []
 
 
-def client_predict(user_model: SeldonComponent, features: Union[np.ndarray, str, bytes], feature_names:Iterable[str],
+def client_predict(user_model: SeldonComponent, features: Union[np.ndarray, str, bytes], feature_names: Iterable[str],
                    **kwargs: Dict) -> Union[np.ndarray, List, str, bytes]:
     """
     Get prediction from user model
@@ -185,9 +185,9 @@ def client_transform_output(user_model: SeldonComponent, features: Union[np.ndar
     features
        Data payload
     feature_names
-       Data payload couln names
+       Data payload column names
     kwargs
-       Optional keyowrd args
+       Optional keyword args
     Returns
     -------
        Transformed data
@@ -245,7 +245,8 @@ def client_feature_names(user_model: SeldonComponent, original: Iterable[str]) -
         return original
 
 
-def client_send_feedback(user_model: SeldonComponent, features: Union[np.ndarray, str, bytes], feature_names: Iterable[str],
+def client_send_feedback(user_model: SeldonComponent, features: Union[np.ndarray, str, bytes],
+                         feature_names: Iterable[str],
                          reward: float, truth: Union[np.ndarray, str, bytes], routing: Union[int, None]) \
         -> Union[np.ndarray, List, str, bytes, None]:
     """
@@ -276,9 +277,10 @@ def client_send_feedback(user_model: SeldonComponent, features: Union[np.ndarray
         return None
 
 
-def client_route(user_model: SeldonComponent, features: Union[np.ndarray, str, bytes], feature_names: Iterable[str]) -> int:
+def client_route(user_model: SeldonComponent, features: Union[np.ndarray, str, bytes],
+                 feature_names: Iterable[str]) -> int:
     """
-    Gte routing from user model
+    Get routing from user model
     Parameters
     ----------
     user_model
@@ -295,7 +297,7 @@ def client_route(user_model: SeldonComponent, features: Union[np.ndarray, str, b
     try:
         return user_model.route(features, feature_names)
     except (NotImplementedError, AttributeError):
-        return -1
+        raise SeldonMicroserviceException("Route not defined")
 
 
 def client_aggregate(user_model: SeldonComponent, features_list: List[Union[np.ndarray, str, bytes]],
@@ -312,9 +314,9 @@ def client_aggregate(user_model: SeldonComponent, features_list: List[Union[np.n
        Column names for payloads
     Returns
     -------
-       An aggrehated payload
+       An aggregated payload
     """
     try:
         return user_model.aggregate(features_list, feature_names_list)
     except (NotImplementedError, AttributeError):
-        return features_list[0]
+        raise SeldonMicroserviceException("Aggregate not defined")
