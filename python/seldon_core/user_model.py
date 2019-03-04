@@ -8,22 +8,8 @@ from seldon_core.proto import prediction_pb2
 
 class SeldonComponent(object):
 
-    def __init__(self, **kwargs) -> None:
-        """
-        Set deprecated methods
-        """
-        self.predict_rest: Optional[Callable] = None
-        self.predict_grpc: Optional[Callable] = None
-        self.route_rest: Optional[Callable] = None
-        self.route_grpc: Optional[Callable] = None
-        self.transform_input_rest: Optional[Callable] = None
-        self.transform_input_grpc: Optional[Callable] = None
-        self.transform_output_rest: Optional[Callable] = None
-        self.transform_output_grpc: Optional[Callable] = None
-        self.aggregate_rest: Optional[Callable] = None
-        self.aggregate_grpc: Optional[Callable] = None
-        self.send_feedback_rest: Optional[Callable] = None
-        self.send_feedback_grpc: Optional[Callable] = None
+    def __init__(self, **kwargs):
+        pass
 
     def tags(self) -> Dict:
         raise NotImplementedError

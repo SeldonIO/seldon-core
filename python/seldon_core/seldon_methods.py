@@ -3,11 +3,12 @@ from seldon_core.utils import *
 from seldon_core.user_model import *
 from google.protobuf import json_format
 from seldon_core.proto import prediction_pb2
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
-def predict(user_model: SeldonComponent, request: prediction_pb2.SeldonMessage) -> prediction_pb2.SeldonMessage:
+def predict(user_model: Any, request: prediction_pb2.SeldonMessage) -> prediction_pb2.SeldonMessage:
     """
     Call the user model to get a prediction and package the response
 
@@ -39,7 +40,7 @@ def predict(user_model: SeldonComponent, request: prediction_pb2.SeldonMessage) 
             return construct_response(user_model, False, request, client_response)
 
 
-def send_feedback(user_model: SeldonComponent, request: prediction_pb2.Feedback,
+def send_feedback(user_model: Any, request: prediction_pb2.Feedback,
                   predictive_unit_id: str) -> prediction_pb2.SeldonMessage:
     """
 
@@ -80,7 +81,7 @@ def send_feedback(user_model: SeldonComponent, request: prediction_pb2.Feedback,
             return construct_response(user_model, False, request.request, client_response)
 
 
-def transform_input(user_model: SeldonComponent, request: prediction_pb2.SeldonMessage) -> prediction_pb2.SeldonMessage:
+def transform_input(user_model: Any, request: prediction_pb2.SeldonMessage) -> prediction_pb2.SeldonMessage:
     """
 
     Parameters
@@ -113,7 +114,7 @@ def transform_input(user_model: SeldonComponent, request: prediction_pb2.SeldonM
             return construct_response(user_model, True, request, client_response)
 
 
-def transform_output(user_model: SeldonComponent,
+def transform_output(user_model: Any,
                      request: prediction_pb2.SeldonMessage) -> prediction_pb2.SeldonMessage:
     """
 
@@ -146,7 +147,7 @@ def transform_output(user_model: SeldonComponent,
             return construct_response(user_model, False, request, client_response)
 
 
-def route(user_model: SeldonComponent, request: prediction_pb2.SeldonMessage) -> prediction_pb2.SeldonMessage:
+def route(user_model: Any, request: prediction_pb2.SeldonMessage) -> prediction_pb2.SeldonMessage:
     """
 
     Parameters
@@ -179,7 +180,7 @@ def route(user_model: SeldonComponent, request: prediction_pb2.SeldonMessage) ->
             return construct_response(user_model, True, request, client_response_arr)
 
 
-def aggregate(user_model: SeldonComponent, request: prediction_pb2.SeldonMessageList) -> prediction_pb2.SeldonMessage:
+def aggregate(user_model: Any, request: prediction_pb2.SeldonMessageList) -> prediction_pb2.SeldonMessage:
     """
     Aggregate a list of payloads
     Parameters
