@@ -144,6 +144,7 @@ Follow the [install guide](docs/install.md) for details on ways to install seldo
     - [Open API Definitions](./openapi/README.md)
  - [Seldon Deployment Custom Resource](./docs/reference/seldon-deployment.md)
  - [Analytics](./docs/analytics.md)
+ - [Python Module](./docs/python/python_module.md)
 
 ## Articles/Blogs/Videos
 
