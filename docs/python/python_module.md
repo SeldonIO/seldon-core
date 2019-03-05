@@ -12,7 +12,7 @@ Seldon Core has a python package `seldon_core` available on PyPI. The package ma
 Install from PyPI with:
 
 ```
-pip install seldon_core
+pip install seldon-core
 ```
 
 # Seldon Core Microservices
