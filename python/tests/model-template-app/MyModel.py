@@ -24,7 +24,7 @@ class MyModel(object):
         logger.info("Predict called - will run idenity function")
         return X
 
-    def send_feedback(self, features, feature_names, reward, truth):
+    def send_feedback(self, features, feature_names, reward, truth, routing=None):
         """
         Handle feedback
 
