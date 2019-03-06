@@ -222,6 +222,15 @@ Internal Tutorials:
 | [Seldon Core Wrapper](https://github.com/SeldonIO/seldon-java-wrapper) | [seldon-core-wrapper](https://mvnrepository.com/artifact/io.seldon.wrapper/seldon-core-wrapper) | 0.1.5 |
 | [Seldon Core JPMML](https://github.com/SeldonIO/JPMML-utils) | [seldon-core-jpmml](https://mvnrepository.com/artifact/io.seldon.wrapper/seldon-core-jpmml) | 0.0.1 |
 
+#### Python Modules
+
+| Description | Python Version | Version |
+|-------------|----------------|---------|
+| [seldon-core](https://pypi.org/project/seldon-core/) | >3.4,<3.7 | 0.2.6.1 |
+| [seldon-core](https://pypi.org/project/seldon-core/) | 2,>=3,<3.7 | 0.2.6 (deprecated) | 
+
+
+
 ## Usage Reporting
 
 Tools that help the development of Seldon Core from anonymous usage.
