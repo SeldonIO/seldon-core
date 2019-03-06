@@ -17,7 +17,7 @@
             "containers": [
               {
                 "name": "imagenet-itransformer",
-                "image": "seldonio/imagenet_transformer:0.1",
+                "image": "seldonio/openvino-demo-transformer:0.1",
                 "env": [
                   {
                     "name": "TRACING",
@@ -26,12 +26,16 @@
                   {
                     "name": "JAEGER_AGENT_HOST",
                     "value": "jaeger-agent"
+                  },
+                  {
+                    "name": "DTYPE",
+                    "value": "float32"
                   }
                 ]
               },
               {
                 "name": "imagenet-otransformer",
-                "image": "seldonio/imagenet_transformer:0.1",
+                "image": "seldonio/openvino-demo-transformer:0.1",
                 "env": [
                   {
                     "name": "TRACING",
@@ -45,7 +49,7 @@
               },
               {
                 "name": "imagenet-combiner",
-                "image": "seldonio/imagenet_combiner:0.1",
+                "image": "seldonio/openvino-demo-combiner:0.1",
                 "env": [
                   {
                     "name": "TRACING",
@@ -59,15 +63,7 @@
               },
               {
                 "name": "prediction1",
-                "image": "seldonio/seldon-openvino-prediction:0.1",
-                "resources": {
-                  "requests": {
-                    "cpu": "1"
-                  },
-                  "limits": {
-                    "cpu": "32"
-                  }
-                },
+                "image": "seldonio/openvino-demo-prediction:0.1",
                 "env": [
                   {
                     "name": "XML_PATH",
@@ -76,22 +72,6 @@
                   {
                     "name": "BIN_PATH",
                     "value": "gs://intelai_public_models/densenet_169/1/densenet_169_i8.bin"
-                  },
-                  {
-                    "name": "KMP_SETTINGS",
-                    "value": "1"
-                  },
-                  {
-                    "name": "KMP_AFFINITY",
-                    "value": "granularity=fine,verbose,compact,1,0"
-                  },
-                  {
-                    "name": "KMP_BLOCKTIME",
-                    "value": "1"
-                  },
-                  {
-                    "name": "OMP_NUM_THREADS",
-                    "value": "16"
                   },
                   {
                     "name": "http_proxy",
@@ -113,57 +93,33 @@
               },
               {
                 "name": "prediction2",
-                "image": "seldonio/seldon-openvino-prediction:0.1",
-                "resources": {
-                  "requests": {
-                    "cpu": "1"
-                  },
-                  "limits": {
-                    "cpu": "32"
-                  }
-                },
-                  "env": [
-                  {
-                    "name": "XML_PATH",
-                    "value": "gs://intelai_public_models/resnet_50_i8/1/resnet_50_i8.xml"
-                  },
-                  {
+                "image": "seldonio/openvino-demo-prediction:0.1",
+                "env": [
+                   {
+                     "name": "XML_PATH",
+                     "value": "gs://intelai_public_models/resnet_50_i8/1/resnet_50_i8.xml"
+                   },
+                   {
                     "name": "BIN_PATH",
                     "value": "gs://intelai_public_models/resnet_50_i8/1/resnet_50_i8.bin"
-                  },
-                  {
-                    "name": "KMP_SETTINGS",
-                    "value": "1"
-                  },
-                  {
-                    "name": "KMP_AFFINITY",
-                    "value": "granularity=fine,verbose,compact,1,0"
-                  },
-                  {
-                    "name": "KMP_BLOCKTIME",
-                    "value": "1"
-                  },
-                  {
-                    "name": "OMP_NUM_THREADS",
-                    "value": "16"
-                  },
-                  {
-                    "name": "http_proxy",
+                   },
+                   {
+                     "name": "http_proxy",
                     "value": ""
-                  },
-                  {
-                    "name": "https_proxy",
-                    "value": ""
-                  },
-                  {
+                   },
+                   {
+                     "name": "https_proxy",
+                     "value": ""
+                   },
+                   {
                     "name": "TRACING",
-                    "value": "1"
-                  },
-                  {
-                    "name": "JAEGER_AGENT_HOST",
-                    "value": "jaeger-agent"
-                  }
-                ]
+                     "value": "1"
+                   },
+                   {
+                     "name": "JAEGER_AGENT_HOST",
+                     "value": "jaeger-agent"
+                   }
+                  ]
               }
             ],
             "terminationGracePeriodSeconds": 1

@@ -217,7 +217,7 @@ public class SeldonGrpcServer    {
     	else
     	{
     		final String namespace = k8sUtil.getNamespace(resource);
-        	final String endpoint = resource.getSpec().getName() + "." + namespace; 
+    		final String endpoint = k8sUtil.getSeldonId(resource) + "." + namespace; 
             final ManagedChannel channel = ManagedChannelBuilder.forAddress(endpoint, appProperties.getEngineGrpcContainerPort()).usePlaintext(true).build();
             if (appProperties.isSingleNamespace())
             	channelStore.put(resource.getSpec().getOauthKey(),channel);

@@ -132,7 +132,6 @@ Follow the [install guide](docs/install.md) for details on ways to install seldo
    * [Canary deployments](./docs/ambassador.md#canary-deployments)
    * [Shadow deployments](./docs/ambassador.md#shadow-deployments)
    * [Header-based Routing to deployments](./docs/ambassador.md#header-based-routing)
- * [Advanced graphs](https://github.com/seldonio/seldon-core/blob/master/notebooks/advanced_graphs.ipynb) showing the various types of runtime prediction graphs that can be built.
  * [Handling large gRPC messages](./notebooks/max_grpc_msg_size.ipynb). Showing how you can add annotations to increase the gRPC max message size.
  * [Handling REST timeouts](./notebooks/timeouts.ipynb). Showing how you can add annotations to set the REST (and gRPC) timeouts.
  * [Distributed Tracing](./docs/distributed-tracing.md)
@@ -153,6 +152,7 @@ Follow the [install guide](docs/install.md) for details on ways to install seldo
     - [Open API Definitions](./openapi/README.md)
  - [Seldon Deployment Custom Resource](./docs/reference/seldon-deployment.md)
  - [Analytics](./docs/analytics.md)
+ - [Python Module](./docs/python/python_module.md)
 
 ## Articles/Blogs/Videos
 
@@ -181,6 +181,7 @@ Internal Tutorials:
 
 ### Release Highlights
 
+ * [0.2.6 Release Highlights](docs/articles/release-0.2.6.md)
  * [0.2.5 Release Highlights](docs/articles/release-0.2.5.md)
  * [0.2.3 Release Highlights](docs/articles/release-0.2.3.md)
 
@@ -202,12 +203,12 @@ Internal Tutorials:
 
 | Description | Image URL | Stable Version | Development |
 |-------------|-----------|----------------|-----|
-| Seldon Operator | [seldonio/cluster-manager](https://hub.docker.com/r/seldonio/cluster-manager/tags/) | 0.2.5 | 0.2.6-SNAPSHOT |
-| Seldon Service Orchestrator | [seldonio/engine](https://hub.docker.com/r/seldonio/engine/tags/) | 0.2.5 | 0.2.6-SNAPSHOT |
-| Seldon API Gateway | [seldonio/apife](https://hub.docker.com/r/seldonio/apife/tags/) | 0.2.5 | 0.2.6-SNAPSHOT |
-| [Seldon Python 3 (3.6) Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python3](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3/tags/) | 0.4 | 0.5-SNAPSHOT |
-| [Seldon Python 3.6 Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python36](https://hub.docker.com/r/seldonio/seldon-core-s2i-python36/tags/) | 0.4 | 0.5-SNAPSHOT |
-| [Seldon Python 2 Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python2](https://hub.docker.com/r/seldonio/seldon-core-s2i-python2/tags/) | 0.4 | 0.5-SNAPSHOT |
+| Seldon Operator | [seldonio/cluster-manager](https://hub.docker.com/r/seldonio/cluster-manager/tags/) | 0.2.6 | 0.2.7-SNAPSHOT |
+| Seldon Service Orchestrator | [seldonio/engine](https://hub.docker.com/r/seldonio/engine/tags/) | 0.2.6 | 0.2.7-SNAPSHOT |
+| Seldon API Gateway | [seldonio/apife](https://hub.docker.com/r/seldonio/apife/tags/) | 0.2.6 | 0.2.7-SNAPSHOT |
+| [Seldon Python 3 (3.6) Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python3](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3/tags/) | 0.5 | 0.6-SNAPSHOT |
+| [Seldon Python 3.6 Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python36](https://hub.docker.com/r/seldonio/seldon-core-s2i-python36/tags/) | 0.5 | 0.6-SNAPSHOT |
+| [Seldon Python 2 Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python2](https://hub.docker.com/r/seldonio/seldon-core-s2i-python2/tags/) | 0.5 | deprecated |
 | [Seldon Python ONNX Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python3-ngraph-onnx](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3-ngraph-onnx/tags/) | 0.3  |   |
 | [Seldon Java Build Wrapper for S2I](docs/wrappers/java.md) | [seldonio/seldon-core-s2i-java-build](https://hub.docker.com/r/seldonio/seldon-core-s2i-java-build/tags/) | 0.1 | |
 | [Seldon Java Runtime Wrapper for S2I](docs/wrappers/java.md) | [seldonio/seldon-core-s2i-java-runtime](https://hub.docker.com/r/seldonio/seldon-core-s2i-java-runtime/tags/) | 0.1 | |
@@ -220,8 +221,17 @@ Internal Tutorials:
 
 | Description | Package | Version |
 |-------------|---------|---------|
-| [Seldon Core Wrapper](https://github.com/SeldonIO/seldon-java-wrapper) | [seldon-core-wrapper](https://mvnrepository.com/artifact/io.seldon.wrapper/seldon-core-wrapper) | 0.1.3 |
+| [Seldon Core Wrapper](https://github.com/SeldonIO/seldon-java-wrapper) | [seldon-core-wrapper](https://mvnrepository.com/artifact/io.seldon.wrapper/seldon-core-wrapper) | 0.1.5 |
 | [Seldon Core JPMML](https://github.com/SeldonIO/JPMML-utils) | [seldon-core-jpmml](https://mvnrepository.com/artifact/io.seldon.wrapper/seldon-core-jpmml) | 0.0.1 |
+
+#### Python Modules
+
+| Description | Python Version | Version |
+|-------------|----------------|---------|
+| [seldon-core](https://pypi.org/project/seldon-core/) | >3.4,<3.7 | 0.2.6.1 |
+| [seldon-core](https://pypi.org/project/seldon-core/) | 2,>=3,<3.7 | 0.2.6 (deprecated) | 
+
+
 
 ## Usage Reporting
 
