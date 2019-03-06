@@ -25,6 +25,7 @@ def create_push_s2i_image(s2i_python_version,component_type,api_type):
     create_s2I_image(s2i_python_version,component_type,api_type)
     push_s2i_image(component_type,api_type)
 
+@pytest.mark.usefixtures("seldon_java_images")
 @pytest.mark.usefixtures("setup_python_s2i")
 @pytest.mark.usefixtures("s2i_python_version")
 class TestPythonS2i(object):
