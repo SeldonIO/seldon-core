@@ -1,3 +1,2 @@
-./build_local_python2.sh
 ./build_local_python3.6.sh
 #./build_local_python3.7.sh

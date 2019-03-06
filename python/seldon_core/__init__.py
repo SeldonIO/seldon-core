@@ -1,1 +1,2 @@
-__version__ = '0.2.6_SNAPSHOT'
+from seldon_core.version import __version__
+#from seldon_core.seldon_client import SeldonClient

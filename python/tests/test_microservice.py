@@ -1,7 +1,4 @@
-from __future__ import absolute_import, division, print_function
-
 from contextlib import contextmanager
-import json
 import os
 from os.path import dirname, join
 import socket
@@ -44,7 +41,7 @@ def start_microservice(app_location,tracing=False,grpc=False,envs={}):
             env_vars["MODEL_NAME"],
             env_vars["API_TYPE"],
             "--service-type", env_vars["SERVICE_TYPE"],
-            "--persistence", env_vars["PERSISTENCE"],
+            "--persistence", env_vars["PERSISTENCE"]
         )
         if tracing:
             cmd = cmd + ("--tracing",)
@@ -85,7 +82,7 @@ def test_model_template_app_rest(tracing):
         response = requests.get(
             "http://127.0.0.1:5000/send-feedback", params="json=%s" % data)
         response.raise_for_status()
-        assert response.json() == {}
+        assert response.json() == {'data': {'ndarray': []}, 'meta': {}}
 
 @pytest.mark.parametrize(
         'tracing', [(False), (True)]
@@ -135,4 +132,4 @@ def test_model_template_app_tracing_config():
         response = requests.get(
             "http://127.0.0.1:5000/send-feedback", params="json=%s" % data)
         response.raise_for_status()
-        assert response.json() == {}
+        assert response.json() == {'data': {'ndarray': []}, 'meta': {}}
