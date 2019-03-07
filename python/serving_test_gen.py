@@ -1,0 +1,85 @@
+"""Contains methods to generate a JSON file for Seldon API integration testing."""
+
+import os
+import random
+from typing import List, Optional, Union
+
+import numpy as np
+import pandas as pd
+
+RANGE_INTEGER_MIN = 0
+RANGE_INTEGER_MAX = 1
+RANGE_FLOAT_MIN = 0.0
+RANGE_FLOAT_MAX = 1.0
+
+
+def _column_range(col: pd.Series) -> Optional[List]:
+    """
+    Calculate minimum and maximum of a column and outputs a list.
+
+    :param col: Column to inspect.
+    :return: Min and max of the column range as a list.
+    """
+    if col.dtype == np.float:
+        if pd.isnull(min(col)):  # This also means that maximum is null
+            return [RANGE_FLOAT_MIN, RANGE_FLOAT_MAX]
+        else:
+            return [min(col), max(col)]
+    elif col.dtype == np.integer:
+        if pd.isnull(min(col)):  # This also means that maximum is null
+            return [RANGE_INTEGER_MIN, RANGE_INTEGER_MAX]
+        else:
+            return [min(col), max(col)]
+    else:
+        return np.NaN
+
+
+def _column_values(column: pd.Series) -> Union[List, float]:
+    """
+    Randomly sample from a column. The number of items is num_repeats or the number of unique values whichever is lower.
+
+    :param column: Column to inspect.
+    :return:
+    """
+    if column.dtype != np.number:
+        num_sample = len(column.unique())
+        random.seed(8888)
+        return random.sample(column.unique().tolist(), num_sample)
+    else:
+        return np.NaN
+
+
+def create_seldon_api_testing_file(data: pd.DataFrame, target: str, output_path: str) -> bool:
+    """
+    Create a JSON file for Seldon API testing.
+
+    :param data: Pandas DataFrame used as a recipe for the json file.
+    :param target: Name of the target column.
+    :param output_path: Path of output file.
+    :return: True if file correctly generated.
+    """
+
+    # create a Data frame in the form of JSON object
+    df_for_json = pd.DataFrame(data=data.columns.values, columns=["name"])
+    df_for_json["dtype"] = np.where(data.dtypes == np.float, 'FLOAT',
+                                    np.where(data.dtypes == np.int, 'INTEGER', np.NaN))
+    df_for_json["ftype"] = np.where(data.dtypes == np.number, 'continuous', 'categorical')
+    ranges = [_column_range(data[column_name]) for column_name in data.columns.values]
+    values = [_column_values(data[column_name]) for column_name in data.columns.values]
+    df_for_json["range"] = ranges
+    df_for_json["values"] = values
+    # Split the target
+    df_for_json_target = df_for_json[df_for_json.name == target]
+    df_for_json_features = df_for_json[df_for_json.name != target]
+
+    # Convert data frames to JSON with a trick that removes records with NaNs
+    json_features_df = df_for_json_features.T.apply(lambda row: row[~row.isnull()].to_json())
+    json_features = f'[{",".join(json_features_df)}]'
+    json_target_df = df_for_json_target.T.apply(lambda row: row[~row.isnull()].to_json())
+    json_target = f'[{",".join(json_target_df)}]'
+    json_combined = f'{{"features": {json_features}, "targets": {json_target}}}'
+
+    with open(output_path, 'w+') as output_file:
+        output_file.write(str(json_combined))
+    return os.path.exists(output_path)
+
