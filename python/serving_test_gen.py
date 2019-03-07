@@ -1,7 +1,6 @@
 """Contains methods to generate a JSON file for Seldon API integration testing."""
 
 import os
-import random
 from typing import List, Optional, Union
 
 import numpy as np
@@ -36,15 +35,13 @@ def _column_range(col: pd.Series) -> Optional[List]:
 
 def _column_values(column: pd.Series) -> Union[List, float]:
     """
-    Randomly sample from a column. The number of items is num_repeats or the number of unique values whichever is lower.
+    Create a list of unique values for categorical variables.
 
     :param column: Column to inspect.
     :return:
     """
     if column.dtype != np.number:
-        num_sample = len(column.unique())
-        random.seed(8888)
-        return random.sample(column.unique().tolist(), num_sample)
+        return column.unique().tolist()
     else:
         return np.NaN
 
@@ -82,4 +79,3 @@ def create_seldon_api_testing_file(data: pd.DataFrame, target: str, output_path:
     with open(output_path, 'w+') as output_file:
         output_file.write(str(json_combined))
     return os.path.exists(output_path)
-
