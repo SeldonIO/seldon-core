@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SeldonNameCreator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">seldon-cluster-manager</a> &gt; <a href="index.source.html" class="el_package">io.seldon.clustermanager.k8s</a> &gt; <span class="el_source">SeldonNameCreator.java</span></div><h1>SeldonNameCreator.java</h1><pre class="source lang-java linenums">package io.seldon.clustermanager.k8s;
+
+import org.apache.commons.codec.digest.DigestUtils;
+
+import io.kubernetes.client.proto.V1;
+import io.seldon.protos.DeploymentProtos.PredictorSpec;
+import io.seldon.protos.DeploymentProtos.SeldonDeployment;
+
+<span class="fc" id="L9">public class SeldonNameCreator {</span>
+
+	private String hash(String key)  {
+<span class="fc" id="L12">	    return DigestUtils.md5Hex(key).toLowerCase().substring(0, 7);</span>
+	}
+	
+	private String createContainerHash(V1.PodTemplateSpec spec)
+	{
+<span class="fc" id="L17">		StringBuffer sb = new StringBuffer();</span>
+<span class="fc bfc" id="L18" title="All 2 branches covered.">		for(V1.Container c : spec.getSpec().getContainersList())</span>
+		{
+<span class="fc" id="L20">			sb.append(c.getName());</span>
+<span class="fc" id="L21">			sb.append(&quot;:&quot;);</span>
+<span class="fc" id="L22">			sb.append(c.getImage());</span>
+<span class="fc" id="L23">			sb.append(&quot;;&quot;);</span>
+<span class="fc" id="L24">		}</span>
+<span class="fc" id="L25">		return hash(sb.toString());</span>
+	}
+	
+	public String getSeldonDeploymentName(SeldonDeployment dep,PredictorSpec pred,V1.PodTemplateSpec spec) {
+<span class="fc" id="L29">		String svcName =  dep.getSpec().getName() + &quot;-&quot; + pred.getName()+&quot;-&quot;+createContainerHash(spec);</span>
+<span class="pc bpc" id="L30" title="1 of 2 branches missed.">		if (svcName.length() &gt; 63)</span>
+<span class="nc" id="L31">			return &quot;seldon-&quot;+hash(svcName);</span>
+		else
+<span class="fc" id="L33">			return svcName;</span>
+	}
+	
+	protected static String cleanContainerImageName(String name)
+	{
+<span class="fc" id="L38">		return name.toLowerCase().replaceAll(&quot;[^-a-z0-9]&quot;, &quot;-&quot;);</span>
+	}
+	
+	public String getServiceOrchestratorName(SeldonDeployment dep,PredictorSpec pred)
+	{
+<span class="fc" id="L43">		String svcName =  dep.getSpec().getName() + &quot;-&quot; + pred.getName()+&quot;-svc-orch&quot;;</span>
+<span class="pc bpc" id="L44" title="1 of 2 branches missed.">		if (svcName.length() &gt; 63)</span>
+<span class="nc" id="L45">			return &quot;seldon-&quot;+hash(svcName);</span>
+		else
+<span class="fc" id="L47">			return svcName;</span>
+	}
+	
+
+	public String getSeldonServiceName(SeldonDeployment dep,PredictorSpec pred,V1.Container container) {
+<span class="fc" id="L52">		String containerImage = cleanContainerImageName(container.getImage());</span>
+<span class="fc" id="L53">		String svcName =  dep.getSpec().getName() + &quot;-&quot; + pred.getName()+&quot;-&quot;+container.getName()+&quot;-&quot;+containerImage;</span>
+<span class="fc bfc" id="L54" title="All 2 branches covered.">		if (svcName.length() &gt; 63)</span>
+		{
+<span class="fc" id="L56">			svcName = &quot;seldon-&quot;+containerImage+&quot;-&quot;+hash(svcName);</span>
+<span class="fc bfc" id="L57" title="All 2 branches covered.">			if (svcName.length() &gt; 63)</span>
+<span class="fc" id="L58">				return &quot;seldon-&quot;+hash(svcName);</span>
+			else
+<span class="fc" id="L60">				return svcName;</span>
+		}
+		else
+<span class="fc" id="L63">			return svcName;</span>
+	}
+	
+	public String getSeldonId(SeldonDeployment mlDep)
+	{
+<span class="fc" id="L68">		return mlDep.getSpec().getName() + &quot;-&quot; + mlDep.getMetadata().getName();</span>
+	}
+
+/*	
+	public String getSeldonServiceName(SeldonDeployment dep,PredictorSpec pred,String containerName) {
+		String svcName =  dep.getSpec().getName() + &quot;-&quot; + pred.getName()+&quot;-&quot;+containerName;
+		if (svcName.length() &gt; 63)
+			return &quot;seldon-&quot;+hash(svcName);
+		else
+			return svcName;
+	}
+	*/
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

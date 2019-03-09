@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProtoBufUtils.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">seldon-cluster-manager</a> &gt; <a href="index.source.html" class="el_package">io.seldon.clustermanager.pb</a> &gt; <span class="el_source">ProtoBufUtils.java</span></div><h1>ProtoBufUtils.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * Copyright 2017 Seldon Technologies Ltd (http://www.seldon.io/)
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *******************************************************************************/
+package io.seldon.clustermanager.pb;
+
+import java.lang.reflect.Type;
+
+import com.google.gson.reflect.TypeToken;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Message;
+
+import io.kubernetes.client.JSON;
+import io.kubernetes.client.models.V1PodTemplateSpec;
+import io.kubernetes.client.proto.IntStr.IntOrString;
+import io.kubernetes.client.proto.Meta.Time;
+import io.kubernetes.client.proto.Meta.Timestamp;
+import io.kubernetes.client.proto.Resource.Quantity;
+import io.kubernetes.client.proto.V1.PodTemplateSpec;
+import io.seldon.clustermanager.k8s.SeldonDeploymentException;
+import io.seldon.clustermanager.pb.JsonFormat.Printer;
+
+
+public class ProtoBufUtils {
+
+    private ProtoBufUtils() {
+    }
+
+    /**
+     * Serialize a protobuf message to JSON, indicating if whitespace needs to be stripped.
+     * 
+     * @param message
+     *            The protobuf message to serialize.
+     * @param omittingInsignificantWhitespace
+     *            True if needs to be stripped of whitespace.
+     * @return json string
+     * @throws InvalidProtocolBufferException
+     */
+    public static String toJson(Message message, boolean omittingInsignificantWhitespace, boolean defaultingFields) throws InvalidProtocolBufferException {
+<span class="fc" id="L51">        Printer jsonPrinter = JsonFormat.printer().preservingProtoFieldNames()</span>
+<span class="fc" id="L52">                .usingTypeConverter(IntOrString.getDescriptor().getFullName(), new IntOrStringUtils.IntOrStringConverter())</span>
+<span class="fc" id="L53">                .usingTypeConverter(Quantity.getDescriptor().getFullName(), new QuantityUtils.QuantityConverter())</span>
+<span class="fc" id="L54">                .usingTypeConverter(Time.getDescriptor().getFullName(), new TimeUtils.TimeConverter())</span>
+<span class="fc" id="L55">                .usingTypeConverter(Timestamp.getDescriptor().getFullName(), new TimeUtils.TimeConverter());</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">        if (omittingInsignificantWhitespace) {</span>
+<span class="fc" id="L57">            jsonPrinter = jsonPrinter.omittingInsignificantWhitespace();</span>
+        }
+<span class="pc bpc" id="L59" title="1 of 2 branches missed.">        if (defaultingFields)</span>
+<span class="nc" id="L60">        	jsonPrinter = jsonPrinter.includingDefaultValueFields();</span>
+<span class="fc" id="L61">        return jsonPrinter.print(message);</span>
+    }
+    
+    /**
+     * Serialize a protobuf message to JSON, allowing the inclusion of whitespace.
+     * 
+     * @param message
+     *            The protobuf message to serialize.
+     * @return json string
+     * @throws InvalidProtocolBufferException
+     */
+    public static String toJson(Message message) throws InvalidProtocolBufferException {
+<span class="fc" id="L73">    	boolean omittingInsignificantWhitespace = false;</span>
+<span class="fc" id="L74">    	boolean defaultingFields = false;</span>
+<span class="fc" id="L75">        return toJson(message, omittingInsignificantWhitespace,defaultingFields);</span>
+    }
+
+    public static &lt;T extends Message.Builder&gt; void updateMessageBuilderFromJson(T messageBuilder, String json) throws InvalidProtocolBufferException {
+<span class="nc" id="L79">        JsonFormat.parser().ignoringUnknownFields()</span>
+<span class="nc" id="L80">            .usingTypeParser(IntOrString.getDescriptor().getFullName(), new IntOrStringUtils.IntOrStringParser())</span>
+<span class="nc" id="L81">            .usingTypeParser(Quantity.getDescriptor().getFullName(), new QuantityUtils.QuantityParser())</span>
+<span class="nc" id="L82">            .usingTypeParser(Time.getDescriptor().getFullName(), new TimeUtils.TimeParser())</span>
+<span class="nc" id="L83">            .usingTypeParser(Timestamp.getDescriptor().getFullName(), new TimeUtils.TimeParser())            </span>
+<span class="nc" id="L84">        .merge(json, messageBuilder);</span>
+
+<span class="nc" id="L86">    }</span>
+    
+    public static &lt;T&gt; T convertProtoToModel(Message m,Type type) throws InvalidProtocolBufferException
+    {
+<span class="nc" id="L90">         JSON json = new JSON();</span>
+<span class="nc" id="L91">         return (T) json.deserialize(toJson(m), type);</span>
+    }
+    
+    
+    public static V1PodTemplateSpec convertProtoToModel(PodTemplateSpec protoTemplateSpec) throws InvalidProtocolBufferException, SeldonDeploymentException
+    {
+<span class="nc" id="L97">         Printer jsonPrinter = JsonFormat.printer().preservingProtoFieldNames();</span>
+<span class="nc" id="L98">         String ptsJson = jsonPrinter.print(protoTemplateSpec);</span>
+<span class="nc" id="L99">         JSON json = new JSON();</span>
+<span class="nc" id="L100">         Type returnType = new TypeToken&lt;V1PodTemplateSpec&gt;(){}.getType();</span>
+<span class="nc" id="L101">         V1PodTemplateSpec podTemplateSpec = (V1PodTemplateSpec) json.deserialize(ptsJson, returnType);</span>
+         //return fixProbes(protoTemplateSpec, podTemplateSpec);
+<span class="nc" id="L103">         return podTemplateSpec;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>
