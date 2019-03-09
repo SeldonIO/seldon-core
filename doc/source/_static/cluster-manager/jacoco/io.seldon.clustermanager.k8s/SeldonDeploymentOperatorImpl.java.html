@@ -1,0 +1,896 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SeldonDeploymentOperatorImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">seldon-cluster-manager</a> &gt; <a href="index.source.html" class="el_package">io.seldon.clustermanager.k8s</a> &gt; <span class="el_source">SeldonDeploymentOperatorImpl.java</span></div><h1>SeldonDeploymentOperatorImpl.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * Copyright 2017 Seldon Technologies Ltd (http://www.seldon.io/)
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *******************************************************************************/
+package io.seldon.clustermanager.k8s;
+
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringJoiner;
+
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Message;
+
+import io.kubernetes.client.models.V1OwnerReference;
+import io.kubernetes.client.proto.IntStr.IntOrString;
+import io.kubernetes.client.proto.Meta.LabelSelector;
+import io.kubernetes.client.proto.Meta.LabelSelectorRequirement;
+import io.kubernetes.client.proto.Meta.ObjectMeta;
+import io.kubernetes.client.proto.Meta.OwnerReference;
+import io.kubernetes.client.proto.Resource.Quantity;
+import io.kubernetes.client.proto.V1;
+import io.kubernetes.client.proto.V1.ContainerPort;
+import io.kubernetes.client.proto.V1.DownwardAPIVolumeFile;
+import io.kubernetes.client.proto.V1.DownwardAPIVolumeSource;
+import io.kubernetes.client.proto.V1.EnvVar;
+import io.kubernetes.client.proto.V1.ExecAction;
+import io.kubernetes.client.proto.V1.HTTPGetAction;
+import io.kubernetes.client.proto.V1.Handler;
+import io.kubernetes.client.proto.V1.Lifecycle;
+import io.kubernetes.client.proto.V1.ObjectFieldSelector;
+import io.kubernetes.client.proto.V1.PodSecurityContext;
+import io.kubernetes.client.proto.V1.PodTemplateSpec;
+import io.kubernetes.client.proto.V1.Probe;
+import io.kubernetes.client.proto.V1.SecurityContext;
+import io.kubernetes.client.proto.V1.Service;
+import io.kubernetes.client.proto.V1.ServicePort;
+import io.kubernetes.client.proto.V1.ServiceSpec;
+import io.kubernetes.client.proto.V1.TCPSocketAction;
+import io.kubernetes.client.proto.V1.Volume;
+import io.kubernetes.client.proto.V1.VolumeMount;
+import io.kubernetes.client.proto.V1.VolumeSource;
+import io.kubernetes.client.proto.V1beta1Extensions;
+import io.kubernetes.client.proto.V1beta1Extensions.Deployment;
+import io.kubernetes.client.proto.V1beta1Extensions.DeploymentSpec;
+import io.kubernetes.client.proto.V1beta1Extensions.DeploymentStrategy;
+import io.kubernetes.client.proto.V1beta1Extensions.RollingUpdateDeployment;
+import io.seldon.clustermanager.ClusterManagerProperites;
+import io.seldon.clustermanager.pb.ProtoBufUtils;
+import io.seldon.protos.DeploymentProtos.Endpoint;
+import io.seldon.protos.DeploymentProtos.Parameter;
+import io.seldon.protos.DeploymentProtos.PredictiveUnit;
+import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitImplementation;
+import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitType;
+import io.seldon.protos.DeploymentProtos.PredictorSpec;
+import io.seldon.protos.DeploymentProtos.SeldonDeployment;
+
+@Component
+public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
+
+<span class="fc" id="L83">	private final static Logger logger = LoggerFactory.getLogger(SeldonDeploymentOperatorImpl.class);</span>
+	private final ClusterManagerProperites clusterManagerProperites;
+	public static final String LABEL_SELDON_APP = &quot;seldon-app&quot;;
+    public static final String LABEL_SELDON_TYPE_KEY = &quot;seldon-type&quot;;
+    public static final String LABEL_SELDON_TYPE_VAL = &quot;deployment&quot;;
+    public static final String PODINFO_VOLUME_NAME = &quot;podinfo&quot;;
+    public static final String PODINFO_VOLUME_PATH = &quot;/etc/podinfo&quot;;
+	public static final String DEFAULT_ENGINE_CPU_REQUEST = &quot;0.1&quot;;
+<span class="fc" id="L91">    private final SeldonNameCreator seldonNameCreator = new SeldonNameCreator();</span>
+    
+	@Autowired
+	public SeldonDeploymentOperatorImpl(ClusterManagerProperites clusterManagerProperites) {
+<span class="fc" id="L95">		super();</span>
+<span class="fc" id="L96">		this.clusterManagerProperites = clusterManagerProperites;</span>
+<span class="fc" id="L97">	}</span>
+
+
+	private static String getEngineEnvVarJson(Message protoMessage) throws SeldonDeploymentException {
+		String retVal;
+		try {
+<span class="fc" id="L103">            retVal = ProtoBufUtils.toJson(protoMessage, true,false);</span>
+<span class="fc" id="L104">            retVal = new String(Base64.getEncoder().encode(retVal.getBytes()));</span>
+<span class="fc" id="L105">            return retVal;</span>
+<span class="nc" id="L106">		} catch (InvalidProtocolBufferException e) {</span>
+<span class="nc" id="L107">           throw new SeldonDeploymentException(&quot;Failed to parse protobuf&quot;,e);</span>
+        }
+	}
+	
+	static final String DEFAULT_ENGINE_JAVA_OPTS=&quot;-Dcom.sun.management.jmxremote.rmi.port=9090 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9090 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.local.only=false -Djava.rmi.server.hostname=127.0.0.1&quot;;
+	private V1.Container createEngineContainer(SeldonDeployment mlDep,PredictorSpec predictorDef) throws SeldonDeploymentException
+	{
+<span class="fc" id="L114">		V1.Container.Builder cBuilder = V1.Container.newBuilder();</span>
+		
+<span class="fc" id="L116">		cBuilder</span>
+<span class="fc" id="L117">			.setName(&quot;seldon-container-engine&quot;)</span>
+<span class="fc" id="L118">			.setImage(clusterManagerProperites.getEngineContainerImageAndVersion())</span>
+<span class="fc" id="L119">			.setImagePullPolicy(clusterManagerProperites.getEngineContainerImagePullPolicy())</span>
+<span class="fc" id="L120">			.addVolumeMounts(VolumeMount.newBuilder().setName(PODINFO_VOLUME_NAME).setMountPath(PODINFO_VOLUME_PATH).setReadOnly(true))</span>
+<span class="fc" id="L121">			.addEnv(EnvVar.newBuilder().setName(&quot;ENGINE_PREDICTOR&quot;).setValue(getEngineEnvVarJson(predictorDef)))</span>
+<span class="fc" id="L122">			.addEnv(EnvVar.newBuilder().setName(&quot;DEPLOYMENT_NAME&quot;).setValue(mlDep.getSpec().getName()))		</span>
+<span class="fc" id="L123">			.addEnv(EnvVar.newBuilder().setName(&quot;ENGINE_SERVER_PORT&quot;).setValue(&quot;&quot;+clusterManagerProperites.getEngineContainerPort()))</span>
+<span class="fc" id="L124">			.addEnv(EnvVar.newBuilder().setName(&quot;ENGINE_SERVER_GRPC_PORT&quot;).setValue(&quot;&quot;+clusterManagerProperites.getEngineGrpcContainerPort()))		</span>
+<span class="fc" id="L125">			.addEnv(EnvVar.newBuilder().setName(&quot;JAVA_OPTS&quot;).setValue(predictorDef.getAnnotationsOrDefault(Constants.ENGINE_JAVA_OPTS_ANNOTATION, DEFAULT_ENGINE_JAVA_OPTS)))</span>
+<span class="fc" id="L126">			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(clusterManagerProperites.getEngineContainerPort()))</span>
+<span class="fc" id="L127">			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(8082).setName(&quot;admin&quot;))</span>
+<span class="fc" id="L128">			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(9090).setName(&quot;jmx&quot;))</span>
+<span class="fc" id="L129">			.setSecurityContext(SecurityContext.newBuilder().setRunAsUser(clusterManagerProperites.getEngineUser()).build())</span>
+<span class="fc" id="L130">			.setReadinessProbe(Probe.newBuilder().setHandler(Handler.newBuilder()</span>
+<span class="fc" id="L131">					.setHttpGet(HTTPGetAction.newBuilder().setPort(IntOrString.newBuilder().setType(1).setStrVal(&quot;admin&quot;)).setPath(&quot;/ready&quot;)))</span>
+<span class="fc" id="L132">					.setInitialDelaySeconds(20)</span>
+<span class="fc" id="L133">					.setPeriodSeconds(1)</span>
+<span class="fc" id="L134">					.setFailureThreshold(1)</span>
+<span class="fc" id="L135">					.setSuccessThreshold(1)</span>
+<span class="fc" id="L136">					.setTimeoutSeconds(2)</span>
+					)
+<span class="fc" id="L138">			.setLivenessProbe(Probe.newBuilder().setHandler(Handler.newBuilder()</span>
+<span class="fc" id="L139">					.setHttpGet(HTTPGetAction.newBuilder().setPort(IntOrString.newBuilder().setType(1).setStrVal(&quot;admin&quot;)).setPath(&quot;/ready&quot;)))</span>
+<span class="fc" id="L140">					.setInitialDelaySeconds(20)</span>
+<span class="fc" id="L141">					.setPeriodSeconds(5)</span>
+<span class="fc" id="L142">					.setFailureThreshold(3)</span>
+<span class="fc" id="L143">					.setSuccessThreshold(1)</span>
+<span class="fc" id="L144">					.setTimeoutSeconds(2)</span>
+					)
+<span class="fc" id="L146">			.setLifecycle(Lifecycle.newBuilder()</span>
+					// Possible future fix for slow DNS lookups see https://blog.quentin-machu.fr/2018/06/24/5-15s-dns-lookups-on-kubernetes/
+					//  But only for non coreOS images
+					//.setPostStart(Handler.newBuilder().setExec(
+					//		ExecAction.newBuilder()
+					//		.addCommand(&quot;/bin/sh&quot;)
+					//		.addCommand(&quot;-c&quot;)							
+					//		.addCommand(&quot;/bin/echo 'options single-request-reopen' &gt;&gt; /etc/resolv.conf&quot;)))
+<span class="fc" id="L154">					.setPreStop(Handler.newBuilder().setExec(</span>
+<span class="fc" id="L155">							ExecAction.newBuilder()</span>
+<span class="fc" id="L156">							.addCommand(&quot;/bin/sh&quot;)</span>
+<span class="fc" id="L157">							.addCommand(&quot;-c&quot;)</span>
+<span class="fc" id="L158">							.addCommand(&quot;curl 127.0.0.1:&quot;+clusterManagerProperites.getEngineContainerPort()+&quot;/pause &amp;&amp; /bin/sleep 10&quot;))));</span>
+
+<span class="fc bfc" id="L160" title="All 2 branches covered.">		if (predictorDef.hasSvcOrchSpec())</span>
+		{
+<span class="pc bpc" id="L162" title="1 of 2 branches missed.">			if (predictorDef.getSvcOrchSpec().hasResources())</span>
+<span class="fc" id="L163">				cBuilder.setResources(predictorDef.getSvcOrchSpec().getResources());</span>
+<span class="pc bpc" id="L164" title="1 of 2 branches missed.">			if (predictorDef.getSvcOrchSpec().getEnvCount() &gt; 0)</span>
+<span class="nc" id="L165">				cBuilder.addAllEnv(predictorDef.getSvcOrchSpec().getEnvList());</span>
+		}
+<span class="fc bfc" id="L167" title="All 2 branches covered.">		else if (predictorDef.hasEngineResources()) // Add engine resources if specified (deprecated - will be removed)</span>
+<span class="fc" id="L168">		    cBuilder.setResources(predictorDef.getEngineResources());</span>
+		else {// set just default resource requests for cpu
+<span class="fc" id="L170">		    cBuilder.setResources(V1.ResourceRequirements.newBuilder().putRequests(&quot;cpu&quot;, Quantity.newBuilder().setString(DEFAULT_ENGINE_CPU_REQUEST).build()));</span>
+		}
+<span class="fc" id="L172">		return cBuilder.build();</span>
+	}
+	
+	
+	private Set&lt;String&gt; getEnvNamesProto(List&lt;EnvVar&gt; envs)
+	{
+<span class="fc" id="L178">		Set&lt;String&gt; s = new HashSet&lt;&gt;();</span>
+<span class="pc bpc" id="L179" title="1 of 2 branches missed.">		for(EnvVar e : envs)</span>
+<span class="nc" id="L180">			s.add(e.getName());</span>
+<span class="fc" id="L181">		return s;</span>
+	}
+	
+	private Integer getPort(List&lt;ContainerPort&gt; ports)
+	{
+<span class="pc bpc" id="L186" title="1 of 2 branches missed.">	    if (ports != null)</span>
+<span class="pc bpc" id="L187" title="1 of 2 branches missed.">	        for(ContainerPort p : ports)</span>
+<span class="nc bnc" id="L188" title="All 4 branches missed.">	            if (&quot;http&quot;.equals(p.getName()) || &quot;grpc&quot;.equals(p.getName()))</span>
+<span class="nc" id="L189">	                return p.getContainerPort();</span>
+<span class="fc" id="L190">	    return null;</span>
+	}
+	
+	private String extractPredictiveUnitParametersAsJson(PredictiveUnit predictiveUnit) {
+<span class="pc bpc" id="L194" title="1 of 2 branches missed.">	    if (predictiveUnit == null)</span>
+<span class="nc" id="L195">	        return &quot;&quot;;</span>
+<span class="fc" id="L196">        StringJoiner sj = new StringJoiner(&quot;,&quot;, &quot;[&quot;, &quot;]&quot;);</span>
+<span class="fc" id="L197">        List&lt;Parameter&gt; parameters = predictiveUnit.getParametersList();</span>
+<span class="pc bpc" id="L198" title="1 of 2 branches missed.">        for (Parameter parameter : parameters) {</span>
+            try {
+<span class="nc" id="L200">                String j = ProtoBufUtils.toJson(parameter, true,false);</span>
+<span class="nc" id="L201">                sj.add(j);</span>
+<span class="nc" id="L202">            } catch (InvalidProtocolBufferException e) {</span>
+<span class="nc" id="L203">                throw new RuntimeException(e);</span>
+<span class="nc" id="L204">            }</span>
+<span class="nc" id="L205">        }</span>
+<span class="fc" id="L206">        return sj.toString();</span>
+    }
+	
+	private PredictiveUnit findPredictiveUnitForContainer(PredictiveUnit unit,String name)
+	{
+<span class="fc bfc" id="L211" title="All 2 branches covered.">	    if (unit.getName().equals(name))</span>
+<span class="fc" id="L212">	        return unit;</span>
+	    else {
+<span class="fc bfc" id="L214" title="All 2 branches covered.">	        for(PredictiveUnit child : unit.getChildrenList())</span>
+	        {
+<span class="fc" id="L216">	            PredictiveUnit found = findPredictiveUnitForContainer(child,name);</span>
+<span class="fc bfc" id="L217" title="All 2 branches covered.">	            if (found != null)</span>
+<span class="fc" id="L218">	                return found;</span>
+<span class="fc" id="L219">	        }</span>
+<span class="fc" id="L220">	        return null;</span>
+	    }
+	}
+	
+	private V1.Container updateContainer(V1.Container c,PredictiveUnit pu,int portNum,String deploymentName,String predictorName)
+	{
+<span class="fc" id="L226">		V1.Container.Builder c2Builder = V1.Container.newBuilder(c);</span>
+        
+		//Add volume to get at pod annotations
+<span class="fc" id="L229">		c2Builder.addVolumeMounts(VolumeMount.newBuilder().setName(PODINFO_VOLUME_NAME).setMountPath(PODINFO_VOLUME_PATH).setReadOnly(true));</span>
+		
+<span class="fc" id="L231">		Integer containerPort = getPort(c.getPortsList());</span>
+		// Add container port and liveness and readiness probes if no container ports are specified
+<span class="pc bpc" id="L233" title="1 of 2 branches missed.">		if (containerPort == null)</span>
+		{
+<span class="pc bpc" id="L235" title="1 of 2 branches missed.">		    if (pu != null)</span>
+		    {
+<span class="fc bfc" id="L237" title="All 2 branches covered.">		        if (pu.getEndpoint().getType() == Endpoint.EndpointType.REST)</span>
+		        {
+<span class="fc" id="L239">		            c2Builder.addPorts(ContainerPort.newBuilder().setName(&quot;http&quot;).setContainerPort(portNum));</span>
+<span class="fc" id="L240">		            containerPort = portNum;</span>
+		            
+<span class="pc bpc" id="L242" title="1 of 2 branches missed.">		            if (!c.hasLivenessProbe())</span>
+		            {
+<span class="fc" id="L244">		                c2Builder.setLivenessProbe(Probe.newBuilder()</span>
+<span class="fc" id="L245">		                        .setHandler(Handler.newBuilder().setTcpSocket(TCPSocketAction.newBuilder().setPort(io.kubernetes.client.proto.IntStr.IntOrString.newBuilder().setType(1).setStrVal(&quot;http&quot;))))</span>
+<span class="fc" id="L246">		                        .setInitialDelaySeconds(60)</span>
+<span class="fc" id="L247">		                        .setPeriodSeconds(5)</span>
+		                        );
+		            }
+<span class="pc bpc" id="L250" title="1 of 2 branches missed.">		            if (!c.hasReadinessProbe())</span>
+		            {
+		                
+<span class="fc" id="L253">		                c2Builder.setReadinessProbe(Probe.newBuilder()</span>
+<span class="fc" id="L254">		                        .setHandler(Handler.newBuilder().setTcpSocket(TCPSocketAction.newBuilder().setPort(io.kubernetes.client.proto.IntStr.IntOrString.newBuilder().setType(1).setStrVal(&quot;http&quot;))))</span>
+<span class="fc" id="L255">		                        .setInitialDelaySeconds(20)</span>
+<span class="fc" id="L256">		                        .setPeriodSeconds(5)</span>
+		                        );
+		            }
+		        }
+		        else
+		        {
+<span class="fc" id="L262">		            c2Builder.addPorts(ContainerPort.newBuilder().setName(&quot;grpc&quot;).setContainerPort(portNum));</span>
+<span class="fc" id="L263">		            containerPort = portNum;		</span>
+		            
+<span class="pc bpc" id="L265" title="1 of 2 branches missed.">		            if (!c.hasLivenessProbe())</span>
+                    {
+<span class="fc" id="L267">                        c2Builder.setLivenessProbe(Probe.newBuilder()</span>
+<span class="fc" id="L268">                                .setHandler(Handler.newBuilder().setTcpSocket(TCPSocketAction.newBuilder().setPort(io.kubernetes.client.proto.IntStr.IntOrString.newBuilder().setType(1).setStrVal(&quot;grpc&quot;))))</span>
+<span class="fc" id="L269">                                .setInitialDelaySeconds(10)</span>
+<span class="fc" id="L270">                                .setPeriodSeconds(5)</span>
+                                );
+                    }
+<span class="pc bpc" id="L273" title="1 of 2 branches missed.">                    if (!c.hasReadinessProbe())</span>
+                    {
+                        
+<span class="fc" id="L276">                        c2Builder.setReadinessProbe(Probe.newBuilder()</span>
+<span class="fc" id="L277">                                .setHandler(Handler.newBuilder().setTcpSocket(TCPSocketAction.newBuilder().setPort(io.kubernetes.client.proto.IntStr.IntOrString.newBuilder().setType(1).setStrVal(&quot;grpc&quot;))))</span>
+<span class="fc" id="L278">                                .setInitialDelaySeconds(10)</span>
+<span class="fc" id="L279">                                .setPeriodSeconds(5)</span>
+                                );
+                        
+                    }
+		        }
+		    }
+		}
+		else
+		{
+			//throw new UnsupportedOperationException(String.format(&quot;Found container port already set with http or grpc label. This is not presently allowed. Found port {}&quot;,containerPort));
+		}
+		
+		// Add environment variable for the port used in case the model needs to access it
+<span class="fc" id="L292">		final String ENV_PREDICTIVE_UNIT_SERVICE_PORT =&quot;PREDICTIVE_UNIT_SERVICE_PORT&quot;;</span>
+<span class="fc" id="L293">		Set&lt;String&gt; envNames = this.getEnvNamesProto(c.getEnvList());</span>
+<span class="pc bpc" id="L294" title="1 of 2 branches missed.">		if (!envNames.contains(ENV_PREDICTIVE_UNIT_SERVICE_PORT))</span>
+<span class="fc" id="L295">			c2Builder.addEnv(EnvVar.newBuilder().setName(ENV_PREDICTIVE_UNIT_SERVICE_PORT).setValue(&quot;&quot;+containerPort));</span>
+				
+		//Add environment variable for the parameters passed in case the model needs to access it
+<span class="fc" id="L298">		final String ENV_PREDICTIVE_UNIT_PARAMETERS = &quot;PREDICTIVE_UNIT_PARAMETERS&quot;;</span>
+<span class="pc bpc" id="L299" title="1 of 2 branches missed.">		if (!envNames.contains(ENV_PREDICTIVE_UNIT_PARAMETERS))</span>
+<span class="fc" id="L300">		    c2Builder.addEnv(EnvVar.newBuilder().setName(ENV_PREDICTIVE_UNIT_PARAMETERS).setValue(extractPredictiveUnitParametersAsJson(pu)));</span>
+
+		//Add environment variable for the predictive unit ID, the predictor ID and the Deployment ID
+<span class="fc" id="L303">		final String ENV_PREDICTIVE_UNIT_ID = &quot;PREDICTIVE_UNIT_ID&quot;;</span>
+<span class="fc" id="L304">		final String ENV_PREDICTOR_ID = &quot;PREDICTOR_ID&quot;;</span>
+<span class="fc" id="L305">		final String ENV_SELDON_DEPLOYMENT_ID = &quot;SELDON_DEPLOYMENT_ID&quot;;</span>
+<span class="pc bpc" id="L306" title="1 of 2 branches missed.">		if (!envNames.contains(ENV_PREDICTIVE_UNIT_ID))</span>
+<span class="fc" id="L307">			c2Builder.addEnv(EnvVar.newBuilder().setName(ENV_PREDICTIVE_UNIT_ID).setValue(c.getName()));</span>
+<span class="pc bpc" id="L308" title="1 of 2 branches missed.">		if (!envNames.contains(ENV_PREDICTOR_ID))</span>
+<span class="fc" id="L309">			c2Builder.addEnv(EnvVar.newBuilder().setName(ENV_PREDICTOR_ID).setValue(predictorName));</span>
+<span class="pc bpc" id="L310" title="1 of 2 branches missed.">		if (!envNames.contains(ENV_SELDON_DEPLOYMENT_ID))</span>
+<span class="fc" id="L311">			c2Builder.addEnv(EnvVar.newBuilder().setName(ENV_SELDON_DEPLOYMENT_ID).setValue(deploymentName));</span>
+		
+		// Add a default lifecycle pre-stop if non exists
+<span class="pc bpc" id="L314" title="1 of 2 branches missed.">		if (!c.hasLifecycle())</span>
+		{
+<span class="pc bpc" id="L316" title="1 of 2 branches missed.">			if (!c.getLifecycle().hasPreStop())</span>
+			{
+<span class="fc" id="L318">				c2Builder.setLifecycle(Lifecycle.newBuilder(c.getLifecycle())</span>
+<span class="fc" id="L319">						.setPreStop(Handler.newBuilder().setExec(</span>
+<span class="fc" id="L320">								ExecAction.newBuilder().addCommand(&quot;/bin/sh&quot;).addCommand(&quot;-c&quot;).addCommand(&quot;/bin/sleep 5&quot;))));</span>
+			}
+		}
+		
+<span class="fc" id="L324">		return c2Builder.build();</span>
+	}
+	
+	private void updatePredictiveUnitBuilderByName(PredictiveUnit.Builder puBuilder,V1.Container container,String containerHostName)
+	{
+<span class="fc bfc" id="L329" title="All 2 branches covered.">	    if (puBuilder.getName().equals(container.getName()))</span>
+        {
+<span class="fc" id="L331">            Endpoint.Builder b = puBuilder.getEndpointBuilder();</span>
+<span class="fc bfc" id="L332" title="All 2 branches covered.">            for(ContainerPort p : container.getPortsList())</span>
+            {
+<span class="fc bfc" id="L334" title="All 2 branches covered.">                if (&quot;http&quot;.equals(p.getName())) //first found will be used</span>
+                {
+<span class="fc" id="L336">                    b.setServicePort(p.getContainerPort());</span>
+<span class="fc" id="L337">                    b.setType(Endpoint.EndpointType.REST);</span>
+<span class="fc" id="L338">                    b.setServiceHost(containerHostName);</span>
+<span class="pc bpc" id="L339" title="1 of 2 branches missed.">                } else if (&quot;grpc&quot;.equals(p.getName())) {</span>
+<span class="fc" id="L340">                    b.setServicePort(p.getContainerPort());</span>
+<span class="fc" id="L341">                    b.setType(Endpoint.EndpointType.GRPC);</span>
+<span class="fc" id="L342">                    b.setServiceHost(containerHostName);</span>
+                }
+<span class="fc" id="L344">            }</span>
+        }
+<span class="fc bfc" id="L346" title="All 2 branches covered.">      for(int i=0;i&lt;puBuilder.getChildrenCount();i++)</span>
+<span class="fc" id="L347">        updatePredictiveUnitBuilderByName(puBuilder.getChildrenBuilder(i),container,containerHostName);</span>
+<span class="fc" id="L348">	}</span>
+	
+	/*
+	private String getPredictorServiceNameValue(SeldonDeployment mlDep,String predictorName,String containerName)
+	{
+		return  mlDep.getSpec().getName()+&quot;-&quot;+predictorName+&quot;-&quot;+containerName;
+	}
+	*/
+	private String getPredictorServiceNameKey(String containerName)
+	{
+<span class="fc" id="L358">		return LABEL_SELDON_APP+&quot;-&quot;+containerName;</span>
+	}
+	
+
+
+	@Override
+	public SeldonDeployment updateStatus(SeldonDeployment mlDep) {
+<span class="fc" id="L365">		SeldonDeployment.Builder mlBuilder = SeldonDeployment.newBuilder(mlDep);</span>
+		
+<span class="pc bpc" id="L367" title="1 of 2 branches missed.">		if (!mlBuilder.hasStatus())</span>
+		{
+<span class="fc" id="L369">			mlBuilder.getStatusBuilder().setState(Constants.STATE_CREATING);</span>
+		}
+		
+<span class="fc" id="L372">		return mlBuilder.build();</span>
+	}
+
+	
+	@Override
+	public SeldonDeployment defaulting(SeldonDeployment mlDep) {
+<span class="fc" id="L378">		SeldonDeployment.Builder mlBuilder = SeldonDeployment.newBuilder(mlDep);</span>
+<span class="fc" id="L379">		String deploymentName = mlDep.getMetadata().getName();</span>
+<span class="fc" id="L380">		final boolean separateEnginePod = SeldonDeploymentUtils.hasSeparateEnginePodAnnotation(mlDep);</span>
+		
+<span class="pc bpc" id="L382" title="1 of 2 branches missed.">		final String namespace = (StringUtils.isEmpty(mlDep.getMetadata().getNamespace())) ? &quot;default&quot; : mlDep.getMetadata().getNamespace();</span>
+		
+<span class="fc bfc" id="L384" title="All 2 branches covered.">		for(int pbIdx=0;pbIdx&lt;mlDep.getSpec().getPredictorsCount();pbIdx++)</span>
+		{
+<span class="fc" id="L386">			PredictorSpec p = mlDep.getSpec().getPredictors(pbIdx);</span>
+<span class="fc" id="L387">			Map&lt;String,Integer&gt; servicePortMap = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L388">			int currentServicePortNum = clusterManagerProperites.getPuContainerPortBase();</span>
+<span class="fc bfc" id="L389" title="All 2 branches covered.">			for(int ptsIdx=0;ptsIdx&lt;p.getComponentSpecsCount();ptsIdx++)</span>
+			{
+<span class="fc" id="L391">				V1.PodTemplateSpec spec = p.getComponentSpecs(ptsIdx);</span>
+<span class="fc" id="L392">				ObjectMeta.Builder metaBuilder = ObjectMeta.newBuilder(spec.getMetadata());</span>
+
+<span class="fc" id="L394">				mlBuilder.getSpecBuilder().getPredictorsBuilder(pbIdx).getComponentSpecsBuilder(ptsIdx).getSpecBuilder().clearContainers();</span>
+<span class="fc" id="L395">				String predictorName = p.getName();</span>
+<span class="fc bfc" id="L396" title="All 2 branches covered.">				for(int cIdx = 0;cIdx &lt; spec.getSpec().getContainersCount();cIdx++)</span>
+				{
+<span class="fc" id="L398">					V1.Container c = spec.getSpec().getContainers(cIdx);</span>
+					// Only update graph and container if container is referenced in the inference graph
+					V1.Container c2;
+<span class="fc bfc" id="L401" title="All 2 branches covered.">					if(isContainerInGraph(p.getGraph(), c))</span>
+					{
+<span class="fc" id="L403">						String containerServiceKey = getPredictorServiceNameKey(c.getName());</span>
+<span class="fc" id="L404">						String containerServiceValue = seldonNameCreator.getSeldonServiceName(mlDep, p, c);</span>
+<span class="fc" id="L405">						metaBuilder.putLabels(containerServiceKey, containerServiceValue); </span>
+					
+						int portNum;
+<span class="pc bpc" id="L408" title="1 of 2 branches missed.">						if (servicePortMap.containsKey(c.getName()))</span>
+<span class="nc" id="L409">							portNum = servicePortMap.get(c.getName());</span>
+						else
+						{
+<span class="fc" id="L412">							portNum = currentServicePortNum;</span>
+<span class="fc" id="L413">							servicePortMap.put(c.getName(), portNum);</span>
+<span class="fc" id="L414">							currentServicePortNum++;</span>
+						}
+<span class="fc" id="L416">						c2 = this.updateContainer(c, findPredictiveUnitForContainer(mlDep.getSpec().getPredictors(pbIdx).getGraph(),c.getName()),portNum,deploymentName,predictorName);</span>
+						// Use FQDN if not a local request: See https://github.com/weaveworks/weave/issues/3287#issuecomment-384881708
+<span class="fc" id="L418">						updatePredictiveUnitBuilderByName(mlBuilder.getSpecBuilder().getPredictorsBuilder(pbIdx).getGraphBuilder(),c2,</span>
+<span class="fc bfc" id="L419" title="All 4 branches covered.">								ptsIdx == 0 &amp;&amp; !separateEnginePod ? &quot;localhost&quot; : (containerServiceValue+&quot;.&quot;+namespace+&quot;.svc.cluster.local.&quot;)); </span>
+<span class="fc" id="L420">					}</span>
+					else
+<span class="fc" id="L422">						c2 = c;</span>
+<span class="fc" id="L423">					mlBuilder.getSpecBuilder().getPredictorsBuilder(pbIdx).getComponentSpecsBuilder(ptsIdx).getSpecBuilder().addContainers(cIdx, c2);	</span>
+				}
+<span class="fc" id="L425">				mlBuilder.getSpecBuilder().getPredictorsBuilder(pbIdx).getComponentSpecsBuilder(ptsIdx).setMetadata(metaBuilder);</span>
+			}
+		}	
+		
+<span class="fc" id="L429">		return mlBuilder.build();</span>
+	}
+	
+	
+	private void checkPredictiveUnitsMicroservices(PredictiveUnit pu,PredictorSpec p) throws SeldonDeploymentException
+	{
+<span class="fc bfc" id="L435" title="All 2 branches covered.">        if (pu.hasType() &amp;&amp;</span>
+<span class="fc bfc" id="L436" title="All 2 branches covered.">                pu.getType() == PredictiveUnitType.MODEL &amp;&amp;</span>
+<span class="pc bpc" id="L437" title="1 of 2 branches missed.">                pu.getImplementation() == PredictiveUnitImplementation.UNKNOWN_IMPLEMENTATION)</span>
+        {
+<span class="fc" id="L439">            boolean found = false;</span>
+<span class="fc bfc" id="L440" title="All 2 branches covered.">            for(V1.PodTemplateSpec spec : p.getComponentSpecsList())</span>
+<span class="fc bfc" id="L441" title="All 2 branches covered.">            	for(V1.Container c : spec.getSpec().getContainersList())</span>
+            	{
+<span class="fc bfc" id="L443" title="All 2 branches covered.">            		if (c.getName().equals(pu.getName()))</span>
+            		{
+<span class="fc" id="L445">            			found = true;</span>
+<span class="fc" id="L446">            			break;</span>
+            		}
+<span class="fc" id="L448">            	}</span>
+<span class="fc bfc" id="L449" title="All 2 branches covered.">            if (!found)</span>
+            {
+<span class="fc" id="L451">                throw new SeldonDeploymentException(&quot;Can't find container for predictive unit with name &quot;+pu.getName());    </span>
+            }
+        }
+<span class="fc bfc" id="L454" title="All 2 branches covered.">        for(PredictiveUnit child :  pu.getChildrenList())</span>
+<span class="fc" id="L455">            checkPredictiveUnitsMicroservices(child,p);</span>
+<span class="fc" id="L456">	}</span>
+	
+	/*
+	 * If implementation is specified, ignore the rest
+	 * if not, implementation defaults to UNKNOWN_IMPLEMENTATION and
+	 * if type is specified ignore the rest
+	 * if not, type defaults to UNKNOWN_TYPE and
+	 * if methods is not specified, raise an error (we are in the case when none of implementation, type, methods has been specified)
+	 */
+	private void checkTypeMethodAndImpl(PredictiveUnit pu) throws SeldonDeploymentException
+	{
+<span class="pc bpc" id="L467" title="1 of 4 branches missed.">        if ((!pu.hasImplementation() || pu.getImplementation().getNumber() == PredictiveUnitImplementation.UNKNOWN_IMPLEMENTATION_VALUE) &amp;&amp;</span>
+<span class="pc bpc" id="L468" title="1 of 4 branches missed.">                (!pu.hasType() || pu.getType().getNumber() == PredictiveUnitType.UNKNOWN_TYPE_VALUE) &amp;&amp;</span>
+<span class="pc bpc" id="L469" title="1 of 2 branches missed.">                pu.getMethodsCount() == 0) </span>
+<span class="fc" id="L470">        	throw new SeldonDeploymentException(String.format(&quot;Predictive unit %s has no methods specified&quot;,pu.getName()));     </span>
+<span class="fc bfc" id="L471" title="All 2 branches covered.">        for(PredictiveUnit child :  pu.getChildrenList())</span>
+<span class="fc" id="L472">            checkTypeMethodAndImpl(child); </span>
+<span class="fc" id="L473">	}</span>
+
+	@Override
+	public void validate(SeldonDeployment mlDep) throws SeldonDeploymentException {
+
+<span class="fc" id="L478">		Set&lt;String&gt; predictorNames = new HashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L479" title="All 2 branches covered.">	    for(PredictorSpec p : mlDep.getSpec().getPredictorsList())</span>
+        {
+<span class="pc bpc" id="L481" title="1 of 2 branches missed.">	    	if (predictorNames.contains(p.getName()))</span>
+<span class="nc" id="L482">	    		throw new SeldonDeploymentException(String.format(&quot;Duplicate predictor name: %s&quot;,p.getName()));</span>
+	    	else
+<span class="fc" id="L484">	    		predictorNames.add(p.getName());</span>
+<span class="fc" id="L485">	        checkPredictiveUnitsMicroservices(p.getGraph(),p);</span>
+<span class="fc" id="L486">	        checkTypeMethodAndImpl(p.getGraph());</span>
+<span class="fc" id="L487">        }</span>
+        
+<span class="fc" id="L489">	}</span>
+	
+	
+	
+	
+	private V1OwnerReference getOwnerReferenceOld(SeldonDeployment mlDep)
+	{
+<span class="nc" id="L496">		return new V1OwnerReference()</span>
+<span class="nc" id="L497">				.apiVersion(mlDep.getApiVersion())</span>
+<span class="nc" id="L498">				.kind(mlDep.getKind())</span>
+<span class="nc" id="L499">				.controller(true)</span>
+<span class="nc" id="L500">				.name(mlDep.getMetadata().getName())</span>
+<span class="nc" id="L501">				.uid(mlDep.getMetadata().getUid());</span>
+	}
+	private OwnerReference getOwnerReference(SeldonDeployment mlDep)
+	{
+<span class="fc" id="L505">		return OwnerReference.newBuilder()</span>
+<span class="fc" id="L506">			.setApiVersion(mlDep.getApiVersion())</span>
+<span class="fc" id="L507">			.setKind(mlDep.getKind())</span>
+<span class="fc" id="L508">			.setController(true)</span>
+<span class="fc" id="L509">			.setName(mlDep.getMetadata().getName())</span>
+<span class="fc" id="L510">			.setUid(mlDep.getMetadata().getUid()).build();</span>
+	}
+	
+	private String getAmbassadorAnnotation(SeldonDeployment mlDep,String serviceName)
+	{
+<span class="fc" id="L515">		final String customConfig = mlDep.getSpec().getAnnotationsOrDefault(Constants.AMBASSADOR_CONFIG_ANNOTATION, null);</span>
+<span class="fc bfc" id="L516" title="All 2 branches covered.">		if (StringUtils.isNotEmpty(customConfig))</span>
+		{
+<span class="fc" id="L518">			logger.info(&quot;Adding custom Ambassador config &quot;,customConfig);</span>
+<span class="fc" id="L519">			return customConfig;</span>
+		}
+		else
+		{
+<span class="fc" id="L523">			logger.info(&quot;Creating default Ambassador config&quot;);</span>
+<span class="pc bpc" id="L524" title="1 of 2 branches missed.">			final String namespace = (StringUtils.isEmpty(mlDep.getMetadata().getNamespace())) ? &quot;default&quot; : mlDep.getMetadata().getNamespace();</span>
+<span class="fc" id="L525">			final String weight = mlDep.getSpec().getAnnotationsOrDefault(Constants.AMBASSADOR_WEIGHT_ANNOTATION, null);	</span>
+<span class="fc" id="L526">			final String shadowing = mlDep.getSpec().getAnnotationsOrDefault(Constants.AMBASSADOR_SHADOW_ANNOTATION, null);	</span>
+<span class="fc" id="L527">			final String serviceNameExternal = mlDep.getSpec().getAnnotationsOrDefault(Constants.AMBASSADOR_SERVICE_ANNOTATION, mlDep.getMetadata().getName());</span>
+<span class="fc" id="L528">			final String customHeader = mlDep.getSpec().getAnnotationsOrDefault(Constants.AMBASSADOR_HEADER_ANNOTATION, null);</span>
+<span class="fc" id="L529">			final String customRegexHeader = mlDep.getSpec().getAnnotationsOrDefault(Constants.AMBASSADOR_REGEX_HEADER_ANNOTATION, null);</span>
+			
+<span class="fc" id="L531">			final String restMapping = &quot;---\n&quot;+</span>
+	                &quot;apiVersion: ambassador/v0\n&quot; +
+	                &quot;kind:  Mapping\n&quot; +
+<span class="fc" id="L534">	                &quot;name:  seldon_&quot;+mlDep.getMetadata().getName()+&quot;_rest_mapping\n&quot; +</span>
+	                &quot;prefix: /seldon/&quot;+serviceNameExternal+&quot;/\n&quot; +
+<span class="fc" id="L536">	                &quot;service: &quot;+serviceName+&quot;.&quot;+namespace+&quot;:&quot;+clusterManagerProperites.getEngineContainerPort()+&quot;\n&quot; +</span>
+<span class="fc" id="L537">	                &quot;timeout_ms: &quot; + mlDep.getSpec().getAnnotationsOrDefault(Constants.REST_READ_TIMEOUT_ANNOTATION, &quot;3000&quot;) + &quot;\n&quot; +</span>
+<span class="fc bfc" id="L538" title="All 2 branches covered.">	                (StringUtils.isNotEmpty(customHeader) ? (&quot;headers:\n&quot; + &quot;  &quot;+customHeader+&quot;\n&quot;) : &quot;&quot;) +  </span>
+<span class="pc bpc" id="L539" title="1 of 2 branches missed.">	                (StringUtils.isNotEmpty(customRegexHeader) ? (&quot;regex_headers:\n&quot; + &quot;  &quot;+customRegexHeader+&quot;\n&quot;) : &quot;&quot;) +  </span>
+<span class="fc bfc" id="L540" title="All 2 branches covered.">	                (StringUtils.isNotEmpty(weight) ? (&quot;weight: &quot;+ weight + &quot;\n&quot;) : &quot;&quot;) +  </span>
+<span class="fc bfc" id="L541" title="All 2 branches covered.">					(StringUtils.isNotEmpty(shadowing) ? (&quot;shadow: true\n&quot;) : &quot;&quot;); </span>
+<span class="fc" id="L542">	        final String grpcMapping = &quot;---\n&quot;+</span>
+	                &quot;apiVersion: ambassador/v0\n&quot; +
+	                &quot;kind:  Mapping\n&quot; +
+<span class="fc" id="L545">	                &quot;name:  &quot;+mlDep.getMetadata().getName()+&quot;_grpc_mapping\n&quot; +</span>
+	                &quot;grpc: true\n&quot; +
+	                &quot;prefix: /seldon.protos.Seldon/\n&quot; +                
+	                &quot;rewrite: /seldon.protos.Seldon/\n&quot; + 
+	                &quot;headers:\n&quot;+
+	                &quot;  seldon: &quot;+serviceNameExternal + &quot;\n&quot; +
+<span class="fc bfc" id="L551" title="All 2 branches covered.">	                (StringUtils.isNotEmpty(customHeader) ? (&quot;  &quot;+customHeader+&quot;\n&quot;) : &quot;&quot;) +  </span>
+<span class="pc bpc" id="L552" title="1 of 2 branches missed.">	                (StringUtils.isNotEmpty(customRegexHeader) ? (&quot;regex_headers:\n&quot; + &quot;  &quot;+customRegexHeader+&quot;\n&quot;) : &quot;&quot;) +  </span>
+<span class="fc" id="L553">	                &quot;service: &quot;+serviceName+&quot;.&quot;+namespace+&quot;:&quot;+clusterManagerProperites.getEngineGrpcContainerPort()+&quot;\n&quot; +</span>
+<span class="fc" id="L554">	                &quot;timeout_ms: &quot; + mlDep.getSpec().getAnnotationsOrDefault(Constants.GRPC_READ_TIMEOUT_ANNOTATION, &quot;3000&quot;) + &quot;\n&quot; +</span>
+<span class="fc bfc" id="L555" title="All 2 branches covered.">	                (StringUtils.isNotEmpty(weight) ? (&quot;weight: &quot;+ weight + &quot;\n&quot;) : &quot;&quot;) +</span>
+<span class="fc bfc" id="L556" title="All 2 branches covered.">					(StringUtils.isNotEmpty(shadowing) ? (&quot;shadow: true\n&quot;) : &quot;&quot;); </span>
+
+<span class="fc" id="L558">			final String restMappingNamespaced = &quot;---\n&quot;+</span>
+	                &quot;apiVersion: ambassador/v0\n&quot; +
+	                &quot;kind:  Mapping\n&quot; +
+<span class="fc" id="L561">	                &quot;name:  seldon_&quot;+namespace+&quot;_&quot;+mlDep.getMetadata().getName()+&quot;_rest_mapping\n&quot; +</span>
+	                &quot;prefix: /seldon/&quot;+namespace+&quot;/&quot;+serviceNameExternal+&quot;/\n&quot; +
+<span class="fc" id="L563">	                &quot;service: &quot;+serviceName+&quot;.&quot;+namespace+&quot;:&quot;+clusterManagerProperites.getEngineContainerPort()+&quot;\n&quot; +</span>
+<span class="fc" id="L564">	                &quot;timeout_ms: &quot; + mlDep.getSpec().getAnnotationsOrDefault(Constants.REST_READ_TIMEOUT_ANNOTATION, &quot;3000&quot;) + &quot;\n&quot; +</span>
+<span class="fc bfc" id="L565" title="All 2 branches covered.">	                (StringUtils.isNotEmpty(customHeader) ? (&quot;headers:\n&quot; + &quot;  &quot;+customHeader+&quot;\n&quot;) : &quot;&quot;) +  </span>
+<span class="pc bpc" id="L566" title="1 of 2 branches missed.">	                (StringUtils.isNotEmpty(customRegexHeader) ? (&quot;regex_headers:\n&quot; + &quot;  &quot;+customRegexHeader+&quot;\n&quot;) : &quot;&quot;) +  </span>
+<span class="fc bfc" id="L567" title="All 2 branches covered.">	                (StringUtils.isNotEmpty(weight) ? (&quot;weight: &quot;+ weight + &quot;\n&quot;) : &quot;&quot;) +</span>
+<span class="fc bfc" id="L568" title="All 2 branches covered.">					(StringUtils.isNotEmpty(shadowing) ? (&quot;shadow: true\n&quot;) : &quot;&quot;); </span>
+			
+<span class="fc" id="L570">	        final String grpcMappingNamespaced = &quot;---\n&quot;+</span>
+	                &quot;apiVersion: ambassador/v0\n&quot; +
+	                &quot;kind:  Mapping\n&quot; +
+<span class="fc" id="L573">	                &quot;name:  &quot;+namespace+&quot;_&quot;+mlDep.getMetadata().getName()+&quot;_grpc_mapping\n&quot; +</span>
+	                &quot;grpc: true\n&quot; +
+	                &quot;prefix: /seldon.protos.Seldon/\n&quot; +                
+	                &quot;rewrite: /seldon.protos.Seldon/\n&quot; + 
+	                &quot;headers:\n&quot;+
+	                &quot;  seldon: &quot;+serviceNameExternal + &quot;\n&quot; +
+	                &quot;  namespace: &quot;+namespace + &quot;\n&quot; +
+<span class="fc bfc" id="L580" title="All 2 branches covered.">	                (StringUtils.isNotEmpty(customHeader) ? (&quot;  &quot;+customHeader+&quot;\n&quot;) : &quot;&quot;) +  </span>
+<span class="pc bpc" id="L581" title="1 of 2 branches missed.">	                (StringUtils.isNotEmpty(customRegexHeader) ? (&quot;regex_headers:\n&quot; + &quot;  &quot;+customRegexHeader+&quot;\n&quot;) : &quot;&quot;) +  </span>
+<span class="fc" id="L582">	                &quot;service: &quot;+serviceName+&quot;.&quot;+namespace+&quot;:&quot;+clusterManagerProperites.getEngineGrpcContainerPort()+&quot;\n&quot; +</span>
+<span class="fc" id="L583">	                &quot;timeout_ms: &quot; + mlDep.getSpec().getAnnotationsOrDefault(Constants.GRPC_READ_TIMEOUT_ANNOTATION, &quot;3000&quot;) + &quot;\n&quot; +</span>
+<span class="fc bfc" id="L584" title="All 2 branches covered.">	                (StringUtils.isNotEmpty(weight) ? (&quot;weight: &quot;+ weight + &quot;\n&quot;) : &quot;&quot;) +</span>
+<span class="fc bfc" id="L585" title="All 2 branches covered.">					(StringUtils.isNotEmpty(shadowing) ? (&quot;shadow: true\n&quot;) : &quot;&quot;); </span>
+	        
+<span class="pc bpc" id="L587" title="1 of 2 branches missed.">	        if (clusterManagerProperites.isSingleNamespace())</span>
+<span class="fc" id="L588">	        	return restMapping + grpcMapping + restMappingNamespaced + grpcMappingNamespaced;</span>
+	        else
+<span class="nc" id="L590">	        	return restMappingNamespaced + grpcMappingNamespaced;</span>
+		}
+	}
+	
+	/**
+	 * 
+	 * @param pu - A predictiveUnit
+	 * @param container - a container
+	 * @return True if container name can be found in graph of pu
+	 */
+	private boolean isContainerInGraph(PredictiveUnit pu,V1.Container container)
+	{
+<span class="fc bfc" id="L602" title="All 2 branches covered.">		 if (pu.getName().equals(container.getName()))</span>
+		 {
+<span class="fc" id="L604">	       return true;</span>
+		 }
+		 else 
+		 {
+<span class="fc bfc" id="L608" title="All 2 branches covered.">			 for(int i=0;i&lt;pu.getChildrenCount();i++)</span>
+<span class="fc bfc" id="L609" title="All 2 branches covered.">				 if (isContainerInGraph(pu.getChildren(i),container))</span>
+<span class="fc" id="L610">					 return true;</span>
+		 }
+<span class="fc" id="L612">		 return false;</span>
+	}
+	
+	private void addServicePort(PredictiveUnit pu,String containerName,ServiceSpec.Builder svcSpecBuilder)
+	{
+<span class="pc bpc" id="L617" title="1 of 2 branches missed.">		if (pu.hasEndpoint())</span>
+		{
+<span class="fc" id="L619">			Endpoint e = pu.getEndpoint();</span>
+<span class="fc bfc" id="L620" title="All 2 branches covered.">			if (pu.getName().equals(containerName))</span>
+			{
+<span class="pc bpc" id="L622" title="2 of 3 branches missed.">				switch(e.getType())</span>
+				{
+				case REST:
+<span class="fc" id="L625">					svcSpecBuilder.addPorts(ServicePort.newBuilder()</span>
+<span class="fc" id="L626">							.setProtocol(&quot;TCP&quot;)</span>
+<span class="fc" id="L627">							.setPort(e.getServicePort())</span>
+<span class="fc" id="L628">							.setTargetPort(IntOrString.newBuilder().setIntVal(e.getServicePort()))</span>
+<span class="fc" id="L629">							.setName(&quot;http&quot;)</span>
+							);
+<span class="fc" id="L631">					return;</span>
+				case GRPC:
+<span class="nc" id="L633">					svcSpecBuilder.addPorts(ServicePort.newBuilder()</span>
+<span class="nc" id="L634">							.setProtocol(&quot;TCP&quot;)</span>
+<span class="nc" id="L635">							.setPort(e.getServicePort())</span>
+<span class="nc" id="L636">							.setTargetPort(IntOrString.newBuilder().setIntVal(e.getServicePort()))</span>
+<span class="nc" id="L637">							.setName(&quot;grpc&quot;)</span>
+							);	
+<span class="nc" id="L639">					return;</span>
+				}
+			}
+		}
+<span class="fc bfc" id="L643" title="All 2 branches covered.">		for(int i=0;i&lt;pu.getChildrenCount();i++)</span>
+<span class="fc" id="L644">			addServicePort(pu.getChildren(i), containerName,svcSpecBuilder);</span>
+<span class="fc" id="L645">	}</span>
+	
+	
+	private Deployment createEngineDeployment(SeldonDeployment mlDep,PredictorSpec p,OwnerReference ownerRef,String serviceLabel,String seldonId) throws SeldonDeploymentException
+	{
+		{//Deployment for engine service orchestrator
+<span class="fc" id="L651">			PodTemplateSpec.Builder podSpecBuilder = PodTemplateSpec.newBuilder();</span>
+<span class="fc" id="L652">			podSpecBuilder.getSpecBuilder()</span>
+<span class="fc" id="L653">	    	.addContainers(createEngineContainer(mlDep,p))</span>
+<span class="fc" id="L654">	    	.setTerminationGracePeriodSeconds(20)</span>
+<span class="fc" id="L655">	    	.setServiceAccountName(clusterManagerProperites.getEngineContainerServiceAccountName())</span>
+<span class="fc" id="L656">	    	.addVolumes(Volume.newBuilder() // Add downwardAPI volume for annotations</span>
+<span class="fc" id="L657">	    			.setName(PODINFO_VOLUME_NAME)</span>
+<span class="fc" id="L658">	    			.setVolumeSource(VolumeSource.newBuilder().setDownwardAPI(DownwardAPIVolumeSource.newBuilder()</span>
+<span class="fc" id="L659">	    			.addItems(DownwardAPIVolumeFile.newBuilder().setPath(&quot;annotations&quot;)</span>
+<span class="fc" id="L660">	    					.setFieldRef(ObjectFieldSelector.newBuilder().setFieldPath(&quot;metadata.annotations&quot;))))));</span>
+		
+<span class="fc" id="L662">			String depName = seldonNameCreator.getServiceOrchestratorName(mlDep, p);</span>
+			//final String depName = seldonNameCreator.getSeldonDeploymentName(mlDep,p,spec);
+<span class="fc" id="L664">			podSpecBuilder.getMetadataBuilder()</span>
+<span class="fc" id="L665">				.putAllAnnotations(mlDep.getSpec().getAnnotationsMap()) // Add all spec annotations first</span>
+<span class="fc" id="L666">				.putAllAnnotations(p.getAnnotationsMap()) // ...then add those for predictor overwriting any from spec above</span>
+<span class="fc" id="L667">		    	.putAnnotations(&quot;prometheus.io/path&quot;, &quot;/prometheus&quot;)</span>
+<span class="fc" id="L668">		    	.putAnnotations(&quot;prometheus.io/port&quot;,&quot;&quot;+clusterManagerProperites.getEngineContainerPort())</span>
+<span class="fc" id="L669">		    	.putAnnotations(&quot;prometheus.io/scrape&quot;, &quot;true&quot;);</span>
+
+<span class="fc" id="L671">			ObjectMeta.Builder depMetaBuilder = ObjectMeta.newBuilder()</span>
+<span class="fc" id="L672">					.setName(depName)					</span>
+<span class="fc" id="L673">					.addOwnerReferences(ownerRef);</span>
+
+			// LABELS - START
+<span class="fc" id="L676">			podSpecBuilder.getMetadataBuilder()</span>
+<span class="fc" id="L677">				.putLabels(LABEL_SELDON_APP, serviceLabel) // key label for entry point to whole graphn- see service below</span>
+<span class="fc" id="L678">				.putLabels(&quot;app&quot;, depName);</span>
+<span class="fc" id="L679">			depMetaBuilder</span>
+<span class="fc" id="L680">				.putLabels(LABEL_SELDON_APP, serviceLabel)</span>
+<span class="fc" id="L681">				.putLabels(Constants.LABEL_SELDON_SVCORCH, &quot;true&quot;)</span>
+<span class="fc" id="L682">				.putLabels(Constants.LABEL_SELDON_ID, seldonId)</span>
+<span class="fc" id="L683">				.putLabels(&quot;app&quot;, depName)</span>
+<span class="fc" id="L684">				.putLabels(&quot;version&quot;, &quot;v1&quot;) // Add default version</span>
+<span class="fc" id="L685">				.putLabels(SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_KEY, SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_VAL);</span>
+			// Add all labels from the predictor but don't allow overwriting of key label for deployment selector
+<span class="pc bpc" id="L687" title="1 of 2 branches missed.">			for(Map.Entry&lt;String, String&gt; predictorLabel : p.getLabelsMap().entrySet())</span>
+			{
+<span class="nc bnc" id="L689" title="All 2 branches missed.">				if (!predictorLabel.getKey().equals(LABEL_SELDON_APP))</span>
+				{
+<span class="nc" id="L691">					depMetaBuilder.putLabels(predictorLabel.getKey(), predictorLabel.getValue());</span>
+<span class="nc" id="L692">					podSpecBuilder.getMetadataBuilder().putLabels(predictorLabel.getKey(), predictorLabel.getValue());</span>
+				}
+<span class="nc" id="L694">			}</span>
+			// LABELS - END
+			
+<span class="fc" id="L697">			Deployment deployment = V1beta1Extensions.Deployment.newBuilder()</span>
+<span class="fc" id="L698">					.setMetadata(depMetaBuilder)</span>
+<span class="fc" id="L699">					.setSpec(DeploymentSpec.newBuilder()</span>
+<span class="fc" id="L700">					        .setTemplate(podSpecBuilder.build())</span>
+<span class="fc" id="L701">					        .setStrategy(DeploymentStrategy.newBuilder().setRollingUpdate(RollingUpdateDeployment.newBuilder().setMaxUnavailable(IntOrString.newBuilder().setType(1).setStrVal(&quot;10%&quot;))))</span>
+<span class="fc" id="L702">							.setReplicas(p.getReplicas())</span>
+<span class="fc" id="L703">							.setSelector(LabelSelector.newBuilder().putMatchLabels(SeldonDeploymentOperatorImpl.LABEL_SELDON_APP, serviceLabel))</span>
+							)
+<span class="fc" id="L705">					.build();</span>
+			
+<span class="fc" id="L707">			return deployment;</span>
+		}
+	}
+	
+	
+	@Override
+	public DeploymentResources createResources(SeldonDeployment mlDep) throws SeldonDeploymentException {
+		
+<span class="fc" id="L715">		OwnerReference ownerRef = getOwnerReference(mlDep);</span>
+<span class="fc" id="L716">		List&lt;Deployment&gt; deployments = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L717">		List&lt;Service&gt; services = new ArrayList&lt;&gt;();</span>
+		// for each predictor Create/replace deployment
+		//final String serviceLabel = mlDep.getSpec().getName();
+<span class="fc" id="L720">		final String seldonId = seldonNameCreator.getSeldonId(mlDep);</span>
+<span class="fc" id="L721">		final String serviceLabel = seldonId;</span>
+<span class="fc" id="L722">		Set&lt;String&gt; createdServices = new HashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L723" title="All 2 branches covered.">		for(int pbIdx=0;pbIdx&lt;mlDep.getSpec().getPredictorsCount();pbIdx++)</span>
+		{
+<span class="fc" id="L725">			PredictorSpec p = mlDep.getSpec().getPredictors(pbIdx);</span>
+
+<span class="fc" id="L727">			final boolean separateEnginePod = SeldonDeploymentUtils.hasSeparateEnginePodAnnotation(mlDep);</span>
+<span class="fc bfc" id="L728" title="All 2 branches covered.">			if (separateEnginePod)</span>
+			{
+<span class="fc" id="L730">				deployments.add(createEngineDeployment(mlDep, p, ownerRef, serviceLabel, seldonId));</span>
+			}
+			
+			
+<span class="fc bfc" id="L734" title="All 2 branches covered.">			for(int ptsIdx=0;ptsIdx&lt;p.getComponentSpecsCount();ptsIdx++)</span>
+			{
+<span class="fc" id="L736">				V1.PodTemplateSpec spec = p.getComponentSpecs(ptsIdx);</span>
+				
+<span class="fc" id="L738">				final String depName = seldonNameCreator.getSeldonDeploymentName(mlDep,p,spec);</span>
+<span class="fc" id="L739">				PodTemplateSpec.Builder podSpecBuilder = PodTemplateSpec.newBuilder(spec);</span>
+<span class="fc" id="L740">				ObjectMeta.Builder depMetaBuilder = ObjectMeta.newBuilder()</span>
+<span class="fc" id="L741">						.setName(depName)</span>
+<span class="fc" id="L742">						.addOwnerReferences(ownerRef);</span>
+				
+				// LABELS - START
+<span class="fc" id="L745">				depMetaBuilder</span>
+<span class="fc" id="L746">					.putLabels(Constants.LABEL_SELDON_ID, seldonId)</span>
+<span class="fc" id="L747">					.putLabels(&quot;app&quot;, depName)</span>
+<span class="fc" id="L748">					.putLabels(SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_KEY, SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_VAL);</span>
+<span class="fc" id="L749">				podSpecBuilder.getMetadataBuilder()</span>
+<span class="fc" id="L750">					.putLabels(&quot;app&quot;, depName)</span>
+<span class="fc" id="L751">					.putLabels(Constants.LABEL_SELDON_ID, seldonId);</span>
+				// Add labels from the predictor for this deployment but not overwriting existing labels
+<span class="pc bpc" id="L753" title="1 of 2 branches missed.">				for(Map.Entry&lt;String, String&gt; predictorLabel : p.getLabelsMap().entrySet())</span>
+				{
+<span class="nc bnc" id="L755" title="All 2 branches missed.">					if (!depMetaBuilder.containsLabels(predictorLabel.getKey()))</span>
+<span class="nc" id="L756">						depMetaBuilder.putLabels(predictorLabel.getKey(), predictorLabel.getValue());</span>
+<span class="nc bnc" id="L757" title="All 2 branches missed.">					if (!podSpecBuilder.getMetadataBuilder().containsLabels(predictorLabel.getKey()))</span>
+<span class="nc" id="L758">						podSpecBuilder.getMetadataBuilder().putLabels(predictorLabel.getKey(), predictorLabel.getValue());</span>
+<span class="nc" id="L759">				}</span>
+				// LABELS - END
+
+<span class="fc" id="L762">				podSpecBuilder.getMetadataBuilder()</span>
+<span class="fc" id="L763">					.putAllAnnotations(mlDep.getSpec().getAnnotationsMap()) // Add all spec annotations first</span>
+<span class="fc" id="L764">					.putAllAnnotations(p.getAnnotationsMap()); // ...then add those for predictor overwriting any from spec above</span>
+				
+<span class="fc" id="L766">				podSpecBuilder.getSpecBuilder()</span>
+<span class="fc" id="L767">		    	.setTerminationGracePeriodSeconds(20)</span>
+<span class="fc" id="L768">		    	.addVolumes(Volume.newBuilder() // Add downwardAPI volume for annotations</span>
+<span class="fc" id="L769">		    			.setName(PODINFO_VOLUME_NAME)</span>
+<span class="fc" id="L770">		    			.setVolumeSource(VolumeSource.newBuilder().setDownwardAPI(DownwardAPIVolumeSource.newBuilder()</span>
+<span class="fc" id="L771">		    			.addItems(DownwardAPIVolumeFile.newBuilder().setPath(&quot;annotations&quot;)</span>
+<span class="fc" id="L772">		    					.setFieldRef(ObjectFieldSelector.newBuilder().setFieldPath(&quot;metadata.annotations&quot;))))));</span>
+				
+<span class="fc" id="L774">				LabelSelector.Builder labelSelector = LabelSelector.newBuilder();</span>
+				
+<span class="fc bfc" id="L776" title="All 4 branches covered.">				if (ptsIdx == 0 &amp;&amp; !separateEnginePod)</span>
+				{
+<span class="fc" id="L778">					podSpecBuilder.getSpecBuilder()</span>
+<span class="fc" id="L779">			    	.addContainers(createEngineContainer(mlDep,p))</span>
+<span class="fc" id="L780">			    	.setServiceAccountName(clusterManagerProperites.getEngineContainerServiceAccountName());</span>
+<span class="fc" id="L781">					podSpecBuilder.getMetadataBuilder()</span>
+<span class="fc" id="L782">				    	.putAnnotations(&quot;prometheus.io/path&quot;, &quot;/prometheus&quot;)</span>
+<span class="fc" id="L783">				    	.putAnnotations(&quot;prometheus.io/port&quot;,&quot;&quot;+clusterManagerProperites.getEngineContainerPort())</span>
+<span class="fc" id="L784">				    	.putAnnotations(&quot;prometheus.io/scrape&quot;, &quot;true&quot;);</span>
+					// LABELS - START
+<span class="fc" id="L786">					podSpecBuilder.getMetadataBuilder().putLabels(LABEL_SELDON_APP, serviceLabel); // key label for entry point to whole graphn- see service below						</span>
+<span class="fc" id="L787">					depMetaBuilder.putLabels(LABEL_SELDON_APP, serviceLabel).putLabels(Constants.LABEL_SELDON_SVCORCH, &quot;true&quot;);</span>
+<span class="fc" id="L788">					labelSelector.putMatchLabels(LABEL_SELDON_APP, serviceLabel);</span>
+					// LABELS - END
+				}
+
+				
+<span class="fc bfc" id="L793" title="All 2 branches covered.">				for(V1.Container c : spec.getSpec().getContainersList())</span>
+				{
+<span class="fc" id="L795">					final String containerServiceKey = getPredictorServiceNameKey(c.getName());</span>
+<span class="fc" id="L796">					final String containerServiceValue = seldonNameCreator.getSeldonServiceName(mlDep, p, c);</span>
+					
+					// Only add a Service if container is a Seldon component in graph and we haven't already created a service for this container name
+<span class="pc bpc" id="L799" title="2 of 4 branches missed.">					if (isContainerInGraph(p.getGraph(), c) &amp;&amp; !createdServices.contains(containerServiceValue))</span>
+					{
+						//Add service
+<span class="fc" id="L802">						Service.Builder s = Service.newBuilder()</span>
+<span class="fc" id="L803">								.setMetadata(ObjectMeta.newBuilder()</span>
+<span class="fc" id="L804">										.setName(containerServiceValue)</span>
+<span class="fc" id="L805">										.putLabels(containerServiceKey, containerServiceValue)</span>
+<span class="fc" id="L806">										.putLabels(&quot;seldon-deployment-id&quot;, mlDep.getSpec().getName())</span>
+<span class="fc" id="L807">										.addOwnerReferences(ownerRef)</span>
+										);
+<span class="fc" id="L809">						ServiceSpec.Builder svcSpecBuilder = ServiceSpec.newBuilder();</span>
+<span class="fc" id="L810">						addServicePort(p.getGraph(), c.getName(), svcSpecBuilder);</span>
+<span class="fc" id="L811">						svcSpecBuilder.setType(&quot;ClusterIP&quot;).putSelector(containerServiceKey,containerServiceValue);</span>
+
+						// LABELS - START
+						// Add the service selector label to both deployment, pod and Service Selector
+						// Deployment labels must remain the same so need to be aware of this for rolling updates to a deployment
+<span class="fc" id="L816">						depMetaBuilder.putLabels(containerServiceKey, containerServiceValue);</span>
+<span class="fc" id="L817">						podSpecBuilder.getMetadataBuilder().putLabels(containerServiceKey, containerServiceValue);</span>
+<span class="fc" id="L818">						labelSelector.putMatchLabels(containerServiceKey, containerServiceValue);</span>
+						// LABELS - END
+<span class="fc" id="L820">						s.setSpec(svcSpecBuilder);</span>
+<span class="fc" id="L821">						services.add(s.build());</span>
+<span class="fc" id="L822">						createdServices.add(containerServiceValue);</span>
+					}
+<span class="fc" id="L824">				}</span>
+				
+				
+				
+				
+<span class="fc" id="L829">				Deployment deployment = V1beta1Extensions.Deployment.newBuilder()</span>
+<span class="fc" id="L830">						.setMetadata(depMetaBuilder)</span>
+<span class="fc" id="L831">						.setSpec(DeploymentSpec.newBuilder()</span>
+<span class="fc" id="L832">						        .setTemplate(podSpecBuilder.build())</span>
+<span class="fc" id="L833">						        .setStrategy(DeploymentStrategy.newBuilder().setRollingUpdate(RollingUpdateDeployment.newBuilder().setMaxUnavailable(IntOrString.newBuilder().setType(1).setStrVal(&quot;10%&quot;))))</span>
+<span class="fc" id="L834">								.setReplicas(p.getReplicas())</span>
+<span class="fc" id="L835">								.setSelector(labelSelector.build())</span>
+								)
+								
+<span class="fc" id="L838">						.build();</span>
+				
+<span class="fc" id="L840">				deployments.add(deployment);</span>
+			}
+		}
+		
+<span class="fc" id="L844">		final boolean headlessSvc = SeldonDeploymentUtils.hasHeadlessSvcAnnotation(mlDep);</span>
+<span class="fc" id="L845">		Service.Builder svcBuilder = Service.newBuilder()</span>
+<span class="fc" id="L846">					.setMetadata(ObjectMeta.newBuilder()</span>
+<span class="fc" id="L847">							.setName(serviceLabel)</span>
+<span class="fc" id="L848">							.putLabels(LABEL_SELDON_APP, serviceLabel)</span>
+<span class="fc" id="L849">							.putLabels(&quot;seldon-deployment-id&quot;, mlDep.getSpec().getName())</span>
+<span class="fc" id="L850">							.addOwnerReferences(ownerRef)</span>
+<span class="fc" id="L851">							.putAnnotations(&quot;getambassador.io/config&quot;,getAmbassadorAnnotation(mlDep,serviceLabel))</span>
+							)
+<span class="fc" id="L853">					.setSpec(ServiceSpec.newBuilder()</span>
+<span class="fc" id="L854">                            .addPorts(ServicePort.newBuilder()</span>
+<span class="fc" id="L855">                                    .setProtocol(&quot;TCP&quot;)</span>
+<span class="fc" id="L856">                                    .setPort(clusterManagerProperites.getEngineContainerPort())</span>
+<span class="fc" id="L857">                                    .setTargetPort(IntOrString.newBuilder().setIntVal(clusterManagerProperites.getEngineContainerPort()))</span>
+<span class="fc" id="L858">                                    .setName(&quot;http&quot;)</span>
+                                    )
+<span class="fc" id="L860">                            .addPorts(ServicePort.newBuilder()</span>
+<span class="fc" id="L861">                                    .setProtocol(&quot;TCP&quot;)</span>
+<span class="fc" id="L862">                                    .setPort(clusterManagerProperites.getEngineGrpcContainerPort())</span>
+<span class="fc" id="L863">                                    .setTargetPort(IntOrString.newBuilder().setIntVal(clusterManagerProperites.getEngineGrpcContainerPort()))</span>
+<span class="fc" id="L864">                                    .setName(&quot;grpc&quot;)</span>
+                                    )
+<span class="fc" id="L866">							.putSelector(SeldonDeploymentOperatorImpl.LABEL_SELDON_APP,serviceLabel)</span>
+							);
+<span class="pc bpc" id="L868" title="1 of 2 branches missed.">		if (headlessSvc)</span>
+		{
+<span class="nc" id="L870">			logger.info(&quot;Creating headless service for &quot;,mlDep.getSpec().getName());</span>
+<span class="nc" id="L871">			svcBuilder.getSpecBuilder().setClusterIP(&quot;None&quot;);</span>
+		}
+
+<span class="fc" id="L874">		services.add(svcBuilder.build());</span>
+		
+
+		
+		// Create service for deployment
+<span class="fc" id="L879">		return new DeploymentResources(deployments, services);</span>
+	}
+	
+	public static class DeploymentResources {
+		
+		List&lt;Deployment&gt; deployments;
+		List&lt;Service&gt; services;
+		
+		public DeploymentResources(List&lt;Deployment&gt; deployments, List&lt;Service&gt; services) {
+<span class="fc" id="L888">			super();</span>
+<span class="fc" id="L889">			this.deployments = deployments;</span>
+<span class="fc" id="L890">			this.services = services;</span>
+<span class="fc" id="L891">		}</span>
+		
+
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

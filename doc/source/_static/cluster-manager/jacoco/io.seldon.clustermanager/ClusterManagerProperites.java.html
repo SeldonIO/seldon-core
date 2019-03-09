@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ClusterManagerProperites.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">seldon-cluster-manager</a> &gt; <a href="index.source.html" class="el_package">io.seldon.clustermanager</a> &gt; <span class="el_source">ClusterManagerProperites.java</span></div><h1>ClusterManagerProperites.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * Copyright 2017 Seldon Technologies Ltd (http://www.seldon.io/)
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *******************************************************************************/
+package io.seldon.clustermanager;
+
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
+<span class="fc" id="L21">public class ClusterManagerProperites {</span>
+
+    private int engineContainerPort;
+    private int engineGrpcContainerPort;
+    private String engineContainerImageAndVersion;
+<span class="fc" id="L26">    private String engineContainerImagePullPolicy = &quot;IfNotPresent&quot;;</span>
+<span class="fc" id="L27">    private String engineContainerServiceAccountName = &quot;default&quot;;</span>
+    private int puContainerPortBase;
+    private String namespace;
+<span class="fc" id="L30">    private boolean singleNamespace = true;</span>
+<span class="fc" id="L31">    private int engineUser = 8889;</span>
+
+    public int getEngineContainerPort() {
+<span class="fc" id="L34">        return engineContainerPort;</span>
+    }
+
+    public void setEngineContainerPort(int engineContainerPort) {
+<span class="fc" id="L38">        this.engineContainerPort = engineContainerPort;</span>
+<span class="fc" id="L39">    }</span>
+
+    public int getEngineGrpcContainerPort() {
+<span class="fc" id="L42">        return engineGrpcContainerPort;</span>
+    }
+
+    public void setEngineGrpcContainerPort(int engineGrpcContainerPort) {
+<span class="nc" id="L46">        this.engineGrpcContainerPort = engineGrpcContainerPort;</span>
+<span class="nc" id="L47">    }</span>
+
+    public String getEngineContainerImageAndVersion() {
+<span class="fc" id="L50">        return engineContainerImageAndVersion;</span>
+    }
+
+    public void setEngineContainerImageAndVersion(String engineContainerImageAndVersion) {
+<span class="fc" id="L54">        this.engineContainerImageAndVersion = engineContainerImageAndVersion;</span>
+<span class="fc" id="L55">    }</span>
+
+    public String getEngineContainerImagePullPolicy() {
+<span class="fc" id="L58">        return engineContainerImagePullPolicy;</span>
+    }
+
+    public void setEngineContainerImagePullPolicy(String engineContainerImagePullPolicy) {
+<span class="fc" id="L62">        this.engineContainerImagePullPolicy = engineContainerImagePullPolicy;</span>
+<span class="fc" id="L63">    }</span>
+    
+    public String getEngineContainerServiceAccountName() {
+<span class="fc" id="L66">		return engineContainerServiceAccountName;</span>
+	}
+
+	public void setEngineContainerServiceAccountName(String engineContainerServiceAccountName) {
+<span class="fc" id="L70">		this.engineContainerServiceAccountName = engineContainerServiceAccountName;</span>
+<span class="fc" id="L71">	}</span>
+
+	public int getPuContainerPortBase() {
+<span class="fc" id="L74">        return puContainerPortBase;</span>
+    }
+
+    public void setPuContainerPortBase(int puContainerPortBase) {
+<span class="fc" id="L78">        this.puContainerPortBase = puContainerPortBase;</span>
+<span class="fc" id="L79">    }</span>
+    
+	public String getNamespace() {
+<span class="fc" id="L82">		return namespace;</span>
+	}
+
+	public void setNamespace(String namespace) {
+<span class="nc" id="L86">		this.namespace = namespace;</span>
+<span class="nc" id="L87">	}</span>
+	
+	public boolean isSingleNamespace() {
+<span class="fc" id="L90">		return singleNamespace;</span>
+	}
+
+	public void setSingleNamespace(boolean singleNamespace) {
+<span class="fc" id="L94">		this.singleNamespace = singleNamespace;</span>
+<span class="fc" id="L95">	}</span>
+
+	public int getEngineUser() {
+<span class="fc" id="L98">		return engineUser;</span>
+	}
+
+	public void setEngineUser(int engineUser) {
+<span class="nc" id="L102">		this.engineUser = engineUser;</span>
+<span class="nc" id="L103">	}</span>
+
+	@Override
+    public String toString() {
+<span class="nc" id="L107">        return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

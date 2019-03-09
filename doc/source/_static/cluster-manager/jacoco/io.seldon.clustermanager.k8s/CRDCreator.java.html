@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CRDCreator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">seldon-cluster-manager</a> &gt; <a href="index.source.html" class="el_package">io.seldon.clustermanager.k8s</a> &gt; <span class="el_source">CRDCreator.java</span></div><h1>CRDCreator.java</h1><pre class="source lang-java linenums">package io.seldon.clustermanager.k8s;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.lang.reflect.Type;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import com.google.gson.reflect.TypeToken;
+
+import io.kubernetes.client.ApiClient;
+import io.kubernetes.client.ApiException;
+import io.kubernetes.client.ApiResponse;
+import io.kubernetes.client.Pair;
+import io.kubernetes.client.ProgressRequestBody;
+import io.kubernetes.client.ProgressResponseBody;
+import io.kubernetes.client.models.V1beta1CustomResourceDefinition;
+import io.seldon.clustermanager.k8s.client.K8sClientProvider;
+
+@Component
+public class CRDCreator {
+<span class="fc" id="L34">	protected static Logger logger = LoggerFactory.getLogger(CRDCreator.class.getName());</span>
+	
+	private final K8sClientProvider k8sClientProvider;
+
+	@Autowired
+	public CRDCreator(K8sClientProvider k8sClientProvider) {
+<span class="nc" id="L40">		super();</span>
+<span class="nc" id="L41">		this.k8sClientProvider = k8sClientProvider;</span>
+<span class="nc" id="L42">	}</span>
+	public void createCRD() throws IOException, ApiException
+	{
+<span class="nc" id="L45">		String jsonStr = readFileFromClasspath(&quot;crd.json&quot;);</span>
+<span class="nc" id="L46">		ApiClient client = k8sClientProvider.getClient();</span>
+		try {
+<span class="nc" id="L48">			createCustomResourceDefinition(client,jsonStr.getBytes(),null);</span>
+<span class="nc" id="L49">			logger.info(&quot;Created CRD&quot;);</span>
+<span class="nc" id="L50">		} catch (ApiException e) {</span>
+<span class="nc bnc" id="L51" title="All 2 branches missed.">			if (e.getCode() == 409)// CRD Already Exists</span>
+			{
+<span class="nc" id="L53">				logger.info(&quot;CRD already exists - ignoring.&quot;);</span>
+			}
+<span class="nc bnc" id="L55" title="All 2 branches missed.">			else if (e.getCode() == 403)// Forbidden - Maybe CRD exists, but we don't know</span>
+			{
+<span class="nc" id="L57">				logger.warn(&quot;No auth to create CRD. Hopefully, one exists.&quot;,e); // Hopefully a cluster-wide CRD has been created for us</span>
+			}
+			else
+			{
+<span class="nc" id="L61">				logger.warn(&quot;Unexpected error trying to create CRD&quot;,e);</span>
+<span class="nc" id="L62">				throw e;</span>
+			}
+<span class="nc" id="L64">		}</span>
+<span class="nc" id="L65">	}</span>
+	private String readFromInputStream(InputStream inputStream)
+			  throws IOException {
+<span class="nc" id="L68">			    StringBuilder resultStringBuilder = new StringBuilder();</span>
+<span class="nc" id="L69">			    try (BufferedReader br</span>
+			      = new BufferedReader(new InputStreamReader(inputStream))) {
+			        String line;
+<span class="nc bnc" id="L72" title="All 2 branches missed.">			        while ((line = br.readLine()) != null) {</span>
+<span class="nc" id="L73">			            resultStringBuilder.append(line).append(&quot;\n&quot;);</span>
+			        }
+			    }
+<span class="nc" id="L76">			  return resultStringBuilder.toString();</span>
+			}
+	private String readFileFromClasspath(String name) throws IOException
+	{
+<span class="nc" id="L80">		InputStream in = this.getClass().getClassLoader().getResourceAsStream(name);</span>
+<span class="nc" id="L81">		String data = readFromInputStream(in);</span>
+<span class="nc" id="L82">		return data;</span>
+	}
+	
+	private String readFile(String path, Charset encoding) 
+			  throws IOException 
+	 {
+<span class="nc" id="L88">		 byte[] encoded = Files.readAllBytes(Paths.get(path));</span>
+<span class="nc" id="L89">		 return new String(encoded, encoding);</span>
+	 }	
+
+	protected V1beta1CustomResourceDefinition createCustomResourceDefinition(ApiClient apiClient,byte[] body, String pretty)
+			throws ApiException {
+<span class="nc" id="L94">		ApiResponse&lt;V1beta1CustomResourceDefinition&gt; resp = createCustomResourceDefinitionWithHttpInfo(apiClient,body, pretty);</span>
+<span class="nc" id="L95">		return resp.getData();</span>
+	}
+
+	private ApiResponse&lt;V1beta1CustomResourceDefinition&gt; createCustomResourceDefinitionWithHttpInfo(ApiClient apiClient,byte[] body,
+			String pretty) throws ApiException {
+<span class="nc" id="L100">		com.squareup.okhttp.Call call = createCustomResourceDefinitionCall(apiClient,body, pretty, null, null);</span>
+<span class="nc" id="L101">		Type localVarReturnType = new TypeToken&lt;V1beta1CustomResourceDefinition&gt;() {</span>
+<span class="nc" id="L102">		}.getType();</span>
+<span class="nc" id="L103">		return apiClient.execute(call, localVarReturnType);</span>
+	}
+
+	public com.squareup.okhttp.Call createCustomResourceDefinitionCall(ApiClient apiClient,byte[] body, String pretty,
+			final ProgressResponseBody.ProgressListener progressListener,
+			final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+<span class="nc" id="L109">		Object localVarPostBody = body;</span>
+
+		// create path and map variables
+<span class="nc" id="L112">		String localVarPath = &quot;/apis/apiextensions.k8s.io/v1beta1/customresourcedefinitions&quot;;</span>
+
+<span class="nc" id="L114">		List&lt;Pair&gt; localVarQueryParams = new ArrayList&lt;Pair&gt;();</span>
+<span class="nc" id="L115">		List&lt;Pair&gt; localVarCollectionQueryParams = new ArrayList&lt;Pair&gt;();</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">		if (pretty != null)</span>
+<span class="nc" id="L117">			localVarQueryParams.addAll(apiClient.parameterToPair(&quot;pretty&quot;, pretty));</span>
+
+<span class="nc" id="L119">		Map&lt;String, String&gt; localVarHeaderParams = new HashMap&lt;String, String&gt;();</span>
+
+<span class="nc" id="L121">		Map&lt;String, Object&gt; localVarFormParams = new HashMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L123">		final String[] localVarAccepts = { &quot;application/json&quot;, &quot;application/yaml&quot;,</span>
+				&quot;application/vnd.kubernetes.protobuf&quot; };
+<span class="nc" id="L125">		final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">		if (localVarAccept != null)</span>
+<span class="nc" id="L127">			localVarHeaderParams.put(&quot;Accept&quot;, localVarAccept);</span>
+
+<span class="nc" id="L129">		final String[] localVarContentTypes = { &quot;*/*&quot; };</span>
+<span class="nc" id="L130">		final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+<span class="nc" id="L131">		localVarHeaderParams.put(&quot;Content-Type&quot;, localVarContentType);</span>
+
+<span class="nc bnc" id="L133" title="All 2 branches missed.">		if (progressListener != null) {</span>
+<span class="nc" id="L134">			apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {</span>
+				@Override
+				public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain)
+						throws IOException {
+<span class="nc" id="L138">					com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());</span>
+<span class="nc" id="L139">					return originalResponse.newBuilder()</span>
+<span class="nc" id="L140">							.body(new ProgressResponseBody(originalResponse.body(), progressListener)).build();</span>
+				}
+			});
+		}
+
+<span class="nc" id="L145">		String[] localVarAuthNames = new String[] { &quot;BearerToken&quot; };</span>
+<span class="nc" id="L146">		return apiClient.buildCall(localVarPath, &quot;POST&quot;, localVarQueryParams, localVarCollectionQueryParams,</span>
+				localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

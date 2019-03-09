@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DeploymentWatcher.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">seldon-cluster-manager</a> &gt; <a href="index.source.html" class="el_package">io.seldon.clustermanager.k8s</a> &gt; <span class="el_source">DeploymentWatcher.java</span></div><h1>DeploymentWatcher.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * Copyright 2017 Seldon Technologies Ltd (http://www.seldon.io/)
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *******************************************************************************/
+package io.seldon.clustermanager.k8s;
+
+import java.io.IOException;
+import java.net.SocketTimeoutException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.gson.reflect.TypeToken;
+
+import io.kubernetes.client.ApiClient;
+import io.kubernetes.client.ApiException;
+import io.kubernetes.client.apis.ExtensionsV1beta1Api;
+import io.kubernetes.client.models.ExtensionsV1beta1Deployment;
+import io.kubernetes.client.models.ExtensionsV1beta1DeploymentStatus;
+import io.kubernetes.client.models.V1OwnerReference;
+import io.kubernetes.client.util.Config;
+import io.kubernetes.client.util.Watch;
+import io.seldon.clustermanager.ClusterManagerProperites;
+import io.seldon.clustermanager.k8s.client.K8sApiProvider;
+import io.seldon.clustermanager.k8s.client.K8sClientProvider;
+
+@Component
+public class DeploymentWatcher {
+
+<span class="fc" id="L48">	protected static Logger logger = LoggerFactory.getLogger(DeploymentWatcher.class.getName());</span>
+	
+<span class="fc" id="L50">	private int resourceVersion = 0;</span>
+<span class="fc" id="L51">	private int resourceVersionProcessed = 0;</span>
+	
+	private final SeldonDeploymentStatusUpdate statusUpdater;
+	private final K8sClientProvider k8sClientProvider;
+	private final K8sApiProvider k8sApiProvider;
+	private final String namespace;
+	private final boolean clusterWide;
+	
+	@Autowired
+	public DeploymentWatcher(K8sApiProvider k8sApiProvider,K8sClientProvider k8sClientProvider,ClusterManagerProperites clusterManagerProperites,SeldonDeploymentStatusUpdate statusUpdater)
+<span class="fc" id="L61">	{</span>
+<span class="fc" id="L62">		this.statusUpdater = statusUpdater;</span>
+<span class="pc bpc" id="L63" title="1 of 2 branches missed.">		this.namespace = StringUtils.isEmpty(clusterManagerProperites.getNamespace()) ? &quot;default&quot; : clusterManagerProperites.getNamespace();</span>
+<span class="pc bpc" id="L64" title="1 of 2 branches missed.">		this.clusterWide = !clusterManagerProperites.isSingleNamespace();</span>
+<span class="fc" id="L65">		this.k8sClientProvider = k8sClientProvider;</span>
+<span class="fc" id="L66">		this.k8sApiProvider = k8sApiProvider;</span>
+<span class="fc" id="L67">	}</span>
+	
+	public int watchDeployments(int resourceVersion,int resourceVersionProcessed) throws ApiException, IOException 
+	{
+<span class="fc" id="L71">		String rs = null;</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">		if (resourceVersion &gt; 0)</span>
+<span class="fc" id="L73">			rs = &quot;&quot;+resourceVersion;</span>
+<span class="fc" id="L74">		logger.debug(&quot;Watching with rs &quot;+rs);</span>
+		
+<span class="fc" id="L76">		int maxResourceVersion = resourceVersion;		</span>
+
+<span class="fc" id="L78">		ApiClient client = k8sClientProvider.getClient();</span>
+<span class="fc" id="L79">		ExtensionsV1beta1Api api = k8sApiProvider.getExtensionsV1beta1Api(client);</span>
+
+		Watch&lt;ExtensionsV1beta1Deployment&gt; watch;
+<span class="pc bpc" id="L82" title="1 of 2 branches missed.">		if (this.clusterWide)</span>
+		{
+<span class="nc" id="L84">			watch = Watch.createWatch(</span>
+					client,
+<span class="nc" id="L86">					api.listDeploymentForAllNamespacesCall(null, null, false, SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_KEY+&quot;=&quot;+SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_VAL, null, null, rs, 10, true, null, null),</span>
+<span class="nc" id="L87">					new TypeToken&lt;Watch.Response&lt;ExtensionsV1beta1Deployment&gt;&gt;(){}.getType());</span>
+		}
+		else
+		{
+<span class="fc" id="L91">			watch = Watch.createWatch(</span>
+					client,
+<span class="fc" id="L93">					api.listNamespacedDeploymentCall(namespace, null, null, null,false,SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_KEY+&quot;=&quot;+SeldonDeploymentOperatorImpl.LABEL_SELDON_TYPE_VAL, null,rs, 10, true,null,null),</span>
+<span class="fc" id="L94">					new TypeToken&lt;Watch.Response&lt;ExtensionsV1beta1Deployment&gt;&gt;(){}.getType());</span>
+		}
+
+		try
+		{
+<span class="fc bfc" id="L99" title="All 2 branches covered.">		    for (Watch.Response&lt;ExtensionsV1beta1Deployment&gt; item : watch) {</span>
+<span class="pc bpc" id="L100" title="1 of 2 branches missed.">		    	if (item.object == null)</span>
+		    	{
+<span class="nc" id="L102">		    		logger.warn(&quot;Bad watch returned will reset resource version type:{} status:{} &quot;,item.type,item.status.toString());</span>
+<span class="nc" id="L103">		    		return 0;</span>
+		    	}
+<span class="fc" id="L105">                int resourceVersionNew = Integer.parseInt(item.object.getMetadata().getResourceVersion());</span>
+<span class="fc bfc" id="L106" title="All 2 branches covered.">                if (resourceVersionNew &lt;= resourceVersionProcessed)</span>
+                {
+<span class="fc" id="L108">                    logger.warn(&quot;Looking at already processed request - skipping&quot;);</span>
+                }
+                else
+                {
+<span class="pc bpc" id="L112" title="1 of 2 branches missed.">                    if (resourceVersionNew &gt; maxResourceVersion)</span>
+<span class="fc" id="L113">                        maxResourceVersion = resourceVersionNew;</span>
+<span class="pc bpc" id="L114" title="1 of 2 branches missed.">                    if (item.object.getMetadata().getOwnerReferences() == null)</span>
+                    {
+<span class="nc" id="L116">                        logger.warn(&quot;Found possible seldon controlled deployment which has no owner reference. Ignoring.&quot;);</span>
+                    }
+                    else
+                    {
+<span class="pc bpc" id="L120" title="1 of 3 branches missed.">                        switch(item.type)</span>
+                        {
+                        case &quot;ADDED&quot;:
+                        case &quot;MODIFIED&quot;:
+<span class="fc bfc" id="L124" title="All 2 branches covered.">                            for (V1OwnerReference ownerRef : item.object.getMetadata().getOwnerReferences())</span>
+                            {
+<span class="pc bpc" id="L126" title="2 of 4 branches missed.">                                if (ownerRef.getKind().equals(KubeCRDHandlerImpl.KIND) &amp;&amp; item.object.getStatus() != null)</span>
+                                {
+<span class="fc" id="L128">                                    String mlDepName = ownerRef.getName();</span>
+<span class="fc" id="L129">                                    String depName = item.object.getMetadata().getName();</span>
+<span class="pc bpc" id="L130" title="1 of 2 branches missed.">                                    String namespace = StringUtils.isEmpty(item.object.getMetadata().getNamespace()) ? &quot;default&quot; : item.object.getMetadata().getNamespace();</span>
+<span class="fc" id="L131">                                    ExtensionsV1beta1DeploymentStatus status = item.object.getStatus();</span>
+<span class="fc" id="L132">                                    logger.info(&quot;{} {} {} replicas:{} replicasAvailable(ready):{} replicasUnavilable:{} replicasReady(available):{}&quot;,item.type,mlDepName,depName,status.getReplicas(),status.getReadyReplicas(),status.getUnavailableReplicas(),status.getAvailableReplicas());</span>
+<span class="fc" id="L133">                                    statusUpdater.updateStatus(mlDepName, depName, item.object.getStatus().getReplicas(),item.object.getStatus().getReadyReplicas(),namespace);</span>
+                                }
+<span class="fc" id="L135">                            }</span>
+<span class="fc" id="L136">                            break;</span>
+                        case &quot;DELETED&quot;:
+<span class="fc bfc" id="L138" title="All 2 branches covered.">                            for (V1OwnerReference ownerRef : item.object.getMetadata().getOwnerReferences())</span>
+                            {
+<span class="pc bpc" id="L140" title="2 of 4 branches missed.">                                if (ownerRef.getKind().equals(KubeCRDHandlerImpl.KIND) &amp;&amp; item.object.getStatus() != null)</span>
+                                {
+<span class="fc" id="L142">                                    String mlDepName = ownerRef.getName();</span>
+<span class="fc" id="L143">                                    String depName = item.object.getMetadata().getName();</span>
+<span class="fc" id="L144">                                    ExtensionsV1beta1DeploymentStatus status = item.object.getStatus();</span>
+<span class="fc" id="L145">                                    logger.info(&quot;{} {} {} replicas:{} replicasAvailable(ready):{} replicasUnavilable:{} replicasReady(available):{}&quot;,item.type,mlDepName,depName,status.getReplicas(),status.getReadyReplicas(),status.getUnavailableReplicas(),status.getAvailableReplicas());</span>
+<span class="pc bpc" id="L146" title="1 of 2 branches missed.">                                    String namespace = StringUtils.isEmpty(item.object.getMetadata().getNamespace()) ? &quot;default&quot; : item.object.getMetadata().getNamespace();</span>
+<span class="fc" id="L147">                                    statusUpdater.removeStatus(mlDepName,depName,namespace);</span>
+                                }
+<span class="fc" id="L149">                            }</span>
+<span class="fc" id="L150">                            break;</span>
+                        default:
+<span class="nc" id="L152">                            logger.error(&quot;Unknown type &quot;+item.type);</span>
+                        }
+                        //for modified get owner reference and determine which predictor it is
+                        //get the MLDeployment from API or local cache and update status
+                        // put this logic in new class
+                    }
+                }
+<span class="fc" id="L159">            }</span>
+        }
+<span class="nc" id="L161">        catch(RuntimeException e)</span>
+        {
+<span class="nc bnc" id="L163" title="All 2 branches missed.">            if (e.getCause() instanceof SocketTimeoutException)</span>
+<span class="nc" id="L164">                return maxResourceVersion;</span>
+            else
+<span class="nc" id="L166">                throw e;</span>
+        } 
+        finally {
+<span class="fc" id="L169">            watch.close();</span>
+        }
+<span class="fc" id="L171">        return maxResourceVersion;</span>
+	}
+		
+<span class="fc" id="L174">	private static final SimpleDateFormat dateFormat = new SimpleDateFormat(&quot;HH:mm:ss&quot;);</span>
+	
+	@Scheduled(fixedDelay = 5000)
+    public void watch() throws JsonProcessingException, ApiException, IOException {
+<span class="nc" id="L178">        logger.debug(&quot;The time is now {}&quot;, dateFormat.format(new Date()));</span>
+<span class="nc" id="L179">        this.resourceVersion = this.watchDeployments(this.resourceVersion,this.resourceVersionProcessed);</span>
+<span class="nc bnc" id="L180" title="All 2 branches missed.">        if (this.resourceVersion &gt; this.resourceVersionProcessed)</span>
+        {
+<span class="nc" id="L182">        	logger.debug(&quot;Updating processed resource version to &quot;+resourceVersion);</span>
+<span class="nc" id="L183">        	this.resourceVersionProcessed = this.resourceVersion;</span>
+        }
+        else
+        {
+<span class="nc" id="L187">        	logger.debug(&quot;Not updating resourceVersion - current:&quot;+this.resourceVersion+&quot; Processed:&quot;+this.resourceVersionProcessed);</span>
+        }
+<span class="nc" id="L189">    }</span>
+		
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>
