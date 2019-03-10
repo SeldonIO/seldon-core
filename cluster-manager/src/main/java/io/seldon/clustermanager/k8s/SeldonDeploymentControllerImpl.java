@@ -48,18 +48,50 @@ import io.kubernetes.client.proto.V1beta1Extensions.Deployment;
 import io.kubernetes.client.proto.V2beta1Autoscaling.HorizontalPodAutoscaler;
 import io.seldon.clustermanager.k8s.SeldonDeploymentOperatorImpl.DeploymentResources;
 import io.seldon.clustermanager.k8s.client.K8sClientProvider;
+import io.seldon.clustermanager.k8s.tasks.K8sTaskScheduler;
+import io.seldon.clustermanager.k8s.tasks.SeldonDeploymentTaskKey;
 import io.seldon.clustermanager.pb.ProtoBufUtils;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
+/**
+ * Handle top level managing of Seldon Deployments. Creating/updating/deleting the required underlying resources via the k8s API.
+ * 
+ * @author clive
+ *
+ */
 @Component
 public class SeldonDeploymentControllerImpl implements SeldonDeploymentController {
 
+	/**
+	 * Task to update Seldon deployment status to failed.
+	 * @author clive
+	 *
+	 */
+	public static class FailStatusTask implements Runnable {
+		
+		private final SeldonDeployment sdep;
+		private final KubeCRDHandler crdHandler;
+
+		public FailStatusTask(SeldonDeployment sdep, KubeCRDHandler crdHandler) {
+			super();
+			this.sdep = sdep;
+			this.crdHandler = crdHandler;
+		}
+
+		@Override
+		public void run() {
+			crdHandler.updateSeldonDeploymentStatus(sdep);
+		}
+		
+	}
+	
 	private final static Logger logger = LoggerFactory.getLogger(SeldonDeploymentControllerImpl.class);
 	private final SeldonDeploymentOperator operator;
 	private final K8sClientProvider clientProvider;
 	private final KubeCRDHandler crdHandler;
 	private final SeldonDeploymentCache mlCache;
 	private final SeldonNameCreator seldonNameCreator = new SeldonNameCreator();
+	private final K8sTaskScheduler k8sTaskScheduler;
 	
 	static final String DEPLOYMENT_API_VERSION = "extensions/v1beta1";
 	static final String AUTOSCALER_API_VERSION = "autoscaling/v2beta1";
@@ -70,12 +102,14 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 
 	
 	@Autowired
-	public SeldonDeploymentControllerImpl(SeldonDeploymentOperator operator, K8sClientProvider clientProvider,KubeCRDHandler crdHandler,SeldonDeploymentCache mlCache) {
+	public SeldonDeploymentControllerImpl(SeldonDeploymentOperator operator, K8sClientProvider clientProvider,KubeCRDHandler crdHandler,SeldonDeploymentCache mlCache,
+			K8sTaskScheduler k8sScheduler) {
 		super();
 		this.operator = operator;
 		this.clientProvider = clientProvider;
 		this.crdHandler = crdHandler;
 		this.mlCache = mlCache;
+		this.k8sTaskScheduler = k8sScheduler;
 	}
 	
 	private void createHPAs(ProtoClient client,String namespace,List<HorizontalPodAutoscaler> hpas) throws ApiException, IOException, SeldonDeploymentException
@@ -334,11 +368,17 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 		}
 	}
 	
+	/**
+	 * Fail the deployment adding the exception message in the status field
+	 * @param mlDep existing Seldon Deployment
+	 * @param e Exception that occurred
+	 */
 	private void failDeployment(SeldonDeployment mlDep,Exception e)
 	{
         SeldonDeployment.Builder mlBuilder = SeldonDeployment.newBuilder(mlDep);
         mlBuilder.getStatusBuilder().setState(Constants.STATE_FAILED).setDescription(e.getMessage());
-        crdHandler.updateSeldonDeploymentStatus(mlBuilder.build());
+        k8sTaskScheduler.submit(new SeldonDeploymentTaskKey(mlDep.getMetadata().getName(), mlDep.getApiVersion(), SeldonDeploymentUtils.getNamespace(mlDep)), 
+        		new FailStatusTask(mlBuilder.build(), crdHandler));
 	}
 	
 	@Override
@@ -412,7 +452,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 		    {
 		        logger.debug("Running updates for "+mlDep.getMetadata().getName());
 		        mlCache.put(mlDep);
-		        SeldonDeployment mlDepStatusUpdated = operator.updateStatus(mlDep);
+		        //SeldonDeployment mlDepStatusUpdated = operator.updateStatus(mlDep);
 		        SeldonDeployment mlDep2 = operator.defaulting(mlDep);
 		        operator.validate(mlDep2);
 		        DeploymentResources resources = operator.createResources(mlDep2);
@@ -422,8 +462,8 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 		        createHPAs(client, namespace, resources.hpas);
 		        if (!mlDep.hasStatus())
 		        {
-		           logger.debug("Pushing updated SeldonDeployment "+mlDepStatusUpdated.getMetadata().getName()+" back to kubectl");
-		           crdHandler.updateSeldonDeploymentStatus(mlDepStatusUpdated);
+		           //logger.debug("Pushing updated SeldonDeployment "+mlDepStatusUpdated.getMetadata().getName()+" back to kubectl");
+		           //crdHandler.updateSeldonDeploymentStatus(mlDepStatusUpdated);
 		        }
 		        else
 		            logger.debug("Not pushing an update as no change to status for SeldonDeployment "+mlDep2.getMetadata().getName());

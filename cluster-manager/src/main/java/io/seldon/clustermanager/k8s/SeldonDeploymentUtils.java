@@ -32,9 +32,20 @@ import io.seldon.clustermanager.pb.QuantityUtils;
 import io.seldon.clustermanager.pb.TimeUtils;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
+/**
+ * Set of general utility methods
+ * @author clive
+ *
+ */
 public class SeldonDeploymentUtils {
 	private  static Logger logger = LoggerFactory.getLogger(SeldonDeploymentUtils.class.getName());
 	
+	/**
+	 * Parse some JSON into a Seldon Deployment. Will throw exception if unknown fields are found.
+	 * @param json
+	 * @return SeldonDeployment
+	 * @throws InvalidProtocolBufferException
+	 */
 	public static SeldonDeployment jsonToSeldonDeployment(String json) throws InvalidProtocolBufferException {
 		SeldonDeployment.Builder mlBuilder = SeldonDeployment.newBuilder();
 		JsonFormat.parser()//.ignoringUnknownFields()
@@ -46,6 +57,13 @@ public class SeldonDeploymentUtils {
 		return mlBuilder.build();
 	}
 	
+	/**
+	 * Turn a SeldonDeployment into a JSON string.
+	 * @param mlDep
+	 * @param omittingWhitespace
+	 * @return
+	 * @throws InvalidProtocolBufferException
+	 */
 	public static String toJson(SeldonDeployment mlDep,boolean omittingWhitespace) throws InvalidProtocolBufferException
 	{
 		Printer jsonPrinter = JsonFormat.printer().preservingProtoFieldNames()
@@ -59,12 +77,27 @@ public class SeldonDeploymentUtils {
 				
 	}
 	
+	/**
+	 * Get the namespace from a Seldon Deployment choosing default if none found
+	 * @param d
+	 * @return
+	 */
 	public static String getNamespace(SeldonDeployment d)
 	{
 	    if (StringUtils.isEmpty(d.getMetadata().getNamespace()))
 	        return "default";
 	    else
 	        return d.getMetadata().getNamespace();
+	}
+	
+	/**
+	 * Get the version from the version field of a resource. Assumes a two part string separated by slash
+	 * @param apiVersion
+	 * @return The version part - e.g. v1alpha2
+	 */
+	public static String getVersionFromApiVersion(String apiVersion)
+	{
+		return apiVersion.split("/")[1];
 	}
 	
 	public static boolean hasSeparateEnginePodAnnotation(SeldonDeployment mlDep)

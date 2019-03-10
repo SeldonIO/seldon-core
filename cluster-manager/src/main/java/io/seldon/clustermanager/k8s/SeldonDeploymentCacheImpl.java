@@ -15,19 +15,18 @@
  *******************************************************************************/
 package io.seldon.clustermanager.k8s;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
-import io.seldon.clustermanager.ClusterManagerProperites;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
+/**
+ * Reference implementation for Seldon Deployment cache.
+ * @author clive
+ *
+ */
 @Component
 public class SeldonDeploymentCacheImpl implements SeldonDeploymentCache {
 
@@ -35,15 +34,20 @@ public class SeldonDeploymentCacheImpl implements SeldonDeploymentCache {
 		    .maximumSize(1000)
 		    .build();	
 	
-	private final KubeCRDHandler crdHandler;
-	
+	/**
+	 * A key derived to ensure unique references basedon name, the api version and namespace of the Seldon Deployment
+	 * @author clive
+	 *
+	 */
 	private static class CacheKey {
 		
 		private String name;
+		private String version;
 		private String namespace;
-		public CacheKey(String name, String namespace) {
+		public CacheKey(String name, String version, String namespace) {
 			super();
 			this.name = name;
+			this.version = version;
 			this.namespace = namespace;
 		}
 		@Override
@@ -52,6 +56,7 @@ public class SeldonDeploymentCacheImpl implements SeldonDeploymentCache {
 			int result = 1;
 			result = prime * result + ((name == null) ? 0 : name.hashCode());
 			result = prime * result + ((namespace == null) ? 0 : namespace.hashCode());
+			result = prime * result + ((version == null) ? 0 : version.hashCode());
 			return result;
 		}
 		@Override
@@ -73,49 +78,28 @@ public class SeldonDeploymentCacheImpl implements SeldonDeploymentCache {
 					return false;
 			} else if (!namespace.equals(other.namespace))
 				return false;
+			if (version == null) {
+				if (other.version != null)
+					return false;
+			} else if (!version.equals(other.version))
+				return false;
 			return true;
 		}
-		
-		
 	}
-	
-	@Autowired
-	public SeldonDeploymentCacheImpl(ClusterManagerProperites clusterManagerProperites,KubeCRDHandler crdHandler)
-	{
-		this.crdHandler = crdHandler;
-	}
-	
+		
 	@Override
     public SeldonDeployment get(SeldonDeployment dep) {
-       return cache.getIfPresent(new CacheKey(dep.getMetadata().getName(), SeldonDeploymentUtils.getNamespace(dep)));
+       return cache.getIfPresent(new CacheKey(dep.getMetadata().getName(), dep.getApiVersion(), SeldonDeploymentUtils.getNamespace(dep)));
     }
-	
-	//@Override
-	public SeldonDeployment getOrLoad(String name,String namespace) {
-		try {
-			return cache.get(new CacheKey(name, namespace), new Callable<SeldonDeployment>() {
-			    @Override
-			    public SeldonDeployment call() throws ExecutionException {
-			      SeldonDeployment mlDep = SeldonDeploymentCacheImpl.this.crdHandler.getSeldonDeployment(name,namespace);
-			      if (mlDep == null)
-			    	  throw new ExecutionException(null);
-			      else
-			    	  return mlDep;
-			    }
-			  });
-		} catch (ExecutionException e) {
-			return null;
-		}
-	}
 	
 	@Override
 	public void put(SeldonDeployment dep) {
-		cache.put(new CacheKey(dep.getMetadata().getName(), SeldonDeploymentUtils.getNamespace(dep)), dep);
+		cache.put(new CacheKey(dep.getMetadata().getName(), dep.getApiVersion(), SeldonDeploymentUtils.getNamespace(dep)), dep);
 	}
 
 	@Override
 	public void remove(SeldonDeployment dep) {
-		cache.invalidate(new CacheKey(dep.getMetadata().getName(), SeldonDeploymentUtils.getNamespace(dep)));
+		cache.invalidate(new CacheKey(dep.getMetadata().getName(), dep.getApiVersion(), SeldonDeploymentUtils.getNamespace(dep)));
 		
 	}
 

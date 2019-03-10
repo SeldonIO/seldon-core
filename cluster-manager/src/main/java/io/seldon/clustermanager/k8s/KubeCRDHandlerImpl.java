@@ -30,27 +30,29 @@ import com.google.protobuf.UninitializedMessageException;
 
 import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.ApiException;
-import io.kubernetes.client.apis.CoreV1Api;
 import io.kubernetes.client.apis.CustomObjectsApi;
 import io.kubernetes.client.apis.ExtensionsV1beta1Api;
 import io.kubernetes.client.models.ExtensionsV1beta1DeploymentList;
 import io.kubernetes.client.models.V1ServiceList;
 import io.kubernetes.client.models.V2beta1HorizontalPodAutoscalerList;
 import io.kubernetes.client.proto.Meta.ObjectMeta;
-import io.kubernetes.client.proto.V2beta1Autoscaling;
 import io.kubernetes.client.util.Config;
 import io.seldon.clustermanager.ClusterManagerProperites;
 import io.seldon.clustermanager.k8s.client.K8sApiProvider;
 import io.seldon.clustermanager.k8s.client.K8sClientProvider;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
+/**
+ * Reference implementation for interacting with Seldon Deployments
+ * @author clive
+ *
+ */
 @Component
 public class KubeCRDHandlerImpl implements KubeCRDHandler {
 
 	private final static Logger logger = LoggerFactory.getLogger(KubeCRDHandlerImpl.class);
 	
 	public static final String GROUP = "machinelearning.seldon.io";
-	public static final String VERSION = "v1alpha2";
 	public static final String KIND_PLURAL = "seldondeployments";
 	public static final String KIND = "SeldonDeployment";
 	
@@ -80,7 +82,7 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 	
 	
 	@Override
-	public void updateRaw(String json,String seldonDeploymentName,String namespace) {
+	public void updateRaw(String json,String seldonDeploymentName, String version, String namespace) {
 		try
 		{
 			logger.info(json);
@@ -90,14 +92,14 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 			{
 				try 
 				{
-					api.replaceNamespacedCustomObjectStatus(GROUP, VERSION, namespace, KIND_PLURAL, seldonDeploymentName,json.getBytes());
+					api.replaceNamespacedCustomObjectStatus(GROUP, version, namespace, KIND_PLURAL, seldonDeploymentName,json.getBytes());
 				} catch (ApiException e) {
 					replaceStatusResource = false; // Stop using the /status endpoint (maybe because the k8s version does not have this <1.10)
 					logger.warn("Failed to update deployment in kubernetes ",e);
 				}
 			}
 			if (!replaceStatusResource)
-				api.replaceNamespacedCustomObject(GROUP, VERSION, namespace, KIND_PLURAL, seldonDeploymentName,json.getBytes());
+				api.replaceNamespacedCustomObject(GROUP, version, namespace, KIND_PLURAL, seldonDeploymentName,json.getBytes());
 		} catch (InvalidProtocolBufferException e) {
 			logger.error("Failed to update deployment in kubernetes ",e);
 		} catch (ApiException e) {
@@ -132,16 +134,18 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 
 			if (replaceStatusResource)
 			{
+				final String version = SeldonDeploymentUtils.getVersionFromApiVersion(mldep.getApiVersion());
 				try 
 				{
-					api.replaceNamespacedCustomObjectStatus(GROUP, VERSION, namespace, KIND_PLURAL, mlDeployment.getMetadata().getName(),json.getBytes());
+
+					api.replaceNamespacedCustomObjectStatus(GROUP, version, namespace, KIND_PLURAL, mlDeployment.getMetadata().getName(),json.getBytes());
 				} catch (ApiException e) {
 					replaceStatusResource = false; // Stop using the /status endpoint (maybe because the k8s version does not have this <1.10)
-					logger.warn("Failed to update deployment in kubernetes ",e);
+					logger.warn("Failed to update deployment in kubernetes {} {}",version,e.getResponseBody(),e);
 				}
 			}
 			if (!replaceStatusResource)
-				api.replaceNamespacedCustomObject(GROUP, VERSION, namespace, KIND_PLURAL, mlDeployment.getMetadata().getName(),json.getBytes());
+				api.replaceNamespacedCustomObject(GROUP, SeldonDeploymentUtils.getVersionFromApiVersion(mldep.getApiVersion()), namespace, KIND_PLURAL, mlDeployment.getMetadata().getName(),json.getBytes());
 		} catch (InvalidProtocolBufferException e) {
 			logger.error("Failed to update deployment in kubernetes ",e);
 		} catch (ApiException e) {
@@ -153,12 +157,12 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 	}
 	
 	@Override
-	public SeldonDeployment getSeldonDeployment(String name,String namespace) {
+	public SeldonDeployment getSeldonDeployment(String name,String version, String namespace) {
 		try
 		{
 			ApiClient client = k8sClientProvider.getClient();
 			CustomObjectsApi api = k8sApiProvider.getCustomObjectsApi(client);
-			Object resp = api.getNamespacedCustomObject(GROUP, VERSION, namespace, KIND_PLURAL, name);
+			Object resp = api.getNamespacedCustomObject(GROUP, version, namespace, KIND_PLURAL, name);
 			Gson gson = new GsonBuilder().create();
     		String json = gson.toJson(resp);
     		

@@ -17,6 +17,11 @@ package io.seldon.clustermanager.k8s;
 
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
+/**
+ * A cache for Seldon Deployments
+ * @author clive
+ *
+ */
 public interface SeldonDeploymentCache {
 
     public SeldonDeployment get(SeldonDeployment dep);
