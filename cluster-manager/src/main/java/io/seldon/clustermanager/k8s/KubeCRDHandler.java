@@ -20,11 +20,16 @@ import io.kubernetes.client.models.V1ServiceList;
 import io.kubernetes.client.models.V2beta1HorizontalPodAutoscalerList;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
+/**
+ * Interactions to update and get details about Seldon deployments and associated resources
+ * @author clive
+ *
+ */
 public interface KubeCRDHandler {
 
-	public void updateRaw(String json,String seldonDeploymentName,String namespace);
+	public void updateRaw(String json, String seldonDeploymentName, String version, String namespace);
 	public void updateSeldonDeploymentStatus(SeldonDeployment mlDep);
-	public SeldonDeployment getSeldonDeployment(String name,String namespace);
+	public SeldonDeployment getSeldonDeployment(String name, String version, String namespace);	
 	public ExtensionsV1beta1DeploymentList getOwnedDeployments(String seldonDeploymentName,String namespace);
 	public V1ServiceList getOwnedServices(String seldonDeploymentName,String namespace);
 	public V2beta1HorizontalPodAutoscalerList getOwnedHPAs(String seldonDeploymentName,String namespace);

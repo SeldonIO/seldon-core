@@ -108,7 +108,7 @@ public class SeldonDeploymentWatcherTest extends AppTest {
         SeldonDeploymentWatcher watcher = new SeldonDeploymentWatcher(mockK8sApiProvider, mockK8sClientProvider, mockCRDCreator, props, mockSeldonDeploymentController, mockMLCache, mockCRDHandler);
 
         Assert.assertEquals("Expected and Actual resource versions do not match !!!",
-                1, watcher.watchSeldonMLDeployments(0, 0));
+                1, watcher.watchSeldonMLDeployments("v1alpha1", 0, 0));
         verify(mockSeldonDeploymentController,times(1)).createOrReplaceSeldonDeployment(any(DeploymentProtos.SeldonDeployment.class),any(Boolean.class));
     }
 
@@ -118,7 +118,7 @@ public class SeldonDeploymentWatcherTest extends AppTest {
         createMocks("src/test/resources/model_simple.json", "MODIFIED",true);
         props.setSingleNamespace(true);
         SeldonDeploymentWatcher watcher = new SeldonDeploymentWatcher(mockK8sApiProvider, mockK8sClientProvider, mockCRDCreator, props, mockSeldonDeploymentController, mockMLCache, mockCRDHandler);
-        watcher.watchSeldonMLDeployments(0, 0);
+        watcher.watchSeldonMLDeployments("v1alpha1", 0, 0);
         verify(mockSeldonDeploymentController,times(1)).createOrReplaceSeldonDeployment(any(DeploymentProtos.SeldonDeployment.class),any(Boolean.class));
     }
 
@@ -126,7 +126,7 @@ public class SeldonDeploymentWatcherTest extends AppTest {
     public void testDeletedSeldonMLDeploymentsForSingleNameSpaceCluster() throws Exception {
         createMocks("src/test/resources/model_simple.json", "DELETED",true);
         SeldonDeploymentWatcher watcher = new SeldonDeploymentWatcher(mockK8sApiProvider, mockK8sClientProvider, mockCRDCreator, props, mockSeldonDeploymentController, mockMLCache, mockCRDHandler);
-        watcher.watchSeldonMLDeployments(0,0);
+        watcher.watchSeldonMLDeployments("v1alpha1",0,0);
         verify(mockMLCache,times(1)).remove(any(DeploymentProtos.SeldonDeployment.class));
     }
 
@@ -137,8 +137,8 @@ public class SeldonDeploymentWatcherTest extends AppTest {
         //we expect to see a warning message in the logs for failure to parse SeldonDeployment
         createMocks("src/test/resources/deployment_model_deployed.json", "ADDED",true);
         SeldonDeploymentWatcher watcher = new SeldonDeploymentWatcher(mockK8sApiProvider, mockK8sClientProvider, mockCRDCreator, props, mockSeldonDeploymentController, mockMLCache, mockCRDHandler);
-        watcher.watchSeldonMLDeployments(0,0);
-        verify(mockCRDHandler,times(1)).updateRaw(anyString(),anyString(),anyString());
+        watcher.watchSeldonMLDeployments("v1alpha1", 0,0);
+        verify(mockCRDHandler,times(1)).updateRaw(anyString(), anyString(),anyString(),anyString());
     }
 
     @Test
@@ -146,7 +146,7 @@ public class SeldonDeploymentWatcherTest extends AppTest {
         createMocks("src/test/resources/model_simple.json", "ADDED",false);
         SeldonDeploymentWatcher watcher = new SeldonDeploymentWatcher(mockK8sApiProvider, mockK8sClientProvider, mockCRDCreator, props, mockSeldonDeploymentController, mockMLCache, mockCRDHandler);
         Assert.assertEquals("Expected and Actual resource versions do not match !!!",
-                1, watcher.watchSeldonMLDeployments(0, 0));
+                1, watcher.watchSeldonMLDeployments("v1alpha1", 0, 0));
         verify(mockSeldonDeploymentController,times(1)).createOrReplaceSeldonDeployment(any(DeploymentProtos.SeldonDeployment.class),any(Boolean.class));
 
     }
@@ -155,7 +155,7 @@ public class SeldonDeploymentWatcherTest extends AppTest {
     public void testModifiedSeldonMLDeploymentsForMultiNamespaceCluster() throws Exception {
         createMocks("src/test/resources/model_simple.json", "MODIFIED",false);
         SeldonDeploymentWatcher watcher = new SeldonDeploymentWatcher(mockK8sApiProvider, mockK8sClientProvider, mockCRDCreator, props, mockSeldonDeploymentController, mockMLCache, mockCRDHandler);
-        watcher.watchSeldonMLDeployments(0,0);
+        watcher.watchSeldonMLDeployments("v1alpha1", 0,0);
         verify(mockSeldonDeploymentController,times(1)).createOrReplaceSeldonDeployment(any(DeploymentProtos.SeldonDeployment.class),any(Boolean.class));
 
     }
@@ -164,7 +164,7 @@ public class SeldonDeploymentWatcherTest extends AppTest {
     public void testDeletedSeldonMLDeploymentsForMultiNameSpaceCluster() throws Exception {
         createMocks("src/test/resources/model_simple.json", "DELETED",false);
         SeldonDeploymentWatcher watcher = new SeldonDeploymentWatcher(mockK8sApiProvider, mockK8sClientProvider, mockCRDCreator, props, mockSeldonDeploymentController, mockMLCache, mockCRDHandler);
-        watcher.watchSeldonMLDeployments(0,0);
+        watcher.watchSeldonMLDeployments("v1alpha1", 0,0);
         verify(mockMLCache,times(1)).remove(any(DeploymentProtos.SeldonDeployment.class));
     }
 
@@ -175,8 +175,8 @@ public class SeldonDeploymentWatcherTest extends AppTest {
         //we expect to see a warning message in the logs for failure to parse SeldonDeployment
         createMocks("src/test/resources/deployment_model_deployed.json", "ADDED",false);
         SeldonDeploymentWatcher watcher = new SeldonDeploymentWatcher(mockK8sApiProvider, mockK8sClientProvider, mockCRDCreator, props, mockSeldonDeploymentController, mockMLCache, mockCRDHandler);
-        watcher.watchSeldonMLDeployments(0,0);
-        verify(mockCRDHandler,times(1)).updateRaw(anyString(),anyString(),anyString());
+        watcher.watchSeldonMLDeployments("v1alpha1",0,0);
+        verify(mockCRDHandler,times(1)).updateRaw(anyString(), anyString(),anyString(),anyString());
     }
 
 
