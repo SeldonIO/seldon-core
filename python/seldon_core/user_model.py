@@ -17,7 +17,8 @@ class SeldonComponent(object):
     def class_names(self) -> Iterable[str]:
         raise NotImplementedError
 
-    def predict(self, X: np.ndarray, names: Iterable[str], meta: Dict = None):
+    def predict(self, X: np.ndarray, names: Iterable[str], meta: Dict = None) -> Union[
+        np.ndarray, List, str, bytes]:
         raise NotImplementedError
 
     def predict_raw(self, msg: prediction_pb2.SeldonMessage) -> prediction_pb2.SeldonMessage:
@@ -26,13 +27,15 @@ class SeldonComponent(object):
     def send_feedback_raw(self, feedback: prediction_pb2.Feedback) -> prediction_pb2.SeldonMessage:
         raise NotImplementedError
 
-    def transform_input(self, X: np.ndarray, names: Iterable[str], meta: Dict = None):
+    def transform_input(self, X: np.ndarray, names: Iterable[str], meta: Dict = None) -> Union[
+        np.ndarray, List, str, bytes]:
         raise NotImplementedError
 
     def transform_input_raw(self, msg: prediction_pb2.SeldonMessage) -> prediction_pb2.SeldonMessage:
         raise NotImplementedError
 
-    def transform_output(self, X: np.ndarray, names: Iterable[str], meta: Dict = None):
+    def transform_output(self, X: np.ndarray, names: Iterable[str], meta: Dict = None) -> Union[
+        np.ndarray, List, str, bytes]:
         raise NotImplementedError
 
     def transform_output_raw(self, msg: prediction_pb2.SeldonMessage) -> prediction_pb2.SeldonMessage:
