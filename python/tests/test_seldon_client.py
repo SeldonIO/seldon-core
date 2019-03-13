@@ -40,6 +40,17 @@ def test_predict_rest_404(mock_post):
 def test_predict_rest(mock_post):
     sc = SeldonClient(deployment_name="mymodel")
     response = sc.predict()
+    print(mock_post.call_args)
+    assert response.success == True
+    assert response.response.data.tensor.shape == [1, 1]
+    assert mock_post.call_count == 1
+
+
+@mock.patch('requests.post', side_effect=mocked_requests_post_success)
+def test_predict_rest_with_names(mock_post):
+    sc = SeldonClient(deployment_name="mymodel")
+    response = sc.predict(names=["a","b"])
+    assert mock_post.call_args[1]["json"]["data"]["names"] == ["a", "b"]
     assert response.success == True
     assert response.response.data.tensor.shape == [1, 1]
     assert mock_post.call_count == 1
