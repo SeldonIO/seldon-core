@@ -88,7 +88,7 @@ def run_predict(args):
         if args.prnt:
             print(f"{'-' * 40}\nSENDING NEW REQUEST:\n")
             print(batch)
-        response_predict = sc.predict(data=batch, deployment_name=args.deployment)
+        response_predict = sc.predict(data=batch, deployment_name=args.deployment, names=feature_names)
         if args.prnt:
             print(f"RECEIVED RESPONSE:\n{response_predict.response}\n")
 

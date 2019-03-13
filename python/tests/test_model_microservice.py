@@ -180,7 +180,6 @@ def test_model_ok_with_names():
     rv = client.get(
         '/predict?json={"data":{"names":["a","b"],"ndarray":[[1,2]]}}')
     j = json.loads(rv.data)
-    print(j)
     assert rv.status_code == 200
     assert j["meta"]["tags"] == {"mytag": 1}
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]

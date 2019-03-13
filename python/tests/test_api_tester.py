@@ -39,6 +39,8 @@ def test_predict_rest(mock_post):
                  "namespace": None}
     args = Bunch(args_dict)
     run_predict(args)
+    print(mock_post.call_args)
+    assert mock_post.call_args[1]["json"]["data"]["names"] == ["sepal_length", "sepal_width", "petal_length", "petal_width"]
 
 
 @mock.patch('requests.post', side_effect=mocked_requests_post_success)
