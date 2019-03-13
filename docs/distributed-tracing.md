@@ -141,6 +141,6 @@ An example is show below:
 ![jaeger-ui-rest](./jaeger-ui-grpc-example.png)
 
 
-# Worked Example
+## Worked Example
 
 A full worked template example can be found [here](../examples/models/template_model_tracing/tracing.ipynb)

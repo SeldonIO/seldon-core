@@ -12,7 +12,7 @@ For CLI installs:
  * Decide on how you wish APIs to be exposed, we support:
    * Ambassador reverse proxy
    * Seldon's built-in OAuth API Gateway
- * Decide on whether you wish to contribute anonymous usage metrics. We encourage you to allow anonymous usage metrics to help us improve the project by understanding the deployment environments. More details can be found [here](/docs/developer/readme.md#usage-reporting)
+ * Decide on whether you wish to contribute anonymous usage metrics. We encourage you to allow anonymous usage metrics to help us improve the project by understanding the deployment environments. More details can be found [here](usage-reporting.md)
   * Does your Kubernetes cluster have RBAC enabled?
     * If not then disable Seldon RBAC setup
 
@@ -44,7 +44,7 @@ helm install seldon-core --name seldon-core --repo https://storage.googleapis.co
 Notes
 
  * You can use ```--namespace``` to install seldon-core to a particular namespace
- * For full configuration options see [here](helm.md)
+ * For full configuration options see [here](../reference/helm.md)
 
 ## With Ksonnet
 

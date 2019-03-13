@@ -1,6 +1,4 @@
-# Seldon Core Helm Charts
-
-# Seldon Core Setup
+## Seldon Core Setup
 
 The core charts for installing Seldon Core.
 
@@ -12,9 +10,7 @@ The core charts for installing Seldon Core.
    * Example Prometheus and Grafana setup with demonstration Grafana dashboard for Seldon Core
 
 
-See the [Installation](../docs/install.md)  documentation for details of how to install Seldon Core using the above charts.
-
-# Seldon Core Inference Graph Templates
+## Seldon Core Inference Graph Templates
 
 A set of charts to provide example templates for creating particular inference graphs using Seldon Core
 
@@ -28,14 +24,14 @@ A set of charts to provide example templates for creating particular inference g
    * Deploy a single model with Intel OpenVINO model server.
  * seldon-od-model and seldon-od-transformer
    * Serve one of the following Outlier Detector components as either models or transformers:
-     * [Isolation Forest](../components/outlier-detection/isolation-forest)
-     * [Variational Auto-Encoder](../components/outlier-detection/vae)
-     * [Sequence-to-Sequence-LSTM](../components/outlier-detection/seq2seq-lstm)
-     * [Mahalanobis Distance](../components/outlier-detection/mahalanobis)
+     * [Isolation Forest](https://github.com/SeldonIO/seldon-core/tree/master/components/outlier-detection/isolation-forest)
+     * [Variational Auto-Encoder](https://github.com/SeldonIO/seldon-core/tree/master/components/outlier-detection/vae)
+     * [Sequence-to-Sequence-LSTM](https://github.com/SeldonIO/seldon-core/tree/master/components/outlier-detection/seq2seq-lstm)
+     * [Mahalanobis Distance](https://github.com/SeldonIO/seldon-core/tree/master/components/outlier-detection/mahalanobis)
 
-For examples of using some of the above charts see [here](../notebooks/helm_examples.ipynb).
+For examples of using some of the above charts see [here](https://github.com/SeldonIO/seldon-core/tree/master/notebooks/helm_examples.ipynb).
 
-# Misc
+## Misc
 
  * seldon-core-loadtesting
    * Utility to load test
