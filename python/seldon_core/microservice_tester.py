@@ -204,7 +204,8 @@ def run_predict(args):
     for i in range(args.n_requests):
         batch: ndarray = generate_batch(contract, args.batch_size, 'features')
         if args.prnt:
-            print(f"{'-' * 40}\nSENDING NEW REQUEST:")
+            print(f"{'-' * 40}\nSENDING NEW REQUEST:\n")
+            print(batch)
 
         transport = "grpc" if args.grpc else "rest"
         payload_type = "tensor" if args.tensor else "ndarray"
@@ -212,7 +213,7 @@ def run_predict(args):
         response = sc.microservice(data=batch, transport=transport, method="predict", payload_type=payload_type)
 
         if args.prnt:
-            print(f"RECEIVED RESPONSE:\n{response}\n")
+            print(f"RECEIVED RESPONSE:\n{response.response}\n")
 
 
 def main():
