@@ -1,13 +1,14 @@
-=================
-Python Components
-=================
-
-To create a component for python
-
+======
+Python
+======
 
 
 .. toctree::
    :maxdepth: 1
-   :caption: Wrappers
 
+   Overview <README.md>
+   Seldon Core Python Module <python_module.md>
+   Your python class <python_component.md>
+   Wrap using S2I <python_wrapping.md>   
    Python API reference <api/modules>
+	     
