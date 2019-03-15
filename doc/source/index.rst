@@ -76,12 +76,10 @@ Seldon Core is a Kubernetes machine learning deployment platform. Its goals are:
 	     
 .. toctree::
    :maxdepth: 1
-   :caption: Metrics, Compliance, Governance
+   :caption: ML Compliance and Governance
 
-   Outlier Detection <analytics/outlier_detection>
-   Routers (incl. Multi Armed Bandits)  <analytics/routers>   
-
-
+   Outlier Detection <analytics/outlier_detection.md>
+   Routers (incl. Multi Armed Bandits)  <analytics/routers.md>   
    
 .. toctree::
    :maxdepth: 1

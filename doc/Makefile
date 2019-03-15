@@ -13,17 +13,20 @@ help:
 
 .PHONY: help Makefile
 
-source/_static/cluster-manager:
-	mkdir -p source/_static/cluster-manager
+TAG=master
 
-source/_static/cluster-manager/dependencies: source/_static/cluster-manager
+cluster-manager-dependencies: 
 	cd ../cluster-manager && mvn clean project-info-reports:dependencies
-	mkdir -p source/_static/cluster-manager/dependencies
-	cp -R ../cluster-manager/target/site/* source/_static/cluster-manager/dependencies
+	cd ../cluster-manager/target/site && \
+		aws s3 cp dependencies.html s3://seldon-core-docs/${TAG}/cluster-manager/dependencies/dependencies.html --acl public-read && \
+		aws s3 cp css s3://seldon-core-docs/${TAG}/cluster-manager/dependencies/css/ --acl public-read --recursive && \
+		aws s3 cp images s3://seldon-core-docs/${TAG}/cluster-manager/dependencies/images/ --acl public-read --recursive
 
-source/_static/cluster-manager/jacoco: source/_static/cluster-manager
+.PHONY: cluster-manager-jacoco
+cluster-manager-jacoco: 
 	cd ../cluster-manager && mvn clean verify
-	cp -R ../cluster-manager/target/site/jacoco source/_static/cluster-manager
+	cd ../cluster-manager/target/site && \
+		aws s3 cp jacoco  s3://seldon-core-docs/${TAG}/cluster-manager/jacoco/ --acl public-read --recursive
 
 #html:: source/_static/cluster-manager/dependencies source/_static/cluster-manager/jacoco
 

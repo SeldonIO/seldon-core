@@ -57,6 +57,7 @@ extensions = [
     'nbsphinx_link',  # for linking notebooks from outside sphinx source root
 ]
 
+
 # nbsphinx settings
 #nbsphinx_execute = 'auto'
 nbsphinx_execute = 'never'
