@@ -18,7 +18,7 @@
                     "spec": {
                         "containers": [
                             {
-                                "image": "seldonio/sk-mnist:0.1",
+                                "image": "seldonio/sk-example-mnist:0.2",
                                 "imagePullPolicy": "IfNotPresent",
                                 "name": "sk-mnist-classifier",
                                 "resources": {
@@ -50,7 +50,7 @@
                     "spec": {
                         "containers": [
                             {
-                                "image": "seldonio/deep-mnist:0.1",
+                                "image": "seldonio/tf-example-mnist:0.1",
                                 "imagePullPolicy": "IfNotPresent",
                                 "name": "tf-mnist-classifier",
                                 "resources": {
