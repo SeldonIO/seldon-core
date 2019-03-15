@@ -3,7 +3,7 @@
 
 In this guide, we illustrate the steps needed to wrap your own Java model in a docker image ready for deployment with Seldon Core using [source-to-image app s2i](https://github.com/openshift/source-to-image).
 
-If you are not familiar with s2i you can read [general instructions on using s2i](./s2i.md) and then follow the steps below.
+If you are not familiar with s2i you can read [general instructions on using s2i](../wrappers/s2i.md) and then follow the steps below.
 
 
 ## Step 1 - Install s2i
@@ -202,12 +202,12 @@ The service type being created. Available options are:
  * COMBINER
 
 
-### Creating different service types
+## Creating different service types
 
-#### MODEL
+### MODEL
 
  * [A minimal skeleton for model source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/java/test/model-template-app)
- * [Example H2O MOJO](https://github.com/SeldonIO/seldon-core/tree/master/examples/models/h2o-mojo/README.md)
+ * [Example H2O MOJO](../examples/h2o_mojo.html)
 
 
 

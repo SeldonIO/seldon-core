@@ -1,6 +1,6 @@
 # Developer
 
-We welcome new contributors. Please read the [code of conduct](../../CODE_OF_CONDUCT.md) and [contributing guidelines](../../CONTRIBUTING.md)
+We welcome new contributors. Please read the [code of conduct](https://github.com/SeldonIO/seldon-core/blob/master/CODE_OF_CONDUCT.md) and [contributing guidelines](https://github.com/SeldonIO/seldon-core/blob/master/CONTRIBUTING.md)
 
 ## Release process
 

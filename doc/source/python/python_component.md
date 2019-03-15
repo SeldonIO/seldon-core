@@ -166,7 +166,7 @@ If you want more control you can provide a low-level methods that will provide a
 
 ## Next Steps
 
-After you have created the Component you need to create a Docker image that can be managed by Seldon Core. Follow the odcumentation [here](./python_wrapping.md).
+After you have created the Component you need to create a Docker image that can be managed by Seldon Core. Follow the documentation [here](./python_wrapping.md).
 
 
 

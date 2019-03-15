@@ -3,7 +3,7 @@
 
 In this guide, we illustrate the steps needed to wrap your own python model in a docker image ready for deployment with Seldon Core using [source-to-image app s2i](https://github.com/openshift/source-to-image).
 
-If you are not familiar with s2i you can read [general instructions on using s2i](./s2i.md) and then follow the steps below.
+If you are not familiar with s2i you can read [general instructions on using s2i](../wrappers/s2i.md) and then follow the steps below.
 
 
 ## Step 1 - Install s2i
@@ -160,12 +160,11 @@ Set either to 0 or 1. Default is 0. If set to 1 then your model will be saved pe
 #### MODEL
 
  * [A minimal skeleton for model source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/python/test/model-template-app)
- * [Example models](https://github.com/SeldonIO/seldon-core/tree/master/examples/models)
+ * [Example model notebooks](../examples/notebooks.html)
 
 #### ROUTER
- * [Description of routers in Seldon Core](../../components/routers/README.md)
+ * [Description of routers in Seldon Core](../components/routers.html)
  * [A minimal skeleton for router source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/python/test/router-template-app)
- * [Example routers](https://github.com/SeldonIO/seldon-core/tree/master/examples/routers)
 
 #### TRANSFORMER
 
@@ -255,7 +254,7 @@ class MyModel(object):
 
 For more details on custom metrics and the format of the metric dict see [here](../custom_metrics.md).
 
-There is an [example notebook illustrating a model with custom metrics in python](../../examples/models/template_model_with_metrics/modelWithMetrics.ipynb).
+There is an [example notebook illustrating a model with custom metrics in python](../examples/tmpl_model_with_metrics.html).
 
 ### Custom Meta Data
 ```from version 0.3```

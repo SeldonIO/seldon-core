@@ -2,8 +2,8 @@
 
 A SeldonDeployment is defined as a custom resource definition within Kubernetes.
 
- * [Proto Buffer Definiton](#definition)
- * [Examples](#examples)
+ * [Proto Buffer Definiton](#proto-buffer-definition)
+ * [Examples](#example)
 
 ## Proto Buffer Definition
 The Seldon Deployment Custom Resource is defined using Proto Buffers.
@@ -145,7 +145,9 @@ message Parameter {
 ```
 
 
-## Examples
+## Example
+
+An example Seldon Deployment resource definition in JSON is shown below.
 
 ### Single Model
 

@@ -4,11 +4,11 @@
 
 To add microservice components to a runtime prediction graph users need to create service that respects the internal API. The API provides a default service for each type of component within the system:
 
- - [Model](#model)
- - [Router](#router)
- - [Combiner](#combiner)
- - [Transformer](#transformer)
- - [Output_Transformer](#output_transformer)
+ * [Model](#model)
+ * [Router](#router)
+ * [Combiner](#combiner)
+ * [Transformer](#transformer)
+ * [Output_Transformer](#output_transformer)
 
 
 ## Model
@@ -22,8 +22,8 @@ A service to return predictions.
  | | |
  | - |- |
  | Endpoint | POST /predict |
- | Request | JSON representation of [```SeldonMessage```](./prediction.md/#proto-buffer-and-grpc-definition) |
- | Response | JSON representation of [```SeldonMessage```](./prediction.md/#proto-buffer-and-grpc-definition) |
+ | Request | JSON representation of SeldonMessage
+ | Response | JSON representation of SeldonMessage
 
 Example request payload:
 
@@ -39,7 +39,7 @@ service Model {
  }
 ```
 
-See full [proto definition](./prediction.md/#proto-buffer-and-grpc-definition).
+See full [proto definition](./prediction.md#proto-buffer-and-grpc-definition).
 
 ## Router
 
@@ -52,8 +52,8 @@ A service to route requests to one of its children and receive feedback rewards 
  | | |
  | - |- |
  | Endpoint | POST /route |
- | Request | JSON representation of [```SeldonMessage```](./prediction.md/#proto-buffer-and-grpc-definition) |
- | Response | JSON representation of [```SeldonMessage```](./prediction.md/#proto-buffer-and-grpc-definition) |
+ | Request | JSON representation of SeldonMessage
+ | Response | JSON representation of SeldonMessage
 
 Example request payload:
 
@@ -66,8 +66,8 @@ Example request payload:
  | | |
  | - |- |
  | Endpoint | POST /send-feedback |
- | Request | JSON representation of [```Feedback```](./prediction.md/#proto-buffer-and-grpc-definition) |
- | Response | JSON representation of [```SeldonMessage```](./prediction.md/#proto-buffer-and-grpc-definition) |
+ | Request | JSON representation of Feedback
+ | Response | JSON representation of SeldonMessage
 
 Example request payload:
 
@@ -104,7 +104,7 @@ service Router {
  }
 ```
 
-See full [proto definition](./prediction.md/#proto-buffer-and-grpc-definition).
+See full [proto definition](./prediction.md#proto-buffer-and-grpc-definition).
 
 ## Combiner
 
@@ -117,8 +117,8 @@ A service to combine responses from its children into a single response.
  | | |
  | - |- |
  | Endpoint | POST /combine |
- | Request | JSON representation of [```SeldonMessageList```](./prediction.md/#proto-buffer-and-grpc-definition) |
- | Response | JSON representation of [```SeldonMessage```](./prediction.md/#proto-buffer-and-grpc-definition) |
+ | Request | JSON representation of SeldonMessageList
+ | Response | JSON representation of SeldonMessage
 
 
 ### gRPC
@@ -144,8 +144,8 @@ A service to transform its input.
  | | |
  | - |- |
  | Endpoint | POST /transform-input |
- | Request | JSON representation of [```SeldonMessage```](./prediction.md/#proto-buffer-and-grpc-definition) |
- | Response | JSON representation of [```SeldonMessage```](./prediction.md/#proto-buffer-and-grpc-definition) |
+ | Request | JSON representation of SeldonMessage
+ | Response | JSON representation of SeldonMessage
 
 Example request payload:
 
@@ -161,7 +161,7 @@ service Transformer {
 }
 ```
 
-See full [proto definition](./prediction.md/#proto-buffer-and-grpc-definition).
+See full [proto definition](./prediction.md#proto-buffer-and-grpc-definition).
 
 
 
@@ -176,8 +176,8 @@ A service to transform the response from its child.
  | | |
  | - |- |
  | Endpoint | POST /transform-output |
- | Request | JSON representation of [```SeldonMessage```](./prediction.md/#proto-buffer-and-grpc-definition) |
- | Response | JSON representation of [```SeldonMessage```](./prediction.md/#proto-buffer-and-grpc-definition) |
+ | Request | JSON representation of SeldonMessage
+ | Response | JSON representation of SeldonMessage
 
 Example request payload:
 
