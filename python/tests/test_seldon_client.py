@@ -57,6 +57,15 @@ def test_predict_rest_with_names(mock_post):
 
 
 @mock.patch('requests.post', side_effect=mocked_requests_post_success)
+def test_predict_rest_with_ambassador_prefix(mock_post):
+    sc = SeldonClient(deployment_name="mymodel")
+    response = sc.predict(gateway="ambassador",transport="rest",ambassador_prefix="/mycompany/ml")
+    assert mock_post.call_args[0][0].index("/mycompany/ml") > 0
+    assert response.success == True
+    assert response.response.data.tensor.shape == [1, 1]
+    assert mock_post.call_count == 1
+
+@mock.patch('requests.post', side_effect=mocked_requests_post_success)
 def test_predict_microservice_rest(mock_post):
     sc = SeldonClient(deployment_name="mymodel")
     response = sc.microservice(method="predict")

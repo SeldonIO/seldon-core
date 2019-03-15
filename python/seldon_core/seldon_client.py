@@ -167,7 +167,8 @@ class SeldonClient(object):
                 seldon_rest_endpoint: str = None, seldon_grpc_endpoint: str = None,
                 ambassador_endpoint: str = None, microservice_endpoint: str = None,
                 method: str = None, shape: Tuple = (1, 1), namespace: str = None, data: np.ndarray = None,
-                bin_data: Union[bytes, bytearray] = None, str_data: str = None, names: Iterable[str] = None) -> SeldonClientPrediction:
+                bin_data: Union[bytes, bytearray] = None, str_data: str = None, names: Iterable[str] = None,
+                ambassador_prefix: str = None, headers: Dict = None) -> SeldonClientPrediction:
         """
 
         Parameters
@@ -206,6 +207,10 @@ class SeldonClient(object):
            String payload to send - will override data
         names
            Column names
+        ambassador_prefix
+           prefix path for Ambassador URL endpoint
+        headers
+           Headers to add to request
 
         Returns
         -------
@@ -217,7 +222,8 @@ class SeldonClient(object):
                               seldon_grpc_endpoint=seldon_grpc_endpoint, ambassador_endpoint=ambassador_endpoint,
                               microservice_endpoint=microservice_endpoint, method=method, shape=shape,
                               namespace=namespace, names=names,
-                              data=data, bin_data=bin_data, str_data=str_data)
+                              data=data, bin_data=bin_data, str_data=str_data,
+                              ambassador_prefix=ambassador_prefix, headers=headers)
         self._validate_args(**k)
         if k["gateway"] == "ambassador":
             if k["transport"] == "rest":
@@ -242,7 +248,8 @@ class SeldonClient(object):
                  payload_type: str = None, oauth_key: str = None, oauth_secret: str = None,
                  seldon_rest_endpoint: str = None, seldon_grpc_endpoint: str = None,
                  ambassador_endpoint: str = None, microservice_endpoint: str = None,
-                 method: str = None, shape: Tuple = (1, 1), namespace: str = None) -> SeldonClientFeedback:
+                 method: str = None, shape: Tuple = (1, 1), namespace: str = None,
+                 ambassador_prefix: str = None) -> SeldonClientFeedback:
         """
 
         Parameters
@@ -293,7 +300,7 @@ class SeldonClient(object):
                               seldon_rest_endpoint=seldon_rest_endpoint
                               , seldon_grpc_endpoint=seldon_grpc_endpoint, ambassador_endpoint=ambassador_endpoint,
                               microservice_endpoint=microservice_endpoint, method=method, shape=shape,
-                              namespace=namespace)
+                              namespace=namespace, ambassador_prefix=ambassador_prefix)
         self._validate_args(**k)
         if k["gateway"] == "ambassador":
             if k["transport"] == "rest":
@@ -978,7 +985,7 @@ def grpc_predict_seldon_oauth(oauth_key: str, oauth_secret: str, namespace: str 
 
 def rest_predict_ambassador(deployment_name: str, namespace: str = None, ambassador_endpoint: str = "localhost:8003",
                             shape: Tuple[int, int] = (1, 1),
-                            data: np.ndarray = None, headers: Dict = None, prefix: str = None,
+                            data: np.ndarray = None, headers: Dict = None, ambassador_prefix: str = None,
                             payload_type: str = "tensor",
                             bin_data: Union[bytes, bytearray] = None, str_data: str = None,
                             names: Iterable[str] = None,
@@ -999,7 +1006,7 @@ def rest_predict_ambassador(deployment_name: str, namespace: str = None, ambassa
        The numpy data to send
     headers
        Headers to add to request
-    prefix
+    ambassador_prefix
        The prefix path to add to the request
     payload_type
        payload - tensor, ndarray or tftensor
@@ -1025,7 +1032,7 @@ def rest_predict_ambassador(deployment_name: str, namespace: str = None, ambassa
         datadef = array_to_grpc_datadef(payload_type, data, names=names)
         request = prediction_pb2.SeldonMessage(data=datadef)
     payload = seldon_message_to_json(request)
-    if prefix is None:
+    if ambassador_prefix is None:
         if namespace is None:
             response_raw = requests.post(
                 "http://" + ambassador_endpoint + "/seldon/" + deployment_name + "/api/v0.1/predictions",
@@ -1038,7 +1045,7 @@ def rest_predict_ambassador(deployment_name: str, namespace: str = None, ambassa
                 headers=headers)
     else:
         response_raw = requests.post(
-            "http://" + ambassador_endpoint + prefix + "/api/v0.1/predictions",
+            "http://" + ambassador_endpoint + ambassador_prefix + "/api/v0.1/predictions",
             json=payload,
             headers=headers)
 
@@ -1317,7 +1324,7 @@ def grpc_feedback_seldon_oauth(prediction_request: prediction_pb2.SeldonMessage 
 def rest_feedback_ambassador(prediction_request: prediction_pb2.SeldonMessage = None,
                              prediction_response: prediction_pb2.SeldonMessage = None, reward: float = 0,
                              deployment_name: str = "", namespace: str = None,
-                             ambassador_endpoint: str = "localhost:8003", headers: Dict = None, prefix: str = None,
+                             ambassador_endpoint: str = "localhost:8003", headers: Dict = None, ambassador_prefix: str = None,
                              **kwargs) -> SeldonClientFeedback:
     """
     Send Feedback to Seldon via Ambassador using REST
@@ -1337,7 +1344,7 @@ def rest_feedback_ambassador(prediction_request: prediction_pb2.SeldonMessage = 
        The ambassador host:port endpoint
     headers
        Headers to add to the request
-    prefix
+    ambassador_prefix
       The prefix to add to the request path for Ambassador
     kwargs
 
@@ -1348,7 +1355,7 @@ def rest_feedback_ambassador(prediction_request: prediction_pb2.SeldonMessage = 
     """
     request = prediction_pb2.Feedback(request=prediction_request, response=prediction_response, reward=reward)
     payload = feedback_to_json(request)
-    if prefix is None:
+    if ambassador_prefix is None:
         if namespace is None:
             response_raw = requests.post(
                 "http://" + ambassador_endpoint + "/seldon/" + deployment_name + "/api/v0.1/feedback",
@@ -1361,7 +1368,7 @@ def rest_feedback_ambassador(prediction_request: prediction_pb2.SeldonMessage = 
                 headers=headers)
     else:
         response_raw = requests.post(
-            "http://" + ambassador_endpoint + prefix + "/api/v0.1/feedback",
+            "http://" + ambassador_endpoint + ambassador_prefix + "/api/v0.1/feedback",
             json=payload,
             headers=headers)
 
