@@ -62,9 +62,9 @@ As we expose the metrics via Prometheus, if ```tags``` are added they must appea
 
 At present the following Seldon Core wrappers provide integrations with custom metrics:
 
- * [Python Wrapper](./wrappers/python.md#custom-metrics)
+ * [Python Wrapper](../python/index.html)
 
 
 ## Example
 
-There is an [example notebook illustrating a model with custom metrics in python](../examples/models/template_model_with_metrics/modelWithMetrics.ipynb).
+There is an [example notebook illustrating a model with custom metrics in python](../examples/tmpl_model_with_metrics.html).

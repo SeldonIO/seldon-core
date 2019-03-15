@@ -2,7 +2,7 @@
 
 In this guide, we illustrate the steps needed to wrap your own R model in a docker image ready for deployment with Seldon Core using [source-to-image app s2i](https://github.com/openshift/source-to-image).
 
-If you are not familiar with s2i you can read [general instructions on using s2i](./s2i.md) and then follow the steps below.
+If you are not familiar with s2i you can read [general instructions on using s2i](../wrappers/s2i.md) and then follow the steps below.
 
 ## Step 1 - Install s2i
 
@@ -146,10 +146,9 @@ Can only by 0 at present. In future, will allow the state of the component to be
 #### MODEL
 
 - [A minimal skeleton for model source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/R/test/model-template-app)
-- [Example models](https://github.com/SeldonIO/seldon-core/tree/master/examples/models)
+- [Example models](../examples/notebooks.html)
 
 #### ROUTER
-- [Description of routers in Seldon Core](../../components/routers/README.md)
 - [A minimal skeleton for router source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/R/test/router-template-app)
 
 #### TRANSFORMER

@@ -70,15 +70,16 @@ Seldon Core is a Kubernetes machine learning deployment platform. Its goals are:
    :maxdepth: 1
    :caption: Deployment Options
 
-   Helm Charts <graph/helm_charts>	     
+   Helm Charts <graph/helm_charts.md>	     
    Ambassador Deployment <graph/ambassador.md>	     
-   Example Grafana Analytics <analytics/analytics.md>
+   Grafana Analytics <analytics/analytics.md>
 	     
 .. toctree::
    :maxdepth: 1
    :caption: Metrics, Compliance, Governance
 
    Outlier Detection <analytics/outlier_detection>
+   Routers (incl. Multi Armed Bandits)  <analytics/routers>   
 
 
    
@@ -104,7 +105,7 @@ Seldon Core is a Kubernetes machine learning deployment platform. Its goals are:
    Seldon Operator <reference/cluster-manager>
    Benchmarking <reference/benchmarking.md>
    Seldon Deployment CRD <reference/seldon-deployment.md>
-   APIs <reference/apis/index>
+   Prediction APIs <reference/apis/index>
    Seldon Core Helm Chart <reference/helm.md>
    Release Highlights <reference/release-highlights>
 

@@ -67,13 +67,13 @@ curl -w "%{http_code}\n" --header "Authorization: Bearer $TOKEN" 0.0.0.0:8002/ap
 
 ### OpenAPI REST
 
-Use Swagger to generate a client for you from the [OpenAPI specifications](../openapi/README.md).
+Use Swagger to generate a client for you from the [OpenAPI specifications](../reference/apis/openapi.html).
 
 ### gRPC
 
-Use [gRPC](https://grpc.io/) tools in your desired language from the [proto buffer specifications](../proto/prediction.proto).
+Use [gRPC](https://grpc.io/) tools in your desired language from the [proto buffer specifications](../reference/apis/prediction.md).
 
-#### Example Python
+#### Reference Python Client
 
-See [example python code](../notebooks/seldon_utils.py).
+Use our [reference python client](../python/python_module.md) which is part of the `seldon-core` module.
 

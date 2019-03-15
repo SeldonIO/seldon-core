@@ -1,6 +1,6 @@
 # Testing Your Seldon Components
 
-Whether you have wrapped your component using [our S2I wrappers](./wrappers/readme.md) or created your own wrapper you will want to test the Docker container standalone and also quickly within a running cluster. We have provided two python console scripts within the [seldon-core Python package](../python) to allow you to easily do this:
+Whether you have wrapped your component using [our S2I wrappers](../wrappers/README.md) or created your own wrapper you will want to test the Docker container standalone and also quickly within a running cluster. We have provided two python console scripts within the [seldon-core Python package](../python/python_module.md) to allow you to easily do this:
 
  * ```seldon-core-microservice-tester```
     * Allows you to test a docker component to check it respects the Seldon  internal microservice API.
@@ -61,7 +61,7 @@ seldon-core-microservice-tester contract.json 0.0.0.0 5000 -p --grpc
 
 The above sends a predict call to a gRPC component exposed at 0.0.0.0:5000 using the contract.json to create a random request.
 
-You can find more examples in the [example models folder notebooks](../examples/models).
+You can find more examples in the [example notebooks list](../examples/notebooks.html).
 
 To understand the format of the contract.json see details [below](#api-contract).
 
@@ -119,7 +119,7 @@ seldon-core-api-tester contract.json  0.0.0.0 8003 --oauth-key oauth-key --oauth
 
  The above sends a gRPC send-feedback request to 0.0.0.0:8003 using the given oauth key/secret (assumes you are using the Seldon API Gateway) with the REST oauth-port at 8002 and use the contract.json file to create a random request. In this example you would have port-forwarded the Seldon api-server to local ports.
 
-You can find more exampes in the [example models folder notebooks](../examples/models).
+You can find more examples in the [example notebooks list](../examples/notebooks.html).
 
 To understand the format of the contract.json see details [below](#api-contract).
 

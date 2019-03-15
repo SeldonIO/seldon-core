@@ -10,6 +10,8 @@ Seldon Core uses REST and gRPC APIs exposed externally for business applications
 
 ## Proto Buffer and gRPC Definition
 
+The proto file can be found [here](https://github.com/SeldonIO/seldon-core/blob/master/proto/prediction.proto) and is reproduced below:
+
 ```proto
 syntax = "proto3";
 

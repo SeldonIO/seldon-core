@@ -35,7 +35,7 @@ Canary rollouts are available where you wish to push a certain percentage of tra
   * `seldon.io/ambassador-service-name`:`<existing_deployment_name>` : The name of the existing Seldon Deployment you want to attach to as a canary.
      * Example: "seldon.io/ambassador-service-name":"example"
 
-A worked example notebook can be found [here](https://github.com/SeldonIO/seldon-core/blob/master/examples/ambassador/canary/ambassador_canary.ipynb)
+A worked example notebook can be found [here](../examples/ambassador_canary.html)
 
 To understand more about the Ambassador configuration for this see [their docs](https://www.getambassador.io/reference/canary/).
 
@@ -49,7 +49,7 @@ You simply need to add some annotations to your Seldon Deployment resource for y
   * `seldon.io/ambassador-service-name`:`<existing_deployment_name>` : The name of the existing Seldon Deployment you want to attach to as a shadow.
      * Example: "seldon.io/ambassador-service-name":"example"
 
-A worked example notebook can be found [here](https://github.com/SeldonIO/seldon-core/blob/master/examples/ambassador/shadow/ambassador_shadow.ipynb)
+A worked example notebook can be found [here](../examples/ambassador_shadow.html)
 
 To understand more about the Ambassador configuration for this see [their docs](https://www.getambassador.io/reference/shadowing/).
 
@@ -64,7 +64,7 @@ You simply need to add some annotations to your Seldon Deployment resource.
   * `seldon.io/ambassador-service-name`:`<existing_deployment_name>` : The name of the existing Seldon you want to attach to as an alternative mapping for requests. 
      * Example: "seldon.io/ambassador-service-name":"example"
 
-A worked example notebook can be found [here](https://github.com/SeldonIO/seldon-core/blob/master/examples/ambassador/headers/ambassador_headers.ipynb)
+A worked example notebook can be found [here](../examples/ambassador_headers.html)
 
 To understand more about the Ambassador configuration for this see [their docs](https://www.getambassador.io/reference/headers).
 
@@ -76,5 +76,5 @@ The above discussed configurations should cover most cases but there maybe a cas
  * `seldon.io/ambassador-config`:`<configuration>` : The custom ambassador configuration
     * Example: `"seldon.io/ambassador-config":"apiVersion: ambassador/v0\nkind: Mapping\nname: seldon_example_rest_mapping\nprefix: /mycompany/ml/\nservice: production-model-example.seldon:8000\ntimeout_ms: 3000"`
 
-A worked example notebook can be found [here](https://github.com/SeldonIO/seldon-core/blob/master/examples/ambassador/custom/ambassador_custom.ipynb)
+A worked example notebook can be found [here](../examples/ambassador_custom.html)
 

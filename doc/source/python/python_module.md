@@ -23,7 +23,7 @@ You can also create your own image and utilise the `seldon-core-microservice` ex
 
 ## Testing Seldon Core Microservices
 
-To test your microservice standalone or your running Seldon Deployment inside Kubernetes you can follow the [API testing docs](../api-testing.md)
+To test your microservice standalone or your running Seldon Deployment inside Kubernetes you can follow the [API testing docs](../workflow/api-testing.md)
 
 
 ## Seldon Core Python API Client
@@ -56,6 +56,6 @@ r = sc.predict(gateway="ambassador",transport="rest")
 print(r)
 ```
 
-Examples of using the `seldon_client` module can be found in the [example notebook](https://github.com/SeldonIO/seldon-core/blob/master/notebooks/helm_examples.ipynb).
+Examples of using the `seldon_client` module can be found in the [example notebook](../examples/helm_examples.html).
 
-Full python docs will be available shortly.
+The API docs can be found [here](api/seldon_core.html#module-seldon_core.seldon_client)

@@ -8,4 +8,5 @@ Python
 
    Microservice API <internal-api.md>
    External API <external-prediction.md>
-   Prediction Proto Buffers <prediction.md>	     
+   Prediction Proto Buffer Spec <prediction.md>	     
+   Prediction Open API Spec <openapi>

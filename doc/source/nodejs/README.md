@@ -2,7 +2,7 @@
 
 In this guide, we illustrate the steps needed to wrap your own JS model running on a node engine in a docker image ready for deployment with Seldon Core using [source-to-image app s2i](https://github.com/openshift/source-to-image).
 
-If you are not familiar with s2i you can read [general instructions on using s2i](./s2i.md) and then follow the steps below.
+If you are not familiar with s2i you can read [general instructions on using s2i](../wrappers/s2i.md) and then follow the steps below.
 
 ## Step 1 - Install s2i
 
@@ -153,4 +153,4 @@ Can only by 0 at present.
 
 ### MODEL
 
-- [Example model](https://github.com/SeldonIO/seldon-core/tree/master/examples/models/nodejs_tensorflow)
+- [Example model](../examples/notebooks.html)

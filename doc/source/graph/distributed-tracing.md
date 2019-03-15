@@ -143,4 +143,4 @@ An example is show below:
 
 ## Worked Example
 
-A full worked template example can be found [here](../examples/models/template_model_tracing/tracing.ipynb)
+A full worked template example can be found [here](../examples/tmpl_model_tracing.html)
