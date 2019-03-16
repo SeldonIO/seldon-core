@@ -12,7 +12,7 @@ For CLI installs:
  * Decide on how you wish APIs to be exposed, we support:
    * Ambassador reverse proxy
    * Seldon's built-in OAuth API Gateway
- * Decide on whether you wish to contribute anonymous usage metrics. We encourage you to allow anonymous usage metrics to help us improve the project by understanding the deployment environments. More details can be found [here](usage-reporting.md)
+ * Decide on whether you wish to contribute anonymous usage metrics. We encourage you to allow anonymous usage metrics to help us improve the project by understanding the deployment environments. Further details on [usage reporting](usage-reporting.md)
   * Does your Kubernetes cluster have RBAC enabled?
     * If not then disable Seldon RBAC setup
 

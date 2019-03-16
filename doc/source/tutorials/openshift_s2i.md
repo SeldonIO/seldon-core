@@ -7,7 +7,7 @@ Seldon aims to help organisations put their data science projects into productio
 # Seldon-Core Overview
 Seldon-core provides scalable machine learning deployments running on Kubernetes. To deploy their models data scientists follow the steps as shown below:
 
-![API](../deploy.png)
+![API](deploy.png)
 
  1. Package their runtime model as a Docker-formatted image
  1. Describe their runtime graph as a Kubernetes resource

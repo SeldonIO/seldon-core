@@ -17,7 +17,7 @@ pip install seldon-core
 
 ## Seldon Core Microservices
 
-Seldon allows you to easily take your runtime inference code and create a Docker container that can be managed by Seldon Core. Follow the instructions [here](../wrappers/python.md) to wrap your code using the S2I tool.
+Seldon allows you to easily take your runtime inference code and create a Docker container that can be managed by Seldon Core. Follow the [S2I instructions](../wrappers/python.md) to wrap your code.
 
 You can also create your own image and utilise the `seldon-core-microservice` executable to run your model code.
 

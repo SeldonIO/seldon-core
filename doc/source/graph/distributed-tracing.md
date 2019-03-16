@@ -143,4 +143,4 @@ An example is show below:
 
 ## Worked Example
 
-A full worked template example can be found [here](../examples/tmpl_model_tracing.html)
+[A fully worked template example](../examples/tmpl_model_tracing.html) is provided.

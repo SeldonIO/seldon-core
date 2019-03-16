@@ -102,7 +102,7 @@ To return metrics associated with a call create a method with signature as shown
     def metrics(self) -> List[Dict]:
 ```
 
-This method should return a Dictionary of metrics as described [here](../analytics/custom_metrics.md).
+This method should return a Dictionary of metrics as described in the [custom metrics](../analytics/custom_metrics.md) docs.
 
 An illustrative example is shown below:
 

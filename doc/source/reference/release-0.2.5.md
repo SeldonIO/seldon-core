@@ -13,8 +13,8 @@ pip install seldon-core
 The module contains:
 
  * The top level REST and gRPC wrapper code which can be tested with your component via the executable ```seldon-core-microservice```.
- * An internal tester for the Seldon microservice REST and gRPC API accessible via the executable ```seldon-core-tester```. See the [documentation](https://github.com/SeldonIO/seldon-core/blob/master/docs/api-testing.md#microservice-api-tester) for further information.
- * An external tester for the external Seldon REST and gRPC API  accessible via the executable ```seldon-core-api-tester```. See the [documentation](https://github.com/SeldonIO/seldon-core/blob/master/docs/api-testing.md#seldon-core-api-tester) for further information.
+ * An internal tester for the Seldon microservice REST and gRPC API accessible via the executable ```seldon-core-tester```. See the [Microservice Tester documentation](https://github.com/SeldonIO/seldon-core/blob/master/docs/api-testing.md#microservice-api-tester) for further information.
+ * An external tester for the external Seldon REST and gRPC API  accessible via the executable ```seldon-core-api-tester```. See the [API Tester documentation](https://github.com/SeldonIO/seldon-core/blob/master/docs/api-testing.md#seldon-core-api-tester) for further information.
 
 ## Inference Graph Components
 One of the aims of Seldon Core is to allow machine learning models to be deployed in production with the appropriate metrics and optimisation to give the required compliance and observability guarantees needed. We have recently extended Seldon Core with Outlier Detection and Multi-Armed Bandit components as discussed below.

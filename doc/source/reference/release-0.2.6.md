@@ -16,14 +16,14 @@ An advanced machine learning deployment for image classification is provided tha
 
 ![openvino pipeline](./pipeline1.png)
 
-The inference graph shows the ability to combine multiple transformation steps and model serving toolkits together in a single Seldon Deployment. See the [Jupyter Notebook](https://github.com/SeldonIO/seldon-core/blob/master/examples/models/openvino_imagenet_ensemble/openvino_imagenet_ensemble.ipynb) for further details.
+The inference graph shows the ability to combine multiple transformation steps and model serving toolkits together in a single Seldon Deployment. See the [OpenVINO Jupyter Notebook](https://github.com/SeldonIO/seldon-core/blob/master/examples/models/openvino_imagenet_ensemble/openvino_imagenet_ensemble.ipynb) for further details.
 
 ## AWS SageMaker Integration
 An example is provided in this release for using [AWS SageMaker](https://aws.amazon.com/sagemaker/) to train a model which is then deployed locally on a Kubernetes cluster with Seldon Core. This example illustrates the flexibility to use various tools to train models when and then deploy all of them in a consistent manner on Kubernetes with Seldon.
 
 ## MlFlow Integration
 
-We provide a [Jupyter Notebook](https://github.com/SeldonIO/seldon-core/blob/master/examples/models/mlflow_model/mlflow.ipynb) that shows how you can train a model with [MLFlow](https://mlflow.org/) and then deploy it onto Seldon Core.
+We provide an [example MLFlow Jupyter Notebook](https://github.com/SeldonIO/seldon-core/blob/master/examples/models/mlflow_model/mlflow.ipynb) that shows how you can train a model with [MLFlow](https://mlflow.org/) and then deploy it onto Seldon Core.
 
 ## CI/CD Integration
 

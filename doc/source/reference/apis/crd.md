@@ -10,7 +10,7 @@ The full specification can be found [here](../reference/seldon-deployment.md). B
 
 The core goal is to describe your runtime inference graph(s) and deploy it with appropriate resources and scale. Example illustrative graphs are shown below:
 
-![graph](../reference/graph.png)
+![graph](graph.png)
 
 The top level SeldonDeployment has standard Kubernetes meta data and consists of a spec which is defined by the user and a status which will be set by the system to represent the current state of the SeldonDeployment.
 
