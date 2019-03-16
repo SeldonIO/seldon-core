@@ -37,7 +37,7 @@ A set of charts to provide example templates for creating particular inference g
      * [Sequence-to-Sequence-LSTM](https://github.com/SeldonIO/seldon-core/tree/master/components/outlier-detection/seq2seq-lstm)
      * [Mahalanobis Distance](https://github.com/SeldonIO/seldon-core/tree/master/components/outlier-detection/mahalanobis)
 
-For examples of using some of the above charts see [here](https://github.com/SeldonIO/seldon-core/tree/master/notebooks/helm_examples.ipynb).
+[A notebook with examples of using the above charts](https://github.com/SeldonIO/seldon-core/tree/master/notebooks/helm_examples.ipynb) is provided.
 
 ## Misc
 

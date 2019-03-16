@@ -44,7 +44,8 @@ Seldon Core is a Kubernetes machine learning deployment platform. Its goals are:
    Create your inference graph <graph/inference-graph.md>
    Deploy your model  <workflow/deploying.md>
    Test your model <workflow/api-testing.md>
-   Serve requests  <workflow/serving.md>   
+   Serve requests  <workflow/serving.md>
+   Troubleshooting guide <workflow/troubleshooting.md>
    usage reporting <workflow/usage-reporting.md>
 
 .. toctree::
@@ -92,14 +93,14 @@ Seldon Core is a Kubernetes machine learning deployment platform. Its goals are:
    :maxdepth: 1
    :caption: Tutorials
 
-   Articles/Blogs <tutorials/blogs.md>
-   Videos <tutorials/videos.md>
+   Articles/Blogs <tutorials/blogs>
+   Videos <tutorials/videos>
 
 .. toctree::
    :maxdepth: 1
    :caption: Reference
 
-   Seldon Microservice API <reference/internal-api.md>
+   Seldon Microservice API <reference/apis/internal-api.md>
    Seldon Operator <reference/cluster-manager>
    Benchmarking <reference/benchmarking.md>
    Seldon Deployment CRD <reference/seldon-deployment.md>

@@ -35,9 +35,9 @@ Canary rollouts are available where you wish to push a certain percentage of tra
   * `seldon.io/ambassador-service-name`:`<existing_deployment_name>` : The name of the existing Seldon Deployment you want to attach to as a canary.
      * Example: "seldon.io/ambassador-service-name":"example"
 
-A worked example notebook can be found [here](../examples/ambassador_canary.html)
+A worked example for [canary deployments](../examples/ambassador_canary.html) is provided.
 
-To understand more about the Ambassador configuration for this see [their docs](https://www.getambassador.io/reference/canary/).
+To understand more about the Ambassador configuration for this see [their docs on canary deployments](https://www.getambassador.io/reference/canary/).
 
 ## Shadow Deployments
 
@@ -49,9 +49,9 @@ You simply need to add some annotations to your Seldon Deployment resource for y
   * `seldon.io/ambassador-service-name`:`<existing_deployment_name>` : The name of the existing Seldon Deployment you want to attach to as a shadow.
      * Example: "seldon.io/ambassador-service-name":"example"
 
-A worked example notebook can be found [here](../examples/ambassador_shadow.html)
+A worked example for [shadow deployments](../examples/ambassador_shadow.html) is provided.
 
-To understand more about the Ambassador configuration for this see [their docs](https://www.getambassador.io/reference/shadowing/).
+To understand more about the Ambassador configuration for this see [their docs on shadow deployments](https://www.getambassador.io/reference/shadowing/).
 
 ## Header based Routing
 
@@ -64,9 +64,9 @@ You simply need to add some annotations to your Seldon Deployment resource.
   * `seldon.io/ambassador-service-name`:`<existing_deployment_name>` : The name of the existing Seldon you want to attach to as an alternative mapping for requests. 
      * Example: "seldon.io/ambassador-service-name":"example"
 
-A worked example notebook can be found [here](../examples/ambassador_headers.html)
+A worked example for [header based routing](../examples/ambassador_headers.html) is provided.
 
-To understand more about the Ambassador configuration for this see [their docs](https://www.getambassador.io/reference/headers).
+To understand more about the Ambassador configuration for this see [their docs on header based routing](https://www.getambassador.io/reference/headers).
 
 
 ## Custom Amabassador configuration
@@ -76,5 +76,5 @@ The above discussed configurations should cover most cases but there maybe a cas
  * `seldon.io/ambassador-config`:`<configuration>` : The custom ambassador configuration
     * Example: `"seldon.io/ambassador-config":"apiVersion: ambassador/v0\nkind: Mapping\nname: seldon_example_rest_mapping\nprefix: /mycompany/ml/\nservice: production-model-example.seldon:8000\ntimeout_ms: 3000"`
 
-A worked example notebook can be found [here](../examples/ambassador_custom.html)
+A worked example for [custom Ambassador config](../examples/ambassador_custom.html) is provided.
 

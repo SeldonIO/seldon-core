@@ -125,22 +125,20 @@ s2i build --help
 
 ## Using with Keras/Tensorflow Models
 
-To ensure Keras models with the Tensorflow backend work correctly you may need to call `_make_predict_function()` on your model after it is loaded. This is because Flask may call the prediction request in a separate thread from the one that initialised your model. See [here](https://github.com/keras-team/keras/issues/6462) for further discussion.
+To ensure Keras models with the Tensorflow backend work correctly you may need to call `_make_predict_function()` on your model after it is loaded. This is because Flask may call the prediction request in a separate thread from the one that initialised your model. See the [keras issue](https://github.com/keras-team/keras/issues/6462) for further discussion.
 
-## Reference
-
-### Environment Variables
+## Environment Variables
 The required environment variables understood by the builder image are explained below. You can provide them in the ```.s2i/environment``` file or on the ```s2i build``` command line.
 
 
-#### MODEL_NAME
+### MODEL_NAME
 The name of the class containing the model. Also the name of the python file which will be imported.
 
-#### API_TYPE
+### API_TYPE
 
 API type to create. Can be REST or GRPC
 
-#### SERVICE_TYPE
+### SERVICE_TYPE
 
 The service type being created. Available options are:
 
@@ -150,23 +148,23 @@ The service type being created. Available options are:
  * COMBINER
  * OUTLIER_DETECTOR
 
-#### PERSISTENCE
+### PERSISTENCE
 
 Set either to 0 or 1. Default is 0. If set to 1 then your model will be saved periodically to redis and loaded from redis (if exists) or created fresh if not.
 
 
 ## Creating different service types
 
-#### MODEL
+### MODEL
 
  * [A minimal skeleton for model source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/python/test/model-template-app)
  * [Example model notebooks](../examples/notebooks.html)
 
-#### ROUTER
+### ROUTER
  * [Description of routers in Seldon Core](../components/routers.html)
  * [A minimal skeleton for router source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/python/test/router-template-app)
 
-#### TRANSFORMER
+### TRANSFORMER
 
  * [A minimal skeleton for transformer source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/python/test/transformer-template-app)
  * [Example transformers](https://github.com/SeldonIO/seldon-core/tree/master/examples/transformers)

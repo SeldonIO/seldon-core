@@ -10,6 +10,7 @@ To add microservice components to a runtime prediction graph users need to creat
  * [Transformer](#transformer)
  * [Output_Transformer](#output_transformer)
 
+See full [proto definition](./prediction.md#proto-buffer-and-grpc-definition).
 
 ## Model
 
@@ -38,8 +39,6 @@ service Model {
   rpc Predict(SeldonMessage) returns (SeldonMessage) {};
  }
 ```
-
-See full [proto definition](./prediction.md#proto-buffer-and-grpc-definition).
 
 ## Router
 
@@ -104,7 +103,6 @@ service Router {
  }
 ```
 
-See full [proto definition](./prediction.md#proto-buffer-and-grpc-definition).
 
 ## Combiner
 
@@ -128,9 +126,6 @@ service Combiner {
   rpc Aggregate(SeldonMessageList) returns (SeldonMessage) {};
 }
 ```
-
-See full [proto definition](./prediction.md/#proto-buffer-and-grpc-definition).
-
 
 
 ## Transformer
@@ -161,9 +156,6 @@ service Transformer {
 }
 ```
 
-See full [proto definition](./prediction.md#proto-buffer-and-grpc-definition).
-
-
 
 ## Output_Transformer
 
@@ -192,6 +184,4 @@ service OutputTransformer {
   rpc TransformOutput(SeldonMessage) returns (SeldonMessage) {};
 }
 ```
-
-See full [proto definition](./prediction.md#proto-buffer-and-grpc-definition).
 

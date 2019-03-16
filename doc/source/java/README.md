@@ -188,11 +188,11 @@ s2i build --help
 The required environment variables understood by the builder image are explained below. You can provide them in the ```.s2i/environment``` file or on the ```s2i build``` command line.
 
 
-#### API_TYPE
+### API_TYPE
 
 API type to create. Can be REST or GRPC.
 
-#### SERVICE_TYPE
+### SERVICE_TYPE
 
 The service type being created. Available options are:
 
