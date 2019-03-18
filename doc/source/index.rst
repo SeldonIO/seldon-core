@@ -117,10 +117,3 @@ Seldon Core is a Kubernetes machine learning deployment platform. Its goals are:
    Overview <developer/readme.md>
    Build using private repo <developer/build-using-private-repo.md>
 
-   
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
