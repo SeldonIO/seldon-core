@@ -1,8 +1,6 @@
 # Seldon Ksonnet
 
-Create your Ksonnet app by following the steps [here](../../docs/install.md#with-ksonnet)
-
-# Prototypes
+## Prototypes
 
 There are a selection of prototypes you can use to create your initial deployments
 

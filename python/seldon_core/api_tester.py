@@ -7,7 +7,8 @@ import logging
 
 def get_seldon_client(args) -> SeldonClient:
     """
-    Get the appropriate Seldon Client basedon args
+    Get the appropriate Seldon Client based on args
+
     Parameters
     ----------
     args
@@ -40,6 +41,7 @@ def get_seldon_client(args) -> SeldonClient:
 def run_send_feedback(args):
     """
     Do a semd-feedback call to the Seldon API
+
     Parameters
     ----------
     args
@@ -67,6 +69,7 @@ def run_send_feedback(args):
 def run_predict(args):
     """
     Make a prediction call to the Seldon API
+
     Parameters
     ----------
     args
@@ -82,13 +85,14 @@ def run_predict(args):
         transport = "grpc"
     else:
         transport = "rest"
+    payload_type = "tensor" if args.tensor else "ndarray"
 
     for i in range(args.n_requests):
         batch = generate_batch(contract, args.batch_size, 'features')
         if args.prnt:
             print(f"{'-' * 40}\nSENDING NEW REQUEST:\n")
             print(batch)
-        response_predict = sc.predict(data=batch, deployment_name=args.deployment)
+        response_predict = sc.predict(data=batch, deployment_name=args.deployment, names=feature_names, payload_type=payload_type)
         if args.prnt:
             print(f"RECEIVED RESPONSE:\n{response_predict.response}\n")
 

@@ -85,7 +85,7 @@ Notes
      * Kubeflow presently runs 0.1 version of seldon-core. This will be updated to 0.2 in the near future.
 
 
-# Next Steps
+## Next Steps
 
  * [Jupyter notebooks showing worked examples](../readme.md#quick-start)
  * Seldon Core Analytics (example Prometheus and Grafana)

@@ -75,7 +75,7 @@ curl -g http://localhost:5000/predict --data-urlencode 'json={"data": {"names": 
 
 
 
-# Seldon-Core API Tester for the External API 
+## Seldon-Core API Tester for the External API 
 
 Use the ```seldon-core-api-tester``` script to test a Seldon graph deployed to a kubernetes cluster.
 

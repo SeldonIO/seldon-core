@@ -6,7 +6,7 @@ In this guide, we illustrate the steps needed to wrap your own Java model in a d
 If you are not familiar with s2i you can read [general instructions on using s2i](./s2i.md) and then follow the steps below.
 
 
-# Step 1 - Install s2i
+## Step 1 - Install s2i
 
  [Download and install s2i](https://github.com/openshift/source-to-image#installation)
 
@@ -20,7 +20,7 @@ To check everything is working you can run
 s2i usage seldonio/seldon-core-s2i-java-build:0.1
 ```
 
-# Step 2 - Create your source code
+## Step 2 - Create your source code
 
 To use our s2i builder image to package your Java model you will need:
 
@@ -31,7 +31,7 @@ To use our s2i builder image to package your Java model you will need:
 
 We will go into detail for each of these steps:
 
-## Maven Project
+### Maven Project
 Create a Spring Boot Maven project and include the dependency:
 
 ```XML
@@ -44,7 +44,7 @@ Create a Spring Boot Maven project and include the dependency:
 
 A full example can be found at ```wrappers/s2i/java/test/model-template-app/pom.xml```.
 
-## Spring Boot Intialization
+### Spring Boot Intialization
 
 Create a main App class:
   * Add @EnableAsync annotation (to allow the embedded gRPC server to start at Spring Boot startup)
@@ -64,7 +64,7 @@ public class App {
 }
 ```
 
-## Prediction Class
+### Prediction Class
 To handle requests to your model or other component you need to implement one or more of the methods in ```io.seldon.wrapper.SeldonPredictionService```, in particular:
 
 ```java
@@ -124,15 +124,15 @@ The above code:
   * Converts the proto buffer message into H2O RowData using provided utility classes.
   * Runs a BionomialModel prediction and converts the result back into a ```SeldonMessage``` for return
 
-### H2O Helper Classes
+#### H2O Helper Classes
 
 We provide H2O utility class ```io.seldon.wrapper.utils.H2OUtils``` in seldon-core-wrapper to convert to and from the seldon-core proto buffer message types.
 
-### DL4J Helper Classes
+#### DL4J Helper Classes
 
 We provide a DL4J utility class ```io.seldon.wrapper.utils.DL4JUtils``` in seldon-core-wrapper to convert to and from the seldon-core proto buffer message types.
 
-## .s2i/environment
+### .s2i/environment
 
 Define the core parameters needed by our R builder image to wrap your model. An example is:
 
@@ -143,7 +143,7 @@ SERVICE_TYPE=MODEL
 
 These values can also be provided or overridden on the command line when building the image.
 
-# Step 3 - Build your image
+## Step 3 - Build your image
 Use ```s2i build``` to create your Docker image from source code. You will need Docker installed on the machine and optionally git if your source code is in a public git repo.
 
 Using s2i you can build directly from a git repo or from a local source folder. See the [s2i docs](https://github.com/openshift/source-to-image/blob/master/docs/cli.md#s2i-build) for further details. The general format is:
@@ -182,17 +182,17 @@ s2i usage seldonio/seldon-core-s2i-java-build:0.1
 s2i build --help
 ```
 
-# Reference
+## Reference
 
-## Environment Variables
+### Environment Variables
 The required environment variables understood by the builder image are explained below. You can provide them in the ```.s2i/environment``` file or on the ```s2i build``` command line.
 
 
-### API_TYPE
+#### API_TYPE
 
 API type to create. Can be REST or GRPC.
 
-### SERVICE_TYPE
+#### SERVICE_TYPE
 
 The service type being created. Available options are:
 
@@ -202,9 +202,9 @@ The service type being created. Available options are:
  * COMBINER
 
 
-## Creating different service types
+### Creating different service types
 
-### MODEL
+#### MODEL
 
  * [A minimal skeleton for model source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/java/test/model-template-app)
  * [Example H2O MOJO](https://github.com/SeldonIO/seldon-core/tree/master/examples/models/h2o-mojo/README.md)
