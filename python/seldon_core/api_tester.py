@@ -7,7 +7,8 @@ import logging
 
 def get_seldon_client(args) -> SeldonClient:
     """
-    Get the appropriate Seldon Client basedon args
+    Get the appropriate Seldon Client based on args
+
     Parameters
     ----------
     args
@@ -40,6 +41,7 @@ def get_seldon_client(args) -> SeldonClient:
 def run_send_feedback(args):
     """
     Do a semd-feedback call to the Seldon API
+
     Parameters
     ----------
     args
@@ -67,6 +69,7 @@ def run_send_feedback(args):
 def run_predict(args):
     """
     Make a prediction call to the Seldon API
+
     Parameters
     ----------
     args

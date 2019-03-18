@@ -6,13 +6,13 @@ If your Seldon Deployment does not seem to be running here are some tips to diag
 
 Check whether the Seldon Deployment is running:
 
-```
+```bash
 kubectl get sdep
 ```
 
 If it exists, check it's status, for a Seldon deployment called `<name>`:
 
-```
+```bash
 kubectl get sdep <name> -o jsonpath='{.status}'
 ```
 

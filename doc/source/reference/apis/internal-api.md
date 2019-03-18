@@ -71,6 +71,7 @@ Example request payload:
 Example request payload:
 
 ```json
+{
     "request": {
         "data": {
             "names": ["a", "b"],

@@ -2,7 +2,7 @@
 
 Seldon Core exposes basic metrics via Prometheus endpoints on its service orchestrator that include request count, request time percentiles and rolling accuracy for each running model. However, you may wish to expose custom metrics from your components which are automaticlaly added to Prometheus. For this purpose you can supply extra fields in the returned meta data of the response object in the API calls to your components as illustrated below:
 
-```
+```json
 {
 	"meta": {
 		"metrics": [
@@ -43,7 +43,7 @@ We provide three types of metric that can be returned in the meta.metrics list:
 
 Each metric apart from the type takes a key and a value. The proto buffer definition is shown below:
 
-```
+```protobuf
 message Metric {
  enum MetricType {
      COUNTER = 0;

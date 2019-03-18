@@ -135,6 +135,7 @@ class SeldonClient(object):
                        method: str = None, data: np.ndarray = None, **kwargs):
         """
         Internal method to validate parameters
+
         Parameters
         ----------
         gateway
@@ -483,6 +484,7 @@ def microservice_api_rest_seldon_message(method: str = "predict", microservice_e
                                          **kwargs) -> SeldonClientPrediction:
     """
     Call Seldon microservice REST API
+
     Parameters
     ----------
     method
@@ -550,6 +552,7 @@ def microservice_api_rest_aggregate(microservice_endpoint: str = "localhost:5000
                                     **kwargs) -> SeldonClientCombine:
     """
     Call Seldon microservice REST API aggregate endpoint
+
     Parameters
     ----------
     microservice_endpoint
@@ -608,6 +611,7 @@ def microservice_api_rest_feedback(prediction_request: prediction_pb2.SeldonMess
                                    microservice_endpoint: str = None, **kwargs) -> SeldonClientFeedback:
     """
     Call Seldon microserice REST API to send feedback
+
     Parameters
     ----------
     prediction_request
@@ -652,6 +656,7 @@ def microservice_api_grpc_seldon_message(method: str = "predict", microservice_e
                                          **kwargs) -> SeldonClientPrediction:
     """
     Call Seldon microservice gRPC API
+
     Parameters
     ----------
     method
@@ -722,6 +727,7 @@ def microservice_api_grpc_aggregate(microservice_endpoint: str = "localhost:5000
                                     **kwargs) -> SeldonClientCombine:
     """
     Call Seldon microservice gRPC API aggregate
+
     Parameters
     ----------
     microservice_endpoint
@@ -781,6 +787,7 @@ def microservice_api_grpc_feedback(prediction_request: prediction_pb2.SeldonMess
                                    **kwargs) -> SeldonClientFeedback:
     """
     Call Seldon gRPC
+
     Parameters
     ----------
     prediction_request
@@ -817,6 +824,7 @@ def get_token(oauth_key: str = "", oauth_secret: str = "", namespace: str = None
               endpoint: str = "localhost:8002") -> str:
     """
     Get an OAUTH key from the Seldon Gateway
+
     Parameters
     ----------
     oauth_key
@@ -853,6 +861,7 @@ def rest_predict_seldon_oauth(oauth_key: str, oauth_secret: str, namespace: str 
                               **kwargs) -> SeldonClientPrediction:
     """
     Call Seldon API Gateway using REST
+
     Parameters
     ----------
     oauth_key
@@ -928,6 +937,7 @@ def grpc_predict_seldon_oauth(oauth_key: str, oauth_secret: str, namespace: str 
                               **kwargs) -> SeldonClientPrediction:
     """
     Call Seldon gRPC API Gateway endpoint
+
     Parameters
     ----------
     oauth_key
@@ -992,6 +1002,7 @@ def rest_predict_ambassador(deployment_name: str, namespace: str = None, ambassa
                             **kwargs) -> SeldonClientPrediction:
     """
     REST request to Seldon Ambassador Ingress
+
     Parameters
     ----------
     deployment_name
@@ -1077,6 +1088,7 @@ def rest_predict_ambassador_basicauth(deployment_name: str, username: str, passw
                                       **kwargs) -> SeldonClientPrediction:
     """
     REST request with Basic Auth to Seldon Ambassador Ingress
+
     Parameters
     ----------
     deployment_name
@@ -1155,6 +1167,7 @@ def grpc_predict_ambassador(deployment_name: str, namespace: str = None, ambassa
                             **kwargs) -> SeldonClientPrediction:
     """
     gRPC request to Seldon Ambassador Ingress
+
     Parameters
     ----------
     deployment_name
@@ -1220,6 +1233,7 @@ def rest_feedback_seldon_oauth(prediction_request: prediction_pb2.SeldonMessage 
                                seldon_rest_endpoint: str = "localhost:8002", **kwargs) -> SeldonClientFeedback:
     """
     Send Feedback to Seldon API Gateway using REST
+
     Parameters
     ----------
     prediction_request
@@ -1279,6 +1293,7 @@ def grpc_feedback_seldon_oauth(prediction_request: prediction_pb2.SeldonMessage 
                                **kwargs) -> SeldonClientFeedback:
     """
     Send feedback to Seldon API gateway via gRPC
+
     Parameters
     ----------
     prediction_request
@@ -1328,6 +1343,7 @@ def rest_feedback_ambassador(prediction_request: prediction_pb2.SeldonMessage = 
                              **kwargs) -> SeldonClientFeedback:
     """
     Send Feedback to Seldon via Ambassador using REST
+
     Parameters
     ----------
     prediction_request

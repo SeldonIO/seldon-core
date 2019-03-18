@@ -12,7 +12,7 @@
 
 Ensure the prerequisites are in place and the correct ports available.
 
-```
+```bash
 # Check that the private local registry works
 (set -x && curl -X GET http://127.0.0.1:5000/v2/_catalog && \
         docker pull busybox && docker tag busybox 127.0.0.1:5000/busybox && \
@@ -34,21 +34,21 @@ Below are details to achieve this.
 
 Build all images and push to private local repository.
 
-```
+```bash
 ./build-all-private-repo
 ./push-all-private-repo
 ```
 
 ### start/stop Seldon Core
 
-```
+```bash
 ./start-seldon-core-private-repo
 ./stop-seldon-core-private-repo
 ```
 
 ### Building individual components
 
-```
+```bash
 ./cluster-manager/build-private-repo
 ./cluster-manager/push-private-repo
 

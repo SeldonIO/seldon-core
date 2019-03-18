@@ -14,7 +14,8 @@ class SeldonTesterException(Exception):
 
 def gen_continuous(f_range: Tuple[Union[float, str], Union[float, str]], n: int) -> np.ndarray:
     """
-    Create a continuous feature basedon given range
+    Create a continuous feature based on given range
+
     Parameters
     ----------
     f_range
@@ -38,6 +39,7 @@ def gen_continuous(f_range: Tuple[Union[float, str], Union[float, str]], n: int)
 def reconciliate_cont_type(feature: np.ndarray, dtype: str) -> np.ndarray:
     """
     Ensure numpy arrays are always of type float
+
     Parameters
     ----------
     feature
@@ -61,6 +63,7 @@ def reconciliate_cont_type(feature: np.ndarray, dtype: str) -> np.ndarray:
 def gen_categorical(values: List[str], n: List[int]) -> np.ndarray:
     """
     Generate a random categorical feature
+
     Parameters
     ----------
     values
@@ -109,6 +112,7 @@ def generate_batch(contract: Dict, n: int, field: str) -> np.ndarray:
 def unfold_contract(contract: Dict) -> Dict:
     """
     Expand contract to full version
+
     Parameters
     ----------
     contract
@@ -157,6 +161,7 @@ def get_class_names(contract: Dict) -> List[str]:
 def run_send_feedback(args):
     """
     Make a feedback call to microservice
+
     Parameters
     ----------
     args
@@ -195,6 +200,7 @@ def run_send_feedback(args):
 def run_predict(args):
     """
     Make a predict call to microservice
+
     Parameters
     ----------
     args

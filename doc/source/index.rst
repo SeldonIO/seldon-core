@@ -46,7 +46,7 @@ Seldon Core is a Kubernetes machine learning deployment platform. Its goals are:
    Test your model <workflow/api-testing.md>
    Serve requests  <workflow/serving.md>
    Troubleshooting guide <workflow/troubleshooting.md>
-   usage reporting <workflow/usage-reporting.md>
+   Usage reporting <workflow/usage-reporting.md>
 
 .. toctree::
    :maxdepth: 1

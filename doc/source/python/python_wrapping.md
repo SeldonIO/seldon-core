@@ -118,7 +118,7 @@ s2i build wrappers/s2i/python/test/model-template-app seldonio/seldon-core-s2i-p
 
 For more help see:
 
-```
+```bash
 s2i usage seldonio/seldon-core-s2i-python3:0.5
 s2i build --help
 ```
@@ -175,10 +175,10 @@ Set either to 0 or 1. Default is 0. If set to 1 then your model will be saved pe
 ### Model Class Arguments
 You can add arguments to your component which will be populated from the ```parameters``` defined in the SeldonDeloyment when you deploy your image on Kubernetes. For example, our [Python TFServing proxy](https://github.com/SeldonIO/seldon-core/tree/master/integrations/tfserving) has the class init method signature defined as below:
 
-```
+```python
 class TfServingProxy(object):
 
-def __init__(self,rest_endpoint=None,grpc_endpoint=None,model_name=None,signature_name=None,model_input=None,model_output=None):
+    def __init__(self,rest_endpoint=None,grpc_endpoint=None,model_name=None,signature_name=None,model_input=None,model_output=None):
 ```
 
 These arguments can be set when deploying in a Seldon Deployment. An example can be found in the [MNIST TFServing example](https://github.com/SeldonIO/seldon-core/blob/master/examples/models/tfserving-mnist/tfserving-mnist.ipynb) where the arguments are defined in the [SeldonDeployment](https://github.com/SeldonIO/seldon-core/blob/master/examples/models/tfserving-mnist/mnist_tfserving_deployment.json.template)  which is partly show below:

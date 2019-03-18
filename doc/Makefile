@@ -32,8 +32,10 @@ cluster-manager-jacoco:
 
 .PHONY: clean
 clean:
-	rm -r source/_static/cluster-manager/dependencies
-	rm -r source/_static/cluster-manager/jacoco
+	rm -rf source/_static/cluster-manager/dependencies
+	rm -rf source/_static/cluster-manager/jacoco
+	rm -rf source/python/api
+	rm -rf _build
 
 livehtml:
 	sphinx-autobuild -b html --ignore "*~" $(ALLSPHINXOPTS) $(SOURCEDIR) $(BUILDDIR)/html

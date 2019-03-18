@@ -53,7 +53,7 @@ The API OAuth Gateway, if used, can also have the following annotations:
 ### Control via Helm
 The API OAuth Gateway annotations can be set via Helm via the seldon-core values file, for example:
 
-```
+```yaml
 apife:
   annotations:
       seldon.io/grpc-max-message-size: "10485760"

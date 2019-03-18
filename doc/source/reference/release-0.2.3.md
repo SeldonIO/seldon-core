@@ -14,7 +14,7 @@ You can now configure aspects of Seldon Core via annotations in the SeldonDeploy
 
 An example Seldon Deployment YAML resource with a gRPC max message size annotation is shown below.
 
-```
+```yaml
 apiVersion: machinelearning.seldon.io/v1alpha2
 kind: SeldonDeployment
 metadata:
@@ -46,7 +46,7 @@ We have an external contribution by @SachinVarghese that provides an initial Sel
 
 An example notebook for an [MNIST Tensorflow model](https://github.com/SeldonIO/seldon-core/blob/master/examples/models/nodejs_tensorflow/nodejs_tensorflow.ipynb) is provided which has the following Javascript inference code:
 
-```
+```js
 const tf = require("@tensorflow/tfjs");
 require("@tensorflow/tfjs-node");
 const path = require("path");

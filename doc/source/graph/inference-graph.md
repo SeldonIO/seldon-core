@@ -7,7 +7,7 @@ A SeldonDeployment is a JSON or YAML file that allows you to define your graph o
 ![inference-graph](./inf-graph.png)
 
 A minimal example for a single model, this time in YAML, is shown below:
-```
+```yaml
 apiVersion: machinelearning.seldon.io/v1alpha2
 kind: SeldonDeployment
 metadata:

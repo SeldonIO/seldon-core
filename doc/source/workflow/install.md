@@ -24,7 +24,7 @@ Follow one of the methods below:
  * Install Seldon CRD. Set:
     * ```usage_metrics.enabled``` as appropriate.
 
-```
+```bash
 helm install seldon-core-crd --name seldon-core-crd --repo https://storage.googleapis.com/seldon-charts \
      --set usage_metrics.enabled=true
 ```
@@ -33,7 +33,8 @@ helm install seldon-core-crd --name seldon-core-crd --repo https://storage.googl
     * ```rbac.enabled``` : (default true) set to ```false``` if running an old Kubernetes cluster without RBAC.
     * ```ambassador.enabled``` : (default false) set to ```true``` if you want to run with an Ambassador reverse proxy.
     * ```single_namespace``` : (default true) if set to ```true``` then Seldon Core's permissions are restricted to the single namespace it is created within. If set to ```false``` then RBAC cluster roles will be created to allow a single Seldon Core installation to control all namespaces. The installer must have permissions to create the appropriate RBAC roles. (>=0.2.5)
-``` 
+
+```bash 
 helm install seldon-core --name seldon-core --repo https://storage.googleapis.com/seldon-charts \
      --set apife.enabled=<true|false> \
      --set rbac.enabled=<true|false> \
@@ -48,9 +49,10 @@ Notes
 
 ## With Ksonnet
 
- * [install Ksonnet](https://ksonnet.io/)
+ * [Install Ksonnet](https://ksonnet.io/)
  * Create a seldon ksonnet app
- ```
+
+```bash
  ks init my-ml-deployment --api-spec=version:v1.8.0
  ```
  * Install seldon-core. Set:
@@ -59,7 +61,7 @@ Notes
    * ```withRbac``` set to ```true``` if your cluster has RBAC enabled
    * ```singleNamespace``` (default true) if set to ```true``` then Seldon Core's permissions are restricted to the single namespace it is created within. If set to ```false``` then RBAC cluster roles will be created to allow a single Seldon Core installation to control all namespaces. The installer must have permissions to create the appropriate RBAC roles. (>=0.2.5)
 
-```
+```bash
 cd my-ml-deployment && \
     ks registry add seldon-core github.com/SeldonIO/seldon-core/tree/master/seldon-core && \
     ks pkg install seldon-core/seldon-core@master && \
