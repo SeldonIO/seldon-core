@@ -4,7 +4,7 @@ In this guide, we illustrate the steps needed to wrap your own JS model running 
 
 If you are not familiar with s2i you can read [general instructions on using s2i](./s2i.md) and then follow the steps below.
 
-# Step 1 - Install s2i
+## Step 1 - Install s2i
 
 [Download and install s2i](https://github.com/openshift/source-to-image#installation)
 
@@ -18,7 +18,7 @@ To check everything is working you can run
 s2i usage seldonio/seldon-core-s2i-nodejs:0.1
 ```
 
-# Step 2 - Create your source code
+## Step 2 - Create your source code
 
 To use our s2i builder image to package your NodeJS model you will need:
 
@@ -28,7 +28,7 @@ To use our s2i builder image to package your NodeJS model you will need:
 
 We will go into detail for each of these steps:
 
-## NodeJS Runtime Model file
+### NodeJS Runtime Model file
 
 Your source code should which provides an ES5 Function object or an ES6 class for your model. For example, looking at our skeleton JS structure:
 
@@ -69,11 +69,11 @@ module.exports = MyModel;
 - A `init` method for the model object. This will be called on startup and you can use this to load any parameters your model needs. This function may also be an async,for example in case if it has to load the model weights from a remote location.
 - A generic `predict` method is created for my model class. This will be called with a `newdata` field with the data object to be predicted.
 
-## package.json
+### package.json
 
 Populate an `package.json` with any software dependencies your code requires using an `npm init` command and save your dependencies to the file.
 
-## .s2i/environment
+### .s2i/environment
 
 Define the core parameters needed by our node JS builder image to wrap your model. An example is:
 
@@ -86,7 +86,7 @@ PERSISTENCE=0
 
 These values can also be provided or overridden on the command line when building the image.
 
-# Step 3 - Build your image
+## Step 3 - Build your image
 
 Use `s2i build` to create your Docker image from source code. You will need Docker installed on the machine and optionally git if your source code is in a public git repo.
 
@@ -124,33 +124,33 @@ s2i usage seldonio/seldon-core-s2i-nodejs:0.1
 s2i build --help
 ```
 
-# Reference
+## Reference
 
-## Environment Variables
+### Environment Variables
 
 The required environment variables understood by the builder image are explained below. You can provide them in the `.s2i/environment` file or on the `s2i build` command line.
 
-### MODEL_NAME
+#### MODEL_NAME
 
 The name of the JS file containing the model.
 
-### API_TYPE
+#### API_TYPE
 
 API type to create. Can be REST or GRPC.
 
-### SERVICE_TYPE
+#### SERVICE_TYPE
 
 The service type being created. Available options are:
 
 - MODEL
 - TRANSFORMER
 
-### PERSISTENCE
+#### PERSISTENCE
 
 Can only by 0 at present.
 
-## Creating different service types
+### Creating different service types
 
-### MODEL
+#### MODEL
 
 - [Example model](https://github.com/SeldonIO/seldon-core/tree/master/examples/models/nodejs_tensorflow)

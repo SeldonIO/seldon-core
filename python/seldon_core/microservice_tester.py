@@ -14,7 +14,8 @@ class SeldonTesterException(Exception):
 
 def gen_continuous(f_range: Tuple[Union[float, str], Union[float, str]], n: int) -> np.ndarray:
     """
-    Create a continuous feature basedon given range
+    Create a continuous feature based on given range
+
     Parameters
     ----------
     f_range
@@ -38,6 +39,7 @@ def gen_continuous(f_range: Tuple[Union[float, str], Union[float, str]], n: int)
 def reconciliate_cont_type(feature: np.ndarray, dtype: str) -> np.ndarray:
     """
     Ensure numpy arrays are always of type float
+
     Parameters
     ----------
     feature
@@ -61,6 +63,7 @@ def reconciliate_cont_type(feature: np.ndarray, dtype: str) -> np.ndarray:
 def gen_categorical(values: List[str], n: List[int]) -> np.ndarray:
     """
     Generate a random categorical feature
+
     Parameters
     ----------
     values
@@ -109,6 +112,7 @@ def generate_batch(contract: Dict, n: int, field: str) -> np.ndarray:
 def unfold_contract(contract: Dict) -> Dict:
     """
     Expand contract to full version
+
     Parameters
     ----------
     contract
@@ -148,9 +152,16 @@ def unfold_contract(contract: Dict) -> Dict:
     return unfolded_contract
 
 
+def get_class_names(contract: Dict) -> List[str]:
+    names = []
+    for feature in contract["features"]:
+        names.append(feature["name"])
+    return names
+
 def run_send_feedback(args):
     """
     Make a feedback call to microservice
+
     Parameters
     ----------
     args
@@ -189,6 +200,7 @@ def run_send_feedback(args):
 def run_predict(args):
     """
     Make a predict call to microservice
+
     Parameters
     ----------
     args
@@ -197,7 +209,7 @@ def run_predict(args):
     """
     contract = json.load(open(args.contract, 'r'))
     contract = unfold_contract(contract)
-
+    feature_names = [feature["name"] for feature in contract["features"]]
     endpoint = f"{args.host}:{args.port}"
     sc = SeldonClient(microservice_endpoint=endpoint)
 
@@ -210,7 +222,7 @@ def run_predict(args):
         transport = "grpc" if args.grpc else "rest"
         payload_type = "tensor" if args.tensor else "ndarray"
 
-        response = sc.microservice(data=batch, transport=transport, method="predict", payload_type=payload_type)
+        response = sc.microservice(data=batch, transport=transport, method="predict", payload_type=payload_type, names=feature_names)
 
         if args.prnt:
             print(f"RECEIVED RESPONSE:\n{response.response}\n")

@@ -160,3 +160,9 @@ examples/wrappers/go/.idea
 
 wrappers/s2i/python_openvino/s2i
 
+doc/_build
+doc/source/_static/cluster-manager
+
+python/build/
+python/dist/
+testing/scripts/proto

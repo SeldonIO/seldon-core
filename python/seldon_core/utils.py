@@ -14,6 +14,7 @@ from typing import Tuple, Dict, Union, List, Optional, Iterable
 def json_to_seldon_message(message_json: Dict) -> prediction_pb2.SeldonMessage:
     """
     Parses JSON input to a SeldonMessage proto
+
     Parameters
     ----------
     message_json
@@ -36,6 +37,7 @@ def json_to_seldon_message(message_json: Dict) -> prediction_pb2.SeldonMessage:
 def json_to_feedback(message_json: Dict) -> prediction_pb2.Feedback:
     """
     Parse a JSON message to a Feedback proto
+
     Parameters
     ----------
     message_json
@@ -64,6 +66,7 @@ def json_to_seldon_messages(message_json: Dict) -> prediction_pb2.SeldonMessageL
 def seldon_message_to_json(message_proto: prediction_pb2.SeldonMessage) -> Dict:
     """
     Convert a SeldonMessage proto to JSON Dict
+
     Parameters
     ----------
     message_proto
@@ -80,6 +83,7 @@ def seldon_message_to_json(message_proto: prediction_pb2.SeldonMessage) -> Dict:
 def seldon_messages_to_json(message_protos: prediction_pb2.SeldonMessageList) -> Dict:
     """
     Convert a SeldonMessage proto list to JSON Dict
+
     Parameters
     ----------
     message_protos
@@ -96,6 +100,7 @@ def seldon_messages_to_json(message_protos: prediction_pb2.SeldonMessageList) ->
 def feedback_to_json(message_proto: prediction_pb2.Feedback) -> Dict:
     """
     Convert a SeldonMessage proto to JSON Dict
+
     Parameters
     ----------
     message_proto
@@ -112,6 +117,7 @@ def feedback_to_json(message_proto: prediction_pb2.Feedback) -> Dict:
 def get_data_from_proto(request: prediction_pb2.SeldonMessage) -> Union[np.ndarray, str, bytes]:
     """
     Extract the data payload from the SeldonMessage
+
     Parameters
     ----------
     request
@@ -137,6 +143,7 @@ def get_data_from_proto(request: prediction_pb2.SeldonMessage) -> Union[np.ndarr
 def grpc_datadef_to_array(datadef: prediction_pb2.DefaultData) -> np.ndarray:
     """
     Convert a SeldonMessage DefaultData to a numpy array.
+
     Parameters
     ----------
     datadef
@@ -172,6 +179,7 @@ def grpc_datadef_to_array(datadef: prediction_pb2.DefaultData) -> np.ndarray:
 def get_meta_from_proto(request: prediction_pb2.SeldonMessage) -> Dict:
     """
     Convert SeldonMessage proto meta into Dict
+
     Parameters
     ----------
     request
@@ -189,6 +197,7 @@ def get_meta_from_proto(request: prediction_pb2.SeldonMessage) -> Dict:
 def array_to_rest_datadef(data_type: str, array: np.ndarray, names: Optional[List[str]] = []) -> Dict:
     """
     Construct a payload Dict from a numpy array
+
     Parameters
     ----------
     data_type
@@ -222,6 +231,7 @@ def array_to_grpc_datadef(data_type: str, array: np.ndarray,
                           names: Optional[Iterable[str]] = []) -> prediction_pb2.DefaultData:
     """
     Convert numpy array and optional column names into a SeldonMessage DefaultData proto
+
     Parameters
     ----------
     array
@@ -266,6 +276,7 @@ def array_to_grpc_datadef(data_type: str, array: np.ndarray,
 def array_to_list_value(array: np.ndarray, lv: Optional[ListValue] = None) -> ListValue:
     """
     Construct a proto ListValue from numpy array
+
     Parameters
     ----------
     array
@@ -369,6 +380,7 @@ def extract_feedback_request_parts(request: prediction_pb2.Feedback) -> Tuple[
     prediction_pb2.DefaultData, np.ndarray, np.ndarray, float]:
     """
     Extract key parts of the Feedback Message
+
     Parameters
     ----------
     request
