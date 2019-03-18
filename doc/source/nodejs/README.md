@@ -119,7 +119,7 @@ s2i build wrappers/s2i/nodejs/test/model-template-app seldonio/seldon-core-s2i-n
 
 For more help see:
 
-```
+```bash
 s2i usage seldonio/seldon-core-s2i-nodejs:0.1
 s2i build --help
 ```

@@ -30,7 +30,7 @@ Each metric has the following key value pairs for further filtering which will b
 
 Seldon Core provides an example Helm analytics chart that displays the above Prometheus metrics in Grafana. You can install it with:
 
-```
+```bash
 helm install seldon-core-analytics --name seldon-core-analytics \
      --repo https://storage.googleapis.com/seldon-charts \
      --set grafana_prom_admin_password=password \
@@ -44,7 +44,7 @@ The available parameters are:
 
 Once running you can expose the Grafana dashboard with:
 
-```
+```bash
 kubectl port-forward $(kubectl get pods -l app=grafana-prom-server -o jsonpath='{.items[0].metadata.name}') 3000:3000
 ```
 

@@ -86,7 +86,7 @@ class ImageNetCombiner(object):
         return (np.reshape(Xs[0],(1,-1)) + np.reshape(Xs[1], (1,-1)))/2.0
 ```
 
-## Router
+## Routers
 Routers provide functionality to direct a request to one of a set of child components. For this you should create a method with signature as shown below that returns the id for the child component to route the request to.
 
 ```python

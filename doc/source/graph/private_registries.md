@@ -1,46 +1,46 @@
 # Pulling from Private Docker Registries
 
-To pull images from private Docker registries simply add imagePullSecrets to the podTemplateSpecs for your SeldonDeployment resources. For example, show below is a simple model which uses a private image ```private-docker-repo/my-image```.  You will need to have created the Kubernetes docker registry secret ```myreposecret``` before applying the resource to your cluster.
+To pull images from private Docker registries simply add imagePullSecrets to the podTemplateSpecs for your SeldonDeployment resources. For example, shown below is a simple model which uses a private image ```private-docker-repo/my-image```.  You will need to have created the Kubernetes docker registry secret ```myreposecret``` before applying the resource to your cluster.
 
-```
+```json
 {
-  apiVersion: "machinelearning.seldon.io/v1alpha2",
-  kind: "SeldonDeployment",
-  metadata: {
-    name: private-model,
+  "apiVersion": "machinelearning.seldon.io/v1alpha2",
+  "kind": "SeldonDeployment",
+  "metadata": {
+    "name": "private-model"
   },
-  spec: {
-    name: private-model-example,
-    predictors: [
+  "spec": {
+    "name": "private-model-example",
+    "predictors": [
       {
-        componentSpecs: [{
-          spec: {
-            containers: [
+        "componentSpecs": [{
+          "spec": {
+            "containers": [
               {
-                image: private-docker-repo/my-image,
-                name: private-model,
-              },
+                "image": "private-docker-repo/my-image",
+                "name": "private-model"
+              }
             ],
-	    imagePullSecrets: [
+        "imagePullSecrets": [
               {
-                name: myreposecret
-              },
-            ],
-          },
+                "name": "myreposecret"
+              }
+            ]
+          }
         }],
-        graph: {
-          children: [],
-          endpoint: {
-            type: REST,
+        "graph": {
+          "children": [],
+          "endpoint": {
+            "type": "REST"
           },
-          name: private-model,
-          type: "MODEL",
+          "name": "private-model",
+          "type": "MODEL"
         },
-        name: private-model,
-        replicas: 1,
-      },
-    ],
-  },
+        "name": "private-model",
+        "replicas": "1"
+      }
+    ]
+  }
 }
 ```
 

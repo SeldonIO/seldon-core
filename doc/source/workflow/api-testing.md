@@ -13,13 +13,13 @@ To use these, install the seldon-core package with ```pip install seldon-core```
 
 To test your model microservice you need to run it. If you have wrapped your model into a Docker container then you should run it and expose the ports. There are many examples in the notebooks in the [examples folders](https://github.com/SeldonIO/seldon-core/tree/master/examples/models) but essential if your model is wrapped in an image `myimage:0.1` then run:
 
-```
+```bash
 docker run --name "my_model" -d --rm -p 5000:5000 myimage:0.1
 ```
 
 Alternatively, if your component is a Python module you can run it directly from python using the core tool ```seldon-core-microservice``` (installed as part of the pip package `seldon-core`). This tool takes the name of the Python module as first argument and the API type REST or GRPC as second argument, for example if you have a file IrisClassifier.py in the current folder you could run:
 
-```
+```bash
 seldon-core-microservice IrisClassifier REST
 ```
 
@@ -31,7 +31,7 @@ Next either use the [Microservce API tester](#microservice-api-tester) or testdi
 
 Use the ```seldon-core-microservice-tester``` script to test a packaged Docker microservice Seldon component.
 
-```
+```text
 usage: seldon-core-microservice-tester [-h] [--endpoint {predict,send-feedback}]
                           [-b BATCH_SIZE] [-n N_REQUESTS] [--grpc] [--fbs]
                           [-t] [-p]
@@ -55,7 +55,7 @@ optional arguments:
 
 Example:
 
-```
+```bash
 seldon-core-microservice-tester contract.json 0.0.0.0 5000 -p --grpc
 ```
 
@@ -69,7 +69,7 @@ To understand the format of the contract.json see details [below](#api-contract)
 ## Microservice API Test via Curl
 You can also test your component if run via Docker or from the command line via curl. An example for [Iris Classifier](http://localhost:8888/notebooks/sklearn_iris.ipynb) might be:
 
-```
+```bash
 curl -g http://localhost:5000/predict --data-urlencode 'json={"data": {"names": ["sepal_length", "sepal_width", "petal_length", "petal_width"], "ndarray": [[7.233, 4.652, 7.39, 0.324]]}}'
 ```
 
@@ -79,7 +79,7 @@ curl -g http://localhost:5000/predict --data-urlencode 'json={"data": {"names": 
 
 Use the ```seldon-core-api-tester``` script to test a Seldon graph deployed to a kubernetes cluster.
 
-```
+```text
 usage: seldon-core-api-tester [-h] [--endpoint {predict,send-feedback}]
                               [-b BATCH_SIZE] [-n N_REQUESTS] [--grpc] [-t]
                               [-p] [--log-level {DEBUG,INFO,ERROR}]
@@ -113,11 +113,11 @@ optional arguments:
 
 Example:
 
-```
+```bash
 seldon-core-api-tester contract.json  0.0.0.0 8003 --oauth-key oauth-key --oauth-secret oauth-secret -p --grpc --oauth-port 8002 --endpoint send-feedback
 ```
 
- The above sends a gRPC send-feedback request to 0.0.0.0:8003 using the given oauth key/secret (assumes you are using the Seldon API Gateway) with the REST oauth-port at 8002 and use the contract.json file to create a random request. In this example you would have port-forwarded the Seldon api-server to local ports.
+The above sends a gRPC send-feedback request to 0.0.0.0:8003 using the given oauth key/secret (assumes you are using the Seldon API Gateway) with the REST oauth-port at 8002 and use the contract.json file to create a random request. In this example you would have port-forwarded the Seldon api-server to local ports.
 
 You can find more examples in the [example notebooks list](../examples/notebooks.html).
 
@@ -129,7 +129,7 @@ Both tester scripts require you to provide a contract.json file defining the dat
 
 An example for the example Iris classification model is shown below:
 
-```
+```json
 {
     "features":[
 	{

@@ -110,7 +110,7 @@ s2i build wrappers/s2i/R/test/model-template-app seldonio/seldon-core-s2i-r:0.1 
 
 For more help see:
 
-```
+```bash
 s2i usage seldonio/seldon-core-s2i-r:0.1
 s2i build --help
 ```

@@ -5,4 +5,4 @@ Notebooks
 .. toctree::
    :maxdepth: 1
 
-   istio <istio.md>
+   Istio <istio.md>

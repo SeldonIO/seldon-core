@@ -20,9 +20,9 @@ For Seldon Core running cluster wide, `singleNamespace=false`, the endpoints exp
 
 ### Ambassador REST
 
-Assuming a Seldon Deployment ```mymodel``` with Ambassador exposed on 0.0.0.0:8003:
+Assuming a Seldon Deployment ```mymodel``` with Ambassador exposed on `0.0.0.0:8003`:
 
-```
+```bash
 curl -v 0.0.0.0:8003/seldon/mymodel/api/v0.1/predictions -d '{"data":{"names":["a","b"],"tensor":{"shape":[2,2],"values":[0,0,1,1]}}}' -H "Content-Type: application/json"
 ```
 
@@ -30,10 +30,10 @@ curl -v 0.0.0.0:8003/seldon/mymodel/api/v0.1/predictions -d '{"data":{"names":["
 
 Canary rollouts are available where you wish to push a certain percentage of traffic to a new model to test whether it works ok in production. You simply need to add some annotations to your Seldon Deployment resource for your canary deployment.
 
-  * `seldon.io/ambassador-weight`:`<weight_value>` : The weight (a value between 0 and 100) to be applied to this deployment.
+  * `seldon.io/ambassador-weight:<weight_value>` : The weight (a value between 0 and 100) to be applied to this deployment.
      * Example: `"seldon.io/ambassador-weight":"25"`
-  * `seldon.io/ambassador-service-name`:`<existing_deployment_name>` : The name of the existing Seldon Deployment you want to attach to as a canary.
-     * Example: "seldon.io/ambassador-service-name":"example"
+  * `seldon.io/ambassador-service-name:<existing_deployment_name>` : The name of the existing Seldon Deployment you want to attach to as a canary.
+     * Example: `"seldon.io/ambassador-service-name":"example"`
 
 A worked example for [canary deployments](../examples/ambassador_canary.html) is provided.
 
@@ -45,9 +45,9 @@ Shadow deployments allow you to send duplicate requests to a parallel deployment
 
 You simply need to add some annotations to your Seldon Deployment resource for your shadow deployment.
 
-  * `seldon.io/ambassador-shadow`:`true` : Flag to mark this deployment as a Shadow deployment in Ambassador.
-  * `seldon.io/ambassador-service-name`:`<existing_deployment_name>` : The name of the existing Seldon Deployment you want to attach to as a shadow.
-     * Example: "seldon.io/ambassador-service-name":"example"
+  * `seldon.io/ambassador-shadow:true` : Flag to mark this deployment as a Shadow deployment in Ambassador.
+  * `seldon.io/ambassador-service-name:<existing_deployment_name>` : The name of the existing Seldon Deployment you want to attach to as a shadow.
+     * Example: `"seldon.io/ambassador-service-name":"example"`
 
 A worked example for [shadow deployments](../examples/ambassador_shadow.html) is provided.
 
@@ -59,10 +59,10 @@ Header based routing allows you to route requests to particular Seldon Deploymen
 
 You simply need to add some annotations to your Seldon Deployment resource.
 
-  * `seldon.io/ambassador-header`:`<header>` : The header to add to Ambassador configuration	    
-     * Example:  "seldon.io/ambassador-header":"location: london"	    
-  * `seldon.io/ambassador-service-name`:`<existing_deployment_name>` : The name of the existing Seldon you want to attach to as an alternative mapping for requests. 
-     * Example: "seldon.io/ambassador-service-name":"example"
+  * `seldon.io/ambassador-header:<header>` : The header to add to Ambassador configuration	    
+     * Example:  `"seldon.io/ambassador-header":"location: london"	    `
+  * `seldon.io/ambassador-service-name:<existing_deployment_name>` : The name of the existing Seldon you want to attach to as an alternative mapping for requests. 
+     * Example: `"seldon.io/ambassador-service-name":"example"`
 
 A worked example for [header based routing](../examples/ambassador_headers.html) is provided.
 
@@ -73,7 +73,7 @@ To understand more about the Ambassador configuration for this see [their docs o
 
 The above discussed configurations should cover most cases but there maybe a case where you want to have a very particular Ambassador configuration under your control. You can acheieve this by adding your confguration as an annotation to your Seldon Deployment resource.
 
- * `seldon.io/ambassador-config`:`<configuration>` : The custom ambassador configuration
+ * `seldon.io/ambassador-config:<configuration>` : The custom ambassador configuration
     * Example: `"seldon.io/ambassador-config":"apiVersion: ambassador/v0\nkind: Mapping\nname: seldon_example_rest_mapping\nprefix: /mycompany/ml/\nservice: production-model-example.seldon:8000\ntimeout_ms: 3000"`
 
 A worked example for [custom Ambassador config](../examples/ambassador_custom.html) is provided.

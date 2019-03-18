@@ -69,6 +69,7 @@ class SeldonComponent(object):
 def client_custom_tags(user_model: SeldonComponent) -> Dict:
     """
     Get tags from user model
+
     Parameters
     ----------
     user_model
@@ -87,6 +88,7 @@ def client_custom_tags(user_model: SeldonComponent) -> Dict:
 def client_class_names(user_model: SeldonComponent, predictions: np.ndarray) -> Iterable[str]:
     """
     Get class names from user model
+
     Parameters
     ----------
     user_model
@@ -111,6 +113,7 @@ def client_predict(user_model: SeldonComponent, features: Union[np.ndarray, str,
                    **kwargs: Dict) -> Union[np.ndarray, List, str, bytes]:
     """
     Get prediction from user model
+
     Parameters
     ----------
     user_model
@@ -138,6 +141,7 @@ def client_transform_input(user_model: SeldonComponent, features: Union[np.ndarr
                            feature_names: Iterable[str], **kwargs: Dict) -> Union[np.ndarray, List, str, bytes]:
     """
     Transform data with user model
+
     Parameters
     ----------
     user_model
@@ -167,6 +171,7 @@ def client_transform_output(user_model: SeldonComponent, features: Union[np.ndar
                             feature_names: Iterable[str], **kwargs: Dict) -> Union[np.ndarray, List, str, bytes]:
     """
     Transform output
+
     Parameters
     ----------
     user_model
@@ -194,6 +199,7 @@ def client_transform_output(user_model: SeldonComponent, features: Union[np.ndar
 def client_custom_metrics(user_model: SeldonComponent) -> List[Dict]:
     """
     Get custom metrics
+
     Parameters
     ----------
     user_model
@@ -218,6 +224,7 @@ def client_custom_metrics(user_model: SeldonComponent) -> List[Dict]:
 def client_feature_names(user_model: SeldonComponent, original: Iterable[str]) -> Iterable[str]:
     """
     Get feature names for user model
+
     Parameters
     ----------
     user_model
@@ -240,6 +247,7 @@ def client_send_feedback(user_model: SeldonComponent, features: Union[np.ndarray
         -> Union[np.ndarray, List, str, bytes, None]:
     """
     Feedback to user model
+
     Parameters
     ----------
     user_model
@@ -270,6 +278,7 @@ def client_route(user_model: SeldonComponent, features: Union[np.ndarray, str, b
                  feature_names: Iterable[str]) -> int:
     """
     Get routing from user model
+
     Parameters
     ----------
     user_model
@@ -293,6 +302,7 @@ def client_aggregate(user_model: SeldonComponent, features_list: List[Union[np.n
                      feature_names_list: List) -> Union[np.ndarray, List, str, bytes]:
     """
     Aggregate payloads
+
     Parameters
     ----------
     user_model

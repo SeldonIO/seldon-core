@@ -28,7 +28,7 @@ To provide a custom configuration following the Jarger Python configuration yaml
 
 An example is show below:
 
-```
+```json
 {
     "apiVersion": "machinelearning.seldon.io/v1alpha2",
     "kind": "SeldonDeployment",

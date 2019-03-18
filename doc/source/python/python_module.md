@@ -11,7 +11,7 @@ Seldon Core has a python package `seldon_core` available on PyPI. The package ma
 
 Install from PyPI with:
 
-```
+```bash
 pip install seldon-core
 ```
 

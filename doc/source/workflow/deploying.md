@@ -25,7 +25,7 @@ You can check the status of the running deployments using kubectl
 
 For example:
 
-```
+```bash
 kubectl get sdep -o jsonpath='{.items[].status}'
 ```
 

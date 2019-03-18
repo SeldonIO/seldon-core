@@ -177,7 +177,7 @@ s2i build wrappers/s2i/R/test/model-template-app seldonio/seldon-core-s2i-java-b
 
 For more help see:
 
-```
+```bash
 s2i usage seldonio/seldon-core-s2i-java-build:0.1
 s2i build --help
 ```

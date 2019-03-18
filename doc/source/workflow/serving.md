@@ -44,7 +44,7 @@ Assuming the API gRPC Gateway is exposed at ```<APIGatewayEndpoint>```
 
 Assuming a SeldonDeplotment ```mymodel``` with Ambassador exposed on 0.0.0.0:8003:
 
-```
+```bash
 curl -v 0.0.0.0:8003/seldon/mymodel/api/v0.1/predictions -d '{"data":{"names":["a","b"],"tensor":{"shape":[2,2],"values":[0,0,1,1]}}}' -H "Content-Type: application/json"
 ```
 
@@ -55,13 +55,13 @@ Assume server is accessible at 0.0.0.0:8002.
 
 Get a token. Assuming the OAuth key is ```oauth-key``` and OAuth secret is ```oauth-secret``` as specified in the SeldonDeployment graph you created:
 
-```
+```bash
 TOKENJSON=$(curl -XPOST -u oauth-key:oauth-secret 0.0.0.0:8002/oauth/token -d 'grant_type=client_credentials')
 TOKEN=$(echo $TOKENJSON | jq ".access_token" -r)
 ```
 
 Get predictions
-```
+```bash
 curl -w "%{http_code}\n" --header "Authorization: Bearer $TOKEN" 0.0.0.0:8002/api/v0.1/predictions -d '{"data":{"names":["a","b"],"tensor":{"shape":[2,2],"values":[0,0,1,1]}}}' -H "Content-Type: application/json"
 ```
 

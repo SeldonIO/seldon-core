@@ -21,6 +21,7 @@ DEFAULT_PUSH_FREQUENCY = 60
 def restore(user_class: Type[SeldonComponent], parameters: Dict) -> SeldonComponent:
     """
     Restore saved state from Redis
+
     Parameters
     ----------
     user_class
@@ -47,6 +48,7 @@ def restore(user_class: Type[SeldonComponent], parameters: Dict) -> SeldonCompon
 def persist(user_object: SeldonComponent, push_frequency: int = None):
     """
     Start a thread to persist a user class to Redis
+
     Parameters
     ----------
     user_object
