@@ -4,7 +4,7 @@ Seldon Core is an open source platform for deploying machine learning models on 
 
  * Deploy machine learning models in the cloud or on-premise.
  * Get metrics and ensure proper governance and compliance for your running machine learning models.
- * Provide powerful inference graphs made up of multiple components.
+ * Create powerful inference graphs made up of multiple components.
  * Provide a consistent serving layer for models built using heterogeneous ML toolkits.
 
 ## Documentation
