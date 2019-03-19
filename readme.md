@@ -9,7 +9,7 @@ Seldon Core is an open source platform for deploying machine learning models on 
 
 ## Documentation
 
-Documentation can be found at [https://docs.seldon.io/projects/seldon-core/en/latest/](https://docs.seldon.io/projects/seldon-core/en/latest/).
+Documentation can be found [here](https://seldon.readthedocs.io/projects/seldon-core/en/latest/).
 
 ## Community
 
