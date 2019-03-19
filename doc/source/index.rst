@@ -107,7 +107,7 @@ Seldon Core is a Kubernetes machine learning deployment platform. Its goals are:
    Prediction APIs <reference/apis/index>
    Seldon Core Helm Chart <reference/helm.md>
    Release Highlights <reference/release-highlights>
-
+   Images <reference/images.md>
    
 .. toctree::
    :maxdepth: 1
