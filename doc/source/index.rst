@@ -9,25 +9,12 @@ Seldon Core
 Goals
 -----
 
-Seldon Core is a Kubernetes machine learning deployment platform. Its goals are:
+Seldon Core is an open source platform for deploying machine learning models on a Kubernetes cluster.
 
- - Allow organisations to run and manage machine learning models built using any machine learning toolkit. Any model that can be run inside a Docker container can run in Seldon Core.
- - Provide a production ready machine learning deployment system on top of Kubernetes and integrating well with other Cloud Native tools.
- - Provide the tools to allow complex metrics, optimization and proper compliance of machine learning models in production.
-   
-   - Optimize your models using multi-armed bandit solvers
-   - Run Outlier Detection models
-   - Get alerts on Concept Drift
-   - Provide black-box model explanations of running models
-     
- - Provide APIs to allow business application to easily call your machine learning models to get predictions.
- - Handle full lifecycle management of the deployed model
-   
-   - Updating the runtime graph with no downtime
-   - Scaling
-   - Monitoring
-   - Security
-
+ * Deploy machine learning models in the cloud or on-premise.
+ * Get metrics and ensure proper governance and compliance for your running machine learning models.
+ * Create powerful inference graphs made up of multiple components.
+ * Provide a consistent serving layer for models built using heterogeneous ML toolkits.
 
 .. toctree::
    :maxdepth: 1
