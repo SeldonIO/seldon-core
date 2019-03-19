@@ -53,7 +53,6 @@ Seldon Core is an open source platform for deploying machine learning models on 
    Annotation-based Configuration <graph/annotations.md>
    Private Docker Registry <graph/private_registries.md>
 
-
 .. toctree::
    :maxdepth: 1
    :caption: Deployment Options
@@ -61,6 +60,7 @@ Seldon Core is an open source platform for deploying machine learning models on 
    Helm Charts <graph/helm_charts.md>	     
    Ambassador Deployment <graph/ambassador.md>	     
    Grafana Analytics <analytics/analytics.md>
+   Autoscaling <graph/autoscaling.md>   
 	     
 .. toctree::
    :maxdepth: 1
