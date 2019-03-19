@@ -183,6 +183,7 @@ def route(user_model: Any, request: prediction_pb2.SeldonMessage) -> prediction_
 def aggregate(user_model: Any, request: prediction_pb2.SeldonMessageList) -> prediction_pb2.SeldonMessage:
     """
     Aggregate a list of payloads
+
     Parameters
     ----------
     user_model

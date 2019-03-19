@@ -111,7 +111,8 @@
                 <version>0.8.2</version>
                <configuration>
        				<excludes>
-            			<exclude>**/io/seldon/protos/**/*.class</exclude>
+            			  <exclude>**/io/seldon/protos/**/*.class</exclude>
+				  <exclude>**/io/seldon/clustermanager/pb/*.class</exclude>
         			</excludes>
     			</configuration>                
                 <executions>

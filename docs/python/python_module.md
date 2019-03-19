@@ -15,18 +15,18 @@ Install from PyPI with:
 pip install seldon-core
 ```
 
-# Seldon Core Microservices
+## Seldon Core Microservices
 
 Seldon allows you to easily take your runtime inference code and create a Docker container that can be managed by Seldon Core. Follow the instructions [here](../wrappers/python.md) to wrap your code using the S2I tool.
 
 You can also create your own image and utilise the `seldon-core-microservice` executable to run your model code.
 
-# Testing Seldon Core Microservices
+## Testing Seldon Core Microservices
 
 To test your microservice standalone or your running Seldon Deployment inside Kubernetes you can follow the [API testing docs](../api-testing.md)
 
 
-# Seldon Core Python API Client
+## Seldon Core Python API Client
 
 The python package contains a module that provides a reference python client for the internal Seldon Core microservice API and the external APIs. More specifically it provides:
 
