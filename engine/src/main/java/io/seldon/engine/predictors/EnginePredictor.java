@@ -41,6 +41,7 @@ import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitType;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitImplementation;
 import io.seldon.protos.DeploymentProtos.PredictorSpec;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
+import io.seldon.protos.DeploymentProtos.SeldonPodSpec;
 
 
 
@@ -123,7 +124,7 @@ public class EnginePredictor {
         //@formatter:off
         PredictorSpec.Builder predictorSpecBuilder = PredictorSpec.newBuilder()
                 .setName("basic-predictor")
-                .addComponentSpecs(PodTemplateSpec.newBuilder());
+                .addComponentSpecs(SeldonPodSpec.newBuilder());
         //@formatter:on
 
         { // Add predictorGraph

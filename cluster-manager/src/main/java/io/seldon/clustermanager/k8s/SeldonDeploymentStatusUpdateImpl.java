@@ -28,6 +28,7 @@ import io.seldon.clustermanager.ClusterManagerProperites;
 import io.seldon.protos.DeploymentProtos.PredictorSpec;
 import io.seldon.protos.DeploymentProtos.PredictorStatus;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
+import io.seldon.protos.DeploymentProtos.SeldonPodSpec;
 
 @Component
 public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusUpdate {
@@ -82,7 +83,7 @@ public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusU
 				names.add(seldonNameCreator.getServiceOrchestratorName(mlDep, p));
 			for(int ptsIdx=0;ptsIdx<p.getComponentSpecsCount();ptsIdx++)
 			{
-				V1.PodTemplateSpec spec = p.getComponentSpecs(ptsIdx);
+				SeldonPodSpec spec = p.getComponentSpecs(ptsIdx);
 				names.add(seldonNameCreator.getSeldonDeploymentName(mlDep,p,spec));
 			}
 		}

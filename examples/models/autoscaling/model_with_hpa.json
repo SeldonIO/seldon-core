@@ -11,9 +11,6 @@
         "predictors": [
             {
                 "componentSpecs": [{
-		    "metadata":{
-			"name":"my-dep"
-		    },
                     "spec": {
                         "containers": [
                             {
@@ -28,14 +25,9 @@
                             }
                         ],
                         "terminationGracePeriodSeconds": 1
-                    }
-                }],
-		"hpaSpecs":[
+                    },
+		    "hpaSpec":
 		    {
-			"scaleTargetRef": {			    
-			    "apiVersion": "extensions/v1beta1",
-			    "kind": "Deployment",
-			    "name": "my-dep"},
 			"minReplicas": 1,
 			"maxReplicas": 4,
 			"metrics": 
@@ -46,7 +38,8 @@
 				    "targetAverageUtilization": 10
 				}
 			    }]
-		    }],
+		    }
+                }],
                 "graph": {
                     "children": [],
                     "name": "classifier",

@@ -2,13 +2,12 @@
 
 To autoscale your Seldon Deployment resources you can add Horizontal Pod Template Specifications to the Pod Template Specifications you create. There are three steps:
 
-  1. Give the PodTemplateSpec you want to autoscale a name by adding appropriate metadata.
   1. Ensure you have a resource request for the metric you want to scale on if it is a standard metric such as cpu or memory.
-  1. Add a HorizontalPodAutoscalerSpec refering to this Deployment.
+  1. Add a HPA Spec refering to this Deployment. (We presently support v1beta1 version of k8s HPA Metrics spec)
 
 To illustrate this we have an example Seldon Deployment below:
 
-```
+```json
 {
     "apiVersion": "machinelearning.seldon.io/v1alpha2",
     "kind": "SeldonDeployment",
@@ -17,12 +16,11 @@ To illustrate this we have an example Seldon Deployment below:
     },
     "spec": {
         "name": "test-deployment",
+        "oauth_key": "oauth-key",
+        "oauth_secret": "oauth-secret",
         "predictors": [
             {
                 "componentSpecs": [{
-		    "metadata":{
-			"name":"my-dep"
-		    },
                     "spec": {
                         "containers": [
                             {
@@ -37,14 +35,9 @@ To illustrate this we have an example Seldon Deployment below:
                             }
                         ],
                         "terminationGracePeriodSeconds": 1
-                    }
-                }],
-		"hpaSpecs":[
+                    },
+		    "hpaSpec":
 		    {
-			"scaleTargetRef": {			    
-			    "apiVersion": "extensions/v1beta1",
-			    "kind": "Deployment",
-			    "name": "my-dep"},
 			"minReplicas": 1,
 			"maxReplicas": 4,
 			"metrics": 
@@ -55,7 +48,8 @@ To illustrate this we have an example Seldon Deployment below:
 				    "targetAverageUtilization": 10
 				}
 			    }]
-		    }],
+		    }
+                }],
                 "graph": {
                     "children": [],
                     "name": "classifier",
@@ -70,18 +64,10 @@ To illustrate this we have an example Seldon Deployment below:
         ]
     }
 }
-
 ```
 
-In the above we can see, we added meta data to give the PodTemplate a name:
+In the above we can see, we added resource requests for the cpu:
 
-```
-"metadata":{
-    "name":"my-dep"
-},
-```
-
-We added resource requests for the cpu:
 ```
 "resources": {
     "requests": {
@@ -90,15 +76,11 @@ We added resource requests for the cpu:
 }
 ```
 
-We added a HPA spec referring to the PodTemplateSpec:
+We added an HPA spec referring to the PodTemplateSpec:
 
 ```
 "hpaSpecs":[
     {
-	"scaleTargetRef": {			    
-	    "apiVersion": "extensions/v1beta1",
-	    "kind": "Deployment",
-	    "name": "my-dep"},
 	"minReplicas": 1,
 	"maxReplicas": 4,
 	"metrics": 

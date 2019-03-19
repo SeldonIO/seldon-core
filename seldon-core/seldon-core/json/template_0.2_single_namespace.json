@@ -25,7 +25,8 @@
                     ],
                     "resources": [
                         "deployments",
-                        "services"
+                        "services",
+			"horizontalpodautoscalers"
                     ],
                     "verbs": [
                         "*"

@@ -26,7 +26,10 @@ def simplifyAdditionalProperties(defn):
         for k in defn.keys():
             simplifyAdditionalProperties(defn[k])
 
-
+"""
+Expands the Swagger JSON for the Root Item by expanding out the $ref items to their referring JSON
+Needed as CRD OpenAPI validation can't handle $ref elements
+"""
 if __name__ == '__main__':
     import logging
     logger = logging.getLogger()
@@ -35,7 +38,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(prog='create_replay')
     parser.add_argument('--swagger', help='Swagger OpenAPI file', default="swagger.json")
-    parser.add_argument('--root', help='root defn', default="io.k8s.api.core.v1.PodTemplateSpec")
+    parser.add_argument('--root', help='root defn', default="io.k8s.api.core.v1.PodSpec")
 
     args = parser.parse_args()
     opts = vars(args)

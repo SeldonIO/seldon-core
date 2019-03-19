@@ -1,5 +1,7 @@
-local podTemplateValidation = import "json/pod-template-spec-validation.json";
 local hpaValidation = import "json/hpa-validation.json";
+local objectMetaValidation = import "json/object-meta-validation.json";
+local podSpecValidation = import "json/pod-spec-validation.json";
+local podTemplateValidation = import "json/pod-template-spec-validation.json";
 local k = import "k.libsonnet";
 
 {
@@ -495,13 +497,35 @@ local k = import "k.libsonnet";
                           {
                             description: "List of pods belonging to the predictor",
                             type: "array",
-                            items: podTemplateValidation,
-                          },
-                        hpaSpecs:
-                          {
-                            description: "List of HPA specs related to the PodTemplatesSpecs",
-                            type: "array",
-                            items: hpaValidation,
+                            items: {
+                              description: "Pod spec with optional HPA spec",
+                              type: "object",
+                              properties: {
+                                metadata: objectMetaValidation,
+                                spec: podSpecValidation,
+                                hpaSpec: {
+                                  description: "Horizontal Pod Autoscaler Spec",
+                                  type: "object",
+                                  properties: {
+                                    maxReplicas: {
+                                      description: "maxReplicas is the upper limit for the number of replicas to which the autoscaler can scale up. It cannot be less that minReplicas.",
+                                      format: "int32",
+                                      type: "integer",
+                                    },
+                                    minReplicas: {
+                                      description: "minReplicas is the lower limit for the number of replicas to which the autoscaler can scale down. It defaults to 1 pod.",
+                                      format: "int32",
+                                      type: "integer",
+                                    },
+                                    metrics: {
+                                      description: "List of HPA Specs",
+                                      type: "array",
+                                      items: hpaValidation,
+                                    },
+                                  },
+                                },
+                              },
+                            },
                           },
                         replicas: {
                           type: "integer",
@@ -642,7 +666,19 @@ local k = import "k.libsonnet";
             },
           },
         },
-        version: "v1alpha2",
+        version: "v1alpha3",
+        versions: [
+          {
+            name: "v1alpha3",
+            served: true,
+            storage: true,
+          },
+          {
+            name: "v1alpha2",
+            served: true,
+            storage: false,
+          },
+        ],
         subresources: {
           status: {},
         },

@@ -31,6 +31,7 @@ import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitType;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitImplementation;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitMethod;
 import io.seldon.protos.DeploymentProtos.PredictorSpec;
+import io.seldon.protos.DeploymentProtos.SeldonPodSpec;
 import io.seldon.protos.PredictionProtos.Feedback;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
 import io.kubernetes.client.proto.V1;
@@ -70,7 +71,7 @@ public class PredictorBean {
 		PredictiveUnit rootUnit = predictorSpec.getGraph();
 		Map<String,Container> containersMap = new HashMap<String,Container>();
 		
-		for(V1.PodTemplateSpec spec : predictorSpec.getComponentSpecsList())
+		for(SeldonPodSpec spec : predictorSpec.getComponentSpecsList())
 			for (Container container : spec.getSpec().getContainersList()){
 				containersMap.put(container.getName(), container);
 		}
