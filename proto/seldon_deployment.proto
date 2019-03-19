@@ -45,13 +45,24 @@ message DeploymentSpec {
 message PredictorSpec {
   required string name = 1; // A unique name not used by any other predictor in the deployment.
   required PredictiveUnit graph = 2; // A graph describing how the predictive units are connected together.
-  repeated k8s.io.api.core.v1.PodTemplateSpec componentSpecs = 3; // A description of the set of containers used by the graph. One for each microservice defined in the graph. Can be split over 1 or more PodTemplateSpecs.
+  repeated SeldonPodSpec componentSpecs = 3; // A description of the set of containers used by the graph. One for each microservice defined in the graph. Can be split over 1 or more PodTemplateSpecs.
   optional int32 replicas = 4; // The number of replicas of the predictor to create.
   map<string,string> annotations = 5; // Arbitrary annotations.
   optional k8s.io.api.core.v1.ResourceRequirements engineResources = 6 [deprecated=true]; // Optional set of resources for the Seldon engine which is added to each Predictor graph to manage the request/response flow
   map<string,string> labels = 7; // labels to be attached to entry deplyment for this predictor
   optional SvcOrchSpec svcOrchSpec = 8; // Service Orchestrator configuration
-  repeated k8s.io.api.autoscaling.v2beta1.HorizontalPodAutoscalerSpec hpaSpecs = 9;
+}
+
+message SeldonPodSpec {
+ optional k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta metadata = 1;
+ optional k8s.io.api.core.v1.PodSpec spec = 2;
+ optional SeldonHpaSpec hpaSpec = 3;
+}
+
+message SeldonHpaSpec {
+  optional int32 minReplicas = 1;
+  optional int32 maxReplicas = 2;
+  repeated k8s.io.api.autoscaling.v2beta1.MetricSpec metrics = 3;
 }
 
 message SvcOrchSpec {

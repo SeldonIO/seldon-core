@@ -31,6 +31,7 @@ import io.kubernetes.client.proto.V1.PodSpec;
 import io.kubernetes.client.proto.V1.PodTemplateSpec;
 import io.seldon.protos.DeploymentProtos.PredictiveUnit;
 import io.seldon.protos.DeploymentProtos.PredictorSpec;
+import io.seldon.protos.DeploymentProtos.SeldonPodSpec;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
 
 @RunWith(SpringRunner.class)
@@ -49,7 +50,7 @@ public class SimpleModelUnitTest {
 		PredictorSpecBuilder.setName("p1");
 		// PredictorSpecBuilder.setRoot("1");
 		PredictorSpecBuilder.setReplicas(1);
-		PredictorSpecBuilder.addComponentSpecs(PodTemplateSpec.newBuilder());
+		PredictorSpecBuilder.addComponentSpecs(SeldonPodSpec.newBuilder());
 		
 		PredictiveUnit.Builder PredictiveUnitBuilder = PredictiveUnit.newBuilder();
 		PredictiveUnitBuilder.setName("1");
@@ -86,7 +87,7 @@ public class SimpleModelUnitTest {
 		PredictorSpecBuilder.setReplicas(1);
 		
 		final String imageName = "myimage";
-		PodTemplateSpec.Builder ptsBuilder = PodTemplateSpec.newBuilder().setSpec(PodSpec.newBuilder().addContainers(Container.newBuilder().setImage(imageName).setName("1")));
+		SeldonPodSpec.Builder ptsBuilder = SeldonPodSpec.newBuilder().setSpec(PodSpec.newBuilder().addContainers(Container.newBuilder().setImage(imageName).setName("1")));
 		
 		PredictorSpecBuilder.addComponentSpecs(ptsBuilder);
 		
@@ -127,7 +128,7 @@ public class SimpleModelUnitTest {
 		
 		final String imageName = "myimage";
 		final String imageVersion = "0.1";
-		PodTemplateSpec.Builder ptsBuilder = PodTemplateSpec.newBuilder().setSpec(PodSpec.newBuilder().addContainers(Container.newBuilder().setImage(imageName+":"+imageVersion).setName("1")));
+		SeldonPodSpec.Builder ptsBuilder = SeldonPodSpec.newBuilder().setSpec(PodSpec.newBuilder().addContainers(Container.newBuilder().setImage(imageName+":"+imageVersion).setName("1")));
 		
 		PredictorSpecBuilder.addComponentSpecs(ptsBuilder);
 		
