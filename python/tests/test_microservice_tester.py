@@ -6,6 +6,7 @@ from seldon_core.proto import prediction_pb2
 import numpy as np
 from os.path import dirname, join
 import pytest
+import json
 
 
 class MockResponse:
@@ -39,6 +40,9 @@ def test_predict_rest(mock_post):
                  "endpoint": "predict", "prnt": True, "grpc": False, "tensor": True}
     args = Bunch(args_dict)
     run_predict(args)
+    print(mock_post.call_args[1])
+    payload = json.loads(mock_post.call_args[1]["data"]["json"])
+    assert payload["data"]["names"] == ["sepal_length", "sepal_width", "petal_length","petal_width"]
 
 
 @mock.patch('requests.post', side_effect=mocked_requests_post_success)
