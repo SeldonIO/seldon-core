@@ -10,6 +10,14 @@ cluster-manager/.m2/
 .settings/
 .project
 
+# Netbeans and IntelliJ files
+!.gitignore
+/nbproject
+/*.ipr
+/*.iws
+*.iml
+.idea
+
 /bin/
 *~
 *.pyc
