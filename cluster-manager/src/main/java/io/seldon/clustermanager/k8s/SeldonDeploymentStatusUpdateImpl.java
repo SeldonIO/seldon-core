@@ -62,9 +62,13 @@ public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusU
 			return false;
 		for (PredictorStatus.Builder b : mlBuilder.getStatusBuilder().getPredictorStatusBuilderList())
         {
-			if (b.getReplicas() != b.getReplicasAvailable())
-				return false;
-			names.remove(b.getName());
+			if (names.contains(b.getName()))
+			{
+				if (b.getReplicas() != b.getReplicasAvailable())
+					return false;
+				else
+					names.remove(b.getName());
+			}
         }
 		if (names.isEmpty())
 			return true;
