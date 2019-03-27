@@ -1,0 +1,63 @@
+{
+  "features": [
+    {
+      "name": "sepal_length",
+      "dtype": "FLOAT",
+      "ftype": "continuous",
+      "range": [
+        4,
+        8
+      ]
+    },
+    {
+      "name": "sepal_width",
+      "dtype": "FLOAT",
+      "ftype": "continuous",
+      "range": [
+        2,
+        5
+      ]
+    },
+    {
+      "name": "petal_length",
+      "dtype": "FLOAT",
+      "ftype": "continuous",
+      "range": [
+        1,
+        10
+      ]
+    },
+    {
+      "name": "DCAPS",
+      "ftype": "categorical",
+      "values": [
+        "A",
+        "B",
+        "C"
+      ]
+    },
+    {
+      "name": "petal_width",
+      "dtype": "FLOAT",
+      "ftype": "continuous",
+      "range": [
+        0,
+        3
+      ]
+    }
+  ],
+  "targets": [
+    {
+      "name": "class",
+      "dtype": "FLOAT",
+      "ftype": "continuous",
+      "range": [
+        0,
+        1
+      ],
+      "repeat": 3
+    }
+  ]
+}
+
+

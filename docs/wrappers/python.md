@@ -6,7 +6,7 @@ In this guide, we illustrate the steps needed to wrap your own python model in a
 If you are not familiar with s2i you can read [general instructions on using s2i](./s2i.md) and then follow the steps below.
 
 
-# Step 1 - Install s2i
+## Step 1 - Install s2i
 
  [Download and install s2i](https://github.com/openshift/source-to-image#installation)
 
@@ -17,11 +17,11 @@ If you are not familiar with s2i you can read [general instructions on using s2i
 To check everything is working you can run
 
 ```bash
-s2i usage seldonio/seldon-core-s2i-python3:0.4
+s2i usage seldonio/seldon-core-s2i-python3:0.5.1
 ```
 
 
-# Step 2 - Create your source code
+## Step 2 - Create your source code
 
 To use our s2i builder image to package your python model you will need:
 
@@ -31,7 +31,7 @@ To use our s2i builder image to package your python model you will need:
 
 We will go into detail for each of these steps:
 
-## Python file
+### Python file
 Your source code should contain a python file which defines a class of the same name as the file. For example, looking at our skeleton python model file at ```wrappers/s2i/python/test/model-template-app/MyModel.py```:
 
 ```python
@@ -64,10 +64,10 @@ class MyModel(object):
  * You can add any required initialization inside the class init method.
  * Your return array should be at least 2-dimensional.
 
-## requirements.txt
+### requirements.txt
 Populate a requirements.txt with any software dependencies your code requires. These will be installed via pip when creating the image. You can instead provide a setup.py if you prefer.
 
-## .s2i/environment
+### .s2i/environment
 
 Define the core parameters needed by our python builder image to wrap your model. An example is:
 
@@ -80,19 +80,17 @@ PERSISTENCE=0
 
 These values can also be provided or overridden on the command line when building the image.
 
-# Step 3 - Build your image
+## Step 3 - Build your image
 Use ```s2i build``` to create your Docker image from source code. You will need Docker installed on the machine and optionally git if your source code is in a public git repo. You can choose from three python builder images
 
- * Python 2 : seldonio/seldon-core-s2i-python2:0.4
- * Python 3.6 : seldonio/seldon-core-s2i-python36:0.4, seldonio/seldon-core-s2i-python3:0.4
+ * Python 3.6 : seldonio/seldon-core-s2i-python36:0.5.1, seldonio/seldon-core-s2i-python3:0.5.1
    * Note there are [issues running TensorFlow under Python 3.7](https://github.com/tensorflow/tensorflow/issues/20444) (Nov 2018) and Python 3.7 is not officially supported by TensorFlow (Dec 2018).
  * Python 3.6 plus ONNX support via [Intel nGraph](https://github.com/NervanaSystems/ngraph) : seldonio/seldon-core-s2i-python3-ngraph-onnx:0.1
 
 Using s2i you can build directly from a git repo or from a local source folder. See the [s2i docs](https://github.com/openshift/source-to-image/blob/master/docs/cli.md#s2i-build) for further details. The general format is:
 
 ```bash
-s2i build <git-repo> seldonio/seldon-core-s2i-python2:0.4 <my-image-name>
-s2i build <src-folder> seldonio/seldon-core-s2i-python2:0.4 <my-image-name>
+s2i build <src-folder> seldonio/seldon-core-s2i-python3:0.5.1 <my-image-name>
 ```
 
 Change to seldonio/seldon-core-s2i-python3 if using python 3.
@@ -100,13 +98,13 @@ Change to seldonio/seldon-core-s2i-python3 if using python 3.
 An example invocation using the test template model inside seldon-core:
 
 ```bash
-s2i build https://github.com/seldonio/seldon-core.git --context-dir=wrappers/s2i/python/test/model-template-app seldonio/seldon-core-s2i-python2:0.4 seldon-core-template-model
+s2i build https://github.com/seldonio/seldon-core.git --context-dir=wrappers/s2i/python/test/model-template-app seldonio/seldon-core-s2i-python3:0.5.1 seldon-core-template-model
 ```
 
 The above s2i build invocation:
 
  * uses the GitHub repo: https://github.com/seldonio/seldon-core.git and the directory ```wrappers/s2i/python/test/model-template-app``` inside that repo.
- * uses the builder image ```seldonio/seldon-core-s2i-python2```
+ * uses the builder image ```seldonio/seldon-core-s2i-python3```
  * creates a docker image ```seldon-core-template-model```
 
 
@@ -115,35 +113,34 @@ For building from a local source folder, an example where we clone the seldon-co
 ```bash
 git clone https://github.com/seldonio/seldon-core.git
 cd seldon-core
-s2i build wrappers/s2i/python/test/model-template-app seldonio/seldon-core-s2i-python2:0.4 seldon-core-template-model
+s2i build wrappers/s2i/python/test/model-template-app seldonio/seldon-core-s2i-python3:0.5.1 seldon-core-template-model
 ```
 
 For more help see:
 
 ```
-s2i usage seldonio/seldon-core-s2i-python2:0.4
-s2i usage seldonio/seldon-core-s2i-python3:0.4
+s2i usage seldonio/seldon-core-s2i-python3:0.5.1
 s2i build --help
 ```
 
-# Using with Keras/Tensorflow Models
+## Using with Keras/Tensorflow Models
 
 To ensure Keras models with the Tensorflow backend work correctly you may need to call `_make_predict_function()` on your model after it is loaded. This is because Flask may call the prediction request in a separate thread from the one that initialised your model. See [here](https://github.com/keras-team/keras/issues/6462) for further discussion.
 
-# Reference
+## Reference
 
-## Environment Variables
+### Environment Variables
 The required environment variables understood by the builder image are explained below. You can provide them in the ```.s2i/environment``` file or on the ```s2i build``` command line.
 
 
-### MODEL_NAME
+#### MODEL_NAME
 The name of the class containing the model. Also the name of the python file which will be imported.
 
-### API_TYPE
+#### API_TYPE
 
 API type to create. Can be REST or GRPC
 
-### SERVICE_TYPE
+#### SERVICE_TYPE
 
 The service type being created. Available options are:
 
@@ -153,32 +150,32 @@ The service type being created. Available options are:
  * COMBINER
  * OUTLIER_DETECTOR
 
-### PERSISTENCE
+#### PERSISTENCE
 
 Set either to 0 or 1. Default is 0. If set to 1 then your model will be saved periodically to redis and loaded from redis (if exists) or created fresh if not.
 
 
-## Creating different service types
+### Creating different service types
 
-### MODEL
+#### MODEL
 
  * [A minimal skeleton for model source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/python/test/model-template-app)
  * [Example models](https://github.com/SeldonIO/seldon-core/tree/master/examples/models)
 
-### ROUTER
+#### ROUTER
  * [Description of routers in Seldon Core](../../components/routers/README.md)
  * [A minimal skeleton for router source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/python/test/router-template-app)
  * [Example routers](https://github.com/SeldonIO/seldon-core/tree/master/examples/routers)
 
-### TRANSFORMER
+#### TRANSFORMER
 
  * [A minimal skeleton for transformer source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/python/test/transformer-template-app)
  * [Example transformers](https://github.com/SeldonIO/seldon-core/tree/master/examples/transformers)
 
 
-# Advanced Usage
+## Advanced Usage
 
-## Model Class Arguments
+### Model Class Arguments
 You can add arguments to your component which will be populated from the ```parameters``` defined in the SeldonDeloyment when you deploy your image on Kubernetes. For example, our [Python TFServing proxy](https://github.com/SeldonIO/seldon-core/tree/master/integrations/tfserving) has the class init method signature defined as below:
 
 ```
@@ -230,18 +227,18 @@ These arguments can be set when deploying in a Seldon Deployment. An example can
 The allowable ```type``` values for the parameters are defined in the [proto buffer definition](https://github.com/SeldonIO/seldon-core/blob/44f7048efd0f6be80a857875058d23efc4221205/proto/seldon_deployment.proto#L117-L131).
 
 
-## Local Python Dependencies
+### Local Python Dependencies
 ```from version 0.5-SNAPSHOT```
 
 To use a private repository for installing Python dependencies use the following build command:
 
 ```bash
-s2i build -i <python-wheel-folder>:/whl <src-folder> seldonio/seldon-core-s2i-python2:0.5-SNAPSHOT <my-image-name>
+s2i build -i <python-wheel-folder>:/whl <src-folder> seldonio/seldon-core-s2i-python3:0.6-SNAPSHOT <my-image-name>
 ```
 
 This command will look for local Python wheels in the ```<python-wheel-folder>``` and use these before searching PyPI.
 
-## Custom Metrics
+### Custom Metrics
 ```from version 0.3```
 
 To add custom metrics to your response you can define an optional method ```metrics``` in your class that returns a list of metric dicts. An example is shown below:
@@ -260,7 +257,7 @@ For more details on custom metrics and the format of the metric dict see [here](
 
 There is an [example notebook illustrating a model with custom metrics in python](../../examples/models/template_model_with_metrics/modelWithMetrics.ipynb).
 
-## Custom Meta Data
+### Custom Meta Data
 ```from version 0.3```
 
 To add custom meta data you can add an optional method ```tags``` which can return a dict of custom meta tags as shown in the example below:

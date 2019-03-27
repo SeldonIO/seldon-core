@@ -13,5 +13,10 @@ public class KubernetesUtil {
 		 else
 			 return d.getMetadata().getNamespace();
 	 }
+	
+	public String getSeldonId(SeldonDeployment mlDep)
+	{
+		return mlDep.getSpec().getName() + "-" + mlDep.getMetadata().getName();
+	}
 
 }

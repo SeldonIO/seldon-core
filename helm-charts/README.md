@@ -1,41 +1,44 @@
-# Seldon Core Helm Charts
+## Seldon Core Setup
 
-# Seldon Core Setup
+Helm charts are published to our official repo. An example install:
+
+```bash
+helm install seldon-core-crd --name seldon-core-crd --repo https://storage.googleapis.com/seldon-charts \
+     --set usage_metrics.enabled=true
+```
 
 The core charts for installing Seldon Core.
 
- * seldon-core-crd
+ * [seldon-core-crd](https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-core-crd)
    * SeldonDeployment Custom Resource Definition and Spartakus usage metrics
- * seldon-core
+ * [seldon-core](https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-core)
    * Main helm chart for installing Seldon Core
- * seldon-core-analytics
+ * [seldon-core-analytics](https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-core-analytics)
    * Example Prometheus and Grafana setup with demonstration Grafana dashboard for Seldon Core
 
 
-See the [Installation](../docs/install.md)  documentation for details of how to install Seldon Core using the above charts.
-
-# Seldon Core Inference Graph Templates
+## Seldon Core Inference Graph Templates
 
 A set of charts to provide example templates for creating particular inference graphs using Seldon Core
 
- * seldon-single-model
+ * [seldon-single-model](https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-single-model)
    * Serve a single model with attached Persistent Volume.
- * seldon-abtest
+ * [seldon-abtest](https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-abtest)
    * Serve an AB test between two models.
- * seldon-mab
+ * [seldon-mab](https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-mab)
    * Serve a multi-armed bandit between two models.
- * seldon-openvino
+ * [seldon-openvino](https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-openvino)
    * Deploy a single model with Intel OpenVINO model server.
- * seldon-od-model and seldon-od-transformer
+ * [seldon-od-model](https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-od-model) and [seldon-od-transformer](https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-od-transformer)
    * Serve one of the following Outlier Detector components as either models or transformers:
-     * [Isolation Forest](../components/outlier-detection/isolation-forest)
-     * [Variational Auto-Encoder](../components/outlier-detection/vae)
-     * [Sequence-to-Sequence-LSTM](../components/outlier-detection/seq2seq-lstm)
-     * [Mahalanobis Distance](../components/outlier-detection/mahalanobis)
+     * [Isolation Forest](https://github.com/SeldonIO/seldon-core/tree/master/components/outlier-detection/isolation-forest)
+     * [Variational Auto-Encoder](https://github.com/SeldonIO/seldon-core/tree/master/components/outlier-detection/vae)
+     * [Sequence-to-Sequence-LSTM](https://github.com/SeldonIO/seldon-core/tree/master/components/outlier-detection/seq2seq-lstm)
+     * [Mahalanobis Distance](https://github.com/SeldonIO/seldon-core/tree/master/components/outlier-detection/mahalanobis)
 
-For examples of using some of the above charts see [here](../notebooks/helm_examples.ipynb).
+For examples of using some of the above charts see [here](https://github.com/SeldonIO/seldon-core/tree/master/notebooks/helm_examples.ipynb).
 
-# Misc
+## Misc
 
- * seldon-core-loadtesting
+ * [seldon-core-loadtesting](https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-core-loadtesting)
    * Utility to load test

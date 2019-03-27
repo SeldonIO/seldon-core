@@ -11,7 +11,7 @@
 // @optionalParam operatorSpringOpts string null cluster manager spring opts
 // @optionalParam operatorJavaOpts string null cluster manager java opts
 // @optionalParam grpcMaxMessageSize string 4194304 Max gRPC message size
-// @optionalParam seldonVersion string 0.2.6-SNAPSHOT Seldon version
+// @optionalParam seldonVersion string 0.2.7-SNAPSHOT Seldon version
 // @optionalParam engineServiceAccount string default Service account for Seldon Service Orchestrator Engine
 // @optionalParam singleNamespace string true Whether to limit seldon to a single namespace
 // @optionalParam engineUser string 8888 User id to run service orchestrator engine

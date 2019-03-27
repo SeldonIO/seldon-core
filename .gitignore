@@ -10,6 +10,14 @@ cluster-manager/.m2/
 .settings/
 .project
 
+# Netbeans and IntelliJ files
+!.gitignore
+/nbproject
+/*.ipr
+/*.iws
+*.iml
+.idea
+
 /bin/
 *~
 *.pyc
@@ -160,3 +168,9 @@ examples/wrappers/go/.idea
 
 wrappers/s2i/python_openvino/s2i
 
+doc/_build
+doc/source/_static/cluster-manager
+
+python/build/
+python/dist/
+testing/scripts/proto
