@@ -2,7 +2,7 @@
 
 Whether you have wrapped your component using [our S2I wrappers](./wrappers/readme.md) or created your own wrapper you will want to test the Docker container standalone and also quickly within a running cluster. We have provided two python console scripts within the [seldon-core Python package](../python) to allow you to easily do this:
 
- * ```seldon-core-tester```
+ * ```seldon-core-microservice-tester```
     * Allows you to test a docker component to check it respects the Seldon  internal microservice API.
  * ```seldon-core-api-tester```
     * Allows you to test the external endpoints for a running Seldon Deployment graph.
@@ -29,10 +29,10 @@ Next either use the [Microservce API tester](#microservice-api-tester) or testdi
 
 ## Microservice API Tester
 
-Use the ```seldon-core-tester``` script to test a packaged Docker microservice Seldon component.
+Use the ```seldon-core-microservice-tester``` script to test a packaged Docker microservice Seldon component.
 
 ```
-usage: seldon-core-tester [-h] [--endpoint {predict,send-feedback}]
+usage: seldon-core-microservice-tester [-h] [--endpoint {predict,send-feedback}]
                           [-b BATCH_SIZE] [-n N_REQUESTS] [--grpc] [--fbs]
                           [-t] [-p]
                           contract host port
@@ -56,7 +56,7 @@ optional arguments:
 Example:
 
 ```
-seldon-core-tester contract.json 0.0.0.0 5000 -p --grpc
+seldon-core-microservice-tester contract.json 0.0.0.0 5000 -p --grpc
 ```
 
 The above sends a predict call to a gRPC component exposed at 0.0.0.0:5000 using the contract.json to create a random request.
@@ -75,24 +75,25 @@ curl -g http://localhost:5000/predict --data-urlencode 'json={"data": {"names": 
 
 
 
-# Seldon-Core API Tester for the External API 
+## Seldon-Core API Tester for the External API 
 
 Use the ```seldon-core-api-tester``` script to test a Seldon graph deployed to a kubernetes cluster.
 
 ```
 usage: seldon-core-api-tester [-h] [--endpoint {predict,send-feedback}]
                               [-b BATCH_SIZE] [-n N_REQUESTS] [--grpc] [-t]
-                              [-p] [--oauth-port OAUTH_PORT]
+                              [-p] [--log-level {DEBUG,INFO,ERROR}]
+                              [--namespace NAMESPACE]
+                              [--oauth-port OAUTH_PORT]
                               [--oauth-key OAUTH_KEY]
                               [--oauth-secret OAUTH_SECRET]
-                              [--ambassador-path AMBASSADOR_PATH]
-                              contract host port
-
+                              contract host port [deployment]
 
 positional arguments:
   contract              File that contains the data contract
   host
   port
+  deployment
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -102,10 +103,11 @@ optional arguments:
   --grpc
   -t, --tensor
   -p, --prnt            Prints requests and responses
+  --log-level {DEBUG,INFO,ERROR}
+  --namespace NAMESPACE
   --oauth-port OAUTH_PORT
   --oauth-key OAUTH_KEY
   --oauth-secret OAUTH_SECRET
-  --ambassador-path AMBASSADOR_PATH
 
 ```
 
