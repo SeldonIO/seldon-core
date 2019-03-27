@@ -19,6 +19,7 @@ push_to_registry:
 clean:
 	@mvn clean
 	@rm -fv cluster-manager.json
+	@rm -fr src/main/proto/*
 
 cache_dependencies:
 	mvn -Dmaven.repo.local=./.m2 dependency:resolve
