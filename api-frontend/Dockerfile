@@ -1,4 +1,11 @@
-FROM openjdk:8u181-jre-alpine3.8
+FROM registry.redhat.io/redhat-openjdk-18/openjdk18-openshift
+MAINTAINER devext@seldon.io
+
+LABEL name="Cluster Manager" \
+      vendor="Seldon" \
+      version="0.2.7-SNAPSHOT" \
+      summary="Cluster Manager for Seldon Core" \
+      description="One of the components in Seldon Core"
 
 ARG APP_VERSION=UNKOWN_VERSION
 
