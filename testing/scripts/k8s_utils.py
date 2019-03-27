@@ -96,7 +96,7 @@ def create_seldon_clusterwide_ksonnet(request):
 def port_forward(request):
     print("Setup: Port forward")
     p1 = Popen("kubectl port-forward $(kubectl get pods -n seldon -l app=seldon-apiserver-container-app -o jsonpath='{.items[0].metadata.name}') -n seldon 8002:8080",stdout=subprocess.PIPE,shell=True, preexec_fn=os.setsid) 
-    p2 = Popen("kubectl port-forward $(kubectl get pods -n seldon -l service=ambassador -o jsonpath='{.items[0].metadata.name}') -n seldon 8003:8080",stdout=subprocess.PIPE,shell=True, preexec_fn=os.setsid) 
+    p2 = Popen("kubectl port-forward $(kubectl get pods -n seldon -l app.kubernetes.io/name=ambassador -o jsonpath='{.items[0].metadata.name}') -n seldon 8003:8080",stdout=subprocess.PIPE,shell=True, preexec_fn=os.setsid)
     p3 = Popen("kubectl port-forward $(kubectl get pods -n seldon -l app=seldon-apiserver-container-app -o jsonpath='{.items[0].metadata.name}') -n seldon 8004:5000",stdout=subprocess.PIPE,shell=True, preexec_fn=os.setsid) 
     #, stdout=subprocess.PIPE
     def fin():        
