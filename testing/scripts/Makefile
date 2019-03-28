@@ -16,3 +16,7 @@ test: build_protos
 .PHONY: clean
 clean:
 	rm -f proto/prediction*
+	rm -rf run.log
+	rm -rf tensorflow
+	rm -rf my-model
+	rm -rf ../../wrappers/s2i/python/_python/
