@@ -3,13 +3,13 @@ ambassador:
   image:
     tag: 0.50.1
   replicaCount: 1
-  resources: {}
-    # limits:
-    #  cpu: 100m
-    #  memory: 128Mi
-    # requests:
-    #  cpu: 100m
-    #  memory: 128Mi
+  resources:
+    limits:
+      cpu: 1
+      memory: 400Mi
+    requests:
+      cpu: 200m
+      memory: 128Mi
   service:
     annotations:
       getambassador.io/config: |
