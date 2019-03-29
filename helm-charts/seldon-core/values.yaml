@@ -25,8 +25,9 @@ ambassador:
   rbac:
     create: true
     namespaced: true
-  env:
-    AMBASSADOR_SINGLE_NAMESPACE: true
+# scope will be cluster wide unless below is set
+#  env:
+#    AMBASSADOR_SINGLE_NAMESPACE: "true"
 apife:
   annotations: null
   enabled: true

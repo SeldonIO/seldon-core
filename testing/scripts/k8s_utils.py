@@ -62,7 +62,7 @@ def create_seldon_single_namespace_helm(request,version):
     setup_k8s()
     setup_helm()
     run("helm install ../../helm-charts/seldon-core-crd --name seldon-core-crd --set usage_metrics.enabled=true", shell=True)
-    run("helm install ../../helm-charts/seldon-core --name seldon-core --namespace seldon  --set ambassador.enabled=true --set apife.image.name=127.0.0.1:5000/seldonio/apife:"+version+" --set cluster_manager.image.name=127.0.0.1:5000/seldonio/cluster-manager:"+version+" --set engine.image.name=127.0.0.1:5000/seldonio/engine:"+version, shell=True)
+    run("helm install ../../helm-charts/seldon-core --name seldon-core --namespace seldon  --set ambassador.enabled=true --set ambassador.env.AMBASSADOR_SINGLE_NAMESPACE=true --set apife.image.name=127.0.0.1:5000/seldonio/apife:"+version+" --set cluster_manager.image.name=127.0.0.1:5000/seldonio/cluster-manager:"+version+" --set engine.image.name=127.0.0.1:5000/seldonio/engine:"+version, shell=True)
     wait_seldon_ready()
     setup_finalizer_helm(request)
 
@@ -70,7 +70,7 @@ def create_seldon_clusterwide_helm(request,version):
     setup_k8s()
     setup_helm()    
     run("helm install ../../helm-charts/seldon-core-crd --name seldon-core-crd --set usage_metrics.enabled=true", shell=True)
-    run("helm install ../../helm-charts/seldon-core --name seldon-core --namespace seldon  --set single_namespace=false --set ambassador.rbac.namespaced=false --set ambassador.enabled=true --set ambassador.env.AMBASSADOR_SINGLE_NAMESPACE=false --set apife.image.name=127.0.0.1:5000/seldonio/apife:"+version+" --set cluster_manager.image.name=127.0.0.1:5000/seldonio/cluster-manager:"+version+" --set engine.image.name=127.0.0.1:5000/seldonio/engine:"+version, shell=True)
+    run("helm install ../../helm-charts/seldon-core --name seldon-core --namespace seldon  --set single_namespace=false --set ambassador.rbac.namespaced=false --set ambassador.enabled=true --set apife.image.name=127.0.0.1:5000/seldonio/apife:"+version+" --set cluster_manager.image.name=127.0.0.1:5000/seldonio/cluster-manager:"+version+" --set engine.image.name=127.0.0.1:5000/seldonio/engine:"+version, shell=True)
     wait_seldon_ready()
     setup_finalizer_helm(request)
 
