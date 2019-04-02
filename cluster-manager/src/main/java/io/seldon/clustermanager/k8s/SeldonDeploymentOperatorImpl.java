@@ -664,7 +664,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			podSpecBuilder.getMetadataBuilder()
 				.putAllAnnotations(mlDep.getSpec().getAnnotationsMap()) // Add all spec annotations first
 				.putAllAnnotations(p.getAnnotationsMap()) // ...then add those for predictor overwriting any from spec above
-		    	.putAnnotations("prometheus.io/path", "/prometheus")
+		    	.putAnnotations("prometheus.io/path", "/"+clusterManagerProperites.getEnginePrometheusPath())
 		    	.putAnnotations("prometheus.io/port",""+clusterManagerProperites.getEngineContainerPort())
 		    	.putAnnotations("prometheus.io/scrape", "true");
 
@@ -779,7 +779,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			    	.addContainers(createEngineContainer(mlDep,p))
 			    	.setServiceAccountName(clusterManagerProperites.getEngineContainerServiceAccountName());
 					podSpecBuilder.getMetadataBuilder()
-				    	.putAnnotations("prometheus.io/path", "/prometheus")
+				    	.putAnnotations("prometheus.io/path", "/"+clusterManagerProperites.getEnginePrometheusPath())
 				    	.putAnnotations("prometheus.io/port",""+clusterManagerProperites.getEngineContainerPort())
 				    	.putAnnotations("prometheus.io/scrape", "true");
 					// LABELS - START

@@ -41,6 +41,8 @@ engine:
   port: 8000
   grpc:
     port: 5001
+  prometheus:
+    path: "prometheus"
 predictive_unit:
   port: 9000
 rbac:

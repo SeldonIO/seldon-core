@@ -29,6 +29,7 @@ public class ClusterManagerProperites {
     private String namespace;
     private boolean singleNamespace = true;
     private int engineUser = 8889;
+    private String enginePrometheusPath = "prometheus";
 
     public int getEngineContainerPort() {
         return engineContainerPort;
@@ -102,7 +103,15 @@ public class ClusterManagerProperites {
 		this.engineUser = engineUser;
 	}
 
-	@Override
+    public String getEnginePrometheusPath() {
+        return enginePrometheusPath;
+    }
+
+    public void setEnginePrometheusPath(String enginePrometheusPath) {
+        this.enginePrometheusPath = enginePrometheusPath;
+    }
+
+    @Override
     public String toString() {
         return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }

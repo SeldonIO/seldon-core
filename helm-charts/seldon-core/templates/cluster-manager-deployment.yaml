@@ -47,6 +47,8 @@ spec:
           value: '{{ .Values.engine.grpc.port }}'
         - name: ENGINE_SERVER_PORT
           value: '{{ .Values.engine.port }}'
+        - name: ENGINE_PROMETHEUS_PATH
+          value: {{ .Values.engine.prometheus.path }}
         - name: SELDON_CLUSTER_MANAGER_POD_NAMESPACE
           valueFrom:
             fieldRef:
