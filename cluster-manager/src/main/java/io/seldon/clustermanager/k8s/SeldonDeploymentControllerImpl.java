@@ -92,7 +92,8 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 	private final SeldonDeploymentCache mlCache;
 	private final SeldonNameCreator seldonNameCreator = new SeldonNameCreator();
 	private final K8sTaskScheduler k8sTaskScheduler;
-	
+	private final SeldonDeletionHandler deletionHandler;	
+
 	static final String DEPLOYMENT_API_VERSION = "extensions/v1beta1";
 	static final String AUTOSCALER_API_VERSION = "autoscaling/v2beta1";
 	
@@ -102,7 +103,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 
 	
 	@Autowired
-	public SeldonDeploymentControllerImpl(SeldonDeploymentOperator operator, K8sClientProvider clientProvider,KubeCRDHandler crdHandler,SeldonDeploymentCache mlCache,
+	public SeldonDeploymentControllerImpl(SeldonDeploymentOperator operator, K8sClientProvider clientProvider,KubeCRDHandler crdHandler,SeldonDeploymentCache mlCache,SeldonDeletionHandler deletetionHandler,
 			K8sTaskScheduler k8sScheduler) {
 		super();
 		this.operator = operator;
@@ -110,6 +111,7 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 		this.crdHandler = crdHandler;
 		this.mlCache = mlCache;
 		this.k8sTaskScheduler = k8sScheduler;
+		this.deletionHandler = deletetionHandler;		
 	}
 	
 	private void createHPAs(ProtoClient client,String namespace,List<HorizontalPodAutoscaler> hpas) throws ApiException, IOException, SeldonDeploymentException
@@ -197,140 +199,6 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
             }
 		}
 	}
-
-	private Set<String> getDeploymentNames(List<Deployment> deployments)
-	{
-		Set<String> names = new HashSet<>();
-	    for(Deployment d : deployments)
-	        names.add(d.getMetadata().getName());
-	    return names;
-	}
-	
-	private int removeDeployments(ProtoClient client,String namespace,SeldonDeployment seldonDeployment,List<Deployment> deployments,boolean svcOrchOnly) throws ApiException, IOException, SeldonDeploymentException
-	{
-		int deleteCount = 0;
-	    Set<String> names = getDeploymentNames(deployments);
-	    ExtensionsV1beta1DeploymentList depList = crdHandler.getOwnedDeployments(seldonNameCreator.getSeldonId(seldonDeployment),namespace);
-	    for (ExtensionsV1beta1Deployment d : depList.getItems())
-	    {
-	    	boolean okToDelete = !svcOrchOnly || (d.getMetadata().getLabels().containsKey(Constants.LABEL_SELDON_SVCORCH));
-	        if (okToDelete && !names.contains(d.getMetadata().getName()))
-	        {
-	        	deleteCount++;
-	            final String deleteApiPath = "/apis/"+DEPLOYMENT_API_VERSION+"/namespaces/{namespace}/deployments/{name}"
-	                    .replaceAll("\\{" + "name" + "\\}", client.getApiClient().escapeString(d.getMetadata().getName()))
-	                    .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString(namespace));
-	            DeleteOptions options = DeleteOptions.newBuilder().setPropagationPolicy("Foreground").build();
-	            ObjectOrStatus<Deployment> os = client.delete(Deployment.newBuilder(),deleteApiPath,options);
-	            if (os.status != null) {
-                    logger.error("Error deleting deployment:"+ProtoBufUtils.toJson(os.status));
-                    //throw new SeldonDeploymentException("Failed to delete deployment "+d.getMetadata().getName());
-                }
-                else {
-                    logger.debug("Deleted deployment:"+ProtoBufUtils.toJson(os.object));
-                }
-	        }
-	        else
-	        	logger.info("Skipping deletion of {} svcOrchOnly:{}",d.getMetadata().getName(),svcOrchOnly);
-	    }
-	    return deleteCount;
-	}
-	
-	private void removeServices(ApiClient client,String namespace,SeldonDeployment seldonDeployment,List<Service> services) throws ApiException, IOException, SeldonDeploymentException
-	{
-		Set<String> names = getServiceNames(services);
-		V1ServiceList svcList = crdHandler.getOwnedServices(seldonNameCreator.getSeldonId(seldonDeployment),namespace);
-		for(V1Service s : svcList.getItems())
-		{
-			if (!names.contains(s.getMetadata().getName()))
-			{	
-				CoreV1Api api = new CoreV1Api(client);
-				io.kubernetes.client.models.V1DeleteOptions options = new V1DeleteOptions();
-				V1Status status = api.deleteNamespacedService(s.getMetadata().getName(), namespace, options, null, null, null, null);
-				if (!"Success".equals(status.getStatus()))
-				{
-					logger.error("Failed to delete service "+s.getMetadata().getName());
-					throw new SeldonDeploymentException("Failed to delete service "+s.getMetadata().getName());
-				}
-				else
-					logger.debug("Deleted service "+s.getMetadata().getName());
-				
-			}
-		}
-	}
-	
-	private Set<String> getHpaNames(List<HorizontalPodAutoscaler> hpas)
-	{
-		Set<String> names = new HashSet<>();
-	    for(HorizontalPodAutoscaler hpa : hpas)
-	        names.add(hpa.getMetadata().getName());
-	    return names;
-	}
-	
-	private void removeHPAs(ApiClient client,String namespace,SeldonDeployment seldonDeployment,List<HorizontalPodAutoscaler> hpas) throws ApiException, IOException, SeldonDeploymentException
-	{
-		Set<String> names = getHpaNames(hpas);
-		V2beta1HorizontalPodAutoscalerList hpaList = crdHandler.getOwnedHPAs(seldonNameCreator.getSeldonId(seldonDeployment),namespace);
-		for(V2beta1HorizontalPodAutoscaler hpa : hpaList.getItems())
-		{
-			if (!names.contains(hpa.getMetadata().getName()))
-			{	
-				AutoscalingV2beta1Api api = new AutoscalingV2beta1Api(client);
-				io.kubernetes.client.models.V1DeleteOptions options = new V1DeleteOptions();
-				V1Status status = api.deleteNamespacedHorizontalPodAutoscaler(hpa.getMetadata().getName(), namespace, options, null, null, null, null);
-				if (!"Success".equals(status.getStatus()))
-				{
-					logger.error("Failed to delete HPA "+hpa.getMetadata().getName());
-					throw new SeldonDeploymentException("Failed to delete HPA "+hpa.getMetadata().getName());
-				}
-				else
-					logger.debug("Deleted HPA "+hpa.getMetadata().getName());
-				
-			}
-		}
-	}
-	
-	/**
-	 * Currently Not used as issue with proto client needs further investigation
-	 * @param client
-	 * @param namespace
-	 * @param seldonDeployment
-	 * @param services
-	 * @throws ApiException
-	 * @throws IOException
-	 * @throws SeldonDeploymentException
-	 */
-	private void removeServices(ProtoClient client,String namespace,SeldonDeployment seldonDeployment,List<Service> services) throws ApiException, IOException, SeldonDeploymentException
-	{
-		Set<String> names = getServiceNames(services);
-		V1ServiceList svcList = crdHandler.getOwnedServices(seldonNameCreator.getSeldonId(seldonDeployment),namespace);
-		for(V1Service s : svcList.getItems())
-		{
-			if (!names.contains(s.getMetadata().getName()))
-			{	
-				final String deleteApiPath = "/apis/v1/namespaces/{namespace}/services/{name}"
-	                    .replaceAll("\\{" + "name" + "\\}", client.getApiClient().escapeString(s.getMetadata().getName()))
-	                    .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString(namespace));
-	            DeleteOptions options = DeleteOptions.newBuilder().setPropagationPolicy("Foreground").build();
-	            ObjectOrStatus<Deployment> os = client.delete(Service.newBuilder(),deleteApiPath,options);
-	            if (os.status != null) {
-                    logger.error("Error deleting service:"+ProtoBufUtils.toJson(os.status));
-                    throw new SeldonDeploymentException("Failed to delete service "+s.getMetadata().getName());
-                }
-                else {
-                    logger.debug("Deleted deployment:"+ProtoBufUtils.toJson(os.object));
-                }
-			}
-		}
-	}
-	
-	private Set<String> getServiceNames(List<Service> services)
-	{
-		Set<String> names = new HashSet<>();
-		for(Service s : services)
-			names.add(s.getMetadata().getName());
-		return names;
-	}
 	
 	private void createServices(ProtoClient client,String namespace,List<Service> services) throws ApiException, IOException, SeldonDeploymentException
 	{
@@ -390,16 +258,16 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 			DeploymentResources resources = operator.createResources(mlDep2);
 			ProtoClient client = clientProvider.getProtoClient();
 			String namespace = SeldonDeploymentUtils.getNamespace(mlDep2);
-			removeHPAs(clientProvider.getClient(), namespace, mlDep2, resources.hpas);
+			deletionHandler.removeHPAs(clientProvider.getClient(), namespace, mlDep2, resources.hpas);
 			final String deploymentDeleteKey = mlDep.getMetadata().getUid()+":"+mlDep.getMetadata().getResourceVersion();
 			logger.info("Deployment delete cache key {}",deploymentDeleteKey);
 			if (deletedCache.getIfPresent(deploymentDeleteKey) == null)
 			{
-				int deleteCount = removeDeployments(client, namespace, mlDep2, resources.deployments,true);
+				int deleteCount = deletionHandler.removeDeployments(client, namespace, mlDep2, resources.deployments,true);
 				if (deleteCount == 0)
 				{
 					logger.info("Failed to delete anything from first stage delete so will delete all unsed deployments for {}",mlDep.getSpec().getName());
-					removeDeployments(client, namespace, mlDep2, resources.deployments,false);
+					deletionHandler.removeDeployments(client, namespace, mlDep2, resources.deployments,false);
 				}
 				deletedCache.put(deploymentDeleteKey, true);
 			}
@@ -423,9 +291,9 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 			DeploymentResources resources = operator.createResources(mlDep2);
 			ProtoClient client = clientProvider.getProtoClient();
 			String namespace = SeldonDeploymentUtils.getNamespace(mlDep2);
-			removeDeployments(client, namespace, mlDep2, resources.deployments,false);
+			deletionHandler.removeDeployments(client, namespace, mlDep2, resources.deployments,false);
 			ApiClient client2 = clientProvider.getClient();
-			removeServices(client2,namespace, mlDep2, resources.services);
+			deletionHandler.removeServices(client2,namespace, mlDep2, resources.services);
 		} catch (SeldonDeploymentException e) {
 			logger.error("Failed to cleanup deployment ",e);
 		} catch (ApiException e) {

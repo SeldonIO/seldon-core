@@ -137,7 +137,6 @@ public class End2EndBase extends AppTest {
 		crdHandler = new KubeCRDHandlerImpl(mockK8sApiProvider,mockK8sClientProvider,props);
 		mlCache = new SeldonDeploymentCacheImpl();
 		operator = new SeldonDeploymentOperatorImpl(props);
-		controller = new SeldonDeploymentControllerImpl(operator, mockK8sClientProvider, crdHandler, mlCache, new K8sSynchronousTaskScheduler());
-		
+		controller = new SeldonDeploymentControllerImpl(operator, mockK8sClientProvider, crdHandler, mlCache, new SeldonDeletionHandler(crdHandler), new K8sSynchronousTaskScheduler());
 	}
 }

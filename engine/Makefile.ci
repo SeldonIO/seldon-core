@@ -33,9 +33,7 @@ push_image_private_repo:
 
 clean:
 	mvn clean -B
-	rm -fv src/main/proto/seldon_deployment.proto
-	rm -fv src/main/proto/prediction.proto
-	rm -fvr src/main/proto/k8s.io
+	rm -fr src/main/proto/*
 
 download_protos_k8s:
 	cd ../proto/k8s ; make create_protos
