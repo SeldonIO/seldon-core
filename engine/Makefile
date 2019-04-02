@@ -17,10 +17,7 @@ push_to_registry:
 clean:
 	@mvn clean
 	@rm -fv engine.json
-	@rm -fv src/main/proto/seldon_deployment.proto
-	@rm -fv src/main/proto/prediction.proto
-	@rm -fvr src/main/proto/k8s.io
-	@rm -fvr src/main/proto/tensorflow
+	@rm -fr src/main/proto/*
 
 cache_dependencies:
 	mvn -Dmaven.repo.local=./.m2 dependency:resolve
