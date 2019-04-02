@@ -116,6 +116,9 @@ examples/models/sk_mnist/MNIST_data/
 examples/models/sk_mnist/sk.pkl
 examples/models/sklearn_iris_fbs/IrisClassifier.sav
 
+# Pickle files
+*.pickle
+
 # api tester created proto folder
 util/api_tester/proto/
 
