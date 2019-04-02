@@ -41,6 +41,12 @@ spec:
           value: '{{ .Values.single_namespace }}'
         - name: ENGINE_CONTAINER_USER
           value: '{{ .Values.engine.user }}'
+        - name: PREDICTIVE_UNIT_SERVICE_PORT
+          value: {{ .Values.predictive_unit.port }}
+        - name: ENGINE_SERVER_GRPC_PORT
+          value: {{ .Values.engine.grpc.port }}
+        - name: ENGINE_SERVER_PORT
+          value: {{ .Values.engine.port }}
         - name: SELDON_CLUSTER_MANAGER_POD_NAMESPACE
           valueFrom:
             fieldRef:

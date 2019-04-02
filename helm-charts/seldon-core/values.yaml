@@ -38,6 +38,11 @@ engine:
   service_account:
     name: default
   user: 8888
+  port: 8000
+  grpc:
+    port: 5001
+predictive_unit:
+  port: 9000
 rbac:
   enabled: true
   rolebinding:

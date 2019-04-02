@@ -34,6 +34,10 @@ spec:
           value: kafka:9092
         - name: SELDON_CLUSTER_MANAGER_REDIS_HOST
           value: {{ .Release.Name }}-redis
+        - name: ENGINE_SERVER_GRPC_PORT
+          value: {{ .Values.engine.grpc.port }}
+        - name: ENGINE_SERVER_PORT
+          value: {{ .Values.engine.port }}
         - name: SELDON_SINGLE_NAMESPACE
           value: '{{ .Values.single_namespace }}'
         - name: SELDON_CLUSTER_MANAGER_POD_NAMESPACE
