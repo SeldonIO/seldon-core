@@ -121,6 +121,9 @@ public class End2EndBase extends AppTest {
 		props.setEngineContainerImageAndVersion("engine:0.1");
 		props.setEngineContainerImagePullPolicy("IfNotPresent");
 		props.setEngineContainerServiceAccountName("default");
+		props.setEngineContainerPort(8000);
+		props.setPuContainerPortBase(9000);
+		props.setEngineGrpcContainerPort(5001);
 		crdHandler = new KubeCRDHandlerImpl(mockK8sApiProvider,mockK8sClientProvider,props);
 		mlCache = new SeldonDeploymentCacheImpl(props, crdHandler);
 		operator = new SeldonDeploymentOperatorImpl(props);
