@@ -14,15 +14,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+#
+# Derived from original files
+#    https://github.com/kubernetes-client/gen/blob/master/proto/dependencies.sh
+#    https://github.com/kubernetes-client/gen/blob/master/proto/generate.sh
+#
+
 release=${1:-"master"}
 
 echo Downloading proto files for ${release}
 
+mkdir -p k8s.io/api/core/v1
 mkdir -p k8s.io/apimachinery/pkg/api/resource
 mkdir -p k8s.io/apimachinery/pkg/apis/meta/v1
 mkdir -p k8s.io/apimachinery/pkg/util/intstr
 mkdir -p k8s.io/apimachinery/pkg/runtime/schema
 mkdir -p k8s.io/apis/meta/v1
+mkdir -p k8s.io/api/autoscaling/v2beta1
 
 base=https://raw.githubusercontent.com/kubernetes
 machinery_base=${base}/apimachinery/${release}
@@ -41,17 +50,19 @@ curl -s ${machinery_base}/pkg/runtime/generated.proto \
 curl -s ${machinery_base}/pkg/runtime/schema/generated.proto \
 	> k8s.io/apimachinery/pkg/runtime/schema/generated.proto
 
-# There are currently no release branches for this file.
-curl -s ${base}/api/master/core/v1/generated.proto > v1.proto
-
+# There are currently no release branches for these files.
+#curl -s ${base}/api/master/core/v1/generated.proto > v1.proto
+curl -s ${base}/api/master/core/v1/generated.proto > k8s.io/api/core/v1/generated.proto
+curl -s ${base}/api/master/autoscaling/v2beta1/generated.proto > k8s.io/api/autoscaling/v2beta1/generated.proto
 
 # The format here is <file-name>;<generated-class-name>
-files="v1.proto;V1 \
+files="k8s.io/api/core/v1/generated.proto;V1 \
        k8s.io/apimachinery/pkg/api/resource/generated.proto;Resource \
        k8s.io/apimachinery/pkg/apis/meta/v1/generated.proto;Meta \
        k8s.io/apimachinery/pkg/runtime/generated.proto;Runtime \
        k8s.io/apimachinery/pkg/runtime/schema/generated.proto;RuntimeSchema \
-       k8s.io/apimachinery/pkg/util/intstr/generated.proto;IntStr"
+       k8s.io/apimachinery/pkg/util/intstr/generated.proto;IntStr \
+       k8s.io/api/autoscaling/v2beta1/generated.proto;V2beta1Autoscaling"
 
 proto_files=""
 

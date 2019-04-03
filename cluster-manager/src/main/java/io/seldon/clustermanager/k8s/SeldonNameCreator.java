@@ -5,6 +5,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import io.kubernetes.client.proto.V1;
 import io.seldon.protos.DeploymentProtos.PredictorSpec;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
+import io.seldon.protos.DeploymentProtos.SeldonPodSpec;
 
 public class SeldonNameCreator {
 
@@ -12,7 +13,7 @@ public class SeldonNameCreator {
 	    return DigestUtils.md5Hex(key).toLowerCase().substring(0, 7);
 	}
 	
-	private String createContainerHash(V1.PodTemplateSpec spec)
+	private String createContainerHash(SeldonPodSpec spec)
 	{
 		StringBuffer sb = new StringBuffer();
 		for(V1.Container c : spec.getSpec().getContainersList())
@@ -25,12 +26,17 @@ public class SeldonNameCreator {
 		return hash(sb.toString());
 	}
 	
-	public String getSeldonDeploymentName(SeldonDeployment dep,PredictorSpec pred,V1.PodTemplateSpec spec) {
-		String svcName =  dep.getSpec().getName() + "-" + pred.getName()+"-"+createContainerHash(spec);
-		if (svcName.length() > 63)
-			return "seldon-"+hash(svcName);
+	public String getSeldonDeploymentName(SeldonDeployment dep,PredictorSpec pred,SeldonPodSpec spec) {
+		if (spec.getMetadata().hasName())
+			return spec.getMetadata().getName();
 		else
-			return svcName;
+		{
+			String svcName =  dep.getSpec().getName() + "-" + pred.getName()+"-"+createContainerHash(spec);
+			if (svcName.length() > 63)
+				return "seldon-"+hash(svcName);
+			else
+				return svcName;
+		}
 	}
 	
 	protected static String cleanContainerImageName(String name)

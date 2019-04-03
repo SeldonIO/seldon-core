@@ -100,6 +100,11 @@
     </extensions>
 
     <plugins>
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-javadoc-plugin</artifactId>
+			<version>3.1.0</version>
+		</plugin>
 			<plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -202,7 +207,6 @@
 	  <checkStaleness>true</checkStaleness>
 	  <excludes>
 	    <exclude>k8s.io/**/*.proto</exclude>
-	    <exclude>**/v1.proto</exclude>
 	  </excludes>
 	</configuration>
 	<executions>

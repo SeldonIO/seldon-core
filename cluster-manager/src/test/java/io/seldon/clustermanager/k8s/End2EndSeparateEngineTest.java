@@ -23,7 +23,7 @@ public class End2EndSeparateEngineTest extends End2EndBase {
 	{
 		createMocks("src/test/resources/model_simple_sepeng.json");
 		SeldonDeploymentWatcher sdWatcher = new SeldonDeploymentWatcher(mockK8sApiProvider,mockK8sClientProvider,mockCrdCreator, props, controller, mlCache, crdHandler);
-		sdWatcher.watchSeldonMLDeployments(0, 0);
+		sdWatcher.watchSeldonMLDeployments("v1alpha2",0, 0);
 
 		verify(mockCustomObjectsApi).listNamespacedCustomObjectCall(any(String.class), any(String.class), any(String.class), 
 				any(String.class), isNull(String.class), isNull(String.class), any(String.class), 
@@ -53,7 +53,7 @@ public class End2EndSeparateEngineTest extends End2EndBase {
 	{
 		createMocks("src/test/resources/model_simple_sepeng.json");
 		SeldonDeploymentWatcher sdWatcher = new SeldonDeploymentWatcher(mockK8sApiProvider,mockK8sClientProvider,mockCrdCreator, props, controller, mlCache, crdHandler);
-		sdWatcher.watchSeldonMLDeployments(1, 1); // version is higher than that in resource so should be ignored
+		sdWatcher.watchSeldonMLDeployments("v1alpha2",1, 1); // version is higher than that in resource so should be ignored
 
 		verify(mockCustomObjectsApi).listNamespacedCustomObjectCall(any(String.class), any(String.class), any(String.class), 
 				any(String.class), isNull(String.class), isNull(String.class), any(String.class), 
@@ -69,7 +69,7 @@ public class End2EndSeparateEngineTest extends End2EndBase {
 	{
 		createMocks("src/test/resources/random_ab_test_sepeng.json");
 		SeldonDeploymentWatcher sdWatcher = new SeldonDeploymentWatcher(mockK8sApiProvider,mockK8sClientProvider,mockCrdCreator, props, controller, mlCache, crdHandler);
-		sdWatcher.watchSeldonMLDeployments(0, 0);
+		sdWatcher.watchSeldonMLDeployments("v1alpha2",0, 0);
 
 		verify(mockCustomObjectsApi).listNamespacedCustomObjectCall(any(String.class), any(String.class), any(String.class), 
 				any(String.class), isNull(String.class), isNull(String.class), any(String.class), 
@@ -99,7 +99,7 @@ public class End2EndSeparateEngineTest extends End2EndBase {
 	{
 		createMocks("src/test/resources/random_ab_test_1pod_sepeng.json");
 		SeldonDeploymentWatcher sdWatcher = new SeldonDeploymentWatcher(mockK8sApiProvider,mockK8sClientProvider,mockCrdCreator, props, controller, mlCache, crdHandler);
-		sdWatcher.watchSeldonMLDeployments(0, 0);
+		sdWatcher.watchSeldonMLDeployments("v1alpha2", 0, 0);
 
 		verify(mockCustomObjectsApi).listNamespacedCustomObjectCall(any(String.class), any(String.class), any(String.class), 
 				any(String.class), isNull(String.class), isNull(String.class), any(String.class), 
