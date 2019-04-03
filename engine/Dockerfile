@@ -9,8 +9,6 @@ LABEL name="Cluster Manager" \
 
 ARG APP_VERSION=UNKOWN_VERSION
 
-RUN apk add curl
-
 COPY /target/seldon-engine-${APP_VERSION}.jar app.jar
 COPY /target/generated-resources /licenses/
 
