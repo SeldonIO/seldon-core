@@ -14,6 +14,7 @@ import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.ApiException;
 import io.kubernetes.client.ProtoClient;
 import io.kubernetes.client.ProtoClient.ObjectOrStatus;
+import io.kubernetes.client.apis.AutoscalingV2beta1Api;
 import io.kubernetes.client.apis.CoreV1Api;
 import io.kubernetes.client.models.ExtensionsV1beta1Deployment;
 import io.kubernetes.client.models.ExtensionsV1beta1DeploymentList;
@@ -21,9 +22,12 @@ import io.kubernetes.client.models.V1DeleteOptions;
 import io.kubernetes.client.models.V1Service;
 import io.kubernetes.client.models.V1ServiceList;
 import io.kubernetes.client.models.V1Status;
+import io.kubernetes.client.models.V2beta1HorizontalPodAutoscaler;
+import io.kubernetes.client.models.V2beta1HorizontalPodAutoscalerList;
 import io.kubernetes.client.proto.Meta.DeleteOptions;
 import io.kubernetes.client.proto.V1.Service;
 import io.kubernetes.client.proto.V1beta1Extensions.Deployment;
+import io.kubernetes.client.proto.V2beta1Autoscaling.HorizontalPodAutoscaler;
 import io.seldon.clustermanager.pb.ProtoBufUtils;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
@@ -57,6 +61,15 @@ public class SeldonDeletionHandler {
 	        names.add(d.getMetadata().getName());
 	    return names;
 	}
+	
+	private Set<String> getHpaNames(List<HorizontalPodAutoscaler> hpas)
+	{
+		Set<String> names = new HashSet<>();
+	    for(HorizontalPodAutoscaler hpa : hpas)
+	        names.add(hpa.getMetadata().getName());
+	    return names;
+	}
+	
 	
 	/**
 	 * Delete deployments that are not in list. Allows 2 stage delete by only deleting service orchestrator or all. Gets owned
@@ -119,6 +132,29 @@ public class SeldonDeletionHandler {
 				}
 				else
 					logger.debug("Deleted service "+s.getMetadata().getName());
+				
+			}
+		}
+	}
+	
+	public void removeHPAs(ApiClient client,String namespace,SeldonDeployment seldonDeployment,List<HorizontalPodAutoscaler> hpas) throws ApiException, IOException, SeldonDeploymentException
+	{
+		Set<String> names = getHpaNames(hpas);
+		V2beta1HorizontalPodAutoscalerList hpaList = crdHandler.getOwnedHPAs(seldonNameCreator.getSeldonId(seldonDeployment),namespace);
+		for(V2beta1HorizontalPodAutoscaler hpa : hpaList.getItems())
+		{
+			if (!names.contains(hpa.getMetadata().getName()))
+			{	
+				AutoscalingV2beta1Api api = new AutoscalingV2beta1Api(client);
+				io.kubernetes.client.models.V1DeleteOptions options = new V1DeleteOptions();
+				V1Status status = api.deleteNamespacedHorizontalPodAutoscaler(hpa.getMetadata().getName(), namespace, options, null, null, null, null);
+				if (!"Success".equals(status.getStatus()))
+				{
+					logger.error("Failed to delete HPA "+hpa.getMetadata().getName());
+					throw new SeldonDeploymentException("Failed to delete HPA "+hpa.getMetadata().getName());
+				}
+				else
+					logger.debug("Deleted HPA "+hpa.getMetadata().getName());
 				
 			}
 		}

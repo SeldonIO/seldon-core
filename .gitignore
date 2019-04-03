@@ -166,7 +166,22 @@ examples/models/sagemaker/scikit_learn_iris_deployment.json
 #go example
 examples/wrappers/go/.idea
 
+util/custom-resource-definitions/hpa-spec.json
 wrappers/s2i/python_openvino/s2i
+
+components/outlier-detection/seq2seq-lstm/data/ECG5000.txt
+components/outlier-detection/seq2seq-lstm/data/ECG5000_TEST.arff
+components/outlier-detection/seq2seq-lstm/data/ECG5000_TEST.txt
+components/outlier-detection/seq2seq-lstm/data/ECG5000_TRAIN.arff
+components/outlier-detection/seq2seq-lstm/data/ECG5000_TRAIN.txt
+
+examples/models/nodejs_mnist/model.json
+examples/models/nodejs_mnist/weights.bin
+examples/models/nodejs_tensorflow/model.json
+examples/models/nodejs_tensorflow/weights.bin
+examples/models/onnx_resnet50/resnet50.tar.gz.1
+examples/models/onnx_resnet50/resnet50.tar.gz.2
+examples/models/onnx_resnet50/resnet50/
 
 doc/_build
 doc/source/_static/cluster-manager

@@ -25,7 +25,7 @@ public class KubeCRDHandlerImplTest  extends End2EndBase {
 		createMocks("src/test/resources/model_simple.json");
 		KubeCRDHandler crdHandler = new KubeCRDHandlerImpl(mockK8sApiProvider, mockK8sClientProvider, props);
 		
-		SeldonDeployment sDep = crdHandler.getSeldonDeployment("a", "b");
+		SeldonDeployment sDep = crdHandler.getSeldonDeployment("any", "any", "any");
 		Assert.assertNotNull(sDep);
 	}
 	
@@ -35,7 +35,7 @@ public class KubeCRDHandlerImplTest  extends End2EndBase {
 		createMocks("src/test/resources/invalid.json");
 		KubeCRDHandler crdHandler = new KubeCRDHandlerImpl(mockK8sApiProvider, mockK8sClientProvider, props);
 		
-		SeldonDeployment sDep = crdHandler.getSeldonDeployment("a", "b");
+		SeldonDeployment sDep = crdHandler.getSeldonDeployment("any", "any", "any");
 		Assert.assertNull(sDep);
 	}
 	
@@ -45,7 +45,7 @@ public class KubeCRDHandlerImplTest  extends End2EndBase {
 		createMocks("src/test/resources/model_invalid.json");
 		KubeCRDHandler crdHandler = new KubeCRDHandlerImpl(mockK8sApiProvider, mockK8sClientProvider, props);
 		
-		SeldonDeployment sDep = crdHandler.getSeldonDeployment("a", "b");
+		SeldonDeployment sDep = crdHandler.getSeldonDeployment("any", "any", "any");
 		Assert.assertNull(sDep);
 	}
 	

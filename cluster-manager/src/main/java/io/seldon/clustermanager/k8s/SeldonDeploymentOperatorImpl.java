@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,10 +33,8 @@ import org.springframework.stereotype.Component;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 
-import io.kubernetes.client.models.V1OwnerReference;
 import io.kubernetes.client.proto.IntStr.IntOrString;
 import io.kubernetes.client.proto.Meta.LabelSelector;
-import io.kubernetes.client.proto.Meta.LabelSelectorRequirement;
 import io.kubernetes.client.proto.Meta.ObjectMeta;
 import io.kubernetes.client.proto.Meta.OwnerReference;
 import io.kubernetes.client.proto.Resource.Quantity;
@@ -51,7 +48,7 @@ import io.kubernetes.client.proto.V1.HTTPGetAction;
 import io.kubernetes.client.proto.V1.Handler;
 import io.kubernetes.client.proto.V1.Lifecycle;
 import io.kubernetes.client.proto.V1.ObjectFieldSelector;
-import io.kubernetes.client.proto.V1.PodSecurityContext;
+import io.kubernetes.client.proto.V1.PodSpec;
 import io.kubernetes.client.proto.V1.PodTemplateSpec;
 import io.kubernetes.client.proto.V1.Probe;
 import io.kubernetes.client.proto.V1.SecurityContext;
@@ -67,6 +64,9 @@ import io.kubernetes.client.proto.V1beta1Extensions.Deployment;
 import io.kubernetes.client.proto.V1beta1Extensions.DeploymentSpec;
 import io.kubernetes.client.proto.V1beta1Extensions.DeploymentStrategy;
 import io.kubernetes.client.proto.V1beta1Extensions.RollingUpdateDeployment;
+import io.kubernetes.client.proto.V2beta1Autoscaling.CrossVersionObjectReference;
+import io.kubernetes.client.proto.V2beta1Autoscaling.HorizontalPodAutoscaler;
+import io.kubernetes.client.proto.V2beta1Autoscaling.HorizontalPodAutoscalerSpec;
 import io.seldon.clustermanager.ClusterManagerProperites;
 import io.seldon.clustermanager.pb.ProtoBufUtils;
 import io.seldon.protos.DeploymentProtos.Endpoint;
@@ -76,6 +76,8 @@ import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitImplementa
 import io.seldon.protos.DeploymentProtos.PredictiveUnit.PredictiveUnitType;
 import io.seldon.protos.DeploymentProtos.PredictorSpec;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
+import io.seldon.protos.DeploymentProtos.SeldonHpaSpec;
+import io.seldon.protos.DeploymentProtos.SeldonPodSpec;
 
 @Component
 public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
@@ -388,7 +390,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			int currentServicePortNum = clusterManagerProperites.getPuContainerPortBase();
 			for(int ptsIdx=0;ptsIdx<p.getComponentSpecsCount();ptsIdx++)
 			{
-				V1.PodTemplateSpec spec = p.getComponentSpecs(ptsIdx);
+				SeldonPodSpec spec = p.getComponentSpecs(ptsIdx);
 				ObjectMeta.Builder metaBuilder = ObjectMeta.newBuilder(spec.getMetadata());
 
 				mlBuilder.getSpecBuilder().getPredictorsBuilder(pbIdx).getComponentSpecsBuilder(ptsIdx).getSpecBuilder().clearContainers();
@@ -437,7 +439,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
                 pu.getImplementation() == PredictiveUnitImplementation.UNKNOWN_IMPLEMENTATION)
         {
             boolean found = false;
-            for(V1.PodTemplateSpec spec : p.getComponentSpecsList())
+            for(SeldonPodSpec spec : p.getComponentSpecsList())
             	for(V1.Container c : spec.getSpec().getContainersList())
             	{
             		if (c.getName().equals(pu.getName()))
@@ -488,18 +490,6 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
         
 	}
 	
-	
-	
-	
-	private V1OwnerReference getOwnerReferenceOld(SeldonDeployment mlDep)
-	{
-		return new V1OwnerReference()
-				.apiVersion(mlDep.getApiVersion())
-				.kind(mlDep.getKind())
-				.controller(true)
-				.name(mlDep.getMetadata().getName())
-				.uid(mlDep.getMetadata().getUid());
-	}
 	private OwnerReference getOwnerReference(SeldonDeployment mlDep)
 	{
 		return OwnerReference.newBuilder()
@@ -644,7 +634,17 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			addServicePort(pu.getChildren(i), containerName,svcSpecBuilder);
 	}
 	
-	
+	/**
+	 *  Create the Deployment for the Service Orchestrator.
+	 *  
+	 * @param mlDep The Seldon Deployment
+	 * @param p The predictor spec we are creating the engine for
+	 * @param ownerRef The owner ref to attach to ensure gargabge collection
+	 * @param serviceLabel The label for the k8s Service we will be backing
+	 * @param seldonId The unqiue ID for this Seldon deployment we are part of
+	 * @return A k8s Deployment
+	 * @throws SeldonDeploymentException
+	 */
 	private Deployment createEngineDeployment(SeldonDeployment mlDep,PredictorSpec p,OwnerReference ownerRef,String serviceLabel,String seldonId) throws SeldonDeploymentException
 	{
 		{//Deployment for engine service orchestrator
@@ -707,14 +707,15 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			return deployment;
 		}
 	}
-	
-	
+
 	@Override
-	public DeploymentResources createResources(SeldonDeployment mlDep) throws SeldonDeploymentException {
+	public DeploymentResources createResources(SeldonDeployment mlDep) throws SeldonDeploymentException 
+	{
 		
-		OwnerReference ownerRef = getOwnerReference(mlDep);
+		final OwnerReference ownerRef = getOwnerReference(mlDep);
 		List<Deployment> deployments = new ArrayList<>();
 		List<Service> services = new ArrayList<>();
+		List<HorizontalPodAutoscaler> hpas = new ArrayList<>();
 		// for each predictor Create/replace deployment
 		//final String serviceLabel = mlDep.getSpec().getName();
 		final String seldonId = seldonNameCreator.getSeldonId(mlDep);
@@ -723,7 +724,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 		for(int pbIdx=0;pbIdx<mlDep.getSpec().getPredictorsCount();pbIdx++)
 		{
 			PredictorSpec p = mlDep.getSpec().getPredictors(pbIdx);
-
+			
 			final boolean separateEnginePod = SeldonDeploymentUtils.hasSeparateEnginePodAnnotation(mlDep);
 			if (separateEnginePod)
 			{
@@ -733,10 +734,13 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			
 			for(int ptsIdx=0;ptsIdx<p.getComponentSpecsCount();ptsIdx++)
 			{
-				V1.PodTemplateSpec spec = p.getComponentSpecs(ptsIdx);
+				SeldonPodSpec spec = p.getComponentSpecs(ptsIdx);
 				
 				final String depName = seldonNameCreator.getSeldonDeploymentName(mlDep,p,spec);
-				PodTemplateSpec.Builder podSpecBuilder = PodTemplateSpec.newBuilder(spec);
+				PodTemplateSpec.Builder podSpecBuilder = PodTemplateSpec.newBuilder()
+						.setMetadata(ObjectMeta.newBuilder(spec.getMetadata()))
+						.setSpec(PodSpec.newBuilder(spec.getSpec()));
+						
 				ObjectMeta.Builder depMetaBuilder = ObjectMeta.newBuilder()
 						.setName(depName)
 						.addOwnerReferences(ownerRef);
@@ -824,17 +828,20 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 				}
 				
 				
+				DeploymentSpec.Builder deploymentSpecBuilder = DeploymentSpec.newBuilder()
+		        .setTemplate(podSpecBuilder.build())
+		        .setStrategy(DeploymentStrategy.newBuilder().setRollingUpdate(RollingUpdateDeployment.newBuilder().setMaxUnavailable(IntOrString.newBuilder().setType(1).setStrVal("10%"))))
+				.setSelector(labelSelector.build());
 				
+				// only add replicas if there is NOT an HPA spec
+				if (!spec.hasHpaSpec())
+					deploymentSpecBuilder.setReplicas(p.getReplicas());
+				else
+					hpas.add(createHPA(spec,depName,ownerRef,seldonId));
 				
 				Deployment deployment = V1beta1Extensions.Deployment.newBuilder()
 						.setMetadata(depMetaBuilder)
-						.setSpec(DeploymentSpec.newBuilder()
-						        .setTemplate(podSpecBuilder.build())
-						        .setStrategy(DeploymentStrategy.newBuilder().setRollingUpdate(RollingUpdateDeployment.newBuilder().setMaxUnavailable(IntOrString.newBuilder().setType(1).setStrVal("10%"))))
-								.setReplicas(p.getReplicas())
-								.setSelector(labelSelector.build())
-								)
-								
+						.setSpec(deploymentSpecBuilder)
 						.build();
 				
 				deployments.add(deployment);
@@ -876,18 +883,54 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 
 		
 		// Create service for deployment
-		return new DeploymentResources(deployments, services);
+		return new DeploymentResources(deployments, services,hpas);
+	}
+	
+	/**
+	 * Create HPA spec for deployment
+	 * @param seldonPodSpec The Seldon Pod Spec
+	 * @param deploymentName The deployment name the HPA spec will refer to
+	 * @param ownerRef The ownerRef of the SeldonDeployment to ensure garbage collection
+	 * @param seldonId The ID of the SeldonDeployment to add as a label
+	 * @return HPA resource
+	 */
+	private HorizontalPodAutoscaler createHPA(SeldonPodSpec seldonPodSpec,String deploymentName,OwnerReference ownerRef,String seldonId)
+	{
+		// Construct HPA spec from Seldon HPA spec
+		final SeldonHpaSpec seldonHpaSpec = seldonPodSpec.getHpaSpec(); 
+		HorizontalPodAutoscalerSpec.Builder hpaSpecBuilder =  HorizontalPodAutoscalerSpec.newBuilder();
+		if (seldonHpaSpec.hasMinReplicas())
+			hpaSpecBuilder.setMinReplicas(seldonHpaSpec.getMinReplicas());
+		if (seldonHpaSpec.hasMaxReplicas())
+			hpaSpecBuilder.setMaxReplicas(seldonHpaSpec.getMaxReplicas());
+		hpaSpecBuilder.addAllMetrics(seldonHpaSpec.getMetricsList());
+		
+		HorizontalPodAutoscaler.Builder hpaBuilder = HorizontalPodAutoscaler.newBuilder()
+				.setSpec(hpaSpecBuilder)
+				.setMetadata(ObjectMeta.newBuilder().setName(deploymentName)
+						.addOwnerReferences(ownerRef)
+						.putLabels(Constants.LABEL_SELDON_ID, seldonId)
+						);
+		//Ensure kind and apiVersion are as expected.
+		hpaBuilder.getSpecBuilder().setScaleTargetRef(CrossVersionObjectReference.newBuilder(hpaBuilder.getSpec().getScaleTargetRef())
+				.setName(deploymentName)
+				.setApiVersion(SeldonDeploymentControllerImpl.DEPLOYMENT_API_VERSION)
+				.setKind("Deployment"));
+				
+		return hpaBuilder.build();
 	}
 	
 	public static class DeploymentResources {
 		
-		List<Deployment> deployments;
-		List<Service> services;
+		final List<Deployment> deployments;
+		final List<Service> services;
+		final List<HorizontalPodAutoscaler> hpas;
 		
-		public DeploymentResources(List<Deployment> deployments, List<Service> services) {
+		public DeploymentResources(List<Deployment> deployments, List<Service> services, List<HorizontalPodAutoscaler> hpas) {
 			super();
 			this.deployments = deployments;
 			this.services = services;
+			this.hpas = hpas;
 		}
 		
 

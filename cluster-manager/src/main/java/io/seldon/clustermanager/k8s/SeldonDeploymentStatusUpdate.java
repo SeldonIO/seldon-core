@@ -15,7 +15,12 @@
  *******************************************************************************/
 package io.seldon.clustermanager.k8s;
 
+/**
+ * Updates to Seldon Deployment status section.
+ * @author clive
+ *
+ */
 public interface SeldonDeploymentStatusUpdate {
-    public void updateStatus(String mlDepName,String depName,Integer replicas,Integer replicasReady,String namespace);
-    public void removeStatus(String mlDepName,String depName,String namespace);
+    public void updateStatus(String mlDepName,String version, String depName,Integer replicas,Integer replicasReady,String namespace);
+    public void removeStatus(String mlDepName,String version, String depName,String namespace);
 }
