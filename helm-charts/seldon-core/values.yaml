@@ -1,11 +1,6 @@
 ambassador:
-  annotations:
-    getambassador.io/config: "---\napiVersion: ambassador/v0\nkind: Module\nname:\
-      \ ambassador\nconfig:\n  service_port: 8080\n"
   enabled: false
-  image:
-    name: quay.io/datawire/ambassador:0.40.2
-  replicas: 1
+  replicaCount: 1
   resources:
     limits:
       cpu: 1
@@ -14,10 +9,25 @@ ambassador:
       cpu: 200m
       memory: 128Mi
   service:
-    targetPorts:
-      http: 8080
-      https: 8443
-    type: NodePort
+    annotations:
+      getambassador.io/config: |
+        ---
+        apiVersion: ambassador/v1
+        kind: Module
+        name: ambassador
+        config:
+          service_port: 8080
+    http:
+      targetPort: 8080
+    https:
+      targetPort: 8443
+    type: LoadBalancer
+  rbac:
+    create: true
+    namespaced: true
+# scope will be cluster wide unless below is set
+#  env:
+#    AMBASSADOR_SINGLE_NAMESPACE: "true"
 apife:
   annotations: null
   enabled: true
