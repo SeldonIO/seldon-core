@@ -6,6 +6,9 @@ build_protos:
 	python -m grpc.tools.protoc -I. --python_out=. --grpc_python_out=. ./proto/prediction.proto
 	cd ../../notebooks && make build_protos
 
+#requires mvn, helm, ks, python, s2i and an accessible k8s cluster (if minikube increase mem and cpu)
+#tests will create namespaces, deploy seldon core and create examples
+
 .PHONY: test
 test: build_protos
 	pytest -s -W ignore > run.log 2>&1
@@ -13,3 +16,7 @@ test: build_protos
 .PHONY: clean
 clean:
 	rm -f proto/prediction*
+	rm -rf run.log
+	rm -rf tensorflow
+	rm -rf my-model
+	rm -rf ../../wrappers/s2i/python/_python/
