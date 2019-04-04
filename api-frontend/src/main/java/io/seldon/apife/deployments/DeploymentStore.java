@@ -60,7 +60,10 @@ public class DeploymentStore implements DeploymentsListener {
 	 
 	public SeldonDeployment getDeployment(String clientId)
 	{
-		return deploymentStore.get(clientId);
+		if (clientId != null)
+			return deploymentStore.get(clientId);
+		else
+			return null;
 	}
 	  
 	 @Override
