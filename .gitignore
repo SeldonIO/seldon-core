@@ -116,6 +116,9 @@ examples/models/sk_mnist/MNIST_data/
 examples/models/sk_mnist/sk.pkl
 examples/models/sklearn_iris_fbs/IrisClassifier.sav
 
+# Pickle files
+*.pickle
+
 # api tester created proto folder
 util/api_tester/proto/
 
@@ -189,4 +192,10 @@ doc/source/_static/cluster-manager
 python/build/
 python/dist/
 testing/scripts/proto
+
 python/.coverage
+
+testing/scripts/tensorflow
+testing/scripts/run.log
+testing/scripts/my-model/
+wrappers/s2i/python/_python/
