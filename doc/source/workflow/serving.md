@@ -42,7 +42,7 @@ Assuming the API gRPC Gateway is exposed at ```<APIGatewayEndpoint>```
 
 #### Ambassador REST
 
-Assuming a SeldonDeplotment ```mymodel``` with Ambassador exposed on 0.0.0.0:8003:
+Assuming a SeldonDeployment ```mymodel``` with Ambassador exposed on 0.0.0.0:8003:
 
 ```bash
 curl -v 0.0.0.0:8003/seldon/mymodel/api/v0.1/predictions -d '{"data":{"names":["a","b"],"tensor":{"shape":[2,2],"values":[0,0,1,1]}}}' -H "Content-Type: application/json"
