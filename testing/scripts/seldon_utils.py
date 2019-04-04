@@ -101,7 +101,7 @@ def rest_request_ambassador_auth(deploymentName,namespace,username,password,endp
             auth=HTTPBasicAuth(username, password))
     return response
 
-@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=7)
+@retry(wait_exponential_multiplier=1000, wait_exponential_max=100000, stop_max_attempt_number=9)
 def grpc_request_ambassador(deploymentName,namespace,endpoint="localhost:8004",data_size=5,rows=1,data=None):
     if data is None:
         shape, arr = create_random_data(data_size,rows)
