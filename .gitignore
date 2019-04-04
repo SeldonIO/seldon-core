@@ -189,3 +189,4 @@ doc/source/_static/cluster-manager
 python/build/
 python/dist/
 testing/scripts/proto
+python/.coverage
