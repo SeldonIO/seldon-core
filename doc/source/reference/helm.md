@@ -35,10 +35,11 @@ The core choice in using the helm chart is to decide if you want to use Ambassad
 |----------|-------------|---------|
 | ambassador.enabled | Whether to enable the ambbassador reverse proxy | false |
 | ambassador.annotations | Configuration for Ambassador | default |
-| ambassador.image.name | Image to use for ambassador | ```<tested release with seldon>``` |
-| ambassador.resources | resource limits and requests | default |
-| ambassador.service_type | How to expose the ambassador service, e.g. NodePort, LoadBalancer | NodePort |
-| ambassador.statsd.image.name | Image to use for statsd | default |
+| ambassador.image.repository | Image name to use for ambassador | ```<tested release with seldon>``` |
+| ambassador.image.tag | Image tag to use for ambassador | ```<tested release with seldon>``` |
+| ambassador.service.type | How to expose the ambassador service, e.g. NodePort, LoadBalancer | NodePort |
+
+For more see https://github.com/helm/charts/tree/master/stable/ambassador
 
 ### General Role Based Access Control Settings
 
