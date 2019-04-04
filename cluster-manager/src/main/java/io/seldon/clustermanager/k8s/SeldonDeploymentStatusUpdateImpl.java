@@ -105,7 +105,7 @@ public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusU
         {
             logger.info(String.format("UPDATE %s : %s %d %d",mlDepName,depName,replicas,replicasAvailable));
             SeldonDeployment mlDep = crdHandler.getSeldonDeployment(mlDepName,version, namespace);
-            if (mlDep != null)
+            if (mlDep != null && !(mlDep.getStatus().hasState() && mlDep.getStatus().getState().equals(Constants.STATE_FAILED)))
             {
                 SeldonDeployment.Builder mlBuilder = SeldonDeployment.newBuilder(mlDep);
                 
