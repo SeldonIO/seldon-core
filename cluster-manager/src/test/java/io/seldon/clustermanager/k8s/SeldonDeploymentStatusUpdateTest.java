@@ -78,13 +78,7 @@ public class SeldonDeploymentStatusUpdateTest extends AppTest {
 		supdate.updateStatus(selDepName, version, "test-deployment-fx-market-predictor-8e1d76f", 1, 1, namespace);
 		
 		verify(mockCrdHandler,times(1)).getSeldonDeployment(eq(selDepName), eq(version), eq(namespace));
-		ArgumentCaptor<SeldonDeployment> argument = ArgumentCaptor.forClass(SeldonDeployment.class);
-		verify(mockCrdHandler,never()).updateSeldonDeploymentStatus(argument.capture());
-		
-		SeldonDeployment sDepUpdated = argument.getAllValues().get(0);
-		Assert.assertEquals(1, sDepUpdated.getStatus().getPredictorStatusCount());
-		Assert.assertEquals(1, sDepUpdated.getStatus().getPredictorStatus(0).getReplicasAvailable());
-		Assert.assertEquals("Available", sDepUpdated.getStatus().getState());
+		verify(mockCrdHandler,never()).updateSeldonDeploymentStatus(any(SeldonDeployment.class));	
 	}
 	
 	
