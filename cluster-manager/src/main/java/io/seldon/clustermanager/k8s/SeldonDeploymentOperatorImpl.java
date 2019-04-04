@@ -519,7 +519,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			final String customRegexHeader = mlDep.getSpec().getAnnotationsOrDefault(Constants.AMBASSADOR_REGEX_HEADER_ANNOTATION, null);
 			
 			final String restMapping = "---\n"+
-	                "apiVersion: ambassador/v0\n" +
+	                "apiVersion: ambassador/v1\n" +
 	                "kind:  Mapping\n" +
 	                "name:  seldon_"+mlDep.getMetadata().getName()+"_rest_mapping\n" +
 	                "prefix: /seldon/"+serviceNameExternal+"/\n" +
@@ -530,7 +530,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 	                (StringUtils.isNotEmpty(weight) ? ("weight: "+ weight + "\n") : "") +  
 					(StringUtils.isNotEmpty(shadowing) ? ("shadow: true\n") : ""); 
 	        final String grpcMapping = "---\n"+
-	                "apiVersion: ambassador/v0\n" +
+	                "apiVersion: ambassador/v1\n" +
 	                "kind:  Mapping\n" +
 	                "name:  "+mlDep.getMetadata().getName()+"_grpc_mapping\n" +
 	                "grpc: true\n" +
@@ -546,7 +546,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 					(StringUtils.isNotEmpty(shadowing) ? ("shadow: true\n") : ""); 
 
 			final String restMappingNamespaced = "---\n"+
-	                "apiVersion: ambassador/v0\n" +
+	                "apiVersion: ambassador/v1\n" +
 	                "kind:  Mapping\n" +
 	                "name:  seldon_"+namespace+"_"+mlDep.getMetadata().getName()+"_rest_mapping\n" +
 	                "prefix: /seldon/"+namespace+"/"+serviceNameExternal+"/\n" +
@@ -558,7 +558,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 					(StringUtils.isNotEmpty(shadowing) ? ("shadow: true\n") : ""); 
 			
 	        final String grpcMappingNamespaced = "---\n"+
-	                "apiVersion: ambassador/v0\n" +
+	                "apiVersion: ambassador/v1\n" +
 	                "kind:  Mapping\n" +
 	                "name:  "+namespace+"_"+mlDep.getMetadata().getName()+"_grpc_mapping\n" +
 	                "grpc: true\n" +
