@@ -11,6 +11,7 @@ from distutils.util import strtobool
 from seldon_core.flask_utils import ANNOTATIONS_FILE
 import seldon_core.wrapper as seldon_microservice
 from typing import Dict, Callable
+from seldon_core.flask_utils import SeldonMicroserviceException
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +71,16 @@ def parse_parameters(parameters: Dict) -> Dict:
         if type_ == "BOOL":
             parsed_parameters[name] = bool(strtobool(value))
         else:
-            parsed_parameters[name] = type_dict[type_](value)
+            try:
+                parsed_parameters[name] = type_dict[type_](value)
+            except ValueError:
+                raise SeldonMicroserviceException(
+                    "Bad model parameter: " + name + " with value " + value + " can't be parsed as a " + type_,
+                    reason="MICROSERVICE_BAD_PARAMETER")
+            except KeyError:
+                raise SeldonMicroserviceException(
+                    "Bad model parameter type: " + type_ + " valid are INT, FLOAT, DOUBLE, STRING, BOOL",
+                    reason="MICROSERVICE_BAD_PARAMETER")
     return parsed_parameters
 
 
@@ -167,6 +177,7 @@ def main():
     log_level_num = getattr(logging, args.log_level.upper(), None)
     if not isinstance(log_level_num, int):
         raise ValueError('Invalid log level: %s', args.log_level)
+
     logger.setLevel(log_level_num)
     logger.debug("Log level set to %s:%s", args.log_level, log_level_num)
 
@@ -185,6 +196,9 @@ def main():
 
     # set log level for the imported microservice type
     seldon_microservice.logger.setLevel(log_level_num)
+    logging.getLogger().setLevel(log_level_num)
+    for handler in logger.handlers:
+        handler.setLevel(log_level_num)
 
     port = int(os.environ.get(SERVICE_PORT_ENV_NAME, DEFAULT_PORT))
 
