@@ -1,5 +1,7 @@
 ambassador:
   enabled: false
+  image:
+    tag: 0.52.1
   replicaCount: 1
   resources:
     limits:
@@ -25,6 +27,9 @@ ambassador:
   rbac:
     create: true
     namespaced: true
+  securityContext:
+    runAsUser: 0
+    runAsGroup: 0
 # scope will be cluster wide unless below is set
 #  env:
 #    AMBASSADOR_SINGLE_NAMESPACE: "true"

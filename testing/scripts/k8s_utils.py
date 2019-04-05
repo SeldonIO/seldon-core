@@ -94,7 +94,7 @@ def create_seldon_clusterwide_ksonnet(request):
     wait_seldon_ready()
     setup_finalizer_ksonnet(request)
 
-@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=7)
+@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=5)
 def port_forward(request):
     print("Setup: Port forward")
     p1 = Popen("kubectl port-forward $(kubectl get pods -n seldon -l app=seldon-apiserver-container-app -o jsonpath='{.items[0].metadata.name}') -n seldon 8002:8080",stdout=subprocess.PIPE,shell=True, preexec_fn=os.setsid) 
@@ -120,7 +120,7 @@ def create_docker_repo(request):
         
     request.addfinalizer(fin)        
 
-@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=7)
+@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=5)
 def port_forward_docker_repo(request):
     print("port-forward docker")
     p1 = Popen("POD_NAME=$(kubectl get pods -l app=docker-private-registry -n default |sed -e '1d'|awk '{print $1}') && kubectl port-forward ${POD_NAME} 5000:5000 -n default",stdout=subprocess.PIPE,shell=True, preexec_fn=os.setsid)
