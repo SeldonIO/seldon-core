@@ -22,7 +22,9 @@ def expand(defn,root):
 def simplifyAdditionalProperties(defn):
     if isinstance(defn, dict):
         if "additionalProperties" in defn.keys():
-            defn["additionalProperties"] = True
+            if isinstance(defn["additionalProperties"], dict):
+                if "$ref" in defn["additionalProperties"].keys():
+                    defn["additionalProperties"] = True
         for k in defn.keys():
             simplifyAdditionalProperties(defn[k])
 
