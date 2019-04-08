@@ -26,7 +26,7 @@ def get_token(oauth_key,oauth_secret,namespace,endpoint):
     token =  response.json()["access_token"]
     return token
 
-@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=7)
+@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=5)
 def rest_request_api_gateway(oauth_key,oauth_secret,namespace,endpoint="localhost:8002",data_size=5,rows=1,data=None):
     token = get_token(oauth_key,oauth_secret,namespace,endpoint)
     if data is None:
@@ -42,7 +42,7 @@ def rest_request_api_gateway(oauth_key,oauth_secret,namespace,endpoint="localhos
                 json=payload)
     return response
 
-@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=7)
+@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=5)
 def grpc_request_api_gateway(oauth_key,oauth_secret,namespace,rest_endpoint="localhost:8002",grpc_endpoint="localhost:8003",data_size=5,rows=1,data=None):
     token = get_token(oauth_key,oauth_secret,namespace,rest_endpoint)
     if data is None:
@@ -63,7 +63,7 @@ def grpc_request_api_gateway(oauth_key,oauth_secret,namespace,rest_endpoint="loc
     response = stub.Predict(request=request,metadata=metadata)
     return response
 
-@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=7)
+@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=5)
 def rest_request_ambassador(deploymentName,namespace,endpoint="localhost:8003",data_size=5,rows=1,data=None):
     if data is None:
         shape, arr = create_random_data(data_size,rows)
@@ -81,7 +81,7 @@ def rest_request_ambassador(deploymentName,namespace,endpoint="localhost:8003",d
             json=payload)
     return response
 
-@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=7)
+@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=5)
 def rest_request_ambassador_auth(deploymentName,namespace,username,password,endpoint="localhost:8003",data_size=5,rows=1,data=None):
     if data is None:
         shape, arr = create_random_data(data_size,rows)
@@ -101,7 +101,7 @@ def rest_request_ambassador_auth(deploymentName,namespace,username,password,endp
             auth=HTTPBasicAuth(username, password))
     return response
 
-@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=7)
+@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=5)
 def grpc_request_ambassador(deploymentName,namespace,endpoint="localhost:8004",data_size=5,rows=1,data=None):
     if data is None:
         shape, arr = create_random_data(data_size,rows)

@@ -43,7 +43,7 @@ public class AmbassadorConfigTest extends AppTest {
 	        System.out.println(ambassadorConfig);
 	        Assert.assertTrue(ambassadorConfig.indexOf("weight: 25\n")>0);
 	        Assert.assertTrue(ambassadorConfig.indexOf("prefix: /seldon/default/example/\n")>0);
-	        Assert.assertTrue(ambassadorConfig.indexOf("apiVersion: ambassador/v0")==4);
+	        Assert.assertTrue(ambassadorConfig.indexOf("apiVersion: ambassador/v1")==4);
 	    }
 	    
 	    @Test
@@ -61,7 +61,7 @@ public class AmbassadorConfigTest extends AppTest {
 	        System.out.println(ambassadorConfig);
 	        Assert.assertTrue(ambassadorConfig.indexOf("shadow: true\n")>0);
 	        Assert.assertTrue(ambassadorConfig.indexOf("prefix: /seldon/default/example/\n")>0);
-	        Assert.assertTrue(ambassadorConfig.indexOf("apiVersion: ambassador/v0")==4);
+	        Assert.assertTrue(ambassadorConfig.indexOf("apiVersion: ambassador/v1")==4);
 	    }
 	    
 	    @Test
@@ -79,7 +79,7 @@ public class AmbassadorConfigTest extends AppTest {
 	        System.out.println(ambassadorConfig);
 	        Assert.assertTrue(ambassadorConfig.indexOf("  location: london\n")>0);
 	        Assert.assertTrue(ambassadorConfig.indexOf("prefix: /seldon/default/example/\n")>0);
-	        Assert.assertTrue(ambassadorConfig.indexOf("apiVersion: ambassador/v0")==4);
+	        Assert.assertTrue(ambassadorConfig.indexOf("apiVersion: ambassador/v1")==4);
 	    }	
 	    
 	    @Test
@@ -97,7 +97,7 @@ public class AmbassadorConfigTest extends AppTest {
 	        System.out.println(ambassadorConfig);
 	        Assert.assertTrue(ambassadorConfig.indexOf("1234")==0);
 	        Assert.assertFalse(ambassadorConfig.indexOf("prefix: /seldon/default/example/\n")>0);
-	        Assert.assertTrue(ambassadorConfig.indexOf("apiVersion: ambassador/v0")==-1);
+	        Assert.assertTrue(ambassadorConfig.indexOf("apiVersion: ambassador/v1")==-1);
 	    }	    
 	    
 }
