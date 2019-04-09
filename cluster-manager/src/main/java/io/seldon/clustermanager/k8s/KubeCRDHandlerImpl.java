@@ -17,6 +17,7 @@ package io.seldon.clustermanager.k8s;
 
 import java.io.IOException;
 
+import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -220,19 +221,19 @@ public class KubeCRDHandlerImpl implements KubeCRDHandler {
 	}
 
 	@Override
-	public V2beta1HorizontalPodAutoscalerList getOwnedHPAs(String seldonDeploymentName, String namespace) {
+	public Optional<V2beta1HorizontalPodAutoscalerList> getOwnedHPAs(String seldonDeploymentName, String namespace) {
 		try
 		{
 			ApiClient client = k8sClientProvider.getClient();
 			io.kubernetes.client.apis.AutoscalingV2beta1Api api = k8sApiProvider.getAutoScalingApi(client);
 			V2beta1HorizontalPodAutoscalerList l = api.listNamespacedHorizontalPodAutoscaler(namespace, null, null, null, false, Constants.LABEL_SELDON_ID+"="+seldonDeploymentName, null, null, null, null);
-			return l;
+			return Optional.of(l);
 		} catch (IOException e) {
             logger.error("Failed to get HPA list for "+seldonDeploymentName,e);
-            return null;
+            return Optional.empty();
         } catch (ApiException e) {
             logger.error("Failed to get HPA list for "+seldonDeploymentName,e);
-            return null;
+            return Optional.empty();
         }
 	}
 
