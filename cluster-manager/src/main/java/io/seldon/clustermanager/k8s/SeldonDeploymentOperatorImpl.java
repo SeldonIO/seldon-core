@@ -126,6 +126,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			.addEnv(EnvVar.newBuilder().setName("ENGINE_SERVER_GRPC_PORT").setValue(""+clusterManagerProperites.getEngineGrpcContainerPort()))		
 			.addEnv(EnvVar.newBuilder().setName("JAVA_OPTS").setValue(predictorDef.getAnnotationsOrDefault(Constants.ENGINE_JAVA_OPTS_ANNOTATION, DEFAULT_ENGINE_JAVA_OPTS)))
 			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(clusterManagerProperites.getEngineContainerPort()))
+			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(clusterManagerProperites.getEngineGrpcContainerPort()).setName("grpc"))
 			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(8082).setName("admin"))
 			.addPorts(V1.ContainerPort.newBuilder().setContainerPort(9090).setName("jmx"))
 			.setSecurityContext(SecurityContext.newBuilder().setRunAsUser(clusterManagerProperites.getEngineUser()).build())
@@ -664,7 +665,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			podSpecBuilder.getMetadataBuilder()
 				.putAllAnnotations(mlDep.getSpec().getAnnotationsMap()) // Add all spec annotations first
 				.putAllAnnotations(p.getAnnotationsMap()) // ...then add those for predictor overwriting any from spec above
-		    	.putAnnotations("prometheus.io/path", "/prometheus")
+		    	.putAnnotations("prometheus.io/path", "/"+clusterManagerProperites.getEnginePrometheusPath())
 		    	.putAnnotations("prometheus.io/port",""+clusterManagerProperites.getEngineContainerPort())
 		    	.putAnnotations("prometheus.io/scrape", "true");
 
@@ -783,7 +784,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 			    	.addContainers(createEngineContainer(mlDep,p))
 			    	.setServiceAccountName(clusterManagerProperites.getEngineContainerServiceAccountName());
 					podSpecBuilder.getMetadataBuilder()
-				    	.putAnnotations("prometheus.io/path", "/prometheus")
+				    	.putAnnotations("prometheus.io/path", "/"+clusterManagerProperites.getEnginePrometheusPath())
 				    	.putAnnotations("prometheus.io/port",""+clusterManagerProperites.getEngineContainerPort())
 				    	.putAnnotations("prometheus.io/scrape", "true");
 					// LABELS - START
