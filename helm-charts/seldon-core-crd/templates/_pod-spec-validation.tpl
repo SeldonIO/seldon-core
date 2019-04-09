@@ -222,7 +222,9 @@
                                                         "type": "array"
                                                     },
                                                     "matchLabels": {
-                                                        "additionalProperties": true,
+                                                        "additionalProperties": {
+                                                            "type": "string"
+                                                        },
                                                         "description": "matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is \"key\", the operator is \"In\", and the values array contains only \"value\". The requirements are ANDed.",
                                                         "type": "object"
                                                     }
@@ -300,7 +302,9 @@
                                                 "type": "array"
                                             },
                                             "matchLabels": {
-                                                "additionalProperties": true,
+                                                "additionalProperties": {
+                                                    "type": "string"
+                                                },
                                                 "description": "matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is \"key\", the operator is \"In\", and the values array contains only \"value\". The requirements are ANDed.",
                                                 "type": "object"
                                             }
@@ -375,7 +379,9 @@
                                                         "type": "array"
                                                     },
                                                     "matchLabels": {
-                                                        "additionalProperties": true,
+                                                        "additionalProperties": {
+                                                            "type": "string"
+                                                        },
                                                         "description": "matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is \"key\", the operator is \"In\", and the values array contains only \"value\". The requirements are ANDed.",
                                                         "type": "object"
                                                     }
@@ -453,7 +459,9 @@
                                                 "type": "array"
                                             },
                                             "matchLabels": {
-                                                "additionalProperties": true,
+                                                "additionalProperties": {
+                                                    "type": "string"
+                                                },
                                                 "description": "matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is \"key\", the operator is \"In\", and the values array contains only \"value\". The requirements are ANDed.",
                                                 "type": "object"
                                             }
@@ -2218,7 +2226,9 @@
             "type": "string"
         },
         "nodeSelector": {
-            "additionalProperties": true,
+            "additionalProperties": {
+                "type": "string"
+            },
             "description": "NodeSelector is a selector which must be true for the pod to fit on a node. Selector which must match a node's labels for the pod to be scheduled on that node. More info: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/",
             "type": "object"
         },
@@ -2621,7 +2631,9 @@
                                 "type": "boolean"
                             },
                             "volumeAttributes": {
-                                "additionalProperties": true,
+                                "additionalProperties": {
+                                    "type": "string"
+                                },
                                 "description": "VolumeAttributes stores driver-specific properties that are passed to the CSI driver. Consult your driver's documentation for supported values.",
                                 "type": "object"
                             }
@@ -2761,7 +2773,9 @@
                                 "type": "string"
                             },
                             "options": {
-                                "additionalProperties": true,
+                                "additionalProperties": {
+                                    "type": "string"
+                                },
                                 "description": "Optional: Extra command options if any.",
                                 "type": "object"
                             },
