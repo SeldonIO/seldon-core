@@ -7,7 +7,7 @@ from seldon_utils import *
 from k8s_utils import *
 
 def wait_for_status(name):
-    for attempts in range(3):
+    for attempts in range(5):
         completedProcess = run("kubectl get sdep "+name+" -o json", shell=True, check=True, stdout=subprocess.PIPE)
         jStr = completedProcess.stdout
         j = json.loads(jStr)
