@@ -1,7 +1,7 @@
 ambassador:
   enabled: false
   image:
-    tag: 0.53.1
+    tag: 0.50.0
   replicaCount: 1
   resources:
     limits:
@@ -14,7 +14,7 @@ ambassador:
     annotations:
       getambassador.io/config: |
         ---
-        apiVersion: ambassador/v1
+        apiVersion: ambassador/v0
         kind: Module
         name: ambassador
         config:
@@ -27,9 +27,6 @@ ambassador:
   rbac:
     create: true
     namespaced: true
-  securityContext:
-    runAsUser: 0
-    runAsGroup: 0
 # scope will be cluster wide unless below is set
 #  env:
 #    AMBASSADOR_SINGLE_NAMESPACE: "true"
