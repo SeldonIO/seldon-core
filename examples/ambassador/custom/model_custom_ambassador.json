@@ -10,7 +10,7 @@
     "spec": {	
         "name": "production-model",
 	"annotations": {
-	    "seldon.io/ambassador-config":"apiVersion: ambassador/v1\nkind: Mapping\nname: seldon_example_rest_mapping\nprefix: /mycompany/ml/\nservice: production-model-example.seldon:8000\ntimeout_ms: 3000"
+	    "seldon.io/ambassador-config":"apiVersion: ambassador/v0\nkind: Mapping\nname: seldon_example_rest_mapping\nprefix: /mycompany/ml/\nservice: production-model-example.seldon:8000\ntimeout_ms: 3000"
 	},	
         "predictors": [
             {
