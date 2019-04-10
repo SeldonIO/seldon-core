@@ -4,7 +4,10 @@ import json
 from typing import Dict, List, Union, Iterable, Callable, Optional
 import numpy as np
 from seldon_core.proto import prediction_pb2
+import inspect
+import logging
 
+logger = logging.getLogger(__name__)
 
 class SeldonComponent(object):
 
@@ -101,7 +104,11 @@ def client_class_names(user_model: SeldonComponent, predictions: np.ndarray) -> 
     """
     if len(predictions.shape) > 1:
         try:
-            return user_model.class_names()
+            if inspect.ismethod(getattr(user_model, 'class_names')):
+                return user_model.class_names()
+            else:
+                logger.info("class_names attribute is deprecated. Please define a class_names method")
+                return user_model.class_names
         except (NotImplementedError, AttributeError):
             n_targets = predictions.shape[1]
             return ["t:{}".format(i) for i in range(n_targets)]
