@@ -184,8 +184,15 @@ def main():
     annotations = load_annotations()
     logger.info("Annotations: %s", annotations)
 
-    interface_file = importlib.import_module(args.interface_name)
-    user_class = getattr(interface_file, args.interface_name)
+    parts = args.interface_name.rsplit(".", 1)
+    if len(parts) == 1:
+        logger.info("Importing ",args.interface_name)
+        interface_file = importlib.import_module(args.interface_name)
+        user_class = getattr(interface_file, args.interface_name)
+    else:
+        logger.info("Importing submodule %s",parts)
+        interface_file = importlib.import_module(args.interface_name)
+        user_class = getattr(interface_file, parts[1])
 
     if args.persistence:
         logger.info('Restoring persisted component')
