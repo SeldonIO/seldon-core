@@ -20,7 +20,9 @@ helm install --kube-context="${KUBE_CONTEXT}" stable/jenkins \
     --name jenkins \
     --namespace jenkins \
     --set rbac.install=true \
-    --version $JENKINS_CHART_VERSION
+    --version $JENKINS_CHART_VERSION \
+    --set Master.AdminUser=$JENKINS_USER_NAME \
+    --set Master.AdminPassword=$JENKINS_USER_PASSWORD
 
 # create a rolebing for jenkins
 ${KUBECTL} create rolebinding jenkins-admin --clusterrole=admin --serviceaccount=jenkins:default --namespace=default --dry-run -o yaml | \
