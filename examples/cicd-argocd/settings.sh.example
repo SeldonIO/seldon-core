@@ -9,6 +9,6 @@ GITHUB_TOKEN=<github personal token>
 
 ARGOCD_VERSION=v0.10.6
 
-JENKINS_USER_NAME=<jenkins user id>
-JENKINS_USER_PASSWORD=<jenkins password>
+JENKINS_USER_NAME=admin
+JENKINS_USER_PASSWORD=admin
 
