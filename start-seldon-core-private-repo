@@ -31,6 +31,5 @@ helm install "${STARTUP_DIR}/helm-charts/seldon-core" --name seldon-core \
     --set engine.image.pull_policy=Always \
     --set engine.image.name=$ENGINE_IMAGE_NAME \
     --set ambassador.enabled=true \
-    --set ambassador.env.AMBASSADOR_SINGLE_NAMESPACE=true \
     --namespace "${NAMESPACE}"
 
