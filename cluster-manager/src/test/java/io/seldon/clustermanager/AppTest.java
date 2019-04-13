@@ -32,9 +32,10 @@ public class AppTest
 	protected ClusterManagerProperites getClusterManagerprops()
 	{
 		ClusterManagerProperites c = new ClusterManagerProperites();
-		c.setEngineContainerPort(9000);
+		c.setEngineContainerPort(8000);
+		c.setEngineGrpcContainerPort(5001);
 		c.setEngineContainerImageAndVersion("seldonio/engine:0.1.6");
-		c.setPuContainerPortBase(8000);
+		c.setPuContainerPortBase(9000);
 		return c;
 	}	
 }

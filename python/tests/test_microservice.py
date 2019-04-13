@@ -87,6 +87,28 @@ def test_model_template_app_rest(tracing):
         response.raise_for_status()
         assert response.json() == {'data': {'ndarray': []}, 'meta': {}}
 
+
+@pytest.mark.parametrize(
+        'tracing', [(False), (True)]
+    )
+def test_model_template_app_rest_submodule(tracing):
+    with start_microservice(join(dirname(__file__), "model-template-app2"),tracing=tracing):
+        data = '{"data":{"names":["a","b"],"ndarray":[[1.0,2.0]]}}'
+        response = requests.get(
+            "http://127.0.0.1:5000/predict", params="json=%s" % data)
+        response.raise_for_status()
+        assert response.json() == {
+            'data': {'names': ['t:0', 't:1'], 'ndarray': [[1.0, 2.0]]}, 'meta': {}}
+
+        data = ('{"request":{"data":{"names":["a","b"],"ndarray":[[1.0,2.0]]}},'
+                '"response":{"meta":{"routing":{"router":0}},"data":{"names":["a","b"],'
+                '"ndarray":[[1.0,2.0]]}},"reward":1}')
+        response = requests.get(
+            "http://127.0.0.1:5000/send-feedback", params="json=%s" % data)
+        response.raise_for_status()
+        assert response.json() == {'data': {'ndarray': []}, 'meta': {}}
+
+
 @pytest.mark.parametrize(
         'tracing', [(False), (True)]
     )

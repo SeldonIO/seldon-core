@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Test;
 
@@ -23,6 +24,7 @@ import io.kubernetes.client.models.ExtensionsV1beta1Deployment;
 import io.kubernetes.client.models.ExtensionsV1beta1DeploymentList;
 import io.kubernetes.client.models.V1ObjectMeta;
 import io.kubernetes.client.proto.Meta.DeleteOptions;
+import io.kubernetes.client.proto.V2beta1Autoscaling.HorizontalPodAutoscaler;
 import io.seldon.clustermanager.AppTest;
 import io.seldon.clustermanager.ClusterManagerProperites;
 import io.seldon.clustermanager.k8s.SeldonDeploymentOperatorImpl.DeploymentResources;
@@ -101,11 +103,15 @@ public class SeldonDeletionHandlerTest   extends AppTest {
 		when(client.getApiClient()).thenReturn(apiClient);
 		when(client.delete(any(Message.Builder.class), any(String.class), any(DeleteOptions.class))).thenReturn(new ObjectOrStatus<>(mlDep,null));
 		
+		when(crdHandler.getOwnedHPAs(any(String.class), any(String.class))).thenReturn(Optional.empty());
         
         SeldonDeletionHandler delHandler = new SeldonDeletionHandler(crdHandler);
         
         delHandler.removeDeployments(client, namespace, mlDep, resources.deployments, false);
         verify(client, never()).delete(any(Message.Builder.class), any(String.class), any(DeleteOptions.class));
+        
+        List<HorizontalPodAutoscaler> hpas = new ArrayList<>();
+        delHandler.removeHPAs(apiClient, namespace, mlDep, hpas);
         
 	}
 	
