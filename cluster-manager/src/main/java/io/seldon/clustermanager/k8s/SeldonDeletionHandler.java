@@ -3,6 +3,7 @@ package io.seldon.clustermanager.k8s;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -140,8 +141,12 @@ public class SeldonDeletionHandler {
 	public void removeHPAs(ApiClient client,String namespace,SeldonDeployment seldonDeployment,List<HorizontalPodAutoscaler> hpas) throws ApiException, IOException, SeldonDeploymentException
 	{
 		Set<String> names = getHpaNames(hpas);
-		V2beta1HorizontalPodAutoscalerList hpaList = crdHandler.getOwnedHPAs(seldonNameCreator.getSeldonId(seldonDeployment),namespace);
-		for(V2beta1HorizontalPodAutoscaler hpa : hpaList.getItems())
+		Optional<V2beta1HorizontalPodAutoscalerList> hpaList = crdHandler.getOwnedHPAs(seldonNameCreator.getSeldonId(seldonDeployment),namespace);
+		if(!hpaList.isPresent()) {
+			logger.info("No HPAs found");
+			return;
+		}
+		for(V2beta1HorizontalPodAutoscaler hpa : hpaList.get().getItems())
 		{
 			if (!names.contains(hpa.getMetadata().getName()))
 			{	

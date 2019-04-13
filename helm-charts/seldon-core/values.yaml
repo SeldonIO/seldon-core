@@ -1,5 +1,7 @@
 ambassador:
   enabled: false
+  image:
+    tag: 0.50.0
   replicaCount: 1
   resources:
     limits:
@@ -12,7 +14,7 @@ ambassador:
     annotations:
       getambassador.io/config: |
         ---
-        apiVersion: ambassador/v1
+        apiVersion: ambassador/v0
         kind: Module
         name: ambassador
         config:
@@ -48,6 +50,13 @@ engine:
   service_account:
     name: default
   user: 8888
+  port: 8000
+  grpc:
+    port: 5001
+  prometheus:
+    path: "prometheus"
+predictive_unit:
+  port: 9000
 rbac:
   enabled: true
   rolebinding:
