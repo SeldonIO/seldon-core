@@ -1121,12 +1121,10 @@
                         "description": "ResourceRequirements describes the compute resource requirements.",
                         "properties": {
                             "limits": {
-                                "additionalProperties": true,
                                 "description": "Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/",
                                 "type": "object"
                             },
                             "requests": {
-                                "additionalProperties": true,
                                 "description": "Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/",
                                 "type": "object"
                             }
@@ -2033,12 +2031,10 @@
                         "description": "ResourceRequirements describes the compute resource requirements.",
                         "properties": {
                             "limits": {
-                                "additionalProperties": true,
                                 "description": "Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/",
                                 "type": "object"
                             },
                             "requests": {
-                                "additionalProperties": true,
                                 "description": "Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/",
                                 "type": "object"
                             }
@@ -2559,52 +2555,6 @@
                         ],
                         "type": "object"
                     },
-                    "configMap": {
-                        "description": "Adapts a ConfigMap into a volume.\n\nThe contents of the target ConfigMap's Data field will be presented in a volume as files using the keys in the Data field as the file names, unless the items element is populated with specific mappings of keys to paths. ConfigMap volumes support ownership management and SELinux relabeling.",
-                        "properties": {
-                            "defaultMode": {
-                                "description": "Optional: mode bits to use on created files by default. Must be a value between 0 and 0777. Defaults to 0644. Directories within the path are not affected by this setting. This might be in conflict with other options that affect the file mode, like fsGroup, and the result can be other mode bits set.",
-                                "format": "int32",
-                                "type": "integer"
-                            },
-                            "items": {
-                                "description": "If unspecified, each key-value pair in the Data field of the referenced ConfigMap will be projected into the volume as a file whose name is the key and content is the value. If specified, the listed keys will be projected into the specified paths, and unlisted keys will not be present. If a key is specified which is not present in the ConfigMap, the volume setup will error unless it is marked optional. Paths must be relative and may not contain the '..' path or start with '..'.",
-                                "items": {
-                                    "description": "Maps a string key to a path within a volume.",
-                                    "properties": {
-                                        "key": {
-                                            "description": "The key to project.",
-                                            "type": "string"
-                                        },
-                                        "mode": {
-                                            "description": "Optional: mode bits to use on this file, must be a value between 0 and 0777. If not specified, the volume defaultMode will be used. This might be in conflict with other options that affect the file mode, like fsGroup, and the result can be other mode bits set.",
-                                            "format": "int32",
-                                            "type": "integer"
-                                        },
-                                        "path": {
-                                            "description": "The relative path of the file to map the key to. May not be an absolute path. May not contain the path element '..'. May not start with the string '..'.",
-                                            "type": "string"
-                                        }
-                                    },
-                                    "required": [
-                                        "key",
-                                        "path"
-                                    ],
-                                    "type": "object"
-                                },
-                                "type": "array"
-                            },
-                            "name": {
-                                "description": "Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names",
-                                "type": "string"
-                            },
-                            "optional": {
-                                "description": "Specify whether the ConfigMap or it's keys must be defined",
-                                "type": "boolean"
-                            }
-                        },
-                        "type": "object"
-                    },
                     "csi": {
                         "description": "Represents a source location of a volume to mount, managed by an external CSI driver",
                         "properties": {
@@ -2641,77 +2591,6 @@
                         "required": [
                             "driver"
                         ],
-                        "type": "object"
-                    },
-                    "downwardAPI": {
-                        "description": "DownwardAPIVolumeSource represents a volume containing downward API info. Downward API volumes support ownership management and SELinux relabeling.",
-                        "properties": {
-                            "defaultMode": {
-                                "description": "Optional: mode bits to use on created files by default. Must be a value between 0 and 0777. Defaults to 0644. Directories within the path are not affected by this setting. This might be in conflict with other options that affect the file mode, like fsGroup, and the result can be other mode bits set.",
-                                "format": "int32",
-                                "type": "integer"
-                            },
-                            "items": {
-                                "description": "Items is a list of downward API volume file",
-                                "items": {
-                                    "description": "DownwardAPIVolumeFile represents information to create the file containing the pod field",
-                                    "properties": {
-                                        "fieldRef": {
-                                            "description": "ObjectFieldSelector selects an APIVersioned field of an object.",
-                                            "properties": {
-                                                "apiVersion": {
-                                                    "description": "Version of the schema the FieldPath is written in terms of, defaults to \"v1\".",
-                                                    "type": "string"
-                                                },
-                                                "fieldPath": {
-                                                    "description": "Path of the field to select in the specified API version.",
-                                                    "type": "string"
-                                                }
-                                            },
-                                            "required": [
-                                                "fieldPath"
-                                            ],
-                                            "type": "object"
-                                        },
-                                        "mode": {
-                                            "description": "Optional: mode bits to use on this file, must be a value between 0 and 0777. If not specified, the volume defaultMode will be used. This might be in conflict with other options that affect the file mode, like fsGroup, and the result can be other mode bits set.",
-                                            "format": "int32",
-                                            "type": "integer"
-                                        },
-                                        "path": {
-                                            "description": "Required: Path is  the relative path name of the file to be created. Must not be absolute or contain the '..' path. Must be utf-8 encoded. The first item of the relative path must not start with '..'",
-                                            "type": "string"
-                                        },
-                                        "resourceFieldRef": {
-                                            "description": "ResourceFieldSelector represents container resources (cpu, memory) and their output format",
-                                            "properties": {
-                                                "containerName": {
-                                                    "description": "Container name: required for volumes, optional for env vars",
-                                                    "type": "string"
-                                                },
-                                                "divisor": {
-                                                    "description": "Quantity is a fixed-point representation of a number. It provides convenient marshaling/unmarshaling in JSON and YAML, in addition to String() and Int64() accessors.\n\nThe serialization format is:\n\n<quantity>        ::= <signedNumber><suffix>\n  (Note that <suffix> may be empty, from the \"\" case in <decimalSI>.)\n<digit>           ::= 0 | 1 | ... | 9 <digits>          ::= <digit> | <digit><digits> <number>          ::= <digits> | <digits>.<digits> | <digits>. | .<digits> <sign>            ::= \"+\" | \"-\" <signedNumber>    ::= <number> | <sign><number> <suffix>          ::= <binarySI> | <decimalExponent> | <decimalSI> <binarySI>        ::= Ki | Mi | Gi | Ti | Pi | Ei\n  (International System of units; See: http://physics.nist.gov/cuu/Units/binary.html)\n<decimalSI>       ::= m | \"\" | k | M | G | T | P | E\n  (Note that 1024 = 1Ki but 1000 = 1k; I didn't choose the capitalization.)\n<decimalExponent> ::= \"e\" <signedNumber> | \"E\" <signedNumber>\n\nNo matter which of the three exponent forms is used, no quantity may represent a number greater than 2^63-1 in magnitude, nor may it have more than 3 decimal places. Numbers larger or more precise will be capped or rounded up. (E.g.: 0.1m will rounded up to 1m.) This may be extended in the future if we require larger or smaller quantities.\n\nWhen a Quantity is parsed from a string, it will remember the type of suffix it had, and will use the same type again when it is serialized.\n\nBefore serializing, Quantity will be put in \"canonical form\". This means that Exponent/suffix will be adjusted up or down (with a corresponding increase or decrease in Mantissa) such that:\n  a. No precision is lost\n  b. No fractional digits will be emitted\n  c. The exponent (or suffix) is as large as possible.\nThe sign will be omitted unless the number is negative.\n\nExamples:\n  1.5 will be serialized as \"1500m\"\n  1.5Gi will be serialized as \"1536Mi\"\n\nNote that the quantity will NEVER be internally represented by a floating point number. That is the whole point of this exercise.\n\nNon-canonical values will still parse as long as they are well formed, but will be re-emitted in their canonical form. (So always use canonical form, or don't diff.)\n\nThis format is intended to make it difficult to use these numbers without writing some sort of special handling code in the hopes that that will cause implementors to also use a fixed point implementation.",
-                                                    "type": "string"
-                                                },
-                                                "resource": {
-                                                    "description": "Required: resource to select",
-                                                    "type": "string"
-                                                }
-                                            },
-                                            "required": [
-                                                "resource"
-                                            ],
-                                            "type": "object"
-                                        }
-                                    },
-                                    "required": [
-                                        "path"
-                                    ],
-                                    "type": "object"
-                                },
-                                "type": "array"
-                            }
-                        },
                         "type": "object"
                     },
                     "emptyDir": {
@@ -3058,154 +2937,6 @@
                                 "items": {
                                     "description": "Projection that may be projected along with other supported volume types",
                                     "properties": {
-                                        "configMap": {
-                                            "description": "Adapts a ConfigMap into a projected volume.\n\nThe contents of the target ConfigMap's Data field will be presented in a projected volume as files using the keys in the Data field as the file names, unless the items element is populated with specific mappings of keys to paths. Note that this is identical to a configmap volume source without the default mode.",
-                                            "properties": {
-                                                "items": {
-                                                    "description": "If unspecified, each key-value pair in the Data field of the referenced ConfigMap will be projected into the volume as a file whose name is the key and content is the value. If specified, the listed keys will be projected into the specified paths, and unlisted keys will not be present. If a key is specified which is not present in the ConfigMap, the volume setup will error unless it is marked optional. Paths must be relative and may not contain the '..' path or start with '..'.",
-                                                    "items": {
-                                                        "description": "Maps a string key to a path within a volume.",
-                                                        "properties": {
-                                                            "key": {
-                                                                "description": "The key to project.",
-                                                                "type": "string"
-                                                            },
-                                                            "mode": {
-                                                                "description": "Optional: mode bits to use on this file, must be a value between 0 and 0777. If not specified, the volume defaultMode will be used. This might be in conflict with other options that affect the file mode, like fsGroup, and the result can be other mode bits set.",
-                                                                "format": "int32",
-                                                                "type": "integer"
-                                                            },
-                                                            "path": {
-                                                                "description": "The relative path of the file to map the key to. May not be an absolute path. May not contain the path element '..'. May not start with the string '..'.",
-                                                                "type": "string"
-                                                            }
-                                                        },
-                                                        "required": [
-                                                            "key",
-                                                            "path"
-                                                        ],
-                                                        "type": "object"
-                                                    },
-                                                    "type": "array"
-                                                },
-                                                "name": {
-                                                    "description": "Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names",
-                                                    "type": "string"
-                                                },
-                                                "optional": {
-                                                    "description": "Specify whether the ConfigMap or it's keys must be defined",
-                                                    "type": "boolean"
-                                                }
-                                            },
-                                            "type": "object"
-                                        },
-                                        "downwardAPI": {
-                                            "description": "Represents downward API info for projecting into a projected volume. Note that this is identical to a downwardAPI volume source without the default mode.",
-                                            "properties": {
-                                                "items": {
-                                                    "description": "Items is a list of DownwardAPIVolume file",
-                                                    "items": {
-                                                        "description": "DownwardAPIVolumeFile represents information to create the file containing the pod field",
-                                                        "properties": {
-                                                            "fieldRef": {
-                                                                "description": "ObjectFieldSelector selects an APIVersioned field of an object.",
-                                                                "properties": {
-                                                                    "apiVersion": {
-                                                                        "description": "Version of the schema the FieldPath is written in terms of, defaults to \"v1\".",
-                                                                        "type": "string"
-                                                                    },
-                                                                    "fieldPath": {
-                                                                        "description": "Path of the field to select in the specified API version.",
-                                                                        "type": "string"
-                                                                    }
-                                                                },
-                                                                "required": [
-                                                                    "fieldPath"
-                                                                ],
-                                                                "type": "object"
-                                                            },
-                                                            "mode": {
-                                                                "description": "Optional: mode bits to use on this file, must be a value between 0 and 0777. If not specified, the volume defaultMode will be used. This might be in conflict with other options that affect the file mode, like fsGroup, and the result can be other mode bits set.",
-                                                                "format": "int32",
-                                                                "type": "integer"
-                                                            },
-                                                            "path": {
-                                                                "description": "Required: Path is  the relative path name of the file to be created. Must not be absolute or contain the '..' path. Must be utf-8 encoded. The first item of the relative path must not start with '..'",
-                                                                "type": "string"
-                                                            },
-                                                            "resourceFieldRef": {
-                                                                "description": "ResourceFieldSelector represents container resources (cpu, memory) and their output format",
-                                                                "properties": {
-                                                                    "containerName": {
-                                                                        "description": "Container name: required for volumes, optional for env vars",
-                                                                        "type": "string"
-                                                                    },
-                                                                    "divisor": {
-                                                                        "description": "Quantity is a fixed-point representation of a number. It provides convenient marshaling/unmarshaling in JSON and YAML, in addition to String() and Int64() accessors.\n\nThe serialization format is:\n\n<quantity>        ::= <signedNumber><suffix>\n  (Note that <suffix> may be empty, from the \"\" case in <decimalSI>.)\n<digit>           ::= 0 | 1 | ... | 9 <digits>          ::= <digit> | <digit><digits> <number>          ::= <digits> | <digits>.<digits> | <digits>. | .<digits> <sign>            ::= \"+\" | \"-\" <signedNumber>    ::= <number> | <sign><number> <suffix>          ::= <binarySI> | <decimalExponent> | <decimalSI> <binarySI>        ::= Ki | Mi | Gi | Ti | Pi | Ei\n  (International System of units; See: http://physics.nist.gov/cuu/Units/binary.html)\n<decimalSI>       ::= m | \"\" | k | M | G | T | P | E\n  (Note that 1024 = 1Ki but 1000 = 1k; I didn't choose the capitalization.)\n<decimalExponent> ::= \"e\" <signedNumber> | \"E\" <signedNumber>\n\nNo matter which of the three exponent forms is used, no quantity may represent a number greater than 2^63-1 in magnitude, nor may it have more than 3 decimal places. Numbers larger or more precise will be capped or rounded up. (E.g.: 0.1m will rounded up to 1m.) This may be extended in the future if we require larger or smaller quantities.\n\nWhen a Quantity is parsed from a string, it will remember the type of suffix it had, and will use the same type again when it is serialized.\n\nBefore serializing, Quantity will be put in \"canonical form\". This means that Exponent/suffix will be adjusted up or down (with a corresponding increase or decrease in Mantissa) such that:\n  a. No precision is lost\n  b. No fractional digits will be emitted\n  c. The exponent (or suffix) is as large as possible.\nThe sign will be omitted unless the number is negative.\n\nExamples:\n  1.5 will be serialized as \"1500m\"\n  1.5Gi will be serialized as \"1536Mi\"\n\nNote that the quantity will NEVER be internally represented by a floating point number. That is the whole point of this exercise.\n\nNon-canonical values will still parse as long as they are well formed, but will be re-emitted in their canonical form. (So always use canonical form, or don't diff.)\n\nThis format is intended to make it difficult to use these numbers without writing some sort of special handling code in the hopes that that will cause implementors to also use a fixed point implementation.",
-                                                                        "type": "string"
-                                                                    },
-                                                                    "resource": {
-                                                                        "description": "Required: resource to select",
-                                                                        "type": "string"
-                                                                    }
-                                                                },
-                                                                "required": [
-                                                                    "resource"
-                                                                ],
-                                                                "type": "object"
-                                                            }
-                                                        },
-                                                        "required": [
-                                                            "path"
-                                                        ],
-                                                        "type": "object"
-                                                    },
-                                                    "type": "array"
-                                                }
-                                            },
-                                            "type": "object"
-                                        },
-                                        "secret": {
-                                            "description": "Adapts a secret into a projected volume.\n\nThe contents of the target Secret's Data field will be presented in a projected volume as files using the keys in the Data field as the file names. Note that this is identical to a secret volume source without the default mode.",
-                                            "properties": {
-                                                "items": {
-                                                    "description": "If unspecified, each key-value pair in the Data field of the referenced Secret will be projected into the volume as a file whose name is the key and content is the value. If specified, the listed keys will be projected into the specified paths, and unlisted keys will not be present. If a key is specified which is not present in the Secret, the volume setup will error unless it is marked optional. Paths must be relative and may not contain the '..' path or start with '..'.",
-                                                    "items": {
-                                                        "description": "Maps a string key to a path within a volume.",
-                                                        "properties": {
-                                                            "key": {
-                                                                "description": "The key to project.",
-                                                                "type": "string"
-                                                            },
-                                                            "mode": {
-                                                                "description": "Optional: mode bits to use on this file, must be a value between 0 and 0777. If not specified, the volume defaultMode will be used. This might be in conflict with other options that affect the file mode, like fsGroup, and the result can be other mode bits set.",
-                                                                "format": "int32",
-                                                                "type": "integer"
-                                                            },
-                                                            "path": {
-                                                                "description": "The relative path of the file to map the key to. May not be an absolute path. May not contain the path element '..'. May not start with the string '..'.",
-                                                                "type": "string"
-                                                            }
-                                                        },
-                                                        "required": [
-                                                            "key",
-                                                            "path"
-                                                        ],
-                                                        "type": "object"
-                                                    },
-                                                    "type": "array"
-                                                },
-                                                "name": {
-                                                    "description": "Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names",
-                                                    "type": "string"
-                                                },
-                                                "optional": {
-                                                    "description": "Specify whether the Secret or its key must be defined",
-                                                    "type": "boolean"
-                                                }
-                                            },
-                                            "type": "object"
-                                        },
                                         "serviceAccountToken": {
                                             "description": "ServiceAccountTokenProjection represents a projected service account token volume. This projection can be used to insert a service account token into the pods runtime filesystem for use against APIs (Kubernetes API Server or otherwise).",
                                             "properties": {
@@ -3379,52 +3110,6 @@
                             "system",
                             "secretRef"
                         ],
-                        "type": "object"
-                    },
-                    "secret": {
-                        "description": "Adapts a Secret into a volume.\n\nThe contents of the target Secret's Data field will be presented in a volume as files using the keys in the Data field as the file names. Secret volumes support ownership management and SELinux relabeling.",
-                        "properties": {
-                            "defaultMode": {
-                                "description": "Optional: mode bits to use on created files by default. Must be a value between 0 and 0777. Defaults to 0644. Directories within the path are not affected by this setting. This might be in conflict with other options that affect the file mode, like fsGroup, and the result can be other mode bits set.",
-                                "format": "int32",
-                                "type": "integer"
-                            },
-                            "items": {
-                                "description": "If unspecified, each key-value pair in the Data field of the referenced Secret will be projected into the volume as a file whose name is the key and content is the value. If specified, the listed keys will be projected into the specified paths, and unlisted keys will not be present. If a key is specified which is not present in the Secret, the volume setup will error unless it is marked optional. Paths must be relative and may not contain the '..' path or start with '..'.",
-                                "items": {
-                                    "description": "Maps a string key to a path within a volume.",
-                                    "properties": {
-                                        "key": {
-                                            "description": "The key to project.",
-                                            "type": "string"
-                                        },
-                                        "mode": {
-                                            "description": "Optional: mode bits to use on this file, must be a value between 0 and 0777. If not specified, the volume defaultMode will be used. This might be in conflict with other options that affect the file mode, like fsGroup, and the result can be other mode bits set.",
-                                            "format": "int32",
-                                            "type": "integer"
-                                        },
-                                        "path": {
-                                            "description": "The relative path of the file to map the key to. May not be an absolute path. May not contain the path element '..'. May not start with the string '..'.",
-                                            "type": "string"
-                                        }
-                                    },
-                                    "required": [
-                                        "key",
-                                        "path"
-                                    ],
-                                    "type": "object"
-                                },
-                                "type": "array"
-                            },
-                            "optional": {
-                                "description": "Specify whether the Secret or it's keys must be defined",
-                                "type": "boolean"
-                            },
-                            "secretName": {
-                                "description": "Name of the secret in the pod's namespace to use. More info: https://kubernetes.io/docs/concepts/storage/volumes#secret",
-                                "type": "string"
-                            }
-                        },
                         "type": "object"
                     },
                     "storageos": {
