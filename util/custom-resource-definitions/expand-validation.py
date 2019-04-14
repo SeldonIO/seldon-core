@@ -8,15 +8,28 @@ def getDefinition(uri):
 
 def expand(defn,root):
     if "properties" in defn:
+        badProps = []
         for prop in defn["properties"].keys():
             if "$ref" in defn["properties"][prop]:
                 ref = getDefinition(defn["properties"][prop]["$ref"])
                 defnNew = expand(root["definitions"][ref],root)
-                defn["properties"][prop] = defnNew
+                if defnNew:
+                    defn["properties"][prop] = defnNew
+                else:
+                    badProps.append(prop)
             elif "items" in defn["properties"][prop] and "$ref" in defn["properties"][prop]["items"]:
                 ref = getDefinition(defn["properties"][prop]["items"]["$ref"])
                 defnNew = expand(root["definitions"][ref],root)
-                defn["properties"][prop]["items"] = defnNew
+                if defnNew:
+                    defn["properties"][prop]["items"] = defnNew
+                else:
+                    badProps.append(prop)
+            ## Temporary hack until https://github.com/go-openapi/validate/issues/108 is fixed
+            ## Causes failure of CRD validation with properties with "items" property
+            if "items" in defn["properties"] and "items" in defn["properties"]["items"]:
+                return None
+        for prop in badProps:
+            del defn["properties"][prop]
     return defn
 
 def simplifyAdditionalProperties(defn):
@@ -24,7 +37,8 @@ def simplifyAdditionalProperties(defn):
         if "additionalProperties" in defn.keys():
             if isinstance(defn["additionalProperties"], dict):
                 if "$ref" in defn["additionalProperties"].keys():
-                    defn["additionalProperties"] = True
+                    del defn["additionalProperties"]
+                    #defn["additionalProperties"] = True
         for k in defn.keys():
             simplifyAdditionalProperties(defn[k])
 
