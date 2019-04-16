@@ -27,18 +27,22 @@
 				"args": [
 				    "--model-store={{ .Values.nvidia.model_store }}"
 				],
+				"env": [
+				    {
+					"name": "LD_LIBRARY_PATH",
+					"value" : "/opt/inference_server/lib:/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/lib"
+				    }
+				],
 				"command": [
 				    "inference_server"
 				],
 				"image": "nvcr.io/nvidia/inferenceserver:18.08.1-py2",
 				"livenessProbe": {
 				    "failureThreshold": 3,
-				    "handler":{
-					"httpGet": {
-					    "path": "/api/health/live",
-					    "port": {{ .Values.nvidia.port }},
-					    "scheme": "HTTP"
-					}
+				    "httpGet": {
+					"path": "/api/health/live",
+					"port": "server",
+					"scheme": "HTTP"
 				    },
 				    "initialDelaySeconds": 5,
 				    "periodSeconds": 5,
@@ -48,6 +52,7 @@
 				"name": "inference-server",
 				"ports": [
 				    {
+					"name": "server",
 					"containerPort": {{ .Values.nvidia.port }},
 					"protocol": "TCP"
 				    },
@@ -62,12 +67,10 @@
 				],
 				"readinessProbe": {
 				    "failureThreshold": 3,
-				    "handler":{
-					"httpGet": {
-					    "path": "/api/health/ready",
-					    "port": {{ .Values.nvidia.port }},
-					    "scheme": "HTTP"
-					}
+				    "httpGet": {
+					"path": "/api/health/ready",
+					"port": "server",
+					"scheme": "HTTP"
 				    },
 				    "initialDelaySeconds": 5,
 				    "periodSeconds": 5,

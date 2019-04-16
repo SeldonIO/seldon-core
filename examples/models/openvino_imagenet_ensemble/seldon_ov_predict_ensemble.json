@@ -8,7 +8,10 @@
     "name": "openvino-model",
     "namespace": "seldon"
   },
-  "spec": {
+    "spec": {
+	"annotations" : {
+	    "seldon.io/grpc-read-timeout":"100000"
+	},
     "name": "openvino",
     "predictors": [
       {
