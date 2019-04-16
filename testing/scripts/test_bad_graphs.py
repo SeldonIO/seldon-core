@@ -7,8 +7,8 @@ from seldon_utils import *
 from k8s_utils import *
 
 def wait_for_status(name):
-    for attempts in range(5):
-        completedProcess = run("kubectl get sdep "+name+" -o json", shell=True, check=True, stdout=subprocess.PIPE)
+    for attempts in range(7):
+        completedProcess = run("kubectl get sdep "+name+" -o json -n seldon", shell=True, check=True, stdout=subprocess.PIPE)
         jStr = completedProcess.stdout
         j = json.loads(jStr)
         if "status" in j:
@@ -22,7 +22,7 @@ def wait_for_status(name):
 class TestBadGraphs(object):
     
     def test_duplicate_predictor_name(self):
-        run("kubectl apply -f ../resources/bad_duplicate_predictor_name.json", shell=True, check=True)
+        run("kubectl apply -f ../resources/bad_duplicate_predictor_name.json -n seldon", shell=True, check=True)
         j = wait_for_status("dupname")
         assert j["status"]["state"] == "Failed"
         assert j["status"]["description"] == "Duplicate predictor name: mymodel"
@@ -30,7 +30,7 @@ class TestBadGraphs(object):
 
     # Name in graph and that in PodTemplateSpec don't match
     def test_model_name_mismatch(self):
-        run("kubectl apply -f ../resources/bad_name_mismatch.json", shell=True, check=True)
+        run("kubectl apply -f ../resources/bad_name_mismatch.json -n seldon", shell=True, check=True)
         j = wait_for_status("namemismatch")
         assert j["status"]["state"] == "Failed"
         assert j["status"]["description"] == "Can't find container for predictive unit with name complex-model_bad_name"
