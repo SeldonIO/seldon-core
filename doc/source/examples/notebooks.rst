@@ -10,7 +10,6 @@ Notebooks
    Ambassador Headers <ambassador_headers>
    Ambassador Custom Config <ambassador_custom>         
    Example Helm Deployments <helm_examples>
-   Example KSonnet Deployments <ksonnet_examples>
    H2O Java MoJo <h2o_mojo>
    Istio Canary <istio_canary>
    Jaeger Tracing <tmpl_model_tracing>

@@ -42,19 +42,14 @@
 			"volumes": [
 			    {
 				"name": "tracing-config",
-				"volumeSource" : {
-				    "configMap": {
-					"localObjectReference" :
+				"configMap": {
+				    "name": "tracing-config",
+				    "items": [
 					{
-					    "name": "tracing-config"
-					},
-					"items": [
-					    {
-						"key": "tracing.yml",
-						"path":  "tracing.yml"
-					    }
-					]
-				    }
+					    "key": "tracing.yml",
+					    "path":  "tracing.yml"
+					}
+				    ]
 				}
 			    }
 			]
