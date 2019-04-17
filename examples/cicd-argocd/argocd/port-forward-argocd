@@ -10,5 +10,4 @@ source ${STARTUP_DIR}/../settings.sh
 
 KUBECTL="kubectl --context=${KUBE_CONTEXT}"
 
-${KUBECTL} -n jenkins port-forward deployment.apps/jenkins 9091:8080
-
+${KUBECTL} -n argocd port-forward deployment.apps/argocd-server 9091:8080
