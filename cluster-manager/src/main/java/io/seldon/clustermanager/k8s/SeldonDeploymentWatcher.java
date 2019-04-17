@@ -62,7 +62,7 @@ import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 public class SeldonDeploymentWatcher  {
 	protected static Logger logger = LoggerFactory.getLogger(SeldonDeploymentWatcher.class.getName());
 	
-	public static final String[] VERSIONS = {"v1alpha2","v1alpha3"};
+	public static final String[] VERSIONS = {"v1alpha2"};
 	
 	private final SeldonDeploymentController seldonDeploymentController;
 	private final SeldonDeploymentCache mlCache;
@@ -274,12 +274,14 @@ public class SeldonDeploymentWatcher  {
         runWatch(version);
     }
 
+	/*
 	@Scheduled(fixedDelay = 5000)
     public void watchv1alpha3() throws JsonProcessingException, ApiException, IOException {
         logger.debug("The time is now {}", dateFormat.format(new Date()));
         final String version = VERSIONS[1];
         runWatch(version);
     }
+    */
 
 	
 

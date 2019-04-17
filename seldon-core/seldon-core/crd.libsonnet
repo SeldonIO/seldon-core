@@ -666,19 +666,7 @@ local k = import "k.libsonnet";
             },
           },
         },
-        version: "v1alpha3",
-        versions: [
-          {
-            name: "v1alpha3",
-            served: true,
-            storage: true,
-          },
-          {
-            name: "v1alpha2",
-            served: true,
-            storage: false,
-          },
-        ],
+        version: "v1alpha2",
         subresources: {
           status: {},
         },
