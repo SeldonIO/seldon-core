@@ -1,7 +1,7 @@
 ambassador:
   enabled: false
   image:
-    tag: 0.50.0
+    tag: 0.40.2
   replicaCount: 1
   resources:
     limits:
