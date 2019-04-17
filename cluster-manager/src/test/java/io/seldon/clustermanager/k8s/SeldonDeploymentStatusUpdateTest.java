@@ -72,7 +72,7 @@ public class SeldonDeploymentStatusUpdateTest extends AppTest {
 		SeldonDeploymentStatusUpdate supdate = new SeldonDeploymentStatusUpdateImpl(mockCrdHandler, mockSeldonDeploymentController, props);
 		
 		final String selDepName = "SeldonDep1";
-		final String version = "v1alpha1";
+		final String version = "v1alpha2";
 		final String namespace = "seldon";
 		
 		supdate.updateStatus(selDepName, version, "test-deployment-fx-market-predictor-8e1d76f", 1, 1, namespace);
