@@ -11,6 +11,12 @@ source ${STARTUP_DIR}/../settings.sh
 KUBECTL="kubectl --context=${KUBE_CONTEXT}"
 
 EXTERNAL_IP=$(${KUBECTL} get svc -n jenkins jenkins -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+NODEPORT=$(${KUBECTL} get svc -n jenkins jenkins -o jsonpath='{.spec.ports[0].nodePort}')
 
-echo "http://${EXTERNAL_IP}:8080/"
-
+if [ -n "${EXTERNAL_IP}" ]
+then
+      echo "url: http://${EXTERNAL_IP}:8080/"
+else
+      EXTERNAL_IP=$(minikube ip)
+      echo "url: http://${EXTERNAL_IP}:${NODEPORT}/"
+fi
