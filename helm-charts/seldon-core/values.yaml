@@ -1,7 +1,7 @@
 ambassador:
   enabled: false
   image:
-    tag: 0.50.0
+    tag: 0.40.2
   replicaCount: 1
   resources:
     limits:
@@ -27,9 +27,8 @@ ambassador:
   rbac:
     create: true
     namespaced: true
-# scope will be cluster wide unless below is set
-#  env:
-#    AMBASSADOR_SINGLE_NAMESPACE: "true"
+  scope:
+    singleNamespace: true
 apife:
   annotations: null
   enabled: true

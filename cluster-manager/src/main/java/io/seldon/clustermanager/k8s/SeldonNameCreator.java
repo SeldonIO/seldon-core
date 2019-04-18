@@ -13,6 +13,17 @@ public class SeldonNameCreator {
 	    return DigestUtils.md5Hex(key).toLowerCase().substring(0, 7);
 	}
 	
+	private String createPredictorHash(PredictorSpec pred)
+	{
+		StringBuffer sb = new StringBuffer();
+		for(SeldonPodSpec podSpec : pred.getComponentSpecsList())
+		{
+			sb.append(createContainerHash(podSpec));
+			sb.append(",");
+		}
+		return hash(sb.toString());
+	}
+	
 	private String createContainerHash(SeldonPodSpec spec)
 	{
 		StringBuffer sb = new StringBuffer();
@@ -46,7 +57,7 @@ public class SeldonNameCreator {
 	
 	public String getServiceOrchestratorName(SeldonDeployment dep,PredictorSpec pred)
 	{
-		String svcName =  dep.getSpec().getName() + "-" + pred.getName()+"-svc-orch";
+		String svcName =  dep.getSpec().getName() + "-" + pred.getName()+"-svc-orch" + "-" + createPredictorHash(pred);
 		if (svcName.length() > 63)
 			return "seldon-"+hash(svcName);
 		else
