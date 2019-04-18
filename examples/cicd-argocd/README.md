@@ -17,6 +17,8 @@ This example uses the following components to setup a demo "gitops" pipleline th
 
 ![missing cicd image](https://raw.githubusercontent.com/SeldonIO/seldon-core/master/examples/cicd-argocd/cicd-demo.png "Seldon Core CICD demo")
 
+Images are built by firing argo jobs from jenkins, justing a deployer image that contains kubectl to launch argo jobs. Models using the images are deployed by ArgoCD, which syncs a git repo to k8s.
+
 ## Setup
 
 * directory for the scripts
@@ -69,27 +71,15 @@ kubectl create clusterrolebinding user-cluster-admin-binding --clusterrole=clust
 ```
 * Setup Jenkins
 ```
-# get initial browser login details, and use to login
+# open browser to jenkins login to create initial user
 ./jenkins/get-jenkins-browser-login
-# Or see port-forward script in ./jenkins for local port-forward port. Password should match settings.sh - check with the get-initial-admin-password script
 
-IMPORTANT: fix any plugin issues, eg. update pipeline-job plugin if necessary and Reboot
+NOTE: if you see plugin issues, you can fix here or in the helm values file
 
-Install "Github" jenkins plugin
-Manage jenkins->Manage Plugins->Available
-    Find the "Github" plugin
-    Install without restart
+On Jenkins login page you will need to create "Create First Admin User"
+            - set in the JENKINS_USER_NAME and JENKINS_USER_PASSWORD in the "settings.sh" file
 
-# setup security to use "Jenkins’ own user database"
-Manage Jenkins->Configure Global Security
-        - select "Jenkins’ own user database"
-        - Make sure "Allow users to sign up" is unchecked
-        - save
-
-Jenkins will ask to "Create First Admin User"
-            - use the JENKINS_USER_NAME and JENKINS_USER_PASSWORD in the "settings.sh" file
-
-You need to create the user with the credentials in the settings file as Jenkins needs that user in its database in order to issue a crumb for job creation
+You need to have the user in the settings file as Jenkins needs that user in its store in order to issue a crumb for job creation. If you want you can disable user signup after creating the user.
 ```
 * Import Jenkins jobs
 ```
@@ -100,12 +90,10 @@ You need to create the user with the credentials in the settings file as Jenkins
 * Setup argocd
 ```
 # get cmd-line login details, and use to login
-# the script assumes a hosted argocd
-# with minikube you get get the URL with `minikube service argocd-server -n argocd` - note some browsers may block and you may have to proceed insecurely
 ./argocd/get-argocd-cmd-line-login
 
-# add current cluster to list
-# add may not be needed if already in list
+# optionally add current cluster to list
+# likely not needed as current cluster should already be in list
 ./argocd/argocd-cluster-add
 ./argocd/argocd-cluster-list
 
@@ -120,12 +108,13 @@ You need to create the user with the credentials in the settings file as Jenkins
 ```
 # For CI, add webhook to "cicd-demo-model-source-files" repo
 # get the webhook details to use
-# For this public hosting of Jenkins is necessary. Skip if using minikube.
+# For this public hosting of Jenkins is necessary. If using minikube you can manually trigger or enable polling.
 # Registering the hook manually via github UI
 ./jenkins/get-jenkins-github-webhook-details
 
 # For CD, add webhook to "cicd-demo-k8s-manifest-files" repo
 # get the webhook details to use
+# For this public hosting of ArgoCD is necessary. If using minikube you can manually trigger or enable polling.
 ./argocd/get-argocd-github-webhook-details
 ```
 ## Operation
@@ -160,7 +149,3 @@ Now changes to model that are committed and pushed will trigger the auto build a
 ```
 ./seldon-core/remove-helm
 ```
-
-* Troubleshooting
-
-Jenkins build jobs can fail on newer k8s if the kubectl binary available to jenkins is too old - https://stackoverflow.com/a/55581050/9705485
