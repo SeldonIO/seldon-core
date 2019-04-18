@@ -7,24 +7,19 @@ set -o pipefail
 STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
 
 source ${STARTUP_DIR}/../settings.sh
+source ${STARTUP_DIR}/get-jenkins-url
 
 KUBECTL="kubectl --context=${KUBE_CONTEXT}"
 
 #printf $(${KUBECTL} get secret --namespace jenkins jenkins -o jsonpath="{.data.jenkins-admin-password}" | base64 --decode);echo
 
-EXTERNAL_IP=$(${KUBECTL} get svc -n jenkins jenkins -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-NODEPORT=$(${KUBECTL} get svc -n jenkins jenkins -o jsonpath='{.spec.ports[0].nodePort}')
 ADMIN_PASSWORD=$(printf $(${KUBECTL} get secret --namespace jenkins jenkins -o jsonpath="{.data.jenkins-admin-password}" | base64 --decode))
 
 echo ""
-if [ -n "${EXTERNAL_IP}" ]
-then
-      echo "url: http://${EXTERNAL_IP}:8080/"
-else
-      EXTERNAL_IP=$(minikube ip)
-      echo "url: http://${EXTERNAL_IP}:${NODEPORT}/"
-fi
-echo "user: admin"
-echo "password: ${ADMIN_PASSWORD}"
+echo "url: http://"$(getUrl)
+echo "setup: http://"$(getUrl)"signup"
+#don't echo initial password as using local store so user hs to create
+#echo "user: admin"
+#echo "password: ${ADMIN_PASSWORD}"
 echo ""
 
