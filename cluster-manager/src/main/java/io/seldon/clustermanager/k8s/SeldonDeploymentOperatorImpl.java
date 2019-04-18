@@ -808,7 +808,7 @@ public class SeldonDeploymentOperatorImpl implements SeldonDeploymentOperator {
 								.setMetadata(ObjectMeta.newBuilder()
 										.setName(containerServiceValue)
 										.putLabels(containerServiceKey, containerServiceValue)
-										.putLabels("seldon-deployment-id", mlDep.getSpec().getName())
+										.putLabels("seldon-deployment-id", seldonId)
 										.addOwnerReferences(ownerRef)
 										);
 						ServiceSpec.Builder svcSpecBuilder = ServiceSpec.newBuilder();
