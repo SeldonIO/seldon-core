@@ -40,7 +40,7 @@ public class End2EndSeparateEngineTest extends End2EndBase {
 		verify(mockProtoClient,Mockito.times(2)).create(argument.capture(), any(String.class), any(String.class), Mockito.matches("Deployment"));
 		
 		Deployment d = argument.getAllValues().get(0);
-		Assert.assertEquals("test-deployment-fx-market-predictor-svc-orch", d.getMetadata().getName());
+		Assert.assertTrue(d.getMetadata().getName().startsWith("test-deployment-fx-market-predictor-svc-orch"));
 		Assert.assertEquals(1, d.getSpec().getReplicas());
 		Assert.assertEquals(1, d.getSpec().getTemplate().getSpec().getContainersCount());
 		d = argument.getAllValues().get(1);
@@ -86,7 +86,7 @@ public class End2EndSeparateEngineTest extends End2EndBase {
 		verify(mockProtoClient,Mockito.times(3)).create(argument.capture(), any(String.class), any(String.class), Mockito.matches("Deployment"));
 				
 		Deployment d = argument.getAllValues().get(0);
-		Assert.assertEquals("test-deployment-abtest-abtest-svc-orch", d.getMetadata().getName());
+		Assert.assertTrue(d.getMetadata().getName().startsWith("test-deployment-abtest-abtest-svc-orch"));
 		Assert.assertEquals(1, d.getSpec().getReplicas());
 		Assert.assertEquals(1, d.getSpec().getTemplate().getSpec().getContainersCount());
 
@@ -142,7 +142,7 @@ public class End2EndSeparateEngineTest extends End2EndBase {
 		
 		Deployment d = argument.getAllValues().get(0);
 		System.out.println(d.getMetadata().getName());
-		Assert.assertEquals("test-deployment-abtest-fx-market-predictor-svc-orch", d.getMetadata().getName());
+		Assert.assertTrue(d.getMetadata().getName().startsWith("test-deployment-abtest-fx-market-predictor-svc-orch"));
 		Assert.assertEquals(1, d.getSpec().getReplicas());
 		Assert.assertEquals(1, d.getSpec().getTemplate().getSpec().getContainersCount());
 		d = argument.getAllValues().get(1);
