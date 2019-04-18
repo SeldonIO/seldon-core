@@ -8,8 +8,8 @@
 This example uses the following components to setup a demo "gitops" pipleline that deploys a dummy ML model.
 
 * Jenkins
-* Argo
-* Argocd
+* [Argo](https://github.com/argoproj/argo)
+* [Argocd](https://github.com/argoproj/argo-cd)
 * Github (remote repos)
 * Git (local repos)
 * Local Docker Registry
@@ -36,7 +36,7 @@ cd /some/path/
 git clone https://github.com/<your github id>/cicd-demo-model-source-files
 git clone https://github.com/<your github id>/cicd-demo-k8s-manifest-files
 ```
-* Create cluster, at least Kubernetes 1.10
+* Create cluster, at least Kubernetes 1.12. Otherwise point the model argo jobs at a different [seldonio/k8s-deployer tag](https://hub.docker.com/r/seldonio/k8s-deployer)
 
 * Have "helm", "argo", "argocd" installed
 * Shell needs to be able to run python, vim and tmux
