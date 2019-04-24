@@ -61,10 +61,8 @@
 			"volumes": [
 			    {
 				"name": "modelstore",
-				"volumeSource": {
-				    "persistentVolumeClaim": {
-					"claimName": "model-store-pvc"
-				    }
+				"persistentVolumeClaim": {
+				    "claimName": "model-store-pvc"
 				}
 			    }
 			]
