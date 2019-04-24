@@ -68,4 +68,9 @@ redis:
   usePassword: false
   cluster:
     enabled: false
+  securityContext:
+    enabled: false
+  master:
+    securityContext:
+      enabled: false
 single_namespace: true

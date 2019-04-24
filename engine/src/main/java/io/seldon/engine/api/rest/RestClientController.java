@@ -62,7 +62,7 @@ public class RestClientController {
 	
 	 @PostConstruct
 	 public void init(){
-		 ready.set(true);;
+		 ready.set(true);
 	 }	
 	
 	@RequestMapping("/")
@@ -95,7 +95,29 @@ public class RestClientController {
 		ResponseEntity<String> responseEntity = new ResponseEntity<String>(ret, responseHeaders, httpStatus);
 		return responseEntity;
     }
-	
+
+	@RequestMapping("/live")
+	ResponseEntity<String> live() {
+
+		HttpHeaders responseHeaders = new HttpHeaders();
+		HttpStatus httpStatus;
+		String ret;
+		if (ready.get()) //don't check whole graph for liveness
+		{
+			httpStatus = HttpStatus.OK;
+			ret = "live";
+		}
+		else
+		{
+			logger.warn("Not live, controller {}",ready.get());
+			httpStatus = HttpStatus.SERVICE_UNAVAILABLE;
+			ret = "Service unavailable";
+		}
+		ResponseEntity<String> responseEntity = new ResponseEntity<String>(ret, responseHeaders, httpStatus);
+		return responseEntity;
+	}
+
+
 	@RequestMapping("/pause")
     String pause() {	    
 		ready.set(false);
