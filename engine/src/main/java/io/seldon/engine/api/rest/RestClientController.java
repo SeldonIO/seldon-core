@@ -101,18 +101,9 @@ public class RestClientController {
 
 		HttpHeaders responseHeaders = new HttpHeaders();
 		HttpStatus httpStatus;
-		String ret;
-		if (ready.get()) //don't check whole graph for liveness
-		{
-			httpStatus = HttpStatus.OK;
-			ret = "live";
-		}
-		else
-		{
-			logger.warn("Not live, controller {}",ready.get());
-			httpStatus = HttpStatus.SERVICE_UNAVAILABLE;
-			ret = "Service unavailable";
-		}
+		String ret  = "live";
+		httpStatus = HttpStatus.OK;
+
 		ResponseEntity<String> responseEntity = new ResponseEntity<String>(ret, responseHeaders, httpStatus);
 		return responseEntity;
 	}
