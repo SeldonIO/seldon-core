@@ -20,8 +20,9 @@ Notebooks
    NVIDIA TensorRT MNIST <nvidia_mnist>
    OpenVINO ImageNet <openvino>
    OpenVINO ImageNet Ensemble <openvino_ensemble>
-   ONNX ResNet with Intel nGraph<onnx_resnet>
+   ONNX ResNet with Intel nGraph<onnx_resnet>   
    R Iris Classifier <r_iris>
+   R MNIST Classifier <r_mnist>   
    REST timeouts <rest_timeouts>	         
    Sagemaker SKLearn Example <sagemaker_sklearn>   
    SKLearn Iris Classifier <iris>
