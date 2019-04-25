@@ -49,9 +49,7 @@
 					"name":"AWS_ACCESS_KEY_ID",
 					"valueFrom": {
 					    "secretKeyRef": {
-						"localObjectReference": {
-							"name": "aws-config"
-						     	},
+					    	"name": "aws-config",
 						"key": "aws_access_key_id"
 					    }
 					}
@@ -60,9 +58,7 @@
 					"name":"AWS_SECRET_ACCESS_KEY",
 					"valueFrom": {
 					    "secretKeyRef": {
-						"localObjectReference": {
-							"name": "aws-config"
-							},
+					    	"name": "aws-config",
 						"key": "aws_secret_access_key"
 					    }
 					}
@@ -71,9 +67,7 @@
 					"name":"AWS_DEFAULT_REGION",
 					"valueFrom": {
 					    "secretKeyRef": {
-						"localObjectReference": {
-							"name": "aws-config"
-							},
+						"name": "aws-config",
 						"key": "region"
 					    }
 					}
