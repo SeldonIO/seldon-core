@@ -65,6 +65,12 @@ rbac:
     name: seldon
 redis:
   enabled: true
-  image:
-    name: redis:4.0.1
+  usePassword: false
+  cluster:
+    enabled: false
+  securityContext:
+    enabled: false
+  master:
+    securityContext:
+      enabled: false
 single_namespace: true
