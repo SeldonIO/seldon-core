@@ -17,22 +17,16 @@ def wait_for_status(name):
             print("Failed to find status - sleeping")
             time.sleep(5)
 
-@pytest.mark.usefixtures("seldon_java_images")
-@pytest.mark.usefixtures("single_namespace_seldon_helm")    
+@pytest.mark.usefixtures("seldon_images")
+@pytest.mark.usefixtures("clusterwide_seldon_helm")
 class TestBadGraphs(object):
-    
+
     def test_duplicate_predictor_name(self):
-        run("kubectl apply -f ../resources/bad_duplicate_predictor_name.json -n seldon", shell=True, check=True)
-        j = wait_for_status("dupname")
-        assert j["status"]["state"] == "Failed"
-        assert j["status"]["description"] == "Duplicate predictor name: mymodel"
-        run("kubectl delete sdep --all", shell=True)    
+        ret = run("kubectl apply -f ../resources/bad_duplicate_predictor_name.json -n seldon", shell=True, check=False)
+        assert ret.returncode == 1
 
     # Name in graph and that in PodTemplateSpec don't match
     def test_model_name_mismatch(self):
-        run("kubectl apply -f ../resources/bad_name_mismatch.json -n seldon", shell=True, check=True)
-        j = wait_for_status("namemismatch")
-        assert j["status"]["state"] == "Failed"
-        assert j["status"]["description"] == "Can't find container for predictive unit with name complex-model_bad_name"
-        run("kubectl delete sdep --all", shell=True)    
-    
+        ret = run("kubectl apply -f ../resources/bad_name_mismatch.json -n seldon", shell=True, check=False)
+        assert ret.returncode == 1
+

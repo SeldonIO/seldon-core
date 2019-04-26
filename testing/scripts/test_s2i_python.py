@@ -25,7 +25,7 @@ def create_push_s2i_image(s2i_python_version,component_type,api_type):
     create_s2I_image(s2i_python_version,component_type,api_type)
     push_s2i_image(component_type,api_type)
 
-@pytest.mark.usefixtures("seldon_java_images")
+@pytest.mark.usefixtures("seldon_images")
 @pytest.mark.usefixtures("setup_python_s2i")
 @pytest.mark.usefixtures("s2i_python_version")
 class TestPythonS2i(object):
@@ -104,7 +104,7 @@ def initial_rest_request():
             r = rest_request_api_gateway("oauth-key","oauth-secret",None,API_GATEWAY_REST)
     return r
         
-@pytest.mark.usefixtures("seldon_java_images")    
+@pytest.mark.usefixtures("seldon_images")    
 @pytest.mark.usefixtures("setup_python_s2i")
 @pytest.mark.usefixtures("s2i_python_version")
 @pytest.mark.usefixtures("single_namespace_seldon_helm")
