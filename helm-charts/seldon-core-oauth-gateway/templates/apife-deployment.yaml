@@ -1,4 +1,3 @@
-{{- if .Values.apife.enabled }}
 ---
 apiVersion: apps/v1beta1
 kind: Deployment
@@ -20,8 +19,8 @@ spec:
   template:
     metadata:
       annotations:
-{{ if .Values.apife.annotations }}        
-{{ toYaml .Values.apife.annotations | indent 8 }}
+{{ if .Values.annotations }}        
+{{ toYaml .Values.annotations | indent 8 }}
 {{ end }}
         prometheus.io/path: /prometheus
         prometheus.io/port: "8080"
@@ -45,8 +44,8 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: metadata.namespace
-        image: {{ .Values.apife.image.repository }}:{{ .Values.apife.image.tag }}
-        imagePullPolicy: {{ .Values.apife.image.pullPolicy }}
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
         name: seldon-apiserver-container
         volumeMounts:
           - name: podinfo
@@ -92,7 +91,6 @@ spec:
   selector:
     app: seldon-apiserver-container-app
   sessionAffinity: None
-  type: {{ .Values.apife.serviceType }}
+  type: {{ .Values.serviceType }}
 status:
   loadBalancer: {}
-{{- end }}
