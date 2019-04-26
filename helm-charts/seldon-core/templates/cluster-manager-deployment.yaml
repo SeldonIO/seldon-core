@@ -30,7 +30,7 @@ spec:
         - name: SPRING_OPTS
           value: {{ .Values.cluster_manager.spring_opts }}
         - name: SELDON_CLUSTER_MANAGER_REDIS_HOST
-          value: {{ .Release.Name }}-redis
+          value: {{ .Release.Name }}-redis-master
         - name: ENGINE_CONTAINER_IMAGE_AND_VERSION
           value: {{ .Values.engine.image.name }}
         - name: ENGINE_CONTAINER_IMAGE_PULL_POLICY

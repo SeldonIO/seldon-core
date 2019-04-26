@@ -1,6 +1,6 @@
 # TensorFlow Serving Proxy
 
-The TensorFlow Serving Proxy provides a proxy to forward Seldon prediction requests to a running [TenserFlow Serving](https://www.tensorflow.org/serving/) server.
+The TensorFlow Serving Proxy provides a proxy to forward Seldon prediction requests to a running [TensorFlow Serving](https://www.tensorflow.org/serving/) server.
 
 ## Configuration
 
