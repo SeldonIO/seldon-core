@@ -4,6 +4,11 @@ GRAFANA_PASS=${GF_SECURITY_ADMIN_PASSWORD}
 HOST=grafana-prom
 PORT=80
 
+if [ -z "${GRAFANA_PASS}" ]
+then
+    GRAFANA_AUTH="${GRAFANA_USER}:${GRAFANA_PASS}@"
+fi
+
 # For DEV outside of cluster
 if [ ! -e /var/run/secrets/kubernetes.io/serviceaccount ]; then
     HOST=localhost
@@ -36,9 +41,9 @@ check_connection() {
 }
 
 recreate_datasource() {
-    curl --silent --fail --show-error --request DELETE http://${GRAFANA_USER}:${GRAFANA_PASS}@${HOST}:${PORT}/api/datasources/name/prometheus
+    curl --silent --fail --show-error --request DELETE http://${GRAFANA_AUTH}${HOST}:${PORT}/api/datasources/name/prometheus
 
-    curl --silent --fail --show-error --request POST http://${GRAFANA_USER}:${GRAFANA_PASS}@${HOST}:${PORT}/api/datasources --header "Content-Type: application/json" --data-binary "@prometheus-datasource.json"
+    curl --silent --fail --show-error --request POST http://${GRAFANA_AUTH}${HOST}:${PORT}/api/datasources --header "Content-Type: application/json" --data-binary "@prometheus-datasource.json"
 }
 
 add_dashboard() {
@@ -50,7 +55,7 @@ add_dashboard() {
     (   echo '{"dashboard":';
         cat "$file";
         echo ',"overwrite":true,"inputs":[{"name":"'${SRC_NAME}'","type":"datasource","pluginId":"prometheus","value":"prometheus"}]}'
-    ) | jq -c '.' | curl --silent --fail --show-error --request POST http://${GRAFANA_USER}:${GRAFANA_PASS}@${HOST}:${PORT}/api/dashboards/import --header "Content-Type: application/json" --data-binary "@-"
+    ) | jq -c '.' | curl --silent --fail --show-error --request POST http://${GRAFANA_AUTH}${HOST}:${PORT}/api/dashboards/import --header "Content-Type: application/json" --data-binary "@-"
 
 }
 
