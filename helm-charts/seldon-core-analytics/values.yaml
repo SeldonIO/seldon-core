@@ -3,6 +3,7 @@ alertmanager:
     enabled: false
 grafana_prom_service_type: NodePort
 grafana_prom_admin_password: admin
+grafana_anonymous_auth: false
 persistence:
   enabled: false
 rbac:

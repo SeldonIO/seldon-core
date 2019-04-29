@@ -20,6 +20,24 @@
                         "containers": [
                             {
                                 "env": [
+                                    {{ if .Values.grafana_anonymous_auth }}
+                                    {
+                                        "name": "GF_AUTH_ANONYMOUS_ENABLED",
+                                        "value": "true"
+                                    },
+                                    {
+                                        "name": "GF_AUTH_BASIC_ENABLED",
+                                        "value": "false"
+                                    },
+                                    {
+                                        "name": "GF_AUTH_PROXY_ENABLED",
+                                        "value": "false"
+                                    },
+                                    {
+                                        "name": "GF_USERS_ALLOW_SIGN_UP",
+                                        "value": "false"
+                                    },
+                                    {{ else }}
                                     {
                                         "name": "GF_SECURITY_ADMIN_PASSWORD",
                                         "valueFrom": {
@@ -28,7 +46,8 @@
                                                 "name": "grafana-prom-secret"
                                             }
                                         }
-                                    }
+                                    },
+                                    {{ end}}
                                 ],
                                 "image": "grafana/grafana:5.3.4",
                                 "name": "grafana",
