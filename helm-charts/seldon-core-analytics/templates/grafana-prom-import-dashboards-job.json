@@ -19,7 +19,6 @@
                         ],
                         "env": [
 
-                            {{ if not (.Values.grafana_anonymous_auth) }}
                             {
                                 "name": "GF_SECURITY_ADMIN_PASSWORD",
                                 "valueFrom": {
@@ -29,7 +28,6 @@
                                     }
                                 }
                             },
-                            {{ end}}
 
                         ],
                         "image": "giantswarm/tiny-tools:0.2.0",

@@ -25,19 +25,7 @@
                                         "name": "GF_AUTH_ANONYMOUS_ENABLED",
                                         "value": "true"
                                     },
-                                    {
-                                        "name": "GF_AUTH_BASIC_ENABLED",
-                                        "value": "false"
-                                    },
-                                    {
-                                        "name": "GF_AUTH_PROXY_ENABLED",
-                                        "value": "false"
-                                    },
-                                    {
-                                        "name": "GF_USERS_ALLOW_SIGN_UP",
-                                        "value": "false"
-                                    },
-                                    {{ else }}
+                                    {{ end }}
                                     {
                                         "name": "GF_SECURITY_ADMIN_PASSWORD",
                                         "valueFrom": {
@@ -47,7 +35,6 @@
                                             }
                                         }
                                     },
-                                    {{ end}}
                                 ],
                                 "image": "grafana/grafana:5.3.4",
                                 "name": "grafana",
