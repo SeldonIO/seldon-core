@@ -18,6 +18,7 @@
                             "import-dashboards-job.sh"
                         ],
                         "env": [
+
                             {
                                 "name": "GF_SECURITY_ADMIN_PASSWORD",
                                 "valueFrom": {
@@ -26,7 +27,8 @@
                                         "name": "grafana-prom-secret"
                                     }
                                 }
-                            }
+                            },
+
                         ],
                         "image": "giantswarm/tiny-tools:0.2.0",
                         "name": "tools",
