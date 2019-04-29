@@ -41,3 +41,14 @@ update_proto:
 
 update_swagger:
 	cp -v ../openapi/engine.oas3.json src/main/resources/static/seldon.json
+
+code_coverage: update_proto
+	mvn clean verify
+	cd target/site && aws s3 cp jacoco s3://seldon-core-docs/master/engine/jacoco --recursive --acl public-read
+
+
+dependencies: update_proto
+	mvn clean project-info-reports:dependencies
+	cd target/site && aws s3 cp dependencies.html s3://seldon-core-docs/master/engine/dependencies/dependencies.html --acl public-read
+	cd target/site && aws s3 cp css s3://seldon-core-docs/master/engine/dependencies/css --recursive --acl public-read
+	cd target/site && aws s3 cp images s3://seldon-core-docs/master/engine/dependencies/images --recursive --acl public-read
