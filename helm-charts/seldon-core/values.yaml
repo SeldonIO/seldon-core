@@ -28,12 +28,12 @@ apife:
   annotations: null
   enabled: true
   image:
-    name: seldonio/apife:0.2.7
+    name: seldonio/apife:0.2.8-SNAPSHOT
     pull_policy: IfNotPresent
   service_type: NodePort
 cluster_manager:
   image:
-    name: seldonio/cluster-manager:0.2.7
+    name: seldonio/cluster-manager:0.2.8-SNAPSHOT
     pull_policy: IfNotPresent
   java_opts: ''
   spring_opts: ''
@@ -41,7 +41,7 @@ engine:
   grpc:
     port: 5001
   image:
-    name: seldonio/engine:0.2.7
+    name: seldonio/engine:0.2.8-SNAPSHOT
     pull_policy: IfNotPresent
   port: 8000
   prometheus:
