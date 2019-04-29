@@ -20,12 +20,6 @@
                         "containers": [
                             {
                                 "env": [
-                                    {{ if .Values.grafana_anonymous_auth }}
-                                    {
-                                        "name": "GF_AUTH_ANONYMOUS_ENABLED",
-                                        "value": "true"
-                                    },
-                                    {{ end }}
                                     {
                                         "name": "GF_SECURITY_ADMIN_PASSWORD",
                                         "valueFrom": {
@@ -34,7 +28,7 @@
                                                 "name": "grafana-prom-secret"
                                             }
                                         }
-                                    },
+                                    }
                                 ],
                                 "image": "grafana/grafana:5.3.4",
                                 "name": "grafana",
