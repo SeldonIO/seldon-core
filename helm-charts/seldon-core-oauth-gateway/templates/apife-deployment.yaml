@@ -32,7 +32,7 @@ spec:
         - name: SELDON_ENGINE_KAFKA_SERVER
           value: kafka:9092
         - name: SELDON_CLUSTER_MANAGER_REDIS_HOST
-          value: {{ .Release.Name }}-redis
+          value: {{ .Release.Name }}-redis-master
         - name: ENGINE_SERVER_GRPC_PORT
           value: '{{ .Values.engine.grpc.port }}'
         - name: ENGINE_SERVER_PORT
