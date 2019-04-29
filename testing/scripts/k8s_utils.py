@@ -37,8 +37,10 @@ def wait_for_shutdown(deploymentName):
 
 def setup_finalizer_helm(request):
     def fin():
+        pass
         run("helm delete seldon-core --purge", shell=True)
         run("helm delete ambassador --purge", shell=True)
+        run("helm delete seldon-gateway --purge", shell=True)
         run("kubectl delete namespace seldon", shell=True)
         run("kubectl delete namespace test1", shell=True)
 
@@ -99,6 +101,7 @@ def create_docker_repo(request):
     run('kubectl apply -f ../resources/docker-private-registry-proxy.json -n default', shell=True)
 
     def fin():
+        pass
         run('kubectl delete -f ../resources/docker-private-registry.json --ignore-not-found=true -n default',
             shell=True)
         run('kubectl delete -f ../resources/docker-private-registry-proxy.json --ignore-not-found=true -n default',
