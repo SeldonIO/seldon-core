@@ -1,5 +1,80 @@
 # Change Log
 
+## [v0.2.7](https://github.com/SeldonIO/seldon-core/tree/v0.2.7) (2019-04-29)
+[Full Changelog](https://github.com/SeldonIO/seldon-core/compare/v0.2.6...v0.2.7)
+
+**Implemented enhancements:**
+
+- Type check predictive unit parameters in the Python wrapper [\#440](https://github.com/SeldonIO/seldon-core/issues/440)
+
+**Fixed bugs:**
+
+- Models pods duplications after corrupted deployment [\#470](https://github.com/SeldonIO/seldon-core/issues/470)
+- Using a configMapRef inside of a seldon deployment manifest causes a NullPointerException in the SeldonDeploymentWatcher [\#450](https://github.com/SeldonIO/seldon-core/issues/450)
+- cannot get working external api but internal api is ok [\#448](https://github.com/SeldonIO/seldon-core/issues/448)
+- Status can become Available even with Exception in Operator [\#429](https://github.com/SeldonIO/seldon-core/issues/429)
+- Fix status update for failed deployments [\#474](https://github.com/SeldonIO/seldon-core/pull/474) ([cliveseldon](https://github.com/cliveseldon))
+
+**Closed issues:**
+
+- Install seldon in a single namespace with restricted tiller [\#514](https://github.com/SeldonIO/seldon-core/issues/514)
+- Document about microservice's input data [\#512](https://github.com/SeldonIO/seldon-core/issues/512)
+- where is io.seldon.protos.DeploymentProtos package located? [\#508](https://github.com/SeldonIO/seldon-core/issues/508)
+- seldon 0.2.3 - nfs volume in seldon graph failing in validation [\#504](https://github.com/SeldonIO/seldon-core/issues/504)
+- SeldonDeployment keeps hanging [\#499](https://github.com/SeldonIO/seldon-core/issues/499)
+- default ambassador chart to single namespace [\#495](https://github.com/SeldonIO/seldon-core/issues/495)
+- use v1 ambassador api [\#491](https://github.com/SeldonIO/seldon-core/issues/491)
+- Configure the way Prometheus exposed [\#484](https://github.com/SeldonIO/seldon-core/issues/484)
+- documentation is in doc not docs [\#481](https://github.com/SeldonIO/seldon-core/issues/481)
+- do a snapshot build and document if not documented [\#479](https://github.com/SeldonIO/seldon-core/issues/479)
+- How can we specify nested python class in .s2i/environment? [\#465](https://github.com/SeldonIO/seldon-core/issues/465)
+- Class names in latest python library is not backwards compatible [\#462](https://github.com/SeldonIO/seldon-core/issues/462)
+- Sending an object dtype array as the request JSON for a Model API [\#461](https://github.com/SeldonIO/seldon-core/issues/461)
+- NullPointer exception in API gateway when principal can't be determined [\#454](https://github.com/SeldonIO/seldon-core/issues/454)
+- Python Wrappers Version 2 [\#406](https://github.com/SeldonIO/seldon-core/issues/406)
+- Write a Python wrapper for a GENERIC component [\#378](https://github.com/SeldonIO/seldon-core/issues/378)
+- Create reference Python client [\#349](https://github.com/SeldonIO/seldon-core/issues/349)
+- Python-wrapper: Use debug flag to provide useful information [\#309](https://github.com/SeldonIO/seldon-core/issues/309)
+- Support autoscaler in SeldonDeployment [\#277](https://github.com/SeldonIO/seldon-core/issues/277)
+- Update Ambassdor Helm or remove and use Ambassador's helm chart [\#258](https://github.com/SeldonIO/seldon-core/issues/258)
+- Prow Integration [\#154](https://github.com/SeldonIO/seldon-core/issues/154)
+- CI/CD demo using GitOps framework [\#11](https://github.com/SeldonIO/seldon-core/issues/11)
+
+**Merged pull requests:**
+
+- permission and timeout changes after trying on an openshift4 cluster [\#524](https://github.com/SeldonIO/seldon-core/pull/524) ([ryandawsonuk](https://github.com/ryandawsonuk))
+- use stable redis helm chart [\#521](https://github.com/SeldonIO/seldon-core/pull/521) ([ryandawsonuk](https://github.com/ryandawsonuk))
+- seldpon\_grpc\_endpoint -\> seldon\_grpc\_endpoint [\#520](https://github.com/SeldonIO/seldon-core/pull/520) ([mustyoshi](https://github.com/mustyoshi))
+- Service Orchestrator Name Fix [\#516](https://github.com/SeldonIO/seldon-core/pull/516) ([cliveseldon](https://github.com/cliveseldon))
+- Remove v1alpha3 and revert to v1alpha2 [\#513](https://github.com/SeldonIO/seldon-core/pull/513) ([cliveseldon](https://github.com/cliveseldon))
+- downgrade ambassador [\#510](https://github.com/SeldonIO/seldon-core/pull/510) ([ryandawsonuk](https://github.com/ryandawsonuk))
+- default ambassador to singleNamespace [\#509](https://github.com/SeldonIO/seldon-core/pull/509) ([ryandawsonuk](https://github.com/ryandawsonuk))
+- Allow submodules to be imported in python module [\#503](https://github.com/SeldonIO/seldon-core/pull/503) ([cliveseldon](https://github.com/cliveseldon))
+- Allow class\_names as method or attribute \(deprecated\) in Python module [\#502](https://github.com/SeldonIO/seldon-core/pull/502) ([cliveseldon](https://github.com/cliveseldon))
+- downgrade ambassador due to grpc unreliability [\#501](https://github.com/SeldonIO/seldon-core/pull/501) ([ryandawsonuk](https://github.com/ryandawsonuk))
+- Fix HPA Nullpointer [\#500](https://github.com/SeldonIO/seldon-core/pull/500) ([cliveseldon](https://github.com/cliveseldon))
+- still intermittent problems, timeout needs to be longer [\#498](https://github.com/SeldonIO/seldon-core/pull/498) ([ryandawsonuk](https://github.com/ryandawsonuk))
+- Add missing additionProperties to openAPI specs for CRDS [\#496](https://github.com/SeldonIO/seldon-core/pull/496) ([cliveseldon](https://github.com/cliveseldon))
+- Spelling [\#493](https://github.com/SeldonIO/seldon-core/pull/493) ([mustyoshi](https://github.com/mustyoshi))
+- ambassador v1 api [\#492](https://github.com/SeldonIO/seldon-core/pull/492) ([ryandawsonuk](https://github.com/ryandawsonuk))
+- Fix image link in readme [\#490](https://github.com/SeldonIO/seldon-core/pull/490) ([cliveseldon](https://github.com/cliveseldon))
+- Updates for various Python and Operator fixes [\#488](https://github.com/SeldonIO/seldon-core/pull/488) ([cliveseldon](https://github.com/cliveseldon))
+- 484 metrics port [\#485](https://github.com/SeldonIO/seldon-core/pull/485) ([ryandawsonuk](https://github.com/ryandawsonuk))
+- ignore pickle files [\#483](https://github.com/SeldonIO/seldon-core/pull/483) ([ryandawsonuk](https://github.com/ryandawsonuk))
+- remove old docs [\#482](https://github.com/SeldonIO/seldon-core/pull/482) ([ryandawsonuk](https://github.com/ryandawsonuk))
+- make ambassador a dependency [\#480](https://github.com/SeldonIO/seldon-core/pull/480) ([ryandawsonuk](https://github.com/ryandawsonuk))
+- gitignore for intellij [\#471](https://github.com/SeldonIO/seldon-core/pull/471) ([ryandawsonuk](https://github.com/ryandawsonuk))
+- python wrapper image fix update [\#469](https://github.com/SeldonIO/seldon-core/pull/469) ([gsunner](https://github.com/gsunner))
+- python wrapper image references updated from 0.5 to 0.5.1 [\#468](https://github.com/SeldonIO/seldon-core/pull/468) ([gsunner](https://github.com/gsunner))
+- Static Documentation Site [\#466](https://github.com/SeldonIO/seldon-core/pull/466) ([cliveseldon](https://github.com/cliveseldon))
+- Remove tornando dependency from Python setup.py [\#464](https://github.com/SeldonIO/seldon-core/pull/464) ([cliveseldon](https://github.com/cliveseldon))
+- Add types for predict, transform\_input, transform\_output [\#463](https://github.com/SeldonIO/seldon-core/pull/463) ([cliveseldon](https://github.com/cliveseldon))
+- Script to create Seldon API testing files from any Pandas dataframe [\#460](https://github.com/SeldonIO/seldon-core/pull/460) ([Love-R](https://github.com/Love-R))
+- WIP: Python wrappers rewrite [\#457](https://github.com/SeldonIO/seldon-core/pull/457) ([cliveseldon](https://github.com/cliveseldon))
+- Python builder [\#455](https://github.com/SeldonIO/seldon-core/pull/455) ([gsunner](https://github.com/gsunner))
+- Update redis [\#446](https://github.com/SeldonIO/seldon-core/pull/446) ([naseemkullah](https://github.com/naseemkullah))
+- WIP: Autoscaling [\#437](https://github.com/SeldonIO/seldon-core/pull/437) ([cliveseldon](https://github.com/cliveseldon))
+
 ## [v0.2.6](https://github.com/SeldonIO/seldon-core/tree/v0.2.6) (2019-02-22)
 [Full Changelog](https://github.com/SeldonIO/seldon-core/compare/v0.2.5...v0.2.6)
 
