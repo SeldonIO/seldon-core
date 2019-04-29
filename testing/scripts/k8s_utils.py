@@ -3,6 +3,8 @@ import signal
 import subprocess
 import os
 import time
+import random
+from retrying import retry
 API_AMBASSADOR="localhost:8003"
 API_GATEWAY_REST="localhost:8002"
 API_GATEWAY_GRPC="localhost:8004"
@@ -68,7 +70,7 @@ def create_seldon_clusterwide_helm(request,version):
     setup_k8s()
     setup_helm()    
     run("helm install ../../helm-charts/seldon-core-crd --name seldon-core-crd --set usage_metrics.enabled=true", shell=True)
-    run("helm install ../../helm-charts/seldon-core --name seldon-core --namespace seldon  --set single_namespace=false --set ambassador.enabled=true --set apife.image.name=127.0.0.1:5000/seldonio/apife:"+version+" --set cluster_manager.image.name=127.0.0.1:5000/seldonio/cluster-manager:"+version+" --set engine.image.name=127.0.0.1:5000/seldonio/engine:"+version, shell=True)        
+    run("helm install ../../helm-charts/seldon-core --name seldon-core --namespace seldon  --set single_namespace=false --set ambassador.rbac.namespaced=false  --set ambassador.scope.singleNamespace=false --set ambassador.enabled=true --set apife.image.name=127.0.0.1:5000/seldonio/apife:"+version+" --set cluster_manager.image.name=127.0.0.1:5000/seldonio/cluster-manager:"+version+" --set engine.image.name=127.0.0.1:5000/seldonio/engine:"+version, shell=True)
     wait_seldon_ready()
     setup_finalizer_helm(request)
 
@@ -92,11 +94,11 @@ def create_seldon_clusterwide_ksonnet(request):
     wait_seldon_ready()
     setup_finalizer_ksonnet(request)
 
-    
+@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=5)
 def port_forward(request):
     print("Setup: Port forward")
     p1 = Popen("kubectl port-forward $(kubectl get pods -n seldon -l app=seldon-apiserver-container-app -o jsonpath='{.items[0].metadata.name}') -n seldon 8002:8080",stdout=subprocess.PIPE,shell=True, preexec_fn=os.setsid) 
-    p2 = Popen("kubectl port-forward $(kubectl get pods -n seldon -l service=ambassador -o jsonpath='{.items[0].metadata.name}') -n seldon 8003:8080",stdout=subprocess.PIPE,shell=True, preexec_fn=os.setsid) 
+    p2 = Popen("kubectl port-forward $(kubectl get pods -n seldon -l app.kubernetes.io/name=ambassador -o jsonpath='{.items[0].metadata.name}') -n seldon 8003:8080",stdout=subprocess.PIPE,shell=True, preexec_fn=os.setsid)
     p3 = Popen("kubectl port-forward $(kubectl get pods -n seldon -l app=seldon-apiserver-container-app -o jsonpath='{.items[0].metadata.name}') -n seldon 8004:5000",stdout=subprocess.PIPE,shell=True, preexec_fn=os.setsid) 
     #, stdout=subprocess.PIPE
     def fin():        
@@ -118,7 +120,7 @@ def create_docker_repo(request):
         
     request.addfinalizer(fin)        
 
-
+@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=5)
 def port_forward_docker_repo(request):
     print("port-forward docker")
     p1 = Popen("POD_NAME=$(kubectl get pods -l app=docker-private-registry -n default |sed -e '1d'|awk '{print $1}') && kubectl port-forward ${POD_NAME} 5000:5000 -n default",stdout=subprocess.PIPE,shell=True, preexec_fn=os.setsid)

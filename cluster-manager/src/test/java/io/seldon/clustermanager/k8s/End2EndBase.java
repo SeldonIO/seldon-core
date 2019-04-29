@@ -7,7 +7,9 @@ import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.Future;
 
+import org.apache.commons.lang3.concurrent.ConcurrentUtils;
 import org.mockito.Mockito;
 
 import com.google.gson.Gson;
@@ -37,6 +39,8 @@ import io.seldon.clustermanager.AppTest;
 import io.seldon.clustermanager.ClusterManagerProperites;
 import io.seldon.clustermanager.k8s.client.K8sApiProvider;
 import io.seldon.clustermanager.k8s.client.K8sClientProvider;
+import io.seldon.clustermanager.k8s.tasks.K8sTaskScheduler;
+import io.seldon.clustermanager.k8s.tasks.SeldonDeploymentTaskKey;
 
 public class End2EndBase extends AppTest {
 
@@ -52,6 +56,15 @@ public class End2EndBase extends AppTest {
 	SeldonDeploymentOperatorImpl operator;
 	SeldonDeploymentControllerImpl controller;
 	
+	public static class K8sSynchronousTaskScheduler implements K8sTaskScheduler{
+
+		@Override
+		public Future submit(SeldonDeploymentTaskKey key,Runnable task) {
+			task.run();
+			return ConcurrentUtils.constantFuture(null);
+		}
+		
+	}
 	
 	@SuppressWarnings("unchecked")
 	public void createMocks(String resourceFilename) throws Exception
@@ -121,10 +134,12 @@ public class End2EndBase extends AppTest {
 		props.setEngineContainerImageAndVersion("engine:0.1");
 		props.setEngineContainerImagePullPolicy("IfNotPresent");
 		props.setEngineContainerServiceAccountName("default");
+		props.setEngineContainerPort(8000);
+		props.setPuContainerPortBase(9000);
+		props.setEngineGrpcContainerPort(5001);
 		crdHandler = new KubeCRDHandlerImpl(mockK8sApiProvider,mockK8sClientProvider,props);
-		mlCache = new SeldonDeploymentCacheImpl(props, crdHandler);
+		mlCache = new SeldonDeploymentCacheImpl();
 		operator = new SeldonDeploymentOperatorImpl(props);
-		controller = new SeldonDeploymentControllerImpl(operator, mockK8sClientProvider, crdHandler, mlCache);
-		
+		controller = new SeldonDeploymentControllerImpl(operator, mockK8sClientProvider, crdHandler, mlCache, new SeldonDeletionHandler(crdHandler), new K8sSynchronousTaskScheduler());
 	}
 }

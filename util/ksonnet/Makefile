@@ -14,7 +14,7 @@ install_kubectl:
 
 template_0.2_single_namespace.yaml template_0.2_cluster_wide.yaml:
 	helm template --set ambassador.enabled=true --set single_namespace=true ../../helm-charts/seldon-core > template_0.2_single_namespace.yaml
-	helm template --set ambassador.enabled=true --set single_namespace=false ../../helm-charts/seldon-core > template_0.2_cluster_wide.yaml
+	helm template --set ambassador.enabled=true --set single_namespace=false --set ambassador.rbac.namespaced=false  --set ambassador.scope.singleNamespace=false ../../helm-charts/seldon-core > template_0.2_cluster_wide.yaml
 
 template_0.2_single_namespace.json template_0.2_cluster_wide.json: template_0.2_single_namespace.yaml template_0.2_cluster_wide.yaml
 	python y2j.py < template_0.2_single_namespace.yaml > template_0.2_single_namespace.json

@@ -36,12 +36,19 @@ import io.kubernetes.client.apis.ExtensionsV1beta1Api;
 import io.kubernetes.client.models.ExtensionsV1beta1Deployment;
 import io.kubernetes.client.models.ExtensionsV1beta1DeploymentStatus;
 import io.kubernetes.client.models.V1OwnerReference;
-import io.kubernetes.client.util.Config;
 import io.kubernetes.client.util.Watch;
 import io.seldon.clustermanager.ClusterManagerProperites;
 import io.seldon.clustermanager.k8s.client.K8sApiProvider;
 import io.seldon.clustermanager.k8s.client.K8sClientProvider;
+import io.seldon.clustermanager.k8s.tasks.K8sTaskScheduler;
+import io.seldon.clustermanager.k8s.tasks.SeldonDeploymentTaskKey;
+import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
+/**
+ * Watch deployments created by Seldon Deployments to update the status of the owned Seldon Deployment
+ * @author clive
+ *
+ */
 @Component
 public class DeploymentWatcher {
 
@@ -50,22 +57,92 @@ public class DeploymentWatcher {
 	private int resourceVersion = 0;
 	private int resourceVersionProcessed = 0;
 	
+	private final K8sTaskScheduler taskScheduler;
 	private final SeldonDeploymentStatusUpdate statusUpdater;
 	private final K8sClientProvider k8sClientProvider;
 	private final K8sApiProvider k8sApiProvider;
 	private final String namespace;
 	private final boolean clusterWide;
 	
+	
+	/**
+	 * Runnable to call the status updater
+	 * @author clive
+	 *
+	 */
+	public static class StatusUpdateTask implements Runnable {
+		
+		private final SeldonDeploymentStatusUpdate statusUpdater;	
+		private final String sdepName;
+		private final String version;
+		private final String namespace;
+		private final String depName;
+		private final Integer replicas;
+		private final Integer replicasReady;
+		public StatusUpdateTask(SeldonDeploymentStatusUpdate statusUpdater,String sdepName, String version, String namespace,String depName, Integer replicas,Integer replicasReady) {
+				this.statusUpdater = statusUpdater;
+				this.sdepName = sdepName;
+				this.version = version;
+				this.namespace = namespace;
+				this.depName = depName;
+				this.replicas = replicas;
+				this.replicasReady = replicasReady;
+		}
+
+		@Override
+		public void run() {
+			statusUpdater.updateStatus(sdepName, version, depName, replicas, replicasReady, namespace);
+		}
+	}
+	
+	/**
+	 * Taks to remove Seldon Deployment status when deployment removed
+	 * @author clive
+	 *
+	 */
+	public static class StatusRemoveTask implements Runnable {
+		
+		private final SeldonDeploymentStatusUpdate statusUpdater;	
+		private final String sdepName;
+		private final String version;
+		private final String namespace;
+		private final String depName;
+		public StatusRemoveTask(SeldonDeploymentStatusUpdate statusUpdater,String sdepName, String version, String namespace,String depName) {
+				this.statusUpdater = statusUpdater;
+				this.sdepName = sdepName;
+				this.version = version;
+				this.namespace = namespace;
+				this.depName = depName;
+		}
+
+		@Override
+		public void run() {
+			statusUpdater.removeStatus(sdepName, version, depName, namespace);
+		}
+	}
+	
+	
 	@Autowired
-	public DeploymentWatcher(K8sApiProvider k8sApiProvider,K8sClientProvider k8sClientProvider,ClusterManagerProperites clusterManagerProperites,SeldonDeploymentStatusUpdate statusUpdater)
+	public DeploymentWatcher(K8sApiProvider k8sApiProvider,K8sClientProvider k8sClientProvider,
+			ClusterManagerProperites clusterManagerProperites,SeldonDeploymentStatusUpdate statusUpdater,
+			K8sTaskScheduler taskScheduler)
 	{
 		this.statusUpdater = statusUpdater;
 		this.namespace = StringUtils.isEmpty(clusterManagerProperites.getNamespace()) ? "default" : clusterManagerProperites.getNamespace();
 		this.clusterWide = !clusterManagerProperites.isSingleNamespace();
 		this.k8sClientProvider = k8sClientProvider;
 		this.k8sApiProvider = k8sApiProvider;
+		this.taskScheduler = taskScheduler;
 	}
 	
+	/**
+	 * Watch for owned deployments
+	 * @param resourceVersion  - last resource version returned
+	 * @param resourceVersionProcessed - last resource version processed
+	 * @return the new resource version
+	 * @throws ApiException
+	 * @throws IOException
+	 */
 	public int watchDeployments(int resourceVersion,int resourceVersionProcessed) throws ApiException, IOException 
 	{
 		String rs = null;
@@ -130,7 +207,9 @@ public class DeploymentWatcher {
                                     String namespace = StringUtils.isEmpty(item.object.getMetadata().getNamespace()) ? "default" : item.object.getMetadata().getNamespace();
                                     ExtensionsV1beta1DeploymentStatus status = item.object.getStatus();
                                     logger.info("{} {} {} replicas:{} replicasAvailable(ready):{} replicasUnavilable:{} replicasReady(available):{}",item.type,mlDepName,depName,status.getReplicas(),status.getReadyReplicas(),status.getUnavailableReplicas(),status.getAvailableReplicas());
-                                    statusUpdater.updateStatus(mlDepName, depName, item.object.getStatus().getReplicas(),item.object.getStatus().getReadyReplicas(),namespace);
+                                    final String version = SeldonDeploymentUtils.getVersionFromApiVersion(ownerRef.getApiVersion());
+                                    //statusUpdater.updateStatus(mlDep, depName, item.object.getStatus().getReplicas(),item.object.getStatus().getReadyReplicas());
+                                    taskScheduler.submit(new SeldonDeploymentTaskKey(mlDepName, version, namespace), new StatusUpdateTask(statusUpdater, mlDepName, version, namespace, depName, item.object.getStatus().getReplicas(),item.object.getStatus().getReadyReplicas()));
                                 }
                             }
                             break;
@@ -144,7 +223,9 @@ public class DeploymentWatcher {
                                     ExtensionsV1beta1DeploymentStatus status = item.object.getStatus();
                                     logger.info("{} {} {} replicas:{} replicasAvailable(ready):{} replicasUnavilable:{} replicasReady(available):{}",item.type,mlDepName,depName,status.getReplicas(),status.getReadyReplicas(),status.getUnavailableReplicas(),status.getAvailableReplicas());
                                     String namespace = StringUtils.isEmpty(item.object.getMetadata().getNamespace()) ? "default" : item.object.getMetadata().getNamespace();
-                                    statusUpdater.removeStatus(mlDepName,depName,namespace);
+                                    final String version = SeldonDeploymentUtils.getVersionFromApiVersion(ownerRef.getApiVersion());
+                                    //statusUpdater.removeStatus(mlDep,depName);
+                                    taskScheduler.submit(new SeldonDeploymentTaskKey(mlDepName, version, namespace), new StatusRemoveTask(statusUpdater, mlDepName, version, namespace, depName));
                                 }
                             }
                             break;

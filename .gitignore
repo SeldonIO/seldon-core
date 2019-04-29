@@ -10,6 +10,14 @@ cluster-manager/.m2/
 .settings/
 .project
 
+# Netbeans and IntelliJ files
+!.gitignore
+/nbproject
+/*.ipr
+/*.iws
+*.iml
+.idea
+
 /bin/
 *~
 *.pyc
@@ -108,6 +116,9 @@ examples/models/sk_mnist/MNIST_data/
 examples/models/sk_mnist/sk.pkl
 examples/models/sklearn_iris_fbs/IrisClassifier.sav
 
+# Pickle files
+*.pickle
+
 # api tester created proto folder
 util/api_tester/proto/
 
@@ -158,5 +169,33 @@ examples/models/sagemaker/scikit_learn_iris_deployment.json
 #go example
 examples/wrappers/go/.idea
 
+util/custom-resource-definitions/hpa-spec.json
 wrappers/s2i/python_openvino/s2i
 
+components/outlier-detection/seq2seq-lstm/data/ECG5000.txt
+components/outlier-detection/seq2seq-lstm/data/ECG5000_TEST.arff
+components/outlier-detection/seq2seq-lstm/data/ECG5000_TEST.txt
+components/outlier-detection/seq2seq-lstm/data/ECG5000_TRAIN.arff
+components/outlier-detection/seq2seq-lstm/data/ECG5000_TRAIN.txt
+
+examples/models/nodejs_mnist/model.json
+examples/models/nodejs_mnist/weights.bin
+examples/models/nodejs_tensorflow/model.json
+examples/models/nodejs_tensorflow/weights.bin
+examples/models/onnx_resnet50/resnet50.tar.gz.1
+examples/models/onnx_resnet50/resnet50.tar.gz.2
+examples/models/onnx_resnet50/resnet50/
+
+doc/_build
+doc/source/_static/cluster-manager
+
+python/build/
+python/dist/
+testing/scripts/proto
+
+python/.coverage
+
+testing/scripts/tensorflow
+testing/scripts/run.log
+testing/scripts/my-model/
+wrappers/s2i/python/_python/

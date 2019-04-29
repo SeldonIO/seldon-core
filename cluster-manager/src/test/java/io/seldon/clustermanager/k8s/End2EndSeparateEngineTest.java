@@ -4,6 +4,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.verify;
 
+import io.kubernetes.client.proto.V1;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -15,6 +16,8 @@ import io.kubernetes.client.ProgressRequestBody.ProgressRequestListener;
 import io.kubernetes.client.ProgressResponseBody.ProgressListener;
 import io.kubernetes.client.proto.V1beta1Extensions.Deployment;
 
+import java.util.List;
+
 public class End2EndSeparateEngineTest extends End2EndBase {
 
 	@SuppressWarnings("unchecked")
@@ -23,7 +26,7 @@ public class End2EndSeparateEngineTest extends End2EndBase {
 	{
 		createMocks("src/test/resources/model_simple_sepeng.json");
 		SeldonDeploymentWatcher sdWatcher = new SeldonDeploymentWatcher(mockK8sApiProvider,mockK8sClientProvider,mockCrdCreator, props, controller, mlCache, crdHandler);
-		sdWatcher.watchSeldonMLDeployments(0, 0);
+		sdWatcher.watchSeldonMLDeployments("v1alpha2",0, 0);
 
 		verify(mockCustomObjectsApi).listNamespacedCustomObjectCall(any(String.class), any(String.class), any(String.class), 
 				any(String.class), isNull(String.class), isNull(String.class), any(String.class), 
@@ -37,7 +40,7 @@ public class End2EndSeparateEngineTest extends End2EndBase {
 		verify(mockProtoClient,Mockito.times(2)).create(argument.capture(), any(String.class), any(String.class), Mockito.matches("Deployment"));
 		
 		Deployment d = argument.getAllValues().get(0);
-		Assert.assertEquals("test-deployment-fx-market-predictor-svc-orch", d.getMetadata().getName());
+		Assert.assertTrue(d.getMetadata().getName().startsWith("test-deployment-fx-market-predictor-svc-orch"));
 		Assert.assertEquals(1, d.getSpec().getReplicas());
 		Assert.assertEquals(1, d.getSpec().getTemplate().getSpec().getContainersCount());
 		d = argument.getAllValues().get(1);
@@ -53,7 +56,7 @@ public class End2EndSeparateEngineTest extends End2EndBase {
 	{
 		createMocks("src/test/resources/model_simple_sepeng.json");
 		SeldonDeploymentWatcher sdWatcher = new SeldonDeploymentWatcher(mockK8sApiProvider,mockK8sClientProvider,mockCrdCreator, props, controller, mlCache, crdHandler);
-		sdWatcher.watchSeldonMLDeployments(1, 1); // version is higher than that in resource so should be ignored
+		sdWatcher.watchSeldonMLDeployments("v1alpha2",1, 1); // version is higher than that in resource so should be ignored
 
 		verify(mockCustomObjectsApi).listNamespacedCustomObjectCall(any(String.class), any(String.class), any(String.class), 
 				any(String.class), isNull(String.class), isNull(String.class), any(String.class), 
@@ -69,7 +72,7 @@ public class End2EndSeparateEngineTest extends End2EndBase {
 	{
 		createMocks("src/test/resources/random_ab_test_sepeng.json");
 		SeldonDeploymentWatcher sdWatcher = new SeldonDeploymentWatcher(mockK8sApiProvider,mockK8sClientProvider,mockCrdCreator, props, controller, mlCache, crdHandler);
-		sdWatcher.watchSeldonMLDeployments(0, 0);
+		sdWatcher.watchSeldonMLDeployments("v1alpha2",0, 0);
 
 		verify(mockCustomObjectsApi).listNamespacedCustomObjectCall(any(String.class), any(String.class), any(String.class), 
 				any(String.class), isNull(String.class), isNull(String.class), any(String.class), 
@@ -83,13 +86,38 @@ public class End2EndSeparateEngineTest extends End2EndBase {
 		verify(mockProtoClient,Mockito.times(3)).create(argument.capture(), any(String.class), any(String.class), Mockito.matches("Deployment"));
 				
 		Deployment d = argument.getAllValues().get(0);
-		Assert.assertEquals("test-deployment-abtest-abtest-svc-orch", d.getMetadata().getName());
+		Assert.assertTrue(d.getMetadata().getName().startsWith("test-deployment-abtest-abtest-svc-orch"));
 		Assert.assertEquals(1, d.getSpec().getReplicas());
 		Assert.assertEquals(1, d.getSpec().getTemplate().getSpec().getContainersCount());
+
+
+		List<V1.Container> containerList = d.getSpec().getTemplate().getSpec().getContainersList();
+		for(V1.Container container:containerList){
+			if(container.getName().contains("engine")){
+				for(V1.EnvVar envVar:container.getEnvList()){
+					if(envVar.getName().equals("ENGINE_SERVER_PORT")){
+						Assert.assertEquals(getClusterManagerprops().getEngineContainerPort()+"",envVar.getValue());
+					}
+					if(envVar.getName().equals("ENGINE_SERVER_GRPC_PORT")){
+						Assert.assertEquals(getClusterManagerprops().getEngineGrpcContainerPort()+"",envVar.getValue());
+					}
+				}
+				for(V1.ContainerPort port:container.getPortsList()){
+					if(port.getName().contains("containerPort")) {
+						Assert.assertTrue(port.getContainerPort() == getClusterManagerprops().getEngineContainerPort());
+					}
+					if(port.getName().contains("grpc")) {
+						Assert.assertTrue(port.getContainerPort() == getClusterManagerprops().getEngineGrpcContainerPort());
+					}
+				}
+			}
+		}
+
 		d = argument.getAllValues().get(1);
 		Assert.assertTrue(d.getMetadata().getName().startsWith("test-deployment-abtest"));
 		Assert.assertEquals(1, d.getSpec().getReplicas());
 		Assert.assertEquals(1, d.getSpec().getTemplate().getSpec().getContainersCount());
+
 		System.out.println(d.getMetadata().getName());
 	}
 	
@@ -99,7 +127,7 @@ public class End2EndSeparateEngineTest extends End2EndBase {
 	{
 		createMocks("src/test/resources/random_ab_test_1pod_sepeng.json");
 		SeldonDeploymentWatcher sdWatcher = new SeldonDeploymentWatcher(mockK8sApiProvider,mockK8sClientProvider,mockCrdCreator, props, controller, mlCache, crdHandler);
-		sdWatcher.watchSeldonMLDeployments(0, 0);
+		sdWatcher.watchSeldonMLDeployments("v1alpha2", 0, 0);
 
 		verify(mockCustomObjectsApi).listNamespacedCustomObjectCall(any(String.class), any(String.class), any(String.class), 
 				any(String.class), isNull(String.class), isNull(String.class), any(String.class), 
@@ -114,7 +142,7 @@ public class End2EndSeparateEngineTest extends End2EndBase {
 		
 		Deployment d = argument.getAllValues().get(0);
 		System.out.println(d.getMetadata().getName());
-		Assert.assertEquals("test-deployment-abtest-fx-market-predictor-svc-orch", d.getMetadata().getName());
+		Assert.assertTrue(d.getMetadata().getName().startsWith("test-deployment-abtest-fx-market-predictor-svc-orch"));
 		Assert.assertEquals(1, d.getSpec().getReplicas());
 		Assert.assertEquals(1, d.getSpec().getTemplate().getSpec().getContainersCount());
 		d = argument.getAllValues().get(1);

@@ -1,11 +1,11 @@
 ambassador:
-  annotations:
-    getambassador.io/config: "---\napiVersion: ambassador/v0\nkind: Module\nname:\
-      \ ambassador\nconfig:\n  service_port: 8080\n"
   enabled: false
   image:
-    name: quay.io/datawire/ambassador:0.40.2
-  replicas: 1
+    tag: 0.40.2
+  rbac:
+    create: true
+    namespaced: true
+  replicaCount: 1
   resources:
     limits:
       cpu: 1
@@ -13,31 +13,44 @@ ambassador:
     requests:
       cpu: 200m
       memory: 128Mi
+  scope:
+    singleNamespace: true
   service:
-    targetPorts:
-      http: 8080
-      https: 8443
-    type: NodePort
+    annotations:
+      getambassador.io/config: "---\napiVersion: ambassador/v0\nkind: Module\nname:\
+        \ ambassador\nconfig:\n  service_port: 8080\n"
+    http:
+      targetPort: 8080
+    https:
+      targetPort: 8443
+    type: LoadBalancer
 apife:
   annotations: null
   enabled: true
   image:
-    name: seldonio/apife:0.2.6
+    name: seldonio/apife:0.2.7
     pull_policy: IfNotPresent
   service_type: NodePort
 cluster_manager:
   image:
-    name: seldonio/cluster-manager:0.2.6
+    name: seldonio/cluster-manager:0.2.7
     pull_policy: IfNotPresent
   java_opts: ''
   spring_opts: ''
 engine:
+  grpc:
+    port: 5001
   image:
-    name: seldonio/engine:0.2.6
+    name: seldonio/engine:0.2.7
     pull_policy: IfNotPresent
+  port: 8000
+  prometheus:
+    path: prometheus
   service_account:
     name: default
   user: 8888
+predictive_unit:
+  port: 9000
 rbac:
   enabled: true
   rolebinding:
@@ -46,7 +59,13 @@ rbac:
     create: true
     name: seldon
 redis:
+  cluster:
+    enabled: false
   enabled: true
-  image:
-    name: redis:4.0.1
+  master:
+    securityContext:
+      enabled: false
+  securityContext:
+    enabled: false
+  usePassword: false
 single_namespace: true

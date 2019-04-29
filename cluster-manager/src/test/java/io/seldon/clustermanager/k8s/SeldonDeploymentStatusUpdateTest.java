@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.never;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -43,24 +44,43 @@ public class SeldonDeploymentStatusUpdateTest extends AppTest {
 		String jsonStr = readFile("src/test/resources/model_simple.json",StandardCharsets.UTF_8);
         SeldonDeployment sDep = SeldonDeploymentUtils.jsonToSeldonDeployment(jsonStr);
 		
-		when(mockCrdHandler.getSeldonDeployment(any(String.class), any(String.class))).thenReturn(sDep);
+		when(mockCrdHandler.getSeldonDeployment(any(String.class), any(String.class), any(String.class))).thenReturn(sDep);
 		
 		SeldonDeploymentStatusUpdate supdate = new SeldonDeploymentStatusUpdateImpl(mockCrdHandler, mockSeldonDeploymentController, props);
 		
 		final String selDepName = "SeldonDep1";
+		final String version = "v1alpha1";
 		final String namespace = "seldon";
 		
-		supdate.updateStatus(selDepName, "test-deployment-fx-market-predictor-8e1d76f", 1, 1, namespace);
+		supdate.updateStatus(selDepName, version, "test-deployment-fx-market-predictor-8e1d76f", 1, 1, namespace);
 		
-		verify(mockCrdHandler,times(1)).getSeldonDeployment(eq(selDepName), eq(namespace));
-		ArgumentCaptor<SeldonDeployment> argument = ArgumentCaptor.forClass(SeldonDeployment.class);
-		verify(mockCrdHandler,times(1)).updateSeldonDeploymentStatus(argument.capture());
-		
-		SeldonDeployment sDepUpdated = argument.getAllValues().get(0);
-		Assert.assertEquals(1, sDepUpdated.getStatus().getPredictorStatusCount());
-		Assert.assertEquals(1, sDepUpdated.getStatus().getPredictorStatus(0).getReplicasAvailable());
-		Assert.assertEquals("Available", sDepUpdated.getStatus().getState());
+		verify(mockCrdHandler,times(1)).getSeldonDeployment(eq(selDepName), eq(version), eq(namespace));
+		verify(mockCrdHandler,times(1)).updateSeldonDeploymentStatus(any(SeldonDeployment.class));
+
 	}
+	
+	@Test
+	public void updateAvailableOnFailedTest() throws IOException
+	{
+		createMocks();
+		
+		String jsonStr = readFile("src/test/resources/model_failed.json",StandardCharsets.UTF_8);
+        SeldonDeployment sDep = SeldonDeploymentUtils.jsonToSeldonDeployment(jsonStr);
+		
+		when(mockCrdHandler.getSeldonDeployment(any(String.class), any(String.class), any(String.class))).thenReturn(sDep);
+		
+		SeldonDeploymentStatusUpdate supdate = new SeldonDeploymentStatusUpdateImpl(mockCrdHandler, mockSeldonDeploymentController, props);
+		
+		final String selDepName = "SeldonDep1";
+		final String version = "v1alpha2";
+		final String namespace = "seldon";
+		
+		supdate.updateStatus(selDepName, version, "test-deployment-fx-market-predictor-8e1d76f", 1, 1, namespace);
+		
+		verify(mockCrdHandler,times(1)).getSeldonDeployment(eq(selDepName), eq(version), eq(namespace));
+		verify(mockCrdHandler,never()).updateSeldonDeploymentStatus(any(SeldonDeployment.class));	
+	}
+	
 	
 	@Test
 	public void twoUpdatesTest() throws IOException
@@ -70,16 +90,17 @@ public class SeldonDeploymentStatusUpdateTest extends AppTest {
 		String jsonStr = readFile("src/test/resources/model_simple.json",StandardCharsets.UTF_8);
         SeldonDeployment sDep = SeldonDeploymentUtils.jsonToSeldonDeployment(jsonStr);
 		
-		when(mockCrdHandler.getSeldonDeployment(any(String.class), any(String.class))).thenReturn(sDep);
+		when(mockCrdHandler.getSeldonDeployment(any(String.class), any(String.class), any(String.class))).thenReturn(sDep);
 		
 		SeldonDeploymentStatusUpdate supdate = new SeldonDeploymentStatusUpdateImpl(mockCrdHandler, mockSeldonDeploymentController, props);
 		
 		final String selDepName = "SeldonDep1";
+		final String version = "v1alpha1";
 		final String namespace = "seldon";
 		
-		supdate.updateStatus(selDepName, "test-deployment-fx-market-predictor-8e1d76f", 1, 0, namespace);
+		supdate.updateStatus(selDepName, version, "test-deployment-fx-market-predictor-8e1d76f", 1, 0, namespace);
 		
-		verify(mockCrdHandler,times(1)).getSeldonDeployment(eq(selDepName), eq(namespace));
+		verify(mockCrdHandler,times(1)).getSeldonDeployment(eq(selDepName), eq(version), eq(namespace));
 		ArgumentCaptor<SeldonDeployment> argument = ArgumentCaptor.forClass(SeldonDeployment.class);
 		verify(mockCrdHandler,times(1)).updateSeldonDeploymentStatus(argument.capture());
 		
@@ -88,9 +109,9 @@ public class SeldonDeploymentStatusUpdateTest extends AppTest {
 		Assert.assertEquals(0, sDepUpdated.getStatus().getPredictorStatus(0).getReplicasAvailable());
 		Assert.assertEquals("Creating", sDepUpdated.getStatus().getState());
 		
-		supdate.updateStatus(selDepName, "test-deployment-fx-market-predictor-8e1d76f", 1, 1, namespace);
+		supdate.updateStatus(selDepName, version, "test-deployment-fx-market-predictor-8e1d76f", 1, 1, namespace);
 		
-		verify(mockCrdHandler,times(2)).getSeldonDeployment(eq(selDepName), eq(namespace));
+		verify(mockCrdHandler,times(2)).getSeldonDeployment(eq(selDepName), eq(version), eq(namespace));
 		argument = ArgumentCaptor.forClass(SeldonDeployment.class);
 		verify(mockCrdHandler,times(2)).updateSeldonDeploymentStatus(argument.capture());
 		sDepUpdated = argument.getAllValues().get(1);
@@ -107,14 +128,15 @@ public class SeldonDeploymentStatusUpdateTest extends AppTest {
 		String jsonStr = readFile("src/test/resources/model_simple.json",StandardCharsets.UTF_8);
         SeldonDeployment sDep = SeldonDeploymentUtils.jsonToSeldonDeployment(jsonStr);
 		
-		when(mockCrdHandler.getSeldonDeployment(any(String.class), any(String.class))).thenReturn(sDep);
+		when(mockCrdHandler.getSeldonDeployment(any(String.class), any(String.class), any(String.class))).thenReturn(sDep);
 		
 		SeldonDeploymentStatusUpdate supdate = new SeldonDeploymentStatusUpdateImpl(mockCrdHandler, mockSeldonDeploymentController, props);
 		
 		final String selDepName = "SeldonDep1";
+		final String version = "v1alpha1";
 		final String namespace = "seldon";
 		
-		supdate.removeStatus(selDepName, "test-deployment-fx-market-predictor-8e1d76f", namespace);
+		supdate.removeStatus(selDepName, version, "test-deployment-fx-market-predictor-8e1d76f", namespace);
 		
 		ArgumentCaptor<SeldonDeployment> argument = ArgumentCaptor.forClass(SeldonDeployment.class);
 		verify(mockCrdHandler,times(1)).updateSeldonDeploymentStatus(argument.capture());
@@ -122,6 +144,8 @@ public class SeldonDeploymentStatusUpdateTest extends AppTest {
 		Assert.assertEquals(0, sDepUpdated.getStatus().getPredictorStatusCount());
 		Assert.assertEquals("", sDepUpdated.getStatus().getState());
 	}
+	
+	
 	
 
 }

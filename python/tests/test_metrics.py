@@ -2,9 +2,10 @@ import pytest
 from google.protobuf import json_format
 import json
 
-from seldon_core.microservice import SeldonMicroserviceException
+from seldon_core.flask_utils import SeldonMicroserviceException
 from seldon_core.proto import prediction_pb2, prediction_pb2_grpc
 from seldon_core.metrics import *
+from seldon_core.user_model import client_custom_metrics
 
 
 def test_create_counter():
@@ -81,13 +82,13 @@ class Component(object):
 
 def test_component_ok():
     c = Component(True)
-    assert get_custom_metrics(c) == c.metrics()
+    assert client_custom_metrics(c) == c.metrics()
 
 
 def test_component_bad():
     with pytest.raises(SeldonMicroserviceException):
         c = Component(False)
-        get_custom_metrics(c)
+        client_custom_metrics(c)
 
 
 def test_proto_metrics():

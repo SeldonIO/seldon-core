@@ -30,6 +30,7 @@ def initial_rest_request():
                 r = rest_request_api_gateway("oauth-key","oauth-secret",None)
     return r
 
+@pytest.mark.usefixtures("seldon_java_images")
 @pytest.mark.usefixtures("single_namespace_seldon_helm")
 class TestRolling(object):
     
@@ -148,9 +149,9 @@ class TestRolling(object):
     def test_rolling_update6(self):
         run("kubectl delete sdep --all", shell=True)
         wait_for_shutdown("mymodel-mymodel-e2eb561")
-        wait_for_shutdown("mymodel-mymodel-svc-orch")    
+        wait_for_shutdown("mymodel-mymodel-svc-orch-8e2a24b")    
         run("kubectl apply -f ../resources/graph1svc.json", shell=True, check=True)
-        wait_for_rollout("mymodel-mymodel-svc-orch")
+        wait_for_rollout("mymodel-mymodel-svc-orch-8e2a24b")
         wait_for_rollout("mymodel-mymodel-e2eb561")
         r = initial_rest_request()
         assert r.status_code == 200
@@ -172,9 +173,9 @@ class TestRolling(object):
     def test_rolling_update7(self):
         run("kubectl delete sdep --all", shell=True)
         wait_for_shutdown("mymodel-mymodel-e2eb561")
-        wait_for_shutdown("mymodel-mymodel-svc-orch")    
+        wait_for_shutdown("mymodel-mymodel-svc-orch-8e2a24b")    
         run("kubectl apply -f ../resources/graph1svc.json", shell=True, check=True)
-        wait_for_rollout("mymodel-mymodel-svc-orch")
+        wait_for_rollout("mymodel-mymodel-svc-orch-8e2a24b")
         wait_for_rollout("mymodel-mymodel-e2eb561")
         r = initial_rest_request()
         assert r.status_code == 200
@@ -196,9 +197,9 @@ class TestRolling(object):
     def test_rolling_update8(self):
         run("kubectl delete sdep --all", shell=True)
         wait_for_shutdown("mymodel-mymodel-e2eb561")
-        wait_for_shutdown("mymodel-mymodel-svc-orch")    
+        wait_for_shutdown("mymodel-mymodel-svc-orch-8e2a24b")    
         run("kubectl apply -f ../resources/graph1svc.json", shell=True, check=True)
-        wait_for_rollout("mymodel-mymodel-svc-orch")
+        wait_for_rollout("mymodel-mymodel-svc-orch-8e2a24b")
         wait_for_rollout("mymodel-mymodel-e2eb561")
         r = initial_rest_request()
         assert r.status_code == 200
@@ -218,9 +219,9 @@ class TestRolling(object):
     def test_rolling_update9(self):
         run("kubectl delete sdep --all", shell=True)
         wait_for_shutdown("mymodel-mymodel-e2eb561")
-        wait_for_shutdown("mymodel-mymodel-svc-orch")    
+        wait_for_shutdown("mymodel-mymodel-svc-orch-8e2a24b")    
         run("kubectl apply -f ../resources/graph1svc.json", shell=True, check=True)
-        wait_for_rollout("mymodel-mymodel-svc-orch")
+        wait_for_rollout("mymodel-mymodel-svc-orch-8e2a24b")
         wait_for_rollout("mymodel-mymodel-e2eb561")
         r = initial_rest_request()
         assert r.status_code == 200
@@ -242,9 +243,9 @@ class TestRolling(object):
     def test_rolling_update10(self):
         run("kubectl delete sdep --all", shell=True)
         wait_for_shutdown("mymodel-mymodel-e2eb561")
-        wait_for_shutdown("mymodel-mymodel-svc-orch")    
+        wait_for_shutdown("mymodel-mymodel-svc-orch-8e2a24b")    
         run("kubectl apply -f ../resources/graph1svc.json", shell=True, check=True)
-        wait_for_rollout("mymodel-mymodel-svc-orch")
+        wait_for_rollout("mymodel-mymodel-svc-orch-8e2a24b")
         wait_for_rollout("mymodel-mymodel-e2eb561")
         r = initial_rest_request()
         assert r.status_code == 200

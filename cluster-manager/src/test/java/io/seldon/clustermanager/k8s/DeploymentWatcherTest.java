@@ -3,18 +3,19 @@ package io.seldon.clustermanager.k8s;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.Future;
 
+import org.apache.commons.lang3.concurrent.ConcurrentUtils;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.internal.LinkedTreeMap;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.Protocol;
@@ -33,9 +34,21 @@ import io.seldon.clustermanager.AppTest;
 import io.seldon.clustermanager.ClusterManagerProperites;
 import io.seldon.clustermanager.k8s.client.K8sApiProvider;
 import io.seldon.clustermanager.k8s.client.K8sClientProvider;
+import io.seldon.clustermanager.k8s.tasks.K8sTaskScheduler;
+import io.seldon.clustermanager.k8s.tasks.SeldonDeploymentTaskKey;
 
 public class DeploymentWatcherTest extends AppTest {
 
+	public static class K8sSynchronousTaskScheduler implements K8sTaskScheduler{
+
+		@Override
+		public Future submit(SeldonDeploymentTaskKey key,Runnable task) {
+			task.run();
+			return ConcurrentUtils.constantFuture(null);
+		}
+		
+	}
+	
 	SeldonDeploymentStatusUpdate mockStatusUpdater;
 	K8sApiProvider mockK8sApiProvider;
 	K8sClientProvider mockK8sClientProvider;
@@ -89,29 +102,29 @@ public class DeploymentWatcherTest extends AppTest {
 	public void testAddedDeployment() throws Exception
 	{
 		createMocks("src/test/resources/deployment_model_deployed.json","ADDED");
-		DeploymentWatcher watcher = new DeploymentWatcher(mockK8sApiProvider, mockK8sClientProvider, props, mockStatusUpdater);
+		DeploymentWatcher watcher = new DeploymentWatcher(mockK8sApiProvider, mockK8sClientProvider, props, mockStatusUpdater, new K8sSynchronousTaskScheduler());
 		watcher.watchDeployments(0, 0);
 		
-		verify(mockStatusUpdater).updateStatus(Mockito.matches("mymodel"), Mockito.matches("mymodel-mymodel-classifier-0"), Mockito.eq(1), Mockito.eq(1),Mockito.anyString());
+		verify(mockStatusUpdater).updateStatus(Mockito.matches("mymodel"), Mockito.matches("v1alpha2"),Mockito.matches("mymodel-mymodel-classifier-0"), Mockito.eq(1), Mockito.eq(1),Mockito.anyString());
 	}
 	
 	@Test
 	public void testDeletedDeployment() throws Exception
 	{
 		createMocks("src/test/resources/deployment_model_deployed.json","DELETED");
-		DeploymentWatcher watcher = new DeploymentWatcher(mockK8sApiProvider, mockK8sClientProvider, props, mockStatusUpdater);
+		DeploymentWatcher watcher = new DeploymentWatcher(mockK8sApiProvider, mockK8sClientProvider, props, mockStatusUpdater, new K8sSynchronousTaskScheduler());
 		watcher.watchDeployments(0, 0);
 		
-		verify(mockStatusUpdater).removeStatus(Mockito.matches("mymodel"), Mockito.matches("mymodel-mymodel-classifier-0"),Mockito.anyString());
+		verify(mockStatusUpdater).removeStatus(Mockito.matches("mymodel"), Mockito.matches("v1alpha2"), Mockito.matches("mymodel-mymodel-classifier-0"),Mockito.anyString());
 	}
 	
 	@Test
 	public void testSkippedWatch() throws Exception
 	{
 		createMocks("src/test/resources/deployment_model_deployed.json","DELETED");
-		DeploymentWatcher watcher = new DeploymentWatcher(mockK8sApiProvider, mockK8sClientProvider, props, mockStatusUpdater);
+		DeploymentWatcher watcher = new DeploymentWatcher(mockK8sApiProvider, mockK8sClientProvider, props, mockStatusUpdater, new K8sSynchronousTaskScheduler());
 		watcher.watchDeployments(1, 1);
 		
-		verify(mockStatusUpdater,Mockito.never()).removeStatus(Mockito.matches("mymodel"), Mockito.matches("mymodel-mymodel-classifier-0"),Mockito.anyString());
+		verify(mockStatusUpdater,Mockito.never()).removeStatus(Mockito.matches("mymodel"), Mockito.matches("v1alpha2"), Mockito.matches("mymodel-mymodel-classifier-0"),Mockito.anyString());
 	}
 }

@@ -10,7 +10,7 @@
 
 	<groupId>io.seldon.engine</groupId>
 	<artifactId>seldon-engine</artifactId>
-	<version>0.2.6</version>
+	<version>0.2.7</version>
 	<packaging>jar</packaging>
 
 	<name>engine</name>
@@ -143,7 +143,6 @@
 					<checkStaleness>true</checkStaleness>
 					<excludes>
 						<exclude>k8s.io/**/*.proto</exclude>
-						<exclude>**/v1.proto</exclude>
 					</excludes>
 				</configuration>
 				<executions>
@@ -296,7 +295,7 @@
 		<dependency>
     		<groupId>io.kubernetes</groupId>
     		<artifactId>client-java</artifactId>
-    		<version>1.0.0-beta1</version>
+    		<version>3.0.0</version>
     		<scope>compile</scope>
 		</dependency>
 		

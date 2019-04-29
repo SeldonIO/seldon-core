@@ -28,6 +28,7 @@ import io.seldon.clustermanager.ClusterManagerProperites;
 import io.seldon.protos.DeploymentProtos.PredictorSpec;
 import io.seldon.protos.DeploymentProtos.PredictorStatus;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
+import io.seldon.protos.DeploymentProtos.SeldonPodSpec;
 
 @Component
 public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusUpdate {
@@ -62,9 +63,13 @@ public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusU
 			return false;
 		for (PredictorStatus.Builder b : mlBuilder.getStatusBuilder().getPredictorStatusBuilderList())
         {
-			if (b.getReplicas() != b.getReplicasAvailable())
-				return false;
-			names.remove(b.getName());
+			if (names.contains(b.getName()))
+			{
+				if (b.getReplicas() != b.getReplicasAvailable())
+					return false;
+				else
+					names.remove(b.getName());
+			}
         }
 		if (names.isEmpty())
 			return true;
@@ -82,7 +87,7 @@ public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusU
 				names.add(seldonNameCreator.getServiceOrchestratorName(mlDep, p));
 			for(int ptsIdx=0;ptsIdx<p.getComponentSpecsCount();ptsIdx++)
 			{
-				V1.PodTemplateSpec spec = p.getComponentSpecs(ptsIdx);
+				SeldonPodSpec spec = p.getComponentSpecs(ptsIdx);
 				names.add(seldonNameCreator.getSeldonDeploymentName(mlDep,p,spec));
 			}
 		}
@@ -90,7 +95,7 @@ public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusU
 	}
 	
     @Override
-    public void updateStatus(String mlDepName, String depName, Integer replicas, Integer replicasAvailable,String namespace) {
+    public void updateStatus(String mlDepName, String version, String depName, Integer replicas, Integer replicasAvailable,String namespace) {
         if (replicas == null || replicas == 0)
         {
         	logger.warn("Remove status for {} {} {} {}",mlDepName,depName,replicas,replicasAvailable);
@@ -99,8 +104,8 @@ public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusU
         else
         {
             logger.info(String.format("UPDATE %s : %s %d %d",mlDepName,depName,replicas,replicasAvailable));
-            SeldonDeployment mlDep = crdHandler.getSeldonDeployment(mlDepName,namespace);
-            if (mlDep != null)
+            SeldonDeployment mlDep = crdHandler.getSeldonDeployment(mlDepName,version, namespace);
+            if (mlDep != null && !(mlDep.getStatus().hasState() && mlDep.getStatus().getState().equals(Constants.STATE_FAILED)))
             {
                 SeldonDeployment.Builder mlBuilder = SeldonDeployment.newBuilder(mlDep);
                 
@@ -138,9 +143,9 @@ public class SeldonDeploymentStatusUpdateImpl implements SeldonDeploymentStatusU
     }
 
     @Override
-    public void removeStatus(String mlDepName, String depName,String namespace) {
+    public void removeStatus(String mlDepName, String version, String depName,String namespace) {
         logger.info(String.format("DELETE %s : %s",mlDepName,depName));
-        SeldonDeployment mlDep = crdHandler.getSeldonDeployment(mlDepName,namespace);
+        SeldonDeployment mlDep = crdHandler.getSeldonDeployment(mlDepName,version, namespace);
         if (mlDep != null)
         {
             SeldonDeployment.Builder mlBuilder = SeldonDeployment.newBuilder(mlDep);

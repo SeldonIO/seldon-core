@@ -30,7 +30,7 @@ spec:
         - name: SPRING_OPTS
           value: {{ .Values.cluster_manager.spring_opts }}
         - name: SELDON_CLUSTER_MANAGER_REDIS_HOST
-          value: {{ .Release.Name }}-redis
+          value: {{ .Release.Name }}-redis-master
         - name: ENGINE_CONTAINER_IMAGE_AND_VERSION
           value: {{ .Values.engine.image.name }}
         - name: ENGINE_CONTAINER_IMAGE_PULL_POLICY
@@ -41,6 +41,14 @@ spec:
           value: '{{ .Values.single_namespace }}'
         - name: ENGINE_CONTAINER_USER
           value: '{{ .Values.engine.user }}'
+        - name: PREDICTIVE_UNIT_SERVICE_PORT
+          value: '{{ .Values.predictive_unit.port }}'
+        - name: ENGINE_SERVER_GRPC_PORT
+          value: '{{ .Values.engine.grpc.port }}'
+        - name: ENGINE_SERVER_PORT
+          value: '{{ .Values.engine.port }}'
+        - name: ENGINE_PROMETHEUS_PATH
+          value: {{ .Values.engine.prometheus.path }}
         - name: SELDON_CLUSTER_MANAGER_POD_NAMESPACE
           valueFrom:
             fieldRef:

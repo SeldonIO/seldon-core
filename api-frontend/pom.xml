@@ -10,7 +10,7 @@
 
 	<groupId>io.seldon.apife</groupId>
 	<artifactId>seldon-apife</artifactId>
-	<version>0.2.6</version>
+	<version>0.2.7</version>
 	<packaging>jar</packaging>
 
 	<name>api-frontend</name>
@@ -142,6 +142,9 @@
 					<pluginId>grpc-java</pluginId>
 					<pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
 					<clearOutputDirectory>false</clearOutputDirectory>
+					<excludes>
+						<exclude>k8s.io/**/*.proto</exclude>
+					</excludes>
 				</configuration>
 				<executions>
 					<execution>
@@ -257,11 +260,6 @@
 			<version>3.2.0rc2</version>
 		</dependency>
 		
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.8.2</version>
-		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.hamcrest/hamcrest-all -->
 		<dependency>
 			<groupId>org.hamcrest</groupId>
@@ -307,7 +305,7 @@
 		<dependency>
     		<groupId>io.kubernetes</groupId>
     		<artifactId>client-java</artifactId>
-    		<version>0.2</version>
+    		<version>3.0.0</version>
     		<scope>compile</scope>
 		</dependency>
 		

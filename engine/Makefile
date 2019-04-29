@@ -17,6 +17,7 @@ push_to_registry:
 clean:
 	@mvn clean
 	@rm -fv engine.json
+	@rm -fr src/main/proto/*
 
 cache_dependencies:
 	mvn -Dmaven.repo.local=./.m2 dependency:resolve
@@ -36,7 +37,6 @@ update_proto:
 	@cp -v ../proto/seldon_deployment.proto src/main/proto/
 	@cp -v ../proto/prediction.proto src/main/proto/
 	cp -vr ../proto/k8s/k8s.io src/main/proto
-	cp -v ../proto/k8s/v1.proto src/main/proto
 	cp -vr ../proto/tensorflow/tensorflow src/main/proto
 
 update_swagger:

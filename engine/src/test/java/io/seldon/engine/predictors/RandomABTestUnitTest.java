@@ -31,6 +31,7 @@ import io.kubernetes.client.proto.V1.PodTemplateSpec;
 import io.seldon.protos.DeploymentProtos.Parameter;
 import io.seldon.protos.DeploymentProtos.Parameter.ParameterType;
 import io.seldon.protos.DeploymentProtos.PredictorSpec;
+import io.seldon.protos.DeploymentProtos.SeldonPodSpec;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
 
 @RunWith(SpringRunner.class)
@@ -46,7 +47,7 @@ public class RandomABTestUnitTest {
 		
 		predictorSpecBuilder.setName("p1");
 		predictorSpecBuilder.setReplicas(1);
-		predictorSpecBuilder.addComponentSpecs(PodTemplateSpec.newBuilder());
+		predictorSpecBuilder.addComponentSpecs(SeldonPodSpec.newBuilder());
 
 		PredictiveUnit.Builder predictiveUnitBuilder = PredictiveUnit.newBuilder();
 		predictiveUnitBuilder.setName("1");

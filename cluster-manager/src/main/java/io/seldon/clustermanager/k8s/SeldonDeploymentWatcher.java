@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -51,9 +53,16 @@ import io.seldon.clustermanager.pb.JsonFormat.Printer;
 import io.seldon.protos.DeploymentProtos.DeploymentStatus;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
+/**
+ * Watch for Seldon Deployment updates. This is the core task that starts all processing in the Operator.
+ * @author clive
+ *
+ */
 @Component
 public class SeldonDeploymentWatcher  {
 	protected static Logger logger = LoggerFactory.getLogger(SeldonDeploymentWatcher.class.getName());
+	
+	public static final String[] VERSIONS = {"v1alpha2"};
 	
 	private final SeldonDeploymentController seldonDeploymentController;
 	private final SeldonDeploymentCache mlCache;
@@ -61,9 +70,22 @@ public class SeldonDeploymentWatcher  {
 	private final KubeCRDHandler crdHandler;
 	private final K8sClientProvider k8sClientProvider;
 	private final K8sApiProvider k8sApiProvider;
+	private final Map<String,ResourceVersion> resourceVersions;	
 	
-	private int resourceVersion = 0;
-	private int resourceVersionProcessed = 0;
+	public static class ResourceVersion {
+		public final String version;
+		public int resourceVersion = 0;
+		public int resourceVersionProcessed = 0;
+		public ResourceVersion(String version) {
+			this.version = version;
+		}
+		@Override
+		public String toString() {
+			return "ResourceVersion [version=" + version + ", resourceVersion=" + resourceVersion
+					+ ", resourceVersionProcessed=" + resourceVersionProcessed + "]";
+		}
+		
+	}
 	
 	@Autowired
 	public SeldonDeploymentWatcher(K8sApiProvider k8sApiProvider,K8sClientProvider k8sClientProvider,CRDCreator crdCreator,ClusterManagerProperites clusterManagerProperites,SeldonDeploymentController seldonDeploymentController,SeldonDeploymentCache mlCache,KubeCRDHandler crdHandler) throws IOException, ApiException
@@ -74,10 +96,13 @@ public class SeldonDeploymentWatcher  {
 		this.crdHandler = crdHandler;
 		this.k8sClientProvider = k8sClientProvider;
 		this.k8sApiProvider = k8sApiProvider;
+		this.resourceVersions = new ConcurrentHashMap<>();
+		for(String version: VERSIONS)
+			resourceVersions.put(version, new ResourceVersion(version));
 		crdCreator.createCRD();
 	}
 	
-	private void processWatch(SeldonDeployment mldep,String action) throws InvalidProtocolBufferException
+	private synchronized void processWatch(SeldonDeployment mldep,String action) throws InvalidProtocolBufferException
 	{
 		switch(action)
 		{
@@ -97,7 +122,7 @@ public class SeldonDeploymentWatcher  {
 		}
 	}
 	
-	private void failDeployment(JsonNode mlDep,Exception e,String namespace)
+	private synchronized void failDeployment(JsonNode mlDep,Exception e,String namespace)
 	{
 		try
 		{
@@ -114,8 +139,9 @@ public class SeldonDeploymentWatcher  {
 			((ObjectNode) mlDep).set("status", statusObj);
 			String json = mapper.writeValueAsString(mlDep);
 			String name = mlDep.get("metadata").get("name").asText();
+			String apiVersion = mlDep.get("apiVersion").asText();
 			//Update seldon deployment
-			crdHandler.updateRaw(json, name,namespace);
+			crdHandler.updateRaw(json, name, SeldonDeploymentUtils.getVersionFromApiVersion(apiVersion), namespace);
 		} catch (JsonParseException e1) {
 			logger.error("Failed to create status for failed parse",e);
 		} catch (InvalidProtocolBufferException e1) {
@@ -138,8 +164,9 @@ public class SeldonDeploymentWatcher  {
 			return StringUtils.isEmpty(this.clusterManagerProperites.getNamespace()) ? "default" : this.clusterManagerProperites.getNamespace();
 	}
 	
-	public int watchSeldonMLDeployments(int resourceVersion,int resourceVersionProcessed) throws ApiException, JsonProcessingException, IOException
+	public int watchSeldonMLDeployments(String version, int resourceVersion,int resourceVersionProcessed) throws ApiException, JsonProcessingException, IOException
 	{
+		logger.debug("Called watch for {}",version);
 		String rs = null;
 		if (resourceVersion > 0)
 			rs = ""+resourceVersion;
@@ -150,17 +177,17 @@ public class SeldonDeploymentWatcher  {
 		{
 			watch = Watch.createWatch(
 					client,
-					api.listClusterCustomObjectCall(KubeCRDHandlerImpl.GROUP, KubeCRDHandlerImpl.VERSION,  KubeCRDHandlerImpl.KIND_PLURAL, null, null, rs, true, null, null),
+					api.listClusterCustomObjectCall(KubeCRDHandlerImpl.GROUP, version,  KubeCRDHandlerImpl.KIND_PLURAL, null, null, rs, true, null, null),
 					new TypeToken<Watch.Response<Object>>(){}.getType());
 			
 		}
 		else
 		{
 			String namespace = StringUtils.isEmpty(this.clusterManagerProperites.getNamespace()) ? "default" : this.clusterManagerProperites.getNamespace();
-			logger.debug("Watching with rs "+rs+" in namespace "+namespace);
+			logger.debug("Watching with rs {} in namespace {} for {}",rs,namespace,version);
 			watch = Watch.createWatch(
 					client,
-					api.listNamespacedCustomObjectCall(KubeCRDHandlerImpl.GROUP, KubeCRDHandlerImpl.VERSION, namespace,  KubeCRDHandlerImpl.KIND_PLURAL, null, null, rs, true, null, null),
+					api.listNamespacedCustomObjectCall(KubeCRDHandlerImpl.GROUP, version, namespace,  KubeCRDHandlerImpl.KIND_PLURAL, null, null, rs, true, null, null),
 					new TypeToken<Watch.Response<Object>>(){}.getType());
 		}
 		
@@ -176,7 +203,7 @@ public class SeldonDeploymentWatcher  {
     	    JsonNode actualObj = mapper.readTree(parser);
     	    if (actualObj.has("kind") && actualObj.get("kind").asText().equals("Status"))
     	    {
-    	    	logger.warn("Possible old resource version found - resetting");
+    	    	logger.warn("Possible old resource version found - resetting {}",version);
     	    	return 0;
     	    }
     	    else
@@ -184,7 +211,7 @@ public class SeldonDeploymentWatcher  {
     	    	int resourceVersionNew = actualObj.get("metadata").get("resourceVersion").asInt();
     	    	if (resourceVersionNew <= resourceVersionProcessed)
     	    	{
-    	    		logger.warn("Looking at already processed request - skipping");
+    	    		logger.warn("Looking at already processed request - skipping {} {}",version,resourceVersionNew);
     	    	}
     	    	else
     	    	{
@@ -200,7 +227,7 @@ public class SeldonDeploymentWatcher  {
     	    			if ("ADDED".equals(item.type))
     	    			{
     	    				failDeployment(actualObj, e, getNamespace(actualObj));
-    	    				logger.warn("Failed to parse SeldonDeployment " + jsonInString, e);
+    	    				logger.warn("Failed to parse SeldonDeployment {}",jsonInString, e);
     	    			}
     	    		}
     	    	}
@@ -210,7 +237,10 @@ public class SeldonDeploymentWatcher  {
 		catch(RuntimeException e)
 		{
 			if (e.getCause() instanceof SocketTimeoutException)
+			{
+				logger.debug("Watch timed out ");
 				return maxResourceVersion;
+			}
 			else
 				throw e;
 		}
@@ -222,20 +252,36 @@ public class SeldonDeploymentWatcher  {
 	
 	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 	
-	@Scheduled(fixedDelay = 5000)
-    public void watch() throws JsonProcessingException, ApiException, IOException {
-        logger.debug("The time is now {}", dateFormat.format(new Date()));
-        this.resourceVersion = this.watchSeldonMLDeployments(this.resourceVersion,this.resourceVersionProcessed);
-        if (this.resourceVersion > this.resourceVersionProcessed)
-        {
-        	logger.debug("Updating processed resource version to "+resourceVersion);
-        	this.resourceVersionProcessed = this.resourceVersion;
-        }
-        else
-        {
-        	logger.debug("Not updating resourceVersion - current:"+this.resourceVersion+" Processed:"+this.resourceVersionProcessed);
-        }
+	public void runWatch(String version) throws JsonProcessingException, ApiException, IOException
+	{
+    	ResourceVersion r = this.resourceVersions.get(version);
+    	r.resourceVersion = this.watchSeldonMLDeployments(version, r.resourceVersion,r.resourceVersionProcessed);
+    	if (r.resourceVersion > r.resourceVersionProcessed)
+    	{
+    		logger.debug("Updating processed resource version to {}",r.toString());
+    		r.resourceVersionProcessed = r.resourceVersion;
+    	}
+    	else
+    	{
+    		logger.debug("Not updating resourceVersion: {}",r.toString());
+    	}
     }
+	
+	@Scheduled(fixedDelay = 5000)
+    public void watchv1alpha2() throws JsonProcessingException, ApiException, IOException {
+        logger.debug("The time is now {}", dateFormat.format(new Date()));
+        final String version = VERSIONS[0];
+        runWatch(version);
+    }
+
+	/*
+	@Scheduled(fixedDelay = 5000)
+    public void watchv1alpha3() throws JsonProcessingException, ApiException, IOException {
+        logger.debug("The time is now {}", dateFormat.format(new Date()));
+        final String version = VERSIONS[1];
+        runWatch(version);
+    }
+    */
 
 	
 

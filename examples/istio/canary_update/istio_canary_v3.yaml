@@ -5,11 +5,11 @@ metadata:
   namespace: seldon
 spec:
   hosts:
-  - mnist-deployment
+  - mnist-deployment-mnist-classifier
   http:
   - route:
     - destination:
-        host: mnist-deployment
+        host: mnist-deployment-mnist-classifier
         subset: v2
 ---
 apiVersion: networking.istio.io/v1alpha3
@@ -18,7 +18,7 @@ metadata:
   name: mnist-deployment
   namespace: seldon  
 spec:
-  host: mnist-deployment
+  host: mnist-deployment-mnist-classifier
   subsets:
   - name: v1
     labels:

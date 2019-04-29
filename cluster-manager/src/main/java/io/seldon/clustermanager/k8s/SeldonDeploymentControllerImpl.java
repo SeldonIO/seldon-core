@@ -32,6 +32,7 @@ import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.ApiException;
 import io.kubernetes.client.ProtoClient;
 import io.kubernetes.client.ProtoClient.ObjectOrStatus;
+import io.kubernetes.client.apis.AutoscalingV2beta1Api;
 import io.kubernetes.client.apis.CoreV1Api;
 import io.kubernetes.client.models.ExtensionsV1beta1Deployment;
 import io.kubernetes.client.models.ExtensionsV1beta1DeploymentList;
@@ -39,25 +40,62 @@ import io.kubernetes.client.models.V1DeleteOptions;
 import io.kubernetes.client.models.V1Service;
 import io.kubernetes.client.models.V1ServiceList;
 import io.kubernetes.client.models.V1Status;
+import io.kubernetes.client.models.V2beta1HorizontalPodAutoscaler;
+import io.kubernetes.client.models.V2beta1HorizontalPodAutoscalerList;
 import io.kubernetes.client.proto.Meta.DeleteOptions;
 import io.kubernetes.client.proto.V1.Service;
 import io.kubernetes.client.proto.V1beta1Extensions.Deployment;
+import io.kubernetes.client.proto.V2beta1Autoscaling.HorizontalPodAutoscaler;
 import io.seldon.clustermanager.k8s.SeldonDeploymentOperatorImpl.DeploymentResources;
 import io.seldon.clustermanager.k8s.client.K8sClientProvider;
+import io.seldon.clustermanager.k8s.tasks.K8sTaskScheduler;
+import io.seldon.clustermanager.k8s.tasks.SeldonDeploymentTaskKey;
 import io.seldon.clustermanager.pb.ProtoBufUtils;
 import io.seldon.protos.DeploymentProtos.SeldonDeployment;
 
+/**
+ * Handle top level managing of Seldon Deployments. Creating/updating/deleting the required underlying resources via the k8s API.
+ * 
+ * @author clive
+ *
+ */
 @Component
 public class SeldonDeploymentControllerImpl implements SeldonDeploymentController {
 
+	/**
+	 * Task to update Seldon deployment status to failed.
+	 * @author clive
+	 *
+	 */
+	public static class FailStatusTask implements Runnable {
+		
+		private final SeldonDeployment sdep;
+		private final KubeCRDHandler crdHandler;
+
+		public FailStatusTask(SeldonDeployment sdep, KubeCRDHandler crdHandler) {
+			super();
+			this.sdep = sdep;
+			this.crdHandler = crdHandler;
+		}
+
+		@Override
+		public void run() {
+			crdHandler.updateSeldonDeploymentStatus(sdep);
+		}
+		
+	}
+	
 	private final static Logger logger = LoggerFactory.getLogger(SeldonDeploymentControllerImpl.class);
 	private final SeldonDeploymentOperator operator;
 	private final K8sClientProvider clientProvider;
 	private final KubeCRDHandler crdHandler;
 	private final SeldonDeploymentCache mlCache;
 	private final SeldonNameCreator seldonNameCreator = new SeldonNameCreator();
-	
-	private static final String DEPLOYMENT_API_VERSION = "extensions/v1beta1";
+	private final K8sTaskScheduler k8sTaskScheduler;
+	private final SeldonDeletionHandler deletionHandler;	
+
+	static final String DEPLOYMENT_API_VERSION = "extensions/v1beta1";
+	static final String AUTOSCALER_API_VERSION = "autoscaling/v2beta1";
 	
 	Cache<String, Boolean> deletedCache = CacheBuilder.newBuilder()
 		    .maximumSize(1000)
@@ -65,12 +103,58 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 
 	
 	@Autowired
-	public SeldonDeploymentControllerImpl(SeldonDeploymentOperator operator, K8sClientProvider clientProvider,KubeCRDHandler crdHandler,SeldonDeploymentCache mlCache) {
+	public SeldonDeploymentControllerImpl(SeldonDeploymentOperator operator, K8sClientProvider clientProvider,KubeCRDHandler crdHandler,SeldonDeploymentCache mlCache,SeldonDeletionHandler deletetionHandler,
+			K8sTaskScheduler k8sScheduler) {
 		super();
 		this.operator = operator;
 		this.clientProvider = clientProvider;
 		this.crdHandler = crdHandler;
 		this.mlCache = mlCache;
+		this.k8sTaskScheduler = k8sScheduler;
+		this.deletionHandler = deletetionHandler;		
+	}
+	
+	private void createHPAs(ProtoClient client,String namespace,List<HorizontalPodAutoscaler> hpas) throws ApiException, IOException, SeldonDeploymentException
+	{
+		for(HorizontalPodAutoscaler hpa : hpas)
+		{
+			 final String listApiPath = "/apis/"+AUTOSCALER_API_VERSION+"/namespaces/{namespace}/horizontalpodautoscalers/{name}"
+	                    .replaceAll("\\{" + "name" + "\\}", client.getApiClient().escapeString(hpa.getMetadata().getName()))
+	                    .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString(namespace));
+	            logger.debug("Will try to call LIST "+listApiPath);
+	            ObjectOrStatus<HorizontalPodAutoscaler> os = client.list(HorizontalPodAutoscaler.newBuilder(),listApiPath);       
+	            if (os.status != null) {
+	                if (os.status.getCode() == 404) { //Create
+	                    logger.debug("About to CREATE "+ProtoBufUtils.toJson(hpa));
+	                    final String createApiPath = "/apis/"+AUTOSCALER_API_VERSION+"/namespaces/{namespace}/horizontalpodautoscalers"
+	                            .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString(namespace));
+
+	                    os = client.create(hpa, createApiPath, AUTOSCALER_API_VERSION, "HorizontalPodAutoscaler");
+	                    if (os.status != null) {
+	                        logger.error("Error creating HPA:"+ProtoBufUtils.toJson(os.status));
+	                        throw new SeldonDeploymentException("Failed to create HPA "+hpa.getMetadata().getName());
+	                    }
+	                    else {
+	                        logger.debug("Created HPA:"+ProtoBufUtils.toJson(os.object));
+	                    }
+	                }
+	                else {
+	                    logger.error("Error listing HPAs:"+ProtoBufUtils.toJson(os.status));
+	                    throw new SeldonDeploymentException("Failed to list HPA "+hpa.getMetadata().getName());
+	                }
+	            }
+	            else { // Update
+	                logger.debug("About to UPDATE "+ProtoBufUtils.toJson(hpa));
+	                os = client.update(hpa,listApiPath, AUTOSCALER_API_VERSION, "HorizontalPodAutoscaler");
+	                if (os.status != null) {
+	                    logger.error("Error updating HPA:"+ProtoBufUtils.toJson(os.status));
+	                    throw new SeldonDeploymentException("Failed to update HPA "+hpa.getMetadata().getName());
+	                }
+	                else {
+	                    logger.debug("Updated HPA:"+ProtoBufUtils.toJson(os.object));
+	                }
+	            }
+		}
 	}
 	
 	private void createDeployments(ProtoClient client,String namespace,List<Deployment> deployments) throws ApiException, IOException, SeldonDeploymentException
@@ -115,75 +199,6 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
             }
 		}
 	}
-
-	private Set<String> getDeploymentNames(List<Deployment> deployments)
-	{
-		Set<String> names = new HashSet<>();
-	    for(Deployment d : deployments)
-	        names.add(d.getMetadata().getName());
-	    return names;
-	}
-	
-	private int removeDeployments(ProtoClient client,String namespace,SeldonDeployment seldonDeployment,List<Deployment> deployments,boolean svcOrchOnly) throws ApiException, IOException, SeldonDeploymentException
-	{
-		int deleteCount = 0;
-	    Set<String> names = getDeploymentNames(deployments);
-	    ExtensionsV1beta1DeploymentList depList = crdHandler.getOwnedDeployments(seldonNameCreator.getSeldonId(seldonDeployment),namespace);
-	    for (ExtensionsV1beta1Deployment d : depList.getItems())
-	    {
-	    	boolean okToDelete = !svcOrchOnly || (d.getMetadata().getLabels().containsKey(Constants.LABEL_SELDON_SVCORCH));
-	        if (okToDelete && !names.contains(d.getMetadata().getName()))
-	        {
-	        	deleteCount++;
-	            final String deleteApiPath = "/apis/"+DEPLOYMENT_API_VERSION+"/namespaces/{namespace}/deployments/{name}"
-	                    .replaceAll("\\{" + "name" + "\\}", client.getApiClient().escapeString(d.getMetadata().getName()))
-	                    .replaceAll("\\{" + "namespace" + "\\}", client.getApiClient().escapeString(namespace));
-	            DeleteOptions options = DeleteOptions.newBuilder().setPropagationPolicy("Foreground").build();
-	            ObjectOrStatus<Deployment> os = client.delete(Deployment.newBuilder(),deleteApiPath,options);
-	            if (os.status != null) {
-                    logger.error("Error deleting deployment:"+ProtoBufUtils.toJson(os.status));
-                    //throw new SeldonDeploymentException("Failed to delete deployment "+d.getMetadata().getName());
-                }
-                else {
-                    logger.debug("Deleted deployment:"+ProtoBufUtils.toJson(os.object));
-                }
-	        }
-	        else
-	        	logger.info("Skipping deletion of {} svcOrchOnly:{}",d.getMetadata().getName(),svcOrchOnly);
-	    }
-	    return deleteCount;
-	}
-	
-	private void removeServices(ApiClient client,String namespace,SeldonDeployment seldonDeployment,List<Service> services) throws ApiException, IOException, SeldonDeploymentException
-	{
-		Set<String> names = getServiceNames(services);
-		V1ServiceList svcList = crdHandler.getOwnedServices(seldonNameCreator.getSeldonId(seldonDeployment),namespace);
-		for(V1Service s : svcList.getItems())
-		{
-			if (!names.contains(s.getMetadata().getName()))
-			{	
-				CoreV1Api api = new CoreV1Api(client);
-				io.kubernetes.client.models.V1DeleteOptions options = new V1DeleteOptions();
-				V1Status status = api.deleteNamespacedService(s.getMetadata().getName(), namespace, options, null, null, null, null);
-				if (!"Success".equals(status.getStatus()))
-				{
-					logger.error("Failed to delete service "+s.getMetadata().getName());
-					throw new SeldonDeploymentException("Failed to delete service "+s.getMetadata().getName());
-				}
-				else
-					logger.debug("Deleted service "+s.getMetadata().getName());
-				
-			}
-		}
-	}
-	
-	private Set<String> getServiceNames(List<Service> services)
-	{
-		Set<String> names = new HashSet<>();
-		for(Service s : services)
-			names.add(s.getMetadata().getName());
-		return names;
-	}
 	
 	private void createServices(ProtoClient client,String namespace,List<Service> services) throws ApiException, IOException, SeldonDeploymentException
 	{
@@ -221,11 +236,17 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 		}
 	}
 	
+	/**
+	 * Fail the deployment adding the exception message in the status field
+	 * @param mlDep existing Seldon Deployment
+	 * @param e Exception that occurred
+	 */
 	private void failDeployment(SeldonDeployment mlDep,Exception e)
 	{
         SeldonDeployment.Builder mlBuilder = SeldonDeployment.newBuilder(mlDep);
         mlBuilder.getStatusBuilder().setState(Constants.STATE_FAILED).setDescription(e.getMessage());
-        crdHandler.updateSeldonDeploymentStatus(mlBuilder.build());
+        k8sTaskScheduler.submit(new SeldonDeploymentTaskKey(mlDep.getMetadata().getName(), mlDep.getApiVersion(), SeldonDeploymentUtils.getNamespace(mlDep)), 
+        		new FailStatusTask(mlBuilder.build(), crdHandler));
 	}
 	
 	@Override
@@ -237,15 +258,16 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 			DeploymentResources resources = operator.createResources(mlDep2);
 			ProtoClient client = clientProvider.getProtoClient();
 			String namespace = SeldonDeploymentUtils.getNamespace(mlDep2);
+			deletionHandler.removeHPAs(clientProvider.getClient(), namespace, mlDep2, resources.hpas);
 			final String deploymentDeleteKey = mlDep.getMetadata().getUid()+":"+mlDep.getMetadata().getResourceVersion();
 			logger.info("Deployment delete cache key {}",deploymentDeleteKey);
 			if (deletedCache.getIfPresent(deploymentDeleteKey) == null)
 			{
-				int deleteCount = removeDeployments(client, namespace, mlDep2, resources.deployments,true);
+				int deleteCount = deletionHandler.removeDeployments(client, namespace, mlDep2, resources.deployments,true);
 				if (deleteCount == 0)
 				{
 					logger.info("Failed to delete anything from first stage delete so will delete all unsed deployments for {}",mlDep.getSpec().getName());
-					removeDeployments(client, namespace, mlDep2, resources.deployments,false);
+					deletionHandler.removeDeployments(client, namespace, mlDep2, resources.deployments,false);
 				}
 				deletedCache.put(deploymentDeleteKey, true);
 			}
@@ -269,9 +291,9 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 			DeploymentResources resources = operator.createResources(mlDep2);
 			ProtoClient client = clientProvider.getProtoClient();
 			String namespace = SeldonDeploymentUtils.getNamespace(mlDep2);
-			removeDeployments(client, namespace, mlDep2, resources.deployments,false);
+			deletionHandler.removeDeployments(client, namespace, mlDep2, resources.deployments,false);
 			ApiClient client2 = clientProvider.getClient();
-			removeServices(client2,namespace, mlDep2, resources.services);
+			deletionHandler.removeServices(client2,namespace, mlDep2, resources.services);
 		} catch (SeldonDeploymentException e) {
 			logger.error("Failed to cleanup deployment ",e);
 		} catch (ApiException e) {
@@ -298,21 +320,18 @@ public class SeldonDeploymentControllerImpl implements SeldonDeploymentControlle
 		    {
 		        logger.debug("Running updates for "+mlDep.getMetadata().getName());
 		        mlCache.put(mlDep);
-		        SeldonDeployment mlDepStatusUpdated = operator.updateStatus(mlDep);
+		        //SeldonDeployment mlDepStatusUpdated = operator.updateStatus(mlDep);
 		        SeldonDeployment mlDep2 = operator.defaulting(mlDep);
 		        operator.validate(mlDep2);
 		        DeploymentResources resources = operator.createResources(mlDep2);
 		        ProtoClient client = clientProvider.getProtoClient();
 		        createDeployments(client, namespace, resources.deployments);
-		        //removeDeployments(client, namespace, mlDep2, resources.deployments);
 		        createServices(client, namespace, resources.services);
-		        //removeServices(client,namespace, mlDep2, resources.services); //Proto Client not presently working for deletion
-		        //ApiClient client2 = clientProvider.getClient();
-		        //removeServices(client2,namespace, mlDep2, resources.services);
+		        createHPAs(client, namespace, resources.hpas);
 		        if (!mlDep.hasStatus())
 		        {
-		           logger.debug("Pushing updated SeldonDeployment "+mlDepStatusUpdated.getMetadata().getName()+" back to kubectl");
-		           crdHandler.updateSeldonDeploymentStatus(mlDepStatusUpdated);
+		           //logger.debug("Pushing updated SeldonDeployment "+mlDepStatusUpdated.getMetadata().getName()+" back to kubectl");
+		           //crdHandler.updateSeldonDeploymentStatus(mlDepStatusUpdated);
 		        }
 		        else
 		            logger.debug("Not pushing an update as no change to status for SeldonDeployment "+mlDep2.getMetadata().getName());

@@ -25,7 +25,8 @@
                     ],
                     "resources": [
                         "deployments",
-                        "services"
+                        "services",
+			"horizontalpodautoscalers"
                     ],
                     "verbs": [
                         "*"
@@ -139,7 +140,7 @@
             "kind": "Service",
             "metadata": {
                 "labels": {
-                    "service": "ambassador"
+                    "app.kubernetes.io/name": "ambassador"
                 },
                 "name": "RELEASE-NAME-ambassador",
                 "annotations": {
@@ -148,7 +149,7 @@
             },
             "spec": {
                 "selector": {
-                    "service": "ambassador"
+                    "app.kubernetes.io/name": "ambassador"
                 },
                 "ports": [
                     {
@@ -172,7 +173,7 @@
             "kind": "Service",
             "metadata": {
                 "labels": {
-                    "service": "ambassador-admin"
+                    "app.kubernetes.io/name": "ambassador-admin"
                 },
                 "name": "RELEASE-NAME-ambassador-admin"
             },
@@ -185,7 +186,7 @@
                     }
                 ],
                 "selector": {
-                    "service": "ambassador"
+                    "app.kubernetes.io/name": "ambassador"
                 },
                 "type": "NodePort"
             }
@@ -204,7 +205,7 @@
                             "sidecar.istio.io/inject": "false"
                         },
                         "labels": {
-                            "service": "ambassador"
+                            "app.kubernetes.io/name": "ambassador"
                         }
                     },
                     "spec": {

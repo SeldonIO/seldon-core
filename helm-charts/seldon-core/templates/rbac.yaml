@@ -1,5 +1,5 @@
 {{- if .Values.rbac.enabled }}
-{{- if .Values.rbac.service_account.create }}  
+{{- if .Values.rbac.service_account.create }}
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -14,12 +14,13 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: seldon-local
-  namespace: {{ .Release.Namespace }}    
+  namespace: {{ .Release.Namespace }}
 rules:
 - apiGroups: ["*"]
   resources:
   - deployments
   - services
+  - horizontalpodautoscalers
   verbs: ["*"]
 - apiGroups:
   - machinelearning.seldon.io
@@ -46,12 +47,13 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: seldon-wide
-  namespace: {{ .Release.Namespace }}    
+  namespace: {{ .Release.Namespace }}
 rules:
 - apiGroups: ["*"]
   resources:
   - deployments
   - services
+  - horizontalpodautoscalers
   verbs: ["*"]
 - apiGroups:
   - machinelearning.seldon.io
@@ -78,7 +80,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: seldon-crd-{{ .Release.Namespace }}
-  namespace: {{ .Release.Namespace }}    
+  namespace: {{ .Release.Namespace }}
 rules:
 - apiGroups:
   - apiextensions.k8s.io
@@ -99,74 +101,6 @@ subjects:
   - kind: ServiceAccount
     name: {{ .Values.rbac.service_account.name }}
     namespace: {{ .Release.Namespace }}
-{{- end }}    
-{{- if .Values.ambassador.enabled }}
-{{- if .Values.single_namespace }}
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: ambassador
-rules:
-- apiGroups: [""]
-  resources:
-  - services
-  verbs: ["get", "list", "watch"]
-- apiGroups: [""]
-  resources:
-  - configmaps
-  verbs: ["create", "update", "patch", "get", "list", "watch"]
-- apiGroups: [""]
-  resources:
-  - secrets
-  verbs: ["get", "list", "watch"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: ambassador
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: ambassador
-subjects:
-- kind: ServiceAccount
-  name: {{ .Values.rbac.service_account.name }}
-  namespace: {{ .Release.Namespace }}
 {{- end }}
-{{- if not .Values.single_namespace }}
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: ambassador
-rules:
-- apiGroups: [""]
-  resources:
-  - services
-  verbs: ["get", "list", "watch"]
-- apiGroups: [""]
-  resources:
-  - configmaps
-  verbs: ["create", "update", "patch", "get", "list", "watch"]
-- apiGroups: [""]
-  resources:
-  - secrets
-  verbs: ["get", "list", "watch"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: ambassador
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: ambassador
-subjects:
-- kind: ServiceAccount
-  name: {{ .Values.rbac.service_account.name }}
-  namespace: {{ .Release.Namespace }}
-{{- end }}
-{{- end }}  
 {{- end }}
 {{- end }}

@@ -4,7 +4,7 @@
   <groupId>io.seldon.clustermanager</groupId>
   <artifactId>seldon-cluster-manager</artifactId>
   <packaging>jar</packaging>
-  <version>0.2.6</version>
+  <version>0.2.7</version>
   <name>seldon-cluster-manager</name>
   <url>http://maven.apache.org</url>
 
@@ -100,13 +100,19 @@
     </extensions>
 
     <plugins>
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-javadoc-plugin</artifactId>
+			<version>3.1.0</version>
+		</plugin>
 			<plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.2</version>
                <configuration>
        				<excludes>
-            			<exclude>**/io/seldon/protos/**/*.class</exclude>
+            			  <exclude>**/io/seldon/protos/**/*.class</exclude>
+				  <exclude>**/io/seldon/clustermanager/pb/*.class</exclude>
         			</excludes>
     			</configuration>                
                 <executions>
@@ -201,7 +207,6 @@
 	  <checkStaleness>true</checkStaleness>
 	  <excludes>
 	    <exclude>k8s.io/**/*.proto</exclude>
-	    <exclude>**/v1.proto</exclude>
 	  </excludes>
 	</configuration>
 	<executions>
