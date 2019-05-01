@@ -1,0 +1,11 @@
+Master:
+  InstallPlugins:
+    - kubernetes:1.15.1
+    - workflow-job:2.32
+    - workflow-aggregator:2.6
+    - credentials-binding:1.18
+    - git:3.9.3
+    - github:1.29.3
+#local jenkins store needed for crumb
+  SecurityRealm: |-
+    <securityRealm class="hudson.security.HudsonPrivateSecurityRealm"/>
