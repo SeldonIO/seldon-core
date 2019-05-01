@@ -17,6 +17,4 @@ argocd app create cicd-demo-argocd \
     --path demo-manifests \
     --dest-namespace default \
     --dest-server https://kubernetes.default.svc \
-    --sync-policy "${SYNC_POLICY}" \
-    --auto-prune
-
+    --sync-policy "${SYNC_POLICY}"
