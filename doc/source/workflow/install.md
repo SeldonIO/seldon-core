@@ -6,78 +6,43 @@ To install seldon-core on a Kubernetes cluster you have several choices:
 
 For CLI installs:
 
- * Decide on which package manager to use, we support:
-   * Helm
-   * Ksonnet
- * Decide on how you wish APIs to be exposed, we support:
-   * Ambassador reverse proxy
-   * Seldon's built-in OAuth API Gateway
- * Decide on whether you wish to contribute anonymous usage metrics. We encourage you to allow anonymous usage metrics to help us improve the project by understanding the deployment environments. Further details on [usage reporting](usage-reporting.md)
-  * Does your Kubernetes cluster have RBAC enabled?
-    * If not then disable Seldon RBAC setup
+We presently support Helm installs.
 
-Follow one of the methods below:
+## Install Seldon Core
 
-## With Helm
-
- * [Install Helm](https://docs.helm.sh)
- * Install Seldon CRD. Set:
-    * ```usage_metrics.enabled``` as appropriate.
-
-```bash
-helm install seldon-core-crd --name seldon-core-crd --repo https://storage.googleapis.com/seldon-charts \
-     --set usage_metrics.enabled=true
-```
- * Install seldon-core components. Set
-    * ```apife.enabled``` : (default true) set to ```false``` if you have installed Ambassador.
-    * ```rbac.enabled``` : (default true) set to ```false``` if running an old Kubernetes cluster without RBAC.
-    * ```ambassador.enabled``` : (default false) set to ```true``` if you want to run with an Ambassador reverse proxy.
-    * ```single_namespace``` : (default true) if set to ```true``` then Seldon Core's permissions are restricted to the single namespace it is created within. If set to ```false``` then RBAC cluster roles will be created to allow a single Seldon Core installation to control all namespaces. The installer must have permissions to create the appropriate RBAC roles. (>=0.2.5)
+First [install Helm](https://docs.helm.sh). When helm is installed you can deploy the seldon controller to manage your Seldon Deployment graphs.
 
 ```bash 
-helm install seldon-core --name seldon-core --repo https://storage.googleapis.com/seldon-charts \
-     --set apife.enabled=<true|false> \
-     --set rbac.enabled=<true|false> \
-     --set ambassador.enabled=<true|false>
-     --set single_namespace=<true|false>
+helm install seldon-core-controller --name seldon-core --repo https://storage.googleapis.com/seldon-charts --set usage_metrics.enabled=true
+
 ```
 
 Notes
 
- * You can use ```--namespace``` to install seldon-core to a particular namespace
+ * You can use ```--namespace``` to install the seldon-core controller to a particular namespace
  * For full configuration options see [here](../reference/helm.md)
 
-## With Ksonnet
+## Install an Ingress Gateway
 
- * [Install Ksonnet](https://ksonnet.io/)
- * Create a seldon ksonnet app
+We presently support two API Ingress Gateways
 
-```bash
- ks init my-ml-deployment --api-spec=version:v1.8.0
- ```
- * Install seldon-core. Set:
-   * ```withApife``` set to ```false``` if you are using Ambassador
-   * ```withAmbassador``` set to ```true``` if you want to use Ambassador reverse proxy
-   * ```withRbac``` set to ```true``` if your cluster has RBAC enabled
-   * ```singleNamespace``` (default true) if set to ```true``` then Seldon Core's permissions are restricted to the single namespace it is created within. If set to ```false``` then RBAC cluster roles will be created to allow a single Seldon Core installation to control all namespaces. The installer must have permissions to create the appropriate RBAC roles. (>=0.2.5)
+ * [Ambassador](https://www.getambassador.io/)
+ * Seldon Core OAuth Gateway
 
-```bash
-cd my-ml-deployment && \
-    ks registry add seldon-core github.com/SeldonIO/seldon-core/tree/master/seldon-core && \
-    ks pkg install seldon-core/seldon-core@master && \
-    ks generate seldon-core seldon-core \
-       --withApife=<true|false> \
-       --withAmbassador=<true|false> \
-       --withRbac=<true|false> \
-       --singleNamespace=<true|false>
+### Install Ambassador
+
+We suggest you install [the official helm chart](https://github.com/helm/charts/tree/master/stable/ambassador). At present we recommend 0.40.2 version due to issues with grpc in the latest.
+
 ```
- * Launch components onto cluster
- ```
- ks apply default
- ```
-Notes
+helm install stable/ambassador --name ambassador --set image.tag=0.40.2
+```
 
- * You can use ```--namespace``` to install seldon-core to a particular namespace
+### Install Seldon OAuth Gateway
+This provides a basic OAuth Gateway.
+
+```
+helm install helm-charts/seldon-core-oauth-gateway --name seldon-gateway --repo https://storage.googleapis.com/seldon-charts
+```
 
 ## Other Options
 
