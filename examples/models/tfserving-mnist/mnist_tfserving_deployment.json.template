@@ -21,7 +21,7 @@
 			    {
 				"args": [
 				    "/usr/bin/tensorflow_model_server",
-				    "--port=8000",
+				    "--port=7001",
 				    "--model_name=mnist-model",
 				    "--model_base_path=gs://seldon-tfserving-store/mnist-model"
 				],
@@ -29,7 +29,7 @@
 				"name": "mnist-model",
 				"ports": [
 				    {
-					"containerPort": 8000,
+					"containerPort": 7001,
 					"protocol": "TCP"
 				    }
 				],
@@ -61,7 +61,7 @@
 			{
 			    "name":"grpc_endpoint",
 			    "type":"STRING",
-			    "value":"localhost:8000"
+			    "value":"localhost:7001"
 			},
 			{
 			    "name":"model_name",

@@ -28,7 +28,13 @@
                                                 "name": "grafana-prom-secret"
                                             }
                                         }
+                                    },
+                                    {{ if .Values.grafana_anonymous_auth }}
+                                    {
+                                        "name": "GF_AUTH_ANONYMOUS_ENABLED",
+                                        "value": "true"
                                     }
+                                    {{ end }}
                                 ],
                                 "image": "grafana/grafana:5.3.4",
                                 "name": "grafana",

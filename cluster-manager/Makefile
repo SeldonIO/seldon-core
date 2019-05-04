@@ -50,3 +50,14 @@ get_published_versions:
 show_logs_cluster_manager:
 	POD_NAME=$$(kubectl --namespace default get pod -l app=seldon-cluster-manager-server -o template --template="{{(index .items 0).metadata.name}}") && \
 		kubectl logs $${POD_NAME} -f
+
+code_coverage: update_proto
+	mvn clean verify
+	cd target/site && aws s3 cp jacoco s3://seldon-core-docs/master/cluster-manager/jacoco --recursive --acl public-read
+
+
+dependencies: update_proto
+	mvn clean project-info-reports:dependencies
+	cd target/site && aws s3 cp dependencies.html s3://seldon-core-docs/master/cluster-manager/dependencies/dependencies.html --acl public-read
+	cd target/site && aws s3 cp css s3://seldon-core-docs/master/cluster-manager/dependencies/css --recursive --acl public-read
+	cd target/site && aws s3 cp images s3://seldon-core-docs/master/cluster-manager/dependencies/images --recursive --acl public-read
