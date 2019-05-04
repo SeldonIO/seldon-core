@@ -2,6 +2,9 @@ ambassador:
   enabled: false
   image:
     tag: 0.40.2
+  rbac:
+    create: true
+    namespaced: true
   replicaCount: 1
   resources:
     limits:
@@ -10,50 +13,42 @@ ambassador:
     requests:
       cpu: 200m
       memory: 128Mi
+  scope:
+    singleNamespace: true
   service:
     annotations:
-      getambassador.io/config: |
-        ---
-        apiVersion: ambassador/v0
-        kind: Module
-        name: ambassador
-        config:
-          service_port: 8080
+      getambassador.io/config: "---\napiVersion: ambassador/v0\nkind: Module\nname:\
+        \ ambassador\nconfig:\n  service_port: 8080\n"
     http:
       targetPort: 8080
     https:
       targetPort: 8443
     type: LoadBalancer
-  rbac:
-    create: true
-    namespaced: true
-  scope:
-    singleNamespace: true
 apife:
   annotations: null
   enabled: true
   image:
-    name: seldonio/apife:0.2.7-SNAPSHOT
+    name: seldonio/apife:0.2.8-SNAPSHOT
     pull_policy: IfNotPresent
   service_type: NodePort
 cluster_manager:
   image:
-    name: seldonio/cluster-manager:0.2.7-SNAPSHOT
+    name: seldonio/cluster-manager:0.2.8-SNAPSHOT
     pull_policy: IfNotPresent
   java_opts: ''
   spring_opts: ''
 engine:
+  grpc:
+    port: 5001
   image:
-    name: seldonio/engine:0.2.7-SNAPSHOT
+    name: seldonio/engine:0.2.8-SNAPSHOT
     pull_policy: IfNotPresent
+  port: 8000
+  prometheus:
+    path: prometheus
   service_account:
     name: default
   user: 8888
-  port: 8000
-  grpc:
-    port: 5001
-  prometheus:
-    path: "prometheus"
 predictive_unit:
   port: 9000
 rbac:
@@ -64,13 +59,13 @@ rbac:
     create: true
     name: seldon
 redis:
-  enabled: true
-  usePassword: false
   cluster:
     enabled: false
-  securityContext:
-    enabled: false
+  enabled: true
   master:
     securityContext:
       enabled: false
+  securityContext:
+    enabled: false
+  usePassword: false
 single_namespace: true

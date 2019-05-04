@@ -29,7 +29,7 @@
 		    "hpaSpec":
 		    {
 			"minReplicas": 1,
-			"maxReplicas": 4,
+			"maxReplicas": 3,
 			"metrics": 
 			    [ {
 				"type": "Resource",
