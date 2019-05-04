@@ -45,7 +45,7 @@ rules:
   - update
   - patch
 - apiGroups:
-  - v2beta1
+  - autoscaling
   resources:
   - horizontalpodautoscalers
   verbs:
@@ -57,7 +57,7 @@ rules:
   - patch
   - delete
 - apiGroups:
-  - v2beta1
+  - autoscaling
   resources:
   - horizontalpodautoscalers/status
   verbs:
