@@ -8,11 +8,13 @@ Notebooks
    Ambassador Canary <ambassador_canary>
    Ambassador Shadow <ambassador_shadow>
    Ambassador Headers <ambassador_headers>
-   Ambassador Custom Config <ambassador_custom>         
+   Ambassador Custom Config <ambassador_custom>
+   Autoscaling Example <autoscaling_example>   
    Example Helm Deployments <helm_examples>
    H2O Java MoJo <h2o_mojo>
    Istio Canary <istio_canary>
    Jaeger Tracing <tmpl_model_tracing>
+   Keras MNIST <keras_mnist>
    Max gRPC Message Size <max_grpc_msg_size>
    Model with Custom Metrics <tmpl_model_with_metrics>
    MLFlow <mlflow>
@@ -28,5 +30,5 @@ Notebooks
    SKLearn Iris Classifier <iris>
    SKLearn MNIST <sklearn_mnist>
    Tensorflow MNIST <deep_mnist>
-
+   TFserving MNIST <tfserving_mnist>
 
