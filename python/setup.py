@@ -31,7 +31,7 @@ setup(name='seldon-core',
           'tensorflow',
           'Flask-OpenTracing==0.2.0',
           'opentracing>=1.2.2,<2',
-          'jaeger-client',
+          'jaeger-client==3.13.0',
           'grpcio-opentracing',
           'pyyaml'
       ],
