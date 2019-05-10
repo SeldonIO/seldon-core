@@ -26,9 +26,9 @@ all: object-meta-validation.tpl hpa-spec-validation.tpl pod-spec-validation.tpl
 
 .PHONY: update-helm
 update-helm: all
-	cp object-meta-validation.tpl ../../helm-charts/seldon-core-crd/templates/_object-meta-validation.tpl
-	cp pod-spec-validation.tpl ../../helm-charts/seldon-core-crd/templates/_pod-spec-validation.tpl
-	cp hpa-spec-validation.tpl ../../helm-charts/seldon-core-crd/templates/_hpa-spec-validation.tpl
+	cp object-meta-validation.tpl ../../helm-charts/seldon-core-controller/templates/_object-meta-validation.tpl
+	cp pod-spec-validation.tpl ../../helm-charts/seldon-core-controller/templates/_pod-spec-validation.tpl
+	cp hpa-spec-validation.tpl ../../helm-charts/seldon-core-controller/templates/_hpa-spec-validation.tpl
 
 update-ksonnet: all
 	cp object-meta.json ../../seldon-core/seldon-core/json/object-meta-validation.json
