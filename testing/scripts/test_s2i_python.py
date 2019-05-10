@@ -6,7 +6,7 @@ from seldon_utils import *
 from k8s_utils import *
 import numpy as np
 
-S2I_CREATE = "cd ../s2i/python/#TYPE# && s2i build -E environment_#API# . seldonio/seldon-core-s2i-python2:#VERSION# 127.0.0.1:5000/seldonio/test#TYPE#_#API#:0.1"
+S2I_CREATE = "cd ../s2i/python/#TYPE# && s2i build -E environment_#API# . seldonio/seldon-core-s2i-python3:#VERSION# 127.0.0.1:5000/seldonio/test#TYPE#_#API#:0.1"
 IMAGE_NAME = "127.0.0.1:5000/seldonio/test#TYPE#_#API#:0.1"
 
 def create_s2I_image(s2i_python_version,component_type,api_type):
