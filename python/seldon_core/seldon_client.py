@@ -849,8 +849,12 @@ def get_token(oauth_key: str = "", oauth_secret: str = "", namespace: str = None
         "http://" + endpoint + "/oauth/token",
         auth=HTTPBasicAuth(key, oauth_secret),
         data=payload)
-    token = response.json()["access_token"]
-    return token
+    if response.status_code == 200:
+        token = response.json()["access_token"]
+        return token
+    else:
+        print("Failed to get token:"+response.text)
+        raise SeldonClientException(response.text)
 
 
 def rest_predict_seldon_oauth(oauth_key: str, oauth_secret: str, namespace: str = None,

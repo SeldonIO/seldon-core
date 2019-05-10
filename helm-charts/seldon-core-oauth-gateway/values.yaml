@@ -24,4 +24,4 @@ redis:
   master:
     securityContext:
       enabled: false
-singleNamespace: true
+singleNamespace: false

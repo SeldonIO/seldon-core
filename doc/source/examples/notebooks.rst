@@ -9,8 +9,11 @@ Notebooks
    Ambassador Shadow <ambassador_shadow>
    Ambassador Headers <ambassador_headers>
    Ambassador Custom Config <ambassador_custom>
-   Autoscaling Example <autoscaling_example>   
+   Autoscaling Example <autoscaling_example>
+   Combiner Example <combiner>
+   Custom Endpoints <custom_endpoints>
    Example Helm Deployments <helm_examples>
+   Go Model <go_example>
    H2O Java MoJo <h2o_mojo>
    Istio Canary <istio_canary>
    Jaeger Tracing <tmpl_model_tracing>
@@ -18,7 +21,8 @@ Notebooks
    Max gRPC Message Size <max_grpc_msg_size>
    Model with Custom Metrics <tmpl_model_with_metrics>
    MLFlow <mlflow>
-   NodeJS MNIST <nodejs_mnist>   
+   NodeJS MNIST <nodejs_mnist>
+   NodeJS Tensorflow <nodejs_tensorflow>
    NVIDIA TensorRT MNIST <nvidia_mnist>
    OpenVINO ImageNet <openvino>
    OpenVINO ImageNet Ensemble <openvino_ensemble>

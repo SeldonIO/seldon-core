@@ -16,10 +16,10 @@ APIFE_VERSION=$(cat ${STARTUP_DIR}/api-frontend/target/version.txt)
 APIFE_IMAGE_NAME=127.0.0.1:5000/seldonio/apife:${APIFE_VERSION}
 
 CLUSTER_MANAGER_VERSION=$(cat ${STARTUP_DIR}/cluster-manager/target/version.txt)
-CLUSTER_MANAGER_IMAGE_NAME=127.0.0.1:5000/seldonio/cluster-manager:${CLUSTER_MANAGER_VERSION}
+CLUSTER_MANAGER_IMAGE_NAME=127.0.0.1:5000/seldonio/cluster-manager
 
 ENGINE_VERSION=$(cat ${STARTUP_DIR}/engine/target/version.txt)
-ENGINE_IMAGE_NAME=127.0.0.1:5000/seldonio/engine:${ENGINE_VERSION}
+ENGINE_IMAGE_NAME=127.0.0.1:5000/seldonio/engine
 
 helm install "${STARTUP_DIR}/helm-charts/seldon-core-crd" --name seldon-core-crd --set usage_metrics.enabled=true
 helm install "${STARTUP_DIR}/helm-charts/seldon-core" --name seldon-core \
@@ -33,3 +33,18 @@ helm install "${STARTUP_DIR}/helm-charts/seldon-core" --name seldon-core \
     --set ambassador.enabled=true \
     --namespace "${NAMESPACE}"
 
+
+
+helm install "${STARTUP_DIR}/helm-charts/seldon-core-crd" --name seldon-core-controller \
+     --set usageMetrics.enabled=true \
+    --set image.pullPolicy=Always \
+    --set image.repository=$CLUSTER_MANAGER_IMAGE_NAME \
+    --set image.tag=$CLUSTER_MANAGER_VERSION \    
+    --set engine.image.pullPolicy=Always \
+    --set engine.image.repository=$ENGINE_IMAGE_NAME \
+    --set engine.image.tag=$ENGINE_VERSION \
+    --namespace seldon-system
+helm install helm-charts/seldon-core-controller --name seldon-core \
+     --namespace "${NAMESPACE}"	 
+helm install helm-charts/seldon-core-oauth-gateway --name seldon-gateway \
+     --namespace "${NAMESPACE}"
