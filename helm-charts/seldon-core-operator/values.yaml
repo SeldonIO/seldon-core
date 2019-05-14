@@ -3,7 +3,7 @@ usageMetrics:
   database: http://seldon-core-stats.seldon.io
 image:
   repository: seldonio/seldon-core-operator
-  tag: 0.2.7-SNAPSHOT
+  tag: 0.2.8-SNAPSHOT
   pullPolicy: IfNotPresent  
 rbac:
   enabled: true
@@ -13,7 +13,7 @@ ambassador:
 engine:
   image:
     repository: seldonio/engine
-    tag: 0.2.7-SNAPSHOT
+    tag: 0.2.8-SNAPSHOT
     pullPolicy: IfNotPresent
   serviceAccount:
     name: default
