@@ -81,7 +81,7 @@ def update_chart_yaml_file(fpath, seldon_core_version, debug=False):
     print("updated {fpath}".format(**locals()))
 
 
-def update_values_yaml_file(fpath, seldon_core_version, debug=False):
+def update_operator_values_yaml_file(fpath, seldon_core_version, debug=False):
     fpath = os.path.realpath(fpath)
     if debug:
         print("processing [{}]".format(fpath))
@@ -90,39 +90,36 @@ def update_values_yaml_file(fpath, seldon_core_version, debug=False):
     f.close()
 
     d = yaml_to_dict(yaml_data)
-    d['apife']['image']['name'] = d['apife']['image']['name'].split(":")[0] + ":" + seldon_core_version
-    d['cluster_manager']['image']['name'] = d['cluster_manager']['image']['name'].split(":")[0] + ":" + seldon_core_version
-    d['engine']['image']['name'] = d['engine']['image']['name'].split(":")[0] + ":" + seldon_core_version
+    d['image']['tag'] = seldon_core_version
+    d['engine']['image']['tag'] = seldon_core_version
 
     with open(fpath, 'w') as f:
         f.write(dict_to_yaml(d))
 
     print("updated {fpath}".format(**locals()))
 
-def update_core_jsonnet(fpath, seldon_core_version, debug=False):
+def update_gateway_values_yaml_file(fpath, seldon_core_version, debug=False):
     fpath = os.path.realpath(fpath)
     if debug:
         print("processing [{}]".format(fpath))
+    f = open(fpath)
+    yaml_data = f.read()
+    f.close()
 
-    tmpfpath = fpath+'.tmp'
-    with open(fpath, 'r') as f:
-        with open(tmpfpath, 'w') as ftmp:
-            for raw_line in f:
-                output_line = raw_line
-                if output_line.startswith("// @optionalParam seldonVersion"):
-                    output_line = "// @optionalParam seldonVersion string "+seldon_core_version+" Seldon version\n"
-                ftmp.write(output_line)
-        if debug:
-            print("created {tmpfpath}".format(**locals()))
-    shutil.move(tmpfpath, fpath) # move created tmp file to original file
+    d = yaml_to_dict(yaml_data)
+    d['image']['tag'] = seldon_core_version
+
+    with open(fpath, 'w') as f:
+        f.write(dict_to_yaml(d))
+
     print("updated {fpath}".format(**locals()))
 
-def set_version(seldon_core_version, pom_files, chart_yaml_files, values_yaml_file, core_jsonnet_file, debug=False):
+def set_version(seldon_core_version, pom_files, chart_yaml_files, operator_values_yaml_file, gateway_values_yaml_file, debug=False):
     # Normalize file paths
     pom_files_realpaths = [os.path.realpath(x) for x in pom_files]
     chart_yaml_file_realpaths = [os.path.realpath(x) for x in chart_yaml_files]
-    values_yaml_file_realpath = os.path.realpath(values_yaml_file) if values_yaml_file != None else None
-    core_jsonnet_file_realpath = os.path.realpath(core_jsonnet_file) if core_jsonnet_file != None else None
+    operator_values_yaml_file_realpath = os.path.realpath(operator_values_yaml_file) if operator_values_yaml_file != None else None
+    gateway_values_yaml_file_realpath = os.path.realpath(gateway_values_yaml_file) if gateway_values_yaml_file != None else None    
 
     # update the pom files
     for fpath in pom_files_realpaths:
@@ -132,23 +129,25 @@ def set_version(seldon_core_version, pom_files, chart_yaml_files, values_yaml_fi
     for chart_yaml_file_realpath in chart_yaml_file_realpaths:
         update_chart_yaml_file(chart_yaml_file_realpath, seldon_core_version, debug)
 
-    # update the helm values file
-    if values_yaml_file != None:
-        update_values_yaml_file(values_yaml_file_realpath, seldon_core_version, debug)
+    # update the operator helm values file
+    if operator_values_yaml_file != None:
+        update_operator_values_yaml_file(operator_values_yaml_file_realpath, seldon_core_version, debug)
 
-    # update the jsonnet file
-    update_core_jsonnet(core_jsonnet_file_realpath, seldon_core_version, debug)
+    # update the gateway helm values file
+    if gateway_values_yaml_file != None:
+        update_gateway_values_yaml_file(gateway_values_yaml_file_realpath, seldon_core_version, debug)
 
 def main(argv):
-    POM_FILES = ['engine/pom.xml', 'api-frontend/pom.xml', 'cluster-manager/pom.xml']
-    CHART_YAML_FILES = ['helm-charts/seldon-core/Chart.yaml', 'helm-charts/seldon-core-crd/Chart.yaml', 'helm-charts/seldon-core-analytics/Chart.yaml']
-    VALUES_YAML_FILE = 'helm-charts/seldon-core/values.yaml'
-    CORE_JSONNET_FILE = 'seldon-core/seldon-core/prototypes/core.jsonnet'
+    POM_FILES = ['engine/pom.xml', 'api-frontend/pom.xml']
+    CHART_YAML_FILES = ['helm-charts/seldon-core-operator/Chart.yaml', 'helm-charts/seldon-core-oauth-gateway/Chart.yaml', 'helm-charts/seldon-core-analytics/Chart.yaml']
+    OPERATOR_VALUES_YAML_FILE = 'helm-charts/seldon-core-operator/values.yaml'
+    GATEWAY_VALUES_YAML_FILE = 'helm-charts/seldon-core-oauth-gateway/values.yaml'    
+
 
     opts = getOpts(argv[1:])
     if opts.debug:
         pp(opts)
-    set_version(opts.seldon_core_version, POM_FILES, CHART_YAML_FILES, VALUES_YAML_FILE, CORE_JSONNET_FILE, opts.debug)
+    set_version(opts.seldon_core_version, POM_FILES, CHART_YAML_FILES, OPERATOR_VALUES_YAML_FILE, GATEWAY_VALUES_YAML_FILE, opts.debug)
     print("done")
 
 if __name__ == "__main__":
