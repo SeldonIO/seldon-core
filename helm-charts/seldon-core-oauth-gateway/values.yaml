@@ -1,7 +1,7 @@
 annotations: null
 image:
   repository: seldonio/apife
-  tag: 0.2.7-SNAPSHOT
+  tag: 0.2.8-SNAPSHOT
   pullPolicy: IfNotPresent
 serviceType: NodePort
 engine:
