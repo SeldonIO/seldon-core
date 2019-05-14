@@ -1,28 +1,27 @@
-usageMetrics:
-  enabled: false
-  database: http://seldon-core-stats.seldon.io
-image:
-  repository: seldonio/seldon-core-operator
-  tag: 0.2.8-SNAPSHOT
-  pullPolicy: IfNotPresent  
-rbac:
-  enabled: true
 ambassador:
   enabled: true
   singleNamespace: false
 engine:
+  grpc:
+    port: 5001
   image:
+    pullPolicy: IfNotPresent
     repository: seldonio/engine
     tag: 0.2.8-SNAPSHOT
-    pullPolicy: IfNotPresent
+  port: 8000
+  prometheus:
+    path: prometheus
   serviceAccount:
     name: default
   user: 8888
-  port: 8000
-  grpc:
-    port: 5001
-  prometheus:
-    path: "prometheus"
+image:
+  pullPolicy: IfNotPresent
+  repository: seldonio/seldon-core-operator
+  tag: 0.2.8-SNAPSHOT
 predictiveUnit:
   port: 9000
-
+rbac:
+  enabled: true
+usageMetrics:
+  database: http://seldon-core-stats.seldon.io
+  enabled: false
