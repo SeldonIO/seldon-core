@@ -4,7 +4,7 @@ Helm charts are published to our official repo. An example install:
 
 The core charts for installing Seldon Core are shown below:
 
- * [seldon-core-controller](https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-core-controller)
+ * [seldon-core-operator](https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-core-operator)
    * Main helm chart for installing Seldon Core CRD and Controller
  * [seldon-core-oauth-gateway](https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-core-oauth-gateway)
    * Seldon OAuth Gateway

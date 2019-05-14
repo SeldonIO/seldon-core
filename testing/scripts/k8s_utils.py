@@ -71,7 +71,7 @@ def create_seldon_clusterwide_helm(request, version):
     setup_k8s()
     setup_helm()
     run(
-        "helm install ../../helm-charts/seldon-core-controller --name seldon-core --namespace seldon-system --set image.repository=127.0.0.1:5000/seldonio/seldon-core-operator --set image.tag=" + version + " --set image.pullPolicy=Always --set engine.image.repository=127.0.0.1:5000/seldonio/engine --set engine.image.tag=" + version + " --set engine.image.pullPolicy=Always",
+        "helm install ../../helm-charts/seldon-core-operator --name seldon-core --namespace seldon-system --set image.repository=127.0.0.1:5000/seldonio/seldon-core-operator --set image.tag=" + version + " --set image.pullPolicy=Always --set engine.image.repository=127.0.0.1:5000/seldonio/engine --set engine.image.tag=" + version + " --set engine.image.pullPolicy=Always",
         shell=True)
     run('kubectl rollout status statefulset.apps/seldon-operator-controller-manager -n seldon-system', shell=True)
     create_ambassador()
