@@ -9,8 +9,11 @@ build_protos:
 #requires mvn, helm, ks, python, s2i and an accessible k8s cluster (if minikube increase mem and cpu)
 #tests will create namespaces, deploy seldon core and create examples
 
+install:
+	pip install -r dev_requirements.txt
+
 .PHONY: test
-test: build_protos
+test: build_protos install
 	pytest -s -W ignore > run.log 2>&1
 
 .PHONY: clean

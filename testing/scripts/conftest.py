@@ -23,7 +23,8 @@ def seldon_images(request):
     create_docker_repo(request)
     port_forward_docker_repo(request)
     build_java_images()
-    build_go_images()
+    version = get_seldon_version()
+    build_go_images(version)
 
 @pytest.fixture(scope="session")
 def seldon_version():
