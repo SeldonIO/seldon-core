@@ -10,6 +10,8 @@ rbac:
 ambassador:
   enabled: true
   singleNamespace: false
+istio:
+  enabled: false
 engine:
   image:
     repository: seldonio/engine
