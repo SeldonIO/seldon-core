@@ -3,7 +3,7 @@ description: Seldon Core CRD and controller helm chart for Kubernetes
 keywords:
 - kubernetes
 - machine-learning
-name: seldon-core-controller
+name: seldon-core-operator
 sources:
 - https://github.com/SeldonIO/seldon-core
 version: 0.2.8-SNAPSHOT
