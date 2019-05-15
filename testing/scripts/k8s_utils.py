@@ -54,8 +54,9 @@ def get_seldon_version():
     return version
 
 
+# Not using latest Ambassador due to gRPC issue. https://github.com/datawire/ambassador/issues/504
 def create_ambassador():
-    run("helm install stable/ambassador --name ambassador --set image.tag=0.61.0 --namespace seldon", shell=True)
+    run("helm install stable/ambassador --name ambassador --set image.tag=0.40.2 --namespace seldon", shell=True)
     run("kubectl rollout status deployment.apps/ambassador --namespace seldon", shell=True)
 
 
