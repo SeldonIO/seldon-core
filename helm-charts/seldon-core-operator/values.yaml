@@ -1,6 +1,8 @@
 ambassador:
+  # If true Ambassador annotations will be added to created svcs. Safe to be used even if not using Ambassador.
   enabled: true
   singleNamespace: false
+# Engine image acts as service orchestrator and is injected as a sidecar container or separate deployment
 engine:
   grpc:
     port: 5001
