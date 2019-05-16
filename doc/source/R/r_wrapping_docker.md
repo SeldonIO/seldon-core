@@ -42,20 +42,7 @@ For running your code outside of docker you can populate an `install.R` with any
 install.packages('rpart')
 ```
 
-These same dependencies will need to be installed in the docker image - there is more than one way to manage this.
-
-### .s2i/environment
-
-Define the core parameters needed by our R builder image to wrap your model. An example is:
-
-```bash
-MODEL_NAME=MyModel.R
-API_TYPE=REST
-SERVICE_TYPE=MODEL
-PERSISTENCE=0
-```
-
-These values can also be provided or overridden on the command line when building the image.
+These same dependencies will need to be installed in the docker image, as explained in the next section.
 
 ## Step 3 - Build your image
 
