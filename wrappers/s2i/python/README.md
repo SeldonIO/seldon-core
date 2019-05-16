@@ -11,6 +11,6 @@ e.g. from 0.3-SNAPSHOT to release 0.3 and create 0.4-SNAPSHOT
  * Update main readme to show new versions of stable and snapshot
  * Update versions in docs, Makefiles and notebooks of stable version
     ``` ./update_python_version.sh X X+1```, e.g ```./update_python_version.sh 0.2 0.3```
-
-
-
+    (check that any references to X-SNAPSHOT are updated to X - may need manual intervention)
+ * Update the `doc/source/reference/images.md` manually with the latest image versions
+ 
