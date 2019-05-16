@@ -9,6 +9,6 @@ Python
    Overview <README.md>
    Seldon Core Python Module <python_module.md>
    Your python class <python_component.md>
-   Wrap using S2I <python_wrapping.md>   
+   Wrap using S2I <python_wrapping_s2i.md> or Docker <python_wrapping_docker.md>
    Python API reference <api/modules>
 	     
