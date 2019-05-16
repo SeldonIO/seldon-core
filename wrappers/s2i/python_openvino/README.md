@@ -33,7 +33,7 @@ Use s2i tool like documented [here](https://github.com/SeldonIO/seldon-core/blob
 An example is presented below:
 
 ```bash
-s2i build . seldonio/seldon-core-s2i-openvino:0.1 {target_component_image_name}
+s2i build . seldonio/seldon-core-s2i-openvino:0.2 {target_component_image_name}
 ```
 
 ## Examples
@@ -57,11 +57,13 @@ This Seldon base image contains, beside OpenVINO inference execution engine pyth
 - Intel optimized TensorFlow with MKL engine
 - Configured conda package manager
 
-In case you would use this compoment to run inference operations using TensorFlow with MKL, make sure you configure 
-also the following environment variables:
+OpenVINO and TensorFlow in this docker image, employs [MKL-DNN](https://github.com/intel/mkl-dnn) library
+with [OpenMP](https://www.openmp.org/) threading control.
+Make sure you configure optimal values for MKL related environment variables in the containers.
+Recommendations are listed below:
 
 `KMP_AFFINITY`=granularity=fine,verbose,compact,1,0
 
 `KMP_BLOCKTIME`=1
 
-`OMP_NUM_THREADS`={number of CPU cores}
+`OMP_NUM_THREADS`={number of physical CPU cores to allocate}
