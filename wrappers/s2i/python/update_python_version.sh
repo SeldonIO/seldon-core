@@ -14,7 +14,7 @@ fi
 OLD_VERSION=$1
 NEW_VERSION=$2
 
-declare -a paths=('./examples/*.ipynb' './docs/*.md' './example/*Makefile' './integrations/*Makefile')
+declare -a paths=('./examples/*.ipynb' './doc/*.md' './docs/*.md' './example/*Makefile' './integrations/*Makefile')
 declare -a versions=('2' '3' '36' '37')
 
 cd ../../..
