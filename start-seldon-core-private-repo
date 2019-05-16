@@ -21,7 +21,7 @@ CONTROLLER_IMAGE_NAME=127.0.0.1:5000/seldonio/seldon-core-operator
 ENGINE_VERSION=$(cat ${STARTUP_DIR}/engine/target/version.txt)
 ENGINE_IMAGE_NAME=127.0.0.1:5000/seldonio/engine
 
-helm install "${STARTUP_DIR}/helm-charts/seldon-core-crd" --name seldon-core-operator \
+helm install "${STARTUP_DIR}/helm-charts/seldon-core-operator" --name seldon-core \
      --set usageMetrics.enabled=true \
     --set image.pullPolicy=Always \
     --set image.repository=$CONTROLLER_IMAGE_NAME \
@@ -30,8 +30,6 @@ helm install "${STARTUP_DIR}/helm-charts/seldon-core-crd" --name seldon-core-ope
     --set engine.image.repository=$ENGINE_IMAGE_NAME \
     --set engine.image.tag=$ENGINE_VERSION \
     --namespace seldon-system
-helm install helm-charts/seldon-core-operator --name seldon-core \
-     --namespace "${NAMESPACE}"	 
 helm install helm-charts/seldon-core-oauth-gateway --name seldon-gateway \
     --set serviceType=LoadBalancer \
     --set apife.image.pullPolicy=Always \
