@@ -18,7 +18,8 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: seldonio/mock_classifier:1.0
+        - name: classifier
+          image: seldonio/mock_classifier:1.0
     graph:
       children: []
       endpoint:
