@@ -1,4 +1,4 @@
-IMAGE_VERSION=0.1
+IMAGE_VERSION=0.2
 IMAGE_NAME = docker.io/seldonio/seldon-core-s2i-openvino
 
 SELDON_CORE_DIR=../../..
