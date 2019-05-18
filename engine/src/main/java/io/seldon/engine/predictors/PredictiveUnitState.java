@@ -87,11 +87,11 @@ public class PredictiveUnitState {
 		
 		if (containersMap.containsKey(name)){
 			this.image = containersMap.get(name).getImage();
-			if (image.contains(":"))
+			int i = image.lastIndexOf(":");
+			if (i >= 0)
 			{
-				String[] parts = image.split(":");
-				this.imageName = parts[0];
-				this.imageVersion = parts[1];
+				this.imageName = StringUtils.substring(image, 0, i);
+				this.imageVersion = StringUtils.substring(image, i+1);
 			}
 			else
 			{
