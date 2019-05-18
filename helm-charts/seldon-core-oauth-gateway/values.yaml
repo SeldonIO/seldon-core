@@ -1,13 +1,12 @@
 annotations: null
-image:
-  repository: seldonio/apife
-  tag: 0.2.7-SNAPSHOT
-  pullPolicy: IfNotPresent
-serviceType: NodePort
 engine:
-  port: 8000
   grpc:
     port: 5001
+  port: 8000
+image:
+  pullPolicy: IfNotPresent
+  repository: seldonio/apife
+  tag: 0.2.8-SNAPSHOT
 rbac:
   rolebinding:
     create: true
@@ -15,13 +14,14 @@ rbac:
     create: true
     name: seldon
 redis:
-  enabled: true
-  usePassword: false
   cluster:
     enabled: false
-  securityContext:
-    enabled: false
+  enabled: true
   master:
     securityContext:
       enabled: false
+  securityContext:
+    enabled: false
+  usePassword: false
+serviceType: NodePort
 singleNamespace: false
