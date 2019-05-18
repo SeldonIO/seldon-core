@@ -14,7 +14,7 @@ KUBECTL="kubectl --context=${KUBE_CONTEXT}"
 # add seldon crd access to admin role
  ${KUBECTL} apply -f ${STARTUP_DIR}/seldon-aggregate-to-admin.json
 
-helm install --kube-context="${KUBE_CONTEXT}" ${SELDON_CORE_DIR}/helm-charts/seldon-core-controller --name seldon-core --set usageMetrics.enabled=true --namespace seldon-system
+helm install --kube-context="${KUBE_CONTEXT}" ${SELDON_CORE_DIR}/helm-charts/seldon-core-operator --name seldon-core --set usageMetrics.enabled=true --namespace seldon-system
 helm install --kube-context="${KUBE_CONTEXT}" ${SELDON_CORE_DIR}/helm-charts/seldon-core-oauth-gateway \
      --name seldon-gateway \
      --set serviceType=ClusterIP \     

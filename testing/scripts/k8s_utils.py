@@ -37,11 +37,10 @@ def wait_for_shutdown(deploymentName):
 
 def setup_finalizer_helm(request):
     def fin():
-        pass
         run("helm delete seldon-core --purge", shell=True)
         run("helm delete ambassador --purge", shell=True)
         run("helm delete seldon-gateway --purge", shell=True)
-        run("kubectl delete namespace seldon-system", shell=True)        
+        run("kubectl delete namespace seldon-system", shell=True)
         run("kubectl delete namespace seldon", shell=True)
         run("kubectl delete namespace test1", shell=True)
 
@@ -49,12 +48,13 @@ def setup_finalizer_helm(request):
 
 
 def get_seldon_version():
-    completedProcess = Popen("cat ../../cluster-manager/target/version.txt", shell=True, stdout=subprocess.PIPE)
+    completedProcess = Popen("grep version: ../../helm-charts/seldon-core-operator/Chart.yaml | cut -d: -f2", shell=True, stdout=subprocess.PIPE)
     output = completedProcess.stdout.readline()
-    version = output.decode('utf-8').rstrip()
+    version = output.decode('utf-8').strip()
     return version
 
 
+# Not using latest Ambassador due to gRPC issue. https://github.com/datawire/ambassador/issues/504
 def create_ambassador():
     run("helm install stable/ambassador --name ambassador --set image.tag=0.40.2 --namespace seldon", shell=True)
     run("kubectl rollout status deployment.apps/ambassador --namespace seldon", shell=True)
@@ -71,7 +71,7 @@ def create_seldon_clusterwide_helm(request, version):
     setup_k8s()
     setup_helm()
     run(
-        "helm install ../../helm-charts/seldon-core-controller --name seldon-core --namespace seldon-system --set image.repository=127.0.0.1:5000/seldonio/seldon-core-operator --set image.tag=" + version + " --set image.pullPolicy=Always --set engine.image.repository=127.0.0.1:5000/seldonio/engine --set engine.image.tag=" + version + " --set engine.image.pullPolicy=Always",
+        "helm install ../../helm-charts/seldon-core-operator --name seldon-core --namespace seldon-system --set image.repository=127.0.0.1:5000/seldonio/seldon-core-operator --set image.tag=" + version + " --set image.pullPolicy=Always --set engine.image.repository=127.0.0.1:5000/seldonio/engine --set engine.image.tag=" + version + " --set engine.image.pullPolicy=Always",
         shell=True)
     run('kubectl rollout status statefulset.apps/seldon-operator-controller-manager -n seldon-system', shell=True)
     create_ambassador()
@@ -104,6 +104,7 @@ def create_docker_repo(request):
     run('kubectl apply -f ../resources/docker-private-registry-proxy.json -n default', shell=True)
 
     def fin():
+        return
         run('kubectl delete -f ../resources/docker-private-registry.json --ignore-not-found=true -n default',
             shell=True)
         run('kubectl delete -f ../resources/docker-private-registry-proxy.json --ignore-not-found=true -n default',

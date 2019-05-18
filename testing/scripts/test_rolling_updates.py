@@ -32,7 +32,7 @@ def initial_rest_request():
 
 @pytest.mark.usefixtures("seldon_images")
 @pytest.mark.usefixtures("clusterwide_seldon_helm")
-class TestRolling(object):
+class TestRollingHttp(object):
 
     # Test updating a model with a new image version as the only change
     def test_rolling_update1(self):
@@ -262,4 +262,3 @@ class TestRolling(object):
                 break
             time.sleep(1)
         assert i < 100
-

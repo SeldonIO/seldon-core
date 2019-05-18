@@ -1,4 +1,4 @@
-CHARTS=seldon-core-crd seldon-core seldon-core-analytics seldon-core-kafka seldon-core-loadtesting seldon-single-model seldon-abtest seldon-mab seldon-od-model seldon-od-transformer seldon-core-controller seldon-core-oauth-gateway
+CHARTS=seldon-core-analytics seldon-core-kafka seldon-core-loadtesting seldon-single-model seldon-abtest seldon-mab seldon-od-model seldon-od-transformer seldon-core-operator seldon-core-oauth-gateway
 
 
 build_all:

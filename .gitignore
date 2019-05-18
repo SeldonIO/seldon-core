@@ -201,3 +201,5 @@ testing/scripts/my-model/
 wrappers/s2i/python/_python/
 
 seldon-controller/go
+
+testing/scripts/go
