@@ -8,7 +8,7 @@ class ModelWithFeedback(object):
         print("Predict called")
         return X
 
-    def send_feedback(self,features,feature_names,reward,truth):
+    def send_feedback(self,features,feature_names,reward,truth,routing=None):
         print("Send feedback called")
         return []
 

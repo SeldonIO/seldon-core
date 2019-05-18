@@ -189,7 +189,7 @@ def run_send_feedback(args):
         else:
             payload_type = "ndarray"
 
-        response_predict = sc.microservice(data=batch, transport="rest", payload_type=payload_type, method="predict")
+        response_predict = sc.microservice(data=batch, transport=transport, payload_type=payload_type, method="predict")
         response_feedback = sc.microservice_feedback(prediction_request=response_predict.request,
                                                      prediction_response=response_predict.response, reward=1.0,
                                                      transport=transport)

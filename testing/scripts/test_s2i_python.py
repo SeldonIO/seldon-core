@@ -25,7 +25,7 @@ def create_push_s2i_image(s2i_python_version,component_type,api_type):
     create_s2I_image(s2i_python_version,component_type,api_type)
     push_s2i_image(component_type,api_type)
 
-@pytest.mark.usefixtures("seldon_java_images")
+@pytest.mark.usefixtures("seldon_images")
 @pytest.mark.usefixtures("setup_python_s2i")
 @pytest.mark.usefixtures("s2i_python_version")
 class TestPythonS2i(object):
@@ -95,19 +95,19 @@ def wait_for_rollout(deploymentName):
         ret = run("kubectl rollout status deploy/"+deploymentName, shell=True)    
 
 def initial_rest_request():
-    r = rest_request_api_gateway("oauth-key","oauth-secret",None,API_GATEWAY_REST)        
+    r = rest_request_api_gateway("oauth-key","oauth-secret","seldon",API_GATEWAY_REST)        
     if not r.status_code == 200:
         time.sleep(1)
-        r = rest_request_api_gateway("oauth-key","oauth-secret",None,API_GATEWAY_REST)
+        r = rest_request_api_gateway("oauth-key","oauth-secret","seldon",API_GATEWAY_REST)
         if not r.status_code == 200:
             time.sleep(5)
-            r = rest_request_api_gateway("oauth-key","oauth-secret",None,API_GATEWAY_REST)
+            r = rest_request_api_gateway("oauth-key","oauth-secret","seldon",API_GATEWAY_REST)
     return r
         
-@pytest.mark.usefixtures("seldon_java_images")    
+@pytest.mark.usefixtures("seldon_images")    
 @pytest.mark.usefixtures("setup_python_s2i")
 @pytest.mark.usefixtures("s2i_python_version")
-@pytest.mark.usefixtures("single_namespace_seldon_helm")
+@pytest.mark.usefixtures("clusterwide_seldon_helm")
 class TestPythonS2iK8s(object):
 
     def test_model_rest(self,s2i_python_version):
@@ -117,7 +117,7 @@ class TestPythonS2iK8s(object):
         wait_for_rollout("mymodel-mymodel-b55624a")
         r = initial_rest_request()
         arr = np.array([[1,2,3]])
-        r = rest_request_api_gateway("oauth-key","oauth-secret",None,API_GATEWAY_REST,data=arr)
+        r = rest_request_api_gateway("oauth-key","oauth-secret","seldon",API_GATEWAY_REST,data=arr)
         res = r.json()
         print(res)
         assert r.status_code == 200
@@ -132,7 +132,7 @@ class TestPythonS2iK8s(object):
         wait_for_rollout("mytrans-mytrans-01bb8ff")
         r = initial_rest_request()
         arr = np.array([[1,2,3]])
-        r = rest_request_api_gateway("oauth-key","oauth-secret",None,API_GATEWAY_REST,data=arr)
+        r = rest_request_api_gateway("oauth-key","oauth-secret","seldon",API_GATEWAY_REST,data=arr)
         res = r.json()
         print(res)
         assert r.status_code == 200
@@ -144,10 +144,10 @@ class TestPythonS2iK8s(object):
         run("kubectl delete sdep --all",shell=True)        
         create_push_s2i_image(s2i_python_version,"transformer","rest")        
         run("kubectl apply -f ../resources/s2i_python_output_transformer.json",shell=True,check=True)
-        wait_for_rollout("mytrans-mytrans-d1d4c2f")
+        wait_for_rollout("mytrans-mytrans-14c8191")
         r = initial_rest_request()
         arr = np.array([[1,2,3]])
-        r = rest_request_api_gateway("oauth-key","oauth-secret",None,API_GATEWAY_REST,data=arr)
+        r = rest_request_api_gateway("oauth-key","oauth-secret","seldon",API_GATEWAY_REST,data=arr)
         res = r.json()
         print(res)
         assert r.status_code == 200
@@ -160,10 +160,10 @@ class TestPythonS2iK8s(object):
         create_push_s2i_image(s2i_python_version,"model","rest")
         create_push_s2i_image(s2i_python_version,"router","rest")                
         run("kubectl apply -f ../resources/s2i_python_router.json",shell=True,check=True)
-        wait_for_rollout("myrouter-myrouter-5d3f6ec")
+        wait_for_rollout("myrouter-myrouter-afd55a5")
         r = initial_rest_request()
         arr = np.array([[1,2,3]])
-        r = rest_request_api_gateway("oauth-key","oauth-secret",None,API_GATEWAY_REST,data=arr)
+        r = rest_request_api_gateway("oauth-key","oauth-secret","seldon",API_GATEWAY_REST,data=arr)
         res = r.json()
         print(res)
         assert r.status_code == 200
@@ -176,10 +176,10 @@ class TestPythonS2iK8s(object):
         create_push_s2i_image(s2i_python_version,"model","rest")
         create_push_s2i_image(s2i_python_version,"combiner","rest")                
         run("kubectl apply -f ../resources/s2i_python_combiner.json",shell=True,check=True)
-        wait_for_rollout("mycombiner-mycombiner-277a07c")
+        wait_for_rollout("mycombiner-mycombiner-e5d0d2c")
         r = initial_rest_request()
         arr = np.array([[1,2,3]])
-        r = rest_request_api_gateway("oauth-key","oauth-secret",None,API_GATEWAY_REST,data=arr)
+        r = rest_request_api_gateway("oauth-key","oauth-secret","seldon",API_GATEWAY_REST,data=arr)
         res = r.json()
         print(res)
         assert r.status_code == 200
@@ -195,7 +195,7 @@ class TestPythonS2iK8s(object):
         wait_for_rollout("mymodel-mymodel-b55624a")
         r = initial_rest_request()
         arr = np.array([[1,2,3]])
-        r = rest_request_api_gateway("oauth-key","oauth-secret",None,API_GATEWAY_REST,data=arr)
+        r = rest_request_api_gateway("oauth-key","oauth-secret","seldon",API_GATEWAY_REST,data=arr)
         res = r.json()
         print(res)
         assert r.status_code == 200
@@ -210,7 +210,7 @@ class TestPythonS2iK8s(object):
         wait_for_rollout("mytrans-mytrans-01bb8ff")
         r = initial_rest_request()
         arr = np.array([[1,2,3]])
-        r = rest_request_api_gateway("oauth-key","oauth-secret",None,API_GATEWAY_REST,data=arr)
+        r = rest_request_api_gateway("oauth-key","oauth-secret","seldon",API_GATEWAY_REST,data=arr)
         res = r.json()
         print(res)
         assert r.status_code == 200
@@ -222,10 +222,10 @@ class TestPythonS2iK8s(object):
         run("kubectl delete sdep --all",shell=True)        
         create_push_s2i_image(s2i_python_version,"transformer","grpc")        
         run("kubectl apply -f ../resources/s2i_python_output_transformer.json",shell=True,check=True)
-        wait_for_rollout("mytrans-mytrans-d1d4c2f")
+        wait_for_rollout("mytrans-mytrans-14c8191")
         r = initial_rest_request()
         arr = np.array([[1,2,3]])
-        r = rest_request_api_gateway("oauth-key","oauth-secret",None,API_GATEWAY_REST,data=arr)
+        r = rest_request_api_gateway("oauth-key","oauth-secret","seldon",API_GATEWAY_REST,data=arr)
         res = r.json()
         print(res)
         assert r.status_code == 200
@@ -238,10 +238,10 @@ class TestPythonS2iK8s(object):
         create_push_s2i_image(s2i_python_version,"model","grpc")
         create_push_s2i_image(s2i_python_version,"router","grpc")                
         run("kubectl apply -f ../resources/s2i_python_router.json",shell=True,check=True)
-        wait_for_rollout("myrouter-myrouter-5d3f6ec")
+        wait_for_rollout("myrouter-myrouter-afd55a5")
         r = initial_rest_request()
         arr = np.array([[1,2,3]])
-        r = rest_request_api_gateway("oauth-key","oauth-secret",None,API_GATEWAY_REST,data=arr)
+        r = rest_request_api_gateway("oauth-key","oauth-secret","seldon",API_GATEWAY_REST,data=arr)
         res = r.json()
         print(res)
         assert r.status_code == 200
@@ -254,10 +254,10 @@ class TestPythonS2iK8s(object):
         create_push_s2i_image(s2i_python_version,"model","grpc")
         create_push_s2i_image(s2i_python_version,"combiner","grpc")                
         run("kubectl apply -f ../resources/s2i_python_combiner.json",shell=True,check=True)
-        wait_for_rollout("mycombiner-mycombiner-277a07c")
+        wait_for_rollout("mycombiner-mycombiner-e5d0d2c")
         r = initial_rest_request()
         arr = np.array([[1,2,3]])
-        r = rest_request_api_gateway("oauth-key","oauth-secret",None,API_GATEWAY_REST,data=arr)
+        r = rest_request_api_gateway("oauth-key","oauth-secret","seldon",API_GATEWAY_REST,data=arr)
         res = r.json()
         print(res)
         assert r.status_code == 200
