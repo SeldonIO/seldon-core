@@ -41,14 +41,14 @@ def plot_confusion_matrix(cm, classes,
     plt.tight_layout()
 
 
-def rest_request_ambassador(deploymentName, request, endpoint="localhost:8003"):
+def rest_request_ambassador(deploymentName, namespace, request, endpoint="localhost:8003"):
     response = requests.post(
-        "http://" + endpoint + "/seldon/" + deploymentName + "/api/v0.1/predictions",
+        "http://" + endpoint + "/seldon/" + namespace + "/" + deploymentName + "/api/v0.1/predictions",
         json=request)
     return response.json()
 
 
-def send_feedback_rest(deploymentName, request, response, reward, truth, endpoint="localhost:8003"):
+def send_feedback_rest(deploymentName, namespace, request, response, reward, truth, endpoint="localhost:8003"):
     feedback = {
         "request": request,
         "response": response,
@@ -56,7 +56,7 @@ def send_feedback_rest(deploymentName, request, response, reward, truth, endpoin
         "truth": {"data": {"ndarray": truth}}
     }
     response = requests.post(
-        "http://" + endpoint + "/seldon/" + deploymentName + "/api/v0.1/feedback",
+        "http://" + endpoint + "/seldon/" + namespace + "/" + deploymentName + "/api/v0.1/feedback",
         json=feedback)
     return response.json()
 
