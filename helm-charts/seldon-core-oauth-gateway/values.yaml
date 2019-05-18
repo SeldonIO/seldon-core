@@ -1,0 +1,27 @@
+annotations: null
+engine:
+  grpc:
+    port: 5001
+  port: 8000
+image:
+  pullPolicy: IfNotPresent
+  repository: seldonio/apife
+  tag: 0.2.8-SNAPSHOT
+rbac:
+  rolebinding:
+    create: true
+  serviceAccount:
+    create: true
+    name: seldon
+redis:
+  cluster:
+    enabled: false
+  enabled: true
+  master:
+    securityContext:
+      enabled: false
+  securityContext:
+    enabled: false
+  usePassword: false
+serviceType: NodePort
+singleNamespace: false

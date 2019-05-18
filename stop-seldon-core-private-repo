@@ -5,5 +5,6 @@ set -o errexit
 set -o pipefail
 
 helm delete seldon-core --purge
-helm delete seldon-core-crd --purge
+helm delete seldon-core-oauth-gateway --purge
+helm delete ambassador --purge
 

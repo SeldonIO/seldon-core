@@ -30,9 +30,9 @@ def rest_request_seldon(request):
     return response.json()
 
 
-def rest_request(deploymentName,request):
+def rest_request(deploymentName,request,namespace):
     response = requests.post(
-                "http://"+AMBASSADOR_API_IP+"/seldon/"+deploymentName+"/api/v0.1/predictions",
+                "http://"+AMBASSADOR_API_IP+"/seldon/"+namespace+"/"+deploymentName+"/api/v0.1/predictions",
                 json=request)
     return response.json()   
     
@@ -56,14 +56,14 @@ def gen_image(arr):
 def download_mnist():
     return input_data.read_data_sets("MNIST_data/", one_hot = True)
 
-def predict_rest_mnist(mnist,deployment_name):
+def predict_rest_mnist(mnist,deployment_name,namespace):
     batch_xs, batch_ys = mnist.train.next_batch(1)
     chosen=0
     gen_image(batch_xs[chosen]).show()
     data = batch_xs[chosen].reshape((1,784))
     features = ["X"+str(i+1) for i in range (0,784)]
     request = {"data":{"names":features,"ndarray":data.tolist()}}
-    predictions = rest_request(deployment_name,request)
+    predictions = rest_request(deployment_name,request,namespace)
     print(predictions)
 
 

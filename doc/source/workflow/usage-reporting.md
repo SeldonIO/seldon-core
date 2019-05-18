@@ -6,10 +6,10 @@ We provide an option to use an anonymous metrics collection tool provided by the
 
 ### Enable Usage Reporting
 
-To help support the development of seldon-core, the voluntary reporting of usage data can be enabled whenever the "seldon-core-crd" helm chart is used  by setting the "--set usage_metrics.enabled=true" option.
+To help support the development of seldon-core, the voluntary reporting of usage data can be enabled whenever the "seldon-core-operator" helm chart is used  by setting the "--set usage_metrics.enabled=true" option.
 
 ```bash
-helm install seldon-core-crd --name seldon-core-crd \
+helm install seldon-core-operator --name seldon-core \
         --repo https://storage.googleapis.com/seldon-charts --set usage_metrics.enabled=true
 ```
 
@@ -59,10 +59,10 @@ An example of what's reported:
 
 ### Disable Usage Reporting
 
-Reporting of usage data is disabled by default, just use "seldon-core-crd" as normal.
+Reporting of usage data is disabled by default, just use "seldon-core-operator" as normal.
 
 ```bash
-helm install seldon-core-crd --name seldon-core-crd \
+helm install seldon-core-operator --name seldon-core \
         --repo https://storage.googleapis.com/seldon-charts
 ```
 

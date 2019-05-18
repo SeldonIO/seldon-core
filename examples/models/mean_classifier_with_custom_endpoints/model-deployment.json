@@ -11,6 +11,9 @@
         "name": "test-deployment",
         "oauth_key": "oauth-key",
         "oauth_secret": "oauth-secret",
+	"annotations": {
+	    "seldon.io/engine-separate-pod": "true"
+	},
         "predictors": [
             {
                 "annotations": {

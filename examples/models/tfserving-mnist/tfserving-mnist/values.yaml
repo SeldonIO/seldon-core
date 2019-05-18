@@ -1,4 +1,4 @@
 tfserving:
   model_base_path: gs://seldon-tfserving-store/mnist-model
-  port: 8000
+  port: 7001
   

@@ -2,17 +2,12 @@
 
 Helm charts are published to our official repo. An example install:
 
-```bash
-helm install seldon-core-crd --name seldon-core-crd --repo https://storage.googleapis.com/seldon-charts \
-     --set usage_metrics.enabled=true
-```
+The core charts for installing Seldon Core are shown below:
 
-The core charts for installing Seldon Core.
-
- * [seldon-core-crd](https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-core-crd)
-   * SeldonDeployment Custom Resource Definition and Spartakus usage metrics
- * [seldon-core](https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-core)
-   * Main helm chart for installing Seldon Core
+ * [seldon-core-operator](https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-core-operator)
+   * Main helm chart for installing Seldon Core CRD and Controller
+ * [seldon-core-oauth-gateway](https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-core-oauth-gateway)
+   * Seldon OAuth Gateway
  * [seldon-core-analytics](https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-core-analytics)
    * Example Prometheus and Grafana setup with demonstration Grafana dashboard for Seldon Core
 
