@@ -1,5 +1,6 @@
 import json
 from google.protobuf import json_format
+from google.protobuf.json_format import MessageToDict, ParseDict
 from seldon_core.proto import prediction_pb2
 from seldon_core.flask_utils import SeldonMicroserviceException
 import numpy as np
@@ -114,7 +115,7 @@ def feedback_to_json(message_proto: prediction_pb2.Feedback) -> Dict:
     return message_dict
 
 
-def get_data_from_proto(request: prediction_pb2.SeldonMessage) -> Union[np.ndarray, str, bytes]:
+def get_data_from_proto(request: prediction_pb2.SeldonMessage) -> Union[np.ndarray, str, bytes, dict]:
     """
     Extract the data payload from the SeldonMessage
 
@@ -136,6 +137,8 @@ def get_data_from_proto(request: prediction_pb2.SeldonMessage) -> Union[np.ndarr
         return request.binData
     elif data_type == "strData":
         return request.strData
+    elif data_type == "jsonData":
+        return MessageToDict(request.jsonData)
     else:
         raise SeldonMicroserviceException("Unknown data in SeldonMessage")
 
@@ -300,7 +303,7 @@ def array_to_list_value(array: np.ndarray, lv: Optional[ListValue] = None) -> Li
 
 
 def construct_response(user_model: SeldonComponent, is_request: bool, client_request: prediction_pb2.SeldonMessage,
-                       client_raw_response: Union[np.ndarray, str, bytes]) -> prediction_pb2.SeldonMessage:
+                       client_raw_response: Union[np.ndarray, str, bytes, dict]) -> prediction_pb2.SeldonMessage:
     """
 
     Parameters
@@ -349,6 +352,9 @@ def construct_response(user_model: SeldonComponent, is_request: bool, client_req
         return prediction_pb2.SeldonMessage(data=data, meta=meta)
     elif isinstance(client_raw_response, str):
         return prediction_pb2.SeldonMessage(strData=client_raw_response, meta=meta)
+    elif isinstance(client_raw_response, dict):
+        jsonDataResponse = ParseDict(client_raw_response, prediction_pb2.SeldonMessage().jsonData)
+        return prediction_pb2.SeldonMessage(jsonData=jsonDataResponse, meta=meta)
     elif isinstance(client_raw_response, (bytes, bytearray)):
         return prediction_pb2.SeldonMessage(binData=client_raw_response, meta=meta)
     else:
@@ -356,7 +362,7 @@ def construct_response(user_model: SeldonComponent, is_request: bool, client_req
 
 
 def extract_request_parts(request: prediction_pb2.SeldonMessage) -> Tuple[
-    Union[np.ndarray, str, bytes], Dict, prediction_pb2.DefaultData, str]:
+    Union[np.ndarray, str, bytes, dict], Dict, prediction_pb2.DefaultData, str]:
     """
 
     Parameters
