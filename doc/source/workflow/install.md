@@ -41,7 +41,7 @@ helm install stable/ambassador --name ambassador --set image.tag=0.40.2
 This provides a basic OAuth Gateway.
 
 ```
-helm install helm-charts/seldon-core-oauth-gateway --name seldon-gateway --repo https://storage.googleapis.com/seldon-charts
+helm install seldon-core-oauth-gateway --name seldon-gateway --repo https://storage.googleapis.com/seldon-charts
 ```
 
 ## Other Options
