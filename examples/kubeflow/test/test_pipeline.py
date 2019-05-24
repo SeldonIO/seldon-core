@@ -3,6 +3,7 @@ from click.testing import CliRunner
 import dill
 import numpy as np
 
+from pipeline.data_downloader.pipeline_step import run_pipeline as download_cli
 from pipeline.clean_text.pipeline_step import run_pipeline as clean_cli
 from pipeline.spacy_tokenize.pipeline_step import run_pipeline as spacy_cli
 from pipeline.tfidf_vectorizer.pipeline_step import run_pipeline as tfidf_cli
@@ -16,12 +17,23 @@ def test_pipeline():
     runner = CliRunner()
     
     with runner.isolated_filesystem():
-        # Creating test data
-        with open('raw_text.data', 'wb') as f:
-            raw_arr = np.array([
-                "hello this is a test", 
-                "another sentence to process"])
-            dill.dump(raw_arr, f)
+
+        # Test Data Downloader
+        result = runner.invoke(download_cli, [
+            '--labels-path', 'labels.data',
+            '--features-path', 'raw_text.data'])
+
+        with open('raw_text.data', "rb") as f:
+            assert f
+        with open('labels.data', "rb") as f:
+            assert f
+
+        ## Creating test data
+        #with open('raw_text.data', 'wb') as f:
+        #    raw_arr = np.array([
+        #        "hello this is a test", 
+        #        "another sentence to process"])
+        #    dill.dump(raw_arr, f)
 
         # Test Clean text transformer
         result = runner.invoke(clean_cli, [
