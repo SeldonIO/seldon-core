@@ -10,6 +10,7 @@ Notebooks
    Ambassador Headers <ambassador_headers>
    Ambassador Custom Config <ambassador_custom>
    Autoscaling Example <autoscaling_example>
+   AWS Elastic Kubernetes Service (EKS) Deep MNIST <aws_eks_deep_mnist>
    Combiner Example <combiner>
    Custom Endpoints <custom_endpoints>
    Example Helm Deployments <helm_examples>
