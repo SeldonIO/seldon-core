@@ -1,0 +1,170 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: mnist-
+spec:
+  arguments:
+    parameters:
+    - name: model-export-dir
+      value: /mnt/export
+    - name: create-pvc
+      value: my-pvc
+    - name: train-steps
+      value: '200'
+    - name: learning-rate
+      value: '0.01'
+    - name: batch-size
+      value: '100'
+  entrypoint: mnist
+  serviceAccountName: pipeline-runner
+  templates:
+  - name: create-pvc
+    outputs:
+      parameters:
+      - name: create-pvc-manifest
+        valueFrom:
+          jsonPath: '{}'
+      - name: create-pvc-name
+        valueFrom:
+          jsonPath: '{.metadata.name}'
+      - name: create-pvc-size
+        valueFrom:
+          jsonPath: '{.status.capacity.storage}'
+    resource:
+      action: create
+      manifest: "apiVersion: v1\nkind: PersistentVolumeClaim\nmetadata:\n  name: '{{workflow.name}}-my-pvc'\n\
+        spec:\n  accessModes:\n  - ReadWriteMany\n  resources:\n    requests:\n  \
+        \    storage: 2Gi\n"
+  - dag:
+      tasks:
+      - name: create-pvc
+        template: create-pvc
+      - arguments:
+          parameters:
+          - name: create-pvc-name
+            value: '{{tasks.create-pvc.outputs.parameters.create-pvc-name}}'
+          - name: model-export-dir
+            value: '{{inputs.parameters.model-export-dir}}'
+        dependencies:
+        - create-pvc
+        - train
+        name: serve
+        template: serve
+      - arguments:
+          parameters:
+          - name: batch-size
+            value: '{{inputs.parameters.batch-size}}'
+          - name: create-pvc-name
+            value: '{{tasks.create-pvc.outputs.parameters.create-pvc-name}}'
+          - name: learning-rate
+            value: '{{inputs.parameters.learning-rate}}'
+          - name: model-export-dir
+            value: '{{inputs.parameters.model-export-dir}}'
+          - name: train-steps
+            value: '{{inputs.parameters.train-steps}}'
+        dependencies:
+        - create-pvc
+        name: train
+        template: train
+      - arguments:
+          parameters:
+          - name: create-pvc-name
+            value: '{{tasks.create-pvc.outputs.parameters.create-pvc-name}}'
+        dependencies:
+        - create-pvc
+        - serve
+        name: web-ui
+        template: web-ui
+    inputs:
+      parameters:
+      - name: batch-size
+      - name: learning-rate
+      - name: model-export-dir
+      - name: train-steps
+    name: mnist
+  - container:
+      args:
+      - --model-export-path
+      - '{{inputs.parameters.model-export-dir}}'
+      - --server-name
+      - mnist-service
+      image: gcr.io/ml-pipeline/ml-pipeline-kubeflow-deployer:7775692adf28d6f79098e76e839986c9ee55dd61
+      volumeMounts:
+      - mountPath: /mnt
+        name: create-pvc
+    inputs:
+      parameters:
+      - name: create-pvc-name
+      - name: model-export-dir
+    name: serve
+    outputs:
+      artifacts:
+      - name: mlpipeline-ui-metadata
+        optional: true
+        path: /mlpipeline-ui-metadata.json
+      - name: mlpipeline-metrics
+        optional: true
+        path: /mlpipeline-metrics.json
+  - container:
+      args:
+      - /opt/model.py
+      - --tf-export-dir
+      - '{{inputs.parameters.model-export-dir}}'
+      - --tf-train-steps
+      - '{{inputs.parameters.train-steps}}'
+      - --tf-batch-size
+      - '{{inputs.parameters.batch-size}}'
+      - --tf-learning-rate
+      - '{{inputs.parameters.learning-rate}}'
+      image: gcr.io/kubeflow-examples/mnist/model:v20190304-v0.2-176-g15d997b
+      volumeMounts:
+      - mountPath: /mnt
+        name: create-pvc
+    inputs:
+      parameters:
+      - name: batch-size
+      - name: create-pvc-name
+      - name: learning-rate
+      - name: model-export-dir
+      - name: train-steps
+    name: train
+    outputs:
+      artifacts:
+      - name: mlpipeline-ui-metadata
+        optional: true
+        path: /mlpipeline-ui-metadata.json
+      - name: mlpipeline-metrics
+        optional: true
+        path: /mlpipeline-metrics.json
+  - container:
+      args:
+      - --image
+      - gcr.io/kubeflow-examples/mnist/web-ui:v20190304-v0.2-176-g15d997b-pipelines
+      - --name
+      - web-ui
+      - --container-port
+      - '5000'
+      - --service-port
+      - '80'
+      - --service-type
+      - LoadBalancer
+      image: gcr.io/kubeflow-examples/mnist/deploy-service:latest
+      volumeMounts:
+      - mountPath: /mnt
+        name: create-pvc
+    inputs:
+      parameters:
+      - name: create-pvc-name
+    name: web-ui
+    outputs:
+      artifacts:
+      - name: mlpipeline-ui-metadata
+        optional: true
+        path: /mlpipeline-ui-metadata.json
+      - name: mlpipeline-metrics
+        optional: true
+        path: /mlpipeline-metrics.json
+  volumes:
+  - name: create-pvc
+    persistentVolumeClaim:
+      claimName: '{{workflow.name}}-my-pvc'
