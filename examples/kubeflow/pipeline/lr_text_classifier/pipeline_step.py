@@ -7,7 +7,7 @@ from sklearn.linear_model import LogisticRegression
 @click.option('--in-path', default="/mnt/tfidf_vectors.data")
 @click.option('--labels-path', default="/mnt/labels.data")
 @click.option('--out-path', default="/mnt/lr_prediction.data")
-@click.option('--c-param', default=1000)
+@click.option('--c-param', default=0.1)
 @click.option('--action', default="predict", 
         type=click.Choice(['predict', 'train']))
 @click.option('--model-path', default="/mnt/lr_text.model")

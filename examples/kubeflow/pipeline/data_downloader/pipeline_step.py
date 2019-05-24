@@ -19,12 +19,15 @@ def run_pipeline(
         labels_column):
 
     df = pd.read_csv(csv_url, encoding=csv_encoding)
+
     x = df[features_column].values
+
+    with open(features_path, "wb") as out_f:
+        dill.dump(x, out_f)
+
     y = df[labels_column].values
 
     with open(labels_path, "wb") as out_f:
-        dill.dump(y, out_f)
-    with open(features_path, "wb") as out_f:
         dill.dump(y, out_f)
 
 if __name__ == "__main__":
