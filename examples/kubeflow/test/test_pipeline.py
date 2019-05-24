@@ -28,7 +28,7 @@ def test_pipeline():
             '--in-path', 'raw_text.data',
             '--out-path', 'clean_text.data'])
 
-        with open('raw_text.data', "rb") as f:
+        with open('clean_text.data', "rb") as f:
             clean_arr = dill.load(f)
             assert all(raw_arr == clean_arr)
 
