@@ -1,6 +1,6 @@
 import click
 import dill
-from .Transformer import Transformer
+from Transformer import Transformer
 
 @click.command()
 @click.option('--in-path', default="/mnt/clean_text.data")
@@ -9,7 +9,7 @@ def run_pipeline(in_path, out_path):
     spacy_transformer = Transformer()
     with open(in_path, 'rb') as in_f:
         x = dill.load(in_f)
-    y = spacy_transformer.transform(x)
+    y = spacy_transformer.predict(x)
     with open(out_path, "wb") as out_f:
         dill.dump(y, out_f)
 
