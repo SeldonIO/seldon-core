@@ -18,22 +18,22 @@ def test_pipeline():
     
     with runner.isolated_filesystem():
 
-        # Test Data Downloader
-        result = runner.invoke(download_cli, [
-            '--labels-path', 'labels.data',
-            '--features-path', 'raw_text.data'])
+        # # Test Data Downloader
+        # result = runner.invoke(download_cli, [
+        #     '--labels-path', 'labels.data',
+        #     '--features-path', 'raw_text.data'])
 
-        with open('raw_text.data', "rb") as f:
-            assert f
-        with open('labels.data', "rb") as f:
-            assert f
+        # with open('raw_text.data', "rb") as f:
+        #     assert f
+        # with open('labels.data', "rb") as f:
+        #     assert f
 
-        ## Creating test data
-        #with open('raw_text.data', 'wb') as f:
-        #    raw_arr = np.array([
-        #        "hello this is a test", 
-        #        "another sentence to process"])
-        #    dill.dump(raw_arr, f)
+        # Creating test data
+        with open('raw_text.data', 'wb') as f:
+            raw_arr = np.array([
+                "hello this is a test", 
+                "another sentence to process"])
+            dill.dump(raw_arr, f)
 
         # Test Clean text transformer
         result = runner.invoke(clean_cli, [
@@ -83,14 +83,12 @@ def test_pipeline():
             '--in-path', 'tfidf_vectors.data',
             '--labels-path', 'labels.data',
             '--out-path', 'prediction.data',
-            '--c_param', "0.1",
+            '--c-param', "0.1",
             '--action', 'train',
             '--model-path', 'lr_text.model'])
 
         with open("prediction.data", "rb") as f:
-            lr_prediction = dill.load(f)
-            print(lr_prediction)
-            assert lr_prediction
+            assert f
 
         with open("lr_text.model", "rb") as f:
             assert f

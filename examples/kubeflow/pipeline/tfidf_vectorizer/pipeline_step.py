@@ -33,6 +33,7 @@ def run_pipeline(
         tfidf_vectorizer.fit(x)
         with open(model_path, "wb") as model_f:
             dill.dump(tfidf_vectorizer, model_f)
+
     elif action == "predict":
         with open(model_path, "rb") as model_f:
             tfidf_vectorizer = dill.load(model_f)

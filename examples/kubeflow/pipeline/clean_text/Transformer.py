@@ -2,7 +2,7 @@ import re
 from html.parser import HTMLParser
 import numpy as np
 
-class Model():
+class Transformer():
     __html_parser = HTMLParser()
     __uplus_pattern = \
         re.compile("\<[uU]\+(?P<digit>[a-zA-Z0-9]+)\>")
@@ -10,7 +10,7 @@ class Model():
         re.compile("\[(.*)\]\((.*)\)")
 
     def transform(self, X, **kwargs):
-        f = np.vectorize(Model.transform_clean_text)
+        f = np.vectorize(Transformer.transform_clean_text)
         X_clean = f(X)
         return X_clean
 
@@ -23,7 +23,7 @@ class Model():
             decoded = raw_text.encode("ISO-8859-1").decode("utf-8")
         except:
             decoded = raw_text.encode("ISO-8859-1").decode("cp1252")
-        html_unescaped =Model.\
+        html_unescaped =Transformer.\
             __html_parser.unescape(decoded) 
         html_unescaped = re.sub(r"\r\n", " ", html_unescaped)
         html_unescaped = re.sub(r"\r\r\n", " ", html_unescaped)
@@ -31,9 +31,9 @@ class Model():
         html_unescaped = html_unescaped.replace("&gt;", " > ")
         html_unescaped = html_unescaped.replace("&lt;", " < ")
         html_unescaped = html_unescaped.replace("--", " - ")
-        html_unescaped = Model.__uplus_pattern.sub(
+        html_unescaped = Transformer.__uplus_pattern.sub(
             " U\g<digit> ", html_unescaped)
-        html_unescaped = Model.__markup_link_pattern.sub(
+        html_unescaped = Transformer.__markup_link_pattern.sub(
             " \1 \2 ", html_unescaped)
         html_unescaped = html_unescaped.replace("\\", "")
         return html_unescaped
