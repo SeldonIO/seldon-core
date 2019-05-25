@@ -253,6 +253,8 @@ spec:
           value: {{ .Values.engine.prometheus.path }}
         - name: ISTIO_ENABLED
           value: '{{ .Values.istio.enabled }}'
+        - name: ISTIO_GATEWAY
+          value: '{{ .Values.istio.gateway }}'
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         name: manager

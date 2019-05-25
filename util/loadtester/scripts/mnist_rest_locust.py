@@ -97,7 +97,20 @@ class SeldonJsLocust(TaskSet):
             self.get_token()
         else:
             self.access_token = "NONE"
-        self.mnist = input_data.read_data_sets("MNIST_data/", one_hot = True)
+        ok = False
+        for i in range(3):
+            try:
+                self.mnist = input_data.read_data_sets("MNIST_data/", one_hot = True)
+                ok = True
+            except:
+                print("Failed to load mnist data")
+                i = i + 1
+                print("Sleeping 2 secs")
+                time.sleep(2)
+        if not ok:
+            sys.exit(-1)
+                
+                
 
     def sendFeedback(self,request,response,reward):
         j = {"request":request,"response":response,"reward":reward}
