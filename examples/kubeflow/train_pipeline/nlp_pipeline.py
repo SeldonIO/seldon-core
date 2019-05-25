@@ -31,7 +31,7 @@ def nlp_pipeline(
       name='my-pvc',
       resource_name="my-pvc",
       modes=["ReadWriteMany"],
-      size="2Gi"
+      size="1Gi"
     )
 
     download_step = dsl.ContainerOp(

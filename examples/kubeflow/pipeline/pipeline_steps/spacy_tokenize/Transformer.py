@@ -1,5 +1,6 @@
 import spacy
 import numpy as np
+import logging
 
 # from spacy.cli import download
 # import importlib
@@ -11,9 +12,11 @@ nlp = spacy.load('en_core_web_sm', parser=False, entity=False)
 class Transformer():
     __symbols = set("!$%^&*()_+|~-=`{}[]:\";'<>?,./-")
 
-    def predict(self, X, feature_names):
+    def predict(self, X, feature_names=[]):
+        logging.warning(X)
         f = np.vectorize(Transformer.transform_to_token, otypes=[object])
         X_tokenized = f(X)
+        logging.warning(X_tokenized)
         return X_tokenized
 
     def fit(self, X, y=None, **fit_params):

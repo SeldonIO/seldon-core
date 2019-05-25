@@ -1,6 +1,7 @@
 import re 
 from html.parser import HTMLParser
 import numpy as np
+import logging
 
 class Transformer():
     __html_parser = HTMLParser()
@@ -9,9 +10,11 @@ class Transformer():
     __markup_link_pattern = \
         re.compile("\[(.*)\]\((.*)\)")
 
-    def predict(self, X, feature_names):
+    def predict(self, X, feature_names=[]):
+        logging.warning(X)
         f = np.vectorize(Transformer.transform_clean_text)
         X_clean = f(X)
+        logging.warning(X_clean)
         return X_clean
 
     def fit(self, X, y=None, **fit_params):

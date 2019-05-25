@@ -1,7 +1,12 @@
 import dill
 import click
 import dill
-from Transformer import Transformer
+try:
+    # Running for tests
+    from .Transformer import Transformer
+except:
+    # Running from CLI
+    from Transformer import Transformer
 
 @click.command()
 @click.option('--in-path', default="/mnt/raw_text.data")

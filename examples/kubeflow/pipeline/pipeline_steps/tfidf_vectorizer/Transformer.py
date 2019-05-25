@@ -1,5 +1,6 @@
 
 import dill
+import logging
 
 class Transformer(object):
     def __init__(self):
@@ -8,7 +9,10 @@ class Transformer(object):
             self._tfidf_vectorizer = dill.load(model_file)
 
     def predict(self, X, feature_names):
-        tfidf_features = self._tfidf_vectorizer.transform(X)
-        return tfidf_features 
+        logging.warning(X)
+        tfidf_sparse = self._tfidf_vectorizer.transform(X)
+        tfidf_array = tfidf_sparse.toarray()
+        logging.warning(tfidf_array)
+        return tfidf_array
 
 

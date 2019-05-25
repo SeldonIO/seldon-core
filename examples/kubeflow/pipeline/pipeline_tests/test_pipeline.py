@@ -3,11 +3,11 @@ from click.testing import CliRunner
 import dill
 import numpy as np
 
-from pipeline.data_downloader.pipeline_step import run_pipeline as download_cli
-from pipeline.clean_text.pipeline_step import run_pipeline as clean_cli
-from pipeline.spacy_tokenize.pipeline_step import run_pipeline as spacy_cli
-from pipeline.tfidf_vectorizer.pipeline_step import run_pipeline as tfidf_cli
-from pipeline.lr_text_classifier.pipeline_step import run_pipeline as lr_cli
+from pipeline_steps.data_downloader.pipeline_step import run_pipeline as download_cli
+from pipeline_steps.clean_text.pipeline_step import run_pipeline as clean_cli
+from pipeline_steps.spacy_tokenize.pipeline_step import run_pipeline as spacy_cli
+from pipeline_steps.tfidf_vectorizer.pipeline_step import run_pipeline as tfidf_cli
+from pipeline_steps.lr_text_classifier.pipeline_step import run_pipeline as lr_cli
 
 import sys
 sys.path.append("..")
