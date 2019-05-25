@@ -256,7 +256,7 @@
                                         }
                                     }
                                 ],
-                                "image": "grafana/grafana:5.3.4",
+                                "image": "grafana/grafana:6.1.6",
                                 "name": "grafana",
                                 "ports": [
                                     {
