@@ -16,6 +16,7 @@ Notebooks
    Go Model <go_example>
    H2O Java MoJo <h2o_mojo>
    Istio Canary <istio_canary>
+   Istio Examples <istio_examples>   
    Jaeger Tracing <tmpl_model_tracing>
    Keras MNIST <keras_mnist>
    Max gRPC Message Size <max_grpc_msg_size>
