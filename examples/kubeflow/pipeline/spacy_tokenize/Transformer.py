@@ -1,14 +1,17 @@
 import spacy
-from spacy.cli import download
 import numpy as np
 
-download("en_core_web_sm")
+# from spacy.cli import download
+# import importlib
+# download("en_core_web_sm")
+# importlib.reload(spacy)
+
 nlp = spacy.load('en_core_web_sm', parser=False, entity=False)
     
 class Transformer():
     __symbols = set("!$%^&*()_+|~-=`{}[]:\";'<>?,./-")
 
-    def transform(self, X, **kwargs):
+    def predict(self, X, feature_names):
         f = np.vectorize(Transformer.transform_to_token, otypes=[object])
         X_tokenized = f(X)
         return X_tokenized

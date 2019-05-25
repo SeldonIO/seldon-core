@@ -9,7 +9,7 @@ class Transformer():
     __markup_link_pattern = \
         re.compile("\[(.*)\]\((.*)\)")
 
-    def transform(self, X, **kwargs):
+    def predict(self, X, feature_names):
         f = np.vectorize(Transformer.transform_clean_text)
         X_clean = f(X)
         return X_clean
