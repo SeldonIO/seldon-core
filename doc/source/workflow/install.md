@@ -53,7 +53,7 @@ If you are using istio then the controller will create virtual services for an i
 This provides a basic OAuth Gateway.
 
 ```bash
-helm install helm-charts/seldon-core-oauth-gateway --name seldon-gateway --repo https://storage.googleapis.com/seldon-charts
+helm install seldon-core-oauth-gateway --name seldon-gateway --repo https://storage.googleapis.com/seldon-charts
 ```
 
 ## Other Options
