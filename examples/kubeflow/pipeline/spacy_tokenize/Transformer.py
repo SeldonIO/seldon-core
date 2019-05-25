@@ -1,6 +1,8 @@
 import spacy
+from spacy.cli import download
 import numpy as np
 
+download("en_core_web_sm")
 nlp = spacy.load('en_core_web_sm', parser=False, entity=False)
     
 class Transformer():

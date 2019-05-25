@@ -1,4 +1,0 @@
-scipy>= 0.13.3
-scikit-learn>=0.18
-spacy==2.0.18
-dill==0.2.9
