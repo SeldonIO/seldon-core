@@ -92,6 +92,7 @@ class SeldonJsLocust(TaskSet):
         self.data_size = int(getEnviron('DATA_SIZE',"1"))
         self.send_feedback = int(getEnviron('SEND_FEEDBACK',"0"))
         self.endpoint = getEnviron('API_ENDPOINT',"external")
+        self.path_prefix = getEnviron('REST_PATH_PREFIX',"")
         if self.oauth_enabled == "true":
             self.get_token()
         else:
@@ -101,7 +102,7 @@ class SeldonJsLocust(TaskSet):
     def sendFeedback(self,request,response,reward):
         j = {"request":request,"response":response,"reward":reward}
         jStr = json.dumps(j)
-        r = self.client.request("POST","/api/v0.1/feedback",headers={"Content-Type":"application/json","Accept":"application/json","Authorization":"Bearer "+self.access_token},name="feedback",data=jStr)
+        r = self.client.request("POST",self.path_prefix+"/api/v0.1/feedback",headers={"Content-Type":"application/json","Accept":"application/json","Authorization":"Bearer "+self.access_token},name="feedback",data=jStr)
         if not r.status_code == 200:
             print("Failed feedback request "+str(r.status_code))
             if r.status_code == 401:
@@ -125,7 +126,7 @@ class SeldonJsLocust(TaskSet):
             payload = {"json":jStr}
             r = self.client.request("POST","/predict",headers={"Accept":"application/json"},name="predictions",data=payload)
         else:
-            r = self.client.request("POST","/api/v0.1/predictions",headers={"Content-Type":"application/json","Accept":"application/json","Authorization":"Bearer "+self.access_token},name="predictions",data=jStr)
+            r = self.client.request("POST",self.path_prefix+"/api/v0.1/predictions",headers={"Content-Type":"application/json","Accept":"application/json","Authorization":"Bearer "+self.access_token},name="predictions",data=jStr)
         if r.status_code == 200:
             if self.send_feedback == 1:
                 response = r.json()
