@@ -5,11 +5,19 @@ In this example we showcase how to build re-usable components to build an ML pip
 
 We will automate content moderation on the Reddit comments in /r/science building a machine learning NLP model with the following components:
 
-![](img/kubeflow-seldon-nlp-reusable-components.jpg)
+![](img/completed-pipeline.jpg)
 
 This tutorial will break down in the following sections:
 
-1) TODO
+1) Run all the services (Kubeflow and Seldon)
+
+2) Test and build all our reusable pipeline steps
+
+3) Train our NLP Pipeline with Kubeflow
+
+4) Deploying your ML Pipeline with Seldon
+
+5) Test Deployed ML REST Endpoints
 
 Let's get started! 🚀🔥
 
@@ -73,7 +81,8 @@ Make sure you install the following dependencies, as they are critical for this 
     Successfully built kfp
 
 
-# Create project
+# 1) Run all the services
+### Start by running Kubeflow
 Kubeflow's CLI allows us to create a project which will allow us to build the configuration we need to deploy our kubeflow and seldon clusters.
 
 
@@ -96,346 +105,346 @@ kfctl generate all -V
 kfctl apply all -V
 ```
 
-    time="2019-05-25T18:24:21+01:00" level=info msg="reading from /home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon/app.yaml" filename="coordinator/coordinator.go:341"
-    time="2019-05-25T18:24:21+01:00" level=info msg="reading from /home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon/app.yaml" filename="coordinator/coordinator.go:341"
-    time="2019-05-25T18:24:21+01:00" level=info msg="Ksonnet.Generate Name kubeflow-seldon AppDir /home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon Platform " filename="ksonnet/ksonnet.go:369"
-    time="2019-05-25T18:24:21+01:00" level=info msg="Creating environment \"default\" with namespace \"kubeflow\", pointing to \"version:v1.13.0\" cluster at address \"https://localhost:6445\"" filename="env/create.go:77"
-    time="2019-05-25T18:24:25+01:00" level=info msg="Generating ksonnet-lib data at path '/home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon/ks_app/lib/ksonnet-lib/v1.13.0'" filename="lib/lib.go:148"
-    time="2019-05-25T18:24:25+01:00" level=info msg="Successfully initialized the app kubeflow-seldon." filename="ksonnet/ksonnet.go:505"
-    time="2019-05-25T18:24:25+01:00" level=info msg="App kubeflow-seldon add registry kubeflow URI /home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon/.cache/v0.5.1/kubeflow" filename="ksonnet/ksonnet.go:621"
-    time="2019-05-25T18:24:25+01:00" level=info msg="Retrieved 6 files" filename="registry/cache.go:114"
-    time="2019-05-25T18:24:25+01:00" level=info msg="Retrieved 22 files" filename="registry/cache.go:114"
-    time="2019-05-25T18:24:25+01:00" level=info msg="Retrieved 9 files" filename="registry/cache.go:114"
-    time="2019-05-25T18:24:25+01:00" level=info msg="Retrieved 35 files" filename="registry/cache.go:114"
-    time="2019-05-25T18:24:25+01:00" level=info msg="Retrieved 49 files" filename="registry/cache.go:114"
-    time="2019-05-25T18:24:25+01:00" level=info msg="Retrieved 6 files" filename="registry/cache.go:114"
-    time="2019-05-25T18:24:25+01:00" level=info msg="Retrieved 4 files" filename="registry/cache.go:114"
-    time="2019-05-25T18:24:25+01:00" level=info msg="Retrieved 4 files" filename="registry/cache.go:114"
-    time="2019-05-25T18:24:25+01:00" level=info msg="Retrieved 9 files" filename="registry/cache.go:114"
-    time="2019-05-25T18:24:25+01:00" level=info msg="Retrieved 14 files" filename="registry/cache.go:114"
-    time="2019-05-25T18:24:25+01:00" level=info msg="Retrieved 6 files" filename="registry/cache.go:114"
-    time="2019-05-25T18:24:25+01:00" level=info msg="Retrieved 17 files" filename="registry/cache.go:114"
-    time="2019-05-25T18:24:25+01:00" level=info msg="Retrieved 8 files" filename="registry/cache.go:114"
-    time="2019-05-25T18:24:25+01:00" level=info msg="Retrieved 12 files" filename="registry/cache.go:114"
-    time="2019-05-25T18:24:25+01:00" level=info msg="Retrieved 4 files" filename="registry/cache.go:114"
-    time="2019-05-25T18:24:25+01:00" level=info msg="Creating Component: ambassador ..." filename="ksonnet/ksonnet.go:207"
-    time="2019-05-25T18:24:25+01:00" level=info msg="Args: [ambassador ambassador]" filename="ksonnet/ksonnet.go:208"
-    time="2019-05-25T18:24:25+01:00" level=info msg="Writing component at '/home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon/ks_app/components/ambassador.jsonnet'" filename="component/create.go:92"
-    time="2019-05-25T18:24:25+01:00" level=info msg="Creating Component: argo ..." filename="ksonnet/ksonnet.go:207"
-    time="2019-05-25T18:24:25+01:00" level=info msg="Args: [argo argo]" filename="ksonnet/ksonnet.go:208"
-    time="2019-05-25T18:24:25+01:00" level=info msg="Writing component at '/home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon/ks_app/components/argo.jsonnet'" filename="component/create.go:92"
-    time="2019-05-25T18:24:25+01:00" level=info msg="Creating Component: centraldashboard ..." filename="ksonnet/ksonnet.go:207"
-    time="2019-05-25T18:24:25+01:00" level=info msg="Args: [centraldashboard centraldashboard]" filename="ksonnet/ksonnet.go:208"
-    time="2019-05-25T18:24:26+01:00" level=info msg="Writing component at '/home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon/ks_app/components/centraldashboard.jsonnet'" filename="component/create.go:92"
-    time="2019-05-25T18:24:26+01:00" level=info msg="Creating Component: jupyter-web-app ..." filename="ksonnet/ksonnet.go:207"
-    time="2019-05-25T18:24:26+01:00" level=info msg="Args: [jupyter-web-app jupyter-web-app]" filename="ksonnet/ksonnet.go:208"
-    time="2019-05-25T18:24:26+01:00" level=info msg="Writing component at '/home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon/ks_app/components/jupyter-web-app.jsonnet'" filename="component/create.go:92"
-    time="2019-05-25T18:24:26+01:00" level=info msg="Creating Component: katib ..." filename="ksonnet/ksonnet.go:207"
-    time="2019-05-25T18:24:26+01:00" level=info msg="Args: [katib katib]" filename="ksonnet/ksonnet.go:208"
-    time="2019-05-25T18:24:26+01:00" level=info msg="Writing component at '/home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon/ks_app/components/katib.jsonnet'" filename="component/create.go:92"
-    time="2019-05-25T18:24:26+01:00" level=info msg="Creating Component: metacontroller ..." filename="ksonnet/ksonnet.go:207"
-    time="2019-05-25T18:24:26+01:00" level=info msg="Args: [metacontroller metacontroller]" filename="ksonnet/ksonnet.go:208"
-    time="2019-05-25T18:24:26+01:00" level=info msg="Writing component at '/home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon/ks_app/components/metacontroller.jsonnet'" filename="component/create.go:92"
-    time="2019-05-25T18:24:26+01:00" level=info msg="Creating Component: notebook-controller ..." filename="ksonnet/ksonnet.go:207"
-    time="2019-05-25T18:24:26+01:00" level=info msg="Args: [notebook-controller notebook-controller]" filename="ksonnet/ksonnet.go:208"
-    time="2019-05-25T18:24:26+01:00" level=info msg="Writing component at '/home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon/ks_app/components/notebook-controller.jsonnet'" filename="component/create.go:92"
-    time="2019-05-25T18:24:26+01:00" level=info msg="Creating Component: pipeline ..." filename="ksonnet/ksonnet.go:207"
-    time="2019-05-25T18:24:26+01:00" level=info msg="Args: [pipeline pipeline]" filename="ksonnet/ksonnet.go:208"
-    time="2019-05-25T18:24:26+01:00" level=info msg="Writing component at '/home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon/ks_app/components/pipeline.jsonnet'" filename="component/create.go:92"
-    time="2019-05-25T18:24:26+01:00" level=info msg="Creating Component: pytorch-operator ..." filename="ksonnet/ksonnet.go:207"
-    time="2019-05-25T18:24:26+01:00" level=info msg="Args: [pytorch-operator pytorch-operator]" filename="ksonnet/ksonnet.go:208"
-    time="2019-05-25T18:24:26+01:00" level=info msg="Writing component at '/home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon/ks_app/components/pytorch-operator.jsonnet'" filename="component/create.go:92"
-    time="2019-05-25T18:24:26+01:00" level=info msg="Creating Component: tensorboard ..." filename="ksonnet/ksonnet.go:207"
-    time="2019-05-25T18:24:26+01:00" level=info msg="Args: [tensorboard tensorboard]" filename="ksonnet/ksonnet.go:208"
-    time="2019-05-25T18:24:26+01:00" level=info msg="Writing component at '/home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon/ks_app/components/tensorboard.jsonnet'" filename="component/create.go:92"
-    time="2019-05-25T18:24:26+01:00" level=info msg="Creating Component: tf-job-operator ..." filename="ksonnet/ksonnet.go:207"
-    time="2019-05-25T18:24:26+01:00" level=info msg="Args: [tf-job-operator tf-job-operator]" filename="ksonnet/ksonnet.go:208"
-    time="2019-05-25T18:24:26+01:00" level=info msg="Writing component at '/home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon/ks_app/components/tf-job-operator.jsonnet'" filename="component/create.go:92"
-    time="2019-05-25T18:24:26+01:00" level=info msg="deploying kubeflow application" filename="cmd/apply.go:35"
-    time="2019-05-25T18:24:26+01:00" level=info msg="reading from /home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon/app.yaml" filename="coordinator/coordinator.go:341"
-    time="2019-05-25T18:24:26+01:00" level=info msg="reading from /home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon/app.yaml" filename="coordinator/coordinator.go:341"
-    time="2019-05-25T18:24:26+01:00" level=info msg="namespace: kubeflow" filename="ksonnet/ksonnet.go:109"
-    time="2019-05-25T18:24:26+01:00" level=info msg="Creating namespace: kubeflow" filename="ksonnet/ksonnet.go:112"
-    time="2019-05-25T18:24:34+01:00" level=info msg="Applying services kubeflow.ambassador" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:24:34+01:00" level=info msg="Creating non-existent services kubeflow.ambassador" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:24:34+01:00" level=info msg="Applying services kubeflow.ambassador-admin" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:24:34+01:00" level=info msg="Creating non-existent services kubeflow.ambassador-admin" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:24:34+01:00" level=info msg="Applying clusterroles ambassador" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:24:34+01:00" level=info msg="Creating non-existent clusterroles ambassador" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:24:34+01:00" level=info msg="Applying serviceaccounts kubeflow.ambassador" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:24:34+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.ambassador" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:24:34+01:00" level=info msg="Applying clusterrolebindings ambassador" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:24:34+01:00" level=info msg="Creating non-existent clusterrolebindings ambassador" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:24:35+01:00" level=info msg="Applying deployments kubeflow.ambassador" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:24:35+01:00" level=info msg="Creating non-existent deployments kubeflow.ambassador" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:24:35+01:00" level=info msg="Component ambassador apply succeeded" filename="ksonnet/ksonnet.go:171"
-    time="2019-05-25T18:24:41+01:00" level=info msg="Applying customresourcedefinitions workflows.argoproj.io" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:24:41+01:00" level=info msg="Creating non-existent customresourcedefinitions workflows.argoproj.io" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:24:45+01:00" level=info msg="Applying clusterrolebindings argo" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:24:45+01:00" level=info msg="Creating non-existent clusterrolebindings argo" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:24:45+01:00" level=info msg="Applying serviceaccounts kubeflow.argo-ui" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:24:45+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.argo-ui" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:24:45+01:00" level=info msg="Applying services kubeflow.argo-ui" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:24:45+01:00" level=info msg="Creating non-existent services kubeflow.argo-ui" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:24:46+01:00" level=info msg="Applying configmaps kubeflow.workflow-controller-configmap" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:24:46+01:00" level=info msg="Creating non-existent configmaps kubeflow.workflow-controller-configmap" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:24:46+01:00" level=info msg="Applying serviceaccounts kubeflow.argo" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:24:46+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.argo" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:24:46+01:00" level=info msg="Applying clusterroles argo" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:24:46+01:00" level=info msg="Creating non-existent clusterroles argo" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:24:46+01:00" level=info msg="Applying clusterroles argo-ui" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:24:46+01:00" level=info msg="Creating non-existent clusterroles argo-ui" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:24:46+01:00" level=info msg="Applying clusterrolebindings argo-ui" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:24:46+01:00" level=info msg="Creating non-existent clusterrolebindings argo-ui" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:24:46+01:00" level=info msg="Applying deployments kubeflow.workflow-controller" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:24:46+01:00" level=info msg="Creating non-existent deployments kubeflow.workflow-controller" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:24:46+01:00" level=info msg="Applying deployments kubeflow.argo-ui" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:24:46+01:00" level=info msg="Creating non-existent deployments kubeflow.argo-ui" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:24:46+01:00" level=info msg="Component argo apply succeeded" filename="ksonnet/ksonnet.go:171"
-    time="2019-05-25T18:24:53+01:00" level=info msg="Applying clusterrolebindings centraldashboard" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:24:53+01:00" level=info msg="Creating non-existent clusterrolebindings centraldashboard" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:24:53+01:00" level=info msg="Applying services kubeflow.centraldashboard" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:24:53+01:00" level=info msg="Creating non-existent services kubeflow.centraldashboard" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:24:53+01:00" level=info msg="Applying serviceaccounts kubeflow.centraldashboard" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:24:53+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.centraldashboard" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:24:53+01:00" level=info msg="Applying roles kubeflow.centraldashboard" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:24:53+01:00" level=info msg="Creating non-existent roles kubeflow.centraldashboard" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:24:53+01:00" level=info msg="Applying rolebindings kubeflow.centraldashboard" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:24:53+01:00" level=info msg="Creating non-existent rolebindings kubeflow.centraldashboard" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:24:53+01:00" level=info msg="Applying clusterroles centraldashboard" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:24:53+01:00" level=info msg="Creating non-existent clusterroles centraldashboard" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:24:53+01:00" level=info msg="Applying deployments kubeflow.centraldashboard" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:24:53+01:00" level=info msg="Creating non-existent deployments kubeflow.centraldashboard" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:24:53+01:00" level=info msg="Component centraldashboard apply succeeded" filename="ksonnet/ksonnet.go:171"
-    time="2019-05-25T18:24:59+01:00" level=info msg="Applying services kubeflow.jupyter-web-app" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:24:59+01:00" level=info msg="Creating non-existent services kubeflow.jupyter-web-app" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:24:59+01:00" level=info msg="Applying deployments kubeflow.jupyter-web-app" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:24:59+01:00" level=info msg="Creating non-existent deployments kubeflow.jupyter-web-app" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:24:59+01:00" level=info msg="Applying configmaps kubeflow.jupyter-web-app-config" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:24:59+01:00" level=info msg="Creating non-existent configmaps kubeflow.jupyter-web-app-config" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:24:59+01:00" level=info msg="Applying serviceaccounts kubeflow.jupyter-web-app" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:24:59+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.jupyter-web-app" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:00+01:00" level=info msg="Applying clusterrolebindings jupyter-web-app-binding" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:00+01:00" level=info msg="Creating non-existent clusterrolebindings jupyter-web-app-binding" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:00+01:00" level=info msg="Applying clusterroles jupyter-web-app-cluster-role" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:00+01:00" level=info msg="Creating non-existent clusterroles jupyter-web-app-cluster-role" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:00+01:00" level=info msg="Applying serviceaccounts kubeflow.jupyter-notebook" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:00+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.jupyter-notebook" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:00+01:00" level=info msg="Applying roles kubeflow.jupyter-notebook-role" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:00+01:00" level=info msg="Creating non-existent roles kubeflow.jupyter-notebook-role" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:00+01:00" level=info msg="Applying rolebindings kubeflow.jupyter-notebook-role-binding" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:00+01:00" level=info msg="Creating non-existent rolebindings kubeflow.jupyter-notebook-role-binding" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:00+01:00" level=info msg="Component jupyter-web-app apply succeeded" filename="ksonnet/ksonnet.go:171"
-    time="2019-05-25T18:25:10+01:00" level=info msg="Applying clusterroles metrics-collector" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:10+01:00" level=info msg="Creating non-existent clusterroles metrics-collector" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:11+01:00" level=info msg="Applying services kubeflow.studyjob-controller" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:11+01:00" level=info msg="Creating non-existent services kubeflow.studyjob-controller" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:11+01:00" level=info msg="Applying services kubeflow.vizier-db" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:11+01:00" level=info msg="Creating non-existent services kubeflow.vizier-db" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:11+01:00" level=info msg="Applying persistentvolumeclaims kubeflow.katib-mysql" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:11+01:00" level=info msg="Creating non-existent persistentvolumeclaims kubeflow.katib-mysql" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:11+01:00" level=info msg="Applying clusterrolebindings studyjob-controller" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:11+01:00" level=info msg="Creating non-existent clusterrolebindings studyjob-controller" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:11+01:00" level=info msg="Applying secrets kubeflow.vizier-db-secrets" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:11+01:00" level=info msg="Creating non-existent secrets kubeflow.vizier-db-secrets" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:11+01:00" level=info msg="Applying clusterroles vizier-core" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:11+01:00" level=info msg="Creating non-existent clusterroles vizier-core" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:11+01:00" level=info msg="Applying clusterrolebindings vizier-core" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:11+01:00" level=info msg="Creating non-existent clusterrolebindings vizier-core" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:11+01:00" level=info msg="Applying serviceaccounts kubeflow.vizier-core" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:11+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.vizier-core" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:11+01:00" level=info msg="Applying services kubeflow.vizier-core-rest" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:11+01:00" level=info msg="Creating non-existent services kubeflow.vizier-core-rest" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:11+01:00" level=info msg="Applying serviceaccounts kubeflow.studyjob-controller" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:11+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.studyjob-controller" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:11+01:00" level=info msg="Applying services kubeflow.katib-ui" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:12+01:00" level=info msg="Creating non-existent services kubeflow.katib-ui" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:12+01:00" level=info msg="Applying clusterroles studyjob-controller" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:12+01:00" level=info msg="Creating non-existent clusterroles studyjob-controller" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:12+01:00" level=info msg="Applying clusterroles katib-ui" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:12+01:00" level=info msg="Creating non-existent clusterroles katib-ui" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:12+01:00" level=info msg="Applying clusterrolebindings katib-ui" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:12+01:00" level=info msg="Creating non-existent clusterrolebindings katib-ui" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:12+01:00" level=info msg="Applying serviceaccounts kubeflow.katib-ui" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:12+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.katib-ui" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:12+01:00" level=info msg="Applying services kubeflow.vizier-suggestion-random" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:12+01:00" level=info msg="Creating non-existent services kubeflow.vizier-suggestion-random" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:13+01:00" level=info msg="Applying services kubeflow.vizier-core" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:13+01:00" level=info msg="Creating non-existent services kubeflow.vizier-core" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:13+01:00" level=info msg="Applying services kubeflow.vizier-suggestion-grid" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:13+01:00" level=info msg="Creating non-existent services kubeflow.vizier-suggestion-grid" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:13+01:00" level=info msg="Applying configmaps kubeflow.metricscollector-template" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:14+01:00" level=info msg="Creating non-existent configmaps kubeflow.metricscollector-template" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:14+01:00" level=info msg="Applying services kubeflow.vizier-suggestion-hyperband" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:14+01:00" level=info msg="Creating non-existent services kubeflow.vizier-suggestion-hyperband" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:14+01:00" level=info msg="Applying clusterrolebindings metrics-collector" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:14+01:00" level=info msg="Creating non-existent clusterrolebindings metrics-collector" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:14+01:00" level=info msg="Applying services kubeflow.vizier-suggestion-bayesianoptimization" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:14+01:00" level=info msg="Creating non-existent services kubeflow.vizier-suggestion-bayesianoptimization" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:15+01:00" level=info msg="Applying serviceaccounts kubeflow.metrics-collector" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:15+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.metrics-collector" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:15+01:00" level=info msg="Applying customresourcedefinitions studyjobs.kubeflow.org" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:15+01:00" level=info msg="Creating non-existent customresourcedefinitions studyjobs.kubeflow.org" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:15+01:00" level=info msg="Applying configmaps kubeflow.worker-template" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:15+01:00" level=info msg="Creating non-existent configmaps kubeflow.worker-template" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:15+01:00" level=info msg="Applying deployments kubeflow.vizier-suggestion-bayesianoptimization" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:15+01:00" level=info msg="Creating non-existent deployments kubeflow.vizier-suggestion-bayesianoptimization" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:15+01:00" level=info msg="Applying deployments kubeflow.vizier-suggestion-hyperband" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:15+01:00" level=info msg="Creating non-existent deployments kubeflow.vizier-suggestion-hyperband" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:16+01:00" level=info msg="Applying deployments kubeflow.vizier-suggestion-grid" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:16+01:00" level=info msg="Creating non-existent deployments kubeflow.vizier-suggestion-grid" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:16+01:00" level=info msg="Applying deployments kubeflow.katib-ui" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:16+01:00" level=info msg="Creating non-existent deployments kubeflow.katib-ui" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:16+01:00" level=info msg="Applying deployments kubeflow.vizier-core-rest" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:16+01:00" level=info msg="Creating non-existent deployments kubeflow.vizier-core-rest" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:16+01:00" level=info msg="Applying deployments kubeflow.vizier-db" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:16+01:00" level=info msg="Creating non-existent deployments kubeflow.vizier-db" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:16+01:00" level=info msg="Applying deployments kubeflow.studyjob-controller" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:16+01:00" level=info msg="Creating non-existent deployments kubeflow.studyjob-controller" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:16+01:00" level=info msg="Applying deployments kubeflow.vizier-core" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:16+01:00" level=info msg="Creating non-existent deployments kubeflow.vizier-core" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:17+01:00" level=info msg="Applying deployments kubeflow.vizier-suggestion-random" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:17+01:00" level=info msg="Creating non-existent deployments kubeflow.vizier-suggestion-random" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:17+01:00" level=info msg="Component katib apply succeeded" filename="ksonnet/ksonnet.go:171"
-    time="2019-05-25T18:25:30+01:00" level=info msg="Applying customresourcedefinitions compositecontrollers.metacontroller.k8s.io" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:30+01:00" level=info msg="Creating non-existent customresourcedefinitions compositecontrollers.metacontroller.k8s.io" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:30+01:00" level=info msg="Applying customresourcedefinitions controllerrevisions.metacontroller.k8s.io" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:30+01:00" level=info msg="Creating non-existent customresourcedefinitions controllerrevisions.metacontroller.k8s.io" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:30+01:00" level=info msg="Applying customresourcedefinitions decoratorcontrollers.metacontroller.k8s.io" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:30+01:00" level=info msg="Creating non-existent customresourcedefinitions decoratorcontrollers.metacontroller.k8s.io" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:30+01:00" level=info msg="Applying serviceaccounts kubeflow.meta-controller-service" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:30+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.meta-controller-service" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:30+01:00" level=info msg="Applying clusterrolebindings meta-controller-cluster-role-binding" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:30+01:00" level=info msg="Creating non-existent clusterrolebindings meta-controller-cluster-role-binding" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:30+01:00" level=info msg="Applying statefulsets kubeflow.metacontroller" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:30+01:00" level=info msg="Creating non-existent statefulsets kubeflow.metacontroller" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:30+01:00" level=info msg="Component metacontroller apply succeeded" filename="ksonnet/ksonnet.go:171"
-    time="2019-05-25T18:25:37+01:00" level=info msg="Applying customresourcedefinitions notebooks.kubeflow.org" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:37+01:00" level=info msg="Creating non-existent customresourcedefinitions notebooks.kubeflow.org" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:42+01:00" level=info msg="Applying services kubeflow.notebooks-controller" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:45+01:00" level=info msg="Creating non-existent services kubeflow.notebooks-controller" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:47+01:00" level=info msg="Applying serviceaccounts kubeflow.notebook-controller" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:47+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.notebook-controller" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:25:57+01:00" level=info msg="Applying deployments kubeflow.notebooks-controller" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:25:58+01:00" level=info msg="Creating non-existent deployments kubeflow.notebooks-controller" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:00+01:00" level=info msg="Applying clusterroles notebooks-controller" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:00+01:00" level=info msg="Creating non-existent clusterroles notebooks-controller" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:00+01:00" level=info msg="Applying clusterrolebindings notebooks-controller" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:00+01:00" level=info msg="Creating non-existent clusterrolebindings notebooks-controller" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:00+01:00" level=info msg="Component notebook-controller apply succeeded" filename="ksonnet/ksonnet.go:171"
-    time="2019-05-25T18:26:08+01:00" level=info msg="Applying services kubeflow.minio-service" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:08+01:00" level=info msg="Creating non-existent services kubeflow.minio-service" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:08+01:00" level=info msg="Applying deployments kubeflow.minio" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:08+01:00" level=info msg="Creating non-existent deployments kubeflow.minio" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:08+01:00" level=info msg="Applying secrets kubeflow.mlpipeline-minio-artifact" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:08+01:00" level=info msg="Creating non-existent secrets kubeflow.mlpipeline-minio-artifact" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:08+01:00" level=info msg="Applying services kubeflow.mysql" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:08+01:00" level=info msg="Creating non-existent services kubeflow.mysql" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:08+01:00" level=info msg="Applying deployments kubeflow.mysql" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:08+01:00" level=info msg="Creating non-existent deployments kubeflow.mysql" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:09+01:00" level=info msg="Applying serviceaccounts kubeflow.ml-pipeline" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:09+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.ml-pipeline" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:09+01:00" level=info msg="Applying rolebindings kubeflow.ml-pipeline" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:09+01:00" level=info msg="Creating non-existent rolebindings kubeflow.ml-pipeline" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:09+01:00" level=info msg="Applying roles kubeflow.ml-pipeline" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:09+01:00" level=info msg="Creating non-existent roles kubeflow.ml-pipeline" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:09+01:00" level=info msg="Applying services kubeflow.ml-pipeline" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:09+01:00" level=info msg="Creating non-existent services kubeflow.ml-pipeline" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:10+01:00" level=info msg="Applying deployments kubeflow.ml-pipeline" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:10+01:00" level=info msg="Creating non-existent deployments kubeflow.ml-pipeline" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:10+01:00" level=info msg="Applying serviceaccounts kubeflow.pipeline-runner" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:10+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.pipeline-runner" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:10+01:00" level=info msg="Applying clusterroles pipeline-runner" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:10+01:00" level=info msg="Creating non-existent clusterroles pipeline-runner" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:10+01:00" level=info msg="Applying clusterrolebindings pipeline-runner" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:10+01:00" level=info msg="Creating non-existent clusterrolebindings pipeline-runner" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:11+01:00" level=info msg="Applying serviceaccounts kubeflow.ml-pipeline-scheduledworkflow" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:11+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.ml-pipeline-scheduledworkflow" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:11+01:00" level=info msg="Applying clusterrolebindings ml-pipeline-scheduledworkflow" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:11+01:00" level=info msg="Creating non-existent clusterrolebindings ml-pipeline-scheduledworkflow" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:11+01:00" level=info msg="Applying roles kubeflow.ml-pipeline-scheduledworkflow" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:11+01:00" level=info msg="Creating non-existent roles kubeflow.ml-pipeline-scheduledworkflow" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:11+01:00" level=info msg="Applying deployments kubeflow.ml-pipeline-scheduledworkflow" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:11+01:00" level=info msg="Creating non-existent deployments kubeflow.ml-pipeline-scheduledworkflow" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:12+01:00" level=info msg="Applying customresourcedefinitions scheduledworkflows.kubeflow.org" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:12+01:00" level=info msg="Creating non-existent customresourcedefinitions scheduledworkflows.kubeflow.org" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:12+01:00" level=info msg="Applying serviceaccounts kubeflow.ml-pipeline-persistenceagent" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:12+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.ml-pipeline-persistenceagent" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:13+01:00" level=info msg="Applying clusterrolebindings ml-pipeline-persistenceagent" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:13+01:00" level=info msg="Creating non-existent clusterrolebindings ml-pipeline-persistenceagent" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:13+01:00" level=info msg="Applying clusterroles ml-pipeline-persistenceagent" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:13+01:00" level=info msg="Creating non-existent clusterroles ml-pipeline-persistenceagent" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:13+01:00" level=info msg="Applying deployments kubeflow.ml-pipeline-persistenceagent" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:13+01:00" level=info msg="Creating non-existent deployments kubeflow.ml-pipeline-persistenceagent" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:13+01:00" level=info msg="Applying serviceaccounts kubeflow.ml-pipeline-viewer-crd-service-account" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:13+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.ml-pipeline-viewer-crd-service-account" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:13+01:00" level=info msg="Applying clusterrolebindings ml-pipeline-viewer-crd-role-binding" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:13+01:00" level=info msg="Creating non-existent clusterrolebindings ml-pipeline-viewer-crd-role-binding" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:13+01:00" level=info msg="Applying clusterroles ml-pipeline-viewer-controller-role" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:13+01:00" level=info msg="Creating non-existent clusterroles ml-pipeline-viewer-controller-role" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:14+01:00" level=info msg="Applying deployments kubeflow.ml-pipeline-viewer-controller-deployment" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:14+01:00" level=info msg="Creating non-existent deployments kubeflow.ml-pipeline-viewer-controller-deployment" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:14+01:00" level=info msg="Applying customresourcedefinitions viewers.kubeflow.org" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:14+01:00" level=info msg="Creating non-existent customresourcedefinitions viewers.kubeflow.org" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:14+01:00" level=info msg="Applying serviceaccounts kubeflow.ml-pipeline-ui" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:14+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.ml-pipeline-ui" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:14+01:00" level=info msg="Applying services kubeflow.ml-pipeline-ui" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:14+01:00" level=info msg="Creating non-existent services kubeflow.ml-pipeline-ui" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:15+01:00" level=info msg="Applying services kubeflow.ml-pipeline-tensorboard-ui" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:15+01:00" level=info msg="Creating non-existent services kubeflow.ml-pipeline-tensorboard-ui" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:15+01:00" level=info msg="Applying rolebindings kubeflow.ml-pipeline-ui" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:15+01:00" level=info msg="Creating non-existent rolebindings kubeflow.ml-pipeline-ui" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:16+01:00" level=info msg="Applying roles kubeflow.ml-pipeline-ui" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:16+01:00" level=info msg="Creating non-existent roles kubeflow.ml-pipeline-ui" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:16+01:00" level=info msg="Applying deployments kubeflow.ml-pipeline-ui" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:16+01:00" level=info msg="Creating non-existent deployments kubeflow.ml-pipeline-ui" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:16+01:00" level=info msg="Applying persistentvolumeclaims kubeflow.mysql-pv-claim" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:16+01:00" level=info msg="Creating non-existent persistentvolumeclaims kubeflow.mysql-pv-claim" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:16+01:00" level=info msg="Applying persistentvolumeclaims kubeflow.minio-pvc" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:16+01:00" level=info msg="Creating non-existent persistentvolumeclaims kubeflow.minio-pvc" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:16+01:00" level=info msg="Component pipeline apply succeeded" filename="ksonnet/ksonnet.go:171"
-    time="2019-05-25T18:26:25+01:00" level=info msg="Applying configmaps kubeflow.pytorch-operator-config" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:25+01:00" level=info msg="Creating non-existent configmaps kubeflow.pytorch-operator-config" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:25+01:00" level=info msg="Applying serviceaccounts kubeflow.pytorch-operator" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:25+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.pytorch-operator" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:26+01:00" level=info msg="Applying clusterroles pytorch-operator" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:26+01:00" level=info msg="Creating non-existent clusterroles pytorch-operator" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:26+01:00" level=info msg="Applying clusterrolebindings pytorch-operator" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:26+01:00" level=info msg="Creating non-existent clusterrolebindings pytorch-operator" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:26+01:00" level=info msg="Applying customresourcedefinitions pytorchjobs.kubeflow.org" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:26+01:00" level=info msg="Creating non-existent customresourcedefinitions pytorchjobs.kubeflow.org" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:26+01:00" level=info msg="Applying deployments kubeflow.pytorch-operator" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:26+01:00" level=info msg="Creating non-existent deployments kubeflow.pytorch-operator" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:26+01:00" level=info msg="Component pytorch-operator apply succeeded" filename="ksonnet/ksonnet.go:171"
-    time="2019-05-25T18:26:42+01:00" level=info msg="Applying services kubeflow.tensorboard" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:42+01:00" level=info msg="Creating non-existent services kubeflow.tensorboard" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:43+01:00" level=info msg="Applying deployments kubeflow.tensorboard" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:43+01:00" level=info msg="Creating non-existent deployments kubeflow.tensorboard" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:43+01:00" level=info msg="Component tensorboard apply succeeded" filename="ksonnet/ksonnet.go:171"
-    time="2019-05-25T18:26:58+01:00" level=info msg="Applying customresourcedefinitions tfjobs.kubeflow.org" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:59+01:00" level=info msg="Creating non-existent customresourcedefinitions tfjobs.kubeflow.org" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:59+01:00" level=info msg="Applying serviceaccounts kubeflow.tf-job-dashboard" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:59+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.tf-job-dashboard" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:59+01:00" level=info msg="Applying configmaps kubeflow.tf-job-operator-config" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:59+01:00" level=info msg="Creating non-existent configmaps kubeflow.tf-job-operator-config" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:59+01:00" level=info msg="Applying serviceaccounts kubeflow.tf-job-operator" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:59+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.tf-job-operator" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:59+01:00" level=info msg="Applying clusterroles tf-job-operator" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:59+01:00" level=info msg="Creating non-existent clusterroles tf-job-operator" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:59+01:00" level=info msg="Applying clusterrolebindings tf-job-operator" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:59+01:00" level=info msg="Creating non-existent clusterrolebindings tf-job-operator" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:59+01:00" level=info msg="Applying services kubeflow.tf-job-dashboard" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:59+01:00" level=info msg="Creating non-existent services kubeflow.tf-job-dashboard" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:26:59+01:00" level=info msg="Applying clusterroles tf-job-dashboard" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:26:59+01:00" level=info msg="Creating non-existent clusterroles tf-job-dashboard" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:27:00+01:00" level=info msg="Applying clusterrolebindings tf-job-dashboard" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:27:00+01:00" level=info msg="Creating non-existent clusterrolebindings tf-job-dashboard" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:27:00+01:00" level=info msg="Applying deployments kubeflow.tf-job-operator" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:27:00+01:00" level=info msg="Creating non-existent deployments kubeflow.tf-job-operator" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:27:01+01:00" level=info msg="Applying deployments kubeflow.tf-job-dashboard" filename="cluster/upsert.go:73"
-    time="2019-05-25T18:27:01+01:00" level=info msg="Creating non-existent deployments kubeflow.tf-job-dashboard" filename="cluster/upsert.go:92"
-    time="2019-05-25T18:27:01+01:00" level=info msg="Component tf-job-operator apply succeeded" filename="ksonnet/ksonnet.go:171"
-    time="2019-05-25T18:27:01+01:00" level=info msg="All components apply succeeded" filename="ksonnet/ksonnet.go:192"
+    time="2019-05-26T07:28:04+01:00" level=info msg="reading from /home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon/app.yaml" filename="coordinator/coordinator.go:341"
+    time="2019-05-26T07:28:04+01:00" level=info msg="reading from /home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon/app.yaml" filename="coordinator/coordinator.go:341"
+    time="2019-05-26T07:28:04+01:00" level=info msg="Ksonnet.Generate Name kubeflow-seldon AppDir /home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon Platform " filename="ksonnet/ksonnet.go:369"
+    time="2019-05-26T07:28:05+01:00" level=info msg="Creating environment \"default\" with namespace \"kubeflow\", pointing to \"version:v1.13.0\" cluster at address \"https://localhost:6445\"" filename="env/create.go:77"
+    time="2019-05-26T07:28:12+01:00" level=info msg="Generating ksonnet-lib data at path '/home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon/ks_app/lib/ksonnet-lib/v1.13.0'" filename="lib/lib.go:148"
+    time="2019-05-26T07:28:12+01:00" level=info msg="Successfully initialized the app kubeflow-seldon." filename="ksonnet/ksonnet.go:505"
+    time="2019-05-26T07:28:12+01:00" level=info msg="App kubeflow-seldon add registry kubeflow URI /home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon/.cache/v0.5.1/kubeflow" filename="ksonnet/ksonnet.go:621"
+    time="2019-05-26T07:28:12+01:00" level=info msg="Retrieved 6 files" filename="registry/cache.go:114"
+    time="2019-05-26T07:28:12+01:00" level=info msg="Retrieved 22 files" filename="registry/cache.go:114"
+    time="2019-05-26T07:28:12+01:00" level=info msg="Retrieved 9 files" filename="registry/cache.go:114"
+    time="2019-05-26T07:28:12+01:00" level=info msg="Retrieved 35 files" filename="registry/cache.go:114"
+    time="2019-05-26T07:28:12+01:00" level=info msg="Retrieved 49 files" filename="registry/cache.go:114"
+    time="2019-05-26T07:28:13+01:00" level=info msg="Retrieved 6 files" filename="registry/cache.go:114"
+    time="2019-05-26T07:28:13+01:00" level=info msg="Retrieved 4 files" filename="registry/cache.go:114"
+    time="2019-05-26T07:28:13+01:00" level=info msg="Retrieved 4 files" filename="registry/cache.go:114"
+    time="2019-05-26T07:28:13+01:00" level=info msg="Retrieved 9 files" filename="registry/cache.go:114"
+    time="2019-05-26T07:28:13+01:00" level=info msg="Retrieved 14 files" filename="registry/cache.go:114"
+    time="2019-05-26T07:28:13+01:00" level=info msg="Retrieved 6 files" filename="registry/cache.go:114"
+    time="2019-05-26T07:28:13+01:00" level=info msg="Retrieved 17 files" filename="registry/cache.go:114"
+    time="2019-05-26T07:28:13+01:00" level=info msg="Retrieved 8 files" filename="registry/cache.go:114"
+    time="2019-05-26T07:28:13+01:00" level=info msg="Retrieved 12 files" filename="registry/cache.go:114"
+    time="2019-05-26T07:28:13+01:00" level=info msg="Retrieved 4 files" filename="registry/cache.go:114"
+    time="2019-05-26T07:28:13+01:00" level=info msg="Creating Component: ambassador ..." filename="ksonnet/ksonnet.go:207"
+    time="2019-05-26T07:28:13+01:00" level=info msg="Args: [ambassador ambassador]" filename="ksonnet/ksonnet.go:208"
+    time="2019-05-26T07:28:13+01:00" level=info msg="Writing component at '/home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon/ks_app/components/ambassador.jsonnet'" filename="component/create.go:92"
+    time="2019-05-26T07:28:13+01:00" level=info msg="Creating Component: argo ..." filename="ksonnet/ksonnet.go:207"
+    time="2019-05-26T07:28:13+01:00" level=info msg="Args: [argo argo]" filename="ksonnet/ksonnet.go:208"
+    time="2019-05-26T07:28:14+01:00" level=info msg="Writing component at '/home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon/ks_app/components/argo.jsonnet'" filename="component/create.go:92"
+    time="2019-05-26T07:28:14+01:00" level=info msg="Creating Component: centraldashboard ..." filename="ksonnet/ksonnet.go:207"
+    time="2019-05-26T07:28:14+01:00" level=info msg="Args: [centraldashboard centraldashboard]" filename="ksonnet/ksonnet.go:208"
+    time="2019-05-26T07:28:14+01:00" level=info msg="Writing component at '/home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon/ks_app/components/centraldashboard.jsonnet'" filename="component/create.go:92"
+    time="2019-05-26T07:28:14+01:00" level=info msg="Creating Component: jupyter-web-app ..." filename="ksonnet/ksonnet.go:207"
+    time="2019-05-26T07:28:14+01:00" level=info msg="Args: [jupyter-web-app jupyter-web-app]" filename="ksonnet/ksonnet.go:208"
+    time="2019-05-26T07:28:14+01:00" level=info msg="Writing component at '/home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon/ks_app/components/jupyter-web-app.jsonnet'" filename="component/create.go:92"
+    time="2019-05-26T07:28:14+01:00" level=info msg="Creating Component: katib ..." filename="ksonnet/ksonnet.go:207"
+    time="2019-05-26T07:28:14+01:00" level=info msg="Args: [katib katib]" filename="ksonnet/ksonnet.go:208"
+    time="2019-05-26T07:28:14+01:00" level=info msg="Writing component at '/home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon/ks_app/components/katib.jsonnet'" filename="component/create.go:92"
+    time="2019-05-26T07:28:14+01:00" level=info msg="Creating Component: metacontroller ..." filename="ksonnet/ksonnet.go:207"
+    time="2019-05-26T07:28:14+01:00" level=info msg="Args: [metacontroller metacontroller]" filename="ksonnet/ksonnet.go:208"
+    time="2019-05-26T07:28:14+01:00" level=info msg="Writing component at '/home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon/ks_app/components/metacontroller.jsonnet'" filename="component/create.go:92"
+    time="2019-05-26T07:28:14+01:00" level=info msg="Creating Component: notebook-controller ..." filename="ksonnet/ksonnet.go:207"
+    time="2019-05-26T07:28:14+01:00" level=info msg="Args: [notebook-controller notebook-controller]" filename="ksonnet/ksonnet.go:208"
+    time="2019-05-26T07:28:14+01:00" level=info msg="Writing component at '/home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon/ks_app/components/notebook-controller.jsonnet'" filename="component/create.go:92"
+    time="2019-05-26T07:28:14+01:00" level=info msg="Creating Component: pipeline ..." filename="ksonnet/ksonnet.go:207"
+    time="2019-05-26T07:28:14+01:00" level=info msg="Args: [pipeline pipeline]" filename="ksonnet/ksonnet.go:208"
+    time="2019-05-26T07:28:15+01:00" level=info msg="Writing component at '/home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon/ks_app/components/pipeline.jsonnet'" filename="component/create.go:92"
+    time="2019-05-26T07:28:15+01:00" level=info msg="Creating Component: pytorch-operator ..." filename="ksonnet/ksonnet.go:207"
+    time="2019-05-26T07:28:15+01:00" level=info msg="Args: [pytorch-operator pytorch-operator]" filename="ksonnet/ksonnet.go:208"
+    time="2019-05-26T07:28:15+01:00" level=info msg="Writing component at '/home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon/ks_app/components/pytorch-operator.jsonnet'" filename="component/create.go:92"
+    time="2019-05-26T07:28:15+01:00" level=info msg="Creating Component: tensorboard ..." filename="ksonnet/ksonnet.go:207"
+    time="2019-05-26T07:28:15+01:00" level=info msg="Args: [tensorboard tensorboard]" filename="ksonnet/ksonnet.go:208"
+    time="2019-05-26T07:28:15+01:00" level=info msg="Writing component at '/home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon/ks_app/components/tensorboard.jsonnet'" filename="component/create.go:92"
+    time="2019-05-26T07:28:15+01:00" level=info msg="Creating Component: tf-job-operator ..." filename="ksonnet/ksonnet.go:207"
+    time="2019-05-26T07:28:15+01:00" level=info msg="Args: [tf-job-operator tf-job-operator]" filename="ksonnet/ksonnet.go:208"
+    time="2019-05-26T07:28:15+01:00" level=info msg="Writing component at '/home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon/ks_app/components/tf-job-operator.jsonnet'" filename="component/create.go:92"
+    time="2019-05-26T07:28:16+01:00" level=info msg="deploying kubeflow application" filename="cmd/apply.go:35"
+    time="2019-05-26T07:28:16+01:00" level=info msg="reading from /home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon/app.yaml" filename="coordinator/coordinator.go:341"
+    time="2019-05-26T07:28:16+01:00" level=info msg="reading from /home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon/app.yaml" filename="coordinator/coordinator.go:341"
+    time="2019-05-26T07:28:16+01:00" level=info msg="namespace: kubeflow" filename="ksonnet/ksonnet.go:109"
+    time="2019-05-26T07:28:16+01:00" level=info msg="Creating namespace: kubeflow" filename="ksonnet/ksonnet.go:112"
+    time="2019-05-26T07:28:34+01:00" level=info msg="Applying services kubeflow.ambassador" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:28:34+01:00" level=info msg="Creating non-existent services kubeflow.ambassador" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:28:35+01:00" level=info msg="Applying services kubeflow.ambassador-admin" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:28:35+01:00" level=info msg="Creating non-existent services kubeflow.ambassador-admin" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:28:35+01:00" level=info msg="Applying clusterroles ambassador" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:28:35+01:00" level=info msg="Creating non-existent clusterroles ambassador" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:28:35+01:00" level=info msg="Applying serviceaccounts kubeflow.ambassador" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:28:35+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.ambassador" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:28:35+01:00" level=info msg="Applying clusterrolebindings ambassador" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:28:35+01:00" level=info msg="Creating non-existent clusterrolebindings ambassador" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:28:35+01:00" level=info msg="Applying deployments kubeflow.ambassador" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:28:35+01:00" level=info msg="Creating non-existent deployments kubeflow.ambassador" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:28:35+01:00" level=info msg="Component ambassador apply succeeded" filename="ksonnet/ksonnet.go:171"
+    time="2019-05-26T07:28:53+01:00" level=info msg="Applying customresourcedefinitions workflows.argoproj.io" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:28:53+01:00" level=info msg="Creating non-existent customresourcedefinitions workflows.argoproj.io" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:28:57+01:00" level=info msg="Applying clusterrolebindings argo" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:28:57+01:00" level=info msg="Creating non-existent clusterrolebindings argo" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:28:57+01:00" level=info msg="Applying serviceaccounts kubeflow.argo-ui" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:28:57+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.argo-ui" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:28:57+01:00" level=info msg="Applying services kubeflow.argo-ui" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:28:57+01:00" level=info msg="Creating non-existent services kubeflow.argo-ui" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:28:57+01:00" level=info msg="Applying configmaps kubeflow.workflow-controller-configmap" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:28:57+01:00" level=info msg="Creating non-existent configmaps kubeflow.workflow-controller-configmap" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:28:57+01:00" level=info msg="Applying serviceaccounts kubeflow.argo" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:28:57+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.argo" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:28:57+01:00" level=info msg="Applying clusterroles argo" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:28:57+01:00" level=info msg="Creating non-existent clusterroles argo" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:28:57+01:00" level=info msg="Applying clusterroles argo-ui" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:28:57+01:00" level=info msg="Creating non-existent clusterroles argo-ui" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:28:57+01:00" level=info msg="Applying clusterrolebindings argo-ui" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:28:58+01:00" level=info msg="Creating non-existent clusterrolebindings argo-ui" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:28:58+01:00" level=info msg="Applying deployments kubeflow.workflow-controller" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:28:58+01:00" level=info msg="Creating non-existent deployments kubeflow.workflow-controller" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:28:58+01:00" level=info msg="Applying deployments kubeflow.argo-ui" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:28:58+01:00" level=info msg="Creating non-existent deployments kubeflow.argo-ui" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:28:58+01:00" level=info msg="Component argo apply succeeded" filename="ksonnet/ksonnet.go:171"
+    time="2019-05-26T07:29:12+01:00" level=info msg="Applying clusterrolebindings centraldashboard" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:12+01:00" level=info msg="Creating non-existent clusterrolebindings centraldashboard" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:12+01:00" level=info msg="Applying services kubeflow.centraldashboard" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:12+01:00" level=info msg="Creating non-existent services kubeflow.centraldashboard" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:13+01:00" level=info msg="Applying serviceaccounts kubeflow.centraldashboard" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:13+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.centraldashboard" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:13+01:00" level=info msg="Applying roles kubeflow.centraldashboard" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:13+01:00" level=info msg="Creating non-existent roles kubeflow.centraldashboard" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:13+01:00" level=info msg="Applying rolebindings kubeflow.centraldashboard" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:13+01:00" level=info msg="Creating non-existent rolebindings kubeflow.centraldashboard" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:13+01:00" level=info msg="Applying clusterroles centraldashboard" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:13+01:00" level=info msg="Creating non-existent clusterroles centraldashboard" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:13+01:00" level=info msg="Applying deployments kubeflow.centraldashboard" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:13+01:00" level=info msg="Creating non-existent deployments kubeflow.centraldashboard" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:13+01:00" level=info msg="Component centraldashboard apply succeeded" filename="ksonnet/ksonnet.go:171"
+    time="2019-05-26T07:29:29+01:00" level=info msg="Applying services kubeflow.jupyter-web-app" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:29+01:00" level=info msg="Creating non-existent services kubeflow.jupyter-web-app" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:29+01:00" level=info msg="Applying deployments kubeflow.jupyter-web-app" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:29+01:00" level=info msg="Creating non-existent deployments kubeflow.jupyter-web-app" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:29+01:00" level=info msg="Applying configmaps kubeflow.jupyter-web-app-config" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:29+01:00" level=info msg="Creating non-existent configmaps kubeflow.jupyter-web-app-config" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:29+01:00" level=info msg="Applying serviceaccounts kubeflow.jupyter-web-app" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:29+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.jupyter-web-app" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:29+01:00" level=info msg="Applying clusterrolebindings jupyter-web-app-binding" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:29+01:00" level=info msg="Creating non-existent clusterrolebindings jupyter-web-app-binding" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:29+01:00" level=info msg="Applying clusterroles jupyter-web-app-cluster-role" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:29+01:00" level=info msg="Creating non-existent clusterroles jupyter-web-app-cluster-role" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:30+01:00" level=info msg="Applying serviceaccounts kubeflow.jupyter-notebook" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:30+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.jupyter-notebook" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:30+01:00" level=info msg="Applying roles kubeflow.jupyter-notebook-role" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:30+01:00" level=info msg="Creating non-existent roles kubeflow.jupyter-notebook-role" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:30+01:00" level=info msg="Applying rolebindings kubeflow.jupyter-notebook-role-binding" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:30+01:00" level=info msg="Creating non-existent rolebindings kubeflow.jupyter-notebook-role-binding" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:30+01:00" level=info msg="Component jupyter-web-app apply succeeded" filename="ksonnet/ksonnet.go:171"
+    time="2019-05-26T07:29:45+01:00" level=info msg="Applying clusterroles metrics-collector" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:45+01:00" level=info msg="Creating non-existent clusterroles metrics-collector" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:45+01:00" level=info msg="Applying services kubeflow.studyjob-controller" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:45+01:00" level=info msg="Creating non-existent services kubeflow.studyjob-controller" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:45+01:00" level=info msg="Applying services kubeflow.vizier-db" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:45+01:00" level=info msg="Creating non-existent services kubeflow.vizier-db" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:45+01:00" level=info msg="Applying persistentvolumeclaims kubeflow.katib-mysql" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:45+01:00" level=info msg="Creating non-existent persistentvolumeclaims kubeflow.katib-mysql" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:45+01:00" level=info msg="Applying clusterrolebindings studyjob-controller" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:45+01:00" level=info msg="Creating non-existent clusterrolebindings studyjob-controller" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:45+01:00" level=info msg="Applying secrets kubeflow.vizier-db-secrets" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:45+01:00" level=info msg="Creating non-existent secrets kubeflow.vizier-db-secrets" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:45+01:00" level=info msg="Applying clusterroles vizier-core" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:45+01:00" level=info msg="Creating non-existent clusterroles vizier-core" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:45+01:00" level=info msg="Applying clusterrolebindings vizier-core" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:45+01:00" level=info msg="Creating non-existent clusterrolebindings vizier-core" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:45+01:00" level=info msg="Applying serviceaccounts kubeflow.vizier-core" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:45+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.vizier-core" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:46+01:00" level=info msg="Applying services kubeflow.vizier-core-rest" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:46+01:00" level=info msg="Creating non-existent services kubeflow.vizier-core-rest" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:46+01:00" level=info msg="Applying serviceaccounts kubeflow.studyjob-controller" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:46+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.studyjob-controller" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:46+01:00" level=info msg="Applying services kubeflow.katib-ui" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:46+01:00" level=info msg="Creating non-existent services kubeflow.katib-ui" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:46+01:00" level=info msg="Applying clusterroles studyjob-controller" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:46+01:00" level=info msg="Creating non-existent clusterroles studyjob-controller" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:46+01:00" level=info msg="Applying clusterroles katib-ui" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:46+01:00" level=info msg="Creating non-existent clusterroles katib-ui" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:46+01:00" level=info msg="Applying clusterrolebindings katib-ui" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:46+01:00" level=info msg="Creating non-existent clusterrolebindings katib-ui" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:46+01:00" level=info msg="Applying serviceaccounts kubeflow.katib-ui" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:46+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.katib-ui" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:46+01:00" level=info msg="Applying services kubeflow.vizier-suggestion-random" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:47+01:00" level=info msg="Creating non-existent services kubeflow.vizier-suggestion-random" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:47+01:00" level=info msg="Applying services kubeflow.vizier-core" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:47+01:00" level=info msg="Creating non-existent services kubeflow.vizier-core" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:47+01:00" level=info msg="Applying services kubeflow.vizier-suggestion-grid" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:47+01:00" level=info msg="Creating non-existent services kubeflow.vizier-suggestion-grid" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:48+01:00" level=info msg="Applying configmaps kubeflow.metricscollector-template" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:48+01:00" level=info msg="Creating non-existent configmaps kubeflow.metricscollector-template" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:48+01:00" level=info msg="Applying services kubeflow.vizier-suggestion-hyperband" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:48+01:00" level=info msg="Creating non-existent services kubeflow.vizier-suggestion-hyperband" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:48+01:00" level=info msg="Applying clusterrolebindings metrics-collector" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:48+01:00" level=info msg="Creating non-existent clusterrolebindings metrics-collector" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:49+01:00" level=info msg="Applying services kubeflow.vizier-suggestion-bayesianoptimization" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:49+01:00" level=info msg="Creating non-existent services kubeflow.vizier-suggestion-bayesianoptimization" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:49+01:00" level=info msg="Applying serviceaccounts kubeflow.metrics-collector" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:49+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.metrics-collector" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:49+01:00" level=info msg="Applying customresourcedefinitions studyjobs.kubeflow.org" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:49+01:00" level=info msg="Creating non-existent customresourcedefinitions studyjobs.kubeflow.org" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:49+01:00" level=info msg="Applying configmaps kubeflow.worker-template" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:49+01:00" level=info msg="Creating non-existent configmaps kubeflow.worker-template" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:50+01:00" level=info msg="Applying deployments kubeflow.vizier-suggestion-bayesianoptimization" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:50+01:00" level=info msg="Creating non-existent deployments kubeflow.vizier-suggestion-bayesianoptimization" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:50+01:00" level=info msg="Applying deployments kubeflow.vizier-suggestion-hyperband" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:50+01:00" level=info msg="Creating non-existent deployments kubeflow.vizier-suggestion-hyperband" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:50+01:00" level=info msg="Applying deployments kubeflow.vizier-suggestion-grid" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:50+01:00" level=info msg="Creating non-existent deployments kubeflow.vizier-suggestion-grid" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:50+01:00" level=info msg="Applying deployments kubeflow.katib-ui" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:50+01:00" level=info msg="Creating non-existent deployments kubeflow.katib-ui" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:50+01:00" level=info msg="Applying deployments kubeflow.vizier-core-rest" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:50+01:00" level=info msg="Creating non-existent deployments kubeflow.vizier-core-rest" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:50+01:00" level=info msg="Applying deployments kubeflow.vizier-db" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:50+01:00" level=info msg="Creating non-existent deployments kubeflow.vizier-db" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:51+01:00" level=info msg="Applying deployments kubeflow.studyjob-controller" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:51+01:00" level=info msg="Creating non-existent deployments kubeflow.studyjob-controller" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:51+01:00" level=info msg="Applying deployments kubeflow.vizier-core" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:51+01:00" level=info msg="Creating non-existent deployments kubeflow.vizier-core" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:51+01:00" level=info msg="Applying deployments kubeflow.vizier-suggestion-random" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:29:51+01:00" level=info msg="Creating non-existent deployments kubeflow.vizier-suggestion-random" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:29:51+01:00" level=info msg="Component katib apply succeeded" filename="ksonnet/ksonnet.go:171"
+    time="2019-05-26T07:30:12+01:00" level=info msg="Applying customresourcedefinitions compositecontrollers.metacontroller.k8s.io" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:12+01:00" level=info msg="Creating non-existent customresourcedefinitions compositecontrollers.metacontroller.k8s.io" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:12+01:00" level=info msg="Applying customresourcedefinitions controllerrevisions.metacontroller.k8s.io" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:12+01:00" level=info msg="Creating non-existent customresourcedefinitions controllerrevisions.metacontroller.k8s.io" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:12+01:00" level=info msg="Applying customresourcedefinitions decoratorcontrollers.metacontroller.k8s.io" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:12+01:00" level=info msg="Creating non-existent customresourcedefinitions decoratorcontrollers.metacontroller.k8s.io" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:12+01:00" level=info msg="Applying serviceaccounts kubeflow.meta-controller-service" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:12+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.meta-controller-service" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:13+01:00" level=info msg="Applying clusterrolebindings meta-controller-cluster-role-binding" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:13+01:00" level=info msg="Creating non-existent clusterrolebindings meta-controller-cluster-role-binding" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:13+01:00" level=info msg="Applying statefulsets kubeflow.metacontroller" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:13+01:00" level=info msg="Creating non-existent statefulsets kubeflow.metacontroller" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:13+01:00" level=info msg="Component metacontroller apply succeeded" filename="ksonnet/ksonnet.go:171"
+    time="2019-05-26T07:30:28+01:00" level=info msg="Applying customresourcedefinitions notebooks.kubeflow.org" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:28+01:00" level=info msg="Creating non-existent customresourcedefinitions notebooks.kubeflow.org" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:29+01:00" level=info msg="Applying services kubeflow.notebooks-controller" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:29+01:00" level=info msg="Creating non-existent services kubeflow.notebooks-controller" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:29+01:00" level=info msg="Applying serviceaccounts kubeflow.notebook-controller" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:29+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.notebook-controller" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:29+01:00" level=info msg="Applying deployments kubeflow.notebooks-controller" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:29+01:00" level=info msg="Creating non-existent deployments kubeflow.notebooks-controller" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:29+01:00" level=info msg="Applying clusterroles notebooks-controller" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:29+01:00" level=info msg="Creating non-existent clusterroles notebooks-controller" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:29+01:00" level=info msg="Applying clusterrolebindings notebooks-controller" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:29+01:00" level=info msg="Creating non-existent clusterrolebindings notebooks-controller" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:29+01:00" level=info msg="Component notebook-controller apply succeeded" filename="ksonnet/ksonnet.go:171"
+    time="2019-05-26T07:30:46+01:00" level=info msg="Applying services kubeflow.minio-service" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:46+01:00" level=info msg="Creating non-existent services kubeflow.minio-service" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:46+01:00" level=info msg="Applying deployments kubeflow.minio" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:46+01:00" level=info msg="Creating non-existent deployments kubeflow.minio" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:46+01:00" level=info msg="Applying secrets kubeflow.mlpipeline-minio-artifact" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:46+01:00" level=info msg="Creating non-existent secrets kubeflow.mlpipeline-minio-artifact" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:46+01:00" level=info msg="Applying services kubeflow.mysql" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:46+01:00" level=info msg="Creating non-existent services kubeflow.mysql" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:46+01:00" level=info msg="Applying deployments kubeflow.mysql" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:46+01:00" level=info msg="Creating non-existent deployments kubeflow.mysql" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:46+01:00" level=info msg="Applying serviceaccounts kubeflow.ml-pipeline" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:46+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.ml-pipeline" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:47+01:00" level=info msg="Applying rolebindings kubeflow.ml-pipeline" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:47+01:00" level=info msg="Creating non-existent rolebindings kubeflow.ml-pipeline" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:47+01:00" level=info msg="Applying roles kubeflow.ml-pipeline" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:47+01:00" level=info msg="Creating non-existent roles kubeflow.ml-pipeline" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:47+01:00" level=info msg="Applying services kubeflow.ml-pipeline" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:47+01:00" level=info msg="Creating non-existent services kubeflow.ml-pipeline" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:47+01:00" level=info msg="Applying deployments kubeflow.ml-pipeline" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:47+01:00" level=info msg="Creating non-existent deployments kubeflow.ml-pipeline" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:47+01:00" level=info msg="Applying serviceaccounts kubeflow.pipeline-runner" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:47+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.pipeline-runner" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:47+01:00" level=info msg="Applying clusterroles pipeline-runner" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:47+01:00" level=info msg="Creating non-existent clusterroles pipeline-runner" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:48+01:00" level=info msg="Applying clusterrolebindings pipeline-runner" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:48+01:00" level=info msg="Creating non-existent clusterrolebindings pipeline-runner" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:48+01:00" level=info msg="Applying serviceaccounts kubeflow.ml-pipeline-scheduledworkflow" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:48+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.ml-pipeline-scheduledworkflow" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:48+01:00" level=info msg="Applying clusterrolebindings ml-pipeline-scheduledworkflow" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:48+01:00" level=info msg="Creating non-existent clusterrolebindings ml-pipeline-scheduledworkflow" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:48+01:00" level=info msg="Applying roles kubeflow.ml-pipeline-scheduledworkflow" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:48+01:00" level=info msg="Creating non-existent roles kubeflow.ml-pipeline-scheduledworkflow" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:48+01:00" level=info msg="Applying deployments kubeflow.ml-pipeline-scheduledworkflow" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:48+01:00" level=info msg="Creating non-existent deployments kubeflow.ml-pipeline-scheduledworkflow" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:48+01:00" level=info msg="Applying customresourcedefinitions scheduledworkflows.kubeflow.org" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:48+01:00" level=info msg="Creating non-existent customresourcedefinitions scheduledworkflows.kubeflow.org" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:48+01:00" level=info msg="Applying serviceaccounts kubeflow.ml-pipeline-persistenceagent" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:48+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.ml-pipeline-persistenceagent" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:48+01:00" level=info msg="Applying clusterrolebindings ml-pipeline-persistenceagent" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:48+01:00" level=info msg="Creating non-existent clusterrolebindings ml-pipeline-persistenceagent" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:48+01:00" level=info msg="Applying clusterroles ml-pipeline-persistenceagent" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:48+01:00" level=info msg="Creating non-existent clusterroles ml-pipeline-persistenceagent" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:48+01:00" level=info msg="Applying deployments kubeflow.ml-pipeline-persistenceagent" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:48+01:00" level=info msg="Creating non-existent deployments kubeflow.ml-pipeline-persistenceagent" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:49+01:00" level=info msg="Applying serviceaccounts kubeflow.ml-pipeline-viewer-crd-service-account" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:49+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.ml-pipeline-viewer-crd-service-account" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:49+01:00" level=info msg="Applying clusterrolebindings ml-pipeline-viewer-crd-role-binding" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:49+01:00" level=info msg="Creating non-existent clusterrolebindings ml-pipeline-viewer-crd-role-binding" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:49+01:00" level=info msg="Applying clusterroles ml-pipeline-viewer-controller-role" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:49+01:00" level=info msg="Creating non-existent clusterroles ml-pipeline-viewer-controller-role" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:49+01:00" level=info msg="Applying deployments kubeflow.ml-pipeline-viewer-controller-deployment" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:49+01:00" level=info msg="Creating non-existent deployments kubeflow.ml-pipeline-viewer-controller-deployment" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:49+01:00" level=info msg="Applying customresourcedefinitions viewers.kubeflow.org" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:49+01:00" level=info msg="Creating non-existent customresourcedefinitions viewers.kubeflow.org" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:49+01:00" level=info msg="Applying serviceaccounts kubeflow.ml-pipeline-ui" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:49+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.ml-pipeline-ui" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:49+01:00" level=info msg="Applying services kubeflow.ml-pipeline-ui" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:49+01:00" level=info msg="Creating non-existent services kubeflow.ml-pipeline-ui" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:49+01:00" level=info msg="Applying services kubeflow.ml-pipeline-tensorboard-ui" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:49+01:00" level=info msg="Creating non-existent services kubeflow.ml-pipeline-tensorboard-ui" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:50+01:00" level=info msg="Applying rolebindings kubeflow.ml-pipeline-ui" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:50+01:00" level=info msg="Creating non-existent rolebindings kubeflow.ml-pipeline-ui" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:50+01:00" level=info msg="Applying roles kubeflow.ml-pipeline-ui" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:50+01:00" level=info msg="Creating non-existent roles kubeflow.ml-pipeline-ui" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:50+01:00" level=info msg="Applying deployments kubeflow.ml-pipeline-ui" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:50+01:00" level=info msg="Creating non-existent deployments kubeflow.ml-pipeline-ui" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:50+01:00" level=info msg="Applying persistentvolumeclaims kubeflow.mysql-pv-claim" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:50+01:00" level=info msg="Creating non-existent persistentvolumeclaims kubeflow.mysql-pv-claim" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:50+01:00" level=info msg="Applying persistentvolumeclaims kubeflow.minio-pvc" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:30:50+01:00" level=info msg="Creating non-existent persistentvolumeclaims kubeflow.minio-pvc" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:30:50+01:00" level=info msg="Component pipeline apply succeeded" filename="ksonnet/ksonnet.go:171"
+    time="2019-05-26T07:31:07+01:00" level=info msg="Applying configmaps kubeflow.pytorch-operator-config" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:31:07+01:00" level=info msg="Creating non-existent configmaps kubeflow.pytorch-operator-config" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:31:07+01:00" level=info msg="Applying serviceaccounts kubeflow.pytorch-operator" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:31:07+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.pytorch-operator" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:31:07+01:00" level=info msg="Applying clusterroles pytorch-operator" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:31:07+01:00" level=info msg="Creating non-existent clusterroles pytorch-operator" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:31:08+01:00" level=info msg="Applying clusterrolebindings pytorch-operator" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:31:08+01:00" level=info msg="Creating non-existent clusterrolebindings pytorch-operator" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:31:08+01:00" level=info msg="Applying customresourcedefinitions pytorchjobs.kubeflow.org" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:31:08+01:00" level=info msg="Creating non-existent customresourcedefinitions pytorchjobs.kubeflow.org" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:31:08+01:00" level=info msg="Applying deployments kubeflow.pytorch-operator" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:31:08+01:00" level=info msg="Creating non-existent deployments kubeflow.pytorch-operator" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:31:08+01:00" level=info msg="Component pytorch-operator apply succeeded" filename="ksonnet/ksonnet.go:171"
+    time="2019-05-26T07:31:27+01:00" level=info msg="Applying services kubeflow.tensorboard" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:31:27+01:00" level=info msg="Creating non-existent services kubeflow.tensorboard" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:31:27+01:00" level=info msg="Applying deployments kubeflow.tensorboard" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:31:27+01:00" level=info msg="Creating non-existent deployments kubeflow.tensorboard" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:31:27+01:00" level=info msg="Component tensorboard apply succeeded" filename="ksonnet/ksonnet.go:171"
+    time="2019-05-26T07:31:48+01:00" level=info msg="Applying customresourcedefinitions tfjobs.kubeflow.org" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:31:48+01:00" level=info msg="Creating non-existent customresourcedefinitions tfjobs.kubeflow.org" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:31:48+01:00" level=info msg="Applying serviceaccounts kubeflow.tf-job-dashboard" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:31:48+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.tf-job-dashboard" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:31:48+01:00" level=info msg="Applying configmaps kubeflow.tf-job-operator-config" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:31:48+01:00" level=info msg="Creating non-existent configmaps kubeflow.tf-job-operator-config" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:31:48+01:00" level=info msg="Applying serviceaccounts kubeflow.tf-job-operator" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:31:48+01:00" level=info msg="Creating non-existent serviceaccounts kubeflow.tf-job-operator" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:31:48+01:00" level=info msg="Applying clusterroles tf-job-operator" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:31:48+01:00" level=info msg="Creating non-existent clusterroles tf-job-operator" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:31:48+01:00" level=info msg="Applying clusterrolebindings tf-job-operator" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:31:48+01:00" level=info msg="Creating non-existent clusterrolebindings tf-job-operator" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:31:48+01:00" level=info msg="Applying services kubeflow.tf-job-dashboard" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:31:48+01:00" level=info msg="Creating non-existent services kubeflow.tf-job-dashboard" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:31:48+01:00" level=info msg="Applying clusterroles tf-job-dashboard" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:31:48+01:00" level=info msg="Creating non-existent clusterroles tf-job-dashboard" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:31:48+01:00" level=info msg="Applying clusterrolebindings tf-job-dashboard" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:31:48+01:00" level=info msg="Creating non-existent clusterrolebindings tf-job-dashboard" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:31:48+01:00" level=info msg="Applying deployments kubeflow.tf-job-operator" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:31:48+01:00" level=info msg="Creating non-existent deployments kubeflow.tf-job-operator" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:31:49+01:00" level=info msg="Applying deployments kubeflow.tf-job-dashboard" filename="cluster/upsert.go:73"
+    time="2019-05-26T07:31:49+01:00" level=info msg="Creating non-existent deployments kubeflow.tf-job-dashboard" filename="cluster/upsert.go:92"
+    time="2019-05-26T07:31:49+01:00" level=info msg="Component tf-job-operator apply succeeded" filename="ksonnet/ksonnet.go:171"
+    time="2019-05-26T07:31:49+01:00" level=info msg="All components apply succeeded" filename="ksonnet/ksonnet.go:192"
 
 
 ### Now let's run Seldon 
@@ -469,8 +478,8 @@ As you can see, we are running the Seldon Operator in the Kubeflow namespace.
 !helm install seldon-core-operator --namespace kubeflow --repo https://storage.googleapis.com/seldon-charts
 ```
 
-    NAME:   yummy-donkey
-    LAST DEPLOYED: Sat May 25 18:27:34 2019
+    NAME:   filled-hare
+    LAST DEPLOYED: Sun May 26 07:32:41 2019
     NAMESPACE: kubeflow
     STATUS: DEPLOYED
     
@@ -493,7 +502,7 @@ As you can see, we are running the Seldon Operator in the Kubeflow namespace.
     
     ==> v1/Service
     NAME                                        TYPE       CLUSTER-IP      EXTERNAL-IP  PORT(S)  AGE
-    seldon-operator-controller-manager-service  ClusterIP  10.105.250.206  <none>       443/TCP  1s
+    seldon-operator-controller-manager-service  ClusterIP  10.110.123.156  <none>       443/TCP  1s
     
     ==> v1/StatefulSet
     NAME                                READY  AGE
@@ -517,56 +526,37 @@ Check all the Seldon Deployment is running
 !kubectl get pod -n kubeflow | grep seldon
 ```
 
-    seldon-operator-controller-manager-0                       1/1     Running   1          52s
+    seldon-operator-controller-manager-0                       1/1     Running   1          7s
 
 
-# Train our NLP Pipeline with Kubeflow
-We can access the Kubeflow dashboard to train our ML pipeline via http://localhost/_/pipeline-dashboard
+### Temporary fix for Argo image
 
-If you can't edit this, you need to make sure that the ambassador gateway service is accessible:
+At the time of writing we need to make some updates in the Argo images with the following commands below.
 
-
-```python
-!kubectl get svc ambassador -n kubeflow
-```
-
-    NAME         TYPE       CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
-    ambassador   NodePort   10.99.81.144   <none>        80:31713/TCP   9m13s
-
-
-In my case, I need to change the kind from `NodePort` into `LoadBalancer` which can be done with the following command:
+(This basically changes the images to the latest ones, otherwise we will get an error when we attach the volume)
 
 
 ```python
-!kubectl patch svc ambassador --type='json' -p '[{"op":"replace","path":"/spec/type","value":"LoadBalancer"}]' -n kubeflow
+!kubectl -n kubeflow patch deployments. workflow-controller --patch '{"spec": {"template": {"spec": {"containers": [{"name": "workflow-controller", "image": "argoproj/workflow-controller:v2.3.0-rc3"}]}}}}'
+!kubectl -n kubeflow patch deployments. ml-pipeline --patch '{"spec": {"template": {"spec": {"containers": [{"name": "ml-pipeline-api-server", "image": "elikatsis/ml-pipeline-api-server:0.1.18-pick-1289"}]}}}}'
+# !kubectl -n kubeflow patch configmaps workflow-controller-configmap --patch '{"data": {"config": "{ executorImage: argoproj/argoexec:v2.3.0-rc3,artifactRepository:{s3: {bucket: mlpipeline,keyPrefix: artifacts,endpoint: minio-service.kubeflow:9000,insecure: true,accessKeySecret: {name: mlpipeline-minio-artifact,key: accesskey},secretKeySecret: {name: mlpipeline-minio-artifact,key: secretkey}}}}" }}'
 ```
 
-    service/ambassador patched
+    deployment.extensions/workflow-controller patched
+    deployment.extensions/ml-pipeline patched
 
 
-Now that I've changed it to a loadbalancer, it has allocated the external IP as my localhost so I can access it at http://localhost/_/pipeline-dashboard
+The last command you need to run actually needs to be manual as the patch cannot change configmap contents directly
 
+You need to run the edit commad and change the executorImage to: `argoproj/argoexec:v2.3.0-rc3`
 
-```python
-!kubectl get svc ambassador -n kubeflow
-```
-
-    NAME         TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
-    ambassador   LoadBalancer   10.99.81.144   localhost     80:31713/TCP   10m
-
-
-If this was successfull, you should see the following screen:
-![](img/k-pipeline-dashboard.jpg)
-
-# Upload our NLP pipeline
-To uplaod our NLP pipeline we must first create it. This will consist in two steps:
+The exact edit command is: 
     
-x.1) Build all the docker images for each pipeline step
-x.2) Build the Kubeflow pipeline file to upload through the dashboard
-x.3) Run a new pipeline instance through the dashboard
+```
+kubectl edit configmaps workflow-controller-configmap -n kubeflow
+```
 
-
-## x.1 Build all docker images for each pipeline step
+# 2) Test and build all our reusable pipeline steps
 
 We will start by building each of the components in our ML pipeline. 
 
@@ -651,7 +641,7 @@ If you want to understand how the CLI pipeline talks to each other, have a look 
     
     pipeline/pipeline_tests/test_pipeline.py [32m.[0m[36m                               [100%][0m
     
-    [33m[1m===================== 1 passed, 9 warnings in 4.89 seconds =====================[0m
+    [33m[1m==================== 1 passed, 9 warnings in 12.89 seconds =====================[0m
 
 
 To build the image we provide a build script in each of the steps that contains the instructions:
@@ -725,11 +715,43 @@ cd ../tfidf_vectorizer && ./build_image.sh
     Build completed successfully
 
 
-# Train ML Pipeline via Kubeflow
-Now that we've built our steps, we can actually train our ML pipeline, which looks as follows:
-![](img/kubeflow-seldon-nlp-ml-pipelines-training.jpg)
+# 3) Train our NLP Pipeline through the Kubeflow UI
+We can access the Kubeflow dashboard to train our ML pipeline via http://localhost/_/pipeline-dashboard
 
-To do this, we have to generate the workflow using our Kubeflow graph definition and then uplaoding it through the UI:
+If you can't edit this, you need to make sure that the ambassador gateway service is accessible:
+
+
+```python
+!kubectl get svc ambassador -n kubeflow
+```
+
+    NAME         TYPE       CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
+    ambassador   NodePort   10.106.32.40   <none>        80:31729/TCP   4m22s
+
+
+In my case, I need to change the kind from `NodePort` into `LoadBalancer` which can be done with the following command:
+
+
+```python
+!kubectl patch svc ambassador --type='json' -p '[{"op":"replace","path":"/spec/type","value":"LoadBalancer"}]' -n kubeflow
+```
+
+    service/ambassador patched
+
+
+Now that I've changed it to a loadbalancer, it has allocated the external IP as my localhost so I can access it at http://localhost/_/pipeline-dashboard
+
+
+```python
+!kubectl get svc ambassador -n kubeflow
+```
+
+    NAME         TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
+    ambassador   LoadBalancer   10.106.32.40   localhost     80:31729/TCP   4m28s
+
+
+If this was successfull, you should see the following screen:
+![](img/k-pipeline-dashboard.jpg)
 
 
 ```bash
@@ -743,20 +765,11 @@ ls train_pipeline/
     nlp_pipeline.py.tar.gz
 
 
-Before uploading the image, at the time of writing we need to make some updates in the Argo images with the following commands below.
 
-(This basically changes the images to the latest ones, otherwise we will get an error when we attach the volume)
+Now that we've built our steps, we can actually train our ML pipeline, which looks as follows:
+![](img/kubeflow-seldon-nlp-ml-pipelines-training.jpg)
 
-
-```python
-!kubectl -n kubeflow patch deployments. workflow-controller --patch '{"spec": {"template": {"spec": {"containers": [{"name": "workflow-controller", "image": "argoproj/workflow-controller:v2.3.0-rc3"}]}}}}'
-!kubectl -n kubeflow patch configmaps workflow-controller-configmap --patch '{"data": {"config": "{ executorImage: argoproj/argoexec:v2.3.0-rc3,artifactRepository:{s3: {bucket: mlpipeline,keyPrefix: artifacts,endpoint: minio-service.kubeflow:9000,insecure: true,accessKeySecret: {name: mlpipeline-minio-artifact,key: accesskey},secretKeySecret: {name: mlpipeline-minio-artifact,key: secretkey}}}}" }}'
-!kubectl -n kubeflow patch deployments. ml-pipeline --patch '{"spec": {"template": {"spec": {"containers": [{"name": "ml-pipeline-api-server", "image": "elikatsis/ml-pipeline-api-server:0.1.18-pick-1289"}]}}}}'
-```
-
-    deployment.extensions/workflow-controller patched
-    deployment.extensions/ml-pipeline patched
-
+### Run the pipeline
 
 We now need to upload the resulting `nlp_pipeline.py.tar.gz` file generated.
 
@@ -766,7 +779,7 @@ Once it's uploaded, we want to create and trigger a run! You should now be able 
 
 ![](img/running-pipeline.jpg)
 
-### Seeing the results in the Persistent Volume
+### Inspecting the data created in the Persistent Volume
 The pipeline saves the output of the pipeline together with the trained model in the persistent volume claim.
 
 The persistent volume claim is the same name as the argo workflow:
@@ -777,7 +790,7 @@ The persistent volume claim is the same name as the argo workflow:
 ```
 
     NAME        AGE
-    nlp-77bln   12m
+    nlp-78k79   45s
 
 
 Our workflow is there! So we can actually access it by running
@@ -793,16 +806,16 @@ And we can use good old `sed` to insert this workflow name in our PVC-Access con
 
 
 ```python
-!sed "s/PVC_NAME/"$(kubectl get workflow -n kubeflow -o jsonpath='{.items[0].metadata.name}')"/g" deploy_pipeline/pvc-access.yaml
+!sed "s/PVC_NAME/"$(kubectl get workflow -n kubeflow -o jsonpath='{.items[0].metadata.name}')"-my-pvc/g" deploy_pipeline/pvc-access.yaml
 ```
 
     apiVersion: v1
     kind: Pod
     metadata:
-      name: busybox
+      name: pvc-access-container
     spec:
       containers:
-      - name: busybox
+      - name: pvc-access-container
         image: busybox
         command: ["/bin/sh", "-ec", "sleep 1000"]
         volumeMounts:
@@ -829,33 +842,19 @@ We just need to apply this container with our kubectl command, and we can use it
 !kubectl get pods -n kubeflow pvc-access-container
 ```
 
-    NAME                   READY   STATUS              RESTARTS   AGE
-    pvc-access-container   0/1     ContainerCreating   0          1s
+    NAME                   READY   STATUS    RESTARTS   AGE
+    pvc-access-container   1/1     Running   0          11s
 
 
-
-```python
-!kubectl apply -f deploy_pipeline/pvc-access.yaml -n kubeflow
-```
-
-    pod/busybox created
-
+Now we can actually see what are the files located in the pvc that the pipeline used:
 
 
 ```python
-!kubectl get pods busybox -n kubeflow
+!kubectl -n kubeflow exec -it pvc-access-container ls /mnt
 ```
 
-    NAME      READY   STATUS    RESTARTS   AGE
-    busybox   0/1     Pending   0          9s
-
-
-
-```python
-!kubectl -n kubeflow exec -it busybox ls /mnt
-```
-
-    Error from server (BadRequest): pod busybox does not have a host assigned
+    [1;32mclean.data[m       [1;32mlr.model[m         [1;32mtext.data[m        [1;32mtfidf.model[m
+    [1;32mlabels.data[m      [1;32mprediction.data[m  [1;32mtfidf.data[m       [1;32mtokens.data[m
 
 
 
@@ -865,6 +864,287 @@ We just need to apply this container with our kubectl command, and we can use it
 
     pod "pvc-access-container" deleted
 
+
+# 4) Deploying your ML Pipeline with Seldon
+Now that we have trained our ML pipeline, it's time to deploy it at scale!
+
+For this we will just need to create a simple Graph definition using the SeldonDeploy Kubernetes Custom Resource Definition.
+
+Adding the Seldon deployment will make our architecture look as follows:
+
+![](img/kubeflow-seldon-nlp-ml-pipelines.jpg)
+
+### Seldon Production pipeline contents
+If we look at the file we'll be using to deploy our pipeline, we can see that it has the following key points:
+
+1) Reusable components definitions as containerSpecs: cleantext, spacytokenizer, tfidfvectorizer & lrclassifier
+
+2) DAG (directed acyclic graph) definition for REST pipeline: cleantext -> spacytokenizer -> tfidfvectorizer -> lrclassifier
+
+
+```python
+!cat deploy_pipeline/seldon_production_pipeline.yaml
+```
+
+    ---
+    apiVersion: machinelearning.seldon.io/v1alpha2
+    kind: SeldonDeployment
+    metadata:
+      labels:
+        app: seldon
+      name: nlp-classifier
+      namespace: kubeflow
+    spec:
+      annotations:
+        project_name: NLP Pipeline
+        deployment_version: v1
+      name: nlp-classifier
+      oauth_key: oauth-key
+      oauth_secret: oauth-secret
+      predictors:
+      - componentSpecs:
+        - spec:
+            containers:
+            - image: clean_text_transformer:0.1
+              imagePullPolicy: IfNotPresent
+              name: cleantext
+              resources:
+                requests:
+                  memory: 1Mi
+            - image: spacy_tokenizer:0.1
+              imagePullPolicy: IfNotPresent
+              name: spacytokenizer
+            - image: tfidf_vectorizer:0.1
+              imagePullPolicy: IfNotPresent
+              name: tfidfvectorizer
+              volumeMounts:
+              - name: mypvc
+                mountPath: /mnt
+            - image: lr_text_classifier:0.1
+              imagePullPolicy: IfNotPresent
+              name: lrclassifier
+              volumeMounts:
+              - name: mypvc
+                mountPath: /mnt
+            terminationGracePeriodSeconds: 20
+            volumes:
+            - name: mypvc
+              persistentVolumeClaim:
+                claimName: PVC_NAME
+        graph:
+          children:
+          - name: spacytokenizer
+            endpoint:
+              type: REST
+            type: MODEL
+            children:
+            - name: tfidfvectorizer
+              endpoint:
+                type: REST
+              type: MODEL
+              children:
+              - name: lrclassifier
+                endpoint:
+                  type: REST
+                type: MODEL
+                children: []
+          name: cleantext
+          endpoint:
+            type: REST
+          type: MODEL
+        name: single-model
+        replicas: 1
+        annotations:
+          predictor_version: v1
+    
+
+
+This is the exact same structure as the Kubeflow definition, and can be deployed using kubectl
+
+Once again, we want to make sure we replace the "PVC_NAME" variable with the workflow ID to attach the container to the Seldon pipeline
+
+
+```python
+!sed "s/PVC_NAME/"$(kubectl get workflow -n kubeflow -o jsonpath='{.items[0].metadata.name}')"-my-pvc/g" deploy_pipeline/seldon_production_pipeline.yaml | kubectl -n kubeflow apply -f -
+```
+
+    seldondeployment.machinelearning.seldon.io/nlp-classifier created
+
+
+We now make sure that the Seldon Engine with the 4 reusable components are running:
+
+
+```python
+!kubectl -n kubeflow get pods | grep nlp-classifier
+```
+
+    nlp-classifier-single-model-51fb0cb-57fbcdd44f-gkxx7       5/5     Running     0          59s
+
+
+We can also find this with the SeldonDeployment custom resource definition
+
+
+```python
+!kubectl -n kubeflow get seldondeployment 
+```
+
+    NAME             AGE
+    nlp-classifier   1m
+
+
+# 5) Test Deployed ML REST Endpoints
+Now that it's running we have a production ML text pipeline that we can Query using REST and GRPC
+
+We can interact with our API in two ways: 
+
+1) Using CURL or any client like PostMan
+
+2) Using the Python SeldonClient
+
+### Using CURL from the terminal
+When using CURL, the only thing we need to provide is the data in JSON format, as well as the url, which is:
+
+```
+http://<ENDPOINT>/seldon/kubeflow/<PIPELINE_NAME>/api/v0.1/predictions
+```
+
+
+```bash
+%%bash
+#!curl -H \"Content-Type: application/x-www-form-urlencoded\" -g localhost/seldon/kubeflow/nlp-classifier/api/v0.1/predictions -d 'json={\"data\":{\"ndarray\":[[\"Hello this is some text to test\"]]}}'
+curl -X POST -H 'Content-Type: application/json' \
+    -d "{'data': {'names': ['text'], 'ndarray': ['Hello world this is a test']}}" \
+    http://127.0.0.1/seldon/kubeflow/nlp-classifier/api/v0.1/predictions
+```
+
+    {
+      "meta": {
+        "puid": "rdp3vmdo20g6ihjbu6nub1m3ra",
+        "tags": {
+        },
+        "routing": {
+          "cleantext": -1,
+          "tfidfvectorizer": -1,
+          "spacytokenizer": -1
+        },
+        "requestPath": {
+          "cleantext": "clean_text_transformer:0.1",
+          "tfidfvectorizer": "tfidf_vectorizer:0.1",
+          "lrclassifier": "lr_text_classifier:0.1",
+          "spacytokenizer": "spacy_tokenizer:0.1"
+        },
+        "metrics": []
+      },
+      "data": {
+        "names": ["t:0", "t:1"],
+        "ndarray": [[0.6729278313299858, 0.32707216867001415]]
+      }
+    }
+
+      % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                     Dload  Upload   Total   Spent    Left  Speed
+    100   600  100   528  100    72    816    111 --:--:-- --:--:-- --:--:--   927
+
+
+### Using the SeldonClient
+We can also use the Python SeldonClient to interact with the pipeline we just deployed 
+
+
+```python
+from seldon_core.seldon_client import SeldonClient
+import numpy as np
+
+host = "localhost"
+port = "80" # Make sure you use the port above
+batch = np.array(["Hello world this is a test"])
+payload_type = "ndarray"
+deployment_name="nlp-classifier"
+transport="rest"
+namespace="kubeflow"
+
+sc = seldon_core.seldon_client.SeldonClient(
+    gateway="ambassador", 
+    ambassador_endpoint=host + ":" + port,
+    namespace=namespace)
+
+client_prediction = sc.predict(
+    data=batch, 
+    deployment_name=deployment_name,
+    names=["text"],
+    payload_type=payload_type,
+    transport="rest")
+
+print(client_prediction)
+```
+
+    http://localhost:80/seldon/kubeflow/nlp-classifier/api/v0.1/predictions 
+    Paload:
+     {'data': {'names': ['text'], 'ndarray': ['Hello world this is a test']}} 
+    HEADERS:
+     None
+    Success:True message:
+    Request:
+    data {
+      names: "text"
+      ndarray {
+        values {
+          string_value: "Hello world this is a test"
+        }
+      }
+    }
+    
+    Response:
+    meta {
+      puid: "slbdab0olpvupib0p2f1raju2s"
+      routing {
+        key: "cleantext"
+        value: -1
+      }
+      routing {
+        key: "spacytokenizer"
+        value: -1
+      }
+      routing {
+        key: "tfidfvectorizer"
+        value: -1
+      }
+      requestPath {
+        key: "cleantext"
+        value: "clean_text_transformer:0.1"
+      }
+      requestPath {
+        key: "lrclassifier"
+        value: "lr_text_classifier:0.1"
+      }
+      requestPath {
+        key: "spacytokenizer"
+        value: "spacy_tokenizer:0.1"
+      }
+      requestPath {
+        key: "tfidfvectorizer"
+        value: "tfidf_vectorizer:0.1"
+      }
+    }
+    data {
+      names: "t:0"
+      names: "t:1"
+      ndarray {
+        values {
+          list_value {
+            values {
+              number_value: 0.6729278313299858
+            }
+            values {
+              number_value: 0.32707216867001415
+            }
+          }
+        }
+      }
+    }
+    
+
+
+# You now have a full end-to-end training and production NLP pipeline 😎 
 
 
 ```python
