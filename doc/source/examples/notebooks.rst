@@ -34,6 +34,7 @@ Notebooks
    Sagemaker SKLearn Example <sagemaker_sklearn>   
    SKLearn Iris Classifier <iris>
    SKLearn MNIST <sklearn_mnist>
+   SKLearn SpaCy Reddit Text Classifier Example <sklearn_spacy_text_classifier_example>
    Tensorflow MNIST <deep_mnist>
    TFserving MNIST <tfserving_mnist>
 
