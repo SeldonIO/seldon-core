@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: busybox
+  name: pvc-access-container
 spec:
   containers:
-  - name: busybox
+  - name: pvc-access-container
     image: busybox
     command: ["/bin/sh", "-ec", "sleep 1000"]
     volumeMounts:
@@ -13,4 +13,4 @@ spec:
   volumes:
   - name: mypvc
     persistentVolumeClaim:
-      claimName: nlp-rhx4j-my-pvc
+      claimName: PVC_NAME
