@@ -42,7 +42,7 @@ spec:
         volumes:
         - name: mypvc
           persistentVolumeClaim:
-            claimName: nlp-rhx4j-my-pvc
+            claimName: PVC_NAME
     graph:
       children:
       - name: spacytokenizer
