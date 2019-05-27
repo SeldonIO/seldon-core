@@ -1,5 +1,5 @@
 
-# Kubeflow NLP end-to-end with Seldon
+# End-to-end Reusable ML Pipeline with Seldon and Kubeflow
 
 In this example we showcase how to build re-usable components to build an ML pipeline that can be trained and deployed at scale.
 
@@ -35,15 +35,10 @@ Make sure you install the following dependencies, as they are critical for this 
 
 
 ```python
-# You can also install the python dependencies that we'll need to build and test:
 !pip install -r requirements-dev.txt
 ```
 
-    Collecting https://storage.googleapis.com/ml-pipeline/release/0.1.20/kfp.tar.gz (from -r requirements-dev.txt (line 2))
-
-
-# 1) Run all the services
-### Start by running Kubeflow
+## 1) Run all the services (Kubeflow and Seldon)
 Kubeflow's CLI allows us to create a project which will allow us to build the configuration we need to deploy our kubeflow and seldon clusters.
 
 
@@ -51,6 +46,9 @@ Kubeflow's CLI allows us to create a project which will allow us to build the co
 !kfctl init kubeflow-seldon
 !ls kubeflow-seldon
 ```
+
+    app.yaml
+
 
 Now we run the following commands to basically launch our Kubeflow cluster with all its components. 
 
@@ -66,11 +64,6 @@ kfctl generate all -V
 kfctl apply all -V
 ```
 
-    time="2019-05-26T07:28:04+01:00" level=info msg="reading from /home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/kubeflow-seldon/app.yaml" filename="coordinator/coordinator.go:341"
-    ...
-    time="2019-05-26T07:31:49+01:00" level=info msg="All components apply succeeded" filename="ksonnet/ksonnet.go:192"
-
-
 ### Now let's run Seldon 
 For this we'll need Helm to be running, so we'll initialise it.
 
@@ -82,14 +75,9 @@ kubectl rollout status deploy/tiller-deploy -n kube-system
 ```
 
     $HELM_HOME has been configured at /home/alejandro/.helm.
-    
-    Tiller (the Helm server-side component) has been installed into your Kubernetes Cluster.
-    
-    Please note: by default, Tiller is deployed with an insecure 'allow unauthenticated users' policy.
-    To prevent this, run `helm init` with the --tiller-tls-verify flag.
-    For more information on securing your installation see: https://docs.helm.sh/using_helm/#securing-your-helm-installation
+    Warning: Tiller is already installed in the cluster.
+    (Use --client-only to suppress this message, or --upgrade to upgrade Tiller to the current version.)
     Happy Helming!
-    Waiting for deployment "tiller-deploy" rollout to finish: 0 of 1 updated replicas are available...
     deployment "tiller-deploy" successfully rolled out
 
 
@@ -102,39 +90,39 @@ As you can see, we are running the Seldon Operator in the Kubeflow namespace.
 !helm install seldon-core-operator --namespace kubeflow --repo https://storage.googleapis.com/seldon-charts
 ```
 
-    NAME:   filled-hare
-    LAST DEPLOYED: Sun May 26 07:32:41 2019
+    NAME:   aspiring-chinchilla
+    LAST DEPLOYED: Mon May 27 16:15:38 2019
     NAMESPACE: kubeflow
     STATUS: DEPLOYED
     
     RESOURCES:
     ==> v1/ClusterRole
     NAME                          AGE
-    seldon-operator-manager-role  1s
+    seldon-operator-manager-role  0s
     
     ==> v1/ClusterRoleBinding
     NAME                                 AGE
-    seldon-operator-manager-rolebinding  1s
+    seldon-operator-manager-rolebinding  0s
     
     ==> v1/Pod(related)
     NAME                                  READY  STATUS             RESTARTS  AGE
-    seldon-operator-controller-manager-0  0/1    ContainerCreating  0         1s
+    seldon-operator-controller-manager-0  0/1    ContainerCreating  0         0s
     
     ==> v1/Secret
     NAME                                   TYPE    DATA  AGE
-    seldon-operator-webhook-server-secret  Opaque  0     1s
+    seldon-operator-webhook-server-secret  Opaque  0     0s
     
     ==> v1/Service
     NAME                                        TYPE       CLUSTER-IP      EXTERNAL-IP  PORT(S)  AGE
-    seldon-operator-controller-manager-service  ClusterIP  10.110.123.156  <none>       443/TCP  1s
+    seldon-operator-controller-manager-service  ClusterIP  10.108.159.109  <none>       443/TCP  0s
     
     ==> v1/StatefulSet
     NAME                                READY  AGE
-    seldon-operator-controller-manager  0/1    1s
+    seldon-operator-controller-manager  0/1    0s
     
     ==> v1beta1/CustomResourceDefinition
     NAME                                         AGE
-    seldondeployments.machinelearning.seldon.io  1s
+    seldondeployments.machinelearning.seldon.io  0s
     
     
     NOTES:
@@ -150,7 +138,7 @@ Check all the Seldon Deployment is running
 !kubectl get pod -n kubeflow | grep seldon
 ```
 
-    seldon-operator-controller-manager-0                       1/1     Running   1          7s
+    seldon-operator-controller-manager-0                       1/1     Running   0          15s
 
 
 ### Temporary fix for Argo image
@@ -158,6 +146,7 @@ Check all the Seldon Deployment is running
 At the time of writing we need to make some updates in the Argo images with the following commands below.
 
 (This basically changes the images to the latest ones, otherwise we will get an error when we attach the volume)
+
 
 
 ```python
@@ -174,27 +163,27 @@ The last command you need to run actually needs to be manual as the patch cannot
 
 You need to run the edit commad and change the executorImage to: `argoproj/argoexec:v2.3.0-rc3`
 
-The exact edit command is: 
-    
+The command should be run from a terminal:
+
 ```
 kubectl edit configmaps workflow-controller-configmap -n kubeflow
 ```
 
-# 2) Test and build all our reusable pipeline steps
+## 2) Test and build all our reusable pipeline steps
 
 We will start by building each of the components in our ML pipeline. 
 
 ![](img/kubeflow-seldon-nlp-reusable-components.jpg)
 
-## Let's first have a look at our clean_text step:
+### Let's first have a look at our clean_text step:
+
 
 
 ```python
 !ls pipeline/pipeline_steps/clean_text/
 ```
 
-    Transformer.py	__pycache__	pipeline_step.py
-    __init__.py	build_image.sh	requirements.txt
+    Transformer.py	__init__.py  build_image.sh  pipeline_step.py  requirements.txt
 
 
 Like in this step, all of the other steps can be found in the `pipeline/pipeline_steps/` folder, and all have the following structure:
@@ -204,6 +193,7 @@ Like in this step, all of the other steps can be found in the `pipeline/pipeline
 * `build_image.sh` which uses `s2i` to build the image with one line
 
 ### Let's check out the CLI for clean_text
+
 
 
 ```python
@@ -219,6 +209,7 @@ Like in this step, all of the other steps can be found in the `pipeline/pipeline
 
 
 This is actually a very simple file, as we are using the click library to define the commands:
+
 
 
 ```python
@@ -265,7 +256,7 @@ If you want to understand how the CLI pipeline talks to each other, have a look 
     
     pipeline/pipeline_tests/test_pipeline.py [32m.[0m[36m                               [100%][0m
     
-    [33m[1m==================== 1 passed, 9 warnings in 12.89 seconds =====================[0m
+    [33m[1m===================== 1 passed, 9 warnings in 3.26 seconds =====================[0m
 
 
 To build the image we provide a build script in each of the steps that contains the instructions:
@@ -285,7 +276,8 @@ The only thing you need to make sure is that Seldon knows how to wrap the right 
 
 This can be achieved with the s2i/environment file. 
 
-As you can see, here we just tell it we want it to use the Transformer file:
+As you can see, here we just tell it we want it to use our `Transformer.py` file:
+
 
 
 ```python
@@ -298,11 +290,9 @@ As you can see, here we just tell it we want it to use the Transformer file:
     PERSISTENCE=0
 
 
-That's it! Quite simple right? 
+Once this is defined, the only thing we need to do is to run the `build_image.sh` for all the reusable components.
 
-The only thing we need to do is to run the `build_image.sh` for all the reusable components.
-
-Here we show the manual way to do it, but we recommend to just run `make build_pipeline_steps`.
+Here we show the manual way to do it:
 
 
 ```bash
@@ -315,45 +305,23 @@ cd ../spacy_tokenize && ./build_image.sh
 cd ../tfidf_vectorizer && ./build_image.sh
 ```
 
-    /home/alejandro/Programming/kubernetes/seldon/seldon-core/examples/kubeflow/pipeline/pipeline_steps/clean_text
-
-
-    ---> Installing application source...
-    ---> Installing dependencies ...
-    Looking in links: /whl
-    Collecting dill==0.2.9 (from -r requirements.txt (line 1))
-      WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
-    Downloading https://files.pythonhosted.org/packages/fe/42/bfe2e0857bc284cbe6a011d93f2a9ad58a22cb894461b199ae72cfef0f29/dill-0.2.9.tar.gz (150kB)
-    Requirement already satisfied: click in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 2)) (7.0)
-    Requirement already satisfied: numpy in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 3)) (1.16.3)
-    Building wheels for collected packages: dill
-    Building wheel for dill (setup.py): started
-    Building wheel for dill (setup.py): finished with status 'done'
-    Stored in directory: /root/.cache/pip/wheels/5b/d7/0f/e58eae695403de585269f4e4a94e0cd6ca60ec0c202936fa4a
-    Successfully built dill
-    Installing collected packages: dill
-    Successfully installed dill-0.2.9
-    WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
-    WARNING: You are using pip version 19.1, however version 19.1.1 is available.
-    You should consider upgrading via the 'pip install --upgrade pip' command.
-    Build completed successfully
-
-
-# 3) Train our NLP Pipeline through the Kubeflow UI
+## 3) Train our NLP Pipeline through the Kubeflow UI
 We can access the Kubeflow dashboard to train our ML pipeline via http://localhost/_/pipeline-dashboard
 
 If you can't edit this, you need to make sure that the ambassador gateway service is accessible:
+
 
 
 ```python
 !kubectl get svc ambassador -n kubeflow
 ```
 
-    NAME         TYPE       CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
-    ambassador   NodePort   10.106.32.40   <none>        80:31729/TCP   4m22s
+    NAME         TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+    ambassador   NodePort   10.108.204.59   <none>        80:31357/TCP   7m8s
 
 
 In my case, I need to change the kind from `NodePort` into `LoadBalancer` which can be done with the following command:
+
 
 
 ```python
@@ -366,15 +334,16 @@ In my case, I need to change the kind from `NodePort` into `LoadBalancer` which 
 Now that I've changed it to a loadbalancer, it has allocated the external IP as my localhost so I can access it at http://localhost/_/pipeline-dashboard
 
 
+
 ```python
 !kubectl get svc ambassador -n kubeflow
 ```
 
-    NAME         TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
-    ambassador   LoadBalancer   10.106.32.40   localhost     80:31729/TCP   4m28s
+    NAME         TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+    ambassador   LoadBalancer   10.108.204.59   localhost     80:31357/TCP   7m36s
 
 
-If this was successfull, you should see the following screen:
+If this was successfull, you should be able to access the dashboard
 ![](img/k-pipeline-dashboard.jpg)
 
 
@@ -387,7 +356,6 @@ ls train_pipeline/
 
     nlp_pipeline.py
     nlp_pipeline.py.tar.gz
-
 
 
 Now that we've built our steps, we can actually train our ML pipeline, which looks as follows:
@@ -409,12 +377,13 @@ The pipeline saves the output of the pipeline together with the trained model in
 The persistent volume claim is the same name as the argo workflow:
 
 
+
 ```python
 !kubectl get workflow -n kubeflow
 ```
 
     NAME        AGE
-    nlp-78k79   45s
+    nlp-jvfdd   1m
 
 
 Our workflow is there! So we can actually access it by running
@@ -424,7 +393,7 @@ Our workflow is there! So we can actually access it by running
 !kubectl get workflow -n kubeflow -o jsonpath='{.items[0].metadata.name}'
 ```
 
-    nlp-77bln
+    nlp-jvfdd
 
 And we can use good old `sed` to insert this workflow name in our PVC-Access controler which we can use to inspect the contents of the volume:
 
@@ -448,7 +417,7 @@ And we can use good old `sed` to insert this workflow name in our PVC-Access con
       volumes:
       - name: mypvc
         persistentVolumeClaim:
-          claimName: nlp-77bln
+          claimName: nlp-jvfdd-my-pvc
 
 
 We just need to apply this container with our kubectl command, and we can use it to inspect the mounted folder:
@@ -467,10 +436,8 @@ We just need to apply this container with our kubectl command, and we can use it
 ```
 
     NAME                   READY   STATUS    RESTARTS   AGE
-    pvc-access-container   1/1     Running   0          11s
+    pvc-access-container   1/1     Running   0          6s
 
-
-Now we can actually see what are the files located in the pvc that the pipeline used:
 
 
 ```python
@@ -489,7 +456,7 @@ Now we can actually see what are the files located in the pvc that the pipeline 
     pod "pvc-access-container" deleted
 
 
-# 4) Deploying your ML Pipeline with Seldon
+## 4) Deploying your ML Pipeline with Seldon
 Now that we have trained our ML pipeline, it's time to deploy it at scale!
 
 For this we will just need to create a simple Graph definition using the SeldonDeploy Kubernetes Custom Resource Definition.
@@ -504,6 +471,7 @@ If we look at the file we'll be using to deploy our pipeline, we can see that it
 1) Reusable components definitions as containerSpecs: cleantext, spacytokenizer, tfidfvectorizer & lrclassifier
 
 2) DAG (directed acyclic graph) definition for REST pipeline: cleantext -> spacytokenizer -> tfidfvectorizer -> lrclassifier
+
 
 
 ```python
@@ -588,6 +556,7 @@ This is the exact same structure as the Kubeflow definition, and can be deployed
 Once again, we want to make sure we replace the "PVC_NAME" variable with the workflow ID to attach the container to the Seldon pipeline
 
 
+
 ```python
 !sed "s/PVC_NAME/"$(kubectl get workflow -n kubeflow -o jsonpath='{.items[0].metadata.name}')"-my-pvc/g" deploy_pipeline/seldon_production_pipeline.yaml | kubectl -n kubeflow apply -f -
 ```
@@ -598,14 +567,16 @@ Once again, we want to make sure we replace the "PVC_NAME" variable with the wor
 We now make sure that the Seldon Engine with the 4 reusable components are running:
 
 
+
 ```python
 !kubectl -n kubeflow get pods | grep nlp-classifier
 ```
 
-    nlp-classifier-single-model-51fb0cb-57fbcdd44f-gkxx7       5/5     Running     0          59s
+    nlp-classifier-single-model-51fb0cb-6cf49fdd7d-txlc8       5/5     Running     0          27s
 
 
 We can also find this with the SeldonDeployment custom resource definition
+
 
 
 ```python
@@ -613,10 +584,10 @@ We can also find this with the SeldonDeployment custom resource definition
 ```
 
     NAME             AGE
-    nlp-classifier   1m
+    nlp-classifier   40s
 
 
-# 5) Test Deployed ML REST Endpoints
+## 5) Test Deployed ML REST Endpoints
 Now that it's running we have a production ML text pipeline that we can Query using REST and GRPC
 
 We can interact with our API in two ways: 
@@ -626,11 +597,13 @@ We can interact with our API in two ways:
 2) Using the Python SeldonClient
 
 ### Using CURL from the terminal
-When using CURL, the only thing we need to provide is the data in JSON format, as well as the url, which is:
+When using CURL, the only thing we need to provide is the data in JSON format, as well as the url, which is of the format:
 
 ```
 http://<ENDPOINT>/seldon/kubeflow/<PIPELINE_NAME>/api/v0.1/predictions
 ```
+
+
 
 
 ```bash
@@ -643,7 +616,7 @@ curl -X POST -H 'Content-Type: application/json' \
 
     {
       "meta": {
-        "puid": "rdp3vmdo20g6ihjbu6nub1m3ra",
+        "puid": "9f7cnfoj2cdk1e052l428s3f7i",
         "tags": {
         },
         "routing": {
@@ -661,13 +634,13 @@ curl -X POST -H 'Content-Type: application/json' \
       },
       "data": {
         "names": ["t:0", "t:1"],
-        "ndarray": [[0.6729278313299858, 0.32707216867001415]]
+        "ndarray": [[0.6729294030193711, 0.3270705969806289]]
       }
     }
 
       % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                      Dload  Upload   Total   Spent    Left  Speed
-    100   600  100   528  100    72    816    111 --:--:-- --:--:-- --:--:--   927
+    100   599  100   527  100    72    918    125 --:--:-- --:--:-- --:--:--  1043
 
 
 ### Using the SeldonClient
@@ -686,7 +659,7 @@ deployment_name="nlp-classifier"
 transport="rest"
 namespace="kubeflow"
 
-sc = seldon_core.seldon_client.SeldonClient(
+sc = SeldonClient(
     gateway="ambassador", 
     ambassador_endpoint=host + ":" + port,
     namespace=namespace)
@@ -701,11 +674,6 @@ client_prediction = sc.predict(
 print(client_prediction)
 ```
 
-    http://localhost:80/seldon/kubeflow/nlp-classifier/api/v0.1/predictions 
-    Paload:
-     {'data': {'names': ['text'], 'ndarray': ['Hello world this is a test']}} 
-    HEADERS:
-     None
     Success:True message:
     Request:
     data {
@@ -719,7 +687,7 @@ print(client_prediction)
     
     Response:
     meta {
-      puid: "slbdab0olpvupib0p2f1raju2s"
+      puid: "5ppdl2ff869fnn6l0n59qspck7"
       routing {
         key: "cleantext"
         value: -1
@@ -756,10 +724,10 @@ print(client_prediction)
         values {
           list_value {
             values {
-              number_value: 0.6729278313299858
+              number_value: 0.6729294030193711
             }
             values {
-              number_value: 0.32707216867001415
+              number_value: 0.3270705969806289
             }
           }
         }
@@ -768,9 +736,4 @@ print(client_prediction)
     
 
 
-# You now have a full end-to-end training and production NLP pipeline 😎 
-
-
-```python
-
-```
+## You now have a full end-to-end training and production NLP pipeline 😎 
