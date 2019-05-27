@@ -1,3308 +1,3826 @@
-
-# Tensorflow MNIST Model
-In this example we will deploy a tensorflow MNIST model in Amazon Web Services' Elastic Kubernetes Service (EKS).
-
-This tutorial will break down in the following sections:
-
-1) Train a tensorflow model to predict mnist locally
-
-2) Containerise the tensorflow model with our docker utility
-
-3) Send some data to the docker model to test it
-
-4) Install and configure AWS tools to interact with AWS
-
-5) Use the AWS tools to create and setup EKS cluster with Seldon
-
-6) Push and run docker image through the AWS Container Registry
-
-7) Test our Elastic Kubernetes deployment by sending some data
-
-#### Let's get started! 🚀🔥
-
-## Dependencies:
-
-* Helm v2.13.1+
-* A Kubernetes cluster running v1.13 or above (minkube / docker-for-windows work well if enough RAM)
-* kubectl v1.14+
-* EKS CLI v0.1.32
-* AWS Cli v1.16.163
-* Python 3.6+
-* Python DEV requirements
-
-
-# 1) Train a tensorflow model to predict mnist locally
-We will load the mnist images, together with their labels, and then train a tensorflow model to predict the right labels
-
-
-```python
-from tensorflow.examples.tutorials.mnist import input_data
-mnist = input_data.read_data_sets("MNIST_data/", one_hot = True)
-import tensorflow as tf
-
-if __name__ == '__main__':
-    
-    x = tf.placeholder(tf.float32, [None,784], name="x")
-
-    W = tf.Variable(tf.zeros([784,10]))
-    b = tf.Variable(tf.zeros([10]))
-
-    y = tf.nn.softmax(tf.matmul(x,W) + b, name="y")
-
-    y_ = tf.placeholder(tf.float32, [None, 10])
-
-    cross_entropy = tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(y), reduction_indices=[1]))
-
-    train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
-
-    init = tf.initialize_all_variables()
-
-    sess = tf.Session()
-    sess.run(init)
-
-    for i in range(1000):
-        batch_xs, batch_ys = mnist.train.next_batch(100)
-        sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
-
-    correct_prediction = tf.equal(tf.argmax(y,1), tf.argmax(y_,1))
-    accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-    print(sess.run(accuracy, feed_dict = {x: mnist.test.images, y_:mnist.test.labels}))
-
-    saver = tf.train.Saver()
-
-    saver.save(sess, "model/deep_mnist_model")
-```
-
-    Extracting MNIST_data/train-images-idx3-ubyte.gz
-    Extracting MNIST_data/train-labels-idx1-ubyte.gz
-    Extracting MNIST_data/t10k-images-idx3-ubyte.gz
-    Extracting MNIST_data/t10k-labels-idx1-ubyte.gz
-    0.9194
-
-
-## 2) Containerise the tensorflow model with our docker utility
-
-First you need to make sure that you have added the .s2i/environment configuration file in this folder with the following content:
-
-
-```python
-!cat .s2i/environment
-```
-
-    MODEL_NAME=DeepMnist
-    API_TYPE=REST
-    SERVICE_TYPE=MODEL
-    PERSISTENCE=0
-
-
-Now we can build a docker image named "deep-mnist" with the tag 0.1
-
-
-```python
-!s2i build . seldonio/seldon-core-s2i-python36:0.5.1 deep-mnist:0.1
-```
-
-    ---> Installing application source...
-    ---> Installing dependencies ...
-    Looking in links: /whl
-    Requirement already satisfied: tensorflow>=1.12.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 1)) (1.13.1)
-    Requirement already satisfied: keras-preprocessing>=1.0.5 in /usr/local/lib/python3.6/site-packages (from tensorflow>=1.12.0->-r requirements.txt (line 1)) (1.0.9)
-    Requirement already satisfied: gast>=0.2.0 in /usr/local/lib/python3.6/site-packages (from tensorflow>=1.12.0->-r requirements.txt (line 1)) (0.2.2)
-    Requirement already satisfied: absl-py>=0.1.6 in /usr/local/lib/python3.6/site-packages (from tensorflow>=1.12.0->-r requirements.txt (line 1)) (0.7.1)
-    Requirement already satisfied: astor>=0.6.0 in /usr/local/lib/python3.6/site-packages (from tensorflow>=1.12.0->-r requirements.txt (line 1)) (0.7.1)
-    Requirement already satisfied: keras-applications>=1.0.6 in /usr/local/lib/python3.6/site-packages (from tensorflow>=1.12.0->-r requirements.txt (line 1)) (1.0.7)
-    Requirement already satisfied: six>=1.10.0 in /usr/local/lib/python3.6/site-packages (from tensorflow>=1.12.0->-r requirements.txt (line 1)) (1.12.0)
-    Requirement already satisfied: termcolor>=1.1.0 in /usr/local/lib/python3.6/site-packages (from tensorflow>=1.12.0->-r requirements.txt (line 1)) (1.1.0)
-    Requirement already satisfied: grpcio>=1.8.6 in /usr/local/lib/python3.6/site-packages (from tensorflow>=1.12.0->-r requirements.txt (line 1)) (1.19.0)
-    Requirement already satisfied: wheel>=0.26 in /usr/local/lib/python3.6/site-packages (from tensorflow>=1.12.0->-r requirements.txt (line 1)) (0.33.1)
-    Requirement already satisfied: tensorboard<1.14.0,>=1.13.0 in /usr/local/lib/python3.6/site-packages (from tensorflow>=1.12.0->-r requirements.txt (line 1)) (1.13.1)
-    Requirement already satisfied: numpy>=1.13.3 in /usr/local/lib/python3.6/site-packages (from tensorflow>=1.12.0->-r requirements.txt (line 1)) (1.16.2)
-    Requirement already satisfied: protobuf>=3.6.1 in /usr/local/lib/python3.6/site-packages (from tensorflow>=1.12.0->-r requirements.txt (line 1)) (3.7.0)
-    Requirement already satisfied: tensorflow-estimator<1.14.0rc0,>=1.13.0 in /usr/local/lib/python3.6/site-packages (from tensorflow>=1.12.0->-r requirements.txt (line 1)) (1.13.0)
-    Requirement already satisfied: h5py in /usr/local/lib/python3.6/site-packages (from keras-applications>=1.0.6->tensorflow>=1.12.0->-r requirements.txt (line 1)) (2.9.0)
-    Requirement already satisfied: markdown>=2.6.8 in /usr/local/lib/python3.6/site-packages (from tensorboard<1.14.0,>=1.13.0->tensorflow>=1.12.0->-r requirements.txt (line 1)) (3.0.1)
-    Requirement already satisfied: werkzeug>=0.11.15 in /usr/local/lib/python3.6/site-packages (from tensorboard<1.14.0,>=1.13.0->tensorflow>=1.12.0->-r requirements.txt (line 1)) (0.15.0)
-    Requirement already satisfied: setuptools in /usr/local/lib/python3.6/site-packages (from protobuf>=3.6.1->tensorflow>=1.12.0->-r requirements.txt (line 1)) (40.8.0)
-    Requirement already satisfied: mock>=2.0.0 in /usr/local/lib/python3.6/site-packages (from tensorflow-estimator<1.14.0rc0,>=1.13.0->tensorflow>=1.12.0->-r requirements.txt (line 1)) (2.0.0)
-    Requirement already satisfied: pbr>=0.11 in /usr/local/lib/python3.6/site-packages (from mock>=2.0.0->tensorflow-estimator<1.14.0rc0,>=1.13.0->tensorflow>=1.12.0->-r requirements.txt (line 1)) (5.1.3)
-    Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
-    You are using pip version 19.0.3, however version 19.1.1 is available.
-    You should consider upgrading via the 'pip install --upgrade pip' command.
-    Build completed successfully
-
-
-## 3) Send some data to the docker model to test it
-We first run the docker image we just created as a container called "mnist_predictor"
-
-
-```python
-!docker run --name "mnist_predictor" -d --rm -p 5000:5000 deep-mnist:0.1
-```
-
-    5157ab4f516bd0dea11b159780f31121e9fb41df6394e0d6d631e6e0d572463b
-
-
-Send some random features that conform to the contract
-
-
-```python
-import matplotlib.pyplot as plt
-# This is the variable that was initialised at the beginning of the file
-i = [0]
-x = mnist.test.images[i]
-y = mnist.test.labels[i]
-plt.imshow(x.reshape((28, 28)), cmap='gray')
-plt.show()
-print("Expected label: ", np.sum(range(0,10) * y), ". One hot encoding: ", y)
-```
-
-
-![png](aws_eks_deep_mnist_files/aws_eks_deep_mnist_11_0.png)
-
-
-    Expected label:  7.0 . One hot encoding:  [[0. 0. 0. 0. 0. 0. 0. 1. 0. 0.]]
-
-
-
-```python
-from seldon_core.seldon_client import SeldonClient
-import math
-import numpy as np
-
-# We now test the REST endpoint expecting the same result
-endpoint = "0.0.0.0:5000"
-batch = x
-payload_type = "ndarray"
-
-sc = SeldonClient(microservice_endpoint=endpoint)
-
-# We use the microservice, instead of the "predict" function
-client_prediction = sc.microservice(
-    data=batch,
-    method="predict",
-    payload_type=payload_type,
-    names=["tfidf"])
-
-for proba, label in zip(client_prediction.response.data.ndarray.values[0].list_value.ListFields()[0][1], range(0,10)):
-    print(f"LABEL {label}:\t {proba.number_value*100:6.4f} %")
-```
-
-    LABEL 0:	 0.0068 %
-    LABEL 1:	 0.0000 %
-    LABEL 2:	 0.0085 %
-    LABEL 3:	 0.3409 %
-    LABEL 4:	 0.0002 %
-    LABEL 5:	 0.0020 %
-    LABEL 6:	 0.0000 %
-    LABEL 7:	 99.5371 %
-    LABEL 8:	 0.0026 %
-    LABEL 9:	 0.1019 %
-
-
-
-```python
-!docker rm mnist_predictor --force
-```
-
-    mnist_predictor
-
-
-## 4) Install and configure AWS tools to interact with AWS
-
-First we install the awscli
-
-
-```python
-!pip install awscli --upgrade --user
-```
-
-    Collecting awscli
-      Using cached https://files.pythonhosted.org/packages/f6/45/259a98719e7c7defc9be4cc00fbfb7ccf699fbd1f74455d8347d0ab0a1df/awscli-1.16.163-py2.py3-none-any.whl
-    Collecting colorama<=0.3.9,>=0.2.5 (from awscli)
-      Using cached https://files.pythonhosted.org/packages/db/c8/7dcf9dbcb22429512708fe3a547f8b6101c0d02137acbd892505aee57adf/colorama-0.3.9-py2.py3-none-any.whl
-    Collecting PyYAML<=3.13,>=3.10 (from awscli)
-    Collecting botocore==1.12.153 (from awscli)
-      Using cached https://files.pythonhosted.org/packages/ec/3b/029218966ce62ae9824a18730de862ac8fc5a0e8083d07d1379815e7cca1/botocore-1.12.153-py2.py3-none-any.whl
-    Requirement already satisfied, skipping upgrade: docutils>=0.10 in /home/alejandro/miniconda3/envs/reddit-classification/lib/python3.7/site-packages (from awscli) (0.14)
-    Collecting rsa<=3.5.0,>=3.1.2 (from awscli)
-      Using cached https://files.pythonhosted.org/packages/e1/ae/baedc9cb175552e95f3395c43055a6a5e125ae4d48a1d7a924baca83e92e/rsa-3.4.2-py2.py3-none-any.whl
-    Requirement already satisfied, skipping upgrade: s3transfer<0.3.0,>=0.2.0 in /home/alejandro/miniconda3/envs/reddit-classification/lib/python3.7/site-packages (from awscli) (0.2.0)
-    Requirement already satisfied, skipping upgrade: urllib3<1.25,>=1.20; python_version >= "3.4" in /home/alejandro/miniconda3/envs/reddit-classification/lib/python3.7/site-packages (from botocore==1.12.153->awscli) (1.24.2)
-    Requirement already satisfied, skipping upgrade: python-dateutil<3.0.0,>=2.1; python_version >= "2.7" in /home/alejandro/miniconda3/envs/reddit-classification/lib/python3.7/site-packages (from botocore==1.12.153->awscli) (2.8.0)
-    Requirement already satisfied, skipping upgrade: jmespath<1.0.0,>=0.7.1 in /home/alejandro/miniconda3/envs/reddit-classification/lib/python3.7/site-packages (from botocore==1.12.153->awscli) (0.9.4)
-    Collecting pyasn1>=0.1.3 (from rsa<=3.5.0,>=3.1.2->awscli)
-      Using cached https://files.pythonhosted.org/packages/7b/7c/c9386b82a25115cccf1903441bba3cbadcfae7b678a20167347fa8ded34c/pyasn1-0.4.5-py2.py3-none-any.whl
-    Requirement already satisfied, skipping upgrade: six>=1.5 in /home/alejandro/miniconda3/envs/reddit-classification/lib/python3.7/site-packages (from python-dateutil<3.0.0,>=2.1; python_version >= "2.7"->botocore==1.12.153->awscli) (1.12.0)
-    Installing collected packages: colorama, PyYAML, botocore, pyasn1, rsa, awscli
-    Successfully installed PyYAML-3.13 awscli-1.16.163 botocore-1.12.153 colorama-0.3.9 pyasn1-0.4.5 rsa-3.4.2
-
-
-#### Configure aws so it can talk to your server 
-(if you are getting issues, make sure you have the permmissions to create clusters)
-
-
-```bash
-%%bash 
-# You must make sure that the access key and secret are changed
-aws configure << END_OF_INPUTS
-YOUR_ACCESS_KEY
-YOUR_ACCESS_SECRET
-us-west-2
-json
-END_OF_INPUTS
-```
-
-    AWS Access Key ID [****************SF4A]: AWS Secret Access Key [****************WLHu]: Default region name [eu-west-1]: Default output format [json]: 
-
-#### Install EKCTL
-*IMPORTANT*: These instructions are for linux
-Please follow the official installation of ekctl at: https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html
-
-
-```python
-!curl --silent --location "https://github.com/weaveworks/eksctl/releases/download/latest_release/eksctl_$(uname -s)_amd64.tar.gz" | tar xz 
-```
-
-
-```python
-!chmod 755 ./eksctl
-```
-
-
-```python
-!./eksctl version
-```
-
-    [36m[ℹ]  version.Info{BuiltAt:"", GitCommit:"", GitTag:"0.1.32"}
-    [0m
-
-## 5) Use the AWS tools to create and setup EKS cluster with Seldon
-In this example we will create a cluster with 2 nodes, with a minimum of 1 and a max of 3. You can tweak this accordingly.
-
-If you want to check the status of the deployment you can go to AWS CloudFormation or to the EKS dashboard.
-
-It will take 10-15 minutes (so feel free to go grab a ☕). 
-
-### IMPORTANT: If you get errors in this step...
-It is most probably IAM role access requirements, which requires you to discuss with your administrator.
-
-
-```bash
-%%bash
-./eksctl create cluster \
---name demo-eks-cluster \
---region us-west-2 \
---nodes 2 
-```
-
-    Process is interrupted.
-
-
-### Configure local kubectl 
-We want to now configure our local Kubectl so we can actually reach the cluster we've just created
-
-
-```python
-!aws eks --region us-west-2 update-kubeconfig --name demo-eks-cluster
-```
-
-    Updated context arn:aws:eks:eu-west-1:271049282727:cluster/deepmnist in /home/alejandro/.kube/config
-
-
-And we can check if the context has been added to kubectl config (contexts are basically the different k8s cluster connections)
-You should be able to see the context as "...aws:eks:eu-west-1:27...". 
-If it's not activated you can activate that context with kubectlt config set-context <CONTEXT_NAME>
-
-
-```python
-!kubectl config get-contexts
-```
-
-    CURRENT   NAME                                                   CLUSTER                                                AUTHINFO                                               NAMESPACE
-    *         arn:aws:eks:eu-west-1:271049282727:cluster/deepmnist   arn:aws:eks:eu-west-1:271049282727:cluster/deepmnist   arn:aws:eks:eu-west-1:271049282727:cluster/deepmnist   
-              docker-desktop                                         docker-desktop                                         docker-desktop                                         
-              docker-for-desktop                                     docker-desktop                                         docker-desktop                                         
-              gke_ml-engineer_us-central1-a_security-cluster-1       gke_ml-engineer_us-central1-a_security-cluster-1       gke_ml-engineer_us-central1-a_security-cluster-1       
-
-
-## Install Seldon Core
-
-### Before we install seldon core, we need to install HELM
-For that, we need to create a ClusterRoleBinding for us, a ServiceAccount, and then a RoleBinding
-
-
-```python
-!kubectl create clusterrolebinding kube-system-cluster-admin --clusterrole=cluster-admin --serviceaccount=kube-system:default
-```
-
-    clusterrolebinding.rbac.authorization.k8s.io/kube-system-cluster-admin created
-
-
-
-```python
-!kubectl create serviceaccount tiller --namespace kube-system
-```
-
-    serviceaccount/tiller created
-
-
-
-```python
-!kubectl apply -f tiller-role-binding.yaml
-```
-
-    clusterrolebinding.rbac.authorization.k8s.io/tiller-role-binding created
-
-
-### Once that is set-up we can install Tiller
-
-
-```python
-!helm init --service-account tiller
-```
-
-    $HELM_HOME has been configured at /home/alejandro/.helm.
-    
-    Tiller (the Helm server-side component) has been installed into your Kubernetes Cluster.
-    
-    Please note: by default, Tiller is deployed with an insecure 'allow unauthenticated users' policy.
-    To prevent this, run `helm init` with the --tiller-tls-verify flag.
-    For more information on securing your installation see: https://docs.helm.sh/using_helm/#securing-your-helm-installation
-    Happy Helming!
-
-
-
-```python
-# Wait until Tiller finishes
-!kubectl rollout status deploy/tiller-deploy -n kube-system
-```
-
-    deployment "tiller-deploy" successfully rolled out
-
-
-### Now we can install SELDON. 
-We first start with the custom resource definitions (CRDs)
-
-
-```python
-!helm install seldon-core-operator --name seldon-core-operator --repo https://storage.googleapis.com/seldon-charts --set usageMetrics.enabled=true --namespace seldon-system
-```
-
-    NAME:   seldon-core-operator
-    LAST DEPLOYED: Wed May 22 16:24:10 2019
-    NAMESPACE: seldon-system
-    STATUS: DEPLOYED
-    
-    RESOURCES:
-    ==> v1/ClusterRole
-    NAME                          AGE
-    seldon-operator-manager-role  2s
-    
-    ==> v1/ClusterRoleBinding
-    NAME                                 AGE
-    seldon-operator-manager-rolebinding  2s
-    
-    ==> v1/ConfigMap
-    NAME                     DATA  AGE
-    seldon-spartakus-config  3     2s
-    
-    ==> v1/Pod(related)
-    NAME                                         READY  STATUS             RESTARTS  AGE
-    seldon-operator-controller-manager-0         0/1    ContainerCreating  0         2s
-    seldon-spartakus-volunteer-6954cffb89-qz4pq  0/1    ContainerCreating  0         1s
-    
-    ==> v1/Secret
-    NAME                                   TYPE    DATA  AGE
-    seldon-operator-webhook-server-secret  Opaque  0     2s
-    
-    ==> v1/Service
-    NAME                                        TYPE       CLUSTER-IP      EXTERNAL-IP  PORT(S)  AGE
-    seldon-operator-controller-manager-service  ClusterIP  10.100.198.157  <none>       443/TCP  2s
-    
-    ==> v1/ServiceAccount
-    NAME                        SECRETS  AGE
-    seldon-spartakus-volunteer  1        2s
-    
-    ==> v1/StatefulSet
-    NAME                                READY  AGE
-    seldon-operator-controller-manager  0/1    2s
-    
-    ==> v1beta1/ClusterRole
-    NAME                        AGE
-    seldon-spartakus-volunteer  2s
-    
-    ==> v1beta1/ClusterRoleBinding
-    NAME                        AGE
-    seldon-spartakus-volunteer  2s
-    
-    ==> v1beta1/CustomResourceDefinition
-    NAME                                         AGE
-    seldondeployments.machinelearning.seldon.io  2s
-    
-    ==> v1beta1/Deployment
-    NAME                        READY  UP-TO-DATE  AVAILABLE  AGE
-    seldon-spartakus-volunteer  0/1    1           0          2s
-    
-    
-    NOTES:
-    NOTES: TODO
-    
-    
-
-
-And confirm they are running by getting the pods:
-
-
-```python
-!kubectl rollout status statefulset.apps/seldon-operator-controller-manager -n seldon-system
-```
-
-    partitioned roll out complete: 1 new pods have been updated...
-
-
-### Now we set-up the ingress
-This will allow you to reach the Seldon models from outside the kubernetes cluster. 
-
-In EKS it automatically creates an Elastic Load Balancer, which you can configure from the EC2 Console
-
-
-```python
-!helm install stable/ambassador --name ambassador --set image.tag=0.40.2
-```
-
-    NAME:   ambassador
-    LAST DEPLOYED: Wed May 22 16:25:38 2019
-    NAMESPACE: default
-    STATUS: DEPLOYED
-    
-    RESOURCES:
-    ==> v1/Deployment
-    NAME        READY  UP-TO-DATE  AVAILABLE  AGE
-    ambassador  0/3    3           0          0s
-    
-    ==> v1/Pod(related)
-    NAME                         READY  STATUS             RESTARTS  AGE
-    ambassador-6dbf99c886-frlfm  0/1    ContainerCreating  0         0s
-    ambassador-6dbf99c886-kj56r  0/1    ContainerCreating  0         0s
-    ambassador-6dbf99c886-v5mtv  0/1    ContainerCreating  0         0s
-    
-    ==> v1/Service
-    NAME               TYPE          CLUSTER-IP      EXTERNAL-IP  PORT(S)                     AGE
-    ambassador         LoadBalancer  10.100.59.146   <pending>    80:30911/TCP,443:31715/TCP  0s
-    ambassador-admins  ClusterIP     10.100.152.178  <none>       8877/TCP                    0s
-    
-    ==> v1/ServiceAccount
-    NAME        SECRETS  AGE
-    ambassador  1        0s
-    
-    ==> v1beta1/ClusterRole
-    NAME        AGE
-    ambassador  0s
-    
-    ==> v1beta1/ClusterRoleBinding
-    NAME        AGE
-    ambassador  0s
-    
-    
-    NOTES:
-    Congratuations! You've successfully installed Ambassador.
-    
-    For help, visit our Slack at https://d6e.co/slack or view the documentation online at https://www.getambassador.io.
-    
-    To get the IP address of Ambassador, run the following commands:
-    NOTE: It may take a few minutes for the LoadBalancer IP to be available.
-         You can watch the status of by running 'kubectl get svc -w  --namespace default ambassador'
-    
-      On GKE/Azure:
-      export SERVICE_IP=$(kubectl get svc --namespace default ambassador -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-    
-      On AWS:
-      export SERVICE_IP=$(kubectl get svc --namespace default ambassador -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-    
-      echo http://$SERVICE_IP:
-    
-
-
-And let's wait until it's fully deployed
-
-
-```python
-!kubectl rollout status deployment.apps/ambassador
-```
-
-## Push docker image
-In order for the EKS seldon deployment to access the image we just built, we need to push it to the Elastic Container Registry (ECR).
-
-If you have any issues please follow the official AWS documentation: https://docs.aws.amazon.com/AmazonECR/latest/userguide/docker-basics.html
-
-### First we create a registry
-You can run the following command, and then see the result at https://us-west-2.console.aws.amazon.com/ecr/repositories?#
-
-
-```python
-!aws ecr create-repository --repository-name seldon-repository --region us-west-2
-```
-
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# AWS Elastic Container Service (EKS) Deep MNIST Example\n",
+    "\n",
+    "In this example we will deploy a tensorflow MNIST model in Amazon Web Services' Elastic Kubernetes Service (EKS).\n",
+    "\n",
+    "This tutorial will break down in the following sections:\n",
+    "\n",
+    "1) Train a tensorflow model to predict mnist locally\n",
+    "\n",
+    "2) Containerise the tensorflow model with our docker utility\n",
+    "\n",
+    "3) Send some data to the docker model to test it\n",
+    "\n",
+    "4) Install and configure AWS tools to interact with AWS\n",
+    "\n",
+    "5) Use the AWS tools to create and setup EKS cluster with Seldon\n",
+    "\n",
+    "6) Push and run docker image through the AWS Container Registry\n",
+    "\n",
+    "7) Test our Elastic Kubernetes deployment by sending some data\n",
+    "\n",
+    "#### Let's get started! 🚀🔥\n",
+    "\n",
+    "## Dependencies:\n",
+    "\n",
+    "* Helm v2.13.1+\n",
+    "* A Kubernetes cluster running v1.13 or above (minkube / docker-for-windows work well if enough RAM)\n",
+    "* kubectl v1.14+\n",
+    "* EKS CLI v0.1.32\n",
+    "* AWS Cli v1.16.163\n",
+    "* Python 3.6+\n",
+    "* Python DEV requirements\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 1) Train a tensorflow model to predict mnist locally\n",
+    "We will load the mnist images, together with their labels, and then train a tensorflow model to predict the right labels"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 45,
+   "metadata": {},
+   "outputs": [
     {
-        "repository": {
-            "repositoryArn": "arn:aws:ecr:us-west-2:271049282727:repository/seldon-repository",
-            "registryId": "271049282727",
-            "repositoryName": "seldon-repository",
-            "repositoryUri": "271049282727.dkr.ecr.us-west-2.amazonaws.com/seldon-repository",
-            "createdAt": 1558535798.0
-        }
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Extracting MNIST_data/train-images-idx3-ubyte.gz\n",
+      "Extracting MNIST_data/train-labels-idx1-ubyte.gz\n",
+      "Extracting MNIST_data/t10k-images-idx3-ubyte.gz\n",
+      "Extracting MNIST_data/t10k-labels-idx1-ubyte.gz\n",
+      "0.9194\n"
+     ]
     }
-
-
-### Now prepare docker image
-We need to first tag the docker image before we can push it
-
-
-```bash
-%%bash
-export AWS_ACCOUNT_ID=""
-export AWS_REGION="us-west-2"
-if [ -z "$AWS_ACCOUNT_ID" ]; then
-    echo "ERROR: Please provide a value for the AWS variables"
-    exit 1
-fi
-
-docker tag deep-mnist:0.1 "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/seldon-repository"
-```
-
-### We now login to aws through docker so we can access the repository
-
-
-```python
-!`aws ecr get-login --no-include-email --region us-west-2`
-```
-
-    WARNING! Using --password via the CLI is insecure. Use --password-stdin.
-    WARNING! Your password will be stored unencrypted in /home/alejandro/.docker/config.json.
-    Configure a credential helper to remove this warning. See
-    https://docs.docker.com/engine/reference/commandline/login/#credentials-store
-    
-    Login Succeeded
-
-
-### And push the image
-Make sure you add your AWS Account ID
-
-
-```bash
-%%bash
-export AWS_ACCOUNT_ID=""
-export AWS_REGION="us-west-2"
-if [ -z "$AWS_ACCOUNT_ID" ]; then
-    echo "ERROR: Please provide a value for the AWS variables"
-    exit 1
-fi
-
-docker push "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/seldon-repository"
-```
-
-    The push refers to repository [271049282727.dkr.ecr.us-west-2.amazonaws.com/seldon-repository]
-    f7d0d000c138: Preparing
-    987f3f1afb00: Preparing
-    00d16a381c47: Preparing
-    bb01f50d544a: Preparing
-    fcb82c6941b5: Preparing
-    67290e35c458: Preparing
-    b813745f5bb3: Preparing
-    ffecb18e9f0b: Preparing
-    f50f856f49fa: Preparing
-    80b43ad4adf9: Preparing
-    14c77983a1cf: Preparing
-    a22a5ac18042: Preparing
-    6257fa9f9597: Preparing
-    578414b395b9: Preparing
-    abc3250a6c7f: Preparing
-    13d5529fd232: Preparing
-    67290e35c458: Waiting
-    b813745f5bb3: Waiting
-    ffecb18e9f0b: Waiting
-    f50f856f49fa: Waiting
-    80b43ad4adf9: Waiting
-    6257fa9f9597: Waiting
-    14c77983a1cf: Waiting
-    a22a5ac18042: Waiting
-    578414b395b9: Waiting
-    abc3250a6c7f: Waiting
-    13d5529fd232: Waiting
-    987f3f1afb00: Pushed
-    fcb82c6941b5: Pushed
-    bb01f50d544a: Pushed
-    f7d0d000c138: Pushed
-    ffecb18e9f0b: Pushed
-    b813745f5bb3: Pushed
-    f50f856f49fa: Pushed
-    67290e35c458: Pushed
-    14c77983a1cf: Pushed
-    578414b395b9: Pushed
-    80b43ad4adf9: Pushed
-    13d5529fd232: Pushed
-    6257fa9f9597: Pushed
-    abc3250a6c7f: Pushed
-    00d16a381c47: Pushed
-    a22a5ac18042: Pushed
-    latest: digest: sha256:19aefaa9d87c1287eb46ec08f5d4f9a689744d9d0d0b75668b7d15e447819d74 size: 3691
-
-
-## Running the Model
-We will now run the model.
-
-Let's first have a look at the file we'll be using to trigger the model:
-
-
-```python
-!cat deep_mnist.json
-```
-
+   ],
+   "source": [
+    "from tensorflow.examples.tutorials.mnist import input_data\n",
+    "mnist = input_data.read_data_sets(\"MNIST_data/\", one_hot = True)\n",
+    "import tensorflow as tf\n",
+    "\n",
+    "if __name__ == '__main__':\n",
+    "    \n",
+    "    x = tf.placeholder(tf.float32, [None,784], name=\"x\")\n",
+    "\n",
+    "    W = tf.Variable(tf.zeros([784,10]))\n",
+    "    b = tf.Variable(tf.zeros([10]))\n",
+    "\n",
+    "    y = tf.nn.softmax(tf.matmul(x,W) + b, name=\"y\")\n",
+    "\n",
+    "    y_ = tf.placeholder(tf.float32, [None, 10])\n",
+    "\n",
+    "    cross_entropy = tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(y), reduction_indices=[1]))\n",
+    "\n",
+    "    train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)\n",
+    "\n",
+    "    init = tf.initialize_all_variables()\n",
+    "\n",
+    "    sess = tf.Session()\n",
+    "    sess.run(init)\n",
+    "\n",
+    "    for i in range(1000):\n",
+    "        batch_xs, batch_ys = mnist.train.next_batch(100)\n",
+    "        sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})\n",
+    "\n",
+    "    correct_prediction = tf.equal(tf.argmax(y,1), tf.argmax(y_,1))\n",
+    "    accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))\n",
+    "    print(sess.run(accuracy, feed_dict = {x: mnist.test.images, y_:mnist.test.labels}))\n",
+    "\n",
+    "    saver = tf.train.Saver()\n",
+    "\n",
+    "    saver.save(sess, \"model/deep_mnist_model\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 2) Containerise the tensorflow model with our docker utility"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "First you need to make sure that you have added the .s2i/environment configuration file in this folder with the following content:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 118,
+   "metadata": {},
+   "outputs": [
     {
-        "apiVersion": "machinelearning.seldon.io/v1alpha2",
-        "kind": "SeldonDeployment",
-        "metadata": {
-            "labels": {
-                "app": "seldon"
-            },
-            "name": "deep-mnist"
-        },
-        "spec": {
-            "annotations": {
-                "project_name": "Tensorflow MNIST",
-                "deployment_version": "v1"
-            },
-            "name": "deep-mnist",
-            "oauth_key": "oauth-key",
-            "oauth_secret": "oauth-secret",
-            "predictors": [
-                {
-                    "componentSpecs": [{
-                        "spec": {
-                            "containers": [
-                                {
-                                    "image": "271049282727.dkr.ecr.us-west-2.amazonaws.com/seldon-repository:latest",
-                                    "imagePullPolicy": "IfNotPresent",
-                                    "name": "classifier",
-                                    "resources": {
-                                        "requests": {
-                                            "memory": "1Mi"
-                                        }
-                                    }
-                                }
-                            ],
-                            "terminationGracePeriodSeconds": 20
-                        }
-                    }],
-                    "graph": {
-                        "children": [],
-                        "name": "classifier",
-                        "endpoint": {
-    			"type" : "REST"
-    		    },
-                        "type": "MODEL"
-                    },
-                    "name": "single-model",
-                    "replicas": 1,
-    		"annotations": {
-    		    "predictor_version" : "v1"
-    		}
-                }
-            ]
-        }
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "MODEL_NAME=DeepMnist\r\n",
+      "API_TYPE=REST\r\n",
+      "SERVICE_TYPE=MODEL\r\n",
+      "PERSISTENCE=0\r\n"
+     ]
     }
-
-
-Now let's trigger seldon to run the model.
-
-We basically have a yaml file, where we want to replace the value "REPLACE_FOR_IMAGE_AND_TAG" for the image you pushed
-
-
-```bash
-%%bash
-export AWS_ACCOUNT_ID=""
-export AWS_REGION="us-west-2"
-if [ -z "$AWS_ACCOUNT_ID" ]; then
-    echo "ERROR: Please provide a value for the AWS variables"
-    exit 1
-fi
-
-sed 's|REPLACE_FOR_IMAGE_AND_TAG|'"$AWS_ACCOUNT_ID"'.dkr.ecr.'"$AWS_REGION"'.amazonaws.com/seldon-repository|g' deep_mnist.json | kubectl apply -f -
-```
-
-    error: unable to recognize "STDIN": Get https://461835FD3FF52848655C8F09FBF5EEAA.yl4.us-west-2.eks.amazonaws.com/api?timeout=32s: dial tcp: lookup 461835FD3FF52848655C8F09FBF5EEAA.yl4.us-west-2.eks.amazonaws.com on 1.1.1.1:53: no such host
-
-
-
-    ---------------------------------------------------------------------------
-
-    CalledProcessError                        Traceback (most recent call last)
-
-    <ipython-input-165-1129742af2c4> in <module>
-    ----> 1 get_ipython().run_cell_magic('bash', '', 'export AWS_ACCOUNT_ID="2710"\nexport AWS_REGION="us-west-2"\nif [ -z "$AWS_ACCOUNT_ID" ]; then\n    echo "ERROR: Please provide a value for the AWS variables"\n    exit 1\nfi\n\nsed \'s|REPLACE_FOR_IMAGE_AND_TAG|\'"$AWS_ACCOUNT_ID"\'.dkr.ecr.\'"$AWS_REGION"\'.amazonaws.com/seldon-repository|g\' deep_mnist.json | kubectl apply -f -\n')
-    
-
-    ~/miniconda3/envs/reddit-classification/lib/python3.7/site-packages/IPython/core/interactiveshell.py in run_cell_magic(self, magic_name, line, cell)
-       2350             with self.builtin_trap:
-       2351                 args = (magic_arg_s, cell)
-    -> 2352                 result = fn(*args, **kwargs)
-       2353             return result
-       2354 
-
-
-    ~/miniconda3/envs/reddit-classification/lib/python3.7/site-packages/IPython/core/magics/script.py in named_script_magic(line, cell)
-        140             else:
-        141                 line = script
-    --> 142             return self.shebang(line, cell)
-        143 
-        144         # write a basic docstring:
-
-
-    </home/alejandro/miniconda3/envs/reddit-classification/lib/python3.7/site-packages/decorator.py:decorator-gen-110> in shebang(self, line, cell)
-
-
-    ~/miniconda3/envs/reddit-classification/lib/python3.7/site-packages/IPython/core/magic.py in <lambda>(f, *a, **k)
-        185     # but it's overkill for just that one bit of state.
-        186     def magic_deco(arg):
-    --> 187         call = lambda f, *a, **k: f(*a, **k)
-        188 
-        189         if callable(arg):
-
-
-    ~/miniconda3/envs/reddit-classification/lib/python3.7/site-packages/IPython/core/magics/script.py in shebang(self, line, cell)
-        243             sys.stderr.flush()
-        244         if args.raise_error and p.returncode!=0:
-    --> 245             raise CalledProcessError(p.returncode, cell, output=out, stderr=err)
-        246 
-        247     def _run_script(self, p, cell, to_close):
-
-
-    CalledProcessError: Command 'b'export AWS_ACCOUNT_ID="2710"\nexport AWS_REGION="us-west-2"\nif [ -z "$AWS_ACCOUNT_ID" ]; then\n    echo "ERROR: Please provide a value for the AWS variables"\n    exit 1\nfi\n\nsed \'s|REPLACE_FOR_IMAGE_AND_TAG|\'"$AWS_ACCOUNT_ID"\'.dkr.ecr.\'"$AWS_REGION"\'.amazonaws.com/seldon-repository|g\' deep_mnist.json | kubectl apply -f -\n'' returned non-zero exit status 1.
-
-
-And let's check that it's been created.
-
-You should see an image called "deep-mnist-single-model...".
-
-We'll wait until STATUS changes from "ContainerCreating" to "Running"
-
-
-```python
-!kubectl get pods
-```
-
-    NAME                                              READY   STATUS    RESTARTS   AGE
-    ambassador-5475779f98-7bhcw                       1/1     Running   0          21m
-    ambassador-5475779f98-986g5                       1/1     Running   0          21m
-    ambassador-5475779f98-zcd28                       1/1     Running   0          21m
-    deep-mnist-single-model-42ed9d9-fdb557d6b-6xv2h   2/2     Running   0          18m
-
-
-## Test the model
-Now we can test the model, let's first find out what is the URL that we'll have to use:
-
-
-```python
-!kubectl get svc ambassador -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 
-```
-
-    a68bbac487ca611e988060247f81f4c1-707754258.us-west-2.elb.amazonaws.com
-
-We'll use a random example from our dataset
-
-
-```python
-import matplotlib.pyplot as plt
-# This is the variable that was initialised at the beginning of the file
-i = [0]
-x = mnist.test.images[i]
-y = mnist.test.labels[i]
-plt.imshow(x.reshape((28, 28)), cmap='gray')
-plt.show()
-print("Expected label: ", np.sum(range(0,10) * y), ". One hot encoding: ", y)
-```
-
-
-![png](aws_eks_deep_mnist_files/aws_eks_deep_mnist_63_0.png)
-
-
-    Expected label:  7.0 . One hot encoding:  [[0. 0. 0. 0. 0. 0. 0. 1. 0. 0.]]
-
-
-We can now add the URL above to send our request:
-
-
-```python
-from seldon_core.seldon_client import SeldonClient
-import math
-import numpy as np
-
-host = "a68bbac487ca611e988060247f81f4c1-707754258.us-west-2.elb.amazonaws.com"
-port = "80" # Make sure you use the port above
-batch = x
-payload_type = "ndarray"
-
-sc = SeldonClient(
-    gateway="ambassador", 
-    ambassador_endpoint=host + ":" + port,
-    namespace="default",
-    oauth_key="oauth-key", 
-    oauth_secret="oauth-secret")
-
-client_prediction = sc.predict(
-    data=batch, 
-    deployment_name="deep-mnist",
-    names=["text"],
-    payload_type=payload_type)
-
-print(client_prediction)
-```
-
-    Success:True message:
-    Request:
-    data {
-      names: "text"
-      ndarray {
-        values {
-          list_value {
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.3294117748737335
-            }
-            values {
-              number_value: 0.7254902124404907
-            }
-            values {
-              number_value: 0.6235294342041016
-            }
-            values {
-              number_value: 0.5921568870544434
-            }
-            values {
-              number_value: 0.2352941334247589
-            }
-            values {
-              number_value: 0.1411764770746231
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.8705883026123047
-            }
-            values {
-              number_value: 0.9960784912109375
-            }
-            values {
-              number_value: 0.9960784912109375
-            }
-            values {
-              number_value: 0.9960784912109375
-            }
-            values {
-              number_value: 0.9960784912109375
-            }
-            values {
-              number_value: 0.9450981020927429
-            }
-            values {
-              number_value: 0.7764706611633301
-            }
-            values {
-              number_value: 0.7764706611633301
-            }
-            values {
-              number_value: 0.7764706611633301
-            }
-            values {
-              number_value: 0.7764706611633301
-            }
-            values {
-              number_value: 0.7764706611633301
-            }
-            values {
-              number_value: 0.7764706611633301
-            }
-            values {
-              number_value: 0.7764706611633301
-            }
-            values {
-              number_value: 0.7764706611633301
-            }
-            values {
-              number_value: 0.6666666865348816
-            }
-            values {
-              number_value: 0.2039215862751007
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.26274511218070984
-            }
-            values {
-              number_value: 0.44705885648727417
-            }
-            values {
-              number_value: 0.2823529541492462
-            }
-            values {
-              number_value: 0.44705885648727417
-            }
-            values {
-              number_value: 0.6392157077789307
-            }
-            values {
-              number_value: 0.8901961445808411
-            }
-            values {
-              number_value: 0.9960784912109375
-            }
-            values {
-              number_value: 0.8823530077934265
-            }
-            values {
-              number_value: 0.9960784912109375
-            }
-            values {
-              number_value: 0.9960784912109375
-            }
-            values {
-              number_value: 0.9960784912109375
-            }
-            values {
-              number_value: 0.9803922176361084
-            }
-            values {
-              number_value: 0.8980392813682556
-            }
-            values {
-              number_value: 0.9960784912109375
-            }
-            values {
-              number_value: 0.9960784912109375
-            }
-            values {
-              number_value: 0.5490196347236633
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.06666667014360428
-            }
-            values {
-              number_value: 0.25882354378700256
-            }
-            values {
-              number_value: 0.05490196496248245
-            }
-            values {
-              number_value: 0.26274511218070984
-            }
-            values {
-              number_value: 0.26274511218070984
-            }
-            values {
-              number_value: 0.26274511218070984
-            }
-            values {
-              number_value: 0.23137256503105164
-            }
-            values {
-              number_value: 0.08235294371843338
-            }
-            values {
-              number_value: 0.9254902601242065
-            }
-            values {
-              number_value: 0.9960784912109375
-            }
-            values {
-              number_value: 0.41568630933761597
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.32549020648002625
-            }
-            values {
-              number_value: 0.9921569228172302
-            }
-            values {
-              number_value: 0.8196079134941101
-            }
-            values {
-              number_value: 0.07058823853731155
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.08627451211214066
-            }
-            values {
-              number_value: 0.9137255549430847
-            }
-            values {
-              number_value: 1.0
-            }
-            values {
-              number_value: 0.32549020648002625
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.5058823823928833
-            }
-            values {
-              number_value: 0.9960784912109375
-            }
-            values {
-              number_value: 0.9333333969116211
-            }
-            values {
-              number_value: 0.1725490242242813
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.23137256503105164
-            }
-            values {
-              number_value: 0.9764706492424011
-            }
-            values {
-              number_value: 0.9960784912109375
-            }
-            values {
-              number_value: 0.24313727021217346
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.5215686559677124
-            }
-            values {
-              number_value: 0.9960784912109375
-            }
-            values {
-              number_value: 0.7333333492279053
-            }
-            values {
-              number_value: 0.019607843831181526
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.03529411926865578
-            }
-            values {
-              number_value: 0.803921639919281
-            }
-            values {
-              number_value: 0.9725490808486938
-            }
-            values {
-              number_value: 0.22745099663734436
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.4941176772117615
-            }
-            values {
-              number_value: 0.9960784912109375
-            }
-            values {
-              number_value: 0.7137255072593689
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.29411765933036804
-            }
-            values {
-              number_value: 0.9843137860298157
-            }
-            values {
-              number_value: 0.9411765336990356
-            }
-            values {
-              number_value: 0.22352942824363708
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.07450980693101883
-            }
-            values {
-              number_value: 0.8666667342185974
-            }
-            values {
-              number_value: 0.9960784912109375
-            }
-            values {
-              number_value: 0.6509804129600525
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.011764707043766975
-            }
-            values {
-              number_value: 0.7960785031318665
-            }
-            values {
-              number_value: 0.9960784912109375
-            }
-            values {
-              number_value: 0.8588235974311829
-            }
-            values {
-              number_value: 0.13725490868091583
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.14901961386203766
-            }
-            values {
-              number_value: 0.9960784912109375
-            }
-            values {
-              number_value: 0.9960784912109375
-            }
-            values {
-              number_value: 0.3019607961177826
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.12156863510608673
-            }
-            values {
-              number_value: 0.8784314393997192
-            }
-            values {
-              number_value: 0.9960784912109375
-            }
-            values {
-              number_value: 0.45098042488098145
-            }
-            values {
-              number_value: 0.003921568859368563
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.5215686559677124
-            }
-            values {
-              number_value: 0.9960784912109375
-            }
-            values {
-              number_value: 0.9960784912109375
-            }
-            values {
-              number_value: 0.2039215862751007
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.2392157018184662
-            }
-            values {
-              number_value: 0.9490196704864502
-            }
-            values {
-              number_value: 0.9960784912109375
-            }
-            values {
-              number_value: 0.9960784912109375
-            }
-            values {
-              number_value: 0.2039215862751007
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.4745098352432251
-            }
-            values {
-              number_value: 0.9960784912109375
-            }
-            values {
-              number_value: 0.9960784912109375
-            }
-            values {
-              number_value: 0.8588235974311829
-            }
-            values {
-              number_value: 0.1568627506494522
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.4745098352432251
-            }
-            values {
-              number_value: 0.9960784912109375
-            }
-            values {
-              number_value: 0.8117647767066956
-            }
-            values {
-              number_value: 0.07058823853731155
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-            values {
-              number_value: 0.0
-            }
-          }
-        }
-      }
+   ],
+   "source": [
+    "!cat .s2i/environment"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Now we can build a docker image named \"deep-mnist\" with the tag 0.1"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "---> Installing application source...\n",
+      "---> Installing dependencies ...\n",
+      "Looking in links: /whl\n",
+      "Requirement already satisfied: tensorflow>=1.12.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 1)) (1.13.1)\n",
+      "Requirement already satisfied: keras-preprocessing>=1.0.5 in /usr/local/lib/python3.6/site-packages (from tensorflow>=1.12.0->-r requirements.txt (line 1)) (1.0.9)\n",
+      "Requirement already satisfied: gast>=0.2.0 in /usr/local/lib/python3.6/site-packages (from tensorflow>=1.12.0->-r requirements.txt (line 1)) (0.2.2)\n",
+      "Requirement already satisfied: absl-py>=0.1.6 in /usr/local/lib/python3.6/site-packages (from tensorflow>=1.12.0->-r requirements.txt (line 1)) (0.7.1)\n",
+      "Requirement already satisfied: astor>=0.6.0 in /usr/local/lib/python3.6/site-packages (from tensorflow>=1.12.0->-r requirements.txt (line 1)) (0.7.1)\n",
+      "Requirement already satisfied: keras-applications>=1.0.6 in /usr/local/lib/python3.6/site-packages (from tensorflow>=1.12.0->-r requirements.txt (line 1)) (1.0.7)\n",
+      "Requirement already satisfied: six>=1.10.0 in /usr/local/lib/python3.6/site-packages (from tensorflow>=1.12.0->-r requirements.txt (line 1)) (1.12.0)\n",
+      "Requirement already satisfied: termcolor>=1.1.0 in /usr/local/lib/python3.6/site-packages (from tensorflow>=1.12.0->-r requirements.txt (line 1)) (1.1.0)\n",
+      "Requirement already satisfied: grpcio>=1.8.6 in /usr/local/lib/python3.6/site-packages (from tensorflow>=1.12.0->-r requirements.txt (line 1)) (1.19.0)\n",
+      "Requirement already satisfied: wheel>=0.26 in /usr/local/lib/python3.6/site-packages (from tensorflow>=1.12.0->-r requirements.txt (line 1)) (0.33.1)\n",
+      "Requirement already satisfied: tensorboard<1.14.0,>=1.13.0 in /usr/local/lib/python3.6/site-packages (from tensorflow>=1.12.0->-r requirements.txt (line 1)) (1.13.1)\n",
+      "Requirement already satisfied: numpy>=1.13.3 in /usr/local/lib/python3.6/site-packages (from tensorflow>=1.12.0->-r requirements.txt (line 1)) (1.16.2)\n",
+      "Requirement already satisfied: protobuf>=3.6.1 in /usr/local/lib/python3.6/site-packages (from tensorflow>=1.12.0->-r requirements.txt (line 1)) (3.7.0)\n",
+      "Requirement already satisfied: tensorflow-estimator<1.14.0rc0,>=1.13.0 in /usr/local/lib/python3.6/site-packages (from tensorflow>=1.12.0->-r requirements.txt (line 1)) (1.13.0)\n",
+      "Requirement already satisfied: h5py in /usr/local/lib/python3.6/site-packages (from keras-applications>=1.0.6->tensorflow>=1.12.0->-r requirements.txt (line 1)) (2.9.0)\n",
+      "Requirement already satisfied: markdown>=2.6.8 in /usr/local/lib/python3.6/site-packages (from tensorboard<1.14.0,>=1.13.0->tensorflow>=1.12.0->-r requirements.txt (line 1)) (3.0.1)\n",
+      "Requirement already satisfied: werkzeug>=0.11.15 in /usr/local/lib/python3.6/site-packages (from tensorboard<1.14.0,>=1.13.0->tensorflow>=1.12.0->-r requirements.txt (line 1)) (0.15.0)\n",
+      "Requirement already satisfied: setuptools in /usr/local/lib/python3.6/site-packages (from protobuf>=3.6.1->tensorflow>=1.12.0->-r requirements.txt (line 1)) (40.8.0)\n",
+      "Requirement already satisfied: mock>=2.0.0 in /usr/local/lib/python3.6/site-packages (from tensorflow-estimator<1.14.0rc0,>=1.13.0->tensorflow>=1.12.0->-r requirements.txt (line 1)) (2.0.0)\n",
+      "Requirement already satisfied: pbr>=0.11 in /usr/local/lib/python3.6/site-packages (from mock>=2.0.0->tensorflow-estimator<1.14.0rc0,>=1.13.0->tensorflow>=1.12.0->-r requirements.txt (line 1)) (5.1.3)\n",
+      "Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.\n",
+      "You are using pip version 19.0.3, however version 19.1.1 is available.\n",
+      "You should consider upgrading via the 'pip install --upgrade pip' command.\n",
+      "Build completed successfully\n"
+     ]
     }
-    
-    Response:
-    meta {
-      puid: "l6bv1r38mmb32l0hbinln2jjcl"
-      requestPath {
-        key: "classifier"
-        value: "271049282727.dkr.ecr.us-west-2.amazonaws.com/seldon-repository:latest"
-      }
+   ],
+   "source": [
+    "!s2i build . seldonio/seldon-core-s2i-python36:0.5.1 deep-mnist:0.1"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 3) Send some data to the docker model to test it\n",
+    "We first run the docker image we just created as a container called \"mnist_predictor\""
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 119,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "5157ab4f516bd0dea11b159780f31121e9fb41df6394e0d6d631e6e0d572463b\r\n"
+     ]
     }
-    data {
-      names: "class:0"
-      names: "class:1"
-      names: "class:2"
-      names: "class:3"
-      names: "class:4"
-      names: "class:5"
-      names: "class:6"
-      names: "class:7"
-      names: "class:8"
-      names: "class:9"
-      ndarray {
-        values {
-          list_value {
-            values {
-              number_value: 6.839015986770391e-05
-            }
-            values {
-              number_value: 9.376968534979824e-09
-            }
-            values {
-              number_value: 8.48581112222746e-05
-            }
-            values {
-              number_value: 0.0034086888190358877
-            }
-            values {
-              number_value: 2.3978568606253248e-06
-            }
-            values {
-              number_value: 2.0100669644307345e-05
-            }
-            values {
-              number_value: 3.0251623428512175e-08
-            }
-            values {
-              number_value: 0.9953710436820984
-            }
-            values {
-              number_value: 2.6070511012221687e-05
-            }
-            values {
-              number_value: 0.0010185304563492537
-            }
-          }
-        }
-      }
+   ],
+   "source": [
+    "!docker run --name \"mnist_predictor\" -d --rm -p 5000:5000 deep-mnist:0.1"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Send some random features that conform to the contract"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 120,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "image/png": "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\n",
+      "text/plain": [
+       "<Figure size 432x288 with 1 Axes>"
+      ]
+     },
+     "metadata": {
+      "needs_background": "light"
+     },
+     "output_type": "display_data"
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Expected label:  7.0 . One hot encoding:  [[0. 0. 0. 0. 0. 0. 0. 1. 0. 0.]]\n"
+     ]
     }
-    
-
-
-### Let's visualise the probability for each label
-It seems that it correctly predicted the number 7
-
-
-```python
-for proba, label in zip(client_prediction.response.data.ndarray.values[0].list_value.ListFields()[0][1], range(0,10)):
-    print(f"LABEL {label}:\t {proba.number_value*100:6.4f} %")
-```
-
-    LABEL 0:	 0.0068 %
-    LABEL 1:	 0.0000 %
-    LABEL 2:	 0.0085 %
-    LABEL 3:	 0.3409 %
-    LABEL 4:	 0.0002 %
-    LABEL 5:	 0.0020 %
-    LABEL 6:	 0.0000 %
-    LABEL 7:	 99.5371 %
-    LABEL 8:	 0.0026 %
-    LABEL 9:	 0.1019 %
-
-
-
-```python
-
-```
+   ],
+   "source": [
+    "import matplotlib.pyplot as plt\n",
+    "# This is the variable that was initialised at the beginning of the file\n",
+    "i = [0]\n",
+    "x = mnist.test.images[i]\n",
+    "y = mnist.test.labels[i]\n",
+    "plt.imshow(x.reshape((28, 28)), cmap='gray')\n",
+    "plt.show()\n",
+    "print(\"Expected label: \", np.sum(range(0,10) * y), \". One hot encoding: \", y)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 144,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "LABEL 0:\t 0.0068 %\n",
+      "LABEL 1:\t 0.0000 %\n",
+      "LABEL 2:\t 0.0085 %\n",
+      "LABEL 3:\t 0.3409 %\n",
+      "LABEL 4:\t 0.0002 %\n",
+      "LABEL 5:\t 0.0020 %\n",
+      "LABEL 6:\t 0.0000 %\n",
+      "LABEL 7:\t 99.5371 %\n",
+      "LABEL 8:\t 0.0026 %\n",
+      "LABEL 9:\t 0.1019 %\n"
+     ]
+    }
+   ],
+   "source": [
+    "from seldon_core.seldon_client import SeldonClient\n",
+    "import math\n",
+    "import numpy as np\n",
+    "\n",
+    "# We now test the REST endpoint expecting the same result\n",
+    "endpoint = \"0.0.0.0:5000\"\n",
+    "batch = x\n",
+    "payload_type = \"ndarray\"\n",
+    "\n",
+    "sc = SeldonClient(microservice_endpoint=endpoint)\n",
+    "\n",
+    "# We use the microservice, instead of the \"predict\" function\n",
+    "client_prediction = sc.microservice(\n",
+    "    data=batch,\n",
+    "    method=\"predict\",\n",
+    "    payload_type=payload_type,\n",
+    "    names=[\"tfidf\"])\n",
+    "\n",
+    "for proba, label in zip(client_prediction.response.data.ndarray.values[0].list_value.ListFields()[0][1], range(0,10)):\n",
+    "    print(f\"LABEL {label}:\\t {proba.number_value*100:6.4f} %\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 145,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "mnist_predictor\r\n"
+     ]
+    }
+   ],
+   "source": [
+    "!docker rm mnist_predictor --force"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 4) Install and configure AWS tools to interact with AWS"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "First we install the awscli"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Collecting awscli\n",
+      "  Using cached https://files.pythonhosted.org/packages/f6/45/259a98719e7c7defc9be4cc00fbfb7ccf699fbd1f74455d8347d0ab0a1df/awscli-1.16.163-py2.py3-none-any.whl\n",
+      "Collecting colorama<=0.3.9,>=0.2.5 (from awscli)\n",
+      "  Using cached https://files.pythonhosted.org/packages/db/c8/7dcf9dbcb22429512708fe3a547f8b6101c0d02137acbd892505aee57adf/colorama-0.3.9-py2.py3-none-any.whl\n",
+      "Collecting PyYAML<=3.13,>=3.10 (from awscli)\n",
+      "Collecting botocore==1.12.153 (from awscli)\n",
+      "  Using cached https://files.pythonhosted.org/packages/ec/3b/029218966ce62ae9824a18730de862ac8fc5a0e8083d07d1379815e7cca1/botocore-1.12.153-py2.py3-none-any.whl\n",
+      "Requirement already satisfied, skipping upgrade: docutils>=0.10 in /home/alejandro/miniconda3/envs/reddit-classification/lib/python3.7/site-packages (from awscli) (0.14)\n",
+      "Collecting rsa<=3.5.0,>=3.1.2 (from awscli)\n",
+      "  Using cached https://files.pythonhosted.org/packages/e1/ae/baedc9cb175552e95f3395c43055a6a5e125ae4d48a1d7a924baca83e92e/rsa-3.4.2-py2.py3-none-any.whl\n",
+      "Requirement already satisfied, skipping upgrade: s3transfer<0.3.0,>=0.2.0 in /home/alejandro/miniconda3/envs/reddit-classification/lib/python3.7/site-packages (from awscli) (0.2.0)\n",
+      "Requirement already satisfied, skipping upgrade: urllib3<1.25,>=1.20; python_version >= \"3.4\" in /home/alejandro/miniconda3/envs/reddit-classification/lib/python3.7/site-packages (from botocore==1.12.153->awscli) (1.24.2)\n",
+      "Requirement already satisfied, skipping upgrade: python-dateutil<3.0.0,>=2.1; python_version >= \"2.7\" in /home/alejandro/miniconda3/envs/reddit-classification/lib/python3.7/site-packages (from botocore==1.12.153->awscli) (2.8.0)\n",
+      "Requirement already satisfied, skipping upgrade: jmespath<1.0.0,>=0.7.1 in /home/alejandro/miniconda3/envs/reddit-classification/lib/python3.7/site-packages (from botocore==1.12.153->awscli) (0.9.4)\n",
+      "Collecting pyasn1>=0.1.3 (from rsa<=3.5.0,>=3.1.2->awscli)\n",
+      "  Using cached https://files.pythonhosted.org/packages/7b/7c/c9386b82a25115cccf1903441bba3cbadcfae7b678a20167347fa8ded34c/pyasn1-0.4.5-py2.py3-none-any.whl\n",
+      "Requirement already satisfied, skipping upgrade: six>=1.5 in /home/alejandro/miniconda3/envs/reddit-classification/lib/python3.7/site-packages (from python-dateutil<3.0.0,>=2.1; python_version >= \"2.7\"->botocore==1.12.153->awscli) (1.12.0)\n",
+      "Installing collected packages: colorama, PyYAML, botocore, pyasn1, rsa, awscli\n",
+      "Successfully installed PyYAML-3.13 awscli-1.16.163 botocore-1.12.153 colorama-0.3.9 pyasn1-0.4.5 rsa-3.4.2\n"
+     ]
+    }
+   ],
+   "source": [
+    "!pip install awscli --upgrade --user"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Configure aws so it can talk to your server \n",
+    "(if you are getting issues, make sure you have the permmissions to create clusters)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 20,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "AWS Access Key ID [****************SF4A]: AWS Secret Access Key [****************WLHu]: Default region name [eu-west-1]: Default output format [json]: "
+     ]
+    }
+   ],
+   "source": [
+    "%%bash \n",
+    "# You must make sure that the access key and secret are changed\n",
+    "aws configure << END_OF_INPUTS\n",
+    "YOUR_ACCESS_KEY\n",
+    "YOUR_ACCESS_SECRET\n",
+    "us-west-2\n",
+    "json\n",
+    "END_OF_INPUTS"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Install EKCTL\n",
+    "*IMPORTANT*: These instructions are for linux\n",
+    "Please follow the official installation of ekctl at: https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 23,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "!curl --silent --location \"https://github.com/weaveworks/eksctl/releases/download/latest_release/eksctl_$(uname -s)_amd64.tar.gz\" | tar xz "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 25,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "!chmod 755 ./eksctl"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 27,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "\u001b[36m[ℹ]  version.Info{BuiltAt:\"\", GitCommit:\"\", GitTag:\"0.1.32\"}\r\n",
+      "\u001b[0m"
+     ]
+    }
+   ],
+   "source": [
+    "!./eksctl version"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 5) Use the AWS tools to create and setup EKS cluster with Seldon\n",
+    "In this example we will create a cluster with 2 nodes, with a minimum of 1 and a max of 3. You can tweak this accordingly.\n",
+    "\n",
+    "If you want to check the status of the deployment you can go to AWS CloudFormation or to the EKS dashboard.\n",
+    "\n",
+    "It will take 10-15 minutes (so feel free to go grab a ☕). \n",
+    "\n",
+    "### IMPORTANT: If you get errors in this step...\n",
+    "It is most probably IAM role access requirements, which requires you to discuss with your administrator."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 107,
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Process is interrupted.\n"
+     ]
+    }
+   ],
+   "source": [
+    "%%bash\n",
+    "./eksctl create cluster \\\n",
+    "--name demo-eks-cluster \\\n",
+    "--region us-west-2 \\\n",
+    "--nodes 2 "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Configure local kubectl \n",
+    "We want to now configure our local Kubectl so we can actually reach the cluster we've just created"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 108,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Updated context arn:aws:eks:eu-west-1:271049282727:cluster/deepmnist in /home/alejandro/.kube/config\r\n"
+     ]
+    }
+   ],
+   "source": [
+    "!aws eks --region us-west-2 update-kubeconfig --name demo-eks-cluster"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "And we can check if the context has been added to kubectl config (contexts are basically the different k8s cluster connections)\n",
+    "You should be able to see the context as \"...aws:eks:eu-west-1:27...\". \n",
+    "If it's not activated you can activate that context with kubectlt config set-context <CONTEXT_NAME>"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 109,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "CURRENT   NAME                                                   CLUSTER                                                AUTHINFO                                               NAMESPACE\r\n",
+      "*         arn:aws:eks:eu-west-1:271049282727:cluster/deepmnist   arn:aws:eks:eu-west-1:271049282727:cluster/deepmnist   arn:aws:eks:eu-west-1:271049282727:cluster/deepmnist   \r\n",
+      "          docker-desktop                                         docker-desktop                                         docker-desktop                                         \r\n",
+      "          docker-for-desktop                                     docker-desktop                                         docker-desktop                                         \r\n",
+      "          gke_ml-engineer_us-central1-a_security-cluster-1       gke_ml-engineer_us-central1-a_security-cluster-1       gke_ml-engineer_us-central1-a_security-cluster-1       \r\n"
+     ]
+    }
+   ],
+   "source": [
+    "!kubectl config get-contexts"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Install Seldon Core"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Before we install seldon core, we need to install HELM\n",
+    "For that, we need to create a ClusterRoleBinding for us, a ServiceAccount, and then a RoleBinding"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 114,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "clusterrolebinding.rbac.authorization.k8s.io/kube-system-cluster-admin created\r\n"
+     ]
+    }
+   ],
+   "source": [
+    "!kubectl create clusterrolebinding kube-system-cluster-admin --clusterrole=cluster-admin --serviceaccount=kube-system:default"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 115,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "serviceaccount/tiller created\r\n"
+     ]
+    }
+   ],
+   "source": [
+    "!kubectl create serviceaccount tiller --namespace kube-system"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 116,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "clusterrolebinding.rbac.authorization.k8s.io/tiller-role-binding created\r\n"
+     ]
+    }
+   ],
+   "source": [
+    "!kubectl apply -f tiller-role-binding.yaml"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Once that is set-up we can install Tiller"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 117,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "$HELM_HOME has been configured at /home/alejandro/.helm.\n",
+      "\n",
+      "Tiller (the Helm server-side component) has been installed into your Kubernetes Cluster.\n",
+      "\n",
+      "Please note: by default, Tiller is deployed with an insecure 'allow unauthenticated users' policy.\n",
+      "To prevent this, run `helm init` with the --tiller-tls-verify flag.\n",
+      "For more information on securing your installation see: https://docs.helm.sh/using_helm/#securing-your-helm-installation\n",
+      "Happy Helming!\n"
+     ]
+    }
+   ],
+   "source": [
+    "!helm init --service-account tiller"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 120,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "deployment \"tiller-deploy\" successfully rolled out\r\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Wait until Tiller finishes\n",
+    "!kubectl rollout status deploy/tiller-deploy -n kube-system"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Now we can install SELDON. \n",
+    "We first start with the custom resource definitions (CRDs)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "NAME:   seldon-core-operator\n",
+      "LAST DEPLOYED: Wed May 22 16:24:10 2019\n",
+      "NAMESPACE: seldon-system\n",
+      "STATUS: DEPLOYED\n",
+      "\n",
+      "RESOURCES:\n",
+      "==> v1/ClusterRole\n",
+      "NAME                          AGE\n",
+      "seldon-operator-manager-role  2s\n",
+      "\n",
+      "==> v1/ClusterRoleBinding\n",
+      "NAME                                 AGE\n",
+      "seldon-operator-manager-rolebinding  2s\n",
+      "\n",
+      "==> v1/ConfigMap\n",
+      "NAME                     DATA  AGE\n",
+      "seldon-spartakus-config  3     2s\n",
+      "\n",
+      "==> v1/Pod(related)\n",
+      "NAME                                         READY  STATUS             RESTARTS  AGE\n",
+      "seldon-operator-controller-manager-0         0/1    ContainerCreating  0         2s\n",
+      "seldon-spartakus-volunteer-6954cffb89-qz4pq  0/1    ContainerCreating  0         1s\n",
+      "\n",
+      "==> v1/Secret\n",
+      "NAME                                   TYPE    DATA  AGE\n",
+      "seldon-operator-webhook-server-secret  Opaque  0     2s\n",
+      "\n",
+      "==> v1/Service\n",
+      "NAME                                        TYPE       CLUSTER-IP      EXTERNAL-IP  PORT(S)  AGE\n",
+      "seldon-operator-controller-manager-service  ClusterIP  10.100.198.157  <none>       443/TCP  2s\n",
+      "\n",
+      "==> v1/ServiceAccount\n",
+      "NAME                        SECRETS  AGE\n",
+      "seldon-spartakus-volunteer  1        2s\n",
+      "\n",
+      "==> v1/StatefulSet\n",
+      "NAME                                READY  AGE\n",
+      "seldon-operator-controller-manager  0/1    2s\n",
+      "\n",
+      "==> v1beta1/ClusterRole\n",
+      "NAME                        AGE\n",
+      "seldon-spartakus-volunteer  2s\n",
+      "\n",
+      "==> v1beta1/ClusterRoleBinding\n",
+      "NAME                        AGE\n",
+      "seldon-spartakus-volunteer  2s\n",
+      "\n",
+      "==> v1beta1/CustomResourceDefinition\n",
+      "NAME                                         AGE\n",
+      "seldondeployments.machinelearning.seldon.io  2s\n",
+      "\n",
+      "==> v1beta1/Deployment\n",
+      "NAME                        READY  UP-TO-DATE  AVAILABLE  AGE\n",
+      "seldon-spartakus-volunteer  0/1    1           0          2s\n",
+      "\n",
+      "\n",
+      "NOTES:\n",
+      "NOTES: TODO\n",
+      "\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "!helm install seldon-core-operator --name seldon-core-operator --repo https://storage.googleapis.com/seldon-charts --set usageMetrics.enabled=true --namespace seldon-system"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "And confirm they are running by getting the pods:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "partitioned roll out complete: 1 new pods have been updated...\r\n"
+     ]
+    }
+   ],
+   "source": [
+    "!kubectl rollout status statefulset.apps/seldon-operator-controller-manager -n seldon-system"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Now we set-up the ingress\n",
+    "This will allow you to reach the Seldon models from outside the kubernetes cluster. \n",
+    "\n",
+    "In EKS it automatically creates an Elastic Load Balancer, which you can configure from the EC2 Console"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "NAME:   ambassador\n",
+      "LAST DEPLOYED: Wed May 22 16:25:38 2019\n",
+      "NAMESPACE: default\n",
+      "STATUS: DEPLOYED\n",
+      "\n",
+      "RESOURCES:\n",
+      "==> v1/Deployment\n",
+      "NAME        READY  UP-TO-DATE  AVAILABLE  AGE\n",
+      "ambassador  0/3    3           0          0s\n",
+      "\n",
+      "==> v1/Pod(related)\n",
+      "NAME                         READY  STATUS             RESTARTS  AGE\n",
+      "ambassador-6dbf99c886-frlfm  0/1    ContainerCreating  0         0s\n",
+      "ambassador-6dbf99c886-kj56r  0/1    ContainerCreating  0         0s\n",
+      "ambassador-6dbf99c886-v5mtv  0/1    ContainerCreating  0         0s\n",
+      "\n",
+      "==> v1/Service\n",
+      "NAME               TYPE          CLUSTER-IP      EXTERNAL-IP  PORT(S)                     AGE\n",
+      "ambassador         LoadBalancer  10.100.59.146   <pending>    80:30911/TCP,443:31715/TCP  0s\n",
+      "ambassador-admins  ClusterIP     10.100.152.178  <none>       8877/TCP                    0s\n",
+      "\n",
+      "==> v1/ServiceAccount\n",
+      "NAME        SECRETS  AGE\n",
+      "ambassador  1        0s\n",
+      "\n",
+      "==> v1beta1/ClusterRole\n",
+      "NAME        AGE\n",
+      "ambassador  0s\n",
+      "\n",
+      "==> v1beta1/ClusterRoleBinding\n",
+      "NAME        AGE\n",
+      "ambassador  0s\n",
+      "\n",
+      "\n",
+      "NOTES:\n",
+      "Congratuations! You've successfully installed Ambassador.\n",
+      "\n",
+      "For help, visit our Slack at https://d6e.co/slack or view the documentation online at https://www.getambassador.io.\n",
+      "\n",
+      "To get the IP address of Ambassador, run the following commands:\n",
+      "NOTE: It may take a few minutes for the LoadBalancer IP to be available.\n",
+      "     You can watch the status of by running 'kubectl get svc -w  --namespace default ambassador'\n",
+      "\n",
+      "  On GKE/Azure:\n",
+      "  export SERVICE_IP=$(kubectl get svc --namespace default ambassador -o jsonpath='{.status.loadBalancer.ingress[0].ip}')\n",
+      "\n",
+      "  On AWS:\n",
+      "  export SERVICE_IP=$(kubectl get svc --namespace default ambassador -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')\n",
+      "\n",
+      "  echo http://$SERVICE_IP:\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "!helm install stable/ambassador --name ambassador --set image.tag=0.40.2"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "And let's wait until it's fully deployed"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "!kubectl rollout status deployment.apps/ambassador"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Push docker image\n",
+    "In order for the EKS seldon deployment to access the image we just built, we need to push it to the Elastic Container Registry (ECR).\n",
+    "\n",
+    "If you have any issues please follow the official AWS documentation: https://docs.aws.amazon.com/AmazonECR/latest/userguide/docker-basics.html"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### First we create a registry\n",
+    "You can run the following command, and then see the result at https://us-west-2.console.aws.amazon.com/ecr/repositories?#"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 110,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "{\r\n",
+      "    \"repository\": {\r\n",
+      "        \"repositoryArn\": \"arn:aws:ecr:us-west-2:271049282727:repository/seldon-repository\",\r\n",
+      "        \"registryId\": \"271049282727\",\r\n",
+      "        \"repositoryName\": \"seldon-repository\",\r\n",
+      "        \"repositoryUri\": \"271049282727.dkr.ecr.us-west-2.amazonaws.com/seldon-repository\",\r\n",
+      "        \"createdAt\": 1558535798.0\r\n",
+      "    }\r\n",
+      "}\r\n"
+     ]
+    }
+   ],
+   "source": [
+    "!aws ecr create-repository --repository-name seldon-repository --region us-west-2"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Now prepare docker image\n",
+    "We need to first tag the docker image before we can push it"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 111,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "%%bash\n",
+    "export AWS_ACCOUNT_ID=\"\"\n",
+    "export AWS_REGION=\"us-west-2\"\n",
+    "if [ -z \"$AWS_ACCOUNT_ID\" ]; then\n",
+    "    echo \"ERROR: Please provide a value for the AWS variables\"\n",
+    "    exit 1\n",
+    "fi\n",
+    "\n",
+    "docker tag deep-mnist:0.1 \"$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/seldon-repository\""
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### We now login to aws through docker so we can access the repository"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 112,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "WARNING! Using --password via the CLI is insecure. Use --password-stdin.\n",
+      "WARNING! Your password will be stored unencrypted in /home/alejandro/.docker/config.json.\n",
+      "Configure a credential helper to remove this warning. See\n",
+      "https://docs.docker.com/engine/reference/commandline/login/#credentials-store\n",
+      "\n",
+      "Login Succeeded\n"
+     ]
+    }
+   ],
+   "source": [
+    "!`aws ecr get-login --no-include-email --region us-west-2`"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### And push the image\n",
+    "Make sure you add your AWS Account ID"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 113,
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "The push refers to repository [271049282727.dkr.ecr.us-west-2.amazonaws.com/seldon-repository]\n",
+      "f7d0d000c138: Preparing\n",
+      "987f3f1afb00: Preparing\n",
+      "00d16a381c47: Preparing\n",
+      "bb01f50d544a: Preparing\n",
+      "fcb82c6941b5: Preparing\n",
+      "67290e35c458: Preparing\n",
+      "b813745f5bb3: Preparing\n",
+      "ffecb18e9f0b: Preparing\n",
+      "f50f856f49fa: Preparing\n",
+      "80b43ad4adf9: Preparing\n",
+      "14c77983a1cf: Preparing\n",
+      "a22a5ac18042: Preparing\n",
+      "6257fa9f9597: Preparing\n",
+      "578414b395b9: Preparing\n",
+      "abc3250a6c7f: Preparing\n",
+      "13d5529fd232: Preparing\n",
+      "67290e35c458: Waiting\n",
+      "b813745f5bb3: Waiting\n",
+      "ffecb18e9f0b: Waiting\n",
+      "f50f856f49fa: Waiting\n",
+      "80b43ad4adf9: Waiting\n",
+      "6257fa9f9597: Waiting\n",
+      "14c77983a1cf: Waiting\n",
+      "a22a5ac18042: Waiting\n",
+      "578414b395b9: Waiting\n",
+      "abc3250a6c7f: Waiting\n",
+      "13d5529fd232: Waiting\n",
+      "987f3f1afb00: Pushed\n",
+      "fcb82c6941b5: Pushed\n",
+      "bb01f50d544a: Pushed\n",
+      "f7d0d000c138: Pushed\n",
+      "ffecb18e9f0b: Pushed\n",
+      "b813745f5bb3: Pushed\n",
+      "f50f856f49fa: Pushed\n",
+      "67290e35c458: Pushed\n",
+      "14c77983a1cf: Pushed\n",
+      "578414b395b9: Pushed\n",
+      "80b43ad4adf9: Pushed\n",
+      "13d5529fd232: Pushed\n",
+      "6257fa9f9597: Pushed\n",
+      "abc3250a6c7f: Pushed\n",
+      "00d16a381c47: Pushed\n",
+      "a22a5ac18042: Pushed\n",
+      "latest: digest: sha256:19aefaa9d87c1287eb46ec08f5d4f9a689744d9d0d0b75668b7d15e447819d74 size: 3691\n"
+     ]
+    }
+   ],
+   "source": [
+    "%%bash\n",
+    "export AWS_ACCOUNT_ID=\"\"\n",
+    "export AWS_REGION=\"us-west-2\"\n",
+    "if [ -z \"$AWS_ACCOUNT_ID\" ]; then\n",
+    "    echo \"ERROR: Please provide a value for the AWS variables\"\n",
+    "    exit 1\n",
+    "fi\n",
+    "\n",
+    "docker push \"$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/seldon-repository\""
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Running the Model\n",
+    "We will now run the model.\n",
+    "\n",
+    "Let's first have a look at the file we'll be using to trigger the model:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 127,
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "{\r\n",
+      "    \"apiVersion\": \"machinelearning.seldon.io/v1alpha2\",\r\n",
+      "    \"kind\": \"SeldonDeployment\",\r\n",
+      "    \"metadata\": {\r\n",
+      "        \"labels\": {\r\n",
+      "            \"app\": \"seldon\"\r\n",
+      "        },\r\n",
+      "        \"name\": \"deep-mnist\"\r\n",
+      "    },\r\n",
+      "    \"spec\": {\r\n",
+      "        \"annotations\": {\r\n",
+      "            \"project_name\": \"Tensorflow MNIST\",\r\n",
+      "            \"deployment_version\": \"v1\"\r\n",
+      "        },\r\n",
+      "        \"name\": \"deep-mnist\",\r\n",
+      "        \"oauth_key\": \"oauth-key\",\r\n",
+      "        \"oauth_secret\": \"oauth-secret\",\r\n",
+      "        \"predictors\": [\r\n",
+      "            {\r\n",
+      "                \"componentSpecs\": [{\r\n",
+      "                    \"spec\": {\r\n",
+      "                        \"containers\": [\r\n",
+      "                            {\r\n",
+      "                                \"image\": \"271049282727.dkr.ecr.us-west-2.amazonaws.com/seldon-repository:latest\",\r\n",
+      "                                \"imagePullPolicy\": \"IfNotPresent\",\r\n",
+      "                                \"name\": \"classifier\",\r\n",
+      "                                \"resources\": {\r\n",
+      "                                    \"requests\": {\r\n",
+      "                                        \"memory\": \"1Mi\"\r\n",
+      "                                    }\r\n",
+      "                                }\r\n",
+      "                            }\r\n",
+      "                        ],\r\n",
+      "                        \"terminationGracePeriodSeconds\": 20\r\n",
+      "                    }\r\n",
+      "                }],\r\n",
+      "                \"graph\": {\r\n",
+      "                    \"children\": [],\r\n",
+      "                    \"name\": \"classifier\",\r\n",
+      "                    \"endpoint\": {\r\n",
+      "\t\t\t\"type\" : \"REST\"\r\n",
+      "\t\t    },\r\n",
+      "                    \"type\": \"MODEL\"\r\n",
+      "                },\r\n",
+      "                \"name\": \"single-model\",\r\n",
+      "                \"replicas\": 1,\r\n",
+      "\t\t\"annotations\": {\r\n",
+      "\t\t    \"predictor_version\" : \"v1\"\r\n",
+      "\t\t}\r\n",
+      "            }\r\n",
+      "        ]\r\n",
+      "    }\r\n",
+      "}\r\n"
+     ]
+    }
+   ],
+   "source": [
+    "!cat deep_mnist.json"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Now let's trigger seldon to run the model.\n",
+    "\n",
+    "We basically have a yaml file, where we want to replace the value \"REPLACE_FOR_IMAGE_AND_TAG\" for the image you pushed"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 165,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "error: unable to recognize \"STDIN\": Get https://461835FD3FF52848655C8F09FBF5EEAA.yl4.us-west-2.eks.amazonaws.com/api?timeout=32s: dial tcp: lookup 461835FD3FF52848655C8F09FBF5EEAA.yl4.us-west-2.eks.amazonaws.com on 1.1.1.1:53: no such host\n"
+     ]
+    },
+    {
+     "ename": "CalledProcessError",
+     "evalue": "Command 'b'export AWS_ACCOUNT_ID=\"2710\"\\nexport AWS_REGION=\"us-west-2\"\\nif [ -z \"$AWS_ACCOUNT_ID\" ]; then\\n    echo \"ERROR: Please provide a value for the AWS variables\"\\n    exit 1\\nfi\\n\\nsed \\'s|REPLACE_FOR_IMAGE_AND_TAG|\\'\"$AWS_ACCOUNT_ID\"\\'.dkr.ecr.\\'\"$AWS_REGION\"\\'.amazonaws.com/seldon-repository|g\\' deep_mnist.json | kubectl apply -f -\\n'' returned non-zero exit status 1.",
+     "output_type": "error",
+     "traceback": [
+      "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+      "\u001b[0;31mCalledProcessError\u001b[0m                        Traceback (most recent call last)",
+      "\u001b[0;32m<ipython-input-165-1129742af2c4>\u001b[0m in \u001b[0;36m<module>\u001b[0;34m\u001b[0m\n\u001b[0;32m----> 1\u001b[0;31m \u001b[0mget_ipython\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mrun_cell_magic\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m'bash'\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m''\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m'export AWS_ACCOUNT_ID=\"2710\"\\nexport AWS_REGION=\"us-west-2\"\\nif [ -z \"$AWS_ACCOUNT_ID\" ]; then\\n    echo \"ERROR: Please provide a value for the AWS variables\"\\n    exit 1\\nfi\\n\\nsed \\'s|REPLACE_FOR_IMAGE_AND_TAG|\\'\"$AWS_ACCOUNT_ID\"\\'.dkr.ecr.\\'\"$AWS_REGION\"\\'.amazonaws.com/seldon-repository|g\\' deep_mnist.json | kubectl apply -f -\\n'\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m",
+      "\u001b[0;32m~/miniconda3/envs/reddit-classification/lib/python3.7/site-packages/IPython/core/interactiveshell.py\u001b[0m in \u001b[0;36mrun_cell_magic\u001b[0;34m(self, magic_name, line, cell)\u001b[0m\n\u001b[1;32m   2350\u001b[0m             \u001b[0;32mwith\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mbuiltin_trap\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   2351\u001b[0m                 \u001b[0margs\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0;34m(\u001b[0m\u001b[0mmagic_arg_s\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mcell\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m-> 2352\u001b[0;31m                 \u001b[0mresult\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mfn\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m*\u001b[0m\u001b[0margs\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mkwargs\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m   2353\u001b[0m             \u001b[0;32mreturn\u001b[0m \u001b[0mresult\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   2354\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m~/miniconda3/envs/reddit-classification/lib/python3.7/site-packages/IPython/core/magics/script.py\u001b[0m in \u001b[0;36mnamed_script_magic\u001b[0;34m(line, cell)\u001b[0m\n\u001b[1;32m    140\u001b[0m             \u001b[0;32melse\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    141\u001b[0m                 \u001b[0mline\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mscript\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 142\u001b[0;31m             \u001b[0;32mreturn\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mshebang\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mline\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mcell\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    143\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    144\u001b[0m         \u001b[0;31m# write a basic docstring:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m</home/alejandro/miniconda3/envs/reddit-classification/lib/python3.7/site-packages/decorator.py:decorator-gen-110>\u001b[0m in \u001b[0;36mshebang\u001b[0;34m(self, line, cell)\u001b[0m\n",
+      "\u001b[0;32m~/miniconda3/envs/reddit-classification/lib/python3.7/site-packages/IPython/core/magic.py\u001b[0m in \u001b[0;36m<lambda>\u001b[0;34m(f, *a, **k)\u001b[0m\n\u001b[1;32m    185\u001b[0m     \u001b[0;31m# but it's overkill for just that one bit of state.\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    186\u001b[0m     \u001b[0;32mdef\u001b[0m \u001b[0mmagic_deco\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0marg\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 187\u001b[0;31m         \u001b[0mcall\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0;32mlambda\u001b[0m \u001b[0mf\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m*\u001b[0m\u001b[0ma\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mk\u001b[0m\u001b[0;34m:\u001b[0m \u001b[0mf\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m*\u001b[0m\u001b[0ma\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mk\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    188\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    189\u001b[0m         \u001b[0;32mif\u001b[0m \u001b[0mcallable\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0marg\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m~/miniconda3/envs/reddit-classification/lib/python3.7/site-packages/IPython/core/magics/script.py\u001b[0m in \u001b[0;36mshebang\u001b[0;34m(self, line, cell)\u001b[0m\n\u001b[1;32m    243\u001b[0m             \u001b[0msys\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mstderr\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mflush\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    244\u001b[0m         \u001b[0;32mif\u001b[0m \u001b[0margs\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mraise_error\u001b[0m \u001b[0;32mand\u001b[0m \u001b[0mp\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mreturncode\u001b[0m\u001b[0;34m!=\u001b[0m\u001b[0;36m0\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 245\u001b[0;31m             \u001b[0;32mraise\u001b[0m \u001b[0mCalledProcessError\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mp\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mreturncode\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mcell\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0moutput\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mout\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mstderr\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0merr\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    246\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    247\u001b[0m     \u001b[0;32mdef\u001b[0m \u001b[0m_run_script\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mp\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mcell\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mto_close\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;31mCalledProcessError\u001b[0m: Command 'b'export AWS_ACCOUNT_ID=\"2710\"\\nexport AWS_REGION=\"us-west-2\"\\nif [ -z \"$AWS_ACCOUNT_ID\" ]; then\\n    echo \"ERROR: Please provide a value for the AWS variables\"\\n    exit 1\\nfi\\n\\nsed \\'s|REPLACE_FOR_IMAGE_AND_TAG|\\'\"$AWS_ACCOUNT_ID\"\\'.dkr.ecr.\\'\"$AWS_REGION\"\\'.amazonaws.com/seldon-repository|g\\' deep_mnist.json | kubectl apply -f -\\n'' returned non-zero exit status 1."
+     ]
+    }
+   ],
+   "source": [
+    "%%bash\n",
+    "export AWS_ACCOUNT_ID=\"\"\n",
+    "export AWS_REGION=\"us-west-2\"\n",
+    "if [ -z \"$AWS_ACCOUNT_ID\" ]; then\n",
+    "    echo \"ERROR: Please provide a value for the AWS variables\"\n",
+    "    exit 1\n",
+    "fi\n",
+    "\n",
+    "sed 's|REPLACE_FOR_IMAGE_AND_TAG|'\"$AWS_ACCOUNT_ID\"'.dkr.ecr.'\"$AWS_REGION\"'.amazonaws.com/seldon-repository|g' deep_mnist.json | kubectl apply -f -"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "And let's check that it's been created.\n",
+    "\n",
+    "You should see an image called \"deep-mnist-single-model...\".\n",
+    "\n",
+    "We'll wait until STATUS changes from \"ContainerCreating\" to \"Running\""
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 20,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "NAME                                              READY   STATUS    RESTARTS   AGE\r\n",
+      "ambassador-5475779f98-7bhcw                       1/1     Running   0          21m\r\n",
+      "ambassador-5475779f98-986g5                       1/1     Running   0          21m\r\n",
+      "ambassador-5475779f98-zcd28                       1/1     Running   0          21m\r\n",
+      "deep-mnist-single-model-42ed9d9-fdb557d6b-6xv2h   2/2     Running   0          18m\r\n"
+     ]
+    }
+   ],
+   "source": [
+    "!kubectl get pods"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Test the model\n",
+    "Now we can test the model, let's first find out what is the URL that we'll have to use:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 22,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "a68bbac487ca611e988060247f81f4c1-707754258.us-west-2.elb.amazonaws.com"
+     ]
+    }
+   ],
+   "source": [
+    "!kubectl get svc ambassador -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We'll use a random example from our dataset"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 42,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "image/png": "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\n",
+      "text/plain": [
+       "<Figure size 432x288 with 1 Axes>"
+      ]
+     },
+     "metadata": {
+      "needs_background": "light"
+     },
+     "output_type": "display_data"
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Expected label:  7.0 . One hot encoding:  [[0. 0. 0. 0. 0. 0. 0. 1. 0. 0.]]\n"
+     ]
+    }
+   ],
+   "source": [
+    "import matplotlib.pyplot as plt\n",
+    "# This is the variable that was initialised at the beginning of the file\n",
+    "i = [0]\n",
+    "x = mnist.test.images[i]\n",
+    "y = mnist.test.labels[i]\n",
+    "plt.imshow(x.reshape((28, 28)), cmap='gray')\n",
+    "plt.show()\n",
+    "print(\"Expected label: \", np.sum(range(0,10) * y), \". One hot encoding: \", y)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We can now add the URL above to send our request:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 112,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Success:True message:\n",
+      "Request:\n",
+      "data {\n",
+      "  names: \"text\"\n",
+      "  ndarray {\n",
+      "    values {\n",
+      "      list_value {\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.3294117748737335\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.7254902124404907\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.6235294342041016\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.5921568870544434\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.2352941334247589\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.1411764770746231\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.8705883026123047\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9960784912109375\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9960784912109375\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9960784912109375\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9960784912109375\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9450981020927429\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.7764706611633301\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.7764706611633301\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.7764706611633301\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.7764706611633301\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.7764706611633301\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.7764706611633301\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.7764706611633301\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.7764706611633301\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.6666666865348816\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.2039215862751007\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.26274511218070984\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.44705885648727417\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.2823529541492462\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.44705885648727417\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.6392157077789307\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.8901961445808411\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9960784912109375\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.8823530077934265\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9960784912109375\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9960784912109375\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9960784912109375\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9803922176361084\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.8980392813682556\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9960784912109375\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9960784912109375\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.5490196347236633\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.06666667014360428\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.25882354378700256\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.05490196496248245\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.26274511218070984\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.26274511218070984\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.26274511218070984\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.23137256503105164\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.08235294371843338\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9254902601242065\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9960784912109375\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.41568630933761597\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.32549020648002625\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9921569228172302\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.8196079134941101\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.07058823853731155\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.08627451211214066\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9137255549430847\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 1.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.32549020648002625\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.5058823823928833\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9960784912109375\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9333333969116211\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.1725490242242813\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.23137256503105164\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9764706492424011\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9960784912109375\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.24313727021217346\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.5215686559677124\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9960784912109375\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.7333333492279053\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.019607843831181526\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.03529411926865578\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.803921639919281\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9725490808486938\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.22745099663734436\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.4941176772117615\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9960784912109375\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.7137255072593689\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.29411765933036804\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9843137860298157\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9411765336990356\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.22352942824363708\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.07450980693101883\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.8666667342185974\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9960784912109375\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.6509804129600525\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.011764707043766975\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.7960785031318665\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9960784912109375\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.8588235974311829\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.13725490868091583\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.14901961386203766\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9960784912109375\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9960784912109375\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.3019607961177826\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.12156863510608673\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.8784314393997192\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9960784912109375\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.45098042488098145\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.003921568859368563\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.5215686559677124\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9960784912109375\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9960784912109375\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.2039215862751007\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.2392157018184662\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9490196704864502\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9960784912109375\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9960784912109375\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.2039215862751007\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.4745098352432251\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9960784912109375\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9960784912109375\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.8588235974311829\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.1568627506494522\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.4745098352432251\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9960784912109375\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.8117647767066956\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.07058823853731155\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0\n",
+      "        }\n",
+      "      }\n",
+      "    }\n",
+      "  }\n",
+      "}\n",
+      "\n",
+      "Response:\n",
+      "meta {\n",
+      "  puid: \"l6bv1r38mmb32l0hbinln2jjcl\"\n",
+      "  requestPath {\n",
+      "    key: \"classifier\"\n",
+      "    value: \"271049282727.dkr.ecr.us-west-2.amazonaws.com/seldon-repository:latest\"\n",
+      "  }\n",
+      "}\n",
+      "data {\n",
+      "  names: \"class:0\"\n",
+      "  names: \"class:1\"\n",
+      "  names: \"class:2\"\n",
+      "  names: \"class:3\"\n",
+      "  names: \"class:4\"\n",
+      "  names: \"class:5\"\n",
+      "  names: \"class:6\"\n",
+      "  names: \"class:7\"\n",
+      "  names: \"class:8\"\n",
+      "  names: \"class:9\"\n",
+      "  ndarray {\n",
+      "    values {\n",
+      "      list_value {\n",
+      "        values {\n",
+      "          number_value: 6.839015986770391e-05\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 9.376968534979824e-09\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 8.48581112222746e-05\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0034086888190358877\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 2.3978568606253248e-06\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 2.0100669644307345e-05\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 3.0251623428512175e-08\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.9953710436820984\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 2.6070511012221687e-05\n",
+      "        }\n",
+      "        values {\n",
+      "          number_value: 0.0010185304563492537\n",
+      "        }\n",
+      "      }\n",
+      "    }\n",
+      "  }\n",
+      "}\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "from seldon_core.seldon_client import SeldonClient\n",
+    "import math\n",
+    "import numpy as np\n",
+    "\n",
+    "host = \"a68bbac487ca611e988060247f81f4c1-707754258.us-west-2.elb.amazonaws.com\"\n",
+    "port = \"80\" # Make sure you use the port above\n",
+    "batch = x\n",
+    "payload_type = \"ndarray\"\n",
+    "\n",
+    "sc = SeldonClient(\n",
+    "    gateway=\"ambassador\", \n",
+    "    ambassador_endpoint=host + \":\" + port,\n",
+    "    namespace=\"default\",\n",
+    "    oauth_key=\"oauth-key\", \n",
+    "    oauth_secret=\"oauth-secret\")\n",
+    "\n",
+    "client_prediction = sc.predict(\n",
+    "    data=batch, \n",
+    "    deployment_name=\"deep-mnist\",\n",
+    "    names=[\"text\"],\n",
+    "    payload_type=payload_type)\n",
+    "\n",
+    "print(client_prediction)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Let's visualise the probability for each label\n",
+    "It seems that it correctly predicted the number 7"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 117,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "LABEL 0:\t 0.0068 %\n",
+      "LABEL 1:\t 0.0000 %\n",
+      "LABEL 2:\t 0.0085 %\n",
+      "LABEL 3:\t 0.3409 %\n",
+      "LABEL 4:\t 0.0002 %\n",
+      "LABEL 5:\t 0.0020 %\n",
+      "LABEL 6:\t 0.0000 %\n",
+      "LABEL 7:\t 99.5371 %\n",
+      "LABEL 8:\t 0.0026 %\n",
+      "LABEL 9:\t 0.1019 %\n"
+     ]
+    }
+   ],
+   "source": [
+    "for proba, label in zip(client_prediction.response.data.ndarray.values[0].list_value.ListFields()[0][1], range(0,10)):\n",
+    "    print(f\"LABEL {label}:\\t {proba.number_value*100:6.4f} %\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.7.3"
+  },
+  "varInspector": {
+   "cols": {
+    "lenName": 16,
+    "lenType": 16,
+    "lenVar": 40
+   },
+   "kernels_config": {
+    "python": {
+     "delete_cmd_postfix": "",
+     "delete_cmd_prefix": "del ",
+     "library": "var_list.py",
+     "varRefreshCmd": "print(var_dic_list())"
+    },
+    "r": {
+     "delete_cmd_postfix": ") ",
+     "delete_cmd_prefix": "rm(",
+     "library": "var_list.r",
+     "varRefreshCmd": "cat(var_dic_list()) "
+    }
+   },
+   "types_to_exclude": [
+    "module",
+    "function",
+    "builtin_function_or_method",
+    "instance",
+    "_Feature"
+   ],
+   "window_display": false
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
