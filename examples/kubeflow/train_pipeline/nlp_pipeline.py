@@ -1,5 +1,6 @@
 
 import kfp.dsl as dsl
+import yaml
 from kubernetes import client as k8s
 
 
@@ -105,6 +106,15 @@ def nlp_pipeline(
         ],
         pvolumes={"/mnt": vectorize_step.pvolume}
     )
+
+    seldon_config = yaml.load(open("../deploy_pipeline/seldon_production_pipeline.yaml"))
+
+    deploy_step = dsl.ResourceOp(
+        name="seldondeploy",
+        k8s_resource=seldon_config,
+        attribute_outputs={"name": "{.metadata.name}"})
+
+    deploy_step.after(predict_step)
 
 if __name__ == '__main__':
   import kfp.compiler as compiler
