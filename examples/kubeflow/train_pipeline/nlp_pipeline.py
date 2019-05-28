@@ -107,7 +107,11 @@ def nlp_pipeline(
         pvolumes={"/mnt": vectorize_step.pvolume}
     )
 
-    seldon_config = yaml.load(open("../deploy_pipeline/seldon_production_pipeline.yaml"))
+    try:
+        seldon_config = yaml.load(open("../deploy_pipeline/seldon_production_pipeline.yaml"))
+    except:
+        # If this file is run from the project core directory 
+        seldon_config = yaml.load(open("deploy_pipeline/seldon_production_pipeline.yaml"))
 
     deploy_step = dsl.ResourceOp(
         name="seldondeploy",
