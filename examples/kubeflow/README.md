@@ -5,7 +5,7 @@ In this example we showcase how to build re-usable components to build an ML pip
 
 We will automate content moderation on the Reddit comments in /r/science building a machine learning NLP model with the following components:
 
-![](img/completed-pipeline.jpg)
+![](img/completed-pipeline-deploy.jpg)
 
 This tutorial will break down in the following sections:
 
@@ -13,13 +13,11 @@ This tutorial will break down in the following sections:
 
 2) Test and build all our reusable pipeline steps
 
-3) Train our NLP Pipeline with Kubeflow
+3) Use Kubeflow to Train the Pipeline and Deploy to Seldon
 
-4) Deploying your ML Pipeline with Seldon
+5) Test Seldon Deployed ML REST Endpoints
 
-5) Test Deployed ML REST Endpoints
-
-Let's get started! 🚀🔥
+6) Visualise Seldon's Production ML Pipelines
 
 # Before you start
 Make sure you install the following dependencies, as they are critical for this example to work:
@@ -28,9 +26,26 @@ Make sure you install the following dependencies, as they are critical for this 
 * A Kubernetes cluster running v1.13 or above (minkube / docker-for-windows work well if enough RAM)
 * kubectl v1.14+
 * ksonnet v0.13.1+
-* kfctl 0.5.2 - Please use this exact version as there are major changes every few months
+* kfctl 0.5.1 - Please use this exact version as there are major changes every few months
 * Python 3.6+
 * Python DEV requirements (we'll install them below)
+
+Let's get started! 🚀🔥 We will be building the end-to-end pipeline below:
+
+![](img/kubeflow-seldon-nlp-full.jpg)
+
+
+
+```python
+!cat requirements-dev.txt
+```
+
+    python-dateutil
+    https://storage.googleapis.com/ml-pipeline/release/0.1.20/kfp.tar.gz
+    kubernetes
+    click
+    seldon_core
+    numpy
 
 
 
@@ -90,8 +105,8 @@ As you can see, we are running the Seldon Operator in the Kubeflow namespace.
 !helm install seldon-core-operator --namespace kubeflow --repo https://storage.googleapis.com/seldon-charts
 ```
 
-    NAME:   aspiring-chinchilla
-    LAST DEPLOYED: Mon May 27 16:15:38 2019
+    NAME:   old-mastiff
+    LAST DEPLOYED: Tue May 28 11:47:35 2019
     NAMESPACE: kubeflow
     STATUS: DEPLOYED
     
@@ -113,8 +128,8 @@ As you can see, we are running the Seldon Operator in the Kubeflow namespace.
     seldon-operator-webhook-server-secret  Opaque  0     0s
     
     ==> v1/Service
-    NAME                                        TYPE       CLUSTER-IP      EXTERNAL-IP  PORT(S)  AGE
-    seldon-operator-controller-manager-service  ClusterIP  10.108.159.109  <none>       443/TCP  0s
+    NAME                                        TYPE       CLUSTER-IP     EXTERNAL-IP  PORT(S)  AGE
+    seldon-operator-controller-manager-service  ClusterIP  10.101.228.36  <none>       443/TCP  0s
     
     ==> v1/StatefulSet
     NAME                                READY  AGE
@@ -138,7 +153,7 @@ Check all the Seldon Deployment is running
 !kubectl get pod -n kubeflow | grep seldon
 ```
 
-    seldon-operator-controller-manager-0                       1/1     Running   0          15s
+    seldon-operator-controller-manager-0                       1/1     Running   1          6s
 
 
 ### Temporary fix for Argo image
@@ -180,10 +195,11 @@ We will start by building each of the components in our ML pipeline.
 
 
 ```python
-!ls pipeline/pipeline_steps/clean_text/
+!ls pipeline/pipeline_steps
 ```
 
-    Transformer.py	__init__.py  build_image.sh  pipeline_step.py  requirements.txt
+    clean_text	 lr_text_classifier  tfidf_vectorizer
+    data_downloader  spacy_tokenize
 
 
 Like in this step, all of the other steps can be found in the `pipeline/pipeline_steps/` folder, and all have the following structure:
@@ -193,6 +209,7 @@ Like in this step, all of the other steps can be found in the `pipeline/pipeline
 * `build_image.sh` which uses `s2i` to build the image with one line
 
 ### Let's check out the CLI for clean_text
+The pipeline_step CLI is the entry point for the kubeflow image as it will be able to pass any relevant parameters
 
 
 
@@ -239,6 +256,60 @@ This is actually a very simple file, as we are using the click library to define
     
     if __name__ == "__main__":
         run_pipeline()
+    
+
+
+The Transformer is where the data munging and transformation stage comes in, which will be wrapped by the container and exposed through the Seldon Engine to ensure our pipeline can be used in production.
+
+Seldon provides multiple different features, such as abilities to send custom metrics, pre-process / post-process data and more. In this example we will only be exposing the `predict` step.
+
+
+```python
+!cat pipeline/pipeline_steps/clean_text/Transformer.py
+```
+
+    import re 
+    from html.parser import HTMLParser
+    import numpy as np
+    import logging
+    
+    class Transformer():
+        __html_parser = HTMLParser()
+        __uplus_pattern = \
+            re.compile("\<[uU]\+(?P<digit>[a-zA-Z0-9]+)\>")
+        __markup_link_pattern = \
+            re.compile("\[(.*)\]\((.*)\)")
+    
+        def predict(self, X, feature_names=[]):
+            logging.warning(X)
+            f = np.vectorize(Transformer.transform_clean_text)
+            X_clean = f(X)
+            logging.warning(X_clean)
+            return X_clean
+    
+        def fit(self, X, y=None, **fit_params):
+            return self
+        
+        @staticmethod
+        def transform_clean_text(raw_text):
+            try:
+                decoded = raw_text.encode("ISO-8859-1").decode("utf-8")
+            except:
+                decoded = raw_text.encode("ISO-8859-1").decode("cp1252")
+            html_unescaped =Transformer.\
+                __html_parser.unescape(decoded) 
+            html_unescaped = re.sub(r"\r\n", " ", html_unescaped)
+            html_unescaped = re.sub(r"\r\r\n", " ", html_unescaped)
+            html_unescaped = re.sub(r"\r", " ", html_unescaped)
+            html_unescaped = html_unescaped.replace("&gt;", " > ")
+            html_unescaped = html_unescaped.replace("&lt;", " < ")
+            html_unescaped = html_unescaped.replace("--", " - ")
+            html_unescaped = Transformer.__uplus_pattern.sub(
+                " U\g<digit> ", html_unescaped)
+            html_unescaped = Transformer.__markup_link_pattern.sub(
+                " \1 \2 ", html_unescaped)
+            html_unescaped = html_unescaped.replace("\\", "")
+            return html_unescaped
     
 
 
@@ -317,7 +388,7 @@ If you can't edit this, you need to make sure that the ambassador gateway servic
 ```
 
     NAME         TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
-    ambassador   NodePort   10.108.204.59   <none>        80:31357/TCP   7m8s
+    ambassador   NodePort   10.97.236.196   <none>        80:30209/TCP   8m58s
 
 
 In my case, I need to change the kind from `NodePort` into `LoadBalancer` which can be done with the following command:
@@ -340,138 +411,159 @@ Now that I've changed it to a loadbalancer, it has allocated the external IP as 
 ```
 
     NAME         TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
-    ambassador   LoadBalancer   10.108.204.59   localhost     80:31357/TCP   7m36s
+    ambassador   LoadBalancer   10.97.236.196   localhost     80:30209/TCP   9m20s
 
 
 If this was successfull, you should be able to access the dashboard
 ![](img/k-pipeline-dashboard.jpg)
 
+### Define the pipeline
+Now we want to generate the pipeline. For this we can use the DSL provided by kubeflow to define the actual steps required. 
 
-```bash
-%%bash
-# Generating graph definition
-python train_pipeline/nlp_pipeline.py
-ls train_pipeline/
-```
-
-    nlp_pipeline.py
-    nlp_pipeline.py.tar.gz
-
-
-Now that we've built our steps, we can actually train our ML pipeline, which looks as follows:
-![](img/kubeflow-seldon-nlp-ml-pipelines-training.jpg)
-
-### Run the pipeline
-
-We now need to upload the resulting `nlp_pipeline.py.tar.gz` file generated.
-
-This can be done through the "Upload PIpeline" button in the UI at http://localhost/_/pipeline-dashboard.
-
-Once it's uploaded, we want to create and trigger a run! You should now be able to see how each step is executed:
-
-![](img/running-pipeline.jpg)
-
-### Inspecting the data created in the Persistent Volume
-The pipeline saves the output of the pipeline together with the trained model in the persistent volume claim.
-
-The persistent volume claim is the same name as the argo workflow:
-
-
-
-```python
-!kubectl get workflow -n kubeflow
-```
-
-    NAME        AGE
-    nlp-jvfdd   1m
-
-
-Our workflow is there! So we can actually access it by running
-
-
-```python
-!kubectl get workflow -n kubeflow -o jsonpath='{.items[0].metadata.name}'
-```
-
-    nlp-jvfdd
-
-And we can use good old `sed` to insert this workflow name in our PVC-Access controler which we can use to inspect the contents of the volume:
-
-
-```python
-!sed "s/PVC_NAME/"$(kubectl get workflow -n kubeflow -o jsonpath='{.items[0].metadata.name}')"-my-pvc/g" deploy_pipeline/pvc-access.yaml
-```
-
-    apiVersion: v1
-    kind: Pod
-    metadata:
-      name: pvc-access-container
-    spec:
-      containers:
-      - name: pvc-access-container
-        image: busybox
-        command: ["/bin/sh", "-ec", "sleep 1000"]
-        volumeMounts:
-        - name: mypvc
-          mountPath: /mnt
-      volumes:
-      - name: mypvc
-        persistentVolumeClaim:
-          claimName: nlp-jvfdd-my-pvc
-
-
-We just need to apply this container with our kubectl command, and we can use it to inspect the mounted folder:
-
-
-```python
-!sed "s/PVC_NAME/"$(kubectl get workflow -n kubeflow -o jsonpath='{.items[0].metadata.name}')"-my-pvc/g" deploy_pipeline/pvc-access.yaml | kubectl -n kubeflow apply -f -
-```
-
-    pod/pvc-access-container created
-
-
-
-```python
-!kubectl get pods -n kubeflow pvc-access-container
-```
-
-    NAME                   READY   STATUS    RESTARTS   AGE
-    pvc-access-container   1/1     Running   0          6s
-
-
-
-```python
-!kubectl -n kubeflow exec -it pvc-access-container ls /mnt
-```
-
-    [1;32mclean.data[m       [1;32mlr.model[m         [1;32mtext.data[m        [1;32mtfidf.model[m
-    [1;32mlabels.data[m      [1;32mprediction.data[m  [1;32mtfidf.data[m       [1;32mtokens.data[m
-
-
-
-```python
-!kubectl delete -f deploy_pipeline/pvc-access.yaml -n kubeflow
-```
-
-    pod "pvc-access-container" deleted
-
-
-## 4) Deploying your ML Pipeline with Seldon
-Now that we have trained our ML pipeline, it's time to deploy it at scale!
-
-For this we will just need to create a simple Graph definition using the SeldonDeploy Kubernetes Custom Resource Definition.
-
-Adding the Seldon deployment will make our architecture look as follows:
+The pipeline will look as follows:
 
 ![](img/kubeflow-seldon-nlp-ml-pipelines.jpg)
 
-### Seldon Production pipeline contents
-If we look at the file we'll be using to deploy our pipeline, we can see that it has the following key points:
 
-1) Reusable components definitions as containerSpecs: cleantext, spacytokenizer, tfidfvectorizer & lrclassifier
+```python
+!cat train_pipeline/nlp_pipeline.py
+```
 
-2) DAG (directed acyclic graph) definition for REST pipeline: cleantext -> spacytokenizer -> tfidfvectorizer -> lrclassifier
+    
+    import kfp.dsl as dsl
+    import yaml
+    from kubernetes import client as k8s
+    
+    
+    @dsl.pipeline(
+      name='NLP',
+      description='A pipeline demonstrating reproducible steps for NLP'
+    )
+    def nlp_pipeline(
+            csv_url="https://raw.githubusercontent.com/axsauze/reddit-classification-exploration/master/data/reddit_train.csv",
+            csv_encoding="ISO-8859-1",
+            features_column="BODY",
+            labels_column="REMOVED",
+            raw_text_path='/mnt/text.data',
+            labels_path='/mnt/labels.data',
+            clean_text_path='/mnt/clean.data',
+            spacy_tokens_path='/mnt/tokens.data',
+            tfidf_vectors_path='/mnt/tfidf.data',
+            lr_prediction_path='/mnt/prediction.data',
+            tfidf_model_path='/mnt/tfidf.model',
+            lr_model_path='/mnt/lr.model',
+            lr_c_param=0.1,
+            tfidf_max_features=10000,
+            tfidf_ngram_range=3,
+            batch_size='100'):
+        """
+        Pipeline 
+        """
+        vop = dsl.VolumeOp(
+          name='my-pvc',
+          resource_name="my-pvc",
+          modes=["ReadWriteMany"],
+          size="1Gi"
+        )
+    
+        download_step = dsl.ContainerOp(
+            name='data_downloader',
+            image='data_downloader:0.1',
+            command="python",
+            arguments=[
+                "/microservice/pipeline_step.py",
+                "--labels-path", labels_path,
+                "--features-path", raw_text_path,
+                "--csv-url", csv_url,
+                "--csv-encoding", csv_encoding,
+                "--features-column", features_column,
+                "--labels-column", labels_column
+            ],
+            pvolumes={"/mnt": vop.volume}
+        )
+    
+        clean_step = dsl.ContainerOp(
+            name='clean_text',
+            image='clean_text_transformer:0.1',
+            command="python",
+            arguments=[
+                "/microservice/pipeline_step.py",
+                "--in-path", raw_text_path,
+                "--out-path", clean_text_path,
+            ],
+            pvolumes={"/mnt": download_step.pvolume}
+        )
+    
+        tokenize_step = dsl.ContainerOp(
+            name='tokenize',
+            image='spacy_tokenizer:0.1',
+            command="python",
+            arguments=[
+                "/microservice/pipeline_step.py",
+                "--in-path", clean_text_path,
+                "--out-path", spacy_tokens_path,
+            ],
+            pvolumes={"/mnt": clean_step.pvolume}
+        )
+    
+        vectorize_step = dsl.ContainerOp(
+            name='vectorize',
+            image='tfidf_vectorizer:0.1',
+            command="python",
+            arguments=[
+                "/microservice/pipeline_step.py",
+                "--in-path", spacy_tokens_path,
+                "--out-path", tfidf_vectors_path,
+                "--max-features", tfidf_max_features,
+                "--ngram-range", tfidf_ngram_range,
+                "--action", "train",
+                "--model-path", tfidf_model_path,
+            ],
+            pvolumes={"/mnt": tokenize_step.pvolume}
+        )
+    
+        predict_step = dsl.ContainerOp(
+            name='predictor',
+            image='lr_text_classifier:0.1',
+            command="python",
+            arguments=[
+                "/microservice/pipeline_step.py",
+                "--in-path", tfidf_vectors_path,
+                "--labels-path", labels_path,
+                "--out-path", lr_prediction_path,
+                "--c-param", lr_c_param,
+                "--action", "train",
+                "--model-path", lr_model_path,
+            ],
+            pvolumes={"/mnt": vectorize_step.pvolume}
+        )
+    
+        try:
+            seldon_config = yaml.load(open("../deploy_pipeline/seldon_production_pipeline.yaml"))
+        except:
+            # If this file is run from the project core directory 
+            seldon_config = yaml.load(open("deploy_pipeline/seldon_production_pipeline.yaml"))
+    
+        deploy_step = dsl.ResourceOp(
+            name="seldondeploy",
+            k8s_resource=seldon_config,
+            attribute_outputs={"name": "{.metadata.name}"})
+    
+        deploy_step.after(predict_step)
+    
+    if __name__ == '__main__':
+      import kfp.compiler as compiler
+      compiler.Compiler().compile(nlp_pipeline, __file__ + '.tar.gz')
 
+
+### Breaking down the  code
+As you can see in the DSL, we have the ContainerOp - each of those is a step in the Kubeflow pipeline.
+
+At the end we can see the `seldondeploy` step which basically deploys the trained pipeline
+
+The definition of the SeldonDeployment graph is provided in the `deploy_pipeline/seldon_production_pipeline.yaml` file.
+
+The seldondeployment file defines our production execution graph using the same reusable components.
 
 
 ```python
@@ -484,13 +576,13 @@ If we look at the file we'll be using to deploy our pipeline, we can see that it
     metadata:
       labels:
         app: seldon
-      name: nlp-classifier
+      name: "seldon-deployment-{{workflow.name}}"
       namespace: kubeflow
     spec:
       annotations:
         project_name: NLP Pipeline
         deployment_version: v1
-      name: nlp-classifier
+      name: "seldon-deployment-{{workflow.name}}"
       oauth_key: oauth-key
       oauth_secret: oauth-secret
       predictors:
@@ -522,7 +614,7 @@ If we look at the file we'll be using to deploy our pipeline, we can see that it
             volumes:
             - name: mypvc
               persistentVolumeClaim:
-                claimName: PVC_NAME
+                claimName: "{{workflow.name}}-my-pvc"
         graph:
           children:
           - name: spacytokenizer
@@ -551,46 +643,155 @@ If we look at the file we'll be using to deploy our pipeline, we can see that it
     
 
 
-This is the exact same structure as the Kubeflow definition, and can be deployed using kubectl
+### Seldon Production pipeline contents
+If we look at the file we'll be using to deploy our pipeline, we can see that it has the following key points:
 
-Once again, we want to make sure we replace the "PVC_NAME" variable with the workflow ID to attach the container to the Seldon pipeline
+1) Reusable components definitions as containerSpecs: cleantext, spacytokenizer, tfidfvectorizer & lrclassifier
+
+2) DAG (directed acyclic graph) definition for REST pipeline: cleantext -> spacytokenizer -> tfidfvectorizer -> lrclassifier
+
+This graph in our production deployment looks as follows:
+
+![](img/kubeflow-seldon-nlp-ml-pipelines-deploy.jpg)
+
+### Generate the pipeline files to upload to Kubeflow
+To generate the pipeline we just have to run the pipeline file, which will output the `tar.gz` file that will be uploaded.
+
+
+```bash
+%%bash
+# Generating graph definition
+python train_pipeline/nlp_pipeline.py
+ls train_pipeline/
+```
+
+    nlp_pipeline.py
+    nlp_pipeline.py.tar.gz
+
+
+
+### Run the pipeline
+
+We now need to upload the resulting `nlp_pipeline.py.tar.gz` file generated.
+
+This can be done through the "Upload PIpeline" button in the UI at http://localhost/_/pipeline-dashboard.
+
+Once it's uploaded, we want to create and trigger a run! You should now be able to see how each step is executed:
+
+![](img/running-pipeline.jpg)
+
+### Inspecting the data created in the Persistent Volume
+The pipeline saves the output of the pipeline together with the trained model in the persistent volume claim.
+
+The persistent volume claim is the same name as the argo workflow:
 
 
 
 ```python
-!sed "s/PVC_NAME/"$(kubectl get workflow -n kubeflow -o jsonpath='{.items[0].metadata.name}')"-my-pvc/g" deploy_pipeline/seldon_production_pipeline.yaml | kubectl -n kubeflow apply -f -
+!kubectl get workflow -n kubeflow
 ```
 
-    seldondeployment.machinelearning.seldon.io/nlp-classifier created
+    NAME        AGE
+    nlp-bddff   2m
 
 
-We now make sure that the Seldon Engine with the 4 reusable components are running:
+Our workflow is there! So we can actually access it by running
+
+
+```python
+!kubectl get workflow -n kubeflow -o jsonpath='{.items[0].metadata.name}'
+```
+
+    nlp-bddff
+
+And we can use good old `sed` to insert this workflow name in our PVC-Access controler which we can use to inspect the contents of the volume:
+
+
+```python
+!sed "s/PVC_NAME/"$(kubectl get workflow -n kubeflow -o jsonpath='{.items[0].metadata.name}')"-my-pvc/g" deploy_pipeline/pvc-access.yaml 
+```
+
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: pvc-access-container
+    spec:
+      containers:
+      - name: pvc-access-container
+        image: busybox
+        command: ["/bin/sh", "-ec", "sleep 1000"]
+        volumeMounts:
+        - name: mypvc
+          mountPath: /mnt
+      volumes:
+      - name: mypvc
+        persistentVolumeClaim:
+          claimName: nlp-b7qt8-my-pvc
+
+
+We just need to apply this container with our kubectl command, and we can use it to inspect the mounted folder:
+
+
+```python
+!sed "s/PVC_NAME/"$(kubectl get workflow -n kubeflow -o jsonpath='{.items[0].metadata.name}')"-my-pvc/g" deploy_pipeline/pvc-access.yaml | kubectl -n kubeflow apply -f -
+```
+
+    pod/pvc-access-container created
 
 
 
 ```python
-!kubectl -n kubeflow get pods | grep nlp-classifier
+!kubectl get pods -n kubeflow pvc-access-container
 ```
 
-    nlp-classifier-single-model-51fb0cb-6cf49fdd7d-txlc8       5/5     Running     0          27s
+    NAME                   READY   STATUS    RESTARTS   AGE
+    pvc-access-container   1/1     Running   0          6s
 
 
-We can also find this with the SeldonDeployment custom resource definition
+Now we can run an `ls` command to see what's inside:
 
+
+```python
+!kubectl -n kubeflow exec -it pvc-access-container ls /mnt
+```
+
+    [1;32mclean.data[m       [1;32mlr.model[m         [1;32mtext.data[m        [1;32mtfidf.model[m
+    [1;32mlabels.data[m      [1;32mprediction.data[m  [1;32mtfidf.data[m       [1;32mtokens.data[m
+
+
+
+```python
+!kubectl delete -f deploy_pipeline/pvc-access.yaml -n kubeflow
+```
+
+    pod "pvc-access-container" deleted
+
+
+## 5) Test Deployed ML REST Endpoints
+Now that it's running we have a production ML text pipeline that we can Query using REST and GRPC
+
+
+First we can check if our Seldon deployment is running with
 
 
 ```python
 !kubectl -n kubeflow get seldondeployment 
 ```
 
-    NAME             AGE
-    nlp-classifier   40s
+    NAME                          AGE
+    seldon-deployment-nlp-b7qt8   57m
 
 
-## 5) Test Deployed ML REST Endpoints
-Now that it's running we have a production ML text pipeline that we can Query using REST and GRPC
+We will need the Seldon Pipeline Deployment name to reach the API, so we can get it using:
 
-We can interact with our API in two ways: 
+
+```python
+!kubectl -n kubeflow get seldondeployment -o jsonpath='{.items[0].metadata.name}'
+```
+
+    seldon-deployment-nlp-b7qt8
+
+Now we can interact with our API in two ways: 
 
 1) Using CURL or any client like PostMan
 
@@ -604,19 +805,16 @@ http://<ENDPOINT>/seldon/kubeflow/<PIPELINE_NAME>/api/v0.1/predictions
 ```
 
 
-
-
 ```bash
 %%bash
-#!curl -H \"Content-Type: application/x-www-form-urlencoded\" -g localhost/seldon/kubeflow/nlp-classifier/api/v0.1/predictions -d 'json={\"data\":{\"ndarray\":[[\"Hello this is some text to test\"]]}}'
 curl -X POST -H 'Content-Type: application/json' \
     -d "{'data': {'names': ['text'], 'ndarray': ['Hello world this is a test']}}" \
-    http://127.0.0.1/seldon/kubeflow/nlp-classifier/api/v0.1/predictions
+    http://127.0.0.1/seldon/kubeflow/$(kubectl -n kubeflow get seldondeployment -o jsonpath='{.items[0].metadata.name}')/api/v0.1/predictions
 ```
 
     {
       "meta": {
-        "puid": "9f7cnfoj2cdk1e052l428s3f7i",
+        "puid": "k89krp6t7tfgb386nt6vc3iftk",
         "tags": {
         },
         "routing": {
@@ -634,13 +832,13 @@ curl -X POST -H 'Content-Type: application/json' \
       },
       "data": {
         "names": ["t:0", "t:1"],
-        "ndarray": [[0.6729294030193711, 0.3270705969806289]]
+        "ndarray": [[0.6729318752883149, 0.3270681247116851]]
       }
     }
 
       % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                      Dload  Upload   Total   Spent    Left  Speed
-    100   599  100   527  100    72    918    125 --:--:-- --:--:-- --:--:--  1043
+    100   599  100   527  100    72    516     70  0:00:01  0:00:01 --:--:--   588
 
 
 ### Using the SeldonClient
@@ -650,12 +848,14 @@ We can also use the Python SeldonClient to interact with the pipeline we just de
 ```python
 from seldon_core.seldon_client import SeldonClient
 import numpy as np
+import subprocess
 
 host = "localhost"
 port = "80" # Make sure you use the port above
 batch = np.array(["Hello world this is a test"])
 payload_type = "ndarray"
-deployment_name="nlp-classifier"
+# Get the deployment name
+deployment_name = subprocess.getoutput("kubectl -n kubeflow get seldondeployment -o jsonpath='{.items[0].metadata.name}'")
 transport="rest"
 namespace="kubeflow"
 
@@ -687,7 +887,7 @@ print(client_prediction)
     
     Response:
     meta {
-      puid: "5ppdl2ff869fnn6l0n59qspck7"
+      puid: "qtdca40d3s0463nn4ginhkvc6t"
       routing {
         key: "cleantext"
         value: -1
@@ -724,10 +924,10 @@ print(client_prediction)
         values {
           list_value {
             values {
-              number_value: 0.6729294030193711
+              number_value: 0.6729318752883149
             }
             values {
-              number_value: 0.3270705969806289
+              number_value: 0.3270681247116851
             }
           }
         }
@@ -736,4 +936,54 @@ print(client_prediction)
     
 
 
+## 6) Visualise Seldon's Production ML Pipelines
+We can visualise the performance using the SeldonAnalytics package, which we can deploy using:
+
+
+```python
+!helm install seldon-core-analytics --repo https://storage.googleapis.com/seldon-charts --namespace kubeflow
+```
+
+In my case, similar to what I did with Ambassador, I need to make sure the the service is a LoadBalancer instead of a NodePort
+
+
+```python
+!kubectl patch svc grafana-prom --type='json' -p '[{"op":"replace","path":"/spec/type","value":"LoadBalancer"}]' -n kubeflow
+```
+
+    service/grafana-prom patched
+
+
+
+```python
+!kubectl get svc grafana-prom -n kubeflow
+```
+
+    NAME           TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+    grafana-prom   LoadBalancer   10.98.248.223   localhost     80:32445/TCP   64m
+
+
+Now we can access it at the port provided, in my case it is http://localhost:32445/d/3swM2iGWz/prediction-analytics?refresh=5s&orgId=1
+
+(initial username is admin and password is password, which will be requested to be changed on the first login)
+
+Generate a bunch of requests and visualise:
+
+
+```python
+while True:
+    client_prediction = sc.predict(
+        data=batch, 
+        deployment_name=deployment_name,
+        names=["text"],
+        payload_type=payload_type,
+        transport="rest")
+```
+
 ## You now have a full end-to-end training and production NLP pipeline 😎 
+![](img/seldon-analytics.jpg)
+
+
+```python
+
+```
