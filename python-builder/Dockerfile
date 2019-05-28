@@ -26,6 +26,7 @@ RUN pip install grpcio
 RUN pip install grpcio-tools
 RUN pip install flatbuffers
 RUN pip install twine
+RUN pip install mypy-protobuf
 
 WORKDIR /work
 
