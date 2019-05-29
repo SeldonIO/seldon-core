@@ -34,7 +34,7 @@ We presently support two API Ingress Gateways
 We suggest you install [the official helm chart](https://github.com/helm/charts/tree/master/stable/ambassador). At present we recommend 0.40.2 version due to issues with grpc in the latest.
 
 ```
-helm install stable/ambassador --name ambassador --set image.tag=0.40.2
+helm install stable/ambassador --name ambassador --set crds.keep=false
 ```
 
 ### Install Seldon OAuth Gateway

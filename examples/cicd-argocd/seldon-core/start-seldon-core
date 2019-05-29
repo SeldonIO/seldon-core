@@ -21,5 +21,5 @@ helm install --kube-context="${KUBE_CONTEXT}" ${SELDON_CORE_DIR}/helm-charts/sel
      --namespace default
 helm install --kube-context="${KUBE_CONTEXT}" stable/ambassador \
      --name ambassador \
-     --set image.tag=0.40.2 \
+     \
      --namespace default
