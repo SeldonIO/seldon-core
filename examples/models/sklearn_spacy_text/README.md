@@ -680,7 +680,7 @@ In order for us to be able to reach the model, we will need to set up an ingress
 
 
 ```python
-!helm install stable/ambassador --name ambassador
+!helm install stable/ambassador --name ambassador --set crds.keep=false
 ```
 
     NAME:   ambassador
