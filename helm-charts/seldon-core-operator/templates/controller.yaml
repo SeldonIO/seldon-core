@@ -199,8 +199,10 @@ spec:
           value: {{ .Values.engine.image.pullPolicy }}
         - name: ENGINE_CONTAINER_SERVICE_ACCOUNT_NAME
           value: {{ .Values.engine.serviceAccount.name }}
+        {{- if .Values.engine.securityContext.enabled }}
         - name: ENGINE_CONTAINER_USER
           value: '{{ .Values.engine.user }}'
+        {{- end }}
         - name: PREDICTIVE_UNIT_SERVICE_PORT
           value: '{{ .Values.predictiveUnit.port }}'
         - name: ENGINE_SERVER_GRPC_PORT
