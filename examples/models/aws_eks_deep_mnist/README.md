@@ -467,7 +467,7 @@ In EKS it automatically creates an Elastic Load Balancer, which you can configur
 
 
 ```python
-!helm install stable/ambassador --name ambassador
+!helm install stable/ambassador --name ambassador --set crds.keep=false
 ```
 
     NAME:   ambassador
