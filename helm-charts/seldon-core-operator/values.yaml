@@ -21,7 +21,7 @@ engine:
   user: 8888
 image:
   pullPolicy: IfNotPresent
-  repository: ryandawsonuk/seldon-core-operator
+  repository: seldonio/seldon-core-operator
   tag: 0.2.8-SNAPSHOT
 predictiveUnit:
   port: 9000
