@@ -16,6 +16,8 @@ engine:
     path: prometheus
   serviceAccount:
     name: default
+  securityContext:
+    enabled: true
   user: 8888
 image:
   pullPolicy: IfNotPresent
