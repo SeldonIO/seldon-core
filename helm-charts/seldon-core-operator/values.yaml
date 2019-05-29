@@ -16,10 +16,12 @@ engine:
     path: prometheus
   serviceAccount:
     name: default
+  securityContext:
+    enabled: true
   user: 8888
 image:
   pullPolicy: IfNotPresent
-  repository: seldonio/seldon-core-operator
+  repository: ryandawsonuk/seldon-core-operator
   tag: 0.2.8-SNAPSHOT
 predictiveUnit:
   port: 9000
