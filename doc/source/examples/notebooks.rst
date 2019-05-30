@@ -19,6 +19,7 @@ Notebooks
    Istio Canary <istio_canary>
    Jaeger Tracing <tmpl_model_tracing>
    Keras MNIST <keras_mnist>
+   Kubeflow Seldon E2E Pipeline <kubeflow_seldon_e2e_pipeline>
    Max gRPC Message Size <max_grpc_msg_size>
    Model with Custom Metrics <tmpl_model_with_metrics>
    MLFlow <mlflow>
