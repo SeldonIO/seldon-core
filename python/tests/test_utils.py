@@ -7,6 +7,7 @@ import base64
 from seldon_core.proto import prediction_pb2
 from seldon_core.flask_utils import SeldonMicroserviceException
 import seldon_core.utils as scu
+from google.protobuf.struct_pb2 import Value
 
 
 class UserObject(object):
@@ -90,6 +91,18 @@ def test_create_response_strdata():
     assert len(sm.strData) > 0
 
 
+def test_create_response_jsondata():
+    user_model = UserObject()
+    request_data = np.array([[5, 6, 7]])
+    datadef = scu.array_to_grpc_datadef("ndarray", request_data)
+    request = prediction_pb2.SeldonMessage(data=datadef)
+    raw_response = {"output": "data"}
+    sm = scu.construct_response(user_model, True, request, raw_response)
+    assert sm.data.WhichOneof("data_oneof") == None
+    emptyValue = Value()
+    assert sm.jsonData != emptyValue
+
+
 def test_create_reponse_list():
     user_model = UserObject()
     request_data = np.array([[5, 6, 7]])
@@ -159,6 +172,16 @@ def test_json_to_seldon_message_str_data():
     (arr, meta, datadef, _) = scu.extract_request_parts(requestProto)
     assert not isinstance(arr, np.ndarray)
     assert arr == "my string data"
+
+
+def test_json_to_seldon_message_json_data():
+    data = {"jsonData": {"some": "value"}}
+    requestProto = scu.json_to_seldon_message(data)
+    assert len(requestProto.data.tensor.values) == 0
+    assert requestProto.WhichOneof("data_oneof") == "jsonData"
+    (json_data, meta, datadef, _) = scu.extract_request_parts(requestProto)
+    assert not isinstance(json_data, np.ndarray)
+    assert json_data == {"some": "value"}
 
 
 def test_json_to_seldon_message_bad_data():
