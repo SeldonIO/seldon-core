@@ -1,7 +1,7 @@
 SHELL:=/bin/bash
 
 DOCKER_IMAGE_NAME=seldonio/locust-core
-DOCKER_IMAGE_VERSION=0.7
+DOCKER_IMAGE_VERSION=0.8
 
 build_proto:
 	cp ../../proto/prediction.proto scripts/proto

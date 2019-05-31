@@ -87,7 +87,7 @@ class SeldonClient(object):
                  deployment_name: str = None,
                  payload_type: str = "tensor", oauth_key: str = None, oauth_secret: str = None,
                  seldon_rest_endpoint: str = "localhost:8002", seldon_grpc_endpoint: str = "localhost:8004",
-                 ambassador_endpoint: str = "localhost:8003", microservice_endpoint: str = "localhost:5000",
+                 gateway_endpoint: str = "localhost:8003", microservice_endpoint: str = "localhost:5000",
                  grpc_max_send_message_length: int = 4 * 1024 * 1024,
                  grpc_max_receive_message_length: int = 4 * 1024 * 1024):
         """
@@ -95,7 +95,7 @@ class SeldonClient(object):
         Parameters
         ----------
         gateway
-           API Gateway - either ambassador or seldon
+           API Gateway - either ambassador, istio or seldon
         transport
            API transport - grpc or rest
         namespace
@@ -112,8 +112,8 @@ class SeldonClient(object):
            REST endpoint to seldon api server
         seldon_grpc_endpoint
            gRPC endpoint to seldon api server
-        ambassador_endpoint
-           Ambassador endpoint
+        gateway_endpoint
+           Gateway endpoint
         microservice_endpoint
            Running microservice endpoint
         grpc_max_send_message_length
@@ -152,8 +152,8 @@ class SeldonClient(object):
         -------
 
         """
-        if not (gateway == "ambassador" or gateway == "seldon"):
-            raise SeldonClientException("Valid values for gateway are 'ambassador' or 'seldon'")
+        if not (gateway == "ambassador" or gateway == "seldon" or gateway == "istio"):
+            raise SeldonClientException("Valid values for gateway are 'ambassador', 'istio', or 'seldon'")
         if not (transport == "rest" or transport == "grpc"):
             raise SeldonClientException("Valid values for transport are 'rest' or 'grpc'")
         if not (method == "predict" or method == "route" or method == "aggregate" or method == "transform-input" or
@@ -166,16 +166,16 @@ class SeldonClient(object):
     def predict(self, gateway: str = None, transport: str = None, deployment_name: str = None,
                 payload_type: str = None, oauth_key: str = None, oauth_secret: str = None,
                 seldon_rest_endpoint: str = None, seldon_grpc_endpoint: str = None,
-                ambassador_endpoint: str = None, microservice_endpoint: str = None,
+                gateway_endpoint: str = None, microservice_endpoint: str = None,
                 method: str = None, shape: Tuple = (1, 1), namespace: str = None, data: np.ndarray = None,
                 bin_data: Union[bytes, bytearray] = None, str_data: str = None, names: Iterable[str] = None,
-                ambassador_prefix: str = None, headers: Dict = None) -> SeldonClientPrediction:
+                gateway_prefix: str = None, headers: Dict = None) -> SeldonClientPrediction:
         """
 
         Parameters
         ----------
         gateway
-           API Gateway - either ambassador or seldon
+           API Gateway - either ambassador, istio or seldon
         transport
            API transport - grpc or rest
         namespace
@@ -192,8 +192,8 @@ class SeldonClient(object):
            REST endpoint to seldon api server
         seldon_grpc_endpoint
            gRPC endpoint to seldon api server
-        ambassador_endpoint
-           Ambassador endpoint
+        gateway_endpoint
+           Gateway endpoint
         microservice_endpoint
            Running microservice endpoint
         grpc_max_send_message_length
@@ -208,8 +208,8 @@ class SeldonClient(object):
            String payload to send - will override data
         names
            Column names
-        ambassador_prefix
-           prefix path for Ambassador URL endpoint
+        gateway_prefix
+           prefix path for gateway URL endpoint
         headers
            Headers to add to request
 
@@ -220,17 +220,17 @@ class SeldonClient(object):
         k = self._gather_args(gateway=gateway, transport=transport, deployment_name=deployment_name,
                               payload_type=payload_type, oauth_key=oauth_key,
                               oauth_secret=oauth_secret, seldon_rest_endpoint=seldon_rest_endpoint,
-                              seldon_grpc_endpoint=seldon_grpc_endpoint, ambassador_endpoint=ambassador_endpoint,
+                              seldon_grpc_endpoint=seldon_grpc_endpoint, gateway_endpoint=gateway_endpoint,
                               microservice_endpoint=microservice_endpoint, method=method, shape=shape,
                               namespace=namespace, names=names,
                               data=data, bin_data=bin_data, str_data=str_data,
-                              ambassador_prefix=ambassador_prefix, headers=headers)
+                              gateway_prefix=gateway_prefix, headers=headers)
         self._validate_args(**k)
-        if k["gateway"] == "ambassador":
+        if k["gateway"] == "ambassador" or k["gateway"] == "istio":
             if k["transport"] == "rest":
-                return rest_predict_ambassador(**k)
+                return rest_predict_gateway(**k)
             elif k["transport"] == "grpc":
-                return grpc_predict_ambassador(**k)
+                return grpc_predict_gateway(**k)
             else:
                 raise SeldonClientException("Unknown transport " + k["transport"])
         elif k["gateway"] == "seldon":
@@ -248,9 +248,9 @@ class SeldonClient(object):
                  gateway: str = None, transport: str = None, deployment_name: str = None,
                  payload_type: str = None, oauth_key: str = None, oauth_secret: str = None,
                  seldon_rest_endpoint: str = None, seldon_grpc_endpoint: str = None,
-                 ambassador_endpoint: str = None, microservice_endpoint: str = None,
+                 gateway_endpoint: str = None, microservice_endpoint: str = None,
                  method: str = None, shape: Tuple = (1, 1), namespace: str = None,
-                 ambassador_prefix: str = None) -> SeldonClientFeedback:
+                 gateway_prefix: str = None) -> SeldonClientFeedback:
         """
 
         Parameters
@@ -262,7 +262,7 @@ class SeldonClient(object):
         reward
            A reward to send in feedback
         gateway
-           API Gateway - either ambassador or seldon
+           API Gateway - either ambassador, istio or seldon
         transport
            API transport - grpc or rest
         deployment_name
@@ -277,8 +277,8 @@ class SeldonClient(object):
            REST endpoint to seldon api server
         seldon_grpc_endpoint
            gRPC endpoint to seldon api server
-        ambassador_endpoint
-           Ambassador endpoint
+        gateway_endpoint
+           Gateway endpoint
         microservice_endpoint
            Running microservice endpoint
         grpc_max_send_message_length
@@ -299,15 +299,15 @@ class SeldonClient(object):
         k = self._gather_args(gateway=gateway, transport=transport, deployment_name=deployment_name,
                               payload_type=payload_type, oauth_key=oauth_key, oauth_secret=oauth_secret,
                               seldon_rest_endpoint=seldon_rest_endpoint
-                              , seldon_grpc_endpoint=seldon_grpc_endpoint, ambassador_endpoint=ambassador_endpoint,
+                              , seldon_grpc_endpoint=seldon_grpc_endpoint, gateway_endpoint=gateway_endpoint,
                               microservice_endpoint=microservice_endpoint, method=method, shape=shape,
-                              namespace=namespace, ambassador_prefix=ambassador_prefix)
+                              namespace=namespace, gateway_prefix=gateway_prefix)
         self._validate_args(**k)
-        if k["gateway"] == "ambassador":
+        if k["gateway"] == "ambassador" or k["gateway"] == "istio":
             if k["transport"] == "rest":
-                return rest_feedback_ambassador(prediction_request, prediction_response, reward, **k)
+                return rest_feedback_gateway(prediction_request, prediction_response, reward, **k)
             elif k["transport"] == "grpc":
-                return grpc_feedback_ambassador(prediction_request, prediction_response, reward, **k)
+                return grpc_feedback_gateway(prediction_request, prediction_response, reward, **k)
             else:
                 raise SeldonClientException("Unknown transport " + k["transport"])
         elif k["gateway"] == "seldon":
@@ -323,7 +323,7 @@ class SeldonClient(object):
     def microservice(self, gateway: str = None, transport: str = None, deployment_name: str = None,
                      payload_type: str = None, oauth_key: str = None, oauth_secret: str = None,
                      seldon_rest_endpoint: str = None, seldon_grpc_endpoint: str = None,
-                     ambassador_endpoint: str = None, microservice_endpoint: str = None,
+                     gateway_endpoint: str = None, microservice_endpoint: str = None,
                      method: str = None, shape: Tuple = (1, 1), namespace: str = None, data: np.ndarray = None,
                      datas: List[np.ndarray] = None, ndatas: int = None, bin_data: Union[bytes, bytearray] = None,
                      str_data: str = None, names: Iterable[str] = None) -> Union[SeldonClientPrediction, SeldonClientCombine]:
@@ -332,7 +332,7 @@ class SeldonClient(object):
         Parameters
         ----------
         gateway
-           API Gateway - either ambassador or seldon
+           API Gateway - either ambassador, istio or seldon
         transport
            API transport - grpc or rest
         deployment_name
@@ -347,8 +347,8 @@ class SeldonClient(object):
            REST endpoint to seldon api server
         seldon_grpc_endpoint
            gRPC endpoint to seldon api server
-        ambassador_endpoint
-           Ambassador endpoint
+        gateway_endpoint
+           Gateway endpoint
         microservice_endpoint
            Running microservice endpoint
         grpc_max_send_message_length
@@ -384,7 +384,7 @@ class SeldonClient(object):
         k = self._gather_args(gateway=gateway, transport=transport, deployment_name=deployment_name,
                               payload_type=payload_type, oauth_key=oauth_key,
                               oauth_secret=oauth_secret, seldon_rest_endpoint=seldon_rest_endpoint,
-                              seldon_grpc_endpoint=seldon_grpc_endpoint, ambassador_endpoint=ambassador_endpoint,
+                              seldon_grpc_endpoint=seldon_grpc_endpoint, gateway_endpoint=gateway_endpoint,
                               microservice_endpoint=microservice_endpoint, method=method, shape=shape,
                               namespace=namespace, datas=datas, ndatas=ndatas, names=names,
                               data=data, bin_data=bin_data, str_data=str_data)
@@ -414,7 +414,7 @@ class SeldonClient(object):
                               payload_type: str = None, oauth_key: str = None, oauth_secret: str = None,
                               seldon_rest_endpoint: str = None,
                               seldon_grpc_endpoint: str = None,
-                              ambassador_endpoint: str = None,
+                              gateway_endpoint: str = None,
                               microservice_endpoint: str = None,
                               method: str = None, shape: Tuple = (1, 1), namespace: str = None) -> SeldonClientFeedback:
         """
@@ -428,7 +428,7 @@ class SeldonClient(object):
         reward
            A reward to send in feedback
         gateway
-           API Gateway - either ambassador or seldon
+           API Gateway - either Gateway or seldon
         transport
            API transport - grpc or rest
         deployment_name
@@ -443,8 +443,8 @@ class SeldonClient(object):
            REST endpoint to seldon api server
         seldon_grpc_endpoint
            gRPC endpoint to seldon api server
-        ambassador_endpoint
-           Ambassador endpoint
+        gateway_endpoint
+           Gateway endpoint
         microservice_endpoint
            Running microservice endpoint
         grpc_max_send_message_length
@@ -466,7 +466,7 @@ class SeldonClient(object):
         k = self._gather_args(gateway=gateway, transport=transport, deployment_name=deployment_name,
                               payload_type=payload_type, oauth_key=oauth_key, oauth_secret=oauth_secret,
                               seldon_rest_endpoint=seldon_rest_endpoint
-                              , seldon_grpc_endpoint=seldon_grpc_endpoint, ambassador_endpoint=ambassador_endpoint,
+                              , seldon_grpc_endpoint=seldon_grpc_endpoint, gateway_endpoint=gateway_endpoint,
                               microservice_endpoint=microservice_endpoint, method=method, shape=shape,
                               namespace=namespace)
         self._validate_args(**k)
@@ -997,15 +997,15 @@ def grpc_predict_seldon_oauth(oauth_key: str, oauth_secret: str, namespace: str 
         return SeldonClientPrediction(request, None, False, str(e))
 
 
-def rest_predict_ambassador(deployment_name: str, namespace: str = None, ambassador_endpoint: str = "localhost:8003",
-                            shape: Tuple[int, int] = (1, 1),
-                            data: np.ndarray = None, headers: Dict = None, ambassador_prefix: str = None,
-                            payload_type: str = "tensor",
-                            bin_data: Union[bytes, bytearray] = None, str_data: str = None,
-                            names: Iterable[str] = None,
-                            **kwargs) -> SeldonClientPrediction:
+def rest_predict_gateway(deployment_name: str, namespace: str = None, gateway_endpoint: str = "localhost:8003",
+                         shape: Tuple[int, int] = (1, 1),
+                         data: np.ndarray = None, headers: Dict = None, gateway_prefix: str = None,
+                         payload_type: str = "tensor",
+                         bin_data: Union[bytes, bytearray] = None, str_data: str = None,
+                         names: Iterable[str] = None,
+                         **kwargs) -> SeldonClientPrediction:
     """
-    REST request to Seldon Ambassador Ingress
+    REST request to Gateway Ingress
 
     Parameters
     ----------
@@ -1013,15 +1013,15 @@ def rest_predict_ambassador(deployment_name: str, namespace: str = None, ambassa
        The name of the Seldon Deployment
     namespace
        k8s namespace of running deployment
-    ambassador_endpoint
-       The host:port of Ambassador
+    gateway_endpoint
+       The host:port of gateway
     shape
        The shape of the data to send
     data
        The numpy data to send
     headers
        Headers to add to request
-    ambassador_prefix
+    gateway_prefix
        The prefix path to add to the request
     payload_type
        payload - tensor, ndarray or tftensor
@@ -1047,20 +1047,20 @@ def rest_predict_ambassador(deployment_name: str, namespace: str = None, ambassa
         datadef = array_to_grpc_datadef(payload_type, data, names=names)
         request = prediction_pb2.SeldonMessage(data=datadef)
     payload = seldon_message_to_json(request)
-    if ambassador_prefix is None:
+    if gateway_prefix is None:
         if namespace is None:
             response_raw = requests.post(
-                "http://" + ambassador_endpoint + "/seldon/" + deployment_name + "/api/v0.1/predictions",
+                "http://" + gateway_endpoint + "/seldon/" + deployment_name + "/api/v0.1/predictions",
                 json=payload,
                 headers=headers)
         else:
             response_raw = requests.post(
-                "http://" + ambassador_endpoint + "/seldon/" + namespace + "/" + deployment_name + "/api/v0.1/predictions",
+                "http://" + gateway_endpoint + "/seldon/" + namespace + "/" + deployment_name + "/api/v0.1/predictions",
                 json=payload,
                 headers=headers)
     else:
         response_raw = requests.post(
-            "http://" + ambassador_endpoint + ambassador_prefix + "/api/v0.1/predictions",
+            "http://" + gateway_endpoint + gateway_prefix + "/api/v0.1/predictions",
             json=payload,
             headers=headers)
 
@@ -1083,15 +1083,15 @@ def rest_predict_ambassador(deployment_name: str, namespace: str = None, ambassa
         return SeldonClientPrediction(request, None, False, str(e))
 
 
-def rest_predict_ambassador_basicauth(deployment_name: str, username: str, password: str, namespace: str = None,
-                                      ambassador_endpoint: str = "localhost:8003",
-                                      shape: Tuple[int, int] = (1, 1), data: np.ndarray = None,
-                                      payload_type: str = "tensor",
-                                      bin_data: Union[bytes, bytearray] = None, str_data: str = None,
-                                      names: Iterable[str] = None,
-                                      **kwargs) -> SeldonClientPrediction:
+def rest_predict_gateway_basicauth(deployment_name: str, username: str, password: str, namespace: str = None,
+                                   gateway_endpoint: str = "localhost:8003",
+                                   shape: Tuple[int, int] = (1, 1), data: np.ndarray = None,
+                                   payload_type: str = "tensor",
+                                   bin_data: Union[bytes, bytearray] = None, str_data: str = None,
+                                   names: Iterable[str] = None,
+                                   **kwargs) -> SeldonClientPrediction:
     """
-    REST request with Basic Auth to Seldon Ambassador Ingress
+    REST request with Basic Auth to Gateway Ingress
 
     Parameters
     ----------
@@ -1103,8 +1103,8 @@ def rest_predict_ambassador_basicauth(deployment_name: str, username: str, passw
        Password for basic auth
     namespace
        The namespace of the running deployment
-    ambassador_endpoint
-       The host:port of ambassador
+    gateway_endpoint
+       The host:port of gateway
     shape
        The shape of data
     data
@@ -1133,12 +1133,12 @@ def rest_predict_ambassador_basicauth(deployment_name: str, username: str, passw
     payload = seldon_message_to_json(request)
     if namespace is None:
         response_raw = requests.post(
-            "http://" + ambassador_endpoint + "/seldon/" + deployment_name + "/api/v0.1/predictions",
+            "http://" + gateway_endpoint + "/seldon/" + deployment_name + "/api/v0.1/predictions",
             json=payload,
             auth=HTTPBasicAuth(username, password))
     else:
         response_raw = requests.post(
-            "http://" + ambassador_endpoint + "/seldon/" + namespace + "/" + deployment_name + "/api/v0.1/predictions",
+            "http://" + gateway_endpoint + "/seldon/" + namespace + "/" + deployment_name + "/api/v0.1/predictions",
             json=payload,
             auth=HTTPBasicAuth(username, password))
     if response_raw.status_code == 200:
@@ -1160,17 +1160,17 @@ def rest_predict_ambassador_basicauth(deployment_name: str, username: str, passw
         return SeldonClientPrediction(request, None, False, str(e))
 
 
-def grpc_predict_ambassador(deployment_name: str, namespace: str = None, ambassador_endpoint: str = "localhost:8003",
-                            shape: Tuple[int, int] = (1, 1),
-                            data: np.ndarray = None,
-                            headers: Dict = None, payload_type: str = "tensor",
-                            bin_data: Union[bytes, bytearray] = None, str_data: str = None,
-                            grpc_max_send_message_length: int = 4 * 1024 * 1024,
-                            grpc_max_receive_message_length: int = 4 * 1024 * 1024,
-                            names: Iterable[str] = None,
-                            **kwargs) -> SeldonClientPrediction:
+def grpc_predict_gateway(deployment_name: str, namespace: str = None, gateway_endpoint: str = "localhost:8003",
+                         shape: Tuple[int, int] = (1, 1),
+                         data: np.ndarray = None,
+                         headers: Dict = None, payload_type: str = "tensor",
+                         bin_data: Union[bytes, bytearray] = None, str_data: str = None,
+                         grpc_max_send_message_length: int = 4 * 1024 * 1024,
+                         grpc_max_receive_message_length: int = 4 * 1024 * 1024,
+                         names: Iterable[str] = None,
+                         **kwargs) -> SeldonClientPrediction:
     """
-    gRPC request to Seldon Ambassador Ingress
+    gRPC request to Gateway Ingress
 
     Parameters
     ----------
@@ -1178,8 +1178,8 @@ def grpc_predict_ambassador(deployment_name: str, namespace: str = None, ambassa
        Deployment name of Seldon Deployment
     namespace
        The namespace the Seldon Deployment is running in
-    ambassador_endpoint
-       The endpoint for Ambassador
+    gateway_endpoint
+       The endpoint for gateway
     shape
        The shape of the data
     data
@@ -1213,7 +1213,7 @@ def grpc_predict_ambassador(deployment_name: str, namespace: str = None, ambassa
             data = np.random.rand(*shape)
         datadef = array_to_grpc_datadef(payload_type, data, names=names)
         request = prediction_pb2.SeldonMessage(data=datadef)
-    channel = grpc.insecure_channel(ambassador_endpoint, options=[
+    channel = grpc.insecure_channel(gateway_endpoint, options=[
         ('grpc.max_send_message_length', grpc_max_send_message_length),
         ('grpc.max_receive_message_length', grpc_max_receive_message_length)])
     stub = prediction_pb2_grpc.SeldonStub(channel)
@@ -1340,13 +1340,13 @@ def grpc_feedback_seldon_oauth(prediction_request: prediction_pb2.SeldonMessage 
         return SeldonClientFeedback(request, None, False, str(e))
 
 
-def rest_feedback_ambassador(prediction_request: prediction_pb2.SeldonMessage = None,
-                             prediction_response: prediction_pb2.SeldonMessage = None, reward: float = 0,
-                             deployment_name: str = "", namespace: str = None,
-                             ambassador_endpoint: str = "localhost:8003", headers: Dict = None, ambassador_prefix: str = None,
-                             **kwargs) -> SeldonClientFeedback:
+def rest_feedback_gateway(prediction_request: prediction_pb2.SeldonMessage = None,
+                          prediction_response: prediction_pb2.SeldonMessage = None, reward: float = 0,
+                          deployment_name: str = "", namespace: str = None,
+                          gateway_endpoint: str = "localhost:8003", headers: Dict = None, gateway_prefix: str = None,
+                          **kwargs) -> SeldonClientFeedback:
     """
-    Send Feedback to Seldon via Ambassador using REST
+    Send Feedback to Seldon via gateway using REST
 
     Parameters
     ----------
@@ -1360,12 +1360,12 @@ def rest_feedback_ambassador(prediction_request: prediction_pb2.SeldonMessage = 
        The name of the running Seldon deployment
     namespace
        k8s namespace of running deployment
-    ambassador_endpoint
-       The ambassador host:port endpoint
+    gateway_endpoint
+       The gateway host:port endpoint
     headers
        Headers to add to the request
-    ambassador_prefix
-      The prefix to add to the request path for Ambassador
+    gateway_prefix
+      The prefix to add to the request path for gateway
     kwargs
 
     Returns
@@ -1375,20 +1375,20 @@ def rest_feedback_ambassador(prediction_request: prediction_pb2.SeldonMessage = 
     """
     request = prediction_pb2.Feedback(request=prediction_request, response=prediction_response, reward=reward)
     payload = feedback_to_json(request)
-    if ambassador_prefix is None:
+    if gateway_prefix is None:
         if namespace is None:
             response_raw = requests.post(
-                "http://" + ambassador_endpoint + "/seldon/" + deployment_name + "/api/v0.1/feedback",
+                "http://" + gateway_endpoint + "/seldon/" + deployment_name + "/api/v0.1/feedback",
                 json=payload,
                 headers=headers)
         else:
             response_raw = requests.post(
-                "http://" + ambassador_endpoint + "/seldon/" + namespace + "/" + deployment_name + "/api/v0.1/feedback",
+                "http://" + gateway_endpoint + "/seldon/" + namespace + "/" + deployment_name + "/api/v0.1/feedback",
                 json=payload,
                 headers=headers)
     else:
         response_raw = requests.post(
-            "http://" + ambassador_endpoint + ambassador_prefix + "/api/v0.1/feedback",
+            "http://" + gateway_endpoint + gateway_prefix + "/api/v0.1/feedback",
             json=payload,
             headers=headers)
 
@@ -1411,14 +1411,14 @@ def rest_feedback_ambassador(prediction_request: prediction_pb2.SeldonMessage = 
         return SeldonClientFeedback(request, None, False, str(e))
 
 
-def grpc_feedback_ambassador(prediction_request: prediction_pb2.SeldonMessage = None,
-                             prediction_response: prediction_pb2.SeldonMessage = None, reward: float = 0,
-                             deployment_name: str = "", namespace: str = None,
-                             ambassador_endpoint: str = "localhost:8003",
-                             headers: Dict = None,
-                             grpc_max_send_message_length: int = 4 * 1024 * 1024,
-                             grpc_max_receive_message_length: int = 4 * 1024 * 1024,
-                             **kwargs) -> SeldonClientFeedback:
+def grpc_feedback_gateway(prediction_request: prediction_pb2.SeldonMessage = None,
+                          prediction_response: prediction_pb2.SeldonMessage = None, reward: float = 0,
+                          deployment_name: str = "", namespace: str = None,
+                          gateway_endpoint: str = "localhost:8003",
+                          headers: Dict = None,
+                          grpc_max_send_message_length: int = 4 * 1024 * 1024,
+                          grpc_max_receive_message_length: int = 4 * 1024 * 1024,
+                          **kwargs) -> SeldonClientFeedback:
     """
 
     Parameters
@@ -1433,8 +1433,8 @@ def grpc_feedback_ambassador(prediction_request: prediction_pb2.SeldonMessage = 
        The name of the running Seldon deployment
     namespace
        k8s namespace of running deployment
-    ambassador_endpoint
-       The ambassador host:port endpoint
+    gateway_endpoint
+       The gateway host:port endpoint
     headers
        Headers to add to the request
     grpc_max_send_message_length
@@ -1448,7 +1448,7 @@ def grpc_feedback_ambassador(prediction_request: prediction_pb2.SeldonMessage = 
 
     """
     request = prediction_pb2.Feedback(request=prediction_request, response=prediction_response, reward=reward)
-    channel = grpc.insecure_channel(ambassador_endpoint, options=[
+    channel = grpc.insecure_channel(gateway_endpoint, options=[
         ('grpc.max_send_message_length', grpc_max_send_message_length),
         ('grpc.max_receive_message_length', grpc_max_receive_message_length)])
     stub = prediction_pb2_grpc.SeldonStub(channel)

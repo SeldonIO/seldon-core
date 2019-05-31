@@ -51,6 +51,7 @@ message PredictorSpec {
   optional k8s.io.api.core.v1.ResourceRequirements engineResources = 6 [deprecated=true]; // Optional set of resources for the Seldon engine which is added to each Predictor graph to manage the request/response flow
   map<string,string> labels = 7; // labels to be attached to entry deplyment for this predictor
   optional SvcOrchSpec svcOrchSpec = 8; // Service Orchestrator configuration
+  optional int32 traffic = 9; // traffic weight for this predictor
 }
 
 message SeldonPodSpec {

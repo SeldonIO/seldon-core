@@ -37,7 +37,7 @@ The python package contains a module that provides a reference python client for
     * Send data as tensor, TFTensor or ndarray
  * External API
     * Make REST or gRPC calls
-    * Call the API via Ambassador or Seldon's OAUTH API gateway.
+    * Call the API via Ambassador, Istio or Seldon's OAUTH API gateway.
     * Test `predict` or `feedback` endpoints
     * Provide a numpy array, binary data or string data as payload or get random data generated as payload for given shape
     * Send data as tensor, TFTensor or ndarray
@@ -46,7 +46,7 @@ Basic usage of the client is to create a `SeldonClient` object first. For exampl
 
 ```python
 from seldon_core.seldon_client import SeldonClient
-sc = SeldonClient(deployment_name="mymodel",namespace="seldon", ambassador_endpoint="localhost:8003")
+sc = SeldonClient(deployment_name="mymodel",namespace="seldon", gateway_endpoint="localhost:8003")
 ```
 
 Then make calls of various types. For example, to make a random prediction  via the Ambassador gateway using REST:
