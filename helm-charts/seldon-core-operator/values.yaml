@@ -23,6 +23,9 @@ image:
   pullPolicy: IfNotPresent
   repository: seldonio/seldon-core-operator
   tag: 0.2.8-SNAPSHOT
+istio:
+  enabled: false
+  gateway: seldon-gateway
 predictiveUnit:
   port: 9000
 rbac:

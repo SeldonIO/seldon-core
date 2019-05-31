@@ -17,6 +17,7 @@ Notebooks
    Go Model <go_example>
    H2O Java MoJo <h2o_mojo>
    Istio Canary <istio_canary>
+   Istio Examples <istio_examples>   
    Jaeger Tracing <tmpl_model_tracing>
    Keras MNIST <keras_mnist>
    Kubeflow Seldon E2E Pipeline <kubeflow_seldon_e2e_pipeline>
