@@ -19,6 +19,7 @@ message SeldonMessage {
     DefaultData data = 3;
     bytes binData = 4;
     string strData = 5;
+    google.protobuf.Value jsonData = 6;
   }
 }
 
