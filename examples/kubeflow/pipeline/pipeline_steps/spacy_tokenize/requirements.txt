@@ -1,0 +1,4 @@
+dill==0.2.9
+click
+numpy
+spacy

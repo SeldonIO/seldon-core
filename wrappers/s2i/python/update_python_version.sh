@@ -14,8 +14,8 @@ fi
 OLD_VERSION=$1
 NEW_VERSION=$2
 
-declare -a paths=('./examples/*.ipynb' './docs/*.md' './example/*Makefile' './integrations/*Makefile')
-declare -a versions=('2' '3' '36' '37')
+declare -a paths=('./examples/*.ipynb' './doc/*.md'  './docs/*.md' './example/*Makefile' './integrations/*Makefile')
+declare -a versions=('3' '36' '37')
 
 cd ../../..
 
@@ -24,6 +24,7 @@ do
     for PYTHON_VERSION in "${versions[@]}"
     do
 	echo "Updating python version ${PYTHON_VERSION} in $i from ${OLD_VERSION} to ${NEW_VERSION}"
+	find . -type f -path "$i" -exec grep -l seldon-core-s2i-python${PYTHON_VERSION}:${OLD_VERSION}-SNAPSHOT \{\} \; | xargs -n1 -r sed -i "s/seldon-core-s2i-python${PYTHON_VERSION}:${OLD_VERSION}-SNAPSHOT/seldon-core-s2i-python${PYTHON_VERSION}:${OLD_VERSION}/g"
 	find . -type f -path "$i" -exec grep -l seldon-core-s2i-python${PYTHON_VERSION}:${OLD_VERSION} \{\} \; | xargs -n1 -r sed -i "s/seldon-core-s2i-python${PYTHON_VERSION}:${OLD_VERSION}/seldon-core-s2i-python${PYTHON_VERSION}:${NEW_VERSION}/g"
     done
 done
