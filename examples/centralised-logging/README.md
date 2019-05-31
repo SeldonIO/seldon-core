@@ -71,7 +71,7 @@ echo $(minikube ip)":31000" to find kibana URL
 When Kibana appears for the first time there will be a brief animation while it initializes.
 On the Welcome page click Explore on my own.
 From the left-hand menu select the top Discover item.
-In the form field Index pattern enter _kubernetescluster-*
+In the form field Index pattern enter kubernetes_cluster-*
 It should read "Success!" and Click the > Next step button on the right.
 In the next form select timestamp from the dropdown labeled Time Filter field name.
 From the bottom-right of the form select Create index pattern.
