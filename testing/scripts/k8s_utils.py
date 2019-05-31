@@ -44,7 +44,8 @@ def setup_finalizer_helm(request):
         run("kubectl delete namespace seldon", shell=True)
         run("kubectl delete namespace test1", shell=True)
 
-    request.addfinalizer(fin)
+    if not request is None:
+        request.addfinalizer(fin)
 
 
 def get_seldon_version():
@@ -76,7 +77,8 @@ def create_seldon_clusterwide_helm(request, version):
     run('kubectl rollout status statefulset.apps/seldon-operator-controller-manager -n seldon-system', shell=True)
     create_ambassador()
     create_seldon_gateway(version)
-    setup_finalizer_helm(request)
+    if not request is None:
+        setup_finalizer_helm(request)
 
 
 @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=5)
@@ -95,7 +97,8 @@ def port_forward(request):
         os.killpg(os.getpgid(p2.pid), signal.SIGTERM)
         os.killpg(os.getpgid(p3.pid), signal.SIGTERM)
 
-    request.addfinalizer(fin)
+    if not request is None:
+        request.addfinalizer(fin)
 
 
 def create_docker_repo(request):
@@ -110,7 +113,8 @@ def create_docker_repo(request):
         run('kubectl delete -f ../resources/docker-private-registry-proxy.json --ignore-not-found=true -n default',
             shell=True)
 
-    request.addfinalizer(fin)
+    if not request is None:
+        request.addfinalizer(fin)
 
 
 @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=5)
@@ -124,4 +128,5 @@ def port_forward_docker_repo(request):
         print("teardown port-foward docker")
         os.killpg(os.getpgid(p1.pid), signal.SIGTERM)
 
-    request.addfinalizer(fin)
+    if not request is None:
+        request.addfinalizer(fin)

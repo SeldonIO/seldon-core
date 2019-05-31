@@ -31,24 +31,43 @@ def initial_rest_request():
 @pytest.mark.usefixtures("clusterwide_seldon_helm")
 class TestClusterWide(object):
 
+    def __init__(self):
+        self.tester = ClusterWideTests()
+
+    def test_single_model(self):
+        self.tester.test_single_model()
+
+    def test_abtest_model(self):
+        self.tester.test_abtest_model()
+
+    def test_mab_model(self):
+        self.tester.test_mab_model()
+
+
+class ClusterWideTests(object):
+
     # Test singe model helm script with 4 API methods
     def test_single_model(self):
         run("helm delete mymodel --purge", shell=True)
         run("helm install ../../helm-charts/seldon-single-model --name mymodel --set oauth.key=oauth-key --set oauth.secret=oauth-secret --namespace test1", shell=True, check=True)
         wait_for_rollout("mymodel-mymodel-7cd068f")
         r = initial_rest_request()
+        print("Test OAuth REST gateway")
         r = rest_request_api_gateway("oauth-key","oauth-secret","test1",API_GATEWAY_REST)
         res = r.json()
         print(res)
         assert r.status_code == 200
         assert len(r.json()["data"]["tensor"]["values"]) == 1
+        print("Test Ambassador REST gateway")
         r = rest_request_ambassador("mymodel","test1",API_AMBASSADOR)
         res = r.json()
         print(res)
         assert r.status_code == 200
         assert len(r.json()["data"]["tensor"]["values"]) == 1
+        print("Test Oauth gRPC gateway")
         r = grpc_request_api_gateway2("oauth-key","oauth-secret","test1",rest_endpoint=API_GATEWAY_REST,grpc_endpoint=API_GATEWAY_GRPC)
         print(r)
+        print("Test Ambassador gRPC gateway")
         r = grpc_request_ambassador2("mymodel","test1",API_AMBASSADOR)
         print(r)
         run("helm delete mymodel --purge", shell=True)
@@ -60,18 +79,22 @@ class TestClusterWide(object):
         wait_for_rollout("myabtest-abtest-41de5b8")
         wait_for_rollout("myabtest-abtest-df66c5c")
         r = initial_rest_request()
+        print("Test Oauth REST gateway")
         r = rest_request_api_gateway("oauth-key","oauth-secret","test1",API_GATEWAY_REST)
         res = r.json()
         print(res)
         assert r.status_code == 200
         assert len(r.json()["data"]["tensor"]["values"]) == 1
+        print("Test OAuth gRPC gateway")
         r = rest_request_ambassador("myabtest","test1",API_AMBASSADOR)
         res = r.json()
         print(res)
         assert r.status_code == 200
         assert len(r.json()["data"]["tensor"]["values"]) == 1
+        print("Test OAuth gRPC gateway")
         r = grpc_request_api_gateway2("oauth-key","oauth-secret","test1",rest_endpoint=API_GATEWAY_REST,grpc_endpoint=API_GATEWAY_GRPC)
         print(r)
+        print("Test Ambassador gRPC gateway")
         r = grpc_request_ambassador2("myabtest","test1",API_AMBASSADOR)
         print(r)
         run("helm delete myabtest --purge", shell=True)
@@ -84,18 +107,22 @@ class TestClusterWide(object):
         wait_for_rollout("mymab-abtest-b8038b2")
         wait_for_rollout("mymab-abtest-df66c5c")
         r = initial_rest_request()
+        print("Test Oauth REST gateway")
         r = rest_request_api_gateway("oauth-key","oauth-secret","test1",API_GATEWAY_REST)
         res = r.json()
         print(res)
         assert r.status_code == 200
         assert len(r.json()["data"]["tensor"]["values"]) == 1
+        print("Test Ambassador REST gateway")
         r = rest_request_ambassador("mymab","test1",API_AMBASSADOR)
         res = r.json()
         print(res)
         assert r.status_code == 200
         assert len(r.json()["data"]["tensor"]["values"]) == 1
+        print("Test OAuth gRPC gateway")
         r = grpc_request_api_gateway2("oauth-key","oauth-secret","test1",rest_endpoint=API_GATEWAY_REST,grpc_endpoint=API_GATEWAY_GRPC)
         print(r)
+        print("Test Ambassador gRPC gateway")
         r = grpc_request_ambassador2("mymab","test1",API_AMBASSADOR)
         print(r)
         run("helm delete mymab --purge", shell=True)
