@@ -27,8 +27,8 @@ def initial_rest_request():
             r = rest_request_api_gateway("oauth-key","oauth-secret","test1",API_GATEWAY_REST)
     return r
 
-#@pytest.mark.usefixtures("seldon_images")
-#@pytest.mark.usefixtures("clusterwide_seldon_helm")
+@pytest.mark.usefixtures("seldon_images")
+@pytest.mark.usefixtures("clusterwide_seldon_helm")
 class TestClusterWide(object):
 
     # Test singe model helm script with 4 API methods

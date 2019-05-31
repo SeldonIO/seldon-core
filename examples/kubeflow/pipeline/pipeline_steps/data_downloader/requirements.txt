@@ -1,0 +1,5 @@
+dill==0.2.9
+click
+numpy==1.16.3
+pandas==0.24.2
+
