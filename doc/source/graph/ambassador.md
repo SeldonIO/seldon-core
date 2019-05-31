@@ -74,7 +74,7 @@ To understand more about the Ambassador configuration for this see [their docs o
 The above discussed configurations should cover most cases but there maybe a case where you want to have a very particular Ambassador configuration under your control. You can acheieve this by adding your confguration as an annotation to your Seldon Deployment resource.
 
  * `seldon.io/ambassador-config:<configuration>` : The custom ambassador configuration
-    * Example: `"seldon.io/ambassador-config":"apiVersion: ambassador/v0\nkind: Mapping\nname: seldon_example_rest_mapping\nprefix: /mycompany/ml/\nservice: production-model-example.seldon:8000\ntimeout_ms: 3000"`
+    * Example: `"seldon.io/ambassador-config":"apiVersion: ambassador/v1\nkind: Mapping\nname: seldon_example_rest_mapping\nprefix: /mycompany/ml/\nservice: production-model-example.seldon:8000\ntimeout_ms: 3000"`
 
 A worked example for [custom Ambassador config](../examples/ambassador_custom.html) is provided.
 
