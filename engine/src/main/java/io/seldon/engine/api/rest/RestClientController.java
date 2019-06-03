@@ -148,7 +148,8 @@ public class RestClientController {
 			ProtoBufUtils.updateMessageBuilderFromJson(builder, requestEntity.getBody() );
 			request = builder.build();
 			if(logRequests){
-				logger.info(request.toString());
+				//log pure json
+				System.out.println(request.toString().replace("\n", "").replace("\r", ""));
 			}
 		} 
 		catch (InvalidProtocolBufferException e) 
@@ -157,7 +158,7 @@ public class RestClientController {
 			throw new APIException(ApiExceptionType.ENGINE_INVALID_JSON,requestEntity.getBody());
 		} finally {
 			if(logRequests){
-				logger.info(requestEntity.getBody());
+				System.out.println(requestEntity.getBody());
 			}
 		}
 
@@ -166,7 +167,7 @@ public class RestClientController {
 			SeldonMessage response = predictionService.predict(request);
 			String json = ProtoBufUtils.toJson(response);
 			if(logResponses){
-				logger.info(json);
+				System.out.println(json.replace("\n", "").replace("\r", ""));
 			}
 			return new ResponseEntity<String>(json,HttpStatus.OK);
 		}
