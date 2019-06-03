@@ -16,35 +16,21 @@ kubectl -n kube-system create sa tiller
 kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
 helm init --service-account tiller
 
-First we will install elasticsearch as the storage backend. This will require a [persistent volume](https://kubernetes.io/docs/tasks/configure-pod-container/configure-persistent-volume-storage/#create-a-persistentvolume) to be available from which elasticsearch can make a claim.
+First setup elasticsearch helm repo:
 
-kubectl apply -f pv-elasticsearch-data.yaml
-kubectl apply -f pv-elasticsearch-master.yaml
+helm repo add elastic https://helm.elastic.co
 
-Note you would want to use a different type of volume in cloud - the above is for minikube.
+Next install elasticsearch with minikube configuration:
 
-Now install elasticsearch:
+helm install --name elasticsearch elastic/elasticsearch --version 7.1.0 --namespace=logs -f elastic-minikube.yaml
 
-helm install stable/elasticsearch --name=elasticsearch --namespace=logs \
---set client.replicas=1 \
---set master.replicas=1 \
---set cluster.env.MINIMUM_MASTER_NODES=1 \
---set cluster.env.RECOVER_AFTER_MASTER_NODES=1 \
---set cluster.env.EXPECTED_MASTER_NODES=1 \
---set data.replicas=1 \
---set data.heapSize=300m \
---set master.persistence.storageClass=elasticsearch-master \
---set master.persistence.size=500M \
---set data.persistence.storageClass=elasticsearch-data \
---set data.persistence.size=500M
+Then fluentbit as a collection agent:
 
-Next fluentbit as a collection agent:
-
-helm install stable/fluent-bit --name=fluent-bit --namespace=logs --set backend.type=es --set backend.es.host=elasticsearch-client
+helm install stable/fluent-bit --name=fluent-bit --namespace=logs --set backend.type=es --set backend.es.host=elasticsearch-master
 
 And kibana UI:
 
-helm install stable/kibana --name=kibana --namespace=logs --set env.ELASTICSEARCH_HOSTS=http://elasticsearch-client:9200 --set service.type=NodePort --set service.nodePort=31000
+helm install elastic/kibana --version 7.1.0 --name=kibana --namespace=logs --set service.type=NodePort --set service.nodePort=31000
 
 ## Generating Logging
 
@@ -52,7 +38,7 @@ First we need seldon and a seldon deployment.
 
 Install seldon operator:
 
-helm install seldon-core-operator --name seldon-core --set usageMetrics.enabled=true --namespace seldon-system --repo https://storage.googleapis.com/seldon-charts
+helm install seldon-core-operator --name seldon-core --set engine.image.repository=ryandawsonuk/engine --namespace seldon-system --repo https://storage.googleapis.com/seldon-charts
 
 Now a model:
 
@@ -66,17 +52,19 @@ helm install seldon-core-loadtesting --name seldon-core-loadtesting --repo https
 
 ## Inspecting Logging
 
-echo $(minikube ip)":31000" to find kibana URL
+To find kibana URL
+
+echo $(minikube ip)":"$(kubectl get svc kibana-kibana -n logs -o=jsonpath='{.spec.ports[?(@.port==5601)].nodePort}')
 
 When Kibana appears for the first time there will be a brief animation while it initializes.
 On the Welcome page click Explore on my own.
-From the left-hand menu select the top Discover item.
+From the Visualize and Explore panel select the top Discover item.
 In the form field Index pattern enter kubernetes_cluster-*
 It should read "Success!" and Click the > Next step button on the right.
 In the next form select timestamp from the dropdown labeled Time Filter field name.
 From the bottom-right of the form select Create index pattern.
 In a moment a list of fields will appear.
-Again, from the left-hand menu select the top Discover item.
+Again, from the Visualize and Explore panel select the top Discover item.
 The log list will appear.
 Refine the list a bit by selecting log near the bottom the left-hand Selected fields list.
 When you hover over or click on the word log, click the Add button to the right of the label.
