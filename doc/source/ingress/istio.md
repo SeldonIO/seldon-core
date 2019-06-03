@@ -45,7 +45,7 @@ Istio has the capability for fine grained traffic routing to your deployments. T
  * green-blue deployments
  * A/B testing
 
-An example showing canary updates can be found [here](../exmaples/istio_canary.html)
+An example showing canary updates can be found [here](../examples/istio_canary.html)
 
 
 
