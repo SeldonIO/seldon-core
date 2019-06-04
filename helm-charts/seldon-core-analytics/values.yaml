@@ -10,4 +10,5 @@ rbac:
   enabled: true
 prometheus:
   service_type: ClusterIP
-
+nodeExporter:
+  port: 9100
