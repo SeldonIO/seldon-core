@@ -18,13 +18,13 @@ package io.seldon.engine.service;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
+import io.seldon.engine.pb.ProtoBufUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -49,6 +49,16 @@ public class PredictionService {
 	
 	PuidGenerator puidGenerator = new PuidGenerator();
 
+	@Value("${log.requests}")
+	private boolean logRequests;
+
+	@Value("${log.responses}")
+	private boolean logResponses;
+
+	@Value("${log.feedback.requests}")
+	private boolean logFeedbackRequests;
+
+
 	public final class PuidGenerator {
 	    private SecureRandom random = new SecureRandom();
 
@@ -62,6 +72,10 @@ public class PredictionService {
 		PredictorState predictorState = predictorBean.predictorStateFromPredictorSpec(enginePredictor.getPredictorSpec());
 
 		predictorBean.sendFeedback(feedback, predictorState);
+
+		if(logFeedbackRequests) {
+			logRawMessageAsJson(feedback);
+		}
 		
 		return;
 	}
@@ -85,7 +99,33 @@ public class PredictionService {
 			
         SeldonMessage.Builder builder = SeldonMessage.newBuilder(predictorReturn).setMeta(Meta.newBuilder(predictorReturn.getMeta()).setPuid(puid));
 
-        return builder.build();
+        SeldonMessage response = builder.build();
+
+		if(logRequests){
+			//log pure json now we've added puid
+			logRawMessageAsJson(request);
+		}
+		if(logResponses){
+			logRawMessageAsJson(response);
+		}
+
+        return response;
 		
+	}
+
+	private void logRawMessageAsJson(SeldonMessage message){
+		try {
+			System.out.println(ProtoBufUtils.toJson(message).replace("\n", "").replace("\r", ""));
+		}catch (Exception ex){
+			logger.error("Unable to parse message",ex);
+		}
+	}
+
+	private void logRawMessageAsJson(Feedback message){
+		try {
+			System.out.println(ProtoBufUtils.toJson(message).replace("\n", "").replace("\r", ""));
+		}catch (Exception ex){
+			logger.error("Unable to parse message",ex);
+		}
 	}
 }

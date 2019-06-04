@@ -39,7 +39,7 @@ helm install stable/fluent-bit --name=fluent-bit --namespace=logs --set backend.
 And kibana UI:
 
 ```
-helm install elastic/kibana --version 7.1.0 --name=kibana --namespace=logs --set service.type=NodePort --set service.nodePort=31000
+helm install elastic/kibana --version 7.1.0 --name=kibana --namespace=logs --set service.type=NodePort
 ```
 
 ## Generating Logging
@@ -75,22 +75,28 @@ echo $(minikube ip)":"$(kubectl get svc kibana-kibana -n logs -o=jsonpath='{.spe
 
 When Kibana appears for the first time there will be a brief animation while it initializes.
 On the Welcome page click Explore on my own.
-From the Visualize and Explore panel select the top Discover item.
+From the top-left or from the `Visualize and Explore Data` panel select the `Discover` item.
 In the form field Index pattern enter kubernetes_cluster-*
-It should read "Success!" and Click the > Next step button on the right.
-In the next form select timestamp from the dropdown labeled Time Filter field name.
-From the bottom-right of the form select Create index pattern.
+It should read "Success!" and Click the `> Next` step button on the right.
+In the next form select timestamp from the dropdown labeled `Time Filter` field name.
+From the bottom-right of the form select `Create index pattern`.
 In a moment a list of fields will appear.
-Again, from the Visualize and Explore panel select the top Discover item.
+From the top-left or the home screen's `Visualize and Explore Data` panel, select the `Discover` item.
 The log list will appear.
-Refine the list a bit by selecting log near the bottom the left-hand Selected fields list.
-When you hover over or click on the word log, click the Add button to the right of the label.
-You can create a filter using the 'Add Filter' button under 'Search'. The field can be `kubernetes.labels.seldon-app` and the value can be an 'is' match on `seldon-single-model-seldon-single-model`.
+Refine the list a bit by selecting `log` near the bottom the left-hand Selected fields list.
+When you hover over or click on the word `log`, click the `Add` button to the right of the label.
+You can create a filter using the `Add Filter` button under `Search`. The field can be `kubernetes.labels.seldon-app` and the value can be an 'is' match on `seldon-single-model-seldon-single-model`.
 
-The custom fields in the request bodies are not currently in the index. If you hover over one in a request you see `No cached mapping for this field`.
+The custom fields in the request bodies may not currently be in the index. If you hover over one in a request you may see `No cached mapping for this field`.
 
 To add mappings, go to `Management` at the bottom-left and then `Index Patterns`. Hit `Refresh` on the index created earlier. The number of fields should increase and `data.names` should be present.
 
 Now we can go back and add a further filter for `data.names` with the operator `exists`. We can add further filters if we want, such as the presence of a feature name or the presence of a feature value.
 
 ![picture](./kibana-custom-search.png)
+
+## Notes
+
+All pods will be logged. To exclude pods see https://docs.fluentbit.io/manual/filter/kubernetes#request-to-exclude-logs
+
+In the future we may need to find a way to transform requests so that data-points are searchable due to https://discuss.elastic.co/t/query-array-by-position/124765

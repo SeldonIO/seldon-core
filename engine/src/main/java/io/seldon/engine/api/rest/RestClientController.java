@@ -23,7 +23,6 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.RequestEntity;
@@ -50,11 +49,6 @@ public class RestClientController {
 	
 	private static Logger logger = LoggerFactory.getLogger(RestClientController.class.getName());
 
-	@Value("${log.requests}")
-	private boolean logRequests;
-
-	@Value("${log.responses}")
-	private boolean logResponses;
 
 	@Autowired
 	private PredictionService predictionService;
@@ -147,29 +141,18 @@ public class RestClientController {
 			SeldonMessage.Builder builder = SeldonMessage.newBuilder();
 			ProtoBufUtils.updateMessageBuilderFromJson(builder, requestEntity.getBody() );
 			request = builder.build();
-			if(logRequests){
-				//log pure json
-				System.out.println(request.toString().replace("\n", "").replace("\r", ""));
-			}
 		} 
 		catch (InvalidProtocolBufferException e) 
 		{
 			logger.error("Bad request",e);
 			throw new APIException(ApiExceptionType.ENGINE_INVALID_JSON,requestEntity.getBody());
-		} finally {
-			if(logRequests){
-				System.out.println(requestEntity.getBody());
-			}
 		}
 
 		try
 		{
 			SeldonMessage response = predictionService.predict(request);
-			String json = ProtoBufUtils.toJson(response);
-			if(logResponses){
-				System.out.println(json.replace("\n", "").replace("\r", ""));
-			}
-			return new ResponseEntity<String>(json,HttpStatus.OK);
+			String responseJson = ProtoBufUtils.toJson(response);
+			return new ResponseEntity<String>(responseJson,HttpStatus.OK);
 		}
 		 catch (InterruptedException e) {
 			throw new APIException(ApiExceptionType.ENGINE_INTERRUPTED,e.getMessage());
