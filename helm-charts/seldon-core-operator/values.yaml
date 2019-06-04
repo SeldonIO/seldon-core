@@ -1,28 +1,25 @@
 ambassador:
-  # If true Ambassador annotations will be added to created svcs. Safe to be used even if not using Ambassador.
   enabled: true
-  # Allow default Ambassador paths with no namespace. Only set if you know your deployment names will be unique.
   singleNamespace: false
-# Engine image acts as service orchestrator and is injected as a sidecar container or separate deployment
 engine:
   grpc:
     port: 5001
   image:
     pullPolicy: IfNotPresent
     repository: seldonio/engine
-    tag: 0.2.8-SNAPSHOT
+    tag: 0.3.0-SNAPSHOT
   port: 8000
   prometheus:
     path: prometheus
-  serviceAccount:
-    name: default
   securityContext:
     enabled: true
+  serviceAccount:
+    name: default
   user: 8888
 image:
   pullPolicy: IfNotPresent
   repository: seldonio/seldon-core-operator
-  tag: 0.2.8-SNAPSHOT
+  tag: 0.3.0-SNAPSHOT
 istio:
   enabled: false
   gateway: seldon-gateway
