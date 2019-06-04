@@ -15,10 +15,15 @@
  *******************************************************************************/
 package io.seldon.engine.service;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.concurrent.ExecutionException;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.primitives.Doubles;
 import io.seldon.engine.pb.ProtoBufUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -58,6 +63,8 @@ public class PredictionService {
 	@Value("${log.feedback.requests}")
 	private boolean logFeedbackRequests;
 
+	@Value("${log.transform.tabular}")
+	private boolean logTransformTabular;
 
 	public final class PuidGenerator {
 	    private SecureRandom random = new SecureRandom();
@@ -74,7 +81,7 @@ public class PredictionService {
 		predictorBean.sendFeedback(feedback, predictorState);
 
 		if(logFeedbackRequests) {
-			logRawMessageAsJson(feedback);
+			logMessageAsJson(feedback);
 		}
 		
 		return;
@@ -102,28 +109,55 @@ public class PredictionService {
         SeldonMessage response = builder.build();
 
 		if(logRequests){
-			//log pure json now we've added puid
-			logRawMessageAsJson(request);
+			//log json now we've added puid
+			logMessageAsJson(request);
 		}
 		if(logResponses){
-			logRawMessageAsJson(response);
+			logMessageAsJson(response);
 		}
 
         return response;
 		
 	}
 
-	private void logRawMessageAsJson(SeldonMessage message){
+	private JsonNode transformJsonTabular(String json) throws IOException {
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode j = mapper.readTree(json);
+		//only transform if there's a data element and it contains a names array
+		if(j.has("data")&&j.get("data").has("names")) {
+			JsonNode namesNode = j.get("data").get("names");
+
+			String[] names = mapper.readValue(namesNode.toString(), String[].class);
+			double[][] values = mapper.readValue(j.get("data").get("ndarray").toString(), double[][].class);
+			double[] vs = Doubles.concat(values);
+
+			for (int i = 0; i < names.length; i++) {
+				((ObjectNode) j.get("data")).put(names[i], vs[i]);
+			}
+
+		}
+		return j;
+	}
+
+	private void logMessageAsJson(SeldonMessage message){
 		try {
-			System.out.println(ProtoBufUtils.toJson(message).replace("\n", "").replace("\r", ""));
+			String json = ProtoBufUtils.toJson(message);
+			if(logTransformTabular){
+				json = transformJsonTabular(json).toString();
+			}
+			System.out.println(json);
 		}catch (Exception ex){
 			logger.error("Unable to parse message",ex);
 		}
 	}
 
-	private void logRawMessageAsJson(Feedback message){
+	private void logMessageAsJson(Feedback message){
 		try {
-			System.out.println(ProtoBufUtils.toJson(message).replace("\n", "").replace("\r", ""));
+			String json = ProtoBufUtils.toJson(message);
+			if(logTransformTabular){
+				json = transformJsonTabular(json).toString();
+			}
+			System.out.println(json);
 		}catch (Exception ex){
 			logger.error("Unable to parse message",ex);
 		}

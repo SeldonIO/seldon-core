@@ -98,5 +98,3 @@ Now we can go back and add a further filter for `data.names` with the operator `
 ## Notes
 
 All pods will be logged. To exclude pods see https://docs.fluentbit.io/manual/filter/kubernetes#request-to-exclude-logs
-
-In the future we may need to find a way to transform requests so that data-points are searchable due to https://discuss.elastic.co/t/query-array-by-position/124765

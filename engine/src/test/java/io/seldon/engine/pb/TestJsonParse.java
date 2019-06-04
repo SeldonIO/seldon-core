@@ -17,6 +17,7 @@ package io.seldon.engine.pb;
 
 import java.io.IOException;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonFactory;
@@ -29,6 +30,8 @@ import com.google.common.primitives.Doubles;
 
 public class TestJsonParse {
 
+	String rawRequest = "{  \"meta\": {    \"puid\": \"avodt6jrk9nbgomnco7nhrvpo0\",    \"tags\": {    },    \"routing\": {    },    \"requestPath\": {    },    \"metrics\": []  },  \"data\": {    \"names\": [\"f0\", \"f1\"],    \"ndarray\": [[0.15, 0.74]]  }}";
+	String rawResponse = "{  \"meta\": {    \"puid\": \"avodt6jrk9nbgomnco7nhrvpo0\",    \"tags\": {    },    \"routing\": {    },    \"requestPath\": {      \"classifier\": \"seldonio/mock_classifier:1.0\"    },    \"metrics\": []  },  \"data\": {    \"names\": [\"proba\"],    \"ndarray\": [[0.07786847593954888]]  }}";
 	
 	@Test
 	public void multiDimTest() throws JsonProcessingException, IOException
@@ -48,5 +51,43 @@ public class TestJsonParse {
 		((ObjectNode) j.get("request")).replace("values",mapper.valueToTree(vs));
 		((ObjectNode) j.get("request")).set("shape",mapper.valueToTree(shape));
 		System.out.println(j.toString());
+	}
+
+	@Test
+	public void tabularTransformRequestTest() throws JsonProcessingException, IOException
+	{
+
+		JsonNode j = transformJson(rawRequest);
+		Assert.assertEquals(j.toString(),"{\"meta\":{\"puid\":\"avodt6jrk9nbgomnco7nhrvpo0\",\"tags\":{},\"routing\":{},\"requestPath\":{},\"metrics\":[]},\"data\":{\"f0\":0.15,\"f1\":0.74}}");
+	}
+
+	@Test
+	public void tabularTransformResponseTest() throws JsonProcessingException, IOException
+	{
+
+		JsonNode j = transformJson(rawResponse);
+		Assert.assertEquals(j.toString(),"{\"meta\":{\"puid\":\"avodt6jrk9nbgomnco7nhrvpo0\",\"tags\":{},\"routing\":{},\"requestPath\":{\"classifier\":\"seldonio/mock_classifier:1.0\"},\"metrics\":[]},\"data\":{\"proba\":0.07786847593954888}}");
+	}
+
+	private JsonNode transformJson(String json) throws IOException {
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode j = mapper.readTree(json);
+		if(j.has("data")&&j.get("data").has("names")) {
+			JsonNode namesNode = j.get("data").get("names");
+
+			String[] names = mapper.readValue(namesNode.toString(), String[].class);
+			double[][] values = mapper.readValue(j.get("data").get("ndarray").toString(), double[][].class);
+			double[] vs = Doubles.concat(values);
+
+			//illustrates removing node - not doing that in PredictionService though
+			((ObjectNode) j.get("data")).remove("names");
+			((ObjectNode) j.get("data")).remove("ndarray");
+
+			for (int i = 0; i < names.length; i++) {
+				((ObjectNode) j.get("data")).put(names[i], vs[i]);
+			}
+
+		}
+		return j;
 	}
 }
