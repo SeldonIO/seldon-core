@@ -18,10 +18,12 @@ package io.seldon.engine.service;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.primitives.Doubles;
 import io.seldon.engine.pb.ProtoBufUtils;
@@ -123,16 +125,70 @@ public class PredictionService {
 	private JsonNode transformJsonTabular(String json) throws IOException {
 		ObjectMapper mapper = new ObjectMapper();
 		JsonNode j = mapper.readTree(json);
-		//only transform if there's a data element and it contains a names array
-		if(j.has("data")&&j.get("data").has("names")) {
+		if(j.has("data")&&j.get("data").has("names") &&j.get("data").get("names").isArray()) {
 			JsonNode namesNode = j.get("data").get("names");
 
 			String[] names = mapper.readValue(namesNode.toString(), String[].class);
-			double[][] values = mapper.readValue(j.get("data").get("ndarray").toString(), double[][].class);
-			double[] vs = Doubles.concat(values);
+			//only transform if there's a data element and it contains a names array
+			if(j.get("data").has("ndarray") && j.get("data").get("ndarray").isArray()) {
 
-			for (int i = 0; i < names.length; i++) {
-				((ObjectNode) j.get("data")).put(names[i], vs[i]);
+				ArrayList values = mapper.readValue(j.get("data").get("ndarray").toString(), ArrayList.class);
+
+				//for 1D ndarray we map columns to features
+				//we'll assume a 2D array is a batch where first dim is batches map columns per batch
+				//for 3D we do nothing
+
+				int nrDims =1;
+
+				if(values.get(0).getClass().equals(ArrayList.class)){
+					//array contains an array
+					nrDims =2;
+					ArrayList inner = (ArrayList)values.get(0);
+					if(inner.get(0).getClass().equals(ArrayList.class)){
+						nrDims=3;
+						//too big - won't try to log
+
+					}
+				}
+
+				if(nrDims==1){
+
+					for (int i = 0; i < names.length; i++) {
+						((ObjectNode) j.get("data")).set(names[i], mapper.readTree(mapper.writeValueAsString(values.get(i))));
+					}
+
+				} else if(nrDims==2){
+
+
+					for (int i = 0; i < names.length; i++) {
+
+						if(values.size()==1){
+
+							//here we have a 2D array but one dimension is empty - so it's really single-dimension
+							//store values as k-v rather than list
+							((ObjectNode) j.get("data")).set(names[i], mapper.readTree(mapper.writeValueAsString(((ArrayList) values.get(0)).get(i))));
+
+						} else {
+
+
+							//really is a 2D array
+							for (int row = 0; row < values.size(); row++) {
+								ArrayList batchRow = (ArrayList) values.get(row);
+								ArrayNode featureVals = null;
+								if (j.get("data").has(names[i])) {
+									featureVals = (ArrayNode) j.get("data").get(names[i]);
+								} else {
+									featureVals = mapper.createArrayNode();
+								}
+								featureVals.add(mapper.readTree(mapper.writeValueAsString(batchRow.get(i))));
+								((ObjectNode) j.get("data")).set(names[i], featureVals);
+							}
+						}
+
+					}
+				}
+
+
 			}
 
 		}
