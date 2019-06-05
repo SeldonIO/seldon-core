@@ -26,10 +26,11 @@
                             {
                                 "image": "prom/node-exporter:v0.16.0",
                                 "name": "prometheus-node-exporter",
+                                "args": ["--web.listen-address=0.0.0.0:{{ .Values.nodeExporter.port }}"],
                                 "ports": [
                                     {
-                                        "containerPort": 9100,
-                                        "hostPort": 9100,
+                                        "containerPort": {{ .Values.nodeExporter.port }},
+                                        "hostPort": {{ .Values.nodeExporter.port }},
                                         "name": "prom-node-exp"
                                     }
                                 ]
@@ -60,7 +61,7 @@
                 "ports": [
                     {
                         "name": "prometheus-node-exporter",
-                        "port": 9100,
+                        "port": {{ .Values.nodeExporter.port }},
                         "protocol": "TCP"
                     }
                 ],
