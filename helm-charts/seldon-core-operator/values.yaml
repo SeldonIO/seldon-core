@@ -7,7 +7,7 @@ engine:
   image:
     pullPolicy: IfNotPresent
     repository: seldonio/engine
-    tag: 0.3.0-SNAPSHOT
+    tag: 0.3.0
   port: 8000
   prometheus:
     path: prometheus
@@ -19,7 +19,7 @@ engine:
 image:
   pullPolicy: IfNotPresent
   repository: seldonio/seldon-core-operator
-  tag: 0.3.0-SNAPSHOT
+  tag: 0.3.0
 istio:
   enabled: false
   gateway: seldon-gateway
