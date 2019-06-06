@@ -15,6 +15,7 @@ Notebooks
    Custom Endpoints <custom_endpoints>
    Example Helm Deployments <helm_examples>
    Go Model <go_example>
+   GPU Tensorflow Deep MNIST <gpu_tensorflow_deep_mnist>
    H2O Java MoJo <h2o_mojo>
    Istio Canary <istio_canary>
    Istio Examples <istio_examples>   
