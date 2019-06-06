@@ -2032,7 +2032,7 @@ cd /usr/local/cuda/samples/bin/x86_64/linux/release
     Result = PASS
 
 
-## Install cuDNN 7.0
+## 1.2) Install cuDNN 7.0
 
 * **Download all 3 .deb files for CUDA9.0 and Ubuntu**
 
@@ -2158,7 +2158,7 @@ sudo ./mnistCUDNN
     Test passed!
 
 
-# Configure CUDA and cuDNN
+## 1.3) Configure CUDA and cuDNN
 
 **Add LD_LIBRARY_PATH in your .bashrc file:**
 
@@ -2174,7 +2174,7 @@ And source it with source:
 $ ~/.bashrc
 ```
 
-# Install tensorflow with GPU
+## 1.4) Install tensorflow with GPU
 
 **Require v=1.12.0 as with CUDA 9.0**
 
@@ -2207,6 +2207,8 @@ $ ~/.bashrc
 import tensorflow as tf
 sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 ```
+
+## 2) Train the MNIST model locally
 
 * Wrap a Tensorflow MNIST python model for use as a prediction microservice in seldon-core
  
@@ -2363,7 +2365,7 @@ Send some random features that conform to the contract
     mnist_predictor
 
 
-## Test using Minikube
+## 3) Test using Minikube
 
 **Due to a [minikube/s2i issue](https://github.com/SeldonIO/seldon-core/issues/253) you will need [s2i >= 1.1.13](https://github.com/openshift/source-to-image/releases/tag/v1.1.13)**
 
