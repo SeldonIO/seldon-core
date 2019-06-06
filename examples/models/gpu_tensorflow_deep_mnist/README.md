@@ -139,8 +139,7 @@ Add ‘:/usr/local/cuda/bin’ to the end of the PATH (inside quotes)
 * **Run the tests that we set up** - this takes some time to complete, so let it run for a little while...
 
 
-```bash
-%%bash
+```python
 
 cd /usr/local/cuda-9.0/samples
 sudo make
