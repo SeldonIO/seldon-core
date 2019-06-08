@@ -136,6 +136,7 @@ public class PredictionService {
 
 				//for 1D ndarray we map columns to features
 				//we'll assume a 2D array is a batch where first dim is batches map columns per batch
+				//if batch has 2 records with values 0.15 and 0.16 for f0 then f0 elem will get two values, 0.15 and 0.16
 				//for 3D we do nothing
 
 				int nrDims =1;
@@ -198,6 +199,9 @@ public class PredictionService {
 	private void logMessageAsJson(SeldonMessage message){
 		try {
 			String json = ProtoBufUtils.toJson(message);
+			//TODO: log message directly only if set to do so
+			//otherwise send to a downstream logging component
+			//engine must not care about response and logger must respond before processing
 			if(logTransformTabular){
 				json = transformJsonTabular(json).toString();
 			}
