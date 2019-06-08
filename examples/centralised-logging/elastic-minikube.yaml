@@ -5,6 +5,12 @@ antiAffinity: "soft"
 # Shrink default JVM heap.
 esJavaOpts: "-Xmx128m -Xms128m"
 
+service:
+  type: NodePort
+
+podAnnotations:
+  fluentbit.io/exclude: "true"
+
 # Allocate smaller chunks of memory per pod.
 resources:
   requests:

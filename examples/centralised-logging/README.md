@@ -2,9 +2,9 @@
 
 ## Introduction
 
-Here we will set up EFK (elasticsearch, fluentbit, kibana) as a stack to gather logs from SeldonDeployments and make them searchable.
+Here we will set up EFK (elasticsearch, fluentd/fluentbit, kibana) as a stack to gather logs from SeldonDeployments and make them searchable.
 
-This demo is aimed at minikube and loosely based on https://www.katacoda.com/javajon/courses/kubernetes-observability/efk
+This demo is aimed at minikube.
 
 Alternatives are available and if you are running in cloud then you can consider a managed service from your cloud provider.
 
@@ -18,38 +18,34 @@ kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceac
 helm init --service-account tiller
 ```
 
-First setup elasticsearch helm repo:
+Install elasticsearch with minikube configuration:
 
 ```
-helm repo add elastic https://helm.elastic.co
+helm install --name elasticsearch elasticsearch --version 7.1.0 --namespace=logs -f elastic-minikube.yaml --repo https://helm.elastic.co
 ```
 
-Next install elasticsearch with minikube configuration:
+Then fluentd as a collection agent (chosen in preference to fluentbit - see notes at end):
 
 ```
-helm install --name elasticsearch elastic/elasticsearch --version 7.1.0 --namespace=logs -f elastic-minikube.yaml
-```
-
-Then fluentbit as a collection agent:
-
-```
-helm install stable/fluent-bit --name=fluent-bit --namespace=logs --set backend.type=es --set backend.es.host=elasticsearch-master
+helm install fluentd-elasticsearch --name fluentd --namespace=logs -f fluentd-values.yaml --repo https://kiwigrid.github.io
 ```
 
 And kibana UI:
 
 ```
-helm install elastic/kibana --version 7.1.0 --name=kibana --namespace=logs --set service.type=NodePort
+helm install kibana --version 7.1.0 --name=kibana --namespace=logs --set service.type=NodePort --repo https://helm.elastic.co
 ```
 
 ## Generating Logging
 
 First we need seldon and a seldon deployment.
 
+TODO: take out image and pull policy below
+
 Install seldon operator:
 
 ```
-helm install seldon-core-operator --name seldon-core --namespace seldon-system --repo https://storage.googleapis.com/seldon-charts
+helm install seldon-core-operator --name seldon-core --namespace seldon-system --set engine.image.tag=0.2.8-SNAPSHOT --set image.tag=0.3.1-SNAPSHOT --set image.pullPolicy=IfNotPresent --repo https://storage.googleapis.com/seldon-charts
 ```
 
 Now a model:
@@ -97,4 +93,17 @@ Now we can go back and add a further filter for `data.names` with the operator `
 
 ## Notes
 
-All pods will be logged. To exclude pods see https://docs.fluentbit.io/manual/filter/kubernetes#request-to-exclude-logs
+The fluentd setup is configured to ensure only labelled pods are logged and seldon pods are automatically labelled.
+
+Fluentbit can be chosen instead. This could be installed with:
+
+```
+helm install stable/fluent-bit --name=fluent-bit --namespace=logs --set backend.type=es --set backend.es.host=elasticsearch-master
+```
+
+In that case pods would be logged. At the time of writing fluentbit only supports [excluding pods by label, not including](https://github.com/fluent/fluent-bit/issues/737).
+
+## Credits
+
+Loosely based on https://www.katacoda.com/javajon/courses/kubernetes-observability/efk
+Fluentd filtering based on https://blog.ptrk.io/tweaking-an-efk-stack-on-kubernetes/
