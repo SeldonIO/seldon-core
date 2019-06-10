@@ -2,9 +2,7 @@
     "apiVersion": "machinelearning.seldon.io/v1alpha2",
     "kind": "SeldonDeployment",
     "metadata": {
-        "labels": {
-            "app": "seldon"
-        },
+        "labels": {{ .Values.sdepLabels | toJson }},
         "name": "{{ .Release.Name }}"
     },
     "spec": {
@@ -20,13 +18,9 @@
                         "containers": [
                             {
                                 "image": "{{ .Values.model.image.name }}",
-                                "imagePullPolicy": "IfNotPresent",
+                                "imagePullPolicy": "{{ .Values.model.image.pullPolicy }}",
                                 "name": "{{ .Values.model.name }}",
-                                "resources": {
-                                    "requests": {
-                                        "memory": "1Mi"
-                                    }
-                                }
+                                "resources": {{ .Values.model.resources | toJson }}
                             }
                         ],
                         "terminationGracePeriodSeconds": 1
@@ -42,9 +36,7 @@
                     }},
                 "name": "{{ .Release.Name }}",
                 "replicas": {{ .Values.replicas }},
-            "labels": {
-            "version" : "v1"
-            }
+            "labels": {{ .Values.model.labels | toJson }}
             }
         ]
     }

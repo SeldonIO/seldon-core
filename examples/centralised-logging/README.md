@@ -45,13 +45,13 @@ TODO: take out image and pull policy below
 Install seldon operator:
 
 ```
-helm install seldon-core-operator --name seldon-core --namespace seldon-system --set engine.image.repository=ryandawsonuk/engine --set engine.image.tag=0.2.8-SNAPSHOT --set image.repository=ryandawsonuk/seldon-core-operator --set image.tag=0.3.1-SNAPSHOT --set image.pullPolicy=IfNotPresent --repo https://storage.googleapis.com/seldon-charts
+helm install seldon-core-operator --name seldon-core --namespace seldon-system --set engine.image.repository=ryandawsonuk/engine --set engine.image.tag=0.2.8-SNAPSHOT --set image.pullPolicy=IfNotPresent --repo https://storage.googleapis.com/seldon-charts
 ```
 
 Now a model:
 
 ```
-helm install seldon-single-model --name seldon-single-model --repo https://storage.googleapis.com/seldon-charts
+helm install --name seldon-single-model ../../helm-charts/seldon-single-model/
 ```
 
 And the loadtester:

@@ -63,9 +63,7 @@
                 },			 			 
                 "name": "{{ .Release.Name }}",
                 "replicas": {{ .Values.replicas }},
-		"labels": {
-		    "version" : "v1"
-		}
+        "labels": {{ .Values.model.labels | toJson }}
             }
         ]
     }

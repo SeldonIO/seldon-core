@@ -2,9 +2,19 @@ name: my-model
 model:
   image:
     name: seldonio/mock_classifier:1.0
+    pullPolicy: IfNotPresent
   name: classifier
+  resources:
+    requests:
+      memory: "1Mi"
+  labels:
+    version: "v1"
+    fluentd: "true"
 replicas: 1
 # Add oauth key and secret if using the default API Oauth Gateway for ingress
 oauth:
   key: 
   secret: 
+
+sdepLabels:
+  app: "seldon"
