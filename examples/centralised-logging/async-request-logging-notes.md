@@ -31,3 +31,19 @@ TODO: should we filter out the istio-proxy, istio-init and queue-proxy container
 
 TODO: Here we invoke the service via HTTP. The first curl is a bit slow so seems to sync (waits for service to warm up).
 Can we use eventing to bring in a broker and call async? Then we could use that to forward requests to be logged to a logging component.
+See https://github.com/knative/eventing/tree/master/contrib/kafka/config
+
+Install eventing with https://knative.dev/v0.3-docs/eventing/
+May need to apply scripts twice due to https://github.com/knative/eventing/issues/680
+
+See example:
+See https://github.com/knative/docs/tree/master/docs/eventing/samples/container-source
+
+For ContainerSource example do
+`kubectl apply -f https://raw.githubusercontent.com/knative/docs/master/docs/eventing/samples/container-source/service.yaml`
+`kubectl apply -f https://raw.githubusercontent.com/knative/docs/master/docs/eventing/samples/container-source/heartbeats-source.yaml`
+
+Seems like what we want to do is have a simple source that takes a raw http request and transforms to CloudEvents format.
+Actually don't want to do that in the engine anyway.
+So something like in https://github.com/knative/eventing-contrib/blob/master/cmd/heartbeats/main.go
+Then need a sink that transforms and logs to stdout. So quite similar to the heartbeats event-display service.
