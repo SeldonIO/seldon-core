@@ -9,3 +9,10 @@ openvino:
   model_volume: hostPath
 tfserving_proxy:
   image: seldonio/tfserving-proxy:0.2
+
+sdepLabels:
+  app: "seldon"
+
+predictorLabels:
+  version: "v1"
+  fluentd: "true"

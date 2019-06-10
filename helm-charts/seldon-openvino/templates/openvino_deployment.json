@@ -2,9 +2,7 @@
     "apiVersion": "machinelearning.seldon.io/v1alpha2",
     "kind": "SeldonDeployment",
     "metadata": {
-        "labels": {
-            "app": "seldon"
-        },
+        "labels": {{ .Values.sdepLabels | toJson }},
         "name": "openvino-model",
 	"namespace": "{{ .Release.Namespace }}"	
     },
@@ -98,7 +96,8 @@
 		    ]
 		},
                 "name": "openvino",
-                "replicas": 1
+                "replicas": 1,
+              "labels": {{ .Values.predictorLabels | toJson }}
             }
         ]
     }

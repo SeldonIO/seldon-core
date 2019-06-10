@@ -7,9 +7,6 @@ model:
   resources:
     requests:
       memory: "1Mi"
-  labels:
-    version: "v1"
-    fluentd: "true"
 replicas: 1
 # Add oauth key and secret if using the default API Oauth Gateway for ingress
 oauth:
@@ -18,3 +15,7 @@ oauth:
 
 sdepLabels:
   app: "seldon"
+
+predictorLabels:
+  version: "v1"
+  fluentd: "true"

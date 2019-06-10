@@ -12,9 +12,7 @@
     "apiVersion": "machinelearning.seldon.io/v1alpha2",
     "kind": "SeldonDeployment",
     "metadata": {
-        "labels": {
-            "app": "seldon"
-        },
+        "labels": {{ .Values.sdepLabels | toJson }},
         "name": "{{ .Release.Name }}"
     },
     "spec": {
@@ -63,7 +61,7 @@
                 },			 			 
                 "name": "{{ .Release.Name }}",
                 "replicas": {{ .Values.replicas }},
-        "labels": {{ .Values.model.labels | toJson }}
+        "labels": {{ .Values.predictorLabels | toJson }}
             }
         ]
     }

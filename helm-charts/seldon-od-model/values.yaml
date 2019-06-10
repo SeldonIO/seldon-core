@@ -39,11 +39,15 @@ model:
     n_stdev: FLOAT
     start_clip: INT
     max_n: INT
-  labels:
-    version: "v1"
-    fluentd: "true"
 replicas: 1
 # Add oauth key and secret if using the default API Oauth Gateway for ingress
 oauth:
   key: 
-  secret: 
+  secret:
+
+sdepLabels:
+  app: "seldon"
+
+predictorLabels:
+  version: "v1"
+  fluentd: "true"
