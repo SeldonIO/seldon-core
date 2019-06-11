@@ -33,7 +33,7 @@ TODO: Here we invoke the service via HTTP. The first curl is a bit slow so seems
 Can we use eventing to bring in a broker and call async? Then we could use that to forward requests to be logged to a logging component.
 See https://github.com/knative/eventing/tree/master/contrib/kafka/config
 
-Install eventing with https://knative.dev/v0.3-docs/eventing/
+Install knative and eventing with knative-setup.sh
 May need to apply scripts twice due to https://github.com/knative/eventing/issues/680
 
 See example:

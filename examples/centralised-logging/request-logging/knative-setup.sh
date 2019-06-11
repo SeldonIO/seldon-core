@@ -17,3 +17,8 @@ curl -L https://github.com/knative/serving/releases/download/v0.3.0/serving.yaml
 
 kubectl rollout status -n knative-serving deployment/controller
 kubectl rollout status -n knative-serving deployment/webhook
+
+kubectl apply -f https://github.com/knative/eventing/releases/download/v0.6.0/release.yaml
+kubectl apply -f https://github.com/knative/eventing/releases/download/v0.6.0/eventing.yaml
+kubectl apply -f https://github.com/knative/eventing/releases/download/v0.6.0/in-memory-channel.yaml
+kubectl apply -f https://github.com/knative/eventing/releases/download/v0.6.0/kafka.yaml
