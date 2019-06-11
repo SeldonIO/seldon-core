@@ -47,3 +47,7 @@ Seems like what we want to do is have a simple source that takes a raw http requ
 Actually don't want to do that in the engine anyway.
 So something like in https://github.com/knative/eventing-contrib/blob/master/cmd/heartbeats/main.go
 Then need a sink that transforms and logs to stdout. So quite similar to the heartbeats event-display service.
+But we need to have a way to send from something that isn't a Source CR.
+Looks like broker-trigger is the way forward. https://github.com/knative/eventing-contrib/issues/453#issuecomment-500597056
+
+Engine will need to enrich request with both puid and the pod, container and request it pertains to. Will need to use https://kubernetes.io/docs/tasks/inject-data-application/environment-variable-expose-pod-information/
