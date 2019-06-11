@@ -4,16 +4,9 @@ Then in-memory channel provisioner.
 
 kubectl apply -f https://raw.githubusercontent.com/knative/eventing/master/config/provisioners/in-memory-channel/in-memory-channel.yaml
 
+(Try in-mem as with kafka am hitting hitting https://github.com/knative/eventing/issues/1383)
+
 Create broker following knative.dev/docs/eventing/broker-trigger/
-
-Seem to be hitting https://github.com/knative/eventing/issues/1383
-:(
-
-But I am getting ImagePullBackOff from kafka-ch-controller, kafka-ch-dispatcher, kafka-channel-dispatcher and kafka-webhook
-
-This is not surprising as the images have names like 'github.com/knative/eventing/contrib/kafka/cmd/webhook' :(
-
-Looks like you have to build them locally https://github.com/knative/eventing-contrib/issues/299
 
 Create service:
 
