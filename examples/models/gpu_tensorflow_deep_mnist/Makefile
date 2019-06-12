@@ -1,9 +1,9 @@
-IMAGE_NAME=seldonio/tf-example-mnist
+IMAGE_NAME=seldonio/gpu-mnist-example
 IMAGE_VERSION=0.1
 
 
 build_image:
-	s2i build . seldonio/seldon-core-s2i-python3:0.5 ${IMAGE_NAME}:${IMAGE_VERSION}
+	s2i build . joelh1996/gpu-base:0.1 ${IMAGE_NAME}:${IMAGE_VERSION}
 
 push_image:
 	docker push $(IMAGE_NAME):$(IMAGE_VERSION)
