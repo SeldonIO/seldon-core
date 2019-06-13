@@ -6,11 +6,11 @@ We provide an option to use an anonymous metrics collection tool provided by the
 
 ### Enable Usage Reporting
 
-To help support the development of seldon-core, the voluntary reporting of usage data can be enabled whenever the "seldon-core-operator" helm chart is used  by setting the "--set usage_metrics.enabled=true" option.
+To help support the development of seldon-core, the voluntary reporting of usage data can be enabled whenever the "seldon-core-operator" helm chart is used  by setting the "--set usageMetrics.enabled=true" option.
 
 ```bash
 helm install seldon-core-operator --name seldon-core \
-        --repo https://storage.googleapis.com/seldon-charts --set usage_metrics.enabled=true
+        --repo https://storage.googleapis.com/seldon-charts --set usageMetrics.enabled=true
 ```
 
 The information that is reported is anonymous and only contains some information about each node in the cluster, including OS version, kubelet version, docker version, and CPU and memory capacity.
