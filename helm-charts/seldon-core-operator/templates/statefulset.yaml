@@ -4,6 +4,10 @@ metadata:
   labels:
     control-plane: controller-manager
     controller-tools.k8s.io: "1.0"
+    app.kubernetes.io/name: {{ include "seldon.name" . }}
+    helm.sh/chart: {{ include "seldon.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
   name: seldon-operator-controller-manager
   namespace: {{ .Release.Namespace }}
 spec:
@@ -11,6 +15,8 @@ spec:
     matchLabels:
       control-plane: controller-manager
       controller-tools.k8s.io: "1.0"
+      app.kubernetes.io/name: {{ include "seldon.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
   serviceName: seldon-operator-controller-manager-service
   template:
     metadata:
@@ -19,6 +25,8 @@ spec:
       labels:
         control-plane: controller-manager
         controller-tools.k8s.io: "1.0"
+        app.kubernetes.io/name: {{ include "seldon.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
       serviceAccountName: {{ include "seldon.serviceAccountName" . }}
       containers:

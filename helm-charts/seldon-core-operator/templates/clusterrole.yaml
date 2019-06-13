@@ -4,6 +4,11 @@ kind: ClusterRole
 metadata:
   creationTimestamp: null
   name: seldon-operator-manager-role
+  labels:
+    app.kubernetes.io/name: {{ include "seldon.name" . }}
+    helm.sh/chart: {{ include "seldon.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
 rules:
   - apiGroups:
       - apps
