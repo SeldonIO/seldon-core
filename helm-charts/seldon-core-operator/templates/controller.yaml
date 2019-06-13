@@ -1,3 +1,4 @@
+{{- if .Values.rbac.roleBinding }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -167,7 +168,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  creationTimestamp: null
   name: seldon-operator-manager-rolebinding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -175,8 +175,9 @@ roleRef:
   name: seldon-operator-manager-role
 subjects:
 - kind: ServiceAccount
-  name: default
-  namespace: {{ .Release.Namespace }}  
+  name: {{ .Values.rbac.serviceAccount }}  
+  namespace: {{ .Release.Namespace }}
+{{- end }}    
 ---
 apiVersion: v1
 kind: Secret
@@ -221,6 +222,7 @@ spec:
         control-plane: controller-manager
         controller-tools.k8s.io: "1.0"
     spec:
+      serviceAccountName: {{ .Values.rbac.serviceAccount }}
       containers:
       - command:
         - /manager
@@ -236,7 +238,7 @@ spec:
         - name: AMBASSADOR_SINGLE_NAMESPACE
           value: '{{ .Values.ambassador.singleNamespace }}'
         - name: ENGINE_CONTAINER_IMAGE_AND_VERSION
-          value: {{ .Values.engine.image.repository }}:{{ .Values.engine.image.tag }}
+          value: {{ .Values.engine.image.registry }}/{{ .Values.engine.image.repository }}:{{ .Values.engine.image.tag }}
         - name: ENGINE_CONTAINER_IMAGE_PULL_POLICY
           value: {{ .Values.engine.image.pullPolicy }}
         - name: ENGINE_CONTAINER_SERVICE_ACCOUNT_NAME
@@ -257,7 +259,7 @@ spec:
           value: '{{ .Values.istio.enabled }}'
         - name: ISTIO_GATEWAY
           value: '{{ .Values.istio.gateway }}'
-        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        image: {{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         name: manager
         ports:
