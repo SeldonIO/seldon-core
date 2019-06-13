@@ -14,6 +14,7 @@ engine:
     path: prometheus
   securityContext:
     enabled: true
+  #by default use default service account
   serviceAccount:
     name: default
   user: 8888
@@ -28,8 +29,11 @@ istio:
 predictiveUnit:
   port: 9000
 rbac:
-  roleBinding: true
-  serviceAccount: default
+  create: true
+serviceAccount:
+  #by default create service account
+  create: true
+  name:
 usageMetrics:
   database: http://seldon-core-stats.seldon.io
   enabled: false
