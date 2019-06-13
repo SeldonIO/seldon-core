@@ -1,0 +1,11 @@
+{{- if .Values.usageMetrics.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: seldon-spartakus-config
+  namespace: kube-system
+data:
+  spartakus.volunteer.clusterid: {{ default uuidv4 .Values.usageMetrics.clusterid }}
+  spartakus.volunteer.database: {{ .Values.usageMetrics.database }}
+  spartakus.volunteer.extensions: '{"seldon-core-version":"{{ .Chart.Version }}"}'
+{{- end }}
