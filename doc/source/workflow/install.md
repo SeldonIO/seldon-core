@@ -13,7 +13,7 @@ We presently support Helm installs.
 First [install Helm](https://docs.helm.sh). When helm is installed you can deploy the seldon controller to manage your Seldon Deployment graphs.
 
 ```bash 
-helm install seldon-core-operator --name seldon-core --repo https://storage.googleapis.com/seldon-charts --set usage_metrics.enabled=true
+helm install seldon-core-operator --name seldon-core --repo https://storage.googleapis.com/seldon-charts --set usageMetrics.enabled=true
 ```
 
 Notes
