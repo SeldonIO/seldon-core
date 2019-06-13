@@ -21,4 +21,5 @@ kubectl rollout status -n knative-serving deployment/webhook
 kubectl apply -f https://github.com/knative/eventing/releases/download/v0.6.0/release.yaml
 kubectl apply -f https://github.com/knative/eventing/releases/download/v0.6.0/eventing.yaml
 kubectl apply -f https://github.com/knative/eventing/releases/download/v0.6.0/in-memory-channel.yaml
-kubectl apply -f https://github.com/knative/eventing/releases/download/v0.6.0/kafka.yaml
+#kafka if you have a kafka cluster setup already
+#kubectl apply -f https://github.com/knative/eventing/releases/download/v0.6.0/kafka.yaml

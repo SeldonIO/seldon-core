@@ -1,17 +1,33 @@
 First install eventing.
 
-Then in-memory channel provisioner.
-
-kubectl apply -f https://raw.githubusercontent.com/knative/eventing/master/config/provisioners/in-memory-channel/in-memory-channel.yaml
-
 (Try in-mem as with kafka am hitting hitting https://github.com/knative/eventing/issues/1383)
 
-Create broker following knative.dev/docs/eventing/broker-trigger/
+Create broker:
+
+kubectl label namespace default knative-eventing-injection=enabled
+kubectl -n default get broker default
 
 Create service:
 
-kubectl apply -f https://raw.githubusercontent.com/knative/docs/master/docs/eventing/samples/container-source/service.yaml
+kubectl apply -f knative-example-service.yaml
 
 And trigger:
 
 kubectl apply -f ./trigger.yaml
+
+To send event first create an interactive pod in the cluster:
+
+kubectl run curl --image=radial/busyboxplus:curl -i --tty --rm
+
+Then from that session run:
+
+curl -v "http://default-broker.default.svc.cluster.local/" \
+  -X POST \
+  -H "X-B3-Flags: 1" \
+  -H "CE-CloudEventsVersion: 0.1" \
+  -H "CE-EventType: dev.knative.foo.bar" \
+  -H "CE-EventTime: 2018-04-05T03:56:24Z" \
+  -H "CE-EventID: 45a8b444-3213-4758-be3f-540bf93f85ff" \
+  -H "CE-Source: dev.knative.example" \
+  -H 'Content-Type: application/json' \
+  -d '{ "much": "wow" }'
