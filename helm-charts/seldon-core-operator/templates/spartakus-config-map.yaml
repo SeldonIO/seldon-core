@@ -4,6 +4,11 @@ kind: ConfigMap
 metadata:
   name: seldon-spartakus-config
   namespace: kube-system
+  labels:
+    app.kubernetes.io/name: {{ include "seldon.name" . }}
+    helm.sh/chart: {{ include "seldon.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
 data:
   spartakus.volunteer.clusterid: {{ default uuidv4 .Values.usageMetrics.clusterid }}
   spartakus.volunteer.database: {{ .Values.usageMetrics.database }}
