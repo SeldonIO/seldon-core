@@ -6,6 +6,7 @@ engine:
     port: 5001
   image:
     pullPolicy: IfNotPresent
+    registry: docker.io    
     repository: seldonio/engine
     tag: 0.3.1-SNAPSHOT
   port: 8000
@@ -17,7 +18,8 @@ engine:
     name: default
   user: 8888
 image:
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
+  registry: docker.io
   repository: seldonio/seldon-core-operator
   tag: 0.3.1-SNAPSHOT
 istio:
@@ -26,7 +28,8 @@ istio:
 predictiveUnit:
   port: 9000
 rbac:
-  enabled: true
+  roleBinding: true
+  serviceAccount: default
 usageMetrics:
   database: http://seldon-core-stats.seldon.io
   enabled: false
