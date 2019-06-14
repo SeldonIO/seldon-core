@@ -18,20 +18,19 @@ package io.seldon.engine.service;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.SecureRandom;
-import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.primitives.Doubles;
+import com.google.protobuf.Message;
 import io.seldon.engine.pb.ProtoBufUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Service;
 
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -42,6 +41,9 @@ import io.seldon.engine.predictors.PredictorState;
 import io.seldon.protos.PredictionProtos.Feedback;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
 import io.seldon.protos.PredictionProtos.Meta;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 public class PredictionService {
@@ -65,8 +67,11 @@ public class PredictionService {
 	@Value("${log.feedback.requests}")
 	private boolean logFeedbackRequests;
 
-	@Value("${log.transform.tabular}")
-	private boolean logTransformTabular;
+	@Value("${log.messages.externally}")
+	private boolean logMessagesExternally;
+
+	@Value("${message.logging.service}")
+	private String messageLoggingService;
 
 	public final class PuidGenerator {
 	    private SecureRandom random = new SecureRandom();
@@ -118,94 +123,41 @@ public class PredictionService {
 			logMessageAsJson(response);
 		}
 
+		if(logMessagesExternally){
+			sendMessagePairAsJson(request,response);
+		}
+
         return response;
 		
 	}
 
-	private JsonNode transformJsonTabular(String json) throws IOException {
+	private JsonNode combineRequestResponse(String request, String response) throws IOException {
 		ObjectMapper mapper = new ObjectMapper();
-		JsonNode j = mapper.readTree(json);
-		if(j.has("data")&&j.get("data").has("names") &&j.get("data").get("names").isArray()) {
-			JsonNode namesNode = j.get("data").get("names");
-
-			String[] names = mapper.readValue(namesNode.toString(), String[].class);
-			//only transform if there's a data element and it contains a names array
-			if(j.get("data").has("ndarray") && j.get("data").get("ndarray").isArray()) {
-
-				ArrayList values = mapper.readValue(j.get("data").get("ndarray").toString(), ArrayList.class);
-
-				//for 1D ndarray we map columns to features
-				//we'll assume a 2D array is a batch where first dim is batches map columns per batch
-				//if batch has 2 records with values 0.15 and 0.16 for f0 then f0 elem will get two values, 0.15 and 0.16
-				//for 3D we do nothing
-
-				int nrDims =1;
-
-				if(values.get(0).getClass().equals(ArrayList.class)){
-					//array contains an array
-					nrDims =2;
-					ArrayList inner = (ArrayList)values.get(0);
-					if(inner.get(0).getClass().equals(ArrayList.class)){
-						nrDims=3;
-						//too big - won't try to log
-
-					}
-				}
-
-				if(nrDims==1){
-
-					for (int i = 0; i < names.length; i++) {
-						((ObjectNode) j.get("data")).set(names[i], mapper.readTree(mapper.writeValueAsString(values.get(i))));
-					}
-
-				} else if(nrDims==2){
-
-
-					for (int i = 0; i < names.length; i++) {
-
-						if(values.size()==1){
-
-							//here we have a 2D array but one dimension is empty - so it's really single-dimension
-							//store values as k-v rather than list
-							((ObjectNode) j.get("data")).set(names[i], mapper.readTree(mapper.writeValueAsString(((ArrayList) values.get(0)).get(i))));
-
-						} else {
-
-
-							//really is a 2D array
-							for (int row = 0; row < values.size(); row++) {
-								ArrayList batchRow = (ArrayList) values.get(row);
-								ArrayNode featureVals = null;
-								if (j.get("data").has(names[i])) {
-									featureVals = (ArrayNode) j.get("data").get(names[i]);
-								} else {
-									featureVals = mapper.createArrayNode();
-								}
-								featureVals.add(mapper.readTree(mapper.writeValueAsString(batchRow.get(i))));
-								((ObjectNode) j.get("data")).set(names[i], featureVals);
-							}
-						}
-
-					}
-				}
-
-
-			}
-
-		}
-		return j;
+		JsonNode requestNode = mapper.readTree(request);
+		JsonNode responseNode = mapper.readTree(response);
+		ObjectNode combined = mapper.createObjectNode();
+		combined.set("request",requestNode);
+		combined.set("response",responseNode);
+		return combined;
 	}
 
-	private void logMessageAsJson(SeldonMessage message){
+	private void sendMessagePairAsJson(SeldonMessage request, SeldonMessage response){
 		try {
-			String json = ProtoBufUtils.toJson(message);
-			//TODO: log message directly only if set to do so
-			//otherwise send to a downstream logging component
-			//engine must not care about response and logger must respond before processing
-			if(logTransformTabular){
-				json = transformJsonTabular(json).toString();
-			}
-			System.out.println(json);
+			String requestJson = ProtoBufUtils.toJson(request);
+			String responseJson = ProtoBufUtils.toJson(response);
+			JsonNode pair = combineRequestResponse(requestJson,responseJson);
+
+			MultiValueMap<String, String> headers = new LinkedMultiValueMap<String, String>();
+			headers.add("Content-Type", "application/json");
+
+			//TODO: figure out headers for knative
+			//would it work with cloudevents sdk?
+
+			HttpEntity<?> requestBody = new HttpEntity<Object>(pair.toString(), headers);
+			RestTemplate restTemplate = new RestTemplate();
+
+			restTemplate.postForEntity(messageLoggingService,requestBody,String.class);
+
 		}catch (Exception ex){
 			logger.error("Unable to parse message",ex);
 		}
@@ -214,9 +166,15 @@ public class PredictionService {
 	private void logMessageAsJson(Feedback message){
 		try {
 			String json = ProtoBufUtils.toJson(message);
-			if(logTransformTabular){
-				json = transformJsonTabular(json).toString();
-			}
+			System.out.println(json);
+		}catch (Exception ex){
+			logger.error("Unable to parse message",ex);
+		}
+	}
+
+	private void logMessageAsJson(Message message){
+		try {
+			String json = ProtoBufUtils.toJson(message);
 			System.out.println(json);
 		}catch (Exception ex){
 			logger.error("Unable to parse message",ex);

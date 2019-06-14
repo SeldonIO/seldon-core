@@ -57,6 +57,26 @@ public class TestJsonParse {
 		System.out.println(j.toString());
 	}
 
+	private JsonNode combineRequestResponse(String request, String response) throws IOException {
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode requestNode = mapper.readTree(request);
+		JsonNode responseNode = mapper.readTree(response);
+		ObjectNode combined = mapper.createObjectNode();
+		combined.set("request",requestNode);
+		combined.set("response",responseNode);
+		return combined;
+	}
+
+	@Test
+	public void combineRequestResponse() throws JsonProcessingException, IOException
+	{
+
+		JsonNode j = combineRequestResponse(rawRequest,rawResponse);
+		Assert.assertEquals(j.toString(),"{\"request\":{\"meta\":{\"puid\":\"avodt6jrk9nbgomnco7nhrvpo0\",\"tags\":{},\"routing\":{},\"requestPath\":{},\"metrics\":[]},\"data\":{\"names\":[\"f0\",\"f1\"],\"ndarray\":[[0.15,0.74]]}},\"response\":{\"meta\":{\"puid\":\"avodt6jrk9nbgomnco7nhrvpo0\",\"tags\":{},\"routing\":{},\"requestPath\":{\"classifier\":\"seldonio/mock_classifier:1.0\"},\"metrics\":[]},\"data\":{\"names\":[\"proba\"],\"ndarray\":[[0.07786847593954888]]}}}");
+	}
+
+
+	//TODO: take out everything from here down as will be handled by seldon-request-logger, separate service
 	@Test
 	public void tabularTransformRequestSingleDimTest() throws JsonProcessingException, IOException
 	{
