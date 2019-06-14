@@ -1,4 +1,5 @@
 from flask import Flask, request
+import sys
 
 app = Flask(__name__)
 
@@ -7,6 +8,7 @@ def index():
     try:
         content = request.get_json(force=True)
         print(str(content))
+        sys.stdout.flush()
         return str(content)
     except:
         return 'Error processing input'
