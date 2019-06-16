@@ -6,6 +6,7 @@ Notebooks
    :maxdepth: 1
 
    Ambassador Canary <ambassador_canary>
+   Ambassador Canary <ambassador_canary>
    Ambassador Shadow <ambassador_shadow>
    Ambassador Headers <ambassador_headers>
    Ambassador Custom Config <ambassador_custom>
@@ -15,6 +16,7 @@ Notebooks
    Combiner Example <combiner>
    Custom Endpoints <custom_endpoints>
    Example Helm Deployments <helm_examples>
+   Explainer Alibi Anchor Tabular <alibi_anchor_tabular>
    Go Model <go_example>
    H2O Java MoJo <h2o_mojo>
    Istio Canary <istio_canary>
