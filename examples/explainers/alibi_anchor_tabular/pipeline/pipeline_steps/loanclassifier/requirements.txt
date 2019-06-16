@@ -1,0 +1,2 @@
+scikit-learn==0.20.1
+dill==0.2.9
