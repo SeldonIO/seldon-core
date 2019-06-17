@@ -33,7 +33,11 @@ def get_seldon_client(args) -> SeldonClient:
                           oauth_key=args.oauth_key, oauth_secret=args.oauth_secret)
     else:
         gateway_endpoint = endpoint
-        sc = SeldonClient(gateway="ambassador", gateway_endpoint=gateway_endpoint,
+        if args.grpc:
+            transport = "grpc"
+        else:
+            transport = "rest"
+        sc = SeldonClient(gateway="ambassador", gateway_endpoint=gateway_endpoint, transport=transport,
                           deployment_name=args.deployment, namespace=args.namespace)
     return sc
 
