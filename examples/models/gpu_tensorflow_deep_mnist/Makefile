@@ -3,7 +3,7 @@ IMAGE_VERSION=0.1
 
 
 build_image:
-	s2i build . joelh1996/gpu-base:0.1 ${IMAGE_NAME}:${IMAGE_VERSION}
+	s2i build . joelh1996/gpu-base:0.4 ${IMAGE_NAME}:${IMAGE_VERSION}
 
 push_image:
 	docker push $(IMAGE_NAME):$(IMAGE_VERSION)
@@ -12,7 +12,7 @@ push_image:
 .PHONY: train
 train:
 	mkdir -p model
-	python create_model.py
+	sudo python3 create_model.py
 
 .PHONY: clean
 clean:

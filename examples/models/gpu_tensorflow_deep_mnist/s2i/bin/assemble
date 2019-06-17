@@ -52,7 +52,7 @@ cp -Rf /tmp/src/. ./
 
 if [[ -f requirements.txt ]]; then
   echo "---> Installing dependencies ..."
-  pip install --find-links /whl -r requirements.txt
+  pip3 install --find-links /whl -r requirements.txt
 elif [[ -f setup.py ]]; then
   echo "---> Installing application ..."
   pip install --find-links /whl -e .
