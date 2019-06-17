@@ -1,6 +1,7 @@
 from flask import Flask, request
 import sys
 import dict_digger
+import json
 
 app = Flask(__name__)
 
@@ -23,7 +24,7 @@ def index():
         if responsePart != None:
             transformDataNdarray(responsePart)
 
-        print(str(content))
+        print(str(json.dumps(content)))
 
         return str(content)
     except Exception as e:
