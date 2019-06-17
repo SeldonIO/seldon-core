@@ -72,7 +72,7 @@ echo $(minikube ip)":"$(kubectl get svc kibana-kibana -n logs -o=jsonpath='{.spe
 When Kibana appears for the first time there will be a brief animation while it initializes.
 On the Welcome page click Explore on my own.
 From the top-left or from the `Visualize and Explore Data` panel select the `Discover` item.
-In the form field Index pattern enter kubernetes_cluster-*
+In the form field Index pattern enter logstash-*
 It should read "Success!" and Click the `> Next` step button on the right.
 In the next form select timestamp from the dropdown labeled `Time Filter` field name.
 From the bottom-right of the form select `Create index pattern`.
@@ -85,7 +85,7 @@ You can create a filter using the `Add Filter` button under `Search`. The field 
 
 The custom fields in the request bodies may not currently be in the index. If you hover over one in a request you may see `No cached mapping for this field`.
 
-To add mappings, go to `Management` at the bottom-left and then `Index Patterns`. Hit `Refresh` on the index created earlier. The number of fields should increase and `data.names` should be present.
+To add mappings, go to `Management` at the bottom-left and then `Index Patterns`. Hit `Refresh` on the index created earlier. The number of fields should increase and `request.data.names` should be present.
 
 Now we can go back and add a further filter for `data.names` with the operator `exists`. We can add further filters if we want, such as the presence of a feature name or the presence of a feature value.
 

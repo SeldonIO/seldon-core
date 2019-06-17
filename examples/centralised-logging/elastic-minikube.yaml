@@ -8,6 +8,9 @@ esJavaOpts: "-Xmx128m -Xms128m"
 podAnnotations:
   fluentbit.io/exclude: "true"
 
+replicas: 1
+minimumMasterNodes: 1
+
 # Allocate smaller chunks of memory per pod.
 resources:
   requests:
@@ -23,4 +26,4 @@ volumeClaimTemplate:
   storageClassName: "standard"
   resources:
     requests:
-      storage: 100M
+      storage: 500M
