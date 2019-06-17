@@ -151,6 +151,11 @@ public class PredictionService {
 			combined.set("sdepName",mapper.readTree(mapper.writeValueAsString(depName)));
 		}
 
+		String depNamespace = System.getenv().get("DEPLOYMENT_NAMESPACE");
+		if(depNamespace!=null){
+			combined.set("namespace",mapper.readTree(mapper.writeValueAsString(depNamespace)));
+		}
+
 		return combined;
 	}
 

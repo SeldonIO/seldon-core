@@ -33,12 +33,6 @@ sleep 3
 kubectl -n default get broker default
 ```
 
-Create service:
-
-```
-kubectl apply -f knative-example-service.yaml
-```
-
 And trigger:
 ```
 kubectl apply -f ./trigger.yaml
@@ -54,18 +48,8 @@ If you filter to pods beginning 'seldon-request-logger' or containing the attrib
 
 ## Notes
 
-TODO: should we filter out the istio-proxy, istio-init and queue-proxy containers? They log much more than the user-container. Fluentd filtering might be:
+We filter out the istio-proxy, istio-init and queue-proxy containers with configuration in the fluentd values file.
 
-```
-<filter kubernetes.**>
-    @type grep
-    <exclude>
-        key $.kubernetes.container_name
-        pattern istio-proxy
-    </exclude>
-</filter>
-```
+TODO: say how to turn on or off req logging via env vars
 
-TODO: say how to turn on or off via env vars
-
-TODO: note on kafka etc
+Knative eventing supports alternative brokering implementations. This uses the default in-memory implementation but can be swapped for e.g. kafka.

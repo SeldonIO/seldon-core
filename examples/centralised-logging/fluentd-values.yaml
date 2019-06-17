@@ -88,3 +88,11 @@ extraConfigMaps:
     pattern true
     </regexp>
     </filter>
+
+    <filter kubernetes.**>
+    @type grep
+    <exclude>
+    key $.kubernetes.container_name
+    pattern istio-proxy
+    </exclude>
+    </filter>

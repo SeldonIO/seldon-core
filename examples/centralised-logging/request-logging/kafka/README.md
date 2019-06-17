@@ -1,0 +1,1 @@
+Kafka instructions are work in progress. Kafka can be used as broker impl with knative eventing but have been hitting https://github.com/knative/eventing/issues/1383 for kafka setup.
