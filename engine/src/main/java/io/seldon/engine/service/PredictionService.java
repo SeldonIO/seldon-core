@@ -18,6 +18,7 @@ package io.seldon.engine.service;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.time.ZonedDateTime;
 import java.util.concurrent.ExecutionException;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -97,6 +98,8 @@ public class PredictionService {
 	public SeldonMessage predict(SeldonMessage request) throws InterruptedException, ExecutionException, InvalidProtocolBufferException
 	{
 
+		ZonedDateTime requestTime = ZonedDateTime.now();
+
 		if (!request.hasMeta())
 		{
 			request = request.toBuilder().setMeta(Meta.newBuilder().setPuid(puidGenerator.nextPuidId()).build()).build();
@@ -115,6 +118,7 @@ public class PredictionService {
 
         SeldonMessage response = builder.build();
 
+        //raw logging in engine, if enabled
 		if(logRequests){
 			//log json now we've added puid
 			logMessageAsJson(request);
@@ -123,35 +127,53 @@ public class PredictionService {
 			logMessageAsJson(response);
 		}
 
+		//enriched logging outside engine, if enabled
 		if(logMessagesExternally){
-			sendMessagePairAsJson(request,response);
+			ZonedDateTime responseTime = ZonedDateTime.now();
+			sendMessagePairAsJson(request,response,requestTime,responseTime);
 		}
 
         return response;
 		
 	}
 
-	private JsonNode combineRequestResponse(String request, String response) throws IOException {
+	private JsonNode combineRequestResponse(String request, String response, ZonedDateTime requestTime, ZonedDateTime responseTime) throws IOException {
 		ObjectMapper mapper = new ObjectMapper();
 		JsonNode requestNode = mapper.readTree(request);
 		JsonNode responseNode = mapper.readTree(response);
 		ObjectNode combined = mapper.createObjectNode();
 		combined.set("request",requestNode);
 		combined.set("response",responseNode);
+		((ObjectNode)combined.get("request")).set("date",mapper.readTree(mapper.writeValueAsString(requestTime.toString())));
+		((ObjectNode)combined.get("response")).set("date",mapper.readTree(mapper.writeValueAsString(responseTime.toString())));
+		String depName = System.getenv().get("DEPLOYMENT_NAME");
+		if(depName!=null){
+			combined.set("sdepName",mapper.readTree(mapper.writeValueAsString(depName)));
+		}
+
 		return combined;
 	}
 
-	private void sendMessagePairAsJson(SeldonMessage request, SeldonMessage response){
+	private void sendMessagePairAsJson(SeldonMessage request, SeldonMessage response, ZonedDateTime requestTime, ZonedDateTime responseTime){
 		try {
 			String requestJson = ProtoBufUtils.toJson(request);
 			String responseJson = ProtoBufUtils.toJson(response);
-			JsonNode pair = combineRequestResponse(requestJson,responseJson);
+			JsonNode pair = combineRequestResponse(requestJson,responseJson,requestTime,responseTime);
 
 			MultiValueMap<String, String> headers = new LinkedMultiValueMap<String, String>();
 			headers.add("Content-Type", "application/json");
+			headers.add("X-B3-Flags", "1");
+			headers.add("CE-SpecVersion", "0.2");
+			headers.add("CE-Type", "seldon.message.pair");
+			headers.add("CE-Time", requestTime.toString());
+			headers.add("CE-EventID", request.getMeta().getPuid());
 
-			//TODO: figure out headers for knative
-			//would it work with cloudevents sdk?
+			String depName = System.getenv().get("DEPLOYMENT_NAME");
+			if(depName!=null){
+				headers.add("CE-Source", "application/json");
+			} else{
+				headers.add("CE-Source", "seldon");
+			}
 
 			HttpEntity<?> requestBody = new HttpEntity<Object>(pair.toString(), headers);
 			RestTemplate restTemplate = new RestTemplate();

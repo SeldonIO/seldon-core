@@ -103,7 +103,7 @@ helm install stable/fluent-bit --name=fluent-bit --namespace=logs --set backend.
 
 In that case pods would be logged. At the time of writing fluentbit only supports [excluding pods by label, not including](https://github.com/fluent/fluent-bit/issues/737).
 
-If [external access to the elasticsearch backend](https://github.com/elastic/helm-charts/issues/157) is needed then the chart supports ingress or you can run `kubectl patch svc elasticsearch-master -n logs -p '{"spec": {"type": "LoadBalancer"}}'`
+Seldon can also be used to log full HTTP requests. See [request logging guide](./request-logging/README.md)
 
 ## Credits
 
