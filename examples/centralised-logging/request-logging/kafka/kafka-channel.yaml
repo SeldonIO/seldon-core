@@ -1,7 +1,0 @@
-apiVersion: messaging.knative.dev/v1alpha1
-kind: KafkaChannel
-metadata:
-  name: my-kafka-channel
-spec:
-  numPartitions: 1
-  replicationFactor: 3

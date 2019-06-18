@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: config-kafka
-  namespace: knative-eventing
-data:
-  # Broker URL. Replace this with the URLs for your kafka cluster,
-  # which is in the format of my-cluster-kafka-bootstrap.my-kafka-namespace:9092.
-  bootstrap_servers: my-cluster-kafka-bootstrap.kafka:9092

@@ -53,3 +53,6 @@ We filter out the istio-proxy, istio-init and queue-proxy containers with config
 TODO: say how to turn on or off req logging via env vars
 
 Knative eventing supports alternative brokering implementations. This uses the default in-memory implementation but can be swapped for e.g. kafka.
+To swap for kafka see https://github.com/knative/eventing/tree/master/contrib/kafka/config
+
+For running on a cloud-provider cluster the helm charts and yaml config would need to be changed. In some places replicas and resources have been reduced to fit into minikube. For a cloud-provider cluster the upstream config defaults are more appropriate.

@@ -3,6 +3,10 @@ curl -L https://github.com/knative/serving/releases/download/v0.3.0/istio.yaml \
   | sed 's/LoadBalancer/NodePort/' \
   | kubectl apply --filename -
 
+#reduce istio resources for minikube
+kubectl patch hpa -n istio-system istio-pilot -p '{"spec":{"minReplicas":1}}'
+kubectl patch deployment -n istio-system istio-pilot -p '{"spec":{"replicas":1}}'
+
 # Label the default namespace with istio-injection=enabled.
 kubectl label namespace default istio-injection=enabled
 
