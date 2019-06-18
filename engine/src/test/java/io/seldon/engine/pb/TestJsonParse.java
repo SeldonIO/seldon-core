@@ -35,9 +35,7 @@ import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
 
 public class TestJsonParse {
 
-	String rawRequestSingleDim = "{  \"meta\": {    \"puid\": \"avodt6jrk9nbgomnco7nhrvpo0\",    \"tags\": {    },    \"routing\": {    },    \"requestPath\": {    },    \"metrics\": []  },  \"data\": {    \"names\": [\"f0\", \"f1\"],    \"ndarray\": [0.15, 0.74]  }}";
 	String rawRequest = "{  \"meta\": {    \"puid\": \"avodt6jrk9nbgomnco7nhrvpo0\",    \"tags\": {    },    \"routing\": {    },    \"requestPath\": {    },    \"metrics\": []  },  \"data\": {    \"names\": [\"f0\", \"f1\"],    \"ndarray\": [[0.15, 0.74]]  }}";
-	String rawRequestBatch = "{  \"meta\": {    \"puid\": \"avodt6jrk9nbgomnco7nhrvpo0\",    \"tags\": {    },    \"routing\": {    },    \"requestPath\": {    },    \"metrics\": []  },  \"data\": {    \"names\": [\"f0\", \"f1\"],    \"ndarray\": [[0.15, 0.74],[0.16, 0.75]]  }}";
 	String rawResponse = "{  \"meta\": {    \"puid\": \"avodt6jrk9nbgomnco7nhrvpo0\",    \"tags\": {    },    \"routing\": {    },    \"requestPath\": {      \"classifier\": \"seldonio/mock_classifier:1.0\"    },    \"metrics\": []  },  \"data\": {    \"names\": [\"proba\"],    \"ndarray\": [[0.07786847593954888]]  }}";
 	
 	@Test
@@ -88,110 +86,4 @@ public class TestJsonParse {
 		Assert.assertEquals(j.toString(),"{\"request\":{\"meta\":{\"puid\":\"avodt6jrk9nbgomnco7nhrvpo0\",\"tags\":{},\"routing\":{},\"requestPath\":{},\"metrics\":[]},\"data\":{\"names\":[\"f0\",\"f1\"],\"ndarray\":[[0.15,0.74]]},\"date\":\"2018-04-26T14:48:09.769Z\"},\"response\":{\"meta\":{\"puid\":\"avodt6jrk9nbgomnco7nhrvpo0\",\"tags\":{},\"routing\":{},\"requestPath\":{\"classifier\":\"seldonio/mock_classifier:1.0\"},\"metrics\":[]},\"data\":{\"names\":[\"proba\"],\"ndarray\":[[0.07786847593954888]]},\"date\":\"2018-04-26T14:48:09.769Z\"}}");
 	}
 
-
-	//TODO: take out everything from here down as will be handled by seldon-request-logger, separate service
-	@Test
-	public void tabularTransformRequestSingleDimTest() throws JsonProcessingException, IOException
-	{
-
-		JsonNode j = transformJson(rawRequestSingleDim);
-		//f0 is 0.15
-		Assert.assertEquals(j.toString(),"{\"meta\":{\"puid\":\"avodt6jrk9nbgomnco7nhrvpo0\",\"tags\":{},\"routing\":{},\"requestPath\":{},\"metrics\":[]},\"data\":{\"names\":[\"f0\",\"f1\"],\"ndarray\":[0.15,0.74],\"f0\":0.15,\"f1\":0.74}}");
-	}
-	@Test
-	public void tabularTransformRequestTest() throws JsonProcessingException, IOException
-	{
-
-		JsonNode j = transformJson(rawRequest);
-		//f0 is 0.15 - it is batch form of 2D but only contains one entry (a batch of one)
-		// want f0 to get straight value rather than array with one entry
-		Assert.assertEquals(j.toString(),"{\"meta\":{\"puid\":\"avodt6jrk9nbgomnco7nhrvpo0\",\"tags\":{},\"routing\":{},\"requestPath\":{},\"metrics\":[]},\"data\":{\"names\":[\"f0\",\"f1\"],\"ndarray\":[[0.15,0.74]],\"f0\":0.15,\"f1\":0.74}}");
-	}
-
-	@Test
-	public void tabularTransformBatchRequestTest() throws JsonProcessingException, IOException
-	{
-
-		JsonNode j = transformJson(rawRequestBatch);
-		//f0 should be array with 0.15 from first entry and 0.16 from second
-		Assert.assertEquals(j.toString(),"{\"meta\":{\"puid\":\"avodt6jrk9nbgomnco7nhrvpo0\",\"tags\":{},\"routing\":{},\"requestPath\":{},\"metrics\":[]},\"data\":{\"names\":[\"f0\",\"f1\"],\"ndarray\":[[0.15,0.74],[0.16,0.75]],\"f0\":[0.15,0.16],\"f1\":[0.74,0.75]}}");
-	}
-
-	@Test
-	public void tabularTransformResponseTest() throws JsonProcessingException, IOException
-	{
-
-		JsonNode j = transformJson(rawResponse);
-		//only entry is proba and it has one value
-		Assert.assertEquals(j.toString(),"{\"meta\":{\"puid\":\"avodt6jrk9nbgomnco7nhrvpo0\",\"tags\":{},\"routing\":{},\"requestPath\":{\"classifier\":\"seldonio/mock_classifier:1.0\"},\"metrics\":[]},\"data\":{\"names\":[\"proba\"],\"ndarray\":[[0.07786847593954888]],\"proba\":0.07786847593954888}}");
-	}
-
-	private JsonNode transformJson(String json) throws IOException {
-		ObjectMapper mapper = new ObjectMapper();
-		JsonNode j = mapper.readTree(json);
-		//only transform if there's a data element and it contains a names array
-		if(j.has("data")&&j.get("data").has("names") &&j.get("data").get("names").isArray()) {
-			JsonNode namesNode = j.get("data").get("names");
-
-			String[] names = mapper.readValue(namesNode.toString(), String[].class);
-			if(j.get("data").has("ndarray") && j.get("data").get("ndarray").isArray()) {
-
-				ArrayList values = mapper.readValue(j.get("data").get("ndarray").toString(), ArrayList.class);
-
-				//for 1D ndarray we map columns to features
-				//we'll assume a 2D array is a batch where first dim is batches map columns per batch
-				//for 3D we do nothing
-
-				int nrDims =1;
-
-				if(values.get(0).getClass().equals(ArrayList.class)){
-					//array contains an array
-					nrDims =2;
-					ArrayList inner = (ArrayList)values.get(0);
-					if(inner.get(0).getClass().equals(ArrayList.class)){
-						nrDims=3;
-						//too big - won't try to log
-					}
-				}
-
-				if(nrDims==1){
-
-					for (int i = 0; i < names.length; i++) {
-						((ObjectNode) j.get("data")).set(names[i], mapper.readTree(mapper.writeValueAsString(values.get(i))));
-					}
-
-				} else if(nrDims==2){
-
-					for (int i = 0; i < names.length; i++) {
-
-						if(values.size()==1){
-							//here we have a 2D array but one dimension is empty - so it's really single-dimension
-							//store values as k-v rather than list
-							((ObjectNode) j.get("data")).set(names[i], mapper.readTree(mapper.writeValueAsString(((ArrayList) values.get(0)).get(i))));
-
-						} else {
-
-							//really is a 2D array
-							for (int row = 0; row < values.size(); row++) {
-								ArrayList batchRow = (ArrayList) values.get(row);
-								ArrayNode featureVals = null;
-								if (j.get("data").has(names[i])) {
-									featureVals = (ArrayNode) j.get("data").get(names[i]);
-								} else {
-									featureVals = mapper.createArrayNode();
-								}
-								featureVals.add(mapper.readTree(mapper.writeValueAsString(batchRow.get(i))));
-								((ObjectNode) j.get("data")).set(names[i], featureVals);
-							}
-						}
-
-					}
-				}
-
-
-			}
-
-		}
-		return j;
-	}
 }
