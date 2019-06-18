@@ -8,6 +8,8 @@ This demo is aimed at minikube.
 
 Alternatives are available and if you are running in cloud then you can consider a managed service from your cloud provider.
 
+If you just want to bootstrap a full logging and request tracking setup for minikube, run ./full-setup.sh. That includes the [request logging setup](./request-logging/README.md)
+
 ## Setup
 
 If helm is not already set up then it needs to be configured:

@@ -63,7 +63,9 @@ To add custom fields for tracking requests (e.g. an order or customer id), add t
 
 If hitting problems be sure to check all pods are up and scheduled and cluster has enough resources - `kubectl get pods --all-namespaces`
 
-You can check whether messages are going through the broker by checking the logs of the default-broker-filter pod. Each message should cause a log line there.
+Check that a broker is available in the default namespace with 'kubectl get broker -n default'
+
+You can check whether messages are going through the broker by checking the logs of the default-broker-filter pod. Each message should cause a log line there. If you don't see that pod at all then the broker is not up.
 
 To manually send messages create an interactive session with a busybox pod:
 
