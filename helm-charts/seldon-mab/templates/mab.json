@@ -95,6 +95,17 @@
 			}   
 		    ]
 		},
+		"svcOrchSpec": {
+		"resources": {{ .Values.engine.resources | toJson }},
+"env": [
+{{- range $key, $value := .Values.engine.env }}
+{
+"name": "{{ $key }}",
+"value": "{{ $value }}"
+},
+{{- end}}
+]
+},
 		"labels": {{ .Values.predictorLabels | toJson }}
 	    }
 	]
