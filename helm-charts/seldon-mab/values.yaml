@@ -32,6 +32,8 @@ engine:
   resources:
     requests:
       cpu: "0.1"
+#basic log request and responses env vars below just logs raw messages to engine stdout
+#to make searchable log externally - see request logging example
   env:
     SELDON_LOG_REQUESTS: false
     SELDON_LOG_RESPONSES: false

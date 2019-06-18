@@ -50,7 +50,7 @@ If you filter to pods beginning 'seldon-request-logger' or containing the attrib
 
 We filter out the istio-proxy, istio-init and queue-proxy containers with configuration in the fluentd values file.
 
-TODO: say how to turn on or off req logging via env vars
+Request logging is disabled by default in seldon deployments but can be enabled by engine environment variables. These are made available in the helm charts or can be set in the svcOrchSpec section of the SeldonDeployment.
 
 Knative eventing supports alternative brokering implementations. This uses the default in-memory implementation but can be swapped for e.g. kafka.
 To swap for kafka see https://github.com/knative/eventing/tree/master/contrib/kafka/config

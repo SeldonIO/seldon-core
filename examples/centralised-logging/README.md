@@ -40,12 +40,10 @@ helm install kibana --version 7.1.0 --name=kibana --namespace=logs --set service
 
 First we need seldon and a seldon deployment.
 
-TODO: take out image and pull policy below
-
 Install seldon operator:
 
 ```
-helm install --name seldon-core ../../helm-charts/seldon-core-operator/ --namespace seldon-system --set image.tag=0.3.1-SNAPSHOT --set image.repository=ryandawsonuk/seldon-core-operator --set engine.image.repository=ryandawsonuk/engine --set engine.image.tag=0.2.8-SNAPSHOT --set image.pullPolicy=IfNotPresent
+helm install --name seldon-core ../../helm-charts/seldon-core-operator/ --namespace seldon-system
 ```
 
 Check that it now recognises the seldon CRD by running `kubectl get sdep`.
