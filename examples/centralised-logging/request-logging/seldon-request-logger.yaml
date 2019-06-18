@@ -1,7 +1,7 @@
 apiVersion: serving.knative.dev/v1alpha1
 kind: Service
 metadata:
-  name: seldon-message-logging
+  name: seldon-request-logger
   namespace: default
 spec:
   runLatest:
@@ -12,4 +12,4 @@ spec:
             fluentd: "true"
         spec:
           container:
-            image: docker.io/ryandawsonuk/seldon-request-logger:latest
+            image: docker.io/seldonio/seldon-request-logger:latest

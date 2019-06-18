@@ -22,7 +22,7 @@ Create minikube cluster with knative recommendations for resource - https://knat
 
 Run knative-setup.sh
 
-Run `kubectl apply -f seldon-message-logger.yaml`
+Run `kubectl apply -f seldon-request-logger.yaml`
 
 
 Create broker:

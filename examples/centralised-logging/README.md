@@ -21,7 +21,7 @@ helm init --service-account tiller
 Install elasticsearch with minikube configuration:
 
 ```
-helm install --name elasticsearch elasticsearch --version 7.1.0 --namespace=logs -f elastic-minikube.yaml --repo https://helm.elastic.co
+helm install --name elasticsearch elasticsearch --version 7.1.1 --namespace=logs -f elastic-minikube.yaml --repo https://helm.elastic.co
 ```
 
 Then fluentd as a collection agent (chosen in preference to fluentbit - see notes at end):
@@ -33,7 +33,7 @@ helm install fluentd-elasticsearch --name fluentd --namespace=logs -f fluentd-va
 And kibana UI:
 
 ```
-helm install kibana --version 7.1.0 --name=kibana --namespace=logs --set service.type=NodePort --repo https://helm.elastic.co
+helm install kibana --version 7.1.1 --name=kibana --namespace=logs --set service.type=NodePort --repo https://helm.elastic.co
 ```
 
 ## Generating Logging
@@ -104,6 +104,8 @@ helm install stable/fluent-bit --name=fluent-bit --namespace=logs --set backend.
 In that case pods would be logged. At the time of writing fluentbit only supports [excluding pods by label, not including](https://github.com/fluent/fluent-bit/issues/737).
 
 Seldon can also be used to log full HTTP requests. See [request logging guide](./request-logging/README.md)
+
+The elasticsearch backend is not available externally by default but can be exposed if needed for debugging with `kubectl patch svc elasticsearch-master -n logs -p '{"spec": {"type": "LoadBalancer"}}'`
 
 ## Credits
 

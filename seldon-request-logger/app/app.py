@@ -38,9 +38,9 @@ def transformDataNdarray(jsonDict):
     names = dict_digger.dig(jsonDict,'data','names')
 
     #won't transform features unless we have names
-    if names == None:
+    if names == None or len(names) == 0 :
         return
-    if ndarray == None:
+    if ndarray == None or len(ndarray) == 0 :
         return
 
     #must be single-dimension set of feature values or batch
