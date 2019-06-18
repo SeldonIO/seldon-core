@@ -30,6 +30,7 @@
 			    }],
 			"terminationGracePeriodSeconds": 20
 		    }},
+	        {
 			"spec":{
 			    "containers":[
 			    {
@@ -93,7 +94,7 @@
 			    "children":[]
 			}   
 		    ]
-		}
+		},
 		"labels": {{ .Values.predictorLabels | toJson }}
 	    }
 	]

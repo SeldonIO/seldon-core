@@ -3,17 +3,11 @@ modela:
     name: seldonio/mock_classifier:1.0
   endpoint: REST
   name: classifier-1
-  labels:
-    version: "v1"
-    fluentd: "true"
 modelb:
   image:
     name: seldonio/mock_classifier:1.0
   endpoint: REST
   name: classifier-2
-  labels:
-    version: "v1"
-    fluentd: "true"
 mab:
   image:
     name: seldonio/mab_epsilon_greedy:1.1
@@ -32,4 +26,4 @@ sdepLabels:
 
 predictorLabels:
   version: "v1"
-  fluentd: "true"
+  fluentd: "false"
