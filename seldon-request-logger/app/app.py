@@ -51,6 +51,7 @@ def transformDataNdarray(jsonDict):
     if isinstance(ndarray[0], list):
         #we'll assume batch is first dim - row-primary
         for row in ndarray:
+            #we iterate through all features - may later have to add a max number
             for num, name in enumerate(names,start=0):
                 jsonDict['elements'][name] = row[num]
     else:
