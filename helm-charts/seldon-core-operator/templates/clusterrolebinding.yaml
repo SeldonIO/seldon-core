@@ -1,0 +1,19 @@
+{{- if .Values.rbac.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: seldon-operator-manager-rolebinding
+  labels:
+    app.kubernetes.io/name: {{ include "seldon.name" . }}
+    helm.sh/chart: {{ include "seldon.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: seldon-operator-manager-role
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "seldon.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}

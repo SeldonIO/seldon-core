@@ -18,7 +18,7 @@ setup(name='seldon-core',
       setup_requires=[
           'pytest-runner'
       ],
-      python_requires='>3.4',
+      python_requires='>=3.6',
       install_requires=[
           'flask',
           'flask-cors',

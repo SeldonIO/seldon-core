@@ -111,8 +111,6 @@ def test_aggreate_invalid_message():
     j = json.loads(rv.data)
     print(j)
     assert j["status"]["reason"] == "MICROSERVICE_BAD_DATA"
-    assert j["status"][
-               "info"] == 'Invalid JSON: Message type "seldon.protos.SeldonMessageList" has no field named "wrong".\n Available Fields(except extensions): <MessageFields sequence>'
 
 
 def test_aggreate_no_list():
@@ -124,8 +122,6 @@ def test_aggreate_no_list():
     j = json.loads(rv.data)
     print(j)
     assert j["status"]["reason"] == "MICROSERVICE_BAD_DATA"
-    assert j["status"][
-               "info"] == "Invalid JSON: Failed to parse seldonMessages field: repeated field seldonMessages must be in [] which is {'data': {'ndarray': [1]}}."
 
 
 def test_aggreate_bad_messages():
@@ -137,8 +133,6 @@ def test_aggreate_bad_messages():
     j = json.loads(rv.data)
     print(j)
     assert j["status"]["reason"] == "MICROSERVICE_BAD_DATA"
-    assert j["status"][
-               "info"] == 'Invalid JSON: Failed to parse seldonMessages field: Message type "seldon.protos.SeldonMessage" has no field named "data2".\n Available Fields(except extensions): <MessageFields sequence>'
 
 
 def test_aggreate_ok_2messages():

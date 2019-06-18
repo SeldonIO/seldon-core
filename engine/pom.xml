@@ -10,7 +10,7 @@
 
 	<groupId>io.seldon.engine</groupId>
 	<artifactId>seldon-engine</artifactId>
-	<version>0.2.8-SNAPSHOT</version>
+	<version>0.3.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>engine</name>
@@ -210,17 +210,17 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
-			<version>2.9.8</version>
+			<version>2.9.9</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>2.9.8</version>
+			<version>2.9.9</version>
 		</dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>2.9.8</version>
+            <version>2.9.9</version>
         </dependency>
 		<dependency>
 			<groupId>commons-lang</groupId>

@@ -6,4 +6,4 @@ keywords:
 name: seldon-core-oauth-gateway
 sources:
 - https://github.com/SeldonIO/seldon-core
-version: 0.2.8-SNAPSHOT
+version: 0.3.1-SNAPSHOT

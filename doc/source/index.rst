@@ -56,10 +56,17 @@ Seldon Core is an open source platform for deploying machine learning models on 
 
 .. toctree::
    :maxdepth: 1
+   :caption: Ingress
+
+   Ambassador Ingress <ingress/ambassador.md>
+   Istio Ingress <ingress/istio.md>
+   Seldon OAuth Gateway <ingress/seldon.md>
+   
+.. toctree::
+   :maxdepth: 1
    :caption: Deployment Options
 
    Helm Charts <graph/helm_charts.md>	     
-   Ambassador Deployment <graph/ambassador.md>	     
    Grafana Analytics <analytics/analytics.md>
    Autoscaling <graph/autoscaling.md>   
 	     

@@ -43,7 +43,8 @@
                 "replicas": 1,
 		"labels":{
 		    "version":"v1"
-		}
+		},
+		"traffic": 75
             },
             {
                 "componentSpecs": [{
@@ -75,7 +76,8 @@
                 "replicas": 1,
 		"labels":{
 		    "version":"v2"
-		}
+		},
+		"traffic": 25
             }
 	    
         ]

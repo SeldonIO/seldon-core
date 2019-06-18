@@ -1,0 +1,6 @@
+python-dateutil
+https://storage.googleapis.com/ml-pipeline/release/0.1.20/kfp.tar.gz
+kubernetes
+click
+seldon_core
+numpy

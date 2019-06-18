@@ -37,6 +37,6 @@ The key components are:
   * For each predictor a list of componentSpecs. Each componentSpec is a Kubernetes PodTemplateSpec which Seldon will build into a Kubernetes Deployment. Place here the images from your graph and their requirements, e.g. Volumes, ImagePullSecrets, Resources Requests etc.
   * A graph specification that describes how your components are joined together.
 
-To understand the inference graph definition in detail see [here](../reference/apis/crd.md)
+To understand the inference graph definition in detail see [here](../reference/seldon-deployment.md)
 
 
