@@ -24,6 +24,7 @@ def index():
         if responsePart != None:
             transformDataNdarray(responsePart)
 
+        #log formatted json to stdout for fluentd collection
         print(str(json.dumps(content)))
 
         return str(content)
