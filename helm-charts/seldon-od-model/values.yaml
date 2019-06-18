@@ -51,3 +51,13 @@ sdepLabels:
 predictorLabels:
   version: "v1"
   fluentd: "true"
+
+engine:
+  resources:
+    requests:
+      cpu: "0.1"
+  env:
+    SELDON_LOG_REQUESTS: false
+    SELDON_LOG_RESPONSES: false
+    SELDON_LOG_MESSAGES_EXTERNALLY: false
+    SELDON_LOG_MESSAGE_TYPE: "seldon.message.pair"

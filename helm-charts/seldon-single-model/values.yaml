@@ -7,7 +7,20 @@ model:
   resources:
     requests:
       memory: "1Mi"
+  env:
+    LOG_LEVEL: INFO
 replicas: 1
+
+engine:
+  resources:
+    requests:
+      cpu: "0.1"
+  env:
+    SELDON_LOG_REQUESTS: false
+    SELDON_LOG_RESPONSES: false
+    SELDON_LOG_MESSAGES_EXTERNALLY: false
+    SELDON_LOG_MESSAGE_TYPE: "seldon.message.pair"
+
 # Add oauth key and secret if using the default API Oauth Gateway for ingress
 oauth:
   key: 

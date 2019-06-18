@@ -20,7 +20,15 @@
                                 "image": "{{ .Values.model.image.name }}",
                                 "imagePullPolicy": "{{ .Values.model.image.pullPolicy }}",
                                 "name": "{{ .Values.model.name }}",
-                                "resources": {{ .Values.model.resources | toJson }}
+                                "resources": {{ .Values.model.resources | toJson }},
+                                "env": [
+{{- range $key, $value := .Values.model.env }}
+{
+"name": "{{ $key }}",
+"value": "{{ $value }}"
+},
+{{- end}}
+]
                             }
                         ],
                         "terminationGracePeriodSeconds": 1
@@ -34,6 +42,17 @@
                     "endpoint": {
                         "type": "REST"
                     }},
+                "svcOrchSpec": {
+                "resources": {{ .Values.engine.resources | toJson }},
+"env": [
+{{- range $key, $value := .Values.engine.env }}
+{
+"name": "{{ $key }}",
+"value": "{{ $value }}"
+},
+{{- end}}
+]
+                },
                 "name": "{{ .Release.Name }}",
                 "replicas": {{ .Values.replicas }},
             "labels": {{ .Values.predictorLabels | toJson }}

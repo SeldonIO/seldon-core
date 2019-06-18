@@ -58,7 +58,18 @@
 			}{{- if ne $key $lastKey -}}, {{ end }}
 {{- end }}
 		]
-                },			 			 
+                },
+                "svcOrchSpec": {
+                "resources": {{ .Values.engine.resources | toJson }},
+"env": [
+{{- range $key, $value := .Values.engine.env }}
+{
+"name": "{{ $key }}",
+"value": "{{ $value }}"
+},
+{{- end}}
+]
+},
                 "name": "{{ .Release.Name }}",
                 "replicas": {{ .Values.replicas }},
         "labels": {{ .Values.predictorLabels | toJson }}

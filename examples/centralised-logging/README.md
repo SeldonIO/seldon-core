@@ -45,7 +45,7 @@ TODO: take out image and pull policy below
 Install seldon operator:
 
 ```
-helm install seldon-core-operator --name seldon-core --namespace seldon-system --set image.tag=0.3.1-SNAPSHOT --set image.repository=ryandawsonuk/seldon-core-operator --set engine.image.repository=ryandawsonuk/engine --set engine.image.tag=0.2.8-SNAPSHOT --set image.pullPolicy=IfNotPresent --repo https://storage.googleapis.com/seldon-charts
+helm install --name seldon-core ../../helm-charts/seldon-core-operator/ --namespace seldon-system --set image.tag=0.3.1-SNAPSHOT --set image.repository=ryandawsonuk/seldon-core-operator --set engine.image.repository=ryandawsonuk/engine --set engine.image.tag=0.2.8-SNAPSHOT --set image.pullPolicy=IfNotPresent
 ```
 
 Check that it now recognises the seldon CRD by running `kubectl get sdep`.
@@ -53,14 +53,14 @@ Check that it now recognises the seldon CRD by running `kubectl get sdep`.
 Now a model:
 
 ```
-helm install --name seldon-single-model ../../helm-charts/seldon-single-model/
+helm install --name seldon-single-model ../../helm-charts/seldon-single-model/ --set engine.env.SELDON_LOG_MESSAGES_EXTERNALLY="true"
 ```
 
 And the loadtester:
 
 ```
 kubectl label nodes $(kubectl get nodes -o jsonpath='{.items[0].metadata.name}') role=locust --overwrite
-helm install seldon-core-loadtesting --name seldon-core-loadtesting --repo https://storage.googleapis.com/seldon-charts --set locust.host=http://seldon-single-model-seldon-single-model:8000 --set oauth.enabled=false --set oauth.key=oauth-key --set oauth.secret=oauth-secret --set locust.hatchRate=1 --set locust.clients=1 --set loadtest.sendFeedback=0 --set locust.minWait=0 --set locust.maxWait=0 --set replicaCount=1
+helm install --name seldon-core-loadtesting ../../helm-charts/seldon-core-loadtesting/ --set locust.host=http://seldon-single-model-seldon-single-model:8000 --set oauth.enabled=false --set oauth.key=oauth-key --set oauth.secret=oauth-secret --set locust.hatchRate=1 --set locust.clients=1 --set loadtest.sendFeedback=0 --set locust.minWait=0 --set locust.maxWait=0 --set replicaCount=1
 ```
 
 ## Inspecting Logging and Search for Requests
