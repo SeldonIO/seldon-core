@@ -56,3 +56,5 @@ Knative eventing supports alternative brokering implementations. This uses the d
 To swap for kafka see https://github.com/knative/eventing/tree/master/contrib/kafka/config
 
 For running on a cloud-provider cluster the helm charts and yaml config would need to be changed. In some places replicas and resources have been reduced to fit into minikube. For a cloud-provider cluster the upstream config defaults are more appropriate.
+
+To add custom fields for tracking requests (e.g. an order or customer id), add this to the 'meta.tags' section of the SeldonMessage and use the [predict_raw method in the model implementation](https://docs.seldon.io/projects/seldon-core/en/latest/python/python_component.html?highlight=predict_raw#low-level-methods)

@@ -48,6 +48,8 @@ Install seldon operator:
 helm install seldon-core-operator --name seldon-core --namespace seldon-system --set image.tag=0.3.1-SNAPSHOT --set image.repository=ryandawsonuk/seldon-core-operator --set engine.image.repository=ryandawsonuk/engine --set engine.image.tag=0.2.8-SNAPSHOT --set image.pullPolicy=IfNotPresent --repo https://storage.googleapis.com/seldon-charts
 ```
 
+Check that it now recognises the seldon CRD by running `kubectl get sdep`.
+
 Now a model:
 
 ```
