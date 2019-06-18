@@ -26,6 +26,7 @@ def index():
 
         #log formatted json to stdout for fluentd collection
         print(str(json.dumps(content)))
+        sys.stdout.flush()
 
         return str(content)
     except Exception as e:
