@@ -6,6 +6,7 @@
         "name": "{{ .Release.Name }}"
     },
     "spec": {
+        "annotations":{{ .Values.model.annotations | toJson }},
         "name": "{{ .Release.Name }}",
 {{- if .Values.oauth.key }}        
         "oauth_key": "{{ .Values.oauth.key }}",

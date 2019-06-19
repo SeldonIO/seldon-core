@@ -33,6 +33,8 @@ sleep 3
 kubectl -n default get broker default
 ```
 
+Note that SeldonDeployments configured to log requests will look for a broker in their namespace unless told otherwise. So this is assuming the SeldonDeployment will be in the default namespace.
+
 And trigger:
 ```
 kubectl apply -f ./trigger.yaml

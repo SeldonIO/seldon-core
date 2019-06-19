@@ -9,19 +9,20 @@ model:
       memory: "1Mi"
   env:
     LOG_LEVEL: INFO
+  #basic log request and responses env vars below just logs raw messages to engine stdout
+  #to make searchable log externally - see request logging example
+  annotations:
+    seldon.io/headless-svc: "false"
+    seldon.io/engine-log-requests: "false"
+    seldon.io/engine-log-responses: "false"
+    seldon.io/engine-log-message-type: "seldon.message.pair"
+    seldon.io/engine-log-messages-externally: "false"
 replicas: 1
 
 engine:
   resources:
     requests:
       cpu: "0.1"
-#basic log request and responses env vars below just logs raw messages to engine stdout
-#to make searchable log externally - see request logging example
-  env:
-    SELDON_LOG_REQUESTS: false
-    SELDON_LOG_RESPONSES: false
-    SELDON_LOG_MESSAGES_EXTERNALLY: false
-    SELDON_LOG_MESSAGE_TYPE: "seldon.message.pair"
 
 # Add oauth key and secret if using the default API Oauth Gateway for ingress
 oauth:
