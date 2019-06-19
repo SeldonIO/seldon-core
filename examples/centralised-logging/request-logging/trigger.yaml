@@ -1,0 +1,14 @@
+apiVersion: eventing.knative.dev/v1alpha1
+kind: Trigger
+metadata:
+  name: seldon-request-logger-trigger
+  namespace: default
+spec:
+  filter:
+    sourceAndType:
+      type: seldon.message.pair
+  subscriber:
+    ref:
+      apiVersion: serving.knative.dev/v1alpha1
+      kind: Service
+      name: seldon-request-logger

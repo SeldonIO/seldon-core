@@ -2,10 +2,8 @@
     "apiVersion": "machinelearning.seldon.io/v1alpha2",
     "kind": "SeldonDeployment",
     "metadata": {
-	"labels": {
-	    "app": "seldon"
-	},
-	"name": "{{ .Release.Name }}"
+		"labels": {{ .Values.sdepLabels | toJson }},
+		"name": "{{ .Release.Name }}"
     },
     "spec": {
 	"name": "{{ .Release.Name }}",
@@ -21,7 +19,7 @@
 		    "spec": {
 			"containers": [
 			    {
-				"image": "{{ .Values.modelb.image.name }}",
+				"image": "{{ .Values.modela.image.name }}",
 				"imagePullPolicy": "IfNotPresent",
 				"name": "{{ .Values.modela.name }}",
 				"resources": {
@@ -33,11 +31,6 @@
 			"terminationGracePeriodSeconds": 20
 		    }},
 	        {
-		    "metadata":{
-			"labels":{
-			    "version":"v2"
-			}
-		    },    
 			"spec":{
 			    "containers":[
 			    {
@@ -101,7 +94,19 @@
 			    "children":[]
 			}   
 		    ]
-		}
+		},
+		"svcOrchSpec": {
+		"resources": {{ .Values.engine.resources | toJson }},
+"env": [
+{{- range $key, $value := .Values.engine.env }}
+{
+"name": "{{ $key }}",
+"value": "{{ $value }}"
+},
+{{- end}}
+]
+},
+		"labels": {{ .Values.predictorLabels | toJson }}
 	    }
 	]
     }
