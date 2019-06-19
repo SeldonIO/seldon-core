@@ -60,6 +60,7 @@ Define a Dockerfile in the same directory as your source code and requirements.t
 FROM python:3.7-slim
 COPY . /app
 WORKDIR /app
+RUN pip install gunicorn
 RUN pip install -r requirements.txt
 EXPOSE 5000
 
@@ -72,6 +73,7 @@ ENV PERSISTENCE 0
 CMD exec seldon-core-microservice $MODEL_NAME $API_TYPE --service-type $SERVICE_TYPE --persistence $PERSISTENCE
 ```
 
+For explanation of use of gunicorn see https://ironboundsoftware.com/blog/2016/06/27/faster-flask-need-gunicorn/
 
 ## Step 3 - Build your image
 Use ```docker build . -t $ORG/$MODEL_NAME:$TAG``` to create your Docker image from source code. A simple name can be used but convention is to use the ORG/IMAGE:TAG format.
