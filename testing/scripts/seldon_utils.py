@@ -126,15 +126,15 @@ def grpc_request_ambassador(deploymentName,namespace,endpoint="localhost:8004",d
 
 def grpc_request_ambassador2(deploymentName,namespace,endpoint="localhost:8004",data_size=5,rows=1,data=None):
     try:
-        grpc_request_ambassador(deploymentName,namespace,endpoint=endpoint,data_size=data_size,rows=rows,data=data)
+        return grpc_request_ambassador(deploymentName,namespace,endpoint=endpoint,data_size=data_size,rows=rows,data=data)
     except:
         print("Warning - caught exception")
-        grpc_request_ambassador(deploymentName,namespace,endpoint=endpoint,data_size=data_size,rows=rows,data=data)
+        return grpc_request_ambassador(deploymentName,namespace,endpoint=endpoint,data_size=data_size,rows=rows,data=data)
 
 def grpc_request_api_gateway2(oauth_key,oauth_secret,namespace,rest_endpoint="localhost:8002",grpc_endpoint="localhost:8003",data_size=5,rows=1,data=None):
     try:
-        grpc_request_api_gateway(oauth_key,oauth_secret,namespace,rest_endpoint=rest_endpoint,grpc_endpoint=grpc_endpoint,data_size=data_size,rows=rows,data=data)
+        return  grpc_request_api_gateway(oauth_key,oauth_secret,namespace,rest_endpoint=rest_endpoint,grpc_endpoint=grpc_endpoint,data_size=data_size,rows=rows,data=data)
     except:
-        print("Warning - caught exception")        
-        grpc_request_api_gateway(oauth_key,oauth_secret,namespace,rest_endpoint=rest_endpoint,grpc_endpoint=grpc_endpoint,data_size=data_size,rows=rows,data=data)        
-    
+        print("Warning - caught exception")
+        return grpc_request_api_gateway(oauth_key,oauth_secret,namespace,rest_endpoint=rest_endpoint,grpc_endpoint=grpc_endpoint,data_size=data_size,rows=rows,data=data)
+
