@@ -2,12 +2,11 @@
     "apiVersion": "machinelearning.seldon.io/v1alpha2",
     "kind": "SeldonDeployment",
     "metadata": {
-        "labels": {
-            "app": "seldon"
-        },
+        "labels": {{ .Values.sdepLabels | toJson }},
         "name": "{{ .Release.Name }}"
     },
     "spec": {
+        "annotations":{{ .Values.model.annotations | toJson }},
         "name": "{{ .Release.Name }}",
 {{- if .Values.oauth.key }}        
         "oauth_key": "{{ .Values.oauth.key }}",
@@ -20,13 +19,17 @@
                         "containers": [
                             {
                                 "image": "{{ .Values.model.image.name }}",
-                                "imagePullPolicy": "IfNotPresent",
+                                "imagePullPolicy": "{{ .Values.model.image.pullPolicy }}",
                                 "name": "{{ .Values.model.name }}",
-                                "resources": {
-                                    "requests": {
-                                        "memory": "1Mi"
-                                    }
-                                }
+                                "resources": {{ .Values.model.resources | toJson }},
+                                "env": [
+{{- range $key, $value := .Values.model.env }}
+{
+"name": "{{ $key }}",
+"value": "{{ $value }}"
+},
+{{- end}}
+]
                             }
                         ],
                         "terminationGracePeriodSeconds": 1
@@ -40,11 +43,20 @@
                     "endpoint": {
                         "type": "REST"
                     }},
+                "svcOrchSpec": {
+                "resources": {{ .Values.engine.resources | toJson }},
+"env": [
+{{- range $key, $value := .Values.engine.env }}
+{
+"name": "{{ $key }}",
+"value": "{{ $value }}"
+},
+{{- end}}
+]
+                },
                 "name": "{{ .Release.Name }}",
                 "replicas": {{ .Values.replicas }},
-            "labels": {
-            "version" : "v1"
-            }
+            "labels": {{ .Values.predictorLabels | toJson }}
             }
         ]
     }
