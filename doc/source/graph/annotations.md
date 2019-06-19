@@ -32,18 +32,32 @@ You can configure aspects of Seldon Core via annotations in the SeldonDeployment
     * Locations : SeldonDeployment.spec.annotations
     * [gRPC headless example](grpc_load_balancing_ambassador.md)
 
-Otherwise any annotations starting with `seldon.io/engine-` will be interpreted as specifying environment variables for the engine container. For example:
+Otherwise any annotations starting with `seldon.io/engine-` will be interpreted as specifying environment variables for the engine container. These include:
 
   * ```seldon.io/engine-java-opts``` : Java Opts for Service Orchestrator
     * Locations : SeldonDeployment.spec.predictors.annotations
     * [Java Opts example](model_engine_java_opts.md)
     * Translates to the environment variable JAVA_OPTS
+  * ```seldon.io/engine-log-requests``` : Whether to log raw requests from engine
+    * Locations : SeldonDeployment.spec.predictors.annotations
+    * Translates to the environment variable LOG_REQUESTS
+  * ```seldon.io/engine-log-responses``` : Whether to log raw responses from engine
+    * Locations : SeldonDeployment.spec.predictors.annotations
+    * Translates to the environment variable LOG_RESPONSES
+  * ```seldon.io/engine-log-messages-externally``` : Option to turn on logging of requests via a logging service
+    * Locations : SeldonDeployment.spec.predictors.annotations
+    * Translates to the environment variable LOG_MESSAGES_EXTERNALLY
+  * ```seldon.io/engine-log-message-type``` : Type to set on messages when sending to logging service
+    * Locations : SeldonDeployment.spec.predictors.annotations
+    * Translates to the environment variable LOG_MESSAGE_TYPE
+
+More details on logging-related variables can be seen in the [request-logging example](https://github.com/SeldonIO/seldon-core/tree/master/examples/centralised-logging/README.md).
 
 Environment variables for the engine can also be set in the `svcOrchSpec` section of the SeldonDeployment, alongside engine resources. For examples see the helm charts.
 
 If both annotations and `svcOrchSpec` environment variables are used to set an environment variable for the engine container then `svcOrchSpec` environment variables take priority.
 
-For a full listing of engine env vars see the application.properties file of the engine source code.
+The above are the key engine env vars. For a full listing of engine env vars see the application.properties file of the engine source code.
 
 ## API OAuth Gateway Annotations
 The API OAuth Gateway, if used, can also have the following annotations:
