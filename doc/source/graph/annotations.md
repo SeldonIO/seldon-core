@@ -47,13 +47,16 @@ Otherwise any annotations starting with `seldon.io/engine-` will be interpreted 
   * ```seldon.io/engine-log-messages-externally``` : Option to turn on logging of requests via a logging service
     * Locations : SeldonDeployment.spec.predictors.annotations
     * Translates to the environment variable LOG_MESSAGES_EXTERNALLY
-  * ```seldon.io/engine-log-message-type``` : Type to set on messages when sending to logging service
+  * ```seldon.io/engine-log-message-type``` : Option to override type set on messages when sending to logging service
     * Locations : SeldonDeployment.spec.predictors.annotations
     * Translates to the environment variable LOG_MESSAGE_TYPE
+  * ```seldon.io/engine-message-logging-service``` : Option to override url to broker that sends to logging service
+    * Locations : SeldonDeployment.spec.predictors.annotations
+    * Translates to the environment variable MESSAGE_LOGGING_SERVICE
 
 More details on logging-related variables can be seen in the [request-logging example](https://github.com/SeldonIO/seldon-core/tree/master/examples/centralised-logging/README.md).
 
-Environment variables for the engine can also be set in the `svcOrchSpec` section of the SeldonDeployment, alongside engine resources. For examples see the helm charts.
+Environment variables for the engine can also be set in the `svcOrchSpec` section of the SeldonDeployment, alongside engine resources. For examples see the helm charts or the [distributed tracing example](./distributed-tracing.md).
 
 If both annotations and `svcOrchSpec` environment variables are used to set an environment variable for the engine container then `svcOrchSpec` environment variables take priority.
 
