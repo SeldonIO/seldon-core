@@ -5,7 +5,28 @@ openvino:
     name: squeezenet1.1
     input: data
     output: prob
+    env:
+      LOG_LEVEL: DEBUG
+    resources: {}
   port: 8001
   model_volume: hostPath
 tfserving_proxy:
   image: seldonio/tfserving-proxy:0.2
+
+engine:
+  resources:
+    requests:
+      cpu: "0.1"
+#basic log request and responses env vars below just logs raw messages to engine stdout
+#to make searchable log externally - see request logging example
+  env:
+    SELDON_LOG_REQUESTS: false
+    SELDON_LOG_RESPONSES: false
+    SELDON_LOG_MESSAGES_EXTERNALLY: false
+
+sdepLabels:
+  app: "seldon"
+
+predictorLabels:
+  version: "v1"
+  fluentd: "true"
