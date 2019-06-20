@@ -1,5 +1,5 @@
 
-# Tensorflow GPU MNIST Model
+# Tensorflow GPU MNIST Model with GKE
 
 **Please note: This tutorial uses Tensorflow-gpu=1.13.1, CUDA 10.0 and cuDNN 7.6**
 
@@ -23,7 +23,9 @@ The tutorial will be broken down into the following sections:
 2. Train the MNIST model locally
 
 
-3. Test using minikube
+3. Push the Image to your proejcts Container Registry
+
+4. Deploy the model on GKE using Seldon Core
 
 
 ## 1) Installing all dependencies to run Tensorflow-GPU
@@ -291,14 +293,55 @@ Send some random features that conform to the contract
 !docker rm mnist_predictor --force
 ```
 
-## 3) Test using Minikube
+## 3) Push the image to Google Container Registry
 
-**Due to a [minikube/s2i issue](https://github.com/SeldonIO/seldon-core/issues/253) you will need [s2i >= 1.1.13](https://github.com/openshift/source-to-image/releases/tag/v1.1.13)**
+**Configure access to container registry** (follow the configuration to link to your own project).
+
+```
+$ gcloud auth configure-docker
+```
+
+**Tag Image with your project's registry path** (Edit the command below)
 
 
 ```python
-!minikube start --memory 4096
+!docker tag deep-mnist-gpu:0.1 gcr.io/<YOUR_PROJECT_ID>/deep-mnist-gpu:0.1
 ```
+
+**Push the Image to the Container Registry** (Again edit command below)
+
+
+```python
+!docker push gcr.io/<YOUR_PROJECT_ID>/deep-mnist-gpu:0.1
+```
+
+## 4) Deploy in GKE
+
+## Spin up a GKE Cluster
+
+For this example only one node is needed within the cluster. The cluster should have the following **config**:
+
+* 8 CPUs
+* 30 GB Total Memory
+* 1 Node with 1X NVIDIA Tesla V100 GPU
+* Ubuntu Node image
+
+Leave the rest of the config as default. 
+
+**Connect to your cluster and check the context.**
+
+
+```python
+!gcloud config set project <YOUR_PROJECT_ID>
+!gcloud container clusters get-credentials <YOUR_CLUSTER_NAME>
+!kubectl config current-context
+```
+
+## Install Seldon Core
+
+**Before installing Seldon Core, we need to install HELM**
+
+To do so, we need to creat a ClusterRoleBinding for us, a ServiceAccount and then a RoleBinding
 
 
 ```python
@@ -307,18 +350,42 @@ Send some random features that conform to the contract
 
 
 ```python
-!helm init
+!kubectl create serviceaccount tiller --namespace kube-system
 ```
 
 
 ```python
+!kubectl apply -f tiller-role-binding.yaml
+```
+
+**Once that is set-up we can install Tiller**
+
+
+```python
+!helm repo update
+```
+
+
+```python
+!helm init --service-account tiller
+```
+
+
+```python
+# Wait until Tiller finishes
 !kubectl rollout status deploy/tiller-deploy -n kube-system
 ```
 
+**Now we can install SELDON.**
+
+We first start with the custom resource definitions (CRDs)
+
 
 ```python
-!helm install ../../../helm-charts/seldon-core-operator --name seldon-core --set usageMetrics.enabled=true --namespace seldon-system
+!helm install seldon-core-operator --name seldon-core-operator --repo https://storage.googleapis.com/seldon-charts
 ```
+
+And confirm they are running by getting the pods:
 
 
 ```python
@@ -326,47 +393,132 @@ Send some random features that conform to the contract
 ```
 
 ## Setup Ingress
-There are gRPC issues with the latest Ambassador, so we rewcommend 0.40.2 until these are fixed.
+
+This will allow you to reach the Seldon models from outside the kubernetes cluster.
+
+In EKS it automatically creates an Elastic Load Balancer, which you can configure from the EC2 Console.
 
 
 ```python
 !helm install stable/ambassador --name ambassador --set crds.keep=false
 ```
 
+And let's wait until it's fully deployed
+
 
 ```python
 !kubectl rollout status deployment.apps/ambassador
 ```
 
-## Wrap Model and Test
+## Build the Seldon Graph
+
+First lets look at the Seldon Graph Yaml file:
 
 
 ```python
-!eval $(minikube docker-env) && s2i build . seldonio/seldon-core-s2i-python2:0.5.1 deep-mnist:0.1
+!cat deep_mnist_gpu.json
+```
+
+    {
+        "apiVersion": "machinelearning.seldon.io/v1alpha2",
+        "kind": "SeldonDeployment",
+        "metadata": {
+            "labels": {
+                "app": "seldon"
+            },
+            "name": "deep-mnist-gpu"
+        },
+        "spec": {
+            "annotations": {
+                "project_name": "Tensorflow MNIST",
+                "deployment_version": "v1"
+            },
+            "name": "deep-mnist-gpu",
+            "oauth_key": "oauth-key",
+            "oauth_secret": "oauth-secret",
+            "predictors": [
+                {
+                    "componentSpecs": [{
+                        "spec": {
+                            "containers": [
+                                {
+                                    "image": "gcr.io/<YOUR_PROJECT_ID>/deep-mnist-gpu:0.1",
+                                    "imagePullPolicy": "IfNotPresent",
+                                    "name": "classifier",
+                                    "resources": {
+                                        "requests": {
+                                            "memory": "1Mi"
+                                        }
+                                    }
+                                }
+                            ],
+                            "terminationGracePeriodSeconds": 20
+                        }
+                    }],
+                    "graph": {
+                        "children": [],
+                        "name": "classifier",
+                        "endpoint": {
+    			"type" : "REST"
+    		    },
+                        "type": "MODEL"
+                    },
+                    "name": "single-model",
+                    "replicas": 1,
+    		"annotations": {
+    		    "predictor_version" : "v1"
+    		}
+                }
+            ]
+        }
+    }
+
+
+**Change the image name in this file (line 24) to match the path to the image in your container registry.**
+
+```
+$vim deep_mnist_gpu.json
+```
+
+Next, we are ready to **build the seldon graph**.
+
+
+```python
+!kubectl create -f deep_mnist_gpu.json
 ```
 
 
 ```python
-!kubectl create -f deep_mnist.json
+!kubectl rollout status deploy/deep-mnist-gpu-single-model-8969cc0
+```
+
+Check the deployment is running
+
+
+```python
+!kubectl get pods
+```
+
+## Test the deployment with test data
+
+**Change the IP address to the External IP of your Ambassador deployment.**
+
+
+```python
+!kubectl get svc
 ```
 
 
 ```python
-!kubectl rollout status deploy/deep-mnist-single-model-8969cc0
+!seldon-core-api-tester contract.json <EXTERNAL_IP_ADDRESS> `kubectl get svc ambassador -o jsonpath='{.spec.ports[0].port}'` \
+    deep-mnist-gpu --namespace default -p
 ```
+
+## Clean up
+
+Make sure you delete the cluster once you have finished with it to avoid any ongoing charges.
 
 
 ```python
-!seldon-core-api-tester contract.json `minikube ip` `kubectl get svc ambassador -o jsonpath='{.spec.ports[0].nodePort}'` \
-    deep-mnist --namespace default -p
-```
-
-
-```python
-!minikube delete
-```
-
-
-```python
-
+!gcloud container clusters delete <YOUR_CLUSTER_NAME>
 ```
