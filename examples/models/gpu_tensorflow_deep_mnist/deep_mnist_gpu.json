@@ -5,14 +5,14 @@
         "labels": {
             "app": "seldon"
         },
-        "name": "deep-mnist"
+        "name": "deep-mnist-gpu"
     },
     "spec": {
         "annotations": {
             "project_name": "Tensorflow MNIST",
             "deployment_version": "v1"
         },
-        "name": "deep-mnist",
+        "name": "deep-mnist-gpu",
         "oauth_key": "oauth-key",
         "oauth_secret": "oauth-secret",
         "predictors": [
@@ -21,7 +21,7 @@
                     "spec": {
                         "containers": [
                             {
-                                "image": "deep-mnist:0.1",
+                                "image": "gcr.io/<YOUR_PROJECT_ID>/deep-mnist-gpu:0.1",
                                 "imagePullPolicy": "IfNotPresent",
                                 "name": "classifier",
                                 "resources": {
