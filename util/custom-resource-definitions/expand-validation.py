@@ -42,6 +42,13 @@ def simplifyAdditionalProperties(defn):
         for k in defn.keys():
             simplifyAdditionalProperties(defn[k])
 
+def removeDescriptions(defn):
+    if isinstance(defn, dict):
+        if "description" in defn.keys():
+            del defn["description"]
+        for k in defn.keys():
+            removeDescriptions(defn[k])
+
 """
 Expands the Swagger JSON for the Root Item by expanding out the $ref items to their referring JSON
 Needed as CRD OpenAPI validation can't handle $ref elements
@@ -64,4 +71,5 @@ if __name__ == '__main__':
     root = data["definitions"][args.root]
     expandedRoot = expand(root,data)
     simplifyAdditionalProperties(expandedRoot)
+    removeDescriptions(expandedRoot)
     print(json.dumps(expandedRoot,indent=4))
