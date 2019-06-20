@@ -53,6 +53,147 @@ Let's get started! 🚀🔥
 !pip install -r requirements-dev.txt
 ```
 
+    Collecting https://storage.googleapis.com/ml-pipeline/release/0.1.20/kfp.tar.gz (from -r requirements-dev.txt (line 3))
+      Using cached https://storage.googleapis.com/ml-pipeline/release/0.1.20/kfp.tar.gz
+    Requirement already satisfied (use --upgrade to upgrade): kfp==0.1.20 from https://storage.googleapis.com/ml-pipeline/release/0.1.20/kfp.tar.gz in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from -r requirements-dev.txt (line 3))
+    Requirement already satisfied: xai==0.0.5 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from -r requirements-dev.txt (line 1)) (0.0.5)
+    Requirement already satisfied: python-dateutil==2.8.0 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from -r requirements-dev.txt (line 2)) (2.8.0)
+    Requirement already satisfied: kubernetes==9.0.0 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from -r requirements-dev.txt (line 4)) (9.0.0)
+    Requirement already satisfied: click==6.7 in /home/alejandro/.local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 5)) (6.7)
+    Requirement already satisfied: seldon_core==0.3.0 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from -r requirements-dev.txt (line 6)) (0.3.0)
+    Requirement already satisfied: alibi==0.2.0 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from -r requirements-dev.txt (line 7)) (0.2.0)
+    Requirement already satisfied: jupyter==1.0.0 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from -r requirements-dev.txt (line 8)) (1.0.0)
+    Requirement already satisfied: dill==0.2.9 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from -r requirements-dev.txt (line 9)) (0.2.9)
+    Requirement already satisfied: scikit-learn==0.20.1 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from -r requirements-dev.txt (line 10)) (0.20.1)
+    Requirement already satisfied: urllib3<1.25,>=1.15 in /home/alejandro/.local/lib/python3.6/site-packages (from kfp==0.1.20->-r requirements-dev.txt (line 3)) (1.24.1)
+    Requirement already satisfied: six>=1.10 in /home/alejandro/.local/lib/python3.6/site-packages (from kfp==0.1.20->-r requirements-dev.txt (line 3)) (1.12.0)
+    Requirement already satisfied: certifi in /home/alejandro/.local/lib/python3.6/site-packages (from kfp==0.1.20->-r requirements-dev.txt (line 3)) (2019.3.9)
+    Requirement already satisfied: PyYAML in /home/alejandro/.local/lib/python3.6/site-packages (from kfp==0.1.20->-r requirements-dev.txt (line 3)) (5.1)
+    Requirement already satisfied: google-cloud-storage>=1.13.0 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from kfp==0.1.20->-r requirements-dev.txt (line 3)) (1.16.1)
+    Requirement already satisfied: PyJWT>=1.6.4 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from kfp==0.1.20->-r requirements-dev.txt (line 3)) (1.7.1)
+    Requirement already satisfied: cryptography>=2.4.2 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from kfp==0.1.20->-r requirements-dev.txt (line 3)) (2.7)
+    Requirement already satisfied: google-auth>=1.6.1 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from kfp==0.1.20->-r requirements-dev.txt (line 3)) (1.6.3)
+    Requirement already satisfied: requests_toolbelt>=0.8.0 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from kfp==0.1.20->-r requirements-dev.txt (line 3)) (0.9.1)
+    Requirement already satisfied: kfp-server-api<0.1.19,>=0.1.18 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from kfp==0.1.20->-r requirements-dev.txt (line 3)) (0.1.18.2)
+    Requirement already satisfied: cycler==0.10.0 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from xai==0.0.5->-r requirements-dev.txt (line 1)) (0.10.0)
+    Requirement already satisfied: pandas==0.23.4 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from xai==0.0.5->-r requirements-dev.txt (line 1)) (0.23.4)
+    Requirement already satisfied: matplotlib==3.0.2 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from xai==0.0.5->-r requirements-dev.txt (line 1)) (3.0.2)
+    Requirement already satisfied: scipy==1.1.0 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from xai==0.0.5->-r requirements-dev.txt (line 1)) (1.1.0)
+    Requirement already satisfied: pyparsing==2.3.0 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from xai==0.0.5->-r requirements-dev.txt (line 1)) (2.3.0)
+    Requirement already satisfied: kiwisolver==1.0.1 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from xai==0.0.5->-r requirements-dev.txt (line 1)) (1.0.1)
+    Requirement already satisfied: numpy==1.15.4 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from xai==0.0.5->-r requirements-dev.txt (line 1)) (1.15.4)
+    Requirement already satisfied: pytz==2018.7 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from xai==0.0.5->-r requirements-dev.txt (line 1)) (2018.7)
+    Requirement already satisfied: requests in /home/alejandro/.local/lib/python3.6/site-packages (from kubernetes==9.0.0->-r requirements-dev.txt (line 4)) (2.22.0)
+    Requirement already satisfied: websocket-client!=0.40.0,!=0.41.*,!=0.42.*,>=0.32.0 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from kubernetes==9.0.0->-r requirements-dev.txt (line 4)) (0.56.0)
+    Requirement already satisfied: setuptools>=21.0.0 in /home/alejandro/.local/lib/python3.6/site-packages (from kubernetes==9.0.0->-r requirements-dev.txt (line 4)) (41.0.0)
+    Requirement already satisfied: requests-oauthlib in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from kubernetes==9.0.0->-r requirements-dev.txt (line 4)) (1.2.0)
+    Requirement already satisfied: grpcio in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from seldon_core==0.3.0->-r requirements-dev.txt (line 6)) (1.21.1)
+    Requirement already satisfied: grpcio-opentracing in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from seldon_core==0.3.0->-r requirements-dev.txt (line 6)) (1.1.4)
+    Requirement already satisfied: redis in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from seldon_core==0.3.0->-r requirements-dev.txt (line 6)) (3.2.1)
+    Requirement already satisfied: tensorflow in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from seldon_core==0.3.0->-r requirements-dev.txt (line 6)) (1.13.1)
+    Requirement already satisfied: flask in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from seldon_core==0.3.0->-r requirements-dev.txt (line 6)) (1.0.3)
+    Requirement already satisfied: flatbuffers in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from seldon_core==0.3.0->-r requirements-dev.txt (line 6)) (1.11)
+    Requirement already satisfied: Flask-OpenTracing==0.2.0 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from seldon_core==0.3.0->-r requirements-dev.txt (line 6)) (0.2.0)
+    Requirement already satisfied: opentracing<2,>=1.2.2 in /home/alejandro/.local/lib/python3.6/site-packages (from seldon_core==0.3.0->-r requirements-dev.txt (line 6)) (1.3.0)
+    Requirement already satisfied: flask-cors in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from seldon_core==0.3.0->-r requirements-dev.txt (line 6)) (3.0.8)
+    Requirement already satisfied: jaeger-client==3.13.0 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from seldon_core==0.3.0->-r requirements-dev.txt (line 6)) (3.13.0)
+    Requirement already satisfied: protobuf in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from seldon_core==0.3.0->-r requirements-dev.txt (line 6)) (3.8.0)
+    Requirement already satisfied: scikit-image in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from alibi==0.2.0->-r requirements-dev.txt (line 7)) (0.15.0)
+    Requirement already satisfied: beautifulsoup4 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from alibi==0.2.0->-r requirements-dev.txt (line 7)) (4.7.1)
+    Requirement already satisfied: opencv-python in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from alibi==0.2.0->-r requirements-dev.txt (line 7)) (4.1.0.25)
+    Requirement already satisfied: seaborn in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from alibi==0.2.0->-r requirements-dev.txt (line 7)) (0.9.0)
+    Requirement already satisfied: spacy in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from alibi==0.2.0->-r requirements-dev.txt (line 7)) (2.1.4)
+    Requirement already satisfied: keras in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from alibi==0.2.0->-r requirements-dev.txt (line 7)) (2.2.4)
+    Requirement already satisfied: nbconvert in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from jupyter==1.0.0->-r requirements-dev.txt (line 8)) (5.5.0)
+    Requirement already satisfied: ipykernel in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from jupyter==1.0.0->-r requirements-dev.txt (line 8)) (5.1.1)
+    Requirement already satisfied: notebook in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from jupyter==1.0.0->-r requirements-dev.txt (line 8)) (5.7.8)
+    Requirement already satisfied: ipywidgets in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from jupyter==1.0.0->-r requirements-dev.txt (line 8)) (7.4.2)
+    Requirement already satisfied: jupyter-console in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from jupyter==1.0.0->-r requirements-dev.txt (line 8)) (6.0.0)
+    Requirement already satisfied: qtconsole in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from jupyter==1.0.0->-r requirements-dev.txt (line 8)) (4.5.1)
+    Requirement already satisfied: google-cloud-core<2.0dev,>=1.0.0 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from google-cloud-storage>=1.13.0->kfp==0.1.20->-r requirements-dev.txt (line 3)) (1.0.2)
+    Requirement already satisfied: google-resumable-media>=0.3.1 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from google-cloud-storage>=1.13.0->kfp==0.1.20->-r requirements-dev.txt (line 3)) (0.3.2)
+    Requirement already satisfied: asn1crypto>=0.21.0 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from cryptography>=2.4.2->kfp==0.1.20->-r requirements-dev.txt (line 3)) (0.24.0)
+    Requirement already satisfied: cffi!=1.11.3,>=1.8 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from cryptography>=2.4.2->kfp==0.1.20->-r requirements-dev.txt (line 3)) (1.12.3)
+    Requirement already satisfied: rsa>=3.1.4 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from google-auth>=1.6.1->kfp==0.1.20->-r requirements-dev.txt (line 3)) (4.0)
+    Requirement already satisfied: cachetools>=2.0.0 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from google-auth>=1.6.1->kfp==0.1.20->-r requirements-dev.txt (line 3)) (3.1.1)
+    Requirement already satisfied: pyasn1-modules>=0.2.1 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from google-auth>=1.6.1->kfp==0.1.20->-r requirements-dev.txt (line 3)) (0.2.5)
+    Requirement already satisfied: chardet<3.1.0,>=3.0.2 in /home/alejandro/.local/lib/python3.6/site-packages (from requests->kubernetes==9.0.0->-r requirements-dev.txt (line 4)) (3.0.4)
+    Requirement already satisfied: idna<2.9,>=2.5 in /home/alejandro/.local/lib/python3.6/site-packages (from requests->kubernetes==9.0.0->-r requirements-dev.txt (line 4)) (2.8)
+    Requirement already satisfied: oauthlib>=3.0.0 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from requests-oauthlib->kubernetes==9.0.0->-r requirements-dev.txt (line 4)) (3.0.1)
+    Requirement already satisfied: tensorboard<1.14.0,>=1.13.0 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from tensorflow->seldon_core==0.3.0->-r requirements-dev.txt (line 6)) (1.13.1)
+    Requirement already satisfied: absl-py>=0.1.6 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from tensorflow->seldon_core==0.3.0->-r requirements-dev.txt (line 6)) (0.7.1)
+    Requirement already satisfied: keras-preprocessing>=1.0.5 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from tensorflow->seldon_core==0.3.0->-r requirements-dev.txt (line 6)) (1.1.0)
+    Requirement already satisfied: astor>=0.6.0 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from tensorflow->seldon_core==0.3.0->-r requirements-dev.txt (line 6)) (0.8.0)
+    Requirement already satisfied: keras-applications>=1.0.6 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from tensorflow->seldon_core==0.3.0->-r requirements-dev.txt (line 6)) (1.0.8)
+    Requirement already satisfied: gast>=0.2.0 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from tensorflow->seldon_core==0.3.0->-r requirements-dev.txt (line 6)) (0.2.2)
+    Requirement already satisfied: wheel>=0.26 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from tensorflow->seldon_core==0.3.0->-r requirements-dev.txt (line 6)) (0.33.4)
+    Requirement already satisfied: termcolor>=1.1.0 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from tensorflow->seldon_core==0.3.0->-r requirements-dev.txt (line 6)) (1.1.0)
+    Requirement already satisfied: tensorflow-estimator<1.14.0rc0,>=1.13.0 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from tensorflow->seldon_core==0.3.0->-r requirements-dev.txt (line 6)) (1.13.0)
+    Requirement already satisfied: Werkzeug>=0.14 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from flask->seldon_core==0.3.0->-r requirements-dev.txt (line 6)) (0.15.4)
+    Requirement already satisfied: Jinja2>=2.10 in /home/alejandro/.local/lib/python3.6/site-packages (from flask->seldon_core==0.3.0->-r requirements-dev.txt (line 6)) (2.10.1)
+    Requirement already satisfied: itsdangerous>=0.24 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from flask->seldon_core==0.3.0->-r requirements-dev.txt (line 6)) (1.1.0)
+    Requirement already satisfied: threadloop<2,>=1 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from jaeger-client==3.13.0->seldon_core==0.3.0->-r requirements-dev.txt (line 6)) (1.0.2)
+    Requirement already satisfied: tornado<5,>=4.3 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from jaeger-client==3.13.0->seldon_core==0.3.0->-r requirements-dev.txt (line 6)) (4.5.3)
+    Requirement already satisfied: thrift in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from jaeger-client==3.13.0->seldon_core==0.3.0->-r requirements-dev.txt (line 6)) (0.11.0)
+    Requirement already satisfied: pillow>=4.3.0 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from scikit-image->alibi==0.2.0->-r requirements-dev.txt (line 7)) (6.0.0)
+    Requirement already satisfied: networkx>=2.0 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from scikit-image->alibi==0.2.0->-r requirements-dev.txt (line 7)) (2.3)
+    Requirement already satisfied: imageio>=2.0.1 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from scikit-image->alibi==0.2.0->-r requirements-dev.txt (line 7)) (2.5.0)
+    Requirement already satisfied: PyWavelets>=0.4.0 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from scikit-image->alibi==0.2.0->-r requirements-dev.txt (line 7)) (1.0.3)
+    Requirement already satisfied: soupsieve>=1.2 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from beautifulsoup4->alibi==0.2.0->-r requirements-dev.txt (line 7)) (1.9.1)
+    Requirement already satisfied: murmurhash<1.1.0,>=0.28.0 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from spacy->alibi==0.2.0->-r requirements-dev.txt (line 7)) (1.0.2)
+    Requirement already satisfied: plac<1.0.0,>=0.9.6 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from spacy->alibi==0.2.0->-r requirements-dev.txt (line 7)) (0.9.6)
+    Requirement already satisfied: blis<0.3.0,>=0.2.2 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from spacy->alibi==0.2.0->-r requirements-dev.txt (line 7)) (0.2.4)
+    Requirement already satisfied: preshed<2.1.0,>=2.0.1 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from spacy->alibi==0.2.0->-r requirements-dev.txt (line 7)) (2.0.1)
+    Requirement already satisfied: cymem<2.1.0,>=2.0.2 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from spacy->alibi==0.2.0->-r requirements-dev.txt (line 7)) (2.0.2)
+    Requirement already satisfied: wasabi<1.1.0,>=0.2.0 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from spacy->alibi==0.2.0->-r requirements-dev.txt (line 7)) (0.2.2)
+    Requirement already satisfied: srsly<1.1.0,>=0.0.5 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from spacy->alibi==0.2.0->-r requirements-dev.txt (line 7)) (0.0.7)
+    Requirement already satisfied: thinc<7.1.0,>=7.0.2 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from spacy->alibi==0.2.0->-r requirements-dev.txt (line 7)) (7.0.4)
+    Requirement already satisfied: jsonschema<3.1.0,>=2.6.0 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from spacy->alibi==0.2.0->-r requirements-dev.txt (line 7)) (3.0.1)
+    Requirement already satisfied: h5py in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from keras->alibi==0.2.0->-r requirements-dev.txt (line 7)) (2.9.0)
+    Requirement already satisfied: pandocfilters>=1.4.1 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from nbconvert->jupyter==1.0.0->-r requirements-dev.txt (line 8)) (1.4.2)
+    Requirement already satisfied: testpath in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from nbconvert->jupyter==1.0.0->-r requirements-dev.txt (line 8)) (0.4.2)
+    Requirement already satisfied: entrypoints>=0.2.2 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from nbconvert->jupyter==1.0.0->-r requirements-dev.txt (line 8)) (0.3)
+    Requirement already satisfied: mistune>=0.8.1 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from nbconvert->jupyter==1.0.0->-r requirements-dev.txt (line 8)) (0.8.4)
+    Requirement already satisfied: bleach in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from nbconvert->jupyter==1.0.0->-r requirements-dev.txt (line 8)) (3.1.0)
+    Requirement already satisfied: nbformat>=4.4 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from nbconvert->jupyter==1.0.0->-r requirements-dev.txt (line 8)) (4.4.0)
+    Requirement already satisfied: traitlets>=4.2 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from nbconvert->jupyter==1.0.0->-r requirements-dev.txt (line 8)) (4.3.2)
+    Requirement already satisfied: defusedxml in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from nbconvert->jupyter==1.0.0->-r requirements-dev.txt (line 8)) (0.6.0)
+    Requirement already satisfied: pygments in /home/alejandro/.local/lib/python3.6/site-packages (from nbconvert->jupyter==1.0.0->-r requirements-dev.txt (line 8)) (2.3.1)
+    Requirement already satisfied: jupyter-core in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from nbconvert->jupyter==1.0.0->-r requirements-dev.txt (line 8)) (4.4.0)
+    Requirement already satisfied: jupyter-client in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from ipykernel->jupyter==1.0.0->-r requirements-dev.txt (line 8)) (5.2.4)
+    Requirement already satisfied: ipython>=5.0.0 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from ipykernel->jupyter==1.0.0->-r requirements-dev.txt (line 8)) (7.5.0)
+    Requirement already satisfied: prometheus-client in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from notebook->jupyter==1.0.0->-r requirements-dev.txt (line 8)) (0.7.0)
+    Requirement already satisfied: ipython-genutils in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from notebook->jupyter==1.0.0->-r requirements-dev.txt (line 8)) (0.2.0)
+    Requirement already satisfied: Send2Trash in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from notebook->jupyter==1.0.0->-r requirements-dev.txt (line 8)) (1.5.0)
+    Requirement already satisfied: pyzmq>=17 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from notebook->jupyter==1.0.0->-r requirements-dev.txt (line 8)) (18.0.1)
+    Requirement already satisfied: terminado>=0.8.1 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from notebook->jupyter==1.0.0->-r requirements-dev.txt (line 8)) (0.8.2)
+    Requirement already satisfied: widgetsnbextension~=3.4.0 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from ipywidgets->jupyter==1.0.0->-r requirements-dev.txt (line 8)) (3.4.2)
+    Requirement already satisfied: prompt-toolkit<2.1.0,>=2.0.0 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from jupyter-console->jupyter==1.0.0->-r requirements-dev.txt (line 8)) (2.0.9)
+    Requirement already satisfied: google-api-core<2.0.0dev,>=1.11.0 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from google-cloud-core<2.0dev,>=1.0.0->google-cloud-storage>=1.13.0->kfp==0.1.20->-r requirements-dev.txt (line 3)) (1.11.1)
+    Requirement already satisfied: pycparser in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from cffi!=1.11.3,>=1.8->cryptography>=2.4.2->kfp==0.1.20->-r requirements-dev.txt (line 3)) (2.19)
+    Requirement already satisfied: pyasn1>=0.1.3 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from rsa>=3.1.4->google-auth>=1.6.1->kfp==0.1.20->-r requirements-dev.txt (line 3)) (0.4.5)
+    Requirement already satisfied: markdown>=2.6.8 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from tensorboard<1.14.0,>=1.13.0->tensorflow->seldon_core==0.3.0->-r requirements-dev.txt (line 6)) (3.1.1)
+    Requirement already satisfied: mock>=2.0.0 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from tensorflow-estimator<1.14.0rc0,>=1.13.0->tensorflow->seldon_core==0.3.0->-r requirements-dev.txt (line 6)) (3.0.5)
+    Requirement already satisfied: MarkupSafe>=0.23 in /home/alejandro/.local/lib/python3.6/site-packages (from Jinja2>=2.10->flask->seldon_core==0.3.0->-r requirements-dev.txt (line 6)) (1.1.1)
+    Requirement already satisfied: decorator>=4.3.0 in /home/alejandro/.local/lib/python3.6/site-packages (from networkx>=2.0->scikit-image->alibi==0.2.0->-r requirements-dev.txt (line 7)) (4.4.0)
+    Requirement already satisfied: tqdm<5.0.0,>=4.10.0 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from thinc<7.1.0,>=7.0.2->spacy->alibi==0.2.0->-r requirements-dev.txt (line 7)) (4.32.1)
+    Requirement already satisfied: attrs>=17.4.0 in /home/alejandro/.local/lib/python3.6/site-packages (from jsonschema<3.1.0,>=2.6.0->spacy->alibi==0.2.0->-r requirements-dev.txt (line 7)) (19.1.0)
+    Requirement already satisfied: pyrsistent>=0.14.0 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from jsonschema<3.1.0,>=2.6.0->spacy->alibi==0.2.0->-r requirements-dev.txt (line 7)) (0.15.2)
+    Requirement already satisfied: webencodings in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from bleach->nbconvert->jupyter==1.0.0->-r requirements-dev.txt (line 8)) (0.5.1)
+    Requirement already satisfied: backcall in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from ipython>=5.0.0->ipykernel->jupyter==1.0.0->-r requirements-dev.txt (line 8)) (0.1.0)
+    Requirement already satisfied: pickleshare in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from ipython>=5.0.0->ipykernel->jupyter==1.0.0->-r requirements-dev.txt (line 8)) (0.7.5)
+    Requirement already satisfied: pexpect; sys_platform != "win32" in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from ipython>=5.0.0->ipykernel->jupyter==1.0.0->-r requirements-dev.txt (line 8)) (4.7.0)
+    Requirement already satisfied: jedi>=0.10 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from ipython>=5.0.0->ipykernel->jupyter==1.0.0->-r requirements-dev.txt (line 8)) (0.13.3)
+    Requirement already satisfied: ptyprocess; os_name != "nt" in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from terminado>=0.8.1->notebook->jupyter==1.0.0->-r requirements-dev.txt (line 8)) (0.6.0)
+    Requirement already satisfied: wcwidth in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from prompt-toolkit<2.1.0,>=2.0.0->jupyter-console->jupyter==1.0.0->-r requirements-dev.txt (line 8)) (0.1.7)
+    Requirement already satisfied: googleapis-common-protos!=1.5.4,<2.0dev,>=1.5.3 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from google-api-core<2.0.0dev,>=1.11.0->google-cloud-core<2.0dev,>=1.0.0->google-cloud-storage>=1.13.0->kfp==0.1.20->-r requirements-dev.txt (line 3)) (1.6.0)
+    Requirement already satisfied: parso>=0.3.0 in /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages (from jedi>=0.10->ipython>=5.0.0->ipykernel->jupyter==1.0.0->-r requirements-dev.txt (line 8)) (0.4.0)
+    Building wheels for collected packages: kfp
+      Building wheel for kfp (setup.py) ... [?25ldone
+    [?25h  Stored in directory: /tmp/pip-ephem-wheel-cache-b58xktj8/wheels/ae/bb/02/32b1356ee756181099d8f1b0950ac6567cb2b38e71b48f02e8
+    Successfully built kfp
+
+
 ### Run Seldon in your Kubernetes cluster
 
 #### Install helm if not installed
@@ -80,10 +221,12 @@ kubectl rollout status deploy/tiller-deploy -n kube-system
 
     Hang tight while we grab the latest from your chart repositories...
     ...Skip local chart repository
-    ...Successfully got an update from the "incubator" chart repository
-    ...Successfully got an update from the "argo" chart repository
     ...Successfully got an update from the "elastic" chart repository
-    ...Successfully got an update from the "stable" chart repository
+    ...Successfully got an update from the "argo" chart repository
+    ...Unable to get an update from the "incubator" chart repository (http://storage.googleapis.com/kubernetes-charts-incubator):
+    	Get http://storage.googleapis.com/kubernetes-charts-incubator/index.yaml: dial tcp 172.217.24.16:80: connect: connection refused
+    ...Unable to get an update from the "stable" chart repository (https://kubernetes-charts.storage.googleapis.com):
+    	Get https://kubernetes-charts.storage.googleapis.com/index.yaml: dial tcp 172.217.24.16:443: connect: connection refused
     Update Complete. ⎈ Happy Helming!⎈ 
 
 
@@ -91,11 +234,11 @@ kubectl rollout status deploy/tiller-deploy -n kube-system
 
 
 ```python
-!helm install seldon-core-operator --repo https://storage.googleapis.com/seldon-charts
+!helm install seldon-core-operator --name seldon-core-operator --repo https://storage.googleapis.com/seldon-charts
 ```
 
-    NAME:   kindled-goat
-    LAST DEPLOYED: Sun Jun 16 13:02:45 2019
+    NAME:   seldon-core-operator
+    LAST DEPLOYED: Thu Jun 20 03:36:53 2019
     NAMESPACE: default
     STATUS: DEPLOYED
     
@@ -117,8 +260,8 @@ kubectl rollout status deploy/tiller-deploy -n kube-system
     seldon-operator-webhook-server-secret  Opaque  0     0s
     
     ==> v1/Service
-    NAME                                        TYPE       CLUSTER-IP      EXTERNAL-IP  PORT(S)  AGE
-    seldon-operator-controller-manager-service  ClusterIP  10.106.227.165  <none>       443/TCP  0s
+    NAME                                        TYPE       CLUSTER-IP    EXTERNAL-IP  PORT(S)  AGE
+    seldon-operator-controller-manager-service  ClusterIP  10.107.15.69  <none>       443/TCP  0s
     
     ==> v1/StatefulSet
     NAME                                READY  AGE
@@ -141,7 +284,7 @@ kubectl rollout status deploy/tiller-deploy -n kube-system
 ```
 
     NAME:   ambassador
-    LAST DEPLOYED: Sun Jun 16 13:02:50 2019
+    LAST DEPLOYED: Thu Jun 20 03:33:28 2019
     NAMESPACE: default
     STATUS: DEPLOYED
     
@@ -152,14 +295,14 @@ kubectl rollout status deploy/tiller-deploy -n kube-system
     
     ==> v1/Pod(related)
     NAME                        READY  STATUS             RESTARTS  AGE
-    ambassador-c8f5c967c-kxljg  0/1    ContainerCreating  0         1s
-    ambassador-c8f5c967c-mpzs8  0/1    ContainerCreating  0         1s
-    ambassador-c8f5c967c-zn4tg  0/1    ContainerCreating  0         1s
+    ambassador-c8f5c967c-4vkpt  0/1    ContainerCreating  0         1s
+    ambassador-c8f5c967c-bj9kj  0/1    ContainerCreating  0         1s
+    ambassador-c8f5c967c-tjv68  0/1    ContainerCreating  0         1s
     
     ==> v1/Service
     NAME               TYPE          CLUSTER-IP     EXTERNAL-IP  PORT(S)                     AGE
-    ambassador         LoadBalancer  10.108.23.208  <pending>    80:31654/TCP,443:32402/TCP  1s
-    ambassador-admins  ClusterIP     10.99.191.30   <none>       8877/TCP                    1s
+    ambassador         LoadBalancer  10.109.84.169  localhost    80:31544/TCP,443:31495/TCP  1s
+    ambassador-admins  ClusterIP     10.108.42.153  <none>       8877/TCP                    1s
     
     ==> v1/ServiceAccount
     NAME        SECRETS  AGE
@@ -211,6 +354,7 @@ kubectl rollout status deploy/tiller-deploy -n kube-system
 
 ```python
 import alibi
+import numpy as np
 
 data, labels, feature_names, category_map = alibi.datasets.adult()
 
@@ -225,6 +369,7 @@ X_train, y_train = data[:idx, :], labels[:idx]
 X_test, y_test = data[idx + 1:, :], labels[idx + 1:]
 ```
 
+    Using TensorFlow backend.
     /home/alejandro/miniconda3/envs/alibi_seldon/lib/python3.6/site-packages/alibi/datasets.py:128: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
       raw_data = pd.read_csv(dataset_url, names=raw_features, delimiter=', ').fillna('?')
 
@@ -273,7 +418,7 @@ from sklearn.ensemble import RandomForestClassifier
 
 np.random.seed(0)
 clf = RandomForestClassifier(n_estimators=50)
-clf.fit(preprocessor.transform(X_train), Y_train)
+clf.fit(preprocessor.transform(X_train), y_train)
 ```
 
 
@@ -349,10 +494,6 @@ xai.metrics_plot(y_test, pred)
 </table>
 </div>
 
-
-
-
-![png](alibi_anchor_tabular_seldon_deployment_files/alibi_anchor_tabular_seldon_deployment_17_1.png)
 
 
 ## 2) Containerise and deploy your model
@@ -454,19 +595,19 @@ PERSISTENCE=0
 
 
 ```python
-!s2i build pipeline/pipeline_steps/loanclassifier seldonio/seldon-core-s2i-python3:0.6 loanclassifier:0.1
+!s2i build pipeline/pipeline_steps/loanclassifier seldonio/seldon-core-s2i-python3:0.8 loanclassifier:0.1
 ```
 
     ---> Installing application source...
     ---> Installing dependencies ...
     Looking in links: /whl
-    Collecting scikit-learn==0.20.1 (from -r requirements.txt (line 1))
       WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+    Collecting scikit-learn==0.20.1 (from -r requirements.txt (line 1))
     Downloading https://files.pythonhosted.org/packages/10/26/d04320c3edf2d59b1fcd0720b46753d4d603a76e68d8ad10a9b92ab06db2/scikit_learn-0.20.1-cp36-cp36m-manylinux1_x86_64.whl (5.4MB)
     Collecting dill==0.2.9 (from -r requirements.txt (line 2))
       WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
     Downloading https://files.pythonhosted.org/packages/fe/42/bfe2e0857bc284cbe6a011d93f2a9ad58a22cb894461b199ae72cfef0f29/dill-0.2.9.tar.gz (150kB)
-    Requirement already satisfied: numpy>=1.8.2 in /usr/local/lib/python3.6/site-packages (from scikit-learn==0.20.1->-r requirements.txt (line 1)) (1.16.3)
+    Requirement already satisfied: numpy>=1.8.2 in /usr/local/lib/python3.6/site-packages (from scikit-learn==0.20.1->-r requirements.txt (line 1)) (1.16.4)
     Collecting scipy>=0.13.3 (from scikit-learn==0.20.1->-r requirements.txt (line 1))
       WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
     Downloading https://files.pythonhosted.org/packages/72/4c/5f81e7264b0a7a8bd570810f48cd346ba36faedbd2ba255c873ad556de76/scipy-1.3.0-cp36-cp36m-manylinux1_x86_64.whl (25.2MB)
@@ -529,14 +670,18 @@ spec:
 ```
 
     NAME                                                     READY   STATUS    RESTARTS   AGE
-    ambassador-c8f5c967c-4p45t                               1/1     Running   0          85s
-    ambassador-c8f5c967c-rnk2l                               1/1     Running   0          85s
-    ambassador-c8f5c967c-sfdgq                               1/1     Running   0          85s
-    loanclassifier-loanclassifier-164157f-69b7b957b6-pbqjk   2/2     Running   0          32s
-    seldon-operator-controller-manager-0                     1/1     Running   3          92s
+    ambassador-c8f5c967c-4vkpt                               1/1     Running   0          3m45s
+    ambassador-c8f5c967c-bj9kj                               1/1     Running   0          3m45s
+    ambassador-c8f5c967c-tjv68                               1/1     Running   0          3m45s
+    loanclassifier-loanclassifier-164157f-69b7b957b6-dgwmx   0/2     Running   0          4s
+    seldon-operator-controller-manager-0                     1/1     Running   1          20s
 
 
 ### Now that it's deployed we can test it with curl
+**IMPORTANT:** If you are using minikube (instead of docker desktop) you have to forward the port first with:
+```
+kubectl port-forward svc/ambassador 80:80
+```
 
 
 ```python
@@ -556,12 +701,12 @@ X_test[:1]
 %%bash
 curl -X POST -H 'Content-Type: application/json' \
     -d "{'data': {'names': ['text'], 'ndarray': [[52,  4,  0,  2,  8,  4,  2,  0,  0,  0, 60,  9]]}}" \
-    http://localhost/seldon/default/loanclassifier/api/v0.1/predictions
+    http://localhost:80/seldon/default/loanclassifier/api/v0.1/predictions
 ```
 
     {
       "meta": {
-        "puid": "haa01nhtdnjkutv401muqpkvr",
+        "puid": "erptc0f8ltc8f8k26udt54tlau",
         "tags": {
         },
         "routing": {
@@ -579,7 +724,7 @@ curl -X POST -H 'Content-Type: application/json' \
 
       % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                      Dload  Upload   Total   Spent    Left  Speed
-    100   355  100   263  100    92   6116   2139 --:--:-- --:--:-- --:--:--  8068
+    100   356  100   264  100    92   8800   3066 --:--:-- --:--:-- --:--:-- 11866
 
 
 ### And we can also test it with the Python SeldonClient
@@ -652,7 +797,7 @@ print(client_prediction)
     
     Response:
     meta {
-      puid: "mljep28gdusnn3938l04vvu77i"
+      puid: "9m9vkqrn4tltci3hc5qiu23cvq"
       requestPath {
         key: "model"
         value: "loanclassifier:0.1"
@@ -728,7 +873,7 @@ print('Coverage: %.2f' % explanation['coverage'])
 ```
 
     Anchor: Marital Status = Separated AND Sex = Female
-    Precision: 0.99
+    Precision: 0.96
     Coverage: 0.11
 
 
@@ -788,7 +933,7 @@ print('Coverage: %.2f' % explanation['coverage'])
 ```
 
     Anchor: Marital Status = Separated AND Sex = Female
-    Precision: 0.95
+    Precision: 0.96
     Coverage: 0.11
 
 
@@ -884,6 +1029,9 @@ seldon-core==0.3.0
 !mkdir pipeline/pipeline_steps/loanclassifier-explainer/.s2i
 ```
 
+    mkdir: cannot create directory ‘pipeline/pipeline_steps/loanclassifier-explainer/.s2i’: File exists
+
+
 
 ```python
 %%writefile pipeline/pipeline_steps/loanclassifier-explainer/.s2i/environment
@@ -893,14 +1041,14 @@ SERVICE_TYPE=MODEL
 PERSISTENCE=0
 ```
 
-    Writing pipeline/pipeline_steps/loanclassifier-explainer/.s2i/environment
+    Overwriting pipeline/pipeline_steps/loanclassifier-explainer/.s2i/environment
 
 
 #### 5) Run the s2i command to build the image
 
 
 ```python
-!s2i build pipeline/pipeline_steps/loanclassifier-explainer seldonio/seldon-core-s2i-python3:0.6 loanclassifier-explainer:0.1
+!s2i build pipeline/pipeline_steps/loanclassifier-explainer seldonio/seldon-core-s2i-python3:0.8 loanclassifier-explainer:0.1
 ```
 
     ---> Installing application source...
@@ -915,170 +1063,156 @@ PERSISTENCE=0
     Collecting alibi==0.2.0 (from -r requirements.txt (line 3))
       WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
     Downloading https://files.pythonhosted.org/packages/1b/89/dc31c2b8ba09eb8f324ce18e991f876378e3c38e1531a82ea35699a8ff61/alibi-0.2.0-py3-none-any.whl (59kB)
-    Collecting seldon-core==0.3.0 (from -r requirements.txt (line 4))
-      WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
-    Downloading https://files.pythonhosted.org/packages/5e/a8/3b3295e38a023980a6c51addcbecf8cfc45770e7d16c2df687f34f636860/seldon_core-0.3.0-py3-none-any.whl
+    Requirement already satisfied: seldon-core==0.3.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 4)) (0.3.0)
     Collecting scipy>=0.13.3 (from scikit-learn==0.20.1->-r requirements.txt (line 1))
       WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
     Downloading https://files.pythonhosted.org/packages/72/4c/5f81e7264b0a7a8bd570810f48cd346ba36faedbd2ba255c873ad556de76/scipy-1.3.0-cp36-cp36m-manylinux1_x86_64.whl (25.2MB)
-    Requirement already satisfied: numpy>=1.8.2 in /usr/local/lib/python3.6/site-packages (from scikit-learn==0.20.1->-r requirements.txt (line 1)) (1.16.3)
+    Requirement already satisfied: numpy>=1.8.2 in /usr/local/lib/python3.6/site-packages (from scikit-learn==0.20.1->-r requirements.txt (line 1)) (1.16.4)
     Collecting spacy (from alibi==0.2.0->-r requirements.txt (line 3))
       WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
     Downloading https://files.pythonhosted.org/packages/a1/5b/0fab3fa533229436533fb504bb62f4cf7ea29541a487a9d1a0749876fc23/spacy-2.1.4-cp36-cp36m-manylinux1_x86_64.whl (29.8MB)
-    Collecting pandas (from alibi==0.2.0->-r requirements.txt (line 3))
-      WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
-    Downloading https://files.pythonhosted.org/packages/19/74/e50234bc82c553fecdbd566d8650801e3fe2d6d8c8d940638e3d8a7c5522/pandas-0.24.2-cp36-cp36m-manylinux1_x86_64.whl (10.1MB)
-    Collecting seaborn (from alibi==0.2.0->-r requirements.txt (line 3))
-      WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
-    Downloading https://files.pythonhosted.org/packages/a8/76/220ba4420459d9c4c9c9587c6ce607bf56c25b3d3d2de62056efe482dadc/seaborn-0.9.0-py3-none-any.whl (208kB)
-    Requirement already satisfied: tensorflow in /usr/local/lib/python3.6/site-packages (from alibi==0.2.0->-r requirements.txt (line 3)) (1.13.1)
     Collecting beautifulsoup4 (from alibi==0.2.0->-r requirements.txt (line 3))
       WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
     Downloading https://files.pythonhosted.org/packages/1d/5d/3260694a59df0ec52f8b4883f5d23b130bc237602a1411fa670eae12351e/beautifulsoup4-4.7.1-py3-none-any.whl (94kB)
-    Requirement already satisfied: requests in /usr/local/lib/python3.6/site-packages (from alibi==0.2.0->-r requirements.txt (line 3)) (2.21.0)
     Collecting opencv-python (from alibi==0.2.0->-r requirements.txt (line 3))
       WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
     Downloading https://files.pythonhosted.org/packages/7b/d2/a2dbf83d4553ca6b3701d91d75e42fe50aea97acdc00652dca515749fb5d/opencv_python-4.1.0.25-cp36-cp36m-manylinux1_x86_64.whl (26.6MB)
+    Collecting seaborn (from alibi==0.2.0->-r requirements.txt (line 3))
+      WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+    Downloading https://files.pythonhosted.org/packages/a8/76/220ba4420459d9c4c9c9587c6ce607bf56c25b3d3d2de62056efe482dadc/seaborn-0.9.0-py3-none-any.whl (208kB)
+    Requirement already satisfied: requests in /usr/local/lib/python3.6/site-packages (from alibi==0.2.0->-r requirements.txt (line 3)) (2.22.0)
+    Collecting pandas (from alibi==0.2.0->-r requirements.txt (line 3))
+      WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+    Downloading https://files.pythonhosted.org/packages/19/74/e50234bc82c553fecdbd566d8650801e3fe2d6d8c8d940638e3d8a7c5522/pandas-0.24.2-cp36-cp36m-manylinux1_x86_64.whl (10.1MB)
+    Requirement already satisfied: tensorflow in /usr/local/lib/python3.6/site-packages (from alibi==0.2.0->-r requirements.txt (line 3)) (1.13.1)
     Collecting keras (from alibi==0.2.0->-r requirements.txt (line 3))
       WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
     Downloading https://files.pythonhosted.org/packages/5e/10/aa32dad071ce52b5502266b5c659451cfd6ffcbf14e6c8c4f16c0ff5aaab/Keras-2.2.4-py2.py3-none-any.whl (312kB)
     Collecting scikit-image (from alibi==0.2.0->-r requirements.txt (line 3))
       WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
     Downloading https://files.pythonhosted.org/packages/d4/ab/674e168bf7d0bc597218b3bec858d02c23fbac9ec1fec9cad878c6cee95f/scikit_image-0.15.0-cp36-cp36m-manylinux1_x86_64.whl (26.3MB)
-    Requirement already satisfied: grpcio in /usr/local/lib/python3.6/site-packages (from seldon-core==0.3.0->-r requirements.txt (line 4)) (1.20.1)
-    Collecting jaeger-client==3.13.0 (from seldon-core==0.3.0->-r requirements.txt (line 4))
-      WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
-    Downloading https://files.pythonhosted.org/packages/c8/a2/e9bd04cd660cbdffe0598173be068be23099fbd68e7a4a89b74440509130/jaeger-client-3.13.0.tar.gz (77kB)
-    Requirement already satisfied: flask-cors in /usr/local/lib/python3.6/site-packages (from seldon-core==0.3.0->-r requirements.txt (line 4)) (3.0.7)
-    Requirement already satisfied: grpcio-opentracing in /usr/local/lib/python3.6/site-packages (from seldon-core==0.3.0->-r requirements.txt (line 4)) (1.1.4)
-    Requirement already satisfied: redis in /usr/local/lib/python3.6/site-packages (from seldon-core==0.3.0->-r requirements.txt (line 4)) (3.2.1)
+    Requirement already satisfied: jaeger-client==3.13.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==0.3.0->-r requirements.txt (line 4)) (3.13.0)
     Requirement already satisfied: opentracing<2,>=1.2.2 in /usr/local/lib/python3.6/site-packages (from seldon-core==0.3.0->-r requirements.txt (line 4)) (1.3.0)
-    Requirement already satisfied: protobuf in /usr/local/lib/python3.6/site-packages (from seldon-core==0.3.0->-r requirements.txt (line 4)) (3.7.1)
-    Requirement already satisfied: flatbuffers in /usr/local/lib/python3.6/site-packages (from seldon-core==0.3.0->-r requirements.txt (line 4)) (1.11)
-    Requirement already satisfied: flask in /usr/local/lib/python3.6/site-packages (from seldon-core==0.3.0->-r requirements.txt (line 4)) (1.0.2)
     Requirement already satisfied: Flask-OpenTracing==0.2.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==0.3.0->-r requirements.txt (line 4)) (0.2.0)
+    Requirement already satisfied: grpcio-opentracing in /usr/local/lib/python3.6/site-packages (from seldon-core==0.3.0->-r requirements.txt (line 4)) (1.1.4)
+    Requirement already satisfied: grpcio in /usr/local/lib/python3.6/site-packages (from seldon-core==0.3.0->-r requirements.txt (line 4)) (1.21.1)
+    Requirement already satisfied: flask in /usr/local/lib/python3.6/site-packages (from seldon-core==0.3.0->-r requirements.txt (line 4)) (1.0.3)
     Requirement already satisfied: pyyaml in /usr/local/lib/python3.6/site-packages (from seldon-core==0.3.0->-r requirements.txt (line 4)) (5.1)
+    Requirement already satisfied: flatbuffers in /usr/local/lib/python3.6/site-packages (from seldon-core==0.3.0->-r requirements.txt (line 4)) (1.11)
+    Requirement already satisfied: flask-cors in /usr/local/lib/python3.6/site-packages (from seldon-core==0.3.0->-r requirements.txt (line 4)) (3.0.7)
+    Requirement already satisfied: protobuf in /usr/local/lib/python3.6/site-packages (from seldon-core==0.3.0->-r requirements.txt (line 4)) (3.8.0)
+    Requirement already satisfied: redis in /usr/local/lib/python3.6/site-packages (from seldon-core==0.3.0->-r requirements.txt (line 4)) (3.2.1)
     Collecting murmurhash<1.1.0,>=0.28.0 (from spacy->alibi==0.2.0->-r requirements.txt (line 3))
       WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
     Downloading https://files.pythonhosted.org/packages/a6/e6/63f160a4fdf0e875d16b28f972083606d8d54f56cd30cb8929f9a1ee700e/murmurhash-1.0.2-cp36-cp36m-manylinux1_x86_64.whl
-    Collecting blis<0.3.0,>=0.2.2 (from spacy->alibi==0.2.0->-r requirements.txt (line 3))
-      WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
-    Downloading https://files.pythonhosted.org/packages/34/46/b1d0bb71d308e820ed30316c5f0a017cb5ef5f4324bcbc7da3cf9d3b075c/blis-0.2.4-cp36-cp36m-manylinux1_x86_64.whl (3.2MB)
-    Collecting thinc<7.1.0,>=7.0.2 (from spacy->alibi==0.2.0->-r requirements.txt (line 3))
-      WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
-    Downloading https://files.pythonhosted.org/packages/a9/f1/3df317939a07b2fc81be1a92ac10bf836a1d87b4016346b25f8b63dee321/thinc-7.0.4-cp36-cp36m-manylinux1_x86_64.whl (2.1MB)
     Collecting srsly<1.1.0,>=0.0.5 (from spacy->alibi==0.2.0->-r requirements.txt (line 3))
       WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
     Downloading https://files.pythonhosted.org/packages/aa/6c/2ef2d6f4c63a197981f4ac01bb17560c857c6721213c7c99998e48cdda2a/srsly-0.0.7-cp36-cp36m-manylinux1_x86_64.whl (180kB)
+    Collecting thinc<7.1.0,>=7.0.2 (from spacy->alibi==0.2.0->-r requirements.txt (line 3))
+      WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+    Downloading https://files.pythonhosted.org/packages/a9/f1/3df317939a07b2fc81be1a92ac10bf836a1d87b4016346b25f8b63dee321/thinc-7.0.4-cp36-cp36m-manylinux1_x86_64.whl (2.1MB)
+    Collecting wasabi<1.1.0,>=0.2.0 (from spacy->alibi==0.2.0->-r requirements.txt (line 3))
+      WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+    Downloading https://files.pythonhosted.org/packages/f4/c1/d76ccdd12c716be79162d934fe7de4ac8a318b9302864716dde940641a79/wasabi-0.2.2-py3-none-any.whl
     Collecting jsonschema<3.1.0,>=2.6.0 (from spacy->alibi==0.2.0->-r requirements.txt (line 3))
       WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
     Downloading https://files.pythonhosted.org/packages/aa/69/df679dfbdd051568b53c38ec8152a3ab6bc533434fc7ed11ab034bf5e82f/jsonschema-3.0.1-py2.py3-none-any.whl (54kB)
+    Collecting plac<1.0.0,>=0.9.6 (from spacy->alibi==0.2.0->-r requirements.txt (line 3))
+      WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+    Downloading https://files.pythonhosted.org/packages/9e/9b/62c60d2f5bc135d2aa1d8c8a86aaf84edb719a59c7f11a4316259e61a298/plac-0.9.6-py2.py3-none-any.whl
+    Collecting blis<0.3.0,>=0.2.2 (from spacy->alibi==0.2.0->-r requirements.txt (line 3))
+      WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+    Downloading https://files.pythonhosted.org/packages/34/46/b1d0bb71d308e820ed30316c5f0a017cb5ef5f4324bcbc7da3cf9d3b075c/blis-0.2.4-cp36-cp36m-manylinux1_x86_64.whl (3.2MB)
     Collecting preshed<2.1.0,>=2.0.1 (from spacy->alibi==0.2.0->-r requirements.txt (line 3))
       WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
     Downloading https://files.pythonhosted.org/packages/20/93/f222fb957764a283203525ef20e62008675fd0a14ffff8cc1b1490147c63/preshed-2.0.1-cp36-cp36m-manylinux1_x86_64.whl (83kB)
     Collecting cymem<2.1.0,>=2.0.2 (from spacy->alibi==0.2.0->-r requirements.txt (line 3))
       WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
     Downloading https://files.pythonhosted.org/packages/3d/61/9b0520c28eb199a4b1ca667d96dd625bba003c14c75230195f9691975f85/cymem-2.0.2-cp36-cp36m-manylinux1_x86_64.whl
-    Collecting plac<1.0.0,>=0.9.6 (from spacy->alibi==0.2.0->-r requirements.txt (line 3))
+    Collecting soupsieve>=1.2 (from beautifulsoup4->alibi==0.2.0->-r requirements.txt (line 3))
       WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
-    Downloading https://files.pythonhosted.org/packages/9e/9b/62c60d2f5bc135d2aa1d8c8a86aaf84edb719a59c7f11a4316259e61a298/plac-0.9.6-py2.py3-none-any.whl
-    Collecting wasabi<1.1.0,>=0.2.0 (from spacy->alibi==0.2.0->-r requirements.txt (line 3))
+    Downloading https://files.pythonhosted.org/packages/b9/a5/7ea40d0f8676bde6e464a6435a48bc5db09b1a8f4f06d41dd997b8f3c616/soupsieve-1.9.1-py2.py3-none-any.whl
+    Collecting matplotlib>=1.4.3 (from seaborn->alibi==0.2.0->-r requirements.txt (line 3))
       WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
-    Downloading https://files.pythonhosted.org/packages/f4/c1/d76ccdd12c716be79162d934fe7de4ac8a318b9302864716dde940641a79/wasabi-0.2.2-py3-none-any.whl
+    Downloading https://files.pythonhosted.org/packages/da/83/d989ee20c78117c737ab40e0318ea221f1aed4e3f5a40b4f93541b369b93/matplotlib-3.1.0-cp36-cp36m-manylinux1_x86_64.whl (13.1MB)
+    Requirement already satisfied: chardet<3.1.0,>=3.0.2 in /usr/local/lib/python3.6/site-packages (from requests->alibi==0.2.0->-r requirements.txt (line 3)) (3.0.4)
+    Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /usr/local/lib/python3.6/site-packages (from requests->alibi==0.2.0->-r requirements.txt (line 3)) (1.25.3)
+    Requirement already satisfied: idna<2.9,>=2.5 in /usr/local/lib/python3.6/site-packages (from requests->alibi==0.2.0->-r requirements.txt (line 3)) (2.8)
+    Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.6/site-packages (from requests->alibi==0.2.0->-r requirements.txt (line 3)) (2019.3.9)
     Collecting pytz>=2011k (from pandas->alibi==0.2.0->-r requirements.txt (line 3))
       WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
     Downloading https://files.pythonhosted.org/packages/3d/73/fe30c2daaaa0713420d0382b16fbb761409f532c56bdcc514bf7b6262bb6/pytz-2019.1-py2.py3-none-any.whl (510kB)
     Collecting python-dateutil>=2.5.0 (from pandas->alibi==0.2.0->-r requirements.txt (line 3))
       WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
     Downloading https://files.pythonhosted.org/packages/41/17/c62faccbfbd163c7f57f3844689e3a78bae1f403648a6afb1d0866d87fbb/python_dateutil-2.8.0-py2.py3-none-any.whl (226kB)
-    Collecting matplotlib>=1.4.3 (from seaborn->alibi==0.2.0->-r requirements.txt (line 3))
-      WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
-    Downloading https://files.pythonhosted.org/packages/da/83/d989ee20c78117c737ab40e0318ea221f1aed4e3f5a40b4f93541b369b93/matplotlib-3.1.0-cp36-cp36m-manylinux1_x86_64.whl (13.1MB)
-    Requirement already satisfied: keras-applications>=1.0.6 in /usr/local/lib/python3.6/site-packages (from tensorflow->alibi==0.2.0->-r requirements.txt (line 3)) (1.0.7)
-    Requirement already satisfied: tensorboard<1.14.0,>=1.13.0 in /usr/local/lib/python3.6/site-packages (from tensorflow->alibi==0.2.0->-r requirements.txt (line 3)) (1.13.1)
-    Requirement already satisfied: absl-py>=0.1.6 in /usr/local/lib/python3.6/site-packages (from tensorflow->alibi==0.2.0->-r requirements.txt (line 3)) (0.7.1)
-    Requirement already satisfied: termcolor>=1.1.0 in /usr/local/lib/python3.6/site-packages (from tensorflow->alibi==0.2.0->-r requirements.txt (line 3)) (1.1.0)
+    Requirement already satisfied: keras-preprocessing>=1.0.5 in /usr/local/lib/python3.6/site-packages (from tensorflow->alibi==0.2.0->-r requirements.txt (line 3)) (1.1.0)
     Requirement already satisfied: wheel>=0.26 in /usr/local/lib/python3.6/site-packages (from tensorflow->alibi==0.2.0->-r requirements.txt (line 3)) (0.33.1)
-    Requirement already satisfied: keras-preprocessing>=1.0.5 in /usr/local/lib/python3.6/site-packages (from tensorflow->alibi==0.2.0->-r requirements.txt (line 3)) (1.0.9)
-    Requirement already satisfied: astor>=0.6.0 in /usr/local/lib/python3.6/site-packages (from tensorflow->alibi==0.2.0->-r requirements.txt (line 3)) (0.7.1)
-    Requirement already satisfied: tensorflow-estimator<1.14.0rc0,>=1.13.0 in /usr/local/lib/python3.6/site-packages (from tensorflow->alibi==0.2.0->-r requirements.txt (line 3)) (1.13.0)
+    Requirement already satisfied: termcolor>=1.1.0 in /usr/local/lib/python3.6/site-packages (from tensorflow->alibi==0.2.0->-r requirements.txt (line 3)) (1.1.0)
     Requirement already satisfied: six>=1.10.0 in /usr/local/lib/python3.6/site-packages (from tensorflow->alibi==0.2.0->-r requirements.txt (line 3)) (1.12.0)
+    Requirement already satisfied: tensorboard<1.14.0,>=1.13.0 in /usr/local/lib/python3.6/site-packages (from tensorflow->alibi==0.2.0->-r requirements.txt (line 3)) (1.13.1)
     Requirement already satisfied: gast>=0.2.0 in /usr/local/lib/python3.6/site-packages (from tensorflow->alibi==0.2.0->-r requirements.txt (line 3)) (0.2.2)
-    Collecting soupsieve>=1.2 (from beautifulsoup4->alibi==0.2.0->-r requirements.txt (line 3))
-      WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
-    Downloading https://files.pythonhosted.org/packages/b9/a5/7ea40d0f8676bde6e464a6435a48bc5db09b1a8f4f06d41dd997b8f3c616/soupsieve-1.9.1-py2.py3-none-any.whl
-    Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.6/site-packages (from requests->alibi==0.2.0->-r requirements.txt (line 3)) (2019.3.9)
-    Requirement already satisfied: idna<2.9,>=2.5 in /usr/local/lib/python3.6/site-packages (from requests->alibi==0.2.0->-r requirements.txt (line 3)) (2.8)
-    Requirement already satisfied: chardet<3.1.0,>=3.0.2 in /usr/local/lib/python3.6/site-packages (from requests->alibi==0.2.0->-r requirements.txt (line 3)) (3.0.4)
-    Requirement already satisfied: urllib3<1.25,>=1.21.1 in /usr/local/lib/python3.6/site-packages (from requests->alibi==0.2.0->-r requirements.txt (line 3)) (1.24.2)
+    Requirement already satisfied: tensorflow-estimator<1.14.0rc0,>=1.13.0 in /usr/local/lib/python3.6/site-packages (from tensorflow->alibi==0.2.0->-r requirements.txt (line 3)) (1.13.0)
+    Requirement already satisfied: keras-applications>=1.0.6 in /usr/local/lib/python3.6/site-packages (from tensorflow->alibi==0.2.0->-r requirements.txt (line 3)) (1.0.8)
+    Requirement already satisfied: absl-py>=0.1.6 in /usr/local/lib/python3.6/site-packages (from tensorflow->alibi==0.2.0->-r requirements.txt (line 3)) (0.7.1)
+    Requirement already satisfied: astor>=0.6.0 in /usr/local/lib/python3.6/site-packages (from tensorflow->alibi==0.2.0->-r requirements.txt (line 3)) (0.8.0)
     Requirement already satisfied: h5py in /usr/local/lib/python3.6/site-packages (from keras->alibi==0.2.0->-r requirements.txt (line 3)) (2.9.0)
-    Collecting PyWavelets>=0.4.0 (from scikit-image->alibi==0.2.0->-r requirements.txt (line 3))
-      WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
-    Downloading https://files.pythonhosted.org/packages/4e/cd/528dba0b474b08f6f9a3a5e1b4bb23d8e33ed5d9f0e321cc967c2607df05/PyWavelets-1.0.3-cp36-cp36m-manylinux1_x86_64.whl (4.4MB)
     Collecting imageio>=2.0.1 (from scikit-image->alibi==0.2.0->-r requirements.txt (line 3))
       WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
     Downloading https://files.pythonhosted.org/packages/af/0a/943c965d372dae0b1f1482677d29030ab834351a61a9a632fd62f27f1523/imageio-2.5.0-py3-none-any.whl (3.3MB)
-    Collecting pillow>=4.3.0 (from scikit-image->alibi==0.2.0->-r requirements.txt (line 3))
+    Collecting PyWavelets>=0.4.0 (from scikit-image->alibi==0.2.0->-r requirements.txt (line 3))
       WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
-    Downloading https://files.pythonhosted.org/packages/d2/c2/f84b1e57416755e967236468dcfb0fad7fd911f707185efc4ba8834a1a94/Pillow-6.0.0-cp36-cp36m-manylinux1_x86_64.whl (2.0MB)
+    Downloading https://files.pythonhosted.org/packages/4e/cd/528dba0b474b08f6f9a3a5e1b4bb23d8e33ed5d9f0e321cc967c2607df05/PyWavelets-1.0.3-cp36-cp36m-manylinux1_x86_64.whl (4.4MB)
     Collecting networkx>=2.0 (from scikit-image->alibi==0.2.0->-r requirements.txt (line 3))
       WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
     Downloading https://files.pythonhosted.org/packages/85/08/f20aef11d4c343b557e5de6b9548761811eb16e438cee3d32b1c66c8566b/networkx-2.3.zip (1.7MB)
-    Requirement already satisfied: threadloop<2,>=1 in /usr/local/lib/python3.6/site-packages (from jaeger-client==3.13.0->seldon-core==0.3.0->-r requirements.txt (line 4)) (1.0.2)
+    Collecting pillow>=4.3.0 (from scikit-image->alibi==0.2.0->-r requirements.txt (line 3))
+      WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+    Downloading https://files.pythonhosted.org/packages/d2/c2/f84b1e57416755e967236468dcfb0fad7fd911f707185efc4ba8834a1a94/Pillow-6.0.0-cp36-cp36m-manylinux1_x86_64.whl (2.0MB)
     Requirement already satisfied: thrift in /usr/local/lib/python3.6/site-packages (from jaeger-client==3.13.0->seldon-core==0.3.0->-r requirements.txt (line 4)) (0.11.0)
+    Requirement already satisfied: threadloop<2,>=1 in /usr/local/lib/python3.6/site-packages (from jaeger-client==3.13.0->seldon-core==0.3.0->-r requirements.txt (line 4)) (1.0.2)
     Requirement already satisfied: tornado<5,>=4.3 in /usr/local/lib/python3.6/site-packages (from jaeger-client==3.13.0->seldon-core==0.3.0->-r requirements.txt (line 4)) (4.5.3)
-    Requirement already satisfied: setuptools in /usr/local/lib/python3.6/site-packages (from protobuf->seldon-core==0.3.0->-r requirements.txt (line 4)) (41.0.1)
-    Requirement already satisfied: click>=5.1 in /usr/local/lib/python3.6/site-packages (from flask->seldon-core==0.3.0->-r requirements.txt (line 4)) (7.0)
-    Requirement already satisfied: Werkzeug>=0.14 in /usr/local/lib/python3.6/site-packages (from flask->seldon-core==0.3.0->-r requirements.txt (line 4)) (0.15.2)
     Requirement already satisfied: itsdangerous>=0.24 in /usr/local/lib/python3.6/site-packages (from flask->seldon-core==0.3.0->-r requirements.txt (line 4)) (1.1.0)
+    Requirement already satisfied: Werkzeug>=0.14 in /usr/local/lib/python3.6/site-packages (from flask->seldon-core==0.3.0->-r requirements.txt (line 4)) (0.15.4)
+    Requirement already satisfied: click>=5.1 in /usr/local/lib/python3.6/site-packages (from flask->seldon-core==0.3.0->-r requirements.txt (line 4)) (7.0)
     Requirement already satisfied: Jinja2>=2.10 in /usr/local/lib/python3.6/site-packages (from flask->seldon-core==0.3.0->-r requirements.txt (line 4)) (2.10.1)
+    Requirement already satisfied: setuptools in /usr/local/lib/python3.6/site-packages (from protobuf->seldon-core==0.3.0->-r requirements.txt (line 4)) (41.0.1)
     Collecting tqdm<5.0.0,>=4.10.0 (from thinc<7.1.0,>=7.0.2->spacy->alibi==0.2.0->-r requirements.txt (line 3))
       WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
-    Downloading https://files.pythonhosted.org/packages/45/af/685bf3ce889ea191f3b916557f5677cc95a5e87b2fa120d74b5dd6d049d0/tqdm-4.32.1-py2.py3-none-any.whl (49kB)
-    Collecting pyrsistent>=0.14.0 (from jsonschema<3.1.0,>=2.6.0->spacy->alibi==0.2.0->-r requirements.txt (line 3))
-      WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
-    Downloading https://files.pythonhosted.org/packages/68/0b/f514e76b4e074386b60cfc6c8c2d75ca615b81e415417ccf3fac80ae0bf6/pyrsistent-0.15.2.tar.gz (106kB)
+    Downloading https://files.pythonhosted.org/packages/9f/3d/7a6b68b631d2ab54975f3a4863f3c4e9b26445353264ef01f465dc9b0208/tqdm-4.32.2-py2.py3-none-any.whl (50kB)
     Collecting attrs>=17.4.0 (from jsonschema<3.1.0,>=2.6.0->spacy->alibi==0.2.0->-r requirements.txt (line 3))
       WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
     Downloading https://files.pythonhosted.org/packages/23/96/d828354fa2dbdf216eaa7b7de0db692f12c234f7ef888cc14980ef40d1d2/attrs-19.1.0-py2.py3-none-any.whl
+    Collecting pyrsistent>=0.14.0 (from jsonschema<3.1.0,>=2.6.0->spacy->alibi==0.2.0->-r requirements.txt (line 3))
+      WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+    Downloading https://files.pythonhosted.org/packages/68/0b/f514e76b4e074386b60cfc6c8c2d75ca615b81e415417ccf3fac80ae0bf6/pyrsistent-0.15.2.tar.gz (106kB)
+    Collecting kiwisolver>=1.0.1 (from matplotlib>=1.4.3->seaborn->alibi==0.2.0->-r requirements.txt (line 3))
+      WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+    Downloading https://files.pythonhosted.org/packages/f8/a1/5742b56282449b1c0968197f63eae486eca2c35dcd334bab75ad524e0de1/kiwisolver-1.1.0-cp36-cp36m-manylinux1_x86_64.whl (90kB)
     Collecting pyparsing!=2.0.4,!=2.1.2,!=2.1.6,>=2.0.1 (from matplotlib>=1.4.3->seaborn->alibi==0.2.0->-r requirements.txt (line 3))
       WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
     Downloading https://files.pythonhosted.org/packages/dd/d9/3ec19e966301a6e25769976999bd7bbe552016f0d32b577dc9d63d2e0c49/pyparsing-2.4.0-py2.py3-none-any.whl (62kB)
     Collecting cycler>=0.10 (from matplotlib>=1.4.3->seaborn->alibi==0.2.0->-r requirements.txt (line 3))
       WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
     Downloading https://files.pythonhosted.org/packages/f7/d2/e07d3ebb2bd7af696440ce7e754c59dd546ffe1bbe732c8ab68b9c834e61/cycler-0.10.0-py2.py3-none-any.whl
-    Collecting kiwisolver>=1.0.1 (from matplotlib>=1.4.3->seaborn->alibi==0.2.0->-r requirements.txt (line 3))
-      WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
-    Downloading https://files.pythonhosted.org/packages/f8/a1/5742b56282449b1c0968197f63eae486eca2c35dcd334bab75ad524e0de1/kiwisolver-1.1.0-cp36-cp36m-manylinux1_x86_64.whl (90kB)
-    Requirement already satisfied: markdown>=2.6.8 in /usr/local/lib/python3.6/site-packages (from tensorboard<1.14.0,>=1.13.0->tensorflow->alibi==0.2.0->-r requirements.txt (line 3)) (3.1)
-    Requirement already satisfied: mock>=2.0.0 in /usr/local/lib/python3.6/site-packages (from tensorflow-estimator<1.14.0rc0,>=1.13.0->tensorflow->alibi==0.2.0->-r requirements.txt (line 3)) (2.0.0)
+    Requirement already satisfied: markdown>=2.6.8 in /usr/local/lib/python3.6/site-packages (from tensorboard<1.14.0,>=1.13.0->tensorflow->alibi==0.2.0->-r requirements.txt (line 3)) (3.1.1)
+    Requirement already satisfied: mock>=2.0.0 in /usr/local/lib/python3.6/site-packages (from tensorflow-estimator<1.14.0rc0,>=1.13.0->tensorflow->alibi==0.2.0->-r requirements.txt (line 3)) (3.0.5)
     Collecting decorator>=4.3.0 (from networkx>=2.0->scikit-image->alibi==0.2.0->-r requirements.txt (line 3))
       WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
     Downloading https://files.pythonhosted.org/packages/5f/88/0075e461560a1e750a0dcbf77f1d9de775028c37a19a346a6c565a257399/decorator-4.4.0-py2.py3-none-any.whl
     Requirement already satisfied: MarkupSafe>=0.23 in /usr/local/lib/python3.6/site-packages (from Jinja2>=2.10->flask->seldon-core==0.3.0->-r requirements.txt (line 4)) (1.1.1)
-    Requirement already satisfied: pbr>=0.11 in /usr/local/lib/python3.6/site-packages (from mock>=2.0.0->tensorflow-estimator<1.14.0rc0,>=1.13.0->tensorflow->alibi==0.2.0->-r requirements.txt (line 3)) (5.2.0)
-    Building wheels for collected packages: dill, jaeger-client, networkx, pyrsistent
+    Building wheels for collected packages: dill, networkx, pyrsistent
     Building wheel for dill (setup.py): started
     Building wheel for dill (setup.py): finished with status 'done'
     Stored in directory: /root/.cache/pip/wheels/5b/d7/0f/e58eae695403de585269f4e4a94e0cd6ca60ec0c202936fa4a
-    Building wheel for jaeger-client (setup.py): started
-    Building wheel for jaeger-client (setup.py): finished with status 'done'
-    Stored in directory: /root/.cache/pip/wheels/2b/9f/33/f5ae3ed41c467ee0a261747216a5cdd22359c2ff2a628d2c0f
     Building wheel for networkx (setup.py): started
     Building wheel for networkx (setup.py): finished with status 'done'
     Stored in directory: /root/.cache/pip/wheels/de/63/64/3699be2a9d0ccdb37c7f16329acf3863fd76eda58c39c737af
     Building wheel for pyrsistent (setup.py): started
     Building wheel for pyrsistent (setup.py): finished with status 'done'
     Stored in directory: /root/.cache/pip/wheels/6b/b9/15/c8c6a1e095a370e8c3273e65a5c982e5cf355dde16d77502f5
-    Successfully built dill jaeger-client networkx pyrsistent
-    Installing collected packages: scipy, scikit-learn, dill, murmurhash, blis, tqdm, srsly, cymem, wasabi, plac, preshed, thinc, pyrsistent, attrs, jsonschema, spacy, pytz, python-dateutil, pandas, pyparsing, cycler, kiwisolver, matplotlib, seaborn, soupsieve, beautifulsoup4, opencv-python, keras, PyWavelets, pillow, imageio, decorator, networkx, scikit-image, alibi, jaeger-client, seldon-core
-    Found existing installation: jaeger-client 4.0.0
-    Uninstalling jaeger-client-4.0.0:
-    Successfully uninstalled jaeger-client-4.0.0
-    Found existing installation: seldon-core 0.2.7
-    Uninstalling seldon-core-0.2.7:
-    Successfully uninstalled seldon-core-0.2.7
-    Successfully installed PyWavelets-1.0.3 alibi-0.2.0 attrs-19.1.0 beautifulsoup4-4.7.1 blis-0.2.4 cycler-0.10.0 cymem-2.0.2 decorator-4.4.0 dill-0.2.9 imageio-2.5.0 jaeger-client-3.13.0 jsonschema-3.0.1 keras-2.2.4 kiwisolver-1.1.0 matplotlib-3.1.0 murmurhash-1.0.2 networkx-2.3 opencv-python-4.1.0.25 pandas-0.24.2 pillow-6.0.0 plac-0.9.6 preshed-2.0.1 pyparsing-2.4.0 pyrsistent-0.15.2 python-dateutil-2.8.0 pytz-2019.1 scikit-image-0.15.0 scikit-learn-0.20.1 scipy-1.3.0 seaborn-0.9.0 seldon-core-0.3.0 soupsieve-1.9.1 spacy-2.1.4 srsly-0.0.7 thinc-7.0.4 tqdm-4.32.1 wasabi-0.2.2
+    Successfully built dill networkx pyrsistent
+    Installing collected packages: scipy, scikit-learn, dill, murmurhash, srsly, tqdm, blis, plac, cymem, preshed, wasabi, thinc, attrs, pyrsistent, jsonschema, spacy, soupsieve, beautifulsoup4, opencv-python, pytz, python-dateutil, pandas, kiwisolver, pyparsing, cycler, matplotlib, seaborn, keras, pillow, imageio, PyWavelets, decorator, networkx, scikit-image, alibi
+    Successfully installed PyWavelets-1.0.3 alibi-0.2.0 attrs-19.1.0 beautifulsoup4-4.7.1 blis-0.2.4 cycler-0.10.0 cymem-2.0.2 decorator-4.4.0 dill-0.2.9 imageio-2.5.0 jsonschema-3.0.1 keras-2.2.4 kiwisolver-1.1.0 matplotlib-3.1.0 murmurhash-1.0.2 networkx-2.3 opencv-python-4.1.0.25 pandas-0.24.2 pillow-6.0.0 plac-0.9.6 preshed-2.0.1 pyparsing-2.4.0 pyrsistent-0.15.2 python-dateutil-2.8.0 pytz-2019.1 scikit-image-0.15.0 scikit-learn-0.20.1 scipy-1.3.0 seaborn-0.9.0 soupsieve-1.9.1 spacy-2.1.4 srsly-0.0.7 thinc-7.0.4 tqdm-4.32.2 wasabi-0.2.2
     WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
     WARNING: You are using pip version 19.1, however version 19.1.1 is available.
     You should consider upgrading via the 'pip install --upgrade pip' command.
@@ -1140,6 +1274,10 @@ spec:
 
 
 ### Now that it's deployed we can query it
+**IMPORTANT:** If you are using minikube (instead of docker desktop) you have to forward the port first with:
+```
+kubectl port-forward svc/ambassador 80:80
+```
 
 #### First we can try Curl
 
@@ -1147,13 +1285,13 @@ spec:
 ```bash
 %%bash
 curl -X POST -H 'Content-Type: application/json' \
-    -d "{'data': {'names': ['text'], 'ndarray': [[52,  4,  0,  2,  8,  4,  2,  0,  0,  0, 60,  9]]}}" \
-    http://localhost/seldon/default/loanclassifier-explainer/api/v0.1/predictions
+    -d "{'data': {'names': ['text'], 'ndarray': [[52,  4,  0,  2,  8,  4,  2,  0,  0,  0, 60, 9]] }}" \
+    http://localhost:80/seldon/default/loanclassifier-explainer/api/v0.1/predictions
 ```
 
     {
       "meta": {
-        "puid": "snugmu5nusqp0oeqlch4bhd7o7",
+        "puid": "k6dj3eqpss9nb72i7m0v4e25rl",
         "tags": {
         },
         "routing": {
@@ -1163,12 +1301,12 @@ curl -X POST -H 'Content-Type: application/json' \
         },
         "metrics": []
       },
-      "strData": "{\"names\": [\"Marital Status = Separated\", \"Sex = Female\"], \"precision\": 0.953307392996109, \"coverage\": 0.1094, \"raw\": {\"feature\": [3, 7], \"mean\": [0.8751560549313359, 0.953307392996109], \"precision\": [0.8751560549313359, 0.953307392996109], \"coverage\": [0.1815, 0.1094], \"examples\": [{\"covered\": [[21, 4, 4, 2, 1, 3, 4, 0, 0, 0, 15, 9], [22, 4, 1, 2, 6, 1, 4, 1, 0, 0, 40, 9], [22, 4, 3, 2, 6, 3, 4, 1, 0, 0, 50, 9], [45, 6, 1, 2, 8, 4, 4, 1, 0, 0, 50, 9], [53, 7, 4, 2, 8, 1, 4, 1, 0, 1092, 40, 9], [45, 5, 4, 2, 6, 0, 4, 1, 0, 0, 40, 9], [51, 0, 0, 2, 0, 0, 4, 1, 0, 0, 50, 9], [59, 4, 4, 2, 6, 4, 2, 0, 0, 0, 40, 9], [53, 4, 4, 2, 2, 0, 4, 1, 0, 2002, 40, 9], [21, 4, 4, 2, 2, 1, 4, 1, 0, 0, 35, 5]], \"covered_true\": [[51, 5, 0, 2, 6, 1, 4, 0, 0, 0, 25, 9], [34, 4, 1, 2, 5, 1, 4, 0, 0, 0, 35, 9], [30, 1, 4, 2, 2, 1, 4, 1, 0, 0, 40, 9], [31, 4, 4, 2, 2, 1, 4, 1, 0, 0, 80, 9], [28, 4, 4, 2, 2, 0, 4, 1, 0, 0, 40, 9], [27, 4, 0, 2, 5, 1, 4, 1, 0, 0, 40, 9], [43, 4, 4, 2, 2, 4, 4, 1, 0, 0, 40, 5], [21, 4, 4, 2, 1, 1, 4, 1, 0, 0, 45, 9], [47, 4, 4, 2, 1, 4, 4, 0, 0, 0, 40, 9], [47, 4, 1, 2, 5, 4, 4, 0, 0, 0, 50, 9]], \"covered_false\": [[28, 4, 4, 2, 8, 0, 2, 1, 15024, 0, 40, 9], [39, 4, 4, 2, 5, 1, 4, 0, 0, 0, 45, 9], [52, 1, 1, 2, 4, 0, 4, 1, 0, 0, 60, 9], [53, 4, 4, 2, 6, 1, 4, 1, 0, 2559, 48, 9], [74, 7, 2, 2, 5, 2, 4, 0, 0, 3683, 20, 9], [46, 5, 1, 2, 2, 0, 4, 1, 7298, 0, 40, 0], [50, 4, 5, 2, 8, 0, 4, 1, 0, 0, 50, 9], [32, 1, 6, 2, 5, 0, 4, 1, 0, 0, 40, 9], [43, 4, 1, 2, 8, 0, 4, 1, 3103, 0, 40, 9], [62, 4, 1, 2, 2, 0, 4, 1, 7688, 0, 50, 9]], \"uncovered_true\": [], \"uncovered_false\": []}, {\"covered\": [[26, 4, 4, 2, 1, 5, 4, 0, 0, 0, 52, 9], [17, 0, 3, 2, 0, 3, 4, 0, 0, 0, 20, 9], [30, 4, 4, 2, 1, 1, 4, 0, 0, 0, 40, 9], [24, 4, 1, 2, 5, 3, 4, 0, 0, 0, 20, 9], [55, 4, 4, 2, 6, 1, 4, 0, 0, 0, 38, 9], [23, 4, 0, 2, 8, 3, 4, 0, 0, 0, 40, 9], [30, 4, 6, 2, 5, 1, 4, 0, 0, 0, 45, 9], [18, 4, 3, 2, 7, 3, 4, 0, 0, 0, 30, 9], [42, 4, 4, 2, 2, 1, 4, 0, 0, 0, 40, 9], [17, 4, 3, 2, 6, 3, 4, 0, 0, 0, 12, 9]], \"covered_true\": [[22, 4, 4, 2, 1, 3, 4, 0, 0, 0, 20, 9], [47, 7, 3, 2, 7, 1, 4, 0, 0, 0, 40, 9], [41, 2, 5, 2, 5, 1, 2, 0, 0, 0, 40, 9], [40, 0, 4, 2, 0, 5, 4, 0, 0, 0, 25, 9], [33, 4, 1, 2, 6, 1, 4, 0, 0, 0, 40, 9], [23, 4, 0, 2, 8, 3, 4, 0, 0, 0, 40, 9], [21, 4, 4, 2, 7, 3, 4, 0, 0, 0, 32, 9], [38, 4, 4, 2, 2, 1, 2, 0, 0, 0, 28, 9], [64, 4, 4, 2, 7, 1, 4, 0, 0, 0, 38, 9], [33, 4, 4, 2, 7, 4, 4, 0, 0, 0, 40, 9]], \"covered_false\": [[71, 2, 5, 2, 5, 1, 4, 0, 0, 0, 40, 9], [74, 7, 2, 2, 5, 2, 4, 0, 0, 3683, 20, 9], [31, 4, 1, 2, 8, 1, 4, 0, 13550, 0, 50, 9], [42, 4, 5, 2, 5, 1, 4, 0, 8614, 0, 50, 9], [34, 4, 1, 2, 7, 5, 1, 0, 7688, 0, 50, 7], [52, 0, 5, 2, 0, 5, 4, 0, 15024, 0, 40, 9], [43, 7, 2, 2, 5, 4, 4, 0, 0, 0, 40, 9], [33, 1, 6, 2, 5, 1, 4, 0, 0, 0, 65, 9], [41, 4, 1, 2, 5, 5, 4, 0, 7688, 0, 10, 9], [41, 6, 1, 2, 1, 5, 4, 0, 7688, 0, 40, 9]], \"uncovered_true\": [], \"uncovered_false\": []}], \"all_precision\": 0, \"num_preds\": 1000001, \"names\": [\"Marital Status = Separated\", \"Sex = Female\"], \"instance\": [[52.0, 4.0, 0.0, 2.0, 8.0, 4.0, 2.0, 0.0, 0.0, 0.0, 60.0, 9.0]], \"prediction\": 0}}"
+      "strData": "{\"names\": [\"Marital Status = Separated\", \"Sex = Female\", \"Capital Gain <= 0.00\"], \"precision\": 0.9603658536585366, \"coverage\": 0.1022, \"raw\": {\"feature\": [3, 7, 8], \"mean\": [0.8811188811188811, 0.9476744186046512, 0.9603658536585366], \"precision\": [0.8811188811188811, 0.9476744186046512, 0.9603658536585366], \"coverage\": [0.181, 0.1076, 0.1022], \"examples\": [{\"covered\": [[38, 4, 4, 2, 1, 5, 4, 0, 0, 0, 36, 9], [60, 5, 4, 2, 8, 0, 4, 1, 0, 0, 40, 9], [60, 4, 4, 2, 6, 0, 4, 1, 0, 0, 55, 9], [28, 4, 4, 2, 8, 3, 4, 1, 0, 0, 32, 9], [28, 4, 1, 2, 6, 0, 4, 1, 0, 0, 45, 9], [42, 4, 4, 2, 2, 0, 4, 1, 0, 0, 50, 9], [69, 4, 3, 2, 2, 0, 4, 1, 9386, 0, 60, 9], [66, 4, 3, 2, 6, 0, 4, 1, 0, 0, 26, 9], [57, 4, 4, 2, 1, 1, 4, 0, 0, 0, 45, 9], [41, 4, 4, 2, 1, 0, 2, 1, 0, 0, 45, 9]], \"covered_true\": [[45, 4, 4, 2, 2, 5, 4, 0, 0, 1740, 40, 9], [30, 1, 4, 2, 1, 0, 4, 1, 0, 0, 40, 9], [51, 4, 4, 2, 7, 2, 2, 1, 0, 0, 32, 5], [40, 7, 5, 2, 5, 0, 4, 1, 0, 0, 35, 9], [32, 4, 4, 2, 1, 4, 4, 0, 0, 0, 40, 9], [22, 4, 4, 2, 2, 1, 4, 1, 0, 0, 40, 9], [35, 4, 4, 2, 6, 0, 4, 1, 0, 0, 40, 9], [18, 7, 3, 2, 1, 3, 4, 0, 0, 0, 5, 9], [41, 6, 4, 2, 5, 0, 4, 1, 0, 0, 40, 9], [22, 4, 4, 2, 1, 3, 4, 0, 0, 0, 40, 9]], \"covered_false\": [[30, 4, 1, 2, 6, 0, 4, 1, 0, 0, 45, 9], [46, 4, 1, 2, 5, 0, 4, 1, 0, 1902, 40, 9], [55, 4, 4, 2, 2, 0, 2, 1, 15024, 0, 40, 9], [29, 6, 6, 2, 5, 3, 4, 1, 0, 0, 50, 3], [46, 4, 6, 2, 5, 0, 4, 1, 15024, 0, 45, 9], [32, 5, 4, 2, 2, 0, 4, 1, 7688, 0, 40, 9], [45, 4, 2, 2, 5, 4, 2, 0, 0, 3004, 35, 9], [48, 4, 1, 2, 8, 0, 4, 1, 0, 0, 40, 9], [38, 4, 6, 2, 5, 0, 4, 1, 0, 0, 40, 9], [40, 6, 6, 2, 5, 1, 4, 1, 0, 2444, 45, 9]], \"uncovered_true\": [], \"uncovered_false\": []}, {\"covered\": [[45, 4, 4, 2, 1, 4, 4, 0, 0, 0, 40, 9], [20, 4, 4, 2, 2, 3, 4, 0, 0, 0, 40, 9], [39, 4, 1, 2, 5, 0, 1, 0, 0, 0, 48, 7], [46, 4, 1, 2, 5, 4, 2, 0, 0, 0, 36, 9], [40, 4, 4, 2, 8, 5, 4, 0, 0, 0, 40, 9], [61, 0, 4, 2, 0, 0, 4, 0, 0, 0, 40, 9], [37, 4, 4, 2, 1, 1, 4, 0, 0, 0, 60, 9], [41, 6, 4, 2, 6, 2, 4, 0, 0, 0, 40, 6], [41, 4, 4, 2, 6, 0, 4, 0, 0, 0, 40, 9], [64, 0, 4, 2, 0, 4, 4, 0, 0, 0, 38, 9]], \"covered_true\": [[41, 7, 4, 2, 8, 4, 4, 0, 0, 0, 45, 9], [41, 6, 5, 2, 5, 4, 4, 0, 0, 0, 35, 9], [42, 6, 1, 2, 2, 0, 4, 0, 0, 0, 50, 9], [49, 7, 6, 2, 8, 1, 4, 0, 0, 0, 40, 9], [34, 2, 4, 2, 1, 4, 4, 0, 0, 0, 35, 9], [26, 2, 1, 2, 5, 1, 4, 0, 0, 0, 40, 9], [40, 4, 4, 2, 8, 5, 4, 0, 0, 0, 40, 9], [49, 4, 4, 2, 7, 1, 4, 0, 0, 0, 45, 9], [55, 4, 4, 2, 2, 1, 4, 0, 0, 0, 40, 9], [17, 0, 3, 2, 0, 1, 3, 0, 0, 0, 20, 9]], \"covered_false\": [[46, 4, 1, 2, 6, 4, 2, 0, 0, 0, 35, 9], [37, 4, 1, 2, 5, 5, 2, 0, 15024, 0, 40, 9], [39, 4, 1, 2, 5, 0, 1, 0, 0, 0, 48, 7], [23, 4, 1, 2, 8, 1, 4, 0, 0, 0, 50, 9], [41, 4, 1, 2, 8, 4, 2, 0, 0, 0, 90, 9], [70, 4, 0, 2, 2, 0, 4, 0, 9386, 0, 50, 9], [50, 6, 4, 2, 8, 1, 4, 0, 99999, 0, 35, 9], [39, 4, 1, 2, 5, 1, 4, 0, 0, 0, 60, 9], [42, 1, 0, 2, 5, 4, 1, 0, 0, 0, 40, 7], [48, 2, 5, 2, 8, 4, 2, 0, 9562, 0, 40, 9]], \"uncovered_true\": [], \"uncovered_false\": []}, {\"covered\": [[44, 4, 4, 2, 1, 5, 4, 0, 0, 0, 38, 9], [49, 4, 4, 2, 2, 4, 2, 0, 0, 0, 40, 9], [22, 4, 0, 2, 1, 3, 4, 0, 0, 0, 40, 9], [29, 4, 5, 2, 5, 5, 1, 0, 0, 0, 40, 2], [57, 4, 4, 2, 1, 1, 4, 0, 0, 0, 45, 9], [31, 4, 5, 2, 5, 1, 4, 0, 0, 0, 46, 9], [41, 6, 5, 2, 5, 4, 4, 0, 0, 0, 35, 9], [38, 4, 4, 2, 6, 3, 4, 0, 0, 0, 40, 9], [31, 4, 0, 2, 1, 0, 4, 0, 0, 0, 40, 9], [60, 0, 4, 2, 0, 0, 4, 0, 0, 0, 12, 9]], \"covered_true\": [[49, 4, 4, 2, 7, 1, 4, 0, 0, 0, 45, 9], [47, 7, 1, 2, 5, 0, 4, 0, 0, 0, 60, 9], [32, 4, 0, 2, 6, 1, 2, 0, 0, 0, 46, 5], [21, 4, 4, 2, 8, 3, 4, 0, 0, 0, 40, 9], [43, 4, 4, 2, 8, 0, 4, 0, 0, 0, 49, 9], [41, 4, 6, 2, 1, 0, 4, 0, 0, 0, 50, 0], [72, 0, 4, 2, 0, 0, 4, 0, 0, 0, 8, 9], [30, 5, 4, 2, 1, 4, 4, 0, 0, 0, 40, 9], [20, 4, 4, 2, 2, 3, 4, 0, 0, 0, 40, 9], [24, 2, 1, 2, 4, 0, 4, 0, 0, 0, 45, 9]], \"covered_false\": [[30, 4, 1, 2, 8, 1, 4, 0, 0, 0, 50, 9], [42, 1, 0, 2, 5, 4, 1, 0, 0, 0, 40, 7], [54, 4, 5, 2, 8, 0, 4, 0, 0, 1887, 44, 9], [46, 4, 1, 2, 6, 4, 2, 0, 0, 0, 35, 9], [46, 6, 2, 2, 5, 1, 4, 0, 0, 0, 45, 9], [41, 4, 1, 2, 8, 4, 2, 0, 0, 0, 90, 9], [53, 2, 5, 2, 5, 1, 4, 0, 0, 0, 35, 9], [45, 7, 4, 2, 8, 4, 4, 0, 0, 0, 38, 9], [23, 4, 1, 2, 8, 1, 4, 0, 0, 0, 50, 9], [39, 4, 1, 2, 5, 0, 1, 0, 0, 0, 48, 7]], \"uncovered_true\": [], \"uncovered_false\": []}], \"all_precision\": 0, \"num_preds\": 1000101, \"names\": [\"Marital Status = Separated\", \"Sex = Female\", \"Capital Gain <= 0.00\"], \"instance\": [[52.0, 4.0, 0.0, 2.0, 8.0, 4.0, 2.0, 0.0, 0.0, 0.0, 60.0, 9.0]], \"prediction\": 0}}"
     }
 
       % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                      Dload  Upload   Total   Spent    Left  Speed
-    100  3493  100  3401  100    92   1231     33  0:00:02  0:00:02 --:--:--  1265
+    100  4898  100  4806  100    92   2671     51  0:00:01  0:00:01 --:--:--  2721
 
 
 ## 5) Test production predictions and explanations
@@ -1203,7 +1341,7 @@ print(to_explain)
 
 
 ```python
-resp = sc_pred.predict(data=to_explain, deployment_name="loanclassifier").response
+resp = sc.predict(data=to_explain, deployment_name="loanclassifier").response
 pred = get_data_from_proto(resp)
 print('Predicted Label: %s' % ("POSITIVE" if pred[0][0] < 0.5 else "NEGATIVE"))
 print('Predicted Probabilities: %s' % pred[0])
@@ -1217,7 +1355,7 @@ print('Predicted Probabilities: %s' % pred[0])
 
 
 ```python
-print('Actual Label: %s' % ("POSITIVE" if y_valid[0] == 1 else "NEGATIVE"))
+print('Actual Label: %s' % ("POSITIVE" if y_test[0] == 1 else "NEGATIVE"))
 ```
 
     Actual Label: NEGATIVE
@@ -1228,7 +1366,7 @@ print('Actual Label: %s' % ("POSITIVE" if y_valid[0] == 1 else "NEGATIVE"))
 
 ```python
 import json
-explanation = sc_xai.predict(data=to_explain, deployment_name="loanclassifier-explainer")
+explanation = sc.predict(data=to_explain, deployment_name="loanclassifier-explainer")
 exp = json.loads(explanation.response.strData)
 
 print('Anchor: %s' % (' AND '.join(exp['names'])))
