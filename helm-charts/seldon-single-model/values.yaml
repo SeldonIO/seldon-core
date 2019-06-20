@@ -2,9 +2,36 @@ name: my-model
 model:
   image:
     name: seldonio/mock_classifier:1.0
+    pullPolicy: IfNotPresent
   name: classifier
+  resources:
+    requests:
+      memory: "1Mi"
+  env:
+    LOG_LEVEL: INFO
+  #basic log request and responses env vars below just logs raw messages to engine stdout
+  #to make searchable log externally - see request logging example
+  annotations:
+    seldon.io/headless-svc: "false"
+    seldon.io/engine-log-requests: "false"
+    seldon.io/engine-log-responses: "false"
+    seldon.io/engine-log-message-type: "seldon.message.pair"
+    seldon.io/engine-log-messages-externally: "false"
 replicas: 1
+
+engine:
+  resources:
+    requests:
+      cpu: "0.1"
+
 # Add oauth key and secret if using the default API Oauth Gateway for ingress
 oauth:
   key: 
   secret: 
+
+sdepLabels:
+  app: "seldon"
+
+predictorLabels:
+  version: "v1"
+  fluentd: "true"
