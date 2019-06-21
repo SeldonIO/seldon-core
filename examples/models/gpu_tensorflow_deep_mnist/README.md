@@ -25,7 +25,18 @@ The tutorial will be broken down into the following sections:
 
 3. Push the Image to your proejcts Container Registry
 
+
 4. Deploy the model on GKE using Seldon Core
+
+
+## Local Testing Environment
+
+For the development of this example a GCE Virtual Machine was used to allow access to a GPU. The configuration for this VM is as follows:
+
+* VM Image: TensorFlow from NVIDIA
+* 8 vCPUs
+* 32 GB memory
+* 1x NVIDIA Tesla V100 GPU
 
 
 ## 1) Installing all dependencies to run Tensorflow-GPU
@@ -273,7 +284,7 @@ Wrap model using s2i
 
 
 ```python
-!s2i build . joelh1996/gpu-base:0.5 deep-mnist-gpu:0.1
+!s2i build . seldonio/seldon-core-s2i-python3-tf-gpu:0.1 deep-mnist-gpu:0.1
 ```
 
 
