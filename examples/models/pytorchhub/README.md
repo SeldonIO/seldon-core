@@ -1,9 +1,11 @@
 
 # Production-level PyTorch Hub models in k8s with 10 lines of Python code
 
-In this example we will showcase how to use Seldon to use our re-usable PyTorch Hub Seldon Deployment to be able to productionise your PyTorch Hub models with a single line of code.
+In this example we will showcase how to use Seldon to use our re-usable PyTorch Hub Seldon Deployment to be able to productionise your PyTorch Hub models using Seldon.
 
-PyTorch Hub is a pre-trained model repository designed to facilitate research reproducibility. Extending PyTorch with Seldon Deployments allows us to go from reproducible research models to robust production machine learning systems.
+PyTorch Hub is a model repository designed to facilitate research reproducibility, and includes trained and untrained versions of the most popular models out there (such as BERT, GP2, VGG, etc). 
+
+Extending PyTorch with Seldon Deployments allows us to go from research models to robust reproducible production machine learning systems.
 
 The architectural diagram of the the PyTorchHub SeldonDeployment project is the following:
 
@@ -11,9 +13,9 @@ The architectural diagram of the the PyTorchHub SeldonDeployment project is the 
 
 This tutorial will break down in the following sections:
 
-1) Run all the services (Kubeflow and Seldon)
+1) Set-up all dependencies
 
-2) Test and build all our reusable pipeline steps
+2) Build your own PyTorch Hub Seldon Deployment
 
 3) Use Kubeflow to Train the Pipeline and Deploy to Seldon
 
