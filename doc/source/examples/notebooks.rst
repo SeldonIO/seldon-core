@@ -31,6 +31,7 @@ Notebooks
    OpenVINO ImageNet <openvino>
    OpenVINO ImageNet Ensemble <openvino_ensemble>
    ONNX ResNet with Intel nGraph<onnx_resnet>   
+   PyTorch Hub Seldon Deployment <pytorch_hub_seldon_deployment>   
    R Iris Classifier <r_iris>
    R MNIST Classifier <r_mnist>   
    REST timeouts <rest_timeouts>	         

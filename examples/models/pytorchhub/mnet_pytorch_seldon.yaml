@@ -1,0 +1,33 @@
+---
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+metadata:
+  name: pytorchhub-img-clf
+spec:
+  annotations:
+    project_name: PyTorch Hub Engine
+    deployment_version: v1
+  name: pytorchhub-img-clf
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: pytorchseldon:0.1
+          imagePullPolicy: IfNotPresent
+          name: pytorchhub-mnet
+        terminationGracePeriodSeconds: 20
+    graph:
+      name: pytorchhub-mnet
+      endpoint:
+        type: REST
+      type: MODEL
+      children: []
+      parameters:
+      - name: repo
+        type: STRING
+        value: pytorch/vision
+      - name: name
+        type: STRING
+        value: mobilenet_v2
+    name: pytorchhub-img-engine
+    replicas: 1
