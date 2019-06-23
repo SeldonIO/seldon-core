@@ -11,19 +11,17 @@ The architectural diagram of the the PyTorchHub SeldonDeployment project is the 
 
 ![](images/pytorchhub-seldondep-overview.jpg)
 
-This tutorial will break down in the following sections:
+### This tutorial will break down in the following sections:
 
 1) Set-up all dependencies
 
 2) Build your own PyTorch Hub Seldon Deployment
 
-3) Use Kubeflow to Train the Pipeline and Deploy to Seldon
+3) Let's deploy MobileNet from PyTorch Hub
 
-5) Test Seldon Deployed ML REST Endpoints
+4) Deploy a few more models and visualise metrics
 
-6) Visualise Seldon's Production ML Pipelines
-
-# Before you start
+### Before you start
 Make sure you install the following dependencies, as they are critical for this example to work:
 
 * Helm v2.13.1+
@@ -583,7 +581,7 @@ print(result)
            requires_grad=True)
 
 
-## 3) Deploy a few more models and visualise metrics
+## 4) Deploy a few more models and visualise metrics
 
 Now that we know what our workflow looks like, we can deploy more models. In this case we'll deploy a squeezenet model, and a densenet model.
 
