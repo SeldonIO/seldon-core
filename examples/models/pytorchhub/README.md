@@ -27,8 +27,6 @@ Make sure you install the following dependencies, as they are critical for this 
 * Helm v2.13.1+
 * A Kubernetes cluster running v1.13 or above (minkube / docker-for-windows work well if enough RAM)
 * kubectl v1.14+
-* ksonnet v0.13.1+
-* kfctl 0.5.1 - Please use this exact version as there are major changes every few months
 * Python 3.6+
 * Python DEV requirements (we'll install them below)
 
@@ -100,7 +98,7 @@ class PyTorchSeldonDeployment:
         return response_bytes
 ```
 
-    Writing deployment_image/PyTorchSeldonDeployment.py
+    Overwriting deployment_image/PyTorchSeldonDeployment.py
 
 
 ### 2.2) Specify the dependencies for your model through a requirements.txt file
@@ -113,7 +111,7 @@ torch==1.1.0
 image==1.5.27
 ```
 
-    Writing deployment_image/requirements.txt
+    Overwriting deployment_image/requirements.txt
 
 
 ### 2.3) Use source2image to build your container image
@@ -205,7 +203,7 @@ spec:
 
 ```
 
-    Overwriting pytorch_seldon_template.yaml
+    Writing pytorch_seldon_template.yaml
 
 
 ### Details: Defining the PyTorch Model through the parameters
@@ -242,7 +240,7 @@ In this case we are applying the file with the model `mobilenet_v2` and the depl
 ```bash
 %%bash 
 sed 's|MODEL_NAME|mobilenet_v2|g; s|DEPLOYMENT_NAME|mnet|g' pytorch_seldon_template.yaml | \
-    kubectl apply -f -
+    kubectl create -f -
 ```
 
     seldondeployment.machinelearning.seldon.io/pytorchhub-mnet-deployment created
@@ -304,7 +302,7 @@ from seldon_core.seldon_client import SeldonClient
 
 sc = SeldonClient(
     gateway="ambassador", 
-    ambassador_endpoint="localhost:80",
+    gateway_endpoint="localhost:80",
     namespace="default",
     payload_type="bytes",
     transport="rest")
@@ -359,7 +357,188 @@ seldon_message_proto = sc.predict(
     names=["image_features"])
 ```
 
-    <class 'NoneType'>
+
+    ---------------------------------------------------------------------------
+
+    ConnectionRefusedError                    Traceback (most recent call last)
+
+    ~/miniconda3/envs/reddit-classification/lib/python3.7/site-packages/urllib3/connection.py in _new_conn(self)
+        158             conn = connection.create_connection(
+    --> 159                 (self._dns_host, self.port), self.timeout, **extra_kw)
+        160 
+
+
+    ~/miniconda3/envs/reddit-classification/lib/python3.7/site-packages/urllib3/util/connection.py in create_connection(address, timeout, source_address, socket_options)
+         79     if err is not None:
+    ---> 80         raise err
+         81 
+
+
+    ~/miniconda3/envs/reddit-classification/lib/python3.7/site-packages/urllib3/util/connection.py in create_connection(address, timeout, source_address, socket_options)
+         69                 sock.bind(source_address)
+    ---> 70             sock.connect(sa)
+         71             return sock
+
+
+    ConnectionRefusedError: [Errno 111] Connection refused
+
+    
+    During handling of the above exception, another exception occurred:
+
+
+    NewConnectionError                        Traceback (most recent call last)
+
+    ~/miniconda3/envs/reddit-classification/lib/python3.7/site-packages/urllib3/connectionpool.py in urlopen(self, method, url, body, headers, retries, redirect, assert_same_host, timeout, pool_timeout, release_conn, chunked, body_pos, **response_kw)
+        599                                                   body=body, headers=headers,
+    --> 600                                                   chunked=chunked)
+        601 
+
+
+    ~/miniconda3/envs/reddit-classification/lib/python3.7/site-packages/urllib3/connectionpool.py in _make_request(self, conn, method, url, timeout, chunked, **httplib_request_kw)
+        353         else:
+    --> 354             conn.request(method, url, **httplib_request_kw)
+        355 
+
+
+    ~/miniconda3/envs/reddit-classification/lib/python3.7/http/client.py in request(self, method, url, body, headers, encode_chunked)
+       1228         """Send a complete request to the server."""
+    -> 1229         self._send_request(method, url, body, headers, encode_chunked)
+       1230 
+
+
+    ~/miniconda3/envs/reddit-classification/lib/python3.7/http/client.py in _send_request(self, method, url, body, headers, encode_chunked)
+       1274             body = _encode(body, 'body')
+    -> 1275         self.endheaders(body, encode_chunked=encode_chunked)
+       1276 
+
+
+    ~/miniconda3/envs/reddit-classification/lib/python3.7/http/client.py in endheaders(self, message_body, encode_chunked)
+       1223             raise CannotSendHeader()
+    -> 1224         self._send_output(message_body, encode_chunked=encode_chunked)
+       1225 
+
+
+    ~/miniconda3/envs/reddit-classification/lib/python3.7/http/client.py in _send_output(self, message_body, encode_chunked)
+       1015         del self._buffer[:]
+    -> 1016         self.send(msg)
+       1017 
+
+
+    ~/miniconda3/envs/reddit-classification/lib/python3.7/http/client.py in send(self, data)
+        955             if self.auto_open:
+    --> 956                 self.connect()
+        957             else:
+
+
+    ~/miniconda3/envs/reddit-classification/lib/python3.7/site-packages/urllib3/connection.py in connect(self)
+        180     def connect(self):
+    --> 181         conn = self._new_conn()
+        182         self._prepare_conn(conn)
+
+
+    ~/miniconda3/envs/reddit-classification/lib/python3.7/site-packages/urllib3/connection.py in _new_conn(self)
+        167             raise NewConnectionError(
+    --> 168                 self, "Failed to establish a new connection: %s" % e)
+        169 
+
+
+    NewConnectionError: <urllib3.connection.HTTPConnection object at 0x7fe279f861d0>: Failed to establish a new connection: [Errno 111] Connection refused
+
+    
+    During handling of the above exception, another exception occurred:
+
+
+    MaxRetryError                             Traceback (most recent call last)
+
+    ~/miniconda3/envs/reddit-classification/lib/python3.7/site-packages/requests/adapters.py in send(self, request, stream, timeout, verify, cert, proxies)
+        448                     retries=self.max_retries,
+    --> 449                     timeout=timeout
+        450                 )
+
+
+    ~/miniconda3/envs/reddit-classification/lib/python3.7/site-packages/urllib3/connectionpool.py in urlopen(self, method, url, body, headers, retries, redirect, assert_same_host, timeout, pool_timeout, release_conn, chunked, body_pos, **response_kw)
+        637             retries = retries.increment(method, url, error=e, _pool=self,
+    --> 638                                         _stacktrace=sys.exc_info()[2])
+        639             retries.sleep()
+
+
+    ~/miniconda3/envs/reddit-classification/lib/python3.7/site-packages/urllib3/util/retry.py in increment(self, method, url, response, error, _pool, _stacktrace)
+        398         if new_retry.is_exhausted():
+    --> 399             raise MaxRetryError(_pool, url, error or ResponseError(cause))
+        400 
+
+
+    MaxRetryError: HTTPConnectionPool(host='localhost', port=80): Max retries exceeded with url: /seldon/default/pytorchhub-mnet-deployment/api/v0.1/predictions (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7fe279f861d0>: Failed to establish a new connection: [Errno 111] Connection refused'))
+
+    
+    During handling of the above exception, another exception occurred:
+
+
+    ConnectionError                           Traceback (most recent call last)
+
+    <ipython-input-5-5b686f91aa0f> in <module>
+          5     bin_data=pickle.dumps(input_batch),
+          6     deployment_name="pytorchhub-mnet-deployment",
+    ----> 7     names=["image_features"])
+    
+
+    ~/miniconda3/envs/reddit-classification/lib/python3.7/site-packages/seldon_core/seldon_client.py in predict(self, gateway, transport, deployment_name, payload_type, oauth_key, oauth_secret, seldon_rest_endpoint, seldon_grpc_endpoint, gateway_endpoint, microservice_endpoint, method, shape, namespace, data, bin_data, str_data, names, gateway_prefix, headers)
+        229         if k["gateway"] == "ambassador" or k["gateway"] == "istio":
+        230             if k["transport"] == "rest":
+    --> 231                 return rest_predict_gateway(**k)
+        232             elif k["transport"] == "grpc":
+        233                 return grpc_predict_gateway(**k)
+
+
+    ~/miniconda3/envs/reddit-classification/lib/python3.7/site-packages/seldon_core/seldon_client.py in rest_predict_gateway(deployment_name, namespace, gateway_endpoint, shape, data, headers, gateway_prefix, payload_type, bin_data, str_data, names, **kwargs)
+       1058                 "http://" + gateway_endpoint + "/seldon/" + namespace + "/" + deployment_name + "/api/v0.1/predictions",
+       1059                 json=payload,
+    -> 1060                 headers=headers)
+       1061     else:
+       1062         response_raw = requests.post(
+
+
+    ~/miniconda3/envs/reddit-classification/lib/python3.7/site-packages/requests/api.py in post(url, data, json, **kwargs)
+        114     """
+        115 
+    --> 116     return request('post', url, data=data, json=json, **kwargs)
+        117 
+        118 
+
+
+    ~/miniconda3/envs/reddit-classification/lib/python3.7/site-packages/requests/api.py in request(method, url, **kwargs)
+         58     # cases, and look like a memory leak in others.
+         59     with sessions.Session() as session:
+    ---> 60         return session.request(method=method, url=url, **kwargs)
+         61 
+         62 
+
+
+    ~/miniconda3/envs/reddit-classification/lib/python3.7/site-packages/requests/sessions.py in request(self, method, url, params, data, headers, cookies, files, auth, timeout, allow_redirects, proxies, hooks, stream, verify, cert, json)
+        531         }
+        532         send_kwargs.update(settings)
+    --> 533         resp = self.send(prep, **send_kwargs)
+        534 
+        535         return resp
+
+
+    ~/miniconda3/envs/reddit-classification/lib/python3.7/site-packages/requests/sessions.py in send(self, request, **kwargs)
+        644 
+        645         # Send the request
+    --> 646         r = adapter.send(request, **kwargs)
+        647 
+        648         # Total elapsed time of the request (approximately)
+
+
+    ~/miniconda3/envs/reddit-classification/lib/python3.7/site-packages/requests/adapters.py in send(self, request, stream, timeout, verify, cert, proxies)
+        514                 raise SSLError(e, request=request)
+        515 
+    --> 516             raise ConnectionError(e, request=request)
+        517 
+        518         except ClosedPoolError as e:
+
+
+    ConnectionError: HTTPConnectionPool(host='localhost', port=80): Max retries exceeded with url: /seldon/default/pytorchhub-mnet-deployment/api/v0.1/predictions (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7fe279f861d0>: Failed to establish a new connection: [Errno 111] Connection refused'))
 
 
 

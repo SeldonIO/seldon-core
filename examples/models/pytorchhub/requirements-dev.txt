@@ -1,3 +1,4 @@
 numpy==1.15.4
 torch==1.1.0
 image==1.5.27
+seldon-core==0.3.0
