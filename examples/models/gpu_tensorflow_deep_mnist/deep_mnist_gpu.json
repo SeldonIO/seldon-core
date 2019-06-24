@@ -25,10 +25,10 @@
                                 "imagePullPolicy": "IfNotPresent",
                                 "name": "classifier",
                                 "resources": {
-                                    "requests": {
-                                        "memory": "1Mi"
+				    "limits": {
+					"nvidia.com/gpu": 1
                                     }
-                                }
+				}
                             }
                         ],
                         "terminationGracePeriodSeconds": 20
