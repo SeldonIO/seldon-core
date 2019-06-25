@@ -7,6 +7,7 @@ grafana_anonymous_auth: false
 grafana:
   virtualservice:
     enabled: false
+    #trailing dash important and should be used when accessing
     prefix: "/grafana/"
     gateways:
       - kubeflow-gateway.kubeflow.svc.cluster.local
