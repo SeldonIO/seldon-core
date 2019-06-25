@@ -19,6 +19,10 @@ def get_rest_microservice(user_model):
     app = Flask(__name__, static_url_path='')
     CORS(app)
 
+    if hasattr(user_model, 'model_error_handler'):
+        logger.info('Registering the custom error handler...')
+        app.register_blueprint(user_model.model_error_handler)
+
     @app.errorhandler(SeldonMicroserviceException)
     def handle_invalid_usage(error):
         response = jsonify(error.to_dict())
