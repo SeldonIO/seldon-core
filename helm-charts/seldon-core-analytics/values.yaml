@@ -4,6 +4,14 @@ alertmanager:
 grafana_prom_service_type: NodePort
 grafana_prom_admin_password: admin
 grafana_anonymous_auth: false
+grafana:
+  virtualservice:
+    enabled: false
+    prefix: "/grafana/"
+    gateways:
+      - kubeflow-gateway.kubeflow.svc.cluster.local
+#  extraEnv:
+#    GF_SERVER_ROOT_URL: "http://PUTHOSTHERE/grafana"
 persistence:
   enabled: false
 rbac:
