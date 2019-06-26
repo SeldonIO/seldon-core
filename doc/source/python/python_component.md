@@ -170,6 +170,7 @@ If you want to handle custom exceptions define a field `model_error_handler` as 
     model_error_handler = flask.Blueprint('error_handlers', __name__)
 ```
 An example is as follow:
+>Wrapper Class
 ```
     class MyModel(Object):
 
@@ -190,7 +191,7 @@ An example is as follow:
         raise UserCustomException('Test-Error-Msg',1402,402)
         return X
 ```
-> Custom User Excpetion
+> Custom User Exception
 ```
     class UserCustomException(Exception):
     
