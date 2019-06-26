@@ -166,12 +166,10 @@ If you want more control you can provide a low-level methods that will provide a
 
 ## User Defined Exceptions
 If you want to handle custom exceptions define a field `model_error_handler` as shown below:
-
 ```
     model_error_handler = flask.Blueprint('error_handlers', __name__)
 ```
 An example is as follow:
-
 ```
     class MyModel(Object):
 
@@ -191,7 +189,9 @@ An example is as follow:
     def predict(self, X, features_names, **kwargs):
         raise UserCustomException('Test-Error-Msg',1402,402)
         return X
-
+```
+> Custom User Excpetion
+```
     class UserCustomException(Exception):
     
     status_code = 404
