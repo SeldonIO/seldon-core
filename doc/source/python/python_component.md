@@ -171,13 +171,20 @@ If you want to handle custom exceptions define a field `model_error_handler` as 
 ```
 An example is as follow:
 
-```
+```python
+"""
+Model Template
+"""
 class MyModel(Object):
 
-    #The field that can be used to register custom exceptions
+    """
+    The field is used to register custom exceptions
+    """
     model_error_handler = flask.Blueprint('error_handlers', __name__)
 
-    #Register the handler for an exception
+    """
+    Register the handler for an exception
+    """
     @model_error_handler.app_errorhandler(UserCustomException)
     def handleCustomError(error):
         response = jsonify(error.to_dict())
@@ -192,7 +199,10 @@ class MyModel(Object):
         return X
 ```
 
-```
+```python
+"""
+User Defined Exception
+"""
 class UserCustomException(Exception):
     
     status_code = 404
