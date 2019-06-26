@@ -42,5 +42,7 @@ sleep 3
 kubectl -n default get broker default
 kubectl apply -f ./request-logging/trigger.yaml
 
+echo 'grafana running at:'
+echo "$(kubectl get svc -n istio-system istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')/grafana/"
 echo 'kibana running at:'
-echo $(kubectl get svc -n istio-system istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip})"/kibana/"
+echo "$(kubectl get svc -n istio-system istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')/kibana/"
