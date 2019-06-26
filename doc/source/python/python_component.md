@@ -164,6 +164,53 @@ If you want more control you can provide a low-level methods that will provide a
     def aggregate_raw(self, msgs: prediction_pb2.SeldonMessageList) -> prediction_pb2.SeldonMessage:
 ```
 
+## User Defined Exceptions
+If you want to handle custom exceptions define a field `model_error_handler` as shown below:
+
+```
+    model_error_handler = flask.Blueprint('error_handlers', __name__)
+```
+An example is as follow:
+
+```
+    class MyModel(Object):
+
+ ** The field that can be used to register custom excpetions **
+    model_error_handler = flask.Blueprint('error_handlers', __name__)
+
+ ** Register the exception handler **
+    @model_error_handler.app_errorhandler(UserCustomException)
+    def handleCustomError(error):
+        response = jsonify(error.to_dict())
+        response.status_code = error.status_code
+        return response
+
+    def __init__(self, metrics_ok=True, ret_nparray=False, ret_meta=False):
+        pass
+
+    def predict(self, X, features_names, **kwargs):
+        raise UserCustomException('Test-Error-Msg',1402,402)
+        return X
+
+    class UserCustomException(Exception):
+    
+    status_code = 404
+
+    def __init__(self, message, application_error_code,http_status_code):
+        Exception.__init__(self)
+        self.message = message
+        if http_status_code is not None:
+            self.status_code = http_status_code
+        self.application_error_code = application_error_code
+
+    def to_dict(self):
+        rv = {"status": {"status": self.status_code, "message": self.message,
+                         "app_code": self.application_error_code}}
+        return rv
+
+```
+
+
 ## Next Steps
 
 After you have created the Component you need to create a Docker image that can be managed by Seldon Core. Follow the documentation to do this with [s2i](./python_wrapping_s2i.md) or [Docker](./python_wrapping_docker.md).
