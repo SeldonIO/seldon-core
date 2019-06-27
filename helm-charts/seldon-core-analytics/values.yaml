@@ -7,12 +7,12 @@ grafana_anonymous_auth: false
 grafana:
   virtualservice:
     enabled: false
-    #trailing dash important and should be used when accessing
     prefix: "/grafana/"
     gateways:
       - kubeflow-gateway.kubeflow.svc.cluster.local
+#if using prefix with virtualservice (off by default) then below gives grafana prefix
 #  extraEnv:
-#    GF_SERVER_ROOT_URL: "http://PUTHOSTHERE/grafana"
+#    GF_SERVER_ROOT_URL: "%(protocol)s://%(domain)s/grafana"
 persistence:
   enabled: false
 rbac:

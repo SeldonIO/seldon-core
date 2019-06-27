@@ -10,4 +10,4 @@ grafana:
       - kubeflow-gateway.kubeflow.svc.cluster.local
   extraEnv:
     #replace with KF gateway URI
-    GF_SERVER_ROOT_URL: "http://35.205.131.58/grafana"
+    GF_SERVER_ROOT_URL: "%(protocol)s://%(domain)s/grafana"

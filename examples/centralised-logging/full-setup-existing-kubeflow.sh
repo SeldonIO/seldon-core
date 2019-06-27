@@ -1,7 +1,5 @@
-# Assumes existing cluster with kubeflow
+# Assumes existing cluster with kubeflow's istio gateway
 # Will put services behind kubeflow istio gateway
-# Before running modify ./kubeflow/seldon-analytics-kubeflow.yaml for KF gateway
-# KF gateway IP is `kubectl get svc -n istio-system istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}'`
 
 ./kubeflow/knative-setup-existing-istio.sh
 
@@ -33,6 +31,7 @@ helm install fluentd-elasticsearch --name fluentd --namespace=logs -f fluentd-va
 helm install kibana --version 7.1.1 --name=kibana --namespace=logs --set service.type=ClusterIP -f ./kubeflow/kibana-values.yaml --repo https://helm.elastic.co
 
 kubectl apply -f ./kubeflow/virtualservice-kibana.yaml
+kubectl apply -f ./kubeflow/virtualservice-elasticsearch.yaml
 
 kubectl rollout status deployment/kibana-kibana -n logs
 
@@ -42,6 +41,8 @@ sleep 3
 kubectl -n default get broker default
 kubectl apply -f ./request-logging/trigger.yaml
 
+echo 'kubeflow dashboard at:'
+echo "$(kubectl get svc -n istio-system istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')"
 echo 'grafana running at:'
 echo "$(kubectl get svc -n istio-system istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')/grafana/"
 echo 'kibana running at:'
