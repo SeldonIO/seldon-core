@@ -47,6 +47,8 @@ Follow the EFK minikube setup from [centralised logging guide](../README.md) but
 helm install --name seldon-single-model ../../helm-charts/seldon-single-model/ --set engine.env.LOG_MESSAGES_EXTERNALLY="true"
 ```
 
+(If you've already installed then you can first remove with `helm delete seldon-single-model --purge` or do an upgrade instead of an install.)
+
 This time when you install the loadtester, requests should get filtered through the to seldon-request-logger and from there to elastic.
 
 If you filter to pods beginning 'seldon-request-logger' or containing the attribute 'sdepName' then you should see request-response pairs for 'seldon-single-model'.
