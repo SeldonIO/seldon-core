@@ -1,6 +1,0 @@
-apiVersion: '0.1'
-kind: ksonnet.io/registry
-libraries:  
-  seldon-core:
-    version: master
-    path: seldon-core

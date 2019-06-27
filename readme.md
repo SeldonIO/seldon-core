@@ -27,6 +27,7 @@ Documentation can be found [here](https://docs.seldon.io/projects/seldon-core/en
 | Branch      | Status |
 |-------------|-------|
 | master      | [![Build Status](https://travis-ci.org/SeldonIO/seldon-core.svg?branch=master)](https://travis-ci.org/SeldonIO/seldon-core) |
+| release-0.3 | [![Build Status](https://travis-ci.org/SeldonIO/seldon-core.svg?branch=release-0.3)](https://travis-ci.org/SeldonIO/seldon-core) |
 | release-0.2 | [![Build Status](https://travis-ci.org/SeldonIO/seldon-core.svg?branch=release-0.2)](https://travis-ci.org/SeldonIO/seldon-core) |
 | release-0.1 | [![Build Status](https://travis-ci.org/SeldonIO/seldon-core.svg?branch=release-0.1)](https://travis-ci.org/SeldonIO/seldon-core) |
 
