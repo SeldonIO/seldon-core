@@ -10,6 +10,8 @@ We presently support Helm installs.
 
 ## Install Seldon Core
 
+**You will need a kubernetes cluster with version >=1.11.0.**
+
 First [install Helm](https://docs.helm.sh). When helm is installed you can deploy the seldon controller to manage your Seldon Deployment graphs.
 
 ```bash 
