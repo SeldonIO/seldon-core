@@ -8,7 +8,7 @@ engine:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/engine
-    tag: 0.3.1
+    tag: 0.3.2-SNAPSHOT
   port: 8000
   prometheus:
     path: prometheus
@@ -21,7 +21,7 @@ image:
   pullPolicy: Always
   registry: docker.io
   repository: seldonio/seldon-core-operator
-  tag: 0.3.1
+  tag: 0.3.2-SNAPSHOT
 istio:
   enabled: false
   gateway: seldon-gateway
@@ -31,7 +31,7 @@ rbac:
   create: true
 serviceAccount:
   create: true
-  name:
+  name: null
 usageMetrics:
   database: http://seldon-core-stats.seldon.io
   enabled: false
