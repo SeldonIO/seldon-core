@@ -6,8 +6,9 @@ engine:
     port: 5001
   image:
     pullPolicy: IfNotPresent
+    registry: docker.io
     repository: seldonio/engine
-    tag: 0.3.0
+    tag: 0.3.1
   port: 8000
   prometheus:
     path: prometheus
@@ -17,16 +18,20 @@ engine:
     name: default
   user: 8888
 image:
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
+  registry: docker.io
   repository: seldonio/seldon-core-operator
-  tag: 0.3.0
+  tag: 0.3.1
 istio:
   enabled: false
   gateway: seldon-gateway
 predictiveUnit:
   port: 9000
 rbac:
-  enabled: true
+  create: true
+serviceAccount:
+  create: true
+  name:
 usageMetrics:
   database: http://seldon-core-stats.seldon.io
   enabled: false

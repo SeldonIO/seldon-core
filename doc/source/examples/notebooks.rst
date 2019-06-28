@@ -11,10 +11,12 @@ Notebooks
    Ambassador Custom Config <ambassador_custom>
    Autoscaling Example <autoscaling_example>
    AWS Elastic Kubernetes Service (EKS) Deep MNIST <aws_eks_deep_mnist>
+   Azure Kubernetes Service (AKS) Deep MNIST <azure_aks_deep_mnist>
    Combiner Example <combiner>
    Custom Endpoints <custom_endpoints>
    Example Helm Deployments <helm_examples>
    Go Model <go_example>
+   GPU Tensorflow Deep MNIST <gpu_tensorflow_deep_mnist>
    H2O Java MoJo <h2o_mojo>
    Istio Canary <istio_canary>
    Istio Examples <istio_examples>   

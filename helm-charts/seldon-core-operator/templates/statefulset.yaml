@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    control-plane: seldon-controller-manager
+    controller-tools.k8s.io: "1.0"
+    app.kubernetes.io/name: {{ include "seldon.name" . }}
+    helm.sh/chart: {{ include "seldon.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  name: seldon-operator-controller-manager
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    matchLabels:
+      control-plane: seldon-controller-manager
+      controller-tools.k8s.io: "1.0"
+      app.kubernetes.io/name: {{ include "seldon.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  serviceName: seldon-operator-controller-manager-service
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+      labels:
+        control-plane: seldon-controller-manager
+        controller-tools.k8s.io: "1.0"
+        app.kubernetes.io/name: {{ include "seldon.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      serviceAccountName: {{ include "seldon.serviceAccountName" . }}
+      containers:
+        - command:
+            - /manager
+          env:
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: SECRET_NAME
+              value: seldon-operator-webhook-server-secret
+            - name: AMBASSADOR_ENABLED
+              value: '{{ .Values.ambassador.enabled }}'
+            - name: AMBASSADOR_SINGLE_NAMESPACE
+              value: '{{ .Values.ambassador.singleNamespace }}'
+            - name: ENGINE_CONTAINER_IMAGE_AND_VERSION
+              value: {{ .Values.engine.image.registry }}/{{ .Values.engine.image.repository }}:{{ .Values.engine.image.tag }}
+            - name: ENGINE_CONTAINER_IMAGE_PULL_POLICY
+              value: {{ .Values.engine.image.pullPolicy }}
+            - name: ENGINE_CONTAINER_SERVICE_ACCOUNT_NAME
+          {{- if .Values.engine.serviceAccount.name }}
+              value: {{ .Values.engine.serviceAccount.name }}
+          {{- else }}
+              value: {{ include "seldon.serviceAccountName" . }}
+          {{- end }}
+          {{- if .Values.engine.securityContext.enabled }}
+            - name: ENGINE_CONTAINER_USER
+              value: '{{ .Values.engine.user }}'
+          {{- end }}
+            - name: PREDICTIVE_UNIT_SERVICE_PORT
+              value: '{{ .Values.predictiveUnit.port }}'
+            - name: ENGINE_SERVER_GRPC_PORT
+              value: '{{ .Values.engine.grpc.port }}'
+            - name: ENGINE_SERVER_PORT
+              value: '{{ .Values.engine.port }}'
+            - name: ENGINE_PROMETHEUS_PATH
+              value: {{ .Values.engine.prometheus.path }}
+            - name: ISTIO_ENABLED
+              value: '{{ .Values.istio.enabled }}'
+            - name: ISTIO_GATEWAY
+              value: '{{ .Values.istio.gateway }}'
+          image: {{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          name: manager
+          ports:
+            - containerPort: 8080
+              name: metrics
+              protocol: TCP
+            - containerPort: 9876
+              name: webhook-server
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 100m
+              memory: 20Mi
+          volumeMounts:
+            - mountPath: /tmp/cert
+              name: cert
+              readOnly: true
+      terminationGracePeriodSeconds: 10
+      volumes:
+        - name: cert
+          secret:
+            defaultMode: 420
+            secretName: seldon-operator-webhook-server-secret
