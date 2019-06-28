@@ -1,5 +1,45 @@
 # Change Log
 
+## [v0.3.1](https://github.com/SeldonIO/seldon-core/tree/v0.3.1) (2019-06-28)
+[Full Changelog](https://github.com/SeldonIO/seldon-core/compare/v0.3.0...v0.3.1)
+
+**Closed issues:**
+
+- Embedded travis build status needs updating \(in main readme\) [\#656](https://github.com/SeldonIO/seldon-core/issues/656)
+- Add doc link to prow [\#655](https://github.com/SeldonIO/seldon-core/issues/655)
+- Remove Old Java Operator Docs [\#653](https://github.com/SeldonIO/seldon-core/issues/653)
+-  requests all failed during benchmarking with Locust [\#644](https://github.com/SeldonIO/seldon-core/issues/644)
+- Seldon & Istio - broken link [\#643](https://github.com/SeldonIO/seldon-core/issues/643)
+- Seldon-core-operator install fails [\#640](https://github.com/SeldonIO/seldon-core/issues/640)
+- how to add custom meta fields for tracking [\#632](https://github.com/SeldonIO/seldon-core/issues/632)
+- Using the cluster-manager underlying API as a library [\#626](https://github.com/SeldonIO/seldon-core/issues/626)
+- User Exceptions raised in predict function of a wrapper class needs to be handled via flask exception handler [\#625](https://github.com/SeldonIO/seldon-core/issues/625)
+- volume mounting - update examples [\#604](https://github.com/SeldonIO/seldon-core/issues/604)
+- engine resources not configurable in new operator [\#598](https://github.com/SeldonIO/seldon-core/issues/598)
+- status code in response missing. Seldon v 0.2.3 [\#519](https://github.com/SeldonIO/seldon-core/issues/519)
+- deprecate ksonnet [\#477](https://github.com/SeldonIO/seldon-core/issues/477)
+
+**Merged pull requests:**
+
+- remove cluster-manager from jenkins build [\#664](https://github.com/SeldonIO/seldon-core/pull/664) ([gsunner](https://github.com/gsunner))
+- Change operator service selector [\#662](https://github.com/SeldonIO/seldon-core/pull/662) ([cliveseldon](https://github.com/cliveseldon))
+- \[Docs\] Fix formatting of s2i docs page [\#661](https://github.com/SeldonIO/seldon-core/pull/661) ([aarondav](https://github.com/aarondav))
+- remove cluster-manager from travis build [\#659](https://github.com/SeldonIO/seldon-core/pull/659) ([gsunner](https://github.com/gsunner))
+- Embedded travis status [\#658](https://github.com/SeldonIO/seldon-core/pull/658) ([gsunner](https://github.com/gsunner))
+- add prow info [\#657](https://github.com/SeldonIO/seldon-core/pull/657) ([gsunner](https://github.com/gsunner))
+- Allow User Defined Exceptions [\#651](https://github.com/SeldonIO/seldon-core/pull/651) ([klalit](https://github.com/klalit))
+- Update loadtest notebook [\#649](https://github.com/SeldonIO/seldon-core/pull/649) ([cliveseldon](https://github.com/cliveseldon))
+- Gpu tensorflow example [\#638](https://github.com/SeldonIO/seldon-core/pull/638) ([JoelH96](https://github.com/JoelH96))
+- Remove ksonnet [\#634](https://github.com/SeldonIO/seldon-core/pull/634) ([cliveseldon](https://github.com/cliveseldon))
+- Update tracing example and fix api-tester grpc for ambassador [\#631](https://github.com/SeldonIO/seldon-core/pull/631) ([cliveseldon](https://github.com/cliveseldon))
+- points on why seldon [\#628](https://github.com/SeldonIO/seldon-core/pull/628) ([ryandawsonuk](https://github.com/ryandawsonuk))
+- generate service account [\#627](https://github.com/SeldonIO/seldon-core/pull/627) ([ryandawsonuk](https://github.com/ryandawsonuk))
+- Registry Image Tags and RBAC control for Operator Helm Chart [\#624](https://github.com/SeldonIO/seldon-core/pull/624) ([cliveseldon](https://github.com/cliveseldon))
+- Example in AKS using deep mnist [\#621](https://github.com/SeldonIO/seldon-core/pull/621) ([axsaucedo](https://github.com/axsaucedo))
+- run python builder container using non-root user [\#620](https://github.com/SeldonIO/seldon-core/pull/620) ([gsunner](https://github.com/gsunner))
+- EFK with transform for tabular data [\#616](https://github.com/SeldonIO/seldon-core/pull/616) ([ryandawsonuk](https://github.com/ryandawsonuk))
+- Update e2e tests [\#606](https://github.com/SeldonIO/seldon-core/pull/606) ([cliveseldon](https://github.com/cliveseldon))
+
 ## [v0.3.0](https://github.com/SeldonIO/seldon-core/tree/v0.3.0) (2019-06-05)
 [Full Changelog](https://github.com/SeldonIO/seldon-core/compare/v0.2.7...v0.3.0)
 
@@ -50,13 +90,13 @@
 - take latest ambassador image [\#599](https://github.com/SeldonIO/seldon-core/pull/599) ([ryandawsonuk](https://github.com/ryandawsonuk))
 - Update SeldonMessage with jsonData [\#595](https://github.com/SeldonIO/seldon-core/pull/595) ([gsunner](https://github.com/gsunner))
 - Python release update [\#594](https://github.com/SeldonIO/seldon-core/pull/594) ([jklaise](https://github.com/jklaise))
-- Fix Jupyter Notebook Headers  [\#592](https://github.com/SeldonIO/seldon-core/pull/592) ([axsauze](https://github.com/axsauze))
-- Kubeflow Seldon e2e NLP ML pipeline using re-usable components [\#589](https://github.com/SeldonIO/seldon-core/pull/589) ([axsauze](https://github.com/axsauze))
+- Fix Jupyter Notebook Headers  [\#592](https://github.com/SeldonIO/seldon-core/pull/592) ([axsaucedo](https://github.com/axsaucedo))
+- Kubeflow Seldon e2e NLP ML pipeline using re-usable components [\#589](https://github.com/SeldonIO/seldon-core/pull/589) ([axsaucedo](https://github.com/axsaucedo))
 - WIP: Integrate with Istio Ingress [\#588](https://github.com/SeldonIO/seldon-core/pull/588) ([cliveseldon](https://github.com/cliveseldon))
-- Added missing link to Jupyter notebook [\#587](https://github.com/SeldonIO/seldon-core/pull/587) ([axsauze](https://github.com/axsauze))
-- Added missed s2i folder to Scikitlearn SpaCy Text Example [\#582](https://github.com/SeldonIO/seldon-core/pull/582) ([axsauze](https://github.com/axsauze))
-- AWS Elastic Kubernetes/Container Service Deep Mnist Example [\#581](https://github.com/SeldonIO/seldon-core/pull/581) ([axsauze](https://github.com/axsauze))
-- Example using Seldon for text classification with SpaCy tokenizer [\#578](https://github.com/SeldonIO/seldon-core/pull/578) ([axsauze](https://github.com/axsauze))
+- Added missing link to Jupyter notebook [\#587](https://github.com/SeldonIO/seldon-core/pull/587) ([axsaucedo](https://github.com/axsaucedo))
+- Added missed s2i folder to Scikitlearn SpaCy Text Example [\#582](https://github.com/SeldonIO/seldon-core/pull/582) ([axsaucedo](https://github.com/axsaucedo))
+- AWS Elastic Kubernetes/Container Service Deep Mnist Example [\#581](https://github.com/SeldonIO/seldon-core/pull/581) ([axsaucedo](https://github.com/axsaucedo))
+- Example using Seldon for text classification with SpaCy tokenizer [\#578](https://github.com/SeldonIO/seldon-core/pull/578) ([axsaucedo](https://github.com/axsaucedo))
 - Remove request limits from operator [\#577](https://github.com/SeldonIO/seldon-core/pull/577) ([cliveseldon](https://github.com/cliveseldon))
 - Fix PredictiveUnitState image name and version \(\#562\) [\#576](https://github.com/SeldonIO/seldon-core/pull/576) ([sasvaritoni](https://github.com/sasvaritoni))
 - Update TF version for security [\#575](https://github.com/SeldonIO/seldon-core/pull/575) ([jklaise](https://github.com/jklaise))
@@ -80,6 +120,7 @@
 - Anonymous grafana [\#534](https://github.com/SeldonIO/seldon-core/pull/534) ([ryandawsonuk](https://github.com/ryandawsonuk))
 - Revert "option to use anonymous auth grafana" [\#532](https://github.com/SeldonIO/seldon-core/pull/532) ([ryandawsonuk](https://github.com/ryandawsonuk))
 - Update component code coverage and dependencies docs [\#531](https://github.com/SeldonIO/seldon-core/pull/531) ([cliveseldon](https://github.com/cliveseldon))
+- option to use anonymous auth grafana [\#530](https://github.com/SeldonIO/seldon-core/pull/530) ([ryandawsonuk](https://github.com/ryandawsonuk))
 - update argocd and jenkins in cd demo and script for minikube [\#517](https://github.com/SeldonIO/seldon-core/pull/517) ([ryandawsonuk](https://github.com/ryandawsonuk))
 
 ## [v0.2.7](https://github.com/SeldonIO/seldon-core/tree/v0.2.7) (2019-04-29)
@@ -124,7 +165,6 @@
 
 **Merged pull requests:**
 
-- option to use anonymous auth grafana [\#530](https://github.com/SeldonIO/seldon-core/pull/530) ([ryandawsonuk](https://github.com/ryandawsonuk))
 - permission and timeout changes after trying on an openshift4 cluster [\#524](https://github.com/SeldonIO/seldon-core/pull/524) ([ryandawsonuk](https://github.com/ryandawsonuk))
 - use stable redis helm chart [\#521](https://github.com/SeldonIO/seldon-core/pull/521) ([ryandawsonuk](https://github.com/ryandawsonuk))
 - seldpon\_grpc\_endpoint -\> seldon\_grpc\_endpoint [\#520](https://github.com/SeldonIO/seldon-core/pull/520) ([mustyoshi](https://github.com/mustyoshi))

@@ -6,7 +6,7 @@ engine:
 image:
   pullPolicy: IfNotPresent
   repository: seldonio/apife
-  tag: 0.3.1
+  tag: 0.3.2-SNAPSHOT
 rbac:
   rolebinding:
     create: true
