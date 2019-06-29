@@ -8,6 +8,7 @@ overlays/reporting:
 	rm overlays/reporting/seldon-operator-*
 	rm overlays/reporting/seldon-core-operator-sa.yaml
 	rm overlays/reporting/seldondeployments.machinelearning.seldon.io-crd.yaml
+	rm overlays/reporting/webhook-server-service-svc.yaml
 	cp reporting_kustomize.yaml overlays/reporting/kustomization.yaml
 
 all: base overlays/reporting
