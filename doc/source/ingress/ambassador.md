@@ -28,16 +28,50 @@ curl -v 0.0.0.0:8003/seldon/mymodel/api/v0.1/predictions -d '{"data":{"names":["
 
 ## Canary Deployments
 
-Canary rollouts are available where you wish to push a certain percentage of traffic to a new model to test whether it works ok in production. You simply need to add some annotations to your Seldon Deployment resource for your canary deployment.
+Canary rollouts are available where you wish to push a certain percentage of traffic to a new model to test whether it works ok in production. To add a canary to your SeldonDeployment simply add a new predictor section and set the traffic levels for the main and canary to desired levels. For example:
 
-  * `seldon.io/ambassador-weight:<weight_value>` : The weight (a value between 0 and 100) to be applied to this deployment.
-     * Example: `"seldon.io/ambassador-weight":"25"`
-  * `seldon.io/ambassador-service-name:<existing_deployment_name>` : The name of the existing Seldon Deployment you want to attach to as a canary.
-     * Example: `"seldon.io/ambassador-service-name":"example"`
+```YAML
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+metadata:
+  name: example
+spec:
+  name: canary-example
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: seldonio/mock_classifier:1.0
+          name: classifier
+    graph:
+      children: []
+      endpoint:
+        type: REST
+      name: classifier
+      type: MODEL
+    name: main
+    replicas: 1
+    traffic: 75
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: seldonio/mock_classifier_rest:1.1
+          name: classifier
+    graph:
+      children: []
+      endpoint:
+        type: REST
+      name: classifier
+      type: MODEL
+    name: canary
+    replicas: 1
+    traffic: 25
+
+```
+
+The above example has a "main" predictor with 75% of traffic and a "canary" with 25%.
 
 A worked example for [canary deployments](../examples/ambassador_canary.html) is provided.
-
-To understand more about the Ambassador configuration for this see [their docs on canary deployments](https://www.getambassador.io/reference/canary/).
 
 ## Shadow Deployments
 
