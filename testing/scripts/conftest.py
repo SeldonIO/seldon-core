@@ -32,7 +32,11 @@ def do_s2i_python_version():
 def do_clusterwide_seldon_helm(request=None):
     version = get_seldon_version()
     create_seldon_clusterwide_helm(request,version)
-    port_forward(request)
+    if not request is None:
+        port_forward(request)
+
+def do_create_docker_repo(request=None):
+    create_docker_repo(request)
 
 def do_seldon_images(request=None):
     create_docker_repo(request)
