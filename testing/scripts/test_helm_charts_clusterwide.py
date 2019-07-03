@@ -12,16 +12,16 @@ def wait_for_shutdown(deploymentName):
 @pytest.mark.usefixtures("clusterwide_seldon_helm")
 class TestClusterWide(object):
 
-    def __init__(self):
-        self.tester = ClusterWideTests()
-
     def test_single_model(self):
-        self.tester.test_single_model()
+        tester = ClusterWideTests()
+        tester.test_single_model()
 
     def test_abtest_model(self):
+        tester = ClusterWideTests()
         self.tester.test_abtest_model()
 
     def test_mab_model(self):
+        tester = ClusterWideTests()
         self.tester.test_mab_model()
 
 

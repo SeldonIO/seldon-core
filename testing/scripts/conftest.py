@@ -18,7 +18,7 @@ def s2i_python_version():
 
 @pytest.fixture(scope="session")
 def seldon_images(request):
-    do_seldon_images()
+    do_seldon_images(request)
 
 @pytest.fixture(scope="session")
 def seldon_version():
