@@ -22,15 +22,3 @@
 | usageMetrics.datebase | URL for Spartakus DB | http://seldon-core-stats.seldon.io |
 
 
-## Seldon Core OAuth Gateway
-
-
-|Parameter | Description | Default |
-|----------|-------------|---------|
-| enabled| Whether to enable the default Oauth API gateway | true |
-| image.repository | The image repository for the API gateway | seldonio/apife |
-| image.tag | The tag for the image | ```<latest release image>``` |
-| image.pullPolicy | The pull policy for apife image | IfNotPresent |
-| serviceType | The expose service type, e.g. NodePort, LoadBalancer | NodePort |
-| annotations | Configuration annotations | empty |
-
