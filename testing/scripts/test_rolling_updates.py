@@ -23,38 +23,47 @@ def wait_for_rollout(deploymentName):
 @pytest.mark.usefixtures("clusterwide_seldon_helm")
 class TestRollingHttp(object):
 
-    def __init__(self):
-        self.tester = RollingTests()
+
 
     def test_rolling_update1(self):
-       self.tester.test_rolling_update1()
+        tester = RollingTests()
+        tester.test_rolling_update1()
 
     def test_rolling_update2(self):
-        self.tester.test_rolling_update2()
+        tester = RollingTests()
+        tester.test_rolling_update2()
 
     def test_rolling_update3(self):
-       self.tester.test_rolling_update3()
+        tester = RollingTests()
+        tester.test_rolling_update3()
 
     def test_rolling_update4(self):
-        self.tester.test_rolling_update4()
+        tester = RollingTests()
+        tester.test_rolling_update4()
 
     def test_rolling_update5(self):
-       self.tester.test_rolling_update5()
+        tester = RollingTests()
+        tester.test_rolling_update5()
 
     def test_rolling_update6(self):
-        self.tester.test_rolling_update6()
+        tester = RollingTests()
+        tester.test_rolling_update6()
 
     def test_rolling_update7(self):
-        self.tester.test_rolling_update7()
+        tester = RollingTests()
+        tester.test_rolling_update7()
 
     def test_rolling_update8(self):
-       self.tester.test_rolling_update8()
+        tester = RollingTests()
+        tester.test_rolling_update8()
 
     def test_rolling_update9(self):
-        self.tester.test_rolling_update9()
+        tester = RollingTests()
+        tester.test_rolling_update9()
 
     def test_rolling_update10(self):
-        self.tester.test_rolling_update10()
+        tester = RollingTests()
+        tester.test_rolling_update10()
 
 
 class RollingTests(object):

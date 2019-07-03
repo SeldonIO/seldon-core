@@ -107,23 +107,25 @@ def wait_for_rollout(deploymentName):
 @pytest.mark.usefixtures("clusterwide_seldon_helm")
 class TestPythonS2iK8s(object):
 
-    def __init__(self):
-        self.tester = S2IK8S()
-
     def test_model_rest(self, s2i_python_version):
-        self.tester.test_model_rest(s2i_python_version)
+        tester = S2IK8S()
+        tester.test_model_rest(s2i_python_version)
 
     def test_input_transformer_rest(self, s2i_python_version):
-        self.tester.test_input_transformer_rest(s2i_python_version)
+        tester = S2IK8S()
+        tester.test_input_transformer_rest(s2i_python_version)
 
     def test_output_transformer_rest(self, s2i_python_version):
-        self.tester.test_output_transformer_rest(s2i_python_version)
+        tester = S2IK8S()
+        tester.test_output_transformer_rest(s2i_python_version)
 
     def test_router_rest(self, s2i_python_version):
-        self.tester.test_router_rest(s2i_python_version)
+        tester = S2IK8S()
+        tester.test_router_rest(s2i_python_version)
 
     def test_combiner_rest(self, s2i_python_version):
-        self.tester.test_combiner_rest(s2i_python_version)
+        tester = S2IK8S()
+        tester.test_combiner_rest(s2i_python_version)
 
 
 class S2IK8S(object):
