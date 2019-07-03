@@ -18,11 +18,11 @@ class TestClusterWide(object):
 
     def test_abtest_model(self):
         tester = ClusterWideTests()
-        self.tester.test_abtest_model()
+        tester.test_abtest_model()
 
     def test_mab_model(self):
         tester = ClusterWideTests()
-        self.tester.test_mab_model()
+        tester.test_mab_model()
 
 
 class ClusterWideTests(object):
