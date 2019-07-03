@@ -1,6 +1,0 @@
-Thank you for installing Seldon Core.
-
-Documentation can be found at https://github.com/SeldonIO/seldon-core
-
-
-
