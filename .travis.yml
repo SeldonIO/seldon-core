@@ -10,16 +10,6 @@ jobs:
   include:
   - stage: build-components
     script:
-    - echo Building api-frontend
-    - |
-      set -x && \
-      docker run --rm -it \
-          -v /var/run/docker.sock:/var/run/docker.sock \
-          -v ${HOME}/.m2:/root/.m2 \
-          -v $(pwd):/work \
-          seldonio/core-builder:0.3 bash -c 'cd api-frontend && make -f Makefile.ci build'
-    - docker images | grep 'seldonio/apife'
-  - script:
     - echo Building engine
     - |
       set -x && \
@@ -29,16 +19,6 @@ jobs:
           -v $(pwd):/work \
           seldonio/core-builder:0.3 bash -c 'cd engine && make -f Makefile.ci build'
     - docker images | grep 'seldonio/engine'
-  - script:
-    - echo Building cluster-manager
-    - |
-      set -x && \
-      docker run --rm -it \
-          -v /var/run/docker.sock:/var/run/docker.sock \
-          -v ${HOME}/.m2:/root/.m2 \
-          -v $(pwd):/work \
-          seldonio/core-builder:0.3 bash -c 'cd cluster-manager && make -f Makefile.ci build'
-    - docker images | grep 'seldonio/cluster-manager'
 
 notifications:
   slack:
