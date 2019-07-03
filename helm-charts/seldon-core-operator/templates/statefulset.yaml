@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   labels:
-    control-plane: controller-manager
+    control-plane: seldon-controller-manager
     controller-tools.k8s.io: "1.0"
     app.kubernetes.io/name: {{ include "seldon.name" . }}
     helm.sh/chart: {{ include "seldon.chart" . }}
@@ -13,7 +13,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      control-plane: controller-manager
+      control-plane: seldon-controller-manager
       controller-tools.k8s.io: "1.0"
       app.kubernetes.io/name: {{ include "seldon.name" . }}
       app.kubernetes.io/instance: {{ .Release.Name }}
@@ -23,7 +23,7 @@ spec:
       annotations:
         prometheus.io/scrape: "true"
       labels:
-        control-plane: controller-manager
+        control-plane: seldon-controller-manager
         controller-tools.k8s.io: "1.0"
         app.kubernetes.io/name: {{ include "seldon.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
