@@ -4,3 +4,6 @@ kubernetes
 click
 seldon_core
 numpy
+pandas
+spacy
+sklearn
