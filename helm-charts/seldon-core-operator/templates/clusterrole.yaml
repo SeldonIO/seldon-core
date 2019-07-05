@@ -133,6 +133,14 @@ rules:
       - update
       - patch
   - apiGroups:
+      - machinelearning.seldon.io
+    resources:
+      - seldondeployments/finalizers
+    verbs:
+      - get
+      - update
+      - patch
+  - apiGroups:
       - admissionregistration.k8s.io
     resources:
       - mutatingwebhookconfigurations
