@@ -65,6 +65,11 @@ helm install seldon-core-oauth-gateway --name seldon-gateway --repo https://stor
   * [Install Seldon as part of Kubeflow.](https://www.kubeflow.org/docs/guides/components/seldon/#seldon-serving)
 
 
+### Install with Kustomize
+
+  * We have initial support for kustomize.
+    ** [Seldon Core Operator](https://github.com/SeldonIO/seldon-core/kustomize/seldon-core-operator)
+
 ## Upgrading from Previous Versions
 
 See our [upgrading notes](../reference/upgrading.md)

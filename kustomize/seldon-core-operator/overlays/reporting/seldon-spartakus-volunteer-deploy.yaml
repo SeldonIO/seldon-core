@@ -1,4 +1,3 @@
-{{- if .Values.usageMetrics.enabled }}
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -12,11 +11,12 @@ spec:
         app: seldon-spartakus-volunteer
     spec:
       containers:
-      - args: 
+      - args:
         - -c
-        - /spartakus volunteer --cluster-id={{ .Values.usageMetrics.clusterid  | default "$(cat /proc/sys/kernel/random/uuid)" }} --database={{ .Values.usageMetrics.database }} --extensions=/etc/config/spartakus_volunteer_extensions
-        command: ["/bin/sh"]        
-        env:
+        - /spartakus volunteer --cluster-id=$(cat /proc/sys/kernel/random/uuid) --database=http://seldon-core-stats.seldon.io
+          --extensions=/etc/config/spartakus_volunteer_extensions
+        command:
+        - /bin/sh
         image: gcr.io/google_containers/spartakus-amd64:v1.1.0
         name: seldon-spartakus-volunteer
         volumeMounts:
@@ -27,4 +27,3 @@ spec:
       - configMap:
           name: seldon-spartakus-config
         name: seldon-spartakus-config-volume
-{{- end }}

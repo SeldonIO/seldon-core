@@ -2,7 +2,7 @@
     "apiVersion": "apiextensions.k8s.io/v1beta1",
     "kind": "CustomResourceDefinition",
     "metadata": {
-        "name": "seldondeployments.machinelearning.seldon.io",
+        "name": "seldondeployments.machinelearning.seldon.io"
     },
     "spec": {
         "group": "machinelearning.seldon.io",
@@ -233,8 +233,8 @@
 						"description": "Pod spec with optional HPA spec",
 						"type": "object",
 						"properties":{
-						    "metadata": {{ include "objectMeta" . }},
-						    "spec": {{ include "podSpec" . }},
+						    "metadata": "foobar1234",
+						    "spec": "foobar1234",
 						    "hpaSpec": {
 							"description" : "Horizontal Pod Autoscaler Spec",
 							"type" : "object",
@@ -252,7 +252,7 @@
 							    "metrics": {
 								"description": "List of HPA Specs",
 								"type": "array",
-								"items": {{ include "hpaSpec" . }}
+								"items": "foobar1234"
 							    }
 							}
 						    }
@@ -271,120 +271,120 @@
 					    "type": "object",
 					    "properties": {
 						"resources": {
-						    "description": "ResourceRequirements describes the compute resource requirements.", 
+						    "description": "ResourceRequirements describes the compute resource requirements.",
 						    "properties": {
 							"requests": {
-							    "additionalProperties": true, 
-							    "type": "object", 
+							    "additionalProperties": true,
+							    "type": "object",
 							    "description": "Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/"
-							}, 
+							},
 							"limits": {
-							    "additionalProperties": true, 
-							    "type": "object", 
+							    "additionalProperties": true,
+							    "type": "object",
 							    "description": "Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/"
 							}
 						    }
-						}, 
+						},
 						"env": {
 						    "items": {
 							"required": [
 							    "name"
-							], 
-							"description": "EnvVar represents an environment variable present in a Container.", 
+							],
+							"description": "EnvVar represents an environment variable present in a Container.",
 							"properties": {
 							    "valueFrom": {
-								"description": "EnvVarSource represents a source for the value of an EnvVar.", 
+								"description": "EnvVarSource represents a source for the value of an EnvVar.",
 								"properties": {
 								    "secretKeyRef": {
 									"required": [
 									    "key"
-									], 
-									"description": "SecretKeySelector selects a key of a Secret.", 
+									],
+									"description": "SecretKeySelector selects a key of a Secret.",
 									"properties": {
                                                         "optional": {
-                                                            "type": "boolean", 
+                                                            "type": "boolean",
                                                             "description": "Specify whether the Secret or it's key must be defined"
-                                                        }, 
+                                                        },
 									    "name": {
-										"type": "string", 
+										"type": "string",
 										"description": "Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names"
-									    }, 
+									    },
 									    "key": {
-										"type": "string", 
+										"type": "string",
 										"description": "The key of the secret to select from.  Must be a valid secret key."
 									    }
 									}
-								    }, 
+								    },
 								    "fieldRef": {
 									"required": [
 									    "fieldPath"
-									], 
-									"description": "ObjectFieldSelector selects an APIVersioned field of an object.", 
+									],
+									"description": "ObjectFieldSelector selects an APIVersioned field of an object.",
 									"properties": {
 									    "fieldPath": {
-										"type": "string", 
+										"type": "string",
 										"description": "Path of the field to select in the specified API version."
-									    }, 
+									    },
 									    "apiVersion": {
-										"type": "string", 
+										"type": "string",
 										"description": "Version of the schema the FieldPath is written in terms of, defaults to \"v1\"."
 									    }
 									}
-								    }, 
+								    },
 								    "resourceFieldRef": {
 									"required": [
 									    "resource"
-									], 
-									"description": "ResourceFieldSelector represents container resources (cpu, memory) and their output format", 
+									],
+									"description": "ResourceFieldSelector represents container resources (cpu, memory) and their output format",
 									"properties": {
 									    "containerName": {
-										"type": "string", 
+										"type": "string",
 										"description": "Container name: required for volumes, optional for env vars"
-									    }, 
+									    },
 									    "resource": {
-										"type": "string", 
+										"type": "string",
 										"description": "Required: resource to select"
-									    }, 
+									    },
 									    "divisor": {
 										"type": "string"
 									    }
 									}
-								    }, 
+								    },
 								    "configMapKeyRef": {
 									"required": [
 									    "key"
-									], 
-									"description": "Selects a key from a ConfigMap.", 
+									],
+									"description": "Selects a key from a ConfigMap.",
 									"properties": {
 									    "optional": {
-										"type": "boolean", 
+										"type": "boolean",
 										"description": "Specify whether the ConfigMap or it's key must be defined"
-									    }, 
+									    },
 									    "name": {
-										"type": "string", 
+										"type": "string",
 										"description": "Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names"
-									    }, 
+									    },
 									    "key": {
-										"type": "string", 
+										"type": "string",
 										"description": "The key to select."
 									    }
 									}
 								    }
 								}
-							    }, 
+							    },
 							    "name": {
-								"type": "string", 
+								"type": "string",
 								"description": "Name of the environment variable. Must be a C_IDENTIFIER."
-							    }, 
+							    },
 							    "value": {
-								"type": "string", 
+								"type": "string",
 								"description": "Variable references $(VAR_NAME) are expanded using the previous defined environment variables in the container and any service environment variables. If a variable cannot be resolved, the reference in the input string will be unchanged. The $(VAR_NAME) syntax can be escaped with a double $$, ie: $$(VAR_NAME). Escaped references will never be expanded, regardless of whether the variable exists or not. Defaults to \"\"."
 							    }
 							}
-						    }, 
-						    "type": "array", 
-						    "description": "List of environment variables to set in the container. Cannot be updated.", 
-						    "x-kubernetes-patch-strategy": "merge", 
+						    },
+						    "type": "array",
+						    "description": "List of environment variables to set in the container. Cannot be updated.",
+						    "x-kubernetes-patch-strategy": "merge",
 						    "x-kubernetes-patch-merge-key": "name"
 						}
 					    }
@@ -392,23 +392,18 @@
                                     }
                                 },
                                 "type": "array"
-                            },
+                            }
                         }
                     }
                 }
             }
         },
-        "version": "v1alpha3",
+        "version": "v1alpha2",
 	"versions": [
-	    {
-		"name": "v1alpha3",
-		"served": true,
-		"storage": true
-	    },
 	    {
 		"name": "v1alpha2",
 		"served": true,
-		"storage": false
+		"storage": true
 	    }
 	],
 	"subresources": {
