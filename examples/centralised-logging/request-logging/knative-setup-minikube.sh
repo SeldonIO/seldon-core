@@ -1,5 +1,5 @@
-kubectl apply --filename https://github.com/knative/serving/releases/download/v0.3.0/istio-crds.yaml &&
-curl -L https://github.com/knative/serving/releases/download/v0.3.0/istio.yaml \
+kubectl apply --filename https://raw.githubusercontent.com/knative/serving/v0.5.2/third_party/istio-1.0.7/istio-crds.yaml &&
+curl -L https://raw.githubusercontent.com/knative/serving/v0.5.2/third_party/istio-1.0.7/istio.yaml \
   | sed 's/LoadBalancer/NodePort/' \
   | kubectl apply --filename -
 
@@ -15,7 +15,7 @@ kubectl rollout status -n istio-system deployment/istio-sidecar-injector
 kubectl rollout status -n istio-system deployment/istio-galley
 kubectl rollout status -n istio-system deployment/istio-pilot
 
-curl -L https://github.com/knative/serving/releases/download/v0.3.0/serving.yaml \
+curl -L https://github.com/knative/serving/releases/download/v0.6.0/serving.yaml \
   | sed 's/LoadBalancer/NodePort/' \
   | kubectl apply --filename -
 
