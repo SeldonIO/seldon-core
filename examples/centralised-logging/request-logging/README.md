@@ -18,9 +18,9 @@ The seldon-request-logger implementation is replaceable and the type of the mess
 
 ## Setup
 
-Create minikube cluster with knative recommendations for resource - https://knative.dev/v0.3-docs/install/knative-with-minikube/
+Create minikube cluster with knative recommendations for resource - https://knative.dev/docs/install/knative-with-minikube/
 
-Run knative-setup.sh
+Run knative-setup-minikube.sh for minikube. Otherwise follow the [knative installation](https://knative.dev/docs/install/) for your cloud provider.
 
 Run `kubectl apply -f seldon-request-logger.yaml`
 
@@ -42,7 +42,12 @@ kubectl apply -f ./trigger.yaml
 
 ## Running and Seeing logs
 
-Follow the EFK minikube setup from [centralised logging guide](../README.md).
+Follow the EFK minikube setup from [centralised logging guide](../README.md) but in the step to deploy the model deploy with:
+```
+helm install --name seldon-single-model ../../helm-charts/seldon-single-model/ --set engine.env.LOG_MESSAGES_EXTERNALLY="true"
+```
+
+(If you've already installed then you can first remove with `helm delete seldon-single-model --purge` or do an upgrade instead of an install.)
 
 This time when you install the loadtester, requests should get filtered through the to seldon-request-logger and from there to elastic.
 
