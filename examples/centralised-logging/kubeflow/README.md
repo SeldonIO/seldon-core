@@ -4,13 +4,11 @@
 
 The request logging setup includes knative, which includes istio. If you've an existing kubeflow, you can instead use the kubeflow istio.
 
-Using the kubeflow istio also provides the possibility to put services behind its authentication. See
+For kubeflow cluster setup and installation see - we recommend installing with istio into an existing cluster:
 
 https://www.kubeflow.org/docs/started/getting-started-k8s/
 
-(Pending discussion at https://github.com/kubeflow/website/issues/840)
-
-To setup seldon and supporting services on top of kubeflow run ./full-setup-existing-kubeflow.sh from the centralised-logging dir.
+To setup seldon and supporting services on top of kubeflow, using its istio, run ./full-setup-existing-kubeflow.sh from the centralised-logging dir.
 
 ## Accessing services
 
