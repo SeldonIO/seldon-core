@@ -17,12 +17,12 @@ kubectl rollout status -n seldon-system statefulset/seldon-operator-controller-m
 
 sleep 5
 
-helm install --name seldon-single-model ../../helm-charts/seldon-single-model/ --set engine.env.LOG_MESSAGES_EXTERNALLY="true" --set model.annotations."seldon\.io/istio-gateway"="kubeflow-gateway.kubeflow.svc.cluster.local"
+helm install --name seldon-single-model --namespace default ../../helm-charts/seldon-single-model/ --set engine.env.LOG_MESSAGES_EXTERNALLY="true" --set model.annotations."seldon\.io/istio-gateway"="kubeflow-gateway.kubeflow.svc.cluster.local"
 
 kubectl label nodes $(kubectl get nodes -o jsonpath='{.items[0].metadata.name}') role=locust --overwrite
-helm install --name seldon-core-loadtesting ../../helm-charts/seldon-core-loadtesting/ --set locust.host=http://seldon-single-model-seldon-single-model:8000 --set oauth.enabled=false --set oauth.key=oauth-key --set oauth.secret=oauth-secret --set locust.hatchRate=1 --set locust.clients=1 --set loadtest.sendFeedback=0 --set locust.minWait=0 --set locust.maxWait=0 --set replicaCount=1
+helm install --name seldon-core-loadtesting --namespace default ../../helm-charts/seldon-core-loadtesting/ --set locust.host=http://seldon-single-model-seldon-single-model:8000 --set oauth.enabled=false --set oauth.key=oauth-key --set oauth.secret=oauth-secret --set locust.hatchRate=1 --set locust.clients=1 --set loadtest.sendFeedback=0 --set locust.minWait=0 --set locust.maxWait=0 --set replicaCount=1
 
-helm install --name seldon-core-analytics ../../helm-charts/seldon-core-analytics/ -f ./kubeflow/seldon-analytics-kubeflow.yaml
+helm install --name seldon-core-analytics --namespace default ../../helm-charts/seldon-core-analytics/ -f ./kubeflow/seldon-analytics-kubeflow.yaml
 
 helm install --name elasticsearch elasticsearch --version 7.1.1 --namespace=logs --set service.type=ClusterIP --set antiAffinity="soft" --repo https://helm.elastic.co
 kubectl rollout status statefulset/elasticsearch-master -n logs
