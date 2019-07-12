@@ -20,6 +20,9 @@ class SeldonComponent(object):
     def class_names(self) -> Iterable[str]:
         raise NotImplementedError
 
+    def load(self):
+        pass
+
     def predict(self, X: np.ndarray, names: Iterable[str], meta: Dict = None) -> Union[
         np.ndarray, List, str, bytes]:
         raise NotImplementedError

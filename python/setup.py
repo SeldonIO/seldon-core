@@ -33,7 +33,8 @@ setup(name='seldon-core',
           'opentracing>=1.2.2,<2',
           'jaeger-client==3.13.0',
           'grpcio-opentracing',
-          'pyyaml'
+          'pyyaml',
+          'gunicorn>=19.9.0'
       ],
       tests_require=[
           'pytest',

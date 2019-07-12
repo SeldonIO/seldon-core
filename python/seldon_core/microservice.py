@@ -12,6 +12,8 @@ from seldon_core.flask_utils import ANNOTATIONS_FILE
 import seldon_core.wrapper as seldon_microservice
 from typing import Dict, Callable
 from seldon_core.flask_utils import SeldonMicroserviceException
+import gunicorn.app.base
+from gunicorn.six import iteritems
 
 logger = logging.getLogger(__name__)
 
@@ -147,6 +149,28 @@ def setup_tracing(interface_name: str) -> object:
     # this call also sets opentracing.tracer
     return config.initialize_tracer()
 
+class StandaloneApplication(gunicorn.app.base.BaseApplication):
+
+    def __init__(self, app,user_object,options:Dict = None):
+        self.application = app
+        self.user_object = user_object
+        self.options = options
+        super(StandaloneApplication, self).__init__()
+
+    def load_config(self):
+        config = dict([(key, value) for key, value in iteritems(self.options)
+                       if key in self.cfg.settings and value is not None])
+        for key, value in iteritems(config):
+            self.cfg.set(key.lower(), value)
+
+    def load(self):
+        print("LOADING APP",os.getpid())
+        try:
+            self.user_object.load()
+        except (NotImplementedError, AttributeError):
+            pass
+        return self.application
+
 
 def main():
     LOG_FORMAT = '%(asctime)s - %(name)s:%(funcName)s:%(lineno)s - %(levelname)s:  %(message)s'
@@ -161,13 +185,13 @@ def main():
 
     parser.add_argument("--service-type", type=str, choices=[
         "MODEL", "ROUTER", "TRANSFORMER", "COMBINER", "OUTLIER_DETECTOR"], default="MODEL")
-    parser.add_argument("--persistence", nargs='?',
-                        default=0, const=1, type=int)
+    parser.add_argument("--persistence", nargs='?', default=0, const=1, type=int)
     parser.add_argument("--parameters", type=str,
                         default=os.environ.get(PARAMETERS_ENV_NAME, "[]"))
     parser.add_argument("--log-level", type=str, default="INFO")
     parser.add_argument("--tracing", nargs='?',
                         default=int(os.environ.get("TRACING", "0")), const=1, type=int)
+    parser.add_argument("--workers", type=int, default=int(os.environ.get("GUNICORN_WORKERS", "4")))
 
     args = parser.parse_args()
 
@@ -212,19 +236,43 @@ def main():
     if args.tracing:
         tracer = setup_tracing(args.interface_name)
 
+
+
+
     if args.api_type == "REST":
 
-        def rest_prediction_server():
-            app = seldon_microservice.get_rest_microservice(user_object)
+        if args.workers > 1:
+            def rest_prediction_server():
+                options = {
+                    'bind': '%s:%s' % ('0.0.0.0', port),
+                    'access_logfile': '-',
+                    'loglevel': 'info',
+                    'timeout': 5000,
+                    'reload': 'true',
+                    'workers': args.workers,
+                }
+                app = seldon_microservice.get_rest_microservice(user_object)
+                StandaloneApplication(app,user_object,options=options).run()
 
-            if args.tracing:
-                from flask_opentracing import FlaskTracer
-                tracing = FlaskTracer(tracer, True, app)
+            logger.info("REST gunicorn microservice running on port %i", port)
+            server1_func = rest_prediction_server
 
-            app.run(host='0.0.0.0', port=port)
+        else:
 
-        logger.info("REST microservice running on port %i", port)
-        server1_func = rest_prediction_server
+            def rest_prediction_server():
+                app = seldon_microservice.get_rest_microservice(user_object)
+                try:
+                    user_object.load()
+                except (NotImplementedError, AttributeError):
+                    pass
+                if args.tracing:
+                    from flask_opentracing import FlaskTracer
+                    tracing = FlaskTracer(tracer, True, app)
+
+                app.run(host='0.0.0.0', port=port)
+
+            logger.info("REST microservice running on port %i", port)
+            server1_func = rest_prediction_server
 
     elif args.api_type == "GRPC":
         def grpc_prediction_server():
@@ -238,6 +286,11 @@ def main():
 
             server = seldon_microservice.get_grpc_server(
                 user_object, annotations=annotations, trace_interceptor=interceptor)
+
+            try:
+                user_object.load()
+            except (NotImplementedError, AttributeError):
+                pass
 
             server.add_insecure_port(f"0.0.0.0:{port}")
 
