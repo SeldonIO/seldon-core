@@ -5,8 +5,8 @@ import tensorflow as tf
 from tensorflow.python.saved_model import signature_constants
 from tensorflow_serving.apis import predict_pb2
 from tensorflow_serving.apis import prediction_service_pb2_grpc
-from seldon_core.microservice import get_data_from_proto, array_to_grpc_datadef
-from seldon_core.model_microservice import get_class_names
+from seldon_core.utils import get_data_from_proto, array_to_grpc_datadef
+from seldon_core.microservice_tester import get_class_names
 from seldon_core.proto import prediction_pb2, prediction_pb2_grpc
 
 import requests
