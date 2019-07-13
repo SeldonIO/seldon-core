@@ -97,6 +97,8 @@ message PredictiveUnit {
     SIMPLE_ROUTER = 2; // An internal router for testing.
     RANDOM_ABTEST = 3; // A A-B test that sends traffic 50% to each child randomly.
     AVERAGE_COMBINER = 4; // A default combiner that returns the average of its children responses.
+    SKLEARN_SERVER = 5; // default sklearn server
+    XGBOOST_SERVER = 6; // default xgboost server
   }
 
   enum PredictiveUnitMethod {
@@ -114,6 +116,7 @@ message PredictiveUnit {
   repeated PredictiveUnitMethod methods = 5;
   optional Endpoint endpoint = 6; // The exposed endpoint for this unit.
   repeated Parameter parameters = 7; // Customer parameter to pass to the unit.
+  optional string modelUri = 8; // Location of saved model
 }
 
 message Endpoint {
