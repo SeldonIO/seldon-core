@@ -84,7 +84,8 @@
 										"RANDOM_ABTEST",
 										"AVERAGE_COMBINER",
 										"SKLEARN_SERVER",
-										"XGBOOST_SERVER"
+										"XGBOOST_SERVER",
+										"TENSORFLOW_SERVER"
 									    ],
 									    "type": "string"
 									},
@@ -143,7 +144,8 @@
 								    "RANDOM_ABTEST",
 								    "AVERAGE_COMBINER",
 								    "SKLEARN_SERVER",
-								    "XGBOOST_SERVER"
+								    "XGBOOST_SERVER",
+								    "TENSORFLOW_SERVER"
 								],
 								"type": "string"
 							    },
@@ -202,7 +204,8 @@
                                                         "RANDOM_ABTEST",
                                                         "AVERAGE_COMBINER",
 							"SKLEARN_SERVER",
-							"XGBOOST_SERVER"
+							"XGBOOST_SERVER",
+							"TENSORFLOW_SERVER"
                                                     ],
                                                     "type": "string"
                                                 },

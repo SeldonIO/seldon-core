@@ -5,9 +5,8 @@ import tensorflow as tf
 from tensorflow.python.saved_model import signature_constants
 from tensorflow_serving.apis import predict_pb2
 from tensorflow_serving.apis import prediction_service_pb2_grpc
-from seldon_core.microservice import get_data_from_proto, array_to_grpc_datadef
-from seldon_core.model_microservice import get_class_names
-from seldon_core.proto import prediction_pb2, prediction_pb2_grpc
+from seldon_core.utils import get_data_from_proto, array_to_grpc_datadef
+from seldon_core.proto import prediction_pb2
 
 import requests
 import json
@@ -32,18 +31,18 @@ class TfServingProxy(object):
             self.stub = prediction_service_pb2_grpc.PredictionServiceStub(channel)
         else:
             self.grpc = False
-            self.rest_endpoint = rest_endpoint
+            self.rest_endpoint = rest_endpoint+"/v1/models/"+model_name+":predict"
         self.model_name = model_name
         if signature_name is None:
             self.signature_name = signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY
         else:
             self.signature_name = signature_name
-        self.model_input = model_input        
+        self.model_input = model_input
         self.model_output = model_output
 
 
     # if we have a TFTensor message we got directly without converting the message otherwise we go the usual route
-    def predict_grpc(self,request):
+    def predict_grpc_prev(self,request):
         print("Predict grpc called")
         default_data_type = request.data.WhichOneof("data_oneof")
         print(default_data_type)
@@ -66,11 +65,7 @@ class TfServingProxy(object):
             predictions = self.predict(features, datadef.names)
 
             predictions = np.array(predictions)
-            if len(predictions.shape) > 1:
-                class_names = get_class_names(
-                    self, predictions.shape[1])
-            else:
-                class_names = []
+            class_names = []
 
             if data_type == "data":
                 default_data_type = request.data.WhichOneof("data_oneof")
@@ -81,7 +76,7 @@ class TfServingProxy(object):
             return prediction_pb2.SeldonMessage(data=data)
 
 
-        
+
     def predict(self,X,features_names):
         if self.grpc:
             request = predict_pb2.PredictRequest()

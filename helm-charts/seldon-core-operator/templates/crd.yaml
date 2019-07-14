@@ -2050,6 +2050,7 @@ spec:
                                     - AVERAGE_COMBINER
                                     - SKLEARN_SERVER
                                     - XGBOOST_SERVER
+                                    - TENSORFLOW_SERVER
                                     type: string
                                   methods:
                                     items:
@@ -2095,6 +2096,7 @@ spec:
                               - AVERAGE_COMBINER
                               - SKLEARN_SERVER
                               - XGBOOST_SERVER
+                              - TENSORFLOW_SERVER
                               type: string
                             methods:
                               items:
@@ -2138,6 +2140,7 @@ spec:
                         - AVERAGE_COMBINER
                         - SKLEARN_SERVER
                         - XGBOOST_SERVER
+                        - TENSORFLOW_SERVER
                         type: string
                       methods:
                         items:
