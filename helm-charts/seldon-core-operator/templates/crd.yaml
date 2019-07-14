@@ -2061,6 +2061,8 @@ spec:
                                       - SEND_FEEDBACK
                                       type: string
                                     type: array
+                                  modelUri:
+                                    type: string
                                   name:
                                     type: string
                                   type:
