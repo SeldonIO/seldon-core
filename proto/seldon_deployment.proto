@@ -99,6 +99,7 @@ message PredictiveUnit {
     AVERAGE_COMBINER = 4; // A default combiner that returns the average of its children responses.
     SKLEARN_SERVER = 5; // default sklearn server
     XGBOOST_SERVER = 6; // default xgboost server
+    TENSORFLOW_SERVER = 7; // default tensorflow server    
   }
 
   enum PredictiveUnitMethod {
