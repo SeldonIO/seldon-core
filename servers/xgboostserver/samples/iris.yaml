@@ -8,7 +8,7 @@ spec:
   - graph:
       children: []
       implementation: XGBOOST_SERVER
-      modelUri: gs://kfserving-samples/models/xgboost/iris
+      modelUri: gs://seldon-models/xgboost/iris
       name: classifier
     name: default
     replicas: 1
