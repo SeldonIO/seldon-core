@@ -33,7 +33,10 @@ setup(name='seldon-core',
           'opentracing>=1.2.2,<2',
           'jaeger-client==3.13.0',
           'grpcio-opentracing',
-          'pyyaml'
+          'pyyaml',
+          "minio >= 4.0.9",
+          "google-cloud-storage >= 1.16.0",
+          "azure-storage-blob >= 2.0.1"
       ],
       tests_require=[
           'pytest',
