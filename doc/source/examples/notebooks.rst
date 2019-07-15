@@ -41,6 +41,7 @@ Notebooks
    SKLearn Iris Classifier <iris>
    SKLearn MNIST <sklearn_mnist>
    SKLearn SpaCy Reddit Text Classifier Example <sklearn_spacy_text_classifier_example>
+   Sklearn, Xgboost, Tensorflow Server Examples <server_examples>
    Tensorflow MNIST <deep_mnist>
    TFserving MNIST <tfserving_mnist>
 

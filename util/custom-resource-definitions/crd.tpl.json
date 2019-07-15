@@ -73,13 +73,19 @@
 									"name": {
 									    "type": "string"
 									},
+									"modelUri" : {
+									    "type": "string"
+									},
 									"implementation": {
 									    "enum": [
 										"UNKNOWN_IMPLEMENTATION",
 										"SIMPLE_MODEL",
 										"SIMPLE_ROUTER",
 										"RANDOM_ABTEST",
-										"AVERAGE_COMBINER"
+										"AVERAGE_COMBINER",
+										"SKLEARN_SERVER",
+										"XGBOOST_SERVER",
+										"TENSORFLOW_SERVER"
 									    ],
 									    "type": "string"
 									},
@@ -136,7 +142,10 @@
 								    "SIMPLE_MODEL",
 								    "SIMPLE_ROUTER",
 								    "RANDOM_ABTEST",
-								    "AVERAGE_COMBINER"
+								    "AVERAGE_COMBINER",
+								    "SKLEARN_SERVER",
+								    "XGBOOST_SERVER",
+								    "TENSORFLOW_SERVER"
 								],
 								"type": "string"
 							    },
@@ -193,7 +202,10 @@
                                                         "SIMPLE_MODEL",
                                                         "SIMPLE_ROUTER",
                                                         "RANDOM_ABTEST",
-                                                        "AVERAGE_COMBINER"
+                                                        "AVERAGE_COMBINER",
+							"SKLEARN_SERVER",
+							"XGBOOST_SERVER",
+							"TENSORFLOW_SERVER"
                                                     ],
                                                     "type": "string"
                                                 },
