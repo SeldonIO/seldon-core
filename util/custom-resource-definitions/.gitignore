@@ -1,0 +1,6 @@
+swagger.json
+pod-spec.json
+hpa-spec.json
+object-meta.json
+crd.yaml
+		    

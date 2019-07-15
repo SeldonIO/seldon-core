@@ -212,79 +212,6 @@ spec:
                             generation:
                               format: int64
                               type: integer
-                            initializers:
-                              properties:
-                                pending:
-                                  items:
-                                    properties:
-                                      name:
-                                        type: string
-                                    required:
-                                    - name
-                                    type: object
-                                  type: array
-                                  x-kubernetes-patch-merge-key: name
-                                  x-kubernetes-patch-strategy: merge
-                                result:
-                                  properties:
-                                    apiVersion:
-                                      type: string
-                                    code:
-                                      format: int32
-                                      type: integer
-                                    details:
-                                      properties:
-                                        causes:
-                                          items:
-                                            properties:
-                                              field:
-                                                type: string
-                                              message:
-                                                type: string
-                                              reason:
-                                                type: string
-                                            type: object
-                                          type: array
-                                        group:
-                                          type: string
-                                        kind:
-                                          type: string
-                                        name:
-                                          type: string
-                                        retryAfterSeconds:
-                                          format: int32
-                                          type: integer
-                                        uid:
-                                          type: string
-                                      type: object
-                                    kind:
-                                      type: string
-                                    message:
-                                      type: string
-                                    metadata:
-                                      properties:
-                                        continue:
-                                          type: string
-                                        remainingItemCount:
-                                          format: int64
-                                          type: integer
-                                        resourceVersion:
-                                          type: string
-                                        selfLink:
-                                          type: string
-                                      type: object
-                                    reason:
-                                      type: string
-                                    status:
-                                      type: string
-                                  type: object
-                                  x-kubernetes-group-version-kind:
-                                  - group: ''
-                                    kind: Status
-                                    version: v1
-                              required:
-                              - pending
-                              type: object
                             labels:
                               additionalProperties:
                                 type: string
@@ -2121,6 +2048,9 @@ spec:
                                     - SIMPLE_ROUTER
                                     - RANDOM_ABTEST
                                     - AVERAGE_COMBINER
+                                    - SKLEARN_SERVER
+                                    - XGBOOST_SERVER
+                                    - TENSORFLOW_SERVER
                                     type: string
                                   methods:
                                     items:
@@ -2132,6 +2062,8 @@ spec:
                                       - SEND_FEEDBACK
                                       type: string
                                     type: array
+                                  modelUri:
+                                    type: string
                                   name:
                                     type: string
                                   type:
@@ -2162,6 +2094,9 @@ spec:
                               - SIMPLE_ROUTER
                               - RANDOM_ABTEST
                               - AVERAGE_COMBINER
+                              - SKLEARN_SERVER
+                              - XGBOOST_SERVER
+                              - TENSORFLOW_SERVER
                               type: string
                             methods:
                               items:
@@ -2203,6 +2138,9 @@ spec:
                         - SIMPLE_ROUTER
                         - RANDOM_ABTEST
                         - AVERAGE_COMBINER
+                        - SKLEARN_SERVER
+                        - XGBOOST_SERVER
+                        - TENSORFLOW_SERVER
                         type: string
                       methods:
                         items:
