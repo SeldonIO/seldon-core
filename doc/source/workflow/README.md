@@ -34,9 +34,17 @@ You can use ```kubectl``` to deploy your ML service like any other Kubernetes re
 
 ## Next Steps
 
-We have created a set of  [notebook step-by-step tutorials](../examples/helm_examples.html) which you can follow to get started with Seldon core.
+If you have a saved model for SKLearn, XGBoost or Tensorflow then you can use oneof our [prepackaged model servers](../servers/overview.html).
 
-### Recommended starter tutorials
+If you want to wrap your custom inference code then follow one of our stater tutorials below for the framework you are using.
+
+### Prepacked Model Servers
+
+ * [SKLearn](../servers/sklearn.html)
+ * [XGBoost](../servers/xgboost.html) 
+ * [Tensorflow](../servers/tensorflow.html)
+ 
+### Recommended starter tutorials for custom inference code
 
 * [Tensorflow Deep MNIST Tutorial](https://docs.seldon.io/projects/seldon-core/en/latest/examples/deep_mnist.html) (Try it also in [AWS](https://docs.seldon.io/projects/seldon-core/en/latest/examples/aws_eks_deep_mnist.html), [Azure](https://docs.seldon.io/projects/seldon-core/en/latest/examples/azure_aks_deep_mnist.html) and [GKE with GPU](https://github.com/SeldonIO/seldon-core/tree/master/examples/models/gpu_tensorflow_deep_mnist))
 * [SKlearn SpaCy Reddit Text Classification Tutorial](https://docs.seldon.io/projects/seldon-core/en/latest/examples/sklearn_spacy_text_classifier_example.html)
