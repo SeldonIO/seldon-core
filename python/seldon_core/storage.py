@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+#
+# Copied from kfserving project as starter.
+#
+
 import glob
 import logging
 import tempfile
