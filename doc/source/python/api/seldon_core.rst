@@ -80,6 +80,14 @@ seldon\_core.seldon\_methods module
     :undoc-members:
     :show-inheritance:
 
+seldon\_core.storage module
+---------------------------
+
+.. automodule:: seldon_core.storage
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 seldon\_core.user\_model module
 -------------------------------
 
