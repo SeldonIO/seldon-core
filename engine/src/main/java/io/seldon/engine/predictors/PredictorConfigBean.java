@@ -82,7 +82,7 @@ public class PredictorConfigBean {
     }
     
     public boolean hasMethod(PredictiveUnitState state) {
-    	return (state.implementation == PredictiveUnitImplementation.UNKNOWN_IMPLEMENTATION);
+    	return (state.implementation == PredictiveUnitImplementation.UNKNOWN_IMPLEMENTATION || !nodeImplementationMap.containsKey(state.implementation));
     }
     
     public PredictiveUnitImpl getImplementation(PredictiveUnitState state){
@@ -93,7 +93,8 @@ public class PredictorConfigBean {
     }
     
     public Boolean hasMethod(PredictiveUnitMethod method, PredictiveUnitState state){
-    	if (state.implementation != PredictiveUnitImplementation.UNKNOWN_IMPLEMENTATION){
+    	if (state.implementation != PredictiveUnitImplementation.UNKNOWN_IMPLEMENTATION &&
+    			nodeImplementationMap.containsKey(state.implementation)){
     		return false;
     	}
     	if (state.type == PredictiveUnitType.UNKNOWN_TYPE) {
