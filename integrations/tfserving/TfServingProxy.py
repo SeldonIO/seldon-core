@@ -22,7 +22,14 @@ A basic tensorflow serving proxy
 '''
 class TfServingProxy(object):
 
-    def __init__(self,rest_endpoint=None,grpc_endpoint=None,model_name=None,signature_name=None,model_input=None,model_output=None):
+    def __init__(
+            self,
+            rest_endpoint=None,
+            grpc_endpoint=None,
+            model_name=None,
+            signature_name=None,
+            model_input=None,
+            model_output=None):
         print("rest_endpoint:",rest_endpoint)
         print("grpc_endpoint:",grpc_endpoint)
         if not grpc_endpoint is None:
@@ -60,25 +67,32 @@ class TfServingProxy(object):
 
         else:
             features = get_data_from_proto(request)
-            datadef = request.data
-            data_type = request.WhichOneof("data_oneof")
-            predictions = self.predict(features, datadef.names)
+            if default_data_type == "data":
+                datadef = request.data
+                data_type = request.WhichOneof("data_oneof")
+                predictions = self.predict(features, datadef.names)
+                predictions = np.array(predictions)
 
-            predictions = np.array(predictions)
+            elif default_data_type == "jsonData":
+                predictions = self.predict(request.jsonData, features_names=[])
+
             class_names = []
 
-            if data_type == "data":
-                default_data_type = request.data.WhichOneof("data_oneof")
+            if data_type == "jsonData":
+                return prediction_pb2.SeldonMessage(jsonData=predictions)
             else:
-                default_data_type = "tensor"
-            data = array_to_grpc_datadef(
-                predictions, class_names, default_data_type)
-            return prediction_pb2.SeldonMessage(data=data)
+                if data_type == "data":
+                    default_data_type = request.data.WhichOneof("data_oneof")
+                else:
+                    default_data_type = "tensor"
+                data = array_to_grpc_datadef(
+                    predictions, class_names, default_data_type)
+                return prediction_pb2.SeldonMessage(data=data)
 
 
 
-    def predict(self,X,features_names):
-        if self.grpc:
+    def predict(self,X,features_names=[]):
+        if self.grpc and type(X) is not dict:
             request = predict_pb2.PredictRequest()
             request.model_spec.name = self.model_name
             request.model_spec.signature_name = self.signature_name
@@ -91,18 +105,24 @@ class TfServingProxy(object):
             return response
         else:
             print(self.rest_endpoint)
-            data = {"instances":X.tolist()}
-            if not self.signature_name is None:
-                data["signature_name"] = self.signature_name
+            if type(X) is dict:
+                data = X
+            else:
+                data = {"instances":X.tolist()}
+                if not self.signature_name is None:
+                    data["signature_name"] = self.signature_name
             print(data)
             response = requests.post(
                 self.rest_endpoint,
                 data = json.dumps(data))
             if response.status_code == 200:
-                result = numpy.array(response.json()["predictions"])
-                if len(result.shape) == 1:
-                    result = numpy.expand_dims(result, axis=0)
-                return result
+                if type(X) is dict:
+                    return response.json()
+                else:
+                    result = numpy.array(response.json()["predictions"])
+                    if len(result.shape) == 1:
+                        result = numpy.expand_dims(result, axis=0)
+                    return result
             else:
                 print("Error from server:",response)
                 raise TensorflowServerError(response.json())
