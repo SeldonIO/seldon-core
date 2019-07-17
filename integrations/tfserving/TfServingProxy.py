@@ -50,10 +50,10 @@ class TfServingProxy(object):
 
     # if we have a TFTensor message we got directly without converting the message otherwise we go the usual route
     def predict_raw(self,request):
-        print("Predict grpc called")
+        print("Predict raw")
         default_data_type = request.data.WhichOneof("data_oneof")
         print(default_data_type)
-        if default_data_type == "tftensor":
+        if default_data_type == "tftensor" and self.grpc:
             tfrequest = predict_pb2.PredictRequest()
             tfrequest.model_spec.name = self.model_name
             tfrequest.model_spec.signature_name = self.signature_name
@@ -78,7 +78,7 @@ class TfServingProxy(object):
 
             class_names = []
 
-            if data_type == "jsonData":
+            if default_data_type == "jsonData":
                 return prediction_pb2.SeldonMessage(jsonData=predictions)
             else:
                 if data_type == "data":
