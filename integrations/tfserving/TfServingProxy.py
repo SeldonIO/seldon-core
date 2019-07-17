@@ -106,16 +106,17 @@ class TfServingProxy(object):
         else:
             print(self.rest_endpoint)
             if type(X) is dict:
+                print("JSON Request")
                 data = X
             else:
+                print("Data Request")
                 data = {"instances":X.tolist()}
                 if not self.signature_name is None:
                     data["signature_name"] = self.signature_name
             print(data)
-            response = requests.post(
-                self.rest_endpoint,
-                data = json.dumps(data))
+            response = requests.post(self.rest_endpoint, data=json.dumps(data))
             if response.status_code == 200:
+                print(response.json())
                 if type(X) is dict:
                     return response.json()
                 else:
