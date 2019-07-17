@@ -76,6 +76,9 @@
 									"modelUri" : {
 									    "type": "string"
 									},
+									"serviceAccountName": {
+										"type": "string"
+									},
 									"implementation": {
 									    "enum": [
 										"UNKNOWN_IMPLEMENTATION",
@@ -283,6 +286,9 @@
 						"type": "object",
 						"properties": {
 							"modelUri": {
+								"type": "string"
+							},
+							"serviceAccountName": {
 								"type": "string"
 							},
 							"type": {
