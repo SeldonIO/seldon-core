@@ -22,7 +22,14 @@ A basic tensorflow serving proxy
 '''
 class TfServingProxy(object):
 
-    def __init__(self,rest_endpoint=None,grpc_endpoint=None,model_name=None,signature_name=None,model_input=None,model_output=None):
+    def __init__(
+            self,
+            rest_endpoint=None,
+            grpc_endpoint=None,
+            model_name=None,
+            signature_name=None,
+            model_input=None,
+            model_output=None):
         print("rest_endpoint:",rest_endpoint)
         print("grpc_endpoint:",grpc_endpoint)
         if not grpc_endpoint is None:
@@ -42,11 +49,11 @@ class TfServingProxy(object):
 
 
     # if we have a TFTensor message we got directly without converting the message otherwise we go the usual route
-    def predict_grpc_prev(self,request):
-        print("Predict grpc called")
+    def predict_raw(self,request):
+        print("Predict raw")
         default_data_type = request.data.WhichOneof("data_oneof")
         print(default_data_type)
-        if default_data_type == "tftensor":
+        if default_data_type == "tftensor" and self.grpc:
             tfrequest = predict_pb2.PredictRequest()
             tfrequest.model_spec.name = self.model_name
             tfrequest.model_spec.signature_name = self.signature_name
@@ -58,27 +65,31 @@ class TfServingProxy(object):
             )
             return prediction_pb2.SeldonMessage(data=datadef)
 
+        elif default_data_type == "jsonData":
+            predictions = self.predict(request.jsonData, features_names=[])
+            return prediction_pb2.SeldonMessage(jsonData=predictions)
+        
         else:
             features = get_data_from_proto(request)
             datadef = request.data
             data_type = request.WhichOneof("data_oneof")
             predictions = self.predict(features, datadef.names)
-
             predictions = np.array(predictions)
-            class_names = []
 
             if data_type == "data":
                 default_data_type = request.data.WhichOneof("data_oneof")
             else:
                 default_data_type = "tensor"
+
+            class_names = []
             data = array_to_grpc_datadef(
                 predictions, class_names, default_data_type)
             return prediction_pb2.SeldonMessage(data=data)
 
 
 
-    def predict(self,X,features_names):
-        if self.grpc:
+    def predict(self,X,features_names=[]):
+        if self.grpc and type(X) is not dict:
             request = predict_pb2.PredictRequest()
             request.model_spec.name = self.model_name
             request.model_spec.signature_name = self.signature_name
@@ -91,18 +102,25 @@ class TfServingProxy(object):
             return response
         else:
             print(self.rest_endpoint)
-            data = {"instances":X.tolist()}
-            if not self.signature_name is None:
-                data["signature_name"] = self.signature_name
+            if type(X) is dict:
+                print("JSON Request")
+                data = X
+            else:
+                print("Data Request")
+                data = {"instances":X.tolist()}
+                if not self.signature_name is None:
+                    data["signature_name"] = self.signature_name
             print(data)
-            response = requests.post(
-                self.rest_endpoint,
-                data = json.dumps(data))
+            response = requests.post(self.rest_endpoint, data=json.dumps(data))
             if response.status_code == 200:
-                result = numpy.array(response.json()["predictions"])
-                if len(result.shape) == 1:
-                    result = numpy.expand_dims(result, axis=0)
-                return result
+                print(response.json())
+                if type(X) is dict:
+                    return response.json()
+                else:
+                    result = numpy.array(response.json()["predictions"])
+                    if len(result.shape) == 1:
+                        result = numpy.expand_dims(result, axis=0)
+                    return result
             else:
                 print("Error from server:",response)
-                raise TensorflowServerError(response.json())
+                return response.json()
