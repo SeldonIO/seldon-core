@@ -65,29 +65,26 @@ class TfServingProxy(object):
             )
             return prediction_pb2.SeldonMessage(data=datadef)
 
+        elif default_data_type == "jsonData":
+            predictions = self.predict(request.jsonData, features_names=[])
+            return prediction_pb2.SeldonMessage(jsonData=predictions)
+        
         else:
             features = get_data_from_proto(request)
-            if default_data_type == "data":
-                datadef = request.data
-                data_type = request.WhichOneof("data_oneof")
-                predictions = self.predict(features, datadef.names)
-                predictions = np.array(predictions)
+            datadef = request.data
+            data_type = request.WhichOneof("data_oneof")
+            predictions = self.predict(features, datadef.names)
+            predictions = np.array(predictions)
 
-            elif default_data_type == "jsonData":
-                predictions = self.predict(request.jsonData, features_names=[])
+            if data_type == "data":
+                default_data_type = request.data.WhichOneof("data_oneof")
+            else:
+                default_data_type = "tensor"
 
             class_names = []
-
-            if default_data_type == "jsonData":
-                return prediction_pb2.SeldonMessage(jsonData=predictions)
-            else:
-                if data_type == "data":
-                    default_data_type = request.data.WhichOneof("data_oneof")
-                else:
-                    default_data_type = "tensor"
-                data = array_to_grpc_datadef(
-                    predictions, class_names, default_data_type)
-                return prediction_pb2.SeldonMessage(data=data)
+            data = array_to_grpc_datadef(
+                predictions, class_names, default_data_type)
+            return prediction_pb2.SeldonMessage(data=data)
 
 
 
@@ -126,4 +123,4 @@ class TfServingProxy(object):
                     return result
             else:
                 print("Error from server:",response)
-                raise TensorflowServerError(response.json())
+                return response.json()
