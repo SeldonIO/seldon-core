@@ -25,7 +25,7 @@
 				    "--model_name=mnist-model",
 				    "--model_base_path=gs://seldon-tfserving-store/mnist-model"
 				],
-				"image": "gcr.io/kubeflow-images-public/tensorflow-serving-1.7:v20180604-0da89b8a",
+				"image": "tensorflow/serving:latest",
 				"name": "mnist-model",
 				"ports": [
 				    {
