@@ -49,7 +49,7 @@ class TfServingProxy(object):
 
 
     # if we have a TFTensor message we got directly without converting the message otherwise we go the usual route
-    def predict_grpc_prev(self,request):
+    def predict_raw(self,request):
         print("Predict grpc called")
         default_data_type = request.data.WhichOneof("data_oneof")
         print(default_data_type)

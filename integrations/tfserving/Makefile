@@ -1,4 +1,4 @@
-IMAGE_VERSION=0.3
+IMAGE_VERSION=0.4
 IMAGE_NAME = docker.io/seldonio/tfserving-proxy
 
 SELDON_CORE_DIR=../../..
