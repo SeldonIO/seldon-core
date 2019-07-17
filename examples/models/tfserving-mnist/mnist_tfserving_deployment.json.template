@@ -15,7 +15,7 @@
                     "spec": {
                         "containers": [
                             {
-                                "image": "seldonio/tfserving-proxy:0.1",
+                                "image": "seldonio/tfserving-proxy:0.4",
                                 "name": "tfserving-proxy"
                             },
 			    {
