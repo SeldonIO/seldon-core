@@ -38,11 +38,10 @@ def get_rest_microservice(user_model):
     def Predict():
         requestJson = get_request()
         logger.debug("REST Request: %s", request)
-        requestProto = json_to_seldon_message(requestJson)
-        logger.debug("Proto Request: %s", requestProto)
-        responseProto = seldon_core.seldon_methods.predict(user_model, requestProto)
-        jsonDict = seldon_message_to_json(responseProto)
-        return jsonify(jsonDict)
+        response = seldon_core.seldon_methods.predict(user_model, requestJson)
+        logger.debug("REST Response: %s", response)
+        return jsonify(response)
+
 
     @app.route("/send-feedback", methods=["GET", "POST"])
     def SendFeedback():
