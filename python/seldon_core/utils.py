@@ -9,7 +9,7 @@ import tensorflow as tf
 from google.protobuf.struct_pb2 import ListValue
 from seldon_core.user_model import client_class_names, client_custom_metrics, client_custom_tags, client_feature_names, \
     SeldonComponent
-from typing import Tuple, Dict, Union, List, Optional, Iterable
+from typing import Tuple, Dict, Union, List, Optional, Iterable, Any
 
 
 def json_to_seldon_message(message_json: Dict) -> prediction_pb2.SeldonMessage:
@@ -301,6 +301,42 @@ def array_to_list_value(array: np.ndarray, lv: Optional[ListValue] = None) -> Li
             array_to_list_value(sub_array, sub_lv)
     return lv
 
+def construct_response_json(user_model: SeldonComponent, is_request: bool, client_request_raw: Union[List, Dict],
+                       client_raw_response: Union[np.ndarray, str, bytes, dict]) -> Union[List, Dict]:
+    """
+    This class converts a raw REST response into a JSON object that has the same structure as
+    the SeldonMessage proto. This is necessary as the conversion using the SeldonMessage proto
+    changes the Numeric types of all ints in a JSON into Floats.
+
+    Parameters
+    ----------
+    user_model
+       Client user class
+    is_request
+       Whether this is part of the request flow as opposed to the response flow
+    client_request
+       The request received
+    client_raw_response
+       The raw client response from their model
+
+    Returns
+    -------
+       A SeldonMessage JSON response
+
+    """
+    client_request = json_to_seldon_message(client_request_raw)
+    data_type = client_request.WhichOneof("data_oneof")
+
+    sm = construct_response(user_model, is_request, client_request, client_raw_response)
+    sm_json = seldon_message_to_json(sm)
+
+    response_data_type = sm.WhichOneof("data_oneof")
+
+    if response_data_type == "jsonData":
+        sm_json["jsonData"] = client_raw_response
+
+    return sm_json
+
 
 def construct_response(user_model: SeldonComponent, is_request: bool, client_request: prediction_pb2.SeldonMessage,
                        client_raw_response: Union[np.ndarray, str, bytes, dict]) -> prediction_pb2.SeldonMessage:
@@ -360,6 +396,28 @@ def construct_response(user_model: SeldonComponent, is_request: bool, client_req
     else:
         raise SeldonMicroserviceException("Unknown data type returned as payload:" + client_raw_response)
 
+
+def extract_request_parts_json(request_raw: Union[Dict, List]) -> Tuple[
+    Union[np.ndarray, str, bytes, dict], Dict, prediction_pb2.DefaultData, str]:
+    """
+
+    Parameters
+    ----------
+    request
+       Input request in JSON format
+
+    Returns
+    -------
+       Key parts of the request extracted
+
+    """
+    request_proto = json_to_seldon_message(request_raw)
+    (features, meta, datadef, data_type) = extract_request_parts(request_proto)
+
+    if data_type == "jsonData":
+        features = request_raw["jsonData"]
+
+    return features, meta, datadef, data_type
 
 def extract_request_parts(request: prediction_pb2.SeldonMessage) -> Tuple[
     Union[np.ndarray, str, bytes, dict], Dict, prediction_pb2.DefaultData, str]:
