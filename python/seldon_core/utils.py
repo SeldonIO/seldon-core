@@ -314,8 +314,8 @@ def construct_response_json(user_model: SeldonComponent, is_request: bool, clien
        Client user class
     is_request
        Whether this is part of the request flow as opposed to the response flow
-    client_request
-       The request received
+    client_request_raw
+       The request received in JSON format
     client_raw_response
        The raw client response from their model
 
