@@ -37,7 +37,6 @@ def predict(
         try:
             return user_model.predict_raw(request)
         except (NotImplementedError, AttributeError):
-            logger.warning("ATTEMPTINGTORUN")
             if is_proto:
                 (features, meta, datadef, data_type) = extract_request_parts(request)
                 client_response = client_predict(user_model, features, datadef.names, meta=meta)
