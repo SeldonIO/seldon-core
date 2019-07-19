@@ -15,6 +15,7 @@ Notebooks
    Azure Kubernetes Service (AKS) Deep MNIST <azure_aks_deep_mnist>
    Combiner Example <combiner>
    Custom Endpoints <custom_endpoints>
+   Elastic Container Service Alibaba Cloud Deep Mnist <alibaba_aks_deep_mnist>
    Example Helm Deployments <helm_examples>
    Explainer Alibi Anchor Tabular <alibi_anchor_tabular>
    Go Model <go_example>
