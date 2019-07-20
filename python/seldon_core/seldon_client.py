@@ -9,6 +9,7 @@ from requests.auth import HTTPBasicAuth
 from typing import Tuple, Dict, Union, List, Optional, Iterable
 import json
 import logging
+import http.client as http_client
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +24,28 @@ class SeldonClientException(Exception):
         Exception.__init__(self)
         self.message = message
 
+class SeldonChannelCredentials(object):
+    """
+    Channel credentials
+    Presently just denotes an SSL connection.
+    """
+
+    def __init__(self, verify:bool = True, root_certificates_file: str = None,
+                 private_key_file: str = None, certificate_chain_file: str = None):
+        self.verify = verify
+        self.root_certificates_file = root_certificates_file
+        self.private_key_file = private_key_file
+        self.certificate_chain_file = certificate_chain_file
+
+
+
+class SeldonCallCredentials(object):
+    """
+    Credentials for each call
+    """
+
+    def __init__(self,token:str = None):
+        self.token = token
 
 class SeldonClientPrediction(object):
     """
@@ -89,7 +112,9 @@ class SeldonClient(object):
                  seldon_rest_endpoint: str = "localhost:8002", seldon_grpc_endpoint: str = "localhost:8004",
                  gateway_endpoint: str = "localhost:8003", microservice_endpoint: str = "localhost:5000",
                  grpc_max_send_message_length: int = 4 * 1024 * 1024,
-                 grpc_max_receive_message_length: int = 4 * 1024 * 1024):
+                 grpc_max_receive_message_length: int = 4 * 1024 * 1024,
+                 channel_credentials: SeldonChannelCredentials =None,
+                 call_credentials: SeldonCallCredentials = None, debug = False):
         """
 
         Parameters
@@ -121,9 +146,12 @@ class SeldonClient(object):
         grpc_max_receive_message_length
            Max grpc receive message size in bytes
         """
+        if debug:
+            logger.setLevel(logging.DEBUG)
+            http_client.HTTPConnection.debuglevel = 1
         self.config = locals()
         del self.config["self"]
-        logging.debug("Configuration:" + str(self.config))
+        logger.debug("Configuration:" + str(self.config))
 
     def _gather_args(self, **kwargs):
 
@@ -1002,7 +1030,8 @@ def rest_predict_gateway(deployment_name: str, namespace: str = None, gateway_en
                          data: np.ndarray = None, headers: Dict = None, gateway_prefix: str = None,
                          payload_type: str = "tensor",
                          bin_data: Union[bytes, bytearray] = None, str_data: str = None,
-                         names: Iterable[str] = None,
+                         names: Iterable[str] = None, call_credentials: SeldonCallCredentials = None,
+                         channel_credentials: SeldonChannelCredentials= None,
                          **kwargs) -> SeldonClientPrediction:
     """
     REST request to Gateway Ingress
@@ -1031,6 +1060,10 @@ def rest_predict_gateway(deployment_name: str, namespace: str = None, gateway_en
        String data to send
     names
        Column names
+    call_credentials
+       Call credentials - see SeldonCallCredentials
+    channel_credentials
+       Channel credentials - see SeldonChannelCredentials
 
     Returns
     -------
@@ -1047,22 +1080,43 @@ def rest_predict_gateway(deployment_name: str, namespace: str = None, gateway_en
         datadef = array_to_grpc_datadef(payload_type, data, names=names)
         request = prediction_pb2.SeldonMessage(data=datadef)
     payload = seldon_message_to_json(request)
+
+    if not headers is None:
+        req_headers = headers.copy()
+    else:
+        req_headers = {}
+    if channel_credentials is None:
+        scheme = "http"
+    else:
+        scheme = "https"
+        if not call_credentials is None:
+            if not call_credentials.token is None:
+                req_headers["X-Auth-Token"] = call_credentials.token
     if gateway_prefix is None:
         if namespace is None:
-            response_raw = requests.post(
-                "http://" + gateway_endpoint + "/seldon/" + deployment_name + "/api/v0.1/predictions",
-                json=payload,
-                headers=headers)
+            url = scheme + "://" + gateway_endpoint + "/seldon/" + deployment_name + "/api/v0.1/predictions"
         else:
-            response_raw = requests.post(
-                "http://" + gateway_endpoint + "/seldon/" + namespace + "/" + deployment_name + "/api/v0.1/predictions",
-                json=payload,
-                headers=headers)
+            url = scheme+"://" + gateway_endpoint + "/seldon/" + namespace + "/" + deployment_name + "/api/v0.1/predictions"
     else:
-        response_raw = requests.post(
-            "http://" + gateway_endpoint + gateway_prefix + "/api/v0.1/predictions",
-            json=payload,
-            headers=headers)
+        url = scheme+"://" + gateway_endpoint + gateway_prefix + "/api/v0.1/predictions"
+    verify = True
+    cert = None
+    if not channel_credentials is None:
+        if not channel_credentials.certificate_chain_file is None:
+            verify = channel_credentials.certificate_chain_file
+        else:
+            verify = channel_credentials.verify
+        if not channel_credentials.private_key_file is None:
+            cert = (channel_credentials.root_certificates_file, channel_credentials.private_key_file)
+    logger.debug("URL is "+url)
+    logger.debug("verify is "+verify)
+    logger.debug("cert is %s",cert)
+    response_raw = requests.post(
+        url,
+        json=payload,
+        headers=req_headers,
+        verify=verify,
+        cert=cert)
 
     if response_raw.status_code == 200:
         success = True
@@ -1081,84 +1135,6 @@ def rest_predict_gateway(deployment_name: str, namespace: str = None, gateway_en
         return SeldonClientPrediction(request, response, success, msg)
     except Exception as e:
         return SeldonClientPrediction(request, None, False, str(e))
-
-
-def rest_predict_gateway_basicauth(deployment_name: str, username: str, password: str, namespace: str = None,
-                                   gateway_endpoint: str = "localhost:8003",
-                                   shape: Tuple[int, int] = (1, 1), data: np.ndarray = None,
-                                   payload_type: str = "tensor",
-                                   bin_data: Union[bytes, bytearray] = None, str_data: str = None,
-                                   names: Iterable[str] = None,
-                                   **kwargs) -> SeldonClientPrediction:
-    """
-    REST request with Basic Auth to Gateway Ingress
-
-    Parameters
-    ----------
-    deployment_name
-       The name of the running deployment
-    username
-       Username for basic auth
-    password
-       Password for basic auth
-    namespace
-       The namespace of the running deployment
-    gateway_endpoint
-       The host:port of gateway
-    shape
-       The shape of data
-    data
-       The numpy data to send
-    payload_type
-       payload - tensor, ndarray or tftensor
-    bin_data
-       Binary data to send
-    str_data
-    names
-       Column names
-
-    Returns
-    -------
-
-    """
-    if bin_data is not None:
-        request = prediction_pb2.SeldonMessage(binData=bin_data)
-    elif str_data is not None:
-        request = prediction_pb2.SeldonMessage(strData=str_data)
-    else:
-        if data is None:
-            data = np.random.rand(*shape)
-        datadef = array_to_grpc_datadef(payload_type, data, names)
-        request = prediction_pb2.SeldonMessage(data=datadef)
-    payload = seldon_message_to_json(request)
-    if namespace is None:
-        response_raw = requests.post(
-            "http://" + gateway_endpoint + "/seldon/" + deployment_name + "/api/v0.1/predictions",
-            json=payload,
-            auth=HTTPBasicAuth(username, password))
-    else:
-        response_raw = requests.post(
-            "http://" + gateway_endpoint + "/seldon/" + namespace + "/" + deployment_name + "/api/v0.1/predictions",
-            json=payload,
-            auth=HTTPBasicAuth(username, password))
-    if response_raw.status_code == 200:
-        success = True
-        msg = ""
-    else:
-        success = False
-        msg = str(response_raw.status_code) + ":" + response_raw.reason
-    try:
-        if len(response_raw.text) > 0:
-            try:
-                response = json_to_seldon_message(response_raw.json())
-            except:
-                response = None
-        else:
-            response = None
-        return SeldonClientPrediction(request, response, success, msg)
-    except Exception as e:
-        return SeldonClientPrediction(request, None, False, str(e))
-
 
 def grpc_predict_gateway(deployment_name: str, namespace: str = None, gateway_endpoint: str = "localhost:8003",
                          shape: Tuple[int, int] = (1, 1),
@@ -1167,7 +1143,8 @@ def grpc_predict_gateway(deployment_name: str, namespace: str = None, gateway_en
                          bin_data: Union[bytes, bytearray] = None, str_data: str = None,
                          grpc_max_send_message_length: int = 4 * 1024 * 1024,
                          grpc_max_receive_message_length: int = 4 * 1024 * 1024,
-                         names: Iterable[str] = None,
+                         names: Iterable[str] = None, call_credentials: SeldonCallCredentials = None,
+                         channel_credentials: SeldonChannelCredentials= None,
                          **kwargs) -> SeldonClientPrediction:
     """
     gRPC request to Gateway Ingress
@@ -1213,9 +1190,24 @@ def grpc_predict_gateway(deployment_name: str, namespace: str = None, gateway_en
             data = np.random.rand(*shape)
         datadef = array_to_grpc_datadef(payload_type, data, names=names)
         request = prediction_pb2.SeldonMessage(data=datadef)
-    channel = grpc.insecure_channel(gateway_endpoint, options=[
-        ('grpc.max_send_message_length', grpc_max_send_message_length),
-        ('grpc.max_receive_message_length', grpc_max_receive_message_length)])
+    options = [
+            ('grpc.max_send_message_length', grpc_max_send_message_length),
+            ('grpc.max_receive_message_length', grpc_max_receive_message_length)]
+    if channel_credentials is None:
+        channel = grpc.insecure_channel(gateway_endpoint, options)
+    else:
+        grpc_channel_credentials = grpc.ssl_channel_credentials(root_certificates=open(channel_credentials.certificate_chain_file, 'rb').read(),
+                                                                private_key=open(channel_credentials.private_key_file, 'rb').read(),
+                                                                certificate_chain=open(channel_credentials.root_certificates_file, 'rb').read())
+        if not call_credentials is None:
+            #grpc_call_credentials = grpc.access_token_call_credentials(call_credentials.token)
+            grpc_call_credentials = grpc.metadata_call_credentials(
+                lambda context, callback: callback((("X-Auth-Token", call_credentials.token),), None))
+            credentials = grpc.composite_channel_credentials(grpc_channel_credentials,grpc_call_credentials)
+        else:
+            credentials = grpc_channel_credentials
+        logger.debug(gateway_endpoint)
+        channel = grpc.secure_channel(gateway_endpoint,credentials, options)
     stub = prediction_pb2_grpc.SeldonStub(channel)
     if namespace is None:
         metadata = [('seldon', deployment_name)]
@@ -1224,11 +1216,11 @@ def grpc_predict_gateway(deployment_name: str, namespace: str = None, gateway_en
     if not headers is None:
         for k in headers:
             metadata.append((k, headers[k]))
-    try:
-        response = stub.Predict(request=request, metadata=metadata)
-        return SeldonClientPrediction(request, response, True, "")
-    except Exception as e:
-        return SeldonClientPrediction(request, None, False, str(e))
+    #try:
+    response = stub.Predict(request=request, metadata=metadata)
+    return SeldonClientPrediction(request, response, True, "")
+    #except Exception as e:
+    #    return SeldonClientPrediction(request, None, False, str(e))
 
 
 def rest_feedback_seldon_oauth(prediction_request: prediction_pb2.SeldonMessage = None,
