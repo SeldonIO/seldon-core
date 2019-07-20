@@ -1109,8 +1109,6 @@ def rest_predict_gateway(deployment_name: str, namespace: str = None, gateway_en
         if not channel_credentials.private_key_file is None:
             cert = (channel_credentials.root_certificates_file, channel_credentials.private_key_file)
     logger.debug("URL is "+url)
-    logger.debug("verify is "+verify)
-    logger.debug("cert is %s",cert)
     response_raw = requests.post(
         url,
         json=payload,
