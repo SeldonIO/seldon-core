@@ -36,7 +36,6 @@ We presently support two API Ingress Gateways
 
  * [Ambassador](https://www.getambassador.io/)
  * [Istio Ingress](https://istio.io/)
- * Seldon Core OAuth Gateway
 
 ### Install Ambassador
 
@@ -49,14 +48,6 @@ helm install stable/ambassador --name ambassador --set crds.keep=false
 ### Install Istio Ingress Gateway
 
 If you are using istio then the controller will create virtual services for an istio gateway. By default it will assume the gateway `seldon-gateway` as the name of the gateway. To change the default gateway add `--set istio.gateway=XYZ` when installing the seldon-core-operator.
-
-### Install Seldon OAuth Gateway
-
-This provides a basic OAuth Gateway.
-
-```bash
-helm install seldon-core-oauth-gateway --name seldon-gateway --repo https://storage.googleapis.com/seldon-charts
-```
 
 ## Other Options
 

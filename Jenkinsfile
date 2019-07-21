@@ -15,24 +15,6 @@ pipeline {
         SELDON_CORE_DOCKER_HUB_PASSWORD = credentials('SELDON_CORE_DOCKER_HUB_PASSWORD')
     }
     stages {
-        stage('build-api-frontend') {
-            when {
-                expression { return params.IS_DISABLED_APIFE_BUILD == false }
-            }
-            steps {
-                echo "Build Image"
-                sh 'cd api-frontend && make -f Makefile.ci build'
-                script {
-                    if (params.IS_IMAGE_BEING_PUBLISHED == true) {
-                        echo "Publish Image"
-                        sh 'cd api-frontend && make -f Makefile.ci repo_login'
-                        sh 'cd api-frontend && make -f Makefile.ci push_image'
-                    } else {
-                        echo "Publish Image [SKIPPED]"
-                    }
-                }
-            }
-        }
         stage('build-engine') {
             when {
                 expression { return params.IS_DISABLED_ENGINE_BUILD == false }

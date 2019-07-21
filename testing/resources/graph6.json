@@ -39,7 +39,8 @@
 		    "type": "MODEL"
                 },
                 "name": "mymodel",
-                "replicas": 1
+                "replicas": 1,
+		"traffic": 50
             },
             {
                 "componentSpecs": [{
@@ -68,7 +69,8 @@
 		    "type": "MODEL"
                 },
                 "name": "mymodel-canary",
-                "replicas": 1
+                "replicas": 1,
+		"traffic": 50
             }
 	    
         ]
