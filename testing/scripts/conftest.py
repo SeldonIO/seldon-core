@@ -18,7 +18,7 @@ def s2i_python_version():
 
 @pytest.fixture(scope="session")
 def seldon_images(request):
-    do_seldon_images()
+    do_seldon_images(request)
 
 @pytest.fixture(scope="session")
 def seldon_version():
@@ -32,11 +32,16 @@ def do_s2i_python_version():
 def do_clusterwide_seldon_helm(request=None):
     version = get_seldon_version()
     create_seldon_clusterwide_helm(request,version)
-    port_forward(request)
+    if not request is None:
+        port_forward(request)
 
-def do_seldon_images(request=None):
+def do_create_docker_repo(request=None):
     create_docker_repo(request)
-    port_forward_docker_repo(request)
+
+def do_seldon_images(request=None,create_docker_repo=True):
+    if create_docker_repo:
+        create_docker_repo(request)
+        port_forward_docker_repo(request)
     build_java_images()
     version = get_seldon_version()
     build_go_images(version)

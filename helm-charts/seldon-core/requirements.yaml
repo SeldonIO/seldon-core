@@ -1,9 +1,0 @@
-dependencies:
-  - name: ambassador
-    version: ^2.1.0
-    repository: https://kubernetes-charts.storage.googleapis.com/
-    condition: ambassador.enabled
-  - name: redis
-    version: ^6.4.5
-    repository: https://kubernetes-charts.storage.googleapis.com/
-    condition: redis.enabled
