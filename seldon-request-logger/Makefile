@@ -1,6 +1,10 @@
 build_image:
 	docker build . -t seldonio/seldon-request-logger:latest
 
+push_image:
+	docker push seldonio/seldon-request-logger:latest
+
+
 run_container:
 	docker run -p 8080:8080 seldonio/seldon-request-logger:latest
 
