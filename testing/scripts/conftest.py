@@ -38,8 +38,8 @@ def do_clusterwide_seldon_helm(request=None):
 def do_create_docker_repo(request=None):
     create_docker_repo(request)
 
-def do_seldon_images(request=None,create_docker_repo=True):
-    if create_docker_repo:
+def do_seldon_images(request=None,create_repo=True):
+    if create_repo:
         create_docker_repo(request)
         port_forward_docker_repo(request)
     build_java_images()
