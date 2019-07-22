@@ -11,7 +11,7 @@ To test a wrapped components you can use one of our [testing scripts](../workflo
 
 ## Python
 
-Python based models, including [TensorFlow](https://www.tensorflow.org/), [Keras](https://keras.io/), [pyTorch](http://pytorch.org/), [StatsModels](http://www.statsmodels.org/stable/index.html), [XGBoost](https://github.com/dmlc/xgboost) and [Scikit-learn](http://scikit-learn.org/stable/) based models.
+Python based models, including [TensorFlow](https://www.tensorflow.org/), [Keras](https://keras.io/), [PyTorch](http://pytorch.org/), [StatsModels](http://www.statsmodels.org/stable/index.html), [XGBoost](https://github.com/dmlc/xgboost) and [scikit-learn](http://scikit-learn.org/stable/) based models.
 
 - [Python model wrapping](../python/index.html)
 
