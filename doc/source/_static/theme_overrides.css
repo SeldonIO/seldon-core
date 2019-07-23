@@ -23,11 +23,11 @@
    }
 
    .wy-side-nav-search { 
-      background-color: #5159ff; 
+      background-color: #ff4072; 
    }
 
    .wy-menu-vertical p.caption { 
-      color: #ff4072;
+      color: #00ded0;
    }
 
    .wy-nav-side {
@@ -47,4 +47,5 @@
       background: #f2f2f2;   
    }
 }
+
 
