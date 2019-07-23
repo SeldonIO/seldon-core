@@ -2,6 +2,8 @@
 
 base:
 	helm convert ../../helm-charts/seldon-core-operator --skip-transformers=image,secret,namePrefix,labels --destination base --namespace seldon-system
+	# Convert seems to lose subresources so we add the crd explicitly
+	cp ../../helm-charts/seldon-core-operator/templates/crd.yaml base/seldondeployments.machinelearning.seldon.io-crd.yaml
 
 overlays/reporting:
 	helm convert ../../helm-charts/seldon-core-operator --skip-transformers=image,secret,namePrefix,labels,configMap --destination overlays/reporting --namespace seldon-system --set usageMetrics.enabled=true
@@ -20,6 +22,7 @@ clean:
 
 .PHONY: deploy-base
 deploy-base:
+	kubectl create namespace seldon-system || echo "seldon-system namespace exists" 
 	kustomize build base | kubectl apply -f -
 
 .PHONY: undeploy-base
