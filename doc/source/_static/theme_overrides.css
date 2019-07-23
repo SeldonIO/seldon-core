@@ -17,3 +17,34 @@
    }
 }
 
+   /* Seldon brand updates */
+   a {
+      color:#5159ff;
+   }
+
+   .wy-side-nav-search { 
+      background-color: #5159ff; 
+   }
+
+   .wy-menu-vertical p.caption { 
+      color: #00ded0;
+   }
+
+   .wy-nav-side {
+      color: #cccccc;
+      background: #333333;
+   }
+
+   .rst-versions .rst-current-version {
+      color:#00ded0;
+      background:#000000;
+   }
+
+}
+
+@media screen and (min-width: 1100px) { 
+   .wy-nav-content-wrap {
+      background: #f2f2f2;   
+   }
+}
+
