@@ -78,6 +78,7 @@ Seldon Core is an open source platform for deploying machine learning models on 
 
    Helm Charts <graph/helm_charts.md>	     
    Grafana Analytics <analytics/analytics.md>
+   Elastic Stack Logging <analytics/logging.md>
    Autoscaling <graph/autoscaling.md>   
 	     
 .. toctree::
