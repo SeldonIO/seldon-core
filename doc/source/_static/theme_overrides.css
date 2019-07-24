@@ -17,17 +17,17 @@
    }
 }
 
-   /* Seldon brand updates */
+  /* Seldon brand updates */
    a {
       color:#5159ff;
    }
 
    .wy-side-nav-search { 
-      background-color: #ff4072; 
+      background-color: #5159ff; 
    }
 
    .wy-menu-vertical p.caption { 
-      color: #00ded0;
+      color: #ff4072;
    }
 
    .wy-nav-side {
@@ -47,5 +47,4 @@
       background: #f2f2f2;   
    }
 }
-
 
