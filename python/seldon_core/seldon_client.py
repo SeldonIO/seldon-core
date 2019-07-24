@@ -1115,7 +1115,6 @@ def rest_predict_gateway(deployment_name: str, namespace: str = None, gateway_en
         headers=req_headers,
         verify=verify,
         cert=cert)
-
     if response_raw.status_code == 200:
         success = True
         msg = ""
@@ -1125,6 +1124,7 @@ def rest_predict_gateway(deployment_name: str, namespace: str = None, gateway_en
     try:
         if len(response_raw.text) > 0:
             try:
+                logger.debug("Raw response: %s", response_raw.text)
                 response = json_to_seldon_message(response_raw.json())
             except:
                 response = None
