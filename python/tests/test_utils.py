@@ -91,7 +91,7 @@ def test_create_response_strdata():
     assert len(sm.strData) > 0
 
 
-def test_create_response_jsondata():
+def test_create_grpc_response_jsondata():
     user_model = UserObject()
     request_data = np.array([[5, 6, 7]])
     datadef = scu.array_to_grpc_datadef("ndarray", request_data)
@@ -102,6 +102,25 @@ def test_create_response_jsondata():
     emptyValue = Value()
     assert sm.jsonData != emptyValue
 
+def test_create_rest_response_jsondata():
+    user_model = UserObject()
+    request_data = np.array([[5, 6, 7]])
+    datadef = scu.array_to_rest_datadef("ndarray", request_data)
+    json_request = { "jsonData": datadef }
+    raw_response = {"output": "data"}
+    json_response = scu.construct_response_json(user_model, True, json_request, raw_response)
+    assert "data" not in json_response
+    emptyValue = Value()
+    assert json_response["jsonData"] != emptyValue
+
+def test_symmetric_json_conversion():
+    user_model = UserObject()
+    request_data = np.array([[5, 6, 7]])
+    datadef = scu.array_to_rest_datadef("ndarray", request_data)
+    json_request = { "jsonData": datadef }
+    seldon_message_request = scu.json_to_seldon_message(json_request)
+    result_json_request = scu.seldon_message_to_json(seldon_message_request)
+    assert json_request == result_json_request
 
 def test_create_reponse_list():
     user_model = UserObject()
@@ -138,8 +157,7 @@ def test_json_to_seldon_message_normal_data():
     assert arr.shape[1] == 1
     assert arr[0][0] == 1
 
-
-def test_json_to_seldon_message_ndarry():
+def test_json_to_seldon_message_ndarray():
     data = {"data": {"ndarray": [[1]]}}
     requestProto = scu.json_to_seldon_message(data)
     assert requestProto.data.ndarray[0][0] == 1
@@ -148,7 +166,6 @@ def test_json_to_seldon_message_ndarry():
     assert arr.shape[0] == 1
     assert arr.shape[1] == 1
     assert arr[0][0] == 1
-
 
 def test_json_to_seldon_message_bin_data():
     a = np.array([1, 2, 3])
@@ -175,11 +192,8 @@ def test_json_to_seldon_message_str_data():
 
 
 def test_json_to_seldon_message_json_data():
-    data = {"jsonData": {"some": "value"}}
-    requestProto = scu.json_to_seldon_message(data)
-    assert len(requestProto.data.tensor.values) == 0
-    assert requestProto.WhichOneof("data_oneof") == "jsonData"
-    (json_data, meta, datadef, _) = scu.extract_request_parts(requestProto)
+    json_data = {"jsonData": {"some": "value"}}
+    (json_data, meta, datadef, _) = scu.extract_request_parts_json(json_data)
     assert not isinstance(json_data, np.ndarray)
     assert json_data == {"some": "value"}
 

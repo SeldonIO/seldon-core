@@ -12,7 +12,7 @@ from seldon_core.user_model import client_class_names, client_custom_metrics, cl
 from typing import Tuple, Dict, Union, List, Optional, Iterable, Any
 
 
-def json_to_seldon_message(message_json: Dict) -> prediction_pb2.SeldonMessage:
+def json_to_seldon_message(message_json: Union[List, Dict]) -> prediction_pb2.SeldonMessage:
     """
     Parses JSON input to a SeldonMessage proto
 
