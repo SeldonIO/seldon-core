@@ -76,6 +76,9 @@
 									"modelUri" : {
 									    "type": "string"
 									},
+									"serviceAccountName": {
+										"type": "string"
+									},
 									"implementation": {
 									    "enum": [
 										"UNKNOWN_IMPLEMENTATION",
@@ -278,6 +281,21 @@
                                             "description": "labels to be attached to entry deplyment for this predictor",
                                             "type": "object"
                                         },
+					"explainer": {
+						"description": "explainer for SeldonDeployment",
+						"type": "object",
+						"properties": {
+							"modelUri": {
+								"type": "string"
+							},
+							"serviceAccountName": {
+								"type": "string"
+							},
+							"type": {
+								"type": "string"
+							}
+						}
+					},
 					"svcOrchSpec": {
 					    "description": "Configuration for the service orchestrator",
 					    "type": "object",
