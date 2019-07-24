@@ -2,5 +2,6 @@ swagger.json
 pod-spec.json
 hpa-spec.json
 object-meta.json
+container.json
 crd.yaml
 		    
