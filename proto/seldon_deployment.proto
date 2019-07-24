@@ -42,6 +42,13 @@ message DeploymentSpec {
   map<string,string> annotations = 5; // Arbitrary annotations.
 }
 
+message Explainer {
+  optional string type = 1; // Type of explainer
+  optional string modelUri = 2; // Bucket or PVC location of explainer model
+  optional string serviceAccountName = 3; // Service account for pulling from bucket
+  optional k8s.io.api.core.v1.Container containerSpec = 4; // Custom spec for explainer
+}
+
 message PredictorSpec {
   required string name = 1; // A unique name not used by any other predictor in the deployment.
   required PredictiveUnit graph = 2; // A graph describing how the predictive units are connected together.
@@ -52,6 +59,7 @@ message PredictorSpec {
   map<string,string> labels = 7; // labels to be attached to entry deplyment for this predictor
   optional SvcOrchSpec svcOrchSpec = 8; // Service Orchestrator configuration
   optional int32 traffic = 9; // traffic weight for this predictor
+  optional Explainer explainer = 10; // Explainer for predictor
 }
 
 message SeldonPodSpec {
@@ -97,6 +105,9 @@ message PredictiveUnit {
     SIMPLE_ROUTER = 2; // An internal router for testing.
     RANDOM_ABTEST = 3; // A A-B test that sends traffic 50% to each child randomly.
     AVERAGE_COMBINER = 4; // A default combiner that returns the average of its children responses.
+    SKLEARN_SERVER = 5; // default sklearn server
+    XGBOOST_SERVER = 6; // default xgboost server
+    TENSORFLOW_SERVER = 7; // default tensorflow server    
   }
 
   enum PredictiveUnitMethod {
@@ -114,6 +125,8 @@ message PredictiveUnit {
   repeated PredictiveUnitMethod methods = 5;
   optional Endpoint endpoint = 6; // The exposed endpoint for this unit.
   repeated Parameter parameters = 7; // Customer parameter to pass to the unit.
+  optional string modelUri = 8; // Location of saved model
+  optional string serviceAccountName = 9; // Service account for pulling model bucket
 }
 
 message Endpoint {

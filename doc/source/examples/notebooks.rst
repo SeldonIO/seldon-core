@@ -15,6 +15,7 @@ Notebooks
    Azure Kubernetes Service (AKS) Deep MNIST <azure_aks_deep_mnist>
    Combiner Example <combiner>
    Custom Endpoints <custom_endpoints>
+   Elastic Container Service Alibaba Cloud Deep Mnist <alibaba_aks_deep_mnist>
    Example Helm Deployments <helm_examples>
    Explainer Alibi Anchor Tabular <alibi_anchor_tabular>
    Go Model <go_example>
@@ -41,6 +42,7 @@ Notebooks
    SKLearn Iris Classifier <iris>
    SKLearn MNIST <sklearn_mnist>
    SKLearn SpaCy Reddit Text Classifier Example <sklearn_spacy_text_classifier_example>
+   Sklearn, Xgboost, Tensorflow Server Examples <server_examples>
    Tensorflow MNIST <deep_mnist>
    TFserving MNIST <tfserving_mnist>
 

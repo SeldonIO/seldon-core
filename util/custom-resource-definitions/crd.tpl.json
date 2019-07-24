@@ -73,13 +73,22 @@
 									"name": {
 									    "type": "string"
 									},
+									"modelUri" : {
+									    "type": "string"
+									},
+									"serviceAccountName": {
+										"type": "string"
+									},
 									"implementation": {
 									    "enum": [
 										"UNKNOWN_IMPLEMENTATION",
 										"SIMPLE_MODEL",
 										"SIMPLE_ROUTER",
 										"RANDOM_ABTEST",
-										"AVERAGE_COMBINER"
+										"AVERAGE_COMBINER",
+										"SKLEARN_SERVER",
+										"XGBOOST_SERVER",
+										"TENSORFLOW_SERVER"
 									    ],
 									    "type": "string"
 									},
@@ -136,7 +145,10 @@
 								    "SIMPLE_MODEL",
 								    "SIMPLE_ROUTER",
 								    "RANDOM_ABTEST",
-								    "AVERAGE_COMBINER"
+								    "AVERAGE_COMBINER",
+								    "SKLEARN_SERVER",
+								    "XGBOOST_SERVER",
+								    "TENSORFLOW_SERVER"
 								],
 								"type": "string"
 							    },
@@ -193,7 +205,10 @@
                                                         "SIMPLE_MODEL",
                                                         "SIMPLE_ROUTER",
                                                         "RANDOM_ABTEST",
-                                                        "AVERAGE_COMBINER"
+                                                        "AVERAGE_COMBINER",
+							"SKLEARN_SERVER",
+							"XGBOOST_SERVER",
+							"TENSORFLOW_SERVER"
                                                     ],
                                                     "type": "string"
                                                 },
@@ -266,6 +281,21 @@
                                             "description": "labels to be attached to entry deplyment for this predictor",
                                             "type": "object"
                                         },
+					"explainer": {
+						"description": "explainer for SeldonDeployment",
+						"type": "object",
+						"properties": {
+							"modelUri": {
+								"type": "string"
+							},
+							"serviceAccountName": {
+								"type": "string"
+							},
+							"type": {
+								"type": "string"
+							}
+						}
+					},
 					"svcOrchSpec": {
 					    "description": "Configuration for the service orchestrator",
 					    "type": "object",

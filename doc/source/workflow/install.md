@@ -15,12 +15,12 @@ We presently support Helm installs.
 First [install Helm](https://docs.helm.sh). When helm is installed you can deploy the seldon controller to manage your Seldon Deployment graphs.
 
 ```bash 
-helm install seldon-core-operator --name seldon-core --repo https://storage.googleapis.com/seldon-charts --set usageMetrics.enabled=true
+helm install seldon-core-operator --name seldon-core --repo https://storage.googleapis.com/seldon-charts --set usageMetrics.enabled=true --namespace seldon-system
 ```
 
 Notes
 
- * You can use ```--namespace``` to install the seldon-core controller to a particular namespace
+ * You can use ```--namespace``` to install the seldon-core controller to a particular namespace but we recommend seldon-system.
  * For full configuration options see [here](../reference/helm.md)
 
 For particular ingresses we support you can inform the controller it should activate processing for them.
@@ -36,7 +36,6 @@ We presently support two API Ingress Gateways
 
  * [Ambassador](https://www.getambassador.io/)
  * [Istio Ingress](https://istio.io/)
- * Seldon Core OAuth Gateway
 
 ### Install Ambassador
 
@@ -49,14 +48,6 @@ helm install stable/ambassador --name ambassador --set crds.keep=false
 ### Install Istio Ingress Gateway
 
 If you are using istio then the controller will create virtual services for an istio gateway. By default it will assume the gateway `seldon-gateway` as the name of the gateway. To change the default gateway add `--set istio.gateway=XYZ` when installing the seldon-core-operator.
-
-### Install Seldon OAuth Gateway
-
-This provides a basic OAuth Gateway.
-
-```bash
-helm install seldon-core-oauth-gateway --name seldon-gateway --repo https://storage.googleapis.com/seldon-charts
-```
 
 ## Other Options
 

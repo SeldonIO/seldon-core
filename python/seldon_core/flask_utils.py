@@ -22,9 +22,9 @@ def get_request() -> Dict:
         else:
             message = request.get_json()
             if message is None:
-                raise SeldonMicroserviceException("Empty jsons parameter in data")
+                raise SeldonMicroserviceException("Can't find JSON in data")
     if message is None:
-        raise SeldonMicroserviceException("Invalid Data Format")
+        raise SeldonMicroserviceException("Invalid Data Format - empty JSON")
     return message
 
 
