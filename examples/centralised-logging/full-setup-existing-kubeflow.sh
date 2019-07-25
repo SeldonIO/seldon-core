@@ -11,7 +11,7 @@ helm init --service-account tiller
 
 kubectl rollout status -n kube-system deployment/tiller-deploy
 
-helm install --name seldon-core ../../helm-charts/seldon-core-operator/ --namespace seldon-system --set istio.gateway="kubeflow-gateway.kubeflow.svc.cluster.local" --set istio.enabled="true"
+helm install --name seldon-core ../../helm-charts/seldon-core-operator/ --namespace seldon-system --set istio.gateway="kubeflow-gateway.kubeflow.svc.cluster.local" --set istio.enabled="true" --set engine.logMessagesExternally="true"
 
 kubectl rollout status -n seldon-system statefulset/seldon-operator-controller-manager
 
