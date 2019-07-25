@@ -38,21 +38,21 @@ Otherwise any annotations starting with `seldon.io/engine-` will be interpreted 
     * Locations : SeldonDeployment.spec.predictors.annotations
     * [Java Opts example](model_engine_java_opts.md)
     * Translates to the environment variable JAVA_OPTS
-  * ```seldon.io/engine-log-requests``` : Whether to log raw requests from engine
+  * ```seldon.io/engine-seldon-log-requests``` : Whether to log raw requests from engine
     * Locations : SeldonDeployment.spec.predictors.annotations
-    * Translates to the environment variable LOG_REQUESTS
-  * ```seldon.io/engine-log-responses``` : Whether to log raw responses from engine
+    * Translates to the environment variable SELDON_LOG_REQUESTS
+  * ```seldon.io/engine-seldon-log-responses``` : Whether to log raw responses from engine
     * Locations : SeldonDeployment.spec.predictors.annotations
-    * Translates to the environment variable LOG_RESPONSES
-  * ```seldon.io/engine-log-messages-externally``` : Option to turn on logging of requests via a logging service
+    * Translates to the environment variable SELDON_LOG_RESPONSES
+  * ```seldon.io/engine-seldon-log-messages-externally``` : Option to turn on logging of requests via a logging service
     * Locations : SeldonDeployment.spec.predictors.annotations
-    * Translates to the environment variable LOG_MESSAGES_EXTERNALLY
-  * ```seldon.io/engine-log-message-type``` : Option to override type set on messages when sending to logging service. Used to determine which logger impl
+    * Translates to the environment variable SELDON_LOG_MESSAGES_EXTERNALLY
+  * ```seldon.io/engine-seldon-log-message-type``` : Option to override type set on messages when sending to logging service. Used to determine which logger impl
     * Locations : SeldonDeployment.spec.predictors.annotations
-    * Translates to the environment variable LOG_MESSAGE_TYPE
-  * ```seldon.io/engine-message-logging-service``` : Option to override url to broker that sends to logging service
+    * Translates to the environment variable SELDON_LOG_MESSAGE_TYPE
+  * ```seldon.io/engine-seldon-message-logging-service``` : Option to override url to broker that sends to logging service
     * Locations : SeldonDeployment.spec.predictors.annotations
-    * Translates to the environment variable MESSAGE_LOGGING_SERVICE
+    * Translates to the environment variable SELDON_MESSAGE_LOGGING_SERVICE
 
 More details on logging-related variables can be seen in the [request-logging example](https://github.com/SeldonIO/seldon-core/tree/master/examples/centralised-logging/README.md).
 
