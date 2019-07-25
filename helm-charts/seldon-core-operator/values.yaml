@@ -17,6 +17,8 @@ engine:
   serviceAccount:
     name: default
   user: 8888
+  #whether to log messages through knative broker to logger service
+  logMessagesExternally: false
 image:
   pullPolicy: Always
   registry: docker.io
