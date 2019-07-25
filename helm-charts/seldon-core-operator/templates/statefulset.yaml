@@ -57,6 +57,8 @@ spec:
             - name: ENGINE_CONTAINER_USER
               value: '{{ .Values.engine.user }}'
           {{- end }}
+            - name: ENGINE_LOG_MESSAGES_EXTERNALLY
+              value: '{{ .Values.engine.logMessagesExternally }}'
             - name: PREDICTIVE_UNIT_SERVICE_PORT
               value: '{{ .Values.predictiveUnit.port }}'
             - name: ENGINE_SERVER_GRPC_PORT

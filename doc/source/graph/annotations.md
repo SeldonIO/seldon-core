@@ -47,7 +47,7 @@ Otherwise any annotations starting with `seldon.io/engine-` will be interpreted 
   * ```seldon.io/engine-log-messages-externally``` : Option to turn on logging of requests via a logging service
     * Locations : SeldonDeployment.spec.predictors.annotations
     * Translates to the environment variable LOG_MESSAGES_EXTERNALLY
-  * ```seldon.io/engine-log-message-type``` : Option to override type set on messages when sending to logging service
+  * ```seldon.io/engine-log-message-type``` : Option to override type set on messages when sending to logging service. Used to determine which logger impl
     * Locations : SeldonDeployment.spec.predictors.annotations
     * Translates to the environment variable LOG_MESSAGE_TYPE
   * ```seldon.io/engine-message-logging-service``` : Option to override url to broker that sends to logging service
