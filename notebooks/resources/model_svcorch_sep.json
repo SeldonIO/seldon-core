@@ -42,6 +42,13 @@
                     "type": "MODEL"
                 },
                 "name": "example",
+		"svcOrchSpec" : {
+		    "resources": {
+			"requests": {
+			    "memory": "8Mi"
+			}
+		    }
+		},
                 "replicas": 1,
 		"labels": {
 		    "version" : "v1"

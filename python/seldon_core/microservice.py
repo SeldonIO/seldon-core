@@ -164,10 +164,12 @@ class StandaloneApplication(gunicorn.app.base.BaseApplication):
             self.cfg.set(key.lower(), value)
 
     def load(self):
-        print("LOADING APP",os.getpid())
+        logger.debug("LOADING APP %d",os.getpid())
         try:
+            logger.debug("Calling user load method")
             self.user_object.load()
         except (NotImplementedError, AttributeError):
+            logger.debug("No load method in user model")
             pass
         return self.application
 

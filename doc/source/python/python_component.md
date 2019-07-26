@@ -221,6 +221,72 @@ class UserCustomException(Exception):
 
 ```
 
+## Gunicorn and load
+
+The wrapped python class will be run under [gunicorn](https://gunicorn.org/). As part of initialization of each gunicorn worker a `load` method will be called on your class if it has it. You should use this method to load and initialise your model. This is important for Tensorflow models which need their session created in each worker process. The [Tensorflow MNIST example](../examples/deep_mnist.html) does this.
+
+```
+import tensorflow as tf
+import numpy as np
+import os
+
+class DeepMnist(object):
+    def __init__(self):
+        self.loaded = False
+        self.class_names = ["class:{}".format(str(i)) for i in range(10)]
+        
+    def load(self):
+        print("Loading model",os.getpid())
+        self.sess = tf.Session()
+        saver = tf.train.import_meta_graph("model/deep_mnist_model.meta")
+        saver.restore(self.sess,tf.train.latest_checkpoint("./model/"))
+        graph = tf.get_default_graph()
+        self.x = graph.get_tensor_by_name("x:0")
+        self.y = graph.get_tensor_by_name("y:0")
+        self.loaded = True
+        print("Loaded model")
+        
+    def predict(self,X,feature_names):
+        if not self.loaded:
+            self.load()
+        predictions = self.sess.run(self.y,feed_dict={self.x:X})
+        return predictions.astype(np.float64)
+```
+
+### Gunicorn workers
+
+By default 4 gunicorn workers will be created for your model. If you wish to change this default then add the environment variable GUNICORN_WORKERS to the container for your model. An example is shown below:
+
+```
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+metadata:
+  name: gunicorn
+spec:
+  name: worker
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: seldonio/mock_classifier:1.0
+          name: classifier
+          env:
+          - name: GUNICORN_WORKERS
+            value: '1'
+        terminationGracePeriodSeconds: 1
+    graph:
+      children: []
+      endpoint:
+        type: REST
+      name: classifier
+      type: MODEL
+    labels:
+      version: v1
+    name: example
+    replicas: 1
+
+```
+
 
 ## Next Steps
 
