@@ -22,7 +22,7 @@ spec:
   - graph:
       children: []
       implementation: TENSORFLOW_SERVER
-      modelUri: gs://seldon-tfserving-store/mnist-model
+      modelUri: gs://seldon-models/tfserving/mnist-model
       name: mnist-model
       parameters:
         - name: signature_name
@@ -56,7 +56,7 @@ spec:
   - graph:
       children: []
       implementation: TENSORFLOW_SERVER
-      modelUri: gs://seldon-tfserving-store/mnist-model
+      modelUri: gs://seldon-models/tfserving/mnist-model
       name: mnist-model
       endpoint:
         type: GRPC
