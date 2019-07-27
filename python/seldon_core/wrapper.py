@@ -32,7 +32,7 @@ def get_rest_microservice(user_model):
 
     @app.route("/seldon.json", methods=["GET"])
     def openAPI():
-        return send_from_directory('', "seldon.json")
+        return send_from_directory('', "openapi/seldon.json")
 
     @app.route("/predict", methods=["GET", "POST"])
     def Predict():
