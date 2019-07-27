@@ -166,7 +166,7 @@ If you want more control you can provide a low-level methods that will provide a
 
 ## User Defined Exceptions
 If you want to handle custom exceptions define a field `model_error_handler` as shown below:
-```
+```python
     model_error_handler = flask.Blueprint('error_handlers', __name__)
 ```
 An example is as follow:
