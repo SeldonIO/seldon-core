@@ -48,7 +48,8 @@ import io.seldon.protos.PredictionProtos.SeldonMessage;
 public class RestClientController {
 	
 	private static Logger logger = LoggerFactory.getLogger(RestClientController.class.getName());
-	
+
+
 	@Autowired
 	private PredictionService predictionService;
 	
@@ -150,8 +151,8 @@ public class RestClientController {
 		try
 		{
 			SeldonMessage response = predictionService.predict(request);
-			String json = ProtoBufUtils.toJson(response);
-			return new ResponseEntity<String>(json,HttpStatus.OK);
+			String responseJson = ProtoBufUtils.toJson(response);
+			return new ResponseEntity<String>(responseJson,HttpStatus.OK);
 		}
 		 catch (InterruptedException e) {
 			throw new APIException(ApiExceptionType.ENGINE_INTERRUPTED,e.getMessage());

@@ -12,10 +12,7 @@ if [[ $# > 0 ]]; then
     NAMESPACE=$1
 fi
 
-APIFE_VERSION=$(cat ${STARTUP_DIR}/api-frontend/target/version.txt)
-APIFE_IMAGE_NAME=127.0.0.1:5000/seldonio/apife:${APIFE_VERSION}
-
-CONTROLLER_VERSION=$(cat ${STARTUP_DIR}/api-frontend/target/version.txt)
+CONTROLLER_VERSION=$(cat ${STARTUP_DIR}/engine/target/version.txt)
 CONTROLLER_IMAGE_NAME=127.0.0.1:5000/seldonio/seldon-core-operator
 
 ENGINE_VERSION=$(cat ${STARTUP_DIR}/engine/target/version.txt)
@@ -32,7 +29,4 @@ helm install "${STARTUP_DIR}/helm-charts/seldon-core-operator" --name seldon-cor
     --namespace seldon-system
 helm install helm-charts/seldon-core-oauth-gateway --name seldon-gateway \
     --set serviceType=LoadBalancer \
-    --set apife.image.pullPolicy=Always \
-    --set image.repository=$APIFE_IMAGE_NAME \
-    --set image.tag=$APIFE_VERSION \    
      --namespace "${NAMESPACE}"

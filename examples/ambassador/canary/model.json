@@ -8,7 +8,7 @@
         "name": "example"
     },
     "spec": {
-        "name": "production-model",
+        "name": "canary-example",
         "predictors": [
             {
                 "componentSpecs": [{
@@ -31,7 +31,7 @@
                     "endpoint": {
                         "type": "REST"
                     }},
-                "name": "single",
+                "name": "main",
                 "replicas": 1
             }
         ]

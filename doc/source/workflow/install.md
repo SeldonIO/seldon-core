@@ -10,24 +10,32 @@ We presently support Helm installs.
 
 ## Install Seldon Core
 
+**You will need a kubernetes cluster with version >=1.11.0.**
+
 First [install Helm](https://docs.helm.sh). When helm is installed you can deploy the seldon controller to manage your Seldon Deployment graphs.
 
 ```bash 
-helm install seldon-core-operator --name seldon-core --repo https://storage.googleapis.com/seldon-charts --set usage_metrics.enabled=true
-
+helm install seldon-core-operator --name seldon-core --repo https://storage.googleapis.com/seldon-charts --set usageMetrics.enabled=true --namespace seldon-system
 ```
 
 Notes
 
- * You can use ```--namespace``` to install the seldon-core controller to a particular namespace
+ * You can use ```--namespace``` to install the seldon-core controller to a particular namespace but we recommend seldon-system.
  * For full configuration options see [here](../reference/helm.md)
+
+For particular ingresses we support you can inform the controller it should activate processing for them.
+
+ * Ambassador
+   * add `--set ambassador.enabled=true` : The controller will add annotations to services it creates so Ambassador can pick them up and wire an endpoint for your deployments.
+ * Istio Gateway
+   * add `--set istio.enabled=true` : The controller will create virtual services and destination rules to wire up endpoints in your istio ingress gateway.
 
 ## Install an Ingress Gateway
 
 We presently support two API Ingress Gateways
 
  * [Ambassador](https://www.getambassador.io/)
- * Seldon Core OAuth Gateway
+ * [Istio Ingress](https://istio.io/)
 
 ### Install Ambassador
 
@@ -37,12 +45,9 @@ We suggest you install [the official helm chart](https://github.com/helm/charts/
 helm install stable/ambassador --name ambassador --set crds.keep=false
 ```
 
-### Install Seldon OAuth Gateway
-This provides a basic OAuth Gateway.
+### Install Istio Ingress Gateway
 
-```
-helm install seldon-core-oauth-gateway --name seldon-gateway --repo https://storage.googleapis.com/seldon-charts
-```
+If you are using istio then the controller will create virtual services for an istio gateway. By default it will assume the gateway `seldon-gateway` as the name of the gateway. To change the default gateway add `--set istio.gateway=XYZ` when installing the seldon-core-operator.
 
 ## Other Options
 
@@ -50,6 +55,11 @@ helm install seldon-core-oauth-gateway --name seldon-gateway --repo https://stor
 
   * [Install Seldon as part of Kubeflow.](https://www.kubeflow.org/docs/guides/components/seldon/#seldon-serving)
 
+
+### Install with Kustomize
+
+  * We have initial support for kustomize.
+    ** [Seldon Core Operator](https://github.com/SeldonIO/seldon-core/kustomize/seldon-core-operator)
 
 ## Upgrading from Previous Versions
 

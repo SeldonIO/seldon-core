@@ -20,7 +20,8 @@ Seldon Core is an open source platform for deploying machine learning models on 
    :maxdepth: 1
    :caption: Getting Started
 
-   Overview <workflow/README.md>
+   Simple Model Serving  <servers/overview.md>
+   Advanced Custom Serving <workflow/README.md>
 
 .. toctree::
    :maxdepth: 1
@@ -36,6 +37,15 @@ Seldon Core is an open source platform for deploying machine learning models on 
    Usage reporting <workflow/usage-reporting.md>
    Upgrading <reference/upgrading.md>
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Servers
+	     
+   Inference Servers Overview <servers/overview.md>
+   SKLearn server <servers/sklearn.md>
+   XGBoost server <servers/xgboost.md>
+   Tensorflow Serving <servers/tensorflow.md>
+   
 .. toctree::
    :maxdepth: 1
    :caption: Wrappers
@@ -56,11 +66,19 @@ Seldon Core is an open source platform for deploying machine learning models on 
 
 .. toctree::
    :maxdepth: 1
+   :caption: Ingress
+
+   Ambassador Ingress <ingress/ambassador.md>
+   Istio Ingress <ingress/istio.md>
+   Seldon OAuth Gateway <ingress/seldon.md>
+   
+.. toctree::
+   :maxdepth: 1
    :caption: Deployment Options
 
    Helm Charts <graph/helm_charts.md>	     
-   Ambassador Deployment <graph/ambassador.md>	     
    Grafana Analytics <analytics/analytics.md>
+   Elastic Stack Logging <analytics/logging.md>
    Autoscaling <graph/autoscaling.md>   
 	     
 .. toctree::
@@ -88,10 +106,9 @@ Seldon Core is an open source platform for deploying machine learning models on 
    :maxdepth: 1
    :caption: Reference
 
+   Python API reference <python/api/modules>	     
    Seldon Microservice API <reference/apis/internal-api.md>
-   Seldon Operator <reference/cluster-manager>
    Seldon Orchestrator <reference/engine>
-   Seldon API OAuth Gateway <reference/apife>   
    Benchmarking <reference/benchmarking.md>
    Seldon Deployment CRD <reference/seldon-deployment.md>
    Prediction APIs <reference/apis/index>

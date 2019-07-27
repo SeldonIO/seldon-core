@@ -43,6 +43,8 @@ spec:
           value: '{{ .Values.locust.maxWait }}'
         - name: OAUTH_ENABLED
           value: '{{ .Values.oauth.enabled }}'
+        - name: REST_PATH_PREFIX
+          value: '{{ .Values.rest.pathPrefix }}'
         image: seldonio/locust-core:{{ .Values.image.release }}
         imagePullPolicy: IfNotPresent
         name: locust-slave-{{ .Values.loadtest.id }}

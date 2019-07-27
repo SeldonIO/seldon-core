@@ -55,6 +55,7 @@ tmp/seldon_deployment.md:
 
 run_python_builder:
 	docker run --rm -it \
+		--user=$$(id -u) \
 		-v $(SELDON_CORE_LOCAL_DIR):/work \
-		seldonio/python-builder bash
+		seldonio/python-builder:0.2 bash
 

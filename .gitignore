@@ -2,6 +2,7 @@
 /target/
 /public
 cluster-manager/.m2/
+.mypy_cache
 
 .ipynb_checkpoints
 
