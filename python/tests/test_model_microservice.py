@@ -281,6 +281,12 @@ def test_model_gets_meta():
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
     assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
 
+def test_model_seldon_json_ok():
+    user_object = UserObject()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+    rv = client.get("/seldon.json")
+    assert rv.status_code == 200
 
 def test_proto_ok():
     user_object = UserObject()
