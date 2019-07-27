@@ -4,10 +4,20 @@ alertmanager:
 grafana_prom_service_type: NodePort
 grafana_prom_admin_password: admin
 grafana_anonymous_auth: false
+grafana:
+  virtualservice:
+    enabled: false
+    prefix: "/grafana/"
+    gateways:
+      - kubeflow-gateway.kubeflow.svc.cluster.local
+#if using prefix with virtualservice (off by default) then below gives grafana prefix
+#  extraEnv:
+#    GF_SERVER_ROOT_URL: "%(protocol)s://%(domain)s/grafana"
 persistence:
   enabled: false
 rbac:
   enabled: true
 prometheus:
   service_type: ClusterIP
-
+nodeExporter:
+  port: 9100

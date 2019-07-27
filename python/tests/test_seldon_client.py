@@ -59,7 +59,7 @@ def test_predict_rest_with_names(mock_post):
 @mock.patch('requests.post', side_effect=mocked_requests_post_success)
 def test_predict_rest_with_ambassador_prefix(mock_post):
     sc = SeldonClient(deployment_name="mymodel")
-    response = sc.predict(gateway="ambassador",transport="rest",ambassador_prefix="/mycompany/ml")
+    response = sc.predict(gateway="ambassador",transport="rest",gateway_prefix="/mycompany/ml")
     assert mock_post.call_args[0][0].index("/mycompany/ml") > 0
     assert response.success == True
     assert response.response.data.tensor.shape == [1, 1]
@@ -76,7 +76,7 @@ def test_predict_microservice_rest(mock_post):
 
 
 @mock.patch('requests.post', side_effect=mocked_requests_post_success)
-def test_predict_microservice_rest(mock_post):
+def test_feedback_microservice_rest(mock_post):
     sc = SeldonClient(deployment_name="mymodel")
     response = sc.microservice_feedback(prediction_request=prediction_pb2.SeldonMessage(),
                                         prediction_response=prediction_pb2.SeldonMessage(), reward=1.0)
@@ -207,14 +207,14 @@ def test_wiring_microservice_api_grpc_feedback(mock_handler):
     assert mock_handler.call_count == 1
 
 
-@mock.patch('seldon_core.seldon_client.rest_predict_ambassador', return_value=SeldonClientPrediction(None, None))
+@mock.patch('seldon_core.seldon_client.rest_predict_gateway', return_value=SeldonClientPrediction(None, None))
 def test_wiring_rest_predict_ambassador(mock_rest_predict_ambassador):
     sc = SeldonClient(deployment_name="mymodel")
     response = sc.predict(gateway="ambassador", transport="rest")
     assert mock_rest_predict_ambassador.call_count == 1
 
 
-@mock.patch('seldon_core.seldon_client.grpc_predict_ambassador', return_value=SeldonClientPrediction(None, None))
+@mock.patch('seldon_core.seldon_client.grpc_predict_gateway', return_value=SeldonClientPrediction(None, None))
 def test_wiring_grpc_predict_ambassador(mock_grpc_predict_ambassador):
     sc = SeldonClient(deployment_name="mymodel")
     response = sc.predict(gateway="ambassador", transport="grpc")

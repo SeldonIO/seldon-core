@@ -1,0 +1,30 @@
+{{- if .Values.usageMetrics.enabled }}
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: seldon-spartakus-volunteer
+  namespace: kube-system
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: seldon-spartakus-volunteer
+    spec:
+      containers:
+      - args: 
+        - -c
+        - /spartakus volunteer --cluster-id={{ .Values.usageMetrics.clusterid  | default "$(cat /proc/sys/kernel/random/uuid)" }} --database={{ .Values.usageMetrics.database }} --extensions=/etc/config/spartakus_volunteer_extensions
+        command: ["/bin/sh"]        
+        env:
+        image: gcr.io/google_containers/spartakus-amd64:v1.1.0
+        name: seldon-spartakus-volunteer
+        volumeMounts:
+        - mountPath: /etc/config
+          name: seldon-spartakus-config-volume
+      serviceAccountName: seldon-spartakus-volunteer
+      volumes:
+      - configMap:
+          name: seldon-spartakus-config
+        name: seldon-spartakus-config-volume
+{{- end }}

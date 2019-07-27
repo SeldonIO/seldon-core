@@ -39,12 +39,12 @@ def setup_finalizer_helm(request):
     def fin():
         run("helm delete seldon-core --purge", shell=True)
         run("helm delete ambassador --purge", shell=True)
-        run("helm delete seldon-gateway --purge", shell=True)
         run("kubectl delete namespace seldon-system", shell=True)
         run("kubectl delete namespace seldon", shell=True)
         run("kubectl delete namespace test1", shell=True)
 
-    request.addfinalizer(fin)
+    if not request is None:
+        request.addfinalizer(fin)
 
 
 def get_seldon_version():
@@ -59,43 +59,30 @@ def create_ambassador():
     run("helm install stable/ambassador --name ambassador --set crds.keep=false --namespace seldon", shell=True)
     run("kubectl rollout status deployment.apps/ambassador --namespace seldon", shell=True)
 
-
-def create_seldon_gateway(version):
-    cmd="helm install ../../helm-charts/seldon-core-oauth-gateway --name seldon-gateway --namespace seldon --set singleNamespace=false --set image.repository=127.0.0.1:5000/seldonio/apife --set image.tag=" + version + " --set image.pullPolicy=Always"
-    print(cmd)
-    run(cmd, shell=True)
-    run("kubectl rollout status deployment.apps/seldon-gateway-seldon-apiserver  --namespace seldon", shell=True)
-
-
 def create_seldon_clusterwide_helm(request, version):
     setup_k8s()
     setup_helm()
     run(
-        "helm install ../../helm-charts/seldon-core-operator --name seldon-core --namespace seldon-system --set image.repository=127.0.0.1:5000/seldonio/seldon-core-operator --set image.tag=" + version + " --set image.pullPolicy=Always --set engine.image.repository=127.0.0.1:5000/seldonio/engine --set engine.image.tag=" + version + " --set engine.image.pullPolicy=Always",
+        "helm install ../../helm-charts/seldon-core-operator --name seldon-core --namespace seldon-system --set image.registry=127.0.0.1:5000 --set image.tag=" + version + " --set image.pullPolicy=Always --set engine.image.registry=127.0.0.1:5000 --set engine.image.tag=" + version + " --set engine.image.pullPolicy=Always",
         shell=True)
     run('kubectl rollout status statefulset.apps/seldon-operator-controller-manager -n seldon-system', shell=True)
     create_ambassador()
-    create_seldon_gateway(version)
-    setup_finalizer_helm(request)
+    if not request is None:
+        setup_finalizer_helm(request)
 
 
 @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=5)
 def port_forward(request):
     print("Setup: Port forward")
-    p1 = Popen("kubectl port-forward $(kubectl get pods -n seldon -l app=seldon-apiserver-container-app -o jsonpath='{.items[0].metadata.name}') -n seldon 8002:8080",stdout=subprocess.PIPE,shell=True, preexec_fn=os.setsid)
     p2 = Popen(
         "kubectl port-forward $(kubectl get pods -n seldon -l app.kubernetes.io/name=ambassador -o jsonpath='{.items[0].metadata.name}') -n seldon 8003:8080",
         stdout=subprocess.PIPE, shell=True, preexec_fn=os.setsid)
-
-    p3 = Popen("kubectl port-forward $(kubectl get pods -n seldon -l app=seldon-apiserver-container-app -o jsonpath='{.items[0].metadata.name}') -n seldon 8004:5000",stdout=subprocess.PIPE,shell=True, preexec_fn=os.setsid)
-    # , stdout=subprocess.PIPE
     def fin():
         print("teardown port forward")
-        os.killpg(os.getpgid(p1.pid), signal.SIGTERM)
         os.killpg(os.getpgid(p2.pid), signal.SIGTERM)
-        os.killpg(os.getpgid(p3.pid), signal.SIGTERM)
 
-    request.addfinalizer(fin)
+    if not request is None:
+        request.addfinalizer(fin)
 
 
 def create_docker_repo(request):
@@ -104,13 +91,13 @@ def create_docker_repo(request):
     run('kubectl apply -f ../resources/docker-private-registry-proxy.json -n default', shell=True)
 
     def fin():
-        return
         run('kubectl delete -f ../resources/docker-private-registry.json --ignore-not-found=true -n default',
             shell=True)
         run('kubectl delete -f ../resources/docker-private-registry-proxy.json --ignore-not-found=true -n default',
             shell=True)
 
-    request.addfinalizer(fin)
+    if not request is None:
+        request.addfinalizer(fin)
 
 
 @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=5)
@@ -124,4 +111,5 @@ def port_forward_docker_repo(request):
         print("teardown port-foward docker")
         os.killpg(os.getpgid(p1.pid), signal.SIGTERM)
 
-    request.addfinalizer(fin)
+    if not request is None:
+        request.addfinalizer(fin)

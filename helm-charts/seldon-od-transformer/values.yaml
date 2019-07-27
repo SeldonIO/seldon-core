@@ -49,3 +49,10 @@ replicas: 1
 oauth:
   key: 
   secret: 
+
+sdepLabels:
+  app: "seldon"
+
+predictorLabels:
+  version: "v1"
+  fluentd: "true"

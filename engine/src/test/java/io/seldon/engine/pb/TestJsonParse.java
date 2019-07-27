@@ -16,7 +16,11 @@
 package io.seldon.engine.pb;
 
 import java.io.IOException;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonFactory;
@@ -27,8 +31,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.primitives.Doubles;
 
+import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
+
 public class TestJsonParse {
 
+	String rawRequest = "{  \"meta\": {    \"puid\": \"avodt6jrk9nbgomnco7nhrvpo0\",    \"tags\": {    },    \"routing\": {    },    \"requestPath\": {    },    \"metrics\": []  },  \"data\": {    \"names\": [\"f0\", \"f1\"],    \"ndarray\": [[0.15, 0.74]]  }}";
+	String rawResponse = "{  \"meta\": {    \"puid\": \"avodt6jrk9nbgomnco7nhrvpo0\",    \"tags\": {    },    \"routing\": {    },    \"requestPath\": {      \"classifier\": \"seldonio/mock_classifier:1.0\"    },    \"metrics\": []  },  \"data\": {    \"names\": [\"proba\"],    \"ndarray\": [[0.07786847593954888]]  }}";
 	
 	@Test
 	public void multiDimTest() throws JsonProcessingException, IOException
@@ -49,4 +57,33 @@ public class TestJsonParse {
 		((ObjectNode) j.get("request")).set("shape",mapper.valueToTree(shape));
 		System.out.println(j.toString());
 	}
+
+
+	private JsonNode combineRequestResponse(String request, String response, ZonedDateTime requestTime, ZonedDateTime responseTime) throws IOException {
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode requestNode = mapper.readTree(request);
+		JsonNode responseNode = mapper.readTree(response);
+		ObjectNode combined = mapper.createObjectNode();
+		combined.set("request",requestNode);
+		combined.set("response",responseNode);
+		((ObjectNode)combined.get("request")).set("date",mapper.readTree(mapper.writeValueAsString(requestTime.toString())));
+		((ObjectNode)combined.get("response")).set("date",mapper.readTree(mapper.writeValueAsString(responseTime.toString())));
+		String depName = System.getenv().get("DEPLOYMENT_NAME");
+		if(depName!=null){
+			combined.set("sdepName",mapper.readTree(depName));
+		}
+
+		return combined;
+	}
+
+
+	@Test
+	public void combineRequestResponse() throws JsonProcessingException, IOException
+	{
+
+		ZonedDateTime time = ZonedDateTime.parse("2018-04-26T14:48:09.769Z", ISO_ZONED_DATE_TIME);
+		JsonNode j = combineRequestResponse(rawRequest,rawResponse,time,time);
+		Assert.assertEquals(j.toString(),"{\"request\":{\"meta\":{\"puid\":\"avodt6jrk9nbgomnco7nhrvpo0\",\"tags\":{},\"routing\":{},\"requestPath\":{},\"metrics\":[]},\"data\":{\"names\":[\"f0\",\"f1\"],\"ndarray\":[[0.15,0.74]]},\"date\":\"2018-04-26T14:48:09.769Z\"},\"response\":{\"meta\":{\"puid\":\"avodt6jrk9nbgomnco7nhrvpo0\",\"tags\":{},\"routing\":{},\"requestPath\":{\"classifier\":\"seldonio/mock_classifier:1.0\"},\"metrics\":[]},\"data\":{\"names\":[\"proba\"],\"ndarray\":[[0.07786847593954888]]},\"date\":\"2018-04-26T14:48:09.769Z\"}}");
+	}
+
 }
