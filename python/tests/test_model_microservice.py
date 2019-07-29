@@ -86,16 +86,17 @@ class UserObjectLowLevel(SeldonComponent):
 
 
 class UserObjectLowLevelWithPredictRaw(SeldonComponent):
-    def __init__(self, img_file=False):
-        self.img_file=img_file
+    def __init__(self, check_name):
+        self.check_name=check_name
     def predict_raw(self, msg):
         file_data=msg.binData
-        if self.img_file:
+        if self.check_name == 'img':
             img = Image.open(io.BytesIO (file_data))
             img.verify()
             return json_to_seldon_message({"data": {"ndarray": [rs232_checksum(file_data).decode('utf-8')]}})
-        else:
+        elif self.check_name == 'txt':
             return json_to_seldon_message({"data": {"ndarray": [file_data.decode('utf-8')]}})
+        
 
 class UserObjectLowLevelGrpc(SeldonComponent):
     def __init__(self, metrics_ok=True, ret_nparray=False):
@@ -147,7 +148,7 @@ def test_model_lowlevel_ok():
     assert j["data"]["ndarray"] == [9, 9]
 
 def test_model_lowlevel_multi_form_data_text_file_ok():
-    user_object = UserObjectLowLevelWithPredictRaw()
+    user_object = UserObjectLowLevelWithPredictRaw('txt')
     app = get_rest_microservice(user_object)
     client = app.test_client()
     rv = client.post('/predict',data={"binData":(f'./tests/resources/test.txt','test.txt')},content_type='multipart/form-data')
@@ -156,7 +157,7 @@ def test_model_lowlevel_multi_form_data_text_file_ok():
     assert j["data"]["ndarray"][0] == "this is test file for testing multipart/form-data input\n"
 
 def test_model_lowlevel_multi_form_data_img_file_ok():
-    user_object = UserObjectLowLevelWithPredictRaw(img_file=True)
+    user_object = UserObjectLowLevelWithPredictRaw('img')
     app = get_rest_microservice(user_object)
     client = app.test_client()
     rv = client.post('/predict',data={"binData":(f'./tests/resources/test.png','test.png')},content_type='multipart/form-data')
@@ -166,6 +167,20 @@ def test_model_lowlevel_multi_form_data_img_file_ok():
     with open('./tests/resources/test.png',"rb") as f:
         img_data=f.read()
     assert j["data"]["ndarray"][0] == rs232_checksum(img_data).decode('utf-8')
+
+def test_model_multi_form_data_ok():
+    user_object = UserObject()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+    rv = client.post('/predict',data={"data":'{"names":["a","b"],"ndarray":[[1,2]]}'},content_type='multipart/form-data')
+    j = json.loads(rv.data)
+    print(j)
+    assert rv.status_code == 200
+    assert j["meta"]["tags"] == {"mytag": 1}
+    assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
+    assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
+    assert j["data"]["names"] == ["t:0", "t:1"]
+    assert j["data"]["ndarray"] == [[1.0, 2.0]]
 
 def test_model_feedback_ok():
     user_object = UserObject()
