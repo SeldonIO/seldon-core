@@ -293,6 +293,28 @@
 							},
 							"type": {
 								"type": "string"
+							},
+							"endpoint": {
+								"properties": {
+									"service_host": {
+										"type": "string"
+									},
+									"service_port": {
+										"type": "integer"
+									},
+									"type": {
+										"enum": [
+											"REST",
+											"GRPC"
+										],
+										"type": "string"
+									}
+								}
+							},
+							"config": {
+								"additionalProperties": true,
+								"description" : "Inline custom parameter settings for explainer",
+								"type" : "object"
 							}
 						}
 					},
