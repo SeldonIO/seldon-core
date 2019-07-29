@@ -10,7 +10,7 @@ import io
 from seldon_core.wrapper import get_rest_microservice, SeldonModelGRPC, get_grpc_server
 from seldon_core.proto import prediction_pb2
 from seldon_core.user_model import SeldonComponent
-from seldon_core.utils import json_to_seldon_message
+from seldon_core.utils import (seldon_message_to_json,json_to_seldon_message)
 
 from flask import jsonify
 
@@ -93,13 +93,13 @@ class UserObjectLowLevelWithPredictRaw(SeldonComponent):
             file_data=msg.binData
             img = Image.open(io.BytesIO (file_data))
             img.verify()
-            return json_to_seldon_message({"data": {"ndarray": [rs232_checksum(file_data).decode('utf-8')]}})
+            return json_to_seldon_message({"meta": seldon_message_to_json(msg.meta),"data": {"ndarray": [rs232_checksum(file_data).decode('utf-8')]}})
         elif self.check_name == 'txt':
             file_data=msg.binData
-            return json_to_seldon_message({"data": {"ndarray": [file_data.decode('utf-8')]}})
+            return json_to_seldon_message({"meta": seldon_message_to_json(msg.meta),"data": {"ndarray": [file_data.decode('utf-8')]}})
         elif self.check_name == 'strData':
             file_data=msg.strData
-            return json_to_seldon_message({"data": {"ndarray": [file_data]}})
+            return json_to_seldon_message({"meta": seldon_message_to_json(msg.meta), "data": {"ndarray": [file_data]}})
         
 
 class UserObjectLowLevelGrpc(SeldonComponent):
@@ -155,18 +155,20 @@ def test_model_lowlevel_multi_form_data_text_file_ok():
     user_object = UserObjectLowLevelWithPredictRaw('txt')
     app = get_rest_microservice(user_object)
     client = app.test_client()
-    rv = client.post('/predict',data={"binData":(f'./tests/resources/test.txt','test.txt')},content_type='multipart/form-data')
+    rv = client.post('/predict',data={"meta":'{"puid":"1234"}',"binData":(f'./tests/resources/test.txt','test.txt')},content_type='multipart/form-data')
     j = json.loads(rv.data)
     assert rv.status_code == 200
+    assert j["meta"]["puid"] == "1234"
     assert j["data"]["ndarray"][0] == "this is test file for testing multipart/form-data input\n"
 
 def test_model_lowlevel_multi_form_data_img_file_ok():
     user_object = UserObjectLowLevelWithPredictRaw('img')
     app = get_rest_microservice(user_object)
     client = app.test_client()
-    rv = client.post('/predict',data={"binData":(f'./tests/resources/test.png','test.png')},content_type='multipart/form-data')
+    rv = client.post('/predict',data={"meta":'{"puid":"1234"}',"binData":(f'./tests/resources/test.png','test.png')},content_type='multipart/form-data')
     j = json.loads(rv.data)
     assert rv.status_code == 200
+    assert j["meta"]["puid"] == "1234"
     with open('./tests/resources/test.png',"rb") as f:
         img_data=f.read()
     assert j["data"]["ndarray"][0] == rs232_checksum(img_data).decode('utf-8')
@@ -175,9 +177,10 @@ def test_model_lowlevel_multi_form_data_strData_ok():
     user_object = UserObjectLowLevelWithPredictRaw('strData')
     app = get_rest_microservice(user_object)
     client = app.test_client()
-    rv = client.post('/predict',data={"strData":(f'./tests/resources/test.txt','test.txt')},content_type='multipart/form-data')
+    rv = client.post('/predict',data={"meta":'{"puid":"1234"}',"strData":(f'./tests/resources/test.txt','test.txt')},content_type='multipart/form-data')
     j = json.loads(rv.data)
     assert rv.status_code == 200
+    assert j["meta"]["puid"] == "1234"
     assert j["data"]["ndarray"][0] == "this is test file for testing multipart/form-data input\n"
 
 def test_model_multi_form_data_ok():
