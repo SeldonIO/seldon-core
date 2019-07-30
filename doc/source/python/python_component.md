@@ -87,7 +87,7 @@ class ImageNetCombiner(object):
 ```
 
 ## Routers
-Routers provide functionality to direct a request to one of a set of child components. For this you should create a method with signature as shown below that returns the id for the child component to route the request to.
+Routers provide functionality to direct a request to one of a set of child components. For this you should create a method with signature as shown below that returns the `id` for the child component to route the request to. The `id` is the index of children connected to the router.
 
 ```python
     def route(self, features: Union[np.ndarray, str, bytes], feature_names: Iterable[str]) -> int:
