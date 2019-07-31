@@ -167,7 +167,8 @@ public class RestClientController {
 			Map<String,Object> mergedParamMap = new HashMap<String,Object>();
 			if(requestEntity.getParameterMap() != null){
 				for(Map.Entry<String,String[]> formEntry: requestEntity.getParameterMap().entrySet()){
-					if(formEntry.getKey().equalsIgnoreCase("strData")){
+
+					if(formEntry.getKey().equalsIgnoreCase(SeldonMessage.DataOneofCase.STRDATA.name())){
 						mergedParamMap.put(formEntry.getKey(),formEntry.getValue());
 					}else{
                         mergedParamMap.put(formEntry.getKey(),mapper.readTree(formEntry.getValue()[0]));
@@ -176,7 +177,7 @@ public class RestClientController {
 			}
 			if(requestEntity.getFileMap() != null){
 				for(Map.Entry<String ,MultipartFile> fileEntry: requestEntity.getFileMap().entrySet()){
-					if(fileEntry.getKey().equalsIgnoreCase("binData")){
+					if(fileEntry.getKey().equalsIgnoreCase(SeldonMessage.DataOneofCase.BINDATA.name())){
 						mergedParamMap.put(fileEntry.getKey(),Base64.getEncoder().encode(fileEntry.getValue().getBytes()));
 					}else{
 						mergedParamMap.put(fileEntry.getKey(),fileEntry.getValue().getBytes());
