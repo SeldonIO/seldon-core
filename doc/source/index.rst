@@ -55,6 +55,7 @@ Seldon Core is an open source platform for deploying machine learning models on 
    R Models <R/README.md>
    NodeJS Models <nodejs/README.md>
    Custom Metrics <analytics/custom_metrics.md>
+   Logging & Log Level <analytics/log_level.md>
 	     
 .. toctree::
    :maxdepth: 1
