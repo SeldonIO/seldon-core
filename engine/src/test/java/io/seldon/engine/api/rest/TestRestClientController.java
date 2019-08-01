@@ -37,10 +37,7 @@ import org.springframework.web.context.WebApplicationContext;
 import io.seldon.engine.pb.ProtoBufUtils;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -212,13 +209,11 @@ public class TestRestClientController {
 	@Test
 	public void testPredict_multiform_binData() throws Exception
 	{
-		final String predictJson = "{" +
-				"\"request\": {" +
-				"\"meta\": {\"puid\":\"1234\"}}" +
-				"}";
+		final String metaJson =  "{\"puid\":\"1234\"}" ;
 		final MultiValueMap<String,String> paramMap = new LinkedMultiValueMap<>();
-		paramMap.put("meta", Arrays.asList(predictJson));
-		MvcResult res = mvc.perform(MockMvcRequestBuilders.fileUpload("/api/v0.1/predictions").file("binData","test data".getBytes())
+		paramMap.put("meta", Arrays.asList(metaJson));
+		byte[] fileData = "test data".getBytes();
+		MvcResult res = mvc.perform(MockMvcRequestBuilders.fileUpload("/api/v0.1/predictions").file("binData",fileData)
 				.accept(MediaType.APPLICATION_JSON_UTF8)
 				.params(paramMap)
 				.contentType(MediaType.MULTIPART_FORM_DATA)).andReturn();
@@ -232,5 +227,57 @@ public class TestRestClientController {
 		Assert.assertEquals("COUNTER", seldonMessage.getMeta().getMetrics(0).getType().toString());
 		Assert.assertEquals("GAUGE", seldonMessage.getMeta().getMetrics(1).getType().toString());
 		Assert.assertEquals("TIMER", seldonMessage.getMeta().getMetrics(2).getType().toString());
+		Assert.assertEquals(new String(fileData), seldonMessage.getBinData().toStringUtf8());
+		Assert.assertEquals("1234", seldonMessage.getMeta().getPuid());
+	}
+	@Test
+	public void testPredict_multiform_strData_as_file() throws Exception
+	{
+		final String metaJson =  "{\"puid\":\"1234\"}" ;
+		final MultiValueMap<String,String> paramMap = new LinkedMultiValueMap<>();
+		paramMap.put("meta", Arrays.asList(metaJson));
+		byte[] fileData = "test data".getBytes();
+		MvcResult res = mvc.perform(MockMvcRequestBuilders.fileUpload("/api/v0.1/predictions").file("strData",fileData)
+				.accept(MediaType.APPLICATION_JSON_UTF8)
+				.params(paramMap)
+				.contentType(MediaType.MULTIPART_FORM_DATA)).andReturn();
+		String response = res.getResponse().getContentAsString();
+		System.out.println(response);
+		Assert.assertEquals(200, res.getResponse().getStatus());
+		SeldonMessage.Builder builder = SeldonMessage.newBuilder();
+		ProtoBufUtils.updateMessageBuilderFromJson(builder, response );
+		SeldonMessage seldonMessage = builder.build();
+		Assert.assertEquals(3, seldonMessage.getMeta().getMetricsCount());
+		Assert.assertEquals("COUNTER", seldonMessage.getMeta().getMetrics(0).getType().toString());
+		Assert.assertEquals("GAUGE", seldonMessage.getMeta().getMetrics(1).getType().toString());
+		Assert.assertEquals("TIMER", seldonMessage.getMeta().getMetrics(2).getType().toString());
+		Assert.assertEquals(new String(fileData), seldonMessage.getStrData());
+		Assert.assertEquals("1234", seldonMessage.getMeta().getPuid());
+
+	}
+	@Test
+	public void testPredict_multiform_strData_as_text() throws Exception
+	{
+		final String metaJson =  "{\"puid\":\"1234\"}" ;
+		final MultiValueMap<String,String> paramMap = new LinkedMultiValueMap<>();
+		paramMap.put("meta", Arrays.asList(metaJson));
+		String strdata = "test data";
+		paramMap.put("strData",Arrays.asList(strdata));
+		MvcResult res = mvc.perform(MockMvcRequestBuilders.post("/api/v0.1/predictions")
+				.accept(MediaType.APPLICATION_JSON_UTF8)
+				.params(paramMap)
+				.contentType(MediaType.MULTIPART_FORM_DATA)).andReturn();
+		String response = res.getResponse().getContentAsString();
+		System.out.println(response);
+		Assert.assertEquals(200, res.getResponse().getStatus());
+		SeldonMessage.Builder builder = SeldonMessage.newBuilder();
+		ProtoBufUtils.updateMessageBuilderFromJson(builder, response );
+		SeldonMessage seldonMessage = builder.build();
+		Assert.assertEquals(3, seldonMessage.getMeta().getMetricsCount());
+		Assert.assertEquals("COUNTER", seldonMessage.getMeta().getMetrics(0).getType().toString());
+		Assert.assertEquals("GAUGE", seldonMessage.getMeta().getMetrics(1).getType().toString());
+		Assert.assertEquals("TIMER", seldonMessage.getMeta().getMetrics(2).getType().toString());
+		Assert.assertEquals(strdata, seldonMessage.getStrData());
+		Assert.assertEquals("1234", seldonMessage.getMeta().getPuid());
 	}
 }
