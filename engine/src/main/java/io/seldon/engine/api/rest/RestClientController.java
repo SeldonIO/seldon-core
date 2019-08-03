@@ -15,11 +15,16 @@
  *******************************************************************************/
 package io.seldon.engine.api.rest;
 
+import java.io.IOException;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.PostConstruct;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +48,8 @@ import io.seldon.engine.service.PredictionService;
 import io.seldon.engine.tracing.TracingProvider;
 import io.seldon.protos.PredictionProtos.Feedback;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 @RestController
 public class RestClientController {
@@ -127,7 +134,7 @@ public class RestClientController {
 	@Timed
 	@CrossOrigin(origins = "*")
 	@RequestMapping(value = "/api/v0.1/predictions", method = RequestMethod.POST, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
-    public ResponseEntity<String> predictions(RequestEntity<String> requestEntity)
+    public ResponseEntity<String> predictions_json(RequestEntity<String> requestEntity)
 	{
 		logger.debug("Received predict request");
 		Scope tracingScope = null;
@@ -135,38 +142,7 @@ public class RestClientController {
 			tracingScope = tracingProvider.getTracer().buildSpan("/api/v0.1/predictions").startActive(true);
 		try
 		{
-		SeldonMessage request;
-		try
-		{
-			SeldonMessage.Builder builder = SeldonMessage.newBuilder();
-			ProtoBufUtils.updateMessageBuilderFromJson(builder, requestEntity.getBody() );
-			request = builder.build();
-		} 
-		catch (InvalidProtocolBufferException e) 
-		{
-			logger.error("Bad request",e);
-			throw new APIException(ApiExceptionType.ENGINE_INVALID_JSON,requestEntity.getBody());
-		}
-
-		try
-		{
-			SeldonMessage response = predictionService.predict(request);
-			String responseJson = ProtoBufUtils.toJson(response);
-			return new ResponseEntity<String>(responseJson,HttpStatus.OK);
-		}
-		 catch (InterruptedException e) {
-			throw new APIException(ApiExceptionType.ENGINE_INTERRUPTED,e.getMessage());
-		} catch (ExecutionException e) {
-			if (e.getCause().getClass() == APIException.class){
-				throw (APIException) e.getCause();
-			}
-			else
-			{
-				throw new APIException(ApiExceptionType.ENGINE_EXECUTION_FAILURE,e.getMessage());
-			}
-		} catch (InvalidProtocolBufferException e) {
-			throw new APIException(ApiExceptionType.ENGINE_INVALID_JSON,"");
-		} 
+			return _predictions(requestEntity.getBody());
 		}
 		finally
 		{
@@ -175,7 +151,88 @@ public class RestClientController {
 		}
 
 	}
-	
+
+
+	@Timed
+	@CrossOrigin(origins = "*")
+	@RequestMapping(value = "/api/v0.1/predictions", method = RequestMethod.POST, consumes = "multipart/form-data", produces = "application/json; charset=utf-8")
+	public ResponseEntity<String> predictions_multiform(MultipartHttpServletRequest requestEntity)
+	{
+		logger.debug("Received predict request");
+		Scope tracingScope = null;
+		if (tracingProvider.isActive())
+			tracingScope = tracingProvider.getTracer().buildSpan("/api/v0.1/predictions").startActive(true);
+		try {
+			ObjectMapper mapper = new ObjectMapper();
+			Map<String,Object> mergedParamMap = new HashMap<String,Object>();
+			if(requestEntity.getParameterMap() != null){
+				for(Map.Entry<String,String[]> formEntry: requestEntity.getParameterMap().entrySet()){
+					if(formEntry.getKey().equalsIgnoreCase(SeldonMessage.DataOneofCase.STRDATA.name())){
+						mergedParamMap.put(formEntry.getKey(),formEntry.getValue()[0]);
+					}else{
+                        mergedParamMap.put(formEntry.getKey(),mapper.readTree(formEntry.getValue()[0]));
+					}
+				}
+			}
+			if(requestEntity.getFileMap() != null){
+				for(Map.Entry<String ,MultipartFile> fileEntry: requestEntity.getFileMap().entrySet()){
+					if(fileEntry.getKey().equalsIgnoreCase(SeldonMessage.DataOneofCase.STRDATA.name())){
+						mergedParamMap.put(fileEntry.getKey(),new String(fileEntry.getValue().getBytes()));
+					}else{
+						mergedParamMap.put(fileEntry.getKey(),fileEntry.getValue().getBytes());
+					}
+				}
+			}
+
+			return _predictions(mapper.writeValueAsString(mergedParamMap));
+		} catch (IOException e) {
+			logger.error("Bad request",e);
+			throw new APIException(ApiExceptionType.REQUEST_IO_EXCEPTION,e.getMessage());
+
+		} finally
+		{
+			if (tracingScope != null)
+				tracingScope.close();
+		}
+
+	}
+
+	private ResponseEntity<String> _predictions(String json)
+	{
+			SeldonMessage request;
+			try
+			{
+				SeldonMessage.Builder builder = SeldonMessage.newBuilder();
+				ProtoBufUtils.updateMessageBuilderFromJson(builder, json );
+				request = builder.build();
+			}
+			catch (InvalidProtocolBufferException e)
+			{
+				logger.error("Bad request",e);
+				throw new APIException(ApiExceptionType.ENGINE_INVALID_JSON,json);
+			}
+
+			try
+			{
+				SeldonMessage response = predictionService.predict(request);
+				String responseJson = ProtoBufUtils.toJson(response);
+				return new ResponseEntity<String>(responseJson,HttpStatus.OK);
+			}
+			catch (InterruptedException e) {
+				throw new APIException(ApiExceptionType.ENGINE_INTERRUPTED,e.getMessage());
+			} catch (ExecutionException e) {
+				if (e.getCause().getClass() == APIException.class){
+					throw (APIException) e.getCause();
+				}
+				else
+				{
+					throw new APIException(ApiExceptionType.ENGINE_EXECUTION_FAILURE,e.getMessage());
+				}
+			} catch (InvalidProtocolBufferException e) {
+				throw new APIException(ApiExceptionType.ENGINE_INVALID_JSON,"");
+			}
+	}
+
 	@Timed
 	@CrossOrigin(origins = "*")
 	@RequestMapping(value= "/api/v0.1/feedback", method = RequestMethod.POST, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
