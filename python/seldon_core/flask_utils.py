@@ -4,6 +4,18 @@ from typing import Dict
 import base64
 
 def get_multi_form_data_request() -> Dict:
+    """
+    Parses a request submitted with Content-type:multipart/form-data
+    all the keys under SeldonMessage are accepted as form input
+    binData can only be passed as file input
+    strData can be passed as file or text input
+    the file input is base64 encoded
+
+    Returns
+    -------
+       JSON Dict
+
+    """
     req_dict = {}
     for key in request.form:
         if key == 'strData':

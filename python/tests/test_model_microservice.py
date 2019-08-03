@@ -14,6 +14,18 @@ from seldon_core.utils import (seldon_message_to_json,json_to_seldon_message)
 
 from flask import jsonify
 
+"""
+ Checksum of bytes. Used to check data integrity of binData passed in multipart/form-data request
+
+ Parameters
+ ----------
+  the_bytes
+    Input bytes
+
+  Returns
+  -------
+  the checksum
+"""
 def rs232_checksum(the_bytes):
     return b'%02X' % (sum(the_bytes) & 0xFF)
 

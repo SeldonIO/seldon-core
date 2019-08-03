@@ -197,6 +197,12 @@ public class RestClientController {
 
 	}
 
+	/**
+	 * It calls the prediction service for the input json.
+	 * It is the base function for all forms of request Content-type
+	 * @param json - Input JSON to predict REST api
+	 * @return The response for prediction service
+	 */
 	private ResponseEntity<String> _predictions(String json)
 	{
 			SeldonMessage request;
