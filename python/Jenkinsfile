@@ -4,7 +4,7 @@ pipeline {
     }
     agent {
         docker {
-            image 'seldonio/core-builder:0.3'
+            image 'seldonio/python-builder:0.2'
             args '-v /root/.m2:/root/.m2'
         }
     }
@@ -13,22 +13,22 @@ pipeline {
         SELDON_CORE_DOCKER_HUB_PASSWORD = credentials('SELDON_CORE_DOCKER_HUB_PASSWORD')
     }
     stages {
-        stage('build-engine') {
+        stage('update-package') {
             steps {
-                echo "Build Image"
-                sh 'cd engine && make -f Makefile.ci build'
+                sh 'cd python && make update_package'
             }
         }
-        stage('publish-image') {
-            when {
-                expression { return params.PUBLISH_IMAGE == true }
-            }
+        stage('build-pypi') {
             steps {
                 script {
-                    echo "Publishing Image"
-                    sh 'cd engine && make -f Makefile.ci repo_login'
-                    sh 'cd engine && make -f Makefile.ci push_image'
+                    sh 'cd python && make build_pypi'
+                    pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple seldon-core
                 }
+            }
+        }
+        stage('run-tests') {
+            steps {
+                sh 'cd python && make test'
             }
         }
     }
