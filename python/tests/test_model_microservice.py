@@ -101,17 +101,18 @@ class UserObjectLowLevelWithPredictRaw(SeldonComponent):
     def __init__(self, check_name):
         self.check_name=check_name
     def predict_raw(self, msg):
+        msg=json_to_seldon_message(msg)
         if self.check_name == 'img':
             file_data=msg.binData
             img = Image.open(io.BytesIO (file_data))
             img.verify()
-            return json_to_seldon_message({"meta": seldon_message_to_json(msg.meta),"data": {"ndarray": [rs232_checksum(file_data).decode('utf-8')]}})
+            return {"meta": seldon_message_to_json(msg.meta),"data": {"ndarray": [rs232_checksum(file_data).decode('utf-8')]}}
         elif self.check_name == 'txt':
             file_data=msg.binData
-            return json_to_seldon_message({"meta": seldon_message_to_json(msg.meta),"data": {"ndarray": [file_data.decode('utf-8')]}})
+            return {"meta": seldon_message_to_json(msg.meta),"data": {"ndarray": [file_data.decode('utf-8')]}}
         elif self.check_name == 'strData':
             file_data=msg.strData
-            return json_to_seldon_message({"meta": seldon_message_to_json(msg.meta), "data": {"ndarray": [file_data]}})
+            return {"meta": seldon_message_to_json(msg.meta), "data": {"ndarray": [file_data]}}
         
 
 class UserObjectLowLevelGrpc(SeldonComponent):
@@ -151,7 +152,6 @@ def test_model_ok():
     assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
     assert j["data"]["names"] == ["t:0", "t:1"]
     assert j["data"]["ndarray"] == [[1.0, 2.0]]
-
 
 def test_model_lowlevel_ok():
     user_object = UserObjectLowLevel()
