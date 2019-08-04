@@ -17,6 +17,12 @@ RUN \
     apt-get update && \
     apt-get install -y docker-ce
 
+RUN wget https://github.com/openshift/source-to-image/releases/download/v1.1.14/source-to-image-v1.1.14-874754de-linux-386.tar.gz && \
+    tar -zxvf source-to-image-v1.1.14-874754de-linux-386.tar.gz && \
+    rm source-to-image-v1.1.14-874754de-linux-386.tar.gz && \
+    mv ./s2i /bin && \
+    mv ./sti /bin
+
 RUN \
     apt-get update -y && \
     apt-get install -y vim && \
