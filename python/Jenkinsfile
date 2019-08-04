@@ -14,23 +14,25 @@ pipeline {
                 SELDON_CORE_DOCKER_HUB_USER = credentials('SELDON_CORE_DOCKER_HUB_USER')
                 SELDON_CORE_DOCKER_HUB_PASSWORD = credentials('SELDON_CORE_DOCKER_HUB_PASSWORD')
             }
-            stage('update-package') {
-                steps {
-                    sh 'cd python && make update_package'
-                    sh 'cd python && make install-dev'
-                }
-            }
-            stage('build-pypi') {
-                steps {
-                    script {
-                        sh 'cd python && make build_pypi'
-                        sh 'pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple seldon-core'
+            stages {
+                stage('update-package') {
+                    steps {
+                        sh 'cd python && make update_package'
+                        sh 'cd python && make install-dev'
                     }
                 }
-            }
-            stage('run-tests') {
-                steps {
-                    sh 'cd python && make test'
+                stage('build-pypi') {
+                    steps {
+                        script {
+                            sh 'cd python && make build_pypi'
+                            sh 'pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple seldon-core'
+                        }
+                    }
+                }
+                stage('run-tests') {
+                    steps {
+                        sh 'cd python && make test'
+                    }
                 }
             }
         }
@@ -45,17 +47,19 @@ pipeline {
                 SELDON_CORE_DOCKER_HUB_USER = credentials('SELDON_CORE_DOCKER_HUB_USER')
                 SELDON_CORE_DOCKER_HUB_PASSWORD = credentials('SELDON_CORE_DOCKER_HUB_PASSWORD')
             }
-            stage('build-images') {
-                steps {
-                    sh 'cd wrappers/s2i/python/build_scripts && ./build_all.sh'
+            stages {
+                stage('build-images') {
+                    steps {
+                        sh 'cd wrappers/s2i/python/build_scripts && ./build_all.sh'
+                    }
                 }
-            }
-            stage('push-images') {
-                when {
-                    expression { return params.PUBLISH_IMAGE == true }
-                }
-                steps {
-                    sh 'cd wrappers/s2i/python/build_scripts && ./push_all.sh'
+                stage('push-images') {
+                    when {
+                        expression { return params.PUBLISH_IMAGE == true }
+                    }
+                    steps {
+                        sh 'cd wrappers/s2i/python/build_scripts && ./push_all.sh'
+                    }
                 }
             }
         }
