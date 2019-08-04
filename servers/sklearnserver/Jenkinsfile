@@ -1,0 +1,30 @@
+pipeline {
+    parameters {
+        booleanParam(name: 'PUBLISH_IMAGE', defaultValue: false, description: '')
+    }
+    agent {
+        docker {
+            image 'seldonio/core-builder:0.3'
+            args '-v /root/.m2:/root/.m2'
+        }
+    }
+    environment {
+        SELDON_CORE_DOCKER_HUB_USER = credentials('SELDON_CORE_DOCKER_HUB_USER')
+        SELDON_CORE_DOCKER_HUB_PASSWORD = credentials('SELDON_CORE_DOCKER_HUB_PASSWORD')
+    }
+    stages {
+        stage('update-package') {
+            steps {
+                sh 'cd servers/sklearnserver && make build_all'
+            }
+        }
+        stage('push-images') {
+            when {
+                expression { return params.PUBLISH_IMAGE == true }
+            }
+            steps {
+                sh 'cd servers/sklearnserver && make push_all'
+            }
+        }
+    }
+}
