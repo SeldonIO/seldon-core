@@ -35,6 +35,7 @@ pipeline {
         stage('build-images') {
             steps {
                 sh 'cd build_scripts && ./build_python3.7.sh'
+            }
+        }
     }
 }
-
