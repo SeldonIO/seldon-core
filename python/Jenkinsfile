@@ -16,6 +16,7 @@ pipeline {
         stage('update-package') {
             steps {
                 sh 'cd python && make update_package'
+                sh 'cd python && make install-dev'
             }
         }
         stage('build-pypi') {
@@ -31,6 +32,9 @@ pipeline {
                 sh 'cd python && make test'
             }
         }
+        stage('build-images') {
+            steps {
+                sh 'cd build_scripts && ./build_python3.7.sh'
     }
 }
 
