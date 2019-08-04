@@ -27,7 +27,7 @@ def start_microservice(app_location,tracing=False,grpc=False,envs={}):
             "PYTHONUNBUFFERED": "x",
             "PYTHONPATH": app_location,
             "APP_HOST": "127.0.0.1",
-            "SERVICE_PORT_ENV_NAME": "5000",
+            "SERVICE_PORT_ENV_NAME": "5003",
         })
         with open(join(app_location, ".s2i", "environment")) as fh:
             for line in fh.readlines():
@@ -44,7 +44,8 @@ def start_microservice(app_location,tracing=False,grpc=False,envs={}):
             env_vars["MODEL_NAME"],
             env_vars["API_TYPE"],
             "--service-type", env_vars["SERVICE_TYPE"],
-            "--persistence", env_vars["PERSISTENCE"]
+            "--persistence", env_vars["PERSISTENCE"],
+            "--port", "5003"
         )
         if tracing:
             cmd = cmd + ("--tracing",)
@@ -56,11 +57,11 @@ def start_microservice(app_location,tracing=False,grpc=False,envs={}):
         for q in range(10):
             time.sleep(5)
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            result = sock.connect_ex(("127.0.0.1", 5000))
+            result = sock.connect_ex(("127.0.0.1", 5003))
             if result == 0:
                 break
         else:
-            raise RuntimeError("Server did not bind to 127.0.0.1:5000")
+            raise RuntimeError("Server did not bind to 127.0.0.1:5003")
         yield
     finally:
         if p:
@@ -74,7 +75,7 @@ def test_model_template_app_rest(tracing):
     with start_microservice(join(dirname(__file__), "model-template-app"),tracing=tracing):
         data = '{"data":{"names":["a","b"],"ndarray":[[1.0,2.0]]}}'
         response = requests.get(
-            "http://127.0.0.1:5000/predict", params="json=%s" % data)
+            "http://127.0.0.1:5003/predict", params="json=%s" % data)
         response.raise_for_status()
         assert response.json() == {
             'data': {'names': ['t:0', 't:1'], 'ndarray': [[1.0, 2.0]]}, 'meta': {}}
@@ -83,7 +84,7 @@ def test_model_template_app_rest(tracing):
                 '"response":{"meta":{"routing":{"router":0}},"data":{"names":["a","b"],'
                 '"ndarray":[[1.0,2.0]]}},"reward":1}')
         response = requests.get(
-            "http://127.0.0.1:5000/send-feedback", params="json=%s" % data)
+            "http://127.0.0.1:5003/send-feedback", params="json=%s" % data)
         response.raise_for_status()
         assert response.json() == {'data': {'ndarray': []}, 'meta': {}}
 
@@ -95,7 +96,7 @@ def test_model_template_app_rest_submodule(tracing):
     with start_microservice(join(dirname(__file__), "model-template-app2"),tracing=tracing):
         data = '{"data":{"names":["a","b"],"ndarray":[[1.0,2.0]]}}'
         response = requests.get(
-            "http://127.0.0.1:5000/predict", params="json=%s" % data)
+            "http://127.0.0.1:5003/predict", params="json=%s" % data)
         response.raise_for_status()
         assert response.json() == {
             'data': {'names': ['t:0', 't:1'], 'ndarray': [[1.0, 2.0]]}, 'meta': {}}
@@ -104,7 +105,7 @@ def test_model_template_app_rest_submodule(tracing):
                 '"response":{"meta":{"routing":{"router":0}},"data":{"names":["a","b"],'
                 '"ndarray":[[1.0,2.0]]}},"reward":1}')
         response = requests.get(
-            "http://127.0.0.1:5000/send-feedback", params="json=%s" % data)
+            "http://127.0.0.1:5003/send-feedback", params="json=%s" % data)
         response.raise_for_status()
         assert response.json() == {'data': {'ndarray': []}, 'meta': {}}
 
@@ -122,7 +123,7 @@ def test_model_template_app_grpc(tracing):
             )
         )
         request = prediction_pb2.SeldonMessage(data = datadef)
-        channel = grpc.insecure_channel("0.0.0.0:5000")
+        channel = grpc.insecure_channel("0.0.0.0:5003")
         stub = prediction_pb2_grpc.ModelStub(channel)
         response = stub.Predict(request=request)
         assert response.data.tensor.shape[0] == 1
@@ -147,7 +148,7 @@ def test_model_template_app_tracing_config():
     with start_microservice(join(dirname(__file__), "model-template-app"),tracing=True,envs=envs):
         data = '{"data":{"names":["a","b"],"ndarray":[[1.0,2.0]]}}'
         response = requests.get(
-            "http://127.0.0.1:5000/predict", params="json=%s" % data)
+            "http://127.0.0.1:5003/predict", params="json=%s" % data)
         response.raise_for_status()
         assert response.json() == {
             'data': {'names': ['t:0', 't:1'], 'ndarray': [[1.0, 2.0]]}, 'meta': {}}
@@ -156,7 +157,7 @@ def test_model_template_app_tracing_config():
                 '"response":{"meta":{"routing":{"router":0}},"data":{"names":["a","b"],'
                 '"ndarray":[[1.0,2.0]]}},"reward":1}')
         response = requests.get(
-            "http://127.0.0.1:5000/send-feedback", params="json=%s" % data)
+            "http://127.0.0.1:5003/send-feedback", params="json=%s" % data)
         response.raise_for_status()
         assert response.json() == {'data': {'ndarray': []}, 'meta': {}}
 
