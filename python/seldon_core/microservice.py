@@ -163,9 +163,6 @@ def main():
         "MODEL", "ROUTER", "TRANSFORMER", "COMBINER", "OUTLIER_DETECTOR"], default="MODEL")
     parser.add_argument("--persistence", nargs='?',
                         default=0, const=1, type=int)
-    parser.add_argument("--port",
-                        default=int(os.environ.get(SERVICE_PORT_ENV_NAME, DEFAULT_PORT)),
-                        type=int)
     parser.add_argument("--parameters", type=str,
                         default=os.environ.get(PARAMETERS_ENV_NAME, "[]"))
     parser.add_argument("--log-level", type=str, default="INFO")
@@ -210,6 +207,8 @@ def main():
     for handler in logger.handlers:
         handler.setLevel(log_level_num)
 
+    port = int(os.environ.get(SERVICE_PORT_ENV_NAME, DEFAULT_PORT))
+
     if args.tracing:
         tracer = setup_tracing(args.interface_name)
 
@@ -222,9 +221,9 @@ def main():
                 from flask_opentracing import FlaskTracer
                 tracing = FlaskTracer(tracer, True, app)
 
-            app.run(host='0.0.0.0', port=args.port)
+            app.run(host='0.0.0.0', port=port)
 
-        logger.info("REST microservice running on port %i", args.port)
+        logger.info("REST microservice running on port %i", port)
         server1_func = rest_prediction_server
 
     elif args.api_type == "GRPC":
@@ -240,11 +239,11 @@ def main():
             server = seldon_microservice.get_grpc_server(
                 user_object, annotations=annotations, trace_interceptor=interceptor)
 
-            server.add_insecure_port(f"0.0.0.0:{args.port}")
+            server.add_insecure_port(f"0.0.0.0:{port}")
 
             server.start()
 
-            logger.info("GRPC microservice Running on port %i", args.port)
+            logger.info("GRPC microservice Running on port %i", port)
             while True:
                 time.sleep(1000)
 
