@@ -1,4 +1,5 @@
 pipeline {
+    agent none
     parameters {
         booleanParam(name: 'PUBLISH_IMAGE', defaultValue: false, description: '')
     }
