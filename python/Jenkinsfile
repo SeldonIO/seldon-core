@@ -34,7 +34,7 @@ pipeline {
         }
         stage('build-images') {
             steps {
-                sh 'cd build_scripts && ./build_all.sh'
+                sh 'cd wrappers/s2i/python/build_scripts && ./build_all.sh'
             }
         }
         stage('push-images') {
@@ -42,7 +42,7 @@ pipeline {
                 expression { return params.PUBLISH_IMAGE == true }
             }
             steps {
-                sh 'cd build_scripts && ./push_all.sh'
+                sh 'cd wrappers/s2i/python/build_scripts && ./push_all.sh'
             }
         }
     }
