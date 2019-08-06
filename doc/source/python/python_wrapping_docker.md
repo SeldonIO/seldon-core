@@ -64,7 +64,7 @@ RUN pip install -r requirements.txt
 EXPOSE 5000
 
 # Define environment variable
-ENV MODEL_NAME SimpleModel
+ENV MODEL_NAME MyModel
 ENV API_TYPE REST
 ENV SERVICE_TYPE MODEL
 ENV PERSISTENCE 0
@@ -202,7 +202,7 @@ There is an [example notebook illustrating a model with custom metrics in python
 To add custom meta data you can add an optional method ```tags``` which can return a dict of custom meta tags as shown in the example below:
 
 ```
-class UserObject(object):
+class MyModel(object):
 
     def predict(self,X,features_names):
         return X
