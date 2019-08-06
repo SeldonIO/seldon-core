@@ -56,7 +56,8 @@ def get_seldon_version():
 
 # Not using latest Ambassador due to gRPC issue. https://github.com/datawire/ambassador/issues/504
 def create_ambassador():
-    run("helm install stable/ambassador --name ambassador --set crds.keep=false --namespace seldon", shell=True)
+    # single-replica ambassador to avoid intermittent 503s as per https://github.com/datawire/ambassador/issues/1461
+    run("helm install stable/ambassador --name ambassador --set crds.keep=false --namespace seldon --set replicaCount=1", shell=True)
     run("kubectl rollout status deployment.apps/ambassador --namespace seldon", shell=True)
 
 def create_seldon_clusterwide_helm(request, version):
