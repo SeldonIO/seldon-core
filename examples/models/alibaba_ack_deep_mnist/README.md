@@ -1,5 +1,5 @@
 
-# Alibaba Cloud Elastic Container Service (ACK) Deep MNIST Example
+# Alibaba Cloud Container Service for Kubernetes (ACK) Deep MNIST Example
 In this example we will deploy a tensorflow MNIST model in the Alibaba Cloud Container Service for Kubernetes.
 
 This tutorial will break down in the following sections:
@@ -21,6 +21,6 @@ You can access the tutorial on the following versions:
 * [English Version Jupyter Notebook](alibaba_cloud_ack_deep_mnist.ipynb)
 * [Chinese Version Jupyter Notebook](alibaba_cloud_ack_deep_mnist_cn.ipynb)
 
-By the end you will have deployed a model in your Alibaba Cloud Elastic Container Service and should be able to visualise real-time metrics as per the image below:
+By the end you will have deployed a model in your Alibaba Cloud Container Service for Kubernetes cluster and should be able to visualise real-time metrics as per the image below:
 
 ![](images/graf.jpg)
