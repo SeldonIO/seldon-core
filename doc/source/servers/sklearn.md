@@ -27,5 +27,29 @@ spec:
 
 ```
 
+## Sklearn Method
+
+By default the server will call `predict_proba` on your loaded model/pipeline. If you wish for it to call `predict` instead you can pass a parameter `method` and set it to `predict`. For example:
+
+```
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+metadata:
+  name: sklearn
+spec:
+  name: iris-predict
+  predictors:
+  - graph:
+      children: []
+      implementation: SKLEARN_SERVER
+      modelUri: gs://seldon-models/sklearn/iris
+      name: classifier
+      parameters:
+        - name: method
+          type: STRING
+          value: predict
+    name: default
+    replicas: 1
+```
 
 Try out a [worked notebook](../examples/server_examples.html)
