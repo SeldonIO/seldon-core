@@ -3,12 +3,15 @@ from seldon_core.utils import *
 from seldon_core.user_model import *
 from google.protobuf import json_format
 from seldon_core.proto import prediction_pb2
-from typing import Any
+from typing import Any, Union, List, Dict
 
 logger = logging.getLogger(__name__)
 
 
-def predict(user_model: Any, request: prediction_pb2.SeldonMessage) -> prediction_pb2.SeldonMessage:
+def predict(
+            user_model: Any, 
+            request: Union[prediction_pb2.SeldonMessage, List, Dict]
+        ) -> prediction_pb2.SeldonMessage:
     """
     Call the user model to get a prediction and package the response
 
@@ -22,22 +25,27 @@ def predict(user_model: Any, request: prediction_pb2.SeldonMessage) -> predictio
     -------
       The prediction
     """
-    if hasattr(user_model, "predict_rest"):
+    is_proto = isinstance(request, prediction_pb2.SeldonMessage)
+
+    if hasattr(user_model, "predict_rest") and not is_proto:
         logger.warning("predict_rest is deprecated. Please use predict_raw")
-        request_json = json_format.MessageToJson(request)
-        response_json = user_model.predict_rest(request_json)
-        return json_to_seldon_message(response_json)
-    elif hasattr(user_model, "predict_grpc"):
+        return user_model.predict_rest(request)
+    elif hasattr(user_model, "predict_grpc") and is_proto:
         logger.warning("predict_grpc is deprecated. Please use predict_raw")
         return user_model.predict_grpc(request)
     else:
         try:
             return user_model.predict_raw(request)
         except (NotImplementedError, AttributeError):
-            (features, meta, datadef, data_type) = extract_request_parts(request)
-            client_response = client_predict(user_model, features, datadef.names, meta=meta)
-
-            return construct_response(user_model, False, request, client_response)
+            if is_proto:
+                (features, meta, datadef, data_type) = extract_request_parts(request)
+                client_response = client_predict(user_model, features, datadef.names, meta=meta)
+                return construct_response(user_model, False, request, client_response)
+            else:
+                (features, meta, datadef, data_type) = extract_request_parts_json(request)
+                client_response = client_predict(user_model, features, datadef.names, meta=meta)
+                print(client_response)
+                return construct_response_json(user_model, False, request, client_response)
 
 
 def send_feedback(user_model: Any, request: prediction_pb2.Feedback,

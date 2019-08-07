@@ -17,6 +17,8 @@ package io.seldon.engine.predictors;
 
 import java.util.Arrays;
 
+import com.google.protobuf.ByteString;
+import io.seldon.protos.PredictionProtos;
 import org.springframework.stereotype.Component;
 
 import io.seldon.protos.PredictionProtos.DefaultData;
@@ -37,15 +39,25 @@ public class SimpleModelUnit extends PredictiveUnitImpl {
 	
 	@Override
 	public SeldonMessage transformInput(SeldonMessage input, PredictiveUnitState state){
-		SeldonMessage output = SeldonMessage.newBuilder()
+		SeldonMessage.Builder builder = SeldonMessage.newBuilder()
 				.setStatus(Status.newBuilder().setStatus(Status.StatusFlag.SUCCESS).build())
 				.setMeta(Meta.newBuilder()
 						.addMetrics(Metric.newBuilder().setKey("mymetric_counter").setType(MetricType.COUNTER).setValue(1))
 						.addMetrics(Metric.newBuilder().setKey("mymetric_gauge").setType(MetricType.GAUGE).setValue(100))
-						.addMetrics(Metric.newBuilder().setKey("mymetric_timer").setType(MetricType.TIMER).setValue(22.1F)))
-				.setData(DefaultData.newBuilder().addAllNames(Arrays.asList(classes))
+						.addMetrics(Metric.newBuilder().setKey("mymetric_timer").setType(MetricType.TIMER).setValue(22.1F)));
+
+		// echo in case of strData and binData
+		if(input.getDataOneofCase().equals(SeldonMessage.DataOneofCase.BINDATA)){
+			builder.setBinData(input.getBinData());
+		} else if (input.getDataOneofCase().equals(SeldonMessage.DataOneofCase.STRDATA)){
+			builder.setStrData(input.getStrData());
+		}else{
+			builder.setData(DefaultData.newBuilder().addAllNames(Arrays.asList(classes))
 					.setTensor(Tensor.newBuilder().addShape(1).addShape(values.length)
-					.addAllValues(Arrays.asList(values)))).build();
+							.addAllValues(Arrays.asList(values))));
+		}
+
+		SeldonMessage output = builder.build();
 		System.out.println("Model " + state.name + " finishing computations");
 		return output;
 	}

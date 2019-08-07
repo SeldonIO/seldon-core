@@ -128,7 +128,7 @@ class SeldonClient(object):
         deployment_name
            name of seldon deployment
         payload_type
-           pyalod - tensor, ndarray or tftensor
+           type of payload - tensor, ndarray or tftensor
         oauth_key
            OAUTH key (if using seldon api server)
         oauth_secret
@@ -211,7 +211,7 @@ class SeldonClient(object):
         deployment_name
            name of seldon deployment
         payload_type
-           pyalod - tensor, ndarray or tftensor
+           type of payload - tensor, ndarray or tftensor
         oauth_key
            OAUTH key (if using seldon api server)
         oauth_secret

@@ -11,11 +11,11 @@ Notebooks
    Ambassador Headers <ambassador_headers>
    Ambassador Custom Config <ambassador_custom>
    Autoscaling Example <autoscaling_example>
+   Alibaba Cloud Container Service for Kubernetes Deep Mnist <alibaba_ack_deep_mnist>
    AWS Elastic Kubernetes Service (EKS) Deep MNIST <aws_eks_deep_mnist>
    Azure Kubernetes Service (AKS) Deep MNIST <azure_aks_deep_mnist>
    Combiner Example <combiner>
    Custom Endpoints <custom_endpoints>
-   Elastic Container Service Alibaba Cloud Deep Mnist <alibaba_aks_deep_mnist>
    Example Helm Deployments <helm_examples>
    Explainer Alibi Anchor Tabular <alibi_anchor_tabular>
    Go Model <go_example>
