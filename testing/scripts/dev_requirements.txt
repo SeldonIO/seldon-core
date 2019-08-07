@@ -1,2 +1,3 @@
 pytest
 retrying
+seldon_core
