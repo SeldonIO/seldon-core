@@ -23,7 +23,7 @@
 				    "/usr/bin/tensorflow_model_server",
 				    "--port=7001",
 				    "--model_name=mnist-model",
-				    "--model_base_path=gs://seldon-tfserving-store/mnist-model"
+				    "--model_base_path=gs://seldon-models/tfserving/mnist-model"
 				],
 				"image": "tensorflow/serving:latest",
 				"name": "mnist-model",

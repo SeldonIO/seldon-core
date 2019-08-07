@@ -45,7 +45,7 @@ An example resource with the proxy and a Tensorflow Serving server is shown belo
 				    "/usr/bin/tensorflow_model_server",
 				    "--port=8000",
 				    "--model_name=mnist-model",
-				    "--model_base_path=gs://seldon-tfserving-store/mnist-model"
+				    "--model_base_path=gs://seldon-models/tfserving/mnist-model"
 				],
 				"image": "gcr.io/kubeflow-images-public/tensorflow-serving-1.7:v20180604-0da89b8a",
 				"name": "mnist-model",
