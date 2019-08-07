@@ -170,7 +170,6 @@ class StandaloneApplication(gunicorn.app.base.BaseApplication):
             self.user_object.load()
         except (NotImplementedError, AttributeError):
             logger.debug("No load method in user model")
-            pass
         return self.application
 
 
