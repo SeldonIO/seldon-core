@@ -81,6 +81,11 @@
                                     }
                                 }
                             }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SeldonMessage"
+                            }
                         }
                     },
                     "required": true
