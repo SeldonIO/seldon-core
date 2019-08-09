@@ -33,7 +33,7 @@ def get_multi_form_data_request() -> Dict:
             This is the case when strData can be passed as file as well
             """
             req_dict[fileKey]=request.files[fileKey].read().decode('utf-8')
-    return req_dict    
+    return req_dict
 
 def get_request() -> Dict:
     """
@@ -45,7 +45,7 @@ def get_request() -> Dict:
 
     """
 
-    if 'multipart/form-data' in request.content_type:
+    if request.content_type is not None and 'multipart/form-data' in request.content_type:
         return get_multi_form_data_request()
 
     j_str = request.form.get("json")

@@ -37,24 +37,6 @@ Assuming the istio gateway is at ```<istioGateway>``` and with a Seldon deployme
     * key ```namespace``` and value ```<namespace>```.
 
 
-## API OAuth Gateway
-
-The HTTP and OAuth endpoints will be on separate ports, default is 8080 (HTTP) and 5000 (gRPC).
-
-### OAuth REST
-
-Assuming the API Gateway is exposed at ```<APIGatewayEndpoint>```
-
- 1. You should get an OAuth token from ```<APIGatewayEndpoint>/oauth/token```
- 1. You should make prediction requests to ```<APIGatewayEndpoint>/api/v0.1/predictions``` with the OAuth token in the header as ```Authorization: Bearer <token>```
-
-### OAuth gRPC
-
-Assuming the API gRPC Gateway is exposed at ```<APIGatewayEndpoint>```
-
- 1. You should get an OAuth token from ```<APIGatewayEndpoint>/oauth/token```
- 1. Send gRPC requests to ```<APIGatewayEndpoint>``` with the OAuth token in the meta data as ```oauth_token: <token>```
-
 ## Client Implementations
 
 ### Curl Examples
@@ -65,23 +47,6 @@ Assuming a SeldonDeployment ```mymodel``` with Ambassador exposed on 0.0.0.0:800
 
 ```bash
 curl -v 0.0.0.0:8003/seldon/mymodel/api/v0.1/predictions -d '{"data":{"names":["a","b"],"tensor":{"shape":[2,2],"values":[0,0,1,1]}}}' -H "Content-Type: application/json"
-```
-
-
-#### API OAuth Gateway REST
-
-Assume server is accessible at 0.0.0.0:8002.
-
-Get a token. Assuming the OAuth key is ```oauth-key``` and OAuth secret is ```oauth-secret``` as specified in the SeldonDeployment graph you created:
-
-```bash
-TOKENJSON=$(curl -XPOST -u oauth-key:oauth-secret 0.0.0.0:8002/oauth/token -d 'grant_type=client_credentials')
-TOKEN=$(echo $TOKENJSON | jq ".access_token" -r)
-```
-
-Get predictions
-```bash
-curl -w "%{http_code}\n" --header "Authorization: Bearer $TOKEN" 0.0.0.0:8002/api/v0.1/predictions -d '{"data":{"names":["a","b"],"tensor":{"shape":[2,2],"values":[0,0,1,1]}}}' -H "Content-Type: application/json"
 ```
 
 ### OpenAPI REST
