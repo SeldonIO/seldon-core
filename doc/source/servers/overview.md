@@ -5,7 +5,7 @@ Seldon provides several prepacked servers you can use to deploy trained models:
  * [SKLearn Server](./sklearn.html)
  * [XGBoost Server](xgboost.html)
  * [Tensorflow Serving](tensorflow.html)
-
+ * [MLFlow Server](mlflow.html)
 
 For these servers you only need the location of the saved model in a local filestore, Google bucket or S3 bucket. An example manifest with an sklearn server is shown below:
 
@@ -63,6 +63,7 @@ Next steps:
    * [SKLearn Server](./sklearn.html)
    * [XGBoost Server](xgboost.html)
    * [Tensorflow Serving](tensorflow.html)
+   * [MLflow Server](mlflow.html)
 
 If your use case does not fall into the above standard servers then you can create your own component using our wrappers.
 
