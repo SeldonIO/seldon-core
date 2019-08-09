@@ -526,7 +526,7 @@
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(rate(seldon_api_engine_server_requests_seconds_count{status!~\"5.*\"}[1m])) / sum(rate(seldon_api_engine_server_requests_seconds_count[1m]))",
+              "expr": "sum(rate(seldon_api_engine_client_requests_seconds_count{deployment_name=~\"$deployment\",status!~\"5.*\"}[1m])) / sum(rate(seldon_api_engine_client_requests_seconds_count{deployment_name=~\"$deployment\"}[1m]))",
               "format": "time_series",
               "intervalFactor": 2,
               "refId": "A",
@@ -534,7 +534,7 @@
             }
           ],
           "thresholds": "",
-          "title": "Success",
+          "title": "Success ($deployment)",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -602,7 +602,7 @@
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(irate(seldon_api_engine_server_requests_seconds_count{status=~\"4.*\"}[1m])) ",
+              "expr": "sum(irate(seldon_api_engine_client_requests_seconds_count{deployment_name=~\"$deployment\",status=~\"4.*\"}[1m]))",
               "format": "time_series",
               "intervalFactor": 2,
               "refId": "A",
@@ -610,7 +610,7 @@
             }
           ],
           "thresholds": "",
-          "title": "4xxs",
+          "title": "4xxs ($deployment)",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -678,7 +678,7 @@
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(irate(seldon_api_engine_server_requests_seconds_count{status=~\"5.*\"}[1m])) ",
+              "expr": "sum(irate(seldon_api_engine_client_requests_seconds_count{deployment_name=~\"$deployment\",status=~\"5.*\"}[1m]))",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -687,7 +687,7 @@
             }
           ],
           "thresholds": "",
-          "title": "5xxs",
+          "title": "5xxs ($deployment)",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
