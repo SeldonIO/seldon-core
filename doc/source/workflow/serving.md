@@ -6,16 +6,35 @@ Depending on whether you deployed Seldon Core with Ambassador or the API Gateway
 
 ### Ambassador REST
 
-Assuming Ambassador is exposed at ```<ambassadorEndpoint>``` and with a Seldon deployment name ```<deploymentName>```:
+Assuming Ambassador is exposed at ```<ambassadorEndpoint>``` and with a Seldon deployment name ```<deploymentName>```  in namespace ```<namespace>```::
 
- * A REST endpoint will be exposed at : ```http://<ambassadorEndpoint>/seldon/<deploymentName>/api/v0.1/predictions```
+ * A REST endpoint will be exposed at : ```http://<ambassadorEndpoint>/seldon/<namespace>/<deploymentName>/api/v0.1/predictions```
 
 
 ### Ambassador gRPC
 
 Assuming Ambassador is exposed at ```<ambassadorEndpoint>``` and with a Seldon deployment name ```<deploymentName>```:
 
-  * A gRPC endpoint will be exposed at ```<ambassadorEndpoint>``` and you should send metadata in your request with key ```seldon``` and value ```<deploymentName>```.
+  * A gRPC endpoint will be exposed at ```<ambassadorEndpoint>``` and you should send header metadata in your request with:
+    * key ```seldon``` and value ```<deploymentName>```.
+    * key ```namespace``` and value ```<namespace>```.
+
+## Istio
+
+### Istio REST
+
+Assuming the istio gateway is at ```<istioGateway>``` and with a Seldon deployment name ```<deploymentName>``` in namespace ```<namespace>```:
+
+ * A REST endpoint will be exposed at : ```http://<istioGateway>/seldon/<namespace>/<deploymentName>/api/v0.1/predictions```
+
+
+### Istio gRPC
+
+Assuming the istio gateway is at ```<istioGateway>``` and with a Seldon deployment name ```<deploymentName>``` in namespace ```<namespace>```:
+
+  * A gRPC endpoint will be exposed at ```<istioGateway>``` and you should send header metadata in your request with:
+    * key ```seldon``` and value ```<deploymentName>```.
+    * key ```namespace``` and value ```<namespace>```.
 
 
 ## API OAuth Gateway
