@@ -88,7 +88,8 @@
 										"AVERAGE_COMBINER",
 										"SKLEARN_SERVER",
 										"XGBOOST_SERVER",
-										"TENSORFLOW_SERVER"
+										"TENSORFLOW_SERVER",
+										"MLFLOW_SERVER"
 									    ],
 									    "type": "string"
 									},
@@ -148,7 +149,8 @@
 								    "AVERAGE_COMBINER",
 								    "SKLEARN_SERVER",
 								    "XGBOOST_SERVER",
-								    "TENSORFLOW_SERVER"
+								    "TENSORFLOW_SERVER",
+								    "MLFLOW_SERVER"
 								],
 								"type": "string"
 							    },
