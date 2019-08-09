@@ -31,7 +31,7 @@
         }
     ],
     "paths": {
-        "/seldon/{deployment}/api/v0.1/predictions": {
+        "/seldon/{namespace}/{deployment}/api/v0.1/predictions": {
             "post": {
                 "operationId": "Predict",
                 "responses": {
@@ -47,6 +47,14 @@
                     }
                 },
                 "parameters": [
+                    {
+                        "name": "namespace",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     {
                         "name": "deployment",
                         "in": "path",
@@ -81,18 +89,13 @@
                                     }
                                 }
                             }
-                        },
-                        "multipart/form-data": {
-                            "schema": {
-                                "$ref": "#/components/schemas/SeldonMessage"
-                            }
                         }
                     },
                     "required": true
                 }
             }
         },
-        "/seldon/{deployment}/api/v0.1/feedback": {
+        "/seldon/{namespace}/{deployment}/api/v0.1/feedback": {
             "post": {
                 "operationId": "SendFeedback",
                 "responses": {
@@ -108,6 +111,14 @@
                     }
                 },
                 "parameters": [
+                    {
+                        "name": "namespace",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     {
                         "name": "deployment",
                         "in": "path",
