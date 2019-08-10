@@ -55,6 +55,7 @@ Seldon Core is an open source platform for deploying machine learning models on 
    R Models <R/README.md>
    NodeJS Models <nodejs/README.md>
    Custom Metrics <analytics/custom_metrics.md>
+   Logging & Log Level <analytics/log_level.md>
 	     
 .. toctree::
    :maxdepth: 1
@@ -63,7 +64,8 @@ Seldon Core is an open source platform for deploying machine learning models on 
    Distributed Tracing <graph/distributed-tracing.md>
    Annotation-based Configuration <graph/annotations.md>
    Private Docker Registry <graph/private_registries.md>
-
+   Service Orchestrator <graph/svcorch.md>
+   
 .. toctree::
    :maxdepth: 1
    :caption: Ingress
@@ -79,7 +81,7 @@ Seldon Core is an open source platform for deploying machine learning models on 
    Helm Charts <graph/helm_charts.md>	     
    Grafana Analytics <analytics/analytics.md>
    Elastic Stack Logging <analytics/logging.md>
-   Autoscaling <graph/autoscaling.md>   
+   Autoscaling <graph/autoscaling.md>
 	     
 .. toctree::
    :maxdepth: 1

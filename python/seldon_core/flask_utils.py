@@ -1,7 +1,39 @@
 from flask import request
 import json
 from typing import Dict
+import base64
 
+def get_multi_form_data_request() -> Dict:
+    """
+    Parses a request submitted with Content-type:multipart/form-data
+    all the keys under SeldonMessage are accepted as form input
+    binData can only be passed as file input
+    strData can be passed as file or text input
+    the file input is base64 encoded
+
+    Returns
+    -------
+       JSON Dict
+
+    """
+    req_dict = {}
+    for key in request.form:
+        if key == 'strData':
+            req_dict[key]=request.form.get(key)
+        else:
+            req_dict[key]=json.loads(request.form.get(key))
+    for fileKey in request.files:
+        """
+        The bytes data needs to be base64 encode because the protobuf trys to do base64 decode for bytes
+        """
+        if fileKey == 'binData':
+            req_dict[fileKey]=base64.b64encode(request.files[fileKey].read())
+        else:
+            """
+            This is the case when strData can be passed as file as well
+            """
+            req_dict[fileKey]=request.files[fileKey].read().decode('utf-8')
+    return req_dict
 
 def get_request() -> Dict:
     """
@@ -12,6 +44,10 @@ def get_request() -> Dict:
        JSON Dict
 
     """
+
+    if request.content_type is not None and 'multipart/form-data' in request.content_type:
+        return get_multi_form_data_request()
+
     j_str = request.form.get("json")
     if j_str:
         message = json.loads(j_str)

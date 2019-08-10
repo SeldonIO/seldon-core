@@ -25,16 +25,19 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.http.MediaType;
-import org.springframework.jmx.support.MetricType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.context.WebApplicationContext;
 
 import io.seldon.engine.pb.ProtoBufUtils;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
+
+import java.util.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -135,4 +138,146 @@ public class TestRestClientController {
 		Assert.assertEquals("GAUGE", seldonMessage.getMeta().getMetrics(1).getType().toString());
 		Assert.assertEquals("TIMER", seldonMessage.getMeta().getMetrics(2).getType().toString());
     }
+
+	@Test
+	public void testPredict_multiform_11dim_ndarry() throws Exception
+	{
+		final String predictJson = "{" +
+				"\"request\": {" +
+				"\"ndarray\": [[1.0]]}" +
+				"}";
+		final MultiValueMap<String,String> paramMap = new LinkedMultiValueMap<>();
+		paramMap.put("data", Arrays.asList(predictJson));
+		MvcResult res = mvc.perform(MockMvcRequestBuilders.post("/api/v0.1/predictions")
+				.accept(MediaType.APPLICATION_JSON_UTF8)
+				.params(paramMap)
+				.contentType(MediaType.MULTIPART_FORM_DATA)).andReturn();
+		String response = res.getResponse().getContentAsString();
+		System.out.println(response);
+		Assert.assertEquals(200, res.getResponse().getStatus());
+	}
+
+	@Test
+	public void testPredict_multiform_21dim_ndarry() throws Exception
+	{
+		final String predictJson = "{" +
+				"\"request\": {" +
+				"\"ndarray\": [[1.0],[2.0]]}" +
+				"}";
+		final MultiValueMap<String,String> paramMap = new LinkedMultiValueMap<>();
+		paramMap.put("data", Arrays.asList(predictJson));
+		MvcResult res = mvc.perform(MockMvcRequestBuilders.post("/api/v0.1/predictions")
+				.accept(MediaType.APPLICATION_JSON_UTF8)
+				.params(paramMap)
+				.contentType(MediaType.MULTIPART_FORM_DATA)).andReturn();
+		String response = res.getResponse().getContentAsString();
+		System.out.println(response);
+		Assert.assertEquals(200, res.getResponse().getStatus());
+		SeldonMessage.Builder builder = SeldonMessage.newBuilder();
+		ProtoBufUtils.updateMessageBuilderFromJson(builder, response );
+		SeldonMessage seldonMessage = builder.build();
+		Assert.assertEquals(3, seldonMessage.getMeta().getMetricsCount());
+		Assert.assertEquals("COUNTER", seldonMessage.getMeta().getMetrics(0).getType().toString());
+		Assert.assertEquals("GAUGE", seldonMessage.getMeta().getMetrics(1).getType().toString());
+		Assert.assertEquals("TIMER", seldonMessage.getMeta().getMetrics(2).getType().toString());
+	}
+
+	@Test
+	public void testPredict_multiform_21dim_tensor() throws Exception
+	{
+		final String predictJson = "{" +
+				"\"request\": {" +
+				"\"tensor\": {\"shape\":[2,1],\"values\":[1.0,2.0]}}" +
+				"}";
+		final MultiValueMap<String,String> paramMap = new LinkedMultiValueMap<>();
+		paramMap.put("data", Arrays.asList(predictJson));
+		MvcResult res = mvc.perform(MockMvcRequestBuilders.post("/api/v0.1/predictions")
+				.accept(MediaType.APPLICATION_JSON_UTF8)
+				.params(paramMap)
+				.contentType(MediaType.MULTIPART_FORM_DATA)).andReturn();
+		String response = res.getResponse().getContentAsString();
+		System.out.println(response);
+		Assert.assertEquals(200, res.getResponse().getStatus());
+		SeldonMessage.Builder builder = SeldonMessage.newBuilder();
+		ProtoBufUtils.updateMessageBuilderFromJson(builder, response );
+		SeldonMessage seldonMessage = builder.build();
+		Assert.assertEquals(3, seldonMessage.getMeta().getMetricsCount());
+		Assert.assertEquals("COUNTER", seldonMessage.getMeta().getMetrics(0).getType().toString());
+		Assert.assertEquals("GAUGE", seldonMessage.getMeta().getMetrics(1).getType().toString());
+		Assert.assertEquals("TIMER", seldonMessage.getMeta().getMetrics(2).getType().toString());
+	}
+	@Test
+	public void testPredict_multiform_binData() throws Exception
+	{
+		final String metaJson =  "{\"puid\":\"1234\"}" ;
+		final MultiValueMap<String,String> paramMap = new LinkedMultiValueMap<>();
+		paramMap.put("meta", Arrays.asList(metaJson));
+		byte[] fileData = "test data".getBytes();
+		MvcResult res = mvc.perform(MockMvcRequestBuilders.fileUpload("/api/v0.1/predictions").file("binData",fileData)
+				.accept(MediaType.APPLICATION_JSON_UTF8)
+				.params(paramMap)
+				.contentType(MediaType.MULTIPART_FORM_DATA)).andReturn();
+		String response = res.getResponse().getContentAsString();
+		System.out.println(response);
+		Assert.assertEquals(200, res.getResponse().getStatus());
+		SeldonMessage.Builder builder = SeldonMessage.newBuilder();
+		ProtoBufUtils.updateMessageBuilderFromJson(builder, response );
+		SeldonMessage seldonMessage = builder.build();
+		Assert.assertEquals(3, seldonMessage.getMeta().getMetricsCount());
+		Assert.assertEquals("COUNTER", seldonMessage.getMeta().getMetrics(0).getType().toString());
+		Assert.assertEquals("GAUGE", seldonMessage.getMeta().getMetrics(1).getType().toString());
+		Assert.assertEquals("TIMER", seldonMessage.getMeta().getMetrics(2).getType().toString());
+		Assert.assertEquals(new String(fileData), seldonMessage.getBinData().toStringUtf8());
+		Assert.assertEquals("1234", seldonMessage.getMeta().getPuid());
+	}
+	@Test
+	public void testPredict_multiform_strData_as_file() throws Exception
+	{
+		final String metaJson =  "{\"puid\":\"1234\"}" ;
+		final MultiValueMap<String,String> paramMap = new LinkedMultiValueMap<>();
+		paramMap.put("meta", Arrays.asList(metaJson));
+		byte[] fileData = "test data".getBytes();
+		MvcResult res = mvc.perform(MockMvcRequestBuilders.fileUpload("/api/v0.1/predictions").file("strData",fileData)
+				.accept(MediaType.APPLICATION_JSON_UTF8)
+				.params(paramMap)
+				.contentType(MediaType.MULTIPART_FORM_DATA)).andReturn();
+		String response = res.getResponse().getContentAsString();
+		System.out.println(response);
+		Assert.assertEquals(200, res.getResponse().getStatus());
+		SeldonMessage.Builder builder = SeldonMessage.newBuilder();
+		ProtoBufUtils.updateMessageBuilderFromJson(builder, response );
+		SeldonMessage seldonMessage = builder.build();
+		Assert.assertEquals(3, seldonMessage.getMeta().getMetricsCount());
+		Assert.assertEquals("COUNTER", seldonMessage.getMeta().getMetrics(0).getType().toString());
+		Assert.assertEquals("GAUGE", seldonMessage.getMeta().getMetrics(1).getType().toString());
+		Assert.assertEquals("TIMER", seldonMessage.getMeta().getMetrics(2).getType().toString());
+		Assert.assertEquals(new String(fileData), seldonMessage.getStrData());
+		Assert.assertEquals("1234", seldonMessage.getMeta().getPuid());
+
+	}
+	@Test
+	public void testPredict_multiform_strData_as_text() throws Exception
+	{
+		final String metaJson =  "{\"puid\":\"1234\"}" ;
+		final MultiValueMap<String,String> paramMap = new LinkedMultiValueMap<>();
+		paramMap.put("meta", Arrays.asList(metaJson));
+		String strdata = "test data";
+		paramMap.put("strData",Arrays.asList(strdata));
+		MvcResult res = mvc.perform(MockMvcRequestBuilders.post("/api/v0.1/predictions")
+				.accept(MediaType.APPLICATION_JSON_UTF8)
+				.params(paramMap)
+				.contentType(MediaType.MULTIPART_FORM_DATA)).andReturn();
+		String response = res.getResponse().getContentAsString();
+		System.out.println(response);
+		Assert.assertEquals(200, res.getResponse().getStatus());
+		SeldonMessage.Builder builder = SeldonMessage.newBuilder();
+		ProtoBufUtils.updateMessageBuilderFromJson(builder, response );
+		SeldonMessage seldonMessage = builder.build();
+		Assert.assertEquals(3, seldonMessage.getMeta().getMetricsCount());
+		Assert.assertEquals("COUNTER", seldonMessage.getMeta().getMetrics(0).getType().toString());
+		Assert.assertEquals("GAUGE", seldonMessage.getMeta().getMetrics(1).getType().toString());
+		Assert.assertEquals("TIMER", seldonMessage.getMeta().getMetrics(2).getType().toString());
+		Assert.assertEquals(strdata, seldonMessage.getStrData());
+		Assert.assertEquals("1234", seldonMessage.getMeta().getPuid());
+	}
 }
