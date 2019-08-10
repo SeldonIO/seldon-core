@@ -1,4 +1,4 @@
-# SKLearn Server
+# MLFlow Server
 
 If you have a trained an MLFlow model you are able to deploy one (or several) of the versions saved using Seldon's prepackaged MLFlow server.
 
