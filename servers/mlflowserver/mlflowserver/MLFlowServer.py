@@ -39,10 +39,10 @@ class MLFlowServer(SeldonComponent):
             # TODO: Make sure this doesn't get called from here, but 
             #   from the actual python wrapper. Raise exception instead
             #raise requests.HTTPError("Model not loaded yet")
-        #if not feature_names is None and len(feature_names)>0:
-        #    df = pd.DataFrame(data=X, columns=feature_names)
-        #else:
-        #    df = pd.DataFrame(data=X)
+        if not feature_names is None and len(feature_names)>0:
+            df = pd.DataFrame(data=X, columns=feature_names)
+        else:
+            df = pd.DataFrame(data=X)
         result = self._model.predict(X)
         log.info(f"Prediction result: {result}")
         return result
