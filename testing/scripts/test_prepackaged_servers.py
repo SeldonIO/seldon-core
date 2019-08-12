@@ -32,7 +32,7 @@ class TestPrepackSkLearn(object):
     def test_sklearn(self):
         run("kubectl delete sdep --all", shell=True)
         run("kubectl apply -f ../../servers/sklearnserver/samples/iris.yaml", shell=True, check=True)
-        wait_for_rollout("iris-default")
+        wait_for_rollout("iris-default-8bb3ef6")
         wait_for_status("sklearn")
         print("Initial request")
         sc = SeldonClient(deployment_name="sklearn",namespace="seldon")
@@ -45,7 +45,7 @@ class TestPrepackSkLearn(object):
     def test_tfserving(self):
         run("kubectl delete sdep --all", shell=True)
         run("kubectl apply -f ../../servers/tfserving/samples/mnist_rest.yaml", shell=True, check=True)
-        wait_for_rollout("mnist-default")
+        wait_for_rollout("mnist-default-808f52c")
         wait_for_status("tfserving")
         print("Initial request")
         sc = SeldonClient(deployment_name="tfserving",namespace="seldon")
@@ -58,7 +58,7 @@ class TestPrepackSkLearn(object):
     def test_xgboost(self):
         run("kubectl delete sdep --all", shell=True)
         run("kubectl apply -f ../../servers/xgboostserver/samples/iris.yaml", shell=True, check=True)
-        wait_for_rollout("iris-default")
+        wait_for_rollout("iris-default-5299e79")
         wait_for_status("xgboost")
         print("Initial request")
         sc = SeldonClient(deployment_name="xgboost",namespace="seldon")
