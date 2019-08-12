@@ -79,6 +79,9 @@
 									"serviceAccountName": {
 										"type": "string"
 									},
+									"envSecretRefName": {
+										"type": "string"
+									},
 									"implementation": {
 									    "enum": [
 										"UNKNOWN_IMPLEMENTATION",
@@ -289,6 +292,9 @@
 								"type": "string"
 							},
 							"serviceAccountName": {
+								"type": "string"
+							},
+							"envSecretRefName": {
 								"type": "string"
 							},
 							"type": {
