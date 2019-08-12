@@ -1977,7 +1977,7 @@ spec:
                                   implementation:
                                     enum: [UNKNOWN_IMPLEMENTATION, SIMPLE_MODEL, SIMPLE_ROUTER,
                                            RANDOM_ABTEST, AVERAGE_COMBINER, SKLEARN_SERVER,
-                                           XGBOOST_SERVER, TENSORFLOW_SERVER]
+                                           XGBOOST_SERVER, TENSORFLOW_SERVER, MLFLOW_SERVER]
                                     type: string
                                   methods:
                                     items:
@@ -2003,7 +2003,7 @@ spec:
                             implementation:
                               enum: [UNKNOWN_IMPLEMENTATION, SIMPLE_MODEL, SIMPLE_ROUTER,
                                      RANDOM_ABTEST, AVERAGE_COMBINER, SKLEARN_SERVER, XGBOOST_SERVER,
-                                     TENSORFLOW_SERVER]
+                                     TENSORFLOW_SERVER, MLFLOW_SERVER]
                               type: string
                             methods:
                               items:
@@ -2027,7 +2027,7 @@ spec:
                       implementation:
                         enum: [UNKNOWN_IMPLEMENTATION, SIMPLE_MODEL, SIMPLE_ROUTER,
                                RANDOM_ABTEST, AVERAGE_COMBINER, SKLEARN_SERVER, XGBOOST_SERVER,
-                               TENSORFLOW_SERVER]
+                               TENSORFLOW_SERVER, MLFLOW_SERVER]
                         type: string
                       methods:
                         items:
