@@ -46,7 +46,8 @@ message Explainer {
   optional string type = 1; // Type of explainer
   optional string modelUri = 2; // Bucket or PVC location of explainer model
   optional string serviceAccountName = 3; // Service account for pulling from bucket
-  optional k8s.io.api.core.v1.Container containerSpec = 4; // Custom spec for explainer
+  optional string envSecretRefName = 4; // Secret for pulling from bucket
+  optional k8s.io.api.core.v1.Container containerSpec = 5; // Custom spec for explainer
 }
 
 message PredictorSpec {
@@ -128,6 +129,7 @@ message PredictiveUnit {
   repeated Parameter parameters = 7; // Customer parameter to pass to the unit.
   optional string modelUri = 8; // Location of saved model
   optional string serviceAccountName = 9; // Service account for pulling model bucket
+  optional string envSecretRefName = 10; // Secret for pulling from bucket
 }
 
 message Endpoint {

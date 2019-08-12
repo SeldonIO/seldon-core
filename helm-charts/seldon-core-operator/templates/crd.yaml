@@ -1952,6 +1952,7 @@ spec:
                           type:
                             enum: [REST, GRPC]
                             type: string
+                      envSecretRefName: {type: string}
                       modelUri: {type: string}
                       serviceAccountName: {type: string}
                       type: {type: string}
@@ -1974,6 +1975,7 @@ spec:
                                       type:
                                         enum: [REST, GRPC]
                                         type: string
+                                  envSecretRefName: {type: string}
                                   implementation:
                                     enum: [UNKNOWN_IMPLEMENTATION, SIMPLE_MODEL, SIMPLE_ROUTER,
                                            RANDOM_ABTEST, AVERAGE_COMBINER, SKLEARN_SERVER,
