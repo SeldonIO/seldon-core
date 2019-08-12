@@ -22,6 +22,7 @@ package seldon.protos;
 
 option java_package = "io.seldon.protos";
 option java_outer_classname = "PredictionProtos";
+option go_package = "github.com/seldonio/seldon-core/examples/wrappers/go/pkg/api";
 
 // [START Messages]
 
@@ -33,6 +34,7 @@ message SeldonMessage {
     DefaultData data = 3;
     bytes binData = 4;
     string strData = 5;
+    google.protobuf.Value jsonData = 6;
   }
 }
 
