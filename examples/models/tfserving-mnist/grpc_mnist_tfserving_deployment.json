@@ -1,0 +1,93 @@
+{
+    "apiVersion": "machinelearning.seldon.io/v1alpha2",
+    "kind": "SeldonDeployment",
+    "metadata": {
+        "labels": {
+            "app": "seldon"
+        },
+        "name": "tfserving-mnist"
+    },
+    "spec": {
+        "name": "tf-mnist",
+        "predictors": [
+            {
+                "componentSpecs": [{
+                    "spec": {
+                        "containers": [
+                            {
+                                "image": "seldonio/tfserving-proxy_grpc:0.6",
+                                "name": "tfserving-proxy"
+                            },
+			    {
+				"args": [
+				    "/usr/bin/tensorflow_model_server",
+				    "--port=8080",
+				    "--model_name=mnist-model",
+				    "--model_base_path=gs://seldon-models/tfserving/mnist-model"
+				],
+				"image": "tensorflow/serving:latest",
+				"name": "mnist-model",
+				"ports": [
+				    {
+					"containerPort": 8080,
+					"protocol": "TCP"
+				    }
+				],
+				"resources": {
+				    "limits": {
+					"cpu": "4",
+					"memory": "4Gi"
+				    },
+				    "requests": {
+					"cpu": "1",
+					"memory": "1Gi"
+				    }
+				},
+				"securityContext": {
+				    "runAsUser": 1000
+				}
+			    }
+			],
+			"terminationGracePeriodSeconds": 1
+		    }
+		}],
+                "graph": {
+		    "name": "tfserving-proxy",
+		    "endpoint": { "type" : "GRPC" },
+		    "type": "MODEL",
+		    "children": [],
+		    "parameters":
+		    [
+			{
+			    "name":"grpc_endpoint",
+			    "type":"STRING",
+			    "value":"localhost:8080"
+			},
+			{
+			    "name":"model_name",
+			    "type":"STRING",
+			    "value":"mnist-model"
+			},
+			{
+			    "name":"model_output",
+			    "type":"STRING",
+			    "value":"scores"
+			},
+			{
+			    "name":"model_input",
+			    "type":"STRING",
+			    "value":"images"
+			},
+			{
+			    "name":"signature_name",
+			    "type":"STRING",
+			    "value":"predict_images"
+			}
+		    ]
+		},
+                "name": "mnist-tfserving",
+                "replicas": 1
+            }
+        ]
+    }
+}
