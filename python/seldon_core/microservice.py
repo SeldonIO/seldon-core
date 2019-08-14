@@ -193,7 +193,7 @@ def main():
     parser.add_argument("--log-level", type=str, default="INFO")
     parser.add_argument("--tracing", nargs='?',
                         default=int(os.environ.get("TRACING", "0")), const=1, type=int)
-    parser.add_argument("--workers", type=int, default=int(os.environ.get("GUNICORN_WORKERS", "4")))
+    parser.add_argument("--workers", type=int, default=int(os.environ.get("GUNICORN_WORKERS", "1")))
 
     args = parser.parse_args()
 
