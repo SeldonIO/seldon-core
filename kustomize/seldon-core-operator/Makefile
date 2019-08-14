@@ -1,7 +1,7 @@
 
 
 base:
-	helm convert ../../helm-charts/seldon-core-operator --skip-transformers=image,secret,namePrefix,labels --destination base --namespace seldon-system
+	helm convert ../../helm-charts/seldon-core-operator --skip-transformers=image,secret,namePrefix,labels,configMap --destination base --namespace seldon-system
 	# Convert seems to lose subresources so we add the crd explicitly
 	cp ../../helm-charts/seldon-core-operator/templates/crd.yaml base/seldondeployments.machinelearning.seldon.io-crd.yaml
 
@@ -11,6 +11,7 @@ overlays/reporting:
 	rm overlays/reporting/seldon-core-operator-sa.yaml
 	rm overlays/reporting/seldondeployments.machinelearning.seldon.io-crd.yaml
 	rm overlays/reporting/webhook-server-service-svc.yaml
+	rm overlays/reporting/seldon-config-cm.yaml
 	cp reporting_kustomize.yaml overlays/reporting/kustomization.yaml
 
 all: base overlays/reporting
