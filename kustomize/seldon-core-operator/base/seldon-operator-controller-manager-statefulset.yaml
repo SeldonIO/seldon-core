@@ -50,6 +50,8 @@ spec:
           value: default
         - name: ENGINE_CONTAINER_USER
           value: "8888"
+        - name: ENGINE_LOG_MESSAGES_EXTERNALLY
+          value: "false"
         - name: PREDICTIVE_UNIT_SERVICE_PORT
           value: "9000"
         - name: ENGINE_SERVER_GRPC_PORT

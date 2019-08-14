@@ -1,6 +1,7 @@
 # List of resource files that kustomize reads, modifies
 # and emits as a YAML string
 resources:
+- seldon-config-cm.yaml
 - seldon-core-operator-sa.yaml
 - seldon-operator-controller-manager-service-svc.yaml
 - seldon-operator-controller-manager-statefulset.yaml
