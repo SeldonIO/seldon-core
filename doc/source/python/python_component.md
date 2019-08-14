@@ -220,6 +220,73 @@ class UserCustomException(Exception):
         return rv
 
 ```
+### Gunicorn (Alpha Feature)
+
+To run your class under gunicorn set the environment variable `GUNICORN_WORKERS` to an integer value > 1.
+
+```
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+metadata:
+  name: gunicorn
+spec:
+  name: worker
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: seldonio/mock_classifier:1.0
+          name: classifier
+          env:
+          - name: GUNICORN_WORKERS
+            value: '4'
+        terminationGracePeriodSeconds: 1
+    graph:
+      children: []
+      endpoint:
+        type: REST
+      name: classifier
+      type: MODEL
+    labels:
+      version: v1
+    name: example
+    replicas: 1
+
+```
+
+
+
+## Gunicorn and load
+
+If the wrapped python class is run under [gunicorn](https://gunicorn.org/) then as part of initialization of each gunicorn worker a `load` method will be called on your class if it has it. You should use this method to load and initialise your model. This is important for Tensorflow models which need their session created in each worker process. The [Tensorflow MNIST example](../examples/deep_mnist.html) does this.
+
+```
+import tensorflow as tf
+import numpy as np
+import os
+
+class DeepMnist(object):
+    def __init__(self):
+        self.loaded = False
+        self.class_names = ["class:{}".format(str(i)) for i in range(10)]
+        
+    def load(self):
+        print("Loading model",os.getpid())
+        self.sess = tf.Session()
+        saver = tf.train.import_meta_graph("model/deep_mnist_model.meta")
+        saver.restore(self.sess,tf.train.latest_checkpoint("./model/"))
+        graph = tf.get_default_graph()
+        self.x = graph.get_tensor_by_name("x:0")
+        self.y = graph.get_tensor_by_name("y:0")
+        self.loaded = True
+        print("Loaded model")
+        
+    def predict(self,X,feature_names):
+        if not self.loaded:
+            self.load()
+        predictions = self.sess.run(self.y,feed_dict={self.x:X})
+        return predictions.astype(np.float64)
+```
 
 
 ## Next Steps
