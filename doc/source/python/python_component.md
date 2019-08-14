@@ -220,10 +220,45 @@ class UserCustomException(Exception):
         return rv
 
 ```
+### Gunicorn (Alpha Feature)
+
+To run your class under gunicorn set the environment variable `GUNICORN_WORKERS` to an integer value > 1.
+
+```
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+metadata:
+  name: gunicorn
+spec:
+  name: worker
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: seldonio/mock_classifier:1.0
+          name: classifier
+          env:
+          - name: GUNICORN_WORKERS
+            value: '4'
+        terminationGracePeriodSeconds: 1
+    graph:
+      children: []
+      endpoint:
+        type: REST
+      name: classifier
+      type: MODEL
+    labels:
+      version: v1
+    name: example
+    replicas: 1
+
+```
+
+
 
 ## Gunicorn and load
 
-The wrapped python class will be run under [gunicorn](https://gunicorn.org/). As part of initialization of each gunicorn worker a `load` method will be called on your class if it has it. You should use this method to load and initialise your model. This is important for Tensorflow models which need their session created in each worker process. The [Tensorflow MNIST example](../examples/deep_mnist.html) does this.
+If the wrapped python class is run under [gunicorn](https://gunicorn.org/) then as part of initialization of each gunicorn worker a `load` method will be called on your class if it has it. You should use this method to load and initialise your model. This is important for Tensorflow models which need their session created in each worker process. The [Tensorflow MNIST example](../examples/deep_mnist.html) does this.
 
 ```
 import tensorflow as tf
@@ -251,40 +286,6 @@ class DeepMnist(object):
             self.load()
         predictions = self.sess.run(self.y,feed_dict={self.x:X})
         return predictions.astype(np.float64)
-```
-
-### Gunicorn workers
-
-By default 4 gunicorn workers will be created for your model. If you wish to change this default then add the environment variable GUNICORN_WORKERS to the container for your model. An example is shown below:
-
-```
-apiVersion: machinelearning.seldon.io/v1alpha2
-kind: SeldonDeployment
-metadata:
-  name: gunicorn
-spec:
-  name: worker
-  predictors:
-  - componentSpecs:
-    - spec:
-        containers:
-        - image: seldonio/mock_classifier:1.0
-          name: classifier
-          env:
-          - name: GUNICORN_WORKERS
-            value: '1'
-        terminationGracePeriodSeconds: 1
-    graph:
-      children: []
-      endpoint:
-        type: REST
-      name: classifier
-      type: MODEL
-    labels:
-      version: v1
-    name: example
-    replicas: 1
-
 ```
 
 
