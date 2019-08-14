@@ -16,7 +16,7 @@
 {{- end }}
 	"predictors": [
 	    {
-		"name": "fx-market-predictor",
+		"name": "{{ .Release.Name }}",
 		"replicas": 1,
 		"componentSpecs": [{
 		    "spec": {

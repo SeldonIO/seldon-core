@@ -13,7 +13,7 @@
 {{- end }}
 	"predictors": [
 	    {
-		"name": "abtest",
+		"name": "mymab",
 		"replicas": {{ .Values.replicas }},
 		"componentSpecs": [{
 		    "spec": {

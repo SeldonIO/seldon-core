@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 PARAMETERS_ENV_NAME = "PREDICTIVE_UNIT_PARAMETERS"
 SERVICE_PORT_ENV_NAME = "PREDICTIVE_UNIT_SERVICE_PORT"
+LOG_LEVEL_ENV = "SELDON_LOG_LEVEL"
 DEFAULT_PORT = 5000
 
 DEBUG_PARAMETER = "SELDON_DEBUG"
@@ -199,7 +200,8 @@ def main():
     parameters = parse_parameters(json.loads(args.parameters))
 
     # set up log level
-    log_level_num = getattr(logging, args.log_level.upper(), None)
+    log_level_raw = os.environ.get(LOG_LEVEL_ENV, args.log_level.upper())
+    log_level_num = getattr(logging, log_level_raw, None)
     if not isinstance(log_level_num, int):
         raise ValueError('Invalid log level: %s', args.log_level)
 

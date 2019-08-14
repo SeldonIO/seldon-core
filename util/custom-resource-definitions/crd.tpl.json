@@ -79,6 +79,9 @@
 									"serviceAccountName": {
 										"type": "string"
 									},
+									"envSecretRefName": {
+										"type": "string"
+									},
 									"implementation": {
 									    "enum": [
 										"UNKNOWN_IMPLEMENTATION",
@@ -88,7 +91,8 @@
 										"AVERAGE_COMBINER",
 										"SKLEARN_SERVER",
 										"XGBOOST_SERVER",
-										"TENSORFLOW_SERVER"
+										"TENSORFLOW_SERVER",
+										"MLFLOW_SERVER"
 									    ],
 									    "type": "string"
 									},
@@ -148,7 +152,8 @@
 								    "AVERAGE_COMBINER",
 								    "SKLEARN_SERVER",
 								    "XGBOOST_SERVER",
-								    "TENSORFLOW_SERVER"
+								    "TENSORFLOW_SERVER",
+								    "MLFLOW_SERVER"
 								],
 								"type": "string"
 							    },
@@ -289,6 +294,9 @@
 								"type": "string"
 							},
 							"serviceAccountName": {
+								"type": "string"
+							},
+							"envSecretRefName": {
 								"type": "string"
 							},
 							"type": {

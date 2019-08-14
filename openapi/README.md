@@ -3,7 +3,6 @@
 We provide initial [OpenAPI](https://www.openapis.org/) 3.0 specifications for our APIs
 
  * [Seldon Core External via Ambassador](https://github.com/SeldonIO/seldon-core/blob/master/openapi/engine.oas3.json)
- * [Seldon Core External via API Gateway](https://github.com/SeldonIO/seldon-core/blob/master/openapi/apife.oas3.json)
  * [Seldon Core Internal microservice API](https://github.com/SeldonIO/seldon-core/blob/master/openapi/wrapper.oas3.json)
 
 You will find the API Specs at runtime at the ```/seldon.json``` path of your API endpoint.
@@ -21,6 +20,8 @@ docker run --network host --rm  swaggerapi/swagger-editor
 ```
 
 It will be reachable at http://localhost:8080/
+
+Open one of the two API specificatons referenced above.
 
 ![swagger-ui-ambassador](./swagger-ui-ambassador.png)
 
