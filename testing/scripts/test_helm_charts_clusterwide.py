@@ -51,8 +51,8 @@ class ClusterWideTests(object):
         run(
             "helm install ../../helm-charts/seldon-abtest --name myabtest --set oauth.key=oauth-key --set oauth.secret=oauth-secret --namespace test1",
             shell=True, check=True)
-        wait_for_rollout("myabtest-abtest-41de5b8")
-        wait_for_rollout("myabtest-abtest-df66c5c")
+        wait_for_rollout("myabtest-myabtest-41de5b8")
+        wait_for_rollout("myabtest-myabtest-df66c5c")
         initial_rest_request("myabtest", "test1")
         print("Test Ambassador REST gateway")
         r = rest_request_ambassador("myabtest", "test1", API_AMBASSADOR)
