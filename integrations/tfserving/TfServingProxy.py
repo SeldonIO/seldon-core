@@ -5,7 +5,7 @@ import tensorflow as tf
 from tensorflow.python.saved_model import signature_constants
 from tensorflow_serving.apis import predict_pb2
 from tensorflow_serving.apis import prediction_service_pb2_grpc
-from seldon_core.utils import get_data_from_proto, array_to_grpc_datadef, json_to_seldon_message
+from seldon_core.utils import get_data_from_proto, array_to_grpc_datadef, json_to_seldon_message, grpc_datadef_to_array
 from seldon_core.proto import prediction_pb2
 from google.protobuf.json_format import ParseError
 
@@ -60,31 +60,32 @@ class TfServingProxy(object):
         if request_data_type != "data":
             raise Exception("strData, binData and jsonData not supported.")
 
-        request = predict_pb2.PredictRequest()
-        request.model_spec.name = self.model_name
-        request.model_spec.signature_name = self.signature_name
+        tfrequest = predict_pb2.PredictRequest()
+        tfrequest.model_spec.name = self.model_name
+        tfrequest.model_spec.signature_name = self.signature_name
 
         # For GRPC case, if we have a TFTensor message we can pass it directly
         if default_data_type == "tftensor":
-            request.inputs[self.model_input].CopyFrom(request.data.tftensor)
-            result = self.stub.Predict(request)
+            tfrequest.inputs[self.model_input].CopyFrom(request.data.tftensor)
+            result = self.stub.Predict(tfrequest)
             datadef = prediction_pb2.DefaultData(
                 tftensor=result.outputs[self.model_output]
             )
             return prediction_pb2.SeldonMessage(data=datadef)
 
         else:
-            request.inputs[self.model_input].CopyFrom(
+            data_arr = grpc_datadef_to_array(request.data)
+            tfrequest.inputs[self.model_input].CopyFrom(
                 tf.contrib.util.make_tensor_proto(
-                    request.data.tolist(), 
-                    shape=request.data.shape))
-            result = self.stub.Predict(request)
+                    data_arr.tolist(),
+                    shape=data_arr.shape))
+            result = self.stub.Predict(tfrequest)
             result_arr = numpy.array(result.outputs[self.model_output].float_val)
-            if len(response.shape) == 1:
-                response = numpy.expand_dims(response, axis=0)
+            if len(result_arr.shape) == 1:
+                result_arr = numpy.expand_dims(result_arr, axis=0)
             class_names = []
             data = array_to_grpc_datadef(
-                result_arr, class_names, default_data_type)
+                default_data_type, result_arr, class_names)
             return prediction_pb2.SeldonMessage(data=data)
 
     def predict(self, X, features_names=[]):
