@@ -70,9 +70,9 @@ class ClusterWideTests(object):
         run(
             "helm install ../../helm-charts/seldon-mab --name mymab --set oauth.key=oauth-key --set oauth.secret=oauth-secret --namespace test1",
             shell=True, check=True)
-        wait_for_rollout("mymab-abtest-41de5b8")
-        wait_for_rollout("mymab-abtest-b8038b2")
-        wait_for_rollout("mymab-abtest-df66c5c")
+        wait_for_rollout("mymab-mymab-41de5b8")
+        wait_for_rollout("mymab-mymab-b8038b2")
+        wait_for_rollout("mymab-mymab-df66c5c")
         initial_rest_request("mymab", "test1")
         print("Test Ambassador REST gateway")
         r = rest_request_ambassador("mymab", "test1", API_AMBASSADOR)
