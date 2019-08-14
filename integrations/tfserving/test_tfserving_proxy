@@ -1,0 +1,19 @@
+from TfServingProxy import TfServingProxy
+
+class FakeStub(object):
+
+    def __init__(self, channel):
+        self.channel = channel
+
+    def Predict(self, **kwargs):
+        return prediction_pb2.SeldonMessage(strData="predict")
+
+    def TransformInput(selfself, **kwargs):
+        return prediction_pb2.SeldonMessage(strData="transform-input")
+
+    def TransformOutput(selfself, **kwargs):
+        return prediction_pb2.SeldonMessage(strData="transform-output")
+
+    def Route(selfself, **kwargs):
+        return prediction_pb2.SeldonMessage(strData="route")
+
