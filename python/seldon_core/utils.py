@@ -325,16 +325,20 @@ def construct_response_json(user_model: SeldonComponent, is_request: bool, clien
        A SeldonMessage JSON response
 
     """
-
     response = {}
-
-    is_np = isinstance(client_raw_response, np.ndarray)
 
     if "jsonData" in client_request_raw:
         response["jsonData"] = client_raw_response
-
-    elif is_np or isinstance(client_raw_response, list):
-
+    elif isinstance(client_raw_response, (bytes, bytearray)):
+        response["binData"] = client_raw_response
+    elif isinstance(client_raw_response, str):
+        response["strData"] = client_raw_response
+    else:
+        is_np = isinstance(client_raw_response, np.ndarray)
+        is_list = isinstance(client_raw_response, list)
+        if not (is_np or is_list):
+            raise SeldonMicroserviceException(
+                "Unknown data type returned as payload:" + client_raw_response)
         if is_np:
             np_client_raw_response = client_raw_response
             client_raw_response = client_raw_response.tolist()
@@ -377,13 +381,6 @@ def construct_response_json(user_model: SeldonComponent, is_request: bool, clien
         else:
             names = client_class_names(user_model, np_client_raw_response)
         response["data"]["names"] = names
-    elif isinstance(client_raw_response, (bytes, bytearray)):
-        response["binData"] = client_raw_response
-    elif isinstance(client_raw_response, str):
-        response["strData"] = client_raw_response
-    else:
-        raise SeldonMicroserviceException(
-            "Unknown data type returned as payload:" + client_raw_response)
 
     response["meta"] = {}
     client_custom_tags(user_model)
