@@ -50,6 +50,17 @@ class UserObject(object):
         else:
             return [{"type": "BAD", "key": "mycounter", "value": 1}]
 
+def test_create_reponse_nparray_json():
+    user_model = UserObject()
+    request = {}
+    raw_response = np.array([[1, 2, 3]])
+    result = scu.construct_response_json(
+        user_model,
+        True,
+        request,
+        raw_response)
+    assert "tensor" in result.get("data", {})
+    assert result["data"]["tensor"]["values"] == [1, 2, 3]
 
 def test_create_reponse_nparray():
     user_model = UserObject()
@@ -59,6 +70,22 @@ def test_create_reponse_nparray():
     assert sm.data.WhichOneof("data_oneof") == "tensor"
     assert sm.data.tensor.values == [1, 2, 3]
 
+def test_create_reponse_ndarray_json():
+    user_model = UserObject()
+    request = {
+        "data": {
+            "ndarray": np.array([[5, 6, 7]]),
+            "names": []
+        }
+    }
+    raw_response = np.array([[1, 2, 3]])
+    result = scu.construct_response_json(
+        user_model,
+        True,
+        request,
+        raw_response)
+    assert "ndarray" in result.get("data", {})
+    assert np.array_equal(result["data"]["ndarray"], raw_response)
 
 def test_create_reponse_ndarray():
     user_model = UserObject()
@@ -69,6 +96,27 @@ def test_create_reponse_ndarray():
     sm = scu.construct_response(user_model, True, request, raw_response)
     assert sm.data.WhichOneof("data_oneof") == "ndarray"
 
+def test_create_reponse_tensor_json():
+    user_model = UserObject()
+    tensor = {
+        "values": [[1,2,3]],
+        "shape": (1,3)
+    }
+    request = {
+        "data": {
+            "tensor": tensor,
+            "names": []
+        }
+    }
+    raw_response = np.array([[1, 2, 3]])
+    result = scu.construct_response_json(
+        user_model,
+        True,
+        request,
+        raw_response)
+    assert "tensor" in result.get("data", {})
+    assert np.array_equal(result["data"]["tensor"], 
+                        tensor)
 
 def test_create_reponse_tensor():
     user_model = UserObject()
