@@ -42,12 +42,9 @@ def predict(
                 client_response = client_predict(user_model, features, datadef.names, meta=meta)
                 return construct_response(user_model, False, request, client_response)
             else:
-                print(request)
                 (features, meta, datadef, data_type) = extract_request_parts_json(request)
-                print(features, meta, datadef, data_type)
                 class_names = datadef["names"] if datadef and "names" in datadef else []
                 client_response = client_predict(user_model, features, class_names, meta=meta)
-                print(client_response)
                 return construct_response_json(user_model, False, request, client_response)
 
 
