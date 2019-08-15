@@ -5,7 +5,7 @@ metadata:
     app.kubernetes.io/instance: seldon-core-operator
     app.kubernetes.io/managed-by: Tiller
     app.kubernetes.io/name: seldon-core-operator
-    helm.sh/chart: seldon-core-operator-0.3.2-SNAPSHOT
+    helm.sh/chart: seldon-core-operator-0.4.0
   name: seldon-operator-manager-rolebinding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
