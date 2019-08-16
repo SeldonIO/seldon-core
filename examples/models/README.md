@@ -7,6 +7,7 @@ These examples provide illustrations of creating various wrapped ML models for d
       * [Keras MNIST Classifier](./keras_mnist/keras_mnist.ipynb)
       * [Scikit-learn MNIST Classifier](./sk_mnist/skmnist.ipynb)
       * [Scikit-learn Iris Classifier](./sklearn_iris/sklearn_iris.ipynb)
+      * [Chainer MNIST Classifier](./chainer_mnist/chainer_mnist.ipynb)
    * R
       * [R MNIST Classifier](./r_mnist/r_mnist.ipynb)
       * [R Iris Classifier](./r_iris/r_iris.ipynb)
