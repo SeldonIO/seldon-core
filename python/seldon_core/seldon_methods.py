@@ -37,15 +37,17 @@ def predict(
         try:
             return user_model.predict_raw(request)
         except (NotImplementedError, AttributeError):
-            if is_proto:
-                (features, meta, datadef, data_type) = extract_request_parts(request)
-                client_response = client_predict(user_model, features, datadef.names, meta=meta)
-                return construct_response(user_model, False, request, client_response)
-            else:
-                (features, meta, datadef, data_type) = extract_request_parts_json(request)
-                client_response = client_predict(user_model, features, datadef.names, meta=meta)
-                print(client_response)
-                return construct_response_json(user_model, False, request, client_response)
+            pass
+
+        if is_proto:
+            (features, meta, datadef, data_type) = extract_request_parts(request)
+            client_response = client_predict(user_model, features, datadef.names, meta=meta)
+            return construct_response(user_model, False, request, client_response)
+        else:
+            (features, meta, datadef, data_type) = extract_request_parts_json(request)
+            client_response = client_predict(user_model, features, datadef.names, meta=meta)
+            print(client_response)
+            return construct_response_json(user_model, False, request, client_response)
 
 
 def send_feedback(user_model: Any, request: prediction_pb2.Feedback,
