@@ -1,0 +1,90 @@
+buildPack: none
+pipelineConfig:
+  pipelines:
+    pullRequest:
+      pipeline:
+        agent:
+          image: seldonio/core-builder:0.3
+        stages:
+          - name: build-and-test
+            parallel:
+              - name: seldon-python
+                agent:
+                  image: seldonio/python-builder:0.2
+                steps:
+                - name: test-python
+                  command: make
+                  args: 
+                    - -C
+                    - python
+                    - update_package &&
+                    - make
+                    - -C
+                    - python
+                    - install-dev &&
+                    - make 
+                    - -C
+                    - python
+                    - build_pypi &&
+                    - make 
+                    - -C
+                    - python
+                    - pip-install &&
+                    - make
+                    - -C
+                    - python
+                    - test
+              - name: seldon-engine
+                agent:
+                  image: seldonio/core-builder:0.3
+                steps:
+                - name: test-engine
+                  command: make
+                  args:
+                  - -C
+                  - engine
+                  - -f
+                  - Makefile.ci
+                  - build_jar
+    release:
+      pipeline:
+        stages:
+          - name: seldon-python
+            agent:
+              image: seldonio/python-builder:0.2
+            steps:
+            - name: test-python
+              command: make
+              args: 
+                - -C
+                - python
+                - update_package &&
+                - make
+                - -C
+                - python
+                - install-dev &&
+                - make 
+                - -C
+                - python
+                - build_pypi &&
+                - make 
+                - -C
+                - python
+                - pip-install &&
+                - make
+                - -C
+                - python
+                - test
+          - name: seldon-engine
+            agent:
+              image: seldonio/core-builder:0.3
+            steps:
+            - name: test-engine
+              command: make
+              args:
+              - -C
+              - engine
+              - -f
+              - Makefile.ci
+              - build_jar
+
