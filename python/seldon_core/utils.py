@@ -367,6 +367,9 @@ def construct_response(user_model: SeldonComponent, is_request: bool, client_req
     metrics = client_custom_metrics(user_model)
     if metrics:
         meta_json["metrics"] = metrics
+    if client_request.meta:
+        if client_request.meta.puid:
+            meta_json["puid"] = client_request.meta.puid
     json_format.ParseDict(meta_json, meta)
     if isinstance(client_raw_response, np.ndarray) or isinstance(client_raw_response, list):
         client_raw_response = np.array(client_raw_response)
