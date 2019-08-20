@@ -13,3 +13,4 @@ spec:
         spec:
           container:
             image: docker.io/seldonio/seldon-request-logger:latest
+            imagePullPolicy: Always
