@@ -119,6 +119,7 @@ message PredictiveUnit {
     SKLEARN_SERVER = 5; // default sklearn server
     XGBOOST_SERVER = 6; // default xgboost server
     TENSORFLOW_SERVER = 7; // default tensorflow server    
+    MLFLOW_SERVER = 7; // default mlflow server
   }
 
   enum PredictiveUnitMethod {
