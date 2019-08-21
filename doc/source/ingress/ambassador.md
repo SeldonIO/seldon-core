@@ -102,6 +102,27 @@ A worked example for [header based routing](../examples/ambassador_headers.html)
 
 To understand more about the Ambassador configuration for this see [their docs on header based routing](https://www.getambassador.io/reference/headers).
 
+## Multiple Ambassadors in the same cluster
+
+To avoid conflicts in a cluster with multiple ambassadors running, you can add the following annotation to your Seldon Deployment resource.
+
+  * `seldon.io/ambassador-id:<instance id>`: The instance id to be added to Ambassador `ambassador_id` configuration
+
+For example,
+
+```YAML
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+metadata:
+  name: multi-ambassadors
+spec:
+  annotations:
+    seldon.io/ambassador-id: my_instance
+  name: ambassadors-example
+```
+
+Note that your Ambassador instance must be configured with matching `ambassador_id`.
+See [AMBASSADOR_ID](https://github.com/datawire/ambassador/blob/master/docs/reference/running.md#ambassador_id) for details
 
 ## Custom Amabassador configuration
 
