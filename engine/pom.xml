@@ -10,7 +10,7 @@
 
 	<groupId>io.seldon.engine</groupId>
 	<artifactId>seldon-engine</artifactId>
-	<version>0.3.2-SNAPSHOT</version>
+	<version>0.4.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>engine</name>

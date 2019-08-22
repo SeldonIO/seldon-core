@@ -8,7 +8,8 @@ engine:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/engine
-    tag: 0.3.2-SNAPSHOT
+    tag: 0.4.1-SNAPSHOT
+  logMessagesExternally: false
   port: 8000
   prometheus:
     path: prometheus
@@ -17,13 +18,11 @@ engine:
   serviceAccount:
     name: default
   user: 8888
-  #whether to log messages through knative broker to logger service
-  logMessagesExternally: false
 image:
   pullPolicy: Always
   registry: docker.io
   repository: seldonio/seldon-core-operator
-  tag: 0.3.2-SNAPSHOT
+  tag: 0.4.1-SNAPSHOT
 istio:
   enabled: false
   gateway: seldon-gateway

@@ -731,99 +731,99 @@ DESCRIPTOR.message_types_by_name['Feedback'] = _FEEDBACK
 DESCRIPTOR.message_types_by_name['RequestResponse'] = _REQUESTRESPONSE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
-SeldonMessage = _reflection.GeneratedProtocolMessageType('SeldonMessage', (_message.Message,), {
-  'DESCRIPTOR' : _SELDONMESSAGE,
-  '__module__' : 'proto.prediction_pb2'
+SeldonMessage = _reflection.GeneratedProtocolMessageType('SeldonMessage', (_message.Message,), dict(
+  DESCRIPTOR = _SELDONMESSAGE,
+  __module__ = 'proto.prediction_pb2'
   # @@protoc_insertion_point(class_scope:seldon.protos.SeldonMessage)
-  })
+  ))
 _sym_db.RegisterMessage(SeldonMessage)
 
-DefaultData = _reflection.GeneratedProtocolMessageType('DefaultData', (_message.Message,), {
-  'DESCRIPTOR' : _DEFAULTDATA,
-  '__module__' : 'proto.prediction_pb2'
+DefaultData = _reflection.GeneratedProtocolMessageType('DefaultData', (_message.Message,), dict(
+  DESCRIPTOR = _DEFAULTDATA,
+  __module__ = 'proto.prediction_pb2'
   # @@protoc_insertion_point(class_scope:seldon.protos.DefaultData)
-  })
+  ))
 _sym_db.RegisterMessage(DefaultData)
 
-Tensor = _reflection.GeneratedProtocolMessageType('Tensor', (_message.Message,), {
-  'DESCRIPTOR' : _TENSOR,
-  '__module__' : 'proto.prediction_pb2'
+Tensor = _reflection.GeneratedProtocolMessageType('Tensor', (_message.Message,), dict(
+  DESCRIPTOR = _TENSOR,
+  __module__ = 'proto.prediction_pb2'
   # @@protoc_insertion_point(class_scope:seldon.protos.Tensor)
-  })
+  ))
 _sym_db.RegisterMessage(Tensor)
 
-Meta = _reflection.GeneratedProtocolMessageType('Meta', (_message.Message,), {
+Meta = _reflection.GeneratedProtocolMessageType('Meta', (_message.Message,), dict(
 
-  'TagsEntry' : _reflection.GeneratedProtocolMessageType('TagsEntry', (_message.Message,), {
-    'DESCRIPTOR' : _META_TAGSENTRY,
-    '__module__' : 'proto.prediction_pb2'
+  TagsEntry = _reflection.GeneratedProtocolMessageType('TagsEntry', (_message.Message,), dict(
+    DESCRIPTOR = _META_TAGSENTRY,
+    __module__ = 'proto.prediction_pb2'
     # @@protoc_insertion_point(class_scope:seldon.protos.Meta.TagsEntry)
-    })
+    ))
   ,
 
-  'RoutingEntry' : _reflection.GeneratedProtocolMessageType('RoutingEntry', (_message.Message,), {
-    'DESCRIPTOR' : _META_ROUTINGENTRY,
-    '__module__' : 'proto.prediction_pb2'
+  RoutingEntry = _reflection.GeneratedProtocolMessageType('RoutingEntry', (_message.Message,), dict(
+    DESCRIPTOR = _META_ROUTINGENTRY,
+    __module__ = 'proto.prediction_pb2'
     # @@protoc_insertion_point(class_scope:seldon.protos.Meta.RoutingEntry)
-    })
+    ))
   ,
 
-  'RequestPathEntry' : _reflection.GeneratedProtocolMessageType('RequestPathEntry', (_message.Message,), {
-    'DESCRIPTOR' : _META_REQUESTPATHENTRY,
-    '__module__' : 'proto.prediction_pb2'
+  RequestPathEntry = _reflection.GeneratedProtocolMessageType('RequestPathEntry', (_message.Message,), dict(
+    DESCRIPTOR = _META_REQUESTPATHENTRY,
+    __module__ = 'proto.prediction_pb2'
     # @@protoc_insertion_point(class_scope:seldon.protos.Meta.RequestPathEntry)
-    })
+    ))
   ,
-  'DESCRIPTOR' : _META,
-  '__module__' : 'proto.prediction_pb2'
+  DESCRIPTOR = _META,
+  __module__ = 'proto.prediction_pb2'
   # @@protoc_insertion_point(class_scope:seldon.protos.Meta)
-  })
+  ))
 _sym_db.RegisterMessage(Meta)
 _sym_db.RegisterMessage(Meta.TagsEntry)
 _sym_db.RegisterMessage(Meta.RoutingEntry)
 _sym_db.RegisterMessage(Meta.RequestPathEntry)
 
-Metric = _reflection.GeneratedProtocolMessageType('Metric', (_message.Message,), {
+Metric = _reflection.GeneratedProtocolMessageType('Metric', (_message.Message,), dict(
 
-  'TagsEntry' : _reflection.GeneratedProtocolMessageType('TagsEntry', (_message.Message,), {
-    'DESCRIPTOR' : _METRIC_TAGSENTRY,
-    '__module__' : 'proto.prediction_pb2'
+  TagsEntry = _reflection.GeneratedProtocolMessageType('TagsEntry', (_message.Message,), dict(
+    DESCRIPTOR = _METRIC_TAGSENTRY,
+    __module__ = 'proto.prediction_pb2'
     # @@protoc_insertion_point(class_scope:seldon.protos.Metric.TagsEntry)
-    })
+    ))
   ,
-  'DESCRIPTOR' : _METRIC,
-  '__module__' : 'proto.prediction_pb2'
+  DESCRIPTOR = _METRIC,
+  __module__ = 'proto.prediction_pb2'
   # @@protoc_insertion_point(class_scope:seldon.protos.Metric)
-  })
+  ))
 _sym_db.RegisterMessage(Metric)
 _sym_db.RegisterMessage(Metric.TagsEntry)
 
-SeldonMessageList = _reflection.GeneratedProtocolMessageType('SeldonMessageList', (_message.Message,), {
-  'DESCRIPTOR' : _SELDONMESSAGELIST,
-  '__module__' : 'proto.prediction_pb2'
+SeldonMessageList = _reflection.GeneratedProtocolMessageType('SeldonMessageList', (_message.Message,), dict(
+  DESCRIPTOR = _SELDONMESSAGELIST,
+  __module__ = 'proto.prediction_pb2'
   # @@protoc_insertion_point(class_scope:seldon.protos.SeldonMessageList)
-  })
+  ))
 _sym_db.RegisterMessage(SeldonMessageList)
 
-Status = _reflection.GeneratedProtocolMessageType('Status', (_message.Message,), {
-  'DESCRIPTOR' : _STATUS,
-  '__module__' : 'proto.prediction_pb2'
+Status = _reflection.GeneratedProtocolMessageType('Status', (_message.Message,), dict(
+  DESCRIPTOR = _STATUS,
+  __module__ = 'proto.prediction_pb2'
   # @@protoc_insertion_point(class_scope:seldon.protos.Status)
-  })
+  ))
 _sym_db.RegisterMessage(Status)
 
-Feedback = _reflection.GeneratedProtocolMessageType('Feedback', (_message.Message,), {
-  'DESCRIPTOR' : _FEEDBACK,
-  '__module__' : 'proto.prediction_pb2'
+Feedback = _reflection.GeneratedProtocolMessageType('Feedback', (_message.Message,), dict(
+  DESCRIPTOR = _FEEDBACK,
+  __module__ = 'proto.prediction_pb2'
   # @@protoc_insertion_point(class_scope:seldon.protos.Feedback)
-  })
+  ))
 _sym_db.RegisterMessage(Feedback)
 
-RequestResponse = _reflection.GeneratedProtocolMessageType('RequestResponse', (_message.Message,), {
-  'DESCRIPTOR' : _REQUESTRESPONSE,
-  '__module__' : 'proto.prediction_pb2'
+RequestResponse = _reflection.GeneratedProtocolMessageType('RequestResponse', (_message.Message,), dict(
+  DESCRIPTOR = _REQUESTRESPONSE,
+  __module__ = 'proto.prediction_pb2'
   # @@protoc_insertion_point(class_scope:seldon.protos.RequestResponse)
-  })
+  ))
 _sym_db.RegisterMessage(RequestResponse)
 
 
