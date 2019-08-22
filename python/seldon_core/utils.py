@@ -302,8 +302,11 @@ def array_to_list_value(array: np.ndarray, lv: Optional[ListValue] = None) -> Li
             array_to_list_value(sub_array, sub_lv)
     return lv
 
-def construct_response_json(user_model: SeldonComponent, is_request: bool, client_request_raw: Union[List, Dict],
-                       client_raw_response: Union[np.ndarray, str, bytes, dict]) -> Union[List, Dict]:
+def construct_response_json(
+        user_model: SeldonComponent,
+        is_request: bool,
+        client_request_raw: Union[List, Dict],
+        client_raw_response: Union[np.ndarray, str, bytes, dict]) -> Union[List, Dict]:
     """
     This class converts a raw REST response into a JSON object that has the same structure as
     the SeldonMessage proto. This is necessary as the conversion using the SeldonMessage proto
@@ -338,42 +341,49 @@ def construct_response_json(user_model: SeldonComponent, is_request: bool, clien
         is_list = isinstance(client_raw_response, list)
         if not (is_np or is_list):
             raise SeldonMicroserviceException(
-                "Unknown data type returned as payload:" + client_raw_response)
+                "Unknown data type returned as payload (must be list or np array):"
+                    + str(client_raw_response))
         if is_np:
             np_client_raw_response = client_raw_response
-            client_raw_response = client_raw_response.tolist()
+            list_client_raw_response = client_raw_response.tolist()
         else:
             np_client_raw_response = np.array(client_raw_response)
+            list_client_raw_response = client_raw_response
+
+        result_client_response = None
 
         response["data"] = {}
         if "data" in client_request_raw:
             if np.issubdtype(np_client_raw_response.dtype, np.number):
                 if "tensor" in client_request_raw["data"]:
                     default_data_type = "tensor"
-                    client_raw_response = {
-                        "values": client_raw_response,
+                    result_client_response = {
+                        "values": list_client_raw_response,
                         "shape": np_client_raw_response.shape
                     }
                 elif "tftensor" in client_request_raw["data"]:
                     default_data_type = "tftensor"
                     tf_json_str = json_format.MessageToJson(
                             tf.make_tensor_proto(np_client_raw_response))
-                    client_raw_response = json.loads(tf_json_str)
+                    result_client_response = json.loads(tf_json_str)
                 else:
                     default_data_type = "ndarray"
+                    result_client_response = list_client_raw_response
             else:
                 default_data_type = "ndarray"
+                result_client_response = list_client_raw_response
         else:
             if np.issubdtype(np_client_raw_response.dtype, np.number):
                 default_data_type = "tensor"
-                client_raw_response = {
+                result_client_response = {
                     "values": np_client_raw_response.ravel().tolist(),
                     "shape": np_client_raw_response.shape
                 }
             else:
                 default_data_type = "ndarray"
+                result_client_response = list_client_raw_repsonse
 
-        response["data"][default_data_type] = client_raw_response
+        response["data"][default_data_type] = result_client_response
 
         if is_request:
             req_names = client_request_raw.get("data", {}).get("names", [])
@@ -453,8 +463,12 @@ def construct_response(user_model: SeldonComponent, is_request: bool, client_req
         raise SeldonMicroserviceException("Unknown data type returned as payload:" + client_raw_response)
 
 
-def extract_request_parts_json(request: Union[Dict, List]) -> Tuple[
-        Union[np.ndarray, str, bytes, dict], Dict, prediction_pb2.DefaultData, str]:
+def extract_request_parts_json(request: Union[Dict, List]
+       ) -> Tuple[
+           Union[np.ndarray, str, bytes, Dict, List],
+           Union[Dict, None],
+           Union[np.ndarray, str, bytes, Dict, List, None],
+           str]:
     """
 
     Parameters
