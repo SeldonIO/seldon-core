@@ -3,6 +3,7 @@ from google.protobuf import json_format
 from google.protobuf.json_format import MessageToDict, ParseDict
 from seldon_core.proto import prediction_pb2
 from seldon_core.flask_utils import SeldonMicroserviceException
+from tensorflow.core.framework.tensor_pb2 import TensorProto
 import numpy as np
 import sys
 import tensorflow as tf
@@ -10,6 +11,7 @@ from google.protobuf.struct_pb2 import ListValue
 from seldon_core.user_model import client_class_names, client_custom_metrics, client_custom_tags, client_feature_names, \
     SeldonComponent
 from typing import Tuple, Dict, Union, List, Optional, Iterable, Any
+import base64
 
 
 def json_to_seldon_message(message_json: Union[List, Dict]) -> prediction_pb2.SeldonMessage:
@@ -141,7 +143,6 @@ def get_data_from_proto(request: prediction_pb2.SeldonMessage) -> Union[np.ndarr
         return MessageToDict(request.jsonData)
     else:
         raise SeldonMicroserviceException("Unknown data in SeldonMessage")
-
 
 def grpc_datadef_to_array(datadef: prediction_pb2.DefaultData) -> np.ndarray:
     """
@@ -301,8 +302,11 @@ def array_to_list_value(array: np.ndarray, lv: Optional[ListValue] = None) -> Li
             array_to_list_value(sub_array, sub_lv)
     return lv
 
-def construct_response_json(user_model: SeldonComponent, is_request: bool, client_request_raw: Union[List, Dict],
-                       client_raw_response: Union[np.ndarray, str, bytes, dict]) -> Union[List, Dict]:
+def construct_response_json(
+        user_model: SeldonComponent,
+        is_request: bool,
+        client_request_raw: Union[List, Dict],
+        client_raw_response: Union[np.ndarray, str, bytes, dict]) -> Union[List, Dict]:
     """
     This class converts a raw REST response into a JSON object that has the same structure as
     the SeldonMessage proto. This is necessary as the conversion using the SeldonMessage proto
@@ -324,18 +328,83 @@ def construct_response_json(user_model: SeldonComponent, is_request: bool, clien
        A SeldonMessage JSON response
 
     """
-    client_request = json_to_seldon_message(client_request_raw)
-    data_type = client_request.WhichOneof("data_oneof")
+    response = {}
 
-    sm = construct_response(user_model, is_request, client_request, client_raw_response)
-    sm_json = seldon_message_to_json(sm)
+    if "jsonData" in client_request_raw:
+        response["jsonData"] = client_raw_response
+    elif isinstance(client_raw_response, (bytes, bytearray)):
+        response["binData"] = client_raw_response
+    elif isinstance(client_raw_response, str):
+        response["strData"] = client_raw_response
+    else:
+        is_np = isinstance(client_raw_response, np.ndarray)
+        is_list = isinstance(client_raw_response, list)
+        if not (is_np or is_list):
+            raise SeldonMicroserviceException(
+                "Unknown data type returned as payload (must be list or np array):"
+                    + str(client_raw_response))
+        if is_np:
+            np_client_raw_response = client_raw_response
+            list_client_raw_response = client_raw_response.tolist()
+        else:
+            np_client_raw_response = np.array(client_raw_response)
+            list_client_raw_response = client_raw_response
 
-    response_data_type = sm.WhichOneof("data_oneof")
+        result_client_response = None
 
-    if response_data_type == "jsonData":
-        sm_json["jsonData"] = client_raw_response
+        response["data"] = {}
+        if "data" in client_request_raw:
+            if np.issubdtype(np_client_raw_response.dtype, np.number):
+                if "tensor" in client_request_raw["data"]:
+                    default_data_type = "tensor"
+                    result_client_response = {
+                        "values": list_client_raw_response,
+                        "shape": np_client_raw_response.shape
+                    }
+                elif "tftensor" in client_request_raw["data"]:
+                    default_data_type = "tftensor"
+                    tf_json_str = json_format.MessageToJson(
+                            tf.make_tensor_proto(np_client_raw_response))
+                    result_client_response = json.loads(tf_json_str)
+                else:
+                    default_data_type = "ndarray"
+                    result_client_response = list_client_raw_response
+            else:
+                default_data_type = "ndarray"
+                result_client_response = list_client_raw_response
+        else:
+            if np.issubdtype(np_client_raw_response.dtype, np.number):
+                default_data_type = "tensor"
+                result_client_response = {
+                    "values": np_client_raw_response.ravel().tolist(),
+                    "shape": np_client_raw_response.shape
+                }
+            else:
+                default_data_type = "ndarray"
+                result_client_response = list_client_raw_repsonse
 
-    return sm_json
+        response["data"][default_data_type] = result_client_response
+
+        if is_request:
+            req_names = client_request_raw.get("data", {}).get("names", [])
+            names = client_feature_names(user_model, req_names)
+        else:
+            names = client_class_names(user_model, np_client_raw_response)
+        response["data"]["names"] = names
+
+    response["meta"] = {}
+    client_custom_tags(user_model)
+    tags = client_custom_tags(user_model)
+    if tags:
+        response["meta"]["tags"] = tags
+    metrics = client_custom_metrics(user_model)
+    if metrics:
+        response["meta"]["metrics"] = metrics
+    puid = client_request_raw.get("meta", {}).get("puid", None)
+    if puid:
+        response["meta"]["puid"] = puid
+
+    return response
 
 
 def construct_response(user_model: SeldonComponent, is_request: bool, client_request: prediction_pb2.SeldonMessage,
@@ -400,8 +469,12 @@ def construct_response(user_model: SeldonComponent, is_request: bool, client_req
         raise SeldonMicroserviceException("Unknown data type returned as payload:" + client_raw_response)
 
 
-def extract_request_parts_json(request_raw: Union[Dict, List]) -> Tuple[
-    Union[np.ndarray, str, bytes, dict], Dict, prediction_pb2.DefaultData, str]:
+def extract_request_parts_json(request: Union[Dict, List]
+       ) -> Tuple[
+           Union[np.ndarray, str, bytes, Dict, List],
+           Union[Dict, None],
+           Union[np.ndarray, str, bytes, Dict, List, None],
+           str]:
     """
 
     Parameters
@@ -414,11 +487,38 @@ def extract_request_parts_json(request_raw: Union[Dict, List]) -> Tuple[
        Key parts of the request extracted
 
     """
-    request_proto = json_to_seldon_message(request_raw)
-    (features, meta, datadef, data_type) = extract_request_parts(request_proto)
+    meta = request.get("meta", None)
+    datadef_type = None
+    datadef = None
 
-    if data_type == "jsonData":
-        features = request_raw["jsonData"]
+    if "data" in request:
+        data_type = "data"
+        datadef = request["data"]
+        if "tensor" in datadef:
+            datadef_type = "tensor"
+            tensor = datadef["tensor"]
+            features = np.array(tensor["values"]).reshape(tensor["shape"])
+        elif "ndarray" in datadef:
+            datadef_type = "ndarray"
+            features = np.array(datadef["ndarray"])
+        elif "tftensor" in datadef:
+            datadef_type = "tftensor"
+            tf_proto = TensorProto()
+            json_format.ParseDict(datadef["tftensor"], tf_proto)
+            features = tf.make_ndarray(tf_proto)
+        else:
+            features = np.array([])
+    elif "jsonData" in request:
+        data_type = "jsonData"
+        features = request["jsonData"]
+    elif "strData" in request:
+        data_type = "strData"
+        features = request["strData"]
+    elif "binData" in request:
+        data_type = "binData"
+        features = bytes(request["binData"], "utf8")
+    else:
+        raise SeldonMicroserviceException(f"Invalid request data type: {request}")
 
     return features, meta, datadef, data_type
 

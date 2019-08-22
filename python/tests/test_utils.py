@@ -50,8 +50,19 @@ class UserObject(object):
         else:
             return [{"type": "BAD", "key": "mycounter", "value": 1}]
 
+def test_create_rest_reponse_nparray():
+    user_model = UserObject()
+    request = {}
+    raw_response = np.array([[1, 2, 3]])
+    result = scu.construct_response_json(
+        user_model,
+        True,
+        request,
+        raw_response)
+    assert "tensor" in result.get("data", {})
+    assert result["data"]["tensor"]["values"] == [1, 2, 3]
 
-def test_create_reponse_nparray():
+def test_create_grpc_reponse_nparray():
     user_model = UserObject()
     request = prediction_pb2.SeldonMessage()
     raw_response = np.array([[1, 2, 3]])
@@ -59,8 +70,24 @@ def test_create_reponse_nparray():
     assert sm.data.WhichOneof("data_oneof") == "tensor"
     assert sm.data.tensor.values == [1, 2, 3]
 
+def test_create_rest_reponse_ndarray():
+    user_model = UserObject()
+    request = {
+        "data": {
+            "ndarray": np.array([[5, 6, 7]]),
+            "names": []
+        }
+    }
+    raw_response = np.array([[1, 2, 3]])
+    result = scu.construct_response_json(
+        user_model,
+        True,
+        request,
+        raw_response)
+    assert "ndarray" in result.get("data", {})
+    assert np.array_equal(result["data"]["ndarray"], raw_response)
 
-def test_create_reponse_ndarray():
+def test_create_grpc_reponse_ndarray():
     user_model = UserObject()
     request_data = np.array([[5, 6, 7]])
     datadef = scu.array_to_grpc_datadef("ndarray", request_data)
@@ -69,8 +96,29 @@ def test_create_reponse_ndarray():
     sm = scu.construct_response(user_model, True, request, raw_response)
     assert sm.data.WhichOneof("data_oneof") == "ndarray"
 
+def test_create_rest_reponse_tensor():
+    user_model = UserObject()
+    tensor = {
+        "values": [[1,2,3]],
+        "shape": (1,3)
+    }
+    request = {
+        "data": {
+            "tensor": tensor,
+            "names": []
+        }
+    }
+    raw_response = np.array([[1, 2, 3]])
+    result = scu.construct_response_json(
+        user_model,
+        True,
+        request,
+        raw_response)
+    assert "tensor" in result.get("data", {})
+    assert np.array_equal(
+        result["data"]["tensor"], tensor)
 
-def test_create_reponse_tensor():
+def test_create_grpc_reponse_tensor():
     user_model = UserObject()
     request_data = np.array([[5, 6, 7]])
     datadef = scu.array_to_grpc_datadef("tensor", request_data)
@@ -79,8 +127,23 @@ def test_create_reponse_tensor():
     sm = scu.construct_response(user_model, True, request, raw_response)
     assert sm.data.WhichOneof("data_oneof") == "tensor"
 
+def test_create_rest_response_strdata():
+    user_model = UserObject()
+    request_data = "Request data"
+    request = {
+        "strData": request_data
+    }
+    raw_response = "hello world"
+    sm = scu.construct_response_json(
+        user_model,
+        True,
+        request,
+        raw_response)
+    assert "strData" in sm
+    assert len(sm["strData"]) > 0
+    assert sm["strData"] == raw_response
 
-def test_create_response_strdata():
+def test_create_grpc_response_strdata():
     user_model = UserObject()
     request_data = np.array([[5, 6, 7]])
     datadef = scu.array_to_grpc_datadef("ndarray", request_data)
@@ -122,7 +185,7 @@ def test_symmetric_json_conversion():
     result_json_request = scu.seldon_message_to_json(seldon_message_request)
     assert json_request == result_json_request
 
-def test_create_reponse_list():
+def test_create_grpc_reponse_list():
     user_model = UserObject()
     request_data = np.array([[5, 6, 7]])
     datadef = scu.array_to_grpc_datadef("tensor", request_data)
@@ -131,8 +194,19 @@ def test_create_reponse_list():
     sm = scu.construct_response(user_model, True, request, raw_response)
     assert sm.data.WhichOneof("data_oneof") == "ndarray"
 
+def test_create_rest_reponse_binary():
+    user_model = UserObject()
+    request_data = b"input"
+    request = {
+        "binData": request_data
+    }
+    raw_response = b"binary"
+    sm = scu.construct_response_json(user_model, True, request, raw_response)
+    assert "strData" not in sm
+    assert "binData" in sm
+    assert sm["binData"] == raw_response
 
-def test_create_reponse_binary():
+def test_create_grpc_reponse_binary():
     user_model = UserObject()
     request_data = np.array([[5, 6, 7]])
     datadef = scu.array_to_grpc_datadef("tensor", request_data)
@@ -142,7 +216,6 @@ def test_create_reponse_binary():
     assert sm.data.WhichOneof("data_oneof") == None
     assert len(sm.strData) == 0
     assert len(sm.binData) > 0
-
 
 def test_json_to_seldon_message_normal_data():
     data = {"data": {"tensor": {"shape": [1, 1], "values": [1]}}}
