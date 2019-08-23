@@ -70,6 +70,42 @@ def test_create_grpc_reponse_nparray():
     assert sm.data.WhichOneof("data_oneof") == "tensor"
     assert sm.data.tensor.values == [1, 2, 3]
 
+def test_create_rest_reponse_text_ndarray():
+    user_model = UserObject()
+    request_data = np.array([["hello", "world"], ["here", "another"]])
+    request = {
+        "data": {
+            "ndarray": request_data,
+            "names": []
+        }
+    }
+    (features, meta, datadef, data_type) = scu.extract_request_parts_json(request)
+    raw_response = np.array([["hello", "world"], ["here", "another"]])
+    result = scu.construct_response_json(
+        user_model,
+        True,
+        request,
+        raw_response)
+    assert "ndarray" in result.get("data", {})
+    assert np.array_equal(result["data"]["ndarray"], raw_response)
+    assert datadef == request["data"]
+    assert np.array_equal(features, request_data)
+    assert data_type == "data"
+
+def test_create_grpc_reponse_text_ndarray():
+    user_model = UserObject()
+    request_data = np.array([["hello", "world"], ["here", "another"]])
+    datadef = scu.array_to_grpc_datadef("ndarray", request_data)
+    request = prediction_pb2.SeldonMessage(data=datadef)
+    (features, meta, datadef, data_type) = scu.extract_request_parts(request)
+    raw_response = np.array([["hello", "world"], ["here", "another"]])
+    sm = scu.construct_response(user_model, True, request, raw_response)
+    assert sm.data.WhichOneof("data_oneof") == "ndarray"
+    assert np.array_equal(sm.data.ndarray, raw_response)
+    assert datadef == request.data
+    assert np.array_equal(features, request_data)
+    assert data_type == "data"
+
 def test_create_rest_reponse_ndarray():
     user_model = UserObject()
     request = {
