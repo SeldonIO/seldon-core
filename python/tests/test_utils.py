@@ -72,7 +72,7 @@ def test_create_grpc_reponse_nparray():
 
 def test_create_rest_reponse_text_ndarray():
     user_model = UserObject()
-    request_data = np.array([["hello", "world"], ["here", "another"]])
+    request_data = np.array([["hello", "world"], ["hello", "another", "world"]])
     request = {
         "data": {
             "ndarray": request_data,
@@ -94,13 +94,14 @@ def test_create_rest_reponse_text_ndarray():
 
 def test_create_grpc_reponse_text_ndarray():
     user_model = UserObject()
-    request_data = np.array([["hello", "world"], ["here", "another"]])
+    request_data = np.array([["hello", "world"], ["hello", "another", "world"]])
     datadef = scu.array_to_grpc_datadef("ndarray", request_data)
     request = prediction_pb2.SeldonMessage(data=datadef)
     (features, meta, datadef, data_type) = scu.extract_request_parts(request)
     raw_response = np.array([["hello", "world"], ["here", "another"]])
     sm = scu.construct_response(user_model, True, request, raw_response)
     assert sm.data.WhichOneof("data_oneof") == "ndarray"
+    assert type(features[0]) == list
     assert np.array_equal(sm.data.ndarray, raw_response)
     assert datadef == request.data
     assert np.array_equal(features, request_data)

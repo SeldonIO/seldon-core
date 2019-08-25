@@ -172,7 +172,8 @@ def grpc_datadef_to_array(datadef: prediction_pb2.DefaultData) -> np.ndarray:
             features = np.array(datadef.tensor.values).reshape(
                 datadef.tensor.shape)
     elif data_type == "ndarray":
-        features = np.array(datadef.ndarray)
+        py_arr = json_format.MessageToDict(datadef.ndarray)
+        features = np.array(py_arr)
     elif data_type == "tftensor":
         features = tf.make_ndarray(datadef.tftensor)
     else:
