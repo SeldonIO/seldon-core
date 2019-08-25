@@ -114,30 +114,6 @@ public class TestRestClientController {
 		Assert.assertEquals("GAUGE", seldonMessage.getMeta().getMetrics(1).getType().toString());
 		Assert.assertEquals("TIMER", seldonMessage.getMeta().getMetrics(2).getType().toString());
     }
-
-    @Test
-    public void testPredict_21dim_str_ndarry() throws Exception
-    {
-        final String predictJson = "{" +
-        	    "\"request\": {" + 
-        	    "\"ndarray\": [[\"hello\", \"world\"],[\"more\", \"words\"]]}" +
-        		"}";
-
-    	MvcResult res = mvc.perform(MockMvcRequestBuilders.post("/api/v0.1/predictions")
-    			.accept(MediaType.APPLICATION_JSON_UTF8)
-    			.content(predictJson)
-    			.contentType(MediaType.APPLICATION_JSON_UTF8)).andReturn();
-    	String response = res.getResponse().getContentAsString();
-    	//System.out.println(response);
-    	Assert.assertEquals(200, res.getResponse().getStatus());
-    	SeldonMessage.Builder builder = SeldonMessage.newBuilder();
-		ProtoBufUtils.updateMessageBuilderFromJson(builder, response );
-		SeldonMessage seldonMessage = builder.build();
-		Assert.assertEquals(3, seldonMessage.getMeta().getMetricsCount());
-		Assert.assertEquals("COUNTER", seldonMessage.getMeta().getMetrics(0).getType().toString());
-		Assert.assertEquals("GAUGE", seldonMessage.getMeta().getMetrics(1).getType().toString());
-		Assert.assertEquals("TIMER", seldonMessage.getMeta().getMetrics(2).getType().toString());
-    }
     
     @Test
     public void testPredict_21dim_tensor() throws Exception
