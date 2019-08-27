@@ -1,0 +1,7 @@
+version: "2"
+domain: seldon.io
+repo: github.com/seldonio/seldon-core/operator
+resources:
+- group: machinelearning
+  version: v1alpha2
+  kind: SeldonDeployment

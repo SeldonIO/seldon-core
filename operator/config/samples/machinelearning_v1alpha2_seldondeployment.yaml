@@ -1,0 +1,7 @@
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+metadata:
+  name: seldondeployment-sample
+spec:
+  # Add fields here
+  foo: bar

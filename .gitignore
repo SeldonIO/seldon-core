@@ -208,3 +208,5 @@ testing/scripts/go
 
 # pyenv
 .python-version
+
+operator/operator.tar
