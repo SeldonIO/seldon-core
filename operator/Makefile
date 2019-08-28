@@ -23,7 +23,7 @@ manager: generate fmt vet
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
 run: generate fmt vet manifests
-	go run ./main.go
+	go run ./main.go --webhook-port=9000
 
 install-cert-manager:
 	kubectl create namespace cert-manager
@@ -46,6 +46,12 @@ deploy: manifests
 undeploy: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
 	kustomize build config/default | kubectl delete -f -
+
+
+deploy-local: manifests
+	cd config/manager && kustomize edit set image controller=${IMG}
+	kustomize build config/local | kubectl apply -f -
+
 
 # Generate manifests e.g. CRD, RBAC etc.
 manifests: controller-gen
@@ -85,3 +91,15 @@ CONTROLLER_GEN=$(GOBIN)/controller-gen
 else
 CONTROLLER_GEN=$(shell which controller-gen)
 endif
+
+WEBHOOK_DIR=/tmp/k8s-webhook-server/serving-certs
+
+minikube-port-forward:
+	ssh -i $$(minikube ssh-key) docker@$$(minikube ip) -R 9000:localhost:9000
+
+tls-extract:
+	mkdir -p ${WEBHOOK_DIR}
+	kubectl get secrets -n seldon-system webhook-server-cert  -o 'go-template={{index .data "tls.key"}}' | base64 -d > ${WEBHOOK_DIR}/tls.key
+	kubectl get secrets -n seldon-system webhook-server-cert  -o 'go-template={{index .data "tls.crt"}}' | base64 -d > ${WEBHOOK_DIR}/tls.crt
+
+

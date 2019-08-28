@@ -1,0 +1,11 @@
+kind: Endpoints
+apiVersion: v1
+metadata:
+ name: seldon-webhook-service
+subsets:
+ - addresses:
+     - ip: 192.168.39.23
+   ports:
+     - port: 9000
+
+

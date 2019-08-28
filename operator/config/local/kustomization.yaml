@@ -1,0 +1,19 @@
+namespace: seldon-system
+
+bases:
+- ../default
+
+
+resources:
+- endpoint.yaml
+
+patches:
+- service.yaml
+
+patchesJson6902:
+  - target:
+      version: v1
+      kind: Service
+      name: seldon-webhook-service
+      namespace: seldon-system
+    path: remove_service.json
