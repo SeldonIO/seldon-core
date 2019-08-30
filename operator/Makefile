@@ -52,6 +52,10 @@ deploy-local: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
 	kustomize build config/local | kubectl apply -f -
 
+deploy-cert: manifests
+	cd config/manager && kustomize edit set image controller=${IMG}
+	kustomize build config/cert2 | kubectl apply -f -
+
 
 # Generate manifests e.g. CRD, RBAC etc.
 manifests: controller-gen
@@ -100,3 +104,11 @@ tls-extract:
 	kubectl get secrets -n seldon-system webhook-server-cert  -o 'go-template={{index .data "tls.crt"}}' | base64 -d > ${WEBHOOK_DIR}/tls.crt
 
 
+.PHONY: self-signed-cert
+self-signed-cert:
+	mkdir -p self-signed-cert
+	./generate-keys.sh self-signed-cert
+
+
+clean-cert:
+	rm -r self-signed-cert
