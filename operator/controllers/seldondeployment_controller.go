@@ -587,6 +587,11 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 			con.ImagePullPolicy = corev1.PullIfNotPresent
 		}
 
+		if con.SecurityContext != nil && con.SecurityContext.ProcMount == nil {
+			var procMount = corev1.DefaultProcMount
+			con.SecurityContext.ProcMount = &procMount
+		}
+
 	}
 
 	//Add some default to help with diffs in controller
