@@ -28,34 +28,27 @@ public class PredictiveUnitBeanTest {
 	public void testMergeMetaList() throws InvalidProtocolBufferException, NoSuchMethodException, IllegalAccessException, InvocationTargetException
 	{
         PredictiveUnitImpl pu = new PredictiveUnitBean();
-        Method method = PredictiveUnitBean.class.getDeclaredMethod("mergeMeta", SeldonMessage.class, List.class);
-        method.setAccessible(true);
+        Method mergeMeta = PredictiveUnitBean.class.getDeclaredMethod("mergeMeta", SeldonMessage.class, List.class);
+        mergeMeta.setAccessible(true);
 
 		DefaultData.Builder d1 = DefaultData.newBuilder();
 		SeldonMessage.Builder b1 = SeldonMessage.newBuilder();
-		Value v1 = Value.newBuilder().setNumberValue(1.0).build();
+		Value v1 = Value.newBuilder().setStringValue("one").build();
 		Meta m1 = Meta.newBuilder().putTags("key", v1).build();
 		b1.setData(d1.build()).setMeta(m1);
         SeldonMessage s1 = b1.build();
 
 		DefaultData.Builder d2 = DefaultData.newBuilder();
 		SeldonMessage.Builder b2 = SeldonMessage.newBuilder();
-		Value v2 = Value.newBuilder().setNumberValue(2.0).build();
+		Value v2 = Value.newBuilder().setStringValue("two").build();
 		Meta m2 = Meta.newBuilder().putTags("key", v2).build();
 		b2.setData(d2.build()).setMeta(m2);
         SeldonMessage s2 = b2.build();
 
-		DefaultData.Builder d3 = DefaultData.newBuilder();
-		SeldonMessage.Builder b3 = SeldonMessage.newBuilder();
-		Value v3 = Value.newBuilder().setNumberValue(3.0).build();
-		Meta m3 = Meta.newBuilder().putTags("key", v3).build();
-		b3.setData(d3.build()).setMeta(m3);
-        SeldonMessage s3 = b3.build();
-
         List<SeldonMessage> messages = new ArrayList<SeldonMessage>();
         messages.add(s2);
 
-        SeldonMessage r1 = (SeldonMessage) method.invoke(pu, s1, messages);
+        SeldonMessage r1 = (SeldonMessage) mergeMeta.invoke(pu, s1, messages);
 
 		String r1str = ProtoBufUtils.toJson(r1.getMeta());
 		String j2 = ProtoBufUtils.toJson(s2.getMeta());
@@ -63,9 +56,17 @@ public class PredictiveUnitBeanTest {
         System.out.println(j2);
 		Assert.assertEquals(r1str, j2);
 
+
+		DefaultData.Builder d3 = DefaultData.newBuilder();
+		SeldonMessage.Builder b3 = SeldonMessage.newBuilder();
+		Value v3 = Value.newBuilder().setStringValue("three").build();
+		Meta m3 = Meta.newBuilder().putTags("key", v3).build();
+		b3.setData(d3.build()).setMeta(m3);
+        SeldonMessage s3 = b3.build();
+
         messages.add(s3);
 
-        SeldonMessage r2 = (SeldonMessage) method.invoke(pu, s1, messages);
+        SeldonMessage r2 = (SeldonMessage) mergeMeta.invoke(pu, s1, messages);
 
 		String r2str = ProtoBufUtils.toJson(r2.getMeta());
 		String j3 = ProtoBufUtils.toJson(s3.getMeta());
@@ -73,5 +74,36 @@ public class PredictiveUnitBeanTest {
         System.out.println(j3);
 		Assert.assertEquals(r2str, j3);
 	}
+
+	@Test
+	public void testMergeMeta() throws InvalidProtocolBufferException, NoSuchMethodException, IllegalAccessException, InvocationTargetException
+	{
+        PredictiveUnitImpl pu = new PredictiveUnitBean();
+        Method mergeMeta = PredictiveUnitBean.class.getDeclaredMethod("mergeMeta", SeldonMessage.class, Meta.class);
+        mergeMeta.setAccessible(true);
+
+		DefaultData.Builder d1 = DefaultData.newBuilder();
+		SeldonMessage.Builder b1 = SeldonMessage.newBuilder();
+		Value v1 = Value.newBuilder().setStringValue("one").build();
+		Meta m1 = Meta.newBuilder().putTags("key", v1).build();
+		b1.setData(d1.build()).setMeta(m1);
+        SeldonMessage s1 = b1.build();
+
+		DefaultData.Builder d2 = DefaultData.newBuilder();
+		SeldonMessage.Builder b2 = SeldonMessage.newBuilder();
+		Value v2 = Value.newBuilder().setStringValue("two").build();
+		Meta m2 = Meta.newBuilder().putTags("key", v2).build();
+		b2.setData(d2.build()).setMeta(m2);
+        SeldonMessage s2 = b2.build();
+
+        SeldonMessage r1 = (SeldonMessage) mergeMeta.invoke(pu, s1, s2.getMeta());
+
+		String r1str = ProtoBufUtils.toJson(r1.getMeta());
+		String j2 = ProtoBufUtils.toJson(s2.getMeta());
+        System.out.println(r1str);
+        System.out.println(j2);
+		Assert.assertEquals(r1str, j2);
+	}
 }
+
 
