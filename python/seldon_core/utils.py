@@ -382,7 +382,7 @@ def construct_response_json(
                 }
             else:
                 default_data_type = "ndarray"
-                result_client_response = list_client_raw_repsonse
+                result_client_response = list_client_raw_response
 
         response["data"][default_data_type] = result_client_response
 
@@ -524,7 +524,7 @@ def extract_request_parts_json(request: Union[Dict, List]
     return features, meta, datadef, data_type
 
 def extract_request_parts(request: prediction_pb2.SeldonMessage) -> Tuple[
-    Union[np.ndarray, str, bytes, dict], Dict, prediction_pb2.DefaultData, str]:
+        Union[np.ndarray, str, bytes, dict], Dict, prediction_pb2.DefaultData, str]:
     """
 
     Parameters
@@ -545,7 +545,7 @@ def extract_request_parts(request: prediction_pb2.SeldonMessage) -> Tuple[
 
 
 def extract_feedback_request_parts(request: prediction_pb2.Feedback) -> Tuple[
-    prediction_pb2.DefaultData, np.ndarray, np.ndarray, float]:
+        prediction_pb2.DefaultData, np.ndarray, np.ndarray, float]:
     """
     Extract key parts of the Feedback Message
 

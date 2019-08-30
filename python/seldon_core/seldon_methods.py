@@ -1,6 +1,11 @@
 import logging
-from seldon_core.utils import *
-from seldon_core.user_model import *
+from seldon_core.utils import extract_request_parts, construct_response,\
+    extract_request_parts_json, construct_response_json, json_to_seldon_message,\
+    extract_feedback_request_parts
+from seldon_core.user_model import client_predict, client_send_feedback,\
+    client_transform_input, client_transform_output, client_route, client_aggregate
+from seldon_core.flask_utils import SeldonMicroserviceException
+import numpy as np
 from google.protobuf import json_format
 from seldon_core.proto import prediction_pb2
 from typing import Any, Union, List, Dict
@@ -9,9 +14,9 @@ logger = logging.getLogger(__name__)
 
 
 def predict(
-            user_model: Any, 
+            user_model: Any,
             request: Union[prediction_pb2.SeldonMessage, List, Dict]
-        ) -> prediction_pb2.SeldonMessage:
+        ) -> Union[prediction_pb2.SeldonMessage, List, Dict]:
     """
     Call the user model to get a prediction and package the response
 
