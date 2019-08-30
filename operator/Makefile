@@ -94,9 +94,6 @@ endif
 
 WEBHOOK_DIR=/tmp/k8s-webhook-server/serving-certs
 
-minikube-port-forward:
-	ssh -i $$(minikube ssh-key) docker@$$(minikube ip) -R 9000:localhost:9000
-
 tls-extract:
 	mkdir -p ${WEBHOOK_DIR}
 	kubectl get secrets -n seldon-system webhook-server-cert  -o 'go-template={{index .data "tls.key"}}' | base64 -d > ${WEBHOOK_DIR}/tls.key
