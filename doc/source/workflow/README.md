@@ -30,7 +30,7 @@ To run your machine learning graph on Kubernetes you need to define how the comp
 
 ## 4. Deploy and Serve Predictions
 
-You can use ```kubectl``` to deploy your ML service like any other Kubernetes resource. This is discussed [here](deploying.md). Once deployed ypu can get predictions by [calling the exposed API](serving.md).
+You can use ```kubectl``` to deploy your ML service like any other Kubernetes resource. This is discussed [here](deploying.md). Once deployed you can get predictions by [calling the exposed API](serving.md).
 
 ## Next Steps
 
