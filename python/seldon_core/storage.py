@@ -21,6 +21,7 @@ import logging
 import tempfile
 import os
 import re
+from urllib.parse import urlparse
 from azure.storage.blob import BlockBlobService
 from google.auth import exceptions
 from google.cloud import storage
@@ -150,9 +151,10 @@ class Storage(object): # pylint: disable=too-few-public-methods
     @staticmethod
     def _create_minio_client():
         # Remove possible http scheme for Minio
-        url = re.compile(r"https?://")
-        minioClient = Minio(url.sub("", os.getenv("S3_ENDPOINT", "")),
+        url = urlparse(os.getenv("S3_ENDPOINT", ""))
+        use_ssl = url.scheme=='https' if url.scheme else bool(os.getenv("USE_SSL", True))
+        minioClient = Minio(url.netloc,
                             access_key=os.getenv("AWS_ACCESS_KEY_ID", ""),
                             secret_key=os.getenv("AWS_SECRET_ACCESS_KEY", ""),
-                            secure=True)
+                            secure=use_ssl)
         return minioClient

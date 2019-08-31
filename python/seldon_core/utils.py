@@ -172,7 +172,8 @@ def grpc_datadef_to_array(datadef: prediction_pb2.DefaultData) -> np.ndarray:
             features = np.array(datadef.tensor.values).reshape(
                 datadef.tensor.shape)
     elif data_type == "ndarray":
-        features = np.array(datadef.ndarray)
+        py_arr = json_format.MessageToDict(datadef.ndarray)
+        features = np.array(py_arr)
     elif data_type == "tftensor":
         features = tf.make_ndarray(datadef.tftensor)
     else:
@@ -350,15 +351,13 @@ def construct_response_json(
             np_client_raw_response = np.array(client_raw_response)
             list_client_raw_response = client_raw_response
 
-        result_client_response = None
-
         response["data"] = {}
         if "data" in client_request_raw:
             if np.issubdtype(np_client_raw_response.dtype, np.number):
                 if "tensor" in client_request_raw["data"]:
                     default_data_type = "tensor"
                     result_client_response = {
-                        "values": list_client_raw_response,
+                        "values": np_client_raw_response.ravel().tolist(),
                         "shape": np_client_raw_response.shape
                     }
                 elif "tftensor" in client_request_raw["data"]:
@@ -381,7 +380,7 @@ def construct_response_json(
                 }
             else:
                 default_data_type = "ndarray"
-                result_client_response = list_client_raw_repsonse
+                result_client_response = list_client_raw_response
 
         response["data"][default_data_type] = result_client_response
 
