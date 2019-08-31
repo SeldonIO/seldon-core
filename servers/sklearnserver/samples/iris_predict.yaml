@@ -16,3 +16,7 @@ spec:
           value: predict
     name: default
     replicas: 1
+    svcOrchSpec: 
+      env: 
+      - name: SELDON_LOG_LEVEL
+        value: DEBUG
