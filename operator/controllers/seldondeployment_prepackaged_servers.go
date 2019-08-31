@@ -122,21 +122,26 @@ func addModelDefaultServers(r *SeldonDeploymentReconciler, pu *machinelearningv1
 		machinelearningv1alpha2.SetImageNameForPrepackContainer(pu, c)
 
 		// Add parameters envvar - point at mount path because initContainer will download
-		if !utils.HasEnvVar(c.Env, constants.PU_PARAMETER_ENVVAR) {
-			params := pu.Parameters
-			uriParam := machinelearningv1alpha2.Parameter{
-				Name:  "model_uri",
-				Type:  "STRING",
-				Value: DefaultModelLocalMountPath,
-			}
-			params = append(params, uriParam)
-			paramStr, err := json.Marshal(params)
-			if err != nil {
-				return err
-			}
-			addContainerDefaults(c)
+		params := pu.Parameters
+		uriParam := machinelearningv1alpha2.Parameter{
+			Name:  "model_uri",
+			Type:  "STRING",
+			Value: DefaultModelLocalMountPath,
+		}
+		params = append(params, uriParam)
+		paramStr, err := json.Marshal(params)
+		if err != nil {
+			return err
+		}
+		addContainerDefaults(c)
 
-			c.Env = append(c.Env, corev1.EnvVar{Name: constants.PU_PARAMETER_ENVVAR, Value: string(paramStr)})
+		if len(params) > 0 {
+			if !utils.HasEnvVar(c.Env, machinelearningv1alpha2.ENV_PREDICTIVE_UNIT_PARAMETERS) {
+				c.Env = append(c.Env, v1.EnvVar{Name: machinelearningv1alpha2.ENV_PREDICTIVE_UNIT_PARAMETERS, Value: string(paramStr)})
+			} else {
+				c.Env = utils.SetEnvVar(c.Env, v1.EnvVar{Name: machinelearningv1alpha2.ENV_PREDICTIVE_UNIT_PARAMETERS, Value: string(paramStr)})
+			}
+
 		}
 
 		// Add container to deployment
@@ -148,7 +153,7 @@ func addModelDefaultServers(r *SeldonDeploymentReconciler, pu *machinelearningv1
 			}
 		}
 
-		_, err := InjectModelInitializer(deploy, c.Name, pu.ModelURI, pu.ServiceAccountName, pu.EnvSecretRefName, r.Client)
+		_, err = InjectModelInitializer(deploy, c.Name, pu.ModelURI, pu.ServiceAccountName, pu.EnvSecretRefName, r.Client)
 		if err != nil {
 			return err
 		}
@@ -212,6 +217,11 @@ func addContainerDefaults(c *v1.Container) {
 
 	if c.ImagePullPolicy == "" {
 		c.ImagePullPolicy = corev1.PullIfNotPresent
+	}
+
+	if c.SecurityContext != nil && c.SecurityContext.ProcMount == nil {
+		var procMount = corev1.DefaultProcMount
+		c.SecurityContext.ProcMount = &procMount
 	}
 }
 
