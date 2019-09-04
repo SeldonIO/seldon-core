@@ -25,14 +25,6 @@ pipelineConfig:
                     - make
                     - -C
                     - python
-                    - build_pypi &&
-                    - make
-                    - -C
-                    - python
-                    - pip-install &&
-                    - make
-                    - -C
-                    - python
                     - test
               - name: seldon-engine
                 agent:
@@ -66,14 +58,6 @@ pipelineConfig:
                 - make
                 - -C
                 - python
-                - build_pypi &&
-                - make
-                - -C
-                - python
-                - pip-install &&
-                - make
-                - -C
-                - python
                 - test
           - name: seldon-engine
             agent:
@@ -87,4 +71,3 @@ pipelineConfig:
               - -f
               - Makefile.ci
               - build_jar
-
