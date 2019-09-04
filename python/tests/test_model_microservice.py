@@ -290,12 +290,10 @@ def test_model_bin_data():
     bdata_base64 = base64.b64encode(bdata).decode('utf-8')
     rv = client.get('/predict?json={"binData":"' + bdata_base64 + '"}')
     j = json.loads(rv.data)
-    sm = prediction_pb2.SeldonMessage()
-    # Check we can parse response
-    assert sm == json_format.Parse(rv.data, sm, ignore_unknown_fields=False)
-    print(j)
+    return_data = \
+            base64.b64encode(base64.b64encode(bdata)).decode('utf-8')
     assert rv.status_code == 200
-    assert j["binData"] == bdata_base64
+    assert j["binData"] == return_data
     assert j["meta"]["tags"] == {"mytag": 1}
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
     assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]

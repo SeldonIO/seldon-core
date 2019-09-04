@@ -334,7 +334,8 @@ def construct_response_json(
     if "jsonData" in client_request_raw:
         response["jsonData"] = client_raw_response
     elif isinstance(client_raw_response, (bytes, bytearray)):
-        response["binData"] = client_raw_response
+        base64_data = base64.b64encode(client_raw_response)
+        response["binData"] = base64_data.decode("utf-8")
     elif isinstance(client_raw_response, str):
         response["strData"] = client_raw_response
     else:
