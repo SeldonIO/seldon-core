@@ -136,8 +136,8 @@ def test_create_grpc_reponse_ndarray():
 def test_create_rest_reponse_tensor():
     user_model = UserObject()
     tensor = {
-        "values": [[1,2,3]],
-        "shape": (1,3)
+        "values": [1,2,3],
+        "shape": (3,)
     }
     request = {
         "data": {
@@ -145,7 +145,7 @@ def test_create_rest_reponse_tensor():
             "names": []
         }
     }
-    raw_response = np.array([[1, 2, 3]])
+    raw_response = np.array([1, 2, 3])
     result = scu.construct_response_json(
         user_model,
         True,
