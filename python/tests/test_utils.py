@@ -237,11 +237,12 @@ def test_create_rest_reponse_binary():
     request = {
         "binData": request_data
     }
-    raw_response = b"binary"
-    sm = scu.construct_response_json(user_model, True, request, raw_response)
+    raw_resp = b"binary"
+    sm = scu.construct_response_json(user_model, True, request, raw_resp)
+    resp_data = base64.b64encode(raw_resp).decode("utf-8")
     assert "strData" not in sm
     assert "binData" in sm
-    assert sm["binData"] == raw_response
+    assert sm["binData"] == resp_data
 
 def test_create_grpc_reponse_binary():
     user_model = UserObject()
