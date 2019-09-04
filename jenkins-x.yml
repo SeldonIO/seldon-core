@@ -87,4 +87,3 @@ pipelineConfig:
               - -f
               - Makefile.ci
               - build_jar
-
