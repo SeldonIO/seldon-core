@@ -90,9 +90,9 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 		for(List<Metric> mlist: metrics.values())
 			metricList.addAll(mlist);
 		SeldonMessage.Builder builder = SeldonMessage
-				.newBuilder(response)
-				.setMeta(Meta
-						.newBuilder(response.getMeta()).putAllRouting(routingDict).putAllRequestPath(requestPathDict).addAllMetrics(metricList));
+			.newBuilder(response)
+			.setMeta(Meta
+					.newBuilder(response.getMeta()).putAllRouting(routingDict).putAllRequestPath(requestPathDict).addAllMetrics(metricList));
 		return builder.build();
 	}
 	
