@@ -90,9 +90,9 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 		for(List<Metric> mlist: metrics.values())
 			metricList.addAll(mlist);
 		SeldonMessage.Builder builder = SeldonMessage
-	    		.newBuilder(response)
-	    		.setMeta(Meta
-	    				.newBuilder(response.getMeta()).putAllRouting(routingDict).putAllRequestPath(requestPathDict).addAllMetrics(metricList));
+				.newBuilder(response)
+				.setMeta(Meta
+						.newBuilder(response.getMeta()).putAllRouting(routingDict).putAllRequestPath(requestPathDict).addAllMetrics(metricList));
 		return builder.build();
 	}
 	
@@ -112,7 +112,7 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 	@Async
 	public Future<SeldonMessage> getOutputAsync(SeldonMessage input, PredictiveUnitState state, Map<String,Integer> routingDict,Map<String,String> requestPathDict,Map<String,List<Metric>> metrics,Span activeSpan) throws InterruptedException, ExecutionException, InvalidProtocolBufferException{
 
-        String puid = input.getMeta().getPuid();
+		String puid = input.getMeta().getPuid();
 		
 		if (activeSpan != null && tracing != null)
 			tracing.getTracer().scopeManager().activate(activeSpan, true);
@@ -129,7 +129,7 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 		
 		addMetrics(transformedInput,state,metrics);
 
-        // Override the input metadata with the new metadata from transformed input
+		// Override the input metadata with the new metadata from transformed input
 		transformedInput = mergeMeta(transformedInput, input, puid);
 
 		
@@ -188,7 +188,7 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 		SeldonMessage transformedOutput = implementation.transformOutput(aggregatedOutput, state);
 		addMetrics(transformedOutput,state,metrics);
 
-        // Override the input metadata with the new metadata from transformed input
+		// Override the input metadata with the new metadata from transformed input
 		transformedOutput = mergeMeta(transformedOutput, aggregatedOutput, puid);
 
 		
@@ -353,11 +353,11 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 
 	private SeldonMessage mergeMeta(SeldonMessage latest, List<SeldonMessage> previous, String puid) {
 		Meta.Builder metaBuilder = Meta.newBuilder();
-        metaBuilder.setPuid(puid);
+		metaBuilder.setPuid(puid);
 		for (SeldonMessage originalMessage : previous){
 			metaBuilder.putAllTags(originalMessage.getMeta().getTagsMap());
 		}
-        metaBuilder.putAllTags(latest.getMeta().getTagsMap());
+		metaBuilder.putAllTags(latest.getMeta().getTagsMap());
 		metaBuilder.clearMetrics();
 		return SeldonMessage.newBuilder(latest).setMeta(metaBuilder).build();
 	}
