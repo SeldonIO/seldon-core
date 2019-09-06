@@ -83,11 +83,10 @@ def get_rest_microservice(user_model):
     def Aggregate():
         requestJson = get_request()
         logger.debug("REST Request: %s", request)
-        requestProto = json_to_seldon_messages(requestJson)
-        logger.debug("Proto Request: %s", request)
-        responseProto = seldon_core.seldon_methods.aggregate(user_model, requestProto)
-        jsonDict = seldon_message_to_json(responseProto)
-        return jsonify(jsonDict)
+        response = seldon_core.seldon_methods.aggregate(
+            user_model, requestJson)
+        logger.debug("REST Response: %s", response)
+        return jsonify(response)
 
     return app
 

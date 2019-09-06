@@ -487,6 +487,8 @@ def extract_request_parts_json(request: Union[Dict, List]
        Key parts of the request extracted
 
     """
+    if not isinstance(request, dict):
+        raise SeldonMicroserviceException(f"Invalid request data type: {request}")
     meta = request.get("meta", None)
     datadef_type = None
     datadef = None

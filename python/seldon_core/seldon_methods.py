@@ -251,11 +251,11 @@ def aggregate(user_model: Any, request: prediction_pb2.SeldonMessageList) -> pre
        Aggregated SeldonMessage proto
 
     """
+    is_proto = isinstance(request, prediction_pb2.SeldonMessageList)
+
     if hasattr(user_model, "aggregate_rest"):
         logger.warning("aggregate_rest is deprecated. Please use aggregate_raw")
-        request_json = json_format.MessageToJson(request)
-        response_json = user_model.aggregate_rest(request_json)
-        return json_to_seldon_message(response_json)
+        return user_model.aggregate_rest(request)
     elif hasattr(user_model, "aggregate_grpc"):
         logger.warning("aggregate_grpc is deprecated. Please use aggregate_raw")
         return user_model.aggregate_grpc(request)
@@ -263,6 +263,9 @@ def aggregate(user_model: Any, request: prediction_pb2.SeldonMessageList) -> pre
         try:
             return user_model.aggregate_raw(request)
         except (NotImplementedError, AttributeError):
+            pass
+
+        if is_proto:
             features_list = []
             names_list = []
 
@@ -273,3 +276,20 @@ def aggregate(user_model: Any, request: prediction_pb2.SeldonMessageList) -> pre
 
             client_response = client_aggregate(user_model, features_list, names_list)
             return construct_response(user_model, False, request.seldonMessages[0], client_response)
+        else:
+            features_list = []
+            names_list = []
+
+            if "seldonMessages" not in request or \
+                    not isinstance(request["seldonMessages"], list):
+                raise SeldonMicroserviceException(f"Invalid request data type: {request}")
+
+            for msg in request["seldonMessages"]:
+                (features, meta, datadef, data_type) = extract_request_parts_json(msg)
+                class_names = datadef["names"] if datadef and "names" in datadef else []
+                features_list.append(features)
+                names_list.append(class_names)
+
+            client_response = client_aggregate(user_model, features_list, names_list)
+            return construct_response_json(user_model, False, request["seldonMessages"][0], client_response)
+
