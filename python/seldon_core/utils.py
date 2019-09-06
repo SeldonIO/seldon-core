@@ -10,7 +10,7 @@ import tensorflow as tf
 from google.protobuf.struct_pb2 import ListValue
 from seldon_core.user_model import client_class_names, client_custom_metrics, client_custom_tags, client_feature_names, \
     SeldonComponent
-from typing import Tuple, Dict, Union, List, Optional, Iterable, Any
+from typing import Tuple, Dict, Union, List, Optional, Iterable
 import base64
 
 

@@ -42,7 +42,6 @@ def get_rest_microservice(user_model):
         logger.debug("REST Response: %s", response)
         return jsonify(response)
 
-
     @app.route("/send-feedback", methods=["GET", "POST"])
     def SendFeedback():
         requestJson = get_request()
@@ -66,21 +65,19 @@ def get_rest_microservice(user_model):
     def TransformOutput():
         requestJson = get_request()
         logger.debug("REST Request: %s", request)
-        requestProto = json_to_seldon_message(requestJson)
-        logger.debug("Proto Request: %s", request)
-        responseProto = seldon_core.seldon_methods.transform_output(user_model, requestProto)
-        jsonDict = seldon_message_to_json(responseProto)
-        return jsonify(jsonDict)
+        response = seldon_core.seldon_methods.transform_output(
+            user_model, requestJson)
+        logger.debug("REST Response: %s", response)
+        return jsonify(response)
 
     @app.route("/route", methods=["GET", "POST"])
     def Route():
         requestJson = get_request()
         logger.debug("REST Request: %s", request)
-        requestProto = json_to_seldon_message(requestJson)
-        logger.debug("Proto Request: %s", request)
-        responseProto = seldon_core.seldon_methods.route(user_model, requestProto)
-        jsonDict = seldon_message_to_json(responseProto)
-        return jsonify(jsonDict)
+        response = seldon_core.seldon_methods.route(
+            user_model, requestJson)
+        logger.debug("REST Response: %s", response)
+        return jsonify(response)
 
     @app.route("/aggregate", methods=["GET", "POST"])
     def Aggregate():
