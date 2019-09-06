@@ -7,6 +7,9 @@ import base64
 from seldon_core.wrapper import get_rest_microservice, SeldonModelGRPC, get_grpc_server
 from seldon_core.proto import prediction_pb2
 from seldon_core.user_model import SeldonComponent
+from seldon_core.utils import seldon_message_to_json
+
+from typing import Dict, List, Union
 
 
 class UserObject(object):
@@ -119,18 +122,13 @@ class UserObjectLowLevelRaw(object):
         self.ret_nparray = ret_nparray
         self.nparray = np.array([1, 2, 3])
 
-    def transform_input_raw(self, X):
-        arr = np.array([9, 9])
-        datadef = prediction_pb2.DefaultData(
-            tensor=prediction_pb2.Tensor(
-                shape=(2, 1),
-                values=arr
-            )
-        )
-        request = prediction_pb2.SeldonMessage(data=datadef)
-        return request
+    def transform_input_raw(
+            self,
+            request: Union[prediction_pb2.SeldonMessage, List, Dict]) \
+            -> Union[prediction_pb2.SeldonMessage, List, Dict]:
 
-    def transform_output_raw(self, X):
+        is_proto = isinstance(request, prediction_pb2.SeldonMessage)
+
         arr = np.array([9, 9])
         datadef = prediction_pb2.DefaultData(
             tensor=prediction_pb2.Tensor(
@@ -138,8 +136,32 @@ class UserObjectLowLevelRaw(object):
                 values=arr
             )
         )
-        request = prediction_pb2.SeldonMessage(data=datadef)
-        return request
+        response = prediction_pb2.SeldonMessage(data=datadef)
+        if is_proto:
+            return response
+        else:
+            return seldon_message_to_json(response)
+
+    def transform_output_raw(
+            self,
+            request: Union[prediction_pb2.SeldonMessage, List, Dict]) \
+            -> Union[prediction_pb2.SeldonMessage, List, Dict]:
+
+        is_proto = isinstance(request, prediction_pb2.SeldonMessage)
+
+        arr = np.array([9, 9])
+        datadef = prediction_pb2.DefaultData(
+            tensor=prediction_pb2.Tensor(
+                shape=(2, 1),
+                values=arr
+            )
+        )
+        response = prediction_pb2.SeldonMessage(data=datadef)
+
+        if is_proto:
+            return response
+        else:
+            return seldon_message_to_json(response)
 
 
 class UserObjectLowLevelRawInherited(SeldonComponent):
@@ -148,18 +170,13 @@ class UserObjectLowLevelRawInherited(SeldonComponent):
         self.ret_nparray = ret_nparray
         self.nparray = np.array([1, 2, 3])
 
-    def transform_input_raw(self, X):
-        arr = np.array([9, 9])
-        datadef = prediction_pb2.DefaultData(
-            tensor=prediction_pb2.Tensor(
-                shape=(2, 1),
-                values=arr
-            )
-        )
-        request = prediction_pb2.SeldonMessage(data=datadef)
-        return request
+    def transform_input_raw(
+            self,
+            request: Union[prediction_pb2.SeldonMessage, List, Dict]) \
+            -> Union[prediction_pb2.SeldonMessage, List, Dict]:
 
-    def transform_output_raw(self, X):
+        is_proto = isinstance(request, prediction_pb2.SeldonMessage)
+
         arr = np.array([9, 9])
         datadef = prediction_pb2.DefaultData(
             tensor=prediction_pb2.Tensor(
@@ -167,8 +184,31 @@ class UserObjectLowLevelRawInherited(SeldonComponent):
                 values=arr
             )
         )
-        request = prediction_pb2.SeldonMessage(data=datadef)
-        return request
+        response = prediction_pb2.SeldonMessage(data=datadef)
+        if is_proto:
+            return response
+        else:
+            return seldon_message_to_json(response)
+
+    def transform_output_raw(
+            self,
+            request: Union[prediction_pb2.SeldonMessage, List, Dict]) \
+            -> Union[prediction_pb2.SeldonMessage, List, Dict]:
+
+        is_proto = isinstance(request, prediction_pb2.SeldonMessage)
+
+        arr = np.array([9, 9])
+        datadef = prediction_pb2.DefaultData(
+            tensor=prediction_pb2.Tensor(
+                shape=(2, 1),
+                values=arr
+            )
+        )
+        response = prediction_pb2.SeldonMessage(data=datadef)
+        if is_proto:
+            return response
+        else:
+            return seldon_message_to_json(response)
 
 
 def test_transformer_input_ok():
@@ -212,6 +252,7 @@ def test_transformer_input_lowlevel_raw_ingerited_ok():
     app = get_rest_microservice(user_object)
     client = app.test_client()
     rv = client.get('/transform-input?json={"data":{"ndarray":[1]}}')
+    print(rv.data)
     j = json.loads(rv.data)
     print(j)
     assert rv.status_code == 200

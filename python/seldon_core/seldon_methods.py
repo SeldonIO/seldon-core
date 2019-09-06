@@ -9,9 +9,9 @@ logger = logging.getLogger(__name__)
 
 
 def predict(
-            user_model: Any, 
-            request: Union[prediction_pb2.SeldonMessage, List, Dict]
-        ) -> prediction_pb2.SeldonMessage:
+        user_model: Any,
+        request: Union[prediction_pb2.SeldonMessage, List, Dict]) \
+        -> Union[prediction_pb2.SeldonMessage, List, Dict]:
     """
     Call the user model to get a prediction and package the response
 
@@ -49,8 +49,11 @@ def predict(
             client_response = client_predict(user_model, features, class_names, meta=meta)
             return construct_response_json(user_model, False, request, client_response)
 
-def send_feedback(user_model: Any, request: prediction_pb2.Feedback,
-                  predictive_unit_id: str) -> prediction_pb2.SeldonMessage:
+def send_feedback(
+        user_model: Any,
+        request: prediction_pb2.Feedback,
+        predictive_unit_id: str) \
+        -> prediction_pb2.SeldonMessage:
     """
 
     Parameters
@@ -90,7 +93,10 @@ def send_feedback(user_model: Any, request: prediction_pb2.Feedback,
             return construct_response(user_model, False, request.request, client_response)
 
 
-def transform_input(user_model: Any, request: prediction_pb2.SeldonMessage) -> prediction_pb2.SeldonMessage:
+def transform_input(
+        user_model: Any,
+        request: Union[prediction_pb2.SeldonMessage, List, Dict]) \
+        -> Union[prediction_pb2.SeldonMessage, List, Dict]:
     """
 
     Parameters
@@ -105,6 +111,36 @@ def transform_input(user_model: Any, request: prediction_pb2.SeldonMessage) -> p
        The transformed request
 
     """
+    is_proto = isinstance(request, prediction_pb2.SeldonMessage)
+
+    if hasattr(user_model, "transform_input_rest"):
+        logger.warning("transform_input_rest is deprecated. Please use transform_input_raw")
+        return user_model.transform_input_rest(request)
+    elif hasattr(user_model, "transform_input_grpc"):
+        logger.warning("transform_input_grpc is deprecated. Please use transform_input_raw")
+        return user_model.transform_input_grpc(request)
+    else:
+        try:
+            return user_model.transform_input_raw(request)
+        except (NotImplementedError, AttributeError):
+            pass
+
+        if is_proto:
+            (features, meta, datadef, data_type) = extract_request_parts(request)
+            client_response = client_transform_input(
+                user_model, features, datadef.names, meta=meta)
+            return construct_response(user_model, False, request, client_response)
+        else:
+            (features, meta, datadef, data_type) = extract_request_parts_json(request)
+            class_names = datadef["names"] if datadef and "names" in datadef else []
+            client_response = client_transform_input(
+                user_model, features, class_names, meta=meta)
+            print("HERE")
+            print(client_response)
+            return construct_response_json(user_model, False, request, client_response)
+
+if False:
+    #########################################################################
     if hasattr(user_model, "transform_input_rest"):
         logger.warning("transform_input_rest is deprecated. Please use transform_input_raw")
         request_json = json_format.MessageToJson(request)

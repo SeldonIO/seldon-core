@@ -57,11 +57,10 @@ def get_rest_microservice(user_model):
     def TransformInput():
         requestJson = get_request()
         logger.debug("REST Request: %s", request)
-        requestProto = json_to_seldon_message(requestJson)
-        logger.debug("Proto Request: %s", request)
-        responseProto = seldon_core.seldon_methods.transform_input(user_model, requestProto)
-        jsonDict = seldon_message_to_json(responseProto)
-        return jsonify(jsonDict)
+        response = seldon_core.seldon_methods.transform_input(
+            user_model, requestJson)
+        logger.debug("REST Response: %s", response)
+        return jsonify(response)
 
     @app.route("/transform-output", methods=["GET", "POST"])
     def TransformOutput():
