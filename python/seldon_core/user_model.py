@@ -10,7 +10,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 class SeldonNotImplementedError(SeldonMicroserviceException):
-    status_code = 403
+    status_code = 400
+
+    def __init__(self, message):
+        SeldonMicroserviceException.__init__(self, message)
 
 class SeldonComponent(object):
 
