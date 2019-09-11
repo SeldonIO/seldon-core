@@ -87,7 +87,8 @@ def client_custom_tags(user_model: SeldonComponent) -> Dict:
     """
     try:
         return user_model.tags()
-    except (NotImplementedError, AttributeError):
+    except NotImplementedError:
+        logger.info("custom_tags is not implemented")
         return {}
 
 
@@ -112,7 +113,8 @@ def client_class_names(user_model: SeldonComponent, predictions: np.ndarray) -> 
             else:
                 logger.info("class_names attribute is deprecated. Please define a class_names method")
                 return user_model.class_names
-        except (NotImplementedError, AttributeError):
+        except NotImplementedError:
+            logger.info("class_names is not implemented")
             n_targets = predictions.shape[1]
             return ["t:{}".format(i) for i in range(n_targets)]
     else:
@@ -143,7 +145,8 @@ def client_predict(user_model: SeldonComponent, features: Union[np.ndarray, str,
             return user_model.predict(features, feature_names, **kwargs)
         except TypeError:
             return user_model.predict(features, feature_names)
-    except (NotImplementedError, AttributeError):
+    except NotImplementedError:
+        logger.info("predict is not implemented")
         return []
 
 
@@ -173,7 +176,8 @@ def client_transform_input(user_model: SeldonComponent, features: Union[np.ndarr
             return user_model.transform_input(features, feature_names, **kwargs)
         except TypeError:
             return user_model.transform_input(features, feature_names)
-    except (NotImplementedError, AttributeError):
+    except NotImplementedError:
+        logger.info("transform_input is not implemented")
         return features
 
 
@@ -202,7 +206,8 @@ def client_transform_output(user_model: SeldonComponent, features: Union[np.ndar
             return user_model.transform_output(features, feature_names, **kwargs)
         except TypeError:
             return user_model.transform_output(features, feature_names)
-    except (NotImplementedError, AttributeError):
+    except NotImplementedError:
+        logger.info("transform_output is not implemented")
         return features
 
 
@@ -227,7 +232,8 @@ def client_custom_metrics(user_model: SeldonComponent) -> List[Dict]:
             raise SeldonMicroserviceException(
                 "Bad metric created during request: " + j_str, reason="MICROSERVICE_BAD_METRIC")
         return metrics
-    except (NotImplementedError, AttributeError):
+    except NotImplementedError:
+        logger.info("custom_metrics is not implemented")
         return []
 
 
@@ -247,7 +253,8 @@ def client_feature_names(user_model: SeldonComponent, original: Iterable[str]) -
     """
     try:
         return user_model.feature_names()
-    except (NotImplementedError, AttributeError):
+    except NotImplementedError:
+        logger.info("feature_names is not implemented")
         return original
 
 
@@ -280,7 +287,8 @@ def client_send_feedback(user_model: SeldonComponent, features: Union[np.ndarray
     """
     try:
         return user_model.send_feedback(features, feature_names, reward, truth, routing=routing)
-    except (NotImplementedError, AttributeError):
+    except NotImplementedError:
+        logger.info("send_feedback is not implemented")
         return None
 
 
@@ -304,7 +312,7 @@ def client_route(user_model: SeldonComponent, features: Union[np.ndarray, str, b
     """
     try:
         return user_model.route(features, feature_names)
-    except (NotImplementedError, AttributeError):
+    except NotImplementedError:
         raise SeldonMicroserviceException("Route not defined")
 
 
@@ -327,5 +335,5 @@ def client_aggregate(user_model: SeldonComponent, features_list: List[Union[np.n
     """
     try:
         return user_model.aggregate(features_list, feature_names_list)
-    except (NotImplementedError, AttributeError):
+    except NotImplementedError:
         raise SeldonMicroserviceException("Aggregate not defined")

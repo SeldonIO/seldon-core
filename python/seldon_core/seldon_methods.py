@@ -36,7 +36,7 @@ def predict(
     else:
         try:
             return user_model.predict_raw(request)
-        except (NotImplementedError, AttributeError):
+        except NotImplementedError:
             pass
 
         if is_proto:
@@ -78,16 +78,18 @@ def send_feedback(user_model: Any, request: prediction_pb2.Feedback,
     else:
         try:
             return user_model.send_feedback_raw(request)
-        except (NotImplementedError, AttributeError):
-            (datadef_request, features, truth, reward) = extract_feedback_request_parts(request)
-            routing = request.response.meta.routing.get(predictive_unit_id)
-            client_response = client_send_feedback(user_model, features, datadef_request.names, reward, truth, routing)
+        except NotImplementedError:
+            pass
 
-            if client_response is None:
-                client_response = np.array([])
-            else:
-                client_response = np.array(client_response)
-            return construct_response(user_model, False, request.request, client_response)
+        (datadef_request, features, truth, reward) = extract_feedback_request_parts(request)
+        routing = request.response.meta.routing.get(predictive_unit_id)
+        client_response = client_send_feedback(user_model, features, datadef_request.names, reward, truth, routing)
+
+        if client_response is None:
+            client_response = np.array([])
+        else:
+            client_response = np.array(client_response)
+        return construct_response(user_model, False, request.request, client_response)
 
 
 def transform_input(user_model: Any, request: prediction_pb2.SeldonMessage) -> prediction_pb2.SeldonMessage:
@@ -116,11 +118,13 @@ def transform_input(user_model: Any, request: prediction_pb2.SeldonMessage) -> p
     else:
         try:
             return user_model.transform_input_raw(request)
-        except (NotImplementedError, AttributeError):
-            (features, meta, datadef, data_type) = extract_request_parts(request)
-            client_response = client_transform_input(user_model, features, datadef.names, meta=meta)
+        except NotImplementedError:
+            pass
 
-            return construct_response(user_model, True, request, client_response)
+        (features, meta, datadef, data_type) = extract_request_parts(request)
+        client_response = client_transform_input(user_model, features, datadef.names, meta=meta)
+
+        return construct_response(user_model, True, request, client_response)
 
 
 def transform_output(user_model: Any,
@@ -150,10 +154,12 @@ def transform_output(user_model: Any,
     else:
         try:
             return user_model.transform_output_raw(request)
-        except (NotImplementedError, AttributeError):
-            (features, meta, datadef, data_type) = extract_request_parts(request)
-            client_response = client_transform_output(user_model, features, datadef.names, meta=meta)
-            return construct_response(user_model, False, request, client_response)
+        except NotImplementedError:
+            pass
+
+        (features, meta, datadef, data_type) = extract_request_parts(request)
+        client_response = client_transform_output(user_model, features, datadef.names, meta=meta)
+        return construct_response(user_model, False, request, client_response)
 
 
 def route(user_model: Any, request: prediction_pb2.SeldonMessage) -> prediction_pb2.SeldonMessage:
@@ -180,13 +186,15 @@ def route(user_model: Any, request: prediction_pb2.SeldonMessage) -> prediction_
     else:
         try:
             return user_model.route_raw(request)
-        except (NotImplementedError, AttributeError):
-            (features, meta, datadef, _) = extract_request_parts(request)
-            client_response = client_route(user_model, features, datadef.names)
-            if not isinstance(client_response, int):
-                raise SeldonMicroserviceException("Routing response must be int but got " + str(client_response))
-            client_response_arr = np.array([[client_response]])
-            return construct_response(user_model, True, request, client_response_arr)
+        except NotImplementedError:
+            pass
+
+        (features, meta, datadef, _) = extract_request_parts(request)
+        client_response = client_route(user_model, features, datadef.names)
+        if not isinstance(client_response, int):
+            raise SeldonMicroserviceException("Routing response must be int but got " + str(client_response))
+        client_response_arr = np.array([[client_response]])
+        return construct_response(user_model, True, request, client_response_arr)
 
 
 def aggregate(user_model: Any, request: prediction_pb2.SeldonMessageList) -> prediction_pb2.SeldonMessage:
@@ -216,14 +224,16 @@ def aggregate(user_model: Any, request: prediction_pb2.SeldonMessageList) -> pre
     else:
         try:
             return user_model.aggregate_raw(request)
-        except (NotImplementedError, AttributeError):
-            features_list = []
-            names_list = []
+        except NotImplementedError:
+            pass
 
-            for msg in request.seldonMessages:
-                (features, meta, datadef, data_type) = extract_request_parts(msg)
-                features_list.append(features)
-                names_list.append(datadef.names)
+        features_list = []
+        names_list = []
 
-            client_response = client_aggregate(user_model, features_list, names_list)
-            return construct_response(user_model, False, request.seldonMessages[0], client_response)
+        for msg in request.seldonMessages:
+            (features, meta, datadef, data_type) = extract_request_parts(msg)
+            features_list.append(features)
+            names_list.append(datadef.names)
+
+        client_response = client_aggregate(user_model, features_list, names_list)
+        return construct_response(user_model, False, request.seldonMessages[0], client_response)
