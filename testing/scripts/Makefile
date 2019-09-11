@@ -1,3 +1,46 @@
+VERSION := $(shell cat ../../version.txt)
+
+kind_create_cluster:
+	kind create cluster
+
+kind_build_engine:
+	cd ../../engine/ && make build_image
+	kind load docker-image seldonio/engine:$(VERSION) --loglevel trace
+
+kind_build_operator:
+	cd ../../operator && make kind-docker-build
+
+kind_build_images: kind_build_engine kind_build_operator
+
+install_helm:
+	kubectl -n kube-system create sa tiller
+	kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
+	helm init --service-account tiller
+	kubectl rollout status deploy/tiller-deploy -n kube-system
+
+install_ambassador:
+	helm install stable/ambassador --name ambassador --set crds.keep=false --namespace seldon --set replicaCount=1
+	kubectl rollout status deployment.apps/ambassador --namespace seldon
+
+install_cert_manager:
+	cd ../../operator && make install-cert-manager
+
+install_seldon: install_cert_manager
+	cd ../../operator && make install deploy
+
+create_namespaces:
+	kubectl create namespace seldon || echo "Namespace seldon already exists"
+	kubectl create namespace test1 || echo "Namespace test1 already exists"
+	kubectl config set-context $$(kubectl config current-context) --namespace=seldon
+
+kind_setup: kind_build_images install_helm install_ambassador install_seldon create_namespaces
+
+port-forward-ambassador:
+	kubectl port-forward $$(kubectl get pods -n seldon -l app.kubernetes.io/name=ambassador -o jsonpath='{.items[0].metadata.name}') -n seldon 8003:8080
+
+
+s2i_build_base_images:
+	cd ../../wrappers/s2i/python/build_scripts && ./build_all_local.sh
 
 build_protos:
 	cp ../../proto/prediction.proto ./proto

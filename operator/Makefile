@@ -26,9 +26,12 @@ run: generate fmt vet manifests
 	go run ./main.go --webhook-port=9000
 
 install-cert-manager:
-	kubectl create namespace cert-manager
-	kubectl label namespace cert-manager certmanager.k8s.io/disable-validation=true
+	kubectl create namespace cert-manager || echo "Namespace cert-manager-exists"
+	kubectl label namespace cert-manager certmanager.k8s.io/disable-validation=true || echo "namespace cert-manager-already labelled"
 	kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v0.9.1/cert-manager.yaml
+	kubectl rollout status deployment.apps/cert-manager -n cert-manager
+	kubectl rollout status deployment.apps/cert-manager-cainjector -n cert-manager
+	kubectl rollout status deployment.apps/cert-manager-webhook -n cert-manager
 
 # Install CRDs into a cluster
 install: manifests

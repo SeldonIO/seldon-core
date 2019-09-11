@@ -1,18 +1,17 @@
 IMAGE_NAME=engine
-VERSION_FILE=target/version.txt
+VERSION := $(shell cat ../version.txt)
+
+version:
+	echo ${VERSION}
 
 build_jar: update_proto update_swagger
 	mvn clean verify -Dlicense.useMissingFile -B
 
-write_version:
-	ls target/seldon-engine-*.jar | sed -n 's/target\/seldon-engine-\(.*\).jar$$/\1/p' > $(VERSION_FILE) && cat $(VERSION_FILE)
-
-build_image: build_jar write_version
-	docker build --build-arg APP_VERSION=$$(cat $(VERSION_FILE)) -t seldonio/$(IMAGE_NAME):latest .
-	docker tag seldonio/$(IMAGE_NAME):latest seldonio/$(IMAGE_NAME):$$(cat $(VERSION_FILE))
+build_image: update_proto update_swagger
+	docker build  -f Dockerfile.mvn -t seldonio/$(IMAGE_NAME):$(VERSION) .
 
 push_to_registry:
-	docker push seldonio/$(IMAGE_NAME):$$(cat $(VERSION_FILE))
+	docker push seldonio/$(IMAGE_NAME):$(VERSION)
 
 clean:
 	@mvn clean

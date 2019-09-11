@@ -14,13 +14,13 @@
                     "spec": {
                         "containers": [
                             {
-                                "image": "127.0.0.1:5000/seldonio/testmodel_rest:0.1",
-                                "imagePullPolicy": "Always",
+                                "image": "seldonio/testmodel_rest:0.1",
+                                "imagePullPolicy": "Never",
                                 "name": "model"
                             },
                             {
-                                "image": "127.0.0.1:5000/seldonio/testrouter_rest:0.1",
-                                "imagePullPolicy": "Always",
+                                "image": "seldonio/testrouter_rest:0.1",
+                                "imagePullPolicy": "Never",
                                 "name": "router"
                             }
                         ],

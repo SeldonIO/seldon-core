@@ -8,24 +8,7 @@ def wait_for_shutdown(deploymentName):
         time.sleep(1)
         ret = run("kubectl get -n test1 deploy/" + deploymentName, shell=True)
 
-@pytest.mark.usefixtures("seldon_images")
-@pytest.mark.usefixtures("clusterwide_seldon_helm")
 class TestClusterWide(object):
-
-    def test_single_model(self):
-        tester = ClusterWideTests()
-        tester.test_single_model()
-
-    def test_abtest_model(self):
-        tester = ClusterWideTests()
-        tester.test_abtest_model()
-
-    def test_mab_model(self):
-        tester = ClusterWideTests()
-        tester.test_mab_model()
-
-
-class ClusterWideTests(object):
 
     # Test singe model helm script with 4 API methods
     def test_single_model(self):

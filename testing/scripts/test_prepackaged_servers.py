@@ -1,10 +1,6 @@
-import pytest
-import time
 import subprocess
-from subprocess import run
 import json
 from seldon_utils import *
-from k8s_utils import *
 from seldon_core.seldon_client import SeldonClient
 
 def wait_for_status(name):
@@ -24,15 +20,13 @@ def wait_for_rollout(deploymentName):
         time.sleep(1)
         ret = run("kubectl rollout status deploy/"+deploymentName, shell=True)
 
-@pytest.mark.usefixtures("seldon_images")
-@pytest.mark.usefixtures("clusterwide_seldon_helm")
 class TestPrepackSkLearn(object):
 
     # Test prepackaged server for sklearn
     def test_sklearn(self):
         run("kubectl delete sdep --all", shell=True)
         run("kubectl apply -f ../../servers/sklearnserver/samples/iris.yaml", shell=True, check=True)
-        wait_for_rollout("iris-default-8bb3ef6")
+        wait_for_rollout("iris-default-4903e3c")
         wait_for_status("sklearn")
         print("Initial request")
         sc = SeldonClient(deployment_name="sklearn",namespace="seldon")
@@ -58,7 +52,7 @@ class TestPrepackSkLearn(object):
     def test_xgboost(self):
         run("kubectl delete sdep --all", shell=True)
         run("kubectl apply -f ../../servers/xgboostserver/samples/iris.yaml", shell=True, check=True)
-        wait_for_rollout("iris-default-5299e79")
+        wait_for_rollout("iris-default-af1783b")
         wait_for_status("xgboost")
         print("Initial request")
         sc = SeldonClient(deployment_name="xgboost",namespace="seldon")
