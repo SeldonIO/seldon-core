@@ -11,6 +11,7 @@ from seldon_core.wrapper import get_rest_microservice, SeldonModelGRPC, get_grpc
 from seldon_core.proto import prediction_pb2
 from seldon_core.user_model import SeldonComponent
 from seldon_core.utils import (seldon_message_to_json,json_to_seldon_message)
+from seldon_core.flask_utils import SeldonMicroserviceException
 
 from flask import jsonify
 
@@ -363,6 +364,21 @@ def test_model_bad_metrics():
     j = json.loads(rv.data)
     print(j)
     assert rv.status_code == 400
+
+
+def test_model_error_status_code():
+    class ErrorUserObject():
+        def predict(self, X, features_names, **kwargs):
+            raise SeldonMicroserviceException("foo", status_code=403)
+
+    user_object = ErrorUserObject()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+    uo = UserObject()
+    rv = client.get('/predict?json={"strData":"my data"}')
+    j = json.loads(rv.data)
+    print(j)
+    assert rv.status_code == 403
 
 
 def test_model_gets_meta():
