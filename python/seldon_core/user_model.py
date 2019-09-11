@@ -38,7 +38,7 @@ class SeldonComponent(object):
 
     def transform_input(self, X: np.ndarray, names: Iterable[str], meta: Dict = None) -> Union[
         np.ndarray, List, str, bytes]:
-        raise SeldonNotImplementedError("transform is not implemented")
+        raise SeldonNotImplementedError("transform_input is not implemented")
 
     def transform_input_raw(self, msg: prediction_pb2.SeldonMessage) -> prediction_pb2.SeldonMessage:
         raise SeldonNotImplementedError("transform_input_raw is not implemented")
