@@ -34,10 +34,11 @@ def predict(
         logger.warning("predict_grpc is deprecated. Please use predict_raw")
         return user_model.predict_grpc(request)
     else:
-        try:
-            return user_model.predict_raw(request)
-        except NotImplementedError:
-            pass
+        if hasattr(user_model, "predict_raw"):
+            try:
+                return user_model.predict_raw(request)
+            except SeldonNotImplementedError:
+                pass
 
         if is_proto:
             (features, meta, datadef, data_type) = extract_request_parts(request)
@@ -76,10 +77,11 @@ def send_feedback(user_model: Any, request: prediction_pb2.Feedback,
         response_json = user_model.send_feedback_grpc(request)
         return json_to_seldon_message(response_json)
     else:
-        try:
-            return user_model.send_feedback_raw(request)
-        except NotImplementedError:
-            pass
+        if hasattr(user_model, "send_feedback_raw"):
+            try:
+                return user_model.send_feedback_raw(request)
+            except SeldonNotImplementedError:
+                pass
 
         (datadef_request, features, truth, reward) = extract_feedback_request_parts(request)
         routing = request.response.meta.routing.get(predictive_unit_id)
@@ -116,10 +118,11 @@ def transform_input(user_model: Any, request: prediction_pb2.SeldonMessage) -> p
         logger.warning("transform_input_grpc is deprecated. Please use transform_input_raw")
         return user_model.transform_input_grpc(request)
     else:
-        try:
-            return user_model.transform_input_raw(request)
-        except NotImplementedError:
-            pass
+        if hasattr(user_model, "transform_input_raw"):
+            try:
+                return user_model.transform_input_raw(request)
+            except SeldonNotImplementedError:
+                pass
 
         (features, meta, datadef, data_type) = extract_request_parts(request)
         client_response = client_transform_input(user_model, features, datadef.names, meta=meta)
@@ -152,10 +155,11 @@ def transform_output(user_model: Any,
         logger.warning("transform_input_grpc is deprecated. Please use transform_input_raw")
         return user_model.transform_output_grpc(request)
     else:
-        try:
-            return user_model.transform_output_raw(request)
-        except NotImplementedError:
-            pass
+        if hasattr(user_model, "transform_output_raw"):
+            try:
+                return user_model.transform_output_raw(request)
+            except SeldonNotImplementedError:
+                pass
 
         (features, meta, datadef, data_type) = extract_request_parts(request)
         client_response = client_transform_output(user_model, features, datadef.names, meta=meta)
@@ -184,10 +188,11 @@ def route(user_model: Any, request: prediction_pb2.SeldonMessage) -> prediction_
         logger.warning("route_grpc is deprecated. Please use route_raw")
         return user_model.route_grpc(request)
     else:
-        try:
-            return user_model.route_raw(request)
-        except NotImplementedError:
-            pass
+        if hasattr(user_model, "route_raw"):
+            try:
+                return user_model.route_raw(request)
+            except SeldonNotImplementedError:
+                pass
 
         (features, meta, datadef, _) = extract_request_parts(request)
         client_response = client_route(user_model, features, datadef.names)
@@ -222,10 +227,11 @@ def aggregate(user_model: Any, request: prediction_pb2.SeldonMessageList) -> pre
         logger.warning("aggregate_grpc is deprecated. Please use aggregate_raw")
         return user_model.aggregate_grpc(request)
     else:
-        try:
-            return user_model.aggregate_raw(request)
-        except NotImplementedError:
-            pass
+        if hasattr(user_model, "aggregate_raw"):
+            try:
+                return user_model.aggregate_raw(request)
+            except SeldonNotImplementedError:
+                pass
 
         features_list = []
         names_list = []
