@@ -57,7 +57,7 @@ deploy-local: manifests
 
 deploy-cert: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
-	kustomize build config/cert2 | kubectl apply -f -
+	kustomize build config/cert | kubectl apply -f -
 
 
 # Generate manifests e.g. CRD, RBAC etc.
@@ -115,3 +115,4 @@ self-signed-cert:
 
 clean-cert:
 	rm -r self-signed-cert
+
