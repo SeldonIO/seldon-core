@@ -522,3 +522,65 @@ def test_proto_gets_meta():
     assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
     assert j["data"]["tensor"]["shape"] == [2, 1]
     assert j["data"]["tensor"]["values"] == [1, 2]
+
+
+def test_unimplemented_predict_raw_on_seldon_component():
+    class CustomSeldonComponent(SeldonComponent):
+        def predict(self, X, features_names, **kwargs):
+            return X * 2
+
+    user_object = CustomSeldonComponent()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+    rv = client.get('/predict?json={"data":{"names":["a","b"],"ndarray":[[1,2]]}}')
+    j = json.loads(rv.data)
+
+    print(j)
+    assert rv.status_code == 200
+    assert j["data"]["ndarray"] == [[2.0, 4.0]]
+
+
+def test_unimplemented_predict_raw():
+    class CustomObject(object):
+        def predict(self, X, features_names, **kwargs):
+            return X * 2
+
+    user_object = CustomObject()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+    rv = client.get('/predict?json={"data":{"names":["a","b"],"ndarray":[[1,2]]}}')
+    j = json.loads(rv.data)
+
+    print(j)
+    assert rv.status_code == 200
+    assert j["data"]["ndarray"] == [[2.0, 4.0]]
+
+
+def test_unimplemented_feedback_raw_on_seldon_component():
+    class CustomSeldonComponent(SeldonComponent):
+        def feedback(self, features, feature_names, reward, truth):
+            print("Feedback called")
+
+    user_object = CustomSeldonComponent()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+    rv = client.get('/send-feedback?json={"request":{"data":{"ndarray":[]}},"reward":1.0}')
+    j = json.loads(rv.data)
+
+    print(j)
+    assert rv.status_code == 200
+
+
+def test_unimplemented_feedback_raw():
+    class CustomObject(object):
+        def feedback(self, features, feature_names, reward, truth):
+            print("Feedback called")
+
+    user_object = CustomObject()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+    rv = client.get('/send-feedback?json={"request":{"data":{"ndarray":[]}},"reward":1.0}')
+    j = json.loads(rv.data)
+
+    print(j)
+    assert rv.status_code == 200
