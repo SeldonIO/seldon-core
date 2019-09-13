@@ -10,7 +10,7 @@ import tensorflow as tf
 from google.protobuf.struct_pb2 import ListValue
 from seldon_core.user_model import client_class_names, client_custom_metrics, client_custom_tags, client_feature_names, \
     SeldonComponent
-from typing import Tuple, Dict, Union, List, Optional, Iterable, Any
+from typing import Tuple, Dict, Union, List, Optional, Iterable
 import base64
 
 
@@ -172,7 +172,8 @@ def grpc_datadef_to_array(datadef: prediction_pb2.DefaultData) -> np.ndarray:
             features = np.array(datadef.tensor.values).reshape(
                 datadef.tensor.shape)
     elif data_type == "ndarray":
-        features = np.array(datadef.ndarray)
+        py_arr = json_format.MessageToDict(datadef.ndarray)
+        features = np.array(py_arr)
     elif data_type == "tftensor":
         features = tf.make_ndarray(datadef.tftensor)
     else:
@@ -333,7 +334,8 @@ def construct_response_json(
     if "jsonData" in client_request_raw:
         response["jsonData"] = client_raw_response
     elif isinstance(client_raw_response, (bytes, bytearray)):
-        response["binData"] = client_raw_response
+        base64_data = base64.b64encode(client_raw_response)
+        response["binData"] = base64_data.decode("utf-8")
     elif isinstance(client_raw_response, str):
         response["strData"] = client_raw_response
     else:
@@ -350,15 +352,13 @@ def construct_response_json(
             np_client_raw_response = np.array(client_raw_response)
             list_client_raw_response = client_raw_response
 
-        result_client_response = None
-
         response["data"] = {}
         if "data" in client_request_raw:
             if np.issubdtype(np_client_raw_response.dtype, np.number):
                 if "tensor" in client_request_raw["data"]:
                     default_data_type = "tensor"
                     result_client_response = {
-                        "values": list_client_raw_response,
+                        "values": np_client_raw_response.ravel().tolist(),
                         "shape": np_client_raw_response.shape
                     }
                 elif "tftensor" in client_request_raw["data"]:
@@ -381,7 +381,7 @@ def construct_response_json(
                 }
             else:
                 default_data_type = "ndarray"
-                result_client_response = list_client_raw_repsonse
+                result_client_response = list_client_raw_response
 
         response["data"][default_data_type] = result_client_response
 
@@ -487,6 +487,8 @@ def extract_request_parts_json(request: Union[Dict, List]
        Key parts of the request extracted
 
     """
+    if not isinstance(request, dict):
+        raise SeldonMicroserviceException(f"Invalid request data type: {request}")
     meta = request.get("meta", None)
     datadef_type = None
     datadef = None

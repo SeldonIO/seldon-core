@@ -199,6 +199,9 @@ def main():
 
     parameters = parse_parameters(json.loads(args.parameters))
 
+    # set flask trace jaeger extra tags
+    jaeger_extra_tags = list(filter(lambda x: (x != ""), [tag.strip() for tag in os.environ.get("JAEGER_EXTRA_TAGS", "").split(",")]))
+    logger.info('Parse JAEGER_EXTRA_TAGS %s', jaeger_extra_tags)
     # set up log level
     log_level_raw = os.environ.get(LOG_LEVEL_ENV, args.log_level.upper())
     log_level_num = getattr(logging, log_level_raw, None)
@@ -269,8 +272,10 @@ def main():
                 except (NotImplementedError, AttributeError):
                     pass
                 if args.tracing:
+                    logger.info('Tracing branch is active')
                     from flask_opentracing import FlaskTracer
-                    tracing = FlaskTracer(tracer, True, app)
+                    logger.info('Set JAEGER_EXTRA_TAGS %s', jaeger_extra_tags)
+                    tracing = FlaskTracer(tracer, True, app, jaeger_extra_tags)
 
                 app.run(host='0.0.0.0', port=port)
 

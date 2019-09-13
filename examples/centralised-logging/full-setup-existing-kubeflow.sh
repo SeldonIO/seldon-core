@@ -1,3 +1,11 @@
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+set -o noclobber
+set -o noglob
+
 # Assumes existing cluster with kubeflow's istio gateway
 # Will put services behind kubeflow istio gateway
 

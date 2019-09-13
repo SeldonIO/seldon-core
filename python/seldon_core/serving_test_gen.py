@@ -16,8 +16,14 @@ def _column_range(col: pd.Series) -> Optional[List]:
     """
     Calculate minimum and maximum of a column and outputs a list.
 
-    :param col: Column to inspect.
-    :return: Min and max of the column range as a list.
+    Parameters
+    ----------
+    col
+        Column to inspect.
+
+    Returns
+    -------
+        Min and max of the column range as a list.
     """
     if col.dtype == np.float:
         if pd.isnull(min(col)):  # This also means that maximum is null
@@ -37,8 +43,14 @@ def _column_values(column: pd.Series) -> Union[List, float]:
     """
     Create a list of unique values for categorical variables.
 
-    :param column: Column to inspect.
-    :return:
+    Parameters
+    ----------
+    column
+        Column to inspect.
+
+    Returns
+    -------
+        List of unique values for categorical variables
     """
     if column.dtype != np.number:
         return column.unique().tolist()
@@ -50,10 +62,18 @@ def create_seldon_api_testing_file(data: pd.DataFrame, target: str, output_path:
     """
     Create a JSON file for Seldon API testing.
 
-    :param data: Pandas DataFrame used as a recipe for the json file.
-    :param target: Name of the target column.
-    :param output_path: Path of output file.
-    :return: True if file correctly generated.
+    Parameters
+    ----------
+    data
+        Pandas DataFrame used as a recipe for the json file.
+    target
+        Name of the target column.
+    output_path
+        Path of output file.
+
+    Returns
+    -------
+        True if file correctly generated.
     """
 
     # create a Data frame in the form of JSON object

@@ -80,6 +80,14 @@ seldon\_core.seldon\_methods module
     :undoc-members:
     :show-inheritance:
 
+seldon\_core.serving\_test\_gen module
+--------------------------------------
+
+.. automodule:: seldon_core.serving_test_gen
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 seldon\_core.storage module
 ---------------------------
 

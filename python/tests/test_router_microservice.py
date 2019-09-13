@@ -3,6 +3,9 @@ import numpy as np
 from google.protobuf import json_format
 from seldon_core.wrapper import get_rest_microservice, SeldonModelGRPC, get_grpc_server
 from seldon_core.proto import prediction_pb2
+from seldon_core.utils import seldon_message_to_json
+from seldon_core.user_model import SeldonComponent
+from typing import Dict, List, Union
 
 
 class UserObject(object):
@@ -79,7 +82,13 @@ class UserObjectLowLevelRaw(object):
         self.ret_nparray = ret_nparray
         self.nparray = np.array([1, 2, 3])
 
-    def route_raw(self, request):
+    def route_raw(
+            self,
+            request: Union[prediction_pb2.SeldonMessage, List, Dict]) \
+            -> Union[prediction_pb2.SeldonMessage, List, Dict]:
+
+        is_proto = isinstance(request, prediction_pb2.SeldonMessage)
+
         arr = np.array([1])
         datadef = prediction_pb2.DefaultData(
             tensor=prediction_pb2.Tensor(
@@ -87,8 +96,11 @@ class UserObjectLowLevelRaw(object):
                 values=arr
             )
         )
-        request = prediction_pb2.SeldonMessage(data=datadef)
-        return request
+        response = prediction_pb2.SeldonMessage(data=datadef)
+        if is_proto:
+            return response
+        else:
+            return seldon_message_to_json(response)
 
     def send_feedback_raw(self, request):
         print("Feedback called")
@@ -273,3 +285,35 @@ def test_proto_feedback():
 def test_get_grpc_server():
     user_object = UserObject()
     server = get_grpc_server(user_object)
+
+
+def test_unimplemented_route_raw_on_seldon_component():
+    class CustomSeldonComponent(SeldonComponent):
+        def route(self, X, features_names):
+            return 53
+
+    user_object = CustomSeldonComponent()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+    rv = client.get('/route?json={"data":{"ndarray":[2]}}')
+    j = json.loads(rv.data)
+
+    print(j)
+    assert rv.status_code == 200
+    assert j["data"]["ndarray"] == [[53]]
+
+
+def test_unimplemented_route_raw():
+    class CustomObject(object):
+        def route(self, X, features_names):
+            return 53
+
+    user_object = CustomObject()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+    rv = client.get('/route?json={"data":{"ndarray":[2]}}')
+    j = json.loads(rv.data)
+
+    print(j)
+    assert rv.status_code == 200
+    assert j["data"]["ndarray"] == [[53]]

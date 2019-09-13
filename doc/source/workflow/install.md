@@ -3,6 +3,7 @@
 To install seldon-core on a Kubernetes cluster you have several choices:
 
  * If you have a Google Cloud Platform account you can install via the [GCP Marketplace](https://console.cloud.google.com/marketplace/details/seldon-portal/seldon-core).
+ * If you have an OpenShift cluster we have a Seldon Core Certified OpenShift operator, which you can find via the [Redhat Container Catalogue](https://access.redhat.com/containers/#/product/a7439c449548aa41).
 
 For CLI installs:
 
