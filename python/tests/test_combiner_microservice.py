@@ -7,6 +7,7 @@ import base64
 from seldon_core.wrapper import get_rest_microservice, SeldonModelGRPC, get_grpc_server
 from seldon_core.proto import prediction_pb2
 from seldon_core.utils import seldon_message_to_json
+from seldon_core.user_model import SeldonComponent
 
 from typing import List, Dict, Union
 
@@ -291,3 +292,35 @@ def test_aggregate_proto_lowlevel_ok():
 def test_get_grpc_server():
     user_object = UserObject(ret_nparray=True)
     server = get_grpc_server(user_object)
+
+
+def test_unimplemented_aggregate_raw_on_seldon_component():
+    class CustomSeldonComponent(SeldonComponent):
+        def aggregate(self, Xs, features_names):
+            return sum(Xs) * 2
+
+    user_object = CustomSeldonComponent()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+    rv = client.get('/aggregate?json={"seldonMessages":[{"data":{"ndarray":[1]}},{"data":{"ndarray":[2]}}]}')
+    j = json.loads(rv.data)
+
+    print(j)
+    assert rv.status_code == 200
+    assert j["data"]["ndarray"] == [6.0]
+
+
+def test_unimplemented_aggregate_raw():
+    class CustomObject(object):
+        def aggregate(self, Xs, features_names):
+            return sum(Xs) * 2
+
+    user_object = CustomObject()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+    rv = client.get('/aggregate?json={"seldonMessages":[{"data":{"ndarray":[1]}},{"data":{"ndarray":[2]}}]}')
+    j = json.loads(rv.data)
+
+    print(j)
+    assert rv.status_code == 200
+    assert j["data"]["ndarray"] == [6.0]

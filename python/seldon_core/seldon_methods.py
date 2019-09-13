@@ -4,7 +4,7 @@ from seldon_core.utils import extract_request_parts, construct_response, \
     extract_request_parts_json, extract_feedback_request_parts
 from seldon_core.user_model import client_predict, client_aggregate, \
     client_route, client_transform_output, client_transform_input, \
-    client_send_feedback
+    client_send_feedback, SeldonNotImplementedError
 from seldon_core.flask_utils import SeldonMicroserviceException
 from google.protobuf import json_format
 from seldon_core.proto import prediction_pb2
@@ -40,10 +40,11 @@ def predict(
         logger.warning("predict_grpc is deprecated. Please use predict_raw")
         return user_model.predict_grpc(request)
     else:
-        try:
-            return user_model.predict_raw(request)
-        except (NotImplementedError, AttributeError):
-            pass
+        if hasattr(user_model, "predict_raw"):
+            try:
+                return user_model.predict_raw(request)
+            except SeldonNotImplementedError:
+                pass
 
         if is_proto:
             (features, meta, datadef, data_type) = extract_request_parts(request)
@@ -85,18 +86,21 @@ def send_feedback(
         response_json = user_model.send_feedback_grpc(request)
         return json_to_seldon_message(response_json)
     else:
-        try:
-            return user_model.send_feedback_raw(request)
-        except (NotImplementedError, AttributeError):
-            (datadef_request, features, truth, reward) = extract_feedback_request_parts(request)
-            routing = request.response.meta.routing.get(predictive_unit_id)
-            client_response = client_send_feedback(user_model, features, datadef_request.names, reward, truth, routing)
+        if hasattr(user_model, "send_feedback_raw"):
+            try:
+                return user_model.send_feedback_raw(request)
+            except SeldonNotImplementedError:
+                pass
 
-            if client_response is None:
-                client_response = np.array([])
-            else:
-                client_response = np.array(client_response)
-            return construct_response(user_model, False, request.request, client_response)
+        (datadef_request, features, truth, reward) = extract_feedback_request_parts(request)
+        routing = request.response.meta.routing.get(predictive_unit_id)
+        client_response = client_send_feedback(user_model, features, datadef_request.names, reward, truth, routing)
+
+        if client_response is None:
+            client_response = np.array([])
+        else:
+            client_response = np.array(client_response)
+        return construct_response(user_model, False, request.request, client_response)
 
 
 def transform_input(
@@ -126,10 +130,11 @@ def transform_input(
         logger.warning("transform_input_grpc is deprecated. Please use transform_input_raw")
         return user_model.transform_input_grpc(request)
     else:
-        try:
-            return user_model.transform_input_raw(request)
-        except (NotImplementedError, AttributeError):
-            pass
+        if hasattr(user_model, "transform_input_raw"):
+            try:
+                return user_model.transform_input_raw(request)
+            except SeldonNotImplementedError:
+                pass
 
         if is_proto:
             (features, meta, datadef, data_type) = extract_request_parts(request)
@@ -170,10 +175,11 @@ def transform_output(
         logger.warning("transform_input_grpc is deprecated. Please use transform_input_raw")
         return user_model.transform_output_grpc(request)
     else:
-        try:
-            return user_model.transform_output_raw(request)
-        except (NotImplementedError, AttributeError):
-            pass
+        if hasattr(user_model, "transform_output_raw"):
+            try:
+                return user_model.transform_output_raw(request)
+            except SeldonNotImplementedError:
+                pass
 
         if is_proto:
             (features, meta, datadef, data_type) = extract_request_parts(request)
@@ -212,10 +218,11 @@ def route(
         logger.warning("route_grpc is deprecated. Please use route_raw")
         return user_model.route_grpc(request)
     else:
-        try:
-            return user_model.route_raw(request)
-        except (NotImplementedError, AttributeError):
-            pass
+        if hasattr(user_model, "route_raw"):
+            try:
+                return user_model.route_raw(request)
+            except SeldonNotImplementedError:
+                pass
 
         if is_proto:
             (features, meta, datadef, data_type) = extract_request_parts(request)
@@ -260,10 +267,11 @@ def aggregate(user_model: Any, request: prediction_pb2.SeldonMessageList) -> pre
         logger.warning("aggregate_grpc is deprecated. Please use aggregate_raw")
         return user_model.aggregate_grpc(request)
     else:
-        try:
-            return user_model.aggregate_raw(request)
-        except (NotImplementedError, AttributeError):
-            pass
+        if hasattr(user_model, "aggregate_raw"):
+            try:
+                return user_model.aggregate_raw(request)
+            except SeldonNotImplementedError:
+                pass
 
         if is_proto:
             features_list = []

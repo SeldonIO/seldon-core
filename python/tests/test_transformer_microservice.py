@@ -626,3 +626,67 @@ def test_transform_output_proto_gets_meta():
     assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
     assert j["data"]["tensor"]["shape"] == [2, 1]
     assert j["data"]["tensor"]["values"] == [1, 2]
+
+
+def test_unimplemented_transform_input_raw_on_seldon_component():
+    class CustomSeldonComponent(SeldonComponent):
+        def transform_input(self, X, features_names, **kwargs):
+            return X * 2
+
+    user_object = CustomSeldonComponent()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+    rv = client.get('/transform-input?json={"data":{"ndarray":[1]}}')
+    j = json.loads(rv.data)
+
+    print(j)
+    assert rv.status_code == 200
+    assert j["data"]["ndarray"] == [2.0]
+
+
+def test_unimplemented_transform_input_raw():
+    class CustomObject(object):
+        def transform_input(self, X, features_names, **kwargs):
+            return X * 2
+
+    user_object = CustomObject()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+    rv = client.get('/transform-input?json={"data":{"ndarray":[1]}}')
+    j = json.loads(rv.data)
+
+    print(j)
+    assert rv.status_code == 200
+    assert j["data"]["ndarray"] == [2.0]
+
+
+def test_unimplemented_transform_output_raw_on_seldon_component():
+    class CustomSeldonComponent(SeldonComponent):
+        def transform_output(self, X, features_names, **kwargs):
+            return X * 2
+
+    user_object = CustomSeldonComponent()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+    rv = client.get('/transform-output?json={"data":{"ndarray":[1]}}')
+    j = json.loads(rv.data)
+
+    print(j)
+    assert rv.status_code == 200
+    assert j["data"]["ndarray"] == [2.0]
+
+
+def test_unimplemented_transform_output_raw():
+    class CustomObject(object):
+        def transform_output(self, X, features_names, **kwargs):
+            return X * 2
+
+    user_object = CustomObject()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+    rv = client.get('/transform-output?json={"data":{"ndarray":[1]}}')
+    j = json.loads(rv.data)
+
+    print(j)
+    assert rv.status_code == 200
+    assert j["data"]["ndarray"] == [2.0]
