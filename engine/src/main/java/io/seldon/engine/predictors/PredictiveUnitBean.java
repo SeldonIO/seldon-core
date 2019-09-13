@@ -90,9 +90,9 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 		for(List<Metric> mlist: metrics.values())
 			metricList.addAll(mlist);
 		SeldonMessage.Builder builder = SeldonMessage
-	    		.newBuilder(response)
-	    		.setMeta(Meta
-	    				.newBuilder(response.getMeta()).putAllRouting(routingDict).putAllRequestPath(requestPathDict).addAllMetrics(metricList));
+			.newBuilder(response)
+			.setMeta(Meta
+					.newBuilder(response.getMeta()).putAllRouting(routingDict).putAllRequestPath(requestPathDict).addAllMetrics(metricList));
 		return builder.build();
 	}
 	
@@ -111,6 +111,8 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 	
 	@Async
 	public Future<SeldonMessage> getOutputAsync(SeldonMessage input, PredictiveUnitState state, Map<String,Integer> routingDict,Map<String,String> requestPathDict,Map<String,List<Metric>> metrics,Span activeSpan) throws InterruptedException, ExecutionException, InvalidProtocolBufferException{
+
+		String puid = input.getMeta().getPuid();
 		
 		if (activeSpan != null && tracing != null)
 			tracing.getTracer().scopeManager().activate(activeSpan, true);
@@ -126,8 +128,9 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 		SeldonMessage transformedInput = implementation.transformInput(input, state);
 		
 		addMetrics(transformedInput,state,metrics);
-		// Preserve the original metadata except metrics
-		transformedInput = mergeMeta(transformedInput,input.getMeta());
+
+		// Override the input metadata with the new metadata from transformed input
+		transformedInput = mergeMeta(transformedInput, input, puid);
 
 		
 		if (state.children.isEmpty()){
@@ -181,11 +184,12 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 		addMetrics(aggregatedOutput,state,metrics);
 		
 		// Merge all the outputs metadata
-		aggregatedOutput = mergeMeta(aggregatedOutput,childrenOutputs);
+		aggregatedOutput = mergeMeta(aggregatedOutput, childrenOutputs, puid);
 		SeldonMessage transformedOutput = implementation.transformOutput(aggregatedOutput, state);
 		addMetrics(transformedOutput,state,metrics);
-		// Preserve metadata except metrics
-		transformedOutput = mergeMeta(transformedOutput,aggregatedOutput.getMeta());
+
+		// Override the input metadata with the new metadata from transformed input
+		transformedOutput = mergeMeta(transformedOutput, aggregatedOutput, puid);
 
 		
 		return new AsyncResult<>(transformedOutput);
@@ -347,22 +351,24 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 		}
 	}
 
-	private SeldonMessage mergeMeta(SeldonMessage message, List<SeldonMessage> messages) {
-		Meta.Builder metaBuilder = Meta.newBuilder(message.getMeta());
-		for (SeldonMessage originalMessage : messages){
+	private SeldonMessage mergeMeta(SeldonMessage latest, List<SeldonMessage> previous, String puid) {
+		Meta.Builder metaBuilder = Meta.newBuilder();
+		metaBuilder.setPuid(puid);
+		for (SeldonMessage originalMessage : previous){
 			metaBuilder.putAllTags(originalMessage.getMeta().getTagsMap());
-			metaBuilder.setPuid(originalMessage.getMeta().getPuid());
 		}
+		metaBuilder.putAllTags(latest.getMeta().getTagsMap());
 		metaBuilder.clearMetrics();
-		return SeldonMessage.newBuilder(message).setMeta(metaBuilder).build();
+		return SeldonMessage.newBuilder(latest).setMeta(metaBuilder).build();
 	}
 	
-	private SeldonMessage mergeMeta(SeldonMessage message, Meta meta) {
-		Meta.Builder metaBuilder = Meta.newBuilder(message.getMeta());
-		metaBuilder.setPuid(meta.getPuid());
-		metaBuilder.putAllTags(meta.getTagsMap());
+	private SeldonMessage mergeMeta(SeldonMessage latest, SeldonMessage previous, String puid) {
+		Meta.Builder metaBuilder = Meta.newBuilder();
+		metaBuilder.setPuid(puid);
+		metaBuilder.putAllTags(previous.getMeta().getTagsMap());
+		metaBuilder.putAllTags(latest.getMeta().getTagsMap());
 		metaBuilder.clearMetrics();
-		return SeldonMessage.newBuilder(message).setMeta(metaBuilder).build();
+		return SeldonMessage.newBuilder(latest).setMeta(metaBuilder).build();
 	}
 
 }
