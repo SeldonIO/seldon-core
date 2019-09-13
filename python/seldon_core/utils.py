@@ -10,7 +10,7 @@ import tensorflow as tf
 from google.protobuf.struct_pb2 import ListValue
 from seldon_core.user_model import client_class_names, client_custom_metrics, client_custom_tags, client_feature_names, \
     SeldonComponent
-from typing import Tuple, Dict, Union, List, Optional, Iterable, Any
+from typing import Tuple, Dict, Union, List, Optional, Iterable
 import base64
 
 
@@ -487,6 +487,8 @@ def extract_request_parts_json(request: Union[Dict, List]
        Key parts of the request extracted
 
     """
+    if not isinstance(request, dict):
+        raise SeldonMicroserviceException(f"Invalid request data type: {request}")
     meta = request.get("meta", None)
     datadef_type = None
     datadef = None

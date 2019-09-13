@@ -3,7 +3,9 @@ import numpy as np
 from google.protobuf import json_format
 from seldon_core.wrapper import get_rest_microservice, SeldonModelGRPC, get_grpc_server
 from seldon_core.proto import prediction_pb2
+from seldon_core.utils import seldon_message_to_json
 from seldon_core.user_model import SeldonComponent
+from typing import Dict, List, Union
 
 
 class UserObject(object):
@@ -80,7 +82,13 @@ class UserObjectLowLevelRaw(object):
         self.ret_nparray = ret_nparray
         self.nparray = np.array([1, 2, 3])
 
-    def route_raw(self, request):
+    def route_raw(
+            self,
+            request: Union[prediction_pb2.SeldonMessage, List, Dict]) \
+            -> Union[prediction_pb2.SeldonMessage, List, Dict]:
+
+        is_proto = isinstance(request, prediction_pb2.SeldonMessage)
+
         arr = np.array([1])
         datadef = prediction_pb2.DefaultData(
             tensor=prediction_pb2.Tensor(
@@ -88,8 +96,11 @@ class UserObjectLowLevelRaw(object):
                 values=arr
             )
         )
-        request = prediction_pb2.SeldonMessage(data=datadef)
-        return request
+        response = prediction_pb2.SeldonMessage(data=datadef)
+        if is_proto:
+            return response
+        else:
+            return seldon_message_to_json(response)
 
     def send_feedback_raw(self, request):
         print("Feedback called")
