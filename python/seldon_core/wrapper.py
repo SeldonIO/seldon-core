@@ -27,7 +27,7 @@ def get_rest_microservice(user_model):
     def handle_invalid_usage(error):
         response = jsonify(error.to_dict())
         logger.error("%s", error.to_dict())
-        response.status_code = 400
+        response.status_code = error.status_code
         return response
 
     @app.route("/seldon.json", methods=["GET"])
