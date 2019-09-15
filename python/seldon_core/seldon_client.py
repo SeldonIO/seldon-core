@@ -197,7 +197,7 @@ class SeldonClient(object):
                 gateway_endpoint: str = None, microservice_endpoint: str = None,
                 method: str = None, shape: Tuple = (1, 1), namespace: str = None, data: np.ndarray = None,
                 bin_data: Union[bytes, bytearray] = None, str_data: str = None, names: Iterable[str] = None,
-                gateway_prefix: str = None, headers: Dict = None) -> SeldonClientPrediction:
+                gateway_prefix: str = None, headers: Dict = None, http_path: str = None) -> SeldonClientPrediction:
         """
 
         Parameters
@@ -240,6 +240,8 @@ class SeldonClient(object):
            prefix path for gateway URL endpoint
         headers
            Headers to add to request
+        http_path:
+           Custom http path for predict call to use
 
         Returns
         -------
@@ -252,7 +254,7 @@ class SeldonClient(object):
                               microservice_endpoint=microservice_endpoint, method=method, shape=shape,
                               namespace=namespace, names=names,
                               data=data, bin_data=bin_data, str_data=str_data,
-                              gateway_prefix=gateway_prefix, headers=headers)
+                              gateway_prefix=gateway_prefix, headers=headers, http_path=http_path)
         self._validate_args(**k)
         if k["gateway"] == "ambassador" or k["gateway"] == "istio":
             if k["transport"] == "rest":
@@ -347,6 +349,84 @@ class SeldonClient(object):
                 raise SeldonClientException("Unknown transport " + k["transport"])
         else:
             raise SeldonClientException("Unknown gateway " + k["gateway"])
+
+    def explain(self, gateway: str = None, transport: str = None, deployment_name: str = None,
+                payload_type: str = None,
+                seldon_rest_endpoint: str = None, seldon_grpc_endpoint: str = None,
+                gateway_endpoint: str = None, microservice_endpoint: str = None,
+                method: str = None, shape: Tuple = (1, 1), namespace: str = None,
+                data: np.ndarray = None,
+                bin_data: Union[bytes, bytearray] = None, str_data: str = None,
+                names: Iterable[str] = None,
+                gateway_prefix: str = None, headers: Dict = None,
+                http_path: str = None) -> Dict:
+        """
+
+        Parameters
+        ----------
+        gateway
+           API Gateway - either ambassador, istio or seldon
+        transport
+           API transport - grpc or rest
+        namespace
+           k8s namespace of running deployment
+        deployment_name
+           name of seldon deployment
+        payload_type
+           type of payload - tensor, ndarray or tftensor
+        seldon_rest_endpoint
+           REST endpoint to seldon api server
+        seldon_grpc_endpoint
+           gRPC endpoint to seldon api server
+        gateway_endpoint
+           Gateway endpoint
+        microservice_endpoint
+           Running microservice endpoint
+        grpc_max_send_message_length
+           Max grpc send message size in bytes
+        grpc_max_receive_message_length
+           Max grpc receive message size in bytes
+        data
+           Numpy Array Payload to send
+        bin_data
+           Binary payload to send - will override data
+        str_data
+           String payload to send - will override data
+        names
+           Column names
+        gateway_prefix
+           prefix path for gateway URL endpoint
+        headers
+           Headers to add to request
+        http_path:
+           Custom http path for predict call to use
+
+        Returns
+        -------
+
+        """
+        k = self._gather_args(gateway=gateway, transport=transport, deployment_name=deployment_name,
+                              payload_type=payload_type, seldon_rest_endpoint=seldon_rest_endpoint,
+                              seldon_grpc_endpoint=seldon_grpc_endpoint,
+                              gateway_endpoint=gateway_endpoint,
+                              microservice_endpoint=microservice_endpoint, method=method,
+                              shape=shape,
+                              namespace=namespace, names=names,
+                              data=data, bin_data=bin_data, str_data=str_data,
+                              gateway_prefix=gateway_prefix, headers=headers, http_path=http_path)
+        self._validate_args(**k)
+        if k["gateway"] == "ambassador" or k["gateway"] == "istio":
+            if k["transport"] == "rest":
+                return explain_predict_gateway(**k)
+            elif k["transport"] == "grpc":
+                raise SeldonClientException("gRPC not supported for explain")
+            else:
+                raise SeldonClientException("Unknown transport " + k["transport"])
+        else:
+            raise SeldonClientException("Unknown gateway " + k["gateway"])
+
+
+
 
     def microservice(self, gateway: str = None, transport: str = None, deployment_name: str = None,
                      payload_type: str = None, oauth_key: str = None, oauth_secret: str = None,
@@ -1031,7 +1111,7 @@ def rest_predict_gateway(deployment_name: str, namespace: str = None, gateway_en
                          payload_type: str = "tensor",
                          bin_data: Union[bytes, bytearray] = None, str_data: str = None,
                          names: Iterable[str] = None, call_credentials: SeldonCallCredentials = None,
-                         channel_credentials: SeldonChannelCredentials= None,
+                         channel_credentials: SeldonChannelCredentials= None, http_path: str = None,
                          **kwargs) -> SeldonClientPrediction:
     """
     REST request to Gateway Ingress
@@ -1064,6 +1144,8 @@ def rest_predict_gateway(deployment_name: str, namespace: str = None, gateway_en
        Call credentials - see SeldonCallCredentials
     channel_credentials
        Channel credentials - see SeldonChannelCredentials
+    http_path
+       Custom http path
 
     Returns
     -------
@@ -1092,13 +1174,16 @@ def rest_predict_gateway(deployment_name: str, namespace: str = None, gateway_en
         if not call_credentials is None:
             if not call_credentials.token is None:
                 req_headers["X-Auth-Token"] = call_credentials.token
-    if gateway_prefix is None:
-        if namespace is None:
-            url = scheme + "://" + gateway_endpoint + "/seldon/" + deployment_name + "/api/v0.1/predictions"
-        else:
-            url = scheme+"://" + gateway_endpoint + "/seldon/" + namespace + "/" + deployment_name + "/api/v0.1/predictions"
+    if http_path is not None:
+        url = url = scheme+"://" + gateway_endpoint + "/seldon/" + namespace + "/" + deployment_name + http_path
     else:
-        url = scheme+"://" + gateway_endpoint + gateway_prefix + "/api/v0.1/predictions"
+        if gateway_prefix is None:
+            if namespace is None:
+                url = scheme + "://" + gateway_endpoint + "/seldon/" + deployment_name + "/api/v0.1/predictions"
+            else:
+                url = scheme+"://" + gateway_endpoint + "/seldon/" + namespace + "/" + deployment_name + "/api/v0.1/predictions"
+        else:
+            url = scheme+"://" + gateway_endpoint + gateway_prefix + "/api/v0.1/predictions"
     verify = True
     cert = None
     if not channel_credentials is None:
@@ -1133,6 +1218,107 @@ def rest_predict_gateway(deployment_name: str, namespace: str = None, gateway_en
         return SeldonClientPrediction(request, response, success, msg)
     except Exception as e:
         return SeldonClientPrediction(request, None, False, str(e))
+
+
+def explain_predict_gateway(deployment_name: str, namespace: str = None, gateway_endpoint: str = "localhost:8003",
+                         shape: Tuple[int, int] = (1, 1),
+                         data: np.ndarray = None, headers: Dict = None, gateway_prefix: str = None,
+                         payload_type: str = "tensor",
+                         bin_data: Union[bytes, bytearray] = None, str_data: str = None,
+                         names: Iterable[str] = None, call_credentials: SeldonCallCredentials = None,
+                         channel_credentials: SeldonChannelCredentials= None, http_path: str = None,
+                         **kwargs) -> Dict:
+    """
+    REST explain request to Gateway Ingress
+
+    Parameters
+    ----------
+    deployment_name
+       The name of the Seldon Deployment
+    namespace
+       k8s namespace of running deployment
+    gateway_endpoint
+       The host:port of gateway
+    shape
+       The shape of the data to send
+    data
+       The numpy data to send
+    headers
+       Headers to add to request
+    gateway_prefix
+       The prefix path to add to the request
+    payload_type
+       payload - tensor, ndarray or tftensor
+    bin_data
+       Binary data to send
+    str_data
+       String data to send
+    names
+       Column names
+    call_credentials
+       Call credentials - see SeldonCallCredentials
+    channel_credentials
+       Channel credentials - see SeldonChannelCredentials
+    http_path
+       Custom http path
+
+    Returns
+    -------
+       A JSON Dict
+
+    """
+    if bin_data is not None:
+        request = prediction_pb2.SeldonMessage(binData=bin_data)
+    elif str_data is not None:
+        request = prediction_pb2.SeldonMessage(strData=str_data)
+    else:
+        if data is None:
+            data = np.random.rand(*shape)
+        datadef = array_to_grpc_datadef(payload_type, data, names=names)
+        request = prediction_pb2.SeldonMessage(data=datadef)
+    payload = seldon_message_to_json(request)
+
+    if not headers is None:
+        req_headers = headers.copy()
+    else:
+        req_headers = {}
+    if channel_credentials is None:
+        scheme = "http"
+    else:
+        scheme = "https"
+        if not call_credentials is None:
+            if not call_credentials.token is None:
+                req_headers["X-Auth-Token"] = call_credentials.token
+    if http_path is not None:
+        url = url = scheme+"://" + gateway_endpoint + "/seldon/" + namespace + "/" + deployment_name + http_path
+    else:
+        if gateway_prefix is None:
+            if namespace is None:
+                url = scheme + "://" + gateway_endpoint + "/seldon/" + deployment_name + "-explainer/models/" + deployment_name+ ":explain"
+            else:
+                url = scheme+"://" + gateway_endpoint + "/seldon/" + namespace + "/" + deployment_name + "-explainer/models/" + deployment_name+ ":explain"
+        else:
+            url = scheme+"://" + gateway_endpoint + gateway_prefix + + "/models/" + deployment_name+ ":explain"
+    verify = True
+    cert = None
+    if not channel_credentials is None:
+        if not channel_credentials.certificate_chain_file is None:
+            verify = channel_credentials.certificate_chain_file
+        else:
+            verify = channel_credentials.verify
+        if not channel_credentials.private_key_file is None:
+            cert = (channel_credentials.root_certificates_file, channel_credentials.private_key_file)
+    logger.debug("URL is "+url)
+    response_raw = requests.post(
+        url,
+        json=payload,
+        headers=req_headers,
+        verify=verify,
+        cert=cert)
+    if response_raw.status_code == 200:
+        return response_raw.json()
+    else:
+        return {"success":False,"response_code":response_raw.status_code}
 
 def grpc_predict_gateway(deployment_name: str, namespace: str = None, gateway_endpoint: str = "localhost:8003",
                          shape: Tuple[int, int] = (1, 1),

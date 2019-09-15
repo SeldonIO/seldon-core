@@ -34,7 +34,11 @@ class TfServingProxy(object):
         log.debug("grpc_endpoint:",grpc_endpoint)
         if not grpc_endpoint is None:
             self.grpc = True
-            channel = grpc.insecure_channel(grpc_endpoint)
+            max_msg = 1000000000
+            options = [('grpc.max_message_length', max_msg),
+                       ('grpc.max_send_message_length', max_msg),
+                       ('grpc.max_receive_message_length', max_msg)]
+            channel = grpc.insecure_channel(grpc_endpoint,options)
             self.stub = prediction_service_pb2_grpc.PredictionServiceStub(channel)
         else:
             self.grpc = False
@@ -80,13 +84,10 @@ class TfServingProxy(object):
                     data_arr.tolist(),
                     shape=data_arr.shape))
             result = self.stub.Predict(tfrequest)
-            result_arr = numpy.array(result.outputs[self.model_output].float_val)
-            if len(result_arr.shape) == 1:
-                result_arr = numpy.expand_dims(result_arr, axis=0)
-            class_names = []
-            data = array_to_grpc_datadef(
-                default_data_type, result_arr, class_names)
-            return prediction_pb2.SeldonMessage(data=data)
+            datadef = prediction_pb2.DefaultData(
+                tftensor=result.outputs[self.model_output]
+            )
+            return prediction_pb2.SeldonMessage(data=datadef)
 
     def predict(self, X, features_names=[]):
         """
