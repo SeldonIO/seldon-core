@@ -18,6 +18,8 @@ const (
 	ANNOTATION_AMBASSADOR_ID           = "seldon.io/ambassador-id"
 
 	YAML_SEP = "---\n"
+
+	AMBASSADOR_IDLE_TIMEOUT = 300000
 )
 
 // Struct for Ambassador configuration
@@ -30,6 +32,7 @@ type AmbassadorConfig struct {
 	Rewrite      string                 `yaml:"rewrite,omitempty"`
 	Service      string                 `yaml:"service"`
 	TimeoutMs    int                    `yaml:"timeout_ms"`
+	IdleTimeoutMs *int                  `yaml:"idle_timeout_ms"`
 	Headers      map[string]string      `yaml:"headers,omitempty"`
 	RegexHeaders map[string]string      `yaml:"regex_headers,omitempty"`
 	Weight       int32                  `yaml:"weight,omitempty"`
@@ -83,6 +86,10 @@ func getAmbassadorRestConfig(mlDep *machinelearningv1alpha2.SeldonDeployment,
 			NumRetries: 3,
 		},
 		Weight: weight,
+	}
+
+	if timeout > AMBASSADOR_IDLE_TIMEOUT {
+		c.IdleTimeoutMs = &timeout
 	}
 
 	if addNamespace {
@@ -167,6 +174,10 @@ func getAmbassadorGrpcConfig(mlDep *machinelearningv1alpha2.SeldonDeployment,
 			NumRetries: 3,
 		},
 		Weight: weight,
+	}
+
+	if timeout > AMBASSADOR_IDLE_TIMEOUT {
+		c.IdleTimeoutMs = &timeout
 	}
 
 	if addNamespace {

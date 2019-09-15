@@ -53,7 +53,7 @@ func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1alph
 
 		if explainerContainer.Image == "" {
 			// TODO: should use explainer type but this is the only one available currently
-			explainerContainer.Image = "seldonio/alibiexplainer:0.1"
+			explainerContainer.Image = "seldonio/alibiexplainer:0.2.3"
 		}
 
 		var portType string
@@ -98,12 +98,15 @@ func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1alph
 		}
 
 		explainerContainer.Args = []string{
-			"--explainerUri=" + DefaultModelLocalMountPath,
-			"--explainer_name=" + mlDep.Name,
-			"--predict_url=" + "http://" + pSvcEndpoint + "/api/v0.1/predictions",
+			"--model_name=" + mlDep.Name,
+			"--predictor_host=" + pSvcEndpoint,
 			"--protocol=" + "seldon." + portType,
 			"--type=" + strings.ToLower(p.Explainer.Type),
 			"--http_port=" + strconv.Itoa(int(portNum))}
+
+		if p.Explainer.ModelUri != "" {
+			explainerContainer.Args = append(explainerContainer.Args, "--storage_uri="+DefaultModelLocalMountPath)
+		}
 
 		for k, v := range p.Explainer.Config {
 			//remote files in model location should get downloaded by initializer
@@ -128,12 +131,17 @@ func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1alph
 		seldonPodSpec := machinelearningv1alpha2.SeldonPodSpec{Spec: corev1.PodSpec{
 			Containers: []corev1.Container{explainerContainer},
 		}}
+
 		deploy := createDeploymentWithoutEngine(depName, seldonId, &seldonPodSpec, p, mlDep)
 
-		deploy, err := InjectModelInitializer(deploy, explainerContainer.Name, p.Explainer.ModelUri, p.Explainer.ServiceAccountName, p.Explainer.EnvSecretRefName, r.Client)
-		if err != nil {
-			return err
+		if p.Explainer.ModelUri != "" {
+			var err error
+			deploy, err = InjectModelInitializer(deploy, explainerContainer.Name, p.Explainer.ModelUri, p.Explainer.ServiceAccountName, p.Explainer.EnvSecretRefName, r.Client)
+			if err != nil {
+				return err
+			}
 		}
+
 		// for explainer use same service name as its Deployment
 		eSvcName := machinelearningv1alpha2.GetExplainerDeploymentName(mlDep.ObjectMeta.Name, p)
 
@@ -142,11 +150,8 @@ func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1alph
 
 		c.deployments = append(c.deployments, deploy)
 
-		//Create Service to be exposed externally (ambassador or istio)
-		// isn't really a predictor service as the explainer is part of a predictor but has its own external endpoint
-		// if you do a canary you get a default predictor and a canary predictor and both could have their own explainer
-		// each explainer with an external service and its own distinct name
-		eSvc, err := createPredictorService(eSvcName, seldonId, p, mlDep, httpPort, grpcPort, p.Name+"-explainer", log)
+		// Use seldondeployment name dash explainer as the external service name. This should allow canarying.
+		eSvc, err := createPredictorService(eSvcName, seldonId, p, mlDep, httpPort, grpcPort, mlDep.ObjectMeta.Name+"-explainer" , log)
 		if err != nil {
 			return err
 		}
