@@ -53,7 +53,7 @@ func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1alph
 
 		if explainerContainer.Image == "" {
 			// TODO: should use explainer type but this is the only one available currently
-			explainerContainer.Image = "seldonio/alibiexplainer:0.2.3"
+			explainerContainer.Image = "seldonio/alibiexplainer_grpc:0.2.3"
 		}
 
 		var portType string
@@ -75,7 +75,10 @@ func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1alph
 		} else {
 			portType = "http"
 			httpPort = int(portNum)
-			pSvcEndpoint = c.serviceDetails[pSvcName].HttpEndpoint
+			//pSvcEndpoint = c.serviceDetails[pSvcName].HttpEndpoint
+			// Default to grpc endpoint
+			pSvcEndpoint = c.serviceDetails[pSvcName].GrpcEndpoint
+
 		}
 
 		if customPort == nil {
@@ -102,12 +105,16 @@ func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1alph
 			"--predictor_host=" + pSvcEndpoint,
 			"--protocol=" + "seldon." + portType,
 			"--type=" + strings.ToLower(p.Explainer.Type),
-			"--http_port=" + strconv.Itoa(int(portNum))}
+			"--http_port=" + strconv.Itoa(int(portNum)),
+			"--use_grpc"}
 
 		if p.Explainer.ModelUri != "" {
 			explainerContainer.Args = append(explainerContainer.Args, "--storage_uri="+DefaultModelLocalMountPath)
 		}
 
+		if p.Explainer.Type == "anchor_images" {
+			explainerContainer.Args = append(explainerContainer.Args, "--tf_data_type=float32")
+		}
 		for k, v := range p.Explainer.Config {
 			//remote files in model location should get downloaded by initializer
 			if p.Explainer.ModelUri != "" {

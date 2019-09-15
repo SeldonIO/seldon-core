@@ -32,7 +32,7 @@ type AmbassadorConfig struct {
 	Rewrite      string                 `yaml:"rewrite,omitempty"`
 	Service      string                 `yaml:"service"`
 	TimeoutMs    int                    `yaml:"timeout_ms"`
-	IdleTimeoutMs *int                  `yaml:"idle_timeout_ms"`
+	IdleTimeoutMs *int                  `yaml:"idle_timeout_ms,omitempty"`
 	Headers      map[string]string      `yaml:"headers,omitempty"`
 	RegexHeaders map[string]string      `yaml:"regex_headers,omitempty"`
 	Weight       int32                  `yaml:"weight,omitempty"`
