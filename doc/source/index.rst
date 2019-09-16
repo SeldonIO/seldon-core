@@ -88,6 +88,7 @@ Seldon Core is an open source platform for deploying machine learning models on 
    :maxdepth: 1
    :caption: ML Compliance and Governance
 
+   Model Explanations <analytics/explainers.md>
    Outlier Detection <analytics/outlier_detection.md>
    Routers (incl. Multi Armed Bandits)  <analytics/routers.md>   
    

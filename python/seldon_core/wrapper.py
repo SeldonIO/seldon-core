@@ -126,6 +126,7 @@ def get_grpc_server(user_model, annotations={}, trace_interceptor=None):
         logger.info(
             "Setting grpc max message and receive length to %d", max_msg)
         options.append(('grpc.max_message_length', max_msg))
+        options.append(('grpc.max_send_message_length', max_msg))
         options.append(('grpc.max_receive_message_length', max_msg))
 
     server = grpc.server(futures.ThreadPoolExecutor(
