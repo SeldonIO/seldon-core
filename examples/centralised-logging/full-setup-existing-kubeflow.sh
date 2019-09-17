@@ -8,8 +8,13 @@ set -o noglob
 
 # Assumes existing cluster with kubeflow's istio gateway
 # Will put services behind kubeflow istio gateway
+brokercrd=$(kubectl get crd inmemorychannels.messaging.knative.dev -o jsonpath='{.metadata.name}') || true
 
-./kubeflow/knative-setup-existing-istio.sh
+if [[ $brokercrd == 'inmemorychannels.messaging.knative.dev' ]] ; then
+    echo "knative already installed"
+else
+   ./kubeflow/knative-setup-existing-istio.sh
+fi
 
 sleep 5
 
