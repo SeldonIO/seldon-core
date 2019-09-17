@@ -17,7 +17,7 @@ WORKDIR /microservice
 COPY ./s2i/bin/ /s2i/bin
 
 # keep install of seldon-core after the COPY to force re-build of layer
-RUN pip3 install tensorflow-gpu==1.13.1
+RUN pip3 install tensorflow-gpu==1.14.0
 RUN pip3 install seldon-core
 
 EXPOSE 5000
