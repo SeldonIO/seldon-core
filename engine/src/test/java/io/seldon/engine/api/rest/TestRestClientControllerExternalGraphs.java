@@ -29,10 +29,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.context.WebApplicationContext;
 
+import io.seldon.engine.XSSFilter;
 import io.seldon.engine.pb.JsonFormat;
 import io.seldon.engine.predictors.EnginePredictor;
 import io.seldon.engine.service.InternalPredictionService;
@@ -68,7 +68,7 @@ public class TestRestClientControllerExternalGraphs {
 
     	mvc = MockMvcBuilders
 				.webAppContextSetup(context)
-        .apply(SecurityMockMvcConfigurers.springSecurity())
+        .addFilters(new XSSFilter())
 				.build();
 	}
 

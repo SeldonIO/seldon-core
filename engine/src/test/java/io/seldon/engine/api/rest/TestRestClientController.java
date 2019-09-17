@@ -18,19 +18,18 @@ package io.seldon.engine.api.rest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.seldon.engine.XSSFilter;
 import io.seldon.engine.pb.ProtoBufUtils;
 import io.seldon.engine.tracing.TracingProvider;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.mock.MockSpan;
-import java.util.*;
-
 import javax.servlet.http.HttpServletResponse;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import java.util.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -52,7 +51,7 @@ import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-//@AutoConfigureMockMvc
+// @AutoConfigureMockMvc
 public class TestRestClientController {
 	private final static Logger logger = LoggerFactory.getLogger(TestRestClientController.class);
 	
@@ -74,7 +73,7 @@ public class TestRestClientController {
     when(mockTracingProvider.isActive()).thenReturn(true);
 		mvc = MockMvcBuilders
 				.webAppContextSetup(context)
-        .apply(SecurityMockMvcConfigurers.springSecurity())
+        .addFilters(new XSSFilter())
 				.build();
 	}
     
@@ -96,9 +95,10 @@ public class TestRestClientController {
     {
     	MvcResult res = mvc.perform(MockMvcRequestBuilders.get("/ping")).andReturn();
     	HttpServletResponse response = res.getResponse();
+
       final String noSniff = response.getHeader("X-Content-Type-Options");
     	Assert.assertEquals("nosniff", noSniff);
-    	Assert.assertEquals(200, res.getResponse().getStatus());
+    	Assert.assertEquals(200, response.getStatus());
     }
     
     @Test
