@@ -24,10 +24,14 @@ import io.seldon.protos.PredictionProtos.SeldonMessage;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.mock.MockSpan;
 import java.util.*;
+
+import javax.servlet.http.HttpServletResponse;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -43,6 +47,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
+
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
@@ -69,6 +75,7 @@ public class TestRestClientController {
     when(mockTracingProvider.isActive()).thenReturn(true);
 		mvc = MockMvcBuilders
 				.webAppContextSetup(context)
+        .apply(SecurityMockMvcConfigurers.springSecurity())
 				.build();
 	}
     
@@ -82,6 +89,16 @@ public class TestRestClientController {
     	MvcResult res = mvc.perform(MockMvcRequestBuilders.get("/ping")).andReturn();
     	String response = res.getResponse().getContentAsString();
     	Assert.assertEquals("pong", response);
+    	Assert.assertEquals(200, res.getResponse().getStatus());
+    }
+
+    @Test
+    public void testSecurityHeaders() throws Exception
+    {
+    	MvcResult res = mvc.perform(MockMvcRequestBuilders.get("/ping")).andReturn();
+    	HttpServletResponse response = res.getResponse();
+      final String noSniff = response.getHeader("X-Content-Type-Options");
+    	Assert.assertEquals("nosniff", noSniff);
     	Assert.assertEquals(200, res.getResponse().getStatus());
     }
     
