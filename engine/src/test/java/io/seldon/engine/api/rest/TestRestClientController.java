@@ -18,7 +18,7 @@ package io.seldon.engine.api.rest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.seldon.engine.XSSFilter;
+import io.seldon.engine.filters.XSSFilter;
 import io.seldon.engine.pb.ProtoBufUtils;
 import io.seldon.engine.tracing.TracingProvider;
 import io.seldon.protos.PredictionProtos.SeldonMessage;

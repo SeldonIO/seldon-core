@@ -1,4 +1,4 @@
-package io.seldon.engine;
+package io.seldon.engine.filters;
 
 import java.io.IOException;
 
