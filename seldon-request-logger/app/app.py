@@ -16,7 +16,7 @@ log.setLevel(logging.ERROR)
 def index():
     #try:
     content = request.get_json(force=True)
-
+    
     requestPart = dict_digger.dig(content,'request')
     req_elements = None
     if not requestPart is None:
@@ -80,7 +80,8 @@ def extractRow(i:int,requestMsg: prediction_pb2.SeldonMessage,req_datatype: str,
         if len(req_features.shape) > 2:
             dataType="image"
         else:
-            dataType="text"   
+            dataType="text"
+            req_features= np.char.decode(req_features.astype('S'),"utf-8")
         dataReq = array_to_grpc_datadef(datatyReq, req_features, req_datadef.names)  
     requestMsg2 = prediction_pb2.SeldonMessage(data=dataReq, meta=requestMsg.meta)
     reqJson = seldon_message_to_json(requestMsg2)
@@ -95,8 +96,11 @@ def createElelmentsArray(X: np.ndarray,names: list):
             results = []
             d = {}
             for num, name in enumerate(names, start=0):
-                d[name] = X[num]
-                results.append(d)
+                if isinstance(X[num],bytes):
+                    d[name] = X[num].decode("utf-8")
+                else:
+                    d[name] = X[num]    
+            results.append(d)
         elif len(X.shape) >= 2:
             results = []
             for i in range(X.shape[0]):
