@@ -1,0 +1,40 @@
+{
+  "apiVersion": "machinelearning.seldon.io/v1alpha2",
+  "kind": "SeldonDeployment",
+  "metadata": {
+    "labels": {
+      "app": "seldon"
+    },
+    "name": "xss-example"
+  },
+  "spec": {
+    "name": "xss-example",
+    "predictors": [
+      {
+        "componentSpecs": [
+          {
+            "spec": {
+              "containers": [
+                {
+                  "image": "xss-model:0.1",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "xss-model"
+                }
+              ]
+            }
+          }
+        ],
+        "graph": {
+          "children": [],
+          "name": "xss-model",
+          "endpoint": {
+            "type": "REST"
+          },
+          "type": "MODEL"
+        },
+        "name": "xss-model",
+        "replicas": 1
+      }
+    ]
+  }
+}
