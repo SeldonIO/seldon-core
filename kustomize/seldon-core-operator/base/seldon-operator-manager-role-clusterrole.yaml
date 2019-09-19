@@ -5,7 +5,7 @@ metadata:
     app.kubernetes.io/instance: seldon-core-operator
     app.kubernetes.io/managed-by: Tiller
     app.kubernetes.io/name: seldon-core-operator
-    helm.sh/chart: seldon-core-operator-0.4.1
+    helm.sh/chart: seldon-core-operator-0.4.2-SNAPSHOT
   name: seldon-operator-manager-role
 rules:
 - apiGroups:

@@ -7,7 +7,7 @@ metadata:
     app.kubernetes.io/name: seldon-core-operator
     control-plane: seldon-controller-manager
     controller-tools.k8s.io: "1.0"
-    helm.sh/chart: seldon-core-operator-0.4.1
+    helm.sh/chart: seldon-core-operator-0.4.2-SNAPSHOT
   name: seldon-operator-controller-manager-service
   namespace: seldon-system
 spec:
