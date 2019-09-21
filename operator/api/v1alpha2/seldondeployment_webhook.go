@@ -129,7 +129,6 @@ func addDefaultsToGraph(pu *PredictiveUnit) {
 func (r *SeldonDeployment) DefaultSeldonDeployment() {
 
 	var firstPuPortNum int32 = 9000
-	var defaultMode = corev1.DownwardAPIVolumeSourceDefaultMode
 	if env_preditive_unit_service_port, ok := os.LookupEnv("PREDICTIVE_UNIT_SERVICE_PORT"); ok {
 		portNum, err := strconv.Atoi(env_preditive_unit_service_port)
 		if err != nil {
@@ -169,12 +168,6 @@ func (r *SeldonDeployment) DefaultSeldonDeployment() {
 
 		for j := 0; j < len(p.ComponentSpecs); j++ {
 			cSpec := r.Spec.Predictors[i].ComponentSpecs[j]
-
-			//Add downwardAPI
-			cSpec.Spec.Volumes = append(cSpec.Spec.Volumes, corev1.Volume{Name: PODINFO_VOLUME_NAME, VolumeSource: corev1.VolumeSource{
-				DownwardAPI: &corev1.DownwardAPIVolumeSource{Items: []corev1.DownwardAPIVolumeFile{
-					{Path: "annotations", FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.annotations", APIVersion: "v1"}}}, DefaultMode: &defaultMode}}})
-
 
 			// add service details for each container - looping this way as if containers in same pod and its the engine pod both need to be localhost
 			for k := 0; k < len(cSpec.Spec.Containers); k++ {

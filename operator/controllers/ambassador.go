@@ -24,21 +24,21 @@ const (
 
 // Struct for Ambassador configuration
 type AmbassadorConfig struct {
-	ApiVersion   string                 `yaml:"apiVersion"`
-	Kind         string                 `yaml:"kind"`
-	Name         string                 `yaml:"name"`
-	Grpc         *bool                  `yaml:"grpc,omitempty"`
-	Prefix       string                 `yaml:"prefix"`
-	Rewrite      string                 `yaml:"rewrite,omitempty"`
-	Service      string                 `yaml:"service"`
-	TimeoutMs    int                    `yaml:"timeout_ms"`
-	IdleTimeoutMs *int                  `yaml:"idle_timeout_ms,omitempty"`
-	Headers      map[string]string      `yaml:"headers,omitempty"`
-	RegexHeaders map[string]string      `yaml:"regex_headers,omitempty"`
-	Weight       int32                  `yaml:"weight,omitempty"`
-	Shadow       *bool                  `yaml:"shadow,omitempty"`
-	RetryPolicy  *AmbassadorRetryPolicy `yaml:"retry_policy,omitempty"`
-	InstanceId   string                 `yaml:"ambassador_id,omitempty"`
+	ApiVersion    string                 `yaml:"apiVersion"`
+	Kind          string                 `yaml:"kind"`
+	Name          string                 `yaml:"name"`
+	Grpc          *bool                  `yaml:"grpc,omitempty"`
+	Prefix        string                 `yaml:"prefix"`
+	Rewrite       string                 `yaml:"rewrite,omitempty"`
+	Service       string                 `yaml:"service"`
+	TimeoutMs     int                    `yaml:"timeout_ms"`
+	IdleTimeoutMs *int                   `yaml:"idle_timeout_ms,omitempty"`
+	Headers       map[string]string      `yaml:"headers,omitempty"`
+	RegexHeaders  map[string]string      `yaml:"regex_headers,omitempty"`
+	Weight        int32                  `yaml:"weight,omitempty"`
+	Shadow        *bool                  `yaml:"shadow,omitempty"`
+	RetryPolicy   *AmbassadorRetryPolicy `yaml:"retry_policy,omitempty"`
+	InstanceId    string                 `yaml:"ambassador_id,omitempty"`
 }
 
 type AmbassadorRetryPolicy struct {

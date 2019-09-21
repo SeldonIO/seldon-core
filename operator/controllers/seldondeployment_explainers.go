@@ -159,7 +159,7 @@ func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1alph
 		c.deployments = append(c.deployments, deploy)
 
 		// Use seldondeployment name dash explainer as the external service name. This should allow canarying.
-		eSvc, err := createPredictorService(eSvcName, seldonId, p, mlDep, httpPort, grpcPort, mlDep.ObjectMeta.Name+"-explainer" , log)
+		eSvc, err := createPredictorService(eSvcName, seldonId, p, mlDep, httpPort, grpcPort, mlDep.ObjectMeta.Name+"-explainer", log)
 		if err != nil {
 			return err
 		}
