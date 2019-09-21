@@ -42,7 +42,7 @@ The python package contains a module that provides a reference python client for
     * Provide a numpy array, binary data or string data as payload or get random data generated as payload for given shape
     * Send data as tensor, TFTensor or ndarray
 
-Basic usage of the client is to create a `SeldonClient` object first. For example for a Seldon Deployment called "mymodel` running in the namespace `seldon` with Ambassador endpoint at "localhost:8003" (i.e., via port-forwarding):
+Basic usage of the client is to create a `SeldonClient` object first. For example for a Seldon Deployment called "mymodel" running in the namespace `seldon` with Ambassador endpoint at "localhost:8003" (i.e., via port-forwarding):
 
 ```python
 from seldon_core.seldon_client import SeldonClient
