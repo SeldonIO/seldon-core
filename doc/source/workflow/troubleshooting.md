@@ -10,7 +10,7 @@ Check whether the Seldon Deployment is running:
 kubectl get sdep
 ```
 
-If it exists, check it's status, for a Seldon deployment called `<name>`:
+If it exists, check its status, for a Seldon deployment called `<name>`:
 
 ```bash
 kubectl get sdep <name> -o jsonpath='{.status}'
