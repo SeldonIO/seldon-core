@@ -8,7 +8,7 @@ kind_build_engine:
 	kind load docker-image seldonio/engine:$(VERSION) --loglevel trace
 
 kind_build_operator:
-	cd ../../operator && make kind-docker-build
+	cd ../../operator && make kind-install-image
 
 kind_build_images: kind_build_engine kind_build_operator
 

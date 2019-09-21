@@ -1,0 +1,15 @@
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  labels:
+    app: seldon
+  name: seldon-serving-cert
+  namespace: seldon-system
+spec:
+  commonName: seldon-webhook-service.seldon-system.svc
+  dnsNames:
+  - seldon-webhook-service.seldon-system.svc.cluster.local
+  issuerRef:
+    kind: Issuer
+    name: seldon-selfsigned-issuer
+  secretName: webhook-server-cert

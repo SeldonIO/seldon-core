@@ -1,0 +1,9 @@
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Issuer
+metadata:
+  labels:
+    app: seldon
+  name: seldon-selfsigned-issuer
+  namespace: seldon-system
+spec:
+  selfSigned: {}

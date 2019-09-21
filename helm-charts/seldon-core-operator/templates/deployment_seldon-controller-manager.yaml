@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: seldon
+    control-plane: seldon-controller-manager
+  name: seldon-controller-manager
+  namespace: seldon-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: seldon
+      control-plane: seldon-controller-manager
+  template:
+    metadata:
+      labels:
+        app: seldon
+        control-plane: seldon-controller-manager
+    spec:
+      containers:
+      - args:
+        - --secure-listen-address=0.0.0.0:8443
+        - --upstream=http://127.0.0.1:8080/
+        - --logtostderr=true
+        - --v=10
+        image: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.0
+        name: kube-rbac-proxy
+        ports:
+        - containerPort: 8443
+          name: https
+      - args:
+        - --metrics-addr=127.0.0.1:8080
+        - --enable-leader-election
+        command:
+        - /manager
+        env:
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: SECRET_NAME
+          value: seldon-operator-webhook-server-secret
+        - name: AMBASSADOR_ENABLED
+          value: '{{ .Values.ambassador.enabled }}'
+        - name: AMBASSADOR_SINGLE_NAMESPACE
+          value: '{{ .Values.ambassador.singleNamespace }}'
+        - name: ENGINE_CONTAINER_IMAGE_AND_VERSION
+          value: '{{ .Values.engine.image.registry }}/{{ .Values.engine.image.repository }}:{{ .Values.engine.image.tag }}'
+        - name: ENGINE_CONTAINER_IMAGE_PULL_POLICY
+          value: '{{ .Values.engine.image.pullPolicy }}'
+        - name: ENGINE_CONTAINER_SERVICE_ACCOUNT_NAME
+          value: '{{ .Values.engine.serviceAccount.name }}'
+        - name: ENGINE_CONTAINER_USER
+          value: '{{ .Values.engine.user }}'
+        - name: ENGINE_LOG_MESSAGES_EXTERNALLY
+          value: '{{ .Values.engine.logMessagesExternally }}'
+        - name: PREDICTIVE_UNIT_SERVICE_PORT
+          value: '{{ .Values.predictiveUnit.port }}'
+        - name: ENGINE_SERVER_GRPC_PORT
+          value: '{{ .Values.engine.grpc.port }}'
+        - name: ENGINE_SERVER_PORT
+          value: '{{ .Values.engine.port }}'
+        - name: ENGINE_PROMETHEUS_PATH
+          value: '{{ .Values.engine.prometheus.path }}'
+        - name: ISTIO_ENABLED
+          value: '{{ .Values.istio.enabled }}'
+        - name: ISTIO_GATEWAY
+          value: '{{ .Values.istio.gateway }}'
+        image: '{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}'
+        imagePullPolicy: '{{ .Values.image.pullPolicy }}'
+        name: manager
+        ports:
+        - containerPort: 443
+          name: webhook-server
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 100m
+            memory: 30Mi
+          requests:
+            cpu: 100m
+            memory: 20Mi
+        volumeMounts:
+        - mountPath: /tmp/k8s-webhook-server/serving-certs
+          name: cert
+          readOnly: true
+      serviceAccountName: seldon-manager
+      terminationGracePeriodSeconds: 10
+      volumes:
+      - name: cert
+        secret:
+          defaultMode: 420
+          secretName: webhook-server-cert

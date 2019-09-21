@@ -1,0 +1,17 @@
+
+bases:
+  - ../default
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+configMapGenerator:
+- name: seldon-spartakus-config
+  namespace: kube-system
+  files:
+    - version.properties
+
+resources:
+#  - spartakus-config-map.yaml
+  - spartakus-rbac.yaml
+  - spartakus-volunteer-deployment.yaml

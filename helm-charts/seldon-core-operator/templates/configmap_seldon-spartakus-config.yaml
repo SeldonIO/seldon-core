@@ -1,0 +1,9 @@
+{{- if .Values.usageMetrics.enabled }}
+apiVersion: v1
+data:
+  version.properties: spartakus_volunteer_extensions='{"seldon-core-version":"0.5"}'
+kind: ConfigMap
+metadata:
+  name: seldon-spartakus-config
+  namespace: kube-system
+{{- end }}

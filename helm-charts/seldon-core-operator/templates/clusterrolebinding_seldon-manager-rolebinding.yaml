@@ -1,0 +1,16 @@
+{{- if .Values.rbac.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    app: seldon
+  name: seldon-manager-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: seldon-manager-role
+subjects:
+- kind: ServiceAccount
+  name: '{{ .Values.serviceAccount.name }}'
+  namespace: seldon-system
+{{- end }}

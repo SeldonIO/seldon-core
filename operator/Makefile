@@ -1,6 +1,6 @@
 
 # Image URL to use all building/pushing image targets
-IMG ?= seldonio/seldon-core-operator:0.5-4
+IMG ?= seldonio/seldon-core-operator:0.5
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true"
 
@@ -85,7 +85,7 @@ docker-push:
 	docker push ${IMG}
 
 
-kind-docker-build: docker-build
+kind-image-install: docker-build
 	docker save ${IMG} > operator.tar
 	kind load image-archive operator.tar --loglevel trace
 

@@ -1,0 +1,28 @@
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingWebhookConfiguration
+metadata:
+  annotations:
+    certmanager.k8s.io/inject-ca-from: seldon-system/seldon-serving-cert
+  creationTimestamp: null
+  labels:
+    app: seldon
+  name: seldon-mutating-webhook-configuration
+webhooks:
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: seldon-webhook-service
+      namespace: seldon-system
+      path: /mutate-machinelearning-seldon-io-v1alpha2-seldondeployment
+  failurePolicy: Fail
+  name: mseldondeployment.kb.io
+  rules:
+  - apiGroups:
+    - machinelearning.seldon.io
+    apiVersions:
+    - v1alpha2
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - seldondeployments

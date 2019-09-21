@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   labels:
-    control-plane: controller-manager
+    control-plane: seldon-controller-manager
   name: config
 data:
   credentials: |-

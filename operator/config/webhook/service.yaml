@@ -9,4 +9,4 @@ spec:
     - port: 443
       targetPort: 443
   selector:
-    control-plane: controller-manager
+    control-plane: seldon-controller-manager
