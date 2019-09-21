@@ -25,7 +25,7 @@ seldon-core-microservice IrisClassifier REST
 
 To get full details about this tool run `seldon-core-microservice --help`.
 
-Next either use the [Microservce API tester](#microservice-api-tester) or testdirectly via [curl](#microservice-api-test-via-curl).
+Next either use the [Microservce API tester](#microservice-api-tester) or test directly via [curl](#microservice-api-test-via-curl).
 
 ## Microservice API Tester
 
