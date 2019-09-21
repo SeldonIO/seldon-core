@@ -31,10 +31,10 @@ The `modelUri` specifies the bucket containing the saved model, in this case `gs
 `modeluri` supports the following three object storage providers:
 
   * Google Cloud Storage (using `gs://`)
-  * S3-comptaible (using `s3://`)
+  * S3-compatible (using `s3://`)
   * Azure Blob storage (using `https://(.+?).blob.core.windows.net/(.+)`)
   
-When using S3-comptaible object storage provider, you can provide access credential and custom endpoint by creating a `Secret` object:
+When using S3-compatible object storage provider, you can provide access credential and custom endpoint by creating a `Secret` object:
 
 ```
 apiVersion: v1

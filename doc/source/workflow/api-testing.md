@@ -11,7 +11,7 @@ To use these, install the seldon-core package with ```pip install seldon-core```
 
 ## Run your Wrapped Model
 
-To test your model microservice you need to run it. If you have wrapped your model into a Docker container then you should run it and expose the ports. There are many examples in the notebooks in the [examples folders](https://github.com/SeldonIO/seldon-core/tree/master/examples/models) but essential if your model is wrapped in an image `myimage:0.1` then run:
+To test your model microservice you need to run it. If you have wrapped your model into a Docker container then you should run it and expose the ports. There are many examples in the notebooks in the [examples folders](https://github.com/SeldonIO/seldon-core/tree/master/examples/models) but essentially if your model is wrapped in an image `myimage:0.1` then run:
 
 ```bash
 docker run --name "my_model" -d --rm -p 5000:5000 myimage:0.1
@@ -25,7 +25,7 @@ seldon-core-microservice IrisClassifier REST
 
 To get full details about this tool run `seldon-core-microservice --help`.
 
-Next either use the [Microservce API tester](#microservice-api-tester) or testdirectly via [curl](#microservice-api-test-via-curl).
+Next either use the [Microservce API tester](#microservice-api-tester) or test directly via [curl](#microservice-api-test-via-curl).
 
 ## Microservice API Tester
 

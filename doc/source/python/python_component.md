@@ -10,7 +10,7 @@ To wrap your machine learning model create a Class that has a predict method wit
     def predict(self, X: np.ndarray, names: Iterable[str], meta: Dict = None) -> Union[np.ndarray, List, str, bytes]:
 ```
 
-Your predict method will receive a numpy array `X` with iterable set f column names (if they exist in the input features) and optioal Dictionary of meta data. It should return the result of the prediction as either:
+Your predict method will receive a numpy array `X` with iterable set of column names (if they exist in the input features) and optional Dictionary of meta data. It should return the result of the prediction as either:
 
   * Numpy array
   * List of values
@@ -30,7 +30,7 @@ class MyModel(object):
         """
         print("Initializing")
 
-    def predict(self,X,features_names):
+    def predict(self, X, features_names=None):
         """
         Return a prediction.
 
@@ -54,7 +54,7 @@ You can also provide a method to return the column names for your prediction wit
 
 ### Examples
 
-  You can follow [various notebook examples](../examples/notebooks.html)
+  You can follow [various notebook examples](../examples/notebooks.html).
 
 ## Transformers
 
@@ -68,7 +68,7 @@ Seldon Core allows you to create components to transform features either in the 
 
 ## Combiners
 
-Seldon Core allows yout to create components that combine responses from multiple models into a single response. To create a class for this add a method with signature below:
+Seldon Core allows you to create components that combine responses from multiple models into a single response. To create a class for this add a method with signature below:
 
 ```python
     def aggregate(self, features_list: List[Union[np.ndarray, str, bytes]], feature_names_list: List) -> Union[np.ndarray, List, str, bytes]:
@@ -169,7 +169,7 @@ If you want to handle custom exceptions define a field `model_error_handler` as 
 ```python
     model_error_handler = flask.Blueprint('error_handlers', __name__)
 ```
-An example is as follow:
+An example is as follows:
 
 ```python
 """

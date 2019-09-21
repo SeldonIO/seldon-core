@@ -34,9 +34,9 @@ You can use ```kubectl``` to deploy your ML service like any other Kubernetes re
 
 ## Next Steps
 
-If you have a saved model for SKLearn, XGBoost or Tensorflow then you can use oneof our [prepackaged model servers](../servers/overview.html).
+If you have a saved model for SKLearn, XGBoost or Tensorflow then you can use one of our [prepackaged model servers](../servers/overview.html).
 
-If you want to wrap your custom inference code then follow one of our stater tutorials below for the framework you are using.
+If you want to wrap your custom inference code then follow one of our starter tutorials below for the framework you are using.
 
 ### Prepacked Model Servers
 
