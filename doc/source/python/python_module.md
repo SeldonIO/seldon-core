@@ -5,7 +5,7 @@ Seldon Core has a python package `seldon_core` available on PyPI. The package ma
  * `seldon-core-microservice` executable to serve microservice components in Seldon Core. This is used by the Python Wrapper for Seldon Core.
  * `seldon-core-microservice-tester` executable to test running Seldon Core microservices over REST or gRPC.
  * `seldon-core-api-tester` executable to test the external API for running Seldon Deployment inference graphs over REST or gRPC.
- * `seldon_core.seldon_client` library. Core reference API module to call Seldon Core services (internal microservices or the external API). This is used by the testing executable and can be used by users which to build their own clients to Seldon Core in Python.
+ * `seldon_core.seldon_client` library. Core reference API module to call Seldon Core services (internal microservices or the external API). This is used by the testing executable and can be used by users to build their own clients to Seldon Core in Python.
 
 ## Install
 
