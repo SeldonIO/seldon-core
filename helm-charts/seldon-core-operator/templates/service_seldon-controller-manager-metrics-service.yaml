@@ -7,9 +7,12 @@ metadata:
     prometheus.io/scrape: 'true'
   labels:
     app: seldon
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/name: '{{ include "seldon.name" . }}'
+    app.kubernetes.io/version: '{{ .Chart.Version }}'
     control-plane: seldon-controller-manager
   name: seldon-controller-manager-metrics-service
-  namespace: seldon-system
+  namespace: '{{ .Release.Namespace }}'
 spec:
   ports:
   - name: https
@@ -17,4 +20,7 @@ spec:
     targetPort: https
   selector:
     app: seldon
+    app.kubernetes.io/instance: seldon1
+    app.kubernetes.io/name: seldon
+    app.kubernetes.io/version: v0.5
     control-plane: seldon-controller-manager

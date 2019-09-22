@@ -6,10 +6,13 @@ metadata:
   creationTimestamp: null
   labels:
     app: seldon
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/name: '{{ include "seldon.name" . }}'
+    app.kubernetes.io/version: '{{ .Chart.Version }}'
   name: seldon-validating-webhook-configuration
 webhooks:
 - clientConfig:
-    caBundle: Cg==
+    caBundle: '{{ .Values.webhook.ca.crt }}'
     service:
       name: seldon-webhook-service
       namespace: seldon-system

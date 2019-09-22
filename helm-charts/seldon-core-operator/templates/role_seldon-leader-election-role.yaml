@@ -3,8 +3,11 @@ kind: Role
 metadata:
   labels:
     app: seldon
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/name: '{{ include "seldon.name" . }}'
+    app.kubernetes.io/version: '{{ .Chart.Version }}'
   name: seldon-leader-election-role
-  namespace: seldon-system
+  namespace: '{{ .Release.Namespace }}'
 rules:
 - apiGroups:
   - ''
