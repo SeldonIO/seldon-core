@@ -16,7 +16,7 @@
 package io.seldon.engine.config;
 
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Scope;
 
@@ -26,7 +26,7 @@ public class AppConfig {
 
     @Bean
     @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
-    public EmbeddedServletContainerCustomizer containerCustomizer() {
+    public WebServerFactoryCustomizer containerCustomizer() {
         return new CustomizationBean();
     }
 
