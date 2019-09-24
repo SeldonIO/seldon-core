@@ -98,12 +98,19 @@ def update_operator_values_yaml_file(fpath, seldon_core_version, debug=False):
 
     print("updated {fpath}".format(**locals()))
 
+def update_versions_txt(seldon_core_version, debug=False):
+    with open("version.txt", "w") as f:
+        f.write("{seldon_core_version}\n".format(**locals()))
+    print("Updated version.txt")
 
 def set_version(seldon_core_version, pom_files, chart_yaml_files, operator_values_yaml_file, debug=False):
     # Normalize file paths
     pom_files_realpaths = [os.path.realpath(x) for x in pom_files]
     chart_yaml_file_realpaths = [os.path.realpath(x) for x in chart_yaml_files]
     operator_values_yaml_file_realpath = os.path.realpath(operator_values_yaml_file) if operator_values_yaml_file != None else None
+
+    # Update top level versions.txt
+    update_versions_txt(seldon_core_version, debug)
 
     # update the pom files
     for fpath in pom_files_realpaths:
