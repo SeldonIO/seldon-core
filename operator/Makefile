@@ -1,6 +1,6 @@
-
+VERSION=`cat ../version.txt`
 # Image URL to use all building/pushing image targets
-IMG ?= seldonio/seldon-core-operator:0.5
+IMG ?= seldonio/seldon-core-operator:${VERSION}
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true"
 
