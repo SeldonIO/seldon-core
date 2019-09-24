@@ -15,7 +15,7 @@
  *******************************************************************************/
 package io.seldon.engine.metrics;
 
-import io.micrometer.spring.web.client.RestTemplateExchangeTagsProvider;
+import org.springframework.boot.actuate.metrics.web.client.RestTemplateExchangeTagsProvider;
 
 //@Configuration
 public class MetricsConfig {
