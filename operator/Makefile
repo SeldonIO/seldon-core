@@ -1,4 +1,4 @@
-VERSION=`cat ../version.txt`
+VERSION := $(shell cat ../version.txt)
 # Image URL to use all building/pushing image targets
 IMG ?= seldonio/seldon-core-operator:${VERSION}
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
@@ -10,6 +10,10 @@ GOBIN=$(shell go env GOPATH)/bin
 else
 GOBIN=$(shell go env GOBIN)
 endif
+
+.PHONY:show_image
+show_image:
+	echo ${IMG}
 
 all: manager
 
