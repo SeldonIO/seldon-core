@@ -94,7 +94,7 @@ if __name__ == "__main__":
                 res["spec"]["commonName"] = '{{- printf "seldon-webhook-service.%s.svc" .Release.Namespace -}}'
                 res["spec"]["dnsNames"][0] = '{{- printf "seldon-webhook-service.%s.svc.cluster.local" .Release.Namespace -}}'
 
-            if kind == "customresourcedefinition"and name == "seldondeployments.machinelearning.seldon.io":
+            if kind == "customresourcedefinition"and name == "seldondeployments.machinelearning.seldon.io" and "conversion" in res["spec"]:
                 res["spec"]["conversion"]["webhookClientConfig"]["caBundle"] = helm_value("webhook.ca.crt")
 
             fdata = yaml.dump(res, width=1000)

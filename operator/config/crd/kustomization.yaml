@@ -6,9 +6,11 @@ resources:
 # +kubebuilder:scaffold:crdkustomizeresource
 
 patchesStrategicMerge:
+# Seldon: Add webhook conversion when we move to v1 of the API
+#
 # [WEBHOOK] To enable webhook, uncomment all the sections with [WEBHOOK] prefix.
 # patches here are for enabling the conversion webhook for each CRD
-- patches/webhook_in_seldondeployments.yaml
+#- patches/webhook_in_seldondeployments.yaml
 # +kubebuilder:scaffold:crdkustomizewebhookpatch
 
 # [CERTMANAGER] To enable webhook, uncomment all the sections with [CERTMANAGER] prefix.
@@ -16,8 +18,10 @@ patchesStrategicMerge:
 - patches/cainjection_in_seldondeployments.yaml
 # +kubebuilder:scaffold:crdkustomizecainjectionpatch
 
+# Seldon addition:
+# Need to add this when conversion patch is activated but will only work in k8s >=1.15
 # Needed due to https://github.com/kubernetes-sigs/controller-tools/issues/279
-- patches/preserve_ukn_fields.yaml
+#- patches/preserve_ukn_fields.yaml
 
 - patches/graph_children.yaml
 
