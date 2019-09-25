@@ -44,21 +44,25 @@ def index():
             content["response_elements"] = b            
             reqJson = extractRow(i, requestMsg, req_datatype, req_features, req_datadef)
             resJson = extractRow(i, responseMsg, res_datatype, res_features, res_datadef)
-            content["request"] = reqJson
-            content["response"] = resJson
+            content["request"] = {"dataType":reqJson["dataType"]}
+            content["request"][reqJson["dataType"]] = reqJson
+            content["response"] = {"dataType":resJson["dataType"]}
+            content["response"][resJson["dataType"]] = resJson
             #log formatted json to stdout for fluentd collection
             print(str(json.dumps(content)))
     elif not req_elements is None:
         for i,e in enumerate(req_elements):
             content["request_elements"] = e
             reqJson = extractRow(i, requestMsg, req_datatype, req_features, req_datadef)
-            content["request"] = reqJson
+            content["request"] = {"dataType":reqJson["dataType"]}
+            content["request"][reqJson["dataType"]] = reqJson
             print(str(json.dumps(content)))
     elif not res_elements is None:
         for i,e in enumerate(res_elements):
             content["response_elements"] = e
             resJson = extractRow(i, responseMsg, res_datatype, res_features, res_datadef)
-            content["response"] = resJson
+            content["response"] = {"dataType":resJson["dataType"]}
+            content["response"][resJson["dataType"]] = resJson
             print(str(json.dumps(content)))
     else:
         print(str(json.dumps(content)))
