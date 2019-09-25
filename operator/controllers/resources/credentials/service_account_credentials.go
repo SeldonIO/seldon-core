@@ -20,10 +20,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/seldonio/seldon-core/operator/controllers/resources/credentials/gcs"
 	"github.com/seldonio/seldon-core/operator/controllers/resources/credentials/s3"
 	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/kubernetes"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
@@ -75,9 +79,8 @@ func (c *CredentialBuilder) CreateSecretVolumeAndEnv(namespace string, serviceAc
 		gcsCredentialFileName = c.config.GCS.GCSCredentialFileName
 	}
 
-	serviceAccount := &v1.ServiceAccount{}
-	err := c.client.Get(context.TODO(), types.NamespacedName{Name: serviceAccountName,
-		Namespace: namespace}, serviceAccount)
+	clientset := kubernetes.NewForConfigOrDie(ctrl.GetConfigOrDie())
+	serviceAccount, err := clientset.CoreV1().ServiceAccounts(namespace).Get(serviceAccountName, metav1.GetOptions{})
 	if err != nil {
 		log.Error(err, "Failed to find service account", "ServiceAccountName", serviceAccountName)
 		return nil
