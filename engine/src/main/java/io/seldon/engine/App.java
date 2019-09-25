@@ -33,11 +33,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduled;
 
 import io.seldon.engine.config.AppConfig;
 
 @SpringBootApplication
 @EnableAsync
+@EnableScheduled
 @Import({ AppConfig.class })
 public class App {
     public static void main(String[] args) throws Exception {
