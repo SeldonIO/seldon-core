@@ -17,8 +17,8 @@
 | image.repository | Operator image repo | seldonio/seldon-core-operator |
 | image.tag | Image repo | Operator ```<latest release version>``` |
 | image.pullPolicy | Operator pull policy | IfNotPresent |
-| rbac.enabled | Whether to enabled RBAC | true |
 | usageMetrics.enabled | Whether to send anonymous usage metrics | ```false``` |
 | usageMetrics.datebase | URL for Spartakus DB | http://seldon-core-stats.seldon.io |
-
+| webhook.certManager.enabled | Whether to assume cert manager for certificates | true |
+| webhook.secretProvided | To add a secret with self provided certificate | false |
 
