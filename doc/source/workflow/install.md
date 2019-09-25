@@ -1,6 +1,6 @@
 # Install Seldon-Core
 
-**You will need a kubernetes cluster with version >=1.11.0.**
+**You will need a kubernetes cluster with version >=1.12**
 
 ## Webhook Certificates
 
