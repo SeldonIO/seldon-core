@@ -197,15 +197,15 @@ func GetContainerServiceName(mlDep *SeldonDeployment, predictorSpec PredictorSpe
 // SeldonDeploymentSpec defines the desired state of SeldonDeployment
 type SeldonDeploymentSpec struct {
 	Name        string            `json:"name,omitempty" protobuf:"string,1,opt,name=name"`
-	Predictors  []PredictorSpec   `json:"predictors,omitempty" protobuf:"bytes,2,opt,name=name"`
+	Predictors  []PredictorSpec   `json:"predictors" protobuf:"bytes,2,opt,name=name"`
 	OauthKey    string            `json:"oauth_key,omitempty" protobuf:"string,3,opt,name=oauth_key"`
 	OauthSecret string            `json:"oauth_secret,omitempty" protobuf:"string,4,opt,name=oauth_secret"`
 	Annotations map[string]string `json:"annotations,omitempty" protobuf:"bytes,5,opt,name=annotations"`
 }
 
 type PredictorSpec struct {
-	Name            string                  `json:"name,omitempty" protobuf:"string,1,opt,name=name"`
-	Graph           *PredictiveUnit         `json:"graph,omitempty" protobuf:"bytes,2,opt,name=predictiveUnit"`
+	Name            string                  `json:"name" protobuf:"string,1,opt,name=name"`
+	Graph           *PredictiveUnit         `json:"graph" protobuf:"bytes,2,opt,name=predictiveUnit"`
 	ComponentSpecs  []*SeldonPodSpec        `json:"componentSpecs,omitempty" protobuf:"bytes,3,opt,name=componentSpecs"`
 	Replicas        int32                   `json:"replicas,omitempty" protobuf:"string,4,opt,name=replicas"`
 	Annotations     map[string]string       `json:"annotations,omitempty" protobuf:"bytes,5,opt,name=annotations"`
@@ -239,7 +239,7 @@ type SeldonPodSpec struct {
 
 type SeldonHpaSpec struct {
 	MinReplicas *int32                          `json:"minReplicas,omitempty" protobuf:"int,1,opt,name=minReplicas"`
-	MaxReplicas int32                           `json:"maxReplicas,omitempty" protobuf:"int,2,opt,name=maxReplicas"`
+	MaxReplicas int32                           `json:"maxReplicas" protobuf:"int,2,opt,name=maxReplicas"`
 	Metrics     []autoscalingv2beta2.MetricSpec `json:"metrics,omitempty" protobuf:"bytes,3,opt,name=metrics"`
 }
 
@@ -302,13 +302,13 @@ const (
 )
 
 type Parameter struct {
-	Name  string       `json:"name,omitempty" protobuf:"string,1,opt,name=name"`
-	Value string       `json:"value,omitempty" protobuf:"string,2,opt,name=value"`
-	Type  ParmeterType `json:"type,omitempty" protobuf:"int,3,opt,name=type"`
+	Name  string       `json:"name" protobuf:"string,1,opt,name=name"`
+	Value string       `json:"value" protobuf:"string,2,opt,name=value"`
+	Type  ParmeterType `json:"type" protobuf:"int,3,opt,name=type"`
 }
 
 type PredictiveUnit struct {
-	Name               string                        `json:"name,omitempty" protobuf:"string,1,opt,name=name"`
+	Name               string                        `json:"name" protobuf:"string,1,opt,name=name"`
 	Children           []PredictiveUnit              `json:"children,omitempty" protobuf:"bytes,2,opt,name=children"`
 	Type               *PredictiveUnitType           `json:"type,omitempty" protobuf:"int,3,opt,name=type"`
 	Implementation     *PredictiveUnitImplementation `json:"implementation,omitempty" protobuf:"int,4,opt,name=implementation"`
