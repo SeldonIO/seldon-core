@@ -25,7 +25,7 @@ import org.springframework.stereotype.Component;
 
 import io.grpc.Server;
 import io.grpc.netty.NettyServerBuilder;
-import io.opentracing.contrib.grpc.ServerTracingInterceptor;
+import io.opentracing.contrib.grpc.TracingServerInterceptor;
 import io.seldon.engine.config.AnnotationsConfig;
 import io.seldon.engine.service.PredictionService;
 import io.seldon.engine.tracing.TracingProvider;
@@ -66,7 +66,10 @@ public class SeldonGrpcServer  {
         NettyServerBuilder builder;
         if (tracingProvider.isActive())
         {
-        	ServerTracingInterceptor tracingInterceptor = new ServerTracingInterceptor(tracingProvider.getTracer());
+        	TracingServerInterceptor tracingInterceptor = TracingServerInterceptor
+            .newBuilder()
+            .withTracer(tracingProvider.getTracer())
+            .build();
         	builder = NettyServerBuilder
         			.forPort(port)
         			.addService(tracingInterceptor.intercept(seldonService));

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import io.opentracing.contrib.grpc.ClientTracingInterceptor;
+import io.opentracing.contrib.grpc.TracingClientInterceptor;
 import io.seldon.engine.tracing.TracingProvider;
 import io.seldon.protos.DeploymentProtos.Endpoint;
 
@@ -30,7 +30,10 @@ public class GrpcChannelHandler {
 			
 			if (tracingProvider != null && tracingProvider.isActive())
 			{
-				ClientTracingInterceptor tracingInterceptor = new ClientTracingInterceptor(this.tracingProvider.getTracer());
+				TracingClientInterceptor tracingInterceptor = TracingClientInterceptor
+          .newBuilder()
+          .withTracer(this.tracingProvider.getTracer())
+          .build();
 				store.putIfAbsent(endpoint, tracingInterceptor.intercept(channel));
 			}
 			else
