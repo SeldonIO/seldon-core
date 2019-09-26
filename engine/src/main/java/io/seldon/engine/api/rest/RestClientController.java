@@ -15,19 +15,26 @@
  *******************************************************************************/
 package io.seldon.engine.api.rest;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+
+import io.micrometer.core.annotation.Timed;
+
+import io.opentracing.Span;
+
 import java.io.IOException;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 import javax.annotation.PostConstruct;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.RequestEntity;
@@ -37,10 +44,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.google.protobuf.InvalidProtocolBufferException;
-
-import io.micrometer.core.annotation.Timed;
-import io.opentracing.Scope;
 import io.seldon.engine.exception.APIException;
 import io.seldon.engine.exception.APIException.ApiExceptionType;
 import io.seldon.engine.pb.ProtoBufUtils;
@@ -137,17 +140,17 @@ public class RestClientController {
     public ResponseEntity<String> predictions_json(RequestEntity<String> requestEntity)
 	{
 		logger.debug("Received predict request");
-		Scope tracingScope = null;
+		Span tracingSpan = null;
 		if (tracingProvider.isActive())
-			tracingScope = tracingProvider.getTracer().buildSpan("/api/v0.1/predictions").startActive(true);
+			tracingSpan = tracingProvider.getTracer().buildSpan("/api/v0.1/predictions").start();
 		try
 		{
 			return _predictions(requestEntity.getBody());
 		}
 		finally
 		{
-			if (tracingScope != null)
-				tracingScope.close();
+			if (tracingSpan != null)
+				tracingSpan.finish();
 		}
 
 	}
@@ -159,9 +162,9 @@ public class RestClientController {
 	public ResponseEntity<String> predictions_multiform(MultipartHttpServletRequest requestEntity)
 	{
 		logger.debug("Received predict request");
-		Scope tracingScope = null;
+		Span tracingSpan = null;
 		if (tracingProvider.isActive())
-			tracingScope = tracingProvider.getTracer().buildSpan("/api/v0.1/predictions").startActive(true);
+			tracingSpan = tracingProvider.getTracer().buildSpan("/api/v0.1/predictions").start();
 		try {
 			ObjectMapper mapper = new ObjectMapper();
 			Map<String,Object> mergedParamMap = new HashMap<String,Object>();
@@ -191,8 +194,8 @@ public class RestClientController {
 
 		} finally
 		{
-			if (tracingScope != null)
-				tracingScope.close();
+			if (tracingSpan != null)
+				tracingSpan.finish();
 		}
 
 	}
@@ -244,9 +247,9 @@ public class RestClientController {
 	@RequestMapping(value= "/api/v0.1/feedback", method = RequestMethod.POST, consumes = "application/json; charset=utf-8", produces = "application/json; charset=utf-8")
 	public ResponseEntity<String>  feedback(RequestEntity<String> requestEntity) {
 		logger.debug("Received feedback request");
-		Scope tracingScope = null;
+		Span tracingSpan = null;
 		if (tracingProvider.isActive())
-			tracingScope = tracingProvider.getTracer().buildSpan("/api/v0.1/feedback").startActive(true);
+			tracingSpan = tracingProvider.getTracer().buildSpan("/api/v0.1/feedback").start();
 		try
 		{
 		Feedback feedback;	
@@ -284,8 +287,8 @@ public class RestClientController {
 		}
 		finally
 		{
-			if (tracingScope != null)
-				tracingScope.close();
+			if (tracingSpan != null)
+				tracingSpan.finish();
 		}
 
     }
