@@ -20,7 +20,7 @@ def wait_for_rollout(deploymentName):
         time.sleep(1)
         ret = run("kubectl rollout status deploy/"+deploymentName, shell=True)
 
-class TestPrepackSkLearn(object):
+class TestPrepack(object):
 
     # Test prepackaged server for sklearn
     def test_sklearn(self):
@@ -39,7 +39,7 @@ class TestPrepackSkLearn(object):
     def test_tfserving(self):
         run("kubectl delete sdep --all", shell=True)
         run("kubectl apply -f ../../servers/tfserving/samples/mnist_rest.yaml", shell=True, check=True)
-        wait_for_rollout("mnist-default-4f27cf3")
+        wait_for_rollout("mnist-default-725903e")
         wait_for_status("tfserving")
         print("Initial request")
         sc = SeldonClient(deployment_name="tfserving",namespace="seldon")
