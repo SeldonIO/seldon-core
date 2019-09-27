@@ -7,7 +7,7 @@ metadata:
     app.kubernetes.io/name: seldon-core-operator
     control-plane: seldon-controller-manager
     controller-tools.k8s.io: "1.0"
-    helm.sh/chart: seldon-core-operator-0.4.1-SNAPSHOT
+    helm.sh/chart: seldon-core-operator-0.4.2-SNAPSHOT
   name: seldon-operator-controller-manager
   namespace: seldon-system
 spec:
@@ -43,7 +43,7 @@ spec:
         - name: AMBASSADOR_SINGLE_NAMESPACE
           value: "false"
         - name: ENGINE_CONTAINER_IMAGE_AND_VERSION
-          value: docker.io/seldonio/engine:0.4.1-SNAPSHOT
+          value: docker.io/seldonio/engine:0.4.2-SNAPSHOT
         - name: ENGINE_CONTAINER_IMAGE_PULL_POLICY
           value: IfNotPresent
         - name: ENGINE_CONTAINER_SERVICE_ACCOUNT_NAME
@@ -64,7 +64,7 @@ spec:
           value: "false"
         - name: ISTIO_GATEWAY
           value: seldon-gateway
-        image: docker.io/seldonio/seldon-core-operator:0.4.1-SNAPSHOT
+        image: docker.io/seldonio/seldon-core-operator:0.4.2-SNAPSHOT
         imagePullPolicy: Always
         name: manager
         ports:

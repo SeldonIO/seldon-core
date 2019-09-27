@@ -9,7 +9,7 @@ Seldon Core is an open source platform for deploying machine learning models on 
 
 ## So Why Seldon?
 
- * Let's you focus on your model by [making it easy to serve on kubernetes](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/README.html)
+ * Lets you focus on your model by [making it easy to serve on kubernetes](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/README.html)
  * The same workflow and base API for a range of toolkits such as scikit-learn, tensorflow and R
  * Out of the box best-practices for logging, tracing and base metrics, applicable to all models across toolkits
  * Support for deployment strategies such as running A/B test and canaries
@@ -30,7 +30,5 @@ Documentation can be found [here](https://docs.seldon.io/projects/seldon-core/en
 | release-0.3 | [![Build Status](https://travis-ci.org/SeldonIO/seldon-core.svg?branch=release-0.3)](https://travis-ci.org/SeldonIO/seldon-core) |
 | release-0.2 | [![Build Status](https://travis-ci.org/SeldonIO/seldon-core.svg?branch=release-0.2)](https://travis-ci.org/SeldonIO/seldon-core) |
 | release-0.1 | [![Build Status](https://travis-ci.org/SeldonIO/seldon-core.svg?branch=release-0.1)](https://travis-ci.org/SeldonIO/seldon-core) |
-
-
 
 

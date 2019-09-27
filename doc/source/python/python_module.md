@@ -5,7 +5,7 @@ Seldon Core has a python package `seldon_core` available on PyPI. The package ma
  * `seldon-core-microservice` executable to serve microservice components in Seldon Core. This is used by the Python Wrapper for Seldon Core.
  * `seldon-core-microservice-tester` executable to test running Seldon Core microservices over REST or gRPC.
  * `seldon-core-api-tester` executable to test the external API for running Seldon Deployment inference graphs over REST or gRPC.
- * `seldon_core.seldon_client` library. Core reference API module to call Seldon Core services (internal microservices or the external API). This is used by the testing executable and can be used by users which to build their own clients to Seldon Core in Python.
+ * `seldon_core.seldon_client` library. Core reference API module to call Seldon Core services (internal microservices or the external API). This is used by the testing executable and can be used by users to build their own clients to Seldon Core in Python.
 
 ## Install
 
@@ -23,7 +23,7 @@ You can also create your own image and utilise the `seldon-core-microservice` ex
 
 ## Testing Seldon Core Microservices
 
-To test your microservice standalone or your running Seldon Deployment inside Kubernetes you can follow the [API testing docs](../workflow/api-testing.md)
+To test your microservice standalone or your running Seldon Deployment inside Kubernetes you can follow the [API testing docs](../workflow/api-testing.md).
 
 
 ## Seldon Core Python API Client
@@ -42,7 +42,7 @@ The python package contains a module that provides a reference python client for
     * Provide a numpy array, binary data or string data as payload or get random data generated as payload for given shape
     * Send data as tensor, TFTensor or ndarray
 
-Basic usage of the client is to create a `SeldonClient` object first. For example for a Seldon Deployment called "mymodel` running in the namespace `seldon` with Ambassador endpoint at "localhost:8003" (i.e., via port-forwarding):
+Basic usage of the client is to create a `SeldonClient` object first. For example for a Seldon Deployment called "mymodel" running in the namespace `seldon` with Ambassador endpoint at "localhost:8003" (i.e., via port-forwarding):
 
 ```python
 from seldon_core.seldon_client import SeldonClient
@@ -58,4 +58,4 @@ print(r)
 
 Examples of using the `seldon_client` module can be found in the [example notebook](../examples/helm_examples.html).
 
-The API docs can be found [here](api/seldon_core.html#module-seldon_core.seldon_client)
+The API docs can be found [here](api/seldon_core.html#module-seldon_core.seldon_client).

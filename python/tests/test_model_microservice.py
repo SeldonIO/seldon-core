@@ -10,7 +10,8 @@ import io
 from seldon_core.wrapper import get_rest_microservice, SeldonModelGRPC, get_grpc_server
 from seldon_core.proto import prediction_pb2
 from seldon_core.user_model import SeldonComponent
-from seldon_core.utils import (seldon_message_to_json,json_to_seldon_message)
+from seldon_core.utils import seldon_message_to_json, json_to_seldon_message
+from seldon_core.flask_utils import SeldonMicroserviceException
 
 from flask import jsonify
 
@@ -290,12 +291,10 @@ def test_model_bin_data():
     bdata_base64 = base64.b64encode(bdata).decode('utf-8')
     rv = client.get('/predict?json={"binData":"' + bdata_base64 + '"}')
     j = json.loads(rv.data)
-    sm = prediction_pb2.SeldonMessage()
-    # Check we can parse response
-    assert sm == json_format.Parse(rv.data, sm, ignore_unknown_fields=False)
-    print(j)
+    return_data = \
+            base64.b64encode(base64.b64encode(bdata)).decode('utf-8')
     assert rv.status_code == 200
-    assert j["binData"] == bdata_base64
+    assert j["binData"] == return_data
     assert j["meta"]["tags"] == {"mytag": 1}
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
     assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
@@ -363,6 +362,21 @@ def test_model_bad_metrics():
     j = json.loads(rv.data)
     print(j)
     assert rv.status_code == 400
+
+
+def test_model_error_status_code():
+    class ErrorUserObject():
+        def predict(self, X, features_names, **kwargs):
+            raise SeldonMicroserviceException("foo", status_code=403)
+
+    user_object = ErrorUserObject()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+    uo = UserObject()
+    rv = client.get('/predict?json={"strData":"my data"}')
+    j = json.loads(rv.data)
+    print(j)
+    assert rv.status_code == 403
 
 
 def test_model_gets_meta():
@@ -524,3 +538,65 @@ def test_proto_gets_meta():
     assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
     assert j["data"]["tensor"]["shape"] == [2, 1]
     assert j["data"]["tensor"]["values"] == [1, 2]
+
+
+def test_unimplemented_predict_raw_on_seldon_component():
+    class CustomSeldonComponent(SeldonComponent):
+        def predict(self, X, features_names, **kwargs):
+            return X * 2
+
+    user_object = CustomSeldonComponent()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+    rv = client.get('/predict?json={"data":{"names":["a","b"],"ndarray":[[1,2]]}}')
+    j = json.loads(rv.data)
+
+    print(j)
+    assert rv.status_code == 200
+    assert j["data"]["ndarray"] == [[2.0, 4.0]]
+
+
+def test_unimplemented_predict_raw():
+    class CustomObject(object):
+        def predict(self, X, features_names, **kwargs):
+            return X * 2
+
+    user_object = CustomObject()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+    rv = client.get('/predict?json={"data":{"names":["a","b"],"ndarray":[[1,2]]}}')
+    j = json.loads(rv.data)
+
+    print(j)
+    assert rv.status_code == 200
+    assert j["data"]["ndarray"] == [[2.0, 4.0]]
+
+
+def test_unimplemented_feedback_raw_on_seldon_component():
+    class CustomSeldonComponent(SeldonComponent):
+        def feedback(self, features, feature_names, reward, truth):
+            print("Feedback called")
+
+    user_object = CustomSeldonComponent()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+    rv = client.get('/send-feedback?json={"request":{"data":{"ndarray":[]}},"reward":1.0}')
+    j = json.loads(rv.data)
+
+    print(j)
+    assert rv.status_code == 200
+
+
+def test_unimplemented_feedback_raw():
+    class CustomObject(object):
+        def feedback(self, features, feature_names, reward, truth):
+            print("Feedback called")
+
+    user_object = CustomObject()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+    rv = client.get('/send-feedback?json={"request":{"data":{"ndarray":[]}},"reward":1.0}')
+    j = json.loads(rv.data)
+
+    print(j)
+    assert rv.status_code == 200

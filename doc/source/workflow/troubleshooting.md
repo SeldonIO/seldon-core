@@ -10,7 +10,7 @@ Check whether the Seldon Deployment is running:
 kubectl get sdep
 ```
 
-If it exists, check it's status, for a Seldon deployment called `<name>`:
+If it exists, check its status, for a Seldon deployment called `<name>`:
 
 ```bash
 kubectl get sdep <name> -o jsonpath='{.status}'
@@ -60,9 +60,9 @@ Check if the pods are running successfully.
 
 ## I get 404s when calling the Ambassador endpoint
 
-If your model is running and you are using Ambassador for ingress and are having problems  check the diagnostics page of Ambassador. See [here](https://www.getambassador.io/reference/diagnostics/). You can then fnd out what path your model can be found under to ensure the URL you are using is correct.
+If your model is running and you are using Ambassador for ingress and are having problems  check the diagnostics page of Ambassador. See [here](https://www.getambassador.io/reference/diagnostics/). You can then find out what path your model can be found under to ensure the URL you are using is correct.
 
-If your ambassador isn't running at all then check the pod logs with `kubectl logs <pod_name>`. Note that if ambassador is installed with cluster-wide scope then its rbac should also not be namespaced, otherwise a there will be a permissions error.
+If your ambassador isn't running at all then check the pod logs with `kubectl logs <pod_name>`. Note that if ambassador is installed with cluster-wide scope then its rbac should also not be namespaced, otherwise there will be a permissions error.
 
 ## I get 500s when calling my model over the API
 

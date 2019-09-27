@@ -27,7 +27,7 @@ def get_rest_microservice(user_model):
     def handle_invalid_usage(error):
         response = jsonify(error.to_dict())
         logger.error("%s", error.to_dict())
-        response.status_code = 400
+        response.status_code = error.status_code
         return response
 
     @app.route("/seldon.json", methods=["GET"])
@@ -41,7 +41,6 @@ def get_rest_microservice(user_model):
         response = seldon_core.seldon_methods.predict(user_model, requestJson)
         logger.debug("REST Response: %s", response)
         return jsonify(response)
-
 
     @app.route("/send-feedback", methods=["GET", "POST"])
     def SendFeedback():
@@ -57,41 +56,37 @@ def get_rest_microservice(user_model):
     def TransformInput():
         requestJson = get_request()
         logger.debug("REST Request: %s", request)
-        requestProto = json_to_seldon_message(requestJson)
-        logger.debug("Proto Request: %s", request)
-        responseProto = seldon_core.seldon_methods.transform_input(user_model, requestProto)
-        jsonDict = seldon_message_to_json(responseProto)
-        return jsonify(jsonDict)
+        response = seldon_core.seldon_methods.transform_input(
+            user_model, requestJson)
+        logger.debug("REST Response: %s", response)
+        return jsonify(response)
 
     @app.route("/transform-output", methods=["GET", "POST"])
     def TransformOutput():
         requestJson = get_request()
         logger.debug("REST Request: %s", request)
-        requestProto = json_to_seldon_message(requestJson)
-        logger.debug("Proto Request: %s", request)
-        responseProto = seldon_core.seldon_methods.transform_output(user_model, requestProto)
-        jsonDict = seldon_message_to_json(responseProto)
-        return jsonify(jsonDict)
+        response = seldon_core.seldon_methods.transform_output(
+            user_model, requestJson)
+        logger.debug("REST Response: %s", response)
+        return jsonify(response)
 
     @app.route("/route", methods=["GET", "POST"])
     def Route():
         requestJson = get_request()
         logger.debug("REST Request: %s", request)
-        requestProto = json_to_seldon_message(requestJson)
-        logger.debug("Proto Request: %s", request)
-        responseProto = seldon_core.seldon_methods.route(user_model, requestProto)
-        jsonDict = seldon_message_to_json(responseProto)
-        return jsonify(jsonDict)
+        response = seldon_core.seldon_methods.route(
+            user_model, requestJson)
+        logger.debug("REST Response: %s", response)
+        return jsonify(response)
 
     @app.route("/aggregate", methods=["GET", "POST"])
     def Aggregate():
         requestJson = get_request()
         logger.debug("REST Request: %s", request)
-        requestProto = json_to_seldon_messages(requestJson)
-        logger.debug("Proto Request: %s", request)
-        responseProto = seldon_core.seldon_methods.aggregate(user_model, requestProto)
-        jsonDict = seldon_message_to_json(responseProto)
-        return jsonify(jsonDict)
+        response = seldon_core.seldon_methods.aggregate(
+            user_model, requestJson)
+        logger.debug("REST Response: %s", response)
+        return jsonify(response)
 
     return app
 
@@ -131,6 +126,7 @@ def get_grpc_server(user_model, annotations={}, trace_interceptor=None):
         logger.info(
             "Setting grpc max message and receive length to %d", max_msg)
         options.append(('grpc.max_message_length', max_msg))
+        options.append(('grpc.max_send_message_length', max_msg))
         options.append(('grpc.max_receive_message_length', max_msg))
 
     server = grpc.server(futures.ThreadPoolExecutor(
