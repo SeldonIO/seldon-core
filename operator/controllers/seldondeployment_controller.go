@@ -438,7 +438,7 @@ func createPredictorService(pSvcName string, seldonId string, p *machinelearning
 func createContainerService(deploy *appsv1.Deployment, p machinelearningv1alpha2.PredictorSpec, mlDep *machinelearningv1alpha2.SeldonDeployment, con *corev1.Container, c components) *corev1.Service {
 	containerServiceKey := machinelearningv1alpha2.GetPredictorServiceNameKey(con)
 	containerServiceValue := machinelearningv1alpha2.GetContainerServiceName(mlDep, p, con)
-	pu := machinelearningv1alpha2.GetPredcitiveUnit(p.Graph, con.Name)
+	pu := machinelearningv1alpha2.GetPredictiveUnit(p.Graph, con.Name)
 
 	// only create services for containers defined as pus in the graph
 	if pu == nil {

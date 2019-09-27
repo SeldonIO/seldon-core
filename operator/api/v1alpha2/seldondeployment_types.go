@@ -127,12 +127,12 @@ func GetPredictorServiceNameKey(c *v1.Container) string {
 	return Label_seldon_app + "-" + c.Name
 }
 
-func GetPredcitiveUnit(pu *PredictiveUnit, name string) *PredictiveUnit {
+func GetPredictiveUnit(pu *PredictiveUnit, name string) *PredictiveUnit {
 	if name == pu.Name {
 		return pu
 	} else {
 		for i := 0; i < len(pu.Children); i++ {
-			found := GetPredcitiveUnit(&pu.Children[i], name)
+			found := GetPredictiveUnit(&pu.Children[i], name)
 			if found != nil {
 				return found
 			}
@@ -161,9 +161,7 @@ func GetPredictiveUnitList(p *PredictiveUnit) (list []*PredictiveUnit) {
 
 	for i := 0; i < len(p.Children); i++ {
 		pu := &p.Children[i]
-		if pu != nil {
-			list = append(list, GetPredictiveUnitList(pu)...)
-		}
+		list = append(list, GetPredictiveUnitList(pu)...)
 	}
 	return list
 }

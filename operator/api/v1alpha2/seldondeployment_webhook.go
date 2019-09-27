@@ -126,6 +126,14 @@ func addDefaultsToGraph(pu *PredictiveUnit) {
 	}
 }
 
+func getUpdatePortNumMap(name string, nextPortNum *int32, portMap map[string]int32) int32 {
+	if _, present := portMap[name]; !present {
+		portMap[name] = *nextPortNum
+		*nextPortNum++
+	}
+	return portMap[name]
+}
+
 func (r *SeldonDeployment) DefaultSeldonDeployment() {
 
 	var firstPuPortNum int32 = 9000
@@ -173,13 +181,11 @@ func (r *SeldonDeployment) DefaultSeldonDeployment() {
 			for k := 0; k < len(cSpec.Spec.Containers); k++ {
 				con := &cSpec.Spec.Containers[k]
 
-				if _, present := portMap[con.Name]; !present {
-					portMap[con.Name] = nextPortNum
-					nextPortNum++
-				}
+				getUpdatePortNumMap(con.Name, &nextPortNum, portMap)
+
 				portNum := portMap[con.Name]
 
-				pu := GetPredcitiveUnit(p.Graph, con.Name)
+				pu := GetPredictiveUnit(p.Graph, con.Name)
 
 				if pu != nil {
 
@@ -212,7 +218,7 @@ func (r *SeldonDeployment) DefaultSeldonDeployment() {
 				}
 			}
 
-			// Add defaultMode to volumes ifnot set to ensure no changes when comparing later in controller
+			// Add defaultMode to volumes if not set to ensure no changes when comparing later in controller
 			for k := 0; k < len(cSpec.Spec.Volumes); k++ {
 				vol := &cSpec.Spec.Volumes[k]
 				if vol.Secret != nil && vol.Secret.DefaultMode == nil {
@@ -383,8 +389,7 @@ func (r *SeldonDeployment) validateSeldonDeployment() error {
 	var allErrs field.ErrorList
 
 	predictorNames := make(map[string]bool)
-	for i := 0; i < len(r.Spec.Predictors); i++ {
-		p := r.Spec.Predictors[i]
+	for i, p := range r.Spec.Predictors {
 		if _, present := predictorNames[p.Name]; present {
 			fldPath := field.NewPath("spec").Child("predictors").Index(i)
 			allErrs = append(allErrs, field.Invalid(fldPath, p.Name, "Duplicate predictor name"))
