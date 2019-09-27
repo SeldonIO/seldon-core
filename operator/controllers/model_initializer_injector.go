@@ -14,17 +14,20 @@ limitations under the License.
 package controllers
 
 import (
-	"context"
+
 	//	"encoding/json"
 	"fmt"
+	"strings"
+
 	"github.com/seldonio/seldon-core/operator/controllers/resources/credentials"
 	"github.com/seldonio/seldon-core/operator/utils"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/apimachinery/pkg/types"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"strings"
 )
 
 // TODO: change image to seldon
@@ -47,8 +50,8 @@ var (
 
 func credentialsBuilder(Client client.Client) (credentialsBuilder *credentials.CredentialBuilder, err error) {
 
-	configMap := &corev1.ConfigMap{}
-	err = Client.Get(context.TODO(), types.NamespacedName{Name: ControllerConfigMapName, Namespace: ControllerNamespace}, configMap)
+	clientset := kubernetes.NewForConfigOrDie(ctrl.GetConfigOrDie())
+	configMap, err := clientset.CoreV1().ConfigMaps(ControllerNamespace).Get(ControllerConfigMapName, metav1.GetOptions{})
 	if err != nil {
 		//log.Error(err, "Failed to find config map", "name", ControllerConfigMapName)
 		return nil, err

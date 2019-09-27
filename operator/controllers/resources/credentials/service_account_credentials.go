@@ -17,13 +17,15 @@ limitations under the License.
 package credentials
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/seldonio/seldon-core/operator/controllers/resources/credentials/gcs"
 	"github.com/seldonio/seldon-core/operator/controllers/resources/credentials/s3"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
@@ -75,17 +77,14 @@ func (c *CredentialBuilder) CreateSecretVolumeAndEnv(namespace string, serviceAc
 		gcsCredentialFileName = c.config.GCS.GCSCredentialFileName
 	}
 
-	serviceAccount := &v1.ServiceAccount{}
-	err := c.client.Get(context.TODO(), types.NamespacedName{Name: serviceAccountName,
-		Namespace: namespace}, serviceAccount)
+	clientset := kubernetes.NewForConfigOrDie(ctrl.GetConfigOrDie())
+	serviceAccount, err := clientset.CoreV1().ServiceAccounts(namespace).Get(serviceAccountName, metav1.GetOptions{})
 	if err != nil {
 		log.Error(err, "Failed to find service account", "ServiceAccountName", serviceAccountName)
 		return nil
 	}
 	for _, secretRef := range serviceAccount.Secrets {
-		secret := &v1.Secret{}
-		err := c.client.Get(context.TODO(), types.NamespacedName{Name: secretRef.Name,
-			Namespace: namespace}, secret)
+		secret, err := clientset.CoreV1().Secrets(namespace).Get(secretRef.Name, metav1.GetOptions{})
 		if err != nil {
 			log.Error(err, "Failed to find secret", "SecretName", secretRef.Name)
 			continue
