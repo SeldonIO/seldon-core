@@ -2,6 +2,8 @@
 
 **You will need a kubernetes cluster with version >=1.12**
 
+The installation process has changed slightly for release versions >0.5 due to webhook certificates. If you need to install versions <0.5 please ensure you load the docs for the version you want.
+
 ## Webhook Certificates
 
 For version >=0.5 Seldon Core requires certificates to be provisioned to the Webhook server. By default we assume the use of [cert-manager](https://github.com/jetstack/cert-manager). You can also provide your certificate in a secret directly if you don't want to use cert manager.
