@@ -1,14 +1,14 @@
 VERSION := $(shell cat ../../version.txt)
 
 kind_create_cluster:
-	kind create cluster
+	kind create cluster --config kind_config.yaml
 
 kind_build_engine:
 	cd ../../engine/ && make build_image
 	kind load docker-image seldonio/engine:$(VERSION) --loglevel trace
 
 kind_build_operator:
-	cd ../../operator && make kind-install-image
+	cd ../../operator && make kind-image-install
 
 kind_build_images: kind_build_engine kind_build_operator
 
@@ -19,7 +19,7 @@ install_helm:
 	kubectl rollout status deploy/tiller-deploy -n kube-system
 
 install_ambassador:
-	helm install stable/ambassador --name ambassador --set crds.keep=false --namespace seldon --set replicaCount=1
+	helm install stable/ambassador -f ambassador_values.yaml --name ambassador --set crds.keep=false --namespace seldon --set replicaCount=1
 	kubectl rollout status deployment.apps/ambassador --namespace seldon
 
 install_cert_manager:
