@@ -6,6 +6,7 @@
 |----------|-------------|---------|
 | ambassador.enabled | Whether to add Ambassador configuration to created services | true |
 | ambassador.singleNamespace | Allow creation of Ambassador paths that don't include namespace | false |
+| certManager.enabled | Whether to assume cert manager for certificates | false |
 | engine.grpc.port | gRPC port | 5001 |
 | engine.image.name | Image to use for service orchestrator | ```<latest release image>``` |
 | engine.image.tag | Tag for service orchestrator | ```<latest release image>``` |
@@ -21,6 +22,3 @@
 | rbac.configmap.create |  Create cluster wide rbacs rules to read configmaps and secrets | true |
 | usageMetrics.enabled | Whether to send anonymous usage metrics | ```false``` |
 | usageMetrics.datebase | URL for Spartakus DB | http://seldon-core-stats.seldon.io |
-| webhook.certManager.enabled | Whether to assume cert manager for certificates | true |
-| webhook.secretProvided | To add a secret with self provided certificate | false |
-

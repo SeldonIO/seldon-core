@@ -12,8 +12,9 @@ HELM_SPARTAKUS_IF_START = '{{- if .Values.usageMetrics.enabled }}\n'
 HELM_RBAC_IF_START = '{{- if .Values.rbac.create }}\n'
 HELM_RBAC_CSS_IF_START = '{{- if .Values.rbac.configmap.create }}\n'
 HELM_SA_IF_START = '{{- if .Values.serviceAccount.create -}}\n'
-HELM_CERTMANAGER_IF_START = '{{- if .Values.webhook.certManager.enabled -}}\n'
-HELM_SECRET_IF_START = '{{- if .Values.webhook.secretProvided -}}\n'
+HELM_CERTMANAGER_IF_START = '{{- if .Values.certManager.enabled -}}\n'
+HELM_NOT_CERTMANAGER_IF_START = '{{- if not .Values.certManager.enabled -}}\n'
+#HELM_SECRET_IF_START = '{{- if .Values.webhook.secretProvided -}}\n'
 HELM_IF_END = '{{- end }}\n'
 
 HELM_ENV_SUBST = {
@@ -113,7 +114,7 @@ if __name__ == "__main__":
             elif kind == "issuer"or kind == "certificate":
                 fdata = HELM_CERTMANAGER_IF_START + fdata + HELM_IF_END
             elif name == "seldon-webhook-server-cert" and kind == "secret":
-                fdata = HELM_SECRET_IF_START + fdata + HELM_IF_END
+                fdata = HELM_NOT_CERTMANAGER_IF_START + fdata + HELM_IF_END
 
             if not kind == "namespace":
                 with open(filename, 'w') as outfile:
