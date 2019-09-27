@@ -9,3 +9,7 @@ resources:
 - auth_proxy_service.yaml
 - auth_proxy_role.yaml
 - auth_proxy_role_binding.yaml
+- role_sas.yaml
+- role_binding_sas.yaml
+- role_cm.yaml
+- role_binding_cm.yaml

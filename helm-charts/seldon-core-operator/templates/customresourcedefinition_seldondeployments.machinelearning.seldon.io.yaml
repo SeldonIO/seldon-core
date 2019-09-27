@@ -241,6 +241,8 @@ spec:
                             minReplicas:
                               format: int32
                               type: integer
+                          required:
+                          - maxReplicas
                           type: object
                         metadata:
                           type: object
@@ -3554,12 +3556,18 @@ spec:
                               type: string
                             value:
                               type: string
+                          required:
+                          - name
+                          - type
+                          - value
                           type: object
                         type: array
                       serviceAccountName:
                         type: string
                       type:
                         type: string
+                    required:
+                    - name
                     type: object
                   labels:
                     additionalProperties:
@@ -3665,8 +3673,13 @@ spec:
                   traffic:
                     format: int32
                     type: integer
+                required:
+                - graph
+                - name
                 type: object
               type: array
+          required:
+          - predictors
           type: object
         status:
           description: SeldonDeploymentStatus defines the observed state of SeldonDeployment

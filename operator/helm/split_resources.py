@@ -10,6 +10,7 @@ args, _ = parser.parse_known_args()
 
 HELM_SPARTAKUS_IF_START = '{{- if .Values.usageMetrics.enabled }}\n'
 HELM_RBAC_IF_START = '{{- if .Values.rbac.create }}\n'
+HELM_RBAC_CSS_IF_START = '{{- if .Values.rbac.configmap.create }}\n'
 HELM_SA_IF_START = '{{- if .Values.serviceAccount.create -}}\n'
 HELM_CERTMANAGER_IF_START = '{{- if .Values.webhook.certManager.enabled -}}\n'
 HELM_SECRET_IF_START = '{{- if .Values.webhook.secretProvided -}}\n'
@@ -104,6 +105,9 @@ if __name__ == "__main__":
                 fdata = HELM_SPARTAKUS_IF_START + fdata + HELM_IF_END
             elif name == "seldon-manager-rolebinding" or name == "seldon-manager-role":
                 fdata = HELM_RBAC_IF_START + fdata + HELM_IF_END
+            elif name == "seldon-manager-sas-rolebinding" or name == "seldon-manager-sas-role" or \
+                name == "seldon-manager-cm-rolebinding" or name == "seldon-manager-cm-role":
+                fdata = HELM_RBAC_IF_START + HELM_RBAC_CSS_IF_START + fdata + HELM_IF_END + HELM_IF_END
             elif name == "seldon-manager" and kind == "serviceaccount":
                 fdata = HELM_SA_IF_START + fdata + HELM_IF_END
             elif kind == "issuer"or kind == "certificate":

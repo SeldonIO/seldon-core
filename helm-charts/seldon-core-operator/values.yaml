@@ -30,6 +30,8 @@ predictiveUnit:
   port: 9000
 rbac:
   create: true
+  configmap:
+    create: true
 serviceAccount:
   create: true
   name: seldon-manager

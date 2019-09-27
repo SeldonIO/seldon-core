@@ -107,8 +107,8 @@ WEBHOOK_DIR=/tmp/k8s-webhook-server/serving-certs
 
 tls-extract:
 	mkdir -p ${WEBHOOK_DIR}
-	kubectl get secrets -n seldon-system webhook-server-cert  -o 'go-template={{index .data "tls.key"}}' | base64 -d > ${WEBHOOK_DIR}/tls.key
-	kubectl get secrets -n seldon-system webhook-server-cert  -o 'go-template={{index .data "tls.crt"}}' | base64 -d > ${WEBHOOK_DIR}/tls.crt
+	kubectl get secrets -n seldon-system seldon-webhook-server-cert  -o 'go-template={{index .data "tls.key"}}' | base64 -d > ${WEBHOOK_DIR}/tls.key
+	kubectl get secrets -n seldon-system seldon-webhook-server-cert  -o 'go-template={{index .data "tls.crt"}}' | base64 -d > ${WEBHOOK_DIR}/tls.crt
 
 
 .PHONY: self-signed-cert

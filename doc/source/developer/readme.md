@@ -30,12 +30,27 @@ To install the Operator run:
 make deploy
 ```
 
-If you wish to install the Operator and prepare the controller to be run outside the cluster, for example inside an IDE (we use GoLand) then run:
+If you wish to install the Operator and prepare the controller to be run outside the cluster, for example inside an IDE (we use GoLand) then run the following. This has only been tested on a local Kind cluster:
 
 ```
 make deploy-local
 ```
 
+When the everything is running delete the seldon-controller-manager deployment from the seldon-system namespace as we will run locally.
+
+Next, download the webhook certificate (created by cert-manager) locally:
+
+```
+make tls-extract
+```
+
+You can now run the manager locally. You will need to set the webhook-port on startup e.g.,
+
+```
+go run ./main.go --webhook-port=9000
+```
+
+If running inside an IDE and you are using Kind then make sure you set the KUBECONFIG env as well.
 
 
 
