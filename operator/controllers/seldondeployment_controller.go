@@ -610,6 +610,21 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 	var terminationGracePeriod int64 = 20
 	deploy.Spec.Template.Spec.TerminationGracePeriodSeconds = &terminationGracePeriod
 
+	volFound := false
+	for _, vol := range deploy.Spec.Template.Spec.Volumes {
+		if vol.Name == machinelearningv1alpha2.PODINFO_VOLUME_NAME {
+			volFound = true
+		}
+	}
+
+	if !volFound {
+		var defaultMode = corev1.DownwardAPIVolumeSourceDefaultMode
+		//Add downwardAPI
+		deploy.Spec.Template.Spec.Volumes = append(deploy.Spec.Template.Spec.Volumes, corev1.Volume{Name: machinelearningv1alpha2.PODINFO_VOLUME_NAME, VolumeSource: corev1.VolumeSource{
+			DownwardAPI: &corev1.DownwardAPIVolumeSource{Items: []corev1.DownwardAPIVolumeFile{
+				{Path: "annotations", FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.annotations", APIVersion: "v1"}}}, DefaultMode: &defaultMode}}})
+	}
+
 	return deploy
 }
 
