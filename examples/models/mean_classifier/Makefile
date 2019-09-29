@@ -2,7 +2,7 @@ VERSION=1.3
 IMAGE_BASE=seldonio/mock_classifier
 
 build_rest:
-	s2i build -E environment_rest . seldonio/seldon-core-s2i-python36:0.11-SNAPSHOT ${IMAGE_BASE}_rest:${VERSION}
+	s2i build -E environment_rest . seldonio/seldon-core-s2i-python36:0.12-SNAPSHOT ${IMAGE_BASE}_rest:${VERSION}
 
 push_rest:
 	docker push ${IMAGE_BASE}_rest:${VERSION}

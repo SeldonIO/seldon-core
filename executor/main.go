@@ -20,6 +20,7 @@ var (
 	configPath   = flag.String("config", "", "Path to kubconfig")
 	sdepName   = flag.String("sdep", "", "Seldon deployment name")
 	namespace   = flag.String("namespace", "", "Namespace")
+	predictor   = flag.String("predictor", "", "Name of the predictor inside the SeldonDeployment")
 	port        = flag.Int("port", 8080, "Executor port")
 	wait        = flag.Duration( "graceful-timeout", time.Second * 15, "Graceful shutdown secs")
 )
@@ -43,20 +44,23 @@ func main() {
 		os.Exit(-1)
 	}
 
+	if *predictor == "" {
+		log.Error("Predictor must be provied")
+		os.Exit(-1)
+	}
+
 	logf.SetLogger(logf.ZapLogger(false))
 	log := logf.Log.WithName("entrypoint")
 
 	seldonDeploymentClient := client.NewSeldonDeploymentClient(configPath)
-	sdep, err := seldonDeploymentClient.Get(*sdepName,*namespace)
+	predictor, err := seldonDeploymentClient.GetPredcitor(*sdepName,*namespace,*predictor)
 	if err != nil {
-		log.Error(err,"Failed to find seldon deployment","name",sdepName)
+		log.Error(err,"Failed to find predictor","name",predictor)
 		panic(err)
-	} else {
-		log.Info("Found seldon deployment","name",sdep.Name)
 	}
 
-
-	seldonRest := rest.NewSeldonRestApi(seldonDeploymentClient)
+	// Create REST client
+	seldonRest := rest.NewSeldonRestApi(predictor)
 	seldonRest.Initialise()
 
 	//http.Handle("/", router)

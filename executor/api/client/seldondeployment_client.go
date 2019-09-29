@@ -1,6 +1,7 @@
 package client
 
 import (
+	"fmt"
 	"github.com/go-logr/logr"
 	"github.com/seldonio/seldon-core/executor/api/machinelearning/v1alpha2"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -53,6 +54,16 @@ func NewSeldonDeploymentClient(path *string) *SeldonDeploymentClient {
 }
 
 
-func (sd *SeldonDeploymentClient) Get(name string, namespace string) (*v1alpha2.SeldonDeployment, error) {
-	return sd.client.SeldonDeployments(namespace).Get(name,v1.GetOptions{})
+func (sd *SeldonDeploymentClient) GetPredcitor(sdepName string, namespace string, predictorName string) (*v1alpha2.PredictorSpec, error) {
+	sdep, err := sd.client.SeldonDeployments(namespace).Get(sdepName,v1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+	for _, predictor := range sdep.Spec.Predictors {
+		if predictor.Name == predictorName {
+			return &predictor, nil
+		}
+	}
+
+	return nil, fmt.Errorf("Failed to find predictor with name %s", predictorName)
 }
