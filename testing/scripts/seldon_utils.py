@@ -4,9 +4,6 @@ from seldon_core.proto import prediction_pb2
 from seldon_core.proto import prediction_pb2_grpc
 import grpc
 import numpy as np
-from retrying import retry
-import time
-from subprocess import run
 from k8s_utils import *
 
 def wait_for_rollout(deploymentName):
@@ -39,7 +36,11 @@ def initial_rest_request(model, namespace):
             print("Sleeping 5 sec and trying again")
             time.sleep(5)
             r = rest_request(model, namespace)
-    return r
+            if r is None:
+                print("Sleeping 10 sec and trying again")
+                time.sleep(10)
+                r = rest_request(model, namespace)
+        return r
 
 
 def create_random_data(data_size,rows=1):

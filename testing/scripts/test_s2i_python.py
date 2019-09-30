@@ -6,8 +6,8 @@ from seldon_utils import *
 from k8s_utils import *
 import numpy as np
 
-S2I_CREATE = "cd ../s2i/python/#TYPE# && s2i build -E environment_#API# . seldonio/seldon-core-s2i-python3:#VERSION# 127.0.0.1:5000/seldonio/test#TYPE#_#API#:0.1"
-IMAGE_NAME = "127.0.0.1:5000/seldonio/test#TYPE#_#API#:0.1"
+S2I_CREATE = "cd ../s2i/python/#TYPE# && s2i build -E environment_#API# . seldonio/seldon-core-s2i-python3:#VERSION# seldonio/test#TYPE#_#API#:0.1"
+IMAGE_NAME = "seldonio/test#TYPE#_#API#:0.1"
 
 
 def create_s2I_image(s2i_python_version, component_type, api_type):
@@ -17,9 +17,11 @@ def create_s2I_image(s2i_python_version, component_type, api_type):
     run(cmd, shell=True, check=True)
 
 
-def push_s2i_image(component_type, api_type):
+def kind_push_s2i_image(component_type, api_type):
     img = get_image_name(component_type, api_type)
-    run("docker push " + img, shell=True, check=True)
+    cmd = "kind load docker-image " + img + " --loglevel trace"
+    print(cmd)
+    run(cmd, shell=True, check=True)
 
 
 def get_image_name(component_type, api_type):
@@ -28,11 +30,9 @@ def get_image_name(component_type, api_type):
 
 def create_push_s2i_image(s2i_python_version, component_type, api_type):
     create_s2I_image(s2i_python_version, component_type, api_type)
-    push_s2i_image(component_type, api_type)
+    kind_push_s2i_image(component_type, api_type)
 
 
-@pytest.mark.usefixtures("seldon_images")
-@pytest.mark.usefixtures("setup_python_s2i")
 @pytest.mark.usefixtures("s2i_python_version")
 class TestPythonS2i(object):
 
@@ -101,10 +101,7 @@ def wait_for_rollout(deploymentName):
         ret = run("kubectl rollout status deploy/" + deploymentName, shell=True)
 
 
-@pytest.mark.usefixtures("seldon_images")
-@pytest.mark.usefixtures("setup_python_s2i")
 @pytest.mark.usefixtures("s2i_python_version")
-@pytest.mark.usefixtures("clusterwide_seldon_helm")
 class TestPythonS2iK8s(object):
 
     def test_model_rest(self, s2i_python_version):
@@ -134,7 +131,7 @@ class S2IK8S(object):
         run("kubectl delete sdep --all", shell=True)
         create_push_s2i_image(s2i_python_version, "model", "rest")
         run("kubectl apply -f ../resources/s2i_python_model.json", shell=True, check=True)
-        wait_for_rollout("mymodel-mymodel-b55624a")
+        wait_for_rollout("mymodel-mymodel-8715075")
         r = initial_rest_request("mymodel", "seldon")
         arr = np.array([[1, 2, 3]])
         r = rest_request_ambassador("mymodel", "seldon", API_AMBASSADOR, data=arr)
@@ -149,7 +146,7 @@ class S2IK8S(object):
         run("kubectl delete sdep --all", shell=True)
         create_push_s2i_image(s2i_python_version, "transformer", "rest")
         run("kubectl apply -f ../resources/s2i_python_transformer.json", shell=True, check=True)
-        wait_for_rollout("mytrans-mytrans-01bb8ff")
+        wait_for_rollout("mytrans-mytrans-1f278ae")
         r = initial_rest_request("mytrans", "seldon")
         arr = np.array([[1, 2, 3]])
         r = rest_request_ambassador("mytrans", "seldon", API_AMBASSADOR, data=arr)
@@ -164,7 +161,7 @@ class S2IK8S(object):
         run("kubectl delete sdep --all", shell=True)
         create_push_s2i_image(s2i_python_version, "transformer", "rest")
         run("kubectl apply -f ../resources/s2i_python_output_transformer.json", shell=True, check=True)
-        wait_for_rollout("mytrans-mytrans-14c8191")
+        wait_for_rollout("mytrans-mytrans-52996cb")
         r = initial_rest_request("mytrans", "seldon")
         arr = np.array([[1, 2, 3]])
         r = rest_request_ambassador("mytrans", "seldon", API_AMBASSADOR, data=arr)
@@ -180,7 +177,7 @@ class S2IK8S(object):
         create_push_s2i_image(s2i_python_version, "model", "rest")
         create_push_s2i_image(s2i_python_version, "router", "rest")
         run("kubectl apply -f ../resources/s2i_python_router.json", shell=True, check=True)
-        wait_for_rollout("myrouter-myrouter-afd55a5")
+        wait_for_rollout("myrouter-myrouter-340ed69")
         r = initial_rest_request("myrouter", "seldon")
         arr = np.array([[1, 2, 3]])
         r = rest_request_ambassador("myrouter", "seldon", API_AMBASSADOR, data=arr)
@@ -196,7 +193,7 @@ class S2IK8S(object):
         create_push_s2i_image(s2i_python_version, "model", "rest")
         create_push_s2i_image(s2i_python_version, "combiner", "rest")
         run("kubectl apply -f ../resources/s2i_python_combiner.json", shell=True, check=True)
-        wait_for_rollout("mycombiner-mycombiner-e5d0d2c")
+        wait_for_rollout("mycombiner-mycombiner-acc7c4d")
         r = initial_rest_request("mycombiner", "seldon")
         arr = np.array([[1, 2, 3]])
         r = rest_request_ambassador("mycombiner", "seldon", API_AMBASSADOR, data=arr)

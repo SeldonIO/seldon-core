@@ -1,0 +1,11 @@
+kind: Endpoints
+apiVersion: v1
+metadata:
+ name: seldon-webhook-service
+subsets:
+ - addresses:
+     - ip: 172.17.0.1
+   ports:
+     - port: 9000
+
+

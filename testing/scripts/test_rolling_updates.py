@@ -1,7 +1,3 @@
-import pytest
-import time
-import subprocess
-from subprocess import run,Popen
 from seldon_utils import *
 from k8s_utils import *
 
@@ -18,55 +14,7 @@ def wait_for_rollout(deploymentName):
         ret = run("kubectl rollout status deploy/"+deploymentName, shell=True)
 
 
-
-@pytest.mark.usefixtures("seldon_images")
-@pytest.mark.usefixtures("clusterwide_seldon_helm")
 class TestRollingHttp(object):
-
-
-
-    def test_rolling_update1(self):
-        tester = RollingTests()
-        tester.test_rolling_update1()
-
-    def test_rolling_update2(self):
-        tester = RollingTests()
-        tester.test_rolling_update2()
-
-    def test_rolling_update3(self):
-        tester = RollingTests()
-        tester.test_rolling_update3()
-
-    def test_rolling_update4(self):
-        tester = RollingTests()
-        tester.test_rolling_update4()
-
-    def test_rolling_update5(self):
-        tester = RollingTests()
-        tester.test_rolling_update5()
-
-    def test_rolling_update6(self):
-        tester = RollingTests()
-        tester.test_rolling_update6()
-
-    def test_rolling_update7(self):
-        tester = RollingTests()
-        tester.test_rolling_update7()
-
-    def test_rolling_update8(self):
-        tester = RollingTests()
-        tester.test_rolling_update8()
-
-    def test_rolling_update9(self):
-        tester = RollingTests()
-        tester.test_rolling_update9()
-
-    def test_rolling_update10(self):
-        tester = RollingTests()
-        tester.test_rolling_update10()
-
-
-class RollingTests(object):
 
     # Test updating a model with a new image version as the only change
     def test_rolling_update1(self):

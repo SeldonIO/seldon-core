@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: seldon-spartakus-config
+  namespace: kube-system
+data:
+  spartakus_volunteer_extensions: '{"seldon-core-version":"FIXME"}'

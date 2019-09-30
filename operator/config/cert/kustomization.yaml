@@ -1,0 +1,11 @@
+
+bases:
+- ../default
+
+resources:
+- secret.yaml
+
+patches:
+- mutating.yaml
+- validating.yaml
+

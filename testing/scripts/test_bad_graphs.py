@@ -1,10 +1,6 @@
-import pytest
-import time
 import subprocess
-from subprocess import run
 import json
 from seldon_utils import *
-from k8s_utils import *
 
 def wait_for_status(name):
     for attempts in range(7):
@@ -17,8 +13,6 @@ def wait_for_status(name):
             print("Failed to find status - sleeping")
             time.sleep(5)
 
-@pytest.mark.usefixtures("seldon_images")
-@pytest.mark.usefixtures("clusterwide_seldon_helm")
 class TestBadGraphs(object):
 
     def test_duplicate_predictor_name(self):

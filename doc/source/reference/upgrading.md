@@ -7,7 +7,7 @@
 The helm charts to install Seldon Core have changed. There is now a single Helm chart `seldon-core-operator` that installs the CRD and its controller. Ingress options are now separate and you need to choose between the available options which are at present:
 
  * Ambassador - via its official Helm chart
- * Seldon's OAUTH Gateway - via its standalone Helm chart
+ * Istio
 
 For more details see the [install docs](../workflow/install.md).
 
