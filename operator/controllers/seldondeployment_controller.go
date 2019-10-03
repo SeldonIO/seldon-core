@@ -177,7 +177,7 @@ func createIstioResources(mlDep *machinelearningv1alpha2.SeldonDeployment,
 			Spec: istio.DestinationRuleSpec{
 				Host: pSvcName,
 				TrafficPolicy: &istio.TrafficPolicy{
-					TLS: &istio.TLSSettings {
+					TLS: &istio.TLSSettings{
 						Mode: istio.TLSmodeIstioMutual,
 					},
 				},

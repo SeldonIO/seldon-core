@@ -283,11 +283,19 @@ public class InternalPredictionService {
 							throw e;
 						}
 					case TRANSFORMER:
-						TransformerBlockingStub transformerStub = TransformerGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
-						.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
-						.withMaxInboundMessageSize(grpcMaxMessageSize)
-						.withMaxOutboundMessageSize(grpcMaxMessageSize);
-						return transformerStub.transformInput(input);
+						try
+						{
+							TransformerBlockingStub transformerStub = TransformerGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
+									.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
+									.withMaxInboundMessageSize(grpcMaxMessageSize)
+									.withMaxOutboundMessageSize(grpcMaxMessageSize);
+							return transformerStub.transformInput(input);
+						}
+						catch (Exception e)
+						{
+							logger.error("grpc exception ",e);
+							throw e;
+						}
 					default:
 						throw new APIException(APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,"Unhandled type");
 				}

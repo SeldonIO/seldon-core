@@ -1,0 +1,22 @@
+{
+    "features":[
+	{
+	    "name":"x",
+	    "dtype":"FLOAT",
+	    "ftype":"continuous",
+	    "range":[0,1],
+	    "shape":[3,224,224]
+	}
+    ],
+    "targets":[
+	{
+	    "name":"class",
+	    "dtype":"FLOAT",
+	    "ftype":"continuous",
+	    "range":[0,1],
+	    "shape":[1000]
+	}
+    ]
+}
+
+    
