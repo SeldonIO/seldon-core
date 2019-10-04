@@ -62,6 +62,7 @@ We provide [an example notebook with tabular, text and image model examples](../
  * We now use [Jenkins X](https://jenkins.io/projects/jenkins-x/) as our project CICD platform.
  * We are available on the [RedHat Container Catalog](https://access.redhat.com/containers/?tab=overview#/registry.connect.redhat.com/seldonio/seldon-operator-0-4-0). Update to 0.4.1 soon.
 
+[Join our slack community to discuss](https://join.slack.com/t/seldondev/shared_invite/enQtMzA2Mzk1Mzg0NjczLTJlNjQ1NTE5Y2MzMWIwMGUzYjNmZGFjZjUxODU5Y2EyMDY0M2U3ZmRiYTBkOTRjMzZhZjA4NjJkNDkxZTA2YmU).
 
 
 
