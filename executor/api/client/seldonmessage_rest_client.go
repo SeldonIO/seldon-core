@@ -17,17 +17,21 @@ const (
 	ContentTypeJSON = "application/json"
 )
 
-type SeldonMessageClient struct {
+type SeldonMessageRestClient struct {
 	Log logr.Logger
 }
 
-func NewSeldonMessageClient() *SeldonMessageClient {
-	return &SeldonMessageClient{
-		logf.Log.WithName("SeldonMessageClient"),
+func NewSeldonMessageRestClient() *SeldonMessageRestClient {
+	return &SeldonMessageRestClient{
+		logf.Log.WithName("SeldonMessageRestClient"),
 	}
 }
 
-func (smc *SeldonMessageClient) PostHttp(url *url.URL, msg *api.SeldonMessage) (*api.SeldonMessage, *int, error) {
+func (smc *SeldonMessageRestClient) Hello() int {
+	return 1
+}
+
+func (smc *SeldonMessageRestClient) PostHttp(url *url.URL, msg *api.SeldonMessage) (*api.SeldonMessage, *int, error) {
 	smc.Log.Info("Calling HTTP","URL",url)
 
 	// Marshall message into JSON
@@ -66,12 +70,25 @@ func (smc *SeldonMessageClient) PostHttp(url *url.URL, msg *api.SeldonMessage) (
 }
 
 
-func (smc *SeldonMessageClient) Predict(host string, port int32, msg *api.SeldonMessage) (*api.SeldonMessage, *int, error) {
+func (smc *SeldonMessageRestClient) Predict(host string, port int32, msg *SeldonPayload) (*SeldonPayload, *int, error) {
 	smc.Log.Info("Predict","port",port)
 	url := url.URL{
 	Scheme: "http",
 	Host:   net.JoinHostPort(host,strconv.Itoa(int(port))),
 	Path:   "/predict",
+	}
+
+	sm, respCode, err := smc.PostHttp(&url,msg)
+	var sp SeldonPayload = &SeldonMessagePayload{sm}
+	return &sp, respCode, err
+}
+
+func (smc *SeldonMessageRestClient) Transform(host string, port int32, msg *SeldonPayload) (*SeldonPayload, *int, error) {
+	smc.Log.Info("Predict","port",port)
+	url := url.URL{
+		Scheme: "http",
+		Host:   net.JoinHostPort(host,strconv.Itoa(int(port))),
+		Path:   "/transform-input",
 	}
 	return smc.PostHttp(&url,msg)
 }

@@ -10,29 +10,36 @@ import (
 
 type PredictorProcess struct {
 	predictor *v1alpha2.PredictorSpec
-	client *client.SeldonMessageClient
+	client *client.SeldonApiClient
 	Log logr.Logger
 }
 
 func NewPredictorProcess(predictor *v1alpha2.PredictorSpec) *PredictorProcess {
 	return &PredictorProcess{
 		predictor,
-		client.NewSeldonMessageClient(),
-		logf.Log.WithName("SeldonMessageClient"),
+		client.NewSeldonMessageRestClient(),
+		logf.Log.WithName("SeldonMessageRestClient"),
 	}
 }
 
-
-func (p *PredictorProcess) Execute(node *v1alpha2.PredictiveUnit, msg *api.SeldonMessage) (*api.SeldonMessage, *int, error) {
-
+func (p *PredictorProcess) transformInput(node *v1alpha2.PredictiveUnit, msg *api.SeldonMessage) (*api.SeldonMessage, *int, error) {
 	var resp *api.SeldonMessage
 	var respCode *int
 	var err error
-	if *node.Type == v1alpha2.MODEL {
+	switch *node.Type {
+	case v1alpha2.MODEL:
 		resp, respCode, err = p.client.Predict(node.Endpoint.ServiceHost,node.Endpoint.ServicePort,msg)
-		if err != nil {
-			return resp,respCode, err
-		}
+	case v1alpha2.TRANSFORMER:
+		resp, respCode, err = p.client.Transform(node.Endpoint.ServiceHost,node.Endpoint.ServicePort,msg)
+	default:
+		return msg, nil, nil
+	}
+	if err != nil {
+		return resp,respCode, err
 	}
 	return resp, respCode, nil
+}
+
+func (p *PredictorProcess) Execute(node *v1alpha2.PredictiveUnit, msg *api.SeldonMessage) (*api.SeldonMessage, *int, error) {
+	return p.transformInput(node,msg)
 }
