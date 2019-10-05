@@ -252,7 +252,7 @@ func getAmbassadorConfigs(mlDep *machinelearningv1alpha2.SeldonDeployment, p *ma
 			return "", err
 		}
 
-		if getEnv("AMBASSADOR_SINGLE_NAMESPACE", "false") == "true" {
+		if GetEnv("AMBASSADOR_SINGLE_NAMESPACE", "false") == "true" {
 			return YAML_SEP + cRestGlobal + YAML_SEP + cGrpcGlobal + YAML_SEP + cRestNamespaced + YAML_SEP + cGrpcNamespaced, nil
 		} else {
 			return YAML_SEP + cRestGlobal + YAML_SEP + cGrpcGlobal, nil

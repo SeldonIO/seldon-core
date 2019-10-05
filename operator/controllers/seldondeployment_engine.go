@@ -60,7 +60,7 @@ func addEngineToDeployment(mlDep *machinelearningv1alpha2.SeldonDeployment, p *m
 	}
 
 	deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, *engineContainer)
-	//deploy.Spec.Template.Spec.ServiceAccountName = getEnv("ENGINE_CONTAINER_SERVICE_ACCOUNT_NAME", "seldon")
+	//deploy.Spec.Template.Spec.ServiceAccountName = GetEnv("ENGINE_CONTAINER_SERVICE_ACCOUNT_NAME", "seldon")
 	//deploy.Spec.Template.Spec.DeprecatedServiceAccount = deploy.Spec.Template.Spec.ServiceAccountName
 	//deploy.Spec.Template.Annotations = map[string]string{}
 	if deploy.Spec.Template.Annotations == nil {
@@ -71,7 +71,7 @@ func addEngineToDeployment(mlDep *machinelearningv1alpha2.SeldonDeployment, p *m
 		deploy.Spec.Template.Annotations[ann] = p.Annotations[ann]
 	}
 	// Add prometheus annotations
-	deploy.Spec.Template.Annotations["prometheus.io/path"] = getEnv("ENGINE_PROMETHEUS_PATH", "/prometheus")
+	deploy.Spec.Template.Annotations["prometheus.io/path"] = GetEnv("ENGINE_PROMETHEUS_PATH", "/prometheus")
 	deploy.Spec.Template.Annotations["prometheus.io/port"] = strconv.Itoa(engine_http_port)
 	deploy.Spec.Template.Annotations["prometheus.io/scrape"] = "true"
 
@@ -134,8 +134,8 @@ func createEngineContainer(mlDep *machinelearningv1alpha2.SeldonDeployment, p *m
 
 	c := corev1.Container{
 		Name:                     EngineContainerName,
-		Image:                    getEnv("ENGINE_CONTAINER_IMAGE_AND_VERSION", "seldonio/engine:0.4.0"),
-		ImagePullPolicy:          corev1.PullPolicy(getEnv("ENGINE_CONTAINER_IMAGE_PULL_POLICY", "IfNotPresent")),
+		Image:                    GetEnv("ENGINE_CONTAINER_IMAGE_AND_VERSION", "seldonio/engine:0.4.0"),
+		ImagePullPolicy:          corev1.PullPolicy(GetEnv("ENGINE_CONTAINER_IMAGE_PULL_POLICY", "IfNotPresent")),
 		TerminationMessagePath:   "/dev/termination-log",
 		TerminationMessagePolicy: corev1.TerminationMessageReadFile,
 		VolumeMounts: []corev1.VolumeMount{
@@ -208,7 +208,7 @@ func createEngineContainer(mlDep *machinelearningv1alpha2.SeldonDeployment, p *m
 	if _, ok := svcOrchEnvMap["SELDON_LOG_MESSAGES_EXTERNALLY"]; ok {
 		//this env var is set already so no need to set a default
 	} else {
-		c.Env = append(c.Env, corev1.EnvVar{Name: "SELDON_LOG_MESSAGES_EXTERNALLY", Value: getEnv("ENGINE_LOG_MESSAGES_EXTERNALLY", "false")})
+		c.Env = append(c.Env, corev1.EnvVar{Name: "SELDON_LOG_MESSAGES_EXTERNALLY", Value: GetEnv("ENGINE_LOG_MESSAGES_EXTERNALLY", "false")})
 	}
 	return &c, nil
 }
@@ -240,7 +240,7 @@ func createEngineDeployment(mlDep *machinelearningv1alpha2.SeldonDeployment, p *
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{machinelearningv1alpha2.Label_seldon_app: seldonId, machinelearningv1alpha2.Label_seldon_id: seldonId, "app": depName},
 					Annotations: map[string]string{
-						"prometheus.io/path":   getEnv("ENGINE_PROMETHEUS_PATH", "/prometheus"),
+						"prometheus.io/path":   GetEnv("ENGINE_PROMETHEUS_PATH", "/prometheus"),
 						"prometheus.io/port":   strconv.Itoa(engine_http_port),
 						"prometheus.io/scrape": "true",
 					},

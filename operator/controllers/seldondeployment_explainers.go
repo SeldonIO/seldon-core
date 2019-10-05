@@ -172,7 +172,7 @@ func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1alph
 		if grpcPort > 0 {
 			c.serviceDetails[eSvcName].GrpcEndpoint = eSvcName + "." + eSvc.Namespace + ":" + strconv.Itoa(grpcPort)
 		}
-		if getEnv(ENV_ISTIO_ENABLED, "false") == "true" {
+		if GetEnv(ENV_ISTIO_ENABLED, "false") == "true" {
 			vsvcs, dstRule := createExplainerIstioResources(eSvcName, p, mlDep, seldonId, getNamespace(mlDep), httpPort, grpcPort)
 			c.virtualServices = append(c.virtualServices, vsvcs...)
 			c.destinationRules = append(c.destinationRules, dstRule...)
@@ -203,7 +203,7 @@ func createExplainerIstioResources(pSvcName string, p *machinelearningv1alpha2.P
 		vsNameGrpc = strings.TrimSuffix(vsNameGrpc, "-")
 	}
 
-	istio_gateway := getEnv(ENV_ISTIO_GATEWAY, "seldon-gateway")
+	istio_gateway := GetEnv(ENV_ISTIO_GATEWAY, "seldon-gateway")
 	httpVsvc := &istio.VirtualService{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      vsNameHttp,
