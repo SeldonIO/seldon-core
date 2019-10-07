@@ -5,6 +5,7 @@ set -o errexit
 set -o pipefail
 set -o noclobber
 set -o noglob
+set -o xtrace
 
 # Assumes existing cluster with kubeflow's istio gateway
 # Will put services behind kubeflow istio gateway
@@ -18,15 +19,15 @@ fi
 
 sleep 5
 
-kubectl -n kube-system create sa tiller
-kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
+kubectl -n kube-system create sa tiller --dry-run -o yaml|kubectl apply -f -
+kubectl create clusterrolebinding tiller --clusterrole=cluster-admin --serviceaccount=kube-system:tiller --dry-run -o yaml | kubectl apply -f -
 helm init --service-account tiller
 
 kubectl rollout status -n kube-system deployment/tiller-deploy
 
 helm install --name seldon-core ../../helm-charts/seldon-core-operator/ --namespace seldon-system --set istio.gateway="kubeflow-gateway.kubeflow.svc.cluster.local" --set istio.enabled="true" --set engine.logMessagesExternally="true"
 
-kubectl rollout status -n seldon-system deployment/seldon-operator-controller-manager
+kubectl rollout status -n seldon-system deployment/seldon-controller-manager
 
 sleep 5
 
@@ -44,8 +45,9 @@ kubectl apply -f ./kubeflow/virtualservice-elasticsearch.yaml
 kubectl rollout status deployment/kibana-kibana -n logs
 
 kubectl apply -f ./request-logging/seldon-request-logger.yaml
-kubectl label namespace default knative-eventing-injection=enabled
-sleep 3
+kubectl label namespace default knative-eventing-injection=enabled --overwrite=true
+#sleep 3
+sleep 6
 kubectl -n default get broker default
 kubectl apply -f ./request-logging/trigger.yaml
 
