@@ -20,6 +20,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import io.micrometer.core.annotation.Timed;
 
 import io.opentracing.Span;
+import io.opentracing.Tracer;
 
 import java.io.IOException;
 import java.util.Base64;
@@ -141,8 +142,11 @@ public class RestClientController {
 	{
 		logger.debug("Received predict request");
 		Span tracingSpan = null;
-		if (tracingProvider.isActive())
-			tracingSpan = tracingProvider.getTracer().buildSpan("/api/v0.1/predictions").start();
+		if (tracingProvider.isActive()) {
+      Tracer tracer = tracingProvider.getTracer();
+			tracingSpan = tracer.buildSpan("/api/v0.1/predictions").start();
+      tracer.scopeManager().activate(tracingSpan);
+    }
 		try
 		{
 			return _predictions(requestEntity.getBody());
@@ -163,8 +167,11 @@ public class RestClientController {
 	{
 		logger.debug("Received predict request");
 		Span tracingSpan = null;
-		if (tracingProvider.isActive())
-			tracingSpan = tracingProvider.getTracer().buildSpan("/api/v0.1/predictions").start();
+		if (tracingProvider.isActive()) {
+      Tracer tracer = tracingProvider.getTracer();
+			tracingSpan = tracer.buildSpan("/api/v0.1/predictions").start();
+      tracer.scopeManager().activate(tracingSpan);
+    }
 		try {
 			ObjectMapper mapper = new ObjectMapper();
 			Map<String,Object> mergedParamMap = new HashMap<String,Object>();
@@ -248,8 +255,11 @@ public class RestClientController {
 	public ResponseEntity<String>  feedback(RequestEntity<String> requestEntity) {
 		logger.debug("Received feedback request");
 		Span tracingSpan = null;
-		if (tracingProvider.isActive())
-			tracingSpan = tracingProvider.getTracer().buildSpan("/api/v0.1/feedback").start();
+		if (tracingProvider.isActive()) {
+      Tracer tracer = tracingProvider.getTracer();
+			tracingSpan = tracer.buildSpan("/api/v0.1/feedback").start();
+      tracer.scopeManager().activate(tracingSpan);
+    }
 		try
 		{
 		Feedback feedback;	
