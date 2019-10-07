@@ -6,6 +6,7 @@ import (
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/gorilla/mux"
 	"github.com/prometheus/common/log"
+	"github.com/seldonio/seldon-core/executor/api/client"
 	api "github.com/seldonio/seldon-core/executor/api/grpc"
 	"github.com/seldonio/seldon-core/executor/api/machinelearning/v1alpha2"
 	"github.com/seldonio/seldon-core/executor/predictor"
@@ -66,22 +67,21 @@ func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 		log.Error("Failed to parse request:",err)
 	}
 
-	seldonPredictorProcess := predictor.NewPredictorProcess(r.predictor)
+	seldonPredictorProcess := &predictor.PredictorProcess{
+		r.predictor,
+		client.NewSeldonMessageRestClient(),
+		logf.Log.WithName("SeldonMessageRestClient"),
+	}
 
-	smResp, respCode, err := seldonPredictorProcess.Execute(r.predictor.Graph,sm)
-
+	reqPayload := client.SeldonMessagePayload{sm}
+	resPayload, err := seldonPredictorProcess.Execute(r.predictor.Graph,&reqPayload)
 	if err != nil {
-		if smResp != nil && respCode != nil {
-			respondWithJSON(w, *respCode, smResp)
-		} else if respCode != nil {
-			respFailed := api.SeldonMessage{Status:&api.Status{Code: int32(*respCode), Info: err.Error()}}
-			respondWithJSON(w, *respCode, &respFailed)
-		} else {
-			respFailed := api.SeldonMessage{Status:&api.Status{Code: 500, Info: err.Error()}}
-			respondWithJSON(w, 500, &respFailed)
-		}
+		respFailed := api.SeldonMessage{Status:&api.Status{Code: 500, Info: err.Error()}}
+		respondWithJSON(w, 500, &respFailed)
 	} else {
+		smResp := resPayload.GetPayload().(*api.SeldonMessage)
 		respondWithJSON(w,200, smResp)
 	}
+
 
 }
