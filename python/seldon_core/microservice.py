@@ -269,7 +269,7 @@ def main():
                     'reload': 'true',
                     'workers': args.workers,
                     'max_requests': args.max_requests,
-                    'max_requests_jitter': args.max_requests_jitter
+                    'max_requests_jitter': args.max_requests_jitter,
                 }
                 app = seldon_microservice.get_rest_microservice(user_object)
                 StandaloneApplication(app,user_object,options=options).run()
