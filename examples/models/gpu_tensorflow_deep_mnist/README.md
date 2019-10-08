@@ -450,7 +450,7 @@ We first start with the custom resource definitions (CRDs)
     
     ==> v1/Pod(related)
     NAME                                  READY  STATUS             RESTARTS  AGE
-    seldon-operator-controller-manager-0  0/1    ContainerCreating  0         2s
+    seldon-controller-manager-0  0/1    ContainerCreating  0         2s
     
     ==> v1/Secret
     NAME                                   TYPE    DATA  AGE
@@ -458,11 +458,11 @@ We first start with the custom resource definitions (CRDs)
     
     ==> v1/Service
     NAME                                        TYPE       CLUSTER-IP   EXTERNAL-IP  PORT(S)  AGE
-    seldon-operator-controller-manager-service  ClusterIP  10.76.8.100  <none>       443/TCP  2s
+    seldon-controller-manager-service  ClusterIP  10.76.8.100  <none>       443/TCP  2s
     
     ==> v1/StatefulSet
     NAME                                READY  AGE
-    seldon-operator-controller-manager  0/1    2s
+    seldon-controller-manager  0/1    2s
     
     ==> v1beta1/CustomResourceDefinition
     NAME                                         AGE
@@ -479,7 +479,7 @@ And confirm they are running by getting the pods:
 
 
 ```python
-!kubectl rollout status deployment/seldon-operator-controller-manager -n seldon-system
+!kubectl rollout status deployment/seldon-controller-manager -n seldon-system
 ```
 
     Error from server (NotFound): namespaces "seldon-system" not found
@@ -678,7 +678,7 @@ Check the deployment is running
     ambassador-865c877494-2vsk2                            1/1     Running   0          101m
     ambassador-865c877494-qzh4c                            1/1     Running   0          101m
     deep-mnist-gpu-single-model-0588ac2-865d745b7d-kqcp9   2/2     Running   0          71m
-    seldon-operator-controller-manager-0                   1/1     Running   1          101m
+    seldon-controller-manager-0                   1/1     Running   1          101m
 
 
 ## Test the deployment with test data
@@ -696,7 +696,7 @@ Check the deployment is running
     deep-mnist-gpu-deep-mnist-gpu                ClusterIP      10.76.5.205    <none>          8000/TCP,5001/TCP            71m
     kubernetes                                   ClusterIP      10.76.0.1      <none>          443/TCP                      107m
     seldon-87fe3957f4554e9b5af993717a0b9327      ClusterIP      10.76.14.160   <none>          9000/TCP                     71m
-    seldon-operator-controller-manager-service   ClusterIP      10.76.8.100    <none>          443/TCP                      101m
+    seldon-controller-manager-service   ClusterIP      10.76.8.100    <none>          443/TCP                      101m
     webhook-server-service                       ClusterIP      10.76.7.151    <none>          443/TCP                      101m
 
 

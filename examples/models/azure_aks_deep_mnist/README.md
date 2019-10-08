@@ -373,7 +373,7 @@ We first start with the custom resource definitions (CRDs)
     
     ==> v1/Pod(related)
     NAME                                  READY  STATUS   RESTARTS  AGE
-    seldon-operator-controller-manager-0  1/1    Running  0         3s
+    seldon-controller-manager-0  1/1    Running  0         3s
     
     ==> v1/Secret
     NAME                                   TYPE    DATA  AGE
@@ -381,11 +381,11 @@ We first start with the custom resource definitions (CRDs)
     
     ==> v1/Service
     NAME                                        TYPE       CLUSTER-IP    EXTERNAL-IP  PORT(S)  AGE
-    seldon-operator-controller-manager-service  ClusterIP  10.0.224.128  <none>       443/TCP  3s
+    seldon-controller-manager-service  ClusterIP  10.0.224.128  <none>       443/TCP  3s
     
     ==> v1/StatefulSet
     NAME                                READY  AGE
-    seldon-operator-controller-manager  1/1    3s
+    seldon-controller-manager  1/1    3s
     
     ==> v1beta1/CustomResourceDefinition
     NAME                                         AGE
@@ -402,7 +402,7 @@ And confirm they are running by getting the pods:
 
 
 ```python
-!kubectl rollout status deployment/seldon-operator-controller-manager -n seldon-system
+!kubectl rollout status deployment/seldon-controller-manager -n seldon-system
 ```
 
     partitioned roll out complete: 1 new pods have been updated...

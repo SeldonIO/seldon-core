@@ -641,7 +641,7 @@ Now we can install run the Seldon Operator using the latest Helm charts
     
     ==> v1/Pod(related)
     NAME                                  READY  STATUS             RESTARTS  AGE
-    seldon-operator-controller-manager-0  0/1    ContainerCreating  0         0s
+    seldon-controller-manager-0  0/1    ContainerCreating  0         0s
     
     ==> v1/Secret
     NAME                                   TYPE    DATA  AGE
@@ -649,11 +649,11 @@ Now we can install run the Seldon Operator using the latest Helm charts
     
     ==> v1/Service
     NAME                                        TYPE       CLUSTER-IP      EXTERNAL-IP  PORT(S)  AGE
-    seldon-operator-controller-manager-service  ClusterIP  10.101.147.136  <none>       443/TCP  0s
+    seldon-controller-manager-service  ClusterIP  10.101.147.136  <none>       443/TCP  0s
     
     ==> v1/StatefulSet
     NAME                                READY  AGE
-    seldon-operator-controller-manager  0/1    0s
+    seldon-controller-manager  0/1    0s
     
     ==> v1beta1/CustomResourceDefinition
     NAME                                         AGE
@@ -673,7 +673,7 @@ And we can make sure that it is actually running with the following command
 !kubectl get pod | grep seldon
 ```
 
-    seldon-operator-controller-manager-0   1/1     Running   1          12s
+    seldon-controller-manager-0   1/1     Running   1          12s
 
 
 In order for us to be able to reach the model, we will need to set up an ingress. For this we will use ambassador:
@@ -829,7 +829,7 @@ We can now deploy our model by using the Seldon graph definition:
     ambassador-7bfc87f865-nr7bn                             1/1     Running   0          5m2s
     ambassador-7bfc87f865-q4lng                             1/1     Running   0          5m2s
     reddit-classifier-single-model-9199e4b-bcc5cdcc-g8j2q   2/2     Running   1          77s
-    seldon-operator-controller-manager-0                    1/1     Running   1          5m23s
+    seldon-controller-manager-0                    1/1     Running   1          5m23s
 
 
 ## 6) Interact with your model through API

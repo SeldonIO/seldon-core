@@ -253,7 +253,7 @@ kubectl rollout status deploy/tiller-deploy -n kube-system
     
     ==> v1/Pod(related)
     NAME                                  READY  STATUS             RESTARTS  AGE
-    seldon-operator-controller-manager-0  0/1    ContainerCreating  0         0s
+    seldon-controller-manager-0  0/1    ContainerCreating  0         0s
     
     ==> v1/Secret
     NAME                                   TYPE    DATA  AGE
@@ -261,11 +261,11 @@ kubectl rollout status deploy/tiller-deploy -n kube-system
     
     ==> v1/Service
     NAME                                        TYPE       CLUSTER-IP    EXTERNAL-IP  PORT(S)  AGE
-    seldon-operator-controller-manager-service  ClusterIP  10.107.15.69  <none>       443/TCP  0s
+    seldon-controller-manager-service  ClusterIP  10.107.15.69  <none>       443/TCP  0s
     
     ==> v1/StatefulSet
     NAME                                READY  AGE
-    seldon-operator-controller-manager  0/1    0s
+    seldon-controller-manager  0/1    0s
     
     ==> v1beta1/CustomResourceDefinition
     NAME                                         AGE
@@ -674,7 +674,7 @@ spec:
     ambassador-c8f5c967c-bj9kj                               1/1     Running   0          3m45s
     ambassador-c8f5c967c-tjv68                               1/1     Running   0          3m45s
     loanclassifier-loanclassifier-164157f-69b7b957b6-dgwmx   0/2     Running   0          4s
-    seldon-operator-controller-manager-0                     1/1     Running   1          20s
+    seldon-controller-manager-0                     1/1     Running   1          20s
 
 
 ### Now that it's deployed we can test it with curl
@@ -1270,7 +1270,7 @@ spec:
     ambassador-c8f5c967c-sfdgq                                        1/1     Running   1          6h42m
     loanclassifier-explainer-loanclassifier-explainer-8444816-lqv66   2/2     Running   0          2m28s
     loanclassifier-loanclassifier-164157f-69b7b957b6-pbqjk            2/2     Running   0          6h41m
-    seldon-operator-controller-manager-0                              1/1     Running   3          6h42m
+    seldon-controller-manager-0                              1/1     Running   3          6h42m
 
 
 ### Now that it's deployed we can query it

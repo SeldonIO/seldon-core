@@ -121,7 +121,7 @@ As you can see, we are running the Seldon Operator in the Kubeflow namespace.
     
     ==> v1/Pod(related)
     NAME                                  READY  STATUS             RESTARTS  AGE
-    seldon-operator-controller-manager-0  0/1    ContainerCreating  0         0s
+    seldon-controller-manager-0  0/1    ContainerCreating  0         0s
     
     ==> v1/Secret
     NAME                                   TYPE    DATA  AGE
@@ -129,11 +129,11 @@ As you can see, we are running the Seldon Operator in the Kubeflow namespace.
     
     ==> v1/Service
     NAME                                        TYPE       CLUSTER-IP     EXTERNAL-IP  PORT(S)  AGE
-    seldon-operator-controller-manager-service  ClusterIP  10.101.228.36  <none>       443/TCP  0s
+    seldon-controller-manager-service  ClusterIP  10.101.228.36  <none>       443/TCP  0s
     
     ==> v1/StatefulSet
     NAME                                READY  AGE
-    seldon-operator-controller-manager  0/1    0s
+    seldon-controller-manager  0/1    0s
     
     ==> v1beta1/CustomResourceDefinition
     NAME                                         AGE
@@ -153,7 +153,7 @@ Check all the Seldon Deployment is running
 !kubectl get pod -n kubeflow | grep seldon
 ```
 
-    seldon-operator-controller-manager-0                       1/1     Running   1          6s
+    seldon-controller-manager-0                       1/1     Running   1          6s
 
 
 ### Temporary fix for Argo image
