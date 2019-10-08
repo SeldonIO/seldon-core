@@ -96,7 +96,7 @@ func (smc *SeldonMessageRestClient) Predict(host string, port int32, req SeldonP
 	return &res, nil
 }
 
-func (smc *SeldonMessageRestClient) Transform(host string, port int32, req SeldonPayload) (SeldonPayload, error) {
+func (smc *SeldonMessageRestClient) TransformInput(host string, port int32, req SeldonPayload) (SeldonPayload, error) {
 	smc.Log.Info("Predict","port",port)
 	smReq := req.GetPayload().(*api.SeldonMessage)
 	url := url.URL{

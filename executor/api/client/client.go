@@ -7,7 +7,10 @@ import (
 
 type SeldonApiClient interface {
 	Predict(host string, port int32,msg SeldonPayload) (SeldonPayload, error)
-	Transform(host string, port int32,msg SeldonPayload) (SeldonPayload, error)
+	TransformInput(host string, port int32,msg SeldonPayload) (SeldonPayload, error)
+	Route(host string, port int32,msg SeldonPayload) (int, error)
+	Combine(host string, port int32,msgs []SeldonPayload) (SeldonPayload, error)
+	TransformOutput(host string, port int32,msg SeldonPayload) (SeldonPayload, error)
 }
 
 type SeldonApiError struct {
