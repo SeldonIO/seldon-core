@@ -176,7 +176,7 @@
 		<dependency>
    			<groupId>org.ojalgo</groupId>
     		<artifactId>ojalgo</artifactId>
-    		<version>47.0.0</version>
+    		<version>47.3.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
