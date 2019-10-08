@@ -25,19 +25,19 @@ helm init --service-account tiller
 
 kubectl rollout status -n kube-system deployment/tiller-deploy
 
-helm install --name seldon-core ../../helm-charts/seldon-core-operator/ --namespace seldon-system --set istio.gateway="kubeflow-gateway.kubeflow.svc.cluster.local" --set istio.enabled="true" --set engine.logMessagesExternally="true"
+helm upgrade --install seldon-core ../../helm-charts/seldon-core-operator/ --namespace seldon-system --set istio.gateway="kubeflow-gateway.kubeflow.svc.cluster.local" --set istio.enabled="true" --set engine.logMessagesExternally="true"
 
 kubectl rollout status -n seldon-system deployment/seldon-controller-manager
 
 sleep 5
 
-helm install --name seldon-core-analytics --namespace default ../../helm-charts/seldon-core-analytics/ -f ./kubeflow/seldon-analytics-kubeflow.yaml
+helm upgrade --install seldon-core-analytics ../../helm-charts/seldon-core-analytics/ --namespace default -f ./kubeflow/seldon-analytics-kubeflow.yaml
 
-helm install --name elasticsearch elasticsearch --version 7.1.1 --namespace=logs --set service.type=ClusterIP --set antiAffinity="soft" --repo https://helm.elastic.co
+helm upgrade --install elasticsearch elasticsearch --version 7.1.1 --namespace=logs --set service.type=ClusterIP --set antiAffinity="soft" --repo https://helm.elastic.co
 kubectl rollout status statefulset/elasticsearch-master -n logs
 
-helm install fluentd-elasticsearch --name fluentd --namespace=logs -f fluentd-values.yaml --repo https://kiwigrid.github.io
-helm install kibana --version 7.1.1 --name=kibana --namespace=logs --set service.type=ClusterIP -f ./kubeflow/kibana-values.yaml --repo https://helm.elastic.co
+helm upgrade --install fluentd fluentd-elasticsearch --namespace=logs -f fluentd-values.yaml --repo https://kiwigrid.github.io
+helm upgrade --install kibana kibana --version 7.1.1 --namespace=logs --set service.type=ClusterIP -f ./kubeflow/kibana-values.yaml --repo https://helm.elastic.co
 
 kubectl apply -f ./kubeflow/virtualservice-kibana.yaml
 kubectl apply -f ./kubeflow/virtualservice-elasticsearch.yaml
