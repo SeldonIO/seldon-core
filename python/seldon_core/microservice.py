@@ -193,7 +193,19 @@ def main():
     parser.add_argument("--log-level", type=str, default="INFO")
     parser.add_argument("--tracing", nargs='?',
                         default=int(os.environ.get("TRACING", "0")), const=1, type=int)
-    parser.add_argument("--workers", type=int, default=int(os.environ.get("GUNICORN_WORKERS", "1")))
+    # gunicorn settings, defaults are from http://docs.gunicorn.org/en/stable/settings.html
+    parser.add_argument("--workers",
+                        type=int,
+                        default=int(os.environ.get("GUNICORN_WORKERS", "1")),
+                        help="Number of gunicorn workers for handling requests.")
+    parser.add_argument("--max-requests",
+                        type=int,
+                        default=int(os.environ.get("GUNICORN_MAX_REQUESTS", "0")),
+                        help="Maximum number of requests gunicorn worker will process before restarting.")
+    parser.add_argument("--max-requests-jitter",
+                        type=int,
+                        default=int(os.environ.get("GUNICORN_MAX_REQUESTS_JITTER", "0")),
+                        help="Maximum random jitter to add to max-requests.")
 
     args = parser.parse_args()
 
@@ -256,6 +268,8 @@ def main():
                     'timeout': 5000,
                     'reload': 'true',
                     'workers': args.workers,
+                    'max_requests': args.max_requests,
+                    'max_requests_jitter': args.max_requests_jitter,
                 }
                 app = seldon_microservice.get_rest_microservice(user_object)
                 StandaloneApplication(app,user_object,options=options).run()

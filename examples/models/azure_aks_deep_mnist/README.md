@@ -402,7 +402,7 @@ And confirm they are running by getting the pods:
 
 
 ```python
-!kubectl rollout status statefulset.apps/seldon-operator-controller-manager -n seldon-system
+!kubectl rollout status deployment/seldon-operator-controller-manager -n seldon-system
 ```
 
     partitioned roll out complete: 1 new pods have been updated...

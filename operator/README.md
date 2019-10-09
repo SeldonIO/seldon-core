@@ -16,7 +16,6 @@ If you installed kubebuilder outside of `/usr/local/kubebuilder` then you will n
 export KUBEBUILDER_ASSETS=/home/clive/tools/kubebuilder_2.0.0_linux_amd64/bin
 ```
 
-### Running with Local Webhooks
 
 Start a kind cluster
 
@@ -37,6 +36,15 @@ Build image
 make kind-docker-build
 ```
 
+## Standard Deploy
+
+```
+make deploy
+```
+
+## Local Development Deploy
+
+
 Deploy with webhook config set to point to host
 
 ```
@@ -56,5 +64,7 @@ make run
 ```
 
 You should now be able to create SeldonDeployments and Webhook calls will hit the local running manager. The same applies if you debug from GoLand. Though for GoLand you will need to export the KUBECONFIG to the debug configuration.
+
+You should delete the Operator running in the cluster at this point.
 
 
