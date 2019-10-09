@@ -8,6 +8,7 @@ from google.protobuf import json_format
 from google.protobuf.json_format import MessageToDict, ParseDict
 from google.protobuf.struct_pb2 import ListValue
 
+from seldon_core.tf_proto.tensor_pb2 import TensorProto
 from seldon_core.proto import prediction_pb2
 from seldon_core.flask_utils import SeldonMicroserviceException
 from seldon_core.user_model import client_class_names, client_custom_metrics, client_custom_tags, client_feature_names, \
@@ -17,7 +18,6 @@ from typing import Tuple, Dict, Union, List, Optional, Iterable
 
 try:
     import tensorflow as tf
-    from tensorflow.core.framework.tensor_pb2 import TensorProto
 except ImportError:
     logging.info("""
         Tensorflow is not installed.
