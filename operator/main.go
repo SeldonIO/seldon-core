@@ -27,6 +27,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
+	istio "knative.dev/pkg/apis/istio/v1alpha3"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	// +kubebuilder:scaffold:imports
@@ -43,6 +44,9 @@ func init() {
 	_ = appsv1.AddToScheme(scheme)
 	_ = corev1.AddToScheme(scheme)
 	_ = machinelearningv1alpha2.AddToScheme(scheme)
+	if controllers.GetEnv(controllers.ENV_ISTIO_ENABLED, "false") == "true" {
+		istio.AddToScheme(scheme)
+	}
 	// +kubebuilder:scaffold:scheme
 }
 
