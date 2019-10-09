@@ -7,7 +7,7 @@ option java_multiple_files = true;
 option java_package = "org.tensorflow.framework";
 option go_package = "github.com/tensorflow/tensorflow/tensorflow/go/core/framework";
 
-package tensorflow;
+package tf_proto;
 
 // Dimensions of a tensor.
 message TensorShapeProto {

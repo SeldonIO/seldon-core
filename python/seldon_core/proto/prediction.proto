@@ -28,7 +28,7 @@ message DefaultData {
   oneof data_oneof {
     Tensor tensor = 2;
     google.protobuf.ListValue ndarray = 3;
-    tensorflow.TensorProto tftensor = 4;
+    tf_proto.TensorProto tftensor = 4;
   }
 }
 

@@ -17,10 +17,10 @@ _sym_db = _symbol_database.Default()
 
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='tf_proto/tensor_shape.proto',
-  package='tensorflow',
+  package='tf_proto',
   syntax='proto3',
   serialized_options=_b('\n\030org.tensorflow.frameworkB\021TensorShapeProtosP\001Z=github.com/tensorflow/tensorflow/tensorflow/go/core/framework\370\001\001'),
-  serialized_pb=_b('\n\x1btf_proto/tensor_shape.proto\x12\ntensorflow\"z\n\x10TensorShapeProto\x12-\n\x03\x64im\x18\x02 \x03(\x0b\x32 .tensorflow.TensorShapeProto.Dim\x12\x14\n\x0cunknown_rank\x18\x03 \x01(\x08\x1a!\n\x03\x44im\x12\x0c\n\x04size\x18\x01 \x01(\x03\x12\x0c\n\x04name\x18\x02 \x01(\tBq\n\x18org.tensorflow.frameworkB\x11TensorShapeProtosP\x01Z=github.com/tensorflow/tensorflow/tensorflow/go/core/framework\xf8\x01\x01\x62\x06proto3')
+  serialized_pb=_b('\n\x1btf_proto/tensor_shape.proto\x12\x08tf_proto\"x\n\x10TensorShapeProto\x12+\n\x03\x64im\x18\x02 \x03(\x0b\x32\x1e.tf_proto.TensorShapeProto.Dim\x12\x14\n\x0cunknown_rank\x18\x03 \x01(\x08\x1a!\n\x03\x44im\x12\x0c\n\x04size\x18\x01 \x01(\x03\x12\x0c\n\x04name\x18\x02 \x01(\tBq\n\x18org.tensorflow.frameworkB\x11TensorShapeProtosP\x01Z=github.com/tensorflow/tensorflow/tensorflow/go/core/framework\xf8\x01\x01\x62\x06proto3')
 )
 
 
@@ -28,20 +28,20 @@ DESCRIPTOR = _descriptor.FileDescriptor(
 
 _TENSORSHAPEPROTO_DIM = _descriptor.Descriptor(
   name='Dim',
-  full_name='tensorflow.TensorShapeProto.Dim',
+  full_name='tf_proto.TensorShapeProto.Dim',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='size', full_name='tensorflow.TensorShapeProto.Dim.size', index=0,
+      name='size', full_name='tf_proto.TensorShapeProto.Dim.size', index=0,
       number=1, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='name', full_name='tensorflow.TensorShapeProto.Dim.name', index=1,
+      name='name', full_name='tf_proto.TensorShapeProto.Dim.name', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -59,26 +59,26 @@ _TENSORSHAPEPROTO_DIM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=132,
-  serialized_end=165,
+  serialized_start=128,
+  serialized_end=161,
 )
 
 _TENSORSHAPEPROTO = _descriptor.Descriptor(
   name='TensorShapeProto',
-  full_name='tensorflow.TensorShapeProto',
+  full_name='tf_proto.TensorShapeProto',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='dim', full_name='tensorflow.TensorShapeProto.dim', index=0,
+      name='dim', full_name='tf_proto.TensorShapeProto.dim', index=0,
       number=2, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='unknown_rank', full_name='tensorflow.TensorShapeProto.unknown_rank', index=1,
+      name='unknown_rank', full_name='tf_proto.TensorShapeProto.unknown_rank', index=1,
       number=3, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
@@ -96,8 +96,8 @@ _TENSORSHAPEPROTO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=43,
-  serialized_end=165,
+  serialized_start=41,
+  serialized_end=161,
 )
 
 _TENSORSHAPEPROTO_DIM.containing_type = _TENSORSHAPEPROTO
@@ -110,12 +110,12 @@ TensorShapeProto = _reflection.GeneratedProtocolMessageType('TensorShapeProto', 
   'Dim' : _reflection.GeneratedProtocolMessageType('Dim', (_message.Message,), {
     'DESCRIPTOR' : _TENSORSHAPEPROTO_DIM,
     '__module__' : 'tf_proto.tensor_shape_pb2'
-    # @@protoc_insertion_point(class_scope:tensorflow.TensorShapeProto.Dim)
+    # @@protoc_insertion_point(class_scope:tf_proto.TensorShapeProto.Dim)
     })
   ,
   'DESCRIPTOR' : _TENSORSHAPEPROTO,
   '__module__' : 'tf_proto.tensor_shape_pb2'
-  # @@protoc_insertion_point(class_scope:tensorflow.TensorShapeProto)
+  # @@protoc_insertion_point(class_scope:tf_proto.TensorShapeProto)
   })
 _sym_db.RegisterMessage(TensorShapeProto)
 _sym_db.RegisterMessage(TensorShapeProto.Dim)
