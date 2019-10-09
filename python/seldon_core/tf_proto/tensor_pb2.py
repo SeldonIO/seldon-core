@@ -13,9 +13,9 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
-from tf_proto import resource_handle_pb2 as tf__proto_dot_resource__handle__pb2
-from tf_proto import tensor_shape_pb2 as tf__proto_dot_tensor__shape__pb2
-from tf_proto import types_pb2 as tf__proto_dot_types__pb2
+from seldon_core.tf_proto import resource_handle_pb2 as tf__proto_dot_resource__handle__pb2
+from seldon_core.tf_proto import tensor_shape_pb2 as tf__proto_dot_tensor__shape__pb2
+from seldon_core.tf_proto import types_pb2 as tf__proto_dot_types__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(

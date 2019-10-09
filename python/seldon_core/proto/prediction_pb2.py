@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 
 
 from google.protobuf import struct_pb2 as google_dot_protobuf_dot_struct__pb2
-from tf_proto import tensor_pb2 as tf__proto_dot_tensor__pb2
+from seldon_core.tf_proto import tensor_pb2 as tf__proto_dot_tensor__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(

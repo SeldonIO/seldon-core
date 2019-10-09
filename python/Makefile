@@ -22,6 +22,7 @@ build_apis: get_apis
 	cd seldon_core && python -m grpc.tools.protoc -I./ --python_out=./ --grpc_python_out=./ --mypy_out=./ ./proto/prediction.proto
 	cd seldon_core && python -m grpc.tools.protoc -I./ --python_out=./ ./tf_proto/*.proto
 	sed -i "s/from proto/from seldon_core.proto/g" seldon_core/proto/prediction_pb2_grpc.py
+	sed -i "s/from tf_proto/from seldon_core.tf_proto/g" seldon_core/proto/*.py seldon_core/tf_proto/*.py
 
 .PHONY: update_version
 update_version:
