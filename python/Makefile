@@ -4,10 +4,16 @@ VERSION=0.4.1
 .PHONY: get_apis
 get_apis:
 	# Protobuf
+	# In order to build the TF protobufs ourselves and remove the runtime
+	# dependency, we import them into a tf_proto package.
+	# This also requires rewriting the imports.
+	mkdir -p seldon_core/proto seldon_core/tf_proto
+	touch seldon_core/proto/__init__.py seldon_core/tf_proto/__init__.py
 	cp ${SELDON_CORE_DIR}/proto/prediction.proto seldon_core/proto/
 	$(MAKE) -C ../proto/tensorflow/ create_protos
-	cp -r $(SELDON_CORE_DIR)/proto/tensorflow/tensorflow seldon_core/
+	cp $(SELDON_CORE_DIR)/proto/tensorflow/tensorflow/core/framework/*.proto seldon_core/tf_proto
 	$(MAKE) -C ../proto/tensorflow clean
+	sed -i "s/tensorflow\/core\/framework/tf_proto/" seldon_core/proto/*.proto seldon_core/tf_proto/*.proto
 
 	# OpenAPI
 	cp $(SELDON_CORE_DIR)/openapi/wrapper.oas3.json seldon_core/openapi/seldon.json
@@ -16,6 +22,7 @@ get_apis:
 build_apis: get_apis
 	# Protobuf
 	cd seldon_core && python -m grpc.tools.protoc -I./ --python_out=./ --grpc_python_out=./ --mypy_out=./ ./proto/prediction.proto
+	cd seldon_core && python -m grpc.tools.protoc -I./ --python_out=./ ./tf_proto/*.proto
 	sed -i "s/from proto/from seldon_core.proto/g" seldon_core/proto/prediction_pb2_grpc.py
 
 .PHONY: update_version
