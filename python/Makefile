@@ -7,8 +7,6 @@ get_apis:
 	# In order to build the TF protobufs ourselves and remove the runtime
 	# dependency, we import them into a tf_proto package.
 	# This also requires rewriting the imports.
-	mkdir -p seldon_core/proto seldon_core/tf_proto
-	touch seldon_core/proto/__init__.py seldon_core/tf_proto/__init__.py
 	cp ${SELDON_CORE_DIR}/proto/prediction.proto seldon_core/proto/
 	$(MAKE) -C ../proto/tensorflow/ create_protos
 	cp $(SELDON_CORE_DIR)/proto/tensorflow/tensorflow/core/framework/*.proto seldon_core/tf_proto
