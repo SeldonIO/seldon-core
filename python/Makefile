@@ -11,7 +11,7 @@ get_apis:
 	$(MAKE) -C ../proto/tensorflow/ create_protos
 	cp $(SELDON_CORE_DIR)/proto/tensorflow/tensorflow/core/framework/*.proto seldon_core/tf_proto
 	$(MAKE) -C ../proto/tensorflow clean
-	sed -i "s/tensorflow\/core\/framework/tf_proto/" seldon_core/proto/*.proto seldon_core/tf_proto/*.proto
+	sed -i "s/import \"tensorflow\/core\/framework/import \"tf_proto/" seldon_core/proto/*.proto seldon_core/tf_proto/*.proto
 
 	# OpenAPI
 	cp $(SELDON_CORE_DIR)/openapi/wrapper.oas3.json seldon_core/openapi/seldon.json
