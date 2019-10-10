@@ -275,10 +275,19 @@ func (r *SeldonDeployment) DefaultSeldonDeployment() {
 					portNum = existingPort.ContainerPort
 				}
 
-				con.VolumeMounts = append(con.VolumeMounts, corev1.VolumeMount{
-					Name:      PODINFO_VOLUME_NAME,
-					MountPath: PODINFO_VOLUME_PATH,
-				})
+				//downward api used to make pod info available to container
+				volMount := false
+				for _, vol := range con.VolumeMounts {
+					if vol.Name == PODINFO_VOLUME_NAME {
+						volMount = true
+					}
+				}
+				if !volMount {
+					con.VolumeMounts = append(con.VolumeMounts, corev1.VolumeMount{
+						Name:      PODINFO_VOLUME_NAME,
+						MountPath: PODINFO_VOLUME_PATH,
+					})
+				}
 			}
 			// Set ports and hostname in predictive unit so engine can read it from SDep
 			// if this is the firstPuPortNum then we've not added engine yet so put the engine in here
