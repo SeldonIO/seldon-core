@@ -106,7 +106,7 @@ def load_annotations() -> Dict:
                         logger.info("Found annotation %s:%s ", parts[0], parts[1])
                         annotations[parts[0]] = parts[1]
                     else:
-                        logger.info("bad annotation [%s]", line)
+                        logger.info("Bad annotation [%s]", line)
     except:
         logger.error("Failed to open annotations file %s", ANNOTATIONS_FILE)
     return annotations
