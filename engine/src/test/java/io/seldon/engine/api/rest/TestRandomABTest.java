@@ -30,6 +30,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.context.WebApplicationContext;
 
+import io.seldon.engine.filters.XSSFilter;
 import io.seldon.engine.pb.JsonFormat;
 import io.seldon.engine.predictors.EnginePredictor;
 import io.seldon.engine.service.InternalPredictionService;
@@ -64,6 +65,7 @@ public class TestRandomABTest {
 	public void setup() throws Exception {
     	mvc = MockMvcBuilders
 				.webAppContextSetup(context)
+        .addFilters(new XSSFilter())
 				.build();
 	}
 
