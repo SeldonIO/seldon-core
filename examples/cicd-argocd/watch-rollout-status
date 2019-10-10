@@ -14,7 +14,6 @@ ${KUBECTL} rollout status deployment.apps/argo-ui -n argo -w
 ${KUBECTL} rollout status deployment.apps/workflow-controller -n argo -w
 ${KUBECTL} rollout status deployment.apps/activity-monitor-deployment -n default -w
 ${KUBECTL} rollout status deployment.apps/docker-private-registry-deployment -n default -w
-${KUBECTL} rollout status statefulset.apps/seldon-core-redis-master -n default -w
 ${KUBECTL} rollout status deployment.apps/seldon-core-seldon-apiserver -n default -w
 ${KUBECTL} rollout status deployment.apps/seldon-core-seldon-cluster-manager -n default -w
 

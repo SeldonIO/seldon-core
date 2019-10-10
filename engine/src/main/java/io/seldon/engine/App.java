@@ -24,20 +24,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.embedded.ConfigurableEmbeddedServletContainer;
-import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
-import org.springframework.boot.context.embedded.tomcat.TomcatConnectorCustomizer;
-import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
+import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
+import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import io.seldon.engine.config.AppConfig;
 
 @SpringBootApplication
 @EnableAsync
+@EnableScheduling
 @Import({ AppConfig.class })
 public class App {
     public static void main(String[] args) throws Exception {
@@ -50,16 +52,11 @@ public class App {
     }
     
     @Bean
-    public EmbeddedServletContainerCustomizer tomcatCustomizer() {
-        return new EmbeddedServletContainerCustomizer() {
-
+    public WebServerFactoryCustomizer tomcatCustomizer() {
+        return new WebServerFactoryCustomizer<TomcatServletWebServerFactory>() {
             @Override
-            public void customize(ConfigurableEmbeddedServletContainer container) {
-                if (container instanceof TomcatEmbeddedServletContainerFactory) {
-                    ((TomcatEmbeddedServletContainerFactory) container)
-                            .addConnectorCustomizers(gracefulShutdown());
-                }
-
+            public void customize(TomcatServletWebServerFactory factory) {
+              factory.addConnectorCustomizers(gracefulShutdown());
             }
         };
     }

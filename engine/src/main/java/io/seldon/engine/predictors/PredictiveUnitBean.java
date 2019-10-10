@@ -115,7 +115,7 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 		String puid = input.getMeta().getPuid();
 		
 		if (activeSpan != null && tracing != null)
-			tracing.getTracer().scopeManager().activate(activeSpan, true);
+			tracing.getTracer().scopeManager().activate(activeSpan);
 		
 		// This element to the request path
 		requestPathDict.put(state.name, state.image);

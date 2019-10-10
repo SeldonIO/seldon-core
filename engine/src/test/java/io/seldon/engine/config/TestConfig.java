@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.http.client.ClientHttpRequestFactory;
 
 import java.io.IOException;
 
@@ -20,7 +21,6 @@ import static org.mockito.Mockito.when;
 @Configuration
 @Profile("test")
 public class TestConfig {
-
     @Autowired
     private AnnotationsConfig annotationsConfig;
 
@@ -36,9 +36,12 @@ public class TestConfig {
 
         RestTemplateBuilder rtb = mock(RestTemplateBuilder.class);
         RestTemplate restTemplate = mock(RestTemplate.class);
+        ClientHttpRequestFactory requestFactory = mock(ClientHttpRequestFactory.class);
         when(rtb.setConnectTimeout(anyInt())).thenReturn(rtb);
         when(rtb.setReadTimeout(anyInt())).thenReturn(rtb);
         when(rtb.build()).thenReturn(restTemplate);
+        when(restTemplate.getRequestFactory()).thenReturn(requestFactory);
+
         return rtb;
     }
 
