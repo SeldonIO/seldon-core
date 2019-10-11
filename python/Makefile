@@ -7,8 +7,11 @@ get_apis:
 	cp ${SELDON_CORE_DIR}/proto/prediction.proto seldon_core/proto/
 	$(MAKE) -C ../proto/tensorflow/ create_protos
 	cp $(SELDON_CORE_DIR)/proto/tensorflow/tensorflow/core/framework/*.proto \
-		seldon_core/tensorflow/tensorflow/core/framework/
+		seldon_core/tf_proto/
 	$(MAKE) -C ../proto/tensorflow clean
+	sed -i \
+		"s/import \"tensorflow\/core\/framework/import \"tf_proto/g" \
+		seldon_core/proto/*.proto seldon_core/tf_proto/*.proto
 
 	# OpenAPI
 	cp $(SELDON_CORE_DIR)/openapi/wrapper.oas3.json seldon_core/openapi/seldon.json
@@ -18,7 +21,7 @@ build_apis: get_apis
 	# Protobuf
 	cd seldon_core && python \
 		-m grpc.tools.protoc \
-		-I. -I./tensorflow/ \
+		-I./ \
 		--python_out=./ \
 		--grpc_python_out=./ \
 		--mypy_out=./ \
@@ -27,9 +30,12 @@ build_apis: get_apis
 	## is not found
 	cd seldon_core && python \
 		-m grpc.tools.protoc \
-		-I./tensorflow/ \
-		--python_out=./tensorflow/ \
-		./tensorflow/tensorflow/core/framework/*.proto
+		-I./ \
+		--python_out=./ \
+		./tf_proto/*.proto
+	mv $(addprefix seldon_core/tf_proto/, resource_handle_pb2.py tensor_pb2.py tensor_shape_pb2.py types_pb2.py) \
+		seldon_core/tf_proto/_fallback/ 
+	sed -i "s/from tf_proto/from seldon_core.tf_proto/g" seldon_core/proto/*.py seldon_core/tf_proto/_fallback/*.py
 	sed -i "s/from proto/from seldon_core.proto/g" seldon_core/proto/prediction_pb2_grpc.py
 
 .PHONY: update_version
