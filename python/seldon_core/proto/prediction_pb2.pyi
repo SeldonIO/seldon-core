@@ -19,8 +19,8 @@ from google.protobuf.struct_pb2 import (
     Value as google___protobuf___struct_pb2___Value,
 )
 
-from tensorflow.core.framework.tensor_pb2 import (
-    TensorProto as tensorflow___core___framework___tensor_pb2___TensorProto,
+from tf_proto.tensor_pb2 import (
+    TensorProto as tf_proto___tensor_pb2___TensorProto,
 )
 
 from typing import (
@@ -95,14 +95,14 @@ class DefaultData(google___protobuf___message___Message):
     def ndarray(self) -> google___protobuf___struct_pb2___ListValue: ...
 
     @property
-    def tftensor(self) -> tensorflow___core___framework___tensor_pb2___TensorProto: ...
+    def tftensor(self) -> tf_proto___tensor_pb2___TensorProto: ...
 
     def __init__(self,
         *,
         names : typing___Optional[typing___Iterable[typing___Text]] = None,
         tensor : typing___Optional[Tensor] = None,
         ndarray : typing___Optional[google___protobuf___struct_pb2___ListValue] = None,
-        tftensor : typing___Optional[tensorflow___core___framework___tensor_pb2___TensorProto] = None,
+        tftensor : typing___Optional[tf_proto___tensor_pb2___TensorProto] = None,
         ) -> None: ...
     @classmethod
     def FromString(cls, s: builtin___bytes) -> DefaultData: ...
