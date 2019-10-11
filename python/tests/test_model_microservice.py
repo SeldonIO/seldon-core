@@ -18,7 +18,7 @@ from utils import skipif_tf_missing
 
 if not _TF_MISSING:
     import tensorflow as tf
-    from tensorflow.core.framework import TensorProto
+    from tensorflow.core.framework.tensor_pb2 import TensorProto
 
 
 """

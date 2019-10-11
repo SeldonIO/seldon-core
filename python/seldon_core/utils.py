@@ -18,7 +18,7 @@ from typing import Tuple, Dict, Union, List, Optional, Iterable
 
 if not _TF_MISSING:
     import tensorflow as tf
-    from tensorflow.core.tensor_pb2 import TensorProto
+    from tensorflow.core.framework.tensor_pb2 import TensorProto
 
 
 def json_to_seldon_message(message_json: Union[List, Dict]) -> prediction_pb2.SeldonMessage:
