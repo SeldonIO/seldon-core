@@ -197,7 +197,7 @@ def run_send_feedback(args):
             print(f"RECEIVED RESPONSE:\n{response_feedback}\n")
 
 
-def run_predict(args):
+def run_method(args, method):
     """
     Make a predict call to microservice
 
@@ -222,7 +222,7 @@ def run_predict(args):
         transport = "grpc" if args.grpc else "rest"
         payload_type = "tensor" if args.tensor else "ndarray"
 
-        response = sc.microservice(data=batch, transport=transport, method="predict", payload_type=payload_type, names=feature_names)
+        response = sc.microservice(data=batch, transport=transport, method=method, payload_type=payload_type, names=feature_names)
 
         if args.prnt:
             print(f"RECEIVED RESPONSE:\n{response.response}\n")
@@ -235,7 +235,7 @@ def main():
     parser.add_argument("host", type=str)
     parser.add_argument("port", type=int)
     parser.add_argument("--endpoint", type=str,
-                        choices=["predict", "send-feedback"], default="predict")
+                        choices=["predict", "send-feedback", "transform-input"], default="predict")
     parser.add_argument("-b", "--batch-size", type=int, default=1)
     parser.add_argument("-n", "--n-requests", type=int, default=1)
     parser.add_argument("--grpc", action="store_true")
@@ -254,8 +254,8 @@ def main():
         log_level = logging.ERROR
     logging.basicConfig(level=log_level, format=LOG_FORMAT)
 
-    if args.endpoint == "predict":
-        run_predict(args)
+    if args.endpoint == "predict" or args.endpoint == "transform-input":
+        run_method(args, args.endpoint)
     elif args.endpoint == "send-feedback":
         run_send_feedback(args)
 
