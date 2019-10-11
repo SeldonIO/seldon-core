@@ -245,7 +245,7 @@ public class RestClientController {
 					throw new APIException(ApiExceptionType.ENGINE_EXECUTION_FAILURE,e.getMessage());
 				}
 			} catch (InvalidProtocolBufferException e) {
-				throw new APIException(ApiExceptionType.ENGINE_INVALID_JSON,"");
+				throw new APIException(ApiExceptionType.ENGINE_INVALID_RESPONSE_JSON,"");
 			}
 	}
 
@@ -292,7 +292,7 @@ public class RestClientController {
 				throw new APIException(ApiExceptionType.ENGINE_EXECUTION_FAILURE,e.getMessage());
 			}
 		} catch (InvalidProtocolBufferException e) {
-			throw new APIException(ApiExceptionType.ENGINE_INVALID_JSON,"");
+			throw new APIException(ApiExceptionType.ENGINE_INVALID_RESPONSE_JSON,"");
 		} 
 		}
 		finally
