@@ -252,10 +252,27 @@ func getAmbassadorConfigs(mlDep *machinelearningv1alpha2.SeldonDeployment, p *ma
 			return "", err
 		}
 
-		if getEnv("AMBASSADOR_SINGLE_NAMESPACE", "false") == "true" {
-			return YAML_SEP + cRestGlobal + YAML_SEP + cGrpcGlobal + YAML_SEP + cRestNamespaced + YAML_SEP + cGrpcNamespaced, nil
+		// Return the appropriate set of config based on whether http and/or grpc is active
+		if engine_http_port > 0 && engine_grpc_port > 0 {
+			if getEnv("AMBASSADOR_SINGLE_NAMESPACE", "false") == "true" {
+				return YAML_SEP + cRestGlobal + YAML_SEP + cGrpcGlobal + YAML_SEP + cRestNamespaced + YAML_SEP + cGrpcNamespaced, nil
+			} else {
+				return YAML_SEP + cRestGlobal + YAML_SEP + cGrpcGlobal, nil
+			}
+		} else if engine_http_port > 0 {
+			if getEnv("AMBASSADOR_SINGLE_NAMESPACE", "false") == "true" {
+				return YAML_SEP + cRestGlobal + YAML_SEP + cRestNamespaced, nil
+			} else {
+				return YAML_SEP + cRestGlobal, nil
+			}
+		} else if engine_grpc_port > 0 {
+			if getEnv("AMBASSADOR_SINGLE_NAMESPACE", "false") == "true" {
+				return YAML_SEP + cGrpcGlobal + YAML_SEP + cGrpcNamespaced, nil
+			} else {
+				return YAML_SEP + cGrpcGlobal, nil
+			}
 		} else {
-			return YAML_SEP + cRestGlobal + YAML_SEP + cGrpcGlobal, nil
+			return "", nil
 		}
 
 	}

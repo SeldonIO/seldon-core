@@ -86,7 +86,6 @@ var _ = Describe("Create a deployment", func() {
 			err := k8sClient.Get(context.Background(), key, fetched)
 			return err
 		}, timeout, interval).Should(BeNil())
-
 		Expect(fetched.Spec.Name).Should(Equal("mydep"))
 
 	})

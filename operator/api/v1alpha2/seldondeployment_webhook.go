@@ -275,10 +275,18 @@ func (r *SeldonDeployment) DefaultSeldonDeployment() {
 					portNum = existingPort.ContainerPort
 				}
 
-				con.VolumeMounts = append(con.VolumeMounts, corev1.VolumeMount{
-					Name:      PODINFO_VOLUME_NAME,
-					MountPath: PODINFO_VOLUME_PATH,
-				})
+				volMount := false
+				for _, vol := range con.VolumeMounts {
+					if vol.Name == PODINFO_VOLUME_NAME {
+						volMount = true
+					}
+				}
+				if !volMount {
+					con.VolumeMounts = append(con.VolumeMounts, corev1.VolumeMount{
+						Name:      PODINFO_VOLUME_NAME,
+						MountPath: PODINFO_VOLUME_PATH,
+					})
+				}
 			}
 			// Set ports and hostname in predictive unit so engine can read it from SDep
 			// if this is the firstPuPortNum then we've not added engine yet so put the engine in here
@@ -385,11 +393,26 @@ func checkTraffic(mlDep *SeldonDeployment, fldPath *field.Path, allErrs field.Er
 	return allErrs
 }
 
+func sizeOfGraph(p *PredictiveUnit) int {
+	count := 0
+	for _, child := range p.Children {
+		count = count + sizeOfGraph(&child)
+	}
+	return count + 1
+}
+
 func (r *SeldonDeployment) validateSeldonDeployment() error {
 	var allErrs field.ErrorList
 
 	predictorNames := make(map[string]bool)
 	for i, p := range r.Spec.Predictors {
+
+		_, noEngine := p.Annotations[ANNOTATION_NO_ENGINE]
+		if noEngine && sizeOfGraph(p.Graph) > 1 {
+			fldPath := field.NewPath("spec").Child("predictors").Index(i)
+			allErrs = append(allErrs, field.Invalid(fldPath, p.Name, "Running without engine only valid for single element graphs"))
+		}
+
 		if _, present := predictorNames[p.Name]; present {
 			fldPath := field.NewPath("spec").Child("predictors").Index(i)
 			allErrs = append(allErrs, field.Invalid(fldPath, p.Name, "Duplicate predictor name"))
