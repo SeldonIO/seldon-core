@@ -101,13 +101,12 @@ def load_annotations() -> Dict:
             with open(ANNOTATIONS_FILE, "r") as ins:
                 for line in ins:
                     line = line.rstrip()
-                    parts = line.split("=")
+                    parts = list(map(str.strip, line.split("=", 1)))
                     if len(parts) == 2:
-                        value = parts[1][1:-1]
-                        logger.info("Found annotation %s:%s ", parts[0], value)
-                        annotations[parts[0]] = value
+                        logger.info("Found annotation %s:%s ", parts[0], parts[1])
+                        annotations[parts[0]] = parts[1]
                     else:
-                        logger.info("bad annotation [%s]", line)
+                        logger.info("Bad annotation [%s]", line)
     except:
         logger.error("Failed to open annotations file %s", ANNOTATIONS_FILE)
     return annotations

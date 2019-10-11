@@ -10,7 +10,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.embedded.LocalServerPort;
+import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
@@ -30,6 +30,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.context.WebApplicationContext;
 
+import io.seldon.engine.filters.XSSFilter;
 import io.seldon.engine.pb.JsonFormat;
 import io.seldon.engine.predictors.EnginePredictor;
 import io.seldon.engine.service.InternalPredictionService;
@@ -64,6 +65,7 @@ public class TestRandomABTest {
 	public void setup() throws Exception {
     	mvc = MockMvcBuilders
 				.webAppContextSetup(context)
+        .addFilters(new XSSFilter())
 				.build();
 	}
 

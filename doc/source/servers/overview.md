@@ -78,6 +78,43 @@ spec:
 
 Alternatively, you can also create a `ServiceAccount` and attach a differently formatted `Secret` to it similar to how kfserving does it.  See kfserving documentation [on this topic](https://github.com/kubeflow/kfserving/tree/master/docs/samples/s3).  Supported annotation prefix includes `serving.kubeflow.org` and `machinelearning.seldon.io`.
 
+For GCP/GKE, go to gcloud console and create a key as json and export as a file. Then create a secret from the file using:
+```
+kubectl create secret generic user-gcp-sa --from-file=gcloud-application-credentials.json=<LOCALFILE>
+```
+The file in the secret needs to be called `gcloud-application-credentials.json` (the name can be configured in the seldon configmap, visible in `kubectl get cm -n seldon-system seldon-config -o yaml`).
+
+Then create a service account to reference the secret:
+```
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: user-gcp-sa
+secrets:
+  - name: user-gcp-sa
+```
+
+This can then be referenced in the SeldonDeployment manifest by setting `serviceAccountName: user-gcp-sa` at the same level as `m̀odelUri` e.g.
+
+
+```
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+metadata:
+  name: sklearn
+spec:
+  name: iris
+  predictors:
+  - graph:
+      children: []
+      implementation: SKLEARN_SERVER
+      modelUri: gs://seldon-models/sklearn/iris
+      serviceAccountName: user-gcp-sa
+      name: classifier
+    name: default
+    replicas: 1
+```
+
 If you want to customize the resources for the server you can add a skeleton `Container` with the same name to your podSpecs, e.g.
 
 ```

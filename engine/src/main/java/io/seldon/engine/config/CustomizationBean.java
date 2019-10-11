@@ -18,10 +18,10 @@ package io.seldon.engine.config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.embedded.ConfigurableEmbeddedServletContainer;
-import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
+import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 
-public class CustomizationBean implements EmbeddedServletContainerCustomizer {
+public class CustomizationBean implements WebServerFactoryCustomizer<ConfigurableServletWebServerFactory> {
 
     private final static Logger logger = LoggerFactory.getLogger(CustomizationBean.class);
     private final static String ENGINE_SERVER_PORT_KEY = "ENGINE_SERVER_PORT";
@@ -30,7 +30,7 @@ public class CustomizationBean implements EmbeddedServletContainerCustomizer {
     private Integer defaultServerPort;
 
     @Override
-    public void customize(ConfigurableEmbeddedServletContainer container) {
+    public void customize(ConfigurableServletWebServerFactory factory) {
         logger.info("Customizing EmbeddedServlet");
 
         Integer serverPort;
@@ -46,7 +46,7 @@ public class CustomizationBean implements EmbeddedServletContainerCustomizer {
         }
 
         logger.info("setting serverPort[{}]", serverPort);
-        container.setPort(serverPort);
+        factory.setPort(serverPort);
     }
 
 }

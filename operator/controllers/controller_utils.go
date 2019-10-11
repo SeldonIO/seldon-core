@@ -29,7 +29,7 @@ func getEngineVarJson(p *machinelearningv1alpha2.PredictorSpec) (string, error) 
 }
 
 // Get an environment variable given by key or return the fallback.
-func getEnv(key, fallback string) string {
+func GetEnv(key, fallback string) string {
 	if value, ok := os.LookupEnv(key); ok {
 		return value
 	}
