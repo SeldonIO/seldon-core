@@ -6,13 +6,12 @@ import base64
 import seldon_core.utils as scu
 from seldon_core.proto import prediction_pb2
 from seldon_core.flask_utils import SeldonMicroserviceException
+from seldon_core.tf_helper import _TF_MISSING
 from google.protobuf.struct_pb2 import Value
 from utils import skipif_tf_missing
 
-try:
+if not _TF_MISSING:
     import tensorflow as tf
-except ImportError:
-    pass
 
 class UserObject(object):
     def __init__(self, metrics_ok=True, ret_nparray=False, ret_meta=False):

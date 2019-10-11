@@ -1,8 +1,5 @@
 import pytest
-import importlib
-
-
-TF_MISSING = importlib.util.find_spec("tensorflow") is None
+from seldon_core.tf_helper import _TF_MISSING
 
 skipif_tf_missing = pytest.mark.skipif(
-    TF_MISSING, reason="tensorflow is not present")
+    _TF_MISSING, reason="tensorflow is not present")
