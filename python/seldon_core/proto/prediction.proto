@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 import "google/protobuf/struct.proto";
-import "tf_proto/tensor.proto";
+import "tensorflow/core/framework/tensor.proto";
 
 package seldon.protos;
 
@@ -28,7 +28,7 @@ message DefaultData {
   oneof data_oneof {
     Tensor tensor = 2;
     google.protobuf.ListValue ndarray = 3;
-    tf_proto.TensorProto tftensor = 4;
+    tensorflow.TensorProto tftensor = 4;
   }
 }
 

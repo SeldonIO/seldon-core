@@ -9,11 +9,9 @@ get_apis:
 	# This also requires rewriting the imports.
 	cp ${SELDON_CORE_DIR}/proto/prediction.proto seldon_core/proto/
 	$(MAKE) -C ../proto/tensorflow/ create_protos
-	cp $(SELDON_CORE_DIR)/proto/tensorflow/tensorflow/core/framework/*.proto seldon_core/tf_proto
+	cp $(SELDON_CORE_DIR)/proto/tensorflow/tensorflow/core/framework/*.proto \
+		seldon_core/tensorflow/tensorflow/core/framework/
 	$(MAKE) -C ../proto/tensorflow clean
-	sed -i "s/import \"tensorflow\/core\/framework/import \"tf_proto/" seldon_core/proto/*.proto seldon_core/tf_proto/*.proto
-	sed -i "s/package tensorflow/package tf_proto/" seldon_core/tf_proto/*.proto
-	sed -i "s/tensorflow.TensorProto/tf_proto.TensorProto/" seldon_core/proto/prediction.proto
 
 	# OpenAPI
 	cp $(SELDON_CORE_DIR)/openapi/wrapper.oas3.json seldon_core/openapi/seldon.json
@@ -21,10 +19,19 @@ get_apis:
 .PHONY: build_apis
 build_apis: get_apis
 	# Protobuf
-	cd seldon_core && python -m grpc.tools.protoc -I./ --python_out=./ --grpc_python_out=./ --mypy_out=./ ./proto/prediction.proto
-	cd seldon_core && python -m grpc.tools.protoc -I./ --python_out=./ ./tf_proto/*.proto
+	cd seldon_core && python \
+		-m grpc.tools.protoc \
+		-I. -I./tensorflow/ \
+		--python_out=./ \
+		--grpc_python_out=./ \
+		--mypy_out=./ \
+		./proto/prediction.proto
+	cd seldon_core && python \
+		-m grpc.tools.protoc \
+		-I./tensorflow/ \
+		--python_out=./tensorflow/ \
+		./tensorflow/tensorflow/core/framework/*.proto
 	sed -i "s/from proto/from seldon_core.proto/g" seldon_core/proto/prediction_pb2_grpc.py
-	sed -i "s/from tf_proto/from seldon_core.tf_proto/g" seldon_core/proto/*.py seldon_core/tf_proto/*.py
 
 .PHONY: update_version
 update_version:
