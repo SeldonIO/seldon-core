@@ -4,9 +4,6 @@ VERSION=0.4.1
 .PHONY: get_apis
 get_apis:
 	# Protobuf
-	# In order to build the TF protobufs ourselves and remove the runtime
-	# dependency, we import them into a tf_proto package.
-	# This also requires rewriting the imports.
 	cp ${SELDON_CORE_DIR}/proto/prediction.proto seldon_core/proto/
 	$(MAKE) -C ../proto/tensorflow/ create_protos
 	cp $(SELDON_CORE_DIR)/proto/tensorflow/tensorflow/core/framework/*.proto \
@@ -26,6 +23,8 @@ build_apis: get_apis
 		--grpc_python_out=./ \
 		--mypy_out=./ \
 		./proto/prediction.proto
+	## We build TF's protobufs as well in case the tensorflow package
+	## is not found
 	cd seldon_core && python \
 		-m grpc.tools.protoc \
 		-I./tensorflow/ \
