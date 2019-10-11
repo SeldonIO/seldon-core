@@ -479,7 +479,7 @@ And confirm they are running by getting the pods:
 
 
 ```python
-!kubectl rollout status statefulset.apps/seldon-operator-controller-manager -n seldon-system
+!kubectl rollout status deployment/seldon-operator-controller-manager -n seldon-system
 ```
 
     Error from server (NotFound): namespaces "seldon-system" not found

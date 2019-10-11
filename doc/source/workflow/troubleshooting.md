@@ -75,5 +75,5 @@ Check the logs of the Seldon `cluster-manager`. This is the operator that handle
 
 ## I have tried the above and I'm still confused
 
- * Contact our [Slack Community](https://join.slack.com/t/seldondev/shared_invite/enQtMzA2Mzk1Mzg0NjczLWQzMGFkNmRjN2UxZmFmMWJmNWIzMTM5Y2UxNGY1ODE5ZmI2NDdkMmNiMmUxYjZhZGYxOTllMDQwM2NkNDQ1MGI)
+ * Contact our [Slack Community](https://join.slack.com/t/seldondev/shared_invite/enQtMzA2Mzk1Mzg0NjczLTJlNjQ1NTE5Y2MzMWIwMGUzYjNmZGFjZjUxODU5Y2EyMDY0M2U3ZmRiYTBkOTRjMzZhZjA4NjJkNDkxZTA2YmU)
  * Create an [issue on Seldon Core's Github repo](https://github.com/SeldonIO/seldon-core/issues). Please make sure to add any diagnostics from the above suggestions to help us diagnose your issue.

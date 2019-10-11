@@ -15,15 +15,28 @@
  *******************************************************************************/
 package io.seldon.engine.api.rest;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.seldon.engine.filters.XSSFilter;
+import io.seldon.engine.pb.ProtoBufUtils;
+import io.seldon.engine.tracing.TracingProvider;
+import io.seldon.protos.PredictionProtos.SeldonMessage;
+import io.opentracing.mock.MockTracer;
+import io.opentracing.mock.MockSpan;
+import javax.servlet.http.HttpServletResponse;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import java.util.*;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -34,28 +47,33 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.context.WebApplicationContext;
 
-import io.seldon.engine.pb.ProtoBufUtils;
-import io.seldon.protos.PredictionProtos.SeldonMessage;
-
-import java.util.*;
+import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-//@AutoConfigureMockMvc
+// @AutoConfigureMockMvc
 public class TestRestClientController {
+	private final static Logger logger = LoggerFactory.getLogger(TestRestClientController.class);
 	
 	@Autowired
 	private WebApplicationContext context;
-	
+
+  @MockBean
+  private TracingProvider mockTracingProvider;
+
+  private MockTracer tracer;
 	
     //@Autowired
     private MockMvc mvc;
-    
-    
+
     @Before
 	public void setup() {
+    tracer = new MockTracer();
+    when(mockTracingProvider.getTracer()).thenReturn(tracer);
+    when(mockTracingProvider.isActive()).thenReturn(true);
 		mvc = MockMvcBuilders
 				.webAppContextSetup(context)
+        .addFilters(new XSSFilter())
 				.build();
 	}
     
@@ -71,8 +89,34 @@ public class TestRestClientController {
     	Assert.assertEquals("pong", response);
     	Assert.assertEquals(200, res.getResponse().getStatus());
     }
+
+    @Test
+    public void testSecurityHeaders() throws Exception
+    {
+    	MvcResult res = mvc.perform(MockMvcRequestBuilders.get("/ping")).andReturn();
+    	HttpServletResponse response = res.getResponse();
+
+      final String noSniff = response.getHeader("X-Content-Type-Options");
+    	Assert.assertEquals("nosniff", noSniff);
+    	Assert.assertEquals(200, response.getStatus());
+    }
     
-    
+    @Test
+    public void testPredict_activateSpan() throws Exception
+    {
+        final String predictJson = "{" +
+        	    "\"request\": {" + 
+        	    "\"ndarray\": [[1.0]]}" +
+        		"}";
+
+    	MvcResult res = mvc.perform(MockMvcRequestBuilders.post("/api/v0.1/predictions")
+    			.accept(MediaType.APPLICATION_JSON_UTF8)
+    			.content(predictJson)
+    			.contentType(MediaType.APPLICATION_JSON_UTF8)).andReturn();
+      List<MockSpan> finishedSpans = tracer.finishedSpans();
+
+      Assert.assertEquals(1, finishedSpans.size());
+    }
     
     @Test
     public void testPredict_11dim_ndarry() throws Exception

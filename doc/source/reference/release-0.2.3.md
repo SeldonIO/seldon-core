@@ -94,4 +94,4 @@ There have also been a few stability updates that should provide improvements fo
     * A [bug fix](https://github.com/SeldonIO/seldon-core/issues/199) ensures that when you update one predictor in a Seldon Deployment any others are not affected by the change. This is important for cases where you want to do canary and other advanced roll out techniques.
 
 
-For the full release details see [here](https://github.com/SeldonIO/seldon-core/releases/tag/v0.2.3). We welcome feedback and suggestions on your machine learning deployment needs on our [Slack channel](https://join.slack.com/t/seldondev/shared_invite/enQtMzA2Mzk1Mzg0NjczLWQzMGFkNmRjN2UxZmFmMWJmNWIzMTM5Y2UxNGY1ODE5ZmI2NDdkMmNiMmUxYjZhZGYxOTllMDQwM2NkNDQ1MGI).
+For the full release details see [here](https://github.com/SeldonIO/seldon-core/releases/tag/v0.2.3). We welcome feedback and suggestions on your machine learning deployment needs on our [Slack channel](https://join.slack.com/t/seldondev/shared_invite/enQtMzA2Mzk1Mzg0NjczLTJlNjQ1NTE5Y2MzMWIwMGUzYjNmZGFjZjUxODU5Y2EyMDY0M2U3ZmRiYTBkOTRjMzZhZjA4NjJkNDkxZTA2YmU).

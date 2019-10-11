@@ -116,7 +116,7 @@ func createIstioResources(mlDep *machinelearningv1alpha2.SeldonDeployment,
 	engine_http_port int,
 	engine_grpc_port int) ([]*istio.VirtualService, []*istio.DestinationRule) {
 
-	istio_gateway := getEnv(ENV_ISTIO_GATEWAY, "seldon-gateway")
+	istio_gateway := GetEnv(ENV_ISTIO_GATEWAY, "seldon-gateway")
 	httpVsvc := &istio.VirtualService{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      seldonId + "-http",
@@ -226,7 +226,7 @@ func createIstioResources(mlDep *machinelearningv1alpha2.SeldonDeployment,
 func getEngineHttpPort() (engine_http_port int, err error) {
 	// Get engine http port from environment or use default
 	engine_http_port = DEFAULT_ENGINE_CONTAINER_PORT
-	var env_engine_http_port = getEnv(ENV_DEFAULT_ENGINE_SERVER_PORT, "")
+	var env_engine_http_port = GetEnv(ENV_DEFAULT_ENGINE_SERVER_PORT, "")
 	if env_engine_http_port != "" {
 		engine_http_port, err = strconv.Atoi(env_engine_http_port)
 		if err != nil {
@@ -239,7 +239,7 @@ func getEngineHttpPort() (engine_http_port int, err error) {
 func getEngineGrpcPort() (engine_grpc_port int, err error) {
 	// Get engine grpc port from environment or use default
 	engine_grpc_port = DEFAULT_ENGINE_GRPC_PORT
-	var env_engine_grpc_port = getEnv(ENV_DEFAULT_ENGINE_SERVER_GRPC_PORT, "")
+	var env_engine_grpc_port = GetEnv(ENV_DEFAULT_ENGINE_SERVER_GRPC_PORT, "")
 	if env_engine_grpc_port != "" {
 		engine_grpc_port, err = strconv.Atoi(env_engine_grpc_port)
 		if err != nil {
@@ -382,7 +382,7 @@ func createComponents(r *SeldonDeploymentReconciler, mlDep *machinelearningv1alp
 	}
 
 	//TODO Fixme - not changed to handle per predictor scenario
-	if getEnv(ENV_ISTIO_ENABLED, "false") == "true" {
+	if GetEnv(ENV_ISTIO_ENABLED, "false") == "true" {
 		vsvcs, dstRule := createIstioResources(mlDep, seldonId, namespace, engine_http_port, engine_grpc_port)
 		c.virtualServices = append(c.virtualServices, vsvcs...)
 		c.destinationRules = append(c.destinationRules, dstRule...)
@@ -421,7 +421,7 @@ func createPredictorService(pSvcName string, seldonId string, p *machinelearning
 		psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engine_grpc_port), TargetPort: intstr.FromInt(engine_grpc_port), Name: "grpc"})
 	}
 
-	if getEnv("AMBASSADOR_ENABLED", "false") == "true" {
+	if GetEnv("AMBASSADOR_ENABLED", "false") == "true" {
 		psvc.Annotations = make(map[string]string)
 		//Create top level Service
 		ambassadorConfig, err := getAmbassadorConfigs(mlDep, p, pSvcName, engine_http_port, engine_grpc_port, ambassadorNameOverride)
@@ -1164,7 +1164,7 @@ func (r *SeldonDeploymentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		return err
 	}
 
-	if getEnv(ENV_ISTIO_ENABLED, "false") == "true" {
+	if GetEnv(ENV_ISTIO_ENABLED, "false") == "true" {
 		if err := mgr.GetFieldIndexer().IndexField(&istio.VirtualService{}, ownerKey, func(rawObj runtime.Object) []string {
 			// grab the deployment object, extract the owner...
 			vsvc := rawObj.(*istio.VirtualService)

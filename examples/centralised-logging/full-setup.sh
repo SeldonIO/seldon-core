@@ -13,7 +13,7 @@ kubectl rollout status -n kube-system deployment/tiller-deploy
 
 helm install --name seldon-core ../../helm-charts/seldon-core-operator/ --namespace seldon-system --set engine.logMessagesExternally="true"
 
-kubectl rollout status -n seldon-system statefulset/seldon-operator-controller-manager
+kubectl rollout status -n seldon-system deployment/seldon-controller-manager
 
 sleep 5
 
