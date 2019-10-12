@@ -30,11 +30,6 @@ func NewSeldonMessageRestClient() SeldonApiClient {
 }
 
 
-
-func (smc *SeldonMessageRestClient) Hello() int {
-	return 1
-}
-
 func (smc *SeldonMessageRestClient) PostHttp(url *url.URL, msg *api.SeldonMessage) (*api.SeldonMessage, error) {
 	smc.Log.Info("Calling HTTP","URL",url)
 
@@ -74,42 +69,51 @@ func (smc *SeldonMessageRestClient) PostHttp(url *url.URL, msg *api.SeldonMessag
 	return &sm, nil
 }
 
-
-func (smc *SeldonMessageRestClient) Predict(host string, port int32, req SeldonPayload) (SeldonPayload, error) {
-	smc.Log.Info("Predict","port",port)
-
-	smReq := req.GetPayload().(*api.SeldonMessage)
-
-	url := url.URL{
-	Scheme: "http",
-	Host:   net.JoinHostPort(host,strconv.Itoa(int(port))),
-	Path:   "/predict",
-	}
-
-	sm, err := smc.PostHttp(&url,smReq)
-	if err != nil {
-		return nil, err
-	}
-
-	res := SeldonMessagePayload{sm}
-
-	return &res, nil
-}
-
-func (smc *SeldonMessageRestClient) TransformInput(host string, port int32, req SeldonPayload) (SeldonPayload, error) {
-	smc.Log.Info("Predict","port",port)
+func (smc *SeldonMessageRestClient) call(method string,host string, port int32, req SeldonPayload) (SeldonPayload, error) {
+	smc.Log.Info("Call","Methof", method, "host", host, "port",port)
 	smReq := req.GetPayload().(*api.SeldonMessage)
 	url := url.URL{
 		Scheme: "http",
 		Host:   net.JoinHostPort(host,strconv.Itoa(int(port))),
-		Path:   "/transform-input",
+		Path:   method,
 	}
-	sm,  err:=  smc.PostHttp(&url,smReq)
+	sm, err := smc.PostHttp(&url,smReq)
 	if err != nil {
 		return nil, err
 	}
 	res := SeldonMessagePayload{sm}
-
 	return &res, nil
 }
 
+func (smc *SeldonMessageRestClient) Predict(host string, port int32, req SeldonPayload) (SeldonPayload, error) {
+	return smc.call("/predict", host, port, req)
+}
+
+func (smc *SeldonMessageRestClient) TransformInput(host string, port int32, req SeldonPayload) (SeldonPayload, error) {
+	return smc.call("/transform-input", host, port, req)
+}
+
+func (smc *SeldonMessageRestClient) Route(host string, port int32, req SeldonPayload) (int, error) {
+	sp, err := smc.call("/route", host, port, req)
+	if err != nil {
+		return 0, err
+	} else {
+		routes := ExtractRoute(sp.GetPayload().(*api.SeldonMessage))
+		//Only returning first route. API could be extended to allow multiple routes
+		return routes[0], nil
+	}
+}
+
+func (smc *SeldonMessageRestClient) Combine(host string, port int32, msgs []SeldonPayload) (SeldonPayload, error) {
+	sms := make([]*api.SeldonMessage, len(msgs))
+	for i,sm := range msgs {
+		sms[i] = sm.GetPayload().(*api.SeldonMessage)
+	}
+	sml := api.SeldonMessageList{SeldonMessages: sms}
+	req := SeldonMessageListPayload{&sml}
+	return smc.call("/aggregate",host, port, &req)
+}
+
+func (smc *SeldonMessageRestClient) TransformOutput(host string, port int32, req SeldonPayload) (SeldonPayload, error) {
+	return smc.call("/transform-output", host, port, req)
+}

@@ -9,6 +9,7 @@ require (
 	github.com/gogo/protobuf v1.1.1
 	github.com/golang/protobuf v1.3.2
 	github.com/gorilla/mux v1.7.3
+	github.com/onsi/gomega v1.7.0
 	github.com/pkg/errors v0.8.1
 	github.com/prometheus/common v0.0.0-20180801064454-c7de2306084e
 	github.com/sirupsen/logrus v1.4.2 // indirect

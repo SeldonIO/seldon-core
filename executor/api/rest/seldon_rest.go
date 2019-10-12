@@ -68,7 +68,6 @@ func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 	}
 
 	seldonPredictorProcess := &predictor.PredictorProcess{
-		r.predictor,
 		client.NewSeldonMessageRestClient(),
 		logf.Log.WithName("SeldonMessageRestClient"),
 	}

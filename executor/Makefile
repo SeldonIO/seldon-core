@@ -13,3 +13,10 @@ compile_tensorflow_proto:
 	go mod edit -replace=github.com/tensorflow/tensorflow/tensorflow/go/core=./proto/tensorflow/core
 	cd proto/tensorflow/core && go mod init github.com/tensorflow/tensorflow/tensorflow/go/core && cd -
 	go build ./proto/tensorflow/serving
+
+
+.PHONY: clean
+clean:
+	rm -rf vendor
+	rm -rf tensorflow
+	rm -rf serving
