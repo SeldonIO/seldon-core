@@ -112,19 +112,25 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
 	@Async
 	public Future<SeldonMessage> getOutputAsync(SeldonMessage input, PredictiveUnitState state, Map<String,Integer> routingDict,Map<String,String> requestPathDict,Map<String,List<Metric>> metrics,Span activeSpan) throws InterruptedException, ExecutionException, InvalidProtocolBufferException{
 
+		logger.debug("Calling getOutputAsync");
 		String puid = input.getMeta().getPuid();
 		
 		if (activeSpan != null && tracing != null)
-			tracing.getTracer().scopeManager().activate(activeSpan, true);
+			tracing.getTracer().scopeManager().activate(activeSpan);
 		
 		// This element to the request path
 		requestPathDict.put(state.name, state.image);
 		
 		// Getting the actual implementation (microservice or hardcoded? )
 		PredictiveUnitImpl implementation = predictorConfig.getImplementation(state);
-		if (implementation == null){ implementation = this; }
+		if (implementation == null)
+		{
+			logger.debug("No implementation");
+			implementation = this; 
+		}
 		
 		// Compute the transformed Input
+		logger.debug("Call transform input");
 		SeldonMessage transformedInput = implementation.transformInput(input, state);
 		
 		addMetrics(transformedInput,state,metrics);

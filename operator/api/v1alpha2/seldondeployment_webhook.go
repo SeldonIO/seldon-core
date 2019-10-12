@@ -204,6 +204,19 @@ func (r *SeldonDeployment) DefaultSeldonDeployment() {
 						if existingPort != nil {
 							portNum = existingPort.ContainerPort
 						}
+
+						volFound := false
+						for _, vol := range con.VolumeMounts {
+							if vol.Name == PODINFO_VOLUME_NAME {
+								volFound = true
+							}
+						}
+						if !volFound {
+							con.VolumeMounts = append(con.VolumeMounts, corev1.VolumeMount{
+								Name:      PODINFO_VOLUME_NAME,
+								MountPath: PODINFO_VOLUME_PATH,
+							})
+						}
 					}
 
 					// Set ports and hostname in predictive unit so engine can read it from SDep
@@ -243,59 +256,9 @@ func (r *SeldonDeployment) DefaultSeldonDeployment() {
 		for l := 0; l < len(pus); l++ {
 			pu := pus[l]
 
-			con := GetContainerForPredictiveUnit(&p, pu.Name)
-
-			// want to set host and port for engine to use in orchestration
-			//only assign host and port if there's a container or it's a prepackaged model server
-			if !IsPrepack(pu) && (con == nil || con.Name == "") {
-				continue
-			}
-
-			if _, present := portMap[pu.Name]; !present {
-				portMap[pu.Name] = nextPortNum
-				nextPortNum++
-			}
-			portNum := portMap[pu.Name]
-			// Add a default REST endpoint if none provided
-			// pu needs to have an endpoint as engine reads it from SDep in order to direct graph traffic
-			// probes etc will be added later by controller
-			if pu.Endpoint == nil {
-				pu.Endpoint = &Endpoint{Type: REST}
-			}
-			var portType string
-			if pu.Endpoint.Type == GRPC {
-				portType = "grpc"
-			} else {
-				portType = "http"
-			}
-
-			if con != nil {
-				existingPort := GetPort(portType, con.Ports)
-				if existingPort != nil {
-					portNum = existingPort.ContainerPort
-				}
-
-				con.VolumeMounts = append(con.VolumeMounts, corev1.VolumeMount{
-					Name:      PODINFO_VOLUME_NAME,
-					MountPath: PODINFO_VOLUME_PATH,
-				})
-			}
-			// Set ports and hostname in predictive unit so engine can read it from SDep
-			// if this is the firstPuPortNum then we've not added engine yet so put the engine in here
-			if pu.Endpoint.ServiceHost == "" {
-				if _, hasSeparateEnginePod := r.Spec.Annotations[ANNOTATION_SEPARATE_ENGINE]; portNum == firstPuPortNum && !hasSeparateEnginePod {
-					pu.Endpoint.ServiceHost = "localhost"
-				} else {
-					containerServiceValue := GetContainerServiceName(r, p, con)
-					pu.Endpoint.ServiceHost = containerServiceValue + "." + r.ObjectMeta.Namespace + ".svc.cluster.local."
-				}
-			}
-			if pu.Endpoint.ServicePort == 0 {
-				pu.Endpoint.ServicePort = portNum
-			}
-
-			// for prepack servers we want to add a container name and image to correspond to grafana dashboards
 			if IsPrepack(pu) {
+
+				con := GetContainerForPredictiveUnit(&p, pu.Name)
 
 				existing := con != nil
 				if !existing {
@@ -329,6 +292,56 @@ func (r *SeldonDeployment) DefaultSeldonDeployment() {
 						r.Spec.Predictors[i] = p
 					}
 				}
+
+				getUpdatePortNumMap(con.Name, &nextPortNum, portMap)
+				portNum := portMap[pu.Name]
+				// Add a default REST endpoint if none provided
+				// pu needs to have an endpoint as engine reads it from SDep in order to direct graph traffic
+				// probes etc will be added later by controller
+				if pu.Endpoint == nil {
+					pu.Endpoint = &Endpoint{Type: REST}
+				}
+				var portType string
+				if pu.Endpoint.Type == GRPC {
+					portType = "grpc"
+				} else {
+					portType = "http"
+				}
+
+				if con != nil {
+					existingPort := GetPort(portType, con.Ports)
+					if existingPort != nil {
+						portNum = existingPort.ContainerPort
+					}
+
+					volFound := false
+					for _, vol := range con.VolumeMounts {
+						if vol.Name == PODINFO_VOLUME_NAME {
+							volFound = true
+						}
+					}
+					if !volFound {
+						con.VolumeMounts = append(con.VolumeMounts, corev1.VolumeMount{
+							Name:      PODINFO_VOLUME_NAME,
+							MountPath: PODINFO_VOLUME_PATH,
+						})
+					}
+				}
+				// Set ports and hostname in predictive unit so engine can read it from SDep
+				// if this is the firstPuPortNum then we've not added engine yet so put the engine in here
+				if pu.Endpoint.ServiceHost == "" {
+					if _, hasSeparateEnginePod := r.Spec.Annotations[ANNOTATION_SEPARATE_ENGINE]; !hasSeparateEnginePod {
+						pu.Endpoint.ServiceHost = "localhost"
+					} else {
+						//FIXME
+						containerServiceValue := GetContainerServiceName(r, p, con)
+						pu.Endpoint.ServiceHost = containerServiceValue + "." + r.ObjectMeta.Namespace + ".svc.cluster.local."
+					}
+				}
+				if pu.Endpoint.ServicePort == 0 {
+					pu.Endpoint.ServicePort = portNum
+				}
+
 			}
 
 		}

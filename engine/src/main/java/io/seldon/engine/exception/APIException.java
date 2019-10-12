@@ -27,7 +27,8 @@ public class APIException extends RuntimeException {
 
 	public enum ApiExceptionType { 
 		
-		ENGINE_INVALID_JSON(201,"Invalid JSON",500),
+		ENGINE_INVALID_JSON(201,"Invalid JSON",400),
+		ENGINE_INVALID_RESPONSE_JSON(201,"Invalid Response JSON",500),
 		ENGINE_INVALID_ENDPOINT_URL(202,"Invalid Endpoint URL",500),	
 		ENGINE_MICROSERVICE_ERROR(203,"Microservice error",500),
 		ENGINE_INVALID_ABTEST(204,"Error happened in AB Test Routing",500),

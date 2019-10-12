@@ -138,5 +138,6 @@ def get_grpc_server(user_model, annotations={}, trace_interceptor=None):
 
     prediction_pb2_grpc.add_GenericServicer_to_server(seldon_model, server)
     prediction_pb2_grpc.add_ModelServicer_to_server(seldon_model, server)
+    prediction_pb2_grpc.add_TransformerServicer_to_server(seldon_model, server)
 
     return server

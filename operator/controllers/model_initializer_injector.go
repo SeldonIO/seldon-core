@@ -44,7 +44,7 @@ const (
 )
 
 var (
-	ControllerNamespace     = getEnv("POD_NAMESPACE", "seldon-system")
+	ControllerNamespace     = GetEnv("POD_NAMESPACE", "seldon-system")
 	ControllerConfigMapName = "seldon-config"
 )
 
