@@ -19,29 +19,36 @@ const (
 )
 
 type SeldonMessageRestClient struct {
+	httpClient  *http.Client
 	Log logr.Logger
 }
 
-func NewSeldonMessageRestClient() SeldonApiClient {
+type Option func(client *SeldonMessageRestClient)
+
+func NewSeldonMessageRestClient(options ...Option) SeldonApiClient {
 	client := SeldonMessageRestClient{
+		&http.Client{},
 		logf.Log.WithName("SeldonMessageRestClient"),
+	}
+
+	for i := range options {
+		options[i](&client)
 	}
 	return &client
 }
 
 
-func (smc *SeldonMessageRestClient) PostHttp(url *url.URL, msg *api.SeldonMessage) (*api.SeldonMessage, error) {
+func (smc *SeldonMessageRestClient) PostHttp(url *url.URL, msg SeldonPayload) (*api.SeldonMessage, error) {
 	smc.Log.Info("Calling HTTP","URL",url)
 
 	// Marshall message into JSON
-	ma := jsonpb.Marshaler{}
-	msgStr, err := ma.MarshalToString(msg)
+	msgStr, err := smc.marshall(msg)
 	if err != nil {
 		return nil, err
 	}
 
 	// Call URL
-	response, err := http.Post(url.String(), ContentTypeJSON, bytes.NewBufferString(msgStr))
+	response, err := smc.httpClient.Post(url.String(), ContentTypeJSON, bytes.NewBufferString(msgStr))
 	if err != nil {
 		return nil, err
 	}
@@ -69,15 +76,28 @@ func (smc *SeldonMessageRestClient) PostHttp(url *url.URL, msg *api.SeldonMessag
 	return &sm, nil
 }
 
+func (smc *SeldonMessageRestClient) marshall(payload SeldonPayload) (string, error) {
+	ma := jsonpb.Marshaler{}
+	var msgStr string
+	var err error
+	if sm,ok := payload.GetPayload().(*api.SeldonMessage); ok {
+		msgStr, err = ma.MarshalToString(sm)
+	} else if sm,ok := payload.GetPayload().(*api.SeldonMessageList); ok {
+		msgStr, err = ma.MarshalToString(sm)
+	} else {
+		return "", errors.New("Unknown type passed")
+	}
+	return msgStr, err
+}
+
 func (smc *SeldonMessageRestClient) call(method string,host string, port int32, req SeldonPayload) (SeldonPayload, error) {
-	smc.Log.Info("Call","Methof", method, "host", host, "port",port)
-	smReq := req.GetPayload().(*api.SeldonMessage)
+	smc.Log.Info("Call","Method", method, "host", host, "port",port)
 	url := url.URL{
 		Scheme: "http",
 		Host:   net.JoinHostPort(host,strconv.Itoa(int(port))),
 		Path:   method,
 	}
-	sm, err := smc.PostHttp(&url,smReq)
+	sm, err := smc.PostHttp(&url,req)
 	if err != nil {
 		return nil, err
 	}
