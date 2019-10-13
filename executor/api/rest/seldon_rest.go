@@ -84,11 +84,11 @@ func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 	}
 
 	seldonPredictorProcess := &predictor.PredictorProcess{
-		client.NewSeldonMessageRestClient(),
-		logf.Log.WithName("SeldonMessageRestClient"),
+		Client: client.NewSeldonMessageRestClient(),
+		Log: logf.Log.WithName("SeldonMessageRestClient"),
 	}
 
-	reqPayload := client.SeldonMessagePayload{sm}
+	reqPayload := client.SeldonMessagePayload{Msg: sm}
 	resPayload, err := seldonPredictorProcess.Execute(r.predictor.Graph, &reqPayload)
 	if err != nil {
 		respFailed := api.SeldonMessage{Status: &api.Status{Code: http.StatusInternalServerError, Info: err.Error()}}

@@ -85,7 +85,7 @@ func createPayload(g *gomega.GomegaWithT) client.SeldonPayload {
 	var data = ` {"data":{"ndarray":[1.1,2.0]}}`
 	err := jsonpb.UnmarshalString(data, &sm)
 	g.Expect(err).Should(gomega.BeNil())
-	return &client.SeldonMessagePayload{&sm}
+	return &client.SeldonMessagePayload{Msg: &sm}
 }
 
 func TestModel(t *testing.T) {
