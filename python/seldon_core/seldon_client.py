@@ -28,9 +28,14 @@ class SeldonChannelCredentials(object):
     """
     Channel credentials
     Presently just denotes an SSL connection.
+    For GRPC in order to be properly implemented, you need to provide *either*
+        the root_certificate_files, *or* all the file paths. 
+    The verify attribute currently is used to avoid SSL verification in REST
+        however for GRPC it is recommended that you provide a path at least
+        for the root_certificates_file otherwise it may not work as expected.
     """
 
-    def __init__(self, verify:bool = True, root_certificates_file: str = None,
+    def __init__(self, verify: bool = True, root_certificates_file: str = None,
                  private_key_file: str = None, certificate_chain_file: str = None):
         self.verify = verify
         self.root_certificates_file = root_certificates_file
@@ -41,7 +46,9 @@ class SeldonChannelCredentials(object):
 
 class SeldonCallCredentials(object):
     """
-    Credentials for each call
+    Credentials for each call, currently implements the ability to provide
+        an OAuth token which is currently made available through REST via 
+        the X-Auth-Token header, and via GRPC via the metadata call creds.
     """
 
     def __init__(self,token:str = None):
@@ -1167,7 +1174,7 @@ def rest_predict_gateway(deployment_name: str, namespace: str = None, gateway_en
         req_headers = headers.copy()
     else:
         req_headers = {}
-    if channel_credentials is None:
+    if call_credentials is None:
         scheme = "http"
     else:
         scheme = "https"
@@ -1359,6 +1366,11 @@ def grpc_predict_gateway(deployment_name: str, namespace: str = None, gateway_en
        Max grpc receive message size in bytes
     names
        Column names
+    call_credentials
+       Call credentials - see SeldonCallCredentials
+    channel_credentials
+       Channel credentials - see SeldonChannelCredentials
+
 
     Returns
     -------
@@ -1380,18 +1392,34 @@ def grpc_predict_gateway(deployment_name: str, namespace: str = None, gateway_en
     if channel_credentials is None:
         channel = grpc.insecure_channel(gateway_endpoint, options)
     else:
-        grpc_channel_credentials = grpc.ssl_channel_credentials(root_certificates=open(channel_credentials.certificate_chain_file, 'rb').read(),
-                                                                private_key=open(channel_credentials.private_key_file, 'rb').read(),
-                                                                certificate_chain=open(channel_credentials.root_certificates_file, 'rb').read())
+        # If one of root cert & cert chain are provided, both must be provided
+        #   otherwise there is a null pointer exception in the Go underlying impl
+        if (channel_credentials.private_key_file
+                and channel_credentials.root_certificates_file
+                and channel_credentials.certificate_chain_file):
+            grpc_channel_credentials = grpc.ssl_channel_credentials(
+                root_certificates=open(channel_credentials.root_certificates_file, 'rb').read(),
+                private_key=open(channel_credentials.private_key_file, 'rb').read(),
+                certificate_chain=open(channel_credentials.certificate_chain_file, 'rb').read())
+        # For most usecases only providing the root cert file is enough
+        elif channel_credentials.root_certificates_file:
+            grpc_channel_credentials = grpc.ssl_channel_credentials(
+                root_certificates=open(channel_credentials.root_certificates_file, 'rb').read())
+        # This piece also allows for blank SSL Channel credentials in case this is required
+        else:
+            grpc_channel_credentials = grpc.ssl_channel_credentials()
+        if channel_credentials.verify == False:
+            # If Verify is set to false then we add the SSL Target Name Override option
+            options += [('grpc.ssl_target_name_override', gateway_endpoint.split(":")[0])]
+
         if not call_credentials is None:
-            #grpc_call_credentials = grpc.access_token_call_credentials(call_credentials.token)
             grpc_call_credentials = grpc.metadata_call_credentials(
-                lambda context, callback: callback((("X-Auth-Token", call_credentials.token),), None))
-            credentials = grpc.composite_channel_credentials(grpc_channel_credentials,grpc_call_credentials)
+                lambda context, callback: callback((("x-auth-token", call_credentials.token),), None))
+            credentials = grpc.composite_channel_credentials(grpc_channel_credentials, grpc_call_credentials)
         else:
             credentials = grpc_channel_credentials
-        logger.debug(gateway_endpoint)
-        channel = grpc.secure_channel(gateway_endpoint,credentials, options)
+        logger.debug(f"Sending GRPC Request to endpoint: {gateway_endpoint}")
+        channel = grpc.secure_channel(gateway_endpoint, credentials, options)
     stub = prediction_pb2_grpc.SeldonStub(channel)
     if namespace is None:
         metadata = [('seldon', deployment_name)]
@@ -1400,11 +1428,8 @@ def grpc_predict_gateway(deployment_name: str, namespace: str = None, gateway_en
     if not headers is None:
         for k in headers:
             metadata.append((k, headers[k]))
-    #try:
     response = stub.Predict(request=request, metadata=metadata)
     return SeldonClientPrediction(request, response, True, "")
-    #except Exception as e:
-    #    return SeldonClientPrediction(request, None, False, str(e))
 
 
 def rest_feedback_seldon_oauth(prediction_request: prediction_pb2.SeldonMessage = None,
