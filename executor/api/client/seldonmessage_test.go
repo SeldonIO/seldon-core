@@ -7,8 +7,6 @@ import (
 	"testing"
 )
 
-
-
 func TestSum(t *testing.T) {
 	var sm api.SeldonMessage
 	var data = ` {"data":{"ndarray":[1.1,2.0]}}
@@ -18,5 +16,5 @@ func TestSum(t *testing.T) {
 	ma := jsonpb.Marshaler{}
 	msgStr, _ := ma.MarshalToString(&sm)
 
-	fmt.Printf("hello %s",msgStr)
+	fmt.Printf("hello %s", msgStr)
 }

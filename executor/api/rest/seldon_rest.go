@@ -16,12 +16,10 @@ import (
 )
 
 type SeldonRestApi struct {
-	Router *mux.Router
+	Router    *mux.Router
 	predictor *v1alpha2.PredictorSpec
-	Log logr.Logger
+	Log       logr.Logger
 }
-
-
 
 func NewSeldonRestApi(predictor *v1alpha2.PredictorSpec) *SeldonRestApi {
 	return &SeldonRestApi{
@@ -31,12 +29,15 @@ func NewSeldonRestApi(predictor *v1alpha2.PredictorSpec) *SeldonRestApi {
 	}
 }
 
-func respondWithJSON(w http.ResponseWriter, code int, payload proto.Message) {
+func (r *SeldonRestApi) respondWithJSON(w http.ResponseWriter, code int, payload proto.Message) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 
 	ma := jsonpb.Marshaler{}
-	ma.Marshal(w, payload)
+	err := ma.Marshal(w, payload)
+	if err != nil {
+		r.Log.Error(err, "Failed to write response")
+	}
 }
 
 // Extract a SeldonMessage proto from the REST request
@@ -54,17 +55,32 @@ func (r *SeldonRestApi) getSeldonMessage(req *http.Request) (*api.SeldonMessage,
 }
 
 func (r *SeldonRestApi) Initialise() {
+	r.Router.HandleFunc("/ready", r.checkReady)
+	r.Router.HandleFunc("/live", r.alive)
 	s := r.Router.PathPrefix("/api/v0.1").Methods("POST").HeadersRegexp("Content-Type", "application/json").Subrouter()
 	s.HandleFunc("/predictions", r.predictions)
 }
 
+func (r *SeldonRestApi) checkReady(w http.ResponseWriter, req *http.Request) {
+	err := predictor.Ready(r.predictor.Graph)
+	if err != nil {
+		r.Log.Error(err, "Ready check failed")
+		w.WriteHeader(http.StatusServiceUnavailable)
+	} else {
+		w.WriteHeader(http.StatusOK)
+	}
+}
+
+func (r *SeldonRestApi) alive(w http.ResponseWriter, req *http.Request) {
+	w.WriteHeader(http.StatusOK)
+}
 
 func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 	r.Log.Info("Prediction called")
 
 	sm, err := r.getSeldonMessage(req)
 	if err != nil {
-		log.Error("Failed to parse request:",err)
+		log.Error("Failed to parse request:", err)
 	}
 
 	seldonPredictorProcess := &predictor.PredictorProcess{
@@ -73,14 +89,13 @@ func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 	}
 
 	reqPayload := client.SeldonMessagePayload{sm}
-	resPayload, err := seldonPredictorProcess.Execute(r.predictor.Graph,&reqPayload)
+	resPayload, err := seldonPredictorProcess.Execute(r.predictor.Graph, &reqPayload)
 	if err != nil {
-		respFailed := api.SeldonMessage{Status:&api.Status{Code: 500, Info: err.Error()}}
-		respondWithJSON(w, 500, &respFailed)
+		respFailed := api.SeldonMessage{Status: &api.Status{Code: http.StatusInternalServerError, Info: err.Error()}}
+		r.respondWithJSON(w, http.StatusInternalServerError, &respFailed)
 	} else {
 		smResp := resPayload.GetPayload().(*api.SeldonMessage)
-		respondWithJSON(w,200, smResp)
+		r.respondWithJSON(w, http.StatusOK, smResp)
 	}
-
 
 }

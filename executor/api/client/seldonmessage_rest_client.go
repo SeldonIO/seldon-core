@@ -19,8 +19,8 @@ const (
 )
 
 type SeldonMessageRestClient struct {
-	httpClient  *http.Client
-	Log logr.Logger
+	httpClient *http.Client
+	Log        logr.Logger
 }
 
 type Option func(client *SeldonMessageRestClient)
@@ -37,9 +37,8 @@ func NewSeldonMessageRestClient(options ...Option) SeldonApiClient {
 	return &client
 }
 
-
 func (smc *SeldonMessageRestClient) PostHttp(url *url.URL, msg SeldonPayload) (*api.SeldonMessage, error) {
-	smc.Log.Info("Calling HTTP","URL",url)
+	smc.Log.Info("Calling HTTP", "URL", url)
 
 	// Marshall message into JSON
 	msgStr, err := smc.marshall(msg)
@@ -54,8 +53,8 @@ func (smc *SeldonMessageRestClient) PostHttp(url *url.URL, msg SeldonPayload) (*
 	}
 
 	if response.StatusCode != 200 {
-		smc.Log.Info("httpPost failed","response code", response.StatusCode)
-		return nil, errors.Errorf("Internal service call failed with to %s status code %d",url,response.StatusCode)
+		smc.Log.Info("httpPost failed", "response code", response.StatusCode)
+		return nil, errors.Errorf("Internal service call failed with to %s status code %d", url, response.StatusCode)
 	}
 
 	//Read response
@@ -80,9 +79,9 @@ func (smc *SeldonMessageRestClient) marshall(payload SeldonPayload) (string, err
 	ma := jsonpb.Marshaler{}
 	var msgStr string
 	var err error
-	if sm,ok := payload.GetPayload().(*api.SeldonMessage); ok {
+	if sm, ok := payload.GetPayload().(*api.SeldonMessage); ok {
 		msgStr, err = ma.MarshalToString(sm)
-	} else if sm,ok := payload.GetPayload().(*api.SeldonMessageList); ok {
+	} else if sm, ok := payload.GetPayload().(*api.SeldonMessageList); ok {
 		msgStr, err = ma.MarshalToString(sm)
 	} else {
 		return "", errors.New("Unknown type passed")
@@ -90,14 +89,14 @@ func (smc *SeldonMessageRestClient) marshall(payload SeldonPayload) (string, err
 	return msgStr, err
 }
 
-func (smc *SeldonMessageRestClient) call(method string,host string, port int32, req SeldonPayload) (SeldonPayload, error) {
-	smc.Log.Info("Call","Method", method, "host", host, "port",port)
+func (smc *SeldonMessageRestClient) call(method string, host string, port int32, req SeldonPayload) (SeldonPayload, error) {
+	smc.Log.Info("Call", "Method", method, "host", host, "port", port)
 	url := url.URL{
 		Scheme: "http",
-		Host:   net.JoinHostPort(host,strconv.Itoa(int(port))),
+		Host:   net.JoinHostPort(host, strconv.Itoa(int(port))),
 		Path:   method,
 	}
-	sm, err := smc.PostHttp(&url,req)
+	sm, err := smc.PostHttp(&url, req)
 	if err != nil {
 		return nil, err
 	}
@@ -126,12 +125,12 @@ func (smc *SeldonMessageRestClient) Route(host string, port int32, req SeldonPay
 
 func (smc *SeldonMessageRestClient) Combine(host string, port int32, msgs []SeldonPayload) (SeldonPayload, error) {
 	sms := make([]*api.SeldonMessage, len(msgs))
-	for i,sm := range msgs {
+	for i, sm := range msgs {
 		sms[i] = sm.GetPayload().(*api.SeldonMessage)
 	}
 	sml := api.SeldonMessageList{SeldonMessages: sms}
 	req := SeldonMessageListPayload{&sml}
-	return smc.call("/aggregate",host, port, &req)
+	return smc.call("/aggregate", host, port, &req)
 }
 
 func (smc *SeldonMessageRestClient) TransformOutput(host string, port int32, req SeldonPayload) (SeldonPayload, error) {

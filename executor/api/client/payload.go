@@ -13,7 +13,7 @@ type SeldonMessagePayload struct {
 	Msg *api.SeldonMessage
 }
 
-func (s *SeldonMessagePayload) GetPayload()  interface{} {
+func (s *SeldonMessagePayload) GetPayload() interface{} {
 	return s.Msg
 }
 
@@ -26,7 +26,7 @@ type SeldonMessageListPayload struct {
 	Msg *api.SeldonMessageList
 }
 
-func (s *SeldonMessageListPayload) GetPayload()  interface{} {
+func (s *SeldonMessageListPayload) GetPayload() interface{} {
 	return s.Msg
 }
 

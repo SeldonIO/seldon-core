@@ -192,7 +192,6 @@ func GetContainerServiceName(mlDep *SeldonDeployment, predictorSpec PredictorSpe
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
-
 // SeldonDeploymentSpec defines the desired state of SeldonDeployment
 type SeldonDeploymentSpec struct {
 	Name        string            `json:"name,omitempty" protobuf:"string,1,opt,name=name"`

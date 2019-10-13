@@ -19,5 +19,5 @@ func TestGetPayload(t *testing.T) {
 
 	ma := jsonpb.Marshaler{}
 	msgStr, _ := ma.MarshalToString(sm2)
-	assert.Equal(t,data,msgStr)
+	assert.Equal(t, data, msgStr)
 }

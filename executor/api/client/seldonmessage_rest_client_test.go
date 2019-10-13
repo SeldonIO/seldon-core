@@ -70,11 +70,11 @@ func TestSimpleMethods(t *testing.T) {
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(okPredictResponse))
 	})
-	host, port, httpClient, teardown := testingHTTPClient(g,h)
+	host, port, httpClient, teardown := testingHTTPClient(g, h)
 	defer teardown()
 	seldonRestClient := NewSeldonMessageRestClient(SetHTTPClient(httpClient))
 
-	methods := []func(string, int32, SeldonPayload) (SeldonPayload, error) {seldonRestClient.Predict, seldonRestClient.TransformInput,seldonRestClient.TransformOutput}
+	methods := []func(string, int32, SeldonPayload) (SeldonPayload, error){seldonRestClient.Predict, seldonRestClient.TransformInput, seldonRestClient.TransformOutput}
 	for _, method := range methods {
 		resPayload, err := method(host, int32(port), createPayload(g))
 		g.Expect(err).Should(gomega.BeNil())
@@ -84,8 +84,6 @@ func TestSimpleMethods(t *testing.T) {
 		g.Expect(smRes.GetData().GetNdarray().Values[0].GetListValue().Values[1].GetNumberValue()).Should(gomega.Equal(0.1))
 	}
 
-
-
 }
 
 func TestRouter(t *testing.T) {
@@ -94,7 +92,7 @@ func TestRouter(t *testing.T) {
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(okRouteResponse))
 	})
-	host, port, httpClient, teardown := testingHTTPClient(g,h)
+	host, port, httpClient, teardown := testingHTTPClient(g, h)
 	defer teardown()
 	seldonRestClient := NewSeldonMessageRestClient(SetHTTPClient(httpClient))
 
@@ -104,13 +102,13 @@ func TestRouter(t *testing.T) {
 	g.Expect(route).Should(gomega.Equal(1))
 }
 func createCombinerPayload(g *gomega.GomegaWithT) []SeldonPayload {
-	var sm1,sm2 api.SeldonMessage
+	var sm1, sm2 api.SeldonMessage
 	var data = ` {"data":{"ndarray":[1.1,2.0]}}`
 	err := jsonpb.UnmarshalString(data, &sm1)
 	g.Expect(err).Should(gomega.BeNil())
 	err = jsonpb.UnmarshalString(data, &sm2)
 	g.Expect(err).Should(gomega.BeNil())
-	smp := []SeldonPayload{&SeldonMessagePayload{&sm1},&SeldonMessagePayload{&sm1}}
+	smp := []SeldonPayload{&SeldonMessagePayload{&sm1}, &SeldonMessagePayload{&sm1}}
 	return smp
 }
 
@@ -120,7 +118,7 @@ func TestCombiner(t *testing.T) {
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(okPredictResponse))
 	})
-	host, port, httpClient, teardown := testingHTTPClient(g,h)
+	host, port, httpClient, teardown := testingHTTPClient(g, h)
 	defer teardown()
 	seldonRestClient := NewSeldonMessageRestClient(SetHTTPClient(httpClient))
 
