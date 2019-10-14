@@ -5,7 +5,7 @@ logger = logging.getLogger(__name__)
 
 try:
     # Let tensorflow shadow these imports if present
-    from . import (
+    from tensorflow.core.framework import (
         tensor_pb2, types_pb2, tensor_shape_pb2)
 except ImportError:
     notice = textwrap.dedent("""

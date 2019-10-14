@@ -33,7 +33,9 @@ build_apis: get_apis
 		--python_out=./ \
 		./tensorflow/core/framework/*.proto
 	sed -i "s/from tensorflow/from seldon_core.proto.tensorflow/" seldon_core/proto/*.py
-	sed -i "s/from tensorflow.core.framework/from ./" seldon_core/proto/tensorflow/core/framework/*.py
+	sed -i "s/from tensorflow.core.framework/from ./" \
+		$(addprefix seldon_core/proto/tensorflow/core/framework/, \
+			resource_handle_pb2.py tensor_pb2.py tensor_shape_pb2.py types_pb2.py)
 	sed -i "s/from proto/from seldon_core.proto/g" seldon_core/proto/prediction_pb2_grpc.py
 
 .PHONY: update_version
