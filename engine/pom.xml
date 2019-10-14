@@ -169,6 +169,9 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
           <source>1.8</source>
           <target>1.8</target>
           <encoding>UTF-8</encoding>
+          <compilerArgs>
+            <arg>-Xlint</arg>
+          </compilerArgs>
         </configuration>
       </plugin>
       <plugin>
