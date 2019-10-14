@@ -7,7 +7,6 @@ import io
 
 from seldon_core.wrapper import get_rest_microservice, SeldonModelGRPC, get_grpc_server
 from seldon_core.proto import prediction_pb2
-from seldon_core.tf_proto.tensor_pb2 import TensorProto
 from seldon_core.user_model import SeldonComponent
 from seldon_core.utils import seldon_message_to_json, json_to_seldon_message
 from seldon_core.flask_utils import SeldonMicroserviceException
@@ -18,6 +17,7 @@ from flask import jsonify
 from utils import skipif_tf_missing
 
 if not _TF_MISSING:
+    from tensorflow.core.framework.tensor_pb2 import TensorProto
     import tensorflow as tf
 
 
