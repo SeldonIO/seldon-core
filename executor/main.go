@@ -2,10 +2,13 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/prometheus/common/log"
 	"github.com/seldonio/seldon-core/executor/api/client"
+	"github.com/seldonio/seldon-core/executor/api/machinelearning/v1alpha2"
 	"github.com/seldonio/seldon-core/executor/api/rest"
 	"net/http"
 	"os"
@@ -16,13 +19,31 @@ import (
 )
 
 var (
-	configPath = flag.String("config", "", "Path to kubconfig")
-	sdepName   = flag.String("sdep", "", "Seldon deployment name")
-	namespace  = flag.String("namespace", "", "Namespace")
-	predictor  = flag.String("predictor", "", "Name of the predictor inside the SeldonDeployment")
-	port       = flag.Int("port", 8080, "Executor port")
-	wait       = flag.Duration("graceful-timeout", time.Second*15, "Graceful shutdown secs")
+	configPath    = flag.String("config", "", "Path to kubconfig")
+	sdepName      = flag.String("sdep", "", "Seldon deployment name")
+	namespace     = flag.String("namespace", "", "Namespace")
+	predictorName = flag.String("predictor", "", "Name of the predictor inside the SeldonDeployment")
+	port          = flag.Int("port", 8080, "Executor port")
+	wait          = flag.Duration("graceful-timeout", time.Second*15, "Graceful shutdown secs")
 )
+
+func getPredictorFromEnv() (*v1alpha2.PredictorSpec, error) {
+	b64Predictor := os.Getenv("ENGINE_PREDICTOR")
+	if b64Predictor != "" {
+		bytes, err := base64.StdEncoding.DecodeString(b64Predictor)
+		if err != nil {
+			return nil, err
+		}
+		predictor := v1alpha2.PredictorSpec{}
+		if err := json.Unmarshal(bytes, &predictor); err != nil {
+			return nil, err
+		} else {
+			return &predictor, nil
+		}
+	} else {
+		return nil, nil
+	}
+}
 
 func main() {
 	flag.Parse()
@@ -37,7 +58,7 @@ func main() {
 		os.Exit(-1)
 	}
 
-	if *predictor == "" {
+	if *predictorName == "" {
 		log.Error("Predictor must be provied")
 		os.Exit(-1)
 	}
@@ -45,11 +66,19 @@ func main() {
 	logf.SetLogger(logf.ZapLogger(false))
 	logger := logf.Log.WithName("entrypoint")
 
-	seldonDeploymentClient := client.NewSeldonDeploymentClient(configPath)
-	predictor, err := seldonDeploymentClient.GetPredcitor(*sdepName, *namespace, *predictor)
+	logger.Info("Trying to get predictor from Env")
+	predictor, err := getPredictorFromEnv()
 	if err != nil {
-		logger.Error(err, "Failed to find predictor", "name", predictor)
+		logger.Error(err, "Failed to get predictor from Env")
 		panic(err)
+	} else if predictor == nil {
+		logger.Info("Trying to get predictor from API")
+		seldonDeploymentClient := client.NewSeldonDeploymentClient(configPath)
+		predictor, err = seldonDeploymentClient.GetPredcitor(*sdepName, *namespace, *predictorName)
+		if err != nil {
+			logger.Error(err, "Failed to find predictor", "name", predictor)
+			panic(err)
+		}
 	}
 
 	// Create REST client

@@ -97,42 +97,47 @@ func addEngineToDeployment(mlDep *machinelearningv1alpha2.SeldonDeployment, p *m
 	return nil
 }
 
-// Create the Container for the service orchestrator.
-func createEngineContainer(mlDep *machinelearningv1alpha2.SeldonDeployment, p *machinelearningv1alpha2.PredictorSpec, engine_http_port, engine_grpc_port int) (*corev1.Container, error) {
-	// Get engine user
-	var engineUser int64 = -1
-	if engineUserEnv, ok := os.LookupEnv("ENGINE_CONTAINER_USER"); ok {
-		user, err := strconv.Atoi(engineUserEnv)
-		if err != nil {
-			return nil, err
-		} else {
-			engineUser = int64(user)
-		}
-	}
-	// get predictor as base64 encoded json
-	pCopy := p.DeepCopy()
-	// Set traffic to zero to ensure this doesn't cause a diff in the resulting  deployment created
-	pCopy.Traffic = 0
-	predictorB64, err := getEngineVarJson(pCopy)
-	if err != nil {
-		return nil, err
-	}
-
-	//get annotation for java opts or default
-	javaOpts := getAnnotation(mlDep, machinelearningv1alpha2.ANNOTATION_JAVA_OPTS, "-server -Dcom.sun.management.jmxremote.rmi.port=9090 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9090 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.local.only=false -Djava.rmi.server.hostname=127.0.0.1")
-
-	//Engine resources
-	engineResources := p.SvcOrchSpec.Resources
-	if engineResources == nil {
-		cpuQuantity, _ := resource.ParseQuantity("0.1")
-		engineResources = &corev1.ResourceRequirements{
-			Requests: map[corev1.ResourceName]resource.Quantity{
-				corev1.ResourceCPU: cpuQuantity,
+func createExecutorContainer(mlDep *machinelearningv1alpha2.SeldonDeployment, p *machinelearningv1alpha2.PredictorSpec, predictorB64 string,
+	http_port int, grpc_port int, resources *corev1.ResourceRequirements) corev1.Container {
+	return corev1.Container{
+		Name:                     EngineContainerName,
+		Image:                    GetEnv("EXECUTOR_CONTAINER_IMAGE_AND_VERSION", "seldonio/seldon-core-executor:0.5.0-SNAPSHOT"),
+		Args:                     []string{"--sdep", mlDep.Name, "--namespace", mlDep.Namespace, "--predictor", p.Name, "--port", strconv.Itoa(http_port)},
+		ImagePullPolicy:          corev1.PullPolicy(GetEnv("ENGINE_CONTAINER_IMAGE_PULL_POLICY", "IfNotPresent")),
+		TerminationMessagePath:   "/dev/termination-log",
+		TerminationMessagePolicy: corev1.TerminationMessageReadFile,
+		VolumeMounts: []corev1.VolumeMount{
+			{
+				Name:      machinelearningv1alpha2.PODINFO_VOLUME_NAME,
+				MountPath: machinelearningv1alpha2.PODINFO_VOLUME_PATH,
 			},
-		}
+		},
+		Env: []corev1.EnvVar{
+			{Name: "ENGINE_PREDICTOR", Value: predictorB64},
+		},
+		Ports: []corev1.ContainerPort{
+			{ContainerPort: int32(http_port), Protocol: corev1.ProtocolTCP},
+			{ContainerPort: int32(grpc_port), Protocol: corev1.ProtocolTCP},
+		},
+		ReadinessProbe: &corev1.Probe{Handler: corev1.Handler{HTTPGet: &corev1.HTTPGetAction{Port: intstr.FromInt(http_port), Path: "/ready", Scheme: corev1.URISchemeHTTP}},
+			InitialDelaySeconds: 20,
+			PeriodSeconds:       5,
+			FailureThreshold:    3,
+			SuccessThreshold:    1,
+			TimeoutSeconds:      60},
+		LivenessProbe: &corev1.Probe{Handler: corev1.Handler{HTTPGet: &corev1.HTTPGetAction{Port: intstr.FromInt(http_port), Path: "/live", Scheme: corev1.URISchemeHTTP}},
+			InitialDelaySeconds: 20,
+			PeriodSeconds:       5,
+			FailureThreshold:    3,
+			SuccessThreshold:    1,
+			TimeoutSeconds:      60},
+		Resources: *resources,
 	}
+}
 
-	c := corev1.Container{
+func createEngineContainerSpec(mlDep *machinelearningv1alpha2.SeldonDeployment, p *machinelearningv1alpha2.PredictorSpec, predictorB64 string,
+	engine_http_port int, engine_grpc_port int, engineResources *corev1.ResourceRequirements) corev1.Container {
+	return corev1.Container{
 		Name:                     EngineContainerName,
 		Image:                    GetEnv("ENGINE_CONTAINER_IMAGE_AND_VERSION", "seldonio/engine:0.4.0"),
 		ImagePullPolicy:          corev1.PullPolicy(GetEnv("ENGINE_CONTAINER_IMAGE_PULL_POLICY", "IfNotPresent")),
@@ -150,7 +155,7 @@ func createEngineContainer(mlDep *machinelearningv1alpha2.SeldonDeployment, p *m
 			{Name: "DEPLOYMENT_NAMESPACE", Value: mlDep.ObjectMeta.Namespace},
 			{Name: "ENGINE_SERVER_PORT", Value: strconv.Itoa(engine_http_port)},
 			{Name: "ENGINE_SERVER_GRPC_PORT", Value: strconv.Itoa(engine_grpc_port)},
-			{Name: "JAVA_OPTS", Value: javaOpts},
+			{Name: "JAVA_OPTS", Value: getAnnotation(mlDep, machinelearningv1alpha2.ANNOTATION_JAVA_OPTS, "-server -Dcom.sun.management.jmxremote.rmi.port=9090 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9090 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.local.only=false -Djava.rmi.server.hostname=127.0.0.1")},
 		},
 		Ports: []corev1.ContainerPort{
 			{ContainerPort: int32(engine_http_port), Protocol: corev1.ProtocolTCP},
@@ -176,6 +181,47 @@ func createEngineContainer(mlDep *machinelearningv1alpha2.SeldonDeployment, p *m
 			},
 		},
 		Resources: *engineResources,
+	}
+}
+
+// Create the Container for the service orchestrator.
+func createEngineContainer(mlDep *machinelearningv1alpha2.SeldonDeployment, p *machinelearningv1alpha2.PredictorSpec, engine_http_port, engine_grpc_port int) (*corev1.Container, error) {
+	// Get engine user
+	var engineUser int64 = -1
+	if engineUserEnv, ok := os.LookupEnv("ENGINE_CONTAINER_USER"); ok {
+		user, err := strconv.Atoi(engineUserEnv)
+		if err != nil {
+			return nil, err
+		} else {
+			engineUser = int64(user)
+		}
+	}
+	// get predictor as base64 encoded json
+	pCopy := p.DeepCopy()
+	// Set traffic to zero to ensure this doesn't cause a diff in the resulting  deployment created
+	pCopy.Traffic = 0
+	predictorB64, err := getEngineVarJson(pCopy)
+	if err != nil {
+		return nil, err
+	}
+
+	//Engine resources
+	engineResources := p.SvcOrchSpec.Resources
+	if engineResources == nil {
+		cpuQuantity, _ := resource.ParseQuantity("0.1")
+		engineResources = &corev1.ResourceRequirements{
+			Requests: map[corev1.ResourceName]resource.Quantity{
+				corev1.ResourceCPU: cpuQuantity,
+			},
+		}
+	}
+
+	useExecutor := getAnnotation(mlDep, machinelearningv1alpha2.ANNOTATION_EXECUTOR, "false")
+	var c corev1.Container
+	if useExecutor == "true" {
+		c = createExecutorContainer(mlDep, p, predictorB64, engine_http_port, engine_grpc_port, engineResources)
+	} else {
+		c = createEngineContainerSpec(mlDep, p, predictorB64, engine_http_port, engine_grpc_port, engineResources)
 	}
 
 	if engineUser != -1 {

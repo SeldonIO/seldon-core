@@ -3,3 +3,6 @@ vendor
 tensorflow
 serving
 bin
+cover.out
+executor.tar
+	

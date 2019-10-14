@@ -43,6 +43,7 @@ const (
 	ANNOTATION_JAVA_OPTS       = "seldon.io/engine-java-opts"
 	ANNOTATION_SEPARATE_ENGINE = "seldon.io/engine-separate-pod"
 	ANNOTATION_HEADLESS_SVC    = "seldon.io/headless-svc"
+	ANNOTATION_EXECUTOR        = "seldon.io/executor"
 )
 
 func hash(text string) string {
