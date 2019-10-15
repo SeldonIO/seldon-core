@@ -18,6 +18,11 @@ vet:
 	go vet ./...
 
 
+# Build manager binary
+executor: fmt vet
+	go build -o executor main.go
+
+
 .PHONY: compile_seldon_proto
 compile_seldon_proto:
 	cp ../proto/prediction.proto api/grpc

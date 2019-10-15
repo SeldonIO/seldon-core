@@ -3,6 +3,7 @@ package client
 import (
 	"fmt"
 	"golang.org/x/xerrors"
+	"io"
 )
 
 type SeldonApiClient interface {
@@ -11,6 +12,9 @@ type SeldonApiClient interface {
 	Route(host string, port int32, msg SeldonPayload) (int, error)
 	Combine(host string, port int32, msgs []SeldonPayload) (SeldonPayload, error)
 	TransformOutput(host string, port int32, msg SeldonPayload) (SeldonPayload, error)
+	Unmarshall(msg []byte) (SeldonPayload, error)
+	Marshall(out io.Writer, msg SeldonPayload) error
+	CreateErrorPayload(err error) (SeldonPayload, error)
 }
 
 type SeldonApiError struct {

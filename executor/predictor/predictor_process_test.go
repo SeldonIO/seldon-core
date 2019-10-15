@@ -7,6 +7,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/client"
 	api "github.com/seldonio/seldon-core/executor/api/grpc"
 	"github.com/seldonio/seldon-core/executor/api/machinelearning/v1alpha2"
+	"io"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"testing"
 )
@@ -16,6 +17,18 @@ type SeldonMessageTestClient struct {
 	chosenRoute int
 	errMethod   *v1alpha2.PredictiveUnitMethod
 	err         error
+}
+
+func (s SeldonMessageTestClient) Unmarshall(msg []byte) (client.SeldonPayload, error) {
+	panic("implement me")
+}
+
+func (s SeldonMessageTestClient) Marshall(out io.Writer, msg client.SeldonPayload) error {
+	panic("implement me")
+}
+
+func (s SeldonMessageTestClient) CreateErrorPayload(err error) (client.SeldonPayload, error) {
+	panic("implement me")
 }
 
 func (s SeldonMessageTestClient) Predict(host string, port int32, msg client.SeldonPayload) (client.SeldonPayload, error) {

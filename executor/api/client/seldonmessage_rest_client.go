@@ -6,6 +6,7 @@ import (
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/pkg/errors"
 	api "github.com/seldonio/seldon-core/executor/api/grpc"
+	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -21,6 +22,27 @@ const (
 type SeldonMessageRestClient struct {
 	httpClient *http.Client
 	Log        logr.Logger
+}
+
+func (smc *SeldonMessageRestClient) CreateErrorPayload(err error) (SeldonPayload, error) {
+	respFailed := api.SeldonMessage{Status: &api.Status{Code: http.StatusInternalServerError, Info: err.Error()}}
+	res := SeldonMessagePayload{&respFailed}
+	return &res, nil
+}
+
+func (smc *SeldonMessageRestClient) Marshall(w io.Writer, msg SeldonPayload) error {
+	ma := jsonpb.Marshaler{}
+	return ma.Marshal(w, msg.GetPayload().(*api.SeldonMessage))
+}
+
+func (smc *SeldonMessageRestClient) Unmarshall(msg []byte) (SeldonPayload, error) {
+	var sm api.SeldonMessage
+	value := string(msg)
+	if err := jsonpb.UnmarshalString(value, &sm); err != nil {
+		return nil, err
+	}
+	reqPayload := SeldonMessagePayload{Msg: &sm}
+	return &reqPayload, nil
 }
 
 type Option func(client *SeldonMessageRestClient)
@@ -90,7 +112,6 @@ func (smc *SeldonMessageRestClient) marshall(payload SeldonPayload) (string, err
 }
 
 func (smc *SeldonMessageRestClient) call(method string, host string, port int32, req SeldonPayload) (SeldonPayload, error) {
-	smc.Log.Info("Call", "Method", method, "host", host, "port", port)
 	url := url.URL{
 		Scheme: "http",
 		Host:   net.JoinHostPort(host, strconv.Itoa(int(port))),

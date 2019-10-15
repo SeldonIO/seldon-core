@@ -2,12 +2,9 @@ package rest
 
 import (
 	"github.com/go-logr/logr"
-	"github.com/gogo/protobuf/proto"
-	"github.com/golang/protobuf/jsonpb"
 	"github.com/gorilla/mux"
 	"github.com/prometheus/common/log"
 	"github.com/seldonio/seldon-core/executor/api/client"
-	api "github.com/seldonio/seldon-core/executor/api/grpc"
 	"github.com/seldonio/seldon-core/executor/api/machinelearning/v1alpha2"
 	"github.com/seldonio/seldon-core/executor/predictor"
 	"io/ioutil"
@@ -17,41 +14,42 @@ import (
 
 type SeldonRestApi struct {
 	Router    *mux.Router
+	Client    client.SeldonApiClient
 	predictor *v1alpha2.PredictorSpec
 	Log       logr.Logger
 }
 
-func NewSeldonRestApi(predictor *v1alpha2.PredictorSpec) *SeldonRestApi {
+func NewSeldonRestApi(predictor *v1alpha2.PredictorSpec, client client.SeldonApiClient) *SeldonRestApi {
 	return &SeldonRestApi{
 		mux.NewRouter(),
+		client,
 		predictor,
 		logf.Log.WithName("SeldonRestApi"),
 	}
 }
 
-func (r *SeldonRestApi) respondWithJSON(w http.ResponseWriter, code int, payload proto.Message) {
+func (r *SeldonRestApi) respondWithJSON(w http.ResponseWriter, code int, payload client.SeldonPayload) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 
-	ma := jsonpb.Marshaler{}
-	err := ma.Marshal(w, payload)
+	err := r.Client.Marshall(w, payload)
 	if err != nil {
 		r.Log.Error(err, "Failed to write response")
 	}
 }
 
-// Extract a SeldonMessage proto from the REST request
-func (r *SeldonRestApi) getSeldonMessage(req *http.Request) (*api.SeldonMessage, error) {
-	var sm api.SeldonMessage
-	bodyBytes, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		return nil, err
+func (r *SeldonRestApi) respondWithError(w http.ResponseWriter, err error) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusInternalServerError)
+
+	errPayload, err2 := r.Client.CreateErrorPayload(err)
+	if err2 != nil {
+		r.Log.Error(err2, "Can't create error payload")
 	}
-	value := string(bodyBytes)
-	if err := jsonpb.UnmarshalString(value, &sm); err != nil {
-		return nil, err
+	err2 = r.Client.Marshall(w, errPayload)
+	if err2 != nil {
+		r.Log.Error(err, "Failed to write error payload")
 	}
-	return &sm, nil
 }
 
 func (r *SeldonRestApi) Initialise() {
@@ -78,9 +76,11 @@ func (r *SeldonRestApi) alive(w http.ResponseWriter, req *http.Request) {
 func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 	r.Log.Info("Prediction called")
 
-	sm, err := r.getSeldonMessage(req)
+	bodyBytes, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		log.Error("Failed to parse request:", err)
+		log.Error("Failed to get body", err)
+		r.respondWithError(w, err)
+		return
 	}
 
 	seldonPredictorProcess := &predictor.PredictorProcess{
@@ -88,14 +88,18 @@ func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 		Log:    logf.Log.WithName("SeldonMessageRestClient"),
 	}
 
-	reqPayload := client.SeldonMessagePayload{Msg: sm}
-	resPayload, err := seldonPredictorProcess.Execute(r.predictor.Graph, &reqPayload)
+	reqPayload, err := seldonPredictorProcess.Client.Unmarshall(bodyBytes)
 	if err != nil {
-		respFailed := api.SeldonMessage{Status: &api.Status{Code: http.StatusInternalServerError, Info: err.Error()}}
-		r.respondWithJSON(w, http.StatusInternalServerError, &respFailed)
-	} else {
-		smResp := resPayload.GetPayload().(*api.SeldonMessage)
-		r.respondWithJSON(w, http.StatusOK, smResp)
+		log.Error("Failed to get body", err)
+		r.respondWithError(w, err)
+		return
 	}
 
+	resPayload, err := seldonPredictorProcess.Execute(r.predictor.Graph, reqPayload)
+	if err != nil {
+		log.Error("Failed to get predictions", err)
+		r.respondWithError(w, err)
+		return
+	}
+	r.respondWithJSON(w, http.StatusOK, resPayload)
 }
