@@ -2,7 +2,7 @@ apiVersion: admissionregistration.k8s.io/v1beta1
 kind: ValidatingWebhookConfiguration
 metadata:
   annotations:
-    certmanager.k8s.io/inject-ca-from: seldon-system/seldon-serving-cert
+    certmanager.k8s.io/inject-ca-from: '{{ .Release.Namespace }}/seldon-serving-cert'
   creationTimestamp: null
   labels:
     app: seldon
@@ -15,7 +15,7 @@ webhooks:
     caBundle: '{{ .Values.webhook.ca.crt }}'
     service:
       name: seldon-webhook-service
-      namespace: seldon-system
+      namespace: '{{ .Release.Namespace }}'
       path: /validate-machinelearning-seldon-io-v1alpha2-seldondeployment
   failurePolicy: Fail
   name: vseldondeployment.kb.io

@@ -15,5 +15,5 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: '{{ .Values.serviceAccount.name }}'
-  namespace: seldon-system
+  namespace: '{{ .Release.Namespace }}'
 {{- end }}
