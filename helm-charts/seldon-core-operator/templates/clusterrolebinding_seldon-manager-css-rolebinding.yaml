@@ -16,6 +16,6 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: seldon-manager
-  namespace: seldon-system
+  namespace: '{{ .Release.Namespace }}'
 {{- end }}
 {{- end }}
