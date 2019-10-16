@@ -62,26 +62,10 @@ If both annotations and `svcOrchSpec` environment variables are used to set an e
 
 The above are the key engine env vars. For a full listing of engine env vars see the application.properties file of the engine source code.
 
-## API OAuth Gateway Annotations
-The API OAuth Gateway, if used, can also have the following annotations:
 
-### gRPC API Control
+### Misc
 
- * ```seldon.io/grpc-max-message-size``` : Maximum gRPC message size
- * ```seldon.io/grpc-read-timeout``` : gRPC read timeout
+ * ```seldon.io/svc-name``` : Custom service name for predictor. You will be responsible that it doesn't clash with any existing service name in the namespace of the deployed SeldonDeployment.
+   * Locations : SeldonDeployment.spec.predictors[].annotations
+   * [custom service name example](custom_svc_name.md)
 
-
-### REST API Control
-
- * ```seldon.io/rest-read-timeout``` : REST read timeout
- * ```seldon.io/rest-connection-timeout``` : REST connection timeout
-
-
-### Control via Helm
-The API OAuth Gateway annotations can be set via Helm via the seldon-core values file, for example:
-
-```yaml
-apife:
-  annotations:
-      seldon.io/grpc-max-message-size: "10485760"
-```
