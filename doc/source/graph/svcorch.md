@@ -71,7 +71,7 @@ You can manipulate some of the functionality of the service orchestrator by addi
 
 ## Bypass Service Orchestrator (version >= 0.5.0, alpha feature)
 
-If you are deploying a single model then for those wishing to minimize the network hops and have lowest latency and resource usage for their deployed model you can opt out of having the service orchestrator included. To do this add the annotation `seldon.io/no-engine: "true"` to the predictor. The predictor must contain just a single node graph. An example is shown below:
+If you are deploying a single model then for those wishing to minimize the latency and resource usage for their deployed model you can opt out of having the service orchestrator included. To do this add the annotation `seldon.io/no-engine: "true"` to the predictor. The predictor must contain just a single node graph. An example is shown below:
 
 
 ```YAML
