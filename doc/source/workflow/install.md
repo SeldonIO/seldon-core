@@ -36,27 +36,6 @@ You can then install seldon-core with:
 helm install seldon-core-operator --name seldon-core --repo https://storage.googleapis.com/seldon-charts --set usageMetrics.enabled=true --namespace seldon-system --version 0.5.0-SNAPSHOT --set certManager.enabled=true
 ```
 
-
-## Self Provided Certificate
-
-To install with a provided certificate for the webhook you should create a values.yaml file containing the certificate details, e.g. a file my-cert.yaml containing:
-
-```
-webhook:
-  ca:
-    crt: <your ca>
-  tls:
-    crt: <your crt>
-    key: <your key>
-
-```
-
-You can then install using these values with:
-
-```bash
-helm install -f my-cert.yaml seldon-core-operator --name seldon-core  --repo https://storage.googleapis.com/seldon-charts --set usageMetrics.enabled=true --namespace seldon-system --version 0.5.0-SNAPSHOT
-```
-
 ## Ingress Support
 
 For particular ingresses we support you can inform the controller it should activate processing for them.
