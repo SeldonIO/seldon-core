@@ -1,17 +1,14 @@
 package io.seldon.engine.filters;
 
-import java.io.IOException;
-
-import org.junit.Assert;
-import org.junit.Test;
-
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import java.io.IOException;
+import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.FilterChain;
+import org.junit.Test;
 
 public class TestXSSFilter {
   @Test

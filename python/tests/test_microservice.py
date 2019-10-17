@@ -179,6 +179,8 @@ def test_model_template_bad_params_type():
 def test_load_annotations(mock_isfile):
     from io import StringIO
     read_data = [
+        ('', {}),
+        ('\n\n', {}),
         ('foo=bar', {'foo': 'bar'}),
         ('foo=bar\nx =y', {'foo': 'bar', 'x': 'y'}),
         ('foo=bar\nfoo=baz\n', {'foo': 'baz'}),
@@ -187,6 +189,5 @@ def test_load_annotations(mock_isfile):
         ('foo=\nfoo', {'foo': ''}),
     ]
     for data, expected_annotation in read_data:
-        m = mock.mock_open(read_data=data)
         with mock.patch('seldon_core.microservice.open', return_value=StringIO(data)):
             assert microservice.load_annotations() == expected_annotation

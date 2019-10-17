@@ -3,6 +3,7 @@
 /public
 cluster-manager/.m2/
 .mypy_cache
+.cache
 
 .ipynb_checkpoints
 
