@@ -23,6 +23,11 @@ executor: fmt vet
 	go build -o executor main.go
 
 
+.PHONY: copy_protos
+copy_protos:
+	cp -r ../proto/tensorflow/tensorflow/** proto/tensorflow
+
+
 .PHONY: compile_seldon_proto
 compile_seldon_proto:
 	cp ../proto/prediction.proto api/grpc
@@ -56,6 +61,10 @@ kind-image-install: docker-build
 	docker save ${IMG} > executor.tar
 	kind load image-archive executor.tar --loglevel trace
 
+
+.PHONY: test_grpc_local
+test_grpc_local:
+	cd proto && grpcurl -plaintext -proto ./prediction.proto  0.0.0.0:8000 seldon.protos.Seldon/Predict
 
 .PHONY: clean
 clean:

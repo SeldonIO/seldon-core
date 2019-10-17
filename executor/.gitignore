@@ -1,8 +1,8 @@
-executor
-vendor
-tensorflow
-serving
-bin
-cover.out
-executor.tar
+./executor
+./vendor
+./tensorflow
+./serving
+./bin
+./cover.out
+./executor.tar
 	

@@ -7,11 +7,15 @@ import (
 	"flag"
 	"fmt"
 	"github.com/ghodss/yaml"
+	"github.com/go-logr/logr"
 	"github.com/prometheus/common/log"
 	seldonclient "github.com/seldonio/seldon-core/executor/api/client"
+	api "github.com/seldonio/seldon-core/executor/api/grpc"
 	"github.com/seldonio/seldon-core/executor/api/machinelearning/v1alpha2"
 	"github.com/seldonio/seldon-core/executor/api/rest"
+	"google.golang.org/grpc"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -29,6 +33,7 @@ var (
 	port          = flag.Int("port", 8080, "Executor port")
 	wait          = flag.Duration("graceful-timeout", time.Second*15, "Graceful shutdown secs")
 	protocol      = flag.String("protocol", "seldon", "The payload protocol")
+	transport     = flag.String("transport", "http", "The network transport http or grpc")
 	filename      = flag.String("file", "", "Load graph from file")
 )
 
@@ -72,65 +77,7 @@ func getPredictorFromFile(predictorName string, filename string) (*v1alpha2.Pred
 	}
 }
 
-func main() {
-	flag.Parse()
-
-	if *sdepName == "" {
-		log.Error("Seldon deployment name must be provided")
-		os.Exit(-1)
-	}
-
-	if *namespace == "" {
-		log.Error("Namespace must be provied")
-		os.Exit(-1)
-	}
-
-	if *predictorName == "" {
-		log.Error("Predictor must be provied")
-		os.Exit(-1)
-	}
-
-	if *protocol != "seldon" {
-		log.Error("Only Seldon protocol supported at present")
-	}
-
-	logf.SetLogger(logf.ZapLogger(false))
-	logger := logf.Log.WithName("entrypoint")
-
-	var err error
-	var predictor *v1alpha2.PredictorSpec
-	if *filename != "" {
-		logger.Info("Trying to get predictor from file")
-		predictor, err = getPredictorFromFile(*predictorName, *filename)
-		if err != nil {
-			logger.Error(err, "Failed to get predictor from file")
-			panic(err)
-		}
-	} else {
-		logger.Info("Trying to get predictor from Env")
-		predictor, err = getPredictorFromEnv()
-		if err != nil {
-			logger.Error(err, "Failed to get predictor from Env")
-			panic(err)
-		} else if predictor == nil {
-			logger.Info("Trying to get predictor from API")
-			seldonDeploymentClient := seldonclient.NewSeldonDeploymentClient(configPath)
-			predictor, err = seldonDeploymentClient.GetPredcitor(*sdepName, *namespace, *predictorName)
-			if err != nil {
-				logger.Error(err, "Failed to find predictor", "name", predictor)
-				panic(err)
-			}
-		}
-	}
-
-	var client seldonclient.SeldonApiClient
-	if *protocol == "seldon" {
-		client = seldonclient.NewSeldonMessageRestClient()
-	} else {
-		log.Error("Unknown protocol", protocol)
-		os.Exit(-1)
-	}
-
+func runHttpServer(logger logr.Logger, predictor *v1alpha2.PredictorSpec, client seldonclient.SeldonApiClient) {
 	// Create REST client
 	seldonRest := rest.NewSeldonRestApi(predictor, client)
 	seldonRest.Initialise()
@@ -172,4 +119,88 @@ func main() {
 	// to finalize based on context cancellation.
 	logger.Info("shutting down")
 	os.Exit(0)
+
+}
+
+func runGrpcServer(logger logr.Logger) {
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+	var opts []grpc.ServerOption
+	grpcServer := grpc.NewServer(opts...)
+	seldonGrpcServer := api.NewGrpcSeldonServer(logger)
+	api.RegisterSeldonServer(grpcServer, seldonGrpcServer)
+	grpcServer.Serve(lis)
+}
+
+func main() {
+	flag.Parse()
+
+	if *sdepName == "" {
+		log.Error("Seldon deployment name must be provided")
+		os.Exit(-1)
+	}
+
+	if *namespace == "" {
+		log.Error("Namespace must be provied")
+		os.Exit(-1)
+	}
+
+	if *predictorName == "" {
+		log.Error("Predictor must be provied")
+		os.Exit(-1)
+	}
+
+	if *protocol != "seldon" {
+		log.Error("Only Seldon protocol supported at present")
+	}
+
+	if !(*transport == "http" || *transport == "grpc") {
+		log.Error("Only http and grpc supported")
+	}
+
+	logf.SetLogger(logf.ZapLogger(false))
+	logger := logf.Log.WithName("entrypoint")
+
+	var err error
+	var predictor *v1alpha2.PredictorSpec
+	if *filename != "" {
+		logger.Info("Trying to get predictor from file")
+		predictor, err = getPredictorFromFile(*predictorName, *filename)
+		if err != nil {
+			logger.Error(err, "Failed to get predictor from file")
+			panic(err)
+		}
+	} else {
+		logger.Info("Trying to get predictor from Env")
+		predictor, err = getPredictorFromEnv()
+		if err != nil {
+			logger.Error(err, "Failed to get predictor from Env")
+			panic(err)
+		} else if predictor == nil {
+			logger.Info("Trying to get predictor from API")
+			seldonDeploymentClient := seldonclient.NewSeldonDeploymentClient(configPath)
+			predictor, err = seldonDeploymentClient.GetPredcitor(*sdepName, *namespace, *predictorName)
+			if err != nil {
+				logger.Error(err, "Failed to find predictor", "name", predictor)
+				panic(err)
+			}
+		}
+	}
+
+	var client seldonclient.SeldonApiClient
+	if *protocol == "seldon" {
+		client = seldonclient.NewSeldonMessageRestClient()
+	} else {
+		log.Error("Unknown protocol")
+		os.Exit(-1)
+	}
+
+	if *transport == "http" {
+		runHttpServer(logger, predictor, client)
+	} else {
+		runGrpcServer(logger)
+	}
+
 }
