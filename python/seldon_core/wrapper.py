@@ -35,6 +35,7 @@ def get_rest_microservice(user_model):
         return send_from_directory('', "openapi/seldon.json")
 
     @app.route("/predict", methods=["GET", "POST"])
+    @app.route("/api/v0.1/predictions", methods=["POST"])
     def Predict():
         requestJson = get_request()
         logger.debug("REST Request: %s", request)
@@ -43,6 +44,7 @@ def get_rest_microservice(user_model):
         return jsonify(response)
 
     @app.route("/send-feedback", methods=["GET", "POST"])
+    @app.route("/api/v0.1/feedback", methods=["POST"])
     def SendFeedback():
         requestJson = get_request()
         logger.debug("REST Request: %s", request)
@@ -139,5 +141,6 @@ def get_grpc_server(user_model, annotations={}, trace_interceptor=None):
     prediction_pb2_grpc.add_GenericServicer_to_server(seldon_model, server)
     prediction_pb2_grpc.add_ModelServicer_to_server(seldon_model, server)
     prediction_pb2_grpc.add_TransformerServicer_to_server(seldon_model, server)
+    prediction_pb2_grpc.add_SeldonServicer_to_server(seldon_model, server)
 
     return server

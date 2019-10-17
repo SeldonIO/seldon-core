@@ -38,7 +38,7 @@ setup(name='seldon-core',
           "minio >= 4.0.9",
           "google-cloud-storage >= 1.16.0",
           "azure-storage-blob >= 2.0.1",
-          "setuptools>=41.0.0"
+          "setuptools >= 41.0.0"
       ],
       tests_require=[
           'pytest',

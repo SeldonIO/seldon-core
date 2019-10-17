@@ -1,0 +1,25 @@
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+metadata:
+  labels:
+    app: seldon
+  name: noengine
+spec:
+  name: noeng
+  predictors:
+  - annotations:
+      seldon.io/no-engine: "true"
+    componentSpecs:
+    - spec:
+        containers:
+        - image: seldonio/mock_classifier_rest:1.3
+          imagePullPolicy: Never
+          name: classifier
+    graph:
+      children: []
+      endpoint:
+        type: REST
+      name: classifier
+      type: MODEL
+    name: noeng
+    replicas: 1

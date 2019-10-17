@@ -43,6 +43,7 @@ const (
 	ANNOTATION_JAVA_OPTS       = "seldon.io/engine-java-opts"
 	ANNOTATION_SEPARATE_ENGINE = "seldon.io/engine-separate-pod"
 	ANNOTATION_HEADLESS_SVC    = "seldon.io/headless-svc"
+	ANNOTATION_NO_ENGINE       = "seldon.io/no-engine"
 	ANNOTATION_CUSTOM_SVC_NAME = "seldon.io/svc-name"
 )
 

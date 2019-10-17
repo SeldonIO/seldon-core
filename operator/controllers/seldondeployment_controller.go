@@ -84,6 +84,11 @@ type serviceDetails struct {
 	ambassadorUrl  string
 }
 
+type httpGrpcPorts struct {
+	httpPort int
+	grpcPort int
+}
+
 func createHpa(podSpec *machinelearningv1alpha2.SeldonPodSpec, deploymentName string, seldonId string, namespace string) *autoscaling.HorizontalPodAutoscaler {
 	hpa := autoscaling.HorizontalPodAutoscaler{
 		ObjectMeta: metav1.ObjectMeta{
@@ -113,8 +118,9 @@ func createHpa(podSpec *machinelearningv1alpha2.SeldonPodSpec, deploymentName st
 func createIstioResources(mlDep *machinelearningv1alpha2.SeldonDeployment,
 	seldonId string,
 	namespace string,
-	engine_http_port int,
-	engine_grpc_port int) ([]*istio.VirtualService, []*istio.DestinationRule) {
+	ports []httpGrpcPorts,
+	httpAllowed bool,
+	grpcAllowed bool) ([]*istio.VirtualService, []*istio.DestinationRule) {
 
 	istio_gateway := GetEnv(ENV_ISTIO_GATEWAY, "seldon-gateway")
 	httpVsvc := &istio.VirtualService{
@@ -197,7 +203,7 @@ func createIstioResources(mlDep *machinelearningv1alpha2.SeldonDeployment,
 				Host:   pSvcName,
 				Subset: p.Name,
 				Port: istio.PortSelector{
-					Number: uint32(engine_http_port),
+					Number: uint32(ports[i].httpPort),
 				},
 			},
 			Weight: int(p.Traffic),
@@ -207,7 +213,7 @@ func createIstioResources(mlDep *machinelearningv1alpha2.SeldonDeployment,
 				Host:   pSvcName,
 				Subset: p.Name,
 				Port: istio.PortSelector{
-					Number: uint32(engine_grpc_port),
+					Number: uint32(ports[i].grpcPort),
 				},
 			},
 			Weight: int(p.Traffic),
@@ -216,11 +222,20 @@ func createIstioResources(mlDep *machinelearningv1alpha2.SeldonDeployment,
 	}
 	httpVsvc.Spec.HTTP[0].Route = routesHttp
 	grpcVsvc.Spec.HTTP[0].Route = routesGrpc
-	vscs := make([]*istio.VirtualService, 2)
-	vscs[0] = httpVsvc
-	vscs[1] = grpcVsvc
-
-	return vscs, drules
+	if httpAllowed && grpcAllowed {
+		vscs := make([]*istio.VirtualService, 2)
+		vscs[0] = httpVsvc
+		vscs[1] = grpcVsvc
+		return vscs, drules
+	} else if httpAllowed {
+		vscs := make([]*istio.VirtualService, 1)
+		vscs[0] = httpVsvc
+		return vscs, drules
+	} else {
+		vscs := make([]*istio.VirtualService, 1)
+		vscs[0] = grpcVsvc
+		return vscs, drules
+	}
 }
 
 func getEngineHttpPort() (engine_http_port int, err error) {
@@ -266,13 +281,37 @@ func createComponents(r *SeldonDeploymentReconciler, mlDep *machinelearningv1alp
 		return nil, err
 	}
 
+	// variables to collect what ports will be exposed and whether we should expose http and grpc externally
+	// If one of the predictors has noEngine then only one of http or grpc should be allowed dependent on
+	// the type of the noEngine model: whether it is http or grpc
+	externalPorts := make([]httpGrpcPorts, len(mlDep.Spec.Predictors))
+	grpcAllowed := true
+	httpAllowed := true
+	// Attempt to set httpAllowed and grpcAllowed to false if we have an noEngine predictor
 	for i := 0; i < len(mlDep.Spec.Predictors); i++ {
 		p := mlDep.Spec.Predictors[i]
+		_, noEngine := p.Annotations[machinelearningv1alpha2.ANNOTATION_NO_ENGINE]
+		if noEngine && len(p.ComponentSpecs) > 0 && len(p.ComponentSpecs[0].Spec.Containers) > 0 {
+			pu := machinelearningv1alpha2.GetPredictiveUnit(p.Graph, p.ComponentSpecs[0].Spec.Containers[0].Name)
+			if pu != nil {
+				if pu.Endpoint != nil && pu.Endpoint.Type == machinelearningv1alpha2.GRPC {
+					httpAllowed = false
+				}
+				if pu.Endpoint == nil || pu.Endpoint.Type == machinelearningv1alpha2.REST {
+					grpcAllowed = false
+				}
+			}
+		}
+	}
+
+	for i := 0; i < len(mlDep.Spec.Predictors); i++ {
+		p := mlDep.Spec.Predictors[i]
+		_, noEngine := p.Annotations[machinelearningv1alpha2.ANNOTATION_NO_ENGINE]
 		pSvcName := machinelearningv1alpha2.GetPredictorKey(mlDep, &p)
 		log.Info("pSvcName", "val", pSvcName)
 		// Add engine deployment if separate
 		_, hasSeparateEnginePod := mlDep.Spec.Annotations[machinelearningv1alpha2.ANNOTATION_SEPARATE_ENGINE]
-		if hasSeparateEnginePod {
+		if hasSeparateEnginePod && !noEngine {
 			deploy, err := createEngineDeployment(mlDep, &p, pSvcName, engine_http_port, engine_grpc_port)
 			if err != nil {
 				return nil, err
@@ -318,6 +357,43 @@ func createComponents(r *SeldonDeploymentReconciler, mlDep *machinelearningv1alp
 						// a user-supplied container may not be a pu so we may not create service for that
 						log.Info("Not creating container service for " + con.Name)
 					}
+
+					if noEngine {
+						deploy.ObjectMeta.Labels[machinelearningv1alpha2.Label_seldon_app] = pSvcName
+						deploy.Spec.Selector.MatchLabels[machinelearningv1alpha2.Label_seldon_app] = pSvcName
+						deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1alpha2.Label_seldon_app] = pSvcName
+
+						port := int(svc.Spec.Ports[0].Port)
+						if svc.Spec.Ports[0].Name == "grpc" {
+							httpAllowed = false
+							externalPorts[i] = httpGrpcPorts{httpPort: 0, grpcPort: port}
+							psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, 0, port, "", log)
+							if err != nil {
+								return nil, err
+							}
+
+							c.services = append(c.services, psvc)
+
+							c.serviceDetails[pSvcName] = &machinelearningv1alpha2.ServiceStatus{
+								SvcName:      pSvcName,
+								GrpcEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(port),
+							}
+						} else {
+							externalPorts[i] = httpGrpcPorts{httpPort: port, grpcPort: 0}
+							grpcAllowed = false
+							psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, port, 0, "", log)
+							if err != nil {
+								return nil, err
+							}
+
+							c.services = append(c.services, psvc)
+
+							c.serviceDetails[pSvcName] = &machinelearningv1alpha2.ServiceStatus{
+								SvcName:      pSvcName,
+								HttpEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(port),
+							}
+						}
+					}
 				}
 			}
 			c.deployments = append(c.deployments, deploy)
@@ -328,51 +404,76 @@ func createComponents(r *SeldonDeploymentReconciler, mlDep *machinelearningv1alp
 			return nil, err
 		}
 
-		// Add service orchestrator to engine deployment if needed
-		if !hasSeparateEnginePod {
-			var deploy *appsv1.Deployment
-			found := false
+		if !noEngine {
 
-			// find the pu that the webhook marked as localhost as its corresponding deployment should get the engine
-			pu := machinelearningv1alpha2.GetEnginePredictiveUnit(p.Graph)
-			if pu == nil {
-				// below should never happen - if it did would suggest problem in webhook
-				return nil, fmt.Errorf("Engine not separate and no pu with localhost service - not clear where to inject engine")
-			}
-			// find the deployment with a container for the pu marked for engine
-			for i, _ := range c.deployments {
-				dep := c.deployments[i]
-				for _, con := range dep.Spec.Template.Spec.Containers {
-					if strings.Compare(con.Name, pu.Name) == 0 {
-						deploy = dep
-						found = true
+			// Add service orchestrator to engine deployment if needed
+			if !hasSeparateEnginePod {
+				var deploy *appsv1.Deployment
+				found := false
+
+				// find the pu that the webhook marked as localhost as its corresponding deployment should get the engine
+				pu := machinelearningv1alpha2.GetEnginePredictiveUnit(p.Graph)
+				if pu == nil {
+					// below should never happen - if it did would suggest problem in webhook
+					return nil, fmt.Errorf("Engine not separate and no pu with localhost service - not clear where to inject engine")
+				}
+				// find the deployment with a container for the pu marked for engine
+				for i, _ := range c.deployments {
+					dep := c.deployments[i]
+					for _, con := range dep.Spec.Template.Spec.Containers {
+						if strings.Compare(con.Name, pu.Name) == 0 {
+							deploy = dep
+							found = true
+						}
 					}
 				}
+
+				if !found {
+					// by this point we should have created the Deployment corresponding to the pu marked localhost - if we haven't something has gone wrong
+					return nil, fmt.Errorf("Engine not separate and no deployment for pu with localhost service - not clear where to inject engine")
+				}
+				err := addEngineToDeployment(mlDep, &p, engine_http_port, engine_grpc_port, pSvcName, deploy)
+				if err != nil {
+					return nil, err
+				}
+
 			}
 
-			if !found {
-				// by this point we should have created the Deployment corresponding to the pu marked localhost - if we haven't something has gone wrong
-				return nil, fmt.Errorf("Engine not separate and no deployment for pu with localhost service - not clear where to inject engine")
+			//Create Service for Predictor - exposed externally (ambassador or istio) and points at engine
+			httpPort := engine_http_port
+			if httpAllowed == false {
+				httpPort = 0
 			}
-			err := addEngineToDeployment(mlDep, &p, engine_http_port, engine_grpc_port, pSvcName, deploy)
+			grpcPort := engine_grpc_port
+			if grpcAllowed == false {
+				grpcPort = 0
+			}
+			psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, httpPort, grpcPort, "", log)
 			if err != nil {
+
 				return nil, err
 			}
 
-		}
+			c.services = append(c.services, psvc)
+			if httpAllowed && grpcAllowed {
+				c.serviceDetails[pSvcName] = &machinelearningv1alpha2.ServiceStatus{
+					SvcName:      pSvcName,
+					HttpEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engine_http_port),
+					GrpcEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engine_grpc_port),
+				}
+			} else if httpAllowed {
+				c.serviceDetails[pSvcName] = &machinelearningv1alpha2.ServiceStatus{
+					SvcName:      pSvcName,
+					HttpEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engine_http_port),
+				}
+			} else if grpcAllowed {
+				c.serviceDetails[pSvcName] = &machinelearningv1alpha2.ServiceStatus{
+					SvcName:      pSvcName,
+					GrpcEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engine_grpc_port),
+				}
+			}
 
-		//Create Service for Predictor - exposed externally (ambassador or istio) and points at engine
-		psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, engine_http_port, engine_grpc_port, "", log)
-		if err != nil {
-
-			return nil, err
-		}
-
-		c.services = append(c.services, psvc)
-		c.serviceDetails[pSvcName] = &machinelearningv1alpha2.ServiceStatus{
-			SvcName:      pSvcName,
-			HttpEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engine_http_port),
-			GrpcEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engine_grpc_port),
+			externalPorts[i] = httpGrpcPorts{httpPort: httpPort, grpcPort: grpcPort}
 		}
 
 		err = createExplainer(r, mlDep, &p, &c, pSvcName, log)
@@ -383,7 +484,7 @@ func createComponents(r *SeldonDeploymentReconciler, mlDep *machinelearningv1alp
 
 	//TODO Fixme - not changed to handle per predictor scenario
 	if GetEnv(ENV_ISTIO_ENABLED, "false") == "true" {
-		vsvcs, dstRule := createIstioResources(mlDep, seldonId, namespace, engine_http_port, engine_grpc_port)
+		vsvcs, dstRule := createIstioResources(mlDep, seldonId, namespace, externalPorts, httpAllowed, grpcAllowed)
 		c.virtualServices = append(c.virtualServices, vsvcs...)
 		c.destinationRules = append(c.destinationRules, dstRule...)
 	}
@@ -458,13 +559,13 @@ func createContainerService(deploy *appsv1.Deployment, p machinelearningv1alpha2
 		portNum = existingPort.ContainerPort
 	}
 
-	if pu != nil && pu.Endpoint.Type == machinelearningv1alpha2.GRPC {
+	if pu.Endpoint.Type == machinelearningv1alpha2.GRPC {
 		portType = "grpc"
 	}
 
 	// pu should have a port set by seldondeployment_create_update_handler.go (if not by user)
 	// that mutator modifies SeldonDeployment and fires before this controller
-	if pu != nil && pu.Endpoint.ServicePort != 0 {
+	if pu.Endpoint.ServicePort != 0 {
 		portNum = pu.Endpoint.ServicePort
 	}
 
