@@ -41,8 +41,8 @@ def get_rest_microservice(user_model):
         logger.debug("REST Request: %s", request)
         response = seldon_core.seldon_methods.predict(user_model, requestJson)
         json_response = jsonify(response)
-        if response.status is not None and response.status.code is not None:
-            json_response.status_code = response.status.code
+        if 'status' in response and 'code' in response['status']:
+            json_response.status_code = response['status']['code']
 
         logger.debug("REST Response: %s", response)
         return json_response
