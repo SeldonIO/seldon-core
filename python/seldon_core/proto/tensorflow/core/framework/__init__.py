@@ -15,4 +15,4 @@ except ImportError:
 
             $ pip install seldon_core[tensorflow]
     """)
-    logger.notice(notice)
+    logger.info(notice)
