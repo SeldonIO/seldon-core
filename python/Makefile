@@ -49,6 +49,10 @@ update_package: get_apis build_apis update_version
 install:
 	pip install -e .
 
+.PHONY: install-tf
+install-tf:
+	pip install -e .[tensorflow]
+
 .PHONY: install-dev
 install-dev:
 	pip install -e . -r requirements.txt
