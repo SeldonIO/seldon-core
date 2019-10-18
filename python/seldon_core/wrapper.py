@@ -40,8 +40,12 @@ def get_rest_microservice(user_model):
         requestJson = get_request()
         logger.debug("REST Request: %s", request)
         response = seldon_core.seldon_methods.predict(user_model, requestJson)
+        json_response = jsonify(response)
+        if response.status is not None and response.status.code is not None:
+            json_response.status_code = response.status.code
+
         logger.debug("REST Response: %s", response)
-        return jsonify(response)
+        return json_response
 
     @app.route("/send-feedback", methods=["GET", "POST"])
     @app.route("/api/v0.1/feedback", methods=["POST"])
