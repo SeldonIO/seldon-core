@@ -368,7 +368,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
     </dependency>
     <dependency>
       <groupId>io.jaegertracing</groupId>
-      <artifactId>jaeger-core</artifactId>
+      <artifactId>jaeger-client</artifactId>
       <version>${jaeger.version}</version>
     </dependency>
     <dependency>
