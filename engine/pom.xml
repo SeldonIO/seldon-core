@@ -25,7 +25,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
     <jaeger.version>1.0.0</jaeger.version>
     <opentracing.version>0.33.0</opentracing.version>
     <curator.version>4.2.0</curator.version>
-    <jackson.version>2.9.10</jackson.version>
+    <jackson.version>2.10.0</jackson.version>
     <kubernetes.version>6.0.1</kubernetes.version>
   </properties>
   <build>
