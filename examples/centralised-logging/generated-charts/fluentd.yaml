@@ -1,0 +1,356 @@
+# Source: fluentd-elasticsearch/templates/configmaps.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluentd-fluentd-elasticsearch
+  labels:
+    app.kubernetes.io/name: fluentd-elasticsearch
+    helm.sh/chart: fluentd-elasticsearch-5.0.0
+    app.kubernetes.io/instance: fluentd
+    app.kubernetes.io/version: "2.7.0"
+    app.kubernetes.io/managed-by: Tiller
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: Reconcile
+data:
+  system.conf: |-
+    <system>
+      root_dir /tmp/fluentd-buffers/
+    </system>
+  forward.input.conf: |-
+    # Takes the messages sent over TCP
+    <source>
+      @id forward
+      @type forward
+    </source>
+  monitoring.conf: |-
+    # Prometheus Exporter Plugin
+    # input plugin that exports metrics
+    <source>
+      @id prometheus
+      @type prometheus
+    </source>
+
+    <source>
+      @id monitor_agent
+      @type monitor_agent
+    </source>
+
+    # input plugin that collects metrics from MonitorAgent
+    <source>
+      @id prometheus_monitor
+      @type prometheus_monitor
+      <labels>
+        host ${hostname}
+      </labels>
+    </source>
+
+    # input plugin that collects metrics for output plugin
+    <source>
+      @id prometheus_output_monitor
+      @type prometheus_output_monitor
+      <labels>
+        host ${hostname}
+      </labels>
+    </source>
+
+    # input plugin that collects metrics for in_tail plugin
+    <source>
+      @id prometheus_tail_monitor
+      @type prometheus_tail_monitor
+      <labels>
+        host ${hostname}
+      </labels>
+    </source>
+  output.conf: |-
+    <match **>
+      @id elasticsearch
+      @type elasticsearch
+      @log_level "#{ENV['OUTPUT_LOG_LEVEL']}"
+      include_tag_key true
+      host "#{ENV['OUTPUT_HOST']}"
+      port "#{ENV['OUTPUT_PORT']}"
+      path "#{ENV['OUTPUT_PATH']}"
+      scheme "#{ENV['OUTPUT_SCHEME']}"
+      ssl_verify "#{ENV['OUTPUT_SSL_VERIFY']}"
+      ssl_version "#{ENV['OUTPUT_SSL_VERSION']}"
+      type_name "#{ENV['OUTPUT_TYPE_NAME']}"
+      logstash_format true
+      logstash_prefix "#{ENV['LOGSTASH_PREFIX']}"
+      reconnect_on_error true
+      <buffer>
+        @type file
+        path /var/log/fluentd-buffers/kubernetes.system.buffer
+        flush_mode interval
+        retry_type exponential_backoff
+        flush_thread_count 2
+        flush_interval 5s
+        retry_forever
+        retry_max_interval 30
+        chunk_limit_size "#{ENV['OUTPUT_BUFFER_CHUNK_LIMIT']}"
+        queue_limit_length "#{ENV['OUTPUT_BUFFER_QUEUE_LIMIT']}"
+        overflow_action block
+      </buffer>
+    </match>
+  containers.input.conf: |-
+    <source>
+    @id fluentd-containers.log
+    @type tail
+    path /var/log/containers/*.log
+    pos_file /var/log/containers.log.pos
+    tag raw.kubernetes.*
+    read_from_head true
+    <parse>
+    @type multi_format
+    <pattern>
+    format json
+    time_key time
+    time_format %Y-%m-%dT%H:%M:%S.%NZ
+    </pattern>
+    <pattern>
+    format /^(?<time>.+) (?<stream>stdout|stderr) [^ ]* (?<log>.*)$/
+    time_format %Y-%m-%dT%H:%M:%S.%N%:z
+    </pattern>
+    </parse>
+    </source>
+
+    # Detect exceptions in the log output and forward them as one log entry.
+    <match raw.kubernetes.**>
+    @id raw.kubernetes
+    @type detect_exceptions
+    remove_tag_prefix raw
+    message log
+    stream stream
+    multiline_flush_interval 5
+    max_bytes 500000
+    max_lines 1000
+    </match>
+
+    # Concatenate multi-line logs
+    <filter **>
+    @id filter_concat
+    @type concat
+    key message
+    multiline_end_regexp /\n$/
+    separator ""
+    </filter>
+
+    # Enriches records with Kubernetes metadata
+    <filter kubernetes.**>
+    @id filter_kubernetes_metadata
+    @type kubernetes_metadata
+    </filter>
+
+    # Fixes json fields in Elasticsearch
+    <filter kubernetes.**>
+    @id filter_parser
+    @type parser
+    key_name log
+    reserve_data true
+    remove_key_name_field true
+    <parse>
+    @type multi_format
+    <pattern>
+    format json
+    </pattern>
+    <pattern>
+    format none
+    </pattern>
+    </parse>
+    </filter>
+
+    #exclude kube-system
+    <match kubernetes.var.log.containers.**kube-system**.log>
+    @type null
+    </match>
+
+    # Filter to only records with label fluentd=true
+    <filter kubernetes.**>
+    @type grep
+    <regexp>
+    key $.kubernetes.labels.fluentd
+    pattern true
+    </regexp>
+    </filter>
+
+    <filter kubernetes.**>
+    @type grep
+    <exclude>
+    key $.kubernetes.container_name
+    pattern istio-proxy
+    </exclude>
+    </filter>
+---
+# Source: fluentd-elasticsearch/templates/service-account.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fluentd-fluentd-elasticsearch
+  labels:
+    app.kubernetes.io/name: fluentd-elasticsearch
+    helm.sh/chart: fluentd-elasticsearch-5.0.0
+    app.kubernetes.io/instance: fluentd
+    app.kubernetes.io/managed-by: Tiller
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: Reconcile
+---
+# Source: fluentd-elasticsearch/templates/clusterrole.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: fluentd-fluentd-elasticsearch
+  labels:
+    app.kubernetes.io/name: fluentd-elasticsearch
+    helm.sh/chart: fluentd-elasticsearch-5.0.0
+    app.kubernetes.io/instance: fluentd
+    app.kubernetes.io/version: "2.7.0"
+    app.kubernetes.io/managed-by: Tiller
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: Reconcile
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - "namespaces"
+  - "pods"
+  verbs:
+  - "get"
+  - "watch"
+  - "list"
+---
+# Source: fluentd-elasticsearch/templates/clusterrolebinding.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: fluentd-fluentd-elasticsearch
+  labels:
+    app.kubernetes.io/name: fluentd-elasticsearch
+    helm.sh/chart: fluentd-elasticsearch-5.0.0
+    app.kubernetes.io/instance: fluentd
+    app.kubernetes.io/version: "2.7.0"
+    app.kubernetes.io/managed-by: Tiller
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: Reconcile
+subjects:
+- kind: ServiceAccount
+  name: fluentd-fluentd-elasticsearch
+  namespace: logs
+roleRef:
+  kind: ClusterRole
+  name: fluentd-fluentd-elasticsearch
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: fluentd-elasticsearch/templates/daemonset.yaml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: fluentd-fluentd-elasticsearch
+  labels:
+    app.kubernetes.io/name: fluentd-elasticsearch
+    helm.sh/chart: fluentd-elasticsearch-5.0.0
+    app.kubernetes.io/instance: fluentd
+    app.kubernetes.io/version: "2.7.0"
+    app.kubernetes.io/managed-by: Tiller
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: Reconcile
+spec:
+  updateStrategy:
+    type: RollingUpdate
+
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: fluentd-elasticsearch
+      app.kubernetes.io/instance: fluentd
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: fluentd-elasticsearch
+        helm.sh/chart: fluentd-elasticsearch-5.0.0
+        app.kubernetes.io/instance: fluentd
+        app.kubernetes.io/version: "2.7.0"
+        app.kubernetes.io/managed-by: Tiller
+        kubernetes.io/cluster-service: "true"
+      annotations:
+        checksum/config: dc41741a3a79bcf90817f6e4cad1db9f8686db6a98698992468bb3f5930c0c86
+    spec:
+      serviceAccountName: fluentd-fluentd-elasticsearch
+      containers:
+      - name: fluentd-fluentd-elasticsearch
+        image:  "quay.io/fluentd_elasticsearch/fluentd:v2.7.0"
+        imagePullPolicy: "IfNotPresent"
+        env:
+        - name: FLUENTD_ARGS
+          value: "--no-supervisor -q"
+        - name: OUTPUT_HOST
+          value: "elasticsearch-master"
+        - name: OUTPUT_PORT
+          value: "9200"
+        - name: OUTPUT_PATH
+          value: ""
+        - name: LOGSTASH_PREFIX
+          value: "logstash"
+        - name: OUTPUT_SCHEME
+          value: "http"
+        - name: OUTPUT_SSL_VERIFY
+          value: "true"
+        - name: OUTPUT_SSL_VERSION
+          value: "TLSv1_2"
+        - name: OUTPUT_TYPE_NAME
+          value: "_doc"
+        - name: OUTPUT_BUFFER_CHUNK_LIMIT
+          value: "2M"
+        - name: OUTPUT_BUFFER_QUEUE_LIMIT
+          value: "8"
+        - name: OUTPUT_LOG_LEVEL
+          value: "info"
+        - name: K8S_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        resources:
+          {}
+
+        volumeMounts:
+        - name: varlog
+          mountPath: /var/log
+        - name: varlibdockercontainers
+          mountPath: /var/lib/docker/containers
+          readOnly: true
+        - name: libsystemddir
+          mountPath: /usr/lib64
+          readOnly: true
+        - name: config-volume
+          mountPath: /etc/fluent/config.d  #pointing to fluentd Dockerfile
+        livenessProbe:
+          initialDelaySeconds: 600
+          periodSeconds: 60
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - |
+              LIVENESS_THRESHOLD_SECONDS=${LIVENESS_THRESHOLD_SECONDS:-300}; STUCK_THRESHOLD_SECONDS=${STUCK_THRESHOLD_SECONDS:-900}; if [ ! -e /var/log/fluentd-buffers ]; then
+                exit 1;
+              fi; touch -d "${STUCK_THRESHOLD_SECONDS} seconds ago" /tmp/marker-stuck; if [ -z "$(find /var/log/fluentd-buffers -type d -newer /tmp/marker-stuck -print -quit)" ]; then
+                rm -rf /var/log/fluentd-buffers;
+                exit 1;
+              fi; touch -d "${LIVENESS_THRESHOLD_SECONDS} seconds ago" /tmp/marker-liveness; if [ -z "$(find /var/log/fluentd-buffers -type d -newer /tmp/marker-liveness -print -quit)" ]; then
+                exit 1;
+              fi;
+
+        ports:
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: varlog
+        hostPath:
+          path: /var/log
+      - name: varlibdockercontainers
+        hostPath:
+          path: /var/lib/docker/containers
+      # It is needed to copy systemd library to decompress journals
+      - name: libsystemddir
+        hostPath:
+          path: /usr/lib64
+      - name: config-volume
+        configMap:
+          name: fluentd-fluentd-elasticsearch
+

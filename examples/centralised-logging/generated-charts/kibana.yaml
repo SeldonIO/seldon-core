@@ -1,0 +1,93 @@
+---
+# Source: kibana/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: kibana-kibana
+  labels:
+    app: kibana
+    release: "kibana"
+    heritage: Tiller
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5601
+      protocol: TCP
+      name: http
+      targetPort: 5601
+  selector:
+    app: kibana
+    release: "kibana"
+---
+# Source: kibana/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kibana-kibana
+  labels:
+    app: kibana
+    release: "kibana"
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+
+  selector:
+    matchLabels:
+      app: kibana
+      release: "kibana"
+  template:
+    metadata:
+      labels:
+        app: kibana
+        release: "kibana"
+      annotations:
+
+    spec:
+      volumes:
+      containers:
+      - name: kibana
+        image: "docker.elastic.co/kibana/kibana:7.1.1"
+        env:
+          - name: ELASTICSEARCH_HOSTS
+            value: "http://elasticsearch-master:9200"
+          - name: SERVER_BASEPATH
+            value: /kibana
+
+        readinessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 3
+          timeoutSeconds: 5
+
+          exec:
+            command:
+              - sh
+              - -c
+              - |
+                #!/usr/bin/env bash -e
+                http () {
+                    local path="${1}"
+                    set -- -XGET -s --fail
+
+                    if [ -n "${ELASTIC_USERNAME}" ] && [ -n "${ELASTIC_PASSWORD}" ]; then
+                      set -- "$@" -u "${ELASTIC_USERNAME}:${ELASTIC_PASSWORD}"
+                    fi
+
+                    curl -k "$@" "http://localhost:5601${path}"
+                }
+
+                http "/app/kibana"
+        ports:
+        - containerPort: 5601
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+          requests:
+            cpu: 100m
+            memory: 500m
+
+        volumeMounts:
+
