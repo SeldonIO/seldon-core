@@ -7,16 +7,6 @@ pipelineConfig:
           image: seldonio/core-builder:0.4
         stages:
           - name: end-to-end
-            options:
-              containerOptions:
-                volumeMounts:
-                  - mountPath: /var/run/docker.sock
-                    name: docker-socket-volume
-                volumes:
-                  - name: docker-socket-volume
-                    hostPath:
-                      path: /var/run/docker.sock
-                      type: File
             steps:
             - name: test-end-to-end
               command: make
@@ -26,3 +16,13 @@ pipelineConfig:
                 - kind_create_cluster
                 - kind_setup
                 - test
+            options:
+              containerOptions:
+              resources:
+                limits:
+                  cpu: 0.4
+                  memory: 256Mi
+                requests:
+                  cpu: 0.2
+                  memory: 128Mi
+
