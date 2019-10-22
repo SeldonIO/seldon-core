@@ -47,6 +47,7 @@ import io.seldon.protos.TransformerGrpc.TransformerBlockingStub;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -138,8 +139,8 @@ public class InternalPredictionService {
     logger.info("REST read timeout set to {}", readTimeout);
     this.restTemplate =
         restTemplateBuilder
-            .setConnectTimeout(connectionTimeout)
-            .setReadTimeout(readTimeout)
+            .setConnectTimeout(Duration.ofMillis(connectionTimeout))
+            .setReadTimeout(Duration.ofMillis(readTimeout))
             .build();
     if (tracingProvider.isActive()) {
       restTemplate.setInterceptors(
@@ -370,7 +371,9 @@ public class InternalPredictionService {
   }
 
   private boolean isDefaultData(SeldonMessage message) {
-    if (message.getDataOneofCase() == DataOneofCase.DATA) return true;
+    if (message.getDataOneofCase() == DataOneofCase.DATA) {
+      return true;
+    }
     return false;
   }
 
@@ -393,8 +396,9 @@ public class InternalPredictionService {
     URI uri;
     try {
       final String uriKey = getUriKey(endpoint, path);
-      if (uriCache.containsKey(uriKey)) uri = uriCache.get(uriKey);
-      else {
+      if (uriCache.containsKey(uriKey)) {
+        uri = uriCache.get(uriKey);
+      } else {
         URIBuilder builder =
             new URIBuilder()
                 .setScheme("http")
@@ -413,8 +417,9 @@ public class InternalPredictionService {
     for (int i = 0; i < restRetries; i++) {
       try {
         HttpHeaders headers;
-        if (headersCache.containsKey(state.name)) headers = headersCache.get(state.name);
-        else {
+        if (headersCache.containsKey(state.name)) {
+          headers = headersCache.get(state.name);
+        } else {
           headers = new HttpHeaders();
           headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
           headers.add(MODEL_NAME_HEADER, state.name);
@@ -430,7 +435,9 @@ public class InternalPredictionService {
         HttpEntity<MultiValueMap<String, String>> request =
             new HttpEntity<MultiValueMap<String, String>>(map, headers);
 
-        if (logger.isDebugEnabled()) logger.debug("Requesting {}", uri.toString());
+        if (logger.isDebugEnabled()) {
+          logger.debug("Requesting {}", uri.toString());
+        }
         ResponseEntity<String> httpResponse =
             restTemplate.postForEntity(uri, request, String.class);
         try {
@@ -449,9 +456,10 @@ public class InternalPredictionService {
                 String.format("Bad return code %d", httpResponse.getStatusCode()));
           }
         } finally {
-          if (logger.isDebugEnabled())
+          if (logger.isDebugEnabled()) {
             logger.debug(
                 "External prediction server took " + (System.currentTimeMillis() - timeNow) + "ms");
+          }
         }
       } catch (ResourceAccessException e) {
         logger.warn("Caught resource access exception ", e);
