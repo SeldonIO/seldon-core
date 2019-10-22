@@ -13,28 +13,16 @@ pipelineConfig:
               args:
                 - -C testing/scripts
                 - s2i_build_base_images
+                - kind_create_cluster
+                - kind_setup
+                - test
             options:
               containerOptions:
                 volumeMounts:
-                  - mountPath: /lib/modules
-                    name: modules
-                    readOnly: true
-                  - mountPath: /sys/fs/cgroup
-                    name: cgroup
-                  - name: dind-storage
-                    mountPath: /var/lib/docker
-                securityContext:
-                  privileged: true
-                imagePullPolicy: Always
+                  - mountPath: /var/run/docker.sock
+                    name: docker-socket-volume
               volumes:
-                - name: modules
+                - name: docker-socket-volume
                   hostPath:
-                    path: /lib/modules
-                    type: directory
-                - name: cgroup
-                  hostPath:
-                    path: /sys/fs/cgroup
-                    type: directory
-                - name: dind-storage
-                  emptyDir: {}
-
+                    path: /var/run/docker.sock
+                    type: File
