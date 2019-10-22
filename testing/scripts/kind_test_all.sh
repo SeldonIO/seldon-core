@@ -4,7 +4,7 @@ set -o pipefail
 set -o nounset
 
 # FIRST WE START THE DOCKER DAEMON
-#service docker start
+service docker start
 # the service can be started but the docker socket not ready, wait for ready
 WAIT_N=0
 while true; do
