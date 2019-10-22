@@ -316,10 +316,10 @@ def main():
                     pass
                 if args.tracing:
                     logger.info("Tracing branch is active")
-                    from flask_opentracing import FlaskTracer
+                    from flask_opentracing import FlaskTracing
 
                     logger.info("Set JAEGER_EXTRA_TAGS %s", jaeger_extra_tags)
-                    tracing = FlaskTracer(tracer, True, app, jaeger_extra_tags)
+                    tracing = FlaskTracing(tracer, True, app, jaeger_extra_tags)
 
                 app.run(host="0.0.0.0", port=port)
 
