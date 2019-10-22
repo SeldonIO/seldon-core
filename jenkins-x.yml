@@ -18,11 +18,11 @@ pipelineConfig:
                 - test
             options:
               containerOptions:
-              resources:
-                limits:
-                  cpu: 0.4
-                  memory: 256Mi
-                requests:
-                  cpu: 0.2
-                  memory: 128Mi
+                resources:
+                  limits:
+                    cpu: 0.4
+                    memory: 256Mi
+                  requests:
+                    cpu: 0.2
+                    memory: 128Mi
 
