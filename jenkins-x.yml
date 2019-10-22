@@ -23,8 +23,6 @@ pipelineConfig:
                     name: cgroup
                   - name: dind-storage
                     mountPath: /var/lib/docker
-                securityContext:
-                  privileged: true
                 imagePullPolicy: Always
               volumes:
                 - name: modules
