@@ -1,16 +1,10 @@
-package client
+package payload
 
-import (
-	api "github.com/seldonio/seldon-core/executor/api/grpc"
-)
-
-type SeldonPayload interface {
-	GetPayload() interface{}
-}
+import "github.com/seldonio/seldon-core/executor/api/grpc/proto"
 
 // SeldonMessage Payload
 type SeldonMessagePayload struct {
-	Msg *api.SeldonMessage
+	Msg *proto.SeldonMessage
 }
 
 func (s *SeldonMessagePayload) GetPayload() interface{} {
@@ -18,12 +12,12 @@ func (s *SeldonMessagePayload) GetPayload() interface{} {
 }
 
 func (s *SeldonMessagePayload) SetPayload(payload interface{}) {
-	s.Msg = payload.(*api.SeldonMessage)
+	s.Msg = payload.(*proto.SeldonMessage)
 }
 
 // SeldonMessageList Payload
 type SeldonMessageListPayload struct {
-	Msg *api.SeldonMessageList
+	Msg *proto.SeldonMessageList
 }
 
 func (s *SeldonMessageListPayload) GetPayload() interface{} {
@@ -31,5 +25,5 @@ func (s *SeldonMessageListPayload) GetPayload() interface{} {
 }
 
 func (s *SeldonMessageListPayload) SetPayload(payload interface{}) {
-	s.Msg = payload.(*api.SeldonMessageList)
+	s.Msg = payload.(*proto.SeldonMessageList)
 }

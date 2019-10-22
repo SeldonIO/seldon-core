@@ -6,6 +6,7 @@ import (
 	"github.com/prometheus/common/log"
 	"github.com/seldonio/seldon-core/executor/api/client"
 	"github.com/seldonio/seldon-core/executor/api/machinelearning/v1alpha2"
+	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/predictor"
 	"io/ioutil"
 	"net/http"
@@ -28,7 +29,7 @@ func NewSeldonRestApi(predictor *v1alpha2.PredictorSpec, client client.SeldonApi
 	}
 }
 
-func (r *SeldonRestApi) respondWithJSON(w http.ResponseWriter, code int, payload client.SeldonPayload) {
+func (r *SeldonRestApi) respondWithJSON(w http.ResponseWriter, code int, payload payload.SeldonPayload) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 
@@ -84,7 +85,7 @@ func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 	}
 
 	seldonPredictorProcess := &predictor.PredictorProcess{
-		Client: client.NewSeldonMessageRestClient(),
+		Client: NewSeldonMessageRestClient(),
 		Log:    logf.Log.WithName("SeldonMessageRestClient"),
 	}
 

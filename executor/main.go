@@ -11,6 +11,7 @@ import (
 	"github.com/prometheus/common/log"
 	seldonclient "github.com/seldonio/seldon-core/executor/api/client"
 	api "github.com/seldonio/seldon-core/executor/api/grpc"
+	"github.com/seldonio/seldon-core/executor/api/grpc/proto"
 	"github.com/seldonio/seldon-core/executor/api/machinelearning/v1alpha2"
 	"github.com/seldonio/seldon-core/executor/api/rest"
 	"google.golang.org/grpc"
@@ -122,15 +123,15 @@ func runHttpServer(logger logr.Logger, predictor *v1alpha2.PredictorSpec, client
 
 }
 
-func runGrpcServer(logger logr.Logger) {
+func runGrpcServer(logger logr.Logger, predictor *v1alpha2.PredictorSpec, client seldonclient.SeldonApiClient) {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
-	seldonGrpcServer := api.NewGrpcSeldonServer(logger)
-	api.RegisterSeldonServer(grpcServer, seldonGrpcServer)
+	seldonGrpcServer := api.NewGrpcSeldonServer(logger, predictor, client)
+	proto.RegisterSeldonServer(grpcServer, seldonGrpcServer)
 	grpcServer.Serve(lis)
 }
 
@@ -191,16 +192,19 @@ func main() {
 
 	var client seldonclient.SeldonApiClient
 	if *protocol == "seldon" {
-		client = seldonclient.NewSeldonMessageRestClient()
+
+		client = rest.NewSeldonMessageRestClient()
 	} else {
 		log.Error("Unknown protocol")
 		os.Exit(-1)
 	}
 
 	if *transport == "http" {
+		logger.Info("Running http server ", "port", *port)
 		runHttpServer(logger, predictor, client)
 	} else {
-		runGrpcServer(logger)
+		logger.Info("Running grpc server ", "port", *port)
+		runGrpcServer(logger, predictor, client)
 	}
 
 }

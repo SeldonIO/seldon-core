@@ -2,19 +2,20 @@ package client
 
 import (
 	"fmt"
+	"github.com/seldonio/seldon-core/executor/api/payload"
 	"golang.org/x/xerrors"
 	"io"
 )
 
 type SeldonApiClient interface {
-	Predict(host string, port int32, msg SeldonPayload) (SeldonPayload, error)
-	TransformInput(host string, port int32, msg SeldonPayload) (SeldonPayload, error)
-	Route(host string, port int32, msg SeldonPayload) (int, error)
-	Combine(host string, port int32, msgs []SeldonPayload) (SeldonPayload, error)
-	TransformOutput(host string, port int32, msg SeldonPayload) (SeldonPayload, error)
-	Unmarshall(msg []byte) (SeldonPayload, error)
-	Marshall(out io.Writer, msg SeldonPayload) error
-	CreateErrorPayload(err error) (SeldonPayload, error)
+	Predict(host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error)
+	TransformInput(host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error)
+	Route(host string, port int32, msg payload.SeldonPayload) (int, error)
+	Combine(host string, port int32, msgs []payload.SeldonPayload) (payload.SeldonPayload, error)
+	TransformOutput(host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error)
+	Unmarshall(msg []byte) (payload.SeldonPayload, error)
+	Marshall(out io.Writer, msg payload.SeldonPayload) error
+	CreateErrorPayload(err error) (payload.SeldonPayload, error)
 }
 
 type SeldonApiError struct {

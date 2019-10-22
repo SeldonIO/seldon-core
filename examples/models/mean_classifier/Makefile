@@ -15,3 +15,6 @@ push_grpc:
 
 run_rest_local:
 	export PREDICTIVE_UNIT_SERVICE_PORT=9000 && seldon-core-microservice --service-type MODEL MeanClassifier REST
+
+run_grpc_local:
+	export PREDICTIVE_UNIT_SERVICE_PORT=9000 && seldon-core-microservice --service-type MODEL MeanClassifier GRPC

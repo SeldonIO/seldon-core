@@ -71,3 +71,9 @@ clean:
 	rm -rf vendor
 	rm -rf tensorflow
 	rm -rf serving
+
+start_test_grpc_server:
+	./executor --sdep seldon-model --namespace default --predictor example --file samples/model_test_grpc.yaml --port 8000 --transport grpc
+
+test_grpc_local:
+	cd proto && grpcurl -d '{"data":{"ndarray":[[1.0,2.0]]}}' -plaintext -proto ./prediction.proto  0.0.0.0:8000 seldon.protos.Seldon/Predict

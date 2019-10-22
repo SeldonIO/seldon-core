@@ -1,11 +1,12 @@
-package client
+package rest
 
 import (
 	"context"
 	"crypto/tls"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/onsi/gomega"
-	api "github.com/seldonio/seldon-core/executor/api/grpc"
+	"github.com/seldonio/seldon-core/executor/api/grpc/proto"
+	"github.com/seldonio/seldon-core/executor/api/payload"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -56,12 +57,12 @@ func SetHTTPClient(httpClient *http.Client) Option {
 	}
 }
 
-func createPayload(g *gomega.GomegaWithT) SeldonPayload {
-	var sm api.SeldonMessage
+func createPayload(g *gomega.GomegaWithT) payload.SeldonPayload {
+	var sm proto.SeldonMessage
 	var data = ` {"data":{"ndarray":[1.1,2.0]}}`
 	err := jsonpb.UnmarshalString(data, &sm)
 	g.Expect(err).Should(gomega.BeNil())
-	return &SeldonMessagePayload{&sm}
+	return &payload.SeldonMessagePayload{Msg: &sm}
 }
 
 func TestSimpleMethods(t *testing.T) {
@@ -74,12 +75,12 @@ func TestSimpleMethods(t *testing.T) {
 	defer teardown()
 	seldonRestClient := NewSeldonMessageRestClient(SetHTTPClient(httpClient))
 
-	methods := []func(string, int32, SeldonPayload) (SeldonPayload, error){seldonRestClient.Predict, seldonRestClient.TransformInput, seldonRestClient.TransformOutput}
+	methods := []func(string, int32, payload.SeldonPayload) (payload.SeldonPayload, error){seldonRestClient.Predict, seldonRestClient.TransformInput, seldonRestClient.TransformOutput}
 	for _, method := range methods {
 		resPayload, err := method(host, int32(port), createPayload(g))
 		g.Expect(err).Should(gomega.BeNil())
 
-		smRes := resPayload.GetPayload().(*api.SeldonMessage)
+		smRes := resPayload.GetPayload().(*proto.SeldonMessage)
 		g.Expect(smRes.GetData().GetNdarray().Values[0].GetListValue().Values[0].GetNumberValue()).Should(gomega.Equal(0.9))
 		g.Expect(smRes.GetData().GetNdarray().Values[0].GetListValue().Values[1].GetNumberValue()).Should(gomega.Equal(0.1))
 	}
@@ -101,14 +102,14 @@ func TestRouter(t *testing.T) {
 
 	g.Expect(route).Should(gomega.Equal(1))
 }
-func createCombinerPayload(g *gomega.GomegaWithT) []SeldonPayload {
-	var sm1, sm2 api.SeldonMessage
+func createCombinerPayload(g *gomega.GomegaWithT) []payload.SeldonPayload {
+	var sm1, sm2 proto.SeldonMessage
 	var data = ` {"data":{"ndarray":[1.1,2.0]}}`
 	err := jsonpb.UnmarshalString(data, &sm1)
 	g.Expect(err).Should(gomega.BeNil())
 	err = jsonpb.UnmarshalString(data, &sm2)
 	g.Expect(err).Should(gomega.BeNil())
-	smp := []SeldonPayload{&SeldonMessagePayload{&sm1}, &SeldonMessagePayload{&sm1}}
+	smp := []payload.SeldonPayload{&payload.SeldonMessagePayload{Msg: &sm1}, &payload.SeldonMessagePayload{Msg: &sm1}}
 	return smp
 }
 
@@ -125,7 +126,7 @@ func TestCombiner(t *testing.T) {
 	resPayload, err := seldonRestClient.Combine(host, int32(port), createCombinerPayload(g))
 	g.Expect(err).Should(gomega.BeNil())
 
-	smRes := resPayload.GetPayload().(*api.SeldonMessage)
+	smRes := resPayload.GetPayload().(*proto.SeldonMessage)
 	g.Expect(smRes.GetData().GetNdarray().Values[0].GetListValue().Values[0].GetNumberValue()).Should(gomega.Equal(0.9))
 	g.Expect(smRes.GetData().GetNdarray().Values[0].GetListValue().Values[1].GetNumberValue()).Should(gomega.Equal(0.1))
 }

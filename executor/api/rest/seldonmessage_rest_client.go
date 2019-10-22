@@ -1,11 +1,14 @@
-package client
+package rest
 
 import (
 	"bytes"
 	"github.com/go-logr/logr"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/pkg/errors"
+	"github.com/seldonio/seldon-core/executor/api/client"
 	api "github.com/seldonio/seldon-core/executor/api/grpc"
+	"github.com/seldonio/seldon-core/executor/api/grpc/proto"
+	"github.com/seldonio/seldon-core/executor/api/payload"
 	"io"
 	"io/ioutil"
 	"net"
@@ -24,30 +27,30 @@ type SeldonMessageRestClient struct {
 	Log        logr.Logger
 }
 
-func (smc *SeldonMessageRestClient) CreateErrorPayload(err error) (SeldonPayload, error) {
-	respFailed := api.SeldonMessage{Status: &api.Status{Code: http.StatusInternalServerError, Info: err.Error()}}
-	res := SeldonMessagePayload{&respFailed}
+func (smc *SeldonMessageRestClient) CreateErrorPayload(err error) (payload.SeldonPayload, error) {
+	respFailed := proto.SeldonMessage{Status: &proto.Status{Code: http.StatusInternalServerError, Info: err.Error()}}
+	res := payload.SeldonMessagePayload{Msg: &respFailed}
 	return &res, nil
 }
 
-func (smc *SeldonMessageRestClient) Marshall(w io.Writer, msg SeldonPayload) error {
+func (smc *SeldonMessageRestClient) Marshall(w io.Writer, msg payload.SeldonPayload) error {
 	ma := jsonpb.Marshaler{}
-	return ma.Marshal(w, msg.GetPayload().(*api.SeldonMessage))
+	return ma.Marshal(w, msg.GetPayload().(*proto.SeldonMessage))
 }
 
-func (smc *SeldonMessageRestClient) Unmarshall(msg []byte) (SeldonPayload, error) {
-	var sm api.SeldonMessage
+func (smc *SeldonMessageRestClient) Unmarshall(msg []byte) (payload.SeldonPayload, error) {
+	var sm proto.SeldonMessage
 	value := string(msg)
 	if err := jsonpb.UnmarshalString(value, &sm); err != nil {
 		return nil, err
 	}
-	reqPayload := SeldonMessagePayload{Msg: &sm}
+	reqPayload := payload.SeldonMessagePayload{Msg: &sm}
 	return &reqPayload, nil
 }
 
 type Option func(client *SeldonMessageRestClient)
 
-func NewSeldonMessageRestClient(options ...Option) SeldonApiClient {
+func NewSeldonMessageRestClient(options ...Option) client.SeldonApiClient {
 	client := SeldonMessageRestClient{
 		&http.Client{},
 		logf.Log.WithName("SeldonMessageRestClient"),
@@ -59,7 +62,7 @@ func NewSeldonMessageRestClient(options ...Option) SeldonApiClient {
 	return &client
 }
 
-func (smc *SeldonMessageRestClient) PostHttp(url *url.URL, msg SeldonPayload) (*api.SeldonMessage, error) {
+func (smc *SeldonMessageRestClient) PostHttp(url *url.URL, msg payload.SeldonPayload) (*proto.SeldonMessage, error) {
 	smc.Log.Info("Calling HTTP", "URL", url)
 
 	// Marshall message into JSON
@@ -89,7 +92,7 @@ func (smc *SeldonMessageRestClient) PostHttp(url *url.URL, msg SeldonPayload) (*
 	}
 
 	// Return SeldonMessage
-	var sm api.SeldonMessage
+	var sm proto.SeldonMessage
 	value := string(b)
 	if err := jsonpb.UnmarshalString(value, &sm); err != nil {
 		return nil, err
@@ -97,13 +100,13 @@ func (smc *SeldonMessageRestClient) PostHttp(url *url.URL, msg SeldonPayload) (*
 	return &sm, nil
 }
 
-func (smc *SeldonMessageRestClient) marshall(payload SeldonPayload) (string, error) {
+func (smc *SeldonMessageRestClient) marshall(payload payload.SeldonPayload) (string, error) {
 	ma := jsonpb.Marshaler{}
 	var msgStr string
 	var err error
-	if sm, ok := payload.GetPayload().(*api.SeldonMessage); ok {
+	if sm, ok := payload.GetPayload().(*proto.SeldonMessage); ok {
 		msgStr, err = ma.MarshalToString(sm)
-	} else if sm, ok := payload.GetPayload().(*api.SeldonMessageList); ok {
+	} else if sm, ok := payload.GetPayload().(*proto.SeldonMessageList); ok {
 		msgStr, err = ma.MarshalToString(sm)
 	} else {
 		return "", errors.New("Unknown type passed")
@@ -111,7 +114,7 @@ func (smc *SeldonMessageRestClient) marshall(payload SeldonPayload) (string, err
 	return msgStr, err
 }
 
-func (smc *SeldonMessageRestClient) call(method string, host string, port int32, req SeldonPayload) (SeldonPayload, error) {
+func (smc *SeldonMessageRestClient) call(method string, host string, port int32, req payload.SeldonPayload) (payload.SeldonPayload, error) {
 	url := url.URL{
 		Scheme: "http",
 		Host:   net.JoinHostPort(host, strconv.Itoa(int(port))),
@@ -121,39 +124,39 @@ func (smc *SeldonMessageRestClient) call(method string, host string, port int32,
 	if err != nil {
 		return nil, err
 	}
-	res := SeldonMessagePayload{sm}
+	res := payload.SeldonMessagePayload{Msg: sm}
 	return &res, nil
 }
 
-func (smc *SeldonMessageRestClient) Predict(host string, port int32, req SeldonPayload) (SeldonPayload, error) {
+func (smc *SeldonMessageRestClient) Predict(host string, port int32, req payload.SeldonPayload) (payload.SeldonPayload, error) {
 	return smc.call("/predict", host, port, req)
 }
 
-func (smc *SeldonMessageRestClient) TransformInput(host string, port int32, req SeldonPayload) (SeldonPayload, error) {
+func (smc *SeldonMessageRestClient) TransformInput(host string, port int32, req payload.SeldonPayload) (payload.SeldonPayload, error) {
 	return smc.call("/transform-input", host, port, req)
 }
 
-func (smc *SeldonMessageRestClient) Route(host string, port int32, req SeldonPayload) (int, error) {
+func (smc *SeldonMessageRestClient) Route(host string, port int32, req payload.SeldonPayload) (int, error) {
 	sp, err := smc.call("/route", host, port, req)
 	if err != nil {
 		return 0, err
 	} else {
-		routes := ExtractRoute(sp.GetPayload().(*api.SeldonMessage))
+		routes := api.ExtractRoute(sp.GetPayload().(*proto.SeldonMessage))
 		//Only returning first route. API could be extended to allow multiple routes
 		return routes[0], nil
 	}
 }
 
-func (smc *SeldonMessageRestClient) Combine(host string, port int32, msgs []SeldonPayload) (SeldonPayload, error) {
-	sms := make([]*api.SeldonMessage, len(msgs))
+func (smc *SeldonMessageRestClient) Combine(host string, port int32, msgs []payload.SeldonPayload) (payload.SeldonPayload, error) {
+	sms := make([]*proto.SeldonMessage, len(msgs))
 	for i, sm := range msgs {
-		sms[i] = sm.GetPayload().(*api.SeldonMessage)
+		sms[i] = sm.GetPayload().(*proto.SeldonMessage)
 	}
-	sml := api.SeldonMessageList{SeldonMessages: sms}
-	req := SeldonMessageListPayload{&sml}
+	sml := proto.SeldonMessageList{SeldonMessages: sms}
+	req := payload.SeldonMessageListPayload{Msg: &sml}
 	return smc.call("/aggregate", host, port, &req)
 }
 
-func (smc *SeldonMessageRestClient) TransformOutput(host string, port int32, req SeldonPayload) (SeldonPayload, error) {
+func (smc *SeldonMessageRestClient) TransformOutput(host string, port int32, req payload.SeldonPayload) (payload.SeldonPayload, error) {
 	return smc.call("/transform-output", host, port, req)
 }

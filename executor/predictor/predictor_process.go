@@ -4,6 +4,7 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/seldonio/seldon-core/executor/api/client"
 	"github.com/seldonio/seldon-core/executor/api/machinelearning/v1alpha2"
+	"github.com/seldonio/seldon-core/executor/api/payload"
 	"sync"
 )
 
@@ -23,7 +24,7 @@ func hasMethod(method v1alpha2.PredictiveUnitMethod, methods *[]v1alpha2.Predict
 	return false
 }
 
-func (p *PredictorProcess) transformInput(node *v1alpha2.PredictiveUnit, msg client.SeldonPayload) (client.SeldonPayload, error) {
+func (p *PredictorProcess) transformInput(node *v1alpha2.PredictiveUnit, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	if (*node).Type != nil {
 		switch *node.Type {
 		case v1alpha2.MODEL:
@@ -38,7 +39,7 @@ func (p *PredictorProcess) transformInput(node *v1alpha2.PredictiveUnit, msg cli
 	return msg, nil
 }
 
-func (p *PredictorProcess) transformOutput(node *v1alpha2.PredictiveUnit, msg client.SeldonPayload) (client.SeldonPayload, error) {
+func (p *PredictorProcess) transformOutput(node *v1alpha2.PredictiveUnit, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	if (*node).Type != nil {
 		switch *node.Type {
 		case v1alpha2.OUTPUT_TRANSFORMER:
@@ -51,7 +52,7 @@ func (p *PredictorProcess) transformOutput(node *v1alpha2.PredictiveUnit, msg cl
 	return msg, nil
 }
 
-func (p *PredictorProcess) route(node *v1alpha2.PredictiveUnit, msg client.SeldonPayload) (int, error) {
+func (p *PredictorProcess) route(node *v1alpha2.PredictiveUnit, msg payload.SeldonPayload) (int, error) {
 	if (*node).Type != nil {
 		switch *node.Type {
 		case v1alpha2.ROUTER:
@@ -64,7 +65,7 @@ func (p *PredictorProcess) route(node *v1alpha2.PredictiveUnit, msg client.Seldo
 	return -1, nil
 }
 
-func (p *PredictorProcess) aggregate(node *v1alpha2.PredictiveUnit, msg []client.SeldonPayload) (client.SeldonPayload, error) {
+func (p *PredictorProcess) aggregate(node *v1alpha2.PredictiveUnit, msg []payload.SeldonPayload) (payload.SeldonPayload, error) {
 	if (*node).Type != nil {
 		switch *node.Type {
 		case v1alpha2.COMBINER:
@@ -77,20 +78,20 @@ func (p *PredictorProcess) aggregate(node *v1alpha2.PredictiveUnit, msg []client
 	return msg[0], nil
 }
 
-func (p *PredictorProcess) routeChildren(node *v1alpha2.PredictiveUnit, msg client.SeldonPayload) (client.SeldonPayload, error) {
+func (p *PredictorProcess) routeChildren(node *v1alpha2.PredictiveUnit, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	if node.Children != nil && len(node.Children) > 0 {
 		route, err := p.route(node, msg)
 		if err != nil {
 			return nil, err
 		}
-		var cmsgs []client.SeldonPayload
+		var cmsgs []payload.SeldonPayload
 		if route == -1 {
-			cmsgs = make([]client.SeldonPayload, len(node.Children))
+			cmsgs = make([]payload.SeldonPayload, len(node.Children))
 			var errs = make([]error, len(node.Children))
 			wg := sync.WaitGroup{}
 			for i, nodeChild := range node.Children {
 				wg.Add(1)
-				go func(i int, nodeChild v1alpha2.PredictiveUnit, msg client.SeldonPayload) {
+				go func(i int, nodeChild v1alpha2.PredictiveUnit, msg payload.SeldonPayload) {
 					cmsgs[i], errs[i] = p.Execute(&nodeChild, msg)
 					wg.Done()
 				}(i, nodeChild, msg)
@@ -102,7 +103,7 @@ func (p *PredictorProcess) routeChildren(node *v1alpha2.PredictiveUnit, msg clie
 				}
 			}
 		} else {
-			cmsgs = make([]client.SeldonPayload, 1)
+			cmsgs = make([]payload.SeldonPayload, 1)
 			cmsgs[0], err = p.Execute(&node.Children[route], msg)
 			if err != nil {
 				return cmsgs[0], err
@@ -114,7 +115,7 @@ func (p *PredictorProcess) routeChildren(node *v1alpha2.PredictiveUnit, msg clie
 	}
 }
 
-func (p *PredictorProcess) Execute(node *v1alpha2.PredictiveUnit, msg client.SeldonPayload) (client.SeldonPayload, error) {
+func (p *PredictorProcess) Execute(node *v1alpha2.PredictiveUnit, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	tmsg, err := p.transformInput(node, msg)
 	if err != nil {
 		return tmsg, err

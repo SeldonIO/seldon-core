@@ -5,8 +5,9 @@ import (
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/onsi/gomega"
 	"github.com/seldonio/seldon-core/executor/api/client"
-	api "github.com/seldonio/seldon-core/executor/api/grpc"
+	"github.com/seldonio/seldon-core/executor/api/grpc/proto"
 	"github.com/seldonio/seldon-core/executor/api/machinelearning/v1alpha2"
+	"github.com/seldonio/seldon-core/executor/api/payload"
 	"io"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"testing"
@@ -19,19 +20,19 @@ type SeldonMessageTestClient struct {
 	err         error
 }
 
-func (s SeldonMessageTestClient) Unmarshall(msg []byte) (client.SeldonPayload, error) {
+func (s SeldonMessageTestClient) Unmarshall(msg []byte) (payload.SeldonPayload, error) {
 	panic("implement me")
 }
 
-func (s SeldonMessageTestClient) Marshall(out io.Writer, msg client.SeldonPayload) error {
+func (s SeldonMessageTestClient) Marshall(out io.Writer, msg payload.SeldonPayload) error {
 	panic("implement me")
 }
 
-func (s SeldonMessageTestClient) CreateErrorPayload(err error) (client.SeldonPayload, error) {
+func (s SeldonMessageTestClient) CreateErrorPayload(err error) (payload.SeldonPayload, error) {
 	panic("implement me")
 }
 
-func (s SeldonMessageTestClient) Predict(host string, port int32, msg client.SeldonPayload) (client.SeldonPayload, error) {
+func (s SeldonMessageTestClient) Predict(host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	s.t.Logf("Predict %s %d", host, port)
 	if s.errMethod != nil && *s.errMethod == v1alpha2.TRANSFORM_INPUT {
 		return nil, s.err
@@ -39,7 +40,7 @@ func (s SeldonMessageTestClient) Predict(host string, port int32, msg client.Sel
 	return msg, nil
 }
 
-func (s SeldonMessageTestClient) TransformInput(host string, port int32, msg client.SeldonPayload) (client.SeldonPayload, error) {
+func (s SeldonMessageTestClient) TransformInput(host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	s.t.Logf("TransformInput %s %d", host, port)
 	if s.errMethod != nil && *s.errMethod == v1alpha2.TRANSFORM_INPUT {
 		return nil, s.err
@@ -47,17 +48,17 @@ func (s SeldonMessageTestClient) TransformInput(host string, port int32, msg cli
 	return msg, nil
 }
 
-func (s SeldonMessageTestClient) Route(host string, port int32, msg client.SeldonPayload) (int, error) {
+func (s SeldonMessageTestClient) Route(host string, port int32, msg payload.SeldonPayload) (int, error) {
 	s.t.Logf("Route %s %d", host, port)
 	return s.chosenRoute, nil
 }
 
-func (s SeldonMessageTestClient) Combine(host string, port int32, msgs []client.SeldonPayload) (client.SeldonPayload, error) {
+func (s SeldonMessageTestClient) Combine(host string, port int32, msgs []payload.SeldonPayload) (payload.SeldonPayload, error) {
 	s.t.Logf("Combine %s %d", host, port)
 	return msgs[0], nil
 }
 
-func (s SeldonMessageTestClient) TransformOutput(host string, port int32, msg client.SeldonPayload) (client.SeldonPayload, error) {
+func (s SeldonMessageTestClient) TransformOutput(host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	s.t.Logf("TransformOutput %s %d", host, port)
 	return msg, nil
 }
@@ -74,31 +75,31 @@ func NewSeldonMessageTestClient(t *testing.T, chosenRoute int, errMethod *v1alph
 
 func createPredictorProcess(t *testing.T) *PredictorProcess {
 	return &PredictorProcess{
-		NewSeldonMessageTestClient(t, -1, nil, nil),
-		logf.Log.WithName("SeldonMessageRestClient"),
+		Client: NewSeldonMessageTestClient(t, -1, nil, nil),
+		Log:    logf.Log.WithName("SeldonMessageRestClient"),
 	}
 }
 
 func createPredictorProcessWithRoute(t *testing.T, chosenRoute int) *PredictorProcess {
 	return &PredictorProcess{
-		NewSeldonMessageTestClient(t, chosenRoute, nil, nil),
-		logf.Log.WithName("SeldonMessageRestClient"),
+		Client: NewSeldonMessageTestClient(t, chosenRoute, nil, nil),
+		Log:    logf.Log.WithName("SeldonMessageRestClient"),
 	}
 }
 
 func createPredictorProcessWithError(t *testing.T, errMethod *v1alpha2.PredictiveUnitMethod, err error) *PredictorProcess {
 	return &PredictorProcess{
-		NewSeldonMessageTestClient(t, -1, errMethod, err),
-		logf.Log.WithName("SeldonMessageRestClient"),
+		Client: NewSeldonMessageTestClient(t, -1, errMethod, err),
+		Log:    logf.Log.WithName("SeldonMessageRestClient"),
 	}
 }
 
-func createPayload(g *gomega.GomegaWithT) client.SeldonPayload {
-	var sm api.SeldonMessage
+func createPayload(g *gomega.GomegaWithT) payload.SeldonPayload {
+	var sm proto.SeldonMessage
 	var data = ` {"data":{"ndarray":[1.1,2.0]}}`
 	err := jsonpb.UnmarshalString(data, &sm)
 	g.Expect(err).Should(gomega.BeNil())
-	return &client.SeldonMessagePayload{Msg: &sm}
+	return &payload.SeldonMessagePayload{Msg: &sm}
 }
 
 func TestModel(t *testing.T) {
@@ -116,7 +117,7 @@ func TestModel(t *testing.T) {
 
 	pResp, err := createPredictorProcess(t).Execute(graph, createPayload(g))
 	g.Expect(err).Should(gomega.BeNil())
-	smRes := pResp.GetPayload().(*api.SeldonMessage)
+	smRes := pResp.GetPayload().(*proto.SeldonMessage)
 	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(gomega.Equal(1.1))
 	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(gomega.Equal(2.0))
 }
@@ -145,7 +146,7 @@ func TestTwoLevelModel(t *testing.T) {
 
 	pResp, err := createPredictorProcess(t).Execute(graph, createPayload(g))
 	g.Expect(err).Should(gomega.BeNil())
-	smRes := pResp.GetPayload().(*api.SeldonMessage)
+	smRes := pResp.GetPayload().(*proto.SeldonMessage)
 	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(gomega.Equal(1.1))
 	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(gomega.Equal(2.0))
 }
@@ -183,7 +184,7 @@ func TestCombiner(t *testing.T) {
 
 	pResp, err := createPredictorProcess(t).Execute(graph, createPayload(g))
 	g.Expect(err).Should(gomega.BeNil())
-	smRes := pResp.GetPayload().(*api.SeldonMessage)
+	smRes := pResp.GetPayload().(*proto.SeldonMessage)
 	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(gomega.Equal(1.1))
 	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(gomega.Equal(2.0))
 }
@@ -213,7 +214,7 @@ func TestMethods(t *testing.T) {
 
 	pResp, err := createPredictorProcess(t).Execute(graph, createPayload(g))
 	g.Expect(err).Should(gomega.BeNil())
-	smRes := pResp.GetPayload().(*api.SeldonMessage)
+	smRes := pResp.GetPayload().(*proto.SeldonMessage)
 	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(gomega.Equal(1.1))
 	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(gomega.Equal(2.0))
 }
@@ -251,19 +252,19 @@ func TestRouter(t *testing.T) {
 
 	pResp, err := createPredictorProcess(t).Execute(graph, createPayload(g))
 	g.Expect(err).Should(gomega.BeNil())
-	smRes := pResp.GetPayload().(*api.SeldonMessage)
+	smRes := pResp.GetPayload().(*proto.SeldonMessage)
 	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(gomega.Equal(1.1))
 	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(gomega.Equal(2.0))
 
 	pResp, err = createPredictorProcessWithRoute(t, 0).Execute(graph, createPayload(g))
 	g.Expect(err).Should(gomega.BeNil())
-	smRes = pResp.GetPayload().(*api.SeldonMessage)
+	smRes = pResp.GetPayload().(*proto.SeldonMessage)
 	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(gomega.Equal(1.1))
 	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(gomega.Equal(2.0))
 
 	pResp, err = createPredictorProcessWithRoute(t, 1).Execute(graph, createPayload(g))
 	g.Expect(err).Should(gomega.BeNil())
-	smRes = pResp.GetPayload().(*api.SeldonMessage)
+	smRes = pResp.GetPayload().(*proto.SeldonMessage)
 	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(gomega.Equal(1.1))
 	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(gomega.Equal(2.0))
 }
