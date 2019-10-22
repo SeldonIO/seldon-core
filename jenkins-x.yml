@@ -12,7 +12,7 @@ pipelineConfig:
               command: make
               args:
                 - -C testing/scripts
-                - kind_test_all
+                - s2i_build_base_images
             options:
               containerOptions:
                 volumeMounts:
@@ -23,6 +23,8 @@ pipelineConfig:
                     name: cgroup
                   - name: dind-storage
                     mountPath: /var/lib/docker
+                securityContext:
+                  privileged: true
                 imagePullPolicy: Always
               volumes:
                 - name: modules
