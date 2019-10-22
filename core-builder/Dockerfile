@@ -17,6 +17,23 @@ RUN \
     apt-get update && \
     apt-get install -y docker-ce
 
+# Installing source to image (s2i)
+RUN wget https://github.com/openshift/source-to-image/releases/download/v1.1.14/source-to-image-v1.1.14-874754de-linux-386.tar.gz && \
+    tar -zxvf source-to-image-v1.1.14-874754de-linux-386.tar.gz && \
+    rm source-to-image-v1.1.14-874754de-linux-386.tar.gz && \
+    mv ./s2i /bin && \
+    mv ./sti /bin
+
+# Installing KIND
+RUN wget https://github.com/kubernetes-sigs/kind/releases/download/v0.5.1/kind-linux-amd64 && \
+    chmod +x kind-linux-amd64 && \
+    mv ./kind-linux-amd64 /bin/kind
+
+# Installing Kubectl
+RUN wget https://storage.googleapis.com/kubernetes-release/release/v1.16.2/bin/linux/amd64/kubectl && \
+    chmod +x ./kubectl && \
+    mv ./kubectl /bin
+
 RUN \
     apt-get update -y && \
     apt-get install -y vim && \
