@@ -13,25 +13,25 @@ pipelineConfig:
             options:
               containerOptions:
                 volumeMounts:
-                - mountPath: /lib/modules
-                  name: modules
-                  readOnly: true
-                - mountPath: /sys/fs/cgroup
-                  name: cgroup
-                - name: dind-storage
-                  mountPath: /var/lib/docker
+                  - mountPath: /lib/modules
+                    name: modules
+                    readOnly: true
+                  - mountPath: /sys/fs/cgroup
+                    name: cgroup
+                  - name: dind-storage
+                    mountPath: /var/lib/docker
                 securityContext:
                   privileged: true
                 imagePullPolicy: Always
               volumes:
-              - name: modules
-                hostpath:
-                  path: /lib/modules
-                  type: directory
-              - name: cgroup
-                hostpath:
-                  path: /sys/fs/cgroup
-                  type: directory
-              - name: dind-storage
-                emptydir: {}
+                - name: modules
+                  hostpath:
+                    path: /lib/modules
+                    type: directory
+                - name: cgroup
+                  hostpath:
+                    path: /sys/fs/cgroup
+                    type: directory
+                - name: dind-storage
+                  emptydir: {}
 
