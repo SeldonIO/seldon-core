@@ -198,19 +198,29 @@ public class InternalPredictionService {
 
       case GRPC:
         if (state.type == PredictiveUnitType.UNKNOWN_TYPE) {
-          GenericBlockingStub stub =
-              GenericGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
-                  .withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
-                  .withMaxInboundMessageSize(grpcMaxMessageSize)
-                  .withMaxOutboundMessageSize(grpcMaxMessageSize);
-          return stub.route(input);
+        	try {
+        		GenericBlockingStub stub =
+        				GenericGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
+        				.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
+        				.withMaxInboundMessageSize(grpcMaxMessageSize)
+        				.withMaxOutboundMessageSize(grpcMaxMessageSize);
+        		return stub.route(input);
+        	} catch (Exception e) {
+                logger.error("grpc exception genericStub route", e);
+                throw e;
+              }
         } else {
-          RouterBlockingStub stub =
-              RouterGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
-                  .withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
-                  .withMaxInboundMessageSize(grpcMaxMessageSize)
-                  .withMaxOutboundMessageSize(grpcMaxMessageSize);
-          return stub.route(input);
+        	try {
+        		RouterBlockingStub stub =
+        				RouterGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
+        				.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
+        				.withMaxInboundMessageSize(grpcMaxMessageSize)
+        				.withMaxOutboundMessageSize(grpcMaxMessageSize);
+        		return stub.route(input);
+        	} catch (Exception e) {
+                logger.error("grpc exception routerStub route", e);
+                throw e;
+              }
         }
     }
     throw new APIException(
@@ -227,26 +237,41 @@ public class InternalPredictionService {
 
       case GRPC:
         if (state.type == PredictiveUnitType.UNKNOWN_TYPE) {
-          GenericBlockingStub stub =
-              GenericGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
-                  .withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
-                  .withMaxInboundMessageSize(grpcMaxMessageSize)
-                  .withMaxOutboundMessageSize(grpcMaxMessageSize);
-          return stub.sendFeedback(feedback);
+        	try {
+        		GenericBlockingStub stub =
+        				GenericGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
+        				.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
+        				.withMaxInboundMessageSize(grpcMaxMessageSize)
+        				.withMaxOutboundMessageSize(grpcMaxMessageSize);
+        		return stub.sendFeedback(feedback);
+        	} catch (Exception e) {
+                logger.error("grpc exception genericStub sendFeedback", e);
+                throw e;
+              }
         } else if (state.type == PredictiveUnitType.MODEL) {
-          ModelBlockingStub modelStub =
-              ModelGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
-                  .withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
-                  .withMaxInboundMessageSize(grpcMaxMessageSize)
-                  .withMaxOutboundMessageSize(grpcMaxMessageSize);
-          return modelStub.sendFeedback(feedback);
+        	try {
+        		ModelBlockingStub modelStub =
+        				ModelGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
+        				.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
+        				.withMaxInboundMessageSize(grpcMaxMessageSize)
+        				.withMaxOutboundMessageSize(grpcMaxMessageSize);
+        		return modelStub.sendFeedback(feedback);
+        	} catch (Exception e) {
+                logger.error("grpc exception modelStub sendFeedback", e);
+                throw e;
+              }
         } else {
-          RouterBlockingStub routerStub =
-              RouterGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
-                  .withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
-                  .withMaxInboundMessageSize(grpcMaxMessageSize)
-                  .withMaxOutboundMessageSize(grpcMaxMessageSize);
-          return routerStub.sendFeedback(feedback);
+        	try {
+        		RouterBlockingStub routerStub =
+        				RouterGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
+        				.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
+        				.withMaxInboundMessageSize(grpcMaxMessageSize)
+        				.withMaxOutboundMessageSize(grpcMaxMessageSize);
+        		return routerStub.sendFeedback(feedback);
+        	} catch (Exception e) {
+                logger.error("grpc exception routerStub sendFeedback", e);
+                throw e;
+              }
         }
     }
     throw new APIException(
@@ -269,12 +294,17 @@ public class InternalPredictionService {
       case GRPC:
         switch (state.type) {
           case UNKNOWN_TYPE:
-            GenericBlockingStub genStub =
-                GenericGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
+        	try {
+        	  GenericBlockingStub genStub =
+        		GenericGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
                     .withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
                     .withMaxInboundMessageSize(grpcMaxMessageSize)
                     .withMaxOutboundMessageSize(grpcMaxMessageSize);
-            return genStub.transformInput(input);
+        	  return genStub.transformInput(input);
+        	 } catch (Exception e) {
+                 logger.error("grpc exception on genericStub transformInput ", e);
+                 throw e;
+               }
           case MODEL:
             try {
               ModelBlockingStub modelStub =
@@ -282,10 +312,10 @@ public class InternalPredictionService {
                       .withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
                       .withMaxInboundMessageSize(grpcMaxMessageSize)
                       .withMaxOutboundMessageSize(grpcMaxMessageSize);
-              logger.info(modelStub.getCallOptions().toString());
+              logger.debug(modelStub.getCallOptions().toString());
               return modelStub.predict(input);
             } catch (Exception e) {
-              logger.error("grpc exception ", e);
+              logger.error("grpc exception on modelStub predict ", e);
               throw e;
             }
           case TRANSFORMER:
@@ -297,7 +327,7 @@ public class InternalPredictionService {
                       .withMaxOutboundMessageSize(grpcMaxMessageSize);
               return transformerStub.transformInput(input);
             } catch (Exception e) {
-              logger.error("grpc exception ", e);
+              logger.error("grpc exception transformStub transformInput", e);
               throw e;
             }
           default:
@@ -319,19 +349,29 @@ public class InternalPredictionService {
 
       case GRPC:
         if (state.type == PredictiveUnitType.UNKNOWN_TYPE) {
-          GenericBlockingStub stub =
-              GenericGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
-                  .withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
-                  .withMaxInboundMessageSize(grpcMaxMessageSize)
-                  .withMaxOutboundMessageSize(grpcMaxMessageSize);
-          return stub.transformOutput(output);
+        	try {
+        		GenericBlockingStub stub =
+        				GenericGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
+        				.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
+        				.withMaxInboundMessageSize(grpcMaxMessageSize)
+        				.withMaxOutboundMessageSize(grpcMaxMessageSize);
+        		return stub.transformOutput(output);
+        	} catch (Exception e) {
+                logger.error("grpc exception genericStub transformOutput", e);
+                throw e;
+              }
         } else {
-          OutputTransformerBlockingStub stub =
-              OutputTransformerGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
-                  .withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
-                  .withMaxInboundMessageSize(grpcMaxMessageSize)
-                  .withMaxOutboundMessageSize(grpcMaxMessageSize);
-          return stub.transformOutput(output);
+        	try {
+        		OutputTransformerBlockingStub stub =
+        				OutputTransformerGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
+        				.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
+        				.withMaxInboundMessageSize(grpcMaxMessageSize)
+        				.withMaxOutboundMessageSize(grpcMaxMessageSize);
+        		return stub.transformOutput(output);
+        	} catch (Exception e) {
+                logger.error("grpc exception outputTransformerStub transformOutput", e);
+                throw e;
+              }
         }
     }
     throw new APIException(
@@ -350,19 +390,29 @@ public class InternalPredictionService {
 
       case GRPC:
         if (state.type == PredictiveUnitType.UNKNOWN_TYPE) {
-          GenericBlockingStub stub =
-              GenericGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
-                  .withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
-                  .withMaxInboundMessageSize(grpcMaxMessageSize)
-                  .withMaxOutboundMessageSize(grpcMaxMessageSize);
-          return stub.aggregate(outputsList);
+        	try {
+        		GenericBlockingStub stub =
+        				GenericGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
+        				.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
+        				.withMaxInboundMessageSize(grpcMaxMessageSize)
+        				.withMaxOutboundMessageSize(grpcMaxMessageSize);
+        		return stub.aggregate(outputsList);
+        	} catch (Exception e) {
+                logger.error("grpc exception genericStub aggregate", e);
+                throw e;
+              }
         } else {
-          CombinerBlockingStub stub =
-              CombinerGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
-                  .withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
-                  .withMaxInboundMessageSize(grpcMaxMessageSize)
-                  .withMaxOutboundMessageSize(grpcMaxMessageSize);
-          return stub.aggregate(outputsList);
+        	try {
+        		CombinerBlockingStub stub =
+        				CombinerGrpc.newBlockingStub(grpcChannelHandler.get(endpoint))
+        				.withDeadlineAfter(grpcReadTimeout, TimeUnit.MILLISECONDS)
+        				.withMaxInboundMessageSize(grpcMaxMessageSize)
+        				.withMaxOutboundMessageSize(grpcMaxMessageSize);
+        		return stub.aggregate(outputsList);
+        	} catch (Exception e) {
+                logger.error("grpc exception combinerStub aggregate", e);
+                throw e;
+              }
         }
     }
     throw new APIException(
