@@ -4,6 +4,9 @@ KUBECONFIG := $(kind get kubeconfig-path)
 kind_create_cluster:
 	kind create cluster --config kind_config.yaml
 
+kind_delete_cluster:
+	kind delete cluster
+
 kind_build_engine:
 	cd ../../engine/ && make build_image
 	kind load docker-image seldonio/engine:$(VERSION) --loglevel trace

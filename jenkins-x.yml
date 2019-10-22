@@ -9,23 +9,29 @@ pipelineConfig:
           - name: end-to-end
             steps:
             - name: test-end-to-end
-              command: make
-              args:
-                - -C testing/scripts
-                - s2i_build_base_images
-                - kind_create_cluster
-                - kind_setup
-                - test
+              command: "./testing/scripts/kind_test_all.sh"
             options:
               containerOptions:
                 volumeMounts:
-                  - mountPath: /var/run/docker.sock
-                    name: docker-socket-volume
+                - mountPath: /lib/modules
+                  name: modules
+                  readOnly: true
+                - mountPath: /sys/fs/cgroup
+                  name: cgroup
+                - name: dind-storage
+                  mountPath: /var/lib/docker
+                securityContext:
+                  privileged: true
                 imagePullPolicy: Always
               volumes:
-                - name: docker-socket-volume
-                  hostPath:
-                    path: /var/run/docker.sock
-                    type: File
-
+              - name: modules
+                hostpath:
+                  path: /lib/modules
+                  type: directory
+              - name: cgroup
+                hostpath:
+                  path: /sys/fs/cgroup
+                  type: directory
+              - name: dind-storage
+                emptydir: {}
 
