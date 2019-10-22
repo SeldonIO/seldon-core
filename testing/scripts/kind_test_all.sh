@@ -30,7 +30,7 @@ make kind_create_cluster
 KIND_EXIT_VALUE=$?
 
 # ONLY RUN THE FOLLOWING IF SUCCESS
-if [ $KIND_EXIT_VALUE -eq 0 ]; then
+if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
     # BUILD S2I BASE IMAGES
     make s2i_build_base_images
     S2I_EXIT_VALUE=$?
@@ -38,6 +38,10 @@ if [ $KIND_EXIT_VALUE -eq 0 ]; then
     # KIND CLUSTER SETUP
     make kind_setup
     SETUP_EXIT_VALUE=$?
+
+    # INSTALL ALL REQUIRED DEPENDENCIES
+    make -C ../../python install-dev
+    INSTALL_EXIT_VALUE=$?
 
     # RUNNING TESTS AND CAPTURING ERROR
     make test
