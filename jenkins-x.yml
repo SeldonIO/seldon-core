@@ -21,6 +21,7 @@ pipelineConfig:
                 volumeMounts:
                   - mountPath: /var/run/docker.sock
                     name: docker-socket-volume
+                imagePullPolicy: Always
               volumes:
                 - name: docker-socket-volume
                   hostPath:
