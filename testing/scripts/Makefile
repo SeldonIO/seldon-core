@@ -63,6 +63,9 @@ install:
 test: build_protos install
 	pytest -s -W ignore > run.log 2>&1
 
+kind_test_all:
+	./kind_test_all.sh
+
 .PHONY: clean
 clean:
 	rm -f proto/prediction*
