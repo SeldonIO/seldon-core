@@ -1,3 +1,4 @@
+#!/bin/bash
 
 set -o errexit
 set -o pipefail
@@ -29,7 +30,7 @@ make kind_create_cluster
 KIND_EXIT_VALUE=$?
 
 # ONLY RUN THE FOLLOWING IF SUCCESS
-if [$KIND_EXIT_VALUE -eq 0 ]; then
+if [ $KIND_EXIT_VALUE -eq 0 ]; then
     # BUILD S2I BASE IMAGES
     make s2i_build_base_images
     S2I_EXIT_VALUE=$?
