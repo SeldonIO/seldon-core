@@ -6,17 +6,25 @@ pipelineConfig:
         agent:
           image: seldonio/core-builder:0.3
         stages:
-          - name: build-and-test
-            parallel:
-              - name: end-to-end
-                agent: 
-                  image: seldonio/core-builder:0.4
-                steps:
-                - name: test-end-to-end
-                  command: make
-                  args:
-                    - -C testing/scripts
-                    - s2i_build_base_images
-                    - kind_create_cluster
-                    - kind_setup
-                    - test
+          - name: end-to-end
+            agent: 
+              image: seldonio/core-builder:0.4
+            options:
+              containerOptions:
+                volumeMounts:
+                  - mountPath: /var/run/docker.sock
+                    name: docker-socket-volume
+                volumes:
+                  - name: docker-socket-volume
+                    hostPath:
+                      path: /var/run/docker.sock
+                      type: File
+            steps:
+            - name: test-end-to-end
+              command: make
+              args:
+                - -C testing/scripts
+                - s2i_build_base_images
+                - kind_create_cluster
+                - kind_setup
+                - test
