@@ -44,7 +44,7 @@ fi
 
 # DELETE KIND CLUSTER
 make kind_delete_cluster
-TEST_EXIT_VALUE=$?
+DELETE_EXIT_VALUE=$?
 
 #######################################
 # EXIT STOPS COMMANDS FROM HERE ONWARDS
