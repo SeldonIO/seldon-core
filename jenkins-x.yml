@@ -18,11 +18,12 @@ pipelineConfig:
                 - test
             options:
               containerOptions:
-                resources:
-                  limits:
-                    cpu: 0.4
-                    memory: 256Mi
-                  requests:
-                    cpu: 0.2
-                    memory: 128Mi
+                volumeMounts:
+                  - mountPath: /var/run/docker.sock
+                    name: docker-socket-volume
+                volumes:
+                  - name: docker-socket-volume
+                    hostPath:
+                      path: /var/run/docker.sock
+                      type: File
 
