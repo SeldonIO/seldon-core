@@ -15,16 +15,16 @@ pipelineConfig:
                 - name: test-python
                   command: make
                   args:
-                    - -C
-                    - python
-                    - update_package &&
-                    - make
-                    - -C
-                    - python
-                    - install-dev &&
-                    - make
-                    - -C
-                    - python
+                    - -C python
+                    - update_package
+                    - install
+                    - test
+                - name: test-python-tf
+                  command: make
+                  args:
+                    - -C python
+                    - update_package
+                    - install-tf
                     - test
               - name: seldon-engine
                 agent:
@@ -33,8 +33,6 @@ pipelineConfig:
                 - name: test-engine
                   command: make
                   args:
-                  - -C
-                  - engine
-                  - -f
-                  - Makefile.ci
+                  - -C engine
+                  - -f Makefile.ci
                   - build_jar

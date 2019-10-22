@@ -2,8 +2,6 @@ import json
 import numpy as np
 from google.protobuf import json_format
 import base64
-import tensorflow as tf
-from tensorflow.core.framework.tensor_pb2 import TensorProto
 
 from seldon_core.wrapper import get_rest_microservice, SeldonModelGRPC, get_grpc_server
 from seldon_core.proto import prediction_pb2
