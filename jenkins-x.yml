@@ -9,9 +9,11 @@ pipelineConfig:
           - name: end-to-end
             steps:
             - name: test-end-to-end
-              command: bash
+              command: cd
               args:
-              - ./testing/scripts/kind_test_all.sh
+              - testing/scripts &&
+              - bash
+              - kind_test_all.sh
             options:
               containerOptions:
                 volumeMounts:
