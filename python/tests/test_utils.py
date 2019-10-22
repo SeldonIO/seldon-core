@@ -13,6 +13,7 @@ from utils import skipif_tf_missing
 if not _TF_MISSING:
     import tensorflow as tf
 
+
 class UserObject(object):
     def __init__(self, metrics_ok=True, ret_nparray=False, ret_meta=False):
         self.metrics_ok = metrics_ok
@@ -53,17 +54,15 @@ class UserObject(object):
         else:
             return [{"type": "BAD", "key": "mycounter", "value": 1}]
 
+
 def test_create_rest_reponse_nparray():
     user_model = UserObject()
     request = {}
     raw_response = np.array([[1, 2, 3]])
-    result = scu.construct_response_json(
-        user_model,
-        True,
-        request,
-        raw_response)
+    result = scu.construct_response_json(user_model, True, request, raw_response)
     assert "tensor" in result.get("data", {})
     assert result["data"]["tensor"]["values"] == [1, 2, 3]
+
 
 def test_create_grpc_reponse_nparray():
     user_model = UserObject()
@@ -73,27 +72,20 @@ def test_create_grpc_reponse_nparray():
     assert sm.data.WhichOneof("data_oneof") == "tensor"
     assert sm.data.tensor.values == [1, 2, 3]
 
+
 def test_create_rest_reponse_text_ndarray():
     user_model = UserObject()
     request_data = np.array([["hello", "world"], ["hello", "another", "world"]])
-    request = {
-        "data": {
-            "ndarray": request_data,
-            "names": []
-        }
-    }
+    request = {"data": {"ndarray": request_data, "names": []}}
     (features, meta, datadef, data_type) = scu.extract_request_parts_json(request)
     raw_response = np.array([["hello", "world"], ["here", "another"]])
-    result = scu.construct_response_json(
-        user_model,
-        True,
-        request,
-        raw_response)
+    result = scu.construct_response_json(user_model, True, request, raw_response)
     assert "ndarray" in result.get("data", {})
     assert np.array_equal(result["data"]["ndarray"], raw_response)
     assert datadef == request["data"]
     assert np.array_equal(features, request_data)
     assert data_type == "data"
+
 
 def test_create_grpc_reponse_text_ndarray():
     user_model = UserObject()
@@ -110,22 +102,15 @@ def test_create_grpc_reponse_text_ndarray():
     assert np.array_equal(features, request_data)
     assert data_type == "data"
 
+
 def test_create_rest_reponse_ndarray():
     user_model = UserObject()
-    request = {
-        "data": {
-            "ndarray": np.array([[5, 6, 7]]),
-            "names": []
-        }
-    }
+    request = {"data": {"ndarray": np.array([[5, 6, 7]]), "names": []}}
     raw_response = np.array([[1, 2, 3]])
-    result = scu.construct_response_json(
-        user_model,
-        True,
-        request,
-        raw_response)
+    result = scu.construct_response_json(user_model, True, request, raw_response)
     assert "ndarray" in result.get("data", {})
     assert np.array_equal(result["data"]["ndarray"], raw_response)
+
 
 def test_create_grpc_reponse_ndarray():
     user_model = UserObject()
@@ -136,27 +121,16 @@ def test_create_grpc_reponse_ndarray():
     sm = scu.construct_response(user_model, True, request, raw_response)
     assert sm.data.WhichOneof("data_oneof") == "ndarray"
 
+
 def test_create_rest_reponse_tensor():
     user_model = UserObject()
-    tensor = {
-        "values": [1,2,3],
-        "shape": (3,)
-    }
-    request = {
-        "data": {
-            "tensor": tensor,
-            "names": []
-        }
-    }
+    tensor = {"values": [1, 2, 3], "shape": (3,)}
+    request = {"data": {"tensor": tensor, "names": []}}
     raw_response = np.array([1, 2, 3])
-    result = scu.construct_response_json(
-        user_model,
-        True,
-        request,
-        raw_response)
+    result = scu.construct_response_json(user_model, True, request, raw_response)
     assert "tensor" in result.get("data", {})
-    assert np.array_equal(
-        result["data"]["tensor"], tensor)
+    assert np.array_equal(result["data"]["tensor"], tensor)
+
 
 def test_create_grpc_reponse_tensor():
     user_model = UserObject()
@@ -167,21 +141,17 @@ def test_create_grpc_reponse_tensor():
     sm = scu.construct_response(user_model, True, request, raw_response)
     assert sm.data.WhichOneof("data_oneof") == "tensor"
 
+
 def test_create_rest_response_strdata():
     user_model = UserObject()
     request_data = "Request data"
-    request = {
-        "strData": request_data
-    }
+    request = {"strData": request_data}
     raw_response = "hello world"
-    sm = scu.construct_response_json(
-        user_model,
-        True,
-        request,
-        raw_response)
+    sm = scu.construct_response_json(user_model, True, request, raw_response)
     assert "strData" in sm
     assert len(sm["strData"]) > 0
     assert sm["strData"] == raw_response
+
 
 def test_create_grpc_response_strdata():
     user_model = UserObject()
@@ -205,25 +175,30 @@ def test_create_grpc_response_jsondata():
     emptyValue = Value()
     assert sm.jsonData != emptyValue
 
+
 def test_create_rest_response_jsondata():
     user_model = UserObject()
     request_data = np.array([[5, 6, 7]])
     datadef = scu.array_to_rest_datadef("ndarray", request_data)
-    json_request = { "jsonData": datadef }
+    json_request = {"jsonData": datadef}
     raw_response = {"output": "data"}
-    json_response = scu.construct_response_json(user_model, True, json_request, raw_response)
+    json_response = scu.construct_response_json(
+        user_model, True, json_request, raw_response
+    )
     assert "data" not in json_response
     emptyValue = Value()
     assert json_response["jsonData"] != emptyValue
+
 
 def test_symmetric_json_conversion():
     user_model = UserObject()
     request_data = np.array([[5, 6, 7]])
     datadef = scu.array_to_rest_datadef("ndarray", request_data)
-    json_request = { "jsonData": datadef }
+    json_request = {"jsonData": datadef}
     seldon_message_request = scu.json_to_seldon_message(json_request)
     result_json_request = scu.seldon_message_to_json(seldon_message_request)
     assert json_request == result_json_request
+
 
 def test_create_grpc_reponse_list():
     user_model = UserObject()
@@ -234,18 +209,18 @@ def test_create_grpc_reponse_list():
     sm = scu.construct_response(user_model, True, request, raw_response)
     assert sm.data.WhichOneof("data_oneof") == "ndarray"
 
+
 def test_create_rest_reponse_binary():
     user_model = UserObject()
     request_data = b"input"
-    request = {
-        "binData": request_data
-    }
+    request = {"binData": request_data}
     raw_resp = b"binary"
     sm = scu.construct_response_json(user_model, True, request, raw_resp)
     resp_data = base64.b64encode(raw_resp).decode("utf-8")
     assert "strData" not in sm
     assert "binData" in sm
     assert sm["binData"] == resp_data
+
 
 def test_create_grpc_reponse_binary():
     user_model = UserObject()
@@ -257,6 +232,7 @@ def test_create_grpc_reponse_binary():
     assert sm.data.WhichOneof("data_oneof") == None
     assert len(sm.strData) == 0
     assert len(sm.binData) > 0
+
 
 def test_json_to_seldon_message_normal_data():
     data = {"data": {"tensor": {"shape": [1, 1], "values": [1]}}}
@@ -271,6 +247,7 @@ def test_json_to_seldon_message_normal_data():
     assert arr.shape[1] == 1
     assert arr[0][0] == 1
 
+
 def test_json_to_seldon_message_ndarray():
     data = {"data": {"ndarray": [[1]]}}
     requestProto = scu.json_to_seldon_message(data)
@@ -281,10 +258,11 @@ def test_json_to_seldon_message_ndarray():
     assert arr.shape[1] == 1
     assert arr[0][0] == 1
 
+
 def test_json_to_seldon_message_bin_data():
     a = np.array([1, 2, 3])
     serialized = pickle.dumps(a)
-    bdata_base64 = base64.b64encode(serialized).decode('utf-8')
+    bdata_base64 = base64.b64encode(serialized).decode("utf-8")
     data = {"binData": bdata_base64}
     requestProto = scu.json_to_seldon_message(data)
     assert len(requestProto.data.tensor.values) == 0
@@ -319,8 +297,11 @@ def test_json_to_seldon_message_bad_data():
 
 
 def test_json_to_feedback():
-    data = {"request": {"data": {"tensor": {"shape": [1, 1], "values": [1]}}},
-            "response": {"data": {"tensor": {"shape": [1, 1], "values": [2]}}}, "reward": 1.0}
+    data = {
+        "request": {"data": {"tensor": {"shape": [1, 1], "values": [1]}}},
+        "response": {"data": {"tensor": {"shape": [1, 1], "values": [2]}}},
+        "reward": 1.0,
+    }
     requestProto = scu.json_to_feedback(data)
     assert requestProto.request.data.tensor.values == [1.0]
     assert requestProto.response.data.tensor.values == [2.0]
@@ -328,14 +309,21 @@ def test_json_to_feedback():
 
 def test_json_to_feedback_bad_data():
     with pytest.raises(SeldonMicroserviceException):
-        data = {"requestBAD": {"data": {"tensor": {"shape": [1, 1], "values": [1]}}},
-                "response": {"data": {"tensor": {"shape": [1, 1], "values": [2]}}}, "reward": 1.0}
+        data = {
+            "requestBAD": {"data": {"tensor": {"shape": [1, 1], "values": [1]}}},
+            "response": {"data": {"tensor": {"shape": [1, 1], "values": [2]}}},
+            "reward": 1.0,
+        }
         requestProto = scu.json_to_feedback(data)
 
 
 def test_json_to_seldon_messages():
-    data = {"seldonMessages": [{"data": {"tensor": {"shape": [1, 1], "values": [1]}}},
-                               {"data": {"tensor": {"shape": [1, 1], "values": [2]}}}]}
+    data = {
+        "seldonMessages": [
+            {"data": {"tensor": {"shape": [1, 1], "values": [1]}}},
+            {"data": {"tensor": {"shape": [1, 1], "values": [2]}}},
+        ]
+    }
     requestProto = scu.json_to_seldon_messages(data)
     assert requestProto.seldonMessages[0].data.tensor.values == [1]
     assert requestProto.seldonMessages[1].data.tensor.values == [2]
@@ -345,10 +333,7 @@ def test_json_to_seldon_messages():
 def test_seldon_message_to_json():
     arr = np.array([1, 2])
     datadef = prediction_pb2.DefaultData(
-        tensor=prediction_pb2.Tensor(
-            shape=(2, 1),
-            values=arr
-        )
+        tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
     )
     request = prediction_pb2.SeldonMessage(data=datadef)
     dict = scu.seldon_message_to_json(request)
@@ -358,10 +343,7 @@ def test_seldon_message_to_json():
 def test_get_data_from_proto_tensor():
     arr = np.array([1, 2])
     datadef = prediction_pb2.DefaultData(
-        tensor=prediction_pb2.Tensor(
-            shape=(2, 1),
-            values=arr
-        )
+        tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
     )
     request = prediction_pb2.SeldonMessage(data=datadef)
     arr: np.ndarray = scu.get_data_from_proto(request)
@@ -373,9 +355,7 @@ def test_get_data_from_proto_tensor():
 def test_get_data_from_proto_ndarray():
     arr = np.array([[1], [2]])
     lv = scu.array_to_list_value(arr)
-    datadef = prediction_pb2.DefaultData(
-        ndarray=lv
-    )
+    datadef = prediction_pb2.DefaultData(ndarray=lv)
     request = prediction_pb2.SeldonMessage(data=datadef)
     arr: np.ndarray = scu.get_data_from_proto(request)
     assert arr.shape == (2, 1)
@@ -386,9 +366,7 @@ def test_get_data_from_proto_ndarray():
 @skipif_tf_missing
 def test_get_data_from_proto_tftensor():
     arr = np.array([[1], [2]])
-    datadef = prediction_pb2.DefaultData(
-        tftensor=tf.make_tensor_proto(arr)
-    )
+    datadef = prediction_pb2.DefaultData(tftensor=tf.make_tensor_proto(arr))
     request = prediction_pb2.SeldonMessage(data=datadef)
     arr: np.ndarray = scu.get_data_from_proto(request)
     assert arr.shape == (2, 1)
@@ -411,8 +389,7 @@ def test_proto_tftensor_to_array():
     names = ["a", "b"]
     array = np.array([[1, 2], [3, 4]])
     datadef = prediction_pb2.DefaultData(
-        names=names,
-        tftensor=tf.make_tensor_proto(array)
+        names=names, tftensor=tf.make_tensor_proto(array)
     )
     array2 = scu.grpc_datadef_to_array(datadef)
     assert array.shape == array2.shape

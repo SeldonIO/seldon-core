@@ -12,7 +12,9 @@ class SeldonTesterException(Exception):
         super().__init__(message)
 
 
-def gen_continuous(f_range: Tuple[Union[float, str], Union[float, str]], n: int) -> np.ndarray:
+def gen_continuous(
+    f_range: Tuple[Union[float, str], Union[float, str]], n: int
+) -> np.ndarray:
     """
     Create a continuous feature based on given range
 
@@ -105,7 +107,7 @@ def generate_batch(contract: Dict, n: int, field: str) -> np.ndarray:
     if len(ty_set) == 1:
         return np.concatenate(feature_batches, axis=1)
     else:
-        out = np.empty((n, len(contract['features'])), dtype=object)
+        out = np.empty((n, len(contract["features"])), dtype=object)
         return np.concatenate(feature_batches, axis=1, out=out)
 
 
@@ -158,6 +160,7 @@ def get_class_names(contract: Dict) -> List[str]:
         names.append(feature["name"])
     return names
 
+
 def run_send_feedback(args):
     """
     Make a feedback call to microservice
@@ -168,15 +171,15 @@ def run_send_feedback(args):
        Command line args
 
     """
-    contract = json.load(open(args.contract, 'r'))
+    contract = json.load(open(args.contract, "r"))
     contract = unfold_contract(contract)
     endpoint = args.host + ":" + str(args.port)
     sc = SeldonClient(microservice_endpoint=endpoint)
 
     for i in range(args.n_requests):
-        batch = generate_batch(contract, args.batch_size, 'features')
+        batch = generate_batch(contract, args.batch_size, "features")
         if args.prnt:
-            print('-' * 40)
+            print("-" * 40)
             print("SENDING NEW REQUEST:")
 
         if not args.grpc:
@@ -189,10 +192,15 @@ def run_send_feedback(args):
         else:
             payload_type = "ndarray"
 
-        response_predict = sc.microservice(data=batch, transport=transport, payload_type=payload_type, method="predict")
-        response_feedback = sc.microservice_feedback(prediction_request=response_predict.request,
-                                                     prediction_response=response_predict.response, reward=1.0,
-                                                     transport=transport)
+        response_predict = sc.microservice(
+            data=batch, transport=transport, payload_type=payload_type, method="predict"
+        )
+        response_feedback = sc.microservice_feedback(
+            prediction_request=response_predict.request,
+            prediction_response=response_predict.response,
+            reward=1.0,
+            transport=transport,
+        )
         if args.prnt:
             print(f"RECEIVED RESPONSE:\n{response_feedback}\n")
 
@@ -207,14 +215,14 @@ def run_method(args, method):
        Command line args
 
     """
-    contract = json.load(open(args.contract, 'r'))
+    contract = json.load(open(args.contract, "r"))
     contract = unfold_contract(contract)
     feature_names = [feature["name"] for feature in contract["features"]]
     endpoint = f"{args.host}:{args.port}"
     sc = SeldonClient(microservice_endpoint=endpoint)
 
     for i in range(args.n_requests):
-        batch: ndarray = generate_batch(contract, args.batch_size, 'features')
+        batch: ndarray = generate_batch(contract, args.batch_size, "features")
         if args.prnt:
             print(f"{'-' * 40}\nSENDING NEW REQUEST:\n")
             print(batch)
@@ -222,7 +230,13 @@ def run_method(args, method):
         transport = "grpc" if args.grpc else "rest"
         payload_type = "tensor" if args.tensor else "ndarray"
 
-        response = sc.microservice(data=batch, transport=transport, method=method, payload_type=payload_type, names=feature_names)
+        response = sc.microservice(
+            data=batch,
+            transport=transport,
+            method=method,
+            payload_type=payload_type,
+            names=feature_names,
+        )
 
         if args.prnt:
             print(f"RECEIVED RESPONSE:\n{response.response}\n")
@@ -230,22 +244,33 @@ def run_method(args, method):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("contract", type=str,
-                        help="File that contains the data contract")
+    parser.add_argument(
+        "contract", type=str, help="File that contains the data contract"
+    )
     parser.add_argument("host", type=str)
     parser.add_argument("port", type=int)
-    parser.add_argument("--endpoint", type=str,
-                        choices=["predict", "send-feedback", "transform-input"], default="predict")
+    parser.add_argument(
+        "--endpoint",
+        type=str,
+        choices=["predict", "send-feedback", "transform-input"],
+        default="predict",
+    )
     parser.add_argument("-b", "--batch-size", type=int, default=1)
     parser.add_argument("-n", "--n-requests", type=int, default=1)
     parser.add_argument("--grpc", action="store_true")
     parser.add_argument("-t", "--tensor", action="store_true")
-    parser.add_argument("-p", "--prnt", action="store_true", help="Prints requests and responses")
-    parser.add_argument("--log-level", type=str, choices=["DEBUG", "INFO", "ERROR"], default="ERROR")
+    parser.add_argument(
+        "-p", "--prnt", action="store_true", help="Prints requests and responses"
+    )
+    parser.add_argument(
+        "--log-level", type=str, choices=["DEBUG", "INFO", "ERROR"], default="ERROR"
+    )
 
     args = parser.parse_args()
 
-    LOG_FORMAT = '%(asctime)s - %(name)s:%(funcName)s:%(lineno)s - %(levelname)s:  %(message)s'
+    LOG_FORMAT = (
+        "%(asctime)s - %(name)s:%(funcName)s:%(lineno)s - %(levelname)s:  %(message)s"
+    )
     if args.log_level == "DEBUG":
         log_level = logging.DEBUG
     elif args.log_level == "INFO":

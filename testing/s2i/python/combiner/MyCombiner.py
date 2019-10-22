@@ -1,6 +1,6 @@
 import logging
-logger = logging.getLogger(__name__)
 
+logger = logging.getLogger(__name__)
 
 
 class MyCombiner(object):
@@ -10,5 +10,4 @@ class MyCombiner(object):
     def aggregate(self, Xs, features_names):
         print("Combiner aggregate called")
         logger.info(Xs)
-        return Xs[0]+1
-
+        return Xs[0] + 1

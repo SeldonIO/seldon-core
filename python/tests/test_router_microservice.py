@@ -40,10 +40,7 @@ class UserObjectLowLevel(object):
     def route_grpc(self, request):
         arr = np.array([1])
         datadef = prediction_pb2.DefaultData(
-            tensor=prediction_pb2.Tensor(
-                shape=(1, 1),
-                values=arr
-            )
+            tensor=prediction_pb2.Tensor(shape=(1, 1), values=arr)
         )
         request = prediction_pb2.SeldonMessage(data=datadef)
         return request
@@ -64,10 +61,7 @@ class UserObjectLowLevelGrpc(object):
     def route_grpc(self, request):
         arr = np.array([1])
         datadef = prediction_pb2.DefaultData(
-            tensor=prediction_pb2.Tensor(
-                shape=(1, 1),
-                values=arr
-            )
+            tensor=prediction_pb2.Tensor(shape=(1, 1), values=arr)
         )
         request = prediction_pb2.SeldonMessage(data=datadef)
         return request
@@ -83,18 +77,14 @@ class UserObjectLowLevelRaw(object):
         self.nparray = np.array([1, 2, 3])
 
     def route_raw(
-            self,
-            request: Union[prediction_pb2.SeldonMessage, List, Dict]) \
-            -> Union[prediction_pb2.SeldonMessage, List, Dict]:
+        self, request: Union[prediction_pb2.SeldonMessage, List, Dict]
+    ) -> Union[prediction_pb2.SeldonMessage, List, Dict]:
 
         is_proto = isinstance(request, prediction_pb2.SeldonMessage)
 
         arr = np.array([1])
         datadef = prediction_pb2.DefaultData(
-            tensor=prediction_pb2.Tensor(
-                shape=(1, 1),
-                values=arr
-            )
+            tensor=prediction_pb2.Tensor(shape=(1, 1), values=arr)
         )
         response = prediction_pb2.SeldonMessage(data=datadef)
         if is_proto:
@@ -162,7 +152,7 @@ def test_router_no_json():
     app = get_rest_microservice(user_object)
     client = app.test_client()
     uo = UserObject()
-    rv = client.get('/route?')
+    rv = client.get("/route?")
     j = json.loads(rv.data)
     print(j)
     assert rv.status_code == 400
@@ -183,7 +173,8 @@ def test_router_feedback_ok():
     app = get_rest_microservice(user_object)
     client = app.test_client()
     rv = client.get(
-        '/send-feedback?json={"request":{"data":{"ndarray":[]}},"response":{"meta":{"routing":{"1":1}}},"reward":1.0}')
+        '/send-feedback?json={"request":{"data":{"ndarray":[]}},"response":{"meta":{"routing":{"1":1}}},"reward":1.0}'
+    )
     j = json.loads(rv.data)
     print(j)
     assert rv.status_code == 200
@@ -193,7 +184,9 @@ def test_router_feedback_lowlevel_ok():
     user_object = UserObjectLowLevel()
     app = get_rest_microservice(user_object)
     client = app.test_client()
-    rv = client.get('/send-feedback?json={"request":{"data":{"ndarray":[]}},"reward":1.0}')
+    rv = client.get(
+        '/send-feedback?json={"request":{"data":{"ndarray":[]}},"reward":1.0}'
+    )
     j = json.loads(rv.data)
     print(j)
     assert rv.status_code == 200
@@ -204,10 +197,7 @@ def test_router_proto_ok():
     app = SeldonModelGRPC(user_object)
     arr = np.array([1, 2])
     datadef = prediction_pb2.DefaultData(
-        tensor=prediction_pb2.Tensor(
-            shape=(2, 1),
-            values=arr
-        )
+        tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
     )
     request = prediction_pb2.SeldonMessage(data=datadef)
     resp = app.Route(request, None)
@@ -227,10 +217,7 @@ def test_router_proto_lowlevel_ok():
     app = SeldonModelGRPC(user_object)
     arr = np.array([1, 2])
     datadef = prediction_pb2.DefaultData(
-        tensor=prediction_pb2.Tensor(
-            shape=(2, 1),
-            values=arr
-        )
+        tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
     )
     request = prediction_pb2.SeldonMessage(data=datadef)
     resp = app.Route(request, None)
@@ -246,10 +233,7 @@ def test_router_proto_lowlevel_raw_ok():
     app = SeldonModelGRPC(user_object)
     arr = np.array([1, 2])
     datadef = prediction_pb2.DefaultData(
-        tensor=prediction_pb2.Tensor(
-            shape=(2, 1),
-            values=arr
-        )
+        tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
     )
     request = prediction_pb2.SeldonMessage(data=datadef)
     resp = app.Route(request, None)
@@ -265,10 +249,7 @@ def test_proto_feedback():
     app = SeldonModelGRPC(user_object)
     arr = np.array([1, 2])
     datadef = prediction_pb2.DefaultData(
-        tensor=prediction_pb2.Tensor(
-            shape=(2, 1),
-            values=arr
-        )
+        tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
     )
     meta = prediction_pb2.Meta()
     metaJson = {}

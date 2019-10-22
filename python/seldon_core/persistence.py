@@ -13,7 +13,7 @@ PRED_UNIT_ID = os.environ.get("PREDICTIVE_UNIT_ID", "0")
 PREDICTOR_ID = os.environ.get("PREDICTOR_ID", "0")
 DEPLOYMENT_ID = os.environ.get("SELDON_DEPLOYMENT_ID", "0")
 REDIS_KEY = f"persistence_{DEPLOYMENT_ID}_{PREDICTOR_ID}_{PRED_UNIT_ID}"
-REDIS_HOST = os.environ.get('REDIS_SERVICE_HOST', 'localhost')
+REDIS_HOST = os.environ.get("REDIS_SERVICE_HOST", "localhost")
 REDIS_PORT = os.environ.get("REDIS_SERVICE_PORT", 6379)
 DEFAULT_PUSH_FREQUENCY = 60
 
@@ -66,7 +66,6 @@ def persist(user_object: SeldonComponent, push_frequency: int = None):
 
 
 class PersistenceThread(threading.Thread):
-
     def __init__(self, user_object, push_frequency):
         self.user_object = user_object
         self.push_frequency = push_frequency
