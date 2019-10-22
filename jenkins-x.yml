@@ -4,11 +4,9 @@ pipelineConfig:
     pullRequest:
       pipeline:
         agent:
-          image: seldonio/core-builder:0.3
+          image: seldonio/core-builder:0.4
         stages:
           - name: end-to-end
-            agent: 
-              image: seldonio/core-builder:0.4
             options:
               containerOptions:
                 volumeMounts:
