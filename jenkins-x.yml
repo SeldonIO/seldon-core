@@ -12,7 +12,7 @@ pipelineConfig:
               command: make
               args:
                 - -C testing/scripts
-                - s2i_build_base_images
+                - kind_test_all
             options:
               containerOptions:
                 volumeMounts:
