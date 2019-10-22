@@ -25,13 +25,13 @@ pipelineConfig:
                 imagePullPolicy: Always
               volumes:
                 - name: modules
-                  hostpath:
+                  hostPath:
                     path: /lib/modules
                     type: directory
                 - name: cgroup
-                  hostpath:
+                  hostPath:
                     path: /sys/fs/cgroup
                     type: directory
                 - name: dind-storage
-                  emptydir: {}
+                  emptyDir: {}
 
