@@ -68,7 +68,10 @@ RUN rm -rf /usr/local/bin/pip && \
         ln -s /usr/local/bin/pip3.6 /usr/local/bin/pip
 
 RUN pip install pyyaml 
+RUN pip install grpcio
+RUN pip install grpcio-tools
 RUN apt-get remove -y --auto-remove && apt-get clean -y && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
 
 WORKDIR /work
 
