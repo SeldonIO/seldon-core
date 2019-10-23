@@ -4,92 +4,31 @@ import (
 	"errors"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/onsi/gomega"
-	"github.com/seldonio/seldon-core/executor/api/client"
 	"github.com/seldonio/seldon-core/executor/api/grpc/proto"
 	"github.com/seldonio/seldon-core/executor/api/machinelearning/v1alpha2"
 	"github.com/seldonio/seldon-core/executor/api/payload"
-	"io"
+	"github.com/seldonio/seldon-core/executor/api/test"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"testing"
 )
 
-type SeldonMessageTestClient struct {
-	t           *testing.T
-	chosenRoute int
-	errMethod   *v1alpha2.PredictiveUnitMethod
-	err         error
-}
-
-func (s SeldonMessageTestClient) Unmarshall(msg []byte) (payload.SeldonPayload, error) {
-	panic("implement me")
-}
-
-func (s SeldonMessageTestClient) Marshall(out io.Writer, msg payload.SeldonPayload) error {
-	panic("implement me")
-}
-
-func (s SeldonMessageTestClient) CreateErrorPayload(err error) payload.SeldonPayload {
-	panic("implement me")
-}
-
-func (s SeldonMessageTestClient) Predict(host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
-	s.t.Logf("Predict %s %d", host, port)
-	if s.errMethod != nil && *s.errMethod == v1alpha2.TRANSFORM_INPUT {
-		return nil, s.err
-	}
-	return msg, nil
-}
-
-func (s SeldonMessageTestClient) TransformInput(host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
-	s.t.Logf("TransformInput %s %d", host, port)
-	if s.errMethod != nil && *s.errMethod == v1alpha2.TRANSFORM_INPUT {
-		return nil, s.err
-	}
-	return msg, nil
-}
-
-func (s SeldonMessageTestClient) Route(host string, port int32, msg payload.SeldonPayload) (int, error) {
-	s.t.Logf("Route %s %d", host, port)
-	return s.chosenRoute, nil
-}
-
-func (s SeldonMessageTestClient) Combine(host string, port int32, msgs []payload.SeldonPayload) (payload.SeldonPayload, error) {
-	s.t.Logf("Combine %s %d", host, port)
-	return msgs[0], nil
-}
-
-func (s SeldonMessageTestClient) TransformOutput(host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
-	s.t.Logf("TransformOutput %s %d", host, port)
-	return msg, nil
-}
-
-func NewSeldonMessageTestClient(t *testing.T, chosenRoute int, errMethod *v1alpha2.PredictiveUnitMethod, err error) client.SeldonApiClient {
-	client := SeldonMessageTestClient{
-		t:           t,
-		chosenRoute: chosenRoute,
-		errMethod:   errMethod,
-		err:         err,
-	}
-	return &client
-}
-
 func createPredictorProcess(t *testing.T) *PredictorProcess {
 	return &PredictorProcess{
-		Client: NewSeldonMessageTestClient(t, -1, nil, nil),
+		Client: test.NewSeldonMessageTestClient(t, -1, nil, nil),
 		Log:    logf.Log.WithName("SeldonMessageRestClient"),
 	}
 }
 
 func createPredictorProcessWithRoute(t *testing.T, chosenRoute int) *PredictorProcess {
 	return &PredictorProcess{
-		Client: NewSeldonMessageTestClient(t, chosenRoute, nil, nil),
+		Client: test.NewSeldonMessageTestClient(t, chosenRoute, nil, nil),
 		Log:    logf.Log.WithName("SeldonMessageRestClient"),
 	}
 }
 
 func createPredictorProcessWithError(t *testing.T, errMethod *v1alpha2.PredictiveUnitMethod, err error) *PredictorProcess {
 	return &PredictorProcess{
-		Client: NewSeldonMessageTestClient(t, -1, errMethod, err),
+		Client: test.NewSeldonMessageTestClient(t, -1, errMethod, err),
 		Log:    logf.Log.WithName("SeldonMessageRestClient"),
 	}
 }
