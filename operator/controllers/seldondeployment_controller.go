@@ -681,25 +681,13 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 		deploy.Spec.Template.ObjectMeta.Labels[k] = v
 	}
 
+	for k := 0; k < len(deploy.Spec.Template.Spec.InitContainers); k++ {
+		con := &deploy.Spec.Template.Spec.InitContainers[k]
+		addContainerDefaults(con)
+	}
 	for k := 0; k < len(deploy.Spec.Template.Spec.Containers); k++ {
 		con := &deploy.Spec.Template.Spec.Containers[k]
-		// Add some defaults for easier diffs
-		if con.TerminationMessagePath == "" {
-			con.TerminationMessagePath = "/dev/termination-log"
-		}
-		if con.TerminationMessagePolicy == "" {
-			con.TerminationMessagePolicy = corev1.TerminationMessageReadFile
-		}
-
-		if con.ImagePullPolicy == "" {
-			con.ImagePullPolicy = corev1.PullIfNotPresent
-		}
-
-		if con.SecurityContext != nil && con.SecurityContext.ProcMount == nil {
-			var procMount = corev1.DefaultProcMount
-			con.SecurityContext.ProcMount = &procMount
-		}
-
+		addContainerDefaults(con)
 	}
 
 	//Add some default to help with diffs in controller

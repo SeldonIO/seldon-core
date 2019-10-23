@@ -2,13 +2,16 @@ import pytest
 import json
 import numpy as np
 import pickle
-import tensorflow as tf
 import base64
+import seldon_core.utils as scu
 from seldon_core.proto import prediction_pb2
 from seldon_core.flask_utils import SeldonMicroserviceException
-import seldon_core.utils as scu
+from seldon_core.tf_helper import _TF_MISSING
 from google.protobuf.struct_pb2 import Value
+from utils import skipif_tf_missing
 
+if not _TF_MISSING:
+    import tensorflow as tf
 
 class UserObject(object):
     def __init__(self, metrics_ok=True, ret_nparray=False, ret_meta=False):
@@ -380,6 +383,7 @@ def test_get_data_from_proto_ndarray():
     assert arr[1][0] == 2
 
 
+@skipif_tf_missing
 def test_get_data_from_proto_tftensor():
     arr = np.array([[1], [2]])
     datadef = prediction_pb2.DefaultData(
@@ -392,6 +396,7 @@ def test_get_data_from_proto_tftensor():
     assert arr[1][0] == 2
 
 
+@skipif_tf_missing
 def test_proto_array_to_tftensor():
     arr = np.array([[1, 2, 3], [4, 5, 6]])
     datadef = scu.array_to_grpc_datadef("tftensor", arr, [])
@@ -401,6 +406,7 @@ def test_proto_array_to_tftensor():
     assert datadef.tftensor.dtype == 9
 
 
+@skipif_tf_missing
 def test_proto_tftensor_to_array():
     names = ["a", "b"]
     array = np.array([[1, 2], [3, 4]])

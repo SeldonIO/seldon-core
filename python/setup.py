@@ -28,7 +28,6 @@ setup(name='seldon-core',
           'flatbuffers',
           'protobuf',
           'grpcio',
-          'tensorflow',
           'Flask-OpenTracing==0.2.0',
           'opentracing>=1.2.2,<2',
           'jaeger-client==3.13.0',
@@ -42,8 +41,12 @@ setup(name='seldon-core',
       ],
       tests_require=[
           'pytest',
-          'pytest-cov'
+          'pytest-cov',
+          'Pillow'
       ],
+      extras_require={
+          'tensorflow': ['tensorflow']
+      },
       test_suite='tests',
       entry_points={
           'console_scripts': [

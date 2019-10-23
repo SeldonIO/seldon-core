@@ -1,17 +1,24 @@
 import json
+import logging
+import sys
+import base64
+import numpy as np
+
 from google.protobuf import json_format
 from google.protobuf.json_format import MessageToDict, ParseDict
+from google.protobuf.struct_pb2 import ListValue
+
 from seldon_core.proto import prediction_pb2
 from seldon_core.flask_utils import SeldonMicroserviceException
-from tensorflow.core.framework.tensor_pb2 import TensorProto
-import numpy as np
-import sys
-import tensorflow as tf
-from google.protobuf.struct_pb2 import ListValue
 from seldon_core.user_model import client_class_names, client_custom_metrics, client_custom_tags, client_feature_names, \
     SeldonComponent
+from seldon_core.tf_helper import _TF_MISSING
+
 from typing import Tuple, Dict, Union, List, Optional, Iterable
-import base64
+
+if not _TF_MISSING:
+    import tensorflow as tf
+    from tensorflow.core.framework.tensor_pb2 import TensorProto
 
 
 def json_to_seldon_message(message_json: Union[List, Dict]) -> prediction_pb2.SeldonMessage:
