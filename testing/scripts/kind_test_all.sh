@@ -43,13 +43,13 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
     make kind_setup
     SETUP_EXIT_VALUE=$?
 
-    # INSTALL ALL REQUIRED DEPENDENCIES
-    make -C ../../python install-dev
-    INSTALL_EXIT_VALUE=$?
+    ## INSTALL ALL REQUIRED DEPENDENCIES
+    #make -C ../../python install-dev
+    #INSTALL_EXIT_VALUE=$?
 
-    # RUNNING TESTS AND CAPTURING ERROR
-    make test
-    TEST_EXIT_VALUE=$?
+    ## RUNNING TESTS AND CAPTURING ERROR
+    #make test
+    #TEST_EXIT_VALUE=$?
 fi
 
 # DELETE KIND CLUSTER
