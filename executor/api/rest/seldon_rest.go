@@ -14,18 +14,20 @@ import (
 )
 
 type SeldonRestApi struct {
-	Router    *mux.Router
-	Client    client.SeldonApiClient
-	predictor *v1alpha2.PredictorSpec
-	Log       logr.Logger
+	Router     *mux.Router
+	Client     client.SeldonApiClient
+	predictor  *v1alpha2.PredictorSpec
+	Log        logr.Logger
+	ProbesOnly bool
 }
 
-func NewSeldonRestApi(predictor *v1alpha2.PredictorSpec, client client.SeldonApiClient) *SeldonRestApi {
+func NewSeldonRestApi(predictor *v1alpha2.PredictorSpec, client client.SeldonApiClient, probesOnly bool) *SeldonRestApi {
 	return &SeldonRestApi{
 		mux.NewRouter(),
 		client,
 		predictor,
 		logf.Log.WithName("SeldonRestApi"),
+		probesOnly,
 	}
 }
 
@@ -43,12 +45,9 @@ func (r *SeldonRestApi) respondWithError(w http.ResponseWriter, err error) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusInternalServerError)
 
-	errPayload, err2 := r.Client.CreateErrorPayload(err)
-	if err2 != nil {
-		r.Log.Error(err2, "Can't create error payload")
-	}
-	err2 = r.Client.Marshall(w, errPayload)
-	if err2 != nil {
+	errPayload := r.Client.CreateErrorPayload(err)
+	err = r.Client.Marshall(w, errPayload)
+	if err != nil {
 		r.Log.Error(err, "Failed to write error payload")
 	}
 }
@@ -56,8 +55,10 @@ func (r *SeldonRestApi) respondWithError(w http.ResponseWriter, err error) {
 func (r *SeldonRestApi) Initialise() {
 	r.Router.HandleFunc("/ready", r.checkReady)
 	r.Router.HandleFunc("/live", r.alive)
-	s := r.Router.PathPrefix("/api/v0.1").Methods("POST").HeadersRegexp("Content-Type", "application/json").Subrouter()
-	s.HandleFunc("/predictions", r.predictions)
+	if !r.ProbesOnly {
+		s := r.Router.PathPrefix("/api/v0.1").Methods("POST").HeadersRegexp("Content-Type", "application/json").Subrouter()
+		s.HandleFunc("/predictions", r.predictions)
+	}
 }
 
 func (r *SeldonRestApi) checkReady(w http.ResponseWriter, req *http.Request) {

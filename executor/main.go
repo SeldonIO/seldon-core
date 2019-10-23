@@ -14,7 +14,6 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/grpc/proto"
 	"github.com/seldonio/seldon-core/executor/api/machinelearning/v1alpha2"
 	"github.com/seldonio/seldon-core/executor/api/rest"
-	"google.golang.org/grpc"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -31,8 +30,9 @@ var (
 	sdepName      = flag.String("sdep", "", "Seldon deployment name")
 	namespace     = flag.String("namespace", "", "Namespace")
 	predictorName = flag.String("predictor", "", "Name of the predictor inside the SeldonDeployment")
-	port          = flag.Int("port", 8080, "Executor port")
-	wait          = flag.Duration("graceful-timeout", time.Second*15, "Graceful shutdown secs")
+	httpPort      = flag.Int("http_port", 8080, "Executor port")
+	grpcPort      = flag.Int("grpc_port", 8000, "Executor port")
+	wait          = flag.Duration("graceful_timeout", time.Second*15, "Graceful shutdown secs")
 	protocol      = flag.String("protocol", "seldon", "The payload protocol")
 	transport     = flag.String("transport", "http", "The network transport http or grpc")
 	filename      = flag.String("file", "", "Load graph from file")
@@ -78,12 +78,12 @@ func getPredictorFromFile(predictorName string, filename string) (*v1alpha2.Pred
 	}
 }
 
-func runHttpServer(logger logr.Logger, predictor *v1alpha2.PredictorSpec, client seldonclient.SeldonApiClient) {
+func runHttpServer(logger logr.Logger, predictor *v1alpha2.PredictorSpec, client seldonclient.SeldonApiClient, port int, probesOnly bool) {
 	// Create REST client
-	seldonRest := rest.NewSeldonRestApi(predictor, client)
+	seldonRest := rest.NewSeldonRestApi(predictor, client, probesOnly)
 	seldonRest.Initialise()
 
-	address := fmt.Sprintf("0.0.0.0:%d", *port)
+	address := fmt.Sprintf("0.0.0.0:%d", port)
 	logger.Info("Listening", "Address", address)
 
 	srv := &http.Server{
@@ -123,16 +123,18 @@ func runHttpServer(logger logr.Logger, predictor *v1alpha2.PredictorSpec, client
 
 }
 
-func runGrpcServer(logger logr.Logger, predictor *v1alpha2.PredictorSpec, client seldonclient.SeldonApiClient) {
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
+func runGrpcServer(logger logr.Logger, predictor *v1alpha2.PredictorSpec, client seldonclient.SeldonApiClient, port int) {
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	var opts []grpc.ServerOption
-	grpcServer := grpc.NewServer(opts...)
+	grpcServer := api.CreateGrpcServer()
 	seldonGrpcServer := api.NewGrpcSeldonServer(logger, predictor, client)
 	proto.RegisterSeldonServer(grpcServer, seldonGrpcServer)
-	grpcServer.Serve(lis)
+	err = grpcServer.Serve(lis)
+	if err != nil {
+		log.Errorf("Grpc server error: %v", err)
+	}
 }
 
 func main() {
@@ -200,11 +202,14 @@ func main() {
 	}
 
 	if *transport == "http" {
-		logger.Info("Running http server ", "port", *port)
-		runHttpServer(logger, predictor, client)
+		logger.Info("Running http server ", "port", *httpPort)
+		runHttpServer(logger, predictor, client, *httpPort, false)
 	} else {
-		logger.Info("Running grpc server ", "port", *port)
-		runGrpcServer(logger, predictor, client)
+		logger.Info("Running http server ", "port", *httpPort)
+		go runHttpServer(logger, predictor, client, *httpPort, true)
+		logger.Info("Running grpc server ", "port", *grpcPort)
+		runGrpcServer(logger, predictor, client, *grpcPort)
+
 	}
 
 }

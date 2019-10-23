@@ -28,7 +28,7 @@ func (s SeldonMessageTestClient) Marshall(out io.Writer, msg payload.SeldonPaylo
 	panic("implement me")
 }
 
-func (s SeldonMessageTestClient) CreateErrorPayload(err error) (payload.SeldonPayload, error) {
+func (s SeldonMessageTestClient) CreateErrorPayload(err error) payload.SeldonPayload {
 	panic("implement me")
 }
 

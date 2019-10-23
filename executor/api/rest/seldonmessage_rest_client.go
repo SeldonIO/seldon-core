@@ -27,10 +27,10 @@ type SeldonMessageRestClient struct {
 	Log        logr.Logger
 }
 
-func (smc *SeldonMessageRestClient) CreateErrorPayload(err error) (payload.SeldonPayload, error) {
+func (smc *SeldonMessageRestClient) CreateErrorPayload(err error) payload.SeldonPayload {
 	respFailed := proto.SeldonMessage{Status: &proto.Status{Code: http.StatusInternalServerError, Info: err.Error()}}
 	res := payload.SeldonMessagePayload{Msg: &respFailed}
-	return &res, nil
+	return &res
 }
 
 func (smc *SeldonMessageRestClient) Marshall(w io.Writer, msg payload.SeldonPayload) error {

@@ -15,7 +15,7 @@ type SeldonApiClient interface {
 	TransformOutput(host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error)
 	Unmarshall(msg []byte) (payload.SeldonPayload, error)
 	Marshall(out io.Writer, msg payload.SeldonPayload) error
-	CreateErrorPayload(err error) (payload.SeldonPayload, error)
+	CreateErrorPayload(err error) payload.SeldonPayload
 }
 
 type SeldonApiError struct {

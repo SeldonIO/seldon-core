@@ -97,12 +97,22 @@ func addEngineToDeployment(mlDep *machinelearningv1alpha2.SeldonDeployment, p *m
 	return nil
 }
 
-func createExecutorContainer(mlDep *machinelearningv1alpha2.SeldonDeployment, p *machinelearningv1alpha2.PredictorSpec, predictorB64 string,
-	http_port int, grpc_port int, resources *corev1.ResourceRequirements) corev1.Container {
+func createExecutorContainer(mlDep *machinelearningv1alpha2.SeldonDeployment, p *machinelearningv1alpha2.PredictorSpec, predictorB64 string, http_port int, grpc_port int, resources *corev1.ResourceRequirements) corev1.Container {
+	transport := "http"
+	if p.Graph.Endpoint.Type == machinelearningv1alpha2.GRPC {
+		transport = "grpc"
+	}
 	return corev1.Container{
-		Name:                     EngineContainerName,
-		Image:                    GetEnv("EXECUTOR_CONTAINER_IMAGE_AND_VERSION", "seldonio/seldon-core-executor:0.5.0-SNAPSHOT"),
-		Args:                     []string{"--sdep", mlDep.Name, "--namespace", mlDep.Namespace, "--predictor", p.Name, "--port", strconv.Itoa(http_port)},
+		Name:  EngineContainerName,
+		Image: GetEnv("EXECUTOR_CONTAINER_IMAGE_AND_VERSION", "seldonio/seldon-core-executor:0.5.0-SNAPSHOT"),
+		Args: []string{
+			"--sdep", mlDep.Name,
+			"--namespace", mlDep.Namespace,
+			"--predictor", p.Name,
+			"--http_port", strconv.Itoa(http_port),
+			"--grpc_port", strconv.Itoa(grpc_port),
+			"--transport", transport,
+		},
 		ImagePullPolicy:          corev1.PullPolicy(GetEnv("ENGINE_CONTAINER_IMAGE_PULL_POLICY", "IfNotPresent")),
 		TerminationMessagePath:   "/dev/termination-log",
 		TerminationMessagePolicy: corev1.TerminationMessageReadFile,
