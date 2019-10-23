@@ -35,6 +35,10 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
     make s2i_build_base_images
     S2I_EXIT_VALUE=$?
 
+    # CREATE PROTOS
+    make build_protos
+    PROTOS_EXIT_VALUE=$?
+
     # KIND CLUSTER SETUP
     make kind_setup
     SETUP_EXIT_VALUE=$?
