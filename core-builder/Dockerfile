@@ -67,6 +67,8 @@ RUN update-alternatives --install /usr/bin/python python /usr/local/bin/python3.
 RUN rm -rf /usr/local/bin/pip && \
         ln -s /usr/local/bin/pip3.6 /usr/local/bin/pip
 
+RUN pip install --upgrade pip
+RUN pip install --upgrade setuptools
 RUN pip install pyyaml 
 RUN pip install grpcio
 RUN pip install grpcio-tools
