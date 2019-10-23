@@ -61,7 +61,7 @@ install:
 
 .PHONY: test
 test: build_protos install
-	pytest -s -W ignore > run.log 2>&1
+	pytest --verbose -s -W ignore 2>&1
 
 .PHONY: clean
 clean:
