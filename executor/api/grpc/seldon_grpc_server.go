@@ -32,17 +32,17 @@ func CreateGrpcServer() *grpc.Server {
 	return grpcServer
 }
 
-func NewGrpcSeldonServer(logger logr.Logger, predictor *v1alpha2.PredictorSpec, client client.SeldonApiClient) *GrpcSeldonServer {
+func NewGrpcSeldonServer(predictor *v1alpha2.PredictorSpec, client client.SeldonApiClient) *GrpcSeldonServer {
 	return &GrpcSeldonServer{
 		Client:    client,
 		predictor: predictor,
-		Log:       logger,
+		Log:       logf.Log.WithName("SeldonGrpcApi"),
 	}
 }
 
 func (g GrpcSeldonServer) Predict(ctx context.Context, req *proto.SeldonMessage) (*proto.SeldonMessage, error) {
 	seldonPredictorProcess := &predictor.PredictorProcess{
-		Client: NewSeldonGrpcClient(),
+		Client: g.Client,
 		Log:    logf.Log.WithName("SeldonMessageRestClient"),
 	}
 	reqPayload := payload.SeldonMessagePayload{Msg: req}

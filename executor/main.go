@@ -129,7 +129,7 @@ func runGrpcServer(logger logr.Logger, predictor *v1alpha2.PredictorSpec, client
 		log.Fatalf("failed to listen: %v", err)
 	}
 	grpcServer := api.CreateGrpcServer()
-	seldonGrpcServer := api.NewGrpcSeldonServer(logger, predictor, client)
+	seldonGrpcServer := api.NewGrpcSeldonServer(predictor, client)
 	proto.RegisterSeldonServer(grpcServer, seldonGrpcServer)
 	err = grpcServer.Serve(lis)
 	if err != nil {
