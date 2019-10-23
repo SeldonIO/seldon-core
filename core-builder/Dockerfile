@@ -75,8 +75,6 @@ RUN pip install grpcio-tools
 RUN apt-get remove -y --auto-remove && apt-get clean -y && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # INSTALL GO
-ENV GOROOT /usr/lib/go
-ENV GOPATH /usr/local/go
 ENV PATH /usr/local/go/bin:$PATH
 RUN wget https://dl.google.com/go/go1.13.3.linux-amd64.tar.gz && \
         tar -zxvf go1.13.3.linux-amd64.tar.gz && \
