@@ -1,5 +1,4 @@
 VERSION := $(shell cat ../../version.txt)
-KUBECONFIG := $(kind get kubeconfig-path)
 
 kind_create_cluster:
 	kind create cluster --config kind_config.yaml

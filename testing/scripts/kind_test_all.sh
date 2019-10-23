@@ -29,6 +29,9 @@ set +o errexit
 make kind_create_cluster
 KIND_EXIT_VALUE=$?
 
+# Ensure we reach the kubeconfig path
+export KUBECONFIG=$(kind get kubeconfig-path)
+
 # ONLY RUN THE FOLLOWING IF SUCCESS
 if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
     # BUILD S2I BASE IMAGES
