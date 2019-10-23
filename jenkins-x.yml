@@ -24,6 +24,10 @@ pipelineConfig:
                     name: cgroup
                   - name: dind-storage
                     mountPath: /var/lib/docker
+                resources:
+                  requests:
+                    cpu: 2
+                    memory: 4000Mi
                 securityContext:
                   privileged: true
                 imagePullPolicy: Always
