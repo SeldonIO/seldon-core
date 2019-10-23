@@ -39,3 +39,4 @@ pipelineConfig:
                 - name: dind-storage
                   emptyDir: {}
 
+
