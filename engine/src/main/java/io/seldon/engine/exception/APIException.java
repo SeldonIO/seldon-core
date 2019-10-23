@@ -25,67 +25,63 @@ package io.seldon.engine.exception;
 
 public class APIException extends RuntimeException {
 
-	public enum ApiExceptionType { 
-		
-		ENGINE_INVALID_JSON(201,"Invalid JSON",400),
-		ENGINE_INVALID_RESPONSE_JSON(201,"Invalid Response JSON",500),
-		ENGINE_INVALID_ENDPOINT_URL(202,"Invalid Endpoint URL",500),	
-		ENGINE_MICROSERVICE_ERROR(203,"Microservice error",500),
-		ENGINE_INVALID_ABTEST(204,"Error happened in AB Test Routing",500),
-		ENGINE_INVALID_COMBINER_RESPONSE(204,"Invalid number of predictions from combiner",500),
-		ENGINE_INTERRUPTED(205,"API call interrupted",500),
-		ENGINE_EXECUTION_FAILURE(206,"Execution failure",500),
-		ENGINE_INVALID_ROUTING(207,"Invalid Routing",500),
-		REQUEST_IO_EXCEPTION(208,"IO Exception",500);
-		
-		int id;
-		String message;
-		int httpCode;
+  public enum ApiExceptionType {
+    ENGINE_INVALID_JSON(201, "Invalid JSON", 400),
+    ENGINE_INVALID_RESPONSE_JSON(201, "Invalid Response JSON", 500),
+    ENGINE_INVALID_ENDPOINT_URL(202, "Invalid Endpoint URL", 500),
+    ENGINE_MICROSERVICE_ERROR(203, "Microservice error", 500),
+    ENGINE_INVALID_ABTEST(204, "Error happened in AB Test Routing", 500),
+    ENGINE_INVALID_COMBINER_RESPONSE(204, "Invalid number of predictions from combiner", 500),
+    ENGINE_INTERRUPTED(205, "API call interrupted", 500),
+    ENGINE_EXECUTION_FAILURE(206, "Execution failure", 500),
+    ENGINE_INVALID_ROUTING(207, "Invalid Routing", 500),
+    REQUEST_IO_EXCEPTION(208, "IO Exception", 500);
 
-		ApiExceptionType(int id,String message,int httpCode) {
-		    this.id = id;
-		    this.message = message;
-		    this.httpCode = httpCode;
-		  }
+    int id;
+    String message;
+    int httpCode;
 
-		public int getId() {
-			return id;
-		}
+    ApiExceptionType(int id, String message, int httpCode) {
+      this.id = id;
+      this.message = message;
+      this.httpCode = httpCode;
+    }
 
-		public String getMessage() {
-			return message;
-		}
+    public int getId() {
+      return id;
+    }
 
-		public int getHttpCode() {
-			return httpCode;
-		}
+    public String getMessage() {
+      return message;
+    }
 
-		
-	};
+    public int getHttpCode() {
+      return httpCode;
+    }
+  };
 
-   ApiExceptionType apiExceptionType;
-   String info;
+  ApiExceptionType apiExceptionType;
+  String info;
 
-   public APIException(ApiExceptionType apiExceptionType,String info) {
-	   super();
-	   this.apiExceptionType = apiExceptionType;
-	   this.info = info;
-   }
+  public APIException(ApiExceptionType apiExceptionType, String info) {
+    super();
+    this.apiExceptionType = apiExceptionType;
+    this.info = info;
+  }
 
-   public ApiExceptionType getApiExceptionType() {
-	   return apiExceptionType;
-   }
+  public ApiExceptionType getApiExceptionType() {
+    return apiExceptionType;
+  }
 
-   public void setApiExceptionType(ApiExceptionType apiExceptionType) {
-	   this.apiExceptionType = apiExceptionType;
-   }
+  public void setApiExceptionType(ApiExceptionType apiExceptionType) {
+    this.apiExceptionType = apiExceptionType;
+  }
 
-   public String getInfo() {
-	   return info;
-   }
+  public String getInfo() {
+    return info;
+  }
 
-   public void setInfo(String info) {
-	   this.info = info;
-   }	
-
+  public void setInfo(String info) {
+    this.info = info;
+  }
 }

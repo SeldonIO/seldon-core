@@ -25,6 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"knative.dev/pkg/apis/istio/common/v1alpha1"
 	istio "knative.dev/pkg/apis/istio/v1alpha3"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -116,7 +117,15 @@ func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1alph
 		if p.Explainer.Type == "anchor_images" {
 			explainerContainer.Args = append(explainerContainer.Args, "--tf_data_type=float32")
 		}
-		for k, v := range p.Explainer.Config {
+
+		// Order explainer config map keys
+		var keys []string
+		for k, _ := range p.Explainer.Config {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		for _, k := range keys {
+			v := p.Explainer.Config[k]
 			//remote files in model location should get downloaded by initializer
 			if p.Explainer.ModelUri != "" {
 				v = strings.Replace(v, p.Explainer.ModelUri, "/mnt/models", 1)

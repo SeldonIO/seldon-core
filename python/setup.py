@@ -28,7 +28,6 @@ setup(name='seldon-core',
           'flatbuffers',
           'protobuf',
           'grpcio',
-          'tensorflow',
           'Flask-OpenTracing==0.2.0',
           'opentracing>=1.2.2,<2',
           'jaeger-client==3.13.0',
@@ -38,12 +37,16 @@ setup(name='seldon-core',
           "minio >= 4.0.9",
           "google-cloud-storage >= 1.16.0",
           "azure-storage-blob >= 2.0.1",
-          "setuptools>=41.0.0"
+          "setuptools >= 41.0.0"
       ],
       tests_require=[
           'pytest',
-          'pytest-cov'
+          'pytest-cov',
+          'Pillow'
       ],
+      extras_require={
+          'tensorflow': ['tensorflow']
+      },
       test_suite='tests',
       entry_points={
           'console_scripts': [

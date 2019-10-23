@@ -22,6 +22,7 @@ import (
 	. "github.com/onsi/gomega"
 	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/api/v1alpha2"
 	"io/ioutil"
+	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -29,15 +30,13 @@ import (
 	"time"
 )
 
-const timeout = time.Second * 5
-
 func helperLoadBytes(name string) []byte {
 	path := filepath.Join("testdata", name) // relative path
 	bytes, _ := ioutil.ReadFile(path)
 	return bytes
 }
 
-var _ = Describe("Create a deployment", func() {
+var _ = Describe("Create a Seldon Deployment", func() {
 	const timeout = time.Second * 30
 	const interval = time.Second * 1
 	By("Creating a resource")
@@ -78,61 +77,33 @@ var _ = Describe("Create a deployment", func() {
 				},
 			},
 		}
+
+		// Run Defaulter
+		instance.Default()
+
 		Expect(k8sClient.Create(context.Background(), instance)).Should(Succeed())
-		time.Sleep(time.Second * 5)
+		//time.Sleep(time.Second * 5)
 
 		fetched := &machinelearningv1alpha2.SeldonDeployment{}
 		Eventually(func() error {
 			err := k8sClient.Get(context.Background(), key, fetched)
 			return err
 		}, timeout, interval).Should(BeNil())
-
 		Expect(fetched.Spec.Name).Should(Equal("mydep"))
+
+		depKey := types.NamespacedName{
+			Name:      machinelearningv1alpha2.GetDeploymentName(instance, instance.Spec.Predictors[0], instance.Spec.Predictors[0].ComponentSpecs[0]),
+			Namespace: "default",
+		}
+		depFetched := &appsv1.Deployment{}
+		Eventually(func() error {
+			err := k8sClient.Get(context.Background(), depKey, depFetched)
+			return err
+		}, timeout, interval).Should(BeNil())
+		Expect(len(depFetched.Spec.Template.Spec.Containers)).Should(Equal(2))
+
+		Expect(k8sClient.Delete(context.Background(), instance)).Should(Succeed())
 
 	})
 
 })
-
-func coreDeploymentTests(instance *machinelearningv1alpha2.SeldonDeployment) {
-
-	// Create the SeldonDeployment object and expect the Reconcile and Deployment to be created
-	Expect(k8sClient.Create(context.Background(), instance)).Should(Succeed())
-	time.Sleep(time.Second * 5)
-	err := k8sClient.Create(context.TODO(), instance)
-
-	Expect(err).NotTo(HaveOccurred())
-	// delete the SeldonDeployment at end of test
-	defer k8sClient.Delete(context.TODO(), instance)
-
-}
-
-/*
-func testReconcileSimpleModel(t *testing.T) {
-	instance := &machinelearningv1alpha2.SeldonDeployment{}
-
-	bStr := helperLoadBytes("model.json")
-	json.Unmarshal(bStr, instance)
-
-	coreDeploymentTests(instance)
-}
-
-func testReconcileModelLongName(t *testing.T) {
-	instance := &machinelearningv1alpha2.SeldonDeployment{}
-
-	bStr := helperLoadBytes("model_long_name.json")
-	json.Unmarshal(bStr, instance)
-
-	coreDeploymentTests(instance)
-}
-
-func testReconcileHpaModel(t *testing.T) {
-
-	instance := &machinelearningv1alpha2.SeldonDeployment{}
-
-	bStr := helperLoadBytes("model_with_hpa.json")
-	json.Unmarshal(bStr, instance)
-
-	coreDeploymentTests(instance)
-}
-
-*/

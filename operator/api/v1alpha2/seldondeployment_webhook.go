@@ -273,6 +273,19 @@ func (r *SeldonDeployment) DefaultSeldonDeployment() {
 					}
 				}
 
+				// Add a default REST endpoint if none provided
+				// pu needs to have an endpoint as engine reads it from SDep in order to direct graph traffic
+				// probes etc will be added later by controller
+				if pu.Endpoint == nil {
+					pu.Endpoint = &Endpoint{Type: REST}
+				}
+				var portType string
+				if pu.Endpoint.Type == GRPC {
+					portType = "grpc"
+				} else {
+					portType = "http"
+				}
+
 				SetImageNameForPrepackContainer(pu, con)
 
 				// if new Add container to componentSpecs
@@ -295,18 +308,6 @@ func (r *SeldonDeployment) DefaultSeldonDeployment() {
 
 				getUpdatePortNumMap(con.Name, &nextPortNum, portMap)
 				portNum := portMap[pu.Name]
-				// Add a default REST endpoint if none provided
-				// pu needs to have an endpoint as engine reads it from SDep in order to direct graph traffic
-				// probes etc will be added later by controller
-				if pu.Endpoint == nil {
-					pu.Endpoint = &Endpoint{Type: REST}
-				}
-				var portType string
-				if pu.Endpoint.Type == GRPC {
-					portType = "grpc"
-				} else {
-					portType = "http"
-				}
 
 				if con != nil {
 					existingPort := GetPort(portType, con.Ports)
@@ -333,7 +334,6 @@ func (r *SeldonDeployment) DefaultSeldonDeployment() {
 					if _, hasSeparateEnginePod := r.Spec.Annotations[ANNOTATION_SEPARATE_ENGINE]; !hasSeparateEnginePod {
 						pu.Endpoint.ServiceHost = "localhost"
 					} else {
-						//FIXME
 						containerServiceValue := GetContainerServiceName(r, p, con)
 						pu.Endpoint.ServiceHost = containerServiceValue + "." + r.ObjectMeta.Namespace + ".svc.cluster.local."
 					}
@@ -398,11 +398,26 @@ func checkTraffic(mlDep *SeldonDeployment, fldPath *field.Path, allErrs field.Er
 	return allErrs
 }
 
+func sizeOfGraph(p *PredictiveUnit) int {
+	count := 0
+	for _, child := range p.Children {
+		count = count + sizeOfGraph(&child)
+	}
+	return count + 1
+}
+
 func (r *SeldonDeployment) validateSeldonDeployment() error {
 	var allErrs field.ErrorList
 
 	predictorNames := make(map[string]bool)
 	for i, p := range r.Spec.Predictors {
+
+		_, noEngine := p.Annotations[ANNOTATION_NO_ENGINE]
+		if noEngine && sizeOfGraph(p.Graph) > 1 {
+			fldPath := field.NewPath("spec").Child("predictors").Index(i)
+			allErrs = append(allErrs, field.Invalid(fldPath, p.Name, "Running without engine only valid for single element graphs"))
+		}
+
 		if _, present := predictorNames[p.Name]; present {
 			fldPath := field.NewPath("spec").Child("predictors").Index(i)
 			allErrs = append(allErrs, field.Invalid(fldPath, p.Name, "Duplicate predictor name"))

@@ -2,8 +2,6 @@ import json
 import numpy as np
 from google.protobuf import json_format
 import base64
-import tensorflow as tf
-from tensorflow.core.framework.tensor_pb2 import TensorProto
 from PIL import Image
 import io
 
@@ -12,8 +10,16 @@ from seldon_core.proto import prediction_pb2
 from seldon_core.user_model import SeldonComponent
 from seldon_core.utils import seldon_message_to_json, json_to_seldon_message
 from seldon_core.flask_utils import SeldonMicroserviceException
+from seldon_core.tf_helper import _TF_MISSING
 
 from flask import jsonify
+
+from utils import skipif_tf_missing
+
+if not _TF_MISSING:
+    from tensorflow.core.framework.tensor_pb2 import TensorProto
+    import tensorflow as tf
+
 
 """
  Checksum of bytes. Used to check data integrity of binData passed in multipart/form-data request
@@ -245,6 +251,7 @@ def test_model_feedback_lowlevel_ok():
     assert rv.status_code == 200
 
 
+@skipif_tf_missing
 def test_model_tftensor_ok():
     user_object = UserObject()
     app = get_rest_microservice(user_object)
@@ -469,6 +476,7 @@ def test_proto_feedback_custom():
     resp = app.SendFeedback(feedback, None)
 
 
+@skipif_tf_missing
 def test_proto_tftensor_ok():
     user_object = UserObject()
     app = SeldonModelGRPC(user_object)
