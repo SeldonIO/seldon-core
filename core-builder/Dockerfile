@@ -76,8 +76,8 @@ RUN apt-get remove -y --auto-remove && apt-get clean -y && rm -rf /var/lib/apt/l
 
 # INSTALL GO
 ENV GOROOT /usr/lib/go
-ENV GOPATH /go
-ENV PATH /go/bin:$PATH
+ENV GOPATH /usr/local/go
+ENV PATH /usr/local/go/bin:$PATH
 RUN wget https://dl.google.com/go/go1.13.3.linux-amd64.tar.gz && \
         tar -zxvf go1.13.3.linux-amd64.tar.gz && \
         mv go/ /usr/local/go
