@@ -50,6 +50,10 @@ RUN \
     pip3 install pyyaml && \
     apt-get remove -y --auto-remove && apt-get clean -y && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+# Ensure pip can be reached
+RUN ln -s /usr/bin/python3 python \
+  && pip3 install --upgrade pip
+
 WORKDIR /work
 
 # Define default command.
