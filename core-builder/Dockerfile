@@ -1,5 +1,7 @@
 FROM openjdk:8u141-jdk
 
+ENV PYTHON_VERSION "3.6.0"
+
 # install docker
 RUN \
     apt-get update && \
@@ -42,17 +44,31 @@ RUN \
     update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java && \
     apt-get remove -y --auto-remove && apt-get clean -y && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# dependencies for release script
-RUN \
-    # install env for python3
-    apt-get update -y && \
-    apt-get install -y python3-pip && \
-    pip3 install pyyaml && \
-    apt-get remove -y --auto-remove && apt-get clean -y && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+# ZLIB1G required for installation python
+RUN apt-get upgrade && \
+        apt-get update && \
+        apt-get install zlib1g -y && \
+        apt-get install zlib1g-dev -y && \
+        apt-get install libssl-dev -y
 
-# Ensure pip can be reached
-RUN ln -s /usr/bin/python3 python \
-  && pip3 install --upgrade pip
+RUN curl -SLO https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz \
+    && tar xvf Python-${PYTHON_VERSION}.tgz \
+    && cd Python-${PYTHON_VERSION} \
+    && ./configure --prefix=/usr/local --with-openssl \
+    && make \
+    && make altinstall \
+    && cd / \
+    && rm -rf Python-${PYTHON_VERSION}*
+
+# Ensure python3 and pip3 are default
+RUN curl -sS https://bootstrap.pypa.io/get-pip.py >>setup.py && \
+        python setup.py
+RUN update-alternatives --install /usr/bin/python python /usr/local/bin/python3.6 1
+RUN rm -rf /usr/local/bin/pip && \
+        ln -s /usr/local/bin/pip3.6 /usr/local/bin/pip
+
+RUN pip install pyyaml 
+RUN apt-get remove -y --auto-remove && apt-get clean -y && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 WORKDIR /work
 
