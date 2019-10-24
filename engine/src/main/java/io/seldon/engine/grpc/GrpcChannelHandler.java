@@ -19,11 +19,12 @@ public class GrpcChannelHandler {
   @Autowired TracingProvider tracingProvider;
 
   public Channel get(Endpoint endpoint) {
-    if (store.containsKey(endpoint)) return store.get(endpoint);
-    else {
+    if (store.containsKey(endpoint)) {
+      return store.get(endpoint);
+    } else {
       ManagedChannel channel =
           ManagedChannelBuilder.forAddress(endpoint.getServiceHost(), endpoint.getServicePort())
-              .usePlaintext(true)
+              .usePlaintext()
               .build();
 
       if (tracingProvider != null && tracingProvider.isActive()) {
@@ -32,7 +33,9 @@ public class GrpcChannelHandler {
                 .withTracer(this.tracingProvider.getTracer())
                 .build();
         store.putIfAbsent(endpoint, tracingInterceptor.intercept(channel));
-      } else store.putIfAbsent(endpoint, channel);
+      } else {
+        store.putIfAbsent(endpoint, channel);
+      }
       return store.get(endpoint);
     }
   }
