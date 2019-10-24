@@ -66,6 +66,9 @@ def get_request() -> Dict:
                 raise SeldonMicroserviceException("Can't find JSON in data")
     if message is None:
         raise SeldonMicroserviceException("Invalid Data Format - empty JSON")
+    if 'binData' in message and message['binData'] is not None:
+        binData = message['binData']
+        message['binData'] = base64.b64decode(binData).decode("utf-8")
     return message
 
 
