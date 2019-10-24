@@ -6,11 +6,14 @@ import grpc
 import numpy as np
 from k8s_utils import *
 
+
 def wait_for_rollout(deploymentName):
     ret = run("kubectl rollout status -n test1 deploy/" + deploymentName, shell=True)
     while ret.returncode > 0:
         time.sleep(1)
-        ret = run("kubectl rollout status -n test1 deploy/" + deploymentName, shell=True)
+        ret = run(
+            "kubectl rollout status -n test1 deploy/" + deploymentName, shell=True
+        )
 
 
 def rest_request(model, namespace):
@@ -43,77 +46,151 @@ def initial_rest_request(model, namespace):
         return r
 
 
-def create_random_data(data_size,rows=1):
-    shape = [rows,data_size]
-    arr = np.random.rand(rows*data_size)
-    return (shape,arr)
+def create_random_data(data_size, rows=1):
+    shape = [rows, data_size]
+    arr = np.random.rand(rows * data_size)
+    return (shape, arr)
 
 
-@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=5)
-def rest_request_ambassador(deploymentName,namespace,endpoint="localhost:8003",data_size=5,rows=1,data=None):
+@retry(
+    wait_exponential_multiplier=1000,
+    wait_exponential_max=10000,
+    stop_max_attempt_number=5,
+)
+def rest_request_ambassador(
+    deploymentName, namespace, endpoint="localhost:8003", data_size=5, rows=1, data=None
+):
     if data is None:
-        shape, arr = create_random_data(data_size,rows)
+        shape, arr = create_random_data(data_size, rows)
     else:
         shape = data.shape
         arr = data.flatten()
-    payload = {"data":{"names":["a","b"],"tensor":{"shape":shape,"values":arr.tolist()}}}
+    payload = {
+        "data": {
+            "names": ["a", "b"],
+            "tensor": {"shape": shape, "values": arr.tolist()},
+        }
+    }
     if namespace is None:
         response = requests.post(
-            "http://"+endpoint+"/seldon/"+deploymentName+"/api/v0.1/predictions",
-            json=payload)
+            "http://"
+            + endpoint
+            + "/seldon/"
+            + deploymentName
+            + "/api/v0.1/predictions",
+            json=payload,
+        )
     else:
         response = requests.post(
-            "http://"+endpoint+"/seldon/"+namespace+"/"+deploymentName+"/api/v0.1/predictions",
-            json=payload)
+            "http://"
+            + endpoint
+            + "/seldon/"
+            + namespace
+            + "/"
+            + deploymentName
+            + "/api/v0.1/predictions",
+            json=payload,
+        )
     return response
 
-@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=5)
-def rest_request_ambassador_auth(deploymentName,namespace,username,password,endpoint="localhost:8003",data_size=5,rows=1,data=None):
+
+@retry(
+    wait_exponential_multiplier=1000,
+    wait_exponential_max=10000,
+    stop_max_attempt_number=5,
+)
+def rest_request_ambassador_auth(
+    deploymentName,
+    namespace,
+    username,
+    password,
+    endpoint="localhost:8003",
+    data_size=5,
+    rows=1,
+    data=None,
+):
     if data is None:
-        shape, arr = create_random_data(data_size,rows)
+        shape, arr = create_random_data(data_size, rows)
     else:
         shape = data.shape
         arr = data.flatten()
-    payload = {"data":{"names":["a","b"],"tensor":{"shape":shape,"values":arr.tolist()}}}
+    payload = {
+        "data": {
+            "names": ["a", "b"],
+            "tensor": {"shape": shape, "values": arr.tolist()},
+        }
+    }
     if namespace is None:
         response = requests.post(
-            "http://"+endpoint+"/seldon/"+deploymentName+"/api/v0.1/predictions",
+            "http://"
+            + endpoint
+            + "/seldon/"
+            + deploymentName
+            + "/api/v0.1/predictions",
             json=payload,
-            auth=HTTPBasicAuth(username, password))
+            auth=HTTPBasicAuth(username, password),
+        )
     else:
         response = requests.post(
-            "http://"+endpoint+"/seldon/"+namespace+"/"+deploymentName+"/api/v0.1/predictions",
+            "http://"
+            + endpoint
+            + "/seldon/"
+            + namespace
+            + "/"
+            + deploymentName
+            + "/api/v0.1/predictions",
             json=payload,
-            auth=HTTPBasicAuth(username, password))
+            auth=HTTPBasicAuth(username, password),
+        )
     return response
 
-@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=5)
-def grpc_request_ambassador(deploymentName,namespace,endpoint="localhost:8004",data_size=5,rows=1,data=None):
+
+@retry(
+    wait_exponential_multiplier=1000,
+    wait_exponential_max=10000,
+    stop_max_attempt_number=5,
+)
+def grpc_request_ambassador(
+    deploymentName, namespace, endpoint="localhost:8004", data_size=5, rows=1, data=None
+):
     if data is None:
-        shape, arr = create_random_data(data_size,rows)
+        shape, arr = create_random_data(data_size, rows)
     else:
         shape = data.shape
         arr = data.flatten()
     datadef = prediction_pb2.DefaultData(
-            tensor = prediction_pb2.Tensor(
-                shape = shape,
-                values = arr
-                )
-            )
-    request = prediction_pb2.SeldonMessage(data = datadef)
+        tensor=prediction_pb2.Tensor(shape=shape, values=arr)
+    )
+    request = prediction_pb2.SeldonMessage(data=datadef)
     channel = grpc.insecure_channel(endpoint)
     stub = prediction_pb2_grpc.SeldonStub(channel)
     if namespace is None:
-        metadata = [('seldon',deploymentName)]
+        metadata = [("seldon", deploymentName)]
     else:
-        metadata = [('seldon',deploymentName),('namespace',namespace)]
-    response = stub.Predict(request=request,metadata=metadata)
+        metadata = [("seldon", deploymentName), ("namespace", namespace)]
+    response = stub.Predict(request=request, metadata=metadata)
     return response
 
-def grpc_request_ambassador2(deploymentName,namespace,endpoint="localhost:8004",data_size=5,rows=1,data=None):
+
+def grpc_request_ambassador2(
+    deploymentName, namespace, endpoint="localhost:8004", data_size=5, rows=1, data=None
+):
     try:
-        return grpc_request_ambassador(deploymentName,namespace,endpoint=endpoint,data_size=data_size,rows=rows,data=data)
+        return grpc_request_ambassador(
+            deploymentName,
+            namespace,
+            endpoint=endpoint,
+            data_size=data_size,
+            rows=rows,
+            data=data,
+        )
     except:
         print("Warning - caught exception")
-        return grpc_request_ambassador(deploymentName,namespace,endpoint=endpoint,data_size=data_size,rows=rows,data=data)
-
+        return grpc_request_ambassador(
+            deploymentName,
+            namespace,
+            endpoint=endpoint,
+            data_size=data_size,
+            rows=rows,
+            data=data,
+        )

@@ -78,7 +78,11 @@ def validate_metrics(metrics: List[Dict]) -> bool:
         for metric in metrics:
             if not ("key" in metric and "value" in metric and "type" in metric):
                 return False
-            if not (metric["type"] == COUNTER or metric["type"] == GAUGE or metric["type"] == TIMER):
+            if not (
+                metric["type"] == COUNTER
+                or metric["type"] == GAUGE
+                or metric["type"] == TIMER
+            ):
                 return False
             try:
                 metric["value"] + 1

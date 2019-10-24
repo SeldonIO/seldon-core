@@ -39,8 +39,7 @@ def test_create_gauge_invalid_value():
 
 
 def test_validate_ok():
-    assert validate_metrics(
-        [{"type": COUNTER, "key": "a", "value": 1}]) == True
+    assert validate_metrics([{"type": COUNTER, "key": "a", "value": 1}]) == True
 
 
 def test_validate_bad_type():
@@ -60,8 +59,7 @@ def test_validate_no_value():
 
 
 def test_validate_bad_value():
-    assert validate_metrics(
-        [{"type": COUNTER, "key": "a", "value": "1"}]) == False
+    assert validate_metrics([{"type": COUNTER, "key": "a", "value": "1"}]) == False
 
 
 def test_validate_no_list():
@@ -69,7 +67,6 @@ def test_validate_no_list():
 
 
 class Component(object):
-
     def __init__(self, ok=True):
         self.ok = ok
 
@@ -100,8 +97,14 @@ def test_proto_metrics():
 
 
 def test_proto_tags():
-    metric = {"tags": {"t1": "t2"}, "metrics": [{"type": "COUNTER", "key": "mycounter", "value": 1.2}, {
-        "type": "GAUGE", "key": "mygauge", "value": 1.2}, {"type": "TIMER", "key": "mytimer", "value": 1.2}]}
+    metric = {
+        "tags": {"t1": "t2"},
+        "metrics": [
+            {"type": "COUNTER", "key": "mycounter", "value": 1.2},
+            {"type": "GAUGE", "key": "mygauge", "value": 1.2},
+            {"type": "TIMER", "key": "mytimer", "value": 1.2},
+        ],
+    }
     meta = prediction_pb2.Meta()
     json_format.ParseDict(metric, meta)
     jStr = json_format.MessageToJson(meta)

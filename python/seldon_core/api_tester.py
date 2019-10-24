@@ -28,17 +28,26 @@ def get_seldon_client(args) -> SeldonClient:
         else:
             seldon_grpc_endpoint = None
             seldon_rest_endpoint = endpoint
-        sc = SeldonClient(gateway="seldon", seldon_rest_endpoint=seldon_rest_endpoint,
-                          seldon_grpc_endpoint=seldon_grpc_endpoint,
-                          oauth_key=args.oauth_key, oauth_secret=args.oauth_secret)
+        sc = SeldonClient(
+            gateway="seldon",
+            seldon_rest_endpoint=seldon_rest_endpoint,
+            seldon_grpc_endpoint=seldon_grpc_endpoint,
+            oauth_key=args.oauth_key,
+            oauth_secret=args.oauth_secret,
+        )
     else:
         gateway_endpoint = endpoint
         if args.grpc:
             transport = "grpc"
         else:
             transport = "rest"
-        sc = SeldonClient(gateway="ambassador", gateway_endpoint=gateway_endpoint, transport=transport,
-                          deployment_name=args.deployment, namespace=args.namespace)
+        sc = SeldonClient(
+            gateway="ambassador",
+            gateway_endpoint=gateway_endpoint,
+            transport=transport,
+            deployment_name=args.deployment,
+            namespace=args.namespace,
+        )
     return sc
 
 
@@ -52,7 +61,7 @@ def run_send_feedback(args):
        Command line args
 
     """
-    contract = json.load(open(args.contract, 'r'))
+    contract = json.load(open(args.contract, "r"))
     contract = unfold_contract(contract)
     sc = get_seldon_client(args)
     if args.grpc:
@@ -61,11 +70,15 @@ def run_send_feedback(args):
         transport = "rest"
 
     for i in range(args.n_requests):
-        batch = generate_batch(contract, args.batch_size, 'features')
+        batch = generate_batch(contract, args.batch_size, "features")
         response_predict = sc.predict(data=batch, deployment_name=args.deployment)
-        response_feedback = sc.feedback(prediction_request=response_predict.request,
-                                        prediction_response=response_predict.response, reward=1.0,
-                                        deployment_name=args.deployment, transport=transport)
+        response_feedback = sc.feedback(
+            prediction_request=response_predict.request,
+            prediction_response=response_predict.response,
+            reward=1.0,
+            deployment_name=args.deployment,
+            transport=transport,
+        )
         if args.prnt:
             print(f"RECEIVED RESPONSE:\n{response_feedback}\n")
 
@@ -80,7 +93,7 @@ def run_predict(args):
        Command line args
 
     """
-    contract = json.load(open(args.contract, 'r'))
+    contract = json.load(open(args.contract, "r"))
     contract = unfold_contract(contract)
     feature_names = [feature["name"] for feature in contract["features"]]
 
@@ -92,36 +105,50 @@ def run_predict(args):
     payload_type = "tensor" if args.tensor else "ndarray"
 
     for i in range(args.n_requests):
-        batch = generate_batch(contract, args.batch_size, 'features')
+        batch = generate_batch(contract, args.batch_size, "features")
         if args.prnt:
             print(f"{'-' * 40}\nSENDING NEW REQUEST:\n")
             print(batch)
-        response_predict = sc.predict(data=batch, deployment_name=args.deployment, names=feature_names, payload_type=payload_type)
+        response_predict = sc.predict(
+            data=batch,
+            deployment_name=args.deployment,
+            names=feature_names,
+            payload_type=payload_type,
+        )
         if args.prnt:
             print(f"RECEIVED RESPONSE:\n{response_predict.response}\n")
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("contract", type=str,
-                        help="File that contains the data contract")
+    parser.add_argument(
+        "contract", type=str, help="File that contains the data contract"
+    )
     parser.add_argument("host", type=str)
     parser.add_argument("port", type=int)
-    parser.add_argument("deployment", type=str, nargs='?', default="mymodel")
-    parser.add_argument("--endpoint", type=str, choices=["predict", "send-feedback"], default="predict")
+    parser.add_argument("deployment", type=str, nargs="?", default="mymodel")
+    parser.add_argument(
+        "--endpoint", type=str, choices=["predict", "send-feedback"], default="predict"
+    )
     parser.add_argument("-b", "--batch-size", type=int, default=1)
     parser.add_argument("-n", "--n-requests", type=int, default=1)
     parser.add_argument("--grpc", action="store_true")
     parser.add_argument("-t", "--tensor", action="store_true")
-    parser.add_argument("-p", "--prnt", action="store_true", help="Prints requests and responses")
-    parser.add_argument("--log-level", type=str, choices=["DEBUG", "INFO", "ERROR"], default="ERROR")
+    parser.add_argument(
+        "-p", "--prnt", action="store_true", help="Prints requests and responses"
+    )
+    parser.add_argument(
+        "--log-level", type=str, choices=["DEBUG", "INFO", "ERROR"], default="ERROR"
+    )
     parser.add_argument("--namespace", type=str)
     parser.add_argument("--oauth-port", type=int)
     parser.add_argument("--oauth-key")
     parser.add_argument("--oauth-secret")
 
     args = parser.parse_args()
-    LOG_FORMAT = '%(asctime)s - %(name)s:%(funcName)s:%(lineno)s - %(levelname)s:  %(message)s'
+    LOG_FORMAT = (
+        "%(asctime)s - %(name)s:%(funcName)s:%(lineno)s - %(levelname)s:  %(message)s"
+    )
     if args.log_level == "DEBUG":
         log_level = logging.DEBUG
     elif args.log_level == "INFO":

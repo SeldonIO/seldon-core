@@ -11,8 +11,11 @@ IMAGE_NAME = "seldonio/test#TYPE#_#API#:0.1"
 
 
 def create_s2I_image(s2i_python_version, component_type, api_type):
-    cmd = S2I_CREATE.replace("#TYPE#", component_type).replace("#API#", api_type).replace("#VERSION#",
-                                                                                          s2i_python_version)
+    cmd = (
+        S2I_CREATE.replace("#TYPE#", component_type)
+        .replace("#API#", api_type)
+        .replace("#VERSION#", s2i_python_version)
+    )
     print(cmd)
     run(cmd, shell=True, check=True)
 
@@ -35,7 +38,6 @@ def create_push_s2i_image(s2i_python_version, component_type, api_type):
 
 @pytest.mark.usefixtures("s2i_python_version")
 class TestPythonS2i(object):
-
     def test_build_router_rest(self, s2i_python_version):
         create_s2I_image(s2i_python_version, "router", "rest")
         img = get_image_name("router", "rest")
@@ -103,7 +105,6 @@ def wait_for_rollout(deploymentName):
 
 @pytest.mark.usefixtures("s2i_python_version")
 class TestPythonS2iK8s(object):
-
     def test_model_rest(self, s2i_python_version):
         tester = S2IK8S()
         tester.test_model_rest(s2i_python_version)
@@ -126,11 +127,14 @@ class TestPythonS2iK8s(object):
 
 
 class S2IK8S(object):
-
     def test_model_rest(self, s2i_python_version):
         run("kubectl delete sdep --all", shell=True)
         create_push_s2i_image(s2i_python_version, "model", "rest")
-        run("kubectl apply -f ../resources/s2i_python_model.json", shell=True, check=True)
+        run(
+            "kubectl apply -f ../resources/s2i_python_model.json",
+            shell=True,
+            check=True,
+        )
         wait_for_rollout("mymodel-mymodel-8715075")
         r = initial_rest_request("mymodel", "seldon")
         arr = np.array([[1, 2, 3]])
@@ -145,7 +149,11 @@ class S2IK8S(object):
     def test_input_transformer_rest(self, s2i_python_version):
         run("kubectl delete sdep --all", shell=True)
         create_push_s2i_image(s2i_python_version, "transformer", "rest")
-        run("kubectl apply -f ../resources/s2i_python_transformer.json", shell=True, check=True)
+        run(
+            "kubectl apply -f ../resources/s2i_python_transformer.json",
+            shell=True,
+            check=True,
+        )
         wait_for_rollout("mytrans-mytrans-1f278ae")
         r = initial_rest_request("mytrans", "seldon")
         arr = np.array([[1, 2, 3]])
@@ -160,7 +168,11 @@ class S2IK8S(object):
     def test_output_transformer_rest(self, s2i_python_version):
         run("kubectl delete sdep --all", shell=True)
         create_push_s2i_image(s2i_python_version, "transformer", "rest")
-        run("kubectl apply -f ../resources/s2i_python_output_transformer.json", shell=True, check=True)
+        run(
+            "kubectl apply -f ../resources/s2i_python_output_transformer.json",
+            shell=True,
+            check=True,
+        )
         wait_for_rollout("mytrans-mytrans-52996cb")
         r = initial_rest_request("mytrans", "seldon")
         arr = np.array([[1, 2, 3]])
@@ -176,7 +188,11 @@ class S2IK8S(object):
         run("kubectl delete sdep --all", shell=True)
         create_push_s2i_image(s2i_python_version, "model", "rest")
         create_push_s2i_image(s2i_python_version, "router", "rest")
-        run("kubectl apply -f ../resources/s2i_python_router.json", shell=True, check=True)
+        run(
+            "kubectl apply -f ../resources/s2i_python_router.json",
+            shell=True,
+            check=True,
+        )
         wait_for_rollout("myrouter-myrouter-340ed69")
         r = initial_rest_request("myrouter", "seldon")
         arr = np.array([[1, 2, 3]])
@@ -192,7 +208,11 @@ class S2IK8S(object):
         run("kubectl delete sdep --all", shell=True)
         create_push_s2i_image(s2i_python_version, "model", "rest")
         create_push_s2i_image(s2i_python_version, "combiner", "rest")
-        run("kubectl apply -f ../resources/s2i_python_combiner.json", shell=True, check=True)
+        run(
+            "kubectl apply -f ../resources/s2i_python_combiner.json",
+            shell=True,
+            check=True,
+        )
         wait_for_rollout("mycombiner-mycombiner-acc7c4d")
         r = initial_rest_request("mycombiner", "seldon")
         arr = np.array([[1, 2, 3]])
@@ -203,4 +223,3 @@ class S2IK8S(object):
         assert r.json()["data"]["tensor"]["shape"] == [1, 3]
         assert r.json()["data"]["tensor"]["values"] == [3, 4, 5]
         run("kubectl delete sdep --all", shell=True)
-
