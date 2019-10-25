@@ -32,6 +32,7 @@ spec:
       containers:
       - args:
         - --enable-leader-election
+        - --webhook-port={{ .Values.webhook.port }}
         command:
         - /manager
         env:
@@ -69,7 +70,7 @@ spec:
         imagePullPolicy: '{{ .Values.image.pullPolicy }}'
         name: manager
         ports:
-        - containerPort: 443
+        - containerPort: {{ .Values.webhook.port }}
           name: webhook-server
           protocol: TCP
         - containerPort: 8080

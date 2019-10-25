@@ -28,6 +28,7 @@ spec:
         - /manager
         args:
         - --enable-leader-election
+        - --webhook-port=443
         env:
         - name: POD_NAMESPACE
           valueFrom:
