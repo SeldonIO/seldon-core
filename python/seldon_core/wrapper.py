@@ -16,6 +16,7 @@ from seldon_core.flask_utils import (
     ANNOTATION_GRPC_MAX_MSG_SIZE,
 )
 from seldon_core.proto import prediction_pb2_grpc
+import base64
 import os
 
 logger = logging.getLogger(__name__)
@@ -113,6 +114,10 @@ class SeldonModelGRPC(object):
         self.user_model = user_model
 
     def Predict(self, request_grpc, context):
+        data_type = request_grpc.WhichOneof("data_oneof")
+        if data_type == "binData":
+            binData = request_grpc.binData
+            request_grpc.binData = base64.b64decode(binData)
         return seldon_core.seldon_methods.predict(self.user_model, request_grpc)
 
     def SendFeedback(self, feedback_grpc, context):
