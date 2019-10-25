@@ -340,6 +340,19 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
       <version>28.1-jre</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.checkerframework</groupId>
+          <artifactId>checker-qual</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <!-- Outdated transitive dependency through guava -->
+      <!-- Waiting on https://github.com/google/guava/pull/3671 -->
+      <groupId>org.checkerframework</groupId>
+      <artifactId>checker-qual</artifactId>
+      <version>2.11.1</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
