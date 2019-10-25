@@ -71,7 +71,3 @@ pipelineConfig:
               - build_jar
               command: make
               name: test-engine
-      setVersion:
-        replace: true
-        steps:
-        - command: echo "setting up"
