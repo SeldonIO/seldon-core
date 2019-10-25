@@ -609,7 +609,7 @@ def test_proto_bin_data():
     bdata_base64 = base64.b64encode(bdata)
     request = prediction_pb2.SeldonMessage(binData=bdata_base64)
     resp = app.Predict(request, None)
-    assert resp.binData == bdata
+    assert resp.binData == bdata_base64
 
 
 def test_proto_bin_data_nparray():
