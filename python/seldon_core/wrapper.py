@@ -16,7 +16,6 @@ from seldon_core.flask_utils import (
     ANNOTATION_GRPC_MAX_MSG_SIZE,
 )
 from seldon_core.proto import prediction_pb2_grpc
-import base64
 import os
 
 logger = logging.getLogger(__name__)
