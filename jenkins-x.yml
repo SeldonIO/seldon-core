@@ -6,33 +6,38 @@ pipelineConfig:
         agent:
           image: seldonio/core-builder:0.3
         stages:
-          - name: build-and-test
-            parallel:
-              - name: seldon-python
-                agent:
-                  image: seldonio/python-builder:0.2
-                steps:
-                - name: test-python
-                  command: make
-                  args:
-                    - -C python
-                    - update_package
-                    - install
-                    - test
-                - name: test-python-tf
-                  command: make
-                  args:
-                    - -C python
-                    - update_package
-                    - install-tf
-                    - test
-              - name: seldon-engine
-                agent:
-                  image: seldonio/core-builder:0.3
-                steps:
-                - name: test-engine
-                  command: make
-                  args:
-                  - -C engine
-                  - -f Makefile.ci
-                  - build_jar
+        - name: build-and-test
+          parallel:
+          - agent:
+              image: seldonio/python-builder:0.2
+            name: seldon-python
+            steps:
+            - args:
+              - -C python
+              - update_package
+              - install
+              - test
+              command: make
+              name: test-python
+            - args:
+              - -C python
+              - update_package
+              - install-tf
+              - test
+              command: make
+              name: test-python-tf
+          - agent:
+              image: seldonio/core-builder:0.3
+            name: seldon-engine
+            steps:
+            - args:
+              - -C engine
+              - -f Makefile.ci
+              - build_jar
+              command: make
+              name: test-engine
+    release:
+      setVersion:
+        replace: true
+        steps:
+        - command: echo "setting up"
