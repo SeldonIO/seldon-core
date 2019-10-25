@@ -418,9 +418,8 @@ def test_model_bin_data():
     bdata_base64 = base64.b64encode(bdata).decode("utf-8")
     rv = client.get('/predict?json={"binData":"' + bdata_base64 + '"}')
     j = json.loads(rv.data)
-    return_data = base64.b64encode(base64.b64encode(bdata)).decode("utf-8")
     assert rv.status_code == 200
-    assert j["binData"] == return_data
+    assert j["binData"] == bdata_base64
     assert j["meta"]["tags"] == {"mytag": 1}
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
     assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
@@ -430,8 +429,8 @@ def test_model_bin_data_nparray():
     user_object = UserObject(ret_nparray=True)
     app = get_rest_microservice(user_object)
     client = app.test_client()
-    encoded = base64.b64encode(b"1234")
-    rv = client.get('/predict?json={"binData":"' + str(encoded) + '"}')
+    encoded = base64.b64encode(b"1234").decode("utf-8")
+    rv = client.get('/predict?json={"binData":"' + encoded + '"}')
     j = json.loads(rv.data)
     print(j)
     assert rv.status_code == 200
