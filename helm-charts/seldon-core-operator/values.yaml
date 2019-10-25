@@ -39,3 +39,5 @@ usageMetrics:
   enabled: false
 certManager:
   enabled: false
+webhook:
+  port: 443

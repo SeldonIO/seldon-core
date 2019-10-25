@@ -69,7 +69,7 @@ if __name__ == "__main__":
                 if res["metadata"]["namespace"] == "seldon-system":
                     res["metadata"]["namespace"] = '{{ .Release.Namespace }}'
 
-            # EnvVars in controller manager
+            # controller manager
             if kind == "deployment" and name == "seldon-controller-manager":
                 res["spec"]["template"]["spec"]["containers"][0]["imagePullPolicy"] = helm_value(
                     'image.pullPolicy')
@@ -82,6 +82,13 @@ if __name__ == "__main__":
                     elif env["name"] == "ENGINE_CONTAINER_IMAGE_AND_VERSION":
                         env[
                             "value"] = '{{ .Values.engine.image.registry }}/{{ .Values.engine.image.repository }}:{{ .Values.engine.image.tag }}'
+                # Update webhook port
+                for portSpec in res["spec"]["template"]["spec"]["containers"][0]["ports"]:
+                    if portSpec["name"] == "webhook-server":
+                        portSpec["containerPort"] = helm_value("webhook.port")
+                for argIdx in range(0, len(res["spec"]["template"]["spec"]["containers"][0]["args"])):
+                    if res["spec"]["template"]["spec"]["containers"][0]["args"][argIdx] == "--webhook-port=443":
+                        res["spec"]["template"]["spec"]["containers"][0]["args"][argIdx] = "--webhook-port="+helm_value("webhook.port")
 
             if kind == "serviceaccount" and name == "seldon-manager":
                 res["metadata"]["name"] = helm_value("serviceAccount.name")
@@ -97,8 +104,6 @@ if __name__ == "__main__":
             # Update role bindings
             if kind == "rolebinding":
                 res["subjects"][0]["namespace"] = helm_release("Namespace")
-
-
 
             # Update webhook certificates
             if name == "seldon-webhook-server-cert" and kind == "secret":
@@ -124,6 +129,11 @@ if __name__ == "__main__":
                 if "certmanager.k8s.io/inject-ca-from" in res["metadata"]["annotations"]:
                     res["metadata"]["annotations"]["certmanager.k8s.io/inject-ca-from"] = helm_release("Namespace") + "/seldon-serving-cert"
 
+            # Update webhook service port
+            if kind == "service" and name == "seldon-webhook-service":
+                res["spec"]["ports"][0]["targetPort"] = helm_value("webhook.port")
+
+
             fdata = yaml.dump(res, width=1000)
 
             # Spartatkus
@@ -140,6 +150,9 @@ if __name__ == "__main__":
                 fdata = HELM_CERTMANAGER_IF_START + fdata + HELM_IF_END
             elif name == "seldon-webhook-server-cert" and kind == "secret":
                 fdata = HELM_NOT_CERTMANAGER_IF_START + fdata + HELM_IF_END
+
+            # make sure webhook is not quoted as its an int
+            fdata = fdata.replace("'{{ .Values.webhook.port }}'","{{ .Values.webhook.port }}")
 
             if not kind == "namespace":
                 if name == "seldon-webhook-server-cert" and kind == "secret" or \
