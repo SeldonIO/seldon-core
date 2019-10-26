@@ -1,5 +1,6 @@
 buildPack: none
 pipelineConfig:
+  pipelines:
     pullRequest:
       pipeline:
         agent:
