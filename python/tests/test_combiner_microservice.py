@@ -171,7 +171,6 @@ def test_aggreate_ok_bindata():
         + bdata_base64
         + '"}]}'
     )
-    bdata_base64_result = base64.b64encode(base64.b64encode(bdata)).decode("utf-8")
     print(rv)
     j = json.loads(rv.data)
     print(j)
@@ -179,7 +178,7 @@ def test_aggreate_ok_bindata():
     assert j["meta"]["tags"] == {"mytag": 1}
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
     assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
-    assert j["binData"] == bdata_base64_result
+    assert j["binData"] == bdata_base64
 
 
 def test_aggreate_ok_strdata():

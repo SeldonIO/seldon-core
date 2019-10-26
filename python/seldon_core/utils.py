@@ -549,7 +549,7 @@ def extract_request_parts_json(
         features = request["strData"]
     elif "binData" in request:
         data_type = "binData"
-        features = bytes(request["binData"])
+        features = base64.b64decode(request["binData"])
     else:
         raise SeldonMicroserviceException(f"Invalid request data type: {request}")
 
