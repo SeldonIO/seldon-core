@@ -81,4 +81,3 @@ pipelineConfig:
                     type: Directory
                 - name: dind-storage
                   emptyDir: {}
-
