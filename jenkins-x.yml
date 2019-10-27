@@ -8,7 +8,8 @@ pipelineConfig:
         stages:
         - name: build-and-test
           parallel:
-          - agent:
+          - name: test-python
+            agent:
               image: seldonio/python-builder:0.2
             name: seldon-python
             steps:
@@ -18,15 +19,15 @@ pipelineConfig:
               - install
               - test
               command: make
-              name: test-python
-            - args:
+          - name: test-python-tf
+             args:
               - -C python
               - update_package
               - install-tf
               - test
               command: make
-              name: test-python-tf
-          - agent:
+          - name: test-engine
+            agent:
               image: seldonio/core-builder:0.3
             name: seldon-engine
             steps:
@@ -35,7 +36,36 @@ pipelineConfig:
               - -f Makefile.ci
               - build_jar
               command: make
-              name: test-engine
+        - name: build-and-push-images
+          steps:
+          - name: build-and-push-engine
+            command: make
+            args:
+            - -C engine
+            - build_image
+            - push_to_registry
+          - name: build-and-push-python-wrapper
+            command: cd
+            args:
+            - wrappers/s2i/python/build_scripts && 
+            - bash
+            - ./build_all.sh &&
+            - bash
+            - ./push_all.sh
+          - name: build-and-push-operator
+            command: make
+            args:
+            - -C operator
+            - docker-build
+            - docker-push
+          - name: build-and-push-model-servers
+            command: cd
+            args:
+            - wrappers/s2i/python/build_scripts && 
+            - bash
+            - ./build_all.sh &&
+            - bash
+            - ./push_all.sh
     release:
       pipeline:
         agent:
