@@ -37,6 +37,10 @@ pipelineConfig:
               command: make
               name: test-engine
     release:
+      setVersion:
+        steps:
+        - name: next-version
+          sh: echo "(skipping until #4624 is resolved)"
       pipeline:
         agent:
           image: seldonio/core-builder:0.4
