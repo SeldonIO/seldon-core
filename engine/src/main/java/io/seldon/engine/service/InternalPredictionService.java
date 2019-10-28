@@ -493,10 +493,9 @@ public class InternalPredictionService {
           SeldonMessage.Builder builder = SeldonMessage.newBuilder();
           String response = httpResponse.getBody();
           logger.debug(response);
-          JsonFormat.parser().ignoringUnknownFields().merge(response, builder);
-          SeldonMessage seldonMessage = builder.build();
           if (httpResponse.getStatusCode().is2xxSuccessful()) {
-            return seldonMessage;
+            JsonFormat.parser().ignoringUnknownFields().merge(response, builder);
+            return builder.build();
           } else {
             logger.error(
                 "Couldn't retrieve prediction from external prediction server -- bad http return code: "
