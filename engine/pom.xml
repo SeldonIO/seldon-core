@@ -254,7 +254,16 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
           <groupId>org.json</groupId>
           <artifactId>json</artifactId>
         </exclusion>
+        <exclusion>
+          <!-- Excluded to use Log4J2 -->
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-logging</artifactId>
+        </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-log4j2</artifactId>
     </dependency>
     <dependency>
       <groupId>io.opentracing</groupId>
