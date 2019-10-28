@@ -523,6 +523,14 @@ public class InternalPredictionService {
           logger.error("Invalid protocol buffer during Json Format merge - ", e);
           throw new APIException(
                   APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR, e.toString());
+      } catch (APIException e)
+      {
+          throw e;
+      } catch (Exception e)
+      {
+          logger.error("Couldn't retrieve prediction from external prediction server - ", e);
+          throw new APIException(
+                  APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR, e.toString());
       }
     }
     logger.error("Failed to retrueve predictions after {} attempts", restRetries);
