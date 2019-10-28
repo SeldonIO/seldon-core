@@ -69,9 +69,8 @@ public class APIException extends RuntimeException {
     this.info = info;
   }
 
-  public APIException(String info) {
-    super();
-    this.info = info;
+  public APIException(String payload) {
+    super(payload);
   }
 
   public ApiExceptionType getApiExceptionType() {
