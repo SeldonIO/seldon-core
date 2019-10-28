@@ -44,7 +44,6 @@ import io.seldon.protos.RouterGrpc;
 import io.seldon.protos.RouterGrpc.RouterBlockingStub;
 import io.seldon.protos.TransformerGrpc;
 import io.seldon.protos.TransformerGrpc.TransformerBlockingStub;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
@@ -491,19 +490,27 @@ public class InternalPredictionService {
         ResponseEntity<String> httpResponse =
             restTemplate.postForEntity(uri, request, String.class);
         try {
+          SeldonMessage.Builder builder = SeldonMessage.newBuilder();
+          String response = httpResponse.getBody();
+          logger.debug(response);
+          JsonFormat.parser().ignoringUnknownFields().merge(response, builder);
+          SeldonMessage seldonMessage = builder.build();
           if (httpResponse.getStatusCode().is2xxSuccessful()) {
-            SeldonMessage.Builder builder = SeldonMessage.newBuilder();
-            String response = httpResponse.getBody();
-            logger.debug(response);
-            JsonFormat.parser().ignoringUnknownFields().merge(response, builder);
-            return builder.build();
+            return seldonMessage;
           } else {
             logger.error(
                 "Couldn't retrieve prediction from external prediction server -- bad http return code: "
                     + httpResponse.getStatusCode());
-            throw new APIException(
-                APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,
-                String.format("Bad return code %d", httpResponse.getStatusCode()));
+            if (response == null) {
+                throw new APIException(
+                        APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,
+                        String.format("Bad return code %d", httpResponse.getStatusCode()));
+            }
+            else
+            {
+                // Throw the payload back directly. This applies to User Defined Exception use case.
+                throw new APIException(response);
+            }
           }
         } finally {
           if (logger.isDebugEnabled()) {
@@ -513,14 +520,10 @@ public class InternalPredictionService {
         }
       } catch (ResourceAccessException e) {
         logger.warn("Caught resource access exception ", e);
-      } catch (IOException e) {
-        logger.error("Couldn't retrieve prediction from external prediction server - ", e);
-        throw new APIException(
-            APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR, e.toString());
-      } catch (Exception e) {
-        logger.error("Couldn't retrieve prediction from external prediction server - ", e);
-        throw new APIException(
-            APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR, e.toString());
+      } catch (InvalidProtocolBufferException e) {
+          logger.error("Invalid protocol buffer during Json Format merge - ", e);
+          throw new APIException(
+                  APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR, e.toString());
       }
     }
     logger.error("Failed to retrueve predictions after {} attempts", restRetries);
