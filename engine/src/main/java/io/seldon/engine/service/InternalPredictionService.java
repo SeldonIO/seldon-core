@@ -490,10 +490,10 @@ public class InternalPredictionService {
         ResponseEntity<String> httpResponse =
             restTemplate.postForEntity(uri, request, String.class);
         try {
-          SeldonMessage.Builder builder = SeldonMessage.newBuilder();
           String response = httpResponse.getBody();
           logger.debug(response);
           if (httpResponse.getStatusCode().is2xxSuccessful()) {
+            SeldonMessage.Builder builder = SeldonMessage.newBuilder();
             JsonFormat.parser().ignoringUnknownFields().merge(response, builder);
             return builder.build();
           } else {
