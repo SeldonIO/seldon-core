@@ -36,6 +36,7 @@ import io.seldon.protos.ModelGrpc;
 import io.seldon.protos.ModelGrpc.ModelBlockingStub;
 import io.seldon.protos.OutputTransformerGrpc;
 import io.seldon.protos.OutputTransformerGrpc.OutputTransformerBlockingStub;
+import io.seldon.protos.PredictionProtos;
 import io.seldon.protos.PredictionProtos.Feedback;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
 import io.seldon.protos.PredictionProtos.SeldonMessage.DataOneofCase;
@@ -492,23 +493,27 @@ public class InternalPredictionService {
         try {
           String response = httpResponse.getBody();
           logger.debug(response);
+          SeldonMessage.Builder builder = SeldonMessage.newBuilder();
+          JsonFormat.parser().ignoringUnknownFields().merge(response, builder);
+          SeldonMessage seldonMessage = builder.build();
           if (httpResponse.getStatusCode().is2xxSuccessful()) {
-            SeldonMessage.Builder builder = SeldonMessage.newBuilder();
-            JsonFormat.parser().ignoringUnknownFields().merge(response, builder);
-            return builder.build();
+            return seldonMessage;
           } else {
             logger.error(
                 "Couldn't retrieve prediction from external prediction server -- bad http return code: "
                     + httpResponse.getStatusCode());
-            if (response == null) {
+            PredictionProtos.Status seldonMessageStatus = seldonMessage.getStatus();
+            if (seldonMessageStatus == null) {
                 throw new APIException(
                         APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,
-                        String.format("Bad return code %d", httpResponse.getStatusCode()));
+                        String.format("Bad return code %d", httpResponse.getStatusCodeValue()));
             }
             else
             {
-                // Throw the payload back directly. This applies to User Defined Exception use case.
-                throw new APIException(response);
+                throw new APIException(seldonMessageStatus.getCode(),
+                                       seldonMessageStatus.getReason(),
+                                       httpResponse.getStatusCodeValue(),
+                                       seldonMessageStatus.getInfo());
             }
           }
         } finally {

@@ -61,6 +61,9 @@ public class APIException extends RuntimeException {
   };
 
   ApiExceptionType apiExceptionType;
+  int id;
+  String message;
+  int httpCode;
   String info;
 
   public APIException(ApiExceptionType apiExceptionType, String info) {
@@ -69,8 +72,12 @@ public class APIException extends RuntimeException {
     this.info = info;
   }
 
-  public APIException(String payload) {
-    super(payload);
+  public APIException(int id, String message, int httpCode, String info) {
+    super();
+    this.id = id;
+    this.message = message;
+    this.httpCode = httpCode;
+    this.info = info;
   }
 
   public ApiExceptionType getApiExceptionType() {
