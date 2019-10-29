@@ -95,4 +95,13 @@ public class APIException extends RuntimeException {
   public void setInfo(String info) {
     this.info = info;
   }
+
+  public int getId() {
+    return id;
+  }
+
+  public String getMessage()
+  {
+    return message;
+  }
 }
