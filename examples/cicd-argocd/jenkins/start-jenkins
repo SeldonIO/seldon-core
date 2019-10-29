@@ -12,17 +12,18 @@ KUBECTL="kubectl --context=${KUBE_CONTEXT}"
 
 #JENKINS_CHART_VERSION=0.15.1
 #JENKINS_CHART_VERSION=0.19.1
-JENKINS_CHART_VERSION=0.39.0
+#JENKINS_CHART_VERSION=0.39.0
+JENKINS_CHART_VERSION=1.7.9
 
 ${KUBECTL} create namespace jenkins --dry-run -o yaml|${KUBECTL} apply -f -
 
 helm install --kube-context="${KUBE_CONTEXT}" stable/jenkins \
     --name jenkins \
     --namespace jenkins \
-    --set rbac.install=true \
+    --set rbac.create=true \
     --version $JENKINS_CHART_VERSION \
-    --set Master.AdminUser=$JENKINS_USER_NAME \
-    --set Master.AdminPassword=$JENKINS_USER_PASSWORD \
+    --set master.adminUser=$JENKINS_USER_NAME \
+    --set master.adminPassword=$JENKINS_USER_PASSWORD \
     --values ${STARTUP_DIR}/values.yml
 
 # create a rolebing for jenkins
