@@ -18,7 +18,7 @@ package io.seldon.engine;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.seldon.engine.exception.APIException;
 import io.seldon.engine.pb.ProtoBufUtils;
-import io.seldon.protos.PredictionProtos;
+import io.seldon.protos.PredictionProtos.SeldonMessage;
 import io.seldon.protos.PredictionProtos.Status;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,8 +38,7 @@ public class ExceptionControllerAdvice {
     statusBuilder.setInfo(exception.getInfo());
     statusBuilder.setStatus(Status.StatusFlag.FAILURE);
 
-    PredictionProtos.SeldonMessage message = PredictionProtos.SeldonMessage.newBuilder()
-            .setStatus(statusBuilder.build()).build();
+    SeldonMessage message = SeldonMessage.newBuilder().setStatus(statusBuilder.build()).build();
     String json;
     json = ProtoBufUtils.toJson(message);
     return new ResponseEntity<String>(
