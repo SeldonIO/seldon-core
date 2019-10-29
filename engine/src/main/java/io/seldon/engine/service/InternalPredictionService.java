@@ -36,11 +36,11 @@ import io.seldon.protos.ModelGrpc;
 import io.seldon.protos.ModelGrpc.ModelBlockingStub;
 import io.seldon.protos.OutputTransformerGrpc;
 import io.seldon.protos.OutputTransformerGrpc.OutputTransformerBlockingStub;
-import io.seldon.protos.PredictionProtos;
 import io.seldon.protos.PredictionProtos.Feedback;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
 import io.seldon.protos.PredictionProtos.SeldonMessage.DataOneofCase;
 import io.seldon.protos.PredictionProtos.SeldonMessageList;
+import io.seldon.protos.PredictionProtos.Status;
 import io.seldon.protos.RouterGrpc;
 import io.seldon.protos.RouterGrpc.RouterBlockingStub;
 import io.seldon.protos.TransformerGrpc;
@@ -502,7 +502,7 @@ public class InternalPredictionService {
             logger.error(
                 "Couldn't retrieve prediction from external prediction server -- bad http return code: "
                     + httpResponse.getStatusCode());
-            PredictionProtos.Status seldonMessageStatus = seldonMessage.getStatus();
+            Status seldonMessageStatus = seldonMessage.getStatus();
             if (seldonMessageStatus == null) {
                 throw new APIException(
                         APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,
