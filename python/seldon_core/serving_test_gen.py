@@ -58,7 +58,9 @@ def _column_values(column: pd.Series) -> Union[List, float]:
         return np.NaN
 
 
-def create_seldon_api_testing_file(data: pd.DataFrame, target: str, output_path: str) -> bool:
+def create_seldon_api_testing_file(
+    data: pd.DataFrame, target: str, output_path: str
+) -> bool:
     """
     Create a JSON file for Seldon API testing.
 
@@ -78,9 +80,14 @@ def create_seldon_api_testing_file(data: pd.DataFrame, target: str, output_path:
 
     # create a Data frame in the form of JSON object
     df_for_json = pd.DataFrame(data=data.columns.values, columns=["name"])
-    df_for_json["dtype"] = np.where(data.dtypes == np.float, 'FLOAT',
-                                    np.where(data.dtypes == np.int, 'INTEGER', np.NaN))
-    df_for_json["ftype"] = np.where(data.dtypes == np.number, 'continuous', 'categorical')
+    df_for_json["dtype"] = np.where(
+        data.dtypes == np.float,
+        "FLOAT",
+        np.where(data.dtypes == np.int, "INTEGER", np.NaN),
+    )
+    df_for_json["ftype"] = np.where(
+        data.dtypes == np.number, "continuous", "categorical"
+    )
     ranges = [_column_range(data[column_name]) for column_name in data.columns.values]
     values = [_column_values(data[column_name]) for column_name in data.columns.values]
     df_for_json["range"] = ranges
@@ -90,12 +97,16 @@ def create_seldon_api_testing_file(data: pd.DataFrame, target: str, output_path:
     df_for_json_features = df_for_json[df_for_json.name != target]
 
     # Convert data frames to JSON with a trick that removes records with NaNs
-    json_features_df = df_for_json_features.T.apply(lambda row: row[~row.isnull()].to_json())
+    json_features_df = df_for_json_features.T.apply(
+        lambda row: row[~row.isnull()].to_json()
+    )
     json_features = f'[{",".join(json_features_df)}]'
-    json_target_df = df_for_json_target.T.apply(lambda row: row[~row.isnull()].to_json())
+    json_target_df = df_for_json_target.T.apply(
+        lambda row: row[~row.isnull()].to_json()
+    )
     json_target = f'[{",".join(json_target_df)}]'
     json_combined = f'{{"features": {json_features}, "targets": {json_target}}}'
 
-    with open(output_path, 'w+') as output_file:
+    with open(output_path, "w+") as output_file:
         output_file.write(str(json_combined))
     return os.path.exists(output_path)

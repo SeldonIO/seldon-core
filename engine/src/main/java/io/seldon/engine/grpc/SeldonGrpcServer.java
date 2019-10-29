@@ -79,7 +79,7 @@ public class SeldonGrpcServer {
       try {
         maxMessageSize = Integer.parseInt(annotations.get(ANNOTATION_MAX_MESSAGE_SIZE));
         logger.info("Setting max message to {}", maxMessageSize);
-        builder.maxMessageSize(maxMessageSize);
+        builder.maxInboundMessageSize(maxMessageSize);
       } catch (NumberFormatException e) {
         logger.warn(
             "Failed to parse {} with value {}",

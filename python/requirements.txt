@@ -8,10 +8,11 @@ redis==2.10.5
 tornado==4.5.3
 flatbuffers==1.10
 tensorflow>=1.10.1,<1.14
-Flask-OpenTracing==0.2.0
-Pillow==6.0.0
-jaeger-client==3.13.0
+Flask-OpenTracing>=1.1.0,<1.2.0
+opentracing>=2.2.0,<2.3.0
+jaeger-client>=4.1.0,<4.2.0
 grpcio-opentracing
+Pillow==6.0.0
 pyyaml
 minio >= 4.0.9
 google-cloud-storage >= 1.16.0

@@ -6,54 +6,48 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 with open(os.path.join(dir_path, "seldon_core/version.py")) as fp:
     exec(fp.read(), version)
 
-setup(name='seldon-core',
-      author='Seldon Technologies Ltd.',
-      author_email='hello@seldon.io',
-      version=version['__version__'],
-      description='Seldon Core client and microservice wrapper',
-      url='https://github.com/SeldonIO/seldon-core',
-      license='Apache 2.0',
-      packages=find_packages(),
-      include_package_data=True,
-      setup_requires=[
-          'pytest-runner'
-      ],
-      python_requires='>=3.6',
-      install_requires=[
-          'flask',
-          'flask-cors',
-          'redis',
-          'requests',
-          'numpy',
-          'flatbuffers',
-          'protobuf',
-          'grpcio',
-          'Flask-OpenTracing==0.2.0',
-          'opentracing>=1.2.2,<2',
-          'jaeger-client==3.13.0',
-          'grpcio-opentracing',
-          'pyyaml',
-          'gunicorn>=19.9.0',
-          "minio >= 4.0.9",
-          "google-cloud-storage >= 1.16.0",
-          "azure-storage-blob >= 2.0.1",
-          "setuptools >= 41.0.0"
-      ],
-      tests_require=[
-          'pytest',
-          'pytest-cov',
-          'Pillow'
-      ],
-      extras_require={
-          'tensorflow': ['tensorflow']
-      },
-      test_suite='tests',
-      entry_points={
-          'console_scripts': [
-              'seldon-core-microservice = seldon_core.microservice:main',
-              'seldon-core-tester = seldon_core.microservice_tester:main',
-              'seldon-core-microservice-tester = seldon_core.microservice_tester:main',
-              'seldon-core-api-tester = seldon_core.api_tester:main',
-          ],
-      },
-      zip_safe=False)
+setup(
+    name="seldon-core",
+    author="Seldon Technologies Ltd.",
+    author_email="hello@seldon.io",
+    version=version["__version__"],
+    description="Seldon Core client and microservice wrapper",
+    url="https://github.com/SeldonIO/seldon-core",
+    license="Apache 2.0",
+    packages=find_packages(),
+    include_package_data=True,
+    setup_requires=["pytest-runner"],
+    python_requires=">=3.6",
+    install_requires=[
+        "flask",
+        "flask-cors",
+        "redis",
+        "requests",
+        "numpy",
+        "flatbuffers",
+        "protobuf",
+        "grpcio",
+        "Flask-OpenTracing >= 1.1.0, < 1.2.0",
+        "opentracing >= 2.2.0, < 2.3.0",
+        "jaeger-client >= 4.1.0, < 4.2.0",
+        "grpcio-opentracing",
+        "pyyaml",
+        "gunicorn >= 19.9.0",
+        "minio >= 4.0.9",
+        "google-cloud-storage >= 1.16.0",
+        "azure-storage-blob >= 2.0.1",
+        "setuptools >= 41.0.0",
+    ],
+    tests_require=["pytest", "pytest-cov", "Pillow"],
+    extras_require={"tensorflow": ["tensorflow"]},
+    test_suite="tests",
+    entry_points={
+        "console_scripts": [
+            "seldon-core-microservice = seldon_core.microservice:main",
+            "seldon-core-tester = seldon_core.microservice_tester:main",
+            "seldon-core-microservice-tester = seldon_core.microservice_tester:main",
+            "seldon-core-api-tester = seldon_core.api_tester:main",
+        ]
+    },
+    zip_safe=False,
+)

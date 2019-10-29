@@ -7,6 +7,7 @@ spec:
     seldon.io/rest-read-timeout: "10000000"
     seldon.io/grpc-read-timeout: "10000000"
     seldon.io/grpc-max-message-size: "1000000000"
+    seldon.io/engine-java-opts: "-Xmx10G"    
   name: image
   predictors:
   - componentSpecs:
@@ -35,15 +36,19 @@ spec:
           - name: model_output
             type: STRING
             value: predictions/Softmax:0
-    engineResources:
-      requests:
-        memory: 1Gi
     svcOrchSpec:
+      resources:
+        requests:
+          memory: 10Gi
+        limits:
+          memory: 10Gi          
       env:
       - name: SELDON_LOG_LEVEL
         value: DEBUG
     explainer:
       type: anchor_images
       modelUri: gs://seldon-models/tfserving/imagenet/explainer
+      config:
+        batch_size: "100"
     name: default
     replicas: 1

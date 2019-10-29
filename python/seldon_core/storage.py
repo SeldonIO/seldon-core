@@ -33,7 +33,7 @@ _BLOB_RE = "https://(.+?).blob.core.windows.net/(.+)"
 _LOCAL_PREFIX = "file://"
 
 
-class Storage(object): # pylint: disable=too-few-public-methods
+class Storage(object):  # pylint: disable=too-few-public-methods
     @staticmethod
     def download(uri: str, out_dir: str = None) -> str:
         logging.info("Copying contents of %s to local", uri)
@@ -57,9 +57,12 @@ class Storage(object): # pylint: disable=too-few-public-methods
         elif is_local:
             return Storage._download_local(uri, out_dir)
         else:
-            raise Exception("Cannot recognize storage type for " + uri +
-                            "\n'%s', '%s', and '%s' are the current available storage type." %
-                            (_GCS_PREFIX, _S3_PREFIX, _LOCAL_PREFIX))
+            raise Exception(
+                "Cannot recognize storage type for "
+                + uri
+                + "\n'%s', '%s', and '%s' are the current available storage type."
+                % (_GCS_PREFIX, _S3_PREFIX, _LOCAL_PREFIX)
+            )
 
         logging.info("Successfully copied %s to %s", uri, out_dir)
         return out_dir
@@ -78,8 +81,11 @@ class Storage(object): # pylint: disable=too-few-public-methods
             if not obj.is_dir:
                 if subdir_object_key == "":
                     subdir_object_key = obj.object_name
-                client.fget_object(bucket_name, obj.object_name,
-                                   os.path.join(temp_dir, subdir_object_key))
+                client.fget_object(
+                    bucket_name,
+                    obj.object_name,
+                    os.path.join(temp_dir, subdir_object_key),
+                )
 
     @staticmethod
     def _download_gcs(uri, temp_dir: str):
@@ -101,7 +107,9 @@ class Storage(object): # pylint: disable=too-few-public-methods
 
             # Create necessary subdirectory to store the object locally
             if "/" in subdir_object_key:
-                local_object_dir = os.path.join(temp_dir, subdir_object_key.rsplit("/", 1)[0])
+                local_object_dir = os.path.join(
+                    temp_dir, subdir_object_key.rsplit("/", 1)[0]
+                )
                 if not os.path.isdir(local_object_dir):
                     os.makedirs(local_object_dir, exist_ok=True)
             if subdir_object_key.strip() != "":
@@ -116,7 +124,11 @@ class Storage(object): # pylint: disable=too-few-public-methods
         storage_url = match.group(2)
         container_name, prefix = storage_url.split("/", 1)
 
-        logging.info("Connecting to BLOB account: %s, contianer: %s", account_name, container_name)
+        logging.info(
+            "Connecting to BLOB account: %s, contianer: %s",
+            account_name,
+            container_name,
+        )
         block_blob_service = BlockBlobService(account_name=account_name)
         blobs = block_blob_service.list_blobs(container_name, prefix=prefix)
 
@@ -156,9 +168,13 @@ class Storage(object): # pylint: disable=too-few-public-methods
     def _create_minio_client():
         # Remove possible http scheme for Minio
         url = urlparse(os.getenv("S3_ENDPOINT", ""))
-        use_ssl = url.scheme=='https' if url.scheme else bool(os.getenv("USE_SSL", True))
-        minioClient = Minio(url.netloc,
-                            access_key=os.getenv("AWS_ACCESS_KEY_ID", ""),
-                            secret_key=os.getenv("AWS_SECRET_ACCESS_KEY", ""),
-                            secure=use_ssl)
+        use_ssl = (
+            url.scheme == "https" if url.scheme else bool(os.getenv("USE_SSL", True))
+        )
+        minioClient = Minio(
+            url.netloc,
+            access_key=os.getenv("AWS_ACCESS_KEY_ID", ""),
+            secret_key=os.getenv("AWS_SECRET_ACCESS_KEY", ""),
+            secure=use_ssl,
+        )
         return minioClient

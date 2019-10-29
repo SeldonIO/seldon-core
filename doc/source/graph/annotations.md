@@ -35,7 +35,7 @@ You can configure aspects of Seldon Core via annotations in the SeldonDeployment
 Otherwise any annotations starting with `seldon.io/engine-` will be interpreted as specifying environment variables for the engine container. These include:
 
   * ```seldon.io/engine-java-opts``` : Java Opts for Service Orchestrator
-    * Locations : SeldonDeployment.spec.predictors.annotations
+    * Locations : SeldonDeployment.spec.annotations
     * [Java Opts example](model_engine_java_opts.md)
     * Translates to the environment variable JAVA_OPTS
   * ```seldon.io/engine-seldon-log-requests``` : Whether to log raw requests from engine

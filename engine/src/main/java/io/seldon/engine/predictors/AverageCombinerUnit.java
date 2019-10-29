@@ -15,7 +15,8 @@
  */
 package io.seldon.engine.predictors;
 
-import static org.ojalgo.function.PrimitiveFunction.*;
+// import static org.ojalgo.function.PrimitiveFunction.*;
+import static org.ojalgo.function.constant.PrimitiveMath.DIVIDE;
 
 import io.seldon.engine.exception.APIException;
 import io.seldon.protos.PredictionProtos.DefaultData;

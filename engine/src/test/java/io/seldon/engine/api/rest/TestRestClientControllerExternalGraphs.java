@@ -29,7 +29,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
@@ -43,10 +42,6 @@ import org.springframework.web.context.WebApplicationContext;
 @ActiveProfiles("test")
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-@TestPropertySource(
-    properties = {
-      "management.security.enabled=false",
-    })
 public class TestRestClientControllerExternalGraphs {
 
   @Autowired private WebApplicationContext context;

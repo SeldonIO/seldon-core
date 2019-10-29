@@ -9,8 +9,7 @@
     },
     "spec": {
         "name": "test-deployment",
-        "oauth_key": "oauth-key",
-        "oauth_secret": "oauth-secret",
+	"annotations" : { "seldon.io/engine-java-opts" : "-Xmx1G" },
         "predictors": [
             {
                 "componentSpecs": [{
@@ -42,8 +41,7 @@
                 "replicas": 1,
 		"labels": {
 		    "version" : "v1"
-		},
-		"annotations" : { "seldon.io/engine-java-opts" : "-Xmx1G" }
+		}
             }
         ]
     }

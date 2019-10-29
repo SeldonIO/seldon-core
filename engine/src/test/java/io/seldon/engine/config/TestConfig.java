@@ -1,6 +1,6 @@
 package io.seldon.engine.config;
 
-import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -8,6 +8,7 @@ import io.seldon.engine.grpc.GrpcChannelHandler;
 import io.seldon.engine.service.InternalPredictionService;
 import io.seldon.engine.tracing.TracingProvider;
 import java.io.IOException;
+import java.time.Duration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
@@ -33,8 +34,8 @@ public class TestConfig {
     RestTemplateBuilder rtb = mock(RestTemplateBuilder.class);
     RestTemplate restTemplate = mock(RestTemplate.class);
     ClientHttpRequestFactory requestFactory = mock(ClientHttpRequestFactory.class);
-    when(rtb.setConnectTimeout(anyInt())).thenReturn(rtb);
-    when(rtb.setReadTimeout(anyInt())).thenReturn(rtb);
+    when(rtb.setConnectTimeout(any(Duration.class))).thenReturn(rtb);
+    when(rtb.setReadTimeout(any(Duration.class))).thenReturn(rtb);
     when(rtb.build()).thenReturn(restTemplate);
     when(restTemplate.getRequestFactory()).thenReturn(requestFactory);
 

@@ -96,6 +96,14 @@ seldon\_core.storage module
     :undoc-members:
     :show-inheritance:
 
+seldon\_core.tf\_helper module
+------------------------------
+
+.. automodule:: seldon_core.tf_helper
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 seldon\_core.user\_model module
 -------------------------------
 

@@ -9,6 +9,7 @@
     },
     "spec": {
         "name": "test-deployment",
+	"annotations" : { "seldon.io/engine-java-opts" : "-Xmx1G" },
         "predictors": [
             {
                 "componentSpecs": [{
@@ -30,8 +31,7 @@
                     "type": "MODEL"
                 },
                 "name": "example",
-                "replicas": 1,
-		"annotations" : { "seldon.io/engine-java-opts" : "-Xmx1G" }
+                "replicas": 1
             }
         ]
     }

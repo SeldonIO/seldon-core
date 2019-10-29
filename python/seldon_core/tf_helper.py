@@ -3,6 +3,7 @@ _TF_MISSING = True
 
 try:
     import tensorflow  # noqa: F401
+
     _TF_MISSING = False
 except ImportError:
     _TF_MISSING = True

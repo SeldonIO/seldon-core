@@ -22,3 +22,4 @@
 | rbac.configmap.create |  Create cluster wide rbacs rules to read configmaps and secrets | true |
 | usageMetrics.enabled | Whether to send anonymous usage metrics | ```false``` |
 | usageMetrics.datebase | URL for Spartakus DB | http://seldon-core-stats.seldon.io |
+| webhook.port | Port for webhook | 443 |
