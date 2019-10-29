@@ -192,23 +192,28 @@ func main() {
 		}
 	}
 
-	var client seldonclient.SeldonApiClient
-	if *protocol == "seldon" {
-
-		client = rest.NewSeldonMessageRestClient()
-	} else {
-		log.Error("Unknown protocol")
-		os.Exit(-1)
-	}
-
 	if *transport == "http" {
+		var clientRest seldonclient.SeldonApiClient
+		if *protocol == "seldon" {
+			clientRest = rest.NewSeldonMessageRestClient()
+		} else {
+			log.Error("Unknown protocol")
+			os.Exit(-1)
+		}
 		logger.Info("Running http server ", "port", *httpPort)
-		runHttpServer(logger, predictor, client, *httpPort, false)
+		runHttpServer(logger, predictor, clientRest, *httpPort, false)
 	} else {
 		logger.Info("Running http server ", "port", *httpPort)
-		go runHttpServer(logger, predictor, client, *httpPort, true)
+		go runHttpServer(logger, predictor, nil, *httpPort, true)
 		logger.Info("Running grpc server ", "port", *grpcPort)
-		runGrpcServer(logger, predictor, client, *grpcPort)
+		var clientGrpc seldonclient.SeldonApiClient
+		if *protocol == "seldon" {
+			clientGrpc = api.NewSeldonGrpcClient()
+		} else {
+			log.Error("Unknown protocol")
+			os.Exit(-1)
+		}
+		runGrpcServer(logger, predictor, clientGrpc, *grpcPort)
 
 	}
 

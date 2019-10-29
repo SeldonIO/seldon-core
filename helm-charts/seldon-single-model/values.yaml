@@ -1,7 +1,7 @@
 name: my-model
 model:
   image:
-    name: seldonio/mock_classifier:1.0
+    name: seldonio/mock_classifier_rest:1.3
     pullPolicy: IfNotPresent
   name: classifier
   resources:

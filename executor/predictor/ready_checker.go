@@ -13,7 +13,7 @@ func Ready(node *v1alpha2.PredictiveUnit) error {
 			return err
 		}
 	}
-	if node.Endpoint != nil {
+	if node.Endpoint != nil && node.Endpoint.ServiceHost != "" && node.Endpoint.ServicePort > 0 {
 		c, err := net.Dial("tcp", fmt.Sprintf("%s:%d", node.Endpoint.ServiceHost, node.Endpoint.ServicePort))
 		if err != nil {
 			return err

@@ -62,6 +62,9 @@ func (p *PredictorProcess) route(node *v1alpha2.PredictiveUnit, msg payload.Seld
 	if hasMethod(v1alpha2.ROUTE, node.Methods) {
 		return p.Client.Route(node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
 	}
+	if node.Implementation != nil && *node.Implementation == v1alpha2.RANDOM_ABTEST {
+		return p.abTestRouter(node)
+	}
 	return -1, nil
 }
 
