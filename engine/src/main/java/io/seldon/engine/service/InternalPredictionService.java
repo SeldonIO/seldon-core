@@ -510,10 +510,10 @@ public class InternalPredictionService {
             }
             else
             {
-                APIException.ApiExceptionType exceptionType =
-                        APIException.ApiExceptionType.CUSTOMIZED_EXCEPTION;
-                exceptionType.setMessage(seldonMessageStatus.getReason());
-                throw new APIException(exceptionType, seldonMessageStatus.getInfo());
+                throw new APIException(seldonMessageStatus.getCode(),
+                                       seldonMessageStatus.getReason(),
+                                       200,
+                                       seldonMessageStatus.getInfo());
             }
           }
         } finally {

@@ -12,32 +12,34 @@ import org.springframework.http.ResponseEntity;
 public class ExceptionControllerAdviceTest {
     @Test
     public void testApiExceptionType() throws Exception {
+        APIException exception = new APIException(
+                ApiExceptionType.ENGINE_MICROSERVICE_ERROR, "info");
         ResponseEntity<String> responseEntity = new io.seldon.engine.ExceptionControllerAdvice()
-                .handleUnauthorizedException(new APIException(
-                        ApiExceptionType.ENGINE_MICROSERVICE_ERROR, "info"));
-        validateSeldonMessage(responseEntity, ApiExceptionType.ENGINE_MICROSERVICE_ERROR);
+                .handleUnauthorizedException(exception);
+        validateSeldonMessage(responseEntity, exception);
     }
 
     @Test
     public void testCustomizedExceptionType() throws Exception {
-        ApiExceptionType exceptionType =
-                ApiExceptionType.CUSTOMIZED_EXCEPTION;
-        exceptionType.setMessage("exception msg in test");
+        APIException exception = new APIException(400,
+                                                 "test in message",
+                                                 200,
+                                                 "info");
         ResponseEntity<String> responseEntity = new io.seldon.engine.ExceptionControllerAdvice()
-                .handleUnauthorizedException(new APIException(exceptionType, "info"));
-        validateSeldonMessage(responseEntity, exceptionType);
+                .handleUnauthorizedException(exception);
+        validateSeldonMessage(responseEntity, exception);
     }
 
     private void validateSeldonMessage(
-            ResponseEntity<String> httpResponse, ApiExceptionType exceptionType) throws Exception {
+            ResponseEntity<String> httpResponse, APIException exception) throws Exception {
         String response = httpResponse.getBody();
         SeldonMessage.Builder builder = SeldonMessage.newBuilder();
         JsonFormat.parser().ignoringUnknownFields().merge(response, builder);
         SeldonMessage seldonMessage = builder.build();
 
-        Assert.assertEquals(exceptionType.getHttpCode(), httpResponse.getStatusCodeValue());
-        Assert.assertEquals(exceptionType.getId(), seldonMessage.getStatus().getCode());
-        Assert.assertEquals(exceptionType.getMessage(), seldonMessage.getStatus().getReason());
+        Assert.assertEquals(exception.getHttpCode(), httpResponse.getStatusCodeValue());
+        Assert.assertEquals(exception.getId(), seldonMessage.getStatus().getCode());
+        Assert.assertEquals(exception.getMessage(), seldonMessage.getStatus().getReason());
         Assert.assertEquals("info", seldonMessage.getStatus().getInfo());
         Assert.assertEquals(Status.StatusFlag.FAILURE, seldonMessage.getStatus().getStatus());
     }
