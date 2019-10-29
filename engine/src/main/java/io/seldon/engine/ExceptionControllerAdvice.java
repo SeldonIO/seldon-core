@@ -33,8 +33,8 @@ public class ExceptionControllerAdvice {
       throws InvalidProtocolBufferException {
 
     Status.Builder statusBuilder = Status.newBuilder();
-    statusBuilder.setCode(exception.getId());
-    statusBuilder.setReason(exception.getMessage());
+    statusBuilder.setCode(exception.getApiExceptionType().getId());
+    statusBuilder.setReason(exception.getApiExceptionType().getMessage());
     statusBuilder.setInfo(exception.getInfo());
     statusBuilder.setStatus(Status.StatusFlag.FAILURE);
 
@@ -43,6 +43,6 @@ public class ExceptionControllerAdvice {
     String json;
     json = ProtoBufUtils.toJson(message);
     return new ResponseEntity<String>(
-        json, HttpStatus.valueOf(exception.getHttpCode()));
+        json, HttpStatus.valueOf(exception.getApiExceptionType().getHttpCode()));
   }
 }

@@ -35,7 +35,8 @@ public class APIException extends RuntimeException {
     ENGINE_INTERRUPTED(205, "API call interrupted", 500),
     ENGINE_EXECUTION_FAILURE(206, "Execution failure", 500),
     ENGINE_INVALID_ROUTING(207, "Invalid Routing", 500),
-    REQUEST_IO_EXCEPTION(208, "IO Exception", 500);
+    REQUEST_IO_EXCEPTION(208, "IO Exception", 500),
+    CUSTOMIZED_EXCEPTION(209, "Customized Exception", 400);
 
     int id;
     String message;
@@ -46,12 +47,25 @@ public class APIException extends RuntimeException {
       this.message = message;
       this.httpCode = httpCode;
     }
+
+    public int getId() {
+      return id;
+    }
+
+    public String getMessage() {
+      return message;
+    }
+
+    public void setMessage(String message) {
+      this.message = message;
+    }
+
+    public int getHttpCode() {
+      return httpCode;
+    }
   };
 
   ApiExceptionType apiExceptionType;
-  int id;
-  String message;
-  int httpCode;
   String info;
 
   public APIException(ApiExceptionType apiExceptionType, String info) {
@@ -60,12 +74,12 @@ public class APIException extends RuntimeException {
     this.info = info;
   }
 
-  public APIException(int id, String message, int httpCode, String info) {
-    super();
-    this.id = id;
-    this.message = message;
-    this.httpCode = httpCode;
-    this.info = info;
+  public ApiExceptionType getApiExceptionType() {
+    return apiExceptionType;
+  }
+
+  public void setApiExceptionType(ApiExceptionType apiExceptionType) {
+    this.apiExceptionType = apiExceptionType;
   }
 
   public String getInfo() {
@@ -74,18 +88,5 @@ public class APIException extends RuntimeException {
 
   public void setInfo(String info) {
     this.info = info;
-  }
-
-  public int getId() {
-    return id;
-  }
-
-  public String getMessage()
-  {
-    return message;
-  }
-  public int getHttpCode()
-  {
-    return httpCode;
   }
 }
