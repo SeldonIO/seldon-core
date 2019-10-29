@@ -7,10 +7,15 @@ import (
 )
 
 func (p *PredictorProcess) abTestRouter(node *v1alpha2.PredictiveUnit) (int, error) {
-	ratioA, err := strconv.ParseFloat(node.Parameters[0].Value, 32)
-	if err != nil {
-		return 0, err
+	ratioA := 0.5
+	var err error
+	if len(node.Parameters) == 1 && node.Parameters[0].Name == "ratioA" {
+		ratioA, err = strconv.ParseFloat(node.Parameters[0].Value, 32)
+		if err != nil {
+			return 0, err
+		}
 	}
+
 	if rand.Float64() < ratioA {
 		return 0, nil
 	} else {

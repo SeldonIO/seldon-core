@@ -228,3 +228,36 @@ func TestModelError(t *testing.T) {
 	g.Expect(pResp).Should(gomega.BeNil())
 	g.Expect(err.Error()).Should(gomega.Equal("something bad happened"))
 }
+
+func TestABTest(t *testing.T) {
+	g := gomega.NewGomegaWithT(t)
+	model := v1alpha2.MODEL
+	abtest := v1alpha2.RANDOM_ABTEST
+	graph := &v1alpha2.PredictiveUnit{
+		Implementation: &abtest,
+		Children: []v1alpha2.PredictiveUnit{
+			{
+				Type: &model,
+				Endpoint: &v1alpha2.Endpoint{
+					ServiceHost: "foo2",
+					ServicePort: 9001,
+					Type:        v1alpha2.REST,
+				},
+			},
+			{
+				Type: &model,
+				Endpoint: &v1alpha2.Endpoint{
+					ServiceHost: "foo3",
+					ServicePort: 9002,
+					Type:        v1alpha2.REST,
+				},
+			},
+		},
+	}
+
+	pResp, err := createPredictorProcess(t).Execute(graph, createPayload(g))
+	g.Expect(err).Should(gomega.BeNil())
+	smRes := pResp.GetPayload().(*proto.SeldonMessage)
+	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(gomega.Equal(1.1))
+	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(gomega.Equal(2.0))
+}
