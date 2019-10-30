@@ -8,11 +8,12 @@ pipelineConfig:
         stages:
         - name: lint-checks
           parallel:
-            name: python-lint
+            name: python-lint-task
             steps:
-            - args:
+            - name: python-lint
+              args:
               - -C python
               - setup_linter
               - run_linter_check
               command: make
-              name: test-python
+              
