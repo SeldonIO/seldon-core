@@ -1,0 +1,18 @@
+buildPack: none
+pipelineConfig:
+  pipelines:
+    pullRequest:
+      pipeline:
+        agent:
+          image: seldonio/core-builder:0.3
+        stages:
+        - name: lint-checks
+          parallel:
+            name: python-lint
+            steps:
+            - args:
+              - -C python
+              - setup_linter
+              - run_linter_check
+              command: make
+              name: test-python
