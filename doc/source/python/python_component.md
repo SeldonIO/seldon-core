@@ -288,6 +288,20 @@ class DeepMnist(object):
         return predictions.astype(np.float64)
 ```
 
+## Multi-value numpy arrays
+
+By default, when using the data ndarray parameter, the conversion to ndarray (by default) converts all inner types into the same type. With models that may take as input arrays with different value types, you will be able to do so by overriding the `predict_raw` function yourself which gives you access to the raw request, and creating the numpy array as follows:
+
+```
+import numpy as np
+class Model:
+    def predict_raw(self, request):
+        data = request.get("data", {}).get("ndarray")
+        if data:
+            mult_types_array = array(data, dtype=object)
+
+        # Handle other data types as required + your logic
+```
 
 ## Next Steps
 
