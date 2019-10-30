@@ -60,17 +60,43 @@ public class APIException extends RuntimeException {
     }
   };
 
-  ApiExceptionType apiExceptionType;
+  private ApiExceptionType apiExceptionType;
+  int id;
+  String message;
+  private int httpCode;
   String info;
+  private Boolean usingCustomizedException;
 
   public APIException(ApiExceptionType apiExceptionType, String info) {
     super();
     this.apiExceptionType = apiExceptionType;
     this.info = info;
+    this.usingCustomizedException = false;
+  }
+
+  public APIException(int id, String message, int httpCode, String info) {
+    super();
+    this.id = id;
+    this.message = message;
+    this.httpCode = httpCode;
+    this.info = info;
+    this.usingCustomizedException = true;
   }
 
   public ApiExceptionType getApiExceptionType() {
     return apiExceptionType;
+  }
+
+  public int getId() {
+    return usingCustomizedException ? id : getApiExceptionType().getId();
+  }
+
+  public String getMessage() {
+    return usingCustomizedException ? message : getApiExceptionType().getMessage();
+  }
+
+  public int getHttpCode() {
+    return usingCustomizedException ? httpCode : getApiExceptionType().getHttpCode();
   }
 
   public void setApiExceptionType(ApiExceptionType apiExceptionType) {

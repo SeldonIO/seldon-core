@@ -33,6 +33,7 @@ util/custom-resource-definitions/pod-template-spec-validation.tpl
 util/custom-resource-definitions/pod-template-spec.json
 util/custom-resource-definitions/swagger.json
 api-frontend/src/main/proto/seldon_deployment.proto
+engine/src/main/proto/io/
 engine/src/main/proto/k8s.io/
 engine/src/main/proto/seldon_deployment.proto
 engine/src/main/proto/v1.proto
