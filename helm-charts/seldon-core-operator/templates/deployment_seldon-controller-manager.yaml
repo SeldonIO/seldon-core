@@ -76,13 +76,10 @@ spec:
         - containerPort: 8080
           name: metrics
           protocol: TCP
+{{- with .Values.controller.resources }}
         resources:
-          limits:
-            cpu: 100m
-            memory: 30Mi
-          requests:
-            cpu: 100m
-            memory: 20Mi
+{{ toYaml . | indent 10 }}
+{{- end }}
         volumeMounts:
         - mountPath: /tmp/k8s-webhook-server/serving-certs
           name: cert
