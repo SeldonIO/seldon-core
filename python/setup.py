@@ -1,5 +1,5 @@
-import itertools
 import os
+from itertools.chain import from_iterable
 from setuptools import find_packages, setup
 
 version = {}
@@ -9,7 +9,7 @@ with open(os.path.join(dir_path, "seldon_core/version.py")) as fp:
 
 # Extra dependencies, with special 'all' key
 extras = {"tensorflow": ["tensorflow"], "gcs": ["google-cloud-storage >= 1.16.0"]}
-extras["all"] = list(set(itertools.chain.from_iterable(extras.values())))
+extras["all"] = list(set(from_iterable(extras.values())))
 
 setup(
     name="seldon-core",

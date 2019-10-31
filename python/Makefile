@@ -53,6 +53,14 @@ install:
 install-tf:
 	pip install -e .[tensorflow]
 
+.PHONY: install-gcs
+install-gcs:
+	pip install -e .[gcs]
+
+.PHONY: install-all
+install-all:
+	pip install -e .[all]
+
 .PHONY: install-dev
 install-dev:
 	pip install -e . -r requirements.txt
