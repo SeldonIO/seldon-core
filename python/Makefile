@@ -92,6 +92,14 @@ push_conda:
 	@echo "Subsequent pushes: need to for the python-seldon-core feedstock"
 	@echo "Alternatively use anaconda upload to publish on own channel"
 
+setup_linter:
+	pip install black==19.3b0
+
+run_linter_check:
+	black \
+		--check ./ ../testing \
+		--exclude "(testing/scripts/proto|seldon_core/proto/|.eggs)"
+
 .PHONY: clean
 clean:
 	rm -rf seldon_core.egg-info

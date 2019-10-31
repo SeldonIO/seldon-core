@@ -3,6 +3,9 @@ VERSION := $(shell cat ../../version.txt)
 kind_create_cluster:
 	kind create cluster --config kind_config.yaml
 
+kind_delete_cluster:
+	kind delete cluster
+
 kind_build_engine:
 	cd ../../engine/ && make build_image
 	kind load docker-image seldonio/engine:$(VERSION) --loglevel trace
@@ -48,6 +51,7 @@ build_protos:
 	cp -vr ../../proto/tensorflow/tensorflow .
 	python -m grpc.tools.protoc -I. --python_out=. --grpc_python_out=. ./proto/prediction.proto
 	cd ../../notebooks && make build_protos
+	cd ../../proto/k8s && make create_protos
 
 #requires mvn, helm, ks, python, s2i and an accessible k8s cluster (if minikube increase mem and cpu)
 #tests will create namespaces, deploy seldon core and create examples
@@ -57,7 +61,7 @@ install:
 
 .PHONY: test
 test: build_protos install
-	pytest -s -W ignore > run.log 2>&1
+	pytest --verbose -s -W ignore 2>&1
 
 .PHONY: clean
 clean:

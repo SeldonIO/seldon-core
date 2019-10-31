@@ -6,45 +6,6 @@ pipelineConfig:
         agent:
           image: seldonio/core-builder:0.4
         stages:
-        - name: build-and-test
-          parallel:
-          - agent:
-              image: seldonio/python-builder:0.2
-            name: seldon-python
-            steps:
-            - args:
-              - -C python
-              - update_package
-              - install
-              - test
-              command: make
-              name: test-python
-            - args:
-              - -C python
-              - update_package
-              - install-tf
-              - test
-              command: make
-              name: test-python-tf
-          - agent:
-              image: seldonio/core-builder:0.4
-            name: seldon-engine
-            steps:
-            - args:
-              - -C engine
-              - -f Makefile.ci
-              - build_jar
-              command: make
-              name: test-engine
-    release:
-      setVersion:
-        steps:
-        - name: next-version
-          sh: echo "(skipping until #4624 is resolved)"
-      pipeline:
-        agent:
-          image: seldonio/core-builder:0.4
-        stages:
           - name: end-to-end
             steps:
             - name: test-end-to-end
@@ -81,3 +42,4 @@ pipelineConfig:
                     type: Directory
                 - name: dind-storage
                   emptyDir: {}
+
