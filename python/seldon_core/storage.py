@@ -18,28 +18,17 @@
 
 import glob
 import logging
-import textwrap
 import tempfile
 import os
 import re
 from urllib.parse import urlparse
 from azure.storage.blob import BlockBlobService
 from minio import Minio
+from seldon_core.imports_helper import _GCS_MISSING
 
-try:
+if not _GCS_MISSING:
     from google.auth import exceptions
     from google.cloud import storage
-except ImportError:
-    notice = textwrap.dedent(
-        """
-        Support for Google Cloud Storage is not installed.
-        If you want to download resources from Google Cloud Storage
-        install `google-cloud-storage` or install `seldon_core` as
-
-            $ pip install seldon_core[gs]
-    """
-    )
-    logging.info(notice)
 
 
 _GCS_PREFIX = "gs://"

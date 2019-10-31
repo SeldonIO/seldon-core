@@ -10,7 +10,7 @@ from seldon_core.proto import prediction_pb2
 from seldon_core.user_model import SeldonComponent
 from seldon_core.utils import seldon_message_to_json, json_to_seldon_message
 from seldon_core.flask_utils import SeldonMicroserviceException
-from seldon_core.tf_helper import _TF_MISSING
+from seldon_core.imports_helper import _TF_MISSING
 
 from utils import skipif_tf_missing
 
