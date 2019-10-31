@@ -24,9 +24,9 @@ import re
 from urllib.parse import urlparse
 from azure.storage.blob import BlockBlobService
 from minio import Minio
-from seldon_core.imports_helper import _GCS_MISSING
+from seldon_core.imports_helper import _GCS_PRESENT
 
-if not _GCS_MISSING:
+if _GCS_PRESENT:
     from google.auth import exceptions
     from google.cloud import storage
 

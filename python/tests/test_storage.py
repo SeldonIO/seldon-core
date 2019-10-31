@@ -21,9 +21,9 @@ import seldon_core
 from minio import Minio, error
 import unittest.mock as mock
 from utils import skipif_gcs_missing
-from seldon_core.imports_helper import _GCS_MISSING
+from seldon_core.imports_helper import _GCS_PRESENT
 
-if not _GCS_MISSING:
+if _GCS_PRESENT:
     from google.cloud import exceptions
 
 STORAGE_MODULE = "seldon_core.storage"

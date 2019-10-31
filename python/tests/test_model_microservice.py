@@ -10,11 +10,11 @@ from seldon_core.proto import prediction_pb2
 from seldon_core.user_model import SeldonComponent
 from seldon_core.utils import seldon_message_to_json, json_to_seldon_message
 from seldon_core.flask_utils import SeldonMicroserviceException
-from seldon_core.imports_helper import _TF_MISSING
+from seldon_core.imports_helper import _TF_PRESENT
 
 from utils import skipif_tf_missing
 
-if not _TF_MISSING:
+if _TF_PRESENT:
     from tensorflow.core.framework.tensor_pb2 import TensorProto
     import tensorflow as tf
 
