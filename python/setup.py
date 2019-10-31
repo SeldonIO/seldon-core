@@ -1,10 +1,15 @@
-from setuptools import find_packages, setup
+import itertools
 import os
+from setuptools import find_packages, setup
 
 version = {}
 dir_path = os.path.dirname(os.path.realpath(__file__))
 with open(os.path.join(dir_path, "seldon_core/version.py")) as fp:
     exec(fp.read(), version)
+
+# Extra dependencies, with special 'all' key
+extras = {"tensorflow": ["tensorflow"], "gcs": ["google-cloud-storage >= 1.16.0"]}
+extras["all"] = list(set(itertools.chain.from_iterable(extras.values())))
 
 setup(
     name="seldon-core",
@@ -38,10 +43,7 @@ setup(
         "setuptools >= 41.0.0",
     ],
     tests_require=["pytest", "pytest-cov", "Pillow"],
-    extras_require={
-        "tensorflow": ["tensorflow"],
-        "gcs": ["google-cloud-storage >= 1.16.0"],
-    },
+    extras_require=extras,
     test_suite="tests",
     entry_points={
         "console_scripts": [

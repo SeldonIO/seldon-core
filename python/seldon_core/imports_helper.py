@@ -21,6 +21,10 @@ except ImportError:
         install `tensorflow` or install `seldon_core` as
 
             $ pip install seldon_core[tensorflow]
+
+        or
+
+            $ pip install seldon_core[all]
     """
     )
     logger.info(notice)
@@ -39,6 +43,10 @@ except ImportError:
         install `google-cloud-storage` or install `seldon_core` as
 
             $ pip install seldon_core[gcs]
+
+        or
+
+            $ pip install seldon_core[all]
     """
     )
     logger.info(notice)
