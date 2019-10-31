@@ -34,12 +34,14 @@ setup(
         "pyyaml",
         "gunicorn >= 19.9.0",
         "minio >= 4.0.9",
-        "google-cloud-storage >= 1.16.0",
         "azure-storage-blob >= 2.0.1",
         "setuptools >= 41.0.0",
     ],
     tests_require=["pytest", "pytest-cov", "Pillow"],
-    extras_require={"tensorflow": ["tensorflow"]},
+    extras_require={
+        "tensorflow": ["tensorflow"],
+        "gcs": ["google-cloud-storage >= 1.16.0"],
+    },
     test_suite="tests",
     entry_points={
         "console_scripts": [
