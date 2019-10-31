@@ -3,12 +3,7 @@ from concurrent import futures
 from flask import jsonify, Flask, send_from_directory, request
 from flask_cors import CORS
 import logging
-from seldon_core.utils import (
-    json_to_seldon_message,
-    seldon_message_to_json,
-    json_to_feedback,
-    json_to_seldon_messages,
-)
+from seldon_core.utils import seldon_message_to_json, json_to_feedback
 from seldon_core.flask_utils import get_request
 import seldon_core.seldon_methods
 from seldon_core.flask_utils import (
@@ -49,8 +44,8 @@ def get_rest_microservice(user_model):
         logger.debug("REST Request: %s", request)
         response = seldon_core.seldon_methods.predict(user_model, requestJson)
         json_response = jsonify(response)
-        if 'status' in response and 'code' in response['status']:
-            json_response.status_code = response['status']['code']
+        if "status" in response and "code" in response["status"]:
+            json_response.status_code = response["status"]["code"]
 
         logger.debug("REST Response: %s", response)
         return json_response
