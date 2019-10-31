@@ -7,3 +7,10 @@ name: seldon-core-operator
 sources:
 - https://github.com/SeldonIO/seldon-core
 version: 0.5.0-SNAPSHOT
+appVersion: 0.5.0-SNAPSHOT
+keywords:
+- seldon
+- seldonio
+home: https://www.seldon.io/
+icon: https://docs.seldon.io/en/latest/_images/seldon.png
+engine: gotpl
