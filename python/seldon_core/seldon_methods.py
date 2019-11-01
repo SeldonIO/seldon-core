@@ -358,13 +358,13 @@ def health_status(user_model: Any) -> Union[prediction_pb2.SeldonMessage, List, 
       Health check output
     """
 
-    if hasattr(user_model, "health_raw"):
+    if hasattr(user_model, "health_status_raw"):
         try:
             return user_model.health_status_raw()
         except SeldonNotImplementedError:
             pass
 
-        client_response = client_health_status(user_model)
-        return construct_response_json(
-            user_model, False, {}, client_response
-        )
+    client_response = client_health_status(user_model)
+    return construct_response_json(
+        user_model, False, {}, client_response
+    )
