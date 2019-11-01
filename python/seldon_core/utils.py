@@ -1,5 +1,4 @@
 import json
-import logging
 import sys
 import base64
 import numpy as np
@@ -17,11 +16,11 @@ from seldon_core.user_model import (
     client_feature_names,
     SeldonComponent,
 )
-from seldon_core.tf_helper import _TF_MISSING
+from seldon_core.imports_helper import _TF_PRESENT
 
 from typing import Tuple, Dict, Union, List, Optional, Iterable
 
-if not _TF_MISSING:
+if _TF_PRESENT:
     import tensorflow as tf
     from tensorflow.core.framework.tensor_pb2 import TensorProto
 
