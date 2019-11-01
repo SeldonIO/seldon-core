@@ -1,5 +1,5 @@
 SELDON_CORE_DIR=..
-VERSION=0.4.1
+VERSION=0.5.0
 
 .PHONY: get_apis
 get_apis:

@@ -226,18 +226,18 @@ DESCRIPTOR.message_types_by_name['TensorProto'] = _TENSORPROTO
 DESCRIPTOR.message_types_by_name['VariantTensorDataProto'] = _VARIANTTENSORDATAPROTO
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
-TensorProto = _reflection.GeneratedProtocolMessageType('TensorProto', (_message.Message,), {
-  'DESCRIPTOR' : _TENSORPROTO,
-  '__module__' : 'tensorflow.core.framework.tensor_pb2'
+TensorProto = _reflection.GeneratedProtocolMessageType('TensorProto', (_message.Message,), dict(
+  DESCRIPTOR = _TENSORPROTO,
+  __module__ = 'tensorflow.core.framework.tensor_pb2'
   # @@protoc_insertion_point(class_scope:tensorflow.TensorProto)
-  })
+  ))
 _sym_db.RegisterMessage(TensorProto)
 
-VariantTensorDataProto = _reflection.GeneratedProtocolMessageType('VariantTensorDataProto', (_message.Message,), {
-  'DESCRIPTOR' : _VARIANTTENSORDATAPROTO,
-  '__module__' : 'tensorflow.core.framework.tensor_pb2'
+VariantTensorDataProto = _reflection.GeneratedProtocolMessageType('VariantTensorDataProto', (_message.Message,), dict(
+  DESCRIPTOR = _VARIANTTENSORDATAPROTO,
+  __module__ = 'tensorflow.core.framework.tensor_pb2'
   # @@protoc_insertion_point(class_scope:tensorflow.VariantTensorDataProto)
-  })
+  ))
 _sym_db.RegisterMessage(VariantTensorDataProto)
 
 

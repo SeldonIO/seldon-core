@@ -138,18 +138,18 @@ _RESOURCEHANDLEPROTO.fields_by_name['dtypes_and_shapes'].message_type = _RESOURC
 DESCRIPTOR.message_types_by_name['ResourceHandleProto'] = _RESOURCEHANDLEPROTO
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
-ResourceHandleProto = _reflection.GeneratedProtocolMessageType('ResourceHandleProto', (_message.Message,), {
+ResourceHandleProto = _reflection.GeneratedProtocolMessageType('ResourceHandleProto', (_message.Message,), dict(
 
-  'DtypeAndShape' : _reflection.GeneratedProtocolMessageType('DtypeAndShape', (_message.Message,), {
-    'DESCRIPTOR' : _RESOURCEHANDLEPROTO_DTYPEANDSHAPE,
-    '__module__' : 'tensorflow.core.framework.resource_handle_pb2'
+  DtypeAndShape = _reflection.GeneratedProtocolMessageType('DtypeAndShape', (_message.Message,), dict(
+    DESCRIPTOR = _RESOURCEHANDLEPROTO_DTYPEANDSHAPE,
+    __module__ = 'tensorflow.core.framework.resource_handle_pb2'
     # @@protoc_insertion_point(class_scope:tensorflow.ResourceHandleProto.DtypeAndShape)
-    })
+    ))
   ,
-  'DESCRIPTOR' : _RESOURCEHANDLEPROTO,
-  '__module__' : 'tensorflow.core.framework.resource_handle_pb2'
+  DESCRIPTOR = _RESOURCEHANDLEPROTO,
+  __module__ = 'tensorflow.core.framework.resource_handle_pb2'
   # @@protoc_insertion_point(class_scope:tensorflow.ResourceHandleProto)
-  })
+  ))
 _sym_db.RegisterMessage(ResourceHandleProto)
 _sym_db.RegisterMessage(ResourceHandleProto.DtypeAndShape)
 
