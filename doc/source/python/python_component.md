@@ -197,6 +197,8 @@ If you want more control you can provide a low-level methods that will provide a
     def route_raw(self, msg: prediction_pb2.SeldonMessage) -> prediction_pb2.SeldonMessage:
 
     def aggregate_raw(self, msgs: prediction_pb2.SeldonMessageList) -> prediction_pb2.SeldonMessage:
+
+    def health_status_raw(self) -> prediction_pb2.SeldonMessage:
 ```
 
 ## User Defined Exceptions
