@@ -20,6 +20,8 @@ if not _TF_MISSING:
     from tensorflow.core.framework.tensor_pb2 import TensorProto
     import tensorflow as tf
 
+HEALTH_PING_URL = "/health/ping"
+HEALTH_STATUS_URL = "/health/status"
 
 """
  Checksum of bytes. Used to check data integrity of binData passed in multipart/form-data request
@@ -40,6 +42,8 @@ def rs232_checksum(the_bytes):
 
 
 class UserObject(SeldonComponent):
+    HEALTH_STATUS_REPONSE = [0.123]
+
     def __init__(self, metrics_ok=True, ret_nparray=False, ret_meta=False):
         self.metrics_ok = metrics_ok
         self.ret_nparray = ret_nparray
@@ -79,8 +83,13 @@ class UserObject(SeldonComponent):
         else:
             return [{"type": "BAD", "key": "mycounter", "value": 1}]
 
+    def health_status(self):
+        return self.predict(self.HEALTH_STATUS_REPONSE, ["some_float"])
+
 
 class UserObjectLowLevel(SeldonComponent):
+    HEALTH_STATUS_RAW_RESPONSE = [123.456, 7.89]
+
     def __init__(self, metrics_ok=True, ret_nparray=False):
         self.metrics_ok = metrics_ok
         self.ret_nparray = ret_nparray
@@ -102,6 +111,11 @@ class UserObjectLowLevel(SeldonComponent):
 
     def send_feedback_grpc(self, request):
         print("Feedback called")
+
+    def health_status_raw(self):
+        return {
+            "data": {"ndarray": self.HEALTH_STATUS_RAW_RESPONSE},
+        }
 
 class UserObjectLowLevelWithStatusInResponse(SeldonComponent):
     def __init__(self, metrics_ok=True, ret_nparray=False):
@@ -523,6 +537,36 @@ def test_model_seldon_json_ok():
     client = app.test_client()
     rv = client.get("/seldon.json")
     assert rv.status_code == 200
+
+
+def test_model_health_ping():
+    user_object = UserObject()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+    rv = client.get(HEALTH_PING_URL)
+    assert rv.status_code == 200
+    assert rv.data == b"pong"
+
+
+def test_model_health_status():
+    user_object = UserObject()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+    rv = client.get(HEALTH_STATUS_URL)
+    assert rv.status_code == 200
+    j = json.loads(rv.data)
+    print(j)
+    assert j["data"]["tensor"]["values"] == UserObject.HEALTH_STATUS_REPONSE
+
+
+def test_model_health_status_raw():
+    user_object = UserObjectLowLevel()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+    rv = client.get(HEALTH_STATUS_URL)
+    assert rv.status_code == 200
+    j = json.loads(rv.data)
+    assert j["data"]["ndarray"] == UserObjectLowLevel.HEALTH_STATUS_RAW_RESPONSE
 
 
 def test_proto_ok():
