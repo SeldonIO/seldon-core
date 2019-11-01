@@ -41,3 +41,11 @@ To integrate these on your local editor, you can follow the official
 instructions to [configure `checkstyle`
 locally](https://checkstyle.org/beginning_development.html) and to [set-up
 `google-java-format`](https://github.com/google/google-java-format#using-the-formatter).
+
+### Python
+
+To format our Python code we use [black](https://github.com/psf/black), the
+heavily opinionated formatter.
+
+To integrate it on your local editor, you can follow the official instructions
+to [set-up black](https://github.com/psf/black#editor-integration).

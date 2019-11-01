@@ -1,5 +1,5 @@
 SELDON_CORE_DIR=..
-VERSION=0.4.1
+VERSION=0.5.0.2
 
 .PHONY: get_apis
 get_apis:
@@ -52,6 +52,14 @@ install:
 .PHONY: install-tf
 install-tf:
 	pip install -e .[tensorflow]
+
+.PHONY: install-gcs
+install-gcs:
+	pip install -e .[gcs]
+
+.PHONY: install-all
+install-all:
+	pip install -e .[all]
 
 .PHONY: install-dev
 install-dev:

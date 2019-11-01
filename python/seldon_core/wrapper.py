@@ -3,12 +3,7 @@ from concurrent import futures
 from flask import jsonify, Flask, send_from_directory, request
 from flask_cors import CORS
 import logging
-from seldon_core.utils import (
-    json_to_seldon_message,
-    seldon_message_to_json,
-    json_to_feedback,
-    json_to_seldon_messages,
-)
+from seldon_core.utils import seldon_message_to_json, json_to_feedback
 from seldon_core.flask_utils import get_request
 import seldon_core.seldon_methods
 from seldon_core.flask_utils import (
