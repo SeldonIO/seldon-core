@@ -111,9 +111,11 @@ def _set_flask_app_configs(app):
         "FLASK_JSON_SORT_KEYS": "JSON_SORT_KEYS",
     }
 
-    for env_var, config_name in env_to_config_map:
+    for env_var, config_name in env_to_config_map.items():
         if os.environ.get(env_var):
-            app.config[config_name] = os.environ.get(env_var)
+            # Environment variables come as strings, convert them to boolean
+            bool_env_value = os.environ.get(env_var).lower() == "true"
+            app.config[config_name] = bool_env_value
 
 
 # ----------------------------
