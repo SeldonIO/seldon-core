@@ -111,9 +111,7 @@ class UserObjectLowLevel(SeldonComponent):
         print("Feedback called")
 
     def health_status_raw(self):
-        return {
-            "data": {"ndarray": self.HEALTH_STATUS_RAW_RESPONSE},
-        }
+        return {"data": {"ndarray": self.HEALTH_STATUS_RAW_RESPONSE}}
 
 
 class UserObjectLowLevelWithStatusInResponse(SeldonComponent):

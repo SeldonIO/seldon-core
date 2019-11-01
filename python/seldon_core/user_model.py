@@ -425,7 +425,9 @@ def client_aggregate(
         raise SeldonNotImplementedError("Aggregate not defined")
 
 
-def client_health_status(user_model: SeldonComponent) -> Union[np.ndarray, List, str, bytes]:
+def client_health_status(
+    user_model: SeldonComponent,
+) -> Union[np.ndarray, List, str, bytes]:
     """
     Perform a health check
 

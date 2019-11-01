@@ -365,6 +365,4 @@ def health_status(user_model: Any) -> Union[prediction_pb2.SeldonMessage, List, 
             pass
 
     client_response = client_health_status(user_model)
-    return construct_response_json(
-        user_model, False, {}, client_response
-    )
+    return construct_response_json(user_model, False, {}, client_response)
