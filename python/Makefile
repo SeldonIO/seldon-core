@@ -103,6 +103,11 @@ push_conda:
 setup_linter:
 	pip install black==19.3b0
 
+run_linter:
+	black \
+		./ ../testing \
+		--exclude "(testing/scripts/proto|seldon_core/proto/|.eggs)"
+
 run_linter_check:
 	black \
 		--check ./ ../testing \
