@@ -1,0 +1,62 @@
+---
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+metadata:
+  labels:
+    app: seldon
+  name: seldon-spam-classifier
+  namespace: default
+spec:
+  annotations:
+    project_name: seldon-spam-classifier
+    deployment_version: v1
+    seldon.io/rest-read-timeout: '100000'
+    seldon.io/rest-connection-timeout: '100000'
+    seldon.io/grpc-read-timeout: '100000'
+  name: seldon-spam-classifier
+  oauth_key: oauth-key
+  oauth_secret: oauth-secret
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - name: combiner
+          image: combiner:1.0.0.1
+          imagePullPolicy: IfNotPresent
+        - name: spam-classifier
+          image: spam-classifier:1.0.0.1
+          imagePullPolicy: IfNotPresent
+        - name: keras-spam-classifier
+          image: keras-spam-classifier:1.0.0.1
+          imagePullPolicy: IfNotPresent
+        - name: translator
+          image: translator:1.0.0.1
+          imagePullPolicy: IfNotPresent
+        # imagePullSecrets:
+        # - name: regcred
+        terminationGracePeriodSeconds: 20
+    graph:
+      children:
+      - name: combiner
+        endpoint:
+          type: REST
+        type: COMBINER
+        children:
+        - name: keras-spam-classifier
+          endpoint:
+            type: REST
+          type: MODEL
+          children: []
+        - name: spam-classifier
+          endpoint: 
+            type: REST
+          type: MODEL
+          children: []
+      name: translator
+      endpoint:
+        type: REST
+      type: TRANSLATOR
+    name: seldon-combiner
+    replicas: 1
+    annotations:
+      predictor_version: v1
