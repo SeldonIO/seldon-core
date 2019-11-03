@@ -14,8 +14,6 @@ spec:
     seldon.io/rest-connection-timeout: '100000'
     seldon.io/grpc-read-timeout: '100000'
   name: seldon-spam-classifier
-  oauth_key: oauth-key
-  oauth_secret: oauth-secret
   predictors:
   - componentSpecs:
     - spec:
@@ -32,8 +30,6 @@ spec:
         - name: translator
           image: translator:1.0.0.1
           imagePullPolicy: IfNotPresent
-        # imagePullSecrets:
-        # - name: regcred
         terminationGracePeriodSeconds: 20
     graph:
       children:
