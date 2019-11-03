@@ -1,1 +1,5 @@
-README.md
+
+#### Deploy to Seldon Core
+
+
+    kubectl apply -f deploy.yaml
