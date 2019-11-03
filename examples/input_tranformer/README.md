@@ -8,12 +8,13 @@ Consider, we want to predict whether a text message is spam or not. The text dat
 
 
 
-Each component in Seldon Inference graph is a microservice – specifically a docker container. The Seldon graph links those docker containers together to result in an end output. The repository contains the code for each docker image needed for seldon graph to work. And deploy.yaml files refer those docker images and make a seldon graph out of them.
-
+Each component in Seldon Inference graph is a microservice – specifically a docker container. The Seldon graph links those docker containers (in deploy.yaml file) to result in an end output. 
 
 
 ![Graph Explanation](https://github.com/SandhyaaGopchandani/seldon-core/blob/seldon_component_example/examples/input_tranformer/graph_explained.png)
 
+
+The repository contains the folder for for each docker image needed for seldon graph to work. Please note that the docker images would not work as is. You will want to add correct logic and model files for it to wotk. Update deploy.yaml file to add correct reference to the docker images and deploy it to seldon core using 
 
 
     kubectl apply -f deploy.yaml
