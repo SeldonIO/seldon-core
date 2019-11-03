@@ -1,7 +1,17 @@
 
 #### Deploy to Seldon Core
 
+Consider, we want to predict whether a text message is spam or not. The text data may contain multiple languages as well as each individual text may also have words from different languages. As per your needs, you are only interested in building a model on English language. So, you want to first translate the text message in English and then pass it to model to classify whether it is a spam or not.
+
 
 ![Model Pipeline](https://github.com/SandhyaaGopchandani/seldon-core/blob/seldon_component_example/examples/input_tranformer/seldon_inference_graph.png)
+
+
+
+Each component in Seldon Inference graph is a microservice – specifically a docker container. The Seldon graph links those docker containers together to result in an end output. The repository contains the code for each docker image needed for seldon graph to work. And deploy.yaml files refer those docker images and make a seldon graph out of them.
+
+
+
+
 
     kubectl apply -f deploy.yaml
