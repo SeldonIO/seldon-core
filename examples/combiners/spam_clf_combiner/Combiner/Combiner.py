@@ -3,7 +3,7 @@ import numpy as np
 class Combiner(object):
 
     def aggregate(self, Xs, features_names=None):
-
+    	"""average out the probabilities from multiple classifier and return that as a result"""
         return np.mean([float(x[0]) for x in Xs])
 
 
