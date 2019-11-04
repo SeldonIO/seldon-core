@@ -7,8 +7,8 @@
 Create a Python virtual environment:
 
 ```
-    $ python3 -m venv venv
-    $ source venv/bin/activate
+$ python3 -m venv venv
+$ source venv/bin/activate
 ```
 
 #### Install s2i
@@ -22,7 +22,6 @@ Create a Python virtual environment:
 
 ```
 $ s2i build . seldonio/seldon-core-s2i-python3:0.7 translator:1.0.0.1
-$ docker tag <yourdockerhubusername>/translator:1.0.0.1
 $ docker push <yourdockerhubusername>/translator:1.0.0.1
 ```
 
@@ -30,5 +29,8 @@ $ docker push <yourdockerhubusername>/translator:1.0.0.1
 
 ```
 $ docker run --name "translator" --rm <yourdockerhubusername>/translator:1.0.0.1
+
+curl -g http://localhost:5000/transform_input --data-urlencode 'json={"data": {"names": ["message"], "ndarray": ["Wie läuft dein Tag"]}}'
+
 
 ```
