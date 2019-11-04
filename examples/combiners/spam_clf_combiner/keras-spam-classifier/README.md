@@ -28,9 +28,17 @@ $ docker push <yourdockerhubusername>/keras-spam-classifier:1.0.0.1
 #### Test
 
 ```
-$ docker run --name "spam-classifier" --rm <yourdockerhubusername>/keras-spam-classifier:1.0.0.1
+$ docker run --name "spam-classifier" --rm -d -p 5000:5000  keras-spam-classifier:1.0.0.1
+
+curl -g http://localhost:5000/predict --data-urlencode 'json={"data": {"names": ["message"], "ndarray": ["please click this link to win the price"]}}'
+
+Result:
+
+{"data":{"ndarray":["0.91942614","spam"]},"meta":{}}
+
 
 ```
+
 
 
 
