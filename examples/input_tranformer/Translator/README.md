@@ -21,13 +21,13 @@ Create a Python virtual environment:
 #### Build
 
 ```
-$ s2i build . seldonio/seldon-core-s2i-python3:0.7 sandhya1594/translator:1.0.0.1
-$ docker push sandhya1594/translator:1.0.0.1
+$ s2i build . seldonio/seldon-core-s2i-python3:0.7 <yourdockerhubusername>/translator:1.0.0.1
+$ docker push <yourdockerhubusername>/translator:1.0.0.1
 ```
 
 #### Test
 
 ```
-$ docker run --name "translator" --rm sandhya1594/translator:1.0.0.1
+$ docker run --name "translator" --rm <yourdockerhubusername>/translator:1.0.0.1
 
 ```
