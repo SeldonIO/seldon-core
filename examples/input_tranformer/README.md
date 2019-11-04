@@ -14,7 +14,7 @@ Each component in Seldon Inference graph is a microservice – specifically a do
 ![Graph Explanation](https://github.com/SandhyaaGopchandani/seldon-core/blob/seldon_component_example/examples/input_tranformer/graph_explained.png)
 
 
-The repository contains the folders for for each docker image needed for seldon graph to work. Please note that the docker image would not work as is. You will want to add correct logic and model files and recreate the docker images for it to wotk. Update deploy.yaml file to add correct reference to the docker images and deploy it to seldon core using:
+The repository contains the folders for for each docker image needed for seldon graph to work. Please note that the docker image would not work as is. You will want to add correct logic and model files and recreate the docker images for it to work. Update deploy.yaml file to add correct reference to the docker images and deploy it to seldon core using:
 
 
     kubectl apply -f deploy.yaml
