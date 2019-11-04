@@ -18,7 +18,7 @@ class SpamClassifier():
         """
         Predict on a english text you got from translator service. The output returns the probability of text being spam
         """
-        data = self.vectorizer.transform([text]).todense()
+        data = self.vectorizer.transform(text).todense()
         probas = self.clf.predict_proba(data)
         prob = probas[0][1]
 
