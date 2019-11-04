@@ -21,7 +21,7 @@ Create a Python virtual environment:
 #### Build
 
 ```
-$ s2i build . seldonio/seldon-core-s2i-python3:0.7 <yourdockerhubusername>/keras-spam-classifier:1.0.0.1
+$ s2i build . seldonio/seldon-core-s2i-python3:0.7 keras-spam-classifier:1.0.0.1
 $ docker push <yourdockerhubusername>/keras-spam-classifier:1.0.0.1
 ```
 
