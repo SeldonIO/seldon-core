@@ -6,12 +6,18 @@ Consider, we want to predict whether a text message is spam or not. The text dat
 Example:
 If classifier 1 outputs the probability of 0.7 for the message to be spam
 Classifier 2 outputs the probability of 0.8 for the message to be spam
-We will go with the average of both classifier: 0.75 
+We will go with the average probability from both classifiers: 0.75 
 
 
 
 ![Model Pipeline](https://github.com/SandhyaaGopchandani/seldon-core/blob/seldon_component_example/examples/combiners/spam_clf_combiner/seldon_inference_graph.png)
 
 
+Each component in Seldon Inference graph is a microservice – specifically a docker container. The Seldon graph links those docker containers (in deploy.yaml file) to result in an end output. 
+
+
+![Graph Explanation](https://github.com/SandhyaaGopchandani/seldon-core/blob/seldon_component_example/examples/combiners/spam_clf_combiner/graph_explained.png)
+
+The repository contains the folders for for each docker image needed for seldon graph to work. Please note that the docker image would not work as is. You will want to add correct logic and model files and recreate the docker images for it to wotk. Update deploy.yaml file to add correct reference to the docker images and deploy it to seldon core using:
 
     kubectl apply -f deploy.yaml
