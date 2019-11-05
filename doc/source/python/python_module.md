@@ -1,6 +1,6 @@
 # Seldon Core Python Package
 
-Seldon Core has a python package `seldon_core` available on PyPI. The package makes it easier to work with Seldon Core if you are using python and is the basis of the Python S2I wrapper. The module provides:
+Seldon Core has a python package `seldon-core` available on PyPI. The package makes it easier to work with Seldon Core if you are using python and is the basis of the Python S2I wrapper. The module provides:
 
  * `seldon-core-microservice` executable to serve microservice components in Seldon Core. This is used by the Python Wrapper for Seldon Core.
  * `seldon-core-microservice-tester` executable to test running Seldon Core microservices over REST or gRPC.
@@ -25,10 +25,10 @@ Therefore, in order to avoid including the `tensorflow` dependency on
 installations where the `TFTensor` support won't be necessary, it isn't
 installed it by default.
 
-To include the optional Tensorflow support, you can install `seldon_core` as:
+To include the optional Tensorflow support, you can install `seldon-core` as:
 
 ```bash
-pip install seldon_core[tensorflow]
+pip install seldon-core[tensorflow]
 ```
 
 ### Google Cloud Storage support
@@ -36,27 +36,27 @@ pip install seldon_core[tensorflow]
 As part of the options to store your trained model, Seldon Core adds optional
 support to fetch them from GCS (Google Cloud Storage).
 We are aware that users will usually only require one of the storage backends.
-Therefore, to avoid bloating the `seldon_core` package, we don't install the
+Therefore, to avoid bloating the `seldon-core` package, we don't install the
 GCS dependencies by default.
 
-To include the optional GCS support, you can install `seldon_core` as:
+To include the optional GCS support, you can install `seldon-core` as:
 
 ```bash
-pip install seldon_core[gcs]
+pip install seldon-core[gcs]
 ```
 
 ### Install all extra dependencies
 
-If you want to install `seldon_core` with all its extra dependencies, you can
+If you want to install `seldon-core` with all its extra dependencies, you can
 do so as:
 
 ```bash
-pip install seldon_core[all]
+pip install seldon-core[all]
 ```
 
 Keep in mind that this will include some dependencies which may not be used.
 Therefore, unless necessary, we recommend most users to install the default
-distribution of `seldon_core` as [documented above](#install).
+distribution of `seldon-core` as [documented above](#install).
 
 ## Seldon Core Microservices
 
