@@ -22,6 +22,8 @@ def get_rest_microservice(user_model):
     app = Flask(__name__, static_url_path="")
     CORS(app)
 
+    _set_flask_app_configs(app)
+
     if hasattr(user_model, "model_error_handler"):
         logger.info("Registering the custom error handler...")
         app.register_blueprint(user_model.model_error_handler)
@@ -96,6 +98,24 @@ def get_rest_microservice(user_model):
         return jsonify(response)
 
     return app
+
+
+def _set_flask_app_configs(app):
+    """
+    Set the configs for the flask app based on environment variables
+    :param app:
+    :return:
+    """
+    env_to_config_map = {
+        "FLASK_JSONIFY_PRETTYPRINT_REGULAR": "JSONIFY_PRETTYPRINT_REGULAR",
+        "FLASK_JSON_SORT_KEYS": "JSON_SORT_KEYS",
+    }
+
+    for env_var, config_name in env_to_config_map.items():
+        if os.environ.get(env_var):
+            # Environment variables come as strings, convert them to boolean
+            bool_env_value = os.environ.get(env_var).lower() == "true"
+            app.config[config_name] = bool_env_value
 
 
 # ----------------------------
