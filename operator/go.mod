@@ -14,7 +14,7 @@ require (
 	github.com/gophercloud/gophercloud v0.4.0 // indirect
 	github.com/json-iterator/go v1.1.6 // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
-	github.com/onsi/ginkgo v1.8.0
+	github.com/onsi/ginkgo v1.10.3
 	github.com/onsi/gomega v1.5.0
 	github.com/spf13/pflag v1.0.3 // indirect
 	golang.org/x/crypto v0.0.0-20190611184440-5c40567a22f8 // indirect
