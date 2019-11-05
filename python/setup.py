@@ -40,7 +40,7 @@ setup(
         "pyaml<20.0.0",
         "gunicorn >= 19.9.0, < 19.10.0",
         "minio >= 4.0.9, < 6.0.0",
-        "azure-storage-blob >= 2.0.1, < 3.0.0",
+        "azure-storage-blob >= 2.0.1, < 13.0.0",
         "setuptools >= 41.0.0",
     ],
     tests_require=["pytest", "pytest-cov", "Pillow"],
