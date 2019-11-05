@@ -24,21 +24,21 @@ class KerasSpamClassifier():
 
 
 
-    def predict(self, text, feature_names): #List[Tuple[float, float]]:
+    def predict(self, text, feature_names=None): #List[Tuple[float, float]]:
         """
         Predict on a english text you got from translator service. The output returns the probability of text being spam
         """
         seq= self.tokenizer.texts_to_sequences([text])
         padded = sequence.pad_sequences(seq, maxlen=self.max_len)
         prob = self.model.predict(padded)
+        prob = prob[0][0]
+        return np.array([prob, "spam"])
 
-        return np.array([prob[0][0], "spam"])
 
+# if __name__== "__main__":
 
-if __name__== "__main__":
-
-    text = 'please click this link to win the price'
-    #vect_path=Path('/Users/sandhya.sandhya/Desktop/data/doc/data'),
-    sc = KerasSpamClassifier(model_path=Path('./model'))
-    res = sc.predict(text, feature_names=None)
-    print(res)
+#     text = 'please click this link to win the price'
+#     #vect_path=Path('/Users/sandhya.sandhya/Desktop/data/doc/data'),
+#     sc = KerasSpamClassifier(model_path=Path('./model'))
+#     res = sc.predict(text, feature_names=None)
+#     print(res)
