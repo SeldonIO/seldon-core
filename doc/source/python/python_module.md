@@ -123,7 +123,7 @@ shouldn't affect users on version `0.5.0.2` and above.
 If you are facing this issue, you should see a stacktrace similar to the one
 below:
 
-```python
+```pytb
 .../seldon_core/storage.py in <module>
      23 import re
      24 from urllib.parse import urlparse
