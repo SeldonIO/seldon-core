@@ -15,6 +15,49 @@ Install from PyPI with:
 pip install seldon-core
 ```
 
+### Tensorflow support
+
+Seldon Core adds optional support to send a `TFTensor` as your prediction
+input.
+However, most users will prefer to send a `numpy` array, string, binary or JSON
+input instead.
+Therefore, in order to avoid including the `tensorflow` dependency on
+installations where the `TFTensor` support won't be necessary, it isn't
+installed it by default.
+
+To include the optional Tensorflow support, you can install `seldon_core` as:
+
+```bash
+pip install seldon_core[tensorflow]
+```
+
+### Google Cloud Storage support
+
+As part of the options to store your trained model, Seldon Core adds optional
+support to fetch them from GCS (Google Cloud Storage).
+We are aware that users will usually only require one of the storage backends.
+Therefore, to avoid bloating the `seldon_core` package, we don't install the
+GCS dependencies by default.
+
+To include the optional GCS support, you can install `seldon_core` as:
+
+```bash
+pip install seldon_core[gcs]
+```
+
+### Install all extra dependencies
+
+If you want to install `seldon_core` with all its extra dependencies, you can
+do so as:
+
+```bash
+pip install seldon_core[all]
+```
+
+Keep in mind that this will include some dependencies which may not be used.
+Therefore, unless necessary, we recommend most users to install the default
+distribution of `seldon_core` as [documented above](#install).
+
 ## Seldon Core Microservices
 
 Seldon allows you to easily take your runtime inference code and create a Docker container that can be managed by Seldon Core. Follow the [S2I instructions](../wrappers/python.md) to wrap your code.
@@ -59,3 +102,4 @@ print(r)
 Examples of using the `seldon_client` module can be found in the [example notebook](../examples/helm_examples.html).
 
 The API docs can be found [here](api/seldon_core.html#module-seldon_core.seldon_client).
+
