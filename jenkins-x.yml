@@ -15,31 +15,10 @@ pipelineConfig:
             - args:
               - -C python
               - update_package
-              - install
+              - install_dev
               - test
               command: make
               name: test-python
-            - args:
-              - -C python
-              - update_package
-              - install-tf
-              - test
-              command: make
-              name: test-python-tf
-            - args:
-              - -C python
-              - update_package
-              - install-gcs
-              - test
-              command: make
-              name: test-python-gcs
-            - args:
-              - -C python
-              - update_package
-              - install-all
-              - test
-              command: make
-              name: test-python-all
           - agent:
               image: seldonio/core-builder:0.4
             name: seldon-engine
