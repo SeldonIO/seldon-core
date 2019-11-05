@@ -49,8 +49,8 @@ update_package: get_apis build_apis update_version
 install:
 	pip install -e .
 
-.PHONY: install-dev
-install-dev:
+.PHONY: install_dev
+install_dev:
 	pip install -e . -r requirements-dev.txt
 
 .PHONY: uninstall
