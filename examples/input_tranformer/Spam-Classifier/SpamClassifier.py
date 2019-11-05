@@ -21,7 +21,7 @@ class SpamClassifier():
         data = self.vectorizer.transform(text).todense()
         probas = self.clf.predict_proba(data)
         prob = probas[0][1]
-
+        
         return np.array([prob, "spam"])
 
 
