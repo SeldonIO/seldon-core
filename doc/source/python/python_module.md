@@ -12,7 +12,7 @@ Seldon Core has a python package `seldon-core` available on PyPI. The package ma
 Install from PyPI with:
 
 ```bash
-pip install seldon-core
+$ pip install seldon-core
 ```
 
 ### Tensorflow support
@@ -25,10 +25,10 @@ Therefore, in order to avoid including the `tensorflow` dependency on
 installations where the `TFTensor` support won't be necessary, it isn't
 installed it by default.
 
-To include the optional Tensorflow support, you can install `seldon-core` as:
+To include the optional `TFTensor` support, you can install `seldon-core` as:
 
 ```bash
-pip install seldon-core[tensorflow]
+$ pip install seldon-core[tensorflow]
 ```
 
 ### Google Cloud Storage support
@@ -42,8 +42,13 @@ GCS dependencies by default.
 To include the optional GCS support, you can install `seldon-core` as:
 
 ```bash
-pip install seldon-core[gcs]
+$ pip install seldon-core[gcs]
 ```
+
+We are currently looking into options to replace the multiple cloud storage
+libraries that `seldon-core` requires for a single multi-cloud one.
+This discussion is currently open on [issue #1028](https://github.com/SeldonIO/seldon-core/issues/1028).
+Feedback and suggestions are welcome!
 
 ### Install all extra dependencies
 
@@ -51,7 +56,7 @@ If you want to install `seldon-core` with all its extra dependencies, you can
 do so as:
 
 ```bash
-pip install seldon-core[all]
+$ pip install seldon-core[all]
 ```
 
 Keep in mind that this will include some dependencies which may not be used.
@@ -103,3 +108,37 @@ Examples of using the `seldon_client` module can be found in the [example notebo
 
 The API docs can be found [here](api/seldon_core.html#module-seldon_core.seldon_client).
 
+## Troubleshooting
+
+If you experience problems after installing `seldon-core`, here are some tips
+to diagnose the issue.
+
+### ImportError: cannot import name 'BlockBlobService'
+
+The library we use to support Azure Blob Storage [released an
+update](https://github.com/Azure/azure-storage-python/issues/640) which
+contains breaking changes with previous versions.
+This update breaks versions of `seldon-core` below or equal to `0.5.0` but it
+shouldn't affect users on version `0.5.0.2` and above.
+If you are facing this issue, you should see a stacktrace similar to the one
+below:
+
+```python
+.../seldon_core/storage.py in <module>
+     23 import re
+     24 from urllib.parse import urlparse
+---> 25 from azure.storage.blob import BlockBlobService
+     26 from minio import Minio
+     27 from seldon_core.imports_helper import _GCS_PRESENT
+
+ImportError: cannot import name 'BlockBlobService'
+```
+
+The recommended workaround is to update `seldon-core` to version `0.5.0.2` or
+above.
+Alternatively, if you can't upgrade to a more recent version, the following
+also works:
+
+```bash
+$ pip install azure-storage-blob==2.1.0 seldon-core 
+```
