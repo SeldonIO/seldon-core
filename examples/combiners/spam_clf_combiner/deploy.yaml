@@ -19,16 +19,16 @@ spec:
     - spec:
         containers:
         - name: combiner
-          image: combiner:1.0.0.1
+          image: sandhya1594/combiner:1.0.0.1
           imagePullPolicy: IfNotPresent
         - name: spam-classifier
-          image: spam-classifier:1.0.0.1
+          image: sandhya1594/spam-classifier:1.0.0.1
           imagePullPolicy: IfNotPresent
         - name: keras-spam-classifier
-          image: keras-spam-classifier:1.0.0.1
+          image: sandhya1594/keras-spam-classifier:1.0.0.1
           imagePullPolicy: IfNotPresent
         - name: translator
-          image: translator:1.0.0.1
+          image: sandhya1594/translator:1.0.0.1
           imagePullPolicy: IfNotPresent
         terminationGracePeriodSeconds: 20
     graph:
@@ -51,7 +51,7 @@ spec:
       name: translator
       endpoint:
         type: REST
-      type: TRANSLATOR
+      type: TRANSFORMER
     name: seldon-combiner
     replicas: 1
     annotations:
