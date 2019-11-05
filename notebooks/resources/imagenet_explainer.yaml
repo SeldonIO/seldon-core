@@ -16,7 +16,7 @@ spec:
       requests:
         memory: 1Gi
     explainer:
-      type: anchor_images
+      type: AnchorImages
       modelUri: gs://seldon-models/tfserving/imagenet/explainer
     name: default
     replicas: 1
