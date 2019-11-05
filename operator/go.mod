@@ -28,5 +28,5 @@ require (
 	k8s.io/klog v0.3.3 // indirect
 	k8s.io/kube-openapi v0.0.0-20190603182131-db7b694dc208 // indirect
 	knative.dev/pkg v0.0.0-20190823221514-39a29cf1bf26
-	sigs.k8s.io/controller-runtime v0.2.0
+	sigs.k8s.io/controller-runtime v0.3.0
 )
