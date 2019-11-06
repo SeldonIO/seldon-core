@@ -1,0 +1,9 @@
+version: 1
+
+update_configs:
+  - package_manager: "python"
+    directory: "/python"
+    update_schedule: "weekly"
+  - package_manager: "java:maven"
+    directory: "/engine"
+    update_schedule: "weekly"

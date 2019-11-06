@@ -1,5 +1,5 @@
 SELDON_CORE_DIR=..
-VERSION=0.5.0.2
+VERSION=0.5.0.3
 
 .PHONY: get_apis
 get_apis:
@@ -102,6 +102,11 @@ push_conda:
 
 setup_linter:
 	pip install black==19.3b0
+
+run_linter:
+	black \
+		./ ../testing \
+		--exclude "(testing/scripts/proto|seldon_core/proto/|.eggs)"
 
 run_linter_check:
 	black \

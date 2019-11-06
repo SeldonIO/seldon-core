@@ -43,7 +43,7 @@ def initial_rest_request(model, namespace):
                 print("Sleeping 10 sec and trying again")
                 time.sleep(10)
                 r = rest_request(model, namespace)
-        return r
+    return r
 
 
 def create_random_data(data_size, rows=1):
