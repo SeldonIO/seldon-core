@@ -34,11 +34,6 @@ import org.slf4j.LoggerFactory;
 public class TestPredictionProto {
   private static Logger log = LoggerFactory.getLogger(TestPredictionProto.class);
 
-  private String toJson(SeldonMessage request) throws InvalidProtocolBufferException {
-    String withNewlines = ProtoBufUtils.toJson(request, true);
-    return withNewlines.replace("\n", "").replace("\r", "");
-  }
-
   @Test
   public void testParseJsonExtraFields() throws InvalidProtocolBufferException {
     String json = "{\"x\":1.0,\"request\":{\"values\":[[1.0],[2.0]]}}";
@@ -46,11 +41,8 @@ public class TestPredictionProto {
     ProtoBufUtils.updateMessageBuilderFromJson(builder, json);
     SeldonMessage request = builder.build();
 
-    String serialised = toJson(request);
-    String expected = "{}";
-
     // TODO: Nothing gets serialised back. Is this alright?
-    Assert.assertEquals(expected, serialised);
+    Assert.assertEquals(0, request.getSerializedSize());
   }
 
   @Test
@@ -65,9 +57,6 @@ public class TestPredictionProto {
 
     ListValue ndarray1 = ndarray.getValues(1).getListValue();
     Assert.assertEquals(3.0, ndarray1.getValues(0).getNumberValue(), 0.01);
-
-    // TODO: Move to ProtoBufUtils.toJson tests
-    String serialised = toJson(request);
   }
 
   @Test
@@ -92,9 +81,6 @@ public class TestPredictionProto {
 
     ListValue ndarray0 = ndarray.getValues(0).getListValue();
     Assert.assertEquals(2.0, ndarray0.getValues(1).getNumberValue(), 0.01);
-
-    // TODO: Move to ProtoBufUtils.toJson tests
-    String serialised = toJson(request);
   }
 
   @Test
@@ -104,11 +90,8 @@ public class TestPredictionProto {
     ProtoBufUtils.updateMessageBuilderFromJson(builder, json);
     SeldonMessage request = builder.build();
 
-    String serialised = toJson(request);
-    String expected = "{}";
-
     // TODO: Nothing gets serialised back. Is this alright?
-    Assert.assertEquals(expected, serialised);
+    Assert.assertEquals(0, request.getSerializedSize());
   }
 
   @Test
@@ -130,9 +113,6 @@ public class TestPredictionProto {
 
     Value key3 = jsonData.getFieldsOrThrow("key3");
     Assert.assertEquals(2.3, key3.getNumberValue());
-
-    // TODO: Move to ProtoBufUtils.toJson tests
-    String serialised = toJson(request);
   }
 
   @Test
