@@ -18,6 +18,7 @@ package io.seldon.engine.pb;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ListValue;
+import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
 import io.seldon.protos.PredictionProtos.DefaultData;
 import io.seldon.protos.PredictionProtos.Meta;
@@ -108,6 +109,30 @@ public class TestPredictionProto {
 
     // TODO: Nothing gets serialised back. Is this alright?
     Assert.assertEquals(expected, serialised);
+  }
+
+  @Test
+  public void testParseJsonData() throws InvalidProtocolBufferException {
+    String json = "{\"jsonData\":{\"key1\":\"bar\",\"key2\": 23,\"key3\":2.3}}";
+    SeldonMessage.Builder builder = SeldonMessage.newBuilder();
+    ProtoBufUtils.updateMessageBuilderFromJson(builder, json);
+    SeldonMessage request = builder.build();
+
+    Struct jsonData = request.getJsonData().getStructValue();
+    Assert.assertEquals(3, jsonData.getFieldsCount());
+
+    Value key1 = jsonData.getFieldsOrThrow("key1");
+    Assert.assertEquals("key1", key1.getStringValue());
+
+    // TODO: How to read an Int32Value from a Struct
+    Value key2 = jsonData.getFieldsOrThrow("key2");
+    Assert.assertEquals(23, key2.getNumberValue());
+
+    Value key3 = jsonData.getFieldsOrThrow("key3");
+    Assert.assertEquals(2.3, key3.getNumberValue());
+
+    // TODO: Move to ProtoBufUtils.toJson tests
+    String serialised = toJson(request);
   }
 
   @Test
