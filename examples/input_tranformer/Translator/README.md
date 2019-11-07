@@ -30,7 +30,9 @@ $ docker push <yourdockerhubusername>/translator:1.0.0.1
 ```
 $ docker run --name "translator" --rm <yourdockerhubusername>/translator:1.0.0.1
 
-curl -g http://localhost:5000/transform_input --data-urlencode 'json={"data": {"names": ["message"], "ndarray": ["Wie läuft dein Tag"]}}'
+curl -g http://localhost:5000/transform-input --data-urlencode 'json={"data": {"names": ["message"], "ndarray": ["Wie läuft dein Tag"]}}'
 
+result: 
 
+{"data":{"names":["message"],"ndarray":["How is your day"]},"meta":{}}
 ```
