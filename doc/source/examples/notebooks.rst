@@ -47,4 +47,6 @@ Notebooks
    Sklearn, Xgboost, Tensorflow Server Examples <server_examples>
    Tensorflow MNIST <deep_mnist>
    TFserving MNIST <tfserving_mnist>
+   Spam Classification TRANSFORMER component <transformer_spam_model>
+   Spam Classification TRANSFORMER + COMBINER Component <combiner_spam_model>
 
