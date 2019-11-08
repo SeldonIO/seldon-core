@@ -9,7 +9,7 @@ _TF_PRESENT = False
 _GCS_PRESENT = False
 
 try:
-    import tensorflow  # noqa: F401
+    from tensorflow import make_ndarray  # noqa: F401
 
     _TF_PRESENT = True
 except ImportError:
