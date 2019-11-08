@@ -114,6 +114,18 @@ def update_kustomize_engine_version(seldon_core_version, debug=False):
         print("error updating kustomize".format(**locals()))
         print(err)
 
+def update_operator_version(seldon_core_version, debug=False):
+    fpath = "operator/config/manager/kustomization.yaml"
+    if debug:
+        print("processing [{}]".format(fpath))
+    args = ["sed", "-i", "s/newTag: .*/newTag: {seldon_core_version}/".format(**locals()), fpath]
+    err, out = run_command(args, debug)
+    if err == None:
+        print("updated {fpath}".format(**locals()))
+    else:
+        print("error updating {fpath}".format(**locals()))
+        print(err)
+
 def set_version(seldon_core_version, pom_files, chart_yaml_files, operator_values_yaml_file, debug=False):
     # Normalize file paths
     pom_files_realpaths = [os.path.realpath(x) for x in pom_files]
@@ -122,6 +134,9 @@ def set_version(seldon_core_version, pom_files, chart_yaml_files, operator_value
 
     # Update kustomize
     update_kustomize_engine_version(seldon_core_version,debug)
+
+    # Update operator version
+    update_operator_version(seldon_core_version, debug)
 
     # Update top level versions.txt
     update_versions_txt(seldon_core_version, debug)
