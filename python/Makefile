@@ -94,12 +94,12 @@ setup_linter:
 run_linter:
 	black \
 		./ ../testing \
-		--exclude "(testing/scripts/proto|seldon_core/proto/|.eggs)"
+		--exclude "(testing/scripts/proto|seldon_core/proto/|.eggs|.tox)"
 
 run_linter_check:
 	black \
 		--check ./ ../testing \
-		--exclude "(testing/scripts/proto|seldon_core/proto/|.eggs)"
+		--exclude "(testing/scripts/proto|seldon_core/proto/|.eggs|.tox)"
 
 .PHONY: clean
 clean:
