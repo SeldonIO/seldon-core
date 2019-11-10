@@ -1,6 +1,5 @@
 import pytest
-from k8s_utils import *
-from s2i_utils import *
+from seldon_e2e_utils import get_s2i_python_version
 
 
 @pytest.fixture(scope="module")
