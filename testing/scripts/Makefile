@@ -62,7 +62,7 @@ install:
 .PHONY: test
 test: build_protos install
 	pip install pytest-xdist
-	pytest --verbose -s -W ignore -n8 2>&1
+	pytest --verbose -s -W ignore -n auto 2>&1
 
 .PHONY: clean
 clean:

@@ -4,7 +4,40 @@ from seldon_core.proto import prediction_pb2
 from seldon_core.proto import prediction_pb2_grpc
 import grpc
 import numpy as np
-from k8s_utils import *
+import time
+from subprocess import run, Popen
+import subprocess
+import json
+from retrying import retry
+
+API_AMBASSADOR = "localhost:8003"
+
+
+def get_s2i_python_version():
+    completedProcess = Popen(
+        "cd ../../wrappers/s2i/python && grep 'IMAGE_VERSION=' Makefile | cut -d'=' -f2",
+        shell=True,
+        stdout=subprocess.PIPE,
+    )
+    output = completedProcess.stdout.readline()
+    version = output.decode("utf-8").rstrip()
+    return version
+
+
+def get_seldon_version():
+    completedProcess = Popen(
+        "cat ../../version.txt", shell=True, stdout=subprocess.PIPE
+    )
+    output = completedProcess.stdout.readline()
+    version = output.decode("utf-8").strip()
+    return version
+
+
+def wait_for_shutdown(deploymentName, namespace):
+    ret = run(f"kubectl get -n {namespace} deploy/{deploymentName}", shell=True)
+    while ret.returncode == 0:
+        time.sleep(1)
+        ret = run(f"kubectl get -n {namespace} deploy/{deploymentName}", shell=True)
 
 
 def wait_for_rollout(deploymentName, namespace):
@@ -17,6 +50,23 @@ def wait_for_rollout(deploymentName, namespace):
             f"kubectl rollout status -n {namespace} deploy/" + deploymentName,
             shell=True,
         )
+
+
+def wait_for_status(name, namespace):
+    for attempts in range(7):
+        completedProcess = run(
+            f"kubectl get sdep {name} -n {namespace} -o json",
+            shell=True,
+            check=True,
+            stdout=subprocess.PIPE,
+        )
+        jStr = completedProcess.stdout
+        j = json.loads(jStr)
+        if "status" in j:
+            return j
+        else:
+            print("Failed to find status - sleeping")
+            time.sleep(5)
 
 
 def rest_request(model, namespace):

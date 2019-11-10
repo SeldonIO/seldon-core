@@ -1,13 +1,12 @@
 import pytest
-from seldon_utils import *
-from k8s_utils import *
-
-
-def wait_for_shutdown(deploymentName, namespace):
-    ret = run(f"kubectl get -n {namespace} deploy/" + deploymentName, shell=True)
-    while ret.returncode == 0:
-        time.sleep(1)
-        ret = run(f"kubectl get -n {namespace} deploy/" + deploymentName, shell=True)
+from seldon_e2e_utils import (
+    wait_for_rollout,
+    initial_rest_request,
+    rest_request_ambassador,
+    grpc_request_ambassador2,
+    API_AMBASSADOR,
+)
+from subprocess import run
 
 
 class TestClusterWide(object):
@@ -15,7 +14,7 @@ class TestClusterWide(object):
     # Test singe model helm script with 4 API methods
     def test_single_model(self):
         namespace = "test-single-model"
-        run(f"kubectl create namespace {namespace}", shell=true, check=true)
+        run(f"kubectl create namespace {namespace}", shell=True, check=True)
         run(
             f"helm install ../../helm-charts/seldon-single-model --name mymodel-{namespace} --set oauth.key=oauth-key --set oauth.secret=oauth-secret --namespace {namespace}",
             shell=True,
@@ -32,12 +31,12 @@ class TestClusterWide(object):
         r = grpc_request_ambassador2("mymodel", namespace, API_AMBASSADOR)
         print(r)
         run(f"helm delete mymodel-{namespace} --purge", shell=True)
-        run(f"kubectl delete namespace {namespace}", shell=true, check=true)
+        run(f"kubectl delete namespace {namespace}", shell=True, check=True)
 
     # Test AB Test model helm script with 4 API methods
     def test_abtest_model(self):
         namespace = "test-abtest-model"
-        run(f"kubectl create namespace {namespace}", shell=true, check=true)
+        run(f"kubectl create namespace {namespace}", shell=True, check=True)
         run(
             f"helm install ../../helm-charts/seldon-abtest --name myabtest-{namespace} --set oauth.key=oauth-key --set oauth.secret=oauth-secret --namespace {namespace}",
             shell=True,
@@ -55,15 +54,13 @@ class TestClusterWide(object):
         print(
             "WARNING SKIPPING FLAKY AMBASSADOR TEST UNTIL AMBASSADOR GRPC ISSUE FIXED.."
         )
-        # r = grpc_request_ambassador2("myabtest", "test1", API_AMBASSADOR)
-        # print(r)
         run(f"helm delete myabtest-{namespace} --purge", shell=True)
-        run(f"kubectl delete namespace {namespace}", shell=true, check=true)
+        run(f"kubectl delete namespace {namespace}", shell=True, check=True)
 
     # Test MAB Test model helm script with 4 API methods
     def test_mab_model(self):
         namespace = "test-mab-model"
-        run(f"kubectl create namespace {namespace}", shell=true, check=true)
+        run(f"kubectl create namespace {namespace}", shell=True, check=True)
         run(
             f"helm install ../../helm-charts/seldon-mab --name mymab-{namespace} --set oauth.key=oauth-key --set oauth.secret=oauth-secret --namespace {namespace}",
             shell=True,
@@ -85,4 +82,4 @@ class TestClusterWide(object):
         # r = grpc_request_ambassador2("mymab", "test1", API_AMBASSADOR)
         # print(r)
         run(f"helm delete mymab-{namespace} --purge", shell=True)
-        run(f"kubectl delete namespace {namespace}", shell=true, check=true)
+        run(f"kubectl delete namespace {namespace}", shell=True, check=True)

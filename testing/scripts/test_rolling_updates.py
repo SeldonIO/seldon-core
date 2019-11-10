@@ -1,23 +1,11 @@
-from seldon_utils import *
-from k8s_utils import *
-
-
-def wait_for_shutdown(deploymentName, namespace):
-    ret = run(f"kubectl get deploy/{deploymentName} -n {namespace}", shell=True)
-    while ret.returncode == 0:
-        time.sleep(1)
-        ret = run(f"kubectl get deploy/{deploymentName} -n {namespace}", shell=True)
-
-
-def wait_for_rollout(deploymentName, namespace):
-    ret = run(
-        f"kubectl rollout status deploy/{deploymentName} -n {namespace}", shell=True
-    )
-    while ret.returncode > 0:
-        time.sleep(1)
-        ret = run(
-            f"kubectl rollout status deploy/{deploymentName} -n {namespace}", shell=True
-        )
+from subprocess import run
+from seldon_e2e_utils import (
+    wait_for_rollout,
+    rest_request_ambassador,
+    initial_rest_request,
+    API_AMBASSADOR,
+)
+import time
 
 
 class TestRollingHttp(object):

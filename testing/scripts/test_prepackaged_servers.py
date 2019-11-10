@@ -1,35 +1,9 @@
 import subprocess
 import json
-from seldon_utils import *
 from seldon_core.seldon_client import SeldonClient
-
-
-def wait_for_status(name, namespace):
-    for attempts in range(7):
-        completedProcess = run(
-            f"kubectl get sdep " + name + " -o json -n {namespace}",
-            shell=True,
-            check=True,
-            stdout=subprocess.PIPE,
-        )
-        jStr = completedProcess.stdout
-        j = json.loads(jStr)
-        if "status" in j and j["status"] == "Available":
-            return j
-        else:
-            print("Failed to find status - sleeping")
-            time.sleep(5)
-
-
-def wait_for_rollout(deploymentName, namespace):
-    ret = run(
-        f"kubectl rollout status deploy/{deploymentName} -n {namespace}", shell=True
-    )
-    while ret.returncode > 0:
-        time.sleep(1)
-        ret = run(
-            f"kubectl rollout status deploy/{deploymentName} -n {namespace}", shell=True
-        )
+from seldon_e2e_utils import wait_for_rollout, wait_for_status
+from subprocess import run
+import time
 
 
 class TestPrepack(object):
