@@ -6,6 +6,7 @@ from seldon_e2e_utils import (
     wait_for_rollout,
     rest_request_ambassador,
     initial_rest_request,
+    retry_run,
     API_AMBASSADOR,
 )
 
@@ -135,10 +136,8 @@ class S2IK8S(object):
         namespace = "s2i-test-model-rest"
         run(f"kubectl create namespace {namespace}", shell=True, check=True)
         create_push_s2i_image(s2i_python_version, "model", "rest")
-        run(
+        retry_run(
             f"kubectl apply -f ../resources/s2i_python_model.json -n {namespace}",
-            shell=True,
-            check=True,
         )
         wait_for_rollout("mymodel-mymodel-8715075", namespace)
         r = initial_rest_request("mymodel", namespace)
@@ -152,18 +151,15 @@ class S2IK8S(object):
         run(
             f"kubectl delete -f ../resources/s2i_python_model.json -n {namespace}",
             shell=True,
-            check=True,
         )
-        run(f"kubectl delete namespace {namespace}", shell=True, check=True)
+        run(f"kubectl delete namespace {namespace}", shell=True)
 
     def test_input_transformer_rest(self, s2i_python_version):
         namespace = "s2i-test-input-transformer-rest"
         run(f"kubectl create namespace {namespace}", shell=True, check=True)
         create_push_s2i_image(s2i_python_version, "transformer", "rest")
-        run(
+        retry_run(
             f"kubectl apply -f ../resources/s2i_python_transformer.json -n {namespace}",
-            shell=True,
-            check=True,
         )
         wait_for_rollout("mytrans-mytrans-1f278ae", namespace)
         r = initial_rest_request("mytrans", namespace)
@@ -177,18 +173,15 @@ class S2IK8S(object):
         run(
             f"kubectl delete -f ../resources/s2i_python_transformer.json -n {namespace}",
             shell=True,
-            check=True,
         )
-        run(f"kubectl create namespace {namespace}", shell=True, check=True)
+        run(f"kubectl create namespace {namespace}", shell=True)
 
     def test_output_transformer_rest(self, s2i_python_version):
         namespace = "s2i-test-output-transformer-rest"
         run(f"kubectl create namespace {namespace}", shell=True, check=True)
         create_push_s2i_image(s2i_python_version, "transformer", "rest")
-        run(
+        retry_run(
             f"kubectl apply -f ../resources/s2i_python_output_transformer.json -n {namespace}",
-            shell=True,
-            check=True,
         )
         wait_for_rollout("mytrans-mytrans-52996cb", namespace)
         r = initial_rest_request("mytrans", namespace)
@@ -202,19 +195,16 @@ class S2IK8S(object):
         run(
             f"kubectl delete -f ../resources/s2i_python_output_transformer.json -n {namespace}",
             shell=True,
-            check=True,
         )
-        run(f"kubectl create namespace {namespace}", shell=True, check=True)
+        run(f"kubectl create namespace {namespace}", shell=True)
 
     def test_router_rest(self, s2i_python_version):
         namespace = "s2i-test-router-rest"
         run(f"kubectl create namespace {namespace}", shell=True, check=True)
         create_push_s2i_image(s2i_python_version, "model", "rest")
         create_push_s2i_image(s2i_python_version, "router", "rest")
-        run(
+        retry_run(
             f"kubectl apply -f ../resources/s2i_python_router.json -n {namespace}",
-            shell=True,
-            check=True,
         )
         wait_for_rollout("myrouter-myrouter-340ed69", namespace)
         r = initial_rest_request("myrouter", namespace)
@@ -228,19 +218,16 @@ class S2IK8S(object):
         run(
             f"kubectl delete -f ../resources/s2i_python_router.json -n {namespace}",
             shell=True,
-            check=True,
         )
-        run(f"kubectl delete namespace {namespace}", shell=True, check=True)
+        run(f"kubectl delete namespace {namespace}", shell=True)
 
     def test_combiner_rest(self, s2i_python_version):
         namespace = "s2i-test-combiner-rest"
         run(f"kubectl create namespace {namespace}", shell=True, check=True)
         create_push_s2i_image(s2i_python_version, "model", "rest")
         create_push_s2i_image(s2i_python_version, "combiner", "rest")
-        run(
+        retry_run(
             f"kubectl apply -f ../resources/s2i_python_combiner.json -n {namespace}",
-            shell=True,
-            check=True,
         )
         wait_for_rollout("mycombiner-mycombiner-acc7c4d", namespace)
         r = initial_rest_request("mycombiner", namespace)
@@ -254,6 +241,5 @@ class S2IK8S(object):
         run(
             f"kubectl delete -f ../resources/s2i_python_combiner.json -n {namespace}",
             shell=True,
-            check=True,
         )
-        run(f"kubectl delete namespace {namespace}", shell=True, check=True)
+        run(f"kubectl delete namespace {namespace}", shell=True)
