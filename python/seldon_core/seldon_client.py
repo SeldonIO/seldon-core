@@ -862,8 +862,7 @@ def microservice_api_rest_seldon_message(
     elif str_data is not None:
         request = prediction_pb2.SeldonMessage(strData=str_data)
     elif json_data is not None:
-        json_data_proto = json_to_seldon_message(json_data)
-        request = prediction_pb2.SeldonMessage(jsonData=json_data_proto)
+        request = json_to_seldon_message({"jsonData": json_data})
     else:
         if data is None:
             data = np.random.rand(*shape)
@@ -1052,8 +1051,7 @@ def microservice_api_grpc_seldon_message(
     elif str_data is not None:
         request = prediction_pb2.SeldonMessage(strData=str_data)
     elif json_data is not None:
-        json_data_proto = json_to_seldon_message(json_data)
-        request = prediction_pb2.SeldonMessage(jsonData=json_data_proto)
+        request = json_to_seldon_message({"jsonData": json_data})
     else:
         if data is None:
             data = np.random.rand(*shape)
@@ -1303,8 +1301,7 @@ def rest_predict_seldon_oauth(
     elif str_data is not None:
         request = prediction_pb2.SeldonMessage(strData=str_data)
     elif json_data is not None:
-        json_data_proto = json_to_seldon_message(json_data)
-        request = prediction_pb2.SeldonMessage(jsonData=json_data_proto)
+        request = json_to_seldon_message({"jsonData": json_data})
     else:
         if data is None:
             data = np.random.rand(*shape)
@@ -1482,8 +1479,7 @@ def rest_predict_gateway(
     elif str_data is not None:
         request = prediction_pb2.SeldonMessage(strData=str_data)
     elif json_data is not None:
-        json_data_proto = json_to_seldon_message(json_data)
-        request = prediction_pb2.SeldonMessage(jsonData=json_data_proto)
+        request = json_to_seldon_message({"jsonData": json_data})
     else:
         if data is None:
             data = np.random.rand(*shape)
@@ -1643,8 +1639,7 @@ def explain_predict_gateway(
     elif str_data is not None:
         request = prediction_pb2.SeldonMessage(strData=str_data)
     elif json_data is not None:
-        json_data_proto = json_to_seldon_message(json_data)
-        request = prediction_pb2.SeldonMessage(jsonData=json_data_proto)
+        request = json_to_seldon_message({"jsonData": json_data})
     else:
         if data is None:
             data = np.random.rand(*shape)
@@ -1797,8 +1792,7 @@ def grpc_predict_gateway(
     elif str_data is not None:
         request = prediction_pb2.SeldonMessage(strData=str_data)
     elif json_data is not None:
-        json_data_proto = json_to_seldon_message(json_data)
-        request = prediction_pb2.SeldonMessage(jsonData=json_data_proto)
+        request = json_to_seldon_message({"jsonData": json_data})
     else:
         if data is None:
             data = np.random.rand(*shape)
