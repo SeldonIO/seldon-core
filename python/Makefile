@@ -40,7 +40,7 @@ build_apis: get_apis
 
 .PHONY: update_version
 update_version:
-	sed -i "s/__version__ = .*/__version__ = '$(VERSION)'/g" seldon_core/version.py
+	sed -i 's/__version__ = .*/__version__ = "$(VERSION)"/g' seldon_core/version.py
 
 .PHONY: update_package
 update_package: get_apis build_apis update_version
