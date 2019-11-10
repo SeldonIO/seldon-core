@@ -1,7 +1,11 @@
 import subprocess
 import json
 from seldon_core.seldon_client import SeldonClient
-from seldon_e2e_utils import wait_for_rollout, wait_for_status
+from seldon_e2e_utils import (
+    wait_for_rollout,
+    retry_run,
+    wait_for_status,
+)
 from subprocess import run
 import time
 
@@ -12,10 +16,8 @@ class TestPrepack(object):
     def test_sklearn(self):
         namespace = "test-sklearn"
         run(f"kubectl create namespace {namespace}", shell=True, check=True)
-        run(
+        retry_run(
             f"kubectl apply -f ../../servers/sklearnserver/samples/iris.yaml -n {namespace}",
-            shell=True,
-            check=True,
         )
         wait_for_rollout("iris-default-4903e3c", namespace)
         wait_for_status("sklearn", namespace)
@@ -27,18 +29,15 @@ class TestPrepack(object):
         run(
             f"kubectl delete -f ../../servers/sklearnserver/samples/iris.yaml -n {namespace}",
             shell=True,
-            check=True,
         )
-        run(f"kubectl delete namespace {namespace}", shell=True, check=True)
+        run(f"kubectl delete namespace {namespace}", shell=True)
 
     # Test prepackaged server for tfserving
     def test_tfserving(self):
         namespace = "test-tfserving"
         run(f"kubectl create namespace {namespace}", shell=True, check=True)
-        run(
+        retry_run(
             f"kubectl apply -f ../../servers/tfserving/samples/mnist_rest.yaml -n {namespace}",
-            shell=True,
-            check=True,
         )
         wait_for_rollout("mnist-default-725903e", namespace)
         wait_for_status("tfserving", namespace)
@@ -50,18 +49,15 @@ class TestPrepack(object):
         run(
             f"kubectl delete -f ../../servers/tfserving/samples/mnist_rest.yaml -n {namespace}",
             shell=True,
-            check=True,
         )
-        run(f"kubectl delete namespace {namespace}", shell=True, check=True)
+        run(f"kubectl delete namespace {namespace}", shell=True)
 
     # Test prepackaged server for xgboost
     def test_xgboost(self):
         namespace = "test-xgboost"
         run(f"kubectl create namespace {namespace}", shell=True, check=True)
-        run(
+        retry_run(
             f"kubectl apply -f ../../servers/xgboostserver/samples/iris.yaml -n {namespace}",
-            shell=True,
-            check=True,
         )
         wait_for_rollout("iris-default-af1783b", namespace)
         wait_for_status("xgboost", namespace)
@@ -73,6 +69,5 @@ class TestPrepack(object):
         run(
             f"kubectl delete -f ../../servers/xgboostserver/samples/iris.yaml -n {namespace}",
             shell=True,
-            check=True,
         )
         run(f"kubectl delete namespace {namespace}", shell=True, check=True)

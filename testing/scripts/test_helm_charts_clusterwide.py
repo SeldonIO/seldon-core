@@ -69,7 +69,7 @@ class TestClusterWide(object):
         wait_for_rollout("mymab-mymab-41de5b8", namespace)
         wait_for_rollout("mymab-mymab-b8038b2", namespace)
         wait_for_rollout("mymab-mymab-df66c5c", namespace)
-        initial_rest_request("mymab", "test1")
+        initial_rest_request("mymab", namespace)
         print("Test Ambassador REST gateway")
         r = rest_request_ambassador("mymab", namespace, API_AMBASSADOR)
         print(r.json())
@@ -79,7 +79,5 @@ class TestClusterWide(object):
         print(
             "WARNING SKIPPING FLAKY AMBASSADOR TEST UNTIL AMBASSADOR GRPC ISSUE FIXED.."
         )
-        # r = grpc_request_ambassador2("mymab", "test1", API_AMBASSADOR)
-        # print(r)
         run(f"helm delete mymab-{namespace} --purge", shell=True)
         run(f"kubectl delete namespace {namespace}", shell=True, check=True)
