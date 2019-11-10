@@ -1,3 +1,4 @@
 pytest
 retrying
-seldon_core
+# local seldon-core
+-e ../../python
