@@ -570,7 +570,7 @@ class SeldonClient(object):
             data=data,
             bin_data=bin_data,
             str_data=str_data,
-            json_data=str_data,
+            json_data=json_data,
             gateway_prefix=gateway_prefix,
             headers=headers,
             http_path=http_path,
