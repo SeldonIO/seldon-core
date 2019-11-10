@@ -4,9 +4,15 @@ from seldon_core.seldon_client import (
     SeldonClientCombine,
 )
 from unittest import mock
-from seldon_core.utils import array_to_grpc_datadef, seldon_message_to_json
+from seldon_core.utils import (
+    array_to_grpc_datadef,
+    seldon_message_to_json,
+    json_to_seldon_message,
+)
 from seldon_core.proto import prediction_pb2, prediction_pb2_grpc
 import numpy as np
+
+JSON_TEST_DATA = {"test": [0, 1]}
 
 
 class MockResponse:
@@ -28,6 +34,12 @@ def mocked_requests_post_success(url, *args, **kwargs):
     data = np.random.rand(1, 1)
     datadef = array_to_grpc_datadef("tensor", data)
     request = prediction_pb2.SeldonMessage(data=datadef)
+    json = seldon_message_to_json(request)
+    return MockResponse(json, 200, text="{}")
+
+
+def mocked_requests_post_success_json_data(url, *args, **kwargs):
+    request = json_to_seldon_message({"jsonData": JSON_TEST_DATA})
     json = seldon_message_to_json(request)
     return MockResponse(json, 200, text="{}")
 
@@ -57,6 +69,18 @@ def test_predict_rest_with_names(mock_post):
     assert mock_post.call_args[1]["json"]["data"]["names"] == ["a", "b"]
     assert response.success == True
     assert response.response.data.tensor.shape == [1, 1]
+    assert mock_post.call_count == 1
+
+
+@mock.patch("requests.post", side_effect=mocked_requests_post_success_json_data)
+def test_predict_rest_json_data_ambassador(mock_post):
+    sc = SeldonClient(deployment_name="mymodel", gateway="ambassador")
+    response = sc.predict(json_data=JSON_TEST_DATA)
+    json_response = seldon_message_to_json(response.response)
+    assert "jsonData" in mock_post.call_args[1]["json"]
+    assert mock_post.call_args[1]["json"]["jsonData"] == JSON_TEST_DATA
+    assert response.success is True
+    assert json_response["jsonData"] == JSON_TEST_DATA
     assert mock_post.call_count == 1
 
 
