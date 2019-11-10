@@ -128,98 +128,128 @@ class TestPythonS2iK8s(object):
 
 class S2IK8S(object):
     def test_model_rest(self, s2i_python_version):
-        run("kubectl delete sdep --all", shell=True)
+        namespace = "s2i-test-model-rest"
+        run(f"kubectl create namespace {namespace}", shell=True, check=True)
         create_push_s2i_image(s2i_python_version, "model", "rest")
         run(
-            "kubectl apply -f ../resources/s2i_python_model.json",
+            f"kubectl apply -f ../resources/s2i_python_model.json -n {namespace}",
             shell=True,
             check=True,
         )
-        wait_for_rollout("mymodel-mymodel-8715075")
-        r = initial_rest_request("mymodel", "seldon")
+        wait_for_rollout("mymodel-mymodel-8715075", namespace)
+        r = initial_rest_request("mymodel", namespace)
         arr = np.array([[1, 2, 3]])
-        r = rest_request_ambassador("mymodel", "seldon", API_AMBASSADOR, data=arr)
+        r = rest_request_ambassador("mymodel", namespace, API_AMBASSADOR, data=arr)
         res = r.json()
         print(res)
         assert r.status_code == 200
         assert r.json()["data"]["tensor"]["shape"] == [1, 3]
         assert r.json()["data"]["tensor"]["values"] == [2, 3, 4]
-        run("kubectl delete sdep --all", shell=True)
+        run(
+            f"kubectl delete -f ../resources/s2i_python_model.json -n {namespace}",
+            shell=True,
+            check=True,
+        )
+        run(f"kubectl delete namespace {namespace}", shell=True, check=True)
 
     def test_input_transformer_rest(self, s2i_python_version):
-        run("kubectl delete sdep --all", shell=True)
+        namespace = "s2i-test-input-transformer-rest"
+        run(f"kubectl create namespace {namespace}", shell=True, check=True)
         create_push_s2i_image(s2i_python_version, "transformer", "rest")
         run(
-            "kubectl apply -f ../resources/s2i_python_transformer.json",
+            f"kubectl apply -f ../resources/s2i_python_transformer.json -n {namespace}",
             shell=True,
             check=True,
         )
-        wait_for_rollout("mytrans-mytrans-1f278ae")
-        r = initial_rest_request("mytrans", "seldon")
+        wait_for_rollout("mytrans-mytrans-1f278ae", namespace)
+        r = initial_rest_request("mytrans", namespace)
         arr = np.array([[1, 2, 3]])
-        r = rest_request_ambassador("mytrans", "seldon", API_AMBASSADOR, data=arr)
+        r = rest_request_ambassador("mytrans", namespace, API_AMBASSADOR, data=arr)
         res = r.json()
         print(res)
         assert r.status_code == 200
         assert r.json()["data"]["tensor"]["shape"] == [1, 3]
         assert r.json()["data"]["tensor"]["values"] == [2, 3, 4]
-        run("kubectl delete sdep --all", shell=True)
-
-    def test_output_transformer_rest(self, s2i_python_version):
-        run("kubectl delete sdep --all", shell=True)
-        create_push_s2i_image(s2i_python_version, "transformer", "rest")
         run(
-            "kubectl apply -f ../resources/s2i_python_output_transformer.json",
+            f"kubectl delete -f ../resources/s2i_python_transformer.json -n {namespace}",
             shell=True,
             check=True,
         )
-        wait_for_rollout("mytrans-mytrans-52996cb")
-        r = initial_rest_request("mytrans", "seldon")
+        run(f"kubectl create namespace {namespace}", shell=True, check=True)
+
+    def test_output_transformer_rest(self, s2i_python_version):
+        namespace = "s2i-test-output-transformer-rest"
+        run(f"kubectl create namespace {namespace}", shell=True, check=True)
+        create_push_s2i_image(s2i_python_version, "transformer", "rest")
+        run(
+            f"kubectl apply -f ../resources/s2i_python_output_transformer.json -n {namespace}",
+            shell=True,
+            check=True,
+        )
+        wait_for_rollout("mytrans-mytrans-52996cb", namespace)
+        r = initial_rest_request("mytrans", namespace)
         arr = np.array([[1, 2, 3]])
-        r = rest_request_ambassador("mytrans", "seldon", API_AMBASSADOR, data=arr)
+        r = rest_request_ambassador("mytrans", namespace, API_AMBASSADOR, data=arr)
         res = r.json()
         print(res)
         assert r.status_code == 200
         assert r.json()["data"]["tensor"]["shape"] == [1, 3]
         assert r.json()["data"]["tensor"]["values"] == [3, 4, 5]
-        run("kubectl delete sdep --all", shell=True)
+        run(
+            f"kubectl delete -f ../resources/s2i_python_output_transformer.json -n {namespace}",
+            shell=True,
+            check=True,
+        )
+        run(f"kubectl create namespace {namespace}", shell=True, check=True)
 
     def test_router_rest(self, s2i_python_version):
-        run("kubectl delete sdep --all", shell=True)
+        namespace = "s2i-test-router-rest"
+        run(f"kubectl create namespace {namespace}", shell=True, check=True)
         create_push_s2i_image(s2i_python_version, "model", "rest")
         create_push_s2i_image(s2i_python_version, "router", "rest")
         run(
-            "kubectl apply -f ../resources/s2i_python_router.json",
+            f"kubectl apply -f ../resources/s2i_python_router.json -n {namespace}",
             shell=True,
             check=True,
         )
-        wait_for_rollout("myrouter-myrouter-340ed69")
-        r = initial_rest_request("myrouter", "seldon")
+        wait_for_rollout("myrouter-myrouter-340ed69", namespace)
+        r = initial_rest_request("myrouter", namespace)
         arr = np.array([[1, 2, 3]])
-        r = rest_request_ambassador("myrouter", "seldon", API_AMBASSADOR, data=arr)
+        r = rest_request_ambassador("myrouter", namespace, API_AMBASSADOR, data=arr)
         res = r.json()
         print(res)
         assert r.status_code == 200
         assert r.json()["data"]["tensor"]["shape"] == [1, 3]
         assert r.json()["data"]["tensor"]["values"] == [2, 3, 4]
-        run("kubectl delete sdep --all", shell=True)
-
-    def test_combiner_rest(self, s2i_python_version):
-        run("kubectl delete sdep --all", shell=True)
-        create_push_s2i_image(s2i_python_version, "model", "rest")
-        create_push_s2i_image(s2i_python_version, "combiner", "rest")
         run(
-            "kubectl apply -f ../resources/s2i_python_combiner.json",
+            f"kubectl delete -f ../resources/s2i_python_router.json -n {namespace}",
             shell=True,
             check=True,
         )
-        wait_for_rollout("mycombiner-mycombiner-acc7c4d")
-        r = initial_rest_request("mycombiner", "seldon")
+        run(f"kubectl delete namespace {namespace}", shell=True, check=True)
+
+    def test_combiner_rest(self, s2i_python_version):
+        namespace = "s2i-test-combiner-rest"
+        run(f"kubectl create namespace {namespace}", shell=True, check=True)
+        create_push_s2i_image(s2i_python_version, "model", "rest")
+        create_push_s2i_image(s2i_python_version, "combiner", "rest")
+        run(
+            f"kubectl apply -f ../resources/s2i_python_combiner.json -n {namespace}",
+            shell=True,
+            check=True,
+        )
+        wait_for_rollout("mycombiner-mycombiner-acc7c4d", namespace)
+        r = initial_rest_request("mycombiner", namespace)
         arr = np.array([[1, 2, 3]])
-        r = rest_request_ambassador("mycombiner", "seldon", API_AMBASSADOR, data=arr)
+        r = rest_request_ambassador("mycombiner", namespace, API_AMBASSADOR, data=arr)
         res = r.json()
         print(res)
         assert r.status_code == 200
         assert r.json()["data"]["tensor"]["shape"] == [1, 3]
         assert r.json()["data"]["tensor"]["values"] == [3, 4, 5]
-        run("kubectl delete sdep --all", shell=True)
+        run(
+            f"kubectl delete -f ../resources/s2i_python_combiner.json -n {namespace}",
+            shell=True,
+            check=True,
+        )
+        run(f"kubectl delete namespace {namespace}", shell=True, check=True)

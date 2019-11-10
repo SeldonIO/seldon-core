@@ -4,10 +4,10 @@ from seldon_utils import *
 from seldon_core.seldon_client import SeldonClient
 
 
-def wait_for_status(name):
+def wait_for_status(name, namespace):
     for attempts in range(7):
         completedProcess = run(
-            "kubectl get sdep " + name + " -o json -n seldon",
+            f"kubectl get sdep " + name + " -o json -n {namespace}",
             shell=True,
             check=True,
             stdout=subprocess.PIPE,
@@ -21,59 +21,84 @@ def wait_for_status(name):
             time.sleep(5)
 
 
-def wait_for_rollout(deploymentName):
-    ret = run("kubectl rollout status deploy/" + deploymentName, shell=True)
+def wait_for_rollout(deploymentName, namespace):
+    ret = run(
+        f"kubectl rollout status deploy/{deploymentName} -n {namespace}", shell=True
+    )
     while ret.returncode > 0:
         time.sleep(1)
-        ret = run("kubectl rollout status deploy/" + deploymentName, shell=True)
+        ret = run(
+            f"kubectl rollout status deploy/{deploymentName} -n {namespace}", shell=True
+        )
 
 
 class TestPrepack(object):
 
     # Test prepackaged server for sklearn
     def test_sklearn(self):
-        run("kubectl delete sdep --all", shell=True)
+        namespace = "test-sklearn"
+        run(f"kubectl create namespace {namespace}", shell=True, check=True)
         run(
-            "kubectl apply -f ../../servers/sklearnserver/samples/iris.yaml",
+            f"kubectl apply -f ../../servers/sklearnserver/samples/iris.yaml -n {namespace}",
             shell=True,
             check=True,
         )
-        wait_for_rollout("iris-default-4903e3c")
-        wait_for_status("sklearn")
+        wait_for_rollout("iris-default-4903e3c", namespace)
+        wait_for_status("sklearn", namespace)
         print("Initial request")
-        sc = SeldonClient(deployment_name="sklearn", namespace="seldon")
+        sc = SeldonClient(deployment_name="sklearn", namespace=namespace)
         r = sc.predict(gateway="ambassador", transport="rest", shape=(1, 4))
         assert r.success
         print("Success for test_prepack_sklearn")
+        run(
+            f"kubectl delete -f ../../servers/sklearnserver/samples/iris.yaml -n {namespace}",
+            shell=True,
+            check=True,
+        )
+        run(f"kubectl delete namespace {namespace}", shell=True, check=True)
 
     # Test prepackaged server for tfserving
     def test_tfserving(self):
-        run("kubectl delete sdep --all", shell=True)
+        namespace = "test-tfserving"
+        run(f"kubectl create namespace {namespace}", shell=True, check=True)
         run(
-            "kubectl apply -f ../../servers/tfserving/samples/mnist_rest.yaml",
+            f"kubectl apply -f ../../servers/tfserving/samples/mnist_rest.yaml -n {namespace}",
             shell=True,
             check=True,
         )
-        wait_for_rollout("mnist-default-725903e")
-        wait_for_status("tfserving")
+        wait_for_rollout("mnist-default-725903e", namespace)
+        wait_for_status("tfserving", namespace)
         print("Initial request")
-        sc = SeldonClient(deployment_name="tfserving", namespace="seldon")
+        sc = SeldonClient(deployment_name="tfserving", namespace=namespace)
         r = sc.predict(gateway="ambassador", transport="rest", shape=(1, 784))
         assert r.success
         print("Success for test_prepack_tfserving")
-
-    # Test prepackaged server for xgboost
-    def test_xgboost(self):
-        run("kubectl delete sdep --all", shell=True)
         run(
-            "kubectl apply -f ../../servers/xgboostserver/samples/iris.yaml",
+            f"kubectl delete -f ../../servers/tfserving/samples/mnist_rest.yaml -n {namespace}",
             shell=True,
             check=True,
         )
-        wait_for_rollout("iris-default-af1783b")
-        wait_for_status("xgboost")
+        run(f"kubectl delete namespace {namespace}", shell=True, check=True)
+
+    # Test prepackaged server for xgboost
+    def test_xgboost(self):
+        namespace = "test-xgboost"
+        run(f"kubectl create namespace {namespace}", shell=True, check=True)
+        run(
+            f"kubectl apply -f ../../servers/xgboostserver/samples/iris.yaml -n {namespace}",
+            shell=True,
+            check=True,
+        )
+        wait_for_rollout("iris-default-af1783b", namespace)
+        wait_for_status("xgboost", namespace)
         print("Initial request")
-        sc = SeldonClient(deployment_name="xgboost", namespace="seldon")
+        sc = SeldonClient(deployment_name="xgboost", namespace=namespace)
         r = sc.predict(gateway="ambassador", transport="rest", shape=(1, 4))
         assert r.success
         print("Success for test_prepack_xgboost")
+        run(
+            f"kubectl delete -f ../../servers/xgboostserver/samples/iris.yaml -n {namespace}",
+            shell=True,
+            check=True,
+        )
+        run(f"kubectl delete namespace {namespace}", shell=True, check=True)

@@ -7,12 +7,15 @@ import numpy as np
 from k8s_utils import *
 
 
-def wait_for_rollout(deploymentName):
-    ret = run("kubectl rollout status -n test1 deploy/" + deploymentName, shell=True)
+def wait_for_rollout(deploymentName, namespace):
+    ret = run(
+        f"kubectl rollout status -n {namespace} deploy/" + deploymentName, shell=True
+    )
     while ret.returncode > 0:
         time.sleep(1)
         ret = run(
-            "kubectl rollout status -n test1 deploy/" + deploymentName, shell=True
+            f"kubectl rollout status -n {namespace} deploy/" + deploymentName,
+            shell=True,
         )
 
 
