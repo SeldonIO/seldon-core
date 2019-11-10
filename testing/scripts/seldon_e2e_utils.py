@@ -54,8 +54,8 @@ def wait_for_rollout(deploymentName, namespace, attempts=50, sleep=5):
     assert ret.returncode == 0
 
 
-def retry_run(cmd, attempts=3, sleep=5):
-    for attempts in range(attempts):
+def retry_run(cmd, attempts=10, sleep=5):
+    for i in range(attempts):
         ret = run(cmd, shell=True)
         if ret.returncode == 0:
             print(f"Successfully ran command: {cmd}")
@@ -66,7 +66,7 @@ def retry_run(cmd, attempts=3, sleep=5):
 
 
 def wait_for_status(name, namespace):
-    for attempts in range(7):
+    for i in range(7):
         completedProcess = run(
             f"kubectl get sdep {name} -n {namespace} -o json",
             shell=True,

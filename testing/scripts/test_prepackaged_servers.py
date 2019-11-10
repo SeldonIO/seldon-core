@@ -70,4 +70,4 @@ class TestPrepack(object):
             f"kubectl delete -f ../../servers/xgboostserver/samples/iris.yaml -n {namespace}",
             shell=True,
         )
-        run(f"kubectl delete namespace {namespace}", shell=True, check=True)
+        run(f"kubectl delete namespace {namespace}", shell=True)
