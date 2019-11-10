@@ -11,8 +11,9 @@ from seldon_core.utils import (
 )
 from seldon_core.proto import prediction_pb2, prediction_pb2_grpc
 import numpy as np
+import json
 
-JSON_TEST_DATA = {"test": [0, 1]}
+JSON_TEST_DATA = {"test": [0.0, 1.0]}
 
 
 class MockResponse:
@@ -95,13 +96,25 @@ def test_predict_rest_json_data_ambassador(mock_post):
 
 @mock.patch("seldon_core.seldon_client.get_token", side_effect=mock_get_token)
 @mock.patch("requests.post", side_effect=mocked_requests_post_success_json_data)
-def test_predict_rest_json_data_ambassador(mock_post, mock_token):
+def test_predict_rest_json_data_seldon(mock_post, mock_token):
     sc = SeldonClient(deployment_name="mymodel", gateway="seldon")
     response = sc.predict(json_data=JSON_TEST_DATA)
     json_response = seldon_message_to_json(response.response)
     assert "jsonData" in mock_post.call_args[1]["json"]
     assert mock_post.call_args[1]["json"]["jsonData"] == JSON_TEST_DATA
     assert response.success is True
+    assert json_response["jsonData"] == JSON_TEST_DATA
+    assert mock_post.call_count == 1
+
+
+@mock.patch("requests.post", side_effect=mocked_requests_post_success_json_data)
+def test_explain_rest_json_data_ambassador(mock_post):
+    sc = SeldonClient(deployment_name="mymodel", gateway="ambassador")
+    json_response = sc.explain(json_data=JSON_TEST_DATA)
+    # Currently this doesn't need to convert to JSON due to #1083
+    # i.e. json_response = seldon_message_to_json(response.response)
+    assert "jsonData" in mock_post.call_args[1]["json"]
+    assert mock_post.call_args[1]["json"]["jsonData"] == JSON_TEST_DATA
     assert json_response["jsonData"] == JSON_TEST_DATA
     assert mock_post.call_count == 1
 
@@ -125,6 +138,20 @@ def test_predict_microservice_rest(mock_post):
     print(response)
     assert response.success == True
     assert response.response.data.tensor.shape == [1, 1]
+    assert mock_post.call_count == 1
+
+
+@mock.patch("requests.post", side_effect=mocked_requests_post_success_json_data)
+def test_predict_microservice_rest_json_data(mock_post):
+    sc = SeldonClient(deployment_name="mymodel")
+    response = sc.microservice(method="predict", json_data=JSON_TEST_DATA)
+    json_response = seldon_message_to_json(response.response)
+    assert "jsonData" in mock_post.call_args[1]["data"]["json"]
+    assert response.success is True
+    assert mock_post.call_args[1]["data"]["json"] == json.dumps(
+        {"jsonData": JSON_TEST_DATA}
+    )
+    assert json_response["jsonData"] == JSON_TEST_DATA
     assert mock_post.call_count == 1
 
 
