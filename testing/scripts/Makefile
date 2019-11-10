@@ -30,6 +30,7 @@ install_cert_manager:
 
 install_seldon: install_cert_manager
 	cd ../../operator && make install deploy
+	kubectl rollout status deployment/seldon-controller-manager --namespace seldon
 
 create_namespaces:
 	kubectl create namespace seldon || echo "Namespace seldon already exists"
