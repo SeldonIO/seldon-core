@@ -62,7 +62,7 @@ install:
 
 .PHONY: test
 test: build_protos install
-	pytest --verbose -s -W ignore 2>&1
+	pytest --verbose -s -W ignore -v test_s2i_python.py 2>&1
 
 .PHONY: clean
 clean:
