@@ -280,6 +280,7 @@ class SeldonClient(object):
         data: np.ndarray = None,
         bin_data: Union[bytes, bytearray] = None,
         str_data: str = None,
+        json_data: Union[str, List, Dict] = None,
         names: Iterable[str] = None,
         gateway_prefix: str = None,
         headers: Dict = None,
@@ -321,6 +322,8 @@ class SeldonClient(object):
            Binary payload to send - will override data
         str_data
            String payload to send - will override data
+        json_data
+           JSON payload to send - will override data
         names
            Column names
         gateway_prefix
@@ -352,6 +355,7 @@ class SeldonClient(object):
             data=data,
             bin_data=bin_data,
             str_data=str_data,
+            json_data=json_data,
             gateway_prefix=gateway_prefix,
             headers=headers,
             http_path=http_path,
@@ -1235,6 +1239,7 @@ def rest_predict_seldon_oauth(
     payload_type: str = "tensor",
     bin_data: Union[bytes, bytearray] = None,
     str_data: str = None,
+    json_data: Union[str, List, Dict] = None,
     names: Iterable[str] = None,
     **kwargs,
 ) -> SeldonClientPrediction:
@@ -1275,6 +1280,9 @@ def rest_predict_seldon_oauth(
         request = prediction_pb2.SeldonMessage(binData=bin_data)
     elif str_data is not None:
         request = prediction_pb2.SeldonMessage(strData=str_data)
+    elif json_data is not None:
+        json_data_proto = json_to_seldon_message(json_data)
+        request = prediction_pb2.SeldonMessage(jsonData=json_data_proto)
     else:
         if data is None:
             data = np.random.rand(*shape)
@@ -1317,6 +1325,7 @@ def grpc_predict_seldon_oauth(
     payload_type: str = "tensor",
     bin_data: Union[bytes, bytearray] = None,
     str_data: str = None,
+    json_data: Union[str, List, Dict] = None,
     grpc_max_send_message_length: int = 4 * 1024 * 1024,
     grpc_max_receive_message_length: int = 4 * 1024 * 1024,
     names: Iterable[str] = None,
@@ -1363,6 +1372,9 @@ def grpc_predict_seldon_oauth(
         request = prediction_pb2.SeldonMessage(binData=bin_data)
     elif str_data is not None:
         request = prediction_pb2.SeldonMessage(strData=str_data)
+    elif json_data is not None:
+        json_data_proto = json_to_seldon_message(jsonData=json_data)
+        request = prediction_pb2.SeldonMessage(jsonData=json_data_proto)
     else:
         if data is None:
             data = np.random.rand(*shape)
@@ -1395,6 +1407,7 @@ def rest_predict_gateway(
     payload_type: str = "tensor",
     bin_data: Union[bytes, bytearray] = None,
     str_data: str = None,
+    json_data: Union[str, Dict, List] = None,
     names: Iterable[str] = None,
     call_credentials: SeldonCallCredentials = None,
     channel_credentials: SeldonChannelCredentials = None,
@@ -1426,6 +1439,8 @@ def rest_predict_gateway(
        Binary data to send
     str_data
        String data to send
+    json_data
+       JSON data to send as str, dict or list
     names
        Column names
     call_credentials
@@ -1444,6 +1459,9 @@ def rest_predict_gateway(
         request = prediction_pb2.SeldonMessage(binData=bin_data)
     elif str_data is not None:
         request = prediction_pb2.SeldonMessage(strData=str_data)
+    elif json_data is not None:
+        json_data_proto = json_to_seldon_message(json_data)
+        request = prediction_pb2.SeldonMessage(jsonData=json_data_proto)
     else:
         if data is None:
             data = np.random.rand(*shape)
@@ -1696,6 +1714,7 @@ def grpc_predict_gateway(
     payload_type: str = "tensor",
     bin_data: Union[bytes, bytearray] = None,
     str_data: str = None,
+    json_data: Union[str, List, Dict] = None,
     grpc_max_send_message_length: int = 4 * 1024 * 1024,
     grpc_max_receive_message_length: int = 4 * 1024 * 1024,
     names: Iterable[str] = None,
@@ -1726,6 +1745,8 @@ def grpc_predict_gateway(
        Binary data to send
     str_data
        String data to send
+    json_data
+       JSON data to send
     grpc_max_send_message_length
        Max grpc send message size in bytes
     grpc_max_receive_message_length
@@ -1747,6 +1768,9 @@ def grpc_predict_gateway(
         request = prediction_pb2.SeldonMessage(binData=bin_data)
     elif str_data is not None:
         request = prediction_pb2.SeldonMessage(strData=str_data)
+    elif json_data is not None:
+        json_data_proto = json_to_seldon_message(json_data)
+        request = prediction_pb2.SeldonMessage(jsonData=json_data_proto)
     else:
         if data is None:
             data = np.random.rand(*shape)
