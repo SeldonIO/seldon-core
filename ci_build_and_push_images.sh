@@ -28,6 +28,7 @@ set +o errexit
 
 # ONLY RUN IF PYTHON HAS BE MODIFIED
 PYTHON_MODIFIED=`git diff --exit-code --quiet master python/`
+git --no-pager diff --exit-code --name-only origin/master python
 if [[ $PYTHON_MODIFIED -gt 0 ]]; then 
     (cd wrappers/s2i/python/build_scripts \
         && ./build_all_local.sh \
@@ -35,10 +36,12 @@ if [[ $PYTHON_MODIFIED -gt 0 ]]; then
     PYTHON_EXIT_VALUE=$?
 else
     echo "SKIPPING PYTHON IMAGE BUILD..."
+    PYTHON_EXIT_VALUE=0
 fi
 
 # MORE EFFICIENT CLUSTER SETUP
 OPERATOR_MODIFIED=`git diff --exit-code --quiet master operator/`
+git --no-pager diff --exit-code --name-only origin/master operator
 if [[ $OPERATOR_MODIFIED -gt 0 ]]; then
     make \
         -C operator \
@@ -47,8 +50,10 @@ if [[ $OPERATOR_MODIFIED -gt 0 ]]; then
     OPERATOR_EXIT_VALUE=$?
 else
     echo "SKIPPING OPERATOR IMAGE BUILD..."
+    OPERATOR_EXIT_VALUE=0
 fi
 
+git --no-pager diff --exit-code --name-only origin/master engine
 ENGINE_MODIFIED=`git diff --exit-code --quiet master engine/`
 if [[ $ENGINE_MODIFIED -gt 0 ]]; then
     make \
@@ -58,6 +63,7 @@ if [[ $ENGINE_MODIFIED -gt 0 ]]; then
     ENGINE_EXIT_VALUE=$?
 else
     echo "SKIPPING ENGINE IMAGE BUILD..."
+    ENGINE_EXIT_VALUE=0
 fi
 
 
