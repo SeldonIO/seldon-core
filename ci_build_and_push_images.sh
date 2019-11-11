@@ -32,6 +32,7 @@ if [[ $PYTHON_MODIFIED -gt 0 ]]; then
     (cd wrappers/s2i/python/build_scripts \
         && ./build_all_local.sh \
         && ./push_all.sh)
+    PYTHON_EXIT_VALUET=$?
 else
     echo "SKIPPING PYTHON IMAGE BUILD..."
 fi
@@ -70,5 +71,7 @@ docker ps -aq | xargs -r docker rm -f || true
 service docker stop || true
 
 # NOW THAT WE'VE CLEANED WE CAN EXIT ON TEST EXIT VALUE
-exit ${TEST_EXIT_VALUE}
+exit $((${PYTHON_EXIT_VALUE} \
+    + ${OPERATOR_EXIT_VALUE} \
+    + ${ENGINE_EXIT_VALUE}))
 
