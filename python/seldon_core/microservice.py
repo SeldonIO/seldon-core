@@ -13,7 +13,6 @@ import seldon_core.wrapper as seldon_microservice
 from typing import Dict, Callable
 from seldon_core.flask_utils import SeldonMicroserviceException
 import gunicorn.app.base
-from gunicorn.six import iteritems
 
 logger = logging.getLogger(__name__)
 
@@ -166,11 +165,11 @@ class StandaloneApplication(gunicorn.app.base.BaseApplication):
         config = dict(
             [
                 (key, value)
-                for key, value in iteritems(self.options)
+                for key, value in self.options.items()
                 if key in self.cfg.settings and value is not None
             ]
         )
-        for key, value in iteritems(config):
+        for key, value in config.items():
             self.cfg.set(key.lower(), value)
 
     def load(self):
