@@ -42,7 +42,6 @@ fi
 echo "Files changed in operator folder:"
 git --no-pager diff --exit-code --name-only origin/master operator
 OPERATOR_MODIFIED=$?
-echo "EXIT CODE: $OPERATOR_MODIFIED"
 if [[ $OPERATOR_MODIFIED -gt 0 ]]; then
     make \
         -C operator \
@@ -58,6 +57,9 @@ echo "Files changed in engine folder:"
 git --no-pager diff --exit-code --name-only origin/master engine
 ENGINE_MODIFIED=$?
 if [[ $ENGINE_MODIFIED -gt 0 ]]; then
+    make \
+        -c testing/scripts
+        build_protos
     make \
         -C engine \
         build_image \
