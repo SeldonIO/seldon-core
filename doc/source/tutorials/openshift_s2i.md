@@ -152,7 +152,7 @@ s2i build <src-folder> seldonio/seldon-core-s2i-r <my-image-name>
 An example invocation using the test template model inside seldon-core:
 
 ```bash
-s2i build https://github.com/seldonio/seldon-core.git --context-dir=wrappers/s2i/R/test/model-template-app seldonio/seldon-core-s2i-r seldon-core-template-model
+s2i build https://github.com/seldonio/seldon-core.git --context-dir=incubating/wrappers/s2i/R/test/model-template-app seldonio/seldon-core-s2i-r seldon-core-template-model
 ```
 
 ## Java
