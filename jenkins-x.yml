@@ -8,6 +8,25 @@ pipelineConfig:
         stages:
         - name: build-and-test
           parallel:
+          - name: test-python
+            agent:
+              image: seldonio/python-builder:0.2
+            steps:
+            - name: test-python
+              command: make
+              args:
+              - -C python
+              - update_package
+              - install_dev
+              - test
+          - name: seldon-engine
+            steps:
+            - args:
+              - -C engine
+              - -f Makefile.ci
+              - build_jar
+              command: make
+              name: test-engine
           - name: build-and-push
             steps:
             - name: build-and-push-images
