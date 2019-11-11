@@ -9,6 +9,7 @@ from subprocess import run, Popen
 import subprocess
 import json
 from retrying import retry
+import logging
 
 API_AMBASSADOR = "localhost:8003"
 
@@ -47,20 +48,20 @@ def wait_for_rollout(deploymentName, namespace, attempts=50, sleep=5):
             shell=True,
         )
         if ret.returncode == 0:
-            print(f"Successfully waited for deployment {deploymentName}")
+            logging.warning(f"Successfully waited for deployment {deploymentName}")
             break
-        print(f"Unsuccessful wait command but retrying for {deploymentName}")
+        logging.warning(f"Unsuccessful wait command but retrying for {deploymentName}")
         time.sleep(sleep)
     assert ret.returncode == 0
 
 
-def retry_run(cmd, attempts=10, sleep=5):
+def retry_run(cmd, attempts=50, sleep=5):
     for i in range(attempts):
         ret = run(cmd, shell=True)
         if ret.returncode == 0:
-            print(f"Successfully ran command: {cmd}")
+            logging.warning(f"Successfully ran command: {cmd}")
             break
-        print(f"Unsuccessful command but retrying: {cmd}")
+        logging.warning(f"Unsuccessful command but retrying: {cmd}")
         time.sleep(sleep)
     assert ret.returncode == 0
 
@@ -78,7 +79,7 @@ def wait_for_status(name, namespace):
         if "status" in j:
             return j
         else:
-            print("Failed to find status - sleeping")
+            logging.warning("Failed to find status - sleeping")
             time.sleep(5)
 
 
@@ -86,27 +87,27 @@ def rest_request(model, namespace):
     try:
         r = rest_request_ambassador(model, namespace, API_AMBASSADOR)
         if not r.status_code == 200:
-            print("Bad status:", r.status_code)
+            logging.warning("Bad status:", r.status_code)
             return None
         else:
             return r
     except Exception as e:
-        print("Failed on REST request ", str(e))
+        logging.warning("Failed on REST request ", str(e))
         return None
 
 
 def initial_rest_request(model, namespace):
     r = rest_request(model, namespace)
     if r is None:
-        print("Sleeping 1 sec and trying again")
+        logging.warning("Sleeping 1 sec and trying again")
         time.sleep(1)
         r = rest_request(model, namespace)
         if r is None:
-            print("Sleeping 5 sec and trying again")
+            logging.warning("Sleeping 5 sec and trying again")
             time.sleep(5)
             r = rest_request(model, namespace)
             if r is None:
-                print("Sleeping 10 sec and trying again")
+                logging.warning("Sleeping 10 sec and trying again")
                 time.sleep(10)
                 r = rest_request(model, namespace)
     return r
@@ -251,7 +252,7 @@ def grpc_request_ambassador2(
             data=data,
         )
     except:
-        print("Warning - caught exception")
+        logging.warning("Warning - caught exception")
         return grpc_request_ambassador(
             deploymentName,
             namespace,
