@@ -49,21 +49,9 @@ update_package: get_apis build_apis update_version
 install:
 	pip install -e .
 
-.PHONY: install-tf
-install-tf:
-	pip install -e .[tensorflow]
-
-.PHONY: install-gcs
-install-gcs:
-	pip install -e .[gcs]
-
-.PHONY: install-all
-install-all:
-	pip install -e .[all]
-
-.PHONY: install-dev
-install-dev:
-	pip install -e . -r requirements.txt
+.PHONY: install_dev
+install_dev:
+	pip install -e . -r requirements-dev.txt
 
 .PHONY: uninstall
 uninstall:
@@ -71,7 +59,7 @@ uninstall:
 
 .PHONY: test
 test:
-	python setup.py test
+	tox
 
 .PHONY: type_check
 type_check:
@@ -106,12 +94,12 @@ setup_linter:
 run_linter:
 	black \
 		./ ../testing \
-		--exclude "(testing/scripts/proto|seldon_core/proto/|.eggs)"
+		--exclude "(testing/scripts/proto|seldon_core/proto/|.eggs|.tox)"
 
 run_linter_check:
 	black \
 		--check ./ ../testing \
-		--exclude "(testing/scripts/proto|seldon_core/proto/|.eggs)"
+		--exclude "(testing/scripts/proto|seldon_core/proto/|.eggs|.tox)"
 
 .PHONY: clean
 clean:

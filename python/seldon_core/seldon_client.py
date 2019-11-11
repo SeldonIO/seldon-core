@@ -36,7 +36,7 @@ class SeldonChannelCredentials(object):
     Channel credentials
     Presently just denotes an SSL connection.
     For GRPC in order to be properly implemented, you need to provide *either*
-        the root_certificate_files, *or* all the file paths. 
+        the root_certificate_files, *or* all the file paths.
     The verify attribute currently is used to avoid SSL verification in REST
         however for GRPC it is recommended that you provide a path at least
         for the root_certificates_file otherwise it may not work as expected.
@@ -58,7 +58,7 @@ class SeldonChannelCredentials(object):
 class SeldonCallCredentials(object):
     """
     Credentials for each call, currently implements the ability to provide
-        an OAuth token which is currently made available through REST via 
+        an OAuth token which is currently made available through REST via
         the X-Auth-Token header, and via GRPC via the metadata call creds.
     """
 
@@ -1637,9 +1637,7 @@ def explain_predict_gateway(
                     + gateway_endpoint
                     + "/seldon/"
                     + deployment_name
-                    + "-explainer/models/"
-                    + deployment_name
-                    + ":explain"
+                    + "-explainer/api/v0.1/explain"
                 )
             else:
                 url = (
@@ -1650,9 +1648,7 @@ def explain_predict_gateway(
                     + namespace
                     + "/"
                     + deployment_name
-                    + "-explainer/models/"
-                    + deployment_name
-                    + ":explain"
+                    + "-explainer/api/v0.1/explain"
                 )
         else:
             url = (
@@ -1660,9 +1656,7 @@ def explain_predict_gateway(
                 + "://"
                 + gateway_endpoint
                 + gateway_prefix
-                + +"/models/"
-                + deployment_name
-                + ":explain"
+                + +"/api/v0.1/explain"
             )
     verify = True
     cert = None
