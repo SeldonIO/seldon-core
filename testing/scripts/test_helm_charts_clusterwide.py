@@ -16,11 +16,11 @@ class TestClusterWide(object):
         namespace = "test-single-model"
         run(f"kubectl create namespace {namespace}", shell=True, check=True)
         run(
-            f"helm install ../../helm-charts/seldon-single-model --name mymodel-{namespace} --set oauth.key=oauth-key --set oauth.secret=oauth-secret --namespace {namespace}",
+            f"helm install ../../helm-charts/seldon-single-model --name mymodel --set oauth.key=oauth-key --set oauth.secret=oauth-secret --namespace {namespace}",
             shell=True,
             check=True,
         )
-        wait_for_rollout("mymodel-mymodel-7cd068f", namespace)
+        wait_for_rollout(f"mymodel-mymodel-7cd068f", namespace)
         initial_rest_request("mymodel", namespace)
         print("Test Ambassador REST gateway")
         r = rest_request_ambassador("mymodel", namespace, API_AMBASSADOR)
@@ -30,7 +30,7 @@ class TestClusterWide(object):
         print("Test Ambassador gRPC gateway")
         r = grpc_request_ambassador2("mymodel", namespace, API_AMBASSADOR)
         print(r)
-        run(f"helm delete mymodel-{namespace} --purge", shell=True)
+        run(f"helm delete mymodel --purge", shell=True)
         run(f"kubectl delete namespace {namespace}", shell=True, check=True)
 
     # Test AB Test model helm script with 4 API methods
@@ -38,7 +38,7 @@ class TestClusterWide(object):
         namespace = "test-abtest-model"
         run(f"kubectl create namespace {namespace}", shell=True, check=True)
         run(
-            f"helm install ../../helm-charts/seldon-abtest --name myabtest-{namespace} --set oauth.key=oauth-key --set oauth.secret=oauth-secret --namespace {namespace}",
+            f"helm install ../../helm-charts/seldon-abtest --name myabtest --set oauth.key=oauth-key --set oauth.secret=oauth-secret --namespace {namespace}",
             shell=True,
             check=True,
         )
@@ -54,7 +54,7 @@ class TestClusterWide(object):
         print(
             "WARNING SKIPPING FLAKY AMBASSADOR TEST UNTIL AMBASSADOR GRPC ISSUE FIXED.."
         )
-        run(f"helm delete myabtest-{namespace} --purge", shell=True)
+        run(f"helm delete myabtest --purge", shell=True)
         run(f"kubectl delete namespace {namespace}", shell=True, check=True)
 
     # Test MAB Test model helm script with 4 API methods
@@ -62,7 +62,7 @@ class TestClusterWide(object):
         namespace = "test-mab-model"
         run(f"kubectl create namespace {namespace}", shell=True, check=True)
         run(
-            f"helm install ../../helm-charts/seldon-mab --name mymab-{namespace} --set oauth.key=oauth-key --set oauth.secret=oauth-secret --namespace {namespace}",
+            f"helm install ../../helm-charts/seldon-mab --name mymab --set oauth.key=oauth-key --set oauth.secret=oauth-secret --namespace {namespace}",
             shell=True,
             check=True,
         )
@@ -79,5 +79,5 @@ class TestClusterWide(object):
         print(
             "WARNING SKIPPING FLAKY AMBASSADOR TEST UNTIL AMBASSADOR GRPC ISSUE FIXED.."
         )
-        run(f"helm delete mymab-{namespace} --purge", shell=True)
+        run(f"helm delete mymab --purge", shell=True)
         run(f"kubectl delete namespace {namespace}", shell=True, check=True)

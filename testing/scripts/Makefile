@@ -1,5 +1,11 @@
 VERSION := $(shell cat ../../version.txt)
-PYTEST_WORKERS ?= "auto"
+
+PYTEST_WORKERS ?= auto
+#ifdef $$PYTEST_WORKERS
+#PYTEST_WORKERS := $$PYTEST_WORKERS
+#else
+#PYTEST_WORKERS := auto
+#endif
 
 kind_create_cluster:
 	kind create cluster --config kind_config.yaml
@@ -61,9 +67,9 @@ install:
 	pip install -r dev_requirements.txt
 
 .PHONY: test
-test: build_protos install
+test: 
 	pip install pytest-xdist
-	pytest --verbose -s -W ignore -n $$PYTEST_WORKERS 2>&1
+	pytest --verbose -s -W ignore -n $(PYTEST_WORKERS) 2>&1
 
 .PHONY: clean
 clean:
