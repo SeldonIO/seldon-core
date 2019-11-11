@@ -23,7 +23,7 @@ public class TestProtoBufUtils {
     SeldonMessage message = builder.build();
 
     String serialised = toJson(message);
-    String expected = "{\"data\":{\"names\":[],\"ndarray\":[[1.5,2.0],[3.223,4.0]]}}";
+    String expected = "{\"data\":{\"names\":[],\"ndarray\":[[1.5,2],[3.223,4]]}}";
     Assert.assertEquals(expected, serialised);
   }
 
@@ -38,7 +38,7 @@ public class TestProtoBufUtils {
     String serialised = toJson(message);
     // TODO: This is what needs to be FIXED!
     String expected =
-        "{\"jsonData\":{\"vocab_size\":275.0,\"input\":\"my sentence\",\"threshold\":0.45}}";
+        "{\"jsonData\":{\"vocab_size\":275,\"input\":\"my sentence\",\"threshold\":0.45}}";
     Assert.assertEquals(expected, serialised);
   }
 }
