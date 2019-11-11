@@ -18,8 +18,6 @@ setuptools >= 41.0.0
 
 pandas==0.25.3
 futures<4.0.0
-tornado==4.5.3
 Pillow==6.2.0
-minio >= 4.0.9
 google-cloud-storage >= 1.16.0
 

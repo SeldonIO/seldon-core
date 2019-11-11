@@ -15,6 +15,7 @@ from typing import Tuple, Dict, Union, List, Optional, Iterable
 import json
 import logging
 import http.client as http_client
+from google.protobuf import json_format
 
 logger = logging.getLogger(__name__)
 
@@ -284,6 +285,7 @@ class SeldonClient(object):
         gateway_prefix: str = None,
         headers: Dict = None,
         http_path: str = None,
+        meta: Dict= None
     ) -> SeldonClientPrediction:
         """
 
@@ -329,6 +331,8 @@ class SeldonClient(object):
            Headers to add to request
         http_path:
            Custom http path for predict call to use
+        meta:
+           Custom meta map
 
         Returns
         -------
@@ -355,6 +359,7 @@ class SeldonClient(object):
             gateway_prefix=gateway_prefix,
             headers=headers,
             http_path=http_path,
+            meta = meta
         )
         self._validate_args(**k)
         if k["gateway"] == "ambassador" or k["gateway"] == "istio":
@@ -1399,6 +1404,7 @@ def rest_predict_gateway(
     call_credentials: SeldonCallCredentials = None,
     channel_credentials: SeldonChannelCredentials = None,
     http_path: str = None,
+    meta: Dict = {},
     **kwargs,
 ) -> SeldonClientPrediction:
     """
@@ -1434,21 +1440,28 @@ def rest_predict_gateway(
        Channel credentials - see SeldonChannelCredentials
     http_path
        Custom http path
+    meta
+       Custom meta map
 
     Returns
     -------
        A requests Response object
 
     """
+    # Create meta data
+    metaKV = prediction_pb2.Meta()
+    metaJson = {"tags": meta}
+    json_format.ParseDict(metaJson, metaKV)
+
     if bin_data is not None:
-        request = prediction_pb2.SeldonMessage(binData=bin_data)
+        request = prediction_pb2.SeldonMessage(binData=bin_data, meta=metaKV)
     elif str_data is not None:
-        request = prediction_pb2.SeldonMessage(strData=str_data)
+        request = prediction_pb2.SeldonMessage(strData=str_data, meta=metaKV)
     else:
         if data is None:
             data = np.random.rand(*shape)
         datadef = array_to_grpc_datadef(payload_type, data, names=names)
-        request = prediction_pb2.SeldonMessage(data=datadef)
+        request = prediction_pb2.SeldonMessage(data=datadef, meta=metaKV)
     payload = seldon_message_to_json(request)
 
     if not headers is None:
@@ -1695,6 +1708,7 @@ def grpc_predict_gateway(
     names: Iterable[str] = None,
     call_credentials: SeldonCallCredentials = None,
     channel_credentials: SeldonChannelCredentials = None,
+    meta: Dict = {},
     **kwargs,
 ) -> SeldonClientPrediction:
     """
@@ -1730,22 +1744,29 @@ def grpc_predict_gateway(
        Call credentials - see SeldonCallCredentials
     channel_credentials
        Channel credentials - see SeldonChannelCredentials
-
+    meta
+       Custom meta data map
 
     Returns
     -------
        A SeldonMessage proto response
 
     """
+
+    # Create meta data
+    metaKV = prediction_pb2.Meta()
+    metaJson = {"tags":meta}
+    json_format.ParseDict(metaJson, metaKV)
+
     if bin_data is not None:
-        request = prediction_pb2.SeldonMessage(binData=bin_data)
+        request = prediction_pb2.SeldonMessage(binData=bin_data, meta=metaKV)
     elif str_data is not None:
-        request = prediction_pb2.SeldonMessage(strData=str_data)
+        request = prediction_pb2.SeldonMessage(strData=str_data, meta=metaKV)
     else:
         if data is None:
             data = np.random.rand(*shape)
         datadef = array_to_grpc_datadef(payload_type, data, names=names)
-        request = prediction_pb2.SeldonMessage(data=datadef)
+        request = prediction_pb2.SeldonMessage(data=datadef, meta=metaKV)
     options = [
         ("grpc.max_send_message_length", grpc_max_send_message_length),
         ("grpc.max_receive_message_length", grpc_max_receive_message_length),
