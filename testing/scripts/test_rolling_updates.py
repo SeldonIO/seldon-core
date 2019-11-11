@@ -28,7 +28,6 @@ class TestRollingHttp(object):
             r = rest_request_ambassador("mymodel", namespace, API_AMBASSADOR)
             assert r.status_code == 200
             res = r.json()
-            logging.warning(res)
             assert (
                 res["meta"]["requestPath"]["complex-model"]
                 == "seldonio/fixed-model:0.1"
@@ -65,7 +64,6 @@ class TestRollingHttp(object):
             r = rest_request_ambassador("mymodel", namespace, API_AMBASSADOR)
             assert r.status_code == 200
             res = r.json()
-            logging.warning(res)
             assert (
                 "complex-model" in res["meta"]["requestPath"]
                 and res["meta"]["requestPath"]["complex-model"]
@@ -103,7 +101,6 @@ class TestRollingHttp(object):
             r = rest_request_ambassador("mymodel", namespace, API_AMBASSADOR)
             assert r.status_code == 200
             res = r.json()
-            logging.warning(res)
             assert res["meta"]["requestPath"][
                 "complex-model"
             ] == "seldonio/fixed-model:0.1" and res["data"]["tensor"]["values"] == [
@@ -135,7 +132,6 @@ class TestRollingHttp(object):
             r = rest_request_ambassador("mymodel", namespace, API_AMBASSADOR)
             assert r.status_code == 200
             res = r.json()
-            logging.warning(res)
             assert (
                 "complex-model" in res["meta"]["requestPath"]
                 and res["meta"]["requestPath"]["complex-model"]
@@ -169,10 +165,8 @@ class TestRollingHttp(object):
         i = 0
         for i in range(50):
             r = rest_request_ambassador("mymodel", namespace, API_AMBASSADOR)
-            logging.warning("Status code", r.status_code)
             assert r.status_code == 200
             res = r.json()
-            logging.warning(res)
             assert (
                 "complex-model" in res["meta"]["requestPath"]
                 and res["meta"]["requestPath"]["complex-model"]
@@ -209,10 +203,8 @@ class TestRollingHttp(object):
         i = 0
         for i in range(100):
             r = rest_request_ambassador("mymodel", namespace, API_AMBASSADOR)
-            logging.warning("Status code", r.status_code)
             assert r.status_code == 200
             res = r.json()
-            logging.warning(res)
             assert (
                 res["meta"]["requestPath"]["complex-model"]
                 == "seldonio/fixed-model:0.1"
@@ -248,10 +240,8 @@ class TestRollingHttp(object):
         i = 0
         for i in range(100):
             r = rest_request_ambassador("mymodel", namespace, API_AMBASSADOR)
-            logging.warning("Status code", r.status_code)
             assert r.status_code == 200
             res = r.json()
-            logging.warning(res)
             assert (
                 "complex-model" in res["meta"]["requestPath"]
                 and res["meta"]["requestPath"]["complex-model"]
@@ -287,10 +277,8 @@ class TestRollingHttp(object):
         i = 0
         for i in range(50):
             r = rest_request_ambassador("mymodel", namespace, API_AMBASSADOR)
-            logging.warning("Status code", r.status_code)
             assert r.status_code == 200
             res = r.json()
-            logging.warning(res)
             assert res["meta"]["requestPath"][
                 "complex-model"
             ] == "seldonio/fixed-model:0.1" and res["data"]["tensor"]["values"] == [
@@ -320,10 +308,8 @@ class TestRollingHttp(object):
         i = 0
         for i in range(50):
             r = rest_request_ambassador("mymodel", namespace, API_AMBASSADOR)
-            logging.warning("Status code", r.status_code)
             assert r.status_code == 200
             res = r.json()
-            logging.warning(res)
             assert (
                 "complex-model" in res["meta"]["requestPath"]
                 and res["meta"]["requestPath"]["complex-model"]
@@ -357,10 +343,8 @@ class TestRollingHttp(object):
         i = 0
         for i in range(50):
             r = rest_request_ambassador("mymodel", namespace, API_AMBASSADOR)
-            logging.warning("Status code", r.status_code)
             assert r.status_code == 200
             res = r.json()
-            logging.warning(res)
             assert (
                 "complex-model" in res["meta"]["requestPath"]
                 and res["meta"]["requestPath"]["complex-model"]
