@@ -198,6 +198,8 @@ func createIstioResources(mlDep *machinelearningv1alpha2.SeldonDeployment,
 			},
 		}
 
+		//we split by adding different routes with their own Weights
+		//so not by tag - different destinations (like https://istio.io/docs/tasks/traffic-management/traffic-shifting/) distinguished by host
 		routesHttp[i] = istio.HTTPRouteDestination{
 			Destination: istio.Destination{
 				Host:   pSvcName,
@@ -365,35 +367,42 @@ func createComponents(r *SeldonDeploymentReconciler, mlDep *machinelearningv1alp
 						deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1alpha2.Label_seldon_app] = pSvcName
 
 						port := int(svc.Spec.Ports[0].Port)
-						if svc.Spec.Ports[0].Name == "grpc" {
-							httpAllowed = false
-							externalPorts[i] = httpGrpcPorts{httpPort: 0, grpcPort: port}
-							psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, 0, port, "", log)
-							if err != nil {
-								return nil, err
+
+						//create predictor service, except for shadow istio predictor
+						if p.Shadow != "true" {
+
+							if svc.Spec.Ports[0].Name == "grpc" {
+								httpAllowed = false
+								externalPorts[i] = httpGrpcPorts{httpPort: 0, grpcPort: port}
+								psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, 0, port, "", log)
+								if err != nil {
+									return nil, err
+								}
+
+								c.services = append(c.services, psvc)
+
+								c.serviceDetails[pSvcName] = &machinelearningv1alpha2.ServiceStatus{
+									SvcName:      pSvcName,
+									GrpcEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(port),
+								}
+							} else {
+								externalPorts[i] = httpGrpcPorts{httpPort: port, grpcPort: 0}
+								grpcAllowed = false
+								psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, port, 0, "", log)
+								if err != nil {
+									return nil, err
+								}
+
+								c.services = append(c.services, psvc)
+
+								c.serviceDetails[pSvcName] = &machinelearningv1alpha2.ServiceStatus{
+									SvcName:      pSvcName,
+									HttpEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(port),
+								}
 							}
 
-							c.services = append(c.services, psvc)
-
-							c.serviceDetails[pSvcName] = &machinelearningv1alpha2.ServiceStatus{
-								SvcName:      pSvcName,
-								GrpcEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(port),
-							}
-						} else {
-							externalPorts[i] = httpGrpcPorts{httpPort: port, grpcPort: 0}
-							grpcAllowed = false
-							psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, port, 0, "", log)
-							if err != nil {
-								return nil, err
-							}
-
-							c.services = append(c.services, psvc)
-
-							c.serviceDetails[pSvcName] = &machinelearningv1alpha2.ServiceStatus{
-								SvcName:      pSvcName,
-								HttpEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(port),
-							}
 						}
+
 					}
 				}
 			}
@@ -440,41 +449,45 @@ func createComponents(r *SeldonDeploymentReconciler, mlDep *machinelearningv1alp
 
 			}
 
-			//Create Service for Predictor - exposed externally (ambassador or istio) and points at engine
-			httpPort := engine_http_port
-			if httpAllowed == false {
-				httpPort = 0
-			}
-			grpcPort := engine_grpc_port
-			if grpcAllowed == false {
-				grpcPort = 0
-			}
-			psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, httpPort, grpcPort, "", log)
-			if err != nil {
+			//create predictor service, except for shadow istio predictor
+			if p.Shadow != "true" {
 
-				return nil, err
-			}
+				//Create Service for Predictor - exposed externally (ambassador or istio) and points at engine
+				httpPort := engine_http_port
+				if httpAllowed == false {
+					httpPort = 0
+				}
+				grpcPort := engine_grpc_port
+				if grpcAllowed == false {
+					grpcPort = 0
+				}
+				psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, httpPort, grpcPort, "", log)
+				if err != nil {
 
-			c.services = append(c.services, psvc)
-			if httpAllowed && grpcAllowed {
-				c.serviceDetails[pSvcName] = &machinelearningv1alpha2.ServiceStatus{
-					SvcName:      pSvcName,
-					HttpEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engine_http_port),
-					GrpcEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engine_grpc_port),
+					return nil, err
 				}
-			} else if httpAllowed {
-				c.serviceDetails[pSvcName] = &machinelearningv1alpha2.ServiceStatus{
-					SvcName:      pSvcName,
-					HttpEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engine_http_port),
-				}
-			} else if grpcAllowed {
-				c.serviceDetails[pSvcName] = &machinelearningv1alpha2.ServiceStatus{
-					SvcName:      pSvcName,
-					GrpcEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engine_grpc_port),
-				}
-			}
 
-			externalPorts[i] = httpGrpcPorts{httpPort: httpPort, grpcPort: grpcPort}
+				c.services = append(c.services, psvc)
+				if httpAllowed && grpcAllowed {
+					c.serviceDetails[pSvcName] = &machinelearningv1alpha2.ServiceStatus{
+						SvcName:      pSvcName,
+						HttpEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engine_http_port),
+						GrpcEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engine_grpc_port),
+					}
+				} else if httpAllowed {
+					c.serviceDetails[pSvcName] = &machinelearningv1alpha2.ServiceStatus{
+						SvcName:      pSvcName,
+						HttpEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engine_http_port),
+					}
+				} else if grpcAllowed {
+					c.serviceDetails[pSvcName] = &machinelearningv1alpha2.ServiceStatus{
+						SvcName:      pSvcName,
+						GrpcEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engine_grpc_port),
+					}
+				}
+
+				externalPorts[i] = httpGrpcPorts{httpPort: httpPort, grpcPort: grpcPort}
+			}
 		}
 
 		err = createExplainer(r, mlDep, &p, &c, pSvcName, log)
