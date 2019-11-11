@@ -8,6 +8,12 @@ pipelineConfig:
         stages:
         - name: build-and-test
           parallel:
+          - name: build-and-push
+            steps:
+            - name: build-and-push-images
+              command: bash
+              args:
+              - ./ci_build_and_push_images.sh
           - agent:
               image: seldonio/python-builder:0.2
             name: seldon-python
@@ -51,10 +57,6 @@ pipelineConfig:
               command: make
               name: test-engine
     release:
-      setVersion:
-        steps:
-        - name: next-version
-          sh: echo "skipping until 4624 is resolved..."
       pipeline:
         agent:
           image: seldonio/core-builder:0.4
@@ -67,6 +69,12 @@ pipelineConfig:
               - testing/scripts &&
               - bash
               - kind_test_all.sh
+          - name: build-and-push
+            steps:
+            - name: build-and-push-images
+              command: bash
+              args:
+              - ./ci_build_and_push_images.sh
             options:
               containerOptions:
                 volumeMounts:
