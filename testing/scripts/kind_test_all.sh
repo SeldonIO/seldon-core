@@ -34,16 +34,19 @@ export KUBECONFIG=$(kind get kubeconfig-path)
 
 # ONLY RUN THE FOLLOWING IF SUCCESS
 if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
-    # BUILD S2I BASE IMAGES
-    PYTHON_MODIFIED=`git diff --exit-code --quiet master ../../python`
+
+    echo "Files changed in python folder:"
+    git --no-pager diff --exit-code --name-only origin/master ../../python
+    PYTHON_MODIFIED=$?
     if [[ $PYTHON_MODIFIED -gt 0 ]]; then 
         make s2i_build_base_images
     else
         echo "SKIPPING PYTHON IMAGE BUILD..."
     fi
 
-    # MORE EFFICIENT CLUSTER SETUP
-    OPERATOR_MODIFIED=`git diff --exit-code --quiet master ../../operator`
+    echo "Files changed in operator folder:"
+    git --no-pager diff --exit-code --name-only origin/master ../../operator
+    OPERATOR_MODIFIED=$?
     if [[ $OPERATOR_MODIFIED -gt 0 ]]; then
         make kind_build_operator
         OPERATOR_EXIT_VALUE=$?
@@ -51,7 +54,9 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
         echo "SKIPPING OPERATOR IMAGE BUILD..."
     fi
 
-    ENGINE_MODIFIED=`git diff --exit-code --quiet master ../../engine`
+    echo "Files changed in engine folder:"
+    git --no-pager diff --exit-code --name-only origin/master ../../engine
+    ENGINE_MODIFIED=$?
     if [[ $ENGINE_MODIFIED -gt 0 ]]; then
         make build_protos
         PROTO_EXIT_VALUE=$?
