@@ -27,8 +27,9 @@ set +o errexit
 
 
 # ONLY RUN IF PYTHON HAS BE MODIFIED
-PYTHON_MODIFIED=`git diff --exit-code --quiet master python/`
 git --no-pager diff --exit-code --name-only origin/master python
+PYTHON_MODIFIED=`git diff --exit-code --quiet master python/`
+echo "EXIT CODE: $PYTHON_MODIFIED"
 if [[ $PYTHON_MODIFIED -gt 0 ]]; then 
     (cd wrappers/s2i/python/build_scripts \
         && ./build_all_local.sh \
@@ -40,8 +41,9 @@ else
 fi
 
 # MORE EFFICIENT CLUSTER SETUP
-OPERATOR_MODIFIED=`git diff --exit-code --quiet master operator/`
 git --no-pager diff --exit-code --name-only origin/master operator
+OPERATOR_MODIFIED=`git diff --exit-code --quiet master operator/`
+echo "EXIT CODE: $OPERATOR_MODIFIED"
 if [[ $OPERATOR_MODIFIED -gt 0 ]]; then
     make \
         -C operator \
@@ -55,6 +57,7 @@ fi
 
 git --no-pager diff --exit-code --name-only origin/master engine
 ENGINE_MODIFIED=`git diff --exit-code --quiet master engine/`
+echo "EXIT CODE: $ENGINE_MODIFIED"
 if [[ $ENGINE_MODIFIED -gt 0 ]]; then
     make \
         -C engine \
