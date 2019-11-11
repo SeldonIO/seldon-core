@@ -1,0 +1,6 @@
+-r requirements.txt
+mypy<=0.740
+pytest<6.0.0
+pytest-cov<3.0.0
+Pillow==6.2.0
+tox<4.0.0
