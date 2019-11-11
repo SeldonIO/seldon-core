@@ -58,7 +58,7 @@ git --no-pager diff --exit-code --name-only origin/master engine
 ENGINE_MODIFIED=$?
 if [[ $ENGINE_MODIFIED -gt 0 ]]; then
     make \
-        -C testing/scripts
+        -C testing/scripts \
         build_protos
     make \
         -C engine \
