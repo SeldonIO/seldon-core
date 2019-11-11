@@ -1,14 +1,8 @@
 {{- if .Values.usageMetrics.enabled }}
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
-metadata:
-  name: seldon-spartakus-volunteer
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: seldon-spartakus-volunteer
+metadata: {name: seldon-spartakus-volunteer}
+roleRef: {apiGroup: rbac.authorization.k8s.io, kind: ClusterRole, name: seldon-spartakus-volunteer}
 subjects:
-- kind: ServiceAccount
-  name: seldon-spartakus-volunteer
-  namespace: kube-system
+- {kind: ServiceAccount, name: seldon-spartakus-volunteer, namespace: kube-system}
 {{- end }}

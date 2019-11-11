@@ -2,19 +2,12 @@
 apiVersion: certmanager.k8s.io/v1alpha1
 kind: Certificate
 metadata:
-  labels:
-    app: seldon
-    app.kubernetes.io/instance: '{{ .Release.Name }}'
-    app.kubernetes.io/name: '{{ include "seldon.name" . }}'
-    app.kubernetes.io/version: '{{ .Chart.Version }}'
+  labels: {app: seldon, app.kubernetes.io/instance: '{{ .Release.Name }}', app.kubernetes.io/name: '{{ include "seldon.name" . }}', app.kubernetes.io/version: '{{ .Chart.Version }}'}
   name: seldon-serving-cert
   namespace: '{{ .Release.Namespace }}'
 spec:
   commonName: '{{- printf "seldon-webhook-service.%s.svc" .Release.Namespace -}}'
-  dnsNames:
-  - '{{- printf "seldon-webhook-service.%s.svc.cluster.local" .Release.Namespace -}}'
-  issuerRef:
-    kind: Issuer
-    name: seldon-selfsigned-issuer
+  dnsNames: ['{{- printf "seldon-webhook-service.%s.svc.cluster.local" .Release.Namespace -}}']
+  issuerRef: {kind: Issuer, name: seldon-selfsigned-issuer}
   secretName: seldon-webhook-server-cert
 {{- end }}

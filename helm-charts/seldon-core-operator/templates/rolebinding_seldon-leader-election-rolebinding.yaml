@@ -1,18 +1,9 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  labels:
-    app: seldon
-    app.kubernetes.io/instance: '{{ .Release.Name }}'
-    app.kubernetes.io/name: '{{ include "seldon.name" . }}'
-    app.kubernetes.io/version: '{{ .Chart.Version }}'
+  labels: {app: seldon, app.kubernetes.io/instance: '{{ .Release.Name }}', app.kubernetes.io/name: '{{ include "seldon.name" . }}', app.kubernetes.io/version: '{{ .Chart.Version }}'}
   name: seldon-leader-election-rolebinding
   namespace: '{{ .Release.Namespace }}'
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: seldon-leader-election-role
+roleRef: {apiGroup: rbac.authorization.k8s.io, kind: Role, name: seldon-leader-election-role}
 subjects:
-- kind: ServiceAccount
-  name: seldon-manager
-  namespace: '{{ .Release.Namespace }}'
+- {kind: ServiceAccount, name: seldon-manager, namespace: '{{ .Release.Namespace }}'}
