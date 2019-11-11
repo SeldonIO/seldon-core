@@ -11,7 +11,7 @@ spec:
       modelUri: gs://seldon-models/sklearn/income/model
       name: classifier
     explainer:
-      type: anchor_tabular
+      type: AnchorTabular
       modelUri: gs://seldon-models/sklearn/income/explainer
     name: default
     replicas: 1
