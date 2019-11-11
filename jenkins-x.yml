@@ -13,7 +13,7 @@ pipelineConfig:
             - name: exit-with-error-to-avoid-tag
               command: exit
               args:
-              - 1
+              - "1"
           - name: test-python
             agent:
               image: seldonio/python-builder:0.2
