@@ -222,6 +222,7 @@ type PredictorSpec struct {
 	SvcOrchSpec     SvcOrchSpec             `json:"svcOrchSpec,omitempty" protobuf:"bytes,8,opt,name=svcOrchSpec"`
 	Traffic         int32                   `json:"traffic,omitempty" protobuf:"bytes,9,opt,name=traffic"`
 	Explainer       Explainer               `json:"explainer,omitempty" protobuf:"bytes,10,opt,name=explainer"`
+	Shadow          string                  `json:"shadow,omitempty" protobuf:"bytes,11,opt,name=shadow"`
 }
 
 type SvcOrchSpec struct {
