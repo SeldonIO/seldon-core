@@ -35,12 +35,31 @@ export KUBECONFIG=$(kind get kubeconfig-path)
 # ONLY RUN THE FOLLOWING IF SUCCESS
 if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
     # BUILD S2I BASE IMAGES
-    make s2i_build_base_images
-    S2I_EXIT_VALUE=$?
+    PYTHON_MODIFIED=`git diff --exit-code --quiet master ../../python`
+    if [[ $PYTHON_MODIFIED -gt 0 ]]; then 
+        make s2i_build_base_images
+    else
+        echo "SKIPPING PYTHON IMAGE BUILD..."
+    fi
 
-    # CREATE PROTOS
-    make build_protos
-    PROTOS_EXIT_VALUE=$?
+    # MORE EFFICIENT CLUSTER SETUP
+    OPERATOR_MODIFIED=`git diff --exit-code --quiet master ../../operator`
+    if [[ $OPERATOR_MODIFIED -gt 0 ]]; then
+        make kind_build_operator
+        OPERATOR_EXIT_VALUE=$?
+    else
+        echo "SKIPPING OPERATOR IMAGE BUILD..."
+    fi
+
+    ENGINE_MODIFIED=`git diff --exit-code --quiet master ../../engine`
+    if [[ $ENGINE_MODIFIED -gt 0 ]]; then
+        make build_protos
+        PROTO_EXIT_VALUE=$?
+        make kind_build_engine
+        ENGINE_EXIT_VALUE=$?
+    else
+        echo "SKIPPING ENGINE IMAGE BUILD..."
+    fi
 
     # KIND CLUSTER SETUP
     make kind_setup
