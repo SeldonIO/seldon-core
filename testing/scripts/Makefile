@@ -1,11 +1,6 @@
 VERSION := $(shell cat ../../version.txt)
 
 PYTEST_WORKERS ?= 0
-#ifdef $$PYTEST_WORKERS
-#PYTEST_WORKERS := $$PYTEST_WORKERS
-#else
-#PYTEST_WORKERS := auto
-#endif
 
 kind_create_cluster:
 	kind create cluster --config kind_config.yaml
