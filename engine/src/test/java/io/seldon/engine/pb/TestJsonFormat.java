@@ -16,6 +16,7 @@
 package io.seldon.engine.pb;
 
 import com.google.protobuf.DoubleValue;
+import com.google.protobuf.FloatValue;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.kubernetes.client.proto.IntStr.IntOrString;
 import io.seldon.engine.pb.JsonFormat.Printer;
@@ -86,11 +87,19 @@ public class TestJsonFormat {
   @Parameters({
     "3.24, 3.24",
     "3.0, 3",
-    "0.232312324152, 0.232312324152",
+    "0.12345678912345, 0.12345678912345",
     "12345678912345678.0, 12345678912345678"
   })
   public void testDoubleVal(double val, String expected) throws InvalidProtocolBufferException {
     DoubleValue encoded = DoubleValue.newBuilder().setValue(val).build();
+    Printer printer = JsonFormat.printer().omittingInsignificantWhitespace();
+    Assert.assertEquals(expected, printer.print(encoded));
+  }
+
+  @Test
+  @Parameters({"3.24, 3.24", "3.0, 3", "0.12345678, 0.12345678", "12345678.0, 12345678"})
+  public void testFloatVal(float val, String expected) throws InvalidProtocolBufferException {
+    FloatValue encoded = FloatValue.newBuilder().setValue(val).build();
     Printer printer = JsonFormat.printer().omittingInsignificantWhitespace();
     Assert.assertEquals(expected, printer.print(encoded));
   }
