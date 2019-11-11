@@ -32,7 +32,7 @@ if [[ $PYTHON_MODIFIED -gt 0 ]]; then
     (cd wrappers/s2i/python/build_scripts \
         && ./build_all_local.sh \
         && ./push_all.sh)
-    PYTHON_EXIT_VALUET=$?
+    PYTHON_EXIT_VALUE=$?
 else
     echo "SKIPPING PYTHON IMAGE BUILD..."
 fi
