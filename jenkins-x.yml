@@ -14,6 +14,42 @@ pipelineConfig:
               command: bash
               args:
               - ./ci_build_and_push_images.sh
+            options:
+              containerOptions:
+                volumeMounts:
+                  - mountPath: /lib/modules
+                    name: modules
+                    readOnly: true
+                  - mountPath: /sys/fs/cgroup
+                    name: cgroup
+                  - name: dind-storage
+                    mountPath: /var/lib/docker
+                  - mountPath: /builder/home/.docker
+                    name: jenkins-docker-config-volume
+                resources:
+                  requests:
+                    cpu: 1
+                    memory: 4000Mi
+                securityContext:
+                  privileged: true
+                imagePullPolicy: Always
+              volumes:
+                - name: modules
+                  hostPath:
+                    path: /lib/modules
+                    type: Directory
+                - name: cgroup
+                  hostPath:
+                    path: /sys/fs/cgroup
+                    type: Directory
+                - name: dind-storage
+                  emptyDir: {}
+                - name: jenkins-docker-config-volume
+                  secret:
+                    items:
+                    - key: config.json
+                      path: config.json
+                    secretName: jenkins-docker-cfg
           - agent:
               image: seldonio/python-builder:0.2
             name: seldon-python
