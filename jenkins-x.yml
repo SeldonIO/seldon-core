@@ -55,7 +55,7 @@ pipelineConfig:
             - name: exit-with-error-to-avoid-tag
               command: exit
               args:
-              - 1
+              - "1"
             options:
               containerOptions:
                 volumeMounts:
