@@ -26,10 +26,9 @@ done
 set +o errexit
 
 
-# ONLY RUN IF PYTHON HAS BE MODIFIED
+echo "Files changed in python folder:"
 git --no-pager diff --exit-code --name-only origin/master python
-PYTHON_MODIFIED=`git diff --exit-code --quiet master python/`
-echo "EXIT CODE: $PYTHON_MODIFIED"
+PYTHON_MODIFIED=$?
 if [[ $PYTHON_MODIFIED -gt 0 ]]; then 
     (cd wrappers/s2i/python/build_scripts \
         && ./build_all_local.sh \
@@ -40,9 +39,9 @@ else
     PYTHON_EXIT_VALUE=0
 fi
 
-# MORE EFFICIENT CLUSTER SETUP
+echo "Files changed in operator folder:"
 git --no-pager diff --exit-code --name-only origin/master operator
-OPERATOR_MODIFIED=`git diff --exit-code --quiet master operator/`
+OPERATOR_MODIFIED=$?
 echo "EXIT CODE: $OPERATOR_MODIFIED"
 if [[ $OPERATOR_MODIFIED -gt 0 ]]; then
     make \
@@ -55,9 +54,9 @@ else
     OPERATOR_EXIT_VALUE=0
 fi
 
+echo "Files changed in engine folder:"
 git --no-pager diff --exit-code --name-only origin/master engine
-ENGINE_MODIFIED=`git diff --exit-code --quiet master engine/`
-echo "EXIT CODE: $ENGINE_MODIFIED"
+ENGINE_MODIFIED=$?
 if [[ $ENGINE_MODIFIED -gt 0 ]]; then
     make \
         -C engine \
