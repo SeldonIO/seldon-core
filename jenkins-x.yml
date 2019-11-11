@@ -85,6 +85,8 @@ pipelineConfig:
                     name: cgroup
                   - name: dind-storage
                     mountPath: /var/lib/docker
+                  - mountPath: /builder/home/.docker
+                    name: jenkins-docker-config-volume
                 resources:
                   requests:
                     cpu: 1
@@ -103,3 +105,10 @@ pipelineConfig:
                     type: Directory
                 - name: dind-storage
                   emptyDir: {}
+                - name: jenkins-docker-config-volume
+                  secret:
+                    items:
+                    - key: config.json
+                      path: config.json
+                    secretName: jenkins-docker-cfg
+
