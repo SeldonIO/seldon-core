@@ -57,7 +57,7 @@ pipelineConfig:
                 resources:
                   requests:
                     cpu: 1
-                    memory: 4000Mi
+                    memory: 2000Mi
                 securityContext:
                   privileged: true
                 imagePullPolicy: Always
