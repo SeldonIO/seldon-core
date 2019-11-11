@@ -8,20 +8,18 @@ pipelineConfig:
         stages:
         - name: build-and-test
           parallel:
-          - agent:
+          - name: test-python
+            agent:
               image: seldonio/python-builder:0.2
-            name: seldon-python
             steps:
-            - args:
+            - name: test-python
+              command: make
+              args:
               - -C python
               - update_package
               - install_dev
               - test
-              command: make
-              name: test-python
-          - agent:
-              image: seldonio/core-builder:0.4
-            name: seldon-engine
+          - name: seldon-engine
             steps:
             - args:
               - -C engine
@@ -30,22 +28,20 @@ pipelineConfig:
               command: make
               name: test-engine
     release:
-      setVersion:
-        steps:
-        - name: next-version
-          sh: echo "skipping until 4624 is resolved..."
       pipeline:
         agent:
           image: seldonio/core-builder:0.4
         stages:
-          - name: end-to-end
+          - name: build-and-push
             steps:
-            - name: test-end-to-end
-              command: cd
+            - name: build-and-push-images
+              command: bash
               args:
-              - testing/scripts &&
-              - bash
-              - kind_test_all.sh
+              - ./ci_build_and_push_images.sh
+            - name: exit-with-error-to-avoid-auto-changelog
+              command: exit
+              args:
+              - "1"
             options:
               containerOptions:
                 volumeMounts:
@@ -56,6 +52,8 @@ pipelineConfig:
                     name: cgroup
                   - name: dind-storage
                     mountPath: /var/lib/docker
+                  - mountPath: /builder/home/.docker
+                    name: jenkins-docker-config-volume
                 resources:
                   requests:
                     cpu: 1
@@ -74,3 +72,10 @@ pipelineConfig:
                     type: Directory
                 - name: dind-storage
                   emptyDir: {}
+                - name: jenkins-docker-config-volume
+                  secret:
+                    items:
+                    - key: config.json
+                      path: config.json
+                    secretName: jenkins-docker-cfg
+
