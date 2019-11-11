@@ -36,7 +36,6 @@ public class TestProtoBufUtils {
     SeldonMessage message = builder.build();
 
     String serialised = toJson(message);
-    // TODO: This is what needs to be FIXED!
     String expected =
         "{\"jsonData\":{\"vocab_size\":275,\"input\":\"my sentence\",\"threshold\":0.45}}";
     Assert.assertEquals(expected, serialised);

@@ -107,7 +107,7 @@ public class TestPredictionProto {
     Value key1 = jsonData.getFieldsOrThrow("key1");
     Assert.assertEquals("bar", key1.getStringValue());
 
-    // TODO: How to read an Int32Value from a Struct
+    // We can't read an Int32Value from a Struct's Value
     Value key2 = jsonData.getFieldsOrThrow("key2");
     Assert.assertEquals(23, (int) key2.getNumberValue());
 
