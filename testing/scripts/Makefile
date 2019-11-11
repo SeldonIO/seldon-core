@@ -1,6 +1,6 @@
 VERSION := $(shell cat ../../version.txt)
 
-PYTEST_WORKERS ?= auto
+PYTEST_WORKERS ?= 0
 #ifdef $$PYTEST_WORKERS
 #PYTEST_WORKERS := $$PYTEST_WORKERS
 #else
@@ -67,7 +67,7 @@ install:
 	pip install -r dev_requirements.txt
 
 .PHONY: test
-test: 
+test: build_protos install
 	pip install pytest-xdist
 	pytest --verbose -s -W ignore -n $(PYTEST_WORKERS) 2>&1
 
