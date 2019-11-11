@@ -9,6 +9,7 @@ from seldon_e2e_utils import (
     retry_run,
     API_AMBASSADOR,
 )
+import logging
 
 S2I_CREATE = "cd ../s2i/python/#TYPE# && s2i build -E environment_#API# . seldonio/seldon-core-s2i-python3:#VERSION# seldonio/test#TYPE#_#API#:0.1"
 IMAGE_NAME = "seldonio/test#TYPE#_#API#:0.1"
@@ -20,14 +21,14 @@ def create_s2I_image(s2i_python_version, component_type, api_type):
         .replace("#API#", api_type)
         .replace("#VERSION#", s2i_python_version)
     )
-    print(cmd)
+    logging.warning(cmd)
     run(cmd, shell=True, check=True)
 
 
 def kind_push_s2i_image(component_type, api_type):
     img = get_image_name(component_type, api_type)
     cmd = "kind load docker-image " + img + " --loglevel trace"
-    print(cmd)
+    logging.warning(cmd)
     run(cmd, shell=True, check=True)
 
 
@@ -95,7 +96,7 @@ class TestPythonS2i(object):
     def test_build_combiner_rest(self, s2i_python_version):
         create_s2I_image(s2i_python_version, "combiner", "rest")
         img = get_image_name("combiner", "rest")
-        print(img)
+        logging.warning(img)
         run("docker run -d --rm --name 'combiner-rest' " + img, shell=True, check=True)
         time.sleep(2)
         run("docker rm -f combiner-rest", shell=True, check=True)
@@ -134,7 +135,7 @@ class TestPythonS2iK8s(object):
 class S2IK8S(object):
     def test_model_rest(self, s2i_python_version):
         namespace = "s2i-test-model-rest"
-        run(f"kubectl create namespace {namespace}", shell=True, check=True)
+        retry_run(f"kubectl create namespace {namespace}")
         create_push_s2i_image(s2i_python_version, "model", "rest")
         retry_run(f"kubectl apply -f ../resources/s2i_python_model.json -n {namespace}")
         wait_for_rollout("mymodel-mymodel-8715075", namespace)
@@ -142,7 +143,7 @@ class S2IK8S(object):
         arr = np.array([[1, 2, 3]])
         r = rest_request_ambassador("mymodel", namespace, API_AMBASSADOR, data=arr)
         res = r.json()
-        print(res)
+        logging.warning(res)
         assert r.status_code == 200
         assert r.json()["data"]["tensor"]["shape"] == [1, 3]
         assert r.json()["data"]["tensor"]["values"] == [2, 3, 4]
@@ -154,7 +155,7 @@ class S2IK8S(object):
 
     def test_input_transformer_rest(self, s2i_python_version):
         namespace = "s2i-test-input-transformer-rest"
-        run(f"kubectl create namespace {namespace}", shell=True, check=True)
+        retry_run(f"kubectl create namespace {namespace}")
         create_push_s2i_image(s2i_python_version, "transformer", "rest")
         retry_run(
             f"kubectl apply -f ../resources/s2i_python_transformer.json -n {namespace}"
@@ -164,7 +165,7 @@ class S2IK8S(object):
         arr = np.array([[1, 2, 3]])
         r = rest_request_ambassador("mytrans", namespace, API_AMBASSADOR, data=arr)
         res = r.json()
-        print(res)
+        logging.warning(res)
         assert r.status_code == 200
         assert r.json()["data"]["tensor"]["shape"] == [1, 3]
         assert r.json()["data"]["tensor"]["values"] == [2, 3, 4]
@@ -172,11 +173,11 @@ class S2IK8S(object):
             f"kubectl delete -f ../resources/s2i_python_transformer.json -n {namespace}",
             shell=True,
         )
-        run(f"kubectl create namespace {namespace}", shell=True)
+        run(f"kubectl delete namespace {namespace}", shell=True)
 
     def test_output_transformer_rest(self, s2i_python_version):
         namespace = "s2i-test-output-transformer-rest"
-        run(f"kubectl create namespace {namespace}", shell=True, check=True)
+        retry_run(f"kubectl create namespace {namespace}")
         create_push_s2i_image(s2i_python_version, "transformer", "rest")
         retry_run(
             f"kubectl apply -f ../resources/s2i_python_output_transformer.json -n {namespace}"
@@ -186,7 +187,7 @@ class S2IK8S(object):
         arr = np.array([[1, 2, 3]])
         r = rest_request_ambassador("mytrans", namespace, API_AMBASSADOR, data=arr)
         res = r.json()
-        print(res)
+        logging.warning(res)
         assert r.status_code == 200
         assert r.json()["data"]["tensor"]["shape"] == [1, 3]
         assert r.json()["data"]["tensor"]["values"] == [3, 4, 5]
@@ -198,7 +199,7 @@ class S2IK8S(object):
 
     def test_router_rest(self, s2i_python_version):
         namespace = "s2i-test-router-rest"
-        run(f"kubectl create namespace {namespace}", shell=True, check=True)
+        retry_run(f"kubectl create namespace {namespace}")
         create_push_s2i_image(s2i_python_version, "model", "rest")
         create_push_s2i_image(s2i_python_version, "router", "rest")
         retry_run(
@@ -209,7 +210,7 @@ class S2IK8S(object):
         arr = np.array([[1, 2, 3]])
         r = rest_request_ambassador("myrouter", namespace, API_AMBASSADOR, data=arr)
         res = r.json()
-        print(res)
+        logging.warning(res)
         assert r.status_code == 200
         assert r.json()["data"]["tensor"]["shape"] == [1, 3]
         assert r.json()["data"]["tensor"]["values"] == [2, 3, 4]
@@ -221,7 +222,7 @@ class S2IK8S(object):
 
     def test_combiner_rest(self, s2i_python_version):
         namespace = "s2i-test-combiner-rest"
-        run(f"kubectl create namespace {namespace}", shell=True, check=True)
+        retry_run(f"kubectl create namespace {namespace}")
         create_push_s2i_image(s2i_python_version, "model", "rest")
         create_push_s2i_image(s2i_python_version, "combiner", "rest")
         retry_run(
@@ -232,7 +233,7 @@ class S2IK8S(object):
         arr = np.array([[1, 2, 3]])
         r = rest_request_ambassador("mycombiner", namespace, API_AMBASSADOR, data=arr)
         res = r.json()
-        print(res)
+        logging.warning(res)
         assert r.status_code == 200
         assert r.json()["data"]["tensor"]["shape"] == [1, 3]
         assert r.json()["data"]["tensor"]["values"] == [3, 4, 5]
