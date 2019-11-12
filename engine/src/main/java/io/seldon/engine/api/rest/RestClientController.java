@@ -125,7 +125,7 @@ public class RestClientController {
   @Timed
   @CrossOrigin(origins = "*")
   @RequestMapping(
-      value = "/api/v0.1/predictions",
+      value = {"/api/v1.0/predictions", "/api/v0.1/predictions"},
       method = RequestMethod.POST,
       consumes = "application/json; charset=utf-8",
       produces = "application/json; charset=utf-8")
@@ -147,7 +147,7 @@ public class RestClientController {
   @Timed
   @CrossOrigin(origins = "*")
   @RequestMapping(
-      value = "/api/v0.1/predictions",
+      value = {"/api/v1.0/predictions", "/api/v0.1/predictions"},
       method = RequestMethod.POST,
       consumes = "multipart/form-data",
       produces = "application/json; charset=utf-8")
@@ -229,7 +229,7 @@ public class RestClientController {
   @Timed
   @CrossOrigin(origins = "*")
   @RequestMapping(
-      value = "/api/v0.1/feedback",
+      value = {"/api/v1.0/feedback", "/api/v0.1/feedback"},
       method = RequestMethod.POST,
       consumes = "application/json; charset=utf-8",
       produces = "application/json; charset=utf-8")

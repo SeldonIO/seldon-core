@@ -8,7 +8,7 @@ Depending on whether you deployed Seldon Core with Ambassador or the API Gateway
 
 Assuming Ambassador is exposed at ```<ambassadorEndpoint>``` and with a Seldon deployment name ```<deploymentName>```  in namespace ```<namespace>```::
 
- * A REST endpoint will be exposed at : ```http://<ambassadorEndpoint>/seldon/<namespace>/<deploymentName>/api/v0.1/predictions```
+ * A REST endpoint will be exposed at : ```http://<ambassadorEndpoint>/seldon/<namespace>/<deploymentName>/api/v1.0/predictions```
 
 
 ### Ambassador gRPC
@@ -25,7 +25,7 @@ Assuming Ambassador is exposed at ```<ambassadorEndpoint>``` and with a Seldon d
 
 Assuming the istio gateway is at ```<istioGateway>``` and with a Seldon deployment name ```<deploymentName>``` in namespace ```<namespace>```:
 
- * A REST endpoint will be exposed at : ```http://<istioGateway>/seldon/<namespace>/<deploymentName>/api/v0.1/predictions```
+ * A REST endpoint will be exposed at : ```http://<istioGateway>/seldon/<namespace>/<deploymentName>/api/v1.0/predictions```
 
 
 ### Istio gRPC
@@ -46,7 +46,7 @@ Assuming the istio gateway is at ```<istioGateway>``` and with a Seldon deployme
 Assuming a SeldonDeployment ```mymodel``` with Ambassador exposed on 0.0.0.0:8003:
 
 ```bash
-curl -v 0.0.0.0:8003/seldon/mymodel/api/v0.1/predictions -d '{"data":{"names":["a","b"],"tensor":{"shape":[2,2],"values":[0,0,1,1]}}}' -H "Content-Type: application/json"
+curl -v 0.0.0.0:8003/seldon/mymodel/api/v1.0/predictions -d '{"data":{"names":["a","b"],"tensor":{"shape":[2,2],"values":[0,0,1,1]}}}' -H "Content-Type: application/json"
 ```
 
 ### OpenAPI REST
