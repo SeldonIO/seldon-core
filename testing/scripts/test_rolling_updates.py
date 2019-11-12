@@ -23,6 +23,9 @@ class TestRollingHttp(object):
         assert r.status_code == 200
         assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
         retry_run(f"kubectl apply -f ../resources/graph2.json -n {namespace}")
+        r = initial_rest_request("mymodel", namespace)
+        assert r.status_code == 200
+        assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
         i = 0
         for i in range(100):
             r = rest_request_ambassador("mymodel", namespace, API_AMBASSADOR)
@@ -59,6 +62,9 @@ class TestRollingHttp(object):
         assert r.status_code == 200
         assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
         retry_run(f"kubectl apply -f ../resources/graph3.json -n {namespace}")
+        r = initial_rest_request("mymodel", namespace)
+        assert r.status_code == 200
+        assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
         i = 0
         for i in range(100):
             r = rest_request_ambassador("mymodel", namespace, API_AMBASSADOR)
@@ -96,6 +102,9 @@ class TestRollingHttp(object):
         assert r.status_code == 200
         assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
         retry_run(f"kubectl apply -f ../resources/graph4.json -n {namespace}")
+        r = initial_rest_request("mymodel", namespace)
+        assert r.status_code == 200
+        assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
         i = 0
         for i in range(50):
             r = rest_request_ambassador("mymodel", namespace, API_AMBASSADOR)
@@ -127,6 +136,9 @@ class TestRollingHttp(object):
         assert r.status_code == 200
         assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
         retry_run(f"kubectl apply -f ../resources/graph5.json -n {namespace}")
+        r = initial_rest_request("mymodel", namespace)
+        assert r.status_code == 200
+        assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
         i = 0
         for i in range(50):
             r = rest_request_ambassador("mymodel", namespace, API_AMBASSADOR)
@@ -162,6 +174,9 @@ class TestRollingHttp(object):
         assert r.status_code == 200
         assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
         retry_run(f"kubectl apply -f ../resources/graph6.json -n {namespace}")
+        r = initial_rest_request("mymodel", namespace)
+        assert r.status_code == 200
+        assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
         i = 0
         for i in range(50):
             r = rest_request_ambassador("mymodel", namespace, API_AMBASSADOR)
@@ -200,6 +215,9 @@ class TestRollingHttp(object):
         assert r.status_code == 200
         assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
         retry_run(f"kubectl apply -f ../resources/graph2svc.json -n {namespace}")
+        r = initial_rest_request("mymodel", namespace)
+        assert r.status_code == 200
+        assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
         i = 0
         for i in range(100):
             r = rest_request_ambassador("mymodel", namespace, API_AMBASSADOR)
@@ -237,6 +255,9 @@ class TestRollingHttp(object):
         assert r.status_code == 200
         assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
         retry_run(f"kubectl apply -f ../resources/graph3svc.json -n {namespace}")
+        r = initial_rest_request("mymodel", namespace)
+        assert r.status_code == 200
+        assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
         i = 0
         for i in range(100):
             r = rest_request_ambassador("mymodel", namespace, API_AMBASSADOR)
@@ -274,6 +295,9 @@ class TestRollingHttp(object):
         assert r.status_code == 200
         assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
         retry_run(f"kubectl apply -f ../resources/graph4svc.json -n {namespace}")
+        r = initial_rest_request("mymodel", namespace)
+        assert r.status_code == 200
+        assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
         i = 0
         for i in range(50):
             r = rest_request_ambassador("mymodel", namespace, API_AMBASSADOR)
@@ -305,6 +329,9 @@ class TestRollingHttp(object):
         assert r.status_code == 200
         assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
         retry_run(f"kubectl apply -f ../resources/graph5svc.json -n {namespace}")
+        r = initial_rest_request("mymodel", namespace)
+        assert r.status_code == 200
+        assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
         i = 0
         for i in range(50):
             r = rest_request_ambassador("mymodel", namespace, API_AMBASSADOR)
@@ -340,6 +367,9 @@ class TestRollingHttp(object):
         assert r.status_code == 200
         assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
         retry_run(f"kubectl apply -f ../resources/graph6svc.json -n {namespace}")
+        r = initial_rest_request("mymodel", namespace)
+        assert r.status_code == 200
+        assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
         i = 0
         for i in range(50):
             r = rest_request_ambassador("mymodel", namespace, API_AMBASSADOR)
