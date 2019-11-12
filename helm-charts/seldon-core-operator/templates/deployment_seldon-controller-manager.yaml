@@ -1,51 +1,96 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  labels: {app: seldon, app.kubernetes.io/instance: '{{ .Release.Name }}', app.kubernetes.io/name: '{{ include "seldon.name" . }}', app.kubernetes.io/version: '{{ .Chart.Version }}', control-plane: seldon-controller-manager}
+  labels:
+    app: seldon
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/name: '{{ include "seldon.name" . }}'
+    app.kubernetes.io/version: '{{ .Chart.Version }}'
+    control-plane: seldon-controller-manager
   name: seldon-controller-manager
   namespace: '{{ .Release.Namespace }}'
 spec:
   replicas: 1
   selector:
-    matchLabels: {app: seldon, app.kubernetes.io/instance: seldon1, app.kubernetes.io/name: seldon, app.kubernetes.io/version: v0.5, control-plane: seldon-controller-manager}
+    matchLabels:
+      app: seldon
+      app.kubernetes.io/instance: seldon1
+      app.kubernetes.io/name: seldon
+      app.kubernetes.io/version: v0.5
+      control-plane: seldon-controller-manager
   template:
     metadata:
-      annotations: {prometheus.io/scrape: 'true'}
-      labels: {app: seldon, app.kubernetes.io/instance: seldon1, app.kubernetes.io/name: seldon, app.kubernetes.io/version: v0.5, control-plane: seldon-controller-manager}
+      annotations:
+        prometheus.io/scrape: 'true'
+      labels:
+        app: seldon
+        app.kubernetes.io/instance: seldon1
+        app.kubernetes.io/name: seldon
+        app.kubernetes.io/version: v0.5
+        control-plane: seldon-controller-manager
     spec:
       containers:
-      - args: [--enable-leader-election, '--webhook-port={{ .Values.webhook.port }}']
-        command: [/manager]
+      - args:
+        - --enable-leader-election
+        - --webhook-port={{ .Values.webhook.port }}
+        command:
+        - /manager
         env:
         - name: POD_NAMESPACE
           valueFrom:
-            fieldRef: {fieldPath: metadata.namespace}
-        - {name: AMBASSADOR_ENABLED, value: '{{ .Values.ambassador.enabled }}'}
-        - {name: AMBASSADOR_SINGLE_NAMESPACE, value: '{{ .Values.ambassador.singleNamespace }}'}
-        - {name: ENGINE_CONTAINER_IMAGE_AND_VERSION, value: '{{ .Values.engine.image.registry }}/{{ .Values.engine.image.repository }}:{{ .Values.engine.image.tag }}'}
-        - {name: ENGINE_CONTAINER_IMAGE_PULL_POLICY, value: '{{ .Values.engine.image.pullPolicy }}'}
-        - {name: ENGINE_CONTAINER_SERVICE_ACCOUNT_NAME, value: '{{ .Values.engine.serviceAccount.name }}'}
-        - {name: ENGINE_CONTAINER_USER, value: '{{ .Values.engine.user }}'}
-        - {name: ENGINE_LOG_MESSAGES_EXTERNALLY, value: '{{ .Values.engine.logMessagesExternally }}'}
-        - {name: PREDICTIVE_UNIT_SERVICE_PORT, value: '{{ .Values.predictiveUnit.port }}'}
-        - {name: ENGINE_SERVER_GRPC_PORT, value: '{{ .Values.engine.grpc.port }}'}
-        - {name: ENGINE_SERVER_PORT, value: '{{ .Values.engine.port }}'}
-        - {name: ENGINE_PROMETHEUS_PATH, value: '{{ .Values.engine.prometheus.path }}'}
-        - {name: ISTIO_ENABLED, value: '{{ .Values.istio.enabled }}'}
-        - {name: ISTIO_GATEWAY, value: '{{ .Values.istio.gateway }}'}
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: AMBASSADOR_ENABLED
+          value: '{{ .Values.ambassador.enabled }}'
+        - name: AMBASSADOR_SINGLE_NAMESPACE
+          value: '{{ .Values.ambassador.singleNamespace }}'
+        - name: ENGINE_CONTAINER_IMAGE_AND_VERSION
+          value: '{{ .Values.engine.image.registry }}/{{ .Values.engine.image.repository }}:{{ .Values.engine.image.tag }}'
+        - name: ENGINE_CONTAINER_IMAGE_PULL_POLICY
+          value: '{{ .Values.engine.image.pullPolicy }}'
+        - name: ENGINE_CONTAINER_SERVICE_ACCOUNT_NAME
+          value: '{{ .Values.engine.serviceAccount.name }}'
+        - name: ENGINE_CONTAINER_USER
+          value: '{{ .Values.engine.user }}'
+        - name: ENGINE_LOG_MESSAGES_EXTERNALLY
+          value: '{{ .Values.engine.logMessagesExternally }}'
+        - name: PREDICTIVE_UNIT_SERVICE_PORT
+          value: '{{ .Values.predictiveUnit.port }}'
+        - name: ENGINE_SERVER_GRPC_PORT
+          value: '{{ .Values.engine.grpc.port }}'
+        - name: ENGINE_SERVER_PORT
+          value: '{{ .Values.engine.port }}'
+        - name: ENGINE_PROMETHEUS_PATH
+          value: '{{ .Values.engine.prometheus.path }}'
+        - name: ISTIO_ENABLED
+          value: '{{ .Values.istio.enabled }}'
+        - name: ISTIO_GATEWAY
+          value: '{{ .Values.istio.gateway }}'
         image: '{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}'
         imagePullPolicy: '{{ .Values.image.pullPolicy }}'
         name: manager
         ports:
-        - {containerPort: {{ .Values.webhook.port }}, name: webhook-server, protocol: TCP}
-        - {containerPort: 8080, name: metrics, protocol: TCP}
+        - containerPort: {{ .Values.webhook.port }}
+          name: webhook-server
+          protocol: TCP
+        - containerPort: 8080
+          name: metrics
+          protocol: TCP
         resources:
-          limits: {cpu: 100m, memory: 30Mi}
-          requests: {cpu: 100m, memory: 20Mi}
+          limits:
+            cpu: 100m
+            memory: 30Mi
+          requests:
+            cpu: 100m
+            memory: 20Mi
         volumeMounts:
-        - {mountPath: /tmp/k8s-webhook-server/serving-certs, name: cert, readOnly: true}
+        - mountPath: /tmp/k8s-webhook-server/serving-certs
+          name: cert
+          readOnly: true
       serviceAccountName: seldon-manager
       terminationGracePeriodSeconds: 10
       volumes:
       - name: cert
-        secret: {defaultMode: 420, secretName: seldon-webhook-server-cert}
+        secret:
+          defaultMode: 420
+          secretName: seldon-webhook-server-cert
