@@ -28,7 +28,6 @@ class TestPrepack(object):
             "sklearn", namespace, rows=1, data_size=4, dtype="ndarray"
         )
         assert r.status_code == 200
-        assert r.success
         logging.warning("Success for test_prepack_sklearn")
         run(
             f"kubectl delete -f ../../servers/sklearnserver/samples/iris.yaml -n {namespace}",
@@ -51,7 +50,6 @@ class TestPrepack(object):
             "tfserving", namespace, rows=1, data_size=784, dtype="ndarray"
         )
         assert r.status_code == 200
-        assert r.success
         logging.warning("Success for test_prepack_tfserving")
         run(
             f"kubectl delete -f ../../servers/tfserving/samples/mnist_rest.yaml -n {namespace}",
@@ -74,8 +72,6 @@ class TestPrepack(object):
             "xgboost", namespace, rows=1, data_size=4, dtype="ndarray"
         )
         assert r.status_code == 200
-        assert r.success
-        assert r.success
         logging.warning("Success for test_prepack_xgboost")
         run(
             f"kubectl delete -f ../../servers/xgboostserver/samples/iris.yaml -n {namespace}",
