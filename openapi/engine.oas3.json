@@ -31,7 +31,7 @@
         }
     ],
     "paths": {
-        "/seldon/{namespace}/{deployment}/api/v0.1/predictions": {
+        "/seldon/{namespace}/{deployment}/api/v1.0/predictions": {
             "post": {
                 "operationId": "Predict",
                 "responses": {
@@ -95,7 +95,7 @@
                 }
             }
         },
-        "/seldon/{namespace}/{deployment}/api/v0.1/feedback": {
+        "/seldon/{namespace}/{deployment}/api/v1.0/feedback": {
             "post": {
                 "operationId": "SendFeedback",
                 "responses": {

@@ -1482,7 +1482,7 @@ def rest_predict_gateway(
                     + gateway_endpoint
                     + "/seldon/"
                     + deployment_name
-                    + "/api/v0.1/predictions"
+                    + "/api/v1.0/predictions"
                 )
             else:
                 url = (
@@ -1493,7 +1493,7 @@ def rest_predict_gateway(
                     + namespace
                     + "/"
                     + deployment_name
-                    + "/api/v0.1/predictions"
+                    + "/api/v1.0/predictions"
                 )
         else:
             url = (
@@ -1501,7 +1501,7 @@ def rest_predict_gateway(
                 + "://"
                 + gateway_endpoint
                 + gateway_prefix
-                + "/api/v0.1/predictions"
+                + "/api/v1.0/predictions"
             )
     verify = True
     cert = None
@@ -1637,7 +1637,7 @@ def explain_predict_gateway(
                     + gateway_endpoint
                     + "/seldon/"
                     + deployment_name
-                    + "-explainer/api/v0.1/explain"
+                    + "-explainer/api/v1.0/explain"
                 )
             else:
                 url = (
@@ -1648,7 +1648,7 @@ def explain_predict_gateway(
                     + namespace
                     + "/"
                     + deployment_name
-                    + "-explainer/api/v0.1/explain"
+                    + "-explainer/api/v1.0/explain"
                 )
         else:
             url = (
@@ -1656,7 +1656,7 @@ def explain_predict_gateway(
                 + "://"
                 + gateway_endpoint
                 + gateway_prefix
-                + +"/api/v0.1/explain"
+                + +"/api/v1.0/explain"
             )
     verify = True
     cert = None
@@ -1852,7 +1852,7 @@ def rest_feedback_seldon_oauth(
     )
     payload = feedback_to_json(request)
     response_raw = requests.post(
-        "http://" + seldon_rest_endpoint + "/api/v0.1/feedback",
+        "http://" + seldon_rest_endpoint + "/api/v1.0/feedback",
         headers=headers,
         json=payload,
     )
@@ -1989,7 +1989,7 @@ def rest_feedback_gateway(
                 + gateway_endpoint
                 + "/seldon/"
                 + deployment_name
-                + "/api/v0.1/feedback",
+                + "/api/v1.0/feedback",
                 json=payload,
                 headers=headers,
             )
@@ -2001,13 +2001,13 @@ def rest_feedback_gateway(
                 + namespace
                 + "/"
                 + deployment_name
-                + "/api/v0.1/feedback",
+                + "/api/v1.0/feedback",
                 json=payload,
                 headers=headers,
             )
     else:
         response_raw = requests.post(
-            "http://" + gateway_endpoint + gateway_prefix + "/api/v0.1/feedback",
+            "http://" + gateway_endpoint + gateway_prefix + "/api/v1.0/feedback",
             json=payload,
             headers=headers,
         )
