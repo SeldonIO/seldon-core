@@ -6,8 +6,6 @@ nodes:
   extraPortMappings:
   - containerPort: 30080
     hostPort: 8003
-networking:
-  disableDefaultCNI: true
 kubeadmConfigPatches:
 - |
   apiVersion: kubelet.config.k8s.io/v1beta1
