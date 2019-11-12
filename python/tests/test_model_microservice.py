@@ -12,7 +12,7 @@ from seldon_core.utils import seldon_message_to_json, json_to_seldon_message
 from seldon_core.flask_utils import SeldonMicroserviceException
 from seldon_core.imports_helper import _TF_PRESENT
 
-from utils import skipif_tf_missing
+from .utils import skipif_tf_missing
 
 if _TF_PRESENT:
     from tensorflow.core.framework.tensor_pb2 import TensorProto
@@ -235,6 +235,37 @@ def test_model_ok():
     assert j["data"]["names"] == ["t:0", "t:1"]
     assert j["data"]["ndarray"] == [[1.0, 2.0]]
 
+def test_model_v01_ok():
+    user_object = UserObject()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+
+    payload = {"data":{"names":["a","b"],"ndarray":[[1,2]]}}
+    rv = client.post('/api/v0.1/predictions', json=payload)
+    j = json.loads(rv.data)
+    print(j)
+    assert rv.status_code == 200
+    assert j["meta"]["tags"] == {"mytag": 1}
+    assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
+    assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
+    assert j["data"]["names"] == ["t:0", "t:1"]
+    assert j["data"]["ndarray"] == [[1.0, 2.0]]
+
+def test_model_v10_ok():
+    user_object = UserObject()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+
+    payload = {"data":{"names":["a","b"],"ndarray":[[1,2]]}}
+    rv = client.post('/api/v1.0/predictions', json=payload)
+    j = json.loads(rv.data)
+    print(j)
+    assert rv.status_code == 200
+    assert j["meta"]["tags"] == {"mytag": 1}
+    assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
+    assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
+    assert j["data"]["names"] == ["t:0", "t:1"]
+    assert j["data"]["ndarray"] == [[1.0, 2.0]]
 
 def test_model_puid_ok():
     user_object = UserObject()
@@ -378,6 +409,27 @@ def test_model_feedback_ok():
     print(j)
     assert rv.status_code == 200
 
+def test_feedback_v10_ok():
+    user_object = UserObject()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+
+    payload = {"request":{"data":{"names":["a","b"],"ndarray":[[1,2]]}},"reward":1.0}
+    rv = client.post('/api/v1.0/feedback', json=payload)
+    j = json.loads(rv.data)
+    print(j)
+    assert rv.status_code == 200
+
+def test_feedback_v01_ok():
+    user_object = UserObject()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+
+    payload = {"request":{"data":{"names":["a","b"],"ndarray":[[1,2]]}},"reward":1.0}
+    rv = client.post('/api/v0.1/feedback', json=payload)
+    j = json.loads(rv.data)
+    print(j)
+    assert rv.status_code == 200
 
 def test_model_feedback_lowlevel_ok():
     user_object = UserObjectLowLevel()

@@ -8,7 +8,7 @@ from seldon_core.proto import prediction_pb2
 from seldon_core.flask_utils import SeldonMicroserviceException
 from seldon_core.imports_helper import _TF_PRESENT
 from google.protobuf.struct_pb2 import Value
-from utils import skipif_tf_missing
+from .utils import skipif_tf_missing
 
 if _TF_PRESENT:
     import tensorflow as tf

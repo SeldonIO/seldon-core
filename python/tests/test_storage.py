@@ -20,7 +20,7 @@ import pytest
 import seldon_core
 from minio import Minio, error
 import unittest.mock as mock
-from utils import skipif_gcs_missing
+from .utils import skipif_gcs_missing
 from seldon_core.imports_helper import _GCS_PRESENT
 
 if _GCS_PRESENT:
