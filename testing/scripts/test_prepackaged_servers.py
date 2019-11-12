@@ -1,7 +1,11 @@
 import subprocess
 import json
-from seldon_core.seldon_client import SeldonClient
-from seldon_e2e_utils import wait_for_rollout, retry_run, wait_for_status
+from seldon_e2e_utils import (
+    wait_for_rollout,
+    initial_rest_request,
+    retry_run,
+    wait_for_status,
+)
 from subprocess import run
 import time
 import logging
@@ -20,8 +24,8 @@ class TestPrepack(object):
         wait_for_status("sklearn", namespace)
         time.sleep(1)
         logging.warning("Initial request")
-        sc = SeldonClient(deployment_name="sklearn", namespace=namespace)
-        r = sc.predict(gateway="ambassador", transport="rest", shape=(1, 4))
+        r = initial_rest_request("sklearn", namespace)
+        assert r.status_code == 200
         assert r.success
         logging.warning("Success for test_prepack_sklearn")
         run(
@@ -41,8 +45,8 @@ class TestPrepack(object):
         wait_for_status("tfserving", namespace)
         time.sleep(1)
         logging.warning("Initial request")
-        sc = SeldonClient(deployment_name="tfserving", namespace=namespace)
-        r = sc.predict(gateway="ambassador", transport="rest", shape=(1, 784))
+        r = initial_rest_request("tfserving", namespace)
+        assert r.status_code == 200
         assert r.success
         logging.warning("Success for test_prepack_tfserving")
         run(
@@ -62,8 +66,9 @@ class TestPrepack(object):
         wait_for_status("xgboost", namespace)
         time.sleep(1)
         logging.warning("Initial request")
-        sc = SeldonClient(deployment_name="xgboost", namespace=namespace)
-        r = sc.predict(gateway="ambassador", transport="rest", shape=(1, 4))
+        r = initial_rest_request("xgboost", namespace)
+        assert r.status_code == 200
+        assert r.success
         assert r.success
         logging.warning("Success for test_prepack_xgboost")
         run(
