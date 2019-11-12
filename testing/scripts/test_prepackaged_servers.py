@@ -24,7 +24,7 @@ class TestPrepack(object):
         wait_for_status("sklearn", namespace)
         time.sleep(1)
         logging.warning("Initial request")
-        r = initial_rest_request("sklearn", namespace)
+        r = initial_rest_request("sklearn", namespace, rows=1, data_size=4)
         assert r.status_code == 200
         assert r.success
         logging.warning("Success for test_prepack_sklearn")
@@ -45,7 +45,7 @@ class TestPrepack(object):
         wait_for_status("tfserving", namespace)
         time.sleep(1)
         logging.warning("Initial request")
-        r = initial_rest_request("tfserving", namespace)
+        r = initial_rest_request("tfserving", namespace, rows=1, data_size=784)
         assert r.status_code == 200
         assert r.success
         logging.warning("Success for test_prepack_tfserving")
@@ -66,7 +66,7 @@ class TestPrepack(object):
         wait_for_status("xgboost", namespace)
         time.sleep(1)
         logging.warning("Initial request")
-        r = initial_rest_request("xgboost", namespace)
+        r = initial_rest_request("xgboost", namespace, rows=1, data_size=4)
         assert r.status_code == 200
         assert r.success
         assert r.success
