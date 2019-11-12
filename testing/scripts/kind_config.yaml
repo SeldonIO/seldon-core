@@ -9,7 +9,7 @@ nodes:
 networking:
   disableDefaultCNI: true
   podSubnet: "10.15.240.0/20"
-  apiServerAddress: "1.0.0.1"
+  apiServerAddress: "0.0.0.0"
   apiServerPort: 26443
 kubeadmConfigPatches:
 - |
