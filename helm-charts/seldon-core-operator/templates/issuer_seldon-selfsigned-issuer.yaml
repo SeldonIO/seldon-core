@@ -2,7 +2,11 @@
 apiVersion: certmanager.k8s.io/v1alpha1
 kind: Issuer
 metadata:
-  labels: {app: seldon, app.kubernetes.io/instance: '{{ .Release.Name }}', app.kubernetes.io/name: '{{ include "seldon.name" . }}', app.kubernetes.io/version: '{{ .Chart.Version }}'}
+  labels:
+    app: seldon
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/name: '{{ include "seldon.name" . }}'
+    app.kubernetes.io/version: '{{ .Chart.Version }}'
   name: seldon-selfsigned-issuer
   namespace: '{{ .Release.Namespace }}'
 spec:
