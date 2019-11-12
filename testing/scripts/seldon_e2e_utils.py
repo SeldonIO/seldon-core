@@ -84,7 +84,13 @@ def wait_for_status(name, namespace):
 
 
 def rest_request(
-    model, namespace, endpoint=API_AMBASSADOR, data_size=5, rows=1, data=None
+    model,
+    namespace,
+    endpoint=API_AMBASSADOR,
+    data_size=5,
+    rows=1,
+    data=None,
+    dtype="tensor",
 ):
     try:
         r = rest_request_ambassador(
@@ -94,6 +100,7 @@ def rest_request(
             data_size=data_size,
             rows=rows,
             data=data,
+            dtype=dtype,
         )
         if not r.status_code == 200:
             logging.warning("Bad status:", r.status_code)
@@ -106,10 +113,22 @@ def rest_request(
 
 
 def initial_rest_request(
-    model, namespace, endpoint=API_AMBASSADOR, data_size=5, rows=1, data=None
+    model,
+    namespace,
+    endpoint=API_AMBASSADOR,
+    data_size=5,
+    rows=1,
+    data=None,
+    dtype="tensor",
 ):
     r = rest_request(
-        model, namespace, endpoint=endpoint, data_size=data_size, rows=rows, data=data
+        model,
+        namespace,
+        endpoint=endpoint,
+        data_size=data_size,
+        rows=rows,
+        data=data,
+        dtype=dtype,
     )
     if r is None:
         logging.warning("Sleeping 1 sec and trying again")
@@ -121,6 +140,7 @@ def initial_rest_request(
             data_size=data_size,
             rows=rows,
             data=data,
+            dtype=dtype,
         )
         if r is None:
             logging.warning("Sleeping 5 sec and trying again")
@@ -132,6 +152,7 @@ def initial_rest_request(
                 data_size=data_size,
                 rows=rows,
                 data=data,
+                dtype=dtype,
             )
             if r is None:
                 logging.warning("Sleeping 10 sec and trying again")
@@ -143,6 +164,7 @@ def initial_rest_request(
                     data_size=data_size,
                     rows=rows,
                     data=data,
+                    dtype=dtype,
                 )
     return r
 
@@ -159,19 +181,30 @@ def create_random_data(data_size, rows=1):
     stop_max_attempt_number=5,
 )
 def rest_request_ambassador(
-    deploymentName, namespace, endpoint="localhost:8003", data_size=5, rows=1, data=None
+    deploymentName,
+    namespace,
+    endpoint="localhost:8003",
+    data_size=5,
+    rows=1,
+    data=None,
+    dtype="tensor",
 ):
     if data is None:
         shape, arr = create_random_data(data_size, rows)
     else:
         shape = data.shape
         arr = data.flatten()
-    payload = {
-        "data": {
-            "names": ["a", "b"],
-            "tensor": {"shape": shape, "values": arr.tolist()},
+
+    if dtype == "tensor":
+        payload = {
+            "data": {
+                "names": ["a", "b"],
+                "tensor": {"shape": shape, "values": arr.tolist()},
+            }
         }
-    }
+    else:
+        payload = {"data": {"names": ["a", "b"], "ndarray": arr.tolist(),}}
+
     if namespace is None:
         response = requests.post(
             "http://"
