@@ -83,9 +83,18 @@ def wait_for_status(name, namespace):
             time.sleep(5)
 
 
-def rest_request(model, namespace):
+def rest_request(
+    model, namespace, endpoint=API_AMBASSADOR, data_size=5, rows=1, data=None
+):
     try:
-        r = rest_request_ambassador(model, namespace, API_AMBASSADOR)
+        r = rest_request_ambassador(
+            model,
+            namespace,
+            endpoint=endpoint,
+            data_size=data_size,
+            rows=rows,
+            data=data,
+        )
         if not r.status_code == 200:
             logging.warning("Bad status:", r.status_code)
             return None
@@ -96,20 +105,45 @@ def rest_request(model, namespace):
         return None
 
 
-def initial_rest_request(model, namespace):
-    r = rest_request(model, namespace)
+def initial_rest_request(
+    model, namespace, endpoint=API_AMBASSADOR, data_size=5, rows=1, data=None
+):
+    r = rest_request(
+        model, namespace, endpoint=endpoint, data_size=data_size, rows=rows, data=data
+    )
     if r is None:
         logging.warning("Sleeping 1 sec and trying again")
         time.sleep(1)
-        r = rest_request(model, namespace)
+        r = rest_request(
+            model,
+            namespace,
+            endpoint=endpoint,
+            data_size=data_size,
+            rows=rows,
+            data=data,
+        )
         if r is None:
             logging.warning("Sleeping 5 sec and trying again")
             time.sleep(5)
-            r = rest_request(model, namespace)
+            r = rest_request(
+                model,
+                namespace,
+                endpoint=endpoint,
+                data_size=data_size,
+                rows=rows,
+                data=data,
+            )
             if r is None:
                 logging.warning("Sleeping 10 sec and trying again")
                 time.sleep(10)
-                r = rest_request(model, namespace)
+                r = rest_request(
+                    model,
+                    namespace,
+                    endpoint=endpoint,
+                    data_size=data_size,
+                    rows=rows,
+                    data=data,
+                )
     return r
 
 
