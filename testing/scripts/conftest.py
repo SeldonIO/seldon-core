@@ -8,7 +8,10 @@ def run_pod_information_in_background(request):
     # This command runs the pod information and prints it
     #   in the background every time there's a new update
     run(
-        "kubectl get pods --all-namespaces -w | awk '{print \"\nPODS UPDATE: \"$0}\n' &",
+        (
+            "kubectl get pods --all-namespaces -w | "
+            + 'awk \'{print "\\nPODS UPDATE: "$0"\\n"}\' & '
+        ),
         shell=True,
     )
 
