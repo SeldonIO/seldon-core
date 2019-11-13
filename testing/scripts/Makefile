@@ -1,6 +1,6 @@
 VERSION := $(shell cat ../../version.txt)
 
-PYTEST_WORKERS ?= "auto"
+PYTEST_WORKERS ?= "4"
 
 kind_create_cluster:
 	kind create cluster --config kind_config.yaml
