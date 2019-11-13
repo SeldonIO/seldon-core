@@ -41,7 +41,7 @@ def wait_for_shutdown(deploymentName, namespace):
         ret = run(f"kubectl get -n {namespace} deploy/{deploymentName}", shell=True)
 
 
-def wait_for_rollout(deploymentName, namespace, attempts=50, sleep=5):
+def wait_for_rollout(deploymentName, namespace, attempts=20, sleep=5):
     for attempts in range(attempts):
         ret = run(
             f"kubectl rollout status -n {namespace} deploy/" + deploymentName,
@@ -55,7 +55,7 @@ def wait_for_rollout(deploymentName, namespace, attempts=50, sleep=5):
     assert ret.returncode == 0
 
 
-def retry_run(cmd, attempts=50, sleep=5):
+def retry_run(cmd, attempts=10, sleep=5):
     for i in range(attempts):
         ret = run(cmd, shell=True)
         if ret.returncode == 0:
