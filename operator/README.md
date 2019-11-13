@@ -69,3 +69,7 @@ make run
 You should now be able to create SeldonDeployments and Webhook calls will hit the local running manager. The same applies if you debug from GoLand. Though for GoLand you will need to export the KUBECONFIG to the debug configuration.
 
 You should delete the Operator running in the cluster at this point.
+
+# Build Helm Chart
+
+Use the Makefile in the `./helm` directory. Ensure you have `pyyaml` in your python environment.
