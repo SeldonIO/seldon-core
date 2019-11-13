@@ -131,7 +131,7 @@ def feedback_to_json(message_proto: prediction_pb2.Feedback) -> Dict:
 
 
 def get_data_from_proto(
-    request: prediction_pb2.SeldonMessage
+    request: prediction_pb2.SeldonMessage,
 ) -> Union[np.ndarray, str, bytes, dict]:
     """
     Extract the data payload from the SeldonMessage
@@ -556,7 +556,7 @@ def extract_request_parts_json(
 
 
 def extract_request_parts(
-    request: prediction_pb2.SeldonMessage
+    request: prediction_pb2.SeldonMessage,
 ) -> Tuple[Union[np.ndarray, str, bytes, dict], Dict, prediction_pb2.DefaultData, str]:
     """
 
@@ -578,7 +578,7 @@ def extract_request_parts(
 
 
 def extract_feedback_request_parts(
-    request: prediction_pb2.Feedback
+    request: prediction_pb2.Feedback,
 ) -> Tuple[prediction_pb2.DefaultData, np.ndarray, np.ndarray, float]:
     """
     Extract key parts of the Feedback Message
