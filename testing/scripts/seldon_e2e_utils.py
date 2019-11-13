@@ -183,7 +183,7 @@ def create_random_data(data_size, rows=1):
 def rest_request_ambassador(
     deploymentName,
     namespace,
-    endpoint="localhost:8003",
+    endpoint=API_AMBASSADOR,
     data_size=5,
     rows=1,
     data=None,
@@ -191,9 +191,11 @@ def rest_request_ambassador(
 ):
     if data is None:
         shape, arr = create_random_data(data_size, rows)
-    else:
+    elif dtype == "tensor":
         shape = data.shape
         arr = data.flatten()
+    else:
+        arr = data
 
     if dtype == "tensor":
         payload = {
@@ -203,7 +205,7 @@ def rest_request_ambassador(
             }
         }
     else:
-        payload = {"data": {"names": ["a", "b"], "ndarray": arr.tolist(),}}
+        payload = {"data": {"names": ["a", "b"], "ndarray": arr}}
 
     if namespace is None:
         response = requests.post(
