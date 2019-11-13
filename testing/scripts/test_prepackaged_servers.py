@@ -26,7 +26,7 @@ class TestPrepack(object):
         time.sleep(1)
         logging.warning("Initial request")
         r = initial_rest_request(
-            "sklearn", namespace, rows=1, data_size=4, dtype="ndarray"
+            "sklearn", namespace, data=[[0.1, 0.2, 0.3, 0.4]], dtype="ndarray"
         )
         assert r.status_code == 200
         logging.warning("Success for test_prepack_sklearn")
