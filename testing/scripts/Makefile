@@ -1,7 +1,7 @@
 VERSION := $(shell cat ../../version.txt)
 
 # This can be "Auto" or a Number
-PYTEST_WORKERS ?= "auto"
+PYTEST_WORKERS ?= "4"
 
 kind_create_cluster:
 	kind create cluster --config kind_config.yaml
@@ -70,8 +70,8 @@ test: build_protos install
 		--verbose \
 		-s \
 		-W ignore \
-		-n $(PYTEST_WORKERS) \
-		--ignore test_s2i_python 2>&1
+		--ignore test_s2i_python.py \
+		-n $(PYTEST_WORKERS)  2>&1
 	# Then run the s2i tests in sequence (as they currently fail in parallel
 	pytest \
 		--verbose \
