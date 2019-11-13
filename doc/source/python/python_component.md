@@ -181,6 +181,43 @@ $ curl localhost:5000/health/ping
 pong%
 ```
 
+You can also override the default liveness and readiness probes and use HTTP health endpoints by adding them in your
+`SeldonDeployment` YAML. Read more about these probes in the
+[kubernetes documentation](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/).
+An example is shown below:
+
+```yaml
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+spec:
+  name: my-app
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: my-app-image:version
+          name: classifier
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 60
+            periodSeconds: 5
+            successThreshold: 1
+            httpGet:
+              path: /health/status
+              port: http
+              scheme: HTTP
+            timeoutSeconds: 1
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 20
+            periodSeconds: 5
+            successThreshold: 1
+            httpGet:
+              path: /health/status
+              port: http
+              scheme: HTTP
+            timeoutSeconds: 1
+```
 
 ## Low level Methods
 If you want more control you can provide a low-level methods that will provide as input the raw proto buffer payloads. The signatures for these are shown below for release `sedon_core>=0.2.6.1`:
