@@ -4,6 +4,7 @@ from seldon_e2e_utils import (
     wait_for_rollout,
     initial_rest_request,
     retry_run,
+    create_random_data,
     wait_for_status,
 )
 from subprocess import run
@@ -47,7 +48,10 @@ class TestPrepack(object):
         time.sleep(1)
         logging.warning("Initial request")
         r = initial_rest_request(
-            "tfserving", namespace, rows=1, data_size=784, dtype="ndarray"
+            "tfserving",
+            namespace,
+            data=[create_random_data(784)[1].tolist()],
+            dtype="ndarray",
         )
         assert r.status_code == 200
         logging.warning("Success for test_prepack_tfserving")
@@ -69,7 +73,7 @@ class TestPrepack(object):
         time.sleep(1)
         logging.warning("Initial request")
         r = initial_rest_request(
-            "xgboost", namespace, rows=1, data_size=4, dtype="ndarray"
+            "xgboost", namespace, data=[[0.1, 0.2, 0.3, 0.4]], dtype="ndarray"
         )
         assert r.status_code == 200
         logging.warning("Success for test_prepack_xgboost")
