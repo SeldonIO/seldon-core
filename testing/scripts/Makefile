@@ -1,6 +1,7 @@
 VERSION := $(shell cat ../../version.txt)
 
-PYTEST_WORKERS ?= "4"
+# This can be "Auto" or a Number
+PYTEST_WORKERS ?= "auto"
 
 kind_create_cluster:
 	kind create cluster --config kind_config.yaml
@@ -64,7 +65,20 @@ install:
 .PHONY: test
 test: build_protos install
 	pip install pytest-xdist
-	pytest --verbose -s -W ignore -n $(PYTEST_WORKERS) 2>&1
+	# Run the core tests in parallel
+	pytest \
+		--verbose \
+		-s \
+		-W ignore \
+		-n $(PYTEST_WORKERS) \
+		--ignore test_s2i_python 2>&1
+	# Then run the s2i tests in sequence (as they currently fail in parallel
+	pytest \
+		--verbose \
+		-s \
+		-W ignore \
+		-n 0 \
+		test_s2i_python.py 2>&1
 
 .PHONY: clean
 clean:
