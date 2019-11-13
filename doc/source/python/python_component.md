@@ -182,7 +182,8 @@ pong%
 ```
 
 You can also override the default liveness and readiness probes and use HTTP health endpoints by adding them in your
-`SeldonDeployment` YAML. Read more about these probes in the
+`SeldonDeployment` YAML. You can modify the parameters for the probes to suit your reliability needs without putting
+too much stress on the container. Read more about these probes in the
 [kubernetes documentation](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/).
 An example is shown below:
 
