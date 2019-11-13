@@ -130,7 +130,7 @@ def initial_rest_request(
         data=data,
         dtype=dtype,
     )
-    if r is None:
+    if r is None or r.status_code != 200:
         logging.warning("Sleeping 1 sec and trying again")
         time.sleep(1)
         r = rest_request(
@@ -142,7 +142,7 @@ def initial_rest_request(
             data=data,
             dtype=dtype,
         )
-        if r is None:
+        if r is None or r.status_code != 200:
             logging.warning("Sleeping 5 sec and trying again")
             time.sleep(5)
             r = rest_request(
@@ -154,7 +154,7 @@ def initial_rest_request(
                 data=data,
                 dtype=dtype,
             )
-            if r is None:
+            if r is None or r.status_code != 200:
                 logging.warning("Sleeping 10 sec and trying again")
                 time.sleep(10)
                 r = rest_request(
