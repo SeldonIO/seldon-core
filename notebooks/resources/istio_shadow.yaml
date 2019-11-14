@@ -17,4 +17,4 @@ spec:
         implementation: SKLEARN_SERVER
         modelUri: gs://seldon-models/sklearn/iris
       replicas: 1
-      shadow: 'true'
+      shadow: true

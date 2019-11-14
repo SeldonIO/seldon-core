@@ -391,7 +391,7 @@ func checkTraffic(mlDep *SeldonDeployment, fldPath *field.Path, allErrs field.Er
 
 		fmt.Printf("%+v\n", p)
 
-		if p.Shadow == "true" {
+		if p.Shadow == true {
 			shadows += 1
 		}
 	}

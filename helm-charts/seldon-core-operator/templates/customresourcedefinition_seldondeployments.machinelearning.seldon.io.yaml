@@ -2793,7 +2793,7 @@ spec:
                     format: int32
                     type: integer
                   shadow:
-                    type: string
+                    type: boolean
                   svcOrchSpec:
                     properties:
                       env:
