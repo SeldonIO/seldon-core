@@ -146,6 +146,82 @@ class ModelWithMetrics(object):
     	return {"system":"production"}
 ```
 
+## REST Health Endpoint
+If you wish to add a REST health point, you can implement the `health_status` method with signature as shown below:
+```python
+    def health_status(self) -> Union[np.ndarray, List, str, bytes]:
+```
+
+You can use this to verify that your service can respond to HTTP calls after you have built your docker image and also 
+as kubernetes liveness and readiness probes to verify that your model is healthy.
+
+A simple example is shown below:
+
+```python
+class ModelWithHealthEndpoint(object):
+    def predict(self, X, features_names):
+        return X
+
+    def health_status(self):
+        response = self.predict([1, 2], ["f1", "f2"])
+        assert len(response) == 2, "health check returning bad predictions" # or some other simple validation
+        return response
+```
+
+When you use `seldon-core-microservice` to start the HTTP server, you can verify that the model is up and running by 
+checking the `/health/status` endpoint:
+```
+$ curl localhost:5000/health/status
+{"data":{"names":[],"tensor":{"shape":[2],"values":[1,2]}},"meta":{}}
+```
+
+Additionally, you can also use the `/health/ping` endpoint if you want a lightweight call that just checks that 
+the HTTP server is up:
+
+```0
+$ curl localhost:5000/health/ping
+pong%
+```
+
+You can also override the default liveness and readiness probes and use HTTP health endpoints by adding them in your
+`SeldonDeployment` YAML. You can modify the parameters for the probes to suit your reliability needs without putting
+too much stress on the container. Read more about these probes in the
+[kubernetes documentation](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/).
+An example is shown below:
+
+```yaml
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+spec:
+  name: my-app
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: my-app-image:version
+          name: classifier
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 60
+            periodSeconds: 5
+            successThreshold: 1
+            httpGet:
+              path: /health/status
+              port: http
+              scheme: HTTP
+            timeoutSeconds: 1
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 20
+            periodSeconds: 5
+            successThreshold: 1
+            httpGet:
+              path: /health/status
+              port: http
+              scheme: HTTP
+            timeoutSeconds: 1
+```
+
 ## Low level Methods
 
 If you want more control you can provide a low-level methods that will provide as input the raw proto buffer payloads. The signatures for these are shown below for release `sedon_core>=0.2.6.1`:
@@ -162,6 +238,8 @@ If you want more control you can provide a low-level methods that will provide a
     def route_raw(self, msg: prediction_pb2.SeldonMessage) -> prediction_pb2.SeldonMessage:
 
     def aggregate_raw(self, msgs: prediction_pb2.SeldonMessageList) -> prediction_pb2.SeldonMessage:
+
+    def health_status_raw(self) -> prediction_pb2.SeldonMessage:
 ```
 
 ## User Defined Exceptions

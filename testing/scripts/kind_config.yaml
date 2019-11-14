@@ -6,3 +6,25 @@ nodes:
   extraPortMappings:
   - containerPort: 30080
     hostPort: 8003
+kubeadmConfigPatches:
+- |
+  apiVersion: kubelet.config.k8s.io/v1beta1
+  kind: KubeletConfiguration
+  metadata:
+    name: config
+  kubeReserved:
+      cpu: "300m"
+      memory: "300Mi"
+      ephemeral-storage: "1Gi"
+  kubeReservedCgroup: "/kube-reserved"
+  systemReserved:
+      cpu: "300m"
+      memory: "300Mi"
+      ephemeral-storage: "1Gi"
+  evictionHard:
+      memory.available:  "200Mi"
+      nodefs.available: "10%"
+  featureGates:
+      DynamicKubeletConfig: true
+      RotateKubeletServerCertificate: true
+

@@ -26,8 +26,8 @@ pipelineConfig:
                     mountPath: /var/lib/docker
                 resources:
                   requests:
-                    cpu: 1
-                    memory: 4000Mi
+                    cpu: 4
+                    memory: 8000Mi
                 securityContext:
                   privileged: true
                 imagePullPolicy: Always
