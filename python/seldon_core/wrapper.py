@@ -97,6 +97,20 @@ def get_rest_microservice(user_model):
         logger.debug("REST Response: %s", response)
         return jsonify(response)
 
+    @app.route("/health/ping", methods=["GET"])
+    def HealthPing():
+        """
+        Lightweight endpoint to check the liveness of the REST endpoint
+        """
+        return "pong"
+
+    @app.route("/health/status", methods=["GET"])
+    def HealthStatus():
+        logger.debug("REST Health Status Request")
+        response = seldon_core.seldon_methods.health_status(user_model)
+        logger.debug("REST Health Status Response: %s", response)
+        return jsonify(response)
+
     return app
 
 
