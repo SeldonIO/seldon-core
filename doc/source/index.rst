@@ -110,6 +110,7 @@ Seldon Core is an open source platform for deploying machine learning models on 
    :maxdepth: 1
    :caption: Reference
 
+   General Availability <reference/ga.md>
    Python API reference <python/api/modules>	     
    Seldon Microservice API <reference/apis/internal-api.md>
    Seldon Orchestrator <reference/engine>

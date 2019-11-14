@@ -187,5 +187,6 @@ testing/scripts/go
 
 # pyenv
 .python-version
+.tox
 
 operator/operator.tar

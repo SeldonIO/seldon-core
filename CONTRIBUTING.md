@@ -49,3 +49,48 @@ heavily opinionated formatter.
 
 To integrate it on your local editor, you can follow the official instructions
 to [set-up black](https://github.com/psf/black#editor-integration).
+
+## Tests
+
+Regardless of the package you are working on, we abstract the main tasks to a
+`Makefile`.
+Therefore, in order to run the tests, you should be able to just do:
+
+```bash
+$ make test
+```
+
+### Python
+
+We use [`pytest`](https://docs.pytest.org/en/latest/) as our main test runner.
+However, to ensure that tests run on the same version of the package that final
+users will download from `pip` and pypi.org, we use
+[`tox`](https://tox.readthedocs.io/en/latest/) on top of it.
+To install both (plus other required plugins), just run:
+
+```bash
+$ make install_dev
+```
+
+Using `tox` we can run the entire test suite over different environments,
+isolated between them.
+You can see the different ones we currently use on the
+[`setup.cfg`](https://github.com/SeldonIO/seldon-core/blob/master/python/setup.cfg)
+file.
+You can run your tests across all these environments using the standard `make test` [mentioned above](#Tests).
+Alternatively, if you want to pass any extra parameters, you can also run `tox`
+directly as:
+
+```bash
+$ tox
+```
+
+One of the caveats of `tox` is that, as the number of environments grows, so
+does the time it takes to finish running the tests.
+As a solution, during local development it may be recommended to run `pytest` directly
+on your own environment.
+You can do so as:
+
+```bash
+$ pytest
+```
