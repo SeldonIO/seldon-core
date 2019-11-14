@@ -356,6 +356,7 @@ func createComponents(r *SeldonDeploymentReconciler, mlDep *machinelearningv1alp
 					} else {
 						// a user-supplied container may not be a pu so we may not create service for that
 						log.Info("Not creating container service for " + con.Name)
+						continue
 					}
 
 					if noEngine {
