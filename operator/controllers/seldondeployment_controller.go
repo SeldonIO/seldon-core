@@ -172,7 +172,7 @@ func createIstioResources(mlDep *machinelearningv1alpha2.SeldonDeployment,
 	var shadows int = 0
 	for i := 0; i < len(mlDep.Spec.Predictors); i++ {
 		p := mlDep.Spec.Predictors[i]
-		if p.Shadow == "true" {
+		if p.Shadow == true {
 			shadows += 1
 		}
 	}
@@ -212,7 +212,7 @@ func createIstioResources(mlDep *machinelearningv1alpha2.SeldonDeployment,
 
 		drules[i] = drule
 
-		if p.Shadow == "true" {
+		if p.Shadow == true {
 			//if there's a shadow then add a mirror section to the VirtualService
 
 			httpVsvc.Spec.HTTP[0].Mirror = &istio.Destination{
@@ -708,7 +708,7 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 		},
 	}
 
-	if p.Shadow == "true" {
+	if p.Shadow == true {
 		deploy.Spec.Template.ObjectMeta.Labels["shadow"] = "true"
 	}
 
