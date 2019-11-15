@@ -48,6 +48,15 @@ fi
 echo "---> Installing application source..."
 cp -Rf /tmp/src/. ./
 
+if [[ -f requirements.txt ]]; then
+  echo "---> Installing system-wide dependencies ..."
+  pip install --find-links /whl -r requirements.txt
+elif [[ -f setup.py ]]; then
+  echo "---> Installing system-wide application ..."
+  pip install --find-links /whl -e .
+fi
+
+# TODO: Support other env names
 # Install conda environment if present
 if [[ -f conda.yaml ]]; then
   echo "---> Creating environment with Conda..."

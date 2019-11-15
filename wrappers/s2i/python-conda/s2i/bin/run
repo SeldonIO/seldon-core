@@ -14,6 +14,7 @@ if [[ -z "$MODEL_NAME" || -z "$API_TYPE" || -z "$SERVICE_TYPE" || -z "$PERSISTEN
 else
   cd /microservice
 
+  # TODO: Support other env names
   if [[ -f conda.yaml ]]; then
     echo "Activating Conda environment"
     # We need to initialise Conda so that it can run on /bin/sh
