@@ -14,12 +14,18 @@ if [[ -z "$MODEL_NAME" || -z "$API_TYPE" || -z "$SERVICE_TYPE" || -z "$PERSISTEN
 else
   cd /microservice
 
+  if [[ -x before-run ]]; then
+    echo "Executing before-run script"
+    ./before-run
+  fi
+
   # TODO: Support other env names
   if [[ -f conda.yaml ]]; then
-    echo "Activating Conda environment"
+    CONDA_ENV_NAME=${CONDA_ENV_NAME:-microservice}
+    echo "Activating Conda environment '$CONDA_ENV_NAME'"
     # We need to initialise Conda so that it can run on /bin/sh
     source /etc/profile.d/conda.sh
-    conda activate microservice
+    conda activate $CONDA_ENV_NAME
   fi
 
   echo "Starting microservice"
