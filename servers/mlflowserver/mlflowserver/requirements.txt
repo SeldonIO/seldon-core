@@ -1,2 +1,4 @@
 mlflow==1.1.0
 numpy==1.16.4
+pyyaml<6.0.0
+requests<3.0.0
