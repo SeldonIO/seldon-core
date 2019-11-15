@@ -7,6 +7,20 @@
 #	https://github.com/openshift/source-to-image/blob/master/docs/builder_image.md
 #
 
+function _get_conda_envs() {
+  # Printed value will be list of Conda envs
+  conda env list | tail -n +3 | head -n -1 | cut -d' ' -f1
+}
+
+function _is_env_present() {
+  # $1 is the Conda env we are probing
+  # Return value will be 0 if present (TRUE)
+
+  local _conda_envs=$(_get_conda_envs)
+  echo $_conda_envs | grep -qw $1
+  return $?
+}
+
 # Check environment vars
 if [[ -z "$MODEL_NAME" || -z "$API_TYPE" || -z "$SERVICE_TYPE" || -z "$PERSISTENCE" ]]; then
   echo "Failed to find required env vars MODEL_NAME, API_TYPE, SERVICE_TYPE, PERSISTENCE"
@@ -19,9 +33,8 @@ else
     ./before-run
   fi
 
-  # TODO: Support other env names
-  if [[ -f conda.yaml ]]; then
-    CONDA_ENV_NAME=${CONDA_ENV_NAME:-microservice}
+  CONDA_ENV_NAME=${CONDA_ENV_NAME:-microservice}
+  if _is_env_present $CONDA_ENV_NAME; then
     echo "Activating Conda environment '$CONDA_ENV_NAME'"
     # We need to initialise Conda so that it can run on /bin/sh
     source /etc/profile.d/conda.sh
