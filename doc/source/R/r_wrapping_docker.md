@@ -8,7 +8,7 @@ You will need an R file which provides an S3 class for your model via an `initia
 
 ### R Runtime Model file
 
-Your source code should contain an R file which defines an S3 class for your model. For example, looking at our skeleton R model file at `wrappers/s2i/R/test/model-template-app/MyModel.R`:
+Your source code should contain an R file which defines an S3 class for your model. For example, looking at our skeleton R model file at `incubating/wrappers/s2i/R/test/model-template-app/MyModel.R`:
 
 ```R
 library(methods)
@@ -73,7 +73,7 @@ RUN mkdir microservice
 COPY . /microservice
 WORKDIR /microservice
 
-RUN curl -OL https://raw.githubusercontent.com/SeldonIO/seldon-core/v0.2.7/wrappers/s2i/R/microservice.R > /microservice/microservice.R
+RUN curl -OL https://raw.githubusercontent.com/SeldonIO/seldon-core/v0.5.0/incubating/wrappers/s2i/R/microservice.R > /microservice/microservice.R
 
 EXPOSE 5000
 
@@ -118,12 +118,12 @@ Can only by 0 at present. In future, will allow the state of the component to be
 
 #### MODEL
 
-- [A minimal skeleton for model source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/R/test/model-template-app)
+- [A minimal skeleton for model source code](https://github.com/seldonio/seldon-core/tree/incubating/wrappers/s2i/R/test/model-template-app)
 - [Example models](../examples/notebooks.html)
 
 #### ROUTER
-- [A minimal skeleton for router source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/R/test/router-template-app)
+- [A minimal skeleton for router source code](https://github.com/seldonio/seldon-core/tree/incubating/wrappers/s2i/R/test/router-template-app)
 
 #### TRANSFORMER
 
-- [A minimal skeleton for transformer source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/R/test/transformer-template-app)
+- [A minimal skeleton for transformer source code](https://github.com/seldonio/seldon-core/tree/incubating/wrappers/s2i/R/test/transformer-template-app)

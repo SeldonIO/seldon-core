@@ -42,7 +42,7 @@ Create a Spring Boot Maven project and include the dependency:
 </dependency>
 ```
 
-A full example can be found at ```wrappers/s2i/java/test/model-template-app/pom.xml```.
+A full example can be found at ```incubating/wrappers/s2i/java/test/model-template-app/pom.xml```.
 
 ### Spring Boot Intialization
 
@@ -156,12 +156,12 @@ s2i build <src-folder> seldonio/seldon-core-s2i-java-build:0.1 <my-image-name> -
 An example invocation using the test template model inside seldon-core:
 
 ```bash
-s2i build https://github.com/seldonio/seldon-core.git --context-dir=wrappers/s2i/python/test/model-template-app seldonio/seldon-core-s2i-java-build:0.1 h2o-test:0.1 --runtime-image seldonio/seldon-core-s2i-java-runtime:0.1
+s2i build https://github.com/seldonio/seldon-core.git --context-dir=incubating/wrappers/s2i/python/test/model-template-app seldonio/seldon-core-s2i-java-build:0.1 h2o-test:0.1 --runtime-image seldonio/seldon-core-s2i-java-runtime:0.1
 ```
 
 The above s2i build invocation:
 
- * uses the GitHub repo: https://github.com/seldonio/seldon-core.git and the directory ```wrappers/s2i/R/test/model-template-app``` inside that repo.
+ * uses the GitHub repo: https://github.com/seldonio/seldon-core.git and the directory ```incubating/wrappers/s2i/java/test/model-template-app``` inside that repo.
  * uses the builder image ```seldonio/seldon-core-s2i-java-build```
  * uses the runtime image ```seldonio/seldon-core-s2i-java-runtime```
  * creates a docker image ```seldon-core-template-model```
@@ -172,7 +172,7 @@ For building from a local source folder, an example where we clone the seldon-co
 ```bash
 git clone https://github.com/seldonio/seldon-core.git
 cd seldon-core
-s2i build wrappers/s2i/R/test/model-template-app seldonio/seldon-core-s2i-java-build:0.1 h2o-test:0.1 --runtime-image seldonio/seldon-core-s2i-java-runtime:0.1
+s2i build incubating/wrappers/s2i/java/test/model-template-app seldonio/seldon-core-s2i-java-build:0.1 h2o-test:0.1 --runtime-image seldonio/seldon-core-s2i-java-runtime:0.1
 ```
 
 For more help see:
@@ -206,7 +206,7 @@ The service type being created. Available options are:
 
 ### MODEL
 
- * [A minimal skeleton for model source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/java/test/model-template-app)
+ * [A minimal skeleton for model source code](https://github.com/seldonio/seldon-core/tree/incubating/wrappers/s2i/java/test/model-template-app)
  * [Example H2O MOJO](../examples/h2o_mojo.html)
 
 

@@ -1,4 +1,4 @@
-# Packaging an R model for Seldon Core using s2i
+# Packaging an R model for Seldon Core using s2i (incubating)
 
 In this guide, we illustrate the steps needed to wrap your own R model in a docker image ready for deployment with Seldon Core using [source-to-image app s2i](https://github.com/openshift/source-to-image). If you prefer to use plain Docker, see the [Docker instructions](r_wrapping_docker.md).
 
@@ -30,7 +30,7 @@ We will go into detail for each of these steps:
 
 ### R Runtime Model file
 
-Your source code should contain an R file which defines an S3 class for your model. For example, looking at our skeleton R model file at `wrappers/s2i/R/test/model-template-app/MyModel.R`:
+Your source code should contain an R file which defines an S3 class for your model. For example, looking at our skeleton R model file at `incubating/wrappers/s2i/R/test/model-template-app/MyModel.R`:
 
 ```R
 library(methods)
@@ -91,12 +91,12 @@ s2i build <src-folder> seldonio/seldon-core-s2i-r:0.1 <my-image-name>
 An example invocation using the test template model inside seldon-core:
 
 ```bash
-s2i build https://github.com/seldonio/seldon-core.git --context-dir=wrappers/s2i/R/test/model-template-app seldonio/seldon-core-s2i-r:0.1 seldon-core-template-model
+s2i build https://github.com/seldonio/seldon-core.git --context-dir=incubating/wrappers/s2i/R/test/model-template-app seldonio/seldon-core-s2i-r:0.1 seldon-core-template-model
 ```
 
 The above s2i build invocation:
 
-- uses the GitHub repo: https://github.com/seldonio/seldon-core.git and the directory `wrappers/s2i/R/test/model-template-app` inside that repo.
+- uses the GitHub repo: https://github.com/seldonio/seldon-core.git and the directory `incubating/wrappers/s2i/R/test/model-template-app` inside that repo.
 - uses the builder image `seldonio/seldon-core-s2i-r`
 - creates a docker image `seldon-core-template-model`
 
@@ -105,7 +105,7 @@ For building from a local source folder, an example where we clone the seldon-co
 ```bash
 git clone https://github.com/seldonio/seldon-core.git
 cd seldon-core
-s2i build wrappers/s2i/R/test/model-template-app seldonio/seldon-core-s2i-r:0.1 seldon-core-template-model
+s2i build incubating/wrappers/s2i/R/test/model-template-app seldonio/seldon-core-s2i-r:0.1 seldon-core-template-model
 ```
 
 For more help see:
@@ -145,12 +145,12 @@ Can only by 0 at present. In future, will allow the state of the component to be
 
 #### MODEL
 
-- [A minimal skeleton for model source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/R/test/model-template-app)
+- [A minimal skeleton for model source code](https://github.com/seldonio/seldon-core/tree/incubating/wrappers/s2i/R/test/model-template-app)
 - [Example models](../examples/notebooks.html)
 
 #### ROUTER
-- [A minimal skeleton for router source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/R/test/router-template-app)
+- [A minimal skeleton for router source code](https://github.com/seldonio/seldon-core/tree/incubating/wrappers/s2i/R/test/router-template-app)
 
 #### TRANSFORMER
 
-- [A minimal skeleton for transformer source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/R/test/transformer-template-app)
+- [A minimal skeleton for transformer source code](https://github.com/seldonio/seldon-core/tree/incubating/wrappers/s2i/R/test/transformer-template-app)
