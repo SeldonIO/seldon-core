@@ -14,8 +14,7 @@ limitations under the License.
 package controllers
 
 import (
-
-	//	"encoding/json"
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -30,23 +29,32 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// TODO: change image to seldon
+// TODO: change image to seldon? is at least configurable by configmap now (with fixed version there)
 // TODO: check PVC
 const (
-	DefaultModelLocalMountPath       = "/mnt/models"
-	ModelInitializerContainerImage   = "gcr.io/kfserving/model-initializer"
-	ModelInitializerContainerVersion = "latest"
-	PvcURIPrefix                     = "pvc://"
-	PvcSourceMountName               = "kfserving-pvc-source"
-	PvcSourceMountPath               = "/mnt/pvc"
-	ModelInitializerVolumeSuffix     = "provision-location"
-	ModelInitializerContainerSuffix  = "model-initializer"
+	DefaultModelLocalMountPath         = "/mnt/models"
+	StorageInitializerConfigMapKeyName = "storageInitializer"
+	ModelInitializerContainerImage     = "gcr.io/kfserving/model-initializer"
+	ModelInitializerContainerVersion   = "latest"
+	PvcURIPrefix                       = "pvc://"
+	PvcSourceMountName                 = "kfserving-pvc-source"
+	PvcSourceMountPath                 = "/mnt/pvc"
+	ModelInitializerVolumeSuffix       = "provision-location"
+	ModelInitializerContainerSuffix    = "model-initializer"
 )
 
 var (
 	ControllerNamespace     = GetEnv("POD_NAMESPACE", "seldon-system")
 	ControllerConfigMapName = "seldon-config"
 )
+
+type StorageInitializerConfig struct {
+	Image         string `json:"image"`
+	CpuRequest    string `json:"cpuRequest"`
+	CpuLimit      string `json:"cpuLimit"`
+	MemoryRequest string `json:"memoryRequest"`
+	MemoryLimit   string `json:"memoryLimit"`
+}
 
 func credentialsBuilder(Client client.Client) (credentialsBuilder *credentials.CredentialBuilder, err error) {
 
@@ -59,6 +67,39 @@ func credentialsBuilder(Client client.Client) (credentialsBuilder *credentials.C
 
 	credentialBuilder := credentials.NewCredentialBulder(Client, configMap)
 	return credentialBuilder, nil
+}
+
+func getStorageInitializerConfigs(Client client.Client) (*StorageInitializerConfig, error) {
+	clientset := kubernetes.NewForConfigOrDie(ctrl.GetConfigOrDie())
+	configMap, err := clientset.CoreV1().ConfigMaps(ControllerNamespace).Get(ControllerConfigMapName, metav1.GetOptions{})
+	if err != nil {
+		//log.Error(err, "Failed to find config map", "name", ControllerConfigMapName)
+		return nil, err
+	}
+	return getStorageInitializerConfigsFromMap(configMap)
+}
+
+func getStorageInitializerConfigsFromMap(configMap *corev1.ConfigMap) (*StorageInitializerConfig, error) {
+	storageInitializerConfig := &StorageInitializerConfig{}
+	if initializerConfig, ok := configMap.Data[StorageInitializerConfigMapKeyName]; ok {
+		err := json.Unmarshal([]byte(initializerConfig), &storageInitializerConfig)
+		if err != nil {
+			panic(fmt.Errorf("Unable to unmarshall %v json string due to %v ", StorageInitializerConfigMapKeyName, err))
+		}
+	}
+	//Ensure that we set proper values for CPU/Memory Limit/Request
+	resourceDefaults := []string{storageInitializerConfig.MemoryRequest,
+		storageInitializerConfig.MemoryLimit,
+		storageInitializerConfig.CpuRequest,
+		storageInitializerConfig.CpuLimit}
+	for _, key := range resourceDefaults {
+		_, err := resource.ParseQuantity(key)
+		if err != nil {
+			return storageInitializerConfig, err
+		}
+	}
+
+	return storageInitializerConfig, nil
 }
 
 // InjectModelInitializer injects an init container to provision model data
@@ -150,10 +191,20 @@ func InjectModelInitializer(deployment *appsv1.Deployment, containerName string,
 	}
 	modelInitializerMounts = append(modelInitializerMounts, sharedVolumeWriteMount)
 
+	config, err := getStorageInitializerConfigs(Client)
+	if err != nil {
+		return nil, err
+	}
+
+	storageInitializerImage := ModelInitializerContainerImage + ":" + ModelInitializerContainerVersion
+	if config != nil && config.Image != "" {
+		storageInitializerImage = config.Image
+	}
+
 	// Add an init container to run provisioning logic to the PodSpec (with defaults to pass comparison later)
 	initContainer := &corev1.Container{
 		Name:            ModelInitializerContainerName,
-		Image:           ModelInitializerContainerImage + ":" + ModelInitializerContainerVersion,
+		Image:           storageInitializerImage,
 		ImagePullPolicy: corev1.PullIfNotPresent,
 		Args: []string{
 			srcURI,
@@ -163,8 +214,14 @@ func InjectModelInitializer(deployment *appsv1.Deployment, containerName string,
 		TerminationMessagePath:   "/dev/termination-log",
 		TerminationMessagePolicy: corev1.TerminationMessageReadFile,
 		Resources: corev1.ResourceRequirements{
-			Limits:   corev1.ResourceList{"cpu": resource.MustParse("1"), "memory": resource.MustParse("4Gi")},
-			Requests: corev1.ResourceList{"cpu": resource.MustParse("0.5"), "memory": resource.MustParse("1Gi")},
+			Limits: map[corev1.ResourceName]resource.Quantity{
+				corev1.ResourceCPU:    resource.MustParse(config.CpuLimit),
+				corev1.ResourceMemory: resource.MustParse(config.MemoryLimit),
+			},
+			Requests: map[corev1.ResourceName]resource.Quantity{
+				corev1.ResourceCPU:    resource.MustParse(config.CpuRequest),
+				corev1.ResourceMemory: resource.MustParse(config.MemoryRequest),
+			},
 		},
 	}
 
