@@ -13,27 +13,29 @@ if [[ "$1" == "-h" ]]; then
 fi
 
 if [[ -z "$MODEL_NAME" ]]; then
-
   echo "Failed to find required env var MODEL_NAME"
   exit 1
 fi
 
 if [[ -z "$API_TYPE" ]]; then
-
   echo "Failed to find required env var API_TYPE, should be either REST or GRPC."
   exit 1
 fi
 
 if [[ -z "$SERVICE_TYPE" ]]; then
-
   echo "Failed to find required env var SERVICE_TYPE, should be one of MODEL, ROUTER, TRANSFORMER, COMBINER."
   exit 1
 fi
 
 if [[ -z "$PERSISTENCE" ]]; then
-
   echo "Failed to find required env var PERSISTENCE, should be 0 or 1."
   exit 1
+fi
+
+if [[ -z "$CONDA_ENV_NAME" ]]; then
+  echo "----> Failed to find env var CONDA_ENV_NAME."
+  echo "      Falling back to default CONDA_ENV_NAME=microservice."
+  CONDA_ENV_NAME=microservice
 fi
 
 cd /microservice
@@ -56,9 +58,9 @@ elif [[ -f setup.py ]]; then
   pip install --find-links /whl -e .
 fi
 
-# TODO: Support other env names
+# TODO: Support other env names (e.g. environment.yaml)
 # Install conda environment if present
 if [[ -f conda.yaml ]]; then
   echo "---> Creating environment with Conda..."
-  conda env create -n microservice --file conda.yaml
+  conda env create -n $CONDA_ENV_NAME --file conda.yaml
 fi
