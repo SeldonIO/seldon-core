@@ -1,4 +1,2 @@
 mlflow==1.1.0
-scikit-learn==0.21.3
-pandas==0.25.0
 numpy==1.16.4
