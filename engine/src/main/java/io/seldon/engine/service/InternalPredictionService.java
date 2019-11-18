@@ -65,6 +65,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
@@ -495,27 +496,7 @@ public class InternalPredictionService {
           logger.debug(response);
           SeldonMessage.Builder builder = SeldonMessage.newBuilder();
           JsonFormat.parser().ignoringUnknownFields().merge(response, builder);
-          SeldonMessage seldonMessage = builder.build();
-          if (httpResponse.getStatusCode().is2xxSuccessful()) {
-            return seldonMessage;
-          } else {
-            logger.error(
-                "Couldn't retrieve prediction from external prediction server -- bad http return code: "
-                    + httpResponse.getStatusCode());
-            Status seldonMessageStatus = seldonMessage.getStatus();
-            if (seldonMessageStatus == null) {
-                throw new APIException(
-                        APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,
-                        String.format("Bad return code %d", httpResponse.getStatusCodeValue()));
-            }
-            else
-            {
-                throw new APIException(seldonMessageStatus.getCode(),
-                                       seldonMessageStatus.getReason(),
-                                       200,
-                                       seldonMessageStatus.getInfo());
-            }
-          }
+          return builder.build();
         } finally {
           if (logger.isDebugEnabled()) {
             logger.debug(
@@ -528,9 +509,12 @@ public class InternalPredictionService {
           logger.error("Invalid protocol buffer during Json Format merge - ", e);
           throw new APIException(
                   APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR, e.toString());
-      } catch (APIException e)
+      } catch (HttpStatusCodeException e)
       {
-          throw e;
+          logger.error(
+                  "Couldn't retrieve prediction from external prediction server -- bad http return code: "
+                          + e.getRawStatusCode());
+          handleHttpStatusCodeError(e);
       } catch (Exception e)
       {
           logger.error("Couldn't retrieve prediction from external prediction server - ", e);
@@ -542,5 +526,32 @@ public class InternalPredictionService {
     throw new APIException(
         APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,
         String.format("Failed to retrieve predictions after %d attempts", restRetries));
+  }
+
+  private void handleHttpStatusCodeError(HttpStatusCodeException exception) {
+      String response = exception.getResponseBodyAsString();
+      SeldonMessage.Builder builder = SeldonMessage.newBuilder();
+      try {
+          JsonFormat.parser().ignoringUnknownFields().merge(response, builder);
+          SeldonMessage seldonMessage = builder.build();
+          Status seldonMessageStatus = seldonMessage.getStatus();
+          if (seldonMessageStatus == null) {
+              throw new APIException(
+                      APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,
+                      String.format("Bad return code %d", e.getRawStatusCode()));
+          }
+          else
+          {
+              throw new APIException(seldonMessageStatus.getCode(),
+                      seldonMessageStatus.getReason(),
+                      200,
+                      seldonMessageStatus.getInfo());
+          }
+      } catch (InvalidProtocolBufferException ex)
+      {
+          logger.error("Invalid protocol buffer during Json Format merge - ", ex);
+          throw new APIException(
+                  APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR, ex.toString());
+      }
   }
 }
