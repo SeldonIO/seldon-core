@@ -2,8 +2,8 @@ channels:
   - defaults
 dependencies:
   - python=3.7.0
-  - pip
-  - pytorch
+  - pip<20.0.0
+  - pytorch<2.0.0
   - pip:
-      - seldon_core
+      - seldon_core<0.6.0
 name: pytorch-env
