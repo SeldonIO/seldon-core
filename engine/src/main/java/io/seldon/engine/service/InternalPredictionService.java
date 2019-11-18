@@ -538,7 +538,7 @@ public class InternalPredictionService {
           if (seldonMessageStatus == null) {
               throw new APIException(
                       APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,
-                      String.format("Bad return code %d", e.getRawStatusCode()));
+                      String.format("Bad return code %d", exception.getRawStatusCode()));
           }
           else
           {
