@@ -1,4 +1,4 @@
-mlflow==1.1.0
-numpy==1.16.4
+# We need these packages for before-run
 pyyaml<6.0.0
-requests<3.0.0
+seldon_core[gcs]<0.6.0
+
