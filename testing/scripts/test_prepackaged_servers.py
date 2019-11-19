@@ -1,5 +1,3 @@
-import subprocess
-import json
 from seldon_e2e_utils import (
     wait_for_rollout,
     initial_rest_request,
@@ -17,10 +15,9 @@ class TestPrepack(object):
     # Test prepackaged server for sklearn
     def test_sklearn(self):
         namespace = "test-sklearn"
+        spec = "../../servers/sklearnserver/samples/iris.yaml"
         retry_run(f"kubectl create namespace {namespace}")
-        retry_run(
-            f"kubectl apply -f ../../servers/sklearnserver/samples/iris.yaml -n {namespace}"
-        )
+        retry_run(f"kubectl apply -f {spec} -n {namespace}")
         wait_for_rollout("iris-default-4903e3c", namespace)
         wait_for_status("sklearn", namespace)
         time.sleep(1)
@@ -30,19 +27,15 @@ class TestPrepack(object):
         )
         assert r.status_code == 200
         logging.warning("Success for test_prepack_sklearn")
-        run(
-            f"kubectl delete -f ../../servers/sklearnserver/samples/iris.yaml -n {namespace}",
-            shell=True,
-        )
+        run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
         run(f"kubectl delete namespace {namespace}", shell=True)
 
     # Test prepackaged server for tfserving
     def test_tfserving(self):
         namespace = "test-tfserving"
+        spec = "../../servers/tfserving/samples/mnist_rest.yaml"
         retry_run(f"kubectl create namespace {namespace}")
-        retry_run(
-            f"kubectl apply -f ../../servers/tfserving/samples/mnist_rest.yaml -n {namespace}"
-        )
+        retry_run(f"kubectl apply -f {spec}  -n {namespace}")
         wait_for_rollout("mnist-default-725903e", namespace)
         wait_for_status("tfserving", namespace)
         time.sleep(1)
@@ -55,19 +48,15 @@ class TestPrepack(object):
         )
         assert r.status_code == 200
         logging.warning("Success for test_prepack_tfserving")
-        run(
-            f"kubectl delete -f ../../servers/tfserving/samples/mnist_rest.yaml -n {namespace}",
-            shell=True,
-        )
+        run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
         run(f"kubectl delete namespace {namespace}", shell=True)
 
     # Test prepackaged server for xgboost
     def test_xgboost(self):
         namespace = "test-xgboost"
+        spec = "../../servers/xgboostserver/samples/iris.yaml"
         retry_run(f"kubectl create namespace {namespace}")
-        retry_run(
-            f"kubectl apply -f ../../servers/xgboostserver/samples/iris.yaml -n {namespace}"
-        )
+        retry_run(f"kubectl apply -f {spec}  -n {namespace}")
         wait_for_rollout("iris-default-af1783b", namespace)
         wait_for_status("xgboost", namespace)
         time.sleep(1)
@@ -77,8 +66,26 @@ class TestPrepack(object):
         )
         assert r.status_code == 200
         logging.warning("Success for test_prepack_xgboost")
-        run(
-            f"kubectl delete -f ../../servers/xgboostserver/samples/iris.yaml -n {namespace}",
-            shell=True,
+        run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
+        run(f"kubectl delete namespace {namespace}", shell=True)
+
+    # Test prepackaged server for MLflow
+    def test_mlflow(self):
+        namespace = "test-mlflow"
+        spec = "../../servers/mlflowserver/samples/elasticnet_wine.yaml"
+        retry_run(f"kubectl create namespace {namespace}")
+        retry_run(f"kubectl apply -f {spec} -n {namespace}")
+        wait_for_rollout("wines-default-8c791aa", namespace)
+        wait_for_status("mlflow", namespace)
+        time.sleep(1)
+
+        r = initial_rest_request(
+            "mlflow",
+            namespace,
+            data=[[6.3, 0.3, 0.34, 1.6, 0.049, 14, 132, 0.994, 3.3, 0.49, 9.5]],
+            dtype="ndarray",
         )
+        assert r.status_code == 200
+
+        run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
         run(f"kubectl delete namespace {namespace}", shell=True)
