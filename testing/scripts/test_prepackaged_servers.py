@@ -84,6 +84,19 @@ class TestPrepack(object):
             namespace,
             data=[[6.3, 0.3, 0.34, 1.6, 0.049, 14, 132, 0.994, 3.3, 0.49, 9.5]],
             dtype="ndarray",
+            names=[
+                "fixed acidity",
+                "volatile acidity",
+                "citric acid",
+                "residual sugar",
+                "chlorides",
+                "free sulfur dioxide",
+                "total sulfur dioxide",
+                "density",
+                "pH",
+                "sulphates",
+                "alcohol",
+            ],
         )
         assert r.status_code == 200
 

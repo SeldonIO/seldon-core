@@ -90,6 +90,7 @@ def rest_request(
     rows=1,
     data=None,
     dtype="tensor",
+    names=["a", "b"],
 ):
     try:
         r = rest_request_ambassador(
@@ -100,6 +101,7 @@ def rest_request(
             rows=rows,
             data=data,
             dtype=dtype,
+            names=names,
         )
         if not r.status_code == 200:
             logging.warning("Bad status:", r.status_code)
@@ -119,6 +121,7 @@ def initial_rest_request(
     rows=1,
     data=None,
     dtype="tensor",
+    names=["a", "b"],
 ):
     r = rest_request(
         model,
@@ -128,6 +131,7 @@ def initial_rest_request(
         rows=rows,
         data=data,
         dtype=dtype,
+        names=names,
     )
     if r is None or r.status_code != 200:
         logging.warning("Sleeping 1 sec and trying again")
@@ -140,6 +144,7 @@ def initial_rest_request(
             rows=rows,
             data=data,
             dtype=dtype,
+            names=names,
         )
         if r is None or r.status_code != 200:
             logging.warning("Sleeping 5 sec and trying again")
@@ -152,6 +157,7 @@ def initial_rest_request(
                 rows=rows,
                 data=data,
                 dtype=dtype,
+                names=names,
             )
             if r is None or r.status_code != 200:
                 logging.warning("Sleeping 10 sec and trying again")
@@ -164,6 +170,7 @@ def initial_rest_request(
                     rows=rows,
                     data=data,
                     dtype=dtype,
+                    names=names,
                 )
     return r
 
@@ -187,6 +194,7 @@ def rest_request_ambassador(
     rows=1,
     data=None,
     dtype="tensor",
+    names=["a", "b"],
 ):
     if data is None:
         shape, arr = create_random_data(data_size, rows)
@@ -198,13 +206,10 @@ def rest_request_ambassador(
 
     if dtype == "tensor":
         payload = {
-            "data": {
-                "names": ["a", "b"],
-                "tensor": {"shape": shape, "values": arr.tolist()},
-            }
+            "data": {"names": names, "tensor": {"shape": shape, "values": arr.tolist()}}
         }
     else:
-        payload = {"data": {"names": ["a", "b"], "ndarray": arr}}
+        payload = {"data": {"names": names, "ndarray": arr}}
 
     if namespace is None:
         response = requests.post(
