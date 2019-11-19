@@ -38,7 +38,7 @@ setup(
         "jaeger-client >= 4.1.0, < 4.2.0",
         "grpcio-opentracing >= 1.1.4, < 1.2.0",
         "pyaml<20.0.0",
-        "gunicorn >= 19.9.0, < 19.10.0",
+        "gunicorn >= 19.9.0, < 20.1.0",
         "minio >= 4.0.9, < 6.0.0",
         "azure-storage-blob >= 2.0.1, < 3.0.0",
         "setuptools >= 41.0.0",
