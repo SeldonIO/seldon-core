@@ -27,6 +27,40 @@ import (
 	"strings"
 )
 
+const PredictorServerConfigMapKeyName = "predictor_servers"
+
+type PredictorImageConfig struct {
+	ContainerImage string `json:"image"`
+	DefaultImageVersion    string   `json:"defaultImageVersion"`
+}
+
+type PredictorServerConfig stuct {
+    RestConfig PredictorImageConfig `json:"rest,omitempty"`
+    GrpcConfig PredictorImageConfig `json:"grpc,omitempty"`
+}
+
+func getPredictorServerConfigs(Client client.Client) (*PredictorServerConfig, error) {
+	clientset := kubernetes.NewForConfigOrDie(ctrl.GetConfigOrDie())
+	configMap, err := clientset.CoreV1().ConfigMaps(ControllerNamespace).Get(ControllerConfigMapName, metav1.GetOptions{})
+	if err != nil {
+		//log.Error(err, "Failed to find config map", "name", ControllerConfigMapName)
+		return nil, err
+	}
+	return getPredictorServerConfigsFromMap(configMap)
+}
+
+func getPredictorServerConfigsFromMap(configMap *corev1.ConfigMap) (*PredictorServerConfig, error) {
+	predictorServerConfig := &PredictorServerConfig{}
+	if predictorConfig, ok := configMap.Data[PredictorServerConfigMapKeyName]; ok {
+		err := json.Unmarshal([]byte(predictorConfig), &predictorServerConfig)
+		if err != nil {
+			panic(fmt.Errorf("Unable to unmarshall %v json string due to %v ", PredictorServerConfigMapKeyName, err))
+		}
+	}
+
+	return predictorServerConfig, nil
+}
+
 func addTFServerContainer(r *SeldonDeploymentReconciler, pu *machinelearningv1alpha2.PredictiveUnit, p *machinelearningv1alpha2.PredictorSpec, deploy *appsv1.Deployment) error {
 
 	if *pu.Implementation == machinelearningv1alpha2.TENSORFLOW_SERVER {
