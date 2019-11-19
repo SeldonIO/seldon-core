@@ -29,8 +29,8 @@ Notebooks
    Kubeflow Seldon E2E Pipeline <kubeflow_seldon_e2e_pipeline>
    Max gRPC Message Size <max_grpc_msg_size>
    Model with Custom Metrics <tmpl_model_with_metrics>
-   MLFlow <mlflow>
-   MLFlow Pre-packaged MOdel Server A/B Test <mlflow_server_ab_test_ambassador>
+   MLflow <mlflow>
+   MLflow Pre-packaged MOdel Server A/B Test <mlflow_server_ab_test_ambassador>
    NodeJS MNIST <nodejs_mnist>
    NodeJS Tensorflow <nodejs_tensorflow>
    NVIDIA TensorRT MNIST <nvidia_mnist>
