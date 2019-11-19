@@ -44,8 +44,7 @@ def wait_for_shutdown(deploymentName, namespace):
 def wait_for_rollout(deploymentName, namespace, attempts=20, sleep=5):
     for attempts in range(attempts):
         ret = run(
-            f"kubectl rollout status -n {namespace} deploy/" + deploymentName,
-            shell=True,
+            f"kubectl rollout status -n {namespace} deploy/{deploymentName}", shell=True
         )
         if ret.returncode == 0:
             logging.warning(f"Successfully waited for deployment {deploymentName}")
