@@ -135,7 +135,7 @@ func InjectModelInitializer(deployment *appsv1.Deployment, containerName string,
 	for _, container := range podSpec.InitContainers {
 		if strings.Compare(container.Name, ModelInitializerContainerName) == 0 {
 			// make sure we have the mount on the main container
-			addVolumeMountToContainer(userContainer, ModelInitializerVolumeName)
+			addVolumeMountToContainer(userContainer, ModelInitializerVolumeName, DefaultModelLocalMountPath)
 			return deployment, nil
 		}
 	}
@@ -169,6 +169,9 @@ func InjectModelInitializer(deployment *appsv1.Deployment, containerName string,
 			ReadOnly:  true,
 		}
 		modelInitializerMounts = append(modelInitializerMounts, pvcSourceVolumeMount)
+
+		// Since the model path is linked from source pvc, userContainer also need to mount the pvc.
+		addVolumeMountToContainer(userContainer, PvcSourceMountName, PvcSourceMountPath)
 
 		// modify the sourceURI to point to the PVC path
 		srcURI = PvcSourceMountPath + "/" + pvcPath
@@ -225,7 +228,7 @@ func InjectModelInitializer(deployment *appsv1.Deployment, containerName string,
 		},
 	}
 
-	addVolumeMountToContainer(userContainer, ModelInitializerVolumeName)
+	addVolumeMountToContainer(userContainer, ModelInitializerVolumeName, DefaultModelLocalMountPath)
 	// Add volumes to the PodSpec
 	podSpec.Volumes = append(podSpec.Volumes, podVolumes...)
 
@@ -265,7 +268,7 @@ func InjectModelInitializer(deployment *appsv1.Deployment, containerName string,
 	return deployment, nil
 }
 
-func addVolumeMountToContainer(userContainer *corev1.Container, ModelInitializerVolumeName string) {
+func addVolumeMountToContainer(userContainer *corev1.Container, ModelInitializerVolumeName string, MountPath string) {
 	mountFound := false
 	for _, v := range userContainer.VolumeMounts {
 		if v.Name == ModelInitializerVolumeName {
@@ -276,7 +279,7 @@ func addVolumeMountToContainer(userContainer *corev1.Container, ModelInitializer
 		// Add a mount the shared volume on the user-container, update the PodSpec
 		sharedVolumeReadMount := &corev1.VolumeMount{
 			Name:      ModelInitializerVolumeName,
-			MountPath: DefaultModelLocalMountPath,
+			MountPath: MountPath,
 			ReadOnly:  true,
 		}
 		userContainer.VolumeMounts = append(userContainer.VolumeMounts, *sharedVolumeReadMount)
