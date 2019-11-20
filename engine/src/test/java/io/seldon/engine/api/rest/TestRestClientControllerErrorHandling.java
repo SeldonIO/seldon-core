@@ -61,7 +61,7 @@ public class TestRestClientControllerErrorHandling
     @LocalServerPort
     private int port;
 
-    @Autowired private TestRestTemplate testRestTemplate;
+    @Autowired private TestRestTemplate testRestErrorTemplate;
 
     @Autowired private InternalPredictionService internalPredictionService;
 
@@ -80,7 +80,7 @@ public class TestRestClientControllerErrorHandling
                 .create(HttpStatus.BAD_REQUEST, "status text", HttpHeaders.EMPTY, responseStr.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
 
         Mockito.when(
-                testRestTemplate
+                testRestErrorTemplate
                         .getRestTemplate()
                         .postForEntity(
                                 Matchers.<URI>any(),
