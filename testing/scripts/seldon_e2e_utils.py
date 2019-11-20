@@ -90,7 +90,7 @@ def rest_request(
     rows=1,
     data=None,
     dtype="tensor",
-    names=["a", "b"],
+    names=None,
 ):
     try:
         r = rest_request_ambassador(
@@ -121,7 +121,7 @@ def initial_rest_request(
     rows=1,
     data=None,
     dtype="tensor",
-    names=["a", "b"],
+    names=None,
 ):
     r = rest_request(
         model,
@@ -194,7 +194,7 @@ def rest_request_ambassador(
     rows=1,
     data=None,
     dtype="tensor",
-    names=["a", "b"],
+    names=None,
 ):
     if data is None:
         shape, arr = create_random_data(data_size, rows)
@@ -205,11 +205,12 @@ def rest_request_ambassador(
         arr = data
 
     if dtype == "tensor":
-        payload = {
-            "data": {"names": names, "tensor": {"shape": shape, "values": arr.tolist()}}
-        }
+        payload = {"data": {"tensor": {"shape": shape, "values": arr.tolist()}}}
     else:
-        payload = {"data": {"names": names, "ndarray": arr}}
+        payload = {"data": {"ndarray": arr}}
+
+    if names is not None:
+        payload["data"]["names"] = names
 
     if namespace is None:
         response = requests.post(
