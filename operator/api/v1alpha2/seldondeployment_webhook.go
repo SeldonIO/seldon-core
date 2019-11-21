@@ -319,6 +319,9 @@ func (r *SeldonDeployment) DefaultSeldonDeployment() {
 					portType = "http"
 				}
 
+                // TODO: do we really want to use a client here?
+                // could do rest.InClusterConfig() and then NewForConfig
+                // but do we want that or need to set this here? why not in the controller?
 				SetImageNameForPrepackContainer(pu, con)
 
 				// if new Add container to componentSpecs
