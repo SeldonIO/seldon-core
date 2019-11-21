@@ -19,7 +19,7 @@ package v1alpha2
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/seldonio/seldon-core/operator/constants"
+
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -31,10 +31,58 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"strconv"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"k8s.io/client-go/kubernetes"
 )
 
-// log is for logging in this package.
-var seldondeploymentlog = logf.Log.WithName("seldondeployment")
+var (
+    // log is for logging in this package.
+    seldondeploymentlog = logf.Log.WithName("seldondeployment")
+	ControllerNamespace     = GetEnv("POD_NAMESPACE", "seldon-system")
+	ControllerConfigMapName = "seldon-config"
+)
+
+const PredictorServerConfigMapKeyName = "predictor_servers"
+
+type PredictorImageConfig struct {
+	ContainerImage         string `json:"image"`
+	DefaultImageVersion    string   `json:"defaultImageVersion"`
+}
+
+type PredictorServerConfig struct {
+    RestConfig PredictorImageConfig `json:"rest,omitempty"`
+    GrpcConfig PredictorImageConfig `json:"grpc,omitempty"`
+}
+
+// Get an environment variable given by key or return the fallback.
+func GetEnv(key, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return fallback
+}
+
+func getPredictorServerConfigs(Client client.Client) (map[string]PredictorServerConfig, error) {
+	clientset := kubernetes.NewForConfigOrDie(ctrl.GetConfigOrDie())
+	configMap, err := clientset.CoreV1().ConfigMaps(ControllerNamespace).Get(ControllerConfigMapName, metav1.GetOptions{})
+	if err != nil {
+		//log.Error(err, "Failed to find config map", "name", ControllerConfigMapName)
+		return nil, err
+	}
+	return getPredictorServerConfigsFromMap(configMap)
+}
+
+func getPredictorServerConfigsFromMap(configMap *corev1.ConfigMap) (map[string]PredictorServerConfig, error) {
+	predictorServerConfig := make(map[string]PredictorServerConfig)
+	if predictorConfig, ok := configMap.Data[PredictorServerConfigMapKeyName]; ok {
+		err := json.Unmarshal([]byte(predictorConfig), &predictorServerConfig)
+		if err != nil {
+			panic(fmt.Errorf("Unable to unmarshall %v json string due to %v ", PredictorServerConfigMapKeyName, err))
+		}
+	}
+
+	return predictorServerConfig, nil
+}
 
 func (r *SeldonDeployment) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
@@ -67,46 +115,31 @@ func GetPort(name string, ports []corev1.ContainerPort) *corev1.ContainerPort {
 }
 
 func IsPrepack(pu *PredictiveUnit) bool {
-	return *pu.Implementation == SKLEARN_SERVER || *pu.Implementation == XGBOOST_SERVER || *pu.Implementation == TENSORFLOW_SERVER || *pu.Implementation == MLFLOW_SERVER
+	return len(*pu.Implementation) > 0
 }
 
-func SetImageNameForPrepackContainer(pu *PredictiveUnit, c *corev1.Container) {
+func SetImageNameForPrepackContainer(pu *PredictiveUnit, c *corev1.Container, Client client.Client) {
 	//Add missing fields
 	// Add image
 	if c.Image == "" {
-		if *pu.Implementation == SKLEARN_SERVER {
 
-			if pu.Endpoint.Type == REST {
-				c.Image = constants.DefaultSKLearnServerImageNameRest
-			} else {
-				c.Image = constants.DefaultSKLearnServerImageNameGrpc
-			}
+	    ServersConfigs, err := getPredictorServerConfigs(Client)
 
-		} else if *pu.Implementation == XGBOOST_SERVER {
+	    if err != nil {
+	        seldondeploymentlog.Error(err, "Failed to read prepacked model servers from configmap")
+	    }
 
-			if pu.Endpoint.Type == REST {
-				c.Image = constants.DefaultXGBoostServerImageNameRest
-			} else {
-				c.Image = constants.DefaultXGBoostServerImageNameGrpc
-			}
+	    ServerConfig, ok := ServersConfigs[string(*pu.Implementation)]
+	    if !ok {
+	        seldondeploymentlog.Error(nil, "No entry in predictors map for "+string(*pu.Implementation))
+	    }
 
-		} else if *pu.Implementation == TENSORFLOW_SERVER {
-
-			if pu.Endpoint.Type == REST {
-				c.Image = constants.DefaultTFServerImageNameRest
-			} else {
-				c.Image = constants.DefaultTFServerImageNameGrpc
-			}
-
-		} else if *pu.Implementation == MLFLOW_SERVER {
-
-			if pu.Endpoint.Type == REST {
-				c.Image = constants.DefaultMLFlowServerImageNameRest
-			} else {
-				c.Image = constants.DefaultMLFlowServerImageNameGrpc
-			}
-
+		if pu.Endpoint.Type == REST {
+			c.Image = ServerConfig.RestConfig.ContainerImage+":"+ServerConfig.RestConfig.DefaultImageVersion
+		} else {
+			c.Image = ServerConfig.GrpcConfig.ContainerImage+":"+ServerConfig.GrpcConfig.DefaultImageVersion
 		}
+
 	}
 }
 
