@@ -26,18 +26,17 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/validation/field"
+	"k8s.io/client-go/kubernetes"
 	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"strconv"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"k8s.io/client-go/kubernetes"
 )
 
 var (
-    // log is for logging in this package.
-    seldondeploymentlog = logf.Log.WithName("seldondeployment")
+	// log is for logging in this package.
+	seldondeploymentlog     = logf.Log.WithName("seldondeployment")
 	ControllerNamespace     = GetEnv("POD_NAMESPACE", "seldon-system")
 	ControllerConfigMapName = "seldon-config"
 )
@@ -45,13 +44,13 @@ var (
 const PredictorServerConfigMapKeyName = "predictor_servers"
 
 type PredictorImageConfig struct {
-	ContainerImage         string `json:"image"`
-	DefaultImageVersion    string   `json:"defaultImageVersion"`
+	ContainerImage      string `json:"image"`
+	DefaultImageVersion string `json:"defaultImageVersion"`
 }
 
 type PredictorServerConfig struct {
-    RestConfig PredictorImageConfig `json:"rest,omitempty"`
-    GrpcConfig PredictorImageConfig `json:"grpc,omitempty"`
+	RestConfig PredictorImageConfig `json:"rest,omitempty"`
+	GrpcConfig PredictorImageConfig `json:"grpc,omitempty"`
 }
 
 // Get an environment variable given by key or return the fallback.
@@ -62,11 +61,11 @@ func GetEnv(key, fallback string) string {
 	return fallback
 }
 
-func getPredictorServerConfigs(Client client.Client) (map[string]PredictorServerConfig, error) {
+func getPredictorServerConfigs() (map[string]PredictorServerConfig, error) {
 	clientset := kubernetes.NewForConfigOrDie(ctrl.GetConfigOrDie())
 	configMap, err := clientset.CoreV1().ConfigMaps(ControllerNamespace).Get(ControllerConfigMapName, metav1.GetOptions{})
 	if err != nil {
-		//log.Error(err, "Failed to find config map", "name", ControllerConfigMapName)
+		fmt.Println("Failed to find config map " + ControllerConfigMapName)
 		return nil, err
 	}
 	return getPredictorServerConfigsFromMap(configMap)
@@ -118,26 +117,28 @@ func IsPrepack(pu *PredictiveUnit) bool {
 	return len(*pu.Implementation) > 0
 }
 
-func SetImageNameForPrepackContainer(pu *PredictiveUnit, c *corev1.Container, Client client.Client) {
+func SetImageNameForPrepackContainer(pu *PredictiveUnit, c *corev1.Container) {
 	//Add missing fields
 	// Add image
 	if c.Image == "" {
 
-	    ServersConfigs, err := getPredictorServerConfigs(Client)
+		ServersConfigs, err := getPredictorServerConfigs()
 
-	    if err != nil {
-	        seldondeploymentlog.Error(err, "Failed to read prepacked model servers from configmap")
-	    }
+		fmt.Printf("%+v\n", ServersConfigs)
 
-	    ServerConfig, ok := ServersConfigs[string(*pu.Implementation)]
-	    if !ok {
-	        seldondeploymentlog.Error(nil, "No entry in predictors map for "+string(*pu.Implementation))
-	    }
+		if err != nil {
+			seldondeploymentlog.Error(err, "Failed to read prepacked model servers from configmap")
+		}
+
+		ServerConfig, ok := ServersConfigs[string(*pu.Implementation)]
+		if !ok {
+			seldondeploymentlog.Error(nil, "No entry in predictors map for "+string(*pu.Implementation))
+		}
 
 		if pu.Endpoint.Type == REST {
-			c.Image = ServerConfig.RestConfig.ContainerImage+":"+ServerConfig.RestConfig.DefaultImageVersion
+			c.Image = ServerConfig.RestConfig.ContainerImage + ":" + ServerConfig.RestConfig.DefaultImageVersion
 		} else {
-			c.Image = ServerConfig.GrpcConfig.ContainerImage+":"+ServerConfig.GrpcConfig.DefaultImageVersion
+			c.Image = ServerConfig.GrpcConfig.ContainerImage + ":" + ServerConfig.GrpcConfig.DefaultImageVersion
 		}
 
 	}
@@ -319,9 +320,9 @@ func (r *SeldonDeployment) DefaultSeldonDeployment() {
 					portType = "http"
 				}
 
-                // TODO: do we really want to use a client here?
-                // could do rest.InClusterConfig() and then NewForConfig
-                // but do we want that or need to set this here? why not in the controller?
+				// TODO: do we really want to use a client here?
+				// could do rest.InClusterConfig() and then NewForConfig
+				// but do we want that or need to set this here? why not in the controller?
 				SetImageNameForPrepackContainer(pu, con)
 
 				// if new Add container to componentSpecs
