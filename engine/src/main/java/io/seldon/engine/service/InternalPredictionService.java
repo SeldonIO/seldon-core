@@ -522,7 +522,7 @@ public class InternalPredictionService {
                   APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR, e.toString());
       }
     }
-    logger.error("Failed to retrueve predictions after {} attempts", restRetries);
+    logger.error("Failed to retrieve predictions after {} attempts", restRetries);
     throw new APIException(
         APIException.ApiExceptionType.ENGINE_MICROSERVICE_ERROR,
         String.format("Failed to retrieve predictions after %d attempts", restRetries));
