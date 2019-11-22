@@ -32,6 +32,14 @@ seldon\_core.flask\_utils module
     :undoc-members:
     :show-inheritance:
 
+seldon\_core.imports\_helper module
+-----------------------------------
+
+.. automodule:: seldon_core.imports_helper
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 seldon\_core.metrics module
 ---------------------------
 

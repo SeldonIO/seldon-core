@@ -28,7 +28,7 @@ Notes
 
 ## Install with cert-manager
 
-You can follow [the cert manager docmentation to install it](https://docs.cert-manager.io/en/latest/getting-started/install/kubernetes.html)
+You can follow [the cert manager documentation to install it](https://docs.cert-manager.io/en/latest/getting-started/install/kubernetes.html)
 
 You can then install seldon-core with:
 
@@ -38,7 +38,7 @@ helm install seldon-core-operator --name seldon-core --repo https://storage.goog
 
 ## Ingress Support
 
-For particular ingresses we support you can inform the controller it should activate processing for them.
+For particular ingresses that we support, you can inform the controller it should activate processing for them.
 
  * Ambassador
    * add `--set ambassador.enabled=true` : The controller will add annotations to services it creates so Ambassador can pick them up and wire an endpoint for your deployments.
@@ -104,4 +104,3 @@ If you have a Google Cloud Platform account you can install via the [GCP Marketp
 ## Upgrading from Previous Versions
 
 See our [upgrading notes](../reference/upgrading.md)
-

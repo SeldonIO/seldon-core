@@ -384,11 +384,18 @@ func checkPredictiveUnits(pu *PredictiveUnit, p *PredictorSpec, fldPath *field.P
 
 func checkTraffic(mlDep *SeldonDeployment, fldPath *field.Path, allErrs field.ErrorList) field.ErrorList {
 	var trafficSum int32 = 0
+	var shadows int = 0
 	for i := 0; i < len(mlDep.Spec.Predictors); i++ {
 		p := mlDep.Spec.Predictors[i]
 		trafficSum = trafficSum + p.Traffic
+
+		fmt.Printf("%+v\n", p)
+
+		if p.Shadow == true {
+			shadows += 1
+		}
 	}
-	if trafficSum != 100 && len(mlDep.Spec.Predictors) > 1 {
+	if trafficSum != 100 && (len(mlDep.Spec.Predictors)-shadows) > 1 {
 		allErrs = append(allErrs, field.Invalid(fldPath, mlDep.Name, "Traffic must sum to 100 for multiple predictors"))
 	}
 	if trafficSum > 0 && trafficSum < 100 && len(mlDep.Spec.Predictors) == 1 {

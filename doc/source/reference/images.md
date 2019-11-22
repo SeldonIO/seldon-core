@@ -3,11 +3,11 @@
 
 | Description | Image URL | Stable Version | Development |
 |-------------|-----------|----------------|-------------|
-| Seldon Operator | [seldonio/seldon-core-operator](https://hub.docker.com/r/seldonio/seldon-core-operator/tags/) | 0.4.1 | 0.4.2-SNAPSHOT |
-| Seldon Service Orchestrator | [seldonio/engine](https://hub.docker.com/r/seldonio/engine/tags/) | 0.4.1 | 0.4.2-SNAPSHOT |
-| [Seldon Python 3 (3.6) Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python3](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3/tags/) | 0.12 | 0.13-SNAPSHOT |
-| [Seldon Python 3.6 Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python36](https://hub.docker.com/r/seldonio/seldon-core-s2i-python36/tags/) | 0.12 | 0.13-SNAPSHOT |
-| [Seldon Python 3.7 Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python37](https://hub.docker.com/r/seldonio/seldon-core-s2i-python37/tags/) | 0.12 | 0.13-SNAPSHOT |
+| Seldon Operator | [seldonio/seldon-core-operator](https://hub.docker.com/r/seldonio/seldon-core-operator/tags/) | 0.5.1 | 0.5.2-SNAPSHOT |
+| Seldon Service Orchestrator | [seldonio/engine](https://hub.docker.com/r/seldonio/engine/tags/) | 0.5.1 | 0.5.2-SNAPSHOT |
+| [Seldon Python 3 (3.6) Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python3](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3/tags/) | 0.14 | 0.15-SNAPSHOT |
+| [Seldon Python 3.6 Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python36](https://hub.docker.com/r/seldonio/seldon-core-s2i-python36/tags/) | 0.14 | 0.15-SNAPSHOT |
+| [Seldon Python 3.7 Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python37](https://hub.docker.com/r/seldonio/seldon-core-s2i-python37/tags/) | 0.14 | 0.15-SNAPSHOT |
 | [Seldon Python 2 Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python2](https://hub.docker.com/r/seldonio/seldon-core-s2i-python2/tags/) | 0.5.1 | deprecated |
 | [Seldon Python ONNX Wrapper for S2I](docs/wrappers/python.md) | [seldonio/seldon-core-s2i-python3-ngraph-onnx](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3-ngraph-onnx/tags/) | 0.3  |   |
 | [Seldon Java Build Wrapper for S2I](docs/wrappers/java.md) | [seldonio/seldon-core-s2i-java-build](https://hub.docker.com/r/seldonio/seldon-core-s2i-java-build/tags/) | 0.1 | |
@@ -29,6 +29,6 @@
 
 | Description | Python Version | Version |
 |-------------|----------------|---------|
-| [seldon-core](https://pypi.org/project/seldon-core/) | >3.4,<3.7 | 0.4.1 |
+| [seldon-core](https://pypi.org/project/seldon-core/) | >3.4,<3.7 | 0.5.1 |
 | [seldon-core](https://pypi.org/project/seldon-core/) | 2,>=3,<3.7 | 0.2.6 (deprecated) | 
 

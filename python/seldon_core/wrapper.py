@@ -3,12 +3,7 @@ from concurrent import futures
 from flask import jsonify, Flask, send_from_directory, request
 from flask_cors import CORS
 import logging
-from seldon_core.utils import (
-    json_to_seldon_message,
-    seldon_message_to_json,
-    json_to_feedback,
-    json_to_seldon_messages,
-)
+from seldon_core.utils import seldon_message_to_json, json_to_feedback
 from seldon_core.flask_utils import get_request
 import seldon_core.seldon_methods
 from seldon_core.flask_utils import (
@@ -26,6 +21,8 @@ PRED_UNIT_ID = os.environ.get("PREDICTIVE_UNIT_ID", "0")
 def get_rest_microservice(user_model):
     app = Flask(__name__, static_url_path="")
     CORS(app)
+
+    _set_flask_app_configs(app)
 
     if hasattr(user_model, "model_error_handler"):
         logger.info("Registering the custom error handler...")
@@ -49,8 +46,8 @@ def get_rest_microservice(user_model):
         logger.debug("REST Request: %s", request)
         response = seldon_core.seldon_methods.predict(user_model, requestJson)
         json_response = jsonify(response)
-        if 'status' in response and 'code' in response['status']:
-            json_response.status_code = response['status']['code']
+        if "status" in response and "code" in response["status"]:
+            json_response.status_code = response["status"]["code"]
 
         logger.debug("REST Response: %s", response)
         return json_response
@@ -100,7 +97,39 @@ def get_rest_microservice(user_model):
         logger.debug("REST Response: %s", response)
         return jsonify(response)
 
+    @app.route("/health/ping", methods=["GET"])
+    def HealthPing():
+        """
+        Lightweight endpoint to check the liveness of the REST endpoint
+        """
+        return "pong"
+
+    @app.route("/health/status", methods=["GET"])
+    def HealthStatus():
+        logger.debug("REST Health Status Request")
+        response = seldon_core.seldon_methods.health_status(user_model)
+        logger.debug("REST Health Status Response: %s", response)
+        return jsonify(response)
+
     return app
+
+
+def _set_flask_app_configs(app):
+    """
+    Set the configs for the flask app based on environment variables
+    :param app:
+    :return:
+    """
+    env_to_config_map = {
+        "FLASK_JSONIFY_PRETTYPRINT_REGULAR": "JSONIFY_PRETTYPRINT_REGULAR",
+        "FLASK_JSON_SORT_KEYS": "JSON_SORT_KEYS",
+    }
+
+    for env_var, config_name in env_to_config_map.items():
+        if os.environ.get(env_var):
+            # Environment variables come as strings, convert them to boolean
+            bool_env_value = os.environ.get(env_var).lower() == "true"
+            app.config[config_name] = bool_env_value
 
 
 # ----------------------------
@@ -155,6 +184,9 @@ def get_grpc_server(user_model, annotations={}, trace_interceptor=None):
     prediction_pb2_grpc.add_GenericServicer_to_server(seldon_model, server)
     prediction_pb2_grpc.add_ModelServicer_to_server(seldon_model, server)
     prediction_pb2_grpc.add_TransformerServicer_to_server(seldon_model, server)
+    prediction_pb2_grpc.add_OutputTransformerServicer_to_server(seldon_model, server)
+    prediction_pb2_grpc.add_CombinerServicer_to_server(seldon_model, server)
+    prediction_pb2_grpc.add_RouterServicer_to_server(seldon_model, server)
     prediction_pb2_grpc.add_SeldonServicer_to_server(seldon_model, server)
 
     return server

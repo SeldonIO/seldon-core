@@ -1,7 +1,13 @@
 VERSION := $(shell cat ../../version.txt)
 
+# This can be "Auto" or a Number
+PYTEST_WORKERS ?= "4"
+
 kind_create_cluster:
 	kind create cluster --config kind_config.yaml
+
+kind_delete_cluster:
+	kind delete cluster
 
 kind_build_engine:
 	cd ../../engine/ && make build_image
@@ -33,7 +39,7 @@ create_namespaces:
 	kubectl create namespace test1 || echo "Namespace test1 already exists"
 	kubectl config set-context $$(kubectl config current-context) --namespace=seldon
 
-kind_setup: kind_build_images install_helm install_ambassador install_seldon create_namespaces
+kind_setup: install_helm install_ambassador install_seldon create_namespaces
 
 port-forward-ambassador:
 	kubectl port-forward $$(kubectl get pods -n seldon -l app.kubernetes.io/name=ambassador -o jsonpath='{.items[0].metadata.name}') -n seldon 8003:8080
@@ -48,6 +54,7 @@ build_protos:
 	cp -vr ../../proto/tensorflow/tensorflow .
 	python -m grpc.tools.protoc -I. --python_out=. --grpc_python_out=. ./proto/prediction.proto
 	cd ../../notebooks && make build_protos
+	cd ../../proto/k8s && make create_protos
 
 #requires mvn, helm, ks, python, s2i and an accessible k8s cluster (if minikube increase mem and cpu)
 #tests will create namespaces, deploy seldon core and create examples
@@ -57,7 +64,21 @@ install:
 
 .PHONY: test
 test: build_protos install
-	pytest -s -W ignore > run.log 2>&1
+	pip install pytest-xdist
+	# Run the core tests in parallel
+	pytest \
+		--verbose \
+		-s \
+		-W ignore \
+		--ignore test_s2i_python.py \
+		-n $(PYTEST_WORKERS)  2>&1
+	# Then run the s2i tests in sequence (as they currently fail in parallel
+	pytest \
+		--verbose \
+		-s \
+		-W ignore \
+		-n 0 \
+		test_s2i_python.py 2>&1
 
 .PHONY: clean
 clean:

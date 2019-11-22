@@ -10,5 +10,5 @@ source ${STARTUP_DIR}/../settings.sh
 
 KUBECTL="kubectl --context=${KUBE_CONTEXT}"
 
-${KUBECTL} port-forward $(${KUBECTL} get pods -n default -l app.kubernetes.io/name=ambassador -o jsonpath='{.items[0].metadata.name}') -n default 8080:8080
+${KUBECTL} port-forward $(${KUBECTL} get pods -n default -l app.kubernetes.io/name=ambassador -o jsonpath='{.items[0].metadata.name}') -n default 8003:8080
 

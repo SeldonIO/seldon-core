@@ -36,7 +36,7 @@ class SeldonChannelCredentials(object):
     Channel credentials
     Presently just denotes an SSL connection.
     For GRPC in order to be properly implemented, you need to provide *either*
-        the root_certificate_files, *or* all the file paths. 
+        the root_certificate_files, *or* all the file paths.
     The verify attribute currently is used to avoid SSL verification in REST
         however for GRPC it is recommended that you provide a path at least
         for the root_certificates_file otherwise it may not work as expected.
@@ -58,7 +58,7 @@ class SeldonChannelCredentials(object):
 class SeldonCallCredentials(object):
     """
     Credentials for each call, currently implements the ability to provide
-        an OAuth token which is currently made available through REST via 
+        an OAuth token which is currently made available through REST via
         the X-Auth-Token header, and via GRPC via the metadata call creds.
     """
 
@@ -280,6 +280,7 @@ class SeldonClient(object):
         data: np.ndarray = None,
         bin_data: Union[bytes, bytearray] = None,
         str_data: str = None,
+        json_data: Union[str, List, Dict] = None,
         names: Iterable[str] = None,
         gateway_prefix: str = None,
         headers: Dict = None,
@@ -321,6 +322,8 @@ class SeldonClient(object):
            Binary payload to send - will override data
         str_data
            String payload to send - will override data
+        json_data
+           JSON payload to send - will override data
         names
            Column names
         gateway_prefix
@@ -352,6 +355,7 @@ class SeldonClient(object):
             data=data,
             bin_data=bin_data,
             str_data=str_data,
+            json_data=json_data,
             gateway_prefix=gateway_prefix,
             headers=headers,
             http_path=http_path,
@@ -497,6 +501,7 @@ class SeldonClient(object):
         data: np.ndarray = None,
         bin_data: Union[bytes, bytearray] = None,
         str_data: str = None,
+        json_data: str = None,
         names: Iterable[str] = None,
         gateway_prefix: str = None,
         headers: Dict = None,
@@ -534,6 +539,8 @@ class SeldonClient(object):
            Binary payload to send - will override data
         str_data
            String payload to send - will override data
+        json_data
+           JSON payload to send - will override data
         names
            Column names
         gateway_prefix
@@ -563,6 +570,7 @@ class SeldonClient(object):
             data=data,
             bin_data=bin_data,
             str_data=str_data,
+            json_data=json_data,
             gateway_prefix=gateway_prefix,
             headers=headers,
             http_path=http_path,
@@ -598,6 +606,7 @@ class SeldonClient(object):
         ndatas: int = None,
         bin_data: Union[bytes, bytearray] = None,
         str_data: str = None,
+        json_data: Union[str, List, Dict] = None,
         names: Iterable[str] = None,
     ) -> Union[SeldonClientPrediction, SeldonClientCombine]:
         """
@@ -640,6 +649,8 @@ class SeldonClient(object):
            Binary payload to send - will override data
         str_data
            String payload to send - will override data
+        json_data
+           String payload to send - will override data
         ndatas
            Multiple numpy arrays to send for aggregation
         bin_data
@@ -674,6 +685,7 @@ class SeldonClient(object):
             data=data,
             bin_data=bin_data,
             str_data=str_data,
+            json_data=json_data,
         )
         self._validate_args(**k)
         if k["transport"] == "rest":
@@ -802,6 +814,7 @@ def microservice_api_rest_seldon_message(
     payload_type: str = "tensor",
     bin_data: Union[bytes, bytearray] = None,
     str_data: str = None,
+    json_data: Union[str, List, Dict] = None,
     names: Iterable[str] = None,
     **kwargs,
 ) -> SeldonClientPrediction:
@@ -834,6 +847,8 @@ def microservice_api_rest_seldon_message(
        Binary data payload
     str_data
        String data payload
+    json_data
+       JSON data payload
     names
        Column names
     kwargs
@@ -846,6 +861,8 @@ def microservice_api_rest_seldon_message(
         request = prediction_pb2.SeldonMessage(binData=bin_data)
     elif str_data is not None:
         request = prediction_pb2.SeldonMessage(strData=str_data)
+    elif json_data is not None:
+        request = json_to_seldon_message({"jsonData": json_data})
     else:
         if data is None:
             data = np.random.rand(*shape)
@@ -990,6 +1007,7 @@ def microservice_api_grpc_seldon_message(
     payload_type: str = "tensor",
     bin_data: Union[bytes, bytearray] = None,
     str_data: str = None,
+    json_data: Union[str, List, Dict] = None,
     grpc_max_send_message_length: int = 4 * 1024 * 1024,
     grpc_max_receive_message_length: int = 4 * 1024 * 1024,
     names: Iterable[str] = None,
@@ -1014,6 +1032,8 @@ def microservice_api_grpc_seldon_message(
        Binary data to send
     str_data
        String data to send
+    json_data
+        JSON data to send
     grpc_max_send_message_length
        Max grpc send message size in bytes
     grpc_max_receive_message_length
@@ -1030,6 +1050,8 @@ def microservice_api_grpc_seldon_message(
         request = prediction_pb2.SeldonMessage(binData=bin_data)
     elif str_data is not None:
         request = prediction_pb2.SeldonMessage(strData=str_data)
+    elif json_data is not None:
+        request = json_to_seldon_message({"jsonData": json_data})
     else:
         if data is None:
             data = np.random.rand(*shape)
@@ -1235,6 +1257,7 @@ def rest_predict_seldon_oauth(
     payload_type: str = "tensor",
     bin_data: Union[bytes, bytearray] = None,
     str_data: str = None,
+    json_data: Union[str, List, Dict] = None,
     names: Iterable[str] = None,
     **kwargs,
 ) -> SeldonClientPrediction:
@@ -1261,6 +1284,8 @@ def rest_predict_seldon_oauth(
        Binary data to send
     str_data
        String data to send
+    json_data
+        JSON data to send
     names
        column names
     kwargs
@@ -1275,6 +1300,8 @@ def rest_predict_seldon_oauth(
         request = prediction_pb2.SeldonMessage(binData=bin_data)
     elif str_data is not None:
         request = prediction_pb2.SeldonMessage(strData=str_data)
+    elif json_data is not None:
+        request = json_to_seldon_message({"jsonData": json_data})
     else:
         if data is None:
             data = np.random.rand(*shape)
@@ -1317,6 +1344,7 @@ def grpc_predict_seldon_oauth(
     payload_type: str = "tensor",
     bin_data: Union[bytes, bytearray] = None,
     str_data: str = None,
+    json_data: Union[str, List, Dict] = None,
     grpc_max_send_message_length: int = 4 * 1024 * 1024,
     grpc_max_receive_message_length: int = 4 * 1024 * 1024,
     names: Iterable[str] = None,
@@ -1363,6 +1391,8 @@ def grpc_predict_seldon_oauth(
         request = prediction_pb2.SeldonMessage(binData=bin_data)
     elif str_data is not None:
         request = prediction_pb2.SeldonMessage(strData=str_data)
+    elif json_data is not None:
+        request = json_to_seldon_message({"jsonData": json_data})
     else:
         if data is None:
             data = np.random.rand(*shape)
@@ -1395,6 +1425,7 @@ def rest_predict_gateway(
     payload_type: str = "tensor",
     bin_data: Union[bytes, bytearray] = None,
     str_data: str = None,
+    json_data: Union[str, Dict, List] = None,
     names: Iterable[str] = None,
     call_credentials: SeldonCallCredentials = None,
     channel_credentials: SeldonChannelCredentials = None,
@@ -1426,6 +1457,8 @@ def rest_predict_gateway(
        Binary data to send
     str_data
        String data to send
+    json_data
+       JSON data to send as str, dict or list
     names
        Column names
     call_credentials
@@ -1444,6 +1477,8 @@ def rest_predict_gateway(
         request = prediction_pb2.SeldonMessage(binData=bin_data)
     elif str_data is not None:
         request = prediction_pb2.SeldonMessage(strData=str_data)
+    elif json_data is not None:
+        request = json_to_seldon_message({"jsonData": json_data})
     else:
         if data is None:
             data = np.random.rand(*shape)
@@ -1550,6 +1585,7 @@ def explain_predict_gateway(
     payload_type: str = "tensor",
     bin_data: Union[bytes, bytearray] = None,
     str_data: str = None,
+    json_data: Union[str, List, Dict] = None,
     names: Iterable[str] = None,
     call_credentials: SeldonCallCredentials = None,
     channel_credentials: SeldonChannelCredentials = None,
@@ -1581,6 +1617,8 @@ def explain_predict_gateway(
        Binary data to send
     str_data
        String data to send
+    json_data
+       JSON data to send
     names
        Column names
     call_credentials
@@ -1599,6 +1637,8 @@ def explain_predict_gateway(
         request = prediction_pb2.SeldonMessage(binData=bin_data)
     elif str_data is not None:
         request = prediction_pb2.SeldonMessage(strData=str_data)
+    elif json_data is not None:
+        request = json_to_seldon_message({"jsonData": json_data})
     else:
         if data is None:
             data = np.random.rand(*shape)
@@ -1637,9 +1677,7 @@ def explain_predict_gateway(
                     + gateway_endpoint
                     + "/seldon/"
                     + deployment_name
-                    + "-explainer/models/"
-                    + deployment_name
-                    + ":explain"
+                    + "-explainer/api/v0.1/explain"
                 )
             else:
                 url = (
@@ -1650,9 +1688,7 @@ def explain_predict_gateway(
                     + namespace
                     + "/"
                     + deployment_name
-                    + "-explainer/models/"
-                    + deployment_name
-                    + ":explain"
+                    + "-explainer/api/v0.1/explain"
                 )
         else:
             url = (
@@ -1660,9 +1696,7 @@ def explain_predict_gateway(
                 + "://"
                 + gateway_endpoint
                 + gateway_prefix
-                + +"/models/"
-                + deployment_name
-                + ":explain"
+                + +"/api/v0.1/explain"
             )
     verify = True
     cert = None
@@ -1696,6 +1730,7 @@ def grpc_predict_gateway(
     payload_type: str = "tensor",
     bin_data: Union[bytes, bytearray] = None,
     str_data: str = None,
+    json_data: Union[str, List, Dict] = None,
     grpc_max_send_message_length: int = 4 * 1024 * 1024,
     grpc_max_receive_message_length: int = 4 * 1024 * 1024,
     names: Iterable[str] = None,
@@ -1726,6 +1761,8 @@ def grpc_predict_gateway(
        Binary data to send
     str_data
        String data to send
+    json_data
+       JSON data to send
     grpc_max_send_message_length
        Max grpc send message size in bytes
     grpc_max_receive_message_length
@@ -1747,6 +1784,8 @@ def grpc_predict_gateway(
         request = prediction_pb2.SeldonMessage(binData=bin_data)
     elif str_data is not None:
         request = prediction_pb2.SeldonMessage(strData=str_data)
+    elif json_data is not None:
+        request = json_to_seldon_message({"jsonData": json_data})
     else:
         if data is None:
             data = np.random.rand(*shape)

@@ -6,10 +6,10 @@ metadata:
 spec:
   name: mlflow-deployment
   predictors:
-  - graph:
-      children: []
-      implementation: MLFLOW_SERVER
-      modelUri: gs://seldon-models/mlflow/elasticnet_wine
-      name: wines-classifier
-    name: mlflow-deployment-dag
-    replicas: 1
+    - graph:
+        children: []
+        implementation: MLFLOW_SERVER
+        modelUri: gs://seldon-models/mlflow/model-a
+        name: wines-classifier
+      name: mlflow-deployment-dag
+      replicas: 1

@@ -1,79 +1,104 @@
-import subprocess
-import json
-from seldon_utils import *
-from seldon_core.seldon_client import SeldonClient
-
-
-def wait_for_status(name):
-    for attempts in range(7):
-        completedProcess = run(
-            "kubectl get sdep " + name + " -o json -n seldon",
-            shell=True,
-            check=True,
-            stdout=subprocess.PIPE,
-        )
-        jStr = completedProcess.stdout
-        j = json.loads(jStr)
-        if "status" in j and j["status"] == "Available":
-            return j
-        else:
-            print("Failed to find status - sleeping")
-            time.sleep(5)
-
-
-def wait_for_rollout(deploymentName):
-    ret = run("kubectl rollout status deploy/" + deploymentName, shell=True)
-    while ret.returncode > 0:
-        time.sleep(1)
-        ret = run("kubectl rollout status deploy/" + deploymentName, shell=True)
+from seldon_e2e_utils import (
+    wait_for_rollout,
+    initial_rest_request,
+    retry_run,
+    create_random_data,
+    wait_for_status,
+)
+from subprocess import run
+import time
+import logging
 
 
 class TestPrepack(object):
 
     # Test prepackaged server for sklearn
     def test_sklearn(self):
-        run("kubectl delete sdep --all", shell=True)
-        run(
-            "kubectl apply -f ../../servers/sklearnserver/samples/iris.yaml",
-            shell=True,
-            check=True,
+        namespace = "test-sklearn"
+        spec = "../../servers/sklearnserver/samples/iris.yaml"
+        retry_run(f"kubectl create namespace {namespace}")
+        retry_run(f"kubectl apply -f {spec} -n {namespace}")
+        wait_for_rollout("iris-default-4903e3c", namespace)
+        wait_for_status("sklearn", namespace)
+        time.sleep(1)
+        logging.warning("Initial request")
+        r = initial_rest_request(
+            "sklearn", namespace, data=[[0.1, 0.2, 0.3, 0.4]], dtype="ndarray"
         )
-        wait_for_rollout("iris-default-4903e3c")
-        wait_for_status("sklearn")
-        print("Initial request")
-        sc = SeldonClient(deployment_name="sklearn", namespace="seldon")
-        r = sc.predict(gateway="ambassador", transport="rest", shape=(1, 4))
-        assert r.success
-        print("Success for test_prepack_sklearn")
+        assert r.status_code == 200
+        logging.warning("Success for test_prepack_sklearn")
+        run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
+        run(f"kubectl delete namespace {namespace}", shell=True)
 
     # Test prepackaged server for tfserving
     def test_tfserving(self):
-        run("kubectl delete sdep --all", shell=True)
-        run(
-            "kubectl apply -f ../../servers/tfserving/samples/mnist_rest.yaml",
-            shell=True,
-            check=True,
+        namespace = "test-tfserving"
+        spec = "../../servers/tfserving/samples/mnist_rest.yaml"
+        retry_run(f"kubectl create namespace {namespace}")
+        retry_run(f"kubectl apply -f {spec}  -n {namespace}")
+        wait_for_rollout("mnist-default-725903e", namespace)
+        wait_for_status("tfserving", namespace)
+        time.sleep(1)
+        logging.warning("Initial request")
+        r = initial_rest_request(
+            "tfserving",
+            namespace,
+            data=[create_random_data(784)[1].tolist()],
+            dtype="ndarray",
         )
-        wait_for_rollout("mnist-default-725903e")
-        wait_for_status("tfserving")
-        print("Initial request")
-        sc = SeldonClient(deployment_name="tfserving", namespace="seldon")
-        r = sc.predict(gateway="ambassador", transport="rest", shape=(1, 784))
-        assert r.success
-        print("Success for test_prepack_tfserving")
+        assert r.status_code == 200
+        logging.warning("Success for test_prepack_tfserving")
+        run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
+        run(f"kubectl delete namespace {namespace}", shell=True)
 
     # Test prepackaged server for xgboost
     def test_xgboost(self):
-        run("kubectl delete sdep --all", shell=True)
-        run(
-            "kubectl apply -f ../../servers/xgboostserver/samples/iris.yaml",
-            shell=True,
-            check=True,
+        namespace = "test-xgboost"
+        spec = "../../servers/xgboostserver/samples/iris.yaml"
+        retry_run(f"kubectl create namespace {namespace}")
+        retry_run(f"kubectl apply -f {spec}  -n {namespace}")
+        wait_for_rollout("iris-default-af1783b", namespace)
+        wait_for_status("xgboost", namespace)
+        time.sleep(1)
+        logging.warning("Initial request")
+        r = initial_rest_request(
+            "xgboost", namespace, data=[[0.1, 0.2, 0.3, 0.4]], dtype="ndarray"
         )
-        wait_for_rollout("iris-default-af1783b")
-        wait_for_status("xgboost")
-        print("Initial request")
-        sc = SeldonClient(deployment_name="xgboost", namespace="seldon")
-        r = sc.predict(gateway="ambassador", transport="rest", shape=(1, 4))
-        assert r.success
-        print("Success for test_prepack_xgboost")
+        assert r.status_code == 200
+        logging.warning("Success for test_prepack_xgboost")
+        run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
+        run(f"kubectl delete namespace {namespace}", shell=True)
+
+    # Test prepackaged server for MLflow
+    def test_mlflow(self):
+        namespace = "test-mlflow"
+        spec = "../../servers/mlflowserver/samples/elasticnet_wine.yaml"
+        retry_run(f"kubectl create namespace {namespace}")
+        retry_run(f"kubectl apply -f {spec} -n {namespace}")
+        wait_for_rollout("wines-default-8c791aa", namespace)
+        wait_for_status("mlflow", namespace)
+        time.sleep(1)
+
+        r = initial_rest_request(
+            "mlflow",
+            namespace,
+            data=[[6.3, 0.3, 0.34, 1.6, 0.049, 14, 132, 0.994, 3.3, 0.49, 9.5]],
+            dtype="ndarray",
+            names=[
+                "fixed acidity",
+                "volatile acidity",
+                "citric acid",
+                "residual sugar",
+                "chlorides",
+                "free sulfur dioxide",
+                "total sulfur dioxide",
+                "density",
+                "pH",
+                "sulphates",
+                "alcohol",
+            ],
+        )
+        assert r.status_code == 200
+
+        run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
+        run(f"kubectl delete namespace {namespace}", shell=True)

@@ -1,5 +1,4 @@
 import json
-import logging
 import sys
 import base64
 import numpy as np
@@ -17,11 +16,11 @@ from seldon_core.user_model import (
     client_feature_names,
     SeldonComponent,
 )
-from seldon_core.tf_helper import _TF_MISSING
+from seldon_core.imports_helper import _TF_PRESENT
 
 from typing import Tuple, Dict, Union, List, Optional, Iterable
 
-if not _TF_MISSING:
+if _TF_PRESENT:
     import tensorflow as tf
     from tensorflow.core.framework.tensor_pb2 import TensorProto
 
@@ -132,7 +131,7 @@ def feedback_to_json(message_proto: prediction_pb2.Feedback) -> Dict:
 
 
 def get_data_from_proto(
-    request: prediction_pb2.SeldonMessage
+    request: prediction_pb2.SeldonMessage,
 ) -> Union[np.ndarray, str, bytes, dict]:
     """
     Extract the data payload from the SeldonMessage
@@ -549,7 +548,7 @@ def extract_request_parts_json(
         features = request["strData"]
     elif "binData" in request:
         data_type = "binData"
-        features = bytes(request["binData"], "utf8")
+        features = base64.b64decode(request["binData"])
     else:
         raise SeldonMicroserviceException(f"Invalid request data type: {request}")
 
@@ -557,7 +556,7 @@ def extract_request_parts_json(
 
 
 def extract_request_parts(
-    request: prediction_pb2.SeldonMessage
+    request: prediction_pb2.SeldonMessage,
 ) -> Tuple[Union[np.ndarray, str, bytes, dict], Dict, prediction_pb2.DefaultData, str]:
     """
 
@@ -579,7 +578,7 @@ def extract_request_parts(
 
 
 def extract_feedback_request_parts(
-    request: prediction_pb2.Feedback
+    request: prediction_pb2.Feedback,
 ) -> Tuple[prediction_pb2.DefaultData, np.ndarray, np.ndarray, float]:
     """
     Extract key parts of the Feedback Message

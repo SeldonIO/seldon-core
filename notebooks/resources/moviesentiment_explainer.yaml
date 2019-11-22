@@ -11,6 +11,6 @@ spec:
       modelUri: gs://seldon-models/sklearn/moviesentiment
       name: classifier
     explainer:
-      type: anchor_text
+      type: AnchorText
     name: default
     replicas: 1

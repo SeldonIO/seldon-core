@@ -103,6 +103,12 @@ class SeldonComponent(object):
     ) -> prediction_pb2.SeldonMessage:
         raise SeldonNotImplementedError("aggregate_raw is not implemented")
 
+    def health_status(self) -> Union[np.ndarray, List, str, bytes]:
+        raise SeldonNotImplementedError("health is not implemented")
+
+    def health_status_raw(self) -> prediction_pb2.SeldonMessage:
+        raise SeldonNotImplementedError("health_raw is not implemented")
+
 
 def client_custom_tags(user_model: SeldonComponent) -> Dict:
     """
@@ -417,3 +423,23 @@ def client_aggregate(
         return user_model.aggregate(features_list, feature_names_list)
     else:
         raise SeldonNotImplementedError("Aggregate not defined")
+
+
+def client_health_status(
+    user_model: SeldonComponent,
+) -> Union[np.ndarray, List, str, bytes]:
+    """
+    Perform a health check
+
+    Parameters
+    ----------
+    user_model
+       A Seldon user model
+    Returns
+    -------
+       Health check results
+    """
+    if hasattr(user_model, "health_status"):
+        return user_model.health_status()
+    else:
+        raise SeldonNotImplementedError("health_status not defined")

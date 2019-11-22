@@ -222,6 +222,7 @@ type PredictorSpec struct {
 	SvcOrchSpec     SvcOrchSpec             `json:"svcOrchSpec,omitempty" protobuf:"bytes,8,opt,name=svcOrchSpec"`
 	Traffic         int32                   `json:"traffic,omitempty" protobuf:"bytes,9,opt,name=traffic"`
 	Explainer       Explainer               `json:"explainer,omitempty" protobuf:"bytes,10,opt,name=explainer"`
+	Shadow          bool                    `json:"shadow,omitempty" protobuf:"bytes,11,opt,name=shadow"`
 }
 
 type SvcOrchSpec struct {
@@ -229,14 +230,24 @@ type SvcOrchSpec struct {
 	Env       []*v1.EnvVar             `json:"env,omitempty" protobuf:"bytes,2,opt,name=env"`
 }
 
+type AlibiExplainerType string
+
+const (
+	AlibiAnchorsTabularExplainer  AlibiExplainerType = "AnchorTabular"
+	AlibiAnchorsImageExplainer    AlibiExplainerType = "AnchorImages"
+	AlibiAnchorsTextExplainer     AlibiExplainerType = "AnchorText"
+	AlibiCounterfactualsExplainer AlibiExplainerType = "Counterfactuals"
+	AlibiContrastiveExplainer     AlibiExplainerType = "Contrastive"
+)
+
 type Explainer struct {
-	Type               string            `json:"type,omitempty" protobuf:"string,1,opt,name=type"`
-	ModelUri           string            `json:"modelUri,omitempty" protobuf:"string,2,opt,name=modelUri"`
-	ServiceAccountName string            `json:"serviceAccountName,omitempty" protobuf:"string,3,opt,name=serviceAccountName"`
-	ContainerSpec      v1.Container      `json:"containerSpec,omitempty" protobuf:"bytes,4,opt,name=containerSpec"`
-	Config             map[string]string `json:"config,omitempty" protobuf:"bytes,5,opt,name=config"`
-	Endpoint           *Endpoint         `json:"endpoint,omitempty" protobuf:"bytes,6,opt,name=endpoint"`
-	EnvSecretRefName   string            `json:"envSecretRefName,omitempty" protobuf:"bytes,7,opt,name=envSecretRefName"`
+	Type               AlibiExplainerType `json:"type,omitempty" protobuf:"string,1,opt,name=type"`
+	ModelUri           string             `json:"modelUri,omitempty" protobuf:"string,2,opt,name=modelUri"`
+	ServiceAccountName string             `json:"serviceAccountName,omitempty" protobuf:"string,3,opt,name=serviceAccountName"`
+	ContainerSpec      v1.Container       `json:"containerSpec,omitempty" protobuf:"bytes,4,opt,name=containerSpec"`
+	Config             map[string]string  `json:"config,omitempty" protobuf:"bytes,5,opt,name=config"`
+	Endpoint           *Endpoint          `json:"endpoint,omitempty" protobuf:"bytes,6,opt,name=endpoint"`
+	EnvSecretRefName   string             `json:"envSecretRefName,omitempty" protobuf:"bytes,7,opt,name=envSecretRefName"`
 }
 
 type SeldonPodSpec struct {

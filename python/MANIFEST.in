@@ -1,3 +1,2 @@
-include seldon_core/fbs/*.fbs
-include seldon_core/proto/*.proto
+recursive-include seldon_core/proto *.proto *.py
 include seldon_core/openapi/seldon.json

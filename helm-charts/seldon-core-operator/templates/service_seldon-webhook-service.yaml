@@ -11,7 +11,7 @@ metadata:
 spec:
   ports:
   - port: 443
-    targetPort: 443
+    targetPort: {{ .Values.webhook.port }}
   selector:
     app: seldon
     app.kubernetes.io/instance: seldon1

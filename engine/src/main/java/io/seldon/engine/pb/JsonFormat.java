@@ -971,7 +971,7 @@ public class JsonFormat {
             if (alwaysWithQuotes) {
               generator.print("\"");
             }
-            generator.print(floatValue.toString());
+            generator.print(numberToString(floatValue));
             if (alwaysWithQuotes) {
               generator.print("\"");
             }
@@ -992,7 +992,7 @@ public class JsonFormat {
             if (alwaysWithQuotes) {
               generator.print("\"");
             }
-            generator.print(doubleValue.toString());
+            generator.print(numberToString(doubleValue));
             if (alwaysWithQuotes) {
               generator.print("\"");
             }
@@ -1051,6 +1051,18 @@ public class JsonFormat {
           break;
       }
     }
+  }
+
+  /** If the decimal part is empty, don't print it. * */
+  private static String numberToString(Number value) {
+    double decimals = value.doubleValue();
+    if (decimals % 1.0 != 0) {
+      // There are decimals present
+      return value.toString();
+    }
+
+    long noDecimals = value.longValue();
+    return Long.toString(noDecimals);
   }
 
   /** Convert an unsigned 32-bit integer to a string. */

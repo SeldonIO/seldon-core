@@ -1,6 +1,7 @@
 apiVersion: v1
 data:
   credentials: "{\n   \"gcs\" : {\n       \"gcsCredentialFileName\": \"gcloud-application-credentials.json\"\n   },\n   \"s3\" : {\n       \"s3AccessKeyIDName\": \"awsAccessKeyID\",\n       \"s3SecretAccessKeyName\": \"awsSecretAccessKey\"\n   }\n}"
+  storageInitializer: "{\n    \"image\" : \"gcr.io/kfserving/storage-initializer:0.2.1\",\n    \"memoryRequest\": \"100Mi\",\n    \"memoryLimit\": \"1Gi\",\n    \"cpuRequest\": \"100m\",\n    \"cpuLimit\": \"1\"\n}"
 kind: ConfigMap
 metadata:
   labels:

@@ -1,0 +1,12 @@
+FROM continuumio/miniconda3:4.7.12
+
+LABEL io.openshift.s2i.scripts-url="image:///s2i/bin"
+
+RUN mkdir microservice
+WORKDIR /microservice
+
+COPY ./s2i/bin/ /s2i/bin
+
+RUN pip install seldon-core
+
+EXPOSE 5000

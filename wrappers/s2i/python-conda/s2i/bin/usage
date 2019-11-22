@@ -1,0 +1,49 @@
+#!/bin/bash -e
+cat <<EOF
+This is the seldon-core-s2i-conda S2I image.
+It allows you to create Seldon images with just your model and a Conda environment.
+
+On your source folder, you only need to include a conda.yaml file describing your environment.
+This file will list the required dependencies (both for conda and pip), the Python version, etc.
+
+To use it, install S2I: https://github.com/openshift/source-to-image
+
+Sample MODEL invocation:
+------------------------
+
+s2i build -E my-env-vars my-model-folder seldonio/seldon-core-s2i-conda seldon-core-my-model
+
+You can then run the resulting image via:
+docker run -p 5000:5000 seldon-core-my-model
+
+And test:
+curl  -d 'json={"data":{"ndarray":[[1.0,2.0]]}}' http://0.0.0.0:5000/predict
+
+Sample ROUTER invocation:
+-------------------------
+
+s2i build -E my-env-vars my-router-folder seldonio/seldon-core-s2i-conda seldon-core-my-router
+
+You can then run the resulting image via:
+docker run -p 5000:5000 seldon-core-my-router
+
+And test:
+curl  -d 'json={"data":{"ndarray":[[1.0,2.0]]}}' http://0.0.0.0:5000/route
+curl  -d 'json={"request":{"data":{"names":["a","b"],"ndarray":[[1.0,2.0]]}},"response":{"meta":{"routing":{"router":0}},"data":{"names":["a","b"],"ndarray":[[1.0,2.0]]}},"reward":1}' http://0.0.0.0:5000/send-feedback
+
+
+Sample TRANSFORMER invocation:
+------------------------------
+
+s2i build -E my-env-vars my-transformer-folder seldonio/seldon-core-s2i-conda seldon-core-my-transformer
+
+You can then run the resulting image via:
+docker run -p 5000:5000 seldon-core-my-transformer
+
+And test:
+curl  -d 'json={"data":{"ndarray":[[1.0,2.0]]}}' http://0.0.0.0:5000/transform-input
+curl  -d 'json={"data":{"ndarray":[[1.0,2.0]]}}' http://0.0.0.0:5000/transform-output
+
+
+
+EOF
