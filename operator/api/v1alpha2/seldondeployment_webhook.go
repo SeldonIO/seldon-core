@@ -124,8 +124,6 @@ func SetImageNameForPrepackContainer(pu *PredictiveUnit, c *corev1.Container) {
 
 		ServersConfigs, err := getPredictorServerConfigs()
 
-		fmt.Printf("%+v\n", ServersConfigs)
-
 		if err != nil {
 			seldondeploymentlog.Error(err, "Failed to read prepacked model servers from configmap")
 		}
@@ -320,9 +318,6 @@ func (r *SeldonDeployment) DefaultSeldonDeployment() {
 					portType = "http"
 				}
 
-				// TODO: do we really want to use a client here?
-				// could do rest.InClusterConfig() and then NewForConfig
-				// but do we want that or need to set this here? why not in the controller?
 				SetImageNameForPrepackContainer(pu, con)
 
 				// if new Add container to componentSpecs
@@ -403,10 +398,7 @@ func checkPredictiveUnits(pu *PredictiveUnit, p *PredictorSpec, fldPath *field.P
 			allErrs = append(allErrs, field.Invalid(fldPath, pu.Name, "Predictive Unit has no implementation methods defined. Change to a know type or add what methods it defines"))
 		}
 
-	} else if *pu.Implementation == SKLEARN_SERVER ||
-		*pu.Implementation == XGBOOST_SERVER ||
-		*pu.Implementation == TENSORFLOW_SERVER ||
-		*pu.Implementation == MLFLOW_SERVER {
+	} else if IsPrepack(pu) {
 		if pu.ModelURI == "" {
 			allErrs = append(allErrs, field.Invalid(fldPath, pu.Name, "Predictive unit modelUri required when using standalone servers"))
 		}
