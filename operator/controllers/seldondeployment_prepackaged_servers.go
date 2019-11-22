@@ -107,9 +107,7 @@ func addTFServerContainer(r *SeldonDeploymentReconciler, pu *machinelearningv1al
 }
 
 func addModelDefaultServers(r *SeldonDeploymentReconciler, pu *machinelearningv1alpha2.PredictiveUnit, p *machinelearningv1alpha2.PredictorSpec, deploy *appsv1.Deployment) error {
-	if *pu.Implementation == machinelearningv1alpha2.SKLEARN_SERVER ||
-		*pu.Implementation == machinelearningv1alpha2.XGBOOST_SERVER ||
-		*pu.Implementation == machinelearningv1alpha2.MLFLOW_SERVER {
+	if len(*pu.Implementation) > 0 && *pu.Implementation != machinelearningv1alpha2.TENSORFLOW_SERVER {
 
 		ty := machinelearningv1alpha2.MODEL
 		pu.Type = &ty
