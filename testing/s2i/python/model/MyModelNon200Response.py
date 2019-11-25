@@ -12,8 +12,5 @@ class MyModelNon200Response(object):
             "status": "FAILURE",
             "info": "exception caught",
         }
-        response = jsonify(
-            {"data": {"names": ["score"], "ndarray": []}, "status": status}
-        )
-        response.status_code = 400
-        return response
+
+        return {"data": {"names": ["score"], "ndarray": []}, "status": status}
