@@ -140,7 +140,7 @@ class S2IK8S(object):
     def test_model_rest(self, s2i_python_version):
         namespace = "s2i-test-model-rest"
         retry_run(f"kubectl create namespace {namespace}")
-        create_push_s2i_image(s2i_python_version, "model", "rest_non200")
+        create_push_s2i_image(s2i_python_version, "model", "rest")
         retry_run(f"kubectl apply -f ../resources/s2i_python_model.json -n {namespace}")
         wait_for_rollout("mymodel-mymodel-8715075", namespace)
         r = initial_rest_request("mymodel", namespace)
@@ -160,7 +160,7 @@ class S2IK8S(object):
     def test_model_rest_non200(self, s2i_python_version):
         namespace = "s2i-test-model-rest"
         retry_run(f"kubectl create namespace {namespace}")
-        create_push_s2i_image(s2i_python_version, "model", "rest")
+        create_push_s2i_image(s2i_python_version, "model", "rest_non200")
         retry_run(f"kubectl apply -f ../resources/s2i_python_model_non200.json -n {namespace}")
         wait_for_rollout("mymodel-mymodel-8715076", namespace)
         r = initial_rest_request("mymodel", namespace)
