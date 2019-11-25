@@ -38,7 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import org.ojalgo.matrix.PrimitiveMatrix;
+import org.ojalgo.matrix.Primitive64Matrix;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -310,7 +310,7 @@ public class PredictiveUnitBean extends PredictiveUnitImpl {
   private int getBranchIndex(SeldonMessage routerReturn, PredictiveUnitState state) {
     int branchIndex = 0;
     try {
-      PrimitiveMatrix dataArray = PredictorUtils.getOJMatrix(routerReturn.getData());
+      Primitive64Matrix dataArray = PredictorUtils.getOJMatrix(routerReturn.getData());
       branchIndex = dataArray.get(0).intValue();
     } catch (IndexOutOfBoundsException e) {
       throw new APIException(
