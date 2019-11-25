@@ -161,7 +161,9 @@ class S2IK8S(object):
         namespace = "s2i-test-model-rest"
         retry_run(f"kubectl create namespace {namespace}")
         create_push_s2i_image(s2i_python_version, "model", "rest_non200")
-        retry_run(f"kubectl apply -f ../resources/s2i_python_model_non200.json -n {namespace}")
+        retry_run(
+            f"kubectl apply -f ../resources/s2i_python_model_non200.json -n {namespace}"
+        )
         wait_for_rollout("mymodel-mymodel-8715076", namespace)
         r = initial_rest_request("mymodel", namespace)
         arr = np.array([[1, 2, 3]])
@@ -169,7 +171,7 @@ class S2IK8S(object):
         res = r.json()
         logging.warning(res)
         assert r.status_code == 200
-        assert r.json()["status"]["code"] == 200
+        assert r.json()["status"]["code"] == 400
         assert r.json()["status"]["reason"] == "exception message"
         assert r.json()["status"]["info"] == "exception caught"
         assert r.json()["status"]["status"] == "FAILURE"
