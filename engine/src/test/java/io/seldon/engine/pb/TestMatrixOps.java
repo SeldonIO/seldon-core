@@ -8,7 +8,7 @@ import io.seldon.protos.PredictionProtos.Tensor;
 import java.util.Arrays;
 import org.junit.Assert;
 import org.junit.Test;
-import org.ojalgo.matrix.PrimitiveMatrix;
+import org.ojalgo.matrix.Primitive64Matrix;
 
 public class TestMatrixOps {
 
@@ -30,7 +30,7 @@ public class TestMatrixOps {
                             .build())
                     .build())
             .build();
-    PrimitiveMatrix p = PredictorUtils.getOJMatrix(m.getData());
+    Primitive64Matrix p = PredictorUtils.getOJMatrix(m.getData());
     Assert.assertEquals(values1[0], p.get(0, 0));
     Assert.assertEquals(values1[1], p.get(0, 1));
     Assert.assertEquals(values1[2], p.get(1, 0));

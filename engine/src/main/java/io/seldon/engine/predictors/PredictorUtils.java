@@ -22,7 +22,7 @@ import io.seldon.protos.PredictionProtos.DefaultData.DataOneofCase;
 import io.seldon.protos.PredictionProtos.Tensor;
 import java.util.Iterator;
 import java.util.List;
-import org.ojalgo.matrix.PrimitiveMatrix;
+import org.ojalgo.matrix.Primitive64Matrix;
 
 public class PredictorUtils {
 
@@ -57,7 +57,7 @@ public class PredictorUtils {
     return null;
   }
 
-  public static void add(DefaultData data, PrimitiveMatrix.DenseReceiver receiver) {
+  public static void add(DefaultData data, Primitive64Matrix.DenseReceiver receiver) {
 
     if (data.getDataOneofCase() == DataOneofCase.TENSOR) {
 
@@ -87,8 +87,8 @@ public class PredictorUtils {
     }
   }
 
-  public static PrimitiveMatrix getOJMatrix(DefaultData data) {
-    PrimitiveMatrix.Factory matrixFactory = PrimitiveMatrix.FACTORY;
+  public static Primitive64Matrix getOJMatrix(DefaultData data) {
+    Primitive64Matrix.Factory matrixFactory = Primitive64Matrix.FACTORY;
     if (data.getDataOneofCase() == DataOneofCase.TENSOR) {
 
       List<Double> valuesList = data.getTensor().getValuesList();
@@ -139,7 +139,7 @@ public class PredictorUtils {
     return null;
   }
 
-  public static DefaultData updateData(DefaultData oldData, PrimitiveMatrix newData) {
+  public static DefaultData updateData(DefaultData oldData, Primitive64Matrix newData) {
     DefaultData.Builder dataBuilder = DefaultData.newBuilder();
 
     dataBuilder.addAllNames(oldData.getNamesList());
