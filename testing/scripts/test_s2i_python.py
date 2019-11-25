@@ -115,6 +115,10 @@ class TestPythonS2iK8s(object):
         tester = S2IK8S()
         tester.test_model_rest(s2i_python_version)
 
+    def test_model_rest_non200(self, s2i_python_version):
+        tester = S2IK8S()
+        tester.test_model_rest_non200(s2i_python_version)
+
     def test_input_transformer_rest(self, s2i_python_version):
         tester = S2IK8S()
         tester.test_input_transformer_rest(s2i_python_version)
@@ -136,7 +140,7 @@ class S2IK8S(object):
     def test_model_rest(self, s2i_python_version):
         namespace = "s2i-test-model-rest"
         retry_run(f"kubectl create namespace {namespace}")
-        create_push_s2i_image(s2i_python_version, "model", "rest")
+        create_push_s2i_image(s2i_python_version, "model", "rest_non200")
         retry_run(f"kubectl apply -f ../resources/s2i_python_model.json -n {namespace}")
         wait_for_rollout("mymodel-mymodel-8715075", namespace)
         r = initial_rest_request("mymodel", namespace)
@@ -149,6 +153,28 @@ class S2IK8S(object):
         assert r.json()["data"]["tensor"]["values"] == [2, 3, 4]
         run(
             f"kubectl delete -f ../resources/s2i_python_model.json -n {namespace}",
+            shell=True,
+        )
+        run(f"kubectl delete namespace {namespace}", shell=True)
+
+    def test_model_rest_non200(self, s2i_python_version):
+        namespace = "s2i-test-model-rest"
+        retry_run(f"kubectl create namespace {namespace}")
+        create_push_s2i_image(s2i_python_version, "model", "rest")
+        retry_run(f"kubectl apply -f ../resources/s2i_python_model_non200.json -n {namespace}")
+        wait_for_rollout("mymodel-mymodel-8715076", namespace)
+        r = initial_rest_request("mymodel", namespace)
+        arr = np.array([[1, 2, 3]])
+        r = rest_request_ambassador("mymodel", namespace, API_AMBASSADOR, data=arr)
+        res = r.json()
+        logging.warning(res)
+        assert r.status_code == 200
+        assert r.json()["status"]["code"] == 200
+        assert r.json()["status"]["reason"] == "exception message"
+        assert r.json()["status"]["info"] == "exception caught"
+        assert r.json()["status"]["status"] == "FAILURE"
+        run(
+            f"kubectl delete -f ../resources/s2i_python_model_non200.json -n {namespace}",
             shell=True,
         )
         run(f"kubectl delete namespace {namespace}", shell=True)
