@@ -49,8 +49,10 @@ type PredictorImageConfig struct {
 }
 
 type PredictorServerConfig struct {
-	RestConfig PredictorImageConfig `json:"rest,omitempty"`
-	GrpcConfig PredictorImageConfig `json:"grpc,omitempty"`
+	Tensorflow      bool                 `json:"tensorflow"`
+	TensorflowImage string               `json:"tfImage"`
+	RestConfig      PredictorImageConfig `json:"rest,omitempty"`
+	GrpcConfig      PredictorImageConfig `json:"grpc,omitempty"`
 }
 
 // Get an environment variable given by key or return the fallback.
@@ -114,7 +116,21 @@ func GetPort(name string, ports []corev1.ContainerPort) *corev1.ContainerPort {
 }
 
 func IsPrepack(pu *PredictiveUnit) bool {
-	return len(*pu.Implementation) > 0
+	return len(*pu.Implementation) > 0 && *pu.Implementation != SIMPLE_MODEL && *pu.Implementation != SIMPLE_ROUTER && *pu.Implementation != RANDOM_ABTEST && *pu.Implementation != AVERAGE_COMBINER
+}
+
+func GetPrepackServerConfig(serverName string) PredictorServerConfig {
+	ServersConfigs, err := getPredictorServerConfigs()
+
+	if err != nil {
+		seldondeploymentlog.Error(err, "Failed to read prepacked model servers from configmap")
+	}
+
+	ServerConfig, ok := ServersConfigs[serverName]
+	if !ok {
+		seldondeploymentlog.Error(nil, "No entry in predictors map for "+serverName)
+	}
+	return ServerConfig
 }
 
 func SetImageNameForPrepackContainer(pu *PredictiveUnit, c *corev1.Container) {
@@ -122,16 +138,7 @@ func SetImageNameForPrepackContainer(pu *PredictiveUnit, c *corev1.Container) {
 	// Add image
 	if c.Image == "" {
 
-		ServersConfigs, err := getPredictorServerConfigs()
-
-		if err != nil {
-			seldondeploymentlog.Error(err, "Failed to read prepacked model servers from configmap")
-		}
-
-		ServerConfig, ok := ServersConfigs[string(*pu.Implementation)]
-		if !ok {
-			seldondeploymentlog.Error(nil, "No entry in predictors map for "+string(*pu.Implementation))
-		}
+		ServerConfig := GetPrepackServerConfig(string(*pu.Implementation))
 
 		if pu.Endpoint.Type == REST {
 			c.Image = ServerConfig.RestConfig.ContainerImage + ":" + ServerConfig.RestConfig.DefaultImageVersion
@@ -395,12 +402,27 @@ func checkPredictiveUnits(pu *PredictiveUnit, p *PredictorSpec, fldPath *field.P
 		}
 
 		if *pu.Type == UNKNOWN_TYPE && (pu.Methods == nil || len(*pu.Methods) == 0) {
-			allErrs = append(allErrs, field.Invalid(fldPath, pu.Name, "Predictive Unit has no implementation methods defined. Change to a know type or add what methods it defines"))
+			allErrs = append(allErrs, field.Invalid(fldPath, pu.Name, "Predictive Unit has no implementation methods defined. Change to a known type or add what methods it defines"))
 		}
 
 	} else if IsPrepack(pu) {
 		if pu.ModelURI == "" {
 			allErrs = append(allErrs, field.Invalid(fldPath, pu.Name, "Predictive unit modelUri required when using standalone servers"))
+		}
+		c := GetContainerForPredictiveUnit(p, pu.Name)
+
+		if c == nil || c.Image == "" {
+
+			ServersConfigs, err := getPredictorServerConfigs()
+
+			if err != nil {
+				seldondeploymentlog.Error(err, "Failed to read prepacked model servers from configmap")
+			}
+
+			_, ok := ServersConfigs[string(*pu.Implementation)]
+			if !ok {
+				allErrs = append(allErrs, field.Invalid(fldPath, pu.Name, "No entry in predictors map for "+string(*pu.Implementation)))
+			}
 		}
 	}
 
