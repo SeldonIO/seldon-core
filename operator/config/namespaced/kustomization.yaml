@@ -1,0 +1,15 @@
+# Adds namespace to all resources.
+namespace: seldon-system
+
+bases:
+- ../default
+
+resources:
+- role.yaml
+- role_binding.yaml
+
+patchesStrategicMerge:
+- patch_cluster_role.yaml
+- patch_cluster_rolebinding.yaml
+- patch_manager_args.yaml
+
