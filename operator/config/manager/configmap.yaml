@@ -18,6 +18,8 @@ data:
   predictor_servers: |-
     {
         "TENSORFLOW_SERVER": {
+            "tensorflow": true,
+            "tfImage": "tensorflow/serving:latest",
             "rest": {
               "image": "seldonio/tfserving-proxy_rest",
               "defaultImageVersion": "0.7"

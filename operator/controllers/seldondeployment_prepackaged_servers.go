@@ -69,9 +69,17 @@ func addTFServerContainer(r *SeldonDeploymentReconciler, pu *machinelearningv1al
 		tfServingContainer := utils.GetContainerForDeployment(deploy, constants.TFServingContainerName)
 		existing = tfServingContainer != nil
 		if !existing {
+			ServerConfig := machinelearningv1alpha2.GetPrepackServerConfig(string(*pu.Implementation))
+
+			tfImage := "tensorflow/serving:latest"
+
+			if ServerConfig.TensorflowImage != "" {
+				tfImage = ServerConfig.TensorflowImage
+			}
+
 			tfServingContainer = &v1.Container{
 				Name:  constants.TFServingContainerName,
-				Image: "tensorflow/serving:latest",
+				Image: tfImage,
 				Args: []string{
 					"/usr/bin/tensorflow_model_server",
 					"--port=2000",
