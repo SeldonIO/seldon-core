@@ -49,8 +49,8 @@ type PredictorImageConfig struct {
 }
 
 type PredictorServerConfig struct {
-	Tensorflow      bool                 `json:"tensorflow"`
-	TensorflowImage string               `json:"tfImage"`
+	Tensorflow      bool                 `json:"tensorflow,omitempty"`
+	TensorflowImage string               `json:"tfImage,omitempty"`
 	RestConfig      PredictorImageConfig `json:"rest,omitempty"`
 	GrpcConfig      PredictorImageConfig `json:"grpc,omitempty"`
 }
