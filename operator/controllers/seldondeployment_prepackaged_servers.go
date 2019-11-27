@@ -116,7 +116,7 @@ func addTFServerContainer(r *SeldonDeploymentReconciler, pu *machinelearningv1al
 
 func addModelDefaultServers(r *SeldonDeploymentReconciler, pu *machinelearningv1alpha2.PredictiveUnit, p *machinelearningv1alpha2.PredictorSpec, deploy *appsv1.Deployment, serverConfig machinelearningv1alpha2.PredictorServerConfig) error {
 
-	if len(*pu.Implementation) > 0 && (serverConfig.Tensorflow || serverConfig.TensorflowImage != "") {
+	if len(*pu.Implementation) > 0 && !serverConfig.Tensorflow && serverConfig.TensorflowImage == "" {
 
 		ty := machinelearningv1alpha2.MODEL
 		pu.Type = &ty
