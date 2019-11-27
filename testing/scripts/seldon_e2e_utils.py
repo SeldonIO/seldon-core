@@ -10,8 +10,9 @@ import subprocess
 import json
 from retrying import retry
 import logging
+import os
 
-API_AMBASSADOR = "localhost:8003"
+API_AMBASSADOR = os.environ.get('API_AMBASSADOR', 'localhost:8003')
 
 
 def get_s2i_python_version():
