@@ -27,9 +27,9 @@ import (
 	"strings"
 )
 
-func addTFServerContainer(r *SeldonDeploymentReconciler, pu *machinelearningv1alpha2.PredictiveUnit, p *machinelearningv1alpha2.PredictorSpec, deploy *appsv1.Deployment) error {
+func addTFServerContainer(r *SeldonDeploymentReconciler, pu *machinelearningv1alpha2.PredictiveUnit, p *machinelearningv1alpha2.PredictorSpec, deploy *appsv1.Deployment, serverConfig machinelearningv1alpha2.PredictorServerConfig) error {
 
-	if *pu.Implementation == machinelearningv1alpha2.TENSORFLOW_SERVER {
+	if len(*pu.Implementation) > 0 && (serverConfig.Tensorflow || serverConfig.TensorflowImage != "") {
 
 		ty := machinelearningv1alpha2.MODEL
 		pu.Type = &ty
@@ -114,8 +114,9 @@ func addTFServerContainer(r *SeldonDeploymentReconciler, pu *machinelearningv1al
 	return nil
 }
 
-func addModelDefaultServers(r *SeldonDeploymentReconciler, pu *machinelearningv1alpha2.PredictiveUnit, p *machinelearningv1alpha2.PredictorSpec, deploy *appsv1.Deployment) error {
-	if len(*pu.Implementation) > 0 && *pu.Implementation != machinelearningv1alpha2.TENSORFLOW_SERVER {
+func addModelDefaultServers(r *SeldonDeploymentReconciler, pu *machinelearningv1alpha2.PredictiveUnit, p *machinelearningv1alpha2.PredictorSpec, deploy *appsv1.Deployment, serverConfig machinelearningv1alpha2.PredictorServerConfig) error {
+
+	if len(*pu.Implementation) > 0 && (serverConfig.Tensorflow || serverConfig.TensorflowImage != "") {
 
 		ty := machinelearningv1alpha2.MODEL
 		pu.Type = &ty
@@ -275,10 +276,12 @@ func createStandaloneModelServers(r *SeldonDeploymentReconciler, mlDep *machinel
 		deploy = createDeploymentWithoutEngine(depName, seldonId, sPodSpec, p, mlDep)
 	}
 
-	if err := addModelDefaultServers(r, pu, p, deploy); err != nil {
+	ServerConfig := machinelearningv1alpha2.GetPrepackServerConfig(string(*pu.Implementation))
+
+	if err := addModelDefaultServers(r, pu, p, deploy, ServerConfig); err != nil {
 		return err
 	}
-	if err := addTFServerContainer(r, pu, p, deploy); err != nil {
+	if err := addTFServerContainer(r, pu, p, deploy, ServerConfig); err != nil {
 		return err
 	}
 
