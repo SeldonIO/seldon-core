@@ -1,0 +1,27 @@
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: mutating-webhook-configuration
+webhooks:
+- name: mseldondeployment.kb.io
+  namespaceSelector:
+    matchLabels:
+      controller-id: $(SERVICE_NAMESPACE)
+---
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: validating-webhook-configuration
+webhooks:
+- name: vseldondeployment.kb.io
+  namespaceSelector:
+    matchLabels:
+      controller-id: $(SERVICE_NAMESPACE)
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    controller-id: $(SERVICE_NAMESPACE)
+  name: system
+            

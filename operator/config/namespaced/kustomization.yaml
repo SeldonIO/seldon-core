@@ -1,6 +1,3 @@
-# Adds namespace to all resources.
-namespace: seldon-system
-
 bases:
 - ../default
 
@@ -12,4 +9,10 @@ patchesStrategicMerge:
 - patch_cluster_role.yaml
 - patch_cluster_rolebinding.yaml
 - patch_manager_args.yaml
+- patch_cluster_role_sas.yaml
+- patch_cluster_rolebinding_sas.yaml
+- patch_webhook.yaml
+
+configurations:
+- webhook-config.yaml
 

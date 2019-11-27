@@ -1,0 +1,5 @@
+varReference:
+- path: webhooks/namespaceSelector/matchLabels/controller-id
+  kind: MutatingWebhookConfiguration
+- path: webhooks/namespaceSelector/matchLabels/controller-id
+  kind: ValidatingWebhookConfiguration

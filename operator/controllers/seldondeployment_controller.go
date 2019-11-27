@@ -52,11 +52,13 @@ import (
 const (
 	ENV_DEFAULT_ENGINE_SERVER_PORT      = "ENGINE_SERVER_PORT"
 	ENV_DEFAULT_ENGINE_SERVER_GRPC_PORT = "ENGINE_SERVER_GRPC_PORT"
+	ENV_CONTROLLER_ID                   = "CONTROLLER_ID"
 
 	DEFAULT_ENGINE_CONTAINER_PORT = 8000
 	DEFAULT_ENGINE_GRPC_PORT      = 5001
 
-	AMBASSADOR_ANNOTATION = "getambassador.io/config"
+	AMBASSADOR_ANNOTATION    = "getambassador.io/config"
+	ANNOTATION_CONTROLLER_ID = "seldon.io/controller-id"
 )
 
 // SeldonDeploymentReconciler reconciles a SeldonDeployment object
@@ -1216,6 +1218,14 @@ func (r *SeldonDeploymentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		// Error reading the object - requeue the request.
 		log.Error(err, "unable to fetch SeldonDeployment")
 		return ctrl.Result{}, err
+	}
+
+	// Check we should reconcile this
+	controllerId := GetEnv(ENV_CONTROLLER_ID, "")
+	desiredControllerId := getAnnotation(instance, ANNOTATION_CONTROLLER_ID, "")
+	if desiredControllerId != controllerId {
+		log.Info("Skipping reconcile of deployment.", "Our controller ID", controllerId, " desired controller ID", desiredControllerId)
+		return ctrl.Result{}, nil
 	}
 
 	components, err := createComponents(r, instance, log)

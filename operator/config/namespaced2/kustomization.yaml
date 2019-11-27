@@ -1,0 +1,17 @@
+# Adds namespace to all resources.
+namespace: seldon2-system
+
+namePrefix: seldon2-
+
+bases:
+- ../namespaced
+
+
+# Fix to get around bug in Kustomize that adds prefix to namespace name
+# See https://github.com/kubernetes-sigs/kustomize/issues/235
+patchesJson6902:
+- target:
+    version: v1
+    kind: Namespace
+    name: system
+  path: namespace-patch.yaml
