@@ -62,6 +62,10 @@ undeploy-namespaced2: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
 	kustomize build config/namespaced2 | kubectl delete -f -
 
+undeploy-controllerid: manifests
+	cd config/manager && kustomize edit set image controller=${IMG}
+	kustomize build config/controllerid | kubectl delete -f -
+
 deploy-local: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
 	kustomize build config/local | kubectl apply -f -
@@ -73,6 +77,10 @@ deploy-namespaced1: manifests
 deploy-namespaced2: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
 	kustomize build config/namespaced2 | kubectl apply -f -
+
+deploy-controllerid: manifests
+	cd config/manager && kustomize edit set image controller=${IMG}
+	kustomize build config/controllerid | kubectl apply -f -
 
 deploy-cert: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}

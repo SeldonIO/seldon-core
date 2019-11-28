@@ -1,11 +1,13 @@
 # Adds namespace to all resources.
-namespace: seldon2-system
+namespace: seldonid1-system
 
-namePrefix: seldon2-
+namePrefix: seldonid1-
 
 bases:
-- ../namespaced
+- ../default
 
+patchesStrategicMerge:
+- patch_manager_id.yaml
 
 # Fix to get around bug in Kustomize that adds prefix to namespace name
 # See https://github.com/kubernetes-sigs/kustomize/issues/235

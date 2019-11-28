@@ -4,6 +4,8 @@ bases:
 resources:
 - role.yaml
 - role_binding.yaml
+- role_sas.yaml
+- role_binding_sas.yaml
 
 patchesStrategicMerge:
 - patch_cluster_role.yaml

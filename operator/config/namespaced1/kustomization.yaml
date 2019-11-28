@@ -14,4 +14,4 @@ patchesJson6902:
     version: v1
     kind: Namespace
     name: system
-  path: namespace-patch.yaml
+  path: namespace_patch.yaml

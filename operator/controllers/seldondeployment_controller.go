@@ -57,8 +57,8 @@ const (
 	DEFAULT_ENGINE_CONTAINER_PORT = 8000
 	DEFAULT_ENGINE_GRPC_PORT      = 5001
 
-	AMBASSADOR_ANNOTATION    = "getambassador.io/config"
-	ANNOTATION_CONTROLLER_ID = "seldon.io/controller-id"
+	AMBASSADOR_ANNOTATION = "getambassador.io/config"
+	LABEL_CONTROLLER_ID   = "controller-id"
 )
 
 // SeldonDeploymentReconciler reconciles a SeldonDeployment object
@@ -1222,9 +1222,9 @@ func (r *SeldonDeploymentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 
 	// Check we should reconcile this
 	controllerId := GetEnv(ENV_CONTROLLER_ID, "")
-	desiredControllerId := getAnnotation(instance, ANNOTATION_CONTROLLER_ID, "")
+	desiredControllerId := instance.Labels[LABEL_CONTROLLER_ID]
 	if desiredControllerId != controllerId {
-		log.Info("Skipping reconcile of deployment.", "Our controller ID", controllerId, " desired controller ID", desiredControllerId)
+		log.Info("Skipping reconcile of deployment.", "Our controller ID form Env", controllerId, " desired controller ID from label", desiredControllerId)
 		return ctrl.Result{}, nil
 	}
 
