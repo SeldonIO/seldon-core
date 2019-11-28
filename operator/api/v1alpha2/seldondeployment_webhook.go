@@ -17,18 +17,19 @@ limitations under the License.
 package v1alpha2
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	k8types "k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/validation/field"
-	"k8s.io/client-go/kubernetes"
 	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"strconv"
@@ -39,6 +40,7 @@ var (
 	seldondeploymentlog     = logf.Log.WithName("seldondeployment")
 	ControllerNamespace     = GetEnv("POD_NAMESPACE", "seldon-system")
 	ControllerConfigMapName = "seldon-config"
+	C                       client.Client
 )
 
 const PredictorServerConfigMapKeyName = "predictor_servers"
@@ -64,12 +66,20 @@ func GetEnv(key, fallback string) string {
 }
 
 func getPredictorServerConfigs() (map[string]PredictorServerConfig, error) {
-	clientset := kubernetes.NewForConfigOrDie(ctrl.GetConfigOrDie())
-	configMap, err := clientset.CoreV1().ConfigMaps(ControllerNamespace).Get(ControllerConfigMapName, metav1.GetOptions{})
+	configMap := &corev1.ConfigMap{}
+
+	fmt.Println("k8s client in webhook")
+	fmt.Printf("%+v\n", C)
+
+	err := C.Get(context.TODO(), k8types.NamespacedName{Name: ControllerConfigMapName, Namespace: ControllerNamespace}, configMap)
+
 	if err != nil {
 		fmt.Println("Failed to find config map " + ControllerConfigMapName)
+		fmt.Println(err)
 		return nil, err
 	}
+	fmt.Println("ConfigMap loaded")
+	fmt.Printf("%+v\n", configMap)
 	return getPredictorServerConfigsFromMap(configMap)
 }
 
@@ -86,6 +96,7 @@ func getPredictorServerConfigsFromMap(configMap *corev1.ConfigMap) (map[string]P
 }
 
 func (r *SeldonDeployment) SetupWebhookWithManager(mgr ctrl.Manager) error {
+	C = mgr.GetClient()
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
 		Complete()
@@ -125,7 +136,6 @@ func GetPrepackServerConfig(serverName string) PredictorServerConfig {
 	if err != nil {
 		seldondeploymentlog.Error(err, "Failed to read prepacked model servers from configmap")
 	}
-
 	ServerConfig, ok := ServersConfigs[serverName]
 	if !ok {
 		seldondeploymentlog.Error(nil, "No entry in predictors map for "+serverName)

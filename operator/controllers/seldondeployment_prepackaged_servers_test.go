@@ -7,6 +7,7 @@ import (
 	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/api/v1alpha2"
 	"github.com/seldonio/seldon-core/operator/utils"
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"time"
@@ -44,6 +45,14 @@ var _ = Describe("Create a prepacked sklearn server", func() {
 				},
 			},
 		}
+
+		configMapName := types.NamespacedName{Name: "seldon-config",
+			Namespace: "seldon-system"}
+
+		configResult := &corev1.ConfigMap{}
+		const timeout = time.Second * 30
+		Eventually(func() error { return k8sClient.Get(context.TODO(), configMapName, configResult) }, timeout).
+			Should(Succeed())
 
 		// Run Defaulter
 		instance.Default()
