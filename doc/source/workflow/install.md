@@ -6,18 +6,26 @@ To install seldon-core on a Kubernetes cluster you have several choices:
 
 We presently support [Helm](#seldon-core-helm-install) and [Kustomize](#seldon-core-kustomize-install).
 
+>**Note:** From Seldon Core v1.0.0 onward, the minimum supported version of Helm is v3.0.0. Users still running Helm v2.16.1 or below should upgrade to a supported version before installing Seldon Core.
+
+>Please see [Migrating from Helm v2 to Helm v3](https://helm.sh/blog/migrate-from-helm-v2-to-helm-v3/) if you are already running Seldon Core using Helm v2 and wish to upgrade.
+
 ## Seldon Core Helm Install
 
 First [install Helm](https://docs.helm.sh). When helm is installed you can deploy the seldon controller to manage your Seldon Deployment graphs.
 
-```bash 
-helm install seldon-core-operator --name seldon-core --repo https://storage.googleapis.com/seldon-charts --set usageMetrics.enabled=true --namespace seldon-system
+```bash
+kubectl create namespace seldon-system
+```
+
+```bash
+helm install seldon-core seldon-core-operator --repo https://storage.googleapis.com/seldon-charts --set usageMetrics.enabled=true --namespace seldon-system
 ```
 
 **For the unreleased 0.5.0 version you would need to install 0.5.0-SNAPSHOT to test**:
 
-```bash 
-helm install seldon-core-operator --name seldon-core --repo https://storage.googleapis.com/seldon-charts --set usageMetrics.enabled=true --namespace seldon-system --version 0.5.0-SNAPSHOT
+```bash
+helm install seldon-core seldon-core-operator --repo https://storage.googleapis.com/seldon-charts --set usageMetrics.enabled=true --namespace seldon-system --version 0.5.0-SNAPSHOT
 ```
 
 Notes
@@ -33,7 +41,7 @@ You can follow [the cert manager documentation to install it](https://docs.cert-
 You can then install seldon-core with:
 
 ```bash 
-helm install seldon-core-operator --name seldon-core --repo https://storage.googleapis.com/seldon-charts --set usageMetrics.enabled=true --namespace seldon-system --version 0.5.0-SNAPSHOT --set certManager.enabled=true
+helm install seldon-core seldon-core-operator --repo https://storage.googleapis.com/seldon-charts --set usageMetrics.enabled=true --namespace seldon-system --version 0.5.0-SNAPSHOT --set certManager.enabled=true
 ```
 
 ## Ingress Support
@@ -56,8 +64,16 @@ We presently support two API Ingress Gateways
 
 We suggest you install [the official helm chart](https://github.com/helm/charts/tree/master/stable/ambassador). At present we recommend 0.40.2 version due to issues with grpc in the latest.
 
+```bash
+helm repo add stable https://kubernetes-charts.storage.googleapis.com/
 ```
-helm install stable/ambassador --name ambassador --set crds.keep=false
+
+```bash
+helm repo update
+```
+
+```bash
+helm install ambassador stable/ambassador --set crds.keep=false
 ```
 
 ### Install Istio Ingress Gateway
