@@ -21,8 +21,8 @@
                     "spec": {
                         "containers": [
                             {
-                                "image": "REPLACE_FOR_IMAGE_AND_TAG",
-                                "imagePullPolicy": "IfNotPresent",
+                                "image": "271049282727.dkr.ecr.us-west-2.amazonaws.com/seldon-repository:latest",
+                                "imagePullPolicy": "Always",
                                 "name": "classifier",
                                 "resources": {
                                     "requests": {
