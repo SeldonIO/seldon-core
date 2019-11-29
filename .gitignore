@@ -149,6 +149,8 @@ examples/models/sagemaker/scikit_learn_iris_deployment.json
 
 #go example
 examples/wrappers/go/.idea
+examples/wrappers/go/tensorflow
+examples/wrappers/go/vendor/tensorflow/
 
 util/custom-resource-definitions/hpa-spec.json
 wrappers/s2i/python_openvino/s2i

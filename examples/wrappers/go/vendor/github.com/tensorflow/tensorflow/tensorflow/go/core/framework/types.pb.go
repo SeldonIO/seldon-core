@@ -20,6 +20,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
+// (== suppress_warning documentation-presence ==)
 // LINT.IfChange
 type DataType int32
 

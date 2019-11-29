@@ -1,4 +1,4 @@
-
+CDIR := ${CURDIR}
 
 .PHONY: compile_tensorflow_proto
 compile_tensorflow_proto:
@@ -9,7 +9,6 @@ compile_proto:
 	cp ../../../proto/prediction.proto pkg/api
 	cd pkg/api && protoc -I. -I${GOPATH}/src/github.com/tensorflow/tensorflow --go_out=paths=source_relative,plugins=grpc:. prediction.proto
 	rm pkg/api/prediction.proto
-
 
 .PHONY: build_docker
 build_docker:

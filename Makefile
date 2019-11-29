@@ -59,3 +59,10 @@ run_python_builder:
 		-v $(SELDON_CORE_LOCAL_DIR):/work \
 		seldonio/python-builder:0.2 bash
 
+protos_go: export GOPATH := $(GOPATH)
+protos_go: export PATH := $(PATH):$(GOPATH)/bin
+protos_go:
+	@echo GOPATH: $(GOPATH)
+	@echo PATH: $(PATH)
+	make -C examples/wrappers/go compile_tensorflow_proto
+	make -C examples/wrappers/go compile_proto
