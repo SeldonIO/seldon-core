@@ -1,2 +1,0 @@
-model_checkpoint_path: "deep_mnist_model"
-all_model_checkpoint_paths: "deep_mnist_model"

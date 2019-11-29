@@ -7,7 +7,6 @@ WORKDIR /microservice
 
 COPY ./s2i/bin/ /s2i/bin
 
-COPY requirements.txt ./requirements.txt
-RUN pip install -r requirements.txt
+RUN pip install seldon-core
 
 EXPOSE 5000
