@@ -156,7 +156,7 @@ s2i build <src-folder> seldonio/seldon-core-s2i-java-build:0.1 <my-image-name> -
 An example invocation using the test template model inside seldon-core:
 
 ```bash
-s2i build https://github.com/seldonio/seldon-core.git --context-dir=incubating/wrappers/s2i/python/test/model-template-app seldonio/seldon-core-s2i-java-build:0.1 h2o-test:0.1 --runtime-image seldonio/seldon-core-s2i-java-runtime:0.1
+s2i build https://github.com/seldonio/seldon-core.git --context-dir=incubating/wrappers/s2i/java/test/model-template-app seldonio/seldon-core-s2i-java-build:0.1 h2o-test:0.1 --runtime-image seldonio/seldon-core-s2i-java-runtime:0.1
 ```
 
 The above s2i build invocation:
