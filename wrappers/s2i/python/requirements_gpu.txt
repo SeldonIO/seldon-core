@@ -1,0 +1,4 @@
+seldon-core
+tensorflow-gpu==1.13.1
+numpy==1.16.1
+
