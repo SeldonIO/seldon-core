@@ -68,9 +68,6 @@ func GetEnv(key, fallback string) string {
 func getPredictorServerConfigs() (map[string]PredictorServerConfig, error) {
 	configMap := &corev1.ConfigMap{}
 
-	fmt.Println("k8s client in webhook")
-	fmt.Printf("%+v\n", C)
-
 	err := C.Get(context.TODO(), k8types.NamespacedName{Name: ControllerConfigMapName, Namespace: ControllerNamespace}, configMap)
 
 	if err != nil {
@@ -78,8 +75,6 @@ func getPredictorServerConfigs() (map[string]PredictorServerConfig, error) {
 		fmt.Println(err)
 		return nil, err
 	}
-	fmt.Println("ConfigMap loaded")
-	fmt.Printf("%+v\n", configMap)
 	return getPredictorServerConfigsFromMap(configMap)
 }
 
