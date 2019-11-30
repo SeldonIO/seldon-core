@@ -276,13 +276,16 @@ func createStandaloneModelServers(r *SeldonDeploymentReconciler, mlDep *machinel
 		deploy = createDeploymentWithoutEngine(depName, seldonId, sPodSpec, p, mlDep)
 	}
 
-	ServerConfig := machinelearningv1alpha2.GetPrepackServerConfig(string(*pu.Implementation))
+	if machinelearningv1alpha2.IsPrepack(pu) {
 
-	if err := addModelDefaultServers(r, pu, p, deploy, ServerConfig); err != nil {
-		return err
-	}
-	if err := addTFServerContainer(r, pu, p, deploy, ServerConfig); err != nil {
-		return err
+		ServerConfig := machinelearningv1alpha2.GetPrepackServerConfig(string(*pu.Implementation))
+
+		if err := addModelDefaultServers(r, pu, p, deploy, ServerConfig); err != nil {
+			return err
+		}
+		if err := addTFServerContainer(r, pu, p, deploy, ServerConfig); err != nil {
+			return err
+		}
 	}
 
 	if !existing {
