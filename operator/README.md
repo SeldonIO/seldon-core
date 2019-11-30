@@ -61,7 +61,13 @@ When running update tls certificates locally
 make tls-extract
 ```
 
-Now delete the cluster Deployment as we will run the manager locally. After which you can run locally:
+Now delete the cluster Deployment as we will run the manager locally:
+
+```
+kubectl delete deployment -n seldon-system seldon-controller-manager
+``` 
+
+Now we can run locally:
 
 ```
 make run
