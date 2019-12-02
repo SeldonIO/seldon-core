@@ -39,7 +39,7 @@ create_namespaces:
 	kubectl create namespace test1 || echo "Namespace test1 already exists"
 	kubectl config set-context $$(kubectl config current-context) --namespace=seldon
 
-kind_setup: install_helm install_ambassador install_seldon create_namespaces
+kind_setup: kind_build_images install_helm install_ambassador install_seldon create_namespaces
 
 port-forward-ambassador:
 	kubectl port-forward $$(kubectl get pods -n seldon -l app.kubernetes.io/name=ambassador -o jsonpath='{.items[0].metadata.name}') -n seldon 8003:8080
