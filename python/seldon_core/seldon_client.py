@@ -265,10 +265,7 @@ class SeldonClient(object):
             )
         if not (data is None or isinstance(data, np.ndarray)):
             raise SeldonClientException("Valid values for data are None or numpy array")
-        if not (
-            client_return_type == "proto"
-            or client_return_type == "dict"
-        ):
+        if not (client_return_type == "proto" or client_return_type == "dict"):
             raise SeldonClientException(
                 "Valid values for client_return_type are proto or dict"
             )
