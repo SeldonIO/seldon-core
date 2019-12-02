@@ -110,7 +110,8 @@ def test_predict_rest_json_data_seldon(mock_post, mock_token):
 @mock.patch("requests.post", side_effect=mocked_requests_post_success_json_data)
 def test_explain_rest_json_data_ambassador(mock_post):
     sc = SeldonClient(deployment_name="mymodel", gateway="ambassador")
-    json_response = sc.explain(json_data=JSON_TEST_DATA)
+    response = sc.explain(json_data=JSON_TEST_DATA)
+    json_response = seldon_message_to_json(response.response)
     # Currently this doesn't need to convert to JSON due to #1083
     # i.e. json_response = seldon_message_to_json(response.response)
     assert "jsonData" in mock_post.call_args[1]["json"]
