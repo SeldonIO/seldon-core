@@ -17,27 +17,28 @@ limitations under the License.
 package controllers
 
 import (
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/kubernetes"
-	"os"
-	"path/filepath"
-	"testing"
-
+	"context"
+	"fmt"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-
 	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/api/v1alpha2"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/kubernetes"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
 	istio "knative.dev/pkg/apis/istio/v1alpha3"
+	"os"
+	"path/filepath"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	"testing"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -57,6 +58,62 @@ func TestAPIs(t *testing.T) {
 	RunSpecsWithDefaultAndCustomReporters(t,
 		"Controller Suite",
 		[]Reporter{envtest.NewlineReporter{}})
+}
+
+var configs = map[string]string{
+	"predictor_servers": `{
+             "TENSORFLOW_SERVER": {
+                 "tensorflow": true,
+                 "tfImage": "tensorflow/serving:latest",
+                 "rest": {
+                   "image": "seldonio/tfserving-proxy_rest",
+                   "defaultImageVersion": "0.7"
+                 },
+                 "grpc": {
+                   "image": "seldonio/tfserving-proxy_grpc",
+                   "defaultImageVersion": "0.7"
+                 }
+             },
+             "SKLEARN_SERVER": {
+                 "rest": {
+                   "image": "seldonio/sklearnserver_rest",
+                   "defaultImageVersion": "0.2"
+                 },
+                 "grpc": {
+                   "image": "seldonio/sklearnserver_grpc",
+                   "defaultImageVersion": "0.2"
+                 }
+             },
+             "XGBOOST_SERVER": {
+                 "rest": {
+                   "image": "seldonio/xgboostserver_rest",
+                   "defaultImageVersion": "0.2"
+                 },
+                 "grpc": {
+                   "image": "seldonio/xgboostserver_grpc",
+                   "defaultImageVersion": "0.2"
+                 }
+             },
+             "MLFLOW_SERVER": {
+                 "rest": {
+                   "image": "seldonio/mlflowserver_rest",
+                   "defaultImageVersion": "0.2"
+                 },
+                 "grpc": {
+                   "image": "seldonio/mlflowserver_grpc",
+                   "defaultImageVersion": "0.2"
+                 }
+             }
+         }`,
+}
+
+// Create configmap
+var configMap = &corev1.ConfigMap{
+	ObjectMeta: metav1.ObjectMeta{
+		Name:      machinelearningv1alpha2.ControllerConfigMapName,
+		Namespace: "seldon-system",
+	},
+	Data: configs,
 }
 
 var _ = BeforeSuite(func(done Done) {
@@ -116,17 +173,27 @@ var _ = BeforeSuite(func(done Done) {
 	}).SetupWithManager(k8sManager)
 	Expect(err).ToNot(HaveOccurred())
 
+	//k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
+	k8sClient = k8sManager.GetClient()
+	Expect(k8sClient).ToNot(BeNil())
+
+	Expect(k8sClient.Create(context.TODO(), configMap)).NotTo(HaveOccurred())
+	//	defer k8sClient.Delete(context.TODO(), configMap)
+
+	machinelearningv1alpha2.C = k8sClient
+
+	fmt.Println("test k8s client")
+	fmt.Printf("%+v\n", k8sClient)
+
 	go func() {
 		defer GinkgoRecover()
+
+		//can't call webhook as leads to https://github.com/kubernetes-sigs/controller-runtime/issues/491
 		//err = (&machinelearningv1alpha2.SeldonDeployment{}).SetupWebhookWithManager(k8sManager)
 		//Expect(err).ToNot(HaveOccurred())
 		err = k8sManager.Start(ctrl.SetupSignalHandler())
 		Expect(err).ToNot(HaveOccurred())
 	}()
-
-	//k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
-	k8sClient = k8sManager.GetClient()
-	Expect(k8sClient).ToNot(BeNil())
 
 	close(done)
 }, 60)
