@@ -77,6 +77,8 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
     ## RUNNING TESTS AND CAPTURING ERROR
     make test
     TEST_EXIT_VALUE=$?
+else
+    echo "Existing kind cluster or failure starting - ${KIND_EXIT_VALUE}"
 fi
 
 # DELETE KIND CLUSTER
