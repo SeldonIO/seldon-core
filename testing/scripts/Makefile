@@ -18,14 +18,10 @@ kind_build_operator:
 
 kind_build_images: kind_build_engine kind_build_operator
 
-install_helm:
-	kubectl -n kube-system create sa tiller
-	kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
-	helm init --service-account tiller
-	kubectl rollout status deploy/tiller-deploy -n kube-system
-
 install_ambassador:
-	helm install stable/ambassador -f ambassador_values.yaml --name ambassador --set crds.keep=false --namespace seldon --set replicaCount=1
+	helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+	helm repo update
+	helm install ambassador stable/ambassador -f ambassador_values.yaml --set crds.keep=false --namespace seldon --set replicaCount=1
 	kubectl rollout status deployment.apps/ambassador --namespace seldon
 
 install_cert_manager:
