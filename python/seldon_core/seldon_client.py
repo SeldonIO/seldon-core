@@ -293,7 +293,7 @@ class SeldonClient(object):
         gateway_prefix: str = None,
         headers: Dict = None,
         http_path: str = None,
-        client_return_type: str = "proto",
+        client_return_type: str = None,
     ) -> SeldonClientPrediction:
         """
 
@@ -409,7 +409,7 @@ class SeldonClient(object):
         shape: Tuple = (1, 1),
         namespace: str = None,
         gateway_prefix: str = None,
-        client_return_type: str = "proto",
+        client_return_type: str = None,
     ) -> SeldonClientFeedback:
         """
 
@@ -522,7 +522,7 @@ class SeldonClient(object):
         gateway_prefix: str = None,
         headers: Dict = None,
         http_path: str = None,
-        client_return_type: str = "proto",
+        client_return_type: str = None,
     ) -> Dict:
         """
 
