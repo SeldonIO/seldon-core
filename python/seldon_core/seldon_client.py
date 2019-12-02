@@ -522,7 +522,7 @@ class SeldonClient(object):
         gateway_prefix: str = None,
         headers: Dict = None,
         http_path: str = None,
-        client_return_type: str = "dict",
+        client_return_type: str = "proto",
     ) -> Dict:
         """
 
@@ -1628,9 +1628,9 @@ def explain_predict_gateway(
     call_credentials: SeldonCallCredentials = None,
     channel_credentials: SeldonChannelCredentials = None,
     http_path: str = None,
-    client_return_type: str = "dict",
+    client_return_type: str = "proto",
     **kwargs,
-) -> Dict:
+) -> SeldonClientPrediction:
     """
     REST explain request to Gateway Ingress
 
@@ -1757,11 +1757,21 @@ def explain_predict_gateway(
     )
     if response_raw.status_code == 200:
         if client_return_type == "proto":
-            response = json_to_seldon_message(response_raw.json())
+            ret_request = json_to_seldon_message(payload)
+            ret_response = json_to_seldon_message(response_raw.json())
         elif client_return_type == "dict":
-            response = response_raw.json()
+            ret_request = payload
+            ret_response = response_raw.json()
+        else:
+            SeldonClientException("Invalid client_return_type")
+        return SeldonClientPrediction(ret_request, ret_response, True, "")
     else:
-        return {"success": False, "response_code": response_raw.status_code}
+        return SeldonClientPrediction(
+            payload,
+            response_raw,
+            False,
+            f"Unsuccessful request with status code: {response_raw.status_code}",
+        )
 
 
 def grpc_predict_gateway(
