@@ -345,7 +345,7 @@ def construct_response_json(
     """
     response = {}
 
-    if "jsonData" in client_request_raw:
+    if isinstance(client_raw_response, dict):
         response["jsonData"] = client_raw_response
     elif isinstance(client_raw_response, (bytes, bytearray)):
         base64_data = base64.b64encode(client_raw_response)
