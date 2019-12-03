@@ -1038,6 +1038,8 @@ func createDeployments(r *SeldonDeploymentReconciler, components *components, in
 
 				if !reflect.DeepEqual(deploy.Spec.Template.Spec.Containers[0].Resources, found.Spec.Template.Spec.Containers[0].Resources) {
 					log.Info("Containers differ")
+				} else {
+					log.Info("Deployments differ")
 				}
 
 				ready = false
