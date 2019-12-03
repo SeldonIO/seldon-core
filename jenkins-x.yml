@@ -1,6 +1,12 @@
 buildPack: none
 pipelineConfig:
   pipelines:
+    overrides:
+    - name: changelog
+      pipeline: release
+      stage: promote
+      step:
+        command: echo "skipping promote"
     pullRequest:
       pipeline:
         agent:
@@ -28,6 +34,18 @@ pipelineConfig:
               command: make
               name: test-engine
     release:
+      setVersion:
+        steps:
+        - name: create-version
+          command: cat version.txt > VERSION
+        - name: delete-existing-branch
+          command: git branch -D v\$(cat version.txt) || echo "No branch exists"
+        - name: create-new-branch
+          command: git checkout -b v\$(cat version.txt)
+        - name: commit-new-branch
+          command: git push origin v\$(cat version.txt) -f
+        - name: skip-tag
+          command: echo "skipping tag"
       pipeline:
         agent:
           image: seldonio/core-builder:0.4

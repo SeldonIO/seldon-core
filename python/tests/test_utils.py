@@ -15,10 +15,13 @@ if _TF_PRESENT:
 
 
 class UserObject(object):
-    def __init__(self, metrics_ok=True, ret_nparray=False, ret_meta=False):
+    def __init__(
+        self, metrics_ok=True, ret_nparray=False, ret_meta=False, ret_dict=False
+    ):
         self.metrics_ok = metrics_ok
         self.ret_nparray = ret_nparray
         self.nparray = np.array([1, 2, 3])
+        self.dict = {"output": "data"}
         self.ret_meta = ret_meta
 
     def predict(self, X, features_names, **kwargs):
@@ -34,6 +37,8 @@ class UserObject(object):
             self.inc_meta = kwargs.get("meta")
         if self.ret_nparray:
             return self.nparray
+        elif self.ret_dict:
+            return self.dict
         else:
             print("Predict called - will run identity function")
             print(X)
@@ -188,6 +193,19 @@ def test_create_rest_response_jsondata():
     assert "data" not in json_response
     emptyValue = Value()
     assert json_response["jsonData"] != emptyValue
+
+
+def test_create_rest_response_jsondata_with_array_input():
+    user_model = UserObject(ret_dict=True)
+    request_data = np.array([[5, 6, 7]])
+    datadef = scu.array_to_rest_datadef("ndarray", request_data)
+    json_request = {"data": datadef}
+    raw_response = {"output": "data"}
+    json_response = scu.construct_response_json(
+        user_model, True, json_request, raw_response
+    )
+    assert "data" not in json_response
+    assert json_response["jsonData"] == user_model.dict
 
 
 def test_symmetric_json_conversion():
