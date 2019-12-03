@@ -154,4 +154,6 @@ Next steps:
 - [Tensorflow Serving](tensorflow.html)
 - [MLflow Server](mlflow.html)
 
-If your use case does not fall into the above standard servers then you can create your own component using our wrappers.
+Custom serving images or versions of images can also be added or overridden in the operator's `seldon-config` configmap.
+
+If your use case does not fit for a reusable standard server then you can create your own component using our wrappers.
