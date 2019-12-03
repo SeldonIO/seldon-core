@@ -34,13 +34,7 @@ To set up ingress [Ambassador](https://www.getambassador.io/user-guide/helm/) or
   helm install stable/ambassador --name ambassador --set crds.keep=false
  ```
 
-## Next Steps
-
-For next steps on using Seldon Core and deploying your first ML models visit the [Seldon Core project page](https://github.com/SeldonIO/seldon-core).
-
-## FAQs
-
-### Install in a particular namespace
+## Install in a particular namespace
 
 Use the helm ```--namespace``` argument to install in a particular namespace
 
@@ -49,3 +43,8 @@ Use the helm ```--namespace``` argument to install in a particular namespace
    helm install seldon-core-aws --name seldon-core --repo https://storage.googleapis.com/seldon-aws-charts \
         --namespace my-namespace
  ```
+
+## Next Steps
+
+For next steps on using Seldon Core and deploying your first ML models visit the [Seldon Core project page](https://github.com/SeldonIO/seldon-core).
+
