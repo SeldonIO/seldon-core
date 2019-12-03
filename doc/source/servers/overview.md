@@ -146,6 +146,8 @@ spec:
 
 The image name and other details will be added when this is deployed automatically.
 
+A Kubernetes PersistentVolume [can be used](https://github.com/SeldonIO/seldon-core/issues/1106) instead of a bucket using `pvc://`.
+
 Next steps:
 
 - [Worked notebook](../examples/server_examples.html)
