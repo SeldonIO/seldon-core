@@ -1,24 +1,13 @@
+{{- if .Values.singleNamespace }}
 {{- if .Values.rbac.create }}
 {{- if .Values.rbac.configmap.create }}
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
+kind: Role
 metadata:
   creationTimestamp: null
-  labels:
-    app: seldon
-    app.kubernetes.io/instance: '{{ .Release.Name }}'
-    app.kubernetes.io/name: '{{ include "seldon.name" . }}'
-    app.kubernetes.io/version: '{{ .Chart.Version }}'
-  name: seldon-manager-css-role
+  name: seldon1-manager-sas-role
+  namespace: '{{ .Release.Namespace }}'
 rules:
-- apiGroups:
-  - ''
-  resources:
-  - configmaps
-  verbs:
-  - get
-  - list
-  - watch
 - apiGroups:
   - ''
   resources:
@@ -35,5 +24,6 @@ rules:
   - get
   - list
   - watch
+{{- end }}
 {{- end }}
 {{- end }}

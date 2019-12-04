@@ -1,6 +1,10 @@
+if [ "$#" -ne 1 ]; then
+    echo "Illegal number of parameters"
+fi
+
 mkdir tmp
 cd tmp
-kustomize build ../../config/spartakus > tt.yaml
+kustomize build ../../config/$1 > tt.yaml
 csplit --suppress-matched   tt.yaml "/^---/" "{*}"
 # manually add secret file from cert kustomize option
 cp ../../config/cert/secret.yaml xxSecret

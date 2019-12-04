@@ -4,3 +4,6 @@ resources:
 
 configurations:
 - kustomizeconfig.yaml
+
+patchesStrategicMerge:
+- patch_object_selector.yaml

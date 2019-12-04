@@ -1,3 +1,4 @@
+{{- if not .Values.singleNamespace }}
 {{- if .Values.rbac.create }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -10,6 +11,14 @@ metadata:
     app.kubernetes.io/version: '{{ .Chart.Version }}'
   name: seldon-manager-role
 rules:
+- apiGroups:
+  - ''
+  resources:
+  - namespaces
+  verbs:
+  - get
+  - list
+  - watch
 - apiGroups:
   - ''
   resources:
@@ -133,6 +142,14 @@ rules:
 - apiGroups:
   - v1
   resources:
+  - namespaces
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - v1
+  resources:
   - services
   verbs:
   - create
@@ -150,4 +167,5 @@ rules:
   - get
   - patch
   - update
+{{- end }}
 {{- end }}

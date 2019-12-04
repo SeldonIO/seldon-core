@@ -4,7 +4,7 @@ metadata:
   name: manager-sas-rolebinding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
+  kind: Role
   name: manager-sas-role
 subjects:
 - kind: ServiceAccount

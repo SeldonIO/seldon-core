@@ -1,0 +1,5 @@
+- op: replace
+  path: /webhooks/0/namespaceSelector
+  value:
+    matchLabels:
+      controller-id: $(SERVICE_NAMESPACE)

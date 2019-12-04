@@ -77,9 +77,10 @@ func main() {
 	}
 
 	if err = (&controllers.SeldonDeploymentReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("SeldonDeployment"),
-		Scheme: mgr.GetScheme(),
+		Client:    mgr.GetClient(),
+		Log:       ctrl.Log.WithName("controllers").WithName("SeldonDeployment"),
+		Scheme:    mgr.GetScheme(),
+		Namespace: namespace,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "SeldonDeployment")
 		os.Exit(1)

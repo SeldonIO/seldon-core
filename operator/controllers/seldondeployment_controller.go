@@ -64,8 +64,9 @@ const (
 // SeldonDeploymentReconciler reconciles a SeldonDeployment object
 type SeldonDeploymentReconciler struct {
 	client.Client
-	Log    logr.Logger
-	Scheme *runtime.Scheme
+	Log       logr.Logger
+	Scheme    *runtime.Scheme
+	Namespace string
 }
 
 //---------------- Old part
@@ -1006,8 +1007,6 @@ func createDeployments(r *SeldonDeploymentReconciler, components *components, in
 		if err != nil && errors.IsNotFound(err) {
 			ready = false
 			log.Info("Creating Deployment", "namespace", deploy.Namespace, "name", deploy.Name)
-			jStr1, err := json.Marshal(deploy.Spec.Template.Spec)
-			fmt.Println(string(jStr1))
 
 			err = r.Create(context.TODO(), deploy)
 			if err != nil {
@@ -1032,11 +1031,6 @@ func createDeployments(r *SeldonDeploymentReconciler, components *components, in
 			//if !reflect.DeepEqual(deploy.Spec.Template.Spec, found.Spec.Template.Spec) {
 			if !jEquals {
 				log.Info("Updating Deployment", "namespace", deploy.Namespace, "name", deploy.Name)
-
-				jStr1, err := json.Marshal(deploy.Spec.Template.Spec)
-				fmt.Println(string(jStr1))
-				jStr2, err := json.Marshal(found.Spec.Template.Spec)
-				fmt.Println(string(jStr2))
 
 				if !reflect.DeepEqual(deploy.Spec.Template.Spec.Containers[0].Resources, found.Spec.Template.Spec.Containers[0].Resources) {
 					log.Info("Containers differ")
@@ -1200,11 +1194,13 @@ func createDeployments(r *SeldonDeploymentReconciler, components *components, in
 // +kubebuilder:rbac:groups=machinelearning.seldon.io,resources=seldondeployments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=machinelearning.seldon.io,resources=seldondeployments/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=machinelearning.seldon.io,resources=seldondeployments/finalizers,verbs=get;update;patch
+// +kubebuilder:rbac:groups=v1,resources=namespaces,verbs=get;list;watch
+// +kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch
 
 func (r *SeldonDeploymentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
-	log := r.Log.WithValues("seldondeployment", req.NamespacedName)
-
+	log := r.Log.WithValues("SeldonDeployment", req.NamespacedName)
+	log.Info("Reconcile called")
 	// your logic here
 	// Fetch the SeldonDeployment instance
 	instance := &machinelearningv1alpha2.SeldonDeployment{}
@@ -1220,7 +1216,22 @@ func (r *SeldonDeploymentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		return ctrl.Result{}, err
 	}
 
-	// Check we should reconcile this
+	// Check if we are not namespaced and should ignore this as its in a namespace managed by another operator
+	if r.Namespace == "" {
+		ns := &corev1.Namespace{}
+		err := r.Get(ctx, types.NamespacedName{Name: instance.Namespace}, ns)
+		if err != nil {
+			log.Error(err, "unable to fetch SeldonDeployment namespace", "namespace", instance.Namespace)
+			return ctrl.Result{}, err
+		} else {
+			if ns.Labels[LABEL_CONTROLLER_ID] != "" {
+				log.Info("Skipping reconcile of namespaced deployment")
+				return ctrl.Result{}, nil
+			}
+		}
+	}
+
+	// Check we should reconcile this by matching controller-id
 	controllerId := GetEnv(ENV_CONTROLLER_ID, "")
 	desiredControllerId := instance.Labels[LABEL_CONTROLLER_ID]
 	if desiredControllerId != controllerId {

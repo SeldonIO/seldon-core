@@ -17,3 +17,18 @@ patchesJson6902:
     kind: Namespace
     name: system
   path: namespace_patch.yaml
+- target:
+    group: admissionregistration.k8s.io
+    version: v1beta1
+    kind: MutatingWebhookConfiguration
+    name: mutating-webhook-configuration
+  path: patch_webhook_selectors.yaml
+- target:
+    group: admissionregistration.k8s.io
+    version: v1beta1
+    kind: ValidatingWebhookConfiguration
+    name: validating-webhook-configuration
+  path: patch_webhook_selectors.yaml
+
+configurations:
+- webhook-config.yaml

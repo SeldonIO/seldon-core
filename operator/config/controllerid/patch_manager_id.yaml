@@ -9,5 +9,5 @@ spec:
       containers:
       - env:
         - name: CONTROLLER_ID
-          value: "seldonid1"
+          value: $(SERVICE_NAMESPACE)
         name: manager

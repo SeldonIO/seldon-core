@@ -4,9 +4,14 @@ metadata:
   name: mutating-webhook-configuration
 webhooks:
 - name: mseldondeployment.kb.io
+  objectSelector:
+    matchExpressions:
+    - operator: DoesNotExist
+      key: controller-id
   namespaceSelector:
-    matchLabels:
-      controller-id: $(SERVICE_NAMESPACE)
+    matchExpressions:
+    - operator: DoesNotExist
+      key: controller-id
 ---
 apiVersion: admissionregistration.k8s.io/v1beta1
 kind: ValidatingWebhookConfiguration
@@ -14,14 +19,11 @@ metadata:
   name: validating-webhook-configuration
 webhooks:
 - name: vseldondeployment.kb.io
+  objectSelector:
+    matchExpressions:
+    - operator: DoesNotExist
+      key: controller-id
   namespaceSelector:
-    matchLabels:
-      controller-id: $(SERVICE_NAMESPACE)
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  labels:
-    controller-id: $(SERVICE_NAMESPACE)
-  name: system
-            
+    matchExpressions:
+    - operator: DoesNotExist
+      key: controller-id
