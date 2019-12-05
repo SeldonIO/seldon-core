@@ -9,6 +9,7 @@ parser.add_argument('--folder', required=True, help='Output folder')
 args, _ = parser.parse_known_args()
 
 HELM_SPARTAKUS_IF_START = '{{- if .Values.usageMetrics.enabled }}\n'
+HELM_CRD_IF_START = '{{- if .Values.crd.create }}\n'
 HELM_NOT_SINGLE_NAMESPACE_IF_START = '{{- if not .Values.singleNamespace }}\n'
 HELM_SINGLE_NAMESPACE_IF_START = '{{- if .Values.singleNamespace }}\n'
 HELM_CONTROLLERID_IF_START = '{{- if .Values.controllerId }}\n'
@@ -102,8 +103,13 @@ if __name__ == "__main__":
             if kind == "serviceaccount" and name == "seldon-manager":
                 res["metadata"]["name"] = helm_value("serviceAccount.name")
 
+            if kind == "clusterrole":
+                res["metadata"]["name"] = res["metadata"]["name"] + "-" + helm_release("Namespace")
+
             # Update cluster role bindings
             if kind == "clusterrolebinding":
+                res["metadata"]["name"] = res["metadata"]["name"] + "-" + helm_release("Namespace")
+                res["roleRef"]["name"] = res["roleRef"]["name"] + "-" + helm_release("Namespace")
                 if name == "seldon-manager-rolebinding":
                     res["subjects"][0]["name"] = helm_value("serviceAccount.name")
                     res["subjects"][0]["namespace"] = helm_release("Namespace")
@@ -125,6 +131,7 @@ if __name__ == "__main__":
                 res["data"]["tls.key"] = "{{ $cert.Key | b64enc }}"
 
             if kind == "mutatingwebhookconfiguration" or kind == "validatingwebhookconfiguration":
+                res["metadata"]["name"] = res["metadata"]["name"] + "-" + helm_release("Namespace")
                 res["webhooks"][0]["clientConfig"]["caBundle"] = "{{ $ca.Cert | b64enc }}"
                 res["webhooks"][0]["clientConfig"]["service"]["namespace"] = helm_release("Namespace")
                 if "certmanager.k8s.io/inject-ca-from" in res["metadata"]["annotations"]:
@@ -171,6 +178,8 @@ if __name__ == "__main__":
                 fdata = HELM_CERTMANAGER_IF_START + fdata + HELM_IF_END
             elif name == "seldon-webhook-server-cert" and kind == "secret":
                 fdata = HELM_NOT_CERTMANAGER_IF_START + fdata + HELM_IF_END
+            elif name == "seldondeployments.machinelearning.seldon.io":
+                fdata =HELM_CRD_IF_START + fdata + HELM_IF_END
 
             # make sure webhook is not quoted as its an int
             fdata = fdata.replace("'{{ .Values.webhook.port }}'","{{ .Values.webhook.port }}")
@@ -187,8 +196,8 @@ if __name__ == "__main__":
                     with open(filename, 'w') as outfile:
                         outfile.write(fdata)
     # Write webhook related data in 1 file
-    namespaceSelector = "    matchLabels:\n      controller-id: " + helm_release("Namespace") + "\n"
-    objectSelector = "    matchLabels:\n      controller-id: " + helm_value("controllerId") + "\n"
+    namespaceSelector = "  namespaceSelector:\n    matchLabels:\n      controller-id: " + helm_release("Namespace") + "\n"
+    objectSelector = "  objectSelector:\n    matchLabels:\n      controller-id: " + helm_value("controllerId") + "\n"
     webhookData = re.sub(r"(.*namespaceSelector:\n.*matchExpressions:\n.*\n.*\n)",HELM_NOT_SINGLE_NAMESPACE_IF_START+r"\1"+HELM_IF_END+HELM_SINGLE_NAMESPACE_IF_START+namespaceSelector+HELM_IF_END,webhookData, re.M)
     webhookData = re.sub(r"(.*objectSelector:\n.*matchExpressions:\n.*\n.*\n)",HELM_NOT_CONTROLLERID_IF_START+r"\1"+HELM_IF_END+HELM_CONTROLLERID_IF_START+objectSelector+HELM_IF_END,webhookData, re.M)
 

@@ -8,11 +8,11 @@ metadata:
     app.kubernetes.io/instance: '{{ .Release.Name }}'
     app.kubernetes.io/name: '{{ include "seldon.name" . }}'
     app.kubernetes.io/version: '{{ .Chart.Version }}'
-  name: seldon-manager-rolebinding
+  name: seldon-manager-rolebinding-{{ .Release.Namespace }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: seldon-manager-role
+  name: seldon-manager-role-{{ .Release.Namespace }}
 subjects:
 - kind: ServiceAccount
   name: '{{ .Values.serviceAccount.name }}'

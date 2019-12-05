@@ -14,7 +14,7 @@ metadata:
     app.kubernetes.io/instance: '{{ .Release.Name }}'
     app.kubernetes.io/name: '{{ include "seldon.name" . }}'
     app.kubernetes.io/version: '{{ .Chart.Version }}'
-  name: seldon-validating-webhook-configuration
+  name: seldon-validating-webhook-configuration-{{ .Release.Namespace }}
 webhooks:
 - clientConfig:
     caBundle: '{{ $ca.Cert | b64enc }}'
@@ -31,6 +31,7 @@ webhooks:
       operator: DoesNotExist
 {{- end }}
 {{- if .Values.singleNamespace }}
+  namespaceSelector:
     matchLabels:
       controller-id: {{ .Release.Namespace }}
 {{- end }}
@@ -41,6 +42,7 @@ webhooks:
       operator: DoesNotExist
 {{- end }}
 {{- if .Values.controllerId }}
+  objectSelector:
     matchLabels:
       controller-id: {{ .Values.controllerId }}
 {{- end }}
@@ -67,7 +69,7 @@ metadata:
     app.kubernetes.io/instance: '{{ .Release.Name }}'
     app.kubernetes.io/name: '{{ include "seldon.name" . }}'
     app.kubernetes.io/version: '{{ .Chart.Version }}'
-  name: seldon-mutating-webhook-configuration
+  name: seldon-mutating-webhook-configuration-{{ .Release.Namespace }}
 webhooks:
 - clientConfig:
     caBundle: '{{ $ca.Cert | b64enc }}'
@@ -84,6 +86,7 @@ webhooks:
       operator: DoesNotExist
 {{- end }}
 {{- if .Values.singleNamespace }}
+  namespaceSelector:
     matchLabels:
       controller-id: {{ .Release.Namespace }}
 {{- end }}
@@ -94,6 +97,7 @@ webhooks:
       operator: DoesNotExist
 {{- end }}
 {{- if .Values.controllerId }}
+  objectSelector:
     matchLabels:
       controller-id: {{ .Values.controllerId }}
 {{- end }}
