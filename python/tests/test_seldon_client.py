@@ -94,6 +94,20 @@ def test_predict_rest_json_data_ambassador(mock_post):
     assert mock_post.call_count == 1
 
 
+@mock.patch("requests.post", side_effect=mocked_requests_post_success_json_data)
+def test_predict_rest_json_data_ambassador_dict_response(mock_post):
+    sc = SeldonClient(
+        deployment_name="mymodel", gateway="ambassador", client_return_type="dict"
+    )
+    response = sc.predict(json_data=JSON_TEST_DATA)
+    json_response = response.response
+    assert "jsonData" in mock_post.call_args[1]["json"]
+    assert mock_post.call_args[1]["json"]["jsonData"] == JSON_TEST_DATA
+    assert response.success is True
+    assert json_response["jsonData"] == JSON_TEST_DATA
+    assert mock_post.call_count == 1
+
+
 @mock.patch("seldon_core.seldon_client.get_token", side_effect=mock_get_token)
 @mock.patch("requests.post", side_effect=mocked_requests_post_success_json_data)
 def test_predict_rest_json_data_seldon(mock_post, mock_token):
@@ -107,10 +121,41 @@ def test_predict_rest_json_data_seldon(mock_post, mock_token):
     assert mock_post.call_count == 1
 
 
+@mock.patch("seldon_core.seldon_client.get_token", side_effect=mock_get_token)
+@mock.patch("requests.post", side_effect=mocked_requests_post_success_json_data)
+def test_predict_rest_json_data_seldon_return_type(mock_post, mock_token):
+    sc = SeldonClient(
+        deployment_name="mymodel", gateway="seldon", client_return_type="dict"
+    )
+    response = sc.predict(json_data=JSON_TEST_DATA)
+    json_response = response.response
+    assert "jsonData" in mock_post.call_args[1]["json"]
+    assert mock_post.call_args[1]["json"]["jsonData"] == JSON_TEST_DATA
+    assert response.success is True
+    assert json_response["jsonData"] == JSON_TEST_DATA
+    assert mock_post.call_count == 1
+
+
 @mock.patch("requests.post", side_effect=mocked_requests_post_success_json_data)
 def test_explain_rest_json_data_ambassador(mock_post):
     sc = SeldonClient(deployment_name="mymodel", gateway="ambassador")
-    json_response = sc.explain(json_data=JSON_TEST_DATA)
+    response = sc.explain(json_data=JSON_TEST_DATA)
+    json_response = seldon_message_to_json(response.response)
+    # Currently this doesn't need to convert to JSON due to #1083
+    # i.e. json_response = seldon_message_to_json(response.response)
+    assert "jsonData" in mock_post.call_args[1]["json"]
+    assert mock_post.call_args[1]["json"]["jsonData"] == JSON_TEST_DATA
+    assert json_response["jsonData"] == JSON_TEST_DATA
+    assert mock_post.call_count == 1
+
+
+@mock.patch("requests.post", side_effect=mocked_requests_post_success_json_data)
+def test_explain_rest_json_data_ambassador_dict_response(mock_post):
+    sc = SeldonClient(
+        deployment_name="mymodel", gateway="ambassador", client_return_type="dict"
+    )
+    response = sc.explain(json_data=JSON_TEST_DATA)
+    json_response = response.response
     # Currently this doesn't need to convert to JSON due to #1083
     # i.e. json_response = seldon_message_to_json(response.response)
     assert "jsonData" in mock_post.call_args[1]["json"]
@@ -128,6 +173,18 @@ def test_predict_rest_with_ambassador_prefix(mock_post):
     assert mock_post.call_args[0][0].index("/mycompany/ml") > 0
     assert response.success == True
     assert response.response.data.tensor.shape == [1, 1]
+    assert mock_post.call_count == 1
+
+
+@mock.patch("requests.post", side_effect=mocked_requests_post_success)
+def test_predict_rest_with_ambassador_prefix_dict_response(mock_post):
+    sc = SeldonClient(deployment_name="mymodel", client_return_type="dict")
+    response = sc.predict(
+        gateway="ambassador", transport="rest", gateway_prefix="/mycompany/ml"
+    )
+    assert mock_post.call_args[0][0].index("/mycompany/ml") > 0
+    assert response.success == True
+    assert response.response["data"]["tensor"]["shape"] == [1, 1]
     assert mock_post.call_count == 1
 
 
@@ -163,7 +220,6 @@ def test_feedback_microservice_rest(mock_post):
         prediction_response=prediction_pb2.SeldonMessage(),
         reward=1.0,
     )
-    print(response)
     assert response.success == True
     assert response.response.data.tensor.shape == [1, 1]
     assert mock_post.call_count == 1
