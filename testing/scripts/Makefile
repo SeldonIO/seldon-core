@@ -36,7 +36,6 @@ install_jaeger:
 	helm install stable/jaeger-operator --name jaeger-operator --set rbac.clusterRole=true --namespace seldon 
 	kubectl rollout status deployment.apps/jaeger-operator --namespace seldon
 	kubectl apply -f ../resources/jaeger.yaml --namespace seldon
-	kubectl rollout status deployment.apps/jaeger --namespace seldon
 
 
 install_cert_manager:
