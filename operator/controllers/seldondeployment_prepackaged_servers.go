@@ -23,7 +23,6 @@ import (
 	"github.com/seldonio/seldon-core/operator/utils"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/api/core/v1"
-	corev1 "k8s.io/api/core/v1"
 	"strings"
 )
 
@@ -55,7 +54,6 @@ func addTFServerContainer(r *SeldonDeploymentReconciler, pu *machinelearningv1al
 		//Add missing fields
 		machinelearningv1alpha2.SetImageNameForPrepackContainer(pu, c)
 		SetUriParamsForTFServingProxyContainer(pu, c)
-		addContainerDefaults(c)
 
 		// Add container to deployment
 		if !existing {
@@ -99,8 +97,6 @@ func addTFServerContainer(r *SeldonDeploymentReconciler, pu *machinelearningv1al
 				},
 			}
 		}
-
-		addContainerDefaults(tfServingContainer)
 
 		if !existing {
 			deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, *tfServingContainer)
@@ -152,7 +148,6 @@ func addModelDefaultServers(r *SeldonDeploymentReconciler, pu *machinelearningv1
 		if err != nil {
 			return err
 		}
-		addContainerDefaults(c)
 
 		if len(params) > 0 {
 			if !utils.HasEnvVar(c.Env, machinelearningv1alpha2.ENV_PREDICTIVE_UNIT_PARAMETERS) {
@@ -230,25 +225,6 @@ func SetUriParamsForTFServingProxyContainer(pu *machinelearningv1alpha2.Predicti
 			c.Env = utils.SetEnvVar(c.Env, v1.EnvVar{Name: machinelearningv1alpha2.ENV_PREDICTIVE_UNIT_PARAMETERS, Value: utils.GetPredictiveUnitAsJson(parameters)})
 		}
 
-	}
-}
-
-func addContainerDefaults(c *v1.Container) {
-	// Add some defaults for easier diffs
-	if c.TerminationMessagePath == "" {
-		c.TerminationMessagePath = "/dev/termination-log"
-	}
-	if c.TerminationMessagePolicy == "" {
-		c.TerminationMessagePolicy = corev1.TerminationMessageReadFile
-	}
-
-	if c.ImagePullPolicy == "" {
-		c.ImagePullPolicy = corev1.PullIfNotPresent
-	}
-
-	if c.SecurityContext != nil && c.SecurityContext.ProcMount == nil {
-		var procMount = corev1.DefaultProcMount
-		c.SecurityContext.ProcMount = &procMount
 	}
 }
 

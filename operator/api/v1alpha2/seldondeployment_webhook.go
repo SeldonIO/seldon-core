@@ -122,7 +122,7 @@ func GetPort(name string, ports []corev1.ContainerPort) *corev1.ContainerPort {
 }
 
 func IsPrepack(pu *PredictiveUnit) bool {
-    fmt.Println("checking whether isPrepack "+string(*pu.Implementation))
+	fmt.Println("checking whether isPrepack " + string(*pu.Implementation))
 	isPrepack := len(*pu.Implementation) > 0 && *pu.Implementation != SIMPLE_MODEL && *pu.Implementation != SIMPLE_ROUTER && *pu.Implementation != RANDOM_ABTEST && *pu.Implementation != AVERAGE_COMBINER && *pu.Implementation != UNKNOWN_IMPLEMENTATION
 	fmt.Println(strconv.FormatBool(isPrepack))
 	return isPrepack
@@ -275,24 +275,6 @@ func (r *SeldonDeployment) DefaultSeldonDeployment() {
 						pu.Endpoint.ServiceHost = containerServiceValue + "." + r.ObjectMeta.Namespace + ".svc.cluster.local."
 					}
 					pu.Endpoint.ServicePort = portNum
-				}
-			}
-
-			// Add defaultMode to volumes if not set to ensure no changes when comparing later in controller
-			for k := 0; k < len(cSpec.Spec.Volumes); k++ {
-				vol := &cSpec.Spec.Volumes[k]
-				if vol.Secret != nil && vol.Secret.DefaultMode == nil {
-					var defaultMode = corev1.SecretVolumeSourceDefaultMode
-					vol.Secret.DefaultMode = &defaultMode
-				} else if vol.ConfigMap != nil && vol.ConfigMap.DefaultMode == nil {
-					var defaultMode = corev1.ConfigMapVolumeSourceDefaultMode
-					vol.ConfigMap.DefaultMode = &defaultMode
-				} else if vol.DownwardAPI != nil && vol.DownwardAPI.DefaultMode == nil {
-					var defaultMode = corev1.DownwardAPIVolumeSourceDefaultMode
-					vol.DownwardAPI.DefaultMode = &defaultMode
-				} else if vol.Projected != nil && vol.Projected.DefaultMode == nil {
-					var defaultMode = corev1.ProjectedVolumeSourceDefaultMode
-					vol.Projected.DefaultMode = &defaultMode
 				}
 			}
 		}

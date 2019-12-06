@@ -179,8 +179,7 @@ func createEngineContainer(mlDep *machinelearningv1alpha2.SeldonDeployment, p *m
 	}
 
 	if engineUser != -1 {
-		var procMount = corev1.DefaultProcMount
-		c.SecurityContext = &corev1.SecurityContext{RunAsUser: &engineUser, ProcMount: &procMount}
+		c.SecurityContext = &corev1.SecurityContext{RunAsUser: &engineUser}
 	}
 
 	// Environment vars if specified
