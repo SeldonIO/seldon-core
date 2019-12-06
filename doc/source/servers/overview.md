@@ -146,6 +146,8 @@ spec:
 
 The image name and other details will be added when this is deployed automatically.
 
+A Kubernetes PersistentVolume [can be used](https://github.com/SeldonIO/seldon-core/issues/1106) instead of a bucket using `pvc://`.
+
 Next steps:
 
 - [Worked notebook](../examples/server_examples.html)
@@ -154,4 +156,6 @@ Next steps:
 - [Tensorflow Serving](tensorflow.html)
 - [MLflow Server](mlflow.html)
 
-If your use case does not fall into the above standard servers then you can create your own component using our wrappers.
+Custom serving images or versions of images can also be added or overridden in the operator's `seldon-config` configmap.
+
+If your use case does not fit for a reusable standard server then you can create your own component using our wrappers.

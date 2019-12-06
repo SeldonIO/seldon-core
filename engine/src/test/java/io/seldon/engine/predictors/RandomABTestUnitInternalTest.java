@@ -24,12 +24,12 @@ import java.util.HashMap;
 import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
-import org.ojalgo.matrix.PrimitiveMatrix;
+import org.ojalgo.matrix.Primitive64Matrix;
 
 public class RandomABTestUnitInternalTest {
 
   private int getBranchIndex(SeldonMessage routerReturn) {
-    PrimitiveMatrix dataArray = PredictorUtils.getOJMatrix(routerReturn.getData());
+    Primitive64Matrix dataArray = PredictorUtils.getOJMatrix(routerReturn.getData());
     return dataArray.get(0).intValue();
   }
 

@@ -6,6 +6,7 @@ BASE_IMAGE_PYTHON_VERSION=`echo -n $(PYTHON_VERSION) | cut -d. -f1`
 IMAGE_VERSION=0.15-SNAPSHOT
 IMAGE_NAME = docker.io/seldonio/seldon-core-s2i-python${IMAGE_PYTHON_VERSION}
 BASE_IMAGE_NAME = docker.io/seldonio/seldon-core-s2i-python${BASE_IMAGE_PYTHON_VERSION}
+GPU_IMAGE_NAME = docker.io/seldonio/seldon-core-s2i-python3-tf-gpu
 
 SELDON_CORE_DIR=../../..
 
@@ -18,6 +19,12 @@ get_local_repo:
 build:
 	cat Dockerfile.tmpl | sed  -e "s|%PYTHON_VERSION%|$(PYTHON_VERSION)|" > Dockerfile
 	set -x && docker build -t $(IMAGE_NAME):$(IMAGE_VERSION) .
+
+.PHONY: build_gpu
+build_gpu:
+	cat Dockerfile.gpu.tmpl > Dockerfile
+	docker build -t ${GPU_IMAGE_NAME}:${IMAGE_VERSION} .
+
 
 .PHONY: build_local
 build_local: get_local_repo
@@ -32,6 +39,9 @@ push_to_dockerhub_base_python:
 
 push_to_dockerhub:
 	docker push $(IMAGE_NAME):$(IMAGE_VERSION)
+
+push_gpu_to_dockerhub:
+	docker push ${GPU_IMAGE_NAME}:${IMAGE_VERSION}
 
 .PHONY: test
 test:

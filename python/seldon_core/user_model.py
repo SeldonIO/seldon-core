@@ -32,37 +32,37 @@ class SeldonComponent(object):
 
     def predict(
         self, X: np.ndarray, names: Iterable[str], meta: Dict = None
-    ) -> Union[np.ndarray, List, str, bytes]:
+    ) -> Union[np.ndarray, List, Dict, str, bytes]:
         raise SeldonNotImplementedError("predict is not implemented")
 
     def predict_raw(
         self, msg: prediction_pb2.SeldonMessage
-    ) -> prediction_pb2.SeldonMessage:
+    ) -> Union[prediction_pb2.SeldonMessage, Dict]:
         raise SeldonNotImplementedError("predict_raw is not implemented")
 
     def send_feedback_raw(
         self, feedback: prediction_pb2.Feedback
-    ) -> prediction_pb2.SeldonMessage:
+    ) -> Union[prediction_pb2.SeldonMessage, Dict]:
         raise SeldonNotImplementedError("send_feedback_raw is not implemented")
 
     def transform_input(
         self, X: np.ndarray, names: Iterable[str], meta: Dict = None
-    ) -> Union[np.ndarray, List, str, bytes]:
+    ) -> Union[np.ndarray, List, Dict, str, bytes]:
         raise SeldonNotImplementedError("transform_input is not implemented")
 
     def transform_input_raw(
         self, msg: prediction_pb2.SeldonMessage
-    ) -> prediction_pb2.SeldonMessage:
+    ) -> Union[prediction_pb2.SeldonMessage, Dict]:
         raise SeldonNotImplementedError("transform_input_raw is not implemented")
 
     def transform_output(
         self, X: np.ndarray, names: Iterable[str], meta: Dict = None
-    ) -> Union[np.ndarray, List, str, bytes]:
+    ) -> Union[np.ndarray, List, Dict, str, bytes]:
         raise SeldonNotImplementedError("transform_output is not implemented")
 
     def transform_output_raw(
         self, msg: prediction_pb2.SeldonMessage
-    ) -> prediction_pb2.SeldonMessage:
+    ) -> Union[prediction_pb2.SeldonMessage, Dict]:
         raise SeldonNotImplementedError("transform_output_raw is not implemented")
 
     def metrics(self) -> List[Dict]:
@@ -78,7 +78,7 @@ class SeldonComponent(object):
         reward: float,
         truth: Union[np.ndarray, str, bytes],
         routing: Union[int, None],
-    ) -> Union[np.ndarray, List, str, bytes, None]:
+    ) -> Union[np.ndarray, List, Dict, str, bytes, None]:
         raise SeldonNotImplementedError("send_feedback is not implemented")
 
     def route(
@@ -88,19 +88,19 @@ class SeldonComponent(object):
 
     def route_raw(
         self, msg: prediction_pb2.SeldonMessage
-    ) -> prediction_pb2.SeldonMessage:
+    ) -> Union[prediction_pb2.SeldonMessage, Dict]:
         raise SeldonNotImplementedError("route_raw is not implemented")
 
     def aggregate(
         self,
         features_list: List[Union[np.ndarray, str, bytes]],
         feature_names_list: List,
-    ) -> Union[np.ndarray, List, str, bytes]:
+    ) -> Union[np.ndarray, List, Dict, str, bytes]:
         raise SeldonNotImplementedError("aggregate is not implemented")
 
     def aggregate_raw(
         self, msgs: prediction_pb2.SeldonMessageList
-    ) -> prediction_pb2.SeldonMessage:
+    ) -> Union[prediction_pb2.SeldonMessage, Dict]:
         raise SeldonNotImplementedError("aggregate_raw is not implemented")
 
     def health_status(self) -> Union[np.ndarray, List, str, bytes]:

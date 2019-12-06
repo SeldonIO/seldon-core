@@ -17,24 +17,81 @@ limitations under the License.
 package v1alpha2
 
 import (
-	"github.com/seldonio/seldon-core/operator/constants"
+	"context"
+	"encoding/json"
+	"fmt"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	k8types "k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"strconv"
 )
 
-// log is for logging in this package.
-var seldondeploymentlog = logf.Log.WithName("seldondeployment")
+var (
+	// log is for logging in this package.
+	seldondeploymentlog     = logf.Log.WithName("seldondeployment")
+	ControllerNamespace     = GetEnv("POD_NAMESPACE", "seldon-system")
+	ControllerConfigMapName = "seldon-config"
+	C                       client.Client
+)
+
+const PredictorServerConfigMapKeyName = "predictor_servers"
+
+type PredictorImageConfig struct {
+	ContainerImage      string `json:"image"`
+	DefaultImageVersion string `json:"defaultImageVersion"`
+}
+
+type PredictorServerConfig struct {
+	Tensorflow      bool                 `json:"tensorflow,omitempty"`
+	TensorflowImage string               `json:"tfImage,omitempty"`
+	RestConfig      PredictorImageConfig `json:"rest,omitempty"`
+	GrpcConfig      PredictorImageConfig `json:"grpc,omitempty"`
+}
+
+// Get an environment variable given by key or return the fallback.
+func GetEnv(key, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return fallback
+}
+
+func getPredictorServerConfigs() (map[string]PredictorServerConfig, error) {
+	configMap := &corev1.ConfigMap{}
+
+	err := C.Get(context.TODO(), k8types.NamespacedName{Name: ControllerConfigMapName, Namespace: ControllerNamespace}, configMap)
+
+	if err != nil {
+		fmt.Println("Failed to find config map " + ControllerConfigMapName)
+		fmt.Println(err)
+		return nil, err
+	}
+	return getPredictorServerConfigsFromMap(configMap)
+}
+
+func getPredictorServerConfigsFromMap(configMap *corev1.ConfigMap) (map[string]PredictorServerConfig, error) {
+	predictorServerConfig := make(map[string]PredictorServerConfig)
+	if predictorConfig, ok := configMap.Data[PredictorServerConfigMapKeyName]; ok {
+		err := json.Unmarshal([]byte(predictorConfig), &predictorServerConfig)
+		if err != nil {
+			panic(fmt.Errorf("Unable to unmarshall %v json string due to %v ", PredictorServerConfigMapKeyName, err))
+		}
+	}
+
+	return predictorServerConfig, nil
+}
 
 func (r *SeldonDeployment) SetupWebhookWithManager(mgr ctrl.Manager) error {
+	C = mgr.GetClient()
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
 		Complete()
@@ -65,46 +122,38 @@ func GetPort(name string, ports []corev1.ContainerPort) *corev1.ContainerPort {
 }
 
 func IsPrepack(pu *PredictiveUnit) bool {
-	return *pu.Implementation == SKLEARN_SERVER || *pu.Implementation == XGBOOST_SERVER || *pu.Implementation == TENSORFLOW_SERVER || *pu.Implementation == MLFLOW_SERVER
+    fmt.Println("checking whether isPrepack "+string(*pu.Implementation))
+	isPrepack := len(*pu.Implementation) > 0 && *pu.Implementation != SIMPLE_MODEL && *pu.Implementation != SIMPLE_ROUTER && *pu.Implementation != RANDOM_ABTEST && *pu.Implementation != AVERAGE_COMBINER && *pu.Implementation != UNKNOWN_IMPLEMENTATION
+	fmt.Println(strconv.FormatBool(isPrepack))
+	return isPrepack
+}
+
+func GetPrepackServerConfig(serverName string) PredictorServerConfig {
+	ServersConfigs, err := getPredictorServerConfigs()
+
+	if err != nil {
+		seldondeploymentlog.Error(err, "Failed to read prepacked model servers from configmap")
+	}
+	ServerConfig, ok := ServersConfigs[serverName]
+	if !ok {
+		seldondeploymentlog.Error(nil, "No entry in predictors map for "+serverName)
+	}
+	return ServerConfig
 }
 
 func SetImageNameForPrepackContainer(pu *PredictiveUnit, c *corev1.Container) {
 	//Add missing fields
 	// Add image
 	if c.Image == "" {
-		if *pu.Implementation == SKLEARN_SERVER {
 
-			if pu.Endpoint.Type == REST {
-				c.Image = constants.DefaultSKLearnServerImageNameRest
-			} else {
-				c.Image = constants.DefaultSKLearnServerImageNameGrpc
-			}
+		ServerConfig := GetPrepackServerConfig(string(*pu.Implementation))
 
-		} else if *pu.Implementation == XGBOOST_SERVER {
-
-			if pu.Endpoint.Type == REST {
-				c.Image = constants.DefaultXGBoostServerImageNameRest
-			} else {
-				c.Image = constants.DefaultXGBoostServerImageNameGrpc
-			}
-
-		} else if *pu.Implementation == TENSORFLOW_SERVER {
-
-			if pu.Endpoint.Type == REST {
-				c.Image = constants.DefaultTFServerImageNameRest
-			} else {
-				c.Image = constants.DefaultTFServerImageNameGrpc
-			}
-
-		} else if *pu.Implementation == MLFLOW_SERVER {
-
-			if pu.Endpoint.Type == REST {
-				c.Image = constants.DefaultMLFlowServerImageNameRest
-			} else {
-				c.Image = constants.DefaultMLFlowServerImageNameGrpc
-			}
-
+		if pu.Endpoint.Type == REST {
+			c.Image = ServerConfig.RestConfig.ContainerImage + ":" + ServerConfig.RestConfig.DefaultImageVersion
+		} else {
+			c.Image = ServerConfig.GrpcConfig.ContainerImage + ":" + ServerConfig.GrpcConfig.DefaultImageVersion
 		}
+
 	}
 }
 
@@ -357,15 +406,27 @@ func checkPredictiveUnits(pu *PredictiveUnit, p *PredictorSpec, fldPath *field.P
 		}
 
 		if *pu.Type == UNKNOWN_TYPE && (pu.Methods == nil || len(*pu.Methods) == 0) {
-			allErrs = append(allErrs, field.Invalid(fldPath, pu.Name, "Predictive Unit has no implementation methods defined. Change to a know type or add what methods it defines"))
+			allErrs = append(allErrs, field.Invalid(fldPath, pu.Name, "Predictive Unit has no implementation methods defined. Change to a known type or add what methods it defines"))
 		}
 
-	} else if *pu.Implementation == SKLEARN_SERVER ||
-		*pu.Implementation == XGBOOST_SERVER ||
-		*pu.Implementation == TENSORFLOW_SERVER ||
-		*pu.Implementation == MLFLOW_SERVER {
+	} else if IsPrepack(pu) {
 		if pu.ModelURI == "" {
 			allErrs = append(allErrs, field.Invalid(fldPath, pu.Name, "Predictive unit modelUri required when using standalone servers"))
+		}
+		c := GetContainerForPredictiveUnit(p, pu.Name)
+
+		if c == nil || c.Image == "" {
+
+			ServersConfigs, err := getPredictorServerConfigs()
+
+			if err != nil {
+				seldondeploymentlog.Error(err, "Failed to read prepacked model servers from configmap")
+			}
+
+			_, ok := ServersConfigs[string(*pu.Implementation)]
+			if !ok {
+				allErrs = append(allErrs, field.Invalid(fldPath, pu.Name, "No entry in predictors map for "+string(*pu.Implementation)))
+			}
 		}
 	}
 
