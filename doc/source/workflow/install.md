@@ -117,6 +117,11 @@ make deploy-cert
 
 If you have a Google Cloud Platform account you can install via the [GCP Marketplace](https://console.cloud.google.com/marketplace/details/seldon-portal/seldon-core).
 
+### AWS MarketPlace
+
+If you have a AWS account you can install via the [AWS Marketplace](https://aws.amazon.com/marketplace/pp/B07KCNBCHV). See our [AWS Install Documentation](../reference/aws-mp-install.md).
+
+
 ## Upgrading from Previous Versions
 
 See our [upgrading notes](../reference/upgrading.md)
