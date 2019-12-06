@@ -43,16 +43,16 @@ export GOPATH="${FAKE_GOPATH}"
 cd "${FAKE_REPOPATH}"
 
 # run the generators
-#"${BINDIR}/deepcopy-gen" -v 9 -i ./api/v1alpha2 -O zz_generated_new.deepcopy --go-header-file hack/boilerplate.go.txt
+#"${BINDIR}/deepcopy-gen" -v 9 -i ./api/v1alpha2/ -O zz_generated_new.deepcopy --go-header-file hack/boilerplate.go.txt
 
 OUTPUT_PKG=${FAKE_REPOPATH}/client 
 
-"${BINDIR}/client-gen" -v 9 --input-base ${PKG_BASE}/api --clientset-name versioned -i ./api/v1alpha2/ --input v1alpha2 --output-package ${PKG_BASE}/client/clientset --go-header-file hack/boilerplate.go.txt -o ${FAKE_GOPATH}/src
+"${BINDIR}/client-gen" -v 9 --input-base ${PKG_BASE}/api --clientset-name versioned -i ./api/machinelearning/v1alpha2/ --input machinelearning/v1alpha2 --output-package ${PKG_BASE}/client/clientset --go-header-file hack/boilerplate.go.txt -o ${FAKE_GOPATH}/src
 
-"${BINDIR}/lister-gen" -v 5 -i ${PKG_BASE}/api/v1alpha2 --output-package ${PKG_BASE}/client/listers --go-header-file hack/boilerplate.go.txt -o ${FAKE_GOPATH}/src
+"${BINDIR}/lister-gen" -v 5 -i ${PKG_BASE}/api/machinelearning/v1alpha2 --output-package ${PKG_BASE}/client/listers --go-header-file hack/boilerplate.go.txt -o ${FAKE_GOPATH}/src
 
 "${BINDIR}/informer-gen" -v 5 \
-     -i ${PKG_BASE}/api/v1alpha2 \
+     -i ${PKG_BASE}/api/machinelearning/v1alpha2 \
      --versioned-clientset-package "${PKG_BASE}/client/clientset/versioned" \
      --listers-package "${PKG_BASE}/client/listers" \
      --output-package ${PKG_BASE}/client/informers \

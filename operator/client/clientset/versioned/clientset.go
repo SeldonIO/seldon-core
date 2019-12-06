@@ -18,9 +18,7 @@ limitations under the License.
 package versioned
 
 import (
-	"fmt"
-
-	v1alpha2internalversion "github.com/seldonio/seldon-core/operator/client/clientset/versioned/typed/v1alpha2/internalversion"
+	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/client/clientset/versioned/typed/machinelearning/v1alpha2"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"
@@ -28,19 +26,19 @@ import (
 
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
-	V1alpha2() v1alpha2internalversion.V1alpha2Interface
+	MachinelearningV1alpha2() machinelearningv1alpha2.MachinelearningV1alpha2Interface
 }
 
 // Clientset contains the clients for groups. Each group has exactly one
 // version included in a Clientset.
 type Clientset struct {
 	*discovery.DiscoveryClient
-	v1alpha2 *v1alpha2internalversion.V1alpha2Client
+	machinelearningV1alpha2 *machinelearningv1alpha2.MachinelearningV1alpha2Client
 }
 
-// V1alpha2 retrieves the V1alpha2Client
-func (c *Clientset) V1alpha2() v1alpha2internalversion.V1alpha2Interface {
-	return c.v1alpha2
+// MachinelearningV1alpha2 retrieves the MachinelearningV1alpha2Client
+func (c *Clientset) MachinelearningV1alpha2() machinelearningv1alpha2.MachinelearningV1alpha2Interface {
+	return c.machinelearningV1alpha2
 }
 
 // Discovery retrieves the DiscoveryClient
@@ -52,19 +50,14 @@ func (c *Clientset) Discovery() discovery.DiscoveryInterface {
 }
 
 // NewForConfig creates a new Clientset for the given config.
-// If config's RateLimiter is not set and QPS and Burst are acceptable,
-// NewForConfig will generate a rate-limiter in configShallowCopy.
 func NewForConfig(c *rest.Config) (*Clientset, error) {
 	configShallowCopy := *c
 	if configShallowCopy.RateLimiter == nil && configShallowCopy.QPS > 0 {
-		if configShallowCopy.Burst <= 0 {
-			return nil, fmt.Errorf("Burst is required to be greater than 0 when RateLimiter is not set and QPS is set to greater than 0")
-		}
 		configShallowCopy.RateLimiter = flowcontrol.NewTokenBucketRateLimiter(configShallowCopy.QPS, configShallowCopy.Burst)
 	}
 	var cs Clientset
 	var err error
-	cs.v1alpha2, err = v1alpha2internalversion.NewForConfig(&configShallowCopy)
+	cs.machinelearningV1alpha2, err = machinelearningv1alpha2.NewForConfig(&configShallowCopy)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +73,7 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 // panics if there is an error in the config.
 func NewForConfigOrDie(c *rest.Config) *Clientset {
 	var cs Clientset
-	cs.v1alpha2 = v1alpha2internalversion.NewForConfigOrDie(c)
+	cs.machinelearningV1alpha2 = machinelearningv1alpha2.NewForConfigOrDie(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClientForConfigOrDie(c)
 	return &cs
@@ -89,7 +82,7 @@ func NewForConfigOrDie(c *rest.Config) *Clientset {
 // New creates a new Clientset for the given RESTClient.
 func New(c rest.Interface) *Clientset {
 	var cs Clientset
-	cs.v1alpha2 = v1alpha2internalversion.New(c)
+	cs.machinelearningV1alpha2 = machinelearningv1alpha2.New(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClient(c)
 	return &cs

@@ -2,7 +2,7 @@ package utils
 
 import (
 	"encoding/json"
-	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/api/v1alpha2"
+	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/api/machinelearning/v1alpha2"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	"strings"

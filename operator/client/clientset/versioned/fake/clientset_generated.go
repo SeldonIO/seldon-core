@@ -19,8 +19,8 @@ package fake
 
 import (
 	clientset "github.com/seldonio/seldon-core/operator/client/clientset/versioned"
-	v1alpha2internalversion "github.com/seldonio/seldon-core/operator/client/clientset/versioned/typed/v1alpha2/internalversion"
-	fakev1alpha2internalversion "github.com/seldonio/seldon-core/operator/client/clientset/versioned/typed/v1alpha2/internalversion/fake"
+	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/client/clientset/versioned/typed/machinelearning/v1alpha2"
+	fakemachinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/client/clientset/versioned/typed/machinelearning/v1alpha2/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"
@@ -40,7 +40,7 @@ func NewSimpleClientset(objects ...runtime.Object) *Clientset {
 		}
 	}
 
-	cs := &Clientset{tracker: o}
+	cs := &Clientset{}
 	cs.discovery = &fakediscovery.FakeDiscovery{Fake: &cs.Fake}
 	cs.AddReactor("*", "*", testing.ObjectReaction(o))
 	cs.AddWatchReactor("*", func(action testing.Action) (handled bool, ret watch.Interface, err error) {
@@ -62,20 +62,15 @@ func NewSimpleClientset(objects ...runtime.Object) *Clientset {
 type Clientset struct {
 	testing.Fake
 	discovery *fakediscovery.FakeDiscovery
-	tracker   testing.ObjectTracker
 }
 
 func (c *Clientset) Discovery() discovery.DiscoveryInterface {
 	return c.discovery
 }
 
-func (c *Clientset) Tracker() testing.ObjectTracker {
-	return c.tracker
-}
-
 var _ clientset.Interface = &Clientset{}
 
-// V1alpha2 retrieves the V1alpha2Client
-func (c *Clientset) V1alpha2() v1alpha2internalversion.V1alpha2Interface {
-	return &fakev1alpha2internalversion.FakeV1alpha2{Fake: &c.Fake}
+// MachinelearningV1alpha2 retrieves the MachinelearningV1alpha2Client
+func (c *Clientset) MachinelearningV1alpha2() machinelearningv1alpha2.MachinelearningV1alpha2Interface {
+	return &fakemachinelearningv1alpha2.FakeMachinelearningV1alpha2{Fake: &c.Fake}
 }

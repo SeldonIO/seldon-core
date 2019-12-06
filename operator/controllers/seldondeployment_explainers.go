@@ -18,7 +18,7 @@ package controllers
 
 import (
 	"github.com/go-logr/logr"
-	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/api/v1alpha2"
+	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/api/machinelearning/v1alpha2"
 	"github.com/seldonio/seldon-core/operator/utils"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
