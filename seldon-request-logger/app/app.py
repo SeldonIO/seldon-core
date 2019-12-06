@@ -86,7 +86,7 @@ def extractRow(i:int,requestMsg: prediction_pb2.SeldonMessage,req_datatype: str,
         else:
             dataType="text"
             req_features= np.char.decode(req_features.astype('S'),"utf-8")
-        dataReq = array_to_grpc_datadef(datatyReq, req_features, req_datadef.names)  
+        dataReq = array_to_grpc_datadef(datatyReq, np.expand_dims(req_features[i], axis=0), req_datadef.names)  
     requestMsg2 = prediction_pb2.SeldonMessage(data=dataReq, meta=requestMsg.meta)
     reqJson = seldon_message_to_json(requestMsg2)
     reqJson["dataType"] = dataType
@@ -98,13 +98,14 @@ def createElelmentsArray(X: np.ndarray,names: list):
     if isinstance(X,np.ndarray):
         if len(X.shape) == 1:
             results = []
-            d = {}
-            for num, name in enumerate(names, start=0):
-                if isinstance(X[num],bytes):
-                    d[name] = X[num].decode("utf-8")
-                else:
-                    d[name] = X[num]    
-            results.append(d)
+            for i in range(X.shape[0]):
+                d = {}
+                for num, name in enumerate(names, start=0):
+                    if isinstance(X[i],bytes):
+                        d[name] = X[i].decode("utf-8")
+                    else:
+                        d[name] = X[i]    
+                results.append(d)
         elif len(X.shape) >= 2:
             results = []
             for i in range(X.shape[0]):

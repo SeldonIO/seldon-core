@@ -12,5 +12,5 @@ spec:
             fluentd: "true"
         spec:
           container:
-            image: docker.io/seldonio/seldon-request-logger:0.0.2
+            image: docker.io/seldonio/seldon-request-logger:0.0.3
             imagePullPolicy: Always

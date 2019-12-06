@@ -99,6 +99,7 @@ Seldon Core is an open source platform for deploying machine learning models on 
    Notebooks <examples/notebooks>
    Integrations <examples/integrations>
 
+
 .. toctree::
    :maxdepth: 1
    :caption: Tutorials
@@ -114,6 +115,7 @@ Seldon Core is an open source platform for deploying machine learning models on 
    Python API reference <python/api/modules>	     
    Seldon Microservice API <reference/apis/internal-api.md>
    Seldon Orchestrator <reference/engine>
+   AWS Marketplace Install <reference/aws-mp-install.md>
    Benchmarking <reference/benchmarking.md>
    Seldon Deployment CRD <reference/seldon-deployment.md>
    Prediction APIs <reference/apis/index>
