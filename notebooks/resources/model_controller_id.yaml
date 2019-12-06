@@ -3,7 +3,7 @@ kind: SeldonDeployment
 metadata:
   labels:
     app: seldon
-    controller-id: seldonid1-system
+    controller-id: seldon-id1
   name: test-c1
 spec:
   name: test-c1
