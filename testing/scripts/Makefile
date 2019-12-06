@@ -4,7 +4,7 @@ VERSION := $(shell cat ../../version.txt)
 PYTEST_WORKERS ?= "4"
 
 kind_create_cluster:
-	kind create cluster --config kind_config.yaml
+	kind create cluster --config ../resources/kind_config.yaml
 
 kind_delete_cluster:
 	kind delete cluster
@@ -33,8 +33,11 @@ install_ambassador:
 	helm install --wait ambassador stable/ambassador -f ambassador_values.yaml --set crds.keep=false --namespace seldon --set replicaCount=1
 
 install_jaeger:
-	helm install stable/jaeger-operator --name jaeger-operator --set rbac.clusterRole=true --set jaeger.create=true --namespace seldon 
+	helm install stable/jaeger-operator --name jaeger-operator --set rbac.clusterRole=true --namespace seldon 
 	kubectl rollout status deployment.apps/jaeger-operator --namespace seldon
+	kubectl apply -f ../resources/jaeger.yaml --namespace seldon
+	kubectl rollout status deployment.apps/jaeger --namespace seldon
+
 
 install_cert_manager:
 	cd ../../operator && make install-cert-manager
