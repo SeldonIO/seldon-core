@@ -18,7 +18,7 @@ class TestClusterWide(object):
         namespace = "test-single-model"
         retry_run(f"kubectl create namespace {namespace}")
         run(
-            f"helm install ../../helm-charts/seldon-single-model --name mymodel --set oauth.key=oauth-key --set oauth.secret=oauth-secret --namespace {namespace}",
+            f"helm install mymodel ../../helm-charts/seldon-single-model --set oauth.key=oauth-key --set oauth.secret=oauth-secret --namespace {namespace}",
             shell=True,
             check=True,
         )
@@ -32,7 +32,7 @@ class TestClusterWide(object):
         logging.warning("Test Ambassador gRPC gateway")
         r = grpc_request_ambassador2("mymodel", namespace, API_AMBASSADOR)
         logging.warning(r)
-        run(f"helm delete mymodel --purge", shell=True)
+        run(f"helm delete mymodel", shell=True)
         run(f"kubectl delete namespace {namespace}", shell=True)
 
     # Test AB Test model helm script with 4 API methods
@@ -40,7 +40,7 @@ class TestClusterWide(object):
         namespace = "test-abtest-model"
         retry_run(f"kubectl create namespace {namespace}")
         run(
-            f"helm install ../../helm-charts/seldon-abtest --name myabtest --set oauth.key=oauth-key --set oauth.secret=oauth-secret --namespace {namespace}",
+            f"helm install myabtest ../../helm-charts/seldon-abtest --set oauth.key=oauth-key --set oauth.secret=oauth-secret --namespace {namespace}",
             shell=True,
             check=True,
         )
@@ -56,7 +56,7 @@ class TestClusterWide(object):
         logging.warning(
             "WARNING SKIPPING FLAKY AMBASSADOR TEST UNTIL AMBASSADOR GRPC ISSUE FIXED.."
         )
-        run(f"helm delete myabtest --purge", shell=True)
+        run(f"helm delete myabtest", shell=True)
         run(f"kubectl delete namespace {namespace}", shell=True)
 
     # Test MAB Test model helm script with 4 API methods
@@ -64,7 +64,7 @@ class TestClusterWide(object):
         namespace = "test-mab-model"
         retry_run(f"kubectl create namespace {namespace}")
         run(
-            f"helm install ../../helm-charts/seldon-mab --name mymab --set oauth.key=oauth-key --set oauth.secret=oauth-secret --namespace {namespace}",
+            f"helm install mymab ../../helm-charts/seldon-mab --set oauth.key=oauth-key --set oauth.secret=oauth-secret --namespace {namespace}",
             shell=True,
             check=True,
         )
@@ -81,5 +81,5 @@ class TestClusterWide(object):
         logging.warning(
             "WARNING SKIPPING FLAKY AMBASSADOR TEST UNTIL AMBASSADOR GRPC ISSUE FIXED.."
         )
-        run(f"helm delete mymab --purge", shell=True)
+        run(f"helm delete mymab", shell=True)
         run(f"kubectl delete namespace {namespace}", shell=True)

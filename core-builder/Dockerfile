@@ -84,7 +84,7 @@ RUN curl -sL https://go.kubebuilder.io/dl/2.0.1/linux/amd64 | tar -xz -C /tmp/ &
 ENV PATH /usr/local/kubebuilder/bin:$PATH
 
 # DOWNLOAD HELM
-RUN curl -L https://git.io/get_helm.sh | bash
+RUN curl -L https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
 
 # DOWNLOAD KUSTOMIZE
 RUN wget https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv3.2.3/kustomize_kustomize.v3.2.3_linux_amd64 && \

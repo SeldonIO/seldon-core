@@ -122,9 +122,7 @@ func GetPort(name string, ports []corev1.ContainerPort) *corev1.ContainerPort {
 }
 
 func IsPrepack(pu *PredictiveUnit) bool {
-	fmt.Println("checking whether isPrepack " + string(*pu.Implementation))
 	isPrepack := len(*pu.Implementation) > 0 && *pu.Implementation != SIMPLE_MODEL && *pu.Implementation != SIMPLE_ROUTER && *pu.Implementation != RANDOM_ABTEST && *pu.Implementation != AVERAGE_COMBINER && *pu.Implementation != UNKNOWN_IMPLEMENTATION
-	fmt.Println(strconv.FormatBool(isPrepack))
 	return isPrepack
 }
 
