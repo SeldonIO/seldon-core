@@ -104,3 +104,57 @@ If you have a Google Cloud Platform account you can install via the [GCP Marketp
 ## Upgrading from Previous Versions
 
 See our [upgrading notes](../reference/upgrading.md)
+
+## Advanced Usage
+
+### Install Seldon Core in a single namespace
+
+You can install the Seldon Core Operator so it only manages resources in its namespace. An example to install in a namespace `seldon-ns1` is shown below:
+
+```bash
+kubectl create namespace seldon-ns1
+kubectl label namespace seldon-ns1 controller-id=seldon-ns1
+```
+
+We label the namespace with `controller-id=<namespace>` to ensure if there is a clusterwide Seldon Core Operator that it should ignore resources for this namespace.
+
+Install the Operator into the namespace:
+
+```bash
+helm install seldon-namespaced seldon-core-operator  --repo https://storage.googleapis.com/seldon-charts  \
+    --set singleNamespace=true \
+    --set image.pullPolicy=IfNotPresent \
+    --set usageMetrics.enabled=false \
+    --set crd.create=true \
+    --namespace seldon-ns1
+```
+
+We set `crd.create=true` to create the CRD. If you are installing a Seldon Core Operator after you have installed a previous Seldon Core Operator on the same cluster you will need to set `crd.create=false`.
+
+See the [multiple server example notebook](../examples/multiple_operators.html).
+
+### Label focused Seldon Core Operator
+
+You can install the Seldon Core Operator so it manages only SeldonDeployments with the label `controller-id` where the value of the label matches the controller-id of the running operator. An example for a namespace `seldon-id1` is shown below:
+
+```bash
+kubectl create namespace seldon-id1
+```
+
+To install the Operator run:
+
+
+```bash
+helm install seldon-controllerid seldon-core-operator  --repo https://storage.googleapis.com/seldon-charts  \
+    --set singleNamespace=false \
+    --set image.pullPolicy=IfNotPresent \
+    --set usageMetrics.enabled=false \
+    --set crd.create=true \
+    --set controllerId=seldon-id1 \
+    --namespace seldon-id1
+```
+
+We set `crd.create=true` to create the CRD. If you are installing a Seldon Core Operator after you have installed a previous Seldon Core Operator on the same cluster you will need to set `crd.create=false`.
+
+See the [multiple server example notebook](../examples/multiple_operators.html).
+
