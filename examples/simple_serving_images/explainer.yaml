@@ -1,0 +1,19 @@
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+metadata:
+  name: income-classifier
+spec:
+  name: income-classifier
+  annotations:
+    seldon.io/engine-log-messages-externally: "true"
+  predictors:
+    - graph:
+        children: []
+        implementation: SKLEARN_SERVER
+        modelUri: "gs://seldon-models/sklearn/income/model"
+        name: classifier
+      name: default
+      replicas: 1
+      explainer:
+        type: ANCHOR_TABULAR
+        modelUri: "gs://seldon-models/sklearn/income/explainer"
