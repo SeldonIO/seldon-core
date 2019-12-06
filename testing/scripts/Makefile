@@ -32,6 +32,10 @@ helm_setup:
 install_ambassador:
 	helm install --wait ambassador stable/ambassador -f ambassador_values.yaml --set crds.keep=false --namespace seldon --set replicaCount=1
 
+install_jaeger:
+	helm install stable/jaeger-operator --name jaeger-operator --set rbac.clusterRole=true --set jaeger.create=true --namespace seldon 
+	kubectl rollout status deployment.apps/jaeger-operator --namespace seldon
+
 install_cert_manager:
 	cd ../../operator && make install-cert-manager
 	sleep 5 #https://github.com/jetstack/cert-manager/issues/2273
