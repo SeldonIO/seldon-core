@@ -1,0 +1,96 @@
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+metadata:
+  labels:
+    app: seldon
+  name: xgboost
+  namespace: seldon-core
+spec:
+  name: xgboost
+  predictors:
+    - componentSpecs:
+        - spec:
+            containers:
+              - name: feature-transformer
+                image: seldonio/clean_text_transformer:0.1
+                env:
+                  - name: TRACING
+                    value: "1"
+                  - name: JAEGER_CONFIG_PATH
+                    value: /etc/tracing/config/tracing.yml
+                  - name: OMP_NUM_THREADS
+                    value: "6"
+                resources:
+                  limits:
+                    cpu: 8
+                    memory: 4Gi
+                  requests:
+                    cpu: 1
+                    memory: 256Mi
+                volumeMounts:
+                  - mountPath: /etc/tracing/config
+                    name: tracing-config
+              - name: model
+                env:
+                  - name: OMP_NUM_THREADS
+                    value: "6"
+                envFrom:
+                  - secretRef:
+                      name: s3-secret
+                resources:
+                  limits:
+                    cpu: 8
+                    memory: 4Gi
+                  requests:
+                    cpu: 1
+                    memory: 256Mi
+                volumeMounts:
+                  - mountPath: /etc/tracing/config
+                    name: tracing-config
+            volumes:
+              - name: tracing-config
+                configMap:
+                  name: tracing-config
+                  items:
+                    - key: tracing.yml
+                      path: tracing.yml
+      svcOrchSpec:
+        env:
+          - name: SELDON_LOG_LEVEL
+            value: DEBUG
+          - name: TRACING
+            value: "1"
+          - name: JAEGER_SERVICE_NAME
+            value: xgboost
+          - name: JAEGER_AGENT_HOST
+            value: jaeger-agent.seldon-core.svc
+          - name: JAEGER_AGENT_PORT
+            value: "6831"
+          - name: JAEGER_SAMPLER_TYPE
+            value: const
+          - name: JAEGER_SAMPLER_PARAM
+            value: "1"
+          - name: JAEGER_PROPAGATION
+            value: "B3"
+          - name: JAEGER_TAGS
+            value: "deployment=xgboost"
+        resources:
+          limits:
+            cpu: 4
+            memory: 4Gi
+          requests:
+            cpu: 500m
+            memory: 512Mi
+      graph:
+        children:
+          - children: []
+            implementation: XGBOOST_SERVER
+            name: model
+            modelUri: gs://seldon-models/xgboost/iris
+            type: MODEL
+        endpoint:
+          type: REST
+        name: feature-transformer
+        type: TRANSFORMER
+      name: transformer
+      replicas: 1

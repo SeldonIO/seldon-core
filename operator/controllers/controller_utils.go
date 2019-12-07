@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/api/v1alpha2"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"os"
 	"sort"
 	"strings"
@@ -19,9 +20,18 @@ func getNamespace(deployment *machinelearningv1alpha2.SeldonDeployment) string {
 	}
 }
 
-// Translte the PredictorSpec p in to base64 encoded JSON.
+// Translte the PredictorSpec p in to base64 encoded JSON to feed to engine in env var.
 func getEngineVarJson(p *machinelearningv1alpha2.PredictorSpec) (string, error) {
-	str, err := json.Marshal(p)
+	pcopy := p.DeepCopy()
+
+	// engine doesn't need to know about metadata or explainer
+	// leaving these out means they're not part of diffs on main predictor deployments
+	for _, compSpec := range pcopy.ComponentSpecs {
+		compSpec.Metadata.CreationTimestamp = metav1.Time{}
+	}
+	pcopy.Explainer = machinelearningv1alpha2.Explainer{}
+
+	str, err := json.Marshal(pcopy)
 	if err != nil {
 		return "", err
 	}

@@ -1,0 +1,96 @@
+---
+# Source: tfserving-mnist/templates/mnist_tfserving_deployment.json
+{
+    "apiVersion": "machinelearning.seldon.io/v1alpha2",
+    "kind": "SeldonDeployment",
+    "metadata": {
+        "labels": {
+            "app": "seldon"
+        },
+        "name": "tfserving-mnist",
+	"namespace": "seldon"	
+    },
+    "spec": {
+        "name": "tf-mnist",
+        "predictors": [
+            {
+                "componentSpecs": [{
+                    "spec": {
+                        "containers": [
+                            {
+                                "image": "seldonio/tfserving-proxy:0.1",
+                                "name": "tfserving-proxy"
+                            },
+			    {
+				"args": [
+				    "/usr/bin/tensorflow_model_server",
+				    "--port=7001",
+				    "--model_name=mnist-model",
+				    "--model_base_path=/mnist-model"
+				],
+				"image": "tensorflow/serving:latest",
+				"name": "mnist-model",
+				"ports": [
+				    {
+					"containerPort": 7001,
+					"protocol": "TCP"
+				    }
+				],
+				"resources": {
+				    "limits": {
+					"cpu": "4",
+					"memory": "4Gi"
+				    },
+				    "requests": {
+					"cpu": "1",
+					"memory": "1Gi"
+				    }
+				},
+				"securityContext": {
+				    "runAsUser": 1000
+				}
+			    }
+			],
+			"terminationGracePeriodSeconds": 1
+		    }
+		}],
+                "graph": {
+		    "name": "tfserving-proxy",
+		    "endpoint": { "type" : "REST" },
+		    "type": "MODEL",
+		    "children": [],
+		    "parameters":
+		    [
+			{
+			    "name":"grpc_endpoint",
+			    "type":"STRING",
+			    "value":"localhost:7001"
+			},
+			{
+			    "name":"model_name",
+			    "type":"STRING",
+			    "value":"mnist-model"
+			},
+			{
+			    "name":"model_output",
+			    "type":"STRING",
+			    "value":"scores"
+			},
+			{
+			    "name":"model_input",
+			    "type":"STRING",
+			    "value":"images"
+			},
+			{
+			    "name":"signature_name",
+			    "type":"STRING",
+			    "value":"predict_images"
+			}
+		    ]
+		},
+                "name": "mnist-tfserving",
+                "replicas": 1
+            }
+        ]
+    }
+}
