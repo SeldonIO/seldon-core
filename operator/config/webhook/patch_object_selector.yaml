@@ -7,11 +7,11 @@ webhooks:
   objectSelector:
     matchExpressions:
     - operator: DoesNotExist
-      key: controller-id
+      key: seldon.io/controller-id
   namespaceSelector:
     matchExpressions:
     - operator: DoesNotExist
-      key: controller-id
+      key: seldon.io/controller-id
 ---
 apiVersion: admissionregistration.k8s.io/v1beta1
 kind: ValidatingWebhookConfiguration
@@ -22,8 +22,8 @@ webhooks:
   objectSelector:
     matchExpressions:
     - operator: DoesNotExist
-      key: controller-id
+      key: seldon.io/controller-id
   namespaceSelector:
     matchExpressions:
     - operator: DoesNotExist
-      key: controller-id
+      key: seldon.io/controller-id

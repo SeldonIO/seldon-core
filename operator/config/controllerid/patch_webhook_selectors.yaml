@@ -2,5 +2,5 @@
   path: /webhooks/0/objectSelector
   value:
     matchLabels:
-      controller-id: $(SERVICE_NAMESPACE)
+      seldon.io/controller-id: $(SERVICE_NAMESPACE)
 

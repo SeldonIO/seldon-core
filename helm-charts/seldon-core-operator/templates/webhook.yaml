@@ -27,24 +27,24 @@ webhooks:
 {{- if not .Values.singleNamespace }}
   namespaceSelector:
     matchExpressions:
-    - key: controller-id
+    - key: seldon.io/controller-id
       operator: DoesNotExist
 {{- end }}
 {{- if .Values.singleNamespace }}
   namespaceSelector:
     matchLabels:
-      controller-id: {{ .Release.Namespace }}
+      seldon.io/controller-id: {{ .Release.Namespace }}
 {{- end }}
 {{- if not .Values.controllerId }}
   objectSelector:
     matchExpressions:
-    - key: controller-id
+    - key: seldon.io/controller-id
       operator: DoesNotExist
 {{- end }}
 {{- if .Values.controllerId }}
   objectSelector:
     matchLabels:
-      controller-id: {{ .Values.controllerId }}
+      seldon.io/controller-id: {{ .Values.controllerId }}
 {{- end }}
   rules:
   - apiGroups:
@@ -82,24 +82,24 @@ webhooks:
 {{- if not .Values.singleNamespace }}
   namespaceSelector:
     matchExpressions:
-    - key: controller-id
+    - key: seldon.io/controller-id
       operator: DoesNotExist
 {{- end }}
 {{- if .Values.singleNamespace }}
   namespaceSelector:
     matchLabels:
-      controller-id: {{ .Release.Namespace }}
+      seldon.io/controller-id: {{ .Release.Namespace }}
 {{- end }}
 {{- if not .Values.controllerId }}
   objectSelector:
     matchExpressions:
-    - key: controller-id
+    - key: seldon.io/controller-id
       operator: DoesNotExist
 {{- end }}
 {{- if .Values.controllerId }}
   objectSelector:
     matchLabels:
-      controller-id: {{ .Values.controllerId }}
+      seldon.io/controller-id: {{ .Values.controllerId }}
 {{- end }}
   rules:
   - apiGroups:

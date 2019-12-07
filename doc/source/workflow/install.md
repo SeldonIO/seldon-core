@@ -134,10 +134,10 @@ You can install the Seldon Core Operator so it only manages resources in its nam
 
 ```bash
 kubectl create namespace seldon-ns1
-kubectl label namespace seldon-ns1 controller-id=seldon-ns1
+kubectl label namespace seldon-ns1 seldon.io/controller-id=seldon-ns1
 ```
 
-We label the namespace with `controller-id=<namespace>` to ensure if there is a clusterwide Seldon Core Operator that it should ignore resources for this namespace.
+We label the namespace with `seldon.io/controller-id=<namespace>` to ensure if there is a clusterwide Seldon Core Operator that it should ignore resources for this namespace.
 
 Install the Operator into the namespace:
 
@@ -156,7 +156,7 @@ See the [multiple server example notebook](../examples/multiple_operators.html).
 
 ### Label focused Seldon Core Operator
 
-You can install the Seldon Core Operator so it manages only SeldonDeployments with the label `controller-id` where the value of the label matches the controller-id of the running operator. An example for a namespace `seldon-id1` is shown below:
+You can install the Seldon Core Operator so it manages only SeldonDeployments with the label `seldon.io/controller-id` where the value of the label matches the controller-id of the running operator. An example for a namespace `seldon-id1` is shown below:
 
 ```bash
 kubectl create namespace seldon-id1

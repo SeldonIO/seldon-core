@@ -58,7 +58,7 @@ const (
 	DEFAULT_ENGINE_GRPC_PORT      = 5001
 
 	AMBASSADOR_ANNOTATION = "getambassador.io/config"
-	LABEL_CONTROLLER_ID   = "controller-id"
+	LABEL_CONTROLLER_ID   = "seldon.io/controller-id"
 )
 
 // SeldonDeploymentReconciler reconciles a SeldonDeployment object

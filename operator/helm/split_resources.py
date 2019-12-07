@@ -196,8 +196,8 @@ if __name__ == "__main__":
                     with open(filename, 'w') as outfile:
                         outfile.write(fdata)
     # Write webhook related data in 1 file
-    namespaceSelector = "  namespaceSelector:\n    matchLabels:\n      controller-id: " + helm_release("Namespace") + "\n"
-    objectSelector = "  objectSelector:\n    matchLabels:\n      controller-id: " + helm_value("controllerId") + "\n"
+    namespaceSelector = "  namespaceSelector:\n    matchLabels:\n      seldon.io/controller-id: " + helm_release("Namespace") + "\n"
+    objectSelector = "  objectSelector:\n    matchLabels:\n      seldon.io/controller-id: " + helm_value("controllerId") + "\n"
     webhookData = re.sub(r"(.*namespaceSelector:\n.*matchExpressions:\n.*\n.*\n)",HELM_NOT_SINGLE_NAMESPACE_IF_START+r"\1"+HELM_IF_END+HELM_SINGLE_NAMESPACE_IF_START+namespaceSelector+HELM_IF_END,webhookData, re.M)
     webhookData = re.sub(r"(.*objectSelector:\n.*matchExpressions:\n.*\n.*\n)",HELM_NOT_CONTROLLERID_IF_START+r"\1"+HELM_IF_END+HELM_CONTROLLERID_IF_START+objectSelector+HELM_IF_END,webhookData, re.M)
 
