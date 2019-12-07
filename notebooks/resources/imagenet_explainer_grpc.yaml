@@ -46,9 +46,11 @@ spec:
       - name: SELDON_LOG_LEVEL
         value: DEBUG
     explainer:
-      type: anchor_images
+      type: AnchorImages
       modelUri: gs://seldon-models/tfserving/imagenet/explainer
       config:
         batch_size: "100"
+      endpoint:
+        type: GRPC
     name: default
     replicas: 1

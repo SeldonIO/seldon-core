@@ -54,32 +54,29 @@ func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1alph
 
 		if explainerContainer.Image == "" {
 			// TODO: should use explainer type but this is the only one available currently
-			explainerContainer.Image = "seldonio/alibiexplainer_grpc:0.2.3"
+			explainerContainer.Image = "seldonio/alibiexplainer:0.1"
 		}
-
-		var portType string
 
 		// explainer can get port from spec or from containerSpec or fall back on default
 		var httpPort = 0
 		var grpcPort = 0
 		var portNum int32 = 9000
+		var explainerProtocol string
 		if p.Explainer.Endpoint != nil && p.Explainer.Endpoint.ServicePort != 0 {
 			portNum = p.Explainer.Endpoint.ServicePort
 		}
 		var pSvcEndpoint = ""
+		//Explainer only accepts http at present
+		portType := "http"
+		httpPort = int(portNum)
 		customPort := getPort(portType, explainerContainer.Ports)
 
 		if p.Explainer.Endpoint != nil && p.Explainer.Endpoint.Type == machinelearningv1alpha2.GRPC {
-			portType = "grpc"
-			grpcPort = int(portNum)
+			explainerProtocol = "grpc"
 			pSvcEndpoint = c.serviceDetails[pSvcName].GrpcEndpoint
 		} else {
-			portType = "http"
-			httpPort = int(portNum)
-			//pSvcEndpoint = c.serviceDetails[pSvcName].HttpEndpoint
-			// Default to grpc endpoint
-			pSvcEndpoint = c.serviceDetails[pSvcName].GrpcEndpoint
-
+			explainerProtocol = "http"
+			pSvcEndpoint = c.serviceDetails[pSvcName].HttpEndpoint
 		}
 
 		if customPort == nil {
@@ -104,17 +101,17 @@ func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1alph
 		explainerContainer.Args = []string{
 			"--model_name=" + mlDep.Name,
 			"--predictor_host=" + pSvcEndpoint,
-			"--protocol=" + "seldon." + portType,
+			"--protocol=" + "seldon." + explainerProtocol,
 			"--http_port=" + strconv.Itoa(int(portNum)),
-			"--use_grpc"}
+		}
 
 		if p.Explainer.ModelUri != "" {
 			explainerContainer.Args = append(explainerContainer.Args, "--storage_uri="+DefaultModelLocalMountPath)
 		}
 
-		explainerContainer.Args = append(explainerContainer.Args, strings.ToLower(p.Explainer.Type))
+		explainerContainer.Args = append(explainerContainer.Args, string(p.Explainer.Type))
 
-		if p.Explainer.Type == "anchor_images" {
+		if p.Explainer.Type == machinelearningv1alpha2.AlibiAnchorsImageExplainer {
 			explainerContainer.Args = append(explainerContainer.Args, "--tf_data_type=float32")
 		}
 

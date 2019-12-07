@@ -29,8 +29,8 @@ Notebooks
    Kubeflow Seldon E2E Pipeline <kubeflow_seldon_e2e_pipeline>
    Max gRPC Message Size <max_grpc_msg_size>
    Model with Custom Metrics <tmpl_model_with_metrics>
-   MLFlow <mlflow>
-   MLFlow Pre-packaged MOdel Server A/B Test <mlflow_server_ab_test_ambassador>
+   MLflow <mlflow>
+   MLflow Pre-packaged MOdel Server A/B Test <mlflow_server_ab_test_ambassador>
    NodeJS MNIST <nodejs_mnist>
    NodeJS Tensorflow <nodejs_tensorflow>
    NVIDIA TensorRT MNIST <nvidia_mnist>
@@ -47,4 +47,6 @@ Notebooks
    Sklearn, Xgboost, Tensorflow Server Examples <server_examples>
    Tensorflow MNIST <deep_mnist>
    TFserving MNIST <tfserving_mnist>
+   Spam Classification TRANSFORMER component <transformer_spam_model>
+   Spam Classification TRANSFORMER + COMBINER Component <combiner_spam_model>
 

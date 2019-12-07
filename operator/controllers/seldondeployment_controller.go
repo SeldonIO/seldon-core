@@ -168,10 +168,22 @@ func createIstioResources(mlDep *machinelearningv1alpha2.SeldonDeployment,
 		},
 	}
 
-	routesHttp := make([]istio.HTTPRouteDestination, len(mlDep.Spec.Predictors))
-	routesGrpc := make([]istio.HTTPRouteDestination, len(mlDep.Spec.Predictors))
+	// shadows don't get destinations in the vs as a shadow is a mirror instead
+	var shadows int = 0
+	for i := 0; i < len(mlDep.Spec.Predictors); i++ {
+		p := mlDep.Spec.Predictors[i]
+		if p.Shadow == true {
+			shadows += 1
+		}
+	}
+
+	routesHttp := make([]istio.HTTPRouteDestination, len(mlDep.Spec.Predictors)-shadows)
+	routesGrpc := make([]istio.HTTPRouteDestination, len(mlDep.Spec.Predictors)-shadows)
+
+	// the shdadow/mirror entry does need a DestinationRule though
 	drules := make([]*istio.DestinationRule, len(mlDep.Spec.Predictors))
 	for i := 0; i < len(mlDep.Spec.Predictors); i++ {
+
 		p := mlDep.Spec.Predictors[i]
 		pSvcName := machinelearningv1alpha2.GetPredictorKey(mlDep, &p)
 
@@ -198,6 +210,32 @@ func createIstioResources(mlDep *machinelearningv1alpha2.SeldonDeployment,
 			},
 		}
 
+		drules[i] = drule
+
+		if p.Shadow == true {
+			//if there's a shadow then add a mirror section to the VirtualService
+
+			httpVsvc.Spec.HTTP[0].Mirror = &istio.Destination{
+				Host:   pSvcName,
+				Subset: p.Name,
+				Port: istio.PortSelector{
+					Number: uint32(ports[i].httpPort),
+				},
+			}
+
+			grpcVsvc.Spec.HTTP[0].Mirror = &istio.Destination{
+				Host:   pSvcName,
+				Subset: p.Name,
+				Port: istio.PortSelector{
+					Number: uint32(ports[i].grpcPort),
+				},
+			}
+
+			continue
+		}
+
+		//we split by adding different routes with their own Weights
+		//so not by tag - different destinations (like https://istio.io/docs/tasks/traffic-management/traffic-shifting/) distinguished by host
 		routesHttp[i] = istio.HTTPRouteDestination{
 			Destination: istio.Destination{
 				Host:   pSvcName,
@@ -218,10 +256,11 @@ func createIstioResources(mlDep *machinelearningv1alpha2.SeldonDeployment,
 			},
 			Weight: int(p.Traffic),
 		}
-		drules[i] = drule
+
 	}
 	httpVsvc.Spec.HTTP[0].Route = routesHttp
 	grpcVsvc.Spec.HTTP[0].Route = routesGrpc
+
 	if httpAllowed && grpcAllowed {
 		vscs := make([]*istio.VirtualService, 2)
 		vscs[0] = httpVsvc
@@ -356,6 +395,7 @@ func createComponents(r *SeldonDeploymentReconciler, mlDep *machinelearningv1alp
 					} else {
 						// a user-supplied container may not be a pu so we may not create service for that
 						log.Info("Not creating container service for " + con.Name)
+						continue
 					}
 
 					if noEngine {
@@ -364,6 +404,7 @@ func createComponents(r *SeldonDeploymentReconciler, mlDep *machinelearningv1alp
 						deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1alpha2.Label_seldon_app] = pSvcName
 
 						port := int(svc.Spec.Ports[0].Port)
+
 						if svc.Spec.Ports[0].Name == "grpc" {
 							httpAllowed = false
 							externalPorts[i] = httpGrpcPorts{httpPort: 0, grpcPort: port}
@@ -393,6 +434,7 @@ func createComponents(r *SeldonDeploymentReconciler, mlDep *machinelearningv1alp
 								HttpEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(port),
 							}
 						}
+
 					}
 				}
 			}
@@ -665,6 +707,10 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 			},
 			Strategy: appsv1.DeploymentStrategy{RollingUpdate: &appsv1.RollingUpdateDeployment{MaxUnavailable: &intstr.IntOrString{StrVal: "10%"}}},
 		},
+	}
+
+	if p.Shadow == true {
+		deploy.Spec.Template.ObjectMeta.Labels["shadow"] = "true"
 	}
 
 	if seldonPodSpec != nil {
@@ -992,6 +1038,8 @@ func createDeployments(r *SeldonDeploymentReconciler, components *components, in
 
 				if !reflect.DeepEqual(deploy.Spec.Template.Spec.Containers[0].Resources, found.Spec.Template.Spec.Containers[0].Resources) {
 					log.Info("Containers differ")
+				} else {
+					log.Info("Deployments differ")
 				}
 
 				ready = false

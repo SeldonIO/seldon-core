@@ -24,6 +24,7 @@ Start a kind cluster
 
 ```
 kind create cluster
+export KUBECONFIG="$(kind get kubeconfig-path --name="kind")"
 ```
 
 Install CRD and cert-manager
@@ -60,7 +61,13 @@ When running update tls certificates locally
 make tls-extract
 ```
 
-Now delete the cluster Deployment as we will run the manager locally. After which you can run locally:
+Now delete the cluster Deployment as we will run the manager locally:
+
+```
+kubectl delete deployment -n seldon-system seldon-controller-manager
+``` 
+
+Now we can run locally:
 
 ```
 make run
@@ -69,3 +76,7 @@ make run
 You should now be able to create SeldonDeployments and Webhook calls will hit the local running manager. The same applies if you debug from GoLand. Though for GoLand you will need to export the KUBECONFIG to the debug configuration.
 
 You should delete the Operator running in the cluster at this point.
+
+# Build Helm Chart
+
+Use the Makefile in the `./helm` directory. Ensure you have `pyyaml` in your python environment.

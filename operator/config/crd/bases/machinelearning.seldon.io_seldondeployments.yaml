@@ -5889,6 +5889,8 @@ spec:
                   replicas:
                     format: int32
                     type: integer
+                  shadow:
+                    type: boolean
                   svcOrchSpec:
                     properties:
                       env:

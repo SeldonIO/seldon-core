@@ -42,7 +42,7 @@ Seldon Core is an open source platform for deploying machine learning models on 
    :caption: Servers
 	     
    Inference Servers Overview <servers/overview.md>
-   MLFlow Server <servers/mlflow.md>
+   MLflow Server <servers/mlflow.md>
    SKLearn server <servers/sklearn.md>
    Tensorflow Serving <servers/tensorflow.md>
    XGBoost server <servers/xgboost.md>
@@ -99,6 +99,7 @@ Seldon Core is an open source platform for deploying machine learning models on 
    Notebooks <examples/notebooks>
    Integrations <examples/integrations>
 
+
 .. toctree::
    :maxdepth: 1
    :caption: Tutorials
@@ -110,9 +111,11 @@ Seldon Core is an open source platform for deploying machine learning models on 
    :maxdepth: 1
    :caption: Reference
 
+   General Availability <reference/ga.md>
    Python API reference <python/api/modules>	     
    Seldon Microservice API <reference/apis/internal-api.md>
    Seldon Orchestrator <reference/engine>
+   AWS Marketplace Install <reference/aws-mp-install.md>
    Benchmarking <reference/benchmarking.md>
    Seldon Deployment CRD <reference/seldon-deployment.md>
    Prediction APIs <reference/apis/index>

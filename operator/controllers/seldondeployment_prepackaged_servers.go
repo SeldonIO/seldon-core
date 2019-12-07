@@ -27,9 +27,9 @@ import (
 	"strings"
 )
 
-func addTFServerContainer(r *SeldonDeploymentReconciler, pu *machinelearningv1alpha2.PredictiveUnit, p *machinelearningv1alpha2.PredictorSpec, deploy *appsv1.Deployment) error {
+func addTFServerContainer(r *SeldonDeploymentReconciler, pu *machinelearningv1alpha2.PredictiveUnit, p *machinelearningv1alpha2.PredictorSpec, deploy *appsv1.Deployment, serverConfig machinelearningv1alpha2.PredictorServerConfig) error {
 
-	if *pu.Implementation == machinelearningv1alpha2.TENSORFLOW_SERVER {
+	if len(*pu.Implementation) > 0 && (serverConfig.Tensorflow || serverConfig.TensorflowImage != "") {
 
 		ty := machinelearningv1alpha2.MODEL
 		pu.Type = &ty
@@ -69,9 +69,17 @@ func addTFServerContainer(r *SeldonDeploymentReconciler, pu *machinelearningv1al
 		tfServingContainer := utils.GetContainerForDeployment(deploy, constants.TFServingContainerName)
 		existing = tfServingContainer != nil
 		if !existing {
+			ServerConfig := machinelearningv1alpha2.GetPrepackServerConfig(string(*pu.Implementation))
+
+			tfImage := "tensorflow/serving:latest"
+
+			if ServerConfig.TensorflowImage != "" {
+				tfImage = ServerConfig.TensorflowImage
+			}
+
 			tfServingContainer = &v1.Container{
 				Name:  constants.TFServingContainerName,
-				Image: "tensorflow/serving:latest",
+				Image: tfImage,
 				Args: []string{
 					"/usr/bin/tensorflow_model_server",
 					"--port=2000",
@@ -106,10 +114,9 @@ func addTFServerContainer(r *SeldonDeploymentReconciler, pu *machinelearningv1al
 	return nil
 }
 
-func addModelDefaultServers(r *SeldonDeploymentReconciler, pu *machinelearningv1alpha2.PredictiveUnit, p *machinelearningv1alpha2.PredictorSpec, deploy *appsv1.Deployment) error {
-	if *pu.Implementation == machinelearningv1alpha2.SKLEARN_SERVER ||
-		*pu.Implementation == machinelearningv1alpha2.XGBOOST_SERVER ||
-		*pu.Implementation == machinelearningv1alpha2.MLFLOW_SERVER {
+func addModelDefaultServers(r *SeldonDeploymentReconciler, pu *machinelearningv1alpha2.PredictiveUnit, p *machinelearningv1alpha2.PredictorSpec, deploy *appsv1.Deployment, serverConfig machinelearningv1alpha2.PredictorServerConfig) error {
+
+	if len(*pu.Implementation) > 0 && !serverConfig.Tensorflow && serverConfig.TensorflowImage == "" {
 
 		ty := machinelearningv1alpha2.MODEL
 		pu.Type = &ty
@@ -269,11 +276,16 @@ func createStandaloneModelServers(r *SeldonDeploymentReconciler, mlDep *machinel
 		deploy = createDeploymentWithoutEngine(depName, seldonId, sPodSpec, p, mlDep)
 	}
 
-	if err := addModelDefaultServers(r, pu, p, deploy); err != nil {
-		return err
-	}
-	if err := addTFServerContainer(r, pu, p, deploy); err != nil {
-		return err
+	if machinelearningv1alpha2.IsPrepack(pu) {
+
+		ServerConfig := machinelearningv1alpha2.GetPrepackServerConfig(string(*pu.Implementation))
+
+		if err := addModelDefaultServers(r, pu, p, deploy, ServerConfig); err != nil {
+			return err
+		}
+		if err := addTFServerContainer(r, pu, p, deploy, ServerConfig); err != nil {
+			return err
+		}
 	}
 
 	if !existing {

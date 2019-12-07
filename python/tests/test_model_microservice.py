@@ -10,16 +10,16 @@ from seldon_core.proto import prediction_pb2
 from seldon_core.user_model import SeldonComponent
 from seldon_core.utils import seldon_message_to_json, json_to_seldon_message
 from seldon_core.flask_utils import SeldonMicroserviceException
-from seldon_core.tf_helper import _TF_MISSING
-
-from flask import jsonify
+from seldon_core.imports_helper import _TF_PRESENT
 
 from utils import skipif_tf_missing
 
-if not _TF_MISSING:
+if _TF_PRESENT:
     from tensorflow.core.framework.tensor_pb2 import TensorProto
     import tensorflow as tf
 
+HEALTH_PING_URL = "/health/ping"
+HEALTH_STATUS_URL = "/health/status"
 
 """
  Checksum of bytes. Used to check data integrity of binData passed in multipart/form-data request
@@ -40,6 +40,8 @@ def rs232_checksum(the_bytes):
 
 
 class UserObject(SeldonComponent):
+    HEALTH_STATUS_REPONSE = [0.123]
+
     def __init__(self, metrics_ok=True, ret_nparray=False, ret_meta=False):
         self.metrics_ok = metrics_ok
         self.ret_nparray = ret_nparray
@@ -79,8 +81,13 @@ class UserObject(SeldonComponent):
         else:
             return [{"type": "BAD", "key": "mycounter", "value": 1}]
 
+    def health_status(self):
+        return self.predict(self.HEALTH_STATUS_REPONSE, ["some_float"])
+
 
 class UserObjectLowLevel(SeldonComponent):
+    HEALTH_STATUS_RAW_RESPONSE = [123.456, 7.89]
+
     def __init__(self, metrics_ok=True, ret_nparray=False):
         self.metrics_ok = metrics_ok
         self.ret_nparray = ret_nparray
@@ -103,6 +110,10 @@ class UserObjectLowLevel(SeldonComponent):
     def send_feedback_grpc(self, request):
         print("Feedback called")
 
+    def health_status_raw(self):
+        return {"data": {"ndarray": self.HEALTH_STATUS_RAW_RESPONSE}}
+
+
 class UserObjectLowLevelWithStatusInResponse(SeldonComponent):
     def __init__(self, metrics_ok=True, ret_nparray=False):
         self.metrics_ok = metrics_ok
@@ -110,15 +121,15 @@ class UserObjectLowLevelWithStatusInResponse(SeldonComponent):
         self.nparray = np.array([1, 2, 3])
 
     def predict_rest(self, request):
-        return {"data": {"ndarray": [9, 9]}, "status": {"code": 400, "status": "FAILURE"}}
+        return {
+            "data": {"ndarray": [9, 9]},
+            "status": {"code": 400, "status": "FAILURE"},
+        }
 
     def predict_grpc(self, request):
         arr = np.array([9, 9])
         datadef = prediction_pb2.DefaultData(
-            tensor=prediction_pb2.Tensor(
-                shape=(2, 1),
-                values=arr
-            )
+            tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
         )
         request = prediction_pb2.SeldonMessage(data=datadef)
         return request
@@ -132,27 +143,33 @@ class UserObjectLowLevelWithStatusInResponse(SeldonComponent):
 
 class UserObjectLowLevelWithStatusInResponseWithPredictRaw(SeldonComponent):
     def __init__(self, check_name):
-        self.check_name=check_name
+        self.check_name = check_name
 
     def predict_raw(self, msg):
-        msg=json_to_seldon_message(msg)
-        if self.check_name == 'img':
-            file_data=msg.binData
-            img = Image.open(io.BytesIO (file_data))
+        msg = json_to_seldon_message(msg)
+        if self.check_name == "img":
+            file_data = msg.binData
+            img = Image.open(io.BytesIO(file_data))
             img.verify()
-            return {"meta": seldon_message_to_json(msg.meta),
-                    "data": {"ndarray": [rs232_checksum(file_data).decode('utf-8')]},
-                    "status": {"code": 400, "status": "FAILURE"}}
-        elif self.check_name == 'txt':
-            file_data=msg.binData
-            return {"meta": seldon_message_to_json(msg.meta),
-                    "data": {"ndarray": [file_data.decode('utf-8')]},
-                    "status": {"code": 400, "status": "FAILURE"}}
-        elif self.check_name == 'strData':
-            file_data=msg.strData
-            return {"meta": seldon_message_to_json(msg.meta),
-                    "data": {"ndarray": [file_data]},
-                    "status": {"code": 400, "status": "FAILURE"}}
+            return {
+                "meta": seldon_message_to_json(msg.meta),
+                "data": {"ndarray": [rs232_checksum(file_data).decode("utf-8")]},
+                "status": {"code": 400, "status": "FAILURE"},
+            }
+        elif self.check_name == "txt":
+            file_data = msg.binData
+            return {
+                "meta": seldon_message_to_json(msg.meta),
+                "data": {"ndarray": [file_data.decode("utf-8")]},
+                "status": {"code": 400, "status": "FAILURE"},
+            }
+        elif self.check_name == "strData":
+            file_data = msg.strData
+            return {
+                "meta": seldon_message_to_json(msg.meta),
+                "data": {"ndarray": [file_data]},
+                "status": {"code": 400, "status": "FAILURE"},
+            }
 
 
 class UserObjectLowLevelWithPredictRaw(SeldonComponent):
@@ -310,16 +327,25 @@ def test_model_lowlevel_multi_form_data_strData_ok():
     )
 
 
-
 def test_model_lowlevel_multi_form_data_strData_non200status():
-    user_object = UserObjectLowLevelWithStatusInResponseWithPredictRaw('strData')
+    user_object = UserObjectLowLevelWithStatusInResponseWithPredictRaw("strData")
     app = get_rest_microservice(user_object)
     client = app.test_client()
-    rv = client.post('/predict',data={"meta":'{"puid":"1234"}',"strData":(f'./tests/resources/test.txt','test.txt')},content_type='multipart/form-data')
+    rv = client.post(
+        "/predict",
+        data={
+            "meta": '{"puid":"1234"}',
+            "strData": (f"./tests/resources/test.txt", "test.txt"),
+        },
+        content_type="multipart/form-data",
+    )
     j = json.loads(rv.data)
     assert rv.status_code == 400
     assert j["meta"]["puid"] == "1234"
-    assert j["data"]["ndarray"][0] == "this is test file for testing multipart/form-data input\n"
+    assert (
+        j["data"]["ndarray"][0]
+        == "this is test file for testing multipart/form-data input\n"
+    )
 
 
 def test_model_multi_form_data_ok():
@@ -523,6 +549,36 @@ def test_model_seldon_json_ok():
     client = app.test_client()
     rv = client.get("/seldon.json")
     assert rv.status_code == 200
+
+
+def test_model_health_ping():
+    user_object = UserObject()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+    rv = client.get(HEALTH_PING_URL)
+    assert rv.status_code == 200
+    assert rv.data == b"pong"
+
+
+def test_model_health_status():
+    user_object = UserObject()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+    rv = client.get(HEALTH_STATUS_URL)
+    assert rv.status_code == 200
+    j = json.loads(rv.data)
+    print(j)
+    assert j["data"]["tensor"]["values"] == UserObject.HEALTH_STATUS_REPONSE
+
+
+def test_model_health_status_raw():
+    user_object = UserObjectLowLevel()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+    rv = client.get(HEALTH_STATUS_URL)
+    assert rv.status_code == 200
+    j = json.loads(rv.data)
+    assert j["data"]["ndarray"] == UserObjectLowLevel.HEALTH_STATUS_RAW_RESPONSE
 
 
 def test_proto_ok():

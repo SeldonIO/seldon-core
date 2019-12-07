@@ -12,9 +12,9 @@ To wrap your machine learning model create a Class that has a predict method wit
 
 Your predict method will receive a numpy array `X` with iterable set of column names (if they exist in the input features) and optional Dictionary of meta data. It should return the result of the prediction as either:
 
-  * Numpy array
-  * List of values
-  * String or Bytes
+- Numpy array
+- List of values
+- String or Bytes
 
 A simple example is shown below:
 
@@ -51,10 +51,9 @@ You can also provide a method to return the column names for your prediction wit
     def class_names(self) -> Iterable[str]:
 ```
 
-
 ### Examples
 
-  You can follow [various notebook examples](../examples/notebooks.html).
+You can follow [various notebook examples](../examples/notebooks.html).
 
 ## Transformers
 
@@ -87,6 +86,7 @@ class ImageNetCombiner(object):
 ```
 
 ## Routers
+
 Routers provide functionality to direct a request to one of a set of child components. For this you should create a method with signature as shown below that returns the `id` for the child component to route the request to. The `id` is the index of children connected to the router.
 
 ```python
@@ -96,6 +96,7 @@ Routers provide functionality to direct a request to one of a set of child compo
 To see examples of this you can follow the various [example routers](https://github.com/SeldonIO/seldon-core/tree/master/components/routers) that are part of Seldon Core.
 
 ## Adding Custom Metrics
+
 To return metrics associated with a call create a method with signature as shown below:
 
 ```python
@@ -126,6 +127,7 @@ class ModelWithMetrics(object):
 ```
 
 ## Returning Tags
+
 If we wish to add arbitrary tags to the returned metadata you can provide a `tags` method with signature as shown below:
 
 ```python
@@ -144,10 +146,84 @@ class ModelWithMetrics(object):
     	return {"system":"production"}
 ```
 
+## REST Health Endpoint
+If you wish to add a REST health point, you can implement the `health_status` method with signature as shown below:
+```python
+    def health_status(self) -> Union[np.ndarray, List, str, bytes]:
+```
 
+You can use this to verify that your service can respond to HTTP calls after you have built your docker image and also 
+as kubernetes liveness and readiness probes to verify that your model is healthy.
 
+A simple example is shown below:
+
+```python
+class ModelWithHealthEndpoint(object):
+    def predict(self, X, features_names):
+        return X
+
+    def health_status(self):
+        response = self.predict([1, 2], ["f1", "f2"])
+        assert len(response) == 2, "health check returning bad predictions" # or some other simple validation
+        return response
+```
+
+When you use `seldon-core-microservice` to start the HTTP server, you can verify that the model is up and running by 
+checking the `/health/status` endpoint:
+```
+$ curl localhost:5000/health/status
+{"data":{"names":[],"tensor":{"shape":[2],"values":[1,2]}},"meta":{}}
+```
+
+Additionally, you can also use the `/health/ping` endpoint if you want a lightweight call that just checks that 
+the HTTP server is up:
+
+```0
+$ curl localhost:5000/health/ping
+pong%
+```
+
+You can also override the default liveness and readiness probes and use HTTP health endpoints by adding them in your
+`SeldonDeployment` YAML. You can modify the parameters for the probes to suit your reliability needs without putting
+too much stress on the container. Read more about these probes in the
+[kubernetes documentation](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/).
+An example is shown below:
+
+```yaml
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+spec:
+  name: my-app
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: my-app-image:version
+          name: classifier
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 60
+            periodSeconds: 5
+            successThreshold: 1
+            httpGet:
+              path: /health/status
+              port: http
+              scheme: HTTP
+            timeoutSeconds: 1
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 20
+            periodSeconds: 5
+            successThreshold: 1
+            httpGet:
+              path: /health/status
+              port: http
+              scheme: HTTP
+            timeoutSeconds: 1
+```
 
 ## Low level Methods
+
 If you want more control you can provide a low-level methods that will provide as input the raw proto buffer payloads. The signatures for these are shown below for release `sedon_core>=0.2.6.1`:
 
 ```python
@@ -162,13 +238,18 @@ If you want more control you can provide a low-level methods that will provide a
     def route_raw(self, msg: prediction_pb2.SeldonMessage) -> prediction_pb2.SeldonMessage:
 
     def aggregate_raw(self, msgs: prediction_pb2.SeldonMessageList) -> prediction_pb2.SeldonMessage:
+
+    def health_status_raw(self) -> prediction_pb2.SeldonMessage:
 ```
 
 ## User Defined Exceptions
+
 If you want to handle custom exceptions define a field `model_error_handler` as shown below:
+
 ```python
     model_error_handler = flask.Blueprint('error_handlers', __name__)
 ```
+
 An example is as follows:
 
 ```python
@@ -204,7 +285,7 @@ class MyModel(Object):
 User Defined Exception
 """
 class UserCustomException(Exception):
-    
+
     status_code = 404
 
     def __init__(self, message, application_error_code,http_status_code):
@@ -220,6 +301,7 @@ class UserCustomException(Exception):
         return rv
 
 ```
+
 ### Gunicorn (Alpha Feature)
 
 To run your class under gunicorn set the environment variable `GUNICORN_WORKERS` to an integer value > 1.
@@ -254,8 +336,6 @@ spec:
 
 ```
 
-
-
 ## Gunicorn and load
 
 If the wrapped python class is run under [gunicorn](https://gunicorn.org/) then as part of initialization of each gunicorn worker a `load` method will be called on your class if it has it. You should use this method to load and initialise your model. This is important for Tensorflow models which need their session created in each worker process. The [Tensorflow MNIST example](../examples/deep_mnist.html) does this.
@@ -269,7 +349,7 @@ class DeepMnist(object):
     def __init__(self):
         self.loaded = False
         self.class_names = ["class:{}".format(str(i)) for i in range(10)]
-        
+
     def load(self):
         print("Loading model",os.getpid())
         self.sess = tf.Session()
@@ -280,7 +360,7 @@ class DeepMnist(object):
         self.y = graph.get_tensor_by_name("y:0")
         self.loaded = True
         print("Loaded model")
-        
+
     def predict(self,X,feature_names):
         if not self.loaded:
             self.load()
@@ -288,10 +368,60 @@ class DeepMnist(object):
         return predictions.astype(np.float64)
 ```
 
+## Multi-value numpy arrays
+
+By default, when using the data ndarray parameter, the conversion to ndarray (by default) converts all inner types into the same type. With models that may take as input arrays with different value types, you will be able to do so by overriding the `predict_raw` function yourself which gives you access to the raw request, and creating the numpy array as follows:
+
+```
+import numpy as np
+
+class Model:
+    def predict_raw(self, request):
+        data = request.get("data", {}).get("ndarray")
+        if data:
+            mult_types_array = np.array(data, dtype=object)
+
+        # Handle other data types as required + your logic
+```
+
+## Integer numbers
+
+The `json` package in Python, parses numbers with no decimal part as integers.
+Therefore, a tensor containing only numbers without a decimal part will get
+parsed as an integer tensor.
+
+To illustrate the above, we can consider the following example:
+
+```JSON
+{
+  "data": {
+    "ndarray": [0, 1, 2, 3]
+  }
+}
+```
+
+By default, the `json` package will parse the array in the `data.ndarray`
+field as an array of Python `Integer` values.
+Since there are no floating-point values, `numpy` will then create a tensor
+with `dtype = np.int32`.
+
+If we want to force a different behaviour, we can use the underlying `predict_raw()`
+method to control the deserialisation of the input payload.
+As an example, using the example above, we could force the resulting tensor to always
+using `dtype = np.float64` by implementing `predict_raw()` as:
+
+```python
+import numpy as np
+
+class Model:
+    def predict_raw(self, request):
+        data = request.get("data", {}).get("ndarray")
+        if data:
+            float_array = np.array(data, dtype=np.float64)
+
+        # Make predictions using float_array
+```
 
 ## Next Steps
 
 After you have created the Component you need to create a Docker image that can be managed by Seldon Core. Follow the documentation to do this with [s2i](./python_wrapping_s2i.md) or [Docker](./python_wrapping_docker.md).
-
-
-

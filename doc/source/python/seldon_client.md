@@ -28,6 +28,19 @@ To make a gRPC call with random payload:
 r = sc.predict(transport="grpc")
 ```
 
+The default return type is the protobuf of type "SeldonMessage", but you can also choose to return a JSON dictionary which could make it easier for interacting with the internal data. You can do this by passing the kwarg `client_return_type` with the value `dict` (default value is `proto`) when either initialising your Seldon Client or when sending a predict request. For example:
+
+```
+sc = SeldonClient(..., client_return_type="dict")
+```
+
+Or alternatively you can pass it when sending the request to override your default parameter:
+
+```
+sc = SeldonClient(..., client_return_type="proto")
+
+sc.predict(..., client_return_type="dict") # Here we override it
+```
 
 ## Advanced Examples
 

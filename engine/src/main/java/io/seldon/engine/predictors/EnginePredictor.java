@@ -94,7 +94,9 @@ public class EnginePredictor {
       if (depName != null) {
         this.deploymentName = depName;
         logger.info("Setting deployment name to {}", deploymentName);
-      } else logger.warn("No deployment name found in environment!");
+      } else {
+        logger.warn("No deployment name found in environment!");
+      }
     }
 
     logger.info("Installed engine predictor: {}", toJson(predictorSpec, true));
