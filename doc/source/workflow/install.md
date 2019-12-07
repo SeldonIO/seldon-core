@@ -22,12 +22,6 @@ kubectl create namespace seldon-system
 helm install seldon-core seldon-core-operator --repo https://storage.googleapis.com/seldon-charts --set usageMetrics.enabled=true --namespace seldon-system
 ```
 
-**For the unreleased 0.5.0 version you would need to install 0.5.0-SNAPSHOT to test**:
-
-```bash
-helm install seldon-core seldon-core-operator --repo https://storage.googleapis.com/seldon-charts --set usageMetrics.enabled=true --namespace seldon-system --version 0.5.0-SNAPSHOT
-```
-
 Notes
 
  * You can use ```--namespace``` to install the seldon-core controller to a particular namespace but we recommend seldon-system.
