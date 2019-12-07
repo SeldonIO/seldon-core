@@ -285,7 +285,7 @@ class SeldonClient(object):
         gateway_prefix: str = None,
         headers: Dict = None,
         http_path: str = None,
-        meta: Dict= None
+        meta: Dict = None,
     ) -> SeldonClientPrediction:
         """
 
@@ -359,7 +359,7 @@ class SeldonClient(object):
             gateway_prefix=gateway_prefix,
             headers=headers,
             http_path=http_path,
-            meta = meta
+            meta=meta,
         )
         self._validate_args(**k)
         if k["gateway"] == "ambassador" or k["gateway"] == "istio":
@@ -1755,7 +1755,7 @@ def grpc_predict_gateway(
 
     # Create meta data
     metaKV = prediction_pb2.Meta()
-    metaJson = {"tags":meta}
+    metaJson = {"tags": meta}
     json_format.ParseDict(metaJson, metaKV)
 
     if bin_data is not None:
