@@ -31,8 +31,8 @@ func NewSeldonRestApi(predictor *v1alpha2.PredictorSpec, client client.SeldonApi
 	}
 }
 
-func (r *SeldonRestApi) respondWithJSON(w http.ResponseWriter, code int, payload payload.SeldonPayload) {
-	w.Header().Set("Content-Type", "application/json")
+func (r *SeldonRestApi) respondWithSuccess(w http.ResponseWriter, code int, payload payload.SeldonPayload) {
+	w.Header().Set("Content-Type", payload.GetContentType())
 	w.WriteHeader(code)
 
 	err := r.Client.Marshall(w, payload)
@@ -103,5 +103,5 @@ func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 		r.respondWithError(w, err)
 		return
 	}
-	r.respondWithJSON(w, http.StatusOK, resPayload)
+	r.respondWithSuccess(w, http.StatusOK, resPayload)
 }

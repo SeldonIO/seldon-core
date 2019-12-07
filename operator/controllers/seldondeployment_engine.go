@@ -104,7 +104,7 @@ func createExecutorContainer(mlDep *machinelearningv1alpha2.SeldonDeployment, p 
 	}
 	return corev1.Container{
 		Name:  EngineContainerName,
-		Image: GetEnv("EXECUTOR_CONTAINER_IMAGE_AND_VERSION", "seldonio/seldon-core-executor:0.5.0-SNAPSHOT"),
+		Image: GetEnv("EXECUTOR_CONTAINER_IMAGE_AND_VERSION", "seldonio/seldon-core-executor:0.5.2-SNAPSHOT"),
 		Args: []string{
 			"--sdep", mlDep.Name,
 			"--namespace", mlDep.Namespace,

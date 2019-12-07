@@ -22,6 +22,7 @@ func NewSeldonDeploymentClient(path *string) *SeldonDeploymentClient {
 
 	var config *rest.Config
 	var err error
+
 	if path != nil && *path != "" {
 		config, err = clientcmd.BuildConfigFromFlags("", *path)
 		if err != nil {

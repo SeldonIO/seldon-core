@@ -62,56 +62,54 @@ func NewSeldonMessageRestClient(options ...Option) client.SeldonApiClient {
 	return &client
 }
 
-func (smc *SeldonMessageRestClient) PostHttp(url *url.URL, msg payload.SeldonPayload) (*proto.SeldonMessage, error) {
+func (smc *SeldonMessageRestClient) PostHttp(url *url.URL, msg payload.SeldonPayload) (*proto.SeldonMessage, string, error) {
 	smc.Log.Info("Calling HTTP", "URL", url)
 
 	// Marshall message into JSON
 	msgStr, err := smc.marshall(msg)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	// Call URL
 	response, err := smc.httpClient.Post(url.String(), ContentTypeJSON, bytes.NewBufferString(msgStr))
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
-	if response.StatusCode != 200 {
+	if response.StatusCode != http.StatusOK {
 		smc.Log.Info("httpPost failed", "response code", response.StatusCode)
-		return nil, errors.Errorf("Internal service call failed with to %s status code %d", url, response.StatusCode)
+		return nil, "", errors.Errorf("Internal service call failed with to %s status code %d", url, response.StatusCode)
 	}
 
 	//Read response
 	b, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
-	if err = response.Body.Close(); err != nil {
-		return nil, err
-	}
+	defer response.Body.Close()
+
+	contentType := response.Header.Get("Content-Type")
 
 	// Return SeldonMessage
 	var sm proto.SeldonMessage
 	value := string(b)
 	if err := jsonpb.UnmarshalString(value, &sm); err != nil {
-		return nil, err
+		return nil, "", err
 	}
-	return &sm, nil
+	return &sm, contentType, nil
 }
 
 func (smc *SeldonMessageRestClient) marshall(payload payload.SeldonPayload) (string, error) {
 	ma := jsonpb.Marshaler{}
-	var msgStr string
-	var err error
-	if sm, ok := payload.GetPayload().(*proto.SeldonMessage); ok {
-		msgStr, err = ma.MarshalToString(sm)
-	} else if sm, ok := payload.GetPayload().(*proto.SeldonMessageList); ok {
-		msgStr, err = ma.MarshalToString(sm)
-	} else {
+	switch sm := payload.GetPayload().(type) {
+	case *proto.SeldonMessage:
+		return ma.MarshalToString(sm)
+	case *proto.SeldonMessageList:
+		return ma.MarshalToString(sm)
+	default:
 		return "", errors.New("Unknown type passed")
 	}
-	return msgStr, err
 }
 
 func (smc *SeldonMessageRestClient) call(method string, host string, port int32, req payload.SeldonPayload) (payload.SeldonPayload, error) {
@@ -120,11 +118,11 @@ func (smc *SeldonMessageRestClient) call(method string, host string, port int32,
 		Host:   net.JoinHostPort(host, strconv.Itoa(int(port))),
 		Path:   method,
 	}
-	sm, err := smc.PostHttp(&url, req)
+	sm, contentType, err := smc.PostHttp(&url, req)
 	if err != nil {
 		return nil, err
 	}
-	res := payload.SeldonMessagePayload{Msg: sm}
+	res := payload.SeldonMessagePayload{Msg: sm, ContentType: contentType}
 	return &res, nil
 }
 

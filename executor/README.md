@@ -7,7 +7,7 @@ This Go project replaces the Seldon Java Engine.  It is presently in development
 
 ## Functionality
 
-The focus is to provide a smaller more efficient graph orchestror. It itends t provide:
+The focus is to provide a smaller more efficient graph orchestror. It intends to provide:
 
  * http REST Seldon protocol server for Seldon graphs.
  * grpc Seldon protocol server for Seldon graphs.
