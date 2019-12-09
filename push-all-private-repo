@@ -13,5 +13,5 @@ docker run --rm -it \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v $HOME/.m2:/root/.m2 \
     -v $PWD:/work \
-    seldonio/core-builder:0.3 bash -c 'make -f Makefile.ci push_images_private_repo'
+    seldonio/core-builder:0.7 bash -c 'make -f Makefile.ci push_images_private_repo'
 

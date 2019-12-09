@@ -91,6 +91,17 @@ RUN wget https://github.com/kubernetes-sigs/kustomize/releases/download/kustomiz
         chmod +x kustomize_kustomize.v3.2.3_linux_amd64 && \
         mv kustomize_kustomize.v3.2.3_linux_amd64 /usr/local/bin/kustomize
 
+# UPGRADE MAVEN
+RUN cd /usr/local && \
+    wget http://www-eu.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz && \
+    sudo tar xzf apache-maven-3.6.3-bin.tar.gz && \
+    sudo ln -s apache-maven-3.6.3 apache-maven && \
+    rm apache-maven-3.6.3-bin.tar.gz && \
+    export M2_HOME=/usr/local/apache-maven  && \
+    export MAVEN_HOME=/usr/local/apache-maven
+
+ENV M2_HOME /usr/local/apache-maven
+ENV MAVEN_HOME /usr/local/apache-maven
 
 WORKDIR /work
 

@@ -10,7 +10,7 @@ pipelineConfig:
     pullRequest:
       pipeline:
         agent:
-          image: seldonio/core-builder:0.4
+          image: seldonio/core-builder:0.7
         stages:
         - name: pr-build-comment
           steps:
@@ -54,7 +54,7 @@ pipelineConfig:
           command: echo "skipping tag"
       pipeline:
         agent:
-          image: seldonio/core-builder:0.4
+          image: seldonio/core-builder:0.7
         stages:
           - name: build-and-push
             steps:

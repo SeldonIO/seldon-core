@@ -13,7 +13,7 @@ function do_build {
         -v /var/run/docker.sock:/var/run/docker.sock \
         -v /home/docker/.m2:/root/.m2 \
         -v ${SELDON_CORE_VM_DIR}:/work \
-        seldonio/core-builder:0.3 bash -c 'make -f Makefile.ci build'
+        seldonio/core-builder:0.7 bash -c 'make -f Makefile.ci build'
 }
 
 SELDON_CORE_LOCAL_DIR=${STARTUP_DIR}

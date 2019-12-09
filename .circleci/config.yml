@@ -2,7 +2,7 @@ version: 2
 jobs:
   build-api-frontend:
     docker:
-      - image: seldonio/core-builder:0.3
+      - image: seldonio/core-builder:0.7
 
     working_directory: /work
 
@@ -21,7 +21,7 @@ jobs:
 
   build-engine:
     docker:
-      - image: seldonio/core-builder:0.3
+      - image: seldonio/core-builder:0.7
 
     working_directory: /work
 
@@ -40,7 +40,7 @@ jobs:
 
   cluster-manager:
     docker:
-      - image: seldonio/core-builder:0.3
+      - image: seldonio/core-builder:0.7
 
     working_directory: /work
 

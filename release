@@ -9,5 +9,5 @@ STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
 docker run --rm -it \
     -v ${HOME}/.m2:/root/.m2 \
     -v "${STARTUP_DIR}":/work \
-    seldonio/core-builder:0.3 python3 release.py "$@"
+    seldonio/core-builder:0.7 python3 release.py "$@"
 
