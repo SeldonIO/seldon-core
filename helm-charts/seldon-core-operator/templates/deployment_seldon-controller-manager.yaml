@@ -33,6 +33,7 @@ spec:
       - args:
         - --enable-leader-election
         - --webhook-port={{ .Values.webhook.port }}
+        - '{{- if .Values.singleNamespace }}--namespace={{ .Release.Namespace }}{{- end }}'
         command:
         - /manager
         env:
@@ -40,6 +41,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        - name: CONTROLLER_ID
+          value: '{{ .Values.controllerId }}'
         - name: AMBASSADOR_ENABLED
           value: '{{ .Values.ambassador.enabled }}'
         - name: AMBASSADOR_SINGLE_NAMESPACE

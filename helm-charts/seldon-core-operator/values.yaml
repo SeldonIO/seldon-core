@@ -41,3 +41,7 @@ usageMetrics:
   enabled: false
 webhook:
   port: 443
+singleNamespace: false
+controllerId: ''
+crd:
+  create: true

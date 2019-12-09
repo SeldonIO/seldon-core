@@ -1,0 +1,34 @@
+# Adds namespace to all resources.
+namespace: seldonid1-system
+
+namePrefix: seldonid1-
+
+bases:
+- ../default
+
+patchesStrategicMerge:
+- patch_manager_id.yaml
+
+# Fix to get around bug in Kustomize that adds prefix to namespace name
+# See https://github.com/kubernetes-sigs/kustomize/issues/235
+patchesJson6902:
+- target:
+    version: v1
+    kind: Namespace
+    name: system
+  path: namespace_patch.yaml
+- target:
+    group: admissionregistration.k8s.io
+    version: v1beta1
+    kind: MutatingWebhookConfiguration
+    name: mutating-webhook-configuration
+  path: patch_webhook_selectors.yaml
+- target:
+    group: admissionregistration.k8s.io
+    version: v1beta1
+    kind: ValidatingWebhookConfiguration
+    name: validating-webhook-configuration
+  path: patch_webhook_selectors.yaml
+
+configurations:
+- webhook-config.yaml

@@ -1,21 +1,14 @@
-
----
+{{- if .Values.singleNamespace }}
+{{- if .Values.rbac.create }}
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
+kind: Role
 metadata:
   creationTimestamp: null
-  name: manager-role
+  name: seldon1-manager-role
+  namespace: '{{ .Release.Namespace }}'
 rules:
 - apiGroups:
-  - ""
-  resources:
-  - namespaces
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - ""
+  - ''
   resources:
   - services
   verbs:
@@ -137,14 +130,6 @@ rules:
 - apiGroups:
   - v1
   resources:
-  - namespaces
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - v1
-  resources:
   - services
   verbs:
   - create
@@ -162,3 +147,5 @@ rules:
   - get
   - patch
   - update
+{{- end }}
+{{- end }}

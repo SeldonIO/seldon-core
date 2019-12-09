@@ -7,6 +7,8 @@
 | ambassador.enabled | Whether to add Ambassador configuration to created services | true |
 | ambassador.singleNamespace | Allow creation of Ambassador paths that don't include namespace | false |
 | certManager.enabled | Whether to assume cert manager for certificates | false |
+| controllerId | The ID for the manager. Only for when you want manager to limit itself to resources labelled with same id. | '' |
+| crd.create | Whether to install the Custom Resource Definition | true |
 | engine.grpc.port | gRPC port | 5001 |
 | engine.image.name | Image to use for service orchestrator | ```<latest release image>``` |
 | engine.image.tag | Tag for service orchestrator | ```<latest release image>``` |
