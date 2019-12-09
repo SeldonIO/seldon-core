@@ -1,4 +1,4 @@
-FROM openjdk:8u141-jdk
+FROM openjdk:8u232-jdk
 
 ENV PYTHON_VERSION "3.6.0"
 
