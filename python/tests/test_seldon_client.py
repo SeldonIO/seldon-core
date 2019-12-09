@@ -271,11 +271,13 @@ def test_predict_grpc_ambassador_with_meta():
     response = sc.predict(meta={"key": "value"})
     assert response.response.strData == "predict"
 
+
 @mock.patch("seldon_core.seldon_client.prediction_pb2_grpc.SeldonStub", new=MyStub)
 def test_grpc_predict_json_data_ambassador():
     sc = SeldonClient(deployment_name="mymodel", transport="grpc", gateway="ambassador")
     response = sc.predict(json_data=JSON_TEST_DATA)
     assert response.response.strData == "predict"
+
 
 @mock.patch("seldon_core.seldon_client.prediction_pb2_grpc.SeldonStub", new=MyStub)
 @mock.patch("seldon_core.seldon_client.get_token", side_effect=mock_get_token)
