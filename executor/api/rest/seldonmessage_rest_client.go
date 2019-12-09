@@ -139,7 +139,7 @@ func (smc *SeldonMessageRestClient) Route(host string, port int32, req payload.S
 	if err != nil {
 		return 0, err
 	} else {
-		routes := api.ExtractRoute(sp.GetPayload().(*proto.SeldonMessage))
+		routes := api.ExtractRouteFromSeldonMessage(sp.GetPayload().(*proto.SeldonMessage))
 		//Only returning first route. API could be extended to allow multiple routes
 		return routes[0], nil
 	}

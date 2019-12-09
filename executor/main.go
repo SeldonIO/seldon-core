@@ -166,6 +166,8 @@ func main() {
 	logf.SetLogger(logf.ZapLogger(false))
 	logger := logf.Log.WithName("entrypoint")
 
+	logger.Info("Flags", "transport", *transport)
+
 	var err error
 	var predictor *v1alpha2.PredictorSpec
 	if *filename != "" {
@@ -195,7 +197,8 @@ func main() {
 	if *transport == "http" {
 		var clientRest seldonclient.SeldonApiClient
 		if *protocol == "seldon" {
-			clientRest = rest.NewSeldonMessageRestClient()
+			//clientRest = rest.NewSeldonMessageRestClient()
+			clientRest = rest.NewBytesRestClient()
 		} else {
 			log.Error("Unknown protocol")
 			os.Exit(-1)

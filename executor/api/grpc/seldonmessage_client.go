@@ -1,8 +1,10 @@
 package api
 
-import "github.com/seldonio/seldon-core/executor/api/grpc/proto"
+import (
+	"github.com/seldonio/seldon-core/executor/api/grpc/proto"
+)
 
-func ExtractRoute(msg *proto.SeldonMessage) []int {
+func ExtractRouteFromSeldonMessage(msg *proto.SeldonMessage) []int {
 	switch msg.GetData().DataOneof.(type) {
 	case *proto.DefaultData_Ndarray:
 		values := msg.GetData().GetNdarray().GetValues()
@@ -28,3 +30,4 @@ func ExtractRoute(msg *proto.SeldonMessage) []int {
 	}
 	return []int{-1}
 }
+

@@ -76,7 +76,7 @@ func (s SeldonMessageGrpcClient) Route(host string, port int32, msg payload.Seld
 	if err != nil {
 		return 0, err
 	}
-	routes := ExtractRoute(resp)
+	routes := ExtractRouteFromSeldonMessage(resp)
 	//Only returning first route. API could be extended to allow multiple routes
 	return routes[0], nil
 }

@@ -56,8 +56,10 @@ func (r *SeldonRestApi) Initialise() {
 	r.Router.HandleFunc("/ready", r.checkReady)
 	r.Router.HandleFunc("/live", r.alive)
 	if !r.ProbesOnly {
-		s := r.Router.PathPrefix("/api/v0.1").Methods("POST").HeadersRegexp("Content-Type", "application/json").Subrouter()
-		s.HandleFunc("/predictions", r.predictions)
+		api01 := r.Router.PathPrefix("/api/v0.1").Methods("POST").Subrouter()
+		api01.HandleFunc("/predictions", r.predictions)
+		api1 := r.Router.PathPrefix("/api/v1").Methods("POST").Subrouter()
+		api1.HandleFunc("/predictions", r.predictions)
 	}
 }
 

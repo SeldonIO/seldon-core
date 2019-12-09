@@ -73,7 +73,20 @@ clean:
 	rm -rf serving
 
 start_test_grpc_server:
-	./executor --sdep seldon-model --namespace default --predictor example --file samples/model_test_grpc.yaml --http_port 8000 -- grpc_port 5000 
+	./executor --sdep seldon-model --namespace default --predictor example --file samples/model_test_grpc.yaml --http_port 8000 --grpc_port 5000 --transport grpc
+
+start_dummy_grpc_model:
+	cd ../examples/models/mean_classifier && make run_grpc_local 
 
 test_grpc_local:
 	cd proto && grpcurl -d '{"data":{"ndarray":[[1.0,2.0]]}}' -plaintext -proto ./prediction.proto  0.0.0.0:5000 seldon.protos.Seldon/Predict
+
+
+start_test_rest_server:
+	./executor --sdep seldon-model --namespace default --predictor example --file samples/model_test_grpc.yaml --http_port 8000 
+
+start_dummy_rest_model:
+	cd ../examples/models/mean_classifier && make run_rest_local 
+
+test_rest_local:
+	curl -v localhost:8000/api/v0.1/predictions -d '{"data":{"ndarray":[[1.0,2.0]]}}' 
