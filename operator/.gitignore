@@ -24,3 +24,6 @@ bin
 *~
 
 self-signed-cert
+
+# Vendor Files
+vendor
