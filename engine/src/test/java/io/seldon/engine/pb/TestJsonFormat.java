@@ -15,28 +15,22 @@
  */
 package io.seldon.engine.pb;
 
+import com.google.protobuf.DoubleValue;
+import com.google.protobuf.FloatValue;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.kubernetes.client.proto.IntStr.IntOrString;
 import io.seldon.engine.pb.JsonFormat.Printer;
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@RunWith(JUnitParamsRunner.class)
 public class TestJsonFormat {
   private static final Logger logger = LoggerFactory.getLogger(TestJsonFormat.class);
-
-  @Test
-  public void testStrValCustomFormat() throws InvalidProtocolBufferException {
-    final String val = "String Value";
-    IntOrString is = IntOrString.newBuilder().setStrVal(val).build();
-    Printer jf =
-        JsonFormat.printer()
-            .usingTypeConverter(
-                is.getDescriptorForType().getFullName(),
-                new IntOrStringUtils.IntOrStringConverter());
-    Assert.assertEquals("\"" + val + "\"", jf.print(is));
-  }
 
   @Test
   public void testEscapeHTML() throws InvalidProtocolBufferException {
@@ -70,10 +64,43 @@ public class TestJsonFormat {
   }
 
   @Test
+  public void testStrValCustomFormat() throws InvalidProtocolBufferException {
+    final String val = "String Value";
+    IntOrString is = IntOrString.newBuilder().setStrVal(val).build();
+    Printer jf =
+        JsonFormat.printer()
+            .usingTypeConverter(
+                is.getDescriptorForType().getFullName(),
+                new IntOrStringUtils.IntOrStringConverter());
+    Assert.assertEquals("\"" + val + "\"", jf.print(is));
+  }
+
+  @Test
   public void testStrValDefaultFormat() throws InvalidProtocolBufferException {
     final String val = "String Value";
     IntOrString is = IntOrString.newBuilder().setStrVal(val).build();
     Printer jf = JsonFormat.printer().omittingInsignificantWhitespace();
     Assert.assertEquals("{\"strVal\":\"" + val + "\"}", jf.print(is));
+  }
+
+  @Test
+  @Parameters({
+    "3.24, 3.24",
+    "3.0, 3",
+    "0.12345678912345, 0.12345678912345",
+    "12345678912345678.0, 12345678912345678"
+  })
+  public void testDoubleVal(double val, String expected) throws InvalidProtocolBufferException {
+    DoubleValue encoded = DoubleValue.newBuilder().setValue(val).build();
+    Printer printer = JsonFormat.printer().omittingInsignificantWhitespace();
+    Assert.assertEquals(expected, printer.print(encoded));
+  }
+
+  @Test
+  @Parameters({"3.24, 3.24", "3.0, 3", "0.12345678, 0.12345678", "12345678.0, 12345678"})
+  public void testFloatVal(float val, String expected) throws InvalidProtocolBufferException {
+    FloatValue encoded = FloatValue.newBuilder().setValue(val).build();
+    Printer printer = JsonFormat.printer().omittingInsignificantWhitespace();
+    Assert.assertEquals(expected, printer.print(encoded));
   }
 }

@@ -14,6 +14,7 @@ from seldon_core.user_model import (
     client_transform_output,
     client_transform_input,
     client_send_feedback,
+    client_health_status,
     SeldonNotImplementedError,
 )
 from seldon_core.flask_utils import SeldonMicroserviceException
@@ -342,3 +343,26 @@ def aggregate(
             return construct_response_json(
                 user_model, False, request["seldonMessages"][0], client_response
             )
+
+
+def health_status(user_model: Any) -> Union[prediction_pb2.SeldonMessage, List, Dict]:
+    """
+    Call the user model to check the health of the model
+
+    Parameters
+    ----------
+    user_model
+       User defined class instance
+    Returns
+    -------
+      Health check output
+    """
+
+    if hasattr(user_model, "health_status_raw"):
+        try:
+            return user_model.health_status_raw()
+        except SeldonNotImplementedError:
+            pass
+
+    client_response = client_health_status(user_model)
+    return construct_response_json(user_model, False, {}, client_response)

@@ -17,73 +17,106 @@ package io.seldon.engine.pb;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.ListValue;
+import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
 import io.seldon.protos.PredictionProtos.DefaultData;
 import io.seldon.protos.PredictionProtos.Meta;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
 import io.seldon.protos.PredictionProtos.Tensor;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TestPredictionProto {
+  private static Logger log = LoggerFactory.getLogger(TestPredictionProto.class);
 
   @Test
-  public void parse_json_extra_fields() throws InvalidProtocolBufferException {
+  public void testParseJsonExtraFields() throws InvalidProtocolBufferException {
     String json = "{\"x\":1.0,\"request\":{\"values\":[[1.0],[2.0]]}}";
     SeldonMessage.Builder builder = SeldonMessage.newBuilder();
     ProtoBufUtils.updateMessageBuilderFromJson(builder, json);
     SeldonMessage request = builder.build();
 
-    String json2 = ProtoBufUtils.toJson(request);
-
-    System.out.println(json2);
+    // TODO: Nothing gets serialised back. Is this alright?
+    Assert.assertEquals(0, request.getSerializedSize());
   }
 
   @Test
-  public void parse_custom_json() throws InvalidProtocolBufferException {
+  public void testParseCustomJson() throws InvalidProtocolBufferException {
     String json = "{\"data\":{\"ndarray\":[[1.0,2.0],[3.0,4.0]]}}";
     SeldonMessage.Builder builder = SeldonMessage.newBuilder();
     ProtoBufUtils.updateMessageBuilderFromJson(builder, json);
     SeldonMessage request = builder.build();
 
-    Assert.assertEquals(2, request.getData().getNdarray().getValuesCount());
+    ListValue ndarray = request.getData().getNdarray();
+    Assert.assertEquals(2, ndarray.getValuesCount());
 
-    String json2 = ProtoBufUtils.toJson(request);
-
-    System.out.println(json2);
+    ListValue ndarray1 = ndarray.getValues(1).getListValue();
+    Assert.assertEquals(3.0, ndarray1.getValues(0).getNumberValue(), 0.01);
   }
 
   @Test
-  public void parse_tags_array() throws InvalidProtocolBufferException {
+  public void testParseTagsArray() throws InvalidProtocolBufferException {
     String json =
         "{\"meta\":{\"tags\":{\"user\":[\"a\",\"b\"],\"gender\":\"female\"}},\"data\":{\"ndarray\":[[1.0,2.0],[3.0,4.0]]}}";
     SeldonMessage.Builder builder = SeldonMessage.newBuilder();
     ProtoBufUtils.updateMessageBuilderFromJson(builder, json);
     SeldonMessage request = builder.build();
 
-    Assert.assertEquals(2, request.getData().getNdarray().getValuesCount());
+    Map<String, Value> metaTags = request.getMeta().getTags();
+    Assert.assertEquals(2, metaTags.size());
 
-    String json2 = ProtoBufUtils.toJson(request);
+    Value gender = metaTags.get("gender");
+    Assert.assertEquals("female", gender.getStringValue());
 
-    System.out.println(json2);
+    ListValue user = metaTags.get("user").getListValue();
+    Assert.assertEquals("a", user.getValues(0).getStringValue());
+
+    ListValue ndarray = request.getData().getNdarray();
+    Assert.assertEquals(2, ndarray.getValuesCount());
+
+    ListValue ndarray0 = ndarray.getValues(0).getListValue();
+    Assert.assertEquals(2.0, ndarray0.getValues(1).getNumberValue(), 0.01);
   }
 
   @Test
-  public void parse_json() throws InvalidProtocolBufferException {
+  public void testParseJson() throws InvalidProtocolBufferException {
     String json = "{\"request\":{\"values\":[[1.0],[2.0]]}}";
     SeldonMessage.Builder builder = SeldonMessage.newBuilder();
     ProtoBufUtils.updateMessageBuilderFromJson(builder, json);
     SeldonMessage request = builder.build();
 
-    String json2 = ProtoBufUtils.toJson(request);
-
-    System.out.println(json2);
+    // TODO: Nothing gets serialised back. Is this alright?
+    Assert.assertEquals(0, request.getSerializedSize());
   }
 
   @Test
-  public void defaultRequest() throws InvalidProtocolBufferException {
+  public void testParseJsonData() throws InvalidProtocolBufferException {
+    String json = "{\"jsonData\":{\"key1\":\"bar\",\"key2\": 23,\"key3\":2.3}}";
+    SeldonMessage.Builder builder = SeldonMessage.newBuilder();
+    ProtoBufUtils.updateMessageBuilderFromJson(builder, json);
+    SeldonMessage request = builder.build();
+
+    Struct jsonData = request.getJsonData().getStructValue();
+    Assert.assertEquals(3, jsonData.getFieldsCount());
+
+    Value key1 = jsonData.getFieldsOrThrow("key1");
+    Assert.assertEquals("bar", key1.getStringValue());
+
+    // We can't read an Int32Value from a Struct's Value
+    Value key2 = jsonData.getFieldsOrThrow("key2");
+    Assert.assertEquals(23, (int) key2.getNumberValue());
+
+    Value key3 = jsonData.getFieldsOrThrow("key3");
+    Assert.assertEquals(2.3, key3.getNumberValue(), 0.01);
+  }
+
+  @Test
+  public void testDefaultRequest() throws InvalidProtocolBufferException {
     String[] features = {"a", "b"};
     Double[] values = {1.0, 2.0, 1.5, 2.2};
     DefaultData.Builder defB = DefaultData.newBuilder();
@@ -100,19 +133,12 @@ public class TestPredictionProto {
 
     b.setData(defB.build()).setMeta(Meta.newBuilder().putTags("key", v1).build());
     SeldonMessage request = b.build();
-
     String json = ProtoBufUtils.toJson(request);
-
-    System.out.println(json);
 
     SeldonMessage.Builder b2 = SeldonMessage.newBuilder();
     ProtoBufUtils.updateMessageBuilderFromJson(b2, json);
-
     SeldonMessage request2 = b2.build();
-
     String json2 = ProtoBufUtils.toJson(request2);
-
-    System.out.println(json2);
 
     Assert.assertEquals(json, json2);
   }
@@ -126,18 +152,10 @@ public class TestPredictionProto {
 
     String json = ProtoBufUtils.toJson(request);
 
-    System.out.println(json);
-
     SeldonMessage.Builder b2 = SeldonMessage.newBuilder();
     ProtoBufUtils.updateMessageBuilderFromJson(b2, json);
-
     SeldonMessage request2 = b2.build();
-    String custom = request2.getBinData().toString(StandardCharsets.UTF_8);
-    System.out.println(custom);
-
     String json2 = ProtoBufUtils.toJson(request2);
-
-    System.out.println(json2);
 
     Assert.assertEquals(json, json2);
   }
@@ -151,16 +169,10 @@ public class TestPredictionProto {
 
     String json = ProtoBufUtils.toJson(request);
 
-    System.out.println(json);
-
     SeldonMessage.Builder b2 = SeldonMessage.newBuilder();
     ProtoBufUtils.updateMessageBuilderFromJson(b2, json);
-
     SeldonMessage request2 = b2.build();
-
     String json2 = ProtoBufUtils.toJson(request2);
-
-    System.out.println(json2);
 
     Assert.assertEquals(json, json2);
   }

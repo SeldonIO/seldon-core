@@ -37,12 +37,6 @@ public class ProtoBufUtils {
    */
   public static String toJson(Message message, boolean omittingInsignificantWhitespace)
       throws InvalidProtocolBufferException {
-    String json = null;
-    // json =
-    // JsonFormat.printer().includingDefaultValueFields().preservingProtoFieldNames().print(message);
-    // json =
-    // JsonFormat.printer().includingDefaultValueFields().preservingProtoFieldNames().omittingInsignificantWhitespace().print(message);
-
     Printer jsonPrinter =
         JsonFormat.printer().includingDefaultValueFields().preservingProtoFieldNames();
     if (omittingInsignificantWhitespace) {

@@ -23,7 +23,7 @@ import io.seldon.protos.PredictionProtos.DefaultData;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
 import java.util.Iterator;
 import java.util.List;
-import org.ojalgo.matrix.PrimitiveMatrix;
+import org.ojalgo.matrix.Primitive64Matrix;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -53,8 +53,8 @@ public class AverageCombinerUnit extends PredictiveUnitImpl {
           APIException.ApiExceptionType.ENGINE_INVALID_COMBINER_RESPONSE,
           String.format("Combiner received data that is not 2 dimensional"));
     }
-    PrimitiveMatrix.DenseReceiver currentSum =
-        PrimitiveMatrix.FACTORY.makeDense(shape[0], shape[1]);
+    Primitive64Matrix.DenseReceiver currentSum =
+        Primitive64Matrix.FACTORY.makeDense(shape[0], shape[1]);
     SeldonMessage.Builder respBuilder = SeldonMessage.newBuilder();
 
     for (Iterator<SeldonMessage> i = outputs.iterator(); i.hasNext(); ) {

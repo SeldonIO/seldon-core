@@ -74,8 +74,8 @@ class SeldonClientPrediction(object):
 
     def __init__(
         self,
-        request: Optional[prediction_pb2.SeldonMessage],
-        response: Optional[prediction_pb2.SeldonMessage],
+        request: Optional[Union[prediction_pb2.SeldonMessage, Dict]],
+        response: Optional[Union[prediction_pb2.SeldonMessage, Dict]],
         success: bool = True,
         msg: str = "",
     ):
@@ -101,7 +101,7 @@ class SeldonClientFeedback(object):
     def __init__(
         self,
         request: Optional[prediction_pb2.Feedback],
-        response: Optional[prediction_pb2.SeldonMessage],
+        response: Optional[Union[prediction_pb2.SeldonMessage, Dict]],
         success: bool = True,
         msg: str = "",
     ):
@@ -167,7 +167,8 @@ class SeldonClient(object):
         grpc_max_receive_message_length: int = 4 * 1024 * 1024,
         channel_credentials: SeldonChannelCredentials = None,
         call_credentials: SeldonCallCredentials = None,
-        debug=False,
+        debug: bool = False,
+        client_return_type: str = "proto",
     ):
         """
 
@@ -199,6 +200,8 @@ class SeldonClient(object):
            Max grpc send message size in bytes
         grpc_max_receive_message_length
            Max grpc receive message size in bytes
+        client_return_type
+            the return type of all functions can be either dict or proto
         """
         if debug:
             logger.setLevel(logging.DEBUG)
@@ -219,6 +222,7 @@ class SeldonClient(object):
         transport: str = None,
         method: str = None,
         data: np.ndarray = None,
+        client_return_type: str = "proto",
         **kwargs,
     ):
         """
@@ -262,6 +266,10 @@ class SeldonClient(object):
             )
         if not (data is None or isinstance(data, np.ndarray)):
             raise SeldonClientException("Valid values for data are None or numpy array")
+        if not (client_return_type == "proto" or client_return_type == "dict"):
+            raise SeldonClientException(
+                "Valid values for client_return_type are proto or dict"
+            )
 
     def predict(
         self,
@@ -281,11 +289,13 @@ class SeldonClient(object):
         data: np.ndarray = None,
         bin_data: Union[bytes, bytearray] = None,
         str_data: str = None,
+        json_data: Union[str, List, Dict] = None,
         names: Iterable[str] = None,
         gateway_prefix: str = None,
         headers: Dict = None,
         http_path: str = None,
         meta: Dict = None,
+        client_return_type: str = None,
     ) -> SeldonClientPrediction:
         """
 
@@ -323,6 +333,8 @@ class SeldonClient(object):
            Binary payload to send - will override data
         str_data
            String payload to send - will override data
+        json_data
+           JSON payload to send - will override data
         names
            Column names
         gateway_prefix
@@ -333,6 +345,8 @@ class SeldonClient(object):
            Custom http path for predict call to use
         meta:
            Custom meta map
+        client_return_type
+            the return type of all functions can be either dict or proto
 
         Returns
         -------
@@ -356,10 +370,12 @@ class SeldonClient(object):
             data=data,
             bin_data=bin_data,
             str_data=str_data,
+            json_data=json_data,
             gateway_prefix=gateway_prefix,
             headers=headers,
             http_path=http_path,
             meta=meta,
+            client_return_type=client_return_type,
         )
         self._validate_args(**k)
         if k["gateway"] == "ambassador" or k["gateway"] == "istio":
@@ -398,6 +414,7 @@ class SeldonClient(object):
         shape: Tuple = (1, 1),
         namespace: str = None,
         gateway_prefix: str = None,
+        client_return_type: str = None,
     ) -> SeldonClientFeedback:
         """
 
@@ -439,6 +456,8 @@ class SeldonClient(object):
            The shape of the data to send
         namespace
            k8s namespace of running deployment
+        client_return_type
+            the return type of all functions can be either dict or proto
 
         Returns
         -------
@@ -459,6 +478,7 @@ class SeldonClient(object):
             shape=shape,
             namespace=namespace,
             gateway_prefix=gateway_prefix,
+            client_return_type=client_return_type,
         )
         self._validate_args(**k)
         if k["gateway"] == "ambassador" or k["gateway"] == "istio":
@@ -502,10 +522,12 @@ class SeldonClient(object):
         data: np.ndarray = None,
         bin_data: Union[bytes, bytearray] = None,
         str_data: str = None,
+        json_data: str = None,
         names: Iterable[str] = None,
         gateway_prefix: str = None,
         headers: Dict = None,
         http_path: str = None,
+        client_return_type: str = None,
     ) -> Dict:
         """
 
@@ -539,6 +561,8 @@ class SeldonClient(object):
            Binary payload to send - will override data
         str_data
            String payload to send - will override data
+        json_data
+           JSON payload to send - will override data
         names
            Column names
         gateway_prefix
@@ -547,6 +571,8 @@ class SeldonClient(object):
            Headers to add to request
         http_path:
            Custom http path for predict call to use
+        client_return_type
+            the return type of all functions can be either dict or proto
 
         Returns
         -------
@@ -568,9 +594,11 @@ class SeldonClient(object):
             data=data,
             bin_data=bin_data,
             str_data=str_data,
+            json_data=json_data,
             gateway_prefix=gateway_prefix,
             headers=headers,
             http_path=http_path,
+            client_return_type=client_return_type,
         )
         self._validate_args(**k)
         if k["gateway"] == "ambassador" or k["gateway"] == "istio":
@@ -603,6 +631,7 @@ class SeldonClient(object):
         ndatas: int = None,
         bin_data: Union[bytes, bytearray] = None,
         str_data: str = None,
+        json_data: Union[str, List, Dict] = None,
         names: Iterable[str] = None,
     ) -> Union[SeldonClientPrediction, SeldonClientCombine]:
         """
@@ -645,6 +674,8 @@ class SeldonClient(object):
            Binary payload to send - will override data
         str_data
            String payload to send - will override data
+        json_data
+           String payload to send - will override data
         ndatas
            Multiple numpy arrays to send for aggregation
         bin_data
@@ -679,6 +710,7 @@ class SeldonClient(object):
             data=data,
             bin_data=bin_data,
             str_data=str_data,
+            json_data=json_data,
         )
         self._validate_args(**k)
         if k["transport"] == "rest":
@@ -807,6 +839,7 @@ def microservice_api_rest_seldon_message(
     payload_type: str = "tensor",
     bin_data: Union[bytes, bytearray] = None,
     str_data: str = None,
+    json_data: Union[str, List, Dict] = None,
     names: Iterable[str] = None,
     **kwargs,
 ) -> SeldonClientPrediction:
@@ -839,6 +872,8 @@ def microservice_api_rest_seldon_message(
        Binary data payload
     str_data
        String data payload
+    json_data
+       JSON data payload
     names
        Column names
     kwargs
@@ -851,6 +886,8 @@ def microservice_api_rest_seldon_message(
         request = prediction_pb2.SeldonMessage(binData=bin_data)
     elif str_data is not None:
         request = prediction_pb2.SeldonMessage(strData=str_data)
+    elif json_data is not None:
+        request = json_to_seldon_message({"jsonData": json_data})
     else:
         if data is None:
             data = np.random.rand(*shape)
@@ -995,6 +1032,7 @@ def microservice_api_grpc_seldon_message(
     payload_type: str = "tensor",
     bin_data: Union[bytes, bytearray] = None,
     str_data: str = None,
+    json_data: Union[str, List, Dict] = None,
     grpc_max_send_message_length: int = 4 * 1024 * 1024,
     grpc_max_receive_message_length: int = 4 * 1024 * 1024,
     names: Iterable[str] = None,
@@ -1019,6 +1057,8 @@ def microservice_api_grpc_seldon_message(
        Binary data to send
     str_data
        String data to send
+    json_data
+        JSON data to send
     grpc_max_send_message_length
        Max grpc send message size in bytes
     grpc_max_receive_message_length
@@ -1035,6 +1075,8 @@ def microservice_api_grpc_seldon_message(
         request = prediction_pb2.SeldonMessage(binData=bin_data)
     elif str_data is not None:
         request = prediction_pb2.SeldonMessage(strData=str_data)
+    elif json_data is not None:
+        request = json_to_seldon_message({"jsonData": json_data})
     else:
         if data is None:
             data = np.random.rand(*shape)
@@ -1240,7 +1282,9 @@ def rest_predict_seldon_oauth(
     payload_type: str = "tensor",
     bin_data: Union[bytes, bytearray] = None,
     str_data: str = None,
+    json_data: Union[str, List, Dict] = None,
     names: Iterable[str] = None,
+    client_return_type: str = "proto",
     **kwargs,
 ) -> SeldonClientPrediction:
     """
@@ -1266,8 +1310,12 @@ def rest_predict_seldon_oauth(
        Binary data to send
     str_data
        String data to send
+    json_data
+        JSON data to send
     names
        column names
+    client_return_type
+        the return type of all functions can be either dict or proto
     kwargs
 
     Returns
@@ -1280,6 +1328,8 @@ def rest_predict_seldon_oauth(
         request = prediction_pb2.SeldonMessage(binData=bin_data)
     elif str_data is not None:
         request = prediction_pb2.SeldonMessage(strData=str_data)
+    elif json_data is not None:
+        request = json_to_seldon_message({"jsonData": json_data})
     else:
         if data is None:
             data = np.random.rand(*shape)
@@ -1301,7 +1351,12 @@ def rest_predict_seldon_oauth(
     try:
         if len(response_raw.text) > 0:
             try:
-                response = json_to_seldon_message(response_raw.json())
+                if client_return_type == "proto":
+                    response = json_to_seldon_message(response_raw.json())
+                elif client_return_type == "dict":
+                    response = response_raw.json()
+                else:
+                    SeldonClientException("Invalid client_return_type")
             except:
                 response = None
         else:
@@ -1322,9 +1377,11 @@ def grpc_predict_seldon_oauth(
     payload_type: str = "tensor",
     bin_data: Union[bytes, bytearray] = None,
     str_data: str = None,
+    json_data: Union[str, List, Dict] = None,
     grpc_max_send_message_length: int = 4 * 1024 * 1024,
     grpc_max_receive_message_length: int = 4 * 1024 * 1024,
     names: Iterable[str] = None,
+    client_return_type: str = "proto",
     **kwargs,
 ) -> SeldonClientPrediction:
     """
@@ -1356,6 +1413,8 @@ def grpc_predict_seldon_oauth(
        Max grpc receive message size in bytes
     names
        Column names
+    client_return_type
+        the return type of all functions can be either dict or proto
     kwargs
 
     Returns
@@ -1368,6 +1427,8 @@ def grpc_predict_seldon_oauth(
         request = prediction_pb2.SeldonMessage(binData=bin_data)
     elif str_data is not None:
         request = prediction_pb2.SeldonMessage(strData=str_data)
+    elif json_data is not None:
+        request = json_to_seldon_message({"jsonData": json_data})
     else:
         if data is None:
             data = np.random.rand(*shape)
@@ -1384,6 +1445,11 @@ def grpc_predict_seldon_oauth(
     metadata = [("oauth_token", token)]
     try:
         response = stub.Predict(request=request, metadata=metadata)
+        if client_return_type == "dict":
+            request = seldon_message_to_json(request)
+            response = seldon_message_to_json(response)
+        elif client_return_type != "proto":
+            SeldonClientException("Invalid client_return_type")
         return SeldonClientPrediction(request, response, True, "")
     except Exception as e:
         return SeldonClientPrediction(request, None, False, str(e))
@@ -1400,11 +1466,13 @@ def rest_predict_gateway(
     payload_type: str = "tensor",
     bin_data: Union[bytes, bytearray] = None,
     str_data: str = None,
+    json_data: Union[str, Dict, List] = None,
     names: Iterable[str] = None,
     call_credentials: SeldonCallCredentials = None,
     channel_credentials: SeldonChannelCredentials = None,
     http_path: str = None,
     meta: Dict = {},
+    client_return_type: str = "proto",
     **kwargs,
 ) -> SeldonClientPrediction:
     """
@@ -1432,6 +1500,8 @@ def rest_predict_gateway(
        Binary data to send
     str_data
        String data to send
+    json_data
+       JSON data to send as str, dict or list
     names
        Column names
     call_credentials
@@ -1442,6 +1512,8 @@ def rest_predict_gateway(
        Custom http path
     meta
        Custom meta map
+    client_return_type
+        the return type of all functions can be either dict or proto
 
     Returns
     -------
@@ -1457,6 +1529,8 @@ def rest_predict_gateway(
         request = prediction_pb2.SeldonMessage(binData=bin_data, meta=metaKV)
     elif str_data is not None:
         request = prediction_pb2.SeldonMessage(strData=str_data, meta=metaKV)
+    elif json_data is not None:
+        request = json_to_seldon_message({"jsonData": json_data})
     else:
         if data is None:
             data = np.random.rand(*shape)
@@ -1542,7 +1616,12 @@ def rest_predict_gateway(
         if len(response_raw.text) > 0:
             try:
                 logger.debug("Raw response: %s", response_raw.text)
-                response = json_to_seldon_message(response_raw.json())
+                if client_return_type == "proto":
+                    response = json_to_seldon_message(response_raw.json())
+                elif client_return_type == "dict":
+                    response = response_raw.json()
+                else:
+                    SeldonClientException("Invalid client_return_type")
             except:
                 response = None
         else:
@@ -1563,12 +1642,14 @@ def explain_predict_gateway(
     payload_type: str = "tensor",
     bin_data: Union[bytes, bytearray] = None,
     str_data: str = None,
+    json_data: Union[str, List, Dict] = None,
     names: Iterable[str] = None,
     call_credentials: SeldonCallCredentials = None,
     channel_credentials: SeldonChannelCredentials = None,
     http_path: str = None,
+    client_return_type: str = "proto",
     **kwargs,
-) -> Dict:
+) -> SeldonClientPrediction:
     """
     REST explain request to Gateway Ingress
 
@@ -1594,6 +1675,8 @@ def explain_predict_gateway(
        Binary data to send
     str_data
        String data to send
+    json_data
+       JSON data to send
     names
        Column names
     call_credentials
@@ -1602,6 +1685,8 @@ def explain_predict_gateway(
        Channel credentials - see SeldonChannelCredentials
     http_path
        Custom http path
+    client_return_type
+        the return type of all functions can be either dict or proto
 
     Returns
     -------
@@ -1612,6 +1697,8 @@ def explain_predict_gateway(
         request = prediction_pb2.SeldonMessage(binData=bin_data)
     elif str_data is not None:
         request = prediction_pb2.SeldonMessage(strData=str_data)
+    elif json_data is not None:
+        request = json_to_seldon_message({"jsonData": json_data})
     else:
         if data is None:
             data = np.random.rand(*shape)
@@ -1688,9 +1775,22 @@ def explain_predict_gateway(
         url, json=payload, headers=req_headers, verify=verify, cert=cert
     )
     if response_raw.status_code == 200:
-        return response_raw.json()
+        if client_return_type == "proto":
+            ret_request = json_to_seldon_message(payload)
+            ret_response = json_to_seldon_message(response_raw.json())
+        elif client_return_type == "dict":
+            ret_request = payload
+            ret_response = response_raw.json()
+        else:
+            SeldonClientException("Invalid client_return_type")
+        return SeldonClientPrediction(ret_request, ret_response, True, "")
     else:
-        return {"success": False, "response_code": response_raw.status_code}
+        return SeldonClientPrediction(
+            payload,
+            response_raw,
+            False,
+            f"Unsuccessful request with status code: {response_raw.status_code}",
+        )
 
 
 def grpc_predict_gateway(
@@ -1703,12 +1803,14 @@ def grpc_predict_gateway(
     payload_type: str = "tensor",
     bin_data: Union[bytes, bytearray] = None,
     str_data: str = None,
+    json_data: Union[str, List, Dict] = None,
     grpc_max_send_message_length: int = 4 * 1024 * 1024,
     grpc_max_receive_message_length: int = 4 * 1024 * 1024,
     names: Iterable[str] = None,
     call_credentials: SeldonCallCredentials = None,
     channel_credentials: SeldonChannelCredentials = None,
     meta: Dict = {},
+    client_return_type: str = "proto",
     **kwargs,
 ) -> SeldonClientPrediction:
     """
@@ -1734,6 +1836,8 @@ def grpc_predict_gateway(
        Binary data to send
     str_data
        String data to send
+    json_data
+       JSON data to send
     grpc_max_send_message_length
        Max grpc send message size in bytes
     grpc_max_receive_message_length
@@ -1746,6 +1850,9 @@ def grpc_predict_gateway(
        Channel credentials - see SeldonChannelCredentials
     meta
        Custom meta data map
+    client_return_type
+        the return type of all functions can be either dict or proto
+
 
     Returns
     -------
@@ -1762,6 +1869,8 @@ def grpc_predict_gateway(
         request = prediction_pb2.SeldonMessage(binData=bin_data, meta=metaKV)
     elif str_data is not None:
         request = prediction_pb2.SeldonMessage(strData=str_data, meta=metaKV)
+    elif json_data is not None:
+        request = json_to_seldon_message({"jsonData": json_data})
     else:
         if data is None:
             data = np.random.rand(*shape)
@@ -1828,6 +1937,11 @@ def grpc_predict_gateway(
         for k in headers:
             metadata.append((k, headers[k]))
     response = stub.Predict(request=request, metadata=metadata)
+    if client_return_type == "dict":
+        request = seldon_message_to_json(request)
+        response = seldon_message_to_json(response)
+    elif client_return_type != "proto":
+        SeldonClientException("Invalid client_return_type")
     return SeldonClientPrediction(request, response, True, "")
 
 
@@ -1839,6 +1953,7 @@ def rest_feedback_seldon_oauth(
     oauth_secret: str = "",
     namespace: str = None,
     seldon_rest_endpoint: str = "localhost:8002",
+    client_return_type: str = "proto",
     **kwargs,
 ) -> SeldonClientFeedback:
     """
@@ -1860,6 +1975,8 @@ def rest_feedback_seldon_oauth(
        k8s namespace of running deployment
     seldon_rest_endpoint
        Endpoint of REST endpoint
+    client_return_type
+        the return type of all functions can be either dict or proto
     kwargs
 
     Returns
@@ -1886,7 +2003,12 @@ def rest_feedback_seldon_oauth(
     try:
         if len(response_raw.text) > 0:
             try:
-                response = json_to_seldon_message(response_raw.json())
+                if client_return_type == "proto":
+                    response = json_to_seldon_message(response_raw.json())
+                elif client_return_type == "dict":
+                    response = response_raw.json()
+                else:
+                    SeldonClientException("Invalid client_return_type")
             except:
                 response = None
         else:
@@ -1907,6 +2029,7 @@ def grpc_feedback_seldon_oauth(
     seldon_grpc_endpoint: str = "localhost:8004",
     grpc_max_send_message_length: int = 4 * 1024 * 1024,
     grpc_max_receive_message_length: int = 4 * 1024 * 1024,
+    client_return_type: str = "proto",
     **kwargs,
 ) -> SeldonClientFeedback:
     """
@@ -1934,6 +2057,8 @@ def grpc_feedback_seldon_oauth(
        Max grpc send message size in bytes
     grpc_max_receive_message_length
        Max grpc receive message size in bytes
+    client_return_type
+        the return type of all functions can be either dict or proto
     kwargs
 
     Returns
@@ -1955,6 +2080,11 @@ def grpc_feedback_seldon_oauth(
     metadata = [("oauth_token", token)]
     try:
         response = stub.SendFeedback(request=request, metadata=metadata)
+        if client_return_type == "dict":
+            request = seldon_message_to_json(request)
+            response = seldon_message_to_json(response)
+        elif client_return_type != "proto":
+            SeldonClientException("Invalid client_return_type")
         return SeldonClientFeedback(request, response, True, "")
     except Exception as e:
         return SeldonClientFeedback(request, None, False, str(e))
@@ -1969,6 +2099,7 @@ def rest_feedback_gateway(
     gateway_endpoint: str = "localhost:8003",
     headers: Dict = None,
     gateway_prefix: str = None,
+    client_return_type: str = "proto",
     **kwargs,
 ) -> SeldonClientFeedback:
     """
@@ -1992,6 +2123,8 @@ def rest_feedback_gateway(
        Headers to add to the request
     gateway_prefix
       The prefix to add to the request path for gateway
+    client_return_type
+        the return type of all functions can be either dict or proto
     kwargs
 
     Returns
@@ -2042,7 +2175,12 @@ def rest_feedback_gateway(
     try:
         if len(response_raw.text) > 0:
             try:
-                response = json_to_seldon_message(response_raw.json())
+                if client_return_type == "proto":
+                    response = json_to_seldon_message(response_raw.json())
+                elif client_return_type == "dict":
+                    response = response_raw.json()
+                else:
+                    SeldonClientException("Invalid client_return_type")
             except:
                 response = None
         else:
@@ -2062,6 +2200,7 @@ def grpc_feedback_gateway(
     headers: Dict = None,
     grpc_max_send_message_length: int = 4 * 1024 * 1024,
     grpc_max_receive_message_length: int = 4 * 1024 * 1024,
+    client_return_type: str = "proto",
     **kwargs,
 ) -> SeldonClientFeedback:
     """
@@ -2086,6 +2225,8 @@ def grpc_feedback_gateway(
        Max grpc send message size in bytes
     grpc_max_receive_message_length
        Max grpc receive message size in bytes
+    client_return_type
+        the return type of all functions can be either dict or proto
     kwargs
 
     Returns
@@ -2112,6 +2253,11 @@ def grpc_feedback_gateway(
             metadata.append((k, headers[k]))
     try:
         response = stub.SendFeedback(request=request, metadata=metadata)
+        if client_return_type == "dict":
+            request = seldon_message_to_json(request)
+            response = seldon_message_to_json(response)
+        elif client_return_type != "proto":
+            SeldonClientException("Invalid client_return_type")
         return SeldonClientFeedback(request, response, True, "")
     except Exception as e:
         return SeldonClientFeedback(request, None, False, str(e))

@@ -1,23 +1,6 @@
 import subprocess
 import json
-from seldon_utils import *
-
-
-def wait_for_status(name):
-    for attempts in range(7):
-        completedProcess = run(
-            "kubectl get sdep " + name + " -o json -n seldon",
-            shell=True,
-            check=True,
-            stdout=subprocess.PIPE,
-        )
-        jStr = completedProcess.stdout
-        j = json.loads(jStr)
-        if "status" in j:
-            return j
-        else:
-            print("Failed to find status - sleeping")
-            time.sleep(5)
+from subprocess import run
 
 
 class TestBadGraphs(object):

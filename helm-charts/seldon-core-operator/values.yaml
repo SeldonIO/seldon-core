@@ -10,7 +10,7 @@ engine:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/engine
-    tag: 0.5.1-SNAPSHOT
+    tag: 0.5.2-SNAPSHOT
   logMessagesExternally: false
   port: 8000
   prometheus:
@@ -24,7 +24,7 @@ image:
   pullPolicy: Always
   registry: docker.io
   repository: seldonio/seldon-core-operator
-  tag: 0.5.1-SNAPSHOT
+  tag: 0.5.2-SNAPSHOT
 istio:
   enabled: false
   gateway: seldon-gateway

@@ -140,7 +140,9 @@ public class RestClientController {
     try {
       return _predictions(requestEntity.getBody());
     } finally {
-      if (tracingSpan != null) tracingSpan.finish();
+      if (tracingSpan != null) {
+        tracingSpan.finish();
+      }
     }
   }
 
@@ -187,7 +189,9 @@ public class RestClientController {
       throw new APIException(ApiExceptionType.REQUEST_IO_EXCEPTION, e.getMessage());
 
     } finally {
-      if (tracingSpan != null) tracingSpan.finish();
+      if (tracingSpan != null) {
+        tracingSpan.finish();
+      }
     }
   }
 
@@ -268,7 +272,9 @@ public class RestClientController {
         throw new APIException(ApiExceptionType.ENGINE_INVALID_RESPONSE_JSON, "");
       }
     } finally {
-      if (tracingSpan != null) tracingSpan.finish();
+      if (tracingSpan != null) {
+        tracingSpan.finish();
+      }
     }
   }
 }

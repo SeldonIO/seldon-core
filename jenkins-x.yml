@@ -1,27 +1,37 @@
 buildPack: none
 pipelineConfig:
   pipelines:
+    overrides:
+    - name: changelog
+      pipeline: release
+      stage: promote
+      step:
+        command: echo "skipping promote"
     pullRequest:
       pipeline:
         agent:
           image: seldonio/core-builder:0.4
         stages:
+        - name: pr-build-comment
+          steps:
+          - agent:
+              image: gcr.io/jenkinsxio/builder-go:2.0.916-264
+            dir: ci
+            sh: "./add-pr-build-comment"
         - name: build-and-test
           parallel:
-          - agent:
+          - name: test-python
+            agent:
               image: seldonio/python-builder:0.2
-            name: seldon-python
             steps:
-            - args:
+            - name: test-python
+              command: make
+              args:
               - -C python
               - update_package
               - install_dev
               - test
-              command: make
-              name: test-python
-          - agent:
-              image: seldonio/core-builder:0.4
-            name: seldon-engine
+          - name: seldon-engine
             steps:
             - args:
               - -C engine
@@ -32,20 +42,30 @@ pipelineConfig:
     release:
       setVersion:
         steps:
-        - name: next-version
-          sh: echo "skipping until 4624 is resolved..."
+        - name: create-version
+          command: cat version.txt > VERSION
+        - name: delete-existing-branch
+          command: git branch -D v\$(cat version.txt) || echo "No branch exists"
+        - name: create-new-branch
+          command: git checkout -b v\$(cat version.txt)
+        - name: commit-new-branch
+          command: git push origin v\$(cat version.txt) -f
+        - name: skip-tag
+          command: echo "skipping tag"
       pipeline:
         agent:
           image: seldonio/core-builder:0.4
         stages:
-          - name: end-to-end
+          - name: build-and-push
             steps:
-            - name: test-end-to-end
-              command: cd
+            - name: build-and-push-images
+              command: bash
               args:
-              - testing/scripts &&
-              - bash
-              - kind_test_all.sh
+              - ./ci_build_and_push_images.sh
+            - name: exit-with-error-to-avoid-auto-changelog
+              command: exit
+              args:
+              - "1"
             options:
               containerOptions:
                 volumeMounts:
@@ -56,10 +76,12 @@ pipelineConfig:
                     name: cgroup
                   - name: dind-storage
                     mountPath: /var/lib/docker
+                  - mountPath: /builder/home/.docker
+                    name: jenkins-docker-config-volume
                 resources:
                   requests:
                     cpu: 1
-                    memory: 4000Mi
+                    memory: 2000Mi
                 securityContext:
                   privileged: true
                 imagePullPolicy: Always
@@ -74,3 +96,10 @@ pipelineConfig:
                     type: Directory
                 - name: dind-storage
                   emptyDir: {}
+                - name: jenkins-docker-config-volume
+                  secret:
+                    items:
+                    - key: config.json
+                      path: config.json
+                    secretName: jenkins-docker-cfg
+

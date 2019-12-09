@@ -4,9 +4,16 @@ from seldon_core.seldon_client import (
     SeldonClientCombine,
 )
 from unittest import mock
-from seldon_core.utils import array_to_grpc_datadef, seldon_message_to_json
+from seldon_core.utils import (
+    array_to_grpc_datadef,
+    seldon_message_to_json,
+    json_to_seldon_message,
+)
 from seldon_core.proto import prediction_pb2, prediction_pb2_grpc
 import numpy as np
+import json
+
+JSON_TEST_DATA = {"test": [0.0, 1.0]}
 
 
 class MockResponse:
@@ -30,6 +37,21 @@ def mocked_requests_post_success(url, *args, **kwargs):
     request = prediction_pb2.SeldonMessage(data=datadef)
     json = seldon_message_to_json(request)
     return MockResponse(json, 200, text="{}")
+
+
+def mocked_requests_post_success_json_data(url, *args, **kwargs):
+    request = json_to_seldon_message({"jsonData": JSON_TEST_DATA})
+    json = seldon_message_to_json(request)
+    return MockResponse(json, 200, text="{}")
+
+
+def mock_get_token(
+    oauth_key: str = "",
+    oauth_secret: str = "",
+    namespace: str = None,
+    endpoint: str = "localhost:8002",
+):
+    return "1234"
 
 
 @mock.patch("requests.post", side_effect=mocked_requests_post_404)
@@ -60,6 +82,88 @@ def test_predict_rest_with_names(mock_post):
     assert mock_post.call_count == 1
 
 
+@mock.patch("requests.post", side_effect=mocked_requests_post_success_json_data)
+def test_predict_rest_json_data_ambassador(mock_post):
+    sc = SeldonClient(deployment_name="mymodel", gateway="ambassador")
+    response = sc.predict(json_data=JSON_TEST_DATA)
+    json_response = seldon_message_to_json(response.response)
+    assert "jsonData" in mock_post.call_args[1]["json"]
+    assert mock_post.call_args[1]["json"]["jsonData"] == JSON_TEST_DATA
+    assert response.success is True
+    assert json_response["jsonData"] == JSON_TEST_DATA
+    assert mock_post.call_count == 1
+
+
+@mock.patch("requests.post", side_effect=mocked_requests_post_success_json_data)
+def test_predict_rest_json_data_ambassador_dict_response(mock_post):
+    sc = SeldonClient(
+        deployment_name="mymodel", gateway="ambassador", client_return_type="dict"
+    )
+    response = sc.predict(json_data=JSON_TEST_DATA)
+    json_response = response.response
+    assert "jsonData" in mock_post.call_args[1]["json"]
+    assert mock_post.call_args[1]["json"]["jsonData"] == JSON_TEST_DATA
+    assert response.success is True
+    assert json_response["jsonData"] == JSON_TEST_DATA
+    assert mock_post.call_count == 1
+
+
+@mock.patch("seldon_core.seldon_client.get_token", side_effect=mock_get_token)
+@mock.patch("requests.post", side_effect=mocked_requests_post_success_json_data)
+def test_predict_rest_json_data_seldon(mock_post, mock_token):
+    sc = SeldonClient(deployment_name="mymodel", gateway="seldon")
+    response = sc.predict(json_data=JSON_TEST_DATA)
+    json_response = seldon_message_to_json(response.response)
+    assert "jsonData" in mock_post.call_args[1]["json"]
+    assert mock_post.call_args[1]["json"]["jsonData"] == JSON_TEST_DATA
+    assert response.success is True
+    assert json_response["jsonData"] == JSON_TEST_DATA
+    assert mock_post.call_count == 1
+
+
+@mock.patch("seldon_core.seldon_client.get_token", side_effect=mock_get_token)
+@mock.patch("requests.post", side_effect=mocked_requests_post_success_json_data)
+def test_predict_rest_json_data_seldon_return_type(mock_post, mock_token):
+    sc = SeldonClient(
+        deployment_name="mymodel", gateway="seldon", client_return_type="dict"
+    )
+    response = sc.predict(json_data=JSON_TEST_DATA)
+    json_response = response.response
+    assert "jsonData" in mock_post.call_args[1]["json"]
+    assert mock_post.call_args[1]["json"]["jsonData"] == JSON_TEST_DATA
+    assert response.success is True
+    assert json_response["jsonData"] == JSON_TEST_DATA
+    assert mock_post.call_count == 1
+
+
+@mock.patch("requests.post", side_effect=mocked_requests_post_success_json_data)
+def test_explain_rest_json_data_ambassador(mock_post):
+    sc = SeldonClient(deployment_name="mymodel", gateway="ambassador")
+    response = sc.explain(json_data=JSON_TEST_DATA)
+    json_response = seldon_message_to_json(response.response)
+    # Currently this doesn't need to convert to JSON due to #1083
+    # i.e. json_response = seldon_message_to_json(response.response)
+    assert "jsonData" in mock_post.call_args[1]["json"]
+    assert mock_post.call_args[1]["json"]["jsonData"] == JSON_TEST_DATA
+    assert json_response["jsonData"] == JSON_TEST_DATA
+    assert mock_post.call_count == 1
+
+
+@mock.patch("requests.post", side_effect=mocked_requests_post_success_json_data)
+def test_explain_rest_json_data_ambassador_dict_response(mock_post):
+    sc = SeldonClient(
+        deployment_name="mymodel", gateway="ambassador", client_return_type="dict"
+    )
+    response = sc.explain(json_data=JSON_TEST_DATA)
+    json_response = response.response
+    # Currently this doesn't need to convert to JSON due to #1083
+    # i.e. json_response = seldon_message_to_json(response.response)
+    assert "jsonData" in mock_post.call_args[1]["json"]
+    assert mock_post.call_args[1]["json"]["jsonData"] == JSON_TEST_DATA
+    assert json_response["jsonData"] == JSON_TEST_DATA
+    assert mock_post.call_count == 1
+
+
 @mock.patch("requests.post", side_effect=mocked_requests_post_success)
 def test_predict_rest_with_meta(mock_post):
     sc = SeldonClient(deployment_name="mymodel")
@@ -85,12 +189,38 @@ def test_predict_rest_with_ambassador_prefix(mock_post):
 
 
 @mock.patch("requests.post", side_effect=mocked_requests_post_success)
+def test_predict_rest_with_ambassador_prefix_dict_response(mock_post):
+    sc = SeldonClient(deployment_name="mymodel", client_return_type="dict")
+    response = sc.predict(
+        gateway="ambassador", transport="rest", gateway_prefix="/mycompany/ml"
+    )
+    assert mock_post.call_args[0][0].index("/mycompany/ml") > 0
+    assert response.success == True
+    assert response.response["data"]["tensor"]["shape"] == [1, 1]
+    assert mock_post.call_count == 1
+
+
+@mock.patch("requests.post", side_effect=mocked_requests_post_success)
 def test_predict_microservice_rest(mock_post):
     sc = SeldonClient(deployment_name="mymodel")
     response = sc.microservice(method="predict")
     print(response)
     assert response.success == True
     assert response.response.data.tensor.shape == [1, 1]
+    assert mock_post.call_count == 1
+
+
+@mock.patch("requests.post", side_effect=mocked_requests_post_success_json_data)
+def test_predict_microservice_rest_json_data(mock_post):
+    sc = SeldonClient(deployment_name="mymodel")
+    response = sc.microservice(method="predict", json_data=JSON_TEST_DATA)
+    json_response = seldon_message_to_json(response.response)
+    assert "jsonData" in mock_post.call_args[1]["data"]["json"]
+    assert response.success is True
+    assert mock_post.call_args[1]["data"]["json"] == json.dumps(
+        {"jsonData": JSON_TEST_DATA}
+    )
+    assert json_response["jsonData"] == JSON_TEST_DATA
     assert mock_post.call_count == 1
 
 
@@ -102,7 +232,6 @@ def test_feedback_microservice_rest(mock_post):
         prediction_response=prediction_pb2.SeldonMessage(),
         reward=1.0,
     )
-    print(response)
     assert response.success == True
     assert response.response.data.tensor.shape == [1, 1]
     assert mock_post.call_count == 1
@@ -129,15 +258,6 @@ def mock_grpc_stub_predict(channel):
     return MyStub()
 
 
-def mock_get_token(
-    oauth_key: str = "",
-    oauth_secret: str = "",
-    namespace: str = None,
-    endpoint: str = "localhost:8002",
-):
-    return "1234"
-
-
 @mock.patch("seldon_core.seldon_client.prediction_pb2_grpc.SeldonStub", new=MyStub)
 def test_predict_grpc_ambassador():
     sc = SeldonClient(deployment_name="mymodel", transport="grpc", gateway="ambassador")
@@ -151,6 +271,11 @@ def test_predict_grpc_ambassador_with_meta():
     response = sc.predict(meta={"key": "value"})
     assert response.response.strData == "predict"
 
+@mock.patch("seldon_core.seldon_client.prediction_pb2_grpc.SeldonStub", new=MyStub)
+def test_grpc_predict_json_data_ambassador():
+    sc = SeldonClient(deployment_name="mymodel", transport="grpc", gateway="ambassador")
+    response = sc.predict(json_data=JSON_TEST_DATA)
+    assert response.response.strData == "predict"
 
 @mock.patch("seldon_core.seldon_client.prediction_pb2_grpc.SeldonStub", new=MyStub)
 @mock.patch("seldon_core.seldon_client.get_token", side_effect=mock_get_token)
@@ -159,6 +284,14 @@ def test_predict_grpc_seldon(mock_get_token):
     response = sc.predict()
     assert response.response.strData == "predict"
     assert mock_get_token.call_count == 1
+
+
+@mock.patch("seldon_core.seldon_client.prediction_pb2_grpc.SeldonStub", new=MyStub)
+@mock.patch("seldon_core.seldon_client.get_token", side_effect=mock_get_token)
+def test_grpc_predict_json_data_seldon(mock_get_token):
+    sc = SeldonClient(deployment_name="mymodel", transport="grpc", gateway="seldon")
+    response = sc.predict(json_data=JSON_TEST_DATA)
+    assert response.response.strData == "predict"
 
 
 @mock.patch("seldon_core.seldon_client.prediction_pb2_grpc.ModelStub", new=MyStub)

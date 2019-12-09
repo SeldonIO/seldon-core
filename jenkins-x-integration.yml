@@ -4,8 +4,14 @@ pipelineConfig:
     pullRequest:
       pipeline:
         agent:
-          image: seldonio/core-builder:0.4
+          image: seldonio/core-builder:0.6
         stages:
+          - name: pr-build-comment
+            steps:
+            - agent:
+                image: gcr.io/jenkinsxio/builder-go:2.0.916-264
+              dir: ci
+              sh: "./add-pr-build-comment"
           - name: end-to-end
             steps:
             - name: test-end-to-end
@@ -26,8 +32,8 @@ pipelineConfig:
                     mountPath: /var/lib/docker
                 resources:
                   requests:
-                    cpu: 1
-                    memory: 4000Mi
+                    cpu: 4
+                    memory: 8000Mi
                 securityContext:
                   privileged: true
                 imagePullPolicy: Always

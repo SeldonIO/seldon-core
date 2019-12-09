@@ -1,18 +1,43 @@
-# MLFlow Server
+# MLflow Server
 
-If you have a trained an MLFlow model you are able to deploy one (or several) of the versions saved using Seldon's prepackaged MLFlow server.
+If you have a trained an MLflow model you are able to deploy one (or several)
+of the versions saved using Seldon's prepackaged MLflow server.
+During initialisation, the built-in reusable server will create the [Conda
+environment](https://www.mlflow.org/docs/latest/projects.html#project-environments)
+specified on your `conda.yaml` file.
 
-Pre-requisites:
+## Pre-requisites
 
-  * The direct path to the selected MLFlow model should be provided (for example, `gs://mlruns/0/540ee112155e46e682b35b2768ae7f4d/artefacts/model`).
-  * The model should be compatible with MLFlow's [load_model](https://www.mlflow.org/docs/latest/python_api/mlflow.pyfunc.html#mlflow.pyfunc.load_model) function
-  * The input to the model is set to be pandas by default, so the numpy array passed will be converted into a pandas dataframe
-  * The model server was built with Pandas version 0.25, so model should be compatible with that version
-  * The model server was built using MLFlow version 1.1.0, so the model should be compatible with that version
+To use the built-in MLflow server the following pre-requisites need to be met:
 
-An example for a saved Iris prediction model:
+- Your [MLmodel artifact
+  folder](https://www.mlflow.org/docs/latest/models.html) needs to be
+  accessible remotely (e.g. as `gs://seldon-models/mlflow/elasticnet_wine`).
+- Your model needs to be compatible with the [python_function
+  flavour](https://www.mlflow.org/docs/latest/models.html#python-function-python-function).
+- Your `MLproject` environment needs to be specified using Conda.
 
-```
+## Conda environment creation
+
+The MLflow built-in server will create the Conda environment specified on your
+`MLmodel`'s `conda.yaml` file during initialisation.
+Note that this approach may slow down your Kubernetes `SeldonDeployment`
+startup time considerably.
+
+In some cases, it may be worth consider creating your own custom reusable
+server using
+[s2i](https://docs.seldon.io/projects/seldon-core/en/latest/python/python_wrapping_s2i.html)
+with the `seldonio/seldon-core-s2i-conda` template image.
+For example, when the Conda environment can be considered stable, you can
+create your own image with a fixed set of dependencies.
+This image can then be re-used across different model versions using the same
+pre-loaded environment.
+
+## Examples
+
+An example for a saved Iris prediction model can be found below:
+
+```yaml
 apiVersion: machinelearning.seldon.io/v1alpha2
 kind: SeldonDeployment
 metadata:
@@ -20,14 +45,16 @@ metadata:
 spec:
   name: wines
   predictors:
-  - graph:
-      children: []
-      implementation: MLFLOW_SERVER
-      modelUri: gs://seldon-models/mlflow/elasticnet_wine
-      name: classifier
-    name: default
-    replicas: 1
-
+    - graph:
+        children: []
+        implementation: MLFLOW_SERVER
+        modelUri: gs://seldon-models/mlflow/elasticnet_wine
+        name: classifier
+      name: default
+      replicas: 1
 ```
 
-Try out a [worked notebook](../examples/server_examples.html)
+You can also try out a [worked
+notebook](../examples/server_examples.html#Serve-MLflow-Elasticnet-Wines-Model)
+or check our [talk at the Spark + AI Summit
+2019](https://www.youtube.com/watch?v=D6eSfd9w9eA).

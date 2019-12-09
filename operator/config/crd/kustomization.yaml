@@ -31,6 +31,7 @@ patchesStrategicMerge:
 
 # Warning
 # DownwardAPI volumes are not presently supported due to: https://github.com/SeldonIO/seldon-core/issues/926
+# Remove volume patch below for Kubernetes 1.17, 1.18 when tested
 
 patchesJson6902:
   - target:

@@ -1,4 +1,5 @@
-mlflow==1.1.0
-scikit-learn==0.21.3
-pandas==0.25.0
-numpy==1.16.4
+pyyaml==5.1.2
+seldon-core[gcs]==0.5.0.3
+requests==2.22.0
+mlflow==1.4.0
+

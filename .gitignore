@@ -173,13 +173,14 @@ doc/source/_static/cluster-manager
 python/build/
 python/dist/
 testing/scripts/proto
-
+testing/scripts/test.log
 python/.coverage
 
 testing/scripts/tensorflow
 testing/scripts/run.log
 testing/scripts/my-model/
 wrappers/s2i/python/_python/
+wrappers/s2i/python-conda/_python/
 
 seldon-controller/go
 
