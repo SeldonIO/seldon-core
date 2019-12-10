@@ -22,7 +22,7 @@ package v1
 
 import (
 	"k8s.io/api/autoscaling/v2beta1"
-	"k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -416,16 +416,16 @@ func (in *SvcOrchSpec) DeepCopyInto(out *SvcOrchSpec) {
 	*out = *in
 	if in.Resources != nil {
 		in, out := &in.Resources, &out.Resources
-		*out = new(v1.ResourceRequirements)
+		*out = new(corev1.ResourceRequirements)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.Env != nil {
 		in, out := &in.Env, &out.Env
-		*out = make([]*v1.EnvVar, len(*in))
+		*out = make([]*corev1.EnvVar, len(*in))
 		for i := range *in {
 			if (*in)[i] != nil {
 				in, out := &(*in)[i], &(*out)[i]
-				*out = new(v1.EnvVar)
+				*out = new(corev1.EnvVar)
 				(*in).DeepCopyInto(*out)
 			}
 		}

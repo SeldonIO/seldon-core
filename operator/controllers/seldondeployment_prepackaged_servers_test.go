@@ -4,7 +4,7 @@ import (
 	"context"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/api/v1alpha2"
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/api/v1"
 	"github.com/seldonio/seldon-core/operator/utils"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -19,27 +19,27 @@ var _ = Describe("Create a prepacked sklearn server", func() {
 	By("Creating a resource")
 	It("should create a resource with defaults", func() {
 		Expect(k8sClient).NotTo(BeNil())
-		var modelType = machinelearningv1alpha2.MODEL
-		var impl = machinelearningv1alpha2.PredictiveUnitImplementation("SKLEARN_SERVER")
+		var modelType = machinelearningv1.MODEL
+		var impl = machinelearningv1.PredictiveUnitImplementation("SKLEARN_SERVER")
 		key := types.NamespacedName{
 			Name:      "prepack",
 			Namespace: "default",
 		}
-		instance := &machinelearningv1alpha2.SeldonDeployment{
+		instance := &machinelearningv1.SeldonDeployment{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      key.Name,
 				Namespace: key.Namespace,
 			},
-			Spec: machinelearningv1alpha2.SeldonDeploymentSpec{
+			Spec: machinelearningv1.SeldonDeploymentSpec{
 				Name: "pp",
-				Predictors: []machinelearningv1alpha2.PredictorSpec{
+				Predictors: []machinelearningv1.PredictorSpec{
 					{
 						Name: "p1",
-						Graph: &machinelearningv1alpha2.PredictiveUnit{
+						Graph: &machinelearningv1.PredictiveUnit{
 							Name:           "classifier",
 							Type:           &modelType,
 							Implementation: &impl,
-							Endpoint:       &machinelearningv1alpha2.Endpoint{Type: machinelearningv1alpha2.REST},
+							Endpoint:       &machinelearningv1.Endpoint{Type: machinelearningv1.REST},
 						},
 					},
 				},
@@ -60,7 +60,7 @@ var _ = Describe("Create a prepacked sklearn server", func() {
 		Expect(k8sClient.Create(context.Background(), instance)).Should(Succeed())
 		//time.Sleep(time.Second * 5)
 
-		fetched := &machinelearningv1alpha2.SeldonDeployment{}
+		fetched := &machinelearningv1.SeldonDeployment{}
 		Eventually(func() error {
 			err := k8sClient.Get(context.Background(), key, fetched)
 			return err
@@ -68,7 +68,7 @@ var _ = Describe("Create a prepacked sklearn server", func() {
 		Expect(fetched.Spec.Name).Should(Equal("pp"))
 
 		sPodSpec := utils.GetSeldonPodSpecForPredictiveUnit(&instance.Spec.Predictors[0], instance.Spec.Predictors[0].Graph.Name)
-		depName := machinelearningv1alpha2.GetDeploymentName(instance, instance.Spec.Predictors[0], sPodSpec)
+		depName := machinelearningv1.GetDeploymentName(instance, instance.Spec.Predictors[0], sPodSpec)
 		depKey := types.NamespacedName{
 			Name:      depName,
 			Namespace: "default",

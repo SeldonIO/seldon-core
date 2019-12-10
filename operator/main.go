@@ -20,7 +20,7 @@ import (
 	"flag"
 	"os"
 
-	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/api/v1alpha2"
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/api/v1"
 	"github.com/seldonio/seldon-core/operator/controllers"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -43,7 +43,7 @@ func init() {
 
 	_ = appsv1.AddToScheme(scheme)
 	_ = corev1.AddToScheme(scheme)
-	_ = machinelearningv1alpha2.AddToScheme(scheme)
+	_ = machinelearningv1.AddToScheme(scheme)
 	if controllers.GetEnv(controllers.ENV_ISTIO_ENABLED, "false") == "true" {
 		istio.AddToScheme(scheme)
 	}
@@ -86,7 +86,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&machinelearningv1alpha2.SeldonDeployment{}).SetupWebhookWithManager(mgr); err != nil {
+	if err = (&machinelearningv1.SeldonDeployment{}).SetupWebhookWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create webhook", "webhook", "SeldonDeployment")
 		os.Exit(1)
 	}

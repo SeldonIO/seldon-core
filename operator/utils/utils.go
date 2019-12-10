@@ -2,13 +2,13 @@ package utils
 
 import (
 	"encoding/json"
-	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/api/v1alpha2"
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/api/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	"strings"
 )
 
-func GetPredictiveUnitAsJson(params []machinelearningv1alpha2.Parameter) string {
+func GetPredictiveUnitAsJson(params []machinelearningv1.Parameter) string {
 	str, err := json.Marshal(params)
 	if err != nil {
 		return ""
@@ -17,7 +17,7 @@ func GetPredictiveUnitAsJson(params []machinelearningv1alpha2.Parameter) string 
 	}
 }
 
-func GetSeldonPodSpecForPredictiveUnit(p *machinelearningv1alpha2.PredictorSpec, name string) *machinelearningv1alpha2.SeldonPodSpec {
+func GetSeldonPodSpecForPredictiveUnit(p *machinelearningv1.PredictorSpec, name string) *machinelearningv1.SeldonPodSpec {
 	for j := 0; j < len(p.ComponentSpecs); j++ {
 		cSpec := p.ComponentSpecs[j]
 		for k := 0; k < len(cSpec.Spec.Containers); k++ {
