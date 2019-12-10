@@ -19,12 +19,7 @@ fi
 
 sleep 5
 
-kubectl -n kube-system create sa tiller --dry-run -o yaml|kubectl apply -f -
-kubectl create clusterrolebinding tiller --clusterrole=cluster-admin --serviceaccount=kube-system:tiller --dry-run -o yaml | kubectl apply -f -
-helm init --service-account tiller
-
-kubectl rollout status -n kube-system deployment/tiller-deploy
-
+kubectl create namespace seldon-system || echo "namespace seldon-system exists"
 helm upgrade --install seldon-core ../../helm-charts/seldon-core-operator/ --namespace seldon-system --set istio.gateway="kubeflow-gateway.kubeflow.svc.cluster.local" --set istio.enabled="true" --set engine.logMessagesExternally="true"
 
 kubectl rollout status -n seldon-system deployment/seldon-controller-manager
@@ -33,11 +28,12 @@ sleep 5
 
 helm upgrade --install seldon-core-analytics ../../helm-charts/seldon-core-analytics/ --namespace default -f ./kubeflow/seldon-analytics-kubeflow.yaml
 
-helm upgrade --install elasticsearch elasticsearch --version 7.1.1 --namespace=logs --set service.type=ClusterIP --set antiAffinity="soft" --repo https://helm.elastic.co
+kubectl create namespace logs || echo "namespace logs exists"
+helm upgrade --install elasticsearch elasticsearch --version 7.5.0 --namespace=logs --set service.type=ClusterIP --set antiAffinity="soft" --repo https://helm.elastic.co
 kubectl rollout status statefulset/elasticsearch-master -n logs
 
 helm upgrade --install fluentd fluentd-elasticsearch --namespace=logs -f fluentd-values.yaml --repo https://kiwigrid.github.io
-helm upgrade --install kibana kibana --version 7.1.1 --namespace=logs --set service.type=ClusterIP -f ./kubeflow/kibana-values.yaml --repo https://helm.elastic.co
+helm upgrade --install kibana kibana --version 7.5.0 --namespace=logs --set service.type=ClusterIP -f ./kubeflow/kibana-values.yaml --repo https://helm.elastic.co
 
 kubectl apply -f ./kubeflow/virtualservice-kibana.yaml
 kubectl apply -f ./kubeflow/virtualservice-elasticsearch.yaml

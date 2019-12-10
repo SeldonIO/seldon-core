@@ -2,7 +2,7 @@
     "apiVersion": "v1",
     "items": [
         {
-            "apiVersion": "extensions/v1beta1",
+            "apiVersion": "apps/v1",
             "kind": "Deployment",
             "metadata": {
                 "name": "alertmanager-deployment",
@@ -10,6 +10,11 @@
             },
             "spec": {
                 "replicas": 1,
+		"selector": {
+		    "matchLabels": {
+                        "app": "alertmanager-server"			
+		    }
+		},				
                 "template": {
                     "metadata": {
                         "annotations": {
