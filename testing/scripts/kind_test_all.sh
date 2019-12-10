@@ -17,6 +17,7 @@ while true; do
         sleep ${WAIT_N}
     else
         echo "[SETUP] Reached maximum attempts, not waiting any longer ..."
+        tail /var/log/docker.log
         break
     fi
 done
