@@ -51,6 +51,10 @@ echo "---> Installing application source..."
 cp -Rf /tmp/src/. ./
 
 if [[ -f requirements.txt ]]; then
+  if [[ -n "$EXTRA_INDEX_URL" ]]; then
+     echo "---> Adding extra index url to pip..."
+     pip config set global.extra-index-url "${EXTRA_INDEX_URL}"
+  fi
   echo "---> Installing system-wide dependencies ..."
   pip install --find-links /whl -r requirements.txt
 elif [[ -f setup.py ]]; then
