@@ -105,6 +105,10 @@ RUN wget https://github.com/kubernetes-sigs/kustomize/releases/download/kustomiz
         chmod +x kustomize_kustomize.v3.2.3_linux_amd64 && \
         mv kustomize_kustomize.v3.2.3_linux_amd64 /usr/local/bin/kustomize
 
+# iptables fix
+RUN \
+    update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy && \
+    update-alternatives --set iptables /usr/sbin/iptables-legacy
 
 WORKDIR /work
 
