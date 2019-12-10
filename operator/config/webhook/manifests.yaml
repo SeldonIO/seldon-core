@@ -11,6 +11,24 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
+      path: /mutate-machinelearning-seldon-io-v1-seldondeployment
+  failurePolicy: Fail
+  name: mseldondeployment.kb.io
+  rules:
+  - apiGroups:
+    - machinelearning.seldon.io
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - seldondeployments
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
       path: /mutate-machinelearning-seldon-io-v1alpha2-seldondeployment
   failurePolicy: Fail
   name: mseldondeployment.kb.io
@@ -19,6 +37,24 @@ webhooks:
     - machinelearning.seldon.io
     apiVersions:
     - v1alpha2
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - seldondeployments
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
+      path: /mutate-machinelearning-seldon-io-v1alpha3-seldondeployment
+  failurePolicy: Fail
+  name: mseldondeployment.kb.io
+  rules:
+  - apiGroups:
+    - machinelearning.seldon.io
+    apiVersions:
+    - v1alpha3
     operations:
     - CREATE
     - UPDATE
@@ -37,6 +73,24 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
+      path: /validate-machinelearning-seldon-io-v1-seldondeployment
+  failurePolicy: Fail
+  name: vseldondeployment.kb.io
+  rules:
+  - apiGroups:
+    - machinelearning.seldon.io
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - seldondeployments
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
       path: /validate-machinelearning-seldon-io-v1alpha2-seldondeployment
   failurePolicy: Fail
   name: vseldondeployment.kb.io
@@ -45,6 +99,24 @@ webhooks:
     - machinelearning.seldon.io
     apiVersions:
     - v1alpha2
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - seldondeployments
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-machinelearning-seldon-io-v1alpha3-seldondeployment
+  failurePolicy: Fail
+  name: vseldondeployment.kb.io
+  rules:
+  - apiGroups:
+    - machinelearning.seldon.io
+    apiVersions:
+    - v1alpha3
     operations:
     - CREATE
     - UPDATE
