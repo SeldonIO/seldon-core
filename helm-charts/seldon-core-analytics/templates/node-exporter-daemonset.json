@@ -13,6 +13,12 @@
                 "namespace": "{{ .Release.Namespace }}"
             },
             "spec": {
+                "selector": {
+                    "matchLabels": {
+                        "app": "prometheus",
+                        "component": "node-exporter"
+                    }
+                },
                 "template": {
                     "metadata": {
                         "labels": {

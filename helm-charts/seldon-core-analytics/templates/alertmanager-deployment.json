@@ -10,6 +10,11 @@
             },
             "spec": {
                 "replicas": 1,
+                "selector": {
+                    "matchLabels": {
+                        "app": "alertmanager-server"
+                    }
+                },
                 "template": {
                     "metadata": {
                         "annotations": {

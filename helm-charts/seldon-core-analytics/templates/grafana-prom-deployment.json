@@ -10,6 +10,11 @@
             },
             "spec": {
                 "replicas": 1,
+                "selector": {
+                    "matchLabels": {
+                        "app": "grafana-prom-server"
+                    }
+                },
                 "template": {
                     "metadata": {
                         "labels": {
