@@ -24,22 +24,26 @@ webhooks:
       path: /validate-machinelearning-seldon-io-v1alpha2-seldondeployment
   failurePolicy: Fail
   name: vseldondeployment.kb.io
+{{- if semverCompare ">=1.14.0" .Capabilities.KubeVersion.Version }}
 {{- if not .Values.singleNamespace }}
   namespaceSelector:
     matchExpressions:
     - key: seldon.io/controller-id
       operator: DoesNotExist
 {{- end }}
+{{- end }}
 {{- if .Values.singleNamespace }}
   namespaceSelector:
     matchLabels:
       seldon.io/controller-id: {{ .Release.Namespace }}
 {{- end }}
+{{- if semverCompare ">=1.14.0" .Capabilities.KubeVersion.Version }}
 {{- if not .Values.controllerId }}
   objectSelector:
     matchExpressions:
     - key: seldon.io/controller-id
       operator: DoesNotExist
+{{- end }}
 {{- end }}
 {{- if .Values.controllerId }}
   objectSelector:
@@ -79,22 +83,26 @@ webhooks:
       path: /mutate-machinelearning-seldon-io-v1alpha2-seldondeployment
   failurePolicy: Fail
   name: mseldondeployment.kb.io
+{{- if semverCompare ">=1.14.0" .Capabilities.KubeVersion.Version }}
 {{- if not .Values.singleNamespace }}
   namespaceSelector:
     matchExpressions:
     - key: seldon.io/controller-id
       operator: DoesNotExist
 {{- end }}
+{{- end }}
 {{- if .Values.singleNamespace }}
   namespaceSelector:
     matchLabels:
       seldon.io/controller-id: {{ .Release.Namespace }}
 {{- end }}
+{{- if semverCompare ">=1.14.0" .Capabilities.KubeVersion.Version }}
 {{- if not .Values.controllerId }}
   objectSelector:
     matchExpressions:
     - key: seldon.io/controller-id
       operator: DoesNotExist
+{{- end }}
 {{- end }}
 {{- if .Values.controllerId }}
   objectSelector:
