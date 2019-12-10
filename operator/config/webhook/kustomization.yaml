@@ -5,5 +5,6 @@ resources:
 configurations:
 - kustomizeconfig.yaml
 
+# Comment this if you have a k8s cluster < 1.15 and want to use namespaced or labelled operators
 patchesStrategicMerge:
 - patch_object_selector.yaml

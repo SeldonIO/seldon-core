@@ -81,6 +81,7 @@ The [Kustomize](https://github.com/kubernetes-sigs/kustomize) installation can b
 
 To use the template directly there is a Makefile which has a set of useful commands:
 
+For kubernetes <1.15 comment the patch_object_selector [here](https://github.com/SeldonIO/seldon-core/blob/master/operator/config/webhook/kustomization.yaml)
 
 Install cert-manager
 
@@ -122,7 +123,11 @@ See our [upgrading notes](../reference/upgrading.md)
 
 ## Advanced Usage
 
-### Install Seldon Core in a single namespace
+### Install Seldon Core in a single namespace (version >=1.0)
+
+**You will need a k8s cluster >= 1.15**
+
+#### Helm
 
 You can install the Seldon Core Operator so it only manages resources in its namespace. An example to install in a namespace `seldon-ns1` is shown below:
 
@@ -146,11 +151,26 @@ helm install seldon-namespaced seldon-core-operator  --repo https://storage.goog
 
 We set `crd.create=true` to create the CRD. If you are installing a Seldon Core Operator after you have installed a previous Seldon Core Operator on the same cluster you will need to set `crd.create=false`.
 
+
+#### Kustomize
+
+An example install is provided in the Makefile in the Operator folder:
+
+```
+make deploy-namespaced1
+```
+
+
 See the [multiple server example notebook](../examples/multiple_operators.html).
 
-### Label focused Seldon Core Operator
+### Label focused Seldon Core Operator (version >=1.0)
+
+**You will need a k8s cluster >= 1.15**
 
 You can install the Seldon Core Operator so it manages only SeldonDeployments with the label `seldon.io/controller-id` where the value of the label matches the controller-id of the running operator. An example for a namespace `seldon-id1` is shown below:
+
+
+#### Helm
 
 ```bash
 kubectl create namespace seldon-id1
@@ -170,6 +190,16 @@ helm install seldon-controllerid seldon-core-operator  --repo https://storage.go
 ```
 
 We set `crd.create=true` to create the CRD. If you are installing a Seldon Core Operator after you have installed a previous Seldon Core Operator on the same cluster you will need to set `crd.create=false`.
+
+For kustomize you will need to uncomment the patch_object_selector [here](https://github.com/SeldonIO/seldon-core/blob/master/operator/config/webhook/kustomization.yaml)
+
+#### Kustomize
+
+An example install is provided in the Makefile in the Operator folder:
+
+```
+make deploy-controllerid
+```
 
 See the [multiple server example notebook](../examples/multiple_operators.html).
 
