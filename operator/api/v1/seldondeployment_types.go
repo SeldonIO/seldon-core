@@ -363,6 +363,7 @@ type SeldonDeploymentStatus struct {
 // +genclient
 // +genclient:noStatus
 // +kubebuilder:object:root=true
+// +kubebuilder:storageversion
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // SeldonDeployment is the Schema for the seldondeployments API
