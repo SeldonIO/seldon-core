@@ -213,10 +213,6 @@ func (r *SeldonDeployment) DefaultSeldonDeployment() {
 		}
 		addDefaultsToGraph(p.Graph)
 
-		fmt.Println("predictor is now")
-		jstr, _ := json.Marshal(p)
-		fmt.Println(string(jstr))
-
 		r.Spec.Predictors[i] = p
 
 		for j := 0; j < len(p.ComponentSpecs); j++ {
@@ -428,8 +424,6 @@ func checkTraffic(mlDep *SeldonDeployment, fldPath *field.Path, allErrs field.Er
 		p := mlDep.Spec.Predictors[i]
 		trafficSum = trafficSum + p.Traffic
 
-		fmt.Printf("%+v\n", p)
-
 		if p.Shadow == true {
 			shadows += 1
 		}
@@ -492,7 +486,7 @@ func (r *SeldonDeployment) validateSeldonDeployment() error {
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *SeldonDeployment) Default() {
-	seldondeploymentlog.Info("default", "name", r.Name)
+	seldondeploymentlog.Info("Defaulting web hook called", "name", r.Name)
 
 	r.DefaultSeldonDeployment()
 }
@@ -504,21 +498,21 @@ var _ webhook.Validator = &SeldonDeployment{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *SeldonDeployment) ValidateCreate() error {
-	seldondeploymentlog.Info("validate create", "name", r.Name)
+	seldondeploymentlog.Info("Validating Webhook called for CREATE", "name", r.Name)
 
 	return r.validateSeldonDeployment()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *SeldonDeployment) ValidateUpdate(old runtime.Object) error {
-	seldondeploymentlog.Info("validate update", "name", r.Name)
+	seldondeploymentlog.Info("Validating webhook called for UPDATE", "name", r.Name)
 
 	return r.validateSeldonDeployment()
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *SeldonDeployment) ValidateDelete() error {
-	seldondeploymentlog.Info("validate delete", "name", r.Name)
+	seldondeploymentlog.Info("Validating webhook called for DELETE", "name", r.Name)
 
 	// TODO(user): fill in your validation logic upon object deletion.
 	return nil

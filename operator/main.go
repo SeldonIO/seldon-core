@@ -54,10 +54,12 @@ func main() {
 	var metricsAddr string
 	var enableLeaderElection bool
 	var webHookPort int
+	var namespace string
 	flag.StringVar(&metricsAddr, "metrics-addr", ":8080", "The address the metric endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "enable-leader-election", false,
 		"Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.")
 	flag.IntVar(&webHookPort, "webhook-port", 443, "Webhook server port")
+	flag.StringVar(&namespace, "namespace", "", "The namespace to restrict the operator.")
 	flag.Parse()
 
 	ctrl.SetLogger(zap.Logger(true))
@@ -67,6 +69,7 @@ func main() {
 		MetricsBindAddress: metricsAddr,
 		LeaderElection:     enableLeaderElection,
 		Port:               webHookPort,
+		Namespace:          namespace,
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
@@ -74,9 +77,10 @@ func main() {
 	}
 
 	if err = (&controllers.SeldonDeploymentReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("SeldonDeployment"),
-		Scheme: mgr.GetScheme(),
+		Client:    mgr.GetClient(),
+		Log:       ctrl.Log.WithName("controllers").WithName("SeldonDeployment"),
+		Scheme:    mgr.GetScheme(),
+		Namespace: namespace,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "SeldonDeployment")
 		os.Exit(1)

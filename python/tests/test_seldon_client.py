@@ -165,6 +165,18 @@ def test_explain_rest_json_data_ambassador_dict_response(mock_post):
 
 
 @mock.patch("requests.post", side_effect=mocked_requests_post_success)
+def test_predict_rest_with_meta(mock_post):
+    sc = SeldonClient(deployment_name="mymodel")
+    meta = {"key": "value"}
+    response = sc.predict(names=["a", "b"], meta=meta)
+    assert mock_post.call_args[1]["json"]["data"]["names"] == ["a", "b"]
+    assert mock_post.call_args[1]["json"]["meta"]["tags"] == meta
+    assert response.success == True
+    assert response.response.data.tensor.shape == [1, 1]
+    assert mock_post.call_count == 1
+
+
+@mock.patch("requests.post", side_effect=mocked_requests_post_success)
 def test_predict_rest_with_ambassador_prefix(mock_post):
     sc = SeldonClient(deployment_name="mymodel")
     response = sc.predict(
@@ -250,6 +262,13 @@ def mock_grpc_stub_predict(channel):
 def test_predict_grpc_ambassador():
     sc = SeldonClient(deployment_name="mymodel", transport="grpc", gateway="ambassador")
     response = sc.predict()
+    assert response.response.strData == "predict"
+
+
+@mock.patch("seldon_core.seldon_client.prediction_pb2_grpc.SeldonStub", new=MyStub)
+def test_predict_grpc_ambassador_with_meta():
+    sc = SeldonClient(deployment_name="mymodel", transport="grpc", gateway="ambassador")
+    response = sc.predict(meta={"key": "value"})
     assert response.response.strData == "predict"
 
 
