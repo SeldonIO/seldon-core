@@ -25,10 +25,12 @@ import (
 
 	"github.com/seldonio/seldon-core/operator/constants"
 	"github.com/seldonio/seldon-core/operator/utils"
+	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"knative.dev/pkg/kmp"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	"github.com/go-logr/logr"
@@ -38,8 +40,6 @@ import (
 	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/api/v1alpha2"
 
 	"encoding/json"
-
-	"reflect"
 
 	appsv1 "k8s.io/api/apps/v1"
 	autoscaling "k8s.io/api/autoscaling/v2beta1"
@@ -730,15 +730,6 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 		deploy.Spec.Template.ObjectMeta.Labels[k] = v
 	}
 
-	for k := 0; k < len(deploy.Spec.Template.Spec.InitContainers); k++ {
-		con := &deploy.Spec.Template.Spec.InitContainers[k]
-		addContainerDefaults(con)
-	}
-	for k := 0; k < len(deploy.Spec.Template.Spec.Containers); k++ {
-		con := &deploy.Spec.Template.Spec.Containers[k]
-		addContainerDefaults(con)
-	}
-
 	//Add some default to help with diffs in controller
 	if deploy.Spec.Template.Spec.RestartPolicy == "" {
 		deploy.Spec.Template.Spec.RestartPolicy = corev1.RestartPolicyAlways
@@ -803,13 +794,28 @@ func createIstioServices(r *SeldonDeploymentReconciler, components *components, 
 			return ready, err
 		} else {
 			// Update the found object and write the result back if there are any changes
-			if !reflect.DeepEqual(svc.Spec, found.Spec) {
-				ready = false
+			if !equality.Semantic.DeepEqual(svc.Spec, found.Spec) {
+				desiredSvc := found.DeepCopy()
 				found.Spec = svc.Spec
 				log.Info("Updating Virtual Service", "namespace", svc.Namespace, "name", svc.Name)
 				err = r.Update(context.TODO(), found)
 				if err != nil {
 					return ready, err
+				}
+
+				// Check if what came back from server modulo the defaults applied by k8s is the same or not
+				if !equality.Semantic.DeepEqual(desiredSvc.Spec, found.Spec) {
+					ready = false
+
+					//For debugging we will show the difference
+					diff, err := kmp.SafeDiff(desiredSvc.Spec, found.Spec)
+					if err != nil {
+						log.Error(err, "Failed to diff")
+					} else {
+						log.Info(fmt.Sprintf("Difference in VSVC: %v", diff))
+					}
+				} else {
+					log.Info("The VSVC are the same - api server defaults ignored")
 				}
 			} else {
 				log.Info("Found identical Virtual Service", "namespace", found.Namespace, "name", found.Name)
@@ -851,13 +857,28 @@ func createIstioServices(r *SeldonDeploymentReconciler, components *components, 
 			return ready, err
 		} else {
 			// Update the found object and write the result back if there are any changes
-			if !reflect.DeepEqual(drule.Spec, found.Spec) {
-				ready = false
+			if !equality.Semantic.DeepEqual(drule.Spec, found.Spec) {
+				desiredDrule := found.DeepCopy()
 				found.Spec = drule.Spec
 				log.Info("Updating Istio Destination Rule", "namespace", drule.Namespace, "name", drule.Name)
 				err = r.Update(context.TODO(), found)
 				if err != nil {
 					return ready, err
+				}
+
+				// Check if what came back from server modulo the defaults applied by k8s is the same or not
+				if !equality.Semantic.DeepEqual(desiredDrule.Spec, found.Spec) {
+					ready = false
+
+					//For debugging we will show the difference
+					diff, err := kmp.SafeDiff(desiredDrule.Spec, found.Spec)
+					if err != nil {
+						log.Error(err, "Failed to diff")
+					} else {
+						log.Info(fmt.Sprintf("Difference in Destination Rules: %v", diff))
+					}
+				} else {
+					log.Info("The Destination Rules are the same - api server defaults ignored")
 				}
 			} else {
 				log.Info("Found identical Istio Destination Rule", "namespace", found.Namespace, "name", found.Name)
@@ -909,13 +930,28 @@ func createServices(r *SeldonDeploymentReconciler, components *components, insta
 		} else {
 			svc.Spec.ClusterIP = found.Spec.ClusterIP
 			// Update the found object and write the result back if there are any changes
-			if !reflect.DeepEqual(svc.Spec, found.Spec) {
-				ready = false
+			if !equality.Semantic.DeepEqual(svc.Spec, found.Spec) {
+				desiredSvc := found.DeepCopy()
 				found.Spec = svc.Spec
 				log.Info("Updating Service", "namespace", svc.Namespace, "name", svc.Name)
 				err = r.Update(context.TODO(), found)
 				if err != nil {
 					return ready, err
+				}
+
+				// Check if what came back from server modulo the defaults applied by k8s is the same or not
+				if !equality.Semantic.DeepEqual(desiredSvc.Spec, found.Spec) {
+					ready = false
+
+					//For debugging we will show the difference
+					diff, err := kmp.SafeDiff(desiredSvc.Spec, found.Spec)
+					if err != nil {
+						log.Error(err, "Failed to diff")
+					} else {
+						log.Info(fmt.Sprintf("Difference in SVCs: %v", diff))
+					}
+				} else {
+					log.Info("The SVCs are the same - api server defaults ignored")
 				}
 			} else {
 				log.Info("Found identical Service", "namespace", found.Namespace, "name", found.Name, "status", found.Status)
@@ -960,14 +996,32 @@ func createHpas(r *SeldonDeploymentReconciler, components *components, instance 
 			return ready, err
 		} else {
 			// Update the found object and write the result back if there are any changes
-			if !reflect.DeepEqual(hpa.Spec, found.Spec) {
+			if !equality.Semantic.DeepEqual(hpa.Spec, found.Spec) {
+
+				desiredHpa := found.DeepCopy()
 				found.Spec = hpa.Spec
-				ready = false
+
 				log.Info("Updating HPA", "namespace", hpa.Namespace, "name", hpa.Name)
 				err = r.Update(context.TODO(), found)
 				if err != nil {
 					return ready, err
 				}
+
+				// Check if what came back from server modulo the defaults applied by k8s is the same or not
+				if !equality.Semantic.DeepEqual(desiredHpa.Spec, found.Spec) {
+					ready = false
+
+					//For debugging we will show the difference
+					diff, err := kmp.SafeDiff(desiredHpa.Spec, found.Spec)
+					if err != nil {
+						log.Error(err, "Failed to diff")
+					} else {
+						log.Info(fmt.Sprintf("Difference in HPAs: %v", diff))
+					}
+				} else {
+					log.Info("The HPAs are the same - api server defaults ignored")
+				}
+
 			} else {
 				log.Info("Found identical HPA", "namespace", found.Namespace, "name", found.Name, "status", found.Status)
 			}
@@ -1016,35 +1070,32 @@ func createDeployments(r *SeldonDeploymentReconciler, components *components, in
 		} else if err != nil {
 			return ready, err
 		} else {
-			//Hack to add default procMount which if not present in old k8s versions might cause us to believe the Specs are different and we need an update
-			for _, c := range found.Spec.Template.Spec.Containers {
-				if c.SecurityContext != nil && c.SecurityContext.ProcMount == nil {
-					var procMount = corev1.DefaultProcMount
-					c.SecurityContext.ProcMount = &procMount
-				}
-			}
-			// Update the found object and write the result back if there are any changes
-			jEquals, err := jsonEquals(deploy.Spec.Template.Spec, found.Spec.Template.Spec)
-			if err != nil {
-				return ready, err
-			}
-			//if !reflect.DeepEqual(deploy.Spec.Template.Spec, found.Spec.Template.Spec) {
-			if !jEquals {
+			if !equality.Semantic.DeepEqual(deploy.Spec.Template.Spec, found.Spec.Template.Spec) {
 				log.Info("Updating Deployment", "namespace", deploy.Namespace, "name", deploy.Name)
 
-				if !reflect.DeepEqual(deploy.Spec.Template.Spec.Containers[0].Resources, found.Spec.Template.Spec.Containers[0].Resources) {
-					log.Info("Containers differ")
-				} else {
-					log.Info("Deployments differ")
-				}
-
-				ready = false
+				desiredDeployment := found.DeepCopy()
 				found.Spec = deploy.Spec
 
 				err = r.Update(context.TODO(), found)
 				if err != nil {
 					return ready, err
 				}
+
+				// Check if what came back from server modulo the defaults applied by k8s is the same or not
+				if !equality.Semantic.DeepEqual(desiredDeployment.Spec.Template.Spec, found.Spec.Template.Spec) {
+					ready = false
+
+					//For debugging we will show the difference
+					diff, err := kmp.SafeDiff(desiredDeployment.Spec.Template.Spec, found.Spec.Template.Spec)
+					if err != nil {
+						log.Error(err, "Failed to diff")
+					} else {
+						log.Info(fmt.Sprintf("Difference in deployments: %v", diff))
+					}
+				} else {
+					log.Info("The deployments are the same - api server defaults ignored")
+				}
+
 			} else {
 				log.Info("Found identical deployment", "namespace", found.Namespace, "name", found.Name, "status", found.Status)
 				deploymentStatus, present := instance.Status.DeploymentStatus[found.Name]
