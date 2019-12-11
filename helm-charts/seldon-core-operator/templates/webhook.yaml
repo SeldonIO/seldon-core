@@ -21,7 +21,7 @@ webhooks:
     service:
       name: seldon-webhook-service
       namespace: '{{ .Release.Namespace }}'
-      path: /validate-machinelearning-seldon-io-v1alpha2-seldondeployment
+      path: /validate-machinelearning-seldon-io-v1-seldondeployment
   failurePolicy: Fail
   name: vseldondeployment.kb.io
 {{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}
@@ -54,12 +54,62 @@ webhooks:
   - apiGroups:
     - machinelearning.seldon.io
     apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - seldondeployments
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: seldon-webhook-service
+      namespace: seldon-system
+      path: /validate-machinelearning-seldon-io-v1alpha2-seldondeployment
+  failurePolicy: Fail
+  name: vseldondeployment.kb.io
+  rules:
+  - apiGroups:
+    - machinelearning.seldon.io
+    apiVersions:
     - v1alpha2
     operations:
     - CREATE
     - UPDATE
     resources:
     - seldondeployments
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: seldon-webhook-service
+      namespace: seldon-system
+      path: /validate-machinelearning-seldon-io-v1alpha3-seldondeployment
+  failurePolicy: Fail
+  name: vseldondeployment.kb.io
+  rules:
+  - apiGroups:
+    - machinelearning.seldon.io
+    apiVersions:
+    - v1alpha3
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - seldondeployments
+---
+
+{{- if not .Values.certManager.enabled -}}
+apiVersion: v1
+data:
+  ca.crt: '{{ $ca.Cert | b64enc }}'
+  tls.crt: '{{ $cert.Cert | b64enc }}'
+  tls.key: '{{ $cert.Key | b64enc }}'
+kind: Secret
+metadata:
+  name: seldon-webhook-server-cert
+  namespace: '{{ .Release.Namespace }}'
+type: kubernetes.io/tls
+{{- end }}
 ---
 
 apiVersion: admissionregistration.k8s.io/v1beta1
@@ -80,7 +130,7 @@ webhooks:
     service:
       name: seldon-webhook-service
       namespace: '{{ .Release.Namespace }}'
-      path: /mutate-machinelearning-seldon-io-v1alpha2-seldondeployment
+      path: /mutate-machinelearning-seldon-io-v1-seldondeployment
   failurePolicy: Fail
   name: mseldondeployment.kb.io
 {{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}
@@ -113,23 +163,45 @@ webhooks:
   - apiGroups:
     - machinelearning.seldon.io
     apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - seldondeployments
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: seldon-webhook-service
+      namespace: seldon-system
+      path: /mutate-machinelearning-seldon-io-v1alpha2-seldondeployment
+  failurePolicy: Fail
+  name: mseldondeployment.kb.io
+  rules:
+  - apiGroups:
+    - machinelearning.seldon.io
+    apiVersions:
     - v1alpha2
     operations:
     - CREATE
     - UPDATE
     resources:
     - seldondeployments
----
-
-{{- if not .Values.certManager.enabled -}}
-apiVersion: v1
-data:
-  ca.crt: '{{ $ca.Cert | b64enc }}'
-  tls.crt: '{{ $cert.Cert | b64enc }}'
-  tls.key: '{{ $cert.Key | b64enc }}'
-kind: Secret
-metadata:
-  name: seldon-webhook-server-cert
-  namespace: '{{ .Release.Namespace }}'
-type: kubernetes.io/tls
-{{- end }}
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: seldon-webhook-service
+      namespace: seldon-system
+      path: /mutate-machinelearning-seldon-io-v1alpha3-seldondeployment
+  failurePolicy: Fail
+  name: mseldondeployment.kb.io
+  rules:
+  - apiGroups:
+    - machinelearning.seldon.io
+    apiVersions:
+    - v1alpha3
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - seldondeployments
