@@ -5,3 +5,9 @@ resources:
 - group: machinelearning
   version: v1alpha2
   kind: SeldonDeployment
+- group: machinelearning
+  version: v1alpha3
+  kind: SeldonDeployment
+- group: machinelearning
+  version: v1
+  kind: SeldonDeployment
