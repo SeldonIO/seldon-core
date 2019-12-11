@@ -10,4 +10,4 @@ compile_proto: compile_tensorflow_proto
 	cp ../proto/prediction.proto pkg/api
 	cd pkg/api && protoc -I. -I${CURDIR}/tensorflow --go_out=paths=source_relative,plugins=grpc:. prediction.proto
 	rm pkg/api/prediction.proto
-	find ./pkg -name "*.pb.go" -type f -exec perl -e "s/github\.com\/tensorflow/github\.com\/hemantkashniyal\/seldon-core\/go\/pkg\/api\/tensorflow/g" -pi {} +
+	find ./pkg -name "*.pb.go" -type f -exec perl -e "s/github\.com\/tensorflow/github\.com\/seldonio\/seldon-core\/go\/pkg\/api\/tensorflow/g" -pi {} +

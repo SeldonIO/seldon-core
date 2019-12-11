@@ -7,7 +7,7 @@ package seldon.protos;
 
 option java_package = "io.seldon.protos";
 option java_outer_classname = "PredictionProtos";
-option go_package = "github.com/hemantkashniyal/seldon-core/go/pkg/api";
+option go_package = "github.com/seldonio/seldon-core/go/pkg/api";
 
 // [START Messages]
 
