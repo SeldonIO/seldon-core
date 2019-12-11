@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/api/v1alpha2"
+	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1alpha2"
 	"gopkg.in/yaml.v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"strings"
