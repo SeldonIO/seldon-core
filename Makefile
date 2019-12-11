@@ -59,3 +59,5 @@ run_python_builder:
 		-v $(SELDON_CORE_LOCAL_DIR):/work \
 		seldonio/python-builder:0.2 bash
 
+protos_go:
+	make -C ./go compile_proto
