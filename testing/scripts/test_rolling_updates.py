@@ -1,3 +1,7 @@
+import os
+import time
+import logging
+import pytest
 from subprocess import run
 from seldon_e2e_utils import (
     wait_for_rollout,
@@ -6,8 +10,17 @@ from seldon_e2e_utils import (
     retry_run,
     API_AMBASSADOR,
 )
-import time
-import logging
+
+
+def clean_string(string):
+    string = string.lower()
+    string = string.replace("_", "-")
+    string = string.replace(".", "-")
+    return string
+
+
+def to_resources_path(file_name):
+    return os.path.join("..", "resources", file_name)
 
 
 class TestRollingHttp(object):
@@ -395,3 +408,57 @@ class TestRollingHttp(object):
         run(f"kubectl delete -f ../resources/graph1svc.json -n {namespace}", shell=True)
         run(f"kubectl delete -f ../resources/graph6svc.json -n {namespace}", shell=True)
         run(f"kubectl delete namespace {namespace}", shell=True)
+
+
+@pytest.mark.parametrize(
+    "from_deployment,to_deployment",
+    [
+        ("graph1.json", "graph8.json"),  # From v1alpha2 to v1
+        ("graph7.json", "graph8.json"),  # From v1alpha3 to v1
+    ],
+)
+def test_rolling_update_deployment(from_deployment, to_deployment):
+    from_name = clean_string(from_deployment)
+    to_name = clean_string(to_deployment)
+    namespace = f"test-rolling-update-{from_name}-{to_name}"
+    retry_run(f"kubectl create namespace {namespace}")
+
+    from_file_path = to_resources_path(from_deployment)
+    retry_run(f"kubectl apply -f {from_file_path} -n {namespace}")
+    # Note that this is not yet parametrised!
+    wait_for_rollout("mymodel-mymodel-e2eb561", namespace)
+
+    logging.warning("Initial request")
+    r = initial_rest_request("mymodel", namespace)
+    assert r.status_code == 200
+    assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
+
+    to_file_path = to_resources_path(to_deployment)
+    retry_run(f"kubectl apply -f {to_file_path} -n {namespace}")
+    r = initial_rest_request("mymodel", namespace)
+    assert r.status_code == 200
+    assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
+
+    i = 0
+    for i in range(100):
+        r = rest_request_ambassador("mymodel", namespace, API_AMBASSADOR)
+        assert r.status_code == 200
+        res = r.json()
+        assert (
+            res["meta"]["requestPath"]["complex-model"] == "seldonio/fixed-model:0.1"
+            and res["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
+        ) or (
+            res["meta"]["requestPath"]["complex-model"] == "seldonio/fixed-model:0.2"
+            and res["data"]["tensor"]["values"] == [5.0, 6.0, 7.0, 8.0]
+        )
+        if (not r.status_code == 200) or (
+            res["data"]["tensor"]["values"] == [5.0, 6.0, 7.0, 8.0]
+        ):
+            break
+        time.sleep(1)
+
+    assert i < 100
+
+    run(f"kubectl delete -f {from_file_path} -n {namespace}", shell=True)
+    run(f"kubectl delete -f {to_file_path} -n {namespace}", shell=True)
+    run(f"kubectl delete namespace {namespace}", shell=True)
