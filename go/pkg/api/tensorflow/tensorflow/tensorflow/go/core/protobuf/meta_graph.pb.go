@@ -7,7 +7,7 @@ import (
 	fmt "fmt"
 	proto "github.com/golang/protobuf/proto"
 	any "github.com/golang/protobuf/ptypes/any"
-	framework "github.com/seldonio/seldon-core/go/pkg/api/tensorflow/tensorflow/tensorflow/go/core/framework"
+	framework "github.com/hemantkashniyal/seldon-core/go/pkg/api/tensorflow/tensorflow/tensorflow/go/core/framework"
 	math "math"
 	protobuf "tensorflow/core/protobuf"
 )
