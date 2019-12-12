@@ -1087,7 +1087,7 @@ func createDeployments(r *SeldonDeploymentReconciler, components *components, in
 				// Check if what came back from server modulo the defaults applied by k8s is the same or not
 				if !equality.Semantic.DeepEqual(desiredDeployment.Spec.Template.Spec, found.Spec.Template.Spec) {
 					ready = false
-
+					identical = false
 					//For debugging we will show the difference
 					diff, err := kmp.SafeDiff(desiredDeployment.Spec.Template.Spec, found.Spec.Template.Spec)
 					if err != nil {
@@ -1096,7 +1096,6 @@ func createDeployments(r *SeldonDeploymentReconciler, components *components, in
 						log.Info(fmt.Sprintf("Difference in deployments: %v", diff))
 					}
 				} else {
-					identical = true
 					log.Info("The deployments are the same - api server defaults ignored")
 				}
 
