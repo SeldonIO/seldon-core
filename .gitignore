@@ -194,8 +194,3 @@ testing/scripts/go
 .tox
 
 operator/operator.tar
-
-# go
-go/third_party
-go/vendor
-go/tensorflow
