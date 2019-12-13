@@ -114,7 +114,7 @@ docker-push:
 
 kind-image-install: docker-build
 	docker save ${IMG} > operator.tar
-	kind load image-archive operator.tar --loglevel trace
+	kind load image-archive operator.tar 
 
 # find or download controller-gen
 # download controller-gen if necessary

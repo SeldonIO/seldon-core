@@ -908,7 +908,7 @@ func createServices(r *SeldonDeploymentReconciler, components *components, insta
 	for _, svc := range components.services {
 		if !all {
 			if _, ok := svc.Annotations[AMBASSADOR_ANNOTATION]; ok {
-				log.Info("Skipping Ambassador Svc")
+				log.Info("Skipping Ambassador Svc", "all", all, "namespace", svc.Namespace, "name", svc.Name)
 				continue
 			}
 		}
@@ -919,7 +919,7 @@ func createServices(r *SeldonDeploymentReconciler, components *components, insta
 		err := r.Get(context.TODO(), types.NamespacedName{Name: svc.Name, Namespace: svc.Namespace}, found)
 		if err != nil && errors.IsNotFound(err) {
 			ready = false
-			log.Info("Creating Service", "namespace", svc.Namespace, "name", svc.Name)
+			log.Info("Creating Service", "all", all, "namespace", svc.Namespace, "name", svc.Name)
 			err = r.Create(context.TODO(), svc)
 			if err != nil {
 				return ready, err
@@ -930,10 +930,12 @@ func createServices(r *SeldonDeploymentReconciler, components *components, insta
 		} else {
 			svc.Spec.ClusterIP = found.Spec.ClusterIP
 			// Update the found object and write the result back if there are any changes
-			if !equality.Semantic.DeepEqual(svc.Spec, found.Spec) {
+			if !equality.Semantic.DeepEqual(svc.Spec, found.Spec) || !equality.Semantic.DeepEqual(svc.Annotations, found.Annotations) {
 				desiredSvc := found.DeepCopy()
+				desiredSvc.Annotations = svc.Annotations
 				found.Spec = svc.Spec
-				log.Info("Updating Service", "namespace", svc.Namespace, "name", svc.Name)
+				found.Annotations = svc.Annotations
+				log.Info("Updating Service", "all", all, "namespace", svc.Namespace, "name", svc.Name)
 				err = r.Update(context.TODO(), found)
 				if err != nil {
 					return ready, err
@@ -944,7 +946,7 @@ func createServices(r *SeldonDeploymentReconciler, components *components, insta
 					ready = false
 
 					//For debugging we will show the difference
-					diff, err := kmp.SafeDiff(desiredSvc.Spec, found.Spec)
+					diff, err := kmp.SafeDiff(desiredSvc, found)
 					if err != nil {
 						log.Error(err, "Failed to diff")
 					} else {
@@ -954,7 +956,7 @@ func createServices(r *SeldonDeploymentReconciler, components *components, insta
 					log.Info("The SVCs are the same - api server defaults ignored")
 				}
 			} else {
-				log.Info("Found identical Service", "namespace", found.Namespace, "name", found.Name, "status", found.Status)
+				log.Info("Found identical Service", "all", all, "namespace", found.Namespace, "name", found.Name, "status", found.Status)
 
 				if instance.Status.ServiceStatus == nil {
 					instance.Status.ServiceStatus = map[string]machinelearningv1alpha2.ServiceStatus{}
@@ -1070,6 +1072,7 @@ func createDeployments(r *SeldonDeploymentReconciler, components *components, in
 		} else if err != nil {
 			return ready, err
 		} else {
+			identical := true
 			if !equality.Semantic.DeepEqual(deploy.Spec.Template.Spec, found.Spec.Template.Spec) {
 				log.Info("Updating Deployment", "namespace", deploy.Namespace, "name", deploy.Name)
 
@@ -1084,7 +1087,7 @@ func createDeployments(r *SeldonDeploymentReconciler, components *components, in
 				// Check if what came back from server modulo the defaults applied by k8s is the same or not
 				if !equality.Semantic.DeepEqual(desiredDeployment.Spec.Template.Spec, found.Spec.Template.Spec) {
 					ready = false
-
+					identical = false
 					//For debugging we will show the difference
 					diff, err := kmp.SafeDiff(desiredDeployment.Spec.Template.Spec, found.Spec.Template.Spec)
 					if err != nil {
@@ -1096,7 +1099,8 @@ func createDeployments(r *SeldonDeploymentReconciler, components *components, in
 					log.Info("The deployments are the same - api server defaults ignored")
 				}
 
-			} else {
+			}
+			if identical {
 				log.Info("Found identical deployment", "namespace", found.Namespace, "name", found.Name, "status", found.Status)
 				deploymentStatus, present := instance.Status.DeploymentStatus[found.Name]
 
@@ -1123,12 +1127,13 @@ func createDeployments(r *SeldonDeploymentReconciler, components *components, in
 					ready = false
 				}
 			}
+
 		}
 	}
 
 	// Add new services
 	// Clean up any old deployments and services
-	// 1. Create any mew services or virtual services
+	// 1. Create any new services or virtual services
 	// 2. Delete any svc-orchestroator deployments
 	// 3. Delete any other deployments
 	// 4. Delete any old services
