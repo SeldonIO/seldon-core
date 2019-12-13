@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/seldonio/seldon-core/operator/constants"
 	"github.com/seldonio/seldon-core/operator/utils"
@@ -919,7 +920,11 @@ func createServices(r *SeldonDeploymentReconciler, components *components, insta
 		err := r.Get(context.TODO(), types.NamespacedName{Name: svc.Name, Namespace: svc.Namespace}, found)
 		if err != nil && errors.IsNotFound(err) {
 			ready = false
-			log.Info("Creating Service", "all", all, "namespace", svc.Namespace, "name", svc.Name)
+			log.Info("Creating Service", "namespace", svc.Namespace, "name", svc.Name)
+			if all {
+				//don't create new ambassador service too quickly
+				time.Sleep(300 * time.Millisecond)
+			}
 			err = r.Create(context.TODO(), svc)
 			if err != nil {
 				return ready, err
