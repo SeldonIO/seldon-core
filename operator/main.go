@@ -20,7 +20,9 @@ import (
 	"flag"
 	"os"
 
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/api/v1"
 	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/api/v1alpha2"
+	machinelearningv1alpha3 "github.com/seldonio/seldon-core/operator/api/v1alpha3"
 	"github.com/seldonio/seldon-core/operator/controllers"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -43,7 +45,9 @@ func init() {
 
 	_ = appsv1.AddToScheme(scheme)
 	_ = corev1.AddToScheme(scheme)
+	_ = machinelearningv1.AddToScheme(scheme)
 	_ = machinelearningv1alpha2.AddToScheme(scheme)
+	_ = machinelearningv1alpha3.AddToScheme(scheme)
 	if controllers.GetEnv(controllers.ENV_ISTIO_ENABLED, "false") == "true" {
 		istio.AddToScheme(scheme)
 	}
@@ -86,7 +90,19 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Note that we need to create the webhooks for v1alpha2 and v1alpha3 because
+	// we are changing our storage version
 	if err = (&machinelearningv1alpha2.SeldonDeployment{}).SetupWebhookWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create webhook", "webhook", "SeldonDeployment")
+		os.Exit(1)
+	}
+
+	if err = (&machinelearningv1alpha3.SeldonDeployment{}).SetupWebhookWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create webhook", "webhook", "SeldonDeployment")
+		os.Exit(1)
+	}
+
+	if err = (&machinelearningv1.SeldonDeployment{}).SetupWebhookWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create webhook", "webhook", "SeldonDeployment")
 		os.Exit(1)
 	}

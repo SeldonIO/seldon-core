@@ -17,7 +17,7 @@ limitations under the License.
 package controllers
 
 import (
-	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/api/v1alpha2"
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/api/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -32,7 +32,7 @@ var (
 	EngineContainerName = "seldon-container-engine"
 )
 
-func addEngineToDeployment(mlDep *machinelearningv1alpha2.SeldonDeployment, p *machinelearningv1alpha2.PredictorSpec, engine_http_port int, engine_grpc_port int, pSvcName string, deploy *appsv1.Deployment) error {
+func addEngineToDeployment(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, engine_http_port int, engine_grpc_port int, pSvcName string, deploy *appsv1.Deployment) error {
 	//check not already present
 	for _, con := range deploy.Spec.Template.Spec.Containers {
 		if strings.Compare(con.Name, EngineContainerName) == 0 {
@@ -43,19 +43,19 @@ func addEngineToDeployment(mlDep *machinelearningv1alpha2.SeldonDeployment, p *m
 	if err != nil {
 		return err
 	}
-	deploy.Labels[machinelearningv1alpha2.Label_svc_orch] = "true"
+	deploy.Labels[machinelearningv1.Label_svc_orch] = "true"
 
 	//downward api used to make pod info available to container
 	volMount := false
 	for _, vol := range engineContainer.VolumeMounts {
-		if vol.Name == machinelearningv1alpha2.PODINFO_VOLUME_NAME {
+		if vol.Name == machinelearningv1.PODINFO_VOLUME_NAME {
 			volMount = true
 		}
 	}
 	if !volMount {
 		engineContainer.VolumeMounts = append(engineContainer.VolumeMounts, corev1.VolumeMount{
-			Name:      machinelearningv1alpha2.PODINFO_VOLUME_NAME,
-			MountPath: machinelearningv1alpha2.PODINFO_VOLUME_PATH,
+			Name:      machinelearningv1.PODINFO_VOLUME_NAME,
+			MountPath: machinelearningv1.PODINFO_VOLUME_PATH,
 		})
 	}
 
@@ -75,13 +75,13 @@ func addEngineToDeployment(mlDep *machinelearningv1alpha2.SeldonDeployment, p *m
 	deploy.Spec.Template.Annotations["prometheus.io/port"] = strconv.Itoa(engine_http_port)
 	deploy.Spec.Template.Annotations["prometheus.io/scrape"] = "true"
 
-	deploy.ObjectMeta.Labels[machinelearningv1alpha2.Label_seldon_app] = pSvcName
-	deploy.Spec.Selector.MatchLabels[machinelearningv1alpha2.Label_seldon_app] = pSvcName
-	deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1alpha2.Label_seldon_app] = pSvcName
+	deploy.ObjectMeta.Labels[machinelearningv1.Label_seldon_app] = pSvcName
+	deploy.Spec.Selector.MatchLabels[machinelearningv1.Label_seldon_app] = pSvcName
+	deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_seldon_app] = pSvcName
 
 	volFound := false
 	for _, vol := range deploy.Spec.Template.Spec.Volumes {
-		if vol.Name == machinelearningv1alpha2.PODINFO_VOLUME_NAME {
+		if vol.Name == machinelearningv1.PODINFO_VOLUME_NAME {
 			volFound = true
 		}
 	}
@@ -89,7 +89,7 @@ func addEngineToDeployment(mlDep *machinelearningv1alpha2.SeldonDeployment, p *m
 	if !volFound {
 		var defaultMode = corev1.DownwardAPIVolumeSourceDefaultMode
 		//Add downwardAPI
-		deploy.Spec.Template.Spec.Volumes = append(deploy.Spec.Template.Spec.Volumes, corev1.Volume{Name: machinelearningv1alpha2.PODINFO_VOLUME_NAME, VolumeSource: corev1.VolumeSource{
+		deploy.Spec.Template.Spec.Volumes = append(deploy.Spec.Template.Spec.Volumes, corev1.Volume{Name: machinelearningv1.PODINFO_VOLUME_NAME, VolumeSource: corev1.VolumeSource{
 			DownwardAPI: &corev1.DownwardAPIVolumeSource{Items: []corev1.DownwardAPIVolumeFile{
 				{Path: "annotations", FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.annotations", APIVersion: "v1"}}}, DefaultMode: &defaultMode}}})
 	}
@@ -98,7 +98,7 @@ func addEngineToDeployment(mlDep *machinelearningv1alpha2.SeldonDeployment, p *m
 }
 
 // Create the Container for the service orchestrator.
-func createEngineContainer(mlDep *machinelearningv1alpha2.SeldonDeployment, p *machinelearningv1alpha2.PredictorSpec, engine_http_port, engine_grpc_port int) (*corev1.Container, error) {
+func createEngineContainer(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, engine_http_port, engine_grpc_port int) (*corev1.Container, error) {
 	// Get engine user
 	var engineUser int64 = -1
 	if engineUserEnv, ok := os.LookupEnv("ENGINE_CONTAINER_USER"); ok {
@@ -119,7 +119,7 @@ func createEngineContainer(mlDep *machinelearningv1alpha2.SeldonDeployment, p *m
 	}
 
 	//get annotation for java opts or default
-	javaOpts := getAnnotation(mlDep, machinelearningv1alpha2.ANNOTATION_JAVA_OPTS, "-server -Dcom.sun.management.jmxremote.rmi.port=9090 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9090 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.local.only=false -Djava.rmi.server.hostname=127.0.0.1")
+	javaOpts := getAnnotation(mlDep, machinelearningv1.ANNOTATION_JAVA_OPTS, "-server -Dcom.sun.management.jmxremote.rmi.port=9090 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9090 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.local.only=false -Djava.rmi.server.hostname=127.0.0.1")
 
 	//Engine resources
 	engineResources := p.SvcOrchSpec.Resources
@@ -140,8 +140,8 @@ func createEngineContainer(mlDep *machinelearningv1alpha2.SeldonDeployment, p *m
 		TerminationMessagePolicy: corev1.TerminationMessageReadFile,
 		VolumeMounts: []corev1.VolumeMount{
 			{
-				Name:      machinelearningv1alpha2.PODINFO_VOLUME_NAME,
-				MountPath: machinelearningv1alpha2.PODINFO_VOLUME_PATH,
+				Name:      machinelearningv1.PODINFO_VOLUME_NAME,
+				MountPath: machinelearningv1.PODINFO_VOLUME_PATH,
 			},
 		},
 		Env: []corev1.EnvVar{
@@ -213,12 +213,12 @@ func createEngineContainer(mlDep *machinelearningv1alpha2.SeldonDeployment, p *m
 }
 
 // Create the service orchestrator.
-func createEngineDeployment(mlDep *machinelearningv1alpha2.SeldonDeployment, p *machinelearningv1alpha2.PredictorSpec, seldonId string, engine_http_port, engine_grpc_port int) (*appsv1.Deployment, error) {
+func createEngineDeployment(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, seldonId string, engine_http_port, engine_grpc_port int) (*appsv1.Deployment, error) {
 
 	var terminationGracePeriodSecs = int64(20)
 	var defaultMode = corev1.DownwardAPIVolumeSourceDefaultMode
 
-	depName := machinelearningv1alpha2.GetServiceOrchestratorName(mlDep, p)
+	depName := machinelearningv1.GetServiceOrchestratorName(mlDep, p)
 
 	con, err := createEngineContainer(mlDep, p, engine_http_port, engine_grpc_port)
 	if err != nil {
@@ -228,16 +228,16 @@ func createEngineDeployment(mlDep *machinelearningv1alpha2.SeldonDeployment, p *
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        depName,
 			Namespace:   getNamespace(mlDep),
-			Labels:      map[string]string{machinelearningv1alpha2.Label_svc_orch: "true", machinelearningv1alpha2.Label_seldon_app: seldonId, machinelearningv1alpha2.Label_seldon_id: seldonId, "app": depName, "version": "v1", "fluentd": "true"},
+			Labels:      map[string]string{machinelearningv1.Label_svc_orch: "true", machinelearningv1.Label_seldon_app: seldonId, machinelearningv1.Label_seldon_id: seldonId, "app": depName, "version": "v1", "fluentd": "true"},
 			Annotations: mlDep.Spec.Annotations,
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
-				MatchLabels: map[string]string{machinelearningv1alpha2.Label_seldon_app: seldonId, machinelearningv1alpha2.Label_seldon_id: seldonId},
+				MatchLabels: map[string]string{machinelearningv1.Label_seldon_app: seldonId, machinelearningv1.Label_seldon_id: seldonId},
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: map[string]string{machinelearningv1alpha2.Label_seldon_app: seldonId, machinelearningv1alpha2.Label_seldon_id: seldonId, "app": depName},
+					Labels: map[string]string{machinelearningv1.Label_seldon_app: seldonId, machinelearningv1.Label_seldon_id: seldonId, "app": depName},
 					Annotations: map[string]string{
 						"prometheus.io/path":   GetEnv("ENGINE_PROMETHEUS_PATH", "/prometheus"),
 						"prometheus.io/port":   strconv.Itoa(engine_http_port),
@@ -253,7 +253,7 @@ func createEngineDeployment(mlDep *machinelearningv1alpha2.SeldonDeployment, p *
 					SchedulerName:                 "default-scheduler",
 					SecurityContext:               &corev1.PodSecurityContext{},
 					Volumes: []corev1.Volume{
-						{Name: machinelearningv1alpha2.PODINFO_VOLUME_NAME, VolumeSource: corev1.VolumeSource{DownwardAPI: &corev1.DownwardAPIVolumeSource{Items: []corev1.DownwardAPIVolumeFile{
+						{Name: machinelearningv1.PODINFO_VOLUME_NAME, VolumeSource: corev1.VolumeSource{DownwardAPI: &corev1.DownwardAPIVolumeSource{Items: []corev1.DownwardAPIVolumeFile{
 							{Path: "annotations", FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.annotations", APIVersion: "v1"}},
 						}, DefaultMode: &defaultMode}}},
 					},
