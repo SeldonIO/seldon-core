@@ -1,7 +1,5 @@
 xai==0.0.5
-python-dateutil==2.8.0
-seldon_core==0.3.0
-alibi==0.2.0
-jupyter==1.0.0
-dill==0.2.9
+seldon_core==0.5.1
+alibi==0.3.2
+dill==0.3.1
 scikit-learn==0.20.1
