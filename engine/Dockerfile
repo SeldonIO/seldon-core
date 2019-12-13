@@ -1,10 +1,9 @@
-FROM openjdk:8u222-jre-slim
+FROM openjdk:11.0.5-jre-slim
 
 ARG APP_VERSION=UNKOWN_VERSION
 
 RUN \
     apt-get update -y && \
-    apt-get install -y curl && \
     apt-get remove -y --auto-remove && \
     apt-get clean -y && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
