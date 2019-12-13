@@ -55,7 +55,7 @@ func getAmbassadorRestConfig(mlDep *machinelearningv1.SeldonDeployment,
 	serviceNameExternal string,
 	customHeader string,
 	customRegexHeader string,
-	weight int32,
+	weight *int32,
 	shadowing string,
 	engine_http_port int,
 	nameOverride string,
@@ -86,7 +86,10 @@ func getAmbassadorRestConfig(mlDep *machinelearningv1.SeldonDeployment,
 			RetryOn:    "connect-failure",
 			NumRetries: 3,
 		},
-		Weight: weight,
+	}
+
+	if weight != nil {
+		c.Weight = *weight
 	}
 
 	if timeout > AMBASSADOR_IDLE_TIMEOUT {
@@ -139,7 +142,7 @@ func getAmbassadorGrpcConfig(mlDep *machinelearningv1.SeldonDeployment,
 	serviceNameExternal string,
 	customHeader string,
 	customRegexHeader string,
-	weight int32,
+	weight *int32,
 	shadowing string,
 	engine_grpc_port int,
 	nameOverride string,
@@ -174,7 +177,10 @@ func getAmbassadorGrpcConfig(mlDep *machinelearningv1.SeldonDeployment,
 			RetryOn:    "connect-failure",
 			NumRetries: 3,
 		},
-		Weight: weight,
+	}
+
+	if weight != nil {
+		c.Weight = *weight
 	}
 
 	if timeout > AMBASSADOR_IDLE_TIMEOUT {
@@ -225,9 +231,22 @@ func getAmbassadorConfigs(mlDep *machinelearningv1.SeldonDeployment, p *machinel
 		return annotation, nil
 	} else {
 
-		weight := p.Traffic
-		if len(mlDep.Spec.Predictors) <= 1 {
-			weight = 100
+		var weight *int32
+		numPredictors := int32(len(mlDep.Spec.Predictors))
+		// Add weight for non-largest traffics or for equal largest traffic
+		if numPredictors > 1 {
+			largest := true
+			numEquals := 0
+			for _, pTmp := range mlDep.Spec.Predictors {
+				if pTmp.Traffic > p.Traffic {
+					largest = false
+				} else if pTmp.Traffic == p.Traffic {
+					numEquals += 1
+				}
+			}
+			if !largest || (largest && numEquals > 1) {
+				weight = &p.Traffic
+			}
 		}
 		shadowing := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_SHADOW, "")
 		serviceNameExternal := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_SERVICE, mlDep.ObjectMeta.Name)
