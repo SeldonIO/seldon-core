@@ -2,10 +2,11 @@ package utils
 
 import (
 	"encoding/json"
-	machinelearningv1 "github.com/seldonio/seldon-core/operator/api/v1"
+	"strings"
+
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
-	"strings"
 )
 
 func GetPredictiveUnitAsJson(params []machinelearningv1.Parameter) string {

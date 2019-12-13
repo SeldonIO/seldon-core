@@ -4,7 +4,7 @@ import (
 	"context"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	machinelearningv1 "github.com/seldonio/seldon-core/operator/api/v1"
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
 	"github.com/seldonio/seldon-core/operator/utils"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"

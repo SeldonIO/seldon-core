@@ -17,15 +17,16 @@ limitations under the License.
 package controllers
 
 import (
-	machinelearningv1 "github.com/seldonio/seldon-core/operator/api/v1"
+	"os"
+	"strconv"
+	"strings"
+
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"os"
-	"strconv"
-	"strings"
 )
 
 var (

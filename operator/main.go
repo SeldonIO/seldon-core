@@ -20,9 +20,9 @@ import (
 	"flag"
 	"os"
 
-	machinelearningv1 "github.com/seldonio/seldon-core/operator/api/v1"
-	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/api/v1alpha2"
-	machinelearningv1alpha3 "github.com/seldonio/seldon-core/operator/api/v1alpha3"
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1alpha2"
+	machinelearningv1alpha3 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1alpha3"
 	"github.com/seldonio/seldon-core/operator/controllers"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"

@@ -3,12 +3,13 @@ package controllers
 import (
 	"encoding/base64"
 	"encoding/json"
-	machinelearningv1 "github.com/seldonio/seldon-core/operator/api/v1"
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"os"
 	"sort"
 	"strings"
+
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // Get the Namespace from the SeldonDeployment. Returns "default" if none found.
