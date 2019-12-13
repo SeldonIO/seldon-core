@@ -1,11 +1,12 @@
 package controllers
 
 import (
-	machinelearningv1 "github.com/seldonio/seldon-core/operator/api/v1"
-	"gopkg.in/yaml.v2"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"strings"
 	"testing"
+
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	"gopkg.in/yaml.v2"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func TestAmbassadorBasic(t *testing.T) {
