@@ -21,7 +21,7 @@ import (
 	"fmt"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/api/v1alpha2"
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -110,7 +110,7 @@ var configs = map[string]string{
 // Create configmap
 var configMap = &corev1.ConfigMap{
 	ObjectMeta: metav1.ObjectMeta{
-		Name:      machinelearningv1alpha2.ControllerConfigMapName,
+		Name:      machinelearningv1.ControllerConfigMapName,
 		Namespace: "seldon-system",
 	},
 	Data: configs,
@@ -152,7 +152,7 @@ var _ = BeforeSuite(func(done Done) {
 	err = corev1.AddToScheme(scheme)
 	Expect(err).NotTo(HaveOccurred())
 
-	err = machinelearningv1alpha2.AddToScheme(scheme)
+	err = machinelearningv1.AddToScheme(scheme)
 	Expect(err).NotTo(HaveOccurred())
 
 	err = istio.AddToScheme(scheme)
@@ -180,7 +180,7 @@ var _ = BeforeSuite(func(done Done) {
 	Expect(k8sClient.Create(context.TODO(), configMap)).NotTo(HaveOccurred())
 	//	defer k8sClient.Delete(context.TODO(), configMap)
 
-	machinelearningv1alpha2.C = k8sClient
+	machinelearningv1.C = k8sClient
 
 	fmt.Println("test k8s client")
 	fmt.Printf("%+v\n", k8sClient)
@@ -189,7 +189,7 @@ var _ = BeforeSuite(func(done Done) {
 		defer GinkgoRecover()
 
 		//can't call webhook as leads to https://github.com/kubernetes-sigs/controller-runtime/issues/491
-		//err = (&machinelearningv1alpha2.SeldonDeployment{}).SetupWebhookWithManager(k8sManager)
+		//err = (&machinelearningv1.SeldonDeployment{}).SetupWebhookWithManager(k8sManager)
 		//Expect(err).ToNot(HaveOccurred())
 		err = k8sManager.Start(ctrl.SetupSignalHandler())
 		Expect(err).ToNot(HaveOccurred())

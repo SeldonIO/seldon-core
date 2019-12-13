@@ -1,16 +1,17 @@
 package controllers
 
 import (
-	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/api/v1alpha2"
-	"gopkg.in/yaml.v2"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"strings"
 	"testing"
+
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	"gopkg.in/yaml.v2"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func TestAmbassadorBasic(t *testing.T) {
-	mlDep := machinelearningv1alpha2.SeldonDeployment{ObjectMeta: metav1.ObjectMeta{Name: "mymodel"}}
-	p := machinelearningv1alpha2.PredictorSpec{Name: "p"}
+	mlDep := machinelearningv1.SeldonDeployment{ObjectMeta: metav1.ObjectMeta{Name: "mymodel"}}
+	p := machinelearningv1.PredictorSpec{Name: "p"}
 	s, err := getAmbassadorConfigs(&mlDep, &p, "myservice", 9000, 5000, "")
 	if err != nil {
 		t.Fatalf("Config format error")
@@ -441,9 +442,9 @@ func TestAmbassadorCanaryThreeEqual(t *testing.T) {
 }
 
 func TestAmbassadorID(t *testing.T) {
-	mlDep := machinelearningv1alpha2.SeldonDeployment{ObjectMeta: metav1.ObjectMeta{Name: "mymodel"},
-		Spec: machinelearningv1alpha2.SeldonDeploymentSpec{Annotations: map[string]string{ANNOTATION_AMBASSADOR_ID: "myinstance_id"}}}
-	p := machinelearningv1alpha2.PredictorSpec{Name: "p"}
+	mlDep := machinelearningv1.SeldonDeployment{ObjectMeta: metav1.ObjectMeta{Name: "mymodel"},
+		Spec: machinelearningv1.SeldonDeploymentSpec{Annotations: map[string]string{ANNOTATION_AMBASSADOR_ID: "myinstance_id"}}}
+	p := machinelearningv1.PredictorSpec{Name: "p"}
 	s, err := getAmbassadorConfigs(&mlDep, &p, "myservice", 9000, 5000, "")
 	if err != nil {
 		t.Fatalf("Config format error")

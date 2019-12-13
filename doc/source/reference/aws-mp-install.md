@@ -13,11 +13,12 @@
   aws eks --region <CLUSTER_REGION> update-kubeconfig --name <CLUSTER-NAME>
   ```
 
- * Install [helm](https://docs.helm.sh/) on your cluster if it is not there already.
+ * Install [helm](https://docs.helm.sh/) on your cluster if it is not there already. **Note: Helm v3 is used for the following set up.**  
+
+  Create a namespace for the Seldon system.
+
   ```
-  kubectl -n kube-system create sa tiller
-  kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
-  helm init --service-account tiller
+  kubectl create namespace seldon-system
   ```
 
  * Install Seldon Core for the release you subscribed to on Amazon MarketPlace:
@@ -25,24 +26,45 @@
 For **Seldon 0.5.0**
 
  ```
-  helm install seldon-core-aws --name seldon-core --repo https://storage.googleapis.com/seldon-aws-charts --version 0.5.0
+  helm install seldon-core seldon-core-aws --repo https://storage.googleapis.com/seldon-aws-charts --version 0.5.0 --set usageMetrics.enabled=true --namespace seldon-system
  ```
 
-To set up ingress [Ambassador](https://www.getambassador.io/user-guide/helm/) or [Istio](https://istio.io/docs/setup/install/helm/) is installed. For example, to install Ambassador:
+## Ingress Support
 
- ```
-  helm install stable/ambassador --name ambassador --set crds.keep=false
- ```
+For particular ingresses that we support, you can inform the controller it should activate processing for them.
 
-## Install in a particular namespace
+ * Ambassador
+   * add `--set ambassador.enabled=true` : The controller will add annotations to services it creates so Ambassador can pick them up and wire an endpoint for your deployments.
+ * Istio Gateway
+   * add `--set istio.enabled=true` : The controller will create virtual services and destination rules to wire up endpoints in your istio ingress gateway.
 
-Use the helm ```--namespace``` argument to install in a particular namespace
+## Install an Ingress Gateway
 
+We presently support two API Ingress Gateways
 
- ```
-   helm install seldon-core-aws --name seldon-core --repo https://storage.googleapis.com/seldon-aws-charts \
-        --namespace my-namespace
- ```
+ * [Ambassador](https://www.getambassador.io/)
+ * [Istio Ingress](https://istio.io/)
+
+### Install Ambassador
+
+We suggest you install [the official helm chart](https://github.com/helm/charts/tree/master/stable/ambassador). At present we recommend 0.40.2 version due to issues with grpc in the latest.
+
+```bash
+helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+```
+
+```bash
+helm repo update
+```
+
+```bash
+helm install ambassador stable/ambassador --set crds.keep=false
+```
+
+### Install Istio Ingress Gateway
+
+If you are using istio then the controller will create virtual services for an istio gateway. By default it will assume the gateway `seldon-gateway` as the name of the gateway. To change the default gateway add `--set istio.gateway=XYZ` when installing the seldon-core-operator.
+
 
 ## Next Steps
 

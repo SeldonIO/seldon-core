@@ -1,10 +1,11 @@
 package controllers
 
 import (
-	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/api/v1alpha2"
-	"gopkg.in/yaml.v2"
 	"strconv"
 	"strings"
+
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	"gopkg.in/yaml.v2"
 )
 
 const (
@@ -47,8 +48,8 @@ type AmbassadorRetryPolicy struct {
 }
 
 // Return a REST configuration for Ambassador with optional custom settings.
-func getAmbassadorRestConfig(mlDep *machinelearningv1alpha2.SeldonDeployment,
-	p *machinelearningv1alpha2.PredictorSpec,
+func getAmbassadorRestConfig(mlDep *machinelearningv1.SeldonDeployment,
+	p *machinelearningv1.PredictorSpec,
 	addNamespace bool,
 	serviceName string,
 	serviceNameExternal string,
@@ -134,8 +135,8 @@ func getAmbassadorRestConfig(mlDep *machinelearningv1alpha2.SeldonDeployment,
 }
 
 // Return a gRPC configuration for Ambassador with optional custom settings.
-func getAmbassadorGrpcConfig(mlDep *machinelearningv1alpha2.SeldonDeployment,
-	p *machinelearningv1alpha2.PredictorSpec,
+func getAmbassadorGrpcConfig(mlDep *machinelearningv1.SeldonDeployment,
+	p *machinelearningv1.PredictorSpec,
 	addNamespace bool,
 	serviceName string,
 	serviceNameExternal string,
@@ -225,7 +226,7 @@ func getAmbassadorGrpcConfig(mlDep *machinelearningv1alpha2.SeldonDeployment,
 // Get the configuration for ambassador using the servce name serviceName.
 // Up to 4 confgurations will be created covering REST, GRPC and cluster-wide and namespaced varieties.
 // Annotations for Ambassador will be used to customize the configuration returned.
-func getAmbassadorConfigs(mlDep *machinelearningv1alpha2.SeldonDeployment, p *machinelearningv1alpha2.PredictorSpec, serviceName string, engine_http_port, engine_grpc_port int, nameOverride string) (string, error) {
+func getAmbassadorConfigs(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, serviceName string, engine_http_port, engine_grpc_port int, nameOverride string) (string, error) {
 	if annotation := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_CUSTOM, ""); annotation != "" {
 		return annotation, nil
 	} else {
