@@ -47,10 +47,10 @@ func TestAmbassadorBasic(t *testing.T) {
 }
 
 func TestAmbassadorSingle(t *testing.T) {
-	p := machinelearningv1alpha2.PredictorSpec{Name: "p"}
-	mlDep := machinelearningv1alpha2.SeldonDeployment{ObjectMeta: metav1.ObjectMeta{Name: "mymodel"},
-		Spec: machinelearningv1alpha2.SeldonDeploymentSpec{
-			Predictors: []machinelearningv1alpha2.PredictorSpec{
+	p := machinelearningv1.PredictorSpec{Name: "p"}
+	mlDep := machinelearningv1.SeldonDeployment{ObjectMeta: metav1.ObjectMeta{Name: "mymodel"},
+		Spec: machinelearningv1.SeldonDeploymentSpec{
+			Predictors: []machinelearningv1.PredictorSpec{
 				p,
 			},
 		},
@@ -94,11 +94,11 @@ func TestAmbassadorSingle(t *testing.T) {
 }
 
 func TestAmbassadorCanary(t *testing.T) {
-	p1 := machinelearningv1alpha2.PredictorSpec{Name: "p", Traffic: 20}
-	p2 := machinelearningv1alpha2.PredictorSpec{Name: "p", Traffic: 80}
-	mlDep := machinelearningv1alpha2.SeldonDeployment{ObjectMeta: metav1.ObjectMeta{Name: "mymodel"},
-		Spec: machinelearningv1alpha2.SeldonDeploymentSpec{
-			Predictors: []machinelearningv1alpha2.PredictorSpec{
+	p1 := machinelearningv1.PredictorSpec{Name: "p", Traffic: 20}
+	p2 := machinelearningv1.PredictorSpec{Name: "p", Traffic: 80}
+	mlDep := machinelearningv1.SeldonDeployment{ObjectMeta: metav1.ObjectMeta{Name: "mymodel"},
+		Spec: machinelearningv1.SeldonDeploymentSpec{
+			Predictors: []machinelearningv1.PredictorSpec{
 				p1,
 				p2,
 			},
@@ -180,11 +180,11 @@ func TestAmbassadorCanary(t *testing.T) {
 }
 
 func TestAmbassadorCanaryEqual(t *testing.T) {
-	p1 := machinelearningv1alpha2.PredictorSpec{Name: "p", Traffic: 50}
-	p2 := machinelearningv1alpha2.PredictorSpec{Name: "p", Traffic: 50}
-	mlDep := machinelearningv1alpha2.SeldonDeployment{ObjectMeta: metav1.ObjectMeta{Name: "mymodel"},
-		Spec: machinelearningv1alpha2.SeldonDeploymentSpec{
-			Predictors: []machinelearningv1alpha2.PredictorSpec{
+	p1 := machinelearningv1.PredictorSpec{Name: "p", Traffic: 50}
+	p2 := machinelearningv1.PredictorSpec{Name: "p", Traffic: 50}
+	mlDep := machinelearningv1.SeldonDeployment{ObjectMeta: metav1.ObjectMeta{Name: "mymodel"},
+		Spec: machinelearningv1.SeldonDeploymentSpec{
+			Predictors: []machinelearningv1.PredictorSpec{
 				p1,
 				p2,
 			},
@@ -266,12 +266,12 @@ func TestAmbassadorCanaryEqual(t *testing.T) {
 }
 
 func TestAmbassadorCanaryThree(t *testing.T) {
-	p1 := machinelearningv1alpha2.PredictorSpec{Name: "p", Traffic: 60}
-	p2 := machinelearningv1alpha2.PredictorSpec{Name: "p", Traffic: 20}
-	p3 := machinelearningv1alpha2.PredictorSpec{Name: "p", Traffic: 20}
-	mlDep := machinelearningv1alpha2.SeldonDeployment{ObjectMeta: metav1.ObjectMeta{Name: "mymodel"},
-		Spec: machinelearningv1alpha2.SeldonDeploymentSpec{
-			Predictors: []machinelearningv1alpha2.PredictorSpec{
+	p1 := machinelearningv1.PredictorSpec{Name: "p", Traffic: 60}
+	p2 := machinelearningv1.PredictorSpec{Name: "p", Traffic: 20}
+	p3 := machinelearningv1.PredictorSpec{Name: "p", Traffic: 20}
+	mlDep := machinelearningv1.SeldonDeployment{ObjectMeta: metav1.ObjectMeta{Name: "mymodel"},
+		Spec: machinelearningv1.SeldonDeploymentSpec{
+			Predictors: []machinelearningv1.PredictorSpec{
 				p1,
 				p2,
 				p3,
@@ -354,12 +354,12 @@ func TestAmbassadorCanaryThree(t *testing.T) {
 }
 
 func TestAmbassadorCanaryThreeEqual(t *testing.T) {
-	p1 := machinelearningv1alpha2.PredictorSpec{Name: "p", Traffic: 33}
-	p2 := machinelearningv1alpha2.PredictorSpec{Name: "p", Traffic: 33}
-	p3 := machinelearningv1alpha2.PredictorSpec{Name: "p", Traffic: 33}
-	mlDep := machinelearningv1alpha2.SeldonDeployment{ObjectMeta: metav1.ObjectMeta{Name: "mymodel"},
-		Spec: machinelearningv1alpha2.SeldonDeploymentSpec{
-			Predictors: []machinelearningv1alpha2.PredictorSpec{
+	p1 := machinelearningv1.PredictorSpec{Name: "p", Traffic: 33}
+	p2 := machinelearningv1.PredictorSpec{Name: "p", Traffic: 33}
+	p3 := machinelearningv1.PredictorSpec{Name: "p", Traffic: 33}
+	mlDep := machinelearningv1.SeldonDeployment{ObjectMeta: metav1.ObjectMeta{Name: "mymodel"},
+		Spec: machinelearningv1.SeldonDeploymentSpec{
+			Predictors: []machinelearningv1.PredictorSpec{
 				p1,
 				p2,
 				p3,
