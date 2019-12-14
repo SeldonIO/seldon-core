@@ -980,10 +980,12 @@ func createServices(r *SeldonDeploymentReconciler, components *components, insta
 // Create Services specified in components.
 func createHpas(r *SeldonDeploymentReconciler, components *components, instance *machinelearningv1.SeldonDeployment, log logr.Logger) (bool, error) {
 	ready := true
+	hpaSet := make(map[string]bool)
 	for _, hpa := range components.hpas {
 		if err := ctrl.SetControllerReference(instance, hpa, r.Scheme); err != nil {
 			return ready, err
 		}
+		hpaSet[hpa.Name] = true
 		found := &autoscaling.HorizontalPodAutoscaler{}
 		err := r.Get(context.TODO(), types.NamespacedName{Name: hpa.Name, Namespace: hpa.Namespace}, found)
 		if err != nil && errors.IsNotFound(err) {
@@ -1030,6 +1032,28 @@ func createHpas(r *SeldonDeploymentReconciler, components *components, instance 
 		}
 
 	}
+
+	// For all Deployments check if any Hpas exist and they are not required
+	for _, deploy := range components.deployments {
+		if _, ok := hpaSet[deploy.Name]; !ok {
+			found := &autoscaling.HorizontalPodAutoscaler{}
+			err := r.Get(context.TODO(), types.NamespacedName{Name: deploy.Name, Namespace: deploy.Namespace}, found)
+			if err != nil {
+				if !errors.IsNotFound(err) {
+					return false, err
+				}
+				// Do nothing
+			} else {
+				// Delete HPA
+				log.Info("Deleting hpa", "name", deploy.Name)
+				err := r.Delete(context.TODO(), found, client.PropagationPolicy(metav1.DeletePropagationForeground))
+				if err != nil {
+					return ready, err
+				}
+			}
+		}
+	}
+
 	return ready, nil
 }
 
@@ -1201,6 +1225,23 @@ func createDeployments(r *SeldonDeploymentReconciler, components *components, in
 					log.Info("Deleting old deployment (svc-orch does not exist)", "name", k)
 
 					err := r.Delete(context.TODO(), found, client.PropagationPolicy(metav1.DeletePropagationForeground))
+					if err != nil {
+						return ready, err
+					}
+				}
+
+				// Delete any dangling HPAs
+				foundHpa := &autoscaling.HorizontalPodAutoscaler{}
+				err := r.Get(context.TODO(), types.NamespacedName{Name: found.Name, Namespace: found.Namespace}, foundHpa)
+				if err != nil {
+					if !errors.IsNotFound(err) {
+						return false, err
+					}
+					// Do nothing
+				} else {
+					// Delete HPA that should not exist
+					log.Info("Deleting hpa for removed predictor", "name", foundHpa.Name)
+					err := r.Delete(context.TODO(), foundHpa, client.PropagationPolicy(metav1.DeletePropagationForeground))
 					if err != nil {
 						return ready, err
 					}

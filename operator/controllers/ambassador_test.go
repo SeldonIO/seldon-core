@@ -10,8 +10,14 @@ import (
 )
 
 func TestAmbassadorBasic(t *testing.T) {
-	mlDep := machinelearningv1.SeldonDeployment{ObjectMeta: metav1.ObjectMeta{Name: "mymodel"}}
 	p := machinelearningv1.PredictorSpec{Name: "p"}
+	mlDep := machinelearningv1.SeldonDeployment{ObjectMeta: metav1.ObjectMeta{Name: "mymodel"},
+		Spec: machinelearningv1.SeldonDeploymentSpec{
+			Predictors: []machinelearningv1.PredictorSpec{
+				p,
+			},
+		},
+	}
 	s, err := getAmbassadorConfigs(&mlDep, &p, "myservice", 9000, 5000, "")
 	if err != nil {
 		t.Fatalf("Config format error")
@@ -125,7 +131,7 @@ func TestAmbassadorCanary(t *testing.T) {
 			t.Fatalf("Failed to unmarshall")
 		}
 
-		if c.Weight != 20 {
+		if c.Weight > 0 {
 			t.Fatalf("Bad weight for Ambassador config %d", c.Weight)
 		}
 
@@ -180,8 +186,8 @@ func TestAmbassadorCanary(t *testing.T) {
 }
 
 func TestAmbassadorCanaryEqual(t *testing.T) {
-	p1 := machinelearningv1.PredictorSpec{Name: "p", Traffic: 50}
-	p2 := machinelearningv1.PredictorSpec{Name: "p", Traffic: 50}
+	p1 := machinelearningv1.PredictorSpec{Name: "p1", Traffic: 50}
+	p2 := machinelearningv1.PredictorSpec{Name: "p2", Traffic: 50}
 	mlDep := machinelearningv1.SeldonDeployment{ObjectMeta: metav1.ObjectMeta{Name: "mymodel"},
 		Spec: machinelearningv1.SeldonDeploymentSpec{
 			Predictors: []machinelearningv1.PredictorSpec{
@@ -211,7 +217,7 @@ func TestAmbassadorCanaryEqual(t *testing.T) {
 			t.Fatalf("Failed to unmarshall")
 		}
 
-		if c.Weight != 50 {
+		if c.Weight > 0 {
 			t.Fatalf("Bad weight for Ambassador config %d", c.Weight)
 		}
 
@@ -266,9 +272,9 @@ func TestAmbassadorCanaryEqual(t *testing.T) {
 }
 
 func TestAmbassadorCanaryThree(t *testing.T) {
-	p1 := machinelearningv1.PredictorSpec{Name: "p", Traffic: 60}
-	p2 := machinelearningv1.PredictorSpec{Name: "p", Traffic: 20}
-	p3 := machinelearningv1.PredictorSpec{Name: "p", Traffic: 20}
+	p1 := machinelearningv1.PredictorSpec{Name: "p1", Traffic: 60}
+	p2 := machinelearningv1.PredictorSpec{Name: "p2", Traffic: 20}
+	p3 := machinelearningv1.PredictorSpec{Name: "p3", Traffic: 20}
 	mlDep := machinelearningv1.SeldonDeployment{ObjectMeta: metav1.ObjectMeta{Name: "mymodel"},
 		Spec: machinelearningv1.SeldonDeploymentSpec{
 			Predictors: []machinelearningv1.PredictorSpec{
@@ -354,9 +360,9 @@ func TestAmbassadorCanaryThree(t *testing.T) {
 }
 
 func TestAmbassadorCanaryThreeEqual(t *testing.T) {
-	p1 := machinelearningv1.PredictorSpec{Name: "p", Traffic: 33}
-	p2 := machinelearningv1.PredictorSpec{Name: "p", Traffic: 33}
-	p3 := machinelearningv1.PredictorSpec{Name: "p", Traffic: 33}
+	p1 := machinelearningv1.PredictorSpec{Name: "p1", Traffic: 33}
+	p2 := machinelearningv1.PredictorSpec{Name: "p2", Traffic: 33}
+	p3 := machinelearningv1.PredictorSpec{Name: "p3", Traffic: 33}
 	mlDep := machinelearningv1.SeldonDeployment{ObjectMeta: metav1.ObjectMeta{Name: "mymodel"},
 		Spec: machinelearningv1.SeldonDeploymentSpec{
 			Predictors: []machinelearningv1.PredictorSpec{
@@ -387,7 +393,7 @@ func TestAmbassadorCanaryThreeEqual(t *testing.T) {
 			t.Fatalf("Failed to unmarshall")
 		}
 
-		if c.Weight != 33 {
+		if c.Weight > 0 {
 			t.Fatalf("Bad weight for Ambassador config %d", c.Weight)
 		}
 
@@ -442,9 +448,16 @@ func TestAmbassadorCanaryThreeEqual(t *testing.T) {
 }
 
 func TestAmbassadorID(t *testing.T) {
-	mlDep := machinelearningv1.SeldonDeployment{ObjectMeta: metav1.ObjectMeta{Name: "mymodel"},
-		Spec: machinelearningv1.SeldonDeploymentSpec{Annotations: map[string]string{ANNOTATION_AMBASSADOR_ID: "myinstance_id"}}}
 	p := machinelearningv1.PredictorSpec{Name: "p"}
+	mlDep := machinelearningv1.SeldonDeployment{ObjectMeta: metav1.ObjectMeta{Name: "mymodel"},
+		Spec: machinelearningv1.SeldonDeploymentSpec{
+			Annotations: map[string]string{ANNOTATION_AMBASSADOR_ID: "myinstance_id"},
+			Predictors: []machinelearningv1.PredictorSpec{
+				p,
+			},
+		},
+	}
+
 	s, err := getAmbassadorConfigs(&mlDep, &p, "myservice", 9000, 5000, "")
 	if err != nil {
 		t.Fatalf("Config format error")
