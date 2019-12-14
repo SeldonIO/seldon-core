@@ -232,22 +232,11 @@ func getAmbassadorConfigs(mlDep *machinelearningv1.SeldonDeployment, p *machinel
 	} else {
 
 		var weight *int32
-		numPredictors := int32(len(mlDep.Spec.Predictors))
-		// Add weight for non-largest traffics or for equal largest traffic
-		if numPredictors > 1 {
-			largest := true
-			numEquals := 0
-			for _, pTmp := range mlDep.Spec.Predictors {
-				if pTmp.Traffic > p.Traffic {
-					largest = false
-				} else if pTmp.Traffic == p.Traffic {
-					numEquals += 1
-				}
-			}
-			if !largest || (largest && numEquals > 1) {
-				weight = &p.Traffic
-			}
+		// Ignore weight on first predictor and let Ambassador handle this
+		if mlDep.Spec.Predictors[0].Name != p.Name {
+			weight = &p.Traffic
 		}
+
 		shadowing := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_SHADOW, "")
 		serviceNameExternal := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_SERVICE, mlDep.ObjectMeta.Name)
 		customHeader := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_HEADER, "")
