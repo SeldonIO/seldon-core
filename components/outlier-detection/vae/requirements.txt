@@ -1,5 +1,5 @@
 keras==2.2.2
-tensorflow==1.13.1
+tensorflow==1.15.0
 numpy==1.14.5
 argparse==1.1
 pandas==0.23.4
