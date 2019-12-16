@@ -36,7 +36,6 @@ install_seldon: install_cert_manager
 
 install_istio:
 	kubectl apply -f istio-1.4.2.yaml
-	kubectl apply -f ../../notebooks/resources/seldon-gateway.yaml
 	kubectl rollout status deployment.apps/istio-ingressgateway -n istio-system
 	kubectl rollout status deployment.apps/istio-pilot -n istio-system
 	kubectl rollout status deployment.apps/istio-citadel -n istio-system
