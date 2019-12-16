@@ -25,14 +25,15 @@ def to_resources_path(file_name):
 
 
 class TestRollingHttp(object):
-
     @pytest.mark.parametrize("api_gateway", [API_AMBASSADOR, API_ISTIO_GATEWAY])
     # Test updating a model with a new image version as the only change
     def test_rolling_update1(self, api_gateway):
         namespace = "test-rolling-update-1"
         retry_run(f"kubectl create namespace {namespace}")
         if api_gateway == API_ISTIO_GATEWAY:
-            retry_run(f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}")
+            retry_run(
+                f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
+            )
         retry_run(f"kubectl apply -f ../resources/graph1.json -n {namespace}")
         wait_for_rollout("mymodel-mymodel-e2eb561", namespace)
         logging.warning("Initial request")
@@ -74,7 +75,9 @@ class TestRollingHttp(object):
         namespace = "test-rolling-update-2"
         retry_run(f"kubectl create namespace {namespace}")
         if api_gateway == API_ISTIO_GATEWAY:
-            retry_run(f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}")
+            retry_run(
+                f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
+            )
         retry_run(f"kubectl apply -f ../resources/graph1.json -n {namespace}")
         wait_for_rollout("mymodel-mymodel-e2eb561", namespace)
         logging.warning("Initial request")
@@ -117,7 +120,9 @@ class TestRollingHttp(object):
         namespace = "test-rolling-updates-3"
         retry_run(f"kubectl create namespace {namespace}")
         if api_gateway == API_ISTIO_GATEWAY:
-            retry_run(f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}")
+            retry_run(
+                f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
+            )
         retry_run(f"kubectl apply -f ../resources/graph1.json -n {namespace}")
         wait_for_rollout("mymodel-mymodel-e2eb561", namespace)
         logging.warning("Initial request")
@@ -154,7 +159,9 @@ class TestRollingHttp(object):
         namespace = "test-rolling-update-4"
         retry_run(f"kubectl create namespace {namespace}")
         if api_gateway == API_ISTIO_GATEWAY:
-            retry_run(f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}")
+            retry_run(
+                f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
+            )
         retry_run(f"kubectl apply -f ../resources/graph1.json -n {namespace}")
         wait_for_rollout("mymodel-mymodel-e2eb561", namespace)
         logging.warning("Initial request")
@@ -195,7 +202,9 @@ class TestRollingHttp(object):
         namespace = "test-rolling-update-5"
         retry_run(f"kubectl create namespace {namespace}")
         if api_gateway == API_ISTIO_GATEWAY:
-            retry_run(f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}")
+            retry_run(
+                f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
+            )
         retry_run(f"kubectl apply -f ../resources/graph1.json -n {namespace}")
         wait_for_rollout("mymodel-mymodel-e2eb561", namespace)
         logging.warning("Initial request")
@@ -238,7 +247,9 @@ class TestRollingHttp(object):
         namespace = "test-rolling-update-6"
         retry_run(f"kubectl create namespace {namespace}")
         if api_gateway == API_ISTIO_GATEWAY:
-            retry_run(f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}")
+            retry_run(
+                f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
+            )
         retry_run(f"kubectl apply -f ../resources/graph1svc.json -n {namespace}")
         wait_for_rollout("mymodel-mymodel-svc-orch-8e2a24b", namespace)
         wait_for_rollout("mymodel-mymodel-e2eb561", namespace)
@@ -247,7 +258,7 @@ class TestRollingHttp(object):
         assert r.status_code == 200
         assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
         retry_run(f"kubectl apply -f ../resources/graph2svc.json -n {namespace}")
-        r = initial_rest_request("mymodel", namespace,endpoint=api_gateway)
+        r = initial_rest_request("mymodel", namespace, endpoint=api_gateway)
         assert r.status_code == 200
         assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
         i = 0
@@ -281,7 +292,9 @@ class TestRollingHttp(object):
         namespace = "test-rolling-update-7"
         retry_run(f"kubectl create namespace {namespace}")
         if api_gateway == API_ISTIO_GATEWAY:
-            retry_run(f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}")
+            retry_run(
+                f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
+            )
         retry_run(f"kubectl apply -f ../resources/graph1svc.json -n {namespace}")
         wait_for_rollout("mymodel-mymodel-svc-orch-8e2a24b", namespace)
         wait_for_rollout("mymodel-mymodel-e2eb561", namespace)
@@ -325,7 +338,9 @@ class TestRollingHttp(object):
         namespace = "test-rolling-update-8"
         retry_run(f"kubectl create namespace {namespace}")
         if api_gateway == API_ISTIO_GATEWAY:
-            retry_run(f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}")
+            retry_run(
+                f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
+            )
         retry_run(f"kubectl apply -f ../resources/graph1svc.json -n {namespace}")
         wait_for_rollout("mymodel-mymodel-svc-orch-8e2a24b", namespace)
         wait_for_rollout("mymodel-mymodel-e2eb561", namespace)
@@ -362,7 +377,9 @@ class TestRollingHttp(object):
         namespace = "test-rolling-update-9"
         retry_run(f"kubectl create namespace {namespace}")
         if api_gateway == API_ISTIO_GATEWAY:
-            retry_run(f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}")
+            retry_run(
+                f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
+            )
         retry_run(f"kubectl apply -f ../resources/graph1svc.json -n {namespace}")
         wait_for_rollout("mymodel-mymodel-svc-orch-8e2a24b", namespace)
         wait_for_rollout("mymodel-mymodel-e2eb561", namespace)
@@ -403,7 +420,9 @@ class TestRollingHttp(object):
         namespace = "test-rolling-update-10"
         retry_run(f"kubectl create namespace {namespace}")
         if api_gateway == API_ISTIO_GATEWAY:
-            retry_run(f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}")
+            retry_run(
+                f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
+            )
         retry_run(f"kubectl apply -f ../resources/graph1svc.json -n {namespace}")
         wait_for_rollout("mymodel-mymodel-svc-orch-8e2a24b", namespace)
         wait_for_rollout("mymodel-mymodel-e2eb561", namespace)
