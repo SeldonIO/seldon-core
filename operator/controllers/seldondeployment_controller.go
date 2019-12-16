@@ -126,6 +126,7 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 	grpcAllowed bool) ([]*istio.VirtualService, []*istio.DestinationRule) {
 
 	istio_gateway := GetEnv(ENV_ISTIO_GATEWAY, "seldon-gateway")
+	istioTLSMode := GetEnv(ENV_ISTIO_TLS_MODE, "")
 	httpVsvc := &istio.VirtualService{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      seldonId + "-http",
@@ -197,11 +198,6 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 			},
 			Spec: istio.DestinationRuleSpec{
 				Host: pSvcName,
-				TrafficPolicy: &istio.TrafficPolicy{
-					TLS: &istio.TLSSettings{
-						Mode: istio.TLSmodeIstioMutual,
-					},
-				},
 				Subsets: []istio.Subset{
 					{
 						Name: p.Name,
@@ -213,6 +209,13 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 			},
 		}
 
+		if istioTLSMode != "" {
+			drule.Spec.TrafficPolicy = &istio.TrafficPolicy{
+				TLS: &istio.TLSSettings{
+					Mode: istio.TLSmode(istioTLSMode),
+				},
+			}
+		}
 		drules[i] = drule
 
 		if p.Shadow == true {
@@ -1353,17 +1356,17 @@ func (r *SeldonDeploymentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		return ctrl.Result{}, err
 	}
 
-	virtualServicesReady, err := createIstioServices(r, components, instance, log)
-	if err != nil {
-		return ctrl.Result{}, err
-	}
+	//virtualServicesReady, err := createIstioServices(r, components, instance, log)
+	//if err != nil {
+	//	return ctrl.Result{}, err
+	//}
 
 	hpasReady, err := createHpas(r, components, instance, log)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 
-	if deploymentsReady && servicesReady && hpasReady && virtualServicesReady {
+	if deploymentsReady && servicesReady && hpasReady {
 		instance.Status.State = "Available"
 	} else {
 		instance.Status.State = "Creating"

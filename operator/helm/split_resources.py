@@ -35,6 +35,7 @@ HELM_ENV_SUBST = {
     "ENGINE_CONTAINER_SERVICE_ACCOUNT_NAME": "engine.serviceAccount.name",
     "ISTIO_ENABLED":"istio.enabled",
     "ISTIO_GATEWAY":"istio.gateway",
+    "ISTIO_TLS_MODE":"istio.tlsMode",
     "PREDICTIVE_UNIT_SERVICE_PORT":"predictiveUnit.port"
 
 }
@@ -135,6 +136,10 @@ if __name__ == "__main__":
                 res["metadata"]["name"] = res["metadata"]["name"] + "-" + helm_release("Namespace")
                 res["webhooks"][0]["clientConfig"]["caBundle"] = "{{ $ca.Cert | b64enc }}"
                 res["webhooks"][0]["clientConfig"]["service"]["namespace"] = helm_release("Namespace")
+                res["webhooks"][1]["clientConfig"]["caBundle"] = "{{ $ca.Cert | b64enc }}"
+                res["webhooks"][1]["clientConfig"]["service"]["namespace"] = helm_release("Namespace")
+                res["webhooks"][2]["clientConfig"]["caBundle"] = "{{ $ca.Cert | b64enc }}"
+                res["webhooks"][2]["clientConfig"]["service"]["namespace"] = helm_release("Namespace")
                 if "certmanager.k8s.io/inject-ca-from" in res["metadata"]["annotations"]:
                     res["metadata"]["annotations"]["certmanager.k8s.io/inject-ca-from"] = helm_release("Namespace") + "/seldon-serving-cert"
 

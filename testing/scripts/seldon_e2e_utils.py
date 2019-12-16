@@ -12,6 +12,7 @@ from retrying import retry
 import logging
 
 API_AMBASSADOR = "localhost:8003"
+API_ISTIO_GATEWAY = "localhost:8004"
 
 
 def get_s2i_python_version():

@@ -62,6 +62,8 @@ spec:
           value: "false"
         - name: ISTIO_GATEWAY
           value: seldon-gateway
+        - name: ISTIO_TLS_MODE
+          value: ""
         image: controller:latest
         name: manager
         resources:

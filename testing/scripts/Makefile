@@ -28,9 +28,16 @@ install_ambassador:
 
 install_cert_manager:
 	cd ../../operator && make install-cert-manager
+	sleep 5 #https://github.com/jetstack/cert-manager/issues/2273
 
 install_seldon: install_cert_manager
-	cd ../../operator && make install deploy
+	kubectl create namespace seldon-system || echo "namespace seldon-system exists"
+	helm install seldon ../../helm-charts/seldon-core-operator --namespace seldon-system --set istio.enabled=true --set istio.gateway=seldon-gateway --set certManager.enabled=false
+
+install_istio:
+	kubectl apply -f istio-1.4.2.yaml
+	kubectl apply -f ../../notebooks/resources/seldon-gateway.yaml
+
 
 create_namespaces:
 	kubectl create namespace seldon || echo "Namespace seldon already exists"
@@ -39,7 +46,7 @@ create_namespaces:
 set_namespace:
 	kubectl config set-context $$(kubectl config current-context) --namespace=seldon
 
-kind_setup: create_namespaces helm_setup install_ambassador install_seldon set_namespace
+kind_setup: create_namespaces helm_setup install_ambassador install_istio install_seldon set_namespace
 port-forward-ambassador:
 	kubectl port-forward $$(kubectl get pods -n seldon -l app.kubernetes.io/name=ambassador -o jsonpath='{.items[0].metadata.name}') -n seldon 8003:8080
 

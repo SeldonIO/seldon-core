@@ -21,13 +21,14 @@ engine:
     name: default
   user: 8888
 image:
-  pullPolicy: Always
+  pullPolicy: IfNotPresent
   registry: docker.io
   repository: seldonio/seldon-core-operator
   tag: 0.5.2-SNAPSHOT
 istio:
   enabled: false
   gateway: seldon-gateway
+  tlsMode: ''
 predictiveUnit:
   port: 9000
 rbac:
