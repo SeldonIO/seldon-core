@@ -63,7 +63,6 @@ install:
 
 .PHONY: test
 test: build_protos install
-	pip install pytest-xdist
 	# Run the core tests in parallel
 	pytest \
 		--verbose \
