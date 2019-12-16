@@ -28,11 +28,11 @@ class TestRollingHttp(object):
     @pytest.mark.parametrize("api_gateway", [API_AMBASSADOR, API_ISTIO_GATEWAY])
     # Test updating a model with a new image version as the only change
     def test_rolling_update1(self, api_gateway):
-        if api_gateway==API_AMBASSADOR:
+        if api_gateway == API_AMBASSADOR:
             ns_suffix = "ambas"
         else:
             ns_suffix = "istio"
-        namespace = "test-rolling-update-1"+ns_suffix
+        namespace = "test-rolling-update-1" + ns_suffix
         retry_run(f"kubectl create namespace {namespace}")
         if api_gateway == API_ISTIO_GATEWAY:
             retry_run(
@@ -76,11 +76,11 @@ class TestRollingHttp(object):
     @pytest.mark.parametrize("api_gateway", [API_AMBASSADOR, API_ISTIO_GATEWAY])
     # test changing the image version and the name of its container
     def test_rolling_update2(self, api_gateway):
-        if api_gateway==API_AMBASSADOR:
+        if api_gateway == API_AMBASSADOR:
             ns_suffix = "ambas"
         else:
             ns_suffix = "istio"
-        namespace = "test-rolling-update-2"+ns_suffix
+        namespace = "test-rolling-update-2" + ns_suffix
         retry_run(f"kubectl create namespace {namespace}")
         if api_gateway == API_ISTIO_GATEWAY:
             retry_run(
@@ -125,11 +125,11 @@ class TestRollingHttp(object):
     @pytest.mark.parametrize("api_gateway", [API_AMBASSADOR, API_ISTIO_GATEWAY])
     # Test updating a model with a new resource request but same image
     def test_rolling_update3(self, api_gateway):
-        if api_gateway==API_AMBASSADOR:
+        if api_gateway == API_AMBASSADOR:
             ns_suffix = "ambas"
         else:
             ns_suffix = "istio"
-        namespace = "test-rolling-updates-3"+ns_suffix
+        namespace = "test-rolling-updates-3" + ns_suffix
         retry_run(f"kubectl create namespace {namespace}")
         if api_gateway == API_ISTIO_GATEWAY:
             retry_run(
@@ -168,11 +168,11 @@ class TestRollingHttp(object):
     @pytest.mark.parametrize("api_gateway", [API_AMBASSADOR, API_ISTIO_GATEWAY])
     # Test updating a model with a multi deployment new model
     def test_rolling_update4(self, api_gateway):
-        if api_gateway==API_AMBASSADOR:
+        if api_gateway == API_AMBASSADOR:
             ns_suffix = "ambas"
         else:
             ns_suffix = "istio"
-        namespace = "test-rolling-update-4"+ns_suffix
+        namespace = "test-rolling-update-4" + ns_suffix
         retry_run(f"kubectl create namespace {namespace}")
         if api_gateway == API_ISTIO_GATEWAY:
             retry_run(
@@ -215,11 +215,11 @@ class TestRollingHttp(object):
     @pytest.mark.parametrize("api_gateway", [API_AMBASSADOR, API_ISTIO_GATEWAY])
     # Test updating a model to a multi predictor model
     def test_rolling_update5(self, api_gateway):
-        if api_gateway==API_AMBASSADOR:
+        if api_gateway == API_AMBASSADOR:
             ns_suffix = "ambas"
         else:
             ns_suffix = "istio"
-        namespace = "test-rolling-update-5"+ns_suffix
+        namespace = "test-rolling-update-5" + ns_suffix
         retry_run(f"kubectl create namespace {namespace}")
         if api_gateway == API_ISTIO_GATEWAY:
             retry_run(
@@ -264,11 +264,11 @@ class TestRollingHttp(object):
     @pytest.mark.parametrize("api_gateway", [API_AMBASSADOR, API_ISTIO_GATEWAY])
     # Test updating a model with a new image version as the only change
     def test_rolling_update6(self, api_gateway):
-        if api_gateway==API_AMBASSADOR:
+        if api_gateway == API_AMBASSADOR:
             ns_suffix = "ambas"
         else:
             ns_suffix = "istio"
-        namespace = "test-rolling-update-6"+ns_suffix
+        namespace = "test-rolling-update-6" + ns_suffix
         retry_run(f"kubectl create namespace {namespace}")
         if api_gateway == API_ISTIO_GATEWAY:
             retry_run(
@@ -313,11 +313,11 @@ class TestRollingHttp(object):
     @pytest.mark.parametrize("api_gateway", [API_AMBASSADOR, API_ISTIO_GATEWAY])
     # test changing the image version and the name of its container
     def test_rolling_update7(self, api_gateway):
-        if api_gateway==API_AMBASSADOR:
+        if api_gateway == API_AMBASSADOR:
             ns_suffix = "ambas"
         else:
             ns_suffix = "istio"
-        namespace = "test-rolling-update-7"+ns_suffix
+        namespace = "test-rolling-update-7" + ns_suffix
         retry_run(f"kubectl create namespace {namespace}")
         if api_gateway == API_ISTIO_GATEWAY:
             retry_run(
@@ -363,11 +363,11 @@ class TestRollingHttp(object):
     @pytest.mark.parametrize("api_gateway", [API_AMBASSADOR, API_ISTIO_GATEWAY])
     # Test updating a model with a new resource request but same image
     def test_rolling_update8(self, api_gateway):
-        if api_gateway==API_AMBASSADOR:
+        if api_gateway == API_AMBASSADOR:
             ns_suffix = "ambas"
         else:
             ns_suffix = "istio"
-        namespace = "test-rolling-update-8"+ns_suffix
+        namespace = "test-rolling-update-8" + ns_suffix
         retry_run(f"kubectl create namespace {namespace}")
         if api_gateway == API_ISTIO_GATEWAY:
             retry_run(
@@ -406,11 +406,11 @@ class TestRollingHttp(object):
     @pytest.mark.parametrize("api_gateway", [API_AMBASSADOR, API_ISTIO_GATEWAY])
     # Test updating a model with a multi deployment new model
     def test_rolling_update9(self, api_gateway):
-        if api_gateway==API_AMBASSADOR:
+        if api_gateway == API_AMBASSADOR:
             ns_suffix = "ambas"
         else:
             ns_suffix = "istio"
-        namespace = "test-rolling-update-9"+ns_suffix
+        namespace = "test-rolling-update-9" + ns_suffix
         retry_run(f"kubectl create namespace {namespace}")
         if api_gateway == API_ISTIO_GATEWAY:
             retry_run(
@@ -453,11 +453,11 @@ class TestRollingHttp(object):
     @pytest.mark.parametrize("api_gateway", [API_AMBASSADOR, API_ISTIO_GATEWAY])
     # Test updating a model to a multi predictor model
     def test_rolling_update10(self, api_gateway):
-        if api_gateway==API_AMBASSADOR:
+        if api_gateway == API_AMBASSADOR:
             ns_suffix = "ambas"
         else:
             ns_suffix = "istio"
-        namespace = "test-rolling-update-10"+ns_suffix
+        namespace = "test-rolling-update-10" + ns_suffix
         retry_run(f"kubectl create namespace {namespace}")
         if api_gateway == API_ISTIO_GATEWAY:
             retry_run(
