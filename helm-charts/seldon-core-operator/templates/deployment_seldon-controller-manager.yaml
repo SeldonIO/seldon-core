@@ -69,6 +69,8 @@ spec:
           value: '{{ .Values.istio.enabled }}'
         - name: ISTIO_GATEWAY
           value: '{{ .Values.istio.gateway }}'
+        - name: ISTIO_TLS_MODE
+          value: '{{ .Values.istio.tlsMode }}'
         image: '{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}'
         imagePullPolicy: '{{ .Values.image.pullPolicy }}'
         name: manager
