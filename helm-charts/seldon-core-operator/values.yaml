@@ -3,6 +3,9 @@ ambassador:
   singleNamespace: false
 certManager:
   enabled: false
+controllerId: ''
+crd:
+  create: true
 engine:
   grpc:
     port: 5001
@@ -10,7 +13,7 @@ engine:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/engine
-    tag: 0.5.2-SNAPSHOT
+    tag: 1.0.0
   logMessagesExternally: false
   port: 8000
   prometheus:
@@ -24,7 +27,7 @@ image:
   pullPolicy: IfNotPresent
   registry: docker.io
   repository: seldonio/seldon-core-operator
-  tag: 0.5.2-SNAPSHOT
+  tag: 1.0.0
 istio:
   enabled: false
   gateway: seldon-gateway
@@ -38,11 +41,8 @@ rbac:
 serviceAccount:
   create: true
   name: seldon-manager
+singleNamespace: false
 usageMetrics:
   enabled: false
 webhook:
   port: 443
-singleNamespace: false
-controllerId: ''
-crd:
-  create: true
