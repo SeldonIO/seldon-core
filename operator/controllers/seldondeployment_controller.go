@@ -186,6 +186,7 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 
 	// the shdadow/mirror entry does need a DestinationRule though
 	drules := make([]*istio.DestinationRule, len(mlDep.Spec.Predictors))
+	routesIdx := 0
 	for i := 0; i < len(mlDep.Spec.Predictors); i++ {
 
 		p := mlDep.Spec.Predictors[i]
@@ -242,7 +243,7 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 
 		//we split by adding different routes with their own Weights
 		//so not by tag - different destinations (like https://istio.io/docs/tasks/traffic-management/traffic-shifting/) distinguished by host
-		routesHttp[i] = istio.HTTPRouteDestination{
+		routesHttp[routesIdx] = istio.HTTPRouteDestination{
 			Destination: istio.Destination{
 				Host:   pSvcName,
 				Subset: p.Name,
@@ -252,7 +253,7 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 			},
 			Weight: int(p.Traffic),
 		}
-		routesGrpc[i] = istio.HTTPRouteDestination{
+		routesGrpc[routesIdx] = istio.HTTPRouteDestination{
 			Destination: istio.Destination{
 				Host:   pSvcName,
 				Subset: p.Name,
@@ -262,6 +263,7 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 			},
 			Weight: int(p.Traffic),
 		}
+		routesIdx += 1
 
 	}
 	httpVsvc.Spec.HTTP[0].Route = routesHttp
