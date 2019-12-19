@@ -8,6 +8,5 @@ set -o pipefail
 make s2i_build_base_images
 
 make kind_create_cluster
-export KUBECONFIG="$(kind get kubeconfig-path)"
 make kind_build_images
 make kind_setup

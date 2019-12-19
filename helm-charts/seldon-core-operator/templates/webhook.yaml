@@ -21,6 +21,50 @@ webhooks:
     service:
       name: seldon-webhook-service
       namespace: '{{ .Release.Namespace }}'
+      path: /validate-machinelearning-seldon-io-v1-seldondeployment
+  failurePolicy: Fail
+  name: vseldondeployment.kb.io
+{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}
+{{- if not .Values.singleNamespace }}
+  namespaceSelector:
+    matchExpressions:
+    - key: seldon.io/controller-id
+      operator: DoesNotExist
+{{- end }}
+{{- end }}
+{{- if .Values.singleNamespace }}
+  namespaceSelector:
+    matchLabels:
+      seldon.io/controller-id: {{ .Release.Namespace }}
+{{- end }}
+{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}
+{{- if not .Values.controllerId }}
+  objectSelector:
+    matchExpressions:
+    - key: seldon.io/controller-id
+      operator: DoesNotExist
+{{- end }}
+{{- end }}
+{{- if .Values.controllerId }}
+  objectSelector:
+    matchLabels:
+      seldon.io/controller-id: {{ .Values.controllerId }}
+{{- end }}
+  rules:
+  - apiGroups:
+    - machinelearning.seldon.io
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - seldondeployments
+- clientConfig:
+    caBundle: '{{ $ca.Cert | b64enc }}'
+    service:
+      name: seldon-webhook-service
+      namespace: '{{ .Release.Namespace }}'
       path: /validate-machinelearning-seldon-io-v1alpha2-seldondeployment
   failurePolicy: Fail
   name: vseldondeployment.kb.io
@@ -60,6 +104,50 @@ webhooks:
     - UPDATE
     resources:
     - seldondeployments
+- clientConfig:
+    caBundle: '{{ $ca.Cert | b64enc }}'
+    service:
+      name: seldon-webhook-service
+      namespace: '{{ .Release.Namespace }}'
+      path: /validate-machinelearning-seldon-io-v1alpha3-seldondeployment
+  failurePolicy: Fail
+  name: vseldondeployment.kb.io
+{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}
+{{- if not .Values.singleNamespace }}
+  namespaceSelector:
+    matchExpressions:
+    - key: seldon.io/controller-id
+      operator: DoesNotExist
+{{- end }}
+{{- end }}
+{{- if .Values.singleNamespace }}
+  namespaceSelector:
+    matchLabels:
+      seldon.io/controller-id: {{ .Release.Namespace }}
+{{- end }}
+{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}
+{{- if not .Values.controllerId }}
+  objectSelector:
+    matchExpressions:
+    - key: seldon.io/controller-id
+      operator: DoesNotExist
+{{- end }}
+{{- end }}
+{{- if .Values.controllerId }}
+  objectSelector:
+    matchLabels:
+      seldon.io/controller-id: {{ .Values.controllerId }}
+{{- end }}
+  rules:
+  - apiGroups:
+    - machinelearning.seldon.io
+    apiVersions:
+    - v1alpha3
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - seldondeployments
 ---
 
 apiVersion: admissionregistration.k8s.io/v1beta1
@@ -75,6 +163,50 @@ metadata:
     app.kubernetes.io/version: '{{ .Chart.Version }}'
   name: seldon-mutating-webhook-configuration-{{ .Release.Namespace }}
 webhooks:
+- clientConfig:
+    caBundle: '{{ $ca.Cert | b64enc }}'
+    service:
+      name: seldon-webhook-service
+      namespace: '{{ .Release.Namespace }}'
+      path: /mutate-machinelearning-seldon-io-v1-seldondeployment
+  failurePolicy: Fail
+  name: mseldondeployment.kb.io
+{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}
+{{- if not .Values.singleNamespace }}
+  namespaceSelector:
+    matchExpressions:
+    - key: seldon.io/controller-id
+      operator: DoesNotExist
+{{- end }}
+{{- end }}
+{{- if .Values.singleNamespace }}
+  namespaceSelector:
+    matchLabels:
+      seldon.io/controller-id: {{ .Release.Namespace }}
+{{- end }}
+{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}
+{{- if not .Values.controllerId }}
+  objectSelector:
+    matchExpressions:
+    - key: seldon.io/controller-id
+      operator: DoesNotExist
+{{- end }}
+{{- end }}
+{{- if .Values.controllerId }}
+  objectSelector:
+    matchLabels:
+      seldon.io/controller-id: {{ .Values.controllerId }}
+{{- end }}
+  rules:
+  - apiGroups:
+    - machinelearning.seldon.io
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - seldondeployments
 - clientConfig:
     caBundle: '{{ $ca.Cert | b64enc }}'
     service:
@@ -114,6 +246,50 @@ webhooks:
     - machinelearning.seldon.io
     apiVersions:
     - v1alpha2
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - seldondeployments
+- clientConfig:
+    caBundle: '{{ $ca.Cert | b64enc }}'
+    service:
+      name: seldon-webhook-service
+      namespace: '{{ .Release.Namespace }}'
+      path: /mutate-machinelearning-seldon-io-v1alpha3-seldondeployment
+  failurePolicy: Fail
+  name: mseldondeployment.kb.io
+{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}
+{{- if not .Values.singleNamespace }}
+  namespaceSelector:
+    matchExpressions:
+    - key: seldon.io/controller-id
+      operator: DoesNotExist
+{{- end }}
+{{- end }}
+{{- if .Values.singleNamespace }}
+  namespaceSelector:
+    matchLabels:
+      seldon.io/controller-id: {{ .Release.Namespace }}
+{{- end }}
+{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}
+{{- if not .Values.controllerId }}
+  objectSelector:
+    matchExpressions:
+    - key: seldon.io/controller-id
+      operator: DoesNotExist
+{{- end }}
+{{- end }}
+{{- if .Values.controllerId }}
+  objectSelector:
+    matchLabels:
+      seldon.io/controller-id: {{ .Values.controllerId }}
+{{- end }}
+  rules:
+  - apiGroups:
+    - machinelearning.seldon.io
+    apiVersions:
+    - v1alpha3
     operations:
     - CREATE
     - UPDATE

@@ -13,6 +13,14 @@
         "oauth_secret": "oauth-secret",
         "predictors": [
             {
+                "svcOrchSpec": {
+                    "env": [
+                        {
+                            "name": "SELDON_LOG_LEVEL",
+                            "value": "DEBUG"
+                        }
+                    ]
+                },
                 "componentSpecs": [{
                     "spec": {
                         "containers": [
@@ -40,9 +48,17 @@
                 },
                 "name": "mymodel",
                 "replicas": 1,
-		"traffic": 50
+		"traffic": 60
             },
             {
+                "svcOrchSpec": {
+                    "env": [
+                        {
+                            "name": "SELDON_LOG_LEVEL",
+                            "value": "DEBUG"
+                        }
+                    ]
+                },
                 "componentSpecs": [{
                     "spec": {
                         "containers": [
@@ -70,9 +86,9 @@
                 },
                 "name": "mymodel-canary",
                 "replicas": 1,
-		"traffic": 50
+		"traffic": 40
             }
-	    
+
         ]
     }
 }

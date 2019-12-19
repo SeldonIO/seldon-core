@@ -1,10 +1,11 @@
 package controllers
 
 import (
-	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/api/v1alpha2"
-	"gopkg.in/yaml.v2"
 	"strconv"
 	"strings"
+
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	"gopkg.in/yaml.v2"
 )
 
 const (
@@ -47,14 +48,14 @@ type AmbassadorRetryPolicy struct {
 }
 
 // Return a REST configuration for Ambassador with optional custom settings.
-func getAmbassadorRestConfig(mlDep *machinelearningv1alpha2.SeldonDeployment,
-	p *machinelearningv1alpha2.PredictorSpec,
+func getAmbassadorRestConfig(mlDep *machinelearningv1.SeldonDeployment,
+	p *machinelearningv1.PredictorSpec,
 	addNamespace bool,
 	serviceName string,
 	serviceNameExternal string,
 	customHeader string,
 	customRegexHeader string,
-	weight int32,
+	weight *int32,
 	shadowing string,
 	engine_http_port int,
 	nameOverride string,
@@ -85,7 +86,10 @@ func getAmbassadorRestConfig(mlDep *machinelearningv1alpha2.SeldonDeployment,
 			RetryOn:    "connect-failure",
 			NumRetries: 3,
 		},
-		Weight: weight,
+	}
+
+	if weight != nil {
+		c.Weight = *weight
 	}
 
 	if timeout > AMBASSADOR_IDLE_TIMEOUT {
@@ -131,14 +135,14 @@ func getAmbassadorRestConfig(mlDep *machinelearningv1alpha2.SeldonDeployment,
 }
 
 // Return a gRPC configuration for Ambassador with optional custom settings.
-func getAmbassadorGrpcConfig(mlDep *machinelearningv1alpha2.SeldonDeployment,
-	p *machinelearningv1alpha2.PredictorSpec,
+func getAmbassadorGrpcConfig(mlDep *machinelearningv1.SeldonDeployment,
+	p *machinelearningv1.PredictorSpec,
 	addNamespace bool,
 	serviceName string,
 	serviceNameExternal string,
 	customHeader string,
 	customRegexHeader string,
-	weight int32,
+	weight *int32,
 	shadowing string,
 	engine_grpc_port int,
 	nameOverride string,
@@ -173,7 +177,10 @@ func getAmbassadorGrpcConfig(mlDep *machinelearningv1alpha2.SeldonDeployment,
 			RetryOn:    "connect-failure",
 			NumRetries: 3,
 		},
-		Weight: weight,
+	}
+
+	if weight != nil {
+		c.Weight = *weight
 	}
 
 	if timeout > AMBASSADOR_IDLE_TIMEOUT {
@@ -219,15 +226,17 @@ func getAmbassadorGrpcConfig(mlDep *machinelearningv1alpha2.SeldonDeployment,
 // Get the configuration for ambassador using the servce name serviceName.
 // Up to 4 confgurations will be created covering REST, GRPC and cluster-wide and namespaced varieties.
 // Annotations for Ambassador will be used to customize the configuration returned.
-func getAmbassadorConfigs(mlDep *machinelearningv1alpha2.SeldonDeployment, p *machinelearningv1alpha2.PredictorSpec, serviceName string, engine_http_port, engine_grpc_port int, nameOverride string) (string, error) {
+func getAmbassadorConfigs(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, serviceName string, engine_http_port, engine_grpc_port int, nameOverride string) (string, error) {
 	if annotation := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_CUSTOM, ""); annotation != "" {
 		return annotation, nil
 	} else {
 
-		weight := p.Traffic
-		if len(mlDep.Spec.Predictors) <= 1 {
-			weight = 100
+		var weight *int32
+		// Ignore weight on first predictor and let Ambassador handle this
+		if mlDep.Spec.Predictors[0].Name != p.Name {
+			weight = &p.Traffic
 		}
+
 		shadowing := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_SHADOW, "")
 		serviceNameExternal := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_SERVICE, mlDep.ObjectMeta.Name)
 		customHeader := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_HEADER, "")

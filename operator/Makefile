@@ -103,6 +103,10 @@ vet:
 generate: controller-gen
 	$(CONTROLLER_GEN) object:headerFile=./hack/boilerplate.go.txt paths="./..."
 
+# Generate Clientset
+create-client: test
+	./hack/update-codegen.sh	
+
 # Build the docker image
 docker-build: test
 	docker build . -t ${IMG}
@@ -114,7 +118,7 @@ docker-push:
 
 kind-image-install: docker-build
 	docker save ${IMG} > operator.tar
-	kind load image-archive operator.tar --loglevel trace
+	kind load image-archive operator.tar 
 
 # find or download controller-gen
 # download controller-gen if necessary

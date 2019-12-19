@@ -20,6 +20,9 @@
 | image.repository | Operator image repo | seldonio/seldon-core-operator |
 | image.tag | Image repo | Operator ```<latest release version>``` |
 | image.pullPolicy | Operator pull policy | IfNotPresent |
+| istio.enabled | Istio enabled | false |
+| istio.gateway | The istio gateway to use | seldon-gateway |
+| istio.tlsMode | The istio TLS mode | '' |
 | rbac.create | Create RBAC roles and bindings | true |
 | rbac.configmap.create |  Create cluster wide rbacs rules to read configmaps and secrets | true |
 | usageMetrics.enabled | Whether to send anonymous usage metrics | ```false``` |

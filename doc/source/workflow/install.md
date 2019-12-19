@@ -56,7 +56,8 @@ We presently support two API Ingress Gateways
 
 ### Install Ambassador
 
-We suggest you install [the official helm chart](https://github.com/helm/charts/tree/master/stable/ambassador). At present we recommend 0.40.2 version due to issues with grpc in the latest.
+We suggest you install [the official helm chart](https://github.com/helm/charts/tree/master/stable/ambassador).
+
 
 ```bash
 helm repo add stable https://kubernetes-charts.storage.googleapis.com/
@@ -71,6 +72,8 @@ helm install ambassador stable/ambassador --set crds.keep=false
 ```
 
 ### Install Istio Ingress Gateway
+
+Follow [the istio docs](https://istio.io/) to install. 
 
 If you are using istio then the controller will create virtual services for an istio gateway. By default it will assume the gateway `seldon-gateway` as the name of the gateway. To change the default gateway add `--set istio.gateway=XYZ` when installing the seldon-core-operator.
 

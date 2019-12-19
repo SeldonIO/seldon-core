@@ -1,4 +1,8 @@
-pytest
+pytest==5.3.1
+pytest-xdist==1.30.0
+pytest-cov==2.8.1
+# 2nd lvl dep on cov required to avoid sqllite dep
+coverage==4.5.4
 retrying
 # local seldon-core
 -e ../../python
