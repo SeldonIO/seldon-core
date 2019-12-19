@@ -1,15 +1,20 @@
 
-
-.PHONY: compile_tensorflow_proto
-compile_tensorflow_proto:
-	./generate_tensorflow_proto.sh
+SELDON_CORE_DIR=../../../../
 
 .PHONY: compile_proto
 compile_proto:
-	cp ../../../proto/prediction.proto pkg/api
-	cd pkg/api && protoc -I. -I${GOPATH}/src/github.com/tensorflow/tensorflow --go_out=paths=source_relative,plugins=grpc:. prediction.proto
-	rm pkg/api/prediction.proto
+	rm -rf pkg/api && mkdir -p pkg/api
 
+	cp ${SELDON_CORE_DIR}/proto/prediction.proto pkg/api
+
+	$(MAKE) -C ${SELDON_CORE_DIR}/proto/tensorflow/ create_protos
+	cp -r $(SELDON_CORE_DIR)/proto/tensorflow/tensorflow pkg/api
+
+	cd pkg/api && protoc -I. -I./tensorflow --go_out=paths=source_relative,plugins=grpc:. *.proto
+	cd pkg/api && protoc -I. -I./tensorflow --go_out=paths=source_relative,plugins=grpc:. ./tensorflow/core/framework/*.proto
+
+	find ./pkg -name "*.pb.go" -type f -exec perl -e "s/github\.com\/tensorflow\/tensorflow\/tensorflow\/go/github\.com\/seldonio\/seldon-core\/incubating\/wrappers\/s2i\/go\/pkg\/api\/tensorflow/g" -pi {} +
+	find ./pkg -name "*.proto" -type f -delete
 
 .PHONY: build_docker
 build_docker:
