@@ -13,7 +13,7 @@ compile_proto:
 	cd pkg/api && protoc -I. -I./tensorflow --go_out=paths=source_relative,plugins=grpc:. *.proto
 	cd pkg/api && protoc -I. -I./tensorflow --go_out=paths=source_relative,plugins=grpc:. ./tensorflow/core/framework/*.proto
 
-	find ./pkg -name "*.pb.go" -type f -exec perl -e "s/github\.com\/tensorflow\/tensorflow\/tensorflow\/go/github\.com\/hemantkashniyal\/seldon-core\/incubating\/wrappers\/s2i\/go\/pkg\/api\/tensorflow/g" -pi {} +
+	find ./pkg -name "*.pb.go" -type f -exec perl -e "s/github\.com\/tensorflow\/tensorflow\/tensorflow\/go/github\.com\/seldonio\/seldon-core\/incubating\/wrappers\/s2i\/go\/pkg\/api\/tensorflow/g" -pi {} +
 	find ./pkg -name "*.proto" -type f -delete
 
 .PHONY: build_docker
