@@ -182,9 +182,9 @@ func cleanContainerName(name string) string {
 	return re.ReplaceAllString(strings.ToLower(name), "-")
 }
 
-func GetContainerServiceName(mlDep *SeldonDeployment, predictorSpec PredictorSpec, c *v1.Container) string {
+func GetContainerServiceName(spec *SeldonDeploymentSpec, predictorSpec PredictorSpec, c *v1.Container) string {
 	containerImageName := cleanContainerName(c.Image)
-	svcName := mlDep.Spec.Name + "-" + predictorSpec.Name + "-" + c.Name
+	svcName := spec.Name + "-" + predictorSpec.Name + "-" + c.Name
 	if containerImageName != "" {
 		svcName = svcName + "-" + containerImageName
 	}
