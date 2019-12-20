@@ -197,8 +197,7 @@ func main() {
 	if *transport == "http" {
 		var clientRest seldonclient.SeldonApiClient
 		if *protocol == "seldon" {
-			//clientRest = rest.NewSeldonMessageRestClient()
-			clientRest = rest.NewBytesRestClient()
+			clientRest = rest.NewJSONRestClient()
 		} else {
 			log.Error("Unknown protocol")
 			os.Exit(-1)

@@ -51,18 +51,15 @@ func testingHTTPClient(g *gomega.GomegaWithT, handler http.Handler) (string, int
 	return url.Hostname(), port, cli, s.Close
 }
 
-func SetHTTPClient(httpClient *http.Client) Option {
-	return func(cli *SeldonMessageRestClient) {
+func SetHTTPClient(httpClient *http.Client) BytesRestClientOption {
+	return func(cli *JSONRestClient) {
 		cli.httpClient = httpClient
 	}
 }
 
 func createPayload(g *gomega.GomegaWithT) payload.SeldonPayload {
-	var sm proto.SeldonMessage
 	var data = ` {"data":{"ndarray":[1.1,2.0]}}`
-	err := jsonpb.UnmarshalString(data, &sm)
-	g.Expect(err).Should(gomega.BeNil())
-	return &payload.SeldonMessagePayload{Msg: &sm}
+	return &payload.BytesPayload{Msg: []byte(data)}
 }
 
 func TestSimpleMethods(t *testing.T) {
@@ -73,14 +70,17 @@ func TestSimpleMethods(t *testing.T) {
 	})
 	host, port, httpClient, teardown := testingHTTPClient(g, h)
 	defer teardown()
-	seldonRestClient := NewSeldonMessageRestClient(SetHTTPClient(httpClient))
+	seldonRestClient := NewJSONRestClient(SetHTTPClient(httpClient))
 
 	methods := []func(string, int32, payload.SeldonPayload) (payload.SeldonPayload, error){seldonRestClient.Predict, seldonRestClient.TransformInput, seldonRestClient.TransformOutput}
 	for _, method := range methods {
 		resPayload, err := method(host, int32(port), createPayload(g))
 		g.Expect(err).Should(gomega.BeNil())
 
-		smRes := resPayload.GetPayload().(*proto.SeldonMessage)
+		data := resPayload.GetPayload().([]byte)
+		var smRes proto.SeldonMessage
+		err = jsonpb.UnmarshalString(string(data), &smRes)
+		g.Expect(err).Should(gomega.BeNil())
 		g.Expect(smRes.GetData().GetNdarray().Values[0].GetListValue().Values[0].GetNumberValue()).Should(gomega.Equal(0.9))
 		g.Expect(smRes.GetData().GetNdarray().Values[0].GetListValue().Values[1].GetNumberValue()).Should(gomega.Equal(0.1))
 	}
@@ -95,7 +95,7 @@ func TestRouter(t *testing.T) {
 	})
 	host, port, httpClient, teardown := testingHTTPClient(g, h)
 	defer teardown()
-	seldonRestClient := NewSeldonMessageRestClient(SetHTTPClient(httpClient))
+	seldonRestClient := NewJSONRestClient(SetHTTPClient(httpClient))
 
 	route, err := seldonRestClient.Route(host, int32(port), createPayload(g))
 	g.Expect(err).Should(gomega.BeNil())
@@ -103,13 +103,8 @@ func TestRouter(t *testing.T) {
 	g.Expect(route).Should(gomega.Equal(1))
 }
 func createCombinerPayload(g *gomega.GomegaWithT) []payload.SeldonPayload {
-	var sm1, sm2 proto.SeldonMessage
 	var data = ` {"data":{"ndarray":[1.1,2.0]}}`
-	err := jsonpb.UnmarshalString(data, &sm1)
-	g.Expect(err).Should(gomega.BeNil())
-	err = jsonpb.UnmarshalString(data, &sm2)
-	g.Expect(err).Should(gomega.BeNil())
-	smp := []payload.SeldonPayload{&payload.SeldonMessagePayload{Msg: &sm1}, &payload.SeldonMessagePayload{Msg: &sm1}}
+	smp := []payload.SeldonPayload{&payload.BytesPayload{Msg: []byte(data)}, &payload.BytesPayload{Msg: []byte(data)}}
 	return smp
 }
 
@@ -121,12 +116,15 @@ func TestCombiner(t *testing.T) {
 	})
 	host, port, httpClient, teardown := testingHTTPClient(g, h)
 	defer teardown()
-	seldonRestClient := NewSeldonMessageRestClient(SetHTTPClient(httpClient))
+	seldonRestClient := NewJSONRestClient(SetHTTPClient(httpClient))
 
 	resPayload, err := seldonRestClient.Combine(host, int32(port), createCombinerPayload(g))
 	g.Expect(err).Should(gomega.BeNil())
 
-	smRes := resPayload.GetPayload().(*proto.SeldonMessage)
+	data := resPayload.GetPayload().([]byte)
+	var smRes proto.SeldonMessage
+	err = jsonpb.UnmarshalString(string(data), &smRes)
+	g.Expect(err).Should(gomega.BeNil())
 	g.Expect(smRes.GetData().GetNdarray().Values[0].GetListValue().Values[0].GetNumberValue()).Should(gomega.Equal(0.9))
 	g.Expect(smRes.GetData().GetNdarray().Values[0].GetListValue().Values[1].GetNumberValue()).Should(gomega.Equal(0.1))
 }
