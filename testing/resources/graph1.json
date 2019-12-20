@@ -13,6 +13,14 @@
         "oauth_secret": "oauth-secret",
         "predictors": [
             {
+                "svcOrchSpec": {
+                    "env": [
+                        {
+                            "name": "SELDON_LOG_LEVEL",
+                            "value": "DEBUG"
+                        }
+                    ]
+                },
                 "componentSpecs": [{
                     "spec": {
                         "containers": [

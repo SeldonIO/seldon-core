@@ -2,14 +2,15 @@ package controllers
 
 import (
 	"context"
+	"time"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/api/v1alpha2"
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"time"
 )
 
 var _ = Describe("Create a Seldon Deployment without engine", func() {
@@ -18,25 +19,25 @@ var _ = Describe("Create a Seldon Deployment without engine", func() {
 	By("Creating a resource")
 	It("should create a resource with defaults", func() {
 		Expect(k8sClient).NotTo(BeNil())
-		var modelType = machinelearningv1alpha2.MODEL
+		var modelType = machinelearningv1.MODEL
 		key := types.NamespacedName{
 			Name:      "dep2",
 			Namespace: "default",
 		}
-		instance := &machinelearningv1alpha2.SeldonDeployment{
+		instance := &machinelearningv1.SeldonDeployment{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      key.Name,
 				Namespace: key.Namespace,
 			},
-			Spec: machinelearningv1alpha2.SeldonDeploymentSpec{
+			Spec: machinelearningv1.SeldonDeploymentSpec{
 				Name: "mydep2",
-				Predictors: []machinelearningv1alpha2.PredictorSpec{
+				Predictors: []machinelearningv1.PredictorSpec{
 					{
 						Annotations: map[string]string{
 							"seldon.io/no-engine": "true",
 						},
 						Name: "p1",
-						ComponentSpecs: []*machinelearningv1alpha2.SeldonPodSpec{
+						ComponentSpecs: []*machinelearningv1.SeldonPodSpec{
 							{
 								Spec: v1.PodSpec{
 									Containers: []v1.Container{
@@ -48,7 +49,7 @@ var _ = Describe("Create a Seldon Deployment without engine", func() {
 								},
 							},
 						},
-						Graph: &machinelearningv1alpha2.PredictiveUnit{
+						Graph: &machinelearningv1.PredictiveUnit{
 							Name: "classifier",
 							Type: &modelType,
 						},
@@ -63,7 +64,7 @@ var _ = Describe("Create a Seldon Deployment without engine", func() {
 		Expect(k8sClient.Create(context.Background(), instance)).Should(Succeed())
 		//time.Sleep(time.Second * 5)
 
-		fetched := &machinelearningv1alpha2.SeldonDeployment{}
+		fetched := &machinelearningv1.SeldonDeployment{}
 		Eventually(func() error {
 			err := k8sClient.Get(context.Background(), key, fetched)
 			return err
@@ -71,7 +72,7 @@ var _ = Describe("Create a Seldon Deployment without engine", func() {
 		Expect(fetched.Spec.Name).Should(Equal("mydep2"))
 
 		depKey := types.NamespacedName{
-			Name:      machinelearningv1alpha2.GetDeploymentName(instance, instance.Spec.Predictors[0], instance.Spec.Predictors[0].ComponentSpecs[0]),
+			Name:      machinelearningv1.GetDeploymentName(instance, instance.Spec.Predictors[0], instance.Spec.Predictors[0].ComponentSpecs[0]),
 			Namespace: "default",
 		}
 		depFetched := &appsv1.Deployment{}

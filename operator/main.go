@@ -20,7 +20,9 @@ import (
 	"flag"
 	"os"
 
-	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/api/v1alpha2"
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1alpha2"
+	machinelearningv1alpha3 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1alpha3"
 	"github.com/seldonio/seldon-core/operator/controllers"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -43,7 +45,9 @@ func init() {
 
 	_ = appsv1.AddToScheme(scheme)
 	_ = corev1.AddToScheme(scheme)
+	_ = machinelearningv1.AddToScheme(scheme)
 	_ = machinelearningv1alpha2.AddToScheme(scheme)
+	_ = machinelearningv1alpha3.AddToScheme(scheme)
 	if controllers.GetEnv(controllers.ENV_ISTIO_ENABLED, "false") == "true" {
 		istio.AddToScheme(scheme)
 	}
@@ -54,10 +58,12 @@ func main() {
 	var metricsAddr string
 	var enableLeaderElection bool
 	var webHookPort int
+	var namespace string
 	flag.StringVar(&metricsAddr, "metrics-addr", ":8080", "The address the metric endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "enable-leader-election", false,
 		"Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.")
 	flag.IntVar(&webHookPort, "webhook-port", 443, "Webhook server port")
+	flag.StringVar(&namespace, "namespace", "", "The namespace to restrict the operator.")
 	flag.Parse()
 
 	ctrl.SetLogger(zap.Logger(true))
@@ -67,6 +73,7 @@ func main() {
 		MetricsBindAddress: metricsAddr,
 		LeaderElection:     enableLeaderElection,
 		Port:               webHookPort,
+		Namespace:          namespace,
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
@@ -74,15 +81,28 @@ func main() {
 	}
 
 	if err = (&controllers.SeldonDeploymentReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("SeldonDeployment"),
-		Scheme: mgr.GetScheme(),
+		Client:    mgr.GetClient(),
+		Log:       ctrl.Log.WithName("controllers").WithName("SeldonDeployment"),
+		Scheme:    mgr.GetScheme(),
+		Namespace: namespace,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "SeldonDeployment")
 		os.Exit(1)
 	}
 
+	// Note that we need to create the webhooks for v1alpha2 and v1alpha3 because
+	// we are changing our storage version
 	if err = (&machinelearningv1alpha2.SeldonDeployment{}).SetupWebhookWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create webhook", "webhook", "SeldonDeployment")
+		os.Exit(1)
+	}
+
+	if err = (&machinelearningv1alpha3.SeldonDeployment{}).SetupWebhookWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create webhook", "webhook", "SeldonDeployment")
+		os.Exit(1)
+	}
+
+	if err = (&machinelearningv1.SeldonDeployment{}).SetupWebhookWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create webhook", "webhook", "SeldonDeployment")
 		os.Exit(1)
 	}

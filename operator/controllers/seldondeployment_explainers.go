@@ -18,7 +18,7 @@ package controllers
 
 import (
 	"github.com/go-logr/logr"
-	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/api/v1alpha2"
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
 	"github.com/seldonio/seldon-core/operator/utils"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -30,13 +30,13 @@ import (
 	"strings"
 )
 
-func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1alpha2.SeldonDeployment, p *machinelearningv1alpha2.PredictorSpec, c *components, pSvcName string, log logr.Logger) error {
+func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, c *components, pSvcName string, log logr.Logger) error {
 
 	if p.Explainer.Type != "" {
 
-		seldonId := machinelearningv1alpha2.GetSeldonDeploymentName(mlDep)
+		seldonId := machinelearningv1.GetSeldonDeploymentName(mlDep)
 
-		depName := machinelearningv1alpha2.GetExplainerDeploymentName(mlDep.ObjectMeta.Name, p)
+		depName := machinelearningv1.GetExplainerDeploymentName(mlDep.ObjectMeta.Name, p)
 
 		explainerContainer := p.Explainer.ContainerSpec
 
@@ -49,7 +49,7 @@ func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1alph
 		}
 
 		if p.Graph.Endpoint == nil {
-			p.Graph.Endpoint = &machinelearningv1alpha2.Endpoint{Type: machinelearningv1alpha2.REST}
+			p.Graph.Endpoint = &machinelearningv1.Endpoint{Type: machinelearningv1.REST}
 		}
 
 		if explainerContainer.Image == "" {
@@ -71,7 +71,7 @@ func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1alph
 		httpPort = int(portNum)
 		customPort := getPort(portType, explainerContainer.Ports)
 
-		if p.Explainer.Endpoint != nil && p.Explainer.Endpoint.Type == machinelearningv1alpha2.GRPC {
+		if p.Explainer.Endpoint != nil && p.Explainer.Endpoint.Type == machinelearningv1.GRPC {
 			explainerProtocol = "grpc"
 			pSvcEndpoint = c.serviceDetails[pSvcName].GrpcEndpoint
 		} else {
@@ -111,7 +111,7 @@ func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1alph
 
 		explainerContainer.Args = append(explainerContainer.Args, string(p.Explainer.Type))
 
-		if p.Explainer.Type == machinelearningv1alpha2.AlibiAnchorsImageExplainer {
+		if p.Explainer.Type == machinelearningv1.AlibiAnchorsImageExplainer {
 			explainerContainer.Args = append(explainerContainer.Args, "--tf_data_type=float32")
 		}
 
@@ -133,16 +133,16 @@ func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1alph
 		// see https://github.com/cliveseldon/kfserving/tree/explainer_update_jul/docs/samples/explanation/income for more
 
 		// Add Environment Variables - TODO: are these needed
-		if !utils.HasEnvVar(explainerContainer.Env, machinelearningv1alpha2.ENV_PREDICTIVE_UNIT_SERVICE_PORT) {
+		if !utils.HasEnvVar(explainerContainer.Env, machinelearningv1.ENV_PREDICTIVE_UNIT_SERVICE_PORT) {
 			explainerContainer.Env = append(explainerContainer.Env, []corev1.EnvVar{
-				corev1.EnvVar{Name: machinelearningv1alpha2.ENV_PREDICTIVE_UNIT_SERVICE_PORT, Value: strconv.Itoa(int(portNum))},
-				corev1.EnvVar{Name: machinelearningv1alpha2.ENV_PREDICTIVE_UNIT_ID, Value: explainerContainer.Name},
-				corev1.EnvVar{Name: machinelearningv1alpha2.ENV_PREDICTOR_ID, Value: p.Name},
-				corev1.EnvVar{Name: machinelearningv1alpha2.ENV_SELDON_DEPLOYMENT_ID, Value: mlDep.ObjectMeta.Name},
+				corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_SERVICE_PORT, Value: strconv.Itoa(int(portNum))},
+				corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_ID, Value: explainerContainer.Name},
+				corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTOR_ID, Value: p.Name},
+				corev1.EnvVar{Name: machinelearningv1.ENV_SELDON_DEPLOYMENT_ID, Value: mlDep.ObjectMeta.Name},
 			}...)
 		}
 
-		seldonPodSpec := machinelearningv1alpha2.SeldonPodSpec{Spec: corev1.PodSpec{
+		seldonPodSpec := machinelearningv1.SeldonPodSpec{Spec: corev1.PodSpec{
 			Containers: []corev1.Container{explainerContainer},
 		}}
 
@@ -157,10 +157,10 @@ func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1alph
 		}
 
 		// for explainer use same service name as its Deployment
-		eSvcName := machinelearningv1alpha2.GetExplainerDeploymentName(mlDep.ObjectMeta.Name, p)
+		eSvcName := machinelearningv1.GetExplainerDeploymentName(mlDep.ObjectMeta.Name, p)
 
-		deploy.ObjectMeta.Labels[machinelearningv1alpha2.Label_seldon_app] = eSvcName
-		deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1alpha2.Label_seldon_app] = eSvcName
+		deploy.ObjectMeta.Labels[machinelearningv1.Label_seldon_app] = eSvcName
+		deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_seldon_app] = eSvcName
 
 		c.deployments = append(c.deployments, deploy)
 
@@ -170,10 +170,10 @@ func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1alph
 			return err
 		}
 		c.services = append(c.services, eSvc)
-		c.serviceDetails[eSvcName] = &machinelearningv1alpha2.ServiceStatus{
+		c.serviceDetails[eSvcName] = &machinelearningv1.ServiceStatus{
 			SvcName:      eSvcName,
 			HttpEndpoint: eSvcName + "." + eSvc.Namespace + ":" + strconv.Itoa(httpPort),
-			ExplainerFor: machinelearningv1alpha2.GetPredictorKey(mlDep, p),
+			ExplainerFor: machinelearningv1.GetPredictorKey(mlDep, p),
 		}
 		if grpcPort > 0 {
 			c.serviceDetails[eSvcName].GrpcEndpoint = eSvcName + "." + eSvc.Namespace + ":" + strconv.Itoa(grpcPort)
@@ -190,8 +190,8 @@ func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1alph
 
 // Create istio virtual service and destination rule for explainer.
 // Explainers need one each with no traffic-splitting
-func createExplainerIstioResources(pSvcName string, p *machinelearningv1alpha2.PredictorSpec,
-	mlDep *machinelearningv1alpha2.SeldonDeployment,
+func createExplainerIstioResources(pSvcName string, p *machinelearningv1.PredictorSpec,
+	mlDep *machinelearningv1.SeldonDeployment,
 	seldonId string,
 	namespace string,
 	engine_http_port int,

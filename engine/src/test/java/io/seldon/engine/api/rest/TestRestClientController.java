@@ -95,6 +95,22 @@ public class TestRestClientController {
 
     MvcResult res =
         mvc.perform(
+                MockMvcRequestBuilders.post("/api/v1.0/predictions")
+                    .accept(MediaType.APPLICATION_JSON_UTF8)
+                    .content(predictJson)
+                    .contentType(MediaType.APPLICATION_JSON_UTF8))
+            .andReturn();
+    List<MockSpan> finishedSpans = tracer.finishedSpans();
+
+    Assert.assertEquals(1, finishedSpans.size());
+  }
+  
+  @Test
+  public void testPredict_v01_activateSpan() throws Exception {
+    final String predictJson = "{" + "\"request\": {" + "\"ndarray\": [[1.0]]}" + "}";
+
+    MvcResult res =
+        mvc.perform(
                 MockMvcRequestBuilders.post("/api/v0.1/predictions")
                     .accept(MediaType.APPLICATION_JSON_UTF8)
                     .content(predictJson)
@@ -105,13 +121,14 @@ public class TestRestClientController {
     Assert.assertEquals(1, finishedSpans.size());
   }
 
+ 
   @Test
   public void testPredict_11dim_ndarry() throws Exception {
     final String predictJson = "{" + "\"request\": {" + "\"ndarray\": [[1.0]]}" + "}";
 
     MvcResult res =
         mvc.perform(
-                MockMvcRequestBuilders.post("/api/v0.1/predictions")
+                MockMvcRequestBuilders.post("/api/v1.0/predictions")
                     .accept(MediaType.APPLICATION_JSON_UTF8)
                     .content(predictJson)
                     .contentType(MediaType.APPLICATION_JSON_UTF8))
@@ -127,7 +144,7 @@ public class TestRestClientController {
 
     MvcResult res =
         mvc.perform(
-                MockMvcRequestBuilders.post("/api/v0.1/predictions")
+                MockMvcRequestBuilders.post("/api/v1.0/predictions")
                     .accept(MediaType.APPLICATION_JSON_UTF8)
                     .content(predictJson)
                     .contentType(MediaType.APPLICATION_JSON_UTF8))
@@ -151,7 +168,7 @@ public class TestRestClientController {
 
     MvcResult res =
         mvc.perform(
-                MockMvcRequestBuilders.post("/api/v0.1/predictions")
+                MockMvcRequestBuilders.post("/api/v1.0/predictions")
                     .accept(MediaType.APPLICATION_JSON_UTF8)
                     .content(predictJson)
                     .contentType(MediaType.APPLICATION_JSON_UTF8))
@@ -175,7 +192,7 @@ public class TestRestClientController {
     paramMap.put("data", Arrays.asList(predictJson));
     MvcResult res =
         mvc.perform(
-                MockMvcRequestBuilders.post("/api/v0.1/predictions")
+                MockMvcRequestBuilders.post("/api/v1.0/predictions")
                     .accept(MediaType.APPLICATION_JSON_UTF8)
                     .params(paramMap)
                     .contentType(MediaType.MULTIPART_FORM_DATA))
@@ -192,7 +209,7 @@ public class TestRestClientController {
     paramMap.put("data", Arrays.asList(predictJson));
     MvcResult res =
         mvc.perform(
-                MockMvcRequestBuilders.post("/api/v0.1/predictions")
+                MockMvcRequestBuilders.post("/api/v1.0/predictions")
                     .accept(MediaType.APPLICATION_JSON_UTF8)
                     .params(paramMap)
                     .contentType(MediaType.MULTIPART_FORM_DATA))
@@ -217,7 +234,7 @@ public class TestRestClientController {
     paramMap.put("data", Arrays.asList(predictJson));
     MvcResult res =
         mvc.perform(
-                MockMvcRequestBuilders.post("/api/v0.1/predictions")
+                MockMvcRequestBuilders.post("/api/v1.0/predictions")
                     .accept(MediaType.APPLICATION_JSON_UTF8)
                     .params(paramMap)
                     .contentType(MediaType.MULTIPART_FORM_DATA))
@@ -242,7 +259,7 @@ public class TestRestClientController {
     byte[] fileData = "test data".getBytes();
     MvcResult res =
         mvc.perform(
-                MockMvcRequestBuilders.fileUpload("/api/v0.1/predictions")
+                MockMvcRequestBuilders.fileUpload("/api/v1.0/predictions")
                     .file("binData", fileData)
                     .accept(MediaType.APPLICATION_JSON_UTF8)
                     .params(paramMap)
@@ -270,7 +287,7 @@ public class TestRestClientController {
     byte[] fileData = "test data".getBytes();
     MvcResult res =
         mvc.perform(
-                MockMvcRequestBuilders.fileUpload("/api/v0.1/predictions")
+                MockMvcRequestBuilders.fileUpload("/api/v1.0/predictions")
                     .file("strData", fileData)
                     .accept(MediaType.APPLICATION_JSON_UTF8)
                     .params(paramMap)
@@ -299,7 +316,7 @@ public class TestRestClientController {
     paramMap.put("strData", Arrays.asList(strdata));
     MvcResult res =
         mvc.perform(
-                MockMvcRequestBuilders.post("/api/v0.1/predictions")
+                MockMvcRequestBuilders.post("/api/v1.0/predictions")
                     .accept(MediaType.APPLICATION_JSON_UTF8)
                     .params(paramMap)
                     .contentType(MediaType.MULTIPART_FORM_DATA))

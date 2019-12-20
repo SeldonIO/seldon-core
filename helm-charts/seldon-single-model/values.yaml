@@ -1,4 +1,5 @@
 name: my-model
+apiVersion: machinelearning.seldon.io/v1
 model:
   image:
     name: seldonio/mock_classifier_rest:1.3
@@ -26,8 +27,8 @@ engine:
 
 # Add oauth key and secret if using the default API Oauth Gateway for ingress
 oauth:
-  key: 
-  secret: 
+  key:
+  secret:
 
 sdepLabels:
   app: "seldon"

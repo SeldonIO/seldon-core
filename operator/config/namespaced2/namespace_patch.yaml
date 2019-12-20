@@ -1,0 +1,3 @@
+- op: replace
+  path: /metadata/name
+  value: seldon2-system

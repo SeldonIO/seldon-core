@@ -12,6 +12,7 @@ from retrying import retry
 import logging
 
 API_AMBASSADOR = "localhost:8003"
+API_ISTIO_GATEWAY = "localhost:8004"
 
 
 def get_s2i_python_version():
@@ -104,12 +105,12 @@ def rest_request(
             names=names,
         )
         if not r.status_code == 200:
-            logging.warning("Bad status:", r.status_code)
+            logging.warning(f"Bad status:{r.status_code}")
             return None
         else:
             return r
     except Exception as e:
-        logging.warning("Failed on REST request ", str(e))
+        logging.warning(f"Failed on REST request {str(e)}")
         return None
 
 

@@ -22,12 +22,6 @@ kubectl create namespace seldon-system
 helm install seldon-core seldon-core-operator --repo https://storage.googleapis.com/seldon-charts --set usageMetrics.enabled=true --namespace seldon-system
 ```
 
-**For the unreleased 0.5.0 version you would need to install 0.5.0-SNAPSHOT to test**:
-
-```bash
-helm install seldon-core seldon-core-operator --repo https://storage.googleapis.com/seldon-charts --set usageMetrics.enabled=true --namespace seldon-system --version 0.5.0-SNAPSHOT
-```
-
 Notes
 
  * You can use ```--namespace``` to install the seldon-core controller to a particular namespace but we recommend seldon-system.
@@ -62,7 +56,8 @@ We presently support two API Ingress Gateways
 
 ### Install Ambassador
 
-We suggest you install [the official helm chart](https://github.com/helm/charts/tree/master/stable/ambassador). At present we recommend 0.40.2 version due to issues with grpc in the latest.
+We suggest you install [the official helm chart](https://github.com/helm/charts/tree/master/stable/ambassador).
+
 
 ```bash
 helm repo add stable https://kubernetes-charts.storage.googleapis.com/
@@ -78,6 +73,8 @@ helm install ambassador stable/ambassador --set crds.keep=false
 
 ### Install Istio Ingress Gateway
 
+Follow [the istio docs](https://istio.io/) to install. 
+
 If you are using istio then the controller will create virtual services for an istio gateway. By default it will assume the gateway `seldon-gateway` as the name of the gateway. To change the default gateway add `--set istio.gateway=XYZ` when installing the seldon-core-operator.
 
 
@@ -87,6 +84,7 @@ The [Kustomize](https://github.com/kubernetes-sigs/kustomize) installation can b
 
 To use the template directly there is a Makefile which has a set of useful commands:
 
+For kubernetes <1.15 comment the patch_object_selector [here](https://github.com/SeldonIO/seldon-core/blob/master/operator/config/webhook/kustomization.yaml)
 
 Install cert-manager
 
@@ -125,3 +123,86 @@ If you have a AWS account you can install via the [AWS Marketplace](https://aws.
 ## Upgrading from Previous Versions
 
 See our [upgrading notes](../reference/upgrading.md)
+
+## Advanced Usage
+
+### Install Seldon Core in a single namespace (version >=1.0)
+
+**You will need a k8s cluster >= 1.15**
+
+#### Helm
+
+You can install the Seldon Core Operator so it only manages resources in its namespace. An example to install in a namespace `seldon-ns1` is shown below:
+
+```bash
+kubectl create namespace seldon-ns1
+kubectl label namespace seldon-ns1 seldon.io/controller-id=seldon-ns1
+```
+
+We label the namespace with `seldon.io/controller-id=<namespace>` to ensure if there is a clusterwide Seldon Core Operator that it should ignore resources for this namespace.
+
+Install the Operator into the namespace:
+
+```bash
+helm install seldon-namespaced seldon-core-operator  --repo https://storage.googleapis.com/seldon-charts  \
+    --set singleNamespace=true \
+    --set image.pullPolicy=IfNotPresent \
+    --set usageMetrics.enabled=false \
+    --set crd.create=true \
+    --namespace seldon-ns1
+```
+
+We set `crd.create=true` to create the CRD. If you are installing a Seldon Core Operator after you have installed a previous Seldon Core Operator on the same cluster you will need to set `crd.create=false`.
+
+
+#### Kustomize
+
+An example install is provided in the Makefile in the Operator folder:
+
+```
+make deploy-namespaced1
+```
+
+
+See the [multiple server example notebook](../examples/multiple_operators.html).
+
+### Label focused Seldon Core Operator (version >=1.0)
+
+**You will need a k8s cluster >= 1.15**
+
+You can install the Seldon Core Operator so it manages only SeldonDeployments with the label `seldon.io/controller-id` where the value of the label matches the controller-id of the running operator. An example for a namespace `seldon-id1` is shown below:
+
+
+#### Helm
+
+```bash
+kubectl create namespace seldon-id1
+```
+
+To install the Operator run:
+
+
+```bash
+helm install seldon-controllerid seldon-core-operator  --repo https://storage.googleapis.com/seldon-charts  \
+    --set singleNamespace=false \
+    --set image.pullPolicy=IfNotPresent \
+    --set usageMetrics.enabled=false \
+    --set crd.create=true \
+    --set controllerId=seldon-id1 \
+    --namespace seldon-id1
+```
+
+We set `crd.create=true` to create the CRD. If you are installing a Seldon Core Operator after you have installed a previous Seldon Core Operator on the same cluster you will need to set `crd.create=false`.
+
+For kustomize you will need to uncomment the patch_object_selector [here](https://github.com/SeldonIO/seldon-core/blob/master/operator/config/webhook/kustomization.yaml)
+
+#### Kustomize
+
+An example install is provided in the Makefile in the Operator folder:
+
+```
+make deploy-controllerid
+```
+
+See the [multiple server example notebook](../examples/multiple_operators.html).
+

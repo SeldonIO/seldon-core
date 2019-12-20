@@ -13,11 +13,12 @@
   aws eks --region <CLUSTER_REGION> update-kubeconfig --name <CLUSTER-NAME>
   ```
 
- * Install [helm](https://docs.helm.sh/) on your cluster if it is not there already.
+ * Install [helm](https://docs.helm.sh/) on your cluster if it is not there already. **Note: Helm v3 is used for the following set up.**  
+
+  Create a namespace for the Seldon system.
+
   ```
-  kubectl -n kube-system create sa tiller
-  kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
-  helm init --service-account tiller
+  kubectl create namespace seldon-system
   ```
 
  * Install Seldon Core for the release you subscribed to on Amazon MarketPlace:
@@ -25,26 +26,10 @@
 For **Seldon 0.5.0**
 
  ```
-  helm install seldon-core-aws --name seldon-core --repo https://storage.googleapis.com/seldon-aws-charts --version 0.5.0
- ```
-
-To set up ingress [Ambassador](https://www.getambassador.io/user-guide/helm/) or [Istio](https://istio.io/docs/setup/install/helm/) is installed. For example, to install Ambassador:
-
- ```
-  helm install stable/ambassador --name ambassador --set crds.keep=false
- ```
-
-## Install in a particular namespace
-
-Use the helm ```--namespace``` argument to install in a particular namespace
-
-
- ```
-   helm install seldon-core-aws --name seldon-core --repo https://storage.googleapis.com/seldon-aws-charts \
-        --namespace my-namespace
+  helm install seldon-core seldon-core-aws --repo https://storage.googleapis.com/seldon-aws-charts --version 0.5.0 --set usageMetrics.enabled=true --namespace seldon-system
  ```
 
 ## Next Steps
 
-For next steps on using Seldon Core and deploying your first ML models visit the [Seldon Core project page](https://github.com/SeldonIO/seldon-core).
+Follow the rest of the [install docs](../workflow/install.md).
 

@@ -8,11 +8,10 @@ COPY src/ src/
 # Build
 RUN mvn clean verify -Dlicense.useMissingFile -B
 
-FROM openjdk:8u222-jre-slim
+FROM openjdk:11.0.5-jre-slim
 
 RUN \
     apt-get update -y && \
-    apt-get install -y curl && \
     apt-get remove -y --auto-remove && \
     apt-get clean -y && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 

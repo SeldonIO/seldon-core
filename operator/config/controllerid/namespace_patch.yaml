@@ -1,0 +1,3 @@
+- op: replace
+  path: /metadata/name
+  value: seldonid1-system

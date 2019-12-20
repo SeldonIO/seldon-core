@@ -15,20 +15,30 @@ if [[ -z "$API_TYPE" || -z "$SERVICE_TYPE" ]]; then
 
 else
     if [[ "$API_TYPE" = "REST" ]]; then
-	if [[ -z "$PREDICTIVE_UNIT_SERVICE_PORT" ]]; then
-	    REST_PORT=5000
-	else
-	    REST_PORT=$PREDICTIVE_UNIT_SERVICE_PORT
-	fi
-	GRPC_PORT=5001
+        if [[ -z "$PREDICTIVE_UNIT_SERVICE_PORT" ]]; then
+            REST_PORT=5000
+        else
+            REST_PORT=$PREDICTIVE_UNIT_SERVICE_PORT
+        fi
+        if [[ -z "$SECONDARY_SERVICE_PORT" ]]; then
+            # We use 61934 as random port
+            GRPC_PORT=61934
+        else
+            GRPC_PORT=$SECONDARY_SERVICE_PORT
+        fi
     fi
     if [[ "$API_TYPE" = "GRPC" ]]; then
-	if [[ -z "$PREDICTIVE_UNIT_SERVICE_PORT" ]]; then
-	    GRPC_PORT=5000
-	else
-	    GRPC_PORT=$PREDICTIVE_UNIT_SERVICE_PORT
-	fi
-	REST_PORT=5001
+        if [[ -z "$PREDICTIVE_UNIT_SERVICE_PORT" ]]; then
+            GRPC_PORT=5000
+        else
+            GRPC_PORT=$PREDICTIVE_UNIT_SERVICE_PORT
+        fi
+        if [[ -z "$SECONDARY_SERVICE_PORT" ]]; then
+            # We use 61934 as random port
+            REST_PORT=61934
+        else
+            REST_PORT=$SECONDARY_SERVICE_PORT
+        fi
     fi
     if [[ "$SERVICE_TYPE" = "MODEL" ]]; then	
 	MODEL_ACTIVE=true

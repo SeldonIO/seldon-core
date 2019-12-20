@@ -1,0 +1,5 @@
+- op: replace
+  path: /webhooks/0/namespaceSelector
+  value:
+    matchLabels:
+      seldon.io/controller-id: $(SERVICE_NAMESPACE)

@@ -1,0 +1,29 @@
+{{- if .Values.singleNamespace }}
+{{- if .Values.rbac.create }}
+{{- if .Values.rbac.configmap.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  creationTimestamp: null
+  name: seldon1-manager-sas-role
+  namespace: '{{ .Release.Namespace }}'
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ''
+  resources:
+  - serviceaccounts
+  verbs:
+  - get
+  - list
+  - watch
+{{- end }}
+{{- end }}
+{{- end }}

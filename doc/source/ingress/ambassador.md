@@ -8,12 +8,12 @@ Assuming Ambassador is exposed at ```<ambassadorEndpoint>``` and with a Seldon d
 
 For Seldon Core restricted to a namespace, `singleNamespace=true`, the endpoints exposed are:
 
- * ```http://<ambassadorEndpoint>/seldon/<deploymentName>/api/v0.1/predictions```
- * ```http://<ambassadorEndpoint>/seldon/<namespace>/<deploymentName>/api/v0.1/predictions```
+ * ```http://<ambassadorEndpoint>/seldon/<deploymentName>/api/v1.0/predictions```
+ * ```http://<ambassadorEndpoint>/seldon/<namespace>/<deploymentName>/api/v1.0/predictions```
 
 For Seldon Core running cluster wide, `singleNamespace=false`, the endpoints exposed are all namespaced:
 
- * ```http://<ambassadorEndpoint>/seldon/<namespace>/<deploymentName>/api/v0.1/predictions```
+ * ```http://<ambassadorEndpoint>/seldon/<namespace>/<deploymentName>/api/v1.0/predictions```
 
 
 ## Example Curl
@@ -23,7 +23,7 @@ For Seldon Core running cluster wide, `singleNamespace=false`, the endpoints exp
 Assuming a Seldon Deployment ```mymodel``` with Ambassador exposed on `0.0.0.0:8003`:
 
 ```bash
-curl -v 0.0.0.0:8003/seldon/mymodel/api/v0.1/predictions -d '{"data":{"names":["a","b"],"tensor":{"shape":[2,2],"values":[0,0,1,1]}}}' -H "Content-Type: application/json"
+curl -v 0.0.0.0:8003/seldon/mymodel/api/v1.0/predictions -d '{"data":{"names":["a","b"],"tensor":{"shape":[2,2],"values":[0,0,1,1]}}}' -H "Content-Type: application/json"
 ```
 
 ## Canary Deployments

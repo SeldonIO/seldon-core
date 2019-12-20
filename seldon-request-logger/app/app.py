@@ -65,6 +65,8 @@ def index():
             content["response"][resJson["dataType"]] = resJson
             print(str(json.dumps(content)))
     else:
+        if "strData" in requestPart:
+            content["request"]["dataType"] = "text"
         print(str(json.dumps(content)))
 
     sys.stdout.flush()

@@ -3,16 +3,17 @@ package controllers
 import (
 	"encoding/base64"
 	"encoding/json"
-	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/api/v1alpha2"
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"os"
 	"sort"
 	"strings"
+
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // Get the Namespace from the SeldonDeployment. Returns "default" if none found.
-func getNamespace(deployment *machinelearningv1alpha2.SeldonDeployment) string {
+func getNamespace(deployment *machinelearningv1.SeldonDeployment) string {
 	if len(deployment.ObjectMeta.Namespace) > 0 {
 		return deployment.ObjectMeta.Namespace
 	} else {
@@ -21,7 +22,7 @@ func getNamespace(deployment *machinelearningv1alpha2.SeldonDeployment) string {
 }
 
 // Translte the PredictorSpec p in to base64 encoded JSON to feed to engine in env var.
-func getEngineVarJson(p *machinelearningv1alpha2.PredictorSpec) (string, error) {
+func getEngineVarJson(p *machinelearningv1.PredictorSpec) (string, error) {
 	pcopy := p.DeepCopy()
 
 	// engine doesn't need to know about metadata or explainer
@@ -29,7 +30,7 @@ func getEngineVarJson(p *machinelearningv1alpha2.PredictorSpec) (string, error) 
 	for _, compSpec := range pcopy.ComponentSpecs {
 		compSpec.Metadata.CreationTimestamp = metav1.Time{}
 	}
-	pcopy.Explainer = machinelearningv1alpha2.Explainer{}
+	pcopy.Explainer = machinelearningv1.Explainer{}
 
 	str, err := json.Marshal(pcopy)
 	if err != nil {
@@ -47,7 +48,7 @@ func GetEnv(key, fallback string) string {
 }
 
 // Get an annotation from the Seldon Deployment given by annotationKey or return the fallback.
-func getAnnotation(mlDep *machinelearningv1alpha2.SeldonDeployment, annotationKey string, fallback string) string {
+func getAnnotation(mlDep *machinelearningv1.SeldonDeployment, annotationKey string, fallback string) string {
 	if annotation, hasAnnotation := mlDep.Spec.Annotations[annotationKey]; hasAnnotation {
 		return annotation
 	} else {
@@ -56,7 +57,7 @@ func getAnnotation(mlDep *machinelearningv1alpha2.SeldonDeployment, annotationKe
 }
 
 //get annotations that start with seldon.io/engine
-func getEngineEnvAnnotations(mlDep *machinelearningv1alpha2.SeldonDeployment) []corev1.EnvVar {
+func getEngineEnvAnnotations(mlDep *machinelearningv1.SeldonDeployment) []corev1.EnvVar {
 
 	envVars := make([]corev1.EnvVar, 0)
 	var keys []string
@@ -67,7 +68,7 @@ func getEngineEnvAnnotations(mlDep *machinelearningv1alpha2.SeldonDeployment) []
 
 	for _, k := range keys {
 		//prefix indicates engine annotation but "seldon.io/engine-separate-pod" isn't an env one
-		if strings.HasPrefix(k, "seldon.io/engine-") && k != machinelearningv1alpha2.ANNOTATION_SEPARATE_ENGINE {
+		if strings.HasPrefix(k, "seldon.io/engine-") && k != machinelearningv1.ANNOTATION_SEPARATE_ENGINE {
 			name := strings.TrimPrefix(k, "seldon.io/engine-")
 			var replacer = strings.NewReplacer("-", "_")
 			name = replacer.Replace(name)

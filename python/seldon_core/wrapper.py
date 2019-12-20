@@ -40,6 +40,7 @@ def get_rest_microservice(user_model):
         return send_from_directory("", "openapi/seldon.json")
 
     @app.route("/predict", methods=["GET", "POST"])
+    @app.route("/api/v1.0/predictions", methods=["POST"])
     @app.route("/api/v0.1/predictions", methods=["POST"])
     def Predict():
         requestJson = get_request()
@@ -53,6 +54,7 @@ def get_rest_microservice(user_model):
         return json_response
 
     @app.route("/send-feedback", methods=["GET", "POST"])
+    @app.route("/api/v1.0/feedback", methods=["POST"])
     @app.route("/api/v0.1/feedback", methods=["POST"])
     def SendFeedback():
         requestJson = get_request()

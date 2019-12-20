@@ -33,6 +33,7 @@ spec:
       - args:
         - --enable-leader-election
         - --webhook-port={{ .Values.webhook.port }}
+        - '{{- if .Values.singleNamespace }}--namespace={{ .Release.Namespace }}{{- end }}'
         command:
         - /manager
         env:
@@ -40,6 +41,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        - name: CONTROLLER_ID
+          value: '{{ .Values.controllerId }}'
         - name: AMBASSADOR_ENABLED
           value: '{{ .Values.ambassador.enabled }}'
         - name: AMBASSADOR_SINGLE_NAMESPACE
@@ -66,6 +69,8 @@ spec:
           value: '{{ .Values.istio.enabled }}'
         - name: ISTIO_GATEWAY
           value: '{{ .Values.istio.gateway }}'
+        - name: ISTIO_TLS_MODE
+          value: '{{ .Values.istio.tlsMode }}'
         image: '{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}'
         imagePullPolicy: '{{ .Values.image.pullPolicy }}'
         name: manager

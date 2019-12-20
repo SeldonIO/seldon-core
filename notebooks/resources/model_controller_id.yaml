@@ -1,0 +1,33 @@
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+metadata:
+  labels:
+    app: seldon
+    seldon.io/controller-id: seldon-id1
+  name: test-c1
+spec:
+  name: test-c1
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: seldonio/mock_classifier:1.0
+          imagePullPolicy: IfNotPresent
+          name: classifier
+          resources:
+            requests:
+              memory: 1Mi
+        terminationGracePeriodSeconds: 1
+        volumes:
+          - name: myempty
+            emptyDir: {}
+    graph:
+      children: []
+      endpoint:
+        type: REST
+      name: classifier
+      type: MODEL
+    labels:
+      version: v1
+    name: example
+    replicas: 1

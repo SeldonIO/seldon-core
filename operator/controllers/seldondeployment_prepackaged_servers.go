@@ -18,24 +18,23 @@ package controllers
 
 import (
 	"encoding/json"
-	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/api/v1alpha2"
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
 	"github.com/seldonio/seldon-core/operator/constants"
 	"github.com/seldonio/seldon-core/operator/utils"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/api/core/v1"
-	corev1 "k8s.io/api/core/v1"
 	"strings"
 )
 
-func addTFServerContainer(r *SeldonDeploymentReconciler, pu *machinelearningv1alpha2.PredictiveUnit, p *machinelearningv1alpha2.PredictorSpec, deploy *appsv1.Deployment, serverConfig machinelearningv1alpha2.PredictorServerConfig) error {
+func addTFServerContainer(r *SeldonDeploymentReconciler, pu *machinelearningv1.PredictiveUnit, p *machinelearningv1.PredictorSpec, deploy *appsv1.Deployment, serverConfig machinelearningv1.PredictorServerConfig) error {
 
 	if len(*pu.Implementation) > 0 && (serverConfig.Tensorflow || serverConfig.TensorflowImage != "") {
 
-		ty := machinelearningv1alpha2.MODEL
+		ty := machinelearningv1.MODEL
 		pu.Type = &ty
 
 		if pu.Endpoint == nil {
-			pu.Endpoint = &machinelearningv1alpha2.Endpoint{Type: machinelearningv1alpha2.REST}
+			pu.Endpoint = &machinelearningv1.Endpoint{Type: machinelearningv1.REST}
 		}
 
 		c := utils.GetContainerForDeployment(deploy, pu.Name)
@@ -45,17 +44,16 @@ func addTFServerContainer(r *SeldonDeploymentReconciler, pu *machinelearningv1al
 				Name: pu.Name,
 				VolumeMounts: []v1.VolumeMount{
 					{
-						Name:      machinelearningv1alpha2.PODINFO_VOLUME_NAME,
-						MountPath: machinelearningv1alpha2.PODINFO_VOLUME_PATH,
+						Name:      machinelearningv1.PODINFO_VOLUME_NAME,
+						MountPath: machinelearningv1.PODINFO_VOLUME_PATH,
 					},
 				},
 			}
 		}
 
 		//Add missing fields
-		machinelearningv1alpha2.SetImageNameForPrepackContainer(pu, c)
+		machinelearningv1.SetImageNameForPrepackContainer(pu, c)
 		SetUriParamsForTFServingProxyContainer(pu, c)
-		addContainerDefaults(c)
 
 		// Add container to deployment
 		if !existing {
@@ -69,7 +67,7 @@ func addTFServerContainer(r *SeldonDeploymentReconciler, pu *machinelearningv1al
 		tfServingContainer := utils.GetContainerForDeployment(deploy, constants.TFServingContainerName)
 		existing = tfServingContainer != nil
 		if !existing {
-			ServerConfig := machinelearningv1alpha2.GetPrepackServerConfig(string(*pu.Implementation))
+			ServerConfig := machinelearningv1.GetPrepackServerConfig(string(*pu.Implementation))
 
 			tfImage := "tensorflow/serving:latest"
 
@@ -100,8 +98,6 @@ func addTFServerContainer(r *SeldonDeploymentReconciler, pu *machinelearningv1al
 			}
 		}
 
-		addContainerDefaults(tfServingContainer)
-
 		if !existing {
 			deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, *tfServingContainer)
 		}
@@ -114,15 +110,15 @@ func addTFServerContainer(r *SeldonDeploymentReconciler, pu *machinelearningv1al
 	return nil
 }
 
-func addModelDefaultServers(r *SeldonDeploymentReconciler, pu *machinelearningv1alpha2.PredictiveUnit, p *machinelearningv1alpha2.PredictorSpec, deploy *appsv1.Deployment, serverConfig machinelearningv1alpha2.PredictorServerConfig) error {
+func addModelDefaultServers(r *SeldonDeploymentReconciler, pu *machinelearningv1.PredictiveUnit, p *machinelearningv1.PredictorSpec, deploy *appsv1.Deployment, serverConfig machinelearningv1.PredictorServerConfig) error {
 
 	if len(*pu.Implementation) > 0 && !serverConfig.Tensorflow && serverConfig.TensorflowImage == "" {
 
-		ty := machinelearningv1alpha2.MODEL
+		ty := machinelearningv1.MODEL
 		pu.Type = &ty
 
 		if pu.Endpoint == nil {
-			pu.Endpoint = &machinelearningv1alpha2.Endpoint{Type: machinelearningv1alpha2.REST}
+			pu.Endpoint = &machinelearningv1.Endpoint{Type: machinelearningv1.REST}
 		}
 		c := utils.GetContainerForDeployment(deploy, pu.Name)
 		existing := c != nil
@@ -131,18 +127,18 @@ func addModelDefaultServers(r *SeldonDeploymentReconciler, pu *machinelearningv1
 				Name: pu.Name,
 				VolumeMounts: []v1.VolumeMount{
 					{
-						Name:      machinelearningv1alpha2.PODINFO_VOLUME_NAME,
-						MountPath: machinelearningv1alpha2.PODINFO_VOLUME_PATH,
+						Name:      machinelearningv1.PODINFO_VOLUME_NAME,
+						MountPath: machinelearningv1.PODINFO_VOLUME_PATH,
 					},
 				},
 			}
 		}
 
-		machinelearningv1alpha2.SetImageNameForPrepackContainer(pu, c)
+		machinelearningv1.SetImageNameForPrepackContainer(pu, c)
 
 		// Add parameters envvar - point at mount path because initContainer will download
 		params := pu.Parameters
-		uriParam := machinelearningv1alpha2.Parameter{
+		uriParam := machinelearningv1.Parameter{
 			Name:  "model_uri",
 			Type:  "STRING",
 			Value: DefaultModelLocalMountPath,
@@ -152,13 +148,12 @@ func addModelDefaultServers(r *SeldonDeploymentReconciler, pu *machinelearningv1
 		if err != nil {
 			return err
 		}
-		addContainerDefaults(c)
 
 		if len(params) > 0 {
-			if !utils.HasEnvVar(c.Env, machinelearningv1alpha2.ENV_PREDICTIVE_UNIT_PARAMETERS) {
-				c.Env = append(c.Env, v1.EnvVar{Name: machinelearningv1alpha2.ENV_PREDICTIVE_UNIT_PARAMETERS, Value: string(paramStr)})
+			if !utils.HasEnvVar(c.Env, machinelearningv1.ENV_PREDICTIVE_UNIT_PARAMETERS) {
+				c.Env = append(c.Env, v1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_PARAMETERS, Value: string(paramStr)})
 			} else {
-				c.Env = utils.SetEnvVar(c.Env, v1.EnvVar{Name: machinelearningv1alpha2.ENV_PREDICTIVE_UNIT_PARAMETERS, Value: string(paramStr)})
+				c.Env = utils.SetEnvVar(c.Env, v1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_PARAMETERS, Value: string(paramStr)})
 			}
 
 		}
@@ -180,7 +175,7 @@ func addModelDefaultServers(r *SeldonDeploymentReconciler, pu *machinelearningv1
 	return nil
 }
 
-func SetUriParamsForTFServingProxyContainer(pu *machinelearningv1alpha2.PredictiveUnit, c *v1.Container) {
+func SetUriParamsForTFServingProxyContainer(pu *machinelearningv1.PredictiveUnit, c *v1.Container) {
 
 	parameters := pu.Parameters
 
@@ -194,16 +189,16 @@ func SetUriParamsForTFServingProxyContainer(pu *machinelearningv1alpha2.Predicti
 		}
 	}
 	if !hasUriParams {
-		var uriParam machinelearningv1alpha2.Parameter
+		var uriParam machinelearningv1.Parameter
 
-		if pu.Endpoint.Type == machinelearningv1alpha2.REST {
-			uriParam = machinelearningv1alpha2.Parameter{
+		if pu.Endpoint.Type == machinelearningv1.REST {
+			uriParam = machinelearningv1.Parameter{
 				Name:  "rest_endpoint",
 				Type:  "STRING",
 				Value: "http://0.0.0.0:2001",
 			}
 		} else {
-			uriParam = machinelearningv1alpha2.Parameter{
+			uriParam = machinelearningv1.Parameter{
 				Name:  "grpc_endpoint",
 				Type:  "STRING",
 				Value: "0.0.0.0:2000",
@@ -213,7 +208,7 @@ func SetUriParamsForTFServingProxyContainer(pu *machinelearningv1alpha2.Predicti
 
 		parameters = append(pu.Parameters, uriParam)
 
-		modelNameParam := machinelearningv1alpha2.Parameter{
+		modelNameParam := machinelearningv1.Parameter{
 			Name:  "model_name",
 			Type:  "STRING",
 			Value: pu.Name,
@@ -224,40 +219,21 @@ func SetUriParamsForTFServingProxyContainer(pu *machinelearningv1alpha2.Predicti
 	}
 
 	if len(parameters) > 0 {
-		if !utils.HasEnvVar(c.Env, machinelearningv1alpha2.ENV_PREDICTIVE_UNIT_PARAMETERS) {
-			c.Env = append(c.Env, v1.EnvVar{Name: machinelearningv1alpha2.ENV_PREDICTIVE_UNIT_PARAMETERS, Value: utils.GetPredictiveUnitAsJson(parameters)})
+		if !utils.HasEnvVar(c.Env, machinelearningv1.ENV_PREDICTIVE_UNIT_PARAMETERS) {
+			c.Env = append(c.Env, v1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_PARAMETERS, Value: utils.GetPredictiveUnitAsJson(parameters)})
 		} else {
-			c.Env = utils.SetEnvVar(c.Env, v1.EnvVar{Name: machinelearningv1alpha2.ENV_PREDICTIVE_UNIT_PARAMETERS, Value: utils.GetPredictiveUnitAsJson(parameters)})
+			c.Env = utils.SetEnvVar(c.Env, v1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_PARAMETERS, Value: utils.GetPredictiveUnitAsJson(parameters)})
 		}
 
 	}
 }
 
-func addContainerDefaults(c *v1.Container) {
-	// Add some defaults for easier diffs
-	if c.TerminationMessagePath == "" {
-		c.TerminationMessagePath = "/dev/termination-log"
-	}
-	if c.TerminationMessagePolicy == "" {
-		c.TerminationMessagePolicy = corev1.TerminationMessageReadFile
-	}
-
-	if c.ImagePullPolicy == "" {
-		c.ImagePullPolicy = corev1.PullIfNotPresent
-	}
-
-	if c.SecurityContext != nil && c.SecurityContext.ProcMount == nil {
-		var procMount = corev1.DefaultProcMount
-		c.SecurityContext.ProcMount = &procMount
-	}
-}
-
-func createStandaloneModelServers(r *SeldonDeploymentReconciler, mlDep *machinelearningv1alpha2.SeldonDeployment, p *machinelearningv1alpha2.PredictorSpec, c *components, pu *machinelearningv1alpha2.PredictiveUnit) error {
+func createStandaloneModelServers(r *SeldonDeploymentReconciler, mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, c *components, pu *machinelearningv1.PredictiveUnit) error {
 
 	// some predictors have no podSpec so this could be nil
 	sPodSpec := utils.GetSeldonPodSpecForPredictiveUnit(p, pu.Name)
 
-	depName := machinelearningv1alpha2.GetDeploymentName(mlDep, *p, sPodSpec)
+	depName := machinelearningv1.GetDeploymentName(mlDep, *p, sPodSpec)
 
 	var deploy *appsv1.Deployment
 	existing := false
@@ -272,13 +248,13 @@ func createStandaloneModelServers(r *SeldonDeploymentReconciler, mlDep *machinel
 
 	// might not be a Deployment yet - if so we have to create one
 	if deploy == nil {
-		seldonId := machinelearningv1alpha2.GetSeldonDeploymentName(mlDep)
+		seldonId := machinelearningv1.GetSeldonDeploymentName(mlDep)
 		deploy = createDeploymentWithoutEngine(depName, seldonId, sPodSpec, p, mlDep)
 	}
 
-	if machinelearningv1alpha2.IsPrepack(pu) {
+	if machinelearningv1.IsPrepack(pu) {
 
-		ServerConfig := machinelearningv1alpha2.GetPrepackServerConfig(string(*pu.Implementation))
+		ServerConfig := machinelearningv1.GetPrepackServerConfig(string(*pu.Implementation))
 
 		if err := addModelDefaultServers(r, pu, p, deploy, ServerConfig); err != nil {
 			return err
