@@ -3,11 +3,25 @@
 {{- $cert := genSignedCert "seldon-webhook-service" nil $altNames 365 $ca -}}
 ---
 
+{{- if not .Values.certManager.enabled -}}
+apiVersion: v1
+data:
+  ca.crt: '{{ $ca.Cert | b64enc }}'
+  tls.crt: '{{ $cert.Cert | b64enc }}'
+  tls.key: '{{ $cert.Key | b64enc }}'
+kind: Secret
+metadata:
+  name: seldon-webhook-server-cert
+  namespace: '{{ .Release.Namespace }}'
+type: kubernetes.io/tls
+{{- end }}
+---
+
 apiVersion: admissionregistration.k8s.io/v1beta1
 kind: ValidatingWebhookConfiguration
 metadata:
   annotations:
-    certmanager.k8s.io/inject-ca-from: '{{ .Release.Namespace }}/seldon-serving-cert'
+    cert-manager.io/inject-ca-from: '{{ .Release.Namespace }}/seldon-serving-cert'
   creationTimestamp: null
   labels:
     app: seldon
@@ -154,7 +168,7 @@ apiVersion: admissionregistration.k8s.io/v1beta1
 kind: MutatingWebhookConfiguration
 metadata:
   annotations:
-    certmanager.k8s.io/inject-ca-from: '{{ .Release.Namespace }}/seldon-serving-cert'
+    cert-manager.io/inject-ca-from: '{{ .Release.Namespace }}/seldon-serving-cert'
   creationTimestamp: null
   labels:
     app: seldon
@@ -295,17 +309,3 @@ webhooks:
     - UPDATE
     resources:
     - seldondeployments
----
-
-{{- if not .Values.certManager.enabled -}}
-apiVersion: v1
-data:
-  ca.crt: '{{ $ca.Cert | b64enc }}'
-  tls.crt: '{{ $cert.Cert | b64enc }}'
-  tls.key: '{{ $cert.Key | b64enc }}'
-kind: Secret
-metadata:
-  name: seldon-webhook-server-cert
-  namespace: '{{ .Release.Namespace }}'
-type: kubernetes.io/tls
-{{- end }}
