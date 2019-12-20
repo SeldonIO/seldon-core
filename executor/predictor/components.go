@@ -1,12 +1,12 @@
 package predictor
 
 import (
-	"github.com/seldonio/seldon-core/executor/api/machinelearning/v1alpha2"
+	"github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
 	"math/rand"
 	"strconv"
 )
 
-func (p *PredictorProcess) abTestRouter(node *v1alpha2.PredictiveUnit) (int, error) {
+func (p *PredictorProcess) abTestRouter(node *v1.PredictiveUnit) (int, error) {
 	ratioA := 0.5
 	var err error
 	if len(node.Parameters) == 1 && node.Parameters[0].Name == "ratioA" {

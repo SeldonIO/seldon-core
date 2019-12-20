@@ -2,11 +2,11 @@ package predictor
 
 import (
 	"fmt"
-	"github.com/seldonio/seldon-core/executor/api/machinelearning/v1alpha2"
+	"github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
 	"net"
 )
 
-func Ready(node *v1alpha2.PredictiveUnit) error {
+func Ready(node *v1.PredictiveUnit) error {
 	for _, child := range node.Children {
 		err := Ready(&child)
 		if err != nil {

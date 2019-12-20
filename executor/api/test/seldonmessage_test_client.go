@@ -4,8 +4,8 @@ import (
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/seldonio/seldon-core/executor/api/client"
 	"github.com/seldonio/seldon-core/executor/api/grpc/proto"
-	"github.com/seldonio/seldon-core/executor/api/machinelearning/v1alpha2"
 	"github.com/seldonio/seldon-core/executor/api/payload"
+	"github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
 	"io"
 	"net/http"
 	"testing"
@@ -14,7 +14,7 @@ import (
 type SeldonMessageTestClient struct {
 	t           *testing.T
 	chosenRoute int
-	errMethod   *v1alpha2.PredictiveUnitMethod
+	errMethod   *v1.PredictiveUnitMethod
 	err         error
 }
 
@@ -41,7 +41,7 @@ func (s SeldonMessageTestClient) CreateErrorPayload(err error) payload.SeldonPay
 
 func (s SeldonMessageTestClient) Predict(host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	s.t.Logf("Predict %s %d", host, port)
-	if s.errMethod != nil && *s.errMethod == v1alpha2.TRANSFORM_INPUT {
+	if s.errMethod != nil && *s.errMethod == v1.TRANSFORM_INPUT {
 		return nil, s.err
 	}
 	return msg, nil
@@ -49,7 +49,7 @@ func (s SeldonMessageTestClient) Predict(host string, port int32, msg payload.Se
 
 func (s SeldonMessageTestClient) TransformInput(host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	s.t.Logf("TransformInput %s %d", host, port)
-	if s.errMethod != nil && *s.errMethod == v1alpha2.TRANSFORM_INPUT {
+	if s.errMethod != nil && *s.errMethod == v1.TRANSFORM_INPUT {
 		return nil, s.err
 	}
 	return msg, nil
@@ -70,7 +70,7 @@ func (s SeldonMessageTestClient) TransformOutput(host string, port int32, msg pa
 	return msg, nil
 }
 
-func NewSeldonMessageTestClient(t *testing.T, chosenRoute int, errMethod *v1alpha2.PredictiveUnitMethod, err error) client.SeldonApiClient {
+func NewSeldonMessageTestClient(t *testing.T, chosenRoute int, errMethod *v1.PredictiveUnitMethod, err error) client.SeldonApiClient {
 	client := SeldonMessageTestClient{
 		t:           t,
 		chosenRoute: chosenRoute,

@@ -12,8 +12,8 @@ import (
 	seldonclient "github.com/seldonio/seldon-core/executor/api/client"
 	api "github.com/seldonio/seldon-core/executor/api/grpc"
 	"github.com/seldonio/seldon-core/executor/api/grpc/proto"
-	"github.com/seldonio/seldon-core/executor/api/machinelearning/v1alpha2"
 	"github.com/seldonio/seldon-core/executor/api/rest"
+	"github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -38,14 +38,14 @@ var (
 	filename      = flag.String("file", "", "Load graph from file")
 )
 
-func getPredictorFromEnv() (*v1alpha2.PredictorSpec, error) {
+func getPredictorFromEnv() (*v1.PredictorSpec, error) {
 	b64Predictor := os.Getenv("ENGINE_PREDICTOR")
 	if b64Predictor != "" {
 		bytes, err := base64.StdEncoding.DecodeString(b64Predictor)
 		if err != nil {
 			return nil, err
 		}
-		predictor := v1alpha2.PredictorSpec{}
+		predictor := v1.PredictorSpec{}
 		if err := json.Unmarshal(bytes, &predictor); err != nil {
 			return nil, err
 		} else {
@@ -56,13 +56,13 @@ func getPredictorFromEnv() (*v1alpha2.PredictorSpec, error) {
 	}
 }
 
-func getPredictorFromFile(predictorName string, filename string) (*v1alpha2.PredictorSpec, error) {
+func getPredictorFromFile(predictorName string, filename string) (*v1.PredictorSpec, error) {
 	dat, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
 	if strings.HasSuffix(filename, "yaml") {
-		var sdep v1alpha2.SeldonDeployment
+		var sdep v1.SeldonDeployment
 		err = yaml.Unmarshal(dat, &sdep)
 		if err != nil {
 			return nil, err
@@ -78,7 +78,7 @@ func getPredictorFromFile(predictorName string, filename string) (*v1alpha2.Pred
 	}
 }
 
-func runHttpServer(logger logr.Logger, predictor *v1alpha2.PredictorSpec, client seldonclient.SeldonApiClient, port int, probesOnly bool) {
+func runHttpServer(logger logr.Logger, predictor *v1.PredictorSpec, client seldonclient.SeldonApiClient, port int, probesOnly bool) {
 	// Create REST client
 	seldonRest := rest.NewSeldonRestApi(predictor, client, probesOnly)
 	seldonRest.Initialise()
@@ -123,7 +123,7 @@ func runHttpServer(logger logr.Logger, predictor *v1alpha2.PredictorSpec, client
 
 }
 
-func runGrpcServer(logger logr.Logger, predictor *v1alpha2.PredictorSpec, client seldonclient.SeldonApiClient, port int) {
+func runGrpcServer(logger logr.Logger, predictor *v1.PredictorSpec, client seldonclient.SeldonApiClient, port int) {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
@@ -169,7 +169,7 @@ func main() {
 	logger.Info("Flags", "transport", *transport)
 
 	var err error
-	var predictor *v1alpha2.PredictorSpec
+	var predictor *v1.PredictorSpec
 	if *filename != "" {
 		logger.Info("Trying to get predictor from file")
 		predictor, err = getPredictorFromFile(*predictorName, *filename)

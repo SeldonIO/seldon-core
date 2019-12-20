@@ -5,9 +5,9 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/prometheus/common/log"
 	"github.com/seldonio/seldon-core/executor/api/client"
-	"github.com/seldonio/seldon-core/executor/api/machinelearning/v1alpha2"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/predictor"
+	"github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
 	"io/ioutil"
 	"net/http"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
@@ -16,12 +16,12 @@ import (
 type SeldonRestApi struct {
 	Router     *mux.Router
 	Client     client.SeldonApiClient
-	predictor  *v1alpha2.PredictorSpec
+	predictor  *v1.PredictorSpec
 	Log        logr.Logger
 	ProbesOnly bool
 }
 
-func NewSeldonRestApi(predictor *v1alpha2.PredictorSpec, client client.SeldonApiClient, probesOnly bool) *SeldonRestApi {
+func NewSeldonRestApi(predictor *v1.PredictorSpec, client client.SeldonApiClient, probesOnly bool) *SeldonRestApi {
 	return &SeldonRestApi{
 		mux.NewRouter(),
 		client,

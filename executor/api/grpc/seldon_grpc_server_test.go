@@ -4,8 +4,8 @@ import (
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/onsi/gomega"
 	"github.com/seldonio/seldon-core/executor/api/grpc/proto"
-	"github.com/seldonio/seldon-core/executor/api/machinelearning/v1alpha2"
 	"github.com/seldonio/seldon-core/executor/api/test"
+	"github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
 	"testing"
 )
 
@@ -13,15 +13,15 @@ func TestSimpleModel(t *testing.T) {
 	t.Logf("Started")
 	g := gomega.NewGomegaWithT(t)
 
-	model := v1alpha2.MODEL
-	p := v1alpha2.PredictorSpec{
+	model := v1.MODEL
+	p := v1.PredictorSpec{
 		Name: "p",
-		Graph: &v1alpha2.PredictiveUnit{
+		Graph: &v1.PredictiveUnit{
 			Type: &model,
-			Endpoint: &v1alpha2.Endpoint{
+			Endpoint: &v1.Endpoint{
 				ServiceHost: "foo",
 				ServicePort: 9000,
-				Type:        v1alpha2.REST,
+				Type:        v1.REST,
 			},
 		},
 	}

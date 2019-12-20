@@ -3,9 +3,9 @@ package client
 import (
 	"fmt"
 	"github.com/go-logr/logr"
-	"github.com/seldonio/seldon-core/executor/api/machinelearning/v1alpha2"
-	clientset "github.com/seldonio/seldon-core/executor/client/clientset/versioned/typed/machinelearning/v1alpha2"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	clientset "github.com/seldonio/seldon-core/operator/client/machinelearning/v1/clientset/versioned/typed/machinelearning/v1"
+	v1meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
@@ -14,7 +14,7 @@ import (
 )
 
 type SeldonDeploymentClient struct {
-	client *clientset.MachinelearningV1alpha2Client
+	client *clientset.MachinelearningV1Client
 	Log    logr.Logger
 }
 
@@ -52,8 +52,8 @@ func NewSeldonDeploymentClient(path *string) *SeldonDeploymentClient {
 	}
 }
 
-func (sd *SeldonDeploymentClient) GetPredcitor(sdepName string, namespace string, predictorName string) (*v1alpha2.PredictorSpec, error) {
-	sdep, err := sd.client.SeldonDeployments(namespace).Get(sdepName, v1.GetOptions{})
+func (sd *SeldonDeploymentClient) GetPredcitor(sdepName string, namespace string, predictorName string) (*v1.PredictorSpec, error) {
+	sdep, err := sd.client.SeldonDeployments(namespace).Get(sdepName, v1meta.GetOptions{})
 	if err != nil {
 		return nil, err
 	}

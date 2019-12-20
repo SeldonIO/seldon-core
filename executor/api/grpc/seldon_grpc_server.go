@@ -5,9 +5,9 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/seldonio/seldon-core/executor/api/client"
 	"github.com/seldonio/seldon-core/executor/api/grpc/proto"
-	"github.com/seldonio/seldon-core/executor/api/machinelearning/v1alpha2"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/predictor"
+	"github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
 	"google.golang.org/grpc"
 	"math"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
@@ -19,7 +19,7 @@ const (
 
 type GrpcSeldonServer struct {
 	Client    client.SeldonApiClient
-	predictor *v1alpha2.PredictorSpec
+	predictor *v1.PredictorSpec
 	Log       logr.Logger
 }
 
@@ -32,7 +32,7 @@ func CreateGrpcServer() *grpc.Server {
 	return grpcServer
 }
 
-func NewGrpcSeldonServer(predictor *v1alpha2.PredictorSpec, client client.SeldonApiClient) *GrpcSeldonServer {
+func NewGrpcSeldonServer(predictor *v1.PredictorSpec, client client.SeldonApiClient) *GrpcSeldonServer {
 	return &GrpcSeldonServer{
 		Client:    client,
 		predictor: predictor,
