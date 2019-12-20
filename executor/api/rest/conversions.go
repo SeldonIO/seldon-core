@@ -14,4 +14,3 @@ func ExtractRouteAsJsonArray(msg []byte) ([]int, error) {
 		return nil, err
 	}
 }
-

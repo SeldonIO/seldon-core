@@ -30,4 +30,3 @@ func ExtractRouteFromSeldonMessage(msg *proto.SeldonMessage) []int {
 	}
 	return []int{-1}
 }
-

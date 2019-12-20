@@ -98,29 +98,29 @@ func (smc *BytesRestClient) TransformInput(host string, port int32, req payload.
 
 // Try to extract from SeldonMessage otherwise fall back to extract from Json Array
 func (smc *BytesRestClient) Route(host string, port int32, req payload.SeldonPayload) (int, error) {
-		sp, err := smc.call("/route", host, port, req)
-		if err != nil {
-			return 0, err
+	sp, err := smc.call("/route", host, port, req)
+	if err != nil {
+		return 0, err
+	} else {
+		var routes []int
+		msg := sp.GetPayload().([]byte)
+
+		var sm proto.SeldonMessage
+		value := string(msg)
+		err := jsonpb.UnmarshalString(value, &sm)
+		if err == nil {
+			//Remove in future
+			routes = api.ExtractRouteFromSeldonMessage(&sm)
 		} else {
-			var routes []int
-			msg := sp.GetPayload().([]byte)
-
-			var sm proto.SeldonMessage
-			value := string(msg)
-			err := jsonpb.UnmarshalString(value, &sm)
-			if err == nil {
-				//Remove in future
-				routes = api.ExtractRouteFromSeldonMessage(&sm)
-			} else {
-				routes, err = ExtractRouteAsJsonArray(msg)
-				if err != nil {
-					return 0, err
-				}
+			routes, err = ExtractRouteAsJsonArray(msg)
+			if err != nil {
+				return 0, err
 			}
-
-			//Only returning first route. API could be extended to allow multiple routes
-			return routes[0], nil
 		}
+
+		//Only returning first route. API could be extended to allow multiple routes
+		return routes[0], nil
+	}
 }
 
 func (smc *BytesRestClient) Combine(host string, port int32, msgs []payload.SeldonPayload) (payload.SeldonPayload, error) {

@@ -62,10 +62,6 @@ kind-image-install: docker-build
 	kind load image-archive executor.tar --loglevel trace
 
 
-.PHONY: test_grpc_local
-test_grpc_local:
-	cd proto && grpcurl -plaintext -proto ./prediction.proto  0.0.0.0:8000 seldon.protos.Seldon/Predict
-
 .PHONY: clean
 clean:
 	rm -rf vendor
