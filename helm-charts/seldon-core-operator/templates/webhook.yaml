@@ -24,7 +24,7 @@ webhooks:
       path: /validate-machinelearning-seldon-io-v1-seldondeployment
   failurePolicy: Fail
   name: vseldondeployment.kb.io
-{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}
+{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
 {{- if not .Values.singleNamespace }}
   namespaceSelector:
     matchExpressions:
@@ -37,7 +37,7 @@ webhooks:
     matchLabels:
       seldon.io/controller-id: {{ .Release.Namespace }}
 {{- end }}
-{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}
+{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
 {{- if not .Values.controllerId }}
   objectSelector:
     matchExpressions:
@@ -68,7 +68,7 @@ webhooks:
       path: /validate-machinelearning-seldon-io-v1alpha2-seldondeployment
   failurePolicy: Fail
   name: vseldondeployment.kb.io
-{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}
+{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
 {{- if not .Values.singleNamespace }}
   namespaceSelector:
     matchExpressions:
@@ -81,7 +81,7 @@ webhooks:
     matchLabels:
       seldon.io/controller-id: {{ .Release.Namespace }}
 {{- end }}
-{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}
+{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
 {{- if not .Values.controllerId }}
   objectSelector:
     matchExpressions:
@@ -112,7 +112,7 @@ webhooks:
       path: /validate-machinelearning-seldon-io-v1alpha3-seldondeployment
   failurePolicy: Fail
   name: vseldondeployment.kb.io
-{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}
+{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
 {{- if not .Values.singleNamespace }}
   namespaceSelector:
     matchExpressions:
@@ -125,7 +125,7 @@ webhooks:
     matchLabels:
       seldon.io/controller-id: {{ .Release.Namespace }}
 {{- end }}
-{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}
+{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
 {{- if not .Values.controllerId }}
   objectSelector:
     matchExpressions:
@@ -171,7 +171,7 @@ webhooks:
       path: /mutate-machinelearning-seldon-io-v1-seldondeployment
   failurePolicy: Fail
   name: mseldondeployment.kb.io
-{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}
+{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
 {{- if not .Values.singleNamespace }}
   namespaceSelector:
     matchExpressions:
@@ -184,7 +184,7 @@ webhooks:
     matchLabels:
       seldon.io/controller-id: {{ .Release.Namespace }}
 {{- end }}
-{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}
+{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
 {{- if not .Values.controllerId }}
   objectSelector:
     matchExpressions:
@@ -215,7 +215,7 @@ webhooks:
       path: /mutate-machinelearning-seldon-io-v1alpha2-seldondeployment
   failurePolicy: Fail
   name: mseldondeployment.kb.io
-{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}
+{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
 {{- if not .Values.singleNamespace }}
   namespaceSelector:
     matchExpressions:
@@ -228,7 +228,7 @@ webhooks:
     matchLabels:
       seldon.io/controller-id: {{ .Release.Namespace }}
 {{- end }}
-{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}
+{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
 {{- if not .Values.controllerId }}
   objectSelector:
     matchExpressions:
@@ -259,7 +259,7 @@ webhooks:
       path: /mutate-machinelearning-seldon-io-v1alpha3-seldondeployment
   failurePolicy: Fail
   name: mseldondeployment.kb.io
-{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}
+{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
 {{- if not .Values.singleNamespace }}
   namespaceSelector:
     matchExpressions:
@@ -272,7 +272,7 @@ webhooks:
     matchLabels:
       seldon.io/controller-id: {{ .Release.Namespace }}
 {{- end }}
-{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}
+{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
 {{- if not .Values.controllerId }}
   objectSelector:
     matchExpressions:

@@ -19,7 +19,7 @@ HELM_RBAC_CSS_IF_START = '{{- if .Values.rbac.configmap.create }}\n'
 HELM_SA_IF_START = '{{- if .Values.serviceAccount.create -}}\n'
 HELM_CERTMANAGER_IF_START = '{{- if .Values.certManager.enabled -}}\n'
 HELM_NOT_CERTMANAGER_IF_START = '{{- if not .Values.certManager.enabled -}}\n'
-HELM_VERSION_IF_START= '{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}\n'
+HELM_VERSION_IF_START= '{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}\n'
 #HELM_SECRET_IF_START = '{{- if .Values.webhook.secretProvided -}}\n'
 HELM_IF_END = '{{- end }}\n'
 
