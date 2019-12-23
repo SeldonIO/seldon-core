@@ -5,4 +5,4 @@ tox<4.0.0
 pytest==5.3.1
 pytest-cov==2.8.1
 # 2nd lvl dep on cov required to avoid sqllite dep
-coverage==4.5.4
+coverage==5.0.1
