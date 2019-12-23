@@ -335,6 +335,26 @@ type PredictiveUnit struct {
 	ModelURI           string                        `json:"modelUri,omitempty" protobuf:"bytes,8,opt,name=modelUri"`
 	ServiceAccountName string                        `json:"serviceAccountName,omitempty" protobuf:"bytes,9,opt,name=serviceAccountName"`
 	EnvSecretRefName   string                        `json:"envSecretRefName,omitempty" protobuf:"bytes,10,opt,name=envSecretRefName"`
+	// Request/response  payload logging. v2alpha1 feature that is added to v1 for backwards compatibility while v1 is the storage version.
+	Logger *Logger `json:"logger,omitempty"`
+}
+
+type LoggerMode string
+
+const (
+	LogAll      LoggerMode = "all"
+	LogRequest  LoggerMode = "request"
+	LogResponse LoggerMode = "response"
+)
+
+// Logger provides optional payload logging for all endpoints
+// +experimental
+type Logger struct {
+	// URL to send request logging CloudEvents
+	// +optional
+	Url *string `json:"url,omitempty"`
+	// What payloads to log
+	Mode LoggerMode `json:"mode,omitempty"`
 }
 
 type DeploymentStatus struct {

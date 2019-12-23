@@ -140,20 +140,21 @@ if __name__ == "__main__":
                 res["webhooks"][1]["clientConfig"]["service"]["namespace"] = helm_release("Namespace")
                 res["webhooks"][2]["clientConfig"]["caBundle"] = "{{ $ca.Cert | b64enc }}"
                 res["webhooks"][2]["clientConfig"]["service"]["namespace"] = helm_release("Namespace")
-                if "certmanager.k8s.io/inject-ca-from" in res["metadata"]["annotations"]:
-                    res["metadata"]["annotations"]["certmanager.k8s.io/inject-ca-from"] = helm_release("Namespace") + "/seldon-serving-cert"
+                if "cert-manager.io/inject-ca-from" in res["metadata"]["annotations"]:
+                    res["metadata"]["annotations"]["cert-manager.io/inject-ca-from"] = helm_release("Namespace") + "/seldon-serving-cert"
 
 
             if kind == "certificate":
                 res["spec"]["commonName"] = '{{- printf "seldon-webhook-service.%s.svc" .Release.Namespace -}}'
                 res["spec"]["dnsNames"][0] = '{{- printf "seldon-webhook-service.%s.svc.cluster.local" .Release.Namespace -}}'
+                res["spec"]["dnsNames"][1] = '{{- printf "seldon-webhook-service.%s.svc" .Release.Namespace -}}'
 
             if kind == "customresourcedefinition"and name == "seldondeployments.machinelearning.seldon.io":
                 # Will only work for cert-manager at present as caBundle would need to be generated in same file as secrets above
                 if "conversion" in res["spec"]:
                     res["spec"]["conversion"]["webhookClientConfig"]["caBundle"] = "=="
-                if "certmanager.k8s.io/inject-ca-from" in res["metadata"]["annotations"]:
-                    res["metadata"]["annotations"]["certmanager.k8s.io/inject-ca-from"] = helm_release("Namespace") + "/seldon-serving-cert"
+                if "cert-manager.io/inject-ca-from" in res["metadata"]["annotations"]:
+                    res["metadata"]["annotations"]["cert-manager.io/inject-ca-from"] = helm_release("Namespace") + "/seldon-serving-cert"
 
             # Update webhook service port
             if kind == "service" and name == "seldon-webhook-service":
