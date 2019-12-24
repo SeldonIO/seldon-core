@@ -275,7 +275,10 @@ def route(
                 user_model, False, request, client_response_arr
             )
 
-def aggregate(user_model: Any, request: Union[prediction_pb2.SeldonMessageList, List, Dict]) -> Union[prediction_pb2.SeldonMessage, List, Dict]:
+
+def aggregate(
+    user_model: Any, request: Union[prediction_pb2.SeldonMessageList, List, Dict]
+) -> Union[prediction_pb2.SeldonMessage, List, Dict]:
     """
     Aggregate a list of payloads
 
