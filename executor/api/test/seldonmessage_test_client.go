@@ -24,7 +24,7 @@ func (s SeldonMessageTestClient) Unmarshall(msg []byte) (payload.SeldonPayload, 
 	if err := jsonpb.UnmarshalString(value, &sm); err != nil {
 		return nil, err
 	}
-	reqPayload := payload.SeldonMessagePayload{Msg: &sm}
+	reqPayload := payload.SeldonMessagePayload{Msg: &sm, ContentType: "application/json"}
 	return &reqPayload, nil
 }
 

@@ -6,6 +6,7 @@ import (
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 )
@@ -14,7 +15,8 @@ func TestAliveEndpoint(t *testing.T) {
 	t.Logf("Started")
 	g := gomega.NewGomegaWithT(t)
 
-	r := NewSeldonRestApi(nil, nil, true)
+	url, _ := url.Parse("http://localhost")
+	r := NewSeldonRestApi(nil, nil, true, url, "default")
 	r.Initialise()
 
 	req, _ := http.NewRequest("GET", "/live", nil)
@@ -41,7 +43,8 @@ func TestSimpleModel(t *testing.T) {
 		},
 	}
 
-	r := NewSeldonRestApi(&p, test.NewSeldonMessageTestClient(t, 0, nil, nil), false)
+	url, _ := url.Parse("http://localhost")
+	r := NewSeldonRestApi(&p, test.NewSeldonMessageTestClient(t, 0, nil, nil), false, url, "default")
 	r.Initialise()
 	var data = ` {"data":{"ndarray":[1.1,2.0]}}`
 

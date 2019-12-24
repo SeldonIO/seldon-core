@@ -13,6 +13,10 @@ func (s *BytesPayload) GetContentType() string {
 	return s.ContentType
 }
 
+func (s *BytesPayload) GetBytes() ([]byte, error) {
+	return s.Msg, nil
+}
+
 func (s *BytesPayload) SetPayload(payload interface{}) {
 	s.Msg = payload.([]byte)
 }

@@ -2,15 +2,34 @@ package predictor
 
 import (
 	"github.com/go-logr/logr"
+	guuid "github.com/google/uuid"
 	"github.com/seldonio/seldon-core/executor/api/client"
 	"github.com/seldonio/seldon-core/executor/api/payload"
+	payloadLogger "github.com/seldonio/seldon-core/executor/logger"
 	"github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	"net/url"
 	"sync"
 )
 
 type PredictorProcess struct {
-	Client client.SeldonApiClient
-	Log    logr.Logger
+	Client    client.SeldonApiClient
+	Log       logr.Logger
+	RequestId string
+	ServerUrl *url.URL
+	Namespace string
+}
+
+func NewPredictorProcess(client client.SeldonApiClient, log logr.Logger, requestId string, serverUrl *url.URL, namespace string) PredictorProcess {
+	if requestId == "" {
+		requestId = guuid.New().String()
+	}
+	return PredictorProcess{
+		Client:    client,
+		Log:       log,
+		RequestId: requestId,
+		ServerUrl: serverUrl,
+		Namespace: namespace,
+	}
 }
 
 func hasMethod(method v1.PredictiveUnitMethod, methods *[]v1.PredictiveUnitMethod) bool {
@@ -118,7 +137,41 @@ func (p *PredictorProcess) routeChildren(node *v1.PredictiveUnit, msg payload.Se
 	}
 }
 
+func (p *PredictorProcess) getLogUrl(logger *v1.Logger) (*url.URL, error) {
+	if logger.Url != nil {
+		return url.Parse(*logger.Url)
+	} else {
+		return url.Parse(payloadLogger.GetLoggerDefaultUrl(p.Namespace))
+	}
+}
+
+func (p *PredictorProcess) logPayload(nodeName string, logger *v1.Logger, reqType payloadLogger.LogRequestType, msg payload.SeldonPayload) error {
+	payload, err := msg.GetBytes()
+	if err != nil {
+		return err
+	}
+	logUrl, err := p.getLogUrl(logger)
+	if err != nil {
+		return err
+	}
+
+	payloadLogger.QueueLogRequest(payloadLogger.LogRequest{
+		Url:         logUrl,
+		Bytes:       &payload,
+		ContentType: msg.GetContentType(),
+		ReqType:     reqType,
+		Id:          p.RequestId,
+		SourceUri:   p.ServerUrl,
+		ModelId:     nodeName,
+	})
+	return nil
+}
+
 func (p *PredictorProcess) Execute(node *v1.PredictiveUnit, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+	//Log Request
+	if node.Logger != nil && (node.Logger.Mode == v1.LogRequest || node.Logger.Mode == v1.LogAll) {
+		p.logPayload(node.Name, node.Logger, payloadLogger.InferenceRequest, msg)
+	}
 	tmsg, err := p.transformInput(node, msg)
 	if err != nil {
 		return tmsg, err
@@ -127,5 +180,10 @@ func (p *PredictorProcess) Execute(node *v1.PredictiveUnit, msg payload.SeldonPa
 	if err != nil {
 		return tmsg, err
 	}
-	return p.transformOutput(node, cmsg)
+	response, err := p.transformOutput(node, cmsg)
+	// Log Response
+	if err == nil && node.Logger != nil && (node.Logger.Mode == v1.LogResponse || node.Logger.Mode == v1.LogAll) {
+		p.logPayload(node.Name, node.Logger, payloadLogger.InferenceResponse, msg)
+	}
+	return response, err
 }

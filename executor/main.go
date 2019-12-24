@@ -13,10 +13,12 @@ import (
 	api "github.com/seldonio/seldon-core/executor/api/grpc"
 	"github.com/seldonio/seldon-core/executor/api/grpc/proto"
 	"github.com/seldonio/seldon-core/executor/api/rest"
+	loghandler "github.com/seldonio/seldon-core/executor/logger"
 	"github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
 	"io/ioutil"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
@@ -36,6 +38,8 @@ var (
 	protocol      = flag.String("protocol", "seldon", "The payload protocol")
 	transport     = flag.String("transport", "http", "The network transport http or grpc")
 	filename      = flag.String("file", "", "Load graph from file")
+	hostname      = flag.String("hostname", "localhost", "The hostname of the running server")
+	logWorkers    = flag.Int("logger_workers", 5, "Number of workers handling payload logging")
 )
 
 func getPredictorFromEnv() (*v1.PredictorSpec, error) {
@@ -78,9 +82,14 @@ func getPredictorFromFile(predictorName string, filename string) (*v1.PredictorS
 	}
 }
 
-func runHttpServer(logger logr.Logger, predictor *v1.PredictorSpec, client seldonclient.SeldonApiClient, port int, probesOnly bool) {
-	// Create REST client
-	seldonRest := rest.NewSeldonRestApi(predictor, client, probesOnly)
+func getServerUrl(hostname string, port int) (*url.URL, error) {
+	return url.Parse(fmt.Sprintf("http://%s:%d/", hostname, port))
+}
+
+func runHttpServer(logger logr.Logger, predictor *v1.PredictorSpec, client seldonclient.SeldonApiClient, port int, probesOnly bool, serverUrl *url.URL, namespace string) {
+
+	// Create REST API
+	seldonRest := rest.NewSeldonRestApi(predictor, client, probesOnly, serverUrl, namespace)
 	seldonRest.Initialise()
 
 	address := fmt.Sprintf("0.0.0.0:%d", port)
@@ -123,13 +132,13 @@ func runHttpServer(logger logr.Logger, predictor *v1.PredictorSpec, client seldo
 
 }
 
-func runGrpcServer(logger logr.Logger, predictor *v1.PredictorSpec, client seldonclient.SeldonApiClient, port int) {
+func runGrpcServer(logger logr.Logger, predictor *v1.PredictorSpec, client seldonclient.SeldonApiClient, port int, serverUrl *url.URL, namespace string) {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	grpcServer := api.CreateGrpcServer()
-	seldonGrpcServer := api.NewGrpcSeldonServer(predictor, client)
+	seldonGrpcServer := api.NewGrpcSeldonServer(predictor, client, serverUrl, namespace)
 	proto.RegisterSeldonServer(grpcServer, seldonGrpcServer)
 	err = grpcServer.Serve(lis)
 	if err != nil {
@@ -161,6 +170,19 @@ func main() {
 
 	if !(*transport == "http" || *transport == "grpc") {
 		log.Error("Only http and grpc supported")
+		os.Exit(-1)
+	}
+
+	var serverUrl *url.URL
+	var err error
+	if *transport == "http" {
+		serverUrl, err = getServerUrl(*hostname, *httpPort)
+	} else {
+		serverUrl, err = getServerUrl(*hostname, *httpPort)
+	}
+	if err != nil {
+		log.Error("Failed to create server url from", *hostname, *httpPort)
+		os.Exit(-1)
 	}
 
 	logf.SetLogger(logf.ZapLogger(false))
@@ -168,7 +190,6 @@ func main() {
 
 	logger.Info("Flags", "transport", *transport)
 
-	var err error
 	var predictor *v1.PredictorSpec
 	if *filename != "" {
 		logger.Info("Trying to get predictor from file")
@@ -194,6 +215,9 @@ func main() {
 		}
 	}
 
+	//Start Logger Dispacther
+	loghandler.StartDispatcher(*logWorkers, logger)
+
 	if *transport == "http" {
 		var clientRest seldonclient.SeldonApiClient
 		if *protocol == "seldon" {
@@ -203,10 +227,10 @@ func main() {
 			os.Exit(-1)
 		}
 		logger.Info("Running http server ", "port", *httpPort)
-		runHttpServer(logger, predictor, clientRest, *httpPort, false)
+		runHttpServer(logger, predictor, clientRest, *httpPort, false, serverUrl, *namespace)
 	} else {
 		logger.Info("Running http server ", "port", *httpPort)
-		go runHttpServer(logger, predictor, nil, *httpPort, true)
+		go runHttpServer(logger, predictor, nil, *httpPort, true, serverUrl, *namespace)
 		logger.Info("Running grpc server ", "port", *grpcPort)
 		var clientGrpc seldonclient.SeldonApiClient
 		if *protocol == "seldon" {
@@ -215,7 +239,7 @@ func main() {
 			log.Error("Unknown protocol")
 			os.Exit(-1)
 		}
-		runGrpcServer(logger, predictor, clientGrpc, *grpcPort)
+		runGrpcServer(logger, predictor, clientGrpc, *grpcPort, serverUrl, *namespace)
 
 	}
 

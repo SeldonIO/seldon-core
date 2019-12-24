@@ -42,7 +42,7 @@ func (smc *JSONRestClient) Marshall(w io.Writer, msg payload.SeldonPayload) erro
 }
 
 func (smc *JSONRestClient) Unmarshall(msg []byte) (payload.SeldonPayload, error) {
-	reqPayload := payload.BytesPayload{Msg: msg}
+	reqPayload := payload.BytesPayload{Msg: msg, ContentType: ContentTypeJSON}
 	return &reqPayload, nil
 }
 

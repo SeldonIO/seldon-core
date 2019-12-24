@@ -6,10 +6,12 @@ import (
 	"github.com/prometheus/common/log"
 	"github.com/seldonio/seldon-core/executor/api/client"
 	"github.com/seldonio/seldon-core/executor/api/payload"
+	"github.com/seldonio/seldon-core/executor/logger"
 	"github.com/seldonio/seldon-core/executor/predictor"
 	"github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
@@ -19,15 +21,19 @@ type SeldonRestApi struct {
 	predictor  *v1.PredictorSpec
 	Log        logr.Logger
 	ProbesOnly bool
+	ServerUrl  *url.URL
+	Namespace  string
 }
 
-func NewSeldonRestApi(predictor *v1.PredictorSpec, client client.SeldonApiClient, probesOnly bool) *SeldonRestApi {
+func NewSeldonRestApi(predictor *v1.PredictorSpec, client client.SeldonApiClient, probesOnly bool, serverUrl *url.URL, namespace string) *SeldonRestApi {
 	return &SeldonRestApi{
 		mux.NewRouter(),
 		client,
 		predictor,
 		logf.Log.WithName("SeldonRestApi"),
 		probesOnly,
+		serverUrl,
+		namespace,
 	}
 }
 
@@ -77,8 +83,12 @@ func (r *SeldonRestApi) alive(w http.ResponseWriter, req *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+func getEventId(req *http.Request) string {
+	return req.Header.Get(logger.CloudEventsIdHeader)
+}
+
 func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
-	r.Log.Info("Prediction called")
+	r.Log.Info("Predictions called")
 
 	bodyBytes, err := ioutil.ReadAll(req.Body)
 	if err != nil {
@@ -87,10 +97,7 @@ func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	seldonPredictorProcess := &predictor.PredictorProcess{
-		Client: r.Client,
-		Log:    logf.Log.WithName("SeldonMessageRestClient"),
-	}
+	seldonPredictorProcess := predictor.NewPredictorProcess(r.Client, logf.Log.WithName("SeldonMessageRestClient"), getEventId(req), r.ServerUrl, r.Namespace)
 
 	reqPayload, err := seldonPredictorProcess.Client.Unmarshall(bodyBytes)
 	if err != nil {

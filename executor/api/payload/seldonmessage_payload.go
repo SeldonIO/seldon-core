@@ -1,10 +1,13 @@
 package payload
 
-import "github.com/seldonio/seldon-core/executor/api/grpc/proto"
+import (
+	"github.com/golang/protobuf/proto"
+	grpcSeldon "github.com/seldonio/seldon-core/executor/api/grpc/proto"
+)
 
 // SeldonMessage Payload
 type SeldonMessagePayload struct {
-	Msg         *proto.SeldonMessage
+	Msg         *grpcSeldon.SeldonMessage
 	ContentType string
 }
 
@@ -12,17 +15,26 @@ func (s *SeldonMessagePayload) GetPayload() interface{} {
 	return s.Msg
 }
 
+func (s *SeldonMessagePayload) GetBytes() ([]byte, error) {
+	data, err := proto.Marshal(s.Msg)
+	if err != nil {
+		return nil, err
+	} else {
+		return data, nil
+	}
+}
+
 func (s *SeldonMessagePayload) GetContentType() string {
 	return s.ContentType
 }
 
 func (s *SeldonMessagePayload) SetPayload(payload interface{}) {
-	s.Msg = payload.(*proto.SeldonMessage)
+	s.Msg = payload.(*grpcSeldon.SeldonMessage)
 }
 
 // SeldonMessageList Payload
 type SeldonMessageListPayload struct {
-	Msg         *proto.SeldonMessageList
+	Msg         *grpcSeldon.SeldonMessageList
 	ContentType string
 }
 
@@ -35,5 +47,5 @@ func (s *SeldonMessageListPayload) GetContentType() string {
 }
 
 func (s *SeldonMessageListPayload) SetPayload(payload interface{}) {
-	s.Msg = payload.(*proto.SeldonMessageList)
+	s.Msg = payload.(*grpcSeldon.SeldonMessageList)
 }

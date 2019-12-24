@@ -79,10 +79,16 @@ test_grpc_local:
 
 
 start_test_rest_server:
-	./executor --sdep seldon-model --namespace default --predictor example --file samples/model_test_grpc.yaml --http_port 8000 
+	./executor --sdep seldon-model --namespace default --predictor example --file samples/model_test_rest.yaml --http_port 8000 
+
+start_test_rest_server_logger:
+	./executor --sdep seldon-model --namespace default --predictor example --file samples/model_test_rest_logger.yaml --http_port 8000 
 
 start_dummy_rest_model:
 	cd ../examples/models/mean_classifier && make run_rest_local 
+
+start_dummy_logsink:
+	docker run -it -p 2222:80 --rm -t mendhak/http-https-echo
 
 test_rest_local:
 	curl -v localhost:8000/api/v0.1/predictions -d '{"data":{"ndarray":[[1.0,2.0]]}}' 
