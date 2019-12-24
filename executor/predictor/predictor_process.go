@@ -1,6 +1,7 @@
 package predictor
 
 import (
+	"context"
 	"github.com/go-logr/logr"
 	guuid "github.com/google/uuid"
 	"github.com/seldonio/seldon-core/executor/api/client"
@@ -12,6 +13,7 @@ import (
 )
 
 type PredictorProcess struct {
+	Ctx       context.Context
 	Client    client.SeldonApiClient
 	Log       logr.Logger
 	RequestId string
@@ -19,11 +21,12 @@ type PredictorProcess struct {
 	Namespace string
 }
 
-func NewPredictorProcess(client client.SeldonApiClient, log logr.Logger, requestId string, serverUrl *url.URL, namespace string) PredictorProcess {
+func NewPredictorProcess(context context.Context, client client.SeldonApiClient, log logr.Logger, requestId string, serverUrl *url.URL, namespace string) PredictorProcess {
 	if requestId == "" {
 		requestId = guuid.New().String()
 	}
 	return PredictorProcess{
+		Ctx:       context,
 		Client:    client,
 		Log:       log,
 		RequestId: requestId,
@@ -47,13 +50,13 @@ func (p *PredictorProcess) transformInput(node *v1.PredictiveUnit, msg payload.S
 	if (*node).Type != nil {
 		switch *node.Type {
 		case v1.MODEL:
-			return p.Client.Predict(node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
+			return p.Client.Predict(p.Ctx, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
 		case v1.TRANSFORMER:
-			return p.Client.TransformInput(node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
+			return p.Client.TransformInput(p.Ctx, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
 		}
 	}
 	if hasMethod(v1.TRANSFORM_INPUT, node.Methods) {
-		return p.Client.TransformInput(node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
+		return p.Client.TransformInput(p.Ctx, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
 	}
 	return msg, nil
 }
@@ -62,11 +65,11 @@ func (p *PredictorProcess) transformOutput(node *v1.PredictiveUnit, msg payload.
 	if (*node).Type != nil {
 		switch *node.Type {
 		case v1.OUTPUT_TRANSFORMER:
-			return p.Client.TransformOutput(node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
+			return p.Client.TransformOutput(p.Ctx, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
 		}
 	}
 	if hasMethod(v1.TRANSFORM_OUTPUT, node.Methods) {
-		return p.Client.TransformOutput(node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
+		return p.Client.TransformOutput(p.Ctx, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
 	}
 	return msg, nil
 }
@@ -75,11 +78,11 @@ func (p *PredictorProcess) route(node *v1.PredictiveUnit, msg payload.SeldonPayl
 	if (*node).Type != nil {
 		switch *node.Type {
 		case v1.ROUTER:
-			return p.Client.Route(node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
+			return p.Client.Route(p.Ctx, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
 		}
 	}
 	if hasMethod(v1.ROUTE, node.Methods) {
-		return p.Client.Route(node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
+		return p.Client.Route(p.Ctx, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
 	}
 	if node.Implementation != nil && *node.Implementation == v1.RANDOM_ABTEST {
 		return p.abTestRouter(node)
@@ -91,11 +94,11 @@ func (p *PredictorProcess) aggregate(node *v1.PredictiveUnit, msg []payload.Seld
 	if (*node).Type != nil {
 		switch *node.Type {
 		case v1.COMBINER:
-			return p.Client.Combine(node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
+			return p.Client.Combine(p.Ctx, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
 		}
 	}
 	if hasMethod(v1.AGGREGATE, node.Methods) {
-		return p.Client.Combine(node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
+		return p.Client.Combine(p.Ctx, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
 	}
 	return msg[0], nil
 }

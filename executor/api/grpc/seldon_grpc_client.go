@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/go-logr/logr"
+	grpc_opentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
+	"github.com/opentracing/opentracing-go"
 	"github.com/seldonio/seldon-core/executor/api/client"
 	"github.com/seldonio/seldon-core/executor/api/grpc/proto"
 	"github.com/seldonio/seldon-core/executor/api/payload"
@@ -17,28 +19,43 @@ import (
 type SeldonMessageGrpcClient struct {
 	Log         logr.Logger
 	callOptions []grpc.CallOption
+	conns       map[string]*grpc.ClientConn
 }
 
 func NewSeldonGrpcClient() client.SeldonApiClient {
+	opts := []grpc.CallOption{
+		grpc.MaxCallSendMsgSize(math.MaxInt32),
+		grpc.MaxCallRecvMsgSize(math.MaxInt32),
+	}
 	smgc := SeldonMessageGrpcClient{
-		Log: logf.Log.WithName("SeldonMessageRestClient"),
-		callOptions: []grpc.CallOption{
-			grpc.MaxCallSendMsgSize(math.MaxInt32),
-			grpc.MaxCallRecvMsgSize(math.MaxInt32),
-		},
+		Log:         logf.Log.WithName("SeldonMessageRestClient"),
+		callOptions: opts,
+		conns:       make(map[string]*grpc.ClientConn),
 	}
 	return smgc
 }
 
 func (s SeldonMessageGrpcClient) getConnection(host string, port int32) (*grpc.ClientConn, error) {
-	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", host, port), grpc.WithInsecure())
-	if err != nil {
-		return nil, err
+	k := fmt.Sprintf("%s:%d", host, port)
+	if conn, ok := s.conns[k]; ok {
+		return conn, nil
+	} else {
+		opts := []grpc.DialOption{
+			grpc.WithInsecure(),
+		}
+		if opentracing.IsGlobalTracerRegistered() {
+			opts = append(opts, grpc.WithUnaryInterceptor(grpc_opentracing.UnaryClientInterceptor()))
+		}
+		conn, err := grpc.Dial(fmt.Sprintf("%s:%d", host, port), opts...)
+		if err != nil {
+			return nil, err
+		}
+		s.conns[k] = conn
+		return conn, nil
 	}
-	return conn, nil
 }
 
-func (s SeldonMessageGrpcClient) Predict(host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+func (s SeldonMessageGrpcClient) Predict(ctx context.Context, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	conn, err := s.getConnection(host, port)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
@@ -52,7 +69,7 @@ func (s SeldonMessageGrpcClient) Predict(host string, port int32, msg payload.Se
 	return &reqPayload, nil
 }
 
-func (s SeldonMessageGrpcClient) TransformInput(host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+func (s SeldonMessageGrpcClient) TransformInput(ctx context.Context, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	conn, err := s.getConnection(host, port)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
@@ -66,7 +83,7 @@ func (s SeldonMessageGrpcClient) TransformInput(host string, port int32, msg pay
 	return &reqPayload, nil
 }
 
-func (s SeldonMessageGrpcClient) Route(host string, port int32, msg payload.SeldonPayload) (int, error) {
+func (s SeldonMessageGrpcClient) Route(ctx context.Context, host string, port int32, msg payload.SeldonPayload) (int, error) {
 	conn, err := s.getConnection(host, port)
 	if err != nil {
 		return 0, err
@@ -81,7 +98,7 @@ func (s SeldonMessageGrpcClient) Route(host string, port int32, msg payload.Seld
 	return routes[0], nil
 }
 
-func (s SeldonMessageGrpcClient) Combine(host string, port int32, msgs []payload.SeldonPayload) (payload.SeldonPayload, error) {
+func (s SeldonMessageGrpcClient) Combine(ctx context.Context, host string, port int32, msgs []payload.SeldonPayload) (payload.SeldonPayload, error) {
 	conn, err := s.getConnection(host, port)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
@@ -100,7 +117,7 @@ func (s SeldonMessageGrpcClient) Combine(host string, port int32, msgs []payload
 	return &reqPayload, nil
 }
 
-func (s SeldonMessageGrpcClient) TransformOutput(host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+func (s SeldonMessageGrpcClient) TransformOutput(ctx context.Context, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	conn, err := s.getConnection(host, port)
 	if err != nil {
 		return s.CreateErrorPayload(err), err

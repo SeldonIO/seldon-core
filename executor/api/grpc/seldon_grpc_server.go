@@ -3,6 +3,8 @@ package api
 import (
 	"context"
 	"github.com/go-logr/logr"
+	grpc_opentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
+	"github.com/opentracing/opentracing-go"
 	"github.com/seldonio/seldon-core/executor/api/client"
 	"github.com/seldonio/seldon-core/executor/api/grpc/proto"
 	"github.com/seldonio/seldon-core/executor/api/payload"
@@ -33,6 +35,9 @@ func CreateGrpcServer() *grpc.Server {
 		grpc.MaxRecvMsgSize(math.MaxInt32),
 		grpc.MaxSendMsgSize(math.MaxInt32),
 	}
+	if opentracing.IsGlobalTracerRegistered() {
+		opts = append(opts, grpc.UnaryInterceptor(grpc_opentracing.UnaryServerInterceptor()))
+	}
 	grpcServer := grpc.NewServer(opts...)
 	return grpcServer
 }
@@ -59,7 +64,7 @@ func getEventId(ctx context.Context) string {
 }
 
 func (g GrpcSeldonServer) Predict(ctx context.Context, req *proto.SeldonMessage) (*proto.SeldonMessage, error) {
-	seldonPredictorProcess := predictor.NewPredictorProcess(g.Client, logf.Log.WithName("SeldonMessageRestClient"), getEventId(ctx), g.ServerUrl, g.Namespace)
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("SeldonMessageRestClient"), getEventId(ctx), g.ServerUrl, g.Namespace)
 	reqPayload := payload.SeldonMessagePayload{Msg: req}
 	resPayload, err := seldonPredictorProcess.Execute(g.predictor.Graph, &reqPayload)
 	if err != nil {

@@ -1,8 +1,11 @@
 package rest
 
 import (
+	"context"
 	"github.com/go-logr/logr"
 	"github.com/gorilla/mux"
+	"github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/ext"
 	"github.com/prometheus/common/log"
 	"github.com/seldonio/seldon-core/executor/api/client"
 	"github.com/seldonio/seldon-core/executor/api/payload"
@@ -90,6 +93,16 @@ func getEventId(req *http.Request) string {
 func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 	r.Log.Info("Predictions called")
 
+	ctx := context.Background()
+	// Apply tracing if active
+	if opentracing.IsGlobalTracerRegistered() {
+		tracer := opentracing.GlobalTracer()
+		spanCtx, _ := tracer.Extract(opentracing.HTTPHeaders, opentracing.HTTPHeadersCarrier(req.Header))
+		serverSpan := tracer.StartSpan("predictions_rest", ext.RPCServerOption(spanCtx))
+		ctx = opentracing.ContextWithSpan(ctx, serverSpan)
+		defer serverSpan.Finish()
+	}
+
 	bodyBytes, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		log.Error("Failed to get body", err)
@@ -97,7 +110,7 @@ func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	seldonPredictorProcess := predictor.NewPredictorProcess(r.Client, logf.Log.WithName("SeldonMessageRestClient"), getEventId(req), r.ServerUrl, r.Namespace)
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName("SeldonMessageRestClient"), getEventId(req), r.ServerUrl, r.Namespace)
 
 	reqPayload, err := seldonPredictorProcess.Client.Unmarshall(bodyBytes)
 	if err != nil {

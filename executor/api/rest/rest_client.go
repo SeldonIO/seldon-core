@@ -2,10 +2,12 @@ package rest
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/go-logr/logr"
 	"github.com/golang/protobuf/jsonpb"
+	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/seldonio/seldon-core/executor/api/client"
 	api "github.com/seldonio/seldon-core/executor/api/grpc"
@@ -60,11 +62,27 @@ func NewJSONRestClient(options ...BytesRestClientOption) client.SeldonApiClient 
 	return &client
 }
 
-func (smc *JSONRestClient) PostHttp(url *url.URL, msg []byte) ([]byte, string, error) {
+func (smc *JSONRestClient) PostHttp(ctx context.Context, method string, url *url.URL, msg []byte) ([]byte, string, error) {
 	smc.Log.Info("Calling HTTP", "URL", url)
 
-	// Call URL
-	response, err := smc.httpClient.Post(url.String(), ContentTypeJSON, bytes.NewBuffer(msg))
+	req, err := http.NewRequest("POST", url.String(), bytes.NewBuffer(msg))
+	if err != nil {
+		return nil, "", err
+	}
+	req.Header.Set("Content-Type", ContentTypeJSON)
+
+	if opentracing.IsGlobalTracerRegistered() {
+		tracer := opentracing.GlobalTracer()
+
+		parentSpan := opentracing.SpanFromContext(ctx)
+		clientSpan := opentracing.StartSpan(
+			method,
+			opentracing.ChildOf(parentSpan.Context()))
+		defer clientSpan.Finish()
+		tracer.Inject(clientSpan.Context(), opentracing.HTTPHeaders, opentracing.HTTPHeadersCarrier(req.Header))
+	}
+
+	response, err := smc.httpClient.Do(req)
 	if err != nil {
 		return nil, "", err
 	}
@@ -86,13 +104,13 @@ func (smc *JSONRestClient) PostHttp(url *url.URL, msg []byte) ([]byte, string, e
 	return b, contentType, nil
 }
 
-func (smc *JSONRestClient) call(method string, host string, port int32, req payload.SeldonPayload) (payload.SeldonPayload, error) {
+func (smc *JSONRestClient) call(ctx context.Context, method string, host string, port int32, req payload.SeldonPayload) (payload.SeldonPayload, error) {
 	url := url.URL{
 		Scheme: "http",
 		Host:   net.JoinHostPort(host, strconv.Itoa(int(port))),
 		Path:   method,
 	}
-	sm, contentType, err := smc.PostHttp(&url, req.GetPayload().([]byte))
+	sm, contentType, err := smc.PostHttp(ctx, method, &url, req.GetPayload().([]byte))
 	if err != nil {
 		return nil, err
 	}
@@ -100,17 +118,17 @@ func (smc *JSONRestClient) call(method string, host string, port int32, req payl
 	return &res, nil
 }
 
-func (smc *JSONRestClient) Predict(host string, port int32, req payload.SeldonPayload) (payload.SeldonPayload, error) {
-	return smc.call("/predict", host, port, req)
+func (smc *JSONRestClient) Predict(ctx context.Context, host string, port int32, req payload.SeldonPayload) (payload.SeldonPayload, error) {
+	return smc.call(ctx, "/predict", host, port, req)
 }
 
-func (smc *JSONRestClient) TransformInput(host string, port int32, req payload.SeldonPayload) (payload.SeldonPayload, error) {
-	return smc.call("/transform-input", host, port, req)
+func (smc *JSONRestClient) TransformInput(ctx context.Context, host string, port int32, req payload.SeldonPayload) (payload.SeldonPayload, error) {
+	return smc.call(ctx, "/transform-input", host, port, req)
 }
 
 // Try to extract from SeldonMessage otherwise fall back to extract from Json Array
-func (smc *JSONRestClient) Route(host string, port int32, req payload.SeldonPayload) (int, error) {
-	sp, err := smc.call("/route", host, port, req)
+func (smc *JSONRestClient) Route(ctx context.Context, host string, port int32, req payload.SeldonPayload) (int, error) {
+	sp, err := smc.call(ctx, "/route", host, port, req)
 	if err != nil {
 		return 0, err
 	} else {
@@ -140,7 +158,7 @@ func isJSON(data []byte) bool {
 	return json.Unmarshal(data, &js) == nil
 }
 
-func (smc *JSONRestClient) Combine(host string, port int32, msgs []payload.SeldonPayload) (payload.SeldonPayload, error) {
+func (smc *JSONRestClient) Combine(ctx context.Context, host string, port int32, msgs []payload.SeldonPayload) (payload.SeldonPayload, error) {
 	// Extract into string array checking the data is JSON
 	strData := make([]string, len(msgs))
 	for i, sm := range msgs {
@@ -154,9 +172,9 @@ func (smc *JSONRestClient) Combine(host string, port int32, msgs []payload.Seldo
 	joined := strings.Join(strData, ",")
 	jStr := "[" + joined + "]"
 	req := payload.BytesPayload{Msg: []byte(jStr)}
-	return smc.call("/aggregate", host, port, &req)
+	return smc.call(ctx, "/aggregate", host, port, &req)
 }
 
-func (smc *JSONRestClient) TransformOutput(host string, port int32, req payload.SeldonPayload) (payload.SeldonPayload, error) {
-	return smc.call("/transform-output", host, port, req)
+func (smc *JSONRestClient) TransformOutput(ctx context.Context, host string, port int32, req payload.SeldonPayload) (payload.SeldonPayload, error) {
+	return smc.call(ctx, "/transform-output", host, port, req)
 }

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/ghodss/yaml"
 	"github.com/go-logr/logr"
+	"github.com/opentracing/opentracing-go"
 	"github.com/prometheus/common/log"
 	seldonclient "github.com/seldonio/seldon-core/executor/api/client"
 	api "github.com/seldonio/seldon-core/executor/api/grpc"
@@ -15,6 +16,8 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/rest"
 	loghandler "github.com/seldonio/seldon-core/executor/logger"
 	"github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	jaegercfg "github.com/uber/jaeger-client-go/config"
+	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -146,31 +149,49 @@ func runGrpcServer(logger logr.Logger, predictor *v1.PredictorSpec, client seldo
 	}
 }
 
+func initTracing() io.Closer {
+	//Initialise tracing
+	cfg, err := jaegercfg.FromEnv()
+	if err != nil {
+		// parsing errors might happen here, such as when we get a string where we expect a number
+		log.Fatal("Could not parse Jaeger env vars", err.Error())
+	}
+
+	if cfg.ServiceName == "" {
+		cfg.ServiceName = "executor"
+	}
+
+	tracer, closer, err := cfg.NewTracer()
+	if err != nil {
+		log.Fatal("Could not initialize jaeger tracer:", err.Error())
+	}
+
+	opentracing.SetGlobalTracer(tracer)
+
+	return closer
+}
+
 func main() {
 	flag.Parse()
 
 	if *sdepName == "" {
-		log.Error("Seldon deployment name must be provided")
-		os.Exit(-1)
+		log.Fatal("Seldon deployment name must be provided")
 	}
 
 	if *namespace == "" {
-		log.Error("Namespace must be provied")
-		os.Exit(-1)
+		log.Fatal("Namespace must be provied")
 	}
 
 	if *predictorName == "" {
-		log.Error("Predictor must be provied")
-		os.Exit(-1)
+		log.Fatal("Predictor must be provied")
 	}
 
 	if *protocol != "seldon" {
-		log.Error("Only Seldon protocol supported at present")
+		log.Fatal("Only Seldon protocol supported at present")
 	}
 
 	if !(*transport == "http" || *transport == "grpc") {
-		log.Error("Only http and grpc supported")
-		os.Exit(-1)
+		log.Fatal("Only http and grpc supported")
 	}
 
 	var serverUrl *url.URL
@@ -181,8 +202,7 @@ func main() {
 		serverUrl, err = getServerUrl(*hostname, *httpPort)
 	}
 	if err != nil {
-		log.Error("Failed to create server url from", *hostname, *httpPort)
-		os.Exit(-1)
+		log.Fatal("Failed to create server url from", *hostname, *httpPort)
 	}
 
 	logf.SetLogger(logf.ZapLogger(false))
@@ -217,6 +237,10 @@ func main() {
 
 	//Start Logger Dispacther
 	loghandler.StartDispatcher(*logWorkers, logger)
+
+	//Init Tracing
+	closer := initTracing()
+	defer closer.Close()
 
 	if *transport == "http" {
 		var clientRest seldonclient.SeldonApiClient

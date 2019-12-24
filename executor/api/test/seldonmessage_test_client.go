@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/seldonio/seldon-core/executor/api/client"
 	"github.com/seldonio/seldon-core/executor/api/grpc/proto"
@@ -39,7 +40,7 @@ func (s SeldonMessageTestClient) CreateErrorPayload(err error) payload.SeldonPay
 	return &res
 }
 
-func (s SeldonMessageTestClient) Predict(host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+func (s SeldonMessageTestClient) Predict(ctx context.Context, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	s.t.Logf("Predict %s %d", host, port)
 	if s.errMethod != nil && *s.errMethod == v1.TRANSFORM_INPUT {
 		return nil, s.err
@@ -47,7 +48,7 @@ func (s SeldonMessageTestClient) Predict(host string, port int32, msg payload.Se
 	return msg, nil
 }
 
-func (s SeldonMessageTestClient) TransformInput(host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+func (s SeldonMessageTestClient) TransformInput(ctx context.Context, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	s.t.Logf("TransformInput %s %d", host, port)
 	if s.errMethod != nil && *s.errMethod == v1.TRANSFORM_INPUT {
 		return nil, s.err
@@ -55,17 +56,17 @@ func (s SeldonMessageTestClient) TransformInput(host string, port int32, msg pay
 	return msg, nil
 }
 
-func (s SeldonMessageTestClient) Route(host string, port int32, msg payload.SeldonPayload) (int, error) {
+func (s SeldonMessageTestClient) Route(ctx context.Context, host string, port int32, msg payload.SeldonPayload) (int, error) {
 	s.t.Logf("Route %s %d", host, port)
 	return s.chosenRoute, nil
 }
 
-func (s SeldonMessageTestClient) Combine(host string, port int32, msgs []payload.SeldonPayload) (payload.SeldonPayload, error) {
+func (s SeldonMessageTestClient) Combine(ctx context.Context, host string, port int32, msgs []payload.SeldonPayload) (payload.SeldonPayload, error) {
 	s.t.Logf("Combine %s %d", host, port)
 	return msgs[0], nil
 }
 
-func (s SeldonMessageTestClient) TransformOutput(host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+func (s SeldonMessageTestClient) TransformOutput(ctx context.Context, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	s.t.Logf("TransformOutput %s %d", host, port)
 	return msg, nil
 }

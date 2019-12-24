@@ -11,14 +11,17 @@ require (
 	github.com/golang/protobuf v1.3.2
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/mux v1.7.3
+	github.com/grpc-ecosystem/go-grpc-middleware v1.1.0
 	github.com/onsi/gomega v1.7.0
+	github.com/opentracing/opentracing-go v1.1.0
 	github.com/pkg/errors v0.8.1
 	github.com/prometheus/client_golang v0.9.3-0.20190127221311-3c4408c8b829 // indirect
 	github.com/prometheus/common v0.2.0
 	github.com/seldonio/seldon-core/operator v0.0.0-20191223100430-3b372610589b
-	github.com/sirupsen/logrus v1.4.2 // indirect
 	github.com/tensorflow/tensorflow v1.14.0 // indirect
 	github.com/tensorflow/tensorflow/tensorflow/go/core v0.0.0-00010101000000-000000000000
+	github.com/uber/jaeger-client-go v2.21.1+incompatible
+	github.com/uber/jaeger-lib v2.2.0+incompatible // indirect
 	golang.org/x/net v0.0.0-20190926025831-c00fd9afed17 // indirect
 	golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7
 	google.golang.org/grpc v1.24.0

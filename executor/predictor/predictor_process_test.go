@@ -1,6 +1,7 @@
 package predictor
 
 import (
+	"context"
 	"errors"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/onsi/gomega"
@@ -23,19 +24,19 @@ const (
 
 func createPredictorProcess(t *testing.T) *PredictorProcess {
 	url, _ := url.Parse(testSourceUrl)
-	pp := NewPredictorProcess(test.NewSeldonMessageTestClient(t, -1, nil, nil), logf.Log.WithName("SeldonMessageRestClient"), testEventId, url, "default")
+	pp := NewPredictorProcess(context.TODO(), test.NewSeldonMessageTestClient(t, -1, nil, nil), logf.Log.WithName("SeldonMessageRestClient"), testEventId, url, "default")
 	return &pp
 }
 
 func createPredictorProcessWithRoute(t *testing.T, chosenRoute int) *PredictorProcess {
 	url, _ := url.Parse(testSourceUrl)
-	pp := NewPredictorProcess(test.NewSeldonMessageTestClient(t, chosenRoute, nil, nil), logf.Log.WithName("SeldonMessageRestClient"), testEventId, url, "default")
+	pp := NewPredictorProcess(context.TODO(), test.NewSeldonMessageTestClient(t, chosenRoute, nil, nil), logf.Log.WithName("SeldonMessageRestClient"), testEventId, url, "default")
 	return &pp
 }
 
 func createPredictorProcessWithError(t *testing.T, errMethod *v1.PredictiveUnitMethod, err error) *PredictorProcess {
 	url, _ := url.Parse(testSourceUrl)
-	pp := NewPredictorProcess(test.NewSeldonMessageTestClient(t, -1, errMethod, err), logf.Log.WithName("SeldonMessageRestClient"), testEventId, url, "default")
+	pp := NewPredictorProcess(context.TODO(), test.NewSeldonMessageTestClient(t, -1, errMethod, err), logf.Log.WithName("SeldonMessageRestClient"), testEventId, url, "default")
 	return &pp
 }
 

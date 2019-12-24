@@ -14,7 +14,7 @@ push_grpc:
 	docker push ${IMAGE_BASE}_grpc:${VERSION}
 
 run_rest_local:
-	export PREDICTIVE_UNIT_SERVICE_PORT=9000 && seldon-core-microservice --service-type MODEL MeanClassifier REST
+	export PREDICTIVE_UNIT_SERVICE_PORT=9000 && TRACING=1 JAEGER_AGENT_HOST=localhost JAEGER_AGENT_PORT=6831 JAEGER_SAMPLER_TYPE=const JAEGER_SAMPLER_PARAM=1 seldon-core-microservice --service-type MODEL MeanClassifier REST
 
 run_grpc_local:
-	export PREDICTIVE_UNIT_SERVICE_PORT=9000 && seldon-core-microservice --service-type MODEL MeanClassifier GRPC
+	export PREDICTIVE_UNIT_SERVICE_PORT=9000 && TRACING=1 JAEGER_AGENT_HOST=localhost JAEGER_AGENT_PORT=6831 JAEGER_SAMPLER_TYPE=const JAEGER_SAMPLER_PARAM=1 seldon-core-microservice --service-type MODEL MeanClassifier GRPC
