@@ -29,7 +29,7 @@ func (s SeldonMessageTestClient) Unmarshall(msg []byte) (payload.SeldonPayload, 
 	if err := jsonpb.UnmarshalString(value, &sm); err != nil {
 		return nil, err
 	}
-	reqPayload := payload.SeldonMessagePayload{Msg: &sm, ContentType: "application/json"}
+	reqPayload := payload.ProtoPayload{Msg: &sm}
 	return &reqPayload, nil
 }
 
@@ -40,7 +40,7 @@ func (s SeldonMessageTestClient) Marshall(out io.Writer, msg payload.SeldonPaylo
 
 func (s SeldonMessageTestClient) CreateErrorPayload(err error) payload.SeldonPayload {
 	respFailed := proto.SeldonMessage{Status: &proto.Status{Code: http.StatusInternalServerError, Info: err.Error()}}
-	res := payload.SeldonMessagePayload{Msg: &respFailed}
+	res := payload.ProtoPayload{Msg: &respFailed}
 	return &res
 }
 

@@ -111,5 +111,16 @@ func (pc *ProtocCmd) Run() error {
 	if err == nil {
 		err = walkErr
 	}
+
+	//for _, in := range pc.Inputs {
+	//	files, err := filepath.Glob(in)
+	//	if err != nil {
+	//		return err
+	//	}
+	//	for _, path := range files {
+	//		err = os.Rename(path, filepath.Join(pc.PkgDir, filepath.Base(path)))
+	//	}
+	//}
+
 	return err
 }

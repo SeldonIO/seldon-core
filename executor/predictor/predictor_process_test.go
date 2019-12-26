@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/onsi/gomega"
+	"github.com/seldonio/seldon-core/executor/api/grpc"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/api/test"
@@ -45,7 +46,7 @@ func createPayload(g *gomega.GomegaWithT) payload.SeldonPayload {
 	var data = ` {"data":{"ndarray":[1.1,2.0]}}`
 	err := jsonpb.UnmarshalString(data, &sm)
 	g.Expect(err).Should(gomega.BeNil())
-	return &payload.SeldonMessagePayload{Msg: &sm, ContentType: "application/json"}
+	return &payload.ProtoPayload{Msg: &sm}
 }
 
 func TestModel(t *testing.T) {
@@ -279,7 +280,7 @@ func TestModelWithLogRequests(t *testing.T) {
 		g.Expect(r.Header.Get(logger.CloudEventsTypeHeader)).Should(gomega.Equal(logger.CEInferenceRequest))
 		g.Expect(r.Header.Get(logger.CloudEventsTypeSource)).Should(gomega.Equal(testSourceUrl))
 		g.Expect(r.Header.Get(logger.ModelIdHeader)).Should(gomega.Equal(modelName))
-		g.Expect(r.Header.Get("Content-Type")).Should(gomega.Equal("application/json"))
+		g.Expect(r.Header.Get("Content-Type")).Should(gomega.Equal(grpc.ProtobufContentType))
 		w.Write([]byte(""))
 		logged = true
 	})

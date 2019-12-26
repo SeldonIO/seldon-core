@@ -11,10 +11,13 @@ import (
 	"github.com/opentracing/opentracing-go"
 	"github.com/prometheus/common/log"
 	seldonclient "github.com/seldonio/seldon-core/executor/api/client"
+	"github.com/seldonio/seldon-core/executor/api/grpc"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
+	"github.com/seldonio/seldon-core/executor/api/grpc/tensorflow"
 	"github.com/seldonio/seldon-core/executor/api/rest"
 	loghandler "github.com/seldonio/seldon-core/executor/logger"
+	"github.com/seldonio/seldon-core/executor/proto/tensorflow/serving"
 	"github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
 	jaegercfg "github.com/uber/jaeger-client-go/config"
 	"io"
@@ -135,14 +138,19 @@ func runHttpServer(logger logr.Logger, predictor *v1.PredictorSpec, client seldo
 
 }
 
-func runGrpcServer(logger logr.Logger, predictor *v1.PredictorSpec, client seldonclient.SeldonApiClient, port int, serverUrl *url.URL, namespace string) {
+func runGrpcServer(logger logr.Logger, predictor *v1.PredictorSpec, client seldonclient.SeldonApiClient, port int, serverUrl *url.URL, namespace string, protocol string) {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	grpcServer := seldon.CreateGrpcServer()
-	seldonGrpcServer := seldon.NewGrpcSeldonServer(predictor, client, serverUrl, namespace)
-	proto.RegisterSeldonServer(grpcServer, seldonGrpcServer)
+	grpcServer := grpc.CreateGrpcServer()
+	if protocol == rest.ProtocolSeldon {
+		seldonGrpcServer := seldon.NewGrpcSeldonServer(predictor, client, serverUrl, namespace)
+		proto.RegisterSeldonServer(grpcServer, seldonGrpcServer)
+	} else {
+		tensorflowGrpcServer := tensorflow.NewGrpcTensorflowServer(predictor, client, serverUrl, namespace)
+		serving.RegisterPredictionServiceServer(grpcServer, tensorflowGrpcServer)
+	}
 	err = grpcServer.Serve(lis)
 	if err != nil {
 		log.Errorf("Grpc server error: %v", err)
@@ -254,10 +262,9 @@ func main() {
 		if *protocol == "seldon" {
 			clientGrpc = seldon.NewSeldonGrpcClient()
 		} else {
-			log.Error("Unknown protocol")
-			os.Exit(-1)
+			clientGrpc = tensorflow.NewSeldonGrpcClient()
 		}
-		runGrpcServer(logger, predictor, clientGrpc, *grpcPort, serverUrl, *namespace)
+		runGrpcServer(logger, predictor, clientGrpc, *grpcPort, serverUrl, *namespace, *protocol)
 
 	}
 

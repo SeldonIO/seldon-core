@@ -28,7 +28,7 @@ func NewSeldonGrpcClient() client.SeldonApiClient {
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),
 	}
 	smgc := SeldonMessageGrpcClient{
-		Log:         logf.Log.WithName("SeldonMessageRestClient"),
+		Log:         logf.Log.WithName("SeldonGrpcClient"),
 		callOptions: opts,
 		conns:       make(map[string]*grpc.ClientConn),
 	}
@@ -69,8 +69,8 @@ func (s SeldonMessageGrpcClient) Predict(ctx context.Context, modelName string, 
 	if err != nil {
 		return s.CreateErrorPayload(err), err
 	}
-	reqPayload := payload.SeldonMessagePayload{Msg: resp}
-	return &reqPayload, nil
+	resPayload := payload.ProtoPayload{Msg: resp}
+	return &resPayload, nil
 }
 
 func (s SeldonMessageGrpcClient) TransformInput(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
@@ -83,8 +83,8 @@ func (s SeldonMessageGrpcClient) TransformInput(ctx context.Context, modelName s
 	if err != nil {
 		return s.CreateErrorPayload(err), err
 	}
-	reqPayload := payload.SeldonMessagePayload{Msg: resp}
-	return &reqPayload, nil
+	resPayload := payload.ProtoPayload{Msg: resp}
+	return &resPayload, nil
 }
 
 func (s SeldonMessageGrpcClient) Route(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (int, error) {
@@ -117,8 +117,8 @@ func (s SeldonMessageGrpcClient) Combine(ctx context.Context, modelName string, 
 	if err != nil {
 		return s.CreateErrorPayload(err), err
 	}
-	reqPayload := payload.SeldonMessagePayload{Msg: resp}
-	return &reqPayload, nil
+	resPayload := payload.ProtoPayload{Msg: resp}
+	return &resPayload, nil
 }
 
 func (s SeldonMessageGrpcClient) TransformOutput(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
@@ -131,8 +131,8 @@ func (s SeldonMessageGrpcClient) TransformOutput(ctx context.Context, modelName 
 	if err != nil {
 		return s.CreateErrorPayload(err), err
 	}
-	reqPayload := payload.SeldonMessagePayload{Msg: resp}
-	return &reqPayload, nil
+	resPayload := payload.ProtoPayload{Msg: resp}
+	return &resPayload, nil
 }
 
 func (s SeldonMessageGrpcClient) Unmarshall(msg []byte) (payload.SeldonPayload, error) {
@@ -145,6 +145,6 @@ func (s SeldonMessageGrpcClient) Marshall(out io.Writer, msg payload.SeldonPaylo
 
 func (s SeldonMessageGrpcClient) CreateErrorPayload(err error) payload.SeldonPayload {
 	respFailed := proto.SeldonMessage{Status: &proto.Status{Code: http.StatusInternalServerError, Info: err.Error()}}
-	res := payload.SeldonMessagePayload{Msg: &respFailed}
+	res := payload.ProtoPayload{Msg: &respFailed}
 	return &res
 }

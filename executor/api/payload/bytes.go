@@ -16,7 +16,3 @@ func (s *BytesPayload) GetContentType() string {
 func (s *BytesPayload) GetBytes() ([]byte, error) {
 	return s.Msg, nil
 }
-
-func (s *BytesPayload) SetPayload(payload interface{}) {
-	s.Msg = payload.([]byte)
-}

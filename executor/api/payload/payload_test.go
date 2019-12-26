@@ -12,7 +12,7 @@ func TestGetPayload(t *testing.T) {
 	var data = `{"data":{"ndarray":[1.1,2]}}`
 	jsonpb.UnmarshalString(data, &sm)
 
-	var sp SeldonPayload = &SeldonMessagePayload{&sm, ""}
+	var sp SeldonPayload = &ProtoPayload{&sm}
 
 	var sm2 *proto.SeldonMessage
 	sm2 = sp.GetPayload().(*proto.SeldonMessage)
