@@ -70,11 +70,11 @@ func TestSimpleMethods(t *testing.T) {
 	})
 	host, port, httpClient, teardown := testingHTTPClient(g, h)
 	defer teardown()
-	seldonRestClient := NewJSONRestClient(SetHTTPClient(httpClient))
+	seldonRestClient := NewJSONRestClient(ProtocolSeldon, SetHTTPClient(httpClient))
 
-	methods := []func(context.Context, string, int32, payload.SeldonPayload) (payload.SeldonPayload, error){seldonRestClient.Predict, seldonRestClient.TransformInput, seldonRestClient.TransformOutput}
+	methods := []func(context.Context, string, string, int32, payload.SeldonPayload) (payload.SeldonPayload, error){seldonRestClient.Predict, seldonRestClient.TransformInput, seldonRestClient.TransformOutput}
 	for _, method := range methods {
-		resPayload, err := method(context.TODO(), host, int32(port), createPayload(g))
+		resPayload, err := method(context.TODO(), "model", host, int32(port), createPayload(g))
 		g.Expect(err).Should(gomega.BeNil())
 
 		data := resPayload.GetPayload().([]byte)
@@ -95,9 +95,9 @@ func TestRouter(t *testing.T) {
 	})
 	host, port, httpClient, teardown := testingHTTPClient(g, h)
 	defer teardown()
-	seldonRestClient := NewJSONRestClient(SetHTTPClient(httpClient))
+	seldonRestClient := NewJSONRestClient(ProtocolSeldon, SetHTTPClient(httpClient))
 
-	route, err := seldonRestClient.Route(context.TODO(), host, int32(port), createPayload(g))
+	route, err := seldonRestClient.Route(context.TODO(), "model", host, int32(port), createPayload(g))
 	g.Expect(err).Should(gomega.BeNil())
 
 	g.Expect(route).Should(gomega.Equal(1))
@@ -116,9 +116,9 @@ func TestCombiner(t *testing.T) {
 	})
 	host, port, httpClient, teardown := testingHTTPClient(g, h)
 	defer teardown()
-	seldonRestClient := NewJSONRestClient(SetHTTPClient(httpClient))
+	seldonRestClient := NewJSONRestClient(ProtocolSeldon, SetHTTPClient(httpClient))
 
-	resPayload, err := seldonRestClient.Combine(context.TODO(), host, int32(port), createCombinerPayload(g))
+	resPayload, err := seldonRestClient.Combine(context.TODO(), "model", host, int32(port), createCombinerPayload(g))
 	g.Expect(err).Should(gomega.BeNil())
 
 	data := resPayload.GetPayload().([]byte)

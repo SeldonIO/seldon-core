@@ -50,13 +50,25 @@ func (p *PredictorProcess) transformInput(node *v1.PredictiveUnit, msg payload.S
 	if (*node).Type != nil {
 		switch *node.Type {
 		case v1.MODEL:
-			return p.Client.Predict(p.Ctx, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
+			msg, err := p.Client.Chain(p.Ctx, msg)
+			if err != nil {
+				return nil, err
+			}
+			return p.Client.Predict(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
 		case v1.TRANSFORMER:
-			return p.Client.TransformInput(p.Ctx, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
+			msg, err := p.Client.Chain(p.Ctx, msg)
+			if err != nil {
+				return nil, err
+			}
+			return p.Client.TransformInput(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
 		}
 	}
 	if hasMethod(v1.TRANSFORM_INPUT, node.Methods) {
-		return p.Client.TransformInput(p.Ctx, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
+		msg, err := p.Client.Chain(p.Ctx, msg)
+		if err != nil {
+			return nil, err
+		}
+		return p.Client.TransformInput(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
 	}
 	return msg, nil
 }
@@ -65,11 +77,15 @@ func (p *PredictorProcess) transformOutput(node *v1.PredictiveUnit, msg payload.
 	if (*node).Type != nil {
 		switch *node.Type {
 		case v1.OUTPUT_TRANSFORMER:
-			return p.Client.TransformOutput(p.Ctx, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
+			msg, err := p.Client.Chain(p.Ctx, msg)
+			if err != nil {
+				return nil, err
+			}
+			return p.Client.TransformOutput(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
 		}
 	}
 	if hasMethod(v1.TRANSFORM_OUTPUT, node.Methods) {
-		return p.Client.TransformOutput(p.Ctx, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
+		return p.Client.TransformOutput(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
 	}
 	return msg, nil
 }
@@ -78,11 +94,11 @@ func (p *PredictorProcess) route(node *v1.PredictiveUnit, msg payload.SeldonPayl
 	if (*node).Type != nil {
 		switch *node.Type {
 		case v1.ROUTER:
-			return p.Client.Route(p.Ctx, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
+			return p.Client.Route(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
 		}
 	}
 	if hasMethod(v1.ROUTE, node.Methods) {
-		return p.Client.Route(p.Ctx, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
+		return p.Client.Route(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
 	}
 	if node.Implementation != nil && *node.Implementation == v1.RANDOM_ABTEST {
 		return p.abTestRouter(node)
@@ -94,11 +110,11 @@ func (p *PredictorProcess) aggregate(node *v1.PredictiveUnit, msg []payload.Seld
 	if (*node).Type != nil {
 		switch *node.Type {
 		case v1.COMBINER:
-			return p.Client.Combine(p.Ctx, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
+			return p.Client.Combine(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
 		}
 	}
 	if hasMethod(v1.AGGREGATE, node.Methods) {
-		return p.Client.Combine(p.Ctx, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
+		return p.Client.Combine(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
 	}
 	return msg[0], nil
 }

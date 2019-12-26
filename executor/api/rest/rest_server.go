@@ -26,9 +26,10 @@ type SeldonRestApi struct {
 	ProbesOnly bool
 	ServerUrl  *url.URL
 	Namespace  string
+	Protocol   string
 }
 
-func NewSeldonRestApi(predictor *v1.PredictorSpec, client client.SeldonApiClient, probesOnly bool, serverUrl *url.URL, namespace string) *SeldonRestApi {
+func NewSeldonRestApi(predictor *v1.PredictorSpec, client client.SeldonApiClient, probesOnly bool, serverUrl *url.URL, namespace string, protocol string) *SeldonRestApi {
 	return &SeldonRestApi{
 		mux.NewRouter(),
 		client,
@@ -37,6 +38,7 @@ func NewSeldonRestApi(predictor *v1.PredictorSpec, client client.SeldonApiClient
 		probesOnly,
 		serverUrl,
 		namespace,
+		protocol,
 	}
 }
 
@@ -65,10 +67,15 @@ func (r *SeldonRestApi) Initialise() {
 	r.Router.HandleFunc("/ready", r.checkReady)
 	r.Router.HandleFunc("/live", r.alive)
 	if !r.ProbesOnly {
-		api01 := r.Router.PathPrefix("/api/v0.1").Methods("POST").Subrouter()
-		api01.HandleFunc("/predictions", r.predictions)
-		api1 := r.Router.PathPrefix("/api/v1").Methods("POST").Subrouter()
-		api1.HandleFunc("/predictions", r.predictions)
+		switch r.Protocol {
+		case ProtocolSeldon:
+			api01 := r.Router.PathPrefix("/api/v0.1").Methods("POST").Subrouter()
+			api01.HandleFunc("/predictions", r.predictions)
+			api1 := r.Router.PathPrefix("/api/v1").Methods("POST").Subrouter()
+			api1.HandleFunc("/predictions", r.predictions)
+		case ProtocolTensorflow:
+			r.Router.NewRoute().Path("/v1/models:predict").Methods("POST").HandlerFunc(r.predictions)
+		}
 	}
 }
 

@@ -55,7 +55,11 @@ func (s SeldonMessageGrpcClient) getConnection(host string, port int32) (*grpc.C
 	}
 }
 
-func (s SeldonMessageGrpcClient) Predict(ctx context.Context, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+func (s SeldonMessageGrpcClient) Chain(ctx context.Context, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+	return msg, nil
+}
+
+func (s SeldonMessageGrpcClient) Predict(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	conn, err := s.getConnection(host, port)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
@@ -69,13 +73,13 @@ func (s SeldonMessageGrpcClient) Predict(ctx context.Context, host string, port 
 	return &reqPayload, nil
 }
 
-func (s SeldonMessageGrpcClient) TransformInput(ctx context.Context, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+func (s SeldonMessageGrpcClient) TransformInput(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	conn, err := s.getConnection(host, port)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
 	}
 	grpcClient := proto.NewTransformerClient(conn)
-	resp, err := grpcClient.TransformInput(context.Background(), msg.GetPayload().(*proto.SeldonMessage), s.callOptions...)
+	resp, err := grpcClient.TransformInput(ctx, msg.GetPayload().(*proto.SeldonMessage), s.callOptions...)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
 	}
@@ -83,7 +87,7 @@ func (s SeldonMessageGrpcClient) TransformInput(ctx context.Context, host string
 	return &reqPayload, nil
 }
 
-func (s SeldonMessageGrpcClient) Route(ctx context.Context, host string, port int32, msg payload.SeldonPayload) (int, error) {
+func (s SeldonMessageGrpcClient) Route(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (int, error) {
 	conn, err := s.getConnection(host, port)
 	if err != nil {
 		return 0, err
@@ -98,7 +102,7 @@ func (s SeldonMessageGrpcClient) Route(ctx context.Context, host string, port in
 	return routes[0], nil
 }
 
-func (s SeldonMessageGrpcClient) Combine(ctx context.Context, host string, port int32, msgs []payload.SeldonPayload) (payload.SeldonPayload, error) {
+func (s SeldonMessageGrpcClient) Combine(ctx context.Context, modelName string, host string, port int32, msgs []payload.SeldonPayload) (payload.SeldonPayload, error) {
 	conn, err := s.getConnection(host, port)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
@@ -109,7 +113,7 @@ func (s SeldonMessageGrpcClient) Combine(ctx context.Context, host string, port 
 	}
 	grpcClient := proto.NewCombinerClient(conn)
 	sml := proto.SeldonMessageList{SeldonMessages: sms}
-	resp, err := grpcClient.Aggregate(context.Background(), &sml, s.callOptions...)
+	resp, err := grpcClient.Aggregate(ctx, &sml, s.callOptions...)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
 	}
@@ -117,13 +121,13 @@ func (s SeldonMessageGrpcClient) Combine(ctx context.Context, host string, port 
 	return &reqPayload, nil
 }
 
-func (s SeldonMessageGrpcClient) TransformOutput(ctx context.Context, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+func (s SeldonMessageGrpcClient) TransformOutput(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	conn, err := s.getConnection(host, port)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
 	}
 	grpcClient := proto.NewOutputTransformerClient(conn)
-	resp, err := grpcClient.TransformOutput(context.Background(), msg.GetPayload().(*proto.SeldonMessage), s.callOptions...)
+	resp, err := grpcClient.TransformOutput(ctx, msg.GetPayload().(*proto.SeldonMessage), s.callOptions...)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
 	}

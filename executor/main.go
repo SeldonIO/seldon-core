@@ -89,10 +89,10 @@ func getServerUrl(hostname string, port int) (*url.URL, error) {
 	return url.Parse(fmt.Sprintf("http://%s:%d/", hostname, port))
 }
 
-func runHttpServer(logger logr.Logger, predictor *v1.PredictorSpec, client seldonclient.SeldonApiClient, port int, probesOnly bool, serverUrl *url.URL, namespace string) {
+func runHttpServer(logger logr.Logger, predictor *v1.PredictorSpec, client seldonclient.SeldonApiClient, port int, probesOnly bool, serverUrl *url.URL, namespace string, protocol string) {
 
 	// Create REST API
-	seldonRest := rest.NewSeldonRestApi(predictor, client, probesOnly, serverUrl, namespace)
+	seldonRest := rest.NewSeldonRestApi(predictor, client, probesOnly, serverUrl, namespace, protocol)
 	seldonRest.Initialise()
 
 	address := fmt.Sprintf("0.0.0.0:%d", port)
@@ -186,8 +186,8 @@ func main() {
 		log.Fatal("Predictor must be provied")
 	}
 
-	if *protocol != "seldon" {
-		log.Fatal("Only Seldon protocol supported at present")
+	if !(*protocol == rest.ProtocolSeldon || *protocol == rest.ProtocolTensorflow) {
+		log.Fatal("Protocol must be seldon or tensorflow")
 	}
 
 	if !(*transport == "http" || *transport == "grpc") {
@@ -243,18 +243,12 @@ func main() {
 	defer closer.Close()
 
 	if *transport == "http" {
-		var clientRest seldonclient.SeldonApiClient
-		if *protocol == "seldon" {
-			clientRest = rest.NewJSONRestClient()
-		} else {
-			log.Error("Unknown protocol")
-			os.Exit(-1)
-		}
+		clientRest := rest.NewJSONRestClient(*protocol)
 		logger.Info("Running http server ", "port", *httpPort)
-		runHttpServer(logger, predictor, clientRest, *httpPort, false, serverUrl, *namespace)
+		runHttpServer(logger, predictor, clientRest, *httpPort, false, serverUrl, *namespace, *protocol)
 	} else {
 		logger.Info("Running http server ", "port", *httpPort)
-		go runHttpServer(logger, predictor, nil, *httpPort, true, serverUrl, *namespace)
+		go runHttpServer(logger, predictor, nil, *httpPort, true, serverUrl, *namespace, *protocol)
 		logger.Info("Running grpc server ", "port", *grpcPort)
 		var clientGrpc seldonclient.SeldonApiClient
 		if *protocol == "seldon" {
