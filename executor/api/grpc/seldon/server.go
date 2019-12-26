@@ -1,4 +1,4 @@
-package api
+package seldon
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	grpc_opentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
 	"github.com/opentracing/opentracing-go"
 	"github.com/seldonio/seldon-core/executor/api/client"
-	"github.com/seldonio/seldon-core/executor/api/grpc/proto"
+	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/logger"
 	"github.com/seldonio/seldon-core/executor/predictor"

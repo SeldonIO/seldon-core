@@ -11,8 +11,8 @@ import (
 	"github.com/opentracing/opentracing-go"
 	"github.com/prometheus/common/log"
 	seldonclient "github.com/seldonio/seldon-core/executor/api/client"
-	api "github.com/seldonio/seldon-core/executor/api/grpc"
-	"github.com/seldonio/seldon-core/executor/api/grpc/proto"
+	"github.com/seldonio/seldon-core/executor/api/grpc/seldon"
+	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/rest"
 	loghandler "github.com/seldonio/seldon-core/executor/logger"
 	"github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
@@ -140,8 +140,8 @@ func runGrpcServer(logger logr.Logger, predictor *v1.PredictorSpec, client seldo
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	grpcServer := api.CreateGrpcServer()
-	seldonGrpcServer := api.NewGrpcSeldonServer(predictor, client, serverUrl, namespace)
+	grpcServer := seldon.CreateGrpcServer()
+	seldonGrpcServer := seldon.NewGrpcSeldonServer(predictor, client, serverUrl, namespace)
 	proto.RegisterSeldonServer(grpcServer, seldonGrpcServer)
 	err = grpcServer.Serve(lis)
 	if err != nil {
@@ -252,7 +252,7 @@ func main() {
 		logger.Info("Running grpc server ", "port", *grpcPort)
 		var clientGrpc seldonclient.SeldonApiClient
 		if *protocol == "seldon" {
-			clientGrpc = api.NewSeldonGrpcClient()
+			clientGrpc = seldon.NewSeldonGrpcClient()
 		} else {
 			log.Error("Unknown protocol")
 			os.Exit(-1)

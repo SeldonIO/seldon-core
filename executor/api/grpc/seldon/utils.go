@@ -1,7 +1,7 @@
-package api
+package seldon
 
 import (
-	"github.com/seldonio/seldon-core/executor/api/grpc/proto"
+	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 )
 
 func ExtractRouteFromSeldonMessage(msg *proto.SeldonMessage) []int {

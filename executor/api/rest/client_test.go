@@ -5,7 +5,7 @@ import (
 	"crypto/tls"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/onsi/gomega"
-	"github.com/seldonio/seldon-core/executor/api/grpc/proto"
+	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"net"
 	"net/http"

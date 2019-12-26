@@ -2,7 +2,7 @@ package payload
 
 import (
 	"github.com/golang/protobuf/proto"
-	grpcSeldon "github.com/seldonio/seldon-core/executor/api/grpc/proto"
+	grpcSeldon "github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 )
 
 // SeldonMessage Payload

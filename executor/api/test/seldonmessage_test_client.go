@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/seldonio/seldon-core/executor/api/client"
-	"github.com/seldonio/seldon-core/executor/api/grpc/proto"
+	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
 	"io"

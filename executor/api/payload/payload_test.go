@@ -2,7 +2,7 @@ package payload
 
 import (
 	"github.com/golang/protobuf/jsonpb"
-	"github.com/seldonio/seldon-core/executor/api/grpc/proto"
+	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"gotest.tools/assert"
 	"testing"
 )

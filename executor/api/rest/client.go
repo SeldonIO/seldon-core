@@ -10,8 +10,8 @@ import (
 	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/seldonio/seldon-core/executor/api/client"
-	api "github.com/seldonio/seldon-core/executor/api/grpc"
-	"github.com/seldonio/seldon-core/executor/api/grpc/proto"
+	"github.com/seldonio/seldon-core/executor/api/grpc/seldon"
+	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"io"
 	"io/ioutil"
@@ -169,7 +169,7 @@ func (smc *JSONRestClient) Route(ctx context.Context, modelName string, host str
 		err := jsonpb.UnmarshalString(value, &sm)
 		if err == nil {
 			//Remove in future
-			routes = api.ExtractRouteFromSeldonMessage(&sm)
+			routes = seldon.ExtractRouteFromSeldonMessage(&sm)
 		} else {
 			routes, err = ExtractRouteAsJsonArray(msg)
 			if err != nil {
