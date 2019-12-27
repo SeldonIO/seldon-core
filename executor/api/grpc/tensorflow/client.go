@@ -56,8 +56,24 @@ func (s TensorflowGrpcClient) getConnection(host string, port int32) (*grpc.Clie
 	}
 }
 
-func (s TensorflowGrpcClient) Chain(ctx context.Context, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
-	return msg, nil
+func (s TensorflowGrpcClient) Chain(ctx context.Context, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+	switch v := msg.GetPayload().(type) {
+	case *serving.PredictRequest, *serving.ClassificationRequest, *serving.MultiInferenceRequest:
+		s.Log.Info("Identity chain")
+		return msg, nil
+	case *serving.PredictResponse:
+		s.Log.Info("Chain!")
+		pr := serving.PredictRequest{
+			ModelSpec: &serving.ModelSpec{
+				Name: modelName,
+			},
+			Inputs: v.Outputs,
+		}
+		msg2 := payload.ProtoPayload{Msg: &pr}
+		return &msg2, nil
+	default:
+		return nil, errors.Errorf("Invalid type %v", v)
+	}
 }
 
 func (s TensorflowGrpcClient) Predict(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
@@ -78,7 +94,7 @@ func (s TensorflowGrpcClient) Predict(ctx context.Context, modelName string, hos
 		return nil, errors.Errorf("Invalid type %v", v)
 	}
 	if err != nil {
-		return s.CreateErrorPayload(err), err
+		return nil, err
 	}
 	resPayload := payload.ProtoPayload{Msg: resp}
 	return &resPayload, nil

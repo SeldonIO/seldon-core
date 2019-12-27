@@ -137,7 +137,7 @@ func (smc *JSONRestClient) call(ctx context.Context, method string, host string,
 	return &res, nil
 }
 
-func (smc *JSONRestClient) Chain(ctx context.Context, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+func (smc *JSONRestClient) Chain(ctx context.Context, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	switch smc.Protocol {
 	case ProtocolSeldon: // Seldon Messages can always be chained together
 		return msg, nil

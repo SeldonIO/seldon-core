@@ -17,7 +17,7 @@ const (
 )
 
 type SeldonApiClient interface {
-	Chain(ctx context.Context, msg payload.SeldonPayload) (payload.SeldonPayload, error)
+	Chain(ctx context.Context, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error)
 	Predict(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error)
 	TransformInput(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error)
 	Route(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (int, error)

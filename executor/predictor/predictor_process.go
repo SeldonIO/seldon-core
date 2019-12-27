@@ -50,13 +50,13 @@ func (p *PredictorProcess) transformInput(node *v1.PredictiveUnit, msg payload.S
 	if (*node).Type != nil {
 		switch *node.Type {
 		case v1.MODEL:
-			msg, err := p.Client.Chain(p.Ctx, msg)
+			msg, err := p.Client.Chain(p.Ctx, node.Name, msg)
 			if err != nil {
 				return nil, err
 			}
 			return p.Client.Predict(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
 		case v1.TRANSFORMER:
-			msg, err := p.Client.Chain(p.Ctx, msg)
+			msg, err := p.Client.Chain(p.Ctx, node.Name, msg)
 			if err != nil {
 				return nil, err
 			}
@@ -64,7 +64,7 @@ func (p *PredictorProcess) transformInput(node *v1.PredictiveUnit, msg payload.S
 		}
 	}
 	if hasMethod(v1.TRANSFORM_INPUT, node.Methods) {
-		msg, err := p.Client.Chain(p.Ctx, msg)
+		msg, err := p.Client.Chain(p.Ctx, node.Name, msg)
 		if err != nil {
 			return nil, err
 		}
@@ -77,7 +77,7 @@ func (p *PredictorProcess) transformOutput(node *v1.PredictiveUnit, msg payload.
 	if (*node).Type != nil {
 		switch *node.Type {
 		case v1.OUTPUT_TRANSFORMER:
-			msg, err := p.Client.Chain(p.Ctx, msg)
+			msg, err := p.Client.Chain(p.Ctx, node.Name, msg)
 			if err != nil {
 				return nil, err
 			}

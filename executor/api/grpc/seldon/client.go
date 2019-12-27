@@ -55,7 +55,7 @@ func (s SeldonMessageGrpcClient) getConnection(host string, port int32) (*grpc.C
 	}
 }
 
-func (s SeldonMessageGrpcClient) Chain(ctx context.Context, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+func (s SeldonMessageGrpcClient) Chain(ctx context.Context, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	return msg, nil
 }
 

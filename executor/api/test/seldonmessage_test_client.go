@@ -19,7 +19,7 @@ type SeldonMessageTestClient struct {
 	err         error
 }
 
-func (s SeldonMessageTestClient) Chain(ctx context.Context, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+func (s SeldonMessageTestClient) Chain(ctx context.Context, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	return msg, nil
 }
 

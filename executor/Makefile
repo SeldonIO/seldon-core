@@ -44,6 +44,10 @@ compile_tensorflow_proto:
 	cd proto/tensorflow/core && go mod init github.com/tensorflow/tensorflow/tensorflow/go/core && cd -
 	go build ./proto/tensorflow/serving
 
+.PHONY: add_protos
+add_protos:
+	cd tensorflow && find ./tensorflow -name '*.proto' | cpio -pdm ../proto
+
 # Run tests
 test: fmt vet
 	go test ./api/... ./predictor/...  -coverprofile cover.out
