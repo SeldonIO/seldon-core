@@ -11,11 +11,11 @@ spec:
     - spec:
         containers:
         - image: rafalskolasinski/seldon-experiments:outliersdetector-0.1
-          name: model-outliers
+          name: outliersdetector
           imagePullPolicy: Always
     graph:
       children: []
-      name: model-outliers
+      name: outliersdetector
       type: MODEL
       endpoint:
         type: REST
