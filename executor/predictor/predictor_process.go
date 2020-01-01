@@ -47,76 +47,99 @@ func hasMethod(method v1.PredictiveUnitMethod, methods *[]v1.PredictiveUnitMetho
 }
 
 func (p *PredictorProcess) transformInput(node *v1.PredictiveUnit, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+	callModel := false
+	callTransformInput := false
 	if (*node).Type != nil {
 		switch *node.Type {
 		case v1.MODEL:
-			msg, err := p.Client.Chain(p.Ctx, node.Name, msg)
-			if err != nil {
-				return nil, err
-			}
-			return p.Client.Predict(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
+			callModel = true
 		case v1.TRANSFORMER:
-			msg, err := p.Client.Chain(p.Ctx, node.Name, msg)
-			if err != nil {
-				return nil, err
-			}
-			return p.Client.TransformInput(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
+			callTransformInput = true
 		}
 	}
 	if hasMethod(v1.TRANSFORM_INPUT, node.Methods) {
+		callTransformInput = true
+	}
+	if callModel {
+		msg, err := p.Client.Chain(p.Ctx, node.Name, msg)
+		if err != nil {
+			return nil, err
+		}
+		return p.Client.Predict(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
+	} else if callTransformInput {
 		msg, err := p.Client.Chain(p.Ctx, node.Name, msg)
 		if err != nil {
 			return nil, err
 		}
 		return p.Client.TransformInput(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
+	} else {
+		return msg, nil
 	}
-	return msg, nil
+
 }
 
 func (p *PredictorProcess) transformOutput(node *v1.PredictiveUnit, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+	callClient := false
 	if (*node).Type != nil {
 		switch *node.Type {
 		case v1.OUTPUT_TRANSFORMER:
-			msg, err := p.Client.Chain(p.Ctx, node.Name, msg)
-			if err != nil {
-				return nil, err
-			}
-			return p.Client.TransformOutput(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
+			callClient = true
 		}
 	}
 	if hasMethod(v1.TRANSFORM_OUTPUT, node.Methods) {
-		return p.Client.TransformOutput(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
+		callClient = true
 	}
-	return msg, nil
+
+	if callClient {
+		msg, err := p.Client.Chain(p.Ctx, node.Name, msg)
+		if err != nil {
+			return nil, err
+		}
+		return p.Client.TransformOutput(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
+	} else {
+		return msg, nil
+	}
+
 }
 
 func (p *PredictorProcess) route(node *v1.PredictiveUnit, msg payload.SeldonPayload) (int, error) {
+	callClient := false
 	if (*node).Type != nil {
 		switch *node.Type {
 		case v1.ROUTER:
-			return p.Client.Route(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
+			callClient = true
 		}
 	}
 	if hasMethod(v1.ROUTE, node.Methods) {
+		callClient = true
+	}
+	if callClient {
 		return p.Client.Route(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
-	}
-	if node.Implementation != nil && *node.Implementation == v1.RANDOM_ABTEST {
+	} else if node.Implementation != nil && *node.Implementation == v1.RANDOM_ABTEST {
 		return p.abTestRouter(node)
+	} else {
+		return -1, nil
 	}
-	return -1, nil
 }
 
 func (p *PredictorProcess) aggregate(node *v1.PredictiveUnit, msg []payload.SeldonPayload) (payload.SeldonPayload, error) {
+	callClient := false
 	if (*node).Type != nil {
 		switch *node.Type {
 		case v1.COMBINER:
-			return p.Client.Combine(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
+			callClient = true
 		}
 	}
 	if hasMethod(v1.AGGREGATE, node.Methods) {
-		return p.Client.Combine(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
+		callClient = true
 	}
-	return msg[0], nil
+
+	if callClient {
+		return p.Client.Combine(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
+	} else {
+		return msg[0], nil
+	}
+
 }
 
 func (p *PredictorProcess) routeChildren(node *v1.PredictiveUnit, msg payload.SeldonPayload) (payload.SeldonPayload, error) {

@@ -9,10 +9,14 @@ import (
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/seldonio/seldon-core/executor/api/client"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
+	"github.com/seldonio/seldon-core/executor/api/metric"
 	"github.com/seldonio/seldon-core/executor/api/payload"
+	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
 	"io"
 	"io/ioutil"
 	"net"
@@ -28,9 +32,12 @@ const (
 )
 
 type JSONRestClient struct {
-	httpClient *http.Client
-	Log        logr.Logger
-	Protocol   string
+	httpClient     *http.Client
+	Log            logr.Logger
+	Protocol       string
+	DeploymentName string
+	predictor      *v1.PredictorSpec
+	histogram      *prometheus.HistogramVec
 }
 
 func (smc *JSONRestClient) CreateErrorPayload(err error) payload.SeldonPayload {
@@ -53,20 +60,60 @@ func (smc *JSONRestClient) Unmarshall(msg []byte) (payload.SeldonPayload, error)
 
 type BytesRestClientOption func(client *JSONRestClient)
 
-func NewJSONRestClient(protocol string, options ...BytesRestClientOption) client.SeldonApiClient {
+func NewJSONRestClient(protocol string, deploymentName string, predictor *v1.PredictorSpec, options ...BytesRestClientOption) client.SeldonApiClient {
+
+	histogram := prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    metric.ClientRequestsMetricName,
+			Help:    "A histogram of latencies for client calls from executor",
+			Buckets: prometheus.DefBuckets,
+		},
+		[]string{metric.DeploymentNameMetric, metric.PredictorNameMetric, metric.PredictorVersionMetric, metric.ModelNameMetric, metric.ModelImageMetric, metric.ModelVersionMetric, "method", "code"},
+	)
+
 	client := JSONRestClient{
-		&http.Client{},
+		http.DefaultClient,
 		logf.Log.WithName("JSONRestClient"),
 		protocol,
+		deploymentName,
+		predictor,
+		histogram,
 	}
 	for i := range options {
 		options[i](&client)
 	}
 
+	err := prometheus.Register(histogram)
+	if err != nil {
+		prometheus.Unregister(histogram)
+		prometheus.Register(histogram)
+	}
+
 	return &client
 }
 
-func (smc *JSONRestClient) PostHttp(ctx context.Context, method string, url *url.URL, msg []byte) ([]byte, string, error) {
+func (smc *JSONRestClient) getMetricsRoundTripper(modelName string) http.RoundTripper {
+	container := v1.GetContainerForPredictiveUnit(smc.predictor, modelName)
+	imageName := ""
+	imageVersion := ""
+	if container != nil {
+		imageParts := strings.Split(container.Image, ":")
+		imageName = imageParts[0]
+		if len(imageParts) == 2 {
+			imageVersion = imageParts[1]
+		}
+	}
+	return promhttp.InstrumentRoundTripperDuration(smc.histogram.MustCurryWith(prometheus.Labels{
+		metric.DeploymentNameMetric:   smc.DeploymentName,
+		metric.PredictorNameMetric:    smc.predictor.Name,
+		metric.PredictorVersionMetric: smc.predictor.Annotations["version"],
+		metric.ModelNameMetric:        modelName,
+		metric.ModelImageMetric:       imageName,
+		metric.ModelVersionMetric:     imageVersion,
+	}), http.DefaultTransport)
+}
+
+func (smc *JSONRestClient) PostHttp(ctx context.Context, modelName string, method string, url *url.URL, msg []byte) ([]byte, string, error) {
 	smc.Log.Info("Calling HTTP", "URL", url)
 
 	req, err := http.NewRequest("POST", url.String(), bytes.NewBuffer(msg))
@@ -86,7 +133,10 @@ func (smc *JSONRestClient) PostHttp(ctx context.Context, method string, url *url
 		tracer.Inject(clientSpan.Context(), opentracing.HTTPHeaders, opentracing.HTTPHeadersCarrier(req.Header))
 	}
 
-	response, err := smc.httpClient.Do(req)
+	client := smc.httpClient
+	client.Transport = smc.getMetricsRoundTripper(modelName)
+
+	response, err := client.Do(req)
 	if err != nil {
 		return nil, "", err
 	}
@@ -123,13 +173,13 @@ func (smc *JSONRestClient) getMethod(method string, modelName string) string {
 	return method
 }
 
-func (smc *JSONRestClient) call(ctx context.Context, method string, host string, port int32, req payload.SeldonPayload) (payload.SeldonPayload, error) {
+func (smc *JSONRestClient) call(ctx context.Context, modelName string, method string, host string, port int32, req payload.SeldonPayload) (payload.SeldonPayload, error) {
 	url := url.URL{
 		Scheme: "http",
 		Host:   net.JoinHostPort(host, strconv.Itoa(int(port))),
 		Path:   method,
 	}
-	sm, contentType, err := smc.PostHttp(ctx, method, &url, req.GetPayload().([]byte))
+	sm, contentType, err := smc.PostHttp(ctx, modelName, method, &url, req.GetPayload().([]byte))
 	if err != nil {
 		return nil, err
 	}
@@ -148,16 +198,16 @@ func (smc *JSONRestClient) Chain(ctx context.Context, modelName string, msg payl
 }
 
 func (smc *JSONRestClient) Predict(ctx context.Context, modelName string, host string, port int32, req payload.SeldonPayload) (payload.SeldonPayload, error) {
-	return smc.call(ctx, smc.getMethod(client.SeldonPredictPath, modelName), host, port, req)
+	return smc.call(ctx, modelName, smc.getMethod(client.SeldonPredictPath, modelName), host, port, req)
 }
 
 func (smc *JSONRestClient) TransformInput(ctx context.Context, modelName string, host string, port int32, req payload.SeldonPayload) (payload.SeldonPayload, error) {
-	return smc.call(ctx, smc.getMethod(client.SeldonTransformInputPath, modelName), host, port, req)
+	return smc.call(ctx, modelName, smc.getMethod(client.SeldonTransformInputPath, modelName), host, port, req)
 }
 
 // Try to extract from SeldonMessage otherwise fall back to extract from Json Array
 func (smc *JSONRestClient) Route(ctx context.Context, modelName string, host string, port int32, req payload.SeldonPayload) (int, error) {
-	sp, err := smc.call(ctx, smc.getMethod(client.SeldonRoutePath, modelName), host, port, req)
+	sp, err := smc.call(ctx, modelName, smc.getMethod(client.SeldonRoutePath, modelName), host, port, req)
 	if err != nil {
 		return 0, err
 	} else {
@@ -201,9 +251,9 @@ func (smc *JSONRestClient) Combine(ctx context.Context, modelName string, host s
 	joined := strings.Join(strData, ",")
 	jStr := "[" + joined + "]"
 	req := payload.BytesPayload{Msg: []byte(jStr)}
-	return smc.call(ctx, smc.getMethod(client.SeldonCombinePath, modelName), host, port, &req)
+	return smc.call(ctx, modelName, smc.getMethod(client.SeldonCombinePath, modelName), host, port, &req)
 }
 
 func (smc *JSONRestClient) TransformOutput(ctx context.Context, modelName string, host string, port int32, req payload.SeldonPayload) (payload.SeldonPayload, error) {
-	return smc.call(ctx, smc.getMethod(client.SeldonTransformOutputPath, modelName), host, port, req)
+	return smc.call(ctx, modelName, smc.getMethod(client.SeldonTransformOutputPath, modelName), host, port, req)
 }

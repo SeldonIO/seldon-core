@@ -6,8 +6,11 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/log"
 	"github.com/seldonio/seldon-core/executor/api/client"
+	"github.com/seldonio/seldon-core/executor/api/metric"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/logger"
 	"github.com/seldonio/seldon-core/executor/predictor"
@@ -19,17 +22,18 @@ import (
 )
 
 type SeldonRestApi struct {
-	Router     *mux.Router
-	Client     client.SeldonApiClient
-	predictor  *v1.PredictorSpec
-	Log        logr.Logger
-	ProbesOnly bool
-	ServerUrl  *url.URL
-	Namespace  string
-	Protocol   string
+	Router         *mux.Router
+	Client         client.SeldonApiClient
+	predictor      *v1.PredictorSpec
+	Log            logr.Logger
+	ProbesOnly     bool
+	ServerUrl      *url.URL
+	Namespace      string
+	Protocol       string
+	DeploymentName string
 }
 
-func NewSeldonRestApi(predictor *v1.PredictorSpec, client client.SeldonApiClient, probesOnly bool, serverUrl *url.URL, namespace string, protocol string) *SeldonRestApi {
+func NewSeldonRestApi(predictor *v1.PredictorSpec, client client.SeldonApiClient, probesOnly bool, serverUrl *url.URL, namespace string, protocol string, deploymentName string) *SeldonRestApi {
 	return &SeldonRestApi{
 		mux.NewRouter(),
 		client,
@@ -39,6 +43,7 @@ func NewSeldonRestApi(predictor *v1.PredictorSpec, client client.SeldonApiClient
 		serverUrl,
 		namespace,
 		protocol,
+		deploymentName,
 	}
 }
 
@@ -63,16 +68,45 @@ func (r *SeldonRestApi) respondWithError(w http.ResponseWriter, err error) {
 	}
 }
 
+func (r *SeldonRestApi) wrapMetrics(baseHandler http.HandlerFunc) http.HandlerFunc {
+	histogram := prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    metric.ServerRequestsMetricName,
+			Help:    "A histogram of latencies for executor server",
+			Buckets: prometheus.DefBuckets,
+		},
+		[]string{metric.DeploymentNameMetric, metric.PredictorNameMetric, metric.PredictorVersionMetric, "method", "code"},
+	)
+	err := prometheus.Register(histogram)
+	if err != nil {
+		prometheus.Unregister(histogram)
+		prometheus.Register(histogram)
+	}
+
+	handler := promhttp.InstrumentHandlerDuration(
+		histogram.MustCurryWith(prometheus.Labels{
+			metric.DeploymentNameMetric:   r.DeploymentName,
+			metric.PredictorNameMetric:    r.predictor.Name,
+			metric.PredictorVersionMetric: r.predictor.Annotations["version"]}),
+		baseHandler,
+	)
+	return handler
+}
+
 func (r *SeldonRestApi) Initialise() {
 	r.Router.HandleFunc("/ready", r.checkReady)
 	r.Router.HandleFunc("/live", r.alive)
+	r.Router.Handle("/metrics", promhttp.Handler())
 	if !r.ProbesOnly {
 		switch r.Protocol {
 		case ProtocolSeldon:
+			predictionsHandler := r.wrapMetrics(http.HandlerFunc(r.predictions))
 			api01 := r.Router.PathPrefix("/api/v0.1").Methods("POST").Subrouter()
-			api01.HandleFunc("/predictions", r.predictions)
+			//api01.HandleFunc("/predictions", r.predictions)
+			api01.Handle("/predictions", predictionsHandler)
 			api1 := r.Router.PathPrefix("/api/v1").Methods("POST").Subrouter()
-			api1.HandleFunc("/predictions", r.predictions)
+			//api1.HandleFunc("/predictions", r.predictions)
+			api1.Handle("/predictions", predictionsHandler)
 		case ProtocolTensorflow:
 			r.Router.NewRoute().Path("/v1/models:predict").Methods("POST").HandlerFunc(r.predictions)
 		}

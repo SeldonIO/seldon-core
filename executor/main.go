@@ -92,10 +92,11 @@ func getServerUrl(hostname string, port int) (*url.URL, error) {
 	return url.Parse(fmt.Sprintf("http://%s:%d/", hostname, port))
 }
 
-func runHttpServer(logger logr.Logger, predictor *v1.PredictorSpec, client seldonclient.SeldonApiClient, port int, probesOnly bool, serverUrl *url.URL, namespace string, protocol string) {
+func runHttpServer(logger logr.Logger, predictor *v1.PredictorSpec, client seldonclient.SeldonApiClient, port int,
+	probesOnly bool, serverUrl *url.URL, namespace string, protocol string, deploymentName string) {
 
 	// Create REST API
-	seldonRest := rest.NewSeldonRestApi(predictor, client, probesOnly, serverUrl, namespace, protocol)
+	seldonRest := rest.NewSeldonRestApi(predictor, client, probesOnly, serverUrl, namespace, protocol, deploymentName)
 	seldonRest.Initialise()
 
 	address := fmt.Sprintf("0.0.0.0:%d", port)
@@ -251,12 +252,12 @@ func main() {
 	defer closer.Close()
 
 	if *transport == "http" {
-		clientRest := rest.NewJSONRestClient(*protocol)
+		clientRest := rest.NewJSONRestClient(*protocol, *sdepName, predictor)
 		logger.Info("Running http server ", "port", *httpPort)
-		runHttpServer(logger, predictor, clientRest, *httpPort, false, serverUrl, *namespace, *protocol)
+		runHttpServer(logger, predictor, clientRest, *httpPort, false, serverUrl, *namespace, *protocol, *sdepName)
 	} else {
 		logger.Info("Running http server ", "port", *httpPort)
-		go runHttpServer(logger, predictor, nil, *httpPort, true, serverUrl, *namespace, *protocol)
+		go runHttpServer(logger, predictor, nil, *httpPort, true, serverUrl, *namespace, *protocol, *sdepName)
 		logger.Info("Running grpc server ", "port", *grpcPort)
 		var clientGrpc seldonclient.SeldonApiClient
 		if *protocol == "seldon" {
