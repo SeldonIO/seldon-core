@@ -1,3 +1,4 @@
+import logging
 import dill
 import os
 
@@ -16,5 +17,10 @@ class Model:
 
     def predict(self, X, feature_names=[]):
         """Run input X through loanclassifier model."""
+        logging.info("Input: " + str(X))
+
         X_prep = self.preprocessor.transform(X)
-        return self.clf.predict_proba(X_prep)
+        output = self.clf.predict_proba(X_prep)
+
+        logging.info("Output: " + str(output))
+        return output
