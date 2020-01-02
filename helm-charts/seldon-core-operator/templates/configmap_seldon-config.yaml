@@ -1,9 +1,8 @@
 apiVersion: v1
 data:
-  credentials: "{\n   \"gcs\" : {\n       \"gcsCredentialFileName\": \"gcloud-application-credentials.json\"\n   },\n   \"s3\" : {\n       \"s3AccessKeyIDName\": \"awsAccessKeyID\",\n       \"s3SecretAccessKeyName\": \"awsSecretAccessKey\"\n   }\n}"
-  predictor_servers: "{\n    \"TENSORFLOW_SERVER\": {\n        \"tensorflow\": true,\n        \"tfImage\": \"tensorflow/serving:latest\",\n        \"rest\": {\n          \"image\": \"seldonio/tfserving-proxy_rest\",\n          \"defaultImageVersion\": \"0.7\"\n        },\n        \"grpc\": {\n          \"image\": \"seldonio/tfserving-proxy_grpc\",\n          \"defaultImageVersion\": \"0.7\"\n        }\n    },\n    \"SKLEARN_SERVER\": {\n        \"rest\": {\n          \"image\": \"seldonio/sklearnserver_rest\",\n          \"defaultImageVersion\": \"0.2\"\n        },\n        \"grpc\": {\n          \"image\": \"seldonio/sklearnserver_grpc\",\n          \"defaultImageVersion\": \"0.2\"\n        }\n    },\n    \"XGBOOST_SERVER\": {\n        \"rest\": {\n          \"image\": \"seldonio/xgboostserver_rest\",\n          \"defaultImageVersion\": \"0.2\"\n        },\n        \"grpc\": {\n          \"image\": \"seldonio/xgboostserver_grpc\",\n          \"defaultImageVersion\": \"0.2\"\n        }\n\
-    \    },\n    \"MLFLOW_SERVER\": {\n        \"rest\": {\n          \"image\": \"seldonio/mlflowserver_rest\",\n          \"defaultImageVersion\": \"0.2\"\n        },\n        \"grpc\": {\n          \"image\": \"seldonio/mlflowserver_grpc\",\n          \"defaultImageVersion\": \"0.2\"\n        }\n    }\n}"
-  storageInitializer: "{\n    \"image\" : \"gcr.io/kfserving/storage-initializer:0.2.1\",\n    \"memoryRequest\": \"100Mi\",\n    \"memoryLimit\": \"1Gi\",\n    \"cpuRequest\": \"100m\",\n    \"cpuLimit\": \"1\"\n}"
+  credentials: '{{ .Values.credentials }}'
+  predictor_servers: '{{ .Values.predictor_servers }}'
+  storageInitializer: '{{ .Values.storageInitializer }}'
 kind: ConfigMap
 metadata:
   labels:

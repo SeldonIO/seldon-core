@@ -102,6 +102,11 @@ if __name__ == "__main__":
                 res["spec"]["template"]["spec"]["containers"][0]["args"].append("{{- if .Values.singleNamespace }}--namespace={{ .Release.Namespace }}{{- end }}")
 
 
+            if kind == "configmap" and name == "seldon-config":
+                res["data"]["credentials"] = helm_value("credentials")
+                res["data"]["predictor_servers"] = helm_value("predictor_servers")
+                res["data"]["storageInitializer"] = helm_value("storageInitializer")
+
             if kind == "serviceaccount" and name == "seldon-manager":
                 res["metadata"]["name"] = helm_value("serviceAccount.name")
 
