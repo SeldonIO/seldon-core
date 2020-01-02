@@ -17,12 +17,21 @@ spec:
         - image: rafalskolasinski/seldon-experiments:loanclassifier-0.1
           name: loanclassifier
           imagePullPolicy: Always
+          env:
+          - name: SELDON_LOG_LEVEL
+            value: DEBUG
         - image: rafalskolasinski/seldon-experiments:outliersdetector-0.1
           name: outliersdetector
           imagePullPolicy: Always
+          env:
+          - name: SELDON_LOG_LEVEL
+            value: DEBUG
         - image: rafalskolasinski/seldon-experiments:combiner-0.1
           name: combiner
           imagePullPolicy: Always
+          env:
+          - name: SELDON_LOG_LEVEL
+            value: DEBUG
     graph:
       children:
       - children: []
