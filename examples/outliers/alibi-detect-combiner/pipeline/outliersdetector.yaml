@@ -10,9 +10,8 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: rafalskolasinski/seldon-experiments:outliersdetector-0.1
+        - image: outliersdetector:0.1
           name: outliersdetector
-          imagePullPolicy: Always
           env:
           - name: SELDON_LOG_LEVEL
             value: DEBUG
