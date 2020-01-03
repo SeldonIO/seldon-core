@@ -4,11 +4,14 @@ import (
 	"context"
 	"fmt"
 	"github.com/go-logr/logr"
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_opentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
 	"github.com/opentracing/opentracing-go"
 	"github.com/seldonio/seldon-core/executor/api/client"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
+	"github.com/seldonio/seldon-core/executor/api/metric"
 	"github.com/seldonio/seldon-core/executor/api/payload"
+	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
 	"google.golang.org/grpc"
 	"io"
 	"math"
@@ -17,25 +20,29 @@ import (
 )
 
 type SeldonMessageGrpcClient struct {
-	Log         logr.Logger
-	callOptions []grpc.CallOption
-	conns       map[string]*grpc.ClientConn
+	Log            logr.Logger
+	callOptions    []grpc.CallOption
+	conns          map[string]*grpc.ClientConn
+	Predictor      *v1.PredictorSpec
+	DeploymentName string
 }
 
-func NewSeldonGrpcClient() client.SeldonApiClient {
+func NewSeldonGrpcClient(spec *v1.PredictorSpec, deploymentName string) client.SeldonApiClient {
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),
 	}
 	smgc := SeldonMessageGrpcClient{
-		Log:         logf.Log.WithName("SeldonGrpcClient"),
-		callOptions: opts,
-		conns:       make(map[string]*grpc.ClientConn),
+		Log:            logf.Log.WithName("SeldonGrpcClient"),
+		callOptions:    opts,
+		conns:          make(map[string]*grpc.ClientConn),
+		Predictor:      spec,
+		DeploymentName: deploymentName,
 	}
 	return smgc
 }
 
-func (s SeldonMessageGrpcClient) getConnection(host string, port int32) (*grpc.ClientConn, error) {
+func (s SeldonMessageGrpcClient) getConnection(host string, port int32, modelName string) (*grpc.ClientConn, error) {
 	k := fmt.Sprintf("%s:%d", host, port)
 	if conn, ok := s.conns[k]; ok {
 		return conn, nil
@@ -44,7 +51,10 @@ func (s SeldonMessageGrpcClient) getConnection(host string, port int32) (*grpc.C
 			grpc.WithInsecure(),
 		}
 		if opentracing.IsGlobalTracerRegistered() {
-			opts = append(opts, grpc.WithUnaryInterceptor(grpc_opentracing.UnaryClientInterceptor()))
+			opts = append(opts, grpc.WithUnaryInterceptor(grpc_middleware.ChainUnaryClient(grpc_opentracing.UnaryClientInterceptor(),
+				metric.NewClientMetrics(s.Predictor, s.DeploymentName, modelName).UnaryClientInterceptor())))
+		} else {
+			opts = append(opts, grpc.WithUnaryInterceptor(metric.NewClientMetrics(s.Predictor, s.DeploymentName, modelName).UnaryClientInterceptor()))
 		}
 		conn, err := grpc.Dial(fmt.Sprintf("%s:%d", host, port), opts...)
 		if err != nil {
@@ -60,7 +70,7 @@ func (s SeldonMessageGrpcClient) Chain(ctx context.Context, modelName string, ms
 }
 
 func (s SeldonMessageGrpcClient) Predict(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
-	conn, err := s.getConnection(host, port)
+	conn, err := s.getConnection(host, port, modelName)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
 	}
@@ -74,7 +84,7 @@ func (s SeldonMessageGrpcClient) Predict(ctx context.Context, modelName string, 
 }
 
 func (s SeldonMessageGrpcClient) TransformInput(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
-	conn, err := s.getConnection(host, port)
+	conn, err := s.getConnection(host, port, modelName)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
 	}
@@ -88,7 +98,7 @@ func (s SeldonMessageGrpcClient) TransformInput(ctx context.Context, modelName s
 }
 
 func (s SeldonMessageGrpcClient) Route(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (int, error) {
-	conn, err := s.getConnection(host, port)
+	conn, err := s.getConnection(host, port, modelName)
 	if err != nil {
 		return 0, err
 	}
@@ -103,7 +113,7 @@ func (s SeldonMessageGrpcClient) Route(ctx context.Context, modelName string, ho
 }
 
 func (s SeldonMessageGrpcClient) Combine(ctx context.Context, modelName string, host string, port int32, msgs []payload.SeldonPayload) (payload.SeldonPayload, error) {
-	conn, err := s.getConnection(host, port)
+	conn, err := s.getConnection(host, port, modelName)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
 	}
@@ -122,7 +132,7 @@ func (s SeldonMessageGrpcClient) Combine(ctx context.Context, modelName string, 
 }
 
 func (s SeldonMessageGrpcClient) TransformOutput(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
-	conn, err := s.getConnection(host, port)
+	conn, err := s.getConnection(host, port, modelName)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
 	}

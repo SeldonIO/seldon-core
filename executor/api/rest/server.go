@@ -31,9 +31,14 @@ type SeldonRestApi struct {
 	Namespace      string
 	Protocol       string
 	DeploymentName string
+	metrics        *metric.ServerMetrics
 }
 
 func NewSeldonRestApi(predictor *v1.PredictorSpec, client client.SeldonApiClient, probesOnly bool, serverUrl *url.URL, namespace string, protocol string, deploymentName string) *SeldonRestApi {
+	var serverMetrics *metric.ServerMetrics
+	if !probesOnly {
+		serverMetrics = metric.NewServerMetrics(predictor, deploymentName)
+	}
 	return &SeldonRestApi{
 		mux.NewRouter(),
 		client,
@@ -44,6 +49,7 @@ func NewSeldonRestApi(predictor *v1.PredictorSpec, client client.SeldonApiClient
 		namespace,
 		protocol,
 		deploymentName,
+		serverMetrics,
 	}
 }
 
@@ -68,26 +74,14 @@ func (r *SeldonRestApi) respondWithError(w http.ResponseWriter, err error) {
 	}
 }
 
-func (r *SeldonRestApi) wrapMetrics(baseHandler http.HandlerFunc) http.HandlerFunc {
-	histogram := prometheus.NewHistogramVec(
-		prometheus.HistogramOpts{
-			Name:    metric.ServerRequestsMetricName,
-			Help:    "A histogram of latencies for executor server",
-			Buckets: prometheus.DefBuckets,
-		},
-		[]string{metric.DeploymentNameMetric, metric.PredictorNameMetric, metric.PredictorVersionMetric, "method", "code"},
-	)
-	err := prometheus.Register(histogram)
-	if err != nil {
-		prometheus.Unregister(histogram)
-		prometheus.Register(histogram)
-	}
+func (r *SeldonRestApi) wrapMetrics(service string, baseHandler http.HandlerFunc) http.HandlerFunc {
 
 	handler := promhttp.InstrumentHandlerDuration(
-		histogram.MustCurryWith(prometheus.Labels{
+		r.metrics.ServerHandledHistogram.MustCurryWith(prometheus.Labels{
 			metric.DeploymentNameMetric:   r.DeploymentName,
 			metric.PredictorNameMetric:    r.predictor.Name,
-			metric.PredictorVersionMetric: r.predictor.Annotations["version"]}),
+			metric.PredictorVersionMetric: r.predictor.Annotations["version"],
+			metric.ServiceMetric:          service}),
 		baseHandler,
 	)
 	return handler
@@ -98,17 +92,15 @@ func (r *SeldonRestApi) Initialise() {
 	r.Router.HandleFunc("/live", r.alive)
 	r.Router.Handle("/metrics", promhttp.Handler())
 	if !r.ProbesOnly {
+		//predictionsHandler := r.wrapMetrics(metric.PredictionHttpServiceName, r.predictions)
 		switch r.Protocol {
 		case ProtocolSeldon:
-			predictionsHandler := r.wrapMetrics(http.HandlerFunc(r.predictions))
 			api01 := r.Router.PathPrefix("/api/v0.1").Methods("POST").Subrouter()
-			//api01.HandleFunc("/predictions", r.predictions)
-			api01.Handle("/predictions", predictionsHandler)
+			api01.Handle("/predictions", r.wrapMetrics("/api/v0.1/predictions", r.predictions))
 			api1 := r.Router.PathPrefix("/api/v1").Methods("POST").Subrouter()
-			//api1.HandleFunc("/predictions", r.predictions)
-			api1.Handle("/predictions", predictionsHandler)
+			api1.Handle("/predictions", r.wrapMetrics("/api/v1/predictions", r.predictions))
 		case ProtocolTensorflow:
-			r.Router.NewRoute().Path("/v1/models:predict").Methods("POST").HandlerFunc(r.predictions)
+			r.Router.NewRoute().Path("/v1/models:predict").Methods("POST").HandlerFunc(r.wrapMetrics("/v1/models:predict", r.predictions))
 		}
 	}
 }

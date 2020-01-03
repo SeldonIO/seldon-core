@@ -17,14 +17,11 @@ spec:
     graph:
       children: []
       endpoint:
-        type: REST
+        type: GRPC
         service_host: 0.0.0.0
         service_port: 9000
       name: classifier
       type: MODEL
-      logger:
-        mode: all
-        url: http://localhost:2222
     labels:
       version: v1
     name: example

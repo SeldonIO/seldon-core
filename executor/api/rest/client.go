@@ -37,7 +37,7 @@ type JSONRestClient struct {
 	Protocol       string
 	DeploymentName string
 	predictor      *v1.PredictorSpec
-	histogram      *prometheus.HistogramVec
+	metrics        *metric.ClientMetrics
 }
 
 func (smc *JSONRestClient) CreateErrorPayload(err error) payload.SeldonPayload {
@@ -62,37 +62,22 @@ type BytesRestClientOption func(client *JSONRestClient)
 
 func NewJSONRestClient(protocol string, deploymentName string, predictor *v1.PredictorSpec, options ...BytesRestClientOption) client.SeldonApiClient {
 
-	histogram := prometheus.NewHistogramVec(
-		prometheus.HistogramOpts{
-			Name:    metric.ClientRequestsMetricName,
-			Help:    "A histogram of latencies for client calls from executor",
-			Buckets: prometheus.DefBuckets,
-		},
-		[]string{metric.DeploymentNameMetric, metric.PredictorNameMetric, metric.PredictorVersionMetric, metric.ModelNameMetric, metric.ModelImageMetric, metric.ModelVersionMetric, "method", "code"},
-	)
-
 	client := JSONRestClient{
 		http.DefaultClient,
 		logf.Log.WithName("JSONRestClient"),
 		protocol,
 		deploymentName,
 		predictor,
-		histogram,
+		metric.NewClientMetrics(predictor, deploymentName, ""),
 	}
 	for i := range options {
 		options[i](&client)
 	}
 
-	err := prometheus.Register(histogram)
-	if err != nil {
-		prometheus.Unregister(histogram)
-		prometheus.Register(histogram)
-	}
-
 	return &client
 }
 
-func (smc *JSONRestClient) getMetricsRoundTripper(modelName string) http.RoundTripper {
+func (smc *JSONRestClient) getMetricsRoundTripper(modelName string, service string) http.RoundTripper {
 	container := v1.GetContainerForPredictiveUnit(smc.predictor, modelName)
 	imageName := ""
 	imageVersion := ""
@@ -103,10 +88,11 @@ func (smc *JSONRestClient) getMetricsRoundTripper(modelName string) http.RoundTr
 			imageVersion = imageParts[1]
 		}
 	}
-	return promhttp.InstrumentRoundTripperDuration(smc.histogram.MustCurryWith(prometheus.Labels{
+	return promhttp.InstrumentRoundTripperDuration(smc.metrics.ClientHandledHistogram.MustCurryWith(prometheus.Labels{
 		metric.DeploymentNameMetric:   smc.DeploymentName,
 		metric.PredictorNameMetric:    smc.predictor.Name,
 		metric.PredictorVersionMetric: smc.predictor.Annotations["version"],
+		metric.ServiceMetric:          service,
 		metric.ModelNameMetric:        modelName,
 		metric.ModelImageMetric:       imageName,
 		metric.ModelVersionMetric:     imageVersion,
@@ -134,7 +120,7 @@ func (smc *JSONRestClient) PostHttp(ctx context.Context, modelName string, metho
 	}
 
 	client := smc.httpClient
-	client.Transport = smc.getMetricsRoundTripper(modelName)
+	client.Transport = smc.getMetricsRoundTripper(modelName, method)
 
 	response, err := client.Do(req)
 	if err != nil {

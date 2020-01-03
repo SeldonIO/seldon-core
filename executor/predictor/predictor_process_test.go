@@ -313,3 +313,47 @@ func TestModelWithLogRequests(t *testing.T) {
 	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(gomega.Equal(2.0))
 	g.Eventually(func() bool { return logged }).Should(gomega.Equal(true))
 }
+
+func TestModelWithLogResponses(t *testing.T) {
+	t.Logf("Started")
+	g := gomega.NewGomegaWithT(t)
+	modelName := "foo"
+	logged := false
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		g.Expect(r.Header.Get(logger.CloudEventsIdHeader)).Should(gomega.Equal(testEventId))
+		g.Expect(r.Header.Get(logger.CloudEventsTypeHeader)).Should(gomega.Equal(logger.CEInferenceResponse))
+		g.Expect(r.Header.Get(logger.CloudEventsTypeSource)).Should(gomega.Equal(testSourceUrl))
+		g.Expect(r.Header.Get(logger.ModelIdHeader)).Should(gomega.Equal(modelName))
+		g.Expect(r.Header.Get("Content-Type")).Should(gomega.Equal(grpc.ProtobufContentType))
+		w.Write([]byte(""))
+		logged = true
+	})
+	server := httptest.NewServer(handler)
+	defer server.Close()
+
+	logf.SetLogger(logf.ZapLogger(false))
+	log := logf.Log.WithName("entrypoint")
+	logger.StartDispatcher(1, log)
+
+	model := v1.MODEL
+	graph := &v1.PredictiveUnit{
+		Name: modelName,
+		Type: &model,
+		Endpoint: &v1.Endpoint{
+			ServiceHost: "foo",
+			ServicePort: 9000,
+			Type:        v1.REST,
+		},
+		Logger: &v1.Logger{
+			Mode: v1.LogResponse,
+			Url:  &server.URL,
+		},
+	}
+
+	pResp, err := createPredictorProcess(t).Execute(graph, createPayload(g))
+	g.Expect(err).Should(gomega.BeNil())
+	smRes := pResp.GetPayload().(*proto.SeldonMessage)
+	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(gomega.Equal(1.1))
+	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(gomega.Equal(2.0))
+	g.Eventually(func() bool { return logged }).Should(gomega.Equal(true))
+}

@@ -225,7 +225,7 @@ func (p *PredictorProcess) Execute(node *v1.PredictiveUnit, msg payload.SeldonPa
 	response, err := p.transformOutput(node, cmsg)
 	// Log Response
 	if err == nil && node.Logger != nil && (node.Logger.Mode == v1.LogResponse || node.Logger.Mode == v1.LogAll) {
-		p.logPayload(node.Name, node.Logger, payloadLogger.InferenceResponse, msg)
+		p.logPayload(node.Name, node.Logger, payloadLogger.InferenceResponse, response)
 	}
 	return response, err
 }

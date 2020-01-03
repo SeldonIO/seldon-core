@@ -22,9 +22,6 @@ spec:
         service_port: 9000
       name: classifier
       type: MODEL
-      logger:
-        mode: all
-        url: http://localhost:2222
     labels:
       version: v1
     name: example

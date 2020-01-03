@@ -139,12 +139,12 @@ func runHttpServer(logger logr.Logger, predictor *v1.PredictorSpec, client seldo
 
 }
 
-func runGrpcServer(logger logr.Logger, predictor *v1.PredictorSpec, client seldonclient.SeldonApiClient, port int, serverUrl *url.URL, namespace string, protocol string) {
+func runGrpcServer(logger logr.Logger, predictor *v1.PredictorSpec, client seldonclient.SeldonApiClient, port int, serverUrl *url.URL, namespace string, protocol string, deploymentName string) {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	grpcServer := grpc.CreateGrpcServer()
+	grpcServer := grpc.CreateGrpcServer(predictor, deploymentName)
 	if protocol == rest.ProtocolSeldon {
 		seldonGrpcServer := seldon.NewGrpcSeldonServer(predictor, client, serverUrl, namespace)
 		proto.RegisterSeldonServer(grpcServer, seldonGrpcServer)
@@ -261,11 +261,11 @@ func main() {
 		logger.Info("Running grpc server ", "port", *grpcPort)
 		var clientGrpc seldonclient.SeldonApiClient
 		if *protocol == "seldon" {
-			clientGrpc = seldon.NewSeldonGrpcClient()
+			clientGrpc = seldon.NewSeldonGrpcClient(predictor, *sdepName)
 		} else {
 			clientGrpc = tensorflow.NewSeldonGrpcClient()
 		}
-		runGrpcServer(logger, predictor, clientGrpc, *grpcPort, serverUrl, *namespace, *protocol)
+		runGrpcServer(logger, predictor, clientGrpc, *grpcPort, serverUrl, *namespace, *protocol, *sdepName)
 
 	}
 
