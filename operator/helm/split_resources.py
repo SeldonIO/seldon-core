@@ -45,6 +45,9 @@ HELM_VALUES_IMAGE_PULL_POLICY = '{{ .Values.image.pullPolicy }}'
 def helm_value(value: str):
     return '{{ .Values.' + value + ' }}'
 
+def helm_value_json(value: str):
+    return '{{ .Values.' + value + ' | toJson }}'
+
 def helm_release(value: str):
     return '{{ .Release.' + value + ' }}'
 
@@ -103,9 +106,9 @@ if __name__ == "__main__":
 
 
             if kind == "configmap" and name == "seldon-config":
-                res["data"]["credentials"] = helm_value("credentials")
-                res["data"]["predictor_servers"] = helm_value("predictor_servers")
-                res["data"]["storageInitializer"] = helm_value("storageInitializer")
+                res["data"]["credentials"] = helm_value_json("credentials")
+                res["data"]["predictor_servers"] = helm_value_json("predictor_servers")
+                res["data"]["storageInitializer"] = helm_value_json("storageInitializer")
 
             if kind == "serviceaccount" and name == "seldon-manager":
                 res["metadata"]["name"] = helm_value("serviceAccount.name")
