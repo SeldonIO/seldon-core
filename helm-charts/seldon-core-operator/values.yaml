@@ -6,6 +6,13 @@ certManager:
 controllerId: ''
 crd:
   create: true
+executor:
+  enabled: false
+  image:
+    pullPolicy: IfNotPresent
+    registry: docker.io
+    repository: seldonio/executor
+    tag: 1.0.1-SNAPSHOT
 engine:
   grpc:
     port: 5001
@@ -46,6 +53,7 @@ usageMetrics:
   enabled: false
 webhook:
   port: 443
+  image: gcr.io/kfserving/storage-initializer:0.2.1
 credentials:
   gcs:
     gcsCredentialFileName: gcloud-application-credentials.json
@@ -84,7 +92,7 @@ predictor_servers:
       image: seldonio/mlflowserver_grpc
       defaultImageVersion: '0.2'
 storageInitializer:
-  image: gcr.io/kfserving/storage-initializer:0.2.1
+  image: gcr.io/kfserving/storage-initializer:0.2.2
   memoryRequest: 100Mi
   memoryLimit: 1Gi
   cpuRequest: 100m

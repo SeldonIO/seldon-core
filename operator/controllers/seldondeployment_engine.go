@@ -105,7 +105,7 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 	}
 	return corev1.Container{
 		Name:  EngineContainerName,
-		Image: GetEnv("EXECUTOR_CONTAINER_IMAGE_AND_VERSION", "seldonio/seldon-core-executor:0.5.2-SNAPSHOT"),
+		Image: GetEnv("EXECUTOR_CONTAINER_IMAGE_AND_VERSION", "seldonio/seldon-core-executor:1.0.1-SNAPSHOT"),
 		Args: []string{
 			"--sdep", mlDep.Name,
 			"--namespace", mlDep.Namespace,
@@ -114,7 +114,7 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 			"--grpc_port", strconv.Itoa(grpc_port),
 			"--transport", transport,
 		},
-		ImagePullPolicy:          corev1.PullPolicy(GetEnv("ENGINE_CONTAINER_IMAGE_PULL_POLICY", "IfNotPresent")),
+		ImagePullPolicy:          corev1.PullPolicy(GetEnv("EXECUTOR_CONTAINER_IMAGE_PULL_POLICY", "IfNotPresent")),
 		TerminationMessagePath:   "/dev/termination-log",
 		TerminationMessagePolicy: corev1.TerminationMessageReadFile,
 		VolumeMounts: []corev1.VolumeMount{
@@ -145,12 +145,6 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 		Resources: *resources,
 	}
 }
-
-
-
-
-
-
 
 func createEngineContainerSpec(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, predictorB64 string,
 	engine_http_port int, engine_grpc_port int, engineResources *corev1.ResourceRequirements) corev1.Container {
@@ -234,8 +228,9 @@ func createEngineContainer(mlDep *machinelearningv1.SeldonDeployment, p *machine
 	}
 
 	useExecutor := getAnnotation(mlDep, machinelearningv1.ANNOTATION_EXECUTOR, "false")
+	useExecutorEnv := GetEnv("USE_EXECUTOR", "false")
 	var c corev1.Container
-	if useExecutor == "true" {
+	if useExecutor == "true" || useExecutorEnv == "true" {
 		c = createExecutorContainer(mlDep, p, predictorB64, engine_http_port, engine_grpc_port, engineResources)
 	} else {
 		c = createEngineContainerSpec(mlDep, p, predictorB64, engine_http_port, engine_grpc_port, engineResources)

@@ -406,6 +406,12 @@ func checkPredictiveUnits(pu *PredictiveUnit, p *PredictorSpec, fldPath *field.P
 		}
 	}
 
+	if pu.Logger != nil {
+		if pu.Logger.Mode == "" {
+			allErrs = append(allErrs, field.Invalid(fldPath, pu.Logger.Mode, "No logger mode specified"))
+		}
+	}
+
 	for i := 0; i < len(pu.Children); i++ {
 		allErrs = checkPredictiveUnits(&pu.Children[i], p, fldPath.Index(i), allErrs)
 	}

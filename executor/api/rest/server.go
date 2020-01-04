@@ -97,7 +97,7 @@ func (r *SeldonRestApi) Initialise() {
 		case ProtocolSeldon:
 			api01 := r.Router.PathPrefix("/api/v0.1").Methods("POST").Subrouter()
 			api01.Handle("/predictions", r.wrapMetrics("/api/v0.1/predictions", r.predictions))
-			api1 := r.Router.PathPrefix("/api/v1").Methods("POST").Subrouter()
+			api1 := r.Router.PathPrefix("/api/v1.0").Methods("POST").Subrouter()
 			api1.Handle("/predictions", r.wrapMetrics("/api/v1/predictions", r.predictions))
 		case ProtocolTensorflow:
 			r.Router.NewRoute().Path("/v1/models:predict").Methods("POST").HandlerFunc(r.wrapMetrics("/v1/models:predict", r.predictions))

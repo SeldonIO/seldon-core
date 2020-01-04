@@ -62,8 +62,7 @@ docker-push:
 
 
 kind-image-install: docker-build
-	docker save ${IMG} > executor.tar
-	kind load image-archive executor.tar --loglevel trace
+	kind load -v 3 docker-image ${IMG}
 
 
 .PHONY: clean
