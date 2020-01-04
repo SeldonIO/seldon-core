@@ -7,26 +7,18 @@ This Go project replaces the Seldon Java Engine.  It is presently in development
 
 ## Functionality
 
-The focus is to provide a smaller more efficient graph orchestror. It intends to provide:
+The focus is to provide a smaller more efficient graph orchestror.
 
- * http REST Seldon protocol server for Seldon graphs.
- * grpc Seldon protocol server for Seldon graphs.
- * Ability to handle other protocols in future, e.g. Tensorflow or NVIDIA TensorRT Server.
+ * REST and gRPC for Seldon and Tensorflow protocols. Easily extendable to other protocols.
+ * Logging of request and or response payloads to arbitrary URLs with CloudEvents
+ * Tracing for REST and gRPC
+ * Prometheus metrics for REST and gRPC
 
-The REST and gRPC server are more restricted in that:
+Changes to existing service orchestrator
 
- * Only 1 is active and it assume your entire graph made up of REST or gRPC components. Mixing is not allowed.
+ * All components must be REST or gRPC in agraph. No mixing.
+ * Not meta data additions to payloads are carried out by the executor.
 
-The executor at present will not include functionality presently in the Java engine which will need to be provided elsewhere. Specifically:
-
- * No request logging
-   * The roadmap will be to use the kfserving InferenceLogger we are proposing in that project and update the Seldon Deployment schema to allow that to be injected as needd.
- * No graph metrics
-   * The roadmap will be to assume each graph component exposes their own Prometheus metrics
- * No meta data additions
-   * It will be assumed this will be done by graph components.
-
-To realise some of the above the Seldon Wrappers will need to be extended.
 
 ## Testing
 
