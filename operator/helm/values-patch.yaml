@@ -1,51 +1,3 @@
-ambassador:
-  enabled: true
-  singleNamespace: false
-certManager:
-  enabled: false
-controllerId: ''
-crd:
-  create: true
-engine:
-  grpc:
-    port: 5001
-  image:
-    pullPolicy: IfNotPresent
-    registry: docker.io
-    repository: seldonio/engine
-    tag: 1.0.1-SNAPSHOT
-  logMessagesExternally: false
-  port: 8000
-  prometheus:
-    path: prometheus
-  securityContext:
-    enabled: true
-  serviceAccount:
-    name: default
-  user: 8888
-image:
-  pullPolicy: IfNotPresent
-  registry: docker.io
-  repository: seldonio/seldon-core-operator
-  tag: 1.0.1-SNAPSHOT
-istio:
-  enabled: false
-  gateway: seldon-gateway
-  tlsMode: ''
-predictiveUnit:
-  port: 9000
-rbac:
-  configmap:
-    create: true
-  create: true
-serviceAccount:
-  create: true
-  name: seldon-manager
-singleNamespace: false
-usageMetrics:
-  enabled: false
-webhook:
-  port: 443
 credentials:
   gcs:
     gcsCredentialFileName: gcloud-application-credentials.json
@@ -84,7 +36,7 @@ predictor_servers:
       image: seldonio/mlflowserver_grpc
       defaultImageVersion: '0.2'
 storageInitializer:
-  image: gcr.io/kfserving/storage-initializer:0.2.1
+  image: gcr.io/kfserving/storage-initializer:0.2.2
   memoryRequest: 100Mi
   memoryLimit: 1Gi
   cpuRequest: 100m

@@ -19,7 +19,7 @@ HELM_RBAC_CSS_IF_START = '{{- if .Values.rbac.configmap.create }}\n'
 HELM_SA_IF_START = '{{- if .Values.serviceAccount.create -}}\n'
 HELM_CERTMANAGER_IF_START = '{{- if .Values.certManager.enabled -}}\n'
 HELM_NOT_CERTMANAGER_IF_START = '{{- if not .Values.certManager.enabled -}}\n'
-HELM_VERSION_IF_START= '{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}\n'
+HELM_VERSION_IF_START= '{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}\n'
 #HELM_SECRET_IF_START = '{{- if .Values.webhook.secretProvided -}}\n'
 HELM_IF_END = '{{- end }}\n'
 
@@ -44,6 +44,9 @@ HELM_VALUES_IMAGE_PULL_POLICY = '{{ .Values.image.pullPolicy }}'
 
 def helm_value(value: str):
     return '{{ .Values.' + value + ' }}'
+
+def helm_value_json(value: str):
+    return '{{ .Values.' + value + ' | toJson }}'
 
 def helm_release(value: str):
     return '{{ .Release.' + value + ' }}'
@@ -101,6 +104,11 @@ if __name__ == "__main__":
                             argIdx] = "--webhook-port=" + helm_value("webhook.port")
                 res["spec"]["template"]["spec"]["containers"][0]["args"].append("{{- if .Values.singleNamespace }}--namespace={{ .Release.Namespace }}{{- end }}")
 
+
+            if kind == "configmap" and name == "seldon-config":
+                res["data"]["credentials"] = helm_value_json("credentials")
+                res["data"]["predictor_servers"] = helm_value_json("predictor_servers")
+                res["data"]["storageInitializer"] = helm_value_json("storageInitializer")
 
             if kind == "serviceaccount" and name == "seldon-manager":
                 res["metadata"]["name"] = helm_value("serviceAccount.name")
