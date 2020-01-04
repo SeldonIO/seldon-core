@@ -8,11 +8,19 @@ crd:
   create: true
 executor:
   enabled: false
+  grpc:
+    port: 5001
   image:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/executor
     tag: 1.0.1-SNAPSHOT
+  port: 8000
+  prometheus:
+    path: /prometheus
+  serviceAccount:
+    name: default
+  user: 8888
 engine:
   grpc:
     port: 5001
@@ -24,9 +32,7 @@ engine:
   logMessagesExternally: false
   port: 8000
   prometheus:
-    path: prometheus
-  securityContext:
-    enabled: true
+    path: /prometheus
   serviceAccount:
     name: default
   user: 8888

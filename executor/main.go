@@ -34,18 +34,19 @@ import (
 )
 
 var (
-	configPath    = flag.String("config", "", "Path to kubconfig")
-	sdepName      = flag.String("sdep", "", "Seldon deployment name")
-	namespace     = flag.String("namespace", "", "Namespace")
-	predictorName = flag.String("predictor", "", "Name of the predictor inside the SeldonDeployment")
-	httpPort      = flag.Int("http_port", 8080, "Executor port")
-	grpcPort      = flag.Int("grpc_port", 8000, "Executor port")
-	wait          = flag.Duration("graceful_timeout", time.Second*15, "Graceful shutdown secs")
-	protocol      = flag.String("protocol", "seldon", "The payload protocol")
-	transport     = flag.String("transport", "http", "The network transport http or grpc")
-	filename      = flag.String("file", "", "Load graph from file")
-	hostname      = flag.String("hostname", "localhost", "The hostname of the running server")
-	logWorkers    = flag.Int("logger_workers", 5, "Number of workers handling payload logging")
+	configPath     = flag.String("config", "", "Path to kubconfig")
+	sdepName       = flag.String("sdep", "", "Seldon deployment name")
+	namespace      = flag.String("namespace", "", "Namespace")
+	predictorName  = flag.String("predictor", "", "Name of the predictor inside the SeldonDeployment")
+	httpPort       = flag.Int("http_port", 8080, "Executor port")
+	grpcPort       = flag.Int("grpc_port", 8000, "Executor port")
+	wait           = flag.Duration("graceful_timeout", time.Second*15, "Graceful shutdown secs")
+	protocol       = flag.String("protocol", "seldon", "The payload protocol")
+	transport      = flag.String("transport", "rest", "The network transport http or grpc")
+	filename       = flag.String("file", "", "Load graph from file")
+	hostname       = flag.String("hostname", "localhost", "The hostname of the running server")
+	logWorkers     = flag.Int("logger_workers", 5, "Number of workers handling payload logging")
+	prometheusPath = flag.String("prometheus_path", "/metrics", "The prometheus metrics path")
 )
 
 func getPredictorFromEnv() (*v1.PredictorSpec, error) {
@@ -93,10 +94,10 @@ func getServerUrl(hostname string, port int) (*url.URL, error) {
 }
 
 func runHttpServer(logger logr.Logger, predictor *v1.PredictorSpec, client seldonclient.SeldonApiClient, port int,
-	probesOnly bool, serverUrl *url.URL, namespace string, protocol string, deploymentName string) {
+	probesOnly bool, serverUrl *url.URL, namespace string, protocol string, deploymentName string, prometheusPath string) {
 
 	// Create REST API
-	seldonRest := rest.NewSeldonRestApi(predictor, client, probesOnly, serverUrl, namespace, protocol, deploymentName)
+	seldonRest := rest.NewServerRestApi(predictor, client, probesOnly, serverUrl, namespace, protocol, deploymentName, prometheusPath)
 	seldonRest.Initialise()
 
 	address := fmt.Sprintf("0.0.0.0:%d", port)
@@ -199,13 +200,13 @@ func main() {
 		log.Fatal("Protocol must be seldon or tensorflow")
 	}
 
-	if !(*transport == "http" || *transport == "grpc") {
-		log.Fatal("Only http and grpc supported")
+	if !(*transport == "rest" || *transport == "grpc") {
+		log.Fatal("Only rest and grpc supported")
 	}
 
 	var serverUrl *url.URL
 	var err error
-	if *transport == "http" {
+	if *transport == "rest" {
 		serverUrl, err = getServerUrl(*hostname, *httpPort)
 	} else {
 		serverUrl, err = getServerUrl(*hostname, *httpPort)
@@ -251,13 +252,13 @@ func main() {
 	closer := initTracing()
 	defer closer.Close()
 
-	if *transport == "http" {
+	if *transport == "rest" {
 		clientRest := rest.NewJSONRestClient(*protocol, *sdepName, predictor)
 		logger.Info("Running http server ", "port", *httpPort)
-		runHttpServer(logger, predictor, clientRest, *httpPort, false, serverUrl, *namespace, *protocol, *sdepName)
+		runHttpServer(logger, predictor, clientRest, *httpPort, false, serverUrl, *namespace, *protocol, *sdepName, *prometheusPath)
 	} else {
-		logger.Info("Running http server ", "port", *httpPort)
-		go runHttpServer(logger, predictor, nil, *httpPort, true, serverUrl, *namespace, *protocol, *sdepName)
+		logger.Info("Running http probes only server ", "port", *httpPort)
+		go runHttpServer(logger, predictor, nil, *httpPort, true, serverUrl, *namespace, *protocol, *sdepName, *prometheusPath)
 		logger.Info("Running grpc server ", "port", *grpcPort)
 		var clientGrpc seldonclient.SeldonApiClient
 		if *protocol == "seldon" {

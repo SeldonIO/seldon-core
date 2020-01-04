@@ -225,7 +225,23 @@ type PredictorSpec struct {
 	Traffic         int32                   `json:"traffic,omitempty" protobuf:"bytes,9,opt,name=traffic"`
 	Explainer       Explainer               `json:"explainer,omitempty" protobuf:"bytes,10,opt,name=explainer"`
 	Shadow          bool                    `json:"shadow,omitempty" protobuf:"bytes,11,opt,name=shadow"`
+	Protocol        Protocol                `json:"protocol,omitempty" protobuf:"bytes,12,opt,name=protocol"`
+	Transport       Transport               `json:"transport,omitempty" protobuf:"bytes,13,opt,name=transport"`
 }
+
+type Protocol string
+
+const (
+	ProtocolSeldon     Protocol = "seldon"
+	ProtocolTensorflow Protocol = "tensorflow"
+)
+
+type Transport string
+
+const (
+	TransportRest Transport = "rest"
+	TransportGrpc Transport = "grpc"
+)
 
 type SvcOrchSpec struct {
 	Resources *v1.ResourceRequirements `json:"resources,omitempty" protobuf:"bytes,1,opt,name=resources"`

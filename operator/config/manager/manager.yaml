@@ -57,7 +57,7 @@ spec:
         - name: ENGINE_SERVER_PORT
           value: "8000"
         - name: ENGINE_PROMETHEUS_PATH
-          value: prometheus
+          value: "/prometheus"
         - name: ISTIO_ENABLED
           value: "false"
         - name: ISTIO_GATEWAY
@@ -68,6 +68,18 @@ spec:
           value: "true"
         - name: EXECUTOR_CONTAINER_IMAGE_AND_VERSION
           value: seldonio/seldon-core-executor:1.0.1-SNAPSHOT
+        - name: EXECUTOR_CONTAINER_IMAGE_PULL_POLICY
+          value: IfNotPresent
+        - name: EXECUTOR_PROMETHEUS_PATH
+          value: "/prometheus"
+        - name: EXECUTOR_SERVER_GRPC_PORT
+          value: "5001"
+        - name: EXECUTOR_SERVER_PORT
+          value: "8000"
+        - name: EXECUTOR_CONTAINER_USER
+          value: "8888"          
+        - name: EXECUTOR_CONTAINER_SERVICE_ACCOUNT_NAME
+          value: default
         image: controller:latest
         name: manager
         resources:

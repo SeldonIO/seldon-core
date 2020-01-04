@@ -38,7 +38,12 @@ HELM_ENV_SUBST = {
     "ISTIO_TLS_MODE":"istio.tlsMode",
     "PREDICTIVE_UNIT_SERVICE_PORT":"predictiveUnit.port",
     "USE_EXECUTOR":"executor.enabled",
+    "EXECUTOR_SERVER_GRPC_PORT": "engine.grpc.port",
     "EXECUTOR_CONTAINER_IMAGE_PULL_POLICY": "executor.image.pullPolicy",
+    "EXECUTOR_SERVER_PORT": "executor.port",
+    "EXECUTOR_PROMETHEUS_PATH": "executor.prometheus.path",
+    "EXECUTOR_CONTAINER_USER": "executor.user",
+    "EXECUTOR_CONTAINER_SERVICE_ACCOUNT_NAME": "executor.serviceAccount.name",
 }
 HELM_VALUES_IMAGE_PULL_POLICY = '{{ .Values.image.pullPolicy }}'
 

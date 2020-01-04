@@ -18,7 +18,7 @@ func TestAliveEndpoint(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
 	url, _ := url.Parse("http://localhost")
-	r := NewSeldonRestApi(nil, nil, true, url, "default", ProtocolSeldon, "test")
+	r := NewServerRestApi(nil, nil, true, url, "default", ProtocolSeldon, "test", "/metrics")
 	r.Initialise()
 
 	req, _ := http.NewRequest("GET", "/live", nil)
@@ -46,7 +46,7 @@ func TestSimpleModel(t *testing.T) {
 	}
 
 	url, _ := url.Parse("http://localhost")
-	r := NewSeldonRestApi(&p, test.NewSeldonMessageTestClient(t, 0, nil, nil), false, url, "default", ProtocolSeldon, "test")
+	r := NewServerRestApi(&p, test.NewSeldonMessageTestClient(t, 0, nil, nil), false, url, "default", ProtocolSeldon, "test", "/metrics")
 	r.Initialise()
 	var data = ` {"data":{"ndarray":[1.1,2.0]}}`
 
@@ -75,7 +75,7 @@ func TestServerMetrics(t *testing.T) {
 	}
 
 	url, _ := url.Parse("http://localhost")
-	r := NewSeldonRestApi(&p, test.NewSeldonMessageTestClient(t, 0, nil, nil), false, url, "default", ProtocolSeldon, "test")
+	r := NewServerRestApi(&p, test.NewSeldonMessageTestClient(t, 0, nil, nil), false, url, "default", ProtocolSeldon, "test", "/metrics")
 	r.Initialise()
 
 	var data = ` {"data":{"ndarray":[1.1,2.0]}}`

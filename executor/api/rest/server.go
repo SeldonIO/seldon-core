@@ -32,9 +32,10 @@ type SeldonRestApi struct {
 	Protocol       string
 	DeploymentName string
 	metrics        *metric.ServerMetrics
+	prometheusPath string
 }
 
-func NewSeldonRestApi(predictor *v1.PredictorSpec, client client.SeldonApiClient, probesOnly bool, serverUrl *url.URL, namespace string, protocol string, deploymentName string) *SeldonRestApi {
+func NewServerRestApi(predictor *v1.PredictorSpec, client client.SeldonApiClient, probesOnly bool, serverUrl *url.URL, namespace string, protocol string, deploymentName string, prometheusPath string) *SeldonRestApi {
 	var serverMetrics *metric.ServerMetrics
 	if !probesOnly {
 		serverMetrics = metric.NewServerMetrics(predictor, deploymentName)
@@ -50,6 +51,7 @@ func NewSeldonRestApi(predictor *v1.PredictorSpec, client client.SeldonApiClient
 		protocol,
 		deploymentName,
 		serverMetrics,
+		prometheusPath,
 	}
 }
 
@@ -90,7 +92,7 @@ func (r *SeldonRestApi) wrapMetrics(service string, baseHandler http.HandlerFunc
 func (r *SeldonRestApi) Initialise() {
 	r.Router.HandleFunc("/ready", r.checkReady)
 	r.Router.HandleFunc("/live", r.alive)
-	r.Router.Handle("/metrics", promhttp.Handler())
+	r.Router.Handle(r.prometheusPath, promhttp.Handler())
 	if !r.ProbesOnly {
 		//predictionsHandler := r.wrapMetrics(metric.PredictionHttpServiceName, r.predictions)
 		switch r.Protocol {
