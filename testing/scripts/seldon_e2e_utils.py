@@ -176,6 +176,61 @@ def initial_rest_request(
     return r
 
 
+def initial_grpc_request(
+    model,
+    namespace,
+    endpoint=API_AMBASSADOR,
+    data_size=5,
+    rows=1,
+    data=None,
+    dtype="tensor",
+    names=None,
+):
+    try:
+        return grpc_request_ambassador(
+        model,
+        namespace,
+        endpoint=endpoint,
+        data_size=data_size,
+        rows=rows,
+        data=data
+        )
+    except:
+        logging.warning("Sleeping 1 sec and trying again")
+        time.sleep(1)
+        try:
+            return grpc_request_ambassador(
+            model,
+            namespace,
+            endpoint=endpoint,
+            data_size=data_size,
+            rows=rows,
+            data=data,
+            )
+        except:
+            logging.warning("Sleeping 5 sec and trying again")
+            time.sleep(5)
+            try:
+                return grpc_request_ambassador(
+                model,
+                namespace,
+                endpoint=endpoint,
+                data_size=data_size,
+                rows=rows,
+                data=data,
+                )
+            except:
+                logging.warning("Sleeping 10 sec and trying again")
+                time.sleep(10)
+                return grpc_request_ambassador(
+                    model,
+                    namespace,
+                    endpoint=endpoint,
+                    data_size=data_size,
+                    rows=rows,
+                    data=data,
+                )
+
 def create_random_data(data_size, rows=1):
     shape = [rows, data_size]
     arr = np.random.rand(rows * data_size)
@@ -287,11 +342,7 @@ def rest_request_ambassador_auth(
     return response
 
 
-@retry(
-    wait_exponential_multiplier=1000,
-    wait_exponential_max=10000,
-    stop_max_attempt_number=5,
-)
+
 def grpc_request_ambassador(
     deploymentName, namespace, endpoint="localhost:8004", data_size=5, rows=1, data=None
 ):

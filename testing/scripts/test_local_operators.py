@@ -18,7 +18,7 @@ class TestLocalOperators(object):
         namespace = "test-namespaced-operator"
         retry_run(f"kubectl create namespace {namespace}")
         retry_run(
-            f"helm install seldon ../../helm-charts/seldon-core-operator --namespace {namespace} --set istio.enabled=true --set istio.gateway=seldon-gateway --set certManager.enabled=false --set crd.create=false --set singleNamespace=true"
+            f"helm install seldon ../../helm-charts/seldon-core-operator --namespace {namespace} --set executor.enabled=true --set istio.enabled=true --set istio.gateway=seldon-gateway --set certManager.enabled=false --set crd.create=false --set singleNamespace=true"
         )
         retry_run(f"kubectl apply -f ../resources/graph1.json -n {namespace}")
         wait_for_rollout("mymodel-mymodel-e2eb561", namespace)
@@ -34,7 +34,7 @@ class TestLocalOperators(object):
         namespace = "test-labelled-operator"
         retry_run(f"kubectl create namespace {namespace}")
         retry_run(
-            f"helm install seldon ../../helm-charts/seldon-core-operator --namespace {namespace} --set istio.enabled=true --set istio.gateway=seldon-gateway --set certManager.enabled=false --set crd.create=false --set controllerId=seldon-id1"
+            f"helm install seldon ../../helm-charts/seldon-core-operator --namespace {namespace} --set executor.enabled=true --set istio.enabled=true --set istio.gateway=seldon-gateway --set certManager.enabled=false --set crd.create=false --set controllerId=seldon-id1"
         )
         retry_run(f"kubectl apply -f ../resources/model_controller_id.yaml -n default")
         wait_for_rollout("test-c1-example-cf749e0", "default")

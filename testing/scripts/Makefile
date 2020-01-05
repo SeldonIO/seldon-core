@@ -16,7 +16,13 @@ kind_build_engine:
 kind_build_operator:
 	cd ../../operator && make kind-image-install
 
-kind_build_images: kind_build_engine kind_build_operator
+kind_build_executor:
+	cd ../../executor && make kind-image-install
+
+kind_build_fixed_models:
+	cd ../docker/fixed-model && make kind_load_images
+
+kind_build_images: kind_build_engine kind_build_operator kind_build_executor kind_build_fixed_models
 
 helm_setup:
 	helm repo add stable https://kubernetes-charts.storage.googleapis.com/
@@ -32,7 +38,7 @@ install_cert_manager:
 
 install_seldon: install_cert_manager
 	kubectl create namespace seldon-system || echo "namespace seldon-system exists"
-	helm install seldon ../../helm-charts/seldon-core-operator --namespace seldon-system --set istio.enabled=true --set istio.gateway=seldon-gateway --set certManager.enabled=false
+	helm install seldon ../../helm-charts/seldon-core-operator --namespace seldon-system --set istio.enabled=true --set istio.gateway=seldon-gateway --set certManager.enabled=false --set executor.enabled=true
 
 install_istio:
 	kubectl apply -f istio-1.4.2.yaml

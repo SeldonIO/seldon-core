@@ -23,14 +23,12 @@ def test_api_version(apiVersion):
     retry_run(f"kubectl create namespace {namespace}")
     command = (
         "helm install mymodel ../../helm-charts/seldon-single-model "
-        "--set oauth.key=oauth-key "
-        "--set oauth.secret=oauth-secret "
         f"--set apiVersion={apiVersion} "
         f"--namespace {namespace}"
     )
     run(command, shell=True, check=True)
 
-    wait_for_rollout(f"mymodel-mymodel-7cd068f", namespace)
+    wait_for_rollout(f"mymodel-mymodel-de240ba", namespace)
     initial_rest_request("mymodel", namespace)
 
     r = rest_request_ambassador("mymodel", namespace, API_AMBASSADOR)
