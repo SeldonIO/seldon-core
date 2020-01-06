@@ -16,43 +16,65 @@ API_ISTIO_GATEWAY = "localhost:8004"
 
 
 def get_s2i_python_version():
-    completedProcess = Popen(
+    ret = Popen(
         "cd ../../wrappers/s2i/python && grep 'IMAGE_VERSION=' Makefile | cut -d'=' -f2",
         shell=True,
         stdout=subprocess.PIPE,
     )
-    output = completedProcess.stdout.readline()
+    output = ret.stdout.readline()
     version = output.decode("utf-8").rstrip()
     return version
 
 
 def get_seldon_version():
-    completedProcess = Popen(
+    ret = Popen(
         "cat ../../version.txt", shell=True, stdout=subprocess.PIPE
     )
-    output = completedProcess.stdout.readline()
+    output = ret.stdout.readline()
     version = output.decode("utf-8").strip()
     return version
 
 
-def wait_for_shutdown(deploymentName, namespace):
-    ret = run(f"kubectl get -n {namespace} deploy/{deploymentName}", shell=True)
+def wait_for_shutdown(deployment_name, namespace):
+    ret = run(f"kubectl get -n {namespace} deploy/{deployment_name}", shell=True)
     while ret.returncode == 0:
         time.sleep(1)
-        ret = run(f"kubectl get -n {namespace} deploy/{deploymentName}", shell=True)
+        ret = run(f"kubectl get -n {namespace} deploy/{deployment_name}", shell=True)
 
 
-def wait_for_rollout(deploymentName, namespace, attempts=20, sleep=5):
-    for attempts in range(attempts):
+def get_deployment_names(sdep_name, namespace, attempts=20, sleep=5):
+    for _ in range(attempts):
         ret = run(
-            f"kubectl rollout status -n {namespace} deploy/{deploymentName}", shell=True
+            f"kubectl get -n {namespace} sdep {sdep_name} -o json",
+            shell=True,
+            capture_output=True,
         )
         if ret.returncode == 0:
-            logging.warning(f"Successfully waited for deployment {deploymentName}")
+            logging.warning(
+                f"Successfully waited for SeldonDeployment {sdep_name}"
+            )
             break
-        logging.warning(f"Unsuccessful wait command but retrying for {deploymentName}")
+        logging.warning(
+            f"Unsuccessful wait command but retrying for SeldonDeployment {sdep_name}"
+        )
         time.sleep(sleep)
-    assert ret.returncode == 0
+    assert ret.returncode == 0, "Failed to get deployment names: non-zero return code"
+    data = json.loads(ret.stdout)
+    # The `deploymentStatus` is dictionary which keys are names of deployments
+    return list(data["status"]["deploymentStatus"])
+
+
+def wait_for_rollout(deployment_name, namespace, attempts=20, sleep=5):
+    for attempts in range(attempts):
+        ret = run(
+            f"kubectl rollout status -n {namespace} deploy/{deployment_name}", shell=True
+        )
+        if ret.returncode == 0:
+            logging.warning(f"Successfully waited for deployment {deployment_name}")
+            break
+        logging.warning(f"Unsuccessful wait command but retrying for {deployment_name}")
+        time.sleep(sleep)
+    assert ret.returncode == 0, "Wait for rollout failed: non-zero return code"
 
 
 def retry_run(cmd, attempts=10, sleep=5):
@@ -63,24 +85,23 @@ def retry_run(cmd, attempts=10, sleep=5):
             break
         logging.warning(f"Unsuccessful command but retrying: {cmd}")
         time.sleep(sleep)
-    assert ret.returncode == 0
+    assert ret.returncode == 0, f"Non-zero return code in retry_run for {cmd}"
 
 
-def wait_for_status(name, namespace):
-    for i in range(7):
-        completedProcess = run(
+def wait_for_status(name, namespace, attempts=20, sleep=5):
+    for _ in range(attempts):
+        ret = run(
             f"kubectl get sdep {name} -n {namespace} -o json",
             shell=True,
             check=True,
             stdout=subprocess.PIPE,
         )
-        jStr = completedProcess.stdout
-        j = json.loads(jStr)
-        if "status" in j:
-            return j
+        data = json.loads(ret.stdout)
+        if ("status" in data) and ("deploymentStatus" in data["status"]):
+            return data
         else:
             logging.warning("Failed to find status - sleeping")
-            time.sleep(5)
+            time.sleep(sleep)
 
 
 def rest_request(
@@ -188,7 +209,7 @@ def create_random_data(data_size, rows=1):
     stop_max_attempt_number=5,
 )
 def rest_request_ambassador(
-    deploymentName,
+    deployment_name,
     namespace,
     endpoint=API_AMBASSADOR,
     data_size=5,
@@ -218,7 +239,7 @@ def rest_request_ambassador(
             "http://"
             + endpoint
             + "/seldon/"
-            + deploymentName
+            + deployment_name
             + "/api/v0.1/predictions",
             json=payload,
         )
@@ -229,7 +250,7 @@ def rest_request_ambassador(
             + "/seldon/"
             + namespace
             + "/"
-            + deploymentName
+            + deployment_name
             + "/api/v0.1/predictions",
             json=payload,
         )
@@ -242,7 +263,7 @@ def rest_request_ambassador(
     stop_max_attempt_number=5,
 )
 def rest_request_ambassador_auth(
-    deploymentName,
+    deployment_name,
     namespace,
     username,
     password,
@@ -267,7 +288,7 @@ def rest_request_ambassador_auth(
             "http://"
             + endpoint
             + "/seldon/"
-            + deploymentName
+            + deployment_name
             + "/api/v0.1/predictions",
             json=payload,
             auth=HTTPBasicAuth(username, password),
@@ -279,7 +300,7 @@ def rest_request_ambassador_auth(
             + "/seldon/"
             + namespace
             + "/"
-            + deploymentName
+            + deployment_name
             + "/api/v0.1/predictions",
             json=payload,
             auth=HTTPBasicAuth(username, password),
@@ -293,7 +314,7 @@ def rest_request_ambassador_auth(
     stop_max_attempt_number=5,
 )
 def grpc_request_ambassador(
-    deploymentName, namespace, endpoint="localhost:8004", data_size=5, rows=1, data=None
+    deployment_name, namespace, endpoint="localhost:8004", data_size=5, rows=1, data=None
 ):
     if data is None:
         shape, arr = create_random_data(data_size, rows)
@@ -307,19 +328,19 @@ def grpc_request_ambassador(
     channel = grpc.insecure_channel(endpoint)
     stub = prediction_pb2_grpc.SeldonStub(channel)
     if namespace is None:
-        metadata = [("seldon", deploymentName)]
+        metadata = [("seldon", deployment_name)]
     else:
-        metadata = [("seldon", deploymentName), ("namespace", namespace)]
+        metadata = [("seldon", deployment_name), ("namespace", namespace)]
     response = stub.Predict(request=request, metadata=metadata)
     return response
 
 
 def grpc_request_ambassador2(
-    deploymentName, namespace, endpoint="localhost:8004", data_size=5, rows=1, data=None
+    deployment_name, namespace, endpoint="localhost:8004", data_size=5, rows=1, data=None
 ):
     try:
         return grpc_request_ambassador(
-            deploymentName,
+            deployment_name,
             namespace,
             endpoint=endpoint,
             data_size=data_size,
@@ -329,7 +350,7 @@ def grpc_request_ambassador2(
     except:
         logging.warning("Warning - caught exception")
         return grpc_request_ambassador(
-            deploymentName,
+            deployment_name,
             namespace,
             endpoint=endpoint,
             data_size=data_size,
