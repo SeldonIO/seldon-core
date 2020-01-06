@@ -1,4 +1,5 @@
 from seldon_e2e_utils import (
+    get_deployment_names,
     wait_for_rollout,
     initial_rest_request,
     retry_run,
@@ -18,8 +19,9 @@ class TestPrepack(object):
         spec = "../../servers/sklearnserver/samples/iris.yaml"
         retry_run(f"kubectl create namespace {namespace}")
         retry_run(f"kubectl apply -f {spec} -n {namespace}")
-        wait_for_rollout("iris-default-4903e3c", namespace)
         wait_for_status("sklearn", namespace)
+        for deployment_name in get_deployment_names("sklearn", namespace):
+            wait_for_rollout(deployment_name, namespace)
         time.sleep(1)
         logging.warning("Initial request")
         r = initial_rest_request(
@@ -36,8 +38,9 @@ class TestPrepack(object):
         spec = "../../servers/tfserving/samples/mnist_rest.yaml"
         retry_run(f"kubectl create namespace {namespace}")
         retry_run(f"kubectl apply -f {spec}  -n {namespace}")
-        wait_for_rollout("mnist-default-725903e", namespace)
         wait_for_status("tfserving", namespace)
+        for deployment_name in get_deployment_names("tfserving", namespace):
+            wait_for_rollout(deployment_name, namespace)
         time.sleep(1)
         logging.warning("Initial request")
         r = initial_rest_request(
@@ -57,8 +60,9 @@ class TestPrepack(object):
         spec = "../../servers/xgboostserver/samples/iris.yaml"
         retry_run(f"kubectl create namespace {namespace}")
         retry_run(f"kubectl apply -f {spec}  -n {namespace}")
-        wait_for_rollout("iris-default-af1783b", namespace)
         wait_for_status("xgboost", namespace)
+        for deployment_name in get_deployment_names("xgboost", namespace):
+            wait_for_rollout(deployment_name, namespace)
         time.sleep(1)
         logging.warning("Initial request")
         r = initial_rest_request(
@@ -75,8 +79,9 @@ class TestPrepack(object):
         spec = "../../servers/mlflowserver/samples/elasticnet_wine.yaml"
         retry_run(f"kubectl create namespace {namespace}")
         retry_run(f"kubectl apply -f {spec} -n {namespace}")
-        wait_for_rollout("wines-default-8c791aa", namespace)
         wait_for_status("mlflow", namespace)
+        for deployment_name in get_deployment_names("mlflow", namespace):
+            wait_for_rollout(deployment_name, namespace)
         time.sleep(1)
 
         r = initial_rest_request(
