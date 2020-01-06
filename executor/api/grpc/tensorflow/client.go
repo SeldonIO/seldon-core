@@ -116,6 +116,10 @@ func (s TensorflowGrpcClient) TransformOutput(ctx context.Context, modelName str
 	return s.Predict(ctx, modelName, host, port, msg)
 }
 
+func (s TensorflowGrpcClient) Feedback(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+	panic("implement me")
+}
+
 func (s TensorflowGrpcClient) Unmarshall(msg []byte) (payload.SeldonPayload, error) {
 	panic("Not implemented")
 }

@@ -102,6 +102,26 @@ func (p *PredictorProcess) transformOutput(node *v1.PredictiveUnit, msg payload.
 
 }
 
+func (p *PredictorProcess) feedback(node *v1.PredictiveUnit, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+	callClient := false
+	if (*node).Type != nil {
+		switch *node.Type {
+		case v1.MODEL:
+			callClient = true
+		}
+	}
+	if hasMethod(v1.SEND_FEEDBACK, node.Methods) {
+		callClient = true
+	}
+
+	if callClient {
+		return p.Client.Feedback(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
+	} else {
+		return msg, nil
+	}
+
+}
+
 func (p *PredictorProcess) route(node *v1.PredictiveUnit, msg payload.SeldonPayload) (int, error) {
 	callClient := false
 	if (*node).Type != nil {
@@ -142,7 +162,7 @@ func (p *PredictorProcess) aggregate(node *v1.PredictiveUnit, msg []payload.Seld
 
 }
 
-func (p *PredictorProcess) routeChildren(node *v1.PredictiveUnit, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+func (p *PredictorProcess) predictChildren(node *v1.PredictiveUnit, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	if node.Children != nil && len(node.Children) > 0 {
 		route, err := p.route(node, msg)
 		if err != nil {
@@ -156,7 +176,7 @@ func (p *PredictorProcess) routeChildren(node *v1.PredictiveUnit, msg payload.Se
 			for i, nodeChild := range node.Children {
 				wg.Add(1)
 				go func(i int, nodeChild v1.PredictiveUnit, msg payload.SeldonPayload) {
-					cmsgs[i], errs[i] = p.Execute(&nodeChild, msg)
+					cmsgs[i], errs[i] = p.Predict(&nodeChild, msg)
 					wg.Done()
 				}(i, nodeChild, msg)
 			}
@@ -168,7 +188,44 @@ func (p *PredictorProcess) routeChildren(node *v1.PredictiveUnit, msg payload.Se
 			}
 		} else {
 			cmsgs = make([]payload.SeldonPayload, 1)
-			cmsgs[0], err = p.Execute(&node.Children[route], msg)
+			cmsgs[0], err = p.Predict(&node.Children[route], msg)
+			if err != nil {
+				return cmsgs[0], err
+			}
+		}
+		return p.aggregate(node, cmsgs)
+	} else {
+		return msg, nil
+	}
+}
+
+func (p *PredictorProcess) feedbackChildren(node *v1.PredictiveUnit, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+	if node.Children != nil && len(node.Children) > 0 {
+		route, err := p.route(node, msg)
+		if err != nil {
+			return nil, err
+		}
+		var cmsgs []payload.SeldonPayload
+		if route == -1 {
+			cmsgs = make([]payload.SeldonPayload, len(node.Children))
+			var errs = make([]error, len(node.Children))
+			wg := sync.WaitGroup{}
+			for i, nodeChild := range node.Children {
+				wg.Add(1)
+				go func(i int, nodeChild v1.PredictiveUnit, msg payload.SeldonPayload) {
+					cmsgs[i], errs[i] = p.Feedback(&nodeChild, msg)
+					wg.Done()
+				}(i, nodeChild, msg)
+			}
+			wg.Wait()
+			for i, err := range errs {
+				if err != nil {
+					return cmsgs[i], err
+				}
+			}
+		} else {
+			cmsgs = make([]payload.SeldonPayload, 1)
+			cmsgs[0], err = p.Feedback(&node.Children[route], msg)
 			if err != nil {
 				return cmsgs[0], err
 			}
@@ -209,7 +266,7 @@ func (p *PredictorProcess) logPayload(nodeName string, logger *v1.Logger, reqTyp
 	return nil
 }
 
-func (p *PredictorProcess) Execute(node *v1.PredictiveUnit, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+func (p *PredictorProcess) Predict(node *v1.PredictiveUnit, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	//Log Request
 	if node.Logger != nil && (node.Logger.Mode == v1.LogRequest || node.Logger.Mode == v1.LogAll) {
 		p.logPayload(node.Name, node.Logger, payloadLogger.InferenceRequest, msg)
@@ -218,7 +275,7 @@ func (p *PredictorProcess) Execute(node *v1.PredictiveUnit, msg payload.SeldonPa
 	if err != nil {
 		return tmsg, err
 	}
-	cmsg, err := p.routeChildren(node, tmsg)
+	cmsg, err := p.predictChildren(node, tmsg)
 	if err != nil {
 		return tmsg, err
 	}
@@ -228,4 +285,12 @@ func (p *PredictorProcess) Execute(node *v1.PredictiveUnit, msg payload.SeldonPa
 		p.logPayload(node.Name, node.Logger, payloadLogger.InferenceResponse, response)
 	}
 	return response, err
+}
+
+func (p *PredictorProcess) Feedback(node *v1.PredictiveUnit, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+	tmsg, err := p.feedbackChildren(node, msg)
+	if err != nil {
+		return tmsg, err
+	}
+	return p.feedback(node, msg)
 }

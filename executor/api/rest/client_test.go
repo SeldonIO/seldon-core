@@ -81,7 +81,7 @@ func TestSimpleMethods(t *testing.T) {
 	}
 	seldonRestClient := NewJSONRestClient(ProtocolSeldon, "test", &predictor, SetHTTPClient(httpClient))
 
-	methods := []func(context.Context, string, string, int32, payload.SeldonPayload) (payload.SeldonPayload, error){seldonRestClient.Predict, seldonRestClient.TransformInput, seldonRestClient.TransformOutput}
+	methods := []func(context.Context, string, string, int32, payload.SeldonPayload) (payload.SeldonPayload, error){seldonRestClient.Predict, seldonRestClient.TransformInput, seldonRestClient.TransformOutput, seldonRestClient.Feedback}
 	for _, method := range methods {
 		resPayload, err := method(context.TODO(), "model", host, int32(port), createPayload(g))
 		g.Expect(err).Should(gomega.BeNil())

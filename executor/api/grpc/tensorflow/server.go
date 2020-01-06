@@ -36,7 +36,7 @@ func NewGrpcTensorflowServer(predictor *v1.PredictorSpec, client client.SeldonAp
 func (g *GrpcTensorflowServer) execute(ctx context.Context, req proto.Message) (payload.SeldonPayload, error) {
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("GrpcClassify"), grpc.GetEventId(ctx), g.ServerUrl, g.Namespace)
 	reqPayload := payload.ProtoPayload{Msg: req}
-	return seldonPredictorProcess.Execute(g.predictor.Graph, &reqPayload)
+	return seldonPredictorProcess.Predict(g.predictor.Graph, &reqPayload)
 }
 
 func (g *GrpcTensorflowServer) Classify(ctx context.Context, req *serving.ClassificationRequest) (*serving.ClassificationResponse, error) {

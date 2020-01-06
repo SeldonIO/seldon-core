@@ -34,13 +34,19 @@ func NewGrpcSeldonServer(predictor *v1.PredictorSpec, client client.SeldonApiCli
 func (g GrpcSeldonServer) Predict(ctx context.Context, req *proto.SeldonMessage) (*proto.SeldonMessage, error) {
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("SeldonMessageRestClient"), grpc.GetEventId(ctx), g.ServerUrl, g.Namespace)
 	reqPayload := payload.ProtoPayload{Msg: req}
-	resPayload, err := seldonPredictorProcess.Execute(g.predictor.Graph, &reqPayload)
+	resPayload, err := seldonPredictorProcess.Predict(g.predictor.Graph, &reqPayload)
 	if err != nil {
 		g.Log.Error(err, "Failed to call predict")
 	}
 	return resPayload.GetPayload().(*proto.SeldonMessage), err
 }
 
-func (g GrpcSeldonServer) SendFeedback(context.Context, *proto.Feedback) (*proto.SeldonMessage, error) {
-	panic("implement me")
+func (g GrpcSeldonServer) SendFeedback(ctx context.Context, req *proto.Feedback) (*proto.SeldonMessage, error) {
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("SeldonMessageRestClient"), grpc.GetEventId(ctx), g.ServerUrl, g.Namespace)
+	reqPayload := payload.ProtoPayload{Msg: req}
+	resPayload, err := seldonPredictorProcess.Feedback(g.predictor.Graph, &reqPayload)
+	if err != nil {
+		g.Log.Error(err, "Failed to call feedback")
+	}
+	return resPayload.GetPayload().(*proto.SeldonMessage), err
 }

@@ -154,7 +154,7 @@ func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	resPayload, err := seldonPredictorProcess.Execute(r.predictor.Graph, reqPayload)
+	resPayload, err := seldonPredictorProcess.Predict(r.predictor.Graph, reqPayload)
 	if err != nil {
 		log.Error("Failed to get predictions", err)
 		r.respondWithError(w, err)

@@ -62,7 +62,7 @@ func TestModel(t *testing.T) {
 		},
 	}
 
-	pResp, err := createPredictorProcess(t).Execute(graph, createPayload(g))
+	pResp, err := createPredictorProcess(t).Predict(graph, createPayload(g))
 	g.Expect(err).Should(gomega.BeNil())
 	smRes := pResp.GetPayload().(*proto.SeldonMessage)
 	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(gomega.Equal(1.1))
@@ -91,7 +91,7 @@ func TestTwoLevelModel(t *testing.T) {
 		},
 	}
 
-	pResp, err := createPredictorProcess(t).Execute(graph, createPayload(g))
+	pResp, err := createPredictorProcess(t).Predict(graph, createPayload(g))
 	g.Expect(err).Should(gomega.BeNil())
 	smRes := pResp.GetPayload().(*proto.SeldonMessage)
 	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(gomega.Equal(1.1))
@@ -129,7 +129,7 @@ func TestCombiner(t *testing.T) {
 		},
 	}
 
-	pResp, err := createPredictorProcess(t).Execute(graph, createPayload(g))
+	pResp, err := createPredictorProcess(t).Predict(graph, createPayload(g))
 	g.Expect(err).Should(gomega.BeNil())
 	smRes := pResp.GetPayload().(*proto.SeldonMessage)
 	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(gomega.Equal(1.1))
@@ -137,7 +137,6 @@ func TestCombiner(t *testing.T) {
 }
 
 func TestMethods(t *testing.T) {
-	t.Logf("Started")
 	g := gomega.NewGomegaWithT(t)
 	//model := v1.UNKNOWN_TYPE
 	graph := &v1.PredictiveUnit{
@@ -159,7 +158,36 @@ func TestMethods(t *testing.T) {
 		},
 	}
 
-	pResp, err := createPredictorProcess(t).Execute(graph, createPayload(g))
+	pResp, err := createPredictorProcess(t).Predict(graph, createPayload(g))
+	g.Expect(err).Should(gomega.BeNil())
+	smRes := pResp.GetPayload().(*proto.SeldonMessage)
+	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(gomega.Equal(1.1))
+	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(gomega.Equal(2.0))
+}
+
+func TestFeedback(t *testing.T) {
+	g := gomega.NewGomegaWithT(t)
+	//model := v1.UNKNOWN_TYPE
+	graph := &v1.PredictiveUnit{
+		Methods: &[]v1.PredictiveUnitMethod{v1.SEND_FEEDBACK},
+		Endpoint: &v1.Endpoint{
+			ServiceHost: "foo",
+			ServicePort: 9000,
+			Type:        v1.REST,
+		},
+		Children: []v1.PredictiveUnit{
+			{
+				Methods: &[]v1.PredictiveUnitMethod{v1.SEND_FEEDBACK},
+				Endpoint: &v1.Endpoint{
+					ServiceHost: "foo2",
+					ServicePort: 9001,
+					Type:        v1.REST,
+				},
+			},
+		},
+	}
+
+	pResp, err := createPredictorProcess(t).Feedback(graph, createPayload(g))
 	g.Expect(err).Should(gomega.BeNil())
 	smRes := pResp.GetPayload().(*proto.SeldonMessage)
 	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(gomega.Equal(1.1))
@@ -197,19 +225,19 @@ func TestRouter(t *testing.T) {
 		},
 	}
 
-	pResp, err := createPredictorProcess(t).Execute(graph, createPayload(g))
+	pResp, err := createPredictorProcess(t).Predict(graph, createPayload(g))
 	g.Expect(err).Should(gomega.BeNil())
 	smRes := pResp.GetPayload().(*proto.SeldonMessage)
 	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(gomega.Equal(1.1))
 	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(gomega.Equal(2.0))
 
-	pResp, err = createPredictorProcessWithRoute(t, 0).Execute(graph, createPayload(g))
+	pResp, err = createPredictorProcessWithRoute(t, 0).Predict(graph, createPayload(g))
 	g.Expect(err).Should(gomega.BeNil())
 	smRes = pResp.GetPayload().(*proto.SeldonMessage)
 	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(gomega.Equal(1.1))
 	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(gomega.Equal(2.0))
 
-	pResp, err = createPredictorProcessWithRoute(t, 1).Execute(graph, createPayload(g))
+	pResp, err = createPredictorProcessWithRoute(t, 1).Predict(graph, createPayload(g))
 	g.Expect(err).Should(gomega.BeNil())
 	smRes = pResp.GetPayload().(*proto.SeldonMessage)
 	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(gomega.Equal(1.1))
@@ -231,7 +259,7 @@ func TestModelError(t *testing.T) {
 
 	errMethod := v1.TRANSFORM_INPUT
 	chosenErr := errors.New("something bad happened")
-	pResp, err := createPredictorProcessWithError(t, &errMethod, chosenErr).Execute(graph, createPayload(g))
+	pResp, err := createPredictorProcessWithError(t, &errMethod, chosenErr).Predict(graph, createPayload(g))
 	g.Expect(err).ShouldNot(gomega.BeNil())
 	g.Expect(pResp).Should(gomega.BeNil())
 	g.Expect(err.Error()).Should(gomega.Equal("something bad happened"))
@@ -263,7 +291,7 @@ func TestABTest(t *testing.T) {
 		},
 	}
 
-	pResp, err := createPredictorProcess(t).Execute(graph, createPayload(g))
+	pResp, err := createPredictorProcess(t).Predict(graph, createPayload(g))
 	g.Expect(err).Should(gomega.BeNil())
 	smRes := pResp.GetPayload().(*proto.SeldonMessage)
 	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(gomega.Equal(1.1))
@@ -306,7 +334,7 @@ func TestModelWithLogRequests(t *testing.T) {
 		},
 	}
 
-	pResp, err := createPredictorProcess(t).Execute(graph, createPayload(g))
+	pResp, err := createPredictorProcess(t).Predict(graph, createPayload(g))
 	g.Expect(err).Should(gomega.BeNil())
 	smRes := pResp.GetPayload().(*proto.SeldonMessage)
 	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(gomega.Equal(1.1))
@@ -350,7 +378,7 @@ func TestModelWithLogResponses(t *testing.T) {
 		},
 	}
 
-	pResp, err := createPredictorProcess(t).Execute(graph, createPayload(g))
+	pResp, err := createPredictorProcess(t).Predict(graph, createPayload(g))
 	g.Expect(err).Should(gomega.BeNil())
 	smRes := pResp.GetPayload().(*proto.SeldonMessage)
 	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(gomega.Equal(1.1))

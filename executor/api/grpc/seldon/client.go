@@ -145,6 +145,20 @@ func (s SeldonMessageGrpcClient) TransformOutput(ctx context.Context, modelName 
 	return &resPayload, nil
 }
 
+func (s SeldonMessageGrpcClient) Feedback(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+	conn, err := s.getConnection(host, port, modelName)
+	if err != nil {
+		return s.CreateErrorPayload(err), err
+	}
+	grpcClient := proto.NewModelClient(conn)
+	resp, err := grpcClient.SendFeedback(ctx, msg.GetPayload().(*proto.Feedback), s.callOptions...)
+	if err != nil {
+		return s.CreateErrorPayload(err), err
+	}
+	resPayload := payload.ProtoPayload{Msg: resp}
+	return &resPayload, nil
+}
+
 func (s SeldonMessageGrpcClient) Unmarshall(msg []byte) (payload.SeldonPayload, error) {
 	panic("Not implemented")
 }

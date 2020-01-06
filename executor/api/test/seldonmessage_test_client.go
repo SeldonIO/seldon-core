@@ -75,6 +75,14 @@ func (s SeldonMessageTestClient) TransformOutput(ctx context.Context, modelName 
 	return msg, nil
 }
 
+func (s SeldonMessageTestClient) Feedback(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+	s.t.Logf("Feedback %s %d", host, port)
+	if s.errMethod != nil && *s.errMethod == v1.SEND_FEEDBACK {
+		return nil, s.err
+	}
+	return msg, nil
+}
+
 func NewSeldonMessageTestClient(t *testing.T, chosenRoute int, errMethod *v1.PredictiveUnitMethod, err error) client.SeldonApiClient {
 	client := SeldonMessageTestClient{
 		t:           t,

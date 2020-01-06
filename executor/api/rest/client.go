@@ -155,6 +155,8 @@ func (smc *JSONRestClient) getMethod(method string, modelName string) string {
 		return "/v1/models/" + modelName + ":aggregate"
 	case client.SeldonRoutePath:
 		return "/v1/models/" + modelName + ":route"
+	case client.SeldonFeedbackPath:
+		return "/v1/models/" + modelName + ":feedback"
 	}
 	return method
 }
@@ -242,4 +244,8 @@ func (smc *JSONRestClient) Combine(ctx context.Context, modelName string, host s
 
 func (smc *JSONRestClient) TransformOutput(ctx context.Context, modelName string, host string, port int32, req payload.SeldonPayload) (payload.SeldonPayload, error) {
 	return smc.call(ctx, modelName, smc.getMethod(client.SeldonTransformOutputPath, modelName), host, port, req)
+}
+
+func (smc *JSONRestClient) Feedback(ctx context.Context, modelName string, host string, port int32, req payload.SeldonPayload) (payload.SeldonPayload, error) {
+	return smc.call(ctx, modelName, smc.getMethod(client.SeldonFeedbackPath, modelName), host, port, req)
 }
