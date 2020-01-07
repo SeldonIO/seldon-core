@@ -30,6 +30,7 @@ class TestLocalOperators(object):
         assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
         logging.warning("Success for test_namespace_operator")
         run(f"kubectl delete -f ../resources/graph1.json -n {namespace}", shell=True)
+        run(f"helm uninstall seldon -n {namespace}", shell=True)
         run(f"kubectl delete namespace {namespace}", shell=True)
 
     def test_labelled_operator(self):
@@ -38,16 +39,19 @@ class TestLocalOperators(object):
         retry_run(
             f"helm install seldon ../../helm-charts/seldon-core-operator --namespace {namespace} --set istio.enabled=true --set istio.gateway=seldon-gateway --set certManager.enabled=false --set crd.create=false --set controllerId=seldon-id1"
         )
-        retry_run(f"kubectl apply -f ../resources/model_controller_id.yaml -n default")
-        wait_for_status("test-c1", "default")
-        wait_for_rollout("test-c1", "default")
+        retry_run(
+            f"kubectl apply -f ../resources/model_controller_id.yaml -n {namespace}"
+        )
+        wait_for_status("test-c1", namespace)
+        wait_for_rollout("test-c1", namespace)
         logging.warning("Initial request")
-        r = initial_rest_request("test-c1", "default", endpoint=API_AMBASSADOR)
+        r = initial_rest_request("test-c1", namespace, endpoint=API_AMBASSADOR)
         assert r.status_code == 200
         assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
         logging.warning("Success for test_labelled_operator")
         run(
-            f"kubectl delete -f ../resources/model_controller_id.yaml -n default",
+            f"kubectl delete -f ../resources/model_controller_id.yaml -n {namespace}",
             shell=True,
         )
+        run(f"helm uninstall seldon -n {namespace}", shell=True)
         run(f"kubectl delete namespace {namespace}", shell=True)
