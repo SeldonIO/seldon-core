@@ -20,8 +20,7 @@ class TestPrepack(object):
         retry_run(f"kubectl create namespace {namespace}")
         retry_run(f"kubectl apply -f {spec} -n {namespace}")
         wait_for_status("sklearn", namespace)
-        for deployment_name in get_deployment_names("sklearn", namespace):
-            wait_for_rollout(deployment_name, namespace)
+        wait_for_rollout("sklearn", namespace)
         time.sleep(1)
         logging.warning("Initial request")
         r = initial_rest_request(
@@ -39,8 +38,7 @@ class TestPrepack(object):
         retry_run(f"kubectl create namespace {namespace}")
         retry_run(f"kubectl apply -f {spec}  -n {namespace}")
         wait_for_status("tfserving", namespace)
-        for deployment_name in get_deployment_names("tfserving", namespace):
-            wait_for_rollout(deployment_name, namespace)
+        wait_for_rollout("tfserving", namespace)
         time.sleep(1)
         logging.warning("Initial request")
         r = initial_rest_request(
@@ -61,8 +59,7 @@ class TestPrepack(object):
         retry_run(f"kubectl create namespace {namespace}")
         retry_run(f"kubectl apply -f {spec}  -n {namespace}")
         wait_for_status("xgboost", namespace)
-        for deployment_name in get_deployment_names("xgboost", namespace):
-            wait_for_rollout(deployment_name, namespace)
+        wait_for_rollout("xgboost", namespace)
         time.sleep(1)
         logging.warning("Initial request")
         r = initial_rest_request(
@@ -80,8 +77,7 @@ class TestPrepack(object):
         retry_run(f"kubectl create namespace {namespace}")
         retry_run(f"kubectl apply -f {spec} -n {namespace}")
         wait_for_status("mlflow", namespace)
-        for deployment_name in get_deployment_names("mlflow", namespace):
-            wait_for_rollout(deployment_name, namespace)
+        wait_for_rollout("mlflow", namespace)
         time.sleep(1)
 
         r = initial_rest_request(

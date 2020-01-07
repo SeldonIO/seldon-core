@@ -27,9 +27,7 @@ def get_s2i_python_version():
 
 
 def get_seldon_version():
-    ret = Popen(
-        "cat ../../version.txt", shell=True, stdout=subprocess.PIPE
-    )
+    ret = Popen("cat ../../version.txt", shell=True, stdout=subprocess.PIPE)
     output = ret.stdout.readline()
     version = output.decode("utf-8").strip()
     return version
@@ -50,9 +48,7 @@ def get_deployment_names(sdep_name, namespace, attempts=20, sleep=5):
             capture_output=True,
         )
         if ret.returncode == 0:
-            logging.warning(
-                f"Successfully waited for SeldonDeployment {sdep_name}"
-            )
+            logging.warning(f"Successfully waited for SeldonDeployment {sdep_name}")
             break
         logging.warning(
             f"Unsuccessful wait command but retrying for SeldonDeployment {sdep_name}"
@@ -61,20 +57,37 @@ def get_deployment_names(sdep_name, namespace, attempts=20, sleep=5):
     assert ret.returncode == 0, "Failed to get deployment names: non-zero return code"
     data = json.loads(ret.stdout)
     # The `deploymentStatus` is dictionary which keys are names of deployments
-    return list(data["status"]["deploymentStatus"])
+    deployment_names = list(data["status"]["deploymentStatus"])
+    logging.warning(
+        f"For SeldonDeployment {sdep_name} found following deployments: {deployment_names}"
+    )
+    return deployment_names
 
 
-def wait_for_rollout(deployment_name, namespace, attempts=20, sleep=5):
-    for attempts in range(attempts):
-        ret = run(
-            f"kubectl rollout status -n {namespace} deploy/{deployment_name}", shell=True
-        )
-        if ret.returncode == 0:
-            logging.warning(f"Successfully waited for deployment {deployment_name}")
-            break
-        logging.warning(f"Unsuccessful wait command but retrying for {deployment_name}")
-        time.sleep(sleep)
-    assert ret.returncode == 0, "Wait for rollout failed: non-zero return code"
+def wait_for_rollout(
+    sdep_name, namespace, attempts=20, sleep=5, expected_deployments=1
+):
+    deployment_names = get_deployment_names(sdep_name, namespace)
+    assert (
+        len(deployment_names) == expected_deployments
+    ), f"Expected {expected_deployments} deployment(s) but got {len(deployment_names)}"
+    for deployment_name in deployment_names:
+        logging.warning(f"Waiting for deployment {deployment_name}")
+        for _ in range(attempts):
+            ret = run(
+                f"kubectl rollout status -n {namespace} deploy/{deployment_name}",
+                shell=True,
+            )
+            if ret.returncode == 0:
+                logging.warning(f"Successfully waited for deployment {deployment_name}")
+                break
+            logging.warning(
+                f"Unsuccessful wait command but retrying for {deployment_name}"
+            )
+            time.sleep(sleep)
+        assert (
+            ret.returncode == 0
+        ), f"Wait for rollout of {deployment_name} failed: non-zero return code"
 
 
 def retry_run(cmd, attempts=10, sleep=5):
@@ -97,7 +110,8 @@ def wait_for_status(name, namespace, attempts=20, sleep=5):
             stdout=subprocess.PIPE,
         )
         data = json.loads(ret.stdout)
-        if ("status" in data) and ("deploymentStatus" in data["status"]):
+        if ("status" in data) and (data["status"]["state"] == "Available"):
+            logging.warning(f"Status for SeldonDeployment {name} is ready.")
             return data
         else:
             logging.warning("Failed to find status - sleeping")
@@ -314,7 +328,12 @@ def rest_request_ambassador_auth(
     stop_max_attempt_number=5,
 )
 def grpc_request_ambassador(
-    deployment_name, namespace, endpoint="localhost:8004", data_size=5, rows=1, data=None
+    deployment_name,
+    namespace,
+    endpoint="localhost:8004",
+    data_size=5,
+    rows=1,
+    data=None,
 ):
     if data is None:
         shape, arr = create_random_data(data_size, rows)
@@ -336,7 +355,12 @@ def grpc_request_ambassador(
 
 
 def grpc_request_ambassador2(
-    deployment_name, namespace, endpoint="localhost:8004", data_size=5, rows=1, data=None
+    deployment_name,
+    namespace,
+    endpoint="localhost:8004",
+    data_size=5,
+    rows=1,
+    data=None,
 ):
     try:
         return grpc_request_ambassador(

@@ -4,6 +4,7 @@ import logging
 import pytest
 from subprocess import run
 from seldon_e2e_utils import (
+    wait_for_status,
     wait_for_rollout,
     rest_request_ambassador,
     initial_rest_request,
@@ -39,7 +40,8 @@ class TestRollingHttp(object):
                 f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
             )
         retry_run(f"kubectl apply -f ../resources/graph1.json -n {namespace}")
-        wait_for_rollout("mymodel-mymodel-e2eb561", namespace)
+        wait_for_status("mymodel", namespace)
+        wait_for_rollout("mymodel", namespace)
         logging.warning("Initial request")
         r = initial_rest_request("mymodel", namespace, endpoint=api_gateway)
         assert r.status_code == 200
@@ -87,7 +89,8 @@ class TestRollingHttp(object):
                 f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
             )
         retry_run(f"kubectl apply -f ../resources/graph1.json -n {namespace}")
-        wait_for_rollout("mymodel-mymodel-e2eb561", namespace)
+        wait_for_status("mymodel", namespace)
+        wait_for_rollout("mymodel", namespace)
         logging.warning("Initial request")
         r = initial_rest_request("mymodel", namespace, endpoint=api_gateway)
         assert r.status_code == 200
@@ -136,7 +139,8 @@ class TestRollingHttp(object):
                 f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
             )
         retry_run(f"kubectl apply -f ../resources/graph1.json -n {namespace}")
-        wait_for_rollout("mymodel-mymodel-e2eb561", namespace)
+        wait_for_status("mymodel", namespace)
+        wait_for_rollout("mymodel", namespace)
         logging.warning("Initial request")
         r = initial_rest_request("mymodel", namespace, endpoint=api_gateway)
         assert r.status_code == 200
@@ -179,7 +183,8 @@ class TestRollingHttp(object):
                 f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
             )
         retry_run(f"kubectl apply -f ../resources/graph1.json -n {namespace}")
-        wait_for_rollout("mymodel-mymodel-e2eb561", namespace)
+        wait_for_status("mymodel", namespace)
+        wait_for_rollout("mymodel", namespace)
         logging.warning("Initial request")
         r = initial_rest_request("mymodel", namespace, endpoint=api_gateway)
         assert r.status_code == 200
@@ -226,7 +231,8 @@ class TestRollingHttp(object):
                 f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
             )
         retry_run(f"kubectl apply -f ../resources/graph1.json -n {namespace}")
-        wait_for_rollout("mymodel-mymodel-e2eb561", namespace)
+        wait_for_status("mymodel", namespace)
+        wait_for_rollout("mymodel", namespace)
         logging.warning("Initial request")
         r = initial_rest_request("mymodel", namespace, endpoint=api_gateway)
         assert r.status_code == 200
@@ -275,8 +281,8 @@ class TestRollingHttp(object):
                 f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
             )
         retry_run(f"kubectl apply -f ../resources/graph1svc.json -n {namespace}")
-        wait_for_rollout("mymodel-mymodel-svc-orch-8e2a24b", namespace)
-        wait_for_rollout("mymodel-mymodel-e2eb561", namespace)
+        wait_for_status("mymodel", namespace)
+        wait_for_rollout("mymodel", namespace, expected_deployments=2)
         logging.warning("Initial request")
         r = initial_rest_request("mymodel", namespace, endpoint=api_gateway)
         assert r.status_code == 200
@@ -324,8 +330,8 @@ class TestRollingHttp(object):
                 f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
             )
         retry_run(f"kubectl apply -f ../resources/graph1svc.json -n {namespace}")
-        wait_for_rollout("mymodel-mymodel-svc-orch-8e2a24b", namespace)
-        wait_for_rollout("mymodel-mymodel-e2eb561", namespace)
+        wait_for_status("mymodel", namespace)
+        wait_for_rollout("mymodel", namespace, expected_deployments=2)
         logging.warning("Initial request")
         r = initial_rest_request("mymodel", namespace, endpoint=api_gateway)
         assert r.status_code == 200
@@ -374,8 +380,8 @@ class TestRollingHttp(object):
                 f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
             )
         retry_run(f"kubectl apply -f ../resources/graph1svc.json -n {namespace}")
-        wait_for_rollout("mymodel-mymodel-svc-orch-8e2a24b", namespace)
-        wait_for_rollout("mymodel-mymodel-e2eb561", namespace)
+        wait_for_status("mymodel", namespace)
+        wait_for_rollout("mymodel", namespace, expected_deployments=2)
         r = initial_rest_request("mymodel", namespace, endpoint=api_gateway)
         assert r.status_code == 200
         assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
@@ -417,8 +423,8 @@ class TestRollingHttp(object):
                 f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
             )
         retry_run(f"kubectl apply -f ../resources/graph1svc.json -n {namespace}")
-        wait_for_rollout("mymodel-mymodel-svc-orch-8e2a24b", namespace)
-        wait_for_rollout("mymodel-mymodel-e2eb561", namespace)
+        wait_for_status("mymodel", namespace)
+        wait_for_rollout("mymodel", namespace, expected_deployments=2)
         r = initial_rest_request("mymodel", namespace, endpoint=api_gateway)
         assert r.status_code == 200
         assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
@@ -464,8 +470,8 @@ class TestRollingHttp(object):
                 f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
             )
         retry_run(f"kubectl apply -f ../resources/graph1svc.json -n {namespace}")
-        wait_for_rollout("mymodel-mymodel-svc-orch-8e2a24b", namespace)
-        wait_for_rollout("mymodel-mymodel-e2eb561", namespace)
+        wait_for_status("mymodel", namespace)
+        wait_for_rollout("mymodel", namespace, expected_deployments=2)
         r = initial_rest_request("mymodel", namespace, endpoint=api_gateway)
         assert r.status_code == 200
         assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
@@ -516,8 +522,8 @@ def test_rolling_update_deployment(from_deployment, to_deployment):
     from_file_path = to_resources_path(from_deployment)
     retry_run(f"kubectl apply -f {from_file_path} -n {namespace}")
     # Note that this is not yet parametrised!
-    wait_for_rollout("mymodel-mymodel-e2eb561", namespace)
-
+    wait_for_status("mymodel", namespace)
+    wait_for_rollout("mymodel", namespace)
     logging.warning("Initial request")
     r = initial_rest_request("mymodel", namespace)
     assert r.status_code == 200

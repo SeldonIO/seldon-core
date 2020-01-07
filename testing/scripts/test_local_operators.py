@@ -4,6 +4,7 @@ import logging
 import pytest
 from subprocess import run
 from seldon_e2e_utils import (
+    wait_for_status,
     wait_for_rollout,
     rest_request_ambassador,
     initial_rest_request,
@@ -21,7 +22,8 @@ class TestLocalOperators(object):
             f"helm install seldon ../../helm-charts/seldon-core-operator --namespace {namespace} --set istio.enabled=true --set istio.gateway=seldon-gateway --set certManager.enabled=false --set crd.create=false --set singleNamespace=true"
         )
         retry_run(f"kubectl apply -f ../resources/graph1.json -n {namespace}")
-        wait_for_rollout("mymodel-mymodel-e2eb561", namespace)
+        wait_for_status("mymodel", namespace)
+        wait_for_rollout("mymodel", namespace)
         logging.warning("Initial request")
         r = initial_rest_request("mymodel", namespace, endpoint=API_AMBASSADOR)
         assert r.status_code == 200
@@ -37,7 +39,8 @@ class TestLocalOperators(object):
             f"helm install seldon ../../helm-charts/seldon-core-operator --namespace {namespace} --set istio.enabled=true --set istio.gateway=seldon-gateway --set certManager.enabled=false --set crd.create=false --set controllerId=seldon-id1"
         )
         retry_run(f"kubectl apply -f ../resources/model_controller_id.yaml -n default")
-        wait_for_rollout("test-c1-example-cf749e0", "default")
+        wait_for_status("test-c1", "default")
+        wait_for_rollout("test-c1", "default")
         logging.warning("Initial request")
         r = initial_rest_request("test-c1", "default", endpoint=API_AMBASSADOR)
         assert r.status_code == 200
