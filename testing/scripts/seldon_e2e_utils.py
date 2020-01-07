@@ -45,7 +45,7 @@ def get_deployment_names(sdep_name, namespace, attempts=20, sleep=5):
         ret = run(
             f"kubectl get -n {namespace} sdep {sdep_name} -o json",
             shell=True,
-            capture_output=True,
+            stdout=subprocess.PIPE,
         )
         if ret.returncode == 0:
             logging.warning(f"Successfully waited for SeldonDeployment {sdep_name}")
