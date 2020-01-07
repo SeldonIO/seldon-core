@@ -80,7 +80,8 @@ func (s SeldonMessageTestClient) Feedback(ctx context.Context, modelName string,
 	if s.errMethod != nil && *s.errMethod == v1.SEND_FEEDBACK {
 		return nil, s.err
 	}
-	return msg, nil
+	resp := &payload.ProtoPayload{Msg: msg.GetPayload().(*proto.Feedback).Request}
+	return resp, nil
 }
 
 func NewSeldonMessageTestClient(t *testing.T, chosenRoute int, errMethod *v1.PredictiveUnitMethod, err error) client.SeldonApiClient {

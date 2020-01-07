@@ -89,16 +89,17 @@ The log sink should show the request payload as a Cloud Event:
   headers: 
    { host: 'localhost:2222',
      'user-agent': 'Go-http-client/1.1',
-     'content-length': '42',
-     'ce-id': '0a032dc1-9882-4188-9453-f7c5be386345',
+     'content-length': '30',
+     'ce-id': '495807bc-a8b8-4068-8fb8-90485deffd66',
      'ce-source': 'http://localhost:8000/',
-     'ce-specversion': '0.2',
-     'ce-time': '2019-12-24T18:00:04.082966884Z',
+     'ce-specversion': '1.0',
+     'ce-time': '2020-01-06T17:34:02.291670652Z',
      'ce-type': 'io.seldon.serving.inference.request',
+     'content-type': 'application/protobuf',
      'model-id': 'classifier',
      'accept-encoding': 'gzip' },
   method: 'POST',
-  body: '"GhwaGgoYMhYKCREAAAAAAADwPwoJEQAAAAAAAABA"',
+  body: '\u001a\u001c\u001a\u001a\n\u00182\u0016\n\t\u0011\u0000\u0000\u0000\u0000\u0000\u0000�?\n\t\u0011\u0000\u0000\u0000\u0000\u0000\u0000\u0000@',
   cookies: undefined,
   fresh: false,
   hostname: 'localhost',
@@ -108,6 +109,6 @@ The log sink should show the request payload as a Cloud Event:
   query: {},
   subdomains: [],
   xhr: false,
-  os: { hostname: 'fc40e5bd5581' } }
+  os: { hostname: 'ea9691dcda8b' } }
 ```
 

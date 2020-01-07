@@ -129,7 +129,7 @@ func (smc *JSONRestClient) PostHttp(ctx context.Context, modelName string, metho
 
 	if response.StatusCode != http.StatusOK {
 		smc.Log.Info("httpPost failed", "response code", response.StatusCode)
-		return nil, "", errors.Errorf("Internal service call failed with to %s status code %d", url, response.StatusCode)
+		return nil, "", errors.Errorf("Internal service call failed calling %s status code %d", url, response.StatusCode)
 	}
 
 	//Read response

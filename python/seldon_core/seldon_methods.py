@@ -326,14 +326,18 @@ def aggregate(
             features_list = []
             names_list = []
 
-            if "seldonMessages" not in request or not isinstance(
+            if isinstance(request, list):
+                msgs = request
+            elif "seldonMessages" in request and isinstance(
                 request["seldonMessages"], list
             ):
+                msgs = request["seldonMessages"]
+            else:
                 raise SeldonMicroserviceException(
                     f"Invalid request data type: {request}"
                 )
 
-            for msg in request["seldonMessages"]:
+            for msg in msgs:
                 (features, meta, datadef, data_type) = extract_request_parts_json(msg)
                 class_names = datadef["names"] if datadef and "names" in datadef else []
                 features_list.append(features)
@@ -341,7 +345,7 @@ def aggregate(
 
             client_response = client_aggregate(user_model, features_list, names_list)
             return construct_response_json(
-                user_model, False, request["seldonMessages"][0], client_response
+                user_model, False, msgs[0], client_response
             )
 
 
