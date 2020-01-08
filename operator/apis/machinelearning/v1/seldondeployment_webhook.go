@@ -466,6 +466,16 @@ func (r *SeldonDeploymentSpec) ValidateSeldonDeployment() error {
 		}
 		predictorNames[p.Name] = true
 		allErrs = checkPredictiveUnits(p.Graph, &p, field.NewPath("spec").Child("predictors").Index(i).Child("graph"), allErrs)
+
+		if p.Protocol != "" && !(p.Protocol == ProtocolSeldon || p.Protocol == ProtocolTensorflow) {
+			fldPath := field.NewPath("spec").Child("predictors").Index(i)
+			allErrs = append(allErrs, field.Invalid(fldPath, p.Protocol, "Invalid protocol"))
+		}
+
+		if p.Transport != "" && !(p.Transport == TransportRest || p.Transport == TransportGrpc) {
+			fldPath := field.NewPath("spec").Child("predictors").Index(i)
+			allErrs = append(allErrs, field.Invalid(fldPath, p.Transport, "Invalid transport"))
+		}
 	}
 
 	allErrs = checkTraffic(r, field.NewPath("spec"), allErrs)

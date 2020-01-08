@@ -7,7 +7,7 @@ controllerId: ''
 crd:
   create: true
 executor:
-  enabled: false
+  enabled: true
   grpc:
     port: 5001
   image:
