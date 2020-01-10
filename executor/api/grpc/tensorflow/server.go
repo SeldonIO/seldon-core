@@ -88,5 +88,5 @@ func (g *GrpcTensorflowServer) GetModelStatus(ctx context.Context, req *serving.
 }
 
 func (g *GrpcTensorflowServer) HandleReloadConfigRequest(context.Context, *serving.ReloadConfigRequest) (*serving.ReloadConfigResponse, error) {
-	panic("implement me")
+	return nil, errors.Errorf("Not implemented")
 }

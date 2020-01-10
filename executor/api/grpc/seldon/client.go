@@ -7,6 +7,7 @@ import (
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_opentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
 	"github.com/opentracing/opentracing-go"
+	"github.com/pkg/errors"
 	"github.com/seldonio/seldon-core/executor/api/client"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/metric"
@@ -174,5 +175,5 @@ func (s SeldonMessageGrpcClient) CreateErrorPayload(err error) payload.SeldonPay
 }
 
 func (s SeldonMessageGrpcClient) Status(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
-	panic("implement me")
+	return nil, errors.Errorf("Not implemented")
 }

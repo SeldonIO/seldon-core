@@ -47,6 +47,7 @@ compile_tensorflow_proto:
 .PHONY: add_protos
 add_protos:
 	cd tensorflow && find ./tensorflow -name '*.proto' | cpio -pdm ../proto
+	cd serving && find ./tensorflow_serving -name '*.proto' | cpio -pdm ../proto
 
 # Run tests
 test: fmt vet

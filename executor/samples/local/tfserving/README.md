@@ -62,6 +62,27 @@ spec:
 
 ```
 
+Check status of model
+```bash
+make curl_status
+```
+
+You should see a response:
+```
+{
+ "model_version_status": [
+  {
+   "version": "123",
+   "state": "AVAILABLE",
+   "status": {
+    "error_code": "OK",
+    "error_message": ""
+   }
+  }
+ ]
+}
+```
+
 Send a request
 ```bash
 make curl_rest
@@ -186,6 +207,26 @@ spec:
       version: v1
     name: example
     replicas: 1
+```
+
+Check Status of model
+```bash
+make grpc_status
+```
+
+You should see a response:
+```
+{
+  "model_version_status": [
+    {
+      "version": "123",
+      "state": "AVAILABLE",
+      "status": {
+        
+      }
+    }
+  ]
+}
 ```
 
 Send a request
