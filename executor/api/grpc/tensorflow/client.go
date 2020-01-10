@@ -56,6 +56,7 @@ func (s TensorflowGrpcClient) getConnection(host string, port int32) (*grpc.Clie
 	}
 }
 
+// Allow PredictionResponses to be turned into PredictionRequests
 func (s TensorflowGrpcClient) Chain(ctx context.Context, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	switch v := msg.GetPayload().(type) {
 	case *serving.PredictRequest, *serving.ClassificationRequest, *serving.MultiInferenceRequest:
@@ -114,6 +115,21 @@ func (s TensorflowGrpcClient) Combine(ctx context.Context, modelName string, hos
 
 func (s TensorflowGrpcClient) TransformOutput(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	return s.Predict(ctx, modelName, host, port, msg)
+}
+
+func (s TensorflowGrpcClient) Status(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+	conn, err := s.getConnection(host, port)
+	if err != nil {
+		return s.CreateErrorPayload(err), err
+	}
+	grpcClient := serving.NewModelServiceClient(conn)
+	var resp proto.Message
+	resp, err = grpcClient.GetModelStatus(ctx, msg.GetPayload().(*serving.GetModelStatusRequest), s.callOptions...)
+	if err != nil {
+		return nil, err
+	}
+	resPayload := payload.ProtoPayload{Msg: resp}
+	return &resPayload, nil
 }
 
 func (s TensorflowGrpcClient) Feedback(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {

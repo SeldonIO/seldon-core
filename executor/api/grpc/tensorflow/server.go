@@ -76,3 +76,17 @@ func (g *GrpcTensorflowServer) MultiInference(ctx context.Context, req *serving.
 func (g *GrpcTensorflowServer) GetModelMetadata(context.Context, *serving.GetModelMetadataRequest) (*serving.GetModelMetadataResponse, error) {
 	return nil, errors.Errorf("not implemented")
 }
+
+func (g *GrpcTensorflowServer) GetModelStatus(ctx context.Context, req *serving.GetModelStatusRequest) (*serving.GetModelStatusResponse, error) {
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("GrpcClassify"), grpc.GetEventId(ctx), g.ServerUrl, g.Namespace)
+	reqPayload := payload.ProtoPayload{Msg: req}
+	resPayload, err := seldonPredictorProcess.Status(g.predictor.Graph, req.ModelSpec.Name, &reqPayload)
+	if err != nil {
+		return nil, err
+	}
+	return resPayload.GetPayload().(*serving.GetModelStatusResponse), nil
+}
+
+func (g *GrpcTensorflowServer) HandleReloadConfigRequest(context.Context, *serving.ReloadConfigRequest) (*serving.ReloadConfigResponse, error) {
+	panic("implement me")
+}

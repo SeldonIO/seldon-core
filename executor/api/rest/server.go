@@ -2,13 +2,13 @@ package rest
 
 import (
 	"context"
+	"fmt"
 	"github.com/go-logr/logr"
 	"github.com/gorilla/mux"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/prometheus/common/log"
 	"github.com/seldonio/seldon-core/executor/api/client"
 	"github.com/seldonio/seldon-core/executor/api/metric"
 	"github.com/seldonio/seldon-core/executor/api/payload"
@@ -98,11 +98,15 @@ func (r *SeldonRestApi) Initialise() {
 		switch r.Protocol {
 		case ProtocolSeldon:
 			api01 := r.Router.PathPrefix("/api/v0.1").Methods("POST").Subrouter()
-			api01.Handle("/predictions", r.wrapMetrics("/api/v0.1/predictions", r.predictions))
+			api01.Handle("/predictions", r.wrapMetrics(metric.PredictionHttpServiceName, r.predictions))
+			r.Router.NewRoute().Path("/api/v0.1/status/{" + ModelHttpPathVariable + "}").Methods("GET").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.status))
 			api1 := r.Router.PathPrefix("/api/v1.0").Methods("POST").Subrouter()
-			api1.Handle("/predictions", r.wrapMetrics("/api/v1/predictions", r.predictions))
+			api1.Handle("/predictions", r.wrapMetrics(metric.PredictionServiceMetricName, r.predictions))
+			r.Router.NewRoute().Path("/api/v1.0/status/{" + ModelHttpPathVariable + "}").Methods("GET").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.status))
+
 		case ProtocolTensorflow:
-			r.Router.NewRoute().Path("/v1/models:predict").Methods("POST").HandlerFunc(r.wrapMetrics("/v1/models:predict", r.predictions))
+			r.Router.NewRoute().Path("/v1/models/{" + ModelHttpPathVariable + "}/:predict").Methods("POST").HandlerFunc(r.wrapMetrics(metric.PredictionHttpServiceName, r.predictions))
+			r.Router.NewRoute().Path("/v1/models/{" + ModelHttpPathVariable + "}").Methods("GET").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.status))
 		}
 	}
 }
@@ -125,6 +129,45 @@ func getEventId(req *http.Request) string {
 	return req.Header.Get(logger.CloudEventsIdHeader)
 }
 
+func (r *SeldonRestApi) failWithError(w http.ResponseWriter, err error) {
+	r.Log.Error(err, "Failed")
+	r.respondWithError(w, err)
+}
+
+func getGraphNodeForModelName(req *http.Request, graph *v1.PredictiveUnit) (*v1.PredictiveUnit, error) {
+	vars := mux.Vars(req)
+	modelName := vars[ModelHttpPathVariable]
+	if graphNode := v1.GetPredictiveUnit(graph, modelName); graphNode == nil {
+		return nil, fmt.Errorf("Failed to find model %s", modelName)
+	} else {
+		return graphNode, nil
+	}
+}
+
+func (r *SeldonRestApi) status(w http.ResponseWriter, req *http.Request) {
+	ctx := context.Background()
+
+	// Apply tracing if active
+	if opentracing.IsGlobalTracerRegistered() {
+		tracer := opentracing.GlobalTracer()
+		spanCtx, _ := tracer.Extract(opentracing.HTTPHeaders, opentracing.HTTPHeadersCarrier(req.Header))
+		serverSpan := tracer.StartSpan("status_rest", ext.RPCServerOption(spanCtx))
+		ctx = opentracing.ContextWithSpan(ctx, serverSpan)
+		defer serverSpan.Finish()
+	}
+
+	vars := mux.Vars(req)
+	modelName := vars[ModelHttpPathVariable]
+
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName("SeldonMessageRestClient"), getEventId(req), r.ServerUrl, r.Namespace)
+	resPayload, err := seldonPredictorProcess.Status(r.predictor.Graph, modelName, nil)
+	if err != nil {
+		r.failWithError(w, err)
+		return
+	}
+	r.respondWithSuccess(w, http.StatusOK, resPayload)
+}
+
 func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 	r.Log.Info("Predictions called")
 
@@ -140,8 +183,7 @@ func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 
 	bodyBytes, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		log.Error("Failed to get body", err)
-		r.respondWithError(w, err)
+		r.failWithError(w, err)
 		return
 	}
 
@@ -149,15 +191,23 @@ func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 
 	reqPayload, err := seldonPredictorProcess.Client.Unmarshall(bodyBytes)
 	if err != nil {
-		log.Error("Failed to get body", err)
-		r.respondWithError(w, err)
+		r.failWithError(w, err)
 		return
 	}
 
-	resPayload, err := seldonPredictorProcess.Predict(r.predictor.Graph, reqPayload)
+	var graphNode *v1.PredictiveUnit
+	if r.Protocol == ProtocolTensorflow {
+		graphNode, err = getGraphNodeForModelName(req, r.predictor.Graph)
+		if err != nil {
+			r.failWithError(w, err)
+			return
+		}
+	} else {
+		graphNode = r.predictor.Graph
+	}
+	resPayload, err := seldonPredictorProcess.Predict(graphNode, reqPayload)
 	if err != nil {
-		log.Error("Failed to get predictions", err)
-		r.respondWithError(w, err)
+		r.failWithError(w, err)
 		return
 	}
 	r.respondWithSuccess(w, http.StatusOK, resPayload)

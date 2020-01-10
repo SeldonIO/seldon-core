@@ -6,6 +6,10 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/payload"
 )
 
+const (
+	ModelHttpPathVariable = "model"
+)
+
 func ChainTensorflow(msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	var f interface{}
 	err := json.Unmarshal(msg.GetPayload().([]byte), &f)

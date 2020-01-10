@@ -152,6 +152,7 @@ func runGrpcServer(logger logr.Logger, predictor *v1.PredictorSpec, client seldo
 	} else {
 		tensorflowGrpcServer := tensorflow.NewGrpcTensorflowServer(predictor, client, serverUrl, namespace)
 		serving.RegisterPredictionServiceServer(grpcServer, tensorflowGrpcServer)
+		serving.RegisterModelServiceServer(grpcServer, tensorflowGrpcServer)
 	}
 	err = grpcServer.Serve(lis)
 	if err != nil {

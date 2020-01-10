@@ -172,3 +172,7 @@ func (s SeldonMessageGrpcClient) CreateErrorPayload(err error) payload.SeldonPay
 	res := payload.ProtoPayload{Msg: &respFailed}
 	return &res
 }
+
+func (s SeldonMessageGrpcClient) Status(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+	panic("implement me")
+}

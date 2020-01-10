@@ -15,16 +15,18 @@ const (
 	SeldonCombinePath         = "/aggregate"
 	SeldonRoutePath           = "/route"
 	SeldonFeedbackPath        = "/send-feedback"
+	SeldonStatusPath          = "/health/status"
 )
 
 type SeldonApiClient interface {
-	Chain(ctx context.Context, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error)
 	Predict(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error)
 	TransformInput(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error)
 	Route(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (int, error)
 	Combine(ctx context.Context, modelName string, host string, port int32, msgs []payload.SeldonPayload) (payload.SeldonPayload, error)
 	TransformOutput(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error)
 	Feedback(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error)
+	Chain(ctx context.Context, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error)
+	Status(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error)
 	Unmarshall(msg []byte) (payload.SeldonPayload, error)
 	Marshall(out io.Writer, msg payload.SeldonPayload) error
 	CreateErrorPayload(err error) payload.SeldonPayload

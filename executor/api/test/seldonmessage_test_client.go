@@ -2,7 +2,6 @@ package test
 
 import (
 	"context"
-	"github.com/golang/protobuf/jsonpb"
 	"github.com/seldonio/seldon-core/executor/api/client"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/payload"
@@ -19,23 +18,26 @@ type SeldonMessageTestClient struct {
 	err         error
 }
 
+const (
+	TestClientStatusResponse = `{"status":"ok"}`
+)
+
+func (s SeldonMessageTestClient) Status(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+	return &payload.BytesPayload{Msg: []byte(TestClientStatusResponse)}, nil
+}
+
 func (s SeldonMessageTestClient) Chain(ctx context.Context, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	return msg, nil
 }
 
 func (s SeldonMessageTestClient) Unmarshall(msg []byte) (payload.SeldonPayload, error) {
-	var sm proto.SeldonMessage
-	value := string(msg)
-	if err := jsonpb.UnmarshalString(value, &sm); err != nil {
-		return nil, err
-	}
-	reqPayload := payload.ProtoPayload{Msg: &sm}
+	reqPayload := payload.BytesPayload{Msg: msg, ContentType: "application/json"}
 	return &reqPayload, nil
 }
 
 func (s SeldonMessageTestClient) Marshall(out io.Writer, msg payload.SeldonPayload) error {
-	ma := jsonpb.Marshaler{}
-	return ma.Marshal(out, msg.GetPayload().(*proto.SeldonMessage))
+	_, err := out.Write(msg.GetPayload().([]byte))
+	return err
 }
 
 func (s SeldonMessageTestClient) CreateErrorPayload(err error) payload.SeldonPayload {

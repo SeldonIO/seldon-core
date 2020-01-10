@@ -2,6 +2,7 @@ package predictor
 
 import (
 	"context"
+	"fmt"
 	"github.com/go-logr/logr"
 	guuid "github.com/google/uuid"
 	"github.com/seldonio/seldon-core/executor/api/client"
@@ -285,6 +286,14 @@ func (p *PredictorProcess) Predict(node *v1.PredictiveUnit, msg payload.SeldonPa
 		p.logPayload(node.Name, node.Logger, payloadLogger.InferenceResponse, response)
 	}
 	return response, err
+}
+
+func (p *PredictorProcess) Status(node *v1.PredictiveUnit, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+	if nodeModel := v1.GetPredictiveUnit(node, modelName); nodeModel == nil {
+		return nil, fmt.Errorf("Failed to find model %s", modelName)
+	} else {
+		return p.Client.Status(p.Ctx, modelName, nodeModel.Endpoint.ServiceHost, nodeModel.Endpoint.ServicePort, msg)
+	}
 }
 
 func (p *PredictorProcess) Feedback(node *v1.PredictiveUnit, msg payload.SeldonPayload) (payload.SeldonPayload, error) {

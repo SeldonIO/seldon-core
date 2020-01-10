@@ -11,9 +11,12 @@ const (
 	ModelImageMetric       = "model_image"
 	ModelVersionMetric     = "model_version"
 
+	PredictionServiceMetricName = "predictions"
+
 	ServerRequestsMetricName = "seldon_api_executor_server_requests_seconds"
 	ClientRequestsMetricName = "seldon_api_executor_client_requests_seconds"
 
 	PredictionHttpServiceName = "predictions"
+	StatusHttpServiceName     = "status"
 	FeedbackHttpServiceName   = "feedback"
 )

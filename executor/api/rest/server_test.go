@@ -96,3 +96,61 @@ func TestServerMetrics(t *testing.T) {
 	g.Expect(metrics[metric.ServerRequestsMetricName]).ShouldNot(gomega.BeNil())
 
 }
+
+func TestTensorflowStatus(t *testing.T) {
+	t.Logf("Started")
+	g := gomega.NewGomegaWithT(t)
+
+	model := v1.MODEL
+	p := v1.PredictorSpec{
+		Name: "p",
+		Graph: &v1.PredictiveUnit{
+			Name: "mymodel",
+			Type: &model,
+			Endpoint: &v1.Endpoint{
+				ServiceHost: "foo",
+				ServicePort: 9000,
+				Type:        v1.REST,
+			},
+		},
+	}
+
+	url, _ := url.Parse("http://localhost")
+	r := NewServerRestApi(&p, test.NewSeldonMessageTestClient(t, 0, nil, nil), false, url, "default", ProtocolTensorflow, "test", "/metrics")
+	r.Initialise()
+
+	req, _ := http.NewRequest("GET", "/v1/models/mymodel", nil)
+	res := httptest.NewRecorder()
+	r.Router.ServeHTTP(res, req)
+	g.Expect(res.Code).To(gomega.Equal(200))
+	g.Expect(res.Body.String()).To(gomega.Equal(test.TestClientStatusResponse))
+}
+
+func TestSeldonStatus(t *testing.T) {
+	t.Logf("Started")
+	g := gomega.NewGomegaWithT(t)
+
+	model := v1.MODEL
+	p := v1.PredictorSpec{
+		Name: "p",
+		Graph: &v1.PredictiveUnit{
+			Name: "mymodel",
+			Type: &model,
+			Endpoint: &v1.Endpoint{
+				ServiceHost: "foo",
+				ServicePort: 9000,
+				Type:        v1.REST,
+			},
+		},
+	}
+
+	url, _ := url.Parse("http://localhost")
+	r := NewServerRestApi(&p, test.NewSeldonMessageTestClient(t, 0, nil, nil), false, url, "default", ProtocolSeldon, "test", "/metrics")
+	r.Initialise()
+
+	req, _ := http.NewRequest("GET", "/api/v1.0/status/mymodel", nil)
+	res := httptest.NewRecorder()
+	r.Router.ServeHTTP(res, req)
+	g.Expect(res.Code).To(gomega.Equal(200))
+	g.Expect(res.Body.String()).To(gomega.Equal(test.TestClientStatusResponse))
+}
