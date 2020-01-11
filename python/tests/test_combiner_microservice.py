@@ -94,6 +94,7 @@ def test_aggreate_ok_seldon_messages():
     assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
     assert j["data"]["ndarray"] == [1]
 
+
 def test_aggreate_ok_list():
     user_object = UserObject()
     app = get_rest_microservice(user_object)
@@ -107,6 +108,7 @@ def test_aggreate_ok_list():
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
     assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
     assert j["data"]["ndarray"] == [1]
+
 
 def test_aggreate_bad_user_object():
     user_object = UserObjectBad()

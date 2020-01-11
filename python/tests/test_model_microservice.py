@@ -42,7 +42,7 @@ def rs232_checksum(the_bytes):
 
 class UserObject(SeldonComponent):
     HEALTH_STATUS_REPONSE = [0.123]
-    METADATA_RESPONSE = {"metadata":{"name":"mymodel"}}
+    METADATA_RESPONSE = {"metadata": {"name": "mymodel"}}
 
     def __init__(self, metrics_ok=True, ret_nparray=False, ret_meta=False):
         self.metrics_ok = metrics_ok
@@ -88,6 +88,7 @@ class UserObject(SeldonComponent):
 
     def metadata(self):
         return self.METADATA_RESPONSE
+
 
 class UserObjectLowLevel(SeldonComponent):
     HEALTH_STATUS_RAW_RESPONSE = [123.456, 7.89]
@@ -658,6 +659,7 @@ def test_model_metadata():
     j = json.loads(rv.data)
     print(j)
     assert j == UserObject.METADATA_RESPONSE
+
 
 def test_proto_ok():
     user_object = UserObject()

@@ -344,9 +344,7 @@ def aggregate(
                 names_list.append(class_names)
 
             client_response = client_aggregate(user_model, features_list, names_list)
-            return construct_response_json(
-                user_model, False, msgs[0], client_response
-            )
+            return construct_response_json(user_model, False, msgs[0], client_response)
 
 
 def health_status(user_model: Any) -> Union[prediction_pb2.SeldonMessage, List, Dict]:
