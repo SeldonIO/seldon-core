@@ -188,36 +188,36 @@ def initial_grpc_request(
 ):
     try:
         return grpc_request_ambassador(
-        model,
-        namespace,
-        endpoint=endpoint,
-        data_size=data_size,
-        rows=rows,
-        data=data
-        )
-    except:
-        logging.warning("Sleeping 1 sec and trying again")
-        time.sleep(1)
-        try:
-            return grpc_request_ambassador(
             model,
             namespace,
             endpoint=endpoint,
             data_size=data_size,
             rows=rows,
             data=data,
-            )
-        except:
-            logging.warning("Sleeping 5 sec and trying again")
-            time.sleep(5)
-            try:
-                return grpc_request_ambassador(
+        )
+    except:
+        logging.warning("Sleeping 1 sec and trying again")
+        time.sleep(1)
+        try:
+            return grpc_request_ambassador(
                 model,
                 namespace,
                 endpoint=endpoint,
                 data_size=data_size,
                 rows=rows,
                 data=data,
+            )
+        except:
+            logging.warning("Sleeping 5 sec and trying again")
+            time.sleep(5)
+            try:
+                return grpc_request_ambassador(
+                    model,
+                    namespace,
+                    endpoint=endpoint,
+                    data_size=data_size,
+                    rows=rows,
+                    data=data,
                 )
             except:
                 logging.warning("Sleeping 10 sec and trying again")
@@ -230,6 +230,7 @@ def initial_grpc_request(
                     rows=rows,
                     data=data,
                 )
+
 
 def create_random_data(data_size, rows=1):
     shape = [rows, data_size]
@@ -340,7 +341,6 @@ def rest_request_ambassador_auth(
             auth=HTTPBasicAuth(username, password),
         )
     return response
-
 
 
 def grpc_request_ambassador(

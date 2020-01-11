@@ -42,7 +42,9 @@ class TestClusterWide(object):
             check=True,
         )
         wait_for_rollout(f"mymodel-mymodel-2a00e84", namespace)
-        time.sleep(5)#Seems to be needed for consistent Ambassador grpc call. If called too early it seems will always fail.
+        time.sleep(
+            5
+        )  # Seems to be needed for consistent Ambassador grpc call. If called too early it seems will always fail.
         initial_grpc_request("mymodel", namespace)
         logging.warning("Test Ambassador gRPC gateway")
         r = grpc_request_ambassador2("mymodel", namespace, API_AMBASSADOR)
