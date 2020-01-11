@@ -19,25 +19,24 @@ import (
 )
 
 const (
-	testEventId   = "1"
 	testSourceUrl = "http://localhost"
 )
 
 func createPredictorProcess(t *testing.T) *PredictorProcess {
 	url, _ := url.Parse(testSourceUrl)
-	pp := NewPredictorProcess(context.TODO(), test.NewSeldonMessageTestClient(t, -1, nil, nil), logf.Log.WithName("SeldonMessageRestClient"), testEventId, url, "default")
+	pp := NewPredictorProcess(context.TODO(), test.NewSeldonMessageTestClient(t, -1, nil, nil), logf.Log.WithName("SeldonMessageRestClient"), url, "default")
 	return &pp
 }
 
 func createPredictorProcessWithRoute(t *testing.T, chosenRoute int) *PredictorProcess {
 	url, _ := url.Parse(testSourceUrl)
-	pp := NewPredictorProcess(context.TODO(), test.NewSeldonMessageTestClient(t, chosenRoute, nil, nil), logf.Log.WithName("SeldonMessageRestClient"), testEventId, url, "default")
+	pp := NewPredictorProcess(context.TODO(), test.NewSeldonMessageTestClient(t, chosenRoute, nil, nil), logf.Log.WithName("SeldonMessageRestClient"), url, "default")
 	return &pp
 }
 
 func createPredictorProcessWithError(t *testing.T, errMethod *v1.PredictiveUnitMethod, err error) *PredictorProcess {
 	url, _ := url.Parse(testSourceUrl)
-	pp := NewPredictorProcess(context.TODO(), test.NewSeldonMessageTestClient(t, -1, errMethod, err), logf.Log.WithName("SeldonMessageRestClient"), testEventId, url, "default")
+	pp := NewPredictorProcess(context.TODO(), test.NewSeldonMessageTestClient(t, -1, errMethod, err), logf.Log.WithName("SeldonMessageRestClient"), url, "default")
 	return &pp
 }
 
@@ -356,7 +355,7 @@ func TestModelWithLogRequests(t *testing.T) {
 	modelName := "foo"
 	logged := false
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		g.Expect(r.Header.Get(logger.CloudEventsIdHeader)).Should(gomega.Equal(testEventId))
+		//g.Expect(r.Header.Get(logger.CloudEventsIdHeader)).Should(gomega.Equal(testEventId))
 		g.Expect(r.Header.Get(logger.CloudEventsTypeHeader)).Should(gomega.Equal(logger.CEInferenceRequest))
 		g.Expect(r.Header.Get(logger.CloudEventsTypeSource)).Should(gomega.Equal(testSourceUrl))
 		g.Expect(r.Header.Get(logger.ModelIdHeader)).Should(gomega.Equal(modelName))
@@ -400,7 +399,7 @@ func TestModelWithLogResponses(t *testing.T) {
 	modelName := "foo"
 	logged := false
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		g.Expect(r.Header.Get(logger.CloudEventsIdHeader)).Should(gomega.Equal(testEventId))
+		//g.Expect(r.Header.Get(logger.CloudEventsIdHeader)).Should(gomega.Equal(testEventId))
 		g.Expect(r.Header.Get(logger.CloudEventsTypeHeader)).Should(gomega.Equal(logger.CEInferenceResponse))
 		g.Expect(r.Header.Get(logger.CloudEventsTypeSource)).Should(gomega.Equal(testSourceUrl))
 		g.Expect(r.Header.Get(logger.ModelIdHeader)).Should(gomega.Equal(modelName))

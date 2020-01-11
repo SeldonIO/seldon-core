@@ -1,4 +1,4 @@
-package seldon
+package util
 
 import (
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"

@@ -4,15 +4,16 @@ import (
 	"context"
 	"fmt"
 	"github.com/go-logr/logr"
+	guuid "github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/seldonio/seldon-core/executor/api"
 	"github.com/seldonio/seldon-core/executor/api/client"
 	"github.com/seldonio/seldon-core/executor/api/metric"
 	"github.com/seldonio/seldon-core/executor/api/payload"
-	"github.com/seldonio/seldon-core/executor/logger"
 	"github.com/seldonio/seldon-core/executor/predictor"
 	"github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
 	"io/ioutil"
@@ -94,9 +95,9 @@ func (r *SeldonRestApi) Initialise() {
 	r.Router.HandleFunc("/live", r.alive)
 	r.Router.Handle(r.prometheusPath, promhttp.Handler())
 	if !r.ProbesOnly {
-		//predictionsHandler := r.wrapMetrics(metric.PredictionHttpServiceName, r.predictions)
+		r.Router.Use(puidHeader)
 		switch r.Protocol {
-		case ProtocolSeldon:
+		case api.ProtocolSeldon:
 			//v0.1 API
 			api01 := r.Router.PathPrefix("/api/v0.1").Methods("POST").Subrouter()
 			api01.Handle("/predictions", r.wrapMetrics(metric.PredictionHttpServiceName, r.predictions))
@@ -108,12 +109,21 @@ func (r *SeldonRestApi) Initialise() {
 			r.Router.NewRoute().Path("/api/v1.0/status/{" + ModelHttpPathVariable + "}").Methods("GET").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.status))
 			r.Router.NewRoute().Path("/api/v1.0/metadata/{" + ModelHttpPathVariable + "}").Methods("GET").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.metadata))
 
-		case ProtocolTensorflow:
+		case api.ProtocolTensorflow:
 			r.Router.NewRoute().Path("/v1/models/{" + ModelHttpPathVariable + "}/:predict").Methods("POST").HandlerFunc(r.wrapMetrics(metric.PredictionHttpServiceName, r.predictions))
 			r.Router.NewRoute().Path("/v1/models/{" + ModelHttpPathVariable + "}").Methods("GET").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.status))
 			r.Router.NewRoute().Path("/v1/models/{" + ModelHttpPathVariable + "}/metadata").Methods("GET").HandlerFunc(r.wrapMetrics(metric.MetadataHttpServiceName, r.metadata))
 		}
 	}
+}
+
+func puidHeader(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if puid := r.Header.Get(payload.SeldonPUIDHeader); puid == "" {
+			r.Header.Set(payload.SeldonPUIDHeader, guuid.New().String())
+		}
+		next.ServeHTTP(w, r)
+	})
 }
 
 func (r *SeldonRestApi) checkReady(w http.ResponseWriter, req *http.Request) {
@@ -128,10 +138,6 @@ func (r *SeldonRestApi) checkReady(w http.ResponseWriter, req *http.Request) {
 
 func (r *SeldonRestApi) alive(w http.ResponseWriter, req *http.Request) {
 	w.WriteHeader(http.StatusOK)
-}
-
-func getEventId(req *http.Request) string {
-	return req.Header.Get(logger.CloudEventsIdHeader)
 }
 
 func (r *SeldonRestApi) failWithError(w http.ResponseWriter, err error) {
@@ -170,7 +176,7 @@ func (r *SeldonRestApi) metadata(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	modelName := vars[ModelHttpPathVariable]
 
-	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), getEventId(req), r.ServerUrl, r.Namespace)
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace)
 	resPayload, err := seldonPredictorProcess.Metadata(r.predictor.Graph, modelName, nil)
 	if err != nil {
 		r.failWithError(w, err)
@@ -192,7 +198,7 @@ func (r *SeldonRestApi) status(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	modelName := vars[ModelHttpPathVariable]
 
-	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), getEventId(req), r.ServerUrl, r.Namespace)
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace)
 	resPayload, err := seldonPredictorProcess.Status(r.predictor.Graph, modelName, nil)
 	if err != nil {
 		r.failWithError(w, err)
@@ -212,13 +218,16 @@ func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 		defer serverSpan.Finish()
 	}
 
+	//Add puid to context
+	ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, req.Header.Get(payload.SeldonPUIDHeader))
+
 	bodyBytes, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		r.failWithError(w, err)
 		return
 	}
 
-	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), getEventId(req), r.ServerUrl, r.Namespace)
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace)
 
 	reqPayload, err := seldonPredictorProcess.Client.Unmarshall(bodyBytes)
 	if err != nil {
@@ -227,7 +236,7 @@ func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 	}
 
 	var graphNode *v1.PredictiveUnit
-	if r.Protocol == ProtocolTensorflow {
+	if r.Protocol == api.ProtocolTensorflow {
 		graphNode, err = getGraphNodeForModelName(req, r.predictor.Graph)
 		if err != nil {
 			r.failWithError(w, err)

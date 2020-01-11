@@ -11,11 +11,12 @@ import (
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/seldonio/seldon-core/executor/api"
 	"github.com/seldonio/seldon-core/executor/api/client"
-	"github.com/seldonio/seldon-core/executor/api/grpc/seldon"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/metric"
 	"github.com/seldonio/seldon-core/executor/api/payload"
+	"github.com/seldonio/seldon-core/executor/api/util"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
 	"io"
 	"io/ioutil"
@@ -118,6 +119,9 @@ func (smc *JSONRestClient) doHttp(ctx context.Context, modelName string, method 
 		}
 	}
 
+	//Add Puid
+	req.Header.Set(payload.SeldonPUIDHeader, ctx.Value(payload.SeldonPUIDHeader).(string))
+
 	if opentracing.IsGlobalTracerRegistered() {
 		tracer := opentracing.GlobalTracer()
 
@@ -155,7 +159,7 @@ func (smc *JSONRestClient) doHttp(ctx context.Context, modelName string, method 
 }
 
 func (smc *JSONRestClient) modifyMethod(method string, modelName string) string {
-	if smc.Protocol == ProtocolTensorflow {
+	if smc.Protocol == api.ProtocolTensorflow {
 		switch method {
 		case client.SeldonPredictPath, client.SeldonTransformInputPath, client.SeldonTransformOutputPath:
 			return "/v1/models/" + modelName + ":predict"
@@ -202,9 +206,9 @@ func (smc *JSONRestClient) Metadata(ctx context.Context, modelName string, host 
 
 func (smc *JSONRestClient) Chain(ctx context.Context, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	switch smc.Protocol {
-	case ProtocolSeldon: // Seldon Messages can always be chained together
+	case api.ProtocolSeldon: // Seldon Messages can always be chained together
 		return msg, nil
-	case ProtocolTensorflow: // Attempt to chain tensorflow payload
+	case api.ProtocolTensorflow: // Attempt to chain tensorflow payload
 		return ChainTensorflow(msg)
 	}
 	return nil, errors.Errorf("Unknown protocol %s", smc.Protocol)
@@ -232,7 +236,7 @@ func (smc *JSONRestClient) Route(ctx context.Context, modelName string, host str
 		err := jsonpb.UnmarshalString(value, &sm)
 		if err == nil {
 			//Remove in future
-			routes = seldon.ExtractRouteFromSeldonMessage(&sm)
+			routes = util.ExtractRouteFromSeldonMessage(&sm)
 		} else {
 			routes, err = ExtractRouteAsJsonArray(msg)
 			if err != nil {

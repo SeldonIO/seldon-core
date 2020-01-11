@@ -12,6 +12,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/metric"
 	"github.com/seldonio/seldon-core/executor/api/payload"
+	"github.com/seldonio/seldon-core/executor/api/util"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
 	"google.golang.org/grpc"
 	"io"
@@ -108,7 +109,7 @@ func (s SeldonMessageGrpcClient) Route(ctx context.Context, modelName string, ho
 	if err != nil {
 		return 0, err
 	}
-	routes := ExtractRouteFromSeldonMessage(resp)
+	routes := util.ExtractRouteFromSeldonMessage(resp)
 	//Only returning first route. API could be extended to allow multiple routes
 	return routes[0], nil
 }

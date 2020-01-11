@@ -17,20 +17,15 @@ type PredictorProcess struct {
 	Ctx       context.Context
 	Client    client.SeldonApiClient
 	Log       logr.Logger
-	RequestId string
 	ServerUrl *url.URL
 	Namespace string
 }
 
-func NewPredictorProcess(context context.Context, client client.SeldonApiClient, log logr.Logger, requestId string, serverUrl *url.URL, namespace string) PredictorProcess {
-	if requestId == "" {
-		requestId = guuid.New().String()
-	}
+func NewPredictorProcess(context context.Context, client client.SeldonApiClient, log logr.Logger, serverUrl *url.URL, namespace string) PredictorProcess {
 	return PredictorProcess{
 		Ctx:       context,
 		Client:    client,
 		Log:       log,
-		RequestId: requestId,
 		ServerUrl: serverUrl,
 		Namespace: namespace,
 	}
@@ -260,7 +255,7 @@ func (p *PredictorProcess) logPayload(nodeName string, logger *v1.Logger, reqTyp
 		Bytes:       &payload,
 		ContentType: msg.GetContentType(),
 		ReqType:     reqType,
-		Id:          p.RequestId,
+		Id:          guuid.New().String(),
 		SourceUri:   p.ServerUrl,
 		ModelId:     nodeName,
 	})

@@ -10,6 +10,7 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/opentracing/opentracing-go"
 	"github.com/prometheus/common/log"
+	"github.com/seldonio/seldon-core/executor/api"
 	seldonclient "github.com/seldonio/seldon-core/executor/api/client"
 	"github.com/seldonio/seldon-core/executor/api/grpc"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon"
@@ -146,7 +147,7 @@ func runGrpcServer(logger logr.Logger, predictor *v1.PredictorSpec, client seldo
 		log.Fatalf("failed to listen: %v", err)
 	}
 	grpcServer := grpc.CreateGrpcServer(predictor, deploymentName)
-	if protocol == rest.ProtocolSeldon {
+	if protocol == api.ProtocolSeldon {
 		seldonGrpcServer := seldon.NewGrpcSeldonServer(predictor, client, serverUrl, namespace)
 		proto.RegisterSeldonServer(grpcServer, seldonGrpcServer)
 	} else {
@@ -197,7 +198,7 @@ func main() {
 		log.Fatal("Predictor must be provied")
 	}
 
-	if !(*protocol == rest.ProtocolSeldon || *protocol == rest.ProtocolTensorflow) {
+	if !(*protocol == api.ProtocolSeldon || *protocol == api.ProtocolTensorflow) {
 		log.Fatal("Protocol must be seldon or tensorflow")
 	}
 
