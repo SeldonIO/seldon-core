@@ -29,4 +29,7 @@ class MeanClassifier(object):
     def health_status(self):
         return {"status":"ok"}
 
+    def metadata(self):
+        return {"metadata":{"modelName":"mean_classifier"}}
+
 

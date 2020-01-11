@@ -154,3 +154,61 @@ func TestSeldonStatus(t *testing.T) {
 	g.Expect(res.Code).To(gomega.Equal(200))
 	g.Expect(res.Body.String()).To(gomega.Equal(test.TestClientStatusResponse))
 }
+
+func TestSeldonMetadata(t *testing.T) {
+	t.Logf("Started")
+	g := gomega.NewGomegaWithT(t)
+
+	model := v1.MODEL
+	p := v1.PredictorSpec{
+		Name: "p",
+		Graph: &v1.PredictiveUnit{
+			Name: "mymodel",
+			Type: &model,
+			Endpoint: &v1.Endpoint{
+				ServiceHost: "foo",
+				ServicePort: 9000,
+				Type:        v1.REST,
+			},
+		},
+	}
+
+	url, _ := url.Parse("http://localhost")
+	r := NewServerRestApi(&p, test.NewSeldonMessageTestClient(t, 0, nil, nil), false, url, "default", ProtocolSeldon, "test", "/metrics")
+	r.Initialise()
+
+	req, _ := http.NewRequest("GET", "/api/v1.0/metadata/mymodel", nil)
+	res := httptest.NewRecorder()
+	r.Router.ServeHTTP(res, req)
+	g.Expect(res.Code).To(gomega.Equal(200))
+	g.Expect(res.Body.String()).To(gomega.Equal(test.TestClientMetadataResponse))
+}
+
+func TestTensorflowMetadata(t *testing.T) {
+	t.Logf("Started")
+	g := gomega.NewGomegaWithT(t)
+
+	model := v1.MODEL
+	p := v1.PredictorSpec{
+		Name: "p",
+		Graph: &v1.PredictiveUnit{
+			Name: "mymodel",
+			Type: &model,
+			Endpoint: &v1.Endpoint{
+				ServiceHost: "foo",
+				ServicePort: 9000,
+				Type:        v1.REST,
+			},
+		},
+	}
+
+	url, _ := url.Parse("http://localhost")
+	r := NewServerRestApi(&p, test.NewSeldonMessageTestClient(t, 0, nil, nil), false, url, "default", ProtocolTensorflow, "test", "/metrics")
+	r.Initialise()
+
+	req, _ := http.NewRequest("GET", "/v1/models/mymodel/metadata", nil)
+	res := httptest.NewRecorder()
+	r.Router.ServeHTTP(res, req)
+	g.Expect(res.Code).To(gomega.Equal(200))
+	g.Expect(res.Body.String()).To(gomega.Equal(test.TestClientMetadataResponse))
+}

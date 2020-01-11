@@ -16,6 +16,7 @@ const (
 	SeldonRoutePath           = "/route"
 	SeldonFeedbackPath        = "/send-feedback"
 	SeldonStatusPath          = "/health/status"
+	SeldonMetadataPath        = "/metadata"
 )
 
 type SeldonApiClient interface {
@@ -27,6 +28,7 @@ type SeldonApiClient interface {
 	Feedback(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error)
 	Chain(ctx context.Context, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error)
 	Status(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error)
+	Metadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error)
 	Unmarshall(msg []byte) (payload.SeldonPayload, error)
 	Marshall(out io.Writer, msg payload.SeldonPayload) error
 	CreateErrorPayload(err error) payload.SeldonPayload

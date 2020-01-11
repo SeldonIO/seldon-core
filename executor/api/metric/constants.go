@@ -18,5 +18,6 @@ const (
 
 	PredictionHttpServiceName = "predictions"
 	StatusHttpServiceName     = "status"
+	MetadataHttpServiceName   = "metadata"
 	FeedbackHttpServiceName   = "feedback"
 )

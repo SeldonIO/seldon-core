@@ -18,6 +18,9 @@ curl_rest:
 curl_status:
 	curl http://localhost:8000/v1/models/half_plus_two
 
+curl_metadata:
+	curl http://localhost:8000/v1/models/half_plus_two/metadata
+
 
 ## GRPC
 
@@ -33,5 +36,8 @@ grpc_test:
 
 grpc_status:
 	cd ${BASE}/proto && grpcurl -d '{"model_spec":{"name":"half_plus_two"}}' -plaintext -proto ./model_service.proto  0.0.0.0:5000 tensorflow.serving.ModelService/GetModelStatus
+
+grpc_metadata:
+	cd ${BASE}/proto && grpcurl -d '{"model_spec":{"name":"half_plus_two"},"metadata_field":"signature_def"}' -plaintext -proto ./prediction_service.proto  0.0.0.0:5000 tensorflow.serving.PredictionService/GetModelMetadata
 
 

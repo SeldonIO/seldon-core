@@ -177,3 +177,7 @@ func (s SeldonMessageGrpcClient) CreateErrorPayload(err error) payload.SeldonPay
 func (s SeldonMessageGrpcClient) Status(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	return nil, errors.Errorf("Not implemented")
 }
+
+func (s SeldonMessageGrpcClient) Metadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+	return nil, errors.Errorf("Not implemented")
+}

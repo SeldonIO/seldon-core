@@ -370,3 +370,21 @@ def health_status(user_model: Any) -> Union[prediction_pb2.SeldonMessage, List, 
 
     client_response = client_health_status(user_model)
     return construct_response_json(user_model, False, {}, client_response)
+
+
+def metadata(user_model: Any) -> Dict:
+    """
+    Call the user model to get the model metadata
+
+    Parameters
+    ----------
+    user_model
+       User defined class instance
+    Returns
+    -------
+      Model Metadata
+    """
+    if hasattr(user_model, "metadata"):
+        return user_model.metadata()
+    else:
+        return {}

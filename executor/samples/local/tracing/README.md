@@ -32,6 +32,16 @@ Example:
 ![jarget_rest](jaeger_trace_rest.png)
 
 
+You can do the same for status and metadata calls
+
+```bash
+make curl_status
+```
+
+```bash
+make curl_metadata
+```
+
 ## gRPC
 
 Run the following commands in different terminals.

@@ -77,6 +77,50 @@ func TestModel(t *testing.T) {
 	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(gomega.Equal(2.0))
 }
 
+func TestStatus(t *testing.T) {
+	t.Logf("Started")
+	modelName := "mymodel"
+	g := gomega.NewGomegaWithT(t)
+	model := v1.MODEL
+	graph := &v1.PredictiveUnit{
+		Name: modelName,
+		Type: &model,
+		Endpoint: &v1.Endpoint{
+			ServiceHost: "foo",
+			ServicePort: 9000,
+			Type:        v1.REST,
+		},
+	}
+
+	pResp, err := createPredictorProcess(t).Status(graph, modelName, nil)
+	g.Expect(err).Should(gomega.BeNil())
+	smRes := string(pResp.GetPayload().([]byte))
+	g.Expect(smRes).To(gomega.Equal(test.TestClientStatusResponse))
+
+}
+
+func TestMetadata(t *testing.T) {
+	t.Logf("Started")
+	modelName := "mymodel"
+	g := gomega.NewGomegaWithT(t)
+	model := v1.MODEL
+	graph := &v1.PredictiveUnit{
+		Name: modelName,
+		Type: &model,
+		Endpoint: &v1.Endpoint{
+			ServiceHost: "foo",
+			ServicePort: 9000,
+			Type:        v1.REST,
+		},
+	}
+
+	pResp, err := createPredictorProcess(t).Metadata(graph, modelName, nil)
+	g.Expect(err).Should(gomega.BeNil())
+	smRes := string(pResp.GetPayload().([]byte))
+	g.Expect(smRes).To(gomega.Equal(test.TestClientMetadataResponse))
+
+}
+
 func TestTwoLevelModel(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 	model := v1.MODEL

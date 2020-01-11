@@ -12,6 +12,12 @@ run_dummy_rest_model:
 curl_rest:
 	curl -v localhost:8000/api/v0.1/predictions -d '{"data":{"ndarray":[[1.0,2.0]]}}' 
 
+curl_status:
+	curl -v localhost:8000/api/v0.1/status/classifier
+
+curl_metadata:
+	curl -v localhost:8000/api/v0.1/metadata/classifier
+
 run_jaeger:
 	docker run -p 6831:6831/udp -p 16686:16686 jaegertracing/all-in-one:latest
 

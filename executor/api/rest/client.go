@@ -167,6 +167,8 @@ func (smc *JSONRestClient) modifyMethod(method string, modelName string) string 
 			return "/v1/models/" + modelName + ":feedback"
 		case client.SeldonStatusPath:
 			return "/v1/models/" + modelName
+		case client.SeldonMetadataPath:
+			return "/v1/models/" + modelName + "/metadata"
 		}
 	}
 	return method
@@ -192,6 +194,10 @@ func (smc *JSONRestClient) call(ctx context.Context, modelName string, method st
 
 func (smc *JSONRestClient) Status(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	return smc.call(ctx, modelName, smc.modifyMethod(client.SeldonStatusPath, modelName), host, port, msg)
+}
+
+func (smc *JSONRestClient) Metadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+	return smc.call(ctx, modelName, smc.modifyMethod(client.SeldonMetadataPath, modelName), host, port, msg)
 }
 
 func (smc *JSONRestClient) Chain(ctx context.Context, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error) {

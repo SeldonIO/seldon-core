@@ -32,6 +32,14 @@ const (
            "ndarray" : [1]
        }
 	}`
+	okStatusResponse = `{
+        "status": "ok"
+	}`
+	okMetadataResponse = `{
+        "metadata": {
+          "name":"mymodel"
+        }
+	}`
 )
 
 func testingHTTPClient(g *gomega.GomegaWithT, handler http.Handler) (string, int, *http.Client, func()) {
@@ -115,6 +123,47 @@ func TestRouter(t *testing.T) {
 
 	g.Expect(route).Should(gomega.Equal(1))
 }
+
+func TestStatus(t *testing.T) {
+	t.Logf("Started")
+	g := gomega.NewGomegaWithT(t)
+	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(okStatusResponse))
+	})
+	host, port, httpClient, teardown := testingHTTPClient(g, h)
+	defer teardown()
+	predictor := v1.PredictorSpec{
+		Name:        "test",
+		Annotations: map[string]string{},
+	}
+	seldonRestClient := NewJSONRestClient(ProtocolSeldon, "test", &predictor, SetHTTPClient(httpClient))
+
+	status, err := seldonRestClient.Status(context.TODO(), "model", host, int32(port), nil)
+	g.Expect(err).Should(gomega.BeNil())
+	data := string(status.GetPayload().([]byte))
+	g.Expect(data).To(gomega.Equal(okStatusResponse))
+}
+
+func TestMetadata(t *testing.T) {
+	t.Logf("Started")
+	g := gomega.NewGomegaWithT(t)
+	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(okMetadataResponse))
+	})
+	host, port, httpClient, teardown := testingHTTPClient(g, h)
+	defer teardown()
+	predictor := v1.PredictorSpec{
+		Name:        "test",
+		Annotations: map[string]string{},
+	}
+	seldonRestClient := NewJSONRestClient(ProtocolSeldon, "test", &predictor, SetHTTPClient(httpClient))
+
+	status, err := seldonRestClient.Metadata(context.TODO(), "model", host, int32(port), nil)
+	g.Expect(err).Should(gomega.BeNil())
+	data := string(status.GetPayload().([]byte))
+	g.Expect(data).To(gomega.Equal(okMetadataResponse))
+}
+
 func createCombinerPayload(g *gomega.GomegaWithT) []payload.SeldonPayload {
 	var data = ` {"data":{"ndarray":[1.1,2.0]}}`
 	smp := []payload.SeldonPayload{&payload.BytesPayload{Msg: []byte(data)}, &payload.BytesPayload{Msg: []byte(data)}}

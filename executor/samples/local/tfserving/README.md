@@ -83,6 +83,207 @@ You should see a response:
 }
 ```
 
+Check model metadata
+```bash
+make curl_metadata
+```
+
+You should see a response like:
+```
+{
+"model_spec":{
+ "name": "half_plus_two",
+ "signature_name": "",
+ "version": "123"
+}
+,
+"metadata": {"signature_def": {
+ "signature_def": {
+  "regress_x_to_y2": {
+   "inputs": {
+    "inputs": {
+     "dtype": "DT_STRING",
+     "tensor_shape": {
+      "dim": [],
+      "unknown_rank": true
+     },
+     "name": "tf_example:0"
+    }
+   },
+   "outputs": {
+    "outputs": {
+     "dtype": "DT_FLOAT",
+     "tensor_shape": {
+      "dim": [
+       {
+        "size": "-1",
+        "name": ""
+       },
+       {
+        "size": "1",
+        "name": ""
+       }
+      ],
+      "unknown_rank": false
+     },
+     "name": "y2:0"
+    }
+   },
+   "method_name": "tensorflow/serving/regress"
+  },
+  "classify_x_to_y": {
+   "inputs": {
+    "inputs": {
+     "dtype": "DT_STRING",
+     "tensor_shape": {
+      "dim": [],
+      "unknown_rank": true
+     },
+     "name": "tf_example:0"
+    }
+   },
+   "outputs": {
+    "scores": {
+     "dtype": "DT_FLOAT",
+     "tensor_shape": {
+      "dim": [
+       {
+        "size": "-1",
+        "name": ""
+       },
+       {
+        "size": "1",
+        "name": ""
+       }
+      ],
+      "unknown_rank": false
+     },
+     "name": "y:0"
+    }
+   },
+   "method_name": "tensorflow/serving/classify"
+  },
+  "regress_x2_to_y3": {
+   "inputs": {
+    "inputs": {
+     "dtype": "DT_FLOAT",
+     "tensor_shape": {
+      "dim": [
+       {
+        "size": "-1",
+        "name": ""
+       },
+       {
+        "size": "1",
+        "name": ""
+       }
+      ],
+      "unknown_rank": false
+     },
+     "name": "x2:0"
+    }
+   },
+   "outputs": {
+    "outputs": {
+     "dtype": "DT_FLOAT",
+     "tensor_shape": {
+      "dim": [
+       {
+        "size": "-1",
+        "name": ""
+       },
+       {
+        "size": "1",
+        "name": ""
+       }
+      ],
+      "unknown_rank": false
+     },
+     "name": "y3:0"
+    }
+   },
+   "method_name": "tensorflow/serving/regress"
+  },
+  "serving_default": {
+   "inputs": {
+    "x": {
+     "dtype": "DT_FLOAT",
+     "tensor_shape": {
+      "dim": [
+       {
+        "size": "-1",
+        "name": ""
+       },
+       {
+        "size": "1",
+        "name": ""
+       }
+      ],
+      "unknown_rank": false
+     },
+     "name": "x:0"
+    }
+   },
+   "outputs": {
+    "x": {
+     "dtype": "DT_FLOAT",
+     "tensor_shape": {
+      "dim": [
+       {
+        "size": "-1",
+        "name": ""
+       },
+       {
+        "size": "1",
+        "name": ""
+       }
+      ],
+      "unknown_rank": false
+     },
+     "name": "y:0"
+    }
+   },
+   "method_name": "tensorflow/serving/predict"
+  },
+  "regress_x_to_y": {
+   "inputs": {
+    "inputs": {
+     "dtype": "DT_STRING",
+     "tensor_shape": {
+      "dim": [],
+      "unknown_rank": true
+     },
+     "name": "tf_example:0"
+    }
+   },
+   "outputs": {
+    "outputs": {
+     "dtype": "DT_FLOAT",
+     "tensor_shape": {
+      "dim": [
+       {
+        "size": "-1",
+        "name": ""
+       },
+       {
+        "size": "1",
+        "name": ""
+       }
+      ],
+      "unknown_rank": false
+     },
+     "name": "y:0"
+    }
+   },
+   "method_name": "tensorflow/serving/regress"
+  }
+ }
+}
+}
+}
+
+```
+
 Send a request
 ```bash
 make curl_rest
@@ -227,6 +428,183 @@ You should see a response:
     }
   ]
 }
+```
+
+Check model metadata
+```bash
+make grpc_metadata
+```
+
+You should see a reponse:
+```
+{
+  "modelSpec": {
+    "name": "half_plus_two",
+    "version": "123"
+  },
+  "metadata": {
+    "signature_def": {
+      "@type": "type.googleapis.com/tensorflow.serving.SignatureDefMap",
+      "signatureDef": {
+        "classify_x_to_y": {
+          "inputs": {
+            "inputs": {
+              "name": "tf_example:0",
+              "dtype": "DT_STRING",
+              "tensorShape": {
+                "unknownRank": true
+              }
+            }
+          },
+          "outputs": {
+            "scores": {
+              "name": "y:0",
+              "dtype": "DT_FLOAT",
+              "tensorShape": {
+                "dim": [
+                  {
+                    "size": "-1"
+                  },
+                  {
+                    "size": "1"
+                  }
+                ]
+              }
+            }
+          },
+          "methodName": "tensorflow/serving/classify"
+        },
+        "regress_x2_to_y3": {
+          "inputs": {
+            "inputs": {
+              "name": "x2:0",
+              "dtype": "DT_FLOAT",
+              "tensorShape": {
+                "dim": [
+                  {
+                    "size": "-1"
+                  },
+                  {
+                    "size": "1"
+                  }
+                ]
+              }
+            }
+          },
+          "outputs": {
+            "outputs": {
+              "name": "y3:0",
+              "dtype": "DT_FLOAT",
+              "tensorShape": {
+                "dim": [
+                  {
+                    "size": "-1"
+                  },
+                  {
+                    "size": "1"
+                  }
+                ]
+              }
+            }
+          },
+          "methodName": "tensorflow/serving/regress"
+        },
+        "regress_x_to_y": {
+          "inputs": {
+            "inputs": {
+              "name": "tf_example:0",
+              "dtype": "DT_STRING",
+              "tensorShape": {
+                "unknownRank": true
+              }
+            }
+          },
+          "outputs": {
+            "outputs": {
+              "name": "y:0",
+              "dtype": "DT_FLOAT",
+              "tensorShape": {
+                "dim": [
+                  {
+                    "size": "-1"
+                  },
+                  {
+                    "size": "1"
+                  }
+                ]
+              }
+            }
+          },
+          "methodName": "tensorflow/serving/regress"
+        },
+        "regress_x_to_y2": {
+          "inputs": {
+            "inputs": {
+              "name": "tf_example:0",
+              "dtype": "DT_STRING",
+              "tensorShape": {
+                "unknownRank": true
+              }
+            }
+          },
+          "outputs": {
+            "outputs": {
+              "name": "y2:0",
+              "dtype": "DT_FLOAT",
+              "tensorShape": {
+                "dim": [
+                  {
+                    "size": "-1"
+                  },
+                  {
+                    "size": "1"
+                  }
+                ]
+              }
+            }
+          },
+          "methodName": "tensorflow/serving/regress"
+        },
+        "serving_default": {
+          "inputs": {
+            "x": {
+              "name": "x:0",
+              "dtype": "DT_FLOAT",
+              "tensorShape": {
+                "dim": [
+                  {
+                    "size": "-1"
+                  },
+                  {
+                    "size": "1"
+                  }
+                ]
+              }
+            }
+          },
+          "outputs": {
+            "x": {
+              "name": "y:0",
+              "dtype": "DT_FLOAT",
+              "tensorShape": {
+                "dim": [
+                  {
+                    "size": "-1"
+                  },
+                  {
+                    "size": "1"
+                  }
+                ]
+              }
+            }
+          },
+          "methodName": "tensorflow/serving/predict"
+        }
+      }
+    }
+  }
+}
+
 ```
 
 Send a request

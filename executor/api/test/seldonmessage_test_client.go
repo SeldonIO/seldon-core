@@ -19,11 +19,16 @@ type SeldonMessageTestClient struct {
 }
 
 const (
-	TestClientStatusResponse = `{"status":"ok"}`
+	TestClientStatusResponse   = `{"status":"ok"}`
+	TestClientMetadataResponse = `{"metadata":{"name":"mymodel"}}`
 )
 
 func (s SeldonMessageTestClient) Status(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	return &payload.BytesPayload{Msg: []byte(TestClientStatusResponse)}, nil
+}
+
+func (s SeldonMessageTestClient) Metadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+	return &payload.BytesPayload{Msg: []byte(TestClientMetadataResponse)}, nil
 }
 
 func (s SeldonMessageTestClient) Chain(ctx context.Context, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error) {

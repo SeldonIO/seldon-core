@@ -296,6 +296,14 @@ func (p *PredictorProcess) Status(node *v1.PredictiveUnit, modelName string, msg
 	}
 }
 
+func (p *PredictorProcess) Metadata(node *v1.PredictiveUnit, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+	if nodeModel := v1.GetPredictiveUnit(node, modelName); nodeModel == nil {
+		return nil, fmt.Errorf("Failed to find model %s", modelName)
+	} else {
+		return p.Client.Metadata(p.Ctx, modelName, nodeModel.Endpoint.ServiceHost, nodeModel.Endpoint.ServicePort, msg)
+	}
+}
+
 func (p *PredictorProcess) Feedback(node *v1.PredictiveUnit, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	tmsg, err := p.feedbackChildren(node, msg)
 	if err != nil {

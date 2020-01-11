@@ -132,6 +132,21 @@ func (s TensorflowGrpcClient) Status(ctx context.Context, modelName string, host
 	return &resPayload, nil
 }
 
+func (s TensorflowGrpcClient) Metadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+	conn, err := s.getConnection(host, port)
+	if err != nil {
+		return s.CreateErrorPayload(err), err
+	}
+	grpcClient := serving.NewPredictionServiceClient(conn)
+	var resp proto.Message
+	resp, err = grpcClient.GetModelMetadata(ctx, msg.GetPayload().(*serving.GetModelMetadataRequest), s.callOptions...)
+	if err != nil {
+		return nil, err
+	}
+	resPayload := payload.ProtoPayload{Msg: resp}
+	return &resPayload, nil
+}
+
 func (s TensorflowGrpcClient) Feedback(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	panic("implement me")
 }
