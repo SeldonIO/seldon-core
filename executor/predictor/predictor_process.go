@@ -241,7 +241,7 @@ func (p *PredictorProcess) getLogUrl(logger *v1.Logger) (*url.URL, error) {
 }
 
 func (p *PredictorProcess) logPayload(nodeName string, logger *v1.Logger, reqType payloadLogger.LogRequestType, msg payload.SeldonPayload) error {
-	payload, err := msg.GetBytes()
+	data, err := msg.GetBytes()
 	if err != nil {
 		return err
 	}
@@ -252,12 +252,13 @@ func (p *PredictorProcess) logPayload(nodeName string, logger *v1.Logger, reqTyp
 
 	payloadLogger.QueueLogRequest(payloadLogger.LogRequest{
 		Url:         logUrl,
-		Bytes:       &payload,
+		Bytes:       &data,
 		ContentType: msg.GetContentType(),
 		ReqType:     reqType,
 		Id:          guuid.New().String(),
 		SourceUri:   p.ServerUrl,
 		ModelId:     nodeName,
+		RequestId:   p.Ctx.Value(payload.SeldonPUIDHeader).(string),
 	})
 	return nil
 }

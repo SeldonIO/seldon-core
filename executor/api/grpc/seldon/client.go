@@ -9,6 +9,7 @@ import (
 	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/seldonio/seldon-core/executor/api/client"
+	grpc2 "github.com/seldonio/seldon-core/executor/api/grpc"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/metric"
 	"github.com/seldonio/seldon-core/executor/api/payload"
@@ -77,7 +78,7 @@ func (s SeldonMessageGrpcClient) Predict(ctx context.Context, modelName string, 
 		return s.CreateErrorPayload(err), err
 	}
 	grpcClient := proto.NewModelClient(conn)
-	resp, err := grpcClient.Predict(context.Background(), msg.GetPayload().(*proto.SeldonMessage), s.callOptions...)
+	resp, err := grpcClient.Predict(grpc2.AddSeldonPuidToGrpcContext(ctx), msg.GetPayload().(*proto.SeldonMessage), s.callOptions...)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
 	}
@@ -91,7 +92,7 @@ func (s SeldonMessageGrpcClient) TransformInput(ctx context.Context, modelName s
 		return s.CreateErrorPayload(err), err
 	}
 	grpcClient := proto.NewTransformerClient(conn)
-	resp, err := grpcClient.TransformInput(ctx, msg.GetPayload().(*proto.SeldonMessage), s.callOptions...)
+	resp, err := grpcClient.TransformInput(grpc2.AddSeldonPuidToGrpcContext(ctx), msg.GetPayload().(*proto.SeldonMessage), s.callOptions...)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
 	}
@@ -105,7 +106,7 @@ func (s SeldonMessageGrpcClient) Route(ctx context.Context, modelName string, ho
 		return 0, err
 	}
 	grpcClient := proto.NewRouterClient(conn)
-	resp, err := grpcClient.Route(context.Background(), msg.GetPayload().(*proto.SeldonMessage), s.callOptions...)
+	resp, err := grpcClient.Route(grpc2.AddSeldonPuidToGrpcContext(ctx), msg.GetPayload().(*proto.SeldonMessage), s.callOptions...)
 	if err != nil {
 		return 0, err
 	}
@@ -125,7 +126,7 @@ func (s SeldonMessageGrpcClient) Combine(ctx context.Context, modelName string, 
 	}
 	grpcClient := proto.NewCombinerClient(conn)
 	sml := proto.SeldonMessageList{SeldonMessages: sms}
-	resp, err := grpcClient.Aggregate(ctx, &sml, s.callOptions...)
+	resp, err := grpcClient.Aggregate(grpc2.AddSeldonPuidToGrpcContext(ctx), &sml, s.callOptions...)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
 	}
@@ -139,7 +140,7 @@ func (s SeldonMessageGrpcClient) TransformOutput(ctx context.Context, modelName 
 		return s.CreateErrorPayload(err), err
 	}
 	grpcClient := proto.NewOutputTransformerClient(conn)
-	resp, err := grpcClient.TransformOutput(ctx, msg.GetPayload().(*proto.SeldonMessage), s.callOptions...)
+	resp, err := grpcClient.TransformOutput(grpc2.AddSeldonPuidToGrpcContext(ctx), msg.GetPayload().(*proto.SeldonMessage), s.callOptions...)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
 	}
@@ -153,7 +154,7 @@ func (s SeldonMessageGrpcClient) Feedback(ctx context.Context, modelName string,
 		return s.CreateErrorPayload(err), err
 	}
 	grpcClient := proto.NewModelClient(conn)
-	resp, err := grpcClient.SendFeedback(ctx, msg.GetPayload().(*proto.Feedback), s.callOptions...)
+	resp, err := grpcClient.SendFeedback(grpc2.AddSeldonPuidToGrpcContext(ctx), msg.GetPayload().(*proto.Feedback), s.callOptions...)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
 	}

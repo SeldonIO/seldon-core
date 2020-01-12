@@ -164,7 +164,7 @@ func setupTracing(ctx context.Context, req *http.Request, spanName string) (cont
 }
 
 func (r *SeldonRestApi) metadata(w http.ResponseWriter, req *http.Request) {
-	ctx := context.Background()
+	ctx := req.Context()
 
 	// Apply tracing if active
 	if opentracing.IsGlobalTracerRegistered() {
@@ -186,7 +186,7 @@ func (r *SeldonRestApi) metadata(w http.ResponseWriter, req *http.Request) {
 }
 
 func (r *SeldonRestApi) status(w http.ResponseWriter, req *http.Request) {
-	ctx := context.Background()
+	ctx := req.Context()
 
 	// Apply tracing if active
 	if opentracing.IsGlobalTracerRegistered() {
@@ -210,16 +210,16 @@ func (r *SeldonRestApi) status(w http.ResponseWriter, req *http.Request) {
 func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 	r.Log.Info("Predictions called")
 
-	ctx := context.Background()
+	ctx := req.Context()
+	// Add Seldon Puid to Context
+	ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, req.Header.Get(payload.SeldonPUIDHeader))
+
 	// Apply tracing if active
 	if opentracing.IsGlobalTracerRegistered() {
 		var serverSpan opentracing.Span
 		ctx, serverSpan = setupTracing(ctx, req, TracingPredictionsName)
 		defer serverSpan.Finish()
 	}
-
-	//Add puid to context
-	ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, req.Header.Get(payload.SeldonPUIDHeader))
 
 	bodyBytes, err := ioutil.ReadAll(req.Body)
 	if err != nil {

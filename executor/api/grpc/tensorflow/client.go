@@ -9,6 +9,7 @@ import (
 	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/seldonio/seldon-core/executor/api/client"
+	grpc2 "github.com/seldonio/seldon-core/executor/api/grpc"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/proto/tensorflow/serving"
 	"google.golang.org/grpc"
@@ -83,6 +84,7 @@ func (s TensorflowGrpcClient) Predict(ctx context.Context, modelName string, hos
 		return s.CreateErrorPayload(err), err
 	}
 	grpcClient := serving.NewPredictionServiceClient(conn)
+	ctx = grpc2.AddSeldonPuidToGrpcContext(ctx)
 	var resp proto.Message
 	switch v := msg.GetPayload().(type) {
 	case *serving.PredictRequest:
@@ -124,7 +126,7 @@ func (s TensorflowGrpcClient) Status(ctx context.Context, modelName string, host
 	}
 	grpcClient := serving.NewModelServiceClient(conn)
 	var resp proto.Message
-	resp, err = grpcClient.GetModelStatus(ctx, msg.GetPayload().(*serving.GetModelStatusRequest), s.callOptions...)
+	resp, err = grpcClient.GetModelStatus(grpc2.AddSeldonPuidToGrpcContext(ctx), msg.GetPayload().(*serving.GetModelStatusRequest), s.callOptions...)
 	if err != nil {
 		return nil, err
 	}
@@ -139,7 +141,7 @@ func (s TensorflowGrpcClient) Metadata(ctx context.Context, modelName string, ho
 	}
 	grpcClient := serving.NewPredictionServiceClient(conn)
 	var resp proto.Message
-	resp, err = grpcClient.GetModelMetadata(ctx, msg.GetPayload().(*serving.GetModelMetadataRequest), s.callOptions...)
+	resp, err = grpcClient.GetModelMetadata(grpc2.AddSeldonPuidToGrpcContext(ctx), msg.GetPayload().(*serving.GetModelMetadataRequest), s.callOptions...)
 	if err != nil {
 		return nil, err
 	}
