@@ -1,6 +1,7 @@
 import pytest
 from seldon_e2e_utils import (
     wait_for_rollout,
+    wait_for_status,
     initial_rest_request,
     rest_request_ambassador,
     grpc_request_ambassador2,
@@ -22,7 +23,8 @@ class TestClusterWide(object):
             shell=True,
             check=True,
         )
-        wait_for_rollout(f"mymodel-mymodel-7cd068f", namespace)
+        wait_for_status("mymodel", namespace)
+        wait_for_rollout("mymodel", namespace)
         initial_rest_request("mymodel", namespace)
         logging.warning("Test Ambassador REST gateway")
         r = rest_request_ambassador("mymodel", namespace, API_AMBASSADOR)
@@ -44,8 +46,8 @@ class TestClusterWide(object):
             shell=True,
             check=True,
         )
-        wait_for_rollout("myabtest-myabtest-41de5b8", namespace)
-        wait_for_rollout("myabtest-myabtest-df66c5c", namespace)
+        wait_for_status("myabtest", namespace)
+        wait_for_rollout("myabtest", namespace, expected_deployments=2)
         initial_rest_request("myabtest", namespace)
         logging.warning("Test Ambassador REST gateway")
         r = rest_request_ambassador("myabtest", namespace, API_AMBASSADOR)
@@ -68,9 +70,8 @@ class TestClusterWide(object):
             shell=True,
             check=True,
         )
-        wait_for_rollout("mymab-mymab-41de5b8", namespace)
-        wait_for_rollout("mymab-mymab-b8038b2", namespace)
-        wait_for_rollout("mymab-mymab-df66c5c", namespace)
+        wait_for_status("mymab", namespace)
+        wait_for_rollout("mymab", namespace, expected_deployments=3)
         initial_rest_request("mymab", namespace)
         logging.warning("Test Ambassador REST gateway")
         r = rest_request_ambassador("mymab", namespace, API_AMBASSADOR)

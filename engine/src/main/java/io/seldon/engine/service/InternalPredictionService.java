@@ -513,7 +513,7 @@ public class InternalPredictionService {
       {
           logger.error(
                   "Couldn't retrieve prediction from external prediction server -- bad http return code: "
-                          + e.getRawStatusCode());
+                          + e.getRawStatusCode(), e);
           handleHttpStatusCodeError(e);
       } catch (Exception e)
       {
