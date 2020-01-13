@@ -27,13 +27,14 @@ kind_build_images: build_protos kind_build_engine kind_build_operator kind_build
 helm_setup:
 	helm repo add stable https://kubernetes-charts.storage.googleapis.com/
 	helm repo add seldonio https://storage.googleapis.com/seldon-charts
+	helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
 	helm repo update
 
 install_ambassador:
 	helm install --wait ambassador stable/ambassador -f ambassador_values.yaml --set crds.keep=false --namespace seldon --set replicaCount=1
 
 install_jaeger:
-	helm install stable/jaeger-operator --name jaeger-operator --set rbac.clusterRole=true --namespace seldon 
+	helm install jaeger-operator jaegertracing/jaeger-operator --set rbac.clusterRole=true --namespace seldon 
 	kubectl rollout status deployment.apps/jaeger-operator --namespace seldon
 	kubectl apply -f ../resources/jaeger.yaml --namespace seldon
 
@@ -67,7 +68,7 @@ create_namespaces:
 set_namespace:
 	kubectl config set-context $$(kubectl config current-context) --namespace=seldon
 
-kind_setup: create_namespaces helm_setup install_ambassador install_istio install_seldon set_namespace
+kind_setup: create_namespaces helm_setup install_ambassador install_istio install_jaeger install_seldon set_namespace
 port-forward-ambassador:
 	kubectl port-forward $$(kubectl get pods -n seldon -l app.kubernetes.io/name=ambassador -o jsonpath='{.items[0].metadata.name}') -n seldon 8003:8080
 
