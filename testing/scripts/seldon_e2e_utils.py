@@ -1,4 +1,5 @@
 import requests
+import re
 from requests.auth import HTTPBasicAuth
 from seldon_core.proto import prediction_pb2
 from seldon_core.proto import prediction_pb2_grpc
@@ -385,6 +386,6 @@ def grpc_request_ambassador2(
 
 def clean_string(string):
     string = string.lower()
-    string = string.replace("_", "-")
-    string = string.replace(".", "-")
+    string = re.sub(r"\]$", "", string)
+    string = re.sub(r"[_\[\.]", "-", string)
     return string

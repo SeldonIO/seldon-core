@@ -1,5 +1,5 @@
 import pytest
-from seldon_e2e_utils import get_s2i_python_version
+from seldon_e2e_utils import clean_string, retry_run, get_s2i_python_version
 from subprocess import run
 
 
@@ -19,6 +19,19 @@ def run_pod_information_in_background(request):
 @pytest.fixture(scope="module")
 def s2i_python_version():
     return do_s2i_python_version()
+
+
+@pytest.fixture
+def namespace(request):
+    test_name = request.node.name
+    namespace = clean_string(test_name)
+
+    # Create namespace
+    retry_run(f"kubectl create namespace {namespace}")
+    yield namespace
+
+    # Tear down namespace
+    run(f"kubectl delete namespace {namespace}", shell=True)
 
 
 def do_s2i_python_version():
