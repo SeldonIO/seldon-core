@@ -4,7 +4,6 @@ import logging
 import pytest
 from subprocess import run
 from seldon_e2e_utils import (
-    clean_string,
     wait_for_status,
     wait_for_rollout,
     rest_request_ambassador,
@@ -19,16 +18,15 @@ def to_resources_path(file_name):
     return os.path.join("..", "resources", file_name)
 
 
+test_all_gateways = pytest.mark.parametrize(
+    "api_gateway", [API_AMBASSADOR, API_ISTIO_GATEWAY], ids=["ambas", "istio"]
+)
+
+
 class TestRollingHttp(object):
-    @pytest.mark.parametrize("api_gateway", [API_AMBASSADOR, API_ISTIO_GATEWAY])
+    @test_all_gateways
     # Test updating a model with a new image version as the only change
-    def test_rolling_update1(self, api_gateway):
-        if api_gateway == API_AMBASSADOR:
-            ns_suffix = "ambas"
-        else:
-            ns_suffix = "istio"
-        namespace = "test-rolling-update-1" + ns_suffix
-        retry_run(f"kubectl create namespace {namespace}")
+    def test_rolling_update1(self, namespace, api_gateway):
         if api_gateway == API_ISTIO_GATEWAY:
             retry_run(
                 f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
@@ -67,17 +65,10 @@ class TestRollingHttp(object):
         logging.warning("Success for test_rolling_update1")
         run(f"kubectl delete -f ../resources/graph1.json -n {namespace}", shell=True)
         run(f"kubectl delete -f ../resources/graph2.json -n {namespace}", shell=True)
-        run(f"kubectl delete namespace {namespace}", shell=True)
 
-    @pytest.mark.parametrize("api_gateway", [API_AMBASSADOR, API_ISTIO_GATEWAY])
+    @test_all_gateways
     # test changing the image version and the name of its container
-    def test_rolling_update2(self, api_gateway):
-        if api_gateway == API_AMBASSADOR:
-            ns_suffix = "ambas"
-        else:
-            ns_suffix = "istio"
-        namespace = "test-rolling-update-2" + ns_suffix
-        retry_run(f"kubectl create namespace {namespace}")
+    def test_rolling_update2(self, namespace, api_gateway):
         if api_gateway == API_ISTIO_GATEWAY:
             retry_run(
                 f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
@@ -117,17 +108,10 @@ class TestRollingHttp(object):
         logging.warning("Success for test_rolling_update2")
         run(f"kubectl delete -f ../resources/graph1.json -n {namespace}", shell=True)
         run(f"kubectl delete -f ../resources/graph3.json -n {namespace}", shell=True)
-        run(f"kubectl delete namespace {namespace}", shell=True)
 
-    @pytest.mark.parametrize("api_gateway", [API_AMBASSADOR, API_ISTIO_GATEWAY])
+    @test_all_gateways
     # Test updating a model with a new resource request but same image
-    def test_rolling_update3(self, api_gateway):
-        if api_gateway == API_AMBASSADOR:
-            ns_suffix = "ambas"
-        else:
-            ns_suffix = "istio"
-        namespace = "test-rolling-updates-3" + ns_suffix
-        retry_run(f"kubectl create namespace {namespace}")
+    def test_rolling_update3(self, namespace, api_gateway):
         if api_gateway == API_ISTIO_GATEWAY:
             retry_run(
                 f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
@@ -161,17 +145,10 @@ class TestRollingHttp(object):
         logging.warning("Success for test_rolling_update3")
         run(f"kubectl delete -f ../resources/graph1.json -n {namespace}", shell=True)
         run(f"kubectl delete -f ../resources/graph4.json -n {namespace}", shell=True)
-        run(f"kubectl delete namespace {namespace}", shell=True)
 
-    @pytest.mark.parametrize("api_gateway", [API_AMBASSADOR, API_ISTIO_GATEWAY])
+    @test_all_gateways
     # Test updating a model with a multi deployment new model
-    def test_rolling_update4(self, api_gateway):
-        if api_gateway == API_AMBASSADOR:
-            ns_suffix = "ambas"
-        else:
-            ns_suffix = "istio"
-        namespace = "test-rolling-update-4" + ns_suffix
-        retry_run(f"kubectl create namespace {namespace}")
+    def test_rolling_update4(self, namespace, api_gateway):
         if api_gateway == API_ISTIO_GATEWAY:
             retry_run(
                 f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
@@ -209,17 +186,10 @@ class TestRollingHttp(object):
         logging.warning("Success for test_rolling_update4")
         run(f"kubectl delete -f ../resources/graph1.json -n {namespace}", shell=True)
         run(f"kubectl delete -f ../resources/graph5.json -n {namespace}", shell=True)
-        run(f"kubectl delete namespace {namespace}", shell=True)
 
-    @pytest.mark.parametrize("api_gateway", [API_AMBASSADOR, API_ISTIO_GATEWAY])
+    @test_all_gateways
     # Test updating a model to a multi predictor model
-    def test_rolling_update5(self, api_gateway):
-        if api_gateway == API_AMBASSADOR:
-            ns_suffix = "ambas"
-        else:
-            ns_suffix = "istio"
-        namespace = "test-rolling-update-5" + ns_suffix
-        retry_run(f"kubectl create namespace {namespace}")
+    def test_rolling_update5(self, namespace, api_gateway):
         if api_gateway == API_ISTIO_GATEWAY:
             retry_run(
                 f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
@@ -259,17 +229,10 @@ class TestRollingHttp(object):
         logging.warning("Success for test_rolling_update5")
         run(f"kubectl delete -f ../resources/graph1.json -n {namespace}", shell=True)
         run(f"kubectl delete -f ../resources/graph6.json -n {namespace}", shell=True)
-        run(f"kubectl delete namespace {namespace}", shell=True)
 
-    @pytest.mark.parametrize("api_gateway", [API_AMBASSADOR, API_ISTIO_GATEWAY])
+    @test_all_gateways
     # Test updating a model with a new image version as the only change
-    def test_rolling_update6(self, api_gateway):
-        if api_gateway == API_AMBASSADOR:
-            ns_suffix = "ambas"
-        else:
-            ns_suffix = "istio"
-        namespace = "test-rolling-update-6" + ns_suffix
-        retry_run(f"kubectl create namespace {namespace}")
+    def test_rolling_update6(self, namespace, api_gateway):
         if api_gateway == API_ISTIO_GATEWAY:
             retry_run(
                 f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
@@ -308,17 +271,10 @@ class TestRollingHttp(object):
         logging.warning("Success for test_rolling_update6")
         run(f"kubectl delete -f ../resources/graph1svc.json -n {namespace}", shell=True)
         run(f"kubectl delete -f ../resources/graph2svc.json -n {namespace}", shell=True)
-        run(f"kubectl delete namespace {namespace}", shell=True)
 
-    @pytest.mark.parametrize("api_gateway", [API_AMBASSADOR, API_ISTIO_GATEWAY])
+    @test_all_gateways
     # test changing the image version and the name of its container
-    def test_rolling_update7(self, api_gateway):
-        if api_gateway == API_AMBASSADOR:
-            ns_suffix = "ambas"
-        else:
-            ns_suffix = "istio"
-        namespace = "test-rolling-update-7" + ns_suffix
-        retry_run(f"kubectl create namespace {namespace}")
+    def test_rolling_update7(self, namespace, api_gateway):
         if api_gateway == API_ISTIO_GATEWAY:
             retry_run(
                 f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
@@ -358,17 +314,10 @@ class TestRollingHttp(object):
         logging.warning("Success for test_rolling_update7")
         run(f"kubectl delete -f ../resources/graph1svc.json -n {namespace}", shell=True)
         run(f"kubectl delete -f ../resources/graph3svc.json -n {namespace}", shell=True)
-        run(f"kubectl delete namespace {namespace}", shell=True)
 
-    @pytest.mark.parametrize("api_gateway", [API_AMBASSADOR, API_ISTIO_GATEWAY])
+    @test_all_gateways
     # Test updating a model with a new resource request but same image
-    def test_rolling_update8(self, api_gateway):
-        if api_gateway == API_AMBASSADOR:
-            ns_suffix = "ambas"
-        else:
-            ns_suffix = "istio"
-        namespace = "test-rolling-update-8" + ns_suffix
-        retry_run(f"kubectl create namespace {namespace}")
+    def test_rolling_update8(self, namespace, api_gateway):
         if api_gateway == API_ISTIO_GATEWAY:
             retry_run(
                 f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
@@ -401,17 +350,10 @@ class TestRollingHttp(object):
         logging.warning("Success for test_rolling_update8")
         run(f"kubectl delete -f ../resources/graph1svc.json -n {namespace}", shell=True)
         run(f"kubectl delete -f ../resources/graph4svc.json -n {namespace}", shell=True)
-        run(f"kubectl delete namespace {namespace}", shell=True)
 
-    @pytest.mark.parametrize("api_gateway", [API_AMBASSADOR, API_ISTIO_GATEWAY])
+    @test_all_gateways
     # Test updating a model with a multi deployment new model
-    def test_rolling_update9(self, api_gateway):
-        if api_gateway == API_AMBASSADOR:
-            ns_suffix = "ambas"
-        else:
-            ns_suffix = "istio"
-        namespace = "test-rolling-update-9" + ns_suffix
-        retry_run(f"kubectl create namespace {namespace}")
+    def test_rolling_update9(self, namespace, api_gateway):
         if api_gateway == API_ISTIO_GATEWAY:
             retry_run(
                 f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
@@ -448,17 +390,10 @@ class TestRollingHttp(object):
         logging.warning("Success for test_rolling_update9")
         run(f"kubectl delete -f ../resources/graph1svc.json -n {namespace}", shell=True)
         run(f"kubectl delete -f ../resources/graph5svc.json -n {namespace}", shell=True)
-        run(f"kubectl delete namespace {namespace}", shell=True)
 
-    @pytest.mark.parametrize("api_gateway", [API_AMBASSADOR, API_ISTIO_GATEWAY])
+    @test_all_gateways
     # Test updating a model to a multi predictor model
-    def test_rolling_update10(self, api_gateway):
-        if api_gateway == API_AMBASSADOR:
-            ns_suffix = "ambas"
-        else:
-            ns_suffix = "istio"
-        namespace = "test-rolling-update-10" + ns_suffix
-        retry_run(f"kubectl create namespace {namespace}")
+    def test_rolling_update10(self, namespace, api_gateway):
         if api_gateway == API_ISTIO_GATEWAY:
             retry_run(
                 f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
@@ -497,7 +432,6 @@ class TestRollingHttp(object):
         logging.warning("Success for test_rolling_update10")
         run(f"kubectl delete -f ../resources/graph1svc.json -n {namespace}", shell=True)
         run(f"kubectl delete -f ../resources/graph6svc.json -n {namespace}", shell=True)
-        run(f"kubectl delete namespace {namespace}", shell=True)
 
 
 @pytest.mark.parametrize(
@@ -507,12 +441,7 @@ class TestRollingHttp(object):
         ("graph7.json", "graph8.json"),  # From v1alpha3 to v1
     ],
 )
-def test_rolling_update_deployment(from_deployment, to_deployment):
-    from_name = clean_string(from_deployment)
-    to_name = clean_string(to_deployment)
-    namespace = f"test-rolling-update-{from_name}-{to_name}"
-    retry_run(f"kubectl create namespace {namespace}")
-
+def test_rolling_update_deployment(namespace, from_deployment, to_deployment):
     from_file_path = to_resources_path(from_deployment)
     retry_run(f"kubectl apply -f {from_file_path} -n {namespace}")
     # Note that this is not yet parametrised!
@@ -551,4 +480,3 @@ def test_rolling_update_deployment(from_deployment, to_deployment):
 
     run(f"kubectl delete -f {from_file_path} -n {namespace}", shell=True)
     run(f"kubectl delete -f {to_file_path} -n {namespace}", shell=True)
-    run(f"kubectl delete namespace {namespace}", shell=True)

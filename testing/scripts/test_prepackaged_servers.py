@@ -1,5 +1,4 @@
 from seldon_e2e_utils import (
-    get_deployment_names,
     wait_for_rollout,
     initial_rest_request,
     retry_run,
@@ -14,10 +13,8 @@ import logging
 class TestPrepack(object):
 
     # Test prepackaged server for sklearn
-    def test_sklearn(self):
-        namespace = "test-sklearn"
+    def test_sklearn(self, namespace):
         spec = "../../servers/sklearnserver/samples/iris.yaml"
-        retry_run(f"kubectl create namespace {namespace}")
         retry_run(f"kubectl apply -f {spec} -n {namespace}")
         wait_for_status("sklearn", namespace)
         wait_for_rollout("sklearn", namespace)
@@ -29,13 +26,10 @@ class TestPrepack(object):
         assert r.status_code == 200
         logging.warning("Success for test_prepack_sklearn")
         run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
-        run(f"kubectl delete namespace {namespace}", shell=True)
 
     # Test prepackaged server for tfserving
-    def test_tfserving(self):
-        namespace = "test-tfserving"
+    def test_tfserving(self, namespace):
         spec = "../../servers/tfserving/samples/mnist_rest.yaml"
-        retry_run(f"kubectl create namespace {namespace}")
         retry_run(f"kubectl apply -f {spec}  -n {namespace}")
         wait_for_status("tfserving", namespace)
         wait_for_rollout("tfserving", namespace)
@@ -50,13 +44,10 @@ class TestPrepack(object):
         assert r.status_code == 200
         logging.warning("Success for test_prepack_tfserving")
         run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
-        run(f"kubectl delete namespace {namespace}", shell=True)
 
     # Test prepackaged server for xgboost
-    def test_xgboost(self):
-        namespace = "test-xgboost"
+    def test_xgboost(self, namespace):
         spec = "../../servers/xgboostserver/samples/iris.yaml"
-        retry_run(f"kubectl create namespace {namespace}")
         retry_run(f"kubectl apply -f {spec}  -n {namespace}")
         wait_for_status("xgboost", namespace)
         wait_for_rollout("xgboost", namespace)
@@ -68,13 +59,10 @@ class TestPrepack(object):
         assert r.status_code == 200
         logging.warning("Success for test_prepack_xgboost")
         run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
-        run(f"kubectl delete namespace {namespace}", shell=True)
 
     # Test prepackaged server for MLflow
-    def test_mlflow(self):
-        namespace = "test-mlflow"
+    def test_mlflow(self, namespace):
         spec = "../../servers/mlflowserver/samples/elasticnet_wine.yaml"
-        retry_run(f"kubectl create namespace {namespace}")
         retry_run(f"kubectl apply -f {spec} -n {namespace}")
         wait_for_status("mlflow", namespace)
         wait_for_rollout("mlflow", namespace)
@@ -102,4 +90,3 @@ class TestPrepack(object):
         assert r.status_code == 200
 
         run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
-        run(f"kubectl delete namespace {namespace}", shell=True)
