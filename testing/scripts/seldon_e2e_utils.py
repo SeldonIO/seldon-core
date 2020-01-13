@@ -381,3 +381,10 @@ def grpc_request_ambassador2(
             rows=rows,
             data=data,
         )
+
+
+def clean_string(string):
+    string = string.lower()
+    string = string.replace("_", "-")
+    string = string.replace(".", "-")
+    return string

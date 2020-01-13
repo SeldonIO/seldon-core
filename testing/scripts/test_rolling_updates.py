@@ -4,6 +4,7 @@ import logging
 import pytest
 from subprocess import run
 from seldon_e2e_utils import (
+    clean_string,
     wait_for_status,
     wait_for_rollout,
     rest_request_ambassador,
@@ -12,13 +13,6 @@ from seldon_e2e_utils import (
     API_AMBASSADOR,
     API_ISTIO_GATEWAY,
 )
-
-
-def clean_string(string):
-    string = string.lower()
-    string = string.replace("_", "-")
-    string = string.replace(".", "-")
-    return string
 
 
 def to_resources_path(file_name):
