@@ -20,6 +20,7 @@ kind_build_images: kind_build_engine kind_build_operator
 
 helm_setup:
 	helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+	helm repo add seldonio https://storage.googleapis.com/seldon-charts
 	helm repo update
 
 install_ambassador:
