@@ -2,10 +2,11 @@ FROM nvidia/cuda:10.0-cudnn7-runtime-ubuntu18.04
 
 LABEL io.openshift.s2i.scripts-url="image:///s2i/bin"
 
-RUN apt-get update -y
-
-RUN apt-get install -y python-pip python-dev build-essential
-RUN apt-get install -y python3-pip python3-dev
+# Install Python 3 and symlink `pip` and `python` to use Python 3
+RUN apt-get update -y && \
+    apt-get install -y python3-pip python3-dev && \
+    ln -s /usr/bin/pip3 /usr/bin/pip && \
+    ln -s /usr/bin/python3 /usr/bin/python
 
 RUN mkdir microservice
 WORKDIR /microservice
