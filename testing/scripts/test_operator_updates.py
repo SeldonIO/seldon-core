@@ -9,9 +9,20 @@ from seldon_e2e_utils import (
 )
 
 
+def assert_model(sdep_name, namespace, initial=False):
+    _request = initial_rest_request if initial else rest_request
+    r = _request(sdep_name, namespace)
+
+    assert r is not None
+    assert r.status_code == 200
+    assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
+
+    retry_run(f"kubectl get -n {namespace} sdep {sdep_name}")
+
+
 @pytest.mark.serial
 @pytest.mark.parametrize("from_version", ["0.4.1", "0.5.1", "1.0.0"])
-def test_operator_update(namespace, from_version):
+def test_cluster_update(namespace, from_version):
     retry_run("helm delete seldon -n seldon-system")
     retry_run(
         "helm install seldon "
@@ -19,16 +30,17 @@ def test_operator_update(namespace, from_version):
         "--namespace seldon-system "
         f"--version {from_version} "
     )
+    # TODO: Need to wait for CRD, webhooks and operator to get deployed
 
     retry_run(f"kubectl apply -f ../resources/graph1.json -n {namespace}")
     wait_for_status("mymodel", namespace)
     wait_for_rollout("mymodel", namespace)
-
-    r = initial_rest_request("mymodel", namespace)
-    assert r.status_code == 200
-    assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
+    assert_model("mymodel", namespace, initial=True)
 
     # The upgrade should leave the cluster as it was before the test
+    # TODO: There is currently a bug updating from 0.4.1 using Helm 3.0.2 This
+    # will be fixed once https://github.com/helm/helm/pull/7269 is released in
+    # Helm 3.0.3.
     retry_run(
         "helm upgrade seldon "
         "../../helm-charts/seldon-core-operator "
@@ -38,7 +50,4 @@ def test_operator_update(namespace, from_version):
         "--set certManager.enabled=false"
     )
 
-    # Improve health check and move to func (e.g. also checking list of sdep)
-    r = rest_request("mymodel", namespace)
-    assert r.status_code == 200
-    assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
+    assert_model("mymodel", namespace, initial=True)
