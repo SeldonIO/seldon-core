@@ -160,19 +160,11 @@ def initial_rest_request(
     dtype="tensor",
     names=None,
 ):
-    r = rest_request(
-        model,
-        namespace,
-        endpoint=endpoint,
-        data_size=data_size,
-        rows=rows,
-        data=data,
-        dtype=dtype,
-        names=names,
-    )
-    if r is None or r.status_code != 200:
-        logging.warning("Sleeping 1 sec and trying again")
-        time.sleep(1)
+    sleeping_times = [1, 5, 10]
+    attempt = 0
+    finished = False
+    r = None
+    while not finished:
         r = rest_request(
             model,
             namespace,
@@ -183,32 +175,18 @@ def initial_rest_request(
             dtype=dtype,
             names=names,
         )
+
         if r is None or r.status_code != 200:
-            logging.warning("Sleeping 5 sec and trying again")
-            time.sleep(5)
-            r = rest_request(
-                model,
-                namespace,
-                endpoint=endpoint,
-                data_size=data_size,
-                rows=rows,
-                data=data,
-                dtype=dtype,
-                names=names,
-            )
-            if r is None or r.status_code != 200:
-                logging.warning("Sleeping 10 sec and trying again")
-                time.sleep(10)
-                r = rest_request(
-                    model,
-                    namespace,
-                    endpoint=endpoint,
-                    data_size=data_size,
-                    rows=rows,
-                    data=data,
-                    dtype=dtype,
-                    names=names,
-                )
+            if attempt >= len(sleeping_times):
+                finished = True
+
+            sleep = sleeping_times[attempt]
+            logging.warning(f"Sleeping {sleep} sec and trying again")
+            time.sleep(sleep)
+            attempt += 1
+        else:
+            finished = True
+
     return r
 
 
