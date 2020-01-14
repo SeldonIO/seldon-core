@@ -78,17 +78,17 @@ For example, the operator update tests change the cluster-wide Seldon
 operator which could affect the other tests running in parallel.
 
 To differentiate between parallelisable tests and tests which are
-required to be run serially you can use the `only_serial` mark.
+required to be run serially you can use the `serial` mark.
 Marks in `pytest` allow to [select subsets of
 tests](http://doc.pytest.org/en/latest/example/markers.html).
 
 To mark a test to run serially, you can do:
 
 ```python
-@pytest.mark.only_serial
+@pytest.mark.serial
 def test_foo(...):
   print("the scripts will run this test serially")
 ```
 
 The integration test scripts will make sure that tests marked as
-`only_serial` get run with a single worker.
+`serial` get run with a single worker.
