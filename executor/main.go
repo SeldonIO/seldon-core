@@ -266,7 +266,7 @@ func main() {
 		if *protocol == "seldon" {
 			clientGrpc = seldon.NewSeldonGrpcClient(predictor, *sdepName)
 		} else {
-			clientGrpc = tensorflow.NewSeldonGrpcClient()
+			clientGrpc = tensorflow.NewTensorflowGrpcClient(predictor, *sdepName)
 		}
 		runGrpcServer(logger, predictor, clientGrpc, *grpcPort, serverUrl, *namespace, *protocol, *sdepName)
 

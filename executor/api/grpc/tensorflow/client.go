@@ -5,13 +5,16 @@ import (
 	"fmt"
 	"github.com/go-logr/logr"
 	"github.com/golang/protobuf/proto"
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_opentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
 	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/seldonio/seldon-core/executor/api/client"
 	grpc2 "github.com/seldonio/seldon-core/executor/api/grpc"
+	"github.com/seldonio/seldon-core/executor/api/metric"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/proto/tensorflow/serving"
+	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
 	"google.golang.org/grpc"
 	"io"
 	"math"
@@ -19,25 +22,29 @@ import (
 )
 
 type TensorflowGrpcClient struct {
-	Log         logr.Logger
-	callOptions []grpc.CallOption
-	conns       map[string]*grpc.ClientConn
+	Log            logr.Logger
+	callOptions    []grpc.CallOption
+	conns          map[string]*grpc.ClientConn
+	Predictor      *v1.PredictorSpec
+	DeploymentName string
 }
 
-func NewSeldonGrpcClient() client.SeldonApiClient {
+func NewTensorflowGrpcClient(predictor *v1.PredictorSpec, deploymentName string) client.SeldonApiClient {
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),
 	}
 	smgc := TensorflowGrpcClient{
-		Log:         logf.Log.WithName("SeldonGrpcClient"),
-		callOptions: opts,
-		conns:       make(map[string]*grpc.ClientConn),
+		Log:            logf.Log.WithName("SeldonGrpcClient"),
+		callOptions:    opts,
+		conns:          make(map[string]*grpc.ClientConn),
+		Predictor:      predictor,
+		DeploymentName: deploymentName,
 	}
 	return smgc
 }
 
-func (s TensorflowGrpcClient) getConnection(host string, port int32) (*grpc.ClientConn, error) {
+func (s TensorflowGrpcClient) getConnection(host string, port int32, modelName string) (*grpc.ClientConn, error) {
 	k := fmt.Sprintf("%s:%d", host, port)
 	if conn, ok := s.conns[k]; ok {
 		return conn, nil
@@ -46,7 +53,10 @@ func (s TensorflowGrpcClient) getConnection(host string, port int32) (*grpc.Clie
 			grpc.WithInsecure(),
 		}
 		if opentracing.IsGlobalTracerRegistered() {
-			opts = append(opts, grpc.WithUnaryInterceptor(grpc_opentracing.UnaryClientInterceptor()))
+			opts = append(opts, grpc.WithUnaryInterceptor(grpc_middleware.ChainUnaryClient(grpc_opentracing.UnaryClientInterceptor(),
+				metric.NewClientMetrics(s.Predictor, s.DeploymentName, modelName).UnaryClientInterceptor())))
+		} else {
+			opts = append(opts, grpc.WithUnaryInterceptor(metric.NewClientMetrics(s.Predictor, s.DeploymentName, modelName).UnaryClientInterceptor()))
 		}
 		conn, err := grpc.Dial(fmt.Sprintf("%s:%d", host, port), opts...)
 		if err != nil {
@@ -79,7 +89,7 @@ func (s TensorflowGrpcClient) Chain(ctx context.Context, modelName string, msg p
 }
 
 func (s TensorflowGrpcClient) Predict(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
-	conn, err := s.getConnection(host, port)
+	conn, err := s.getConnection(host, port, modelName)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
 	}
@@ -120,7 +130,7 @@ func (s TensorflowGrpcClient) TransformOutput(ctx context.Context, modelName str
 }
 
 func (s TensorflowGrpcClient) Status(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
-	conn, err := s.getConnection(host, port)
+	conn, err := s.getConnection(host, port, modelName)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
 	}
@@ -135,7 +145,7 @@ func (s TensorflowGrpcClient) Status(ctx context.Context, modelName string, host
 }
 
 func (s TensorflowGrpcClient) Metadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
-	conn, err := s.getConnection(host, port)
+	conn, err := s.getConnection(host, port, modelName)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
 	}

@@ -1,0 +1,1358 @@
+{
+  "dashboard": {
+    "version": 3,
+    "title": "Prediction Analytics",
+    "timezone": "browser",
+    "timepicker": {
+      "time_options": [
+        "5m",
+        "15m",
+        "1h",
+        "6h",
+        "12h",
+        "24h",
+        "2d",
+        "7d",
+        "30d"
+      ],
+      "refresh_intervals": [
+        "5s",
+        "10s",
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "1h",
+        "2h",
+        "1d"
+      ]
+    },
+    "time": {
+      "to": "now",
+      "from": "now-15m"
+    },
+    "templating": {
+      "list": [
+        {
+          "useTags": false,
+          "type": "query",
+          "tagsQuery": "",
+          "tags": [],
+          "tagValuesQuery": "",
+          "sort": 0,
+          "skipUrlSync": false,
+          "regex": "",
+          "refresh": 1,
+          "query": "label_values(seldon_api_executor_client_requests_seconds_count,deployment_name)",
+          "options": [],
+          "name": "deployment",
+          "multi": true,
+          "label": null,
+          "includeAll": true,
+          "hide": 0,
+          "definition": "label_values(seldon_api_executor_client_requests_seconds_count,deployment_name)",
+          "datasource": "prometheus",
+          "current": {
+            "value": [
+              "$__all"
+            ],
+            "text": "All"
+          },
+          "allValue": ".*"
+        },
+        {
+          "useTags": false,
+          "type": "query",
+          "tagsQuery": "",
+          "tags": [],
+          "tagValuesQuery": "",
+          "sort": 0,
+          "skipUrlSync": false,
+          "regex": "",
+          "refresh": 1,
+          "query": "label_values(seldon_api_executor_client_requests_seconds_count,predictor_name)",
+          "options": [],
+          "name": "predictor",
+          "multi": true,
+          "label": null,
+          "includeAll": true,
+          "hide": 0,
+          "definition": "label_values(seldon_api_executor_client_requests_seconds_count,predictor_name)",
+          "datasource": "prometheus",
+          "current": {
+            "value": "$__all",
+            "text": "All"
+          },
+          "allValue": ".*"
+        },
+        {
+          "useTags": false,
+          "type": "query",
+          "tagsQuery": "",
+          "tags": [],
+          "tagValuesQuery": "",
+          "sort": 0,
+          "skipUrlSync": false,
+          "regex": "",
+          "refresh": 1,
+          "query": "label_values(seldon_api_executor_client_requests_seconds_count,predictor_version)",
+          "options": [],
+          "name": "version",
+          "multi": true,
+          "label": null,
+          "includeAll": true,
+          "hide": 0,
+          "definition": "label_values(seldon_api_executor_client_requests_seconds_count,predictor_version)",
+          "datasource": "prometheus",
+          "current": {
+            "value": "$__all",
+            "text": "All"
+          },
+          "allValue": ".*"
+        },
+        {
+          "useTags": false,
+          "type": "query",
+          "tagsQuery": "",
+          "tags": [],
+          "tagValuesQuery": "",
+          "sort": 0,
+          "skipUrlSync": false,
+          "regex": "",
+          "refresh": 1,
+          "query": "label_values(seldon_api_executor_client_requests_seconds_count,model_name)",
+          "options": [],
+          "name": "model_name",
+          "multi": true,
+          "label": null,
+          "includeAll": true,
+          "hide": 0,
+          "definition": "label_values(seldon_api_executor_client_requests_seconds_count,model_name)",
+          "datasource": "prometheus",
+          "current": {
+            "value": "$__all",
+            "text": "All"
+          },
+          "allValue": ".*"
+        },
+        {
+          "useTags": false,
+          "type": "query",
+          "tagsQuery": "",
+          "tags": [],
+          "tagValuesQuery": "",
+          "sort": 0,
+          "skipUrlSync": false,
+          "regex": "",
+          "refresh": 1,
+          "query": "label_values(seldon_api_executor_client_requests_seconds_count,model_image)",
+          "options": [],
+          "name": "model_image",
+          "multi": true,
+          "label": null,
+          "includeAll": true,
+          "hide": 0,
+          "definition": "label_values(seldon_api_executor_client_requests_seconds_count,model_image)",
+          "datasource": "prometheus",
+          "current": {
+            "value": "$__all",
+            "text": "All"
+          },
+          "allValue": ".*"
+        },
+        {
+          "useTags": false,
+          "type": "query",
+          "tagsQuery": "",
+          "tags": [],
+          "tagValuesQuery": "",
+          "sort": 0,
+          "skipUrlSync": false,
+          "regex": "",
+          "refresh": 1,
+          "query": "label_values(seldon_api_executor_client_requests_seconds_count,model_version)",
+          "options": [],
+          "name": "model_version",
+          "multi": true,
+          "label": null,
+          "includeAll": true,
+          "hide": 0,
+          "definition": "label_values(seldon_api_executor_client_requests_seconds_count,model_version)",
+          "datasource": "prometheus",
+          "current": {
+            "value": "$__all",
+            "text": "All"
+          },
+          "allValue": ".*"
+        }
+      ]
+    },
+    "tags": [
+      "seldon"
+    ],
+    "style": "dark",
+    "schemaVersion": 18,
+    "refresh": "5s",
+    "panels": [
+      {
+        "type": "row",
+        "title": "Heading",
+        "repeat": null,
+        "panels": [],
+        "id": 40,
+        "gridPos": {
+          "y": 0,
+          "x": 0,
+          "w": 24,
+          "h": 1
+        },
+        "collapsed": false
+      },
+      {
+        "type": "text",
+        "title": "",
+        "mode": "html",
+        "links": [],
+        "id": 27,
+        "gridPos": {
+          "y": 1,
+          "x": 0,
+          "w": 24,
+          "h": 3
+        },
+        "content": "<div class=\"text-center dashboard-header\">\n  <span>Seldon Core API Dashboard<\/span>\n<\/div>"
+      },
+      {
+        "type": "row",
+        "title": "Global Counts",
+        "repeat": null,
+        "panels": [],
+        "id": 41,
+        "gridPos": {
+          "y": 4,
+          "x": 0,
+          "w": 24,
+          "h": 1
+        },
+        "collapsed": false
+      },
+      {
+        "valueName": "current",
+        "valueMaps": [
+          {
+            "value": "null",
+            "text": "N\/A",
+            "op": "="
+          }
+        ],
+        "valueFontSize": "80%",
+        "type": "singlestat",
+        "title": "Global Request Rate",
+        "thresholds": "",
+        "targets": [
+          {
+            "step": 20,
+            "refId": "A",
+            "intervalFactor": 2,
+            "instant": false,
+            "format": "time_series",
+            "expr": "round(sum(irate(seldon_api_executor_server_requests_seconds_count[1m])),0.001)"
+          }
+        ],
+        "tableColumn": "",
+        "sparkline": {
+          "show": true,
+          "lineColor": "rgb(31, 120, 193)",
+          "full": true,
+          "fillColor": "rgba(31, 118, 189, 0.18)"
+        },
+        "rangeMaps": [
+          {
+            "to": "null",
+            "text": "N\/A",
+            "from": "null"
+          }
+        ],
+        "prefixFontSize": "50%",
+        "prefix": "",
+        "postfixFontSize": "50%",
+        "postfix": "",
+        "nullText": null,
+        "nullPointMode": "connected",
+        "maxDataPoints": 100,
+        "mappingTypes": [
+          {
+            "value": 1,
+            "name": "value to text"
+          },
+          {
+            "value": 2,
+            "name": "range to text"
+          }
+        ],
+        "mappingType": 1,
+        "links": [],
+        "interval": null,
+        "id": 16,
+        "gridPos": {
+          "y": 5,
+          "x": 0,
+          "w": 6,
+          "h": 3
+        },
+        "gauge": {
+          "thresholdMarkers": true,
+          "thresholdLabels": false,
+          "show": false,
+          "minValue": 0,
+          "maxValue": 100
+        },
+        "format": "ops",
+        "datasource": "prometheus",
+        "colors": [
+          "rgba(245, 54, 54, 0.9)",
+          "rgba(237, 129, 40, 0.89)",
+          "rgba(50, 172, 45, 0.97)"
+        ],
+        "colorValue": false,
+        "colorBackground": false,
+        "cacheTimeout": null
+      },
+      {
+        "valueName": "avg",
+        "valueMaps": [
+          {
+            "value": "null",
+            "text": "N\/A",
+            "op": "="
+          }
+        ],
+        "valueFontSize": "80%",
+        "type": "singlestat",
+        "title": "Success",
+        "thresholds": "",
+        "targets": [
+          {
+            "step": 20,
+            "refId": "A",
+            "intervalFactor": 2,
+            "format": "time_series",
+            "expr": "sum(rate(seldon_api_executor_server_requests_seconds_count{status!~\"5.*\"}[1m])) \/ sum(rate(seldon_api_executor_server_requests_seconds_count[1m]))"
+          }
+        ],
+        "tableColumn": "",
+        "sparkline": {
+          "show": true,
+          "lineColor": "rgb(31, 120, 193)",
+          "full": true,
+          "fillColor": "rgba(31, 118, 189, 0.18)"
+        },
+        "rangeMaps": [
+          {
+            "to": "null",
+            "text": "N\/A",
+            "from": "null"
+          }
+        ],
+        "prefixFontSize": "50%",
+        "prefix": "",
+        "postfixFontSize": "50%",
+        "postfix": "",
+        "nullText": null,
+        "nullPointMode": "connected",
+        "maxDataPoints": 100,
+        "mappingTypes": [
+          {
+            "value": 1,
+            "name": "value to text"
+          },
+          {
+            "value": 2,
+            "name": "range to text"
+          }
+        ],
+        "mappingType": 1,
+        "links": [],
+        "interval": null,
+        "id": 17,
+        "gridPos": {
+          "y": 5,
+          "x": 6,
+          "w": 6,
+          "h": 3
+        },
+        "gauge": {
+          "thresholdMarkers": true,
+          "thresholdLabels": false,
+          "show": false,
+          "minValue": 0,
+          "maxValue": 100
+        },
+        "format": "percentunit",
+        "datasource": "prometheus",
+        "colors": [
+          "rgba(245, 54, 54, 0.9)",
+          "rgba(237, 129, 40, 0.89)",
+          "rgba(50, 172, 45, 0.97)"
+        ],
+        "colorValue": false,
+        "colorBackground": false,
+        "cacheTimeout": null
+      },
+      {
+        "valueName": "avg",
+        "valueMaps": [
+          {
+            "value": "null",
+            "text": "N\/A",
+            "op": "="
+          }
+        ],
+        "valueFontSize": "80%",
+        "type": "singlestat",
+        "title": "4xxs",
+        "thresholds": "",
+        "targets": [
+          {
+            "step": 20,
+            "refId": "A",
+            "intervalFactor": 2,
+            "format": "time_series",
+            "expr": "sum(irate(seldon_api_executor_server_requests_seconds_count{status=~\"4.*\"}[1m])) "
+          }
+        ],
+        "tableColumn": "",
+        "sparkline": {
+          "show": true,
+          "lineColor": "rgb(31, 120, 193)",
+          "full": true,
+          "fillColor": "rgba(31, 118, 189, 0.18)"
+        },
+        "rangeMaps": [
+          {
+            "to": "null",
+            "text": "N\/A",
+            "from": "null"
+          }
+        ],
+        "prefixFontSize": "50%",
+        "prefix": "",
+        "postfixFontSize": "50%",
+        "postfix": "",
+        "nullText": null,
+        "nullPointMode": "connected",
+        "maxDataPoints": 100,
+        "mappingTypes": [
+          {
+            "value": 1,
+            "name": "value to text"
+          },
+          {
+            "value": 2,
+            "name": "range to text"
+          }
+        ],
+        "mappingType": 1,
+        "links": [],
+        "interval": null,
+        "id": 18,
+        "gridPos": {
+          "y": 5,
+          "x": 12,
+          "w": 6,
+          "h": 3
+        },
+        "gauge": {
+          "thresholdMarkers": true,
+          "thresholdLabels": false,
+          "show": false,
+          "minValue": 0,
+          "maxValue": 100
+        },
+        "format": "ops",
+        "datasource": "prometheus",
+        "colors": [
+          "rgba(245, 54, 54, 0.9)",
+          "rgba(237, 129, 40, 0.89)",
+          "rgba(50, 172, 45, 0.97)"
+        ],
+        "colorValue": false,
+        "colorBackground": false,
+        "cacheTimeout": null
+      },
+      {
+        "valueName": "avg",
+        "valueMaps": [
+          {
+            "value": "null",
+            "text": "N\/A",
+            "op": "="
+          }
+        ],
+        "valueFontSize": "80%",
+        "type": "singlestat",
+        "title": "5xxs",
+        "thresholds": "",
+        "targets": [
+          {
+            "step": 20,
+            "refId": "A",
+            "intervalFactor": 2,
+            "hide": false,
+            "format": "time_series",
+            "expr": "sum(irate(seldon_api_executor_server_requests_seconds_count{status=~\"5.*\"}[1m])) "
+          }
+        ],
+        "tableColumn": "",
+        "sparkline": {
+          "show": true,
+          "lineColor": "rgb(31, 120, 193)",
+          "full": true,
+          "fillColor": "rgba(31, 118, 189, 0.18)"
+        },
+        "rangeMaps": [
+          {
+            "to": "null",
+            "text": "N\/A",
+            "from": "null"
+          }
+        ],
+        "prefixFontSize": "50%",
+        "prefix": "",
+        "postfixFontSize": "50%",
+        "postfix": "",
+        "nullText": null,
+        "nullPointMode": "connected",
+        "maxDataPoints": 100,
+        "mappingTypes": [
+          {
+            "value": 1,
+            "name": "value to text"
+          },
+          {
+            "value": 2,
+            "name": "range to text"
+          }
+        ],
+        "mappingType": 1,
+        "links": [],
+        "interval": null,
+        "id": 19,
+        "gridPos": {
+          "y": 5,
+          "x": 18,
+          "w": 6,
+          "h": 3
+        },
+        "gauge": {
+          "thresholdMarkers": true,
+          "thresholdLabels": false,
+          "show": false,
+          "minValue": 0,
+          "maxValue": 100
+        },
+        "format": "ops",
+        "datasource": "prometheus",
+        "colors": [
+          "rgba(245, 54, 54, 0.9)",
+          "rgba(237, 129, 40, 0.89)",
+          "rgba(50, 172, 45, 0.97)"
+        ],
+        "colorValue": false,
+        "colorBackground": false,
+        "cacheTimeout": null
+      },
+      {
+        "type": "row",
+        "title": "Deployment Counts",
+        "scopedVars": {
+          "deployment": {
+            "value": "grpc-tfserving",
+            "text": "grpc-tfserving",
+            "selected": false
+          }
+        },
+        "repeat": "deployment",
+        "panels": [],
+        "id": 42,
+        "gridPos": {
+          "y": 8,
+          "x": 0,
+          "w": 24,
+          "h": 1
+        },
+        "collapsed": false
+      },
+      {
+        "valueName": "current",
+        "valueMaps": [
+          {
+            "value": "null",
+            "text": "N\/A",
+            "op": "="
+          }
+        ],
+        "valueFontSize": "80%",
+        "type": "singlestat",
+        "title": "Request Rate ($deployment)",
+        "thresholds": "",
+        "targets": [
+          {
+            "step": 20,
+            "refId": "A",
+            "intervalFactor": 2,
+            "format": "time_series",
+            "expr": "round(sum(irate(seldon_api_executor_client_requests_seconds_count{deployment_name=~'$deployment'}[1m])), 0.001)"
+          }
+        ],
+        "tableColumn": "",
+        "sparkline": {
+          "show": true,
+          "lineColor": "rgb(31, 120, 193)",
+          "full": true,
+          "fillColor": "rgba(31, 118, 189, 0.18)"
+        },
+        "scopedVars": {
+          "deployment": {
+            "value": "grpc-tfserving",
+            "text": "grpc-tfserving",
+            "selected": false
+          }
+        },
+        "rangeMaps": [
+          {
+            "to": "null",
+            "text": "N\/A",
+            "from": "null"
+          }
+        ],
+        "prefixFontSize": "50%",
+        "prefix": "",
+        "postfixFontSize": "50%",
+        "postfix": "",
+        "nullText": null,
+        "nullPointMode": "connected",
+        "maxDataPoints": 100,
+        "mappingTypes": [
+          {
+            "value": 1,
+            "name": "value to text"
+          },
+          {
+            "value": 2,
+            "name": "range to text"
+          }
+        ],
+        "mappingType": 1,
+        "links": [],
+        "interval": null,
+        "id": 36,
+        "gridPos": {
+          "y": 9,
+          "x": 0,
+          "w": 6,
+          "h": 3
+        },
+        "gauge": {
+          "thresholdMarkers": true,
+          "thresholdLabels": false,
+          "show": false,
+          "minValue": 0,
+          "maxValue": 100
+        },
+        "format": "ops",
+        "datasource": "prometheus",
+        "colors": [
+          "rgba(245, 54, 54, 0.9)",
+          "rgba(237, 129, 40, 0.89)",
+          "rgba(50, 172, 45, 0.97)"
+        ],
+        "colorValue": false,
+        "colorBackground": false,
+        "cacheTimeout": null
+      },
+      {
+        "valueName": "avg",
+        "valueMaps": [
+          {
+            "value": "null",
+            "text": "N\/A",
+            "op": "="
+          }
+        ],
+        "valueFontSize": "80%",
+        "type": "singlestat",
+        "title": "Success ($deployment)",
+        "thresholds": "",
+        "targets": [
+          {
+            "step": 20,
+            "refId": "A",
+            "intervalFactor": 2,
+            "format": "time_series",
+            "expr": "sum(rate(seldon_api_executor_client_requests_seconds_count{deployment_name=~\"$deployment\",status!~\"5.*\"}[1m])) \/ sum(rate(seldon_api_executor_client_requests_seconds_count{deployment_name=~\"$deployment\"}[1m]))"
+          }
+        ],
+        "tableColumn": "",
+        "sparkline": {
+          "show": true,
+          "lineColor": "rgb(31, 120, 193)",
+          "full": true,
+          "fillColor": "rgba(31, 118, 189, 0.18)"
+        },
+        "scopedVars": {
+          "deployment": {
+            "value": "grpc-tfserving",
+            "text": "grpc-tfserving",
+            "selected": false
+          }
+        },
+        "rangeMaps": [
+          {
+            "to": "null",
+            "text": "N\/A",
+            "from": "null"
+          }
+        ],
+        "prefixFontSize": "50%",
+        "prefix": "",
+        "postfixFontSize": "50%",
+        "postfix": "",
+        "nullText": null,
+        "nullPointMode": "connected",
+        "maxDataPoints": 100,
+        "mappingTypes": [
+          {
+            "value": 1,
+            "name": "value to text"
+          },
+          {
+            "value": 2,
+            "name": "range to text"
+          }
+        ],
+        "mappingType": 1,
+        "links": [],
+        "interval": null,
+        "id": 37,
+        "gridPos": {
+          "y": 9,
+          "x": 6,
+          "w": 6,
+          "h": 3
+        },
+        "gauge": {
+          "thresholdMarkers": true,
+          "thresholdLabels": false,
+          "show": false,
+          "minValue": 0,
+          "maxValue": 100
+        },
+        "format": "percentunit",
+        "datasource": "prometheus",
+        "colors": [
+          "rgba(245, 54, 54, 0.9)",
+          "rgba(237, 129, 40, 0.89)",
+          "rgba(50, 172, 45, 0.97)"
+        ],
+        "colorValue": false,
+        "colorBackground": false,
+        "cacheTimeout": null
+      },
+      {
+        "valueName": "avg",
+        "valueMaps": [
+          {
+            "value": "null",
+            "text": "N\/A",
+            "op": "="
+          }
+        ],
+        "valueFontSize": "80%",
+        "type": "singlestat",
+        "title": "4xxs ($deployment)",
+        "thresholds": "",
+        "targets": [
+          {
+            "step": 20,
+            "refId": "A",
+            "intervalFactor": 2,
+            "format": "time_series",
+            "expr": "sum(irate(seldon_api_executor_client_requests_seconds_count{deployment_name=~\"$deployment\",status=~\"4.*\"}[1m]))"
+          }
+        ],
+        "tableColumn": "",
+        "sparkline": {
+          "show": true,
+          "lineColor": "rgb(31, 120, 193)",
+          "full": true,
+          "fillColor": "rgba(31, 118, 189, 0.18)"
+        },
+        "scopedVars": {
+          "deployment": {
+            "value": "grpc-tfserving",
+            "text": "grpc-tfserving",
+            "selected": false
+          }
+        },
+        "rangeMaps": [
+          {
+            "to": "null",
+            "text": "N\/A",
+            "from": "null"
+          }
+        ],
+        "prefixFontSize": "50%",
+        "prefix": "",
+        "postfixFontSize": "50%",
+        "postfix": "",
+        "nullText": null,
+        "nullPointMode": "connected",
+        "maxDataPoints": 100,
+        "mappingTypes": [
+          {
+            "value": 1,
+            "name": "value to text"
+          },
+          {
+            "value": 2,
+            "name": "range to text"
+          }
+        ],
+        "mappingType": 1,
+        "links": [],
+        "interval": null,
+        "id": 38,
+        "gridPos": {
+          "y": 9,
+          "x": 12,
+          "w": 6,
+          "h": 3
+        },
+        "gauge": {
+          "thresholdMarkers": true,
+          "thresholdLabels": false,
+          "show": false,
+          "minValue": 0,
+          "maxValue": 100
+        },
+        "format": "ops",
+        "datasource": "prometheus",
+        "colors": [
+          "rgba(245, 54, 54, 0.9)",
+          "rgba(237, 129, 40, 0.89)",
+          "rgba(50, 172, 45, 0.97)"
+        ],
+        "colorValue": false,
+        "colorBackground": false,
+        "cacheTimeout": null
+      },
+      {
+        "valueName": "avg",
+        "valueMaps": [
+          {
+            "value": "null",
+            "text": "N\/A",
+            "op": "="
+          }
+        ],
+        "valueFontSize": "80%",
+        "type": "singlestat",
+        "title": "5xxs ($deployment)",
+        "thresholds": "",
+        "targets": [
+          {
+            "step": 20,
+            "refId": "A",
+            "intervalFactor": 2,
+            "hide": false,
+            "format": "time_series",
+            "expr": "sum(irate(seldon_api_executor_client_requests_seconds_count{deployment_name=~\"$deployment\",status=~\"5.*\"}[1m]))"
+          }
+        ],
+        "tableColumn": "",
+        "sparkline": {
+          "show": true,
+          "lineColor": "rgb(31, 120, 193)",
+          "full": true,
+          "fillColor": "rgba(31, 118, 189, 0.18)"
+        },
+        "scopedVars": {
+          "deployment": {
+            "value": "grpc-tfserving",
+            "text": "grpc-tfserving",
+            "selected": false
+          }
+        },
+        "rangeMaps": [
+          {
+            "to": "null",
+            "text": "N\/A",
+            "from": "null"
+          }
+        ],
+        "prefixFontSize": "50%",
+        "prefix": "",
+        "postfixFontSize": "50%",
+        "postfix": "",
+        "nullText": null,
+        "nullPointMode": "connected",
+        "maxDataPoints": 100,
+        "mappingTypes": [
+          {
+            "value": 1,
+            "name": "value to text"
+          },
+          {
+            "value": 2,
+            "name": "range to text"
+          }
+        ],
+        "mappingType": 1,
+        "links": [],
+        "interval": null,
+        "id": 39,
+        "gridPos": {
+          "y": 9,
+          "x": 18,
+          "w": 6,
+          "h": 3
+        },
+        "gauge": {
+          "thresholdMarkers": true,
+          "thresholdLabels": false,
+          "show": false,
+          "minValue": 0,
+          "maxValue": 100
+        },
+        "format": "ops",
+        "datasource": "prometheus",
+        "colors": [
+          "rgba(245, 54, 54, 0.9)",
+          "rgba(237, 129, 40, 0.89)",
+          "rgba(50, 172, 45, 0.97)"
+        ],
+        "colorValue": false,
+        "colorBackground": false,
+        "cacheTimeout": null
+      },
+      {
+        "type": "row",
+        "title": "Models",
+        "repeat": null,
+        "panels": [],
+        "id": 43,
+        "gridPos": {
+          "y": 12,
+          "x": 0,
+          "w": 24,
+          "h": 1
+        },
+        "collapsed": false
+      },
+      {
+        "type": "text",
+        "title": "",
+        "mode": "html",
+        "links": [],
+        "id": 8,
+        "gridPos": {
+          "y": 13,
+          "x": 0,
+          "w": 24,
+          "h": 3
+        },
+        "content": "<div class=\"text-center dashboard-header\">\n  <span>Models<\/span>\n<\/div>"
+      },
+      {
+        "type": "row",
+        "title": "Model Metrics",
+        "scopedVars": {
+          "model_image": {
+            "value": "tensorflow\/serving",
+            "text": "tensorflow\/serving",
+            "selected": false
+          }
+        },
+        "repeat": "model_image",
+        "panels": [],
+        "id": 44,
+        "gridPos": {
+          "y": 16,
+          "x": 0,
+          "w": 24,
+          "h": 1
+        },
+        "collapsed": false
+      },
+      {
+        "yaxis": {
+          "alignLevel": null,
+          "align": false
+        },
+        "yaxes": [
+          {
+            "show": true,
+            "min": "0",
+            "max": null,
+            "logBase": 1,
+            "label": null,
+            "format": "short"
+          },
+          {
+            "show": true,
+            "min": null,
+            "max": null,
+            "logBase": 1,
+            "label": null,
+            "format": "short"
+          }
+        ],
+        "xaxis": {
+          "values": [],
+          "show": true,
+          "name": null,
+          "mode": "time",
+          "buckets": null
+        },
+        "type": "graph",
+        "tooltip": {
+          "value_type": "individual",
+          "sort": 0,
+          "shared": true
+        },
+        "title": "Reqs\/sec to $model_image",
+        "timeShift": null,
+        "timeRegions": [],
+        "timeFrom": null,
+        "thresholds": [],
+        "targets": [
+          {
+            "step": 2,
+            "refId": "A",
+            "metric": "io_seldon_apife_api_rest_RestClientController_home_snapshot_75thPercentile",
+            "legendFormat": "{{predictor_name}}:{{predictor_version}} ({{model_name}} {{model_image}} : {{model_version}}) {{service}}",
+            "intervalFactor": 2,
+            "hide": false,
+            "format": "time_series",
+            "expr": "sum(rate(seldon_api_executor_client_requests_seconds_count{model_name=~\"$model_name\",model_version=~\"$model_version\",model_image=~\"$model_image\",predictor_name=~\"$predictor\",predictor_version=~\"$version\"}[5s])) by (model_name,predictor_name,predictor_version,model_image,model_version,service)"
+          }
+        ],
+        "steppedLine": false,
+        "stack": false,
+        "spaceLength": 10,
+        "seriesOverrides": [],
+        "scopedVars": {
+          "model_image": {
+            "value": "tensorflow\/serving",
+            "text": "tensorflow\/serving",
+            "selected": false
+          }
+        },
+        "renderer": "flot",
+        "points": false,
+        "pointradius": 5,
+        "percentage": false,
+        "nullPointMode": "null",
+        "links": [],
+        "linewidth": 1,
+        "lines": true,
+        "legend": {
+          "values": false,
+          "total": false,
+          "show": true,
+          "min": false,
+          "max": false,
+          "current": false,
+          "avg": false
+        },
+        "id": 7,
+        "gridPos": {
+          "y": 17,
+          "x": 0,
+          "w": 8,
+          "h": 9
+        },
+        "fill": 1,
+        "datasource": "prometheus",
+        "dashes": false,
+        "dashLength": 10,
+        "bars": false,
+        "aliasColors": {}
+      },
+      {
+        "yaxis": {
+          "alignLevel": null,
+          "align": false
+        },
+        "yaxes": [
+          {
+            "show": true,
+            "min": "0",
+            "max": null,
+            "logBase": 1,
+            "label": null,
+            "format": "short"
+          },
+          {
+            "show": true,
+            "min": null,
+            "max": null,
+            "logBase": 1,
+            "label": null,
+            "format": "short"
+          }
+        ],
+        "xaxis": {
+          "values": [],
+          "show": true,
+          "name": null,
+          "mode": "time",
+          "buckets": null
+        },
+        "type": "graph",
+        "tooltip": {
+          "value_type": "individual",
+          "sort": 0,
+          "shared": true
+        },
+        "title": "$model_image Reward",
+        "timeShift": null,
+        "timeRegions": [],
+        "timeFrom": null,
+        "thresholds": [],
+        "targets": [
+          {
+            "step": 2,
+            "refId": "A",
+            "metric": "",
+            "legendFormat": "{{deployment_name}}\/{{predictor_name}}:{{predictor_version}}  {{model_name}} {{model_image}} : {{model_version}}",
+            "intervalFactor": 2,
+            "hide": false,
+            "format": "time_series",
+            "expr": "rate(seldon_api_model_feedback_reward_total{deployment_name=~\"$deployment\",predictor_name=~\"$predictor\",predictor_version=~\"$version\",model_image=~\"$model_image\",model_version=~\"$model_version\",model_name=~\"$model_name\"}[1m])\/rate(seldon_api_model_feedback_total{deployment_name=~\"$deployment\",predictor_name=~\"$predictor\",predictor_version=~\"$version\",model_image=~\"$model_image\",model_version=~\"$model_version\",model_name=~\"$model_name\"}[1m])"
+          }
+        ],
+        "steppedLine": false,
+        "stack": false,
+        "spaceLength": 10,
+        "seriesOverrides": [],
+        "scopedVars": {
+          "model_image": {
+            "value": "tensorflow\/serving",
+            "text": "tensorflow\/serving",
+            "selected": false
+          }
+        },
+        "renderer": "flot",
+        "points": false,
+        "pointradius": 5,
+        "percentage": false,
+        "nullPointMode": "null",
+        "links": [],
+        "linewidth": 1,
+        "lines": true,
+        "legend": {
+          "values": false,
+          "total": false,
+          "show": true,
+          "rightSide": false,
+          "min": false,
+          "max": false,
+          "current": false,
+          "avg": false,
+          "alignAsTable": true
+        },
+        "id": 28,
+        "gridPos": {
+          "y": 17,
+          "x": 8,
+          "w": 8,
+          "h": 9
+        },
+        "fill": 1,
+        "datasource": "prometheus",
+        "dashes": false,
+        "dashLength": 10,
+        "bars": false,
+        "aliasColors": {}
+      },
+      {
+        "yaxis": {
+          "alignLevel": null,
+          "align": false
+        },
+        "yaxes": [
+          {
+            "show": true,
+            "min": "0",
+            "max": null,
+            "logBase": 1,
+            "label": null,
+            "format": "short"
+          },
+          {
+            "show": true,
+            "min": null,
+            "max": null,
+            "logBase": 1,
+            "label": null,
+            "format": "short"
+          }
+        ],
+        "xaxis": {
+          "values": [],
+          "show": true,
+          "name": null,
+          "mode": "time",
+          "buckets": null
+        },
+        "type": "graph",
+        "tooltip": {
+          "value_type": "individual",
+          "sort": 0,
+          "shared": false
+        },
+        "title": "$model_image Latency",
+        "timeShift": null,
+        "timeRegions": [],
+        "timeFrom": null,
+        "thresholds": [],
+        "targets": [
+          {
+            "step": 2,
+            "refId": "E",
+            "metric": "",
+            "legendFormat": "{{predictor_name}}:{{predictor_version}} {{model_name}} {{model_image}}: {{model_version}} (p50)",
+            "intervalFactor": 2,
+            "hide": false,
+            "format": "time_series",
+            "expr": "histogram_quantile(0.5, sum(rate(seldon_api_executor_client_requests_seconds_bucket{service=~\"\/Predict\", model_image=~\"$model_image\",predictor_name=~\"$predictor\",predictor_version=~\"$version\",model_name=~\"$model_name\",model_version=~\"$model_version\"}[20s])) by (predictor_name,predictor_version,model_name,model_image,model_version,le))"
+          },
+          {
+            "step": 2,
+            "refId": "B",
+            "metric": "",
+            "legendFormat": "{{predictor_name}}:{{predictor_version}} {{model_name}} {{model_image}}:{{model_version}} {{service}} (p75)",
+            "intervalFactor": 2,
+            "hide": false,
+            "format": "time_series",
+            "expr": "histogram_quantile(0.75, sum(rate(seldon_api_executor_client_requests_seconds_bucket{service=~\".*[Pp]redict\",model_image=~\"$model_image\",predictor_name=~\"$predictor\",predictor_version=~\"$version\",model_name=~\"$model_name\",model_version=~\"$model_version\"}[20s])) by (predictor_name,predictor_version,model_name,model_image,model_version,service,le))"
+          },
+          {
+            "step": 2,
+            "refId": "A",
+            "metric": "",
+            "legendFormat": "{{predictor_name}}:{{predictor_version}} {{model_name}} {{model_image}}:{{model_version}}  {{service}} (p90)",
+            "intervalFactor": 2,
+            "hide": false,
+            "format": "time_series",
+            "expr": "histogram_quantile(0.9, sum(rate(seldon_api_executor_client_requests_seconds_bucket{service=~\".*[Pp]redict\",model_image=~\"$model_image\",predictor_name=~\"$predictor\",predictor_version=~\"$version\",model_name=~\"$model_name\",model_version=~\"$model_version\"}[20s])) by (predictor_name,predictor_version,model_name,model_image,model_version, service,le))"
+          },
+          {
+            "step": 2,
+            "refId": "C",
+            "metric": "",
+            "legendFormat": "{{predictor_name}}:{{predictor_version}} {{model_name}} {{model_image}}:{{model_version}} {{service}} (p95)",
+            "intervalFactor": 2,
+            "hide": false,
+            "format": "time_series",
+            "expr": "histogram_quantile(0.95, sum(rate(seldon_api_executor_client_requests_seconds_bucket{service=~\".*[Pp]redict\",model_image=~\"$model_image\",predictor_name=~\"$predictor\",predictor_version=~\"$version\",model_name=~\"$model_name\",model_version=~\"$model_version\"}[20s])) by (predictor_name,predictor_version,model_name,model_image,model_version,service,le))"
+          },
+          {
+            "step": 2,
+            "refId": "D",
+            "metric": "",
+            "legendFormat": "{{predictor_name}}:{{predictor_version}} {{model_name}} {{model_image}}:{{model_version}} {{service}} (p99)",
+            "intervalFactor": 2,
+            "hide": false,
+            "format": "time_series",
+            "expr": "histogram_quantile(0.99, sum(rate(seldon_api_executor_client_requests_seconds_bucket{service=~\".*[Pp]redict\",model_image=~\"$model_image\",predictor_name=~\"$predictor\",predictor_version=~\"$version\",model_name=~\"$model_name\",model_version=~\"$model_version\"}[20s])) by (predictor_name,predictor_version,model_name,model_image,model_version,service,le))"
+          }
+        ],
+        "steppedLine": false,
+        "stack": false,
+        "spaceLength": 10,
+        "seriesOverrides": [],
+        "scopedVars": {
+          "model_image": {
+            "value": "tensorflow\/serving",
+            "text": "tensorflow\/serving",
+            "selected": false
+          }
+        },
+        "renderer": "flot",
+        "points": false,
+        "pointradius": 5,
+        "percentage": false,
+        "nullPointMode": "null",
+        "links": [],
+        "linewidth": 1,
+        "lines": true,
+        "legend": {
+          "values": false,
+          "total": false,
+          "show": true,
+          "min": false,
+          "max": false,
+          "current": false,
+          "avg": false,
+          "alignAsTable": true
+        },
+        "id": 11,
+        "gridPos": {
+          "y": 17,
+          "x": 16,
+          "w": 8,
+          "h": 9
+        },
+        "fill": 1,
+        "datasource": "prometheus",
+        "dashes": false,
+        "dashLength": 10,
+        "bars": false,
+        "aliasColors": {}
+      }
+    ],
+    "links": [],
+    "iteration": 1579017830257,
+    "graphTooltip": 0,
+    "gnetId": null,
+    "editable": true,
+    "annotations": {
+      "list": [
+        {
+          "type": "dashboard",
+          "name": "Annotations & Alerts",
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "hide": true,
+          "enable": true,
+          "datasource": "-- Grafana --",
+          "builtIn": 1
+        }
+      ]
+    }
+  },
+  "meta": {
+    "provisioned": false,
+    "folderUrl": "",
+    "folderTitle": "General",
+    "folderId": 0,
+    "isFolder": false,
+    "hasAcl": false,
+    "version": 3,
+    "createdBy": "admin",
+    "updatedBy": "admin",
+    "updated": "2020-01-14T16:04:25Z",
+    "created": "2020-01-14T15:59:02Z",
+    "expires": "0001-01-01T00:00:00Z",
+    "url": "\/d\/TcosMYEWz\/prediction-analytics",
+    "slug": "prediction-analytics",
+    "canStar": true,
+    "canAdmin": true,
+    "canEdit": true,
+    "canSave": true,
+    "type": "db"
+  }
+}

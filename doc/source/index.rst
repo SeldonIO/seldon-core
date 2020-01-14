@@ -49,7 +49,7 @@ Seldon Core is an open source platform for deploying machine learning models on 
    
 .. toctree::
    :maxdepth: 1
-   :caption: Wrappers
+   :caption: Language Wrappers
 
    Python Models <python/index>   	     
    Java Models <java/README.md>
@@ -70,13 +70,13 @@ Seldon Core is an open source platform for deploying machine learning models on 
 
    Protocols <graph/protocols.md>	     
    Tracing <graph/distributed-tracing.md>
-   Analytics <analytics/analytics.md>
+   Metrics <analytics/analytics.md>
    Payload Logging <analytics/logging.md>
    Autoscaling <graph/autoscaling.md>
       
 .. toctree::
    :maxdepth: 1
-   :caption: ML Compliance and Governance
+   :caption: Advanced Inference
 
    Model Explanations <analytics/explainers.md>
    Outlier Detection <analytics/outlier_detection.md>
