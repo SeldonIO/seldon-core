@@ -51,8 +51,8 @@ kubectl logs -f -n seldon-system $(kubectl get pods -n seldon-system -l app=seld
 
 Each test should run on its own separate Kubernetes namespace.
 This allows for a cleaner environment as well as enables some of them
-to get parallelised (see [Serial and parallel
-tests](#Serial-and-parallel-tests)).
+to get parallelised (see [Sequential and parallel
+tests](#Sequential-and-parallel-tests)).
 
 To make the creation and deletion of the namespace easier, you can
 use the `namespace` fixture.
@@ -68,7 +68,7 @@ def test_foo(..., namespace, ...):
   print(f"the new namespace's name is {namespace}")
 ```
 
-### Serial and parallel tests
+### Sequential and parallel tests
 
 We leverage `pytest-xdist` to speed up the test suite by
 parallelising the test execution.
@@ -78,17 +78,17 @@ For example, the operator update tests change the cluster-wide Seldon
 operator which could affect the other tests running in parallel.
 
 To differentiate between parallelisable tests and tests which are
-required to be run serially you can use the `serial` mark.
+required to be run sequentially you can use the `sequential` mark.
 Marks in `pytest` allow to [select subsets of
 tests](http://doc.pytest.org/en/latest/example/markers.html).
 
-To mark a test to run serially, you can do:
+To mark a test to run sequentially, you can do:
 
 ```python
-@pytest.mark.serial
+@pytest.mark.sequential
 def test_foo(...):
-  print("the scripts will run this test serially")
+  print("the scripts will run this test sequentially")
 ```
 
 The integration test scripts will make sure that tests marked as
-`serial` get run with a single worker.
+`sequential` get run with a single worker.

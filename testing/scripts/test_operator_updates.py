@@ -20,7 +20,7 @@ def assert_model(sdep_name, namespace, initial=False):
     retry_run(f"kubectl get -n {namespace} sdep {sdep_name}")
 
 
-@pytest.mark.serial
+@pytest.mark.sequential
 @pytest.mark.parametrize("from_version", ["0.4.1", "0.5.1", "1.0.0"])
 def test_cluster_update(namespace, from_version):
     retry_run("helm delete seldon -n seldon-system")

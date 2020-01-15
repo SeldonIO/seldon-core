@@ -78,14 +78,14 @@ test: build_protos install
 		-s \
 		-W ignore \
 		-n $(PYTEST_WORKERS) \
-		-m "not serial" 2>&1
+		-m "not sequential" 2>&1
 	# Then run the s2i tests in sequence (as they currently fail in parallel
 	pytest \
 		--verbose \
 		-s \
 		-W ignore \
 		-n 0 \
-		-m "serial" 2>&1
+		-m "sequential" 2>&1
 
 .PHONY: clean
 clean:
