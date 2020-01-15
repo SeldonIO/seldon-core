@@ -9,17 +9,13 @@ The Helm chart parameters for Prometheus and Grafana can be found and edited in 
 An example install is shown below:
 
 ```
-kubectl create namespace seldon
-```
-
-```
-helm install seldon-core-analytics . -n seldon
+helm install seldon-core-analytics . -n seldon-system
 ```
 
 To access the Grafana dashboard port-forward to the Grafana pod:
 
 ```
-kubectl port-forward $(kubectl get pods -l app=grafana -n seldon -o jsonpath='{.items[0].metadata.name}') -n seldon 3000:3000
+kubectl port-forward $(kubectl get pods -l app=grafana -n seldon-system -o jsonpath='{.items[0].metadata.name}') -n seldon-system 3000:3000
 ```
 
 You can then open http://localhost:3000 to log into Grafana using your set password from values.yaml.
