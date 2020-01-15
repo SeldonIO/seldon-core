@@ -16,7 +16,7 @@ For running locally `kind`, `kustomize` and `kubebuilder` should be installed.
 If you installed kubebuilder outside of `/usr/local/kubebuilder` then you will need to set the env var `KUBEBUILDER_ASSETS` for example:
 
 ```
-export KUBEBUILDER_ASSETS=/home/clive/tools/kubebuilder_2.0.0_linux_amd64/bin
+export KUBEBUILDER_ASSETS=/home/clive/tools/kubebuilder_2.2.0_linux_amd64/bin
 ```
 
 
@@ -80,3 +80,4 @@ You should delete the Operator running in the cluster at this point.
 # Build Helm Chart
 
 Use the Makefile in the `./helm` directory. Ensure you have `pyyaml` in your python environment.
+

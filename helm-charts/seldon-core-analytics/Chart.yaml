@@ -9,4 +9,4 @@ keywords:
 name: seldon-core-analytics
 sources:
 - https://github.com/SeldonIO/seldon-core
-version: 1.0.0
+version: 1.0.1

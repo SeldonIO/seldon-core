@@ -31,8 +31,8 @@ run: generate fmt vet manifests
 
 install-cert-manager:
 	kubectl create namespace cert-manager || echo "Namespace cert-manager-exists"
-	kubectl label namespace cert-manager certmanager.k8s.io/disable-validation=true || echo "namespace cert-manager-already labelled"
-	kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.9.1/cert-manager.yaml
+	kubectl label namespace cert-manager cert-manager.io/disable-validation=true || echo "namespace cert-manager-already labelled"
+	kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml
 	kubectl rollout status deployment.apps/cert-manager -n cert-manager
 	kubectl rollout status deployment.apps/cert-manager-cainjector -n cert-manager
 	kubectl rollout status deployment.apps/cert-manager-webhook -n cert-manager
@@ -124,7 +124,14 @@ kind-image-install: docker-build
 # download controller-gen if necessary
 controller-gen:
 ifeq (, $(shell which controller-gen))
-	go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.2.0
+	@{ \
+	set -e ;\
+	CONTROLLER_GEN_TMP_DIR=$$(mktemp -d) ;\
+	cd $$CONTROLLER_GEN_TMP_DIR ;\
+	go mod init tmp ;\
+	go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.2.4 ;\
+	rm -rf $$CONTROLLER_GEN_TMP_DIR ;\
+	}
 CONTROLLER_GEN=$(GOBIN)/controller-gen
 else
 CONTROLLER_GEN=$(shell which controller-gen)

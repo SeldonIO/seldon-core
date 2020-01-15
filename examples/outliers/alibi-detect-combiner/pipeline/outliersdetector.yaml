@@ -1,0 +1,25 @@
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+metadata:
+  labels:
+    app: seldon
+  name: outliersdetector
+spec:
+  name: outliersdetector
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: outliersdetector:0.1
+          name: outliersdetector
+          env:
+          - name: SELDON_LOG_LEVEL
+            value: DEBUG
+    graph:
+      children: []
+      name: outliersdetector
+      type: MODEL
+      endpoint:
+        type: REST
+    name: outliersdetector
+    replicas: 1

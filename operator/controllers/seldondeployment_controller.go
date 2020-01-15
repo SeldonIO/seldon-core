@@ -593,7 +593,7 @@ func createPredictorService(pSvcName string, seldonId string, p *machinelearning
 // service for hitting a model directly, not via engine - not exposed externally, also adds probes
 func createContainerService(deploy *appsv1.Deployment, p machinelearningv1.PredictorSpec, mlDep *machinelearningv1.SeldonDeployment, con *corev1.Container, c components) *corev1.Service {
 	containerServiceKey := machinelearningv1.GetPredictorServiceNameKey(con)
-	containerServiceValue := machinelearningv1.GetContainerServiceName(mlDep, p, con)
+	containerServiceValue := machinelearningv1.GetContainerServiceName(&mlDep.Spec, p, con)
 	pu := machinelearningv1.GetPredictiveUnit(p.Graph, con.Name)
 
 	// only create services for containers defined as pus in the graph
@@ -1107,6 +1107,10 @@ func createDeployments(r *SeldonDeploymentReconciler, components *components, in
 
 				desiredDeployment := found.DeepCopy()
 				found.Spec = deploy.Spec
+
+				if deploy.Spec.Replicas == nil {
+					found.Spec.Replicas = desiredDeployment.Spec.Replicas
+				}
 
 				err = r.Update(context.TODO(), found)
 				if err != nil {

@@ -19,7 +19,7 @@ HELM_RBAC_CSS_IF_START = '{{- if .Values.rbac.configmap.create }}\n'
 HELM_SA_IF_START = '{{- if .Values.serviceAccount.create -}}\n'
 HELM_CERTMANAGER_IF_START = '{{- if .Values.certManager.enabled -}}\n'
 HELM_NOT_CERTMANAGER_IF_START = '{{- if not .Values.certManager.enabled -}}\n'
-HELM_VERSION_IF_START= '{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}\n'
+HELM_VERSION_IF_START= '{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}\n'
 #HELM_SECRET_IF_START = '{{- if .Values.webhook.secretProvided -}}\n'
 HELM_IF_END = '{{- end }}\n'
 
@@ -44,6 +44,9 @@ HELM_VALUES_IMAGE_PULL_POLICY = '{{ .Values.image.pullPolicy }}'
 
 def helm_value(value: str):
     return '{{ .Values.' + value + ' }}'
+
+def helm_value_json(value: str):
+    return '{{ .Values.' + value + ' | toJson }}'
 
 def helm_release(value: str):
     return '{{ .Release.' + value + ' }}'
@@ -102,6 +105,11 @@ if __name__ == "__main__":
                 res["spec"]["template"]["spec"]["containers"][0]["args"].append("{{- if .Values.singleNamespace }}--namespace={{ .Release.Namespace }}{{- end }}")
 
 
+            if kind == "configmap" and name == "seldon-config":
+                res["data"]["credentials"] = helm_value_json("credentials")
+                res["data"]["predictor_servers"] = helm_value_json("predictor_servers")
+                res["data"]["storageInitializer"] = helm_value_json("storageInitializer")
+
             if kind == "serviceaccount" and name == "seldon-manager":
                 res["metadata"]["name"] = helm_value("serviceAccount.name")
 
@@ -140,20 +148,21 @@ if __name__ == "__main__":
                 res["webhooks"][1]["clientConfig"]["service"]["namespace"] = helm_release("Namespace")
                 res["webhooks"][2]["clientConfig"]["caBundle"] = "{{ $ca.Cert | b64enc }}"
                 res["webhooks"][2]["clientConfig"]["service"]["namespace"] = helm_release("Namespace")
-                if "certmanager.k8s.io/inject-ca-from" in res["metadata"]["annotations"]:
-                    res["metadata"]["annotations"]["certmanager.k8s.io/inject-ca-from"] = helm_release("Namespace") + "/seldon-serving-cert"
+                if "cert-manager.io/inject-ca-from" in res["metadata"]["annotations"]:
+                    res["metadata"]["annotations"]["cert-manager.io/inject-ca-from"] = helm_release("Namespace") + "/seldon-serving-cert"
 
 
             if kind == "certificate":
                 res["spec"]["commonName"] = '{{- printf "seldon-webhook-service.%s.svc" .Release.Namespace -}}'
                 res["spec"]["dnsNames"][0] = '{{- printf "seldon-webhook-service.%s.svc.cluster.local" .Release.Namespace -}}'
+                res["spec"]["dnsNames"][1] = '{{- printf "seldon-webhook-service.%s.svc" .Release.Namespace -}}'
 
             if kind == "customresourcedefinition"and name == "seldondeployments.machinelearning.seldon.io":
                 # Will only work for cert-manager at present as caBundle would need to be generated in same file as secrets above
                 if "conversion" in res["spec"]:
                     res["spec"]["conversion"]["webhookClientConfig"]["caBundle"] = "=="
-                if "certmanager.k8s.io/inject-ca-from" in res["metadata"]["annotations"]:
-                    res["metadata"]["annotations"]["certmanager.k8s.io/inject-ca-from"] = helm_release("Namespace") + "/seldon-serving-cert"
+                if "cert-manager.io/inject-ca-from" in res["metadata"]["annotations"]:
+                    res["metadata"]["annotations"]["cert-manager.io/inject-ca-from"] = helm_release("Namespace") + "/seldon-serving-cert"
 
             # Update webhook service port
             if kind == "service" and name == "seldon-webhook-service":

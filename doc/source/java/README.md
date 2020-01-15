@@ -26,7 +26,7 @@ To use our s2i builder image to package your Java model you will need:
 
  * A Maven project that depends on ```io.seldon.wrapper``` library
  * A Spring Boot configuration class
- * A class that implements ```io.seldon.wrapper.SeldonPredictionService``` for the type of component you are creating
+ * A class that implements ```io.seldon.wrapper.api.SeldonPredictionService``` for the type of component you are creating
  * .s2i/environment - model definitions used by the s2i builder to correctly wrap your model
 
 We will go into detail for each of these steps:
@@ -65,7 +65,7 @@ public class App {
 ```
 
 ### Prediction Class
-To handle requests to your model or other component you need to implement one or more of the methods in ```io.seldon.wrapper.SeldonPredictionService```, in particular:
+To handle requests to your model or other component you need to implement one or more of the methods in ```io.seldon.wrapper.api.SeldonPredictionService```, in particular:
 
 ```java
 default public SeldonMessage predict(SeldonMessage request);
@@ -208,9 +208,3 @@ The service type being created. Available options are:
 
  * [A minimal skeleton for model source code](https://github.com/seldonio/seldon-core/tree/incubating/wrappers/s2i/java/test/model-template-app)
  * [Example H2O MOJO](../examples/h2o_mojo.html)
-
-
-
-
-
-

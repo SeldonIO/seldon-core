@@ -179,7 +179,7 @@ func getUpdatePortNumMap(name string, nextPortNum *int32, portMap map[string]int
 	return portMap[name]
 }
 
-func (r *SeldonDeployment) DefaultSeldonDeployment() {
+func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(namespace string) {
 
 	var firstPuPortNum int32 = 9000
 	if env_preditive_unit_service_port, ok := os.LookupEnv("PREDICTIVE_UNIT_SERVICE_PORT"); ok {
@@ -194,12 +194,8 @@ func (r *SeldonDeployment) DefaultSeldonDeployment() {
 
 	portMap := map[string]int32{}
 
-	if r.ObjectMeta.Namespace == "" {
-		r.ObjectMeta.Namespace = "default"
-	}
-
-	for i := 0; i < len(r.Spec.Predictors); i++ {
-		p := r.Spec.Predictors[i]
+	for i := 0; i < len(r.Predictors); i++ {
+		p := r.Predictors[i]
 		if p.Graph.Type == nil {
 			ty := UNKNOWN_TYPE
 			p.Graph.Type = &ty
@@ -213,10 +209,10 @@ func (r *SeldonDeployment) DefaultSeldonDeployment() {
 		}
 		addDefaultsToGraph(p.Graph)
 
-		r.Spec.Predictors[i] = p
+		r.Predictors[i] = p
 
 		for j := 0; j < len(p.ComponentSpecs); j++ {
-			cSpec := r.Spec.Predictors[i].ComponentSpecs[j]
+			cSpec := r.Predictors[i].ComponentSpecs[j]
 
 			// add service details for each container - looping this way as if containers in same pod and its the engine pod both need to be localhost
 			for k := 0; k < len(cSpec.Spec.Containers); k++ {
@@ -262,11 +258,11 @@ func (r *SeldonDeployment) DefaultSeldonDeployment() {
 
 					// Set ports and hostname in predictive unit so engine can read it from SDep
 					// if this is the first componentSpec then it's the one to put the engine in - note using outer loop counter here
-					if _, hasSeparateEnginePod := r.Spec.Annotations[ANNOTATION_SEPARATE_ENGINE]; j == 0 && !hasSeparateEnginePod {
+					if _, hasSeparateEnginePod := r.Annotations[ANNOTATION_SEPARATE_ENGINE]; j == 0 && !hasSeparateEnginePod {
 						pu.Endpoint.ServiceHost = "localhost"
 					} else {
 						containerServiceValue := GetContainerServiceName(r, p, con)
-						pu.Endpoint.ServiceHost = containerServiceValue + "." + r.ObjectMeta.Namespace + ".svc.cluster.local."
+						pu.Endpoint.ServiceHost = containerServiceValue + "." + namespace + ".svc.cluster.local."
 					}
 					pu.Endpoint.ServicePort = portNum
 				}
@@ -325,7 +321,7 @@ func (r *SeldonDeployment) DefaultSeldonDeployment() {
 						p.ComponentSpecs = []*SeldonPodSpec{&podSpec}
 
 						// p is a copy so update the entry
-						r.Spec.Predictors[i] = p
+						r.Predictors[i] = p
 					}
 				}
 
@@ -354,11 +350,11 @@ func (r *SeldonDeployment) DefaultSeldonDeployment() {
 				// Set ports and hostname in predictive unit so engine can read it from SDep
 				// if this is the firstPuPortNum then we've not added engine yet so put the engine in here
 				if pu.Endpoint.ServiceHost == "" {
-					if _, hasSeparateEnginePod := r.Spec.Annotations[ANNOTATION_SEPARATE_ENGINE]; !hasSeparateEnginePod {
+					if _, hasSeparateEnginePod := r.Annotations[ANNOTATION_SEPARATE_ENGINE]; !hasSeparateEnginePod {
 						pu.Endpoint.ServiceHost = "localhost"
 					} else {
 						containerServiceValue := GetContainerServiceName(r, p, con)
-						pu.Endpoint.ServiceHost = containerServiceValue + "." + r.ObjectMeta.Namespace + ".svc.cluster.local."
+						pu.Endpoint.ServiceHost = containerServiceValue + "." + namespace + ".svc.cluster.local."
 					}
 				}
 				if pu.Endpoint.ServicePort == 0 {
@@ -417,22 +413,22 @@ func checkPredictiveUnits(pu *PredictiveUnit, p *PredictorSpec, fldPath *field.P
 	return allErrs
 }
 
-func checkTraffic(mlDep *SeldonDeployment, fldPath *field.Path, allErrs field.ErrorList) field.ErrorList {
+func checkTraffic(spec *SeldonDeploymentSpec, fldPath *field.Path, allErrs field.ErrorList) field.ErrorList {
 	var trafficSum int32 = 0
 	var shadows int = 0
-	for i := 0; i < len(mlDep.Spec.Predictors); i++ {
-		p := mlDep.Spec.Predictors[i]
+	for i := 0; i < len(spec.Predictors); i++ {
+		p := spec.Predictors[i]
 		trafficSum = trafficSum + p.Traffic
 
 		if p.Shadow == true {
 			shadows += 1
 		}
 	}
-	if trafficSum != 100 && (len(mlDep.Spec.Predictors)-shadows) > 1 {
-		allErrs = append(allErrs, field.Invalid(fldPath, mlDep.Name, "Traffic must sum to 100 for multiple predictors"))
+	if trafficSum != 100 && (len(spec.Predictors)-shadows) > 1 {
+		allErrs = append(allErrs, field.Invalid(fldPath, spec.Name, "Traffic must sum to 100 for multiple predictors"))
 	}
-	if trafficSum > 0 && trafficSum < 100 && len(mlDep.Spec.Predictors) == 1 {
-		allErrs = append(allErrs, field.Invalid(fldPath, mlDep.Name, "Traffic must sum be 100 for a single predictor when set"))
+	if trafficSum > 0 && trafficSum < 100 && len(spec.Predictors) == 1 {
+		allErrs = append(allErrs, field.Invalid(fldPath, spec.Name, "Traffic must sum be 100 for a single predictor when set"))
 	}
 
 	return allErrs
@@ -446,11 +442,11 @@ func sizeOfGraph(p *PredictiveUnit) int {
 	return count + 1
 }
 
-func (r *SeldonDeployment) validateSeldonDeployment() error {
+func (r *SeldonDeploymentSpec) ValidateSeldonDeployment() error {
 	var allErrs field.ErrorList
 
 	predictorNames := make(map[string]bool)
-	for i, p := range r.Spec.Predictors {
+	for i, p := range r.Predictors {
 
 		_, noEngine := p.Annotations[ANNOTATION_NO_ENGINE]
 		if noEngine && sizeOfGraph(p.Graph) > 1 {
@@ -486,9 +482,12 @@ func (r *SeldonDeployment) validateSeldonDeployment() error {
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *SeldonDeployment) Default() {
-	seldondeploymentlog.Info("Defaulting web hook called", "name", r.Name)
+	seldondeploymentlog.Info("Defaulting v1 web hook called", "name", r.Name)
 
-	r.DefaultSeldonDeployment()
+	if r.ObjectMeta.Namespace == "" {
+		r.ObjectMeta.Namespace = "default"
+	}
+	r.Spec.DefaultSeldonDeployment(r.ObjectMeta.Namespace)
 }
 
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
@@ -498,21 +497,21 @@ var _ webhook.Validator = &SeldonDeployment{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *SeldonDeployment) ValidateCreate() error {
-	seldondeploymentlog.Info("Validating Webhook called for CREATE", "name", r.Name)
+	seldondeploymentlog.Info("Validating v1 Webhook called for CREATE", "name", r.Name)
 
-	return r.validateSeldonDeployment()
+	return r.Spec.ValidateSeldonDeployment()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *SeldonDeployment) ValidateUpdate(old runtime.Object) error {
-	seldondeploymentlog.Info("Validating webhook called for UPDATE", "name", r.Name)
+	seldondeploymentlog.Info("Validating v1 webhook called for UPDATE", "name", r.Name)
 
-	return r.validateSeldonDeployment()
+	return r.Spec.ValidateSeldonDeployment()
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *SeldonDeployment) ValidateDelete() error {
-	seldondeploymentlog.Info("Validating webhook called for DELETE", "name", r.Name)
+	seldondeploymentlog.Info("Validating v1 webhook called for DELETE", "name", r.Name)
 
 	// TODO(user): fill in your validation logic upon object deletion.
 	return nil
