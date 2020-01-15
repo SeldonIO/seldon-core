@@ -12,6 +12,12 @@ If you just want to bootstrap a full logging and request tracking setup for mini
 
 ## Setup
 
+Start Minikube with flags as shown:
+
+```
+minikube start --cpus 6 --memory 10240 --disk-size=30g --kubernetes-version='1.15.0'
+```
+
 Install elasticsearch with minikube configuration:
 
 ```
