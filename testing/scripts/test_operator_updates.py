@@ -29,8 +29,8 @@ def test_cluster_update(namespace, from_version):
         "seldonio/seldon-core-operator "
         "--namespace seldon-system "
         f"--version {from_version} "
+        "--wait"
     )
-    # TODO: Need to wait for CRD, webhooks and operator to get deployed
 
     retry_run(f"kubectl apply -f ../resources/graph1.json -n {namespace}")
     wait_for_status("mymodel", namespace)
@@ -38,16 +38,17 @@ def test_cluster_update(namespace, from_version):
     assert_model("mymodel", namespace, initial=True)
 
     # The upgrade should leave the cluster as it was before the test
-    # TODO: There is currently a bug updating from 0.4.1 using Helm 3.0.2 This
-    # will be fixed once https://github.com/helm/helm/pull/7269 is released in
-    # Helm 3.0.3.
+    # TODO: There is currently a bug updating from 0.4.1 using Helm 3.0.2.
+    # This will be fixed once https://github.com/helm/helm/pull/7269 is
+    # released in Helm 3.0.3.
     retry_run(
         "helm upgrade seldon "
         "../../helm-charts/seldon-core-operator "
         "--namespace seldon-system "
         "--set istio.enabled=true "
         "--set istio.gateway=seldon-gateway "
-        "--set certManager.enabled=false"
+        "--set certManager.enabled=false "
+        "--wait"
     )
 
     assert_model("mymodel", namespace, initial=True)
