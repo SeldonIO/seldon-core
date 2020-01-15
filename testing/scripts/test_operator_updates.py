@@ -21,18 +21,10 @@ def assert_model(sdep_name, namespace, initial=False):
 
 
 @pytest.mark.sequential
-@pytest.mark.parametrize("from_version", ["0.4.1", "0.5.1", "1.0.0", "1.0.1"])
-def test_cluster_update(namespace, from_version):
-    # Install past version cluster-wide
-    retry_run("helm delete seldon -n seldon-system")
-    retry_run(
-        "helm install seldon "
-        "seldonio/seldon-core-operator "
-        "--namespace seldon-system "
-        f"--version {from_version} "
-        "--wait"
-    )
-
+@pytest.mark.parametrize(
+    "seldon_version", ["0.4.1", "0.5.1", "1.0.0", "1.0.1"], indirect=True
+)
+def test_cluster_update(namespace, seldon_version):
     # Deploy test model
     retry_run(f"kubectl apply -f ../resources/graph1.json -n {namespace}")
     wait_for_status("mymodel", namespace)
@@ -49,9 +41,6 @@ def test_cluster_update(namespace, from_version):
         "helm upgrade seldon "
         "../../helm-charts/seldon-core-operator "
         "--namespace seldon-system "
-        "--set istio.enabled=true "
-        "--set istio.gateway=seldon-gateway "
-        "--set certManager.enabled=false "
         "--wait",
         attempts=2,
     )
@@ -60,18 +49,8 @@ def test_cluster_update(namespace, from_version):
 
 
 @pytest.mark.sequential
-@pytest.mark.parametrize("from_version", ["1.0.0", "1.0.1"])
-def test_namespace_update(namespace, from_version):
-    # Install past version cluster-wide
-    retry_run("helm delete seldon -n seldon-system")
-    retry_run(
-        "helm install seldon "
-        "seldonio/seldon-core-operator "
-        "--namespace seldon-system "
-        f"--version {from_version} "
-        "--wait"
-    )
-
+@pytest.mark.parametrize("seldon_version", ["1.0.0", "1.0.1"], indirect=True)
+def test_namespace_update(namespace, seldon_version):
     # Deploy test model
     retry_run(f"kubectl apply -f ../resources/graph1.json -n {namespace}")
     wait_for_status("mymodel", namespace)
@@ -88,9 +67,6 @@ def test_namespace_update(namespace, from_version):
         "helm install seldon "
         "../../helm-charts/seldon-core-operator "
         f"--namespace {namespace} "
-        "--set istio.enabled=true "
-        "--set istio.gateway=seldon-gateway "
-        "--set certManager.enabled=false "
         "--set crd.create=false "
         "--set singleNamespace=true "
         "--wait",
@@ -102,17 +78,35 @@ def test_namespace_update(namespace, from_version):
     wait_for_rollout("mymodel", namespace)
     assert_model("mymodel", namespace, initial=True)
 
-    # Delete all resources (webhooks, etc.) before deleting namespace
-    retry_run(f"helm delete seldon --namespace {namespace}")
 
-    # Re-install source code version cluster-wide
+@pytest.mark.sequential
+@pytest.mark.parametrize("seldon_version", ["1.0.0", "1.0.1"], indirect=True)
+def test_label_update(namespace, seldon_version):
+    # Deploy test model
+    retry_run(f"kubectl apply -f ../resources/graph1.json -n {namespace}")
+    wait_for_status("mymodel", namespace)
+    wait_for_rollout("mymodel", namespace)
+    assert_model("mymodel", namespace, initial=True)
+
+    # Install id-scoped operator
+    controller_id = f"seldon-{namespace}"
     retry_run(
-        "helm upgrade seldon "
+        f"helm install {controller_id} "
         "../../helm-charts/seldon-core-operator "
         "--namespace seldon-system "
-        "--set istio.enabled=true "
-        "--set istio.gateway=seldon-gateway "
-        "--set certManager.enabled=false "
+        "--set crd.create=false "
+        f"--set controllerId={controller_id} "
         "--wait",
         attempts=2,
     )
+
+    # Label model to be served by new controller
+    retry_run(f"kubectl label sdep mymodel seldon.io/controller-id={controller_id}")
+
+    # Assert that model is still working under new id-scoped operator
+    wait_for_status("mymodel", namespace)
+    wait_for_rollout("mymodel", namespace)
+    assert_model("mymodel", namespace, initial=True)
+
+    # Delete all resources (webhooks, etc.) before deleting namespace
+    retry_run(f"helm delete seldon --namespace {namespace}")
