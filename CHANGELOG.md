@@ -1,5 +1,55 @@
 # Changelog
 
+## [v1.0.1](https://github.com/seldonio/seldon-core/tree/v1.0.1) (2020-01-15)
+
+[Full Changelog](https://github.com/seldonio/seldon-core/compare/v1.0.0...v1.0.1)
+
+**Fixed bugs:**
+
+- operator CI build fails [\#1330](https://github.com/SeldonIO/seldon-core/issues/1330)
+- Remove log4j from H2O example [\#1318](https://github.com/SeldonIO/seldon-core/issues/1318)
+- cert-manager version [\#1262](https://github.com/SeldonIO/seldon-core/issues/1262)
+
+**Closed issues:**
+
+- Old pods not removed after rolling update [\#1325](https://github.com/SeldonIO/seldon-core/issues/1325)
+- seldonio/seldon-core-s2i-python3-tf-gpu:0.15 image default python version is 2.7.17 [\#1324](https://github.com/SeldonIO/seldon-core/issues/1324)
+- send\_feedback\(\) got an unexpected keyword argument 'routing' [\#1321](https://github.com/SeldonIO/seldon-core/issues/1321)
+- Helm 2 install fails for v1.0 [\#1299](https://github.com/SeldonIO/seldon-core/issues/1299)
+- Clean up API types and Webhooks [\#1294](https://github.com/SeldonIO/seldon-core/issues/1294)
+- Include seldon proto compilation in GO [\#1245](https://github.com/SeldonIO/seldon-core/issues/1245)
+- helm upgrade when the operator configmap has changed? [\#1135](https://github.com/SeldonIO/seldon-core/issues/1135)
+- End-to-end tests for Pre-packaged model servers hang if name doesn't match exactly [\#820](https://github.com/SeldonIO/seldon-core/issues/820)
+- S2I builder images should have pinned Python dependencies [\#340](https://github.com/SeldonIO/seldon-core/issues/340)
+
+**Merged pull requests:**
+
+- make gpu image Python 3 exclusive, closes \#1324 [\#1336](https://github.com/SeldonIO/seldon-core/pull/1336) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- fix operator build - controller-gen install for go modules [\#1335](https://github.com/SeldonIO/seldon-core/pull/1335) ([gsunner](https://github.com/gsunner))
+- Create and use seldonio/core-builder:0.10 [\#1334](https://github.com/SeldonIO/seldon-core/pull/1334) ([gsunner](https://github.com/gsunner))
+- typo fix: missing api in io.seldon.wrapper.api.SeldonPredictionService [\#1332](https://github.com/SeldonIO/seldon-core/pull/1332) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- operator build test [\#1329](https://github.com/SeldonIO/seldon-core/pull/1329) ([gsunner](https://github.com/gsunner))
+- Bump okhttp from 4.3.0 to 4.3.1 in /engine [\#1328](https://github.com/SeldonIO/seldon-core/pull/1328) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
+- Exception stack trace should be logged [\#1326](https://github.com/SeldonIO/seldon-core/pull/1326) ([lennon310](https://github.com/lennon310))
+- updatekindversion [\#1323](https://github.com/SeldonIO/seldon-core/pull/1323) ([ryandawsonuk](https://github.com/ryandawsonuk))
+- Remove log4j [\#1319](https://github.com/SeldonIO/seldon-core/pull/1319) ([adriangonz](https://github.com/adriangonz))
+- set deployment replicas [\#1316](https://github.com/SeldonIO/seldon-core/pull/1316) ([andrewshaoyu](https://github.com/andrewshaoyu))
+- fix issue 820 [\#1315](https://github.com/SeldonIO/seldon-core/pull/1315) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- Bump okhttp from 4.2.2 to 4.3.0 in /engine [\#1314](https://github.com/SeldonIO/seldon-core/pull/1314) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
+- Bump pillow from 6.2.0 to 7.0.0 in /python [\#1313](https://github.com/SeldonIO/seldon-core/pull/1313) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
+- treat config as yaml in the values [\#1311](https://github.com/SeldonIO/seldon-core/pull/1311) ([ryandawsonuk](https://github.com/ryandawsonuk))
+- configmap control via helm values [\#1309](https://github.com/SeldonIO/seldon-core/pull/1309) ([ryandawsonuk](https://github.com/ryandawsonuk))
+- pvc tfjob example [\#1308](https://github.com/SeldonIO/seldon-core/pull/1308) ([ryandawsonuk](https://github.com/ryandawsonuk))
+- Bump guava from 28.1-jre to 28.2-jre in /engine [\#1307](https://github.com/SeldonIO/seldon-core/pull/1307) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
+- Outlier example [\#1306](https://github.com/SeldonIO/seldon-core/pull/1306) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- Add logger to graph types [\#1305](https://github.com/SeldonIO/seldon-core/pull/1305) ([cliveseldon](https://github.com/cliveseldon))
+- Update mypy requirement from \<0.751 to \<0.762 in /python [\#1304](https://github.com/SeldonIO/seldon-core/pull/1304) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
+- Make seldon-core-operator work with helm2 [\#1300](https://github.com/SeldonIO/seldon-core/pull/1300) ([cliveseldon](https://github.com/cliveseldon))
+- use newer certmanager [\#1298](https://github.com/SeldonIO/seldon-core/pull/1298) ([ryandawsonuk](https://github.com/ryandawsonuk))
+- Clean up duplicated code for types and webhooks [\#1296](https://github.com/SeldonIO/seldon-core/pull/1296) ([cliveseldon](https://github.com/cliveseldon))
+- update "income classifier and Alibi anchor explainer" to use "fetch\_adult" [\#1287](https://github.com/SeldonIO/seldon-core/pull/1287) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- Fixed Seldon golang package [\#1246](https://github.com/SeldonIO/seldon-core/pull/1246) ([hemantkashniyal](https://github.com/hemantkashniyal))
+
 ## [v1.0.0](https://github.com/seldonio/seldon-core/tree/v1.0.0) (2019-12-18)
 
 [Full Changelog](https://github.com/seldonio/seldon-core/compare/v0.5.1...v1.0.0)
@@ -423,6 +473,7 @@
 - Updating request-response logging structure [\#886](https://github.com/SeldonIO/seldon-core/pull/886) ([SachinVarghese](https://github.com/SachinVarghese))
 - Move image to doc source [\#881](https://github.com/SeldonIO/seldon-core/pull/881) ([MarcoGorelli](https://github.com/MarcoGorelli))
 - Fix top nav bar colour and typo in README [\#879](https://github.com/SeldonIO/seldon-core/pull/879) ([MarcoGorelli](https://github.com/MarcoGorelli))
+- Add missing packages to requirements.txt [\#859](https://github.com/SeldonIO/seldon-core/pull/859) ([adriangonz](https://github.com/adriangonz))
 - Kubebuilder operator move to main repo [\#841](https://github.com/SeldonIO/seldon-core/pull/841) ([cliveseldon](https://github.com/cliveseldon))
 
 ## [v0.4.1](https://github.com/seldonio/seldon-core/tree/v0.4.1) (2019-09-19)
@@ -549,7 +600,6 @@
 - xgboost server version added in docs [\#865](https://github.com/SeldonIO/seldon-core/pull/865) ([gsunner](https://github.com/gsunner))
 - Create explainer notebook and fix tfserving proxy [\#864](https://github.com/SeldonIO/seldon-core/pull/864) ([cliveseldon](https://github.com/cliveseldon))
 - upgrade knative version [\#863](https://github.com/SeldonIO/seldon-core/pull/863) ([ryandawsonuk](https://github.com/ryandawsonuk))
-- Add missing packages to requirements.txt [\#859](https://github.com/SeldonIO/seldon-core/pull/859) ([adriangonz](https://github.com/adriangonz))
 - add branch release-0.4 to travis builds [\#856](https://github.com/SeldonIO/seldon-core/pull/856) ([gsunner](https://github.com/gsunner))
 - Fix status code handling [\#855](https://github.com/SeldonIO/seldon-core/pull/855) ([dtaniwaki](https://github.com/dtaniwaki))
 - Make debug easier [\#854](https://github.com/SeldonIO/seldon-core/pull/854) ([dtaniwaki](https://github.com/dtaniwaki))
