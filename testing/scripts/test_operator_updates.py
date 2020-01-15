@@ -21,7 +21,7 @@ def assert_model(sdep_name, namespace, initial=False):
 
 
 @pytest.mark.sequential
-@pytest.mark.parametrize("from_version", ["0.4.1", "0.5.1", "1.0.0"])
+@pytest.mark.parametrize("from_version", ["0.4.1", "0.5.1", "1.0.0", "1.0.1"])
 def test_cluster_update(namespace, from_version):
     # Install past version cluster-wide
     retry_run("helm delete seldon -n seldon-system")
@@ -60,7 +60,7 @@ def test_cluster_update(namespace, from_version):
 
 
 @pytest.mark.sequential
-@pytest.mark.parametrize("from_version", ["1.0.0"])
+@pytest.mark.parametrize("from_version", ["1.0.0", "1.0.1"])
 def test_namespace_update(namespace, from_version):
     # Install past version cluster-wide
     retry_run("helm delete seldon -n seldon-system")
@@ -78,6 +78,11 @@ def test_namespace_update(namespace, from_version):
     wait_for_rollout("mymodel", namespace)
     assert_model("mymodel", namespace, initial=True)
 
+    # Label namespace to deploy a single operator
+    retry_run(
+        f"kubectl label namespace {namespace} seldon.io/controller-id={namespace}"
+    )
+
     # Install on the current namespace
     retry_run(
         "helm install seldon "
@@ -93,7 +98,12 @@ def test_namespace_update(namespace, from_version):
     )
 
     # Assert that model is still working under new namespaced version
+    wait_for_status("mymodel", namespace)
+    wait_for_rollout("mymodel", namespace)
     assert_model("mymodel", namespace, initial=True)
+
+    # Delete all resources (webhooks, etc.) before deleting namespace
+    retry_run(f"helm delete seldon --namespace {namespace}")
 
     # Re-install source code version cluster-wide
     retry_run(
