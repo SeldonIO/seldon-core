@@ -6,4 +6,4 @@ keywords:
 name: seldon-core-operator
 sources:
 - https://github.com/SeldonIO/seldon-core
-version: 1.0.1
+version: 1.0.2-SNAPSHOT
