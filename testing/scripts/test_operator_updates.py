@@ -23,6 +23,7 @@ def assert_model(sdep_name, namespace, initial=False):
 @pytest.mark.sequential
 @pytest.mark.parametrize("from_version", ["0.4.1", "0.5.1", "1.0.0"])
 def test_cluster_update(namespace, from_version):
+    # Install past version cluster-wide
     retry_run("helm delete seldon -n seldon-system")
     retry_run(
         "helm install seldon "
@@ -32,12 +33,15 @@ def test_cluster_update(namespace, from_version):
         "--wait"
     )
 
+    # Deploy test model
     retry_run(f"kubectl apply -f ../resources/graph1.json -n {namespace}")
     wait_for_status("mymodel", namespace)
     wait_for_rollout("mymodel", namespace)
     assert_model("mymodel", namespace, initial=True)
 
-    # The upgrade should leave the cluster as it was before the test
+    # Upgrade to source code version cluster-wide.
+    # Note that this upgrade should leave the cluster as it was before the
+    # test.
     # TODO: There is currently a bug updating from 0.4.1 using Helm 3.0.2.
     # This will be fixed once https://github.com/helm/helm/pull/7269 is
     # released in Helm 3.0.3.
@@ -48,7 +52,57 @@ def test_cluster_update(namespace, from_version):
         "--set istio.enabled=true "
         "--set istio.gateway=seldon-gateway "
         "--set certManager.enabled=false "
-        "--wait"
+        "--wait",
+        attempts=2,
     )
 
     assert_model("mymodel", namespace, initial=True)
+
+
+@pytest.mark.sequential
+@pytest.mark.parametrize("from_version", ["1.0.0"])
+def test_namespace_update(namespace, from_version):
+    # Install past version cluster-wide
+    retry_run("helm delete seldon -n seldon-system")
+    retry_run(
+        "helm install seldon "
+        "seldonio/seldon-core-operator "
+        "--namespace seldon-system "
+        f"--version {from_version} "
+        "--wait"
+    )
+
+    # Deploy test model
+    retry_run(f"kubectl apply -f ../resources/graph1.json -n {namespace}")
+    wait_for_status("mymodel", namespace)
+    wait_for_rollout("mymodel", namespace)
+    assert_model("mymodel", namespace, initial=True)
+
+    # Install on the current namespace
+    retry_run(
+        "helm install seldon "
+        "../../helm-charts/seldon-core-operator "
+        f"--namespace {namespace} "
+        "--set istio.enabled=true "
+        "--set istio.gateway=seldon-gateway "
+        "--set certManager.enabled=false "
+        "--set crd.create=false "
+        "--set singleNamespace=true "
+        "--wait",
+        attempts=2,
+    )
+
+    # Assert that model is still working under new namespaced version
+    assert_model("mymodel", namespace, initial=True)
+
+    # Re-install source code version cluster-wide
+    retry_run(
+        "helm upgrade seldon "
+        "../../helm-charts/seldon-core-operator "
+        "--namespace seldon-system "
+        "--set istio.enabled=true "
+        "--set istio.gateway=seldon-gateway "
+        "--set certManager.enabled=false "
+        "--wait",
+        attempts=2,
+    )
