@@ -24,8 +24,7 @@ helm_setup:
 	helm repo update
 
 install_ambassador:
-	helm install ambassador stable/ambassador -f ambassador_values.yaml --set crds.keep=false --namespace seldon --set replicaCount=1
-	kubectl rollout status deployment.apps/ambassador --namespace seldon
+	helm install --wait ambassador stable/ambassador -f ambassador_values.yaml --set crds.keep=false --namespace seldon --set replicaCount=1
 
 install_cert_manager:
 	cd ../../operator && make install-cert-manager
@@ -33,7 +32,7 @@ install_cert_manager:
 
 install_seldon: install_cert_manager
 	kubectl create namespace seldon-system || echo "namespace seldon-system exists"
-	helm install seldon ../../helm-charts/seldon-core-operator --namespace seldon-system --set istio.enabled=true --set istio.gateway=seldon-gateway --set certManager.enabled=false
+	helm install --wait seldon ../../helm-charts/seldon-core-operator --namespace seldon-system --set istio.enabled=true --set istio.gateway=seldon-gateway --set certManager.enabled=false
 
 install_istio:
 	kubectl apply -f istio-1.4.2.yaml
