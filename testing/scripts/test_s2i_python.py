@@ -42,7 +42,7 @@ def create_push_s2i_image(s2i_python_version, component_type, api_type):
     kind_push_s2i_image(component_type, api_type)
 
 
-@pytest.mark.serial
+@pytest.mark.sequential
 @pytest.mark.usefixtures("s2i_python_version")
 class TestPythonS2i(object):
     def test_build_router_rest(self, s2i_python_version):
@@ -111,7 +111,7 @@ class TestPythonS2i(object):
         run("docker rm -f combiner-grpc", shell=True, check=True)
 
 
-@pytest.mark.serial
+@pytest.mark.sequential
 @pytest.mark.usefixtures("s2i_python_version")
 class TestPythonS2iK8s(object):
     def test_model_rest(self, s2i_python_version):
