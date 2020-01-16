@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 from sklearn.neural_network import MLPClassifier
 
@@ -15,6 +16,6 @@ class SigmoidPredictor():
     
         self.ffnn = MLPClassifier()
         self.ffnn.fit(X,y)
-        print "Class", self, "variables", dir(self)
+        print("Class", self, "variables", dir(self))
     def predict(self,X,features_names):
         return self.ffnn.predict_proba(X)
