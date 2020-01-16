@@ -22,7 +22,14 @@ def assert_model(sdep_name, namespace, initial=False):
 
 @pytest.mark.sequential
 @pytest.mark.parametrize(
-    "seldon_version", ["0.4.1", "0.5.1", "1.0.0", "1.0.1"], indirect=True
+    "seldon_version",
+    [
+        pytest.param("0.4.1", marks=pytest.mark.skip(reason="fixed in Helm 3.0.3")),
+        "0.5.1",
+        "1.0.0",
+        "1.0.1",
+    ],
+    indirect=True,
 )
 def test_cluster_update(namespace, seldon_version):
     # Deploy test model
@@ -90,10 +97,12 @@ def test_label_update(namespace, seldon_version):
 
     # Install id-scoped operator
     controller_id = f"seldon-{namespace}"
+    # TODO: We install the new controller on the same namespace but it's not
+    # necessary, since it will get targeted by controllerId
     retry_run(
         f"helm install {controller_id} "
         "../../helm-charts/seldon-core-operator "
-        "--namespace seldon-system "
+        f"--namespace {namespace} "
         "--set crd.create=false "
         f"--set controllerId={controller_id} "
         "--wait",
@@ -101,7 +110,11 @@ def test_label_update(namespace, seldon_version):
     )
 
     # Label model to be served by new controller
-    retry_run(f"kubectl label sdep mymodel seldon.io/controller-id={controller_id}")
+    retry_run(
+        "kubectl label sdep mymodel "
+        f"seldon.io/controller-id={controller_id} "
+        f"--namespace {namespace}"
+    )
 
     # Assert that model is still working under new id-scoped operator
     wait_for_status("mymodel", namespace)
@@ -109,4 +122,4 @@ def test_label_update(namespace, seldon_version):
     assert_model("mymodel", namespace, initial=True)
 
     # Delete all resources (webhooks, etc.) before deleting namespace
-    retry_run(f"helm delete seldon --namespace {namespace}")
+    retry_run(f"helm delete {controller_id} --namespace {namespace}")
