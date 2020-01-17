@@ -1,0 +1,8 @@
+name: model-a
+channels:
+  - defaults
+dependencies:
+  - python=3.6
+  - pyspark=2.4.0
+  - pip:
+      - mlflow>=1.0
