@@ -365,5 +365,5 @@ def grpc_request_ambassador2(
 def clean_string(string):
     string = string.lower()
     string = re.sub(r"\]$", "", string)
-    string = re.sub(r"[_\[\.]", "-", string)
+    string = re.sub(r"[_\[\./]", "-", string)
     return string
