@@ -112,34 +112,9 @@ class TestPythonS2i(object):
 
 
 @pytest.mark.sequential
+@pytest.mark.usefixtures("namespace")
 @pytest.mark.usefixtures("s2i_python_version")
 class TestPythonS2iK8s(object):
-    def test_model_rest(self, s2i_python_version):
-        tester = S2IK8S()
-        tester.test_model_rest(s2i_python_version)
-
-    def test_model_rest_non200(self, s2i_python_version):
-        tester = S2IK8S()
-        tester.test_model_rest_non200(s2i_python_version)
-
-    def test_input_transformer_rest(self, s2i_python_version):
-        tester = S2IK8S()
-        tester.test_input_transformer_rest(s2i_python_version)
-
-    def test_output_transformer_rest(self, s2i_python_version):
-        tester = S2IK8S()
-        tester.test_output_transformer_rest(s2i_python_version)
-
-    def test_router_rest(self, s2i_python_version):
-        tester = S2IK8S()
-        tester.test_router_rest(s2i_python_version)
-
-    def test_combiner_rest(self, s2i_python_version):
-        tester = S2IK8S()
-        tester.test_combiner_rest(s2i_python_version)
-
-
-class S2IK8S(object):
     def test_model_rest(self, namespace, s2i_python_version):
         create_push_s2i_image(s2i_python_version, "model", "rest")
         retry_run(f"kubectl apply -f ../resources/s2i_python_model.json -n {namespace}")
