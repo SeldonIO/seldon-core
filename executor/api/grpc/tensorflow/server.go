@@ -6,6 +6,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 	"github.com/seldonio/seldon-core/executor/api/client"
+	"github.com/seldonio/seldon-core/executor/api/grpc"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/predictor"
 	"github.com/seldonio/seldon-core/executor/proto/tensorflow/serving"
@@ -33,7 +34,7 @@ func NewGrpcTensorflowServer(predictor *v1.PredictorSpec, client client.SeldonAp
 }
 
 func (g *GrpcTensorflowServer) execute(ctx context.Context, req proto.Message, method string) (payload.SeldonPayload, error) {
-	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName(method), g.ServerUrl, g.Namespace)
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName(method), g.ServerUrl, g.Namespace, grpc.CollectMetadata(ctx))
 	reqPayload := payload.ProtoPayload{Msg: req}
 	return seldonPredictorProcess.Predict(g.predictor.Graph, &reqPayload)
 }
@@ -73,7 +74,7 @@ func (g *GrpcTensorflowServer) MultiInference(ctx context.Context, req *serving.
 
 // GetModelMetadata - provides access to metadata for loaded models.
 func (g *GrpcTensorflowServer) GetModelMetadata(ctx context.Context, req *serving.GetModelMetadataRequest) (*serving.GetModelMetadataResponse, error) {
-	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("GrpcGetModelMetadata"), g.ServerUrl, g.Namespace)
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("GrpcGetModelMetadata"), g.ServerUrl, g.Namespace, grpc.CollectMetadata(ctx))
 	reqPayload := payload.ProtoPayload{Msg: req}
 	resPayload, err := seldonPredictorProcess.Metadata(g.predictor.Graph, req.ModelSpec.Name, &reqPayload)
 	if err != nil {
@@ -83,7 +84,7 @@ func (g *GrpcTensorflowServer) GetModelMetadata(ctx context.Context, req *servin
 }
 
 func (g *GrpcTensorflowServer) GetModelStatus(ctx context.Context, req *serving.GetModelStatusRequest) (*serving.GetModelStatusResponse, error) {
-	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("GrpcGetModelStatus"), g.ServerUrl, g.Namespace)
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("GrpcGetModelStatus"), g.ServerUrl, g.Namespace, grpc.CollectMetadata(ctx))
 	reqPayload := payload.ProtoPayload{Msg: req}
 	resPayload, err := seldonPredictorProcess.Status(g.predictor.Graph, req.ModelSpec.Name, &reqPayload)
 	if err != nil {

@@ -13,13 +13,11 @@ func TestAddPuidToCtx(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
 	ctx := context.Background()
-	ctx = addSeldonPuid(ctx)
-
-	g.Expect(ctx.Value(payload.SeldonPUIDHeader)).NotTo(gomega.BeNil())
-
-	ctx = AddSeldonPuidToGrpcContext(ctx)
+	meta := CollectMetadata(ctx)
+	ctx = AddMetadataToOutgoingGrpcContext(ctx, meta)
 
 	md, ok := metadata.FromOutgoingContext(ctx)
-	g.Expect(ok).To(gomega.Equal(true))
+	g.Expect(ok).To(gomega.BeTrue())
 	g.Expect(md.Get(payload.SeldonPUIDHeader)).NotTo(gomega.BeNil())
+
 }

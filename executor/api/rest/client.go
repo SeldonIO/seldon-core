@@ -100,7 +100,15 @@ func (smc *JSONRestClient) getMetricsRoundTripper(modelName string, service stri
 	}), http.DefaultTransport)
 }
 
-func (smc *JSONRestClient) doHttp(ctx context.Context, modelName string, method string, url *url.URL, msg []byte) ([]byte, string, error) {
+func (smc *JSONRestClient) addHeaders(req *http.Request, m map[string][]string) {
+	for k, vv := range m {
+		for _, v := range vv {
+			req.Header.Set(k, v)
+		}
+	}
+}
+
+func (smc *JSONRestClient) doHttp(ctx context.Context, modelName string, method string, url *url.URL, msg []byte, meta map[string][]string) ([]byte, string, error) {
 	smc.Log.Info("Calling HTTP", "URL", url)
 
 	var req *http.Request
@@ -119,8 +127,8 @@ func (smc *JSONRestClient) doHttp(ctx context.Context, modelName string, method 
 		}
 	}
 
-	//Add Puid
-	req.Header.Set(payload.SeldonPUIDHeader, ctx.Value(payload.SeldonPUIDHeader).(string))
+	// Add metadata passed in
+	smc.addHeaders(req, meta)
 
 	if opentracing.IsGlobalTracerRegistered() {
 		tracer := opentracing.GlobalTracer()
@@ -178,7 +186,7 @@ func (smc *JSONRestClient) modifyMethod(method string, modelName string) string 
 	return method
 }
 
-func (smc *JSONRestClient) call(ctx context.Context, modelName string, method string, host string, port int32, req payload.SeldonPayload) (payload.SeldonPayload, error) {
+func (smc *JSONRestClient) call(ctx context.Context, modelName string, method string, host string, port int32, req payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
 	url := url.URL{
 		Scheme: "http",
 		Host:   net.JoinHostPort(host, strconv.Itoa(int(port))),
@@ -188,7 +196,7 @@ func (smc *JSONRestClient) call(ctx context.Context, modelName string, method st
 	if req != nil {
 		bytes = req.GetPayload().([]byte)
 	}
-	sm, contentType, err := smc.doHttp(ctx, modelName, method, &url, bytes)
+	sm, contentType, err := smc.doHttp(ctx, modelName, method, &url, bytes, meta)
 	if err != nil {
 		return nil, err
 	}
@@ -196,12 +204,12 @@ func (smc *JSONRestClient) call(ctx context.Context, modelName string, method st
 	return &res, nil
 }
 
-func (smc *JSONRestClient) Status(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
-	return smc.call(ctx, modelName, smc.modifyMethod(client.SeldonStatusPath, modelName), host, port, msg)
+func (smc *JSONRestClient) Status(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
+	return smc.call(ctx, modelName, smc.modifyMethod(client.SeldonStatusPath, modelName), host, port, msg, meta)
 }
 
-func (smc *JSONRestClient) Metadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
-	return smc.call(ctx, modelName, smc.modifyMethod(client.SeldonMetadataPath, modelName), host, port, msg)
+func (smc *JSONRestClient) Metadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
+	return smc.call(ctx, modelName, smc.modifyMethod(client.SeldonMetadataPath, modelName), host, port, msg, meta)
 }
 
 func (smc *JSONRestClient) Chain(ctx context.Context, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
@@ -214,17 +222,17 @@ func (smc *JSONRestClient) Chain(ctx context.Context, modelName string, msg payl
 	return nil, errors.Errorf("Unknown protocol %s", smc.Protocol)
 }
 
-func (smc *JSONRestClient) Predict(ctx context.Context, modelName string, host string, port int32, req payload.SeldonPayload) (payload.SeldonPayload, error) {
-	return smc.call(ctx, modelName, smc.modifyMethod(client.SeldonPredictPath, modelName), host, port, req)
+func (smc *JSONRestClient) Predict(ctx context.Context, modelName string, host string, port int32, req payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
+	return smc.call(ctx, modelName, smc.modifyMethod(client.SeldonPredictPath, modelName), host, port, req, meta)
 }
 
-func (smc *JSONRestClient) TransformInput(ctx context.Context, modelName string, host string, port int32, req payload.SeldonPayload) (payload.SeldonPayload, error) {
-	return smc.call(ctx, modelName, smc.modifyMethod(client.SeldonTransformInputPath, modelName), host, port, req)
+func (smc *JSONRestClient) TransformInput(ctx context.Context, modelName string, host string, port int32, req payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
+	return smc.call(ctx, modelName, smc.modifyMethod(client.SeldonTransformInputPath, modelName), host, port, req, meta)
 }
 
 // Try to extract from SeldonMessage otherwise fall back to extract from Json Array
-func (smc *JSONRestClient) Route(ctx context.Context, modelName string, host string, port int32, req payload.SeldonPayload) (int, error) {
-	sp, err := smc.call(ctx, modelName, smc.modifyMethod(client.SeldonRoutePath, modelName), host, port, req)
+func (smc *JSONRestClient) Route(ctx context.Context, modelName string, host string, port int32, req payload.SeldonPayload, meta map[string][]string) (int, error) {
+	sp, err := smc.call(ctx, modelName, smc.modifyMethod(client.SeldonRoutePath, modelName), host, port, req, meta)
 	if err != nil {
 		return 0, err
 	} else {
@@ -254,7 +262,7 @@ func isJSON(data []byte) bool {
 	return json.Unmarshal(data, &js) == nil
 }
 
-func (smc *JSONRestClient) Combine(ctx context.Context, modelName string, host string, port int32, msgs []payload.SeldonPayload) (payload.SeldonPayload, error) {
+func (smc *JSONRestClient) Combine(ctx context.Context, modelName string, host string, port int32, msgs []payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
 	// Extract into string array checking the data is JSON
 	strData := make([]string, len(msgs))
 	for i, sm := range msgs {
@@ -268,13 +276,13 @@ func (smc *JSONRestClient) Combine(ctx context.Context, modelName string, host s
 	joined := strings.Join(strData, ",")
 	jStr := "[" + joined + "]"
 	req := payload.BytesPayload{Msg: []byte(jStr)}
-	return smc.call(ctx, modelName, smc.modifyMethod(client.SeldonCombinePath, modelName), host, port, &req)
+	return smc.call(ctx, modelName, smc.modifyMethod(client.SeldonCombinePath, modelName), host, port, &req, meta)
 }
 
-func (smc *JSONRestClient) TransformOutput(ctx context.Context, modelName string, host string, port int32, req payload.SeldonPayload) (payload.SeldonPayload, error) {
-	return smc.call(ctx, modelName, smc.modifyMethod(client.SeldonTransformOutputPath, modelName), host, port, req)
+func (smc *JSONRestClient) TransformOutput(ctx context.Context, modelName string, host string, port int32, req payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
+	return smc.call(ctx, modelName, smc.modifyMethod(client.SeldonTransformOutputPath, modelName), host, port, req, meta)
 }
 
-func (smc *JSONRestClient) Feedback(ctx context.Context, modelName string, host string, port int32, req payload.SeldonPayload) (payload.SeldonPayload, error) {
-	return smc.call(ctx, modelName, smc.modifyMethod(client.SeldonFeedbackPath, modelName), host, port, req)
+func (smc *JSONRestClient) Feedback(ctx context.Context, modelName string, host string, port int32, req payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
+	return smc.call(ctx, modelName, smc.modifyMethod(client.SeldonFeedbackPath, modelName), host, port, req, meta)
 }

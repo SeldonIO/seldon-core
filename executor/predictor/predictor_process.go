@@ -19,15 +19,17 @@ type PredictorProcess struct {
 	Log       logr.Logger
 	ServerUrl *url.URL
 	Namespace string
+	Meta      *payload.MetaData
 }
 
-func NewPredictorProcess(context context.Context, client client.SeldonApiClient, log logr.Logger, serverUrl *url.URL, namespace string) PredictorProcess {
+func NewPredictorProcess(context context.Context, client client.SeldonApiClient, log logr.Logger, serverUrl *url.URL, namespace string, meta map[string][]string) PredictorProcess {
 	return PredictorProcess{
 		Ctx:       context,
 		Client:    client,
 		Log:       log,
 		ServerUrl: serverUrl,
 		Namespace: namespace,
+		Meta:      payload.NewFromMap(meta),
 	}
 }
 
@@ -61,13 +63,13 @@ func (p *PredictorProcess) transformInput(node *v1.PredictiveUnit, msg payload.S
 		if err != nil {
 			return nil, err
 		}
-		return p.Client.Predict(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
+		return p.Client.Predict(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg, p.Meta.Meta)
 	} else if callTransformInput {
 		msg, err := p.Client.Chain(p.Ctx, node.Name, msg)
 		if err != nil {
 			return nil, err
 		}
-		return p.Client.TransformInput(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
+		return p.Client.TransformInput(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg, p.Meta.Meta)
 	} else {
 		return msg, nil
 	}
@@ -91,7 +93,7 @@ func (p *PredictorProcess) transformOutput(node *v1.PredictiveUnit, msg payload.
 		if err != nil {
 			return nil, err
 		}
-		return p.Client.TransformOutput(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
+		return p.Client.TransformOutput(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg, p.Meta.Meta)
 	} else {
 		return msg, nil
 	}
@@ -111,7 +113,7 @@ func (p *PredictorProcess) feedback(node *v1.PredictiveUnit, msg payload.SeldonP
 	}
 
 	if callClient {
-		return p.Client.Feedback(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
+		return p.Client.Feedback(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg, p.Meta.Meta)
 	} else {
 		return msg, nil
 	}
@@ -130,7 +132,7 @@ func (p *PredictorProcess) route(node *v1.PredictiveUnit, msg payload.SeldonPayl
 		callClient = true
 	}
 	if callClient {
-		return p.Client.Route(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
+		return p.Client.Route(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg, p.Meta.Meta)
 	} else if node.Implementation != nil && *node.Implementation == v1.RANDOM_ABTEST {
 		return p.abTestRouter(node)
 	} else {
@@ -151,7 +153,7 @@ func (p *PredictorProcess) aggregate(node *v1.PredictiveUnit, msg []payload.Seld
 	}
 
 	if callClient {
-		return p.Client.Combine(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg)
+		return p.Client.Combine(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg, p.Meta.Meta)
 	} else {
 		return msg[0], nil
 	}
@@ -288,7 +290,7 @@ func (p *PredictorProcess) Status(node *v1.PredictiveUnit, modelName string, msg
 	if nodeModel := v1.GetPredictiveUnit(node, modelName); nodeModel == nil {
 		return nil, fmt.Errorf("Failed to find model %s", modelName)
 	} else {
-		return p.Client.Status(p.Ctx, modelName, nodeModel.Endpoint.ServiceHost, nodeModel.Endpoint.ServicePort, msg)
+		return p.Client.Status(p.Ctx, modelName, nodeModel.Endpoint.ServiceHost, nodeModel.Endpoint.ServicePort, msg, p.Meta.Meta)
 	}
 }
 
@@ -296,7 +298,7 @@ func (p *PredictorProcess) Metadata(node *v1.PredictiveUnit, modelName string, m
 	if nodeModel := v1.GetPredictiveUnit(node, modelName); nodeModel == nil {
 		return nil, fmt.Errorf("Failed to find model %s", modelName)
 	} else {
-		return p.Client.Metadata(p.Ctx, modelName, nodeModel.Endpoint.ServiceHost, nodeModel.Endpoint.ServicePort, msg)
+		return p.Client.Metadata(p.Ctx, modelName, nodeModel.Endpoint.ServiceHost, nodeModel.Endpoint.ServicePort, msg, p.Meta.Meta)
 	}
 }
 

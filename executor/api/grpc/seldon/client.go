@@ -72,13 +72,13 @@ func (s SeldonMessageGrpcClient) Chain(ctx context.Context, modelName string, ms
 	return msg, nil
 }
 
-func (s SeldonMessageGrpcClient) Predict(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+func (s SeldonMessageGrpcClient) Predict(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
 	conn, err := s.getConnection(host, port, modelName)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
 	}
 	grpcClient := proto.NewModelClient(conn)
-	resp, err := grpcClient.Predict(grpc2.AddSeldonPuidToGrpcContext(ctx), msg.GetPayload().(*proto.SeldonMessage), s.callOptions...)
+	resp, err := grpcClient.Predict(grpc2.AddMetadataToOutgoingGrpcContext(ctx, meta), msg.GetPayload().(*proto.SeldonMessage), s.callOptions...)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
 	}
@@ -86,13 +86,13 @@ func (s SeldonMessageGrpcClient) Predict(ctx context.Context, modelName string, 
 	return &resPayload, nil
 }
 
-func (s SeldonMessageGrpcClient) TransformInput(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+func (s SeldonMessageGrpcClient) TransformInput(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
 	conn, err := s.getConnection(host, port, modelName)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
 	}
 	grpcClient := proto.NewTransformerClient(conn)
-	resp, err := grpcClient.TransformInput(grpc2.AddSeldonPuidToGrpcContext(ctx), msg.GetPayload().(*proto.SeldonMessage), s.callOptions...)
+	resp, err := grpcClient.TransformInput(grpc2.AddMetadataToOutgoingGrpcContext(ctx, meta), msg.GetPayload().(*proto.SeldonMessage), s.callOptions...)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
 	}
@@ -100,13 +100,13 @@ func (s SeldonMessageGrpcClient) TransformInput(ctx context.Context, modelName s
 	return &resPayload, nil
 }
 
-func (s SeldonMessageGrpcClient) Route(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (int, error) {
+func (s SeldonMessageGrpcClient) Route(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (int, error) {
 	conn, err := s.getConnection(host, port, modelName)
 	if err != nil {
 		return 0, err
 	}
 	grpcClient := proto.NewRouterClient(conn)
-	resp, err := grpcClient.Route(grpc2.AddSeldonPuidToGrpcContext(ctx), msg.GetPayload().(*proto.SeldonMessage), s.callOptions...)
+	resp, err := grpcClient.Route(grpc2.AddMetadataToOutgoingGrpcContext(ctx, meta), msg.GetPayload().(*proto.SeldonMessage), s.callOptions...)
 	if err != nil {
 		return 0, err
 	}
@@ -115,7 +115,7 @@ func (s SeldonMessageGrpcClient) Route(ctx context.Context, modelName string, ho
 	return routes[0], nil
 }
 
-func (s SeldonMessageGrpcClient) Combine(ctx context.Context, modelName string, host string, port int32, msgs []payload.SeldonPayload) (payload.SeldonPayload, error) {
+func (s SeldonMessageGrpcClient) Combine(ctx context.Context, modelName string, host string, port int32, msgs []payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
 	conn, err := s.getConnection(host, port, modelName)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
@@ -126,7 +126,7 @@ func (s SeldonMessageGrpcClient) Combine(ctx context.Context, modelName string, 
 	}
 	grpcClient := proto.NewCombinerClient(conn)
 	sml := proto.SeldonMessageList{SeldonMessages: sms}
-	resp, err := grpcClient.Aggregate(grpc2.AddSeldonPuidToGrpcContext(ctx), &sml, s.callOptions...)
+	resp, err := grpcClient.Aggregate(grpc2.AddMetadataToOutgoingGrpcContext(ctx, meta), &sml, s.callOptions...)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
 	}
@@ -134,13 +134,13 @@ func (s SeldonMessageGrpcClient) Combine(ctx context.Context, modelName string, 
 	return &resPayload, nil
 }
 
-func (s SeldonMessageGrpcClient) TransformOutput(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+func (s SeldonMessageGrpcClient) TransformOutput(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
 	conn, err := s.getConnection(host, port, modelName)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
 	}
 	grpcClient := proto.NewOutputTransformerClient(conn)
-	resp, err := grpcClient.TransformOutput(grpc2.AddSeldonPuidToGrpcContext(ctx), msg.GetPayload().(*proto.SeldonMessage), s.callOptions...)
+	resp, err := grpcClient.TransformOutput(grpc2.AddMetadataToOutgoingGrpcContext(ctx, meta), msg.GetPayload().(*proto.SeldonMessage), s.callOptions...)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
 	}
@@ -148,13 +148,13 @@ func (s SeldonMessageGrpcClient) TransformOutput(ctx context.Context, modelName 
 	return &resPayload, nil
 }
 
-func (s SeldonMessageGrpcClient) Feedback(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+func (s SeldonMessageGrpcClient) Feedback(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
 	conn, err := s.getConnection(host, port, modelName)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
 	}
 	grpcClient := proto.NewModelClient(conn)
-	resp, err := grpcClient.SendFeedback(grpc2.AddSeldonPuidToGrpcContext(ctx), msg.GetPayload().(*proto.Feedback), s.callOptions...)
+	resp, err := grpcClient.SendFeedback(grpc2.AddMetadataToOutgoingGrpcContext(ctx, meta), msg.GetPayload().(*proto.Feedback), s.callOptions...)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
 	}
@@ -176,10 +176,10 @@ func (s SeldonMessageGrpcClient) CreateErrorPayload(err error) payload.SeldonPay
 	return &res
 }
 
-func (s SeldonMessageGrpcClient) Status(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+func (s SeldonMessageGrpcClient) Status(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
 	return nil, errors.Errorf("Not implemented")
 }
 
-func (s SeldonMessageGrpcClient) Metadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+func (s SeldonMessageGrpcClient) Metadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
 	return nil, errors.Errorf("Not implemented")
 }

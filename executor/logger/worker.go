@@ -52,7 +52,7 @@ func (W *Worker) sendCloudEvent(logReq LogRequest) error {
 		cloudevents.WithTarget(logReq.Url.String()),
 		cloudevents.WithEncoding(cloudevents.HTTPBinaryV1),
 		cloudevents.WitHHeader(ModelIdHeader, logReq.ModelId),
-		cloudevents.WitHHeader(payload.SeldonPUIDHeader, logReq.RequestId),
+		cloudevents.WitHHeader(payload.SeldonPUIDHeader, logReq.RequestId), //FIXME add all meta data
 	)
 
 	if err != nil {

@@ -19,28 +19,30 @@ import (
 )
 
 const (
-	testSourceUrl  = "http://localhost"
-	testSeldonPuid = "1"
+	testSourceUrl       = "http://localhost"
+	testSeldonPuid      = "1"
+	testCustomMetaKey   = "key"
+	testCustomMetaValue = "foo"
 )
 
 func createPredictorProcess(t *testing.T) *PredictorProcess {
 	url, _ := url.Parse(testSourceUrl)
 	ctx := context.WithValue(context.TODO(), payload.SeldonPUIDHeader, testSeldonPuid)
-	pp := NewPredictorProcess(ctx, test.NewSeldonMessageTestClient(t, -1, nil, nil), logf.Log.WithName("SeldonMessageRestClient"), url, "default")
+	pp := NewPredictorProcess(ctx, test.NewSeldonMessageTestClient(t, -1, nil, nil), logf.Log.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{testCustomMetaKey: []string{testCustomMetaValue}})
 	return &pp
 }
 
 func createPredictorProcessWithRoute(t *testing.T, chosenRoute int) *PredictorProcess {
 	url, _ := url.Parse(testSourceUrl)
 	ctx := context.WithValue(context.TODO(), payload.SeldonPUIDHeader, testSeldonPuid)
-	pp := NewPredictorProcess(ctx, test.NewSeldonMessageTestClient(t, chosenRoute, nil, nil), logf.Log.WithName("SeldonMessageRestClient"), url, "default")
+	pp := NewPredictorProcess(ctx, test.NewSeldonMessageTestClient(t, chosenRoute, nil, nil), logf.Log.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{})
 	return &pp
 }
 
 func createPredictorProcessWithError(t *testing.T, errMethod *v1.PredictiveUnitMethod, err error) *PredictorProcess {
 	url, _ := url.Parse(testSourceUrl)
 	ctx := context.WithValue(context.TODO(), payload.SeldonPUIDHeader, testSeldonPuid)
-	pp := NewPredictorProcess(ctx, test.NewSeldonMessageTestClient(t, -1, errMethod, err), logf.Log.WithName("SeldonMessageRestClient"), url, "default")
+	pp := NewPredictorProcess(ctx, test.NewSeldonMessageTestClient(t, -1, errMethod, err), logf.Log.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{})
 	return &pp
 }
 
@@ -360,10 +362,11 @@ func TestModelWithLogRequests(t *testing.T) {
 	logged := false
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		//g.Expect(r.Header.Get(logger.CloudEventsIdHeader)).Should(gomega.Equal(testEventId))
-		g.Expect(r.Header.Get(logger.CloudEventsTypeHeader)).Should(gomega.Equal(logger.CEInferenceRequest))
-		g.Expect(r.Header.Get(logger.CloudEventsTypeSource)).Should(gomega.Equal(testSourceUrl))
-		g.Expect(r.Header.Get(logger.ModelIdHeader)).Should(gomega.Equal(modelName))
-		g.Expect(r.Header.Get("Content-Type")).Should(gomega.Equal(grpc.ProtobufContentType))
+		g.Expect(r.Header.Get(logger.CloudEventsTypeHeader)).To(gomega.Equal(logger.CEInferenceRequest))
+		g.Expect(r.Header.Get(logger.CloudEventsTypeSource)).To(gomega.Equal(testSourceUrl))
+		g.Expect(r.Header.Get(logger.ModelIdHeader)).To(gomega.Equal(modelName))
+		g.Expect(r.Header.Get("Content-Type")).To(gomega.Equal(grpc.ProtobufContentType))
+		g.Expect(r.Header.Get(payload.SeldonPUIDHeader)).To(gomega.Equal(testSeldonPuid))
 		w.Write([]byte(""))
 		logged = true
 	})
@@ -404,11 +407,11 @@ func TestModelWithLogResponses(t *testing.T) {
 	logged := false
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		//g.Expect(r.Header.Get(logger.CloudEventsIdHeader)).Should(gomega.Equal(testEventId))
-		g.Expect(r.Header.Get(logger.CloudEventsTypeHeader)).Should(gomega.Equal(logger.CEInferenceResponse))
-		g.Expect(r.Header.Get(logger.CloudEventsTypeSource)).Should(gomega.Equal(testSourceUrl))
-		g.Expect(r.Header.Get(logger.ModelIdHeader)).Should(gomega.Equal(modelName))
-		g.Expect(r.Header.Get("Content-Type")).Should(gomega.Equal(grpc.ProtobufContentType))
-		g.Expect(r.Header.Get(payload.SeldonPUIDHeader)).Should(gomega.Equal(testSeldonPuid))
+		g.Expect(r.Header.Get(logger.CloudEventsTypeHeader)).To(gomega.Equal(logger.CEInferenceResponse))
+		g.Expect(r.Header.Get(logger.CloudEventsTypeSource)).To(gomega.Equal(testSourceUrl))
+		g.Expect(r.Header.Get(logger.ModelIdHeader)).To(gomega.Equal(modelName))
+		g.Expect(r.Header.Get("Content-Type")).To(gomega.Equal(grpc.ProtobufContentType))
+		g.Expect(r.Header.Get(payload.SeldonPUIDHeader)).To(gomega.Equal(testSeldonPuid))
 		w.Write([]byte(""))
 		logged = true
 	})

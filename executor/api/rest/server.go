@@ -176,7 +176,7 @@ func (r *SeldonRestApi) metadata(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	modelName := vars[ModelHttpPathVariable]
 
-	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace)
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace, req.Header)
 	resPayload, err := seldonPredictorProcess.Metadata(r.predictor.Graph, modelName, nil)
 	if err != nil {
 		r.failWithError(w, err)
@@ -198,7 +198,7 @@ func (r *SeldonRestApi) status(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	modelName := vars[ModelHttpPathVariable]
 
-	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace)
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace, req.Header)
 	resPayload, err := seldonPredictorProcess.Status(r.predictor.Graph, modelName, nil)
 	if err != nil {
 		r.failWithError(w, err)
@@ -227,7 +227,7 @@ func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace)
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace, req.Header)
 
 	reqPayload, err := seldonPredictorProcess.Client.Unmarshall(bodyBytes)
 	if err != nil {

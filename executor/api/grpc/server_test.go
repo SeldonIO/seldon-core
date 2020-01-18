@@ -5,6 +5,7 @@ import (
 	"github.com/onsi/gomega"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"google.golang.org/grpc/metadata"
+	"strings"
 	"testing"
 )
 
@@ -13,9 +14,9 @@ func TestAddPuid(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
 	ctx := context.Background()
-	ctx = addSeldonPuid(ctx)
+	meta := CollectMetadata(ctx)
 
-	g.Expect(ctx.Value(payload.SeldonPUIDHeader)).NotTo(gomega.BeNil())
+	g.Expect(meta[payload.SeldonPUIDHeader]).NotTo(gomega.BeNil())
 }
 
 func TestExistingPuid(t *testing.T) {
@@ -24,8 +25,8 @@ func TestExistingPuid(t *testing.T) {
 	guid := "1"
 
 	ctx := metadata.NewIncomingContext(context.TODO(), metadata.New(map[string]string{payload.SeldonPUIDHeader: guid}))
-	ctx = addSeldonPuid(ctx)
+	meta := CollectMetadata(ctx)
 
-	g.Expect(ctx.Value(payload.SeldonPUIDHeader)).NotTo(gomega.BeNil())
-	g.Expect(ctx.Value(payload.SeldonPUIDHeader).(string)).To(gomega.Equal(guid))
+	g.Expect(meta[strings.ToLower(payload.SeldonPUIDHeader)]).NotTo(gomega.BeNil())
+	g.Expect(meta[strings.ToLower(payload.SeldonPUIDHeader)][0]).To(gomega.Equal(guid))
 }

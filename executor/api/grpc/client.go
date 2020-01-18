@@ -2,10 +2,14 @@ package grpc
 
 import (
 	"context"
-	"github.com/seldonio/seldon-core/executor/api/payload"
 	"google.golang.org/grpc/metadata"
 )
 
-func AddSeldonPuidToGrpcContext(ctx context.Context) context.Context {
-	return metadata.AppendToOutgoingContext(ctx, payload.SeldonPUIDHeader, ctx.Value(payload.SeldonPUIDHeader).(string))
+func AddMetadataToOutgoingGrpcContext(ctx context.Context, meta map[string][]string) context.Context {
+	for k, vv := range meta {
+		for _, v := range vv {
+			ctx = metadata.AppendToOutgoingContext(ctx, k, v)
+		}
+	}
+	return ctx
 }

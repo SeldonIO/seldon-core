@@ -24,7 +24,7 @@ func CreateGrpcServer(spec *v1.PredictorSpec, deploymentName string) *grpc.Serve
 		grpc.MaxSendMsgSize(math.MaxInt32),
 	}
 	if opentracing.IsGlobalTracerRegistered() {
-		opts = append(opts, grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(seldonPuidUnaryInterceptor(), grpc_opentracing.UnaryServerInterceptor(), metric.NewServerMetrics(spec, deploymentName).UnaryServerInterceptor())))
+		opts = append(opts, grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(grpc_opentracing.UnaryServerInterceptor(), metric.NewServerMetrics(spec, deploymentName).UnaryServerInterceptor())))
 	} else {
 		opts = append(opts, grpc.UnaryInterceptor(metric.NewServerMetrics(spec, deploymentName).UnaryServerInterceptor()))
 	}
@@ -33,21 +33,15 @@ func CreateGrpcServer(spec *v1.PredictorSpec, deploymentName string) *grpc.Serve
 	return grpcServer
 }
 
-// Add Seldon Puid if missing to context
-func addSeldonPuid(ctx context.Context) context.Context {
-	if md, ok := metadata.FromIncomingContext(ctx); ok {
-		vals := md.Get(payload.SeldonPUIDHeader)
-		if len(vals) == 1 {
-			return context.WithValue(ctx, payload.SeldonPUIDHeader, vals[0])
+func CollectMetadata(ctx context.Context) map[string][]string {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if ok {
+		val := md.Get(payload.SeldonPUIDHeader)
+		if len(val) == 0 {
+			md.Set(payload.SeldonPUIDHeader, guuid.New().String())
 		}
-	}
-	return context.WithValue(ctx, payload.SeldonPUIDHeader, guuid.New().String())
-}
-
-func seldonPuidUnaryInterceptor() func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		ctx = addSeldonPuid(ctx)
-		resp, err := handler(ctx, req)
-		return resp, err
+		return md
+	} else {
+		return map[string][]string{payload.SeldonPUIDHeader: []string{guuid.New().String()}}
 	}
 }

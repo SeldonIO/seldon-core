@@ -96,9 +96,9 @@ func TestSimpleMethods(t *testing.T) {
 	}
 	seldonRestClient := NewJSONRestClient(api.ProtocolSeldon, "test", &predictor, SetHTTPClient(httpClient))
 
-	methods := []func(context.Context, string, string, int32, payload.SeldonPayload) (payload.SeldonPayload, error){seldonRestClient.Predict, seldonRestClient.TransformInput, seldonRestClient.TransformOutput, seldonRestClient.Feedback}
+	methods := []func(context.Context, string, string, int32, payload.SeldonPayload, map[string][]string) (payload.SeldonPayload, error){seldonRestClient.Predict, seldonRestClient.TransformInput, seldonRestClient.TransformOutput, seldonRestClient.Feedback}
 	for _, method := range methods {
-		resPayload, err := method(createTestContext(), "model", host, int32(port), createPayload(g))
+		resPayload, err := method(createTestContext(), "model", host, int32(port), createPayload(g), map[string][]string{})
 		g.Expect(err).Should(gomega.BeNil())
 
 		data := resPayload.GetPayload().([]byte)
@@ -125,7 +125,7 @@ func TestRouter(t *testing.T) {
 	}
 	seldonRestClient := NewJSONRestClient(api.ProtocolSeldon, "test", &predictor, SetHTTPClient(httpClient))
 
-	route, err := seldonRestClient.Route(createTestContext(), "model", host, int32(port), createPayload(g))
+	route, err := seldonRestClient.Route(createTestContext(), "model", host, int32(port), createPayload(g), map[string][]string{})
 	g.Expect(err).Should(gomega.BeNil())
 
 	g.Expect(route).Should(gomega.Equal(1))
@@ -145,7 +145,7 @@ func TestStatus(t *testing.T) {
 	}
 	seldonRestClient := NewJSONRestClient(api.ProtocolSeldon, "test", &predictor, SetHTTPClient(httpClient))
 
-	status, err := seldonRestClient.Status(createTestContext(), "model", host, int32(port), nil)
+	status, err := seldonRestClient.Status(createTestContext(), "model", host, int32(port), nil, map[string][]string{})
 	g.Expect(err).Should(gomega.BeNil())
 	data := string(status.GetPayload().([]byte))
 	g.Expect(data).To(gomega.Equal(okStatusResponse))
@@ -165,7 +165,7 @@ func TestMetadata(t *testing.T) {
 	}
 	seldonRestClient := NewJSONRestClient(api.ProtocolSeldon, "test", &predictor, SetHTTPClient(httpClient))
 
-	status, err := seldonRestClient.Metadata(createTestContext(), "model", host, int32(port), nil)
+	status, err := seldonRestClient.Metadata(createTestContext(), "model", host, int32(port), nil, map[string][]string{})
 	g.Expect(err).Should(gomega.BeNil())
 	data := string(status.GetPayload().([]byte))
 	g.Expect(data).To(gomega.Equal(okMetadataResponse))
@@ -191,7 +191,7 @@ func TestCombiner(t *testing.T) {
 	}
 	seldonRestClient := NewJSONRestClient(api.ProtocolSeldon, "test", &predictor, SetHTTPClient(httpClient))
 
-	resPayload, err := seldonRestClient.Combine(createTestContext(), "model", host, int32(port), createCombinerPayload(g))
+	resPayload, err := seldonRestClient.Combine(createTestContext(), "model", host, int32(port), createCombinerPayload(g), map[string][]string{})
 	g.Expect(err).Should(gomega.BeNil())
 
 	data := resPayload.GetPayload().([]byte)
@@ -230,9 +230,9 @@ func TestClientMetrics(t *testing.T) {
 	}
 	seldonRestClient := NewJSONRestClient(api.ProtocolSeldon, "test", &predictor, SetHTTPClient(httpClient))
 
-	methods := []func(context.Context, string, string, int32, payload.SeldonPayload) (payload.SeldonPayload, error){seldonRestClient.Predict, seldonRestClient.TransformInput, seldonRestClient.TransformOutput}
+	methods := []func(context.Context, string, string, int32, payload.SeldonPayload, map[string][]string) (payload.SeldonPayload, error){seldonRestClient.Predict, seldonRestClient.TransformInput, seldonRestClient.TransformOutput}
 	for _, method := range methods {
-		resPayload, err := method(createTestContext(), "model", host, int32(port), createPayload(g))
+		resPayload, err := method(createTestContext(), "model", host, int32(port), createPayload(g), map[string][]string{})
 		g.Expect(err).Should(gomega.BeNil())
 
 		data := resPayload.GetPayload().([]byte)
