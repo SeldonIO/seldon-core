@@ -46,5 +46,5 @@ The specification is:
 
 ## Example Notebook
 
-You can try out an [example notebook with logging](../example/payload_logging.html)
+You can try out an [example notebook with logging](../examples/payload_logging.html)
 

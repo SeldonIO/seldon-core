@@ -38,6 +38,7 @@ Notebooks
    OpenVINO ImageNet <openvino>
    OpenVINO ImageNet Ensemble <openvino_ensemble>
    ONNX ResNet with Intel nGraph<onnx_resnet>
+   Payload Logging <payload_logging>
    Protocol Examples <protocol_examples>
    R Iris Classifier <r_iris>
    R MNIST Classifier <r_mnist>   
@@ -49,6 +50,7 @@ Notebooks
    Sklearn, Xgboost, Tensorflow Server Examples <server_examples>
    Tensorflow MNIST <deep_mnist>
    TFserving MNIST <tfserving_mnist>
+   Tracing <tracing>
    Spam Classification TRANSFORMER component <transformer_spam_model>
    Spam Classification TRANSFORMER + COMBINER Component <combiner_spam_model>
 
