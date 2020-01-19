@@ -1,6 +1,7 @@
 import pytest
 from seldon_e2e_utils import (
     wait_for_rollout,
+    wait_for_status,
     initial_rest_request,
     initial_grpc_request,
     rest_request_ambassador,
@@ -24,7 +25,8 @@ class TestClusterWide(object):
             shell=True,
             check=True,
         )
-        wait_for_rollout(f"mymodel-mymodel-de240ba", namespace)
+        wait_for_status("mymodel", namespace)
+        wait_for_rollout("mymodel", namespace)
         initial_rest_request("mymodel", namespace)
         logging.warning("Test Ambassador REST gateway")
         r = rest_request_ambassador("mymodel", namespace, API_AMBASSADOR)
@@ -41,7 +43,8 @@ class TestClusterWide(object):
             shell=True,
             check=True,
         )
-        wait_for_rollout(f"mymodel-mymodel-2a00e84", namespace)
+        wait_for_status("mymodel", namespace)
+        wait_for_rollout("mymodel", namespace)
         time.sleep(
             5
         )  # Seems to be needed for consistent Ambassador grpc call. If called too early it seems will always fail.
@@ -60,8 +63,8 @@ class TestClusterWide(object):
             shell=True,
             check=True,
         )
-        wait_for_rollout("myabtest-myabtest-0cce7b2", namespace)
-        wait_for_rollout("myabtest-myabtest-ba661ba", namespace)
+        wait_for_status("myabtest", namespace)
+        wait_for_rollout("myabtest", namespace, expected_deployments=2)
         initial_rest_request("myabtest", namespace)
         logging.warning("Test Ambassador REST gateway")
         r = rest_request_ambassador("myabtest", namespace, API_AMBASSADOR)
@@ -83,9 +86,8 @@ class TestClusterWide(object):
             shell=True,
             check=True,
         )
-        wait_for_rollout("mymab-mymab-0cce7b2", namespace)
-        wait_for_rollout("mymab-mymab-4ae7b7c", namespace)
-        wait_for_rollout("mymab-mymab-ba661ba", namespace)
+        wait_for_status("mymab", namespace)
+        wait_for_rollout("mymab", namespace, expected_deployments=3)
         initial_rest_request("mymab", namespace)
         logging.warning("Test Ambassador REST gateway")
         r = rest_request_ambassador("mymab", namespace, API_AMBASSADOR)

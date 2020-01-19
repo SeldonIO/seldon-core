@@ -1,7 +1,7 @@
 {
     "access": "proxy",
     "basicAuth": false,
-    "name": "prometheus",
+    "name": "DS_PROM",
     "type": "prometheus",
     "url": "http://prometheus-seldon"
 }

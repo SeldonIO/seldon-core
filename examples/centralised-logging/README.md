@@ -12,30 +12,32 @@ If you just want to bootstrap a full logging and request tracking setup for mini
 
 ## Setup
 
-If helm is not already set up then it needs to be configured:
+Start Minikube with flags as shown:
 
 ```
-kubectl -n kube-system create sa tiller
-kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
-helm init --service-account tiller
+minikube start --cpus 6 --memory 10240 --disk-size=30g --kubernetes-version='1.15.0'
 ```
 
 Install elasticsearch with minikube configuration:
 
 ```
-helm install --name elasticsearch elasticsearch --version 7.1.1 --namespace=logs -f elastic-minikube.yaml --repo https://helm.elastic.co
+kubectl create namespace logs
+```
+
+```
+helm install elasticsearch elasticsearch --version 7.1.1 --namespace=logs -f elastic-minikube.yaml --repo https://helm.elastic.co
 ```
 
 Then fluentd as a collection agent (chosen in preference to fluentbit - see notes at end):
 
 ```
-helm install fluentd-elasticsearch --name fluentd --namespace=logs -f fluentd-values.yaml --repo https://kiwigrid.github.io
+helm install fluentd fluentd-elasticsearch --namespace=logs -f fluentd-values.yaml --repo https://kiwigrid.github.io
 ```
 
 And kibana UI:
 
 ```
-helm install kibana --version 7.1.1 --name=kibana --namespace=logs --set service.type=NodePort --repo https://helm.elastic.co
+helm install kibana kibana --version 7.1.1 --namespace=logs --set service.type=NodePort --repo https://helm.elastic.co
 ```
 
 ## Generating Logging
@@ -45,7 +47,9 @@ First we need seldon and a seldon deployment.
 Install seldon operator:
 
 ```
-helm install --name seldon-core ../../helm-charts/seldon-core-operator/ --namespace seldon-system
+kubectl create namespace seldon-system
+
+helm install seldon-core ../../helm-charts/seldon-core-operator/ --namespace seldon-system
 ```
 
 Check that it now recognises the seldon CRD by running `kubectl get sdep`.
@@ -53,14 +57,15 @@ Check that it now recognises the seldon CRD by running `kubectl get sdep`.
 Now a model:
 
 ```
-helm install --name seldon-single-model ../../helm-charts/seldon-single-model/ --set engine.env.LOG_MESSAGES_EXTERNALLY="false"
+helm install seldon-single-model ../../helm-charts/seldon-single-model/ --set engine.env.LOG_MESSAGES_EXTERNALLY="false"
 ```
 
 And the loadtester:
 
 ```
 kubectl label nodes $(kubectl get nodes -o jsonpath='{.items[0].metadata.name}') role=locust --overwrite
-helm install --name seldon-core-loadtesting ../../helm-charts/seldon-core-loadtesting/ --set locust.host=http://seldon-single-model-seldon-single-model:8000 --set oauth.enabled=false --set oauth.key=oauth-key --set oauth.secret=oauth-secret --set locust.hatchRate=1 --set locust.clients=1 --set loadtest.sendFeedback=0 --set locust.minWait=0 --set locust.maxWait=0 --set replicaCount=1
+
+helm install seldon-core-loadtesting ../../helm-charts/seldon-core-loadtesting/ --set locust.host=http://seldon-single-model-seldon-single-model:8000 --set oauth.enabled=false --set oauth.key=oauth-key --set oauth.secret=oauth-secret --set locust.hatchRate=1 --set locust.clients=1 --set loadtest.sendFeedback=0 --set locust.minWait=0 --set locust.maxWait=0 --set replicaCount=1
 ```
 
 ## Inspecting Logging and Search for Requests
@@ -100,7 +105,7 @@ The fluentd setup is configured to ensure only labelled pods are logged and seld
 Fluentbit can be chosen instead. This could be installed with:
 
 ```
-helm install stable/fluent-bit --name=fluent-bit --namespace=logs --set backend.type=es --set backend.es.host=elasticsearch-master
+helm install --name=fluent-bit stable/fluent-bit --namespace=logs --set backend.type=es --set backend.es.host=elasticsearch-master
 ```
 
 In that case pods would be logged. At the time of writing fluentbit only supports [excluding pods by label, not including](https://github.com/fluent/fluent-bit/issues/737).

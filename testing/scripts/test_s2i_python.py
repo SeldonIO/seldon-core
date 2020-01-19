@@ -3,6 +3,7 @@ import time
 from subprocess import run
 import numpy as np
 from seldon_e2e_utils import (
+    wait_for_status,
     wait_for_rollout,
     rest_request_ambassador,
     initial_rest_request,
@@ -142,7 +143,8 @@ class S2IK8S(object):
         retry_run(f"kubectl create namespace {namespace}")
         create_push_s2i_image(s2i_python_version, "model", "rest")
         retry_run(f"kubectl apply -f ../resources/s2i_python_model.json -n {namespace}")
-        wait_for_rollout("mymodel-mymodel-8715075", namespace)
+        wait_for_status("mymodel", namespace)
+        wait_for_rollout("mymodel", namespace)
         r = initial_rest_request("mymodel", namespace)
         arr = np.array([[1, 2, 3]])
         r = rest_request_ambassador("mymodel", namespace, API_AMBASSADOR, data=arr)
@@ -164,7 +166,8 @@ class S2IK8S(object):
         retry_run(
             f"kubectl apply -f ../resources/s2i_python_model_non200.json -n {namespace}"
         )
-        wait_for_rollout("mymodel-mymodel-4e3d66d", namespace)
+        wait_for_status("mymodel", namespace)
+        wait_for_rollout("mymodel", namespace)
         r = initial_rest_request("mymodel", namespace)
         arr = np.array([[1, 2, 3]])
         r = rest_request_ambassador("mymodel", namespace, API_AMBASSADOR, data=arr)
@@ -189,7 +192,8 @@ class S2IK8S(object):
         retry_run(
             f"kubectl apply -f ../resources/s2i_python_transformer.json -n {namespace}"
         )
-        wait_for_rollout("mytrans-mytrans-1f278ae", namespace)
+        wait_for_status("mytrans", namespace)
+        wait_for_rollout("mytrans", namespace)
         r = initial_rest_request("mytrans", namespace)
         arr = np.array([[1, 2, 3]])
         r = rest_request_ambassador("mytrans", namespace, API_AMBASSADOR, data=arr)
@@ -211,7 +215,8 @@ class S2IK8S(object):
         retry_run(
             f"kubectl apply -f ../resources/s2i_python_output_transformer.json -n {namespace}"
         )
-        wait_for_rollout("mytrans-mytrans-52996cb", namespace)
+        wait_for_status("mytrans", namespace)
+        wait_for_rollout("mytrans", namespace)
         r = initial_rest_request("mytrans", namespace)
         arr = np.array([[1, 2, 3]])
         r = rest_request_ambassador("mytrans", namespace, API_AMBASSADOR, data=arr)
@@ -234,7 +239,8 @@ class S2IK8S(object):
         retry_run(
             f"kubectl apply -f ../resources/s2i_python_router.json -n {namespace}"
         )
-        wait_for_rollout("myrouter-myrouter-340ed69", namespace)
+        wait_for_status("myrouter", namespace)
+        wait_for_rollout("myrouter", namespace)
         r = initial_rest_request("myrouter", namespace)
         arr = np.array([[1, 2, 3]])
         r = rest_request_ambassador("myrouter", namespace, API_AMBASSADOR, data=arr)
@@ -257,7 +263,8 @@ class S2IK8S(object):
         retry_run(
             f"kubectl apply -f ../resources/s2i_python_combiner.json -n {namespace}"
         )
-        wait_for_rollout("mycombiner-mycombiner-acc7c4d", namespace)
+        wait_for_status("mycombiner", namespace)
+        wait_for_rollout("mycombiner", namespace)
         r = initial_rest_request("mycombiner", namespace)
         arr = np.array([[1, 2, 3]])
         r = rest_request_ambassador("mycombiner", namespace, API_AMBASSADOR, data=arr)

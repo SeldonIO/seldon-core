@@ -1107,6 +1107,10 @@ func createDeployments(r *SeldonDeploymentReconciler, components *components, in
 				desiredDeployment := found.DeepCopy()
 				found.Spec = deploy.Spec
 
+				if deploy.Spec.Replicas == nil {
+					found.Spec.Replicas = desiredDeployment.Spec.Replicas
+				}
+
 				err = r.Update(context.TODO(), found)
 				if err != nil {
 					return ready, err

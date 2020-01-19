@@ -1,31 +1,23 @@
 
-## For development if updating the Seldon Example Dashboard.
+## For development if creating a new dashboard.
 
-Save the dashboard to JSON by using the grafana API.
-Find the dashboard using:
+This helm chart deploys Grafana Dashboards using a sidecar
+(https://github.com/helm/charts/tree/master/stable/grafana#sidecar-for-dashboards)
 
-```
-curl http://admin:password@localhost:3000/api/search?tag=seldon
-```
+To modify or add a dashboard please follow the steps below.
 
-Export by UID:
-
-```
-curl -v http://admin:password@localhost:3000/api/dashboards/uid/TcosMYEWz > dashboard.json
-```
-
-Manually edit to
-
- * Remove `uid` and `id`
- * set aliasColors to `{}` rather than `null`. TODO: fix this so we can make process more automated
-
-A dashboard can be imported with:
-
-```
-curl -v http://admin:password@localhost:3000/api/dashboards/import -d "@dashboard.json" --header "Content-Type: application/json"
-```
-
-This API endpoint seems to be undocumented. The create dashboard referred to in docs did not work with exported dashboard. TODO: find out if we can use the documented API endpoint.
-
-See [Grafana API docs](https://grafana.com/docs/grafana/latest/http_api/dashboard/)
-
+  * Save the dashboard to JSON by exporting it and copy it to the `files/grafana/config` directory.
+  * Save a new configmap in the `templates/grafana` directory for the dashboard using the template below, replacing <new-dashboard> with the name of your dashboard:
+     * <new-dashboard>-configmap.yaml
+     ```
+     apiVersion: v1
+     data:
+     {{ (.Files.Glob "files/grafana/configs/<new-dashboard>.json").AsConfig | indent 2 }}
+     kind: ConfigMap
+     metadata:
+       creationTimestamp: null
+       name: <new-dashboard>
+       namespace: {{ .Release.Namespace }}
+       labels:
+         seldon_dashboard: "1" 
+     ```
