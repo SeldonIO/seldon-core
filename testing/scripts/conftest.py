@@ -18,6 +18,7 @@ def run_pod_information_in_background(request):
 
 @pytest.fixture(scope="module")
 def s2i_python_version():
+    """Return version of s2i images, the IMAGE_VERSION, e.g. 0.17-SNAPSHOT."""
     return do_s2i_python_version()
 
 
