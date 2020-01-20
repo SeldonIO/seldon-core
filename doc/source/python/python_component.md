@@ -146,6 +146,9 @@ class ModelWithMetrics(object):
     	return {"system":"production"}
 ```
 
+## REST Metadata Endpoint
+The python wrapper will automatically expose a `/metadata` endpoint to return metadata about the loaded model. It is up to the developer to implement a `metadata` method in their class to provide an arbitrary Dict back containing the model metadata.\
+
 ## REST Health Endpoint
 If you wish to add a REST health point, you can implement the `health_status` method with signature as shown below:
 ```python
