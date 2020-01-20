@@ -1,5 +1,7 @@
+.. _contributing:
+
 ========
-Contributing to Seldon Core
+Contributing
 ========
 
  .. mdinclude:: ../../../CONTRIBUTING.md
