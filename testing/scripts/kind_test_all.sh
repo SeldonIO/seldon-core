@@ -67,6 +67,19 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
         echo "SKIPPING ENGINE IMAGE BUILD..."
     fi
 
+    echo "Files changed in executor folder:"
+    git --no-pager diff --exit-code --name-only origin/master ../../executor
+    EXECUTOR_MODIFIED=$?
+    if [[ $EXECUTOR_MODIFIED -gt 0 ]]; then
+        make kind_build_executor
+        EXECUTOR_EXIT_VALUE=$?
+    else
+        echo "SKIPPING EXECUTOR IMAGE BUILD..."
+    fi
+
+    echo "Build fixed models"
+    make kind_build_fixed_models
+
     # KIND CLUSTER SETUP
     make kind_setup
     SETUP_EXIT_VALUE=$?
