@@ -17,6 +17,11 @@ def assert_model(sdep_name, namespace, initial=False):
     assert r.status_code == 200
     assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
 
+    # NOTE: The following will test if the `SeldonDeployment` can be fetched as
+    # a Kubernetes resource. This covers cases where some resources (e.g. CRD
+    # versions or webhooks) may get inadvertently removed between versions.
+    # The `retry_run()` method will **implicitly do an assert** on the return
+    # code of the command.
     retry_run(f"kubectl get -n {namespace} sdep {sdep_name}")
 
 
