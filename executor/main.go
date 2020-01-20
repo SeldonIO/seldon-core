@@ -206,13 +206,7 @@ func main() {
 		log.Fatal("Only rest and grpc supported")
 	}
 
-	var serverUrl *url.URL
-	var err error
-	if *transport == "rest" {
-		serverUrl, err = getServerUrl(*hostname, *httpPort)
-	} else {
-		serverUrl, err = getServerUrl(*hostname, *httpPort)
-	}
+	serverUrl, err := getServerUrl(*hostname, *httpPort)
 	if err != nil {
 		log.Fatal("Failed to create server url from", *hostname, *httpPort)
 	}
