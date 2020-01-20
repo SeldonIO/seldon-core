@@ -1,4 +1,6 @@
 import mlflow
+import pandas as pd
+import numpy as np
 
 from argparse import ArgumentParser
 
@@ -6,7 +8,9 @@ from pyspark.ml.regression import LinearRegression
 from pyspark.ml.feature import VectorAssembler
 from pyspark.ml import Pipeline
 
-from ..common import eval_metrics, read_data
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+from sklearn.model_selection import train_test_split
+
 
 parser = ArgumentParser()
 parser.add_argument(
@@ -20,7 +24,7 @@ parser.add_argument(
 )
 parser.add_argument(
     "-l",
-    "--l1-ratio",
+    "--l1_ratio",
     action="store",
     dest="l1_ratio",
     type=float,
@@ -29,10 +33,29 @@ parser.add_argument(
 )
 
 
+def eval_metrics(actual, pred):
+    rmse = np.sqrt(mean_squared_error(actual, pred))
+    mae = mean_absolute_error(actual, pred)
+    r2 = r2_score(actual, pred)
+    return rmse, mae, r2
+
+
+def read_data():
+    data = pd.read_csv("../wine-quality.csv")
+    data.head()
+
+    # We normalize the inputs to both the SparkML & TensorFlow models
+    # so that they have the same input schema.
+    for col in data.columns[:-1]:
+        data[col] = (data[col] - data[col].mean()) / data[col].std()
+
+    return data
+
+
 def train(alpha, l1_ratio):
     # Split data into training and test datasets.
     data = read_data()
-    (training, test) = data.randomSplit([0.8, 0.2])
+    (training, test) = train_test_split(data, train_size=0.8)
 
     # Assemble feature columns into a vector (excluding the "quality" label).
     assembler = VectorAssembler(inputCols=data.columns[0:-1], outputCol="features")
