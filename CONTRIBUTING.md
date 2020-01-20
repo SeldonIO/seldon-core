@@ -95,12 +95,13 @@ You can do so as:
 $ pytest
 ```
 
-### Integration
+### End to End Tests
 
-As part of Seldon Core's test suite, we also run integration tests.
+As part of Seldon Core's test suite, we also run end to end tests.
 These spin up an actual Kubernetes cluster using
 [Kind](https://github.com/kubernetes-sigs/kind) and deploy different
 `SeldonDeployment` and resources.
 
-You can read more about them and how to add new integration tests on [their
-dedicated documentation](testing/scripts/README.md).
+You can learn more about how to run them and how to add new test cases on
+[their dedicated
+documentation](https://docs.seldon.io/projects/seldon-core/en/latest/developer/e2e.html).
