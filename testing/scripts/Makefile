@@ -16,7 +16,7 @@ kind_build_engine:
 kind_build_operator:
 	cd ../../operator && make kind-image-install
 
-kind_build_images: kind_build_engine kind_build_operator
+kind_build_images: build_protos kind_build_engine kind_build_operator
 
 helm_setup:
 	helm repo add stable https://kubernetes-charts.storage.googleapis.com/
