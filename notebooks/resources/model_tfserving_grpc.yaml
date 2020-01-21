@@ -3,7 +3,7 @@ kind: SeldonDeployment
 metadata:
   name: grpc-tfserving
 spec:
-  name: test
+  name: grpctfserving
   predictors:
   - protocol: tensorflow
     transport: grpc

@@ -3,7 +3,7 @@ kind: SeldonDeployment
 metadata:
   name: rest-tfserving
 spec:
-  name: test
+  name: resttfserving
   predictors:
   - protocol: tensorflow
     transport: rest

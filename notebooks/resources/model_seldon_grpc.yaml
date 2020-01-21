@@ -3,7 +3,7 @@ kind: SeldonDeployment
 metadata:
   name: grpc-seldon
 spec:
-  name: test
+  name: grpcseldon
   predictors:
   - protocol: seldon
     transport: grpc

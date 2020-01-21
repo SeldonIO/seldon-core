@@ -3,7 +3,7 @@ kind: SeldonDeployment
 metadata:
   name: rest-seldon
 spec:
-  name: test
+  name: restseldon
   predictors:
   - protocol: seldon
     transport: rest

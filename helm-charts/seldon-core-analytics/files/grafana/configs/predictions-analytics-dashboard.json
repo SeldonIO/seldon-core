@@ -407,7 +407,7 @@
       "id": 42,
       "panels": [],
       "repeat": "deployment",
-      "title": "Deployment Counts",
+      "title": "Deployment Counts $deployment",
       "type": "row"
     },
     {
@@ -782,7 +782,7 @@
       "id": 44,
       "panels": [],
       "repeat": "model_image",
-      "title": "Model Metrics",
+      "title": "Model Metrics $model_image",
       "type": "row"
     },
     {
