@@ -52,7 +52,7 @@ func NewSeldonDeploymentClient(path *string) *SeldonDeploymentClient {
 	}
 }
 
-func (sd *SeldonDeploymentClient) GetPredcitor(sdepName string, namespace string, predictorName string) (*v1.PredictorSpec, error) {
+func (sd *SeldonDeploymentClient) GetPredictor(sdepName string, namespace string, predictorName string) (*v1.PredictorSpec, error) {
 	sdep, err := sd.client.SeldonDeployments(namespace).Get(sdepName, v1meta.GetOptions{})
 	if err != nil {
 		return nil, err

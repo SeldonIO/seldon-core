@@ -60,7 +60,7 @@ Example request payload:
 {"data":{"names":["a","b"],"tensor":{"shape":[2,2],"values":[0,0,1,1]}}}
 ```
 
-Exxample response payload:
+Example response payload:
 
 ```json
 {"data":{"ndarray":[1]}}

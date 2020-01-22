@@ -233,7 +233,7 @@ func main() {
 		} else if predictor == nil {
 			logger.Info("Trying to get predictor from API")
 			seldonDeploymentClient := seldonclient.NewSeldonDeploymentClient(configPath)
-			predictor, err = seldonDeploymentClient.GetPredcitor(*sdepName, *namespace, *predictorName)
+			predictor, err = seldonDeploymentClient.GetPredictor(*sdepName, *namespace, *predictorName)
 			if err != nil {
 				logger.Error(err, "Failed to find predictor", "name", predictor)
 				panic(err)
