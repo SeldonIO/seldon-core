@@ -41,10 +41,10 @@ func NewTensorflowGrpcClient(predictor *v1.PredictorSpec, deploymentName string)
 		Predictor:      predictor,
 		DeploymentName: deploymentName,
 	}
-	return smgc
+	return &smgc
 }
 
-func (s TensorflowGrpcClient) getConnection(host string, port int32, modelName string) (*grpc.ClientConn, error) {
+func (s *TensorflowGrpcClient) getConnection(host string, port int32, modelName string) (*grpc.ClientConn, error) {
 	k := fmt.Sprintf("%s:%d", host, port)
 	if conn, ok := s.conns[k]; ok {
 		return conn, nil
@@ -68,7 +68,7 @@ func (s TensorflowGrpcClient) getConnection(host string, port int32, modelName s
 }
 
 // Allow PredictionResponses to be turned into PredictionRequests
-func (s TensorflowGrpcClient) Chain(ctx context.Context, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+func (s *TensorflowGrpcClient) Chain(ctx context.Context, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	switch v := msg.GetPayload().(type) {
 	case *serving.PredictRequest, *serving.ClassificationRequest, *serving.MultiInferenceRequest:
 		s.Log.Info("Identity chain")
@@ -88,7 +88,7 @@ func (s TensorflowGrpcClient) Chain(ctx context.Context, modelName string, msg p
 	}
 }
 
-func (s TensorflowGrpcClient) Predict(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
+func (s *TensorflowGrpcClient) Predict(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
 	conn, err := s.getConnection(host, port, modelName)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
@@ -113,23 +113,23 @@ func (s TensorflowGrpcClient) Predict(ctx context.Context, modelName string, hos
 	return &resPayload, nil
 }
 
-func (s TensorflowGrpcClient) TransformInput(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
+func (s *TensorflowGrpcClient) TransformInput(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
 	return s.Predict(ctx, modelName, host, port, msg, meta)
 }
 
-func (s TensorflowGrpcClient) Route(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (int, error) {
+func (s *TensorflowGrpcClient) Route(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (int, error) {
 	panic("Not implemented")
 }
 
-func (s TensorflowGrpcClient) Combine(ctx context.Context, modelName string, host string, port int32, msgs []payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
+func (s *TensorflowGrpcClient) Combine(ctx context.Context, modelName string, host string, port int32, msgs []payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
 	panic("Not implemented")
 }
 
-func (s TensorflowGrpcClient) TransformOutput(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
+func (s *TensorflowGrpcClient) TransformOutput(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
 	return s.Predict(ctx, modelName, host, port, msg, meta)
 }
 
-func (s TensorflowGrpcClient) Status(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
+func (s *TensorflowGrpcClient) Status(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
 	conn, err := s.getConnection(host, port, modelName)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
@@ -144,7 +144,7 @@ func (s TensorflowGrpcClient) Status(ctx context.Context, modelName string, host
 	return &resPayload, nil
 }
 
-func (s TensorflowGrpcClient) Metadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
+func (s *TensorflowGrpcClient) Metadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
 	conn, err := s.getConnection(host, port, modelName)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
@@ -159,18 +159,18 @@ func (s TensorflowGrpcClient) Metadata(ctx context.Context, modelName string, ho
 	return &resPayload, nil
 }
 
-func (s TensorflowGrpcClient) Feedback(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
+func (s *TensorflowGrpcClient) Feedback(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
 	panic("implement me")
 }
 
-func (s TensorflowGrpcClient) Unmarshall(msg []byte) (payload.SeldonPayload, error) {
+func (s *TensorflowGrpcClient) Unmarshall(msg []byte) (payload.SeldonPayload, error) {
 	panic("Not implemented")
 }
 
-func (s TensorflowGrpcClient) Marshall(out io.Writer, msg payload.SeldonPayload) error {
+func (s *TensorflowGrpcClient) Marshall(out io.Writer, msg payload.SeldonPayload) error {
 	panic("Not implemented")
 }
 
-func (s TensorflowGrpcClient) CreateErrorPayload(err error) payload.SeldonPayload {
+func (s *TensorflowGrpcClient) CreateErrorPayload(err error) payload.SeldonPayload {
 	panic("Not implemented")
 }

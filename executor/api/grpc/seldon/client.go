@@ -42,10 +42,10 @@ func NewSeldonGrpcClient(spec *v1.PredictorSpec, deploymentName string) client.S
 		Predictor:      spec,
 		DeploymentName: deploymentName,
 	}
-	return smgc
+	return &smgc
 }
 
-func (s SeldonMessageGrpcClient) getConnection(host string, port int32, modelName string) (*grpc.ClientConn, error) {
+func (s *SeldonMessageGrpcClient) getConnection(host string, port int32, modelName string) (*grpc.ClientConn, error) {
 	k := fmt.Sprintf("%s:%d", host, port)
 	if conn, ok := s.conns[k]; ok {
 		return conn, nil
@@ -68,11 +68,11 @@ func (s SeldonMessageGrpcClient) getConnection(host string, port int32, modelNam
 	}
 }
 
-func (s SeldonMessageGrpcClient) Chain(ctx context.Context, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+func (s *SeldonMessageGrpcClient) Chain(ctx context.Context, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	return msg, nil
 }
 
-func (s SeldonMessageGrpcClient) Predict(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
+func (s *SeldonMessageGrpcClient) Predict(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
 	conn, err := s.getConnection(host, port, modelName)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
@@ -86,7 +86,7 @@ func (s SeldonMessageGrpcClient) Predict(ctx context.Context, modelName string, 
 	return &resPayload, nil
 }
 
-func (s SeldonMessageGrpcClient) TransformInput(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
+func (s *SeldonMessageGrpcClient) TransformInput(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
 	conn, err := s.getConnection(host, port, modelName)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
@@ -100,7 +100,7 @@ func (s SeldonMessageGrpcClient) TransformInput(ctx context.Context, modelName s
 	return &resPayload, nil
 }
 
-func (s SeldonMessageGrpcClient) Route(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (int, error) {
+func (s *SeldonMessageGrpcClient) Route(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (int, error) {
 	conn, err := s.getConnection(host, port, modelName)
 	if err != nil {
 		return 0, err
@@ -115,7 +115,7 @@ func (s SeldonMessageGrpcClient) Route(ctx context.Context, modelName string, ho
 	return routes[0], nil
 }
 
-func (s SeldonMessageGrpcClient) Combine(ctx context.Context, modelName string, host string, port int32, msgs []payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
+func (s *SeldonMessageGrpcClient) Combine(ctx context.Context, modelName string, host string, port int32, msgs []payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
 	conn, err := s.getConnection(host, port, modelName)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
@@ -134,7 +134,7 @@ func (s SeldonMessageGrpcClient) Combine(ctx context.Context, modelName string, 
 	return &resPayload, nil
 }
 
-func (s SeldonMessageGrpcClient) TransformOutput(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
+func (s *SeldonMessageGrpcClient) TransformOutput(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
 	conn, err := s.getConnection(host, port, modelName)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
@@ -148,7 +148,7 @@ func (s SeldonMessageGrpcClient) TransformOutput(ctx context.Context, modelName 
 	return &resPayload, nil
 }
 
-func (s SeldonMessageGrpcClient) Feedback(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
+func (s *SeldonMessageGrpcClient) Feedback(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
 	conn, err := s.getConnection(host, port, modelName)
 	if err != nil {
 		return s.CreateErrorPayload(err), err
@@ -162,24 +162,24 @@ func (s SeldonMessageGrpcClient) Feedback(ctx context.Context, modelName string,
 	return &resPayload, nil
 }
 
-func (s SeldonMessageGrpcClient) Unmarshall(msg []byte) (payload.SeldonPayload, error) {
+func (s *SeldonMessageGrpcClient) Unmarshall(msg []byte) (payload.SeldonPayload, error) {
 	panic("Not implemented")
 }
 
-func (s SeldonMessageGrpcClient) Marshall(out io.Writer, msg payload.SeldonPayload) error {
+func (s *SeldonMessageGrpcClient) Marshall(out io.Writer, msg payload.SeldonPayload) error {
 	panic("Not implemented")
 }
 
-func (s SeldonMessageGrpcClient) CreateErrorPayload(err error) payload.SeldonPayload {
+func (s *SeldonMessageGrpcClient) CreateErrorPayload(err error) payload.SeldonPayload {
 	respFailed := proto.SeldonMessage{Status: &proto.Status{Code: http.StatusInternalServerError, Info: err.Error()}}
 	res := payload.ProtoPayload{Msg: &respFailed}
 	return &res
 }
 
-func (s SeldonMessageGrpcClient) Status(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
+func (s *SeldonMessageGrpcClient) Status(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
 	return nil, errors.Errorf("Not implemented")
 }
 
-func (s SeldonMessageGrpcClient) Metadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
+func (s *SeldonMessageGrpcClient) Metadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
 	return nil, errors.Errorf("Not implemented")
 }
