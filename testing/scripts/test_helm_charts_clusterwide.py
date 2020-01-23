@@ -29,9 +29,6 @@ class TestClusterWide(object):
         logging.warning(r.json())
         assert r.status_code == 200
         assert len(r.json()["data"]["tensor"]["values"]) == 1
-        logging.warning("Test Ambassador gRPC gateway")
-        r = grpc_request_ambassador2("mymodel", namespace, API_AMBASSADOR)
-        logging.warning(r)
         run(f"helm delete mymodel", shell=True)
 
     # Test AB Test model helm script with 4 API methods
