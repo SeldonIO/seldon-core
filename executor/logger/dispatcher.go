@@ -7,7 +7,7 @@ import (
 var WorkerQueue chan chan LogRequest
 
 func StartDispatcher(nworkers int, log logr.Logger) {
-	// First, initialize the channel we are going to but the workers' work channels into.
+	// First, initialize the channel we are going to put the workers' work channels into.
 	WorkerQueue = make(chan chan LogRequest, nworkers)
 
 	// Now, create all of our workers.
