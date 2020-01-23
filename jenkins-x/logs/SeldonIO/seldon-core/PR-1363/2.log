@@ -1,0 +1,145 @@
+
+Showing logs for build [32mseldonio-seldon-core-pr-1363-li-9s7xr-2[0m stage [32mpr-build-comment[0m and container [32mstep-credential-initializer-2j292[0m
+{"level":"warn","ts":1579808692.4207387,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1579808692.4212668,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1363-li-9s7xr-2[0m stage [32mpr-build-comment[0m and container [32mstep-working-dir-initializer-g2l76[0m
+{"level":"warn","ts":1579808693.8952844,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1579808693.896911,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1363-li-9s7xr-2[0m stage [32mpr-build-comment[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-1363-li-9s7xr-2[0m stage [32mpr-build-comment[0m and container [32mstep-create-dir-workspace-9cl62[0m
+{"level":"warn","ts":1579808700.0293353,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1579808700.0310178,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1363-li-9s7xr-2[0m stage [32mpr-build-comment[0m and container [32mstep-git-source-seldonio-seldon-core-pr-1363-li-f4wl5[0m
+{"level":"warn","ts":1579808700.3087864,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1579808703.9142275,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ master in path /workspace/source"}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1363-li-9s7xr-2[0m stage [32mpr-build-comment[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=v1.0.1-SNAPSHOT:349bc5bd5312b7371a5961b49d23e145f54ea238,1363:87fe3f9787eb0ff59c7aea24bd7ac1ae89e8366d
+DEBUG: ran git fetch --unshallow origin 87fe3f9787eb0ff59c7aea24bd7ac1ae89e8366d: 349bc5bd5312b7371a5961b49d23e145f54ea238: in 
+DEBUG: ran git checkout v1.0.1-SNAPSHOT in 
+DEBUG: ran git reset --hard 349bc5bd5312b7371a5961b49d23e145f54ea238 in 
+DEBUG: ran clean --force -d . in 
+DEBUG: ran git merge 87fe3f9787eb0ff59c7aea24bd7ac1ae89e8366d in 
+Merged SHA 87fe3f9787eb0ff59c7aea24bd7ac1ae89e8366d with commit message 'fix tensorflow==2.1 in outliers example' into base branch v1.0.1-SNAPSHOT
+Merged SHA f2cf965a80dbebbd581213a5b2c7f2d87df05161 with commit message 'add missing build dependencies' into base branch v1.0.1-SNAPSHOT
+Merged SHA da7780f0fe4926c83cf19c2f106f8aeb77509633 with commit message 'merge conda and regular python s2i wrappers, closes #1125' into base branch v1.0.1-SNAPSHOT
+Merged SHA bd64eab4a33145193474b00c9587a83d4f74f1dc with commit message 'add comment to s2i_python_version fixture' into base branch v1.0.1-SNAPSHOT
+Merged SHA 52b97abc0c79de39dd7723e6a9aca2d55f0e1a60 with commit message 'fix running kind_test_setup.sh on fresh machine' into base branch v1.0.1-SNAPSHOT
+Merged SHA 2192efd746ef649ed179611816b6a2d4ab45ee5e with commit message 'Bump ojalgo from 48.0.0 to 48.1.0 in /engine' into base branch v1.0.1-SNAPSHOT
+Merged SHA 9bd4149c32d0c0c9702d74d098fdff10d74b7a23 with commit message 'Add page for integration tests' into base branch v1.0.1-SNAPSHOT
+Merged SHA 7d931ea33c0019e786e9e483fe265ae03443f322 with commit message 'Add comment on sdep test' into base branch v1.0.1-SNAPSHOT
+Merged SHA 27d08c3ef4a4f4464a828415fb0c92fc104c9e30 with commit message 'Make title match link' into base branch v1.0.1-SNAPSHOT
+Merged SHA b2f477a92c343e7ac40d37cbad821b6180054e9c with commit message 'Remove backticks inside links which break RST' into base branch v1.0.1-SNAPSHOT
+Merged SHA 111ce75788a9a5c79e9cfdff4eed5f9b424d4479 with commit message 'Remove title' into base branch v1.0.1-SNAPSHOT
+Merged SHA 52ebdc3094259c9ba97e77a34f1cefd024524a9a with commit message 'Link to contributing doc' into base branch v1.0.1-SNAPSHOT
+Merged SHA 95c447fe453fcaaa9df99036b82e375b9a798da4 with commit message 'Remove extra space' into base branch v1.0.1-SNAPSHOT
+Merged SHA 6a4da1538a101a4d376429df0dd87b372c64f6ef with commit message 'Rename to just 'Contributing'' into base branch v1.0.1-SNAPSHOT
+Merged SHA f2cd530d05630dbece6aede9a1c9c0e4b2eaaac4 with commit message 'Add CONTRIBUTING.md to main docs' into base branch v1.0.1-SNAPSHOT
+Merged SHA 4434710a897b496bc3b3a7238bcb8889158eba9b with commit message 'Remove S2iK8s util class' into base branch v1.0.1-SNAPSHOT
+Merged SHA c8617f26db6cf638b2f57bf742bd42658de9816e with commit message 'Escape slash for namespace generation' into base branch v1.0.1-SNAPSHOT
+Merged SHA fab0d1bc3c514ab253807c0f0a6172cb2c0fd341 with commit message 'Fix label tests and skip update test from 0.4.1' into base branch v1.0.1-SNAPSHOT
+Merged SHA b87d608d8071994fd4ed35f4ed7836a33b6b0ea4 with commit message 'Add seldon_version fixture to reduce code duplication' into base branch v1.0.1-SNAPSHOT
+Merged SHA bbcf7b9a5e046700d591affeb9b168533f6faf02 with commit message 'Add 1.0.1 and namespace update' into base branch v1.0.1-SNAPSHOT
+Merged SHA 76b1d212722214134ec9333a16d44e320248ab3a with commit message 'Add tests deploying a namespace-scoped recent version' into base branch v1.0.1-SNAPSHOT
+Merged SHA 53112e889cff46e32e92a47d007b4cff41bf4fde with commit message 'Rename serial to sequential' into base branch v1.0.1-SNAPSHOT
+Merged SHA fccde972abfb6a644c59eb8e934db4ae64c14e03 with commit message 'Use helm --wait' into base branch v1.0.1-SNAPSHOT
+Merged SHA 50c00059d6b349ffe5db999220841b28d6d37f68 with commit message 'Add a few comments' into base branch v1.0.1-SNAPSHOT
+Merged SHA 6ff8c50875f567600aee4316a70146379b2dcffc with commit message 'Add test for cluster-wide updates of te operator' into base branch v1.0.1-SNAPSHOT
+Merged SHA aad1a03cea1eb7e69f2e65c0a20b652c261b8431 with commit message 'Rename mark to 'serial' and register' into base branch v1.0.1-SNAPSHOT
+Merged SHA b00a67f9864b28274a6d617d1944ed73aef7cb52 with commit message 'Add pytest mark only_serial and docs' into base branch v1.0.1-SNAPSHOT
+Merged SHA ab30021cfc287b4ec22b95a3d17546d60e8d80ae with commit message 'Rename api_gateway parametrizer' into base branch v1.0.1-SNAPSHOT
+Merged SHA 9d409b5cb109372b6757b5315668f26bc6baecf0 with commit message 'Turn initial_rest_request into a loop' into base branch v1.0.1-SNAPSHOT
+Merged SHA a11d4cf0f8b263be8d7ff66f25c034722ef266c7 with commit message 'Add helm repo for Seldon as part of kind setup' into base branch v1.0.1-SNAPSHOT
+Merged SHA cea96dd33bf2099b30b85c816d1585a9b5829559 with commit message 'Use namespace fixture instead of mally creating the namespace' into base branch v1.0.1-SNAPSHOT
+Merged SHA f42f063914377049c1743d21ccf8a9031b7c8a22 with commit message 'Add namespace fixture' into base branch v1.0.1-SNAPSHOT
+Merged SHA 3ae6c8695eb792d683d3254df30f52c3c6dfb121 with commit message 'Move clean_string to e2e_utils' into base branch v1.0.1-SNAPSHOT
+Merged SHA 93e1f6de0ebcef55b565cd38bd534fe0d990ad17 with commit message 'fix links do images descriptions, closes #1249' into base branch v1.0.1-SNAPSHOT
+Merged SHA 8f4cd97823c40353e88a97fba1bef895b4f781ab with commit message 'Remove log4j since it's already using SLF4J' into base branch v1.0.1-SNAPSHOT
+Merged SHA d9ff54f1aad761472091b54884a214cf948f7ab0 with commit message 'Format Java code' into base branch v1.0.1-SNAPSHOT
+Merged SHA 76fd9b533425130c54ad8e892881add17554272c with commit message 'Include minikube setup' into base branch v1.0.1-SNAPSHOT
+Merged SHA 4714a91ea50cef44278cc3bbb389d40cd25406fe with commit message 'Update centralised logging example README to helm 3' into base branch v1.0.1-SNAPSHOT
+Merged SHA 95951e9bf853a080bcd9aa472db0996c5c914001 with commit message '#1297 WIP Update Analytics Helm Chart (#1331)' into base branch v1.0.1-SNAPSHOT
+Merged SHA e2c0eb4141f5c278bea004030d618f97dc0d34a8 with commit message 'update images reference doc' into base branch v1.0.1-SNAPSHOT
+Merged SHA 9cd336904fd47d85593d48ca8568e71a03f28284 with commit message 'python wrapper version usage updated' into base branch v1.0.1-SNAPSHOT
+Merged SHA 47f84d1d4f236d01a28f51ccec81ccd5210e064b with commit message 'seldon-core python version 1.0.1' into base branch v1.0.1-SNAPSHOT
+Merged SHA 9c373d670cfd46e6fd4faed1d56c923a6d8ad7d5 with commit message 'version 1.0.2-SNAPSHOT' into base branch v1.0.1-SNAPSHOT
+Merged SHA b2a728e2e71bb3adbfd6713d2b69be3648e89eea with commit message 'version 1.0.1' into base branch v1.0.1-SNAPSHOT
+
+Showing logs for build [32mseldonio-seldon-core-pr-1363-li-9s7xr-2[0m stage [32mpr-build-comment[0m and container [32mstep-step2[0m
++++ dirname ./add-pr-build-comment
+++ cd .
+++ pwd
++ STARTUP_DIR=/workspace/source/ci
++ REPO_OWNER=SeldonIO
++ REPO_NAME=seldon-core
++ PULL_NUMBER=1363
++ BUILD_NUMBER=2
++ PIPELINE_CONTEXT=lint
+++ cat
++++ date
++ COMMENT_MSG='Thu Jan 23 19:45:09 UTC 2020
+The logs for [lint] [2] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-1363/2.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-1363 --build=2'
++ ** step pr comment --owner=SeldonIO --repository=seldon-core --pull-request=1363 '--comment=Thu Jan 23 19:45:09 UTC 2020
+The logs for [lint] [2] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-1363/2.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-1363 --build=2'
+
+Showing logs for build [32mseldonio-seldon-core-pr-1363-li-9s7xr-2[0m stage [32mpr-build-comment[0m and container [32mstep-source-mkdir-seldonio-seldon-core-pr-1363-li-bj7qc[0m
+{"level":"warn","ts":1579808712.174166,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1579808712.178165,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1363-li-9s7xr-2[0m stage [32mpr-build-comment[0m and container [32mstep-source-copy-seldonio-seldon-core-pr-1363-li-5dtf9[0m
+{"level":"warn","ts":1579808712.451812,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1579808712.6766257,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r source/. /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1363-li-9s7xr-2[0m stage [32mpython-lint-task[0m and container [32mstep-credential-initializer-n7l99[0m
+{"level":"warn","ts":1579808740.0827374,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1579808740.083219,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1363-li-9s7xr-2[0m stage [32mpython-lint-task[0m and container [32mstep-working-dir-initializer-8dw6l[0m
+{"level":"warn","ts":1579808741.2260833,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1579808741.2284627,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1363-li-9s7xr-2[0m stage [32mpython-lint-task[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-1363-li-9s7xr-2[0m stage [32mpython-lint-task[0m and container [32mstep-create-dir-workspace-fjnjz[0m
+{"level":"warn","ts":1579808756.0518265,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1579808756.0542378,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1363-li-9s7xr-2[0m stage [32mpython-lint-task[0m and container [32mstep-source-copy-workspace-c7lhz[0m
+{"level":"warn","ts":1579808756.8908675,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1579808759.0355065,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1363-li-9s7xr-2[0m stage [32mpython-lint-task[0m and container [32mstep-python-lint[0m
+make: Entering directory '/workspace/source/python'
+pip install black==19.3b0
+Collecting black==19.3b0
+  Downloading https://files.pythonhosted.org/packages/30/62/cf549544a5fe990bbaeca21e9c419501b2de7a701ab0afb377bc81676600/black-19.3b0-py36-none-any.whl (89kB)
+Collecting appdirs
+  Downloading https://files.pythonhosted.org/packages/56/eb/810e700ed1349edde4cbdc1b2a21e28cdf115f9faf263f6bbf8447c1abf3/appdirs-1.4.3-py2.py3-none-any.whl
+Collecting toml>=0.9.4
+  Downloading https://files.pythonhosted.org/packages/a2/12/ced7105d2de62fa7c8fb5fce92cc4ce66b57c95fb875e9318dba7f8c5db0/toml-0.10.0-py2.py3-none-any.whl
+Collecting attrs>=18.1.0
+  Downloading https://files.pythonhosted.org/packages/a2/db/4313ab3be961f7a763066401fb77f7748373b6094076ae2bda2806988af6/attrs-19.3.0-py2.py3-none-any.whl
+Collecting click>=6.5
+  Downloading https://files.pythonhosted.org/packages/fa/37/45185cb5abbc30d7257104c434fe0b07e5a195a6847506c074527aa599ec/Click-7.0-py2.py3-none-any.whl (81kB)
+Installing collected packages: appdirs, toml, attrs, click, black
+Successfully installed appdirs-1.4.3 attrs-19.3.0 black-19.3b0 click-7.0 toml-0.10.0
+WARNING: You are using pip version 19.3.1; however, version 20.0.1 is available.
+You should consider upgrading via the 'pip install --upgrade pip' command.
+black \
+	--check ./ ../testing \
+	--exclude "(testing/scripts/proto|seldon_core/proto/|.eggs|.tox)"
+All done! ✨ 🍰 ✨
+53 files would be left unchanged.
+make: Leaving directory '/workspace/source/python'
