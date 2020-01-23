@@ -115,6 +115,8 @@ Seldon Core is an open source platform for deploying machine learning models on 
    :caption: Developer
 
    Overview <developer/readme.md>
+   Contributing to Seldon Core <developer/contributing.rst>
+   End to End Tests <developer/e2e.rst>
    Roadmap <developer/roadmap.md>
    Build using private repo <developer/build-using-private-repo.md>
 

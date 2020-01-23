@@ -22,15 +22,15 @@ kind_build_executor:
 kind_build_fixed_models:
 	cd ../docker/fixed-model && make kind_load_images
 
-kind_build_images: kind_build_engine kind_build_operator kind_build_executor kind_build_fixed_models
+kind_build_images: build_protos kind_build_engine kind_build_operator kind_build_executor kind_build_fixed_models
 
 helm_setup:
 	helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+	helm repo add seldonio https://storage.googleapis.com/seldon-charts
 	helm repo update
 
 install_ambassador:
-	helm install ambassador stable/ambassador -f ambassador_values.yaml --set crds.keep=false --namespace seldon --set replicaCount=1
-	kubectl rollout status deployment.apps/ambassador --namespace seldon
+	helm install --wait ambassador stable/ambassador -f ambassador_values.yaml --set crds.keep=false --namespace seldon --set replicaCount=1
 
 install_cert_manager:
 	cd ../../operator && make install-cert-manager
@@ -38,7 +38,7 @@ install_cert_manager:
 
 install_seldon: install_cert_manager
 	kubectl create namespace seldon-system || echo "namespace seldon-system exists"
-	helm install seldon ../../helm-charts/seldon-core-operator --namespace seldon-system --set istio.enabled=true --set istio.gateway=seldon-gateway --set certManager.enabled=false --set executor.enabled=true
+	helm install --wait seldon ../../helm-charts/seldon-core-operator --namespace seldon-system --set istio.enabled=true --set istio.gateway=seldon-gateway --set certManager.enabled=false --set executor.enabled=true
 
 install_istio:
 	kubectl apply -f istio-1.4.2.yaml
@@ -83,15 +83,15 @@ test: build_protos install
 		--verbose \
 		-s \
 		-W ignore \
-		--ignore test_s2i_python.py \
-		-n $(PYTEST_WORKERS)  2>&1
+		-n $(PYTEST_WORKERS) \
+		-m "not sequential" 2>&1
 	# Then run the s2i tests in sequence (as they currently fail in parallel
 	pytest \
 		--verbose \
 		-s \
 		-W ignore \
 		-n 0 \
-		test_s2i_python.py 2>&1
+		-m "sequential" 2>&1
 
 .PHONY: clean
 clean:

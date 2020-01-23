@@ -1,6 +1,9 @@
 # Developer
 
-We welcome new contributors. Please read the [code of conduct](https://github.com/SeldonIO/seldon-core/blob/master/CODE_OF_CONDUCT.md) and [contributing guidelines](https://github.com/SeldonIO/seldon-core/blob/master/CONTRIBUTING.md)
+We welcome new contributors.
+Please read the [code of
+conduct](https://github.com/SeldonIO/seldon-core/blob/master/CODE_OF_CONDUCT.md)
+and the [contributing guidelines](contributing.rst).
 
 ## Operator Development
 
@@ -52,18 +55,15 @@ go run ./main.go --webhook-port=9000
 
 If running inside an IDE and you are using Kind then make sure you set the KUBECONFIG env as well.
 
-
-
 ## Tools we use
 
- - [github-changelog-generator](https://github.com/skywinder/github-changelog-generator)
- - [Grip - Local Markdown viewer](https://github.com/joeyespo/grip)
+- [github-changelog-generator](https://github.com/skywinder/github-changelog-generator)
+- [Grip - Local Markdown viewer](https://github.com/joeyespo/grip)
 
 ## Building Seldon Core
 
-* [Build using private repository](build-using-private-repo.md)
+- [Build using private repository](build-using-private-repo.md)
 
 ## Seldon Prow
 
- - [prow status](https://prow.seldon.io)
-
+- [prow status](https://prow.seldon.io)

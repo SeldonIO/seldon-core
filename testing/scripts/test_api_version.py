@@ -4,7 +4,6 @@ from seldon_e2e_utils import (
     wait_for_status,
     initial_rest_request,
     rest_request_ambassador,
-    retry_run,
     API_AMBASSADOR,
 )
 from subprocess import run
@@ -18,10 +17,7 @@ from subprocess import run
         "machinelearning.seldon.io/v1",
     ],
 )
-def test_api_version(apiVersion):
-    version = apiVersion.split("/")[-1]
-    namespace = f"test-api-version-{version}"
-    retry_run(f"kubectl create namespace {namespace}")
+def test_api_version(namespace, apiVersion):
     command = (
         "helm install mymodel ../../helm-charts/seldon-single-model "
         f"--set apiVersion={apiVersion} "
@@ -39,4 +35,3 @@ def test_api_version(apiVersion):
     assert len(r.json()["data"]["tensor"]["values"]) == 1
 
     run(f"helm delete mymodel", shell=True)
-    run(f"kubectl delete namespace {namespace}", shell=True)

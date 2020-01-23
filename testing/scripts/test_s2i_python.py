@@ -42,6 +42,7 @@ def create_push_s2i_image(s2i_python_version, component_type, api_type):
     kind_push_s2i_image(component_type, api_type)
 
 
+@pytest.mark.sequential
 @pytest.mark.usefixtures("s2i_python_version")
 class TestPythonS2i(object):
     def test_build_router_rest(self, s2i_python_version):
@@ -110,37 +111,11 @@ class TestPythonS2i(object):
         run("docker rm -f combiner-grpc", shell=True, check=True)
 
 
+@pytest.mark.sequential
+@pytest.mark.usefixtures("namespace")
 @pytest.mark.usefixtures("s2i_python_version")
 class TestPythonS2iK8s(object):
-    def test_model_rest(self, s2i_python_version):
-        tester = S2IK8S()
-        tester.test_model_rest(s2i_python_version)
-
-    def test_model_rest_non200(self, s2i_python_version):
-        tester = S2IK8S()
-        tester.test_model_rest_non200(s2i_python_version)
-
-    def test_input_transformer_rest(self, s2i_python_version):
-        tester = S2IK8S()
-        tester.test_input_transformer_rest(s2i_python_version)
-
-    def test_output_transformer_rest(self, s2i_python_version):
-        tester = S2IK8S()
-        tester.test_output_transformer_rest(s2i_python_version)
-
-    def test_router_rest(self, s2i_python_version):
-        tester = S2IK8S()
-        tester.test_router_rest(s2i_python_version)
-
-    def test_combiner_rest(self, s2i_python_version):
-        tester = S2IK8S()
-        tester.test_combiner_rest(s2i_python_version)
-
-
-class S2IK8S(object):
-    def test_model_rest(self, s2i_python_version):
-        namespace = "s2i-test-model-rest"
-        retry_run(f"kubectl create namespace {namespace}")
+    def test_model_rest(self, namespace, s2i_python_version):
         create_push_s2i_image(s2i_python_version, "model", "rest")
         retry_run(f"kubectl apply -f ../resources/s2i_python_model.json -n {namespace}")
         wait_for_status("mymodel", namespace)
@@ -157,11 +132,8 @@ class S2IK8S(object):
             f"kubectl delete -f ../resources/s2i_python_model.json -n {namespace}",
             shell=True,
         )
-        run(f"kubectl delete namespace {namespace}", shell=True)
 
-    def test_model_rest_non200(self, s2i_python_version):
-        namespace = "s2i-test-model-rest-non200"
-        retry_run(f"kubectl create namespace {namespace}")
+    def test_model_rest_non200(self, namespace, s2i_python_version):
         create_push_s2i_image(s2i_python_version, "model", "rest_non200")
         retry_run(
             f"kubectl apply -f ../resources/s2i_python_model_non200.json -n {namespace}"
@@ -183,11 +155,8 @@ class S2IK8S(object):
             f"kubectl delete -f ../resources/s2i_python_model_non200.json -n {namespace}",
             shell=True,
         )
-        run(f"kubectl delete namespace {namespace}", shell=True)
 
-    def test_input_transformer_rest(self, s2i_python_version):
-        namespace = "s2i-test-input-transformer-rest"
-        retry_run(f"kubectl create namespace {namespace}")
+    def test_input_transformer_rest(self, namespace, s2i_python_version):
         create_push_s2i_image(s2i_python_version, "transformer", "rest")
         retry_run(
             f"kubectl apply -f ../resources/s2i_python_transformer.json -n {namespace}"
@@ -206,11 +175,8 @@ class S2IK8S(object):
             f"kubectl delete -f ../resources/s2i_python_transformer.json -n {namespace}",
             shell=True,
         )
-        run(f"kubectl delete namespace {namespace}", shell=True)
 
-    def test_output_transformer_rest(self, s2i_python_version):
-        namespace = "s2i-test-output-transformer-rest"
-        retry_run(f"kubectl create namespace {namespace}")
+    def test_output_transformer_rest(self, namespace, s2i_python_version):
         create_push_s2i_image(s2i_python_version, "transformer", "rest")
         retry_run(
             f"kubectl apply -f ../resources/s2i_python_output_transformer.json -n {namespace}"
@@ -229,11 +195,8 @@ class S2IK8S(object):
             f"kubectl delete -f ../resources/s2i_python_output_transformer.json -n {namespace}",
             shell=True,
         )
-        run(f"kubectl create namespace {namespace}", shell=True)
 
-    def test_router_rest(self, s2i_python_version):
-        namespace = "s2i-test-router-rest"
-        retry_run(f"kubectl create namespace {namespace}")
+    def test_router_rest(self, namespace, s2i_python_version):
         create_push_s2i_image(s2i_python_version, "model", "rest")
         create_push_s2i_image(s2i_python_version, "router", "rest")
         retry_run(
@@ -253,11 +216,8 @@ class S2IK8S(object):
             f"kubectl delete -f ../resources/s2i_python_router.json -n {namespace}",
             shell=True,
         )
-        run(f"kubectl delete namespace {namespace}", shell=True)
 
-    def test_combiner_rest(self, s2i_python_version):
-        namespace = "s2i-test-combiner-rest"
-        retry_run(f"kubectl create namespace {namespace}")
+    def test_combiner_rest(self, namespace, s2i_python_version):
         create_push_s2i_image(s2i_python_version, "model", "rest")
         create_push_s2i_image(s2i_python_version, "combiner", "rest")
         retry_run(
@@ -277,4 +237,3 @@ class S2IK8S(object):
             f"kubectl delete -f ../resources/s2i_python_combiner.json -n {namespace}",
             shell=True,
         )
-        run(f"kubectl delete namespace {namespace}", shell=True)
