@@ -1,5 +1,4 @@
 import pytest
-import json
 import numpy as np
 import pickle
 import base64
@@ -165,7 +164,7 @@ def test_create_grpc_response_strdata():
     request = prediction_pb2.SeldonMessage(data=datadef)
     raw_response = "hello world"
     sm = scu.construct_response(user_model, True, request, raw_response)
-    assert sm.data.WhichOneof("data_oneof") == None
+    assert sm.data.WhichOneof("data_oneof") is None
     assert len(sm.strData) > 0
 
 
@@ -176,7 +175,7 @@ def test_create_grpc_response_jsondata():
     request = prediction_pb2.SeldonMessage(data=datadef)
     raw_response = {"output": "data"}
     sm = scu.construct_response(user_model, True, request, raw_response)
-    assert sm.data.WhichOneof("data_oneof") == None
+    assert sm.data.WhichOneof("data_oneof") is None
     emptyValue = Value()
     assert sm.jsonData != emptyValue
 
@@ -209,7 +208,6 @@ def test_create_rest_response_jsondata_with_array_input():
 
 
 def test_symmetric_json_conversion():
-    user_model = UserObject()
     request_data = np.array([[5, 6, 7]])
     datadef = scu.array_to_rest_datadef("ndarray", request_data)
     json_request = {"jsonData": datadef}
@@ -247,7 +245,7 @@ def test_create_grpc_reponse_binary():
     request = prediction_pb2.SeldonMessage(data=datadef)
     raw_response = b"binary"
     sm = scu.construct_response(user_model, True, request, raw_response)
-    assert sm.data.WhichOneof("data_oneof") == None
+    assert sm.data.WhichOneof("data_oneof") is None
     assert len(sm.strData) == 0
     assert len(sm.binData) > 0
 
@@ -311,7 +309,7 @@ def test_json_to_seldon_message_json_data():
 def test_json_to_seldon_message_bad_data():
     with pytest.raises(SeldonMicroserviceException):
         data = {"foo": "bar"}
-        requestProto = scu.json_to_seldon_message(data)
+        scu.json_to_seldon_message(data)
 
 
 def test_json_to_feedback():
@@ -332,7 +330,7 @@ def test_json_to_feedback_bad_data():
             "response": {"data": {"tensor": {"shape": [1, 1], "values": [2]}}},
             "reward": 1.0,
         }
-        requestProto = scu.json_to_feedback(data)
+        scu.json_to_feedback(data)
 
 
 def test_json_to_seldon_messages():
