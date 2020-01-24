@@ -1,11 +1,24 @@
 # Example Request Logger
 
-For use with request logging example (/examples/centralised-logging/request-logging/). The deployment yaml for this is there.
+This example request logger is as general-purpose as possible. Eventually intended to read all types of CloudEvents emitted by the Seldon executor. These can be:
 
-Intended to be called via knative eventing. Can also be called as regular flask http service.
-
-Request logger component should take request, transform as appropriate and log to stdout for collection by fluentd.
+ - GRPC or json
+ - SeldonMessages or tensorflow format
+ - Tabular data, string data or image data
+ - Requests, responses to main predictor or to canary or shadow (all to be aggregated)
 
 Custom request loggers can be built for different types of transformations. Can be written in any language, just needs to handle HTTP POST requests and log to stdout for fluentd or could go direct to chosen backend.
 
-Initial version just dealing with ndarray - not image or tensor.
+To try this out, run elastic locally
+```
+docker pull docker.elastic.co/elasticsearch/elasticsearch:7.5.2
+docker run -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch:7.5.2
+```
+
+NEED TO UPDATE THE EXAMPLES IN test.sh
+
+USE seldon-core/executor/samples/local/logger
+
+ENV VARS NEEDED
+
+NEED TO SET A PROPER ID

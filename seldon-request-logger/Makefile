@@ -8,6 +8,11 @@ push_image:
 run_container:
 	docker run -p 8080:8080 seldonio/seldon-request-logger:latest
 
+run_local: export FLASK_RUN_PORT = 2222
+run_local: export FLASK_APP = app.py
+run_local:
+	cd app && flask run
+
 test:
 	curl -v "http://localhost:8080/" \
       -X POST \
