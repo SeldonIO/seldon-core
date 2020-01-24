@@ -72,3 +72,6 @@ clean:
 	rm -rf tensorflow
 	rm -rf serving
 
+licenses/dep.txt:
+	go list -m all | cut -d ' ' -f 1 > licenses/dep.txt
+
