@@ -4,7 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"github.com/golang/protobuf/jsonpb"
-	"github.com/onsi/gomega"
+	. "github.com/onsi/gomega"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/seldonio/seldon-core/executor/api"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
@@ -43,7 +43,7 @@ const (
 	}`
 )
 
-func testingHTTPClient(g *gomega.GomegaWithT, handler http.Handler) (string, int, *http.Client, func()) {
+func testingHTTPClient(g *GomegaWithT, handler http.Handler) (string, int, *http.Client, func()) {
 	s := httptest.NewServer(handler)
 
 	cli := &http.Client{
@@ -58,9 +58,9 @@ func testingHTTPClient(g *gomega.GomegaWithT, handler http.Handler) (string, int
 	}
 
 	url, err := url.Parse(s.URL)
-	g.Expect(err).Should(gomega.BeNil())
+	g.Expect(err).Should(BeNil())
 	port, err := strconv.Atoi(url.Port())
-	g.Expect(err).Should(gomega.BeNil())
+	g.Expect(err).Should(BeNil())
 
 	return url.Hostname(), port, cli, s.Close
 }
@@ -71,7 +71,7 @@ func SetHTTPClient(httpClient *http.Client) BytesRestClientOption {
 	}
 }
 
-func createPayload(g *gomega.GomegaWithT) payload.SeldonPayload {
+func createPayload(g *GomegaWithT) payload.SeldonPayload {
 	var data = ` {"data":{"ndarray":[1.1,2.0]}}`
 	return &payload.BytesPayload{Msg: []byte(data)}
 }
@@ -84,7 +84,7 @@ func createTestContext() context.Context {
 
 func TestSimpleMethods(t *testing.T) {
 	t.Logf("Started")
-	g := gomega.NewGomegaWithT(t)
+	g := NewGomegaWithT(t)
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(okPredictResponse))
 	})
@@ -99,21 +99,21 @@ func TestSimpleMethods(t *testing.T) {
 	methods := []func(context.Context, string, string, int32, payload.SeldonPayload, map[string][]string) (payload.SeldonPayload, error){seldonRestClient.Predict, seldonRestClient.TransformInput, seldonRestClient.TransformOutput, seldonRestClient.Feedback}
 	for _, method := range methods {
 		resPayload, err := method(createTestContext(), "model", host, int32(port), createPayload(g), map[string][]string{})
-		g.Expect(err).Should(gomega.BeNil())
+		g.Expect(err).Should(BeNil())
 
 		data := resPayload.GetPayload().([]byte)
 		var smRes proto.SeldonMessage
 		err = jsonpb.UnmarshalString(string(data), &smRes)
-		g.Expect(err).Should(gomega.BeNil())
-		g.Expect(smRes.GetData().GetNdarray().Values[0].GetListValue().Values[0].GetNumberValue()).Should(gomega.Equal(0.9))
-		g.Expect(smRes.GetData().GetNdarray().Values[0].GetListValue().Values[1].GetNumberValue()).Should(gomega.Equal(0.1))
+		g.Expect(err).Should(BeNil())
+		g.Expect(smRes.GetData().GetNdarray().Values[0].GetListValue().Values[0].GetNumberValue()).Should(Equal(0.9))
+		g.Expect(smRes.GetData().GetNdarray().Values[0].GetListValue().Values[1].GetNumberValue()).Should(Equal(0.1))
 	}
 
 }
 
 func TestRouter(t *testing.T) {
 	t.Logf("Started")
-	g := gomega.NewGomegaWithT(t)
+	g := NewGomegaWithT(t)
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(okRouteResponse))
 	})
@@ -126,14 +126,14 @@ func TestRouter(t *testing.T) {
 	seldonRestClient := NewJSONRestClient(api.ProtocolSeldon, "test", &predictor, SetHTTPClient(httpClient))
 
 	route, err := seldonRestClient.Route(createTestContext(), "model", host, int32(port), createPayload(g), map[string][]string{})
-	g.Expect(err).Should(gomega.BeNil())
+	g.Expect(err).Should(BeNil())
 
-	g.Expect(route).Should(gomega.Equal(1))
+	g.Expect(route).Should(Equal(1))
 }
 
 func TestStatus(t *testing.T) {
 	t.Logf("Started")
-	g := gomega.NewGomegaWithT(t)
+	g := NewGomegaWithT(t)
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(okStatusResponse))
 	})
@@ -146,14 +146,14 @@ func TestStatus(t *testing.T) {
 	seldonRestClient := NewJSONRestClient(api.ProtocolSeldon, "test", &predictor, SetHTTPClient(httpClient))
 
 	status, err := seldonRestClient.Status(createTestContext(), "model", host, int32(port), nil, map[string][]string{})
-	g.Expect(err).Should(gomega.BeNil())
+	g.Expect(err).Should(BeNil())
 	data := string(status.GetPayload().([]byte))
-	g.Expect(data).To(gomega.Equal(okStatusResponse))
+	g.Expect(data).To(Equal(okStatusResponse))
 }
 
 func TestMetadata(t *testing.T) {
 	t.Logf("Started")
-	g := gomega.NewGomegaWithT(t)
+	g := NewGomegaWithT(t)
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(okMetadataResponse))
 	})
@@ -166,12 +166,12 @@ func TestMetadata(t *testing.T) {
 	seldonRestClient := NewJSONRestClient(api.ProtocolSeldon, "test", &predictor, SetHTTPClient(httpClient))
 
 	status, err := seldonRestClient.Metadata(createTestContext(), "model", host, int32(port), nil, map[string][]string{})
-	g.Expect(err).Should(gomega.BeNil())
+	g.Expect(err).Should(BeNil())
 	data := string(status.GetPayload().([]byte))
-	g.Expect(data).To(gomega.Equal(okMetadataResponse))
+	g.Expect(data).To(Equal(okMetadataResponse))
 }
 
-func createCombinerPayload(g *gomega.GomegaWithT) []payload.SeldonPayload {
+func createCombinerPayload(g *GomegaWithT) []payload.SeldonPayload {
 	var data = ` {"data":{"ndarray":[1.1,2.0]}}`
 	smp := []payload.SeldonPayload{&payload.BytesPayload{Msg: []byte(data)}, &payload.BytesPayload{Msg: []byte(data)}}
 	return smp
@@ -179,7 +179,7 @@ func createCombinerPayload(g *gomega.GomegaWithT) []payload.SeldonPayload {
 
 func TestCombiner(t *testing.T) {
 	t.Logf("Started")
-	g := gomega.NewGomegaWithT(t)
+	g := NewGomegaWithT(t)
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(okPredictResponse))
 	})
@@ -192,19 +192,19 @@ func TestCombiner(t *testing.T) {
 	seldonRestClient := NewJSONRestClient(api.ProtocolSeldon, "test", &predictor, SetHTTPClient(httpClient))
 
 	resPayload, err := seldonRestClient.Combine(createTestContext(), "model", host, int32(port), createCombinerPayload(g), map[string][]string{})
-	g.Expect(err).Should(gomega.BeNil())
+	g.Expect(err).Should(BeNil())
 
 	data := resPayload.GetPayload().([]byte)
 	var smRes proto.SeldonMessage
 	err = jsonpb.UnmarshalString(string(data), &smRes)
-	g.Expect(err).Should(gomega.BeNil())
-	g.Expect(smRes.GetData().GetNdarray().Values[0].GetListValue().Values[0].GetNumberValue()).Should(gomega.Equal(0.9))
-	g.Expect(smRes.GetData().GetNdarray().Values[0].GetListValue().Values[1].GetNumberValue()).Should(gomega.Equal(0.1))
+	g.Expect(err).Should(BeNil())
+	g.Expect(smRes.GetData().GetNdarray().Values[0].GetListValue().Values[0].GetNumberValue()).Should(Equal(0.9))
+	g.Expect(smRes.GetData().GetNdarray().Values[0].GetListValue().Values[1].GetNumberValue()).Should(Equal(0.1))
 }
 
 func TestClientMetrics(t *testing.T) {
 	t.Logf("Started")
-	g := gomega.NewGomegaWithT(t)
+	g := NewGomegaWithT(t)
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(okPredictResponse))
 	})
@@ -233,17 +233,17 @@ func TestClientMetrics(t *testing.T) {
 	methods := []func(context.Context, string, string, int32, payload.SeldonPayload, map[string][]string) (payload.SeldonPayload, error){seldonRestClient.Predict, seldonRestClient.TransformInput, seldonRestClient.TransformOutput}
 	for _, method := range methods {
 		resPayload, err := method(createTestContext(), "model", host, int32(port), createPayload(g), map[string][]string{})
-		g.Expect(err).Should(gomega.BeNil())
+		g.Expect(err).Should(BeNil())
 
 		data := resPayload.GetPayload().([]byte)
 		var smRes proto.SeldonMessage
 		err = jsonpb.UnmarshalString(string(data), &smRes)
-		g.Expect(err).Should(gomega.BeNil())
-		g.Expect(smRes.GetData().GetNdarray().Values[0].GetListValue().Values[0].GetNumberValue()).Should(gomega.Equal(0.9))
-		g.Expect(smRes.GetData().GetNdarray().Values[0].GetListValue().Values[1].GetNumberValue()).Should(gomega.Equal(0.1))
+		g.Expect(err).Should(BeNil())
+		g.Expect(smRes.GetData().GetNdarray().Values[0].GetListValue().Values[0].GetNumberValue()).Should(Equal(0.9))
+		g.Expect(smRes.GetData().GetNdarray().Values[0].GetListValue().Values[1].GetNumberValue()).Should(Equal(0.1))
 
 		mfs, err := prometheus.DefaultGatherer.Gather()
-		g.Expect(err).Should(gomega.BeNil())
+		g.Expect(err).Should(BeNil())
 		found := false
 		foundImage := false
 		foundImageVersion := false
@@ -260,9 +260,9 @@ func TestClientMetrics(t *testing.T) {
 				found = true
 			}
 		}
-		g.Expect(found).Should(gomega.Equal(true))
-		g.Expect(foundImage).Should(gomega.Equal(true))
-		g.Expect(foundImageVersion).Should(gomega.Equal(true))
+		g.Expect(found).Should(Equal(true))
+		g.Expect(foundImage).Should(Equal(true))
+		g.Expect(foundImageVersion).Should(Equal(true))
 	}
 
 }

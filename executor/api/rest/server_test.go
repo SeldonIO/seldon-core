@@ -1,7 +1,7 @@
 package rest
 
 import (
-	"github.com/onsi/gomega"
+	. "github.com/onsi/gomega"
 	"github.com/prometheus/common/expfmt"
 	"github.com/seldonio/seldon-core/executor/api"
 	"github.com/seldonio/seldon-core/executor/api/metric"
@@ -23,7 +23,7 @@ const (
 
 func TestAliveEndpoint(t *testing.T) {
 	t.Logf("Started")
-	g := gomega.NewGomegaWithT(t)
+	g := NewGomegaWithT(t)
 
 	url, _ := url.Parse("http://localhost")
 	r := NewServerRestApi(nil, nil, true, url, "default", api.ProtocolSeldon, "test", "/metrics")
@@ -33,12 +33,12 @@ func TestAliveEndpoint(t *testing.T) {
 	res := httptest.NewRecorder()
 	r.Router.ServeHTTP(res, req)
 
-	g.Expect(res.Code).To(gomega.Equal(200))
+	g.Expect(res.Code).To(Equal(200))
 }
 
 func TestSimpleModel(t *testing.T) {
 	t.Logf("Started")
-	g := gomega.NewGomegaWithT(t)
+	g := NewGomegaWithT(t)
 
 	model := v1.MODEL
 	p := v1.PredictorSpec{
@@ -62,28 +62,28 @@ func TestSimpleModel(t *testing.T) {
 	req.Header = map[string][]string{"Content-Type": []string{"application/json"}}
 	res := httptest.NewRecorder()
 	r.Router.ServeHTTP(res, req)
-	g.Expect(res.Code).To(gomega.Equal(200))
+	g.Expect(res.Code).To(Equal(200))
 }
 
 func TestModelWithServer(t *testing.T) {
 	t.Logf("Started")
-	g := gomega.NewGomegaWithT(t)
+	g := NewGomegaWithT(t)
 	called := false
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		bodyBytes, err := ioutil.ReadAll(r.Body)
-		g.Expect(err).To(gomega.BeNil())
-		g.Expect(r.Header.Get(payload.SeldonPUIDHeader)).To(gomega.Equal(TestSeldonPuid))
+		g.Expect(err).To(BeNil())
+		g.Expect(r.Header.Get(payload.SeldonPUIDHeader)).To(Equal(TestSeldonPuid))
 		called = true
 		w.Write([]byte(bodyBytes))
 	})
 	server := httptest.NewServer(handler)
 	defer server.Close()
 	url, err := url.Parse(server.URL)
-	g.Expect(err).Should(gomega.BeNil())
+	g.Expect(err).Should(BeNil())
 	urlParts := strings.Split(url.Host, ":")
 	port, err := strconv.Atoi(urlParts[1])
-	g.Expect(err).Should(gomega.BeNil())
+	g.Expect(err).Should(BeNil())
 
 	model := v1.MODEL
 	p := v1.PredictorSpec{
@@ -106,14 +106,14 @@ func TestModelWithServer(t *testing.T) {
 	req.Header = map[string][]string{"Content-Type": []string{"application/json"}, payload.SeldonPUIDHeader: []string{TestSeldonPuid}}
 	res := httptest.NewRecorder()
 	r.Router.ServeHTTP(res, req)
-	g.Expect(res.Code).To(gomega.Equal(200))
-	g.Expect(called).To(gomega.Equal(true))
+	g.Expect(res.Code).To(Equal(200))
+	g.Expect(called).To(Equal(true))
 
 }
 
 func TestServerMetrics(t *testing.T) {
 	t.Logf("Started")
-	g := gomega.NewGomegaWithT(t)
+	g := NewGomegaWithT(t)
 
 	model := v1.MODEL
 	p := v1.PredictorSpec{
@@ -138,22 +138,22 @@ func TestServerMetrics(t *testing.T) {
 	req.Header = map[string][]string{"Content-Type": []string{"application/json"}}
 	res := httptest.NewRecorder()
 	r.Router.ServeHTTP(res, req)
-	g.Expect(res.Code).To(gomega.Equal(200))
+	g.Expect(res.Code).To(Equal(200))
 
 	req, _ = http.NewRequest("GET", "/metrics", nil)
 	res = httptest.NewRecorder()
 	r.Router.ServeHTTP(res, req)
-	g.Expect(res.Code).To(gomega.Equal(200))
+	g.Expect(res.Code).To(Equal(200))
 	tp := expfmt.TextParser{}
 	metrics, err := tp.TextToMetricFamilies(res.Body)
-	g.Expect(err).Should(gomega.BeNil())
-	g.Expect(metrics[metric.ServerRequestsMetricName]).ShouldNot(gomega.BeNil())
+	g.Expect(err).Should(BeNil())
+	g.Expect(metrics[metric.ServerRequestsMetricName]).ShouldNot(BeNil())
 
 }
 
 func TestTensorflowStatus(t *testing.T) {
 	t.Logf("Started")
-	g := gomega.NewGomegaWithT(t)
+	g := NewGomegaWithT(t)
 
 	model := v1.MODEL
 	p := v1.PredictorSpec{
@@ -176,13 +176,13 @@ func TestTensorflowStatus(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/v1/models/mymodel", nil)
 	res := httptest.NewRecorder()
 	r.Router.ServeHTTP(res, req)
-	g.Expect(res.Code).To(gomega.Equal(200))
-	g.Expect(res.Body.String()).To(gomega.Equal(test.TestClientStatusResponse))
+	g.Expect(res.Code).To(Equal(200))
+	g.Expect(res.Body.String()).To(Equal(test.TestClientStatusResponse))
 }
 
 func TestSeldonStatus(t *testing.T) {
 	t.Logf("Started")
-	g := gomega.NewGomegaWithT(t)
+	g := NewGomegaWithT(t)
 
 	model := v1.MODEL
 	p := v1.PredictorSpec{
@@ -205,13 +205,13 @@ func TestSeldonStatus(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/api/v1.0/status/mymodel", nil)
 	res := httptest.NewRecorder()
 	r.Router.ServeHTTP(res, req)
-	g.Expect(res.Code).To(gomega.Equal(200))
-	g.Expect(res.Body.String()).To(gomega.Equal(test.TestClientStatusResponse))
+	g.Expect(res.Code).To(Equal(200))
+	g.Expect(res.Body.String()).To(Equal(test.TestClientStatusResponse))
 }
 
 func TestSeldonMetadata(t *testing.T) {
 	t.Logf("Started")
-	g := gomega.NewGomegaWithT(t)
+	g := NewGomegaWithT(t)
 
 	model := v1.MODEL
 	p := v1.PredictorSpec{
@@ -234,13 +234,13 @@ func TestSeldonMetadata(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/api/v1.0/metadata/mymodel", nil)
 	res := httptest.NewRecorder()
 	r.Router.ServeHTTP(res, req)
-	g.Expect(res.Code).To(gomega.Equal(200))
-	g.Expect(res.Body.String()).To(gomega.Equal(test.TestClientMetadataResponse))
+	g.Expect(res.Code).To(Equal(200))
+	g.Expect(res.Body.String()).To(Equal(test.TestClientMetadataResponse))
 }
 
 func TestTensorflowMetadata(t *testing.T) {
 	t.Logf("Started")
-	g := gomega.NewGomegaWithT(t)
+	g := NewGomegaWithT(t)
 
 	model := v1.MODEL
 	p := v1.PredictorSpec{
@@ -263,6 +263,6 @@ func TestTensorflowMetadata(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/v1/models/mymodel/metadata", nil)
 	res := httptest.NewRecorder()
 	r.Router.ServeHTTP(res, req)
-	g.Expect(res.Code).To(gomega.Equal(200))
-	g.Expect(res.Body.String()).To(gomega.Equal(test.TestClientMetadataResponse))
+	g.Expect(res.Code).To(Equal(200))
+	g.Expect(res.Body.String()).To(Equal(test.TestClientMetadataResponse))
 }

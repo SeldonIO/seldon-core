@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/golang/protobuf/jsonpb"
-	"github.com/onsi/gomega"
+	. "github.com/onsi/gomega"
 	"github.com/seldonio/seldon-core/executor/api/grpc"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/payload"
@@ -46,25 +46,25 @@ func createPredictorProcessWithError(t *testing.T, errMethod *v1.PredictiveUnitM
 	return &pp
 }
 
-func createPredictPayload(g *gomega.GomegaWithT) payload.SeldonPayload {
+func createPredictPayload(g *GomegaWithT) payload.SeldonPayload {
 	var sm proto.SeldonMessage
 	var data = ` {"data":{"ndarray":[1.1,2.0]}}`
 	err := jsonpb.UnmarshalString(data, &sm)
-	g.Expect(err).Should(gomega.BeNil())
+	g.Expect(err).Should(BeNil())
 	return &payload.ProtoPayload{Msg: &sm}
 }
 
-func createFeedbackPayload(g *gomega.GomegaWithT) payload.SeldonPayload {
+func createFeedbackPayload(g *GomegaWithT) payload.SeldonPayload {
 	var sm proto.Feedback
 	var data = ` {"request":{"data":{"ndarray":[1.1,2.0]}}}`
 	err := jsonpb.UnmarshalString(data, &sm)
-	g.Expect(err).Should(gomega.BeNil())
+	g.Expect(err).Should(BeNil())
 	return &payload.ProtoPayload{Msg: &sm}
 }
 
 func TestModel(t *testing.T) {
 	t.Logf("Started")
-	g := gomega.NewGomegaWithT(t)
+	g := NewGomegaWithT(t)
 	model := v1.MODEL
 	graph := &v1.PredictiveUnit{
 		Type: &model,
@@ -76,16 +76,16 @@ func TestModel(t *testing.T) {
 	}
 
 	pResp, err := createPredictorProcess(t).Predict(graph, createPredictPayload(g))
-	g.Expect(err).Should(gomega.BeNil())
+	g.Expect(err).Should(BeNil())
 	smRes := pResp.GetPayload().(*proto.SeldonMessage)
-	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(gomega.Equal(1.1))
-	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(gomega.Equal(2.0))
+	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(Equal(1.1))
+	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(Equal(2.0))
 }
 
 func TestStatus(t *testing.T) {
 	t.Logf("Started")
 	modelName := "mymodel"
-	g := gomega.NewGomegaWithT(t)
+	g := NewGomegaWithT(t)
 	model := v1.MODEL
 	graph := &v1.PredictiveUnit{
 		Name: modelName,
@@ -98,16 +98,16 @@ func TestStatus(t *testing.T) {
 	}
 
 	pResp, err := createPredictorProcess(t).Status(graph, modelName, nil)
-	g.Expect(err).Should(gomega.BeNil())
+	g.Expect(err).Should(BeNil())
 	smRes := string(pResp.GetPayload().([]byte))
-	g.Expect(smRes).To(gomega.Equal(test.TestClientStatusResponse))
+	g.Expect(smRes).To(Equal(test.TestClientStatusResponse))
 
 }
 
 func TestMetadata(t *testing.T) {
 	t.Logf("Started")
 	modelName := "mymodel"
-	g := gomega.NewGomegaWithT(t)
+	g := NewGomegaWithT(t)
 	model := v1.MODEL
 	graph := &v1.PredictiveUnit{
 		Name: modelName,
@@ -120,14 +120,14 @@ func TestMetadata(t *testing.T) {
 	}
 
 	pResp, err := createPredictorProcess(t).Metadata(graph, modelName, nil)
-	g.Expect(err).Should(gomega.BeNil())
+	g.Expect(err).Should(BeNil())
 	smRes := string(pResp.GetPayload().([]byte))
-	g.Expect(smRes).To(gomega.Equal(test.TestClientMetadataResponse))
+	g.Expect(smRes).To(Equal(test.TestClientMetadataResponse))
 
 }
 
 func TestTwoLevelModel(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
+	g := NewGomegaWithT(t)
 	model := v1.MODEL
 	graph := &v1.PredictiveUnit{
 		Type: &model,
@@ -149,14 +149,14 @@ func TestTwoLevelModel(t *testing.T) {
 	}
 
 	pResp, err := createPredictorProcess(t).Predict(graph, createPredictPayload(g))
-	g.Expect(err).Should(gomega.BeNil())
+	g.Expect(err).Should(BeNil())
 	smRes := pResp.GetPayload().(*proto.SeldonMessage)
-	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(gomega.Equal(1.1))
-	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(gomega.Equal(2.0))
+	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(Equal(1.1))
+	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(Equal(2.0))
 }
 
 func TestCombiner(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
+	g := NewGomegaWithT(t)
 	model := v1.MODEL
 	combiner := v1.COMBINER
 	graph := &v1.PredictiveUnit{
@@ -187,14 +187,14 @@ func TestCombiner(t *testing.T) {
 	}
 
 	pResp, err := createPredictorProcess(t).Predict(graph, createPredictPayload(g))
-	g.Expect(err).Should(gomega.BeNil())
+	g.Expect(err).Should(BeNil())
 	smRes := pResp.GetPayload().(*proto.SeldonMessage)
-	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(gomega.Equal(1.1))
-	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(gomega.Equal(2.0))
+	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(Equal(1.1))
+	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(Equal(2.0))
 }
 
 func TestMethods(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
+	g := NewGomegaWithT(t)
 	//model := v1.UNKNOWN_TYPE
 	graph := &v1.PredictiveUnit{
 		Methods: &[]v1.PredictiveUnitMethod{v1.TRANSFORM_INPUT, v1.TRANSFORM_OUTPUT, v1.ROUTE, v1.AGGREGATE},
@@ -216,14 +216,14 @@ func TestMethods(t *testing.T) {
 	}
 
 	pResp, err := createPredictorProcess(t).Predict(graph, createPredictPayload(g))
-	g.Expect(err).Should(gomega.BeNil())
+	g.Expect(err).Should(BeNil())
 	smRes := pResp.GetPayload().(*proto.SeldonMessage)
-	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(gomega.Equal(1.1))
-	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(gomega.Equal(2.0))
+	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(Equal(1.1))
+	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(Equal(2.0))
 }
 
 func TestFeedback(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
+	g := NewGomegaWithT(t)
 	//model := v1.UNKNOWN_TYPE
 	graph := &v1.PredictiveUnit{
 		Methods: &[]v1.PredictiveUnitMethod{v1.SEND_FEEDBACK},
@@ -245,14 +245,14 @@ func TestFeedback(t *testing.T) {
 	}
 
 	pResp, err := createPredictorProcess(t).Feedback(graph, createFeedbackPayload(g))
-	g.Expect(err).Should(gomega.BeNil())
+	g.Expect(err).Should(BeNil())
 	smRes := pResp.GetPayload().(*proto.SeldonMessage)
-	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(gomega.Equal(1.1))
-	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(gomega.Equal(2.0))
+	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(Equal(1.1))
+	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(Equal(2.0))
 }
 
 func TestRouter(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
+	g := NewGomegaWithT(t)
 	model := v1.MODEL
 	router := v1.ROUTER
 	graph := &v1.PredictiveUnit{
@@ -283,27 +283,27 @@ func TestRouter(t *testing.T) {
 	}
 
 	pResp, err := createPredictorProcess(t).Predict(graph, createPredictPayload(g))
-	g.Expect(err).Should(gomega.BeNil())
+	g.Expect(err).Should(BeNil())
 	smRes := pResp.GetPayload().(*proto.SeldonMessage)
-	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(gomega.Equal(1.1))
-	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(gomega.Equal(2.0))
+	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(Equal(1.1))
+	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(Equal(2.0))
 
 	pResp, err = createPredictorProcessWithRoute(t, 0).Predict(graph, createPredictPayload(g))
-	g.Expect(err).Should(gomega.BeNil())
+	g.Expect(err).Should(BeNil())
 	smRes = pResp.GetPayload().(*proto.SeldonMessage)
-	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(gomega.Equal(1.1))
-	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(gomega.Equal(2.0))
+	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(Equal(1.1))
+	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(Equal(2.0))
 
 	pResp, err = createPredictorProcessWithRoute(t, 1).Predict(graph, createPredictPayload(g))
-	g.Expect(err).Should(gomega.BeNil())
+	g.Expect(err).Should(BeNil())
 	smRes = pResp.GetPayload().(*proto.SeldonMessage)
-	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(gomega.Equal(1.1))
-	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(gomega.Equal(2.0))
+	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(Equal(1.1))
+	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(Equal(2.0))
 }
 
 func TestModelError(t *testing.T) {
 	t.Logf("Started")
-	g := gomega.NewGomegaWithT(t)
+	g := NewGomegaWithT(t)
 	model := v1.MODEL
 	graph := &v1.PredictiveUnit{
 		Type: &model,
@@ -317,13 +317,13 @@ func TestModelError(t *testing.T) {
 	errMethod := v1.TRANSFORM_INPUT
 	chosenErr := errors.New("something bad happened")
 	pResp, err := createPredictorProcessWithError(t, &errMethod, chosenErr).Predict(graph, createPredictPayload(g))
-	g.Expect(err).ShouldNot(gomega.BeNil())
-	g.Expect(pResp).Should(gomega.BeNil())
-	g.Expect(err.Error()).Should(gomega.Equal("something bad happened"))
+	g.Expect(err).ShouldNot(BeNil())
+	g.Expect(pResp).Should(BeNil())
+	g.Expect(err.Error()).Should(Equal("something bad happened"))
 }
 
 func TestABTest(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
+	g := NewGomegaWithT(t)
 	model := v1.MODEL
 	abtest := v1.RANDOM_ABTEST
 	graph := &v1.PredictiveUnit{
@@ -349,24 +349,24 @@ func TestABTest(t *testing.T) {
 	}
 
 	pResp, err := createPredictorProcess(t).Predict(graph, createPredictPayload(g))
-	g.Expect(err).Should(gomega.BeNil())
+	g.Expect(err).Should(BeNil())
 	smRes := pResp.GetPayload().(*proto.SeldonMessage)
-	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(gomega.Equal(1.1))
-	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(gomega.Equal(2.0))
+	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(Equal(1.1))
+	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(Equal(2.0))
 }
 
 func TestModelWithLogRequests(t *testing.T) {
 	t.Logf("Started")
-	g := gomega.NewGomegaWithT(t)
+	g := NewGomegaWithT(t)
 	modelName := "foo"
 	logged := false
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//g.Expect(r.Header.Get(logger.CloudEventsIdHeader)).Should(gomega.Equal(testEventId))
-		g.Expect(r.Header.Get(logger.CloudEventsTypeHeader)).To(gomega.Equal(logger.CEInferenceRequest))
-		g.Expect(r.Header.Get(logger.CloudEventsTypeSource)).To(gomega.Equal(testSourceUrl))
-		g.Expect(r.Header.Get(logger.ModelIdHeader)).To(gomega.Equal(modelName))
-		g.Expect(r.Header.Get("Content-Type")).To(gomega.Equal(grpc.ProtobufContentType))
-		g.Expect(r.Header.Get(payload.SeldonPUIDHeader)).To(gomega.Equal(testSeldonPuid))
+		//g.Expect(r.Header.Get(logger.CloudEventsIdHeader)).Should(Equal(testEventId))
+		g.Expect(r.Header.Get(logger.CloudEventsTypeHeader)).To(Equal(logger.CEInferenceRequest))
+		g.Expect(r.Header.Get(logger.CloudEventsTypeSource)).To(Equal(testSourceUrl))
+		g.Expect(r.Header.Get(logger.ModelIdHeader)).To(Equal(modelName))
+		g.Expect(r.Header.Get("Content-Type")).To(Equal(grpc.ProtobufContentType))
+		g.Expect(r.Header.Get(payload.SeldonPUIDHeader)).To(Equal(testSeldonPuid))
 		w.Write([]byte(""))
 		logged = true
 	})
@@ -393,25 +393,25 @@ func TestModelWithLogRequests(t *testing.T) {
 	}
 
 	pResp, err := createPredictorProcess(t).Predict(graph, createPredictPayload(g))
-	g.Expect(err).Should(gomega.BeNil())
+	g.Expect(err).Should(BeNil())
 	smRes := pResp.GetPayload().(*proto.SeldonMessage)
-	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(gomega.Equal(1.1))
-	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(gomega.Equal(2.0))
-	g.Eventually(func() bool { return logged }).Should(gomega.Equal(true))
+	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(Equal(1.1))
+	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(Equal(2.0))
+	g.Eventually(func() bool { return logged }).Should(Equal(true))
 }
 
 func TestModelWithLogResponses(t *testing.T) {
 	t.Logf("Started")
-	g := gomega.NewGomegaWithT(t)
+	g := NewGomegaWithT(t)
 	modelName := "foo"
 	logged := false
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//g.Expect(r.Header.Get(logger.CloudEventsIdHeader)).Should(gomega.Equal(testEventId))
-		g.Expect(r.Header.Get(logger.CloudEventsTypeHeader)).To(gomega.Equal(logger.CEInferenceResponse))
-		g.Expect(r.Header.Get(logger.CloudEventsTypeSource)).To(gomega.Equal(testSourceUrl))
-		g.Expect(r.Header.Get(logger.ModelIdHeader)).To(gomega.Equal(modelName))
-		g.Expect(r.Header.Get("Content-Type")).To(gomega.Equal(grpc.ProtobufContentType))
-		g.Expect(r.Header.Get(payload.SeldonPUIDHeader)).To(gomega.Equal(testSeldonPuid))
+		//g.Expect(r.Header.Get(logger.CloudEventsIdHeader)).Should(Equal(testEventId))
+		g.Expect(r.Header.Get(logger.CloudEventsTypeHeader)).To(Equal(logger.CEInferenceResponse))
+		g.Expect(r.Header.Get(logger.CloudEventsTypeSource)).To(Equal(testSourceUrl))
+		g.Expect(r.Header.Get(logger.ModelIdHeader)).To(Equal(modelName))
+		g.Expect(r.Header.Get("Content-Type")).To(Equal(grpc.ProtobufContentType))
+		g.Expect(r.Header.Get(payload.SeldonPUIDHeader)).To(Equal(testSeldonPuid))
 		w.Write([]byte(""))
 		logged = true
 	})
@@ -438,9 +438,9 @@ func TestModelWithLogResponses(t *testing.T) {
 	}
 
 	pResp, err := createPredictorProcess(t).Predict(graph, createPredictPayload(g))
-	g.Expect(err).Should(gomega.BeNil())
+	g.Expect(err).Should(BeNil())
 	smRes := pResp.GetPayload().(*proto.SeldonMessage)
-	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(gomega.Equal(1.1))
-	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(gomega.Equal(2.0))
-	g.Eventually(func() bool { return logged }).Should(gomega.Equal(true))
+	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(Equal(1.1))
+	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(Equal(2.0))
+	g.Eventually(func() bool { return logged }).Should(Equal(true))
 }

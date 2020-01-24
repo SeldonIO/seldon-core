@@ -1,7 +1,7 @@
 package metric
 
 import (
-	"github.com/onsi/gomega"
+	. "github.com/onsi/gomega"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
 	v12 "k8s.io/api/core/v1"
 	v1meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -9,7 +9,7 @@ import (
 )
 
 func TestNewFromtMeta(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
+	g := NewGomegaWithT(t)
 
 	const imageName = "image"
 	const imageVersion = "1.2"
@@ -38,8 +38,8 @@ func TestNewFromtMeta(t *testing.T) {
 
 	metrics := NewClientMetrics(&predictor, deploymentName, modelName)
 
-	g.Expect(metrics.ImageName).To(gomega.Equal(imageName))
-	g.Expect(metrics.ImageVersion).To(gomega.Equal(imageVersion))
-	g.Expect(metrics.ModelName).To(gomega.Equal(modelName))
-	g.Expect(metrics.DeploymentName).To(gomega.Equal(deploymentName))
+	g.Expect(metrics.ImageName).To(Equal(imageName))
+	g.Expect(metrics.ImageVersion).To(Equal(imageVersion))
+	g.Expect(metrics.ModelName).To(Equal(modelName))
+	g.Expect(metrics.DeploymentName).To(Equal(deploymentName))
 }

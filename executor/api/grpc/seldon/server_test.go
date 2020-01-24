@@ -3,7 +3,7 @@ package seldon
 import (
 	"context"
 	"github.com/golang/protobuf/jsonpb"
-	"github.com/onsi/gomega"
+	. "github.com/onsi/gomega"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/test"
 	"github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
@@ -13,7 +13,7 @@ import (
 
 func TestPredict(t *testing.T) {
 	t.Logf("Started")
-	g := gomega.NewGomegaWithT(t)
+	g := NewGomegaWithT(t)
 
 	model := v1.MODEL
 	p := v1.PredictorSpec{
@@ -33,17 +33,17 @@ func TestPredict(t *testing.T) {
 	var sm proto.SeldonMessage
 	var data = ` {"data":{"ndarray":[[1.1,2.0]]}}`
 	err := jsonpb.UnmarshalString(data, &sm)
-	g.Expect(err).Should(gomega.BeNil())
+	g.Expect(err).Should(BeNil())
 
 	res, err := server.Predict(context.TODO(), &sm)
-	g.Expect(err).To(gomega.BeNil())
-	g.Expect(res.GetData().GetNdarray().Values[0].GetListValue().Values[0].GetNumberValue()).Should(gomega.Equal(1.1))
-	g.Expect(res.GetData().GetNdarray().Values[0].GetListValue().Values[1].GetNumberValue()).Should(gomega.Equal(2.0))
+	g.Expect(err).To(BeNil())
+	g.Expect(res.GetData().GetNdarray().Values[0].GetListValue().Values[0].GetNumberValue()).Should(Equal(1.1))
+	g.Expect(res.GetData().GetNdarray().Values[0].GetListValue().Values[1].GetNumberValue()).Should(Equal(2.0))
 }
 
 func TestFeedback(t *testing.T) {
 	t.Logf("Started")
-	g := gomega.NewGomegaWithT(t)
+	g := NewGomegaWithT(t)
 
 	model := v1.MODEL
 	p := v1.PredictorSpec{
@@ -63,10 +63,10 @@ func TestFeedback(t *testing.T) {
 	var sm proto.Feedback
 	var data = ` {"request":{"data":{"ndarray":[[1.1,2.0]]}}}`
 	err := jsonpb.UnmarshalString(data, &sm)
-	g.Expect(err).Should(gomega.BeNil())
+	g.Expect(err).Should(BeNil())
 
 	res, err := server.SendFeedback(context.TODO(), &sm)
-	g.Expect(err).To(gomega.BeNil())
-	g.Expect(res.GetData().GetNdarray().Values[0].GetListValue().Values[0].GetNumberValue()).Should(gomega.Equal(1.1))
-	g.Expect(res.GetData().GetNdarray().Values[0].GetListValue().Values[1].GetNumberValue()).Should(gomega.Equal(2.0))
+	g.Expect(err).To(BeNil())
+	g.Expect(res.GetData().GetNdarray().Values[0].GetListValue().Values[0].GetNumberValue()).Should(Equal(1.1))
+	g.Expect(res.GetData().GetNdarray().Values[0].GetListValue().Values[1].GetNumberValue()).Should(Equal(2.0))
 }

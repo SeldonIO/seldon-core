@@ -3,7 +3,7 @@ package tensorflow
 import (
 	"context"
 	"github.com/golang/protobuf/jsonpb"
-	"github.com/onsi/gomega"
+	. "github.com/onsi/gomega"
 	"github.com/seldonio/seldon-core/executor/api/client"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/payload"
@@ -46,10 +46,10 @@ func (s TestTensorflowClient) Status(ctx context.Context, modelName string, host
 }
 
 func (s TestTensorflowClient) Metadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
-	g := gomega.NewGomegaWithT(s.t)
+	g := NewGomegaWithT(s.t)
 	md, ok := metadata.FromIncomingContext(ctx)
-	g.Expect(ok).NotTo(gomega.BeNil())
-	g.Expect(md.Get(TestMetaDataKey)[0]).To(gomega.Equal(TestMetaDataVal))
+	g.Expect(ok).NotTo(BeNil())
+	g.Expect(md.Get(TestMetaDataKey)[0]).To(Equal(TestMetaDataVal))
 	pm := msg.GetPayload().(*serving.GetModelMetadataRequest)
 	st := serving.GetModelMetadataResponse{
 		ModelSpec: pm.ModelSpec,
@@ -78,10 +78,10 @@ func (s TestTensorflowClient) CreateErrorPayload(err error) payload.SeldonPayloa
 }
 
 func (s TestTensorflowClient) Predict(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
-	g := gomega.NewGomegaWithT(s.t)
+	g := NewGomegaWithT(s.t)
 	md, ok := metadata.FromIncomingContext(ctx)
-	g.Expect(ok).NotTo(gomega.BeNil())
-	g.Expect(md.Get(TestMetaDataKey)[0]).To(gomega.Equal(TestMetaDataVal))
+	g.Expect(ok).NotTo(BeNil())
+	g.Expect(md.Get(TestMetaDataKey)[0]).To(Equal(TestMetaDataVal))
 	pm := msg.GetPayload().(*serving.PredictRequest)
 	pr := serving.PredictResponse{
 		Outputs: pm.Inputs,
@@ -111,7 +111,7 @@ func (s TestTensorflowClient) Feedback(ctx context.Context, modelName string, ho
 }
 func TestPredict(t *testing.T) {
 	t.Logf("Started")
-	g := gomega.NewGomegaWithT(t)
+	g := NewGomegaWithT(t)
 
 	model := v1.MODEL
 	p := v1.PredictorSpec{
@@ -131,19 +131,19 @@ func TestPredict(t *testing.T) {
 	var sm serving.PredictRequest
 	var data = `{"model_spec":{"name":"half_plus_two"},"inputs":{"x":{"dtype": 1, "tensor_shape": {"dim":[{"size": 3}]}, "floatVal" : [1.0, 2.0, 3.0]}}}`
 	err := jsonpb.UnmarshalString(data, &sm)
-	g.Expect(err).Should(gomega.BeNil())
+	g.Expect(err).Should(BeNil())
 
 	ctx := context.Background()
 	ctx = metadata.NewIncomingContext(ctx, metadata.New(map[string]string{TestMetaDataKey: TestMetaDataVal}))
 	res, err := server.Predict(ctx, &sm)
-	g.Expect(err).To(gomega.BeNil())
-	g.Expect(res.Outputs["x"].FloatVal[0]).Should(gomega.Equal(float32(1.0)))
-	g.Expect(res.Outputs["x"].FloatVal[1]).Should(gomega.Equal(float32(2.0)))
+	g.Expect(err).To(BeNil())
+	g.Expect(res.Outputs["x"].FloatVal[0]).Should(Equal(float32(1.0)))
+	g.Expect(res.Outputs["x"].FloatVal[1]).Should(Equal(float32(2.0)))
 }
 
 func TestGetModelStatus(t *testing.T) {
 	t.Logf("Started")
-	g := gomega.NewGomegaWithT(t)
+	g := NewGomegaWithT(t)
 
 	model := v1.MODEL
 	p := v1.PredictorSpec{
@@ -164,19 +164,19 @@ func TestGetModelStatus(t *testing.T) {
 	var sm serving.GetModelStatusRequest
 	var data = `{"model_spec":{"name":"model"}}`
 	err := jsonpb.UnmarshalString(data, &sm)
-	g.Expect(err).Should(gomega.BeNil())
+	g.Expect(err).Should(BeNil())
 
 	ctx := context.Background()
 	ctx = metadata.NewIncomingContext(ctx, metadata.New(map[string]string{TestMetaDataKey: TestMetaDataVal}))
 	res, err := server.GetModelStatus(ctx, &sm)
-	g.Expect(err).To(gomega.BeNil())
-	g.Expect(res.ModelVersionStatus[0].Version).To(gomega.Equal(TestModelVersion))
+	g.Expect(err).To(BeNil())
+	g.Expect(res.ModelVersionStatus[0].Version).To(Equal(TestModelVersion))
 
 }
 
 func TestGetModelMetadata(t *testing.T) {
 	t.Logf("Started")
-	g := gomega.NewGomegaWithT(t)
+	g := NewGomegaWithT(t)
 
 	const modelName = "model"
 	model := v1.MODEL
@@ -198,12 +198,12 @@ func TestGetModelMetadata(t *testing.T) {
 	var sm serving.GetModelMetadataRequest
 	var data = `{"model_spec":{"name":"model"},"metadata_field":["signature_def"]}`
 	err := jsonpb.UnmarshalString(data, &sm)
-	g.Expect(err).Should(gomega.BeNil())
+	g.Expect(err).Should(BeNil())
 
 	ctx := context.Background()
 	ctx = metadata.NewIncomingContext(ctx, metadata.New(map[string]string{TestMetaDataKey: TestMetaDataVal}))
 	res, err := server.GetModelMetadata(ctx, &sm)
-	g.Expect(err).To(gomega.BeNil())
-	g.Expect(res.ModelSpec.Name).To(gomega.Equal(modelName))
+	g.Expect(err).To(BeNil())
+	g.Expect(res.ModelSpec.Name).To(Equal(modelName))
 
 }
