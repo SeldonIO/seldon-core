@@ -520,21 +520,17 @@ def extract_request_parts_json(
     if not isinstance(request, dict):
         raise SeldonMicroserviceException(f"Invalid request data type: {request}")
     meta = request.get("meta", None)
-    datadef_type = None
     datadef = None
 
     if "data" in request:
         data_type = "data"
         datadef = request["data"]
         if "tensor" in datadef:
-            datadef_type = "tensor"
             tensor = datadef["tensor"]
             features = np.array(tensor["values"]).reshape(tensor["shape"])
         elif "ndarray" in datadef:
-            datadef_type = "ndarray"
             features = np.array(datadef["ndarray"])
         elif "tftensor" in datadef:
-            datadef_type = "tftensor"
             tf_proto = TensorProto()
             json_format.ParseDict(datadef["tftensor"], tf_proto)
             features = tf.make_ndarray(tf_proto)
