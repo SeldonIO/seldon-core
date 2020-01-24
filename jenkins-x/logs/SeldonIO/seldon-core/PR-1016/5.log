@@ -1,0 +1,181 @@
+
+Showing logs for build [32mseldonio-seldon-core-pr-1016-li-gbsnp-5[0m stage [32mpr-build-comment[0m and container [32mstep-credential-initializer-6wrtk[0m
+{"level":"warn","ts":1579888030.2737324,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1579888030.2742429,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1016-li-gbsnp-5[0m stage [32mpr-build-comment[0m and container [32mstep-working-dir-initializer-c4r48[0m
+{"level":"warn","ts":1579888031.2827713,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1579888031.2851293,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1016-li-gbsnp-5[0m stage [32mpr-build-comment[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-1016-li-gbsnp-5[0m stage [32mpr-build-comment[0m and container [32mstep-create-dir-workspace-k8d7s[0m
+{"level":"warn","ts":1579888036.5977464,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1579888036.5999362,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1016-li-gbsnp-5[0m stage [32mpr-build-comment[0m and container [32mstep-git-source-seldonio-seldon-core-pr-1016-li-vqs6z[0m
+{"level":"warn","ts":1579888036.898948,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1579888039.9602895,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ master in path /workspace/source"}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1016-li-gbsnp-5[0m stage [32mpr-build-comment[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:87fe3f9787eb0ff59c7aea24bd7ac1ae89e8366d,1016:fbe3405c10614071d1b35d0b2f207220e5cc1dd6
+DEBUG: ran git fetch --unshallow origin fbe3405c10614071d1b35d0b2f207220e5cc1dd6: 87fe3f9787eb0ff59c7aea24bd7ac1ae89e8366d: in 
+DEBUG: ran git checkout master in 
+DEBUG: ran git reset --hard 87fe3f9787eb0ff59c7aea24bd7ac1ae89e8366d in 
+DEBUG: ran clean --force -d . in 
+DEBUG: ran git merge fbe3405c10614071d1b35d0b2f207220e5cc1dd6 in 
+Merged SHA fbe3405c10614071d1b35d0b2f207220e5cc1dd6 with commit message 'add 3rd party licenses' into base branch master
+Merged SHA aeca6647e189d36d946ffd415cc1cfc372dbd659 with commit message 'remove grpc test due to Ambassador issues' into base branch master
+Merged SHA fbc8e94be47c8e51188ab7ebadc3b883ac31b1d1 with commit message 'rebase' into base branch master
+Merged SHA f66f773154aadb8a07a9803151339b80daf72657 with commit message 'fix typo' into base branch master
+Merged SHA 90cde353d82a4c95ba3d9fdac02ab04daefb70d0 with commit message 'Update grpc server receivers' into base branch master
+Merged SHA 79d94a76812a0a69cbf99a194c74de705550d210 with commit message 'Fix typos from review' into base branch master
+Merged SHA 2fd3ff451b7e8eca64b3503e3ca5d4636f645bc8 with commit message 'Update from testing example notebooks' into base branch master
+Merged SHA 04dfb568a433f1b697168c59e15f0409252b8644 with commit message 'update from code review' into base branch master
+Merged SHA f25753cb50d2eda0256663154123da2053b98054 with commit message 'add docs for new metadata endpoint' into base branch master
+Merged SHA 51244719a3a3dc6190eef4dad84bbab5d0a591a8 with commit message 'update tests' into base branch master
+Merged SHA da09ef3bd7cee05331b20b53eacd693541bd6f41 with commit message 'rebase' into base branch master
+Merged SHA 10f5c330d8459c69bd943dfb4fec8a4ab3cc5b7d with commit message 'Docs update' into base branch master
+Merged SHA 8d5af50ae8c6aa5131fb1a4b6e12008ec79809c0 with commit message 'Add header pass thru and more tests' into base branch master
+Merged SHA 5921b70705350ed20b141f95f225b21c9feb7fc2 with commit message 'Add logging docs and example' into base branch master
+Merged SHA b1630d8e7c5359e726dc48804d1d34b90725116b with commit message 'Update tensorflow serving prepacked server creation' into base branch master
+Merged SHA 28f66e4211d7452b7befbb1c62ce27fb30614e0b with commit message 'add metrics examples and docs' into base branch master
+Merged SHA 7b45d2310925de212b9cb6a94264672c84ba3c2c with commit message 'Update seldon id logging and context pass thru' into base branch master
+Merged SHA e87b4e38746a5e8436ad9af4a8bc7474e3453a26 with commit message 'updates docs and tracing example' into base branch master
+Merged SHA 1f6d7711ed90641097bb38111f3661516943806b with commit message 'lint' into base branch master
+Merged SHA 980ea292714f373012828fc58ea6186a5e6ea610 with commit message 'add seldon puid to rest' into base branch master
+Merged SHA 96fa7daea5a424b24139a6cbee1db7c10ec331ad with commit message 'python linter' into base branch master
+Merged SHA 0bd64ff4e68de307802a2198373fe5a1adf9d619 with commit message 'Add metadata endpoints' into base branch master
+Merged SHA 4da41fad5fb1dc60f949f97ac0bdd6e16e830afe with commit message 'Add tensorflow model status' into base branch master
+Merged SHA 6de46515f78f7b9c2c9e1fe1c9f425560ffb5909 with commit message 'Add status for REST' into base branch master
+Merged SHA a3b05b3476c1cf790ee1be7a21711419a818a46a with commit message 'Update ingress so seldon and tensorflow work' into base branch master
+Merged SHA 4e2a681eb9fc6114f7b090583d826f050b6b654a with commit message 'Updates from e2e tests' into base branch master
+Merged SHA 7e2b1c769437b55355c82e07864d23256b02dca8 with commit message 'Add feedback' into base branch master
+Merged SHA 18c892edc31171a5c74670c6c50898b235d542f3 with commit message 'update tests' into base branch master
+Merged SHA f12cde6d3e062cb274125f5874cff69a5a60ccef with commit message 'Add executor helm variables' into base branch master
+Merged SHA 90ca5148cf6dda22d2a3b1823439c2a6c25f2fe8 with commit message 'Update helm charts on testing' into base branch master
+Merged SHA fb86cdd282d77db4a0a0de5628626e8facd8567a with commit message 'Merge branch 'master' into executor' into base branch master
+Merged SHA e41c9b0ef23fbe7ea365d34f9de47876f101dd1f with commit message 'Update README' into base branch master
+Merged SHA 6175b9b904ff91dc60aa8d2924f7a29cf995e8bd with commit message 'clean up' into base branch master
+Merged SHA 2eeb4431cc7a62b3990411db79228c7864b77401 with commit message 'Add grpc prometheus metrics' into base branch master
+Merged SHA 6d25b25c49941e46738cf7dc132aac23ffcb05be with commit message 'add REST metrics' into base branch master
+Merged SHA 304df2690b9a236d13172967cc1202832bb4d559 with commit message 'Add tfserving example' into base branch master
+Merged SHA 1bcd2d8419bacfbf83986b1a70aa5c44e3f71c9c with commit message 'add protos' into base branch master
+Merged SHA 6c827e080e3c4456fa452760e478a68a259469ad with commit message 'add tf' into base branch master
+Merged SHA e9172ef183d8ba749df8cfa07a6c3f9abf405924 with commit message 'add tensorflow grpc' into base branch master
+Merged SHA 5d2f03ae387b490dd440c57351f27f1c5c589f48 with commit message 'package restructure' into base branch master
+Merged SHA d0001c5aa1d3331fb806021b308cd2fc748a910a with commit message 'Allow tensorflow protocol for REST' into base branch master
+Merged SHA 2a29e7587d09c3b8a014c669510c5e312182f3d5 with commit message 'Add logger sample' into base branch master
+Merged SHA 42789d24e1372183a77283ffc0b81aefbad80b6e with commit message 'Add open tracing to executor' into base branch master
+Merged SHA 14174fe4b394a63f83928adc3642f9f5809d792e with commit message 'run linter' into base branch master
+Merged SHA 1b5a1f2ce748c721dbe0a19a98e40f8ef685726d with commit message 'Add new logger' into base branch master
+Merged SHA e724c54c899e56c61f0d232c33b60c67f026d36c with commit message 'Merge branch 'master' into executor' into base branch master
+Merged SHA cd02dea56569c511466182a3e1ed6a03ae762d2d with commit message 'add JSON rest client with test' into base branch master
+Merged SHA b70ee3eea41ba35a8641b5c6921e6c68015e4863 with commit message 'use operator types and clientset' into base branch master
+Merged SHA 6b540d1ded8cfc6ecffd80c2103aa7e73023dde3 with commit message 'lint updates and clean Makefile' into base branch master
+Merged SHA 4fc0346ab1ac22439fe8ace66b6585ed5359dec0 with commit message 'rebase' into base branch master
+Merged SHA 2dab32847c94f9e8e0eafb4d1b27a52346ed17bb with commit message 'initial generic processing' into base branch master
+Merged SHA d61ee53428b922bd2b5d34a1ecd88495aea892a4 with commit message 'review updates and content type handling' into base branch master
+Merged SHA a52af143f978bf0d6381c3361dc40f904e4b60f5 with commit message 'Merge branch 'master' into executor' into base branch master
+Merged SHA dc3b5c573b9f281ed2c0731593ed16ae1d2fe766 with commit message 'Update test for AB test' into base branch master
+Merged SHA f83875c7eeca0fcdeae480e9398a08ba86ef6f1e with commit message 'Basic testing for model and abtests' into base branch master
+Merged SHA 583b54d6638428fdf5d534477b9c41d10d0c3732 with commit message 'rebase' into base branch master
+Merged SHA db3ba063a922a0e47b8882da72cc4b6962edd5fa with commit message 'Add README' into base branch master
+Merged SHA ff04ed759c2f187e62d8ea88867cd92fe7188835 with commit message 'Add grpc tests' into base branch master
+Merged SHA e52cb74e20ae31851e5b5093f84b8c6d8b59ae55 with commit message 'Add rest server tests' into base branch master
+Merged SHA da9ab7519afb36aedb567ca68ea6f8570ac55110 with commit message 'rebase' into base branch master
+Merged SHA 4083d9ffaabb53c89a5b792116b49c7a7238a2bb with commit message 'finish grpc server' into base branch master
+Merged SHA 49a7b69c00977aeded912d048a942e71682f789f with commit message 'grpc client initial commit' into base branch master
+Merged SHA 61077fb017d0dfb6ef3ffb93c5f590cdc110b0ad with commit message 'initial grpc commit' into base branch master
+Merged SHA eb8219b1609b1d729543382eb4235f651da5c22d with commit message 'add proto folder' into base branch master
+Merged SHA 00e57f219e82fbf6333160aee10c5af9571dfeea with commit message 'updated mean classifier' into base branch master
+Merged SHA 88f17c9ef568cf94036a26ccfca2ee8367120f1e with commit message 'client updates' into base branch master
+Merged SHA 59b34b51712fbdc7e1ce6118268050c79bfb2fde with commit message 'incorporate into operator' into base branch master
+Merged SHA aaaf941e4fe1ba1309e1cd646a5ccd54c12286a3 with commit message 'go vet' into base branch master
+Merged SHA 8710ff86fe2d1877566fec73d80f3b31912edad8 with commit message 'go fmt' into base branch master
+Merged SHA b81f5dede50b548b2290e1fc49fa42ab9a05479e with commit message 'correct type annotation for aggregate' into base branch master
+Merged SHA 2ab8b5bd5a949fc16f2ba99afff1626bcdb58113 with commit message 'rest client tests' into base branch master
+Merged SHA c61136beed474a4fc636f31a9e4197214f0cc42f with commit message 'add full predictor process' into base branch master
+Merged SHA 7b3445fc598b7ed5d6ab71daf0dd023782568507 with commit message 'Merge branch 'master' into executor' into base branch master
+Merged SHA 598b13fd40fbb59c6839d911e911e9a349e1f262 with commit message 'update executor transform' into base branch master
+Merged SHA 188392a22b3a1387f762830350fa46493901d1a3 with commit message 'generalize executor payloads' into base branch master
+Merged SHA ac827cbf6e963555bca40ee694072b7fa5db5541 with commit message 'update to refector and test transform - WIP' into base branch master
+Merged SHA f24f6ee5d0d15b5b4133016792129d4b75a64031 with commit message 'Merge branch 'master' into executor' into base branch master
+Merged SHA f795b1bf98dc813817ff99c005b9f7190f3564ef with commit message 'Merge branch 'master' into executor' into base branch master
+Merged SHA c5c58d57b0f4fae7d0c872f66df87bd660610c03 with commit message 'initial e2e processing' into base branch master
+Merged SHA 11d88f60093dff4168ac4487b15a045ea9d86488 with commit message 'executor initial commit' into base branch master
+
+Showing logs for build [32mseldonio-seldon-core-pr-1016-li-gbsnp-5[0m stage [32mpr-build-comment[0m and container [32mstep-step2[0m
++++ dirname ./add-pr-build-comment
+++ cd .
+++ pwd
++ STARTUP_DIR=/workspace/source/ci
++ REPO_OWNER=SeldonIO
++ REPO_NAME=seldon-core
++ PULL_NUMBER=1016
++ BUILD_NUMBER=5
++ PIPELINE_CONTEXT=lint
+++ cat
++++ date
++ COMMENT_MSG='Fri Jan 24 17:47:26 UTC 2020
+The logs for [lint] [5] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-1016/5.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-1016 --build=5'
++ ** step pr comment --owner=SeldonIO --repository=seldon-core --pull-request=1016 '--comment=Fri Jan 24 17:47:26 UTC 2020
+The logs for [lint] [5] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-1016/5.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-1016 --build=5'
+
+Showing logs for build [32mseldonio-seldon-core-pr-1016-li-gbsnp-5[0m stage [32mpr-build-comment[0m and container [32mstep-source-mkdir-seldonio-seldon-core-pr-1016-li-cqnqc[0m
+{"level":"warn","ts":1579888048.7210758,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1579888048.7254348,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1016-li-gbsnp-5[0m stage [32mpr-build-comment[0m and container [32mstep-source-copy-seldonio-seldon-core-pr-1016-li-jq5fs[0m
+{"level":"warn","ts":1579888049.0412083,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1579888049.3217356,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r source/. /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1016-li-gbsnp-5[0m stage [32mpython-lint-task[0m and container [32mstep-credential-initializer-jtvh4[0m
+{"level":"warn","ts":1579888052.5876565,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1579888052.588161,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1016-li-gbsnp-5[0m stage [32mpython-lint-task[0m and container [32mstep-working-dir-initializer-xb8fg[0m
+{"level":"warn","ts":1579888053.95116,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1579888053.953178,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1016-li-gbsnp-5[0m stage [32mpython-lint-task[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-1016-li-gbsnp-5[0m stage [32mpython-lint-task[0m and container [32mstep-create-dir-workspace-smg8h[0m
+{"level":"warn","ts":1579888062.5911396,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1579888062.593577,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1016-li-gbsnp-5[0m stage [32mpython-lint-task[0m and container [32mstep-source-copy-workspace-z2zhk[0m
+{"level":"warn","ts":1579888062.9186268,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1579888063.1847348,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1016-li-gbsnp-5[0m stage [32mpython-lint-task[0m and container [32mstep-python-lint[0m
+make: Entering directory '/workspace/source/python'
+pip install black==19.3b0
+Collecting black==19.3b0
+  Downloading https://files.pythonhosted.org/packages/30/62/cf549544a5fe990bbaeca21e9c419501b2de7a701ab0afb377bc81676600/black-19.3b0-py36-none-any.whl (89kB)
+Collecting appdirs
+  Downloading https://files.pythonhosted.org/packages/56/eb/810e700ed1349edde4cbdc1b2a21e28cdf115f9faf263f6bbf8447c1abf3/appdirs-1.4.3-py2.py3-none-any.whl
+Collecting attrs>=18.1.0
+  Downloading https://files.pythonhosted.org/packages/a2/db/4313ab3be961f7a763066401fb77f7748373b6094076ae2bda2806988af6/attrs-19.3.0-py2.py3-none-any.whl
+Collecting click>=6.5
+  Downloading https://files.pythonhosted.org/packages/fa/37/45185cb5abbc30d7257104c434fe0b07e5a195a6847506c074527aa599ec/Click-7.0-py2.py3-none-any.whl (81kB)
+Collecting toml>=0.9.4
+  Downloading https://files.pythonhosted.org/packages/a2/12/ced7105d2de62fa7c8fb5fce92cc4ce66b57c95fb875e9318dba7f8c5db0/toml-0.10.0-py2.py3-none-any.whl
+Installing collected packages: appdirs, attrs, click, toml, black
+Successfully installed appdirs-1.4.3 attrs-19.3.0 black-19.3b0 click-7.0 toml-0.10.0
+WARNING: You are using pip version 19.3.1; however, version 20.0.2 is available.
+You should consider upgrading via the 'pip install --upgrade pip' command.
+black \
+	--check ./ ../testing \
+	--exclude "(testing/scripts/proto|seldon_core/proto/|.eggs|.tox)"
+All done! ✨ 🍰 ✨
+53 files would be left unchanged.
+make: Leaving directory '/workspace/source/python'
