@@ -154,3 +154,6 @@ self-signed-cert:
 clean-cert:
 	rm -r self-signed-cert
 
+
+licenses/dep.txt:
+	go list -m all | cut -d ' ' -f 1 > licenses/dep.txt
