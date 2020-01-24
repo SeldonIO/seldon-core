@@ -1,3 +1,4 @@
+import os
 import json
 import sys
 import base64
@@ -593,3 +594,27 @@ def extract_feedback_request_parts(
     truth = grpc_datadef_to_array(request.truth.data)
     reward = request.reward
     return request.request.data, features, truth, reward
+
+
+def getenv(*env_vars, default=None):
+    """
+    Overload of os.getenv() to allow falling back through multiple environment
+    variables. The environment variables will be checked sequentially until one
+    of them is found.
+
+    Parameters
+    ------
+    *env_vars
+        Variadic list of environment variable names to check.
+    default
+        Default value to return if none of the environment variables exist.
+
+    Returns
+    ------
+        Value of the first environment variable set or default.
+    """
+    for env_var in env_vars:
+        if env_var in os.environ:
+            return os.environ.get(env_var)
+
+    return default

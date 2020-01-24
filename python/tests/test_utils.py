@@ -410,3 +410,21 @@ def test_proto_tftensor_to_array():
     array2 = scu.grpc_datadef_to_array(datadef)
     assert array.shape == array2.shape
     assert np.array_equal(array, array2)
+
+
+@pytest.mark.parametrize(
+    "env,expected",
+    [
+        ({"FOO1": "BAR1"}, "BAR1"),
+        ({"FOO2": "BAR2"}, "BAR2"),
+        ({"FOO3": "BAR3"}, "BAR3"),
+        ({"FOO1": "BAR1", "FOO2": "BAR2"}, "BAR1"),
+        ({}, "DEF"),
+    ],
+)
+def test_getenv(monkeypatch, env, expected):
+    for env_var, env_value in env.items():
+        monkeypatch.setenv(env_var, env_value)
+
+    value = scu.getenv("FOO1", "FOO2", "FOO3", default="DEF")
+    assert value == expected
