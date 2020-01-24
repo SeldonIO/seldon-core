@@ -9,17 +9,24 @@ from typing import Dict, List, Union
 
 
 class UserObject(object):
-    def __init__(self, metrics_ok=True):
+    def __init__(self, metrics_ok=True, ret_meta=False):
         self.metrics_ok = metrics_ok
+        self.ret_meta = ret_meta
 
-    def route(self, X, features_names):
+    def route(self, X, features_names, **kwargs):
+        print("Route called")
+        if self.ret_meta:
+            self.inc_meta = kwargs.get("meta")
         return 22
 
     def send_feedback(self, features, feature_names, reward, truth, routing=-1):
         print("Feedback called")
 
     def tags(self):
-        return {"mytag": 1}
+        if self.ret_meta:
+            return {"inc_meta": self.inc_meta}
+        else:
+            return {"mytag": 1}
 
     def metrics(self):
         if self.metrics_ok:
@@ -112,6 +119,19 @@ def test_router_ok():
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
     assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
     assert j["data"]["ndarray"] == [[22]]
+
+
+def test_router_gets_meta():
+    user_object = UserObject(ret_meta=True)
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+    rv = client.get('/route?json={"meta":{"puid": "abc"}, "data":{"ndarray":[2]}}')
+    j = json.loads(rv.data)
+    print(j)
+    assert rv.status_code == 200
+    assert j["meta"]["tags"] == {"inc_meta": {"puid": "abc"}}
+    assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
+    assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
 
 
 def test_router_bad_user_object():
