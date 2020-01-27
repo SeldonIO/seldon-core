@@ -113,6 +113,13 @@ def get_rest_microservice(user_model):
         logger.debug("REST Health Status Response: %s", response)
         return jsonify(response)
 
+    @app.route("/metadata", methods=["GET"])
+    def Metadata():
+        logger.debug("REST Metadata Request")
+        response = seldon_core.seldon_methods.metadata(user_model)
+        logger.debug("REST Metadata Response: %s", response)
+        return jsonify(response)
+
     return app
 
 

@@ -8,7 +8,7 @@ The Seldon Core exposes a generic external API to connect your ML runtime predic
 
 ### Prediction
 
- - endpoint : POST /api/v0.1/predictions
+ - endpoint : POST /api/v1.0/predictions
  - payload : JSON representation of ```SeldonMessage``` - see [proto definition](./prediction.md#proto-buffer-and-grpc-definition)
  - example payload :
 
@@ -18,7 +18,7 @@ The Seldon Core exposes a generic external API to connect your ML runtime predic
 
 ### Feedback
 
- - endpoint : POST /api/v0.1/feedback
+ - endpoint : POST /api/v1.0/feedback
  - payload : JSON representation of ```Feedback``` - see [proto definition](./prediction.md#proto-buffer-and-grpc-definition)
 
 ## gRPC

@@ -20,6 +20,7 @@ if _TF_PRESENT:
 
 HEALTH_PING_URL = "/health/ping"
 HEALTH_STATUS_URL = "/health/status"
+METADATA_URL = "/metadata"
 
 """
  Checksum of bytes. Used to check data integrity of binData passed in multipart/form-data request
@@ -41,6 +42,7 @@ def rs232_checksum(the_bytes):
 
 class UserObject(SeldonComponent):
     HEALTH_STATUS_REPONSE = [0.123]
+    METADATA_RESPONSE = {"metadata": {"name": "mymodel"}}
 
     def __init__(self, metrics_ok=True, ret_nparray=False, ret_meta=False):
         self.metrics_ok = metrics_ok
@@ -83,6 +85,9 @@ class UserObject(SeldonComponent):
 
     def health_status(self):
         return self.predict(self.HEALTH_STATUS_REPONSE, ["some_float"])
+
+    def metadata(self):
+        return self.METADATA_RESPONSE
 
 
 class UserObjectLowLevel(SeldonComponent):
@@ -643,6 +648,17 @@ def test_model_health_status_raw():
     assert rv.status_code == 200
     j = json.loads(rv.data)
     assert j["data"]["ndarray"] == UserObjectLowLevel.HEALTH_STATUS_RAW_RESPONSE
+
+
+def test_model_metadata():
+    user_object = UserObject()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+    rv = client.get(METADATA_URL)
+    assert rv.status_code == 200
+    j = json.loads(rv.data)
+    print(j)
+    assert j == UserObject.METADATA_RESPONSE
 
 
 def test_proto_ok():

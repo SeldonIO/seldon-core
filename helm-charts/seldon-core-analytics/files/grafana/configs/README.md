@@ -1,17 +1,23 @@
 
-## For development if updating the Seldon Example Dashboard.
+## For development if creating a new dashboard.
 
-  * Save the dashboard to JSON by exporting it.
-  * Overwrite the prediction-analytics-dashboard.json with the exported JSON
-  * Run ```./convert-exported-graph.sh```
-  * Then import the new dashboard
-     * Port forward the grafana port
-     ```
-     kubectl port-forward $(kubectl get pods -n seldon -l app=grafana-prom-server -o jsonpath='{.items[0].metadata.name}') -n seldon 3000:3000
-     ```
-     * export the password used when starting the analytics, e.g.
-     ```
-     export GF_SECURITY_ADMIN_PASSWORD=password
-     ```
-     * run ```import-dashboards-job.sh```
+This helm chart deploys Grafana Dashboards using a sidecar
+(https://github.com/helm/charts/tree/master/stable/grafana#sidecar-for-dashboards)
 
+To modify or add a dashboard please follow the steps below.
+
+  * Save the dashboard to JSON by exporting it and copy it to the `files/grafana/config` directory.
+  * Save a new configmap in the `templates/grafana` directory for the dashboard using the template below, replacing <new-dashboard> with the name of your dashboard:
+     * <new-dashboard>-configmap.yaml
+     ```
+     apiVersion: v1
+     data:
+     {{ (.Files.Glob "files/grafana/configs/<new-dashboard>.json").AsConfig | indent 2 }}
+     kind: ConfigMap
+     metadata:
+       creationTimestamp: null
+       name: <new-dashboard>
+       namespace: {{ .Release.Namespace }}
+       labels:
+         seldon_dashboard: "1" 
+     ```

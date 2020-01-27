@@ -1,4 +1,3 @@
-import pytest
 import json
 import numpy as np
 from google.protobuf import json_format
@@ -81,11 +80,26 @@ class UserObjectBad(object):
     pass
 
 
-def test_aggreate_ok():
+def test_aggreate_ok_seldon_messages():
     user_object = UserObject()
     app = get_rest_microservice(user_object)
     client = app.test_client()
     rv = client.get('/aggregate?json={"seldonMessages":[{"data":{"ndarray":[1]}}]}')
+    print(rv)
+    j = json.loads(rv.data)
+    print(j)
+    assert rv.status_code == 200
+    assert j["meta"]["tags"] == {"mytag": 1}
+    assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
+    assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
+    assert j["data"]["ndarray"] == [1]
+
+
+def test_aggreate_ok_list():
+    user_object = UserObject()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+    rv = client.get('/aggregate?json=[{"data":{"ndarray":[1]}}]')
     print(rv)
     j = json.loads(rv.data)
     print(j)

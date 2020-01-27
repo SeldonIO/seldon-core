@@ -1,14 +1,10 @@
 # Distributed Tracing
 
-You can use Jaeger Open Tracing to trace your API calls to Seldon Core.
-
-This feature is available from versions >=0.2.5-SNAPSHOT of the core images and presently in:
-
- * Python wrappers >=0.5-SNAPSHOT
+You can use Open Tracing to trace your API calls to Seldon Core.
 
 ## Install Jaeger
 
-You will need to install Jaeger on your Kubernetes cluster. Follow their [documentation](https://github.com/jaegertracing/jaeger-kubernetes).
+You will need to install Jaeger on your Kubernetes cluster. Follow their [documentation](https://www.jaegertracing.io/docs/1.16/operator/)
 
 ## Configuration
 
@@ -143,4 +139,4 @@ An example is show below:
 
 ## Worked Example
 
-[A fully worked template example](../examples/tmpl_model_tracing.html) is provided.
+[A fully worked template example](../examples/tracing.html) is provided.

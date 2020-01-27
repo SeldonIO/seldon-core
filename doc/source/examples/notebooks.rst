@@ -29,6 +29,7 @@ Notebooks
    Chainer MNIST <chainer_mnist>
    Kubeflow Seldon E2E Pipeline <kubeflow_seldon_e2e_pipeline>
    Max gRPC Message Size <max_grpc_msg_size>
+   Metrics <metrics>
    Model with Custom Metrics <tmpl_model_with_metrics>
    MLflow <mlflow>
    MLflow Pre-packaged MOdel Server A/B Test <mlflow_server_ab_test_ambassador>
@@ -37,7 +38,9 @@ Notebooks
    NVIDIA TensorRT MNIST <nvidia_mnist>
    OpenVINO ImageNet <openvino>
    OpenVINO ImageNet Ensemble <openvino_ensemble>
-   ONNX ResNet with Intel nGraph<onnx_resnet>   
+   ONNX ResNet with Intel nGraph<onnx_resnet>
+   Payload Logging <payload_logging>
+   Protocol Examples <protocol_examples>
    R Iris Classifier <r_iris>
    R MNIST Classifier <r_mnist>   
    REST timeouts <rest_timeouts>	         
@@ -48,6 +51,7 @@ Notebooks
    Sklearn, Xgboost, Tensorflow Server Examples <server_examples>
    Tensorflow MNIST <deep_mnist>
    TFserving MNIST <tfserving_mnist>
+   Tracing <tracing>
    Spam Classification TRANSFORMER component <transformer_spam_model>
    Spam Classification TRANSFORMER + COMBINER Component <combiner_spam_model>
 

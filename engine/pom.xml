@@ -10,7 +10,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
   </parent>
   <groupId>io.seldon.engine</groupId>
   <artifactId>seldon-engine</artifactId>
-  <version>1.0.1-SNAPSHOT</version>
+  <version>1.0.2-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>engine</name>
   <url>http://maven.apache.org</url>
@@ -242,7 +242,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
     <dependency>
       <groupId>org.ojalgo</groupId>
       <artifactId>ojalgo</artifactId>
-      <version>48.0.0</version>
+      <version>48.1.0</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>

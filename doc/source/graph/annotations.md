@@ -32,36 +32,6 @@ You can configure aspects of Seldon Core via annotations in the SeldonDeployment
     * Locations : SeldonDeployment.spec.annotations
     * [gRPC headless example](grpc_load_balancing_ambassador.md)
 
-Otherwise any annotations starting with `seldon.io/engine-` will be interpreted as specifying environment variables for the engine container. These include:
-
-  * ```seldon.io/engine-java-opts``` : Java Opts for Service Orchestrator
-    * Locations : SeldonDeployment.spec.annotations
-    * [Java Opts example](model_engine_java_opts.md)
-    * Translates to the environment variable JAVA_OPTS
-  * ```seldon.io/engine-seldon-log-requests``` : Whether to log raw requests from engine
-    * Locations : SeldonDeployment.spec.annotations
-    * Translates to the environment variable SELDON_LOG_REQUESTS
-  * ```seldon.io/engine-seldon-log-responses``` : Whether to log raw responses from engine
-    * Locations : SeldonDeployment.spec.annotations
-    * Translates to the environment variable SELDON_LOG_RESPONSES
-  * ```seldon.io/engine-seldon-log-messages-externally``` : Option to turn on logging of requests via a logging service
-    * Locations : SeldonDeployment.spec.annotations
-    * Translates to the environment variable SELDON_LOG_MESSAGES_EXTERNALLY
-  * ```seldon.io/engine-seldon-log-message-type``` : Option to override type set on messages when sending to logging service. Used to determine which logger impl
-    * Locations : SeldonDeployment.spec.annotations
-    * Translates to the environment variable SELDON_LOG_MESSAGE_TYPE
-  * ```seldon.io/engine-seldon-message-logging-service``` : Option to override url to broker that sends to logging service
-    * Locations : SeldonDeployment.spec.annotations
-    * Translates to the environment variable SELDON_MESSAGE_LOGGING_SERVICE
-
-More details on logging-related variables can be seen in the [request-logging example](https://github.com/SeldonIO/seldon-core/tree/master/examples/centralised-logging/README.md).
-
-Environment variables for the engine can also be set in the `svcOrchSpec` section of the SeldonDeployment, alongside engine resources. For examples see the helm charts or the [distributed tracing example](./distributed-tracing.md).
-
-If both annotations and `svcOrchSpec` environment variables are used to set an environment variable for the engine container then `svcOrchSpec` environment variables take priority.
-
-The above are the key engine env vars. For a full listing of engine env vars see the application.properties file of the engine source code.
-
 
 ### Misc
 

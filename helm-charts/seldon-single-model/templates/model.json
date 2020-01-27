@@ -18,7 +18,7 @@
                     "spec": {
                         "containers": [
                             {
-                                "image": "{{ .Values.model.image.name }}",
+                                "image": "{{ .Values.model.image.name }}_{{ lower .Values.protocol  }}:{{ .Values.model.image.version }}",
                                 "imagePullPolicy": "{{ .Values.model.image.pullPolicy }}",
                                 "name": "{{ .Values.model.name }}",
                                 "resources": {{ .Values.model.resources | toJson }},
@@ -41,7 +41,7 @@
                     "name": "{{ .Values.model.name }}",
                     "type": "MODEL",
                     "endpoint": {
-                        "type": "REST"
+                        "type": "{{ .Values.protocol }}"
                     }},
                 "svcOrchSpec": {
                 "resources": {{ .Values.engine.resources | toJson }},
