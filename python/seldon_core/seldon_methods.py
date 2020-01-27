@@ -277,8 +277,8 @@ def route(
 
 
 def aggregate(
-    user_model: Any, request: prediction_pb2.SeldonMessageList
-) -> prediction_pb2.SeldonMessage:
+    user_model: Any, request: Union[prediction_pb2.SeldonMessageList, List, Dict]
+) -> Union[prediction_pb2.SeldonMessage, List, Dict]:
     """
     Aggregate a list of payloads
 
@@ -326,23 +326,25 @@ def aggregate(
             features_list = []
             names_list = []
 
-            if "seldonMessages" not in request or not isinstance(
+            if isinstance(request, list):
+                msgs = request
+            elif "seldonMessages" in request and isinstance(
                 request["seldonMessages"], list
             ):
+                msgs = request["seldonMessages"]
+            else:
                 raise SeldonMicroserviceException(
                     f"Invalid request data type: {request}"
                 )
 
-            for msg in request["seldonMessages"]:
+            for msg in msgs:
                 (features, meta, datadef, data_type) = extract_request_parts_json(msg)
                 class_names = datadef["names"] if datadef and "names" in datadef else []
                 features_list.append(features)
                 names_list.append(class_names)
 
             client_response = client_aggregate(user_model, features_list, names_list)
-            return construct_response_json(
-                user_model, False, request["seldonMessages"][0], client_response
-            )
+            return construct_response_json(user_model, False, msgs[0], client_response)
 
 
 def health_status(user_model: Any) -> Union[prediction_pb2.SeldonMessage, List, Dict]:
@@ -366,3 +368,21 @@ def health_status(user_model: Any) -> Union[prediction_pb2.SeldonMessage, List, 
 
     client_response = client_health_status(user_model)
     return construct_response_json(user_model, False, {}, client_response)
+
+
+def metadata(user_model: Any) -> Dict:
+    """
+    Call the user model to get the model metadata
+
+    Parameters
+    ----------
+    user_model
+       User defined class instance
+    Returns
+    -------
+      Model Metadata
+    """
+    if hasattr(user_model, "metadata"):
+        return user_model.metadata()
+    else:
+        return {}

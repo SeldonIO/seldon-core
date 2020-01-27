@@ -47,14 +47,8 @@ class TestRollingHttp(object):
             r = rest_request_ambassador("mymodel", namespace, api_gateway)
             assert r.status_code == 200
             res = r.json()
-            assert (
-                res["meta"]["requestPath"]["complex-model"]
-                == "seldonio/fixed-model:0.1"
-                and res["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
-            ) or (
-                res["meta"]["requestPath"]["complex-model"]
-                == "seldonio/fixed-model:0.2"
-                and res["data"]["tensor"]["values"] == [5.0, 6.0, 7.0, 8.0]
+            assert (res["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]) or (
+                res["data"]["tensor"]["values"] == [5.0, 6.0, 7.0, 8.0]
             )
             if (not r.status_code == 200) or (
                 res["data"]["tensor"]["values"] == [5.0, 6.0, 7.0, 8.0]
@@ -89,15 +83,8 @@ class TestRollingHttp(object):
             r = rest_request_ambassador("mymodel", namespace, api_gateway)
             assert r.status_code == 200
             res = r.json()
-            assert (
-                "complex-model" in res["meta"]["requestPath"]
-                and res["meta"]["requestPath"]["complex-model"]
-                == "seldonio/fixed-model:0.1"
-                and res["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
-            ) or (
-                res["meta"]["requestPath"]["complex-model2"]
-                == "seldonio/fixed-model:0.2"
-                and res["data"]["tensor"]["values"] == [5.0, 6.0, 7.0, 8.0]
+            assert (res["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]) or (
+                res["data"]["tensor"]["values"] == [5.0, 6.0, 7.0, 8.0]
             )
             if (not r.status_code == 200) or (
                 res["data"]["tensor"]["values"] == [5.0, 6.0, 7.0, 8.0]
@@ -132,14 +119,7 @@ class TestRollingHttp(object):
             r = rest_request_ambassador("mymodel", namespace, api_gateway)
             assert r.status_code == 200
             res = r.json()
-            assert res["meta"]["requestPath"][
-                "complex-model"
-            ] == "seldonio/fixed-model:0.1" and res["data"]["tensor"]["values"] == [
-                1.0,
-                2.0,
-                3.0,
-                4.0,
-            ]
+            assert res["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
             time.sleep(1)
         assert i == 49
         logging.warning("Success for test_rolling_update3")
@@ -169,20 +149,9 @@ class TestRollingHttp(object):
             r = rest_request_ambassador("mymodel", namespace, api_gateway)
             assert r.status_code == 200
             res = r.json()
-            assert (
-                "complex-model" in res["meta"]["requestPath"]
-                and res["meta"]["requestPath"]["complex-model"]
-                == "seldonio/fixed-model:0.1"
-                and res["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
-            ) or (
-                res["meta"]["requestPath"]["model1"] == "seldonio/fixed-model:0.1"
-                and res["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
-                and res["meta"]["requestPath"]["model2"] == "seldonio/fixed-model:0.1"
-            )
-            if (not r.status_code == 200) or ("model1" in res["meta"]["requestPath"]):
-                break
+            assert res["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
             time.sleep(1)
-        assert i < 100
+        assert i == 49
         logging.warning("Success for test_rolling_update4")
         run(f"kubectl delete -f ../resources/graph1.json -n {namespace}", shell=True)
         run(f"kubectl delete -f ../resources/graph5.json -n {namespace}", shell=True)
@@ -210,15 +179,8 @@ class TestRollingHttp(object):
             r = rest_request_ambassador("mymodel", namespace, api_gateway)
             assert r.status_code == 200
             res = r.json()
-            assert (
-                "complex-model" in res["meta"]["requestPath"]
-                and res["meta"]["requestPath"]["complex-model"]
-                == "seldonio/fixed-model:0.1"
-                and res["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
-            ) or (
-                res["meta"]["requestPath"]["complex-model"]
-                == "seldonio/fixed-model:0.2"
-                and res["data"]["tensor"]["values"] == [5.0, 6.0, 7.0, 8.0]
+            assert (res["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]) or (
+                res["data"]["tensor"]["values"] == [5.0, 6.0, 7.0, 8.0]
             )
             if (not r.status_code == 200) or (
                 res["data"]["tensor"]["values"] == [5.0, 6.0, 7.0, 8.0]
@@ -253,14 +215,8 @@ class TestRollingHttp(object):
             r = rest_request_ambassador("mymodel", namespace, api_gateway)
             assert r.status_code == 200
             res = r.json()
-            assert (
-                res["meta"]["requestPath"]["complex-model"]
-                == "seldonio/fixed-model:0.1"
-                and res["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
-            ) or (
-                res["meta"]["requestPath"]["complex-model"]
-                == "seldonio/fixed-model:0.2"
-                and res["data"]["tensor"]["values"] == [5.0, 6.0, 7.0, 8.0]
+            assert (res["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]) or (
+                res["data"]["tensor"]["values"] == [5.0, 6.0, 7.0, 8.0]
             )
             if (not r.status_code == 200) or (
                 res["data"]["tensor"]["values"] == [5.0, 6.0, 7.0, 8.0]
@@ -295,15 +251,8 @@ class TestRollingHttp(object):
             r = rest_request_ambassador("mymodel", namespace, api_gateway)
             assert r.status_code == 200
             res = r.json()
-            assert (
-                "complex-model" in res["meta"]["requestPath"]
-                and res["meta"]["requestPath"]["complex-model"]
-                == "seldonio/fixed-model:0.1"
-                and res["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
-            ) or (
-                res["meta"]["requestPath"]["complex-model2"]
-                == "seldonio/fixed-model:0.2"
-                and res["data"]["tensor"]["values"] == [5.0, 6.0, 7.0, 8.0]
+            assert (res["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]) or (
+                res["data"]["tensor"]["values"] == [5.0, 6.0, 7.0, 8.0]
             )
             if (not r.status_code == 200) or (
                 res["data"]["tensor"]["values"] == [5.0, 6.0, 7.0, 8.0]
@@ -337,14 +286,7 @@ class TestRollingHttp(object):
             r = rest_request_ambassador("mymodel", namespace, api_gateway)
             assert r.status_code == 200
             res = r.json()
-            assert res["meta"]["requestPath"][
-                "complex-model"
-            ] == "seldonio/fixed-model:0.1" and res["data"]["tensor"]["values"] == [
-                1.0,
-                2.0,
-                3.0,
-                4.0,
-            ]
+            assert res["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
             time.sleep(1)
         assert i == 49
         logging.warning("Success for test_rolling_update8")
@@ -373,20 +315,9 @@ class TestRollingHttp(object):
             r = rest_request_ambassador("mymodel", namespace, api_gateway)
             assert r.status_code == 200
             res = r.json()
-            assert (
-                "complex-model" in res["meta"]["requestPath"]
-                and res["meta"]["requestPath"]["complex-model"]
-                == "seldonio/fixed-model:0.1"
-                and res["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
-            ) or (
-                res["meta"]["requestPath"]["model1"] == "seldonio/fixed-model:0.1"
-                and res["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
-                and res["meta"]["requestPath"]["model2"] == "seldonio/fixed-model:0.1"
-            )
-            if (not r.status_code == 200) or ("model1" in res["meta"]["requestPath"]):
-                break
+            assert res["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
             time.sleep(1)
-        assert i < 100
+        assert i == 49
         logging.warning("Success for test_rolling_update9")
         run(f"kubectl delete -f ../resources/graph1svc.json -n {namespace}", shell=True)
         run(f"kubectl delete -f ../resources/graph5svc.json -n {namespace}", shell=True)
@@ -413,15 +344,8 @@ class TestRollingHttp(object):
             r = rest_request_ambassador("mymodel", namespace, api_gateway)
             assert r.status_code == 200
             res = r.json()
-            assert (
-                "complex-model" in res["meta"]["requestPath"]
-                and res["meta"]["requestPath"]["complex-model"]
-                == "seldonio/fixed-model:0.1"
-                and res["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
-            ) or (
-                res["meta"]["requestPath"]["complex-model"]
-                == "seldonio/fixed-model:0.2"
-                and res["data"]["tensor"]["values"] == [5.0, 6.0, 7.0, 8.0]
+            assert (res["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]) or (
+                res["data"]["tensor"]["values"] == [5.0, 6.0, 7.0, 8.0]
             )
             if (not r.status_code == 200) or (
                 res["data"]["tensor"]["values"] == [5.0, 6.0, 7.0, 8.0]
@@ -463,12 +387,8 @@ def test_rolling_update_deployment(namespace, from_deployment, to_deployment):
         r = rest_request_ambassador("mymodel", namespace, API_AMBASSADOR)
         assert r.status_code == 200
         res = r.json()
-        assert (
-            res["meta"]["requestPath"]["complex-model"] == "seldonio/fixed-model:0.1"
-            and res["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
-        ) or (
-            res["meta"]["requestPath"]["complex-model"] == "seldonio/fixed-model:0.2"
-            and res["data"]["tensor"]["values"] == [5.0, 6.0, 7.0, 8.0]
+        assert (res["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]) or (
+            res["data"]["tensor"]["values"] == [5.0, 6.0, 7.0, 8.0]
         )
         if (not r.status_code == 200) or (
             res["data"]["tensor"]["values"] == [5.0, 6.0, 7.0, 8.0]

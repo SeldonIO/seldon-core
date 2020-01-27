@@ -2,12 +2,14 @@ from seldon_e2e_utils import (
     wait_for_rollout,
     wait_for_status,
     initial_rest_request,
+    initial_grpc_request,
     rest_request_ambassador,
     grpc_request_ambassador2,
     API_AMBASSADOR,
 )
 from subprocess import run
 import logging
+import time
 
 
 class TestClusterWide(object):
@@ -15,7 +17,7 @@ class TestClusterWide(object):
     # Test singe model helm script with 4 API methods
     def test_single_model(self, namespace):
         run(
-            f"helm install mymodel ../../helm-charts/seldon-single-model --set oauth.key=oauth-key --set oauth.secret=oauth-secret --namespace {namespace}",
+            f"helm install mymodel ../../helm-charts/seldon-single-model --namespace {namespace}",
             shell=True,
             check=True,
         )
@@ -27,15 +29,12 @@ class TestClusterWide(object):
         logging.warning(r.json())
         assert r.status_code == 200
         assert len(r.json()["data"]["tensor"]["values"]) == 1
-        logging.warning("Test Ambassador gRPC gateway")
-        r = grpc_request_ambassador2("mymodel", namespace, API_AMBASSADOR)
-        logging.warning(r)
         run(f"helm delete mymodel", shell=True)
 
     # Test AB Test model helm script with 4 API methods
     def test_abtest_model(self, namespace):
         run(
-            f"helm install myabtest ../../helm-charts/seldon-abtest --set oauth.key=oauth-key --set oauth.secret=oauth-secret --namespace {namespace}",
+            f"helm install myabtest ../../helm-charts/seldon-abtest --namespace {namespace}",
             shell=True,
             check=True,
         )
@@ -56,7 +55,7 @@ class TestClusterWide(object):
     # Test MAB Test model helm script with 4 API methods
     def test_mab_model(self, namespace):
         run(
-            f"helm install mymab ../../helm-charts/seldon-mab --set oauth.key=oauth-key --set oauth.secret=oauth-secret --namespace {namespace}",
+            f"helm install mymab ../../helm-charts/seldon-mab --namespace {namespace}",
             shell=True,
             check=True,
         )

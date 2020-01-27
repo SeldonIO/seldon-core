@@ -36,8 +36,14 @@ HELM_ENV_SUBST = {
     "ISTIO_ENABLED":"istio.enabled",
     "ISTIO_GATEWAY":"istio.gateway",
     "ISTIO_TLS_MODE":"istio.tlsMode",
-    "PREDICTIVE_UNIT_SERVICE_PORT":"predictiveUnit.port"
-
+    "PREDICTIVE_UNIT_SERVICE_PORT":"predictiveUnit.port",
+    "USE_EXECUTOR":"executor.enabled",
+    "EXECUTOR_SERVER_GRPC_PORT": "engine.grpc.port",
+    "EXECUTOR_CONTAINER_IMAGE_PULL_POLICY": "executor.image.pullPolicy",
+    "EXECUTOR_SERVER_PORT": "executor.port",
+    "EXECUTOR_PROMETHEUS_PATH": "executor.prometheus.path",
+    "EXECUTOR_CONTAINER_USER": "executor.user",
+    "EXECUTOR_CONTAINER_SERVICE_ACCOUNT_NAME": "executor.serviceAccount.name",
 }
 HELM_VALUES_IMAGE_PULL_POLICY = '{{ .Values.image.pullPolicy }}'
 
@@ -90,8 +96,9 @@ if __name__ == "__main__":
                     if env["name"] in HELM_ENV_SUBST:
                         env["value"] = helm_value(HELM_ENV_SUBST[env["name"]])
                     elif env["name"] == "ENGINE_CONTAINER_IMAGE_AND_VERSION":
-                        env[
-                            "value"] = '{{ .Values.engine.image.registry }}/{{ .Values.engine.image.repository }}:{{ .Values.engine.image.tag }}'
+                        env["value"] = '{{ .Values.engine.image.registry }}/{{ .Values.engine.image.repository }}:{{ .Values.engine.image.tag }}'
+                    elif env["name"] == "EXECUTOR_CONTAINER_IMAGE_AND_VERSION":
+                        env["value"] = '{{ .Values.executor.image.registry }}/{{ .Values.executor.image.repository }}:{{ .Values.executor.image.tag }}'
                     elif env["name"] == "CONTROLLER_ID":
                         env["value"] = "{{ .Values.controllerId }}"
                 # Update webhook port

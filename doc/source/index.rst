@@ -49,44 +49,34 @@ Seldon Core is an open source platform for deploying machine learning models on 
    
 .. toctree::
    :maxdepth: 1
-   :caption: Wrappers
+   :caption: Language Wrappers
 
    Python Models <python/index>   	     
    Java Models <java/README.md>
    R Models <R/README.md>
    NodeJS Models <nodejs/README.md>
    Custom Metrics <analytics/custom_metrics.md>
-   Logging & Log Level <analytics/log_level.md>
-	     
-.. toctree::
-   :maxdepth: 1
-   :caption: Inference Graphs
 
-   Distributed Tracing <graph/distributed-tracing.md>
-   Annotation-based Configuration <graph/annotations.md>
-   Private Docker Registry <graph/private_registries.md>
-   Service Orchestrator <graph/svcorch.md>
-   
 .. toctree::
    :maxdepth: 1
    :caption: Ingress
 
    Ambassador Ingress <ingress/ambassador.md>
    Istio Ingress <ingress/istio.md>
-   Seldon OAuth Gateway <ingress/seldon.md>
    
 .. toctree::
    :maxdepth: 1
-   :caption: Deployment Options
+   :caption: Production
 
-   Helm Charts <graph/helm_charts.md>	     
-   Grafana Analytics <analytics/analytics.md>
-   Elastic Stack Logging <analytics/logging.md>
+   Protocols <graph/protocols.md>	     
+   Tracing <graph/distributed-tracing.md>
+   Metrics <analytics/analytics.md>
+   Payload Logging <analytics/logging.md>
    Autoscaling <graph/autoscaling.md>
-	     
+      
 .. toctree::
    :maxdepth: 1
-   :caption: ML Compliance and Governance
+   :caption: Advanced Inference
 
    Model Explanations <analytics/explainers.md>
    Outlier Detection <analytics/outlier_detection.md>
@@ -98,12 +88,6 @@ Seldon Core is an open source platform for deploying machine learning models on 
 
    Notebooks <examples/notebooks>
    Integrations <examples/integrations>
-
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Tutorials
-
    Articles/Blogs <tutorials/blogs>
    Videos <tutorials/videos>
 
@@ -111,17 +95,20 @@ Seldon Core is an open source platform for deploying machine learning models on 
    :maxdepth: 1
    :caption: Reference
 
-   General Availability <reference/ga.md>
-   Python API reference <python/api/modules>	     
-   Seldon Microservice API <reference/apis/internal-api.md>
-   Seldon Orchestrator <reference/engine>
+   Annotation-based Configuration <graph/annotations.md>   	     
    AWS Marketplace Install <reference/aws-mp-install.md>
-   Benchmarking <reference/benchmarking.md>
-   Seldon Deployment CRD <reference/seldon-deployment.md>
-   Prediction APIs <reference/apis/index>
-   Seldon Core Helm Chart <reference/helm.md>
-   Release Highlights <reference/release-highlights>
+   Benchmarking <reference/benchmarking.md>   
+   General Availability <reference/ga.md>
+   Helm Charts <graph/helm_charts.md>
    Images <reference/images.md>
+   Logging & Log Level <analytics/log_level.md>   
+   Private Docker Registry <graph/private_registries.md>   
+   Prediction APIs <reference/apis/index>   
+   Python API reference <python/api/modules>
+   Release Highlights <reference/release-highlights>   
+   Seldon Core Helm Chart <reference/helm.md>   
+   Seldon Deployment CRD <reference/seldon-deployment.md>   
+   Service Orchestrator <graph/svcorch.md>
    
 .. toctree::
    :maxdepth: 1

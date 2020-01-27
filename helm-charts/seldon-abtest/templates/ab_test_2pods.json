@@ -22,7 +22,7 @@
 		    "spec": {
 			"containers": [
 			    {
-				"image": "{{ .Values.modelb.image.name }}",
+                                "image": "{{ .Values.modela.image.name }}_{{ lower .Values.protocol  }}:{{ .Values.modela.image.version }}",
 				"imagePullPolicy": "IfNotPresent",
 				"name": "{{ .Values.modela.name }}",
 				"resources": {
@@ -41,8 +41,8 @@
 		    },    
 			"spec":{
 			    "containers":[
-			    {
-				"image": "{{ .Values.modelb.image.name }}",
+				{
+                                "image": "{{ .Values.modela.image.name }}_{{ lower .Values.protocol  }}:{{ .Values.modela.image.version }}",
 				"imagePullPolicy": "IfNotPresent",
 				"name": "{{ .Values.modelb.name }}",
 				"resources": {
@@ -57,7 +57,9 @@
 				   }],
 		"graph": {
 		    "name": "{{ .Release.Name }}",
-		    "endpoint":{},
+		    "endpoint":{
+			"type":"{{ .Values.protocol }}"	
+		    },
 		    "implementation":"RANDOM_ABTEST",
 		    "parameters": [
 			{
@@ -70,7 +72,7 @@
 			{
 			    "name": "{{ .Values.modela.name }}",
 			    "endpoint":{
-				"type":"REST"
+				"type":"{{ .Values.protocol }}"				
 			    },
 			    "type":"MODEL",
 			    "children":[]
@@ -78,7 +80,7 @@
 			{
 			    "name": "{{ .Values.modelb.name }}",
 			    "endpoint":{
-				"type":"REST"
+				"type":"{{ .Values.protocol }}"				
 			    },
 			    "type":"MODEL",
 			    "children":[]

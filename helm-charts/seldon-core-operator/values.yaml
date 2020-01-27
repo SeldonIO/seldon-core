@@ -23,12 +23,25 @@ engine:
   logMessagesExternally: false
   port: 8000
   prometheus:
-    path: prometheus
-  securityContext:
-    enabled: true
+    path: /prometheus
   serviceAccount:
     name: default
   user: 8888
+executor:
+  enabled: true
+  grpc:
+    port: 5001
+  image:
+    pullPolicy: IfNotPresent
+    registry: docker.io
+    repository: seldonio/seldon-core-executor
+    tag: 1.0.2-SNAPSHOT
+  port: 8000
+  prometheus:
+    path: /prometheus
+  serviceAccount:
+    name: default
+  user: 8888  
 image:
   pullPolicy: IfNotPresent
   registry: docker.io
@@ -80,11 +93,11 @@ serviceAccount:
   name: seldon-manager
 singleNamespace: false
 storageInitializer:
-  cpuLimit: '1'
-  cpuRequest: 100m
-  image: gcr.io/kfserving/storage-initializer:0.2.1
-  memoryLimit: 1Gi
+  image: gcr.io/kfserving/storage-initializer:0.2.2
   memoryRequest: 100Mi
+  memoryLimit: 1Gi
+  cpuRequest: 100m
+  cpuLimit: '1'
 usageMetrics:
   enabled: false
 webhook:

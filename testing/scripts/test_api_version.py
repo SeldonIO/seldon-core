@@ -20,8 +20,6 @@ from subprocess import run
 def test_api_version(namespace, apiVersion):
     command = (
         "helm install mymodel ../../helm-charts/seldon-single-model "
-        "--set oauth.key=oauth-key "
-        "--set oauth.secret=oauth-secret "
         f"--set apiVersion={apiVersion} "
         f"--namespace {namespace}"
     )
