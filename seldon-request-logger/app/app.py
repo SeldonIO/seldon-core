@@ -19,18 +19,27 @@ def index():
 
     body = request.get_json(force=True)
 
-    # TODO: extract_content needs refactoring as no more request and response sections
-    # TODO: instead req and response will come through separately and we need enrich the doc with response
-    #content = extract_content(body)
-    content = json.dumps(body)
+    print('RAW LOGMESSAGE')
     print(str(request.headers))
-    print(str(content))
+    print(str(body))
+    print('----------')
     sys.stdout.flush()
     es = connect_elasticsearch()
 
-    # TODO: get proper id
     # TODO: use env vars for index and doc type
-    store_record_with_retry(es, 'seldon', content, request.headers.get('Ce-Id'), 'seldonrequest')
+    # TODO: see executor code for proper headers - need model and SeldonDeployment name
+    type_header = request.headers.get('Ce-Type')
+    content = separate_request_response_sections(es, type_header, body, request.headers.get('Seldon-Puid'))
+
+    # req and response will come through separately and we need enrich the doc with response
+    content = extract_content(content)
+    print('TRANSFORMED LOGMESSAGE')
+    print(str(content))
+    print('----------')
+    sys.stdout.flush()
+    # TODO: that means getting the existing record and joining
+
+    store_record_with_retry(es, 'seldon', content, request.headers.get('Seldon-Puid'), 'seldonrequest')
     #store_record_with_retry(es, 'seldon', content, '7f70cbb5-70d0-42c2-a6b4-561edef3ccba', 'seldonrequest')
     sys.stdout.flush()
 
@@ -39,6 +48,33 @@ def index():
     #    print(e, file=sys.stderr)
     #    return 'Error processing input'
 
+def separate_request_response_sections(elastic_object, type_header, content, request_id):
+    new_content = {}
+    if type_header == "io.seldon.serving.inference.request":
+        print('SETTING CONTENT FOR REQUEST')
+        sys.stdout.flush()
+        # put whole dict under 'request' and return it
+        new_content['request'] = content
+    elif type_header == "io.seldon.serving.inference.response":
+
+        # TODO: waiting for req to be in first... do a wait with retries or allow response to be first?
+        time.sleep(1)
+        doc = retrieve_doc(elastic_object, 'seldon', 'seldonrequest', request_id)
+
+        # build a new doc that contains the request and response
+        new_content['request'] = {}
+        # TODO: but the request has already been transformed before insertion so have to untransform it
+        # have 'untransform' it because whole thing will go through transformation again in extract_content
+        new_content['request']['data'] = doc['_source']['request']['tabular']['data']
+
+        new_content['response'] = content
+
+        # TODO: also not nice that for response we retrieve doc and don't retain the '_seq_no' and '_primary_term' so we do an unnecessary retry on posting to elastic
+
+    else:
+        new_content = content
+
+    return new_content
 
 def connect_elasticsearch():
     _es = None
@@ -59,12 +95,7 @@ def store_record_with_retry(elastic_object, index_name, record, req_id, record_d
         store_record(elastic_object, index_name, record, req_id, record_doc_type)
 
 def store_record(elastic_object, index_name, record, req_id, record_doc_type):
-    doc = None
-    try:
-        # see https://elasticsearch-py.readthedocs.io/en/master/api.html#elasticsearch.Elasticsearch.get
-        doc = elastic_object.get(index=index_name, doc_type=record_doc_type, id=req_id)
-    except:
-        pass
+    doc = retrieve_doc(elastic_object, index_name, record_doc_type, req_id)
 
     try:
         # see https://elasticsearch-py.readthedocs.io/en/master/api.html#elasticsearch.Elasticsearch.index
@@ -80,6 +111,16 @@ def store_record(elastic_object, index_name, record, req_id, record_doc_type):
         print('Error in indexing data')
         print(str(ex))
         raise
+
+
+def retrieve_doc(elastic_object, index_name, record_doc_type, req_id):
+    doc = None
+    try:
+        # see https://elasticsearch-py.readthedocs.io/en/master/api.html#elasticsearch.Elasticsearch.get
+        doc = elastic_object.get(index=index_name, doc_type=record_doc_type, id=req_id)
+    except:
+        pass
+    return doc
 
 
 def extract_content(content):
