@@ -8,6 +8,11 @@ from seldon_core.user_model import SeldonComponent
 from typing import Dict, List, Union
 
 
+class MinimalUserObject(object):
+    def route(self, X, features_names):
+        return 22
+
+
 class UserObject(object):
     def __init__(self, metrics_ok=True, ret_meta=False):
         self.metrics_ok = metrics_ok
@@ -132,6 +137,17 @@ def test_router_gets_meta():
     assert j["meta"]["tags"] == {"inc_meta": {"puid": "abc"}}
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
     assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
+
+
+def test_router_meta_to_nonmeta_model():
+    user_object = MinimalUserObject()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+    rv = client.get('/route?json={"meta":{"puid": "abc"}, "data":{"ndarray":[2]}}')
+    j = json.loads(rv.data)
+    print(j)
+    assert rv.status_code == 200
+    assert j["data"]["ndarray"] == [[22]]
 
 
 def test_router_bad_user_object():
