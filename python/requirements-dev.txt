@@ -8,3 +8,5 @@ pytest-cov==2.8.1
 coverage==4.5.4
 # Used in serving_test_gen
 pandas==1.0.0
+# Fetch licenses
+pip-licenses==2.1.0
