@@ -29,7 +29,7 @@ set +o errexit
 echo "Files changed in python folder:"
 git --no-pager diff --exit-code --name-only origin/master python
 PYTHON_MODIFIED=$?
-if [[ $PYTHON_MODIFIED -gt 0 ]]; then 
+if [[ $PYTHON_MODIFIED -gt 0 ]]; then
     (cd wrappers/s2i/python/build_scripts \
         && ./build_all_local.sh \
         && ./push_all.sh)
@@ -51,6 +51,20 @@ if [[ $OPERATOR_MODIFIED -gt 0 ]]; then
 else
     echo "SKIPPING OPERATOR IMAGE BUILD..."
     OPERATOR_EXIT_VALUE=0
+fi
+
+echo "Files changed in executor folder:"
+git --no-pager diff --exit-code --name-only origin/master executor
+EXECUTOR_MODIFIED=$?
+if [[ $EXECUTOR_MODIFIED -gt 0 ]]; then
+    make \
+        -C executor \
+        docker-build \
+        docker-push
+    EXECUTOR_EXIT_VALUE=$?
+else
+    echo "SKIPPING EXECUTOR IMAGE BUILD..."
+    EXECUTOR_EXIT_VALUE=0
 fi
 
 echo "Files changed in engine folder:"
@@ -83,5 +97,6 @@ service docker stop || true
 # NOW THAT WE'VE CLEANED WE CAN EXIT ON TEST EXIT VALUE
 exit $((${PYTHON_EXIT_VALUE} \
     + ${OPERATOR_EXIT_VALUE} \
-    + ${ENGINE_EXIT_VALUE}))
+    + ${ENGINE_EXIT_VALUE})) \
+    + ${EXECUTOR_EXIT_VALUE}))
 
