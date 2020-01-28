@@ -61,12 +61,11 @@ def separate_request_response_sections(elastic_object, type_header, content, req
         time.sleep(1)
         doc = retrieve_doc(elastic_object, 'seldon', 'seldonrequest', request_id)
 
-        # build a new doc that contains the request and response
-        new_content['request'] = {}
-        # TODO: but the request has already been transformed before insertion so have to untransform it
-        # have 'untransform' it because whole thing will go through transformation again in extract_content
-        new_content['request']['data'] = doc['_source']['request']['tabular']['data']
 
+        # doc can have existing content - should have (processed) request content already
+        new_content = doc['_source']
+
+        # add the response content
         new_content['response'] = content
 
         # TODO: also not nice that for response we retrieve doc and don't retain the '_seq_no' and '_primary_term' so we do an unnecessary retry on posting to elastic
@@ -126,7 +125,9 @@ def retrieve_doc(elastic_object, index_name, record_doc_type, req_id):
 def extract_content(content):
     requestPart = dict_digger.dig(content, 'request')
     req_elements = None
-    if not requestPart is None:
+
+    # checking for "dataType" in case we've already parsed that part
+    if not requestPart is None and not "dataType" in requestPart:
         requestCopy = requestPart.copy()
         if "date" in requestCopy:
             del requestCopy["date"]
@@ -135,7 +136,7 @@ def extract_content(content):
         req_elements = createElelmentsArray(req_features, list(req_datadef.names))
     responsePart = dict_digger.dig(content, 'response')
     res_elements = None
-    if not responsePart is None:
+    if not responsePart is None and not "dataType" in responsePart:
         responseCopy = responsePart.copy()
         if "date" in responseCopy:
             del responseCopy["date"]
@@ -149,25 +150,21 @@ def extract_content(content):
             content["response_elements"] = b
             reqJson = extractRow(i, requestMsg, req_datatype, req_features, req_datadef)
             resJson = extractRow(i, responseMsg, res_datatype, res_features, res_datadef)
-            content["request"] = {"dataType": reqJson["dataType"]}
-            content["request"][reqJson["dataType"]] = reqJson
-            content["response"] = {"dataType": resJson["dataType"]}
-            content["response"][resJson["dataType"]] = resJson
+            content["request"] = reqJson
+            content["response"] = resJson
             # log formatted json to stdout for fluentd collection
             return json.dumps(content)
     elif not req_elements is None:
         for i, e in enumerate(req_elements):
             content["request_elements"] = e
             reqJson = extractRow(i, requestMsg, req_datatype, req_features, req_datadef)
-            content["request"] = {"dataType": reqJson["dataType"]}
-            content["request"][reqJson["dataType"]] = reqJson
+            content["request"] = reqJson
             return json.dumps(content)
     elif not res_elements is None:
         for i, e in enumerate(res_elements):
             content["response_elements"] = e
             resJson = extractRow(i, responseMsg, res_datatype, res_features, res_datadef)
-            content["response"] = {"dataType": resJson["dataType"]}
-            content["response"][resJson["dataType"]] = resJson
+            content["response"] = resJson
             return json.dumps(content)
     else:
         if "strData" in requestPart:
@@ -188,7 +185,10 @@ def extractRow(i:int,requestMsg: prediction_pb2.SeldonMessage,req_datatype: str,
             req_features= np.char.decode(req_features.astype('S'),"utf-8")
         dataReq = array_to_grpc_datadef(datatyReq, np.expand_dims(req_features[i], axis=0), req_datadef.names)  
     requestMsg2 = prediction_pb2.SeldonMessage(data=dataReq, meta=requestMsg.meta)
-    reqJson = seldon_message_to_json(requestMsg2)
+    reqJson = {}
+    reqJson["payload"] = seldon_message_to_json(requestMsg2)
+    # setting dataType here temporarily so calling method will be able to access it
+    # don't want to set it at the payload level
     reqJson["dataType"] = dataType
     return reqJson
 
