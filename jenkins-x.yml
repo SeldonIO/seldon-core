@@ -33,12 +33,19 @@ pipelineConfig:
               - test
           - name: seldon-engine
             steps:
-            - args:
+            - name: test-engine
+              command: make
+              args:
               - -C engine
               - -f Makefile.ci
               - build_jar
+          - name: operator
+            steps:
+            - name: test-operator
               command: make
-              name: test-engine
+              args:
+              - -C engine
+              - test
     release:
       setVersion:
         steps:
