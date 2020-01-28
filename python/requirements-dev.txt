@@ -4,9 +4,12 @@ Pillow==7.0.0
 tox<4.0.0
 pytest==5.3.1
 pytest-cov==2.8.1
+
 # 2nd lvl dep on cov required to avoid sqllite dep
 coverage==4.5.4
+
 # Used in serving_test_gen
 pandas==1.0.0
+
 # Fetch licenses
 pip-licenses==2.1.0
