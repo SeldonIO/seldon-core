@@ -1,17 +1,19 @@
 IMAGE_NAME=seldon-java-wrapper
-VERSION_FILE=target/version.txt
+VERSION := $(shell cat ../version.txt)
+
+version:
+	echo ${VERSION}
 
 build_jar: update_proto
-	mvn clean package -B
+	@set -x && mvn clean verify package -B
 
-seldon-core:
-	git clone git@github.com:SeldonIO/seldon-core.git
+download_protos_tensorflow:
+	cd ../proto/tensorflow ; make create_protos
 
-update_proto: seldon-core
-	cd seldon-core/proto/tensorflow && make create_protos
-	@cp -v seldon-core/proto/prediction.proto src/main/proto/
-	@cp -vr seldon-core/proto/tensorflow/tensorflow src/main/proto
+update_proto: download_protos_tensorflow
+	cp -v ../proto/prediction.proto src/main/proto/
+	cp -vr ../proto/tensorflow/tensorflow src/main/proto
+
 clean:
-	rm -rf seldon-core
-	rm -rf src/main/proto/*
-	mvn clean
+	mvn clean -B
+	rm -fr src/main/proto/*
