@@ -37,11 +37,10 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
   </developers>
   <scm>
     <connection>
-    scm:git:git://github.com/SeldonIO/seldon-java-wrapper.git</connection>
-    <url>
-    https://github.com/SeldonIO/seldon-java-wrapper/tree/master</url>
+    scm:git:git://github.com/SeldonIO/seldon-core.git</connection>
+    <url>https://github.com/SeldonIO/seldon-core/tree/master</url>
     <developerConnection>
-    scm:git:git@github.com:SeldonIO/seldon-java-wrapper.git</developerConnection>
+    scm:git:git@github.com:SeldonIO/seldon-core.git</developerConnection>
   </scm>
   <parent>
     <groupId>org.springframework.boot</groupId>
