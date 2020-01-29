@@ -39,7 +39,7 @@ pipelineConfig:
               - -C engine
               - -f Makefile.ci
               - build_jar
-          - name: operator
+          - name: seldon-operator
             steps:
             - name: test-operator
               command: make
