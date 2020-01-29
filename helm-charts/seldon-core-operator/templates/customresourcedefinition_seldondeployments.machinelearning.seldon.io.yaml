@@ -2840,6 +2840,8 @@ spec:
                     type: object
                   name:
                     type: string
+                  protocol:
+                    type: string
                   replicas:
                     format: int32
                     type: integer
@@ -2940,6 +2942,8 @@ spec:
                   traffic:
                     format: int32
                     type: integer
+                  transport:
+                    type: string
                 required:
                 - graph
                 - name
