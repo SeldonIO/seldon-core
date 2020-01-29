@@ -44,7 +44,7 @@ pipelineConfig:
             - name: test-operator
               command: make
               args:
-              - -C engine
+              - -C operator
               - test
     release:
       setVersion:
