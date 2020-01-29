@@ -23,12 +23,3 @@ Documentation can be found [here](https://docs.seldon.io/projects/seldon-core/en
 
  * [Join our Slack Channel](https://join.slack.com/t/seldondev/shared_invite/enQtMzA2Mzk1Mzg0NjczLTJlNjQ1NTE5Y2MzMWIwMGUzYjNmZGFjZjUxODU5Y2EyMDY0M2U3ZmRiYTBkOTRjMzZhZjA4NjJkNDkxZTA2YmU)
 
-
-| Branch      | Status |
-|-------------|-------|
-| master      | [![Build Status](https://travis-ci.org/SeldonIO/seldon-core.svg?branch=master)](https://travis-ci.org/SeldonIO/seldon-core) |
-| release-0.3 | [![Build Status](https://travis-ci.org/SeldonIO/seldon-core.svg?branch=release-0.3)](https://travis-ci.org/SeldonIO/seldon-core) |
-| release-0.2 | [![Build Status](https://travis-ci.org/SeldonIO/seldon-core.svg?branch=release-0.2)](https://travis-ci.org/SeldonIO/seldon-core) |
-| release-0.1 | [![Build Status](https://travis-ci.org/SeldonIO/seldon-core.svg?branch=release-0.1)](https://travis-ci.org/SeldonIO/seldon-core) |
-
-
