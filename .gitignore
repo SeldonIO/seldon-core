@@ -48,6 +48,9 @@ tests/CLUSTER_MANAGER_ENDPOINT
 tests/out.log
 cluster-manager/settings.sh
 engine/target/
+incubating/wrappers/java/target/
+incubating/wrappers/java/src/main/proto/prediction.proto
+incubating/wrappers/java/src/main/proto/tensorflow/
 zookeeper-k8s/zookeeper.json
 monitoring/alertmanager/config.yml
 monitoring/grafana/auth/grafana-prom-admin-password.txt
