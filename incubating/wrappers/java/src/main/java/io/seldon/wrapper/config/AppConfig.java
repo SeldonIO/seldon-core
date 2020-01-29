@@ -7,10 +7,9 @@ import org.apache.catalina.connector.Connector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.boot.context.embedded.ConfigurableEmbeddedServletContainer;
-import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
-import org.springframework.boot.context.embedded.tomcat.TomcatConnectorCustomizer;
-import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
+import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Scope;
@@ -25,7 +24,7 @@ public class AppConfig {
 
   @Bean
   @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
-  public EmbeddedServletContainerCustomizer containerCustomizer() {
+  public WebServerFactoryCustomizer containerCustomizer() {
     return new CustomizationBean();
   }
 
@@ -35,15 +34,12 @@ public class AppConfig {
   }
 
   @Bean
-  public EmbeddedServletContainerCustomizer tomcatCustomizer() {
-    return new EmbeddedServletContainerCustomizer() {
+  public WebServerFactoryCustomizer tomcatCustomizer() {
+    return new WebServerFactoryCustomizer<TomcatServletWebServerFactory>() {
 
       @Override
-      public void customize(ConfigurableEmbeddedServletContainer container) {
-        if (container instanceof TomcatEmbeddedServletContainerFactory) {
-          ((TomcatEmbeddedServletContainerFactory) container)
-              .addConnectorCustomizers(gracefulShutdown());
-        }
+      public void customize(TomcatServletWebServerFactory container) {
+        container.addConnectorCustomizers(gracefulShutdown());
       }
     };
   }

@@ -18,15 +18,16 @@ package io.seldon.wrapper.config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.embedded.ConfigurableEmbeddedServletContainer;
-import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
+import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory;
 
 /**
- * Customization of the Tomcat embedded servlet engne
+ * Customization of the Tomcat embedded servlet engine.
  *
  * @author clive
  */
-public class CustomizationBean implements EmbeddedServletContainerCustomizer {
+public class CustomizationBean
+    implements WebServerFactoryCustomizer<ConfigurableServletWebServerFactory> {
 
   private static final Logger logger = LoggerFactory.getLogger(CustomizationBean.class);
 
@@ -34,7 +35,7 @@ public class CustomizationBean implements EmbeddedServletContainerCustomizer {
   private Integer defaultServerPort;
 
   @Override
-  public void customize(ConfigurableEmbeddedServletContainer container) {
+  public void customize(ConfigurableServletWebServerFactory container) {
     logger.info("Customizing EmbeddedServlet");
 
     Integer serverPort;
