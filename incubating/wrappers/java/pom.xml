@@ -53,8 +53,8 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
     UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>
     UTF-8</project.reporting.outputEncoding>
-    <grpc.version>1.5.0</grpc.version>
-    <!-- CURRENT_GRPC_VERSION -->
+    <grpc.version>1.25.0</grpc.version>
+    <pb.version>3.11.1</pb.version>
     <start-class>io.seldon.wrapper.App</start-class>
   </properties>
   <distributionManagement>
@@ -109,10 +109,10 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
       <plugin>
         <groupId>org.xolstice.maven.plugins</groupId>
         <artifactId>protobuf-maven-plugin</artifactId>
-        <version>0.5.0</version>
+        <version>0.6.1</version>
         <configuration>
           <protocArtifact>
-          com.google.protobuf:protoc:3.1.0:exe:${os.detected.classifier}</protocArtifact>
+          com.google.protobuf:protoc:${pb.version}:exe:${os.detected.classifier}</protocArtifact>
           <pluginId>grpc-java</pluginId>
           <pluginArtifact>
           io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
@@ -204,16 +204,11 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
     </dependency>
-    <dependency>
-      <groupId>commons-lang</groupId>
-      <artifactId>commons-lang</artifactId>
-      <version>2.6</version>
-    </dependency>
     <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>3.5</version>
+      <version>3.9</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -222,7 +217,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
-      <version>4.5.2</version>
+      <version>4.5.10</version>
     </dependency>
     <dependency>
       <groupId>io.grpc</groupId>
@@ -242,17 +237,17 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
-      <version>3.5.1</version>
+      <version>${pb.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java-util</artifactId>
-      <version>3.5.1</version>
+      <version>${pb.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>22.0</version>
+      <version>28.2-jre</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
