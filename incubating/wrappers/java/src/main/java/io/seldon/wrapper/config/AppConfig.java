@@ -24,7 +24,7 @@ public class AppConfig {
 
   @Bean
   @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
-  public WebServerFactoryCustomizer containerCustomizer() {
+  public WebServerFactoryCustomizer<?> containerCustomizer() {
     return new CustomizationBean();
   }
 
@@ -34,7 +34,7 @@ public class AppConfig {
   }
 
   @Bean
-  public WebServerFactoryCustomizer tomcatCustomizer() {
+  public WebServerFactoryCustomizer<?> tomcatCustomizer() {
     return new WebServerFactoryCustomizer<TomcatServletWebServerFactory>() {
 
       @Override
