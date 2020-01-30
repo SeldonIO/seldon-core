@@ -15,12 +15,15 @@ const (
 	CEInferenceRequest  = "io.seldon.serving.inference.request"
 	CEInferenceResponse = "io.seldon.serving.inference.response"
 	ModelIdHeader       = "Model-ID"
+	SDepNameHeader      = "Seldondeployment"
+	NamespaceHeader     = "Namespace"
+	PredictorHeader     = "Predictor"
 )
 
 // NewWorker creates, and returns a new Worker object. Its only argument
 // is a channel that the worker can add itself to whenever it is done its
 // work.
-func NewWorker(id int, workerQueue chan chan LogRequest, log logr.Logger) Worker {
+func NewWorker(id int, workerQueue chan chan LogRequest, log logr.Logger, sdepName string, namespace string, predictorName string) Worker {
 	// Create, and return the worker.
 	return Worker{
 		Log:         log,
@@ -31,19 +34,25 @@ func NewWorker(id int, workerQueue chan chan LogRequest, log logr.Logger) Worker
 		Client: http.Client{
 			Timeout: 60 * time.Second,
 		},
-		CeCtx: cloudevents.ContextWithEncoding(context.Background(), cloudevents.Binary),
+		CeCtx:         cloudevents.ContextWithEncoding(context.Background(), cloudevents.Binary),
+		SdepName:      sdepName,
+		Namespace:     namespace,
+		PredictorName: predictorName,
 	}
 }
 
 type Worker struct {
-	Log         logr.Logger
-	ID          int
-	Work        chan LogRequest
-	WorkerQueue chan chan LogRequest
-	QuitChan    chan bool
-	Client      http.Client
-	CeCtx       context.Context
-	CeTransport transport.Transport
+	Log           logr.Logger
+	ID            int
+	Work          chan LogRequest
+	WorkerQueue   chan chan LogRequest
+	QuitChan      chan bool
+	Client        http.Client
+	CeCtx         context.Context
+	CeTransport   transport.Transport
+	SdepName      string
+	Namespace     string
+	PredictorName string
 }
 
 func (W *Worker) sendCloudEvent(logReq LogRequest) error {
@@ -53,6 +62,9 @@ func (W *Worker) sendCloudEvent(logReq LogRequest) error {
 		cloudevents.WithEncoding(cloudevents.HTTPBinaryV1),
 		cloudevents.WitHHeader(ModelIdHeader, logReq.ModelId),
 		cloudevents.WitHHeader(payload.SeldonPUIDHeader, logReq.RequestId), //FIXME add all meta data
+		cloudevents.WitHHeader(SDepNameHeader, W.SdepName),
+		cloudevents.WitHHeader(NamespaceHeader, W.Namespace),
+		cloudevents.WitHHeader(PredictorHeader, W.PredictorName),
 	)
 
 	if err != nil {
