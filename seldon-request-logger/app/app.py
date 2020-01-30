@@ -24,16 +24,22 @@ def index():
 
     es = connect_elasticsearch()
 
+    print('HEADERS')
+    print(str(request.headers))
+    print('-----')
+    sys.stdout.flush()
     # TODO: use env vars for index and doc type
     # TODO: see executor code for proper headers - need model and SeldonDeployment name
+    # TODO: put all the headers in the document? maybe only if an env var set?
+    #  perhaps all headers except the ones we already have or don't need?
     type_header = request.headers.get('Ce-Type')
     message_type = parse_message_type(type_header)
 
     try:
         #first ensure there is an elastic doc as we need something to lock against
-        update_elastic_doc(es,message_type,{},request.headers.get('Seldon-Puid'))
+        update_elastic_doc(es,message_type,{},request.headers.get('Seldon-Puid'), request.headers)
         #now process and update the doc
-        doc = process_and_update_elastic_doc(es, message_type, body, request.headers.get('Seldon-Puid'))
+        doc = process_and_update_elastic_doc(es, message_type, body, request.headers.get('Seldon-Puid'),request.headers)
         return str(doc)
     except Exception as ex:
         print(ex)
@@ -47,19 +53,37 @@ def parse_message_type(type_header):
         return 'response'
     return 'unknown'
 
-def process_and_update_elastic_doc(elastic_object, message_type, message_body, request_id):
+
+def set_metadata(content, headers):
+    type_header = request.headers.get('Ce-Type')
+    if type_header.startswith('io.seldon.serving'):
+        content['ServingEngine'] = 'Seldon'
+    elif type_header.startswith('org.kubeflow.serving'):
+        content['ServingEngine'] = 'InferenceService'
+
+    field_from_header(content, 'Seldondeploymentname', headers)
+    field_from_header(content, 'Predictor', headers)
+    field_from_header(content, 'Namespace', headers)
+    field_from_header(content, 'Model-Id', headers)
+    return
+
+
+def field_from_header(content, header_name, headers):
+    if not request.headers.get(header_name) is None:
+        content[header_name] = headers.get(header_name)
+
+
+def process_and_update_elastic_doc(elastic_object, message_type, message_body, request_id, headers):
     if message_type == 'unknown':
         print('UNKNOWN REQUEST TYPE FOR '+request_id+' - NOT PROCESSING')
 
-    #TODO: find Seldon vs KFServing from header (type header)
-    #TODO: need to get SDep and predictor name in (but where to put?)
-    #TODO: sdepName, namespace and timestamp all currently set at top level
+    #TODO: set timestamp - currently set at top level
     #TODO: last-ce-id? set timestamps separately for req and resp?
 
     #first do any needed transformations
     new_content_part = process_content(message_body)
 
-    new_content = update_elastic_doc(elastic_object, message_type, new_content_part, request_id)
+    new_content = update_elastic_doc(elastic_object, message_type, new_content_part, request_id, headers)
     return str(new_content)
 
 
@@ -67,7 +91,7 @@ def process_and_update_elastic_doc(elastic_object, message_type, message_body, r
                       Exception,
                       max_time=30,
                       jitter=backoff.random_jitter)
-def update_elastic_doc(elastic_object, message_type, new_content_part, request_id):
+def update_elastic_doc(elastic_object, message_type, new_content_part, request_id, headers):
     # now ready to upsert
     doc = retrieve_doc(elastic_object, 'seldon', 'seldonrequest', request_id)
     # req and response will come through separately and we need enrich the doc with response
@@ -84,6 +108,7 @@ def update_elastic_doc(elastic_object, message_type, new_content_part, request_i
 
     # add the new content under its key
     new_content[message_type] = new_content_part
+    set_metadata(new_content,headers)
     store_record(elastic_object, 'seldon', new_content, request_id, 'seldonrequest', seq_no, primary_term)
     return new_content
 
