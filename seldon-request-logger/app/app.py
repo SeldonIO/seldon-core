@@ -1,6 +1,8 @@
 from flask import Flask, request
 import sys
 import dict_digger
+import backoff
+import requests
 import json
 import time
 from seldon_core.utils import json_to_seldon_message, extract_request_parts, array_to_grpc_datadef, seldon_message_to_json
@@ -13,67 +15,76 @@ import logging
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
+
 @app.route("/", methods=['GET','POST'])
 def index():
     #try:
 
     body = request.get_json(force=True)
 
-    print('RAW LOGMESSAGE')
-    print(str(request.headers))
-    print(str(body))
-    print('----------')
-    sys.stdout.flush()
     es = connect_elasticsearch()
 
     # TODO: use env vars for index and doc type
     # TODO: see executor code for proper headers - need model and SeldonDeployment name
     type_header = request.headers.get('Ce-Type')
-    content = separate_request_response_sections(es, type_header, body, request.headers.get('Seldon-Puid'))
+    message_type = parse_message_type(type_header)
 
-    # req and response will come through separately and we need enrich the doc with response
-    content = extract_content(content)
-    print('TRANSFORMED LOGMESSAGE')
-    print(str(content))
-    print('----------')
+    try:
+        #first ensure there is an elastic doc as we need something to lock against
+        update_elastic_doc(es,message_type,{},request.headers.get('Seldon-Puid'))
+        #now process and update the doc
+        doc = process_and_update_elastic_doc(es, message_type, body, request.headers.get('Seldon-Puid'))
+        return str(doc)
+    except Exception as ex:
+        print(ex)
     sys.stdout.flush()
-    # TODO: that means getting the existing record and joining
+    return 'problem logging request'
 
-    store_record_with_retry(es, 'seldon', content, request.headers.get('Seldon-Puid'), 'seldonrequest')
-    #store_record_with_retry(es, 'seldon', content, '7f70cbb5-70d0-42c2-a6b4-561edef3ccba', 'seldonrequest')
-    sys.stdout.flush()
-
-    return str(content)
-    #except Exception as e:
-    #    print(e, file=sys.stderr)
-    #    return 'Error processing input'
-
-def separate_request_response_sections(elastic_object, type_header, content, request_id):
-    new_content = {}
+def parse_message_type(type_header):
     if type_header == "io.seldon.serving.inference.request":
-        print('SETTING CONTENT FOR REQUEST')
-        sys.stdout.flush()
-        # put whole dict under 'request' and return it
-        new_content['request'] = content
-    elif type_header == "io.seldon.serving.inference.response":
+        return 'request'
+    if type_header == "io.seldon.serving.inference.response":
+        return 'response'
+    return 'unknown'
 
-        # TODO: waiting for req to be in first... do a wait with retries or allow response to be first?
-        time.sleep(1)
-        doc = retrieve_doc(elastic_object, 'seldon', 'seldonrequest', request_id)
+def process_and_update_elastic_doc(elastic_object, message_type, message_body, request_id):
+    if message_type == 'unknown':
+        print('UNKNOWN REQUEST TYPE FOR '+request_id+' - NOT PROCESSING')
+
+    #TODO: find Seldon vs KFServing from header (type header)
+    #TODO: need to get SDep and predictor name in (but where to put?)
+
+    #first do any needed transformations
+    new_content_part = process_content(message_body)
+
+    new_content = update_elastic_doc(elastic_object, message_type, new_content_part, request_id)
+    return str(new_content)
 
 
-        # doc can have existing content - should have (processed) request content already
+@backoff.on_exception(backoff.expo,
+                      Exception,
+                      max_time=30,
+                      jitter=backoff.random_jitter)
+def update_elastic_doc(elastic_object, message_type, new_content_part, request_id):
+    # now ready to upsert
+    doc = retrieve_doc(elastic_object, 'seldon', 'seldonrequest', request_id)
+    # req and response will come through separately and we need enrich the doc with response
+    # doc can have existing content - should have (processed) request content already
+    # JITTERED BACKOFFS ARE NEEDED TO HANDLE CONCURRENT UPDATES
+    new_content = {}
+    seq_no = None
+    primary_term = None
+    if not doc is None:
         new_content = doc['_source']
+        # need seq_no for elastic optimistic locking
+        seq_no = doc['_seq_no']
+        primary_term = doc['_primary_term']
 
-        # add the response content
-        new_content['response'] = content
-
-        # TODO: also not nice that for response we retrieve doc and don't retain the '_seq_no' and '_primary_term' so we do an unnecessary retry on posting to elastic
-
-    else:
-        new_content = content
-
+    # add the new content under its key
+    new_content[message_type] = new_content_part
+    store_record(elastic_object, 'seldon', new_content, request_id, 'seldonrequest', seq_no, primary_term)
     return new_content
+
 
 def connect_elasticsearch():
     _es = None
@@ -85,30 +96,31 @@ def connect_elasticsearch():
         print('Could not connect to Elasticsearch')
     return _es
 
-def store_record_with_retry(elastic_object, index_name, record, req_id, record_doc_type):
-    try:
-        store_record(elastic_object, index_name, record, req_id, record_doc_type)
-    except Exception as ex:
-        time.sleep(1)
-        print('retrying indexing of doc '+req_id)
-        store_record(elastic_object, index_name, record, req_id, record_doc_type)
 
-def store_record(elastic_object, index_name, record, req_id, record_doc_type):
-    doc = retrieve_doc(elastic_object, index_name, record_doc_type, req_id)
+def store_record(elastic_object, index_name, record, req_id, record_doc_type, seq_no, primary_term):
+    doc = None
+    # don't already have a seq_no for optimistic lock so get one
+    if seq_no is None or primary_term is None:
+        doc = retrieve_doc(elastic_object, index_name, record_doc_type, req_id)
+        if not doc is None:
+            seq_no = doc['_seq_no']
+            primary_term = doc['_primary_term']
 
     try:
         # see https://elasticsearch-py.readthedocs.io/en/master/api.html#elasticsearch.Elasticsearch.index
         if doc is None:
             print('doc '+req_id+' does not exist')
-            outcome = elastic_object.index(index=index_name, doc_type=record_doc_type, id=req_id, body=record)
         else:
             print('doc '+req_id+' exists')
             print(str(doc))
 
-            outcome = elastic_object.index(index=index_name, doc_type=record_doc_type, id=req_id, body=record, if_seq_no=doc['_seq_no'], if_primary_term=doc['_primary_term'])
+        sys.stdout.flush()
+        outcome = elastic_object.index(index=index_name, doc_type=record_doc_type, id=req_id, body=record, if_seq_no=seq_no, if_primary_term=primary_term, refresh='wait_for',request_timeout=60.0)
+
     except Exception as ex:
         print('Error in indexing data')
         print(str(ex))
+        sys.stdout.flush()
         raise
 
 
@@ -121,56 +133,39 @@ def retrieve_doc(elastic_object, index_name, record_doc_type, req_id):
         pass
     return doc
 
+# take request or response part and process it by deriving metadata
+def process_content(content):
 
-def extract_content(content):
-    requestPart = dict_digger.dig(content, 'request')
-    req_elements = None
+    if content is None:
+        return content
 
-    # checking for "dataType" in case we've already parsed that part
-    if not requestPart is None and not "dataType" in requestPart:
-        requestCopy = requestPart.copy()
-        if "date" in requestCopy:
-            del requestCopy["date"]
-        requestMsg = json_to_seldon_message(requestCopy)
-        (req_features, _, req_datadef, req_datatype) = extract_request_parts(requestMsg)
-        req_elements = createElelmentsArray(req_features, list(req_datadef.names))
-    responsePart = dict_digger.dig(content, 'response')
-    res_elements = None
-    if not responsePart is None and not "dataType" in responsePart:
-        responseCopy = responsePart.copy()
-        if "date" in responseCopy:
-            del responseCopy["date"]
-        responseMsg = json_to_seldon_message(responseCopy)
-        (res_features, _, res_datadef, res_datatype) = extract_request_parts(responseMsg)
-        res_elements = createElelmentsArray(res_features, list(res_datadef.names))
-    if not req_elements is None and not res_elements is None:
-        for i, (a, b) in enumerate(zip(req_elements, res_elements)):
-            # merged = {**a, **b}
-            content["request_elements"] = a
-            content["response_elements"] = b
-            reqJson = extractRow(i, requestMsg, req_datatype, req_features, req_datadef)
-            resJson = extractRow(i, responseMsg, res_datatype, res_features, res_datadef)
-            content["request"] = reqJson
-            content["response"] = resJson
-            # log formatted json to stdout for fluentd collection
-            return json.dumps(content)
-    elif not req_elements is None:
-        for i, e in enumerate(req_elements):
-            content["request_elements"] = e
-            reqJson = extractRow(i, requestMsg, req_datatype, req_features, req_datadef)
-            content["request"] = reqJson
-            return json.dumps(content)
-    elif not res_elements is None:
-        for i, e in enumerate(res_elements):
-            content["response_elements"] = e
-            resJson = extractRow(i, responseMsg, res_datatype, res_features, res_datadef)
-            content["response"] = resJson
-            return json.dumps(content)
-    else:
-        if "strData" in requestPart:
-            content["request"]["dataType"] = "text"
-        return json.dumps(content)
+    #no transformation using strData
+    if "strData" in content:
+        content["dataType"] = "text"
+        return content
 
+    #if we have dataType then have already parsed before
+    if "dataType" in content:
+        print('dataType already in content')
+        sys.stdout.flush()
+        return content
+
+    requestCopy = content.copy()
+    if "date" in requestCopy:
+        del requestCopy["date"]
+    requestMsg = json_to_seldon_message(requestCopy)
+    (req_features, _, req_datadef, req_datatype) = extract_request_parts(requestMsg)
+    elements = createElelmentsArray(req_features, list(req_datadef.names))
+    for i, e in enumerate(elements):
+        reqJson = extractRow(i, requestMsg, req_datatype, req_features, req_datadef)
+        reqJson["elements"] = e
+        print('json from process_content_part')
+        print(str(reqJson))
+        sys.stdout.flush()
+        content = reqJson
+        return content
+
+    return content
 
 def extractRow(i:int,requestMsg: prediction_pb2.SeldonMessage,req_datatype: str,req_features: np.ndarray,req_datadef: "prediction_pb2.SeldonMessage.data"):
     datatyReq = "ndarray"
