@@ -53,6 +53,8 @@ def process_and_update_elastic_doc(elastic_object, message_type, message_body, r
 
     #TODO: find Seldon vs KFServing from header (type header)
     #TODO: need to get SDep and predictor name in (but where to put?)
+    #TODO: sdepName, namespace and timestamp all currently set at top level
+    #TODO: last-ce-id? set timestamps separately for req and resp?
 
     #first do any needed transformations
     new_content_part = process_content(message_body)
@@ -159,11 +161,7 @@ def process_content(content):
     for i, e in enumerate(elements):
         reqJson = extractRow(i, requestMsg, req_datatype, req_features, req_datadef)
         reqJson["elements"] = e
-        print('json from process_content_part')
-        print(str(reqJson))
-        sys.stdout.flush()
         content = reqJson
-        return content
 
     return content
 
