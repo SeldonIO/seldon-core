@@ -8,9 +8,11 @@ You can configure aspects of Seldon Core via annotations in the SeldonDeployment
 
  * ```seldon.io/grpc-max-message-size``` : Maximum gRPC message size (bytes)
    * Locations : SeldonDeployment.spec.annotations
+   * Default is MaxInt32
    * [gRPC message size example](model_rest_grpc_settings.md)
  * ```seldon.io/grpc-read-timeout``` : gRPC read timeout (msecs)
    * Locations : SeldonDeployment.spec.annotations
+   * Default is no timeout
    * [gRPC read timeout example](model_rest_grpc_settings.md)
 
 

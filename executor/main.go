@@ -146,7 +146,10 @@ func runGrpcServer(logger logr.Logger, predictor *v1.PredictorSpec, client seldo
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	grpcServer := grpc.CreateGrpcServer(predictor, deploymentName)
+	grpcServer, err := grpc.CreateGrpcServer(predictor, deploymentName)
+	if err != nil {
+		log.Fatalf("Failed to create grpc server: %v", err)
+	}
 	if protocol == api.ProtocolSeldon {
 		seldonGrpcServer := seldon.NewGrpcSeldonServer(predictor, client, serverUrl, namespace)
 		proto.RegisterSeldonServer(grpcServer, seldonGrpcServer)
