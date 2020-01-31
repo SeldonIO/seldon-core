@@ -1,15 +1,16 @@
 import mlflow
-import pandas as pd
 import numpy as np
 
 from argparse import ArgumentParser
 
+from mlflow import spark as mlflow_spark
+from pyspark import SparkContext
+from pyspark.sql import SparkSession
 from pyspark.ml.regression import LinearRegression
 from pyspark.ml.feature import VectorAssembler
 from pyspark.ml import Pipeline
 
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
-from sklearn.model_selection import train_test_split
 
 
 parser = ArgumentParser()
@@ -40,22 +41,25 @@ def eval_metrics(actual, pred):
     return rmse, mae, r2
 
 
-def read_data():
-    data = pd.read_csv("../wine-quality.csv")
-    data.head()
+def read_data(spark):
+    data = spark.read.option("header", "true").csv(
+        "../wine-quality.csv", inferSchema=True
+    )
+    pdf = data.toPandas()
 
     # We normalize the inputs to both the SparkML & TensorFlow models
     # so that they have the same input schema.
-    for col in data.columns[:-1]:
-        data[col] = (data[col] - data[col].mean()) / data[col].std()
+    for col in pdf.columns[:-1]:
+        pdf[col] = (pdf[col] - pdf[col].mean()) / pdf[col].std()
 
     return data
 
 
 def train(alpha, l1_ratio):
     # Split data into training and test datasets.
-    data = read_data()
-    (training, test) = train_test_split(data, train_size=0.8)
+    spark = SparkSession.builder.getOrCreate()
+    data = read_data(spark)
+    (training, test) = data.randomSplit([0.8, 0.2])
 
     # Assemble feature columns into a vector (excluding the "quality" label).
     assembler = VectorAssembler(inputCols=data.columns[0:-1], outputCol="features")
@@ -74,7 +78,7 @@ def train(alpha, l1_ratio):
 
         # Train and save the model.
         lrModel = pipeline.fit(training)
-        mlflow.spark.log_model(lrModel, "")
+        mlflow_spark.log_model(lrModel, "")
 
         # Evaluate the model on the test set.
         predictions = lrModel.transform(test)
@@ -86,4 +90,8 @@ def train(alpha, l1_ratio):
 
 if __name__ == "__main__":
     args = parser.parse_args()
+    sc = SparkContext()
+
     train(args.alpha, args.l1_ratio)
+
+    sc.stop()

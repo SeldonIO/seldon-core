@@ -6,4 +6,4 @@ dependencies:
   - pyspark=2.4.0
   - scikit-learn=0.22.1
   - pip:
-      - mlflow>=1.0
+      - mlflow==1.6.0
