@@ -4,17 +4,17 @@
 
 Before setting up request logging, first look at [centralised logging](../README.md).
 
-Request logging does not necessarily need the EFK stack used for centralised logging. However, this example will use it.
+Request logging does not necessarily need the EFK stack used for centralised logging. However, this example will use elasticsearch.
 
 The approach is:
 
-1 Configure a seldon deployment to send the request-response pairs of the HTTP traffic into a knative broker.
-2 The broker sends this a knative service for logging, called seldon-request-logger
-3 Fluentd picks up the logged message and feeds to elasticsearch
+1 Configure a seldon deployment to send the requests and responses of the HTTP traffic into a knative broker.
+2 The broker sends these to a knative service for logging, called seldon-request-logger
+3 seldon-request-logger processes and sends to elasticsearch
 
 The seldon-request-logger enriches the raw message to optimise for searching.
 
-The seldon-request-logger implementation is replaceable and the type of the message emitted by the SeldonDeployment can be adjusted (by an env var) to go a different logger.
+The seldon-request-logger implementation is replaceable and the type of the message emitted by the SeldonDeployment can be adjusted to go a different logger.
 
 ## Setup
 

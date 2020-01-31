@@ -5,6 +5,7 @@ import backoff
 import requests
 import json
 import time
+import os
 from seldon_core.utils import json_to_seldon_message, extract_request_parts, array_to_grpc_datadef, seldon_message_to_json
 from seldon_core.proto import prediction_pb2
 import numpy as np
@@ -24,14 +25,6 @@ def index():
 
     es = connect_elasticsearch()
 
-    print('HEADERS')
-    print(str(request.headers))
-    print('-----')
-    sys.stdout.flush()
-    # TODO: use env vars for index and doc type
-    # TODO: see executor code for proper headers - need model and SeldonDeployment name
-    # TODO: put all the headers in the document? maybe only if an env var set?
-    #  perhaps all headers except the ones we already have or don't need?
     type_header = request.headers.get('Ce-Type')
     message_type = parse_message_type(type_header)
 
@@ -61,6 +54,7 @@ def set_metadata(content, headers):
     elif type_header.startswith('org.kubeflow.serving'):
         content['ServingEngine'] = 'InferenceService'
 
+    # TODO: provide a way for custom headers to be passed on too?
     field_from_header(content, 'Seldondeploymentname', headers)
     field_from_header(content, 'Predictor', headers)
     field_from_header(content, 'Namespace', headers)
@@ -77,11 +71,11 @@ def process_and_update_elastic_doc(elastic_object, message_type, message_body, r
     if message_type == 'unknown':
         print('UNKNOWN REQUEST TYPE FOR '+request_id+' - NOT PROCESSING')
 
-    #TODO: set timestamp - currently set at top level
-    #TODO: last-ce-id? set timestamps separately for req and resp?
-
     #first do any needed transformations
     new_content_part = process_content(message_body)
+    #set metadata specific to this part (request or response)
+    field_from_header(content=new_content_part,header_name='ce-time',headers=headers)
+    field_from_header(content=new_content_part, header_name='ce-source', headers=headers)
 
     new_content = update_elastic_doc(elastic_object, message_type, new_content_part, request_id, headers)
     return str(new_content)
@@ -93,6 +87,7 @@ def process_and_update_elastic_doc(elastic_object, message_type, message_body, r
                       jitter=backoff.random_jitter)
 def update_elastic_doc(elastic_object, message_type, new_content_part, request_id, headers):
     # now ready to upsert
+    #TODO: might put inferenceservices under a different doc type and not 'seldonrequest' (use env vars?)
     doc = retrieve_doc(elastic_object, 'seldon', 'seldonrequest', request_id)
     # req and response will come through separately and we need enrich the doc with response
     # doc can have existing content - should have (processed) request content already
@@ -108,6 +103,7 @@ def update_elastic_doc(elastic_object, message_type, new_content_part, request_i
 
     # add the new content under its key
     new_content[message_type] = new_content_part
+    # ensure any top-level metadata is set
     set_metadata(new_content,headers)
     store_record(elastic_object, 'seldon', new_content, request_id, 'seldonrequest', seq_no, primary_term)
     return new_content
@@ -115,8 +111,10 @@ def update_elastic_doc(elastic_object, message_type, new_content_part, request_i
 
 def connect_elasticsearch():
     _es = None
-    #TODO: use env vars as host will change
-    _es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+    elastic_host = os.getenv('ELASTICSEARCH_HOST', 'localhost')
+    elastic_port = os.getenv('ELASTICSEARCH_PORT', 9200)
+
+    _es = Elasticsearch([{'host': elastic_host, 'port': elastic_port}])
     if _es.ping():
         print('Connected to Elasticsearch')
     else:
