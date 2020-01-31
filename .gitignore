@@ -102,6 +102,7 @@ examples/models/r_mnist/train-labels-idx1-ubyte
 examples/models/sk_mnist/MNIST_data/
 examples/models/sk_mnist/sk.pkl
 examples/models/sklearn_iris_fbs/IrisClassifier.sav
+examples/models/mlflow_server_ab_test_ambassador/**/mlruns
 
 # Pickle files
 *.pickle
