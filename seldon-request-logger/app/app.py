@@ -30,9 +30,11 @@ def index():
 
     try:
         #first ensure there is an elastic doc as we need something to lock against
-        update_elastic_doc(es,message_type,{},request.headers.get('Seldon-Puid'), request.headers)
+        #use req id as doc id (if None then elastic should generate one but then req & res won't be linked)
+        request_id = request.headers.get('Seldon-Puid')
+        update_elastic_doc(es,message_type,{}, request_id, request.headers)
         #now process and update the doc
-        doc = process_and_update_elastic_doc(es, message_type, body, request.headers.get('Seldon-Puid'),request.headers)
+        doc = process_and_update_elastic_doc(es, message_type, body, request_id,request.headers)
         return str(doc)
     except Exception as ex:
         print(ex)
