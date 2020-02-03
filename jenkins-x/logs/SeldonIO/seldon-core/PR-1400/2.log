@@ -1,0 +1,118 @@
+
+Showing logs for build [32mseldonio-seldon-core-pr-1400-li-x96kl-2[0m stage [32mpr-build-comment[0m and container [32mstep-credential-initializer-js4bf[0m
+{"level":"warn","ts":1580741917.7187784,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1580741917.7194383,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+failed to watch file "/var/lib/docker/containers/ab455a72052b0594b9a98e504257e81cbf9f327f051a7d8810174f80edb78f2b/ab455a72052b0594b9a98e504257e81cbf9f327f051a7d8810174f80edb78f2b-json.log": no space left on device
+
+Showing logs for build [32mseldonio-seldon-core-pr-1400-li-x96kl-2[0m stage [32mpr-build-comment[0m and container [32mstep-working-dir-initializer-4fhj8[0m
+{"level":"warn","ts":1580741918.9042852,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1580741918.907837,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+failed to watch file "/var/lib/docker/containers/523981bd5fc53a929b3e167526ee1383035fc8d6e767802965ebd72e725a5990/523981bd5fc53a929b3e167526ee1383035fc8d6e767802965ebd72e725a5990-json.log": no space left on device
+
+Showing logs for build [32mseldonio-seldon-core-pr-1400-li-x96kl-2[0m stage [32mpr-build-comment[0m and container [32mstep-place-tools[0m
+failed to watch file "/var/lib/docker/containers/1836a4765038573a9f2d164f12b4ff0ab00d131c1dd16c8f6cfcc238c8325584/1836a4765038573a9f2d164f12b4ff0ab00d131c1dd16c8f6cfcc238c8325584-json.log": no space left on device
+
+Showing logs for build [32mseldonio-seldon-core-pr-1400-li-x96kl-2[0m stage [32mpr-build-comment[0m and container [32mstep-create-dir-workspace-dhrk8[0m
+{"level":"warn","ts":1580741929.200311,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1580741929.2047396,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p source\"; output "}
+failed to watch file "/var/lib/docker/containers/aef048901a778449bfc8dd132c2bcfd58f498636510955758024076b1a846e22/aef048901a778449bfc8dd132c2bcfd58f498636510955758024076b1a846e22-json.log": no space left on device
+
+Showing logs for build [32mseldonio-seldon-core-pr-1400-li-x96kl-2[0m stage [32mpr-build-comment[0m and container [32mstep-git-source-seldonio-seldon-core-pr-1400-li-c76m7[0m
+{"level":"warn","ts":1580741929.8461928,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1580741932.971458,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ master in path /workspace/source"}
+failed to watch file "/var/lib/docker/containers/36f756762965f31c51d4d89421827dcae97db8768d384e4b19e3039079b8632a/36f756762965f31c51d4d89421827dcae97db8768d384e4b19e3039079b8632a-json.log": no space left on device
+
+Showing logs for build [32mseldonio-seldon-core-pr-1400-li-x96kl-2[0m stage [32mpr-build-comment[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:98eba0b301e9882f8bcbedb87e3039ec0cec5d24,1400:f2a374be41dd450978fa458747c1bea9dc15fb39
+DEBUG: ran git fetch --unshallow origin f2a374be41dd450978fa458747c1bea9dc15fb39: 98eba0b301e9882f8bcbedb87e3039ec0cec5d24: in 
+DEBUG: ran git checkout master in 
+DEBUG: ran git reset --hard 98eba0b301e9882f8bcbedb87e3039ec0cec5d24 in 
+DEBUG: ran clean --force -d . in 
+DEBUG: ran git merge f2a374be41dd450978fa458747c1bea9dc15fb39 in 
+Merged SHA a2a804ff5185f0657da1a5678379a7377731fcc9 with commit message 'Merge commit 'f2a374be41dd450978fa458747c1bea9dc15fb39'' into base branch master
+Merged SHA f2a374be41dd450978fa458747c1bea9dc15fb39 with commit message 'Run dist-upgrade to fetch security updates' into base branch master
+failed to watch file "/var/lib/docker/containers/ed5e3f8514857c9e456cd4b90a889b43b0d92b2beef2f11095615b031724bec3/ed5e3f8514857c9e456cd4b90a889b43b0d92b2beef2f11095615b031724bec3-json.log": no space left on device
+
+Showing logs for build [32mseldonio-seldon-core-pr-1400-li-x96kl-2[0m stage [32mpr-build-comment[0m and container [32mstep-step2[0m
++++ dirname ./add-pr-build-comment
+++ cd .
+++ pwd
++ STARTUP_DIR=/workspace/source/ci
++ REPO_OWNER=SeldonIO
++ REPO_NAME=seldon-core
++ PULL_NUMBER=1400
++ BUILD_NUMBER=2
++ PIPELINE_CONTEXT=lint
+++ cat
++++ date
++ COMMENT_MSG='Mon Feb  3 14:59:00 UTC 2020
+The logs for [lint] [2] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-1400/2.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-1400 --build=2'
++ ** step pr comment --owner=SeldonIO --repository=seldon-core --pull-request=1400 '--comment=Mon Feb  3 14:59:00 UTC 2020
+The logs for [lint] [2] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-1400/2.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-1400 --build=2'
+failed to watch file "/var/lib/docker/containers/eff0e56818c62df7c133a71b1c1ae35c469b882cb143f7788eefa04be2ee7dfc/eff0e56818c62df7c133a71b1c1ae35c469b882cb143f7788eefa04be2ee7dfc-json.log": no space left on device
+
+Showing logs for build [32mseldonio-seldon-core-pr-1400-li-x96kl-2[0m stage [32mpr-build-comment[0m and container [32mstep-source-mkdir-seldonio-seldon-core-pr-1400-li-5bjmn[0m
+{"level":"warn","ts":1580741945.744402,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1580741945.7822323,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /pvc/pr-build-comment/workspace\"; output "}
+failed to watch file "/var/lib/docker/containers/254d7051161debd7706455c46b9cd439fc2a5fb9bfb8a4266fc2099250f31804/254d7051161debd7706455c46b9cd439fc2a5fb9bfb8a4266fc2099250f31804-json.log": no space left on device
+
+Showing logs for build [32mseldonio-seldon-core-pr-1400-li-x96kl-2[0m stage [32mpr-build-comment[0m and container [32mstep-source-copy-seldonio-seldon-core-pr-1400-li-56m5n[0m
+{"level":"warn","ts":1580741946.3654366,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1580741946.8766942,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r source/. /pvc/pr-build-comment/workspace\"; output "}
+failed to watch file "/var/lib/docker/containers/c68c95721564baf3c526dd26819dc6c55c568d2701939d8b52257211c88623e1/c68c95721564baf3c526dd26819dc6c55c568d2701939d8b52257211c88623e1-json.log": no space left on device
+
+Showing logs for build [32mseldonio-seldon-core-pr-1400-li-x96kl-2[0m stage [32mpython-lint-task[0m and container [32mstep-credential-initializer-4hjz4[0m
+{"level":"warn","ts":1580741971.717818,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1580741971.718288,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+failed to watch file "/var/lib/docker/containers/59b9738d55470255d244d501b15fca2483a3a87f573f9b25986f4b134dd90883/59b9738d55470255d244d501b15fca2483a3a87f573f9b25986f4b134dd90883-json.log": no space left on device
+
+Showing logs for build [32mseldonio-seldon-core-pr-1400-li-x96kl-2[0m stage [32mpython-lint-task[0m and container [32mstep-working-dir-initializer-48kmh[0m
+{"level":"warn","ts":1580741972.6478436,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1580741972.654207,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+failed to watch file "/var/lib/docker/containers/113d8064ed35a97b11dd3cbd157065254c4611d465e143fbb3b970548f7961e0/113d8064ed35a97b11dd3cbd157065254c4611d465e143fbb3b970548f7961e0-json.log": no space left on device
+
+Showing logs for build [32mseldonio-seldon-core-pr-1400-li-x96kl-2[0m stage [32mpython-lint-task[0m and container [32mstep-place-tools[0m
+failed to watch file "/var/lib/docker/containers/ad91963c65b949e913b0f853d851fdc7a139683ace220f284990c4448781ae79/ad91963c65b949e913b0f853d851fdc7a139683ace220f284990c4448781ae79-json.log": no space left on device
+
+Showing logs for build [32mseldonio-seldon-core-pr-1400-li-x96kl-2[0m stage [32mpython-lint-task[0m and container [32mstep-create-dir-workspace-ptk26[0m
+{"level":"warn","ts":1580741981.8607767,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1580741981.8656878,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+failed to watch file "/var/lib/docker/containers/e777adb205aac2885984d30d50d9d7ac4db72cec4468d109a6200821bbea56c3/e777adb205aac2885984d30d50d9d7ac4db72cec4468d109a6200821bbea56c3-json.log": no space left on device
+
+Showing logs for build [32mseldonio-seldon-core-pr-1400-li-x96kl-2[0m stage [32mpython-lint-task[0m and container [32mstep-source-copy-workspace-4swf9[0m
+{"level":"warn","ts":1580741982.8866816,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1580741986.1604118,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+failed to watch file "/var/lib/docker/containers/cdd302c77f04844c2a5a25f67dc88aea47a202fa7e32389c621536caf28366ad/cdd302c77f04844c2a5a25f67dc88aea47a202fa7e32389c621536caf28366ad-json.log": no space left on device
+
+Showing logs for build [32mseldonio-seldon-core-pr-1400-li-x96kl-2[0m stage [32mpython-lint-task[0m and container [32mstep-python-lint[0m
+make: Entering directory '/workspace/source/python'
+pip install black==19.3b0
+Collecting black==19.3b0
+  Downloading https://files.pythonhosted.org/packages/30/62/cf549544a5fe990bbaeca21e9c419501b2de7a701ab0afb377bc81676600/black-19.3b0-py36-none-any.whl (89kB)
+Collecting attrs>=18.1.0
+  Downloading https://files.pythonhosted.org/packages/a2/db/4313ab3be961f7a763066401fb77f7748373b6094076ae2bda2806988af6/attrs-19.3.0-py2.py3-none-any.whl
+Collecting appdirs
+  Downloading https://files.pythonhosted.org/packages/56/eb/810e700ed1349edde4cbdc1b2a21e28cdf115f9faf263f6bbf8447c1abf3/appdirs-1.4.3-py2.py3-none-any.whl
+Collecting click>=6.5
+  Downloading https://files.pythonhosted.org/packages/fa/37/45185cb5abbc30d7257104c434fe0b07e5a195a6847506c074527aa599ec/Click-7.0-py2.py3-none-any.whl (81kB)
+Collecting toml>=0.9.4
+  Downloading https://files.pythonhosted.org/packages/a2/12/ced7105d2de62fa7c8fb5fce92cc4ce66b57c95fb875e9318dba7f8c5db0/toml-0.10.0-py2.py3-none-any.whl
+Installing collected packages: attrs, appdirs, click, toml, black
+Successfully installed appdirs-1.4.3 attrs-19.3.0 black-19.3b0 click-7.0 toml-0.10.0
+WARNING: You are using pip version 19.3.1; however, version 20.0.2 is available.
+You should consider upgrading via the 'pip install --upgrade pip' command.
+black \
+	--check ./ ../testing \
+	--exclude "(testing/scripts/proto|seldon_core/proto/|.eggs|.tox)"
+All done! ✨ 🍰 ✨
+53 files would be left unchanged.
+make: Leaving directory '/workspace/source/python'
+failed to watch file "/var/lib/docker/containers/388636bca873e52e9e9a7c04bae511887850d4b3855faea07affae23afb913bd/388636bca873e52e9e9a7c04bae511887850d4b3855faea07affae23afb913bd-json.log": no space left on device
