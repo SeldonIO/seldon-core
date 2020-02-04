@@ -89,6 +89,7 @@ Example output is:
 # On-going work
 
 TODO: ONE OF THE TESTS IN test.sh ERRORS WITH `failed to parse field [request.payload.data.ndarray] of type [float] in document with id '3c'. Preview of field's value: 'test2'"`
+May need to make it configurable whether all docs go into the same index or each sdep gets its own index.
 
 TODO: UPDATE CENTRALISED LOGGING EXAMPLE - INC SAMPLE MODEL AND LOGGER MANIFEST (SET ELASTIC ENV VARS)
 

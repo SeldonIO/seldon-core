@@ -14,3 +14,8 @@ spec:
           container:
             image: docker.io/seldonio/seldon-request-logger:0.0.4
             imagePullPolicy: Always
+            env:
+             - name: ELASTICSEARCH_HOST
+               value: "elasticsearch-master.logs.svc.cluster.local"
+             - name: ELASTICSEARCH_PORT
+               value: "9200"

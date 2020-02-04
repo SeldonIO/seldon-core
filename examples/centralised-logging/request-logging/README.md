@@ -18,9 +18,14 @@ The seldon-request-logger implementation is replaceable and the type of the mess
 
 ## Setup
 
-Create minikube cluster with knative recommendations for resource - https://knative.dev/docs/install/knative-with-minikube/
+Local options are minikube or KIND. Create minikube cluster with knative recommendations for resource - https://knative.dev/docs/install/knative-with-minikube/. For KIND cluster use:
+```
+kind create cluster --config ../kind_config.yaml --image kindest/node:v1.15.6
+```
 
-Run knative-setup-minikube.sh for minikube. Otherwise follow the [knative installation](https://knative.dev/docs/install/) for your cloud provider.
+For KIND or minikube run knative-setup-minikube.sh. 
+
+Otherwise (for non-local) follow the [knative installation](https://knative.dev/docs/install/) for your cloud provider.
 
 Run `kubectl apply -f seldon-request-logger.yaml`
 
@@ -42,9 +47,9 @@ kubectl apply -f ./trigger.yaml
 
 ## Running and Seeing logs
 
-Follow the EFK minikube setup from [centralised logging guide](../README.md) but in the step to deploy the model deploy with:
+Follow the EFK minikube setup from [centralised logging guide](../README.md) except the step to deploy the model, which instead should be:
 ```
-helm install --name seldon-single-model ../../helm-charts/seldon-single-model/ --set engine.env.LOG_MESSAGES_EXTERNALLY="true"
+helm install seldon-single-model ../../../helm-charts/seldon-single-model/ --set model.logger="http://default-broker"
 ```
 
 (If you've already installed then you can first remove with `helm delete seldon-single-model --purge` or do an upgrade instead of an install.)

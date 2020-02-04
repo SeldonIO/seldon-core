@@ -10,7 +10,20 @@ Alternatives are available and if you are running in cloud then you can consider
 
 If you just want to bootstrap a full logging and request tracking setup for minikube, run ./full-setup.sh. That includes the [request logging setup](./request-logging/README.md)
 
-## Setup
+## Setup Elastic - KIND
+
+Start cluster
+```
+kind create cluster --config kind_config.yaml --image kindest/node:v1.15.6
+```
+Install elastic with KIND config:
+```
+kubectl create namespace logs
+kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
+helm install elasticsearch elasticsearch --version 7.5.2 --namespace=logs -f elastic-kind.yaml --repo https://helm.elastic.co
+```
+
+## Setup Elastic - Minikube
 
 Start Minikube with flags as shown:
 
@@ -22,11 +35,10 @@ Install elasticsearch with minikube configuration:
 
 ```
 kubectl create namespace logs
+helm install elasticsearch elasticsearch --version 7.5.2 --namespace=logs -f elastic-minikube.yaml --repo https://helm.elastic.co
 ```
 
-```
-helm install elasticsearch elasticsearch --version 7.1.1 --namespace=logs -f elastic-minikube.yaml --repo https://helm.elastic.co
-```
+## Fluentd and Kibana
 
 Then fluentd as a collection agent (chosen in preference to fluentbit - see notes at end):
 
@@ -37,7 +49,7 @@ helm install fluentd fluentd-elasticsearch --namespace=logs -f fluentd-values.ya
 And kibana UI:
 
 ```
-helm install kibana kibana --version 7.1.1 --namespace=logs --set service.type=NodePort --repo https://helm.elastic.co
+helm install kibana kibana --version 7.5.2 --namespace=logs --set service.type=NodePort --repo https://helm.elastic.co
 ```
 
 ## Generating Logging
@@ -57,15 +69,15 @@ Check that it now recognises the seldon CRD by running `kubectl get sdep`.
 Now a model:
 
 ```
-helm install seldon-single-model ../../helm-charts/seldon-single-model/ --set engine.env.LOG_MESSAGES_EXTERNALLY="false"
+helm install seldon-single-model ../../helm-charts/seldon-single-model/
 ```
 
-And the loadtester:
+And the loadtester (on KIND first run `kubectl label nodes kind-worker role=locust --overwrite`):
 
 ```
-kubectl label nodes $(kubectl get nodes -o jsonpath='{.items[0].metadata.name}') role=locust --overwrite
+kubectl label nodes $(kubectl get nodes -o jsonpath='{.items[1].metadata.name}') role=locust --overwrite
 
-helm install seldon-core-loadtesting ../../helm-charts/seldon-core-loadtesting/ --set locust.host=http://seldon-single-model-seldon-single-model:8000 --set oauth.enabled=false --set oauth.key=oauth-key --set oauth.secret=oauth-secret --set locust.hatchRate=1 --set locust.clients=1 --set loadtest.sendFeedback=0 --set locust.minWait=0 --set locust.maxWait=0 --set replicaCount=1
+helm install seldon-core-loadtesting ../../helm-charts/seldon-core-loadtesting/ --set locust.host=http://seldon-single-model-seldon-single-model-seldon-single-model:8000 --set oauth.enabled=false --set oauth.key=oauth-key --set oauth.secret=oauth-secret --set locust.hatchRate=1 --set locust.clients=1 --set loadtest.sendFeedback=0 --set locust.minWait=0 --set locust.maxWait=0 --set replicaCount=1
 ```
 
 ## Inspecting Logging and Search for Requests
@@ -74,6 +86,10 @@ To find kibana URL
 
 ```
 echo $(minikube ip)":"$(kubectl get svc kibana-kibana -n logs -o=jsonpath='{.spec.ports[?(@.port==5601)].nodePort}')
+```
+Or if not on minikube then port-forward to `localhost:5601`:
+```
+kubectl port-forward svc/kibana-kibana -n logs 5601:5601
 ```
 
 When Kibana appears for the first time there will be a brief animation while it initializes.
@@ -92,9 +108,9 @@ You can create a filter using the `Add Filter` button under `Search`. The field 
 
 The custom fields in the request bodies may not currently be in the index. If you hover over one in a request you may see `No cached mapping for this field`.
 
-To add mappings, go to `Management` at the bottom-left and then `Index Patterns`. Hit `Refresh` on the index created earlier. The number of fields should increase and `request.data.names` should be present.
+To add mappings, go to `Management` at the bottom-left and then `Index Patterns`. Hit `Refresh` on the index created earlier. The number of fields should increase.
 
-Now we can go back and add a further filter for `data.names` with the operator `exists`. We can add further filters if we want, such as the presence of a feature name or the presence of a feature value.
+Now we can go back and add further filters if we want.
 
 ![picture](./kibana-custom-search.png)
 

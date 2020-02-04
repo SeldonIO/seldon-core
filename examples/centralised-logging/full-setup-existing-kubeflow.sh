@@ -29,11 +29,11 @@ sleep 5
 helm upgrade --install seldon-core-analytics ../../helm-charts/seldon-core-analytics/ --namespace default -f ./kubeflow/seldon-analytics-kubeflow.yaml
 
 kubectl create namespace logs || echo "namespace logs exists"
-helm upgrade --install elasticsearch elasticsearch --version 7.5.0 --namespace=logs --set service.type=ClusterIP --set antiAffinity="soft" --repo https://helm.elastic.co
+helm upgrade --install elasticsearch elasticsearch --version 7.5.2 --namespace=logs --set service.type=ClusterIP --set antiAffinity="soft" --repo https://helm.elastic.co
 kubectl rollout status statefulset/elasticsearch-master -n logs
 
 helm upgrade --install fluentd fluentd-elasticsearch --namespace=logs -f fluentd-values.yaml --repo https://kiwigrid.github.io
-helm upgrade --install kibana kibana --version 7.5.0 --namespace=logs --set service.type=ClusterIP -f ./kubeflow/kibana-values.yaml --repo https://helm.elastic.co
+helm upgrade --install kibana kibana --version 7.5.2 --namespace=logs --set service.type=ClusterIP -f ./kubeflow/kibana-values.yaml --repo https://helm.elastic.co
 
 kubectl apply -f ./kubeflow/virtualservice-kibana.yaml
 kubectl apply -f ./kubeflow/virtualservice-elasticsearch.yaml
