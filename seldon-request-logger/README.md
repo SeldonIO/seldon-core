@@ -89,11 +89,11 @@ Example output is:
 # On-going work
 
 TODO: ONE OF THE TESTS IN test.sh ERRORS WITH `failed to parse field [request.payload.data.ndarray] of type [float] in document with id '3c'. Preview of field's value: 'test2'"`
-May need to make it configurable whether all docs go into the same index or each sdep gets its own index.
+May need to make it configurable whether all docs go into the same index or each sdep gets its own index. Or just force these to string or escape whole content as this payload section not intended to be searchable.
 
-TODO: UPDATE CENTRALISED LOGGING EXAMPLE - INC SAMPLE MODEL AND LOGGER MANIFEST (SET ELASTIC ENV VARS)
+TODO: UPDATE CENTRALISED LOGGING EXAMPLE - INC KIBANA PART AND PUBLISHING IMAGE
 
-TODO: BATCH IS BROKEN BY THIS WAY OF USING REQ IDS - NOW THE SECOND ROW OVERWRITES THE FIRST
+TODO: BATCH IS BROKEN BY THIS WAY OF USING REQ IDS - NOW THE SECOND ROW OVERWRITES THE FIRST. MAY HAVE TO ADD ORDINAL TO DOC ID AND ENSURE ORIGINAL ID IN DOC BODY.
 TODO: HANDLE GRPC AND INFERENCESERVICES
-TODO: THINK ABOUT SHADOW CASE - HOW TO ENSURE WE HAVE SOMETHING TO LINK DEFAULT AND SHADOW? https://github.com/SeldonIO/seldon-core/issues/1207
+TODO: THINK ABOUT SHADOW CASE - HOW TO ENSURE WE HAVE SOMETHING TO LINK DEFAULT AND SHADOW? MULTIPLE SHADOWS? https://github.com/SeldonIO/seldon-core/issues/1207
 TODO: FEEDBACK - IF SENT WITH CUSTOM ID HEADER COULD SUPPORT A/B TESTS WITH RECORDED RESULTS
