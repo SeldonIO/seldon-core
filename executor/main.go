@@ -17,6 +17,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/grpc/tensorflow"
 	"github.com/seldonio/seldon-core/executor/api/rest"
+	"github.com/seldonio/seldon-core/executor/k8s"
 	loghandler "github.com/seldonio/seldon-core/executor/logger"
 	"github.com/seldonio/seldon-core/executor/proto/tensorflow/serving"
 	"github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
@@ -141,12 +142,12 @@ func runHttpServer(logger logr.Logger, predictor *v1.PredictorSpec, client seldo
 
 }
 
-func runGrpcServer(logger logr.Logger, predictor *v1.PredictorSpec, client seldonclient.SeldonApiClient, port int, serverUrl *url.URL, namespace string, protocol string, deploymentName string) {
+func runGrpcServer(logger logr.Logger, predictor *v1.PredictorSpec, client seldonclient.SeldonApiClient, port int, serverUrl *url.URL, namespace string, protocol string, deploymentName string, annotations map[string]string) {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	grpcServer, err := grpc.CreateGrpcServer(predictor, deploymentName)
+	grpcServer, err := grpc.CreateGrpcServer(predictor, deploymentName, annotations)
 	if err != nil {
 		log.Fatalf("Failed to create grpc server: %v", err)
 	}
@@ -244,6 +245,11 @@ func main() {
 		}
 	}
 
+	annotations, err := k8s.GetAnnotations()
+	if err != nil {
+		log.Error(err, "Failed to load annotations")
+	}
+
 	//Start Logger Dispacther
 	loghandler.StartDispatcher(*logWorkers, logger)
 
@@ -261,11 +267,11 @@ func main() {
 		logger.Info("Running grpc server ", "port", *grpcPort)
 		var clientGrpc seldonclient.SeldonApiClient
 		if *protocol == "seldon" {
-			clientGrpc = seldon.NewSeldonGrpcClient(predictor, *sdepName)
+			clientGrpc = seldon.NewSeldonGrpcClient(predictor, *sdepName, annotations)
 		} else {
-			clientGrpc = tensorflow.NewTensorflowGrpcClient(predictor, *sdepName)
+			clientGrpc = tensorflow.NewTensorflowGrpcClient(predictor, *sdepName, annotations)
 		}
-		runGrpcServer(logger, predictor, clientGrpc, *grpcPort, serverUrl, *namespace, *protocol, *sdepName)
+		runGrpcServer(logger, predictor, clientGrpc, *grpcPort, serverUrl, *namespace, *protocol, *sdepName, annotations)
 
 	}
 

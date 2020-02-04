@@ -13,7 +13,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"math"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"strconv"
 )
 
@@ -35,13 +34,8 @@ func getMaxMsgSizeFromAnnotations(annotations map[string]string) (int, error) {
 	}
 }
 
-func CreateGrpcServer(spec *v1.PredictorSpec, deploymentName string) (*grpc.Server, error) {
-	log := logf.Log.WithName("grpcServer")
+func CreateGrpcServer(spec *v1.PredictorSpec, deploymentName string, annotations map[string]string) (*grpc.Server, error) {
 	maxMsgSize := math.MaxInt32
-	annotations, err := k8s.GetAnnotations()
-	if err != nil {
-		log.Error(err, "Failed to load annotations")
-	}
 	// Update from annotations
 	if annotations != nil {
 		sizeFromAnnotation, err := getMaxMsgSizeFromAnnotations(annotations)
@@ -62,14 +56,6 @@ func CreateGrpcServer(spec *v1.PredictorSpec, deploymentName string) (*grpc.Serv
 		interceptors = append(interceptors, grpc_opentracing.UnaryServerInterceptor())
 	}
 	opts = append(opts, grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(interceptors...)))
-
-	//if opentracing.IsGlobalTracerRegistered() {
-	//		opts = append(opts, grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(grpc_opentracing.UnaryServerInterceptor(), metric.NewServerMetrics(spec, deploymentName).UnaryServerInterceptor())))
-	//} else {
-	//	opts = append(opts, grpc.UnaryInterceptor(metric.NewServerMetrics(spec, deploymentName).UnaryServerInterceptor()))
-	//}
-	//opts = append(opts, grpc.UnaryInterceptor(metric.NewServerMetrics(spec, deploymentName).UnaryServerInterceptor()))
-	//
 
 	grpcServer := grpc.NewServer(opts...)
 	return grpcServer, nil
