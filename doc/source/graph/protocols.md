@@ -13,7 +13,7 @@ Seldon Core supports the following data planes:
 
 Seldon is the default protocol for SeldonDeployment resources. You can specify the gRPC protocol by setting `transport: grpc` in your SeldonDeployment resource or ensuring all components in the graph have endpoint.tranport set ot grpc.
 
-See [example notebook](../examples/protcol_examples.html). 
+See [example notebook](../examples/protocol_examples.html). 
 
 ## REST and gRPC Tensorflow Protocol
 
