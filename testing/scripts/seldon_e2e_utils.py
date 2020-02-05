@@ -1,16 +1,19 @@
 import requests
 import re
+import grpc
+import time
+import logging
+import numpy as np
+import json
+import subprocess
+
+from concurrent.futures import ThreadPoolExecutor
+from subprocess import run, Popen
+from retrying import retry
 from requests.auth import HTTPBasicAuth
+
 from seldon_core.proto import prediction_pb2
 from seldon_core.proto import prediction_pb2_grpc
-import grpc
-import numpy as np
-import time
-from subprocess import run, Popen
-import subprocess
-import json
-from retrying import retry
-import logging
 
 API_AMBASSADOR = "localhost:8003"
 API_ISTIO_GATEWAY = "localhost:8004"
@@ -420,3 +423,32 @@ def clean_string(string):
     string = re.sub(r"\]$", "", string)
     string = re.sub(r"[_\[\./]", "-", string)
     return string
+
+
+def assert_model_during_op(op, *assert_args, **assert_kwargs):
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(op)
+
+        while future.running():
+            assert_model(*assert_args, **assert_kwargs)
+
+        # Future.result() will raise any exceptions thrown within the future
+        future.result()
+
+
+def assert_model(sdep_name, namespace, initial=False, endpoint=API_AMBASSADOR):
+    _request = initial_rest_request if initial else rest_request
+    r = _request(sdep_name, namespace, endpoint=endpoint)
+
+    assert r is not None
+    assert r.status_code == 200
+
+    response = r.json()
+    assert response["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
+
+    # NOTE: The following will test if the `SeldonDeployment` can be fetched as
+    # a Kubernetes resource. This covers cases where some resources (e.g. CRD
+    # versions or webhooks) may get inadvertently removed between versions.
+    # The `retry_run()` method will **implicitly do an assert** on the return
+    # code of the command.
+    retry_run(f"kubectl get -n {namespace} sdep {sdep_name}")
