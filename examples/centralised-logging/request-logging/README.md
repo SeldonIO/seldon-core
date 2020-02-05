@@ -25,7 +25,8 @@ kind create cluster --config ../kind_config.yaml --image kindest/node:v1.15.6
 
 For KIND or minikube run:
 ```
-./knative-setup-minikube.sh
+./install_istio.sh
+./install_knative.sh
 ```
 
 Otherwise (for non-local) follow the [knative installation](https://knative.dev/docs/install/) for your cloud provider.
@@ -92,7 +93,7 @@ Then from that session you can run a curl direct to the broker (or any other k8s
 curl -v "http://default-broker.default.svc.cluster.local/" \
   -X POST \
   -H "X-B3-Flags: 1" \
-  -H 'CE-SpecVersion: 0.2' \
+  -H 'CE-SpecVersion: 1.0' \
   -H "CE-Type: io.seldon.serving.inference.request" \
   -H "CE-Time: 2018-04-05T03:56:24Z" \
   -H "CE-ID: 45a8b444-3213-4758-be3f-540bf93f85ff" \
@@ -108,7 +109,7 @@ curl -v "http://default-broker.default.svc.cluster.local/" \
   curl -v "http://default-broker.default.svc.cluster.local/" \
   -X POST \
   -H "X-B3-Flags: 1" \
-  -H 'CE-SpecVersion: 0.2' \
+  -H 'CE-SpecVersion: 1.0' \
   -H "CE-Type: io.seldon.serving.inference.response" \
   -H "CE-Time: 2018-04-05T03:56:24Z" \
   -H "CE-ID: 45a8b444-3213-4758-be3f-540bf93f85fg" \

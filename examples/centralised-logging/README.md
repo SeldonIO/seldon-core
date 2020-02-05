@@ -72,9 +72,10 @@ Now a model:
 helm install seldon-single-model ../../helm-charts/seldon-single-model/
 ```
 
-And the loadtester (on KIND first run `kubectl label nodes kind-worker role=locust --overwrite`):
+And the loadtester (first line is only needed for KIND):
 
 ```
+kubectl label nodes kind-worker role=locust --overwrite
 kubectl label nodes $(kubectl get nodes -o jsonpath='{.items[0].metadata.name}') role=locust --overwrite
 
 helm install seldon-core-loadtesting ../../helm-charts/seldon-core-loadtesting/ --set locust.host=http://seldon-single-model-seldon-single-model-seldon-single-model:8000 --set oauth.enabled=false --set oauth.key=oauth-key --set oauth.secret=oauth-secret --set locust.hatchRate=1 --set locust.clients=1 --set loadtest.sendFeedback=0 --set locust.minWait=0 --set locust.maxWait=0 --set replicaCount=1
@@ -105,8 +106,6 @@ The log list will appear.
 Refine the list a bit by selecting `log` near the bottom the left-hand Selected fields list.
 When you hover over or click on the word `log`, click the `Add` button to the right of the label.
 You can create a filter using the `Add Filter` button under `Search`. The field can be `kubernetes.labels.seldon-app` and the value can be an 'is' match on `seldon-single-model-seldon-single-model-seldon-single-model`.
-
-The custom fields in the request bodies may not currently be in the index. If you hover over one in a request you may see `No cached mapping for this field`.
 
 To add mappings, go to `Management` at the bottom-left and then `Index Patterns`. Hit `Refresh` on the index created earlier. The number of fields should increase.
 
