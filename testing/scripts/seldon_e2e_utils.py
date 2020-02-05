@@ -17,11 +17,12 @@ API_ISTIO_GATEWAY = "localhost:8004"
 
 
 def get_s2i_python_version():
-    ret = Popen(
-        "cd ../../wrappers/s2i/python && grep 'IMAGE_VERSION=' Makefile | cut -d'=' -f2",
-        shell=True,
-        stdout=subprocess.PIPE,
+    cmd = (
+        "cd ../../wrappers/s2i/python && "
+        "grep 'IMAGE_VERSION=' Makefile |"
+        "cut -d'=' -f2"
     )
+    ret = Popen(cmd, shell=True, stdout=subprocess.PIPE,)
     output = ret.stdout.readline()
     version = output.decode("utf-8").rstrip()
     return version
@@ -60,7 +61,8 @@ def get_deployment_names(sdep_name, namespace, attempts=20, sleep=5):
     # The `deploymentStatus` is dictionary which keys are names of deployments
     deployment_names = list(data["status"]["deploymentStatus"])
     logging.warning(
-        f"For SeldonDeployment {sdep_name} found following deployments: {deployment_names}"
+        f"For SeldonDeployment {sdep_name} "
+        f"found following deployments: {deployment_names}"
     )
     return deployment_names
 
@@ -209,7 +211,7 @@ def initial_grpc_request(
             rows=rows,
             data=data,
         )
-    except:
+    except Exception:
         logging.warning("Sleeping 1 sec and trying again")
         time.sleep(1)
         try:
@@ -221,7 +223,7 @@ def initial_grpc_request(
                 rows=rows,
                 data=data,
             )
-        except:
+        except Exception:
             logging.warning("Sleeping 5 sec and trying again")
             time.sleep(5)
             try:
@@ -233,7 +235,7 @@ def initial_grpc_request(
                     rows=rows,
                     data=data,
                 )
-            except:
+            except Exception:
                 logging.warning("Sleeping 10 sec and trying again")
                 time.sleep(10)
                 return grpc_request_ambassador(
@@ -401,7 +403,7 @@ def grpc_request_ambassador2(
             rows=rows,
             data=data,
         )
-    except:
+    except Exception:
         logging.warning("Warning - caught exception")
         return grpc_request_ambassador(
             deployment_name,
