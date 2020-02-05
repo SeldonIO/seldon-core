@@ -6,18 +6,19 @@ import (
 	"github.com/cloudevents/sdk-go"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/transport"
 	"github.com/go-logr/logr"
-	"github.com/seldonio/seldon-core/executor/api/payload"
 	"net/http"
 	"time"
 )
 
 const (
-	CEInferenceRequest  = "io.seldon.serving.inference.request"
-	CEInferenceResponse = "io.seldon.serving.inference.response"
-	ModelIdHeader       = "Model-ID"
-	SDepNameHeader      = "Seldondeployment"
-	NamespaceHeader     = "Namespace"
-	PredictorHeader     = "Predictor"
+	CEInferenceRequest       = "io.seldon.serving.inference.request"
+	CEInferenceResponse      = "io.seldon.serving.inference.response"
+	// cloud events extension attributes have to be lowercase alphanumeric
+	RequestIdAttr            = "requestid"
+	ModelIdAttr              = "modelid"
+	InferenceServiceNameAttr = "inferenceservicename"
+	NamespaceAttr            = "namespace"
+	PredictorAttr            = "predictor"
 )
 
 // NewWorker creates, and returns a new Worker object. Its only argument
@@ -60,11 +61,6 @@ func (W *Worker) sendCloudEvent(logReq LogRequest) error {
 	t, err := cloudevents.NewHTTPTransport(
 		cloudevents.WithTarget(logReq.Url.String()),
 		cloudevents.WithEncoding(cloudevents.HTTPBinaryV1),
-		cloudevents.WitHHeader(ModelIdHeader, logReq.ModelId),
-		cloudevents.WitHHeader(payload.SeldonPUIDHeader, logReq.RequestId), //FIXME add all meta data
-		cloudevents.WitHHeader(SDepNameHeader, W.SdepName),
-		cloudevents.WitHHeader(NamespaceHeader, W.Namespace),
-		cloudevents.WitHHeader(PredictorHeader, W.PredictorName),
 	)
 
 	if err != nil {
@@ -83,11 +79,20 @@ func (W *Worker) sendCloudEvent(logReq LogRequest) error {
 	} else {
 		event.SetType(CEInferenceResponse)
 	}
+
+	event.SetExtension(ModelIdAttr, logReq.ModelId)
+	event.SetExtension(RequestIdAttr, logReq.RequestId)
+	event.SetExtension(InferenceServiceNameAttr, W.SdepName)
+	event.SetExtension(NamespaceAttr, W.Namespace)
+	event.SetExtension(PredictorAttr, W.PredictorName)
+
 	event.SetSource(logReq.SourceUri.String())
 	event.SetDataContentType(logReq.ContentType)
 	if err := event.SetData(*logReq.Bytes); err != nil {
 		return fmt.Errorf("while setting cloudevents data: %s", err)
 	}
+
+	//fmt.Printf("%+v\n", event)
 
 	if _, _, err := c.Send(W.CeCtx, event); err != nil {
 		return fmt.Errorf("while sending event: %s", err)

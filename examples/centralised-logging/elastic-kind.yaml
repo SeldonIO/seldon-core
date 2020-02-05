@@ -24,3 +24,20 @@ volumeClaimTemplate:
   resources:
     requests:
       storage: 100M
+extraInitContainers: |
+   - name: create
+     image: busybox:1.28
+     command: ['mkdir', '-p', '/usr/share/elasticsearch/data/nodes/']
+     securityContext:
+       runAsUser: 0
+     volumeMounts:
+      - mountPath: /usr/share/elasticsearch/data
+        name: elasticsearch-master
+   - name: file-permissions
+     image: busybox:1.28
+     command: ['chown', '-R', '1000:1000', '/usr/share/elasticsearch/']
+     securityContext:
+        runAsUser: 0
+     volumeMounts:
+      - mountPath: /usr/share/elasticsearch/data
+        name: elasticsearch-master

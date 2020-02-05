@@ -23,7 +23,10 @@ Local options are minikube or KIND. Create minikube cluster with knative recomme
 kind create cluster --config ../kind_config.yaml --image kindest/node:v1.15.6
 ```
 
-For KIND or minikube run knative-setup-minikube.sh. 
+For KIND or minikube run:
+```
+./knative-setup-minikube.sh
+```
 
 Otherwise (for non-local) follow the [knative installation](https://knative.dev/docs/install/) for your cloud provider.
 
@@ -94,7 +97,11 @@ curl -v "http://default-broker.default.svc.cluster.local/" \
   -H "CE-Time: 2018-04-05T03:56:24Z" \
   -H "CE-ID: 45a8b444-3213-4758-be3f-540bf93f85ff" \
   -H "CE-Source: dev.knative.example" \
-  -H "Seldon-Puid: 1a" \
+  -H "Ce-Inferenceservicename: seldon-model" \
+  -H "Ce-Modelid: classifier" \
+  -H "Ce-Namespace: default" \
+  -H "Ce-Predictor: example" \
+  -H "Ce-Requestid: 11226d35-9679-40fe-a21b-d22bb55fbe0e" \
   -H 'Content-Type: application/json' \
   -d '{"data": {"names": ["f0", "f1"], "ndarray": [0.77, 0.63]}}'
 
@@ -106,7 +113,11 @@ curl -v "http://default-broker.default.svc.cluster.local/" \
   -H "CE-Time: 2018-04-05T03:56:24Z" \
   -H "CE-ID: 45a8b444-3213-4758-be3f-540bf93f85fg" \
   -H "CE-Source: dev.knative.example" \
-  -H "Seldon-Puid: 1a" \
+  -H "Ce-Inferenceservicename: seldon-model" \
+  -H "Ce-Modelid: classifier" \
+  -H "Ce-Namespace: default" \
+  -H "Ce-Predictor: example" \
+  -H "Ce-Requestid: 11226d35-9679-40fe-a21b-d22bb55fbe0e" \
   -H 'Content-Type: application/json' \
   -d '{"data": {"names": ["proba"], "ndarray": [0.09826376903346358]}}'
 

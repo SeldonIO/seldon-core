@@ -22,6 +22,11 @@ def index():
     #try:
 
     body = request.get_json(force=True)
+    # print('RECEIVED MESSAGE.')
+    # print(str(request.headers))
+    # print(str(body))
+    # print('----')
+    # sys.stdout.flush()
 
     es = connect_elasticsearch()
 
@@ -31,7 +36,7 @@ def index():
     try:
         #first ensure there is an elastic doc as we need something to lock against
         #use req id as doc id (if None then elastic should generate one but then req & res won't be linked)
-        request_id = request.headers.get('Seldon-Puid')
+        request_id = request.headers.get('Ce-Requestid')
         update_elastic_doc(es,message_type,{}, request_id, request.headers)
         #now process and update the doc
         doc = process_and_update_elastic_doc(es, message_type, body, request_id,request.headers)
@@ -57,10 +62,10 @@ def set_metadata(content, headers):
         content['ServingEngine'] = 'InferenceService'
 
     # TODO: provide a way for custom headers to be passed on too?
-    field_from_header(content, 'Seldondeploymentname', headers)
-    field_from_header(content, 'Predictor', headers)
-    field_from_header(content, 'Namespace', headers)
-    field_from_header(content, 'Model-Id', headers)
+    field_from_header(content, 'Ce-Inferenceservicename', headers)
+    field_from_header(content, 'Ce-Predictor', headers)
+    field_from_header(content, 'Ce-Namespace', headers)
+    field_from_header(content, 'Ce-Modelid', headers)
     return
 
 
@@ -107,6 +112,7 @@ def update_elastic_doc(elastic_object, message_type, new_content_part, request_i
     new_content[message_type] = new_content_part
     # ensure any top-level metadata is set
     set_metadata(new_content,headers)
+
     store_record(elastic_object, 'seldon', new_content, request_id, 'seldonrequest', seq_no, primary_term)
     return new_content
 

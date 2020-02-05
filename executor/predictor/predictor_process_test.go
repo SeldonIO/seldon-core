@@ -3,6 +3,7 @@ package predictor
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/golang/protobuf/jsonpb"
 	. "github.com/onsi/gomega"
 	"github.com/seldonio/seldon-core/executor/api/grpc"
@@ -364,11 +365,13 @@ func TestModelWithLogRequests(t *testing.T) {
 		//g.Expect(r.Header.Get(logger.CloudEventsIdHeader)).Should(Equal(testEventId))
 		g.Expect(r.Header.Get(logger.CloudEventsTypeHeader)).To(Equal(logger.CEInferenceRequest))
 		g.Expect(r.Header.Get(logger.CloudEventsTypeSource)).To(Equal(testSourceUrl))
-		g.Expect(r.Header.Get(logger.ModelIdHeader)).To(Equal(modelName))
+		g.Expect(r.Header.Get("Ce-Modelid")).To(Equal(modelName))
 		g.Expect(r.Header.Get("Content-Type")).To(Equal(grpc.ProtobufContentType))
-		g.Expect(r.Header.Get(payload.SeldonPUIDHeader)).To(Equal(testSeldonPuid))
+		g.Expect(r.Header.Get("Ce-Requestid")).To(Equal(testSeldonPuid))
 		w.Write([]byte(""))
 		logged = true
+		fmt.Printf("%+v\n", r.Header)
+		fmt.Printf("%+v\n", r.Body)
 	})
 	server := httptest.NewServer(handler)
 	defer server.Close()
@@ -409,9 +412,9 @@ func TestModelWithLogResponses(t *testing.T) {
 		//g.Expect(r.Header.Get(logger.CloudEventsIdHeader)).Should(Equal(testEventId))
 		g.Expect(r.Header.Get(logger.CloudEventsTypeHeader)).To(Equal(logger.CEInferenceResponse))
 		g.Expect(r.Header.Get(logger.CloudEventsTypeSource)).To(Equal(testSourceUrl))
-		g.Expect(r.Header.Get(logger.ModelIdHeader)).To(Equal(modelName))
+		g.Expect(r.Header.Get("Ce-Modelid")).To(Equal(modelName))
 		g.Expect(r.Header.Get("Content-Type")).To(Equal(grpc.ProtobufContentType))
-		g.Expect(r.Header.Get(payload.SeldonPUIDHeader)).To(Equal(testSeldonPuid))
+		g.Expect(r.Header.Get("Ce-Requestid")).To(Equal(testSeldonPuid))
 		w.Write([]byte(""))
 		logged = true
 	})
