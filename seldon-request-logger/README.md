@@ -23,14 +23,16 @@ Run seldon-core/executor/samples/local/logger but don't start the dummy_logsink.
 ```
 make run_local
 ```
-The log output from the request-logger will show the document id. View the document at `localhost:9200/seldon/seldonrequest/<doc_id>`
+The log output from the request-logger will show the document id and index name, which is built from the seldon deployment name and namespace (if supplied).
+
+View the document at `localhost:9200/<index>/inferencerequest/<doc_id>`
 
 Example output is:
 
 ```
 {
-    "_index": "seldon",
-    "_type": "seldonrequest",
+    "_index": "inference-log-seldon-default-seldon-single-model",
+    "_type": "inferencerequest",
     "_id": "a8ea9850-7102-42c7-80d0-a6c26f1d8159",
     "_version": 4,
     "_seq_no": 3,
@@ -87,9 +89,6 @@ Example output is:
 
 
 # On-going work
-
-TODO: ONE OF THE TESTS IN test.sh ERRORS WITH `failed to parse field [request.payload.data.ndarray] of type [float] in document with id '3c'. Preview of field's value: 'test2'"`
-May need to make it configurable whether all docs go into the same index or each sdep gets its own index. Or just force these to string or escape whole content as this payload section not intended to be searchable.
 
 TODO: UPDATE CENTRALISED LOGGING EXAMPLE - INC PUBLISHING IMAGE
 TODO: DOCUMENT HEADERS AND EXTENSION ATTRIBUTES BETTER
