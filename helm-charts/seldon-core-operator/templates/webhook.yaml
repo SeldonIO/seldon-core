@@ -30,6 +30,10 @@ webhooks:
     matchExpressions:
     - key: seldon.io/controller-id
       operator: DoesNotExist
+{{- if .Values.kubeflow }}
+    matchLabels:
+      serving.kubeflow.org/inferenceservice: enabled
+{{- end }}
 {{- end }}
 {{- end }}
 {{- if .Values.singleNamespace }}
@@ -74,6 +78,10 @@ webhooks:
     matchExpressions:
     - key: seldon.io/controller-id
       operator: DoesNotExist
+{{- if .Values.kubeflow }}
+    matchLabels:
+      serving.kubeflow.org/inferenceservice: enabled
+{{- end }}
 {{- end }}
 {{- end }}
 {{- if .Values.singleNamespace }}
@@ -118,6 +126,10 @@ webhooks:
     matchExpressions:
     - key: seldon.io/controller-id
       operator: DoesNotExist
+{{- if .Values.kubeflow }}
+    matchLabels:
+      serving.kubeflow.org/inferenceservice: enabled
+{{- end }}
 {{- end }}
 {{- end }}
 {{- if .Values.singleNamespace }}
@@ -177,6 +189,10 @@ webhooks:
     matchExpressions:
     - key: seldon.io/controller-id
       operator: DoesNotExist
+{{- if .Values.kubeflow }}
+    matchLabels:
+      serving.kubeflow.org/inferenceservice: enabled
+{{- end }}
 {{- end }}
 {{- end }}
 {{- if .Values.singleNamespace }}
@@ -221,6 +237,10 @@ webhooks:
     matchExpressions:
     - key: seldon.io/controller-id
       operator: DoesNotExist
+{{- if .Values.kubeflow }}
+    matchLabels:
+      serving.kubeflow.org/inferenceservice: enabled
+{{- end }}
 {{- end }}
 {{- end }}
 {{- if .Values.singleNamespace }}
@@ -265,6 +285,10 @@ webhooks:
     matchExpressions:
     - key: seldon.io/controller-id
       operator: DoesNotExist
+{{- if .Values.kubeflow }}
+    matchLabels:
+      serving.kubeflow.org/inferenceservice: enabled
+{{- end }}
 {{- end }}
 {{- end }}
 {{- if .Values.singleNamespace }}

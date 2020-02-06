@@ -20,6 +20,7 @@ HELM_SA_IF_START = '{{- if .Values.serviceAccount.create -}}\n'
 HELM_CERTMANAGER_IF_START = '{{- if .Values.certManager.enabled -}}\n'
 HELM_NOT_CERTMANAGER_IF_START = '{{- if not .Values.certManager.enabled -}}\n'
 HELM_VERSION_IF_START= '{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}\n'
+HELM_KUBEFLOW_IF_START='{{- if .Values.kubeflow }}\n'
 #HELM_SECRET_IF_START = '{{- if .Values.webhook.secretProvided -}}\n'
 HELM_IF_END = '{{- end }}\n'
 
@@ -220,7 +221,8 @@ if __name__ == "__main__":
     # Write webhook related data in 1 file
     namespaceSelector = "  namespaceSelector:\n    matchLabels:\n      seldon.io/controller-id: " + helm_release("Namespace") + "\n"
     objectSelector = "  objectSelector:\n    matchLabels:\n      seldon.io/controller-id: " + helm_value("controllerId") + "\n"
-    webhookData = re.sub(r"(.*namespaceSelector:\n.*matchExpressions:\n.*\n.*\n)",HELM_VERSION_IF_START+HELM_NOT_SINGLE_NAMESPACE_IF_START+r"\1"+HELM_IF_END+HELM_IF_END+HELM_SINGLE_NAMESPACE_IF_START+namespaceSelector+HELM_IF_END,webhookData, re.M)
+    kubeflowSelector = "    matchLabels:\n      serving.kubeflow.org/inferenceservice: enabled\n"
+    webhookData = re.sub(r"(.*namespaceSelector:\n.*matchExpressions:\n.*\n.*\n)",HELM_VERSION_IF_START+HELM_NOT_SINGLE_NAMESPACE_IF_START+r"\1"+HELM_KUBEFLOW_IF_START+kubeflowSelector+HELM_IF_END+HELM_IF_END+HELM_IF_END+HELM_SINGLE_NAMESPACE_IF_START+namespaceSelector+HELM_IF_END,webhookData, re.M)
     webhookData = re.sub(r"(.*objectSelector:\n.*matchExpressions:\n.*\n.*\n)",HELM_VERSION_IF_START+HELM_NOT_CONTROLLERID_IF_START+r"\1"+HELM_IF_END+HELM_IF_END+HELM_CONTROLLERID_IF_START+objectSelector+HELM_IF_END,webhookData, re.M)
 
     filename = args.folder + "/" + "webhook.yaml"
