@@ -39,10 +39,14 @@ def get_seldon_version():
 
 
 def wait_for_shutdown(deployment_name, namespace):
-    ret = run(f"kubectl get -n {namespace} deploy/{deployment_name}", shell=True)
-    while ret.returncode == 0:
-        time.sleep(1)
-        ret = run(f"kubectl get -n {namespace} deploy/{deployment_name}", shell=True)
+    cmd = (
+        "kubectl wait --for=delete "
+        "--timeout=1m "
+        f"-n {namespace} "
+        f"deploy/{deployment_name}"
+    )
+
+    return run(cmd, shell=True)
 
 
 def get_deployment_names(sdep_name, namespace, attempts=20, sleep=5):
@@ -443,12 +447,20 @@ def assert_model(sdep_name, namespace, initial=False, endpoint=API_AMBASSADOR):
     assert r is not None
     assert r.status_code == 200
 
+    # Assert possible return values across different models
     response = r.json()
-    assert response["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
+    values = response["data"]["tensor"]["values"]
+    assert values in [
+        [1.0, 2.0, 3.0, 4.0],  # fixed-model:0.1
+        [5.0, 6.0, 7.0, 8.0],  # fixed-model:0.2
+    ]
 
     # NOTE: The following will test if the `SeldonDeployment` can be fetched as
     # a Kubernetes resource. This covers cases where some resources (e.g. CRD
     # versions or webhooks) may get inadvertently removed between versions.
-    # The `retry_run()` method will **implicitly do an assert** on the return
-    # code of the command.
-    retry_run(f"kubectl get -n {namespace} sdep {sdep_name}")
+    ret = run(
+        f"kubectl get -n {namespace} sdep {sdep_name}",
+        stdout=subprocess.DEVNULL,
+        shell=True,
+    )
+    assert ret.returncode == 0
