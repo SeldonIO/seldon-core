@@ -20,10 +20,13 @@ import (
 )
 
 const (
-	testSourceUrl       = "http://localhost"
-	testSeldonPuid      = "1"
-	testCustomMetaKey   = "key"
-	testCustomMetaValue = "foo"
+	testSourceUrl         = "http://localhost"
+	testSeldonPuid        = "1"
+	testCustomMetaKey     = "key"
+	testCustomMetaValue   = "foo"
+	modelIdHeaderName     = "Ce-Modelid"
+	contentTypeHeaderName = "Content-Type"
+	requestIdHeaderName   = "Ce-Requestid"
 )
 
 func createPredictorProcess(t *testing.T) *PredictorProcess {
@@ -365,9 +368,9 @@ func TestModelWithLogRequests(t *testing.T) {
 		//g.Expect(r.Header.Get(logger.CloudEventsIdHeader)).Should(Equal(testEventId))
 		g.Expect(r.Header.Get(logger.CloudEventsTypeHeader)).To(Equal(logger.CEInferenceRequest))
 		g.Expect(r.Header.Get(logger.CloudEventsTypeSource)).To(Equal(testSourceUrl))
-		g.Expect(r.Header.Get("Ce-Modelid")).To(Equal(modelName))
-		g.Expect(r.Header.Get("Content-Type")).To(Equal(grpc.ProtobufContentType))
-		g.Expect(r.Header.Get("Ce-Requestid")).To(Equal(testSeldonPuid))
+		g.Expect(r.Header.Get(modelIdHeaderName)).To(Equal(modelName))
+		g.Expect(r.Header.Get(contentTypeHeaderName)).To(Equal(grpc.ProtobufContentType))
+		g.Expect(r.Header.Get(requestIdHeaderName)).To(Equal(testSeldonPuid))
 		w.Write([]byte(""))
 		logged = true
 		fmt.Printf("%+v\n", r.Header)
@@ -412,9 +415,9 @@ func TestModelWithLogResponses(t *testing.T) {
 		//g.Expect(r.Header.Get(logger.CloudEventsIdHeader)).Should(Equal(testEventId))
 		g.Expect(r.Header.Get(logger.CloudEventsTypeHeader)).To(Equal(logger.CEInferenceResponse))
 		g.Expect(r.Header.Get(logger.CloudEventsTypeSource)).To(Equal(testSourceUrl))
-		g.Expect(r.Header.Get("Ce-Modelid")).To(Equal(modelName))
-		g.Expect(r.Header.Get("Content-Type")).To(Equal(grpc.ProtobufContentType))
-		g.Expect(r.Header.Get("Ce-Requestid")).To(Equal(testSeldonPuid))
+		g.Expect(r.Header.Get(modelIdHeaderName)).To(Equal(modelName))
+		g.Expect(r.Header.Get(contentTypeHeaderName)).To(Equal(grpc.ProtobufContentType))
+		g.Expect(r.Header.Get(requestIdHeaderName)).To(Equal(testSeldonPuid))
 		w.Write([]byte(""))
 		logged = true
 	})
