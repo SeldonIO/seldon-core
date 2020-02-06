@@ -51,6 +51,11 @@ istio:
   enabled: false
   gateway: seldon-gateway
   tlsMode: ''
+manager:
+  memoryRequest: 20Mi
+  memoryLimit: 30Mi
+  cpuRequest: 100m
+  cpuLimit: 100m
 predictiveUnit:
   port: 9000
 predictor_servers:
@@ -102,8 +107,4 @@ usageMetrics:
   enabled: false
 webhook:
   port: 443
-manager:
-  memoryRequest: 20Mi
-  memoryLimit: 30Mi
-  cpuRequest: 100m
-  cpuLimit: 100m
+
