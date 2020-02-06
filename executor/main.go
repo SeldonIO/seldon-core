@@ -25,7 +25,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net"
-	"net/http"
 	"net/url"
 	"os"
 	"os/signal"
@@ -101,17 +100,7 @@ func runHttpServer(logger logr.Logger, predictor *v1.PredictorSpec, client seldo
 	// Create REST API
 	seldonRest := rest.NewServerRestApi(predictor, client, probesOnly, serverUrl, namespace, protocol, deploymentName, prometheusPath)
 	seldonRest.Initialise()
-
-	address := fmt.Sprintf("0.0.0.0:%d", port)
-	logger.Info("Listening", "Address", address)
-
-	srv := &http.Server{
-		Handler: seldonRest.Router,
-		Addr:    address,
-		// Good practice: enforce timeouts for servers you create!
-		WriteTimeout: 15 * time.Second,
-		ReadTimeout:  15 * time.Second,
-	}
+	srv := seldonRest.CreateHttpServer(port)
 
 	go func() {
 		if err := srv.ListenAndServe(); err != nil {
