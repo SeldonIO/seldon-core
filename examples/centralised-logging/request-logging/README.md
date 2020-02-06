@@ -31,6 +31,8 @@ For KIND or minikube run:
 
 Otherwise (for non-local) follow the [knative installation](https://knative.dev/docs/install/) for your cloud provider.
 
+Ensure you run `kubectl get pods --all-namespaces` and wait for all knative-eventing pods to come up.
+
 Run `kubectl apply -f seldon-request-logger.yaml`
 
 
@@ -41,6 +43,7 @@ kubectl label namespace default knative-eventing-injection=enabled
 sleep 3
 kubectl -n default get broker default
 ```
+The broker should show 'READY' as True.
 
 Note that SeldonDeployments configured to log requests will look for a broker in their namespace unless told otherwise. So this is assuming the SeldonDeployment will be in the default namespace.
 
@@ -56,7 +59,7 @@ Follow the EFK minikube setup from [centralised logging guide](../README.md) exc
 helm install seldon-single-model ../../../helm-charts/seldon-single-model/ --set model.logger="http://default-broker"
 ```
 
-(If you've already installed then you can first remove with `helm delete seldon-single-model --purge` or do an upgrade instead of an install.)
+(If you've already installed then you can first remove with `helm delete seldon-single-model` or do an upgrade instead of an install.)
 
 This time when you install the loadtester, requests should get filtered through the to seldon-request-logger and from there to elastic.
 
@@ -81,13 +84,13 @@ If hitting problems be sure to check all pods are up and scheduled and cluster h
 
 Check that a broker is available in the default namespace with 'kubectl get broker -n default'
 
-You can check whether messages are going through the broker by checking the logs of the default-broker-filter pod. Each message should cause a log line there. If you don't see that pod at all then the broker is not up.
+You can check whether messages are going through the broker by checking the logs of the default-broker-filter pod and/or checking whether seldon-request-logger pods get started. If you don't see a broker pod at all then the broker is not up.
 
 To manually send messages create an interactive session with a busybox pod:
 
 `kubectl run curl --image=radial/busyboxplus:curl -i --tty --rm`
 
-Then from that session you can run a curl direct to the broker (or any other k8s service) e.g.:
+Then from that session you can run a curl direct to the broker (or any other k8s service) e.g. the below - you may want to set the CE-Time to your current time:
 
 ```
 curl -v "http://default-broker.default.svc.cluster.local/" \
@@ -95,7 +98,7 @@ curl -v "http://default-broker.default.svc.cluster.local/" \
   -H "X-B3-Flags: 1" \
   -H 'CE-SpecVersion: 1.0' \
   -H "CE-Type: io.seldon.serving.inference.request" \
-  -H "CE-Time: 2018-04-05T03:56:24Z" \
+  -H "CE-Time: 2020-02-06T16:41:24Z" \
   -H "CE-ID: 45a8b444-3213-4758-be3f-540bf93f85ff" \
   -H "CE-Source: dev.knative.example" \
   -H "Ce-Inferenceservicename: seldon-model" \
@@ -111,7 +114,7 @@ curl -v "http://default-broker.default.svc.cluster.local/" \
   -H "X-B3-Flags: 1" \
   -H 'CE-SpecVersion: 1.0' \
   -H "CE-Type: io.seldon.serving.inference.response" \
-  -H "CE-Time: 2018-04-05T03:56:24Z" \
+  -H "CE-Time: 2020-02-06T16:41:24Z" \
   -H "CE-ID: 45a8b444-3213-4758-be3f-540bf93f85fg" \
   -H "CE-Source: dev.knative.example" \
   -H "Ce-Inferenceservicename: seldon-model" \

@@ -4,7 +4,7 @@
 
 Here we will set up EFK (elasticsearch, fluentd/fluentbit, kibana) as a stack to gather logs from SeldonDeployments and make them searchable.
 
-This demo is aimed at minikube.
+This demo is aimed at KIND or minikube but can also work with a cloud provider. Uses helm v3.
 
 Alternatives are available and if you are running in cloud then you can consider a managed service from your cloud provider.
 
@@ -96,7 +96,7 @@ kubectl port-forward svc/kibana-kibana -n logs 5601:5601
 When Kibana appears for the first time there will be a brief animation while it initializes.
 On the Welcome page click Explore on my own.
 From the top-left or from the `Visualize and Explore Data` panel select the `Discover` item.
-In the form field Index pattern enter logstash-*
+In the form field Index pattern enter *
 It should read "Success!" and Click the `> Next` step button on the right.
 In the next form select timestamp from the dropdown labeled `Time Filter` field name.
 From the bottom-right of the form select `Create index pattern`.

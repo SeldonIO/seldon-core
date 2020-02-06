@@ -10,9 +10,20 @@ from seldon_core.utils import json_to_seldon_message, extract_request_parts, arr
 from seldon_core.proto import prediction_pb2
 import numpy as np
 from elasticsearch import Elasticsearch
+import logging
+
+
+TYPE_HEADER_NAME = "Ce-Type"
+REQUEST_ID_HEADER_NAME = "Ce-Requestid"
+MODELID_HEADER_NAME = 'Ce-Modelid'
+NAMESPACE_HEADER_NAME = 'Ce-Namespace'
+PREDICTOR_HEADER_NAME = 'Ce-Predictor'
+INFERENCESERVICE_HEADER_NAME = 'Ce-Inferenceservicename'
+DOC_TYPE_NAME = 'inferencerequest'
+
 app = Flask(__name__)
 
-import logging
+
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
@@ -30,21 +41,46 @@ def index():
 
     es = connect_elasticsearch()
 
-    type_header = request.headers.get('Ce-Type')
+    type_header = request.headers.get(TYPE_HEADER_NAME)
     message_type = parse_message_type(type_header)
+    index_name = build_index_name(request.headers)
+    print('index is '+index_name)
+    sys.stdout.flush()
 
     try:
         #first ensure there is an elastic doc as we need something to lock against
         #use req id as doc id (if None then elastic should generate one but then req & res won't be linked)
-        request_id = request.headers.get('Ce-Requestid')
-        update_elastic_doc(es,message_type,{}, request_id, request.headers)
+        request_id = request.headers.get(REQUEST_ID_HEADER_NAME)
+        update_elastic_doc(es,message_type,{}, request_id, request.headers, index_name)
         #now process and update the doc
-        doc = process_and_update_elastic_doc(es, message_type, body, request_id,request.headers)
+        doc = process_and_update_elastic_doc(es, message_type, body, request_id,request.headers, index_name)
         return str(doc)
     except Exception as ex:
         print(ex)
     sys.stdout.flush()
     return 'problem logging request'
+
+
+def build_index_name(headers):
+    #use a fixed index name if user chooses to do so
+    index_name = os.getenv('INDEX_NAME')
+    if index_name:
+        return index_name
+
+    #otherwise create an index per deployment
+    index_name = "inference-log-" + serving_engine(headers)
+    namespace = request.headers.get(NAMESPACE_HEADER_NAME)
+    if namespace is None:
+        index_name = index_name + "-unknown-namespace"
+    else:
+        index_name = index_name + "-" + namespace
+    inference_service_name = request.headers.get(INFERENCESERVICE_HEADER_NAME)
+    if inference_service_name is None:
+        index_name = index_name + "-unknown-inferenceservice"
+    else:
+        index_name = index_name + "-" + inference_service_name
+    return index_name
+
 
 def parse_message_type(type_header):
     if type_header == "io.seldon.serving.inference.request":
@@ -55,18 +91,23 @@ def parse_message_type(type_header):
 
 
 def set_metadata(content, headers):
-    type_header = request.headers.get('Ce-Type')
-    if type_header.startswith('io.seldon.serving'):
-        content['ServingEngine'] = 'Seldon'
-    elif type_header.startswith('org.kubeflow.serving'):
-        content['ServingEngine'] = 'InferenceService'
+    serving_engine_name = serving_engine(headers)
+    content['ServingEngine'] = serving_engine_name
 
     # TODO: provide a way for custom headers to be passed on too?
-    field_from_header(content, 'Ce-Inferenceservicename', headers)
-    field_from_header(content, 'Ce-Predictor', headers)
-    field_from_header(content, 'Ce-Namespace', headers)
-    field_from_header(content, 'Ce-Modelid', headers)
+    field_from_header(content, INFERENCESERVICE_HEADER_NAME, headers)
+    field_from_header(content, PREDICTOR_HEADER_NAME, headers)
+    field_from_header(content, NAMESPACE_HEADER_NAME, headers)
+    field_from_header(content, MODELID_HEADER_NAME, headers)
     return
+
+
+def serving_engine(headers):
+    type_header = request.headers.get(TYPE_HEADER_NAME)
+    if type_header.startswith('io.seldon.serving'):
+        return 'seldon'
+    elif type_header.startswith('org.kubeflow.serving'):
+        return 'inferenceservice'
 
 
 def field_from_header(content, header_name, headers):
@@ -74,7 +115,7 @@ def field_from_header(content, header_name, headers):
         content[header_name] = headers.get(header_name)
 
 
-def process_and_update_elastic_doc(elastic_object, message_type, message_body, request_id, headers):
+def process_and_update_elastic_doc(elastic_object, message_type, message_body, request_id, headers, index_name):
     if message_type == 'unknown':
         print('UNKNOWN REQUEST TYPE FOR '+request_id+' - NOT PROCESSING')
 
@@ -84,7 +125,7 @@ def process_and_update_elastic_doc(elastic_object, message_type, message_body, r
     field_from_header(content=new_content_part,header_name='ce-time',headers=headers)
     field_from_header(content=new_content_part, header_name='ce-source', headers=headers)
 
-    new_content = update_elastic_doc(elastic_object, message_type, new_content_part, request_id, headers)
+    new_content = update_elastic_doc(elastic_object, message_type, new_content_part, request_id, headers, index_name)
     return str(new_content)
 
 
@@ -92,10 +133,10 @@ def process_and_update_elastic_doc(elastic_object, message_type, message_body, r
                       Exception,
                       max_time=30,
                       jitter=backoff.random_jitter)
-def update_elastic_doc(elastic_object, message_type, new_content_part, request_id, headers):
+def update_elastic_doc(elastic_object, message_type, new_content_part, request_id, headers, index_name):
     # now ready to upsert
     #TODO: might put inferenceservices under a different doc type and not 'seldonrequest' (use env vars?)
-    doc = retrieve_doc(elastic_object, 'seldon', 'seldonrequest', request_id)
+    doc = retrieve_doc(elastic_object, index_name, DOC_TYPE_NAME, request_id)
     # req and response will come through separately and we need enrich the doc with response
     # doc can have existing content - should have (processed) request content already
     # JITTERED BACKOFFS ARE NEEDED TO HANDLE CONCURRENT UPDATES
@@ -113,7 +154,7 @@ def update_elastic_doc(elastic_object, message_type, new_content_part, request_i
     # ensure any top-level metadata is set
     set_metadata(new_content,headers)
 
-    store_record(elastic_object, 'seldon', new_content, request_id, 'seldonrequest', seq_no, primary_term)
+    store_record(elastic_object, index_name, new_content, request_id, DOC_TYPE_NAME, seq_no, primary_term)
     return new_content
 
 
@@ -132,6 +173,7 @@ def connect_elasticsearch():
 
 def store_record(elastic_object, index_name, record, req_id, record_doc_type, seq_no, primary_term):
     doc = None
+
     # don't already have a seq_no for optimistic lock so get one
     if seq_no is None or primary_term is None:
         doc = retrieve_doc(elastic_object, index_name, record_doc_type, req_id)
@@ -141,14 +183,18 @@ def store_record(elastic_object, index_name, record, req_id, record_doc_type, se
 
     try:
         # see https://elasticsearch-py.readthedocs.io/en/master/api.html#elasticsearch.Elasticsearch.index
-        if doc is None:
-            print('doc '+req_id+' does not exist')
-        else:
-            print('doc '+req_id+' exists')
+        if doc is None and req_id is not None:
+            print('doc '+index_name+'/'+record_doc_type+'/'+req_id+' does not exist')
+        elif req_id is not None:
+            print('doc '+index_name+'/'+record_doc_type+'/'+req_id+' exists')
             print(str(doc))
 
         sys.stdout.flush()
         outcome = elastic_object.index(index=index_name, doc_type=record_doc_type, id=req_id, body=record, if_seq_no=seq_no, if_primary_term=primary_term, refresh='wait_for',request_timeout=60.0)
+
+        if outcome is not None:
+            print('doc '+outcome['_index']+'/'+outcome['_type']+'/'+outcome['_id']+' indexed')
+            sys.stdout.flush()
 
     except Exception as ex:
         print('Error in indexing data')

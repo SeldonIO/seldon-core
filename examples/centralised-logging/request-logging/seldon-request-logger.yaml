@@ -12,7 +12,7 @@ spec:
             fluentd: "true"
         spec:
           container:
-            image: docker.io/ryandawsonuk/seldon-request-logger:0.1.0
+            image: docker.io/ryandawsonuk/seldon-request-logger:test1
             imagePullPolicy: Always
             env:
              - name: ELASTICSEARCH_HOST
