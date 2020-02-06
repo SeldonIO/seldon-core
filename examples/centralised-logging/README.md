@@ -93,6 +93,8 @@ Or if not on minikube then port-forward to `localhost:5601`:
 kubectl port-forward svc/kibana-kibana -n logs 5601:5601
 ```
 
+If you want to check the elastic API with postman then also run `kubectl port-forward svc/elasticsearch-master -n logs 9200:9200`
+
 When Kibana appears for the first time there will be a brief animation while it initializes.
 On the Welcome page click Explore on my own.
 From the top-left or from the `Visualize and Explore Data` panel select the `Discover` item.
