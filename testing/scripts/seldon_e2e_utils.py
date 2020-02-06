@@ -77,10 +77,19 @@ def get_deployment_names(sdep_name, namespace, attempts=20, sleep=5):
 def wait_for_rollout(
     sdep_name, namespace, attempts=20, sleep=5, expected_deployments=1
 ):
-    deployment_names = get_deployment_names(sdep_name, namespace)
-    assert (
-        len(deployment_names) == expected_deployments
-    ), f"Expected {expected_deployments} deployment(s) but got {len(deployment_names)}"
+    deployment_names = []
+    for _ in range(attempts):
+        deployment_names = get_deployment_names(sdep_name, namespace)
+        deployments = len(deployment_names)
+
+        if deployments == expected_deployments:
+            break
+
+    error_msg = (
+        f"Expected {expected_deployments} deployment(s) but got {len(deployment_names)}"
+    )
+    assert len(deployment_names) == expected_deployments, error_msg
+
     for deployment_name in deployment_names:
         logging.warning(f"Waiting for deployment {deployment_name}")
         for _ in range(attempts):
