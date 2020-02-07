@@ -10,7 +10,7 @@ pipelineConfig:
     pullRequest:
       pipeline:
         agent:
-          image: seldonio/core-builder:0.10
+          image: seldonio/core-builder:0.11
         stages:
         - name: pr-build-comment
           steps:
@@ -21,8 +21,6 @@ pipelineConfig:
         - name: build-and-test
           parallel:
           - name: test-python
-            agent:
-              image: seldonio/python-builder:0.2
             steps:
             - name: test-python
               command: make
@@ -61,7 +59,7 @@ pipelineConfig:
           command: echo "skipping tag"
       pipeline:
         agent:
-          image: seldonio/core-builder:0.10
+          image: seldonio/core-builder:0.11
         stages:
           - name: build-and-push
             steps:
