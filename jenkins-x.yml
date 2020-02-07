@@ -21,6 +21,8 @@ pipelineConfig:
         - name: build-and-test
           parallel:
           - name: test-python
+            agent:
+              image: seldonio/python-builder:0.2
             steps:
             - name: test-python
               command: make
