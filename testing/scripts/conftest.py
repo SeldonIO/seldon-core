@@ -68,6 +68,7 @@ def seldon_version(request):
         "--set istio.enabled=true "
         "--set istio.gateway=seldon-gateway "
         "--set certManager.enabled=false "
+        "--set executor.enabled=true "
         f"--version {seldon_version} "
         "--wait"
     )
@@ -83,6 +84,7 @@ def seldon_version(request):
         "--set istio.enabled=true "
         "--set istio.gateway=seldon-gateway "
         "--set certManager.enabled=false "
+        "--set executor.enabled=true "
         "--wait",
         attempts=2,
     )

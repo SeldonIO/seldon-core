@@ -38,7 +38,14 @@ install_cert_manager:
 
 install_seldon: install_cert_manager
 	kubectl create namespace seldon-system || echo "namespace seldon-system exists"
-	helm install --wait seldon ../../helm-charts/seldon-core-operator --namespace seldon-system --set istio.enabled=true --set istio.gateway=seldon-gateway --set certManager.enabled=false --set executor.enabled=true
+	helm install seldon \
+		../../helm-charts/seldon-core-operator \
+		--namespace seldon-system \
+		--set istio.enabled=true \
+		--set istio.gateway=seldon-gateway \
+		--set certManager.enabled=false \
+		--set executor.enabled=true \
+		--wait
 
 install_istio:
 	kubectl apply -f istio-1.4.2.yaml
