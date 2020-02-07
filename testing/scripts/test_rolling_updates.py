@@ -235,7 +235,6 @@ class TestRollingHttp(object):
         ("graph1.json", "graph3.json"),  # New image version and new name of container
         ("graph1.json", "graph4.json"),  # New resource request but same image
         ("graph1.json", "graph5.json"),  # Update with multi-deployment new model
-        ("graph1.json", "graph6.json"),  # Update to multi-predictor model
         ("graph1.json", "graph8.json"),  # From v1alpha2 to v1
         ("graph7.json", "graph8.json"),  # From v1alpha3 to v1
     ],
