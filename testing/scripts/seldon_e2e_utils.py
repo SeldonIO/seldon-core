@@ -41,7 +41,7 @@ def get_seldon_version():
 def wait_for_shutdown(deployment_name, namespace):
     cmd = (
         "kubectl wait --for=delete "
-        "--timeout=1m "
+        "--timeout=3m "
         f"-n {namespace} "
         f"deploy/{deployment_name}"
     )
@@ -450,7 +450,7 @@ def assert_model_during_op(op, *assert_args, **assert_kwargs):
             # to finish before raising
             cancelled = future.cancel()
             if not cancelled:
-                wait(future)
+                wait([future])
 
             raise err
 
