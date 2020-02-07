@@ -51,6 +51,8 @@ istio:
   enabled: false
   gateway: seldon-gateway
   tlsMode: ''
+kubeflow:
+  false
 predictiveUnit:
   port: 9000
 predictor_servers:
