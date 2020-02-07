@@ -19,11 +19,14 @@ The seldon-request-logger implementation is replaceable and the type of the mess
 ## Setup
 
 Local options are minikube or KIND. Create minikube cluster with knative recommendations for resource - https://knative.dev/docs/install/knative-with-minikube/. For KIND cluster use:
+
 ```
 kind create cluster --config ../kind_config.yaml --image kindest/node:v1.15.6
 ```
+(Or for KIND only there is a full-kind-setup.sh script that runs steps.)
 
 For KIND or minikube run:
+
 ```
 ./install_istio.sh
 ./install_knative.sh
@@ -43,11 +46,13 @@ kubectl label namespace default knative-eventing-injection=enabled
 sleep 3
 kubectl -n default get broker default
 ```
+
 The broker should show 'READY' as True.
 
 Note that SeldonDeployments configured to log requests will look for a broker in their namespace unless told otherwise. So this is assuming the SeldonDeployment will be in the default namespace.
 
 And trigger:
+
 ```
 kubectl apply -f ./trigger.yaml
 ```
@@ -55,6 +60,7 @@ kubectl apply -f ./trigger.yaml
 ## Running and Seeing logs
 
 Follow the EFK minikube setup from [centralised logging guide](../README.md) except the step to deploy the model, which instead should be:
+
 ```
 helm install seldon-single-model ../../../helm-charts/seldon-single-model/ --set model.logger="http://default-broker"
 ```
@@ -85,6 +91,8 @@ If hitting problems be sure to check all pods are up and scheduled and cluster h
 Check that a broker is available in the default namespace with 'kubectl get broker -n default'
 
 You can check whether messages are going through the broker by checking the logs of the default-broker-filter pod and/or checking whether seldon-request-logger pods get started. If you don't see a broker pod at all then the broker is not up.
+
+If too many requests are going through for elastic to handle with its allocated memory you might hit https://github.com/elastic/elasticsearch/issues/31197
 
 To manually send messages create an interactive session with a busybox pod:
 

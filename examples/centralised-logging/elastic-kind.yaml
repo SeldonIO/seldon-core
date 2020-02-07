@@ -3,19 +3,21 @@
 antiAffinity: "soft"
 
 # Shrink default JVM heap.
-esJavaOpts: "-Xmx128m -Xms128m"
+esJavaOpts: "-Xmx256m -Xms256m"
 
 podAnnotations:
   fluentbit.io/exclude: "true"
+  
+replicas: 1
 
 # Allocate smaller chunks of memory per pod.
 resources:
   requests:
-    cpu: "100m"
+    cpu: "200m"
     memory: "512M"
   limits:
-    cpu: "1000m"
-    memory: "512M"
+    cpu: "1500m"
+    memory: "1024M"
 
 # Request smaller persistent volumes.
 volumeClaimTemplate:
@@ -23,7 +25,7 @@ volumeClaimTemplate:
   storageClassName: "local-path"
   resources:
     requests:
-      storage: 100M
+      storage: 400M
 extraInitContainers: |
    - name: create
      image: busybox:1.28

@@ -18,6 +18,7 @@ REQUEST_ID_HEADER_NAME = "Ce-Requestid"
 MODELID_HEADER_NAME = 'Ce-Modelid'
 NAMESPACE_HEADER_NAME = 'Ce-Namespace'
 PREDICTOR_HEADER_NAME = 'Ce-Predictor'
+TIMESTAMP_HEADER_NAME = 'CE-Time'
 INFERENCESERVICE_HEADER_NAME = 'Ce-Inferenceservicename'
 DOC_TYPE_NAME = 'inferencerequest'
 
@@ -90,7 +91,7 @@ def parse_message_type(type_header):
     return 'unknown'
 
 
-def set_metadata(content, headers):
+def set_metadata(content, headers, message_type):
     serving_engine_name = serving_engine(headers)
     content['ServingEngine'] = serving_engine_name
 
@@ -99,6 +100,10 @@ def set_metadata(content, headers):
     field_from_header(content, PREDICTOR_HEADER_NAME, headers)
     field_from_header(content, NAMESPACE_HEADER_NAME, headers)
     field_from_header(content, MODELID_HEADER_NAME, headers)
+
+    if message_type == "request":
+       content['@timestamp'] = headers.get(TIMESTAMP_HEADER_NAME)
+       content['RequestId'] = headers.get(REQUEST_ID_HEADER_NAME)
     return
 
 
@@ -129,9 +134,9 @@ def process_and_update_elastic_doc(elastic_object, message_type, message_body, r
     return str(new_content)
 
 
-@backoff.on_exception(backoff.expo,
+@backoff.on_exception(backoff.constant,
                       Exception,
-                      max_time=30,
+                      max_time=60,
                       jitter=backoff.random_jitter)
 def update_elastic_doc(elastic_object, message_type, new_content_part, request_id, headers, index_name):
     # now ready to upsert
@@ -152,7 +157,7 @@ def update_elastic_doc(elastic_object, message_type, new_content_part, request_i
     # add the new content under its key
     new_content[message_type] = new_content_part
     # ensure any top-level metadata is set
-    set_metadata(new_content,headers)
+    set_metadata(new_content,headers, message_type)
 
     store_record(elastic_object, index_name, new_content, request_id, DOC_TYPE_NAME, seq_no, primary_term)
     return new_content
