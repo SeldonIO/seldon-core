@@ -7,7 +7,7 @@ import numpy as np
 import json
 import subprocess
 
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, wait
 from subprocess import run, Popen
 from retrying import retry
 from requests.auth import HTTPBasicAuth
@@ -442,11 +442,20 @@ def assert_model_during_op(op, *assert_args, **assert_kwargs):
     with ThreadPoolExecutor(max_workers=1) as executor:
         future = executor.submit(op)
 
-        while future.running():
-            assert_model(*assert_args, **assert_kwargs)
+        try:
+            while future.running():
+                assert_model(*assert_args, **assert_kwargs)
+        except AssertionError as err:
+            # In case the assertion failed, try to cancel Future or wait for it
+            # to finish before raising
+            cancelled = future.cancel()
+            if not cancelled:
+                wait(future)
 
-        # Future.result() will raise any exceptions thrown within the future
-        future.result()
+            raise err
+
+        # Future.exception() will raise any exceptions thrown within the future
+        future.exception()
 
 
 def assert_model(sdep_name, namespace, initial=False, endpoint=API_AMBASSADOR):
