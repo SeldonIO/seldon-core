@@ -30,64 +30,6 @@ with_api_gateways = pytest.mark.parametrize(
 @pytest.mark.flaky
 @with_api_gateways
 class TestRollingHttp(object):
-    # Test updating a model with a new resource request but same image
-    def test_rolling_update3(self, namespace, api_gateway):
-        if api_gateway == API_ISTIO_GATEWAY:
-            retry_run(
-                f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
-            )
-        retry_run(f"kubectl apply -f ../resources/graph1.json -n {namespace}")
-        wait_for_status("mymodel", namespace)
-        wait_for_rollout("mymodel", namespace)
-        logging.warning("Initial request")
-        r = initial_rest_request("mymodel", namespace, endpoint=api_gateway)
-        assert r.status_code == 200
-        assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
-        retry_run(f"kubectl apply -f ../resources/graph4.json -n {namespace}")
-        r = initial_rest_request("mymodel", namespace, endpoint=api_gateway)
-        assert r.status_code == 200
-        assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
-        i = 0
-        for i in range(50):
-            r = rest_request_ambassador("mymodel", namespace, api_gateway)
-            assert r.status_code == 200
-            res = r.json()
-            assert res["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
-            time.sleep(1)
-        assert i == 49
-        logging.warning("Success for test_rolling_update3")
-        run(f"kubectl delete -f ../resources/graph1.json -n {namespace}", shell=True)
-        run(f"kubectl delete -f ../resources/graph4.json -n {namespace}", shell=True)
-
-    # Test updating a model with a multi deployment new model
-    def test_rolling_update4(self, namespace, api_gateway):
-        if api_gateway == API_ISTIO_GATEWAY:
-            retry_run(
-                f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
-            )
-        retry_run(f"kubectl apply -f ../resources/graph1.json -n {namespace}")
-        wait_for_status("mymodel", namespace)
-        wait_for_rollout("mymodel", namespace)
-        logging.warning("Initial request")
-        r = initial_rest_request("mymodel", namespace, endpoint=api_gateway)
-        assert r.status_code == 200
-        assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
-        retry_run(f"kubectl apply -f ../resources/graph5.json -n {namespace}")
-        r = initial_rest_request("mymodel", namespace, endpoint=api_gateway)
-        assert r.status_code == 200
-        assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
-        i = 0
-        for i in range(50):
-            r = rest_request_ambassador("mymodel", namespace, api_gateway)
-            assert r.status_code == 200
-            res = r.json()
-            assert res["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
-            time.sleep(1)
-        assert i == 49
-        logging.warning("Success for test_rolling_update4")
-        run(f"kubectl delete -f ../resources/graph1.json -n {namespace}", shell=True)
-        run(f"kubectl delete -f ../resources/graph5.json -n {namespace}", shell=True)
-
     # Test updating a model to a multi predictor model
     def test_rolling_update5(self, namespace, api_gateway):
         if api_gateway == API_ISTIO_GATEWAY:
@@ -292,6 +234,8 @@ class TestRollingHttp(object):
         ("graph1.json", "graph2.json"),  # New image version
         ("graph1.json", "graph3.json"),  # New image version and new name of container
         ("graph1.json", "graph4.json"),  # New resource request but same image
+        ("graph1.json", "graph5.json"),  # Update with multi-deployment new model
+        ("graph1.json", "graph6.json"),  # Update to multi-predictor model
         ("graph1.json", "graph8.json"),  # From v1alpha2 to v1
         ("graph7.json", "graph8.json"),  # From v1alpha3 to v1
     ],
