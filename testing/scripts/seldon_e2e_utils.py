@@ -38,10 +38,10 @@ def get_seldon_version():
     return version
 
 
-def wait_for_shutdown(deployment_name, namespace):
+def wait_for_shutdown(deployment_name, namespace, timeout="10m"):
     cmd = (
         "kubectl wait --for=delete "
-        "--timeout=3m "
+        f"--timeout={timeout} "
         f"-n {namespace} "
         f"deploy/{deployment_name}"
     )
