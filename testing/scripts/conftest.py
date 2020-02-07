@@ -5,8 +5,8 @@ from subprocess import run
 
 @pytest.fixture(scope="session", autouse=True)
 def run_pod_information_in_background(request):
-    # This command runs the pod information and prints it
-    #   in the background every time there's a new update
+    # This command runs the pod information and prints it in the background
+    # every time there's a new update
     run(
         (
             "kubectl get pods --all-namespaces -w | "
@@ -60,7 +60,7 @@ def seldon_version(request):
     seldon_version = request.param
 
     # Install past version cluster-wide
-    retry_run("helm delete seldon -n seldon-system")
+    delete_seldon()
     retry_run(
         "helm install seldon "
         "seldonio/seldon-core-operator "
@@ -72,7 +72,7 @@ def seldon_version(request):
     yield seldon_version
 
     # Re-install source code version cluster-wide
-    retry_run("helm delete seldon -n seldon-system")
+    delete_seldon()
     retry_run(
         "helm install seldon "
         "../../helm-charts/seldon-core-operator "
@@ -82,6 +82,17 @@ def seldon_version(request):
         "--set certManager.enabled=false "
         "--wait",
         attempts=2,
+    )
+
+
+def delete_seldon(name="seldon", namespace="seldon-system"):
+    retry_run(f"helm delete {name} -n {namespace}", attempts=3)
+
+    # Helm 3.0.3 doesn't delete CRDs
+    retry_run(
+        "kubectl delete crd --ignore-not-found "
+        "seldondeployments.machinelearning.seldon.io ",
+        attempts=3,
     )
 
 
