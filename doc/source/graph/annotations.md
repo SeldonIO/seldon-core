@@ -10,20 +10,18 @@ You can configure aspects of Seldon Core via annotations in the SeldonDeployment
    * Locations : SeldonDeployment.spec.annotations
    * Default is MaxInt32
    * [gRPC message size example](model_rest_grpc_settings.md)
- * ```seldon.io/grpc-read-timeout``` : gRPC read timeout (msecs)
+ * ```seldon.io/grpc-timeout``` : gRPC timeout (msecs)
    * Locations : SeldonDeployment.spec.annotations
    * Default is no timeout
-   * [gRPC read timeout example](model_rest_grpc_settings.md)
+   * [gRPC timeout example](model_rest_grpc_settings.md)
 
 
 ### REST API Control
 
- * ```seldon.io/rest-read-timeout``` : REST read timeout (msecs)
+ * ```seldon.io/rest-timeout``` : REST timeout (msecs)
    * Locations : SeldonDeployment.spec.annotations
-   * [REST read timeout example](model_rest_grpc_settings.md)
- * ```seldon.io/rest-connection-timeout``` : REST connection timeout (msecs)
-   * Locations : SeldonDeployment.spec.annotations
-   * [REST read connection timeout example](model_rest_grpc_settings.md)
+   * Default is no overall timeout but will use GoLang's default transport settings which include a 30 sec connection timeout.
+   * [REST timeout example](model_rest_grpc_settings.md)
 
 ### Service Orchestrator
 

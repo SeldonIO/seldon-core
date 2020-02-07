@@ -30,11 +30,11 @@ func AddClientInterceptors(predictor *v1.PredictorSpec, deploymentName, modelNam
 		interceptors = append(interceptors, grpc_opentracing.UnaryClientInterceptor())
 	}
 	if annotations != nil {
-		val := annotations[k8s.ANNOTATION_GRPC_READ_TIMEOUT]
+		val := annotations[k8s.ANNOTATION_GRPC_TIMEOUT]
 		if val != "" {
 			timeout, err := strconv.Atoi(val)
 			if err != nil {
-				log.Error(err, "Failed to parse annotation to int so will ignore", k8s.ANNOTATION_GRPC_READ_TIMEOUT, val)
+				log.Error(err, "Failed to parse annotation to int so will ignore", k8s.ANNOTATION_GRPC_TIMEOUT, val)
 			} else {
 				interceptors = append(interceptors, unaryClientInterceptorWithTimeout(time.Millisecond*time.Duration(timeout)))
 			}

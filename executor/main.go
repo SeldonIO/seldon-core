@@ -247,7 +247,10 @@ func main() {
 	defer closer.Close()
 
 	if *transport == "rest" {
-		clientRest := rest.NewJSONRestClient(*protocol, *sdepName, predictor)
+		clientRest, err := rest.NewJSONRestClient(*protocol, *sdepName, predictor, annotations)
+		if err != nil {
+			log.Fatalf("Failed to create http client: %v", err)
+		}
 		logger.Info("Running http server ", "port", *httpPort)
 		runHttpServer(logger, predictor, clientRest, *httpPort, false, serverUrl, *namespace, *protocol, *sdepName, *prometheusPath)
 	} else {

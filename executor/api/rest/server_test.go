@@ -98,7 +98,9 @@ func TestModelWithServer(t *testing.T) {
 		},
 	}
 
-	r := NewServerRestApi(&p, NewJSONRestClient(api.ProtocolSeldon, "dep", &p), false, url, "default", api.ProtocolSeldon, "test", "/metrics")
+	client, err := NewJSONRestClient(api.ProtocolSeldon, "dep", &p, nil)
+	g.Expect(err).To(BeNil())
+	r := NewServerRestApi(&p, client, false, url, "default", api.ProtocolSeldon, "test", "/metrics")
 	r.Initialise()
 	var data = ` {"data":{"ndarray":[1.1,2.0]}}`
 

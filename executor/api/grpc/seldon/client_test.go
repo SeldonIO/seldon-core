@@ -79,7 +79,7 @@ func TestClientPredictTimeout(t *testing.T) {
 	p, host, port, stopFunc := createTestGrpcServer(g, nil)
 	defer stopFunc()
 
-	annotations := map[string]string{k8s.ANNOTATION_GRPC_READ_TIMEOUT: "100"}
+	annotations := map[string]string{k8s.ANNOTATION_GRPC_TIMEOUT: "100"}
 	client := NewSeldonGrpcClient(p, "", annotations)
 
 	req := createPredictPayload(g)
