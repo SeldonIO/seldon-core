@@ -65,6 +65,9 @@ def seldon_version(request):
         "helm install seldon "
         "seldonio/seldon-core-operator "
         "--namespace seldon-system "
+        "--set istio.enabled=true "
+        "--set istio.gateway=seldon-gateway "
+        "--set certManager.enabled=false "
         f"--version {seldon_version} "
         "--wait"
     )
