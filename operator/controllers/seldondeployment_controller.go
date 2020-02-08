@@ -160,7 +160,7 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 				{
 					Match: []istio.HTTPMatchRequest{
 						{
-							URI: &v1alpha1.StringMatch{Prefix: "/seldon.protos.Seldon/"},
+							URI: &v1alpha1.StringMatch{Regex: constants.GRPCRegExMatchIstio},
 							Headers: map[string]v1alpha1.StringMatch{
 								"seldon":    v1alpha1.StringMatch{Exact: mlDep.Name},
 								"namespace": v1alpha1.StringMatch{Exact: namespace},
@@ -602,15 +602,14 @@ func createContainerService(deploy *appsv1.Deployment, p machinelearningv1.Predi
 	}
 	namespace := getNamespace(mlDep)
 	portType := "http"
+	if pu.Endpoint.Type == machinelearningv1.GRPC {
+		portType = "grpc"
+	}
 	var portNum int32
 	portNum = 0
 	existingPort := machinelearningv1.GetPort(portType, con.Ports)
 	if existingPort != nil {
 		portNum = existingPort.ContainerPort
-	}
-
-	if pu.Endpoint.Type == machinelearningv1.GRPC {
-		portType = "grpc"
 	}
 
 	// pu should have a port set by seldondeployment_create_update_handler.go (if not by user)
@@ -1107,6 +1106,10 @@ func createDeployments(r *SeldonDeploymentReconciler, components *components, in
 
 				desiredDeployment := found.DeepCopy()
 				found.Spec = deploy.Spec
+
+				if deploy.Spec.Replicas == nil {
+					found.Spec.Replicas = desiredDeployment.Spec.Replicas
+				}
 
 				err = r.Update(context.TODO(), found)
 				if err != nil {

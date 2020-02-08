@@ -6,6 +6,12 @@ certManager:
 controllerId: ''
 crd:
   create: true
+credentials:
+  gcs:
+    gcsCredentialFileName: gcloud-application-credentials.json
+  s3:
+    s3AccessKeyIDName: awsAccessKeyID
+    s3SecretAccessKeyName: awsSecretAccessKey
 engine:
   grpc:
     port: 5001
@@ -13,27 +19,76 @@ engine:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/engine
-    tag: 1.0.1-SNAPSHOT
+    tag: 1.0.2-SNAPSHOT
   logMessagesExternally: false
   port: 8000
   prometheus:
-    path: prometheus
-  securityContext:
-    enabled: true
+    path: /prometheus
   serviceAccount:
     name: default
   user: 8888
+executor:
+  enabled: true
+  grpc:
+    port: 5001
+  image:
+    pullPolicy: IfNotPresent
+    registry: docker.io
+    repository: seldonio/seldon-core-executor
+    tag: 1.0.2-SNAPSHOT
+  port: 8000
+  prometheus:
+    path: /prometheus
+  serviceAccount:
+    name: default
+  user: 8888  
 image:
   pullPolicy: IfNotPresent
   registry: docker.io
   repository: seldonio/seldon-core-operator
-  tag: 1.0.1-SNAPSHOT
+  tag: 1.0.2-SNAPSHOT
 istio:
   enabled: false
   gateway: seldon-gateway
   tlsMode: ''
+manager:
+  memoryRequest: 20Mi
+  memoryLimit: 30Mi
+  cpuRequest: 100m
+  cpuLimit: 100m
 predictiveUnit:
   port: 9000
+predictor_servers:
+  MLFLOW_SERVER:
+    grpc:
+      defaultImageVersion: '0.2'
+      image: seldonio/mlflowserver_grpc
+    rest:
+      defaultImageVersion: '0.2'
+      image: seldonio/mlflowserver_rest
+  SKLEARN_SERVER:
+    grpc:
+      defaultImageVersion: '0.2'
+      image: seldonio/sklearnserver_grpc
+    rest:
+      defaultImageVersion: '0.2'
+      image: seldonio/sklearnserver_rest
+  TENSORFLOW_SERVER:
+    grpc:
+      defaultImageVersion: '0.7'
+      image: seldonio/tfserving-proxy_grpc
+    rest:
+      defaultImageVersion: '0.7'
+      image: seldonio/tfserving-proxy_rest
+    tensorflow: true
+    tfImage: tensorflow/serving:latest
+  XGBOOST_SERVER:
+    grpc:
+      defaultImageVersion: '0.2'
+      image: seldonio/xgboostserver_grpc
+    rest:
+      defaultImageVersion: '0.2'
+      image: seldonio/xgboostserver_rest
 rbac:
   configmap:
     create: true
@@ -42,7 +97,14 @@ serviceAccount:
   create: true
   name: seldon-manager
 singleNamespace: false
+storageInitializer:
+  image: gcr.io/kfserving/storage-initializer:0.2.2
+  memoryRequest: 100Mi
+  memoryLimit: 1Gi
+  cpuRequest: 100m
+  cpuLimit: '1'
 usageMetrics:
   enabled: false
 webhook:
   port: 443
+

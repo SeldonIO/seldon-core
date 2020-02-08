@@ -23,8 +23,53 @@ import (
 	"github.com/seldonio/seldon-core/operator/utils"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/api/core/v1"
+	"strconv"
 	"strings"
 )
+
+func createTensorflowServingContainer(pu *machinelearningv1.PredictiveUnit, usePUPorts bool) *v1.Container {
+	ServerConfig := machinelearningv1.GetPrepackServerConfig(string(*pu.Implementation))
+
+	tfImage := "tensorflow/serving:latest"
+
+	if ServerConfig.TensorflowImage != "" {
+		tfImage = ServerConfig.TensorflowImage
+	}
+
+	grpcPort := int32(constants.TfServingGrpcPort)
+	restPort := int32(constants.TfServingRestPort)
+	name := constants.TFServingContainerName
+	if usePUPorts {
+		if pu.Endpoint.Type == machinelearningv1.GRPC {
+			grpcPort = pu.Endpoint.ServicePort
+		} else {
+			restPort = pu.Endpoint.ServicePort
+		}
+		name = pu.Name
+	}
+
+	return &v1.Container{
+		Name:  name,
+		Image: tfImage,
+		Args: []string{
+			"/usr/bin/tensorflow_model_server",
+			constants.TfServingArgPort + strconv.Itoa(int(grpcPort)),
+			constants.TfServingArgRestPort + strconv.Itoa(int(restPort)),
+			"--model_name=" + pu.Name,
+			"--model_base_path=" + DefaultModelLocalMountPath},
+		ImagePullPolicy: v1.PullIfNotPresent,
+		Ports: []v1.ContainerPort{
+			{
+				ContainerPort: grpcPort,
+				Protocol:      v1.ProtocolTCP,
+			},
+			{
+				ContainerPort: restPort,
+				Protocol:      v1.ProtocolTCP,
+			},
+		},
+	}
+}
 
 func addTFServerContainer(r *SeldonDeploymentReconciler, pu *machinelearningv1.PredictiveUnit, p *machinelearningv1.PredictorSpec, deploy *appsv1.Deployment, serverConfig machinelearningv1.PredictorServerConfig) error {
 
@@ -33,73 +78,33 @@ func addTFServerContainer(r *SeldonDeploymentReconciler, pu *machinelearningv1.P
 		ty := machinelearningv1.MODEL
 		pu.Type = &ty
 
-		if pu.Endpoint == nil {
-			pu.Endpoint = &machinelearningv1.Endpoint{Type: machinelearningv1.REST}
-		}
-
 		c := utils.GetContainerForDeployment(deploy, pu.Name)
-		existing := c != nil
-		if !existing {
-			c = &v1.Container{
-				Name: pu.Name,
-				VolumeMounts: []v1.VolumeMount{
-					{
-						Name:      machinelearningv1.PODINFO_VOLUME_NAME,
-						MountPath: machinelearningv1.PODINFO_VOLUME_PATH,
-					},
-				},
+
+		var tfServingContainer *v1.Container
+		if p.Protocol == machinelearningv1.ProtocolTensorflow {
+			tfServingContainer = createTensorflowServingContainer(pu, true)
+			containers := make([]v1.Container, len(deploy.Spec.Template.Spec.Containers))
+			for i, ctmp := range deploy.Spec.Template.Spec.Containers {
+				if ctmp.Name == pu.Name {
+					containers[i] = *tfServingContainer
+				} else {
+					containers[i] = ctmp
+				}
 			}
-		}
+			deploy.Spec.Template.Spec.Containers = containers
 
-		//Add missing fields
-		machinelearningv1.SetImageNameForPrepackContainer(pu, c)
-		SetUriParamsForTFServingProxyContainer(pu, c)
+		} else {
+			//Add missing fields
+			machinelearningv1.SetImageNameForPrepackContainer(pu, c)
+			SetUriParamsForTFServingProxyContainer(pu, c)
 
-		// Add container to deployment
-		if !existing {
-			if len(deploy.Spec.Template.Spec.Containers) > 0 {
-				deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, *c)
-			} else {
-				deploy.Spec.Template.Spec.Containers = []v1.Container{*c}
-			}
-		}
-
-		tfServingContainer := utils.GetContainerForDeployment(deploy, constants.TFServingContainerName)
-		existing = tfServingContainer != nil
-		if !existing {
-			ServerConfig := machinelearningv1.GetPrepackServerConfig(string(*pu.Implementation))
-
-			tfImage := "tensorflow/serving:latest"
-
-			if ServerConfig.TensorflowImage != "" {
-				tfImage = ServerConfig.TensorflowImage
+			tfServingContainer = utils.GetContainerForDeployment(deploy, constants.TFServingContainerName)
+			existing := tfServingContainer != nil
+			if !existing {
+				tfServingContainer = createTensorflowServingContainer(pu, false)
+				deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, *tfServingContainer)
 			}
 
-			tfServingContainer = &v1.Container{
-				Name:  constants.TFServingContainerName,
-				Image: tfImage,
-				Args: []string{
-					"/usr/bin/tensorflow_model_server",
-					"--port=2000",
-					"--rest_api_port=2001",
-					"--model_name=" + pu.Name,
-					"--model_base_path=" + DefaultModelLocalMountPath},
-				ImagePullPolicy: v1.PullIfNotPresent,
-				Ports: []v1.ContainerPort{
-					{
-						ContainerPort: 2000,
-						Protocol:      v1.ProtocolTCP,
-					},
-					{
-						ContainerPort: 2001,
-						Protocol:      v1.ProtocolTCP,
-					},
-				},
-			}
-		}
-
-		if !existing {
-			deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, *tfServingContainer)
 		}
 
 		_, err := InjectModelInitializer(deploy, tfServingContainer.Name, pu.ModelURI, pu.ServiceAccountName, pu.EnvSecretRefName, r)

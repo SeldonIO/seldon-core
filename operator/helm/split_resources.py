@@ -19,7 +19,7 @@ HELM_RBAC_CSS_IF_START = '{{- if .Values.rbac.configmap.create }}\n'
 HELM_SA_IF_START = '{{- if .Values.serviceAccount.create -}}\n'
 HELM_CERTMANAGER_IF_START = '{{- if .Values.certManager.enabled -}}\n'
 HELM_NOT_CERTMANAGER_IF_START = '{{- if not .Values.certManager.enabled -}}\n'
-HELM_VERSION_IF_START= '{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}\n'
+HELM_VERSION_IF_START= '{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}\n'
 #HELM_SECRET_IF_START = '{{- if .Values.webhook.secretProvided -}}\n'
 HELM_IF_END = '{{- end }}\n'
 
@@ -36,14 +36,23 @@ HELM_ENV_SUBST = {
     "ISTIO_ENABLED":"istio.enabled",
     "ISTIO_GATEWAY":"istio.gateway",
     "ISTIO_TLS_MODE":"istio.tlsMode",
-    "PREDICTIVE_UNIT_SERVICE_PORT":"predictiveUnit.port"
-
+    "PREDICTIVE_UNIT_SERVICE_PORT":"predictiveUnit.port",
+    "USE_EXECUTOR":"executor.enabled",
+    "EXECUTOR_SERVER_GRPC_PORT": "engine.grpc.port",
+    "EXECUTOR_CONTAINER_IMAGE_PULL_POLICY": "executor.image.pullPolicy",
+    "EXECUTOR_SERVER_PORT": "executor.port",
+    "EXECUTOR_PROMETHEUS_PATH": "executor.prometheus.path",
+    "EXECUTOR_CONTAINER_USER": "executor.user",
+    "EXECUTOR_CONTAINER_SERVICE_ACCOUNT_NAME": "executor.serviceAccount.name",
 }
 HELM_VALUES_IMAGE_PULL_POLICY = '{{ .Values.image.pullPolicy }}'
 
 
 def helm_value(value: str):
     return '{{ .Values.' + value + ' }}'
+
+def helm_value_json(value: str):
+    return '{{ .Values.' + value + ' | toJson }}'
 
 def helm_release(value: str):
     return '{{ .Release.' + value + ' }}'
@@ -87,8 +96,9 @@ if __name__ == "__main__":
                     if env["name"] in HELM_ENV_SUBST:
                         env["value"] = helm_value(HELM_ENV_SUBST[env["name"]])
                     elif env["name"] == "ENGINE_CONTAINER_IMAGE_AND_VERSION":
-                        env[
-                            "value"] = '{{ .Values.engine.image.registry }}/{{ .Values.engine.image.repository }}:{{ .Values.engine.image.tag }}'
+                        env["value"] = '{{ .Values.engine.image.registry }}/{{ .Values.engine.image.repository }}:{{ .Values.engine.image.tag }}'
+                    elif env["name"] == "EXECUTOR_CONTAINER_IMAGE_AND_VERSION":
+                        env["value"] = '{{ .Values.executor.image.registry }}/{{ .Values.executor.image.repository }}:{{ .Values.executor.image.tag }}'
                     elif env["name"] == "CONTROLLER_ID":
                         env["value"] = "{{ .Values.controllerId }}"
                 # Update webhook port
@@ -101,6 +111,11 @@ if __name__ == "__main__":
                             argIdx] = "--webhook-port=" + helm_value("webhook.port")
                 res["spec"]["template"]["spec"]["containers"][0]["args"].append("{{- if .Values.singleNamespace }}--namespace={{ .Release.Namespace }}{{- end }}")
 
+
+            if kind == "configmap" and name == "seldon-config":
+                res["data"]["credentials"] = helm_value_json("credentials")
+                res["data"]["predictor_servers"] = helm_value_json("predictor_servers")
+                res["data"]["storageInitializer"] = helm_value_json("storageInitializer")
 
             if kind == "serviceaccount" and name == "seldon-manager":
                 res["metadata"]["name"] = helm_value("serviceAccount.name")

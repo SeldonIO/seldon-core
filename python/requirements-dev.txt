@@ -1,6 +1,6 @@
 -r requirements.txt
-mypy<0.751
-Pillow==6.2.0
+mypy<0.762
+Pillow==7.0.0
 tox<4.0.0
 pytest==5.3.1
 pytest-cov==2.8.1

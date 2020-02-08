@@ -3,20 +3,6 @@
 {{- $cert := genSignedCert "seldon-webhook-service" nil $altNames 365 $ca -}}
 ---
 
-{{- if not .Values.certManager.enabled -}}
-apiVersion: v1
-data:
-  ca.crt: '{{ $ca.Cert | b64enc }}'
-  tls.crt: '{{ $cert.Cert | b64enc }}'
-  tls.key: '{{ $cert.Key | b64enc }}'
-kind: Secret
-metadata:
-  name: seldon-webhook-server-cert
-  namespace: '{{ .Release.Namespace }}'
-type: kubernetes.io/tls
-{{- end }}
----
-
 apiVersion: admissionregistration.k8s.io/v1beta1
 kind: ValidatingWebhookConfiguration
 metadata:
@@ -38,7 +24,7 @@ webhooks:
       path: /validate-machinelearning-seldon-io-v1-seldondeployment
   failurePolicy: Fail
   name: vseldondeployment.kb.io
-{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}
+{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
 {{- if not .Values.singleNamespace }}
   namespaceSelector:
     matchExpressions:
@@ -51,7 +37,7 @@ webhooks:
     matchLabels:
       seldon.io/controller-id: {{ .Release.Namespace }}
 {{- end }}
-{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}
+{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
 {{- if not .Values.controllerId }}
   objectSelector:
     matchExpressions:
@@ -82,7 +68,7 @@ webhooks:
       path: /validate-machinelearning-seldon-io-v1alpha2-seldondeployment
   failurePolicy: Fail
   name: vseldondeployment.kb.io
-{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}
+{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
 {{- if not .Values.singleNamespace }}
   namespaceSelector:
     matchExpressions:
@@ -95,7 +81,7 @@ webhooks:
     matchLabels:
       seldon.io/controller-id: {{ .Release.Namespace }}
 {{- end }}
-{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}
+{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
 {{- if not .Values.controllerId }}
   objectSelector:
     matchExpressions:
@@ -126,7 +112,7 @@ webhooks:
       path: /validate-machinelearning-seldon-io-v1alpha3-seldondeployment
   failurePolicy: Fail
   name: vseldondeployment.kb.io
-{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}
+{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
 {{- if not .Values.singleNamespace }}
   namespaceSelector:
     matchExpressions:
@@ -139,7 +125,7 @@ webhooks:
     matchLabels:
       seldon.io/controller-id: {{ .Release.Namespace }}
 {{- end }}
-{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}
+{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
 {{- if not .Values.controllerId }}
   objectSelector:
     matchExpressions:
@@ -185,7 +171,7 @@ webhooks:
       path: /mutate-machinelearning-seldon-io-v1-seldondeployment
   failurePolicy: Fail
   name: mseldondeployment.kb.io
-{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}
+{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
 {{- if not .Values.singleNamespace }}
   namespaceSelector:
     matchExpressions:
@@ -198,7 +184,7 @@ webhooks:
     matchLabels:
       seldon.io/controller-id: {{ .Release.Namespace }}
 {{- end }}
-{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}
+{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
 {{- if not .Values.controllerId }}
   objectSelector:
     matchExpressions:
@@ -229,7 +215,7 @@ webhooks:
       path: /mutate-machinelearning-seldon-io-v1alpha2-seldondeployment
   failurePolicy: Fail
   name: mseldondeployment.kb.io
-{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}
+{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
 {{- if not .Values.singleNamespace }}
   namespaceSelector:
     matchExpressions:
@@ -242,7 +228,7 @@ webhooks:
     matchLabels:
       seldon.io/controller-id: {{ .Release.Namespace }}
 {{- end }}
-{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}
+{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
 {{- if not .Values.controllerId }}
   objectSelector:
     matchExpressions:
@@ -273,7 +259,7 @@ webhooks:
       path: /mutate-machinelearning-seldon-io-v1alpha3-seldondeployment
   failurePolicy: Fail
   name: mseldondeployment.kb.io
-{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}
+{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
 {{- if not .Values.singleNamespace }}
   namespaceSelector:
     matchExpressions:
@@ -286,7 +272,7 @@ webhooks:
     matchLabels:
       seldon.io/controller-id: {{ .Release.Namespace }}
 {{- end }}
-{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.Version }}
+{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
 {{- if not .Values.controllerId }}
   objectSelector:
     matchExpressions:
@@ -309,3 +295,17 @@ webhooks:
     - UPDATE
     resources:
     - seldondeployments
+---
+
+{{- if not .Values.certManager.enabled -}}
+apiVersion: v1
+data:
+  ca.crt: '{{ $ca.Cert | b64enc }}'
+  tls.crt: '{{ $cert.Cert | b64enc }}'
+  tls.key: '{{ $cert.Key | b64enc }}'
+kind: Secret
+metadata:
+  name: seldon-webhook-server-cert
+  namespace: '{{ .Release.Namespace }}'
+type: kubernetes.io/tls
+{{- end }}

@@ -1,3 +1,4 @@
+import os
 import json
 import sys
 import base64
@@ -520,21 +521,17 @@ def extract_request_parts_json(
     if not isinstance(request, dict):
         raise SeldonMicroserviceException(f"Invalid request data type: {request}")
     meta = request.get("meta", None)
-    datadef_type = None
     datadef = None
 
     if "data" in request:
         data_type = "data"
         datadef = request["data"]
         if "tensor" in datadef:
-            datadef_type = "tensor"
             tensor = datadef["tensor"]
             features = np.array(tensor["values"]).reshape(tensor["shape"])
         elif "ndarray" in datadef:
-            datadef_type = "ndarray"
             features = np.array(datadef["ndarray"])
         elif "tftensor" in datadef:
-            datadef_type = "tftensor"
             tf_proto = TensorProto()
             json_format.ParseDict(datadef["tftensor"], tf_proto)
             features = tf.make_ndarray(tf_proto)
@@ -597,3 +594,27 @@ def extract_feedback_request_parts(
     truth = grpc_datadef_to_array(request.truth.data)
     reward = request.reward
     return request.request.data, features, truth, reward
+
+
+def getenv(*env_vars, default=None):
+    """
+    Overload of os.getenv() to allow falling back through multiple environment
+    variables. The environment variables will be checked sequentially until one
+    of them is found.
+
+    Parameters
+    ------
+    *env_vars
+        Variadic list of environment variable names to check.
+    default
+        Default value to return if none of the environment variables exist.
+
+    Returns
+    ------
+        Value of the first environment variable set or default.
+    """
+    for env_var in env_vars:
+        if env_var in os.environ:
+            return os.environ.get(env_var)
+
+    return default

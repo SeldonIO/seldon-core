@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logger
+spec:
+  selector:
+    matchLabels:
+      run: logger
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: logger
+    spec:
+      containers:
+      - name: logger
+        image: mendhak/http-https-echo
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: logger
+  labels:
+    run: logger
+spec:
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+  selector:
+    run: logger
+
+    

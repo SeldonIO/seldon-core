@@ -1,0 +1,11 @@
+dill==0.3.1
+xai==0.0.5
+
+alibi==0.3.2
+alibi-detect==0.2.0
+seldon_core==1.0
+
+scipy==1.1.0
+numpy==1.15.4
+scikit-learn==0.20.1
+tensorflow==2.1

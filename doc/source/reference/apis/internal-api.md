@@ -18,8 +18,6 @@ A service to return predictions.
 
 ### REST API
 
-#### Predict
-
  | | |
  | - |- |
  | Endpoint | POST /predict |
@@ -32,6 +30,9 @@ Example request payload:
 {"data":{"names":["a","b"],"tensor":{"shape":[2,2],"values":[0,0,1,1]}}}
 ```
 
+Example response payload
+
+
 ### gRPC
 
 ```protobuf
@@ -40,13 +41,12 @@ service Model {
  }
 ```
 
-## Router
+## Route
 
 A service to route requests to one of its children and receive feedback rewards for them.
 
 ### REST API
 
-#### Route
 
  | | |
  | - |- |
@@ -60,7 +60,22 @@ Example request payload:
 {"data":{"names":["a","b"],"tensor":{"shape":[2,2],"values":[0,0,1,1]}}}
 ```
 
-#### Send Feedback
+Example response payload:
+
+```json
+{"data":{"ndarray":[1]}}
+```
+
+### gRPC
+
+```protobuf
+service Router {
+  rpc Route(SeldonMessage) returns (SeldonMessage) {};
+ }
+```
+
+
+## Send Feedback
 
  | | |
  | - |- |
@@ -99,11 +114,9 @@ Example request payload:
 
 ```protobuf
 service Router {
-  rpc Route(SeldonMessage) returns (SeldonMessage) {};
   rpc SendFeedback(Feedback) returns (SeldonMessage) {};
  }
 ```
-
 
 ## Combiner
 
@@ -111,7 +124,6 @@ A service to combine responses from its children into a single response.
 
 ### REST API
 
-#### Combine
 
  | | |
  | - |- |
@@ -135,7 +147,6 @@ A service to transform its input.
 
 ### REST API
 
-#### Transform
 
  | | |
  | - |- |
@@ -163,8 +174,6 @@ service Transformer {
 A service to transform the response from its child.
 
 ### REST API
-
-#### Transform
 
  | | |
  | - |- |

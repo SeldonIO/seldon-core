@@ -109,6 +109,9 @@ class SeldonComponent(object):
     def health_status_raw(self) -> prediction_pb2.SeldonMessage:
         raise SeldonNotImplementedError("health_raw is not implemented")
 
+    def metadata(self) -> Dict:
+        raise SeldonNotImplementedError("metadata is not implemented")
+
 
 def client_custom_tags(user_model: SeldonComponent) -> Dict:
     """
