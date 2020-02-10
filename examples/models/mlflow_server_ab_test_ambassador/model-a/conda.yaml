@@ -6,6 +6,6 @@ dependencies:
   - pyspark=2.4.0
   - scikit-learn=0.22.1
   - openjdk=8.0.152
-  - pyaml=19.4.1
   - pip:
       - mlflow==1.6.0
+      - pyyaml==5.1.2
