@@ -71,6 +71,22 @@ spec:
           value: '{{ .Values.istio.gateway }}'
         - name: ISTIO_TLS_MODE
           value: '{{ .Values.istio.tlsMode }}'
+        - name: USE_EXECUTOR
+          value: '{{ .Values.executor.enabled }}'
+        - name: EXECUTOR_CONTAINER_IMAGE_AND_VERSION
+          value: '{{ .Values.executor.image.registry }}/{{ .Values.executor.image.repository }}:{{ .Values.executor.image.tag }}'
+        - name: EXECUTOR_CONTAINER_IMAGE_PULL_POLICY
+          value: '{{ .Values.executor.image.pullPolicy }}'
+        - name: EXECUTOR_PROMETHEUS_PATH
+          value: '{{ .Values.executor.prometheus.path }}'
+        - name: EXECUTOR_SERVER_GRPC_PORT
+          value: '{{ .Values.engine.grpc.port }}'
+        - name: EXECUTOR_SERVER_PORT
+          value: '{{ .Values.executor.port }}'
+        - name: EXECUTOR_CONTAINER_USER
+          value: '{{ .Values.executor.user }}'
+        - name: EXECUTOR_CONTAINER_SERVICE_ACCOUNT_NAME
+          value: '{{ .Values.executor.serviceAccount.name }}'
         image: '{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}'
         imagePullPolicy: '{{ .Values.image.pullPolicy }}'
         name: manager
@@ -83,11 +99,11 @@ spec:
           protocol: TCP
         resources:
           limits:
-            cpu: 100m
-            memory: 30Mi
+            cpu: {{ .Values.manager.cpuLimit }}
+            memory: {{ .Values.manager.memoryLimit }}
           requests:
-            cpu: 100m
-            memory: 20Mi
+            cpu: {{ .Values.manager.cpuRequest }}
+            memory: {{ .Values.manager.memoryRequest }}
         volumeMounts:
         - mountPath: /tmp/k8s-webhook-server/serving-certs
           name: cert

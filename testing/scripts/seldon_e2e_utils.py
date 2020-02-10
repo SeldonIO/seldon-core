@@ -1,4 +1,5 @@
 import requests
+import re
 from requests.auth import HTTPBasicAuth
 from seldon_core.proto import prediction_pb2
 from seldon_core.proto import prediction_pb2_grpc
@@ -159,19 +160,11 @@ def initial_rest_request(
     dtype="tensor",
     names=None,
 ):
-    r = rest_request(
-        model,
-        namespace,
-        endpoint=endpoint,
-        data_size=data_size,
-        rows=rows,
-        data=data,
-        dtype=dtype,
-        names=names,
-    )
-    if r is None or r.status_code != 200:
-        logging.warning("Sleeping 1 sec and trying again")
-        time.sleep(1)
+    sleeping_times = [1, 5, 10]
+    attempt = 0
+    finished = False
+    r = None
+    while not finished:
         r = rest_request(
             model,
             namespace,
@@ -182,33 +175,75 @@ def initial_rest_request(
             dtype=dtype,
             names=names,
         )
+
         if r is None or r.status_code != 200:
-            logging.warning("Sleeping 5 sec and trying again")
-            time.sleep(5)
-            r = rest_request(
+            if attempt >= len(sleeping_times):
+                finished = True
+
+            sleep = sleeping_times[attempt]
+            logging.warning(f"Sleeping {sleep} sec and trying again")
+            time.sleep(sleep)
+            attempt += 1
+        else:
+            finished = True
+
+    return r
+
+
+def initial_grpc_request(
+    model,
+    namespace,
+    endpoint=API_AMBASSADOR,
+    data_size=5,
+    rows=1,
+    data=None,
+    dtype="tensor",
+    names=None,
+):
+    try:
+        return grpc_request_ambassador(
+            model,
+            namespace,
+            endpoint=endpoint,
+            data_size=data_size,
+            rows=rows,
+            data=data,
+        )
+    except:
+        logging.warning("Sleeping 1 sec and trying again")
+        time.sleep(1)
+        try:
+            return grpc_request_ambassador(
                 model,
                 namespace,
                 endpoint=endpoint,
                 data_size=data_size,
                 rows=rows,
                 data=data,
-                dtype=dtype,
-                names=names,
             )
-            if r is None or r.status_code != 200:
-                logging.warning("Sleeping 10 sec and trying again")
-                time.sleep(10)
-                r = rest_request(
+        except:
+            logging.warning("Sleeping 5 sec and trying again")
+            time.sleep(5)
+            try:
+                return grpc_request_ambassador(
                     model,
                     namespace,
                     endpoint=endpoint,
                     data_size=data_size,
                     rows=rows,
                     data=data,
-                    dtype=dtype,
-                    names=names,
                 )
-    return r
+            except:
+                logging.warning("Sleeping 10 sec and trying again")
+                time.sleep(10)
+                return grpc_request_ambassador(
+                    model,
+                    namespace,
+                    endpoint=endpoint,
+                    data_size=data_size,
+                    rows=rows,
+                    data=data,
+                )
 
 
 def create_random_data(data_size, rows=1):
@@ -322,11 +357,6 @@ def rest_request_ambassador_auth(
     return response
 
 
-@retry(
-    wait_exponential_multiplier=1000,
-    wait_exponential_max=10000,
-    stop_max_attempt_number=5,
-)
 def grpc_request_ambassador(
     deployment_name,
     namespace,
@@ -381,3 +411,10 @@ def grpc_request_ambassador2(
             rows=rows,
             data=data,
         )
+
+
+def clean_string(string):
+    string = string.lower()
+    string = re.sub(r"\]$", "", string)
+    string = re.sub(r"[_\[\./]", "-", string)
+    return string

@@ -1,0 +1,21 @@
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+metadata:
+  name: hpt
+spec:
+  name: hpt
+  predictors:
+  - graph:
+      children: []
+      implementation: TENSORFLOW_SERVER
+      modelUri: gs://seldon-models/tfserving/half_plus_two
+      name:  halfplustwo
+      parameters:
+        - name: model_name
+          type: STRING
+          value: halfplustwo
+    name: default
+    replicas: 1
+    protocol: tensorflow
+    transport: rest
+    

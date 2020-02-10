@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"github.com/seldonio/seldon-core/operator/constants"
 	"strconv"
 	"strings"
 
@@ -30,7 +31,8 @@ type AmbassadorConfig struct {
 	Name          string                 `yaml:"name"`
 	Grpc          *bool                  `yaml:"grpc,omitempty"`
 	Prefix        string                 `yaml:"prefix"`
-	Rewrite       string                 `yaml:"rewrite,omitempty"`
+	PrefixRegex   *bool                  `yaml:"prefix_regex,omitempty"`
+	Rewrite       string                 `yaml:"rewrite"`
 	Service       string                 `yaml:"service"`
 	TimeoutMs     int                    `yaml:"timeout_ms"`
 	IdleTimeoutMs *int                   `yaml:"idle_timeout_ms,omitempty"`
@@ -80,6 +82,7 @@ func getAmbassadorRestConfig(mlDep *machinelearningv1.SeldonDeployment,
 		Kind:       "Mapping",
 		Name:       "seldon_" + mlDep.ObjectMeta.Name + "_" + name + "_rest_mapping",
 		Prefix:     "/seldon/" + serviceNameExternal + "/",
+		Rewrite:    "/",
 		Service:    serviceName + "." + namespace + ":" + strconv.Itoa(engine_http_port),
 		TimeoutMs:  timeout,
 		RetryPolicy: &AmbassadorRetryPolicy{
@@ -164,15 +167,16 @@ func getAmbassadorGrpcConfig(mlDep *machinelearningv1.SeldonDeployment,
 	}
 
 	c := AmbassadorConfig{
-		ApiVersion: "ambassador/v1",
-		Kind:       "Mapping",
-		Name:       "seldon_" + mlDep.ObjectMeta.Name + "_" + name + "_grpc_mapping",
-		Grpc:       &grpc,
-		Prefix:     "/seldon.protos.Seldon/",
-		Rewrite:    "/seldon.protos.Seldon/",
-		Headers:    map[string]string{"seldon": serviceNameExternal},
-		Service:    serviceName + "." + namespace + ":" + strconv.Itoa(engine_grpc_port),
-		TimeoutMs:  timeout,
+		ApiVersion:  "ambassador/v1",
+		Kind:        "Mapping",
+		Name:        "seldon_" + mlDep.ObjectMeta.Name + "_" + name + "_grpc_mapping",
+		Grpc:        &grpc,
+		Prefix:      constants.GRPCRegExMatchAmbassador,
+		PrefixRegex: &grpc,
+		Rewrite:     "",
+		Headers:     map[string]string{"seldon": serviceNameExternal},
+		Service:     serviceName + "." + namespace + ":" + strconv.Itoa(engine_grpc_port),
+		TimeoutMs:   timeout,
 		RetryPolicy: &AmbassadorRetryPolicy{
 			RetryOn:    "connect-failure",
 			NumRetries: 3,

@@ -1,0 +1,116 @@
+syntax = "proto3";
+
+import "google/protobuf/wrappers.proto";
+import "tensorflow/core/protobuf/config.proto";
+import "tensorflow/core/protobuf/named_tensor.proto";
+
+package tensorflow.serving;
+
+// Options related to model-warmup.
+message ModelWarmupOptions {
+  // Number of times a request is iterated during warmup replay. By default 1.
+  google.protobuf.Int32Value num_request_iterations = 1;
+}
+
+// Configuration parameters for a SessionBundle, with optional batching.
+message SessionBundleConfig {
+  // The TensorFlow runtime to connect to.
+  // See full documentation in tensorflow/core/public/session_options.h.
+  //
+  // For single machine serving, we recommend using the empty string "", which
+  // will configure the local TensorFlow runtime implementation. This provides
+  // the best isolation currently available across multiple Session servables.
+  string session_target = 1;
+
+  // TensorFlow Session configuration options.
+  // See details at tensorflow/core/protobuf/config.proto.
+  ConfigProto session_config = 2;
+
+  // If set, each emitted session is wrapped with a layer that schedules Run()
+  // calls in batches. The batching layer is transparent to the client
+  // (implements the tensorflow::Session API).
+  //
+  // IMPORTANT: With batching enabled, client threads will spend most of their
+  // time blocked on Session::Run() calls, waiting for enough peer threads to
+  // also call Session::Run() such that a large batch can be formed. For good
+  // throughput, we recommend setting the number of client threads equal to
+  // roughly twice the maximum batch size ('max_batch_size' below).
+  //
+  // The batching layer uses a SharedBatchScheduler to coordinate batching
+  // across multiple session servables emitted by this source adapter. A
+  // BatchSchedulerRetrier is added on top of each batching session.
+  BatchingParameters batching_parameters = 3;
+
+  // If set, session run calls use a separate threadpool for restore and init
+  // ops as part of loading the session-bundle. The value of this field should
+  // correspond to the index of the tensorflow::ThreadPoolOptionProto defined as
+  // part of `session_config.session_inter_op_thread_pool`.
+  google.protobuf.Int32Value session_run_load_threadpool_index = 4;
+
+  // EXPERIMENTAL. THIS FIELD MAY CHANGE OR GO AWAY. USE WITH CAUTION.
+  //
+  // Transient memory used while loading a model, which is released once the
+  // loading phase has completed. (This is on top of the memory used in steady-
+  // state while the model is in memory after it has finished loading.)
+  //
+  // TODO(b/38376838): This is a temporary hack, and it applies to all models.
+  // Remove it once resource estimates are moved inside SavedModel.
+  uint64 experimental_transient_ram_bytes_during_load = 5;
+
+  // Set of SavedModel tags identifying the specific meta graph def to be
+  // loaded.
+  repeated string saved_model_tags = 6;
+
+  // EXPERIMENTAL. THIS FIELD MAY CHANGE OR GO AWAY. USE WITH CAUTION.
+  //
+  // Input tensors to append to every Session::Run() call.
+  repeated NamedTensorProto experimental_fixed_input_tensors = 778;
+
+  // Enables model warmup.
+  bool enable_model_warmup = 779;
+  ModelWarmupOptions model_warmup_options = 780;
+}
+
+// Batching parameters. Each individual parameter is optional. If omitted, the
+// default value from the relevant batching config struct (SharedBatchScheduler
+// ::Options or BatchSchedulerRetrier::Options) is used.
+message BatchingParameters {
+  // SharedBatchScheduler options (see shared_batch_scheduler.h):
+  //
+
+  // The maximum size of each batch.
+  //
+  // IMPORTANT: As discussed above, use 'max_batch_size * 2' client threads to
+  // achieve high throughput with batching.
+  google.protobuf.Int64Value max_batch_size = 1;
+
+  // If a task has been enqueued for this amount of time (in microseconds), and
+  // a thread is available, the scheduler will immediately form a batch from
+  // enqueued tasks and assign the batch to the thread for processing, even if
+  // the batch's size is below 'max_batch_size'.
+  google.protobuf.Int64Value batch_timeout_micros = 2;
+
+  // The maximum length of the queue, in terms of the number of batches. (A
+  // batch that has been scheduled on a thread is considered to have been
+  // removed from the queue.)
+  google.protobuf.Int64Value max_enqueued_batches = 3;
+
+  // The number of threads to use to process batches.
+  // Must be >= 1, and should be tuned carefully.
+  google.protobuf.Int64Value num_batch_threads = 4;
+
+  // The name to use for the pool of batch threads.
+  google.protobuf.StringValue thread_pool_name = 5;
+
+  // BatchingSession options (see batching_session.h):
+  //
+
+  // The allowed batch sizes. (Ignored if left empty.)
+  // Requirements:
+  //  - The entries must be in increasing order.
+  //  - The final entry must equal 'max_batch_size'.
+  repeated int64 allowed_batch_sizes = 6;
+
+  // Whether to pad variable-length inputs when a batch is formed.
+  bool pad_variable_length_inputs = 7;
+}

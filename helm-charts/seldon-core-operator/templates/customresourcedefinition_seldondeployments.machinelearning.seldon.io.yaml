@@ -2598,6 +2598,16 @@ spec:
                                                 type: string
                                               implementation:
                                                 type: string
+                                              logger:
+                                                description: Request/response  payload logging. v2alpha1 feature that is added to v1 for backwards compatibility while v1 is the storage version.
+                                                properties:
+                                                  mode:
+                                                    description: What payloads to log
+                                                    type: string
+                                                  url:
+                                                    description: URL to send request logging CloudEvents
+                                                    type: string
+                                                type: object
                                               methods:
                                                 items:
                                                   type: string
@@ -2637,6 +2647,16 @@ spec:
                                           type: string
                                         implementation:
                                           type: string
+                                        logger:
+                                          description: Request/response  payload logging. v2alpha1 feature that is added to v1 for backwards compatibility while v1 is the storage version.
+                                          properties:
+                                            mode:
+                                              description: What payloads to log
+                                              type: string
+                                            url:
+                                              description: URL to send request logging CloudEvents
+                                              type: string
+                                          type: object
                                         methods:
                                           items:
                                             type: string
@@ -2676,6 +2696,16 @@ spec:
                                     type: string
                                   implementation:
                                     type: string
+                                  logger:
+                                    description: Request/response  payload logging. v2alpha1 feature that is added to v1 for backwards compatibility while v1 is the storage version.
+                                    properties:
+                                      mode:
+                                        description: What payloads to log
+                                        type: string
+                                      url:
+                                        description: URL to send request logging CloudEvents
+                                        type: string
+                                    type: object
                                   methods:
                                     items:
                                       type: string
@@ -2715,6 +2745,16 @@ spec:
                               type: string
                             implementation:
                               type: string
+                            logger:
+                              description: Request/response  payload logging. v2alpha1 feature that is added to v1 for backwards compatibility while v1 is the storage version.
+                              properties:
+                                mode:
+                                  description: What payloads to log
+                                  type: string
+                                url:
+                                  description: URL to send request logging CloudEvents
+                                  type: string
+                              type: object
                             methods:
                               items:
                                 type: string
@@ -2754,6 +2794,16 @@ spec:
                         type: string
                       implementation:
                         type: string
+                      logger:
+                        description: Request/response  payload logging. v2alpha1 feature that is added to v1 for backwards compatibility while v1 is the storage version.
+                        properties:
+                          mode:
+                            description: What payloads to log
+                            type: string
+                          url:
+                            description: URL to send request logging CloudEvents
+                            type: string
+                        type: object
                       methods:
                         items:
                           type: string
@@ -2789,6 +2839,8 @@ spec:
                       type: string
                     type: object
                   name:
+                    type: string
+                  protocol:
                     type: string
                   replicas:
                     format: int32
@@ -2890,6 +2942,8 @@ spec:
                   traffic:
                     format: int32
                     type: integer
+                  transport:
+                    type: string
                 required:
                 - graph
                 - name

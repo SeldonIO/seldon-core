@@ -1,5 +1,5 @@
 pyyaml==5.1.2
-seldon-core[gcs]==0.5.0.3
+seldon-core[gcs]==1.0.1
 requests==2.22.0
 mlflow==1.4.0
 

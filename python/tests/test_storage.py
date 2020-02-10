@@ -69,6 +69,21 @@ def test_storage_blob_exception():
 
 @mock.patch("urllib3.PoolManager")
 @mock.patch(STORAGE_MODULE + ".Minio")
+def test_storage_s3_exception(mock_connection, mock_minio):
+    minio_path = "s3://foo/bar"
+    # Create mock connection
+    mock_server = mock.MagicMock()
+    mock_connection.return_value = mock_server
+    # Create mock client
+    mock_minio.return_value = Minio(
+        "s3.us.cloud-object-storage.appdomain.cloud", secure=True
+    )
+    with pytest.raises(Exception):
+        seldon_core.Storage.download(minio_path)
+
+
+@mock.patch("urllib3.PoolManager")
+@mock.patch(STORAGE_MODULE + ".Minio")
 def test_no_permission_buckets(mock_connection, mock_minio):
     bad_s3_path = "s3://random/path"
     # Access private buckets without credentials
