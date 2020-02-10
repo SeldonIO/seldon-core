@@ -11,12 +11,5 @@ spec:
         implementation: MLFLOW_SERVER
         modelUri: gs://seldon-models/mlflow/v2/model-a
         name: wines-classifier
-      componentSpecs:
-        - spec:
-            containers:
-              - name: wines-classifier
-                env:
-                  - name: SPARK_MASTER
-                    value: spark://spark-master.spark-system:7077
       name: mlflow-model-a
       replicas: 1
