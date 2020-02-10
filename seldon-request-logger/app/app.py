@@ -134,7 +134,7 @@ def process_and_update_elastic_doc(elastic_object, message_type, message_body, r
     return str(new_content)
 
 
-@backoff.on_exception(backoff.constant,
+@backoff.on_exception(backoff.fibo,
                       Exception,
                       max_time=60,
                       jitter=backoff.random_jitter)

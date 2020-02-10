@@ -20,7 +20,7 @@ fi
 sleep 5
 
 kubectl create namespace seldon-system || echo "namespace seldon-system exists"
-helm upgrade --install seldon-core ../../helm-charts/seldon-core-operator/ --namespace seldon-system --set istio.gateway="kubeflow-gateway.kubeflow.svc.cluster.local" --set istio.enabled="true" --set engine.logMessagesExternally="true" --set certManager.enabled="true"
+helm upgrade --install seldon-core ../../helm-charts/seldon-core-operator/ --namespace seldon-system --set istio.gateway="kubeflow-gateway.kubeflow.svc.cluster.local" --set istio.enabled="true" --set certManager.enabled="true"
 
 kubectl rollout status -n seldon-system deployment/seldon-controller-manager
 
