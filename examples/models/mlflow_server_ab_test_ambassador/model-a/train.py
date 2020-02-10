@@ -1,5 +1,6 @@
 import mlflow
 import numpy as np
+import yaml
 
 from argparse import ArgumentParser
 
@@ -55,6 +56,11 @@ def read_data(spark):
     return data
 
 
+def get_conda_env():
+    with open("conda.yaml") as conda_file:
+        return yaml.safe_load(conda_file)
+
+
 def train(alpha, l1_ratio):
     # Split data into training and test datasets.
     spark = SparkSession.builder.getOrCreate()
@@ -78,7 +84,8 @@ def train(alpha, l1_ratio):
 
         # Train and save the model.
         lrModel = pipeline.fit(training)
-        mlflow_spark.log_model(lrModel, "")
+        conda_env = get_conda_env()
+        mlflow_spark.log_model(lrModel, "", conda_env=conda_env)
 
         # Evaluate the model on the test set.
         predictions = lrModel.transform(test)
