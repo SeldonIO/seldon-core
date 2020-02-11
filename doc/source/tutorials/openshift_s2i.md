@@ -86,11 +86,11 @@ API_TYPE=REST
 SERVICE_TYPE=MODEL
 ```
 
-Finally we Use ```s2i build``` to create the Docker-formatted image from source code. Examples for python2 code are:
+Finally we Use ```s2i build``` to create the Docker-formatted image from source code. Examples for python3 code are:
 
 ```bash
-s2i build <git-repo> seldonio/seldon-core-s2i-python2 <my-image-name>
-s2i build <src-folder> seldonio/seldon-core-s2i-python2 <my-image-name>
+s2i build <git-repo> seldonio/seldon-core-s2i-python3 <my-image-name>
+s2i build <src-folder> seldonio/seldon-core-s2i-python3 <my-image-name>
 ```
 
 ## R
@@ -172,7 +172,3 @@ More details can be found in the seldon-core docs.
 By utilizing Openshift's source-to-image tool data scientists can easily build Docker-formatted images for their runtime components to be deployed at scale using seldon-core. This allows data science teams to use the best machine learning tool for the task and deploy the resulting model in a consistent manner. The seldon-core project is working on providing full Openshift integration in the near future so that Enterprise customers can easily utilize machine learning models within their organisation.
 
 Seldon will be joining Openshift Commons and will be present at [Kubecon Europe 2018](https://events.linuxfoundation.org/events/kubecon-cloudnativecon-europe-2018/) and the OpenShift Kubecon Europe event on Tues 1st May. Feel free to contact us to discuss Seldon-Core and Openshift and how they can work together to help data scientists put machine learning into production.
-
-
-
-
