@@ -28,6 +28,12 @@ else
    kubectl apply --filename https://github.com/knative/eventing/releases/download/v0.11.0/in-memory-channel.yaml
 fi
 
+#istio for knative needs to have cluster-local-gateway
+#script installs any missing istio components (but leaves existing ones)
+cd request-logging
+./install_istio.sh
+cd ..
+
 sleep 5
 
 kubectl create namespace seldon-system || echo "namespace seldon-system exists"
