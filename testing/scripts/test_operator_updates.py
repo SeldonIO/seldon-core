@@ -14,7 +14,7 @@ from seldon_e2e_utils import (
     "seldon_version",
     [
         pytest.param(
-            "0.4.1", marks=pytest.mark.skip(reason="doesn't install in Helm 3")
+            "0.4.1", marks=pytest.mark.skip(reason="doesn't work with K8s 1.16")
         ),
         "0.5.1",
         "1.0.0",
