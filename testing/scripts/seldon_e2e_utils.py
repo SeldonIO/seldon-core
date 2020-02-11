@@ -25,7 +25,7 @@ def get_s2i_python_version():
         "grep 'IMAGE_VERSION=' Makefile |"
         "cut -d'=' -f2"
     )
-    ret = Popen(cmd, shell=True, stdout=subprocess.PIPE,)
+    ret = Popen(cmd, shell=True, stdout=subprocess.PIPE)
     output = ret.stdout.readline()
     version = output.decode("utf-8").rstrip()
     return version

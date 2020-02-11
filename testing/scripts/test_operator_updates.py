@@ -39,9 +39,7 @@ def test_cluster_update(namespace, seldon_version):
             attempts=2,
         )
 
-    assert_model_during_op(
-        _upgrade_seldon, "mymodel", namespace,
-    )
+    assert_model_during_op(_upgrade_seldon, "mymodel", namespace)
 
 
 @pytest.mark.sequential
