@@ -1,0 +1,1047 @@
+
+Showing logs for build [32mseldonio-seldon-core-pr-1426-in-9xssx-5[0m stage [32mpr-build-comment[0m and container [32mstep-credential-initializer-jtn7l[0m
+{"level":"warn","ts":1581439773.082545,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1581439773.0831447,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1426-in-9xssx-5[0m stage [32mpr-build-comment[0m and container [32mstep-working-dir-initializer-q8j9w[0m
+{"level":"warn","ts":1581439774.072824,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1581439774.0741146,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1426-in-9xssx-5[0m stage [32mpr-build-comment[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-1426-in-9xssx-5[0m stage [32mpr-build-comment[0m and container [32mstep-create-dir-workspace-86wtp[0m
+{"level":"warn","ts":1581439780.2548907,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1581439780.2563398,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1426-in-9xssx-5[0m stage [32mpr-build-comment[0m and container [32mstep-git-source-seldonio-seldon-core-pr-1426-in-mdrjp[0m
+{"level":"warn","ts":1581439780.5419376,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1581439784.0342872,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ master in path /workspace/source"}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1426-in-9xssx-5[0m stage [32mpr-build-comment[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:efc71a60fd7a721a72ee601d69f52088441668cf,1426:eeb60595cea471252e4003fcd42972bb2fac7246
+DEBUG: ran git fetch --unshallow origin eeb60595cea471252e4003fcd42972bb2fac7246: efc71a60fd7a721a72ee601d69f52088441668cf: in 
+DEBUG: ran git checkout master in 
+DEBUG: ran git reset --hard efc71a60fd7a721a72ee601d69f52088441668cf in 
+DEBUG: ran clean --force -d . in 
+DEBUG: ran git merge eeb60595cea471252e4003fcd42972bb2fac7246 in 
+Merged SHA b666abb2a1fb27216e0720a89381a02b734b321f with commit message 'Merge commit 'eeb60595cea471252e4003fcd42972bb2fac7246'' into base branch master
+Merged SHA eeb60595cea471252e4003fcd42972bb2fac7246 with commit message 'Fix linter' into base branch master
+Merged SHA 27950c97db03628143ddd96a79008668beaaa1f7 with commit message 'Add back mark on 0.4.1' into base branch master
+Merged SHA 4afa67f5ae0fe09bb72d2dad5ae106f6d15474a0 with commit message 'Increase timeout' into base branch master
+Merged SHA 16215bd6ccd2808c951a1fea750daca262d765c0 with commit message 'Remove multi-deployment from parameterize' into base branch master
+Merged SHA 43b79bf50b588c1fb7e7789533fbab5cff67144e with commit message 'Increase timeout and fix typo' into base branch master
+Merged SHA a0e5160cad5f3c1673a81186d54b756b60a42804 with commit message 'Migrate more tests to parametrize' into base branch master
+Merged SHA 2a31b26d42407ce79be92331fefee5f312a6c4b1 with commit message 'Handle Future correctly if assertion is raised' into base branch master
+Merged SHA 5466bbe5920e3100b4615a173f69a97f5c6e15c3 with commit message 'Parametrise some tests as a single one' into base branch master
+Merged SHA 2bb9e2c628a4e0113a85c9a32ddf2913fb21c2d9 with commit message 'There may be more deployment names temporarily' into base branch master
+Merged SHA fa4581d9cc961bb68a4e91e2408b3a0bc2172621 with commit message 'Fix assertion and wait for shutdown cmd' into base branch master
+Merged SHA ebc24bd1f63aafae8656bf1ded3b8ac124341d3a with commit message 'Assert that now downtime occurs' into base branch master
+Merged SHA c307cb3bd8bd8d48fea5c9e760354b123c8882aa with commit message 'Manually delete CRD' into base branch master
+Merged SHA 67374b3c1c99eff3f8957c118bca6c1504ab426e with commit message 'Fix bug and lint errors' into base branch master
+
+Showing logs for build [32mseldonio-seldon-core-pr-1426-in-9xssx-5[0m stage [32mpr-build-comment[0m and container [32mstep-step2[0m
++++ dirname ./add-pr-build-comment
+++ cd .
+++ pwd
++ STARTUP_DIR=/workspace/source/ci
++ REPO_OWNER=SeldonIO
++ REPO_NAME=seldon-core
++ PULL_NUMBER=1426
++ BUILD_NUMBER=5
++ PIPELINE_CONTEXT=integration
+++ cat
++++ date
++ COMMENT_MSG='Tue Feb 11 16:49:52 UTC 2020
+The logs for [integration] [5] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-1426/5.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-1426 --build=5'
++ ** step pr comment --owner=SeldonIO --repository=seldon-core --pull-request=1426 '--comment=Tue Feb 11 16:49:52 UTC 2020
+The logs for [integration] [5] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-1426/5.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-1426 --build=5'
+
+Showing logs for build [32mseldonio-seldon-core-pr-1426-in-9xssx-5[0m stage [32mpr-build-comment[0m and container [32mstep-source-mkdir-seldonio-seldon-core-pr-1426-in-mtrqw[0m
+{"level":"warn","ts":1581439797.3401954,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1581439797.3429255,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1426-in-9xssx-5[0m stage [32mpr-build-comment[0m and container [32mstep-source-copy-seldonio-seldon-core-pr-1426-in-5z7xl[0m
+{"level":"warn","ts":1581439797.5902236,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1581439797.8748138,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r source/. /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1426-in-9xssx-5[0m stage [32mend-to-end[0m and container [32mstep-credential-initializer-29qqk[0m
+{"level":"warn","ts":1581439801.2993035,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1581439801.2997963,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1426-in-9xssx-5[0m stage [32mend-to-end[0m and container [32mstep-working-dir-initializer-qzmpf[0m
+{"level":"warn","ts":1581439801.7598917,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1581439801.7622924,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1426-in-9xssx-5[0m stage [32mend-to-end[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-1426-in-9xssx-5[0m stage [32mend-to-end[0m and container [32mstep-create-dir-workspace-98sxx[0m
+{"level":"warn","ts":1581439808.9027092,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1581439808.904231,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1426-in-9xssx-5[0m stage [32mend-to-end[0m and container [32mstep-source-copy-workspace-ghhc6[0m
+{"level":"warn","ts":1581439809.1731193,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1581439811.1811166,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1426-in-9xssx-5[0m stage [32mend-to-end[0m and container [32mstep-test-end-to-end[0m
+Starting Docker: docker.
+[SETUP] Waiting for Docker to be ready, sleeping for 1 seconds ...
+kind create cluster --config kind_config.yaml
+Creating cluster "kind" ...
+ • Ensuring node image (kindest/node:v1.16.3) 🖼  ...
+ ✓ Ensuring node image (kindest/node:v1.16.3) 🖼
+ • Preparing nodes 📦  ...
+ ✓ Preparing nodes 📦
+ • Writing configuration 📜  ...
+ ✓ Writing configuration 📜
+ • Starting control-plane 🕹️  ...
+ ✓ Starting control-plane 🕹️
+ • Installing CNI 🔌  ...
+ ✓ Installing CNI 🔌
+ • Installing StorageClass 💾  ...
+ ✓ Installing StorageClass 💾
+ • Joining worker nodes 🚜  ...
+ ✓ Joining worker nodes 🚜
+Set kubectl context to "kind-kind"
+You can now use your cluster with:
+
+kubectl cluster-info --context kind-kind
+
+Have a nice day! 👋
+`kind get kubeconfig-path` is deprecated!
+
+KIND will export and merge kubeconfig like kops, minikube, etc.
+This command is now unnecessary and will be removed in a future release.
+
+For more info see: https://github.com/kubernetes-sigs/kind/issues/1060
+See also the output of `kind create cluster`
+
+Files changed in python folder:
+SKIPPING PYTHON IMAGE BUILD...
+Files changed in operator folder:
+SKIPPING OPERATOR IMAGE BUILD...
+Files changed in engine folder:
+SKIPPING ENGINE IMAGE BUILD...
+Files changed in executor folder:
+SKIPPING EXECUTOR IMAGE BUILD...
+Build fixed models
+cd ../docker/fixed-model && make kind_load_images
+make[1]: Entering directory '/workspace/source/testing/docker/fixed-model'
+s2i build -E environment_rest_v1 . seldonio/seldon-core-s2i-python3:0.15 seldonio/fixed-model:0.1
+---> Installing application source...
+Build completed successfully
+s2i build -E environment_rest_v2 . seldonio/seldon-core-s2i-python3:0.15 seldonio/fixed-model:0.2
+---> Installing application source...
+Build completed successfully
+kind load -v 3 docker-image seldonio/fixed-model:0.1
+Image: "seldonio/fixed-model:0.1" with ID "sha256:9835d8c1070154ee340b51cdd79fcab3d5719530d08b40c527f73a9018f4dd40" not present on node "kind-worker"
+Image: "seldonio/fixed-model:0.1" with ID "sha256:9835d8c1070154ee340b51cdd79fcab3d5719530d08b40c527f73a9018f4dd40" not present on node "kind-control-plane"
+kind load -v 3 docker-image seldonio/fixed-model:0.2
+Image: "seldonio/fixed-model:0.2" with ID "sha256:ae490fe7225fe38e1d0f09dde7a1055840f3ff112774d95a3a9603b6d23faf34" not present on node "kind-worker"
+Image: "seldonio/fixed-model:0.2" with ID "sha256:ae490fe7225fe38e1d0f09dde7a1055840f3ff112774d95a3a9603b6d23faf34" not present on node "kind-control-plane"
+make[1]: Leaving directory '/workspace/source/testing/docker/fixed-model'
+kubectl create namespace seldon || echo "Namespace seldon already exists"
+namespace/seldon created
+kubectl create namespace test1 || echo "Namespace test1 already exists"
+namespace/test1 created
+helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+"stable" has been added to your repositories
+helm repo add seldonio https://storage.googleapis.com/seldon-charts
+"seldonio" has been added to your repositories
+helm repo update
+Hang tight while we grab the latest from your chart repositories...
+...Successfully got an update from the "seldonio" chart repository
+...Successfully got an update from the "stable" chart repository
+Update Complete. ⎈ Happy Helming!⎈ 
+helm install --wait ambassador stable/ambassador -f ambassador_values.yaml --set crds.keep=false --namespace seldon --set replicaCount=1
+manifest_sorter.go:175: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:175: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:175: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:175: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:175: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:175: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:175: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:175: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:175: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:175: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:175: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:175: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:175: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:175: info: skipping unknown hook: "crd-install"
+NAME: ambassador
+LAST DEPLOYED: Tue Feb 11 16:55:04 2020
+NAMESPACE: seldon
+STATUS: deployed
+REVISION: 1
+NOTES:
+Congratulations! You've successfully installed Ambassador.
+
+For help, visit our Slack at https://d6e.co/slack or view the documentation online at https://www.getambassador.io.
+
+To get the IP address of Ambassador, run the following commands:
+  export NODE_PORT=$(kubectl get --namespace seldon -o jsonpath="{.spec.ports[0].nodePort}" services ambassador)
+  export NODE_IP=$(kubectl get nodes --namespace seldon -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+kubectl apply -f istio-1.4.2.yaml
+clusterrole.rbac.authorization.k8s.io/istio-reader-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-reader-istio-system created
+customresourcedefinition.apiextensions.k8s.io/attributemanifests.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/clusterrbacconfigs.rbac.istio.io created
+customresourcedefinition.apiextensions.k8s.io/destinationrules.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/envoyfilters.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/gateways.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/httpapispecbindings.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/httpapispecs.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/meshpolicies.authentication.istio.io created
+customresourcedefinition.apiextensions.k8s.io/policies.authentication.istio.io created
+customresourcedefinition.apiextensions.k8s.io/quotaspecbindings.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/quotaspecs.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/rbacconfigs.rbac.istio.io created
+customresourcedefinition.apiextensions.k8s.io/rules.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/serviceentries.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/servicerolebindings.rbac.istio.io created
+customresourcedefinition.apiextensions.k8s.io/serviceroles.rbac.istio.io created
+customresourcedefinition.apiextensions.k8s.io/virtualservices.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/adapters.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/instances.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/templates.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/handlers.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/sidecars.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/authorizationpolicies.security.istio.io created
+namespace/istio-system created
+serviceaccount/istio-reader-service-account created
+clusterrole.rbac.authorization.k8s.io/istio-citadel-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-citadel-istio-system created
+deployment.apps/istio-citadel created
+poddisruptionbudget.policy/istio-citadel created
+service/istio-citadel created
+serviceaccount/istio-citadel-service-account created
+deployment.apps/istio-egressgateway created
+poddisruptionbudget.policy/istio-egressgateway created
+gateway.networking.istio.io/istio-multicluster-egressgateway created
+virtualservice.networking.istio.io/istio-multicluster-egressgateway created
+envoyfilter.networking.istio.io/istio-multicluster-egressgateway created
+destinationrule.networking.istio.io/istio-multicluster-destinationrule created
+service/istio-egressgateway created
+role.rbac.authorization.k8s.io/istio-egressgateway-sds created
+rolebinding.rbac.authorization.k8s.io/istio-egressgateway-sds created
+serviceaccount/istio-egressgateway-service-account created
+clusterrole.rbac.authorization.k8s.io/istio-galley-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-galley-*****-role-binding-istio-system created
+configmap/istio-mesh-galley created
+configmap/istio-galley-configuration created
+deployment.apps/istio-galley created
+poddisruptionbudget.policy/istio-galley created
+service/istio-galley created
+serviceaccount/istio-galley-service-account created
+configmap/istio-grafana-configuration-dashboards-citadel-dashboard created
+configmap/istio-grafana-configuration-dashboards-galley-dashboard created
+configmap/istio-grafana-configuration-dashboards-istio-mesh-dashboard created
+configmap/istio-grafana-configuration-dashboards-istio-performance-dashboard created
+configmap/istio-grafana-configuration-dashboards-istio-service-dashboard created
+configmap/istio-grafana-configuration-dashboards-istio-workload-dashboard created
+configmap/istio-grafana-configuration-dashboards-mixer-dashboard created
+configmap/istio-grafana-configuration-dashboards-pilot-dashboard created
+configmap/istio-grafana created
+deployment.apps/grafana created
+policy.authentication.istio.io/grafana-ports-mtls-disabled created
+service/grafana created
+deployment.apps/istio-ingressgateway created
+gateway.networking.istio.io/ingressgateway created
+poddisruptionbudget.policy/ingressgateway created
+service/istio-ingressgateway created
+serviceaccount/istio-ingressgateway-service-account created
+sidecar.networking.istio.io/default created
+clusterrole.rbac.authorization.k8s.io/istio-sidecar-injector-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-sidecar-injector-*****-role-binding-istio-system created
+configmap/injector-mesh created
+deployment.apps/istio-sidecar-injector created
+mutatingwebhookconfiguration.admissionregistration.k8s.io/istio-sidecar-injector created
+poddisruptionbudget.policy/istio-sidecar-injector created
+service/istio-sidecar-injector created
+serviceaccount/istio-sidecar-injector-service-account created
+configmap/istio-sidecar-injector created
+clusterrole.rbac.authorization.k8s.io/kiali created
+clusterrole.rbac.authorization.k8s.io/kiali-viewer created
+clusterrolebinding.rbac.authorization.k8s.io/kiali created
+configmap/kiali created
+secret/kiali created
+deployment.apps/kiali created
+service/kiali created
+serviceaccount/kiali-service-account created
+clusterrole.rbac.authorization.k8s.io/istio-pilot-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-pilot-istio-system created
+configmap/pilot-envoy-config created
+configmap/istio created
+deployment.apps/istio-pilot created
+meshpolicy.authentication.istio.io/default created
+poddisruptionbudget.policy/istio-pilot created
+service/istio-pilot created
+serviceaccount/istio-pilot-service-account created
+clusterrole.rbac.authorization.k8s.io/istio-policy created
+clusterrolebinding.rbac.authorization.k8s.io/istio-policy-*****-role-binding-istio-system created
+destinationrule.networking.istio.io/istio-policy created
+deployment.apps/istio-policy created
+poddisruptionbudget.policy/istio-policy created
+service/istio-policy created
+serviceaccount/istio-policy-service-account created
+clusterrole.rbac.authorization.k8s.io/prometheus-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/prometheus-istio-system created
+configmap/prometheus created
+deployment.apps/prometheus created
+service/prometheus created
+serviceaccount/prometheus created
+horizontalpodautoscaler.autoscaling/istio-telemetry created
+clusterrole.rbac.authorization.k8s.io/istio-mixer-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-mixer-*****-role-binding-istio-system created
+attributemanifest.config.istio.io/istioproxy created
+attributemanifest.config.istio.io/kubernetes created
+handler.config.istio.io/stdio created
+instance.config.istio.io/accesslog created
+instance.config.istio.io/tcpaccesslog created
+rule.config.istio.io/stdio created
+rule.config.istio.io/stdiotcp created
+instance.config.istio.io/requestcount created
+instance.config.istio.io/requestduration created
+instance.config.istio.io/requestsize created
+instance.config.istio.io/responsesize created
+instance.config.istio.io/tcpbytesent created
+instance.config.istio.io/tcpbytereceived created
+instance.config.istio.io/tcpconnectionsopened created
+instance.config.istio.io/tcpconnectionsclosed created
+handler.config.istio.io/prometheus created
+rule.config.istio.io/promhttp created
+rule.config.istio.io/promtcp created
+rule.config.istio.io/promtcpconnectionopen created
+rule.config.istio.io/promtcpconnectionclosed created
+handler.config.istio.io/kubernetesenv created
+rule.config.istio.io/kubeattrgenrulerule created
+rule.config.istio.io/tcpkubeattrgenrulerule created
+instance.config.istio.io/attributes created
+destinationrule.networking.istio.io/istio-telemetry created
+configmap/telemetry-envoy-config created
+deployment.apps/istio-telemetry created
+poddisruptionbudget.policy/istio-telemetry created
+service/istio-telemetry created
+serviceaccount/istio-mixer-service-account created
+deployment.apps/istio-tracing created
+service/jaeger-query created
+service/jaeger-collector created
+service/jaeger-agent created
+service/zipkin created
+service/tracing created
+kubectl rollout status deployment.apps/istio-ingressgateway -n istio-system
+Waiting for deployment "istio-ingressgateway" rollout to finish: 0 out of 1 new replicas have been updated...
+Waiting for deployment "istio-ingressgateway" rollout to finish: 0 out of 1 new replicas have been updated...
+Waiting for deployment "istio-ingressgateway" rollout to finish: 0 of 1 updated replicas are available...
+deployment "istio-ingressgateway" successfully rolled out
+kubectl rollout status deployment.apps/istio-pilot -n istio-system
+deployment "istio-pilot" successfully rolled out
+kubectl rollout status deployment.apps/istio-citadel -n istio-system
+deployment "istio-citadel" successfully rolled out
+cd ../../operator && make install-cert-manager
+make[1]: Entering directory '/workspace/source/operator'
+kubectl create namespace cert-manager || echo "Namespace cert-manager-exists"
+namespace/cert-manager created
+kubectl label namespace cert-manager cert-manager.io/disable-validation=true || echo "namespace cert-manager-already labelled"
+namespace/cert-manager labeled
+kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml
+customresourcedefinition.apiextensions.k8s.io/certificaterequests.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/certificates.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/challenges.acme.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/clusterissuers.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/issuers.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/orders.acme.cert-manager.io created
+Warning: kubectl apply should be used on resource created by either kubectl create --save-config or kubectl apply
+namespace/cert-manager configured
+serviceaccount/cert-manager-cainjector created
+serviceaccount/cert-manager created
+serviceaccount/cert-manager-webhook created
+clusterrole.rbac.authorization.k8s.io/cert-manager-cainjector created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-cainjector created
+role.rbac.authorization.k8s.io/cert-manager-cainjector:leaderelection created
+rolebinding.rbac.authorization.k8s.io/cert-manager-cainjector:leaderelection created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-webhook:auth-delegator created
+rolebinding.rbac.authorization.k8s.io/cert-manager-webhook:webhook-authentication-reader created
+clusterrole.rbac.authorization.k8s.io/cert-manager-webhook:webhook-requester created
+role.rbac.authorization.k8s.io/cert-manager:leaderelection created
+rolebinding.rbac.authorization.k8s.io/cert-manager:leaderelection created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-issuers created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-clusterissuers created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-certificates created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-orders created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-challenges created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-ingress-shim created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-issuers created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-clusterissuers created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-certificates created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-orders created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-challenges created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-ingress-shim created
+clusterrole.rbac.authorization.k8s.io/cert-manager-view created
+clusterrole.rbac.authorization.k8s.io/cert-manager-edit created
+service/cert-manager created
+service/cert-manager-webhook created
+deployment.apps/cert-manager-cainjector created
+deployment.apps/cert-manager created
+deployment.apps/cert-manager-webhook created
+mutatingwebhookconfiguration.admissionregistration.k8s.io/cert-manager-webhook created
+validatingwebhookconfiguration.admissionregistration.k8s.io/cert-manager-webhook created
+kubectl rollout status deployment.apps/cert-manager -n cert-manager
+Waiting for deployment "cert-manager" rollout to finish: 0 of 1 updated replicas are available...
+deployment "cert-manager" successfully rolled out
+kubectl rollout status deployment.apps/cert-manager-cainjector -n cert-manager
+deployment "cert-manager-cainjector" successfully rolled out
+kubectl rollout status deployment.apps/cert-manager-webhook -n cert-manager
+Waiting for deployment "cert-manager-webhook" rollout to finish: 0 of 1 updated replicas are available...
+deployment "cert-manager-webhook" successfully rolled out
+make[1]: Leaving directory '/workspace/source/operator'
+sleep 5 #https://github.com/jetstack/cert-manager/issues/2273
+kubectl create namespace seldon-system || echo "namespace seldon-system exists"
+namespace/seldon-system created
+helm install seldon \
+	../../helm-charts/seldon-core-operator \
+	--namespace seldon-system \
+	--set istio.enabled=true \
+	--set istio.gateway=seldon-gateway \
+	--set certManager.enabled=false \
+	--set executor.enabled=true \
+	--wait
+NAME: seldon
+LAST DEPLOYED: Tue Feb 11 16:58:18 2020
+NAMESPACE: seldon-system
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+kubectl config set-context $(kubectl config current-context) --namespace=seldon
+Context "kind-kind" modified.
+make: Entering directory '/workspace/source/python'
+pip install -e . -r requirements-dev.txt
+Obtaining file:///workspace/source/python
+Collecting Flask<2.0.0
+  Downloading Flask-1.1.1-py2.py3-none-any.whl (94 kB)
+Collecting Flask-cors<4.0.0
+  Downloading Flask_Cors-3.0.8-py2.py3-none-any.whl (14 kB)
+Collecting redis<4.0.0
+  Downloading redis-3.4.1-py2.py3-none-any.whl (71 kB)
+Collecting requests<3.0.0
+  Downloading requests-2.22.0-py2.py3-none-any.whl (57 kB)
+Collecting numpy<2.0.0
+  Downloading numpy-1.18.1-cp36-cp36m-manylinux1_x86_64.whl (20.1 MB)
+Collecting flatbuffers<2.0.0
+  Downloading flatbuffers-1.11-py2.py3-none-any.whl (15 kB)
+Requirement already satisfied: protobuf<4.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 7)) (3.11.3)
+Requirement already satisfied: grpcio<2.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 8)) (1.26.0)
+Collecting Flask-OpenTracing<1.2.0,>=1.1.0
+  Downloading Flask-OpenTracing-1.1.0.tar.gz (8.2 kB)
+Collecting opentracing<2.3.0,>=2.2.0
+  Downloading opentracing-2.2.0.tar.gz (47 kB)
+Collecting jaeger-client<4.2.0,>=4.1.0
+  Downloading jaeger-client-4.1.0.tar.gz (80 kB)
+Collecting grpcio-opentracing<1.2.0,>=1.1.4
+  Downloading grpcio_opentracing-1.1.4-py3-none-any.whl (14 kB)
+Collecting pyaml<20.0.0
+  Downloading pyaml-19.12.0-py2.py3-none-any.whl (17 kB)
+Collecting gunicorn<20.1.0,>=19.9.0
+  Downloading gunicorn-20.0.4-py2.py3-none-any.whl (77 kB)
+Collecting minio<6.0.0,>=4.0.9
+  Downloading minio-5.0.7-py2.py3-none-any.whl (71 kB)
+Collecting azure-storage-blob<3.0.0,>=2.0.1
+  Downloading azure_storage_blob-2.1.0-py2.py3-none-any.whl (88 kB)
+Requirement already satisfied: setuptools>=41.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 17)) (45.1.0)
+Collecting google-cloud-storage>=1.16.0
+  Downloading google_cloud_storage-1.25.0-py2.py3-none-any.whl (73 kB)
+Collecting mypy<0.762
+  Downloading mypy-0.761-cp36-cp36m-manylinux1_x86_64.whl (24.1 MB)
+Collecting Pillow==7.0.0
+  Downloading Pillow-7.0.0-cp36-cp36m-manylinux1_x86_64.whl (2.1 MB)
+Collecting tox<4.0.0
+  Downloading tox-3.14.3-py2.py3-none-any.whl (80 kB)
+Collecting pytest==5.3.1
+  Downloading pytest-5.3.1-py3-none-any.whl (233 kB)
+Collecting pytest-cov==2.8.1
+  Downloading pytest_cov-2.8.1-py2.py3-none-any.whl (18 kB)
+Collecting coverage==4.5.4
+  Downloading coverage-4.5.4-cp36-cp36m-manylinux1_x86_64.whl (205 kB)
+ERROR: Could not find a version that satisfies the requirement pandas==1.0.0 (from -r requirements-dev.txt (line 10)) (from versions: 0.1, 0.2b0, 0.2b1, 0.2, 0.3.0b0, 0.3.0b2, 0.3.0, 0.4.0, 0.4.1, 0.4.2, 0.4.3, 0.5.0, 0.6.0, 0.6.1, 0.7.0rc1, 0.7.0, 0.7.1, 0.7.2, 0.7.3, 0.8.0rc1, 0.8.0rc2, 0.8.0, 0.8.1, 0.9.0, 0.9.1, 0.10.0, 0.10.1, 0.11.0, 0.12.0, 0.13.0, 0.13.1, 0.14.0, 0.14.1, 0.15.0, 0.15.1, 0.15.2, 0.16.0, 0.16.1, 0.16.2, 0.17.0, 0.17.1, 0.18.0, 0.18.1, 0.19.0rc1, 0.19.0, 0.19.1, 0.19.2, 0.20.0rc1, 0.20.0, 0.20.1, 0.20.2, 0.20.3, 0.21.0rc1, 0.21.0, 0.21.1, 0.22.0, 0.23.0rc2, 0.23.0, 0.23.1, 0.23.2, 0.23.3, 0.23.4, 0.24.0rc1, 0.24.0, 0.24.1, 0.24.2, 0.25.0rc0, 0.25.0, 0.25.1, 0.25.2, 0.25.3)
+ERROR: No matching distribution found for pandas==1.0.0 (from -r requirements-dev.txt (line 10))
+make: Leaving directory '/workspace/source/python'
+make: *** [Makefile:54: install_dev] Error 1
+cp ../../proto/prediction.proto ./proto
+cd ../../proto/tensorflow && make create_protos
+make[1]: Entering directory '/workspace/source/proto/tensorflow'
+./create-protos.sh
+Downloading proto files for master
+make[1]: Leaving directory '/workspace/source/proto/tensorflow'
+cp -vr ../../proto/tensorflow/tensorflow .
+'../../proto/tensorflow/tensorflow' -> './tensorflow'
+'../../proto/tensorflow/tensorflow/core' -> './tensorflow/core'
+'../../proto/tensorflow/tensorflow/core/framework' -> './tensorflow/core/framework'
+'../../proto/tensorflow/tensorflow/core/framework/types.proto' -> './tensorflow/core/framework/types.proto'
+'../../proto/tensorflow/tensorflow/core/framework/resource_handle.proto' -> './tensorflow/core/framework/resource_handle.proto'
+'../../proto/tensorflow/tensorflow/core/framework/tensor_shape.proto' -> './tensorflow/core/framework/tensor_shape.proto'
+'../../proto/tensorflow/tensorflow/core/framework/tensor.proto' -> './tensorflow/core/framework/tensor.proto'
+python -m grpc.tools.protoc -I. --python_out=. --grpc_python_out=. ./proto/prediction.proto
+cd ../../notebooks && make build_protos
+make[1]: Entering directory '/workspace/source/notebooks'
+cd ../proto/tensorflow && make create_protos
+make[2]: Entering directory '/workspace/source/proto/tensorflow'
+make[2]: Nothing to be done for 'create_protos'.
+make[2]: Leaving directory '/workspace/source/proto/tensorflow'
+cp -vr ../proto/tensorflow/tensorflow .
+'../proto/tensorflow/tensorflow' -> './tensorflow'
+'../proto/tensorflow/tensorflow/core' -> './tensorflow/core'
+'../proto/tensorflow/tensorflow/core/framework' -> './tensorflow/core/framework'
+'../proto/tensorflow/tensorflow/core/framework/types.proto' -> './tensorflow/core/framework/types.proto'
+'../proto/tensorflow/tensorflow/core/framework/resource_handle.proto' -> './tensorflow/core/framework/resource_handle.proto'
+'../proto/tensorflow/tensorflow/core/framework/tensor_shape.proto' -> './tensorflow/core/framework/tensor_shape.proto'
+'../proto/tensorflow/tensorflow/core/framework/tensor.proto' -> './tensorflow/core/framework/tensor.proto'
+cp ../proto/prediction.proto ./proto
+python -m grpc.tools.protoc -I. --python_out=. --grpc_python_out=. ./proto/prediction.proto
+make[1]: Leaving directory '/workspace/source/notebooks'
+cd ../../proto/k8s && make create_protos
+make[1]: Entering directory '/workspace/source/proto/k8s'
+./create-k8s-protos.sh
+Downloading proto files for master
+Munging proto file packages
+sed -i.bak 's|import "k8s.io/apiextensions-apiserver/|//import "k8s.io/apiextensions-apiserver/|' k8s.io/api/core/v1/generated.proto
+rm k8s.io/api/core/v1/generated.proto.bak
+make[1]: Leaving directory '/workspace/source/proto/k8s'
+pip install -r dev_requirements.txt
+Obtaining file:///workspace/source/python (from -r dev_requirements.txt (line 11))
+Collecting pytest==5.3.1
+  Using cached pytest-5.3.1-py3-none-any.whl (233 kB)
+Collecting pytest-xdist==1.30.0
+  Downloading pytest_xdist-1.30.0-py2.py3-none-any.whl (35 kB)
+Collecting pytest-cov==2.8.1
+  Using cached pytest_cov-2.8.1-py2.py3-none-any.whl (18 kB)
+Collecting flaky==3.6.1
+  Downloading flaky-3.6.1-py2.py3-none-any.whl (22 kB)
+Collecting retrying==1.3.3
+  Downloading retrying-1.3.3.tar.gz (10 kB)
+Collecting coverage==4.5.4
+  Using cached coverage-4.5.4-cp36-cp36m-manylinux1_x86_64.whl (205 kB)
+Collecting Flask<2.0.0
+  Using cached Flask-1.1.1-py2.py3-none-any.whl (94 kB)
+Collecting Flask-cors<4.0.0
+  Using cached Flask_Cors-3.0.8-py2.py3-none-any.whl (14 kB)
+Collecting redis<4.0.0
+  Using cached redis-3.4.1-py2.py3-none-any.whl (71 kB)
+Collecting requests<3.0.0
+  Using cached requests-2.22.0-py2.py3-none-any.whl (57 kB)
+Collecting numpy<2.0.0
+  Using cached numpy-1.18.1-cp36-cp36m-manylinux1_x86_64.whl (20.1 MB)
+Collecting flatbuffers<2.0.0
+  Using cached flatbuffers-1.11-py2.py3-none-any.whl (15 kB)
+Requirement already satisfied: protobuf<4.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.0.1->-r dev_requirements.txt (line 11)) (3.11.3)
+Requirement already satisfied: grpcio<2.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.0.1->-r dev_requirements.txt (line 11)) (1.26.0)
+Collecting Flask-OpenTracing<1.2.0,>=1.1.0
+  Using cached Flask-OpenTracing-1.1.0.tar.gz (8.2 kB)
+Collecting opentracing<2.3.0,>=2.2.0
+  Using cached opentracing-2.2.0.tar.gz (47 kB)
+Collecting jaeger-client<4.2.0,>=4.1.0
+  Using cached jaeger-client-4.1.0.tar.gz (80 kB)
+Collecting grpcio-opentracing<1.2.0,>=1.1.4
+  Using cached grpcio_opentracing-1.1.4-py3-none-any.whl (14 kB)
+Collecting pyaml<20.0.0
+  Using cached pyaml-19.12.0-py2.py3-none-any.whl (17 kB)
+Collecting gunicorn<20.1.0,>=19.9.0
+  Using cached gunicorn-20.0.4-py2.py3-none-any.whl (77 kB)
+Collecting minio<6.0.0,>=4.0.9
+  Using cached minio-5.0.7-py2.py3-none-any.whl (71 kB)
+Collecting azure-storage-blob<3.0.0,>=2.0.1
+  Using cached azure_storage_blob-2.1.0-py2.py3-none-any.whl (88 kB)
+Requirement already satisfied: setuptools>=41.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.0.1->-r dev_requirements.txt (line 11)) (45.1.0)
+Collecting more-itertools>=4.0.0
+  Downloading more_itertools-8.2.0-py3-none-any.whl (43 kB)
+Collecting attrs>=17.4.0
+  Downloading attrs-19.3.0-py2.py3-none-any.whl (39 kB)
+Collecting pluggy<1.0,>=0.12
+  Downloading pluggy-0.13.1-py2.py3-none-any.whl (18 kB)
+Collecting wcwidth
+  Downloading wcwidth-0.1.8-py2.py3-none-any.whl (17 kB)
+Collecting importlib-metadata>=0.12; python_version < "3.8"
+  Downloading importlib_metadata-1.5.0-py2.py3-none-any.whl (30 kB)
+Collecting packaging
+  Downloading packaging-20.1-py2.py3-none-any.whl (36 kB)
+Collecting py>=1.5.0
+  Downloading py-1.8.1-py2.py3-none-any.whl (83 kB)
+Requirement already satisfied: six in /usr/local/lib/python3.6/site-packages (from pytest-xdist==1.30.0->-r dev_requirements.txt (line 2)) (1.14.0)
+Collecting pytest-forked
+  Downloading pytest_forked-1.1.3-py2.py3-none-any.whl (4.5 kB)
+Collecting execnet>=1.1
+  Downloading execnet-1.7.1-py2.py3-none-any.whl (39 kB)
+Collecting click>=5.1
+  Downloading Click-7.0-py2.py3-none-any.whl (81 kB)
+Collecting Werkzeug>=0.15
+  Downloading Werkzeug-1.0.0-py2.py3-none-any.whl (298 kB)
+Collecting Jinja2>=2.10.1
+  Downloading Jinja2-2.11.1-py2.py3-none-any.whl (126 kB)
+Collecting itsdangerous>=0.24
+  Downloading itsdangerous-1.1.0-py2.py3-none-any.whl (16 kB)
+Collecting certifi>=2017.4.17
+  Downloading certifi-2019.11.28-py2.py3-none-any.whl (156 kB)
+Collecting chardet<3.1.0,>=3.0.2
+  Downloading chardet-3.0.4-py2.py3-none-any.whl (133 kB)
+Collecting urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1
+  Downloading urllib3-1.25.8-py2.py3-none-any.whl (125 kB)
+Collecting idna<2.9,>=2.5
+  Downloading idna-2.8-py2.py3-none-any.whl (58 kB)
+Collecting threadloop<2,>=1
+  Downloading threadloop-1.0.2.tar.gz (4.9 kB)
+Collecting thrift
+  Downloading thrift-0.13.0.tar.gz (59 kB)
+Collecting tornado<6,>=4.3
+  Downloading tornado-5.1.1.tar.gz (516 kB)
+Requirement already satisfied: PyYAML in /usr/local/lib/python3.6/site-packages (from pyaml<20.0.0->seldon-core==1.0.1->-r dev_requirements.txt (line 11)) (5.3)
+Collecting python-dateutil
+  Downloading python_dateutil-2.8.1-py2.py3-none-any.whl (227 kB)
+Collecting pytz
+  Downloading pytz-2019.3-py2.py3-none-any.whl (509 kB)
+Collecting configparser
+  Downloading configparser-4.0.2-py2.py3-none-any.whl (22 kB)
+Collecting azure-storage-common~=2.1
+  Downloading azure_storage_common-2.1.0-py2.py3-none-any.whl (47 kB)
+Collecting azure-common>=1.1.5
+  Downloading azure_common-1.1.24-py2.py3-none-any.whl (12 kB)
+Collecting zipp>=0.5
+  Downloading zipp-2.2.0-py36-none-any.whl (4.6 kB)
+Collecting pyparsing>=2.0.2
+  Downloading pyparsing-2.4.6-py2.py3-none-any.whl (67 kB)
+Collecting apipkg>=1.4
+  Downloading apipkg-1.5-py2.py3-none-any.whl (4.9 kB)
+Collecting MarkupSafe>=0.23
+  Downloading MarkupSafe-1.1.1-cp36-cp36m-manylinux1_x86_64.whl (27 kB)
+Collecting cryptography
+  Downloading cryptography-2.8-cp34-abi3-manylinux2010_x86_64.whl (2.3 MB)
+Collecting cffi!=1.11.3,>=1.8
+  Downloading cffi-1.14.0-cp36-cp36m-manylinux1_x86_64.whl (399 kB)
+Collecting pycparser
+  Downloading pycparser-2.19.tar.gz (158 kB)
+Building wheels for collected packages: retrying, Flask-OpenTracing, opentracing, jaeger-client, threadloop, thrift, tornado, pycparser
+  Building wheel for retrying (setup.py): started
+  Building wheel for retrying (setup.py): finished with status 'done'
+  Created wheel for retrying: filename=retrying-1.3.3-py3-none-any.whl size=11430 sha256=232866413cd214a6ccd1b218876628c91563335df18da5c7bdb347aeb3750f96
+  Stored in directory: /builder/home/.cache/pip/wheels/ac/cb/8a/b27bf6323e2f4c462dcbf77d70b7c5e7868a7fbe12871770cf
+  Building wheel for Flask-OpenTracing (setup.py): started
+  Building wheel for Flask-OpenTracing (setup.py): finished with status 'done'
+  Created wheel for Flask-OpenTracing: filename=Flask_OpenTracing-1.1.0-py3-none-any.whl size=9070 sha256=473b2ecb58476d33897f36ae1d434896d9d5109ae2b68a58cf3e7ccce29338d5
+  Stored in directory: /builder/home/.cache/pip/wheels/ad/4b/2d/24ff0da0a0b53c7c77ce59b843bcceaf644c88703241e59615
+  Building wheel for opentracing (setup.py): started
+  Building wheel for opentracing (setup.py): finished with status 'done'
+  Created wheel for opentracing: filename=opentracing-2.2.0-py3-none-any.whl size=49319 sha256=4d1ecde92edd204eaa69a9fd3e411c24a2606f75aa297b3d175a754b15ce26ec
+  Stored in directory: /builder/home/.cache/pip/wheels/39/40/44/8bace79f4514e99786236c31f1df8d1b814ff02c1e08b1d697
+  Building wheel for jaeger-client (setup.py): started
+  Building wheel for jaeger-client (setup.py): finished with status 'done'
+  Created wheel for jaeger-client: filename=jaeger_client-4.1.0-py3-none-any.whl size=64309 sha256=2c1be88c48eb66a1a29d8e5bc14558a270d14548ac95df7051d1f93611f25d18
+  Stored in directory: /builder/home/.cache/pip/wheels/e9/9b/8c/503d0cc13b39a551c054515683ba1d15b40324c863dc442e66
+  Building wheel for threadloop (setup.py): started
+  Building wheel for threadloop (setup.py): finished with status 'done'
+  Created wheel for threadloop: filename=threadloop-1.0.2-py3-none-any.whl size=3423 sha256=5f94463d8eeb2635e76ed5148c124a53864cee849f3472040a24ab0fc385f2d1
+  Stored in directory: /builder/home/.cache/pip/wheels/02/54/65/9f87de48fe8fcaaee30f279973d946ad55f9df56b93b3e78da
+  Building wheel for thrift (setup.py): started
+  Building wheel for thrift (setup.py): finished with status 'done'
+  Created wheel for thrift: filename=thrift-0.13.0-cp36-cp36m-linux_x86_64.whl size=483902 sha256=30a2644169e8c5f8bb47b9f3f7ca694e17ee9a07356adc86664e716d43fa818d
+  Stored in directory: /builder/home/.cache/pip/wheels/e0/38/fc/472fe18756b177b42096961f8bd3ff2dc5c5620ac399fce52d
+  Building wheel for tornado (setup.py): started
+  Building wheel for tornado (setup.py): finished with status 'done'
+  Created wheel for tornado: filename=tornado-5.1.1-cp36-cp36m-linux_x86_64.whl size=462649 sha256=fc1eb177b74403d207f98dc53c56daabd58d4c8ad65c968d55fbd3aeccbef019
+  Stored in directory: /builder/home/.cache/pip/wheels/64/74/71/e7a0d0eb4fc42cb20a17aec36f8f0b5b8c5e1ec19c701fd34a
+  Building wheel for pycparser (setup.py): started
+  Building wheel for pycparser (setup.py): finished with status 'done'
+  Created wheel for pycparser: filename=pycparser-2.19-py2.py3-none-any.whl size=111031 sha256=df712b4c35c6c411af22fafe537761f4d8e01f90b150c4dfea520d88e8af25e8
+  Stored in directory: /builder/home/.cache/pip/wheels/c6/6b/83/2608afaa57ecfb0a66ac89191a8d9bad71c62ca55ee499c2d0
+Successfully built retrying Flask-OpenTracing opentracing jaeger-client threadloop thrift tornado pycparser
+Installing collected packages: more-itertools, attrs, zipp, importlib-metadata, pluggy, wcwidth, pyparsing, packaging, py, pytest, pytest-forked, apipkg, execnet, pytest-xdist, coverage, pytest-cov, flaky, retrying, click, Werkzeug, MarkupSafe, Jinja2, itsdangerous, Flask, Flask-cors, redis, certifi, chardet, urllib3, idna, requests, numpy, flatbuffers, opentracing, Flask-OpenTracing, tornado, threadloop, thrift, jaeger-client, grpcio-opentracing, pyaml, gunicorn, python-dateutil, pytz, configparser, minio, azure-common, pycparser, cffi, cryptography, azure-storage-common, azure-storage-blob, seldon-core
+  Running setup.py develop for seldon-core
+Successfully installed Flask-1.1.1 Flask-OpenTracing-1.1.0 Flask-cors-3.0.8 Jinja2-2.11.1 MarkupSafe-1.1.1 Werkzeug-1.0.0 apipkg-1.5 attrs-19.3.0 azure-common-1.1.24 azure-storage-blob-2.1.0 azure-storage-common-2.1.0 certifi-2019.11.28 cffi-1.14.0 chardet-3.0.4 click-7.0 configparser-4.0.2 coverage-4.5.4 cryptography-2.8 execnet-1.7.1 flaky-3.6.1 flatbuffers-1.11 grpcio-opentracing-1.1.4 gunicorn-20.0.4 idna-2.8 importlib-metadata-1.5.0 itsdangerous-1.1.0 jaeger-client-4.1.0 minio-5.0.7 more-itertools-8.2.0 numpy-1.18.1 opentracing-2.2.0 packaging-20.1 pluggy-0.13.1 py-1.8.1 pyaml-19.12.0 pycparser-2.19 pyparsing-2.4.6 pytest-5.3.1 pytest-cov-2.8.1 pytest-forked-1.1.3 pytest-xdist-1.30.0 python-dateutil-2.8.1 pytz-2019.3 redis-3.4.1 requests-2.22.0 retrying-1.3.3 seldon-core threadloop-1.0.2 thrift-0.13.0 tornado-5.1.1 urllib3-1.25.8 wcwidth-0.1.8 zipp-2.2.0
+# Run the core tests in parallel
+pytest \
+	--verbose \
+	-s \
+	-W ignore \
+	-n "4" \
+	-m "not sequential" 2>&1
+============================= test session starts ==============================
+platform linux -- Python 3.6.0, pytest-5.3.1, py-1.8.1, pluggy-0.13.1 -- /usr/local/bin/python
+cachedir: .pytest_cache
+rootdir: /workspace/source/testing/scripts, inifile: setup.cfg
+plugins: xdist-1.30.0, forked-1.1.3, flaky-3.6.1, cov-2.8.1
+gw0 I / gw1 I / gw2 I / gw3 I
+[gw0] linux Python 3.6.0 cwd: /workspace/source/testing/scripts
+[gw1] linux Python 3.6.0 cwd: /workspace/source/testing/scripts
+[gw2] linux Python 3.6.0 cwd: /workspace/source/testing/scripts
+[gw3] linux Python 3.6.0 cwd: /workspace/source/testing/scripts
+[gw0] Python 3.6.0 (default, Feb  4 2020, 10:38:29)  -- [GCC 8.3.0]
+[gw1] Python 3.6.0 (default, Feb  4 2020, 10:38:29)  -- [GCC 8.3.0]
+[gw2] Python 3.6.0 (default, Feb  4 2020, 10:38:29)  -- [GCC 8.3.0]
+[gw3] Python 3.6.0 (default, Feb  4 2020, 10:38:29)  -- [GCC 8.3.0]
+gw0 [38] / gw1 [38] / gw2 [38] / gw3 [38]
+
+scheduling tests via LoadScheduling
+
+test_bad_graphs.py::TestBadGraphs::test_duplicate_predictor_name 
+test_api_version.py::test_api_version[machinelearning.seldon.io/v1alpha3] 
+test_api_version.py::test_api_version[machinelearning.seldon.io/v1] 
+test_api_version.py::test_api_version[machinelearning.seldon.io/v1alpha2] Error from server (SeldonDeployment.machinelearing.seldon.io "dupname" is invalid: [spec.predictors[1]: Invalid value: "mymodel": Duplicate predictor name, spec: Invalid value: "dupname": Traffic must sum to 100 for multiple predictors]): error when creating "../resources/bad_duplicate_predictor_name.json": admission webhook "vseldondeployment.kb.io" denied the request: SeldonDeployment.machinelearing.seldon.io "dupname" is invalid: [spec.predictors[1]: Invalid value: "mymodel": Duplicate predictor name, spec: Invalid value: "dupname": Traffic must sum to 100 for multiple predictors]
+
+[gw3] PASSED test_bad_graphs.py::TestBadGraphs::test_duplicate_predictor_name 
+test_helm_charts_clusterwide.py::TestClusterWide::test_mab_model Error: uninstall: Release not loaded: mymodel: release: not found
+
+[gw2] PASSED test_api_version.py::test_api_version[machinelearning.seldon.io/v1] Error: uninstall: Release not loaded: mymab: release: not found
+
+[gw3] PASSED test_helm_charts_clusterwide.py::TestClusterWide::test_mab_model Error: uninstall: Release not loaded: mymodel: release: not found
+
+[gw1] PASSED test_api_version.py::test_api_version[machinelearning.seldon.io/v1alpha3] Error: uninstall: Release not loaded: mymodel: release: not found
+
+[gw0] PASSED test_api_version.py::test_api_version[machinelearning.seldon.io/v1alpha2] 
+test_helm_charts_clusterwide.py::TestClusterWide::test_abtest_model 
+test_helm_charts_clusterwide.py::TestClusterWide::test_single_model 
+test_local_operators.py::TestLocalOperators::test_labelled_operator 
+test_bad_graphs.py::TestBadGraphs::test_model_name_mismatch Error from server (InternalError): error when creating "../resources/model_controller_id.yaml": Internal error occurred: failed calling webhook "mseldondeployment.kb.io": Post https://seldon-webhook-service.test-labelled-operator.svc:443/mutate-machinelearning-seldon-io-v1alpha2-seldondeployment?timeout=30s: dial tcp 10.101.88.175:443: connect: connection refused
+Error from server (SeldonDeployment.machinelearing.seldon.io "namemismatch" is invalid: spec.predictors[0].graph: Invalid value: "complex-model_bad_name": Can't find container for Predictive Unit): error when creating "../resources/bad_name_mismatch.json": admission webhook "vseldondeployment.kb.io" denied the request: SeldonDeployment.machinelearing.seldon.io "namemismatch" is invalid: spec.predictors[0].graph: Invalid value: "complex-model_bad_name": Can't find container for Predictive Unit
+
+[gw0] PASSED test_bad_graphs.py::TestBadGraphs::test_model_name_mismatch 
+test_local_operators.py::TestLocalOperators::test_namespace_operator Error: uninstall: Release not loaded: myabtest: release: not found
+
+[gw2] PASSED test_helm_charts_clusterwide.py::TestClusterWide::test_abtest_model Error: uninstall: Release not loaded: mymodel: release: not found
+
+[gw1] PASSED test_helm_charts_clusterwide.py::TestClusterWide::test_single_model 
+[gw0] PASSED test_local_operators.py::TestLocalOperators::test_namespace_operator 
+[gw3] PASSED test_local_operators.py::TestLocalOperators::test_labelled_operator 
+test_prepackaged_servers.py::TestPrepack::test_mlflow 
+test_rolling_updates.py::TestRollingHttp::test_rolling_update5[istio] 
+test_prepackaged_servers.py::TestPrepack::test_tfserving 
+test_prepackaged_servers.py::TestPrepack::test_sklearn Error from server (NotFound): error when deleting "../resources/graph6.json": seldondeployments.machinelearning.seldon.io "mymodel" not found
+
+[gw0] PASSED test_rolling_updates.py::TestRollingHttp::test_rolling_update5[istio] 
+[gw3] PASSED test_prepackaged_servers.py::TestPrepack::test_sklearn 
+test_rolling_updates.py::TestRollingHttp::test_rolling_update6[ambas] 
+test_rolling_updates.py::TestRollingHttp::test_rolling_update6[istio] 
+[gw1] PASSED test_prepackaged_servers.py::TestPrepack::test_mlflow 
+[gw2] PASSED test_prepackaged_servers.py::TestPrepack::test_tfserving Error from server (NotFound): error when deleting "../resources/graph2svc.json": seldondeployments.machinelearning.seldon.io "mymodel" not found
+
+[gw0] PASSED test_rolling_updates.py::TestRollingHttp::test_rolling_update6[ambas] Error from server (NotFound): error when deleting "../resources/graph2svc.json": seldondeployments.machinelearning.seldon.io "mymodel" not found
+
+[gw3] PASSED test_rolling_updates.py::TestRollingHttp::test_rolling_update6[istio] 
+test_prepackaged_servers.py::TestPrepack::test_xgboost 
+test_rolling_updates.py::TestRollingHttp::test_rolling_update5[ambas] 
+test_rolling_updates.py::TestRollingHttp::test_rolling_update7[ambas] 
+test_rolling_updates.py::TestRollingHttp::test_rolling_update7[istio] 
+[gw2] PASSED test_prepackaged_servers.py::TestPrepack::test_xgboost Error from server (NotFound): error when deleting "../resources/graph6.json": seldondeployments.machinelearning.seldon.io "mymodel" not found
+
+[gw1] PASSED test_rolling_updates.py::TestRollingHttp::test_rolling_update5[ambas] Error from server (NotFound): error when deleting "../resources/graph3svc.json": seldondeployments.machinelearning.seldon.io "mymodel" not found
+
+[gw3] PASSED test_rolling_updates.py::TestRollingHttp::test_rolling_update7[istio] 
+test_rolling_updates.py::TestRollingHttp::test_rolling_update8[istio] 
+test_rolling_updates.py::TestRollingHttp::test_rolling_update8[ambas] 
+test_rolling_updates.py::TestRollingHttp::test_rolling_update9[istio] 
+test_rolling_updates.py::TestRollingHttp::test_rolling_update7[ambas] Error from server (NotFound): error when deleting "../resources/graph4svc.json": seldondeployments.machinelearning.seldon.io "mymodel" not found
+
+[gw1] PASSED test_rolling_updates.py::TestRollingHttp::test_rolling_update8[istio] 
+[gw0] FAILED test_rolling_updates.py::TestRollingHttp::test_rolling_update7[ambas] Error from server (NotFound): error when deleting "../resources/graph4svc.json": seldondeployments.machinelearning.seldon.io "mymodel" not found
+
+[gw2] PASSED test_rolling_updates.py::TestRollingHttp::test_rolling_update8[ambas] Error from server (NotFound): error when deleting "../resources/graph5svc.json": seldondeployments.machinelearning.seldon.io "mymodel" not found
+
+[gw3] PASSED test_rolling_updates.py::TestRollingHttp::test_rolling_update9[istio] 
+test_rolling_updates.py::TestRollingHttp::test_rolling_update10[ambas] 
+test_rolling_updates.py::TestRollingHttp::test_rolling_update10[istio] 
+test_rolling_updates.py::TestRollingHttp::test_rolling_update9[ambas] 
+test_rolling_updates.py::test_rolling_update_deployment[graph1.json-graph2.json-ambas] Error from server (NotFound): error when deleting "../resources/graph6svc.json": seldondeployments.machinelearning.seldon.io "mymodel" not found
+
+[gw1] PASSED test_rolling_updates.py::TestRollingHttp::test_rolling_update10[ambas] Error from server (NotFound): error when deleting "../resources/graph6svc.json": seldondeployments.machinelearning.seldon.io "mymodel" not found
+
+[gw2] PASSED test_rolling_updates.py::TestRollingHttp::test_rolling_update10[istio] 
+test_rolling_updates.py::test_rolling_update_deployment[graph1.json-graph3.json-ambas] Error from server (NotFound): error when deleting "../resources/graph5svc.json": seldondeployments.machinelearning.seldon.io "mymodel" not found
+
+[gw0] PASSED test_rolling_updates.py::TestRollingHttp::test_rolling_update9[ambas] 
+test_rolling_updates.py::test_rolling_update_deployment[graph1.json-graph2.json-istio] 
+test_rolling_updates.py::test_rolling_update_deployment[graph1.json-graph3.json-istio] 
+test_rolling_updates.py::test_rolling_update_deployment[graph1.json-graph2.json-ambas] 
+[gw2] PASSED test_rolling_updates.py::test_rolling_update_deployment[graph1.json-graph3.json-ambas] 
+[gw1] PASSED test_rolling_updates.py::test_rolling_update_deployment[graph1.json-graph2.json-istio] 
+[gw0] PASSED test_rolling_updates.py::test_rolling_update_deployment[graph1.json-graph3.json-istio] 
+test_rolling_updates.py::test_rolling_update_deployment[graph1.json-graph4.json-istio] 
+test_rolling_updates.py::test_rolling_update_deployment[graph1.json-graph5.json-ambas] 
+test_rolling_updates.py::test_rolling_update_deployment[graph1.json-graph5.json-istio] 
+[gw3] FAILED test_rolling_updates.py::test_rolling_update_deployment[graph1.json-graph2.json-ambas] 
+test_rolling_updates.py::test_rolling_update_deployment[graph1.json-graph4.json-ambas] 
+[gw0] PASSED test_rolling_updates.py::test_rolling_update_deployment[graph1.json-graph5.json-istio] 
+[gw1] PASSED test_rolling_updates.py::test_rolling_update_deployment[graph1.json-graph5.json-ambas] 
+test_rolling_updates.py::test_rolling_update_deployment[graph7.json-graph8.json-ambas] 
+test_rolling_updates.py::test_rolling_update_deployment[graph1.json-graph8.json-istio] error: timed out waiting for the condition on deployments/mymodel-mymodel-e2eb561
+
+[gw2] PASSED test_rolling_updates.py::test_rolling_update_deployment[graph1.json-graph4.json-istio] 
+test_rolling_updates.py::test_rolling_update_deployment[graph1.json-graph8.json-ambas] error: timed out waiting for the condition on deployments/mymodel-mymodel-e2eb561
+
+[gw3] PASSED test_rolling_updates.py::test_rolling_update_deployment[graph1.json-graph4.json-ambas] 
+test_rolling_updates.py::test_rolling_update_deployment[graph7.json-graph8.json-istio] error: timed out waiting for the condition on deployments/mymodel-mymodel-e2eb561
+error: timed out waiting for the condition on deployments/mymodel-mymodel-e2eb561
+
+[gw0] PASSED test_rolling_updates.py::test_rolling_update_deployment[graph7.json-graph8.json-ambas] 
+[gw1] PASSED test_rolling_updates.py::test_rolling_update_deployment[graph1.json-graph8.json-istio] error: timed out waiting for the condition on deployments/mymodel-mymodel-e2eb561
+
+test_rolling_updates.py::test_rolling_update_deployment[graph1.json-graph8.json-ambas] error: timed out waiting for the condition on deployments/mymodel-mymodel-e2eb561
+
+[gw3] PASSED test_rolling_updates.py::test_rolling_update_deployment[graph7.json-graph8.json-istio] error: timed out waiting for the condition on deployments/mymodel-mymodel-e2eb561
+
+[gw2] PASSED test_rolling_updates.py::test_rolling_update_deployment[graph1.json-graph8.json-ambas] 
+
+=================================== FAILURES ===================================
+_________________ TestRollingHttp.test_rolling_update7[ambas] __________________
+[gw0] linux -- Python 3.6.0 /usr/local/bin/python
+
+self = <test_rolling_updates.TestRollingHttp object at 0x7fbd5504c0b8>
+namespace = 'test-rolling-update7-ambas', api_gateway = 'localhost:8003'
+
+    def test_rolling_update7(self, namespace, api_gateway):
+        if api_gateway == API_ISTIO_GATEWAY:
+            retry_run(
+                f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
+            )
+        retry_run(f"kubectl apply -f ../resources/graph1svc.json -n {namespace}")
+        wait_for_status("mymodel", namespace)
+        wait_for_rollout("mymodel", namespace, expected_deployments=2)
+        logging.warning("Initial request")
+        r = initial_rest_request("mymodel", namespace, endpoint=api_gateway)
+        assert r.status_code == 200
+        assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
+        retry_run(f"kubectl apply -f ../resources/graph3svc.json -n {namespace}")
+        r = initial_rest_request("mymodel", namespace, endpoint=api_gateway)
+        assert r.status_code == 200
+        assert r.json()["data"]["tensor"]["values"] == [1.0, 2.0, 3.0, 4.0]
+        i = 0
+        for i in range(100):
+            r = rest_request_ambassador("mymodel", namespace, api_gateway)
+>           assert r.status_code == 200
+E           assert 504 == 200
+E             -504
+E             +200
+
+test_rolling_updates.py:123: AssertionError
+------------------------------ Captured log setup ------------------------------
+WARNING  root:seldon_e2e_utils.py:116 Successfully ran command: kubectl create namespace test-rolling-update7-ambas
+------------------------------ Captured log call -------------------------------
+WARNING  root:seldon_e2e_utils.py:116 Successfully ran command: kubectl apply -f ../resources/graph1svc.json -n test-rolling-update7-ambas
+WARNING  root:seldon_e2e_utils.py:136 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:136 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:136 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:136 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:136 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:136 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:133 Status for SeldonDeployment mymodel is ready.
+WARNING  root:seldon_e2e_utils.py:60 Successfully waited for SeldonDeployment mymodel
+WARNING  root:seldon_e2e_utils.py:71 For SeldonDeployment mymodel found following deployments: ['mymodel-mymodel-e2eb561', 'mymodel-mymodel-svc-orch-8e2a24b']
+WARNING  root:seldon_e2e_utils.py:94 Waiting for deployment mymodel-mymodel-e2eb561
+WARNING  root:seldon_e2e_utils.py:101 Successfully waited for deployment mymodel-mymodel-e2eb561
+WARNING  root:seldon_e2e_utils.py:94 Waiting for deployment mymodel-mymodel-svc-orch-8e2a24b
+WARNING  root:seldon_e2e_utils.py:101 Successfully waited for deployment mymodel-mymodel-svc-orch-8e2a24b
+WARNING  root:test_rolling_updates.py:112 Initial request
+WARNING  root:seldon_e2e_utils.py:116 Successfully ran command: kubectl apply -f ../resources/graph3svc.json -n test-rolling-update7-ambas
+------------------------------ Captured log setup ------------------------------
+WARNING  root:seldon_e2e_utils.py:116 Successfully ran command: kubectl create namespace test-rolling-update7-ambas
+------------------------------ Captured log call -------------------------------
+WARNING  root:seldon_e2e_utils.py:116 Successfully ran command: kubectl apply -f ../resources/graph1svc.json -n test-rolling-update7-ambas
+WARNING  root:seldon_e2e_utils.py:136 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:136 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:136 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:136 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:136 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:136 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:136 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:133 Status for SeldonDeployment mymodel is ready.
+WARNING  root:seldon_e2e_utils.py:60 Successfully waited for SeldonDeployment mymodel
+WARNING  root:seldon_e2e_utils.py:71 For SeldonDeployment mymodel found following deployments: ['mymodel-mymodel-e2eb561', 'mymodel-mymodel-svc-orch-8e2a24b']
+WARNING  root:seldon_e2e_utils.py:94 Waiting for deployment mymodel-mymodel-e2eb561
+WARNING  root:seldon_e2e_utils.py:101 Successfully waited for deployment mymodel-mymodel-e2eb561
+WARNING  root:seldon_e2e_utils.py:94 Waiting for deployment mymodel-mymodel-svc-orch-8e2a24b
+WARNING  root:seldon_e2e_utils.py:101 Successfully waited for deployment mymodel-mymodel-svc-orch-8e2a24b
+WARNING  root:test_rolling_updates.py:112 Initial request
+WARNING  root:seldon_e2e_utils.py:116 Successfully ran command: kubectl apply -f ../resources/graph3svc.json -n test-rolling-update7-ambas
+________ test_rolling_update_deployment[graph1.json-graph2.json-ambas] _________
+[gw3] linux -- Python 3.6.0 /usr/local/bin/python
+
+namespace = 'test-rolling-update-deployment-graph1-json-graph2-json-ambas'
+api_gateway = 'localhost:8003', from_deployment = 'graph1.json'
+to_deployment = 'graph2.json'
+
+    @pytest.mark.flaky
+    @with_api_gateways
+    @pytest.mark.parametrize(
+        "from_deployment,to_deployment",
+        [
+            ("graph1.json", "graph2.json"),  # New image version
+            ("graph1.json", "graph3.json"),  # New image version and new name of container
+            ("graph1.json", "graph4.json"),  # New resource request but same image
+            ("graph1.json", "graph5.json"),  # Update with multi-deployment new model
+            ("graph1.json", "graph8.json"),  # From v1alpha2 to v1
+            ("graph7.json", "graph8.json"),  # From v1alpha3 to v1
+        ],
+    )
+    def test_rolling_update_deployment(
+        namespace, api_gateway, from_deployment, to_deployment
+    ):
+        if api_gateway == API_ISTIO_GATEWAY:
+            retry_run(f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}")
+    
+        from_file_path = to_resources_path(from_deployment)
+        retry_run(f"kubectl apply -f {from_file_path} -n {namespace}")
+        wait_for_status("mymodel", namespace)
+        wait_for_rollout("mymodel", namespace)
+        assert_model("mymodel", namespace, initial=True, endpoint=api_gateway)
+    
+        old_deployment_name = get_deployment_names("mymodel", namespace)[0]
+        to_file_path = to_resources_path(to_deployment)
+    
+        def _update_model():
+            retry_run(f"kubectl apply -f {to_file_path} -n {namespace}")
+            wait_for_shutdown(old_deployment_name, namespace)
+            wait_for_status("mymodel", namespace)
+            wait_for_rollout("mymodel", namespace)
+    
+>       assert_model_during_op(_update_model, "mymodel", namespace, endpoint=api_gateway)
+
+test_rolling_updates.py:263: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+seldon_e2e_utils.py:455: in assert_model_during_op
+    raise err
+seldon_e2e_utils.py:447: in assert_model_during_op
+    assert_model(*assert_args, **assert_kwargs)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+sdep_name = 'mymodel'
+namespace = 'test-rolling-update-deployment-graph1-json-graph2-json-ambas'
+initial = False, endpoint = 'localhost:8003'
+
+    def assert_model(sdep_name, namespace, initial=False, endpoint=API_AMBASSADOR):
+        _request = initial_rest_request if initial else rest_request
+        r = _request(sdep_name, namespace, endpoint=endpoint)
+    
+>       assert r is not None
+E       AssertionError
+
+seldon_e2e_utils.py:465: AssertionError
+------------------------------ Captured log setup ------------------------------
+WARNING  root:seldon_e2e_utils.py:116 Successfully ran command: kubectl create namespace test-rolling-update-deployment-graph1-json-graph2-json-ambas
+------------------------------ Captured log call -------------------------------
+WARNING  root:seldon_e2e_utils.py:116 Successfully ran command: kubectl apply -f ../resources/graph1.json -n test-rolling-update-deployment-graph1-json-graph2-json-ambas
+WARNING  root:seldon_e2e_utils.py:136 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:136 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:136 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:136 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:136 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:133 Status for SeldonDeployment mymodel is ready.
+WARNING  root:seldon_e2e_utils.py:60 Successfully waited for SeldonDeployment mymodel
+WARNING  root:seldon_e2e_utils.py:71 For SeldonDeployment mymodel found following deployments: ['mymodel-mymodel-e2eb561']
+WARNING  root:seldon_e2e_utils.py:94 Waiting for deployment mymodel-mymodel-e2eb561
+WARNING  root:seldon_e2e_utils.py:101 Successfully waited for deployment mymodel-mymodel-e2eb561
+WARNING  root:seldon_e2e_utils.py:60 Successfully waited for SeldonDeployment mymodel
+WARNING  root:seldon_e2e_utils.py:71 For SeldonDeployment mymodel found following deployments: ['mymodel-mymodel-e2eb561']
+WARNING  root:seldon_e2e_utils.py:116 Successfully ran command: kubectl apply -f ../resources/graph2.json -n test-rolling-update-deployment-graph1-json-graph2-json-ambas
+WARNING  root:seldon_e2e_utils.py:162 Bad status:503
+WARNING  root:seldon_e2e_utils.py:133 Status for SeldonDeployment mymodel is ready.
+WARNING  root:seldon_e2e_utils.py:60 Successfully waited for SeldonDeployment mymodel
+WARNING  root:seldon_e2e_utils.py:71 For SeldonDeployment mymodel found following deployments: ['mymodel-mymodel-47c581c']
+WARNING  root:seldon_e2e_utils.py:94 Waiting for deployment mymodel-mymodel-47c581c
+WARNING  root:seldon_e2e_utils.py:101 Successfully waited for deployment mymodel-mymodel-47c581c
+------------------------------ Captured log setup ------------------------------
+WARNING  root:seldon_e2e_utils.py:116 Successfully ran command: kubectl create namespace test-rolling-update-deployment-graph1-json-graph2-json-ambas
+------------------------------ Captured log call -------------------------------
+WARNING  root:seldon_e2e_utils.py:116 Successfully ran command: kubectl apply -f ../resources/graph1.json -n test-rolling-update-deployment-graph1-json-graph2-json-ambas
+WARNING  root:seldon_e2e_utils.py:136 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:136 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:136 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:136 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:136 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:133 Status for SeldonDeployment mymodel is ready.
+WARNING  root:seldon_e2e_utils.py:60 Successfully waited for SeldonDeployment mymodel
+WARNING  root:seldon_e2e_utils.py:71 For SeldonDeployment mymodel found following deployments: ['mymodel-mymodel-e2eb561']
+WARNING  root:seldon_e2e_utils.py:94 Waiting for deployment mymodel-mymodel-e2eb561
+WARNING  root:seldon_e2e_utils.py:101 Successfully waited for deployment mymodel-mymodel-e2eb561
+WARNING  root:seldon_e2e_utils.py:60 Successfully waited for SeldonDeployment mymodel
+WARNING  root:seldon_e2e_utils.py:71 For SeldonDeployment mymodel found following deployments: ['mymodel-mymodel-e2eb561']
+WARNING  root:seldon_e2e_utils.py:116 Successfully ran command: kubectl apply -f ../resources/graph2.json -n test-rolling-update-deployment-graph1-json-graph2-json-ambas
+WARNING  root:seldon_e2e_utils.py:162 Bad status:503
+WARNING  root:seldon_e2e_utils.py:133 Status for SeldonDeployment mymodel is ready.
+WARNING  root:seldon_e2e_utils.py:60 Successfully waited for SeldonDeployment mymodel
+WARNING  root:seldon_e2e_utils.py:71 For SeldonDeployment mymodel found following deployments: ['mymodel-mymodel-47c581c', 'mymodel-mymodel-e2eb561']
+WARNING  root:seldon_e2e_utils.py:60 Successfully waited for SeldonDeployment mymodel
+WARNING  root:seldon_e2e_utils.py:71 For SeldonDeployment mymodel found following deployments: ['mymodel-mymodel-47c581c', 'mymodel-mymodel-e2eb561']
+WARNING  root:seldon_e2e_utils.py:60 Successfully waited for SeldonDeployment mymodel
+WARNING  root:seldon_e2e_utils.py:71 For SeldonDeployment mymodel found following deployments: ['mymodel-mymodel-47c581c', 'mymodel-mymodel-e2eb561']
+WARNING  root:seldon_e2e_utils.py:60 Successfully waited for SeldonDeployment mymodel
+WARNING  root:seldon_e2e_utils.py:71 For SeldonDeployment mymodel found following deployments: ['mymodel-mymodel-47c581c', 'mymodel-mymodel-e2eb561']
+WARNING  root:seldon_e2e_utils.py:60 Successfully waited for SeldonDeployment mymodel
+WARNING  root:seldon_e2e_utils.py:71 For SeldonDeployment mymodel found following deployments: ['mymodel-mymodel-47c581c', 'mymodel-mymodel-e2eb561']
+WARNING  root:seldon_e2e_utils.py:60 Successfully waited for SeldonDeployment mymodel
+WARNING  root:seldon_e2e_utils.py:71 For SeldonDeployment mymodel found following deployments: ['mymodel-mymodel-47c581c', 'mymodel-mymodel-e2eb561']
+WARNING  root:seldon_e2e_utils.py:60 Successfully waited for SeldonDeployment mymodel
+WARNING  root:seldon_e2e_utils.py:71 For SeldonDeployment mymodel found following deployments: ['mymodel-mymodel-47c581c', 'mymodel-mymodel-e2eb561']
+WARNING  root:seldon_e2e_utils.py:60 Successfully waited for SeldonDeployment mymodel
+WARNING  root:seldon_e2e_utils.py:71 For SeldonDeployment mymodel found following deployments: ['mymodel-mymodel-47c581c']
+WARNING  root:seldon_e2e_utils.py:94 Waiting for deployment mymodel-mymodel-47c581c
+WARNING  root:seldon_e2e_utils.py:101 Successfully waited for deployment mymodel-mymodel-47c581c
+===Flaky Test Report===
+
+test_rolling_update5[istio] passed 1 out of the required 1 times. Success!
+test_rolling_update6[ambas] passed 1 out of the required 1 times. Success!
+test_rolling_update7[ambas] failed (1 runs remaining out of 2).
+	<class 'AssertionError'>
+	assert 503 == 200
+  -503
+  +200
+	[<TracebackEntry /workspace/source/testing/scripts/test_rolling_updates.py:123>]
+test_rolling_update7[ambas] failed; it passed 0 out of the required 1 times.
+	<class 'AssertionError'>
+	assert 504 == 200
+  -504
+  +200
+	[<TracebackEntry /workspace/source/testing/scripts/test_rolling_updates.py:123>]
+test_rolling_update9[ambas] passed 1 out of the required 1 times. Success!
+test_rolling_update_deployment[graph1.json-graph3.json-istio] passed 1 out of the required 1 times. Success!
+test_rolling_update_deployment[graph1.json-graph5.json-istio] passed 1 out of the required 1 times. Success!
+test_rolling_update_deployment[graph7.json-graph8.json-ambas] passed 1 out of the required 1 times. Success!
+test_rolling_update5[ambas] passed 1 out of the required 1 times. Success!
+test_rolling_update8[istio] passed 1 out of the required 1 times. Success!
+test_rolling_update10[ambas] passed 1 out of the required 1 times. Success!
+test_rolling_update_deployment[graph1.json-graph2.json-istio] passed 1 out of the required 1 times. Success!
+test_rolling_update_deployment[graph1.json-graph5.json-ambas] passed 1 out of the required 1 times. Success!
+test_rolling_update_deployment[graph1.json-graph8.json-istio] passed 1 out of the required 1 times. Success!
+test_rolling_update6[istio] passed 1 out of the required 1 times. Success!
+test_rolling_update7[istio] passed 1 out of the required 1 times. Success!
+test_rolling_update9[istio] passed 1 out of the required 1 times. Success!
+test_rolling_update_deployment[graph1.json-graph2.json-ambas] failed (1 runs remaining out of 2).
+	<class 'AssertionError'>
+	
+	[<TracebackEntry /workspace/source/testing/scripts/test_rolling_updates.py:263>, <TracebackEntry /workspace/source/testing/scripts/seldon_e2e_utils.py:455>, <TracebackEntry /workspace/source/testing/scripts/seldon_e2e_utils.py:447>, <TracebackEntry /workspace/source/testing/scripts/seldon_e2e_utils.py:465>]
+test_rolling_update_deployment[graph1.json-graph2.json-ambas] failed; it passed 0 out of the required 1 times.
+	<class 'AssertionError'>
+	
+	[<TracebackEntry /workspace/source/testing/scripts/test_rolling_updates.py:263>, <TracebackEntry /workspace/source/testing/scripts/seldon_e2e_utils.py:455>, <TracebackEntry /workspace/source/testing/scripts/seldon_e2e_utils.py:447>, <TracebackEntry /workspace/source/testing/scripts/seldon_e2e_utils.py:465>]
+test_rolling_update_deployment[graph1.json-graph4.json-ambas] passed 1 out of the required 1 times. Success!
+test_rolling_update_deployment[graph7.json-graph8.json-istio] passed 1 out of the required 1 times. Success!
+test_rolling_update8[ambas] passed 1 out of the required 1 times. Success!
+test_rolling_update10[istio] passed 1 out of the required 1 times. Success!
+test_rolling_update_deployment[graph1.json-graph3.json-ambas] passed 1 out of the required 1 times. Success!
+test_rolling_update_deployment[graph1.json-graph4.json-istio] passed 1 out of the required 1 times. Success!
+test_rolling_update_deployment[graph1.json-graph8.json-ambas] failed (1 runs remaining out of 2).
+	<class 'AssertionError'>
+	
+	[<TracebackEntry /workspace/source/testing/scripts/test_rolling_updates.py:263>, <TracebackEntry /workspace/source/testing/scripts/seldon_e2e_utils.py:455>, <TracebackEntry /workspace/source/testing/scripts/seldon_e2e_utils.py:447>, <TracebackEntry /workspace/source/testing/scripts/seldon_e2e_utils.py:465>]
+test_rolling_update_deployment[graph1.json-graph8.json-ambas] passed 1 out of the required 1 times. Success!
+
+===End Flaky Test Report===
+================== 2 failed, 36 passed in 2847.83s (0:47:27) ===================
+make: *** [Makefile:89: test] Error 1
+kind delete cluster
+Deleting cluster "kind" ...
+Stopping Docker: dockerProgram process in pidfile '/var/run/docker-ssd.pid', 1 process(es), refused to die.
+[31m
+Pipeline failed on stage 'end-to-end' : container 'step-test-end-to-end'. The execution of the pipeline has stopped.[0m
