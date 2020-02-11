@@ -179,11 +179,11 @@ def initial_rest_request(
         if r is None or r.status_code != 200:
             if attempt >= len(sleeping_times):
                 finished = True
-
-            sleep = sleeping_times[attempt]
-            logging.warning(f"Sleeping {sleep} sec and trying again")
-            time.sleep(sleep)
-            attempt += 1
+            else:
+                sleep = sleeping_times[attempt]
+                logging.warning(f"Sleeping {sleep} sec and trying again")
+                time.sleep(sleep)
+                attempt += 1
         else:
             finished = True
 
