@@ -11,7 +11,16 @@ from seldon_e2e_utils import (
 
 @pytest.mark.sequential
 @pytest.mark.parametrize(
-    "seldon_version", ["0.4.1", "0.5.1", "1.0.0", "1.0.1"], indirect=True,
+    "seldon_version",
+    [
+        pytest.param(
+            "0.4.1", marks=pytest.mark.skip(reason="doesn't install in Helm 3")
+        ),
+        "0.5.1",
+        "1.0.0",
+        "1.0.1",
+    ],
+    indirect=True,
 )
 def test_cluster_update(namespace, seldon_version):
     # Deploy test model
@@ -21,11 +30,6 @@ def test_cluster_update(namespace, seldon_version):
     assert_model("mymodel", namespace, initial=True)
 
     # Upgrade to source code version cluster-wide.
-    # Note that this upgrade should leave the cluster as it was before the
-    # test.
-    # TODO: There is currently a bug updating from 0.4.1 using Helm 3.0.2.
-    # This will be fixed once https://github.com/helm/helm/pull/7269 is
-    # released in Helm 3.0.3.
     def _upgrade_seldon():
         retry_run(
             "helm upgrade seldon "
