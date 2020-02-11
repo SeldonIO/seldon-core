@@ -6,6 +6,6 @@ metadata:
 spec:
   subscriber:
     ref:
-      apiVersion: serving.knative.dev/v1alpha1
+      apiVersion: serving.knative.dev/v1
       kind: Service
       name: seldon-request-logger
