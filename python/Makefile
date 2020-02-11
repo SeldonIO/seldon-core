@@ -53,6 +53,10 @@ install:
 install_dev:
 	pip install -e . -r requirements-dev.txt
 
+.PHONY: licenses
+licenses:
+	tox -e licenses
+
 .PHONY: uninstall
 uninstall:
 	pip uninstall seldon-core
