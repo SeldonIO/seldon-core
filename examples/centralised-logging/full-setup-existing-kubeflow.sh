@@ -17,9 +17,9 @@ else
    ./request-logging/install_knative.sh
 fi
 
-brokercrd=$(kubectl get crd inmemorychannels.messaging.knative.dev -o jsonpath='{.metadata.name}') || true
+imc=$(kubectl get deployment -n knative-eventing imc-controller -o jsonpath='{.metadata.name}') || true
 
-if [[ $brokercrd == 'inmemorychannels.messaging.knative.dev' ]] ; then
+if [[ $imc == 'imc-controller' ]] ; then
     echo "knative eventing already installed"
 else
    kubectl apply --selector knative.dev/crd-install=true --filename https://github.com/knative/eventing/releases/download/v0.11.0/eventing.yaml
