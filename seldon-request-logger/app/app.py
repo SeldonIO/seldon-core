@@ -134,9 +134,9 @@ def process_and_update_elastic_doc(elastic_object, message_type, message_body, r
     return str(new_content)
 
 
-@backoff.on_exception(backoff.fibo,
+@backoff.on_exception(backoff.expo,
                       Exception,
-                      max_time=60,
+                      max_time=180,
                       jitter=backoff.random_jitter)
 def update_elastic_doc(elastic_object, message_type, new_content_part, request_id, headers, index_name):
     # now ready to upsert
