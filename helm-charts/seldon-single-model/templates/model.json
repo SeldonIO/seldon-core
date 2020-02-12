@@ -54,7 +54,7 @@
 {{- end}}
 ]
                 },
-                "name": "{{ .Release.Name }}",
+                "name": "{{ .Values.predictor.name }}",
                 "replicas": {{ .Values.replicas }},
             "labels": {{ .Values.predictorLabels | toJson }}
             }

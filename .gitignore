@@ -198,3 +198,6 @@ testing/scripts/go
 
 operator/operator.tar
 operator/helm/tmp/
+
+# vim
+*.swp
