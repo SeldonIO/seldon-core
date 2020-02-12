@@ -157,3 +157,9 @@ clean-cert:
 
 licenses/dep.txt:
 	go list -m all | cut -d ' ' -f 1 > licenses/dep.txt
+
+new-kind:
+	kind delete cluster && kind create cluster --image kindest/node:v1.15.0
+
+local-changes: new-kind install install-cert-manager kind-image-install deploy
+	

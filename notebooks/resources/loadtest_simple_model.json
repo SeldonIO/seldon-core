@@ -33,7 +33,7 @@
                     "type": "MODEL",
 		    "implementation": "SIMPLE_MODEL"
                 },
-                "name": "loadtest",
+                "name": "default",
                 "replicas": 1,
 		"annotations": {
 		    "predictor_version" : "v1"

@@ -22,7 +22,7 @@ model:
 replicas: 1
 
 predictor:
-  name: "mypredictor"
+  name: "default"
 
 engine:
   resources:
