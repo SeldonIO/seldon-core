@@ -44,6 +44,10 @@ webhooks:
     matchExpressions:
     - key: seldon.io/controller-id
       operator: DoesNotExist
+{{- if .Values.kubeflow }}
+    matchLabels:
+      serving.kubeflow.org/inferenceservice: enabled
+{{- end }}
 {{- end }}
 {{- end }}
 {{- if .Values.singleNamespace }}
@@ -51,6 +55,7 @@ webhooks:
     matchLabels:
       seldon.io/controller-id: {{ .Release.Namespace }}
 {{- end }}
+{{- if not .Values.kubeflow }}
 {{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
 {{- if not .Values.controllerId }}
   objectSelector:
@@ -63,6 +68,7 @@ webhooks:
   objectSelector:
     matchLabels:
       seldon.io/controller-id: {{ .Values.controllerId }}
+{{- end }}
 {{- end }}
   rules:
   - apiGroups:
@@ -88,6 +94,10 @@ webhooks:
     matchExpressions:
     - key: seldon.io/controller-id
       operator: DoesNotExist
+{{- if .Values.kubeflow }}
+    matchLabels:
+      serving.kubeflow.org/inferenceservice: enabled
+{{- end }}
 {{- end }}
 {{- end }}
 {{- if .Values.singleNamespace }}
@@ -95,6 +105,7 @@ webhooks:
     matchLabels:
       seldon.io/controller-id: {{ .Release.Namespace }}
 {{- end }}
+{{- if not .Values.kubeflow }}
 {{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
 {{- if not .Values.controllerId }}
   objectSelector:
@@ -107,6 +118,7 @@ webhooks:
   objectSelector:
     matchLabels:
       seldon.io/controller-id: {{ .Values.controllerId }}
+{{- end }}
 {{- end }}
   rules:
   - apiGroups:
@@ -132,6 +144,10 @@ webhooks:
     matchExpressions:
     - key: seldon.io/controller-id
       operator: DoesNotExist
+{{- if .Values.kubeflow }}
+    matchLabels:
+      serving.kubeflow.org/inferenceservice: enabled
+{{- end }}
 {{- end }}
 {{- end }}
 {{- if .Values.singleNamespace }}
@@ -139,6 +155,7 @@ webhooks:
     matchLabels:
       seldon.io/controller-id: {{ .Release.Namespace }}
 {{- end }}
+{{- if not .Values.kubeflow }}
 {{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
 {{- if not .Values.controllerId }}
   objectSelector:
@@ -151,6 +168,7 @@ webhooks:
   objectSelector:
     matchLabels:
       seldon.io/controller-id: {{ .Values.controllerId }}
+{{- end }}
 {{- end }}
   rules:
   - apiGroups:
@@ -191,6 +209,10 @@ webhooks:
     matchExpressions:
     - key: seldon.io/controller-id
       operator: DoesNotExist
+{{- if .Values.kubeflow }}
+    matchLabels:
+      serving.kubeflow.org/inferenceservice: enabled
+{{- end }}
 {{- end }}
 {{- end }}
 {{- if .Values.singleNamespace }}
@@ -198,6 +220,7 @@ webhooks:
     matchLabels:
       seldon.io/controller-id: {{ .Release.Namespace }}
 {{- end }}
+{{- if not .Values.kubeflow }}
 {{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
 {{- if not .Values.controllerId }}
   objectSelector:
@@ -210,6 +233,7 @@ webhooks:
   objectSelector:
     matchLabels:
       seldon.io/controller-id: {{ .Values.controllerId }}
+{{- end }}
 {{- end }}
   rules:
   - apiGroups:
@@ -235,6 +259,10 @@ webhooks:
     matchExpressions:
     - key: seldon.io/controller-id
       operator: DoesNotExist
+{{- if .Values.kubeflow }}
+    matchLabels:
+      serving.kubeflow.org/inferenceservice: enabled
+{{- end }}
 {{- end }}
 {{- end }}
 {{- if .Values.singleNamespace }}
@@ -242,6 +270,7 @@ webhooks:
     matchLabels:
       seldon.io/controller-id: {{ .Release.Namespace }}
 {{- end }}
+{{- if not .Values.kubeflow }}
 {{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
 {{- if not .Values.controllerId }}
   objectSelector:
@@ -254,6 +283,7 @@ webhooks:
   objectSelector:
     matchLabels:
       seldon.io/controller-id: {{ .Values.controllerId }}
+{{- end }}
 {{- end }}
   rules:
   - apiGroups:
@@ -279,6 +309,10 @@ webhooks:
     matchExpressions:
     - key: seldon.io/controller-id
       operator: DoesNotExist
+{{- if .Values.kubeflow }}
+    matchLabels:
+      serving.kubeflow.org/inferenceservice: enabled
+{{- end }}
 {{- end }}
 {{- end }}
 {{- if .Values.singleNamespace }}
@@ -286,6 +320,7 @@ webhooks:
     matchLabels:
       seldon.io/controller-id: {{ .Release.Namespace }}
 {{- end }}
+{{- if not .Values.kubeflow }}
 {{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
 {{- if not .Values.controllerId }}
   objectSelector:
@@ -298,6 +333,7 @@ webhooks:
   objectSelector:
     matchLabels:
       seldon.io/controller-id: {{ .Values.controllerId }}
+{{- end }}
 {{- end }}
   rules:
   - apiGroups:

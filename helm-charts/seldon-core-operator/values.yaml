@@ -38,6 +38,8 @@ istio:
   enabled: false
   gateway: seldon-gateway
   tlsMode: ''
+kubeflow:
+  false
 manager:
   memoryRequest: 20Mi
   memoryLimit: 30Mi
