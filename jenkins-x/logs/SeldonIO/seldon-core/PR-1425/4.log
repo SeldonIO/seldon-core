@@ -1,0 +1,101 @@
+
+Showing logs for build [32mseldonio-seldon-core-pr-1425-li-xf2tv-4[0m stage [32mpr-build-comment[0m and container [32mstep-credential-initializer-z6ttm[0m
+{"level":"warn","ts":1581494096.0820854,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1581494096.0824978,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1425-li-xf2tv-4[0m stage [32mpr-build-comment[0m and container [32mstep-working-dir-initializer-s9p2p[0m
+{"level":"warn","ts":1581494097.1279454,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1581494097.129565,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1425-li-xf2tv-4[0m stage [32mpr-build-comment[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-1425-li-xf2tv-4[0m stage [32mpr-build-comment[0m and container [32mstep-create-dir-workspace-2jgx5[0m
+{"level":"warn","ts":1581494103.200066,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1581494103.2014723,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1425-li-xf2tv-4[0m stage [32mpr-build-comment[0m and container [32mstep-git-source-seldonio-seldon-core-pr-1425-li-jv4mj[0m
+{"level":"warn","ts":1581494103.4366062,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1581494109.333093,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ master in path /workspace/source"}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1425-li-xf2tv-4[0m stage [32mpr-build-comment[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:b466a57c3075f6c77d8014e7eac310b0d06d1512,1425:a51531a462c39bd70cc5fa09722e6075252f7f27
+DEBUG: ran git fetch --unshallow origin a51531a462c39bd70cc5fa09722e6075252f7f27: b466a57c3075f6c77d8014e7eac310b0d06d1512: in 
+DEBUG: ran git checkout master in 
+DEBUG: ran git reset --hard b466a57c3075f6c77d8014e7eac310b0d06d1512 in 
+DEBUG: ran clean --force -d . in 
+DEBUG: ran git merge a51531a462c39bd70cc5fa09722e6075252f7f27 in 
+Merged SHA 3400b34afc833a33f5246950e5111d9fae12eb41 with commit message 'Merge commit 'a51531a462c39bd70cc5fa09722e6075252f7f27'' into base branch master
+Merged SHA a51531a462c39bd70cc5fa09722e6075252f7f27 with commit message 'Update seldon-core-s2i-python2 -> seldon-core-s2i-python3. Closes #593.' into base branch master
+
+Showing logs for build [32mseldonio-seldon-core-pr-1425-li-xf2tv-4[0m stage [32mpr-build-comment[0m and container [32mstep-step2[0m
++++ dirname ./add-pr-build-comment
+++ cd .
+++ pwd
++ STARTUP_DIR=/workspace/source/ci
++ REPO_OWNER=SeldonIO
++ REPO_NAME=seldon-core
++ PULL_NUMBER=1425
++ BUILD_NUMBER=4
++ PIPELINE_CONTEXT=lint
+++ cat
++++ date
++ COMMENT_MSG='Wed Feb 12 07:55:15 UTC 2020
+The logs for [lint] [4] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-1425/4.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-1425 --build=4'
++ ** step pr comment --owner=SeldonIO --repository=seldon-core --pull-request=1425 '--comment=Wed Feb 12 07:55:15 UTC 2020
+The logs for [lint] [4] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-1425/4.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-1425 --build=4'
+
+Showing logs for build [32mseldonio-seldon-core-pr-1425-li-xf2tv-4[0m stage [32mpr-build-comment[0m and container [32mstep-source-mkdir-seldonio-seldon-core-pr-1425-li-lvfbn[0m
+{"level":"warn","ts":1581494118.0598345,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1581494118.0626593,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1425-li-xf2tv-4[0m stage [32mpr-build-comment[0m and container [32mstep-source-copy-seldonio-seldon-core-pr-1425-li-q7gc5[0m
+{"level":"warn","ts":1581494118.3233843,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1581494118.5695605,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r source/. /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1425-li-xf2tv-4[0m stage [32mpython-lint-task[0m and container [32mstep-credential-initializer-t8kw4[0m
+{"level":"warn","ts":1581494142.752717,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1581494142.7533045,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1425-li-xf2tv-4[0m stage [32mpython-lint-task[0m and container [32mstep-working-dir-initializer-qpqj8[0m
+{"level":"warn","ts":1581494143.8128397,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1581494143.8142219,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1425-li-xf2tv-4[0m stage [32mpython-lint-task[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-1425-li-xf2tv-4[0m stage [32mpython-lint-task[0m and container [32mstep-create-dir-workspace-5x825[0m
+{"level":"warn","ts":1581494149.9916742,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1581494149.9931016,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1425-li-xf2tv-4[0m stage [32mpython-lint-task[0m and container [32mstep-source-copy-workspace-rxdbk[0m
+{"level":"warn","ts":1581494150.4506629,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1581494152.9428003,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1425-li-xf2tv-4[0m stage [32mpython-lint-task[0m and container [32mstep-python-lint[0m
+make: Entering directory '/workspace/source/python'
+pip install black==19.3b0
+Collecting black==19.3b0
+  Downloading black-19.3b0-py36-none-any.whl (89 kB)
+Collecting appdirs
+  Downloading appdirs-1.4.3-py2.py3-none-any.whl (12 kB)
+Collecting attrs>=18.1.0
+  Downloading attrs-19.3.0-py2.py3-none-any.whl (39 kB)
+Collecting click>=6.5
+  Downloading Click-7.0-py2.py3-none-any.whl (81 kB)
+Collecting toml>=0.9.4
+  Downloading toml-0.10.0-py2.py3-none-any.whl (25 kB)
+Installing collected packages: appdirs, attrs, click, toml, black
+Successfully installed appdirs-1.4.3 attrs-19.3.0 black-19.3b0 click-7.0 toml-0.10.0
+black \
+	--check ./ ../testing \
+	--exclude "(testing/scripts/proto|seldon_core/proto/|.eggs|.tox)"
+All done! ✨ 🍰 ✨
+54 files would be left unchanged.
+make: Leaving directory '/workspace/source/python'
