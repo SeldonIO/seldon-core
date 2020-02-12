@@ -23,7 +23,7 @@ webhooks:
       namespace: '{{ .Release.Namespace }}'
       path: /validate-machinelearning-seldon-io-v1-seldondeployment
   failurePolicy: Fail
-  name: vseldondeployment.kb.io
+  name: v1.vseldondeployment.kb.io
 {{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
 {{- if not .Values.singleNamespace }}
   namespaceSelector:
@@ -67,7 +67,7 @@ webhooks:
       namespace: '{{ .Release.Namespace }}'
       path: /validate-machinelearning-seldon-io-v1alpha2-seldondeployment
   failurePolicy: Fail
-  name: vseldondeployment.kb.io
+  name: v1alpha2.vseldondeployment.kb.io
 {{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
 {{- if not .Values.singleNamespace }}
   namespaceSelector:
@@ -111,7 +111,7 @@ webhooks:
       namespace: '{{ .Release.Namespace }}'
       path: /validate-machinelearning-seldon-io-v1alpha3-seldondeployment
   failurePolicy: Fail
-  name: vseldondeployment.kb.io
+  name: v1alpha3.vseldondeployment.kb.io
 {{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
 {{- if not .Values.singleNamespace }}
   namespaceSelector:
@@ -170,7 +170,7 @@ webhooks:
       namespace: '{{ .Release.Namespace }}'
       path: /mutate-machinelearning-seldon-io-v1-seldondeployment
   failurePolicy: Fail
-  name: mseldondeployment.kb.io
+  name: v1.mseldondeployment.kb.io
 {{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
 {{- if not .Values.singleNamespace }}
   namespaceSelector:
@@ -214,7 +214,7 @@ webhooks:
       namespace: '{{ .Release.Namespace }}'
       path: /mutate-machinelearning-seldon-io-v1alpha2-seldondeployment
   failurePolicy: Fail
-  name: mseldondeployment.kb.io
+  name: v1alpha2.mseldondeployment.kb.io
 {{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
 {{- if not .Values.singleNamespace }}
   namespaceSelector:
@@ -258,7 +258,7 @@ webhooks:
       namespace: '{{ .Release.Namespace }}'
       path: /mutate-machinelearning-seldon-io-v1alpha3-seldondeployment
   failurePolicy: Fail
-  name: mseldondeployment.kb.io
+  name: v1alpha3.mseldondeployment.kb.io
 {{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
 {{- if not .Values.singleNamespace }}
   namespaceSelector:
