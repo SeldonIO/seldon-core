@@ -12,6 +12,7 @@ from seldon_core.utils import (
 from seldon_core.proto import prediction_pb2, prediction_pb2_grpc
 import numpy as np
 import json
+import logging
 
 JSON_TEST_DATA = {"test": [0.0, 1.0]}
 
@@ -66,7 +67,7 @@ def test_predict_rest_404(mock_post):
 def test_predict_rest(mock_post):
     sc = SeldonClient(deployment_name="mymodel")
     response = sc.predict()
-    print(mock_post.call_args)
+    logging.info(mock_post.call_args)
     assert response.success == True
     assert response.response.data.tensor.shape == [1, 1]
     assert mock_post.call_count == 1
@@ -204,7 +205,7 @@ def test_predict_rest_with_ambassador_prefix_dict_response(mock_post):
 def test_predict_microservice_rest(mock_post):
     sc = SeldonClient(deployment_name="mymodel")
     response = sc.microservice(method="predict")
-    print(response)
+    logging.info(response)
     assert response.success == True
     assert response.response.data.tensor.shape == [1, 1]
     assert mock_post.call_count == 1

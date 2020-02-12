@@ -4,6 +4,7 @@ from seldon_core.utils import array_to_grpc_datadef, seldon_message_to_json
 from seldon_core.proto import prediction_pb2
 import numpy as np
 from os.path import dirname, join
+import logging
 
 
 class MockResponse:
@@ -50,7 +51,7 @@ def test_predict_rest(mock_post):
     }
     args = Bunch(args_dict)
     run_predict(args)
-    print(mock_post.call_args)
+    logging.info(mock_post.call_args)
     assert mock_post.call_args[1]["json"]["data"]["names"] == [
         "sepal_length",
         "sepal_width",

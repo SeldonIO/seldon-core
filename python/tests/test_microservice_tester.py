@@ -11,6 +11,7 @@ import numpy as np
 from os.path import dirname, join
 import pytest
 import json
+import logging
 
 
 class MockResponse:
@@ -53,7 +54,7 @@ def test_predict_rest(mock_post):
     }
     args = Bunch(args_dict)
     run_method(args, "predict")
-    print(mock_post.call_args[1])
+    logging.info(mock_post.call_args[1])
     payload = json.loads(mock_post.call_args[1]["data"]["json"])
     assert payload["data"]["names"] == [
         "sepal_length",
