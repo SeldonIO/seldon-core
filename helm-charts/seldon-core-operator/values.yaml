@@ -51,11 +51,13 @@ istio:
   enabled: false
   gateway: seldon-gateway
   tlsMode: ''
+kubeflow:
+  false
 manager:
-  memoryRequest: 20Mi
-  memoryLimit: 30Mi
+  memoryRequest: 200Mi
+  memoryLimit: 300Mi
   cpuRequest: 100m
-  cpuLimit: 100m
+  cpuLimit: 500m
 predictiveUnit:
   port: 9000
 predictor_servers:
