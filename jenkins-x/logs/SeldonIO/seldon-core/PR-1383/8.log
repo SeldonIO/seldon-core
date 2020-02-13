@@ -1,0 +1,2976 @@
+
+Showing logs for build [32mseldonio-seldon-core-pr-1383-in-2ktdv-8[0m stage [32mpr-build-comment[0m and container [32mstep-credential-initializer-cdxqs[0m
+{"level":"warn","ts":1581606420.1714776,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1581606420.171869,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1383-in-2ktdv-8[0m stage [32mpr-build-comment[0m and container [32mstep-working-dir-initializer-72ft8[0m
+{"level":"warn","ts":1581606421.5177326,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1581606421.5196636,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1383-in-2ktdv-8[0m stage [32mpr-build-comment[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-1383-in-2ktdv-8[0m stage [32mpr-build-comment[0m and container [32mstep-create-dir-workspace-gdrx7[0m
+{"level":"warn","ts":1581606426.522931,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1581606426.5250587,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1383-in-2ktdv-8[0m stage [32mpr-build-comment[0m and container [32mstep-git-source-seldonio-seldon-core-pr-1383-in-tcdnf[0m
+{"level":"warn","ts":1581606426.7980025,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1581606429.9078007,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ master in path /workspace/source"}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1383-in-2ktdv-8[0m stage [32mpr-build-comment[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:ed241b1d5c1b148be98c540eaea3d3e310511ea2,1383:66fd4a0d536e799d2bb6a1fe68874962cf9c29a4
+DEBUG: ran git fetch --unshallow origin 66fd4a0d536e799d2bb6a1fe68874962cf9c29a4: ed241b1d5c1b148be98c540eaea3d3e310511ea2: in 
+DEBUG: ran git checkout master in 
+DEBUG: ran git reset --hard ed241b1d5c1b148be98c540eaea3d3e310511ea2 in 
+DEBUG: ran clean --force -d . in 
+DEBUG: ran git merge 66fd4a0d536e799d2bb6a1fe68874962cf9c29a4 in 
+Merged SHA 1dc73bf319a2dcbc21ecee325b0856b609b39f15 with commit message 'Merge commit '66fd4a0d536e799d2bb6a1fe68874962cf9c29a4'' into base branch master
+Merged SHA 66fd4a0d536e799d2bb6a1fe68874962cf9c29a4 with commit message 'Update ambassador docs' into base branch master
+Merged SHA 903eaf15bc283d66cbaaab9e618f72d1c5018d53 with commit message 'Update amabassador retries and restructure tests for Ambassador' into base branch master
+
+Showing logs for build [32mseldonio-seldon-core-pr-1383-in-2ktdv-8[0m stage [32mpr-build-comment[0m and container [32mstep-step2[0m
++++ dirname ./add-pr-build-comment
+++ cd .
+++ pwd
++ STARTUP_DIR=/workspace/source/ci
++ REPO_OWNER=SeldonIO
++ REPO_NAME=seldon-core
++ PULL_NUMBER=1383
++ BUILD_NUMBER=8
++ PIPELINE_CONTEXT=integration
+++ cat
++++ date
++ COMMENT_MSG='Thu Feb 13 15:07:15 UTC 2020
+The logs for [integration] [8] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-1383/8.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-1383 --build=8'
++ ** step pr comment --owner=SeldonIO --repository=seldon-core --pull-request=1383 '--comment=Thu Feb 13 15:07:15 UTC 2020
+The logs for [integration] [8] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-1383/8.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-1383 --build=8'
+
+Showing logs for build [32mseldonio-seldon-core-pr-1383-in-2ktdv-8[0m stage [32mpr-build-comment[0m and container [32mstep-source-mkdir-seldonio-seldon-core-pr-1383-in-d4pr2[0m
+{"level":"warn","ts":1581606437.5748873,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1581606437.5790505,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1383-in-2ktdv-8[0m stage [32mpr-build-comment[0m and container [32mstep-source-copy-seldonio-seldon-core-pr-1383-in-7xvvh[0m
+{"level":"warn","ts":1581606437.8344488,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1581606438.085473,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r source/. /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1383-in-2ktdv-8[0m stage [32mend-to-end[0m and container [32mstep-credential-initializer-klrxh[0m
+{"level":"warn","ts":1581606442.4294765,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1581606442.4298627,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1383-in-2ktdv-8[0m stage [32mend-to-end[0m and container [32mstep-working-dir-initializer-6k6km[0m
+{"level":"warn","ts":1581606443.0204751,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1581606443.0223436,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1383-in-2ktdv-8[0m stage [32mend-to-end[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-1383-in-2ktdv-8[0m stage [32mend-to-end[0m and container [32mstep-create-dir-workspace-dkzmf[0m
+{"level":"warn","ts":1581606449.1260033,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1581606449.1290972,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1383-in-2ktdv-8[0m stage [32mend-to-end[0m and container [32mstep-source-copy-workspace-85sqh[0m
+{"level":"warn","ts":1581606449.4030533,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1581606451.5556364,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1383-in-2ktdv-8[0m stage [32mend-to-end[0m and container [32mstep-test-end-to-end[0m
+Starting Docker: docker.
+[SETUP] Waiting for Docker to be ready, sleeping for 1 seconds ...
+kind create cluster --config kind_config.yaml
+Creating cluster "kind" ...
+ • Ensuring node image (kindest/node:v1.16.3) 🖼  ...
+ ✓ Ensuring node image (kindest/node:v1.16.3) 🖼
+ • Preparing nodes 📦  ...
+ ✓ Preparing nodes 📦
+ • Writing configuration 📜  ...
+ ✓ Writing configuration 📜
+ • Starting control-plane 🕹️  ...
+ ✓ Starting control-plane 🕹️
+ • Installing CNI 🔌  ...
+ ✓ Installing CNI 🔌
+ • Installing StorageClass 💾  ...
+ ✓ Installing StorageClass 💾
+ • Joining worker nodes 🚜  ...
+ ✓ Joining worker nodes 🚜
+Set kubectl context to "kind-kind"
+You can now use your cluster with:
+
+kubectl cluster-info --context kind-kind
+
+Have a nice day! 👋
+`kind get kubeconfig-path` is deprecated!
+
+KIND will export and merge kubeconfig like kops, minikube, etc.
+This command is now unnecessary and will be removed in a future release.
+
+For more info see: https://github.com/kubernetes-sigs/kind/issues/1060
+See also the output of `kind create cluster`
+
+Files changed in python folder:
+SKIPPING PYTHON IMAGE BUILD...
+Files changed in operator folder:
+operator/Makefile
+operator/controllers/ambassador.go
+operator/controllers/ambassador_test.go
+cd ../../operator && make kind-image-install
+make[1]: Entering directory '/workspace/source/operator'
+go: creating new go.mod: module tmp
+go: finding sigs.k8s.io/controller-tools/cmd/controller-gen v0.2.4
+go: finding sigs.k8s.io/controller-tools/cmd v0.2.4
+go: finding sigs.k8s.io/controller-tools v0.2.4
+go: downloading sigs.k8s.io/controller-tools v0.2.4
+go: extracting sigs.k8s.io/controller-tools v0.2.4
+go: finding github.com/spf13/pflag v1.0.3
+go: finding github.com/google/go-cmp v0.3.0
+go: finding github.com/spf13/cobra v0.0.5
+go: finding github.com/fatih/color v1.7.0
+go: finding k8s.io/apimachinery v0.0.0-20190913080033-27d36303b655
+go: finding k8s.io/utils v0.0.0-20190801114015-581e00157fb1
+go: finding k8s.io/apiextensions-apiserver v0.0.0-20190918161926-8f644eb6e783
+go: finding k8s.io/api v0.0.0-20190918155943-95b840bb6a1f
+go: finding gopkg.in/inf.v0 v0.9.1
+go: finding gopkg.in/yaml.v3 v3.0.0-20190905181640-827449938966
+go: finding github.com/mattn/go-colorable v0.1.2
+go: finding github.com/gobuffalo/flect v0.1.5
+go: finding github.com/spf13/afero v1.2.2
+go: finding github.com/inconshreveable/mousetrap v1.0.0
+go: finding github.com/davecgh/go-spew v1.1.1
+go: finding github.com/googleapis/gnostic v0.0.0-20170729233727-0c5108395e2d
+go: finding github.com/go-openapi/validate v0.19.2
+go: finding github.com/emicklei/go-restful v2.9.5+incompatible
+go: finding gopkg.in/inf.v0 v0.9.0
+go: finding github.com/BurntSushi/toml v0.3.1
+go: finding k8s.io/klog v0.3.0
+go: finding github.com/mattn/go-isatty v0.0.8
+go: finding github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f
+go: finding gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127
+go: finding k8s.io/code-generator v0.0.0-20190912054826-cd179ad6a269
+go: finding github.com/docker/spdystream v0.0.0-20160310174837-449fdfce4d96
+go: finding github.com/json-iterator/go v1.1.7
+go: finding github.com/golang/groupcache v0.0.0-20160516000752-02826c3e7903
+go: finding sigs.k8s.io/yaml v1.1.0
+go: finding k8s.io/client-go v0.0.0-20190918160344-1fbdaa4c8d90
+go: finding github.com/go-openapi/runtime v0.19.0
+go: finding github.com/go-openapi/spec v0.19.2
+go: finding github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d
+go: finding golang.org/x/sys v0.0.0-20190222072716-a9d3bda3a223
+go: finding github.com/google/gofuzz v1.0.0
+go: finding github.com/onsi/gomega v1.5.0
+go: finding github.com/mitchellh/go-homedir v1.1.0
+go: finding k8s.io/gengo v0.0.0-20190822140433-26a664648505
+go: finding k8s.io/klog v0.4.0
+go: finding github.com/google/uuid v1.1.1
+go: finding github.com/go-openapi/jsonreference v0.18.0
+go: finding github.com/hashicorp/golang-lru v0.5.1
+go: finding github.com/PuerkitoBio/purell v1.1.1
+go: finding github.com/spf13/viper v1.3.2
+go: finding github.com/mailru/easyjson v0.0.0-20190312143242-1de009706dbe
+go: finding github.com/elazarl/goproxy v0.0.0-20170405201442-c4fc26588b6e
+go: finding github.com/peterbourgon/diskv v2.0.1+incompatible
+go: finding gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7
+go: finding github.com/Azure/go-autorest/autorest/adal v0.5.0
+go: finding github.com/go-openapi/analysis v0.18.0
+go: finding github.com/go-openapi/strfmt v0.19.0
+go: finding github.com/onsi/ginkgo v1.6.0
+go: finding github.com/stretchr/ob** v0.2.0
+go: finding github.com/golang/protobuf v1.3.1
+go: finding github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742
+go: finding golang.org/x/net v0.0.0-20190812203447-cdfb69ac37fc
+go: finding github.com/hpcloud/tail v1.0.0
+go: finding github.com/kr/pty v1.1.5
+go: finding golang.org/x/tools v0.0.0-20190614205625-5aca471b1d59
+go: finding golang.org/x/sys v0.0.0-20180909124046-d0be0721c37e
+go: finding github.com/spf13/afero v1.1.2
+go: finding github.com/fsnotify/fsnotify v1.4.7
+go: finding github.com/coreos/go-etcd v2.0.0+incompatible
+go: finding github.com/onsi/ginkgo v1.8.0
+go: finding github.com/spf13/cast v1.3.0
+go: finding golang.org/x/net v0.0.0-20181005035420-146acd28ed58
+go: finding github.com/spf13/jwalterweatherman v1.0.0
+go: finding golang.org/x/net v0.0.0-20180906233101-161cd47e91fd
+go: finding github.com/mailru/easyjson v0.0.0-20180823135443-60711f1a8329
+go: finding golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+go: finding github.com/dgrijalva/jwt-go v3.2.0+incompatible
+go: finding github.com/globalsign/mgo v0.0.0-20180905125535-1ca0a4f7cbcb
+go: finding github.com/go-openapi/errors v0.18.0
+go: finding github.com/asaskevich/govalidator v0.0.0-20180720115003-f9ffefc3facf
+go: finding k8s.io/apiserver v0.0.0-20190918160949-bfa5e2e684ad
+go: finding golang.org/x/sys v0.0.0-20181205085412-a5c9d58dba9a
+go: finding github.com/go-openapi/swag v0.18.0
+go: finding github.com/golang/protobuf v1.2.0
+go: finding github.com/go-openapi/spec v0.17.0
+go: finding github.com/go-openapi/strfmt v0.18.0
+go: finding github.com/pborman/uuid v1.2.0
+go: finding github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
+go: finding github.com/go-openapi/errors v0.17.0
+go: finding golang.org/x/sys v0.0.0-20190616124812-15dcb6c0061f
+go: finding github.com/Azure/go-autorest/autorest v0.9.0
+go: finding github.com/go-openapi/swag v0.17.0
+go: finding github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421
+go: finding github.com/PuerkitoBio/purell v1.1.0
+go: finding github.com/mitchellh/mapstructure v1.1.2
+go: finding golang.org/x/text v0.3.0
+go: finding github.com/pmezard/go-difflib v1.0.0
+go: finding github.com/go-openapi/errors v0.19.2
+go: finding cloud.google.com/go v0.38.0
+go: finding github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77
+go: finding github.com/go-openapi/analysis v0.19.2
+go: finding google.golang.org/appengine v1.5.0
+go: finding github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6
+go: finding github.com/go-logr/logr v0.1.0
+go: finding go.uber.org/atomic v0.0.0-20181018215023-8dc6146f7569
+go: finding github.com/tmc/grpc-websocket-proxy v0.0.0-20170815181823-89b8d40f7ca8
+go: finding github.com/hashicorp/hcl v1.0.0
+go: finding github.com/coreos/go-systemd v0.0.0-20180511133405-39ca1b05acc7
+go: finding github.com/gorilla/websocket v1.4.0
+go: finding honnef.co/go/tools v0.0.0-20190106161140-3f1c8253044a
+go: finding google.golang.org/grpc v1.19.0
+go: finding github.com/grpc-ecosystem/go-grpc-middleware v0.0.0-20190222133341-cfaf5686ec79
+go: finding github.com/go-openapi/swag v0.19.2
+go: finding github.com/go-openapi/jsonreference v0.17.0
+go: finding github.com/gophercloud/gophercloud v0.1.0
+go: finding github.com/golang/mock v1.2.0
+go: finding golang.org/x/sync v0.0.0-20181221193216-37e7f081c4d4
+go: finding golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2
+go: finding github.com/kr/pretty v0.1.0
+go: finding github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78
+go: finding github.com/Azure/go-autorest/autorest/mocks v0.1.0
+go: finding github.com/modern-go/reflect2 v1.0.1
+go: finding github.com/stretchr/testify v1.3.0
+go: finding github.com/kisielk/errcheck v1.2.0
+go: finding github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
+go: finding github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8
+go: finding github.com/stretchr/ob** v0.1.1
+go: finding github.com/google/go-cmp v0.2.0
+go: finding golang.org/x/time v0.0.0-20181108054448-85acf8d2951c
+go: finding golang.org/x/lint v0.0.0-20181026193005-c67002cb31c3
+go: finding github.com/go-openapi/loads v0.19.2
+go: finding honnef.co/go/tools v0.0.0-20190102054323-c2f93a96b099
+go: finding golang.org/x/net v0.0.0-20190320064053-1272bf9dcd53
+go: finding github.com/sirupsen/logrus v1.4.2
+go: finding github.com/go-openapi/jsonpointer v0.18.0
+go: finding golang.org/x/sync v0.0.0-20190227155943-e225da77a7e6
+go: finding golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a
+go: finding sigs.k8s.io/structured-merge-diff v0.0.0-20190817042607-6149e4549fca
+go: finding google.golang.org/grpc v1.23.0
+go: finding github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
+go: finding github.com/client9/misspell v0.3.4
+go: finding github.com/google/pprof v0.0.0-20181206194817-3ea8567a2e57
+go: finding github.com/go-openapi/jsonreference v0.19.2
+go: finding github.com/Azure/go-autorest/tracing v0.5.0
+go: finding github.com/google/btree v0.0.0-20180813153112-4030bb1f1f0c
+go: finding github.com/go-openapi/jsonpointer v0.19.2
+go: finding golang.org/x/net v0.0.0-20190311183353-d8887717615a
+go: finding golang.org/x/tools v0.0.0-20190114222345-bf090417da8b
+go: finding github.com/coreos/go-semver v0.2.0
+go: finding golang.org/x/tools v0.0.0-20190312170243-e65039ee4138
+go: finding github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
+go: finding github.com/Azure/go-autorest/logger v0.1.0
+go: finding github.com/gregjones/httpcache v0.0.0-20170728041850-787624de3eb7
+go: finding github.com/pelletier/go-toml v1.2.0
+go: finding golang.org/x/sync v0.0.0-20190423024810-112230192c58
+go: finding golang.org/x/tools v0.0.0-20181030221726-6c7e314b6563
+go: finding github.com/imdario/mergo v0.3.5
+go: finding github.com/go-openapi/loads v0.18.0
+go: finding github.com/jonboulle/clockwork v0.1.0
+go: finding golang.org/x/lint v0.0.0-20190313153728-d0100b6bd8b3
+go: finding golang.org/x/sync v0.0.0-20180314180146-1d60e4601c6f
+go: finding github.com/pquerna/cachecontrol v0.0.0-20171018203845-0dec1b30a021
+go: finding go.uber.org/zap v0.0.0-20180814183419-67bc79d13d15
+go: finding golang.org/x/sys v0.0.0-20190422165155-953cdadca894
+go: finding gotest.tools v2.2.0+incompatible
+go: finding golang.org/x/net v0.0.0-20180724234803-3673e40ba225
+go: finding github.com/google/uuid v1.0.0
+go: finding github.com/coreos/pkg v0.0.0-20180108230652-97fdf19511ea
+go: finding github.com/Azure/go-autorest/autorest/date v0.1.0
+go: finding golang.org/x/net v0.0.0-20180826012351-8a410e7b638d
+go: finding gonum.org/v1/netlib v0.0.0-20190331212654-76723241ea4e
+go: finding golang.org/x/net v0.0.0-20190613194153-d28f0bde5980
+go: finding google.golang.org/appengine v1.1.0
+go: finding golang.org/x/sys v0.0.0-20180830151530-49385e6e1522
+go: finding google.golang.org/genproto v0.0.0-20190418145605-e7d98fc518a7
+go: finding github.com/go-openapi/strfmt v0.17.0
+go: finding github.com/Azure/go-autorest/autorest/mocks v0.2.0
+go: finding go.uber.org/multierr v0.0.0-20180122172545-ddea229ff1df
+go: finding github.com/mailru/easyjson v0.0.0-20190614124828-94de47d64c63
+go: finding golang.org/x/text v0.3.1-0.20180807135948-17ff2d5776d2
+go: finding github.com/prometheus/client_model v0.0.0-20180712105110-5c3871d89910
+go: finding golang.org/x/oauth2 v0.0.0-20190226205417-e64efc72b421
+go: finding golang.org/x/net v0.0.0-20190108225652-1e06a53dbb7e
+go: finding golang.org/x/lint v0.0.0-20190301231843-5614ed5bae6f
+go: finding github.com/munnerz/goautoneg v0.0.0-20120707110453-a547fc61f48d
+go: finding gonum.org/v1/gonum v0.0.0-20190331200053-3d26580ed485
+go: finding github.com/kr/text v0.1.0
+go: finding github.com/go-openapi/validate v0.18.0
+go: finding google.golang.org/api v0.4.0
+go: finding golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be
+go: finding github.com/coreos/go-semver v0.3.0
+go: finding gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405
+go: finding modernc.org/xc v1.0.0
+go: finding golang.org/x/tools v0.0.0-20190311212946-11955173bddd
+go: finding github.com/kisielk/gotool v1.0.0
+go: finding github.com/docker/docker v0.7.3-0.20190327010347-be7ac8be2ae0
+go: finding github.com/coreos/etcd v3.3.10+incompatible
+go: finding gopkg.in/fsnotify.v1 v1.4.7
+go: finding github.com/go-openapi/spec v0.18.0
+go: finding golang.org/x/crypto v0.0.0-20190320223903-b7391e95e576
+go: finding gopkg.in/yaml.v2 v2.2.2
+go: finding github.com/golang/mock v1.1.1
+go: finding modernc.org/cc v1.0.0
+go: finding cloud.google.com/go v0.34.0
+go: finding go.opencensus.io v0.21.0
+go: finding golang.org/x/tools v0.0.0-20190206041539-40960b6deb8e
+go: finding modernc.org/strutil v1.0.0
+go: finding gonum.org/v1/netlib v0.0.0-20190313105609-8cb42192e0e0
+go: finding golang.org/x/crypto v0.0.0-20190611184440-5c40567a22f8
+go: finding k8s.io/component-base v0.0.0-20190918160511-547f6c5d7090
+go: finding github.com/pkg/errors v0.8.0
+go: finding golang.org/x/text v0.3.2
+go: finding golang.org/x/net v0.0.0-20190213061140-3a22650c66bd
+go: finding github.com/jstemmer/go-junit-report v0.0.0-20190106144839-af01ea7f8024
+go: finding github.com/evanphx/json-patch v4.2.0+incompatible
+go: finding github.com/soheilhy/cmux v0.1.3
+go: finding github.com/go-openapi/loads v0.19.0
+go: finding golang.org/x/net v0.0.0-20190404232315-eb5bcb51f2a3
+go: finding github.com/konsorten/go-windows-terminal-sequences v1.0.1
+go: finding github.com/googleapis/gax-go/v2 v2.0.4
+go: finding google.golang.org/genproto v0.0.0-20180817151627-c66870c02cf8
+go: finding github.com/docker/go-units v0.3.3
+go: finding github.com/cpuguy83/go-md2man v1.0.10
+go: finding golang.org/x/crypto v0.0.0-20181203042331-505ab145d0a9
+go: finding modernc.org/golex v1.0.0
+go: finding golang.org/x/sys v0.0.0-20190209173611-3b5209105503
+go: finding github.com/coreos/etcd v3.3.15+incompatible
+go: finding github.com/go-openapi/jsonpointer v0.17.0
+go: finding github.com/magiconair/properties v1.8.0
+go: finding golang.org/x/tools v0.0.0-20190621195816-6e04913cbbac
+go: finding gopkg.in/yaml.v2 v2.2.1
+go: finding golang.org/x/tools v0.0.0-20190524140312-2c0ae7006135
+go: finding golang.org/x/exp v0.0.0-20190121172915-509febef88a4
+go: finding golang.org/x/exp v0.0.0-20190125153040-c74c464bbbf2
+go: finding golang.org/x/exp v0.0.0-20190312203227-4b39c73a6495
+go: finding golang.org/x/tools v0.0.0-20190226205152-f727befe758c
+go: finding github.com/go-openapi/analysis v0.0.0-20180825180245-b006789cd277
+go: finding github.com/go-openapi/runtime v0.0.0-20180920151709-4f900dc2ade9
+go: finding google.golang.org/genproto v0.0.0-20190307195333-5fe7a883aa19
+go: finding golang.org/x/sync v0.0.0-20181108010431-42b317875d0f
+go: finding github.com/json-iterator/go v1.1.6
+go: finding golang.org/x/tools v0.0.0-20180917221912-90fa682c2a6e
+go: finding github.com/go-openapi/loads v0.17.0
+go: finding github.com/google/martian v2.1.0+incompatible
+go: finding k8s.io/kube-openapi v0.0.0-20190816220812-743ec37842bf
+go: finding github.com/hashicorp/golang-lru v0.5.0
+go: finding github.com/prometheus/procfs v0.0.0-20181204211112-1dc9a6cbc91a
+go: finding golang.org/x/lint v0.0.0-20190227174305-5b3e6a55c961
+go: finding golang.org/x/tools v0.0.0-20190312151545-0bb0c0a6e846
+go: finding golang.org/x/image v0.0.0-20190227222117-0694c2d4d067
+go: finding github.com/grpc-ecosystem/grpc-gateway v1.3.0
+go: finding golang.org/x/sys v0.0.0-20190412213103-97732733099d
+go: finding github.com/kr/pty v1.1.1
+go: finding github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+go: finding github.com/xiang90/probing v0.0.0-20160813154853-07dd2e8dfe18
+go: finding github.com/coreos/bbolt v1.3.1-coreos.6
+go: finding cloud.google.com/go v0.26.0
+go: finding github.com/davecgh/go-spew v0.0.0-20151105211317-5215b55f46b2
+go: finding golang.org/x/text v0.0.0-20160726164857-2910a502d2bf
+go: finding k8s.io/gengo v0.0.0-20190128074634-0689ccc1d7d6
+go: finding github.com/russross/blackfriday v1.5.2
+go: finding golang.org/x/tools v0.0.0-20181011042414-1f849cf54d09
+go: finding github.com/PuerkitoBio/purell v1.0.0
+go: finding golang.org/x/sys v0.0.0-20170830134202-bb24a47a89ea
+go: finding github.com/go-openapi/analysis v0.17.0
+go: finding github.com/go-openapi/spec v0.0.0-20160808142527-6aced65f8501
+go: finding google.golang.org/genproto v0.0.0-20190502173448-54afdca5d873
+go: finding golang.org/x/net v0.0.0-20170114055629-f2499483f923
+go: finding gopkg.in/natefinch/lumberjack.v2 v2.0.0
+go: finding golang.org/x/mobile v0.0.0-20190312151609-d3739f865fa6
+go: finding gopkg.in/square/go-jose.v2 v2.2.2
+go: finding github.com/pmezard/go-difflib v0.0.0-20151028094244-d8ed2627bdf0
+go: finding sigs.k8s.io/structured-merge-diff v0.0.0-20190525122527-15d366b2352e
+go: finding github.com/go-openapi/swag v0.0.0-20160704191624-1d0bd113de87
+go: finding k8s.io/klog v0.0.0-20181102134211-b9b56d5dfc92
+go: finding github.com/PuerkitoBio/urlesc v0.0.0-20160726150825-5bd2802263f2
+go: finding github.com/stretchr/testify v0.0.0-20151208002404-e3a8ff8ce365
+go: finding github.com/davecgh/go-spew v1.1.0
+go: finding github.com/go-openapi/jsonreference v0.0.0-20160704190145-13c6e3589ad9
+go: finding github.com/emicklei/go-restful v0.0.0-20170410110728-ff4f55a20633
+go: finding github.com/json-iterator/go v0.0.0-20180612202835-f2b4162afba3
+go: finding github.com/mailru/easyjson v0.0.0-20160728113105-d5b7844b561a
+go: finding github.com/spf13/pflag v0.0.0-20170130214245-9ff6c6923cff
+go: finding github.com/stretchr/ob** v0.1.0
+go: finding github.com/stretchr/testify v1.2.2
+go: finding github.com/golang/protobuf v0.0.0-20161109072736-4bd1920723d7
+go: finding github.com/google/gofuzz v0.0.0-20161122191042-44d81051d367
+go: finding github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
+go: finding github.com/blang/semver v3.5.0+incompatible
+go: finding github.com/onsi/ginkgo v0.0.0-20170829012221-11459a886d9c
+go: finding modernc.org/mathutil v1.0.0
+go: finding github.com/coreos/go-oidc v2.1.0+incompatible
+go: finding github.com/go-openapi/jsonpointer v0.0.0-20160704185906-46af16f9f7b1
+go: finding google.golang.org/appengine v1.4.0
+go: finding github.com/prometheus/client_golang v0.9.2
+go: finding golang.org/x/crypto v0.0.0-20190211182817-74369b46fc67
+go: finding github.com/remyoudompheng/bigfft v0.0.0-20170806203942-52369c62f446
+go: finding golang.org/x/sys v0.0.0-20190312061237-fead79001313
+go: finding github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802
+go: finding github.com/onsi/gomega v0.0.0-20170829124025-dcabb60a477c
+go: finding github.com/modern-go/reflect2 v0.0.0-20180320133207-05fbef0ca5da
+go: finding github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a
+go: finding golang.org/x/sys v0.0.0-20190321052220-f7bb7a8bee54
+go: finding github.com/ghodss/yaml v0.0.0-20150909031657-73d445a93680
+go: finding github.com/prometheus/common v0.0.0-20181126121408-4724e9255275
+go: finding honnef.co/go/tools v0.0.0-20190523083050-ea95bdfd59fc
+go: finding golang.org/x/net v0.0.0-20181201002055-351d144fa1fc
+go: finding github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973
+go: finding github.com/matttproud/golang_protobuf_extensions v1.0.1
+go: downloading github.com/spf13/cobra v0.0.5
+go: downloading gopkg.in/yaml.v3 v3.0.0-20190905181640-827449938966
+go: downloading sigs.k8s.io/yaml v1.1.0
+go: downloading k8s.io/apimachinery v0.0.0-20190913080033-27d36303b655
+go: downloading github.com/gobuffalo/flect v0.1.5
+go: downloading k8s.io/api v0.0.0-20190918155943-95b840bb6a1f
+go: downloading k8s.io/apiextensions-apiserver v0.0.0-20190918161926-8f644eb6e783
+go: extracting sigs.k8s.io/yaml v1.1.0
+go: downloading golang.org/x/tools v0.0.0-20190621195816-6e04913cbbac
+go: extracting github.com/gobuffalo/flect v0.1.5
+go: extracting gopkg.in/yaml.v3 v3.0.0-20190905181640-827449938966
+go: downloading gopkg.in/yaml.v2 v2.2.2
+go: extracting github.com/spf13/cobra v0.0.5
+go: downloading github.com/spf13/pflag v1.0.3
+go: extracting gopkg.in/yaml.v2 v2.2.2
+go: extracting github.com/spf13/pflag v1.0.3
+go: extracting k8s.io/apiextensions-apiserver v0.0.0-20190918161926-8f644eb6e783
+go: downloading github.com/fatih/color v1.7.0
+go: extracting k8s.io/apimachinery v0.0.0-20190913080033-27d36303b655
+go: downloading github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d
+go: downloading k8s.io/utils v0.0.0-20190801114015-581e00157fb1
+go: downloading github.com/google/gofuzz v1.0.0
+go: downloading gopkg.in/inf.v0 v0.9.1
+go: downloading k8s.io/klog v0.4.0
+go: extracting github.com/google/gofuzz v1.0.0
+go: extracting gopkg.in/inf.v0 v0.9.1
+go: downloading golang.org/x/net v0.0.0-20190812203447-cdfb69ac37fc
+go: extracting k8s.io/klog v0.4.0
+go: extracting k8s.io/utils v0.0.0-20190801114015-581e00157fb1
+go: extracting github.com/fatih/color v1.7.0
+go: downloading github.com/mattn/go-colorable v0.1.2
+go: downloading github.com/mattn/go-isatty v0.0.8
+go: extracting github.com/mattn/go-isatty v0.0.8
+go: extracting github.com/mattn/go-colorable v0.1.2
+go: downloading golang.org/x/sys v0.0.0-20190616124812-15dcb6c0061f
+go: extracting golang.org/x/net v0.0.0-20190812203447-cdfb69ac37fc
+go: downloading golang.org/x/text v0.3.2
+go: extracting golang.org/x/tools v0.0.0-20190621195816-6e04913cbbac
+go: extracting golang.org/x/sys v0.0.0-20190616124812-15dcb6c0061f
+go: extracting k8s.io/api v0.0.0-20190918155943-95b840bb6a1f
+go: extracting github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d
+go: extracting golang.org/x/text v0.3.2
+/builder/home/go/bin/controller-gen object:headerFile=./hack/boilerplate.go.txt paths="./..."
+go fmt ./...
+go vet ./...
+go: downloading github.com/onsi/gomega v1.5.0
+go: downloading github.com/gophercloud/gophercloud v0.4.0
+go: downloading github.com/onsi/ginkgo v1.8.0
+go: downloading github.com/Azure/go-autorest/autorest v0.9.2
+go: downloading sigs.k8s.io/testing_frameworks v0.1.1
+go: extracting github.com/Azure/go-autorest/autorest v0.9.2
+go: downloading github.com/Azure/go-autorest/autorest/adal v0.7.0
+go: downloading github.com/Azure/go-autorest/tracing v0.5.0
+go: downloading github.com/Azure/go-autorest/logger v0.1.0
+go: extracting github.com/onsi/gomega v1.5.0
+go: extracting github.com/onsi/ginkgo v1.8.0
+go: downloading github.com/hpcloud/tail v1.0.0
+go: extracting github.com/Azure/go-autorest/logger v0.1.0
+go: extracting github.com/hpcloud/tail v1.0.0
+go: downloading gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7
+go: extracting github.com/Azure/go-autorest/tracing v0.5.0
+go: extracting github.com/Azure/go-autorest/autorest/adal v0.7.0
+go: downloading github.com/dgrijalva/jwt-go v3.2.0+incompatible
+go: downloading github.com/Azure/go-autorest/autorest/date v0.2.0
+go: extracting github.com/dgrijalva/jwt-go v3.2.0+incompatible
+go: extracting github.com/Azure/go-autorest/autorest/date v0.2.0
+go: extracting github.com/gophercloud/gophercloud v0.4.0
+go: extracting gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7
+go: extracting sigs.k8s.io/testing_frameworks v0.1.1
+/builder/home/go/bin/controller-gen "crd:trivialVersions=true" rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+go test ./controllers/... ./apis/... ./utils/... -coverprofile cover.out
+ok  	github.com/seldonio/seldon-core/operator/controllers	12.335s	coverage: 45.1% of statements
+?   	github.com/seldonio/seldon-core/operator/controllers/resources/credentials	[no test files]
+ok  	github.com/seldonio/seldon-core/operator/controllers/resources/credentials/gcs	0.014s	coverage: 100.0% of statements
+ok  	github.com/seldonio/seldon-core/operator/controllers/resources/credentials/s3	0.010s	coverage: 94.6% of statements
+?   	github.com/seldonio/seldon-core/operator/apis/machinelearning/v1	[no test files]
+?   	github.com/seldonio/seldon-core/operator/apis/machinelearning/v1alpha2	[no test files]
+?   	github.com/seldonio/seldon-core/operator/apis/machinelearning/v1alpha3	[no test files]
+?   	github.com/seldonio/seldon-core/operator/utils	[no test files]
+docker build . -t seldonio/seldon-core-operator:1.0.2-SNAPSHOT
+Sending build context to Docker daemon  1.817MB
+Step 1/17 : FROM golang:1.12.5 as builder
+1.12.5: Pulling from library/golang
+6f2f362378c5: Pulling fs layer
+494c27a8a6b8: Pulling fs layer
+7596bb83081b: Pulling fs layer
+372744b62d49: Pulling fs layer
+0658c6765517: Pulling fs layer
+dbd5b1749350: Pulling fs layer
+ca642e59c356: Pulling fs layer
+372744b62d49: Waiting
+0658c6765517: Waiting
+ca642e59c356: Waiting
+dbd5b1749350: Waiting
+7596bb83081b: Verifying Checksum
+7596bb83081b: Download complete
+494c27a8a6b8: Verifying Checksum
+494c27a8a6b8: Download complete
+6f2f362378c5: Download complete
+372744b62d49: Verifying Checksum
+372744b62d49: Download complete
+0658c6765517: Verifying Checksum
+0658c6765517: Download complete
+ca642e59c356: Download complete
+6f2f362378c5: Pull complete
+dbd5b1749350: Verifying Checksum
+dbd5b1749350: Download complete
+494c27a8a6b8: Pull complete
+7596bb83081b: Pull complete
+372744b62d49: Pull complete
+0658c6765517: Pull complete
+dbd5b1749350: Pull complete
+ca642e59c356: Pull complete
+Digest: sha256:5bc207d20bd9e97c57dc2ad013f2b02d982cc6e411d48bdc79d90bb601696650
+Status: Downloaded newer image for golang:1.12.5
+ ---> 1ef078f0da9e
+Step 2/17 : WORKDIR /workspace
+ ---> Running in 9c96536ced12
+Removing intermediate container 9c96536ced12
+ ---> f261f26cf7f8
+Step 3/17 : COPY go.mod go.mod
+ ---> 360293c6b2e2
+Step 4/17 : COPY go.sum go.sum
+ ---> 7a8d1a180155
+Step 5/17 : RUN go mod download
+ ---> Running in 3b32c79f3e68
+[91mgo: finding github.com/gophercloud/gophercloud v0.4.0
+[0m[91mgo: finding github.com/Azure/go-autorest/autorest/adal v0.7.0
+[0m[91mgo: finding github.com/Azure/go-autorest/autorest v0.9.2
+[0m[91mgo: finding github.com/googleapis/gnostic v0.3.0
+[0m[91mgo: finding github.com/onsi/ginkgo v1.8.0
+[0m[91mgo: finding sigs.k8s.io/controller-runtime v0.2.0
+[0m[91mgo: finding sigs.k8s.io/controller-tools v0.2.0
+[0m[91mgo: finding golang.org/x/sys v0.0.0-20190621203818-d432491b9138
+[0m[91mgo: finding gopkg.in/yaml.v2 v2.2.2
+[0m[91mgo: finding knative.dev/pkg v0.0.0-20190823221514-39a29cf1bf26
+[0m[91mgo: finding golang.org/x/net v0.0.0-20190620200207-3b0461eec859
+[0m[91mgo: finding github.com/google/go-cmp v0.3.1
+[0m[91mgo: finding k8s.io/apimachinery v0.0.0-20190404173353-6a84e37a896d
+[0m[91mgo: finding github.com/spf13/pflag v1.0.3
+[0m[91mgo: finding github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+[0m[91mgo: finding github.com/fatih/color v1.7.0
+[0m[91mgo: finding github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973
+[0m[91mgo: finding github.com/matttproud/golang_protobuf_extensions v1.0.1
+[0m[91mgo: finding github.com/json-iterator/go v1.1.6
+[0m[91mgo: finding k8s.io/apiextensions-apiserver v0.0.0-20190409022649-727a075fdec8
+[0m[91mgo: finding github.com/json-iterator/go v1.1.5
+[0m[91mgo: finding k8s.io/kube-openapi v0.0.0-20190603182131-db7b694dc208
+[0m[91mgo: finding golang.org/x/tools v0.0.0-20190501045030-23463209683d
+[0m[91mgo: finding github.com/prometheus/client_golang v0.9.0
+[0m[91mgo: finding github.com/prometheus/procfs v0.0.0-20180725123919-05ee40e3a273
+[0m[91mgo: finding github.com/onsi/gomega v1.4.2
+[0m[91mgo: finding github.com/golang/protobuf v1.3.1
+[0m[91mgo: finding gopkg.in/fsnotify.v1 v1.4.7
+[0m[91mgo: finding github.com/munnerz/goautoneg v0.0.0-20120707110453-a547fc61f48d
+[0m[91mgo: finding github.com/gogo/protobuf v1.1.1
+[0m[91mgo: finding github.com/imdario/mergo v0.3.6
+[0m[91mgo: finding k8s.io/klog v0.3.3
+[0m[91mgo: finding github.com/Azure/go-autorest/autorest v0.9.0
+[0m[91mgo: finding github.com/Azure/go-autorest/logger v0.1.0
+[0m[91mgo: finding sigs.k8s.io/testing_frameworks v0.1.1
+[0m[91mgo: finding golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2
+[0m[91mgo: finding gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7
+[0m[91mgo: finding github.com/golang/protobuf v0.0.0-20161109072736-4bd1920723d7
+[0m[91mgo: finding github.com/pborman/uuid v0.0.0-20170612153648-e790cca94e6c
+[0m[91mgo: finding github.com/googleapis/gnostic v0.0.0-20170426233943-68f4ded48ba9
+[0m[91mgo: finding github.com/prometheus/common v0.0.0-20180801064454-c7de2306084e
+[0m[91mgo: finding github.com/gogo/protobuf v1.2.1
+[0m[91mgo: finding golang.org/x/crypto v0.0.0-20190211182817-74369b46fc67
+[0m[91mgo: finding github.com/golang/groupcache v0.0.0-20180513044358-24b0969c4cb7
+[0m[91mgo: finding golang.org/x/net v0.0.0-20170114055629-f2499483f923
+[0m[91mgo: finding github.com/go-openapi/jsonreference v0.0.0-20160704190145-13c6e3589ad9
+[0m[91mgo: finding github.com/onsi/ginkgo v1.6.0
+[0m[91mgo: finding golang.org/x/sys v0.0.0-20170830134202-bb24a47a89ea
+[0m[91mgo: finding k8s.io/api v0.0.0-20190409021203-6e4e0e4f393b
+[0m[91mgo: finding github.com/json-iterator/go v0.0.0-20180612202835-f2b4162afba3
+[0m[91mgo: finding google.golang.org/appengine v1.1.0
+[0m[91mgo: finding github.com/spf13/cobra v0.0.3
+[0m[91mgo: finding golang.org/x/sync v0.0.0-20180314180146-1d60e4601c6f
+[0m[91mgo: finding go.uber.org/zap v1.9.1
+[0m[91mgo: finding gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127
+[0m[91mgo: finding golang.org/x/net v0.0.0-20190311183353-d8887717615a
+[0m[91mgo: finding github.com/modern-go/reflect2 v0.0.0-20180320133207-05fbef0ca5da
+[0m[91mgo: finding golang.org/x/crypto v0.0.0-20190611184440-5c40567a22f8
+[0m[91mgo: finding github.com/mailru/easyjson v0.0.0-20160728113105-d5b7844b561a
+[0m[91mgo: finding k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
+[0m[91mgo: finding golang.org/x/text v0.0.0-20160726164857-2910a502d2bf
+[0m[91mgo: finding cloud.google.com/go v0.26.0
+[0m[91mgo: finding k8s.io/gengo v0.0.0-20190128074634-0689ccc1d7d6
+[0m[91mgo: finding github.com/google/gofuzz v0.0.0-20161122191042-44d81051d367
+[0m[91mgo: finding gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405
+[0m[91mgo: finding github.com/Azure/go-autorest/autorest/date v0.2.0
+[0m[91mgo: finding github.com/hashicorp/golang-lru v0.0.0-20180201235237-0fb14efe8c47
+[0m[91mgo: finding golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be
+[0m[91mgo: finding github.com/Azure/go-autorest/autorest/adal v0.5.0
+[0m[91mgo: finding github.com/pmezard/go-difflib v0.0.0-20151028094244-d8ed2627bdf0
+[0m[91mgo: finding go.uber.org/atomic v1.3.2
+[0m[91mgo: finding github.com/spf13/pflag v1.0.2
+[0m[91mgo: finding github.com/PuerkitoBio/urlesc v0.0.0-20160726150825-5bd2802263f2
+[0m[91mgo: finding github.com/ghodss/yaml v0.0.0-20150909031657-73d445a93680
+[0m[91mgo: finding github.com/onsi/gomega v0.0.0-20170829124025-dcabb60a477c
+[0m[91mgo: finding github.com/onsi/gomega v1.5.0
+[0m[91mgo: finding sigs.k8s.io/structured-merge-diff v0.0.0-20190525122527-15d366b2352e
+[0m[91mgo: finding k8s.io/klog v0.2.0
+[0m[91mgo: finding github.com/dgrijalva/jwt-go v3.2.0+incompatible
+[0m[91mgo: finding github.com/stretchr/testify v0.0.0-20151208002404-e3a8ff8ce365
+[0m[91mgo: finding golang.org/x/text v0.3.0
+[0m[91mgo: finding golang.org/x/text v0.3.2
+[0m[91mgo: finding github.com/Azure/go-autorest/autorest/mocks v0.2.0
+go: finding github.com/google/gofuzz v0.0.0-20170612174753-24818f796faf
+[0m[91mgo: finding github.com/google/go-cmp v0.3.0
+[0m[91mgo: finding golang.org/x/sync v0.0.0-20190423024810-112230192c58
+[0m[91mgo: finding github.com/evanphx/json-patch v4.5.0+incompatible
+[0m[91mgo: finding sigs.k8s.io/yaml v1.1.0
+[0m[91mgo: finding github.com/google/gofuzz v1.0.0
+[0m[91mgo: finding github.com/kr/pretty v0.1.0
+[0m[91mgo: finding k8s.io/kube-openapi v0.0.0-20180731170545-e3762e86a74c
+[0m[91mgo: finding github.com/modern-go/reflect2 v1.0.1
+[0m[91mgo: finding gopkg.in/yaml.v2 v2.2.1
+[0m[91mgo: finding github.com/davecgh/go-spew v0.0.0-20151105211317-5215b55f46b2
+[0m[91mgo: finding github.com/PuerkitoBio/purell v1.0.0
+[0m[91mgo: finding github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742
+[0m[91mgo: finding github.com/googleapis/gnostic v0.2.0
+[0m[91mgo: finding golang.org/x/time v0.0.0-20180412165947-fbb02b2291d2
+[0m[91mgo: finding github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
+[0m[91mgo: finding golang.org/x/sys v0.0.0-20190412213103-97732733099d
+[0m[91mgo: finding github.com/go-openapi/swag v0.0.0-20160704191624-1d0bd113de87
+[0m[91mgo: finding golang.org/x/net v0.0.0-20190501004415-9ce7a6920f09
+[0m[91mgo: finding golang.org/x/net v0.0.0-20190404232315-eb5bcb51f2a3
+[0m[91mgo: finding github.com/spf13/pflag v0.0.0-20170130214245-9ff6c6923cff
+[0m[91mgo: finding github.com/kisielk/errcheck v1.1.0
+[0m[91mgo: finding github.com/mattn/go-colorable v0.1.2
+[0m[91mgo: finding github.com/hpcloud/tail v1.0.0
+[0m[91mgo: finding github.com/Azure/go-autorest/autorest/mocks v0.1.0
+[0m[91mgo: finding github.com/Azure/go-autorest/autorest/mocks v0.3.0
+[0m[91mgo: finding golang.org/x/sys v0.0.0-20190429190828-d89cdac9e872
+[0m[91mgo: finding github.com/go-openapi/spec v0.0.0-20160808142527-6aced65f8501
+[0m[91mgo: finding github.com/go-logr/zapr v0.1.0
+[0m[91mgo: finding golang.org/x/tools v0.0.0-20180917221912-90fa682c2a6e
+[0m[91mgo: finding github.com/golang/protobuf v1.2.0
+[0m[91mgo: finding github.com/emicklei/go-restful v0.0.0-20170410110728-ff4f55a20633
+[0m[91mgo: finding github.com/go-openapi/jsonpointer v0.0.0-20160704185906-46af16f9f7b1
+[0m[91mgo: finding github.com/fsnotify/fsnotify v1.4.7
+[0m[91mgo: finding golang.org/x/sys v0.0.0-20180909124046-d0be0721c37e
+[0m[91mgo: finding k8s.io/klog v0.0.0-20181102134211-b9b56d5dfc92
+[0m[91mgo: finding github.com/gobuffalo/flect v0.1.5
+[0m[91mgo: finding github.com/kr/text v0.1.0
+[0m[91mgo: finding go.uber.org/multierr v1.1.0
+[0m[91mgo: finding golang.org/x/crypto v0.0.0-20180820150726-614d502a4dac
+[0m[91mgo: finding github.com/onsi/ginkgo v0.0.0-20170829012221-11459a886d9c
+[0m[91mgo: finding github.com/mattn/go-isatty v0.0.8
+[0m[91mgo: finding github.com/kisielk/gotool v1.0.0
+[0m[91mgo: finding github.com/Azure/go-autorest/autorest/date v0.1.0
+[0m[91mgo: finding github.com/prometheus/client_model v0.0.0-20180712105110-5c3871d89910
+[0m[91mgo: finding golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a
+[0m[91mgo: finding golang.org/x/tools v0.0.0-20180221164845-07fd8470d635
+[0m[91mgo: finding github.com/go-logr/logr v0.1.0
+[0m[91mgo: finding k8s.io/utils v0.0.0-20190506122338-8fab8cb257d5
+[0m[91mgo: finding golang.org/x/sys v0.0.0-20190209173611-3b5209105503
+[0m[91mgo: finding github.com/inconshreveable/mousetrap v1.0.0
+[0m[91mgo: finding github.com/Azure/go-autorest/tracing v0.5.0
+[0m[91mgo: finding github.com/davecgh/go-spew v1.1.1
+[0m[91mgo: finding golang.org/x/net v0.0.0-20180906233101-161cd47e91fd
+[0m[91mgo: finding github.com/stretchr/testify v1.3.0
+[0m[91mgo: finding gomodules.xyz/jsonpatch/v2 v2.0.1
+[0m[91mgo: finding github.com/stretchr/ob** v0.1.0
+[0m[91mgo: finding golang.org/x/tools v0.0.0-20181011042414-1f849cf54d09
+[0m[91mgo: finding github.com/davecgh/go-spew v1.1.0
+[0m[91mgo: finding github.com/pmezard/go-difflib v1.0.0
+[0m[91mgo: finding github.com/kr/pty v1.1.1
+[0m[91mgo: finding gopkg.in/inf.v0 v0.9.1
+[0m[91mgo: finding golang.org/x/sys v0.0.0-20190222072716-a9d3bda3a223
+[0m[91mgo: finding k8s.io/klog v0.3.0
+[0m[91mgo: finding github.com/spf13/afero v1.2.2
+[0m[91mgo: finding github.com/pkg/errors v0.8.1
+[0mRemoving intermediate container 3b32c79f3e68
+ ---> 149bdd9d8897
+Step 6/17 : COPY main.go main.go
+ ---> 8553b1f3c27c
+Step 7/17 : COPY apis/ apis/
+ ---> a2f25a609d89
+Step 8/17 : COPY controllers/ controllers/
+ ---> 38061bffae79
+Step 9/17 : COPY utils/ utils/
+ ---> f31711066e01
+Step 10/17 : COPY constants/ constants/
+ ---> 050d172a40b1
+Step 11/17 : COPY client/ client/
+ ---> 294a241b15d7
+Step 12/17 : RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o manager main.go
+ ---> Running in e92100381846
+Removing intermediate container e92100381846
+ ---> f4be4918e147
+Step 13/17 : FROM gcr.io/distroless/static:latest
+latest: Pulling from distroless/static
+9ff2acc3204b: Pulling fs layer
+9ff2acc3204b: Verifying Checksum
+9ff2acc3204b: Download complete
+9ff2acc3204b: Pull complete
+Digest: sha256:c6d5981545ce1406d33e61434c61e9452dad93ecd8397c41e89036ef977a88f4
+Status: Downloaded newer image for gcr.io/distroless/static:latest
+ ---> e4d2a899b1bf
+Step 14/17 : WORKDIR /
+ ---> Running in f823722862a0
+Removing intermediate container f823722862a0
+ ---> 3f716733623c
+Step 15/17 : COPY --from=builder /workspace/manager .
+ ---> 62227f69de50
+Step 16/17 : COPY licenses/license.txt .
+ ---> eed7067a4596
+Step 17/17 : ENTRYPOINT ["/manager"]
+ ---> Running in cc6fa7e5db08
+Removing intermediate container cc6fa7e5db08
+ ---> f5bd6de1d862
+Successfully built f5bd6de1d862
+Successfully tagged seldonio/seldon-core-operator:1.0.2-SNAPSHOT
+docker save seldonio/seldon-core-operator:1.0.2-SNAPSHOT > operator.tar
+kind load image-archive operator.tar 
+make[1]: Leaving directory '/workspace/source/operator'
+Files changed in engine folder:
+SKIPPING ENGINE IMAGE BUILD...
+Files changed in executor folder:
+SKIPPING EXECUTOR IMAGE BUILD...
+Build fixed models
+cd ../docker/fixed-model && make kind_load_images
+make[1]: Entering directory '/workspace/source/testing/docker/fixed-model'
+s2i build -E environment_rest_v1 . seldonio/seldon-core-s2i-python3:0.15 seldonio/fixed-model:0.1
+---> Installing application source...
+Build completed successfully
+s2i build -E environment_rest_v2 . seldonio/seldon-core-s2i-python3:0.15 seldonio/fixed-model:0.2
+---> Installing application source...
+Build completed successfully
+kind load -v 3 docker-image seldonio/fixed-model:0.1
+Image: "seldonio/fixed-model:0.1" with ID "sha256:99e995ffb47216c602cd7aa204ad4402803fc38f19f06a12d78d6340702dda89" not present on node "kind-control-plane"
+Image: "seldonio/fixed-model:0.1" with ID "sha256:99e995ffb47216c602cd7aa204ad4402803fc38f19f06a12d78d6340702dda89" not present on node "kind-worker"
+kind load -v 3 docker-image seldonio/fixed-model:0.2
+Image: "seldonio/fixed-model:0.2" with ID "sha256:58993e5888f30f49b15dd3baa67b53805be0e13cbc4b21a9dc7acf53b88d937a" not present on node "kind-control-plane"
+Image: "seldonio/fixed-model:0.2" with ID "sha256:58993e5888f30f49b15dd3baa67b53805be0e13cbc4b21a9dc7acf53b88d937a" not present on node "kind-worker"
+make[1]: Leaving directory '/workspace/source/testing/docker/fixed-model'
+kubectl create namespace seldon || echo "Namespace seldon already exists"
+namespace/seldon created
+kubectl create namespace test1 || echo "Namespace test1 already exists"
+namespace/test1 created
+helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+"stable" has been added to your repositories
+helm repo add seldonio https://storage.googleapis.com/seldon-charts
+"seldonio" has been added to your repositories
+helm repo update
+Hang tight while we grab the latest from your chart repositories...
+...Successfully got an update from the "seldonio" chart repository
+...Successfully got an update from the "stable" chart repository
+Update Complete. ⎈ Happy Helming!⎈ 
+helm install --wait ambassador stable/ambassador -f ambassador_values.yaml --set crds.keep=false --namespace seldon --set replicaCount=1
+manifest_sorter.go:175: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:175: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:175: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:175: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:175: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:175: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:175: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:175: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:175: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:175: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:175: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:175: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:175: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:175: info: skipping unknown hook: "crd-install"
+NAME: ambassador
+LAST DEPLOYED: Thu Feb 13 15:17:19 2020
+NAMESPACE: seldon
+STATUS: deployed
+REVISION: 1
+NOTES:
+Congratulations! You've successfully installed Ambassador.
+
+For help, visit our Slack at https://d6e.co/slack or view the documentation online at https://www.getambassador.io.
+
+To get the IP address of Ambassador, run the following commands:
+  export NODE_PORT=$(kubectl get --namespace seldon -o jsonpath="{.spec.ports[0].nodePort}" services ambassador)
+  export NODE_IP=$(kubectl get nodes --namespace seldon -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+kubectl apply -f istio-1.4.2.yaml
+clusterrole.rbac.authorization.k8s.io/istio-reader-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-reader-istio-system created
+customresourcedefinition.apiextensions.k8s.io/attributemanifests.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/clusterrbacconfigs.rbac.istio.io created
+customresourcedefinition.apiextensions.k8s.io/destinationrules.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/envoyfilters.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/gateways.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/httpapispecbindings.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/httpapispecs.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/meshpolicies.authentication.istio.io created
+customresourcedefinition.apiextensions.k8s.io/policies.authentication.istio.io created
+customresourcedefinition.apiextensions.k8s.io/quotaspecbindings.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/quotaspecs.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/rbacconfigs.rbac.istio.io created
+customresourcedefinition.apiextensions.k8s.io/rules.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/serviceentries.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/servicerolebindings.rbac.istio.io created
+customresourcedefinition.apiextensions.k8s.io/serviceroles.rbac.istio.io created
+customresourcedefinition.apiextensions.k8s.io/virtualservices.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/adapters.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/instances.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/templates.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/handlers.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/sidecars.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/authorizationpolicies.security.istio.io created
+namespace/istio-system created
+serviceaccount/istio-reader-service-account created
+clusterrole.rbac.authorization.k8s.io/istio-citadel-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-citadel-istio-system created
+deployment.apps/istio-citadel created
+poddisruptionbudget.policy/istio-citadel created
+service/istio-citadel created
+serviceaccount/istio-citadel-service-account created
+deployment.apps/istio-egressgateway created
+poddisruptionbudget.policy/istio-egressgateway created
+gateway.networking.istio.io/istio-multicluster-egressgateway created
+virtualservice.networking.istio.io/istio-multicluster-egressgateway created
+envoyfilter.networking.istio.io/istio-multicluster-egressgateway created
+destinationrule.networking.istio.io/istio-multicluster-destinationrule created
+service/istio-egressgateway created
+role.rbac.authorization.k8s.io/istio-egressgateway-sds created
+rolebinding.rbac.authorization.k8s.io/istio-egressgateway-sds created
+serviceaccount/istio-egressgateway-service-account created
+clusterrole.rbac.authorization.k8s.io/istio-galley-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-galley-*****-role-binding-istio-system created
+configmap/istio-mesh-galley created
+configmap/istio-galley-configuration created
+deployment.apps/istio-galley created
+poddisruptionbudget.policy/istio-galley created
+service/istio-galley created
+serviceaccount/istio-galley-service-account created
+configmap/istio-grafana-configuration-dashboards-citadel-dashboard created
+configmap/istio-grafana-configuration-dashboards-galley-dashboard created
+configmap/istio-grafana-configuration-dashboards-istio-mesh-dashboard created
+configmap/istio-grafana-configuration-dashboards-istio-performance-dashboard created
+configmap/istio-grafana-configuration-dashboards-istio-service-dashboard created
+configmap/istio-grafana-configuration-dashboards-istio-workload-dashboard created
+configmap/istio-grafana-configuration-dashboards-mixer-dashboard created
+configmap/istio-grafana-configuration-dashboards-pilot-dashboard created
+configmap/istio-grafana created
+deployment.apps/grafana created
+policy.authentication.istio.io/grafana-ports-mtls-disabled created
+service/grafana created
+deployment.apps/istio-ingressgateway created
+gateway.networking.istio.io/ingressgateway created
+poddisruptionbudget.policy/ingressgateway created
+service/istio-ingressgateway created
+serviceaccount/istio-ingressgateway-service-account created
+sidecar.networking.istio.io/default created
+clusterrole.rbac.authorization.k8s.io/istio-sidecar-injector-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-sidecar-injector-*****-role-binding-istio-system created
+configmap/injector-mesh created
+deployment.apps/istio-sidecar-injector created
+mutatingwebhookconfiguration.admissionregistration.k8s.io/istio-sidecar-injector created
+poddisruptionbudget.policy/istio-sidecar-injector created
+service/istio-sidecar-injector created
+serviceaccount/istio-sidecar-injector-service-account created
+configmap/istio-sidecar-injector created
+clusterrole.rbac.authorization.k8s.io/kiali created
+clusterrole.rbac.authorization.k8s.io/kiali-viewer created
+clusterrolebinding.rbac.authorization.k8s.io/kiali created
+configmap/kiali created
+secret/kiali created
+deployment.apps/kiali created
+service/kiali created
+serviceaccount/kiali-service-account created
+clusterrole.rbac.authorization.k8s.io/istio-pilot-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-pilot-istio-system created
+configmap/pilot-envoy-config created
+configmap/istio created
+deployment.apps/istio-pilot created
+meshpolicy.authentication.istio.io/default created
+poddisruptionbudget.policy/istio-pilot created
+service/istio-pilot created
+serviceaccount/istio-pilot-service-account created
+clusterrole.rbac.authorization.k8s.io/istio-policy created
+clusterrolebinding.rbac.authorization.k8s.io/istio-policy-*****-role-binding-istio-system created
+destinationrule.networking.istio.io/istio-policy created
+deployment.apps/istio-policy created
+poddisruptionbudget.policy/istio-policy created
+service/istio-policy created
+serviceaccount/istio-policy-service-account created
+clusterrole.rbac.authorization.k8s.io/prometheus-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/prometheus-istio-system created
+configmap/prometheus created
+deployment.apps/prometheus created
+service/prometheus created
+serviceaccount/prometheus created
+horizontalpodautoscaler.autoscaling/istio-telemetry created
+clusterrole.rbac.authorization.k8s.io/istio-mixer-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-mixer-*****-role-binding-istio-system created
+attributemanifest.config.istio.io/istioproxy created
+attributemanifest.config.istio.io/kubernetes created
+handler.config.istio.io/stdio created
+instance.config.istio.io/accesslog created
+instance.config.istio.io/tcpaccesslog created
+rule.config.istio.io/stdio created
+rule.config.istio.io/stdiotcp created
+instance.config.istio.io/requestcount created
+instance.config.istio.io/requestduration created
+instance.config.istio.io/requestsize created
+instance.config.istio.io/responsesize created
+instance.config.istio.io/tcpbytesent created
+instance.config.istio.io/tcpbytereceived created
+instance.config.istio.io/tcpconnectionsopened created
+instance.config.istio.io/tcpconnectionsclosed created
+handler.config.istio.io/prometheus created
+rule.config.istio.io/promhttp created
+rule.config.istio.io/promtcp created
+rule.config.istio.io/promtcpconnectionopen created
+rule.config.istio.io/promtcpconnectionclosed created
+handler.config.istio.io/kubernetesenv created
+rule.config.istio.io/kubeattrgenrulerule created
+rule.config.istio.io/tcpkubeattrgenrulerule created
+instance.config.istio.io/attributes created
+destinationrule.networking.istio.io/istio-telemetry created
+configmap/telemetry-envoy-config created
+deployment.apps/istio-telemetry created
+poddisruptionbudget.policy/istio-telemetry created
+service/istio-telemetry created
+serviceaccount/istio-mixer-service-account created
+deployment.apps/istio-tracing created
+service/jaeger-query created
+service/jaeger-collector created
+service/jaeger-agent created
+service/zipkin created
+service/tracing created
+kubectl rollout status deployment.apps/istio-ingressgateway -n istio-system
+Waiting for deployment "istio-ingressgateway" rollout to finish: 0 of 1 updated replicas are available...
+deployment "istio-ingressgateway" successfully rolled out
+kubectl rollout status deployment.apps/istio-pilot -n istio-system
+deployment "istio-pilot" successfully rolled out
+kubectl rollout status deployment.apps/istio-citadel -n istio-system
+deployment "istio-citadel" successfully rolled out
+cd ../../operator && make install-cert-manager
+make[1]: Entering directory '/workspace/source/operator'
+kubectl create namespace cert-manager || echo "Namespace cert-manager-exists"
+namespace/cert-manager created
+kubectl label namespace cert-manager cert-manager.io/disable-validation=true || echo "namespace cert-manager-already labelled"
+namespace/cert-manager labeled
+kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml
+customresourcedefinition.apiextensions.k8s.io/certificaterequests.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/certificates.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/challenges.acme.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/clusterissuers.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/issuers.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/orders.acme.cert-manager.io created
+Warning: kubectl apply should be used on resource created by either kubectl create --save-config or kubectl apply
+namespace/cert-manager configured
+serviceaccount/cert-manager-cainjector created
+serviceaccount/cert-manager created
+serviceaccount/cert-manager-webhook created
+clusterrole.rbac.authorization.k8s.io/cert-manager-cainjector created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-cainjector created
+role.rbac.authorization.k8s.io/cert-manager-cainjector:leaderelection created
+rolebinding.rbac.authorization.k8s.io/cert-manager-cainjector:leaderelection created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-webhook:auth-delegator created
+rolebinding.rbac.authorization.k8s.io/cert-manager-webhook:webhook-authentication-reader created
+clusterrole.rbac.authorization.k8s.io/cert-manager-webhook:webhook-requester created
+role.rbac.authorization.k8s.io/cert-manager:leaderelection created
+rolebinding.rbac.authorization.k8s.io/cert-manager:leaderelection created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-issuers created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-clusterissuers created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-certificates created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-orders created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-challenges created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-ingress-shim created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-issuers created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-clusterissuers created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-certificates created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-orders created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-challenges created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-ingress-shim created
+clusterrole.rbac.authorization.k8s.io/cert-manager-view created
+clusterrole.rbac.authorization.k8s.io/cert-manager-edit created
+service/cert-manager created
+service/cert-manager-webhook created
+deployment.apps/cert-manager-cainjector created
+deployment.apps/cert-manager created
+deployment.apps/cert-manager-webhook created
+mutatingwebhookconfiguration.admissionregistration.k8s.io/cert-manager-webhook created
+validatingwebhookconfiguration.admissionregistration.k8s.io/cert-manager-webhook created
+kubectl rollout status deployment.apps/cert-manager -n cert-manager
+Waiting for deployment "cert-manager" rollout to finish: 0 of 1 updated replicas are available...
+deployment "cert-manager" successfully rolled out
+kubectl rollout status deployment.apps/cert-manager-cainjector -n cert-manager
+deployment "cert-manager-cainjector" successfully rolled out
+kubectl rollout status deployment.apps/cert-manager-webhook -n cert-manager
+Waiting for deployment "cert-manager-webhook" rollout to finish: 0 of 1 updated replicas are available...
+deployment "cert-manager-webhook" successfully rolled out
+make[1]: Leaving directory '/workspace/source/operator'
+sleep 5 #https://github.com/jetstack/cert-manager/issues/2273
+kubectl create namespace seldon-system || echo "namespace seldon-system exists"
+namespace/seldon-system created
+helm install seldon \
+	../../helm-charts/seldon-core-operator \
+	--namespace seldon-system \
+	--set istio.enabled=true \
+	--set istio.gateway=seldon-gateway \
+	--set certManager.enabled=false \
+	--set executor.enabled=true \
+	--wait
+NAME: seldon
+LAST DEPLOYED: Thu Feb 13 15:21:24 2020
+NAMESPACE: seldon-system
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+kubectl config set-context $(kubectl config current-context) --namespace=seldon
+Context "kind-kind" modified.
+make: Entering directory '/workspace/source/python'
+pip install -e . -r requirements-dev.txt
+Obtaining file:///workspace/source/python
+Collecting Flask<2.0.0
+  Downloading Flask-1.1.1-py2.py3-none-any.whl (94 kB)
+Collecting Flask-cors<4.0.0
+  Downloading Flask_Cors-3.0.8-py2.py3-none-any.whl (14 kB)
+Collecting redis<4.0.0
+  Downloading redis-3.4.1-py2.py3-none-any.whl (71 kB)
+Collecting requests<3.0.0
+  Downloading requests-2.22.0-py2.py3-none-any.whl (57 kB)
+Collecting numpy<2.0.0
+  Downloading numpy-1.18.1-cp36-cp36m-manylinux1_x86_64.whl (20.1 MB)
+Collecting flatbuffers<2.0.0
+  Downloading flatbuffers-1.11-py2.py3-none-any.whl (15 kB)
+Requirement already satisfied: protobuf<4.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 7)) (3.11.3)
+Requirement already satisfied: grpcio<2.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 8)) (1.26.0)
+Collecting Flask-OpenTracing<1.2.0,>=1.1.0
+  Downloading Flask-OpenTracing-1.1.0.tar.gz (8.2 kB)
+Collecting opentracing<2.3.0,>=2.2.0
+  Downloading opentracing-2.2.0.tar.gz (47 kB)
+Collecting jaeger-client<4.2.0,>=4.1.0
+  Downloading jaeger-client-4.1.0.tar.gz (80 kB)
+Collecting grpcio-opentracing<1.2.0,>=1.1.4
+  Downloading grpcio_opentracing-1.1.4-py3-none-any.whl (14 kB)
+Collecting pyaml<20.0.0
+  Downloading pyaml-19.12.0-py2.py3-none-any.whl (17 kB)
+Collecting gunicorn<20.1.0,>=19.9.0
+  Downloading gunicorn-20.0.4-py2.py3-none-any.whl (77 kB)
+Collecting minio<6.0.0,>=4.0.9
+  Downloading minio-5.0.7-py2.py3-none-any.whl (71 kB)
+Collecting azure-storage-blob<3.0.0,>=2.0.1
+  Downloading azure_storage_blob-2.1.0-py2.py3-none-any.whl (88 kB)
+Requirement already satisfied: setuptools>=41.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 17)) (45.1.0)
+Collecting google-cloud-storage>=1.16.0
+  Downloading google_cloud_storage-1.26.0-py2.py3-none-any.whl (75 kB)
+Collecting mypy<0.762
+  Downloading mypy-0.761-cp36-cp36m-manylinux1_x86_64.whl (24.1 MB)
+Collecting Pillow==7.0.0
+  Downloading Pillow-7.0.0-cp36-cp36m-manylinux1_x86_64.whl (2.1 MB)
+Collecting tox<4.0.0
+  Downloading tox-3.14.4-py2.py3-none-any.whl (81 kB)
+Collecting pytest==5.3.1
+  Downloading pytest-5.3.1-py3-none-any.whl (233 kB)
+Collecting pytest-cov==2.8.1
+  Downloading pytest_cov-2.8.1-py2.py3-none-any.whl (18 kB)
+Collecting coverage==4.5.4
+  Downloading coverage-4.5.4-cp36-cp36m-manylinux1_x86_64.whl (205 kB)
+ERROR: Could not find a version that satisfies the requirement pandas==1.0.0 (from -r requirements-dev.txt (line 12)) (from versions: 0.1, 0.2b0, 0.2b1, 0.2, 0.3.0b0, 0.3.0b2, 0.3.0, 0.4.0, 0.4.1, 0.4.2, 0.4.3, 0.5.0, 0.6.0, 0.6.1, 0.7.0rc1, 0.7.0, 0.7.1, 0.7.2, 0.7.3, 0.8.0rc1, 0.8.0rc2, 0.8.0, 0.8.1, 0.9.0, 0.9.1, 0.10.0, 0.10.1, 0.11.0, 0.12.0, 0.13.0, 0.13.1, 0.14.0, 0.14.1, 0.15.0, 0.15.1, 0.15.2, 0.16.0, 0.16.1, 0.16.2, 0.17.0, 0.17.1, 0.18.0, 0.18.1, 0.19.0rc1, 0.19.0, 0.19.1, 0.19.2, 0.20.0rc1, 0.20.0, 0.20.1, 0.20.2, 0.20.3, 0.21.0rc1, 0.21.0, 0.21.1, 0.22.0, 0.23.0rc2, 0.23.0, 0.23.1, 0.23.2, 0.23.3, 0.23.4, 0.24.0rc1, 0.24.0, 0.24.1, 0.24.2, 0.25.0rc0, 0.25.0, 0.25.1, 0.25.2, 0.25.3)
+ERROR: No matching distribution found for pandas==1.0.0 (from -r requirements-dev.txt (line 12))
+make: *** [Makefile:54: install_dev] Error 1
+make: Leaving directory '/workspace/source/python'
+cp ../../proto/prediction.proto ./proto
+cd ../../proto/tensorflow && make create_protos
+make[1]: Entering directory '/workspace/source/proto/tensorflow'
+./create-protos.sh
+Downloading proto files for master
+make[1]: Leaving directory '/workspace/source/proto/tensorflow'
+cp -vr ../../proto/tensorflow/tensorflow .
+'../../proto/tensorflow/tensorflow' -> './tensorflow'
+'../../proto/tensorflow/tensorflow/core' -> './tensorflow/core'
+'../../proto/tensorflow/tensorflow/core/framework' -> './tensorflow/core/framework'
+'../../proto/tensorflow/tensorflow/core/framework/types.proto' -> './tensorflow/core/framework/types.proto'
+'../../proto/tensorflow/tensorflow/core/framework/resource_handle.proto' -> './tensorflow/core/framework/resource_handle.proto'
+'../../proto/tensorflow/tensorflow/core/framework/tensor_shape.proto' -> './tensorflow/core/framework/tensor_shape.proto'
+'../../proto/tensorflow/tensorflow/core/framework/tensor.proto' -> './tensorflow/core/framework/tensor.proto'
+python -m grpc.tools.protoc -I. --python_out=. --grpc_python_out=. ./proto/prediction.proto
+cd ../../notebooks && make build_protos
+make[1]: Entering directory '/workspace/source/notebooks'
+cd ../proto/tensorflow && make create_protos
+make[2]: Entering directory '/workspace/source/proto/tensorflow'
+make[2]: Nothing to be done for 'create_protos'.
+make[2]: Leaving directory '/workspace/source/proto/tensorflow'
+cp -vr ../proto/tensorflow/tensorflow .
+'../proto/tensorflow/tensorflow' -> './tensorflow'
+'../proto/tensorflow/tensorflow/core' -> './tensorflow/core'
+'../proto/tensorflow/tensorflow/core/framework' -> './tensorflow/core/framework'
+'../proto/tensorflow/tensorflow/core/framework/types.proto' -> './tensorflow/core/framework/types.proto'
+'../proto/tensorflow/tensorflow/core/framework/resource_handle.proto' -> './tensorflow/core/framework/resource_handle.proto'
+'../proto/tensorflow/tensorflow/core/framework/tensor_shape.proto' -> './tensorflow/core/framework/tensor_shape.proto'
+'../proto/tensorflow/tensorflow/core/framework/tensor.proto' -> './tensorflow/core/framework/tensor.proto'
+cp ../proto/prediction.proto ./proto
+python -m grpc.tools.protoc -I. --python_out=. --grpc_python_out=. ./proto/prediction.proto
+make[1]: Leaving directory '/workspace/source/notebooks'
+cd ../../proto/k8s && make create_protos
+make[1]: Entering directory '/workspace/source/proto/k8s'
+./create-k8s-protos.sh
+Downloading proto files for master
+Munging proto file packages
+sed -i.bak 's|import "k8s.io/apiextensions-apiserver/|//import "k8s.io/apiextensions-apiserver/|' k8s.io/api/core/v1/generated.proto
+rm k8s.io/api/core/v1/generated.proto.bak
+make[1]: Leaving directory '/workspace/source/proto/k8s'
+pip install -r dev_requirements.txt
+Obtaining file:///workspace/source/python (from -r dev_requirements.txt (line 11))
+Collecting pytest==5.3.1
+  Using cached pytest-5.3.1-py3-none-any.whl (233 kB)
+Collecting pytest-xdist==1.30.0
+  Downloading pytest_xdist-1.30.0-py2.py3-none-any.whl (35 kB)
+Collecting pytest-cov==2.8.1
+  Using cached pytest_cov-2.8.1-py2.py3-none-any.whl (18 kB)
+Collecting flaky==3.6.1
+  Downloading flaky-3.6.1-py2.py3-none-any.whl (22 kB)
+Collecting retrying==1.3.3
+  Downloading retrying-1.3.3.tar.gz (10 kB)
+Collecting coverage==4.5.4
+  Using cached coverage-4.5.4-cp36-cp36m-manylinux1_x86_64.whl (205 kB)
+Collecting Flask<2.0.0
+  Using cached Flask-1.1.1-py2.py3-none-any.whl (94 kB)
+Collecting Flask-cors<4.0.0
+  Using cached Flask_Cors-3.0.8-py2.py3-none-any.whl (14 kB)
+Collecting redis<4.0.0
+  Using cached redis-3.4.1-py2.py3-none-any.whl (71 kB)
+Collecting requests<3.0.0
+  Using cached requests-2.22.0-py2.py3-none-any.whl (57 kB)
+Collecting numpy<2.0.0
+  Using cached numpy-1.18.1-cp36-cp36m-manylinux1_x86_64.whl (20.1 MB)
+Collecting flatbuffers<2.0.0
+  Using cached flatbuffers-1.11-py2.py3-none-any.whl (15 kB)
+Requirement already satisfied: protobuf<4.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.0.1->-r dev_requirements.txt (line 11)) (3.11.3)
+Requirement already satisfied: grpcio<2.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.0.1->-r dev_requirements.txt (line 11)) (1.26.0)
+Collecting Flask-OpenTracing<1.2.0,>=1.1.0
+  Using cached Flask-OpenTracing-1.1.0.tar.gz (8.2 kB)
+Collecting opentracing<2.3.0,>=2.2.0
+  Using cached opentracing-2.2.0.tar.gz (47 kB)
+Collecting jaeger-client<4.2.0,>=4.1.0
+  Using cached jaeger-client-4.1.0.tar.gz (80 kB)
+Collecting grpcio-opentracing<1.2.0,>=1.1.4
+  Using cached grpcio_opentracing-1.1.4-py3-none-any.whl (14 kB)
+Collecting pyaml<20.0.0
+  Using cached pyaml-19.12.0-py2.py3-none-any.whl (17 kB)
+Collecting gunicorn<20.1.0,>=19.9.0
+  Using cached gunicorn-20.0.4-py2.py3-none-any.whl (77 kB)
+Collecting minio<6.0.0,>=4.0.9
+  Using cached minio-5.0.7-py2.py3-none-any.whl (71 kB)
+Collecting azure-storage-blob<3.0.0,>=2.0.1
+  Using cached azure_storage_blob-2.1.0-py2.py3-none-any.whl (88 kB)
+Requirement already satisfied: setuptools>=41.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.0.1->-r dev_requirements.txt (line 11)) (45.1.0)
+Collecting py>=1.5.0
+  Downloading py-1.8.1-py2.py3-none-any.whl (83 kB)
+Collecting attrs>=17.4.0
+  Downloading attrs-19.3.0-py2.py3-none-any.whl (39 kB)
+Collecting importlib-metadata>=0.12; python_version < "3.8"
+  Downloading importlib_metadata-1.5.0-py2.py3-none-any.whl (30 kB)
+Collecting packaging
+  Downloading packaging-20.1-py2.py3-none-any.whl (36 kB)
+Collecting more-itertools>=4.0.0
+  Downloading more_itertools-8.2.0-py3-none-any.whl (43 kB)
+Collecting pluggy<1.0,>=0.12
+  Downloading pluggy-0.13.1-py2.py3-none-any.whl (18 kB)
+Collecting wcwidth
+  Downloading wcwidth-0.1.8-py2.py3-none-any.whl (17 kB)
+Requirement already satisfied: six in /usr/local/lib/python3.6/site-packages (from pytest-xdist==1.30.0->-r dev_requirements.txt (line 2)) (1.14.0)
+Collecting pytest-forked
+  Downloading pytest_forked-1.1.3-py2.py3-none-any.whl (4.5 kB)
+Collecting execnet>=1.1
+  Downloading execnet-1.7.1-py2.py3-none-any.whl (39 kB)
+Collecting itsdangerous>=0.24
+  Downloading itsdangerous-1.1.0-py2.py3-none-any.whl (16 kB)
+Collecting Jinja2>=2.10.1
+  Downloading Jinja2-2.11.1-py2.py3-none-any.whl (126 kB)
+Collecting Werkzeug>=0.15
+  Downloading Werkzeug-1.0.0-py2.py3-none-any.whl (298 kB)
+Collecting click>=5.1
+  Downloading Click-7.0-py2.py3-none-any.whl (81 kB)
+Collecting urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1
+  Downloading urllib3-1.25.8-py2.py3-none-any.whl (125 kB)
+Collecting certifi>=2017.4.17
+  Downloading certifi-2019.11.28-py2.py3-none-any.whl (156 kB)
+Collecting chardet<3.1.0,>=3.0.2
+  Downloading chardet-3.0.4-py2.py3-none-any.whl (133 kB)
+Collecting idna<2.9,>=2.5
+  Downloading idna-2.8-py2.py3-none-any.whl (58 kB)
+Collecting threadloop<2,>=1
+  Downloading threadloop-1.0.2.tar.gz (4.9 kB)
+Collecting thrift
+  Downloading thrift-0.13.0.tar.gz (59 kB)
+Collecting tornado<6,>=4.3
+  Downloading tornado-5.1.1.tar.gz (516 kB)
+Requirement already satisfied: PyYAML in /usr/local/lib/python3.6/site-packages (from pyaml<20.0.0->seldon-core==1.0.1->-r dev_requirements.txt (line 11)) (5.3)
+Collecting configparser
+  Downloading configparser-4.0.2-py2.py3-none-any.whl (22 kB)
+Collecting pytz
+  Downloading pytz-2019.3-py2.py3-none-any.whl (509 kB)
+Collecting python-dateutil
+  Downloading python_dateutil-2.8.1-py2.py3-none-any.whl (227 kB)
+Collecting azure-storage-common~=2.1
+  Downloading azure_storage_common-2.1.0-py2.py3-none-any.whl (47 kB)
+Collecting azure-common>=1.1.5
+  Downloading azure_common-1.1.24-py2.py3-none-any.whl (12 kB)
+Collecting zipp>=0.5
+  Downloading zipp-2.2.0-py36-none-any.whl (4.6 kB)
+Collecting pyparsing>=2.0.2
+  Downloading pyparsing-2.4.6-py2.py3-none-any.whl (67 kB)
+Collecting apipkg>=1.4
+  Downloading apipkg-1.5-py2.py3-none-any.whl (4.9 kB)
+Collecting MarkupSafe>=0.23
+  Downloading MarkupSafe-1.1.1-cp36-cp36m-manylinux1_x86_64.whl (27 kB)
+Collecting cryptography
+  Downloading cryptography-2.8-cp34-abi3-manylinux2010_x86_64.whl (2.3 MB)
+Collecting cffi!=1.11.3,>=1.8
+  Downloading cffi-1.14.0-cp36-cp36m-manylinux1_x86_64.whl (399 kB)
+Collecting pycparser
+  Downloading pycparser-2.19.tar.gz (158 kB)
+Building wheels for collected packages: retrying, Flask-OpenTracing, opentracing, jaeger-client, threadloop, thrift, tornado, pycparser
+  Building wheel for retrying (setup.py): started
+  Building wheel for retrying (setup.py): finished with status 'done'
+  Created wheel for retrying: filename=retrying-1.3.3-py3-none-any.whl size=11430 sha256=628d26af58179f762a53774913992563137587ca957c6ef544053e156ae5ba9e
+  Stored in directory: /builder/home/.cache/pip/wheels/ac/cb/8a/b27bf6323e2f4c462dcbf77d70b7c5e7868a7fbe12871770cf
+  Building wheel for Flask-OpenTracing (setup.py): started
+  Building wheel for Flask-OpenTracing (setup.py): finished with status 'done'
+  Created wheel for Flask-OpenTracing: filename=Flask_OpenTracing-1.1.0-py3-none-any.whl size=9070 sha256=be06eae14269dbac32c98eaea7557e790405195458f08e162818f6e03cee0207
+  Stored in directory: /builder/home/.cache/pip/wheels/ad/4b/2d/24ff0da0a0b53c7c77ce59b843bcceaf644c88703241e59615
+  Building wheel for opentracing (setup.py): started
+  Building wheel for opentracing (setup.py): finished with status 'done'
+  Created wheel for opentracing: filename=opentracing-2.2.0-py3-none-any.whl size=49319 sha256=54c4eaec4c9e07085862b424238de08a37fccab8990696ce4d85616be5f9e407
+  Stored in directory: /builder/home/.cache/pip/wheels/39/40/44/8bace79f4514e99786236c31f1df8d1b814ff02c1e08b1d697
+  Building wheel for jaeger-client (setup.py): started
+  Building wheel for jaeger-client (setup.py): finished with status 'done'
+  Created wheel for jaeger-client: filename=jaeger_client-4.1.0-py3-none-any.whl size=64309 sha256=2b5346badc830dec77b131c58cc472c5a6606bb0a828a9703da5760295b5648e
+  Stored in directory: /builder/home/.cache/pip/wheels/e9/9b/8c/503d0cc13b39a551c054515683ba1d15b40324c863dc442e66
+  Building wheel for threadloop (setup.py): started
+  Building wheel for threadloop (setup.py): finished with status 'done'
+  Created wheel for threadloop: filename=threadloop-1.0.2-py3-none-any.whl size=3423 sha256=b4f58e8e89814f6433bd8324fc2293a5f4e54428bfdb4e10c898bb51704ff0a1
+  Stored in directory: /builder/home/.cache/pip/wheels/02/54/65/9f87de48fe8fcaaee30f279973d946ad55f9df56b93b3e78da
+  Building wheel for thrift (setup.py): started
+  Building wheel for thrift (setup.py): finished with status 'done'
+  Created wheel for thrift: filename=thrift-0.13.0-cp36-cp36m-linux_x86_64.whl size=483859 sha256=0612712570f9784c9910162fe1cfe74794489c30cee8afda915e474e6d439a16
+  Stored in directory: /builder/home/.cache/pip/wheels/e0/38/fc/472fe18756b177b42096961f8bd3ff2dc5c5620ac399fce52d
+  Building wheel for tornado (setup.py): started
+  Building wheel for tornado (setup.py): finished with status 'done'
+  Created wheel for tornado: filename=tornado-5.1.1-cp36-cp36m-linux_x86_64.whl size=462649 sha256=64bfb6aeaa81521dd215f102ecae64accc59bd95d9134c7940a030c4fc347ca8
+  Stored in directory: /builder/home/.cache/pip/wheels/64/74/71/e7a0d0eb4fc42cb20a17aec36f8f0b5b8c5e1ec19c701fd34a
+  Building wheel for pycparser (setup.py): started
+  Building wheel for pycparser (setup.py): finished with status 'done'
+  Created wheel for pycparser: filename=pycparser-2.19-py2.py3-none-any.whl size=111031 sha256=22495e4bae8448af60e7ba1a012e994c9443c10177aa24964444b2db2a3730c1
+  Stored in directory: /builder/home/.cache/pip/wheels/c6/6b/83/2608afaa57ecfb0a66ac89191a8d9bad71c62ca55ee499c2d0
+Successfully built retrying Flask-OpenTracing opentracing jaeger-client threadloop thrift tornado pycparser
+Installing collected packages: py, attrs, zipp, importlib-metadata, pyparsing, packaging, more-itertools, pluggy, wcwidth, pytest, pytest-forked, apipkg, execnet, pytest-xdist, coverage, pytest-cov, flaky, retrying, itsdangerous, MarkupSafe, Jinja2, Werkzeug, click, Flask, Flask-cors, redis, urllib3, certifi, chardet, idna, requests, numpy, flatbuffers, opentracing, Flask-OpenTracing, tornado, threadloop, thrift, jaeger-client, grpcio-opentracing, pyaml, gunicorn, configparser, pytz, python-dateutil, minio, azure-common, pycparser, cffi, cryptography, azure-storage-common, azure-storage-blob, seldon-core
+  Running setup.py develop for seldon-core
+Successfully installed Flask-1.1.1 Flask-OpenTracing-1.1.0 Flask-cors-3.0.8 Jinja2-2.11.1 MarkupSafe-1.1.1 Werkzeug-1.0.0 apipkg-1.5 attrs-19.3.0 azure-common-1.1.24 azure-storage-blob-2.1.0 azure-storage-common-2.1.0 certifi-2019.11.28 cffi-1.14.0 chardet-3.0.4 click-7.0 configparser-4.0.2 coverage-4.5.4 cryptography-2.8 execnet-1.7.1 flaky-3.6.1 flatbuffers-1.11 grpcio-opentracing-1.1.4 gunicorn-20.0.4 idna-2.8 importlib-metadata-1.5.0 itsdangerous-1.1.0 jaeger-client-4.1.0 minio-5.0.7 more-itertools-8.2.0 numpy-1.18.1 opentracing-2.2.0 packaging-20.1 pluggy-0.13.1 py-1.8.1 pyaml-19.12.0 pycparser-2.19 pyparsing-2.4.6 pytest-5.3.1 pytest-cov-2.8.1 pytest-forked-1.1.3 pytest-xdist-1.30.0 python-dateutil-2.8.1 pytz-2019.3 redis-3.4.1 requests-2.22.0 retrying-1.3.3 seldon-core threadloop-1.0.2 thrift-0.13.0 tornado-5.1.1 urllib3-1.25.8 wcwidth-0.1.8 zipp-2.2.0
+# Run the core tests in parallel
+pytest \
+	--verbose \
+	-s \
+	-W ignore \
+	-n "4" \
+	-m "not sequential" 2>&1
+============================= test session starts ==============================
+platform linux -- Python 3.6.0, pytest-5.3.1, py-1.8.1, pluggy-0.13.1 -- /usr/local/bin/python
+cachedir: .pytest_cache
+rootdir: /workspace/source/testing/scripts, inifile: setup.cfg
+plugins: xdist-1.30.0, forked-1.1.3, flaky-3.6.1, cov-2.8.1
+gw0 I / gw1 I / gw2 I / gw3 I
+[gw0] linux Python 3.6.0 cwd: /workspace/source/testing/scripts
+[gw1] linux Python 3.6.0 cwd: /workspace/source/testing/scripts
+[gw2] linux Python 3.6.0 cwd: /workspace/source/testing/scripts
+[gw3] linux Python 3.6.0 cwd: /workspace/source/testing/scripts
+[gw0] Python 3.6.0 (default, Feb  4 2020, 10:38:29)  -- [GCC 8.3.0]
+[gw1] Python 3.6.0 (default, Feb  4 2020, 10:38:29)  -- [GCC 8.3.0]
+[gw2] Python 3.6.0 (default, Feb  4 2020, 10:38:29)  -- [GCC 8.3.0]
+[gw3] Python 3.6.0 (default, Feb  4 2020, 10:38:29)  -- [GCC 8.3.0]
+gw0 [36] / gw1 [36] / gw2 [36] / gw3 [36]
+
+scheduling tests via LoadScheduling
+
+test_api_version.py::test_api_version[machinelearning.seldon.io/v1alpha2] 
+test_api_version.py::test_api_version[machinelearning.seldon.io/v1] 
+test_api_version.py::test_api_version[machinelearning.seldon.io/v1alpha3] 
+test_bad_graphs.py::TestBadGraphs::test_duplicate_predictor_name Error from server (SeldonDeployment.machinelearing.seldon.io "dupname" is invalid: [spec.predictors[1]: Invalid value: "mymodel": Duplicate predictor name, spec: Invalid value: "dupname": Traffic must sum to 100 for multiple predictors]): error when creating "../resources/bad_duplicate_predictor_name.json": admission webhook "v1alpha2.vseldondeployment.kb.io" denied the request: SeldonDeployment.machinelearing.seldon.io "dupname" is invalid: [spec.predictors[1]: Invalid value: "mymodel": Duplicate predictor name, spec: Invalid value: "dupname": Traffic must sum to 100 for multiple predictors]
+
+[gw3] PASSED test_bad_graphs.py::TestBadGraphs::test_duplicate_predictor_name 
+test_helm_charts_clusterwide.py::TestClusterWide::test_mab_model Error: uninstall: Release not loaded: mymodel: release: not found
+
+[gw1] PASSED test_api_version.py::test_api_version[machinelearning.seldon.io/v1alpha3] Error: uninstall: Release not loaded: mymab: release: not found
+
+[gw3] PASSED test_helm_charts_clusterwide.py::TestClusterWide::test_mab_model Error: uninstall: Release not loaded: mymodel: release: not found
+
+[gw2] PASSED test_api_version.py::test_api_version[machinelearning.seldon.io/v1] Error: uninstall: Release not loaded: mymodel: release: not found
+
+[gw0] PASSED test_api_version.py::test_api_version[machinelearning.seldon.io/v1alpha2] 
+test_helm_charts_clusterwide.py::TestClusterWide::test_abtest_model 
+test_bad_graphs.py::TestBadGraphs::test_model_name_mismatch 
+test_helm_charts_clusterwide.py::TestClusterWide::test_single_model Error from server (SeldonDeployment.machinelearing.seldon.io "namemismatch" is invalid: spec.predictors[0].graph: Invalid value: "complex-model_bad_name": Can't find container for Predictive Unit): error when creating "../resources/bad_name_mismatch.json": admission webhook "v1alpha2.vseldondeployment.kb.io" denied the request: SeldonDeployment.machinelearing.seldon.io "namemismatch" is invalid: spec.predictors[0].graph: Invalid value: "complex-model_bad_name": Can't find container for Predictive Unit
+
+[gw0] PASSED test_bad_graphs.py::TestBadGraphs::test_model_name_mismatch 
+test_local_operators.py::TestLocalOperators::test_namespace_operator 
+test_local_operators.py::TestLocalOperators::test_labelled_operator Error from server (InternalError): error when creating "../resources/model_controller_id.yaml": Internal error occurred: failed calling webhook "v1alpha2.mseldondeployment.kb.io": Post https://seldon-webhook-service.test-labelled-operator.svc:443/mutate-machinelearning-seldon-io-v1alpha2-seldondeployment?timeout=30s: dial tcp 10.100.1.173:443: connect: connection refused
+Error: uninstall: Release not loaded: myabtest: release: not found
+
+[gw2] PASSED test_helm_charts_clusterwide.py::TestClusterWide::test_abtest_model 
+[gw0] PASSED test_local_operators.py::TestLocalOperators::test_namespace_operator Error: uninstall: Release not loaded: mymodel: release: not found
+
+[gw1] PASSED test_helm_charts_clusterwide.py::TestClusterWide::test_single_model 
+[gw3] PASSED test_local_operators.py::TestLocalOperators::test_labelled_operator 
+test_prepackaged_servers.py::TestPrepack::test_tfserving 
+test_prepackaged_servers.py::TestPrepack::test_mlflow 
+test_prepackaged_servers.py::TestPrepack::test_sklearn 
+test_rolling_updates.py::TestRollingHttp::test_rolling_update1[ambas] Error from server (NotFound): error when deleting "../resources/graph2.json": seldondeployments.machinelearning.seldon.io "mymodel" not found
+
+[gw0] PASSED test_rolling_updates.py::TestRollingHttp::test_rolling_update1[ambas] 
+test_rolling_updates.py::TestRollingHttp::test_rolling_update2[istio] 
+[gw2] PASSED test_prepackaged_servers.py::TestPrepack::test_tfserving 
+[gw1] PASSED test_prepackaged_servers.py::TestPrepack::test_mlflow 
+[gw3] PASSED test_prepackaged_servers.py::TestPrepack::test_sklearn 
+test_prepackaged_servers.py::TestPrepack::test_xgboost 
+test_rolling_updates.py::TestRollingHttp::test_rolling_update1[istio] 
+test_rolling_updates.py::TestRollingHttp::test_rolling_update2[ambas] Error from server (NotFound): error when deleting "../resources/graph3.json": seldondeployments.machinelearning.seldon.io "mymodel" not found
+
+[gw0] PASSED test_rolling_updates.py::TestRollingHttp::test_rolling_update2[istio] 
+[gw2] PASSED test_prepackaged_servers.py::TestPrepack::test_xgboost Error from server (NotFound): error when deleting "../resources/graph2.json": seldondeployments.machinelearning.seldon.io "mymodel" not found
+
+[gw1] PASSED test_rolling_updates.py::TestRollingHttp::test_rolling_update1[istio] 
+test_rolling_updates.py::TestRollingHttp::test_rolling_update3[ambas] Error from server (NotFound): error when deleting "../resources/graph3.json": seldondeployments.machinelearning.seldon.io "mymodel" not found
+
+[gw3] PASSED test_rolling_updates.py::TestRollingHttp::test_rolling_update2[ambas] 
+test_rolling_updates.py::TestRollingHttp::test_rolling_update3[istio] 
+test_rolling_updates.py::TestRollingHttp::test_rolling_update4[ambas] 
+test_rolling_updates.py::TestRollingHttp::test_rolling_update4[istio] Error from server (NotFound): error when deleting "../resources/graph4.json": seldondeployments.machinelearning.seldon.io "mymodel" not found
+
+[gw0] PASSED test_rolling_updates.py::TestRollingHttp::test_rolling_update3[ambas] Error from server (NotFound): error when deleting "../resources/graph4.json": seldondeployments.machinelearning.seldon.io "mymodel" not found
+
+[gw2] PASSED test_rolling_updates.py::TestRollingHttp::test_rolling_update3[istio] Error from server (NotFound): error when deleting "../resources/graph5.json": seldondeployments.machinelearning.seldon.io "mymodel" not found
+
+[gw1] PASSED test_rolling_updates.py::TestRollingHttp::test_rolling_update4[ambas] 
+test_rolling_updates.py::TestRollingHttp::test_rolling_update5[ambas] Error from server (NotFound): error when deleting "../resources/graph5.json": seldondeployments.machinelearning.seldon.io "mymodel" not found
+
+[gw3] PASSED test_rolling_updates.py::TestRollingHttp::test_rolling_update4[istio] 
+test_rolling_updates.py::TestRollingHttp::test_rolling_update5[istio] 
+test_rolling_updates.py::TestRollingHttp::test_rolling_update6[ambas] 
+test_rolling_updates.py::TestRollingHttp::test_rolling_update6[istio] Error from server (NotFound): error when deleting "../resources/graph6.json": seldondeployments.machinelearning.seldon.io "mymodel" not found
+
+[gw0] PASSED test_rolling_updates.py::TestRollingHttp::test_rolling_update5[ambas] Error from server (NotFound): error when deleting "../resources/graph6.json": seldondeployments.machinelearning.seldon.io "mymodel" not found
+
+[gw2] PASSED test_rolling_updates.py::TestRollingHttp::test_rolling_update5[istio] 
+test_rolling_updates.py::TestRollingHttp::test_rolling_update7[ambas] Error from server (NotFound): error when deleting "../resources/graph2svc.json": seldondeployments.machinelearning.seldon.io "mymodel" not found
+
+[gw3] PASSED test_rolling_updates.py::TestRollingHttp::test_rolling_update6[istio] 
+test_rolling_updates.py::TestRollingHttp::test_rolling_update7[istio] Error from server (NotFound): error when deleting "../resources/graph2svc.json": seldondeployments.machinelearning.seldon.io "mymodel" not found
+
+[gw1] PASSED test_rolling_updates.py::TestRollingHttp::test_rolling_update6[ambas] 
+test_rolling_updates.py::TestRollingHttp::test_rolling_update8[istio] 
+test_rolling_updates.py::TestRollingHttp::test_rolling_update8[ambas] Error from server (NotFound): error when deleting "../resources/graph3svc.json": seldondeployments.machinelearning.seldon.io "mymodel" not found
+
+[gw0] PASSED test_rolling_updates.py::TestRollingHttp::test_rolling_update7[ambas] Error from server (NotFound): error when deleting "../resources/graph3svc.json": seldondeployments.machinelearning.seldon.io "mymodel" not found
+
+[gw2] PASSED test_rolling_updates.py::TestRollingHttp::test_rolling_update7[istio] 
+test_rolling_updates.py::TestRollingHttp::test_rolling_update9[istio] 
+test_rolling_updates.py::TestRollingHttp::test_rolling_update9[ambas] Error from server (NotFound): error when deleting "../resources/graph4svc.json": seldondeployments.machinelearning.seldon.io "mymodel" not found
+
+[gw3] PASSED test_rolling_updates.py::TestRollingHttp::test_rolling_update8[istio] Error from server (NotFound): error when deleting "../resources/graph4svc.json": seldondeployments.machinelearning.seldon.io "mymodel" not found
+
+[gw1] PASSED test_rolling_updates.py::TestRollingHttp::test_rolling_update8[ambas] 
+test_rolling_updates.py::TestRollingHttp::test_rolling_update10[ambas] 
+test_rolling_updates.py::TestRollingHttp::test_rolling_update10[istio] Error from server (NotFound): error when deleting "../resources/graph5svc.json": seldondeployments.machinelearning.seldon.io "mymodel" not found
+
+[gw2] PASSED test_rolling_updates.py::TestRollingHttp::test_rolling_update9[istio] Error from server (NotFound): error when deleting "../resources/graph5svc.json": seldondeployments.machinelearning.seldon.io "mymodel" not found
+
+[gw0] PASSED test_rolling_updates.py::TestRollingHttp::test_rolling_update9[ambas] 
+test_rolling_updates.py::test_rolling_update_deployment[graph7.json-graph8.json] 
+test_rolling_updates.py::test_rolling_update_deployment[graph1.json-graph8.json] Error from server (NotFound): error when deleting "../resources/graph6svc.json": seldondeployments.machinelearning.seldon.io "mymodel" not found
+
+[gw1] PASSED test_rolling_updates.py::TestRollingHttp::test_rolling_update10[istio] Error from server (NotFound): error when deleting "../resources/graph6svc.json": seldondeployments.machinelearning.seldon.io "mymodel" not found
+
+[gw3] PASSED test_rolling_updates.py::TestRollingHttp::test_rolling_update10[ambas] Error from server (NotFound): error when deleting "../resources/graph8.json": seldondeployments.machinelearning.seldon.io "mymodel" not found
+
+[gw0] PASSED test_rolling_updates.py::test_rolling_update_deployment[graph7.json-graph8.json] Error from server (NotFound): error when deleting "../resources/graph8.json": seldondeployments.machinelearning.seldon.io "mymodel" not found
+
+[gw2] PASSED test_rolling_updates.py::test_rolling_update_deployment[graph1.json-graph8.json] 
+===Flaky Test Report===
+
+test_rolling_update1[istio] passed 1 out of the required 1 times. Success!
+test_rolling_update4[ambas] passed 1 out of the required 1 times. Success!
+test_rolling_update6[ambas] passed 1 out of the required 1 times. Success!
+test_rolling_update8[ambas] passed 1 out of the required 1 times. Success!
+test_rolling_update10[istio] passed 1 out of the required 1 times. Success!
+test_rolling_update2[ambas] passed 1 out of the required 1 times. Success!
+test_rolling_update4[istio] passed 1 out of the required 1 times. Success!
+test_rolling_update6[istio] passed 1 out of the required 1 times. Success!
+test_rolling_update8[istio] passed 1 out of the required 1 times. Success!
+test_rolling_update10[ambas] passed 1 out of the required 1 times. Success!
+test_rolling_update3[istio] passed 1 out of the required 1 times. Success!
+test_rolling_update5[istio] passed 1 out of the required 1 times. Success!
+test_rolling_update7[istio] passed 1 out of the required 1 times. Success!
+test_rolling_update9[istio] passed 1 out of the required 1 times. Success!
+test_rolling_update_deployment[graph1.json-graph8.json] passed 1 out of the required 1 times. Success!
+test_rolling_update1[ambas] passed 1 out of the required 1 times. Success!
+test_rolling_update2[istio] passed 1 out of the required 1 times. Success!
+test_rolling_update3[ambas] passed 1 out of the required 1 times. Success!
+test_rolling_update5[ambas] passed 1 out of the required 1 times. Success!
+test_rolling_update7[ambas] passed 1 out of the required 1 times. Success!
+test_rolling_update9[ambas] passed 1 out of the required 1 times. Success!
+test_rolling_update_deployment[graph7.json-graph8.json] passed 1 out of the required 1 times. Success!
+
+===End Flaky Test Report===
+
+======================= 36 passed in 1160.36s (0:19:20) ========================
+# Then run the s2i tests in sequence (as they currently fail in parallel
+pytest \
+	--verbose \
+	-s \
+	-W ignore \
+	-n 0 \
+	-m "sequential" 2>&1
+============================= test session starts ==============================
+platform linux -- Python 3.6.0, pytest-5.3.1, py-1.8.1, pluggy-0.13.1 -- /usr/local/bin/python
+cachedir: .pytest_cache
+rootdir: /workspace/source/testing/scripts, inifile: setup.cfg
+plugins: xdist-1.30.0, forked-1.1.3, flaky-3.6.1, cov-2.8.1
+collecting ... collected 58 items / 36 deselected / 22 selected
+
+test_operator_updates.py::test_cluster_update[0.4.1] SKIPPED
+test_operator_updates.py::test_cluster_update[0.5.1] namespace/test-cluster-update-0-5-1 created
+release "seldon" uninstalled
+customresourcedefinition.apiextensions.k8s.io "seldondeployments.machinelearning.seldon.io" deleted
+NAME: seldon
+LAST DEPLOYED: Thu Feb 13 15:41:43 2020
+NAMESPACE: seldon-system
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+Error from server (InternalError): error when creating "../resources/graph1.json": Internal error occurred: failed calling webhook "mseldondeployment.kb.io": Post https://seldon-webhook-service.seldon-system.svc:443/mutate-machinelearning-seldon-io-v1alpha2-seldondeployment?timeout=30s: dial tcp 10.105.176.59:443: connect: connection refused
+seldondeployment.machinelearning.seldon.io/mymodel created
+
+PODS UPDATE: NAMESPACE       NAME                                         READY   STATUS    RESTARTS   AGE
+
+
+PODS UPDATE: cert-manager    cert-manager-5c47f46f57-jdbnr                1/1     Running   0          22m
+
+
+PODS UPDATE: cert-manager    cert-manager-cainjector-6659d6844d-4ld9n     1/1     Running   0          22m
+
+
+PODS UPDATE: cert-manager    cert-manager-webhook-547567b88f-rn8p8        1/1     Running   0          22m
+
+
+PODS UPDATE: istio-system    grafana-6b65874977-6kkcg                     1/1     Running   0          23m
+
+
+PODS UPDATE: istio-system    istio-citadel-86dcf4c6b-s9f62                1/1     Running   0          23m
+
+
+PODS UPDATE: istio-system    istio-egressgateway-68f754ccdd-8krs9         1/1     Running   0          23m
+
+
+PODS UPDATE: istio-system    istio-galley-5fc6d6c45b-chj9g                1/1     Running   0          23m
+
+
+PODS UPDATE: istio-system    istio-ingressgateway-6d759478d8-pjnq2        1/1     Running   0          23m
+
+
+PODS UPDATE: istio-system    istio-pilot-5c4995d687-jc9qx                 1/1     Running   0          23m
+
+
+PODS UPDATE: istio-system    istio-policy-57b99968f-gj99n                 1/1     Running   1          23m
+
+
+PODS UPDATE: istio-system    istio-sidecar-injector-746f7c7bbb-2wz4l      1/1     Running   0          23m
+
+
+PODS UPDATE: istio-system    istio-telemetry-854d8556d5-75474             1/1     Running   1          23m
+
+
+PODS UPDATE: istio-system    istio-tracing-c66d67cd9-q68wp                1/1     Running   0          23m
+
+
+PODS UPDATE: istio-system    kiali-8559969566-5vmd9                       1/1     Running   0          23m
+
+
+PODS UPDATE: istio-system    prometheus-66c5887c86-fjw5d                  1/1     Running   0          23m
+
+
+PODS UPDATE: kube-system     coredns-5644d7b6d9-f5t75                     1/1     Running   0          32m
+
+
+PODS UPDATE: kube-system     coredns-5644d7b6d9-m6fn7                     1/1     Running   0          32m
+
+
+PODS UPDATE: kube-system     etcd-kind-control-plane                      1/1     Running   0          31m
+
+
+PODS UPDATE: kube-system     kindnet-j8zrt                                1/1     Running   0          32m
+
+
+PODS UPDATE: kube-system     kindnet-jcfrn                                1/1     Running   0          32m
+
+
+PODS UPDATE: kube-system     kube-apiserver-kind-control-plane            1/1     Running   0          32m
+
+
+PODS UPDATE: kube-system     kube-controller-manager-kind-control-plane   1/1     Running   0          31m
+
+
+PODS UPDATE: kube-system     kube-proxy-2cbrn                             1/1     Running   0          32m
+
+
+PODS UPDATE: kube-system     kube-proxy-hbvvx                             1/1     Running   0          32m
+
+
+PODS UPDATE: kube-system     kube-scheduler-kind-control-plane            1/1     Running   0          31m
+
+
+PODS UPDATE: seldon-system   seldon-controller-manager-747589bdd4-dp7gk   1/1     Running   0          20m
+
+
+PODS UPDATE: seldon          ambassador-689859d47c-tm7jm                  1/1     Running   0          24m
+
+
+PODS UPDATE: seldon-system   seldon-controller-manager-747589bdd4-dp7gk   1/1     Terminating   0          20m
+
+
+PODS UPDATE: seldon-system   seldon-controller-manager-747589bdd4-dp7gk   0/1     Terminating   0          20m
+
+
+PODS UPDATE: seldon-system   seldon-controller-manager-66bbb9fc44-pm2lk   0/1     Pending       0          0s
+
+
+PODS UPDATE: seldon-system   seldon-controller-manager-66bbb9fc44-pm2lk   0/1     Pending       0          0s
+
+
+PODS UPDATE: seldon-system   seldon-controller-manager-66bbb9fc44-pm2lk   0/1     ContainerCreating   0          0s
+
+
+PODS UPDATE: seldon-system   seldon-controller-manager-66bbb9fc44-pm2lk   1/1     Running             0          5s
+
+
+PODS UPDATE: seldon-system   seldon-controller-manager-747589bdd4-dp7gk   0/1     Terminating         0          20m
+
+
+PODS UPDATE: seldon-system   seldon-controller-manager-747589bdd4-dp7gk   0/1     Terminating         0          20m
+
+
+PODS UPDATE: test-cluster-update-0-5-1   mymodel-mymodel-e2eb561-fbb6f756f-7jh6l      0/2     Pending             0    deployment "mymodel-mymodel-e2eb561" successfully rolled out
+NAME      AGE
+mymodel   52s
+Release "seldon" has been upgraded. Happy Helming!
+NAME: seldon
+LAST DEPLOYED: Thu Feb 13 15:42:50 2020
+NAMESPACE: seldon-system
+STATUS: deployed
+REVISION: 2
+TEST SUITE: None
+NAME      AGE
+mymodel   57s
+PASSEDrelease "seldon" uninstalled
+customresourcedefinition.apiextensions.k8s.io "seldondeployments.machinelearning.seldon.io" deleted
+NAME: seldon
+LAST DEPLOYED: Thu Feb 13 15:42:55 2020
+NAMESPACE: seldon-system
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+namespace "test-cluster-update-0-5-1" deleted
+
+test_operator_updates.py::test_cluster_update[1.0.0] namespace/test-cluster-update-1-0-0 created
+release "seldon" uninstalled
+customresourcedefinition.apiextensions.k8s.io "seldondeployments.machinelearning.seldon.io" deleted
+NAME: seldon
+LAST DEPLOYED: Thu Feb 13 15:43:22 2020
+NAMESPACE: seldon-system
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+Error from server (InternalError): error when creating "../resources/graph1.json": Internal error occurred: failed calling webhook "mseldondeployment.kb.io": Post https://seldon-webhook-service.seldon-system.svc:443/mutate-machinelearning-seldon-io-v1alpha2-seldondeployment?timeout=30s: dial tcp 10.98.143.185:443: connect: connection refused
+seldondeployment.machinelearning.seldon.io/mymodel created
+      0s
+
+
+PODS UPDATE: test-cluster-update-0-5-1   mymodel-mymodel-e2eb561-fbb6f756f-7jh6l      0/2     Pending             0          0s
+
+
+PODS UPDATE: test-cluster-update-0-5-1   mymodel-mymodel-e2eb561-fbb6f756f-7jh6l      0/2     ContainerCreating   0          0s
+
+
+PODS UPDATE: test-cluster-update-0-5-1   mymodel-mymodel-e2eb561-fbb6f756f-7jh6l      0/2     Running             0          15s
+
+
+PODS UPDATE: test-cluster-update-0-5-1   mymodel-mymodel-e2eb561-fbb6f756f-7jh6l      1/2     Running             0          29s
+
+
+PODS UPDATE: test-cluster-update-0-5-1   mymodel-mymodel-e2eb561-fbb6f756f-7jh6l      2/2     Running             0          35s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-pp7sf   0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-pp7sf   0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-pp7sf   0/1     ContainerCreating   0          0s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-pp7sf   1/1     Running             0          2s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-66bbb9fc44-pm2lk   1/1     Terminating         0          69s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-66bbb9fc44-pm2lk   0/1     Terminating         0          70s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-pp7sf   1/1     Terminating         0          3s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-66bbb9fc44-pm2lk   0/1     Terminating         0          71s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-66bbb9fc44-pm2lk   0/1     Terminating         0          71s
+
+
+PODS UPDATE: test-cluster-update-0-5-1   mymodel-mymodel-e2eb561-fbb6f756f-7jh6l      2/2     Terminating         0          47s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-pp7sf   0/1     Terminating         0          5s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-wqf99   0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-wqf99   0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-wqf99   0/1     ContainerCreating   0          0s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-pp7sf   0/1     Terminating         0          6s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-pp7sf   0/1     Terminating         0          6s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-wqf99   1/1     Running             0          2s
+
+
+PODS UPDATE: test-cluster-update-0-5-1   mymodel-mymodel-e2eb561-fbb6f756f-7jh6l      1/2     Terminating         0          60s
+
+
+PODS UPDATE: test-cluster-update-0-5-1   mymodel-mymodel-e2eb561-fbb6f756f-7jh6l      0/2     Terminating         0          68s
+
+
+PODS UPDATE: test-cluster-update-0-5-1   mymodel-mymodel-e2eb561-fbb6f756f-7jh6l      0/2     Terminating         0          69s
+
+
+PODS UPDATE: test-cluster-update-0-5-1   mymodel-mymodel-e2eb561-fbb6f756f-7jh6l      0/2     Terminating         0          69s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-wqf99   1/1     Terminating         0          25s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-wqf99   0/1     Terminating         0          26s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-wqf99   0/1     Terminating         0          27s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-wqf99   0/1     Terminating         0          27s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-6f6c4dfbc8-w52hz   0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon-system             deployment "mymodel-mymodel-e2eb561" successfully rolled out
+NAME      AGE
+mymodel   46s
+Release "seldon" has been upgraded. Happy Helming!
+NAME: seldon
+LAST DEPLOYED: Thu Feb 13 15:44:23 2020
+NAMESPACE: seldon-system
+STATUS: deployed
+REVISION: 2
+TEST SUITE: None
+NAME      AGE
+mymodel   51s
+PASSEDrelease "seldon" uninstalled
+customresourcedefinition.apiextensions.k8s.io "seldondeployments.machinelearning.seldon.io" deleted
+NAME: seldon
+LAST DEPLOYED: Thu Feb 13 15:44:28 2020
+NAMESPACE: seldon-system
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+namespace "test-cluster-update-1-0-0" deleted
+
+test_operator_updates.py::test_cluster_update[1.0.1] namespace/test-cluster-update-1-0-1 created
+release "seldon" uninstalled
+customresourcedefinition.apiextensions.k8s.io "seldondeployments.machinelearning.seldon.io" deleted
+NAME: seldon
+LAST DEPLOYED: Thu Feb 13 15:44:57 2020
+NAMESPACE: seldon-system
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+Error from server (InternalError): error when creating "../resources/graph1.json": Internal error occurred: failed calling webhook "mseldondeployment.kb.io": Post https://seldon-webhook-service.seldon-system.svc:443/mutate-machinelearning-seldon-io-v1alpha2-seldondeployment?timeout=30s: dial tcp 10.108.160.187:443: connect: connection refused
+seldondeployment.machinelearning.seldon.io/mymodel created
+deployment "mymodel-mymodel-e2eb561" successfully rolled out
+NAME      AGE
+mymodel   47s
+  seldon-controller-manager-6f6c4dfbc8-w52hz   0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-6f6c4dfbc8-w52hz   0/1     ContainerCreating   0          0s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-6f6c4dfbc8-w52hz   1/1     Running             0          6s
+
+
+PODS UPDATE: test-cluster-update-1-0-0   mymodel-mymodel-e2eb561-df56cfcf8-zq65r      0/2     Pending             0          0s
+
+
+PODS UPDATE: test-cluster-update-1-0-0   mymodel-mymodel-e2eb561-df56cfcf8-zq65r      0/2     Pending             0          0s
+
+
+PODS UPDATE: test-cluster-update-1-0-0   mymodel-mymodel-e2eb561-df56cfcf8-zq65r      0/2     ContainerCreating   0          0s
+
+
+PODS UPDATE: test-cluster-update-1-0-0   mymodel-mymodel-e2eb561-df56cfcf8-zq65r      0/2     Running             0          9s
+
+
+PODS UPDATE: test-cluster-update-1-0-0   mymodel-mymodel-e2eb561-df56cfcf8-zq65r      1/2     Running             0          24s
+
+
+PODS UPDATE: test-cluster-update-1-0-0   mymodel-mymodel-e2eb561-df56cfcf8-zq65r      2/2     Running             0          31s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-vppqm   0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-vppqm   0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-vppqm   0/1     ContainerCreating   0          0s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-vppqm   1/1     Running             0          2s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-6f6c4dfbc8-w52hz   1/1     Terminating         0          63s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-6f6c4dfbc8-w52hz   0/1     Terminating         0          64s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-vppqm   1/1     Terminating         0          3s
+
+
+PODS UPDATE: test-cluster-update-1-0-0   mymodel-mymodel-e2eb561-df56cfcf8-zq65r      2/2     Terminating         0          41s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-vppqm   0/1     Terminating         0          5s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-fgl9x   0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-fgl9x   0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-fgl9x   0/1     ContainerCreating   0          0s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-fgl9x   1/1     Running             0          2s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-vppqm   0/1     Terminating         0          10s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-vppqm   0/1     Terminating         0          10s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-6f6c4dfbc8-w52hz   0/1     Terminating         0          71s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-6f6c4dfbc8-w52hz   0/1     Terminating         0          71s
+
+
+PODS UPDATE: test-cluster-update-1-0-0   mymodel-mymodel-e2eb561-df56cfcf8-zq65r      0/2     Terminating         0          62s
+
+
+PODS UPDATE: test-cluster-update-1-0-0   mymodel-mymodel-e2eb561-df56cfcf8-zq65r      0/2     Terminating         0          67s
+
+
+PODS UPDATE: test-cluster-update-1-0-0   mymodel-mymodel-e2eb561-df56cfcf8-zq65r      0/2     Terminating         0          67s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-fgl9x   1/1     Terminating         0          27s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-fgl9x   0/1     Terminating         0          27s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-fgl9x   0/1  Release "seldon" has been upgraded. Happy Helming!
+NAME: seldon
+LAST DEPLOYED: Thu Feb 13 15:45:58 2020
+NAMESPACE: seldon-system
+STATUS: deployed
+REVISION: 2
+TEST SUITE: None
+NAME      AGE
+mymodel   52s
+PASSEDrelease "seldon" uninstalled
+customresourcedefinition.apiextensions.k8s.io "seldondeployments.machinelearning.seldon.io" deleted
+NAME: seldon
+LAST DEPLOYED: Thu Feb 13 15:46:03 2020
+NAMESPACE: seldon-system
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+namespace "test-cluster-update-1-0-1" deleted
+
+test_operator_updates.py::test_namespace_update[1.0.0] namespace/test-namespace-update-1-0-0 created
+release "seldon" uninstalled
+customresourcedefinition.apiextensions.k8s.io "seldondeployments.machinelearning.seldon.io" deleted
+NAME: seldon
+LAST DEPLOYED: Thu Feb 13 15:46:37 2020
+NAMESPACE: seldon-system
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+Error from server (InternalError): error when creating "../resources/graph1.json": Internal error occurred: failed calling webhook "mseldondeployment.kb.io": Post https://seldon-webhook-service.seldon-system.svc:443/mutate-machinelearning-seldon-io-v1alpha2-seldondeployment?timeout=30s: dial tcp 10.97.222.79:443: connect: connection refused
+seldondeployment.machinelearning.seldon.io/mymodel created
+deployment "mymodel-mymodel-e2eb561" successfully rolled out
+NAME      AGE
+mymodel   37s
+namespace/test-namespace-update-1-0-0 labeled
+   Terminating         0          28s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-fgl9x   0/1     Terminating         0          28s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-5dd5ffc74d-qhzwj   0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-5dd5ffc74d-qhzwj   0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-5dd5ffc74d-qhzwj   0/1     ContainerCreating   0          0s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-5dd5ffc74d-qhzwj   1/1     Running             0          5s
+
+
+PODS UPDATE: test-cluster-update-1-0-1   mymodel-mymodel-e2eb561-c97b7999d-hzt5k      0/2     Pending             0          0s
+
+
+PODS UPDATE: test-cluster-update-1-0-1   mymodel-mymodel-e2eb561-c97b7999d-hzt5k      0/2     Pending             0          0s
+
+
+PODS UPDATE: test-cluster-update-1-0-1   mymodel-mymodel-e2eb561-c97b7999d-hzt5k      0/2     ContainerCreating   0          0s
+
+
+PODS UPDATE: test-cluster-update-1-0-1   mymodel-mymodel-e2eb561-c97b7999d-hzt5k      0/2     Running             0          12s
+
+
+PODS UPDATE: test-cluster-update-1-0-1   mymodel-mymodel-e2eb561-c97b7999d-hzt5k      1/2     Running             0          22s
+
+
+PODS UPDATE: test-cluster-update-1-0-1   mymodel-mymodel-e2eb561-c97b7999d-hzt5k      2/2     Running             0          32s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-5rwrc   0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-5rwrc   0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-5rwrc   0/1     ContainerCreating   0          0s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-5rwrc   1/1     Running             0          1s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-5dd5ffc74d-qhzwj   1/1     Terminating         0          62s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-5dd5ffc74d-qhzwj   0/1     Terminating         0          63s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-5rwrc   1/1     Terminating         0          3s
+
+
+PODS UPDATE: test-cluster-update-1-0-1   mymodel-mymodel-e2eb561-c97b7999d-hzt5k      2/2     Terminating         0          42s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-5rwrc   0/1     Terminating         0          4s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-5dd5ffc74d-qhzwj   0/1     Terminating         0          66s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-5dd5ffc74d-qhzwj   0/1     Terminating         0          66s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-rznx6   0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-rznx6   0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-rznx6   0/1     ContainerCreating   0          0s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-rznx6   1/1     Running             0          1s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-5rwrc   0/1     Terminating         0          15s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-5rwrc   0/1     Terminating         0          15s
+
+
+PODS UPDATE: test-cluster-update-1-0-1   mymodel-mymodel-e2eb561-c97b7999d-hzt5k      0/2     Terminating         0          63s
+
+
+PODS UPDATE: test-cluster-update-1-0-1   mymodel-mymodel-e2eb561-c97b7999d-hzt5k      0/2     Terminating         0          73s
+
+
+PODS UPDATE: test-cluster-update-1-0-1   mymodel-mymodel-e2eb561-c97b7999d-hzt5k      0/2     Terminating         0          73s
+
+
+PODS UPDATE:NAME: seldon
+LAST DEPLOYED: Thu Feb 13 15:47:23 2020
+NAMESPACE: test-namespace-update-1-0-0
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+deployment "mymodel-mymodel-e2eb561" successfully rolled out
+NAME      AGE
+mymodel   66s
+PASSEDrelease "seldon" uninstalled
+customresourcedefinition.apiextensions.k8s.io "seldondeployments.machinelearning.seldon.io" deleted
+NAME: seldon
+LAST DEPLOYED: Thu Feb 13 15:47:54 2020
+NAMESPACE: seldon-system
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+namespace "test-namespace-update-1-0-0" deleted
+
+test_operator_updates.py::test_namespace_update[1.0.1] namespace/test-namespace-update-1-0-1 created
+release "seldon" uninstalled
+customresourcedefinition.apiextensions.k8s.io "seldondeployments.machinelearning.seldon.io" deleted
+ seldon-system               seldon-controller-manager-747589bdd4-rznx6   1/1     Terminating         0          31s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-rznx6   0/1     Terminating         0          31s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-6f6c4dfbc8-fszxh   0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-6f6c4dfbc8-fszxh   0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-6f6c4dfbc8-fszxh   0/1     ContainerCreating   0          0s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-6f6c4dfbc8-fszxh   1/1     Running             0          1s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-rznx6   0/1     Terminating         0          39s
+
+
+PODS UPDATE: seldon-system               seldon-controller-manager-747589bdd4-rznx6   0/1     Terminating         0          39s
+
+
+PODS UPDATE: test-namespace-update-1-0-0   mymodel-mymodel-e2eb561-bfddd67ff-tbgq4      0/2     Pending             0          0s
+
+
+PODS UPDATE: test-namespace-update-1-0-0   mymodel-mymodel-e2eb561-bfddd67ff-tbgq4      0/2     Pending             0          0s
+
+
+PODS UPDATE: test-namespace-update-1-0-0   mymodel-mymodel-e2eb561-bfddd67ff-tbgq4      0/2     ContainerCreating   0          0s
+
+
+PODS UPDATE: test-namespace-update-1-0-0   mymodel-mymodel-e2eb561-bfddd67ff-tbgq4      0/2     Running             0          1s
+
+
+PODS UPDATE: test-namespace-update-1-0-0   mymodel-mymodel-e2eb561-bfddd67ff-tbgq4      1/2     Running             0          22s
+
+
+PODS UPDATE: test-namespace-update-1-0-0   mymodel-mymodel-e2eb561-bfddd67ff-tbgq4      2/2     Running             0          23s
+
+
+PODS UPDATE: test-namespace-update-1-0-0   seldon-controller-manager-54949f5dd7-zlpsv   0/1     Pending             0          0s
+
+
+PODS UPDATE: test-namespace-update-1-0-0   seldon-controller-manager-54949f5dd7-zlpsv   0/1     Pending             0          0s
+
+
+PODS UPDATE: test-namespace-update-1-0-0   seldon-controller-manager-54949f5dd7-zlpsv   0/1     ContainerCreating   0          0s
+
+
+PODS UPDATE: test-namespace-update-1-0-0   seldon-controller-manager-54949f5dd7-zlpsv   1/1     Running             0          2s
+
+
+PODS UPDATE: test-namespace-update-1-0-0   mymodel-mymodel-e2eb561-778dd649f8-hr6db     0/2     Pending             0          0s
+
+
+PODS UPDATE: test-namespace-update-1-0-0   mymodel-mymodel-e2eb561-778dd649f8-hr6db     0/2     Pending             0          0s
+
+
+PODS UPDATE: test-namespace-update-1-0-0   mymodel-mymodel-e2eb561-778dd649f8-hr6db     0/2     ContainerCreating   0          0s
+
+
+PODS UPDATE: test-namespace-update-1-0-0   mymodel-mymodel-e2eb561-778dd649f8-hr6db     0/2     Running             0          2s
+
+
+PODS UPDATE: test-namespace-update-1-0-0   mymodel-mymodel-e2eb561-778dd649f8-hr6db     1/2     Running             0          23s
+
+
+PODS UPDATE: test-namespace-update-1-0-0   mymodel-mymodel-e2eb561-778dd649f8-hr6db     2/2     Running             0          24s
+
+
+PODS UPDATE: test-namespace-update-1-0-0   mymodel-mymodel-e2eb561-bfddd67ff-tbgq4      2/2     Terminating         0          52s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-6f6c4dfbc8-fszxh   1/1     Terminating         0          76s
+
+
+PODS UPDATE: test-namespace-update-1-0-0   mymodel-mymodel-e2eb561-778dd649f8-hr6db     2/2     Terminating         0          28s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-6f6c4dfbc8-fszxh   0/1     Terminating         0          77s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-747589bdd4-zmmfg   0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-747589bdd4-zmmfg   0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-747589bdd4-zmmfg   0/1     ContainerCreating   0          0s
+
+
+PODS UPDATE: seldon-NAME: seldon
+LAST DEPLOYED: Thu Feb 13 15:48:28 2020
+NAMESPACE: seldon-system
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+seldondeployment.machinelearning.seldon.io/mymodel created
+deployment "mymodel-mymodel-e2eb561" successfully rolled out
+NAME      AGE
+mymodel   42s
+namespace/test-namespace-update-1-0-1 labeled
+NAME: seldon
+LAST DEPLOYED: Thu Feb 13 15:49:17 2020
+NAMESPACE: test-namespace-update-1-0-1
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+Waiting for deployment "mymodel-mymodel-e2eb561" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "mymodel-mymodel-e2eb561" rollout to finish: 1 old replicas are pending termination...
+deployment "mymodel-mymodel-e2eb561" successfully rolled out
+NAME      AGE
+mymodel   70s
+PASSEDrelease "seldon" uninstalled
+customresourcedefinition.apiextensions.k8s.io "seldondeployments.machinelearning.seldon.io" deleted
+NAME: seldon
+LAST DEPLOYED: Thu Feb 13 15:49:46 2020
+NAMESPACE: seldon-system
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+namespace "test-namespace-update-1-0-1" deleted
+system                 seldon-controller-manager-747589bdd4-zmmfg   1/1     Running             0          2s
+
+
+PODS UPDATE: test-namespace-update-1-0-0   seldon-controller-manager-54949f5dd7-zlpsv   1/1     Terminating         0          39s
+
+
+PODS UPDATE: test-namespace-update-1-0-0   seldon-controller-manager-54949f5dd7-zlpsv   0/1     Terminating         0          40s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-6f6c4dfbc8-fszxh   0/1     Terminating         0          86s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-6f6c4dfbc8-fszxh   0/1     Terminating         0          86s
+
+
+PODS UPDATE: test-namespace-update-1-0-0   mymodel-mymodel-e2eb561-778dd649f8-hr6db     1/2     Terminating         0          39s
+
+
+PODS UPDATE: test-namespace-update-1-0-0   seldon-controller-manager-54949f5dd7-zlpsv   0/1     Terminating         0          41s
+
+
+PODS UPDATE: test-namespace-update-1-0-0   seldon-controller-manager-54949f5dd7-zlpsv   0/1     Terminating         0          41s
+
+
+PODS UPDATE: test-namespace-update-1-0-0   mymodel-mymodel-e2eb561-bfddd67ff-tbgq4      0/2     Terminating         0          73s
+
+
+PODS UPDATE: test-namespace-update-1-0-0   mymodel-mymodel-e2eb561-bfddd67ff-tbgq4      0/2     Terminating         0          74s
+
+
+PODS UPDATE: test-namespace-update-1-0-0   mymodel-mymodel-e2eb561-bfddd67ff-tbgq4      0/2     Terminating         0          76s
+
+
+PODS UPDATE: test-namespace-update-1-0-0   mymodel-mymodel-e2eb561-bfddd67ff-tbgq4      0/2     Terminating         0          76s
+
+
+PODS UPDATE: test-namespace-update-1-0-0   mymodel-mymodel-e2eb561-778dd649f8-hr6db     0/2     Terminating         0          49s
+
+
+PODS UPDATE: test-namespace-update-1-0-0   mymodel-mymodel-e2eb561-778dd649f8-hr6db     0/2     Terminating         0          50s
+
+
+PODS UPDATE: test-namespace-update-1-0-0   mymodel-mymodel-e2eb561-778dd649f8-hr6db     0/2     Terminating         0          58s
+
+
+PODS UPDATE: test-namespace-update-1-0-0   mymodel-mymodel-e2eb561-778dd649f8-hr6db     0/2     Terminating         0          58s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-747589bdd4-zmmfg   1/1     Terminating         0          32s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-747589bdd4-zmmfg   0/1     Terminating         0          33s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-747589bdd4-zmmfg   0/1     Terminating         0          34s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-747589bdd4-zmmfg   0/1     Terminating         0          34s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-5dd5ffc74d-pd7vx   0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-5dd5ffc74d-pd7vx   0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-5dd5ffc74d-pd7vx   0/1     ContainerCreating   0          0s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-5dd5ffc74d-pd7vx   1/1     Running             0          3s
+
+
+PODS UPDATE: test-namespace-update-1-0-1   mymodel-mymodel-e2eb561-74f48678d7-ntx29     0/2     Pending             0          0s
+
+
+PODS UPDATE: test-namespace-update-1-0-1   mymodel-mymodel-e2eb561-74f48678d7-ntx29     0/2     Pending             0          0s
+
+
+PODS UPDATE: test-namespace-update-1-0-1   mymodel-mymodel-e2eb561-74f48678d7-ntx29     0/2     ContainerCreating   0          0s
+
+
+PODS UPDATE: test-namespace-update-1-0-1   mymodel-mymodel-e2eb561-74f48678d7-ntx29     0/2     Running             0          2s
+
+
+PODS UPDATE: test-namespace-update-1-0-1   mymodel-mymodel-e2eb561-74f48678d7-ntx29     1/2     Running             0          22s
+
+
+PODS UPDATE: test-namespace-update-1-0-1   mymodel-mymodel-e2eb561-74f48678d7-ntx29     2/2     Running             0          24s
+
+
+PODS UPDATE: test-namespace-update-1-0-1   seldon-controller-manager-85c9546f98-2z4x8   0/1     Pending             0          0s
+
+
+POD
+test_operator_updates.py::test_label_update[1.0.0] namespace/test-label-update-1-0-0 created
+release "seldon" uninstalled
+customresourcedefinition.apiextensions.k8s.io "seldondeployments.machinelearning.seldon.io" deleted
+NAME: seldon
+LAST DEPLOYED: Thu Feb 13 15:50:17 2020
+NAMESPACE: seldon-system
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+Error from server (InternalError): error when creating "../resources/graph1.json": Internal error occurred: failed calling webhook "mseldondeployment.kb.io": Post https://seldon-webhook-service.seldon-system.svc:443/mutate-machinelearning-seldon-io-v1alpha2-seldondeployment?timeout=30s: dial tcp 10.101.105.1:443: connect: connection refused
+seldondeployment.machinelearning.seldon.io/mymodel created
+deployment "mymodel-mymodel-e2eb561" successfully rolled out
+NAME      AGE
+mymodel   42s
+NAME: seldon-test-label-update-1-0-0
+LAST DEPLOYED: Thu Feb 13 15:51:09 2020
+NAMESPACE: test-label-update-1-0-0
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+seldondeployment.machinelearning.seldon.io/mymodel labeled
+Waiting for deployment "mymodel-mymodel-e2eb561" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "mymodel-mymodel-e2eb561" rollout to finish: 1 old replicas are pending termination...
+deployment "mymodel-mymodel-e2eb561" successfully rolled out
+NAME      AGE
+mymodel   71s
+S UPDATE: test-namespace-update-1-0-1   seldon-controller-manager-85c9546f98-2z4x8   0/1     Pending             0          0s
+
+
+PODS UPDATE: test-namespace-update-1-0-1   seldon-controller-manager-85c9546f98-2z4x8   0/1     ContainerCreating   0          0s
+
+
+PODS UPDATE: test-namespace-update-1-0-1   seldon-controller-manager-85c9546f98-2z4x8   1/1     Running             0          1s
+
+
+PODS UPDATE: test-namespace-update-1-0-1   mymodel-mymodel-e2eb561-5cc895c959-hbcrr     0/2     Pending             0          0s
+
+
+PODS UPDATE: test-namespace-update-1-0-1   mymodel-mymodel-e2eb561-5cc895c959-hbcrr     0/2     Pending             0          0s
+
+
+PODS UPDATE: test-namespace-update-1-0-1   mymodel-mymodel-e2eb561-5cc895c959-hbcrr     0/2     ContainerCreating   0          0s
+
+
+PODS UPDATE: test-namespace-update-1-0-1   mymodel-mymodel-e2eb561-5cc895c959-hbcrr     0/2     Running             0          2s
+
+
+PODS UPDATE: test-namespace-update-1-0-1   mymodel-mymodel-e2eb561-5cc895c959-hbcrr     1/2     Running             0          21s
+
+
+PODS UPDATE: test-namespace-update-1-0-1   mymodel-mymodel-e2eb561-5cc895c959-hbcrr     2/2     Running             0          24s
+
+
+PODS UPDATE: test-namespace-update-1-0-1   mymodel-mymodel-e2eb561-74f48678d7-ntx29     2/2     Terminating         0          54s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-5dd5ffc74d-pd7vx   1/1     Terminating         0          76s
+
+
+PODS UPDATE: test-namespace-update-1-0-1   mymodel-mymodel-e2eb561-5cc895c959-hbcrr     2/2     Terminating         0          26s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-5dd5ffc74d-pd7vx   0/1     Terminating         0          77s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-747589bdd4-pj5lg   0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-747589bdd4-pj5lg   0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-747589bdd4-pj5lg   0/1     ContainerCreating   0          0s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-5dd5ffc74d-pd7vx   0/1     Terminating         0          78s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-5dd5ffc74d-pd7vx   0/1     Terminating         0          78s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-747589bdd4-pj5lg   1/1     Running             0          1s
+
+
+PODS UPDATE: test-namespace-update-1-0-1   seldon-controller-manager-85c9546f98-2z4x8   1/1     Terminating         0          37s
+
+
+PODS UPDATE: test-namespace-update-1-0-1   seldon-controller-manager-85c9546f98-2z4x8   0/1     Terminating         0          38s
+
+
+PODS UPDATE: test-namespace-update-1-0-1   seldon-controller-manager-85c9546f98-2z4x8   0/1     Terminating         0          39s
+
+
+PODS UPDATE: test-namespace-update-1-0-1   seldon-controller-manager-85c9546f98-2z4x8   0/1     Terminating         0          39s
+
+
+PODS UPDATE: test-namespace-update-1-0-1   mymodel-mymodel-e2eb561-5cc895c959-hbcrr     1/2     Terminating         0          39s
+
+
+PODS UPDATE: test-namespace-update-1-0-1   mymodel-mymodel-e2eb561-74f48678d7-ntx29     0/2     Terminating         0          75s
+
+
+PODS UPDATE: test-namespace-update-1-0-1   mymodel-mymodel-e2eb561-5cc895c959-hbcrr     0/2     Terminating         0          46s
+
+
+PODS UPDATE: test-namespace-update-1-0-1   mymodel-mymodel-e2eb561-5cc895c959-hbcrr     0/2     Terminating         0          54s
+
+
+PODS UPDATE: test-namespace-update-1-0-1   mymodel-mymodel-e2eb561-5cc895c959-hbcrr     0/2     Terminating         0          54s
+
+
+PODS UPDATE: test-namespace-update-1-0-1   mymodel-mymodel-e2eb561-74f48678d7-ntx29     0/2     Terminating         0          84s
+
+
+PODS UPDATE: test-namespace-update-1-0-1   mymodel-mymodel-e2eb561-74f48678d7-ntx29     0/2     Terminating         0          84s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-747589bdd4-pj5lg   1/1     Terminating         0   release "seldon-test-label-update-1-0-0" uninstalled
+PASSEDrelease "seldon" uninstalled
+customresourcedefinition.apiextensions.k8s.io "seldondeployments.machinelearning.seldon.io" deleted
+NAME: seldon
+LAST DEPLOYED: Thu Feb 13 15:51:40 2020
+NAMESPACE: seldon-system
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+namespace "test-label-update-1-0-0" deleted
+
+test_operator_updates.py::test_label_update[1.0.1] namespace/test-label-update-1-0-1 created
+release "seldon" uninstalled
+customresourcedefinition.apiextensions.k8s.io "seldondeployments.machinelearning.seldon.io" deleted
+NAME: seldon
+LAST DEPLOYED: Thu Feb 13 15:52:09 2020
+NAMESPACE: seldon-system
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+Error from server (InternalError): error when creating "../resources/graph1.json": Internal error occurred: failed calling webhook "mseldondeployment.kb.io": Post https://seldon-webhook-service.seldon-system.svc:443/mutate-machinelearning-seldon-io-v1alpha2-seldondeployment?timeout=30s: dial tcp 10.106.230.159:443: connect: connection refused
+seldondeployment.machinelearning.seldon.io/mymodel created
+       29s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-747589bdd4-pj5lg   0/1     Terminating         0          30s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-6f6c4dfbc8-l5h7t   0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-6f6c4dfbc8-l5h7t   0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-6f6c4dfbc8-l5h7t   0/1     ContainerCreating   0          0s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-6f6c4dfbc8-l5h7t   1/1     Running             0          2s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-747589bdd4-pj5lg   0/1     Terminating         0          37s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-747589bdd4-pj5lg   0/1     Terminating         0          37s
+
+
+PODS UPDATE: test-label-update-1-0-0       mymodel-mymodel-e2eb561-7574577f98-dfwm6     0/2     Pending             0          0s
+
+
+PODS UPDATE: test-label-update-1-0-0       mymodel-mymodel-e2eb561-7574577f98-dfwm6     0/2     Pending             0          0s
+
+
+PODS UPDATE: test-label-update-1-0-0       mymodel-mymodel-e2eb561-7574577f98-dfwm6     0/2     ContainerCreating   0          0s
+
+
+PODS UPDATE: test-label-update-1-0-0       mymodel-mymodel-e2eb561-7574577f98-dfwm6     0/2     Running             0          1s
+
+
+PODS UPDATE: test-label-update-1-0-0       mymodel-mymodel-e2eb561-7574577f98-dfwm6     1/2     Running             0          24s
+
+
+PODS UPDATE: test-label-update-1-0-0       mymodel-mymodel-e2eb561-7574577f98-dfwm6     2/2     Running             0          25s
+
+
+PODS UPDATE: test-label-update-1-0-0       seldon-controller-manager-5df8f465b4-bs76p   0/1     Pending             0          0s
+
+
+PODS UPDATE: test-label-update-1-0-0       seldon-controller-manager-5df8f465b4-bs76p   0/1     Pending             0          0s
+
+
+PODS UPDATE: test-label-update-1-0-0       seldon-controller-manager-5df8f465b4-bs76p   0/1     ContainerCreating   0          0s
+
+
+PODS UPDATE: test-label-update-1-0-0       seldon-controller-manager-5df8f465b4-bs76p   1/1     Running             0          1s
+
+
+PODS UPDATE: test-label-update-1-0-0       mymodel-mymodel-e2eb561-7bc7b8f4f5-7gwkz     0/2     Pending             0          0s
+
+
+PODS UPDATE: test-label-update-1-0-0       mymodel-mymodel-e2eb561-7bc7b8f4f5-7gwkz     0/2     Pending             0          0s
+
+
+PODS UPDATE: test-label-update-1-0-0       mymodel-mymodel-e2eb561-7bc7b8f4f5-7gwkz     0/2     ContainerCreating   0          0s
+
+
+PODS UPDATE: test-label-update-1-0-0       mymodel-mymodel-e2eb561-7bc7b8f4f5-7gwkz     0/2     Running             0          1s
+
+
+PODS UPDATE: test-label-update-1-0-0       mymodel-mymodel-e2eb561-7bc7b8f4f5-7gwkz     1/2     Running             0          25s
+
+
+PODS UPDATE: test-label-update-1-0-0       mymodel-mymodel-e2eb561-7bc7b8f4f5-7gwkz     2/2     Running             0          25s
+
+
+PODS UPDATE: test-label-update-1-0-0       mymodel-mymodel-e2eb561-7574577f98-dfwm6     2/2     Terminating         0          58s
+
+
+PODS UPDATE: test-label-update-1-0-0       seldon-controller-manager-5df8f465b4-bs76p   1/1     Terminating         0          28s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-6f6c4dfbc8-l5h7t   1/1     Terminating         0          81s
+
+
+PODS UPDATE: test-label-update-1-0-0       seldon-controller-manager-5df8f465b4-bs76p   0/1     Terminating         0          30s
+
+
+PODS UPDATE: test-label-update-1-0-0       mymodel-mymodel-e2eb561-7bc7b8f4f5-7gwkz     2/2     Terminating         0          28s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-6f6c4dfbc8-l5h7t   0/1     Terminating         0          83s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-747589bdd4-w4rxl   0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-747589bdd4-w4rxl   0/1     Pending       deployment "mymodel-mymodel-e2eb561" successfully rolled out
+NAME      AGE
+mymodel   41s
+NAME: seldon-test-label-update-1-0-1
+LAST DEPLOYED: Thu Feb 13 15:53:01 2020
+NAMESPACE: test-label-update-1-0-1
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+seldondeployment.machinelearning.seldon.io/mymodel labeled
+Waiting for deployment "mymodel-mymodel-e2eb561" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "mymodel-mymodel-e2eb561" rollout to finish: 1 old replicas are pending termination...
+deployment "mymodel-mymodel-e2eb561" successfully rolled out
+NAME      AGE
+mymodel   70s
+release "seldon-test-label-update-1-0-1" uninstalled
+PASSEDrelease "seldon" uninstalled
+customresourcedefinition.apiextensions.k8s.io "seldondeployments.machinelearning.seldon.io" deleted
+NAME: seldon
+LAST DEPLOYED: Thu Feb 13 15:53:31 2020
+NAMESPACE: seldon-system
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+namespace "test-label-update-1-0-1" deleted
+      0          0s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-747589bdd4-w4rxl   0/1     ContainerCreating   0          0s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-747589bdd4-w4rxl   1/1     Running             0          2s
+
+
+PODS UPDATE: test-label-update-1-0-0       seldon-controller-manager-5df8f465b4-bs76p   0/1     Terminating         0          34s
+
+
+PODS UPDATE: test-label-update-1-0-0       seldon-controller-manager-5df8f465b4-bs76p   0/1     Terminating         0          34s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-6f6c4dfbc8-l5h7t   0/1     Terminating         0          86s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-6f6c4dfbc8-l5h7t   0/1     Terminating         0          86s
+
+
+PODS UPDATE: test-label-update-1-0-0       mymodel-mymodel-e2eb561-7bc7b8f4f5-7gwkz     1/2     Terminating         0          40s
+
+
+PODS UPDATE: test-label-update-1-0-0       mymodel-mymodel-e2eb561-7574577f98-dfwm6     0/2     Terminating         0          80s
+
+
+PODS UPDATE: test-label-update-1-0-0       mymodel-mymodel-e2eb561-7574577f98-dfwm6     0/2     Terminating         0          80s
+
+
+PODS UPDATE: test-label-update-1-0-0       mymodel-mymodel-e2eb561-7bc7b8f4f5-7gwkz     0/2     Terminating         0          49s
+
+
+PODS UPDATE: test-label-update-1-0-0       mymodel-mymodel-e2eb561-7bc7b8f4f5-7gwkz     0/2     Terminating         0          49s
+
+
+PODS UPDATE: test-label-update-1-0-0       mymodel-mymodel-e2eb561-7bc7b8f4f5-7gwkz     0/2     Terminating         0          52s
+
+
+PODS UPDATE: test-label-update-1-0-0       mymodel-mymodel-e2eb561-7bc7b8f4f5-7gwkz     0/2     Terminating         0          52s
+
+
+PODS UPDATE: test-label-update-1-0-0       mymodel-mymodel-e2eb561-7574577f98-dfwm6     0/2     Terminating         0          85s
+
+
+PODS UPDATE: test-label-update-1-0-0       mymodel-mymodel-e2eb561-7574577f98-dfwm6     0/2     Terminating         0          85s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-747589bdd4-w4rxl   1/1     Terminating         0          25s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-747589bdd4-w4rxl   0/1     Terminating         0          27s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-5dd5ffc74d-qqjm8   0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-5dd5ffc74d-qqjm8   0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-5dd5ffc74d-qqjm8   0/1     ContainerCreating   0          0s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-5dd5ffc74d-qqjm8   1/1     Running             0          2s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-747589bdd4-w4rxl   0/1     Terminating         0          32s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-747589bdd4-w4rxl   0/1     Terminating         0          32s
+
+
+PODS UPDATE: test-label-update-1-0-1       mymodel-mymodel-e2eb561-5dddc789c4-s2sdw     0/2     Pending             0          0s
+
+
+PODS UPDATE: test-label-update-1-0-1       mymodel-mymodel-e2eb561-5dddc789c4-s2sdw     0/2     Pending             0          0s
+
+
+PODS UPDATE: test-label-update-1-0-1       mymodel-mymodel-e2eb561-5dddc789c4-s2sdw     0/2     ContainerCreating   0          0s
+
+
+PODS UPDATE: test-label-update-1-0-1       mymodel-mymodel-e2eb561-5dddc789c4-s2sdw     0/2     Running             0          2s
+
+
+PODS UPDATE: test-label-update-1-0-1       mymodel-mymodel-e2eb561-5dddc789c4-s2sdw     1/2     Running             0          24s
+
+
+PODS UPDATE: test-label-update-1-0-1       mymodel-mymodel-e2eb561-5dddc789c4-s2sdw     2/2     Running             0          25s
+
+
+PODS UPDATE: test-label-update-1-0-1       seldon-controller-manager-76f4b44fd7-ws2zx   0/1     Pending             0          0s
+
+
+PODS UPDATE: test-label-update-1-0-1       seldon-controller-manager-76f4b44fd7-ws2zx   0/1    
+test_s2i_python.py::TestPythonS2i::test_build_router_rest ---> Installing application source...
+Build completed successfully
+40a0d0cf91278843a2e6addaffa48828885789dd7c8e6b382817919e57ac503e
+router-rest
+PASSED
+test_s2i_python.py::TestPythonS2i::test_build_router_grpc ---> Installing application source...
+Build completed successfully
+ee62f2c1aa5d55f12588bcfe46f5e1283e2e0009a824d27f9ffa60f1edf707f2
+router-grpc
+PASSED
+test_s2i_python.py::TestPythonS2i::test_build_model_rest ---> Installing application source...
+Build completed successfully
+1ec657eee66390714be882b25914f405211a8fcf61e17c41ce55041c964073fa
+model-rest
+PASSED
+test_s2i_python.py::TestPythonS2i::test_build_model_grpc ---> Installing application source...
+Build completed successfully
+c568f915f17443c8d5331f2cd495206c59a14fe384e91f40a862393742346aa2
+model-grpc
+PASSED
+test_s2i_python.py::TestPythonS2i::test_build_transformer_rest ---> Installing application source...
+Build completed successfully
+44b0bb8c0849156ad907aaff76447a783864d5aacdbddbc7727da5b5c03072d5
+transformer-rest
+PASSED
+test_s2i_python.py::TestPythonS2i::test_build_transformer_grpc ---> Installing application source...
+Build completed successfully
+7056f02a5fb68b233709017a429753e119b1b27ccbfd46cacf729e0700abaa1a
+transformer-grpc
+PASSED
+test_s2i_python.py::TestPythonS2i::test_build_combiner_rest ---> Installing application source...
+Build completed successfully
+491443399b7d42aa0260306b310c3cc7e40e32b7fb4605b0bd63ff825afaa5db
+combiner-rest
+PASSED
+test_s2i_python.py::TestPythonS2i::test_build_combiner_grpc ---> Installing application source...
+Build completed successfully
+88989e0ee929611e6e85482686a6ac0a1541185fa4181b12939027063525a2af
+combiner-grpc
+PASSED
+test_s2i_python.py::TestPythonS2iK8s::test_model_rest namespace/test-model-rest created
+---> Installing application source...
+Build completed successfully
+Image: "seldonio/testmodel_rest:0.1" with ID "sha256:d3b67845755b4ff0065fc151fc61ffd765ac0c098f078f6ec42a90f2b0c7251f" not present on node "kind-control-plane"
+Image: "seldonio/testmodel_rest:0.1" with ID "sha256:d3b67845755b4ff0065fc151fc61ffd765ac0c098f078f6ec42a90f2b0c7251f" not present on node "kind-worker"
+seldondeployment.machinelearning.seldon.io/mymodel created
+deployment "mymodel-mymodel-8715075" successfully rolled out
+seldondeployment.machinelearning.seldon.io "mymodel" deleted
+PASSEDnamespace "test-model-rest" deleted
+
+test_s2i_python.py::TestPythonS2iK8s::test_model_rest_non200 namespace/test-model-rest-non200 created
+---> Installing application source...
+Build completed successfully
+Image: "seldonio/testmodel_rest_non200:0.1" with ID "sha256:f9c4d943224402c550ab9013ea9fdbd310c7f364941fe5bf1ec88722c1c3241f" not present on node "kind-control-plane"
+Image: "seldonio/testmodel_rest_non200:0.1" with ID "sha256:f9c4d943224402c550ab9013ea9fdbd310c7f364941fe5bf1ec88722c1c3241f" not present on node "kind-worker"
+seldondeployment.machinelearning.seldon.io/mymodel created
+deployment "mymodel-mymodel-4e3d66d" successfully rolled out
+seldondeployment.machinelearning.seldon.io "mymodel" deleted
+PASSEDnamespace "test-model-rest-non200" deleted
+
+test_s2i_python.py::TestPythonS2iK8s::test_input_transformer_rest namespace/test-input-transformer-rest created
+---> Installing application source...
+Build completed successfully
+Image: "seldonio/testtransformer_rest:0.1" with ID "sha256:b41697405d004fbdb975162eb4b66077a6492a452b4e3da230b3b02d28867714" not present on node "kind-control-plane"
+Image: "seldonio/testtransformer_rest:0.1" with ID "sha256:b41697405d004fbdb975162eb4b66077a6492a452b4e3da230b3b02d28867714" not present on node "kind-worker"
+seldondeployment.machinelearning.seldon.io/mytrans created
+deployment "mytrans-mytrans-1f278ae" successfully rolled out
+seldondeployment.machinelearning.seldon.io "mytrans" deleted
+PASSEDnamespace "test-input-transformer-rest" deleted
+ Pending             0          0s
+
+
+PODS UPDATE: test-label-update-1-0-1       seldon-controller-manager-76f4b44fd7-ws2zx   0/1     ContainerCreating   0          0s
+
+
+PODS UPDATE: test-label-update-1-0-1       seldon-controller-manager-76f4b44fd7-ws2zx   1/1     Running             0          2s
+
+
+PODS UPDATE: test-label-update-1-0-1       mymodel-mymodel-e2eb561-7fc69b8678-zckg2     0/2     Pending             0          0s
+
+
+PODS UPDATE: test-label-update-1-0-1       mymodel-mymodel-e2eb561-7fc69b8678-zckg2     0/2     Pending             0          0s
+
+
+PODS UPDATE: test-label-update-1-0-1       mymodel-mymodel-e2eb561-7fc69b8678-zckg2     0/2     ContainerCreating   0          0s
+
+
+PODS UPDATE: test-label-update-1-0-1       mymodel-mymodel-e2eb561-7fc69b8678-zckg2     0/2     Running             0          2s
+
+
+PODS UPDATE: test-label-update-1-0-1       mymodel-mymodel-e2eb561-7fc69b8678-zckg2     1/2     Running             0          21s
+
+
+PODS UPDATE: test-label-update-1-0-1       mymodel-mymodel-e2eb561-7fc69b8678-zckg2     2/2     Running             0          23s
+
+
+PODS UPDATE: test-label-update-1-0-1       mymodel-mymodel-e2eb561-5dddc789c4-s2sdw     2/2     Terminating         0          58s
+
+
+PODS UPDATE: test-label-update-1-0-1       seldon-controller-manager-76f4b44fd7-ws2zx   1/1     Terminating         0          27s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-5dd5ffc74d-qqjm8   1/1     Terminating         0          80s
+
+
+PODS UPDATE: test-label-update-1-0-1       seldon-controller-manager-76f4b44fd7-ws2zx   0/1     Terminating         0          28s
+
+
+PODS UPDATE: test-label-update-1-0-1       mymodel-mymodel-e2eb561-7fc69b8678-zckg2     2/2     Terminating         0          25s
+
+
+PODS UPDATE: test-label-update-1-0-1       seldon-controller-manager-76f4b44fd7-ws2zx   0/1     Terminating         0          29s
+
+
+PODS UPDATE: test-label-update-1-0-1       seldon-controller-manager-76f4b44fd7-ws2zx   0/1     Terminating         0          29s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-5dd5ffc74d-qqjm8   0/1     Terminating         0          81s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-747589bdd4-mbwdc   0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-747589bdd4-mbwdc   0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-747589bdd4-mbwdc   0/1     ContainerCreating   0          0s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-5dd5ffc74d-qqjm8   0/1     Terminating         0          84s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-5dd5ffc74d-qqjm8   0/1     Terminating         0          84s
+
+
+PODS UPDATE: seldon-system                 seldon-controller-manager-747589bdd4-mbwdc   1/1     Running             0          3s
+
+
+PODS UPDATE: test-label-update-1-0-1       mymodel-mymodel-e2eb561-7fc69b8678-zckg2     1/2     Terminating         0          38s
+
+
+PODS UPDATE: test-label-update-1-0-1       mymodel-mymodel-e2eb561-5dddc789c4-s2sdw     0/2     Terminating         0          79s
+
+
+PODS UPDATE: test-label-update-1-0-1       mymodel-mymodel-e2eb561-5dddc789c4-s2sdw     0/2     Terminating         0          79s
+
+
+PODS UPDATE: test-label-update-1-0-1       mymodel-mymodel-e2eb561-7fc69b8678-zckg2     0/2     Terminating         0          46s
+
+
+PODS UPDATE: test-label-update-1-0-1       mymodel-mymodel-e2eb561-7fc69b8678-zckg2     0/2     Terminating         0          47s
+
+
+PODS UPDATE: test-label-update-1-0-1       mymodel-mymodel-e2eb561-5dddc789c4-s2sdw     0/2     Terminating         0          84s
+
+
+PODS UPDATE: test-label-update-1-0-1       mymodel-mymodel-e2eb561-5dddc789c4-s2sdw     0/2     Terminating         0          84s
+
+
+PODS UPDATE: test-label-update-1-0-1       mymodel-mymodel-e2eb561-7fc69b8678-zckg2     0/2     Terminating         0          49s
+
+
+PODS UPDATE: test-label-update-1-0-1       mymodel-mymodel-e2eb561-7fc69b8678-zckg2     0/2     Terminating         0          49s
+
+
+PODS UPDATE: test-model-rest               mymodel-mymodel-8715075-646bdd79bf-jj9dr     0/2     Pending             0          0s
+
+
+PODS UPDATE: test-model-rest               mymodel-mymodel-8715075-646bdd79bf-jj9dr     0/2     Pending             0          0s
+
+
+PODS UPDATE: test-model-rest               mymodel-mymodel-8715075-646bdd79bf-jj9dr     0/2     ContainerCreating   0          0s
+
+
+PODS UPDATE: test-model-rest               mymodel-mymodel-8715075-646bdd79bf-jj9dr     0/2     Running             0          16s
+
+
+PODS UPDATE: test-model-rest               mymodel-mymodel-8715075-646bdd79bf-jj9dr     1/2     Running             0          35s
+
+
+PODS UPDATE: test-model-rest               mymodel-mymodel-8715075-646bdd79bf-jj9dr     2/2     Running             0          37s
+
+
+PODS UPDATE: test-model-rest               mymodel-mymodel-8715075-646bdd79bf-jj9dr     2/2     Terminating         0          42s
+
+
+PODS UPDATE: test-model-rest               mymodel-mymodel-8715075-646bdd79bf-jj9dr     1/2     Terminating         0          55s
+
+
+PODS UPDATE: test-model-rest               mymodel-mymodel-8715075-646bdd79bf-jj9dr     0/2     Terminating         0          63s
+
+
+PODS UPDATE: test-model-rest               mymodel-mymodel-8715075-646bdd79bf-jj9dr     0/2     Terminating         0          63s
+
+
+PODS UPDATE: test-model-rest               mymodel-mymodel-8715075-646bdd79bf-jj9dr     0/2     Terminating         0          64s
+
+
+PODS UPDATE: test-model-rest               mymodel-mymodel-8715075-646bdd79bf-jj9dr     0/2     Terminating         0          64s
+
+
+PODS UPDATE: test-model-rest-non200        mymodel-mymodel-4e3d66d-68c67575fb-hdbv8     0/2     Pending             0          0s
+
+
+PODS UPDATE: test-model-rest-non200        mymodel-mymodel-4e3d66d-68c67575fb-hdbv8     0/2     Pending             0          0s
+
+
+PODS UPDATE: test-model-rest-non200        mymodel-mymodel-4e3d66d-68c67575fb-hdbv8     0/2     ContainerCreating   0          0s
+
+
+PODS UPDATE: test-model-rest-non200        mymodel-mymodel-4e3d66d-68c67575fb-hdbv8     0/2     Running             0          2s
+
+
+PODS UPDATE: test-model-rest-non200        mymodel-mymodel-4e3d66d-68c67575fb-hdbv8     1/2     Running             0          23s
+
+
+PODS UPDATE: test-model-rest-non200        mymodel-mymodel-4e3d66d-68c67575fb-hdbv8     2/2     Running             0          24s
+
+
+PODS UPDATE: test-model-rest-non200        mymodel-mymodel-4e3d66d-68c67575fb-hdbv8     2/2     Terminating         0          43s
+
+
+PODS UPDATE: test-model-rest-non200        mymodel-mymodel-4e3d66d-68c67575fb-hdbv8     1/2     Terminating         0          54s
+
+
+PODS UPDATE: test-model-rest-non200        mymodel-mymodel-4e3d66d-68c67575fb-hdbv8     0/2     Terminating         0          64s
+
+
+PODS UPDATE: test-model-rest-non200        mymodel-mymodel-4e3d66d-68c67575fb-hdbv8     0/2     Terminating         0          71s
+
+
+PODS UPDATE: test-model-rest-non200        mymodel-mymodel-4e3d66d-68c67575fb-hdbv8     0/2     Terminating         0          71s
+
+
+PODS UPDATE: test-input-transformer-rest   mytrans-mytrans-1f278ae-587f6b6db8-bj2vn     0/2     Pending             0          0s
+
+
+PODS UPDATE: test-input-transformer-rest   mytrans-mytrans-1f278ae-587f6b6db8-bj2vn     0/2     Pending             0          0s
+
+
+PODS UPDATE: test-input-transformer-rest   mytrans-mytrans-1f278ae-587f6b6db8-bj2vn     0/2     ContainerCreating   0          0s
+
+
+PODS UPDATE: test-input-transformer-rest   mytrans-mytrans-1f278ae-587f6b6db8-bj2vn     0/2     Running             0          1s
+
+
+PODS UPDATE: test-input-transformer-rest   mytrans-mytrans-1f278ae-587f6b6db8-bj2vn     1/2     Running             0          22s
+
+
+PODS UPDATE: test-input-transformer-rest   mytrans-mytrans-1f278ae-587f6b6db8-bj2vn     2/2     Running             0          24s
+
+
+PODS UPDATE: test-input-transformer-rest   mytrans-mytrans-1f278ae-587f6b6db8-bj2vn     2/2     Terminating         0          26s
+
+
+PODS UPDATE: test-input-transformer-rest   mytrans-mytrans-1f27
+test_s2i_python.py::TestPythonS2iK8s::test_output_transformer_rest namespace/test-output-transformer-rest created
+---> Installing application source...
+Build completed successfully
+Image: "seldonio/testtransformer_rest:0.1" with ID "sha256:af9d86942fc90935ce169939811cc110ea26b24f290f4cea8eb02f6f17152c7c" not present on node "kind-control-plane"
+Image: "seldonio/testtransformer_rest:0.1" with ID "sha256:af9d86942fc90935ce169939811cc110ea26b24f290f4cea8eb02f6f17152c7c" not present on node "kind-worker"
+seldondeployment.machinelearning.seldon.io/mytrans created
+deployment "mytrans-mytrans-52996cb" successfully rolled out
+seldondeployment.machinelearning.seldon.io "mytrans" deleted
+PASSEDnamespace "test-output-transformer-rest" deleted
+
+test_s2i_python.py::TestPythonS2iK8s::test_router_rest namespace/test-router-rest created
+---> Installing application source...
+Build completed successfully
+Image: "seldonio/testmodel_rest:0.1" with ID "sha256:e19ad0b8c4bb3fb70569ab40de2a46c3722fb11f6e5af643c73a42e833cf6338" not present on node "kind-control-plane"
+Image: "seldonio/testmodel_rest:0.1" with ID "sha256:e19ad0b8c4bb3fb70569ab40de2a46c3722fb11f6e5af643c73a42e833cf6338" not present on node "kind-worker"
+---> Installing application source...
+Build completed successfully
+Image: "seldonio/testrouter_rest:0.1" with ID "sha256:3e0ac9113755528f6277d6ea677689d89ab90d641e90ca335dfee40b342ebdd8" not present on node "kind-control-plane"
+Image: "seldonio/testrouter_rest:0.1" with ID "sha256:3e0ac9113755528f6277d6ea677689d89ab90d641e90ca335dfee40b342ebdd8" not present on node "kind-worker"
+seldondeployment.machinelearning.seldon.io/myrouter created
+deployment "myrouter-myrouter-340ed69" successfully rolled out
+seldondeployment.machinelearning.seldon.io "myrouter" deleted
+PASSEDnamespace "test-router-rest" deleted
+
+test_s2i_python.py::TestPythonS2iK8s::test_combiner_rest namespace/test-combiner-rest created
+---> Installing application source...
+Build completed successfully
+Image: "seldonio/testmodel_rest:0.1" with ID "sha256:85c33bc1b574efd1dd819725dcb61f5794d6d658d3af203ab292080b7f330b21" not present on node "kind-control-plane"
+Image: "seldonio/testmodel_rest:0.1" with ID "sha256:85c33bc1b574efd1dd819725dcb61f5794d6d658d3af203ab292080b7f330b21" not present on node "kind-worker"
+---> Installing application source...
+Build completed successfully
+Image: "seldonio/testcombiner_rest:0.1" with ID "sha256:8189ee44c4a012722a73a80d86a87ea0f80689279a0c06f6b3678779bfa71aec" not present on node "kind-control-plane"
+Image: "seldonio/testcombiner_rest:0.1" with ID "sha256:8189ee44c4a012722a73a80d86a87ea0f80689279a0c06f6b3678779bfa71aec" not present on node "kind-worker"
+seldondeployment.machinelearning.seldon.io/mycombiner created
+deployment "mycombiner-mycombiner-acc7c4d" successfully rolled out
+seldondeployment.machinelearning.seldon.io "mycombiner" deleted
+PASSED8ae-587f6b6db8-bj2vn     1/2     Terminating         0          39s
+
+
+PODS UPDATE: test-input-transformer-rest   mytrans-mytrans-1f278ae-587f6b6db8-bj2vn     0/2     Terminating         0          48s
+
+
+PODS UPDATE: test-input-transformer-rest   mytrans-mytrans-1f278ae-587f6b6db8-bj2vn     0/2     Terminating         0          53s
+
+
+PODS UPDATE: test-input-transformer-rest   mytrans-mytrans-1f278ae-587f6b6db8-bj2vn     0/2     Terminating         0          53s
+
+
+PODS UPDATE: test-output-transformer-rest   mytrans-mytrans-52996cb-7c7d456599-kspr5     0/3     Pending             0          0s
+
+
+PODS UPDATE: test-output-transformer-rest   mytrans-mytrans-52996cb-7c7d456599-kspr5     0/3     Pending             0          0s
+
+
+PODS UPDATE: test-output-transformer-rest   mytrans-mytrans-52996cb-7c7d456599-kspr5     0/3     ContainerCreating   0          0s
+
+
+PODS UPDATE: test-output-transformer-rest   mytrans-mytrans-52996cb-7c7d456599-kspr5     0/3     Running             0          2s
+
+
+PODS UPDATE: test-output-transformer-rest   mytrans-mytrans-52996cb-7c7d456599-kspr5     1/3     Running             0          21s
+
+
+PODS UPDATE: test-output-transformer-rest   mytrans-mytrans-52996cb-7c7d456599-kspr5     2/3     Running             0          22s
+
+
+PODS UPDATE: test-output-transformer-rest   mytrans-mytrans-52996cb-7c7d456599-kspr5     3/3     Running             0          22s
+
+
+PODS UPDATE: test-output-transformer-rest   mytrans-mytrans-52996cb-7c7d456599-kspr5     3/3     Terminating         0          26s
+
+
+PODS UPDATE: test-output-transformer-rest   mytrans-mytrans-52996cb-7c7d456599-kspr5     2/3     Terminating         0          36s
+
+
+PODS UPDATE: test-output-transformer-rest   mytrans-mytrans-52996cb-7c7d456599-kspr5     0/3     Terminating         0          47s
+
+
+PODS UPDATE: test-output-transformer-rest   mytrans-mytrans-52996cb-7c7d456599-kspr5     0/3     Terminating         0          47s
+
+
+PODS UPDATE: test-output-transformer-rest   mytrans-mytrans-52996cb-7c7d456599-kspr5     0/3     Terminating         0          58s
+
+
+PODS UPDATE: test-output-transformer-rest   mytrans-mytrans-52996cb-7c7d456599-kspr5     0/3     Terminating         0          58s
+
+
+PODS UPDATE: test-router-rest               myrouter-myrouter-340ed69-fb5878c49-rckzd    0/3     Pending             0          0s
+
+
+PODS UPDATE: test-router-rest               myrouter-myrouter-340ed69-fb5878c49-rckzd    0/3     Pending             0          0s
+
+
+PODS UPDATE: test-router-rest               myrouter-myrouter-340ed69-fb5878c49-rckzd    0/3     ContainerCreating   0          0s
+
+
+PODS UPDATE: test-router-rest               myrouter-myrouter-340ed69-fb5878c49-rckzd    0/3     Running             0          2s
+
+
+PODS UPDATE: test-router-rest               myrouter-myrouter-340ed69-fb5878c49-rckzd    1/3     Running             0          21s
+
+
+PODS UPDATE: test-router-rest               myrouter-myrouter-340ed69-fb5878c49-rckzd    2/3     Running             0          22s
+
+
+PODS UPDATE: test-router-rest               myrouter-myrouter-340ed69-fb5878c49-rckzd    3/3     Running             0          23s
+
+
+PODS UPDATE: test-router-rest               myrouter-myrouter-340ed69-fb5878c49-rckzd    3/3     Terminating         0          27s
+
+
+PODS UPDATE: test-router-rest               myrouter-myrouter-340ed69-fb5878c49-rckzd    2/3     Terminating         0          41s
+
+
+PODS UPDATE: test-router-rest               myrouter-myrouter-340ed69-fb5878c49-rckzd    0/3     Terminating         0          48s
+
+
+PODS UPDATE: test-router-rest               myrouter-myrouter-340ed69-fb5878c49-rckzd    0/3     Terminating         0          48s
+
+
+PODS UPDATE: test-router-rest               myrouter-myrouter-340ed69-fb5878c49-rckzd    0/3     Terminating         0          49s
+
+
+PODS UPDATE: test-router-rest               myrouter-myrouter-340ed69-fb5878c49-rckzd    0/3     Terminating         0          49s
+
+
+PODS UPDATE: test-combiner-rest             mycombiner-mycombiner-acc7c4d-664cf8d9d9-zvq8v   0/3     Pending             0          0s
+
+
+PODS UPDATE: tnamespace "test-combiner-rest" deleted
+
+
+========== 21 passed, 1 skipped, 36 deselected in 1654.35s (0:27:34) ===========
+kind delete cluster
+Deleting cluster "kind" ...
+est-combiner-rest             mycombiner-mycombiner-acc7c4d-664cf8d9d9-zvq8v   0/3     Pending             0          0s
+
+
+PODS UPDATE: test-combiner-rest             mycombiner-mycombiner-acc7c4d-664cf8d9d9-zvq8v   0/3     ContainerCreating   0          0s
+
+
+PODS UPDATE: test-combiner-rest             mycombiner-mycombiner-acc7c4d-664cf8d9d9-zvq8v   0/3     Running             0          2s
+
+
+PODS UPDATE: test-combiner-rest             mycombiner-mycombiner-acc7c4d-664cf8d9d9-zvq8v   1/3     Running             0          22s
+
+
+PODS UPDATE: test-combiner-rest             mycombiner-mycombiner-acc7c4d-664cf8d9d9-zvq8v   2/3     Running             0          22s
+
+
+PODS UPDATE: test-combiner-rest             mycombiner-mycombiner-acc7c4d-664cf8d9d9-zvq8v   3/3     Running             0          22s
+
+
+PODS UPDATE: test-combiner-rest             mycombiner-mycombiner-acc7c4d-664cf8d9d9-zvq8v   3/3     Terminating         0          26s
+
+
+PODS UPDATE: test-combiner-rest             mycombiner-mycombiner-acc7c4d-664cf8d9d9-zvq8v   2/3     Terminating         0          37s
+
+
+PODS UPDATE: test-combiner-rest             mycombiner-mycombiner-acc7c4d-664cf8d9d9-zvq8v   0/3     Terminating         0          47s
+
+
+PODS UPDATE: test-combiner-rest             mycombiner-mycombiner-acc7c4d-664cf8d9d9-zvq8v   0/3     Terminating         0          55s
+
+
+PODS UPDATE: test-combiner-rest             mycombiner-mycombiner-acc7c4d-664cf8d9d9-zvq8v   0/3     Terminating         0          55s
+
+Stopping Docker: dockerProgram process in pidfile '/var/run/docker-ssd.pid', 1 process(es), refused to die.
