@@ -255,7 +255,9 @@ def route(
 
         if is_proto:
             (features, meta, datadef, data_type) = extract_request_parts(request)
-            client_response = client_route(user_model, features, datadef.names)
+            client_response = client_route(
+                user_model, features, datadef.names, meta=meta
+            )
             if not isinstance(client_response, int):
                 raise SeldonMicroserviceException(
                     "Routing response must be int but got " + str(client_response)
@@ -265,7 +267,7 @@ def route(
         else:
             (features, meta, datadef, data_type) = extract_request_parts_json(request)
             class_names = datadef["names"] if datadef and "names" in datadef else []
-            client_response = client_route(user_model, features, class_names)
+            client_response = client_route(user_model, features, class_names, meta=meta)
             if not isinstance(client_response, int):
                 raise SeldonMicroserviceException(
                     "Routing response must be int but got " + str(client_response)
