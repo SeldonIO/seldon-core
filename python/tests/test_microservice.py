@@ -1,3 +1,4 @@
+import logging
 from contextlib import contextmanager
 import os
 from os.path import dirname, join
@@ -53,8 +54,8 @@ def start_microservice(app_location, tracing=False, grpc=False, envs={}):
         )
         if tracing:
             cmd = cmd + ("--tracing",)
-        print("starting:", " ".join(cmd))
-        print("cwd:", app_location)
+        logging.info("starting:", " ".join(cmd))
+        logging.info("cwd:", app_location)
         # stdout=PIPE, stderr=PIPE,
         p = Popen(cmd, cwd=app_location, env=env_vars, preexec_fn=os.setsid)
 

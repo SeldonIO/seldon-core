@@ -1,4 +1,5 @@
 import json
+import logging
 import numpy as np
 from google.protobuf import json_format
 import base64
@@ -21,8 +22,8 @@ class UserObject(object):
         if self.ret_nparray:
             return self.nparray
         else:
-            print("Aggregate input called - will return first item")
-            print(Xs)
+            logging.info("Aggregate input called - will return first item")
+            logging.info(Xs)
             return Xs[0]
 
     def tags(self):
@@ -85,9 +86,9 @@ def test_aggreate_ok_seldon_messages():
     app = get_rest_microservice(user_object)
     client = app.test_client()
     rv = client.get('/aggregate?json={"seldonMessages":[{"data":{"ndarray":[1]}}]}')
-    print(rv)
+    logging.info(rv)
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["meta"]["tags"] == {"mytag": 1}
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
@@ -100,9 +101,9 @@ def test_aggreate_ok_list():
     app = get_rest_microservice(user_object)
     client = app.test_client()
     rv = client.get('/aggregate?json=[{"data":{"ndarray":[1]}}]')
-    print(rv)
+    logging.info(rv)
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["meta"]["tags"] == {"mytag": 1}
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
@@ -115,9 +116,9 @@ def test_aggreate_bad_user_object():
     app = get_rest_microservice(user_object)
     client = app.test_client()
     rv = client.get('/aggregate?json={"seldonMessages":[{"data":{"ndarray":[1]}}]}')
-    print(rv)
+    logging.info(rv)
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 400
     assert j["status"]["info"] == "Aggregate not defined"
 
@@ -129,7 +130,7 @@ def test_aggreate_invalid_message():
     rv = client.get('/aggregate?json={"wrong":[{"data":{"ndarray":[1]}}]}')
     assert rv.status_code == 400
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert j["status"]["reason"] == "MICROSERVICE_BAD_DATA"
 
 
@@ -140,7 +141,7 @@ def test_aggreate_no_list():
     rv = client.get('/aggregate?json={"seldonMessages":{"data":{"ndarray":[1]}}}')
     assert rv.status_code == 400
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert j["status"]["reason"] == "MICROSERVICE_BAD_DATA"
 
 
@@ -151,7 +152,7 @@ def test_aggreate_bad_messages():
     rv = client.get('/aggregate?json={"seldonMessages":[{"data2":{"ndarray":[1]}}]}')
     assert rv.status_code == 400
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert j["status"]["reason"] == "MICROSERVICE_BAD_DATA"
 
 
@@ -162,9 +163,9 @@ def test_aggreate_ok_2messages():
     rv = client.get(
         '/aggregate?json={"seldonMessages":[{"data":{"ndarray":[1]}},{"data":{"ndarray":[2]}}]}'
     )
-    print(rv)
+    logging.info(rv)
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["meta"]["tags"] == {"mytag": 1}
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
@@ -185,9 +186,9 @@ def test_aggreate_ok_bindata():
         + bdata_base64
         + '"}]}'
     )
-    print(rv)
+    logging.info(rv)
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["meta"]["tags"] == {"mytag": 1}
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
@@ -202,9 +203,9 @@ def test_aggreate_ok_strdata():
     rv = client.get(
         '/aggregate?json={"seldonMessages":[{"strData":"123"},{"strData":"456"}]}'
     )
-    print(rv)
+    logging.info(rv)
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["meta"]["tags"] == {"mytag": 1}
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
@@ -220,7 +221,7 @@ def test_aggregate_bad_metrics():
         '/aggregate?json={"seldonMessages":[{"data":{"ndarray":[1]}},{"data":{"ndarray":[2]}}]}'
     )
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 400
 
 
@@ -231,9 +232,9 @@ def test_aggreate_ok_lowlevel():
     rv = client.get(
         '/aggregate?json={"seldonMessages":[{"data":{"ndarray":[1]}},{"data":{"ndarray":[2]}}]}'
     )
-    print(rv)
+    logging.info(rv)
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["data"]["ndarray"] == [9, 9]
 
@@ -255,7 +256,7 @@ def test_aggregate_proto_ok():
     resp = app.Aggregate(request, None)
     jStr = json_format.MessageToJson(resp)
     j = json.loads(jStr)
-    print(j)
+    logging.info(j)
     assert j["meta"]["tags"] == {"mytag": 1}
     # add default type
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
@@ -291,7 +292,7 @@ def test_aggregate_proto_lowlevel_ok():
     resp = app.Aggregate(request, None)
     jStr = json_format.MessageToJson(resp)
     j = json.loads(jStr)
-    print(j)
+    logging.info(j)
     assert j["data"]["tensor"]["shape"] == [2, 1]
     assert j["data"]["tensor"]["values"] == [9, 9]
 
@@ -314,7 +315,7 @@ def test_unimplemented_aggregate_raw_on_seldon_component():
     )
     j = json.loads(rv.data)
 
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["data"]["ndarray"] == [6.0]
 
@@ -332,6 +333,6 @@ def test_unimplemented_aggregate_raw():
     )
     j = json.loads(rv.data)
 
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["data"]["ndarray"] == [6.0]

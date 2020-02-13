@@ -1,3 +1,4 @@
+import logging
 import json
 import numpy as np
 from google.protobuf import json_format
@@ -25,7 +26,7 @@ class UserObject(object):
         return 22
 
     def send_feedback(self, features, feature_names, reward, truth, routing=-1):
-        print("Feedback called")
+        logging.info("Feedback called")
 
     def tags(self):
         if self.ret_meta:
@@ -58,10 +59,10 @@ class UserObjectLowLevel(object):
         return request
 
     def send_feedback_rest(self, request):
-        print("Feedback called")
+        logging.info("Feedback called")
 
     def send_feedback_grpc(self, request):
-        print("Feedback called")
+        logging.info("Feedback called")
 
 
 class UserObjectLowLevelGrpc(object):
@@ -79,7 +80,7 @@ class UserObjectLowLevelGrpc(object):
         return request
 
     def send_feedback_grpc(self, request):
-        print("Feedback called")
+        logging.info("Feedback called")
 
 
 class UserObjectLowLevelRaw(object):
@@ -105,7 +106,7 @@ class UserObjectLowLevelRaw(object):
             return seldon_message_to_json(response)
 
     def send_feedback_raw(self, request):
-        print("Feedback called")
+        logging.info("Feedback called")
 
 
 class UserObjectBad(object):
@@ -118,7 +119,7 @@ def test_router_ok():
     client = app.test_client()
     rv = client.get('/route?json={"data":{"ndarray":[2]}}')
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["meta"]["tags"] == {"mytag": 1}
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
@@ -156,7 +157,7 @@ def test_router_bad_user_object():
     client = app.test_client()
     rv = client.get('/route?json={"data":{"ndarray":[2]}}')
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 400
     assert j["status"]["info"] == "Route not defined"
 
@@ -167,7 +168,7 @@ def test_router_lowlevel_ok():
     client = app.test_client()
     rv = client.get('/route?json={"data":{"ndarray":[2]}}')
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["data"]["ndarray"] == [[1]]
 
@@ -178,7 +179,7 @@ def test_router_lowlevel_raw_ok():
     client = app.test_client()
     rv = client.get('/route?json={"data":{"ndarray":[2]}}')
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["data"]["tensor"]["values"] == [1]
 
@@ -190,7 +191,7 @@ def test_router_no_json():
     uo = UserObject()
     rv = client.get("/route?")
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 400
 
 
@@ -200,7 +201,7 @@ def test_router_bad_metrics():
     client = app.test_client()
     rv = client.get('/route?json={"data":{"ndarray":[]}}')
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 400
 
 
@@ -212,7 +213,7 @@ def test_router_feedback_ok():
         '/send-feedback?json={"request":{"data":{"ndarray":[]}},"response":{"meta":{"routing":{"1":1}}},"reward":1.0}'
     )
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
 
 
@@ -224,7 +225,7 @@ def test_router_feedback_lowlevel_ok():
         '/send-feedback?json={"request":{"data":{"ndarray":[]}},"reward":1.0}'
     )
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
 
 
@@ -239,7 +240,7 @@ def test_router_proto_ok():
     resp = app.Route(request, None)
     jStr = json_format.MessageToJson(resp)
     j = json.loads(jStr)
-    print(j)
+    logging.info(j)
     assert j["meta"]["tags"] == {"mytag": 1}
     # add default type
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
@@ -259,7 +260,7 @@ def test_router_proto_lowlevel_ok():
     resp = app.Route(request, None)
     jStr = json_format.MessageToJson(resp)
     j = json.loads(jStr)
-    print(j)
+    logging.info(j)
     assert j["data"]["tensor"]["shape"] == [1, 1]
     assert j["data"]["tensor"]["values"] == [1]
 
@@ -275,7 +276,7 @@ def test_router_proto_lowlevel_raw_ok():
     resp = app.Route(request, None)
     jStr = json_format.MessageToJson(resp)
     j = json.loads(jStr)
-    print(j)
+    logging.info(j)
     assert j["data"]["tensor"]["shape"] == [1, 1]
     assert j["data"]["tensor"]["values"] == [1]
 
@@ -315,7 +316,7 @@ def test_unimplemented_route_raw_on_seldon_component():
     rv = client.get('/route?json={"data":{"ndarray":[2]}}')
     j = json.loads(rv.data)
 
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["data"]["ndarray"] == [[53]]
 
@@ -331,6 +332,6 @@ def test_unimplemented_route_raw():
     rv = client.get('/route?json={"data":{"ndarray":[2]}}')
     j = json.loads(rv.data)
 
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["data"]["ndarray"] == [[53]]
