@@ -109,6 +109,9 @@ class SeldonComponent(object):
     def health_status_raw(self) -> prediction_pb2.SeldonMessage:
         raise SeldonNotImplementedError("health_raw is not implemented")
 
+    def metadata(self) -> Dict:
+        raise SeldonNotImplementedError("metadata is not implemented")
+
 
 def client_custom_tags(user_model: SeldonComponent) -> Dict:
     """
@@ -376,6 +379,7 @@ def client_route(
     user_model: SeldonComponent,
     features: Union[np.ndarray, str, bytes],
     feature_names: Iterable[str],
+    **kwargs: Dict
 ) -> int:
     """
     Get routing from user model
@@ -394,7 +398,10 @@ def client_route(
        Routing index for one of children
     """
     if hasattr(user_model, "route"):
-        return user_model.route(features, feature_names)
+        try:
+            return user_model.route(features, feature_names, **kwargs)
+        except TypeError:
+            return user_model.route(features, feature_names)
     else:
         raise SeldonNotImplementedError("Route not defined")
 

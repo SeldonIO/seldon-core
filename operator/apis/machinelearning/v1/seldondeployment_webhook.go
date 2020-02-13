@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/seldonio/seldon-core/operator/constants"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -181,7 +182,7 @@ func getUpdatePortNumMap(name string, nextPortNum *int32, portMap map[string]int
 
 func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(namespace string) {
 
-	var firstPuPortNum int32 = 9000
+	var firstPuPortNum int32 = constants.FirstPortNumber
 	if env_preditive_unit_service_port, ok := os.LookupEnv("PREDICTIVE_UNIT_SERVICE_PORT"); ok {
 		portNum, err := strconv.Atoi(env_preditive_unit_service_port)
 		if err != nil {
@@ -296,7 +297,11 @@ func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(namespace string) {
 				// pu needs to have an endpoint as engine reads it from SDep in order to direct graph traffic
 				// probes etc will be added later by controller
 				if pu.Endpoint == nil {
-					pu.Endpoint = &Endpoint{Type: REST}
+					if p.Transport == TransportGrpc {
+						pu.Endpoint = &Endpoint{Type: GRPC}
+					} else {
+						pu.Endpoint = &Endpoint{Type: REST}
+					}
 				}
 				var portType string
 				if pu.Endpoint.Type == GRPC {
@@ -406,6 +411,12 @@ func checkPredictiveUnits(pu *PredictiveUnit, p *PredictorSpec, fldPath *field.P
 		}
 	}
 
+	if pu.Logger != nil {
+		if pu.Logger.Mode == "" {
+			allErrs = append(allErrs, field.Invalid(fldPath, pu.Logger.Mode, "No logger mode specified"))
+		}
+	}
+
 	for i := 0; i < len(pu.Children); i++ {
 		allErrs = checkPredictiveUnits(&pu.Children[i], p, fldPath.Index(i), allErrs)
 	}
@@ -460,6 +471,16 @@ func (r *SeldonDeploymentSpec) ValidateSeldonDeployment() error {
 		}
 		predictorNames[p.Name] = true
 		allErrs = checkPredictiveUnits(p.Graph, &p, field.NewPath("spec").Child("predictors").Index(i).Child("graph"), allErrs)
+
+		if p.Protocol != "" && !(p.Protocol == ProtocolSeldon || p.Protocol == ProtocolTensorflow) {
+			fldPath := field.NewPath("spec").Child("predictors").Index(i)
+			allErrs = append(allErrs, field.Invalid(fldPath, p.Protocol, "Invalid protocol"))
+		}
+
+		if p.Transport != "" && !(p.Transport == TransportRest || p.Transport == TransportGrpc) {
+			fldPath := field.NewPath("spec").Child("predictors").Index(i)
+			allErrs = append(allErrs, field.Invalid(fldPath, p.Transport, "Invalid transport"))
+		}
 	}
 
 	allErrs = checkTraffic(r, field.NewPath("spec"), allErrs)

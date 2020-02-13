@@ -7,7 +7,7 @@
 #	https://github.com/openshift/source-to-image/blob/master/docs/builder_image.md
 #
 
-# If the 'seldon-core-s2i-python2' assemble script is executed with the '-h' flag, print the usage.
+# If the 'seldon-core-s2i-python3' assemble script is executed with the '-h' flag, print the usage.
 if [[ "$1" == "-h" ]]; then
 	exec /usr/libexec/s2i/usage
 fi
@@ -51,16 +51,21 @@ echo "---> Installing application source..."
 cp -Rf /tmp/src/. ./
 
 if [[ -f requirements.txt ]]; then
-
-  if [[ -n "$EXTRA_INDEX_URL" ]]; then
-     echo "---> Adding extra index url to pip..."
-     pip config set global.extra-index-url "${EXTRA_INDEX_URL}"
-  fi
-
-  echo "---> Installing dependencies ..."
-  pip install --find-links /whl -r requirements.txt
+    if [[ -n "$EXTRA_INDEX_URL" ]]; then
+        echo "---> Adding extra index url to pip..."
+        pip config set global.extra-index-url "${EXTRA_INDEX_URL}"
+    fi
+    echo "---> Installing dependencies ..."
+    pip install --find-links /whl -r requirements.txt
 elif [[ -f setup.py ]]; then
-  echo "---> Installing application ..."
-  pip install --find-links /whl -e .
+    echo "---> Installing application ..."
+    pip install --find-links /whl -e .
+elif [[ -f environment.yml ]]; then
+    echo "---> Creating environment with Conda..."
+    if [[ -z "$CONDA_ENV_NAME" ]]; then
+        echo "----> Failed to find env var CONDA_ENV_NAME."
+        echo "      Falling back to default CONDA_ENV_NAME=microservice."
+        CONDA_ENV_NAME=microservice
+    fi
+    conda env create --name $CONDA_ENV_NAME --file environment.yml
 fi
-

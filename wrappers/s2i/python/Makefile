@@ -1,6 +1,7 @@
 SHELL:=/bin/bash
 
-PYTHON_VERSION=2
+PYTHON_VERSION=3.7
+CONDA_VERSION=4.7.12
 IMAGE_PYTHON_VERSION=`echo -n $(PYTHON_VERSION) | sed 's/\.//g'`
 BASE_IMAGE_PYTHON_VERSION=`echo -n $(PYTHON_VERSION) | cut -d. -f1`
 IMAGE_VERSION=0.17-SNAPSHOT
@@ -16,19 +17,19 @@ get_local_repo:
 	cp -r $(SELDON_CORE_DIR)/python _python
 
 .PHONY: build
-build:
-	cat Dockerfile.tmpl | sed  -e "s|%PYTHON_VERSION%|$(PYTHON_VERSION)|" > Dockerfile
+build: get_local_repo
+	cat Dockerfile.tmpl | sed  -e "s|%PYTHON_VERSION%|$(PYTHON_VERSION)|" | sed  -e "s|%CONDA_VERSION%|$(CONDA_VERSION)|" > Dockerfile
 	set -x && docker build -t $(IMAGE_NAME):$(IMAGE_VERSION) .
 
 .PHONY: build_gpu
-build_gpu:
+build_gpu: get_local_repo
 	cat Dockerfile.gpu.tmpl > Dockerfile
 	docker build -t ${GPU_IMAGE_NAME}:${IMAGE_VERSION} .
 
 
 .PHONY: build_local
 build_local: get_local_repo
-	cat Dockerfile.local.tmpl | sed  -e "s|%PYTHON_VERSION%|$(PYTHON_VERSION)|" > Dockerfile
+	cat Dockerfile.local.tmpl | sed  -e "s|%PYTHON_VERSION%|$(PYTHON_VERSION)|" | sed  -e "s|%CONDA_VERSION%|$(CONDA_VERSION)|" > Dockerfile
 	set -x && docker build -t $(IMAGE_NAME):$(IMAGE_VERSION) .
 
 tag_base_python:
@@ -45,13 +46,13 @@ push_gpu_to_dockerhub:
 
 .PHONY: test
 test:
-	cat Dockerfile.tmpl | sed  -e "s|%PYTHON_VERSION%|$(PYTHON_VERSION)|" > Dockerfile
+	cat Dockerfile.tmpl | sed  -e "s|%PYTHON_VERSION%|$(PYTHON_VERSION)|" | sed  -e "s|%CONDA_VERSION%|$(CONDA_VERSION)|" > Dockerfile
 	docker build -t $(IMAGE_NAME)-candidate .
 	IMAGE_NAME=$(IMAGE_NAME)-candidate test/run
 
 .PHONY: test_local
 test_local:
-	cat Dockerfile.local.tmpl | sed  -e "s|%PYTHON_VERSION%|$(PYTHON_VERSION)|" > Dockerfile
+	cat Dockerfile.local.tmpl | sed  -e "s|%PYTHON_VERSION%|$(PYTHON_VERSION)|" | sed  -e "s|%CONDA_VERSION%|$(CONDA_VERSION)|" > Dockerfile
 	docker build -t $(IMAGE_NAME)-candidate .
 	IMAGE_NAME=$(IMAGE_NAME)-candidate test/run
 

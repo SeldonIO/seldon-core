@@ -5,7 +5,7 @@ If you have a trained SKLearn model saved as a pickle you can deploy it simply u
 Pre-requisites:
 
   * The model pickle must be saved using joblib and presently be named `model.joblib`
-  * We presently use sklearn version 0.20.3. Your pickled model must be compatbible with this version
+  * We presently use sklearn version 0.20.3. Your pickled model must be compatible with this version
 
 An example for a saved Iris prediction model:
 

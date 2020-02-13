@@ -1,5 +1,5 @@
 DOCKER_IMAGE_NAME=seldonio/core-builder
-DOCKER_IMAGE_VERSION=0.10
+DOCKER_IMAGE_VERSION=0.11
 
 build_docker_image:
 	docker build --force-rm=true -t $(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VERSION) .
