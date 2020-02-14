@@ -145,7 +145,7 @@ class SeldonJsLocust(TaskSet):
                 proba = response["data"]["tensor"]["values"]
                 predicted = proba.index(max(proba))
                 correct = np.argmax(batch_ys[0])
-                j = json.loads(r.content)
+                j = json.loads(response.content)
                 if predicted == correct:
                     self.sendFeedback(request,j,1.0)
                     print("Correct!")
