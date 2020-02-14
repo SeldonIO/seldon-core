@@ -17,12 +17,12 @@ get_local_repo:
 	cp -r $(SELDON_CORE_DIR)/python _python
 
 .PHONY: build
-build:
+build: get_local_repo
 	cat Dockerfile.tmpl | sed  -e "s|%PYTHON_VERSION%|$(PYTHON_VERSION)|" | sed  -e "s|%CONDA_VERSION%|$(CONDA_VERSION)|" > Dockerfile
 	set -x && docker build -t $(IMAGE_NAME):$(IMAGE_VERSION) .
 
 .PHONY: build_gpu
-build_gpu:
+build_gpu: get_local_repo
 	cat Dockerfile.gpu.tmpl > Dockerfile
 	docker build -t ${GPU_IMAGE_NAME}:${IMAGE_VERSION} .
 

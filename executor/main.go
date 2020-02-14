@@ -242,7 +242,7 @@ func main() {
 	}
 
 	//Start Logger Dispacther
-	loghandler.StartDispatcher(*logWorkers, logger)
+	loghandler.StartDispatcher(*logWorkers, logger, *sdepName, *namespace, *predictorName)
 
 	//Init Tracing
 	closer := initTracing()

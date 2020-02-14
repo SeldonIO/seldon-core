@@ -1,4 +1,5 @@
 import pytest
+import logging
 import numpy as np
 import pickle
 import base64
@@ -39,12 +40,12 @@ class UserObject(object):
         elif self.ret_dict:
             return self.dict
         else:
-            print("Predict called - will run identity function")
-            print(X)
+            logging.info("Predict called - will run identity function")
+            logging.info(X)
             return X
 
     def feedback(self, features, feature_names, reward, truth):
-        print("Feedback called")
+        logging.info("Feedback called")
 
     def tags(self):
         if self.ret_meta:
@@ -394,7 +395,7 @@ def test_get_data_from_proto_tftensor():
 def test_proto_array_to_tftensor():
     arr = np.array([[1, 2, 3], [4, 5, 6]])
     datadef = scu.array_to_grpc_datadef("tftensor", arr, [])
-    print(datadef)
+    logging.info(datadef)
     assert datadef.tftensor.tensor_shape.dim[0].size == 2
     assert datadef.tftensor.tensor_shape.dim[1].size == 3
     assert datadef.tftensor.dtype == 9

@@ -1,4 +1,5 @@
 import json
+import logging
 import numpy as np
 from google.protobuf import json_format
 import base64
@@ -79,7 +80,7 @@ def test_raise_exception():
     client = app.test_client()
     rv = client.get('/predict?json={"data":{"names":["a","b"],"ndarray":[[1,2]]}}')
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 402
     assert j["status"]["app_code"] == 1402
 
@@ -90,6 +91,6 @@ def test_raise_eception_lowlevel():
     client = app.test_client()
     rv = client.get('/predict?json={"data":{"ndarray":[1,2]}}')
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 402
     assert j["status"]["app_code"] == 1402
