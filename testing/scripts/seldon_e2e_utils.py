@@ -1,27 +1,31 @@
 import requests
 import re
+import grpc
+import time
+import logging
+import numpy as np
+import json
+import subprocess
+
+from concurrent.futures import ThreadPoolExecutor, wait
+from subprocess import run, Popen
+from retrying import retry
 from requests.auth import HTTPBasicAuth
+
 from seldon_core.proto import prediction_pb2
 from seldon_core.proto import prediction_pb2_grpc
-import grpc
-import numpy as np
-import time
-from subprocess import run, Popen
-import subprocess
-import json
-from retrying import retry
-import logging
 
 API_AMBASSADOR = "localhost:8003"
 API_ISTIO_GATEWAY = "localhost:8004"
 
 
 def get_s2i_python_version():
-    ret = Popen(
-        "cd ../../wrappers/s2i/python && grep 'IMAGE_VERSION=' Makefile | cut -d'=' -f2",
-        shell=True,
-        stdout=subprocess.PIPE,
+    cmd = (
+        "cd ../../wrappers/s2i/python && "
+        "grep 'IMAGE_VERSION=' Makefile |"
+        "cut -d'=' -f2"
     )
+    ret = Popen(cmd, shell=True, stdout=subprocess.PIPE)
     output = ret.stdout.readline()
     version = output.decode("utf-8").rstrip()
     return version
@@ -34,11 +38,15 @@ def get_seldon_version():
     return version
 
 
-def wait_for_shutdown(deployment_name, namespace):
-    ret = run(f"kubectl get -n {namespace} deploy/{deployment_name}", shell=True)
-    while ret.returncode == 0:
-        time.sleep(1)
-        ret = run(f"kubectl get -n {namespace} deploy/{deployment_name}", shell=True)
+def wait_for_shutdown(deployment_name, namespace, timeout="10m"):
+    cmd = (
+        "kubectl wait --for=delete "
+        f"--timeout={timeout} "
+        f"-n {namespace} "
+        f"deploy/{deployment_name}"
+    )
+
+    return run(cmd, shell=True)
 
 
 def get_deployment_names(sdep_name, namespace, attempts=20, sleep=5):
@@ -60,7 +68,8 @@ def get_deployment_names(sdep_name, namespace, attempts=20, sleep=5):
     # The `deploymentStatus` is dictionary which keys are names of deployments
     deployment_names = list(data["status"]["deploymentStatus"])
     logging.warning(
-        f"For SeldonDeployment {sdep_name} found following deployments: {deployment_names}"
+        f"For SeldonDeployment {sdep_name} "
+        f"found following deployments: {deployment_names}"
     )
     return deployment_names
 
@@ -68,10 +77,19 @@ def get_deployment_names(sdep_name, namespace, attempts=20, sleep=5):
 def wait_for_rollout(
     sdep_name, namespace, attempts=20, sleep=5, expected_deployments=1
 ):
-    deployment_names = get_deployment_names(sdep_name, namespace)
-    assert (
-        len(deployment_names) == expected_deployments
-    ), f"Expected {expected_deployments} deployment(s) but got {len(deployment_names)}"
+    deployment_names = []
+    for _ in range(attempts):
+        deployment_names = get_deployment_names(sdep_name, namespace)
+        deployments = len(deployment_names)
+
+        if deployments == expected_deployments:
+            break
+
+    error_msg = (
+        f"Expected {expected_deployments} deployment(s) but got {len(deployment_names)}"
+    )
+    assert len(deployment_names) == expected_deployments, error_msg
+
     for deployment_name in deployment_names:
         logging.warning(f"Waiting for deployment {deployment_name}")
         for _ in range(attempts):
@@ -209,7 +227,7 @@ def initial_grpc_request(
             rows=rows,
             data=data,
         )
-    except:
+    except Exception:
         logging.warning("Sleeping 1 sec and trying again")
         time.sleep(1)
         try:
@@ -221,7 +239,7 @@ def initial_grpc_request(
                 rows=rows,
                 data=data,
             )
-        except:
+        except Exception:
             logging.warning("Sleeping 5 sec and trying again")
             time.sleep(5)
             try:
@@ -233,7 +251,7 @@ def initial_grpc_request(
                     rows=rows,
                     data=data,
                 )
-            except:
+            except Exception:
                 logging.warning("Sleeping 10 sec and trying again")
                 time.sleep(10)
                 return grpc_request_ambassador(
@@ -401,7 +419,7 @@ def grpc_request_ambassador2(
             rows=rows,
             data=data,
         )
-    except:
+    except Exception:
         logging.warning("Warning - caught exception")
         return grpc_request_ambassador(
             deployment_name,
@@ -418,3 +436,49 @@ def clean_string(string):
     string = re.sub(r"\]$", "", string)
     string = re.sub(r"[_\[\./]", "-", string)
     return string
+
+
+def assert_model_during_op(op, *assert_args, **assert_kwargs):
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(op)
+
+        try:
+            while future.running():
+                assert_model(*assert_args, **assert_kwargs)
+        except AssertionError as err:
+            # In case the assertion failed, try to cancel Future or wait for it
+            # to finish before raising
+            cancelled = future.cancel()
+            if not cancelled:
+                wait([future])
+
+            raise err
+
+        # Future.exception() will raise any exceptions thrown within the future
+        future.exception()
+
+
+def assert_model(sdep_name, namespace, initial=False, endpoint=API_AMBASSADOR):
+    _request = initial_rest_request if initial else rest_request
+    r = _request(sdep_name, namespace, endpoint=endpoint)
+
+    assert r is not None
+    assert r.status_code == 200
+
+    # Assert possible return values across different models
+    response = r.json()
+    values = response["data"]["tensor"]["values"]
+    assert values in [
+        [1.0, 2.0, 3.0, 4.0],  # fixed-model:0.1
+        [5.0, 6.0, 7.0, 8.0],  # fixed-model:0.2
+    ]
+
+    # NOTE: The following will test if the `SeldonDeployment` can be fetched as
+    # a Kubernetes resource. This covers cases where some resources (e.g. CRD
+    # versions or webhooks) may get inadvertently removed between versions.
+    ret = run(
+        f"kubectl get -n {namespace} sdep {sdep_name}",
+        stdout=subprocess.DEVNULL,
+        shell=True,
+    )
+    assert ret.returncode == 0
