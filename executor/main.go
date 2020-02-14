@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"github.com/ghodss/yaml"
 	"github.com/go-logr/logr"
-	"github.com/opentracing/opentracing-go"
 	"github.com/prometheus/common/log"
 	"github.com/seldonio/seldon-core/executor/api"
 	seldonclient "github.com/seldonio/seldon-core/executor/api/client"
@@ -17,6 +16,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/grpc/tensorflow"
 	"github.com/seldonio/seldon-core/executor/api/rest"
+	"github.com/seldonio/seldon-core/executor/api/tracing"
 	loghandler "github.com/seldonio/seldon-core/executor/logger"
 	"github.com/seldonio/seldon-core/executor/proto/tensorflow/serving"
 	"github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
@@ -173,13 +173,11 @@ func initTracing() io.Closer {
 		cfg.ServiceName = "executor"
 	}
 
-	tracer, closer, err := cfg.NewTracer()
+	propagation := os.Getenv("JAEGER_TRACE_PROPAGATION_TYPE")
+	closer, err := tracing.NewTraceByPropagation(propagation, cfg)
 	if err != nil {
 		log.Fatal("Could not initialize jaeger tracer:", err.Error())
 	}
-
-	opentracing.SetGlobalTracer(tracer)
-
 	return closer
 }
 
