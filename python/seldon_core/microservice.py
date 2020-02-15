@@ -18,8 +18,10 @@ logger = logging.getLogger(__name__)
 
 PARAMETERS_ENV_NAME = "PREDICTIVE_UNIT_PARAMETERS"
 SERVICE_PORT_ENV_NAME = "PREDICTIVE_UNIT_SERVICE_PORT"
+SERVICE_HOST_ENV_NAME = "PREDICTIVE_UNIT_SERVICE_HOST"
 LOG_LEVEL_ENV = "SELDON_LOG_LEVEL"
 DEFAULT_PORT = 5000
+DEFAULT_HOST = "0.0.0.0"
 
 DEBUG_PARAMETER = "SELDON_DEBUG"
 DEBUG = False
@@ -192,7 +194,7 @@ def main():
     sys.path.append(os.getcwd())
     parser = argparse.ArgumentParser()
     parser.add_argument("interface_name", type=str, help="Name of the user interface.")
-    parser.add_argument("api_type", type=str, choices=["REST", "GRPC", "FBS"])
+    parser.add_argument("api_type", type=str, choices=["REST", "GRPC", "FBS", "KAFKA"])
 
     parser.add_argument(
         "--service-type",
@@ -280,6 +282,7 @@ def main():
         handler.setLevel(log_level_num)
 
     port = int(os.environ.get(SERVICE_PORT_ENV_NAME, DEFAULT_PORT))
+    host = os.environ.get(SERVICE_HOST_ENV_NAME, DEFAULT_HOST)
 
     if args.tracing:
         tracer = setup_tracing(args.interface_name)
@@ -320,7 +323,7 @@ def main():
                     logger.info("Set JAEGER_EXTRA_TAGS %s", jaeger_extra_tags)
                     tracing = FlaskTracing(tracer, True, app, jaeger_extra_tags)
 
-                app.run(host="0.0.0.0", port=port)
+                app.run(host=host, port=port)
 
             logger.info("REST microservice running on port %i", port)
             server1_func = rest_prediction_server
@@ -346,7 +349,7 @@ def main():
             except (NotImplementedError, AttributeError):
                 pass
 
-            server.add_insecure_port(f"0.0.0.0:{port}")
+            server.add_insecure_port(f"{host}:{port}")
 
             server.start()
 
@@ -355,6 +358,40 @@ def main():
                 time.sleep(1000)
 
         server1_func = grpc_prediction_server
+
+    elif args.api_type == "KAFKA":
+
+        def kafka_prediction_server():
+            if args.tracing:
+                from grpc_opentracing import open_tracing_server_interceptor
+
+                logger.info("Adding tracer")
+                interceptor = open_tracing_server_interceptor(tracer)
+            else:
+                interceptor = None
+
+            kafka_worker = seldon_microservice.get_kafka_worker(
+                user_object,
+                log_level=args.log_level,
+                tracing=interceptor,
+                host=host,
+                port=port,
+            )
+
+            try:
+                user_object.load()
+            except (NotImplementedError, AttributeError):
+                pass
+
+            kafka_worker.execute_from_commandline()
+
+            # TODO: Separate REST endpoints for microservice and health and
+            #   send as server2_func so it runs in parallel
+            logger.info(f"KAFKA Service Listening in address")
+            while True:
+                time.sleep(1000)
+
+        server1_func = kafka_prediction_server
 
     else:
         server1_func = None

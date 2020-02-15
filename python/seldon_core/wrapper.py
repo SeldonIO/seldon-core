@@ -15,7 +15,56 @@ import os
 
 logger = logging.getLogger(__name__)
 
-PRED_UNIT_ID = os.environ.get("PREDICTIVE_UNIT_ID", "0")
+PRED_UNIT_ID = os.environ.get("PREDICTIVE_UNIT_ID")  # Container name
+PREDICTOR_ID = os.environ.get("PREDICTOR_ID")  # Predictor spec name
+DEPLOYMENT_ID = os.environ.get("SELDON_DEPLOYMENT_ID")  # Deployment name
+
+
+def get_kafka_worker(
+    user_model,
+    log_level="INFO",
+    tracing=None,
+    host="0.0.0.0",
+    topic_partitions=1,
+    port=9092,
+):
+    if not all([bool(PRED_UNIT_ID), bool(PREDICTOR_ID), bool(DEPLOYMENT_ID)]):
+        # TODO: update for correct prediction
+        raise Exception("Predictie unit, predictor id or deployment id not set")
+    import faust
+
+    TOPIC_PREFIX = f"{DEPLOYMENT_ID}-{PRED_UNIT_ID}"
+    KAFKA_BROKERS = f"kafka://{host}:{port}"
+    # TODO: Add more customizable parameters from env
+    # TODO: Add and test tracing
+    app = faust.App(
+        __name__,
+        broker=KAFKA_BROKERS,
+        key_serializer="json",
+        value_serializer="json",
+        topic_partitions=topic_partitions,
+        tracing=tracing,
+    )
+
+    # At this point only the predict function is available for streaming
+    # TODO: Explore adding functionality for more than just the predict function
+    # if any(hasattr(user_model, attr) for attr in
+    #        ["predict", "predict_raw", "predict_grpc", "predict_rest"]):
+
+    predict_topic_input = app.topic(f"{TOPIC_PREFIX}-predict-input")
+    predict_topic_output = app.topic(f"{TOPIC_PREFIX}-predict-output")
+
+    @app.agent(predict_topic_input)
+    async def predict(predict_stream):
+        async for key, value in predict_stream.items():
+            logger.debug(f"KAFKA data content ID [{key}]. CONTENT: [{value}].")
+            response = seldon_core.seldon_methods.predict(user_model, value)
+            logger.debug(f"KAFKA Data response: {response}")
+            await predict_topic_output.send(key=key, value=response)
+
+    print(f"LOG LEVEL PROVIDED {log_level}")
+    worker = faust.Worker(app, loglevel=log_level)
+    return worker
 
 
 def get_rest_microservice(user_model):
