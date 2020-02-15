@@ -76,6 +76,15 @@ PREDICTOR_ID=streaming_graph
 SELDON_DEPLOYMENT_ID=streaming_deployment
 ```
 
+Due to our streaming library not supporting opentracing > 2.0.0 we need to add the following temp overrides:
+(For more information read https://github.com/robinhood/faust/issues/528)
+
+```
+Flask-OpenTracing==0.2.0
+jaeger-client==3.13.0
+opentracing==1.3.0
+```
+
 ### 3.2) Run a kafka cluster locally so that our model can connect to it
 
 Now we want to run a kafka cluster. 
