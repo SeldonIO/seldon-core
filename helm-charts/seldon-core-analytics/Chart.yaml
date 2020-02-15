@@ -13,9 +13,9 @@ version: 1.0.2-SNAPSHOT
 dependencies:
 - name: "grafana"
   condition: grafana.enabled
-  version: "~4.2.3"
+  version: "4.2.3"
   repository: "https://kubernetes-charts.storage.googleapis.com"
 - name: "prometheus"
   condition: prometheus.enabled
-  version: "~9.7.3"
+  version: "9.7.4"
   repository: "https://kubernetes-charts.storage.googleapis.com"
