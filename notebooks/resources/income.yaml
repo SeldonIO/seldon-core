@@ -1,14 +1,33 @@
-apiVersion: machinelearning.seldon.io/v1alpha2
+apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: income
+  name: income-predictor
 spec:
-  name: income
+  name: income-predictor
   predictors:
-  - graph:
-      children: []
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: seldonio/sklearnserver_rest:0.2
+          name: income-predictor-default
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1Gi
+            requests:
+              cpu: 100m
+              memory: 1Gi
+          volumeMounts:
+          - mountPath: /etc/podinfo
+            name: podinfo
+    graph:
+      endpoint:
+        service_host: localhost
+        service_port: 9000
+        type: REST
       implementation: SKLEARN_SERVER
       modelUri: gs://seldon-models/sklearn/income/model
-      name: classifier
+      name: income-predictor-default
+      type: UNKNOWN_TYPE
     name: default
     replicas: 1

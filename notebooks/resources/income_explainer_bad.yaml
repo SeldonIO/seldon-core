@@ -21,7 +21,6 @@ spec:
           - mountPath: /etc/podinfo
             name: podinfo
     explainer:
-      modelUri: gs://seldon-models/sklearn/income/explainer
       type: AnchorTabular
     graph:
       endpoint:
