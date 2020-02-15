@@ -42,6 +42,7 @@ setup(
         "minio >= 4.0.9, < 6.0.0",
         "azure-storage-blob >= 2.0.1, < 3.0.0",
         "setuptools >= 41.0.0",
+        "faust==1.10.2",
     ],
     tests_require=["pytest<6.0.0", "pytest-cov<3.0.0", "Pillow==7.0.0"],
     extras_require=extras,
