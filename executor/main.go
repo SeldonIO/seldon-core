@@ -20,8 +20,6 @@ import (
 	loghandler "github.com/seldonio/seldon-core/executor/logger"
 	"github.com/seldonio/seldon-core/executor/proto/tensorflow/serving"
 	"github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
-	jaegercfg "github.com/uber/jaeger-client-go/config"
-	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -161,26 +159,6 @@ func runGrpcServer(logger logr.Logger, predictor *v1.PredictorSpec, client seldo
 	}
 }
 
-func initTracing() io.Closer {
-	//Initialise tracing
-	cfg, err := jaegercfg.FromEnv()
-	if err != nil {
-		// parsing errors might happen here, such as when we get a string where we expect a number
-		log.Fatal("Could not parse Jaeger env vars", err.Error())
-	}
-
-	if cfg.ServiceName == "" {
-		cfg.ServiceName = "executor"
-	}
-
-	propagation := os.Getenv("JAEGER_TRACE_PROPAGATION_TYPE")
-	closer, err := tracing.NewTraceByPropagation(propagation, cfg)
-	if err != nil {
-		log.Fatal("Could not initialize jaeger tracer:", err.Error())
-	}
-	return closer
-}
-
 func main() {
 	flag.Parse()
 
@@ -243,7 +221,10 @@ func main() {
 	loghandler.StartDispatcher(*logWorkers, logger, *sdepName, *namespace, *predictorName)
 
 	//Init Tracing
-	closer := initTracing()
+	closer, err := tracing.InitTracing()
+	if err != nil {
+		log.Fatal("Could not initialize jaeger tracer", err.Error())
+	}
 	defer closer.Close()
 
 	if *transport == "rest" {

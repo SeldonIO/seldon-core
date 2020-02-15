@@ -1,13 +1,35 @@
 package tracing
 
 import (
+	"io"
+	"os"
+
 	"github.com/opentracing/opentracing-go"
 	jaegercfg "github.com/uber/jaeger-client-go/config"
 	"github.com/uber/jaeger-client-go/zipkin"
-	"io"
 )
 
-func NewTraceByPropagation(propagation string, cfg *jaegercfg.Configuration) (closer io.Closer, err error) {
+func InitTracing() (io.Closer, error) {
+	//Initialise tracing
+	cfg, err := jaegercfg.FromEnv()
+	if err != nil {
+		// parsing errors might happen here, such as when we get a string where we expect a number
+		return nil, err
+	}
+
+	if cfg.ServiceName == "" {
+		cfg.ServiceName = "executor"
+	}
+
+	propagation := os.Getenv("JAEGER_TRACE_PROPAGATION_TYPE")
+	closer, err := newTraceByPropagation(propagation, cfg)
+	if err != nil {
+		return nil, err
+	}
+	return closer, nil
+}
+
+func newTraceByPropagation(propagation string, cfg *jaegercfg.Configuration) (closer io.Closer, err error) {
 	switch propagation {
 	case "b3":
 		return newB3Tracer(cfg)
@@ -21,6 +43,7 @@ func newB3Tracer(cfg *jaegercfg.Configuration) (io.Closer, error) {
 		jaegercfg.Injector(opentracing.HTTPHeaders, zipkinPropagator),
 		jaegercfg.Extractor(opentracing.HTTPHeaders, zipkinPropagator),
 		jaegercfg.ZipkinSharedRPCSpan(true))
+
 	return closer, err
 }
 func newDefaultTracer(cfg *jaegercfg.Configuration) (io.Closer, error) {
