@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	CEInferenceRequest       = "io.seldon.serving.inference.request"
-	CEInferenceResponse      = "io.seldon.serving.inference.response"
+	CEInferenceRequest  = "io.seldon.serving.inference.request"
+	CEInferenceResponse = "io.seldon.serving.inference.response"
 	// cloud events extension attributes have to be lowercase alphanumeric
 	RequestIdAttr            = "requestid"
 	ModelIdAttr              = "modelid"
