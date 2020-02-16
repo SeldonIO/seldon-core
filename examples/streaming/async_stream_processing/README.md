@@ -188,5 +188,193 @@ b'{"data": {"ndarray": [1, 2, 3, 4], "names": []}, "meta": {}}'
 
 ## 4) Deploy the model and test in a Kubernetes cluster
 
-TODO
+We now want to test it in our Kubernetes cluster. 
+
+For this, you will need to make sure you have all the [Seldon Core dependencies installed (Operator, Ingress, etc).](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/install.html)
+
+Once you have everything installed, we'll do the following steps:
+1) Run Kafka in our Kubernetes
+2) Create a Seldon Deployment that uses our model
+3) Deploy our Seldon Deployment
+4) Publish messages in the input topic and see messages coming from output topic
+
+### 1) Run Kafka in our Kubernetes
+
+We first need to make sure our helm installer has access to the incubator charts:
+
+```
+helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
+```
+
+Now we're able to create a simple Kafka deployment:
+
+```
+helm install my-kafka incubator/kafka
+```
+
+Once it's running we'll be able to see the containers:
+
+```bash
+$ kubeclt get pods
+
+NAME                   READY   STATUS    RESTARTS   AGE
+my-kafka-0             1/1     Running   0          2m43s
+my-kafka-1             1/1     Running   0          42s
+my-kafka-zookeeper-0   1/1     Running   0          2m43s
+my-kafka-zookeeper-1   1/1     Running   0          96s
+my-kafka-zookeeper-2   1/1     Running   0          62s
+```
+
+### 2) Create a Seldon Deployment that uses our model
+
+Now we want to create a Seldon Deploymen configuration file that we'll be able to deploy.
+
+For this we'll use a simple file that just sets the following:
+* Selects the deployment to run without the Engine/Orchestrator
+* Adds the environment variables to point it to the cluster we just deployed
+* Points to the docker image that we just built
+
+The contents of `cluster/streaming_model_deployment.json` are as follows:
+
+```json
+{    "apiVersion": "machinelearning.seldon.io/v1alpha2",
+ 
+   "kind": "SeldonDeployment",
+    "metadata": {
+        "name": "streaming-deployment",
+        "creationTimestamp": null
+    },
+    "spec": {
+        "name": "streaming-spec",
+        "predictors": [
+            {
+                "annotations": {
+                    "seldon.io/no-engine": "true"
+                },
+                "name": "streaming-graph",
+                "graph": {
+                    "name": "streaming-model",
+                    "endpoint": {
+                        "type": "REST"
+                    },
+                    "type": "MODEL",
+                    "children": [],
+                    "parameters": []
+                },
+                "componentSpecs": [
+                    {
+                        "spec": {
+                            "containers": [
+                                {
+                                    "image": "streaming_model:0.1",
+                                    "name": "streaming-model",
+                                    "env": [
+                                        {
+                                            "name": "SELDON_LOG_LEVEL",
+                                            "value": "DEBUG"
+                                        },
+                                        {
+                                            "name": "PREDICTIVE_UNIT_SERVICE_PORT",
+                                            "value": "9092"
+                                        },
+                                        {
+                                            "name": "PREDICTIVE_UNIT_SERVICE_HOST",
+                                            "value": "my-kafka"
+                                        },
+                                        {
+                                            "name": "PREDICTIVE_UNIT_ID",
+                                            "value": "streaming-model"
+                                        },
+                                        {
+                                            "name": "PREDICTOR_ID",
+                                            "value": "streaming-spec"
+                                        },
+                                        {
+                                            "name": "SELDON_DEPLOYMENT_ID",
+                                            "value": "streaming-deployment"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "terminationGracePeriodSeconds": 1
+                        }
+                    }
+                ],
+                "replicas": 1,
+                "engineResources": {},
+                "svcOrchSpec": {},
+                "traffic": 100,
+                "explainer": {
+                    "containerSpec": {
+                        "name": "",
+                        "resources": {}
+                    }
+                }
+            }
+        ],
+        "annotations": {
+            "seldon.io/engine-seldon-log-messages-externally": "true"
+        }
+    },
+    "status": {}
+}
+```
+
+
+### 3) Deploy our Seldon Deployment
+
+Now that we've created out deployment, we just need to launch it:
+
+```
+kubectl apply -f cluster/streaming_model_deployment.json
+```
+
+Once it's deployed we can see it by running:
+
+```
+$ kubectl get pods | grep streaming
+
+streaming-spec-streaming-graph-e90bdcd-56986c5d4b-7xvtm   1/1     Running   0          6m28s
+```
+
+4) Publish messages in the input topic and see messages coming from output topic
+
+Now we want to test it by sending some messages.
+
+We can get the name of the pod by running:
+
+```
+export STREAM_SELDON_POD=`kubectl get pod -l seldon-app=streaming-deployment-streaming-spec-streaming-graph -o jsonpath="{.items[0].metadata.name}"`
+```
+
+First let's run a consumer to see the output:
+
+```
+kubectl exec -i $STREAM_SELDON_POD python - <<EOF
+import kafka
+consumer = kafka.KafkaConsumer(
+    'streaming-deployment-streaming-model-predict-output',
+    bootstrap_servers='my-kafka:9092');
+print(next(consumer).value)
+EOF
+```
+
+Then let's send the message:
+
+```
+kubectl exec -i $STREAM_SELDON_POD python - <<EOF
+import kafka, json;
+producer = kafka.KafkaProducer(bootstrap_servers='my-kafka:9092', value_serializer=lambda v: json.dumps(v).encode('utf-8'));
+result = producer.send('streaming-deployment-streaming-model-predict-input', value={'data': { 'ndarray': [1,2,3,4] } })
+result.get(timeout=3)
+EOF
+```
+
+We can now see in our consumer that we have received and printed the output as follows:
+
+```
+b'{"data": {"ndarray": [1, 2, 3, 4], "names": []}, "meta": {}}'
+```
+
+
 
