@@ -1,0 +1,84 @@
+{
+    "apiVersion": "machinelearning.seldon.io/v1alpha2",
+    "kind": "SeldonDeployment",
+    "metadata": {
+        "name": "streaming-deployment",
+        "creationTimestamp": null
+    },
+    "spec": {
+        "name": "streaming-spec",
+        "predictors": [
+            {
+                "annotations": {
+                    "seldon.io/no-engine": "true"
+                },
+                "name": "streaming-graph",
+                "graph": {
+                    "name": "streaming-model",
+                    "endpoint": {
+                        "type": "REST"
+                    },
+                    "type": "MODEL",
+                    "children": [],
+                    "parameters": []
+                },
+                "componentSpecs": [
+                    {
+                        "metadata": {
+                            "creationTimestamp": "2019-10-12T16:00:00Z"
+                        },
+                        "spec": {
+                            "containers": [
+                                {
+                                    "image": "streaming_model:0.1",
+                                    "name": "streaming-model",
+                                    "env": [
+                                        {
+                                            "name": "SELDON_LOG_LEVEL",
+                                            "value": "DEBUG"
+                                        },
+                                        {
+                                            "name": "PREDICTIVE_UNIT_SERVICE_PORT",
+                                            "value": "9092"
+                                        },
+                                        {
+                                            "name": "PREDICTIVE_UNIT_SERVICE_HOST",
+                                            "value": "my-kafka"
+                                        },
+                                        {
+                                            "name": "PREDICTIVE_UNIT_ID",
+                                            "value": "streaming-model"
+                                        },
+                                        {
+                                            "name": "PREDICTOR_ID",
+                                            "value": "streaming-spec"
+                                        },
+                                        {
+                                            "name": "SELDON_DEPLOYMENT_ID",
+                                            "value": "streaming-deployment"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "terminationGracePeriodSeconds": 1
+                        }
+                    }
+                ],
+                "replicas": 1,
+                "engineResources": {},
+                "svcOrchSpec": {},
+                "traffic": 100,
+                "explainer": {
+                    "containerSpec": {
+                        "name": "",
+                        "resources": {}
+                    }
+                }
+            }
+        ],
+        "annotations": {
+            "seldon.io/engine-seldon-log-messages-externally": "true"
+        }
+    },
+    "status": {}
+}
