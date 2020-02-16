@@ -15,7 +15,7 @@ To get started we want to create a simple model wrapper.
 
 For this we will create the file `model/StreamingModel.py` with the following contents:
 
-```
+```python
 class StreamingModel:
     def __init__(self):
         print("INITIALIZING STREAMINGMODEL")
@@ -33,7 +33,7 @@ This means that Routes and Aggregators are still in development.
 
 In order to containerise the model we need to create a new file `model/.s2i/environment` with the following contents:
 
-```
+```console
 MODEL_NAME=StreamingModel
 API_TYPE=KAFKA
 SERVICE_TYPE=MODEL
@@ -42,7 +42,7 @@ PERSISTENCE=0
 
 With this now we just have to containerise our wrapper using the Seldon CLI tools by running:
 
-```
+```console
 s2i build model/. seldonio/seldon-core-s2i-python37:0.17-SNAPSHOT streaming_model:0.1
 ```
 
@@ -68,7 +68,7 @@ The contents should be the location of the kafka cluster, together with the name
 
 
 `local/conatiner.env` contents:
-```
+```console
 PREDICTIVE_UNIT_SERVICE_HOST=kafka
 PREDICTIVE_UNIT_SERVICE_PORT=9092
 PREDICTIVE_UNIT_ID=streaming_model
@@ -79,7 +79,7 @@ SELDON_DEPLOYMENT_ID=streaming_deployment
 Due to our streaming library not supporting opentracing > 2.0.0 we need to add the following temp overrides:
 (For more information read https://github.com/robinhood/faust/issues/528)
 
-```
+```console
 Flask-OpenTracing==0.2.0
 jaeger-client==3.13.0
 opentracing==1.3.0
@@ -93,7 +93,7 @@ For this we will run a simple single-node kafka cluster, and zookeeper worker th
 
 We will be using docker-compose version 1.25 to run the following `local/local-docker-compose.yaml` file:
 
-```
+```yaml
 version: "3"
 
 volumes:
@@ -138,13 +138,13 @@ services:
 
 We can run this file by simply running the following command:
 
-```
+```console
 docker-compose -f local/local-docker-compose.yaml up -d
 ```
 
 This is running deattached, so you can see the logs by running:
 
-```
+```console
 docker-compose -f local/local-docker-compose.yaml logs -f
 ```
 
@@ -152,13 +152,13 @@ docker-compose -f local/local-docker-compose.yaml logs -f
 
 TO run our model locally, we can simply use the following command:
 
-```
+```console
 docker run --name streaming_model --network kafkanet --env-file local/container.env streaming_model:0.1
 ```
 
 In order to see if it's working we want to run a consumer that listens for the next message - we'll leverage the running container to run the python command directly in the command line:
 
-```
+```python
 docker exec -i streaming_model python - <<EOF
 import kafka
 consumer = kafka.KafkaConsumer(
@@ -170,7 +170,7 @@ EOF
 
 And then we can send some data by also leveraging the running container:
 
-```
+```python
 docker exec -i streaming_model python - <<EOF
 import kafka, json;
 producer = kafka.KafkaProducer(bootstrap_servers='kafka:9092', value_serializer=lambda v: json.dumps(v).encode('utf-8'));
@@ -181,7 +181,7 @@ EOF
 
 We can now see that the consumer prints out the content from the output topic:
 
-```
+```json
 b'{"data": {"ndarray": [1, 2, 3, 4], "names": []}, "meta": {}}'
 ```
 
@@ -202,19 +202,19 @@ Once you have everything installed, we'll do the following steps:
 
 We first need to make sure our helm installer has access to the incubator charts:
 
-```
+```console
 helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
 ```
 
 Now we're able to create a simple Kafka deployment:
 
-```
+```console
 helm install my-kafka incubator/kafka
 ```
 
 Once it's running we'll be able to see the containers:
 
-```bash
+```console
 $ kubeclt get pods
 
 NAME                   READY   STATUS    RESTARTS   AGE
@@ -325,13 +325,13 @@ The contents of `cluster/streaming_model_deployment.json` are as follows:
 
 Now that we've created out deployment, we just need to launch it:
 
-```
+```console
 kubectl apply -f cluster/streaming_model_deployment.json
 ```
 
 Once it's deployed we can see it by running:
 
-```
+```console
 $ kubectl get pods | grep streaming
 
 streaming-spec-streaming-graph-e90bdcd-56986c5d4b-7xvtm   1/1     Running   0          6m28s
@@ -343,13 +343,13 @@ Now we want to test it by sending some messages.
 
 We can get the name of the pod by running:
 
-```
+```console
 export STREAM_SELDON_POD=`kubectl get pod -l seldon-app=streaming-deployment-streaming-spec-streaming-graph -o jsonpath="{.items[0].metadata.name}"`
 ```
 
 First let's run a consumer to see the output:
 
-```
+```python
 kubectl exec -i $STREAM_SELDON_POD python - <<EOF
 import kafka
 consumer = kafka.KafkaConsumer(
@@ -361,7 +361,7 @@ EOF
 
 Then let's send the message:
 
-```
+```python
 kubectl exec -i $STREAM_SELDON_POD python - <<EOF
 import kafka, json;
 producer = kafka.KafkaProducer(bootstrap_servers='my-kafka:9092', value_serializer=lambda v: json.dumps(v).encode('utf-8'));
@@ -372,7 +372,7 @@ EOF
 
 We can now see in our consumer that we have received and printed the output as follows:
 
-```
+```json
 b'{"data": {"ndarray": [1, 2, 3, 4], "names": []}, "meta": {}}'
 ```
 
