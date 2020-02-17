@@ -19,7 +19,7 @@ pipelineConfig:
               image: seldonio/python-builder:0.2
             steps:
               - name: lint-python
-                command: make 
+                command: make
                 args:
                 - -C python
                 - install_dev
