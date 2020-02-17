@@ -5,7 +5,7 @@ metadata:
   name: jaeger
 spec:
   strategy: allInOne
-  query:
+  allInOne:
     options:
       query:
         base-path: /jaeger
@@ -17,3 +17,5 @@ metadata:
 spec:
   prefix: /jaeger
   service: jaeger-query.seldon:16686
+  # Jaeger will expect the `/jaeger` prefix, so we can't rewrite it
+  rewrite: ""
