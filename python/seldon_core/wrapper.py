@@ -30,7 +30,12 @@ def get_kafka_worker(
 ):
     if not all([bool(PRED_UNIT_ID), bool(PREDICTOR_ID), bool(DEPLOYMENT_ID)]):
         # TODO: update for correct prediction
-        raise Exception("Predictie unit, predictor id or deployment id not set")
+        raise Exception(
+            "Predictie unit, predictor id or deployment id not set.\n"
+            f"PREDICTIVE_UNIT_ID={PRED_UNIT_ID}\n"
+            f"PREDICTOR_ID={PREDICTOR_ID}\n"
+            f"DEPLOYMENT_ID={DEPLOYMENT_ID}"
+        )
     import faust
 
     TOPIC_PREFIX = f"{DEPLOYMENT_ID}-{PRED_UNIT_ID}"
@@ -65,6 +70,51 @@ def get_kafka_worker(
     print(f"LOG LEVEL PROVIDED {log_level}")
     worker = faust.Worker(app, loglevel=log_level)
     return worker
+
+
+def get_rest_basic_endpoints(user_model):
+    app = Flask(__name__, static_url_path="")
+    CORS(app)
+
+    _set_flask_app_configs(app)
+
+    if hasattr(user_model, "model_error_handler"):
+        logger.info("Registering the custom error handler...")
+        app.register_blueprint(user_model.model_error_handler)
+
+    @app.errorhandler(SeldonMicroserviceException)
+    def handle_invalid_usage(error):
+        response = jsonify(error.to_dict())
+        logger.error("%s", error.to_dict())
+        response.status_code = error.status_code
+        return response
+
+    @app.route("/seldon.json", methods=["GET"])
+    def openAPI():
+        return send_from_directory("", "openapi/seldon.json")
+
+    @app.route("/health/ping", methods=["GET"])
+    def HealthPing():
+        """
+        Lightweight endpoint to check the liveness of the REST endpoint
+        """
+        return "pong"
+
+    @app.route("/health/status", methods=["GET"])
+    def HealthStatus():
+        logger.debug("REST Health Status Request")
+        response = seldon_core.seldon_methods.health_status(user_model)
+        logger.debug("REST Health Status Response: %s", response)
+        return jsonify(response)
+
+    @app.route("/metadata", methods=["GET"])
+    def Metadata():
+        logger.debug("REST Metadata Request")
+        response = seldon_core.seldon_methods.metadata(user_model)
+        logger.debug("REST Metadata Response: %s", response)
+        return jsonify(response)
+
+    return app
 
 
 def get_rest_microservice(user_model):

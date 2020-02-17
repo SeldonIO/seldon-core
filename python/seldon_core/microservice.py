@@ -400,6 +400,26 @@ def main():
         getattr(user_object, "custom_service")
     ):
         server2_func = user_object.custom_service
+    elif args.api_type == "KAFKA":
+
+        def basic_rest_prediction_server():
+            options = {
+                "bind": "%s:%s" % ("0.0.0.0", 9000),
+                "access_logfile": "-",
+                "loglevel": "info",
+                "timeout": 5000,
+                "reload": "true",
+                "workers": args.workers,
+                "max_requests": args.max_requests,
+                "max_requests_jitter": args.max_requests_jitter,
+            }
+            app = seldon_microservice.get_rest_basic_endpoints(user_object)
+            StandaloneApplication(app, user_object, options=options).run()
+
+        logger.info(
+            "REST gunicorn microservice for KAFKA worker running on port %i", port
+        )
+        server2_func = basic_rest_prediction_server
     else:
         server2_func = None
 
