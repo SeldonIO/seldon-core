@@ -31,11 +31,20 @@ helm_setup:
 	helm repo update
 
 install_ambassador:
-	helm install --wait ambassador stable/ambassador -f ambassador_values.yaml --set crds.keep=false --namespace seldon --set replicaCount=1
+	helm install ambassador \
+		stable/ambassador \
+		-f ../resources/ambassador_values.yaml \
+		--set crds.keep=false \
+		--namespace seldon \
+		--set replicaCount=1 \
+		--wait
 
 install_jaeger:
-	helm install jaeger-operator jaegertracing/jaeger-operator --set rbac.clusterRole=true --namespace seldon 
-	kubectl rollout status deployment.apps/jaeger-operator --namespace seldon
+	helm install jaeger-operator \
+		jaegertracing/jaeger-operator \
+		--set rbac.clusterRole=true \
+		--namespace seldon \
+		--wait
 	kubectl apply -f ../resources/jaeger.yaml --namespace seldon
 
 
