@@ -13,17 +13,12 @@ pipelineConfig:
             dir: ci
             sh: "./add-pr-build-comment"
         - name: lint-checks
-          agent:
-            image: seldonio/python-builder:0.2
-          steps:
-          - name: pip-install
-            command: python3
-            args:
-            - -m pip install -r python/requirements-dev.txt
-          - name: python-black
-            command: make
+          parallel:
+          - name: lint-python
+            agent:
+              image: seldonio/python-builder:0.2
+            command: make 
             args:
             - -C python
+            - install_dev
             - run_linter_check
-          - name: python-lint
-            command: flake8
