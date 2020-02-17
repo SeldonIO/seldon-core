@@ -13,11 +13,11 @@ pipelineConfig:
             dir: ci
             sh: "./add-pr-build-comment"
         - name: lint-checks
-          steps:
-          - name: pip-install-
-               command: python3
-               args:
-               - -m pip install -r python/requirements-dev.txt
+          stages:
+          - name: pip-install
+            command: python3
+            args:
+            - -m pip install -r python/requirements-dev.txt
           - name: python-lint-task
             parallel:
             - name: python-lint
