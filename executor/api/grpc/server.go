@@ -8,29 +8,57 @@ import (
 	"github.com/opentracing/opentracing-go"
 	"github.com/seldonio/seldon-core/executor/api/metric"
 	"github.com/seldonio/seldon-core/executor/api/payload"
+	"github.com/seldonio/seldon-core/executor/k8s"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"math"
+	"strconv"
 )
 
 const (
 	ProtobufContentType = "application/protobuf"
 )
 
-func CreateGrpcServer(spec *v1.PredictorSpec, deploymentName string) *grpc.Server {
-	opts := []grpc.ServerOption{
-		grpc.MaxRecvMsgSize(math.MaxInt32),
-		grpc.MaxSendMsgSize(math.MaxInt32),
-	}
-	if opentracing.IsGlobalTracerRegistered() {
-		opts = append(opts, grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(grpc_opentracing.UnaryServerInterceptor(), metric.NewServerMetrics(spec, deploymentName).UnaryServerInterceptor())))
+func getMaxMsgSizeFromAnnotations(annotations map[string]string) (int, error) {
+	val := annotations[k8s.ANNOTATION_GRPC_MAX_MESSAGE_SIZE]
+	if val != "" {
+		converted, err := strconv.ParseInt(val, 10, 32)
+		if err != nil {
+			return 0, err
+		} else {
+			return int(converted), nil
+		}
 	} else {
-		opts = append(opts, grpc.UnaryInterceptor(metric.NewServerMetrics(spec, deploymentName).UnaryServerInterceptor()))
+		return 0, nil
+	}
+}
+
+func CreateGrpcServer(spec *v1.PredictorSpec, deploymentName string, annotations map[string]string) (*grpc.Server, error) {
+	maxMsgSize := math.MaxInt32
+	// Update from annotations
+	if annotations != nil {
+		sizeFromAnnotation, err := getMaxMsgSizeFromAnnotations(annotations)
+		if err != nil {
+			return nil, err
+		} else if sizeFromAnnotation > 0 {
+			maxMsgSize = sizeFromAnnotation
+		}
 	}
 
+	opts := []grpc.ServerOption{
+		grpc.MaxRecvMsgSize(maxMsgSize),
+		grpc.MaxSendMsgSize(maxMsgSize),
+	}
+
+	interceptors := []grpc.UnaryServerInterceptor{metric.NewServerMetrics(spec, deploymentName).UnaryServerInterceptor()}
+	if opentracing.IsGlobalTracerRegistered() {
+		interceptors = append(interceptors, grpc_opentracing.UnaryServerInterceptor())
+	}
+	opts = append(opts, grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(interceptors...)))
+
 	grpcServer := grpc.NewServer(opts...)
-	return grpcServer
+	return grpcServer, nil
 }
 
 func CollectMetadata(ctx context.Context) map[string][]string {
