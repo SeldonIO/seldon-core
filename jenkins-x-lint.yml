@@ -17,8 +17,10 @@ pipelineConfig:
           - name: lint-python
             agent:
               image: seldonio/python-builder:0.2
-            command: make 
-            args:
-            - -C python
-            - install_dev
-            - run_linter_check
+            steps:
+              - name: lint-python
+                command: make 
+                args:
+                - -C python
+                - install_dev
+                - run_linter_check
