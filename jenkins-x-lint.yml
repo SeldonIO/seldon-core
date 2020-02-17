@@ -13,6 +13,8 @@ pipelineConfig:
             dir: ci
             sh: "./add-pr-build-comment"
         - name: lint-checks
+          agent:
+            image: seldonio/python-builder:0.2
           steps:
           - name: pip-install
             command: python3
