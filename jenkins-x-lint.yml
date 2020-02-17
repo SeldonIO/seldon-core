@@ -14,12 +14,15 @@ pipelineConfig:
             sh: "./add-pr-build-comment"
         - name: lint-checks
           parallel:
+          - name: pip-install-
+               command: python3
+               args:
+               - -m pip install -r python/requirements-dev.txt
           - name: python-lint-task
             steps:
             - name: python-lint
               args:
               - -C python
-              - setup_linter
               - run_linter_check
               command: make
             - name: python-lint-with-flake8
