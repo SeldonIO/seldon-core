@@ -13,17 +13,15 @@ pipelineConfig:
             dir: ci
             sh: "./add-pr-build-comment"
         - name: lint-checks
-          stages:
+          steps:
           - name: pip-install
             command: python3
             args:
             - -m pip install -r python/requirements-dev.txt
-          - name: python-lint-task
-            parallel:
-            - name: python-lint
-              args:
-              - -C python
-              - run_linter_check
-              command: make
-            - name: python-lint-with-flake8
-              command: flake8
+          - name: python-black
+            command: make
+            args:
+            - -C python
+            - run_linter_check
+          - name: python-lint
+            command: flake8
