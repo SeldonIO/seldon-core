@@ -104,6 +104,7 @@ run_linter_check:
 	black \
 		--check ./ ../testing \
 		--exclude "(testing/scripts/proto|seldon_core/proto/|.eggs|.tox)"
+	flake8
 
 .PHONY: clean
 clean:
