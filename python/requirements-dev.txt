@@ -1,15 +1,17 @@
 -r requirements.txt
+black==19.10b0
+flake8==3.7.9
 mypy<0.762
 Pillow==7.0.0
-tox<4.0.0
 pytest==5.3.1
 pytest-cov==2.8.1
+tox<4.0.0
 
 # 2nd lvl dep on cov required to avoid sqllite dep
 coverage==4.5.4
 
 # Used in serving_test_gen
-pandas==1.0.0
+pandas==1.0.1
 
 # Fetch licenses
-pip-licenses==2.1.0
+pip-licenses==2.1.1
