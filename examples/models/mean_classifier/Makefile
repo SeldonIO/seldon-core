@@ -1,4 +1,4 @@
-VERSION=1.3
+VERSION=1.4
 IMAGE_BASE=seldonio/mock_classifier
 
 build_rest:

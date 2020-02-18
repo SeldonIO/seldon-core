@@ -180,7 +180,7 @@ func getUpdatePortNumMap(name string, nextPortNum *int32, portMap map[string]int
 	return portMap[name]
 }
 
-func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(namespace string) {
+func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(mldepName string, namespace string) {
 
 	var firstPuPortNum int32 = constants.FirstPortNumber
 	if env_preditive_unit_service_port, ok := os.LookupEnv("PREDICTIVE_UNIT_SERVICE_PORT"); ok {
@@ -262,7 +262,7 @@ func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(namespace string) {
 					if _, hasSeparateEnginePod := r.Annotations[ANNOTATION_SEPARATE_ENGINE]; j == 0 && !hasSeparateEnginePod {
 						pu.Endpoint.ServiceHost = "localhost"
 					} else {
-						containerServiceValue := GetContainerServiceName(r, p, con)
+						containerServiceValue := GetContainerServiceName(mldepName, p, con)
 						pu.Endpoint.ServiceHost = containerServiceValue + "." + namespace + ".svc.cluster.local."
 					}
 					pu.Endpoint.ServicePort = portNum
@@ -358,7 +358,7 @@ func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(namespace string) {
 					if _, hasSeparateEnginePod := r.Annotations[ANNOTATION_SEPARATE_ENGINE]; !hasSeparateEnginePod {
 						pu.Endpoint.ServiceHost = "localhost"
 					} else {
-						containerServiceValue := GetContainerServiceName(r, p, con)
+						containerServiceValue := GetContainerServiceName(mldepName, p, con)
 						pu.Endpoint.ServiceHost = containerServiceValue + "." + namespace + ".svc.cluster.local."
 					}
 				}
@@ -436,10 +436,10 @@ func checkTraffic(spec *SeldonDeploymentSpec, fldPath *field.Path, allErrs field
 		}
 	}
 	if trafficSum != 100 && (len(spec.Predictors)-shadows) > 1 {
-		allErrs = append(allErrs, field.Invalid(fldPath, spec.Name, "Traffic must sum to 100 for multiple predictors"))
+		allErrs = append(allErrs, field.Invalid(fldPath, spec.Predictors[0].Name, "Traffic must sum to 100 for multiple predictors"))
 	}
 	if trafficSum > 0 && trafficSum < 100 && len(spec.Predictors) == 1 {
-		allErrs = append(allErrs, field.Invalid(fldPath, spec.Name, "Traffic must sum be 100 for a single predictor when set"))
+		allErrs = append(allErrs, field.Invalid(fldPath, spec.Predictors[0].Name, "Traffic must sum be 100 for a single predictor when set"))
 	}
 
 	return allErrs
@@ -508,7 +508,7 @@ func (r *SeldonDeployment) Default() {
 	if r.ObjectMeta.Namespace == "" {
 		r.ObjectMeta.Namespace = "default"
 	}
-	r.Spec.DefaultSeldonDeployment(r.ObjectMeta.Namespace)
+	r.Spec.DefaultSeldonDeployment(r.Name, r.ObjectMeta.Namespace)
 }
 
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.

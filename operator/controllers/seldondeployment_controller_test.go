@@ -89,10 +89,10 @@ var _ = Describe("Create a Seldon Deployment", func() {
 			err := k8sClient.Get(context.Background(), key, fetched)
 			return err
 		}, timeout, interval).Should(BeNil())
-		Expect(fetched.Spec.Name).Should(Equal("mydep"))
+		Expect(fetched.Name).Should(Equal("dep"))
 
 		depKey := types.NamespacedName{
-			Name:      machinelearningv1.GetDeploymentName(instance, instance.Spec.Predictors[0], instance.Spec.Predictors[0].ComponentSpecs[0]),
+			Name:      machinelearningv1.GetDeploymentName(instance, instance.Spec.Predictors[0], instance.Spec.Predictors[0].ComponentSpecs[0], 0),
 			Namespace: "default",
 		}
 		depFetched := &appsv1.Deployment{}

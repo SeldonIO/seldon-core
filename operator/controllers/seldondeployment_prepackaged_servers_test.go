@@ -70,10 +70,10 @@ var _ = Describe("Create a prepacked sklearn server", func() {
 			err := k8sClient.Get(context.Background(), key, fetched)
 			return err
 		}, timeout, interval).Should(BeNil())
-		Expect(fetched.Spec.Name).Should(Equal(name))
+		Expect(fetched.Name).Should(Equal(sdepName))
 
-		sPodSpec := utils.GetSeldonPodSpecForPredictiveUnit(&instance.Spec.Predictors[0], instance.Spec.Predictors[0].Graph.Name)
-		depName := machinelearningv1.GetDeploymentName(instance, instance.Spec.Predictors[0], sPodSpec)
+		sPodSpec, idx := utils.GetSeldonPodSpecForPredictiveUnit(&instance.Spec.Predictors[0], instance.Spec.Predictors[0].Graph.Name)
+		depName := machinelearningv1.GetDeploymentName(instance, instance.Spec.Predictors[0], sPodSpec, idx)
 		depKey := types.NamespacedName{
 			Name:      depName,
 			Namespace: "default",
@@ -144,10 +144,10 @@ var _ = Describe("Create a prepacked tfserving server for Seldon protocol and RE
 			err := k8sClient.Get(context.Background(), key, fetched)
 			return err
 		}, timeout, interval).Should(BeNil())
-		Expect(fetched.Spec.Name).Should(Equal(name))
+		Expect(fetched.Name).Should(Equal(sdepName))
 
-		sPodSpec := utils.GetSeldonPodSpecForPredictiveUnit(&instance.Spec.Predictors[0], instance.Spec.Predictors[0].Graph.Name)
-		depName := machinelearningv1.GetDeploymentName(instance, instance.Spec.Predictors[0], sPodSpec)
+		sPodSpec, idx := utils.GetSeldonPodSpecForPredictiveUnit(&instance.Spec.Predictors[0], instance.Spec.Predictors[0].Graph.Name)
+		depName := machinelearningv1.GetDeploymentName(instance, instance.Spec.Predictors[0], sPodSpec, idx)
 		depKey := types.NamespacedName{
 			Name:      depName,
 			Namespace: "default",
@@ -232,10 +232,10 @@ var _ = Describe("Create a prepacked tfserving server for tensorflow protocol an
 			err := k8sClient.Get(context.Background(), key, fetched)
 			return err
 		}, timeout, interval).Should(BeNil())
-		Expect(fetched.Spec.Name).Should(Equal(name))
+		Expect(fetched.Name).Should(Equal(sdepName))
 
-		sPodSpec := utils.GetSeldonPodSpecForPredictiveUnit(&instance.Spec.Predictors[0], instance.Spec.Predictors[0].Graph.Name)
-		depName := machinelearningv1.GetDeploymentName(instance, instance.Spec.Predictors[0], sPodSpec)
+		sPodSpec, idx := utils.GetSeldonPodSpecForPredictiveUnit(&instance.Spec.Predictors[0], instance.Spec.Predictors[0].Graph.Name)
+		depName := machinelearningv1.GetDeploymentName(instance, instance.Spec.Predictors[0], sPodSpec, idx)
 		depKey := types.NamespacedName{
 			Name:      depName,
 			Namespace: "default",
@@ -321,10 +321,10 @@ var _ = Describe("Create a prepacked tfserving server for tensorflow protocol an
 			err := k8sClient.Get(context.Background(), key, fetched)
 			return err
 		}, timeout, interval).Should(BeNil())
-		Expect(fetched.Spec.Name).Should(Equal(name))
+		Expect(fetched.Name).Should(Equal(sdepName))
 
-		sPodSpec := utils.GetSeldonPodSpecForPredictiveUnit(&instance.Spec.Predictors[0], instance.Spec.Predictors[0].Graph.Name)
-		depName := machinelearningv1.GetDeploymentName(instance, instance.Spec.Predictors[0], sPodSpec)
+		sPodSpec, idx := utils.GetSeldonPodSpecForPredictiveUnit(&instance.Spec.Predictors[0], instance.Spec.Predictors[0].Graph.Name)
+		depName := machinelearningv1.GetDeploymentName(instance, instance.Spec.Predictors[0], sPodSpec, idx)
 		depKey := types.NamespacedName{
 			Name:      depName,
 			Namespace: "default",
