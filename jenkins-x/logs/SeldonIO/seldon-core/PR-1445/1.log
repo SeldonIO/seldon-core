@@ -1,0 +1,28 @@
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-14-clmd2-1[0m stage [32mmeta-pipeline[0m and container [32mstep-credential-initializer-2wj46[0m
+{"level":"warn","ts":1582015785.366634,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1582015785.3677917,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-14-clmd2-1[0m stage [32mmeta-pipeline[0m and container [32mstep-working-dir-initializer-2t97j[0m
+{"level":"warn","ts":1582015786.3165975,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1582015786.319288,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-14-clmd2-1[0m stage [32mmeta-pipeline[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-14-clmd2-1[0m stage [32mmeta-pipeline[0m and container [32mstep-git-source-meta-seldonio-seldon-core-pr-14-kwkp4[0m
+{"level":"warn","ts":1582015862.399373,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1582015866.0407245,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ b8c7c97dda737ed9efd60d9baace7892f0764892 in path /workspace/source"}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-14-clmd2-1[0m stage [32mmeta-pipeline[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:b8c7c97dda737ed9efd60d9baace7892f0764892,1445:51ad0482f6d8f3e5bd97ad6e62ef3c229caf5143
+DEBUG: ran git fetch --unshallow origin 51ad0482f6d8f3e5bd97ad6e62ef3c229caf5143: b8c7c97dda737ed9efd60d9baace7892f0764892: in 
+DEBUG: ran git checkout master in 
+DEBUG: ran git reset --hard b8c7c97dda737ed9efd60d9baace7892f0764892 in 
+DEBUG: ran clean --force -d . in 
+error: error during merge: merging 51ad0482f6d8f3e5bd97ad6e62ef3c229caf5143 into master: git output: Auto-merging executor/main.go
+CONFLICT (content): Merge conflict in executor/main.go
+Automatic merge failed; fix conflicts and then commit the result.: failed to run 'git merge 51ad0482f6d8f3e5bd97ad6e62ef3c229caf5143' command in directory '', output: 'Auto-merging executor/main.go
+CONFLICT (content): Merge conflict in executor/main.go
+Automatic merge failed; fix conflicts and then commit the result.'
+[31m
+Pipeline failed on stage 'meta-pipeline' : container 'step-git-merge'. The execution of the pipeline has stopped.[0m
