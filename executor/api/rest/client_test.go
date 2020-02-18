@@ -3,6 +3,7 @@ package rest
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
 	"github.com/golang/protobuf/jsonpb"
 	. "github.com/onsi/gomega"
 	"github.com/prometheus/client_golang/prometheus"
@@ -10,6 +11,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/metric"
 	"github.com/seldonio/seldon-core/executor/api/payload"
+	"github.com/seldonio/seldon-core/executor/k8s"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
 	v12 "k8s.io/api/core/v1"
 	v1meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -19,6 +21,7 @@ import (
 	"net/url"
 	"strconv"
 	"testing"
+	"time"
 )
 
 const (
@@ -94,7 +97,8 @@ func TestSimpleMethods(t *testing.T) {
 		Name:        "test",
 		Annotations: map[string]string{},
 	}
-	seldonRestClient := NewJSONRestClient(api.ProtocolSeldon, "test", &predictor, SetHTTPClient(httpClient))
+	seldonRestClient, err := NewJSONRestClient(api.ProtocolSeldon, "test", &predictor, nil, SetHTTPClient(httpClient))
+	g.Expect(err).To(BeNil())
 
 	methods := []func(context.Context, string, string, int32, payload.SeldonPayload, map[string][]string) (payload.SeldonPayload, error){seldonRestClient.Predict, seldonRestClient.TransformInput, seldonRestClient.TransformOutput, seldonRestClient.Feedback}
 	for _, method := range methods {
@@ -123,7 +127,8 @@ func TestRouter(t *testing.T) {
 		Name:        "test",
 		Annotations: map[string]string{},
 	}
-	seldonRestClient := NewJSONRestClient(api.ProtocolSeldon, "test", &predictor, SetHTTPClient(httpClient))
+	seldonRestClient, err := NewJSONRestClient(api.ProtocolSeldon, "test", &predictor, nil, SetHTTPClient(httpClient))
+	g.Expect(err).To(BeNil())
 
 	route, err := seldonRestClient.Route(createTestContext(), "model", host, int32(port), createPayload(g), map[string][]string{})
 	g.Expect(err).Should(BeNil())
@@ -143,7 +148,8 @@ func TestStatus(t *testing.T) {
 		Name:        "test",
 		Annotations: map[string]string{},
 	}
-	seldonRestClient := NewJSONRestClient(api.ProtocolSeldon, "test", &predictor, SetHTTPClient(httpClient))
+	seldonRestClient, err := NewJSONRestClient(api.ProtocolSeldon, "test", &predictor, nil, SetHTTPClient(httpClient))
+	g.Expect(err).To(BeNil())
 
 	status, err := seldonRestClient.Status(createTestContext(), "model", host, int32(port), nil, map[string][]string{})
 	g.Expect(err).Should(BeNil())
@@ -163,7 +169,8 @@ func TestMetadata(t *testing.T) {
 		Name:        "test",
 		Annotations: map[string]string{},
 	}
-	seldonRestClient := NewJSONRestClient(api.ProtocolSeldon, "test", &predictor, SetHTTPClient(httpClient))
+	seldonRestClient, err := NewJSONRestClient(api.ProtocolSeldon, "test", &predictor, nil, SetHTTPClient(httpClient))
+	g.Expect(err).To(BeNil())
 
 	status, err := seldonRestClient.Metadata(createTestContext(), "model", host, int32(port), nil, map[string][]string{})
 	g.Expect(err).Should(BeNil())
@@ -189,7 +196,8 @@ func TestCombiner(t *testing.T) {
 		Name:        "test",
 		Annotations: map[string]string{},
 	}
-	seldonRestClient := NewJSONRestClient(api.ProtocolSeldon, "test", &predictor, SetHTTPClient(httpClient))
+	seldonRestClient, err := NewJSONRestClient(api.ProtocolSeldon, "test", &predictor, nil, SetHTTPClient(httpClient))
+	g.Expect(err).To(BeNil())
 
 	resPayload, err := seldonRestClient.Combine(createTestContext(), "model", host, int32(port), createCombinerPayload(g), map[string][]string{})
 	g.Expect(err).Should(BeNil())
@@ -228,7 +236,8 @@ func TestClientMetrics(t *testing.T) {
 			},
 		},
 	}
-	seldonRestClient := NewJSONRestClient(api.ProtocolSeldon, "test", &predictor, SetHTTPClient(httpClient))
+	seldonRestClient, err := NewJSONRestClient(api.ProtocolSeldon, "test", &predictor, nil, SetHTTPClient(httpClient))
+	g.Expect(err).To(BeNil())
 
 	methods := []func(context.Context, string, string, int32, payload.SeldonPayload, map[string][]string) (payload.SeldonPayload, error){seldonRestClient.Predict, seldonRestClient.TransformInput, seldonRestClient.TransformOutput}
 	for _, method := range methods {
@@ -265,4 +274,26 @@ func TestClientMetrics(t *testing.T) {
 		g.Expect(foundImageVersion).Should(Equal(true))
 	}
 
+}
+
+func TestTimeout(t *testing.T) {
+	t.Logf("Started")
+	g := NewGomegaWithT(t)
+	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(1 * time.Second)
+		w.Write([]byte(okStatusResponse))
+	})
+	host, port, _, teardown := testingHTTPClient(g, h)
+	defer teardown()
+	predictor := v1.PredictorSpec{
+		Name:        "test",
+		Annotations: map[string]string{},
+	}
+	annotations := map[string]string{k8s.ANNOTATION_REST_TIMEOUT: "1"}
+	seldonRestClient, err := NewJSONRestClient(api.ProtocolSeldon, "test", &predictor, annotations)
+	g.Expect(err).To(BeNil())
+
+	_, err = seldonRestClient.Status(createTestContext(), "model", host, int32(port), nil, map[string][]string{})
+	g.Expect(err).ToNot(BeNil())
+	g.Expect(err.Error()).To(Equal(fmt.Sprintf("Get http://127.0.0.1:%d/health/status: net/http: request canceled (Client.Timeout exceeded while awaiting headers)", port)))
 }
