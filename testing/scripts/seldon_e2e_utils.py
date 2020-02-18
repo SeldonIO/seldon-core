@@ -399,6 +399,7 @@ def grpc_request_ambassador(
     else:
         metadata = [("seldon", deployment_name), ("namespace", namespace)]
     response = stub.Predict(request=request, metadata=metadata)
+    channel.close()
     return response
 
 

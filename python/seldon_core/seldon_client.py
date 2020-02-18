@@ -1105,8 +1105,10 @@ def microservice_api_grpc_seldon_message(
         else:
             raise SeldonClientException("Unknown method:" + method)
 
+        channel.close()
         return SeldonClientPrediction(request, response, True, "")
     except Exception as e:
+        channel.close()
         return SeldonClientPrediction(request, None, False, str(e))
 
 
@@ -1174,6 +1176,7 @@ def microservice_api_grpc_aggregate(
         )
         stub = prediction_pb2_grpc.GenericStub(channel)
         response = stub.Aggregate(request=request)
+        channel.close()
         return SeldonClientCombine(request, response, True, "")
     except Exception as e:
         return SeldonClientCombine(request, None, False, str(e))
@@ -1220,6 +1223,7 @@ def microservice_api_grpc_feedback(
         )
         stub = prediction_pb2_grpc.GenericStub(channel)
         response = stub.SendFeedback(request=request)
+        channel.close()
         return SeldonClientFeedback(request, response, True, "")
     except Exception as e:
         return SeldonClientFeedback(request, None, False, str(e))
@@ -1445,6 +1449,7 @@ def grpc_predict_seldon_oauth(
     metadata = [("oauth_token", token)]
     try:
         response = stub.Predict(request=request, metadata=metadata)
+        channel.close()
         if client_return_type == "dict":
             request = seldon_message_to_json(request)
             response = seldon_message_to_json(response)
@@ -1452,6 +1457,7 @@ def grpc_predict_seldon_oauth(
             raise SeldonClientException("Invalid client_return_type")
         return SeldonClientPrediction(request, response, True, "")
     except Exception as e:
+        channel.close()
         return SeldonClientPrediction(request, None, False, str(e))
 
 
@@ -1935,6 +1941,7 @@ def grpc_predict_gateway(
         for k in headers:
             metadata.append((k, headers[k]))
     response = stub.Predict(request=request, metadata=metadata)
+    channel.close()
     if client_return_type == "dict":
         request = seldon_message_to_json(request)
         response = seldon_message_to_json(response)
@@ -2078,6 +2085,7 @@ def grpc_feedback_seldon_oauth(
     metadata = [("oauth_token", token)]
     try:
         response = stub.SendFeedback(request=request, metadata=metadata)
+        channel.close()
         if client_return_type == "dict":
             request = seldon_message_to_json(request)
             response = seldon_message_to_json(response)
@@ -2085,6 +2093,7 @@ def grpc_feedback_seldon_oauth(
             raise SeldonClientException("Invalid client_return_type")
         return SeldonClientFeedback(request, response, True, "")
     except Exception as e:
+        channel.close()
         return SeldonClientFeedback(request, None, False, str(e))
 
 
@@ -2251,6 +2260,7 @@ def grpc_feedback_gateway(
             metadata.append((k, headers[k]))
     try:
         response = stub.SendFeedback(request=request, metadata=metadata)
+        channel.close()
         if client_return_type == "dict":
             request = seldon_message_to_json(request)
             response = seldon_message_to_json(response)
@@ -2258,4 +2268,5 @@ def grpc_feedback_gateway(
             raise SeldonClientException("Invalid client_return_type")
         return SeldonClientFeedback(request, response, True, "")
     except Exception as e:
+        channel.close()
         return SeldonClientFeedback(request, None, False, str(e))

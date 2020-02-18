@@ -204,3 +204,5 @@ operator/helm/tmp/
 
 # vim
 *.swp
+
+notebooks/helm_examples.py
