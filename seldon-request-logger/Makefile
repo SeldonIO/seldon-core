@@ -4,6 +4,11 @@ build_image:
 push_image:
 	docker push seldonio/seldon-request-logger:latest
 
+build_image_cifar:
+	docker build . -t seldonio/seldon-request-logger-cifar:latest
+
+push_image_cifar:
+	docker push seldonio/seldon-request-logger-cifar:latest
 
 run_container:
 	docker run -p 2222:8080 seldonio/seldon-request-logger:latest
@@ -12,6 +17,11 @@ run_local: export FLASK_RUN_PORT = 2222
 run_local: export FLASK_APP = app.py
 run_local:
 	cd app && flask run
+
+run_local_cifar: export FLASK_RUN_PORT = 2222
+run_local_cifar: export FLASK_APP = app.py
+run_local_cifar:
+	cd cifar && flask run
 
 test:
 	curl -v "http://localhost:2222/" \

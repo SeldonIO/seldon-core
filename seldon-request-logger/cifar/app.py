@@ -7,8 +7,6 @@ import json
 import time
 import random
 import os
-from seldon_core.utils import json_to_seldon_message, extract_request_parts, array_to_grpc_datadef, seldon_message_to_json
-from seldon_core.proto import prediction_pb2
 import numpy as np
 from elasticsearch import Elasticsearch
 import logging
@@ -36,11 +34,12 @@ def index():
     #try:
 
     body = request.get_json(force=True)
-    # print('RECEIVED MESSAGE.')
-    # print(str(request.headers))
-    # print(str(body))
-    # print('----')
-    # sys.stdout.flush()
+
+    print('RECEIVED MESSAGE.')
+    print(str(request.headers))
+    #print(str(body))
+    print('----')
+    sys.stdout.flush()
 
     es = connect_elasticsearch()
 
@@ -53,15 +52,17 @@ def index():
     try:
 
         request_id = request.headers.get(REQUEST_ID_HEADER_NAME)
-
-        # TODO: need to fix this upstream
         if request_id is None:
+            # TODO: need to fix this upstream
             request_id = request.headers.get(CLOUD_EVENT_ID)
 
         if message_type != 'request':
             #can reduce overall number of elastic queries if we wait for req first
             #locking involves contention and retries so want to spread out to increase success %
             time.sleep(random.uniform(3.0,6.0))
+
+        print('type is '+message_type)
+        sys.stdout.flush()
 
         #first ensure there is an elastic doc as we'll need something to lock against
         #use req id as doc id (if None then elastic should generate one but then req & res won't be linked)
@@ -120,6 +121,7 @@ def set_metadata(content, headers, message_type):
     if message_type == "request":
        content['@timestamp'] = headers.get(TIMESTAMP_HEADER_NAME)
        content['RequestId'] = headers.get(REQUEST_ID_HEADER_NAME)
+
     return
 
 
@@ -142,7 +144,8 @@ def process_and_update_elastic_doc(elastic_object, message_type, message_body, r
         sys.stdout.flush()
 
     #first do any needed transformations
-    new_content_part = process_content(message_body)
+    new_content_part = process_content(message_type, message_body)
+
     #set metadata specific to this part (request or response)
     field_from_header(content=new_content_part,header_name='ce-time',headers=headers)
     field_from_header(content=new_content_part, header_name='ce-source', headers=headers)
@@ -170,9 +173,19 @@ def update_elastic_doc(elastic_object, message_type, new_content_part, request_i
         # need seq_no for elastic optimistic locking
         seq_no = doc['_seq_no']
         primary_term = doc['_primary_term']
+        print('seq_no')
+        print(seq_no)
+        print('primary_term')
+        print(primary_term)
 
     # add the new content under its key
     new_content[message_type] = new_content_part
+
+    if message_type == 'outlier':
+        print('outlier content')
+        print(new_content)
+        sys.stdout.flush()
+
     # ensure any top-level metadata is set
     set_metadata(new_content,headers, message_type)
 
@@ -195,6 +208,9 @@ def connect_elasticsearch():
 
 def store_record(elastic_object, index_name, record, req_id, record_doc_type, seq_no, primary_term):
     doc = None
+
+    #FIXME: first time through this loop for any existing doc we will have seq_no and req_id ... but code won't look it up!
+    # it won't error either - it will try to overwrite it!
 
     # don't already have a seq_no for optimistic lock so get one
     if seq_no is None or primary_term is None:
@@ -234,15 +250,13 @@ def retrieve_doc(elastic_object, index_name, record_doc_type, req_id):
         pass
     return doc
 
+
 # take request or response part and process it by deriving metadata
-def process_content(content):
+def process_content(message_type,content):
 
     if content is None:
-        return content
-
-    #no transformation using strData
-    if "strData" in content:
-        content["dataType"] = "text"
+        print('content is empty')
+        sys.stdout.flush()
         return content
 
     #if we have dataType then have already parsed before
@@ -252,60 +266,25 @@ def process_content(content):
         return content
 
     requestCopy = content.copy()
-    if "date" in requestCopy:
-        del requestCopy["date"]
-    requestMsg = json_to_seldon_message(requestCopy)
-    (req_features, _, req_datadef, req_datatype) = extract_request_parts(requestMsg)
-    elements = createElelmentsArray(req_features, list(req_datadef.names))
-    for i, e in enumerate(elements):
-        reqJson = extractRow(i, requestMsg, req_datatype, req_features, req_datadef)
-        reqJson["elements"] = e
-        content = reqJson
 
-    return content
+    print('in process_content for '+message_type)
+    sys.stdout.flush()
 
-def extractRow(i:int,requestMsg: prediction_pb2.SeldonMessage,req_datatype: str,req_features: np.ndarray,req_datadef: "prediction_pb2.SeldonMessage.data"):
-    datatyReq = "ndarray"
-    dataType = "tabular"
-    if len(req_features.shape) == 2:
-        dataReq = array_to_grpc_datadef(datatyReq, np.expand_dims(req_features[i], axis=0), req_datadef.names)
-    else:
-        if len(req_features.shape) > 2:
-            dataType="image"
-        else:
-            dataType="text"
-            req_features= np.char.decode(req_features.astype('S'),"utf-8")
-        dataReq = array_to_grpc_datadef(datatyReq, np.expand_dims(req_features[i], axis=0), req_datadef.names)  
-    requestMsg2 = prediction_pb2.SeldonMessage(data=dataReq, meta=requestMsg.meta)
-    reqJson = {}
-    reqJson["payload"] = seldon_message_to_json(requestMsg2)
-    # setting dataType here temporarily so calling method will be able to access it
-    # don't want to set it at the payload level
-    reqJson["dataType"] = dataType
-    return reqJson
+    if message_type == 'request':
+        # we know this is a cifar10 image
+        content["dataType"] = "image"
+        requestCopy["image"] = decode(content)
+        if "instances" in requestCopy:
+            del requestCopy["instances"]
+
+    return requestCopy
 
 
-def createElelmentsArray(X: np.ndarray,names: list):
-    results = None
-    if isinstance(X,np.ndarray):
-        if len(X.shape) == 1:
-            results = []
-            for i in range(X.shape[0]):
-                d = {}
-                for num, name in enumerate(names, start=0):
-                    if isinstance(X[i],bytes):
-                        d[name] = X[i].decode("utf-8")
-                    else:
-                        d[name] = X[i]    
-                results.append(d)
-        elif len(X.shape) >= 2:
-            results = []
-            for i in range(X.shape[0]):
-                d = {}
-                for num, name in enumerate(names, start=0):
-                    d[name] = np.expand_dims(X[i,num], axis=0).tolist()
-                results.append(d)      
-    return results
+def decode(X):
+    X=np.array(X["instances"])
+    X=np.transpose(X, (0,2, 3, 1))
+    img = X/2.0 + 0.5
+    return img.tolist()
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8080)
