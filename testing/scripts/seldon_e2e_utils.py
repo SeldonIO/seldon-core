@@ -9,7 +9,7 @@ import subprocess
 
 from concurrent.futures import ThreadPoolExecutor, wait
 from subprocess import run, Popen
-from retrying import retry
+from tenacity import retry, wait_exponential, stop_after_attempt
 from requests.auth import HTTPBasicAuth
 
 from seldon_core.proto import prediction_pb2
@@ -284,11 +284,7 @@ def create_random_data(data_size, rows=1):
     return (shape, arr)
 
 
-@retry(
-    wait_exponential_multiplier=1000,
-    wait_exponential_max=10000,
-    stop_max_attempt_number=5,
-)
+@retry(wait=wait_exponential(max=10), stop=stop_after_attempt(5))
 def rest_request_ambassador(
     deployment_name,
     namespace,
@@ -338,11 +334,7 @@ def rest_request_ambassador(
     return response
 
 
-@retry(
-    wait_exponential_multiplier=1000,
-    wait_exponential_max=10000,
-    stop_max_attempt_number=5,
-)
+@retry(wait=wait_exponential(max=10), stop=stop_after_attempt(5))
 def rest_request_ambassador_auth(
     deployment_name,
     namespace,
