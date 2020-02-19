@@ -29,11 +29,11 @@ def index():
 
     body = request.get_json(force=True)
 
-    print('RECEIVED MESSAGE.')
-    print(str(request.headers))
-    #print(str(body))
-    print('----')
-    sys.stdout.flush()
+    # print('RECEIVED MESSAGE.')
+    # print(str(request.headers))
+    # print(str(body))
+    # print('----')
+    # sys.stdout.flush()
 
     es = connect_elasticsearch()
 
@@ -84,8 +84,8 @@ def parse_message_type(type_header):
         return 'request'
     if type_header == "io.seldon.serving.inference.response" or type_header == "org.kubeflow.serving.inference.response":
         return 'response'
-    #FIXME: this type doesn't tell us whether seldon or kfserving, which means index won't match!
-    if type_header == 'seldon.outlier':
+    #FIXME: upstream needs to actually send in this format
+    if type_header == "io.seldon.serving.inference.outlier" or type_header == "org.kubeflow.serving.inference.outlier":
         return 'outlier'
     return 'unknown'
 
@@ -177,9 +177,6 @@ def process_content(message_type,content):
         return content
 
     requestCopy = content.copy()
-
-    print('in process_content for '+message_type)
-    sys.stdout.flush()
 
     if message_type == 'request':
         # we know this is a cifar10 image
