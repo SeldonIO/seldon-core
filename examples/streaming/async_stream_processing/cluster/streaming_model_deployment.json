@@ -16,7 +16,8 @@
                 "graph": {
                     "name": "streaming-model",
                     "endpoint": {
-                        "type": "REST"
+                        "type": "REST",
+                        "service_port": 9000
                     },
                     "type": "MODEL",
                     "children": [],
@@ -35,12 +36,9 @@
                                             "value": "DEBUG"
                                         },
                                         {
-                                            "name": "PREDICTIVE_UNIT_SERVICE_PORT",
-                                            "value": "9092"
-                                        },
-                                        {
-                                            "name": "PREDICTIVE_UNIT_SERVICE_HOST",
-                                            "value": "my-kafka"
+
+                                            "name": "PREDICTIVE_UNIT_STREAMING_BROKER",
+                                            "value": "kafka://my-kafka:9092"
                                         },
                                         {
                                             "name": "PREDICTIVE_UNIT_ID",

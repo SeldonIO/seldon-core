@@ -16,7 +16,6 @@ import os
 logger = logging.getLogger(__name__)
 
 PRED_UNIT_ID = os.environ.get("PREDICTIVE_UNIT_ID")  # Container name
-PREDICTOR_ID = os.environ.get("PREDICTOR_ID")  # Predictor spec name
 DEPLOYMENT_ID = os.environ.get("SELDON_DEPLOYMENT_ID")  # Deployment name
 
 
@@ -24,27 +23,25 @@ def get_kafka_worker(
     user_model,
     log_level="INFO",
     tracing=None,
-    host="0.0.0.0",
+    broker="kafka://kafka:9092",
     topic_partitions=1,
-    port=9092,
 ):
-    if not all([bool(PRED_UNIT_ID), bool(PREDICTOR_ID), bool(DEPLOYMENT_ID)]):
+
+    if not all([bool(PRED_UNIT_ID), bool(DEPLOYMENT_ID)]):
         # TODO: update for correct prediction
         raise Exception(
             "Predictie unit, predictor id or deployment id not set.\n"
             f"PREDICTIVE_UNIT_ID={PRED_UNIT_ID}\n"
-            f"PREDICTOR_ID={PREDICTOR_ID}\n"
             f"DEPLOYMENT_ID={DEPLOYMENT_ID}"
         )
     import faust
 
     TOPIC_PREFIX = f"{DEPLOYMENT_ID}-{PRED_UNIT_ID}"
-    KAFKA_BROKERS = f"kafka://{host}:{port}"
     # TODO: Add more customizable parameters from env
     # TODO: Add and test tracing
     app = faust.App(
         __name__,
-        broker=KAFKA_BROKERS,
+        broker=broker,
         key_serializer="json",
         value_serializer="json",
         topic_partitions=topic_partitions,
@@ -56,6 +53,7 @@ def get_kafka_worker(
     # if any(hasattr(user_model, attr) for attr in
     #        ["predict", "predict_raw", "predict_grpc", "predict_rest"]):
 
+    # TODO: Potentially allow for extending the intput and output topics
     predict_topic_input = app.topic(f"{TOPIC_PREFIX}-predict-input")
     predict_topic_output = app.topic(f"{TOPIC_PREFIX}-predict-output")
 

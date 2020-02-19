@@ -19,7 +19,9 @@ logger = logging.getLogger(__name__)
 PARAMETERS_ENV_NAME = "PREDICTIVE_UNIT_PARAMETERS"
 SERVICE_PORT_ENV_NAME = "PREDICTIVE_UNIT_SERVICE_PORT"
 SERVICE_HOST_ENV_NAME = "PREDICTIVE_UNIT_SERVICE_HOST"
+STREAMING_BROKER_ENV_NAME = "PREDICTIVE_UNIT_STREAMING_BROKER"
 LOG_LEVEL_ENV = "SELDON_LOG_LEVEL"
+DEFAULT_BROKER = "kafka://kafka:9092"
 DEFAULT_PORT = 5000
 DEFAULT_HOST = "0.0.0.0"
 
@@ -283,6 +285,7 @@ def main():
 
     port = int(os.environ.get(SERVICE_PORT_ENV_NAME, DEFAULT_PORT))
     host = os.environ.get(SERVICE_HOST_ENV_NAME, DEFAULT_HOST)
+    broker = os.environ.get(STREAMING_BROKER_ENV_NAME, DEFAULT_BROKER)
 
     if args.tracing:
         tracer = setup_tracing(args.interface_name)
@@ -374,8 +377,7 @@ def main():
                 user_object,
                 log_level=args.log_level,
                 tracing=interceptor,
-                host=host,
-                port=port,
+                broker=broker,
             )
 
             try:
@@ -404,7 +406,7 @@ def main():
 
         def basic_rest_prediction_server():
             options = {
-                "bind": "%s:%s" % ("0.0.0.0", 9000),
+                "bind": "%s:%s" % ("0.0.0.0", port),
                 "access_logfile": "-",
                 "loglevel": "info",
                 "timeout": 5000,

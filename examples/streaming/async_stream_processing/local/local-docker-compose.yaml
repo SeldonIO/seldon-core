@@ -38,20 +38,4 @@ services:
     networks:
       - kafkanet
 
-  kafka_manager:
-    image: hlebalbau/kafka-manager:1.3.3.18
-    container_name: kafka_manager
-    ports:
-      - "9000:9000"
-    environment:
-      ZK_HOSTS: "zookeeper:2181"
-      APPLICATION_SECRET: "random-secret"
-    command: -Dpidfile.path=/dev/null
-    depends_on:
-      - "zookeeper"
-      - "kafka"
-    networks:
-      - kafkanet
-
-
 

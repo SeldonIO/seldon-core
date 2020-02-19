@@ -69,11 +69,9 @@ The contents should be the location of the kafka cluster, together with the name
 
 `local/conatiner.env` contents:
 ```console
-PREDICTIVE_UNIT_SERVICE_HOST=kafka
-PREDICTIVE_UNIT_SERVICE_PORT=9092
-PREDICTIVE_UNIT_ID=streaming_model
-PREDICTOR_ID=streaming_graph
-SELDON_DEPLOYMENT_ID=streaming_deployment
+PREDICTIVE_UNIT_STREAMING_BROKER=kafka://kafka:9092
+PREDICTIVE_UNIT_ID=streaming-model
+SELDON_DEPLOYMENT_ID=streaming-deployment
 ```
 
 Due to our streaming library not supporting opentracing > 2.0.0 we need to add the following temp overrides:
@@ -153,7 +151,7 @@ docker-compose -f local/local-docker-compose.yaml logs -f
 TO run our model locally, we can simply use the following command:
 
 ```console
-docker run --name streaming_model --network kafkanet --env-file local/container.env streaming_model:0.1
+docker run --rm --name streaming_model --network local_kafkanet --env-file local/container.env streaming_model:0.1
 ```
 
 In order to see if it's working we want to run a consumer that listens for the next message - we'll leverage the running container to run the python command directly in the command line:
@@ -162,7 +160,7 @@ In order to see if it's working we want to run a consumer that listens for the n
 docker exec -i streaming_model python - <<EOF
 import kafka
 consumer = kafka.KafkaConsumer(
-    'streaming_deployment-streaming_model-predict-output',
+    'streaming-deployment-streaming-model-predict-output',
     bootstrap_servers='kafka:9092');
 print(next(consumer).value)
 EOF
@@ -174,7 +172,7 @@ And then we can send some data by also leveraging the running container:
 docker exec -i streaming_model python - <<EOF
 import kafka, json;
 producer = kafka.KafkaProducer(bootstrap_servers='kafka:9092', value_serializer=lambda v: json.dumps(v).encode('utf-8'));
-result = producer.send('streaming_deployment-streaming_model-predict-input', value={'data': { 'ndarray': [1,2,3,4] } })
+result = producer.send('streaming-deployment-streaming-model-predict-input', value={'data': { 'ndarray': [1,2,3,4] } })
 result.get(timeout=3)
 EOF
 ```
@@ -255,7 +253,8 @@ The contents of `cluster/streaming_model_deployment.json` are as follows:
                 "graph": {
                     "name": "streaming-model",
                     "endpoint": {
-                        "type": "REST"
+                        "type": "REST",
+                        "service_port": 9000
                     },
                     "type": "MODEL",
                     "children": [],
@@ -274,12 +273,9 @@ The contents of `cluster/streaming_model_deployment.json` are as follows:
                                             "value": "DEBUG"
                                         },
                                         {
-                                            "name": "PREDICTIVE_UNIT_SERVICE_PORT",
-                                            "value": "9092"
-                                        },
-                                        {
-                                            "name": "PREDICTIVE_UNIT_SERVICE_HOST",
-                                            "value": "my-kafka"
+
+                                            "name": "PREDICTIVE_UNIT_STREAMING_BROKER",
+                                            "value": "kafka://my-kafka:9092"
                                         },
                                         {
                                             "name": "PREDICTIVE_UNIT_ID",
