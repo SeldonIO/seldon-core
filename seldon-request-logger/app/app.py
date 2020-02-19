@@ -35,6 +35,8 @@ def index():
     # print(str(body))
     # print('----')
     # sys.stdout.flush()
+    #TODO: limit size of body with env var (100KB)
+    # this way main logger will by default ignore larger messages as they probably require custom logger
 
     es = connect_elasticsearch()
 
@@ -90,7 +92,7 @@ def parse_message_type(type_header):
     return 'unknown'
 
 
-def set_metadata(content, headers, message_type):
+def set_metadata(content, headers, message_type, request_id):
     serving_engine_name = serving_engine(headers)
     content['ServingEngine'] = serving_engine_name
 
@@ -102,7 +104,8 @@ def set_metadata(content, headers, message_type):
 
     if message_type == "request":
        content['@timestamp'] = headers.get(TIMESTAMP_HEADER_NAME)
-       content['RequestId'] = headers.get(REQUEST_ID_HEADER_NAME)
+
+    content['RequestId'] = request_id
     return
 
 
@@ -138,10 +141,10 @@ def process_and_update_elastic_doc(elastic_object, message_type, message_body, r
         }
     }
 
-    set_metadata(upsert_body['doc'],headers,message_type)
+    set_metadata(upsert_body['doc'],headers,message_type,request_id)
 
     new_content = elastic_object.update(index=index_name,doc_type=DOC_TYPE_NAME,id=request_id,body=upsert_body,retry_on_conflict=3,refresh=True,timeout="60s")
-    print('upserted to doc '+index_name+"/"+DOC_TYPE_NAME+"/"+ request_id)
+    print('upserted to doc '+index_name+"/"+DOC_TYPE_NAME+"/"+ request_id+ ' adding '+message_type)
     sys.stdout.flush()
     return str(new_content)
 

@@ -1,7 +1,5 @@
 from flask import Flask, request
 import sys
-import time
-import random
 import os
 import numpy as np
 from elasticsearch import Elasticsearch
@@ -86,12 +84,13 @@ def parse_message_type(type_header):
         return 'request'
     if type_header == "io.seldon.serving.inference.response" or type_header == "org.kubeflow.serving.inference.response":
         return 'response'
+    #FIXME: this type doesn't tell us whether seldon or kfserving, which means index won't match!
     if type_header == 'seldon.outlier':
         return 'outlier'
     return 'unknown'
 
 
-def set_metadata(content, headers, message_type):
+def set_metadata(content, headers, message_type, request_id):
     serving_engine_name = serving_engine(headers)
     content['ServingEngine'] = serving_engine_name
 
@@ -103,8 +102,8 @@ def set_metadata(content, headers, message_type):
 
     if message_type == "request":
        content['@timestamp'] = headers.get(TIMESTAMP_HEADER_NAME)
-       content['RequestId'] = headers.get(REQUEST_ID_HEADER_NAME)
 
+    content['RequestId'] = request_id
     return
 
 
@@ -140,10 +139,12 @@ def process_and_update_elastic_doc(elastic_object, message_type, message_body, r
         }
     }
 
-    set_metadata(upsert_body['doc'],headers,message_type)
+    set_metadata(upsert_body['doc'],headers,message_type,request_id)
 
     new_content = elastic_object.update(index=index_name,doc_type=DOC_TYPE_NAME,id=request_id,body=upsert_body,retry_on_conflict=3,refresh=True,timeout="60s")
-    print('upserted to doc '+index_name+"/"+DOC_TYPE_NAME+"/"+ request_id)
+    print('upserted to doc '+index_name+"/"+DOC_TYPE_NAME+"/"+ request_id+ ' adding '+message_type)
+    if message_type == 'outlier':
+        print(upsert_body)
     return str(new_content)
 
 
