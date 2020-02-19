@@ -1,9 +1,5 @@
 from flask import Flask, request
 import sys
-import dict_digger
-import backoff
-import requests
-import json
 import time
 import random
 import os
@@ -46,8 +42,6 @@ def index():
     type_header = request.headers.get(TYPE_HEADER_NAME)
     message_type = parse_message_type(type_header)
     index_name = build_index_name(request.headers)
-    print('index is '+index_name)
-    sys.stdout.flush()
 
     try:
 
@@ -56,20 +50,9 @@ def index():
             # TODO: need to fix this upstream
             request_id = request.headers.get(CLOUD_EVENT_ID)
 
-        if message_type != 'request':
-            #can reduce overall number of elastic queries if we wait for req first
-            #locking involves contention and retries so want to spread out to increase success %
-            time.sleep(random.uniform(3.0,6.0))
-
-        print('type is '+message_type)
-        sys.stdout.flush()
-
-        #first ensure there is an elastic doc as we'll need something to lock against
-        #use req id as doc id (if None then elastic should generate one but then req & res won't be linked)
-        update_elastic_doc(es,message_type,{}, request_id, request.headers, index_name)
-
         #now process and update the doc
         doc = process_and_update_elastic_doc(es, message_type, body, request_id,request.headers, index_name)
+
         return str(doc)
     except Exception as ex:
         print(ex)
@@ -150,47 +133,19 @@ def process_and_update_elastic_doc(elastic_object, message_type, message_body, r
     field_from_header(content=new_content_part,header_name='ce-time',headers=headers)
     field_from_header(content=new_content_part, header_name='ce-source', headers=headers)
 
-    new_content = update_elastic_doc(elastic_object, message_type, new_content_part, request_id, headers, index_name)
+    upsert_body= {
+        "doc_as_upsert": True,
+        "doc": {
+            message_type: new_content_part
+        }
+    }
+
+    set_metadata(upsert_body['doc'],headers,message_type)
+
+    new_content = elastic_object.update(index=index_name,doc_type=DOC_TYPE_NAME,id=request_id,body=upsert_body,retry_on_conflict=3,refresh=True,timeout="60s")
+    print('upserted to doc '+index_name+"/"+DOC_TYPE_NAME+"/"+ request_id)
     return str(new_content)
 
-
-@backoff.on_exception(backoff.expo,
-                      Exception,
-                      max_time=240,
-                      jitter=backoff.random_jitter)
-def update_elastic_doc(elastic_object, message_type, new_content_part, request_id, headers, index_name):
-    # now ready to upsert
-    #TODO: might put inferenceservices under a different doc type and not 'seldonrequest' (use env vars?)
-    doc = retrieve_doc(elastic_object, index_name, DOC_TYPE_NAME, request_id)
-    # req and response will come through separately and we need enrich the doc with response
-    # doc can have existing content - should have (processed) request content already
-    # JITTERED BACKOFFS ARE NEEDED TO HANDLE CONCURRENT UPDATES
-    new_content = {}
-    seq_no = None
-    primary_term = None
-    if not doc is None:
-        new_content = doc['_source']
-        # need seq_no for elastic optimistic locking
-        seq_no = doc['_seq_no']
-        primary_term = doc['_primary_term']
-        print('seq_no')
-        print(seq_no)
-        print('primary_term')
-        print(primary_term)
-
-    # add the new content under its key
-    new_content[message_type] = new_content_part
-
-    if message_type == 'outlier':
-        print('outlier content')
-        print(new_content)
-        sys.stdout.flush()
-
-    # ensure any top-level metadata is set
-    set_metadata(new_content,headers, message_type)
-
-    store_record(elastic_object, index_name, new_content, request_id, DOC_TYPE_NAME, seq_no, primary_term)
-    return new_content
 
 
 def connect_elasticsearch():
@@ -204,51 +159,6 @@ def connect_elasticsearch():
     else:
         print('Could not connect to Elasticsearch')
     return _es
-
-
-def store_record(elastic_object, index_name, record, req_id, record_doc_type, seq_no, primary_term):
-    doc = None
-
-    #FIXME: first time through this loop for any existing doc we will have seq_no and req_id ... but code won't look it up!
-    # it won't error either - it will try to overwrite it!
-
-    # don't already have a seq_no for optimistic lock so get one
-    if seq_no is None or primary_term is None:
-        doc = retrieve_doc(elastic_object, index_name, record_doc_type, req_id)
-        if not doc is None:
-            seq_no = doc['_seq_no']
-            primary_term = doc['_primary_term']
-
-    try:
-        # see https://elasticsearch-py.readthedocs.io/en/master/api.html#elasticsearch.Elasticsearch.index
-        if doc is None and req_id is not None:
-            print('doc '+index_name+'/'+record_doc_type+'/'+req_id+' does not exist')
-        elif req_id is not None:
-            print('doc '+index_name+'/'+record_doc_type+'/'+req_id+' exists')
-            print(str(doc))
-
-        sys.stdout.flush()
-        outcome = elastic_object.index(index=index_name, doc_type=record_doc_type, id=req_id, body=record, if_seq_no=seq_no, if_primary_term=primary_term, refresh='wait_for',request_timeout=60.0)
-
-        if outcome is not None:
-            print('doc '+outcome['_index']+'/'+outcome['_type']+'/'+outcome['_id']+' indexed')
-            sys.stdout.flush()
-
-    except Exception as ex:
-        print('Error in indexing data')
-        print(str(ex))
-        sys.stdout.flush()
-        raise
-
-
-def retrieve_doc(elastic_object, index_name, record_doc_type, req_id):
-    doc = None
-    try:
-        # see https://elasticsearch-py.readthedocs.io/en/master/api.html#elasticsearch.Elasticsearch.get
-        doc = elastic_object.get(index=index_name, doc_type=record_doc_type, id=req_id)
-    except:
-        pass
-    return doc
 
 
 # take request or response part and process it by deriving metadata
