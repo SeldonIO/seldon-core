@@ -24,7 +24,7 @@ def assert_trace(trace, expected_operations):
             prev_span = spans[idx - 1]
             ref = span["references"][0]
             assert ref["refType"] == "CHILD_OF"
-            assert ref["spanID"] == prev_span["traceID"]
+            assert ref["spanID"] == prev_span["spanID"]
 
 
 def test_tracing_rest(namespace):
@@ -40,11 +40,11 @@ def test_tracing_rest(namespace):
     pod_names = get_pod_names(deployment_name, namespace)
     pod_name = pod_names[0]
 
+    # Get traces and assert their content
     traces = get_traces(pod_name, "executor", "predictions")
     assert len(traces) == 1
 
     trace = traces[0]
     processes = trace["processes"]
-
     assert len(processes) == 2
     assert_trace(trace, expected_operations=["predictions", "/predict", "Predict"])
