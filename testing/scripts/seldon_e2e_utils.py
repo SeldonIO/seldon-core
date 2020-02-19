@@ -137,6 +137,20 @@ def wait_for_status(name, namespace, attempts=20, sleep=5):
             time.sleep(sleep)
 
 
+def get_pod_names(deployment_name, namespace):
+    cmd = f"kubectl get pod -l app={deployment_name} -n {namespace} -o json"
+    ret = run(cmd, shell=True, check=True, stdout=subprocess.PIPE)
+    pods = json.loads(ret.stdout)
+
+    pod_names = []
+    for pod in pods["items"]:
+        pod_metadata = pod["metadata"]
+        pod_name = pod_metadata["name"]
+        pod_names.append(pod_name)
+
+    return pod_names
+
+
 def rest_request(
     model,
     namespace,
