@@ -31,7 +31,7 @@ def dict_to_yaml(d):
 
 
 def yaml_to_dict(yaml_data):
-    return yaml.load(StringIO(yaml_data))
+    return yaml.load(StringIO(yaml_data), Loader=yaml.FullLoader)
 
 
 def run_command(args, debug=False):
