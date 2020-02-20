@@ -103,6 +103,7 @@ def update_operator_values_yaml_file(fpath, seldon_core_version, debug=False):
     d = yaml_to_dict(yaml_data)
     d["image"]["tag"] = seldon_core_version
     d["engine"]["image"]["tag"] = seldon_core_version
+    d["executor"]["image"]["tag"] = seldon_core_version
 
     with open(fpath, "w") as f:
         f.write(dict_to_yaml(d))
