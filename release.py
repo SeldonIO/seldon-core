@@ -134,6 +134,23 @@ def update_kustomize_engine_version(seldon_core_version, debug=False):
         print("error updating kustomize".format(**locals()))
         print(err)
 
+def update_kustomize_executor_version(seldon_core_version, debug=False):
+    args = [
+        "sed",
+        "-i",
+        "s/seldonio\/seldon-core-executor:\(.*\)/seldonio\/seldon-core-executor:{seldon_core_version}/g".format(
+            **locals()
+        ),
+        "operator/config/manager/manager.yaml",
+    ]
+    err, out = run_command(args, debug)
+    # pp(out)
+    # pp(err)
+    if err == None:
+        print("updated kustomize".format(**locals()))
+    else:
+        print("error updating kustomize".format(**locals()))
+        print(err)
 
 def update_operator_version(seldon_core_version, debug=False):
     fpath = "operator/config/manager/kustomization.yaml"
@@ -171,6 +188,7 @@ def set_version(
 
     # Update kustomize
     update_kustomize_engine_version(seldon_core_version, debug)
+    update_kustomize_executor_version(seldon_core_version, debug)
 
     # Update operator version
     update_operator_version(seldon_core_version, debug)
