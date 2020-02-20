@@ -13,7 +13,8 @@ def assert_trace(trace, expected_operations):
     spans = trace["spans"]
     assert len(spans) == len(expected_operations)
 
-    # Assert the operations are in the right order
+    # Assert the operations happened in the right order
+    spans.sort(key=lambda s: s["startTime"])
     for idx, span in enumerate(spans):
         assert span["operationName"] == expected_operations[idx]
         if idx > 0:
