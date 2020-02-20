@@ -4,9 +4,10 @@ import time
 
 {% block codecell %}
 {% if "kubectl rollout status" in super() or "delete" in super() %}
-{{ super() }}
 time.sleep(4)
-{% else %}
 {{ super() }}
+time.sleep(2)
+{% else %}
+{{ super().replace("'inline'","'agg'") }}
 {% endif %}
 {% endblock codecell %}

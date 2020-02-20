@@ -13,3 +13,10 @@ class TestNotebooks(object):
 
     def test_helm_examples(self):
         create_and_run_script("helm_examples")
+
+    def test_explainer_examples(self):
+        create_and_run_script("explainer_examples")
+
+    def test_istio_examples(self):
+        create_and_run_script("istio_example")
+
