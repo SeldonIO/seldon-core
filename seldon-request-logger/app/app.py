@@ -4,6 +4,7 @@ import os
 from seldon_core.utils import json_to_seldon_message, extract_request_parts, array_to_grpc_datadef, seldon_message_to_json
 from seldon_core.proto import prediction_pb2
 import numpy as np
+import json
 from elasticsearch import Elasticsearch
 import logging
 

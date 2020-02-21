@@ -5,7 +5,7 @@ push_image:
 	docker push seldonio/seldon-request-logger:latest
 
 build_image_cifar:
-	docker build . -t seldonio/seldon-request-logger-cifar:latest
+	docker build -f cifar10.Dockerfile . -t seldonio/seldon-request-logger-cifar:latest
 
 push_image_cifar:
 	docker push seldonio/seldon-request-logger-cifar:latest
