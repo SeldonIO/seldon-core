@@ -2,6 +2,7 @@ from flask import Flask, request
 import sys
 import os
 import numpy as np
+import json
 from elasticsearch import Elasticsearch
 import logging
 
@@ -28,6 +29,8 @@ def index():
     #try:
 
     body = request.get_json(force=True)
+    if not type(body) is dict:
+        body = json.loads(body)
 
     # print('RECEIVED MESSAGE.')
     # print(str(request.headers))

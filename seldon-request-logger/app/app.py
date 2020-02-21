@@ -30,6 +30,9 @@ def index():
     #try:
 
     body = request.get_json(force=True)
+    if not type(body) is dict:
+        body = json.loads(body)
+
     # print('RECEIVED MESSAGE.')
     # print(str(request.headers))
     # print(str(body))
