@@ -1,5 +1,6 @@
 import pytest
 import json
+import logging
 import numpy as np
 from google.protobuf import json_format
 import base64
@@ -25,8 +26,8 @@ class UserObject(object):
         if self.ret_nparray:
             return self.nparray
         else:
-            print("Transform input called - will run identity function")
-            print(X)
+            logging.info("Transform input called - will run identity function")
+            logging.info(X)
             return X
 
     def transform_output(self, X, features_names, **kwargs):
@@ -35,8 +36,8 @@ class UserObject(object):
         if self.ret_nparray:
             return self.nparray
         else:
-            print("Transform output called - will run identity function")
-            print(X)
+            logging.info("Transform output called - will run identity function")
+            logging.info(X)
         return X
 
     def tags(self):
@@ -189,7 +190,7 @@ def test_transformer_input_ok():
     client = app.test_client()
     rv = client.get('/transform-input?json={"data":{"ndarray":[1]}}')
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["meta"]["tags"] == {"mytag": 1}
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
@@ -203,7 +204,7 @@ def test_transformer_input_lowlevel_ok():
     client = app.test_client()
     rv = client.get('/transform-input?json={"data":{"ndarray":[1]}}')
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["data"]["ndarray"] == [9, 9]
 
@@ -214,7 +215,7 @@ def test_transformer_input_lowlevel_raw_ok():
     client = app.test_client()
     rv = client.get('/transform-input?json={"data":{"ndarray":[1]}}')
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["data"]["tensor"]["values"] == [9, 9]
 
@@ -224,9 +225,9 @@ def test_transformer_input_lowlevel_raw_ingerited_ok():
     app = get_rest_microservice(user_object)
     client = app.test_client()
     rv = client.get('/transform-input?json={"data":{"ndarray":[1]}}')
-    print(rv.data)
+    logging.info(rv.data)
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["data"]["tensor"]["values"] == [9, 9]
 
@@ -242,7 +243,7 @@ def test_transformer_input_bin_data():
     sm = prediction_pb2.SeldonMessage()
     # Check we can parse response
     assert sm == json_format.Parse(rv.data, sm, ignore_unknown_fields=False)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert "binData" in j
     assert j["meta"]["tags"] == {"mytag": 1}
@@ -258,7 +259,7 @@ def test_transformer_input_bin_data_nparray():
     bdata_base64 = base64.b64encode(bdata).decode("utf-8")
     rv = client.get('/transform-input?json={"binData":"' + bdata_base64 + '"}')
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["data"]["tensor"]["values"] == [1, 2, 3]
     assert j["meta"]["tags"] == {"mytag": 1}
@@ -273,7 +274,7 @@ def test_tranform_input_no_json():
     uo = UserObject()
     rv = client.get("/transform-input?")
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 400
 
 
@@ -283,7 +284,7 @@ def test_transform_input_bad_metrics():
     client = app.test_client()
     rv = client.get('/transform-input?json={"data":{"ndarray":[]}}')
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 400
 
 
@@ -295,7 +296,7 @@ def test_transform_input_gets_meta():
         '/transform-input?json={"meta":{"puid": "abc"},"data":{"ndarray":[]}}'
     )
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["meta"]["tags"] == {"inc_meta": {"puid": "abc"}}
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
@@ -310,7 +311,7 @@ def test_transform_output_gets_meta():
         '/transform-output?json={"meta":{"puid": "abc"},"data":{"ndarray":[]}}'
     )
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["meta"]["tags"] == {"inc_meta": {"puid": "abc"}}
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
@@ -323,7 +324,7 @@ def test_transformer_output_ok():
     client = app.test_client()
     rv = client.get('/transform-output?json={"data":{"ndarray":[1]}}')
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["meta"]["tags"] == {"mytag": 1}
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
@@ -337,7 +338,7 @@ def test_transformer_output_lowlevel_ok():
     client = app.test_client()
     rv = client.get('/transform-output?json={"data":{"ndarray":[1]}}')
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["data"]["ndarray"] == [9, 9]
 
@@ -348,7 +349,7 @@ def test_transformer_output_lowlevel_raw_ok():
     client = app.test_client()
     rv = client.get('/transform-output?json={"data":{"ndarray":[1]}}')
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["data"]["tensor"]["values"] == [9, 9]
 
@@ -359,7 +360,7 @@ def test_transformer_output_lowlevel_raw_inherited_ok():
     client = app.test_client()
     rv = client.get('/transform-output?json={"data":{"ndarray":[1]}}')
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["data"]["tensor"]["values"] == [9, 9]
 
@@ -375,7 +376,7 @@ def test_transformer_output_bin_data():
     sm = prediction_pb2.SeldonMessage()
     # Check we can parse response
     assert sm == json_format.Parse(rv.data, sm, ignore_unknown_fields=False)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert "binData" in j
     assert j["meta"]["tags"] == {"mytag": 1}
@@ -391,7 +392,7 @@ def test_transformer_output_bin_data_nparray():
     bdata_base64 = base64.b64encode(bdata).decode("utf-8")
     rv = client.get('/transform-output?json={"binData":"' + bdata_base64 + '"}')
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["data"]["tensor"]["values"] == [1, 2, 3]
     assert j["meta"]["tags"] == {"mytag": 1}
@@ -406,7 +407,7 @@ def test_tranform_output_no_json():
     uo = UserObject()
     rv = client.get("/transform-output?")
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 400
 
 
@@ -416,7 +417,7 @@ def test_transform_output_bad_metrics():
     client = app.test_client()
     rv = client.get('/transform-output?json={"data":{"ndarray":[]}}')
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 400
 
 
@@ -431,7 +432,7 @@ def test_transform_input_proto_ok():
     resp = app.TransformInput(request, None)
     jStr = json_format.MessageToJson(resp)
     j = json.loads(jStr)
-    print(j)
+    logging.info(j)
     assert j["meta"]["tags"] == {"mytag": 1}
     # add default type
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
@@ -451,7 +452,7 @@ def test_transform_input_proto_lowlevel_ok():
     resp = app.TransformInput(request, None)
     jStr = json_format.MessageToJson(resp)
     j = json.loads(jStr)
-    print(j)
+    logging.info(j)
     assert j["data"]["tensor"]["shape"] == [2, 1]
     assert j["data"]["tensor"]["values"] == [9, 9]
 
@@ -473,7 +474,7 @@ def test_transform_input_proto_bin_data_nparray():
     resp = app.TransformInput(request, None)
     jStr = json_format.MessageToJson(resp)
     j = json.loads(jStr)
-    print(j)
+    logging.info(j)
     assert j["data"]["tensor"]["values"] == list(user_object.nparray.flatten())
 
 
@@ -488,7 +489,7 @@ def test_transform_output_proto_ok():
     resp = app.TransformOutput(request, None)
     jStr = json_format.MessageToJson(resp)
     j = json.loads(jStr)
-    print(j)
+    logging.info(j)
     assert j["meta"]["tags"] == {"mytag": 1}
     # add default type
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
@@ -508,7 +509,7 @@ def test_transform_output_proto_lowlevel_ok():
     resp = app.TransformOutput(request, None)
     jStr = json_format.MessageToJson(resp)
     j = json.loads(jStr)
-    print(j)
+    logging.info(j)
     assert j["data"]["tensor"]["shape"] == [2, 1]
     assert j["data"]["tensor"]["values"] == [9, 9]
 
@@ -530,7 +531,7 @@ def test_transform_output_proto_bin_data_nparray():
     resp = app.TransformOutput(request, None)
     jStr = json_format.MessageToJson(resp)
     j = json.loads(jStr)
-    print(j)
+    logging.info(j)
     assert j["data"]["tensor"]["values"] == list(user_object.nparray.flatten())
 
 
@@ -553,7 +554,7 @@ def test_transform_input_proto_gets_meta():
     resp = app.TransformInput(request, None)
     jStr = json_format.MessageToJson(resp)
     j = json.loads(jStr)
-    print(j)
+    logging.info(j)
     assert j["meta"]["tags"] == {"inc_meta": {"puid": "abc"}}
     # add default type
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
@@ -576,7 +577,7 @@ def test_transform_output_proto_gets_meta():
     resp = app.TransformOutput(request, None)
     jStr = json_format.MessageToJson(resp)
     j = json.loads(jStr)
-    print(j)
+    logging.info(j)
     assert j["meta"]["tags"] == {"inc_meta": {"puid": "abc"}}
     # add default type
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
@@ -596,7 +597,7 @@ def test_unimplemented_transform_input_raw_on_seldon_component():
     rv = client.get('/transform-input?json={"data":{"ndarray":[1]}}')
     j = json.loads(rv.data)
 
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["data"]["ndarray"] == [2.0]
 
@@ -612,7 +613,7 @@ def test_unimplemented_transform_input_raw():
     rv = client.get('/transform-input?json={"data":{"ndarray":[1]}}')
     j = json.loads(rv.data)
 
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["data"]["ndarray"] == [2.0]
 
@@ -628,7 +629,7 @@ def test_unimplemented_transform_output_raw_on_seldon_component():
     rv = client.get('/transform-output?json={"data":{"ndarray":[1]}}')
     j = json.loads(rv.data)
 
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["data"]["ndarray"] == [2.0]
 
@@ -644,6 +645,6 @@ def test_unimplemented_transform_output_raw():
     rv = client.get('/transform-output?json={"data":{"ndarray":[1]}}')
     j = json.loads(rv.data)
 
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["data"]["ndarray"] == [2.0]

@@ -59,7 +59,7 @@ def seldon_version(request):
     """
     seldon_version = request.param
 
-    # Install past version cluster-wide
+    # Delete source version cluster-wide and install new one
     delete_seldon()
     retry_run(
         "helm install seldon "

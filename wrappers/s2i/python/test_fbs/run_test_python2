@@ -1,5 +1,0 @@
-s2i build . seldonio/seldon-core-s2i-python2:0.4 test-wrapper-py2:0.1
-docker run --name "test_predictor" --rm -d -p 5000:5000 test-wrapper-py2:0.1
-sleep 2
-seldon-core-tester contract.json 0.0.0.0 5000 -p --fbs
-docker rm -f test_predictor

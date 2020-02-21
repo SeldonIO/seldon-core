@@ -1,4 +1,5 @@
 import json
+import logging
 import numpy as np
 from google.protobuf import json_format
 import base64
@@ -64,12 +65,12 @@ class UserObject(SeldonComponent):
         if self.ret_nparray:
             return self.nparray
         else:
-            print("Predict called - will run identity function")
-            print(X)
+            logging.info("Predict called - will run identity function")
+            logging.info(X)
             return X
 
     def feedback(self, features, feature_names, reward, truth):
-        print("Feedback called")
+        logging.info("Feedback called")
 
     def tags(self):
         if self.ret_meta:
@@ -110,10 +111,10 @@ class UserObjectLowLevel(SeldonComponent):
         return request
 
     def send_feedback_rest(self, request):
-        print("Feedback called")
+        logging.info("Feedback called")
 
     def send_feedback_grpc(self, request):
-        print("Feedback called")
+        logging.info("Feedback called")
 
     def health_status_raw(self):
         return {"data": {"ndarray": self.HEALTH_STATUS_RAW_RESPONSE}}
@@ -140,10 +141,10 @@ class UserObjectLowLevelWithStatusInResponse(SeldonComponent):
         return request
 
     def send_feedback_rest(self, request):
-        print("Feedback called")
+        logging.info("Feedback called")
 
     def send_feedback_grpc(self, request):
-        print("Feedback called")
+        logging.info("Feedback called")
 
 
 class UserObjectLowLevelWithStatusInResponseWithPredictRaw(SeldonComponent):
@@ -220,10 +221,10 @@ class UserObjectLowLevelGrpc(SeldonComponent):
         return request
 
     def send_feedback_rest(self, request):
-        print("Feedback called")
+        logging.info("Feedback called")
 
     def send_feedback_grpc(self, request):
-        print("Feedback called")
+        logging.info("Feedback called")
 
 
 def test_model_ok():
@@ -232,7 +233,7 @@ def test_model_ok():
     client = app.test_client()
     rv = client.get('/predict?json={"data":{"names":["a","b"],"ndarray":[[1,2]]}}')
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["meta"]["tags"] == {"mytag": 1}
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
@@ -249,7 +250,7 @@ def test_model_v01_ok():
     payload = {"data": {"names": ["a", "b"], "ndarray": [[1, 2]]}}
     rv = client.post("/api/v0.1/predictions", json=payload)
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["meta"]["tags"] == {"mytag": 1}
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
@@ -266,7 +267,7 @@ def test_model_v10_ok():
     payload = {"data": {"names": ["a", "b"], "ndarray": [[1, 2]]}}
     rv = client.post("/api/v1.0/predictions", json=payload)
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["meta"]["tags"] == {"mytag": 1}
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
@@ -283,7 +284,7 @@ def test_model_puid_ok():
         '/predict?json={"meta":{"puid":"123"},"data":{"names":["a","b"],"ndarray":[[1,2]]}}'
     )
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["meta"]["tags"] == {"mytag": 1}
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
@@ -299,7 +300,7 @@ def test_model_lowlevel_ok():
     client = app.test_client()
     rv = client.get('/predict?json={"data":{"ndarray":[1,2]}}')
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["data"]["ndarray"] == [9, 9]
 
@@ -397,7 +398,7 @@ def test_model_multi_form_data_ok():
         content_type="multipart/form-data",
     )
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["meta"]["tags"] == {"mytag": 1}
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
@@ -414,7 +415,7 @@ def test_model_feedback_ok():
         '/send-feedback?json={"request":{"data":{"ndarray":[]}},"reward":1.0}'
     )
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
 
 
@@ -429,7 +430,7 @@ def test_feedback_v10_ok():
     }
     rv = client.post("/api/v1.0/feedback", json=payload)
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
 
 
@@ -444,7 +445,7 @@ def test_feedback_v01_ok():
     }
     rv = client.post("/api/v0.1/feedback", json=payload)
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
 
 
@@ -456,7 +457,7 @@ def test_model_feedback_lowlevel_ok():
         '/send-feedback?json={"request":{"data":{"ndarray":[]}},"reward":1.0}'
     )
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
 
 
@@ -466,7 +467,7 @@ def test_model_non200status_lowlevel():
     client = app.test_client()
     rv = client.get('/predict?json={"request":{"data":{"ndarray":[]}},"reward":1.0}')
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 400
 
 
@@ -481,7 +482,7 @@ def test_model_tftensor_ok():
     jStr = json_format.MessageToJson(request)
     rv = client.get("/predict?json=" + jStr)
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["meta"]["tags"] == {"mytag": 1}
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
@@ -527,7 +528,7 @@ def test_model_bin_data_nparray():
     encoded = base64.b64encode(b"1234").decode("utf-8")
     rv = client.get('/predict?json={"binData":"' + encoded + '"}')
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["data"]["tensor"]["values"] == [1, 2, 3]
     assert j["meta"]["tags"] == {"mytag": 1}
@@ -541,7 +542,7 @@ def test_model_str_data():
     client = app.test_client()
     rv = client.get('/predict?json={"strData":"my data"}')
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["data"]["tensor"]["values"] == [1, 2, 3]
     assert j["meta"]["tags"] == {"mytag": 1}
@@ -555,7 +556,7 @@ def test_model_str_data_identity():
     client = app.test_client()
     rv = client.get('/predict?json={"strData":"my data"}')
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["strData"] == "my data"
     assert j["meta"]["tags"] == {"mytag": 1}
@@ -570,7 +571,7 @@ def test_model_no_json():
     uo = UserObject()
     rv = client.get("/predict?")
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 400
 
 
@@ -580,7 +581,7 @@ def test_model_bad_metrics():
     client = app.test_client()
     rv = client.get('/predict?json={"data":{"ndarray":[]}}')
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 400
 
 
@@ -595,7 +596,7 @@ def test_model_error_status_code():
     uo = UserObject()
     rv = client.get('/predict?json={"strData":"my data"}')
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 403
 
 
@@ -605,7 +606,7 @@ def test_model_gets_meta():
     client = app.test_client()
     rv = client.get('/predict?json={"meta":{"puid": "abc"},"data":{"ndarray":[]}}')
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["meta"]["tags"] == {"inc_meta": {"puid": "abc"}}
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
@@ -636,7 +637,7 @@ def test_model_health_status():
     rv = client.get(HEALTH_STATUS_URL)
     assert rv.status_code == 200
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert j["data"]["tensor"]["values"] == UserObject.HEALTH_STATUS_REPONSE
 
 
@@ -657,7 +658,7 @@ def test_model_metadata():
     rv = client.get(METADATA_URL)
     assert rv.status_code == 200
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert j == UserObject.METADATA_RESPONSE
 
 
@@ -672,7 +673,7 @@ def test_proto_ok():
     resp = app.Predict(request, None)
     jStr = json_format.MessageToJson(resp)
     j = json.loads(jStr)
-    print(j)
+    logging.info(j)
     assert j["meta"]["tags"] == {"mytag": 1}
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
     assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
@@ -691,7 +692,7 @@ def test_proto_lowlevel():
     resp = app.Predict(request, None)
     jStr = json_format.MessageToJson(resp)
     j = json.loads(jStr)
-    print(j)
+    logging.info(j)
     assert j["data"]["tensor"]["shape"] == [2, 1]
     assert j["data"]["tensor"]["values"] == [9, 9]
 
@@ -730,7 +731,7 @@ def test_proto_tftensor_ok():
     resp = app.Predict(request, None)
     jStr = json_format.MessageToJson(resp)
     j = json.loads(jStr)
-    print(j)
+    logging.info(j)
     assert j["meta"]["tags"] == {"mytag": 1}
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
     assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
@@ -756,7 +757,7 @@ def test_proto_bin_data_nparray():
     resp = app.Predict(request, None)
     jStr = json_format.MessageToJson(resp)
     j = json.loads(jStr)
-    print(j)
+    logging.info(j)
     assert j["data"]["tensor"]["values"] == list(user_object.nparray.flatten())
 
 
@@ -779,7 +780,7 @@ def test_proto_gets_meta():
     resp = app.Predict(request, None)
     jStr = json_format.MessageToJson(resp)
     j = json.loads(jStr)
-    print(j)
+    logging.info(j)
     assert j["meta"]["tags"] == {"inc_meta": {"puid": "abc"}}
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
     assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
@@ -798,7 +799,7 @@ def test_unimplemented_predict_raw_on_seldon_component():
     rv = client.get('/predict?json={"data":{"names":["a","b"],"ndarray":[[1,2]]}}')
     j = json.loads(rv.data)
 
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["data"]["ndarray"] == [[2.0, 4.0]]
 
@@ -814,7 +815,7 @@ def test_unimplemented_predict_raw():
     rv = client.get('/predict?json={"data":{"names":["a","b"],"ndarray":[[1,2]]}}')
     j = json.loads(rv.data)
 
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["data"]["ndarray"] == [[2.0, 4.0]]
 
@@ -822,7 +823,7 @@ def test_unimplemented_predict_raw():
 def test_unimplemented_feedback_raw_on_seldon_component():
     class CustomSeldonComponent(SeldonComponent):
         def feedback(self, features, feature_names, reward, truth):
-            print("Feedback called")
+            logging.info("Feedback called")
 
     user_object = CustomSeldonComponent()
     app = get_rest_microservice(user_object)
@@ -832,14 +833,14 @@ def test_unimplemented_feedback_raw_on_seldon_component():
     )
     j = json.loads(rv.data)
 
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
 
 
 def test_unimplemented_feedback_raw():
     class CustomObject(object):
         def feedback(self, features, feature_names, reward, truth):
-            print("Feedback called")
+            logging.info("Feedback called")
 
     user_object = CustomObject()
     app = get_rest_microservice(user_object)
@@ -849,5 +850,5 @@ def test_unimplemented_feedback_raw():
     )
     j = json.loads(rv.data)
 
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
