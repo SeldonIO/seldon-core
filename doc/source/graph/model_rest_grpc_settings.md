@@ -10,9 +10,8 @@
     "spec": {
         "annotations": {
 	    "seldon.io/grpc-max-message-size":"10000000",
-	    "seldon.io/rest-read-timeout":"100000",
-	    "seldon.io/rest-connection-timeout":"100000",	    
-	    "seldon.io/grpc-read-timeout":"100000"
+	    "seldon.io/rest-timeout":"100000",	    
+	    "seldon.io/grpc-timeout":"100000"
         },
         "name": "test-deployment",
         "predictors": [

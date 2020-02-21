@@ -5,13 +5,9 @@ import (
 	"fmt"
 	"github.com/go-logr/logr"
 	"github.com/golang/protobuf/proto"
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	grpc_opentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
-	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/seldonio/seldon-core/executor/api/client"
 	grpc2 "github.com/seldonio/seldon-core/executor/api/grpc"
-	"github.com/seldonio/seldon-core/executor/api/metric"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/proto/tensorflow/serving"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
@@ -27,9 +23,10 @@ type TensorflowGrpcClient struct {
 	conns          map[string]*grpc.ClientConn
 	Predictor      *v1.PredictorSpec
 	DeploymentName string
+	annotations    map[string]string
 }
 
-func NewTensorflowGrpcClient(predictor *v1.PredictorSpec, deploymentName string) client.SeldonApiClient {
+func NewTensorflowGrpcClient(predictor *v1.PredictorSpec, deploymentName string, annotations map[string]string) client.SeldonApiClient {
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),
@@ -40,6 +37,7 @@ func NewTensorflowGrpcClient(predictor *v1.PredictorSpec, deploymentName string)
 		conns:          make(map[string]*grpc.ClientConn),
 		Predictor:      predictor,
 		DeploymentName: deploymentName,
+		annotations:    annotations,
 	}
 	return &smgc
 }
@@ -52,12 +50,7 @@ func (s *TensorflowGrpcClient) getConnection(host string, port int32, modelName 
 		opts := []grpc.DialOption{
 			grpc.WithInsecure(),
 		}
-		if opentracing.IsGlobalTracerRegistered() {
-			opts = append(opts, grpc.WithUnaryInterceptor(grpc_middleware.ChainUnaryClient(grpc_opentracing.UnaryClientInterceptor(),
-				metric.NewClientMetrics(s.Predictor, s.DeploymentName, modelName).UnaryClientInterceptor())))
-		} else {
-			opts = append(opts, grpc.WithUnaryInterceptor(metric.NewClientMetrics(s.Predictor, s.DeploymentName, modelName).UnaryClientInterceptor()))
-		}
+		opts = append(opts, grpc2.AddClientInterceptors(s.Predictor, s.DeploymentName, modelName, s.annotations, s.Log))
 		conn, err := grpc.Dial(fmt.Sprintf("%s:%d", host, port), opts...)
 		if err != nil {
 			return nil, err
