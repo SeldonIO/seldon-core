@@ -1940,14 +1940,18 @@ def grpc_predict_gateway(
     if not headers is None:
         for k in headers:
             metadata.append((k, headers[k]))
-    response = stub.Predict(request=request, metadata=metadata)
-    channel.close()
-    if client_return_type == "dict":
-        request = seldon_message_to_json(request)
-        response = seldon_message_to_json(response)
-    elif client_return_type != "proto":
-        raise SeldonClientException("Invalid client_return_type")
-    return SeldonClientPrediction(request, response, True, "")
+    try:
+        response = stub.Predict(request=request, metadata=metadata)
+        channel.close()
+        if client_return_type == "dict":
+            request = seldon_message_to_json(request)
+            response = seldon_message_to_json(response)
+        elif client_return_type != "proto":
+            raise SeldonClientException("Invalid client_return_type")
+        return SeldonClientPrediction(request, response, True, "")
+    except Exception as e:
+        channel.close()
+        return SeldonClientPrediction(request, None, False, str(e))
 
 
 def rest_feedback_seldon_oauth(

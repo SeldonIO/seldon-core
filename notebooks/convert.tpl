@@ -4,7 +4,7 @@ import time
 
 {% block codecell %}
 {% if "kubectl rollout status" in super() or "delete" in super() %}
-time.sleep(4)
+time.sleep(10)
 {{ super() }}
 time.sleep(2)
 {% else %}

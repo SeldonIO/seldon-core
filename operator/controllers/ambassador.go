@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	ANNOTATION_REST_READ_TIMEOUT       = "seldon.io/rest-read-timeout"
-	ANNOTATION_GRPC_READ_TIMEOUT       = "seldon.io/grpc-read-timeout"
+	ANNOTATION_REST_TIMEOUT            = "seldon.io/rest-timeout"
+	ANNOTATION_GRPC_TIMEOUT            = "seldon.io/grpc-timeout"
 	ANNOTATION_AMBASSADOR_CUSTOM       = "seldon.io/ambassador-config"
 	ANNOTATION_AMBASSADOR_SHADOW       = "seldon.io/ambassador-shadow"
 	ANNOTATION_AMBASSADOR_SERVICE      = "seldon.io/ambassador-service-name"
@@ -66,7 +66,7 @@ func getAmbassadorRestConfig(mlDep *machinelearningv1.SeldonDeployment,
 	namespace := getNamespace(mlDep)
 
 	// Set timeout
-	timeout, err := strconv.Atoi(getAnnotation(mlDep, ANNOTATION_REST_READ_TIMEOUT, "3000"))
+	timeout, err := strconv.Atoi(getAnnotation(mlDep, ANNOTATION_REST_TIMEOUT, "3000"))
 	if err != nil {
 		return "", nil
 	}
@@ -155,7 +155,7 @@ func getAmbassadorGrpcConfig(mlDep *machinelearningv1.SeldonDeployment,
 	namespace := getNamespace(mlDep)
 
 	// Set timeout
-	timeout, err := strconv.Atoi(getAnnotation(mlDep, ANNOTATION_GRPC_READ_TIMEOUT, "3000"))
+	timeout, err := strconv.Atoi(getAnnotation(mlDep, ANNOTATION_GRPC_TIMEOUT, "3000"))
 	if err != nil {
 		return "", nil
 	}
