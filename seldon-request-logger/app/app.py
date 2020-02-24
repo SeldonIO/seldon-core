@@ -7,7 +7,7 @@ import numpy as np
 import json
 from elasticsearch import Elasticsearch
 import logging
-
+import datetime
 
 TYPE_HEADER_NAME = "Ce-Type"
 REQUEST_ID_HEADER_NAME = "Ce-Requestid"
@@ -106,8 +106,11 @@ def set_metadata(content, headers, message_type, request_id):
     field_from_header(content, NAMESPACE_HEADER_NAME, headers)
     field_from_header(content, MODELID_HEADER_NAME, headers)
 
-    if message_type == "request":
-       content['@timestamp'] = headers.get(TIMESTAMP_HEADER_NAME)
+    if message_type == "request" or not '@timestamp' in content:
+        timestamp = headers.get(TIMESTAMP_HEADER_NAME)
+        if timestamp is None:
+            timestamp = datetime.datetime.now(datetime.timezone.utc).isoformat()
+        content['@timestamp'] = timestamp
 
     content['RequestId'] = request_id
     return

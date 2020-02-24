@@ -5,13 +5,16 @@ push_image:
 	docker push seldonio/seldon-request-logger:latest
 
 build_image_cifar:
-	docker build -f cifar10.Dockerfile . -t seldonio/seldon-request-logger-cifar:latest
+	docker build --no-cache -f cifar10.Dockerfile . -t seldonio/seldon-request-logger-cifar:latest
 
 push_image_cifar:
 	docker push seldonio/seldon-request-logger-cifar:latest
 
 run_container:
 	docker run -p 2222:8080 seldonio/seldon-request-logger:latest
+
+run_container_cifar:
+	docker run -p 2222:8080 seldonio/seldon-request-logger-cifar:latest
 
 run_local: export FLASK_RUN_PORT = 2222
 run_local: export FLASK_APP = app.py

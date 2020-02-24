@@ -5,7 +5,7 @@ import numpy as np
 import json
 from elasticsearch import Elasticsearch
 import logging
-
+import datetime
 
 TYPE_HEADER_NAME = "Ce-Type"
 REQUEST_ID_HEADER_NAME = "Ce-Requestid"
@@ -18,7 +18,8 @@ INFERENCESERVICE_HEADER_NAME = 'Ce-Inferenceservicename'
 DOC_TYPE_NAME = 'inferencerequest'
 
 app = Flask(__name__)
-
+print('starting cifar logger')
+sys.stdout.flush()
 
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
@@ -32,11 +33,11 @@ def index():
     if not type(body) is dict:
         body = json.loads(body)
 
-    # print('RECEIVED MESSAGE.')
-    # print(str(request.headers))
-    # print(str(body))
-    # print('----')
-    # sys.stdout.flush()
+    print('RECEIVED MESSAGE.')
+    print(str(request.headers))
+    print(str(body))
+    print('----')
+    sys.stdout.flush()
 
     es = connect_elasticsearch()
 
@@ -103,8 +104,11 @@ def set_metadata(content, headers, message_type, request_id):
     field_from_header(content, NAMESPACE_HEADER_NAME, headers)
     field_from_header(content, MODELID_HEADER_NAME, headers)
 
-    if message_type == "request":
-       content['@timestamp'] = headers.get(TIMESTAMP_HEADER_NAME)
+    if message_type == "request" or not '@timestamp' in content:
+        timestamp = headers.get(TIMESTAMP_HEADER_NAME)
+        if timestamp is None:
+            timestamp = datetime.datetime.now(datetime.timezone.utc).isoformat()
+        content['@timestamp'] = timestamp
 
     content['RequestId'] = request_id
     return
@@ -124,6 +128,9 @@ def field_from_header(content, header_name, headers):
 
 
 def process_and_update_elastic_doc(elastic_object, message_type, message_body, request_id, headers, index_name):
+    print('in process_and_update_elastic_doc')
+    sys.stdout.flush()
+
     if message_type == 'unknown':
         print('UNKNOWN REQUEST TYPE FOR '+request_id+' - NOT PROCESSING')
         sys.stdout.flush()
@@ -146,8 +153,10 @@ def process_and_update_elastic_doc(elastic_object, message_type, message_body, r
 
     new_content = elastic_object.update(index=index_name,doc_type=DOC_TYPE_NAME,id=request_id,body=upsert_body,retry_on_conflict=3,refresh=True,timeout="60s")
     print('upserted to doc '+index_name+"/"+DOC_TYPE_NAME+"/"+ request_id+ ' adding '+message_type)
+    sys.stdout.flush()
     if message_type == 'outlier':
         print(upsert_body)
+        sys.stdout.flush()
     return str(new_content)
 
 
@@ -160,8 +169,10 @@ def connect_elasticsearch():
     _es = Elasticsearch([{'host': elastic_host, 'port': elastic_port}])
     if _es.ping():
         print('Connected to Elasticsearch')
+        sys.stdout.flush()
     else:
         print('Could not connect to Elasticsearch')
+        sys.stdout.flush()
     return _es
 
 
