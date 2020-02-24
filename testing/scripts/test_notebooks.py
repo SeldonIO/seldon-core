@@ -1,33 +1,53 @@
 from subprocess import run
 
-def create_and_run_script(notebook):
+def create_and_run_script(folder, notebook):
     run(
-        f"jupyter nbconvert --template ../../notebooks/convert.tpl --to script ../../notebooks/{notebook}.ipynb",
+        f"jupyter nbconvert --template ../../notebooks/convert.tpl --to script {folder}/{notebook}.ipynb",
         shell=True,
         check=True,
     )
-    run(f"chmod u+x ../../notebooks/{notebook}.py", shell=True, check=True)
-    run(f"cd ../../notebooks && ./{notebook}.py", shell=True, check=True)
+    run(f"chmod u+x {folder}/{notebook}.py", shell=True, check=True)
+    run(f"cd {folder} && ./{notebook}.py", shell=True, check=True)
 
 class TestNotebooks(object):
 
+    #
+    # Core notebooks
+    #
+
     def test_helm_examples(self):
-        create_and_run_script("helm_examples")
+        create_and_run_script("../../notebooks", "helm_examples")
 
     def test_explainer_examples(self):
-        create_and_run_script("explainer_examples")
+        create_and_run_script("../../notebooks", "explainer_examples")
 
     def test_istio_examples(self):
-        create_and_run_script("istio_example")
+        create_and_run_script("../../notebooks", "istio_example")
 
     def test_max_grpc_msg_size(self):
-        create_and_run_script("max_grpc_msg_size")
+        create_and_run_script("../../notebooks", "max_grpc_msg_size")
 
     def test_multiple_operators(self):
-        create_and_run_script("multiple_operators")
+        create_and_run_script("../../notebooks", "multiple_operators")
 
     def test_protocol_examples(self):
-        create_and_run_script("protocol_examples")
+        create_and_run_script("../../notebooks", "protocol_examples")
 
     def test_server_examples(self):
-        create_and_run_script("server_examples")
+        create_and_run_script("../../notebooks", "server_examples")
+
+    #
+    # Ambassador
+    #
+
+    def test_ambassador_canary(self):
+        create_and_run_script("../../examples/ambassador/canary", "ambassador_canary")
+
+    def test_ambassador_headers(self):
+        create_and_run_script("../../examples/ambassador/headers", "ambassador_headers")
+
+    def test_ambassador_shadow(self):
+        create_and_run_script("../../examples/ambassador/shadow", "ambassador_shadow")
+
+    def test_ambassador_custom(self):
+        create_and_run_script("../../examples/ambassador/custom", "ambassador_custom")

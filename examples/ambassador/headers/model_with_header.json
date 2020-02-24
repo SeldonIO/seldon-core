@@ -19,7 +19,7 @@
                     "spec": {
                         "containers": [
                             {
-                                "image": "seldonio/mock_classifier_rest:1.1",
+                                "image": "seldonio/mock_classifier_rest:1.4",
                                 "imagePullPolicy": "IfNotPresent",
                                 "name": "classifier"
                             }
