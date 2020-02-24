@@ -51,3 +51,14 @@ class TestNotebooks(object):
 
     def test_ambassador_custom(self):
         create_and_run_script("../../examples/ambassador/custom", "ambassador_custom")
+
+    #
+    # Misc
+    #
+
+    def test_tracing(self):
+        create_and_run_script("../../examples/models/tracing", "tracing")
+
+    def test_metrics(self):
+        create_and_run_script("../../examples/models/metrics", "metrics")
+
