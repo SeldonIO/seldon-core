@@ -1,3 +1,4 @@
+import time
 from seldon_e2e_utils import (
     get_pod_names,
     get_deployment_names,
@@ -40,6 +41,9 @@ def test_tracing_rest(namespace):
     deployment_name = deployment_names[0]
     pod_names = get_pod_names(deployment_name, namespace)
     pod_name = pod_names[0]
+
+    # Jaeger takes a bit of time to process all spans
+    time.sleep(2)
 
     # Get traces and assert their content
     traces = get_traces(pod_name, "executor", "predictions")

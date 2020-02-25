@@ -12,7 +12,7 @@ def _is_empty(result):
 
 @retry(
     stop=stop_after_attempt(5),
-    wait=wait_exponential(min=1, max=5),
+    wait=wait_exponential(max=5),
     retry=retry_if_result(_is_empty),
 )
 def get_traces(pod_name, service, operation):
