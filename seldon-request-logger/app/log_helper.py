@@ -1,7 +1,7 @@
 import os
 import datetime
 import sys
-from elasticsearch import Elasticsearch
+from elasticsearch import Elasticsearch, RequestsHttpConnection
 
 TYPE_HEADER_NAME = "Ce-Type"
 REQUEST_ID_HEADER_NAME = "Ce-Requestid"
@@ -96,8 +96,18 @@ def connect_elasticsearch():
     _es = None
     elastic_host = os.getenv('ELASTICSEARCH_HOST', 'localhost')
     elastic_port = os.getenv('ELASTICSEARCH_PORT', 9200)
+    elastic_protocol = os.getenv('ELASTICSEARCH_PROTOCOL', 'http')
+    elastic_user = os.getenv('ELASTICSEARCH_USER')
+    elastic_pass = os.getenv('ELASTICSEARCH_PASS')
 
-    _es = Elasticsearch([{'host': elastic_host, 'port': elastic_port}])
+    connection_string = elastic_protocol +'://'
+
+    if elastic_user and elastic_pass:
+        connection_string = connection_string + elastic_user + ':' + elastic_pass + '@'
+
+    connection_string = connection_string + elastic_host + ':' + str(elastic_port)
+
+    _es = Elasticsearch(connection_string,verify_certs=False,connection_class=RequestsHttpConnection)
     if _es.ping():
         print('Connected to Elasticsearch')
         sys.stdout.flush()
