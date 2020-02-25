@@ -84,8 +84,6 @@ examples/models/pyspark_pmml/.gitignore
 examples/models/h2o_mojo/src/main/resources/model.zip
 
 #created model folders
-examples/models/deep_mnist/MNIST_data/
-examples/models/deep_mnist/model/
 examples/models/sklearn_iris/IrisClassifier.sav
 examples/istio/canary_update/MNIST_data/
 examples/istio/canary_update/tmp/
@@ -99,8 +97,6 @@ examples/models/r_mnist/t10k-images-idx3-ubyte
 examples/models/r_mnist/t10k-labels-idx1-ubyte
 examples/models/r_mnist/train-images-idx3-ubyte
 examples/models/r_mnist/train-labels-idx1-ubyte
-examples/models/sk_mnist/MNIST_data/
-examples/models/sk_mnist/sk.pkl
 examples/models/sklearn_iris_fbs/IrisClassifier.sav
 
 # Pickle files
