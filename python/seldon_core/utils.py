@@ -322,6 +322,7 @@ def construct_response_json(
     is_request: bool,
     client_request_raw: Union[List, Dict],
     client_raw_response: Union[np.ndarray, str, bytes, dict],
+    meta: dict = None,
 ) -> Union[List, Dict]:
     """
     This class converts a raw REST response into a JSON object that has the same structure as
@@ -410,8 +411,13 @@ def construct_response_json(
         response["data"]["names"] = names
 
     response["meta"] = {}
-    client_custom_tags(user_model)
-    tags = client_custom_tags(user_model)
+    if meta:
+        tags = meta.get("tags", {})
+    else:
+        tags = {}
+    custom_tags = client_custom_tags(user_model)
+    if custom_tags:
+        tags.update(custom_tags)
     if tags:
         response["meta"]["tags"] = tags
     metrics = client_custom_metrics(user_model)
@@ -429,6 +435,7 @@ def construct_response(
     is_request: bool,
     client_request: prediction_pb2.SeldonMessage,
     client_raw_response: Union[np.ndarray, str, bytes, dict],
+    meta: dict = None,
 ) -> prediction_pb2.SeldonMessage:
     """
 
@@ -449,18 +456,25 @@ def construct_response(
 
     """
     data_type = client_request.WhichOneof("data_oneof")
-    meta = prediction_pb2.Meta()
+    meta_pb = prediction_pb2.Meta()
     meta_json: Dict = {}
-    tags = client_custom_tags(user_model)
+
+    tags: Dict = {}
+    if meta is not None and "tags" in meta:
+        tags.update(meta["tags"])
+    custom_tags = client_custom_tags(user_model)
+    if custom_tags:
+        tags.update(custom_tags)
     if tags:
         meta_json["tags"] = tags
+
     metrics = client_custom_metrics(user_model)
     if metrics:
         meta_json["metrics"] = metrics
     if client_request.meta:
         if client_request.meta.puid:
             meta_json["puid"] = client_request.meta.puid
-    json_format.ParseDict(meta_json, meta)
+    json_format.ParseDict(meta_json, meta_pb)
     if isinstance(client_raw_response, np.ndarray) or isinstance(
         client_raw_response, list
     ):
@@ -482,16 +496,16 @@ def construct_response(
             else:
                 default_data_type = "ndarray"
         data = array_to_grpc_datadef(default_data_type, client_raw_response, names)
-        return prediction_pb2.SeldonMessage(data=data, meta=meta)
+        return prediction_pb2.SeldonMessage(data=data, meta=meta_pb)
     elif isinstance(client_raw_response, str):
-        return prediction_pb2.SeldonMessage(strData=client_raw_response, meta=meta)
+        return prediction_pb2.SeldonMessage(strData=client_raw_response, meta=meta_pb)
     elif isinstance(client_raw_response, dict):
         jsonDataResponse = ParseDict(
             client_raw_response, prediction_pb2.SeldonMessage().jsonData
         )
-        return prediction_pb2.SeldonMessage(jsonData=jsonDataResponse, meta=meta)
+        return prediction_pb2.SeldonMessage(jsonData=jsonDataResponse, meta=meta_pb)
     elif isinstance(client_raw_response, (bytes, bytearray)):
-        return prediction_pb2.SeldonMessage(binData=client_raw_response, meta=meta)
+        return prediction_pb2.SeldonMessage(binData=client_raw_response, meta=meta_pb)
     else:
         raise SeldonMicroserviceException(
             "Unknown data type returned as payload:" + client_raw_response

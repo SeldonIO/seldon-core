@@ -15,6 +15,7 @@ import grpc
 import numpy as np
 import signal
 import unittest.mock as mock
+from google.protobuf import json_format
 
 
 @contextmanager
@@ -101,6 +102,22 @@ def test_model_template_app_rest(tracing):
 
 
 @pytest.mark.parametrize("tracing", [(False), (True)])
+def test_model_template_app_rest_tags(tracing):
+    with start_microservice(
+        join(dirname(__file__), "model-template-app"), tracing=tracing
+    ):
+        data = '{"meta":{"tags":{"foo":"bar"}},"data":{"names":["a","b"],"ndarray":[[1.0,2.0]]}}'
+        response = requests.get(
+            "http://127.0.0.1:5000/predict", params="json=%s" % data
+        )
+        response.raise_for_status()
+        assert response.json() == {
+            "data": {"names": ["t:0", "t:1"], "ndarray": [[1.0, 2.0]]},
+            "meta": {"tags": {"foo": "bar"}},
+        }
+
+
+@pytest.mark.parametrize("tracing", [(False), (True)])
 def test_model_template_app_rest_submodule(tracing):
     with start_microservice(
         join(dirname(__file__), "model-template-app2"), tracing=tracing
@@ -152,6 +169,31 @@ def test_model_template_app_grpc(tracing):
         request = prediction_pb2.SeldonMessage(data=datadef)
         feedback = prediction_pb2.Feedback(request=request, reward=1.0)
         response = stub.SendFeedback(request=request)
+
+
+@pytest.mark.parametrize("tracing", [(False), (True)])
+def test_model_template_app_grpc_tags(tracing):
+    with start_microservice(
+        join(dirname(__file__), "model-template-app"), tracing=tracing, grpc=True
+    ):
+        data = np.array([[1, 2]])
+        datadef = prediction_pb2.DefaultData(
+            tensor=prediction_pb2.Tensor(shape=data.shape, values=data.flatten())
+        )
+
+        meta = prediction_pb2.Meta()
+        json_format.ParseDict({"tags": {"foo": "bar"}}, meta)
+
+        request = prediction_pb2.SeldonMessage(data=datadef, meta=meta)
+        channel = grpc.insecure_channel("0.0.0.0:5000")
+        stub = prediction_pb2_grpc.ModelStub(channel)
+        response = stub.Predict(request=request)
+        assert response.data.tensor.shape[0] == 1
+        assert response.data.tensor.shape[1] == 2
+        assert response.data.tensor.values[0] == 1
+        assert response.data.tensor.values[1] == 2
+
+        assert response.meta.tags["foo"].string_value == "bar"
 
 
 def test_model_template_app_tracing_config():
