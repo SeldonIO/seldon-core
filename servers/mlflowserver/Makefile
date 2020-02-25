@@ -1,14 +1,15 @@
 VERSION=0.3-SNAPSHOT
 IMAGE_BASE=seldonio/mlflowserver
+S2I_IMAGE_VERSION=0.19-SNAPSHOT
 
 build_rest:
-	s2i build -E environment_rest ./mlflowserver seldonio/seldon-core-s2i-python37:0.17-SNAPSHOT ${IMAGE_BASE}_rest:${VERSION}
+	s2i build -E environment_rest ./mlflowserver seldonio/seldon-core-s2i-python37:${S2I_IMAGE_VERSION} ${IMAGE_BASE}_rest:${VERSION}
 
 push_rest:
 	docker push ${IMAGE_BASE}_rest:${VERSION}
 
 build_grpc:
-	s2i build -E environment_grpc ./mlflowserver seldonio/seldon-core-s2i-python37:0.17-SNAPSHOT ${IMAGE_BASE}_grpc:${VERSION}
+	s2i build -E environment_grpc ./mlflowserver seldonio/seldon-core-s2i-python37:${S2I_IMAGE_VERSION} ${IMAGE_BASE}_grpc:${VERSION}
 
 push_grpc:
 	docker push ${IMAGE_BASE}_grpc:${VERSION}
