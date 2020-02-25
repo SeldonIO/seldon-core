@@ -17,14 +17,14 @@ run_container_cifar:
 	docker run -p 2222:8080 seldonio/seldon-request-logger-cifar:latest
 
 run_local: export FLASK_RUN_PORT = 2222
-run_local: export FLASK_APP = app.py
+run_local: export FLASK_APP = default_logger.py
 run_local:
 	cd app && flask run
 
 run_local_cifar: export FLASK_RUN_PORT = 2222
-run_local_cifar: export FLASK_APP = app.py
+run_local_cifar: export FLASK_APP = cifar_logger.py
 run_local_cifar:
-	cd cifar && flask run
+	cd app && flask run
 
 test:
 	curl -v "http://localhost:2222/" \

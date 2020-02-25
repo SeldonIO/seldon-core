@@ -1,24 +1,13 @@
 from flask import Flask, request
 import sys
-import os
 from seldon_core.utils import json_to_seldon_message, extract_request_parts, array_to_grpc_datadef, seldon_message_to_json
 from seldon_core.proto import prediction_pb2
 import numpy as np
 import json
-from elasticsearch import Elasticsearch
 import logging
-import datetime
+import log_helper
 
-TYPE_HEADER_NAME = "Ce-Type"
-REQUEST_ID_HEADER_NAME = "Ce-Requestid"
-CLOUD_EVENT_ID = "Ce-id"
-MODELID_HEADER_NAME = 'Ce-Modelid'
-NAMESPACE_HEADER_NAME = 'Ce-Namespace'
-PREDICTOR_HEADER_NAME = 'Ce-Predictor'
-TIMESTAMP_HEADER_NAME = 'CE-Time'
-INFERENCESERVICE_HEADER_NAME = 'Ce-Inferenceservicename'
-DOC_TYPE_NAME = 'inferencerequest'
-
+MAX_PAYLOAD_BYTES = 100000
 app = Flask(__name__)
 
 
@@ -28,7 +17,21 @@ log.setLevel(logging.ERROR)
 
 @app.route("/", methods=['GET','POST'])
 def index():
-    #try:
+
+    request_id = log_helper.extract_request_id(request.headers)
+    type_header = request.headers.get(log_helper.TYPE_HEADER_NAME)
+    message_type = log_helper.parse_message_type(type_header)
+    index_name = log_helper.build_index_name(request.headers)
+
+    # max size is configurable with env var or defaults to constant
+    max_payload_bytes = log_helper.get_max_payload_bytes(MAX_PAYLOAD_BYTES)
+
+    body_length = request.headers.get(log_helper.LENGTH_HEADER_NAME)
+    if body_length and int(body_length) > int(max_payload_bytes):
+        too_large_message = 'body too large for '+index_name+"/"+log_helper.DOC_TYPE_NAME+"/"+ request_id+ ' adding '+message_type
+        print()
+        sys.stdout.flush()
+        return too_large_message
 
     body = request.get_json(force=True)
     if not type(body) is dict:
@@ -39,22 +42,10 @@ def index():
     # print(str(body))
     # print('----')
     # sys.stdout.flush()
-    #TODO: limit size of body with env var (100KB)
-    # this way main logger will by default ignore larger messages as they probably require custom logger
 
-    es = connect_elasticsearch()
-
-    type_header = request.headers.get(TYPE_HEADER_NAME)
-    message_type = parse_message_type(type_header)
-    index_name = build_index_name(request.headers)
+    es = log_helper.connect_elasticsearch()
 
     try:
-
-        request_id = request.headers.get(REQUEST_ID_HEADER_NAME)
-
-        # TODO: need to fix this upstream
-        if request_id is None:
-            request_id = request.headers.get(CLOUD_EVENT_ID)
 
         #now process and update the doc
         doc = process_and_update_elastic_doc(es, message_type, body, request_id,request.headers, index_name)
@@ -63,70 +54,6 @@ def index():
         print(ex)
     sys.stdout.flush()
     return 'problem logging request'
-
-
-def build_index_name(headers):
-    #use a fixed index name if user chooses to do so
-    index_name = os.getenv('INDEX_NAME')
-    if index_name:
-        return index_name
-
-    #otherwise create an index per deployment
-    index_name = "inference-log-" + serving_engine(headers)
-    namespace = request.headers.get(NAMESPACE_HEADER_NAME)
-    if namespace is None:
-        index_name = index_name + "-unknown-namespace"
-    else:
-        index_name = index_name + "-" + namespace
-    inference_service_name = request.headers.get(INFERENCESERVICE_HEADER_NAME)
-    if inference_service_name is None:
-        index_name = index_name + "-unknown-inferenceservice"
-    else:
-        index_name = index_name + "-" + inference_service_name
-    return index_name
-
-
-def parse_message_type(type_header):
-    if type_header == "io.seldon.serving.inference.request" or type_header == "org.kubeflow.serving.inference.request":
-        return 'request'
-    if type_header == "io.seldon.serving.inference.response" or type_header == "org.kubeflow.serving.inference.response":
-        return 'response'
-    if type_header == 'seldon.outlier':
-        return 'outlier'
-    return 'unknown'
-
-
-def set_metadata(content, headers, message_type, request_id):
-    serving_engine_name = serving_engine(headers)
-    content['ServingEngine'] = serving_engine_name
-
-    # TODO: provide a way for custom headers to be passed on too?
-    field_from_header(content, INFERENCESERVICE_HEADER_NAME, headers)
-    field_from_header(content, PREDICTOR_HEADER_NAME, headers)
-    field_from_header(content, NAMESPACE_HEADER_NAME, headers)
-    field_from_header(content, MODELID_HEADER_NAME, headers)
-
-    if message_type == "request" or not '@timestamp' in content:
-        timestamp = headers.get(TIMESTAMP_HEADER_NAME)
-        if timestamp is None:
-            timestamp = datetime.datetime.now(datetime.timezone.utc).isoformat()
-        content['@timestamp'] = timestamp
-
-    content['RequestId'] = request_id
-    return
-
-
-def serving_engine(headers):
-    type_header = request.headers.get(TYPE_HEADER_NAME)
-    if type_header.startswith('io.seldon.serving') or type_header.startswith('seldon'):
-        return 'seldon'
-    elif type_header.startswith('org.kubeflow.serving'):
-        return 'inferenceservice'
-
-
-def field_from_header(content, header_name, headers):
-    if not request.headers.get(header_name) is None:
-        content[header_name] = headers.get(header_name)
 
 
 def process_and_update_elastic_doc(elastic_object, message_type, message_body, request_id, headers, index_name):
@@ -138,8 +65,8 @@ def process_and_update_elastic_doc(elastic_object, message_type, message_body, r
     #first do any needed transformations
     new_content_part = process_content(message_body)
     #set metadata specific to this part (request or response)
-    field_from_header(content=new_content_part,header_name='ce-time',headers=headers)
-    field_from_header(content=new_content_part, header_name='ce-source', headers=headers)
+    log_helper.field_from_header(content=new_content_part,header_name='ce-time',headers=headers)
+    log_helper.field_from_header(content=new_content_part, header_name='ce-source', headers=headers)
 
     upsert_body= {
         "doc_as_upsert": True,
@@ -148,24 +75,13 @@ def process_and_update_elastic_doc(elastic_object, message_type, message_body, r
         }
     }
 
-    set_metadata(upsert_body['doc'],headers,message_type,request_id)
+    log_helper.set_metadata(upsert_body['doc'],headers,message_type,request_id)
 
-    new_content = elastic_object.update(index=index_name,doc_type=DOC_TYPE_NAME,id=request_id,body=upsert_body,retry_on_conflict=3,refresh=True,timeout="60s")
-    print('upserted to doc '+index_name+"/"+DOC_TYPE_NAME+"/"+ request_id+ ' adding '+message_type)
+    new_content = elastic_object.update(index=index_name,doc_type=log_helper.DOC_TYPE_NAME,id=request_id,body=upsert_body,retry_on_conflict=3,refresh=True,timeout="60s")
+    print('upserted to doc '+index_name+"/"+log_helper.DOC_TYPE_NAME+"/"+ request_id+ ' adding '+message_type)
     sys.stdout.flush()
     return str(new_content)
 
-
-
-def connect_elasticsearch():
-    _es = None
-    elastic_host = os.getenv('ELASTICSEARCH_HOST', 'localhost')
-    elastic_port = os.getenv('ELASTICSEARCH_PORT', 9200)
-
-    _es = Elasticsearch([{'host': elastic_host, 'port': elastic_port}])
-    if not _es.ping():
-        print('Could not connect to Elasticsearch')
-    return _es
 
 
 # take request or response part and process it by deriving metadata

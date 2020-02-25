@@ -5,4 +5,4 @@ RUN pip install -r requirements.txt
 RUN pip install gunicorn
 EXPOSE 8080
 ENTRYPOINT ["python"]
-CMD ["cifar/app.py"]
+CMD ["app/cifar_logger.py"]
