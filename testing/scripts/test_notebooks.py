@@ -69,4 +69,11 @@ class TestNotebooks(object):
     def test_metrics(self):
         create_and_run_script("../../examples/models/metrics", "metrics")
 
+    #
+    # Payloads
+    #
+
+    def test_jsondata(self):
+        create_and_run_script("../../examples/models/sklearn_iris_jsondata", "sklearn_iris_jsondata")
+
 
