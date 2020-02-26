@@ -72,9 +72,9 @@ class TestNotebooks(object):
         create_and_run_script("../../examples/models/metrics", "metrics")
 
     def test_payload_logging(self):
-        create_and_run_script("../../examples/models/payload_logging", "payload_logging")
-
-
+        create_and_run_script(
+            "../../examples/models/payload_logging", "payload_logging"
+        )
 
     #
     # Payloads
