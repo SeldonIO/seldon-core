@@ -1,5 +1,6 @@
 from subprocess import run
 
+
 def create_and_run_script(folder, notebook):
     run(
         f"jupyter nbconvert --template ../../notebooks/convert.tpl --to script {folder}/{notebook}.ipynb",
@@ -8,6 +9,7 @@ def create_and_run_script(folder, notebook):
     )
     run(f"chmod u+x {folder}/{notebook}.py", shell=True, check=True)
     run(f"cd {folder} && ./{notebook}.py", shell=True, check=True)
+
 
 class TestNotebooks(object):
 
@@ -74,7 +76,9 @@ class TestNotebooks(object):
     #
 
     def test_jsondata(self):
-        create_and_run_script("../../examples/models/sklearn_iris_jsondata", "sklearn_iris_jsondata")
+        create_and_run_script(
+            "../../examples/models/sklearn_iris_jsondata", "sklearn_iris_jsondata"
+        )
 
     #
     # SKLearn
@@ -82,7 +86,6 @@ class TestNotebooks(object):
 
     def test_sklearn_iris(self):
         create_and_run_script("../../examples/models/sklearn_iris", "sklearn_iris")
-
 
     #
     # OpenVino
@@ -92,9 +95,7 @@ class TestNotebooks(object):
         create_and_run_script("../../examples/models/openvino", "openvino-squeezenet")
 
     def test_openvino_imagenet_ensemble(self):
-        create_and_run_script("../../examples/models/openvino_imagenet_ensemble", "openvino_imagenet_ensemble")
-
-
-
-
-
+        create_and_run_script(
+            "../../examples/models/openvino_imagenet_ensemble",
+            "openvino_imagenet_ensemble",
+        )
