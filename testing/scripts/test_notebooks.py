@@ -76,4 +76,13 @@ class TestNotebooks(object):
     def test_jsondata(self):
         create_and_run_script("../../examples/models/sklearn_iris_jsondata", "sklearn_iris_jsondata")
 
+    #
+    # SKLearn
+    #
+
+    def test_sklearn_iris(self):
+        create_and_run_script("../../examples/models/sklearn_iris", "sklearn_iris")
+
+
+
 

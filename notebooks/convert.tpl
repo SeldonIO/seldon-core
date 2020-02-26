@@ -7,6 +7,9 @@ import time
 time.sleep(10)
 {{ super() }}
 time.sleep(2)
+{% elif "docker run" in super() %}
+{{ super() }}
+time.sleep(3)
 {% else %}
 {{ super().replace("'inline'","'agg'") }}
 {% endif %}
