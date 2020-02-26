@@ -17,8 +17,8 @@ A custom logger example is provided for a [CIFAR10 image classfier example](http
 
 To try this out, run elastic locally
 ```
-docker pull docker.elastic.co/elasticsearch/elasticsearch:7.5.2
-docker run -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch:7.5.2
+docker pull docker.elastic.co/elasticsearch/elasticsearch-oss:7.6.0
+docker run -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch-oss:7.6.0
 ```
 
 Run seldon-core/executor/samples/local/logger but don't start the dummy_logsink. Instead run the local request logger with:
