@@ -66,7 +66,7 @@
               },
               {
                 "name": "prediction1",
-                "image": "seldonio/openvino-demo-prediction:0.2",
+                "image": "seldonio/openvino-demo-prediction:0.3",
                 "resources": {
                   "requests": {
                     "cpu": "1"
@@ -116,7 +116,7 @@
               },
               {
                 "name": "prediction2",
-                "image": "seldonio/openvino-demo-prediction:0.2",
+                "image": "seldonio/openvino-demo-prediction:0.3",
                 "resources": {
                   "requests": {
                     "cpu": "1"
@@ -203,31 +203,7 @@
           ]
         },
         "name": "openvino",
-        "replicas": 1,
-        "svcOrchSpec" : {
-          "env": [
-            {
-              "name": "TRACING",
-              "value": "1"
-            },
-            {
-              "name": "JAEGER_AGENT_HOST",
-              "value": "jaeger-agent"
-            },
-            {
-              "name": "JAEGER_AGENT_PORT",
-              "value": "5775"
-            },
-            {
-              "name": "JAEGER_SAMPLER_TYPE",
-              "value": "const"
-            },
-            {
-              "name": "JAEGER_SAMPLER_PARAM",
-              "value": "1"
-            }
-          ]
-        }
+        "replicas": 1
       }
     ]
   }
