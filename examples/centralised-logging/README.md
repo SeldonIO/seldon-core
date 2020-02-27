@@ -134,6 +134,12 @@ Seldon can also be used to log full HTTP requests. See [request logging guide](.
 
 The elasticsearch backend is not available externally by default but can be exposed if needed for debugging with `kubectl patch svc elasticsearch-master -n logs -p '{"spec": {"type": "LoadBalancer"}}'`
 
+### Benchmarking
+
+This example illustrates one way to send multiple requests at a controllable rate.
+
+It is therefore possible to use this example as a benchmarking test scenario.
+
 ## Credits
 
 Loosely based on https://www.katacoda.com/javajon/courses/kubernetes-observability/efk
