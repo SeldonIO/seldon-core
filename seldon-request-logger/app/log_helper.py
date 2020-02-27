@@ -35,16 +35,21 @@ def build_index_name(headers):
 
     #otherwise create an index per deployment
     index_name = "inference-log-" + serving_engine(headers)
-    namespace = headers.get(NAMESPACE_HEADER_NAME)
+    namespace = clean_header(NAMESPACE_HEADER_NAME, headers)
     if namespace is None:
         index_name = index_name + "-unknown-namespace"
     else:
         index_name = index_name + "-" + namespace
-    inference_service_name = headers.get(INFERENCESERVICE_HEADER_NAME)
+    inference_service_name = clean_header(INFERENCESERVICE_HEADER_NAME, headers)
+    #won't get inference service name for kfserving
+    if inference_service_name is None or not inference_service_name:
+        inference_service_name = clean_header(MODELID_HEADER_NAME, headers)
+
     if inference_service_name is None:
         index_name = index_name + "-unknown-inferenceservice"
     else:
         index_name = index_name + "-" + inference_service_name
+
     return index_name
 
 
@@ -70,6 +75,11 @@ def set_metadata(content, headers, message_type, request_id):
     field_from_header(content, NAMESPACE_HEADER_NAME, headers)
     field_from_header(content, MODELID_HEADER_NAME, headers)
 
+    inference_service_name = content.get(INFERENCESERVICE_HEADER_NAME)
+    #kfserving won't set inferenceservice header
+    if inference_service_name is None or not inference_service_name:
+        content[INFERENCESERVICE_HEADER_NAME] = clean_header(MODELID_HEADER_NAME, headers)
+
     if message_type == "request" or not '@timestamp' in content:
         timestamp = headers.get(TIMESTAMP_HEADER_NAME)
         if timestamp is None:
@@ -81,7 +91,7 @@ def set_metadata(content, headers, message_type, request_id):
 
 
 def serving_engine(headers):
-    type_header = headers.get(TYPE_HEADER_NAME)
+    type_header = clean_header(TYPE_HEADER_NAME,headers)
     if type_header.startswith('io.seldon.serving') or type_header.startswith('seldon'):
         return 'seldon'
     elif type_header.startswith('org.kubeflow.serving'):
@@ -90,7 +100,15 @@ def serving_engine(headers):
 
 def field_from_header(content, header_name, headers):
     if not headers.get(header_name) is None:
-        content[header_name] = headers.get(header_name)
+        content[header_name] = clean_header(header_name, headers)
+
+
+def clean_header(header_name, headers):
+    header_val = headers.get(header_name)
+    if not header_val is None:
+        header_val = header_val.translate({ord(c): None for c in '!@#$"<>/?'})
+    return header_val
+
 
 def connect_elasticsearch():
     _es = None
