@@ -1,4 +1,6 @@
-SELDON_CORE_DIR=$(realpath ../..)
+MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
+MKFILE_DIR := $(dir $(MKFILE_PATH))
+SELDON_CORE_DIR := $(realpath $(MKFILE_DIR)/../..)
 
 .PHONY: create
 create:
