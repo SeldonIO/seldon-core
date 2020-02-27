@@ -89,7 +89,7 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
     INSTALL_EXIT_VALUE=$?
 
     ## RUNNING TESTS AND CAPTURING ERROR
-    make test
+    make test_notebooks
     TEST_EXIT_VALUE=$?
 else
     echo "Existing kind cluster or failure starting - ${KIND_EXIT_VALUE}"

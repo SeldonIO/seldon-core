@@ -1,5 +1,5 @@
-from subprocess import run
-
+from subprocess import run, PIPE, CalledProcessError
+import logging
 
 def create_and_run_script(folder, notebook):
     run(
@@ -8,7 +8,12 @@ def create_and_run_script(folder, notebook):
         check=True,
     )
     run(f"chmod u+x {folder}/{notebook}.py", shell=True, check=True)
-    run(f"cd {folder} && ./{notebook}.py", shell=True, check=True)
+    try:
+        run(f"cd {folder} && ./{notebook}.py", shell=True, check=True, stdout=PIPE, stderr=PIPE, encoding='utf-8')
+    except CalledProcessError as e:
+        logging.error(f"failed notebook test {notebook} stdout:{e.stdout}, stderr:{e.stderr}")
+        raise e
+
 
 
 class TestNotebooks(object):
