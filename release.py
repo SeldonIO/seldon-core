@@ -60,11 +60,22 @@ def update_pom_file(fpath, seldon_core_version, debug=False):
         print("processing [{}]".format(fpath))
     comp_dir_path = os.path.dirname(fpath)
     os.chdir(comp_dir_path)
-    args = [
-        "mvn",
-        "versions:set",
-        "-DnewVersion={seldon_core_version}".format(**locals()),
-    ]
+
+    MAVEN_REPOSITORY_LOCATION = os.getenv('MAVEN_REPOSITORY_LOCATION')
+    if MAVEN_REPOSITORY_LOCATION == None:
+        args = [
+            "mvn",
+            "versions:set",
+            "-DnewVersion={seldon_core_version}".format(**locals()),
+        ]
+    else:
+        args = [
+            "mvn",
+            "versions:set",
+            "-DnewVersion={seldon_core_version}".format(**locals()),
+            "-Dmaven.repo.local={MAVEN_REPOSITORY_LOCATION}".format(**locals()),
+        ]
+
     err, out = run_command(args, debug)
     ##pp(out)
     ##pp(err)
