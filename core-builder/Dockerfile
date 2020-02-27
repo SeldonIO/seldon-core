@@ -1,6 +1,6 @@
 FROM openjdk:13.0.1-jdk-buster
 
-ENV PYTHON_VERSION "3.6.0"
+ENV PYTHON_VERSION "3.6.8"
 
 # install docker
 RUN \
