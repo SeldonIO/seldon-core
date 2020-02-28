@@ -104,8 +104,8 @@ class TestNotebooks(object):
     def test_openvino_squeezenet(self):
         create_and_run_script("../../examples/models/openvino", "openvino-squeezenet")
 
-    def test_openvino_imagenet_ensemble(self):
-        create_and_run_script(
-            "../../examples/models/openvino_imagenet_ensemble",
-            "openvino_imagenet_ensemble",
-        )
+    #def test_openvino_imagenet_ensemble(self):
+    #    create_and_run_script(
+    #        "../../examples/models/openvino_imagenet_ensemble",
+    #        "openvino_imagenet_ensemble",
+    #    )

@@ -104,7 +104,7 @@ test_notebooks: build_protos install
 	pytest \
 		--verbose \
 		-s \
-		-W ignore test_notebooks.py::TestNotebooks::test_protocol_examples 2>&1
+		-W ignore test_notebooks.py::TestNotebooks 2>&1
 
 .PHONY: clean
 clean:
