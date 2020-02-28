@@ -54,8 +54,8 @@ def start_microservice(app_location, tracing=False, grpc=False, envs={}):
         )
         if tracing:
             cmd = cmd + ("--tracing",)
-        logging.info("starting:", " ".join(cmd))
-        logging.info("cwd:", app_location)
+        logging.info("starting: %s", " ".join(cmd))
+        logging.info("cwd: %s", app_location)
         # stdout=PIPE, stderr=PIPE,
         p = Popen(cmd, cwd=app_location, env=env_vars, preexec_fn=os.setsid)
 
