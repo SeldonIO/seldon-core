@@ -118,7 +118,7 @@ examples/models/onnx_resnet50/cpu_codegen/Function_0_codegen.cpp
 examples/models/onnx_resnet50/resnet.onnx
 
 #logging example
-examples/centralised-logging/request-logging/istio-1.1.6
+examples/centralised-logging/request-logging/istio-**
 
 #openapi
 engine/src/main/resources/static/seldon.json
