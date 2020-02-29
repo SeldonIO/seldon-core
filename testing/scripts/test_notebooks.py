@@ -1,6 +1,7 @@
 from subprocess import run, PIPE, CalledProcessError
 import logging
 
+
 def create_and_run_script(folder, notebook):
     run(
         f"jupyter nbconvert --template ../../notebooks/convert.tpl --to script {folder}/{notebook}.ipynb",
@@ -9,11 +10,19 @@ def create_and_run_script(folder, notebook):
     )
     run(f"chmod u+x {folder}/{notebook}.py", shell=True, check=True)
     try:
-        run(f"cd {folder} && ./{notebook}.py", shell=True, check=True, stdout=PIPE, stderr=PIPE, encoding='utf-8')
+        run(
+            f"cd {folder} && ./{notebook}.py",
+            shell=True,
+            check=True,
+            stdout=PIPE,
+            stderr=PIPE,
+            encoding="utf-8",
+        )
     except CalledProcessError as e:
-        logging.error(f"failed notebook test {notebook} stdout:{e.stdout}, stderr:{e.stderr}")
+        logging.error(
+            f"failed notebook test {notebook} stdout:{e.stdout}, stderr:{e.stderr}"
+        )
         raise e
-
 
 
 class TestNotebooks(object):
@@ -104,7 +113,7 @@ class TestNotebooks(object):
     def test_openvino_squeezenet(self):
         create_and_run_script("../../examples/models/openvino", "openvino-squeezenet")
 
-    #def test_openvino_imagenet_ensemble(self):
+    # def test_openvino_imagenet_ensemble(self):
     #    create_and_run_script(
     #        "../../examples/models/openvino_imagenet_ensemble",
     #        "openvino_imagenet_ensemble",
