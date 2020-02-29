@@ -75,7 +75,15 @@
                     "cpu": "32"
                   }
                 },
-                "env": [
+                  "env": [
+		      {
+			  "name": "LOG_LEVEL",
+			  "value": "DEBUG"
+		      },
+		      {
+			  "name": "GOOGLE_APPLICATION_CREDENTIALS",
+			  "value": ""
+		      },
                   {
                     "name": "XML_PATH",
                     "value": "gs://intelai_public_models/densenet_169/1/densenet_169_i8.xml"
@@ -126,6 +134,14 @@
                   }
                 },
                 "env": [
+		      {
+			  "name": "LOG_LEVEL",
+			  "value": "DEBUG"
+		      },
+		      {
+			  "name": "GOOGLE_APPLICATION_CREDENTIALS",
+			  "value": ""
+		      },
                   {
                     "name": "XML_PATH",
                     "value": "gs://intelai_public_models/resnet_50_i8/1/resnet_50_i8.xml"
