@@ -1,0 +1,26 @@
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-14-45tkv-54[0m stage [32mmeta-pipeline[0m and container [32mstep-credential-initializer-bdqjt[0m
+{"level":"warn","ts":1583055963.566184,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1583055963.5669105,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-14-45tkv-54[0m stage [32mmeta-pipeline[0m and container [32mstep-working-dir-initializer-rclvz[0m
+{"level":"warn","ts":1583055964.8901281,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1583055964.978882,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-14-45tkv-54[0m stage [32mmeta-pipeline[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-14-45tkv-54[0m stage [32mmeta-pipeline[0m and container [32mstep-git-source-meta-seldonio-seldon-core-pr-14-7bl9z[0m
+{"level":"warn","ts":1583055976.0026937,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1583055980.188176,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ c682547c4e17ead1a9d96198ac520c32db441120 in path /workspace/source"}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-14-45tkv-54[0m stage [32mmeta-pipeline[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:c682547c4e17ead1a9d96198ac520c32db441120,1466:a5c4697738446d0fbc464977955585e496b983cb
+DEBUG: ran git remote update in 
+DEBUG: ran git fetch origin a5c4697738446d0fbc464977955585e496b983cb: c682547c4e17ead1a9d96198ac520c32db441120: in 
+DEBUG: Unshallowed git repo in 
+DEBUG: ran git checkout master in 
+DEBUG: ran git reset --hard c682547c4e17ead1a9d96198ac520c32db441120 in 
+DEBUG: ran clean --force -d . in 
+error: error during merge: merging a5c4697738446d0fbc464977955585e496b983cb into master: git output: merge: a5c4697738446d0fbc464977955585e496b983cb - not something we can merge: failed to run 'git merge a5c4697738446d0fbc464977955585e496b983cb' command in directory '', output: 'merge: a5c4697738446d0fbc464977955585e496b983cb - not something we can merge'
+[31m
+Pipeline failed on stage 'meta-pipeline' : container 'step-git-merge'. The execution of the pipeline has stopped.[0m
