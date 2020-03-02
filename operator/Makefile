@@ -19,7 +19,7 @@ all: manager
 
 # Run tests
 test: generate fmt vet manifests
-	go test ./controllers/...  -coverprofile cover.out
+	go test ./controllers/... ./utils/...  -coverprofile cover.out
 
 # Build manager binary
 manager: generate fmt vet
@@ -157,3 +157,6 @@ clean-cert:
 
 licenses/dep.txt:
 	go list -m all | cut -d ' ' -f 1 > licenses/dep.txt
+
+generate-resources:
+	kustomize build config/default/ -o generated

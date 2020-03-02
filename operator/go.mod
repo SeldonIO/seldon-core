@@ -5,6 +5,7 @@ go 1.12
 require (
 	github.com/Azure/go-autorest/autorest v0.9.2 // indirect
 	github.com/Azure/go-autorest/autorest/adal v0.7.0 // indirect
+	github.com/ghodss/yaml v0.0.0-20150909031657-73d445a93680
 	github.com/go-logr/logr v0.1.0
 	github.com/golang/protobuf v1.3.1 // indirect
 	github.com/google/go-cmp v0.3.1

@@ -13,3 +13,5 @@ resources:
 - role_binding_sas.yaml
 - role_cm.yaml
 - role_binding_cm.yaml
+- role_webhook.yaml
+- role_binding_webhook.yaml

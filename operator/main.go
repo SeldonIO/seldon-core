@@ -24,6 +24,7 @@ import (
 	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1alpha2"
 	machinelearningv1alpha3 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1alpha3"
 	"github.com/seldonio/seldon-core/operator/controllers"
+	k8sutils "github.com/seldonio/seldon-core/operator/utils/k8s"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -59,16 +60,34 @@ func main() {
 	var enableLeaderElection bool
 	var webHookPort int
 	var namespace string
+	var operatorNamespace string
+	var createResources bool
 	flag.StringVar(&metricsAddr, "metrics-addr", ":8080", "The address the metric endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "enable-leader-election", false,
 		"Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.")
 	flag.IntVar(&webHookPort, "webhook-port", 443, "Webhook server port")
 	flag.StringVar(&namespace, "namespace", "", "The namespace to restrict the operator.")
+	flag.StringVar(&operatorNamespace, "operator-namespace", "default", "The namespace of the running operator")
+	flag.BoolVar(&createResources, "create-resources", false, "Create resources such as webhooks and configmaps on startup")
 	flag.Parse()
 
 	ctrl.SetLogger(zap.Logger(true))
 
-	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
+	config := ctrl.GetConfigOrDie()
+
+	//Override operator namespace from environment variable as the source of truth
+	operatorNamespace = controllers.GetEnv("POD_NAMESPACE", operatorNamespace)
+
+	if createResources {
+		setupLog.Info("Intializing operator")
+		err := k8sutils.InitializeOperator(config, operatorNamespace, setupLog)
+		if err != nil {
+			setupLog.Error(err, "unable to initialise operator")
+			os.Exit(1)
+		}
+	}
+
+	mgr, err := ctrl.NewManager(config, ctrl.Options{
 		Scheme:             scheme,
 		MetricsBindAddress: metricsAddr,
 		LeaderElection:     enableLeaderElection,
