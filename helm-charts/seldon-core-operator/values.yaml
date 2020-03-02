@@ -62,10 +62,10 @@ predictiveUnit:
 predictor_servers:
   MLFLOW_SERVER:
     grpc:
-      defaultImageVersion: "0.3-SNAPSHOT"
+      defaultImageVersion: "0.3"
       image: seldonio/mlflowserver_grpc
     rest:
-      defaultImageVersion: "0.3-SNAPSHOT"
+      defaultImageVersion: "0.3"
       image: seldonio/mlflowserver_rest
   SKLEARN_SERVER:
     grpc:
@@ -85,10 +85,10 @@ predictor_servers:
     tfImage: tensorflow/serving:latest
   XGBOOST_SERVER:
     grpc:
-      defaultImageVersion: "0.3-SNAPSHOT"
+      defaultImageVersion: "0.3"
       image: seldonio/xgboostserver_grpc
     rest:
-      defaultImageVersion: "0.3-SNAPSHOT"
+      defaultImageVersion: "0.3"
       image: seldonio/xgboostserver_rest
 rbac:
   configmap:

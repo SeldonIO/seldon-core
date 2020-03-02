@@ -1,6 +1,6 @@
-VERSION=0.3-SNAPSHOT
+VERSION=0.3
 IMAGE_BASE=seldonio/xgboostserver
-S2I_IMAGE_VERSION=0.19-SNAPSHOT
+S2I_IMAGE_VERSION=0.18
 
 build_%:
 	s2i build \
