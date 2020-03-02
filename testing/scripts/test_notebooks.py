@@ -2,6 +2,7 @@ from subprocess import run, PIPE, CalledProcessError
 import logging
 import pytest
 
+
 def create_and_run_script(folder, notebook):
     run(
         f"jupyter nbconvert --template ../../notebooks/convert.tpl --to script {folder}/{notebook}.ipynb",
@@ -23,6 +24,7 @@ def create_and_run_script(folder, notebook):
             f"failed notebook test {notebook} stdout:{e.stdout}, stderr:{e.stderr}"
         )
         raise e
+
 
 @pytest.mark.sequential
 class TestNotebooks(object):
