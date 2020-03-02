@@ -132,7 +132,7 @@
                   },
                   {
                    "name": "BIN_PATH",
-                   "value": "gs://public-artifacts/intelai_public_modelsresnet_50_i8/1/resnet_50_i8.bin"
+                   "value": "gs://public-artifacts/intelai_public_models/resnet_50_i8/1/resnet_50_i8.bin"
                   },
                   {
                     "name": "KMP_AFFINITY",
