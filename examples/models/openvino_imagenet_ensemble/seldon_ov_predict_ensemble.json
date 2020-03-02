@@ -78,11 +78,11 @@
                 "env": [
                   {
                     "name": "XML_PATH",
-                    "value": "gs://intelai_public_models/densenet_169/1/densenet_169_i8.xml"
+                    "value": "gs://public-artifacts/intelai_public_models/densenet_169/1/densenet_169_i8.xml"
                   },
                   {
                     "name": "BIN_PATH",
-                    "value": "gs://intelai_public_models/densenet_169/1/densenet_169_i8.bin"
+                    "value": "gs://public-artifacts/intelai_public_models/densenet_169/1/densenet_169_i8.bin"
                   },
                   {
                     "name": "KMP_AFFINITY",
@@ -128,11 +128,11 @@
                 "env": [
                   {
                     "name": "XML_PATH",
-                    "value": "gs://intelai_public_models/resnet_50_i8/1/resnet_50_i8.xml"
+                    "value": "gs://public-artifacts/intelai_public_models/resnet_50_i8/1/resnet_50_i8.xml"
                   },
                   {
                    "name": "BIN_PATH",
-                   "value": "gs://intelai_public_models/resnet_50_i8/1/resnet_50_i8.bin"
+                   "value": "gs://public-artifacts/intelai_public_modelsresnet_50_i8/1/resnet_50_i8.bin"
                   },
                   {
                     "name": "KMP_AFFINITY",
