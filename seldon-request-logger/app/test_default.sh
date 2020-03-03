@@ -7,9 +7,9 @@ curl 0.0.0.0:2222 -d '{"data":{"names":["a","b"],"ndarray":[[1,2],[3,4]]}}' -H "
 curl 0.0.0.0:2222 -d '{"data":{"names":["c"],"ndarray":[[7],[8]]}}' -H "Content-Type: application/json" -H "Ce-Type: io.seldon.serving.inference.response" -H "Ce-Requestid: 2b"
 
 curl 0.0.0.0:2222 -d '{"data":{"names":["a"],"ndarray":["test1","test2"]}}' -H "Content-Type: application/json" -H "Ce-Type: io.seldon.serving.inference.request" -H "Ce-Requestid: 3c" -H "Ce-Inferenceservicename: seldon-model" \
-  -H "Ce-Modelid: classifier" -H "Ce-Namespace: default" -H "Ce-Predictor: example" -H "Ce-Requestid: 11226d35-9679-40fe-a21b-d22bb55fbe0e"
+  -H "Ce-Modelid: classifier" -H "Ce-Namespace: default" -H "Ce-Endpoint: example" -H "Ce-Requestid: 11226d35-9679-40fe-a21b-d22bb55fbe0e"
 curl 0.0.0.0:2222 -d '{"data":{"names":["c"],"ndarray":[[7],[8]]}}' -H "Content-Type: application/json" -H "Ce-Type: io.seldon.serving.inference.response" -H "Ce-Requestid: 3c" \
-  -H "Ce-Modelid: classifier" -H "Ce-Namespace: default" -H "Ce-Predictor: example" -H "Ce-Requestid: 11226d35-9679-40fe-a21b-d22bb55fbe0e"
+  -H "Ce-Modelid: classifier" -H "Ce-Namespace: default" -H "Ce-Endpoint: example" -H "Ce-Requestid: 11226d35-9679-40fe-a21b-d22bb55fbe0e"
 
 curl 0.0.0.0:2222 -d '{"data":{"names":["a","b"],"tensor":{"shape":[2,2],"values":[1,2,3,4]}}}' -H "Content-Type: application/json" -H "Ce-Type: io.seldon.serving.inference.request" -H "Ce-Requestid: 4d"
 

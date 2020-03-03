@@ -8,7 +8,7 @@ REQUEST_ID_HEADER_NAME = "Ce-Requestid"
 CLOUD_EVENT_ID = "Ce-id"
 MODELID_HEADER_NAME = 'Ce-Modelid'
 NAMESPACE_HEADER_NAME = 'Ce-Namespace'
-PREDICTOR_HEADER_NAME = 'Ce-Predictor'
+ENDPOINT_HEADER_NAME = 'Ce-Endpoint'
 TIMESTAMP_HEADER_NAME = 'CE-Time'
 INFERENCESERVICE_HEADER_NAME = 'Ce-Inferenceservicename'
 LENGTH_HEADER_NAME = 'Content-Length'
@@ -71,7 +71,7 @@ def set_metadata(content, headers, message_type, request_id):
 
     # TODO: provide a way for custom headers to be passed on too?
     field_from_header(content, INFERENCESERVICE_HEADER_NAME, headers)
-    field_from_header(content, PREDICTOR_HEADER_NAME, headers)
+    field_from_header(content, ENDPOINT_HEADER_NAME, headers)
     field_from_header(content, NAMESPACE_HEADER_NAME, headers)
     field_from_header(content, MODELID_HEADER_NAME, headers)
 
