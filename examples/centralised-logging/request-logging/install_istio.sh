@@ -2,7 +2,7 @@
 
 # Download and unpack Istio
 #export ISTIO_VERSION=1.3.6
-export ISTIO_VERSION=1.1.6
+export ISTIO_VERSION=1.2.10
 rm -rf istio-${ISTIO_VERSION}
 curl -L https://git.io/getLatestIstio | sh -
 cd istio-${ISTIO_VERSION}

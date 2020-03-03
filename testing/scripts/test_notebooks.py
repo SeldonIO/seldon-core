@@ -1,5 +1,6 @@
 from subprocess import run, PIPE, CalledProcessError
 import logging
+import pytest
 
 
 def create_and_run_script(folder, notebook):
@@ -25,6 +26,7 @@ def create_and_run_script(folder, notebook):
         raise e
 
 
+@pytest.mark.sequential
 class TestNotebooks(object):
 
     #
