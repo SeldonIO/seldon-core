@@ -187,7 +187,6 @@ func (smc *JSONRestClient) doHttp(ctx context.Context, modelName string, method 
 
 	contentType := response.Header.Get("Content-Type")
 
-	err = nil
 	if response.StatusCode != http.StatusOK {
 		smc.Log.Info("httpPost failed", "response code", response.StatusCode)
 		err = errors.Errorf("Internal service call from executor failed calling %s status code %d", url, response.StatusCode)
