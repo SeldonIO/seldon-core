@@ -375,7 +375,7 @@ func createComponents(r *SeldonDeploymentReconciler, mlDep *machinelearningv1.Se
 			}
 
 			// create Deployment from podspec
-			depName := machinelearningv1.GetDeploymentName(mlDep, p, cSpec)
+			depName := machinelearningv1.GetDeploymentName(mlDep, p, cSpec, j)
 			deploy := createDeploymentWithoutEngine(depName, seldonId, cSpec, &p, mlDep)
 
 			// Add HPA if needed
@@ -592,8 +592,9 @@ func createPredictorService(pSvcName string, seldonId string, p *machinelearning
 
 // service for hitting a model directly, not via engine - not exposed externally, also adds probes
 func createContainerService(deploy *appsv1.Deployment, p machinelearningv1.PredictorSpec, mlDep *machinelearningv1.SeldonDeployment, con *corev1.Container, c components) *corev1.Service {
-	containerServiceKey := machinelearningv1.GetPredictorServiceNameKey(con)
-	containerServiceValue := machinelearningv1.GetContainerServiceName(&mlDep.Spec, p, con)
+	//containerServiceKey := machinelearningv1.GetPredictorServiceNameKey(con)
+	containerServiceKey := machinelearningv1.Label_seldon_app_svc
+	containerServiceValue := machinelearningv1.GetContainerServiceName(mlDep.Name, p, con)
 	pu := machinelearningv1.GetPredictiveUnit(p.Graph, con.Name)
 
 	// only create services for containers defined as pus in the graph
@@ -638,7 +639,7 @@ func createContainerService(deploy *appsv1.Deployment, p machinelearningv1.Predi
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      containerServiceValue,
 			Namespace: namespace,
-			Labels:    map[string]string{containerServiceKey: containerServiceValue, machinelearningv1.Label_seldon_id: mlDep.Spec.Name},
+			Labels:    map[string]string{containerServiceKey: containerServiceValue, machinelearningv1.Label_seldon_id: mlDep.Name},
 		},
 		Spec: corev1.ServiceSpec{
 			Ports: []corev1.ServicePort{

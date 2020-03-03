@@ -19,6 +19,8 @@ func ChainTensorflow(msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	m := f.(map[string]interface{})
 	if _, ok := m["instances"]; ok {
 		return msg, nil
+	} else if _, ok := m["inputs"]; ok {
+		return msg, nil
 	} else if _, ok := m["predictions"]; ok {
 		m["instances"] = m["predictions"]
 		delete(m, "predictions")

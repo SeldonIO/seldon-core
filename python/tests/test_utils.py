@@ -1,5 +1,5 @@
 import pytest
-import json
+import logging
 import numpy as np
 import pickle
 import base64
@@ -40,12 +40,12 @@ class UserObject(object):
         elif self.ret_dict:
             return self.dict
         else:
-            print("Predict called - will run identity function")
-            print(X)
+            logging.info("Predict called - will run identity function")
+            logging.info(X)
             return X
 
     def feedback(self, features, feature_names, reward, truth):
-        print("Feedback called")
+        logging.info("Feedback called")
 
     def tags(self):
         if self.ret_meta:
@@ -165,7 +165,7 @@ def test_create_grpc_response_strdata():
     request = prediction_pb2.SeldonMessage(data=datadef)
     raw_response = "hello world"
     sm = scu.construct_response(user_model, True, request, raw_response)
-    assert sm.data.WhichOneof("data_oneof") == None
+    assert sm.data.WhichOneof("data_oneof") is None
     assert len(sm.strData) > 0
 
 
@@ -176,7 +176,7 @@ def test_create_grpc_response_jsondata():
     request = prediction_pb2.SeldonMessage(data=datadef)
     raw_response = {"output": "data"}
     sm = scu.construct_response(user_model, True, request, raw_response)
-    assert sm.data.WhichOneof("data_oneof") == None
+    assert sm.data.WhichOneof("data_oneof") is None
     emptyValue = Value()
     assert sm.jsonData != emptyValue
 
@@ -209,7 +209,6 @@ def test_create_rest_response_jsondata_with_array_input():
 
 
 def test_symmetric_json_conversion():
-    user_model = UserObject()
     request_data = np.array([[5, 6, 7]])
     datadef = scu.array_to_rest_datadef("ndarray", request_data)
     json_request = {"jsonData": datadef}
@@ -247,7 +246,7 @@ def test_create_grpc_reponse_binary():
     request = prediction_pb2.SeldonMessage(data=datadef)
     raw_response = b"binary"
     sm = scu.construct_response(user_model, True, request, raw_response)
-    assert sm.data.WhichOneof("data_oneof") == None
+    assert sm.data.WhichOneof("data_oneof") is None
     assert len(sm.strData) == 0
     assert len(sm.binData) > 0
 
@@ -311,7 +310,7 @@ def test_json_to_seldon_message_json_data():
 def test_json_to_seldon_message_bad_data():
     with pytest.raises(SeldonMicroserviceException):
         data = {"foo": "bar"}
-        requestProto = scu.json_to_seldon_message(data)
+        scu.json_to_seldon_message(data)
 
 
 def test_json_to_feedback():
@@ -332,7 +331,7 @@ def test_json_to_feedback_bad_data():
             "response": {"data": {"tensor": {"shape": [1, 1], "values": [2]}}},
             "reward": 1.0,
         }
-        requestProto = scu.json_to_feedback(data)
+        scu.json_to_feedback(data)
 
 
 def test_json_to_seldon_messages():
@@ -396,7 +395,7 @@ def test_get_data_from_proto_tftensor():
 def test_proto_array_to_tftensor():
     arr = np.array([[1, 2, 3], [4, 5, 6]])
     datadef = scu.array_to_grpc_datadef("tftensor", arr, [])
-    print(datadef)
+    logging.info(datadef)
     assert datadef.tftensor.tensor_shape.dim[0].size == 2
     assert datadef.tftensor.tensor_shape.dim[1].size == 3
     assert datadef.tftensor.dtype == 9
@@ -412,3 +411,21 @@ def test_proto_tftensor_to_array():
     array2 = scu.grpc_datadef_to_array(datadef)
     assert array.shape == array2.shape
     assert np.array_equal(array, array2)
+
+
+@pytest.mark.parametrize(
+    "env,expected",
+    [
+        ({"FOO1": "BAR1"}, "BAR1"),
+        ({"FOO2": "BAR2"}, "BAR2"),
+        ({"FOO3": "BAR3"}, "BAR3"),
+        ({"FOO1": "BAR1", "FOO2": "BAR2"}, "BAR1"),
+        ({}, "DEF"),
+    ],
+)
+def test_getenv(monkeypatch, env, expected):
+    for env_var, env_value in env.items():
+        monkeypatch.setenv(env_var, env_value)
+
+    value = scu.getenv("FOO1", "FOO2", "FOO3", default="DEF")
+    assert value == expected

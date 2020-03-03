@@ -1,5 +1,5 @@
 SELDON_CORE_DIR=..
-VERSION=1.0.1
+VERSION=1.0.2
 
 .PHONY: get_apis
 get_apis:
@@ -53,6 +53,10 @@ install:
 install_dev:
 	pip install -e . -r requirements-dev.txt
 
+.PHONY: licenses
+licenses:
+	tox -e licenses
+
 .PHONY: uninstall
 uninstall:
 	pip uninstall seldon-core
@@ -100,6 +104,7 @@ run_linter_check:
 	black \
 		--check ./ ../testing \
 		--exclude "(testing/scripts/proto|seldon_core/proto/|.eggs|.tox)"
+	flake8
 
 .PHONY: clean
 clean:

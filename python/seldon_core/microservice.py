@@ -111,8 +111,10 @@ def load_annotations() -> Dict:
                     line = line.rstrip()
                     parts = list(map(str.strip, line.split("=", 1)))
                     if len(parts) == 2:
-                        logger.info("Found annotation %s:%s ", parts[0], parts[1])
-                        annotations[parts[0]] = parts[1]
+                        key = parts[0]
+                        value = parts[1][1:-1]  # strip quotes at start and end
+                        logger.info("Found annotation %s:%s ", key, value)
+                        annotations[key] = value
                     else:
                         logger.info("Bad annotation [%s]", line)
     except:

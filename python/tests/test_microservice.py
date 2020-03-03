@@ -1,3 +1,4 @@
+import logging
 from contextlib import contextmanager
 import os
 from os.path import dirname, join
@@ -53,8 +54,8 @@ def start_microservice(app_location, tracing=False, grpc=False, envs={}):
         )
         if tracing:
             cmd = cmd + ("--tracing",)
-        print("starting:", " ".join(cmd))
-        print("cwd:", app_location)
+        logging.info("starting:", " ".join(cmd))
+        logging.info("cwd:", app_location)
         # stdout=PIPE, stderr=PIPE,
         p = Popen(cmd, cwd=app_location, env=env_vars, preexec_fn=os.setsid)
 
@@ -213,14 +214,9 @@ def test_load_annotations(mock_isfile):
     from io import StringIO
 
     read_data = [
-        ("", {}),
-        ("\n\n", {}),
-        ("foo=bar", {"foo": "bar"}),
-        ("foo=bar\nx =y", {"foo": "bar", "x": "y"}),
-        ("foo=bar\nfoo=baz\n", {"foo": "baz"}),
-        (" foo  =   bar ", {"foo": "bar"}),
-        ("key =  assign===", {"key": "assign==="}),
-        ("foo=\nfoo", {"foo": ""}),
+        ('foo="bar"', {"foo": "bar"}),
+        (' foo  =   "bar"  ', {"foo": "bar"}),
+        ('key=  "assign==="', {"key": "assign==="}),
     ]
     for data, expected_annotation in read_data:
         with mock.patch("seldon_core.microservice.open", return_value=StringIO(data)):

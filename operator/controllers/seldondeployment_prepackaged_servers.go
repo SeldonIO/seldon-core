@@ -236,9 +236,9 @@ func SetUriParamsForTFServingProxyContainer(pu *machinelearningv1.PredictiveUnit
 func createStandaloneModelServers(r *SeldonDeploymentReconciler, mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, c *components, pu *machinelearningv1.PredictiveUnit) error {
 
 	// some predictors have no podSpec so this could be nil
-	sPodSpec := utils.GetSeldonPodSpecForPredictiveUnit(p, pu.Name)
+	sPodSpec, idx := utils.GetSeldonPodSpecForPredictiveUnit(p, pu.Name)
 
-	depName := machinelearningv1.GetDeploymentName(mlDep, *p, sPodSpec)
+	depName := machinelearningv1.GetDeploymentName(mlDep, *p, sPodSpec, idx)
 
 	var deploy *appsv1.Deployment
 	existing := false

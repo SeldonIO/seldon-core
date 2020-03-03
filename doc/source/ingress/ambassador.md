@@ -96,11 +96,7 @@ A worked example for [canary deployments](../examples/ambassador_canary.html) is
 
 Shadow deployments allow you to send duplicate requests to a parallel deployment but throw away the response. This allows you to test machine learning models under load and compare the results to the live deployment. 
 
-You simply need to add some annotations to your Seldon Deployment resource for your shadow deployment.
-
-  * `seldon.io/ambassador-shadow:true` : Flag to mark this deployment as a Shadow deployment in Ambassador.
-  * `seldon.io/ambassador-service-name:<existing_deployment_name>` : The name of the existing Seldon Deployment you want to attach to as a shadow.
-     * Example: `"seldon.io/ambassador-service-name":"example"`
+Simply set the `shadow` boolean in your shadow predictor.
 
 A worked example for [shadow deployments](../examples/ambassador_shadow.html) is provided.
 

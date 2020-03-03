@@ -10,10 +10,9 @@ import (
 )
 
 const (
-	ANNOTATION_REST_READ_TIMEOUT       = "seldon.io/rest-read-timeout"
-	ANNOTATION_GRPC_READ_TIMEOUT       = "seldon.io/grpc-read-timeout"
+	ANNOTATION_REST_TIMEOUT            = "seldon.io/rest-timeout"
+	ANNOTATION_GRPC_TIMEOUT            = "seldon.io/grpc-timeout"
 	ANNOTATION_AMBASSADOR_CUSTOM       = "seldon.io/ambassador-config"
-	ANNOTATION_AMBASSADOR_SHADOW       = "seldon.io/ambassador-shadow"
 	ANNOTATION_AMBASSADOR_SERVICE      = "seldon.io/ambassador-service-name"
 	ANNOTATION_AMBASSADOR_HEADER       = "seldon.io/ambassador-header"
 	ANNOTATION_AMBASSADOR_REGEX_HEADER = "seldon.io/ambassador-regex-header"
@@ -60,7 +59,7 @@ func getAmbassadorRestConfig(mlDep *machinelearningv1.SeldonDeployment,
 	customHeader string,
 	customRegexHeader string,
 	weight *int32,
-	shadowing string,
+	shadowing bool,
 	engine_http_port int,
 	nameOverride string,
 	instance_id string) (string, error) {
@@ -68,7 +67,7 @@ func getAmbassadorRestConfig(mlDep *machinelearningv1.SeldonDeployment,
 	namespace := getNamespace(mlDep)
 
 	// Set timeout
-	timeout, err := strconv.Atoi(getAnnotation(mlDep, ANNOTATION_REST_READ_TIMEOUT, "3000"))
+	timeout, err := strconv.Atoi(getAnnotation(mlDep, ANNOTATION_REST_TIMEOUT, "3000"))
 	if err != nil {
 		return "", err
 	}
@@ -133,9 +132,8 @@ func getAmbassadorRestConfig(mlDep *machinelearningv1.SeldonDeployment,
 		}
 		c.RegexHeaders = elementMap
 	}
-	if shadowing != "" {
-		shadow := true
-		c.Shadow = &shadow
+	if shadowing {
+		c.Shadow = &shadowing
 	}
 	if instance_id != "" {
 		c.InstanceId = instance_id
@@ -156,7 +154,7 @@ func getAmbassadorGrpcConfig(mlDep *machinelearningv1.SeldonDeployment,
 	customHeader string,
 	customRegexHeader string,
 	weight *int32,
-	shadowing string,
+	shadowing bool,
 	engine_grpc_port int,
 	nameOverride string,
 	instance_id string) (string, error) {
@@ -165,7 +163,7 @@ func getAmbassadorGrpcConfig(mlDep *machinelearningv1.SeldonDeployment,
 	namespace := getNamespace(mlDep)
 
 	// Set timeout
-	timeout, err := strconv.Atoi(getAnnotation(mlDep, ANNOTATION_GRPC_READ_TIMEOUT, "3000"))
+	timeout, err := strconv.Atoi(getAnnotation(mlDep, ANNOTATION_GRPC_TIMEOUT, "3000"))
 	if err != nil {
 		return "", nil
 	}
@@ -231,9 +229,8 @@ func getAmbassadorGrpcConfig(mlDep *machinelearningv1.SeldonDeployment,
 		}
 		c.RegexHeaders = elementMap
 	}
-	if shadowing != "" {
-		shadow := true
-		c.Shadow = &shadow
+	if shadowing {
+		c.Shadow = &shadowing
 	}
 	if instance_id != "" {
 		c.InstanceId = instance_id
@@ -259,7 +256,7 @@ func getAmbassadorConfigs(mlDep *machinelearningv1.SeldonDeployment, p *machinel
 			weight = &p.Traffic
 		}
 
-		shadowing := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_SHADOW, "")
+		shadowing := p.Shadow
 		serviceNameExternal := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_SERVICE, mlDep.ObjectMeta.Name)
 		customHeader := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_HEADER, "")
 		customRegexHeader := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_REGEX_HEADER, "")

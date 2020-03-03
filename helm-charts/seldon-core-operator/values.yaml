@@ -19,7 +19,7 @@ engine:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/engine
-    tag: 1.0.2-SNAPSHOT
+    tag: 1.0.3-SNAPSHOT
   logMessagesExternally: false
   port: 8000
   prometheus:
@@ -35,22 +35,28 @@ executor:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/seldon-core-executor
-    tag: 1.0.2-SNAPSHOT
+    tag: 1.0.3-SNAPSHOT
   port: 8000
   prometheus:
     path: /prometheus
   serviceAccount:
     name: default
-  user: 8888  
+  user: 8888
 image:
   pullPolicy: IfNotPresent
   registry: docker.io
   repository: seldonio/seldon-core-operator
-  tag: 1.0.2-SNAPSHOT
+  tag: 1.0.3-SNAPSHOT
 istio:
   enabled: false
   gateway: seldon-gateway
   tlsMode: ''
+kubeflow: false
+manager:
+  cpuLimit: 500m
+  cpuRequest: 100m
+  memoryLimit: 300Mi
+  memoryRequest: 200Mi
 predictiveUnit:
   port: 9000
 predictor_servers:
@@ -93,11 +99,11 @@ serviceAccount:
   name: seldon-manager
 singleNamespace: false
 storageInitializer:
-  image: gcr.io/kfserving/storage-initializer:0.2.2
-  memoryRequest: 100Mi
-  memoryLimit: 1Gi
-  cpuRequest: 100m
   cpuLimit: '1'
+  cpuRequest: 100m
+  image: gcr.io/kfserving/storage-initializer:0.2.2
+  memoryLimit: 1Gi
+  memoryRequest: 100Mi
 usageMetrics:
   enabled: false
 webhook:

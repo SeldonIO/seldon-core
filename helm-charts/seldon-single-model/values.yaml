@@ -1,5 +1,4 @@
 protocol: REST
-name: my-model
 apiVersion: machinelearning.seldon.io/v1
 model:
   image:
@@ -12,15 +11,13 @@ model:
       memory: "1Mi"
   env:
     LOG_LEVEL: INFO
-  #basic log request and responses env vars below just logs raw messages to engine stdout
-  #to make searchable log externally - see request logging example
   annotations:
     seldon.io/headless-svc: "false"
-    seldon.io/engine-log-requests: "false"
-    seldon.io/engine-log-responses: "false"
-    seldon.io/engine-log-message-type: "seldon.message.pair"
-    seldon.io/engine-log-messages-externally: "false"
+  logger: ""
 replicas: 1
+
+predictor:
+  name: "default"
 
 engine:
   resources:

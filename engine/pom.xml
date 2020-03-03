@@ -10,7 +10,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
   </parent>
   <groupId>io.seldon.engine</groupId>
   <artifactId>seldon-engine</artifactId>
-  <version>1.0.2-SNAPSHOT</version>
+  <version>1.0.3-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>engine</name>
   <url>http://maven.apache.org</url>
@@ -19,7 +19,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
     UTF-8</project.build.sourceEncoding>
     <java.version>1.8</java.version>
     <grpc.version>1.25.0</grpc.version>
-    <pb.version>3.11.1</pb.version>
+    <pb.version>3.11.3</pb.version>
     <micrometer.version>1.3.0</micrometer.version>
     <start-class>io.seldon.engine.App</start-class>
     <jaeger.version>1.0.0</jaeger.version>
@@ -179,7 +179,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>3.1.0</version>
+        <version>3.1.1</version>
         <configuration>
           <configLocation>google_checks.xml</configLocation>
           <consoleOutput>true</consoleOutput>
@@ -418,7 +418,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
       <!-- Waiting on https://github.com/jaegertracing/jaeger-client-java/issues/666 -->
       <groupId>com.squareup.okhttp3</groupId>
       <artifactId>okhttp</artifactId>
-      <version>4.3.1</version>
+      <version>4.4.0</version>
     </dependency>
     <dependency>
       <groupId>io.opentracing.contrib</groupId>

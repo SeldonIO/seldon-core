@@ -168,7 +168,7 @@ class SeldonClient(object):
         channel_credentials: SeldonChannelCredentials = None,
         call_credentials: SeldonCallCredentials = None,
         debug: bool = False,
-        client_return_type: str = "proto",
+        client_return_type: str = "dict",
     ):
         """
 
@@ -222,7 +222,7 @@ class SeldonClient(object):
         transport: str = None,
         method: str = None,
         data: np.ndarray = None,
-        client_return_type: str = "proto",
+        client_return_type: str = "dict",
         **kwargs,
     ):
         """
@@ -1105,8 +1105,10 @@ def microservice_api_grpc_seldon_message(
         else:
             raise SeldonClientException("Unknown method:" + method)
 
+        channel.close()
         return SeldonClientPrediction(request, response, True, "")
     except Exception as e:
+        channel.close()
         return SeldonClientPrediction(request, None, False, str(e))
 
 
@@ -1174,6 +1176,7 @@ def microservice_api_grpc_aggregate(
         )
         stub = prediction_pb2_grpc.GenericStub(channel)
         response = stub.Aggregate(request=request)
+        channel.close()
         return SeldonClientCombine(request, response, True, "")
     except Exception as e:
         return SeldonClientCombine(request, None, False, str(e))
@@ -1220,6 +1223,7 @@ def microservice_api_grpc_feedback(
         )
         stub = prediction_pb2_grpc.GenericStub(channel)
         response = stub.SendFeedback(request=request)
+        channel.close()
         return SeldonClientFeedback(request, response, True, "")
     except Exception as e:
         return SeldonClientFeedback(request, None, False, str(e))
@@ -1445,13 +1449,15 @@ def grpc_predict_seldon_oauth(
     metadata = [("oauth_token", token)]
     try:
         response = stub.Predict(request=request, metadata=metadata)
+        channel.close()
         if client_return_type == "dict":
             request = seldon_message_to_json(request)
             response = seldon_message_to_json(response)
         elif client_return_type != "proto":
-            SeldonClientException("Invalid client_return_type")
+            raise SeldonClientException("Invalid client_return_type")
         return SeldonClientPrediction(request, response, True, "")
     except Exception as e:
+        channel.close()
         return SeldonClientPrediction(request, None, False, str(e))
 
 
@@ -1621,7 +1627,7 @@ def rest_predict_gateway(
                 elif client_return_type == "dict":
                     response = response_raw.json()
                 else:
-                    SeldonClientException("Invalid client_return_type")
+                    raise SeldonClientException("Invalid client_return_type")
             except:
                 response = None
         else:
@@ -1647,7 +1653,7 @@ def explain_predict_gateway(
     call_credentials: SeldonCallCredentials = None,
     channel_credentials: SeldonChannelCredentials = None,
     http_path: str = None,
-    client_return_type: str = "proto",
+    client_return_type: str = "dict",
     **kwargs,
 ) -> SeldonClientPrediction:
     """
@@ -1775,14 +1781,12 @@ def explain_predict_gateway(
         url, json=payload, headers=req_headers, verify=verify, cert=cert
     )
     if response_raw.status_code == 200:
-        if client_return_type == "proto":
-            ret_request = json_to_seldon_message(payload)
-            ret_response = json_to_seldon_message(response_raw.json())
-        elif client_return_type == "dict":
+        print(client_return_type)
+        if client_return_type == "dict":
             ret_request = payload
             ret_response = response_raw.json()
         else:
-            SeldonClientException("Invalid client_return_type")
+            raise SeldonClientException("Invalid client_return_type")
         return SeldonClientPrediction(ret_request, ret_response, True, "")
     else:
         return SeldonClientPrediction(
@@ -1936,13 +1940,18 @@ def grpc_predict_gateway(
     if not headers is None:
         for k in headers:
             metadata.append((k, headers[k]))
-    response = stub.Predict(request=request, metadata=metadata)
-    if client_return_type == "dict":
-        request = seldon_message_to_json(request)
-        response = seldon_message_to_json(response)
-    elif client_return_type != "proto":
-        SeldonClientException("Invalid client_return_type")
-    return SeldonClientPrediction(request, response, True, "")
+    try:
+        response = stub.Predict(request=request, metadata=metadata)
+        channel.close()
+        if client_return_type == "dict":
+            request = seldon_message_to_json(request)
+            response = seldon_message_to_json(response)
+        elif client_return_type != "proto":
+            raise SeldonClientException("Invalid client_return_type")
+        return SeldonClientPrediction(request, response, True, "")
+    except Exception as e:
+        channel.close()
+        return SeldonClientPrediction(request, None, False, str(e))
 
 
 def rest_feedback_seldon_oauth(
@@ -2008,7 +2017,7 @@ def rest_feedback_seldon_oauth(
                 elif client_return_type == "dict":
                     response = response_raw.json()
                 else:
-                    SeldonClientException("Invalid client_return_type")
+                    raise SeldonClientException("Invalid client_return_type")
             except:
                 response = None
         else:
@@ -2080,13 +2089,15 @@ def grpc_feedback_seldon_oauth(
     metadata = [("oauth_token", token)]
     try:
         response = stub.SendFeedback(request=request, metadata=metadata)
+        channel.close()
         if client_return_type == "dict":
             request = seldon_message_to_json(request)
             response = seldon_message_to_json(response)
         elif client_return_type != "proto":
-            SeldonClientException("Invalid client_return_type")
+            raise SeldonClientException("Invalid client_return_type")
         return SeldonClientFeedback(request, response, True, "")
     except Exception as e:
+        channel.close()
         return SeldonClientFeedback(request, None, False, str(e))
 
 
@@ -2180,7 +2191,7 @@ def rest_feedback_gateway(
                 elif client_return_type == "dict":
                     response = response_raw.json()
                 else:
-                    SeldonClientException("Invalid client_return_type")
+                    raise SeldonClientException("Invalid client_return_type")
             except:
                 response = None
         else:
@@ -2253,11 +2264,13 @@ def grpc_feedback_gateway(
             metadata.append((k, headers[k]))
     try:
         response = stub.SendFeedback(request=request, metadata=metadata)
+        channel.close()
         if client_return_type == "dict":
             request = seldon_message_to_json(request)
             response = seldon_message_to_json(response)
         elif client_return_type != "proto":
-            SeldonClientException("Invalid client_return_type")
+            raise SeldonClientException("Invalid client_return_type")
         return SeldonClientFeedback(request, response, True, "")
     except Exception as e:
+        channel.close()
         return SeldonClientFeedback(request, None, False, str(e))

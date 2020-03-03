@@ -39,6 +39,7 @@ spec:
                 type: string
               type: object
             name:
+              description: Name is Deprecated will be removed in future
               type: string
             oauth_key:
               type: string

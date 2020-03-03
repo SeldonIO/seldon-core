@@ -379,6 +379,7 @@ def client_route(
     user_model: SeldonComponent,
     features: Union[np.ndarray, str, bytes],
     feature_names: Iterable[str],
+    **kwargs: Dict
 ) -> int:
     """
     Get routing from user model
@@ -397,7 +398,10 @@ def client_route(
        Routing index for one of children
     """
     if hasattr(user_model, "route"):
-        return user_model.route(features, feature_names)
+        try:
+            return user_model.route(features, feature_names, **kwargs)
+        except TypeError:
+            return user_model.route(features, feature_names)
     else:
         raise SeldonNotImplementedError("Route not defined")
 

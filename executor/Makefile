@@ -51,7 +51,7 @@ add_protos:
 
 # Run tests
 test: fmt vet
-	go test ./api/... ./predictor/...  -coverprofile cover.out
+	go test ./api/... ./predictor/... ./k8s/...  -coverprofile cover.out
 
 # Build the docker image
 docker-build: test
