@@ -9,7 +9,7 @@ import subprocess
 
 from concurrent.futures import ThreadPoolExecutor, wait
 from subprocess import run, Popen
-from retrying import retry
+from tenacity import retry, wait_exponential, stop_after_attempt
 from requests.auth import HTTPBasicAuth
 
 from seldon_core.proto import prediction_pb2
@@ -135,6 +135,20 @@ def wait_for_status(name, namespace, attempts=20, sleep=5):
         else:
             logging.warning("Failed to find status - sleeping")
             time.sleep(sleep)
+
+
+def get_pod_names(deployment_name, namespace):
+    cmd = f"kubectl get pod -l app={deployment_name} -n {namespace} -o json"
+    ret = run(cmd, shell=True, check=True, stdout=subprocess.PIPE)
+    pods = json.loads(ret.stdout)
+
+    pod_names = []
+    for pod in pods["items"]:
+        pod_metadata = pod["metadata"]
+        pod_name = pod_metadata["name"]
+        pod_names.append(pod_name)
+
+    return pod_names
 
 
 def rest_request(
@@ -270,11 +284,7 @@ def create_random_data(data_size, rows=1):
     return (shape, arr)
 
 
-@retry(
-    wait_exponential_multiplier=1000,
-    wait_exponential_max=10000,
-    stop_max_attempt_number=5,
-)
+@retry(wait=wait_exponential(max=10), stop=stop_after_attempt(5))
 def rest_request_ambassador(
     deployment_name,
     namespace,
@@ -324,11 +334,7 @@ def rest_request_ambassador(
     return response
 
 
-@retry(
-    wait_exponential_multiplier=1000,
-    wait_exponential_max=10000,
-    stop_max_attempt_number=5,
-)
+@retry(wait=wait_exponential(max=10), stop=stop_after_attempt(5))
 def rest_request_ambassador_auth(
     deployment_name,
     namespace,
