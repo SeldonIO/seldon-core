@@ -17,6 +17,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/metric"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/api/util"
+	"github.com/seldonio/seldon-core/executor/k8s"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
 	"io"
 	"io/ioutil"
@@ -26,6 +27,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
@@ -61,10 +63,37 @@ func (smc *JSONRestClient) Unmarshall(msg []byte) (payload.SeldonPayload, error)
 
 type BytesRestClientOption func(client *JSONRestClient)
 
-func NewJSONRestClient(protocol string, deploymentName string, predictor *v1.PredictorSpec, options ...BytesRestClientOption) client.SeldonApiClient {
+func getRestTimeoutFromAnnotations(annotations map[string]string) (int, error) {
+	val := annotations[k8s.ANNOTATION_REST_TIMEOUT]
+	if val != "" {
+		converted, err := strconv.ParseInt(val, 10, 32)
+		if err != nil {
+			return 0, err
+		} else {
+			return int(converted), nil
+		}
+	} else {
+		return 0, nil
+	}
+}
+
+func NewJSONRestClient(protocol string, deploymentName string, predictor *v1.PredictorSpec, annotations map[string]string, options ...BytesRestClientOption) (client.SeldonApiClient, error) {
+
+	httpClient := http.DefaultClient
+	if annotations != nil {
+		restTimeout, err := getRestTimeoutFromAnnotations(annotations)
+		if err != nil {
+			return nil, err
+		}
+		if restTimeout > 0 {
+			httpClient = &http.Client{
+				Timeout: time.Duration(restTimeout) * time.Millisecond,
+			}
+		}
+	}
 
 	client := JSONRestClient{
-		http.DefaultClient,
+		httpClient,
 		logf.Log.WithName("JSONRestClient"),
 		protocol,
 		deploymentName,
@@ -75,7 +104,7 @@ func NewJSONRestClient(protocol string, deploymentName string, predictor *v1.Pre
 		options[i](&client)
 	}
 
-	return &client
+	return &client, nil
 }
 
 func (smc *JSONRestClient) getMetricsRoundTripper(modelName string, service string) http.RoundTripper {

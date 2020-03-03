@@ -15,6 +15,7 @@ COPY main.go main.go
 COPY api/ api/
 COPY predictor/ predictor/
 COPY logger/ logger/
+COPY k8s/ k8s/
 
 # Build
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o executor main.go

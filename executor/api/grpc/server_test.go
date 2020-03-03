@@ -10,7 +10,6 @@ import (
 )
 
 func TestAddPuid(t *testing.T) {
-	t.Logf("Started")
 	g := NewGomegaWithT(t)
 
 	ctx := context.Background()
@@ -20,7 +19,6 @@ func TestAddPuid(t *testing.T) {
 }
 
 func TestExistingPuid(t *testing.T) {
-	t.Logf("Started")
 	g := NewGomegaWithT(t)
 	guid := "1"
 

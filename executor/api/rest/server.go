@@ -20,6 +20,7 @@ import (
 	"net/http"
 	"net/url"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	"time"
 )
 
 type SeldonRestApi struct {
@@ -53,6 +54,20 @@ func NewServerRestApi(predictor *v1.PredictorSpec, client client.SeldonApiClient
 		deploymentName,
 		serverMetrics,
 		prometheusPath,
+	}
+}
+
+func (r *SeldonRestApi) CreateHttpServer(port int) *http.Server {
+
+	address := fmt.Sprintf("0.0.0.0:%d", port)
+	r.Log.Info("Listening", "Address", address)
+
+	return &http.Server{
+		Handler: r.Router,
+		Addr:    address,
+		// Good practice: enforce timeouts for servers you create!
+		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  15 * time.Second,
 	}
 }
 

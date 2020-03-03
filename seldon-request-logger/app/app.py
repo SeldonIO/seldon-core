@@ -5,6 +5,7 @@ import backoff
 import requests
 import json
 import time
+import random
 import os
 from seldon_core.utils import json_to_seldon_message, extract_request_parts, array_to_grpc_datadef, seldon_message_to_json
 from seldon_core.proto import prediction_pb2
@@ -49,10 +50,18 @@ def index():
     sys.stdout.flush()
 
     try:
-        #first ensure there is an elastic doc as we need something to lock against
-        #use req id as doc id (if None then elastic should generate one but then req & res won't be linked)
+
         request_id = request.headers.get(REQUEST_ID_HEADER_NAME)
+
+        if message_type != 'request':
+            #can reduce overall number of elastic queries if we wait for req first
+            #locking involves contention and retries so want to spread out to increase success %
+            time.sleep(random.uniform(3.0,6.0))
+
+        #first ensure there is an elastic doc as we'll need something to lock against
+        #use req id as doc id (if None then elastic should generate one but then req & res won't be linked)
         update_elastic_doc(es,message_type,{}, request_id, request.headers, index_name)
+
         #now process and update the doc
         doc = process_and_update_elastic_doc(es, message_type, body, request_id,request.headers, index_name)
         return str(doc)
@@ -136,7 +145,7 @@ def process_and_update_elastic_doc(elastic_object, message_type, message_body, r
 
 @backoff.on_exception(backoff.expo,
                       Exception,
-                      max_time=180,
+                      max_time=240,
                       jitter=backoff.random_jitter)
 def update_elastic_doc(elastic_object, message_type, new_content_part, request_id, headers, index_name):
     # now ready to upsert

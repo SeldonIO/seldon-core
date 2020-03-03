@@ -31,7 +31,7 @@ def dict_to_yaml(d):
 
 
 def yaml_to_dict(yaml_data):
-    return yaml.load(StringIO(yaml_data))
+    return yaml.load(StringIO(yaml_data), Loader=yaml.FullLoader)
 
 
 def run_command(args, debug=False):
@@ -60,11 +60,22 @@ def update_pom_file(fpath, seldon_core_version, debug=False):
         print("processing [{}]".format(fpath))
     comp_dir_path = os.path.dirname(fpath)
     os.chdir(comp_dir_path)
-    args = [
-        "mvn",
-        "versions:set",
-        "-DnewVersion={seldon_core_version}".format(**locals()),
-    ]
+
+    MAVEN_REPOSITORY_LOCATION = os.getenv('MAVEN_REPOSITORY_LOCATION')
+    if MAVEN_REPOSITORY_LOCATION == None:
+        args = [
+            "mvn",
+            "versions:set",
+            "-DnewVersion={seldon_core_version}".format(**locals()),
+        ]
+    else:
+        args = [
+            "mvn",
+            "versions:set",
+            "-DnewVersion={seldon_core_version}".format(**locals()),
+            "-Dmaven.repo.local={MAVEN_REPOSITORY_LOCATION}".format(**locals()),
+        ]
+
     err, out = run_command(args, debug)
     ##pp(out)
     ##pp(err)
@@ -103,6 +114,7 @@ def update_operator_values_yaml_file(fpath, seldon_core_version, debug=False):
     d = yaml_to_dict(yaml_data)
     d["image"]["tag"] = seldon_core_version
     d["engine"]["image"]["tag"] = seldon_core_version
+    d["executor"]["image"]["tag"] = seldon_core_version
 
     with open(fpath, "w") as f:
         f.write(dict_to_yaml(d))
@@ -134,6 +146,23 @@ def update_kustomize_engine_version(seldon_core_version, debug=False):
         print("error updating kustomize".format(**locals()))
         print(err)
 
+def update_kustomize_executor_version(seldon_core_version, debug=False):
+    args = [
+        "sed",
+        "-i",
+        "s/seldonio\/seldon-core-executor:\(.*\)/seldonio\/seldon-core-executor:{seldon_core_version}/g".format(
+            **locals()
+        ),
+        "operator/config/manager/manager.yaml",
+    ]
+    err, out = run_command(args, debug)
+    # pp(out)
+    # pp(err)
+    if err == None:
+        print("updated kustomize".format(**locals()))
+    else:
+        print("error updating kustomize".format(**locals()))
+        print(err)
 
 def update_operator_version(seldon_core_version, debug=False):
     fpath = "operator/config/manager/kustomization.yaml"
@@ -171,6 +200,7 @@ def set_version(
 
     # Update kustomize
     update_kustomize_engine_version(seldon_core_version, debug)
+    update_kustomize_executor_version(seldon_core_version, debug)
 
     # Update operator version
     update_operator_version(seldon_core_version, debug)

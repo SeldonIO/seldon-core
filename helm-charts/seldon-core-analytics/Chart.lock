@@ -4,6 +4,6 @@ dependencies:
   version: 4.2.3
 - name: prometheus
   repository: https://kubernetes-charts.storage.googleapis.com
-  version: 9.7.4
-digest: sha256:c313809a039950dbef7a16b0e1cd27ea3611ffd6780d123da68a3a3f9400d8f8
-generated: "2020-01-08T14:10:53.298192702Z"
+  version: 9.7.3
+digest: sha256:03659c33d5eee9768f172e024d62063630457986a08f24e0a78b8e46d980d32e
+generated: "2020-01-20T11:08:25.503721317Z"
