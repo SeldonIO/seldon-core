@@ -1,4 +1,6 @@
-from subprocess import run
+from subprocess import run, PIPE, CalledProcessError
+import logging
+import pytest
 
 
 def create_and_run_script(folder, notebook):
@@ -8,9 +10,23 @@ def create_and_run_script(folder, notebook):
         check=True,
     )
     run(f"chmod u+x {folder}/{notebook}.py", shell=True, check=True)
-    run(f"cd {folder} && ./{notebook}.py", shell=True, check=True)
+    try:
+        run(
+            f"cd {folder} && ./{notebook}.py",
+            shell=True,
+            check=True,
+            stdout=PIPE,
+            stderr=PIPE,
+            encoding="utf-8",
+        )
+    except CalledProcessError as e:
+        logging.error(
+            f"failed notebook test {notebook} stdout:{e.stdout}, stderr:{e.stderr}"
+        )
+        raise e
 
 
+@pytest.mark.sequential
 class TestNotebooks(object):
 
     #
@@ -96,11 +112,11 @@ class TestNotebooks(object):
     # OpenVino
     #
 
-    def test_openvino_squeezenet(self):
-        create_and_run_script("../../examples/models/openvino", "openvino-squeezenet")
+    # def test_openvino_squeezenet(self):
+    #    create_and_run_script("../../examples/models/openvino", "openvino-squeezenet")
 
-    def test_openvino_imagenet_ensemble(self):
-        create_and_run_script(
-            "../../examples/models/openvino_imagenet_ensemble",
-            "openvino_imagenet_ensemble",
-        )
+    # def test_openvino_imagenet_ensemble(self):
+    #    create_and_run_script(
+    #        "../../examples/models/openvino_imagenet_ensemble",
+    #        "openvino_imagenet_ensemble",
+    #    )
