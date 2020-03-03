@@ -12,6 +12,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/k8s"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
 	"net"
+	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"testing"
 )
 
@@ -43,7 +44,8 @@ func createTestGrpcServer(g *GomegaWithT, annotations map[string]string) (*v1.Pr
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	g.Expect(err).To(BeNil())
 
-	grpcServer, err := grpc.CreateGrpcServer(&p, deploymentName, annotations)
+	logger := logf.Log.WithName("entrypoint")
+	grpcServer, err := grpc.CreateGrpcServer(&p, deploymentName, annotations, logger)
 	g.Expect(err).To(BeNil())
 
 	testSeldonGrpcServer := test.NewSeldonTestServer(1)

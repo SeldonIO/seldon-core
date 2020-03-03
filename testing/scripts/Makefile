@@ -116,6 +116,12 @@ test: build_protos install
 		-n 0 \
 		-m "sequential" 2>&1
 
+test_notebooks: build_protos install
+	pytest \
+		--verbose \
+		-s \
+		-W ignore test_notebooks.py::TestNotebooks 2>&1
+
 .PHONY: clean
 clean:
 	rm -f proto/prediction*

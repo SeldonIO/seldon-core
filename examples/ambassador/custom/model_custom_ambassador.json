@@ -10,7 +10,7 @@
     "spec": {	
         "name": "production-model",
 	"annotations": {
-	    "seldon.io/ambassador-config":"apiVersion: ambassador/v1\nkind: Mapping\nname: seldon_example_rest_mapping\nprefix: /mycompany/ml/\nservice: production-model-example.seldon:8000\ntimeout_ms: 3000"
+	    "seldon.io/ambassador-config":"apiVersion: ambassador/v1\nkind: Mapping\nname: seldon_example_rest_mapping\nprefix: /mycompany/ml/\nservice: example-single.seldon:8000\ntimeout_ms: 3000"
 	},	
         "predictors": [
             {
@@ -18,7 +18,7 @@
                     "spec": {
                         "containers": [
                             {
-                                "image": "seldonio/mock_classifier:1.0",
+                                "image": "seldonio/mock_classifier_rest:1.4",
                                 "imagePullPolicy": "IfNotPresent",
                                 "name": "classifier"
                             }

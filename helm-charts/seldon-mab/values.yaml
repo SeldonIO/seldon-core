@@ -43,3 +43,5 @@ engine:
     SELDON_LOG_RESPONSES: false
     SELDON_LOG_MESSAGES_EXTERNALLY: false
     SELDON_LOG_MESSAGE_TYPE: "seldon.message.pair"
+predictor:
+  name: default

@@ -10,20 +10,17 @@
     "spec": {
         "annotations": {
             "deployment_version": "v1",
-	    "seldon.io/rest-read-timeout":"100000",
-	    "seldon.io/rest-connection-timeout":"100000",	    
-	    "seldon.io/grpc-read-timeout":"100000"
+	    "seldon.io/rest-timeout":"100000",
+	    "seldon.io/grpc-timeout":"100000"
         },
         "name": "long-to",
-        "oauth_key": "oauth-key",
-        "oauth_secret": "oauth-secret",
         "predictors": [
             {
                 "componentSpecs": [{
                     "spec": {
                         "containers": [
                             {
-                                "image": "seldonio/mock_classifier:1.0",
+                                "image": "seldonio/mock_classifier_grpc:1.5",
                                 "imagePullPolicy": "IfNotPresent",
                                 "name": "classifier",
                                 "resources": {
@@ -40,7 +37,7 @@
                     "children": [],
                     "name": "classifier",
                     "endpoint": {
-			"type" : "REST"
+			"type" : "GRPC"
 		    },
                     "type": "MODEL"
                 },

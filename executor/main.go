@@ -134,7 +134,7 @@ func runGrpcServer(logger logr.Logger, predictor *v1.PredictorSpec, client seldo
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	grpcServer, err := grpc.CreateGrpcServer(predictor, deploymentName, annotations)
+	grpcServer, err := grpc.CreateGrpcServer(predictor, deploymentName, annotations, logger)
 	if err != nil {
 		log.Fatalf("Failed to create grpc server: %v", err)
 	}

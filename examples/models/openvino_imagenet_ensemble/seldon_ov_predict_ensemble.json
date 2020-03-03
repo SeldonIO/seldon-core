@@ -66,7 +66,7 @@
               },
               {
                 "name": "prediction1",
-                "image": "seldonio/openvino-demo-prediction:0.2",
+                "image": "seldonio/openvino-demo-prediction:0.3",
                 "resources": {
                   "requests": {
                     "cpu": "1"
@@ -75,7 +75,15 @@
                     "cpu": "32"
                   }
                 },
-                "env": [
+                  "env": [
+		      {
+			  "name": "LOG_LEVEL",
+			  "value": "DEBUG"
+		      },
+		      {
+			  "name": "GOOGLE_APPLICATION_CREDENTIALS",
+			  "value": ""
+		      },
                   {
                     "name": "XML_PATH",
                     "value": "gs://intelai_public_models/densenet_169/1/densenet_169_i8.xml"
@@ -116,7 +124,7 @@
               },
               {
                 "name": "prediction2",
-                "image": "seldonio/openvino-demo-prediction:0.2",
+                "image": "seldonio/openvino-demo-prediction:0.3",
                 "resources": {
                   "requests": {
                     "cpu": "1"
@@ -126,6 +134,14 @@
                   }
                 },
                 "env": [
+		      {
+			  "name": "LOG_LEVEL",
+			  "value": "DEBUG"
+		      },
+		      {
+			  "name": "GOOGLE_APPLICATION_CREDENTIALS",
+			  "value": ""
+		      },
                   {
                     "name": "XML_PATH",
                     "value": "gs://intelai_public_models/resnet_50_i8/1/resnet_50_i8.xml"
@@ -203,31 +219,7 @@
           ]
         },
         "name": "openvino",
-        "replicas": 1,
-        "svcOrchSpec" : {
-          "env": [
-            {
-              "name": "TRACING",
-              "value": "1"
-            },
-            {
-              "name": "JAEGER_AGENT_HOST",
-              "value": "jaeger-agent"
-            },
-            {
-              "name": "JAEGER_AGENT_PORT",
-              "value": "5775"
-            },
-            {
-              "name": "JAEGER_SAMPLER_TYPE",
-              "value": "const"
-            },
-            {
-              "name": "JAEGER_SAMPLER_PARAM",
-              "value": "1"
-            }
-          ]
-        }
+        "replicas": 1
       }
     ]
   }

@@ -18,18 +18,18 @@ func GetPredictiveUnitAsJson(params []machinelearningv1.Parameter) string {
 	}
 }
 
-func GetSeldonPodSpecForPredictiveUnit(p *machinelearningv1.PredictorSpec, name string) *machinelearningv1.SeldonPodSpec {
+func GetSeldonPodSpecForPredictiveUnit(p *machinelearningv1.PredictorSpec, name string) (*machinelearningv1.SeldonPodSpec, int) {
 	for j := 0; j < len(p.ComponentSpecs); j++ {
 		cSpec := p.ComponentSpecs[j]
 		for k := 0; k < len(cSpec.Spec.Containers); k++ {
 			c := &cSpec.Spec.Containers[k]
 			//the podSpec will have a container matching the PU name
 			if c.Name == name {
-				return cSpec
+				return cSpec, j
 			}
 		}
 	}
-	return nil
+	return nil, 0
 }
 
 func GetContainerForDeployment(deploy *appsv1.Deployment, name string) *v1.Container {
