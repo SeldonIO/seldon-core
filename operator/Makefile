@@ -116,7 +116,7 @@ create-client: test
 	./hack/update-codegen.sh	
 
 # Build the docker image
-docker-build: test
+docker-build: test generate-resources
 	docker build . -t ${IMG}
 
 # Push the docker image
@@ -167,4 +167,6 @@ licenses/dep.txt:
 	go list -m all | cut -d ' ' -f 1 > licenses/dep.txt
 
 generate-resources:
+	rm -rf generated
+	mkdir generated
 	kustomize build config/default/ -o generated
