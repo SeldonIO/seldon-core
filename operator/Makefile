@@ -66,6 +66,10 @@ undeploy-controllerid: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
 	kustomize build config/controllerid | kubectl delete -f -
 
+undeploy-lite: manifests
+	cd config/manager && kustomize edit set image controller=${IMG}
+	kustomize build config/lite | kubectl delete -f -
+
 deploy-local: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
 	kustomize build config/local | kubectl apply -f -
@@ -85,6 +89,10 @@ deploy-controllerid: manifests
 deploy-cert: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
 	kustomize build config/cert | kubectl apply -f -
+
+deploy-lite: manifests
+	cd config/manager && kustomize edit set image controller=${IMG}
+	kustomize build config/lite | kubectl apply -f -
 
 
 # Generate manifests e.g. CRD, RBAC etc.

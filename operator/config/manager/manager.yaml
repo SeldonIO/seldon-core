@@ -31,7 +31,10 @@ spec:
         args:
         - --enable-leader-election
         - --webhook-port=443
+        - --create-resources=$(CREATE_RESOURCES)
         env:
+        - name: CREATE_RESOURCES
+          value: "false"
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:

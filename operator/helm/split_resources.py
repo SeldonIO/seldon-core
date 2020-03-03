@@ -22,6 +22,7 @@ HELM_NOT_CERTMANAGER_IF_START = '{{- if not .Values.certManager.enabled -}}\n'
 HELM_VERSION_IF_START= '{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}\n'
 HELM_KUBEFLOW_IF_START='{{- if .Values.kubeflow }}\n'
 HELM_KUBEFLOW_IF_NOT_START='{{- if not .Values.kubeflow }}\n'
+HELM_CREATERESOURCES_IF_START='{{- if not .Values.createResources }}\n'
 #HELM_SECRET_IF_START = '{{- if .Values.webhook.secretProvided -}}\n'
 HELM_IF_END = '{{- end }}\n'
 
@@ -46,6 +47,7 @@ HELM_ENV_SUBST = {
     "EXECUTOR_PROMETHEUS_PATH": "executor.prometheus.path",
     "EXECUTOR_CONTAINER_USER": "executor.user",
     "EXECUTOR_CONTAINER_SERVICE_ACCOUNT_NAME": "executor.serviceAccount.name",
+    "CREATE_RESOURCES": "createResources",
 }
 HELM_VALUES_IMAGE_PULL_POLICY = '{{ .Values.image.pullPolicy }}'
 
@@ -62,7 +64,8 @@ def helm_release(value: str):
 if __name__ == "__main__":
     exp = args.prefix + "*"
     files = glob.glob(exp)
-    webhookData = '{{- $altNames := list ( printf "seldon-webhook-service.%s" .Release.Namespace ) ( printf "seldon-webhook-service.%s.svc" .Release.Namespace ) -}}\n'
+    webhookData = HELM_CREATERESOURCES_IF_START
+    webhookData = webhookData + '{{- $altNames := list ( printf "seldon-webhook-service.%s" .Release.Namespace ) ( printf "seldon-webhook-service.%s.svc" .Release.Namespace ) -}}\n'
     webhookData = webhookData + '{{- $ca := genCA "custom-metrics-ca" 365 -}}\n'
     webhookData = webhookData + '{{- $cert := genSignedCert "seldon-webhook-service" nil $altNames 365 $ca -}}\n'
 
@@ -204,6 +207,16 @@ if __name__ == "__main__":
                 fdata = HELM_NOT_CERTMANAGER_IF_START + fdata + HELM_IF_END
             elif name == "seldondeployments.machinelearning.seldon.io":
                 fdata =HELM_CRD_IF_START + fdata + HELM_IF_END
+            elif kind == "service" and name == "seldon-webhook-service":
+                fdata = HELM_CREATERESOURCES_IF_START + fdata + HELM_IF_END
+            elif kind == "configmap" and name == "seldon-config":
+                fdata = HELM_CREATERESOURCES_IF_START + fdata + HELM_IF_END
+            elif kind == "deployment" and name == "seldon-controller-manager":
+                fdata = re.sub(r"(.*volumeMounts:\n.*\n.*\n.*\n)",
+                               HELM_CREATERESOURCES_IF_START + r"\1" + HELM_IF_END, fdata, re.M)
+                fdata = re.sub(r"(.*volumes:\n.*\n.*\n.*\n.*\n)",
+                               HELM_CREATERESOURCES_IF_START + r"\1" + HELM_IF_END, fdata, re.M)
+
 
             # make sure webhook is not quoted as its an int
             fdata = fdata.replace("'{{ .Values.webhook.port }}'","{{ .Values.webhook.port }}")
@@ -225,7 +238,7 @@ if __name__ == "__main__":
     kubeflowSelector = "    matchLabels:\n      serving.kubeflow.org/inferenceservice: enabled\n"
     webhookData = re.sub(r"(.*namespaceSelector:\n.*matchExpressions:\n.*\n.*\n)",HELM_VERSION_IF_START+HELM_NOT_SINGLE_NAMESPACE_IF_START+r"\1"+HELM_KUBEFLOW_IF_START+kubeflowSelector+HELM_IF_END+HELM_IF_END+HELM_IF_END+HELM_SINGLE_NAMESPACE_IF_START+namespaceSelector+HELM_IF_END,webhookData, re.M)
     webhookData = re.sub(r"(.*objectSelector:\n.*matchExpressions:\n.*\n.*\n)",HELM_KUBEFLOW_IF_NOT_START+HELM_VERSION_IF_START+HELM_NOT_CONTROLLERID_IF_START+r"\1"+HELM_IF_END+HELM_IF_END+HELM_CONTROLLERID_IF_START+objectSelector+HELM_IF_END+HELM_IF_END,webhookData, re.M)
-
+    webhookData = webhookData + "\n" + HELM_IF_END
     filename = args.folder + "/" + "webhook.yaml"
     with open(filename, 'w') as outfile:
         outfile.write(webhookData)

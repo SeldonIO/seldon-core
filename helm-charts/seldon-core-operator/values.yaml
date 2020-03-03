@@ -4,6 +4,7 @@ ambassador:
 certManager:
   enabled: false
 controllerId: ''
+createResources: false
 crd:
   create: true
 credentials:

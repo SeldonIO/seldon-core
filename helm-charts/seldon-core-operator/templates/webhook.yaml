@@ -1,3 +1,4 @@
+{{- if not .Values.createResources }}
 {{- $altNames := list ( printf "seldon-webhook-service.%s" .Release.Namespace ) ( printf "seldon-webhook-service.%s.svc" .Release.Namespace ) -}}
 {{- $ca := genCA "custom-metrics-ca" 365 -}}
 {{- $cert := genSignedCert "seldon-webhook-service" nil $altNames 365 $ca -}}
@@ -344,4 +345,6 @@ metadata:
   name: seldon-webhook-server-cert
   namespace: '{{ .Release.Namespace }}'
 type: kubernetes.io/tls
+{{- end }}
+
 {{- end }}

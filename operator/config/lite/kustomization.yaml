@@ -1,0 +1,32 @@
+# Adds namespace to all resources.
+namespace: seldon-system
+
+# Value of this field is prepended to the
+# names of all resources, e.g. a deployment named
+# "wordpress" becomes "alices-wordpress".
+# Note that it should also match with the prefix (text before '-') of the namespace
+# field above.
+namePrefix: seldon-
+
+# Labels to add to all resources and selectors.
+commonLabels:
+  app: seldon
+  app.kubernetes.io/name: seldon
+  app.kubernetes.io/version: v0.5
+  app.kubernetes.io/instance: seldon1
+    
+bases:
+- ../crd
+- ../rbac
+- ../manager
+
+resources:
+- role_webhook.yaml
+- role_binding_webhook.yaml
+
+patchesStrategicMerge:
+- patch_configmap.yaml
+#- patch_manager_args.yaml
+- patch_manager_env.yaml
+- manager_webhook_patch.yaml
+

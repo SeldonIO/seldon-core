@@ -34,10 +34,13 @@ spec:
       - args:
         - --enable-leader-election
         - --webhook-port={{ .Values.webhook.port }}
+        - --create-resources=$(CREATE_RESOURCES)
         - '{{- if .Values.singleNamespace }}--namespace={{ .Release.Namespace }}{{- end }}'
         command:
         - /manager
         env:
+        - name: CREATE_RESOURCES
+          value: '{{ .Values.createResources }}'
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -100,19 +103,23 @@ spec:
           protocol: TCP
         resources:
           limits:
-            cpu: {{ .Values.manager.cpuLimit }}
-            memory: {{ .Values.manager.memoryLimit }}
+            cpu: 500m
+            memory: 300Mi
           requests:
-            cpu: {{ .Values.manager.cpuRequest }}
-            memory: {{ .Values.manager.memoryRequest }}
+            cpu: 100m
+            memory: 200Mi
+{{- if not .Values.createResources }}
         volumeMounts:
         - mountPath: /tmp/k8s-webhook-server/serving-certs
           name: cert
           readOnly: true
+{{- end }}
       serviceAccountName: seldon-manager
       terminationGracePeriodSeconds: 10
+{{- if not .Values.createResources }}
       volumes:
       - name: cert
         secret:
           defaultMode: 420
           secretName: seldon-webhook-server-cert
+{{- end }}
