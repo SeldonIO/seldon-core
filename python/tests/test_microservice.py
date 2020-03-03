@@ -214,14 +214,9 @@ def test_load_annotations(mock_isfile):
     from io import StringIO
 
     read_data = [
-        ("", {}),
-        ("\n\n", {}),
-        ("foo=bar", {"foo": "bar"}),
-        ("foo=bar\nx =y", {"foo": "bar", "x": "y"}),
-        ("foo=bar\nfoo=baz\n", {"foo": "baz"}),
-        (" foo  =   bar ", {"foo": "bar"}),
-        ("key =  assign===", {"key": "assign==="}),
-        ("foo=\nfoo", {"foo": ""}),
+        ('foo="bar"', {"foo": "bar"}),
+        (' foo  =   "bar"  ', {"foo": "bar"}),
+        ('key=  "assign==="', {"key": "assign==="}),
     ]
     for data, expected_annotation in read_data:
         with mock.patch("seldon_core.microservice.open", return_value=StringIO(data)):

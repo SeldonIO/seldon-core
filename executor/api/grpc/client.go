@@ -36,7 +36,10 @@ func AddClientInterceptors(predictor *v1.PredictorSpec, deploymentName, modelNam
 			if err != nil {
 				log.Error(err, "Failed to parse annotation to int so will ignore", k8s.ANNOTATION_GRPC_TIMEOUT, val)
 			} else {
-				interceptors = append(interceptors, unaryClientInterceptorWithTimeout(time.Millisecond*time.Duration(timeout)))
+				dur := time.Millisecond * time.Duration(timeout)
+				log.Info("Adding grpc timeout to client", "value", timeout, "seconds", dur)
+
+				interceptors = append(interceptors, unaryClientInterceptorWithTimeout(dur))
 			}
 		}
 	}

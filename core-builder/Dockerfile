@@ -1,6 +1,6 @@
 FROM openjdk:13.0.1-jdk-buster
 
-ENV PYTHON_VERSION "3.6.0"
+ENV PYTHON_VERSION "3.6.10"
 
 # install docker
 RUN \
@@ -57,12 +57,14 @@ RUN mkdir -p /usr/share/maven /usr/share/maven/ref \
 ENV MAVEN_HOME=/usr/share/maven
 ENV MAVEN_CONFIG="$USER_HOME_DIR/.m2"
 
-# ZLIB1G required for installation python
+# compression and ssl libs required for installation python and dependencies (pandas)
 RUN apt-get upgrade && \
         apt-get update && \
         apt-get install zlib1g -y && \
         apt-get install zlib1g-dev -y && \
-        apt-get install libssl-dev -y
+        apt-get install libssl-dev -y && \
+	apt-get install libbz2-dev -y && \
+	apt-get install liblzma-dev -y
 
 RUN curl -SLO https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz \
     && tar xvf Python-${PYTHON_VERSION}.tgz \
@@ -109,6 +111,20 @@ RUN wget https://github.com/kubernetes-sigs/kustomize/releases/download/kustomiz
 RUN \
     update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy && \
     update-alternatives --set iptables /usr/sbin/iptables-legacy
+
+# install jupyter
+RUN pip install jupyter
+
+# Install grpcurl
+RUN go get github.com/fullstorydev/grpcurl && \
+    go install github.com/fullstorydev/grpcurl/cmd/grpcurl
+
+ENV PATH="${PATH}:/root/go/bin"
+   
+# Notebooks python requirements
+RUN pip install alibi && \
+    pip install matplotlib && \
+    pip install keras
 
 WORKDIR /work
 

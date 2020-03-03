@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"github.com/go-logr/logr"
 	guuid "github.com/google/uuid"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
@@ -34,7 +35,7 @@ func getMaxMsgSizeFromAnnotations(annotations map[string]string) (int, error) {
 	}
 }
 
-func CreateGrpcServer(spec *v1.PredictorSpec, deploymentName string, annotations map[string]string) (*grpc.Server, error) {
+func CreateGrpcServer(spec *v1.PredictorSpec, deploymentName string, annotations map[string]string, logger logr.Logger) (*grpc.Server, error) {
 	maxMsgSize := math.MaxInt32
 	// Update from annotations
 	if annotations != nil {
@@ -46,6 +47,7 @@ func CreateGrpcServer(spec *v1.PredictorSpec, deploymentName string, annotations
 		}
 	}
 
+	logger.Info("Setting max message size ", "size", maxMsgSize)
 	opts := []grpc.ServerOption{
 		grpc.MaxRecvMsgSize(maxMsgSize),
 		grpc.MaxSendMsgSize(maxMsgSize),
