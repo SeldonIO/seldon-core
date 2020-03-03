@@ -1,107 +1,53 @@
 package controllers
 
 import (
-	"strings"
-	"testing"
-
+	. "github.com/onsi/gomega"
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
 	"gopkg.in/yaml.v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"strings"
+	"testing"
 )
 
-func TestAmbassadorBasic(t *testing.T) {
-	p := machinelearningv1.PredictorSpec{Name: "p"}
-	mlDep := machinelearningv1.SeldonDeployment{ObjectMeta: metav1.ObjectMeta{Name: "mymodel"},
-		Spec: machinelearningv1.SeldonDeploymentSpec{
-			Predictors: []machinelearningv1.PredictorSpec{
-				p,
-			},
-		},
-	}
-	s, err := getAmbassadorConfigs(&mlDep, &p, "myservice", 9000, 5000, "")
-	if err != nil {
-		t.Fatalf("Config format error")
-	}
-	t.Logf("%s\n\n", s)
+const (
+	TEST_DEFAULT_EXPECTED_RETRIES = 0
+)
+
+func basicAbassadorTests(t *testing.T, mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, expectedWeight int32, expectedInstanceId string, expectedRetries int) {
+	g := NewGomegaWithT(t)
+	s, err := getAmbassadorConfigs(mlDep, p, "myservice", 9000, 5000, "")
+	g.Expect(err).To(BeNil())
 	parts := strings.Split(s, "---\n")[1:]
-
-	if len(parts) != 2 {
-		t.Fatalf("Bad number of configs returned %d", len(parts))
-	}
-
-	for _, part := range parts {
-		c := AmbassadorConfig{}
-		t.Logf("Config: %s", part)
-
-		err = yaml.Unmarshal([]byte(s), &c)
-		if err != nil {
-			t.Fatalf("Failed to unmarshall")
-		}
-
-		if len(c.Headers) > 0 {
-			t.Fatalf("Found headers")
-		}
-		if c.Prefix != "/seldon/default/mymodel/" {
-			t.Fatalf("Found bad prefix %s", c.Prefix)
-		}
-
-		if c.InstanceId != "" {
-			t.Fatalf("Found ambassador_id %s", c.InstanceId)
-		}
+	g.Expect(len(parts)).To(Equal(2))
+	c := AmbassadorConfig{}
+	err = yaml.Unmarshal([]byte(parts[0]), &c)
+	g.Expect(err).To(BeNil())
+	g.Expect(c.Prefix).To(Equal("/seldon/default/mymodel/"))
+	g.Expect(c.Weight).To(Equal(expectedWeight))
+	g.Expect(c.InstanceId).To(Equal(expectedInstanceId))
+	if expectedRetries > 0 {
+		g.Expect(c.RetryPolicy.NumRetries).To(Equal(expectedRetries))
+	} else {
+		g.Expect(c.RetryPolicy).To(BeNil())
 	}
 
 }
 
 func TestAmbassadorSingle(t *testing.T) {
-	p := machinelearningv1.PredictorSpec{Name: "p"}
+	p1 := machinelearningv1.PredictorSpec{Name: "p1"}
 	mlDep := machinelearningv1.SeldonDeployment{ObjectMeta: metav1.ObjectMeta{Name: "mymodel"},
 		Spec: machinelearningv1.SeldonDeploymentSpec{
 			Predictors: []machinelearningv1.PredictorSpec{
-				p,
+				p1,
 			},
 		},
 	}
-	s, err := getAmbassadorConfigs(&mlDep, &p, "myservice", 9000, 5000, "")
-	if err != nil {
-		t.Fatalf("Config format error")
-	}
-	t.Logf("%s\n\n", s)
-	parts := strings.Split(s, "---\n")[1:]
-
-	if len(parts) != 2 {
-		t.Fatalf("Bad number of configs returned %d", len(parts))
-	}
-
-	for _, part := range parts {
-		c := AmbassadorConfig{}
-		t.Logf("Config: %s", part)
-
-		err = yaml.Unmarshal([]byte(s), &c)
-		if err != nil {
-			t.Fatalf("Failed to unmarshall")
-		}
-
-		if c.Weight > 0 {
-			t.Fatalf("Bad weight for Ambassador config %d", c.Weight)
-		}
-
-		if len(c.Headers) > 0 {
-			t.Fatalf("Found headers")
-		}
-		if c.Prefix != "/seldon/default/mymodel/" {
-			t.Fatalf("Found bad prefix %s", c.Prefix)
-		}
-
-		if c.InstanceId != "" {
-			t.Fatalf("Found ambassador_id %s", c.InstanceId)
-		}
-	}
-
+	basicAbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES)
 }
 
 func TestAmbassadorCanary(t *testing.T) {
-	p1 := machinelearningv1.PredictorSpec{Name: "p", Traffic: 20}
-	p2 := machinelearningv1.PredictorSpec{Name: "p", Traffic: 80}
+	p1 := machinelearningv1.PredictorSpec{Name: "p1", Traffic: 20}
+	p2 := machinelearningv1.PredictorSpec{Name: "p2", Traffic: 80}
 	mlDep := machinelearningv1.SeldonDeployment{ObjectMeta: metav1.ObjectMeta{Name: "mymodel"},
 		Spec: machinelearningv1.SeldonDeploymentSpec{
 			Predictors: []machinelearningv1.PredictorSpec{
@@ -110,79 +56,8 @@ func TestAmbassadorCanary(t *testing.T) {
 			},
 		},
 	}
-
-	s, err := getAmbassadorConfigs(&mlDep, &p1, "myservice", 9000, 5000, "")
-	if err != nil {
-		t.Fatalf("Config format error")
-	}
-	t.Logf("%s\n\n", s)
-	parts := strings.Split(s, "---\n")[1:]
-
-	if len(parts) != 2 {
-		t.Fatalf("Bad number of configs returned %d", len(parts))
-	}
-
-	for _, part := range parts {
-		c := AmbassadorConfig{}
-		t.Logf("Config: %s", part)
-
-		err = yaml.Unmarshal([]byte(s), &c)
-		if err != nil {
-			t.Fatalf("Failed to unmarshall")
-		}
-
-		if c.Weight > 0 {
-			t.Fatalf("Bad weight for Ambassador config %d", c.Weight)
-		}
-
-		if len(c.Headers) > 0 {
-			t.Fatalf("Found headers")
-		}
-		if c.Prefix != "/seldon/default/mymodel/" {
-			t.Fatalf("Found bad prefix %s", c.Prefix)
-		}
-
-		if c.InstanceId != "" {
-			t.Fatalf("Found ambassador_id %s", c.InstanceId)
-		}
-	}
-
-	s, err = getAmbassadorConfigs(&mlDep, &p2, "myservice", 9000, 5000, "")
-	if err != nil {
-		t.Fatalf("Config format error")
-	}
-	t.Logf("%s\n\n", s)
-	parts = strings.Split(s, "---\n")[1:]
-
-	if len(parts) != 2 {
-		t.Fatalf("Bad number of configs returned %d", len(parts))
-	}
-
-	for _, part := range parts {
-		c := AmbassadorConfig{}
-		t.Logf("Config: %s", part)
-
-		err = yaml.Unmarshal([]byte(s), &c)
-		if err != nil {
-			t.Fatalf("Failed to unmarshall")
-		}
-
-		if c.Weight > 0 {
-			t.Fatalf("Bad weight for Ambassador config %d", c.Weight)
-		}
-
-		if len(c.Headers) > 0 {
-			t.Fatalf("Found headers")
-		}
-		if c.Prefix != "/seldon/default/mymodel/" {
-			t.Fatalf("Found bad prefix %s", c.Prefix)
-		}
-
-		if c.InstanceId != "" {
-			t.Fatalf("Found ambassador_id %s", c.InstanceId)
-		}
-	}
-
+	basicAbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES)
+	basicAbassadorTests(t, &mlDep, &p2, 80, "", TEST_DEFAULT_EXPECTED_RETRIES)
 }
 
 func TestAmbassadorCanaryEqual(t *testing.T) {
@@ -196,79 +71,8 @@ func TestAmbassadorCanaryEqual(t *testing.T) {
 			},
 		},
 	}
-
-	s, err := getAmbassadorConfigs(&mlDep, &p1, "myservice", 9000, 5000, "")
-	if err != nil {
-		t.Fatalf("Config format error")
-	}
-	t.Logf("%s\n\n", s)
-	parts := strings.Split(s, "---\n")[1:]
-
-	if len(parts) != 2 {
-		t.Fatalf("Bad number of configs returned %d", len(parts))
-	}
-
-	for _, part := range parts {
-		c := AmbassadorConfig{}
-		t.Logf("Config: %s", part)
-
-		err = yaml.Unmarshal([]byte(s), &c)
-		if err != nil {
-			t.Fatalf("Failed to unmarshall")
-		}
-
-		if c.Weight > 0 {
-			t.Fatalf("Bad weight for Ambassador config %d", c.Weight)
-		}
-
-		if len(c.Headers) > 0 {
-			t.Fatalf("Found headers")
-		}
-		if c.Prefix != "/seldon/default/mymodel/" {
-			t.Fatalf("Found bad prefix %s", c.Prefix)
-		}
-
-		if c.InstanceId != "" {
-			t.Fatalf("Found ambassador_id %s", c.InstanceId)
-		}
-	}
-
-	s, err = getAmbassadorConfigs(&mlDep, &p2, "myservice", 9000, 5000, "")
-	if err != nil {
-		t.Fatalf("Config format error")
-	}
-	t.Logf("%s\n\n", s)
-	parts = strings.Split(s, "---\n")[1:]
-
-	if len(parts) != 2 {
-		t.Fatalf("Bad number of configs returned %d", len(parts))
-	}
-
-	for _, part := range parts {
-		c := AmbassadorConfig{}
-		t.Logf("Config: %s", part)
-
-		err = yaml.Unmarshal([]byte(s), &c)
-		if err != nil {
-			t.Fatalf("Failed to unmarshall")
-		}
-
-		if c.Weight != 50 {
-			t.Fatalf("Bad weight for Ambassador config %d", c.Weight)
-		}
-
-		if len(c.Headers) > 0 {
-			t.Fatalf("Found headers")
-		}
-		if c.Prefix != "/seldon/default/mymodel/" {
-			t.Fatalf("Found bad prefix %s", c.Prefix)
-		}
-
-		if c.InstanceId != "" {
-			t.Fatalf("Found ambassador_id %s", c.InstanceId)
-		}
-	}
-
+	basicAbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES)
+	basicAbassadorTests(t, &mlDep, &p2, 50, "", TEST_DEFAULT_EXPECTED_RETRIES)
 }
 
 func TestAmbassadorCanaryThree(t *testing.T) {
@@ -284,79 +88,9 @@ func TestAmbassadorCanaryThree(t *testing.T) {
 			},
 		},
 	}
-
-	s, err := getAmbassadorConfigs(&mlDep, &p1, "myservice", 9000, 5000, "")
-	if err != nil {
-		t.Fatalf("Config format error")
-	}
-	t.Logf("%s\n\n", s)
-	parts := strings.Split(s, "---\n")[1:]
-
-	if len(parts) != 2 {
-		t.Fatalf("Bad number of configs returned %d", len(parts))
-	}
-
-	for _, part := range parts {
-		c := AmbassadorConfig{}
-		t.Logf("Config: %s", part)
-
-		err = yaml.Unmarshal([]byte(s), &c)
-		if err != nil {
-			t.Fatalf("Failed to unmarshall")
-		}
-
-		if c.Weight != 0 {
-			t.Fatalf("Bad weight for Ambassador config %d", c.Weight)
-		}
-
-		if len(c.Headers) > 0 {
-			t.Fatalf("Found headers")
-		}
-		if c.Prefix != "/seldon/default/mymodel/" {
-			t.Fatalf("Found bad prefix %s", c.Prefix)
-		}
-
-		if c.InstanceId != "" {
-			t.Fatalf("Found ambassador_id %s", c.InstanceId)
-		}
-	}
-
-	s, err = getAmbassadorConfigs(&mlDep, &p2, "myservice", 9000, 5000, "")
-	if err != nil {
-		t.Fatalf("Config format error")
-	}
-	t.Logf("%s\n\n", s)
-	parts = strings.Split(s, "---\n")[1:]
-
-	if len(parts) != 2 {
-		t.Fatalf("Bad number of configs returned %d", len(parts))
-	}
-
-	for _, part := range parts {
-		c := AmbassadorConfig{}
-		t.Logf("Config: %s", part)
-
-		err = yaml.Unmarshal([]byte(s), &c)
-		if err != nil {
-			t.Fatalf("Failed to unmarshall")
-		}
-
-		if c.Weight != 20 {
-			t.Fatalf("Bad weight for Ambassador config %d", c.Weight)
-		}
-
-		if len(c.Headers) > 0 {
-			t.Fatalf("Found headers")
-		}
-		if c.Prefix != "/seldon/default/mymodel/" {
-			t.Fatalf("Found bad prefix %s", c.Prefix)
-		}
-
-		if c.InstanceId != "" {
-			t.Fatalf("Found ambassador_id %s", c.InstanceId)
-		}
-	}
-
+	basicAbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES)
+	basicAbassadorTests(t, &mlDep, &p2, 20, "", TEST_DEFAULT_EXPECTED_RETRIES)
+	basicAbassadorTests(t, &mlDep, &p3, 20, "", TEST_DEFAULT_EXPECTED_RETRIES)
 }
 
 func TestAmbassadorCanaryThreeEqual(t *testing.T) {
@@ -372,121 +106,34 @@ func TestAmbassadorCanaryThreeEqual(t *testing.T) {
 			},
 		},
 	}
-
-	s, err := getAmbassadorConfigs(&mlDep, &p1, "myservice", 9000, 5000, "")
-	if err != nil {
-		t.Fatalf("Config format error")
-	}
-	t.Logf("%s\n\n", s)
-	parts := strings.Split(s, "---\n")[1:]
-
-	if len(parts) != 2 {
-		t.Fatalf("Bad number of configs returned %d", len(parts))
-	}
-
-	for _, part := range parts {
-		c := AmbassadorConfig{}
-		t.Logf("Config: %s", part)
-
-		err = yaml.Unmarshal([]byte(s), &c)
-		if err != nil {
-			t.Fatalf("Failed to unmarshall")
-		}
-
-		if c.Weight > 0 {
-			t.Fatalf("Bad weight for Ambassador config %d", c.Weight)
-		}
-
-		if len(c.Headers) > 0 {
-			t.Fatalf("Found headers")
-		}
-		if c.Prefix != "/seldon/default/mymodel/" {
-			t.Fatalf("Found bad prefix %s", c.Prefix)
-		}
-
-		if c.InstanceId != "" {
-			t.Fatalf("Found ambassador_id %s", c.InstanceId)
-		}
-	}
-
-	s, err = getAmbassadorConfigs(&mlDep, &p2, "myservice", 9000, 5000, "")
-	if err != nil {
-		t.Fatalf("Config format error")
-	}
-	t.Logf("%s\n\n", s)
-	parts = strings.Split(s, "---\n")[1:]
-
-	if len(parts) != 2 {
-		t.Fatalf("Bad number of configs returned %d", len(parts))
-	}
-
-	for _, part := range parts {
-		c := AmbassadorConfig{}
-		t.Logf("Config: %s", part)
-
-		err = yaml.Unmarshal([]byte(s), &c)
-		if err != nil {
-			t.Fatalf("Failed to unmarshall")
-		}
-
-		if c.Weight != 33 {
-			t.Fatalf("Bad weight for Ambassador config %d", c.Weight)
-		}
-
-		if len(c.Headers) > 0 {
-			t.Fatalf("Found headers")
-		}
-		if c.Prefix != "/seldon/default/mymodel/" {
-			t.Fatalf("Found bad prefix %s", c.Prefix)
-		}
-
-		if c.InstanceId != "" {
-			t.Fatalf("Found ambassador_id %s", c.InstanceId)
-		}
-	}
-
+	basicAbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES)
+	basicAbassadorTests(t, &mlDep, &p2, 33, "", TEST_DEFAULT_EXPECTED_RETRIES)
+	basicAbassadorTests(t, &mlDep, &p3, 33, "", TEST_DEFAULT_EXPECTED_RETRIES)
 }
 
 func TestAmbassadorID(t *testing.T) {
+	const instanceId = "myinstance_id"
+	p1 := machinelearningv1.PredictorSpec{Name: "p"}
+	mlDep := machinelearningv1.SeldonDeployment{ObjectMeta: metav1.ObjectMeta{Name: "mymodel"},
+		Spec: machinelearningv1.SeldonDeploymentSpec{
+			Annotations: map[string]string{ANNOTATION_AMBASSADOR_ID: instanceId},
+			Predictors: []machinelearningv1.PredictorSpec{
+				p1,
+			},
+		},
+	}
+	basicAbassadorTests(t, &mlDep, &p1, 0, instanceId, TEST_DEFAULT_EXPECTED_RETRIES)
+}
+
+func TestAmbassadorRetriesAnnotation(t *testing.T) {
 	p := machinelearningv1.PredictorSpec{Name: "p"}
 	mlDep := machinelearningv1.SeldonDeployment{ObjectMeta: metav1.ObjectMeta{Name: "mymodel"},
 		Spec: machinelearningv1.SeldonDeploymentSpec{
-			Annotations: map[string]string{ANNOTATION_AMBASSADOR_ID: "myinstance_id"},
+			Annotations: map[string]string{ANNOTATION_AMBASSADOR_RETRIES: "2"},
 			Predictors: []machinelearningv1.PredictorSpec{
 				p,
 			},
 		},
 	}
-
-	s, err := getAmbassadorConfigs(&mlDep, &p, "myservice", 9000, 5000, "")
-	if err != nil {
-		t.Fatalf("Config format error")
-	}
-	t.Logf("%s\n\n", s)
-	parts := strings.Split(s, "---\n")[1:]
-
-	if len(parts) != 2 {
-		t.Fatalf("Bad number of configs returned %d", len(parts))
-	}
-
-	for _, part := range parts {
-		c := AmbassadorConfig{}
-		t.Logf("Config: %s", part)
-
-		err = yaml.Unmarshal([]byte(s), &c)
-		if err != nil {
-			t.Fatalf("Failed to unmarshall")
-		}
-
-		if len(c.Headers) > 0 {
-			t.Fatalf("Found headers")
-		}
-		if c.Prefix != "/seldon/default/mymodel/" {
-			t.Fatalf("Found bad prefix %s", c.Prefix)
-		}
-
-		if c.InstanceId != "myinstance_id" {
-			t.Fatalf("Found mismatch ambassador_id %s", c.InstanceId)
-		}
-	}
+	basicAbassadorTests(t, &mlDep, &p, 0, "", 2)
 }
