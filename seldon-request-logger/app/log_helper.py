@@ -41,7 +41,7 @@ def build_index_name(headers):
     else:
         index_name = index_name + "-" + namespace
     inference_service_name = clean_header(INFERENCESERVICE_HEADER_NAME, headers)
-    #won't get inference service name for kfserving
+    #won't get inference service name for kfserving versions prior to https://github.com/kubeflow/kfserving/pull/699/
     if inference_service_name is None or not inference_service_name:
         inference_service_name = clean_header(MODELID_HEADER_NAME, headers)
 
