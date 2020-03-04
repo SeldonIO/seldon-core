@@ -4,10 +4,13 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/go-logr/logr"
 	"k8s.io/api/admissionregistration/v1beta1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"strconv"
 )
 
@@ -17,9 +20,10 @@ type WebhookCreator struct {
 	logger       logr.Logger
 	majorVersion int
 	minorVersion int
+	scheme       *runtime.Scheme
 }
 
-func NewWebhookCreator(client kubernetes.Interface, certs *Cert, logger logr.Logger) (*WebhookCreator, error) {
+func NewWebhookCreator(client kubernetes.Interface, certs *Cert, logger logr.Logger, scheme *runtime.Scheme) (*WebhookCreator, error) {
 	serverVersion, err := client.Discovery().ServerVersion()
 	if err != nil {
 		return nil, err
@@ -41,10 +45,11 @@ func NewWebhookCreator(client kubernetes.Interface, certs *Cert, logger logr.Log
 		logger:       logger,
 		majorVersion: majorVersion,
 		minorVersion: minorVersion,
+		scheme:       scheme,
 	}, nil
 }
 
-func (wc *WebhookCreator) CreateMutatingWebhookConfigurationFromFile(rawYaml []byte) error {
+func (wc *WebhookCreator) CreateMutatingWebhookConfigurationFromFile(rawYaml []byte, namespace string, owner *appsv1.Deployment) error {
 	mwc := v1beta1.MutatingWebhookConfiguration{}
 	err := yaml.Unmarshal(rawYaml, &mwc)
 	if err != nil {
@@ -54,6 +59,8 @@ func (wc *WebhookCreator) CreateMutatingWebhookConfigurationFromFile(rawYaml []b
 	for idx, _ := range mwc.Webhooks {
 		// add caBundle
 		mwc.Webhooks[idx].ClientConfig.CABundle = []byte(wc.certs.caPEM)
+		// set namespace
+		mwc.Webhooks[idx].ClientConfig.Service.Namespace = namespace
 		//Remove selector if version too low
 		if wc.majorVersion == 1 && wc.minorVersion < 15 {
 			mwc.Webhooks[idx].NamespaceSelector = nil
@@ -61,6 +68,10 @@ func (wc *WebhookCreator) CreateMutatingWebhookConfigurationFromFile(rawYaml []b
 	}
 
 	// add ownership
+	err = ctrl.SetControllerReference(owner, &mwc, wc.scheme)
+	if err != nil {
+		return err
+	}
 
 	// create or update via client
 	client := wc.clientset.AdmissionregistrationV1beta1().MutatingWebhookConfigurations()
@@ -78,7 +89,7 @@ func (wc *WebhookCreator) CreateMutatingWebhookConfigurationFromFile(rawYaml []b
 	return err
 }
 
-func (wc *WebhookCreator) CreateValidatingWebhookConfigurationFromFile(rawYaml []byte) error {
+func (wc *WebhookCreator) CreateValidatingWebhookConfigurationFromFile(rawYaml []byte, namespace string, owner *appsv1.Deployment) error {
 	vwc := v1beta1.ValidatingWebhookConfiguration{}
 	err := yaml.Unmarshal(rawYaml, &vwc)
 	if err != nil {
@@ -87,9 +98,16 @@ func (wc *WebhookCreator) CreateValidatingWebhookConfigurationFromFile(rawYaml [
 	// add caBundle
 	for idx, _ := range vwc.Webhooks {
 		vwc.Webhooks[idx].ClientConfig.CABundle = []byte(wc.certs.caPEM)
+		// set namespace
+		vwc.Webhooks[idx].ClientConfig.Service.Namespace = namespace
+
 	}
 
 	// add ownership
+	err = ctrl.SetControllerReference(owner, &vwc, wc.scheme)
+	if err != nil {
+		return err
+	}
 
 	// create or update via client
 	client := wc.clientset.AdmissionregistrationV1beta1().ValidatingWebhookConfigurations()
@@ -107,7 +125,7 @@ func (wc *WebhookCreator) CreateValidatingWebhookConfigurationFromFile(rawYaml [
 	return err
 }
 
-func (wc *WebhookCreator) CreateWebhookServiceFromFile(rawYaml []byte, namespace string) error {
+func (wc *WebhookCreator) CreateWebhookServiceFromFile(rawYaml []byte, namespace string, owner *appsv1.Deployment) error {
 	svcRaw := corev1.Service{}
 	err := yaml.Unmarshal(rawYaml, &svcRaw)
 	if err != nil {
@@ -123,6 +141,10 @@ func (wc *WebhookCreator) CreateWebhookServiceFromFile(rawYaml []byte, namespace
 	svc.Namespace = namespace
 
 	// add ownership
+	err = ctrl.SetControllerReference(owner, &svc, wc.scheme)
+	if err != nil {
+		return err
+	}
 
 	// create or update via client
 	client := wc.clientset.CoreV1().Services(namespace)

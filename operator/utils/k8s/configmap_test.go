@@ -9,11 +9,13 @@ import (
 
 func TestConfigmapCreate(t *testing.T) {
 	g := NewGomegaWithT(t)
+	scheme := createScheme()
 	bytes, err := LoadBytesFromFile("testdata", "configmap.yaml")
 	g.Expect(err).To(BeNil())
 	client := fake.NewSimpleClientset()
-
-	cc := NewConfigmapCreator(client, ctrl.Log)
-	err = cc.CreateConfigmap(bytes, "test")
+	dep, err := createManagerDeployment(client, TestNamespace)
+	g.Expect(err).To(BeNil())
+	cc := NewConfigmapCreator(client, ctrl.Log, scheme)
+	err = cc.CreateConfigmap(bytes, TestNamespace, dep)
 	g.Expect(err).To(BeNil())
 }

@@ -1347,6 +1347,18 @@ func (r *SeldonDeploymentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		return ctrl.Result{}, nil
 	}
 
+	//rerun defaulting
+	before := instance.DeepCopy()
+	instance.Default()
+	if !equality.Semantic.DeepEqual(instance.Spec, before.Spec) {
+		diff, err := kmp.SafeDiff(instance.Spec, before.Spec)
+		if err != nil {
+			log.Error(err, "Failed to diff")
+		} else {
+			log.Info(fmt.Sprintf("Difference in seldon deployments: %v", diff))
+		}
+	}
+
 	components, err := createComponents(r, instance, log)
 	if err != nil {
 		return ctrl.Result{}, err

@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"github.com/go-logr/logr"
 	"io/ioutil"
+	appsv1 "k8s.io/api/apps/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"os"
@@ -21,6 +24,8 @@ const (
 	ValidatingWebhookFilename = "validate.yaml"
 	ConfigMapFilename         = "configmap.yaml"
 	ServiceFilename           = "service.yaml"
+
+	ManagerDeploymentName = "seldon-controller-manager"
 )
 
 func LoadBytesFromFile(path string, name string) ([]byte, error) {
@@ -28,19 +33,33 @@ func LoadBytesFromFile(path string, name string) ([]byte, error) {
 	return ioutil.ReadFile(fullpath)
 }
 
-func InitializeOperator(config *rest.Config, namespace string, logger logr.Logger) error {
+func findMyDeployment(clientset kubernetes.Interface, namespace string) (*appsv1.Deployment, error) {
+	client := clientset.AppsV1().Deployments(namespace)
+	return client.Get(ManagerDeploymentName, v1.GetOptions{})
+}
+
+func InitializeOperator(config *rest.Config, namespace string, logger logr.Logger, scheme *runtime.Scheme) error {
 
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		return err
 	}
+
+	dep, err := findMyDeployment(clientset, namespace)
+	if err != nil {
+		return err
+	}
+
+	// Create certs
 	host1 := fmt.Sprintf("seldon-webhook-service.%s", namespace)
 	host2 := fmt.Sprintf("seldon-webhook-service.%s.svc", namespace)
 	certs, err := certSetup([]string{host1, host2})
 	if err != nil {
 		return err
 	}
-	wc, err := NewWebhookCreator(clientset, certs, logger)
+
+	// Create webhooks
+	wc, err := NewWebhookCreator(clientset, certs, logger, scheme)
 	if err != nil {
 		return err
 	}
@@ -50,7 +69,7 @@ func InitializeOperator(config *rest.Config, namespace string, logger logr.Logge
 	if err != nil {
 		return err
 	}
-	err = wc.CreateMutatingWebhookConfigurationFromFile(bytes)
+	err = wc.CreateMutatingWebhookConfigurationFromFile(bytes, namespace, dep)
 	if err != nil {
 		return err
 	}
@@ -60,7 +79,7 @@ func InitializeOperator(config *rest.Config, namespace string, logger logr.Logge
 	if err != nil {
 		return err
 	}
-	err = wc.CreateValidatingWebhookConfigurationFromFile(bytes)
+	err = wc.CreateValidatingWebhookConfigurationFromFile(bytes, namespace, dep)
 	if err != nil {
 		return err
 	}
@@ -70,18 +89,18 @@ func InitializeOperator(config *rest.Config, namespace string, logger logr.Logge
 	if err != nil {
 		return err
 	}
-	err = wc.CreateWebhookServiceFromFile(bytes, namespace)
+	err = wc.CreateWebhookServiceFromFile(bytes, namespace, dep)
 	if err != nil {
 		return err
 	}
 
 	//Create Configmap
-	cc := NewConfigmapCreator(clientset, logger)
+	cc := NewConfigmapCreator(clientset, logger, scheme)
 	bytes, err = LoadBytesFromFile(ResourceFolder, ConfigMapFilename)
 	if err != nil {
 		return err
 	}
-	err = cc.CreateConfigmap(bytes, namespace)
+	err = cc.CreateConfigmap(bytes, namespace, dep)
 	if err != nil {
 		return err
 	}
