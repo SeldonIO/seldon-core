@@ -39,6 +39,8 @@ spec:
         command:
         - /manager
         env:
+        - name: WATCH_NAMESPACE
+          value: ''
         - name: CREATE_RESOURCES
           value: '{{ .Values.createResources }}'
         - name: POD_NAMESPACE

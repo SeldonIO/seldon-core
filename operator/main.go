@@ -78,6 +78,12 @@ func main() {
 	//Override operator namespace from environment variable as the source of truth
 	operatorNamespace = controllers.GetEnv("POD_NAMESPACE", operatorNamespace)
 
+	watchNamespace := controllers.GetEnv("WATCH_NAMESPACE", "")
+	if watchNamespace != "" {
+		setupLog.Info("Overriding namespace from WATCH_NAMESPACE", "watchNamespace", watchNamespace)
+		namespace = watchNamespace
+	}
+
 	if createResources {
 		setupLog.Info("Intializing operator")
 		err := k8sutils.InitializeOperator(config, operatorNamespace, setupLog)
