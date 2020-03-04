@@ -607,8 +607,25 @@ def test_model_gets_meta():
     rv = client.get('/predict?json={"meta":{"puid": "abc"},"data":{"ndarray":[]}}')
     j = json.loads(rv.data)
     logging.info(j)
+
     assert rv.status_code == 200
     assert j["meta"]["tags"] == {"inc_meta": {"puid": "abc"}}
+    assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
+    assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
+
+
+def test_model_passes_through_tags():
+    user_object = UserObject()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+    rv = client.get(
+        '/predict?json={"meta":{"tags":{"foo":"bar"}},"data":{"ndarray":[]}}'
+    )
+    j = json.loads(rv.data)
+    logging.info(j)
+
+    assert rv.status_code == 200
+    assert j["meta"]["tags"] == {"foo": "bar", "mytag": 1}
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
     assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
 
@@ -675,6 +692,27 @@ def test_proto_ok():
     j = json.loads(jStr)
     logging.info(j)
     assert j["meta"]["tags"] == {"mytag": 1}
+    assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
+    assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
+    assert j["data"]["tensor"]["shape"] == [2, 1]
+    assert j["data"]["tensor"]["values"] == [1, 2]
+
+
+def test_proto_passes_through_tags():
+    user_object = UserObject()
+    app = SeldonModelGRPC(user_object)
+    arr = np.array([1, 2])
+    datadef = prediction_pb2.DefaultData(
+        tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr),
+    )
+    meta = prediction_pb2.Meta()
+    json_format.ParseDict({"tags": {"foo": "bar"}}, meta)
+    request = prediction_pb2.SeldonMessage(data=datadef, meta=meta)
+    resp = app.Predict(request, None)
+    jStr = json_format.MessageToJson(resp)
+    j = json.loads(jStr)
+    logging.info(j)
+    assert j["meta"]["tags"] == {"foo": "bar", "mytag": 1}
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
     assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
     assert j["data"]["tensor"]["shape"] == [2, 1]
