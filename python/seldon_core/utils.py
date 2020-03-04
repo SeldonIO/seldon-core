@@ -459,9 +459,10 @@ def construct_response(
     meta_pb = prediction_pb2.Meta()
     meta_json: Dict = {}
 
-    tags: Dict = {}
-    if meta is not None and "tags" in meta:
-        tags.update(meta["tags"])
+    if meta:
+        tags = meta.get("tags", {})
+    else:
+        tags = {}
     custom_tags = client_custom_tags(user_model)
     if custom_tags:
         tags.update(custom_tags)

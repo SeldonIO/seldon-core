@@ -27,7 +27,7 @@ with_api_gateways = pytest.mark.parametrize(
 )
 
 
-@pytest.mark.flaky
+@pytest.mark.flaky(max_runs=3)
 @with_api_gateways
 class TestRollingHttp(object):
     # Test updating a model to a multi predictor model
@@ -226,7 +226,7 @@ class TestRollingHttp(object):
         run(f"kubectl delete -f ../resources/graph6svc.json -n {namespace}", shell=True)
 
 
-@pytest.mark.flaky
+@pytest.mark.flaky(max_runs=3)
 @with_api_gateways
 @pytest.mark.parametrize(
     "from_deployment,to_deployment",
