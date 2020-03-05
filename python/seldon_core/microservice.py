@@ -358,6 +358,18 @@ def main():
 
         server1_func = grpc_prediction_server
 
+    elif args.api_type == "BATCH":
+
+        def batch_prediction_worker():
+
+            worker = seldon_microservice.get_batch_worker(
+                num_cores=None, user_class=user_class, user_object=user_object
+            )
+            logger.info("Starting Batch Worker")
+            worker.start()
+
+        server1_func = batch_prediction_worker
+
     else:
         server1_func = None
 

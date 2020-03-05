@@ -5,6 +5,7 @@ from flask_cors import CORS
 import logging
 from seldon_core.utils import seldon_message_to_json, json_to_feedback
 from seldon_core.flask_utils import get_request
+from seldon_core.seldon_client import SeldonClient
 import seldon_core.seldon_methods
 from seldon_core.flask_utils import (
     SeldonMicroserviceException,
@@ -12,10 +13,89 @@ from seldon_core.flask_utils import (
 )
 from seldon_core.proto import prediction_pb2_grpc
 import os
+import multiprocessing
 
 logger = logging.getLogger(__name__)
 
 PRED_UNIT_ID = os.environ.get("PREDICTIVE_UNIT_ID", "0")
+
+
+class SeldonBatchWorker:
+    """
+    SeldonBatchWorker is the wrapper method to the user defined class
+    which in this case woudl serve as a data ingestor component. In this
+    bare implementation, the core conceptual components include a source,
+    a processing step and a sink, with a method that creates a connection.
+
+    To avoid potential shared state, SeldonBatchWorker enforces that the 
+
+    """
+
+    def __init__(self, user_object, user_class, num_cores=None):
+        self._user_object = user_object
+        self._user_class = user_class
+
+        self._pool = multiprocessing.Pool(processes=num_cores)
+
+        self._ensure_class_compliance(user_object, user_class)
+
+    def _ensure_class_compliance(self, user_object, user_class):
+        """
+        Before we run the class we want to make sure that the user has implemented
+        the data ingestion class correctly. This class has tighter constraints as
+        it has more strict requirements into the inputs, outputs.
+        """
+        # Ensure all required methods are present
+        required_methods = ["connection", "fetch", "process", "publish"]
+        for method in required_methods:
+            if not hasattr(self._user_class, method):
+                raise SeldonMicroserviceException(
+                    f"Batch worker must implement a {method} method"
+                )
+
+        # Ensure all required methods are static
+        static_methods = ["fetch", "process", "publish"]
+        for method in static_methods:
+            if not isinstance(self._user_object, getattr(self._user_object, method)):
+                raise SeldonMicroserviceException(
+                    f"Batch worker must implement the {method} method as a static method"
+                )
+
+    def get_seldon_client(self):
+        """
+        """
+        return SeldonClient()
+
+    def run_control_loop(self):
+        # We iterate until we run out of data to be fetched
+        repeat = True
+        while repeat:
+            connection = self._user_object.connection()
+            repeat, in_data = self._user_object.fetch(connection)
+            if in_data:
+                # Run a process with max pool workers on fetched data
+                self._pool.apply_async(
+                    lambda uc, con, sc, in_d: uc.publish(
+                        uc.process(con, sc, in_d), in_d, con
+                    ),
+                    args=(self._user_class, connection, in_data),
+                )
+        self._pool.close()
+        self._pool.join()
+
+    def terminate_batch_worker(self):
+        logger.info("Terminating Batch Worker")
+
+    def start(self):
+        logger.info("Starting Batch Worker")
+        self.run_control_loop()
+        self.terminate_batch_worker()
+
+
+def get_batch_worker(user_object, user_class, num_cores):
+    worker = SeldonBatchWorker(user_object, user_class, num_cores)
+
+    return worker
 
 
 def get_rest_microservice(user_model):
