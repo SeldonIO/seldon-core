@@ -1,0 +1,39 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: iris-streaming-deployment
+spec:
+  name: iris-streaming-spec
+  predictors:
+  - name: iris-streaming-predictor
+    batch:
+      streaming: 'true'
+      name: kafka-ingestor
+      parameters:
+      - name: bootstrap_servers
+        type: STRING
+        value: kafka://my-kafka.default.svc.cluster.local:9092
+      - name: consumer_topic
+        type: STRING
+        value: iris-streaming-deployment-kafka-ingestor-input
+      - name: producer_topic
+        type: STRING
+        value: iris-streaming-deployment-kafka-ingestor-output
+      - name: group_id
+        type: STRING
+        value: iris-streaming-deployment-kafka-ingestor
+    graph:
+      name: iris-model
+      endpoint:
+        type: REST
+      type: MODEL
+      children: []
+      parameters: []
+    componentSpecs:
+    - spec:
+        containers:
+        - image: seldonio/sklearn-iris:0.1
+          name: iris-model
+        - image: kafka_data_ingestor:0.1
+          name: kafka-ingestor
+
