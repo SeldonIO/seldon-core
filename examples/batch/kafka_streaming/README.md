@@ -1,7 +1,20 @@
 
-# Seldon Batch Processing Elasticsearch Data Source
+# Seldon Batch Processing Kafka Data Source
 
 This example will walk you through the steps for you to leverage the data ingestor batch functionality in Seldon Core to build your own custom Kafka Data Ingestor which will consume from a Kafka Topic, send the data to Seldon and then publish the output into another Kafka topic. The diagram below provides some intuition on what we'll be deploying:
+
+[](./batch-seldon-kafka-cluster.png)
+
+In this example we will:
+1. Create a Kafka Data Ingestor
+2. Run our Kafka Data Ingestor with docker-compose
+3. Deploy the model and test in Kubernetes cluster
+
+## 1) Create Kafka Data Ingestor
+
+To get started we want to create a simple data ingestor that consumes and publishes from Kafka.
+
+For this, we will create the file `model/KafkaDataIngestor.py` with the following contents:
 
 ```python
 import kafka
@@ -54,8 +67,7 @@ class KafkaDataIngestor:
 
     @staticmethod
     def publish(out_data, in_data, connection):
-        logger.info(f"Publishing with out_data=[{out_data}], "
-            f"in_data={in_data}")
+        logger.info(f"Publishing with out_data=[{out_data}], in_data={in_data}")
 
         res = connection["producer"].send(
             connection["producer_topic"], in_data)

@@ -27,7 +27,8 @@ class SeldonBatchWorker:
     bare implementation, the core conceptual components include a source,
     a processing step and a sink, with a method that creates a connection.
 
-    To avoid potential shared state, SeldonBatchWorker enforces that the 
+    To avoid potential shared state, SeldonBatchWorker enforces that the
+    fetch, process and publish methods are static.
 
     """
 

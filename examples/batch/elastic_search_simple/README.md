@@ -1,4 +1,21 @@
 
+# Seldon Batch Processing Elasticsearch Data Source
+
+This example will walk you through the steps for you to leverage the data ingestor batch functionality in Seldon Core to build your own custom Elasticsearch Data Ingestor which will consume from a Kafka Topic, send the data to Seldon and then publish the output into another Kafka topic. The diagram below provides some intuition on what we'll be deploying:
+
+[](./batch-seldon-elk-cluster.png)
+
+In this example we will:
+1. Create an ELK Data Ingestor
+2. Run our ELK Data Ingestor with docker-compose
+3. Deploy the model and test in Kubernetes cluster
+
+## 1) Create ELK Data Ingestor
+
+To get started we want to create a simple data ingestor that consumes and publishes from ELK.
+
+For this, we will create the file `model/ElasticDataIngestor.py` with the following contents:
+
 ```python
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search
