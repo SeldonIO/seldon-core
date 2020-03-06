@@ -1,3 +1,6 @@
+from prometheus_client.core import HistogramMetricFamily
+
+
 import argparse
 import os
 import importlib
