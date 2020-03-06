@@ -18,6 +18,11 @@ logger = logging.getLogger(__name__)
 PRED_UNIT_ID = os.environ.get("PREDICTIVE_UNIT_ID", "0")
 
 
+import multiprocessing as mp
+manager = mp.Manager()
+shared_dict = manager.dict()
+
+
 def get_rest_microservice(user_model):
     app = Flask(__name__, static_url_path="")
     CORS(app)
@@ -119,6 +124,20 @@ def get_rest_microservice(user_model):
         response = seldon_core.seldon_methods.metadata(user_model)
         logger.debug("REST Metadata Response: %s", response)
         return jsonify(response)
+
+    @app.route("/metrics", methods=["GET"])
+    def Metrics():
+        logger.debug("REST Metrics Request")
+
+        pid = os.getpid()
+
+        counter = shared_dict.get(pid, 0)
+        shared_dict[pid] = counter + 1
+        print(dict(shared_dict))
+
+        # response = seldon_core.seldon_methods.metrics(user_model)
+        # logger.debug("REST Metrics Response: %s", response)
+        return jsonify({"pid": pid})
 
     return app
 
