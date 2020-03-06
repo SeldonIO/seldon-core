@@ -1,4 +1,4 @@
-from seldon_core.metrics import validate_metrics
+from seldon_core.metrics import validate_metrics, register_metrics
 from seldon_core.flask_utils import SeldonMicroserviceException
 import json
 from typing import Dict, List, Union, Iterable, Callable, Optional
@@ -292,15 +292,6 @@ def client_custom_metrics(user_model: SeldonComponent) -> List[Dict]:
        A list of custom metrics
 
     """
-
-    from seldon_core.metrics import shared_dict
-    import os
-
-    pid = os.getpid()
-
-    counter = shared_dict.get(pid, 0)
-    shared_dict[pid] = counter + 1
-
     if hasattr(user_model, "metrics"):
         try:
             metrics = user_model.metrics()
@@ -310,6 +301,11 @@ def client_custom_metrics(user_model: SeldonComponent) -> List[Dict]:
                     "Bad metric created during request: " + j_str,
                     reason="MICROSERVICE_BAD_METRIC",
                 )
+            try:
+                register_metrics(metrics)
+            except Exception as e:
+                print(e)
+
             return metrics
         except SeldonNotImplementedError:
             pass
