@@ -1,4 +1,10 @@
 from typing import List, Dict
+import multiprocessing as mp
+
+
+manager = mp.Manager()
+shared_dict = manager.dict()
+
 
 COUNTER = "COUNTER"
 GAUGE = "GAUGE"
