@@ -1,8 +1,8 @@
 FROM python:3.7-slim
-COPY . /app
-WORKDIR /app
+COPY . /cifar
+WORKDIR /cifar
 RUN pip install -r requirements.txt
 RUN pip install gunicorn
 EXPOSE 8080
 ENTRYPOINT ["python"]
-CMD ["app/default_logger.py"]
+CMD ["app/cifar_logger.py"]
