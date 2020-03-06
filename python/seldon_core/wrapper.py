@@ -3,6 +3,7 @@ from concurrent import futures
 from flask import jsonify, Flask, send_from_directory, request
 from flask_cors import CORS
 import logging
+from seldon_core.metrics import shared_dict as metrics_shared_dict
 from seldon_core.utils import seldon_message_to_json, json_to_feedback
 from seldon_core.flask_utils import get_request
 import seldon_core.seldon_methods
@@ -16,11 +17,6 @@ import os
 logger = logging.getLogger(__name__)
 
 PRED_UNIT_ID = os.environ.get("PREDICTIVE_UNIT_ID", "0")
-
-
-import multiprocessing as mp
-manager = mp.Manager()
-shared_dict = manager.dict()
 
 
 def get_rest_microservice(user_model):
@@ -130,10 +126,7 @@ def get_rest_microservice(user_model):
         logger.debug("REST Metrics Request")
 
         pid = os.getpid()
-
-        counter = shared_dict.get(pid, 0)
-        shared_dict[pid] = counter + 1
-        print(dict(shared_dict))
+        print(dict(metrics_shared_dict))
 
         # response = seldon_core.seldon_methods.metrics(user_model)
         # logger.debug("REST Metrics Response: %s", response)

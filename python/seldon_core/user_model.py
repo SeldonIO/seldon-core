@@ -292,6 +292,15 @@ def client_custom_metrics(user_model: SeldonComponent) -> List[Dict]:
        A list of custom metrics
 
     """
+
+    from seldon_core.metrics import shared_dict
+    import os
+
+    pid = os.getpid()
+
+    counter = shared_dict.get(pid, 0)
+    shared_dict[pid] = counter + 1
+
     if hasattr(user_model, "metrics"):
         try:
             metrics = user_model.metrics()
