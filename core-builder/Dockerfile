@@ -92,11 +92,11 @@ RUN apt-get remove -y --auto-remove && apt-get clean -y && rm -rf /var/lib/apt/l
 
 # INSTALL GO
 ENV PATH /usr/local/go/bin:$PATH
-RUN wget https://dl.google.com/go/go1.12.5.linux-amd64.tar.gz && \
-        tar -zxvf go1.12.5.linux-amd64.tar.gz && \
+RUN wget https://dl.google.com/go/go1.13.8.linux-amd64.tar.gz && \
+        tar -zxvf go1.13.8.linux-amd64.tar.gz && \
         mv go/ /usr/local/go
-RUN curl -sL https://go.kubebuilder.io/dl/2.0.1/linux/amd64 | tar -xz -C /tmp/ && \
-        mv /tmp/kubebuilder_2.0.1_linux_amd64 /usr/local/kubebuilder/
+RUN curl -sL https://go.kubebuilder.io/dl/2.3.0/linux/amd64 | tar -xz -C /tmp/ && \
+        mv /tmp/kubebuilder_2.3.0_linux_amd64 /usr/local/kubebuilder/
 ENV PATH /usr/local/kubebuilder/bin:$PATH
 
 # DOWNLOAD HELM
