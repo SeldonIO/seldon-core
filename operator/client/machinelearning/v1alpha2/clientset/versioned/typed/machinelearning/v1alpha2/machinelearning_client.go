@@ -20,7 +20,6 @@ package v1alpha2
 import (
 	v1alpha2 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1alpha2"
 	"github.com/seldonio/seldon-core/operator/client/machinelearning/v1alpha2/clientset/versioned/scheme"
-	serializer "k8s.io/apimachinery/pkg/runtime/serializer"
 	rest "k8s.io/client-go/rest"
 )
 
@@ -70,7 +69,7 @@ func setConfigDefaults(config *rest.Config) error {
 	gv := v1alpha2.SchemeGroupVersion
 	config.GroupVersion = &gv
 	config.APIPath = "/apis"
-	config.NegotiatedSerializer = serializer.DirectCodecFactory{CodecFactory: scheme.Codecs}
+	config.NegotiatedSerializer = scheme.Codecs.WithoutConversion()
 
 	if config.UserAgent == "" {
 		config.UserAgent = rest.DefaultKubernetesUserAgent()

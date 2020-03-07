@@ -120,8 +120,7 @@ kind-image-install: docker-build
 	docker save ${IMG} > operator.tar
 	kind load image-archive operator.tar 
 
-# find or download controller-gen
-# download controller-gen if necessary
+
 controller-gen:
 ifeq (, $(shell which controller-gen))
 	@{ \
@@ -129,9 +128,10 @@ ifeq (, $(shell which controller-gen))
 	CONTROLLER_GEN_TMP_DIR=$$(mktemp -d) ;\
 	cd $$CONTROLLER_GEN_TMP_DIR ;\
 	go mod init tmp ;\
-	go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.2.4 ;\
+	go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.2.5 ;\
 	rm -rf $$CONTROLLER_GEN_TMP_DIR ;\
 	}
+
 CONTROLLER_GEN=$(GOBIN)/controller-gen
 else
 CONTROLLER_GEN=$(shell which controller-gen)

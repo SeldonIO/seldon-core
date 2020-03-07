@@ -38,6 +38,17 @@ def get_seldon_version():
     return version
 
 
+def wait_for_pod_shutdown(pod_name, namespace, timeout="10m"):
+    cmd = (
+        "kubectl wait --for=delete "
+        f"--timeout={timeout} "
+        f"-n {namespace} "
+        f"pod/{pod_name}"
+    )
+
+    return run(cmd, shell=True)
+
+
 def wait_for_shutdown(deployment_name, namespace, timeout="10m"):
     cmd = (
         "kubectl wait --for=delete "
@@ -47,6 +58,31 @@ def wait_for_shutdown(deployment_name, namespace, timeout="10m"):
     )
 
     return run(cmd, shell=True)
+
+
+def get_pod_name_for_sdep(sdep_name, namespace, attempts=20, sleep=5):
+    for _ in range(attempts):
+        ret = run(
+            f"kubectl get -n {namespace} pod -l seldon-deployment-id={sdep_name} -o json",
+            shell=True,
+            stdout=subprocess.PIPE,
+        )
+        if ret.returncode == 0:
+            logging.warning(f"Successfully waited for pod for {sdep_name}")
+            break
+        logging.warning(
+            f"Unsuccessful wait command but retrying for SeldonDeployment pod {sdep_name}"
+        )
+        time.sleep(sleep)
+    assert ret.returncode == 0, "Failed to get  pod names: non-zero return code"
+    data = json.loads(ret.stdout)
+    pod_names = []
+    for item in data["items"]:
+        pod_names.append(item["metadata"]["name"])
+    logging.warning(
+        f"For SeldonDeployment {sdep_name} " f"found following pod: {pod_names}"
+    )
+    return pod_names
 
 
 def get_deployment_names(sdep_name, namespace, attempts=20, sleep=5):

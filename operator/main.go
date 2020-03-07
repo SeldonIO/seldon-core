@@ -24,12 +24,12 @@ import (
 	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1alpha2"
 	machinelearningv1alpha3 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1alpha3"
 	"github.com/seldonio/seldon-core/operator/controllers"
+	istio "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-	istio "knative.dev/pkg/apis/istio/v1alpha3"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	// +kubebuilder:scaffold:imports
@@ -49,7 +49,7 @@ func init() {
 	_ = machinelearningv1alpha2.AddToScheme(scheme)
 	_ = machinelearningv1alpha3.AddToScheme(scheme)
 	if controllers.GetEnv(controllers.ENV_ISTIO_ENABLED, "false") == "true" {
-		istio.AddToScheme(scheme)
+		_ = istio.AddToScheme(scheme)
 	}
 	// +kubebuilder:scaffold:scheme
 }
@@ -72,6 +72,7 @@ func main() {
 		Scheme:             scheme,
 		MetricsBindAddress: metricsAddr,
 		LeaderElection:     enableLeaderElection,
+		LeaderElectionID:   "a33bd623.machinelearning.seldon.io",
 		Port:               webHookPort,
 		Namespace:          namespace,
 	})
