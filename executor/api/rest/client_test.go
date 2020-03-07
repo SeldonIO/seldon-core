@@ -295,5 +295,5 @@ func TestTimeout(t *testing.T) {
 
 	_, err = seldonRestClient.Status(createTestContext(), "model", host, int32(port), nil, map[string][]string{})
 	g.Expect(err).ToNot(BeNil())
-	g.Expect(err.Error()).To(Equal(fmt.Sprintf("Get http://127.0.0.1:%d/health/status: net/http: request canceled (Client.Timeout exceeded while awaiting headers)", port)))
+	g.Expect(err.Error()).To(Equal(fmt.Sprintf("Get \"http://127.0.0.1:%d/health/status\": net/http: request canceled (Client.Timeout exceeded while awaiting headers)", port)))
 }
