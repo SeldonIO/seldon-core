@@ -19,10 +19,11 @@ package v1
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"strconv"
+
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"strconv"
 )
 
 const (
