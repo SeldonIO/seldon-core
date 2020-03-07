@@ -10,16 +10,15 @@ const (
 )
 
 // Variable to cache the value of ENV default request logger
-var defaultRequestLoggerEndpointPrefix string
+var defaultRequestLoggerEndpointPrefix string = ""
 
 func GetLoggerDefaultUrl(namespace string) string {
-	if defaultRequestLoggerEndpointPrefix != "" {
-		return defaultRequestLoggerEndpointPrefix + namespace
-	}
-	if value, ok := os.LookupEnv("REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX"); ok && value != "" {
-		defaultRequestLoggerEndpointPrefix = value
-	} else {
-		defaultRequestLoggerEndpointPrefix = "http://default-broker."
+	if defaultRequestLoggerEndpointPrefix == "" {
+		if value, ok := os.LookupEnv("REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX"); ok && value != "" {
+			defaultRequestLoggerEndpointPrefix = value
+		} else {
+			defaultRequestLoggerEndpointPrefix = "http://default-broker."
+		}
 	}
 	return defaultRequestLoggerEndpointPrefix + namespace
 }
