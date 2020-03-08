@@ -12,6 +12,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"strconv"
+	"strings"
 )
 
 type WebhookCreator struct {
@@ -31,13 +32,21 @@ func NewWebhookCreator(client kubernetes.Interface, certs *Cert, logger logr.Log
 	logger.Info("Server version", "Major", serverVersion.Major, "Minor", serverVersion.Minor)
 	majorVersion, err := strconv.Atoi(serverVersion.Major)
 	if err != nil {
-		logger.Error(err, "Failed to parse majorVersion defaulting to 0")
-		majorVersion = 0
+		logger.Error(err, "Failed to parse majorVersion defaulting to 1")
+		majorVersion = 1
 	}
 	minorVersion, err := strconv.Atoi(serverVersion.Minor)
 	if err != nil {
-		logger.Error(err, "Failed to parse minorVersion defaulting to 0")
-		minorVersion = 0
+		if strings.HasSuffix(serverVersion.Minor, "+") {
+			minorVersion, err = strconv.Atoi(serverVersion.Minor[0 : len(serverVersion.Minor)-1])
+			if err != nil {
+				logger.Error(err, "Failed to parse minorVersion defaulting to 12")
+				minorVersion = 12
+			}
+		} else {
+			logger.Error(err, "Failed to parse minorVersion defaulting to 12")
+			minorVersion = 12
+		}
 	}
 	return &WebhookCreator{
 		clientset:    client,
@@ -49,7 +58,7 @@ func NewWebhookCreator(client kubernetes.Interface, certs *Cert, logger logr.Log
 	}, nil
 }
 
-func (wc *WebhookCreator) CreateMutatingWebhookConfigurationFromFile(rawYaml []byte, namespace string, owner *appsv1.Deployment) error {
+func (wc *WebhookCreator) CreateMutatingWebhookConfigurationFromFile(rawYaml []byte, namespace string, owner *appsv1.Deployment, watchNamespace bool) error {
 	mwc := v1beta1.MutatingWebhookConfiguration{}
 	err := yaml.Unmarshal(rawYaml, &mwc)
 	if err != nil {
@@ -63,8 +72,15 @@ func (wc *WebhookCreator) CreateMutatingWebhookConfigurationFromFile(rawYaml []b
 		mwc.Webhooks[idx].ClientConfig.Service.Namespace = namespace
 		//Remove selector if version too low
 		if wc.majorVersion == 1 && wc.minorVersion < 15 {
+			//mwc.Webhooks[idx].ObjectSelector = nil
+		}
+
+		//Remove namespace exclusion if watchNamespace
+		//TODO change to add a namespace selector if the initalizer adds a label to namespace
+		if watchNamespace {
 			mwc.Webhooks[idx].NamespaceSelector = nil
 		}
+
 	}
 
 	// add ownership
@@ -89,7 +105,7 @@ func (wc *WebhookCreator) CreateMutatingWebhookConfigurationFromFile(rawYaml []b
 	return err
 }
 
-func (wc *WebhookCreator) CreateValidatingWebhookConfigurationFromFile(rawYaml []byte, namespace string, owner *appsv1.Deployment) error {
+func (wc *WebhookCreator) CreateValidatingWebhookConfigurationFromFile(rawYaml []byte, namespace string, owner *appsv1.Deployment, watchNamespace bool) error {
 	vwc := v1beta1.ValidatingWebhookConfiguration{}
 	err := yaml.Unmarshal(rawYaml, &vwc)
 	if err != nil {
@@ -101,6 +117,11 @@ func (wc *WebhookCreator) CreateValidatingWebhookConfigurationFromFile(rawYaml [
 		// set namespace
 		vwc.Webhooks[idx].ClientConfig.Service.Namespace = namespace
 
+		//Remove namespace exclusion if watchNamespace
+		//TODO change to add a namespace selector if the initalizer adds a label to namespace
+		if watchNamespace {
+			vwc.Webhooks[idx].NamespaceSelector = nil
+		}
 	}
 
 	// add ownership

@@ -79,7 +79,7 @@ func TestMutatingWebhookCreate(t *testing.T) {
 	g.Expect(err).To(BeNil())
 	wc, err := NewWebhookCreator(client, certs, ctrl.Log, scheme)
 	g.Expect(err).To(BeNil())
-	err = wc.CreateMutatingWebhookConfigurationFromFile(bytes, TestNamespace, dep)
+	err = wc.CreateMutatingWebhookConfigurationFromFile(bytes, TestNamespace, dep, false)
 	g.Expect(err).To(BeNil())
 }
 
@@ -96,7 +96,7 @@ func TestValidatingWebhookCreate(t *testing.T) {
 	g.Expect(err).To(BeNil())
 	wc, err := NewWebhookCreator(client, certs, ctrl.Log, scheme)
 	g.Expect(err).To(BeNil())
-	err = wc.CreateValidatingWebhookConfigurationFromFile(bytes, TestNamespace, dep)
+	err = wc.CreateValidatingWebhookConfigurationFromFile(bytes, TestNamespace, dep, false)
 	g.Expect(err).To(BeNil())
 }
 

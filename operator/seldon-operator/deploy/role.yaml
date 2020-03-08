@@ -44,6 +44,14 @@ rules:
   - create
   - update
 - apiGroups:
+  - apps
+  resources:
+  - deployments/finalizers
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
   - ''
   resources:
   - namespaces
@@ -225,11 +233,3 @@ rules:
   - events
   verbs:
   - create
-- apiGroups:
-  - ''
-  resources:
-  - configmaps
-  verbs:
-  - get
-  - list
-  - watch

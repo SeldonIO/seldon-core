@@ -50,7 +50,7 @@ metadata:
       machine learning systems through the Seldon Engine. Once installed, the Seldon
       Operator provides multiple functions which facilitate the productisation, monitoring
       and maintenance of machine learning systems at scale.
-    repository: https://github.com/SeldonIO/seldon-operator
+    repository: https://github.com/SeldonIO/seldon-core
     support: Clive Cox
   name: seldon-operator.v1.1.0
   namespace: seldon-operator-system
@@ -158,6 +158,14 @@ spec:
           - get
           - list
           - create
+          - update
+        - apiGroups:
+          - apps
+          resources:
+          - deployments/finalizers
+          verbs:
+          - get
+          - patch
           - update
         - apiGroups:
           - ""
@@ -402,6 +410,7 @@ spec:
                 - name: EXECUTOR_CONTAINER_SERVICE_ACCOUNT_NAME
                   value: default
                 image: seldonio/seldon-core-operator:1.0.3-SNAPSHOT
+                imagePullPolicy: Always
                 name: manager
                 ports:
                 - containerPort: 443
@@ -444,14 +453,6 @@ spec:
           - events
           verbs:
           - create
-        - apiGroups:
-          - ""
-          resources:
-          - configmaps
-          verbs:
-          - get
-          - list
-          - watch
         serviceAccountName: seldon-manager
     strategy: deployment
   installModes:
@@ -484,7 +485,7 @@ spec:
   minKubeVersion: 1.13.0
   provider:
     name: Seldon Technologies
-  replaces: seldonoperator.v0.1.5
+  replaces: seldon-operator.v1.0.0
   selector:
     matchLabels:
       name: seldon-operator

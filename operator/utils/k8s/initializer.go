@@ -38,7 +38,7 @@ func findMyDeployment(clientset kubernetes.Interface, namespace string) (*appsv1
 	return client.Get(ManagerDeploymentName, v1.GetOptions{})
 }
 
-func InitializeOperator(config *rest.Config, namespace string, logger logr.Logger, scheme *runtime.Scheme) error {
+func InitializeOperator(config *rest.Config, namespace string, logger logr.Logger, scheme *runtime.Scheme, watchNamespace bool) error {
 
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
@@ -69,7 +69,7 @@ func InitializeOperator(config *rest.Config, namespace string, logger logr.Logge
 	if err != nil {
 		return err
 	}
-	err = wc.CreateMutatingWebhookConfigurationFromFile(bytes, namespace, dep)
+	err = wc.CreateMutatingWebhookConfigurationFromFile(bytes, namespace, dep, watchNamespace)
 	if err != nil {
 		return err
 	}
@@ -79,7 +79,7 @@ func InitializeOperator(config *rest.Config, namespace string, logger logr.Logge
 	if err != nil {
 		return err
 	}
-	err = wc.CreateValidatingWebhookConfigurationFromFile(bytes, namespace, dep)
+	err = wc.CreateValidatingWebhookConfigurationFromFile(bytes, namespace, dep, watchNamespace)
 	if err != nil {
 		return err
 	}

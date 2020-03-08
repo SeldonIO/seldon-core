@@ -26,7 +26,6 @@ resources:
 
 patchesStrategicMerge:
 - patch_configmap.yaml
-#- patch_manager_args.yaml
 - patch_manager_env.yaml
 - manager_webhook_patch.yaml
 

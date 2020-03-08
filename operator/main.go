@@ -86,7 +86,7 @@ func main() {
 
 	if createResources {
 		setupLog.Info("Intializing operator")
-		err := k8sutils.InitializeOperator(config, operatorNamespace, setupLog, scheme)
+		err := k8sutils.InitializeOperator(config, operatorNamespace, setupLog, scheme, namespace != "")
 		if err != nil {
 			setupLog.Error(err, "unable to initialise operator")
 			os.Exit(1)

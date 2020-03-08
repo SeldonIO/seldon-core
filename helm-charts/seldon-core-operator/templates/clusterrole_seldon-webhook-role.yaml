@@ -19,3 +19,11 @@ rules:
   - list
   - create
   - update
+- apiGroups:
+  - apps
+  resources:
+  - deployments/finalizers
+  verbs:
+  - get
+  - patch
+  - update
