@@ -22,3 +22,10 @@ deploy/olm-catalog/seldon-operator/1.1.0/seldon-operator.v1.1.0.clusterserviceve
 
 scorecard:
 	operator-sdk scorecard -o text --bundle deploy/olm-catalog/seldon-operator --kubeconfig ~/.kube/config
+
+operator-courier_ui_validate:
+	operator-courier verify --ui_validate_io deploy/olm-catalog/seldon-operator
+
+# See https://github.com/operator-framework/community-operators/blob/master/docs/testing-operators.md
+operator-courier_push:
+	operator-courier push deploy/olm-catalog/seldon-operator seldon seldon-operator 1.1.0 "$$QUAY_TOKEN"
