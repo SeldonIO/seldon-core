@@ -226,7 +226,7 @@ class TestRollingHttp(object):
         run(f"kubectl delete -f ../resources/graph6svc.json -n {namespace}", shell=True)
 
 
-# @pytest.mark.flaky(max_runs=3)
+@pytest.mark.flaky(max_runs=2)
 @with_api_gateways
 @pytest.mark.parametrize(
     "from_deployment,to_deployment,change",
@@ -239,7 +239,7 @@ class TestRollingHttp(object):
         ),  # New image version and new name of container
         ("graph1.json", "graph4.json", True),  # New resource request but same image
         ("graph1.json", "graph5.json", True),  # Update with multi-deployment new model
-        ("graph1.json", "graph8.json", False),  # From v1alpha2 to v1
+        ("graph1.json", "graph8.json", True),  # From v1alpha2 to v1
         ("graph7.json", "graph8.json", False),  # From v1alpha3 to v1
     ],
 )
