@@ -37,7 +37,7 @@ pipelineConfig:
               command: make
               args:
               - -C engine
-              - -f Makefile.ci
+              - -f Makefile
               - build_jar
           - name: seldon-operator
             steps:

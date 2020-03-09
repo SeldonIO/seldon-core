@@ -34,11 +34,11 @@ cd ..
 
 kubectl create namespace logs
 kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
-helm install elasticsearch elasticsearch --version 7.5.2 --namespace=logs -f elastic-kind.yaml --repo https://helm.elastic.co
+helm install elasticsearch elasticsearch --version 7.6.0 --namespace=logs -f elastic-kind.yaml --repo https://helm.elastic.co --set image=docker.elastic.co/elasticsearch/elasticsearch-oss
 
 helm install fluentd fluentd-elasticsearch --namespace=logs -f fluentd-values.yaml --repo https://kiwigrid.github.io
 
-helm install kibana kibana --version 7.5.2 --namespace=logs --set service.type=NodePort --repo https://helm.elastic.co
+helm install kibana kibana --version 7.6.0 --namespace=logs --set service.type=NodePort --repo https://helm.elastic.co --set image=docker.elastic.co/kibana/kibana-oss
 
 kubectl rollout status -n logs statefulset/elasticsearch-master
 

@@ -112,7 +112,7 @@ curl -v "http://default-broker.default.svc.cluster.local/" \
   -H "Ce-Inferenceservicename: seldon-model" \
   -H "Ce-Modelid: classifier" \
   -H "Ce-Namespace: default" \
-  -H "Ce-Predictor: example" \
+  -H "Ce-Endpoint: example" \
   -H "Ce-Requestid: 11226d35-9679-40fe-a21b-d22bb55fbe0e" \
   -H 'Content-Type: application/json' \
   -d '{"data": {"names": ["f0", "f1"], "ndarray": [0.77, 0.63]}}'
@@ -128,7 +128,7 @@ curl -v "http://default-broker.default.svc.cluster.local/" \
   -H "Ce-Inferenceservicename: seldon-model" \
   -H "Ce-Modelid: classifier" \
   -H "Ce-Namespace: default" \
-  -H "Ce-Predictor: example" \
+  -H "Ce-Endpoint: example" \
   -H "Ce-Requestid: 11226d35-9679-40fe-a21b-d22bb55fbe0e" \
   -H 'Content-Type: application/json' \
   -d '{"data": {"names": ["proba"], "ndarray": [0.09826376903346358]}}'
