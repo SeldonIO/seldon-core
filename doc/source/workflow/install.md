@@ -47,7 +47,7 @@ You can follow [the cert manager documentation to install it](https://docs.cert-
 You can then install seldon-core with:
 
 ```bash 
-helm install seldon-core seldon-core-operator --repo https://storage.googleapis.com/seldon-charts --set usageMetrics.enabled=true --namespace seldon-system --version 0.5.0-SNAPSHOT --set certManager.enabled=true
+helm install seldon-core seldon-core-operator --repo https://storage.googleapis.com/seldon-charts --set usageMetrics.enabled=true --namespace seldon-system --set certManager.enabled=true
 ```
 
 ## Ingress Support
