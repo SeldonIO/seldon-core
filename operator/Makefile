@@ -18,7 +18,7 @@ show_image:
 all: manager
 
 # Run tests
-test: generate fmt vet manifests
+test: generate fmt vet manifests generate-resources
 	go test ./controllers/...  -coverprofile cover.out
 
 # Build manager binary
@@ -157,3 +157,10 @@ clean-cert:
 
 licenses/dep.txt:
 	go list -m all | cut -d ' ' -f 1 > licenses/dep.txt
+
+generate-resources:
+	rm -rf generated
+	mkdir generated
+	kustomize build config/default/ -o generated
+	cp generated/apiextensions.k8s.io_v1beta1_customresourcedefinition_seldondeployments.machinelearning.seldon.io.yaml testing/machinelearning.seldon.io_seldondeployments.yaml
+
