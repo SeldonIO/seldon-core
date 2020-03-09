@@ -62,14 +62,16 @@ def predict(
             client_response = client_predict(
                 user_model, features, datadef.names, meta=meta
             )
-            return construct_response(user_model, False, request, client_response)
+            return construct_response(user_model, False, request, client_response, meta)
         else:
             (features, meta, datadef, data_type) = extract_request_parts_json(request)
             class_names = datadef["names"] if datadef and "names" in datadef else []
             client_response = client_predict(
                 user_model, features, class_names, meta=meta
             )
-            return construct_response_json(user_model, False, request, client_response)
+            return construct_response_json(
+                user_model, False, request, client_response, meta
+            )
 
 
 def send_feedback(
@@ -162,14 +164,16 @@ def transform_input(
             client_response = client_transform_input(
                 user_model, features, datadef.names, meta=meta
             )
-            return construct_response(user_model, False, request, client_response)
+            return construct_response(user_model, False, request, client_response, meta)
         else:
             (features, meta, datadef, data_type) = extract_request_parts_json(request)
             class_names = datadef["names"] if datadef and "names" in datadef else []
             client_response = client_transform_input(
                 user_model, features, class_names, meta=meta
             )
-            return construct_response_json(user_model, False, request, client_response)
+            return construct_response_json(
+                user_model, False, request, client_response, meta
+            )
 
 
 def transform_output(
@@ -213,14 +217,16 @@ def transform_output(
             client_response = client_transform_output(
                 user_model, features, datadef.names, meta=meta
             )
-            return construct_response(user_model, False, request, client_response)
+            return construct_response(user_model, False, request, client_response, meta)
         else:
             (features, meta, datadef, data_type) = extract_request_parts_json(request)
             class_names = datadef["names"] if datadef and "names" in datadef else []
             client_response = client_transform_output(
                 user_model, features, class_names, meta=meta
             )
-            return construct_response_json(user_model, False, request, client_response)
+            return construct_response_json(
+                user_model, False, request, client_response, meta
+            )
 
 
 def route(
@@ -296,6 +302,14 @@ def aggregate(
        Aggregated SeldonMessage proto
 
     """
+
+    def merge_meta(meta_list):
+        tags = {}
+        for meta in meta_list:
+            if meta:
+                tags.update(meta.get("tags", {}))
+        return {"tags": tags}
+
     is_proto = isinstance(request, prediction_pb2.SeldonMessageList)
 
     if hasattr(user_model, "aggregate_rest"):
@@ -314,15 +328,21 @@ def aggregate(
         if is_proto:
             features_list = []
             names_list = []
+            meta_list = []
 
             for msg in request.seldonMessages:
                 (features, meta, datadef, data_type) = extract_request_parts(msg)
                 features_list.append(features)
                 names_list.append(datadef.names)
+                meta_list.append(meta)
 
             client_response = client_aggregate(user_model, features_list, names_list)
             return construct_response(
-                user_model, False, request.seldonMessages[0], client_response
+                user_model,
+                False,
+                request.seldonMessages[0],
+                client_response,
+                merge_meta(meta_list),
             )
         else:
             features_list = []
@@ -339,14 +359,18 @@ def aggregate(
                     f"Invalid request data type: {request}"
                 )
 
+            meta_list = []
             for msg in msgs:
                 (features, meta, datadef, data_type) = extract_request_parts_json(msg)
                 class_names = datadef["names"] if datadef and "names" in datadef else []
                 features_list.append(features)
                 names_list.append(class_names)
+                meta_list.append(meta)
 
             client_response = client_aggregate(user_model, features_list, names_list)
-            return construct_response_json(user_model, False, msgs[0], client_response)
+            return construct_response_json(
+                user_model, False, msgs[0], client_response, merge_meta(meta_list)
+            )
 
 
 def health_status(user_model: Any) -> Union[prediction_pb2.SeldonMessage, List, Dict]:

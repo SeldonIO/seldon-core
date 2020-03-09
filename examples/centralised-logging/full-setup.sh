@@ -19,12 +19,12 @@ helm install --name seldon-core-loadtesting ../../helm-charts/seldon-core-loadte
 
 
 kubectl create namespace logs || echo "namespace logs exists"
-helm install --name elasticsearch elasticsearch --version 7.5.2 --namespace=logs -f elastic-minikube.yaml --repo https://helm.elastic.co
+helm install --name elasticsearch elasticsearch --version 7.6.0 --namespace=logs -f elastic-minikube.yaml --repo https://helm.elastic.co --set image=docker.elastic.co/elasticsearch/elasticsearch-oss
 kubectl rollout status statefulset/elasticsearch-master -n logs
 kubectl patch svc elasticsearch-master -n logs -p '{"spec": {"type": "LoadBalancer"}}'
 
 helm install fluentd-elasticsearch --name fluentd --namespace=logs -f fluentd-values.yaml --repo https://kiwigrid.github.io
-helm install kibana --version 7.5.2 --name=kibana --namespace=logs --set service.type=NodePort --repo https://helm.elastic.co
+helm install kibana --version 7.6.0 --name=kibana --namespace=logs --set service.type=NodePort --repo https://helm.elastic.co --set image=docker.elastic.co/kibana/kibana-oss
 
 kubectl rollout status deployment/kibana-kibana -n logs
 

@@ -11,12 +11,14 @@ This example request logger is as general-purpose as possible. Eventually intend
 
 Custom request loggers can be built for different types of transformations. Can be written in any language, just needs to handle HTTP POST requests and log to stdout for fluentd or could go direct to chosen backend.
 
+A custom logger example is provided for a [CIFAR10 image classfier example](https://github.com/SeldonIO/alibi-detect/tree/master/integrations/samples/kfserving/od-cifar10)
+
 # Local Testing
 
 To try this out, run elastic locally
 ```
-docker pull docker.elastic.co/elasticsearch/elasticsearch:7.5.2
-docker run -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch:7.5.2
+docker pull docker.elastic.co/elasticsearch/elasticsearch-oss:7.6.0
+docker run -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch-oss:7.6.0
 ```
 
 Run seldon-core/executor/samples/local/logger but don't start the dummy_logsink. Instead run the local request logger with:
@@ -97,4 +99,3 @@ TODO: BATCH IS BROKEN BY THIS WAY OF USING REQ IDS - NOW THE SECOND ROW OVERWRIT
 TODO: HANDLE GRPC AND INFERENCESERVICES
 TODO: THINK ABOUT SHADOW CASE - HOW TO ENSURE WE HAVE SOMETHING TO LINK DEFAULT AND SHADOW? MULTIPLE SHADOWS? https://github.com/SeldonIO/seldon-core/issues/1207
 TODO: FEEDBACK - IF SENT WITH CUSTOM ID HEADER COULD SUPPORT A/B TESTS WITH RECORDED RESULTS
-TODO: COULD WE REDUCE NUM RETRIES USING CREATE AND UPDATE INSTEAD OF INDEX? Can hit esrejectedexecutionexception with high load on elastic dep on num nodes. 
