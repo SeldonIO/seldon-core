@@ -1,6 +1,7 @@
 VERSION := $(shell cat ../version.txt)
 # Image URL to use all building/pushing image targets
 IMG ?= seldonio/seldon-core-operator:${VERSION}
+IMG_REDHAT ?= seldonio/seldon-core-operator-ubi8:${VERSION}
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true"
 
@@ -119,13 +120,26 @@ create-client: test
 docker-build: test generate-resources
 	docker build . -t ${IMG}
 
+# Build the docker image for Redhat
+docker-build-redhat: test generate-resources
+	docker build . -f Dockerfile.redhat -t ${IMG_REDHAT}
+
+
 # Push the docker image
 docker-push:
 	docker push ${IMG}
 
+# Push the docker image
+docker-push-redhat:
+	docker push ${IMG_REDHAT}
+
 
 kind-image-install: docker-build
 	docker save ${IMG} > operator.tar
+	kind load image-archive operator.tar 
+
+kind-image-install-redhat: docker-build-redhat
+	docker save ${IMG_REDHAT} > operator.tar
 	kind load image-archive operator.tar 
 
 # find or download controller-gen

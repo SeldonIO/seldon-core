@@ -1,7 +1,7 @@
 VERSION := $(shell cat ../version.txt)
 # Image URL to use all building/pushing image targets
 IMG ?= seldonio/seldon-core-executor:${VERSION}
-
+IMG_REDHAT ?= seldonio/seldon-core-executor-ubi8:${VERSION}
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
 GOBIN=$(shell go env GOPATH)/bin
@@ -57,13 +57,23 @@ test: fmt vet
 docker-build: test
 	docker build . -t ${IMG}
 
+# Build the docker image for Redhat
+docker-build-redhat: test
+	docker build . -f Dockerfile.redhat -t ${IMG_REDHAT}
+
 # Push the docker image
 docker-push:
 	docker push ${IMG}
 
+# Push the docker image
+docker-push-redhat:
+	docker push ${IMG_REDHAT}
 
 kind-image-install: docker-build
 	kind load -v 3 docker-image ${IMG}
+
+kind-image-install-redhat: docker-build-redhat
+	kind load -v 3 docker-image ${IMG_REDHAT}
 
 
 .PHONY: clean
