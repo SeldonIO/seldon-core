@@ -26,7 +26,26 @@ Assuming a Seldon Deployment ```mymodel``` with Ambassador exposed on `0.0.0.0:8
 curl -v 0.0.0.0:8003/seldon/mymodel/api/v1.0/predictions -d '{"data":{"names":["a","b"],"tensor":{"shape":[2,2],"values":[0,0,1,1]}}}' -H "Content-Type: application/json"
 ```
 
-## Canary Deployments
+## Ambassador Configuration Annotations Reference
+
+| Annotation | Description |
+|------------|-------------|
+|`seldon.io/ambassador-config:<configuration>`| Custom Ambassador Configuration |
+|`seldon.io/ambassador-header:<header>`| The header to add to Ambassador configuration |
+|`seldon.io/ambassador-id:<instance id>`| The instance id to be added to Ambassador `ambassador_id` configuration |
+|`seldon.io/ambassador-regex-header:<regex>`| The regular expression header to use for routing via headers|
+|`seldon.io/ambassador-retries:<number of retries>` | The number of times ambassador will retry request on connect-failure. Default 0. Use custom configuration if more control needed.|
+|`seldon.io/ambassador-service-name:<existing_deployment_name>`| The name of the existing Seldon Deployment for shadow or header based routing |
+|`seldon.io/ambassador-shadow:true` | Activate shadowing for this deployment |
+|`seldon.io/grpc-read-timeout: <gRPC read timeout (msecs)>` | gRPC read timeout |
+|`seldon.io/rest-read-timeout:<REST read timeout (msecs)>` | REST read timeout |
+
+All annotations should be placed in `spec.annotations`.
+
+See below for details.
+
+
+### Canary Deployments
 
 Canary rollouts are available where you wish to push a certain percentage of traffic to a new model to test whether it works ok in production. To add a canary to your SeldonDeployment simply add a new predictor section and set the traffic levels for the main and canary to desired levels. For example:
 
@@ -73,21 +92,17 @@ The above example has a "main" predictor with 75% of traffic and a "canary" with
 
 A worked example for [canary deployments](../examples/ambassador_canary.html) is provided.
 
-## Shadow Deployments
+### Shadow Deployments
 
 Shadow deployments allow you to send duplicate requests to a parallel deployment but throw away the response. This allows you to test machine learning models under load and compare the results to the live deployment. 
 
-You simply need to add some annotations to your Seldon Deployment resource for your shadow deployment.
-
-  * `seldon.io/ambassador-shadow:true` : Flag to mark this deployment as a Shadow deployment in Ambassador.
-  * `seldon.io/ambassador-service-name:<existing_deployment_name>` : The name of the existing Seldon Deployment you want to attach to as a shadow.
-     * Example: `"seldon.io/ambassador-service-name":"example"`
+Simply set the `shadow` boolean in your shadow predictor.
 
 A worked example for [shadow deployments](../examples/ambassador_shadow.html) is provided.
 
 To understand more about the Ambassador configuration for this see [their docs on shadow deployments](https://www.getambassador.io/reference/shadowing/).
 
-## Header based Routing
+### Header based Routing
 
 Header based routing allows you to route requests to particular Seldon Deployments based on headers in the incoming requests.
 
@@ -95,7 +110,9 @@ You simply need to add some annotations to your Seldon Deployment resource.
 
   * `seldon.io/ambassador-header:<header>` : The header to add to Ambassador configuration	    
      * Example:  `"seldon.io/ambassador-header":"location: london"	    `
-  * `seldon.io/ambassador-service-name:<existing_deployment_name>` : The name of the existing Seldon you want to attach to as an alternative mapping for requests. 
+  * `seldon.io/ambassador-regex-header:<header>` : The regular expression header to add to Ambassador configuration	    
+     * Example:  `"seldon.io/ambassador-header":"location: lond.*"	    `
+  * `seldon.io/ambassador-service-name:<existing_deployment_name>` : The name of the existing Seldon Deployment you want to attach to as an alternative mapping for requests. 
      * Example: `"seldon.io/ambassador-service-name":"example"`
 
 A worked example for [header based routing](../examples/ambassador_headers.html) is provided.
@@ -122,9 +139,10 @@ spec:
 ```
 
 Note that your Ambassador instance must be configured with matching `ambassador_id`.
+
 See [AMBASSADOR_ID](https://github.com/datawire/ambassador/blob/master/docs/reference/running.md#ambassador_id) for details
 
-## Custom Amabassador configuration
+### Custom Amabassador configuration
 
 The above discussed configurations should cover most cases but there maybe a case where you want to have a very particular Ambassador configuration under your control. You can acheieve this by adding your confguration as an annotation to your Seldon Deployment resource.
 
@@ -132,4 +150,6 @@ The above discussed configurations should cover most cases but there maybe a cas
     * Example: `"seldon.io/ambassador-config":"apiVersion: ambassador/v1\nkind: Mapping\nname: seldon_example_rest_mapping\nprefix: /mycompany/ml/\nservice: production-model-example.seldon:8000\ntimeout_ms: 3000"`
 
 A worked example for [custom Ambassador config](../examples/ambassador_custom.html) is provided.
+
+
 

@@ -4,7 +4,7 @@ VERSION := $(shell cat ../../version.txt)
 PYTEST_WORKERS ?= "4"
 
 kind_create_cluster:
-	kind create cluster --config kind_config.yaml
+	kind create cluster --config ../resources/kind_config.yaml
 
 kind_delete_cluster:
 	kind delete cluster
@@ -27,10 +27,26 @@ kind_build_images: build_protos kind_build_engine kind_build_operator kind_build
 helm_setup:
 	helm repo add stable https://kubernetes-charts.storage.googleapis.com/
 	helm repo add seldonio https://storage.googleapis.com/seldon-charts
+	helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
 	helm repo update
 
 install_ambassador:
-	helm install --wait ambassador stable/ambassador -f ambassador_values.yaml --set crds.keep=false --namespace seldon --set replicaCount=1
+	helm install ambassador \
+		stable/ambassador \
+		-f ../resources/ambassador_values.yaml \
+		--set crds.keep=false \
+		--namespace seldon \
+		--set replicaCount=1 \
+		--wait
+
+install_jaeger:
+	helm install jaeger-operator \
+		jaegertracing/jaeger-operator \
+		--set rbac.clusterRole=true \
+		--namespace seldon \
+		--wait
+	kubectl apply -f ../resources/jaeger.yaml --namespace seldon
+
 
 install_cert_manager:
 	cd ../../operator && make install-cert-manager
@@ -61,7 +77,7 @@ create_namespaces:
 set_namespace:
 	kubectl config set-context $$(kubectl config current-context) --namespace=seldon
 
-kind_setup: create_namespaces helm_setup install_ambassador install_istio install_seldon set_namespace
+kind_setup: create_namespaces helm_setup install_ambassador install_istio install_jaeger install_seldon set_namespace
 port-forward-ambassador:
 	kubectl port-forward $$(kubectl get pods -n seldon -l app.kubernetes.io/name=ambassador -o jsonpath='{.items[0].metadata.name}') -n seldon 8003:8080
 
@@ -99,6 +115,12 @@ test: build_protos install
 		-W ignore \
 		-n 0 \
 		-m "sequential" 2>&1
+
+test_notebooks: build_protos install
+	pytest \
+		--verbose \
+		-s \
+		-W ignore test_notebooks.py::TestNotebooks 2>&1
 
 .PHONY: clean
 clean:

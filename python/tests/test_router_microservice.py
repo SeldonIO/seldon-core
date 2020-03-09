@@ -20,7 +20,7 @@ class UserObject(object):
         self.ret_meta = ret_meta
 
     def route(self, X, features_names, **kwargs):
-        print("Route called")
+        logging.info("Route called")
         if self.ret_meta:
             self.inc_meta = kwargs.get("meta")
         return 22
@@ -133,7 +133,7 @@ def test_router_gets_meta():
     client = app.test_client()
     rv = client.get('/route?json={"meta":{"puid": "abc"}, "data":{"ndarray":[2]}}')
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["meta"]["tags"] == {"inc_meta": {"puid": "abc"}}
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
@@ -146,7 +146,7 @@ def test_router_meta_to_nonmeta_model():
     client = app.test_client()
     rv = client.get('/route?json={"meta":{"puid": "abc"}, "data":{"ndarray":[2]}}')
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 200
     assert j["data"]["ndarray"] == [[22]]
 

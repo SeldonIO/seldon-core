@@ -17,4 +17,5 @@ replicas: 1
 oauth:
   key: 
   secret:
-      
+predictor:
+  name: default

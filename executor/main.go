@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"github.com/ghodss/yaml"
 	"github.com/go-logr/logr"
-	"github.com/opentracing/opentracing-go"
 	"github.com/prometheus/common/log"
 	"github.com/seldonio/seldon-core/executor/api"
 	seldonclient "github.com/seldonio/seldon-core/executor/api/client"
@@ -17,12 +16,11 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/grpc/tensorflow"
 	"github.com/seldonio/seldon-core/executor/api/rest"
+	"github.com/seldonio/seldon-core/executor/api/tracing"
 	"github.com/seldonio/seldon-core/executor/k8s"
 	loghandler "github.com/seldonio/seldon-core/executor/logger"
 	"github.com/seldonio/seldon-core/executor/proto/tensorflow/serving"
 	"github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
-	jaegercfg "github.com/uber/jaeger-client-go/config"
-	"io"
 	"io/ioutil"
 	"net"
 	"net/url"
@@ -136,7 +134,7 @@ func runGrpcServer(logger logr.Logger, predictor *v1.PredictorSpec, client seldo
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	grpcServer, err := grpc.CreateGrpcServer(predictor, deploymentName, annotations)
+	grpcServer, err := grpc.CreateGrpcServer(predictor, deploymentName, annotations, logger)
 	if err != nil {
 		log.Fatalf("Failed to create grpc server: %v", err)
 	}
@@ -152,28 +150,6 @@ func runGrpcServer(logger logr.Logger, predictor *v1.PredictorSpec, client seldo
 	if err != nil {
 		log.Errorf("Grpc server error: %v", err)
 	}
-}
-
-func initTracing() io.Closer {
-	//Initialise tracing
-	cfg, err := jaegercfg.FromEnv()
-	if err != nil {
-		// parsing errors might happen here, such as when we get a string where we expect a number
-		log.Fatal("Could not parse Jaeger env vars", err.Error())
-	}
-
-	if cfg.ServiceName == "" {
-		cfg.ServiceName = "executor"
-	}
-
-	tracer, closer, err := cfg.NewTracer()
-	if err != nil {
-		log.Fatal("Could not initialize jaeger tracer:", err.Error())
-	}
-
-	opentracing.SetGlobalTracer(tracer)
-
-	return closer
 }
 
 func main() {
@@ -243,7 +219,10 @@ func main() {
 	loghandler.StartDispatcher(*logWorkers, logger, *sdepName, *namespace, *predictorName)
 
 	//Init Tracing
-	closer := initTracing()
+	closer, err := tracing.InitTracing()
+	if err != nil {
+		log.Fatal("Could not initialize jaeger tracer", err.Error())
+	}
 	defer closer.Close()
 
 	if *transport == "rest" {

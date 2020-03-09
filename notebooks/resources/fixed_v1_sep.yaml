@@ -1,0 +1,21 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: fixed
+spec:
+  name: fixed
+  annotations:
+    seldon.io/engine-separate-pod: "true"
+  predictors:
+  - protocol: seldon
+    transport: rest
+    componentSpecs:
+    - spec:
+        containers:
+        - image: seldonio/fixed-model:0.1
+          name: classifier
+    graph:
+      name: classifier
+      type: MODEL
+    name: default
+    replicas: 1

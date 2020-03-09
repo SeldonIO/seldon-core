@@ -35,7 +35,7 @@ executor:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/seldon-core-executor
-    tag: 1.0.2-SNAPSHOT
+    tag: 1.0.3-SNAPSHOT
   port: 8000
   prometheus:
     path: /prometheus

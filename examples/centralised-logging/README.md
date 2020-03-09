@@ -23,7 +23,7 @@ Install elastic with KIND config:
 ```
 kubectl create namespace logs
 kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
-helm install elasticsearch elasticsearch --version 7.5.2 --namespace=logs -f elastic-kind.yaml --repo https://helm.elastic.co
+helm install elasticsearch elasticsearch --version 7.6.0 --namespace=logs -f elastic-kind.yaml --repo https://helm.elastic.co --set image=docker.elastic.co/elasticsearch/elasticsearch-oss
 ```
 
 ## Setup Elastic - Minikube
@@ -38,7 +38,7 @@ Install elasticsearch with minikube configuration:
 
 ```
 kubectl create namespace logs
-helm install elasticsearch elasticsearch --version 7.5.2 --namespace=logs -f elastic-minikube.yaml --repo https://helm.elastic.co
+helm install elasticsearch elasticsearch --version 7.6.0 --namespace=logs -f elastic-minikube.yaml --repo https://helm.elastic.co --set image=docker.elastic.co/elasticsearch/elasticsearch-oss
 ```
 
 ## Fluentd and Kibana
@@ -52,7 +52,7 @@ helm install fluentd fluentd-elasticsearch --namespace=logs -f fluentd-values.ya
 And kibana UI:
 
 ```
-helm install kibana kibana --version 7.5.2 --namespace=logs --set service.type=NodePort --repo https://helm.elastic.co
+helm install kibana kibana --version 7.6.0 --namespace=logs --set service.type=NodePort --repo https://helm.elastic.co --set image=docker.elastic.co/kibana/kibana-oss
 ```
 
 ## Generating Logging
@@ -133,6 +133,12 @@ In that case pods would be logged. At the time of writing fluentbit only support
 Seldon can also be used to log full HTTP requests. See [request logging guide](./request-logging/README.md)
 
 The elasticsearch backend is not available externally by default but can be exposed if needed for debugging with `kubectl patch svc elasticsearch-master -n logs -p '{"spec": {"type": "LoadBalancer"}}'`
+
+### Benchmarking
+
+This example illustrates one way to send multiple requests at a controllable rate.
+
+It is therefore possible to use this example as a benchmarking test scenario.
 
 ## Credits
 

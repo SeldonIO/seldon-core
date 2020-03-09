@@ -69,7 +69,7 @@ spec:
         - name: USE_EXECUTOR
           value: "true"
         - name: EXECUTOR_CONTAINER_IMAGE_AND_VERSION
-          value: seldonio/seldon-core-executor:1.0.1-SNAPSHOT
+          value: seldonio/seldon-core-executor:1.0.3-SNAPSHOT
         - name: EXECUTOR_CONTAINER_IMAGE_PULL_POLICY
           value: IfNotPresent
         - name: EXECUTOR_PROMETHEUS_PATH

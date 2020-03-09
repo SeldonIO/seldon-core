@@ -10,18 +10,19 @@ import (
 )
 
 const (
-	ANNOTATION_REST_READ_TIMEOUT       = "seldon.io/rest-read-timeout"
-	ANNOTATION_GRPC_READ_TIMEOUT       = "seldon.io/grpc-read-timeout"
+	ANNOTATION_REST_TIMEOUT            = "seldon.io/rest-timeout"
+	ANNOTATION_GRPC_TIMEOUT            = "seldon.io/grpc-timeout"
 	ANNOTATION_AMBASSADOR_CUSTOM       = "seldon.io/ambassador-config"
-	ANNOTATION_AMBASSADOR_SHADOW       = "seldon.io/ambassador-shadow"
 	ANNOTATION_AMBASSADOR_SERVICE      = "seldon.io/ambassador-service-name"
 	ANNOTATION_AMBASSADOR_HEADER       = "seldon.io/ambassador-header"
 	ANNOTATION_AMBASSADOR_REGEX_HEADER = "seldon.io/ambassador-regex-header"
 	ANNOTATION_AMBASSADOR_ID           = "seldon.io/ambassador-id"
+	ANNOTATION_AMBASSADOR_RETRIES      = "seldon.io/ambassador-retries"
 
 	YAML_SEP = "---\n"
 
-	AMBASSADOR_IDLE_TIMEOUT = 300000
+	AMBASSADOR_IDLE_TIMEOUT    = 300000
+	AMBASSADOR_DEFAULT_RETRIES = "0"
 )
 
 // Struct for Ambassador configuration
@@ -58,7 +59,7 @@ func getAmbassadorRestConfig(mlDep *machinelearningv1.SeldonDeployment,
 	customHeader string,
 	customRegexHeader string,
 	weight *int32,
-	shadowing string,
+	shadowing bool,
 	engine_http_port int,
 	nameOverride string,
 	instance_id string) (string, error) {
@@ -66,9 +67,14 @@ func getAmbassadorRestConfig(mlDep *machinelearningv1.SeldonDeployment,
 	namespace := getNamespace(mlDep)
 
 	// Set timeout
-	timeout, err := strconv.Atoi(getAnnotation(mlDep, ANNOTATION_REST_READ_TIMEOUT, "3000"))
+	timeout, err := strconv.Atoi(getAnnotation(mlDep, ANNOTATION_REST_TIMEOUT, "3000"))
 	if err != nil {
-		return "", nil
+		return "", err
+	}
+
+	retries, err := strconv.Atoi(getAnnotation(mlDep, ANNOTATION_AMBASSADOR_RETRIES, AMBASSADOR_DEFAULT_RETRIES))
+	if err != nil {
+		return "", err
 	}
 
 	name := p.Name
@@ -85,10 +91,13 @@ func getAmbassadorRestConfig(mlDep *machinelearningv1.SeldonDeployment,
 		Rewrite:    "/",
 		Service:    serviceName + "." + namespace + ":" + strconv.Itoa(engine_http_port),
 		TimeoutMs:  timeout,
-		RetryPolicy: &AmbassadorRetryPolicy{
+	}
+
+	if retries != 0 {
+		c.RetryPolicy = &AmbassadorRetryPolicy{
 			RetryOn:    "connect-failure",
-			NumRetries: 3,
-		},
+			NumRetries: retries,
+		}
 	}
 
 	if weight != nil {
@@ -123,9 +132,8 @@ func getAmbassadorRestConfig(mlDep *machinelearningv1.SeldonDeployment,
 		}
 		c.RegexHeaders = elementMap
 	}
-	if shadowing != "" {
-		shadow := true
-		c.Shadow = &shadow
+	if shadowing {
+		c.Shadow = &shadowing
 	}
 	if instance_id != "" {
 		c.InstanceId = instance_id
@@ -146,7 +154,7 @@ func getAmbassadorGrpcConfig(mlDep *machinelearningv1.SeldonDeployment,
 	customHeader string,
 	customRegexHeader string,
 	weight *int32,
-	shadowing string,
+	shadowing bool,
 	engine_grpc_port int,
 	nameOverride string,
 	instance_id string) (string, error) {
@@ -155,9 +163,14 @@ func getAmbassadorGrpcConfig(mlDep *machinelearningv1.SeldonDeployment,
 	namespace := getNamespace(mlDep)
 
 	// Set timeout
-	timeout, err := strconv.Atoi(getAnnotation(mlDep, ANNOTATION_GRPC_READ_TIMEOUT, "3000"))
+	timeout, err := strconv.Atoi(getAnnotation(mlDep, ANNOTATION_GRPC_TIMEOUT, "3000"))
 	if err != nil {
 		return "", nil
+	}
+
+	retries, err := strconv.Atoi(getAnnotation(mlDep, ANNOTATION_AMBASSADOR_RETRIES, AMBASSADOR_DEFAULT_RETRIES))
+	if err != nil {
+		return "", err
 	}
 
 	name := p.Name
@@ -177,10 +190,13 @@ func getAmbassadorGrpcConfig(mlDep *machinelearningv1.SeldonDeployment,
 		Headers:     map[string]string{"seldon": serviceNameExternal},
 		Service:     serviceName + "." + namespace + ":" + strconv.Itoa(engine_grpc_port),
 		TimeoutMs:   timeout,
-		RetryPolicy: &AmbassadorRetryPolicy{
+	}
+
+	if retries != 0 {
+		c.RetryPolicy = &AmbassadorRetryPolicy{
 			RetryOn:    "connect-failure",
-			NumRetries: 3,
-		},
+			NumRetries: retries,
+		}
 	}
 
 	if weight != nil {
@@ -213,9 +229,8 @@ func getAmbassadorGrpcConfig(mlDep *machinelearningv1.SeldonDeployment,
 		}
 		c.RegexHeaders = elementMap
 	}
-	if shadowing != "" {
-		shadow := true
-		c.Shadow = &shadow
+	if shadowing {
+		c.Shadow = &shadowing
 	}
 	if instance_id != "" {
 		c.InstanceId = instance_id
@@ -241,7 +256,7 @@ func getAmbassadorConfigs(mlDep *machinelearningv1.SeldonDeployment, p *machinel
 			weight = &p.Traffic
 		}
 
-		shadowing := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_SHADOW, "")
+		shadowing := p.Shadow
 		serviceNameExternal := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_SERVICE, mlDep.ObjectMeta.Name)
 		customHeader := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_HEADER, "")
 		customRegexHeader := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_REGEX_HEADER, "")

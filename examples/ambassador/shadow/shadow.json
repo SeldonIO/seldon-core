@@ -5,21 +5,17 @@
         "labels": {
             "app": "seldon"
         },
-        "name": "example-shadow"
+        "name": "example"
     },
     "spec": {
         "name": "shadow-model",
-	"annotations": {
-	    "seldon.io/ambassador-service-name":"example",
-	    "seldon.io/ambassador-shadow":"true"	    
-	},	
         "predictors": [
             {
                 "componentSpecs": [{
                     "spec": {
                         "containers": [
                             {
-                                "image": "seldonio/mock_classifier_rest:1.1",
+                                "image": "seldonio/mock_classifier_rest:1.4",
                                 "imagePullPolicy": "IfNotPresent",
                                 "name": "classifier"
                             }
@@ -35,9 +31,34 @@
                     "endpoint": {
                         "type": "REST"
                     }},
-                "name": "single",
+                "name": "default",
                 "replicas": 1
+            },
+            {
+                "componentSpecs": [{
+                    "spec": {
+                        "containers": [
+                            {
+                                "image": "seldonio/mock_classifier_rest:1.4",
+                                "imagePullPolicy": "IfNotPresent",
+                                "name": "classifier"
+                            }
+                        ]
+                    }}
+                                  ],
+                "graph":
+                {
+                    "children": [],
+                    "name": "classifier",
+                    "type": "MODEL",
+                    "endpoint": {
+                        "type": "REST"
+                    }},
+                "name": "shadow",
+                "replicas": 1,
+		"shadow": true
             }
+	    
         ]
     }
 }
