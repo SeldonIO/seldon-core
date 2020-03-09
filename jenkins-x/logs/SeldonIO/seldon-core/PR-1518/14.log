@@ -1,0 +1,28 @@
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-15-v5ct2-14[0m stage [32mmeta-pipeline[0m and container [32mstep-credential-initializer-7xt26[0m
+{"level":"warn","ts":1583767643.7211587,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1583767643.7215972,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-15-v5ct2-14[0m stage [32mmeta-pipeline[0m and container [32mstep-working-dir-initializer-c2824[0m
+{"level":"warn","ts":1583767644.7583818,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1583767644.7598693,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-15-v5ct2-14[0m stage [32mmeta-pipeline[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-15-v5ct2-14[0m stage [32mmeta-pipeline[0m and container [32mstep-git-source-meta-seldonio-seldon-core-pr-15-9ml52[0m
+{"level":"warn","ts":1583767651.0229268,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1583767654.1358817,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ 8899aad3bf0c940c3a166008952f62b58ceab8d1 in path /workspace/source"}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-15-v5ct2-14[0m stage [32mmeta-pipeline[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:8899aad3bf0c940c3a166008952f62b58ceab8d1,1518:a0d11a390dbe63a0b16728315cf19399175bafd1
+DEBUG: ran git fetch --unshallow origin a0d11a390dbe63a0b16728315cf19399175bafd1: 8899aad3bf0c940c3a166008952f62b58ceab8d1: in 
+DEBUG: ran git checkout master in 
+DEBUG: ran git reset --hard 8899aad3bf0c940c3a166008952f62b58ceab8d1 in 
+DEBUG: ran clean --force -d . in 
+error: error during merge: merging a0d11a390dbe63a0b16728315cf19399175bafd1 into master: git output: Auto-merging jenkins-x.yml
+CONFLICT (modify/delete): Jenkinsfile deleted in HEAD and modified in a0d11a390dbe63a0b16728315cf19399175bafd1. Version a0d11a390dbe63a0b16728315cf19399175bafd1 of Jenkinsfile left in tree.
+Automatic merge failed; fix conflicts and then commit the result.: failed to run 'git merge a0d11a390dbe63a0b16728315cf19399175bafd1' command in directory '', output: 'Auto-merging jenkins-x.yml
+CONFLICT (modify/delete): Jenkinsfile deleted in HEAD and modified in a0d11a390dbe63a0b16728315cf19399175bafd1. Version a0d11a390dbe63a0b16728315cf19399175bafd1 of Jenkinsfile left in tree.
+Automatic merge failed; fix conflicts and then commit the result.'
+[31m
+Pipeline failed on stage 'meta-pipeline' : container 'step-git-merge'. The execution of the pipeline has stopped.[0m
