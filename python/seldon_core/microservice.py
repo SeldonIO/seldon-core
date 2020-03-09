@@ -1,6 +1,3 @@
-from prometheus_client.core import HistogramMetricFamily
-
-
 import argparse
 import os
 import importlib
@@ -10,6 +7,7 @@ import logging
 import multiprocessing as mp
 import sys
 import seldon_core.persistence as persistence
+from seldon_core.metrics import SeldonMetrics
 from distutils.util import strtobool
 from seldon_core.flask_utils import ANNOTATIONS_FILE
 import seldon_core.wrapper as seldon_microservice
@@ -40,13 +38,17 @@ def start_servers(target1: Callable, target2: Callable) -> None:
        Auxilary flask process
 
     """
+    manager = mp.Manager()
+    seldon_metrics = SeldonMetrics(manager)
+
     p2 = mp.Process(target=target2)
     p2.daemon = True
     p2.start()
 
-    target1()
+    target1(seldon_metrics)
 
     p2.join()
+    manager.shutdown()
 
 
 def parse_parameters(parameters: Dict) -> Dict:
@@ -293,7 +295,7 @@ def main():
 
         if args.workers > 1:
 
-            def rest_prediction_server():
+            def rest_prediction_server(seldon_metrics):
                 options = {
                     "bind": "%s:%s" % ("0.0.0.0", port),
                     "access_logfile": "-",
@@ -304,7 +306,9 @@ def main():
                     "max_requests": args.max_requests,
                     "max_requests_jitter": args.max_requests_jitter,
                 }
-                app = seldon_microservice.get_rest_microservice(user_object)
+                app = seldon_microservice.get_rest_microservice(
+                    user_object, seldon_metrics
+                )
                 StandaloneApplication(app, user_object, options=options).run()
 
             logger.info("REST gunicorn microservice running on port %i", port)
@@ -312,8 +316,10 @@ def main():
 
         else:
 
-            def rest_prediction_server():
-                app = seldon_microservice.get_rest_microservice(user_object)
+            def rest_prediction_server(seldon_metrics):
+                app = seldon_microservice.get_rest_microservice(
+                    user_object, seldon_metrics
+                )
                 try:
                     user_object.load()
                 except (NotImplementedError, AttributeError):
@@ -332,7 +338,7 @@ def main():
 
     elif args.api_type == "GRPC":
 
-        def grpc_prediction_server():
+        def grpc_prediction_server(seldon_metrics):
 
             if args.tracing:
                 from grpc_opentracing import open_tracing_server_interceptor

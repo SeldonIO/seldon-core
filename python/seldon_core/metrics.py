@@ -13,21 +13,9 @@ import os
 logger = logging.getLogger(__name__)
 
 
-manager = mp.Manager()
-
-
 COUNTER = "COUNTER"
 GAUGE = "GAUGE"
 TIMER = "TIMER"
-
-
-def register_metrics(metrics_list):
-    logger.info(f"Registering metrics_list: {metrics_list}")
-    metrics.update(metrics_list)
-
-
-def collect_metrics():
-    return generate_metrics(metrics)
 
 
 def generate_metrics(metrics):
@@ -72,9 +60,6 @@ class SeldonMetrics:
                 )
 
                 yield metric
-
-
-metrics = SeldonMetrics(manager)
 
 
 METRICS_MAP = {
