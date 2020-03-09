@@ -8,7 +8,7 @@ build_jar: update_proto update_swagger
 	mvn clean verify -Dlicense.useMissingFile -B
 
 build_image: update_proto update_swagger
-	docker build  -f Dockerfile.mvn -t seldonio/$(IMAGE_NAME):$(VERSION) .
+	docker build  -f Dockerfile -t seldonio/$(IMAGE_NAME):$(VERSION) .
 
 push_to_registry:
 	docker push seldonio/$(IMAGE_NAME):$(VERSION)
@@ -31,10 +31,15 @@ start_engine: engine.json
 stop_engine: engine.json
 	kubectl delete --ignore-not-found=true -f engine.json
 
+download_protos_k8s:
+	cd ../proto/k8s ; make create_protos
 
-update_proto:
-	@cp -v ../proto/seldon_deployment.proto src/main/proto/
-	@cp -v ../proto/prediction.proto src/main/proto/
+download_protos_tensorflow:
+	cd ../proto/tensorflow ; make create_protos
+
+update_proto: download_protos_k8s download_protos_tensorflow
+	cp -v ../proto/seldon_deployment.proto src/main/proto/
+	cp -v ../proto/prediction.proto src/main/proto/
 	cp -vr ../proto/k8s/k8s.io src/main/proto
 	cp -vr ../proto/tensorflow/tensorflow src/main/proto
 

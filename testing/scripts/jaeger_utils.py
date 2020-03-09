@@ -15,7 +15,7 @@ def _is_empty(result):
     wait=wait_exponential(max=5),
     retry=retry_if_result(_is_empty),
 )
-def get_traces(pod_name, service, operation):
+def get_traces(pod_name, service, operation, _should_retry=lambda x: False):
     """
     Fetch traces for a given pod, service and operation.
 
@@ -51,4 +51,8 @@ def get_traces(pod_name, service, operation):
     response = requests.get(endpoint, params=params)
     payload = response.json()
     traces = payload["data"]
+
+    if _should_retry(traces):
+        return None
+
     return traces
