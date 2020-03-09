@@ -18,6 +18,7 @@ from seldon_core.user_model import (
     SeldonNotImplementedError,
 )
 from seldon_core.flask_utils import SeldonMicroserviceException
+from seldon_core.metrics import SeldonMetrics
 from google.protobuf import json_format
 from seldon_core.proto import prediction_pb2
 from typing import Any, Union, List, Dict
@@ -27,7 +28,9 @@ logger = logging.getLogger(__name__)
 
 
 def predict(
-    user_model: Any, request: Union[prediction_pb2.SeldonMessage, List, Dict]
+    user_model: Any,
+    request: Union[prediction_pb2.SeldonMessage, List, Dict],
+    seldon_metrics: SeldonMetrics = None,
 ) -> Union[prediction_pb2.SeldonMessage, List, Dict]:
     """
     Call the user model to get a prediction and package the response
@@ -70,7 +73,7 @@ def predict(
                 user_model, features, class_names, meta=meta
             )
             return construct_response_json(
-                user_model, False, request, client_response, meta
+                user_model, False, request, client_response, meta, seldon_metrics
             )
 
 
@@ -124,7 +127,9 @@ def send_feedback(
 
 
 def transform_input(
-    user_model: Any, request: Union[prediction_pb2.SeldonMessage, List, Dict]
+    user_model: Any,
+    request: Union[prediction_pb2.SeldonMessage, List, Dict],
+    seldon_metrics: SeldonMetrics = None,
 ) -> Union[prediction_pb2.SeldonMessage, List, Dict]:
     """
 
@@ -172,12 +177,14 @@ def transform_input(
                 user_model, features, class_names, meta=meta
             )
             return construct_response_json(
-                user_model, False, request, client_response, meta
+                user_model, False, request, client_response, meta, seldon_metrics
             )
 
 
 def transform_output(
-    user_model: Any, request: Union[prediction_pb2.SeldonMessage, List, Dict]
+    user_model: Any,
+    request: Union[prediction_pb2.SeldonMessage, List, Dict],
+    seldon_metrics: SeldonMetrics = None,
 ) -> Union[prediction_pb2.SeldonMessage, List, Dict]:
     """
 
@@ -225,12 +232,14 @@ def transform_output(
                 user_model, features, class_names, meta=meta
             )
             return construct_response_json(
-                user_model, False, request, client_response, meta
+                user_model, False, request, client_response, meta, seldon_metrics
             )
 
 
 def route(
-    user_model: Any, request: Union[prediction_pb2.SeldonMessage, List, Dict]
+    user_model: Any,
+    request: Union[prediction_pb2.SeldonMessage, List, Dict],
+    seldon_metrics: SeldonMetrics = None,
 ) -> Union[prediction_pb2.SeldonMessage, List, Dict]:
     """
 
@@ -280,12 +289,14 @@ def route(
                 )
             client_response_arr = np.array([[client_response]])
             return construct_response_json(
-                user_model, False, request, client_response_arr
+                user_model, False, request, client_response_arr, seldon_metrics
             )
 
 
 def aggregate(
-    user_model: Any, request: Union[prediction_pb2.SeldonMessageList, List, Dict]
+    user_model: Any,
+    request: Union[prediction_pb2.SeldonMessageList, List, Dict],
+    seldon_metrics: SeldonMetrics = None,
 ) -> Union[prediction_pb2.SeldonMessage, List, Dict]:
     """
     Aggregate a list of payloads
@@ -369,11 +380,18 @@ def aggregate(
 
             client_response = client_aggregate(user_model, features_list, names_list)
             return construct_response_json(
-                user_model, False, msgs[0], client_response, merge_meta(meta_list)
+                user_model,
+                False,
+                msgs[0],
+                client_response,
+                merge_meta(meta_list),
+                seldon_metrics,
             )
 
 
-def health_status(user_model: Any) -> Union[prediction_pb2.SeldonMessage, List, Dict]:
+def health_status(
+    user_model: Any, seldon_metrics: SeldonMetrics = None
+) -> Union[prediction_pb2.SeldonMessage, List, Dict]:
     """
     Call the user model to check the health of the model
 
@@ -393,7 +411,9 @@ def health_status(user_model: Any) -> Union[prediction_pb2.SeldonMessage, List, 
             pass
 
     client_response = client_health_status(user_model)
-    return construct_response_json(user_model, False, {}, client_response)
+    return construct_response_json(
+        user_model, False, {}, client_response, seldon_metrics
+    )
 
 
 def metadata(user_model: Any) -> Dict:

@@ -18,7 +18,7 @@ from seldon_core.user_model import (
     SeldonComponent,
 )
 from seldon_core.imports_helper import _TF_PRESENT
-
+from seldon_core.metrics import SeldonMetrics
 from typing import Tuple, Dict, Union, List, Optional, Iterable
 
 if _TF_PRESENT:
@@ -323,6 +323,7 @@ def construct_response_json(
     client_request_raw: Union[List, Dict],
     client_raw_response: Union[np.ndarray, str, bytes, dict],
     meta: dict = None,
+    seldon_metrics: SeldonMetrics = None,
 ) -> Union[List, Dict]:
     """
     This class converts a raw REST response into a JSON object that has the same structure as
@@ -421,6 +422,7 @@ def construct_response_json(
     if tags:
         response["meta"]["tags"] = tags
     metrics = client_custom_metrics(user_model)
+    seldon_metrics.update(metrics)
     if metrics:
         response["meta"]["metrics"] = metrics
     puid = client_request_raw.get("meta", {}).get("puid", None)

@@ -3,7 +3,7 @@ from concurrent import futures
 from flask import jsonify, Flask, send_from_directory, request, Response
 from flask_cors import CORS
 import logging
-from seldon_core.metrics import collect_metrics
+from seldon_core.metrics import generate_metrics
 from seldon_core.utils import seldon_message_to_json, json_to_feedback
 from seldon_core.flask_utils import get_request
 import seldon_core.seldon_methods
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 PRED_UNIT_ID = os.environ.get("PREDICTIVE_UNIT_ID", "0")
 
 
-def get_rest_microservice(user_model):
+def get_rest_microservice(user_model, seldon_metrics=None):
     app = Flask(__name__, static_url_path="")
     CORS(app)
 
@@ -49,7 +49,9 @@ def get_rest_microservice(user_model):
     def Predict():
         requestJson = get_request()
         logger.debug("REST Request: %s", request)
-        response = seldon_core.seldon_methods.predict(user_model, requestJson)
+        response = seldon_core.seldon_methods.predict(
+            user_model, requestJson, seldon_metrics
+        )
         json_response = jsonify(response)
         if "status" in response and "code" in response["status"]:
             json_response.status_code = response["status"]["code"]
@@ -75,7 +77,9 @@ def get_rest_microservice(user_model):
     def TransformInput():
         requestJson = get_request()
         logger.debug("REST Request: %s", request)
-        response = seldon_core.seldon_methods.transform_input(user_model, requestJson)
+        response = seldon_core.seldon_methods.transform_input(
+            user_model, requestJson, seldon_metrics
+        )
         logger.debug("REST Response: %s", response)
         return jsonify(response)
 
@@ -83,7 +87,9 @@ def get_rest_microservice(user_model):
     def TransformOutput():
         requestJson = get_request()
         logger.debug("REST Request: %s", request)
-        response = seldon_core.seldon_methods.transform_output(user_model, requestJson)
+        response = seldon_core.seldon_methods.transform_output(
+            user_model, requestJson, seldon_metrics
+        )
         logger.debug("REST Response: %s", response)
         return jsonify(response)
 
@@ -91,7 +97,9 @@ def get_rest_microservice(user_model):
     def Route():
         requestJson = get_request()
         logger.debug("REST Request: %s", request)
-        response = seldon_core.seldon_methods.route(user_model, requestJson)
+        response = seldon_core.seldon_methods.route(
+            user_model, requestJson, seldon_metrics
+        )
         logger.debug("REST Response: %s", response)
         return jsonify(response)
 
@@ -99,7 +107,9 @@ def get_rest_microservice(user_model):
     def Aggregate():
         requestJson = get_request()
         logger.debug("REST Request: %s", request)
-        response = seldon_core.seldon_methods.aggregate(user_model, requestJson)
+        response = seldon_core.seldon_methods.aggregate(
+            user_model, requestJson, seldon_metrics
+        )
         logger.debug("REST Response: %s", response)
         return jsonify(response)
 
@@ -113,7 +123,7 @@ def get_rest_microservice(user_model):
     @app.route("/health/status", methods=["GET"])
     def HealthStatus():
         logger.debug("REST Health Status Request")
-        response = seldon_core.seldon_methods.health_status(user_model)
+        response = seldon_core.seldon_methods.health_status(user_model, seldon_metrics)
         logger.debug("REST Health Status Response: %s", response)
         return jsonify(response)
 
@@ -127,9 +137,7 @@ def get_rest_microservice(user_model):
     @app.route("/metrics", methods=["GET"])
     def Metrics():
         logger.debug("REST Metrics Request")
-
-        metrics = collect_metrics()
-
+        metrics = generate_metrics(seldon_metrics)
         return Response(metrics, mimetype=exposition.CONTENT_TYPE_LATEST)
 
     return app
