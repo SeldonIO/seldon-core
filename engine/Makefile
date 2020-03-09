@@ -8,7 +8,7 @@ build_jar: update_proto update_swagger
 	mvn clean verify -Dlicense.useMissingFile -B
 
 build_image: update_proto update_swagger
-	docker build  -f Dockerfile.mvn -t seldonio/$(IMAGE_NAME):$(VERSION) .
+	docker build  -f Dockerfile -t seldonio/$(IMAGE_NAME):$(VERSION) .
 
 push_to_registry:
 	docker push seldonio/$(IMAGE_NAME):$(VERSION)
