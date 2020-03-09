@@ -3,7 +3,7 @@ ambassador:
   singleNamespace: false
 certManager:
   enabled: false
-controllerId: ''
+controllerId: ""
 crd:
   create: true
 credentials:
@@ -50,7 +50,7 @@ image:
 istio:
   enabled: false
   gateway: seldon-gateway
-  tlsMode: ''
+  tlsMode: ""
 kubeflow: false
 manager:
   cpuLimit: 500m
@@ -62,33 +62,33 @@ predictiveUnit:
 predictor_servers:
   MLFLOW_SERVER:
     grpc:
-      defaultImageVersion: '0.2'
+      defaultImageVersion: "0.3"
       image: seldonio/mlflowserver_grpc
     rest:
-      defaultImageVersion: '0.2'
+      defaultImageVersion: "0.3"
       image: seldonio/mlflowserver_rest
   SKLEARN_SERVER:
     grpc:
-      defaultImageVersion: '0.2'
+      defaultImageVersion: "0.2"
       image: seldonio/sklearnserver_grpc
     rest:
-      defaultImageVersion: '0.2'
+      defaultImageVersion: "0.2"
       image: seldonio/sklearnserver_rest
   TENSORFLOW_SERVER:
     grpc:
-      defaultImageVersion: '0.7'
+      defaultImageVersion: "0.7"
       image: seldonio/tfserving-proxy_grpc
     rest:
-      defaultImageVersion: '0.7'
+      defaultImageVersion: "0.7"
       image: seldonio/tfserving-proxy_rest
     tensorflow: true
     tfImage: tensorflow/serving:latest
   XGBOOST_SERVER:
     grpc:
-      defaultImageVersion: '0.2'
+      defaultImageVersion: "0.3"
       image: seldonio/xgboostserver_grpc
     rest:
-      defaultImageVersion: '0.2'
+      defaultImageVersion: "0.3"
       image: seldonio/xgboostserver_rest
 rbac:
   configmap:
@@ -99,7 +99,7 @@ serviceAccount:
   name: seldon-manager
 singleNamespace: false
 storageInitializer:
-  cpuLimit: '1'
+  cpuLimit: "1"
   cpuRequest: 100m
   image: gcr.io/kfserving/storage-initializer:0.2.2
   memoryLimit: 1Gi
