@@ -42,6 +42,7 @@ executor:
   serviceAccount:
     name: default
   user: 8888
+  defaultRequestLoggerEndpointPrefix: 'http://default-broker.'
 image:
   pullPolicy: IfNotPresent
   registry: docker.io
