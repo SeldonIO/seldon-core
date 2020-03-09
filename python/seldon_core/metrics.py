@@ -14,64 +14,67 @@ logger = logging.getLogger(__name__)
 
 
 manager = mp.Manager()
-shared_dict = manager.dict()
+
 
 COUNTER = "COUNTER"
 GAUGE = "GAUGE"
 TIMER = "TIMER"
 
 
-
 def register_metrics(metrics_list):
     logger.info(f"Registering metrics_list: {metrics_list}")
-    worker_pid = os.getpid()
-    data = shared_dict.get(worker_pid, {})
-    metrics = Metrics(worker_pid, data)
-
-    for item in metrics_list:
-        metrics.update(item)
-
-    shared_dict[worker_pid] = metrics.data
+    metrics.update(metrics_list)
 
 
 def collect_metrics():
+    return generate_metrics(metrics)
+
+
+def generate_metrics(metrics):
     myregistry = CollectorRegistry()
-
-    for worker, data in shared_dict.items():
-        metrics = Metrics(worker, data)
-        myregistry.register(metrics)
-
+    myregistry.register(metrics)
     return exposition.generate_latest(myregistry).decode("utf-8")
 
 
-class Metrics:
+class SeldonMetrics:
+    """Class to manage custom metrics stored in shared memory."""
 
-    def __init__(self, worker_pid, data):
-        self.worker_pid = worker_pid
-        self.data = data
+    def __init__(self, manager):
+        self.data = manager.dict()
 
-    def update(self, item):
-        key = item["type"], item["key"]
-        if item["type"] == "COUNTER":
-            value = self.data.get(key, 0)
-            self.data[key] = value + item["value"]
-        else:
-            self.data[key] = item["value"]
+    def update(self, custom_metrics):
+        data = self.data.get(os.getpid(), {})
+
+        for metrics in custom_metrics:
+            key = metrics["type"], metrics["key"]
+            if metrics["type"] == "COUNTER":
+                value = data.get(key, 0)
+                data[key] = value + metrics["value"]
+            else:
+                data[key] = metrics["value"]
+
+        self.data[os.getpid()] = data
 
     def collect(self):
-        for (item_type, item_name), item_value in self.data.items():
+        data = dict(self.data)
+        for worker, metrics in data.items():
+            for (item_type, item_name), item_value in metrics.items():
+                if item_type not in METRICS_MAP:
+                    print(f"Unknown metric type {item_type}")
+                    continue
 
-            if item_type not in METRICS_MAP:
-                print(f"Unknown metric type {item_type}")
-                continue
+                metric = METRICS_MAP[item_type](
+                    item_name, "", labels=["worker-pid", "model", "image"]
+                )
 
-            metric = new_metric(item_type, item_name)
-            metric.add_metric(
-                [str(self.worker_pid), labels["model"], labels["image"]],
-                item_value
-            )
-            yield metric
+                metric.add_metric(
+                    [str(worker), labels["model"], labels["image"]], item_value
+                )
 
+                yield metric
+
+
+metrics = SeldonMetrics(manager)
 
 
 METRICS_MAP = {
@@ -81,10 +84,6 @@ METRICS_MAP = {
 
 
 labels = {"model": "latest", "image": "my-image"}
-
-def new_metric(item_type, item_name):
-    return METRICS_MAP[item_type](item_name, "", labels=["worker-pid", "model", "image"])
-
 
 
 def create_counter(key: str, value: float):

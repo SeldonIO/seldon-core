@@ -130,10 +130,7 @@ def get_rest_microservice(user_model):
 
         metrics = collect_metrics()
 
-        return Response(
-                metrics,
-                mimetype=exposition.CONTENT_TYPE_LATEST
-        )
+        return Response(metrics, mimetype=exposition.CONTENT_TYPE_LATEST)
 
     return app
 
