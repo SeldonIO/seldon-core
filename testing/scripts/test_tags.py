@@ -52,7 +52,7 @@ def create_push_s2i_image(s2i_python_version, model, api_type):
 
 @pytest.mark.sequential
 @pytest.mark.usefixtures("s2i_python_version")
-class TestPythonS2i(object):
+class TestTagsPythonS2i(object):
     def test_build_model_one_rest(self, s2i_python_version):
         create_s2i_image(s2i_python_version, "one", "rest")
         img = get_image_name("one", "rest")
@@ -99,7 +99,7 @@ class TestPythonS2i(object):
 @pytest.mark.sequential
 @pytest.mark.usefixtures("namespace")
 @pytest.mark.usefixtures("s2i_python_version")
-class TestPythonS2iK8s(object):
+class TestTagsPythonS2iK8s(object):
     def test_model_single_rest(self, namespace, s2i_python_version):
         create_push_s2i_image(s2i_python_version, "one", "rest")
         retry_run(f"kubectl apply -f ../resources/tags_single_rest.json -n {namespace}")
