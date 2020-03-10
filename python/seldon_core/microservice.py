@@ -5,6 +5,7 @@ import json
 import time
 import logging
 import multiprocessing as mp
+import threading
 import sys
 import seldon_core.persistence as persistence
 from seldon_core.metrics import SeldonMetrics
@@ -43,22 +44,18 @@ def start_servers(
        Auxilary flask process
 
     """
-    manager = mp.Manager()
-    seldon_metrics = SeldonMetrics(manager)
-
-    p2 = mp.Process(target=target2, args=(seldon_metrics,))
+    p2 = mp.Process(target=target2)
     p2.daemon = True
     p2.start()
 
-    p3 = mp.Process(target=metrics_target, args=(seldon_metrics,))
+    p3 = mp.Process(target=metrics_target)
     p3.daemon = True
     p3.start()
 
-    target1(seldon_metrics)
+    target1()
 
     p2.join()
     p3.join()
-    manager.shutdown()
 
 
 def parse_parameters(parameters: Dict) -> Dict:
@@ -301,21 +298,15 @@ def main():
         os.environ.get(METRICS_SERVICE_PORT_ENV_NAME, DEFAULT_METRICS_PORT)
     )
 
-    def rest_metrics_server(seldon_metrics):
-        app = seldon_microservice.get_metrics_microservice(seldon_metrics)
-        app.run(host="0.0.0.0", port=metrics_port)
-
-    logger.info("REST metrics microservice running on port %i", metrics_port)
-    metrics_server_func = rest_metrics_server
-
     if args.tracing:
         tracer = setup_tracing(args.interface_name)
 
     if args.api_type == "REST":
+        seldon_metrics = SeldonMetrics(worker_id_func=os.getpid)
 
         if args.workers > 1:
 
-            def rest_prediction_server(seldon_metrics):
+            def rest_prediction_server():
                 options = {
                     "bind": "%s:%s" % ("0.0.0.0", port),
                     "access_logfile": "-",
@@ -336,7 +327,7 @@ def main():
 
         else:
 
-            def rest_prediction_server(seldon_metrics):
+            def rest_prediction_server():
                 app = seldon_microservice.get_rest_microservice(
                     user_object, seldon_metrics
                 )
@@ -357,8 +348,11 @@ def main():
             server1_func = rest_prediction_server
 
     elif args.api_type == "GRPC":
+        seldon_metrics = SeldonMetrics(
+            worker_id_func=lambda: threading.current_thread().name
+        )
 
-        def grpc_prediction_server(seldon_metrics):
+        def grpc_prediction_server():
 
             if args.tracing:
                 from grpc_opentracing import open_tracing_server_interceptor
@@ -392,6 +386,13 @@ def main():
 
     else:
         server1_func = None
+
+    def rest_metrics_server():
+        app = seldon_microservice.get_metrics_microservice(seldon_metrics)
+        app.run(host="0.0.0.0", port=metrics_port)
+
+    logger.info("REST metrics microservice running on port %i", metrics_port)
+    metrics_server_func = rest_metrics_server
 
     if hasattr(user_object, "custom_service") and callable(
         getattr(user_object, "custom_service")

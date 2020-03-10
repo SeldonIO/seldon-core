@@ -3,6 +3,8 @@ from prometheus_client.core import GaugeMetricFamily, CounterMetricFamily
 from prometheus_client.core import CollectorRegistry
 from prometheus_client import exposition
 
+from multiprocessing import Manager
+
 from typing import List, Dict
 import logging
 import os
@@ -28,11 +30,16 @@ def generate_metrics(metrics):
 class SeldonMetrics:
     """Class to manage custom metrics stored in shared memory."""
 
-    def __init__(self, manager):
-        self.data = manager.dict()
+    def __init__(self, worker_id_func=os.getpid):
+        self.manager = Manager()
+        self.data = self.manager.dict()
+        self.worker_id_func = worker_id_func
+
+    def __del__(self):
+        self.manager.shutdown()
 
     def update(self, custom_metrics):
-        data = self.data.get(os.getpid(), {})
+        data = self.data.get(self.worker_id_func(), {})
 
         for metrics in custom_metrics:
             key = metrics["type"], metrics["key"]
@@ -42,7 +49,7 @@ class SeldonMetrics:
             else:
                 data[key] = metrics["value"]
 
-        self.data[os.getpid()] = data
+        self.data[self.worker_id_func()] = data
 
     def collect(self):
         data = dict(self.data)
@@ -53,7 +60,7 @@ class SeldonMetrics:
                     continue
 
                 metric = METRICS_MAP[item_type](
-                    item_name, "", labels=["worker-pid", "model", "image"]
+                    item_name, "", labels=["worker-id", "model", "image"]
                 )
 
                 metric.add_metric(
