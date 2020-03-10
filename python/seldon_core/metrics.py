@@ -1,9 +1,15 @@
-from prometheus_client.core import HistogramMetricFamily
-from prometheus_client.core import GaugeMetricFamily, CounterMetricFamily
-from prometheus_client.core import CollectorRegistry
+from prometheus_client.core import (
+    HistogramMetricFamily,
+    GaugeMetricFamily,
+    CounterMetricFamily,
+    CollectorRegistry
+)
 from prometheus_client import exposition
+from prometheus_client.utils import floatToGoString
 
 from multiprocessing import Manager
+
+import numpy as np
 
 from typing import List, Dict
 import logging
@@ -27,6 +33,38 @@ def generate_metrics(metrics):
     )
 
 
+BINS = [0] + list(np.logspace(-3, np.log10(30), 50)) + [np.inf]
+LABELS = ["worker-id", "model", "image"]
+
+my_labels = {"model": "latest", "image": "my-image"}
+
+def update_hist(x, vals, sumv):
+    hist = np.histogram([x], BINS)[0]
+    vals = list(np.array(vals) + hist)
+    return vals, sumv + x
+
+
+def expose_gauge(name, value, labels):
+    metric = GaugeMetricFamily(name, "", labels=LABELS)
+    metric.add_metric(labels, value)
+    return metric
+
+
+def expose_counter(name, value, labels):
+    metric = CounterMetricFamily(name, "", labels=LABELS)
+    metric.add_metric(labels, value)
+    return metric
+
+
+def expose_histogram(name, value, labels):
+    vals, sumv = value
+    buckets = [[floatToGoString(b), v] for v, b in zip(np.cumsum(vals), BINS[1:])]
+
+    metric = HistogramMetricFamily(name, "", labels=LABELS)
+    metric.add_metric(labels, buckets, sum_value=sumv)
+    return metric
+
+
 class SeldonMetrics:
     """Class to manage custom metrics stored in shared memory."""
 
@@ -46,6 +84,10 @@ class SeldonMetrics:
             if metrics["type"] == "COUNTER":
                 value = data.get(key, 0)
                 data[key] = value + metrics["value"]
+            elif metrics["type"] == "TIMER":
+                vals, sumv = data.get(key, (list(np.zeros(len(BINS) - 1)), 0))
+                # Dividing by 1000 because unit is milliseconds
+                data[key] = update_hist(metrics["value"] / 1000, vals, sumv)
             else:
                 data[key] = metrics["value"]
 
@@ -53,30 +95,18 @@ class SeldonMetrics:
 
     def collect(self):
         data = dict(self.data)
+
         for worker, metrics in data.items():
+            labels = [str(worker), my_labels["model"], my_labels["image"]]
             for (item_type, item_name), item_value in metrics.items():
-                if item_type not in METRICS_MAP:
-                    print(f"Unknown metric type {item_type}")
+                if item_type == "GAUGE":
+                    yield expose_gauge(item_name, item_value, labels)
+                elif item_type == "COUNTER":
+                    yield expose_counter(item_name, item_value, labels)
+                elif item_type == "TIMER":
+                    yield expose_histogram(item_name, item_value, labels)
+                else:
                     continue
-
-                metric = METRICS_MAP[item_type](
-                    item_name, "", labels=["worker-id", "model", "image"]
-                )
-
-                metric.add_metric(
-                    [str(worker), labels["model"], labels["image"]], item_value
-                )
-
-                yield metric
-
-
-METRICS_MAP = {
-    "COUNTER": CounterMetricFamily,
-    "GAUGE": GaugeMetricFamily,
-}
-
-
-labels = {"model": "latest", "image": "my-image"}
 
 
 def create_counter(key: str, value: float):
