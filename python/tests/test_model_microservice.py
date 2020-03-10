@@ -703,7 +703,7 @@ def test_proto_passes_through_tags():
     app = SeldonModelGRPC(user_object)
     arr = np.array([1, 2])
     datadef = prediction_pb2.DefaultData(
-        tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr),
+        tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
     )
     meta = prediction_pb2.Meta()
     json_format.ParseDict({"tags": {"foo": "bar"}}, meta)
