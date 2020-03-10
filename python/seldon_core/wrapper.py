@@ -173,7 +173,7 @@ def _set_flask_app_configs(app):
 
 
 class SeldonModelGRPC(object):
-    def __init__(self, user_model, seldon_metrics):
+    def __init__(self, user_model, seldon_metrics=None):
         self.user_model = user_model
         self.seldon_metrics = seldon_metrics
 
@@ -208,7 +208,9 @@ class SeldonModelGRPC(object):
         )
 
 
-def get_grpc_server(user_model, seldon_metrics, annotations={}, trace_interceptor=None):
+def get_grpc_server(
+    user_model, seldon_metrics=None, annotations={}, trace_interceptor=None
+):
     seldon_model = SeldonModelGRPC(user_model, seldon_metrics)
     options = []
     if ANNOTATION_GRPC_MAX_MSG_SIZE in annotations:
