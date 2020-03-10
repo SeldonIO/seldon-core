@@ -369,7 +369,10 @@ def main():
                 interceptor = None
 
             server = seldon_microservice.get_grpc_server(
-                user_object, annotations=annotations, trace_interceptor=interceptor
+                user_object,
+                seldon_metrics,
+                annotations=annotations,
+                trace_interceptor=interceptor,
             )
 
             try:
