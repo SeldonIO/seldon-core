@@ -25,7 +25,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o manager 
 FROM gcr.io/distroless/static:latest
 WORKDIR /
 COPY --from=builder /workspace/manager .
-COPY licenses/license.txt .
+COPY licenses/license.txt licenses/license.txt 
 COPY generated/admissionregistration.k8s.io_v1beta1_mutatingwebhookconfiguration_seldon-mutating-webhook-configuration.yaml /tmp/operator-resources/mutate.yaml
 COPY generated/admissionregistration.k8s.io_v1beta1_validatingwebhookconfiguration_seldon-validating-webhook-configuration.yaml /tmp/operator-resources/validate.yaml
 COPY generated/~g_v1_service_seldon-webhook-service.yaml /tmp/operator-resources/service.yaml
