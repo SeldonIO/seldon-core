@@ -173,11 +173,14 @@ def _set_flask_app_configs(app):
 
 
 class SeldonModelGRPC(object):
-    def __init__(self, user_model):
+    def __init__(self, user_model, seldon_metrics):
         self.user_model = user_model
+        self.seldon_metrics = seldon_metrics
 
     def Predict(self, request_grpc, context):
-        return seldon_core.seldon_methods.predict(self.user_model, request_grpc)
+        return seldon_core.seldon_methods.predict(
+            self.user_model, request_grpc, self.seldon_metrics
+        )
 
     def SendFeedback(self, feedback_grpc, context):
         return seldon_core.seldon_methods.send_feedback(
@@ -185,22 +188,28 @@ class SeldonModelGRPC(object):
         )
 
     def TransformInput(self, request_grpc, context):
-        return seldon_core.seldon_methods.transform_input(self.user_model, request_grpc)
+        return seldon_core.seldon_methods.transform_input(
+            self.user_model, request_grpc, self.seldon_metrics
+        )
 
     def TransformOutput(self, request_grpc, context):
         return seldon_core.seldon_methods.transform_output(
-            self.user_model, request_grpc
+            self.user_model, request_grpc, self.seldon_metrics
         )
 
     def Route(self, request_grpc, context):
-        return seldon_core.seldon_methods.route(self.user_model, request_grpc)
+        return seldon_core.seldon_methods.route(
+            self.user_model, request_grpc, self.seldon_metrics
+        )
 
     def Aggregate(self, request_grpc, context):
-        return seldon_core.seldon_methods.aggregate(self.user_model, request_grpc)
+        return seldon_core.seldon_methods.aggregate(
+            self.user_model, request_grpc, self.seldon_metrics
+        )
 
 
-def get_grpc_server(user_model, annotations={}, trace_interceptor=None):
-    seldon_model = SeldonModelGRPC(user_model)
+def get_grpc_server(user_model, seldon_metrics, annotations={}, trace_interceptor=None):
+    seldon_model = SeldonModelGRPC(user_model, seldon_metrics)
     options = []
     if ANNOTATION_GRPC_MAX_MSG_SIZE in annotations:
         max_msg = int(annotations[ANNOTATION_GRPC_MAX_MSG_SIZE])

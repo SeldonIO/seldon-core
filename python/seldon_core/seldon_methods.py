@@ -11,6 +11,7 @@ from seldon_core.user_model import (
     client_predict,
     client_aggregate,
     client_route,
+    client_custom_metrics,
     client_transform_output,
     client_transform_input,
     client_send_feedback,
@@ -65,15 +66,27 @@ def predict(
             client_response = client_predict(
                 user_model, features, datadef.names, meta=meta
             )
-            return construct_response(user_model, False, request, client_response, meta)
+
+            metrics = client_custom_metrics(user_model)
+            if seldon_metrics is not None:
+                seldon_metrics.update(metrics)
+
+            return construct_response(
+                user_model, False, request, client_response, meta, metrics
+            )
         else:
             (features, meta, datadef, data_type) = extract_request_parts_json(request)
             class_names = datadef["names"] if datadef and "names" in datadef else []
             client_response = client_predict(
                 user_model, features, class_names, meta=meta
             )
+
+            metrics = client_custom_metrics(user_model)
+            if seldon_metrics is not None:
+                seldon_metrics.update(metrics)
+
             return construct_response_json(
-                user_model, False, request, client_response, meta, seldon_metrics
+                user_model, False, request, client_response, meta, metrics
             )
 
 
@@ -169,15 +182,27 @@ def transform_input(
             client_response = client_transform_input(
                 user_model, features, datadef.names, meta=meta
             )
-            return construct_response(user_model, False, request, client_response, meta)
+
+            metrics = client_custom_metrics(user_model)
+            if seldon_metrics is not None:
+                seldon_metrics.update(metrics)
+
+            return construct_response(
+                user_model, False, request, client_response, meta, metrics
+            )
         else:
             (features, meta, datadef, data_type) = extract_request_parts_json(request)
             class_names = datadef["names"] if datadef and "names" in datadef else []
             client_response = client_transform_input(
                 user_model, features, class_names, meta=meta
             )
+
+            metrics = client_custom_metrics(user_model)
+            if seldon_metrics is not None:
+                seldon_metrics.update(metrics)
+
             return construct_response_json(
-                user_model, False, request, client_response, meta, seldon_metrics
+                user_model, False, request, client_response, meta, metrics
             )
 
 
@@ -224,15 +249,33 @@ def transform_output(
             client_response = client_transform_output(
                 user_model, features, datadef.names, meta=meta
             )
-            return construct_response(user_model, False, request, client_response, meta)
+
+            metrics = client_custom_metrics(user_model)
+            if seldon_metrics is not None:
+                seldon_metrics.update(metrics)
+
+            return construct_response(
+                user_model, False, request, client_response, meta, metrics
+            )
         else:
             (features, meta, datadef, data_type) = extract_request_parts_json(request)
             class_names = datadef["names"] if datadef and "names" in datadef else []
             client_response = client_transform_output(
                 user_model, features, class_names, meta=meta
             )
+
+            metrics = client_custom_metrics(user_model)
+            if seldon_metrics is not None:
+                seldon_metrics.update(metrics)
+
             return construct_response_json(
-                user_model, False, request, client_response, meta, seldon_metrics
+                user_model,
+                False,
+                request,
+                client_response,
+                meta,
+                seldon_metrics,
+                metrics,
             )
 
 
@@ -278,7 +321,14 @@ def route(
                     "Routing response must be int but got " + str(client_response)
                 )
             client_response_arr = np.array([[client_response]])
-            return construct_response(user_model, False, request, client_response_arr)
+
+            metrics = client_custom_metrics(user_model)
+            if seldon_metrics is not None:
+                seldon_metrics.update(metrics)
+
+            return construct_response(
+                user_model, False, request, client_response_arr, None, metrics
+            )
         else:
             (features, meta, datadef, data_type) = extract_request_parts_json(request)
             class_names = datadef["names"] if datadef and "names" in datadef else []
@@ -288,8 +338,13 @@ def route(
                     "Routing response must be int but got " + str(client_response)
                 )
             client_response_arr = np.array([[client_response]])
+
+            metrics = client_custom_metrics(user_model)
+            if seldon_metrics is not None:
+                seldon_metrics.update(metrics)
+
             return construct_response_json(
-                user_model, False, request, client_response_arr, seldon_metrics
+                user_model, False, request, client_response_arr, None, metrics
             )
 
 
@@ -348,12 +403,18 @@ def aggregate(
                 meta_list.append(meta)
 
             client_response = client_aggregate(user_model, features_list, names_list)
+
+            metrics = client_custom_metrics(user_model)
+            if seldon_metrics is not None:
+                seldon_metrics.update(metrics)
+
             return construct_response(
                 user_model,
                 False,
                 request.seldonMessages[0],
                 client_response,
                 merge_meta(meta_list),
+                metrics,
             )
         else:
             features_list = []
@@ -379,13 +440,18 @@ def aggregate(
                 meta_list.append(meta)
 
             client_response = client_aggregate(user_model, features_list, names_list)
+
+            metrics = client_custom_metrics(user_model)
+            if seldon_metrics is not None:
+                seldon_metrics.update(metrics)
+
             return construct_response_json(
                 user_model,
                 False,
                 msgs[0],
                 client_response,
                 merge_meta(meta_list),
-                seldon_metrics,
+                metrics,
             )
 
 
@@ -411,8 +477,12 @@ def health_status(
             pass
 
     client_response = client_health_status(user_model)
+    metrics = client_custom_metrics(user_model)
+    if seldon_metrics is not None:
+        seldon_metrics.update(metrics)
+
     return construct_response_json(
-        user_model, False, {}, client_response, seldon_metrics
+        user_model, False, {}, client_response, None, metrics
     )
 
 
