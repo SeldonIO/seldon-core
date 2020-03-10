@@ -3,7 +3,6 @@ from concurrent import futures
 from flask import jsonify, Flask, send_from_directory, request, Response
 from flask_cors import CORS
 import logging
-from seldon_core.metrics import generate_metrics
 from seldon_core.utils import seldon_message_to_json, json_to_feedback
 from seldon_core.flask_utils import get_request
 import seldon_core.seldon_methods
@@ -11,9 +10,7 @@ from seldon_core.flask_utils import (
     SeldonMicroserviceException,
     ANNOTATION_GRPC_MAX_MSG_SIZE,
 )
-
-from prometheus_client import exposition
-
+from seldon_core.metrics import generate_metrics
 from seldon_core.proto import prediction_pb2_grpc
 import os
 
@@ -134,11 +131,20 @@ def get_rest_microservice(user_model, seldon_metrics=None):
         logger.debug("REST Metadata Response: %s", response)
         return jsonify(response)
 
+    return app
+
+
+def get_metrics_microservice(seldon_metrics):
+    app = Flask(__name__, static_url_path="")
+    CORS(app)
+
+    _set_flask_app_configs(app)
+
     @app.route("/metrics", methods=["GET"])
     def Metrics():
         logger.debug("REST Metrics Request")
-        metrics = generate_metrics(seldon_metrics)
-        return Response(metrics, mimetype=exposition.CONTENT_TYPE_LATEST)
+        metrics, mimetype = generate_metrics(seldon_metrics)
+        return Response(metrics, mimetype=mimetype)
 
     return app
 
