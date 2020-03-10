@@ -449,7 +449,6 @@ def grpc_request_ambassador(
         raise e
 
 
-
 def grpc_request_ambassador2(
     deployment_name,
     namespace,
