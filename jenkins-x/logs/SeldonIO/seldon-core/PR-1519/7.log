@@ -1,0 +1,56 @@
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-15-hhvbd-7[0m stage [32mmeta-pipeline[0m and container [32mstep-credential-initializer-dmh7f[0m
+{"level":"warn","ts":1583868130.0387578,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1583868130.039831,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-15-hhvbd-7[0m stage [32mmeta-pipeline[0m and container [32mstep-working-dir-initializer-6wj9g[0m
+{"level":"warn","ts":1583868131.0478969,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1583868131.0498374,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-15-hhvbd-7[0m stage [32mmeta-pipeline[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-15-hhvbd-7[0m stage [32mmeta-pipeline[0m and container [32mstep-git-source-meta-seldonio-seldon-core-pr-15-s9gls[0m
+{"level":"warn","ts":1583868138.1869886,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1583868141.5439224,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ 41c265903ef7f7a9497f4b6693015a35d1e07fb5 in path /workspace/source"}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-15-hhvbd-7[0m stage [32mmeta-pipeline[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:41c265903ef7f7a9497f4b6693015a35d1e07fb5,1519:1fd2c716580ee006ddb542641056cb4865236e78
+DEBUG: ran git fetch --unshallow origin 1fd2c716580ee006ddb542641056cb4865236e78: 41c265903ef7f7a9497f4b6693015a35d1e07fb5: in 
+DEBUG: ran git checkout master in 
+DEBUG: ran git reset --hard 41c265903ef7f7a9497f4b6693015a35d1e07fb5 in 
+DEBUG: ran clean --force -d . in 
+error: error during merge: merging 1fd2c716580ee006ddb542641056cb4865236e78 into master: git output: Auto-merging operator/main.go
+CONFLICT (content): Merge conflict in operator/main.go
+Auto-merging operator/helm/split_resources.py
+CONFLICT (content): Merge conflict in operator/helm/split_resources.py
+Auto-merging operator/go.sum
+Auto-merging operator/go.mod
+Auto-merging operator/controllers/seldondeployment_controller.go
+Removing operator/config/rbac/role_cm.yaml
+Auto-merging operator/config/manager/manager.yaml
+Auto-merging operator/config/crd/bases/machinelearning.seldon.io_seldondeployments.yaml
+CONFLICT (content): Merge conflict in operator/config/crd/bases/machinelearning.seldon.io_seldondeployments.yaml
+Auto-merging operator/Makefile
+CONFLICT (content): Merge conflict in operator/Makefile
+Auto-merging operator/Dockerfile
+Auto-merging helm-charts/seldon-core-operator/values.yaml
+Auto-merging helm-charts/seldon-core-operator/templates/deployment_seldon-controller-manager.yaml
+Automatic merge failed; fix conflicts and then commit the result.: failed to run 'git merge 1fd2c716580ee006ddb542641056cb4865236e78' command in directory '', output: 'Auto-merging operator/main.go
+CONFLICT (content): Merge conflict in operator/main.go
+Auto-merging operator/helm/split_resources.py
+CONFLICT (content): Merge conflict in operator/helm/split_resources.py
+Auto-merging operator/go.sum
+Auto-merging operator/go.mod
+Auto-merging operator/controllers/seldondeployment_controller.go
+Removing operator/config/rbac/role_cm.yaml
+Auto-merging operator/config/manager/manager.yaml
+Auto-merging operator/config/crd/bases/machinelearning.seldon.io_seldondeployments.yaml
+CONFLICT (content): Merge conflict in operator/config/crd/bases/machinelearning.seldon.io_seldondeployments.yaml
+Auto-merging operator/Makefile
+CONFLICT (content): Merge conflict in operator/Makefile
+Auto-merging operator/Dockerfile
+Auto-merging helm-charts/seldon-core-operator/values.yaml
+Auto-merging helm-charts/seldon-core-operator/templates/deployment_seldon-controller-manager.yaml
+Automatic merge failed; fix conflicts and then commit the result.'
+[31m
+Pipeline failed on stage 'meta-pipeline' : container 'step-git-merge'. The execution of the pipeline has stopped.[0m
