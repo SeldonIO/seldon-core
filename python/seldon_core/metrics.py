@@ -3,9 +3,7 @@ from prometheus_client.core import GaugeMetricFamily, CounterMetricFamily
 from prometheus_client.core import CollectorRegistry
 from prometheus_client import exposition
 
-
 from typing import List, Dict
-import multiprocessing as mp
 import logging
 import os
 
@@ -21,7 +19,10 @@ TIMER = "TIMER"
 def generate_metrics(metrics):
     myregistry = CollectorRegistry()
     myregistry.register(metrics)
-    return exposition.generate_latest(myregistry).decode("utf-8")
+    return (
+        exposition.generate_latest(myregistry).decode("utf-8"),
+        exposition.CONTENT_TYPE_LATEST,
+    )
 
 
 class SeldonMetrics:

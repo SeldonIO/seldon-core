@@ -19,14 +19,19 @@ logger = logging.getLogger(__name__)
 
 PARAMETERS_ENV_NAME = "PREDICTIVE_UNIT_PARAMETERS"
 SERVICE_PORT_ENV_NAME = "PREDICTIVE_UNIT_SERVICE_PORT"
+METRICS_SERVICE_PORT_ENV_NAME = "PREDICTIVE_UNIT_METRICS_SERVICE_PORT"
+
 LOG_LEVEL_ENV = "SELDON_LOG_LEVEL"
 DEFAULT_PORT = 5000
+DEFAULT_METRICS_PORT = 6000
 
 DEBUG_PARAMETER = "SELDON_DEBUG"
 DEBUG = False
 
 
-def start_servers(target1: Callable, target2: Callable) -> None:
+def start_servers(
+    target1: Callable, target2: Callable, metrics_target: Callable
+) -> None:
     """
     Start servers
 
@@ -41,13 +46,18 @@ def start_servers(target1: Callable, target2: Callable) -> None:
     manager = mp.Manager()
     seldon_metrics = SeldonMetrics(manager)
 
-    p2 = mp.Process(target=target2)
+    p2 = mp.Process(target=target2, args=(seldon_metrics,))
     p2.daemon = True
     p2.start()
+
+    p3 = mp.Process(target=metrics_target, args=(seldon_metrics,))
+    p3.daemon = True
+    p3.start()
 
     target1(seldon_metrics)
 
     p2.join()
+    p3.join()
     manager.shutdown()
 
 
@@ -287,6 +297,16 @@ def main():
         handler.setLevel(log_level_num)
 
     port = int(os.environ.get(SERVICE_PORT_ENV_NAME, DEFAULT_PORT))
+    metrics_port = int(
+        os.environ.get(METRICS_SERVICE_PORT_ENV_NAME, DEFAULT_METRICS_PORT)
+    )
+
+    def rest_metrics_server(seldon_metrics):
+        app = seldon_microservice.get_metrics_microservice(seldon_metrics)
+        app.run(host="0.0.0.0", port=metrics_port)
+
+    logger.info("REST metrics microservice running on port %i", metrics_port)
+    metrics_server_func = rest_metrics_server
 
     if args.tracing:
         tracer = setup_tracing(args.interface_name)
@@ -378,7 +398,7 @@ def main():
         server2_func = None
 
         logger.info("Starting servers")
-    start_servers(server1_func, server2_func)
+    start_servers(server1_func, server2_func, metrics_server_func)
 
 
 if __name__ == "__main__":
