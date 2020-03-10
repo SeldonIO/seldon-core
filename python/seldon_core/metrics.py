@@ -2,7 +2,7 @@ from prometheus_client.core import (
     HistogramMetricFamily,
     GaugeMetricFamily,
     CounterMetricFamily,
-    CollectorRegistry
+    CollectorRegistry,
 )
 from prometheus_client import exposition
 from prometheus_client.utils import floatToGoString
@@ -37,6 +37,7 @@ BINS = [0] + list(np.logspace(-3, np.log10(30), 50)) + [np.inf]
 LABELS = ["worker-id", "model", "image"]
 
 my_labels = {"model": "latest", "image": "my-image"}
+
 
 def update_hist(x, vals, sumv):
     hist = np.histogram([x], BINS)[0]
