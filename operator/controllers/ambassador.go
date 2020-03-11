@@ -93,9 +93,10 @@ func getAmbassadorRestConfig(mlDep *machinelearningv1.SeldonDeployment,
 		TimeoutMs:  timeout,
 	}
 
+	// Ambassador only allows a single RetryOn: https://github.com/datawire/ambassador/issues/1570
 	if retries != 0 {
 		c.RetryPolicy = &AmbassadorRetryPolicy{
-			RetryOn:    "connect-failure",
+			RetryOn:    "gateway-error",
 			NumRetries: retries,
 		}
 	}
@@ -192,9 +193,10 @@ func getAmbassadorGrpcConfig(mlDep *machinelearningv1.SeldonDeployment,
 		TimeoutMs:   timeout,
 	}
 
+	// Ambassador only allows a single RetryOn: https://github.com/datawire/ambassador/issues/1570
 	if retries != 0 {
 		c.RetryPolicy = &AmbassadorRetryPolicy{
-			RetryOn:    "connect-failure",
+			RetryOn:    "gateway-error",
 			NumRetries: retries,
 		}
 	}

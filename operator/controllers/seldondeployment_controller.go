@@ -20,9 +20,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"strconv"
-	"strings"
-
+	types2 "github.com/gogo/protobuf/types"
 	"github.com/seldonio/seldon-core/operator/constants"
 	"github.com/seldonio/seldon-core/operator/utils"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -32,6 +30,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"knative.dev/pkg/kmp"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"strconv"
+	"strings"
 
 	"github.com/go-logr/logr"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -41,12 +41,12 @@ import (
 
 	"encoding/json"
 
+	istio_networking "istio.io/api/networking/v1alpha3"
+	istio "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscaling "k8s.io/api/autoscaling/v2beta1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"knative.dev/pkg/apis/istio/common/v1alpha1"
-	istio "knative.dev/pkg/apis/istio/v1alpha3"
 )
 
 const (
@@ -123,26 +123,42 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 	namespace string,
 	ports []httpGrpcPorts,
 	httpAllowed bool,
-	grpcAllowed bool) ([]*istio.VirtualService, []*istio.DestinationRule) {
+	grpcAllowed bool) ([]*istio.VirtualService, []*istio.DestinationRule, error) {
 
 	istio_gateway := GetEnv(ENV_ISTIO_GATEWAY, "seldon-gateway")
 	istioTLSMode := GetEnv(ENV_ISTIO_TLS_MODE, "")
+	istioRetriesAnnotation := getAnnotation(mlDep, ANNOTATION_ISTIO_RETRIES, "")
+	istioRetriesTimeoutAnnotation := getAnnotation(mlDep, ANNOTATION_ISTIO_RETRIES_TIMEOUT, "1")
+	istioRetries := 0
+	istioRetriesTimeout := 1
+	var err error
+
+	if istioRetriesAnnotation != "" {
+		istioRetries, err = strconv.Atoi(istioRetriesAnnotation)
+		if err != nil {
+			return nil, nil, err
+		}
+		istioRetriesTimeout, err = strconv.Atoi(istioRetriesTimeoutAnnotation)
+		if err != nil {
+			return nil, nil, err
+		}
+	}
 	httpVsvc := &istio.VirtualService{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      seldonId + "-http",
 			Namespace: namespace,
 		},
-		Spec: istio.VirtualServiceSpec{
+		Spec: istio_networking.VirtualService{
 			Hosts:    []string{"*"},
 			Gateways: []string{getAnnotation(mlDep, ANNOTATION_ISTIO_GATEWAY, istio_gateway)},
-			HTTP: []istio.HTTPRoute{
+			Http: []*istio_networking.HTTPRoute{
 				{
-					Match: []istio.HTTPMatchRequest{
+					Match: []*istio_networking.HTTPMatchRequest{
 						{
-							URI: &v1alpha1.StringMatch{Prefix: "/seldon/" + namespace + "/" + mlDep.Name + "/"},
+							Uri: &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Prefix{Prefix: "/seldon/" + namespace + "/" + mlDep.Name + "/"}},
 						},
 					},
-					Rewrite: &istio.HTTPRewrite{URI: "/"},
+					Rewrite: &istio_networking.HTTPRewrite{Uri: "/"},
 				},
 			},
 		},
@@ -153,23 +169,28 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 			Name:      seldonId + "-grpc",
 			Namespace: namespace,
 		},
-		Spec: istio.VirtualServiceSpec{
+		Spec: istio_networking.VirtualService{
 			Hosts:    []string{"*"},
 			Gateways: []string{getAnnotation(mlDep, ANNOTATION_ISTIO_GATEWAY, istio_gateway)},
-			HTTP: []istio.HTTPRoute{
+			Http: []*istio_networking.HTTPRoute{
 				{
-					Match: []istio.HTTPMatchRequest{
+					Match: []*istio_networking.HTTPMatchRequest{
 						{
-							URI: &v1alpha1.StringMatch{Regex: constants.GRPCRegExMatchIstio},
-							Headers: map[string]v1alpha1.StringMatch{
-								"seldon":    v1alpha1.StringMatch{Exact: mlDep.Name},
-								"namespace": v1alpha1.StringMatch{Exact: namespace},
+							Uri: &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Regex{Regex: constants.GRPCRegExMatchIstio}},
+							Headers: map[string]*istio_networking.StringMatch{
+								"seldon":    &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Exact{Exact: mlDep.Name}},
+								"namespace": &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Exact{Exact: namespace}},
 							},
 						},
 					},
 				},
 			},
 		},
+	}
+	// Add retries
+	if istioRetries > 0 {
+		httpVsvc.Spec.Http[0].Retries = &istio_networking.HTTPRetry{Attempts: int32(istioRetries), PerTryTimeout: &types2.Duration{Seconds: int64(istioRetriesTimeout)}, RetryOn: "gateway-error,connect-failure,refused-stream", RetryRemoteLocalities: &types2.BoolValue{Value: true}}
+		grpcVsvc.Spec.Http[0].Retries = &istio_networking.HTTPRetry{Attempts: int32(istioRetries), PerTryTimeout: &types2.Duration{Seconds: int64(istioRetriesTimeout)}, RetryOn: "gateway-error,connect-failure,refused-stream", RetryRemoteLocalities: &types2.BoolValue{Value: true}}
 	}
 
 	// shadows don't get destinations in the vs as a shadow is a mirror instead
@@ -181,8 +202,8 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 		}
 	}
 
-	routesHttp := make([]istio.HTTPRouteDestination, len(mlDep.Spec.Predictors)-shadows)
-	routesGrpc := make([]istio.HTTPRouteDestination, len(mlDep.Spec.Predictors)-shadows)
+	routesHttp := make([]*istio_networking.HTTPRouteDestination, len(mlDep.Spec.Predictors)-shadows)
+	routesGrpc := make([]*istio_networking.HTTPRouteDestination, len(mlDep.Spec.Predictors)-shadows)
 
 	// the shdadow/mirror entry does need a DestinationRule though
 	drules := make([]*istio.DestinationRule, len(mlDep.Spec.Predictors))
@@ -197,9 +218,9 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 				Name:      pSvcName,
 				Namespace: namespace,
 			},
-			Spec: istio.DestinationRuleSpec{
+			Spec: istio_networking.DestinationRule{
 				Host: pSvcName,
-				Subsets: []istio.Subset{
+				Subsets: []*istio_networking.Subset{
 					{
 						Name: p.Name,
 						Labels: map[string]string{
@@ -211,9 +232,9 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 		}
 
 		if istioTLSMode != "" {
-			drule.Spec.TrafficPolicy = &istio.TrafficPolicy{
-				TLS: &istio.TLSSettings{
-					Mode: istio.TLSmode(istioTLSMode),
+			drule.Spec.TrafficPolicy = &istio_networking.TrafficPolicy{
+				Tls: &istio_networking.TLSSettings{
+					Mode: istio_networking.TLSSettings_TLSmode(istio_networking.TLSSettings_TLSmode_value[istioTLSMode]),
 				},
 			}
 		}
@@ -222,18 +243,18 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 		if p.Shadow == true {
 			//if there's a shadow then add a mirror section to the VirtualService
 
-			httpVsvc.Spec.HTTP[0].Mirror = &istio.Destination{
+			httpVsvc.Spec.Http[0].Mirror = &istio_networking.Destination{
 				Host:   pSvcName,
 				Subset: p.Name,
-				Port: istio.PortSelector{
+				Port: &istio_networking.PortSelector{
 					Number: uint32(ports[i].httpPort),
 				},
 			}
 
-			grpcVsvc.Spec.HTTP[0].Mirror = &istio.Destination{
+			grpcVsvc.Spec.Http[0].Mirror = &istio_networking.Destination{
 				Host:   pSvcName,
 				Subset: p.Name,
-				Port: istio.PortSelector{
+				Port: &istio_networking.PortSelector{
 					Number: uint32(ports[i].grpcPort),
 				},
 			}
@@ -243,45 +264,45 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 
 		//we split by adding different routes with their own Weights
 		//so not by tag - different destinations (like https://istio.io/docs/tasks/traffic-management/traffic-shifting/) distinguished by host
-		routesHttp[routesIdx] = istio.HTTPRouteDestination{
-			Destination: istio.Destination{
+		routesHttp[routesIdx] = &istio_networking.HTTPRouteDestination{
+			Destination: &istio_networking.Destination{
 				Host:   pSvcName,
 				Subset: p.Name,
-				Port: istio.PortSelector{
+				Port: &istio_networking.PortSelector{
 					Number: uint32(ports[i].httpPort),
 				},
 			},
-			Weight: int(p.Traffic),
+			Weight: p.Traffic,
 		}
-		routesGrpc[routesIdx] = istio.HTTPRouteDestination{
-			Destination: istio.Destination{
+		routesGrpc[routesIdx] = &istio_networking.HTTPRouteDestination{
+			Destination: &istio_networking.Destination{
 				Host:   pSvcName,
 				Subset: p.Name,
-				Port: istio.PortSelector{
+				Port: &istio_networking.PortSelector{
 					Number: uint32(ports[i].grpcPort),
 				},
 			},
-			Weight: int(p.Traffic),
+			Weight: p.Traffic,
 		}
 		routesIdx += 1
 
 	}
-	httpVsvc.Spec.HTTP[0].Route = routesHttp
-	grpcVsvc.Spec.HTTP[0].Route = routesGrpc
+	httpVsvc.Spec.Http[0].Route = routesHttp
+	grpcVsvc.Spec.Http[0].Route = routesGrpc
 
 	if httpAllowed && grpcAllowed {
 		vscs := make([]*istio.VirtualService, 2)
 		vscs[0] = httpVsvc
 		vscs[1] = grpcVsvc
-		return vscs, drules
+		return vscs, drules, nil
 	} else if httpAllowed {
 		vscs := make([]*istio.VirtualService, 1)
 		vscs[0] = httpVsvc
-		return vscs, drules
+		return vscs, drules, nil
 	} else {
 		vscs := make([]*istio.VirtualService, 1)
 		vscs[0] = grpcVsvc
-		return vscs, drules
+		return vscs, drules, nil
 	}
 }
 
@@ -534,7 +555,10 @@ func createComponents(r *SeldonDeploymentReconciler, mlDep *machinelearningv1.Se
 
 	//TODO Fixme - not changed to handle per predictor scenario
 	if GetEnv(ENV_ISTIO_ENABLED, "false") == "true" {
-		vsvcs, dstRule := createIstioResources(mlDep, seldonId, namespace, externalPorts, httpAllowed, grpcAllowed)
+		vsvcs, dstRule, err := createIstioResources(mlDep, seldonId, namespace, externalPorts, httpAllowed, grpcAllowed)
+		if err != nil {
+			return nil, err
+		}
 		c.virtualServices = append(c.virtualServices, vsvcs...)
 		c.destinationRules = append(c.destinationRules, dstRule...)
 	}

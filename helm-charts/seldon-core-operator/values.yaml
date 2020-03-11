@@ -43,6 +43,7 @@ executor:
   serviceAccount:
     name: default
   user: 8888
+  defaultRequestLoggerEndpointPrefix: 'http://default-broker.'
 image:
   pullPolicy: IfNotPresent
   registry: docker.io
@@ -83,7 +84,7 @@ predictor_servers:
       defaultImageVersion: "0.7"
       image: seldonio/tfserving-proxy_rest
     tensorflow: true
-    tfImage: tensorflow/serving:latest
+    tfImage: tensorflow/serving:2.1.0
   XGBOOST_SERVER:
     grpc:
       defaultImageVersion: "0.3"

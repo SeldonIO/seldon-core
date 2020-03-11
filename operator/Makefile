@@ -21,7 +21,7 @@ show_image:
 all: manager
 
 # Run tests
-test: generate fmt vet manifests
+test: generate fmt vet manifests generate-resources
 	go test ./controllers/... ./utils/...  -coverprofile cover.out
 
 # Build manager binary
@@ -151,6 +151,7 @@ kind-image-install-redhat: docker-build-redhat
 
 # find or download controller-gen
 # download controller-gen if necessary
+
 controller-gen:
 ifeq (, $(shell which controller-gen))
 	@{ \
@@ -158,9 +159,10 @@ ifeq (, $(shell which controller-gen))
 	CONTROLLER_GEN_TMP_DIR=$$(mktemp -d) ;\
 	cd $$CONTROLLER_GEN_TMP_DIR ;\
 	go mod init tmp ;\
-	go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.2.4 ;\
+	go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.2.5 ;\
 	rm -rf $$CONTROLLER_GEN_TMP_DIR ;\
 	}
+
 CONTROLLER_GEN=$(GOBIN)/controller-gen
 else
 CONTROLLER_GEN=$(shell which controller-gen)
@@ -191,3 +193,4 @@ generate-resources:
 	rm -rf generated
 	mkdir generated
 	kustomize build config/default/ -o generated
+	cp generated/apiextensions.k8s.io_v1beta1_customresourcedefinition_seldondeployments.machinelearning.seldon.io.yaml testing/machinelearning.seldon.io_seldondeployments.yaml

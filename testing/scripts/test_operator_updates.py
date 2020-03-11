@@ -42,6 +42,7 @@ def test_cluster_update(namespace, seldon_version):
     assert_model_during_op(_upgrade_seldon, "mymodel", namespace)
 
 
+@pytest.mark.flaky(max_runs=2)
 @pytest.mark.sequential
 @pytest.mark.parametrize("seldon_version", ["1.0.0", "1.0.1"], indirect=True)
 def test_namespace_update(namespace, seldon_version):
