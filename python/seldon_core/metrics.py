@@ -23,59 +23,25 @@ COUNTER = "COUNTER"
 GAUGE = "GAUGE"
 TIMER = "TIMER"
 
-
-def generate_metrics(metrics):
-    myregistry = CollectorRegistry()
-    myregistry.register(metrics)
-    return (
-        exposition.generate_latest(myregistry).decode("utf-8"),
-        exposition.CONTENT_TYPE_LATEST,
-    )
-
-
+# This sets the bins spread logarithmically between 0.001 and 30
 BINS = [0] + list(np.logspace(-3, np.log10(30), 50)) + [np.inf]
+
+# Development placeholder
 LABELS = ["worker-id", "model", "image"]
-
 my_labels = {"model": "latest", "image": "my-image"}
-
-
-def update_hist(x, vals, sumv):
-    hist = np.histogram([x], BINS)[0]
-    vals = list(np.array(vals) + hist)
-    return vals, sumv + x
-
-
-def expose_gauge(name, value, labels):
-    metric = GaugeMetricFamily(name, "", labels=LABELS)
-    metric.add_metric(labels, value)
-    return metric
-
-
-def expose_counter(name, value, labels):
-    metric = CounterMetricFamily(name, "", labels=LABELS)
-    metric.add_metric(labels, value)
-    return metric
-
-
-def expose_histogram(name, value, labels):
-    vals, sumv = value
-    buckets = [[floatToGoString(b), v] for v, b in zip(np.cumsum(vals), BINS[1:])]
-
-    metric = HistogramMetricFamily(name, "", labels=LABELS)
-    metric.add_metric(labels, buckets, sum_value=sumv)
-    return metric
 
 
 class SeldonMetrics:
     """Class to manage custom metrics stored in shared memory."""
 
     def __init__(self, worker_id_func=os.getpid):
-        self.manager = Manager()
-        self.data = self.manager.dict()
+        # We keep reference to Manager so it does not get garbage collected
+        self._manager = Manager()
+        self.data = self._manager.dict()
         self.worker_id_func = worker_id_func
 
     def __del__(self):
-        self.manager.shutdown()
+        self._manager.shutdown()
 
     def update(self, custom_metrics):
         data = self.data.get(self.worker_id_func(), {})
@@ -88,7 +54,7 @@ class SeldonMetrics:
             elif metrics["type"] == "TIMER":
                 vals, sumv = data.get(key, (list(np.zeros(len(BINS) - 1)), 0))
                 # Dividing by 1000 because unit is milliseconds
-                data[key] = update_hist(metrics["value"] / 1000, vals, sumv)
+                data[key] = self._update_hist(metrics["value"] / 1000, vals, sumv)
             else:
                 data[key] = metrics["value"]
 
@@ -101,13 +67,46 @@ class SeldonMetrics:
             labels = [str(worker), my_labels["model"], my_labels["image"]]
             for (item_type, item_name), item_value in metrics.items():
                 if item_type == "GAUGE":
-                    yield expose_gauge(item_name, item_value, labels)
+                    yield self._expose_gauge(item_name, item_value, labels)
                 elif item_type == "COUNTER":
-                    yield expose_counter(item_name, item_value, labels)
+                    yield self._expose_counter(item_name, item_value, labels)
                 elif item_type == "TIMER":
-                    yield expose_histogram(item_name, item_value, labels)
-                else:
-                    continue
+                    yield self._expose_histogram(item_name, item_value, labels)
+
+    def generate_metrics(self):
+        myregistry = CollectorRegistry()
+        myregistry.register(self)
+        return (
+            exposition.generate_latest(myregistry).decode("utf-8"),
+            exposition.CONTENT_TYPE_LATEST,
+        )
+
+    @staticmethod
+    def _update_hist(x, vals, sumv):
+        hist = np.histogram([x], BINS)[0]
+        vals = list(np.array(vals) + hist)
+        return vals, sumv + x
+
+    @staticmethod
+    def _expose_gauge(name, value, labels):
+        metric = GaugeMetricFamily(name, "", labels=LABELS)
+        metric.add_metric(labels, value)
+        return metric
+
+    @staticmethod
+    def _expose_counter(name, value, labels):
+        metric = CounterMetricFamily(name, "", labels=LABELS)
+        metric.add_metric(labels, value)
+        return metric
+
+    @staticmethod
+    def _expose_histogram(name, value, labels):
+        vals, sumv = value
+        buckets = [[floatToGoString(b), v] for v, b in zip(np.cumsum(vals), BINS[1:])]
+
+        metric = HistogramMetricFamily(name, "", labels=LABELS)
+        metric.add_metric(labels, buckets, sum_value=sumv)
+        return metric
 
 
 def create_counter(key: str, value: float):

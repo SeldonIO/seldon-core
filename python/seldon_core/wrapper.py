@@ -10,7 +10,6 @@ from seldon_core.flask_utils import (
     SeldonMicroserviceException,
     ANNOTATION_GRPC_MAX_MSG_SIZE,
 )
-from seldon_core.metrics import generate_metrics
 from seldon_core.proto import prediction_pb2_grpc
 import os
 
@@ -143,7 +142,7 @@ def get_metrics_microservice(seldon_metrics):
     @app.route("/metrics", methods=["GET"])
     def Metrics():
         logger.debug("REST Metrics Request")
-        metrics, mimetype = generate_metrics(seldon_metrics)
+        metrics, mimetype = seldon_metrics.generate_metrics()
         return Response(metrics, mimetype=mimetype)
 
     return app
