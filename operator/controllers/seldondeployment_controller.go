@@ -715,9 +715,17 @@ func createContainerService(deploy *appsv1.Deployment, p machinelearningv1.Predi
 	}
 
 	// Always set the predictive and deployment identifiers
+
+	labels, err := json.Marshal(p.Labels)
+	if err != nil {
+		labels = []byte("{}")
+	}
+
 	con.Env = append(con.Env, []corev1.EnvVar{
 		corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_ID, Value: con.Name},
+		corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_IMAGE, Value: con.Image},
 		corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTOR_ID, Value: p.Name},
+		corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTOR_LABELS, Value: string(labels)},
 		corev1.EnvVar{Name: machinelearningv1.ENV_SELDON_DEPLOYMENT_ID, Value: mlDep.ObjectMeta.Name},
 	}...)
 

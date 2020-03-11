@@ -13,11 +13,18 @@ import numpy as np
 
 from typing import List, Dict
 import logging
+import json
 import os
 
 
 logger = logging.getLogger(__name__)
 
+
+ENV_SELDON_DEPLOYMENT_NAME = "SELDON_DEPLOYMENT_ID"
+ENV_MODEL_NAME = "PREDICTIVE_UNIT_ID"
+ENV_MODEL_IMAGE = "PREDICTIVE_UNIT_IMAGE"
+ENV_PREDICTOR_NAME = "PREDICTOR_ID"
+ENV_PREDICTOR_LABELS = "PREDICTOR_LABELS"
 
 COUNTER = "COUNTER"
 GAUGE = "GAUGE"
@@ -27,8 +34,30 @@ TIMER = "TIMER"
 BINS = [0] + list(np.logspace(-3, np.log10(30), 50)) + [np.inf]
 
 # Development placeholder
-LABELS = ["worker-id", "model", "image"]
-my_labels = {"model": "latest", "image": "my-image"}
+LABELS = [
+    "worker-id",
+    "seldon_deployment_name",
+    "model_name",
+    "image_name",
+    "image_version",
+    "predictor_name",
+    "predictor_version",
+]
+
+image = os.environ.get(ENV_MODEL_IMAGE, "UNDEFINED:UNDEFINED")
+image_name, image_version = image.split(":")
+predictor_version = json.loads(os.environ.get(ENV_PREDICTOR_LABELS, "{}")).get(
+    "version", "UNDERFINED"
+)
+
+my_labels = {
+    "seldon_deployment_name": os.environ.get(ENV_SELDON_DEPLOYMENT_NAME, "UNDEFINED"),
+    "model_name": os.environ.get(ENV_MODEL_NAME, "UNDEFINED"),
+    "image_name": image_name,
+    "image_version": image_version,
+    "predictor_name": os.environ.get(ENV_PREDICTOR_NAME, "UNDEFINED"),
+    "predictor_version": predictor_version,
+}
 
 
 class SeldonMetrics:
@@ -74,7 +103,15 @@ class SeldonMetrics:
             data = dict(self.data)
 
         for worker, metrics in data.items():
-            labels = [str(worker), my_labels["model"], my_labels["image"]]
+            labels = [
+                str(worker),
+                my_labels["seldon_deployment_name"],
+                my_labels["model_name"],
+                my_labels["image_name"],
+                my_labels["image_version"],
+                my_labels["predictor_name"],
+                my_labels["predictor_version"],
+            ]
             for (item_type, item_name), item_value in metrics.items():
                 if item_type == "GAUGE":
                     yield self._expose_gauge(item_name, item_value, labels)
