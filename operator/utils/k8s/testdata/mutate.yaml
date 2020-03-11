@@ -8,7 +8,6 @@ metadata:
     app: seldon
     app.kubernetes.io/instance: 'seldon-operator'
     app.kubernetes.io/name: 'seldon-core-operator'
-    app.kubernetes.io/version: '1.0.3-SNAPSHOT'
   name: seldon-mutating-webhook-configuration-default
 webhooks:
 - clientConfig:

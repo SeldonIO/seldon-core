@@ -1,6 +1,6 @@
 
 .PHONY: recreate-generated
-recreate-generated:
+generate-resources:
 	rm -rf generated
 	mkdir generated
 	kustomize build ../config/lite -o generated

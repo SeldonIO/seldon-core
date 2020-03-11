@@ -3,10 +3,10 @@ ambassador:
   singleNamespace: false
 certManager:
   enabled: false
-controllerId: ""
-createResources: false
+controllerId: ''
 crd:
   create: true
+createResources: false
 credentials:
   gcs:
     gcsCredentialFileName: gcloud-application-credentials.json
@@ -20,7 +20,7 @@ engine:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/engine
-    tag: 1.0.3-SNAPSHOT
+    tag: 1.1.0-SNAPSHOT
   logMessagesExternally: false
   port: 8000
   prometheus:
@@ -29,6 +29,7 @@ engine:
     name: default
   user: 8888
 executor:
+  defaultRequestLoggerEndpointPrefix: http://default-broker.
   enabled: true
   grpc:
     port: 5001
@@ -36,23 +37,22 @@ executor:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/seldon-core-executor
-    tag: 1.0.3-SNAPSHOT
+    tag: 1.1.0-SNAPSHOT
   port: 8000
   prometheus:
     path: /prometheus
   serviceAccount:
     name: default
   user: 8888
-  defaultRequestLoggerEndpointPrefix: 'http://default-broker.'
 image:
   pullPolicy: IfNotPresent
   registry: docker.io
   repository: seldonio/seldon-core-operator
-  tag: 1.0.3-SNAPSHOT
+  tag: 1.1.0-SNAPSHOT
 istio:
   enabled: false
   gateway: seldon-gateway
-  tlsMode: ""
+  tlsMode: ''
 kubeflow: false
 manager:
   cpuLimit: 500m
@@ -64,33 +64,33 @@ predictiveUnit:
 predictor_servers:
   MLFLOW_SERVER:
     grpc:
-      defaultImageVersion: "0.3"
+      defaultImageVersion: '0.3'
       image: seldonio/mlflowserver_grpc
     rest:
-      defaultImageVersion: "0.3"
+      defaultImageVersion: '0.3'
       image: seldonio/mlflowserver_rest
   SKLEARN_SERVER:
     grpc:
-      defaultImageVersion: "0.2"
+      defaultImageVersion: '0.2'
       image: seldonio/sklearnserver_grpc
     rest:
-      defaultImageVersion: "0.2"
+      defaultImageVersion: '0.2'
       image: seldonio/sklearnserver_rest
   TENSORFLOW_SERVER:
     grpc:
-      defaultImageVersion: "0.7"
+      defaultImageVersion: '0.7'
       image: seldonio/tfserving-proxy_grpc
     rest:
-      defaultImageVersion: "0.7"
+      defaultImageVersion: '0.7'
       image: seldonio/tfserving-proxy_rest
     tensorflow: true
     tfImage: tensorflow/serving:2.1.0
   XGBOOST_SERVER:
     grpc:
-      defaultImageVersion: "0.3"
+      defaultImageVersion: '0.3'
       image: seldonio/xgboostserver_grpc
     rest:
-      defaultImageVersion: "0.3"
+      defaultImageVersion: '0.3'
       image: seldonio/xgboostserver_rest
 rbac:
   configmap:
@@ -101,7 +101,7 @@ serviceAccount:
   name: seldon-manager
 singleNamespace: false
 storageInitializer:
-  cpuLimit: "1"
+  cpuLimit: '1'
   cpuRequest: 100m
   image: gcr.io/kfserving/storage-initializer:0.2.2
   memoryLimit: 1Gi
