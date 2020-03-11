@@ -168,6 +168,13 @@ spec:
           - patch
           - update
         - apiGroups:
+          - apiextensions.k8s.io
+          resources:
+          - customresourcedefinitions
+          verbs:
+          - get
+          - list
+        - apiGroups:
           - ""
           resources:
           - namespaces
@@ -395,6 +402,7 @@ spec:
                 - name: ISTIO_TLS_MODE
                 - name: USE_EXECUTOR
                   value: "true"
+                - name: EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT
                 - name: EXECUTOR_CONTAINER_IMAGE_AND_VERSION
                   value: seldonio/seldon-core-executor:1.0.3-SNAPSHOT
                 - name: EXECUTOR_CONTAINER_IMAGE_PULL_POLICY
@@ -410,7 +418,6 @@ spec:
                 - name: EXECUTOR_CONTAINER_SERVICE_ACCOUNT_NAME
                   value: default
                 image: seldonio/seldon-core-operator:1.0.3-SNAPSHOT
-                imagePullPolicy: Always
                 name: manager
                 ports:
                 - containerPort: 443
@@ -476,8 +483,6 @@ spec:
     url: https://www.seldon.io/
   - name: Documentation
     url: https://docs.seldon.io/projects/seldon-core/en/latest/
-  - name: Seldon Operator
-    url: https://github.com/seldonio/seldon-operator
   maintainers:
   - email: hello@seldon.io
     name: Seldon Technologies
