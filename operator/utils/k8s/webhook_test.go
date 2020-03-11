@@ -2,10 +2,17 @@ package k8s
 
 import (
 	. "github.com/onsi/gomega"
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1alpha2"
+	machinelearningv1alpha3 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1alpha3"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	apiextensionsfake "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/fake"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -58,11 +65,34 @@ func createManagerDeployment(client kubernetes.Interface, namespace string) (*ap
 	return client.AppsV1().Deployments(namespace).Create(deployment)
 }
 
+func createCRD(client apiextensionsclient.Interface) (*v1beta1.CustomResourceDefinition, error) {
+	crd := &v1beta1.CustomResourceDefinition{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: CRDName,
+		},
+		Spec: v1beta1.CustomResourceDefinitionSpec{
+			Group: "machinelearning.seldon.io",
+			Scope: v1beta1.ClusterScoped,
+			Names: v1beta1.CustomResourceDefinitionNames{
+				Plural: "seldondeployments",
+				Kind:   "seldondeployment",
+			},
+			Version: "v1",
+		},
+	}
+	return client.ApiextensionsV1beta1().CustomResourceDefinitions().Create(crd)
+}
+
 func createScheme() *runtime.Scheme {
 	scheme := runtime.NewScheme()
 	_ = clientgoscheme.AddToScheme(scheme)
 	_ = appsv1.AddToScheme(scheme)
 	_ = v1.AddToScheme(scheme)
+	_ = machinelearningv1.AddToScheme(scheme)
+	_ = machinelearningv1alpha2.AddToScheme(scheme)
+	_ = machinelearningv1alpha3.AddToScheme(scheme)
+	_ = v1beta1.AddToScheme(scheme)
+	_ = serializer.NewCodecFactory(scheme).UniversalDeserializer().Decode
 	return scheme
 }
 
@@ -72,14 +102,15 @@ func TestMutatingWebhookCreate(t *testing.T) {
 	bytes, err := LoadBytesFromFile("testdata", "mutate.yaml")
 	g.Expect(err).To(BeNil())
 	client := fake.NewSimpleClientset()
-	dep, err := createManagerDeployment(client, TestNamespace)
+	apiExtensionsFake := apiextensionsfake.NewSimpleClientset()
+	crd, err := createCRD(apiExtensionsFake)
 	g.Expect(err).To(BeNil())
 	hosts := []string{"seldon-webhook-service.seldon-system", "seldon-webhook-service.seldon-system.svc"}
 	certs, err := certSetup(hosts)
 	g.Expect(err).To(BeNil())
 	wc, err := NewWebhookCreator(client, certs, ctrl.Log, scheme)
 	g.Expect(err).To(BeNil())
-	err = wc.CreateMutatingWebhookConfigurationFromFile(bytes, TestNamespace, dep, false)
+	err = wc.CreateMutatingWebhookConfigurationFromFile(bytes, TestNamespace, crd, false)
 	g.Expect(err).To(BeNil())
 }
 
@@ -89,14 +120,15 @@ func TestValidatingWebhookCreate(t *testing.T) {
 	bytes, err := LoadBytesFromFile("testdata", "mutate.yaml")
 	g.Expect(err).To(BeNil())
 	client := fake.NewSimpleClientset()
-	dep, err := createManagerDeployment(client, TestNamespace)
+	apiExtensionsFake := apiextensionsfake.NewSimpleClientset()
+	crd, err := createCRD(apiExtensionsFake)
 	g.Expect(err).To(BeNil())
 	hosts := []string{"seldon-webhook-service.seldon-system", "seldon-webhook-service.seldon-system.svc"}
 	certs, err := certSetup(hosts)
 	g.Expect(err).To(BeNil())
 	wc, err := NewWebhookCreator(client, certs, ctrl.Log, scheme)
 	g.Expect(err).To(BeNil())
-	err = wc.CreateValidatingWebhookConfigurationFromFile(bytes, TestNamespace, dep, false)
+	err = wc.CreateValidatingWebhookConfigurationFromFile(bytes, TestNamespace, crd, false)
 	g.Expect(err).To(BeNil())
 }
 

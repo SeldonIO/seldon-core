@@ -6,6 +6,7 @@ import (
 	"k8s.io/api/admissionregistration/v1beta1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	apiextensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -58,7 +59,7 @@ func NewWebhookCreator(client kubernetes.Interface, certs *Cert, logger logr.Log
 	}, nil
 }
 
-func (wc *WebhookCreator) CreateMutatingWebhookConfigurationFromFile(rawYaml []byte, namespace string, owner *appsv1.Deployment, watchNamespace bool) error {
+func (wc *WebhookCreator) CreateMutatingWebhookConfigurationFromFile(rawYaml []byte, namespace string, owner *apiextensionsv1beta1.CustomResourceDefinition, watchNamespace bool) error {
 	mwc := v1beta1.MutatingWebhookConfiguration{}
 	err := yaml.Unmarshal(rawYaml, &mwc)
 	if err != nil {
@@ -105,7 +106,7 @@ func (wc *WebhookCreator) CreateMutatingWebhookConfigurationFromFile(rawYaml []b
 	return err
 }
 
-func (wc *WebhookCreator) CreateValidatingWebhookConfigurationFromFile(rawYaml []byte, namespace string, owner *appsv1.Deployment, watchNamespace bool) error {
+func (wc *WebhookCreator) CreateValidatingWebhookConfigurationFromFile(rawYaml []byte, namespace string, owner *apiextensionsv1beta1.CustomResourceDefinition, watchNamespace bool) error {
 	vwc := v1beta1.ValidatingWebhookConfiguration{}
 	err := yaml.Unmarshal(rawYaml, &vwc)
 	if err != nil {

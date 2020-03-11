@@ -97,7 +97,7 @@ setup_linter:
 
 run_linter:
 	black \
-		./ ../testing \
+		./ ../testing ../operator/helm \
 		--exclude "(testing/scripts/proto|seldon_core/proto/|.eggs|.tox)"
 
 run_linter_check:

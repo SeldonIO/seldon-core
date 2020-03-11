@@ -79,6 +79,8 @@ spec:
           value: '{{ .Values.istio.tlsMode }}'
         - name: USE_EXECUTOR
           value: '{{ .Values.executor.enabled }}'
+        - name: EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT
+          value: ''
         - name: EXECUTOR_CONTAINER_IMAGE_AND_VERSION
           value: '{{ .Values.executor.image.registry }}/{{ .Values.executor.image.repository }}:{{ .Values.executor.image.tag }}'
         - name: EXECUTOR_CONTAINER_IMAGE_PULL_POLICY
@@ -93,8 +95,6 @@ spec:
           value: '{{ .Values.executor.user }}'
         - name: EXECUTOR_CONTAINER_SERVICE_ACCOUNT_NAME
           value: '{{ .Values.executor.serviceAccount.name }}'
-        - name: EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX
-          value: '{{ .Values.executor.defaultRequestLoggerEndpointPrefix }}'
         image: '{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}'
         imagePullPolicy: '{{ .Values.image.pullPolicy }}'
         name: manager

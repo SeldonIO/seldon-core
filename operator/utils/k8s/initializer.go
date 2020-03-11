@@ -5,6 +5,8 @@ import (
 	"github.com/go-logr/logr"
 	"io/ioutil"
 	appsv1 "k8s.io/api/apps/v1"
+	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
@@ -26,6 +28,7 @@ const (
 	ServiceFilename           = "service.yaml"
 
 	ManagerDeploymentName = "seldon-controller-manager"
+	CRDName               = "seldondeployments.machinelearning.seldon.io"
 )
 
 func LoadBytesFromFile(path string, name string) ([]byte, error) {
@@ -38,7 +41,22 @@ func findMyDeployment(clientset kubernetes.Interface, namespace string) (*appsv1
 	return client.Get(ManagerDeploymentName, v1.GetOptions{})
 }
 
+func findCRD(clientset apiextensionsclient.Interface) (*v1beta1.CustomResourceDefinition, error) {
+	client := clientset.ApiextensionsV1beta1().CustomResourceDefinitions()
+	return client.Get(CRDName, v1.GetOptions{})
+}
+
 func InitializeOperator(config *rest.Config, namespace string, logger logr.Logger, scheme *runtime.Scheme, watchNamespace bool) error {
+
+	apiExtensionClient, err := apiextensionsclient.NewForConfig(config)
+	if err != nil {
+		return err
+	}
+
+	crd, err := findCRD(apiExtensionClient)
+	if err != nil {
+		return err
+	}
 
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
@@ -69,7 +87,7 @@ func InitializeOperator(config *rest.Config, namespace string, logger logr.Logge
 	if err != nil {
 		return err
 	}
-	err = wc.CreateMutatingWebhookConfigurationFromFile(bytes, namespace, dep, watchNamespace)
+	err = wc.CreateMutatingWebhookConfigurationFromFile(bytes, namespace, crd, watchNamespace)
 	if err != nil {
 		return err
 	}
@@ -79,7 +97,7 @@ func InitializeOperator(config *rest.Config, namespace string, logger logr.Logge
 	if err != nil {
 		return err
 	}
-	err = wc.CreateValidatingWebhookConfigurationFromFile(bytes, namespace, dep, watchNamespace)
+	err = wc.CreateValidatingWebhookConfigurationFromFile(bytes, namespace, crd, watchNamespace)
 	if err != nil {
 		return err
 	}

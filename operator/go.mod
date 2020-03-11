@@ -5,7 +5,7 @@ go 1.13
 require (
 	github.com/Azure/go-autorest/autorest v0.9.2 // indirect
 	github.com/Azure/go-autorest/autorest/adal v0.7.0 // indirect
-	github.com/ghodss/yaml v0.0.0-20150909031657-73d445a93680
+	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v0.1.0
 	github.com/gogo/protobuf v1.3.1
 	github.com/gomodules/jsonpatch v2.1.0+incompatible // indirect
@@ -17,6 +17,7 @@ require (
 	istio.io/api v0.0.0-20200305220354-742c3015842e
 	istio.io/client-go v0.0.0-20200305195406-fddfc7a9ca06
 	k8s.io/api v0.17.2
+	k8s.io/apiextensions-apiserver v0.17.2
 	k8s.io/apimachinery v0.17.2
 	k8s.io/client-go v0.17.2
 	knative.dev/pkg v0.0.0-20200306225627-d1665814487e
