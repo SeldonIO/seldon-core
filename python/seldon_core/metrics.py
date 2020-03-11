@@ -37,6 +37,7 @@ class SeldonMetrics:
     def __init__(self, worker_id_func=os.getpid):
         # We keep reference to Manager so it does not get garbage collected
         self._manager = Manager()
+        self._lock = self._manager.Lock()
         self.data = self._manager.dict()
         self.worker_id_func = worker_id_func
 
@@ -44,7 +45,11 @@ class SeldonMetrics:
         self._manager.shutdown()
 
     def update(self, custom_metrics):
-        data = self.data.get(self.worker_id_func(), {})
+        # Read a corresponding worker's metric data with lock as Proxy objects
+        # are not thread-safe, see "Thread safety of proxies" here
+        # https://docs.python.org/3.7/library/multiprocessing.html#programming-guidelines
+        with self._lock:
+            data = self.data.get(self.worker_id_func(), {})
 
         for metrics in custom_metrics:
             key = metrics["type"], metrics["key"]
@@ -58,10 +63,15 @@ class SeldonMetrics:
             else:
                 data[key] = metrics["value"]
 
-        self.data[self.worker_id_func()] = data
+        # Write worker's data with lock (again - Proxy objects are not thread-safe)
+        with self._lock:
+            self.data[self.worker_id_func()] = data
 
     def collect(self):
-        data = dict(self.data)
+        # Read all workers metrics with lock to avoid other processes / threads
+        # writing to it at the same time. Casting to `dict` works like reading of data.
+        with self._lock:
+            data = dict(self.data)
 
         for worker, metrics in data.items():
             labels = [str(worker), my_labels["model"], my_labels["image"]]
