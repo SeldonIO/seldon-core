@@ -54,6 +54,8 @@ spec:
           value: "false"
         - name: PREDICTIVE_UNIT_SERVICE_PORT
           value: "9000"
+        - name: PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME
+          value: ""
         - name: ENGINE_SERVER_GRPC_PORT
           value: "5001"
         - name: ENGINE_SERVER_PORT
