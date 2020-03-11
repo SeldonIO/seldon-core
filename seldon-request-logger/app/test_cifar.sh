@@ -1,0 +1,3 @@
+curl 0.0.0.0:2222 --data-binary "@cifardata.json" -H "Content-Type: application/json" -H "Ce-Type: org.kubeflow.serving.inference.request" -H "Ce-id: 1a" -H 'CE-SpecVersion: 0.2' -v
+curl 0.0.0.0:2222 -d '{"data":{"names":["class"],"tensor":{"shape":[1,1],"values":["truck"]}}}' -H "Content-Type: application/json" -H "Ce-Type: org.kubeflow.serving.inference.response" -H "Ce-id: 1a"
+curl 0.0.0.0:2222 -d '{"data": {"feature_score": null, "instance_score": null, "is_outlier": [1]}, "meta": {"name": "OutlierVAE", "detector_type": "offline", "data_type": "image"}}' -H "Content-Type: application/json" -H "Ce-Type: org.kubeflow.serving.inference.outlier" -H "Ce-id: 1a"

@@ -1,0 +1,21 @@
+---
+apiVersion: jaegertracing.io/v1
+kind: Jaeger
+metadata:
+  name: jaeger
+spec:
+  strategy: allInOne
+  allInOne:
+    options:
+      query:
+        base-path: /jaeger
+---
+apiVersion: getambassador.io/v1
+kind: Mapping
+metadata:
+  name: jaeger
+spec:
+  prefix: /jaeger
+  service: jaeger-query.seldon:16686
+  # Jaeger will expect the `/jaeger` prefix, so we can't rewrite it
+  rewrite: ""

@@ -20,11 +20,11 @@ import (
 	"github.com/go-logr/logr"
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
 	"github.com/seldonio/seldon-core/operator/utils"
+	istio_networking "istio.io/api/networking/v1alpha3"
+	istio "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"knative.dev/pkg/apis/istio/common/v1alpha1"
-	istio "knative.dev/pkg/apis/istio/v1alpha3"
 	"sort"
 	"strconv"
 	"strings"
@@ -54,7 +54,7 @@ func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1.Sel
 
 		if explainerContainer.Image == "" {
 			// TODO: should use explainer type but this is the only one available currently
-			explainerContainer.Image = "seldonio/alibiexplainer:0.1"
+			explainerContainer.Image = "seldonio/alibiexplainer:0.1.1"
 		}
 
 		// explainer can get port from spec or from containerSpec or fall back on default
@@ -215,17 +215,17 @@ func createExplainerIstioResources(pSvcName string, p *machinelearningv1.Predict
 			Name:      vsNameHttp,
 			Namespace: namespace,
 		},
-		Spec: istio.VirtualServiceSpec{
+		Spec: istio_networking.VirtualService{
 			Hosts:    []string{"*"},
 			Gateways: []string{getAnnotation(mlDep, ANNOTATION_ISTIO_GATEWAY, istio_gateway)},
-			HTTP: []istio.HTTPRoute{
+			Http: []*istio_networking.HTTPRoute{
 				{
-					Match: []istio.HTTPMatchRequest{
+					Match: []*istio_networking.HTTPMatchRequest{
 						{
-							URI: &v1alpha1.StringMatch{Prefix: "/seldon/" + namespace + "/" + mlDep.Name + "/" + p.Name + "/explainer/"},
+							Uri: &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Prefix{Prefix: "/seldon/" + namespace + "/" + mlDep.Name + "/" + p.Name + "/explainer/"}},
 						},
 					},
-					Rewrite: &istio.HTTPRewrite{URI: "/"},
+					Rewrite: &istio_networking.HTTPRewrite{Uri: "/"},
 				},
 			},
 		},
@@ -236,17 +236,17 @@ func createExplainerIstioResources(pSvcName string, p *machinelearningv1.Predict
 			Name:      vsNameGrpc,
 			Namespace: namespace,
 		},
-		Spec: istio.VirtualServiceSpec{
+		Spec: istio_networking.VirtualService{
 			Hosts:    []string{"*"},
 			Gateways: []string{getAnnotation(mlDep, ANNOTATION_ISTIO_GATEWAY, istio_gateway)},
-			HTTP: []istio.HTTPRoute{
+			Http: []*istio_networking.HTTPRoute{
 				{
-					Match: []istio.HTTPMatchRequest{
+					Match: []*istio_networking.HTTPMatchRequest{
 						{
-							URI: &v1alpha1.StringMatch{Prefix: "/seldon.protos.Seldon/"},
-							Headers: map[string]v1alpha1.StringMatch{
-								"seldon":    v1alpha1.StringMatch{Exact: mlDep.Name}, //TODO: change this?
-								"namespace": v1alpha1.StringMatch{Exact: namespace},
+							Uri: &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Prefix{Prefix: "/seldon.protos.Seldon/"}},
+							Headers: map[string]*istio_networking.StringMatch{
+								"seldon":    &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Exact{Exact: mlDep.Name}},
+								"namespace": &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Exact{Exact: namespace}},
 							},
 						},
 					},
@@ -255,8 +255,8 @@ func createExplainerIstioResources(pSvcName string, p *machinelearningv1.Predict
 		},
 	}
 
-	routesHttp := make([]istio.HTTPRouteDestination, 1)
-	routesGrpc := make([]istio.HTTPRouteDestination, 1)
+	routesHttp := make([]*istio_networking.HTTPRouteDestination, 1)
+	routesGrpc := make([]*istio_networking.HTTPRouteDestination, 1)
 	drules := make([]*istio.DestinationRule, 1)
 
 	drule := &istio.DestinationRule{
@@ -264,9 +264,9 @@ func createExplainerIstioResources(pSvcName string, p *machinelearningv1.Predict
 			Name:      pSvcName,
 			Namespace: namespace,
 		},
-		Spec: istio.DestinationRuleSpec{
+		Spec: istio_networking.DestinationRule{
 			Host: pSvcName,
-			Subsets: []istio.Subset{
+			Subsets: []*istio_networking.Subset{
 				{
 					Name: p.Name,
 					Labels: map[string]string{
@@ -277,30 +277,30 @@ func createExplainerIstioResources(pSvcName string, p *machinelearningv1.Predict
 		},
 	}
 
-	routesHttp[0] = istio.HTTPRouteDestination{
-		Destination: istio.Destination{
+	routesHttp[0] = &istio_networking.HTTPRouteDestination{
+		Destination: &istio_networking.Destination{
 			Host:   pSvcName,
 			Subset: p.Name,
-			Port: istio.PortSelector{
+			Port: &istio_networking.PortSelector{
 				Number: uint32(engine_http_port),
 			},
 		},
-		Weight: int(100),
+		Weight: int32(100),
 	}
-	routesGrpc[0] = istio.HTTPRouteDestination{
-		Destination: istio.Destination{
+	routesGrpc[0] = &istio_networking.HTTPRouteDestination{
+		Destination: &istio_networking.Destination{
 			Host:   pSvcName,
 			Subset: p.Name,
-			Port: istio.PortSelector{
+			Port: &istio_networking.PortSelector{
 				Number: uint32(engine_grpc_port),
 			},
 		},
-		Weight: int(100),
+		Weight: int32(100),
 	}
 	drules[0] = drule
 
-	httpVsvc.Spec.HTTP[0].Route = routesHttp
-	grpcVsvc.Spec.HTTP[0].Route = routesGrpc
+	httpVsvc.Spec.Http[0].Route = routesHttp
+	grpcVsvc.Spec.Http[0].Route = routesGrpc
 	vscs := make([]*istio.VirtualService, 0, 2)
 	// explainer may not expose REST and grpc (presumably engine ensures predictors do?)
 	if engine_http_port > 0 {

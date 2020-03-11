@@ -1,2 +1,3 @@
 google-cloud-storage==1.13.0
 boto3==1.9.34
+numpy>=1.18.1

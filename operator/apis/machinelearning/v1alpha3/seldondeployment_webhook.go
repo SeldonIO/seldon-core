@@ -48,7 +48,7 @@ func (r *SeldonDeployment) Default() {
 	if r.ObjectMeta.Namespace == "" {
 		r.ObjectMeta.Namespace = "default"
 	}
-	r.Spec.DefaultSeldonDeployment(r.ObjectMeta.Namespace)
+	r.Spec.DefaultSeldonDeployment(r.Name, r.ObjectMeta.Namespace)
 }
 
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.

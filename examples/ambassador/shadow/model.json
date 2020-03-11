@@ -15,7 +15,7 @@
                     "spec": {
                         "containers": [
                             {
-                                "image": "seldonio/mock_classifier:1.0",
+                                "image": "seldonio/mock_classifier_rest:1.4",
                                 "imagePullPolicy": "IfNotPresent",
                                 "name": "classifier"
                             }
@@ -31,7 +31,7 @@
                     "endpoint": {
                         "type": "REST"
                     }},
-                "name": "single",
+                "name": "default",
                 "replicas": 1
             }
         ]

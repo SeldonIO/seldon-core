@@ -1,5 +1,4 @@
 protocol: REST
-name: my-model
 apiVersion: machinelearning.seldon.io/v1
 model:
   image:
@@ -16,6 +15,9 @@ model:
     seldon.io/headless-svc: "false"
   logger: ""
 replicas: 1
+
+predictor:
+  name: "default"
 
 engine:
   resources:

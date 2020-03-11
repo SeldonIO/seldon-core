@@ -16,7 +16,7 @@
 {{- end }}
 	"predictors": [
 	    {
-		"name": "{{ .Release.Name }}",
+		"name": "{{ .Values.predictor.name }}",
 		"replicas": 1,
 		"componentSpecs": [{
 		    "spec": {

@@ -9,8 +9,10 @@
     },
     "spec": {
         "name": "mymodel",
-        "oauth_key": "oauth-key",
-        "oauth_secret": "oauth-secret",
+        "annotations": {
+            "seldon.io/ambassador-retries": "3",
+            "seldon.io/istio-retries": "3"
+        },
         "predictors": [
             {
                 "svcOrchSpec": {

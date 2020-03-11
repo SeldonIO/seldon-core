@@ -226,6 +226,7 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 		},
 		Env: []corev1.EnvVar{
 			{Name: "ENGINE_PREDICTOR", Value: predictorB64},
+			{Name: "REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX", Value: GetEnv("EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX", "")},
 		},
 		Ports: []corev1.ContainerPort{
 			{ContainerPort: int32(http_port), Protocol: corev1.ProtocolTCP},
@@ -263,7 +264,7 @@ func createEngineContainerSpec(mlDep *machinelearningv1.SeldonDeployment, p *mac
 		},
 		Env: []corev1.EnvVar{
 			{Name: "ENGINE_PREDICTOR", Value: predictorB64},
-			{Name: "DEPLOYMENT_NAME", Value: mlDep.Spec.Name},
+			{Name: "DEPLOYMENT_NAME", Value: mlDep.Name},
 			{Name: "DEPLOYMENT_NAMESPACE", Value: mlDep.ObjectMeta.Namespace},
 			{Name: "ENGINE_SERVER_PORT", Value: strconv.Itoa(engine_http_port)},
 			{Name: "ENGINE_SERVER_GRPC_PORT", Value: strconv.Itoa(engine_grpc_port)},

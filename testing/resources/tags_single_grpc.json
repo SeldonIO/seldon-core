@@ -1,0 +1,40 @@
+{
+  "apiVersion": "machinelearning.seldon.io/v1alpha2",
+  "kind": "SeldonDeployment",
+  "metadata": {
+    "name": "mymodel-tags-single"
+  },
+  "spec": {
+    "name": "mymodel-tags-single",
+    "oauth_key": "oauth-key",
+    "oauth_secret": "oauth-secret",
+    "predictors": [
+      {
+        "componentSpecs": [
+          {
+            "spec": {
+              "containers": [
+                {
+                  "image": "seldonio/test_tags_one_grpc:0.1",
+                  "imagePullPolicy": "Never",
+                  "name": "model"
+                }
+              ],
+              "terminationGracePeriodSeconds": 1
+            }
+          }
+        ],
+        "graph": {
+          "children": [],
+          "endpoint": {
+            "type": "GRPC"
+          },
+          "name": "model",
+          "type": "MODEL"
+        },
+        "name": "mymodel-tags-single",
+        "replicas": 1
+      }
+    ]
+  }
+}
