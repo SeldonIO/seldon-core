@@ -17,10 +17,12 @@ const (
 	ANNOTATION_AMBASSADOR_HEADER       = "seldon.io/ambassador-header"
 	ANNOTATION_AMBASSADOR_REGEX_HEADER = "seldon.io/ambassador-regex-header"
 	ANNOTATION_AMBASSADOR_ID           = "seldon.io/ambassador-id"
+	ANNOTATION_AMBASSADOR_RETRIES      = "seldon.io/ambassador-retries"
 
 	YAML_SEP = "---\n"
 
-	AMBASSADOR_IDLE_TIMEOUT = 300000
+	AMBASSADOR_IDLE_TIMEOUT    = 300000
+	AMBASSADOR_DEFAULT_RETRIES = "0"
 )
 
 // Struct for Ambassador configuration
@@ -67,7 +69,12 @@ func getAmbassadorRestConfig(mlDep *machinelearningv1.SeldonDeployment,
 	// Set timeout
 	timeout, err := strconv.Atoi(getAnnotation(mlDep, ANNOTATION_REST_TIMEOUT, "3000"))
 	if err != nil {
-		return "", nil
+		return "", err
+	}
+
+	retries, err := strconv.Atoi(getAnnotation(mlDep, ANNOTATION_AMBASSADOR_RETRIES, AMBASSADOR_DEFAULT_RETRIES))
+	if err != nil {
+		return "", err
 	}
 
 	name := p.Name
@@ -84,10 +91,14 @@ func getAmbassadorRestConfig(mlDep *machinelearningv1.SeldonDeployment,
 		Rewrite:    "/",
 		Service:    serviceName + "." + namespace + ":" + strconv.Itoa(engine_http_port),
 		TimeoutMs:  timeout,
-		RetryPolicy: &AmbassadorRetryPolicy{
-			RetryOn:    "connect-failure",
-			NumRetries: 3,
-		},
+	}
+
+	// Ambassador only allows a single RetryOn: https://github.com/datawire/ambassador/issues/1570
+	if retries != 0 {
+		c.RetryPolicy = &AmbassadorRetryPolicy{
+			RetryOn:    "gateway-error",
+			NumRetries: retries,
+		}
 	}
 
 	if weight != nil {
@@ -158,6 +169,11 @@ func getAmbassadorGrpcConfig(mlDep *machinelearningv1.SeldonDeployment,
 		return "", nil
 	}
 
+	retries, err := strconv.Atoi(getAnnotation(mlDep, ANNOTATION_AMBASSADOR_RETRIES, AMBASSADOR_DEFAULT_RETRIES))
+	if err != nil {
+		return "", err
+	}
+
 	name := p.Name
 	if nameOverride != "" {
 		name = nameOverride
@@ -175,10 +191,14 @@ func getAmbassadorGrpcConfig(mlDep *machinelearningv1.SeldonDeployment,
 		Headers:     map[string]string{"seldon": serviceNameExternal},
 		Service:     serviceName + "." + namespace + ":" + strconv.Itoa(engine_grpc_port),
 		TimeoutMs:   timeout,
-		RetryPolicy: &AmbassadorRetryPolicy{
-			RetryOn:    "connect-failure",
-			NumRetries: 3,
-		},
+	}
+
+	// Ambassador only allows a single RetryOn: https://github.com/datawire/ambassador/issues/1570
+	if retries != 0 {
+		c.RetryPolicy = &AmbassadorRetryPolicy{
+			RetryOn:    "gateway-error",
+			NumRetries: retries,
+		}
 	}
 
 	if weight != nil {

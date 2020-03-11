@@ -55,3 +55,10 @@ spec:
     replicas: 1
 
 ```
+
+## Development
+
+We assume:
+
+ * Go 1.13
+ 

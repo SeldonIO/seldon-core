@@ -68,6 +68,8 @@ spec:
           value: ""
         - name: USE_EXECUTOR
           value: "true"
+        - name: EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT
+          value: ""
         - name: EXECUTOR_CONTAINER_IMAGE_AND_VERSION
           value: seldonio/seldon-core-executor:1.0.3-SNAPSHOT
         - name: EXECUTOR_CONTAINER_IMAGE_PULL_POLICY

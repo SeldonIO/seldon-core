@@ -88,6 +88,8 @@ spec:
           value: '{{ .Values.executor.user }}'
         - name: EXECUTOR_CONTAINER_SERVICE_ACCOUNT_NAME
           value: '{{ .Values.executor.serviceAccount.name }}'
+        - name: EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX
+          value: '{{ .Values.executor.defaultRequestLoggerEndpointPrefix }}'
         image: '{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}'
         imagePullPolicy: '{{ .Values.image.pullPolicy }}'
         name: manager

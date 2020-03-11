@@ -18,7 +18,7 @@ const (
 	ModelIdAttr              = "modelid"
 	InferenceServiceNameAttr = "inferenceservicename"
 	NamespaceAttr            = "namespace"
-	PredictorAttr            = "predictor"
+	EndpointAttr             = "endpoint"
 )
 
 // NewWorker creates, and returns a new Worker object. Its only argument
@@ -84,7 +84,8 @@ func (W *Worker) sendCloudEvent(logReq LogRequest) error {
 	event.SetExtension(RequestIdAttr, logReq.RequestId)
 	event.SetExtension(InferenceServiceNameAttr, W.SdepName)
 	event.SetExtension(NamespaceAttr, W.Namespace)
-	event.SetExtension(PredictorAttr, W.PredictorName)
+	//use 'endpoint' for the header to align with kfserving - https://github.com/kubeflow/kfserving/pull/699/files#r385360114
+	event.SetExtension(EndpointAttr, W.PredictorName)
 
 	event.SetSource(logReq.SourceUri.String())
 	event.SetDataContentType(logReq.ContentType)
