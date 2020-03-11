@@ -12,13 +12,11 @@ from seldon_core.proto import prediction_pb2
 from seldon_core.flask_utils import SeldonMicroserviceException
 from seldon_core.user_model import (
     client_class_names,
-    client_custom_metrics,
     client_custom_tags,
     client_feature_names,
     SeldonComponent,
 )
 from seldon_core.imports_helper import _TF_PRESENT
-from seldon_core.metrics import SeldonMetrics
 from typing import Tuple, Dict, Union, List, Optional, Iterable
 
 if _TF_PRESENT:
