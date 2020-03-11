@@ -7,6 +7,7 @@ import xgboost as xgb
 
 BOOSTER_FILE = "model.bst"
 
+
 class XGBoostServer(SeldonComponent):
     def __init__(self, model_uri: str):
         super().__init__()
@@ -14,11 +15,15 @@ class XGBoostServer(SeldonComponent):
         self.ready = False
 
     def load(self):
-        model_file = os.path.join(seldon_core.Storage.download(self.model_uri), BOOSTER_FILE)
+        model_file = os.path.join(
+            seldon_core.Storage.download(self.model_uri), BOOSTER_FILE
+        )
         self._booster = xgb.Booster(model_file=model_file)
         self.ready = True
 
-    def predict(self, X: np.ndarray, names: Iterable[str], meta: Dict = None) -> Union[np.ndarray, List, str, bytes]:
+    def predict(
+        self, X: np.ndarray, names: Iterable[str], meta: Dict = None
+    ) -> Union[np.ndarray, List, str, bytes]:
         if not self.ready:
             self.load()
         dmatrix = xgb.DMatrix(X)
