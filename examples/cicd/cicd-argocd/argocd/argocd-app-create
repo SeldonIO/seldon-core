@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+source ${STARTUP_DIR}/../settings.sh
+
+# eg. SYNC_POLICY=automated
+# eg. SYNC_POLICY=none
+SYNC_POLICY=none
+
+argocd app create cicd-demo-argocd \
+    --repo  "https://github.com/${GITHUB_USER}/cicd-demo-k8s-manifest-files.git" \
+    --path demo-manifests \
+    --dest-namespace default \
+    --dest-server https://kubernetes.default.svc \
+    --sync-policy "${SYNC_POLICY}"

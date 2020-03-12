@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+source ${STARTUP_DIR}/../settings.sh
+source ${STARTUP_DIR}/get-jenkins-url
+
+KUBECTL="kubectl --context=${KUBE_CONTEXT}"
+
+#printf $(${KUBECTL} get secret --namespace jenkins jenkins -o jsonpath="{.data.jenkins-admin-password}" | base64 --decode);echo
+
+ADMIN_PASSWORD=$(printf $(${KUBECTL} get secret --namespace jenkins jenkins -o jsonpath="{.data.jenkins-admin-password}" | base64 --decode))
+
+echo ""
+echo "url: http://"$(getUrl)
+echo "setup: http://"$(getUrl)"signup"
+#don't echo initial password as using local store so user hs to create
+#echo "user: admin"
+#echo "password: ${ADMIN_PASSWORD}"
+echo ""
+

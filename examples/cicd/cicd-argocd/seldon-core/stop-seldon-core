@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+source ${STARTUP_DIR}/../settings.sh
+
+KUBECTL="kubectl --context=${KUBE_CONTEXT}"
+
+helm delete --kube-context="${KUBE_CONTEXT}" seldon-core --purge || echo "ignore not found"
+helm delete --kube-context="${KUBE_CONTEXT}" ambassador --purge || echo "ignore not found"
+
+# remove seldon crd access to admin role
+ ${KUBECTL} delete -f ${STARTUP_DIR}/seldon-aggregate-to-admin.json --ignore-not-found=true
+

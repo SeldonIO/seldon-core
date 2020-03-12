@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+source ${STARTUP_DIR}/settings.sh
+
+create_new_port_forward_window() {
+    tmux new-window -n 'seldon-core-cicd-demo-port-forward'
+
+    # create panes
+    tmux split-window -v
+    tmux select-pane -t 0
+    tmux split-window -h
+    tmux select-pane -t 2
+    tmux split-window -h
+
+    # port forward "k8s-local-docker-registry"
+    tmux select-pane -t 0
+    tmux send-keys "${STARTUP_DIR}/k8s-local-docker-registry/port-forward-registry" C-m
+
+    # port forward jenkins
+    tmux select-pane -t 1
+    tmux send-keys "${STARTUP_DIR}/jenkins/port-forard-jenkins" C-m
+
+    # port forward api server
+    tmux select-pane -t 2
+    tmux send-keys "${STARTUP_DIR}/seldon-core/port-forard-ambassador" C-m
+
+    # port forward argo
+    tmux select-pane -t 3
+    tmux send-keys "${STARTUP_DIR}/argo/port-forard-argo" C-m
+}
+
+create_new_dash_window() {
+    tmux new-window -n 'seldon-core-cicd-demo-dash'
+
+    # create panes
+    tmux split-window -v
+    tmux select-pane -t 0
+    tmux split-window -h
+    tmux select-pane -t 2
+    tmux split-window -h
+    tmux select-pane -t 3
+    tmux split-window -v
+    tmux select-pane -t 1
+    tmux split-window -v
+
+    # watch cluster
+    tmux select-pane -t 0
+    tmux send-keys "${STARTUP_DIR}/watch-cluster-pods" C-m
+
+    # show jenkins logs
+    tmux select-pane -t 1
+    tmux send-keys "clear && ${STARTUP_DIR}/jenkins/show-jenkins-logs" C-m
+
+    # show argocd logs
+    tmux select-pane -t 2
+    tmux send-keys "clear && ${STARTUP_DIR}/argocd/show-argocd-logs" C-m
+
+    # watch calls
+    tmux select-pane -t 3
+    tmux send-keys "${STARTUP_DIR}/seldon-core/watch-calls" C-m
+
+    # edit model
+    tmux select-pane -t 4
+    tmux send-keys "cd ${MODEL_SOURCE_FILES_DIR}/models/simple-model && vim SimpleModel.py" C-m
+
+    # git commit pane
+    tmux select-pane -t 5
+    tmux send-keys "cd ${MODEL_SOURCE_FILES_DIR}/models/simple-model && clear && echo '#git commit -m '\'update value\'' SimpleModel.py && git push'" C-m
+}
+
+SESSION_NAME=seldon-core-cicd-demo
+
+tmux new-session -d -s $SESSION_NAME
+
+create_new_port_forward_window
+create_new_dash_window
+
+tmux attach-session -t $SESSION_NAME
+

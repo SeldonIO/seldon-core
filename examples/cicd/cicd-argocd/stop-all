@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+main() {
+    ${STARTUP_DIR}/delete-secrets
+    ${STARTUP_DIR}/seldon-core/delete-seldon-deployment
+    ${STARTUP_DIR}/seldon-core/stop-seldon-core
+    ${STARTUP_DIR}/activity-monitor/stop-activity-monitor
+    ${STARTUP_DIR}/jenkins/stop-jenkins
+    ${STARTUP_DIR}/k8s-local-docker-registry/stop-docker-private-registry
+    ${STARTUP_DIR}/argo/stop-argo
+    ${STARTUP_DIR}/argocd/stop-argocd
+}
+
+main "$@"
+

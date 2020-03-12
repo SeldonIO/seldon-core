@@ -1,0 +1,16 @@
+master:
+  installPlugins:
+    - kubernetes:1.20.2
+    - workflow-job:2.32
+    - workflow-aggregator:2.6
+    - credentials-binding:1.18
+    - git:3.9.3
+    - github:1.29.3
+#local jenkins store needed for crumb
+  securityRealm: |-
+    <securityRealm class="hudson.security.HudsonPrivateSecurityRealm"/>
+# Due an update, CSRF tokens (crumbs) are now only valid for the web session they were created.
+# Set a system property to disable this.
+# https://jenkins.io/doc/upgrade-guide/2.176/#SECURITY-626
+  javaOpts: "-Dhudson.security.csrf.DefaultCrumbIssuer.EXCLUDE_SESSION_ID=true"
+

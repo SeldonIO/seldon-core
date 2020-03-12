@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+source ${STARTUP_DIR}/../settings.sh
+
+KUBECTL="kubectl --context=${KUBE_CONTEXT}"
+
+${KUBECTL} create namespace argocd --dry-run -o yaml|${KUBECTL} apply -f -
+
+${KUBECTL} apply -n argocd -f "https://raw.githubusercontent.com/argoproj/argo-cd/${ARGOCD_VERSION}/manifests/install.yaml"
+
+${KUBECTL} rollout status deployment.apps/argocd-repo-server -n argocd -w && ${KUBECTL} rollout status deployment.apps/argocd-server -n argocd -w
+
+${KUBECTL} patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
+
+# add abilty to receive Webhooks
+${STARTUP_DIR}/update-argocd-webhook-secret
+

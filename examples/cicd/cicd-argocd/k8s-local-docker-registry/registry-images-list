@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+set -o noclobber
+set -o noglob
+
+STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+curl -X GET http://127.0.0.1:5000/v2/_catalog
+

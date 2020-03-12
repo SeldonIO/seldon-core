@@ -1,0 +1,23 @@
+{
+    "apiVersion": "rbac.authorization.k8s.io/v1",
+    "kind": "ClusterRole",
+    "metadata": {
+        "labels": {
+            "rbac.authorization.k8s.io/aggregate-to-admin": "true"
+        },
+        "name": "seldon-aggregate-to-admin"
+    },
+    "rules": [
+        {
+            "apiGroups": [
+                "machinelearning.seldon.io"
+            ],
+            "resources": [
+                "*"
+            ],
+            "verbs": [
+                "*"
+            ]
+        }
+    ]
+}
