@@ -85,7 +85,7 @@ RUN rm -rf /usr/local/bin/pip && \
 
 RUN pip install --upgrade pip
 RUN pip install --upgrade setuptools
-RUN pip install pyyaml 
+RUN pip install pyyaml
 RUN pip install grpcio
 RUN pip install grpcio-tools
 RUN apt-get remove -y --auto-remove && apt-get clean -y && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
@@ -120,14 +120,12 @@ RUN go get github.com/fullstorydev/grpcurl && \
     go install github.com/fullstorydev/grpcurl/cmd/grpcurl
 
 ENV PATH="${PATH}:/root/go/bin"
-   
+
 # Notebooks python requirements
-RUN pip install alibi && \
-    pip install matplotlib && \
-    pip install keras
+COPY dev_requirements.txt /tmp/requirements.txt
+RUN pip install -r /tmp/requirements.txt
 
 WORKDIR /work
 
 # Define default command.
 CMD ["bash"]
-

@@ -98,6 +98,7 @@ build_protos:
 
 install:
 	pip install -r dev_requirements.txt
+	pip install -e ../../python
 
 .PHONY: test
 test: build_protos install
