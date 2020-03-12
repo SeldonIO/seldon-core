@@ -35,7 +35,7 @@ BINS = [0] + list(np.logspace(-3, np.log10(30), 50)) + [np.inf]
 
 # Development placeholder
 LABELS = [
-    "worker-id",
+    "worker_id",
     "seldon_deployment_name",
     "model_name",
     "image_name",
