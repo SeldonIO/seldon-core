@@ -1,4 +1,4 @@
-# Seldon Core ![API](./doc/source/seldon.png)
+# Seldon Core ![API](./doc/source/images/core-logo.png)
 
 Seldon Core is an open source platform for deploying machine learning models on a Kubernetes cluster.
 
@@ -22,4 +22,3 @@ Documentation can be found [here](https://docs.seldon.io/projects/seldon-core/en
 ## Community
 
  * [Join our Slack Channel](https://join.slack.com/t/seldondev/shared_invite/enQtMzA2Mzk1Mzg0NjczLTJlNjQ1NTE5Y2MzMWIwMGUzYjNmZGFjZjUxODU5Y2EyMDY0M2U3ZmRiYTBkOTRjMzZhZjA4NjJkNDkxZTA2YmU)
-
