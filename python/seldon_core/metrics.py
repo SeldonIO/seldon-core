@@ -77,8 +77,10 @@ class SeldonMetrics:
         # Read a corresponding worker's metric data with lock as Proxy objects
         # are not thread-safe, see "Thread safety of proxies" here
         # https://docs.python.org/3.7/library/multiprocessing.html#programming-guidelines
+        logger.debug("Updating metrics: {}".format(custom_metrics))
         with self._lock:
             data = self.data.get(self.worker_id_func(), {})
+        logger.debug("Read current metrics data from shared memory")
 
         for metrics in custom_metrics:
             key = metrics["type"], metrics["key"]
@@ -95,12 +97,15 @@ class SeldonMetrics:
         # Write worker's data with lock (again - Proxy objects are not thread-safe)
         with self._lock:
             self.data[self.worker_id_func()] = data
+        logger.debug("Updated metrics in the shared memory.")
 
     def collect(self):
         # Read all workers metrics with lock to avoid other processes / threads
         # writing to it at the same time. Casting to `dict` works like reading of data.
+        logger.debug("SeldonMetrics.collect called")
         with self._lock:
             data = dict(self.data)
+        logger.debug("Read current metrics data from shared memory")
 
         for worker, metrics in data.items():
             labels = [
