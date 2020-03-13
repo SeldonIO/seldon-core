@@ -16,6 +16,7 @@ import os
 logger = logging.getLogger(__name__)
 
 PRED_UNIT_ID = os.environ.get("PREDICTIVE_UNIT_ID", "0")
+METRICS_ENDPOINT = os.environ.get("PREDICTIVE_UNIT_METRICS_ENDPOINT", "/metrics")
 
 
 def get_rest_microservice(user_model, seldon_metrics=None):
@@ -139,7 +140,7 @@ def get_metrics_microservice(seldon_metrics):
 
     _set_flask_app_configs(app)
 
-    @app.route("/metrics", methods=["GET"])
+    @app.route(METRICS_ENDPOINT, methods=["GET"])
     def Metrics():
         logger.debug("REST Metrics Request")
         metrics, mimetype = seldon_metrics.generate_metrics()
