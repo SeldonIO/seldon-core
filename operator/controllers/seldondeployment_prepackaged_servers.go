@@ -18,14 +18,33 @@ package controllers
 
 import (
 	"encoding/json"
+	"strconv"
+	"strings"
+
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
 	"github.com/seldonio/seldon-core/operator/constants"
 	"github.com/seldonio/seldon-core/operator/utils"
 	appsv1 "k8s.io/api/apps/v1"
-	"k8s.io/api/core/v1"
-	"strconv"
-	"strings"
+	v1 "k8s.io/api/core/v1"
 )
+
+const (
+	ENV_PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME = "PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME"
+)
+
+var (
+	PredictiveUnitDefaultEnvSecretRefName = GetEnv(ENV_PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME, "")
+)
+
+func extractEnvSecretRefName(pu *machinelearningv1.PredictiveUnit) string {
+	envSecretRefName := ""
+	if pu.EnvSecretRefName == "" {
+		envSecretRefName = PredictiveUnitDefaultEnvSecretRefName
+	} else {
+		envSecretRefName = pu.EnvSecretRefName
+	}
+	return envSecretRefName
+}
 
 func createTensorflowServingContainer(pu *machinelearningv1.PredictiveUnit, usePUPorts bool) *v1.Container {
 	ServerConfig := machinelearningv1.GetPrepackServerConfig(string(*pu.Implementation))
@@ -107,7 +126,9 @@ func addTFServerContainer(r *SeldonDeploymentReconciler, pu *machinelearningv1.P
 
 		}
 
-		_, err := InjectModelInitializer(deploy, tfServingContainer.Name, pu.ModelURI, pu.ServiceAccountName, pu.EnvSecretRefName, r)
+		envSecretRefName := extractEnvSecretRefName(pu)
+
+		_, err := InjectModelInitializer(deploy, tfServingContainer.Name, pu.ModelURI, pu.ServiceAccountName, envSecretRefName, r)
 		if err != nil {
 			return err
 		}
@@ -172,7 +193,9 @@ func addModelDefaultServers(r *SeldonDeploymentReconciler, pu *machinelearningv1
 			}
 		}
 
-		_, err = InjectModelInitializer(deploy, c.Name, pu.ModelURI, pu.ServiceAccountName, pu.EnvSecretRefName, r.Client)
+		envSecretRefName := extractEnvSecretRefName(pu)
+
+		_, err = InjectModelInitializer(deploy, c.Name, pu.ModelURI, pu.ServiceAccountName, envSecretRefName, r.Client)
 		if err != nil {
 			return err
 		}

@@ -60,6 +60,7 @@ manager:
   memoryRequest: 200Mi
 predictiveUnit:
   port: 9000
+  defaultEnvSecretRefName: ""
 predictor_servers:
   MLFLOW_SERVER:
     grpc:

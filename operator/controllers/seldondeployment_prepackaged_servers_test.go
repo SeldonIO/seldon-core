@@ -2,6 +2,10 @@ package controllers
 
 import (
 	"context"
+	"strconv"
+	"strings"
+	"time"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
@@ -11,9 +15,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"strconv"
-	"strings"
-	"time"
 )
 
 var _ = Describe("Create a prepacked sklearn server", func() {
@@ -262,6 +263,44 @@ var _ = Describe("Create a prepacked tfserving server for tensorflow protocol an
 		Expect(k8sClient.Delete(context.Background(), instance)).Should(Succeed())
 	})
 
+})
+
+var _ = Describe("Test override of environment variable", func() {
+	const blankName = ""
+	const secretName = "SECRET_NAME"
+	const overrideName = "OVERRIDE_NAME"
+	By("Creating a predictive unit resource with an envSecretRefName and a default env var")
+	It("Should override the default env var with envSecretRefName", func() {
+		// Overriding environment variable
+		PredictiveUnitDefaultEnvSecretRefName = secretName
+		predictiveUnit := machinelearningv1.PredictiveUnit{EnvSecretRefName: overrideName}
+		resultSecretName := extractEnvSecretRefName(&predictiveUnit)
+		Expect(resultSecretName).To(Equal(overrideName))
+	})
+	By("Creating a predictive unit resource with an envSecretRefName and no default env var")
+	It("Should override the default env var with envSecretRefName", func() {
+		// Overriding environment variable
+		PredictiveUnitDefaultEnvSecretRefName = blankName
+		predictiveUnit := machinelearningv1.PredictiveUnit{EnvSecretRefName: overrideName}
+		resultSecretName := extractEnvSecretRefName(&predictiveUnit)
+		Expect(resultSecretName).To(Equal(overrideName))
+	})
+	By("Creating a predictive unit resource without an envSecretRefName and a default env var")
+	It("Should set the value to the default env var", func() {
+		// Overriding environment variable
+		PredictiveUnitDefaultEnvSecretRefName = secretName
+		predictiveUnit := machinelearningv1.PredictiveUnit{}
+		resultSecretName := extractEnvSecretRefName(&predictiveUnit)
+		Expect(resultSecretName).To(Equal(secretName))
+	})
+	By("Creating a predictive unit resource without an envSecretRefName and without default env var")
+	It("Should set the value to empty string", func() {
+		// Overriding environment variable
+		PredictiveUnitDefaultEnvSecretRefName = blankName
+		predictiveUnit := machinelearningv1.PredictiveUnit{}
+		resultSecretName := extractEnvSecretRefName(&predictiveUnit)
+		Expect(resultSecretName).To(Equal(blankName))
+	})
 })
 
 var _ = Describe("Create a prepacked tfserving server for tensorflow protocol and grpc", func() {
