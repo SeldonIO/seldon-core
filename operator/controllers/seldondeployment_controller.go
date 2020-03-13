@@ -102,7 +102,7 @@ func createHpa(podSpec *machinelearningv1.SeldonPodSpec, deploymentName string, 
 		Spec: autoscaling.HorizontalPodAutoscalerSpec{
 			ScaleTargetRef: autoscaling.CrossVersionObjectReference{
 				Name:       deploymentName,
-				APIVersion: "extensions/v1beta1",
+				APIVersion: "apps/v1",
 				Kind:       "Deployment",
 			},
 			MaxReplicas: podSpec.HpaSpec.MaxReplicas,
