@@ -32,7 +32,7 @@ import (
 
 func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, c *components, pSvcName string, log logr.Logger) error {
 
-	if p.Explainer.Type != "" {
+	if p.Explainer != nil {
 
 		seldonId := machinelearningv1.GetSeldonDeploymentName(mlDep)
 
