@@ -81,14 +81,21 @@ func (r *SeldonRestApi) respondWithSuccess(w http.ResponseWriter, code int, payl
 	}
 }
 
-func (r *SeldonRestApi) respondWithError(w http.ResponseWriter, err error) {
+func (r *SeldonRestApi) respondWithError(w http.ResponseWriter, payload payload.SeldonPayload, err error) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusInternalServerError)
 
-	errPayload := r.Client.CreateErrorPayload(err)
-	err = r.Client.Marshall(w, errPayload)
-	if err != nil {
-		r.Log.Error(err, "Failed to write error payload")
+	if payload != nil && payload.GetPayload() != nil {
+		err := r.Client.Marshall(w, payload)
+		if err != nil {
+			r.Log.Error(err, "Failed to write response")
+		}
+	} else {
+		errPayload := r.Client.CreateErrorPayload(err)
+		err = r.Client.Marshall(w, errPayload)
+		if err != nil {
+			r.Log.Error(err, "Failed to write error payload")
+		}
 	}
 }
 
@@ -155,11 +162,6 @@ func (r *SeldonRestApi) alive(w http.ResponseWriter, req *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (r *SeldonRestApi) failWithError(w http.ResponseWriter, err error) {
-	r.Log.Error(err, "Failed")
-	r.respondWithError(w, err)
-}
-
 func getGraphNodeForModelName(req *http.Request, graph *v1.PredictiveUnit) (*v1.PredictiveUnit, error) {
 	vars := mux.Vars(req)
 	modelName := vars[ModelHttpPathVariable]
@@ -194,7 +196,7 @@ func (r *SeldonRestApi) metadata(w http.ResponseWriter, req *http.Request) {
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace, req.Header)
 	resPayload, err := seldonPredictorProcess.Metadata(r.predictor.Graph, modelName, nil)
 	if err != nil {
-		r.failWithError(w, err)
+		r.respondWithError(w, resPayload, err)
 		return
 	}
 	r.respondWithSuccess(w, http.StatusOK, resPayload)
@@ -216,7 +218,7 @@ func (r *SeldonRestApi) status(w http.ResponseWriter, req *http.Request) {
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace, req.Header)
 	resPayload, err := seldonPredictorProcess.Status(r.predictor.Graph, modelName, nil)
 	if err != nil {
-		r.failWithError(w, err)
+		r.respondWithError(w, resPayload, err)
 		return
 	}
 	r.respondWithSuccess(w, http.StatusOK, resPayload)
@@ -238,7 +240,7 @@ func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 
 	bodyBytes, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		r.failWithError(w, err)
+		r.respondWithError(w, nil, err)
 		return
 	}
 
@@ -246,7 +248,7 @@ func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 
 	reqPayload, err := seldonPredictorProcess.Client.Unmarshall(bodyBytes)
 	if err != nil {
-		r.failWithError(w, err)
+		r.respondWithError(w, nil, err)
 		return
 	}
 
@@ -254,7 +256,7 @@ func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 	if r.Protocol == api.ProtocolTensorflow {
 		graphNode, err = getGraphNodeForModelName(req, r.predictor.Graph)
 		if err != nil {
-			r.failWithError(w, err)
+			r.respondWithError(w, nil, err)
 			return
 		}
 	} else {
@@ -262,7 +264,7 @@ func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 	}
 	resPayload, err := seldonPredictorProcess.Predict(graphNode, reqPayload)
 	if err != nil {
-		r.failWithError(w, err)
+		r.respondWithError(w, resPayload, err)
 		return
 	}
 	r.respondWithSuccess(w, http.StatusOK, resPayload)
