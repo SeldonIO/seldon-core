@@ -81,7 +81,7 @@ func addEngineToDeployment(mlDep *machinelearningv1.SeldonDeployment, p *machine
 	}
 	// Add prometheus annotations
 	deploy.Spec.Template.Annotations["prometheus.io/path"] = getPrometheusPath(mlDep)
-	deploy.Spec.Template.Annotations["prometheus.io/port"] = strconv.Itoa(engine_http_port)
+	// deploy.Spec.Template.Annotations["prometheus.io/port"] = strconv.Itoa(engine_http_port)
 	deploy.Spec.Template.Annotations["prometheus.io/scrape"] = "true"
 
 	deploy.ObjectMeta.Labels[machinelearningv1.Label_seldon_app] = pSvcName
@@ -230,6 +230,7 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 		},
 		Ports: []corev1.ContainerPort{
 			{ContainerPort: int32(http_port), Protocol: corev1.ProtocolTCP},
+			{ContainerPort: int32(http_port), Protocol: corev1.ProtocolTCP, Name: "metrics"},
 			{ContainerPort: int32(grpc_port), Protocol: corev1.ProtocolTCP},
 		},
 		ReadinessProbe: &corev1.Probe{Handler: corev1.Handler{HTTPGet: &corev1.HTTPGetAction{Port: intstr.FromInt(http_port), Path: "/ready", Scheme: corev1.URISchemeHTTP}},
@@ -272,6 +273,7 @@ func createEngineContainerSpec(mlDep *machinelearningv1.SeldonDeployment, p *mac
 		},
 		Ports: []corev1.ContainerPort{
 			{ContainerPort: int32(engine_http_port), Protocol: corev1.ProtocolTCP},
+			{ContainerPort: int32(engine_http_port), Protocol: corev1.ProtocolTCP, Name: "metrics"},
 			{ContainerPort: int32(engine_grpc_port), Protocol: corev1.ProtocolTCP},
 			{ContainerPort: 8082, Name: "admin", Protocol: corev1.ProtocolTCP},
 			{ContainerPort: 9090, Name: "jmx", Protocol: corev1.ProtocolTCP},
@@ -400,8 +402,8 @@ func createEngineDeployment(mlDep *machinelearningv1.SeldonDeployment, p *machin
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{machinelearningv1.Label_seldon_app: seldonId, machinelearningv1.Label_seldon_id: seldonId, "app": depName},
 					Annotations: map[string]string{
-						"prometheus.io/path":   getPrometheusPath(mlDep),
-						"prometheus.io/port":   strconv.Itoa(engine_http_port),
+						"prometheus.io/path": getPrometheusPath(mlDep),
+						// "prometheus.io/port":   strconv.Itoa(engine_http_port),
 						"prometheus.io/scrape": "true",
 					},
 				},
