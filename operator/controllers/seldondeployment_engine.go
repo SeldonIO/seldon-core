@@ -17,6 +17,7 @@ limitations under the License.
 package controllers
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -37,10 +38,19 @@ const (
 
 	DEFAULT_EXECUTOR_CONTAINER_PORT = 8000
 	DEFAULT_EXECUTOR_GRPC_PORT      = 5001
+
+	ENV_EXECUTOR_IMAGE         = "EXECUTOR_CONTAINER_IMAGE_AND_VERSION"
+	ENV_EXECUTOR_IMAGE_RELATED = "RELATED_IMAGE_EXECUTOR" //RedHat specific
+	ENV_ENGINE_IMAGE           = "ENGINE_CONTAINER_IMAGE_AND_VERSION"
+	ENV_ENGINE_IMAGE_RELATED   = "RELATED_IMAGE_ENGINE" //Redhat specific
 )
 
 var (
-	EngineContainerName = "seldon-container-engine"
+	EngineContainerName     = "seldon-container-engine"
+	envExecutorImage        = os.Getenv(ENV_EXECUTOR_IMAGE)
+	envExecutorImageRelated = os.Getenv(ENV_EXECUTOR_IMAGE_RELATED)
+	envEngineImage          = os.Getenv(ENV_ENGINE_IMAGE)
+	envEngineImageRelated   = os.Getenv(ENV_ENGINE_IMAGE_RELATED)
 )
 
 func addEngineToDeployment(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, engine_http_port int, engine_grpc_port int, pSvcName string, deploy *appsv1.Deployment) error {
@@ -187,7 +197,7 @@ func getSvcOrchUser(mlDep *machinelearningv1.SeldonDeployment) (int64, error) {
 	return engineUser, nil
 }
 
-func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, predictorB64 string, http_port int, grpc_port int, resources *corev1.ResourceRequirements) corev1.Container {
+func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, predictorB64 string, http_port int, grpc_port int, resources *corev1.ResourceRequirements) (*corev1.Container, error) {
 	transport := p.Transport
 	//Backwards compatible with older resources
 	if transport == "" {
@@ -202,9 +212,18 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 	if protocol == "" {
 		protocol = machinelearningv1.ProtocolSeldon
 	}
-	return corev1.Container{
+
+	// Get executor image from env vars in order of priority
+	var executorImage string
+	if executorImage = envExecutorImageRelated; executorImage == "" {
+		if executorImage = envExecutorImage; executorImage == "" {
+			return nil, fmt.Errorf("Failed to find executor image from environment. Check %s or %s are set.", ENV_EXECUTOR_IMAGE, ENV_EXECUTOR_IMAGE_RELATED)
+		}
+	}
+
+	return &corev1.Container{
 		Name:  EngineContainerName,
-		Image: GetEnv("EXECUTOR_CONTAINER_IMAGE_AND_VERSION", "seldonio/seldon-core-executor:1.0.1-SNAPSHOT"),
+		Image: executorImage,
 		Args: []string{
 			"--sdep", mlDep.Name,
 			"--namespace", mlDep.Namespace,
@@ -245,14 +264,22 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 			SuccessThreshold:    1,
 			TimeoutSeconds:      60},
 		Resources: *resources,
-	}
+	}, nil
 }
 
 func createEngineContainerSpec(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, predictorB64 string,
-	engine_http_port int, engine_grpc_port int, engineResources *corev1.ResourceRequirements) corev1.Container {
-	return corev1.Container{
+	engine_http_port int, engine_grpc_port int, engineResources *corev1.ResourceRequirements) (*corev1.Container, error) {
+
+	// Get engine image from env vars in order of priority
+	var engineImage string
+	if engineImage = envEngineImageRelated; engineImage == "" {
+		if engineImage = envEngineImage; engineImage == "" {
+			return nil, fmt.Errorf("Failed to find engine image from environment. Check %s or %s are set.", ENV_ENGINE_IMAGE, ENV_ENGINE_IMAGE_RELATED)
+		}
+	}
+	return &corev1.Container{
 		Name:                     EngineContainerName,
-		Image:                    GetEnv("ENGINE_CONTAINER_IMAGE_AND_VERSION", "seldonio/engine:0.4.0"),
+		Image:                    engineImage,
 		ImagePullPolicy:          corev1.PullPolicy(GetEnv("ENGINE_CONTAINER_IMAGE_PULL_POLICY", "IfNotPresent")),
 		TerminationMessagePath:   "/dev/termination-log",
 		TerminationMessagePolicy: corev1.TerminationMessageReadFile,
@@ -294,7 +321,7 @@ func createEngineContainerSpec(mlDep *machinelearningv1.SeldonDeployment, p *mac
 			},
 		},
 		Resources: *engineResources,
-	}
+	}, nil
 }
 
 // Create the Container for the service orchestrator.
@@ -324,7 +351,7 @@ func createEngineContainer(mlDep *machinelearningv1.SeldonDeployment, p *machine
 		}
 	}
 
-	var c corev1.Container
+	var c *corev1.Container
 	if isExecutorEnabled(mlDep) {
 		executor_http_port, err := getExecutorHttpPort()
 		if err != nil {
@@ -334,9 +361,15 @@ func createEngineContainer(mlDep *machinelearningv1.SeldonDeployment, p *machine
 		if err != nil {
 			return nil, err
 		}
-		c = createExecutorContainer(mlDep, p, predictorB64, executor_http_port, executor_grpc_port, engineResources)
+		c, err = createExecutorContainer(mlDep, p, predictorB64, executor_http_port, executor_grpc_port, engineResources)
+		if err != nil {
+			return nil, err
+		}
 	} else {
-		c = createEngineContainerSpec(mlDep, p, predictorB64, engine_http_port, engine_grpc_port, engineResources)
+		c, err = createEngineContainerSpec(mlDep, p, predictorB64, engine_http_port, engine_grpc_port, engineResources)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if engineUser != -1 {
@@ -370,7 +403,7 @@ func createEngineContainer(mlDep *machinelearningv1.SeldonDeployment, p *machine
 	} else {
 		c.Env = append(c.Env, corev1.EnvVar{Name: "SELDON_LOG_MESSAGES_EXTERNALLY", Value: GetEnv("ENGINE_LOG_MESSAGES_EXTERNALLY", "false")})
 	}
-	return &c, nil
+	return c, nil
 }
 
 // Create the service orchestrator.

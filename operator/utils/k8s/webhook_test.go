@@ -117,7 +117,7 @@ func TestMutatingWebhookCreate(t *testing.T) {
 func TestValidatingWebhookCreate(t *testing.T) {
 	g := NewGomegaWithT(t)
 	scheme := createScheme()
-	bytes, err := LoadBytesFromFile("testdata", "mutate.yaml")
+	bytes, err := LoadBytesFromFile("testdata", "validate.yaml")
 	g.Expect(err).To(BeNil())
 	client := fake.NewSimpleClientset()
 	apiExtensionsFake := apiextensionsfake.NewSimpleClientset()

@@ -21,20 +21,12 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
-	"io/ioutil"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"path/filepath"
 	"time"
 )
-
-func helperLoadBytes(name string) []byte {
-	path := filepath.Join("testdata", name) // relative path
-	bytes, _ := ioutil.ReadFile(path)
-	return bytes
-}
 
 var _ = Describe("Create a Seldon Deployment", func() {
 	const timeout = time.Second * 30

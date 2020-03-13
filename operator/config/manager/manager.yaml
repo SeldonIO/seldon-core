@@ -35,6 +35,10 @@ spec:
         env:
         - name: WATCH_NAMESPACE
           value: ""
+        - name: RELATED_IMAGE_EXECUTOR
+          value: ""
+        - name: RELATED_IMAGE_ENGINE
+          value: ""
         - name: CREATE_RESOURCES
           value: "false"
         - name: POD_NAMESPACE
