@@ -90,6 +90,9 @@ spec:
       - kind: ValidatingWebhookConfiguration
         name: ""
         version: v1beta1
+      - kind: customresourcedefinitions
+        name: ""
+        version: v1beta1
       specDescriptors:
       - description: Name of the seldon deployment
         displayName: name
@@ -374,6 +377,8 @@ spec:
                   valueFrom:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
+                - name: RELATED_IMAGE_EXECUTOR
+                - name: RELATED_IMAGE_ENGINE
                 - name: CREATE_RESOURCES
                   value: "true"
                 - name: POD_NAMESPACE
@@ -426,6 +431,7 @@ spec:
                 - name: EXECUTOR_CONTAINER_SERVICE_ACCOUNT_NAME
                   value: default
                 image: seldonio/seldon-core-operator:1.1.0-SNAPSHOT
+                imagePullPolicy: Always
                 name: manager
                 ports:
                 - containerPort: 443
