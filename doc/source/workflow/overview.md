@@ -32,14 +32,15 @@ With over 2M installs, Seldon Core is used across organisations to manage large 
  * Full auditability through model input-output request logging integration with Elasticsearch.
  * Microservice tracing through integration to Jaeger for insights on latency across microservice hops.
 
-
 # Getting Started
 
-Deploying your models using Seldon Core is simplified through our pre-packaged inference servers and language wrappers. Below you can see how you can deploy our "hello world Iris" example. You can see more details on these workflows in our [Documentation Quickstart](https://docs.seldon.io/projects/seldon-core/en/latest/workflows/quickstart.html).
+Below is a very high level overview that describes a simplified workflow that summarises the base steps to get you up and running with Seldon Core and deploy your first model.
 
-### Install Seldon Core
+You can dive into the full deep dive of the [Seldon Core Workflow](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/index.html).
 
-Quick install using Helm 3 (you can also use Kustomize):
+## Install Seldon Core in your Cluster
+
+**Install using Helm 3 (you can also use Kustomize)**
 
 ```
 kubectl create namespace seldon-system
@@ -52,17 +53,47 @@ helm install seldon-core seldon-core-operator \
     # You can set ambassador instead with --set ambassador.enabled=true
 ```
 
-### Deploy using pre-packaged model servers
+For a more advanced guide that shows you how to install Seldon Core with many different options and parameters you can dive further in our [detailed installation guide](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/install.html).
 
-For more custom models that have custom dependencies such as 3rd party libraries, operating system binaries or even external systems, we can use any of the Seldon Core language wrappers.
+## Productionise your first Model with Seldon Core
 
-Upload your model binaries into your preferred object store, in this case we have a trained scikit-learn iris model in a Google bucket:
+There are two main ways you can productionise using Seldon Core:
 
-```console
-gs://seldon-models/sklearn/iris/model.pickle
+* Wrap your model with our pre-packaged inference servers
+* Wrap your model with our language wrappers
+
+### Wrap your model with our pre-packaged inference servers
+
+You can use our pre-packaged inference servers which are optimized for popular machine learning frameworks and languages, and allow for simplified workflows that can be scaled across large number of usecases.
+
+A typical workflow would normally be programmatic (triggered through CI/CD), however below we show the commands you would normally carry out.
+
+**1. Export your model binaries / artifacts**
+
+Export your model binaries using the instructions provided in the requirements outlined in the respective [pre-packaged model server](https://docs.seldon.io/projects/seldon-core/en/latest/servers/overview.html) you are planning to use.
+
+```python
+>>my_sklearn_model.train(...)
+>>pickle.dumps(my_sklearn_model, "model.pickle")
+
+[Created file at /mypath/model.pickle]
 ```
 
-We can deploy this model into the Kubernetes cluster using the pre-packaged model server for scikit-learn (SKLEARN_SERVER) using the `kubectl apply` command below:
+**2. Upload your model to an object store**
+
+You can upload your models into any of the object stores supported by our pre-package model server file downloader, or alternatively add your custom file downloader.
+
+For simplicity we have already uploaded it to the bucket so you can just proceed to the next step and run your model on Seldon Core.
+
+```console
+$ gsutil cp model.pickle gs://seldon-models/sklearn/iris/model.pickle
+
+[ Saved into gs://seldon-models/sklearn/iris/model.pickle ]
+```
+
+**3. Deploy to Seldon Core in Kubernetes**
+
+Finally you can just deploy your model by loading the binaries/artifacts using the pre-packaged model server of your choice. You can build [complex inference graphs]() that use multiple components for inference.
 
 ```yaml
 $ kubectl apply -f - << END
@@ -83,55 +114,9 @@ spec:
 END
 ```
 
-### Deploy using language wrappers
+**4. Send a request in Kubernetes cluster**
 
-Write a class wrapper that exposes the logic of your model, for example in Python we have `Model.py`:
-
-```python
-import pickle
-class Model:
-    def __init__(self):
-        self._model = pickle.loads( open("model.pickle", "rb") )
-
-    def predict(self, X):
-        output = self._model(X)
-        return output
-```
-
-We can now containerize our class file using the s2i utils to produce the `sklear_iris` image:
-
-```console
-s2i build . seldonio/seldon-core-s2i-python3:0.18 sklearn_iris:0.1 
-```
-
-And we now deploy it to our Seldon Core Kubernetes Cluster:
-
-```yaml
-$ kubectl apply -f - << END
-apiVersion: machinelearning.seldon.io/v1
-kind: SeldonDeployment
-metadata:
-  name: iris-model
-  namespace: model-namespace
-spec:
-  name: iris
-  predictors:
-  - componentSpecs:
-    - spec:
-      containers:
-      - name: classifier
-        image: sklearn_iris:0.1
-  - graph:
-      name: classifier
-    name: default
-    replicas: 1
-END
-```
-
-
-### Send API requests
-
-Finally we send a request to our deployed model:
+Once you deploy your model you can access it through the Kubernetes ingress you exposed, or by port forwarding the service:
 
 ```console
 $ curl -X POST http://<ingress>/seldon/model-namespace/iris-model/api/v1.0/predictions \
@@ -157,72 +142,134 @@ $ curl -X POST http://<ingress>/seldon/model-namespace/iris-model/api/v1.0/predi
 }
 ```
 
-# Advanced Production ML Integrations
+### Wrap your model with our language wrappers
 
-Any model that is deployed and orchestrated with Seldon Core provides out of the box machine learning insights for monitoring, managing, scaling and debugging. Below are some of the core components together with link to the logs that provide further insights on how to set them up.
+Below are the high level steps required to containerise your model using Seldon Core's Language Wrappers.
 
-<table>
-  <tr valign="top">
-    <td width="50%" >
-        <a href="">
-            <br>
-            <b>Out of the box and custom metrics</b>
-            <br>
-            <br>
-            <img src="./doc/source/analytics/dashboard.png">
-        </a>
-    </td>
-    <td width="50%">
-        <a href="">
-            <br>
-            <b>Full audit trails with ELK request logging</b>
-            <br>
-            <br>
-            <img src="./doc/source/images/kibana-custom-search.png">
-        </a>
-    </td>
-  </tr>
-  <tr valign="top">
-    <td width="50%">
-        <a href="">
-            <br>
-            <b>Explainers for ML Interpretability</b>
-            <br>
-            <br>
-            <img src="./doc/source/images/anchors.jpg">
-        </a>
-    </td>
-    <td width="50%">
-        <a href="">
-            <br>
-            <b>Outlier and Adversarial Detectors</b>
-            <br>
-            <br>
-            <img src="./doc/source/images/adversarial-attack.png">
-        </a>
-    </td>
-  </tr>
-  <tr valign="top">
-    <td width="50%">
-        <a href="">
-            <br>
-            <b>CI/CD for MLOps at Massive Scale</b>
-            <br>
-            <br>
-            <img src="./doc/source/images/cicd-seldon.jpg">
-        </a>
-    </td>
-    <td width="50%">
-        <a href="">
-            <br>
-            <b>Distributed tracing of requests</b>
-            <br>
-            <br>
-            <img src="./doc/source/graph/jaeger-ui-rest-example.png">
-        </a>
-    </td>
-  </tr>
-</table>
+Language wrappers are used for more custom use-cases that require dependencies that are not covered by our pre-packaged model servers. Langauge wrappers can be built using our graduated Python and Java wrappers - for further details check out our [Language Wrappers section]().
+
+**1. Export your model binaries and/or artifacts:**
+
+In this case we are also exporting the model binaries/artifacts, but we will be in charge of the logic to load the models. This means that we can use third party dependencies and even external system calls. Seldon Core is running production use-cases with very heterogeneous models.
+
+```python
+>> my_sklearn_model.train(...)
+>> pickle.dumps(my_sklearn_model, "model.pickle")
+
+[Created file at /mypath/model.pickle]
+```
+
+**2. Create a wrapper class `Model.py`**
+
+In this case we're using the Python language wrapper, which allows us to create a custom wrapper file which allows us to expose all functionality through the `predict` method - any HTTP/GRPC requests sent through the API are passed to that function, and the response will contain whatever we return from that function.
+
+The python SDK also allows for other functions such as `load` for loading logic, `metrics` for custom Prometheus metrics, `tags` for metadata, and more.
+
+```python
+class Model:
+    def __init__(self):
+        self._model = pickle.loads("model.pickle")
+
+    def predict(self, X):
+        output = self._model(X)
+        return output
+```
+
+**3. Use the Seldon tools to containerise your model**
+
+Now we can use the Seldon Core utilities to convert our python class into a fully fledged Seldon Core microservice. In this case we are also containerising the model binaries. 
+
+The result below is a container with the name `sklearn_iris` and the tag `0.1` which we will be able to deploy using Seldon Core.
+
+```console
+s2i build . seldonio/seldon-core-s2i-python3:0.18 sklearn_iris:0.1 
+```
+
+**4. Test model locally**
+
+Before we deploy our model to production, we can actually run our model locally using Docker, and send it a prediction request.
+
+```console
+$ docker run -p 8000:8000 --rm sklearn_iris:0.1 
+
+Listening on port 8080...
+
+$ curl -X POST localhost:8080/api/v1.0/predictions \
+    -H 'Content-Type: application/json' \
+    -d '{ "data": { "ndarray": [1,2,3,4] } }' | json_pp
+
+{
+   "meta" : {},
+   "data" : {
+      "names" : [
+         "t:0",
+         "t:1",
+         "t:2"
+      ],
+      "ndarray" : [
+         [
+            0.000698519453116284,
+            0.00366803903943576,
+            0.995633441507448
+         ]
+      ]
+   }
+}
+```
+
+**4. Deploy to Kubernetes**
+
+Similar to what we did with the pre-packaged model server, we define here our deployment structure however we also have to specify the container that we just built, together with any further containerSpec options we may want to add.
+
+```yaml
+$ kubectl apply -f - << END
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: iris-model
+  namespace: model-namespace
+spec:
+  name: iris
+  predictors:
+  - componentSpecs:
+    - spec:
+      containers:
+      - name: classifier
+        image: sklearn_iris:0.1
+  - graph:
+      name: classifier
+    name: default
+    replicas: 1
+END
+```
+
+**5. Send a request to your deployed model in Kubernetes**
+
+Finally we can just send a request to the model and see the reply by the server.
+
+```console
+$ curl -X POST http://<ingress>/seldon/model-namespace/iris-model/api/v1.0/predictions \
+    -H 'Content-Type: application/json' \
+    -d '{ "data": { "ndarray": [1,2,3,4] } }' | json_pp
+
+{
+   "meta" : {},
+   "data" : {
+      "names" : [
+         "t:0",
+         "t:1",
+         "t:2"
+      ],
+      "ndarray" : [
+         [
+            0.000698519453116284,
+            0.00366803903943576,
+            0.995633441507448
+         ]
+      ]
+   }
+}
+```
 
 # Hands on Examples
 
