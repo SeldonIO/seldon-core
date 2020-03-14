@@ -2,33 +2,48 @@
 Seldon Core
 ===========
 
-.. image:: seldon.png
+An open source platform to deploy your machine learning models on Kubernetes at massive scale.
+
+.. image:: seldon-logo-small.png
    :alt: Seldon logo
    :align: center
 
-Goals
+Overview
+-----
+Seldon core converts your ML models (Tensorflow, Pytorch, H2o, etc.) or language wrappers (Python, Java, etc.) into production REST/GRPC microservices.
+
+Seldon handles scaling to thousands of production machine learning models and provides advanced machine learning capabilities out of the box including Advanced Metrics, Request Logging, Explainers, Outlier Detectors, A/B Tests, Canaries and more.
+
+Quick Links
 -----
 
-Seldon Core is an open source platform for deploying machine learning models on a Kubernetes cluster.
+* Read the `Seldon Core Documentation <https://docs.seldon.io/projects/seldon-core/en/latest/>`_
+* Join our `community Slack <https://join.slack.com/t/seldondev/shared_invite/enQtMzA2Mzk1Mzg0NjczLTJlNjQ1NTE5Y2MzMWIwMGUzYjNmZGFjZjUxODU5Y2EyMDY0M2U3ZmRiYTBkOTRjMzZhZjA4NjJkNDkxZTA2YmU>`_ to ask any questions
+* Get started with `Seldon Core Notebook Examples <https://docs.seldon.io/projects/seldon-core/en/latest/examples/notebooks.html>`_
+* Join our fortnightly `online community calls <>`_
+* Learn how you can `start contributing <https://docs.seldon.io/projects/seldon-core/en/latest/developer/contributing.html>`_
+* Check out `Blogs <https://docs.seldon.io/projects/seldon-core/en/latest/tutorials/blogs.html>`_ that dive into Seldon Core components
+* Watch some of the `Videos and Talks <https://docs.seldon.io/projects/seldon-core/en/latest/tutorials/videos.html>`_ using Seldon Core
 
- * Deploy machine learning models in the cloud or on-premise.
- * Get metrics and ensure proper governance and compliance for your running machine learning models.
- * Create powerful inference graphs made up of multiple components.
- * Provide a consistent serving layer for models built using heterogeneous ML toolkits.
+.. image:: ./images/seldon-core-high-level.jpg
+   :alt: Seldon logo
+   :align: center
 
 .. toctree::
    :maxdepth: 1
    :caption: Getting Started
 
-   Simple Model Serving  <servers/overview.md>
-   Advanced Custom Serving <workflow/README.md>
+   Overview <workflows/overview.md>
+   Quickstart Guide <workflows/quickstart.md>
 
 .. toctree::
    :maxdepth: 1
-   :caption: Workflow
+   :caption: Workflow Deep Dive
   
-   Install  <workflow/install.md>
+   Install on Kubernetes <workflow/install.md>
    Wrap your model <wrappers/README.md>   
+   Wrap your model with Pre-packaged Inreference Servers <servers/overview.md>
+   Wrap your model with Custom Models with Language Wrappers <workflow/README.md>
    Create your inference graph <graph/inference-graph.md>
    Deploy your model  <workflow/deploying.md>
    Test your model <workflow/api-testing.md>
