@@ -2,6 +2,11 @@
 
 ## Development
 
+We assume:
+
+ * Go 1.13
+ * Kubebuilder 2.3.0
+
 ### Issues
 
  * Generated CRD is not structural: https://github.com/kubernetes-sigs/controller-tools/issues/304
@@ -16,7 +21,7 @@ For running locally `kind`, `kustomize` and `kubebuilder` should be installed.
 If you installed kubebuilder outside of `/usr/local/kubebuilder` then you will need to set the env var `KUBEBUILDER_ASSETS` for example:
 
 ```
-export KUBEBUILDER_ASSETS=/home/clive/tools/kubebuilder_2.2.0_linux_amd64/bin
+export KUBEBUILDER_ASSETS=/home/clive/tools/kubebuilder_2.3.0_linux_amd64/bin
 ```
 
 

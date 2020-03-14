@@ -3,7 +3,7 @@ ambassador:
   singleNamespace: false
 certManager:
   enabled: false
-controllerId: ''
+controllerId: ""
 crd:
   create: true
 credentials:
@@ -42,6 +42,7 @@ executor:
   serviceAccount:
     name: default
   user: 8888
+  defaultRequestLoggerEndpointPrefix: 'http://default-broker.'
 image:
   pullPolicy: IfNotPresent
   registry: docker.io
@@ -50,7 +51,7 @@ image:
 istio:
   enabled: false
   gateway: seldon-gateway
-  tlsMode: ''
+  tlsMode: ""
 kubeflow: false
 manager:
   cpuLimit: 500m
@@ -59,36 +60,37 @@ manager:
   memoryRequest: 200Mi
 predictiveUnit:
   port: 9000
+  defaultEnvSecretRefName: ""
 predictor_servers:
   MLFLOW_SERVER:
     grpc:
-      defaultImageVersion: '0.2'
+      defaultImageVersion: "0.3"
       image: seldonio/mlflowserver_grpc
     rest:
-      defaultImageVersion: '0.2'
+      defaultImageVersion: "0.3"
       image: seldonio/mlflowserver_rest
   SKLEARN_SERVER:
     grpc:
-      defaultImageVersion: '0.2'
+      defaultImageVersion: "0.2"
       image: seldonio/sklearnserver_grpc
     rest:
-      defaultImageVersion: '0.2'
+      defaultImageVersion: "0.2"
       image: seldonio/sklearnserver_rest
   TENSORFLOW_SERVER:
     grpc:
-      defaultImageVersion: '0.7'
+      defaultImageVersion: "0.7"
       image: seldonio/tfserving-proxy_grpc
     rest:
-      defaultImageVersion: '0.7'
+      defaultImageVersion: "0.7"
       image: seldonio/tfserving-proxy_rest
     tensorflow: true
-    tfImage: tensorflow/serving:latest
+    tfImage: tensorflow/serving:2.1.0
   XGBOOST_SERVER:
     grpc:
-      defaultImageVersion: '0.2'
+      defaultImageVersion: "0.3"
       image: seldonio/xgboostserver_grpc
     rest:
-      defaultImageVersion: '0.2'
+      defaultImageVersion: "0.3"
       image: seldonio/xgboostserver_rest
 rbac:
   configmap:
@@ -99,7 +101,7 @@ serviceAccount:
   name: seldon-manager
 singleNamespace: false
 storageInitializer:
-  cpuLimit: '1'
+  cpuLimit: "1"
   cpuRequest: 100m
   image: gcr.io/kfserving/storage-initializer:0.2.2
   memoryLimit: 1Gi

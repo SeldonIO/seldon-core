@@ -268,3 +268,53 @@ func TestTensorflowMetadata(t *testing.T) {
 	g.Expect(res.Code).To(Equal(200))
 	g.Expect(res.Body.String()).To(Equal(test.TestClientMetadataResponse))
 }
+
+func TestPredictErrorWithServer(t *testing.T) {
+	t.Logf("Started")
+	g := NewGomegaWithT(t)
+	called := false
+
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, err := ioutil.ReadAll(r.Body)
+		g.Expect(err).To(BeNil())
+		g.Expect(r.Header.Get(payload.SeldonPUIDHeader)).To(Equal(TestSeldonPuid))
+		called = true
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(errorPredictResponse))
+	})
+	server := httptest.NewServer(handler)
+	defer server.Close()
+	url, err := url.Parse(server.URL)
+	g.Expect(err).Should(BeNil())
+	urlParts := strings.Split(url.Host, ":")
+	port, err := strconv.Atoi(urlParts[1])
+	g.Expect(err).Should(BeNil())
+
+	model := v1.MODEL
+	p := v1.PredictorSpec{
+		Name: "p",
+		Graph: &v1.PredictiveUnit{
+			Type: &model,
+			Endpoint: &v1.Endpoint{
+				ServiceHost: urlParts[0],
+				ServicePort: int32(port),
+				Type:        v1.REST,
+			},
+		},
+	}
+	client, err := NewJSONRestClient(api.ProtocolSeldon, "dep", &p, nil)
+	g.Expect(err).Should(BeNil())
+	r := NewServerRestApi(&p, client, false, url, "default", api.ProtocolSeldon, "test", "/metrics")
+	r.Initialise()
+	var data = ` {"data":{"ndarray":[1.1,2.0]}}`
+
+	req, _ := http.NewRequest("POST", "/api/v0.1/predictions", strings.NewReader(data))
+	req.Header = map[string][]string{"Content-Type": []string{"application/json"}, payload.SeldonPUIDHeader: []string{TestSeldonPuid}}
+	res := httptest.NewRecorder()
+	r.Router.ServeHTTP(res, req)
+	g.Expect(res.Code).To(Equal(http.StatusInternalServerError))
+	g.Expect(called).To(Equal(true))
+	b, err := ioutil.ReadAll(res.Body)
+	g.Expect(err).Should(BeNil())
+	g.Expect(string(b)).To(Equal(errorPredictResponse))
+}

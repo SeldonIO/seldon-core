@@ -32,6 +32,8 @@ def namespace(request):
 
     test_name = request.node.name
     namespace = clean_string(test_name)
+    if len(namespace) > 63:
+        namespace = namespace[0:63]
 
     # Create namespace
     retry_run(f"kubectl create namespace {namespace}")
