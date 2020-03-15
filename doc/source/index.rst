@@ -65,7 +65,7 @@ Documentation Index
    :maxdepth: 1
    :caption: Language Wrappers
 
-   Python Language Wrapper [Production] <python/README.md>
+   Python Language Wrapper [Production] <python/index.rst>
    Java Language Wrapper [Incubating] <java/README.md>
    
 .. toctree::
@@ -117,7 +117,6 @@ Documentation Index
    Prediction APIs <reference/apis/index>   
    Python API reference <python/api/modules>
    Release Highlights <reference/release-highlights>   
-   Seldon Core Helm Chart <reference/helm.md>   
    Seldon Deployment CRD <reference/seldon-deployment.md>   
    Service Orchestrator <graph/svcorch.md>
 
