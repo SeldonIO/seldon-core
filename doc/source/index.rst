@@ -4,11 +4,6 @@ Seldon Core
 
 An open source platform to deploy your machine learning models on Kubernetes at massive scale.
 
-.. image:: ./images/seldon-core-high-level.jpg
-   :alt: Seldon logo
-   :align: center
-
-
 Overview
 -----
 Seldon core converts your ML models (Tensorflow, Pytorch, H2o, etc.) or language wrappers (Python, Java, etc.) into production REST/GRPC microservices.
@@ -26,6 +21,10 @@ Quick Links
 * Check out `Blogs <https://docs.seldon.io/projects/seldon-core/en/latest/tutorials/blogs.html>`_ that dive into Seldon Core components
 * Watch some of the `Videos and Talks <https://docs.seldon.io/projects/seldon-core/en/latest/tutorials/videos.html>`_ using Seldon Core
 
+.. image:: ./images/seldon-core-high-level.jpg
+   :alt: Seldon logo
+   :align: center
+
 Documentation Index
 ----
 
@@ -33,18 +32,18 @@ Documentation Index
    :maxdepth: 1
    :caption: Getting Started
 
-   Overview <workflow/overview.md>
+   Overview <workflow/github-readme.rst>
    Quickstart Guide <workflow/quickstart.md>
-   Community Resources <developer/community.md>
+   Install Seldon Core on Kubernetes <workflow/install.md>
+   Join the Community <developer/community.md>
 
 .. toctree::
    :maxdepth: 1
-   :caption: Workflow Deep Dive
+   :caption: Seldon Core Deep Dive
   
-   Install Seldon Core on Kubernetes <workflow/install.md>
-   Wrap your model <wrappers/README.md>   
-   Wrap your model with Pre-packaged Inreference Servers <servers/overview.md>
-   Wrap your model with Custom Models with Language Wrappers <workflow/README.md>
+   Detailed Installation Parameters <reference/helm.rst>
+   Pre-packaged Inreference Servers <servers/overview.md>
+   Language Wrappers for Custom Models <workflow/language-wrappers.md>
    Create your inference graph <graph/inference-graph.md>
    Deploy your model  <workflow/deploying.md>
    Test your model <workflow/api-testing.md>
@@ -86,10 +85,11 @@ Documentation Index
    :caption: Production
 
    Supported API Protocols <graph/protocols.md>
-   CI/CD MLOps at Scale <anayltics/cicd-mlops.md>
+   CI/CD MLOps at Scale <analytics/cicd-mlops.md>
    Metrics with Prometheus <analytics/analytics.md>
    Payload Logging with ELK <analytics/logging.md>
    Autoscaling <graph/autoscaling.md>
+   Kubeflow <analytics/kubeflow.md>
       
 .. toctree::
    :maxdepth: 1
@@ -104,7 +104,6 @@ Documentation Index
    :caption: Examples
 
    Notebooks <examples/notebooks>
-   Integrations <examples/integrations>
    Articles/Blogs <tutorials/blogs>
    Videos <tutorials/videos>
 

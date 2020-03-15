@@ -106,7 +106,7 @@ language = None
 exclude_patterns = []
 
 is_fast_build = os.environ.get("FAST_BUILD", False)
-if is_fast_build.lower() == "true":
+if is_fast_build and is_fast_build.lower() == "true":
     exclude_patterns = ["examples", "python"]
 
 # The name of the Pygments (syntax highlighting) style to use.
