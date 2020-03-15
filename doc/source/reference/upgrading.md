@@ -1,4 +1,4 @@
-# Upgrading Notes
+# Upgrading Seldon Core
 
 This page provides with instructions on how to upgrade from previous versions. Each of these have to be run sequentially if it's expected for previous running models to be upgraded without disruption (i.e if you are running version 0.4.2, you will first have to upgrade to 0.5.2 and then to 1.1, etc).
 

@@ -1,4 +1,10 @@
-# Serving Predictions
+# Testing Your Model Endpoints
+
+In order to test your components you are able to send the requests directly using CURL/grpCURL or a similar utility, as well as by using our Python SeldonClient SDK.
+
+## Pre-requisites
+
+First you need to make sure you've deployed your model, and the model is available through one of the supported [Ingress (as outlined in installation docs)](../workflow/install.md) you are able
 
 Depending on whether you deployed Seldon Core with Ambassador or the API Gateway you can access your models as discussed below:
 

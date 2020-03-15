@@ -43,11 +43,10 @@ Documentation Index
   
    Detailed Installation Parameters <reference/helm.rst>
    Pre-packaged Inreference Servers <servers/overview.md>
-   Language Wrappers for Custom Models <workflow/language-wrappers.md>
-   Create your inference graph <graph/inference-graph.md>
-   Deploy your model  <workflow/deploying.md>
-   Test your model <workflow/api-testing.md>
-   Serve requests  <workflow/serving.md>
+   Language Wrappers for Custom Models <wrappers/language_wrappers.md>
+   Create your Inference Graph <graph/inference-graph.md>
+   Deploy your Model  <workflow/deploying.md>
+   Testing your Model Endpoints  <workflow/serving.md>
    Troubleshooting guide <workflow/troubleshooting.md>
    Usage reporting <workflow/usage-reporting.md>
    Upgrading <reference/upgrading.md>
@@ -55,9 +54,8 @@ Documentation Index
 
 .. toctree::
    :maxdepth: 1
-   :caption: Servers
+   :caption: Pre-Packaged Inference Servers
 	     
-   Inference Servers Overview <servers/overview.md>
    MLflow Server <servers/mlflow.md>
    SKLearn server <servers/sklearn.md>
    Tensorflow Serving <servers/tensorflow.md>
@@ -67,12 +65,9 @@ Documentation Index
    :maxdepth: 1
    :caption: Language Wrappers
 
-   Python Models <python/index>   	     
-   Java Models <java/README.md>
-   R Models <R/README.md>
-   NodeJS Models <nodejs/README.md>
-   Custom Metrics <analytics/custom_metrics.md>
-
+   Python Language Wrapper [Production] <python/README.md>
+   Java Language Wrapper [Incubating] <java/README.md>
+   
 .. toctree::
    :maxdepth: 1
    :caption: Ingress
@@ -125,6 +120,14 @@ Documentation Index
    Seldon Core Helm Chart <reference/helm.md>   
    Seldon Deployment CRD <reference/seldon-deployment.md>   
    Service Orchestrator <graph/svcorch.md>
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Incubating
+
+   R Language Wrapper [ALPHA] <R/README.md>
+   NodeJS Language Wrapper [ALPHA] <nodejs/README.md>
+   Custom Language Wrapper [ALPHA] <analytics/custom_metrics.md>
    
 .. toctree::
    :maxdepth: 1
