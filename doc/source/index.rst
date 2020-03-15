@@ -4,9 +4,10 @@ Seldon Core
 
 An open source platform to deploy your machine learning models on Kubernetes at massive scale.
 
-.. image:: seldon-logo-small.png
+.. image:: ./images/seldon-core-high-level.jpg
    :alt: Seldon logo
    :align: center
+
 
 Overview
 -----
@@ -20,21 +21,21 @@ Quick Links
 * Read the `Seldon Core Documentation <https://docs.seldon.io/projects/seldon-core/en/latest/>`_
 * Join our `community Slack <https://join.slack.com/t/seldondev/shared_invite/enQtMzA2Mzk1Mzg0NjczLTJlNjQ1NTE5Y2MzMWIwMGUzYjNmZGFjZjUxODU5Y2EyMDY0M2U3ZmRiYTBkOTRjMzZhZjA4NjJkNDkxZTA2YmU>`_ to ask any questions
 * Get started with `Seldon Core Notebook Examples <https://docs.seldon.io/projects/seldon-core/en/latest/examples/notebooks.html>`_
-* Join our fortnightly `online community calls <>`_
+* Join our fortnightly `online community calls <https://docs.seldon.io/projects/seldon-core/en/latest/developer/community.html>`_
 * Learn how you can `start contributing <https://docs.seldon.io/projects/seldon-core/en/latest/developer/contributing.html>`_
 * Check out `Blogs <https://docs.seldon.io/projects/seldon-core/en/latest/tutorials/blogs.html>`_ that dive into Seldon Core components
 * Watch some of the `Videos and Talks <https://docs.seldon.io/projects/seldon-core/en/latest/tutorials/videos.html>`_ using Seldon Core
 
-.. image:: ./images/seldon-core-high-level.jpg
-   :alt: Seldon logo
-   :align: center
+Documentation Index
+----
 
 .. toctree::
    :maxdepth: 1
    :caption: Getting Started
 
-   Overview <workflows/overview.md>
-   Quickstart Guide <workflows/quickstart.md>
+   Overview <workflow/overview.md>
+   Quickstart Guide <workflow/quickstart.md>
+   Community Resources <developer/community.md>
 
 .. toctree::
    :maxdepth: 1

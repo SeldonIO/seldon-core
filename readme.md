@@ -4,7 +4,7 @@ An open source platform to deploy your machine learning models on Kubernetes at 
 ![API](./doc/source/images/core-logo-small.png)
 
 
-# Overview
+## Overview
 
 Seldon core converts your ML models (Tensorflow, Pytorch, H2o, etc.) or language wrappers (Python, Java, etc.) into production REST/GRPC microservices.
 
@@ -20,7 +20,7 @@ Seldon handles scaling to thousands of production machine learning models and pr
  
 ![API](./doc/source/images/seldon-core-high-level.jpg)
 
-## Details
+### High Level Features
 
 With over 2M installs, Seldon Core is used across organisations to manage large scale deployment of machine learning models, and key benefits include:
 
@@ -33,11 +33,11 @@ With over 2M installs, Seldon Core is used across organisations to manage large 
  * Microservice tracing through integration to Jaeger for insights on latency across microservice hops.
 
 
-# Getting Started
+## Getting Started
 
 Deploying your models using Seldon Core is simplified through our pre-packaged inference servers and language wrappers. Below you can see how you can deploy our "hello world Iris" example. You can see more details on these workflows in our [Documentation Quickstart](https://docs.seldon.io/projects/seldon-core/en/latest/workflows/quickstart.html).
 
-### Install Seldon Core
+#### Install Seldon Core
 
 Quick install using Helm 3 (you can also use Kustomize):
 
@@ -52,17 +52,17 @@ helm install seldon-core seldon-core-operator \
     # You can set ambassador instead with --set ambassador.enabled=true
 ```
 
-### Deploy using pre-packaged model servers
+#### Deploy your model using pre-packaged model servers
 
-For more custom models that have custom dependencies such as 3rd party libraries, operating system binaries or even external systems, we can use any of the Seldon Core language wrappers.
+We provide optimized model servers for some of the most popular Deep Learning and Machine Learning frameworks that allow you to deploy your trained model binaries/weights without having to containerize or modify them.
 
-Upload your model binaries into your preferred object store, in this case we have a trained scikit-learn iris model in a Google bucket:
+You only have to upload your model binaries into your preferred object store, in this case we have a trained scikit-learn iris model in a Google bucket:
 
 ```console
 gs://seldon-models/sklearn/iris/model.pickle
 ```
 
-We can deploy this model into the Kubernetes cluster using the pre-packaged model server for scikit-learn (SKLEARN_SERVER) using the `kubectl apply` command below:
+We then can deploy this model with Seldon Core to our Kubernetes cluster using the pre-packaged model server for scikit-learn (SKLEARN_SERVER) by running the `kubectl apply` command below:
 
 ```yaml
 $ kubectl apply -f - << END
@@ -83,9 +83,11 @@ spec:
 END
 ```
 
-### Deploy using language wrappers
+#### Deploy your custom model using language wrappers
 
-Write a class wrapper that exposes the logic of your model, for example in Python we have `Model.py`:
+For more custom deep learning and machine learning use-cases which have custom dependencies (such as 3rd party libraries, operating system binaries or even external systems), we can use any of the Seldon Core language wrappers.
+
+You only have to write a class wrapper that exposes the logic of your model; for example in Python we have create a file `Model.py`:
 
 ```python
 import pickle
@@ -98,7 +100,7 @@ class Model:
         return output
 ```
 
-We can now containerize our class file using the s2i utils to produce the `sklear_iris` image:
+We can now containerize our class file using the [Seldon Core s2i utils]() to produce the `sklear_iris` image:
 
 ```console
 s2i build . seldonio/seldon-core-s2i-python3:0.18 sklearn_iris:0.1 
@@ -129,9 +131,9 @@ END
 ```
 
 
-### Send API requests
+#### Send API requests to your deployed model
 
-Finally we send a request to our deployed model:
+Once our model is deployed we can send requests using either the REST or GRPC endpoint:
 
 ```console
 $ curl -X POST http://<ingress>/seldon/model-namespace/iris-model/api/v1.0/predictions \
@@ -157,16 +159,18 @@ $ curl -X POST http://<ingress>/seldon/model-namespace/iris-model/api/v1.0/predi
 }
 ```
 
-# Advanced Production ML Integrations
+#### Dive into the Advanced Production ML Integrations
 
-Any model that is deployed and orchestrated with Seldon Core provides out of the box machine learning insights for monitoring, managing, scaling and debugging. Below are some of the core components together with link to the logs that provide further insights on how to set them up.
+Any model that is deployed and orchestrated with Seldon Core provides out of the box machine learning insights for monitoring, managing, scaling and debugging. 
+
+Below are some of the core components together with link to the logs that provide further insights on how to set them up.
 
 <table>
   <tr valign="top">
     <td width="50%" >
         <a href="">
             <br>
-            <b>Out of the box and custom metrics</b>
+            <b>Standard and custom metrics with prometheus</b>
             <br>
             <br>
             <img src="./doc/source/analytics/dashboard.png">
@@ -186,7 +190,7 @@ Any model that is deployed and orchestrated with Seldon Core provides out of the
     <td width="50%">
         <a href="">
             <br>
-            <b>Explainers for ML Interpretability</b>
+            <b>Explainers for Machine Learning Interpretability</b>
             <br>
             <br>
             <img src="./doc/source/images/anchors.jpg">
@@ -195,7 +199,7 @@ Any model that is deployed and orchestrated with Seldon Core provides out of the
     <td width="50%">
         <a href="">
             <br>
-            <b>Outlier and Adversarial Detectors</b>
+            <b>Outlier and Adversarial Detectors for Monitoring</b>
             <br>
             <br>
             <img src="./doc/source/images/adversarial-attack.png">
@@ -215,7 +219,7 @@ Any model that is deployed and orchestrated with Seldon Core provides out of the
     <td width="50%">
         <a href="">
             <br>
-            <b>Distributed tracing of requests</b>
+            <b>Distributed tracing for performance monitoring</b>
             <br>
             <br>
             <img src="./doc/source/graph/jaeger-ui-rest-example.png">
@@ -224,43 +228,50 @@ Any model that is deployed and orchestrated with Seldon Core provides out of the
   </tr>
 </table>
 
-# Hands on Examples
+## How to get started?
 
-Below are a set of Jupyter notebooks that you can try out yourself for deploying Seldon Core as well as using some of the more advanced features.
+### Check out our Quickstart Guide
 
-### Prepacked Model Servers
+### Dive into the detailed components
+
+### 
+
+### Examples
+
+
+#### Prepacked Model Servers
 
  * [Deploy a SciKit-learn Pickle/Binary](../servers/sklearn.html) 
  * [Deploy an XGBoost model](../servers/xgboost.html) 
  * [Deploy a Tensorflow exported model](../servers/tensorflow.html)
  * [Deploy an MLFlow Exported model](https://docs.seldon.io/projects/seldon-core/en/latest/examples/server_examples.html#Serve-MLflow-Elasticnet-Wines-Model)
  
-### Recommended starter tutorials for custom inference code
+#### Recommended starter tutorials for custom inference code
 
 * [Tensorflow Deep MNIST Tutorial](https://docs.seldon.io/projects/seldon-core/en/latest/examples/deep_mnist.html) (Try it also in [AWS](https://docs.seldon.io/projects/seldon-core/en/latest/examples/aws_eks_deep_mnist.html), [Azure](https://docs.seldon.io/projects/seldon-core/en/latest/examples/azure_aks_deep_mnist.html) and [GKE with GPU](https://github.com/SeldonIO/seldon-core/tree/master/examples/models/gpu_tensorflow_deep_mnist))
 * [SKlearn SpaCy Reddit Text Classification Tutorial](https://docs.seldon.io/projects/seldon-core/en/latest/examples/sklearn_spacy_text_classifier_example.html)
 * Deploy your R models with the [MNIST example](https://docs.seldon.io/projects/seldon-core/en/latest/examples/r_mnist.html) and the [Iris example](https://docs.seldon.io/projects/seldon-core/en/latest/examples/r_iris.html)
 * [Deploy your Java models with the H2O example](https://docs.seldon.io/projects/seldon-core/en/latest/examples/h2o_mojo.html)
 
-### More complex deployments
+#### More complex deployments
 
 * [Example Seldon Core Deployments using Helm](https://docs.seldon.io/projects/seldon-core/en/latest/examples/helm_examples.html)
 * [Canary deployment with Seldon and Istio](https://docs.seldon.io/projects/seldon-core/en/latest/examples/istio_canary.html)
 * [Autoscaling Seldon Example](https://docs.seldon.io/projects/seldon-core/en/latest/examples/autoscaling_example.html)
 * [Seldon Model with Custom Metrics](https://docs.seldon.io/projects/seldon-core/en/latest/examples/tmpl_model_with_metrics.html)
 
-### End-to-end / use-case tutorials
+#### End-to-end / use-case tutorials
 
 * [End-to-end Reusable ML Pipeline with Seldon and Kubeflow](https://docs.seldon.io/projects/seldon-core/en/latest/examples/kubeflow_seldon_e2e_pipeline.html)
 * [Seldon Deployment of Income Classifier and Alibi Anchor Explainer](https://docs.seldon.io/projects/seldon-core/en/latest/examples/alibi_anchor_tabular.html)
 
-### Integration with other platforms
+#### Integration with other platforms
 
 * [Sagemaker (Seldon SKLearn integration example)](https://docs.seldon.io/projects/seldon-core/en/latest/examples/sagemaker_sklearn.html)
 * [Tensorflow Serving (TFServing) integration example](https://docs.seldon.io/projects/seldon-core/en/latest/examples/tfserving_mnist.html)
 * [MLFlow integration example](https://docs.seldon.io/projects/seldon-core/en/latest/examples/mlflow.html)
 
-# About the name "Seldon Core"
+## About the name "Seldon Core"
 
 The name Seldon (ˈSɛldən) Core was inspired from [the Foundation Series (Scifi Novel)](https://en.wikipedia.org/wiki/Foundation_series) where it's premise consists of a mathematician called "Hari Seldon" who spends his life developing a theory of Psychohistory, a new and effective mathematical sociology which allows for the future to be predicted extremely accurate through long periods of time (across hundreds of thousands of years).
 
