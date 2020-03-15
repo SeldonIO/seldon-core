@@ -86,9 +86,9 @@ Documentation Index
    :caption: Production
 
    Protocols <graph/protocols.md>	     
-   Tracing <graph/distributed-tracing.md>
-   Metrics <analytics/analytics.md>
-   Payload Logging <analytics/logging.md>
+   Tracing with Jaeger <graph/distributed-tracing.md>
+   Metrics with Prometheus <analytics/analytics.md>
+   Payload Logging with ELK <analytics/logging.md>
    Autoscaling <graph/autoscaling.md>
       
 .. toctree::

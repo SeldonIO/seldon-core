@@ -168,7 +168,7 @@ Below are some of the core components together with link to the logs that provid
 <table>
   <tr valign="top">
     <td width="50%" >
-        <a href="">
+        <a href="https://docs.seldon.io/projects/seldon-core/en/latest/reference/upgrading.html">
             <br>
             <b>Standard and custom metrics with prometheus</b>
             <br>
@@ -177,7 +177,7 @@ Below are some of the core components together with link to the logs that provid
         </a>
     </td>
     <td width="50%">
-        <a href="">
+        <a href="https://docs.seldon.io/projects/seldon-core/en/latest/reference/upgrading.html">
             <br>
             <b>Full audit trails with ELK request logging</b>
             <br>
@@ -188,7 +188,7 @@ Below are some of the core components together with link to the logs that provid
   </tr>
   <tr valign="top">
     <td width="50%">
-        <a href="">
+        <a href="https://docs.seldon.io/projects/seldon-core/en/latest/reference/upgrading.html">
             <br>
             <b>Explainers for Machine Learning Interpretability</b>
             <br>
@@ -197,7 +197,7 @@ Below are some of the core components together with link to the logs that provid
         </a>
     </td>
     <td width="50%">
-        <a href="">
+        <a href="https://docs.seldon.io/projects/seldon-core/en/latest/reference/upgrading.html">
             <br>
             <b>Outlier and Adversarial Detectors for Monitoring</b>
             <br>
@@ -208,7 +208,7 @@ Below are some of the core components together with link to the logs that provid
   </tr>
   <tr valign="top">
     <td width="50%">
-        <a href="">
+        <a href="https://docs.seldon.io/projects/seldon-core/en/latest/reference/upgrading.html">
             <br>
             <b>CI/CD for MLOps at Massive Scale</b>
             <br>
@@ -217,7 +217,7 @@ Below are some of the core components together with link to the logs that provid
         </a>
     </td>
     <td width="50%">
-        <a href="">
+        <a href="https://docs.seldon.io/projects/seldon-core/en/latest/graph/distributed-tracing.html">
             <br>
             <b>Distributed tracing for performance monitoring</b>
             <br>

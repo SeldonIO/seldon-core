@@ -9,7 +9,7 @@
 
 #### Running older versions of Seldon Core? 
 
-Make sure you read the ["Upgrading Seldon Core Guide"](https://docs.seldon.io/projects/seldon-core/en/latest/reference/upgrading.html)
+Make sure you read the ["Upgrading Seldon Core Guide"](../reference/upgrading.md)
 
 * **Seldon Core will stop supporting versions prior to 1.0 so make sure you upgrade.** 
 * If you are running an older version of Seldon Core, and will be upgading it please make sure you read the [Upgrading Seldon Core docs]() to understand breaking changes and best practices for upgrading.
@@ -20,7 +20,7 @@ Make sure you read the ["Upgrading Seldon Core Guide"](https://docs.seldon.io/pr
 
 First [install Helm 3.x](https://docs.helm.sh). When helm is installed you can deploy the seldon controller to manage your Seldon Deployment graphs.
 
-If you want to provide advanced parameters with your installation you can check the full [Seldon Core Helm Chart Reference](https://docs.seldon.io/projects/seldon-core/en/latest/reference/helm.html).
+If you want to provide advanced parameters with your installation you can check the full [Seldon Core Helm Chart Reference](../reference/helm.html).
 
 The namespace `seldon-system` is preferred, so we can create it:
 
@@ -41,54 +41,28 @@ Make sure you install it with the relevant ingress (ambassador.enabled, istio.en
 
 ### Install with cert-manager
 
-You can follow [the cert manager documentation to install it](https://docs.cert-manager.io/en/latest/getting-started/install/kubernetes.html)
+You can follow [the cert manager documentation to install it](../install/kubernetes.html).
 
 You can then install seldon-core with:
 
 ```bash 
-helm install seldon-core seldon-core-operator --repo https://storage.googleapis.com/seldon-charts --set usageMetrics.enabled=true --namespace seldon-system --set certManager.enabled=true
+helm install seldon-core seldon-core-operator \
+    --repo https://storage.googleapis.com/seldon-charts \
+    --set usageMetrics.enabled=true \
+    --namespace seldon-system \
+    --set certManager.enabled=true
 ```
 
-### Ingress Support
+## Ingress Support
 
 For particular ingresses that we support, you can inform the controller it should activate processing for them.
 
  * Ambassador
    * add `--set ambassador.enabled=true` : The controller will add annotations to services it creates so Ambassador can pick them up and wire an endpoint for your deployments.
+   * For full instructions on installation with Ambassador read the [Ingress Ambassador Integration](../ingress/ambassador.md) page.
  * Istio Gateway
    * add `--set istio.enabled=true` : The controller will create virtual services and destination rules to wire up endpoints in your istio ingress gateway.
-
-### Install an Ingress Gateway
-
-We presently support two API Ingress Gateways
-
- * [Ambassador](https://www.getambassador.io/)
- * [Istio Ingress](https://istio.io/)
-
-#### Install Ambassador
-
-We suggest you install [the official helm chart](https://github.com/helm/charts/tree/master/stable/ambassador).
-
-
-```bash
-helm repo add stable https://kubernetes-charts.storage.googleapis.com/
-```
-
-```bash
-helm repo update
-```
-
-```bash
-helm install ambassador stable/ambassador --set crds.keep=false
-```
-
-#### Install Istio Ingress Gateway
-
-Follow [the istio docs](https://istio.io/) to install istio in your cluster. 
-
-You must make sure you create a gateway - by default seldon-core will expect a gateway called seldon-gateway.
-
-You can find full details on how to install Seldon Core with Istio (As well as how to create the gateway) in the [Istio Ingress Section](https://docs.seldon.io/projects/seldon-core/en/latest/reference/upgrading.html).
+   * For full instructions on installation with Ambassador read the [Ingress Ambassador Integration](../ingress/istio.md) page.
 
 
 ## Seldon Core Kustomize Install 
@@ -119,6 +93,12 @@ make deploy-cert
 
 
 ## Other Options
+
+### Install Production Integrations
+
+Now that you have Seldon Core installed, you can set it up with:
+
+* 
 
 ### Install with Kubeflow
 
