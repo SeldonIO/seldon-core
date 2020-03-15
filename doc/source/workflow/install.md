@@ -1,46 +1,45 @@
 # Install Seldon-Core
 
-**You will need a kubernetes cluster with version >=1.12**
+## Pre-requisites:
+* Kubernetes cluster version equal or higher than 1.12
+    * For Openshift it requires version 4.2 or higher
+* Installer method
+    * Helm version equal or higher than 3.0
+    * Kustomize version equal or higher than 0.1.0
 
-To install seldon-core on a Kubernetes cluster you have several choices:
+#### Running older versions of Seldon Core? 
 
-We presently support [Helm](#seldon-core-helm-install) and [Kustomize](#seldon-core-kustomize-install).
+Make sure you read the ["Upgrading Seldon Core Guide"](https://docs.seldon.io/projects/seldon-core/en/latest/reference/upgrading.html)
 
->**Note:** From Seldon Core v1.0.0 onward, the minimum supported version of Helm is v3.0.0. Users still running Helm v2.16.1 or below should upgrade to a supported version before installing Seldon Core.
-
->Please see [Migrating from Helm v2 to Helm v3](https://helm.sh/blog/migrate-from-helm-v2-to-helm-v3/) if you are already running Seldon Core using Helm v2 and wish to upgrade.
-
-## New Service Orchestrator
-
-From version 1.1 Seldon Core comes with a new service orchestrator written in Go which replaces the previous Java engine. Some breaking changes are present:
-
- * Metadata fields in the Seldon Protocol are no longer added. Any custom metata data will need to be added and exposed to Prometheus metrics by the individual components in the graph
- * All components in the graph must either be REST or gRPC and only the given protocol is exposed externally.
-
-The new service orchestrator comes with several advantages including ability to handle Tensorflow REST and gRPC protocols and full metrics and tracing support for both REST and gRPC.
-
-For those wishing to use the deprecated Java engine service orchestrator see [the service orchestrator docs](../graph/svcorch.md) for details.
+* **Seldon Core will stop supporting versions prior to 1.0 so make sure you upgrade.** 
+* If you are running an older version of Seldon Core, and will be upgading it please make sure you read the [Upgrading Seldon Core docs]() to understand breaking changes and best practices for upgrading.
+* Please see [Migrating from Helm v2 to Helm v3](https://helm.sh/blog/migrate-from-helm-v2-to-helm-v3/) if you are already running Seldon Core using Helm v2 and wish to upgrade.
 
 
-## Seldon Core Helm Install
+## Install Seldon Core with Helm 
 
-First [install Helm](https://docs.helm.sh). When helm is installed you can deploy the seldon controller to manage your Seldon Deployment graphs.
+First [install Helm 3.x](https://docs.helm.sh). When helm is installed you can deploy the seldon controller to manage your Seldon Deployment graphs.
+
+If you want to provide advanced parameters with your installation you can check the full [Seldon Core Helm Chart Reference](https://docs.seldon.io/projects/seldon-core/en/latest/reference/helm.html).
+
+The namespace `seldon-system` is preferred, so we can create it:
 
 ```bash
 kubectl create namespace seldon-system
 ```
 
+Now we can install Seldon Core in the `seldon-system` namespace.
+
 ```bash
-helm install seldon-core seldon-core-operator --repo https://storage.googleapis.com/seldon-charts --set usageMetrics.enabled=true --namespace seldon-system
+helm install seldon-core seldon-core-operator \
+    --repo https://storage.googleapis.com/seldon-charts \
+    --set usageMetrics.enabled=true \
+    --namespace seldon-system
 ```
 
-Notes
+Make sure you install it with the relevant ingress (ambassador.enabled, istio.enabled, etc) so you are able to send requests (instructions below).
 
- * You can use ```--namespace``` to install the seldon-core controller to a particular namespace but we recommend seldon-system.
- * For full configuration options see [here](../reference/helm.md)
-
-
-## Install with cert-manager
+### Install with cert-manager
 
 You can follow [the cert manager documentation to install it](https://docs.cert-manager.io/en/latest/getting-started/install/kubernetes.html)
 
@@ -50,7 +49,7 @@ You can then install seldon-core with:
 helm install seldon-core seldon-core-operator --repo https://storage.googleapis.com/seldon-charts --set usageMetrics.enabled=true --namespace seldon-system --set certManager.enabled=true
 ```
 
-## Ingress Support
+### Ingress Support
 
 For particular ingresses that we support, you can inform the controller it should activate processing for them.
 
@@ -59,14 +58,14 @@ For particular ingresses that we support, you can inform the controller it shoul
  * Istio Gateway
    * add `--set istio.enabled=true` : The controller will create virtual services and destination rules to wire up endpoints in your istio ingress gateway.
 
-## Install an Ingress Gateway
+### Install an Ingress Gateway
 
 We presently support two API Ingress Gateways
 
  * [Ambassador](https://www.getambassador.io/)
  * [Istio Ingress](https://istio.io/)
 
-### Install Ambassador
+#### Install Ambassador
 
 We suggest you install [the official helm chart](https://github.com/helm/charts/tree/master/stable/ambassador).
 
@@ -83,11 +82,13 @@ helm repo update
 helm install ambassador stable/ambassador --set crds.keep=false
 ```
 
-### Install Istio Ingress Gateway
+#### Install Istio Ingress Gateway
 
-Follow [the istio docs](https://istio.io/) to install. 
+Follow [the istio docs](https://istio.io/) to install istio in your cluster. 
 
-If you are using istio then the controller will create virtual services for an istio gateway. By default it will assume the gateway `seldon-gateway` as the name of the gateway. To change the default gateway add `--set istio.gateway=XYZ` when installing the seldon-core-operator.
+You must make sure you create a gateway - by default seldon-core will expect a gateway called seldon-gateway.
+
+You can find full details on how to install Seldon Core with Istio (As well as how to create the gateway) in the [Istio Ingress Section](https://docs.seldon.io/projects/seldon-core/en/latest/reference/upgrading.html).
 
 
 ## Seldon Core Kustomize Install 
@@ -96,7 +97,7 @@ The [Kustomize](https://github.com/kubernetes-sigs/kustomize) installation can b
 
 To use the template directly there is a Makefile which has a set of useful commands:
 
-For kubernetes <1.15 comment the patch_object_selector [here](https://github.com/SeldonIO/seldon-core/blob/master/operator/config/webhook/kustomization.yaml)
+For kubernetes clusters of version higher than 1.15, make sure you comment the patch_object_selector [here](https://github.com/SeldonIO/seldon-core/blob/master/operator/config/webhook/kustomization.yaml)
 
 Install cert-manager
 
@@ -130,7 +131,6 @@ If you have a Google Cloud Platform account you can install via the [GCP Marketp
 ### AWS MarketPlace
 
 If you have a AWS account you can install via the [AWS Marketplace](https://aws.amazon.com/marketplace/pp/B07KCNBCHV). See our [AWS Install Documentation](../reference/aws-mp-install.md).
-
 
 ## Upgrading from Previous Versions
 
@@ -175,7 +175,6 @@ An example install is provided in the Makefile in the Operator folder:
 make deploy-namespaced1
 ```
 
-
 See the [multiple server example notebook](../examples/multiple_operators.html).
 
 ### Label focused Seldon Core Operator (version >=1.0)
@@ -183,7 +182,6 @@ See the [multiple server example notebook](../examples/multiple_operators.html).
 **You will need a k8s cluster >= 1.15**
 
 You can install the Seldon Core Operator so it manages only SeldonDeployments with the label `seldon.io/controller-id` where the value of the label matches the controller-id of the running operator. An example for a namespace `seldon-id1` is shown below:
-
 
 #### Helm
 

@@ -228,16 +228,10 @@ Below are some of the core components together with link to the logs that provid
   </tr>
 </table>
 
-## How to get started?
 
-### Check out our Quickstart Guide
-
-### Dive into the detailed components
-
-###
+## Where to go from here
 
 ### Examples
-
 
 #### Prepacked Model Servers
 

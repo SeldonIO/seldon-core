@@ -41,7 +41,7 @@ Documentation Index
    :maxdepth: 1
    :caption: Workflow Deep Dive
   
-   Install on Kubernetes <workflow/install.md>
+   Install Seldon Core on Kubernetes <workflow/install.md>
    Wrap your model <wrappers/README.md>   
    Wrap your model with Pre-packaged Inreference Servers <servers/overview.md>
    Wrap your model with Custom Models with Language Wrappers <workflow/README.md>
@@ -52,6 +52,7 @@ Documentation Index
    Troubleshooting guide <workflow/troubleshooting.md>
    Usage reporting <workflow/usage-reporting.md>
    Upgrading <reference/upgrading.md>
+   Changelog <reference/changelog.rst>
 
 .. toctree::
    :maxdepth: 1

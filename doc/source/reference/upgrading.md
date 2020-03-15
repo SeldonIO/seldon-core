@@ -1,8 +1,49 @@
 # Upgrading Notes
 
+This page provides with instructions on how to upgrade from previous versions. Each of these have to be run sequentially if it's expected for previous running models to be upgraded without disruption (i.e if you are running version 0.4.2, you will first have to upgrade to 0.5.2 and then to 1.1, etc).
+
+If you were running our Openshift 0.4.2 certified operator and are looking to upgrade to our 1.1 certified operator, you will also need to follow the "upgrading process" steps in the "Upgrading to 0.5.2 from previous versions" section.
+
+Make sure you also [read the CHANGELOG](https://docs.seldon.io/projects/seldon-core/en/latest/reference/changelog.html) to see the detailed features and bug-fixes in each version.
+
+
+## Upgrading to 1.1 from previous versions
+
+As we moved to 1.x+ there are several breaking changes that need to be considered. These are outlined below
+
+### New Features / Breaking Changes
+
+#### New Service Orchestrator
+
+From version 1.1 Seldon Core comes with a new service orchestrator written in Go which replaces the previous Java engine. Some breaking changes are present:
+
+ * Metadata fields in the Seldon Protocol are no longer added. Any custom metata data will need to be added and exposed to Prometheus metrics by the individual components in the graph
+ * All components in the graph must either be REST or gRPC and only the given protocol is exposed externally.
+
+The new service orchestrator comes with several advantages including ability to handle Tensorflow REST and gRPC protocols and full metrics and tracing support for both REST and gRPC.
+
+For those wishing to use the deprecated Java engine service orchestrator see [the service orchestrator docs](../graph/svcorch.md) for details.
+
+### Upgrading process
+
+
+## Upgrading to 0.5.2 from previous versions
+
+This version included significant improvements and features, including the addition of pre-packaged model servers, fixing several critical bugs.
+
+This was the version that also dropped support for kubernetes 1.11, and added changes in the mutating and validating webhooks that you need to make sure are transitioned as outlined below.
+
+### Upgrading process
+
+In order to upgrade, the main requirement is to make sure that the Kubernetes cluster is updated to 1.12 or higher.
+
+Once this is done, it's necessary to delete the old webhooks. This can be done with the following commands (you need to make sure that the commands are executed in the namespace in which seldon core was installed).
+
 ## Upgrading to 0.2.8 from previous versions.
 
-### Helm
+### Upgrading process
+
+#### Installation process now with Helm
 
 The helm charts to install Seldon Core have changed. There is now a single Helm chart `seldon-core-operator` that installs the CRD and its controller. Ingress options are now separate and you need to choose between the available options which are at present:
 
@@ -13,6 +54,6 @@ For more details see the [install docs](../workflow/install.md).
 
 The Helm chart `seldon-core-operator` will require clusterwide RBAC and should be installed by a cluster admin.
 
-### Ksonnet
+##### Dropping support for KSonnet
 
 Ksonnet is now deprecated. You should convert to using Helm to install Seldon Core.

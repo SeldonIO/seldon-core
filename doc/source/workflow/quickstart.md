@@ -1,8 +1,10 @@
-## Getting Started
+# Quickstart
 
-Below is a very high level overview that describes a simplified workflow that summarises the base steps to get you up and running with Seldon Core and deploy your first model.
+In this page we have put together a very containerised example that will get you up and running with your first Seldon Core model.
 
-You can dive into the full deep dive of the [Seldon Core Workflow](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/index.html).
+We will show you how to deploy your model using a pre-packaged model server, as well as a language wrapper for more custom servers.
+
+You can dive into a deeper dive of each of the components and stages of the [Seldon Core Workflow](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/index.html).
 
 ### Install Seldon Core in your Cluster
 
