@@ -85,8 +85,8 @@ Documentation Index
    :maxdepth: 1
    :caption: Production
 
-   Protocols <graph/protocols.md>	     
-   Tracing with Jaeger <graph/distributed-tracing.md>
+   Supported API Protocols <graph/protocols.md>
+   CI/CD MLOps at Scale <anayltics/cicd-mlops.md>
    Metrics with Prometheus <analytics/analytics.md>
    Payload Logging with ELK <analytics/logging.md>
    Autoscaling <graph/autoscaling.md>

@@ -208,7 +208,7 @@ Below are some of the core components together with link to the logs that provid
   </tr>
   <tr valign="top">
     <td width="50%">
-        <a href="https://docs.seldon.io/projects/seldon-core/en/latest/reference/upgrading.html">
+        <a href="https://docs.seldon.io/projects/seldon-core/en/latest/analytics/cicd-mlops.html">
             <br>
             <b>CI/CD for MLOps at Massive Scale</b>
             <br>
