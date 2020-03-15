@@ -208,4 +208,5 @@ examples/ambassador/custom/ambassador_custom.py
 examples/ambassador/headers/ambassador_headers.py
 examples/ambassador/shadow/ambassador_shadow.py
 examples/models/metrics/metrics.py
+examples/models/custom_metrics/customMetrics.py
 examples/models/tracing/tracing.py

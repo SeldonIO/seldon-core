@@ -269,7 +269,7 @@ def transform_output(
                 seldon_metrics.update(metrics)
 
             return construct_response_json(
-                user_model, False, request, client_response, meta, metrics,
+                user_model, False, request, client_response, meta, metrics
             )
 
 

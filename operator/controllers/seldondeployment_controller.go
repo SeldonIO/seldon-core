@@ -729,6 +729,15 @@ func createContainerService(deploy *appsv1.Deployment, p machinelearningv1.Predi
 		corev1.EnvVar{Name: machinelearningv1.ENV_SELDON_DEPLOYMENT_ID, Value: mlDep.ObjectMeta.Name},
 	}...)
 
+	//Add Metric Env Var
+	metricPort := getPort(constants.MetricsPortName, con.Ports)
+	if metricPort != nil {
+		con.Env = append(con.Env, []corev1.EnvVar{
+			corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_SERVICE_PORT_METRICS, Value: strconv.Itoa(int(metricPort.ContainerPort))},
+			corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_METRICS_ENDPOINT, Value: getPrometheusPath(mlDep)},
+		}...)
+	}
+
 	return svc
 }
 
@@ -752,6 +761,13 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 			Strategy: appsv1.DeploymentStrategy{RollingUpdate: &appsv1.RollingUpdateDeployment{MaxUnavailable: &intstr.IntOrString{StrVal: "10%"}}},
 		},
 	}
+
+	if deploy.Spec.Template.Annotations == nil {
+		deploy.Spec.Template.Annotations = map[string]string{}
+	}
+	// Add prometheus annotations
+	deploy.Spec.Template.Annotations["prometheus.io/path"] = getPrometheusPath(mlDep)
+	deploy.Spec.Template.Annotations["prometheus.io/scrape"] = "true"
 
 	if p.Shadow == true {
 		deploy.Spec.Template.ObjectMeta.Labels["shadow"] = "true"
