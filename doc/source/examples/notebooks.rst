@@ -2,7 +2,7 @@
 Notebooks
 =========
 
-Prepackaged Model Servers
+Prepackaged Inference Server Examples
 -----
 
 .. toctree::
@@ -13,30 +13,32 @@ Prepackaged Model Servers
    MLflow Pre-packaged MOdel Server A/B Test <mlflow_server_ab_test_ambassador>
    Deploy a XGBoost Model Binary <../servers/xgboost.md>
 
-Language Wrapper Examples
+Python Language Wrapper Examples
 -----
 
 .. toctree::
    :titlesonly:
 
-   Tensorflow Deep MNIST <deep_mnist>
    Scikit-learn Spacy Reddit Text Classification Tutorial <sklearn_spacy_text_classifier_example>
    Keras MNIST <keras_mnist>
+   SKLearn Iris Classifier <iris>
+   SKLearn MNIST <sklearn_mnist>
+   Sagemaker SKLearn Example <sagemaker_sklearn>   
+   TFserving MNIST <tfserving_mnist>
+
+Specialised Framework Examples
+-----
+
+.. toctree::
+   :titlesonly:
+
+   Kubeflow Seldon E2E Pipeline <kubeflow_seldon_e2e_pipeline>
+   H2O Java MoJo <h2o_mojo>
+   Deploy your R models with the R <deep_mnist>
    NVIDIA TensorRT MNIST <nvidia_mnist>
    OpenVINO ImageNet <openvino>
    OpenVINO ImageNet Ensemble <openvino_ensemble>
    ONNX ResNet with Intel nGraph<onnx_resnet>
-   H2O Java MoJo <h2o_mojo>
-
-
-Misc
------
-
-.. toctree::
-   :titlesonly:
-
-   Deploy your R models with the R <deep_mnist>
-
 
 Cloud-Specific Examples
 -----
@@ -60,35 +62,19 @@ Advanced Machine Learning Insights
    Tabular, Text and Image Model Explainers <explainer_examples>
   
 
-End-to-end examples
+MLOps: Scaling and Monitoring and Observability
 -----
 
 .. toctree::
    :titlesonly:
   
-   Kubeflow Seldon E2E Pipeline <kubeflow_seldon_e2e_pipeline>
+   Request Payload Logging with ELK <payload_logging>
+   Custom Metrics with Grafana & Prometheus <metrics>
+   Distributed Tracing with Jaeger <tracing>
+   CI / CD with Jenkins Classic <jenkins_classic>
+   CI / CD with Jenkins X <jenkins_x>
 
-Complex Graph Exaples
------
-
-.. toctree::
-   :titlesonly:
-  
-   Combiner Example <combiner>
-   Chainer MNIST <chainer_mnist>
-
-
-Monitoring and Observability
------
-
-.. toctree::
-   :titlesonly:
-  
-   Payload Logging <payload_logging>
-   Metrics <metrics>
-   Tracing <tracing>
-
-Production Configurations
+Production Configurations and Integrations
 -----
 
 .. toctree::
@@ -98,6 +84,20 @@ Production Configurations
    Custom Endpoints <custom_endpoints>
    Example Helm Deployments <helm_examples>
    Max gRPC Message Size <max_grpc_msg_size>
+   REST timeouts <rest_timeouts>
+   Deploy Multiple Seldon Core Operators <multiple_operators>
+   Protocol Examples <protocol_examples>
+
+Complex Graph Exaples
+-----
+
+.. toctree::
+   :titlesonly:
+  
+   Combiner Example <combiner>
+   Chainer MNIST <chainer_mnist>
+   Spam Classification TRANSFORMER <transformer_spam_model>
+   Spam Classification TRANSFORMER + COMBINER  <combiner_spam_model>
 
 Ingress
 -----
@@ -111,20 +111,4 @@ Ingress
    Ambassador Custom Config <ambassador_custom>
    Istio Canary <istio_canary>
    Istio Examples <istio_examples>   
-
-Other
-----
-.. toctree::
-   :titlesonly:
-
-   Protocol Examples <protocol_examples>
-   REST timeouts <rest_timeouts>	         
-   Sagemaker SKLearn Example <sagemaker_sklearn>   
-   SKLearn Iris Classifier <iris>
-   SKLearn MNIST <sklearn_mnist>
-   SKLearn SpaCy Reddit Text Classifier Example <sklearn_spacy_text_classifier_example>
-   Sklearn, Xgboost, Tensorflow Server Examples <server_examples>
-   TFserving MNIST <tfserving_mnist>
-   Spam Classification TRANSFORMER component <transformer_spam_model>
-   Spam Classification TRANSFORMER + COMBINER Component <combiner_spam_model>
 
