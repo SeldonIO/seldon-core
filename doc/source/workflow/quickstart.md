@@ -155,7 +155,7 @@ In this case we are also exporting the model binaries/artifacts, but we will be 
 [Created file at /mypath/model.pickle]
 ```
 
-**2. Create a wrapper class `Model.py`**
+**2. Create a wrapper class Model.py**
 
 In this case we're using the Python language wrapper, which allows us to create a custom wrapper file which allows us to expose all functionality through the `predict` method - any HTTP/GRPC requests sent through the API are passed to that function, and the response will contain whatever we return from that function.
 

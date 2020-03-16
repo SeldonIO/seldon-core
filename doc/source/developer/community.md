@@ -13,7 +13,7 @@ The community call is also a great opportunity for the community to ask question
 
 **Dates & times**
 
-The dates for the community call is every Thursday at 16:00 UK Time.
+The dates for the community call is on Thursday every 2 weeks at 16:00 UK Time.
 
 We always announce the community call in our Community Slack and social media (Twitter, Instagram, etc) so make sure you are able to join to stay up to date.
 

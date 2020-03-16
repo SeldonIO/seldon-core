@@ -44,7 +44,7 @@ The specification is:
  * url: Any url. Optional. If not provided then it will default to the default knative borker in the namespace of the Seldon Deployment.
  * mode: Either `request`, `response` or `all`
 
-# Setting Global Default
+## Setting Global Default
 
 If you don't want to set up the custom logger every time, you are able to set it with the defaultRequestLoggerEndpointPrefix Helm Chart Variable as outlined in the [helm chart advanced settings section](../reference/helm.rst). 
 
@@ -64,7 +64,7 @@ So when the model runs in the `deep-learning` namespace, it will send all the in
 You will still need to make sure the model is deployed with a specification on what requests will be logged, i.e. all, request or response (as outlined above).
 
 
-## Example Notebook
+### Example Notebook
 
 You can try out an [example notebook with logging](../examples/payload_logging.html)
 
