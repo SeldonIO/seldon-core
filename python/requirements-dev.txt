@@ -11,7 +11,7 @@ tox<4.0.0
 coverage==4.5.4
 
 # Used in serving_test_gen
-pandas==1.0.1
+pandas==1.0.2
 
 # Fetch licenses
 pip-licenses==2.1.1
