@@ -20,6 +20,9 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"strconv"
+	"strings"
+
 	types2 "github.com/gogo/protobuf/types"
 	"github.com/seldonio/seldon-core/operator/constants"
 	"github.com/seldonio/seldon-core/operator/utils"
@@ -30,8 +33,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"knative.dev/pkg/kmp"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"strconv"
-	"strings"
 
 	"github.com/go-logr/logr"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -735,7 +736,20 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      map[string]string{machinelearningv1.Label_seldon_id: seldonId, "app": depName, "fluentd": "true"},
+					Labels: map[string]string{
+						machinelearningv1.Label_seldon_id: seldonId,
+						"app":                             depName,
+						"fluentd":                         "true",
+						"model":                           "false",
+						"input-transformer":               "false",
+						"output-transformer":              "false",
+						"router":                          "false",
+						"combiner":                        "false",
+						"default":                         "false",
+						"canary":                          "false",
+						"shadow":                          "false",
+						"explainer":                       "false",
+					},
 					Annotations: mlDep.Spec.Annotations,
 				},
 			},
