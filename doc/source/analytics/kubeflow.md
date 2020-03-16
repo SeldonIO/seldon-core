@@ -43,8 +43,3 @@ spec:
 
 Save the above resource and apply it with `kubectl`.
 
-## Examples
-
-Seldon provides a [large set of example notebooks](https://docs.seldon.io/projects/seldon-core/en/latest/examples/notebooks.html) showing how to run inference code for a wide range of machine learning toolkits.
-
-

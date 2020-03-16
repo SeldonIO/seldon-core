@@ -63,10 +63,19 @@ Documentation Index
    
 .. toctree::
    :maxdepth: 1
-   :caption: Language Wrappers
+   :caption: Language Wrappers (Production)
 
    Python Language Wrapper [Production] <python/index.rst>
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Language Wrappers (Incubating)
+
    Java Language Wrapper [Incubating] <java/README.md>
+   R Language Wrapper [ALPHA] <R/README.md>
+   NodeJS Language Wrapper [ALPHA] <nodejs/README.md>
+   Custom Language Wrapper [ALPHA] <analytics/custom_metrics.md>
+   
    
 .. toctree::
    :maxdepth: 1
@@ -84,7 +93,6 @@ Documentation Index
    Metrics with Prometheus <analytics/analytics.md>
    Payload Logging with ELK <analytics/logging.md>
    Autoscaling <graph/autoscaling.md>
-   Kubeflow <analytics/kubeflow.md>
       
 .. toctree::
    :maxdepth: 1
@@ -119,15 +127,8 @@ Documentation Index
    Release Highlights <reference/release-highlights>   
    Seldon Deployment CRD <reference/seldon-deployment.md>   
    Service Orchestrator <graph/svcorch.md>
+   Kubeflow <analytics/kubeflow.md>
 
-.. toctree::
-   :maxdepth: 1
-   :caption: Incubating
-
-   R Language Wrapper [ALPHA] <R/README.md>
-   NodeJS Language Wrapper [ALPHA] <nodejs/README.md>
-   Custom Language Wrapper [ALPHA] <analytics/custom_metrics.md>
-   
 .. toctree::
    :maxdepth: 1
    :caption: Developer

@@ -32,13 +32,23 @@ Specialised Framework Examples
 .. toctree::
    :titlesonly:
 
-   Kubeflow Seldon E2E Pipeline <kubeflow_seldon_e2e_pipeline>
-   H2O Java MoJo <h2o_mojo>
-   Deploy your R models with the R <deep_mnist>
    NVIDIA TensorRT MNIST <nvidia_mnist>
    OpenVINO ImageNet <openvino>
    OpenVINO ImageNet Ensemble <openvino_ensemble>
    ONNX ResNet with Intel nGraph<onnx_resnet>
+
+
+Incubating Projects Examples
+-----
+
+.. toctree::
+   :titlesonly:
+
+   Kubeflow Seldon E2E Pipeline <kubeflow_seldon_e2e_pipeline>
+   H2O Java MoJo <h2o_mojo>
+   Deploy your R models with the R <deep_mnist>
+   Outlier Detection with Combiner <outlier_combiner>
+
 
 Cloud-Specific Examples
 -----
@@ -58,7 +68,6 @@ Advanced Machine Learning Insights
    :titlesonly:
 
    Explainer Alibi Anchor Tabular <alibi_anchor_tabular>
-   Outlier Detection with Combiner <outlier_combiner>
    Tabular, Text and Image Model Explainers <explainer_examples>
   
 
