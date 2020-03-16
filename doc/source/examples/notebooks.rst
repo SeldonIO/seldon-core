@@ -67,7 +67,6 @@ Advanced Machine Learning Insights
 .. toctree::
    :titlesonly:
 
-   Explainer Alibi Anchor Tabular <alibi_anchor_tabular>
    Tabular, Text and Image Model Explainers <explainer_examples>
   
 
