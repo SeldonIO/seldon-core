@@ -1,0 +1,27 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  labels:
+    app: seldon
+  name: loanclassifier
+spec:
+  name: loanclassifier
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: loanclassifier:0.1
+          name: model
+    graph:
+      children: []
+      name: model
+      type: MODEL
+      endpoint:
+        type: REST
+    explainer:
+      type: "AnchorExplainer"
+      containerSpec:
+        name: "loanclassifier-explainer"
+        image: loanclassifier-explainer:0.1
+    name: loanclassifier
+    replicas: 1
