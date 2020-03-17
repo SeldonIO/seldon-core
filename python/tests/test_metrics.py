@@ -1,8 +1,10 @@
 import pytest
+import numpy as np
 from google.protobuf import json_format
 import json
 
 from seldon_core.flask_utils import SeldonMicroserviceException
+from seldon_core.wrapper import get_rest_microservice, get_metrics_microservice
 from seldon_core.proto import prediction_pb2, prediction_pb2_grpc
 from seldon_core.metrics import *
 from seldon_core.user_model import client_custom_metrics
@@ -117,3 +119,119 @@ def test_proto_tags():
     assert "TIMER" == j["metrics"][2]["type"]
     assert "mytimer" == j["metrics"][2]["key"]
     assert 1.2 == pytest.approx(j["metrics"][2]["value"], 0.01)
+
+
+class UserObject:
+    def predict(self, X, features_names):
+        logging.info("Predict called")
+        return X
+
+    def metrics(self):
+        logging.info("metrics called")
+        return [
+            {"type": "COUNTER", "key": "mycounter", "value": 1},
+            {"type": "GAUGE", "key": "mygauge", "value": 100},
+            {"type": "TIMER", "key": "mytimer", "value": 20.2},
+        ]
+
+
+def test_seldon_metrics_gauge():
+    user_object = UserObject()
+    seldon_metrics = SeldonMetrics()
+
+    app = get_rest_microservice(user_object, seldon_metrics)
+    client = app.test_client()
+
+    rv = client.get('/predict?json={"data": {"names": ["input"], "ndarray": ["data"]}}')
+    assert rv.status_code == 200
+
+    data = seldon_metrics.data[os.getpid()]
+    assert data["GAUGE", "mygauge"] == 100
+
+
+def test_seldon_metrics_counter():
+    user_object = UserObject()
+    seldon_metrics = SeldonMetrics()
+
+    app = get_rest_microservice(user_object, seldon_metrics)
+    client = app.test_client()
+
+    rv = client.get('/predict?json={"data": {"names": ["input"], "ndarray": ["data"]}}')
+    assert rv.status_code == 200
+    data = seldon_metrics.data[os.getpid()]
+    assert data["COUNTER", "mycounter"] == 1
+
+    rv = client.get('/predict?json={"data": {"names": ["input"], "ndarray": ["data"]}}')
+    assert rv.status_code == 200
+    data = seldon_metrics.data[os.getpid()]
+    assert data["COUNTER", "mycounter"] == 2
+
+
+def test_seldon_metrics_histogram():
+    user_object = UserObject()
+    seldon_metrics = SeldonMetrics()
+
+    app = get_rest_microservice(user_object, seldon_metrics)
+    client = app.test_client()
+
+    rv = client.get('/predict?json={"data": {"names": ["input"], "ndarray": ["data"]}}')
+    assert rv.status_code == 200
+    data = seldon_metrics.data[os.getpid()]
+    assert np.allclose(
+        np.histogram([20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+    )
+    assert np.allclose(data["TIMER", "mytimer"][1], 0.0202)
+
+    rv = client.get('/predict?json={"data": {"names": ["input"], "ndarray": ["data"]}}')
+    assert rv.status_code == 200
+    data = seldon_metrics.data[os.getpid()]
+    assert np.allclose(
+        np.histogram([20.2 / 1000, 20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+    )
+    assert np.allclose(data["TIMER", "mytimer"][1], 0.0404)
+
+
+def test_seldon_metrics_endpoint():
+    def _match_label(line):
+        _data, value = line.split()
+        name, labels = _data.split()[0].split("{")
+        labels = labels[:-1]
+        return name, value, eval(f"dict({labels})")
+
+    def _iterate_metrics(text):
+        for line in text.split("\n"):
+            if not line or line[0] == "#":
+                continue
+            yield _match_label(line)
+
+    user_object = UserObject()
+    seldon_metrics = SeldonMetrics()
+
+    app = get_rest_microservice(user_object, seldon_metrics)
+    client = app.test_client()
+
+    metrics_app = get_metrics_microservice(seldon_metrics)
+    metrics_client = metrics_app.test_client()
+
+    rv = metrics_client.get("/metrics")
+    assert rv.status_code == 200
+    assert rv.data.decode() == ""
+
+    rv = client.get('/predict?json={"data": {"names": ["input"], "ndarray": ["data"]}}')
+    rv = metrics_client.get("/metrics")
+    text = rv.data.decode()
+
+    timer_present = False
+    for name, value, labels in _iterate_metrics(text):
+        if name == "mytimer_bucket":
+            timer_present = True
+
+        if name == "mycounter_total":
+            assert value == "1.0"
+            assert labels["worker_id"] == str(os.getpid())
+
+        if name == "mygauge":
+            assert value == "100.0"
+            assert labels["worker_id"] == str(os.getpid())
+
+    assert timer_present

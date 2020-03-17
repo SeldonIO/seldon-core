@@ -31,7 +31,9 @@ def start_microservice(app_location, tracing=False, grpc=False, envs={}):
                 "PYTHONUNBUFFERED": "x",
                 "PYTHONPATH": app_location,
                 "APP_HOST": "127.0.0.1",
-                "SERVICE_PORT_ENV_NAME": "5000",
+                "PREDICTIVE_UNIT_SERVICE_PORT": "5000",
+                "PREDICTIVE_UNIT_METRICS_SERVICE_PORT": "6005",
+                "PREDICTIVE_UNIT_METRICS_ENDPOINT": "/metrics-endpoint",
             }
         )
         with open(join(app_location, ".s2i", "environment")) as fh:
@@ -131,6 +133,16 @@ def test_model_template_app_rest_metrics(tracing):
             "data": {"names": ["t:0", "t:1"], "ndarray": [[1.0, 2.0]]},
             "meta": {"metrics": [{"key": "mygauge", "type": "GAUGE", "value": 100}]},
         }
+
+
+@pytest.mark.parametrize("tracing", [(False), (True)])
+def test_model_template_app_rest_metrics_endpoint(tracing):
+    with start_microservice(
+        join(dirname(__file__), "model-template-app"), tracing=tracing
+    ):
+        response = requests.get("http://127.0.0.1:6005/metrics-endpoint")
+        # This just tests if endpoint exists and replies with 200
+        assert response.status_code == 200
 
 
 @pytest.mark.parametrize("tracing", [(False), (True)])
