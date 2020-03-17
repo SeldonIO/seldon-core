@@ -119,7 +119,7 @@ if __name__ == "__main__":
                 res["spec"]["template"]["spec"]["containers"][0]["resources"]["requests"][
                     "memory"] = helm_value("manager.memoryRequest")
                 res["spec"]["template"]["spec"]["containers"][0]["resources"]["limits"][
-                    "cpu"] = helm_value("manager.cpulimit")
+                    "cpu"] = helm_value("manager.cpuLimit")
                 res["spec"]["template"]["spec"]["containers"][0]["resources"]["limits"][
                     "memory"] = helm_value("manager.memoryLimit")
 

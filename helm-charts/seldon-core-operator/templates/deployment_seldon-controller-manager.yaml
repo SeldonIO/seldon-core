@@ -104,7 +104,7 @@ spec:
           protocol: TCP
         resources:
           limits:
-            cpu: '{{ .Values.manager.cpulimit }}'
+            cpu: '{{ .Values.manager.cpuLimit }}'
             memory: '{{ .Values.manager.memoryLimit }}'
           requests:
             cpu: '{{ .Values.manager.cpuRequest }}'
