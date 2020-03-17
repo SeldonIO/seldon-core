@@ -90,7 +90,7 @@ func createTensorflowServingContainer(pu *machinelearningv1.PredictiveUnit, useP
 	}
 }
 
-func addTFServerContainer(r *SeldonDeploymentReconciler, pu *machinelearningv1.PredictiveUnit, p *machinelearningv1.PredictorSpec, deploy *appsv1.Deployment, serverConfig machinelearningv1.PredictorServerConfig) error {
+func addTFServerContainer(mlDep *machinelearningv1.SeldonDeployment, r *SeldonDeploymentReconciler, pu *machinelearningv1.PredictiveUnit, p *machinelearningv1.PredictorSpec, deploy *appsv1.Deployment, serverConfig machinelearningv1.PredictorServerConfig) error {
 
 	if len(*pu.Implementation) > 0 && (serverConfig.Tensorflow || serverConfig.TensorflowImage != "") {
 
@@ -100,7 +100,7 @@ func addTFServerContainer(r *SeldonDeploymentReconciler, pu *machinelearningv1.P
 		c := utils.GetContainerForDeployment(deploy, pu.Name)
 
 		var tfServingContainer *v1.Container
-		if p.Protocol == machinelearningv1.ProtocolTensorflow {
+		if mlDep.Spec.Protocol == machinelearningv1.ProtocolTensorflow {
 			tfServingContainer = createTensorflowServingContainer(pu, true)
 			containers := make([]v1.Container, len(deploy.Spec.Template.Spec.Containers))
 			for i, ctmp := range deploy.Spec.Template.Spec.Containers {
@@ -287,7 +287,7 @@ func createStandaloneModelServers(r *SeldonDeploymentReconciler, mlDep *machinel
 		if err := addModelDefaultServers(r, pu, p, deploy, ServerConfig); err != nil {
 			return err
 		}
-		if err := addTFServerContainer(r, pu, p, deploy, ServerConfig); err != nil {
+		if err := addTFServerContainer(mlDep, r, pu, p, deploy, ServerConfig); err != nil {
 			return err
 		}
 	}

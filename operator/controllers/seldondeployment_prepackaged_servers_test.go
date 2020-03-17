@@ -198,11 +198,11 @@ var _ = Describe("Create a prepacked tfserving server for tensorflow protocol an
 				Namespace: key.Namespace,
 			},
 			Spec: machinelearningv1.SeldonDeploymentSpec{
-				Name: name,
+				Name:     name,
+				Protocol: machinelearningv1.ProtocolTensorflow,
 				Predictors: []machinelearningv1.PredictorSpec{
 					{
-						Name:     "p1",
-						Protocol: machinelearningv1.ProtocolTensorflow,
+						Name: "p1",
 						Graph: &machinelearningv1.PredictiveUnit{
 							Name:           modelName,
 							Type:           &modelType,
@@ -324,12 +324,12 @@ var _ = Describe("Create a prepacked tfserving server for tensorflow protocol an
 				Namespace: key.Namespace,
 			},
 			Spec: machinelearningv1.SeldonDeploymentSpec{
-				Name: name,
+				Name:      name,
+				Protocol:  machinelearningv1.ProtocolTensorflow,
+				Transport: machinelearningv1.TransportGrpc,
 				Predictors: []machinelearningv1.PredictorSpec{
 					{
-						Name:      "p1",
-						Protocol:  machinelearningv1.ProtocolTensorflow,
-						Transport: machinelearningv1.TransportGrpc,
+						Name: "p1",
 						Graph: &machinelearningv1.PredictiveUnit{
 							Name:           modelName,
 							Type:           &modelType,
