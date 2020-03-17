@@ -348,6 +348,42 @@ def test_transform_output_passes_through_tags():
     assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
 
 
+def test_transform_input_passes_through_metrics():
+    user_object = UserObject()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+    rv = client.get(
+        '/transform-input?json={"meta":{"metrics":[{"key":"request_gauge","type":"GAUGE","value":100}]},"data":{"ndarray":[]}}'
+    )
+    j = json.loads(rv.data)
+    logging.info(j)
+    assert rv.status_code == 200
+    assert j["meta"]["tags"] == {"mytag": 1}
+    assert j["meta"]["metrics"][0]["key"] == "request_gauge"
+    assert j["meta"]["metrics"][0]["value"] == 100
+
+    assert j["meta"]["metrics"][1]["key"] == user_object.metrics()[0]["key"]
+    assert j["meta"]["metrics"][1]["value"] == user_object.metrics()[0]["value"]
+
+
+def test_transform_output_passes_through_metrics():
+    user_object = UserObject()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+    rv = client.get(
+        '/transform-output?json={"meta":{"metrics":[{"key":"request_gauge","type":"GAUGE","value":100}]},"data":{"ndarray":[]}}'
+    )
+    j = json.loads(rv.data)
+    logging.info(j)
+    assert rv.status_code == 200
+    assert j["meta"]["tags"] == {"mytag": 1}
+    assert j["meta"]["metrics"][0]["key"] == "request_gauge"
+    assert j["meta"]["metrics"][0]["value"] == 100
+
+    assert j["meta"]["metrics"][1]["key"] == user_object.metrics()[0]["key"]
+    assert j["meta"]["metrics"][1]["value"] == user_object.metrics()[0]["value"]
+
+
 def test_transformer_output_ok():
     user_object = UserObject()
     app = get_rest_microservice(user_object)
@@ -654,6 +690,58 @@ def test_transform_proto_output_passes_through_tags():
     assert j["meta"]["tags"] == {"foo": "bar", "mytag": 1}
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
     assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
+    assert j["data"]["tensor"]["shape"] == [2, 1]
+    assert j["data"]["tensor"]["values"] == [1, 2]
+
+
+def test_transform_proto_input_passes_through_metrics():
+    user_object = UserObject()
+    app = SeldonModelGRPC(user_object)
+    arr = np.array([1, 2])
+    datadef = prediction_pb2.DefaultData(
+        tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
+    )
+    meta = prediction_pb2.Meta()
+    json_format.ParseDict(
+        {"metrics": [{"key": "request_gauge", "type": "GAUGE", "value": 100}]}, meta
+    )
+    request = prediction_pb2.SeldonMessage(data=datadef, meta=meta)
+    resp = app.TransformInput(request, None)
+    jStr = json_format.MessageToJson(resp)
+    j = json.loads(jStr)
+    logging.info(j)
+    assert j["meta"]["metrics"][0]["key"] == "request_gauge"
+    assert j["meta"]["metrics"][0]["value"] == 100
+
+    assert j["meta"]["metrics"][1]["key"] == user_object.metrics()[0]["key"]
+    assert j["meta"]["metrics"][1]["value"] == user_object.metrics()[0]["value"]
+
+    assert j["data"]["tensor"]["shape"] == [2, 1]
+    assert j["data"]["tensor"]["values"] == [1, 2]
+
+
+def test_transform_proto_output_passes_through_metrics():
+    user_object = UserObject()
+    app = SeldonModelGRPC(user_object)
+    arr = np.array([1, 2])
+    datadef = prediction_pb2.DefaultData(
+        tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
+    )
+    meta = prediction_pb2.Meta()
+    json_format.ParseDict(
+        {"metrics": [{"key": "request_gauge", "type": "GAUGE", "value": 100}]}, meta
+    )
+    request = prediction_pb2.SeldonMessage(data=datadef, meta=meta)
+    resp = app.TransformOutput(request, None)
+    jStr = json_format.MessageToJson(resp)
+    j = json.loads(jStr)
+    logging.info(j)
+    assert j["meta"]["metrics"][0]["key"] == "request_gauge"
+    assert j["meta"]["metrics"][0]["value"] == 100
+
+    assert j["meta"]["metrics"][1]["key"] == user_object.metrics()[0]["key"]
+    assert j["meta"]["metrics"][1]["value"] == user_object.metrics()[0]["value"]
+
     assert j["data"]["tensor"]["shape"] == [2, 1]
     assert j["data"]["tensor"]["values"] == [1, 2]
 

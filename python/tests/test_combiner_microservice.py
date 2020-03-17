@@ -123,6 +123,35 @@ def test_aggreate_combines_tags():
     assert j["data"]["ndarray"] == [0]
 
 
+def test_aggreate_combines_metrics():
+    user_object = UserObject()
+    app = get_rest_microservice(user_object)
+    client = app.test_client()
+    msgs = (
+        "["
+        '{"meta":{"metrics":[{"key":"request_gauge_1","type":"GAUGE","value":100}]}, "data":{"ndarray":[0]}},'
+        '{"meta":{"metrics":[{"key":"request_gauge_2","type":"GAUGE","value":200}]}, "data":{"ndarray":[1]}}'
+        "]"
+    )
+    # Note: double "{{}}" used to escape for string formatting
+    rv = client.get('/aggregate?json={{"seldonMessages":{}}}'.format(msgs))
+    logging.info(rv)
+    j = json.loads(rv.data)
+    logging.info(j)
+    assert rv.status_code == 200
+    assert j["meta"]["tags"] == {"mytag": 1}
+
+    assert j["meta"]["metrics"][0]["key"] == "request_gauge_1"
+    assert j["meta"]["metrics"][0]["value"] == 100
+
+    assert j["meta"]["metrics"][1]["key"] == "request_gauge_2"
+    assert j["meta"]["metrics"][1]["value"] == 200
+
+    assert j["meta"]["metrics"][2]["key"] == user_object.metrics()[0]["key"]
+    assert j["meta"]["metrics"][2]["value"] == user_object.metrics()[0]["value"]
+    assert j["data"]["ndarray"] == [0]
+
+
 def test_aggreate_ok_list():
     user_object = UserObject()
     app = get_rest_microservice(user_object)
@@ -328,6 +357,51 @@ def test_aggregate_proto_combines_tags():
     # add default type
     assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
     assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
+    assert j["data"]["tensor"]["shape"] == [2, 1]
+    assert j["data"]["tensor"]["values"] == [1, 2]
+
+
+def test_aggregate_proto_combines_metrics():
+    user_object = UserObject()
+    app = SeldonModelGRPC(user_object)
+
+    arr1 = np.array([1, 2])
+    meta1 = prediction_pb2.Meta()
+    json_format.ParseDict(
+        {"metrics": [{"key": "request_gauge_1", "type": "GAUGE", "value": 100}]}, meta1
+    )
+    datadef1 = prediction_pb2.DefaultData(
+        tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr1)
+    )
+
+    arr2 = np.array([3, 4])
+    meta2 = prediction_pb2.Meta()
+    json_format.ParseDict(
+        {"metrics": [{"key": "request_gauge_2", "type": "GAUGE", "value": 200}]}, meta2
+    )
+    datadef2 = prediction_pb2.DefaultData(
+        tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr2)
+    )
+
+    msg1 = prediction_pb2.SeldonMessage(data=datadef1, meta=meta1)
+    msg2 = prediction_pb2.SeldonMessage(data=datadef2, meta=meta2)
+    request = prediction_pb2.SeldonMessageList(seldonMessages=[msg1, msg2])
+    resp = app.Aggregate(request, None)
+    jStr = json_format.MessageToJson(resp)
+    j = json.loads(jStr)
+    logging.info(j)
+
+    assert j["meta"]["tags"] == {"mytag": 1}
+
+    assert j["meta"]["metrics"][0]["key"] == "request_gauge_1"
+    assert j["meta"]["metrics"][0]["value"] == 100
+
+    assert j["meta"]["metrics"][1]["key"] == "request_gauge_2"
+    assert j["meta"]["metrics"][1]["value"] == 200
+
+    assert j["meta"]["metrics"][2]["key"] == user_object.metrics()[0]["key"]
+    assert j["meta"]["metrics"][2]["value"] == user_object.metrics()[0]["value"]
+
     assert j["data"]["tensor"]["shape"] == [2, 1]
     assert j["data"]["tensor"]["values"] == [1, 2]
 
