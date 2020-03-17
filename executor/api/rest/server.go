@@ -141,9 +141,13 @@ func (r *SeldonRestApi) Initialise() {
 
 func puidHeader(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if puid := r.Header.Get(payload.SeldonPUIDHeader); puid == "" {
-			r.Header.Set(payload.SeldonPUIDHeader, guuid.New().String())
-			w.Header().Set(payload.SeldonPUIDHeader, guuid.New().String())
+		puid := r.Header.Get(payload.SeldonPUIDHeader)
+		if len(puid) == 0 {
+			puid = guuid.New().String()
+			r.Header.Set(payload.SeldonPUIDHeader, puid)
+		}
+		if req_puid := w.Header().Get(payload.SeldonPUIDHeader); len(req_puid) == 0 {
+			w.Header().Set(payload.SeldonPUIDHeader, puid)
 		}
 
 		next.ServeHTTP(w, r)
