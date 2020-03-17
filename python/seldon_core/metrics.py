@@ -19,6 +19,7 @@ import os
 
 logger = logging.getLogger(__name__)
 
+NONIMPLEMENTED_MSG = "NOT_IMPLEMENTED"
 
 ENV_SELDON_DEPLOYMENT_NAME = "SELDON_DEPLOYMENT_ID"
 ENV_MODEL_NAME = "PREDICTIVE_UNIT_ID"
@@ -44,18 +45,18 @@ LABELS = [
     "predictor_version",
 ]
 
-image = os.environ.get(ENV_MODEL_IMAGE, "UNDEFINED:UNDEFINED")
+image = os.environ.get(ENV_MODEL_IMAGE, f"{NONIMPLEMENTED_MSG}:{NONIMPLEMENTED_MSG}")
 image_name, image_version = image.split(":")
 predictor_version = json.loads(os.environ.get(ENV_PREDICTOR_LABELS, "{}")).get(
-    "version", "UNDERFINED"
+    "version", f"{NONIMPLEMENTED_MSG}"
 )
 
 my_labels = {
-    "seldon_deployment_name": os.environ.get(ENV_SELDON_DEPLOYMENT_NAME, "UNDEFINED"),
-    "model_name": os.environ.get(ENV_MODEL_NAME, "UNDEFINED"),
+    "seldon_deployment_name": os.environ.get(ENV_SELDON_DEPLOYMENT_NAME, f"{NONIMPLEMENTED_MSG}"),
+    "model_name": os.environ.get(ENV_MODEL_NAME, f"{NONIMPLEMENTED_MSG}"),
     "image_name": image_name,
     "image_version": image_version,
-    "predictor_name": os.environ.get(ENV_PREDICTOR_NAME, "UNDEFINED"),
+    "predictor_name": os.environ.get(ENV_PREDICTOR_NAME, f"{NONIMPLEMENTED_MSG}"),
     "predictor_version": predictor_version,
 }
 
