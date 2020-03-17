@@ -4010,8 +4010,6 @@ spec:
                     type: object
                   name:
                     type: string
-                  protocol:
-                    type: string
                   replicas:
                     format: int32
                     type: integer
@@ -4124,13 +4122,15 @@ spec:
                   traffic:
                     format: int32
                     type: integer
-                  transport:
-                    type: string
                 required:
                 - graph
                 - name
                 type: object
               type: array
+            protocol:
+              type: string
+            transport:
+              type: string
           required:
           - predictors
           type: object

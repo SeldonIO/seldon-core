@@ -79,8 +79,6 @@ spec:
           value: ""
         - name: USE_EXECUTOR
           value: "true"
-        - name: EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT
-          value: ""
         - name: EXECUTOR_CONTAINER_IMAGE_AND_VERSION
           value: seldonio/seldon-core-executor:1.1.0-SNAPSHOT
         - name: EXECUTOR_CONTAINER_IMAGE_PULL_POLICY
@@ -95,6 +93,8 @@ spec:
           value: "8888"          
         - name: EXECUTOR_CONTAINER_SERVICE_ACCOUNT_NAME
           value: default
+        - name: EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX
+          value: "http://default-broker."
         image: controller:latest
         name: manager
         resources:

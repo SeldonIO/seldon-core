@@ -85,8 +85,6 @@ spec:
           value: '{{ .Values.istio.tlsMode }}'
         - name: USE_EXECUTOR
           value: '{{ .Values.executor.enabled }}'
-        - name: EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT
-          value: ''
         - name: EXECUTOR_CONTAINER_IMAGE_AND_VERSION
           value: '{{ .Values.executor.image.registry }}/{{ .Values.executor.image.repository }}:{{ .Values.executor.image.tag }}'
         - name: EXECUTOR_CONTAINER_IMAGE_PULL_POLICY
@@ -101,6 +99,8 @@ spec:
           value: '{{ .Values.executor.user }}'
         - name: EXECUTOR_CONTAINER_SERVICE_ACCOUNT_NAME
           value: '{{ .Values.executor.serviceAccount.name }}'
+        - name: EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX
+          value: '{{ .Values.executor.defaultRequestLoggerEndpointPrefix }}'
         image: '{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}'
         imagePullPolicy: '{{ .Values.image.pullPolicy }}'
         name: manager
@@ -113,11 +113,11 @@ spec:
           protocol: TCP
         resources:
           limits:
-            cpu: 500m
-            memory: 300Mi
+            cpu: '{{ .Values.manager.cpuLimit }}'
+            memory: '{{ .Values.manager.memoryLimit }}'
           requests:
-            cpu: 100m
-            memory: 200Mi
+            cpu: '{{ .Values.manager.cpuRequest }}'
+            memory: '{{ .Values.manager.memoryRequest }}'
 {{- if not .Values.createResources }}
         volumeMounts:
         - mountPath: /tmp/k8s-webhook-server/serving-certs
