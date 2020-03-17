@@ -1,0 +1,43 @@
+{
+  "apiVersion": "machinelearning.seldon.io/v1alpha2",
+  "kind": "SeldonDeployment",
+  "metadata": { "name": "news-classifier" },
+  "spec": {
+    "annotations": {
+      "seldon.io/engine-seldon-log-messages-externally": "true"
+    },
+    "name": "news-classifier",
+    "predictors": [
+      {
+        "componentSpecs": [
+          {
+            "spec": {
+              "containers": [
+                {
+                  "env": [{ "name": "SELDON_LOG_LEVEL", "value": "DEBUG" }],
+                  "name": "default"
+                }
+              ],
+              "terminationGracePeriodSeconds": 1
+            }
+          }
+        ],
+        "engineResources": {},
+        "explainer": { "containerSpec": { "name": "", "resources": {} } },
+        "graph": {
+          "children": [],
+          "implementation": "SKLEARN_SERVER",
+          "modelUri": "gs://news_classifier/model",
+          "name": "default",
+          "parameters": [
+            { "name": "method", "type": "STRING", "value": "predict" }
+          ]
+        },
+        "name": "default",
+        "replicas": 1,
+        "svcOrchSpec": {},
+        "traffic": 100
+      }
+    ]
+  }
+}

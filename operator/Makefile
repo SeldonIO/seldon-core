@@ -19,7 +19,7 @@ all: manager
 
 # Run tests
 test: generate fmt vet manifests generate-resources
-	go test ./controllers/...  -coverprofile cover.out
+	go test ./controllers/... ./apis/...  -coverprofile cover.out
 
 # Build manager binary
 manager: generate fmt vet

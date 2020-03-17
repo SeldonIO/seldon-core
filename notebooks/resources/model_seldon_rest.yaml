@@ -4,10 +4,10 @@ metadata:
   name: rest-seldon
 spec:
   name: restseldon
+  protocol: seldon
+  transport: rest  
   predictors:
-  - protocol: seldon
-    transport: rest
-    componentSpecs:
+  - componentSpecs:
     - spec:
         containers:
         - image: seldonio/mock_classifier_rest:1.3

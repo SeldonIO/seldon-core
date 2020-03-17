@@ -4,10 +4,10 @@ metadata:
   name: grpc-tfserving
 spec:
   name: grpctfserving
+  protocol: tensorflow
+  transport: grpc
   predictors:
-  - protocol: tensorflow
-    transport: grpc
-    componentSpecs:
+  - componentSpecs:
     - spec:
         containers:
         - args: 
