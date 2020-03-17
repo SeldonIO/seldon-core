@@ -1,0 +1,3 @@
+Get the application URL by running these commands:
+
+kubectl get ingress {{ template "fullname" . }}
