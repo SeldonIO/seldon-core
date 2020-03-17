@@ -3,6 +3,7 @@ package rest
 import (
 	"context"
 	"crypto/tls"
+	"encoding/json"
 	"github.com/golang/protobuf/jsonpb"
 	. "github.com/onsi/gomega"
 	"github.com/prometheus/client_golang/prometheus"
@@ -43,6 +44,9 @@ const (
           "name":"mymodel"
         }
 	}`
+	errorPredictResponse = `{
+       "status":"failed"
+    }`
 )
 
 func testingHTTPClient(g *GomegaWithT, handler http.Handler) (string, int, *http.Client, func()) {
@@ -111,7 +115,6 @@ func TestSimpleMethods(t *testing.T) {
 		g.Expect(smRes.GetData().GetNdarray().Values[0].GetListValue().Values[0].GetNumberValue()).Should(Equal(0.9))
 		g.Expect(smRes.GetData().GetNdarray().Values[0].GetListValue().Values[1].GetNumberValue()).Should(Equal(0.1))
 	}
-
 }
 
 func TestRouter(t *testing.T) {
@@ -275,6 +278,37 @@ func TestClientMetrics(t *testing.T) {
 
 }
 
+func TestErrorResponse(t *testing.T) {
+	t.Logf("Started")
+	g := NewGomegaWithT(t)
+	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(errorPredictResponse))
+	})
+	host, port, _, teardown := testingHTTPClient(g, h)
+
+	defer teardown()
+	predictor := v1.PredictorSpec{
+		Name:        "test",
+		Annotations: map[string]string{},
+	}
+
+	seldonRestClient, err := NewJSONRestClient(api.ProtocolSeldon, "test", &predictor, nil)
+	g.Expect(err).To(BeNil())
+
+	methods := []func(context.Context, string, string, int32, payload.SeldonPayload, map[string][]string) (payload.SeldonPayload, error){seldonRestClient.Predict}
+	for _, method := range methods {
+		resPayload, err := method(createTestContext(), "model", host, int32(port), createPayload(g), map[string][]string{})
+		g.Expect(err).ToNot(BeNil())
+
+		data := resPayload.GetPayload().([]byte)
+		var objmap map[string]interface{}
+		err = json.Unmarshal(data, &objmap)
+		g.Expect(err).To(BeNil())
+		g.Expect(string(data)).To(Equal(errorPredictResponse))
+	}
+}
+
 func TestTimeout(t *testing.T) {
 	t.Logf("Started")
 	g := NewGomegaWithT(t)
@@ -283,6 +317,7 @@ func TestTimeout(t *testing.T) {
 		w.Write([]byte(okStatusResponse))
 	})
 	host, port, _, teardown := testingHTTPClient(g, h)
+
 	defer teardown()
 	predictor := v1.PredictorSpec{
 		Name:        "test",

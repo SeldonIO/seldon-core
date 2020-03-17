@@ -30,7 +30,7 @@ func getEngineVarJson(p *machinelearningv1.PredictorSpec) (string, error) {
 	for _, compSpec := range pcopy.ComponentSpecs {
 		compSpec.Metadata.CreationTimestamp = metav1.Time{}
 	}
-	pcopy.Explainer = machinelearningv1.Explainer{}
+	pcopy.Explainer = nil
 
 	str, err := json.Marshal(pcopy)
 	if err != nil {

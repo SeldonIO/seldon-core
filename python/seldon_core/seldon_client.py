@@ -206,7 +206,7 @@ class SeldonClient(object):
         if debug:
             logger.setLevel(logging.DEBUG)
             http_client.HTTPConnection.debuglevel = 1
-        self.config = locals()
+        self.config = locals().copy()
         del self.config["self"]
         logger.debug("Configuration:" + str(self.config))
 

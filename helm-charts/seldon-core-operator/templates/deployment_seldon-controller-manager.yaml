@@ -69,6 +69,8 @@ spec:
           value: '{{ .Values.engine.logMessagesExternally }}'
         - name: PREDICTIVE_UNIT_SERVICE_PORT
           value: '{{ .Values.predictiveUnit.port }}'
+        - name: PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME
+          value: '{{ .Values.predictiveUnit.defaultEnvSecretRefName }}'
         - name: ENGINE_SERVER_GRPC_PORT
           value: '{{ .Values.engine.grpc.port }}'
         - name: ENGINE_SERVER_PORT
