@@ -321,7 +321,7 @@ def construct_response_json(
     client_request_raw: Union[List, Dict],
     client_raw_response: Union[np.ndarray, str, bytes, dict],
     meta: dict = None,
-    metrics: List[Dict] = None,
+    custom_metrics: List[Dict] = None,
 ) -> Union[List, Dict]:
     """
     This class converts a raw REST response into a JSON object that has the same structure as
@@ -412,11 +412,15 @@ def construct_response_json(
     response["meta"] = {}
     if meta:
         tags = meta.get("tags", {})
+        metrics = meta.get("metrics", [])
     else:
         tags = {}
+        metrics = []
     custom_tags = client_custom_tags(user_model)
     if custom_tags:
         tags.update(custom_tags)
+    if custom_metrics:
+        metrics.extend(custom_metrics)
     if tags:
         response["meta"]["tags"] = tags
     if metrics:
@@ -434,7 +438,7 @@ def construct_response(
     client_request: prediction_pb2.SeldonMessage,
     client_raw_response: Union[np.ndarray, str, bytes, dict],
     meta: dict = None,
-    metrics: List[Dict] = None,
+    custom_metrics: List[Dict] = None,
 ) -> prediction_pb2.SeldonMessage:
     """
 
@@ -460,11 +464,15 @@ def construct_response(
 
     if meta:
         tags = meta.get("tags", {})
+        metrics = meta.get("metrics", [])
     else:
         tags = {}
+        metrics = []
     custom_tags = client_custom_tags(user_model)
     if custom_tags:
         tags.update(custom_tags)
+    if custom_metrics:
+        metrics.extend(custom_metrics)
     if tags:
         meta_json["tags"] = tags
     if metrics:

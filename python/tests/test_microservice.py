@@ -118,6 +118,22 @@ def test_model_template_app_rest_tags(tracing):
 
 
 @pytest.mark.parametrize("tracing", [(False), (True)])
+def test_model_template_app_rest_metrics(tracing):
+    with start_microservice(
+        join(dirname(__file__), "model-template-app"), tracing=tracing
+    ):
+        data = '{"meta":{"metrics":[{"key":"mygauge","type":"GAUGE","value":100}]},"data":{"names":["a","b"],"ndarray":[[1.0,2.0]]}}'
+        response = requests.get(
+            "http://127.0.0.1:5000/predict", params="json=%s" % data
+        )
+        response.raise_for_status()
+        assert response.json() == {
+            "data": {"names": ["t:0", "t:1"], "ndarray": [[1.0, 2.0]]},
+            "meta": {"metrics": [{"key": "mygauge", "type": "GAUGE", "value": 100}]},
+        }
+
+
+@pytest.mark.parametrize("tracing", [(False), (True)])
 def test_model_template_app_rest_submodule(tracing):
     with start_microservice(
         join(dirname(__file__), "model-template-app2"), tracing=tracing
@@ -194,6 +210,34 @@ def test_model_template_app_grpc_tags(tracing):
         assert response.data.tensor.values[1] == 2
 
         assert response.meta.tags["foo"].string_value == "bar"
+
+
+@pytest.mark.parametrize("tracing", [(False), (True)])
+def test_model_template_app_grpc_metrics(tracing):
+    with start_microservice(
+        join(dirname(__file__), "model-template-app"), tracing=tracing, grpc=True
+    ):
+        data = np.array([[1, 2]])
+        datadef = prediction_pb2.DefaultData(
+            tensor=prediction_pb2.Tensor(shape=data.shape, values=data.flatten())
+        )
+
+        meta = prediction_pb2.Meta()
+        json_format.ParseDict(
+            {"metrics": [{"key": "mygauge", "type": "GAUGE", "value": 100}]}, meta
+        )
+
+        request = prediction_pb2.SeldonMessage(data=datadef, meta=meta)
+        channel = grpc.insecure_channel("0.0.0.0:5000")
+        stub = prediction_pb2_grpc.ModelStub(channel)
+        response = stub.Predict(request=request)
+        assert response.data.tensor.shape[0] == 1
+        assert response.data.tensor.shape[1] == 2
+        assert response.data.tensor.values[0] == 1
+        assert response.data.tensor.values[1] == 2
+
+        assert response.meta.metrics[0].key == "mygauge"
+        assert response.meta.metrics[0].value == 100
 
 
 def test_model_template_app_tracing_config():

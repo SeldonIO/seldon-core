@@ -370,6 +370,14 @@ def aggregate(
                 tags.update(meta.get("tags", {}))
         return {"tags": tags}
 
+    def merge_metrics(meta_list, custom_metrics):
+        metrics = []
+        for meta in meta_list:
+            if meta:
+                metrics.extend(meta.get("metrics", []))
+        metrics.extend(custom_metrics)
+        return metrics
+
     is_proto = isinstance(request, prediction_pb2.SeldonMessageList)
 
     if hasattr(user_model, "aggregate_rest"):
@@ -408,7 +416,7 @@ def aggregate(
                 request.seldonMessages[0],
                 client_response,
                 merge_meta(meta_list),
-                metrics,
+                merge_metrics(meta_list, metrics),
             )
         else:
             features_list = []
@@ -445,7 +453,7 @@ def aggregate(
                 msgs[0],
                 client_response,
                 merge_meta(meta_list),
-                metrics,
+                merge_metrics(meta_list, metrics),
             )
 
 
