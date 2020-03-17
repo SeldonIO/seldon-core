@@ -1,6 +1,7 @@
 package rest
 
 import (
+	guuid "github.com/google/uuid"
 	. "github.com/onsi/gomega"
 	"github.com/prometheus/common/expfmt"
 	"github.com/seldonio/seldon-core/executor/api"
@@ -63,6 +64,38 @@ func TestSimpleModel(t *testing.T) {
 	res := httptest.NewRecorder()
 	r.Router.ServeHTTP(res, req)
 	g.Expect(res.Code).To(Equal(200))
+}
+
+func TestHeaderResponsePuuid(t *testing.T) {
+	t.Logf("Started")
+	g := NewGomegaWithT(t)
+
+	model := v1.MODEL
+	p := v1.PredictorSpec{
+		Name: "p",
+		Graph: &v1.PredictiveUnit{
+			Type: &model,
+			Endpoint: &v1.Endpoint{
+				ServiceHost: "foo",
+				ServicePort: 9000,
+				Type:        v1.REST,
+			},
+		},
+	}
+
+	url, _ := url.Parse("http://localhost")
+	r := NewServerRestApi(&p, test.NewSeldonMessageTestClient(t, 0, nil, nil), false, url, "default", api.ProtocolSeldon, "test", "/metrics")
+	r.Initialise()
+	var data = ` {"data":{"ndarray":[1.1,2.0]}}`
+
+	req, _ := http.NewRequest("POST", "/api/v0.1/predictions", strings.NewReader(data))
+	req.Header = map[string][]string{"Content-Type": []string{"application/json"}}
+	res := httptest.NewRecorder()
+	r.Router.ServeHTTP(res, req)
+	g.Expect(res.Code).To(Equal(200))
+	// Check that the SeldonPUUIDHeader is set
+	g.Expect(len(res.Header().Get(payload.SeldonPUIDHeader))).ShouldNot(BeZero())
+	g.Expect(len(res.Header().Get(payload.SeldonPUIDHeader))).To(Equal(len(guuid.New().String())))
 }
 
 func TestModelWithServer(t *testing.T) {
