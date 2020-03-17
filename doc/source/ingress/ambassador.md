@@ -1,4 +1,4 @@
-# Deployment Options running Seldon Core with Ambassador
+# Ingress with Ambassador
 
 Seldon Core works well with [Ambassador](https://www.getambassador.io/), allowing a single ingress to be used to expose ambassador and [running machine learning deployments can then be dynamically exposed](https://kubernetes.io/blog/2018/06/07/dynamic-ingress-in-kubernetes/) through seldon-created ambassador configurations. In this doc we will discuss how your Seldon Deployments are exposed via Ambassador and how you can use both to do various production rollout strategies.
 

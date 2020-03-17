@@ -15,4 +15,5 @@ Blogs
    Overview of Openshift source-to-image use in Seldon-Core <openshift_s2i.md>
    IBM Framework for Deep Learning and Seldon-Core <https://developer.ibm.com/code/2018/06/12/serve-it-hot-deploy-your-ffdl-trained-models-using-seldon/>
    CartPole game by Reinforcement Learning <https://github.com/hypnosapos/cartpole-rl-remote/>
+   Clear Linux Deep Learning Reference Stack <https://docs.01.org/clearlinux/latest/guides/stacks/dlrs-inference.html>
 
