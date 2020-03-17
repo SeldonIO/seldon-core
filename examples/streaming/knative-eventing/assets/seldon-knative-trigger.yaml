@@ -1,0 +1,12 @@
+
+apiVersion: eventing.knative.dev/v1beta1
+kind: Trigger
+metadata:
+  name: seldon-eventing-sklearn-trigger
+spec:
+  broker: default
+  filter:
+    attributes:
+      type: io.seldon.eventing.request
+  subscriber:
+    uri: http://simple-iris-deployment-simple-iris-predictor:8000/api/v1.0/predictions

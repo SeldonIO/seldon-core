@@ -1,0 +1,17 @@
+
+# Trigger to send events to service above
+apiVersion: eventing.knative.dev/v1alpha1
+kind: Trigger
+metadata:
+  name: event-display
+spec:
+  broker: default
+  filter:
+    attributes:
+      type: io.seldon.eventing.response
+      source: io.seldon.eventing.seldondeployment
+  subscriber:
+    ref:
+      apiVersion: v1
+      kind: Service
+      name: event-display

@@ -1,0 +1,17 @@
+
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: simple-iris-deployment
+  annotations:
+    io.seldon.eventing: "enabled"
+spec:
+  name: simple-iris-spec
+  predictors:
+  - graph:
+      implementation: SKLEARN_SERVER
+      modelUri: gs://seldon-models/sklearn/iris
+      name: simple-iris-model
+      children: []
+    name: simple-iris-predictor
+    replicas: 1
