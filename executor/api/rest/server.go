@@ -23,6 +23,16 @@ import (
 	"time"
 )
 
+const (
+	CLOUDEVENTS_HEADER_ID_NAME             = "Ce-Id"
+	CLOUDEVENTS_HEADER_SPECVERSION_NAME    = "Ce-specversion"
+	CLOUDEVENTS_HEADER_SOURCE_NAME         = "Ce-Source"
+	CLOUDEVENTS_HEADER_TYPE_NAME           = "Ce-Type"
+	CLOUDEVENTS_HEADER_SPECVERSION_DEFAULT = "0.3"
+	CLOUDEVENTS_HEADER_SOURCE_DEFAULT      = "io.seldon.eventing.seldondeployment"
+	CLOUDEVENTS_HEADER_TYPE_DEFAULT        = "io.seldon.eventing.response"
+)
+
 type SeldonRestApi struct {
 	Router         *mux.Router
 	Client         client.SeldonApiClient
@@ -117,6 +127,8 @@ func (r *SeldonRestApi) Initialise() {
 	r.Router.HandleFunc("/live", r.alive)
 	r.Router.Handle(r.prometheusPath, promhttp.Handler())
 	if !r.ProbesOnly {
+		// TODO: Add if branch based on parameter passed
+		r.Router.Use(cloudeventsHeader)
 		r.Router.Use(puidHeader)
 		switch r.Protocol {
 		case api.ProtocolSeldon:
@@ -137,6 +149,19 @@ func (r *SeldonRestApi) Initialise() {
 			r.Router.NewRoute().Path("/v1/models/{" + ModelHttpPathVariable + "}/metadata").Methods("GET").HandlerFunc(r.wrapMetrics(metric.MetadataHttpServiceName, r.metadata))
 		}
 	}
+}
+
+func cloudeventsHeader(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		puid := r.Header.Get(payload.SeldonPUIDHeader)
+		w.Header().Set(CLOUDEVENTS_HEADER_ID_NAME, puid)
+		w.Header().Set(CLOUDEVENTS_HEADER_SPECVERSION_NAME, CLOUDEVENTS_HEADER_SPECVERSION_DEFAULT)
+		w.Header().Set(CLOUDEVENTS_HEADER_TYPE_NAME, CLOUDEVENTS_HEADER_TYPE_DEFAULT)
+		// TODO: Update the source to be more specific to model
+		w.Header().Set(CLOUDEVENTS_HEADER_SOURCE_NAME, CLOUDEVENTS_HEADER_SOURCE_DEFAULT)
+
+		next.ServeHTTP(w, r)
+	})
 }
 
 func puidHeader(next http.Handler) http.Handler {
