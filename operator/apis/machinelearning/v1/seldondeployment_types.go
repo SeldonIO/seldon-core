@@ -171,6 +171,8 @@ type SeldonDeploymentSpec struct {
 	OauthKey    string            `json:"oauth_key,omitempty" protobuf:"string,3,opt,name=oauth_key"`
 	OauthSecret string            `json:"oauth_secret,omitempty" protobuf:"string,4,opt,name=oauth_secret"`
 	Annotations map[string]string `json:"annotations,omitempty" protobuf:"bytes,5,opt,name=annotations"`
+	Protocol    Protocol          `json:"protocol,omitempty" protobuf:"bytes,6,opt,name=protocol"`
+	Transport   Transport         `json:"transport,omitempty" protobuf:"bytes,7,opt,name=transport"`
 }
 
 type PredictorSpec struct {
@@ -185,8 +187,6 @@ type PredictorSpec struct {
 	Traffic         int32                   `json:"traffic,omitempty" protobuf:"bytes,9,opt,name=traffic"`
 	Explainer       *Explainer              `json:"explainer,omitempty" protobuf:"bytes,10,opt,name=explainer"`
 	Shadow          bool                    `json:"shadow,omitempty" protobuf:"bytes,11,opt,name=shadow"`
-	Protocol        Protocol                `json:"protocol,omitempty" protobuf:"bytes,12,opt,name=protocol"`
-	Transport       Transport               `json:"transport,omitempty" protobuf:"bytes,13,opt,name=transport"`
 }
 
 type Protocol string

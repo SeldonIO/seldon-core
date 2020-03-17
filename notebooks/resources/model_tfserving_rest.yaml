@@ -4,10 +4,10 @@ metadata:
   name: rest-tfserving
 spec:
   name: resttfserving
+  protocol: tensorflow
+  transport: rest
   predictors:
-  - protocol: tensorflow
-    transport: rest
-    componentSpecs:
+  - componentSpecs:
     - spec:
         containers:
         - args: 
