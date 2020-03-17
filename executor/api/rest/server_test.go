@@ -66,7 +66,7 @@ func TestSimpleModel(t *testing.T) {
 	g.Expect(res.Code).To(Equal(200))
 }
 
-func TestRequestPuuidIsSet(t *testing.T) {
+func TestReponsePuuidIsSet(t *testing.T) {
 	t.Logf("Started")
 	g := NewGomegaWithT(t)
 
