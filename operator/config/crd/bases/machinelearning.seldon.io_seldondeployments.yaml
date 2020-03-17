@@ -6694,6 +6694,8 @@ spec:
                           type: object
                       type: object
                     type: array
+                  default:
+                    type: boolean
                   engineResources:
                     description: ResourceRequirements describes the compute resource
                       requirements.

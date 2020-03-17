@@ -680,6 +680,26 @@ func createContainerService(deploy *appsv1.Deployment, p machinelearningv1.Predi
 			SessionAffinity: corev1.ServiceAffinityNone,
 		},
 	}
+	switch *pu.Type {
+	case machinelearningv1.ROUTER:
+		svc.Labels[machinelearningv1.Label_router] = "true"
+	case machinelearningv1.COMBINER:
+		svc.Labels[machinelearningv1.Label_combiner] = "true"
+	case machinelearningv1.MODEL:
+		svc.Labels[machinelearningv1.Label_model] = "true"
+	case machinelearningv1.TRANSFORMER:
+		svc.Labels[machinelearningv1.Label_transformer] = "true"
+	case machinelearningv1.OUTPUT_TRANSFORMER:
+		svc.Labels[machinelearningv1.Label_output_transformer] = "true"
+	}
+	if p.Default == true {
+		svc.Labels[machinelearningv1.Label_default] = "true"
+	} else if p.Shadow == true {
+		svc.Labels[machinelearningv1.Label_shadow] = "true"
+	}
+	if p.Explainer != nil {
+		svc.Labels[machinelearningv1.Label_explainer] = "true"
+	}
 
 	//Add labels for this service to deployment
 	deploy.ObjectMeta.Labels[containerServiceKey] = containerServiceValue
@@ -738,17 +758,8 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
 						machinelearningv1.Label_seldon_id: seldonId,
-						"app":                             depName,
-						"fluentd":                         "true",
-						"model":                           "false",
-						"input-transformer":               "false",
-						"output-transformer":              "false",
-						"router":                          "false",
-						"combiner":                        "false",
-						"default":                         "false",
-						"canary":                          "false",
-						"shadow":                          "false",
-						"explainer":                       "false",
+						machinelearningv1.Label_app:       depName,
+						machinelearningv1.Label_fluentd:   "true",
 					},
 					Annotations: mlDep.Spec.Annotations,
 				},
@@ -758,7 +769,7 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 	}
 
 	if p.Shadow == true {
-		deploy.Spec.Template.ObjectMeta.Labels["shadow"] = "true"
+		deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_shadow] = "true"
 	}
 
 	if seldonPodSpec != nil {
