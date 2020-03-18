@@ -818,3 +818,51 @@ func TestValidateTrafficSum(t *testing.T) {
 	g.Expect(serr.Status().Details.Causes[0].Type).To(Equal(v12.CauseTypeFieldValueInvalid))
 	g.Expect(serr.Status().Details.Causes[0].Field).To(Equal("spec"))
 }
+
+func TestDefaultABTest(t *testing.T) {
+	g := NewGomegaWithT(t)
+	impl := RANDOM_ABTEST
+	spec := &SeldonDeploymentSpec{
+		Predictors: []PredictorSpec{
+			{
+				Name: "p1",
+				ComponentSpecs: []*SeldonPodSpec{
+					{
+						Spec: v1.PodSpec{
+							Containers: []v1.Container{
+								{
+									Image: "seldonio/mock_classifier:1.0",
+									Name:  "classifier1",
+								},
+								{
+									Image: "seldonio/mock_classifier:1.0",
+									Name:  "classifier2",
+								},
+							},
+						},
+					},
+				},
+				Graph: &PredictiveUnit{
+					Implementation: &impl,
+					Children: []PredictiveUnit{
+						{
+							Name: "classifier1",
+						},
+						{
+							Name: "classifier2",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	spec.DefaultSeldonDeployment("mydep", "default")
+	err := spec.ValidateSeldonDeployment()
+	g.Expect(err).To(BeNil())
+	graph := spec.Predictors[0].Graph
+	g.Expect(graph.Type).To(BeNil())
+	g.Expect(*graph.Implementation).To(Equal(RANDOM_ABTEST))
+	g.Expect(*graph.Children[0].Type).To(Equal(MODEL))
+	g.Expect(*graph.Children[1].Type).To(Equal(MODEL))
+}

@@ -161,7 +161,7 @@ func SetImageNameForPrepackContainer(pu *PredictiveUnit, c *corev1.Container) {
 // -----
 
 func addDefaultsToGraph(pu *PredictiveUnit) {
-	if pu.Type == nil && pu.Methods == nil {
+	if pu.Type == nil && pu.Methods == nil && pu.Implementation == nil {
 		ty := MODEL
 		pu.Type = &ty
 	}
