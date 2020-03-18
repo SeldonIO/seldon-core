@@ -22,6 +22,7 @@ import (
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"strconv"
 )
 
@@ -355,6 +356,7 @@ type SeldonDeploymentStatus struct {
 	Description      string                      `json:"description,omitempty" protobuf:"string,2,opt,name=description"`
 	DeploymentStatus map[string]DeploymentStatus `json:"deploymentStatus,omitempty" protobuf:"bytes,3,opt,name=deploymentStatus"`
 	ServiceStatus    map[string]ServiceStatus    `json:"serviceStatus,omitempty" protobuf:"bytes,4,opt,name=serviceStatus"`
+	Address          *duckv1.Addressable         `json:"address,omitempty"`
 }
 
 // +genclient

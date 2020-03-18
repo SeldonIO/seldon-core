@@ -47,6 +47,7 @@ import (
 	autoscaling "k8s.io/api/autoscaling/v2beta1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
 const (
@@ -78,6 +79,7 @@ type components struct {
 	hpas             []*autoscaling.HorizontalPodAutoscaler
 	virtualServices  []*istio.VirtualService
 	destinationRules []*istio.DestinationRule
+	addresable       *duckv1.Addressable
 }
 
 type serviceDetails struct {
