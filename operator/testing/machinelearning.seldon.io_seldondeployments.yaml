@@ -60,6 +60,8 @@ spec:
                     additionalProperties:
                       type: string
                     type: object
+                  canary:
+                    type: boolean
                   componentSpecs:
                     items:
                       properties:
@@ -5265,8 +5267,6 @@ spec:
                           type: object
                       type: object
                     type: array
-                  default:
-                    type: boolean
                   engineResources:
                     description: ResourceRequirements describes the compute resource
                       requirements.

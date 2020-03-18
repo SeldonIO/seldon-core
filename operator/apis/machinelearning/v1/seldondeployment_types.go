@@ -40,6 +40,7 @@ const (
 	Label_output_transformer = "output-transformer"
 	Label_default            = "default"
 	Label_shadow             = "shadow"
+	Label_canary             = "canary"
 	Label_explainer          = "explainer"
 
 	PODINFO_VOLUME_NAME = "podinfo"
@@ -196,7 +197,7 @@ type PredictorSpec struct {
 	Traffic         int32                   `json:"traffic,omitempty" protobuf:"bytes,9,opt,name=traffic"`
 	Explainer       *Explainer              `json:"explainer,omitempty" protobuf:"bytes,10,opt,name=explainer"`
 	Shadow          bool                    `json:"shadow,omitempty" protobuf:"bytes,11,opt,name=shadow"`
-	Default         bool                    `json:"default,omitempty" protobuf:"bytes,12,opt,name=default"`
+	Canary          bool                    `json:"canary,omitempty" protobuf:"bytes,12,opt,name=canary"`
 	Protocol        Protocol                `json:"protocol,omitempty" protobuf:"bytes,13,opt,name=protocol"`
 	Transport       Transport               `json:"transport,omitempty" protobuf:"bytes,14,opt,name=transport"`
 }
