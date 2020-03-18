@@ -172,3 +172,24 @@ Follow quay bundle upload above.
 See [testing/openshift/README.md](testing/openshift/README.md).
 
 
+## Release Process onto RedHat channels
+
+After a Seldon Release has taken place.
+
+ * Update versions of images by running above updates and ensuring images referenced in the CSV are for the last release.
+ * Run above tests to check all works ok.
+
+For community operators:
+
+ * Create a fork of https://github.com/operator-framework/community-operators and update Seldon and create a new PR
+
+For certified operators:
+
+ * Create UBI images for operator, executor and engine.
+ * Create a new release on https://connect.redhat.com/content/seldon-core with
+    * new ubi images
+    * new bundle that refrences then. TODO: create bundle from community bundle.
+
+For Marketplace:
+
+ * Update Seldon on marketplace. TODO: add link.
