@@ -197,9 +197,8 @@ type PredictorSpec struct {
 	Traffic         int32                   `json:"traffic,omitempty" protobuf:"bytes,9,opt,name=traffic"`
 	Explainer       *Explainer              `json:"explainer,omitempty" protobuf:"bytes,10,opt,name=explainer"`
 	Shadow          bool                    `json:"shadow,omitempty" protobuf:"bytes,11,opt,name=shadow"`
-	Canary          bool                    `json:"canary,omitempty" protobuf:"bytes,12,opt,name=canary"`
-	Protocol        Protocol                `json:"protocol,omitempty" protobuf:"bytes,13,opt,name=protocol"`
-	Transport       Transport               `json:"transport,omitempty" protobuf:"bytes,14,opt,name=transport"`
+	Protocol        Protocol                `json:"protocol,omitempty" protobuf:"bytes,12,opt,name=protocol"`
+	Transport       Transport               `json:"transport,omitempty" protobuf:"bytes,13,opt,name=transport"`
 }
 
 type Protocol string

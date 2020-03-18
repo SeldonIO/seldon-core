@@ -692,13 +692,13 @@ func createContainerService(deploy *appsv1.Deployment, p machinelearningv1.Predi
 	case machinelearningv1.OUTPUT_TRANSFORMER:
 		svc.Labels[machinelearningv1.Label_output_transformer] = "true"
 	}
-	if p.Shadow != true && p.Canary != true {
+	if p.Shadow != true && (p.Traffic >= 50 || p.Traffic == 0) {
 		svc.Labels[machinelearningv1.Label_default] = "true"
 	}
 	if p.Shadow == true {
 		svc.Labels[machinelearningv1.Label_shadow] = "true"
 	}
-	if p.Canary == true {
+	if p.Traffic < 50 && p.Traffic > 0 {
 		svc.Labels[machinelearningv1.Label_canary] = "true"
 	}
 	if p.Explainer != nil {

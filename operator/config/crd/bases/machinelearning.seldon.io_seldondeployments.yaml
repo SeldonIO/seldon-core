@@ -56,8 +56,6 @@ spec:
                     additionalProperties:
                       type: string
                     type: object
-                  canary:
-                    type: boolean
                   componentSpecs:
                     items:
                       properties:
