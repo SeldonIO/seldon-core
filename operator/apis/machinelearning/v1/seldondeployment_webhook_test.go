@@ -42,7 +42,7 @@ func TestValidateBadProtocol(t *testing.T) {
 	g.Expect(err).ToNot(BeNil())
 	serr := err.(*errors.StatusError)
 	g.Expect(serr.Status().Code).To(Equal(int32(422)))
-	g.Expect(len(serr.Status().Details.Causes)).To(Equal(2))
+	g.Expect(len(serr.Status().Details.Causes)).To(Equal(1))
 	g.Expect(serr.Status().Details.Causes[0].Type).To(Equal(v12.CauseTypeFieldValueInvalid))
 	g.Expect(serr.Status().Details.Causes[0].Field).To(Equal("spec"))
 }
@@ -179,7 +179,6 @@ func TestValidateMixedMultipleTransport(t *testing.T) {
 	g.Expect(serr.Status().Details.Causes[0].Type).To(Equal(v12.CauseTypeFieldValueInvalid))
 	g.Expect(serr.Status().Details.Causes[0].Field).To(Equal("spec"))
 }
-
 
 func TestDefaultSingleContainer(t *testing.T) {
 	g := NewGomegaWithT(t)
@@ -478,10 +477,10 @@ func TestPredictorProtocolGrpc(t *testing.T) {
 	C = fake.NewFakeClientWithScheme(scheme)
 	impl := PredictiveUnitImplementation(constants.PrePackedServerTensorflow)
 	spec := &SeldonDeploymentSpec{
+		Transport: TransportGrpc,
 		Predictors: []PredictorSpec{
 			{
-				Transport: TransportGrpc,
-				Name:      "p1",
+				Name: "p1",
 				Graph: &PredictiveUnit{
 					Name:           "classifier",
 					Implementation: &impl,
@@ -510,10 +509,10 @@ func TestPrepackedWithExistingContainer(t *testing.T) {
 	C = fake.NewFakeClientWithScheme(scheme)
 	impl := PredictiveUnitImplementation(constants.PrePackedServerTensorflow)
 	spec := &SeldonDeploymentSpec{
+		Transport: TransportGrpc,
 		Predictors: []PredictorSpec{
 			{
-				Transport: TransportGrpc,
-				Name:      "p1",
+				Name: "p1",
 				ComponentSpecs: []*SeldonPodSpec{
 					{
 						Spec: v1.PodSpec{

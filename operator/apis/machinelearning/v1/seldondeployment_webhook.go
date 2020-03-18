@@ -199,7 +199,7 @@ func (r *SeldonDeploymentSpec) setContainerPredictiveUnitDefaults(compSpecIdx in
 	p *PredictorSpec, pu *PredictiveUnit, con *corev1.Container) {
 
 	if pu.Endpoint == nil {
-		if p.Transport == TransportGrpc {
+		if r.Transport == TransportGrpc {
 			pu.Endpoint = &Endpoint{Type: GRPC}
 		} else {
 			pu.Endpoint = &Endpoint{Type: REST}
@@ -334,12 +334,6 @@ func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(mldepName string, namespa
 					} else {
 						pu.Endpoint = &Endpoint{Type: REST}
 					}
-				}
-				var portType string
-				if pu.Endpoint.Type == GRPC {
-					portType = "grpc"
-				} else {
-					portType = "http"
 				}
 
 				getUpdatePortNumMap(con.Name, &nextPortNum, portMap)
