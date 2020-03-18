@@ -325,17 +325,6 @@ func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(mldepName string, namespa
 					}
 				}
 
-				// Add a default REST endpoint if none provided
-				// pu needs to have an endpoint as engine reads it from SDep in order to direct graph traffic
-				// probes etc will be added later by controller
-				if pu.Endpoint == nil {
-					if r.Transport == TransportGrpc {
-						pu.Endpoint = &Endpoint{Type: GRPC}
-					} else {
-						pu.Endpoint = &Endpoint{Type: REST}
-					}
-				}
-
 				getUpdatePortNumMap(con.Name, &nextPortNum, portMap)
 				portNum := portMap[pu.Name]
 
