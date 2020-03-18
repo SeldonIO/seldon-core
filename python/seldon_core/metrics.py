@@ -52,7 +52,9 @@ predictor_version = json.loads(os.environ.get(ENV_PREDICTOR_LABELS, "{}")).get(
 )
 
 my_labels = {
-    "seldon_deployment_name": os.environ.get(ENV_SELDON_DEPLOYMENT_NAME, f"{NONIMPLEMENTED_MSG}"),
+    "seldon_deployment_name": os.environ.get(
+        ENV_SELDON_DEPLOYMENT_NAME, f"{NONIMPLEMENTED_MSG}"
+    ),
     "model_name": os.environ.get(ENV_MODEL_NAME, f"{NONIMPLEMENTED_MSG}"),
     "image_name": image_name,
     "image_version": image_version,
