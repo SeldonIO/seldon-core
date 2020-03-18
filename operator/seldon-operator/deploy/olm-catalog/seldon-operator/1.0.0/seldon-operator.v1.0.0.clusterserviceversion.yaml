@@ -52,7 +52,7 @@ metadata:
       and maintenance of machine learning systems at scale.
     repository: https://github.com/SeldonIO/seldon-core
     support: Clive Cox
-  name: seldon-operator.v1.1.0
+  name: seldon-operator.v1.0.0
   namespace: seldon-operator-system
 spec:
   apiservicedefinitions: {}
@@ -166,21 +166,6 @@ spec:
           - apps
           resources:
           - deployments/finalizers
-          verbs:
-          - get
-          - patch
-          - update
-        - apiGroups:
-          - apiextensions.k8s.io
-          resources:
-          - customresourcedefinitions
-          verbs:
-          - get
-          - list
-        - apiGroups:
-          - apiextensions.k8s.io
-          resources:
-          - customresourcedefinitions/finalizers
           verbs:
           - get
           - patch
@@ -377,8 +362,6 @@ spec:
                   valueFrom:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
-                - name: RELATED_IMAGE_EXECUTOR
-                - name: RELATED_IMAGE_ENGINE
                 - name: CREATE_RESOURCES
                   value: "true"
                 - name: POD_NAMESPACE
@@ -402,7 +385,6 @@ spec:
                   value: "false"
                 - name: PREDICTIVE_UNIT_SERVICE_PORT
                   value: "9000"
-                - name: PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME
                 - name: ENGINE_SERVER_GRPC_PORT
                   value: "5001"
                 - name: ENGINE_SERVER_PORT
@@ -430,8 +412,6 @@ spec:
                   value: "8888"
                 - name: EXECUTOR_CONTAINER_SERVICE_ACCOUNT_NAME
                   value: default
-                - name: EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX
-                  value: http://default-broker.
                 image: seldonio/seldon-core-operator:1.1.0-SNAPSHOT
                 name: manager
                 ports:
@@ -475,6 +455,14 @@ spec:
           - events
           verbs:
           - create
+        - apiGroups:
+          - ""
+          resources:
+          - configmaps
+          verbs:
+          - get
+          - list
+          - watch
         serviceAccountName: seldon-manager
     strategy: deployment
   installModes:
@@ -505,8 +493,8 @@ spec:
   minKubeVersion: 1.13.0
   provider:
     name: Seldon Technologies
-  replaces: seldon-operator.v1.0.0
+  replaces: seldonoperator.v0.1.5
   selector:
     matchLabels:
       name: seldon-operator
-  version: 1.1.0
+  version: 1.0.0
