@@ -158,6 +158,7 @@ class UserObjectLowLevel:
             "data": msg["data"],
         }
 
+
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevel])
 def test_seldon_metrics_gauge(cls):
     user_object = cls()
