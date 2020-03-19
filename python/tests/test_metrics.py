@@ -140,8 +140,24 @@ class UserObject:
         logging.info("Predict called")
         return X
 
+    def aggregate(self, X, features_names):
+        logging.info("Aggregate called")
+        return X[0]
+
+    def transform_input(self, X, feature_names):
+        logging.info("Transform input called")
+        return X
+
+    def transform_output(self, X, feature_names):
+        logging.info("Transform output called")
+        return X
+
+    def route(self, X, feature_names):
+        logging.info("Route called")
+        return 22
+
     def metrics(self):
-        logging.info("metrics called")
+        logging.info("Metrics called")
         return [
             {"type": "COUNTER", "key": "mycounter", "value": 1},
             {"type": "GAUGE", "key": "mygauge", "value": 100},
@@ -150,29 +166,60 @@ class UserObject:
 
 
 class UserObjectLowLevel:
-    def predict_raw(self, msg):
-        metrics = [
-            {"type": "COUNTER", "key": "mycounter", "value": 1},
-            {"type": "GAUGE", "key": "mygauge", "value": 100},
-            {"type": "TIMER", "key": "mytimer", "value": 20.2},
-        ]
+    _metrics = [
+        {"type": "COUNTER", "key": "mycounter", "value": 1},
+        {"type": "GAUGE", "key": "mygauge", "value": 100},
+        {"type": "TIMER", "key": "mytimer", "value": 20.2},
+    ]
 
+    def predict_raw(self, msg):
+        logging.info("Predict raw called")
         return {
-            "meta": {"metrics": metrics},
+            "meta": {"metrics": self._metrics},
             "data": {"names": ["input"], "data": ["output"]},
+        }
+
+    def aggregate_raw(self, msg):
+        logging.info("Aggregate raw called")
+        return {
+            "meta": {"metrics": self._metrics},
+            "data": {"names": ["input"], "data": ["output"]},
+        }
+
+    def transform_input_raw(self, msg):
+        logging.info("Transform input raw called")
+        return {
+            "meta": {"metrics": self._metrics},
+            "data": {"names": ["input"], "data": ["output"]},
+        }
+
+    def transform_output_raw(self, msg):
+        logging.info("Transform output raw called")
+        return {
+            "meta": {"metrics": self._metrics},
+            "data": {"names": ["input"], "data": ["output"]},
+        }
+
+    def route_raw(self, msg):
+        logging.info("Route raw called")
+        return {
+            "meta": {"metrics": self._metrics},
+            "data": {"names": ["input"], "data": [22]},
         }
 
 
 class UserObjectLowLevelGrpc:
+    _metrics = [
+        {"type": "COUNTER", "key": "mycounter", "value": 1},
+        {"type": "GAUGE", "key": "mygauge", "value": 100},
+        {"type": "TIMER", "key": "mytimer", "value": 20.2},
+    ]
+
     def predict_raw(self, msg):
-        metrics = [
-            {"type": "COUNTER", "key": "mycounter", "value": 1},
-            {"type": "GAUGE", "key": "mygauge", "value": 100},
-            {"type": "TIMER", "key": "mytimer", "value": 20.2},
-        ]
+        logging.info("Predict raw called")
 
         meta = prediction_pb2.Meta()
-        json_format.ParseDict({"metrics": metrics}, meta)
+        json_format.ParseDict({"metrics": self._metrics}, meta)
 
         arr = np.array([9, 9])
         datadef = prediction_pb2.DefaultData(
@@ -181,9 +228,61 @@ class UserObjectLowLevelGrpc:
         request = prediction_pb2.SeldonMessage(data=datadef, meta=meta)
         return request
 
+    def aggregate_raw(self, msg):
+        logging.info("Aggregate raw called")
+
+        meta = prediction_pb2.Meta()
+        json_format.ParseDict({"metrics": self._metrics}, meta)
+
+        arr = np.array([9, 9])
+        datadef = prediction_pb2.DefaultData(
+            tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
+        )
+        request = prediction_pb2.SeldonMessage(data=datadef, meta=meta)
+        return request
+
+    def transform_input_raw(self, msg):
+        logging.info("Transform input raw called")
+
+        meta = prediction_pb2.Meta()
+        json_format.ParseDict({"metrics": self._metrics}, meta)
+
+        arr = np.array([9, 9])
+        datadef = prediction_pb2.DefaultData(
+            tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
+        )
+        request = prediction_pb2.SeldonMessage(data=datadef, meta=meta)
+        return request
+
+    def transform_output_raw(self, msg):
+        logging.info("Transform output raw called")
+
+        meta = prediction_pb2.Meta()
+        json_format.ParseDict({"metrics": self._metrics}, meta)
+
+        arr = np.array([9, 9])
+        datadef = prediction_pb2.DefaultData(
+            tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
+        )
+        request = prediction_pb2.SeldonMessage(data=datadef, meta=meta)
+        return request
+
+    def route_raw(self, msg):
+        logging.info("Route raw called")
+
+        meta = prediction_pb2.Meta()
+        json_format.ParseDict({"metrics": self._metrics}, meta)
+
+        arr = np.array([22])
+        datadef = prediction_pb2.DefaultData(
+            tensor=prediction_pb2.Tensor(shape=(1, 1), values=arr)
+        )
+        request = prediction_pb2.SeldonMessage(data=datadef, meta=meta)
+        return request
+
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevel])
-def test_seldon_metrics(cls):
+def test_seldon_metrics_predict(cls):
     user_object = cls()
     seldon_metrics = SeldonMetrics()
 
@@ -213,8 +312,144 @@ def test_seldon_metrics(cls):
     assert np.allclose(data["TIMER", "mytimer"][1], 0.0404)
 
 
+@pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevel])
+def test_seldon_metrics_aggregate(cls):
+    user_object = cls()
+    seldon_metrics = SeldonMetrics()
+
+    app = get_rest_microservice(user_object, seldon_metrics)
+    client = app.test_client()
+
+    rv = client.get(
+        '/aggregate?json={"seldonMessages": [{"data": {"names": ["input"], "ndarray": ["data"]}}]}'
+    )
+    assert rv.status_code == 200
+
+    data = seldon_metrics.data[os.getpid()]
+    assert data["GAUGE", "mygauge"] == 100
+    assert data["COUNTER", "mycounter"] == 1
+    assert np.allclose(
+        np.histogram([20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+    )
+    assert np.allclose(data["TIMER", "mytimer"][1], 0.0202)
+
+    rv = client.get(
+        '/aggregate?json={"seldonMessages": [{"data": {"names": ["input"], "ndarray": ["data"]}}]}'
+    )
+    assert rv.status_code == 200
+
+    data = seldon_metrics.data[os.getpid()]
+    assert data["GAUGE", "mygauge"] == 100
+    assert data["COUNTER", "mycounter"] == 2
+    assert np.allclose(
+        np.histogram([20.2 / 1000, 20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+    )
+    assert np.allclose(data["TIMER", "mytimer"][1], 0.0404)
+
+
+@pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevel])
+def test_seldon_metrics_transform_input(cls):
+    user_object = cls()
+    seldon_metrics = SeldonMetrics()
+
+    app = get_rest_microservice(user_object, seldon_metrics)
+    client = app.test_client()
+
+    rv = client.get(
+        '/transform-input?json={"data": {"names": ["input"], "ndarray": ["data"]}}'
+    )
+    assert rv.status_code == 200
+
+    data = seldon_metrics.data[os.getpid()]
+    assert data["GAUGE", "mygauge"] == 100
+    assert data["COUNTER", "mycounter"] == 1
+    assert np.allclose(
+        np.histogram([20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+    )
+    assert np.allclose(data["TIMER", "mytimer"][1], 0.0202)
+
+    rv = client.get(
+        '/transform-input?json={"data": {"names": ["input"], "ndarray": ["data"]}}'
+    )
+    assert rv.status_code == 200
+
+    data = seldon_metrics.data[os.getpid()]
+    assert data["GAUGE", "mygauge"] == 100
+    assert data["COUNTER", "mycounter"] == 2
+    assert np.allclose(
+        np.histogram([20.2 / 1000, 20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+    )
+    assert np.allclose(data["TIMER", "mytimer"][1], 0.0404)
+
+
+@pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevel])
+def test_seldon_metrics_transform_output(cls):
+    user_object = cls()
+    seldon_metrics = SeldonMetrics()
+
+    app = get_rest_microservice(user_object, seldon_metrics)
+    client = app.test_client()
+
+    rv = client.get(
+        '/transform-output?json={"data": {"names": ["input"], "ndarray": ["data"]}}'
+    )
+    assert rv.status_code == 200
+
+    data = seldon_metrics.data[os.getpid()]
+    assert data["GAUGE", "mygauge"] == 100
+    assert data["COUNTER", "mycounter"] == 1
+    assert np.allclose(
+        np.histogram([20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+    )
+    assert np.allclose(data["TIMER", "mytimer"][1], 0.0202)
+
+    rv = client.get(
+        '/transform-output?json={"data": {"names": ["input"], "ndarray": ["data"]}}'
+    )
+    assert rv.status_code == 200
+
+    data = seldon_metrics.data[os.getpid()]
+    assert data["GAUGE", "mygauge"] == 100
+    assert data["COUNTER", "mycounter"] == 2
+    assert np.allclose(
+        np.histogram([20.2 / 1000, 20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+    )
+    assert np.allclose(data["TIMER", "mytimer"][1], 0.0404)
+
+
+@pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevel])
+def test_seldon_metrics_route(cls):
+    user_object = cls()
+    seldon_metrics = SeldonMetrics()
+
+    app = get_rest_microservice(user_object, seldon_metrics)
+    client = app.test_client()
+
+    rv = client.get('/route?json={"data": {"names": ["input"], "ndarray": ["data"]}}')
+    assert rv.status_code == 200
+
+    data = seldon_metrics.data[os.getpid()]
+    assert data["GAUGE", "mygauge"] == 100
+    assert data["COUNTER", "mycounter"] == 1
+    assert np.allclose(
+        np.histogram([20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+    )
+    assert np.allclose(data["TIMER", "mytimer"][1], 0.0202)
+
+    rv = client.get('/route?json={"data": {"names": ["input"], "ndarray": ["data"]}}')
+    assert rv.status_code == 200
+
+    data = seldon_metrics.data[os.getpid()]
+    assert data["GAUGE", "mygauge"] == 100
+    assert data["COUNTER", "mycounter"] == 2
+    assert np.allclose(
+        np.histogram([20.2 / 1000, 20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+    )
+    assert np.allclose(data["TIMER", "mytimer"][1], 0.0404)
+
+
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevelGrpc])
-def test_proto_seldon_metrics(cls):
+def test_proto_seldon_metrics_predict(cls):
     user_object = cls()
     seldon_metrics = SeldonMetrics()
 
@@ -235,6 +470,142 @@ def test_proto_seldon_metrics(cls):
     assert np.allclose(data["TIMER", "mytimer"][1], 0.0202)
 
     app.Predict(request, None)
+
+    data = seldon_metrics.data[os.getpid()]
+    assert data["GAUGE", "mygauge"] == 100
+    assert data["COUNTER", "mycounter"] == 2
+    assert np.allclose(
+        np.histogram([20.2 / 1000, 20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+    )
+    assert np.allclose(data["TIMER", "mytimer"][1], 0.0404)
+
+
+@pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevelGrpc])
+def test_proto_seldon_metrics_aggregate(cls):
+    user_object = cls()
+    seldon_metrics = SeldonMetrics()
+
+    app = SeldonModelGRPC(user_object, seldon_metrics)
+
+    arr1 = np.array([1, 2])
+    datadef1 = prediction_pb2.DefaultData(
+        tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr1)
+    )
+    arr2 = np.array([3, 4])
+    datadef2 = prediction_pb2.DefaultData(
+        tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr2)
+    )
+    msg1 = prediction_pb2.SeldonMessage(data=datadef1)
+    msg2 = prediction_pb2.SeldonMessage(data=datadef2)
+
+    request = prediction_pb2.SeldonMessageList(seldonMessages=[msg1, msg2])
+    app.Aggregate(request, None)
+
+    data = seldon_metrics.data[os.getpid()]
+    assert data["GAUGE", "mygauge"] == 100
+    assert data["COUNTER", "mycounter"] == 1
+    assert np.allclose(
+        np.histogram([20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+    )
+    assert np.allclose(data["TIMER", "mytimer"][1], 0.0202)
+
+    app.Aggregate(request, None)
+
+    data = seldon_metrics.data[os.getpid()]
+    assert data["GAUGE", "mygauge"] == 100
+    assert data["COUNTER", "mycounter"] == 2
+    assert np.allclose(
+        np.histogram([20.2 / 1000, 20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+    )
+    assert np.allclose(data["TIMER", "mytimer"][1], 0.0404)
+
+
+@pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevelGrpc])
+def test_proto_seldon_metrics_transform_input(cls):
+    user_object = cls()
+    seldon_metrics = SeldonMetrics()
+
+    app = SeldonModelGRPC(user_object, seldon_metrics)
+    datadef = prediction_pb2.DefaultData(
+        tensor=prediction_pb2.Tensor(shape=(2, 1), values=np.array([1, 2]))
+    )
+
+    request = prediction_pb2.SeldonMessage(data=datadef)
+    app.TransformInput(request, None)
+
+    data = seldon_metrics.data[os.getpid()]
+    assert data["GAUGE", "mygauge"] == 100
+    assert data["COUNTER", "mycounter"] == 1
+    assert np.allclose(
+        np.histogram([20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+    )
+    assert np.allclose(data["TIMER", "mytimer"][1], 0.0202)
+
+    app.TransformInput(request, None)
+
+    data = seldon_metrics.data[os.getpid()]
+    assert data["GAUGE", "mygauge"] == 100
+    assert data["COUNTER", "mycounter"] == 2
+    assert np.allclose(
+        np.histogram([20.2 / 1000, 20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+    )
+    assert np.allclose(data["TIMER", "mytimer"][1], 0.0404)
+
+
+@pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevelGrpc])
+def test_proto_seldon_metrics_transform_output(cls):
+    user_object = cls()
+    seldon_metrics = SeldonMetrics()
+
+    app = SeldonModelGRPC(user_object, seldon_metrics)
+    datadef = prediction_pb2.DefaultData(
+        tensor=prediction_pb2.Tensor(shape=(2, 1), values=np.array([1, 2]))
+    )
+
+    request = prediction_pb2.SeldonMessage(data=datadef)
+    app.TransformOutput(request, None)
+
+    data = seldon_metrics.data[os.getpid()]
+    assert data["GAUGE", "mygauge"] == 100
+    assert data["COUNTER", "mycounter"] == 1
+    assert np.allclose(
+        np.histogram([20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+    )
+    assert np.allclose(data["TIMER", "mytimer"][1], 0.0202)
+
+    app.TransformOutput(request, None)
+
+    data = seldon_metrics.data[os.getpid()]
+    assert data["GAUGE", "mygauge"] == 100
+    assert data["COUNTER", "mycounter"] == 2
+    assert np.allclose(
+        np.histogram([20.2 / 1000, 20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+    )
+    assert np.allclose(data["TIMER", "mytimer"][1], 0.0404)
+
+
+@pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevelGrpc])
+def test_proto_seldon_metrics_route(cls):
+    user_object = cls()
+    seldon_metrics = SeldonMetrics()
+
+    app = SeldonModelGRPC(user_object, seldon_metrics)
+    datadef = prediction_pb2.DefaultData(
+        tensor=prediction_pb2.Tensor(shape=(2, 1), values=np.array([1, 2]))
+    )
+
+    request = prediction_pb2.SeldonMessage(data=datadef)
+    app.Route(request, None)
+
+    data = seldon_metrics.data[os.getpid()]
+    assert data["GAUGE", "mygauge"] == 100
+    assert data["COUNTER", "mycounter"] == 1
+    assert np.allclose(
+        np.histogram([20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+    )
+    assert np.allclose(data["TIMER", "mytimer"][1], 0.0202)
+
+    app.Route(request, None)
 
     data = seldon_metrics.data[os.getpid()]
     assert data["GAUGE", "mygauge"] == 100
