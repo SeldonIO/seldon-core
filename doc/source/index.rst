@@ -92,7 +92,8 @@ Documentation Index
    CI/CD MLOps at Scale <analytics/cicd-mlops.md>
    Metrics with Prometheus <analytics/analytics.md>
    Payload Logging with ELK <analytics/logging.md>
-   Autoscaling <graph/autoscaling.md>
+   Distributed Tracing with Jaeger <graph/distributed-tracing.md>
+   Autoscaling in Kubernetes <graph/autoscaling.md>
       
 .. toctree::
    :maxdepth: 1
