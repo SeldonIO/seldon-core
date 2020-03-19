@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 def predict(
     user_model: Any,
     request: Union[prediction_pb2.SeldonMessage, List, Dict],
-    seldon_metrics: SeldonMetrics = None,
+    seldon_metrics: SeldonMetrics,
 ) -> Union[prediction_pb2.SeldonMessage, List, Dict]:
     """
     Call the user model to get a prediction and package the response
@@ -146,7 +146,7 @@ def send_feedback(
 def transform_input(
     user_model: Any,
     request: Union[prediction_pb2.SeldonMessage, List, Dict],
-    seldon_metrics: SeldonMetrics = None,
+    seldon_metrics: SeldonMetrics,
 ) -> Union[prediction_pb2.SeldonMessage, List, Dict]:
     """
 
@@ -213,7 +213,7 @@ def transform_input(
 def transform_output(
     user_model: Any,
     request: Union[prediction_pb2.SeldonMessage, List, Dict],
-    seldon_metrics: SeldonMetrics = None,
+    seldon_metrics: SeldonMetrics,
 ) -> Union[prediction_pb2.SeldonMessage, List, Dict]:
     """
 
@@ -280,7 +280,7 @@ def transform_output(
 def route(
     user_model: Any,
     request: Union[prediction_pb2.SeldonMessage, List, Dict],
-    seldon_metrics: SeldonMetrics = None,
+    seldon_metrics: SeldonMetrics,
 ) -> Union[prediction_pb2.SeldonMessage, List, Dict]:
     """
 
@@ -349,7 +349,7 @@ def route(
 def aggregate(
     user_model: Any,
     request: Union[prediction_pb2.SeldonMessageList, List, Dict],
-    seldon_metrics: SeldonMetrics = None,
+    seldon_metrics: SeldonMetrics,
 ) -> Union[prediction_pb2.SeldonMessage, List, Dict]:
     """
     Aggregate a list of payloads
@@ -462,7 +462,7 @@ def aggregate(
 
 
 def health_status(
-    user_model: Any, seldon_metrics: SeldonMetrics = None
+    user_model: Any, seldon_metrics: SeldonMetrics
 ) -> Union[prediction_pb2.SeldonMessage, List, Dict]:
     """
     Call the user model to check the health of the model

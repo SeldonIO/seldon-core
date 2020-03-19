@@ -5,6 +5,7 @@ from google.protobuf import json_format
 import base64
 
 from seldon_core.wrapper import get_rest_microservice, SeldonModelGRPC, get_grpc_server
+from seldon_core.metrics import SeldonMetrics
 from seldon_core.proto import prediction_pb2
 from seldon_core.utils import seldon_message_to_json
 from seldon_core.user_model import SeldonComponent
@@ -83,7 +84,8 @@ class UserObjectBad(object):
 
 def test_aggreate_ok_seldon_messages():
     user_object = UserObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get('/aggregate?json={"seldonMessages":[{"data":{"ndarray":[1]}}]}')
     logging.info(rv)
@@ -98,7 +100,8 @@ def test_aggreate_ok_seldon_messages():
 
 def test_aggreate_combines_tags():
     user_object = UserObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     msgs = (
         "["
@@ -125,7 +128,8 @@ def test_aggreate_combines_tags():
 
 def test_aggreate_combines_metrics():
     user_object = UserObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     msgs = (
         "["
@@ -154,7 +158,8 @@ def test_aggreate_combines_metrics():
 
 def test_aggreate_ok_list():
     user_object = UserObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get('/aggregate?json=[{"data":{"ndarray":[1]}}]')
     logging.info(rv)
@@ -169,7 +174,8 @@ def test_aggreate_ok_list():
 
 def test_aggreate_bad_user_object():
     user_object = UserObjectBad()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get('/aggregate?json={"seldonMessages":[{"data":{"ndarray":[1]}}]}')
     logging.info(rv)
@@ -181,7 +187,8 @@ def test_aggreate_bad_user_object():
 
 def test_aggreate_invalid_message():
     user_object = UserObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get('/aggregate?json={"wrong":[{"data":{"ndarray":[1]}}]}')
     assert rv.status_code == 400
@@ -192,7 +199,8 @@ def test_aggreate_invalid_message():
 
 def test_aggreate_no_list():
     user_object = UserObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get('/aggregate?json={"seldonMessages":{"data":{"ndarray":[1]}}}')
     assert rv.status_code == 400
@@ -203,7 +211,8 @@ def test_aggreate_no_list():
 
 def test_aggreate_bad_messages():
     user_object = UserObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get('/aggregate?json={"seldonMessages":[{"data2":{"ndarray":[1]}}]}')
     assert rv.status_code == 400
@@ -214,7 +223,8 @@ def test_aggreate_bad_messages():
 
 def test_aggreate_ok_2messages():
     user_object = UserObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get(
         '/aggregate?json={"seldonMessages":[{"data":{"ndarray":[1]}},{"data":{"ndarray":[2]}}]}'
@@ -231,7 +241,8 @@ def test_aggreate_ok_2messages():
 
 def test_aggreate_ok_bindata():
     user_object = UserObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     bdata = b"123"
     bdata_base64 = base64.b64encode(bdata).decode("utf-8")
@@ -254,7 +265,8 @@ def test_aggreate_ok_bindata():
 
 def test_aggreate_ok_strdata():
     user_object = UserObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get(
         '/aggregate?json={"seldonMessages":[{"strData":"123"},{"strData":"456"}]}'
@@ -271,7 +283,8 @@ def test_aggreate_ok_strdata():
 
 def test_aggregate_bad_metrics():
     user_object = UserObject(metrics_ok=False)
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get(
         '/aggregate?json={"seldonMessages":[{"data":{"ndarray":[1]}},{"data":{"ndarray":[2]}}]}'
@@ -283,7 +296,8 @@ def test_aggregate_bad_metrics():
 
 def test_aggreate_ok_lowlevel():
     user_object = UserObjectLowLevel()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get(
         '/aggregate?json={"seldonMessages":[{"data":{"ndarray":[1]}},{"data":{"ndarray":[2]}}]}'
@@ -440,7 +454,8 @@ def test_aggregate_proto_lowlevel_ok():
 
 def test_get_grpc_server():
     user_object = UserObject(ret_nparray=True)
-    server = get_grpc_server(user_object)
+    seldon_metrics = SeldonMetrics()
+    server = get_grpc_server(user_object, seldon_metrics)
 
 
 def test_unimplemented_aggregate_raw_on_seldon_component():
@@ -449,7 +464,8 @@ def test_unimplemented_aggregate_raw_on_seldon_component():
             return sum(Xs) * 2
 
     user_object = CustomSeldonComponent()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get(
         '/aggregate?json={"seldonMessages":[{"data":{"ndarray":[1]}},{"data":{"ndarray":[2]}}]}'
@@ -467,7 +483,8 @@ def test_unimplemented_aggregate_raw():
             return sum(Xs) * 2
 
     user_object = CustomObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get(
         '/aggregate?json={"seldonMessages":[{"data":{"ndarray":[1]}},{"data":{"ndarray":[2]}}]}'

@@ -19,7 +19,7 @@ PRED_UNIT_ID = os.environ.get("PREDICTIVE_UNIT_ID", "0")
 METRICS_ENDPOINT = os.environ.get("PREDICTIVE_UNIT_METRICS_ENDPOINT", "/metrics")
 
 
-def get_rest_microservice(user_model, seldon_metrics=None):
+def get_rest_microservice(user_model, seldon_metrics):
     app = Flask(__name__, static_url_path="")
     CORS(app)
 
@@ -209,7 +209,7 @@ class SeldonModelGRPC(object):
 
 
 def get_grpc_server(
-    user_model, seldon_metrics=None, annotations={}, trace_interceptor=None
+    user_model, seldon_metrics, annotations={}, trace_interceptor=None
 ):
     seldon_model = SeldonModelGRPC(user_model, seldon_metrics)
     options = []
