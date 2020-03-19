@@ -86,11 +86,12 @@ class SeldonMetrics:
         logger.debug("Read current metrics data from shared memory")
 
         for metrics in custom_metrics:
-            key = metrics["type"], metrics["key"]
-            if metrics["type"] == "COUNTER":
+            metrics_type = metrics.get("type", "COUNTER")
+            key = metrics_type, metrics["key"]
+            if metrics_type == "COUNTER":
                 value = data.get(key, 0)
                 data[key] = value + metrics["value"]
-            elif metrics["type"] == "TIMER":
+            elif metrics_type == "TIMER":
                 vals, sumv = data.get(key, (list(np.zeros(len(BINS) - 1)), 0))
                 # Dividing by 1000 because unit is milliseconds
                 data[key] = self._update_hist(metrics["value"] / 1000, vals, sumv)
