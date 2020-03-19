@@ -183,7 +183,7 @@ class UserObjectLowLevelGrpc:
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevel])
-def test_seldon_metrics_gauge(cls):
+def test_seldon_metrics(cls):
     user_object = cls()
     seldon_metrics = SeldonMetrics()
 
@@ -195,85 +195,7 @@ def test_seldon_metrics_gauge(cls):
 
     data = seldon_metrics.data[os.getpid()]
     assert data["GAUGE", "mygauge"] == 100
-
-
-@pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevelGrpc])
-def test_proto_seldon_metrics_gauge(cls):
-    user_object = cls()
-    seldon_metrics = SeldonMetrics()
-
-    app = SeldonModelGRPC(user_object, seldon_metrics)
-    datadef = prediction_pb2.DefaultData(
-        tensor=prediction_pb2.Tensor(shape=(2, 1), values=np.array([1, 2]))
-    )
-
-    request = prediction_pb2.SeldonMessage(data=datadef)
-    resp = app.Predict(request, None)
-
-    j = json.loads(json_format.MessageToJson(resp))
-    logging.info(j)
-
-    data = seldon_metrics.data[os.getpid()]
-    assert data["GAUGE", "mygauge"] == 100
-
-
-@pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevel])
-def test_seldon_metrics_counter(cls):
-    user_object = cls()
-    seldon_metrics = SeldonMetrics()
-
-    app = get_rest_microservice(user_object, seldon_metrics)
-    client = app.test_client()
-
-    rv = client.get('/predict?json={"data": {"names": ["input"], "ndarray": ["data"]}}')
-    assert rv.status_code == 200
-    data = seldon_metrics.data[os.getpid()]
     assert data["COUNTER", "mycounter"] == 1
-
-    rv = client.get('/predict?json={"data": {"names": ["input"], "ndarray": ["data"]}}')
-    assert rv.status_code == 200
-    data = seldon_metrics.data[os.getpid()]
-    assert data["COUNTER", "mycounter"] == 2
-
-
-@pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevelGrpc])
-def test_proto_seldon_metrics_counter(cls):
-    user_object = cls()
-    seldon_metrics = SeldonMetrics()
-
-    app = SeldonModelGRPC(user_object, seldon_metrics)
-    datadef = prediction_pb2.DefaultData(
-        tensor=prediction_pb2.Tensor(shape=(2, 1), values=np.array([1, 2]))
-    )
-
-    request = prediction_pb2.SeldonMessage(data=datadef)
-
-    resp = app.Predict(request, None)
-    j = json.loads(json_format.MessageToJson(resp))
-    logging.info(j)
-
-    data = seldon_metrics.data[os.getpid()]
-    assert data["COUNTER", "mycounter"] == 1
-
-    resp = app.Predict(request, None)
-    j = json.loads(json_format.MessageToJson(resp))
-    logging.info(j)
-
-    data = seldon_metrics.data[os.getpid()]
-    assert data["COUNTER", "mycounter"] == 2
-
-
-@pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevel])
-def test_seldon_metrics_histogram(cls):
-    user_object = cls()
-    seldon_metrics = SeldonMetrics()
-
-    app = get_rest_microservice(user_object, seldon_metrics)
-    client = app.test_client()
-
-    rv = client.get('/predict?json={"data": {"names": ["input"], "ndarray": ["data"]}}')
-    assert rv.status_code == 200
-    data = seldon_metrics.data[os.getpid()]
     assert np.allclose(
         np.histogram([20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
     )
@@ -281,7 +203,10 @@ def test_seldon_metrics_histogram(cls):
 
     rv = client.get('/predict?json={"data": {"names": ["input"], "ndarray": ["data"]}}')
     assert rv.status_code == 200
+
     data = seldon_metrics.data[os.getpid()]
+    assert data["GAUGE", "mygauge"] == 100
+    assert data["COUNTER", "mycounter"] == 2
     assert np.allclose(
         np.histogram([20.2 / 1000, 20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
     )
@@ -289,7 +214,7 @@ def test_seldon_metrics_histogram(cls):
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevelGrpc])
-def test_proto_seldon_metrics_histogram(cls):
+def test_proto_seldon_metrics(cls):
     user_object = cls()
     seldon_metrics = SeldonMetrics()
 
@@ -299,22 +224,21 @@ def test_proto_seldon_metrics_histogram(cls):
     )
 
     request = prediction_pb2.SeldonMessage(data=datadef)
-
-    resp = app.Predict(request, None)
-    j = json.loads(json_format.MessageToJson(resp))
-    logging.info(j)
+    app.Predict(request, None)
 
     data = seldon_metrics.data[os.getpid()]
+    assert data["GAUGE", "mygauge"] == 100
+    assert data["COUNTER", "mycounter"] == 1
     assert np.allclose(
         np.histogram([20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
     )
     assert np.allclose(data["TIMER", "mytimer"][1], 0.0202)
 
-    resp = app.Predict(request, None)
-    j = json.loads(json_format.MessageToJson(resp))
-    logging.info(j)
+    app.Predict(request, None)
 
     data = seldon_metrics.data[os.getpid()]
+    assert data["GAUGE", "mygauge"] == 100
+    assert data["COUNTER", "mycounter"] == 2
     assert np.allclose(
         np.histogram([20.2 / 1000, 20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
     )
