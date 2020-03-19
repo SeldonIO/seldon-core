@@ -3,6 +3,7 @@ from seldon_core.utils import (
     extract_request_parts,
     construct_response,
     json_to_seldon_message,
+    seldon_message_to_json,
     construct_response_json,
     extract_request_parts_json,
     extract_feedback_request_parts,
@@ -58,9 +59,14 @@ def predict(
         if hasattr(user_model, "predict_raw"):
             try:
                 response = user_model.predict_raw(request)
-                if seldon_metrics is not None:
-                    metrics = response.get("meta", {}).get("metrics", {})
-                    seldon_metrics.update(metrics)
+                if is_proto:
+                    metrics = (
+                        seldon_message_to_json(response.meta)
+                        .get("metrics", [])
+                    )
+                else:
+                    metrics = response.get("meta", {}).get("metrics", [])
+                seldon_metrics.update(metrics)
                 return response
             except SeldonNotImplementedError:
                 pass
@@ -177,7 +183,16 @@ def transform_input(
     else:
         if hasattr(user_model, "transform_input_raw"):
             try:
-                return user_model.transform_input_raw(request)
+                response = user_model.transform_input_raw(request)
+                if is_proto:
+                    metrics = (
+                        seldon_message_to_json(response.meta)
+                        .get("metrics", [])
+                    )
+                else:
+                    metrics = response.get("meta", {}).get("metrics", [])
+                seldon_metrics.update(metrics)
+                return response
             except SeldonNotImplementedError:
                 pass
 
@@ -244,7 +259,16 @@ def transform_output(
     else:
         if hasattr(user_model, "transform_output_raw"):
             try:
-                return user_model.transform_output_raw(request)
+                response = user_model.transform_output_raw(request)
+                if is_proto:
+                    metrics = (
+                        seldon_message_to_json(response.meta)
+                        .get("metrics", [])
+                    )
+                else:
+                    metrics = response.get("meta", {}).get("metrics", [])
+                seldon_metrics.update(metrics)
+                return response
             except SeldonNotImplementedError:
                 pass
 
@@ -305,7 +329,16 @@ def route(
     else:
         if hasattr(user_model, "route_raw"):
             try:
-                return user_model.route_raw(request)
+                response = user_model.route_raw(request)
+                if is_proto:
+                    metrics = (
+                        seldon_message_to_json(response.meta)
+                        .get("metrics", [])
+                    )
+                else:
+                    metrics = response.get("meta", {}).get("metrics", [])
+                seldon_metrics.update(metrics)
+                return response
             except SeldonNotImplementedError:
                 pass
 
@@ -393,7 +426,16 @@ def aggregate(
     else:
         if hasattr(user_model, "aggregate_raw"):
             try:
-                return user_model.aggregate_raw(request)
+                response = user_model.aggregate_raw(request)
+                if is_proto:
+                    metrics = (
+                        seldon_message_to_json(response.meta)
+                        .get("metrics", [])
+                    )
+                else:
+                    metrics = response.get("meta", {}).get("metrics", [])
+                seldon_metrics.update(metrics)
+                return response
             except SeldonNotImplementedError:
                 pass
 
