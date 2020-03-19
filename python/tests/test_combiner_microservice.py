@@ -311,7 +311,8 @@ def test_aggreate_ok_lowlevel():
 
 def test_aggregate_proto_ok():
     user_object = UserObject()
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
     arr1 = np.array([1, 2])
     datadef1 = prediction_pb2.DefaultData(
         tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr1)
@@ -337,7 +338,8 @@ def test_aggregate_proto_ok():
 
 def test_aggregate_proto_combines_tags():
     user_object = UserObject()
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
 
     arr1 = np.array([1, 2])
     meta1 = prediction_pb2.Meta()
@@ -377,7 +379,8 @@ def test_aggregate_proto_combines_tags():
 
 def test_aggregate_proto_combines_metrics():
     user_object = UserObject()
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
 
     arr1 = np.array([1, 2])
     meta1 = prediction_pb2.Meta()
@@ -422,7 +425,8 @@ def test_aggregate_proto_combines_metrics():
 
 def test_aggregate_proto_bin_data():
     user_object = UserObject()
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
     binData = b"\0\1"
     msg1 = prediction_pb2.SeldonMessage(binData=binData)
     request = prediction_pb2.SeldonMessageList(seldonMessages=[msg1])
@@ -432,7 +436,8 @@ def test_aggregate_proto_bin_data():
 
 def test_aggregate_proto_lowlevel_ok():
     user_object = UserObjectLowLevelGrpc()
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
     arr1 = np.array([1, 2])
     datadef1 = prediction_pb2.DefaultData(
         tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr1)

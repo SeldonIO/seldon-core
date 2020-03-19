@@ -242,7 +242,8 @@ def test_router_feedback_lowlevel_ok():
 
 def test_router_proto_ok():
     user_object = UserObject()
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
     arr = np.array([1, 2])
     datadef = prediction_pb2.DefaultData(
         tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
@@ -262,7 +263,8 @@ def test_router_proto_ok():
 
 def test_router_proto_lowlevel_ok():
     user_object = UserObjectLowLevelGrpc()
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
     arr = np.array([1, 2])
     datadef = prediction_pb2.DefaultData(
         tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
@@ -278,7 +280,8 @@ def test_router_proto_lowlevel_ok():
 
 def test_router_proto_lowlevel_raw_ok():
     user_object = UserObjectLowLevelRaw()
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
     arr = np.array([1, 2])
     datadef = prediction_pb2.DefaultData(
         tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
@@ -294,7 +297,8 @@ def test_router_proto_lowlevel_raw_ok():
 
 def test_proto_feedback():
     user_object = UserObject()
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
     arr = np.array([1, 2])
     datadef = prediction_pb2.DefaultData(
         tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)

@@ -732,7 +732,8 @@ def test_model_metadata():
 
 def test_proto_ok():
     user_object = UserObject()
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
     arr = np.array([1, 2])
     datadef = prediction_pb2.DefaultData(
         tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
@@ -751,7 +752,8 @@ def test_proto_ok():
 
 def test_proto_passes_through_tags():
     user_object = UserObject()
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
     arr = np.array([1, 2])
     datadef = prediction_pb2.DefaultData(
         tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
@@ -772,7 +774,8 @@ def test_proto_passes_through_tags():
 
 def test_proto_passes_through_metrics():
     user_object = UserObject()
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
     arr = np.array([1, 2])
     datadef = prediction_pb2.DefaultData(
         tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
@@ -799,7 +802,8 @@ def test_proto_passes_through_metrics():
 
 def test_proto_lowlevel():
     user_object = UserObjectLowLevelGrpc()
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
     arr = np.array([1, 2])
     datadef = prediction_pb2.DefaultData(
         tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
@@ -815,7 +819,8 @@ def test_proto_lowlevel():
 
 def test_proto_feedback():
     user_object = UserObject()
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
     arr = np.array([1, 2])
     datadef = prediction_pb2.DefaultData(
         tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
@@ -827,7 +832,8 @@ def test_proto_feedback():
 
 def test_proto_feedback_custom():
     user_object = UserObjectLowLevel()
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
     arr = np.array([1, 2])
     datadef = prediction_pb2.DefaultData(
         tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
@@ -840,7 +846,8 @@ def test_proto_feedback_custom():
 @skipif_tf_missing
 def test_proto_tftensor_ok():
     user_object = UserObject()
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
     arr = np.array([1, 2])
     datadef = prediction_pb2.DefaultData(tftensor=tf.make_tensor_proto(arr))
     request = prediction_pb2.SeldonMessage(data=datadef)
@@ -857,7 +864,8 @@ def test_proto_tftensor_ok():
 
 def test_proto_bin_data():
     user_object = UserObject()
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
     bdata = b"123"
     bdata_base64 = base64.b64encode(bdata)
     request = prediction_pb2.SeldonMessage(binData=bdata_base64)
@@ -867,7 +875,8 @@ def test_proto_bin_data():
 
 def test_proto_bin_data_nparray():
     user_object = UserObject(ret_nparray=True)
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
     binData = b"\0\1"
     request = prediction_pb2.SeldonMessage(binData=binData)
     resp = app.Predict(request, None)
@@ -885,7 +894,8 @@ def test_get_grpc_server():
 
 def test_proto_gets_meta():
     user_object = UserObject(ret_meta=True)
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
     arr = np.array([1, 2])
     datadef = prediction_pb2.DefaultData(
         tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
