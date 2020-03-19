@@ -59,12 +59,8 @@ def predict(
             try:
                 response = user_model.predict_raw(request)
                 if seldon_metrics is not None:
-                    try:
-                        seldon_metrics.update(response["meta"]["metrics"])
-                    except KeyError:
-                        pass
-                    except Exception as e:
-                        logger.warning("Failed to update SeldonMetrics")
+                    metrics = response.get("meta", {}).get("metrics", {})
+                    seldon_metrics.update(metrics)
                 return response
             except SeldonNotImplementedError:
                 pass
