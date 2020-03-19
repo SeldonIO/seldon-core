@@ -145,8 +145,22 @@ class UserObject:
         ]
 
 
-def test_seldon_metrics_gauge():
-    user_object = UserObject()
+class UserObjectLowLevel:
+    def predict_raw(self, msg):
+        metrics = [
+            {"type": "COUNTER", "key": "mycounter", "value": 1},
+            {"type": "GAUGE", "key": "mygauge", "value": 100},
+            {"type": "TIMER", "key": "mytimer", "value": 20.2},
+        ]
+
+        return {
+            "meta": {"metrics": metrics},
+            "data": msg["data"],
+        }
+
+@pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevel])
+def test_seldon_metrics_gauge(cls):
+    user_object = cls()
     seldon_metrics = SeldonMetrics()
 
     app = get_rest_microservice(user_object, seldon_metrics)
@@ -159,8 +173,9 @@ def test_seldon_metrics_gauge():
     assert data["GAUGE", "mygauge"] == 100
 
 
-def test_seldon_metrics_counter():
-    user_object = UserObject()
+@pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevel])
+def test_seldon_metrics_counter(cls):
+    user_object = cls()
     seldon_metrics = SeldonMetrics()
 
     app = get_rest_microservice(user_object, seldon_metrics)
@@ -177,8 +192,9 @@ def test_seldon_metrics_counter():
     assert data["COUNTER", "mycounter"] == 2
 
 
-def test_seldon_metrics_histogram():
-    user_object = UserObject()
+@pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevel])
+def test_seldon_metrics_histogram(cls):
+    user_object = cls()
     seldon_metrics = SeldonMetrics()
 
     app = get_rest_microservice(user_object, seldon_metrics)
@@ -201,7 +217,8 @@ def test_seldon_metrics_histogram():
     assert np.allclose(data["TIMER", "mytimer"][1], 0.0404)
 
 
-def test_seldon_metrics_endpoint():
+@pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevel])
+def test_seldon_metrics_endpoint(cls):
     def _match_label(line):
         _data, value = line.split()
         name, labels = _data.split()[0].split("{")
@@ -214,7 +231,7 @@ def test_seldon_metrics_endpoint():
                 continue
             yield _match_label(line)
 
-    user_object = UserObject()
+    user_object = cls()
     seldon_metrics = SeldonMetrics()
 
     app = get_rest_microservice(user_object, seldon_metrics)

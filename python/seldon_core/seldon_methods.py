@@ -57,7 +57,15 @@ def predict(
     else:
         if hasattr(user_model, "predict_raw"):
             try:
-                return user_model.predict_raw(request)
+                response = user_model.predict_raw(request)
+                if seldon_metrics is not None:
+                    try:
+                        seldon_metrics.update(response["meta"]["metrics"])
+                    except KeyError:
+                        pass
+                    except Exception as e:
+                        logger.warning("Failed to update SeldonMetrics")
+                return response
             except SeldonNotImplementedError:
                 pass
 
