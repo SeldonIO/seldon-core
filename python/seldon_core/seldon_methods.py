@@ -60,10 +60,7 @@ def predict(
             try:
                 response = user_model.predict_raw(request)
                 if is_proto:
-                    metrics = (
-                        seldon_message_to_json(response.meta)
-                        .get("metrics", [])
-                    )
+                    metrics = seldon_message_to_json(response.meta).get("metrics", [])
                 else:
                     metrics = response.get("meta", {}).get("metrics", [])
                 seldon_metrics.update(metrics)
@@ -185,10 +182,7 @@ def transform_input(
             try:
                 response = user_model.transform_input_raw(request)
                 if is_proto:
-                    metrics = (
-                        seldon_message_to_json(response.meta)
-                        .get("metrics", [])
-                    )
+                    metrics = seldon_message_to_json(response.meta).get("metrics", [])
                 else:
                     metrics = response.get("meta", {}).get("metrics", [])
                 seldon_metrics.update(metrics)
@@ -261,10 +255,7 @@ def transform_output(
             try:
                 response = user_model.transform_output_raw(request)
                 if is_proto:
-                    metrics = (
-                        seldon_message_to_json(response.meta)
-                        .get("metrics", [])
-                    )
+                    metrics = seldon_message_to_json(response.meta).get("metrics", [])
                 else:
                     metrics = response.get("meta", {}).get("metrics", [])
                 seldon_metrics.update(metrics)
@@ -331,10 +322,7 @@ def route(
             try:
                 response = user_model.route_raw(request)
                 if is_proto:
-                    metrics = (
-                        seldon_message_to_json(response.meta)
-                        .get("metrics", [])
-                    )
+                    metrics = seldon_message_to_json(response.meta).get("metrics", [])
                 else:
                     metrics = response.get("meta", {}).get("metrics", [])
                 seldon_metrics.update(metrics)
@@ -428,10 +416,7 @@ def aggregate(
             try:
                 response = user_model.aggregate_raw(request)
                 if is_proto:
-                    metrics = (
-                        seldon_message_to_json(response.meta)
-                        .get("metrics", [])
-                    )
+                    metrics = seldon_message_to_json(response.meta).get("metrics", [])
                 else:
                     metrics = response.get("meta", {}).get("metrics", [])
                 seldon_metrics.update(metrics)
