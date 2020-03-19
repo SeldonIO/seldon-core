@@ -7,7 +7,11 @@ import json
 
 from seldon_core.flask_utils import SeldonMicroserviceException
 from seldon_core.proto import prediction_pb2
-from seldon_core.wrapper import get_rest_microservice, get_metrics_microservice
+from seldon_core.wrapper import (
+    get_rest_microservice,
+    get_metrics_microservice,
+    SeldonModelGRPC,
+)
 from seldon_core.metrics import (
     SeldonMetrics,
     create_counter,
@@ -155,8 +159,27 @@ class UserObjectLowLevel:
 
         return {
             "meta": {"metrics": metrics},
-            "data": msg["data"],
+            "data": {"names": ["input"], "data": ["output"]},
         }
+
+
+class UserObjectLowLevelGrpc:
+    def predict_raw(self, msg):
+        metrics = [
+            {"type": "COUNTER", "key": "mycounter", "value": 1},
+            {"type": "GAUGE", "key": "mygauge", "value": 100},
+            {"type": "TIMER", "key": "mytimer", "value": 20.2},
+        ]
+
+        meta = prediction_pb2.Meta()
+        json_format.ParseDict({"metrics": metrics}, meta)
+
+        arr = np.array([9, 9])
+        datadef = prediction_pb2.DefaultData(
+            tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
+        )
+        request = prediction_pb2.SeldonMessage(data=datadef, meta=meta)
+        return request
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevel])
@@ -169,6 +192,26 @@ def test_seldon_metrics_gauge(cls):
 
     rv = client.get('/predict?json={"data": {"names": ["input"], "ndarray": ["data"]}}')
     assert rv.status_code == 200
+
+    data = seldon_metrics.data[os.getpid()]
+    assert data["GAUGE", "mygauge"] == 100
+
+
+@pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevelGrpc])
+def test_proto_seldon_metrics_gauge(cls):
+    user_object = cls()
+    seldon_metrics = SeldonMetrics()
+
+    app = SeldonModelGRPC(user_object, seldon_metrics)
+    datadef = prediction_pb2.DefaultData(
+        tensor=prediction_pb2.Tensor(shape=(2, 1), values=np.array([1, 2]))
+    )
+
+    request = prediction_pb2.SeldonMessage(data=datadef)
+    resp = app.Predict(request, None)
+
+    j = json.loads(json_format.MessageToJson(resp))
+    logging.info(j)
 
     data = seldon_metrics.data[os.getpid()]
     assert data["GAUGE", "mygauge"] == 100
@@ -193,6 +236,33 @@ def test_seldon_metrics_counter(cls):
     assert data["COUNTER", "mycounter"] == 2
 
 
+@pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevelGrpc])
+def test_proto_seldon_metrics_counter(cls):
+    user_object = cls()
+    seldon_metrics = SeldonMetrics()
+
+    app = SeldonModelGRPC(user_object, seldon_metrics)
+    datadef = prediction_pb2.DefaultData(
+        tensor=prediction_pb2.Tensor(shape=(2, 1), values=np.array([1, 2]))
+    )
+
+    request = prediction_pb2.SeldonMessage(data=datadef)
+
+    resp = app.Predict(request, None)
+    j = json.loads(json_format.MessageToJson(resp))
+    logging.info(j)
+
+    data = seldon_metrics.data[os.getpid()]
+    assert data["COUNTER", "mycounter"] == 1
+
+    resp = app.Predict(request, None)
+    j = json.loads(json_format.MessageToJson(resp))
+    logging.info(j)
+
+    data = seldon_metrics.data[os.getpid()]
+    assert data["COUNTER", "mycounter"] == 2
+
+
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevel])
 def test_seldon_metrics_histogram(cls):
     user_object = cls()
@@ -211,6 +281,39 @@ def test_seldon_metrics_histogram(cls):
 
     rv = client.get('/predict?json={"data": {"names": ["input"], "ndarray": ["data"]}}')
     assert rv.status_code == 200
+    data = seldon_metrics.data[os.getpid()]
+    assert np.allclose(
+        np.histogram([20.2 / 1000, 20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+    )
+    assert np.allclose(data["TIMER", "mytimer"][1], 0.0404)
+
+
+@pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevelGrpc])
+def test_proto_seldon_metrics_histogram(cls):
+    user_object = cls()
+    seldon_metrics = SeldonMetrics()
+
+    app = SeldonModelGRPC(user_object, seldon_metrics)
+    datadef = prediction_pb2.DefaultData(
+        tensor=prediction_pb2.Tensor(shape=(2, 1), values=np.array([1, 2]))
+    )
+
+    request = prediction_pb2.SeldonMessage(data=datadef)
+
+    resp = app.Predict(request, None)
+    j = json.loads(json_format.MessageToJson(resp))
+    logging.info(j)
+
+    data = seldon_metrics.data[os.getpid()]
+    assert np.allclose(
+        np.histogram([20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+    )
+    assert np.allclose(data["TIMER", "mytimer"][1], 0.0202)
+
+    resp = app.Predict(request, None)
+    j = json.loads(json_format.MessageToJson(resp))
+    logging.info(j)
+
     data = seldon_metrics.data[os.getpid()]
     assert np.allclose(
         np.histogram([20.2 / 1000, 20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
@@ -246,6 +349,57 @@ def test_seldon_metrics_endpoint(cls):
     assert rv.data.decode() == ""
 
     rv = client.get('/predict?json={"data": {"names": ["input"], "ndarray": ["data"]}}')
+    rv = metrics_client.get("/metrics")
+    text = rv.data.decode()
+
+    timer_present = False
+    for name, value, labels in _iterate_metrics(text):
+        if name == "mytimer_bucket":
+            timer_present = True
+
+        if name == "mycounter_total":
+            assert value == "1.0"
+            assert labels["worker_id"] == str(os.getpid())
+
+        if name == "mygauge":
+            assert value == "100.0"
+            assert labels["worker_id"] == str(os.getpid())
+
+    assert timer_present
+
+
+@pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevelGrpc])
+def test_proto_seldon_metrics_endpoint(cls):
+    def _match_label(line):
+        _data, value = line.split()
+        name, labels = _data.split()[0].split("{")
+        labels = labels[:-1]
+        return name, value, eval(f"dict({labels})")
+
+    def _iterate_metrics(text):
+        for line in text.split("\n"):
+            if not line or line[0] == "#":
+                continue
+            yield _match_label(line)
+
+    user_object = cls()
+    seldon_metrics = SeldonMetrics()
+
+    app = SeldonModelGRPC(user_object, seldon_metrics)
+    datadef = prediction_pb2.DefaultData(
+        tensor=prediction_pb2.Tensor(shape=(2, 1), values=np.array([1, 2]))
+    )
+
+    request = prediction_pb2.SeldonMessage(data=datadef)
+
+    metrics_app = get_metrics_microservice(seldon_metrics)
+    metrics_client = metrics_app.test_client()
+
+    rv = metrics_client.get("/metrics")
+    assert rv.status_code == 200
+    assert rv.data.decode() == ""
+
+    app.Predict(request, None)
     rv = metrics_client.get("/metrics")
     text = rv.data.decode()
 
