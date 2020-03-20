@@ -50,7 +50,7 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
             PYTHON_EXIT_VALUE=$?
             if [[ $PYTHON_EXIT_VALUE -gt 0 ]]; then
                 echo "Python build returned errors"
-                return
+                return 1
             fi
         else
             echo "SKIPPING PYTHON IMAGE BUILD..."
@@ -64,7 +64,7 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
             OPERATOR_EXIT_VALUE=$?
             if [[ $OPERATOR_EXIT_VALUE -gt 0 ]]; then
                 echo "Operator build returned errors"
-                return
+                return 1
             fi
         else
             echo "SKIPPING OPERATOR IMAGE BUILD..."
@@ -77,13 +77,13 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
             make build_protos
             PROTO_EXIT_VALUE=$?
             if [[ $PROTO_EXIT_VALUE -gt 0 ]]; then
-                return
+                return 1
             fi
             make kind_build_engine
             ENGINE_EXIT_VALUE=$?
             if [[ $ENGINE_EXIT_VALUE -gt 0 ]]; then
                 echo "Engine build returned errors"
-                return
+                return 1
             fi
         else
             echo "SKIPPING ENGINE IMAGE BUILD..."
@@ -97,7 +97,7 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
             EXECUTOR_EXIT_VALUE=$?
             if [[ $EXECUTOR_EXIT_VALUE -gt 0 ]]; then
                 echo "Executor build returned errors"
-                return
+                return 1
             fi
         else
             echo "SKIPPING EXECUTOR IMAGE BUILD..."
@@ -108,7 +108,7 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
         KIND_BUILD_EXIT_VALUE=$?
         if [[ $KIND_BUILD_EXIT_VALUE -gt 0 ]]; then
             echo "Kind build has errors"
-            return
+            return 1
         fi
 
         # KIND CLUSTER SETUP
@@ -116,7 +116,7 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
         SETUP_EXIT_VALUE=$?
         if [[ $SETUP_EXIT_VALUE -gt 0 ]]; then
             echo "Kind setup returned errors"
-            return
+            return 1
         fi
 
         ## INSTALL ALL REQUIRED DEPENDENCIES
@@ -124,7 +124,7 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
         INSTALL_EXIT_VALUE=$?
         if [[ $INSTALL_EXIT_VALUE -gt 0 ]]; then
             echo "Dependency installation returned errors"
-            return
+            return 1
         fi
 
         ## RUNNING TESTS AND CAPTURING ERROR
@@ -138,11 +138,16 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
         TEST_EXIT_VALUE=$?
         if [[ $TEST_EXIT_VALUE -gt 0 ]]; then
             echo "Test returned errors"
-            return
+            return 1
         fi
+
+        # If we reach this point return success
+        return 0
     }
     # We run the piece above
     run_end_to_end_tests
+    RUN_EXIT_VALUE=$?
+    
 else
     echo "Existing kind cluster or failure starting - ${KIND_EXIT_VALUE}"
 fi
@@ -159,6 +164,6 @@ set -o errexit
 docker ps -aq | xargs -r docker rm -f || true
 service docker stop || true
 
-# NOW THAT WE'VE CLEANED WE CAN EXIT ON TEST EXIT VALUE
-exit ${TEST_EXIT_VALUE}
+# NOW THAT WE'VE CLEANED WE CAN EXIT ON RUN EXIT VALUE
+exit ${RUN_EXIT_VALUE}
 
