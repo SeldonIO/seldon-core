@@ -40,67 +40,109 @@ export KUBECONFIG=$(kind get kubeconfig-path)
 # ONLY RUN THE FOLLOWING IF SUCCESS
 if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
 
-    echo "Files changed in python folder:"
-    git --no-pager diff --exit-code --name-only origin/master ../../python
-    PYTHON_MODIFIED=$?
-    if [[ $PYTHON_MODIFIED -gt 0 ]]; then 
-        make s2i_build_base_images
-    else
-        echo "SKIPPING PYTHON IMAGE BUILD..."
-    fi
+    run_end_to_end_tests() {
 
-    echo "Files changed in operator folder:"
-    git --no-pager diff --exit-code --name-only origin/master ../../operator
-    OPERATOR_MODIFIED=$?
-    if [[ $OPERATOR_MODIFIED -gt 0 ]]; then
-        make kind_build_operator
-        OPERATOR_EXIT_VALUE=$?
-    else
-        echo "SKIPPING OPERATOR IMAGE BUILD..."
-    fi
+        echo "Files changed in python folder:"
+        git --no-pager diff --exit-code --name-only origin/master ../../python
+        PYTHON_MODIFIED=$?
+        if [[ $PYTHON_MODIFIED -gt 0 ]]; then 
+            make s2i_build_base_images
+            PYTHON_EXIT_VALUE=$?
+            if [[ $PYTHON_EXIT_VALUE -gt 0 ]]; then
+                echo "Python build returned errors"
+                return
+            fi
+        else
+            echo "SKIPPING PYTHON IMAGE BUILD..."
+        fi
 
-    echo "Files changed in engine folder:"
-    git --no-pager diff --exit-code --name-only origin/master ../../engine
-    ENGINE_MODIFIED=$?
-    if [[ $ENGINE_MODIFIED -gt 0 ]]; then
-        make build_protos
-        PROTO_EXIT_VALUE=$?
-        make kind_build_engine
-        ENGINE_EXIT_VALUE=$?
-    else
-        echo "SKIPPING ENGINE IMAGE BUILD..."
-    fi
+        echo "Files changed in operator folder:"
+        git --no-pager diff --exit-code --name-only origin/master ../../operator
+        OPERATOR_MODIFIED=$?
+        if [[ $OPERATOR_MODIFIED -gt 0 ]]; then
+            make kind_build_operator
+            OPERATOR_EXIT_VALUE=$?
+            if [[ $OPERATOR_EXIT_VALUE -gt 0 ]]; then
+                echo "Operator build returned errors"
+                return
+            fi
+        else
+            echo "SKIPPING OPERATOR IMAGE BUILD..."
+        fi
 
-    echo "Files changed in executor folder:"
-    git --no-pager diff --exit-code --name-only origin/master ../../executor
-    EXECUTOR_MODIFIED=$?
-    if [[ $EXECUTOR_MODIFIED -gt 0 ]]; then
-        make kind_build_executor
-        EXECUTOR_EXIT_VALUE=$?
-    else
-        echo "SKIPPING EXECUTOR IMAGE BUILD..."
-    fi
+        echo "Files changed in engine folder:"
+        git --no-pager diff --exit-code --name-only origin/master ../../engine
+        ENGINE_MODIFIED=$?
+        if [[ $ENGINE_MODIFIED -gt 0 ]]; then
+            make build_protos
+            PROTO_EXIT_VALUE=$?
+            if [[ $PROTO_EXIT_VALUE -gt 0 ]]; then
+                return
+            fi
+            make kind_build_engine
+            ENGINE_EXIT_VALUE=$?
+            if [[ $ENGINE_EXIT_VALUE -gt 0 ]]; then
+                echo "Engine build returned errors"
+                return
+            fi
+        else
+            echo "SKIPPING ENGINE IMAGE BUILD..."
+        fi
 
-    echo "Build fixed models"
-    make kind_build_fixed_models
+        echo "Files changed in executor folder:"
+        git --no-pager diff --exit-code --name-only origin/master ../../executor
+        EXECUTOR_MODIFIED=$?
+        if [[ $EXECUTOR_MODIFIED -gt 0 ]]; then
+            make kind_build_executor
+            EXECUTOR_EXIT_VALUE=$?
+            if [[ $EXECUTOR_EXIT_VALUE -gt 0 ]]; then
+                echo "Executor build returned errors"
+                return
+            fi
+        else
+            echo "SKIPPING EXECUTOR IMAGE BUILD..."
+        fi
 
-    # KIND CLUSTER SETUP
-    make kind_setup
-    SETUP_EXIT_VALUE=$?
+        echo "Build fixed models"
+        make kind_build_fixed_models
+        KIND_BUILD_EXIT_VALUE=$?
+        if [[ $KIND_BUILD_EXIT_VALUE -gt 0 ]]; then
+            echo "Kind build has errors"
+            return
+        fi
 
-    ## INSTALL ALL REQUIRED DEPENDENCIES
-    make -C ../../python install_dev
-    INSTALL_EXIT_VALUE=$?
+        # KIND CLUSTER SETUP
+        make kind_setup
+        SETUP_EXIT_VALUE=$?
+        if [[ $SETUP_EXIT_VALUE -gt 0 ]]; then
+            echo "Kind setup returned errors"
+            return
+        fi
 
-    ## RUNNING TESTS AND CAPTURING ERROR
-    if [ "$TESTS_TO_RUN" == "all" ]; then
-        make test_parallel test_sequential test_notebooks
-    elif [ "$TESTS_TO_RUN" == "notebooks" ]; then
-        make test_notebooks
-    elif [ "$TESTS_TO_RUN" == "base" ]; then
-        make test_parallel test_sequential
-    fi
-    TEST_EXIT_VALUE=$?
+        ## INSTALL ALL REQUIRED DEPENDENCIES
+        make -C ../../python install_dev
+        INSTALL_EXIT_VALUE=$?
+        if [[ $INSTALL_EXIT_VALUE -gt 0 ]]; then
+            echo "Dependency installation returned errors"
+            return
+        fi
+
+        ## RUNNING TESTS AND CAPTURING ERROR
+        if [ "$TESTS_TO_RUN" == "all" ]; then
+            make test_parallel test_sequential test_notebooks
+        elif [ "$TESTS_TO_RUN" == "notebooks" ]; then
+            make test_notebooks
+        elif [ "$TESTS_TO_RUN" == "base" ]; then
+            make test_parallel test_sequential
+        fi
+        TEST_EXIT_VALUE=$?
+        if [[ $TEST_EXIT_VALUE -gt 0 ]]; then
+            echo "Test returned errors"
+            return
+        fi
+    }
+    # We run the piece above
+    run_end_to_end_tests
 else
     echo "Existing kind cluster or failure starting - ${KIND_EXIT_VALUE}"
 fi
