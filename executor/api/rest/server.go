@@ -171,7 +171,7 @@ func puidHeader(next http.Handler) http.Handler {
 			puid = guuid.New().String()
 			r.Header.Set(payload.SeldonPUIDHeader, puid)
 		}
-		if req_puid := w.Header().Get(payload.SeldonPUIDHeader); len(req_puid) == 0 {
+		if res_puid := w.Header().Get(payload.SeldonPUIDHeader); len(res_puid) == 0 {
 			w.Header().Set(payload.SeldonPUIDHeader, puid)
 		}
 
