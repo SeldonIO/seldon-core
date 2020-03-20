@@ -100,8 +100,7 @@ install:
 	pip install -r dev_requirements.txt
 	pip install -e ../../python
 
-.PHONY: test
-test: build_protos install
+test_parallel: build_protos install
 	# Run the core tests in parallel
 	pytest \
 		--verbose \
@@ -109,6 +108,8 @@ test: build_protos install
 		-W ignore \
 		-n $(PYTEST_WORKERS) \
 		-m "not sequential" 2>&1
+
+test_sequential: build_protos install
 	# Then run the s2i tests in sequence (as they currently fail in parallel
 	pytest \
 		--verbose \
@@ -121,6 +122,7 @@ test_notebooks: build_protos install
 	pytest \
 		--verbose \
 		-s \
+		-m "notebooks" \
 		-W ignore test_notebooks.py::TestNotebooks 2>&1
 
 .PHONY: clean
