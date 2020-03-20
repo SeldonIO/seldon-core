@@ -93,11 +93,11 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
     INSTALL_EXIT_VALUE=$?
 
     ## RUNNING TESTS AND CAPTURING ERROR
-    if [ "$SELDON_E2E_TESTS_TO_RUN" == "all" ]; then
+    if [ "$TESTS_TO_RUN" == "all" ]; then
         make test_parallel test_sequential test_notebooks
-    elif [ "$SELDON_E2E_TESTS_TO_RUN" == "notebooks" ]; then
+    elif [ "$TESTS_TO_RUN" == "notebooks" ]; then
         make test_notebooks
-    elif [ "$SELDON_E2E_TESTS_TO_RUN" == "base" ]; then
+    elif [ "$TESTS_TO_RUN" == "base" ]; then
         make test_parallel test_sequential
     fi
     TEST_EXIT_VALUE=$?

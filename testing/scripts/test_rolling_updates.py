@@ -27,6 +27,7 @@ with_api_gateways = pytest.mark.parametrize(
 )
 
 
+@pytest.mark.sequential
 @pytest.mark.flaky(max_runs=3)
 @with_api_gateways
 class TestRollingHttp(object):
