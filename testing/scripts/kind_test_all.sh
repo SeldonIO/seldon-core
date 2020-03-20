@@ -6,6 +6,7 @@ set -o nounset
 
 # Collect Environment Variables
 TESTS_TO_RUN="${SELDON_E2E_TESTS_TO_RUN:-all}"
+echo "Test run type is: [$TESTS_TO_RUN]"
 
 # FIRST WE START THE DOCKER DAEMON
 service docker start
