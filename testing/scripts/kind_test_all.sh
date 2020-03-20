@@ -4,6 +4,9 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
+# Collect Environment Variables
+TESTS_TO_RUN="${SELDON_E2E_TESTS_TO_RUN:-all}"
+
 # FIRST WE START THE DOCKER DAEMON
 service docker start
 # the service can be started but the docker socket not ready, wait for ready
@@ -89,7 +92,13 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
     INSTALL_EXIT_VALUE=$?
 
     ## RUNNING TESTS AND CAPTURING ERROR
-    make test
+    if [ "$SELDON_E2E_TESTS_TO_RUN" == "all" ]; then
+        make test_parallel test_sequential test_notebooks
+    elif [ "$SELDON_E2E_TESTS_TO_RUN" == "notebooks" ]; then
+        make test_notebooks
+    elif [ "$SELDON_E2E_TESTS_TO_RUN" == "base" ]; then
+        make test_parallel test_sequential
+    fi
     TEST_EXIT_VALUE=$?
 else
     echo "Existing kind cluster or failure starting - ${KIND_EXIT_VALUE}"
