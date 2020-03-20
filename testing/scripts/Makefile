@@ -107,7 +107,7 @@ test_parallel: build_protos install
 		-s \
 		-W ignore \
 		-n $(PYTEST_WORKERS) \
-		-m "not sequential" 2>&1
+		-m "not sequential and not notebooks" 2>&1
 
 test_sequential: build_protos install
 	# Then run the s2i tests in sequence (as they currently fail in parallel
