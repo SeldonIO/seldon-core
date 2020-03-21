@@ -1,24 +1,21 @@
 # Seldon Core Real Time Stream Processing with KNative Eventing 
 
-In this example we will show how you can enable real time stream processing in Seldon Core by leveraging KNative Eventing.
+In this example we will show how you can enable real time stream processing in Seldon Core by leveraging the KNative Eventing integration.
 
-In this example we will deploy a simple model containerised with Seldon Core and we will leverage its integration with KNative Eventing which will allow us to connect it so it can receive cloud events as requests and return a cloud event response which can be collected by another component.
+In this example we will deploy a simple model containerised with Seldon Core and we will leverage the basic Seldon Core  integration with KNative Eventing which will allow us to connect it so it can receive cloud events as requests and return a cloudevent-enabled response which can be collected by other components.
 
 ## Pre-requisites
 
 You will require the following in order to go ahead:
-* Seldon Core (with all dependencies)
-* KNative Eventing
-* Istio 
+* Istio 1.42+ Installed ([Documentation Instructions](https://istio.io/docs/setup/install/helm/))
+* KNative Eventing 0.13 installed ([Documentation Instructions](https://knative.dev/docs/install/any-kubernetes-cluster/))
+* Seldon Core v1.1+ installed with Istio Ingress Enabled ([Documentation Instructions](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/install.html#ingress-support))
 
 ## Deploy your Seldon Model
 
-We will first deploy our model using Seldon Core. We need to make sure we enabled cloud events using the following annotation:
-    
-```yaml
-  annotations:
-    io.seldon.eventing: "enabled"
-```
+We will first deploy our model using Seldon Core. In this case we'll use one of the [pre-packaged model servers](https://docs.seldon.io/projects/seldon-core/en/latest/servers/overview.html).
+
+We first createa  configuration file:
 
 
 ```python
@@ -28,8 +25,6 @@ apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
   name: simple-iris-deployment
-  annotations:
-    io.seldon.eventing: "enabled"
 spec:
   name: simple-iris-spec
   predictors:
@@ -48,7 +43,7 @@ spec:
 
 ### Run the model in our cluster
 
-Now we run the Seldon Deployment
+Now we run the Seldon Deployment configuration file we just created.
 
 
 ```python
@@ -76,7 +71,9 @@ Now we run the Seldon Deployment
 
 ## Create a Trigger to reach our model 
 
-We want to create a trigger that is able to reach directly to the service:
+We want to create a trigger that is able to reach directly to the service.
+
+We will be using the following seldon deployment:
 
 
 ```python
@@ -113,7 +110,7 @@ spec:
     Overwriting ./assets/seldon-knative-trigger.yaml
 
 
-Run trigger in the file
+Create this trigger file which will send all cloudevents of type `"seldon.<deploymentName>.request"`.
 
 
 ```python
@@ -123,7 +120,7 @@ Run trigger in the file
     trigger.eventing.knative.dev/seldon-eventing-sklearn-trigger unchanged
 
 
-CHeck that the trigger is working correctly (you should see "Ready: True")
+CHeck that the trigger is working correctly (you should see "Ready: True"), together with the URL that will be reached.
 
 
 ```python
@@ -135,9 +132,9 @@ CHeck that the trigger is working correctly (you should see "Ready: True")
     seldon-eventing-sklearn-trigger   True             default   http://istio-ingressgateway.istio-system.svc.cluster.local/seldon/default/simple-iris-deployment/api/v1.0/predictions   74m
 
 
-### Send a request to KNative Eventing
+### Send a request to the KNative Eventing default broker
 
-To send requests we can do so with the following command
+To send requests we can do so by sending a curl command from a pod inside of the cluster.
 
 
 ```python
@@ -170,7 +167,7 @@ To send requests we can do so with the following command
 
 ### Check our model has received it
 
-We can do this by checking the logs (we can query the logs through the service name)
+We can do this by checking the logs (we can query the logs through the service name) and see that the request has been processed
 
 
 ```python
@@ -189,9 +186,11 @@ We can do this by checking the logs (we can query the logs through the service n
 
 Our Seldon Model is producing results which are sent back to KNative.
 
-This means that we can connect other subsequent services by listening to the SeldonCore deployment type and source
+This means that we can connect other subsequent services through a trigger that filters for those response cloudevents.
 
 ### First create the service that willl print the results
+
+This is just a simple pod that prints all the request data into the console.
 
 
 ```python
@@ -234,7 +233,7 @@ spec:
     Overwriting ./assets/event-display-deployment.yaml
 
 
-### Now run the event display service
+### Now run the event display resources
 
 
 ```python
@@ -256,6 +255,8 @@ spec:
 
 
 ### Create trigger for event display
+
+We now can create a trigger that sends all the requests of the type and source created by the seldon deployment to our event display pod
 
 
 ```python
@@ -283,6 +284,8 @@ spec:
     Overwriting ./assets/event-display-trigger.yaml
 
 
+### Apply that trigger
+
 
 ```python
 !kubectl apply -f assets/event-display-trigger.yaml
@@ -292,6 +295,8 @@ spec:
 
 
 ### Check our triggers are correctly set up
+
+We now should see the event trigger available.
 
 
 ```python

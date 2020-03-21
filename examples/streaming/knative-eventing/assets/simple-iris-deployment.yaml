@@ -3,8 +3,6 @@ apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
   name: simple-iris-deployment
-  annotations:
-    io.seldon.eventing: "enabled"
 spec:
   name: simple-iris-spec
   predictors:
