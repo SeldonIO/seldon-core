@@ -102,8 +102,10 @@ spec:
   filter:
     attributes:
       type: io.seldon.eventing.request
-  subscriber:
-    uri: http://simple-iris-deployment-simple-iris-predictor:8000/api/v1.0/predictions
+   ref:
+     apiVersion: v1
+     kind: SeldonDeployment
+     name: simple-iris-deployment
 
 ```
 

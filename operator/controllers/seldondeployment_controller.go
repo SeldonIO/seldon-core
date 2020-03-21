@@ -29,6 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"knative.dev/pkg/kmp"
+	"path"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"strconv"
 	"strings"
@@ -47,12 +48,14 @@ import (
 	autoscaling "k8s.io/api/autoscaling/v2beta1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	apisv1 "knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
 const (
 	ENV_DEFAULT_ENGINE_SERVER_PORT      = "ENGINE_SERVER_PORT"
 	ENV_DEFAULT_ENGINE_SERVER_GRPC_PORT = "ENGINE_SERVER_GRPC_PORT"
+	ENV_AMBASSADOR_ENABLED              = "AMBASSADOR_ENABLED"
 	ENV_CONTROLLER_ID                   = "CONTROLLER_ID"
 
 	DEFAULT_ENGINE_CONTAINER_PORT = 8000
@@ -60,6 +63,11 @@ const (
 
 	AMBASSADOR_ANNOTATION = "getambassador.io/config"
 	LABEL_CONTROLLER_ID   = "seldon.io/controller-id"
+)
+
+var (
+	envIstioEnabled      = GetEnv(ENV_ISTIO_ENABLED, "false")
+	envAmbassadorEnabled = GetEnv(ENV_AMBASSADOR_ENABLED, "false")
 )
 
 // SeldonDeploymentReconciler reconciles a SeldonDeployment object
@@ -79,7 +87,7 @@ type components struct {
 	hpas             []*autoscaling.HorizontalPodAutoscaler
 	virtualServices  []*istio.VirtualService
 	destinationRules []*istio.DestinationRule
-	addresable       *duckv1.Addressable
+	addressable      *duckv1.Addressable
 }
 
 type serviceDetails struct {
@@ -116,6 +124,25 @@ func createHpa(podSpec *machinelearningv1.SeldonPodSpec, deploymentName string, 
 	}
 
 	return &hpa
+}
+
+func createAddressableResource(mlDep *machinelearningv1.SeldonDeployment, namespace string) *duckv1.Addressable {
+	addressableHost := ""
+	addressablePath := ""
+	// TODO: Make host uri construction dynamic
+	if envIstioEnabled == "true" {
+		addressableHost = "istio-ingressgateway.istio-system.svc.cluster.local"
+		addressablePath = path.Join(utils.CreateGatewayUrlPrefix(namespace, mlDep.Name), utils.GetPredictionPath(mlDep))
+	} else if envAmbassadorEnabled == "true" {
+		addressableHost = "ambassador.ambassador.svc.cluster.local"
+		addressablePath = path.Join(utils.CreateGatewayUrlPrefix(namespace, mlDep.Name), utils.GetPredictionPath(mlDep))
+	} else {
+		// When there is no gateway the service is created for the first predictor
+		firstPredictorName := mlDep.Spec.Predictors[0].Name
+		addressableHost = mlDep.Name + "-" + firstPredictorName + "." + namespace + ".svc.cluster.local"
+		addressablePath = utils.GetPredictionPath(mlDep)
+	}
+	return &duckv1.Addressable{URL: &apisv1.URL{Scheme: "http", Host: addressableHost, Path: addressablePath}}
 }
 
 // Create istio virtual service and destination rule.
@@ -157,7 +184,7 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 				{
 					Match: []*istio_networking.HTTPMatchRequest{
 						{
-							Uri: &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Prefix{Prefix: "/seldon/" + namespace + "/" + mlDep.Name + "/"}},
+							Uri: &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Prefix{Prefix: utils.CreateGatewayUrlPrefix(namespace, mlDep.Name)}},
 						},
 					},
 					Rewrite: &istio_networking.HTTPRewrite{Uri: "/"},
@@ -555,8 +582,10 @@ func createComponents(r *SeldonDeploymentReconciler, mlDep *machinelearningv1.Se
 		}
 	}
 
+	c.addressable = createAddressableResource(mlDep, namespace)
+
 	//TODO Fixme - not changed to handle per predictor scenario
-	if GetEnv(ENV_ISTIO_ENABLED, "false") == "true" {
+	if envIstioEnabled == "true" {
 		vsvcs, dstRule, err := createIstioResources(mlDep, seldonId, namespace, externalPorts, httpAllowed, grpcAllowed)
 		if err != nil {
 			return nil, err
@@ -598,7 +627,7 @@ func createPredictorService(pSvcName string, seldonId string, p *machinelearning
 		psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engine_grpc_port), TargetPort: intstr.FromInt(engine_grpc_port), Name: "grpc"})
 	}
 
-	if GetEnv("AMBASSADOR_ENABLED", "false") == "true" {
+	if envAmbassadorEnabled == "true" {
 		psvc.Annotations = make(map[string]string)
 		//Create top level Service
 		ambassadorConfig, err := getAmbassadorConfigs(mlDep, p, pSvcName, engine_http_port, engine_grpc_port, ambassadorNameOverride)
@@ -962,6 +991,8 @@ func createServices(r *SeldonDeploymentReconciler, components *components, insta
 			return ready, err
 		} else {
 			svc.Spec.ClusterIP = found.Spec.ClusterIP
+			// Configure addressable status
+			instance.Status.Address = components.addressable
 			// Update the found object and write the result back if there are any changes
 			if !equality.Semantic.DeepEqual(svc.Spec, found.Spec) || !equality.Semantic.DeepEqual(svc.Annotations, found.Annotations) {
 				desiredSvc := found.DeepCopy()

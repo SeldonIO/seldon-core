@@ -222,7 +222,7 @@ func createExplainerIstioResources(pSvcName string, p *machinelearningv1.Predict
 				{
 					Match: []*istio_networking.HTTPMatchRequest{
 						{
-							Uri: &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Prefix{Prefix: "/seldon/" + namespace + "/" + mlDep.Name + "/" + p.Name + "/explainer/"}},
+							Uri: &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Prefix{Prefix: utils.CreateExplainerGatewayUrlPrefix(namespace, mlDep.Name, p.Name)}},
 						},
 					},
 					Rewrite: &istio_networking.HTTPRewrite{Uri: "/"},
