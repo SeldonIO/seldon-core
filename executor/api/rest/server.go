@@ -163,7 +163,6 @@ func (h *CloudeventHeaderMiddleware) Middleware(next http.Handler) http.Handler 
 		w.Header().Set(CLOUDEVENTS_HEADER_PATH_NAME, r.URL.Path)
 		// TODO: Explore whether granularity is necessary on type, such as metadata, etc
 		w.Header().Set(CLOUDEVENTS_HEADER_TYPE_NAME, "seldon."+h.deploymentName+".response")
-		// TODO: Update the source to be more specific to model
 		w.Header().Set(CLOUDEVENTS_HEADER_SOURCE_NAME, "seldon."+h.deploymentName)
 
 		next.ServeHTTP(w, r)
