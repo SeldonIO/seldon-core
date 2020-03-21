@@ -17,3 +17,26 @@ const (
 
 	FirstPortNumber = 9000
 )
+
+const (
+	ControllerName = "seldon-core-controller"
+)
+
+// Event messages
+const (
+	EventsCreateVirtualService  = "CreateVirtualService"
+	EventsUpdateVirtualService  = "UpdateVirtualService"
+	EventsCreateDestinationRule = "CreateDestinationRule"
+	EventsUpdateDestinationRule = "UpdateDestinationRule"
+	EventsCreateService         = "CreateService"
+	EventsUpdateService         = "UpdateService"
+	EventsCreateHPA             = "CreateHPA"
+	EventsUpdateHPA             = "UpdateHPA"
+	EventsDeleteHPA             = "DeleteHPA"
+	EventsCreateDeployment      = "CreateDeployment"
+	EventsUpdateDeployment      = "UpdateDeployment"
+	EventsDeleteDeployment      = "DeleteDeployment"
+	EventsInternalError         = "InternalError"
+	EventsUpdated               = "Updated"
+	EventsUpdateFailed          = "UpdateFailed"
+)

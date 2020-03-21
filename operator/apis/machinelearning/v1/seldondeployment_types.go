@@ -349,9 +349,18 @@ type ServiceStatus struct {
 	ExplainerFor string `json:"explainerFor,omitempty" protobuf:"string,4,opt,name=explainerFor"`
 }
 
+type StatusState string
+
+// CRD Status values
+const (
+	StatusStateAvailable StatusState = "Available"
+	StatusStateCreating  StatusState = "Creating"
+	StatusStateFailed    StatusState = "Failed"
+)
+
 // SeldonDeploymentStatus defines the observed state of SeldonDeployment
 type SeldonDeploymentStatus struct {
-	State            string                      `json:"state,omitempty" protobuf:"string,1,opt,name=state"`
+	State            StatusState                 `json:"state,omitempty" protobuf:"string,1,opt,name=state"`
 	Description      string                      `json:"description,omitempty" protobuf:"string,2,opt,name=description"`
 	DeploymentStatus map[string]DeploymentStatus `json:"deploymentStatus,omitempty" protobuf:"bytes,3,opt,name=deploymentStatus"`
 	ServiceStatus    map[string]ServiceStatus    `json:"serviceStatus,omitempty" protobuf:"bytes,4,opt,name=serviceStatus"`

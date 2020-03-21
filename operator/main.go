@@ -18,6 +18,7 @@ package main
 
 import (
 	"flag"
+	"github.com/seldonio/seldon-core/operator/constants"
 	"os"
 
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
@@ -86,7 +87,8 @@ func main() {
 		Log:       ctrl.Log.WithName("controllers").WithName("SeldonDeployment"),
 		Scheme:    mgr.GetScheme(),
 		Namespace: namespace,
-	}).SetupWithManager(mgr); err != nil {
+		Recorder:  mgr.GetEventRecorderFor(constants.ControllerName),
+	}).SetupWithManager(mgr, constants.ControllerName); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "SeldonDeployment")
 		os.Exit(1)
 	}
