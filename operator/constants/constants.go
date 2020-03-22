@@ -19,7 +19,7 @@ const (
 )
 
 const (
-	ControllerName = "seldon-core-controller"
+	ControllerName = "seldon-controller-manager"
 )
 
 // Event messages
