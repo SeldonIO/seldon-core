@@ -54,6 +54,15 @@ For a model with invalid json/yaml an example is shown below:
 }
 ```
 
+## Check all events on the SeldonDeployment
+
+```bash
+kubectl describe sdep mysdep
+```
+
+This will show each event from the operator including create, update, delete and error events.
+
+
 ## My Seldon Deployment remains in "creating" state
 
 Check if the pods are running successfully.
