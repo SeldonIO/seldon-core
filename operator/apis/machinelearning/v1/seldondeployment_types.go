@@ -46,6 +46,8 @@ const (
 	ANNOTATION_NO_ENGINE       = "seldon.io/no-engine"
 	ANNOTATION_CUSTOM_SVC_NAME = "seldon.io/svc-name"
 	ANNOTATION_EXECUTOR        = "seldon.io/executor"
+
+	DeploymentNamePredfix = "seldon"
 )
 
 func hash(text string) string {
@@ -72,15 +74,27 @@ func GetExplainerDeploymentName(sdepName string, predictorSpec *PredictorSpec) s
 	}
 }
 
-func GetDeploymentName(mlDep *SeldonDeployment, predictorSpec PredictorSpec, podSpec *SeldonPodSpec, idx int) string {
-	name := mlDep.Name + "-" + predictorSpec.Name
+func getContainerNames(containers []v1.Container) string {
+	name := ""
+	for i, c := range containers {
+		if i > 0 {
+			name = name + "-"
+		}
+		name = name + c.Name
+	}
+	return name
+}
+
+func GetDeploymentName(mlDep *SeldonDeployment, predictorSpec PredictorSpec, podSpec *SeldonPodSpec, podSpecIdx int) string {
+	baseName := mlDep.Name + "-" + predictorSpec.Name + "-" + strconv.Itoa(podSpecIdx) + "-"
+	var name string
 	if podSpec != nil && len(podSpec.Metadata.Name) != 0 {
-		name = name + "-" + podSpec.Metadata.Name
+		name = baseName + podSpec.Metadata.Name
 	} else {
-		name = name + "-" + strconv.Itoa(idx)
+		name = baseName + getContainerNames(podSpec.Spec.Containers)
 	}
 	if len(name) > 63 {
-		return "seldon-" + hash(name)
+		return DeploymentNamePredfix + "-" + hash(name)
 	} else {
 		return name
 	}

@@ -684,6 +684,7 @@ func createContainerService(deploy *appsv1.Deployment, p machinelearningv1.Predi
 
 	//Add labels for this service to deployment
 	deploy.ObjectMeta.Labels[containerServiceKey] = containerServiceValue
+	//FIXME testing this change
 	deploy.Spec.Selector.MatchLabels[containerServiceKey] = containerServiceValue
 	deploy.Spec.Template.ObjectMeta.Labels[containerServiceKey] = containerServiceValue
 
@@ -1270,6 +1271,7 @@ func (r *SeldonDeploymentReconciler) completeServiceCreation(instance *machinele
 				if err != nil {
 					return err
 				}
+				r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsDeleteService, "Deleted Service %q", found.GetName())
 			}
 		}
 	}
@@ -1411,7 +1413,6 @@ func (r *SeldonDeploymentReconciler) updateStatusForError(desired *machinelearni
 			"Failed to update status for SeldonDeployment %q: %v", desired.Name, err)
 	} else {
 		// If there was a difference and there was no error.
-		r.Recorder.Eventf(desired, corev1.EventTypeNormal, constants.EventsUpdated, "Updated SeldonDeployment %q", desired.GetName())
 	}
 }
 
@@ -1430,7 +1431,6 @@ func (r *SeldonDeploymentReconciler) updateStatus(desired *machinelearningv1.Sel
 		return err
 	} else {
 		// If there was a difference and there was no error.
-		r.Recorder.Eventf(desired, corev1.EventTypeNormal, constants.EventsUpdated, "Updated SeldonDeployment %q", desired.GetName())
 	}
 	return nil
 }
