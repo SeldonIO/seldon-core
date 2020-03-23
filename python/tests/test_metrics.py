@@ -162,6 +162,12 @@ class UserObject:
             {"type": "COUNTER", "key": "mycounter", "value": 1},
             {"type": "GAUGE", "key": "mygauge", "value": 100},
             {"type": "TIMER", "key": "mytimer", "value": 20.2},
+            {
+                "type": "GAUGE",
+                "key": "customtag",
+                "value": 200,
+                "tags": {"mytag": "mytagvalue"},
+            },
         ]
 
 
@@ -170,6 +176,12 @@ class UserObjectLowLevel:
         {"type": "COUNTER", "key": "mycounter", "value": 1},
         {"type": "GAUGE", "key": "mygauge", "value": 100},
         {"type": "TIMER", "key": "mytimer", "value": 20.2},
+        {
+            "type": "GAUGE",
+            "key": "customtag",
+            "value": 200,
+            "tags": {"mytag": "mytagvalue"},
+        },
     ]
 
     def predict_raw(self, msg):
@@ -213,6 +225,12 @@ class UserObjectLowLevelGrpc:
         {"type": "COUNTER", "key": "mycounter", "value": 1},
         {"type": "GAUGE", "key": "mygauge", "value": 100},
         {"type": "TIMER", "key": "mytimer", "value": 20.2},
+        {
+            "type": "GAUGE",
+            "key": "customtag",
+            "value": 200,
+            "tags": {"mytag": "mytagvalue"},
+        },
     ]
 
     def predict_raw(self, msg):
@@ -293,23 +311,28 @@ def test_seldon_metrics_predict(cls):
     assert rv.status_code == 200
 
     data = seldon_metrics.data[os.getpid()]
-    assert data["GAUGE", "mygauge"] == 100
-    assert data["COUNTER", "mycounter"] == 1
+    assert data["GAUGE", "mygauge"]["value"] == 100
+    assert data["GAUGE", "customtag"]["value"] == 200
+    assert data["GAUGE", "customtag"]["tags"] == {"mytag": "mytagvalue"}
+    assert data["COUNTER", "mycounter"]["value"] == 1
     assert np.allclose(
-        np.histogram([20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+        np.histogram([20.2 / 1000], BINS)[0], data["TIMER", "mytimer"]["value"][0]
     )
-    assert np.allclose(data["TIMER", "mytimer"][1], 0.0202)
+    assert np.allclose(data["TIMER", "mytimer"]["value"][1], 0.0202)
 
     rv = client.get('/predict?json={"data": {"names": ["input"], "ndarray": ["data"]}}')
     assert rv.status_code == 200
 
     data = seldon_metrics.data[os.getpid()]
-    assert data["GAUGE", "mygauge"] == 100
-    assert data["COUNTER", "mycounter"] == 2
+    assert data["GAUGE", "mygauge"]["value"] == 100
+    assert data["GAUGE", "customtag"]["value"] == 200
+    assert data["GAUGE", "customtag"]["tags"] == {"mytag": "mytagvalue"}
+    assert data["COUNTER", "mycounter"]["value"] == 2
     assert np.allclose(
-        np.histogram([20.2 / 1000, 20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+        np.histogram([20.2 / 1000, 20.2 / 1000], BINS)[0],
+        data["TIMER", "mytimer"]["value"][0],
     )
-    assert np.allclose(data["TIMER", "mytimer"][1], 0.0404)
+    assert np.allclose(data["TIMER", "mytimer"]["value"][1], 0.0404)
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevel])
@@ -326,12 +349,14 @@ def test_seldon_metrics_aggregate(cls):
     assert rv.status_code == 200
 
     data = seldon_metrics.data[os.getpid()]
-    assert data["GAUGE", "mygauge"] == 100
-    assert data["COUNTER", "mycounter"] == 1
+    assert data["GAUGE", "mygauge"]["value"] == 100
+    assert data["GAUGE", "customtag"]["value"] == 200
+    assert data["GAUGE", "customtag"]["tags"] == {"mytag": "mytagvalue"}
+    assert data["COUNTER", "mycounter"]["value"] == 1
     assert np.allclose(
-        np.histogram([20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+        np.histogram([20.2 / 1000], BINS)[0], data["TIMER", "mytimer"]["value"][0]
     )
-    assert np.allclose(data["TIMER", "mytimer"][1], 0.0202)
+    assert np.allclose(data["TIMER", "mytimer"]["value"][1], 0.0202)
 
     rv = client.get(
         '/aggregate?json={"seldonMessages": [{"data": {"names": ["input"], "ndarray": ["data"]}}]}'
@@ -339,12 +364,15 @@ def test_seldon_metrics_aggregate(cls):
     assert rv.status_code == 200
 
     data = seldon_metrics.data[os.getpid()]
-    assert data["GAUGE", "mygauge"] == 100
-    assert data["COUNTER", "mycounter"] == 2
+    assert data["GAUGE", "mygauge"]["value"] == 100
+    assert data["GAUGE", "customtag"]["value"] == 200
+    assert data["GAUGE", "customtag"]["tags"] == {"mytag": "mytagvalue"}
+    assert data["COUNTER", "mycounter"]["value"] == 2
     assert np.allclose(
-        np.histogram([20.2 / 1000, 20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+        np.histogram([20.2 / 1000, 20.2 / 1000], BINS)[0],
+        data["TIMER", "mytimer"]["value"][0],
     )
-    assert np.allclose(data["TIMER", "mytimer"][1], 0.0404)
+    assert np.allclose(data["TIMER", "mytimer"]["value"][1], 0.0404)
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevel])
@@ -361,12 +389,14 @@ def test_seldon_metrics_transform_input(cls):
     assert rv.status_code == 200
 
     data = seldon_metrics.data[os.getpid()]
-    assert data["GAUGE", "mygauge"] == 100
-    assert data["COUNTER", "mycounter"] == 1
+    assert data["GAUGE", "mygauge"]["value"] == 100
+    assert data["GAUGE", "customtag"]["value"] == 200
+    assert data["GAUGE", "customtag"]["tags"] == {"mytag": "mytagvalue"}
+    assert data["COUNTER", "mycounter"]["value"] == 1
     assert np.allclose(
-        np.histogram([20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+        np.histogram([20.2 / 1000], BINS)[0], data["TIMER", "mytimer"]["value"][0]
     )
-    assert np.allclose(data["TIMER", "mytimer"][1], 0.0202)
+    assert np.allclose(data["TIMER", "mytimer"]["value"][1], 0.0202)
 
     rv = client.get(
         '/transform-input?json={"data": {"names": ["input"], "ndarray": ["data"]}}'
@@ -374,12 +404,15 @@ def test_seldon_metrics_transform_input(cls):
     assert rv.status_code == 200
 
     data = seldon_metrics.data[os.getpid()]
-    assert data["GAUGE", "mygauge"] == 100
-    assert data["COUNTER", "mycounter"] == 2
+    assert data["GAUGE", "mygauge"]["value"] == 100
+    assert data["GAUGE", "customtag"]["value"] == 200
+    assert data["GAUGE", "customtag"]["tags"] == {"mytag": "mytagvalue"}
+    assert data["COUNTER", "mycounter"]["value"] == 2
     assert np.allclose(
-        np.histogram([20.2 / 1000, 20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+        np.histogram([20.2 / 1000, 20.2 / 1000], BINS)[0],
+        data["TIMER", "mytimer"]["value"][0],
     )
-    assert np.allclose(data["TIMER", "mytimer"][1], 0.0404)
+    assert np.allclose(data["TIMER", "mytimer"]["value"][1], 0.0404)
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevel])
@@ -396,12 +429,14 @@ def test_seldon_metrics_transform_output(cls):
     assert rv.status_code == 200
 
     data = seldon_metrics.data[os.getpid()]
-    assert data["GAUGE", "mygauge"] == 100
-    assert data["COUNTER", "mycounter"] == 1
+    assert data["GAUGE", "mygauge"]["value"] == 100
+    assert data["GAUGE", "customtag"]["value"] == 200
+    assert data["GAUGE", "customtag"]["tags"] == {"mytag": "mytagvalue"}
+    assert data["COUNTER", "mycounter"]["value"] == 1
     assert np.allclose(
-        np.histogram([20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+        np.histogram([20.2 / 1000], BINS)[0], data["TIMER", "mytimer"]["value"][0]
     )
-    assert np.allclose(data["TIMER", "mytimer"][1], 0.0202)
+    assert np.allclose(data["TIMER", "mytimer"]["value"][1], 0.0202)
 
     rv = client.get(
         '/transform-output?json={"data": {"names": ["input"], "ndarray": ["data"]}}'
@@ -409,12 +444,15 @@ def test_seldon_metrics_transform_output(cls):
     assert rv.status_code == 200
 
     data = seldon_metrics.data[os.getpid()]
-    assert data["GAUGE", "mygauge"] == 100
-    assert data["COUNTER", "mycounter"] == 2
+    assert data["GAUGE", "mygauge"]["value"] == 100
+    assert data["GAUGE", "customtag"]["value"] == 200
+    assert data["GAUGE", "customtag"]["tags"] == {"mytag": "mytagvalue"}
+    assert data["COUNTER", "mycounter"]["value"] == 2
     assert np.allclose(
-        np.histogram([20.2 / 1000, 20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+        np.histogram([20.2 / 1000, 20.2 / 1000], BINS)[0],
+        data["TIMER", "mytimer"]["value"][0],
     )
-    assert np.allclose(data["TIMER", "mytimer"][1], 0.0404)
+    assert np.allclose(data["TIMER", "mytimer"]["value"][1], 0.0404)
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevel])
@@ -429,23 +467,28 @@ def test_seldon_metrics_route(cls):
     assert rv.status_code == 200
 
     data = seldon_metrics.data[os.getpid()]
-    assert data["GAUGE", "mygauge"] == 100
-    assert data["COUNTER", "mycounter"] == 1
+    assert data["GAUGE", "mygauge"]["value"] == 100
+    assert data["GAUGE", "customtag"]["value"] == 200
+    assert data["GAUGE", "customtag"]["tags"] == {"mytag": "mytagvalue"}
+    assert data["COUNTER", "mycounter"]["value"] == 1
     assert np.allclose(
-        np.histogram([20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+        np.histogram([20.2 / 1000], BINS)[0], data["TIMER", "mytimer"]["value"][0]
     )
-    assert np.allclose(data["TIMER", "mytimer"][1], 0.0202)
+    assert np.allclose(data["TIMER", "mytimer"]["value"][1], 0.0202)
 
     rv = client.get('/route?json={"data": {"names": ["input"], "ndarray": ["data"]}}')
     assert rv.status_code == 200
 
     data = seldon_metrics.data[os.getpid()]
-    assert data["GAUGE", "mygauge"] == 100
-    assert data["COUNTER", "mycounter"] == 2
+    assert data["GAUGE", "mygauge"]["value"] == 100
+    assert data["GAUGE", "customtag"]["value"] == 200
+    assert data["GAUGE", "customtag"]["tags"] == {"mytag": "mytagvalue"}
+    assert data["COUNTER", "mycounter"]["value"] == 2
     assert np.allclose(
-        np.histogram([20.2 / 1000, 20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+        np.histogram([20.2 / 1000, 20.2 / 1000], BINS)[0],
+        data["TIMER", "mytimer"]["value"][0],
     )
-    assert np.allclose(data["TIMER", "mytimer"][1], 0.0404)
+    assert np.allclose(data["TIMER", "mytimer"]["value"][1], 0.0404)
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevelGrpc])
@@ -462,22 +505,27 @@ def test_proto_seldon_metrics_predict(cls):
     app.Predict(request, None)
 
     data = seldon_metrics.data[os.getpid()]
-    assert data["GAUGE", "mygauge"] == 100
-    assert data["COUNTER", "mycounter"] == 1
+    assert data["GAUGE", "mygauge"]["value"] == 100
+    assert data["GAUGE", "customtag"]["value"] == 200
+    assert data["GAUGE", "customtag"]["tags"] == {"mytag": "mytagvalue"}
+    assert data["COUNTER", "mycounter"]["value"] == 1
     assert np.allclose(
-        np.histogram([20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+        np.histogram([20.2 / 1000], BINS)[0], data["TIMER", "mytimer"]["value"][0]
     )
-    assert np.allclose(data["TIMER", "mytimer"][1], 0.0202)
+    assert np.allclose(data["TIMER", "mytimer"]["value"][1], 0.0202)
 
     app.Predict(request, None)
 
     data = seldon_metrics.data[os.getpid()]
-    assert data["GAUGE", "mygauge"] == 100
-    assert data["COUNTER", "mycounter"] == 2
+    assert data["GAUGE", "mygauge"]["value"] == 100
+    assert data["GAUGE", "customtag"]["value"] == 200
+    assert data["GAUGE", "customtag"]["tags"] == {"mytag": "mytagvalue"}
+    assert data["COUNTER", "mycounter"]["value"] == 2
     assert np.allclose(
-        np.histogram([20.2 / 1000, 20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+        np.histogram([20.2 / 1000, 20.2 / 1000], BINS)[0],
+        data["TIMER", "mytimer"]["value"][0],
     )
-    assert np.allclose(data["TIMER", "mytimer"][1], 0.0404)
+    assert np.allclose(data["TIMER", "mytimer"]["value"][1], 0.0404)
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevelGrpc])
@@ -502,22 +550,27 @@ def test_proto_seldon_metrics_aggregate(cls):
     app.Aggregate(request, None)
 
     data = seldon_metrics.data[os.getpid()]
-    assert data["GAUGE", "mygauge"] == 100
-    assert data["COUNTER", "mycounter"] == 1
+    assert data["GAUGE", "mygauge"]["value"] == 100
+    assert data["GAUGE", "customtag"]["value"] == 200
+    assert data["GAUGE", "customtag"]["tags"] == {"mytag": "mytagvalue"}
+    assert data["COUNTER", "mycounter"]["value"] == 1
     assert np.allclose(
-        np.histogram([20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+        np.histogram([20.2 / 1000], BINS)[0], data["TIMER", "mytimer"]["value"][0]
     )
-    assert np.allclose(data["TIMER", "mytimer"][1], 0.0202)
+    assert np.allclose(data["TIMER", "mytimer"]["value"][1], 0.0202)
 
     app.Aggregate(request, None)
 
     data = seldon_metrics.data[os.getpid()]
-    assert data["GAUGE", "mygauge"] == 100
-    assert data["COUNTER", "mycounter"] == 2
+    assert data["GAUGE", "mygauge"]["value"] == 100
+    assert data["GAUGE", "customtag"]["value"] == 200
+    assert data["GAUGE", "customtag"]["tags"] == {"mytag": "mytagvalue"}
+    assert data["COUNTER", "mycounter"]["value"] == 2
     assert np.allclose(
-        np.histogram([20.2 / 1000, 20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+        np.histogram([20.2 / 1000, 20.2 / 1000], BINS)[0],
+        data["TIMER", "mytimer"]["value"][0],
     )
-    assert np.allclose(data["TIMER", "mytimer"][1], 0.0404)
+    assert np.allclose(data["TIMER", "mytimer"]["value"][1], 0.0404)
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevelGrpc])
@@ -534,22 +587,27 @@ def test_proto_seldon_metrics_transform_input(cls):
     app.TransformInput(request, None)
 
     data = seldon_metrics.data[os.getpid()]
-    assert data["GAUGE", "mygauge"] == 100
-    assert data["COUNTER", "mycounter"] == 1
+    assert data["GAUGE", "mygauge"]["value"] == 100
+    assert data["GAUGE", "customtag"]["value"] == 200
+    assert data["GAUGE", "customtag"]["tags"] == {"mytag": "mytagvalue"}
+    assert data["COUNTER", "mycounter"]["value"] == 1
     assert np.allclose(
-        np.histogram([20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+        np.histogram([20.2 / 1000], BINS)[0], data["TIMER", "mytimer"]["value"][0]
     )
-    assert np.allclose(data["TIMER", "mytimer"][1], 0.0202)
+    assert np.allclose(data["TIMER", "mytimer"]["value"][1], 0.0202)
 
     app.TransformInput(request, None)
 
     data = seldon_metrics.data[os.getpid()]
-    assert data["GAUGE", "mygauge"] == 100
-    assert data["COUNTER", "mycounter"] == 2
+    assert data["GAUGE", "mygauge"]["value"] == 100
+    assert data["GAUGE", "customtag"]["value"] == 200
+    assert data["GAUGE", "customtag"]["tags"] == {"mytag": "mytagvalue"}
+    assert data["COUNTER", "mycounter"]["value"] == 2
     assert np.allclose(
-        np.histogram([20.2 / 1000, 20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+        np.histogram([20.2 / 1000, 20.2 / 1000], BINS)[0],
+        data["TIMER", "mytimer"]["value"][0],
     )
-    assert np.allclose(data["TIMER", "mytimer"][1], 0.0404)
+    assert np.allclose(data["TIMER", "mytimer"]["value"][1], 0.0404)
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevelGrpc])
@@ -566,22 +624,27 @@ def test_proto_seldon_metrics_transform_output(cls):
     app.TransformOutput(request, None)
 
     data = seldon_metrics.data[os.getpid()]
-    assert data["GAUGE", "mygauge"] == 100
-    assert data["COUNTER", "mycounter"] == 1
+    assert data["GAUGE", "mygauge"]["value"] == 100
+    assert data["GAUGE", "customtag"]["value"] == 200
+    assert data["GAUGE", "customtag"]["tags"] == {"mytag": "mytagvalue"}
+    assert data["COUNTER", "mycounter"]["value"] == 1
     assert np.allclose(
-        np.histogram([20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+        np.histogram([20.2 / 1000], BINS)[0], data["TIMER", "mytimer"]["value"][0]
     )
-    assert np.allclose(data["TIMER", "mytimer"][1], 0.0202)
+    assert np.allclose(data["TIMER", "mytimer"]["value"][1], 0.0202)
 
     app.TransformOutput(request, None)
 
     data = seldon_metrics.data[os.getpid()]
-    assert data["GAUGE", "mygauge"] == 100
-    assert data["COUNTER", "mycounter"] == 2
+    assert data["GAUGE", "mygauge"]["value"] == 100
+    assert data["GAUGE", "customtag"]["value"] == 200
+    assert data["GAUGE", "customtag"]["tags"] == {"mytag": "mytagvalue"}
+    assert data["COUNTER", "mycounter"]["value"] == 2
     assert np.allclose(
-        np.histogram([20.2 / 1000, 20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+        np.histogram([20.2 / 1000, 20.2 / 1000], BINS)[0],
+        data["TIMER", "mytimer"]["value"][0],
     )
-    assert np.allclose(data["TIMER", "mytimer"][1], 0.0404)
+    assert np.allclose(data["TIMER", "mytimer"]["value"][1], 0.0404)
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevelGrpc])
@@ -598,22 +661,27 @@ def test_proto_seldon_metrics_route(cls):
     app.Route(request, None)
 
     data = seldon_metrics.data[os.getpid()]
-    assert data["GAUGE", "mygauge"] == 100
-    assert data["COUNTER", "mycounter"] == 1
+    assert data["GAUGE", "mygauge"]["value"] == 100
+    assert data["GAUGE", "customtag"]["value"] == 200
+    assert data["GAUGE", "customtag"]["tags"] == {"mytag": "mytagvalue"}
+    assert data["COUNTER", "mycounter"]["value"] == 1
     assert np.allclose(
-        np.histogram([20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+        np.histogram([20.2 / 1000], BINS)[0], data["TIMER", "mytimer"]["value"][0]
     )
-    assert np.allclose(data["TIMER", "mytimer"][1], 0.0202)
+    assert np.allclose(data["TIMER", "mytimer"]["value"][1], 0.0202)
 
     app.Route(request, None)
 
     data = seldon_metrics.data[os.getpid()]
-    assert data["GAUGE", "mygauge"] == 100
-    assert data["COUNTER", "mycounter"] == 2
+    assert data["GAUGE", "mygauge"]["value"] == 100
+    assert data["GAUGE", "customtag"]["value"] == 200
+    assert data["GAUGE", "customtag"]["tags"] == {"mytag": "mytagvalue"}
+    assert data["COUNTER", "mycounter"]["value"] == 2
     assert np.allclose(
-        np.histogram([20.2 / 1000, 20.2 / 1000], BINS)[0], data["TIMER", "mytimer"][0]
+        np.histogram([20.2 / 1000, 20.2 / 1000], BINS)[0],
+        data["TIMER", "mytimer"]["value"][0],
     )
-    assert np.allclose(data["TIMER", "mytimer"][1], 0.0404)
+    assert np.allclose(data["TIMER", "mytimer"]["value"][1], 0.0404)
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevel])
@@ -659,6 +727,10 @@ def test_seldon_metrics_endpoint(cls):
         if name == "mygauge":
             assert value == "100.0"
             assert labels["worker_id"] == str(os.getpid())
+
+        if name == "customtag":
+            assert value == "200.0"
+            assert labels["mytag"] == "mytagvalue"
 
     assert timer_present
 
@@ -710,5 +782,9 @@ def test_proto_seldon_metrics_endpoint(cls):
         if name == "mygauge":
             assert value == "100.0"
             assert labels["worker_id"] == str(os.getpid())
+
+        if name == "customtag":
+            assert value == "200.0"
+            assert labels["mytag"] == "mytagvalue"
 
     assert timer_present
