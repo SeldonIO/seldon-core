@@ -61,8 +61,10 @@ const (
 	DEFAULT_ENGINE_CONTAINER_PORT = 8000
 	DEFAULT_ENGINE_GRPC_PORT      = 5001
 
-	AMBASSADOR_ANNOTATION = "getambassador.io/config"
-	LABEL_CONTROLLER_ID   = "seldon.io/controller-id"
+	AMBASSADOR_ANNOTATION      = "getambassador.io/config"
+	LABEL_CONTROLLER_ID        = "seldon.io/controller-id"
+	ISTIO_DEFAULT_INGRESS      = "istio-ingressgateway.istio-system.svc.cluster.local"
+	AMBASSADOR_DEFAULT_INGRESS = "ambassador.ambassador.svc.cluster.local"
 )
 
 var (
@@ -131,10 +133,10 @@ func createAddressableResource(mlDep *machinelearningv1.SeldonDeployment, namesp
 	addressablePath := ""
 	// TODO: Make host uri construction dynamic
 	if envIstioEnabled == "true" {
-		addressableHost = "istio-ingressgateway.istio-system.svc.cluster.local"
+		addressableHost = ISTIO_DEFAULT_INGRESS
 		addressablePath = path.Join(utils.CreateGatewayUrlPrefix(namespace, mlDep.Name), utils.GetPredictionPath(mlDep))
 	} else if envAmbassadorEnabled == "true" {
-		addressableHost = "ambassador.ambassador.svc.cluster.local"
+		addressableHost = AMBASSADOR_DEFAULT_INGRESS
 		addressablePath = path.Join(utils.CreateGatewayUrlPrefix(namespace, mlDep.Name), utils.GetPredictionPath(mlDep))
 	} else {
 		// When there is no gateway the service is created for the first predictor
