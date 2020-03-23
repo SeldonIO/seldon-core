@@ -36,67 +36,6 @@ func helperLoadBytes(name string) []byte {
 	return bytes
 }
 
-var _ = Describe("Create Addressable Resource", func() {
-	var modelType = machinelearningv1.MODEL
-	testNamespace := "test-namespace"
-	testName := "deployment-name"
-	key := types.NamespacedName{
-		Name:      testName,
-		Namespace: testNamespace,
-	}
-	instance := &machinelearningv1.SeldonDeployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      key.Name,
-			Namespace: key.Namespace,
-		},
-		Spec: machinelearningv1.SeldonDeploymentSpec{
-			Name: "mydep",
-			Predictors: []machinelearningv1.PredictorSpec{
-				{
-					Name: "p1",
-					ComponentSpecs: []*machinelearningv1.SeldonPodSpec{
-						{
-							Spec: v1.PodSpec{
-								Containers: []v1.Container{
-									{
-										Image: "seldonio/mock_classifier:1.0",
-										Name:  "classifier",
-									},
-								},
-							},
-						},
-					},
-					Graph: &machinelearningv1.PredictiveUnit{
-						Name: "classifier",
-						Type: &modelType,
-					},
-				},
-			},
-		},
-	}
-
-	By("Calling createAddressableResource with envIstioEnabled")
-	It("Should create istio addressable", func() {
-		envIstioEnabled = "true"
-		envAmbassadorEnabled = "false"
-		addressable := createAddressableResource(instance, testNamespace)
-		Expect(addressable.URL.Host).Should(Equal(ISTIO_DEFAULT_INGRESS))
-	By("Calling createAddressableResource with envAmbassadorEnabled")
-	It("Should create ambassador addressable", func() {
-		envIstioEnabled = "false"
-		envAmbassadorEnabled = "true"
-		addressable := createAddressableResource(instance, testNamespace)
-		Expect(addressable.URL.Host).Should(Equal(AMBASSADOR_DEFAULT_INGRESS))
-	})
-	By("Calling createAddressableResource with envAmbassadorEnabled")
-	It("Should create ambassador addressable", func() {
-		envIstioEnabled = "false"
-		envAmbassadorEnabled = "false"
-		addressable := createAddressableResource(instance, testNamespace)
-		Expect(addressable.URL.Host).Should(Equal(mlDep.Name + "-" + firstPredictorName + "." + namespace + ".svc.cluster.local"))
-	})
-})
-
 var _ = Describe("Create a Seldon Deployment", func() {
 	const timeout = time.Second * 30
 	const interval = time.Second * 1
@@ -166,5 +105,66 @@ var _ = Describe("Create a Seldon Deployment", func() {
 		Expect(k8sClient.Delete(context.Background(), instance)).Should(Succeed())
 
 	})
+})
 
+var _ = Describe("Create Addressable Resource", func() {
+	var modelType = machinelearningv1.MODEL
+	testNamespace := "test-namespace"
+	testName := "deployment-name"
+	key := types.NamespacedName{
+		Name:      testName,
+		Namespace: testNamespace,
+	}
+	instance := &machinelearningv1.SeldonDeployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      key.Name,
+			Namespace: key.Namespace,
+		},
+		Spec: machinelearningv1.SeldonDeploymentSpec{
+			Name: "mydep",
+			Predictors: []machinelearningv1.PredictorSpec{
+				{
+					Name: "p1",
+					ComponentSpecs: []*machinelearningv1.SeldonPodSpec{
+						{
+							Spec: v1.PodSpec{
+								Containers: []v1.Container{
+									{
+										Image: "seldonio/mock_classifier:1.0",
+										Name:  "classifier",
+									},
+								},
+							},
+						},
+					},
+					Graph: &machinelearningv1.PredictiveUnit{
+						Name: "classifier",
+						Type: &modelType,
+					},
+				},
+			},
+		},
+	}
+
+	By("Calling createAddressableResource with envIstioEnabled")
+	It("Should create istio addressable", func() {
+		envIstioEnabled = "true"
+		envAmbassadorEnabled = "false"
+		addressable := createAddressableResource(instance, testNamespace)
+		Expect(addressable.URL.Host).Should(Equal(ISTIO_DEFAULT_INGRESS))
+	})
+	By("Calling createAddressableResource with envAmbassadorEnabled")
+	It("Should create ambassador addressable", func() {
+		envIstioEnabled = "false"
+		envAmbassadorEnabled = "true"
+		addressable := createAddressableResource(instance, testNamespace)
+		Expect(addressable.URL.Host).Should(Equal(AMBASSADOR_DEFAULT_INGRESS))
+	})
+	By("Calling createAddressableResource with envAmbassadorEnabled")
+	It("Should create ambassador addressable", func() {
+		envIstioEnabled = "false"
+		envAmbassadorEnabled = "false"
+		addressable := createAddressableResource(instance, testNamespace)
+		Expect(addressable.URL.Host).Should(Equal(mlDep.Name + "-" + firstPredictorName + "." + namespace + ".svc.cluster.local"))
+	})
 })
