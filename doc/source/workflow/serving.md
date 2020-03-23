@@ -2,6 +2,41 @@
 
 In order to test your components you are able to send the requests directly using CURL/grpCURL or a similar utility, as well as by using our Python SeldonClient SDK.
 
+## Testing options
+
+There are several options for testing your model before deploying it.
+
+* Running your model directly with the Python Client
+* Running your model as a Docker container
+    * This can be used for all Language Wrappers (but not prepackaged inference servers)
+* Run your SeldonDeployment in a Kubernetes Dev client such as KIND
+    * This can be used for any models
+
+### Running your model directly with the Python Client
+
+* This can be used for Python Language Wrapped Models only
+
+When you create your Python model, such as a file called `Model.py` with the contents:
+
+```
+class Model:
+    def __init__(self):
+        pass
+    def predict(*args, **kwargs):
+        pass
+```
+
+You can actually run this model by simply using the Python module.
+
+Once you install the Python module you will have some 
+
+
+
+### Test using the Python Client
+
+If you have containerised a model using our Python Language server, you will be able to test it locally.
+
+
 ## Pre-requisites
 
 First you need to make sure you've deployed your model, and the model is available through one of the supported [Ingress (as outlined in installation docs)](../workflow/install.md) you are able
