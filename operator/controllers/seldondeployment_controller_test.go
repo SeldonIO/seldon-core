@@ -30,6 +30,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/rand"
 	"path/filepath"
+	"testing"
 	"time"
 )
 
@@ -530,3 +531,105 @@ var _ = Describe("Create a Seldon Deployment with hpa", func() {
 	})
 
 })
+
+// --- Non Ginkgo Tests
+
+func TestCreateDeploymentWithLabelsAndAnnotations(t *testing.T) {
+	g := NewGomegaWithT(t)
+	depName := "dep"
+	labelKey1 := "key1"
+	labelValue1 := "value1"
+	labelKey2 := "key2"
+	labelValue2 := "value2"
+	annotationKey1 := "key1"
+	annotationValue1 := "value1"
+	annotationKey2 := "key2"
+	annotationValue2 := "value2"
+	annotationKey3 := "key3"
+	annotationValue3 := "value3"
+	modelType := machinelearningv1.MODEL
+	instance := &machinelearningv1.SeldonDeployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      depName,
+			Namespace: "default",
+		},
+		Spec: machinelearningv1.SeldonDeploymentSpec{
+			Name:        "mydep",
+			Annotations: map[string]string{annotationKey1: annotationValue1},
+			Predictors: []machinelearningv1.PredictorSpec{
+				{
+					Name:        "p1",
+					Labels:      map[string]string{labelKey1: labelValue1},
+					Annotations: map[string]string{annotationKey2: annotationValue2},
+					ComponentSpecs: []*machinelearningv1.SeldonPodSpec{
+						{
+							Metadata: metav1.ObjectMeta{
+								Labels:      map[string]string{labelKey2: labelValue2},
+								Annotations: map[string]string{annotationKey3: annotationValue3},
+							},
+							Spec: v1.PodSpec{
+								Containers: []v1.Container{
+									{
+										Image: "seldonio/mock_classifier:1.0",
+										Name:  "classifier",
+									},
+								},
+							},
+						},
+					},
+					Graph: &machinelearningv1.PredictiveUnit{
+						Name: "classifier",
+						Type: &modelType,
+					},
+				},
+			},
+		},
+	}
+
+	dep := createDeploymentWithoutEngine(depName, "a", instance.Spec.Predictors[0].ComponentSpecs[0], &instance.Spec.Predictors[0], instance)
+	g.Expect(dep.Labels[labelKey1]).To(Equal(labelValue1))
+	g.Expect(dep.Labels[labelKey2]).To(Equal(labelValue2))
+	g.Expect(dep.Spec.Template.ObjectMeta.Labels[labelKey1]).To(Equal(labelValue1))
+	g.Expect(dep.Spec.Template.ObjectMeta.Labels[labelKey2]).To(Equal(labelValue2))
+	g.Expect(dep.Annotations[annotationKey1]).To(Equal(annotationValue1))
+	g.Expect(dep.Annotations[annotationKey2]).To(Equal(annotationValue2))
+	g.Expect(dep.Annotations[annotationKey3]).To(Equal(annotationValue3))
+}
+
+func TestCreateDeploymentWithNoLabelsAndAnnotations(t *testing.T) {
+	depName := "dep"
+	modelType := machinelearningv1.MODEL
+	instance := &machinelearningv1.SeldonDeployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      depName,
+			Namespace: "default",
+		},
+		Spec: machinelearningv1.SeldonDeploymentSpec{
+			Name: "mydep",
+			Predictors: []machinelearningv1.PredictorSpec{
+				{
+					Name: "p1",
+					ComponentSpecs: []*machinelearningv1.SeldonPodSpec{
+						{
+							Metadata: metav1.ObjectMeta{},
+							Spec: v1.PodSpec{
+								Containers: []v1.Container{
+									{
+										Image: "seldonio/mock_classifier:1.0",
+										Name:  "classifier",
+									},
+								},
+							},
+						},
+					},
+					Graph: &machinelearningv1.PredictiveUnit{
+						Name: "classifier",
+						Type: &modelType,
+					},
+				},
+			},
+		},
+	}
+
+	_ = createDeploymentWithoutEngine(depName, "a", instance.Spec.Predictors[0].ComponentSpecs[0], &instance.Spec.Predictors[0], instance)
+}
