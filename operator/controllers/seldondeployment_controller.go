@@ -680,35 +680,8 @@ func createContainerService(deploy *appsv1.Deployment, p machinelearningv1.Predi
 			SessionAffinity: corev1.ServiceAffinityNone,
 		},
 	}
-	switch *pu.Type {
-	case machinelearningv1.ROUTER:
-		svc.Labels[machinelearningv1.Label_router] = "true"
-	case machinelearningv1.COMBINER:
-		svc.Labels[machinelearningv1.Label_combiner] = "true"
-	case machinelearningv1.MODEL:
-		svc.Labels[machinelearningv1.Label_model] = "true"
-	case machinelearningv1.TRANSFORMER:
-		svc.Labels[machinelearningv1.Label_transformer] = "true"
-	case machinelearningv1.OUTPUT_TRANSFORMER:
-		svc.Labels[machinelearningv1.Label_output_transformer] = "true"
-	}
-	if p.Shadow != true && (p.Traffic >= 50 || p.Traffic == 0) {
-		svc.Labels[machinelearningv1.Label_default] = "true"
-	}
-	if p.Shadow == true {
-		svc.Labels[machinelearningv1.Label_shadow] = "true"
-	}
-	if p.Traffic < 50 && p.Traffic > 0 {
-		svc.Labels[machinelearningv1.Label_canary] = "true"
-	}
-	if p.Explainer != nil {
-		svc.Labels[machinelearningv1.Label_explainer] = "true"
-	}
-
-	//Add labels for this service to deployment
-	deploy.ObjectMeta.Labels[containerServiceKey] = containerServiceValue
-	deploy.Spec.Selector.MatchLabels[containerServiceKey] = containerServiceValue
-	deploy.Spec.Template.ObjectMeta.Labels[containerServiceKey] = containerServiceValue
+	addLabelsToService(svc, pu, p)
+	addLabelsToDeployment(deploy, containerServiceKey, containerServiceValue)
 
 	if existingPort == nil || con.Ports == nil {
 		con.Ports = append(con.Ports, corev1.ContainerPort{Name: portType, ContainerPort: portNum, Protocol: corev1.ProtocolTCP})
