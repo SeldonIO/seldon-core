@@ -183,6 +183,8 @@ type SeldonDeploymentSpec struct {
 	OauthKey    string            `json:"oauth_key,omitempty" protobuf:"string,3,opt,name=oauth_key"`
 	OauthSecret string            `json:"oauth_secret,omitempty" protobuf:"string,4,opt,name=oauth_secret"`
 	Annotations map[string]string `json:"annotations,omitempty" protobuf:"bytes,5,opt,name=annotations"`
+	Protocol    Protocol          `json:"protocol,omitempty" protobuf:"bytes,6,opt,name=protocol"`
+	Transport   Transport         `json:"transport,omitempty" protobuf:"bytes,7,opt,name=transport"`
 }
 
 type PredictorSpec struct {
@@ -197,8 +199,6 @@ type PredictorSpec struct {
 	Traffic         int32                   `json:"traffic,omitempty" protobuf:"bytes,9,opt,name=traffic"`
 	Explainer       *Explainer              `json:"explainer,omitempty" protobuf:"bytes,10,opt,name=explainer"`
 	Shadow          bool                    `json:"shadow,omitempty" protobuf:"bytes,11,opt,name=shadow"`
-	Protocol        Protocol                `json:"protocol,omitempty" protobuf:"bytes,12,opt,name=protocol"`
-	Transport       Transport               `json:"transport,omitempty" protobuf:"bytes,13,opt,name=transport"`
 }
 
 type Protocol string
@@ -361,9 +361,18 @@ type ServiceStatus struct {
 	ExplainerFor string `json:"explainerFor,omitempty" protobuf:"string,4,opt,name=explainerFor"`
 }
 
+type StatusState string
+
+// CRD Status values
+const (
+	StatusStateAvailable StatusState = "Available"
+	StatusStateCreating  StatusState = "Creating"
+	StatusStateFailed    StatusState = "Failed"
+)
+
 // SeldonDeploymentStatus defines the observed state of SeldonDeployment
 type SeldonDeploymentStatus struct {
-	State            string                      `json:"state,omitempty" protobuf:"string,1,opt,name=state"`
+	State            StatusState                 `json:"state,omitempty" protobuf:"string,1,opt,name=state"`
 	Description      string                      `json:"description,omitempty" protobuf:"string,2,opt,name=description"`
 	DeploymentStatus map[string]DeploymentStatus `json:"deploymentStatus,omitempty" protobuf:"bytes,3,opt,name=deploymentStatus"`
 	ServiceStatus    map[string]ServiceStatus    `json:"serviceStatus,omitempty" protobuf:"bytes,4,opt,name=serviceStatus"`

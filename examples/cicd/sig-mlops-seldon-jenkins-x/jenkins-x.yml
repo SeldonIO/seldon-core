@@ -1,0 +1,120 @@
+buildPack: none
+pipelineConfig:
+  pipelines:
+    release:
+      pipeline:
+        agent:
+          image: seldonio/core-builder:0.4
+        stages:
+        - name: release-tests
+          steps:
+          - name: release-unit-tests
+            command: make
+            args:
+            - install_dev
+            - test
+#          - name: release-end-to-end-tests
+#            command: bash
+#            args:
+#            - integration/kind_test_all.sh
+        - name: release-promote
+          agent:
+            image: gcr.io/jenkinsxio/builder-go:2.0.916-264
+          - sh: "echo $(jx-release-version) > VERSION"
+            name: next-version
+          steps:
+          - sh: "jx step tag --version $(cat VERSION)"
+            name: tag-version
+          - name: release-changelog
+            sh: "cd charts/seldon-model-server && jx step changelog --batch-mode --version v$(cat ../../VERSION)"
+          - name: release-publish-chart
+            sh: "cd charts/seldon-model-server && jx step helm release --dir ."
+          - name: release-promote-staging
+            sh: "cd charts/seldon-model-server && jx promote -b --all-auto --timeout 1h --version $(cat ../../VERSION)"
+        options:
+          containerOptions:
+            volumeMounts:
+              - mountPath: /lib/modules
+                name: modules
+                readOnly: true
+              - mountPath: /sys/fs/cgroup
+                name: cgroup
+              - name: dind-storage
+                mountPath: /var/lib/docker
+              - mountPath: /builder/home/.docker
+                name: jenkins-docker-config-volume
+            securityContext:
+              privileged: true
+          volumes:
+            - name: modules
+              hostPath:
+                path: /lib/modules
+                type: Directory
+            - name: cgroup
+              hostPath:
+                path: /sys/fs/cgroup
+                type: Directory
+            - name: dind-storage
+              emptyDir: {}
+            - name: jenkins-docker-config-volume
+              secret:
+                items:
+                - key: config.json
+                  path: config.json
+                secretName: jenkins-docker-cfg
+    pullRequest:
+      pipeline:
+        agent:
+          image: seldonio/core-builder:0.4
+        stages:
+        - name: pr-tests
+          steps:
+          - name: pr-unit-tests
+            command: make
+            args:
+            - install_dev
+            - test
+          - name: pr-end-to-end-tests
+            command: bash
+            args:
+            - integration/kind_test_all.sh
+        - name: pr-preview
+          agent:
+            image: gcr.io/jenkinsxio/builder-go:2.0.916-264
+          steps:
+          - name: pr-build-preview
+            sh: cd charts/preview && make preview
+          - name: pr-deploy-preview
+            sh: cd charts/preview && jx preview --app $APP_NAME --dir .
+        options:
+          containerOptions:
+            volumeMounts:
+              - mountPath: /lib/modules
+                name: modules
+                readOnly: true
+              - mountPath: /sys/fs/cgroup
+                name: cgroup
+              - name: dind-storage
+                mountPath: /var/lib/docker
+              - mountPath: /builder/home/.docker
+                name: jenkins-docker-config-volume
+            securityContext:
+              privileged: true
+          volumes:
+            - name: modules
+              hostPath:
+                path: /lib/modules
+                type: Directory
+            - name: cgroup
+              hostPath:
+                path: /sys/fs/cgroup
+                type: Directory
+            - name: dind-storage
+              emptyDir: {}
+            - name: jenkins-docker-config-volume
+              secret:
+                items:
+                - key: config.json
+                  path: config.json
+                secretName: jenkins-docker-cfg
+

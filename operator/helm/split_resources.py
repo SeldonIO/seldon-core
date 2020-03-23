@@ -41,6 +41,7 @@ HELM_ENV_SUBST = {
     "ISTIO_GATEWAY": "istio.gateway",
     "ISTIO_TLS_MODE": "istio.tlsMode",
     "PREDICTIVE_UNIT_SERVICE_PORT": "predictiveUnit.port",
+    "PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME": "predictiveUnit.defaultEnvSecretRefName",
     "USE_EXECUTOR": "executor.enabled",
     "EXECUTOR_SERVER_GRPC_PORT": "engine.grpc.port",
     "EXECUTOR_CONTAINER_IMAGE_PULL_POLICY": "executor.image.pullPolicy",
@@ -48,6 +49,7 @@ HELM_ENV_SUBST = {
     "EXECUTOR_PROMETHEUS_PATH": "executor.prometheus.path",
     "EXECUTOR_CONTAINER_USER": "executor.user",
     "EXECUTOR_CONTAINER_SERVICE_ACCOUNT_NAME": "executor.serviceAccount.name",
+    "EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX": "executor.defaultRequestLoggerEndpointPrefix",
 }
 HELM_VALUES_IMAGE_PULL_POLICY = "{{ .Values.image.pullPolicy }}"
 
@@ -111,6 +113,16 @@ if __name__ == "__main__":
                     "image"
                 ] = "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
 
+                # Resource requests
+                res["spec"]["template"]["spec"]["containers"][0]["resources"]["requests"][
+                    "cpu"] = helm_value("manager.cpuRequest")
+                res["spec"]["template"]["spec"]["containers"][0]["resources"]["requests"][
+                    "memory"] = helm_value("manager.memoryRequest")
+                res["spec"]["template"]["spec"]["containers"][0]["resources"]["limits"][
+                    "cpu"] = helm_value("manager.cpuLimit")
+                res["spec"]["template"]["spec"]["containers"][0]["resources"]["limits"][
+                    "memory"] = helm_value("manager.memoryLimit")
+
                 for env in res["spec"]["template"]["spec"]["containers"][0]["env"]:
                     if env["name"] in HELM_ENV_SUBST:
                         env["value"] = helm_value(HELM_ENV_SUBST[env["name"]])
@@ -124,12 +136,7 @@ if __name__ == "__main__":
                         ] = "{{ .Values.executor.image.registry }}/{{ .Values.executor.image.repository }}:{{ .Values.executor.image.tag }}"
                     elif env["name"] == "CONTROLLER_ID":
                         env["value"] = "{{ .Values.controllerId }}"
-                    elif (
-                        env["name"] == "EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX"
-                    ):
-                        env[
-                            "value"
-                        ] = "{{ .Values.executor.defaultRequestLoggerEndpointPrefix }}"
+
                 # Update webhook port
                 for portSpec in res["spec"]["template"]["spec"]["containers"][0][
                     "ports"

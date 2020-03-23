@@ -2,10 +2,7 @@
 
 We provide an example python client for calling the API using REST or gRPC for internal microservice testing or for calling the public external API.
 
-Examples of its use can be found in various notebooks:
-
-  * [Helm based deployment examples](../examples/helm_examples.html)
-  * [Istio examples](../examples/istio_examples.html)
+Examples of its use can be found in most of the [Seldon Core examples](../examples).
 
 To use the client simply create an instance with settings for your use case, for example:
 

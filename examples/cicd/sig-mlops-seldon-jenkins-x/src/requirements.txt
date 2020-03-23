@@ -1,0 +1,18 @@
+# You need the right versions for your model server:
+# Model servers: https://docs.seldon.io/projects/seldon-core/en/latest/servers/overview.html
+
+# For SKLearn you need a pickle and the following:
+scikit-learn==0.20.3 # See https://docs.seldon.io/projects/seldon-core/en/latest/servers/sklearn.html
+joblib==0.13.2
+
+# For XGBoost you need v 0.82 and an xgboost export (not a pickle)
+#xgboost==0.82
+
+# For MLFlow you need the following, and a link to the built model:
+#mlflow==1.1.0
+#pandas==0.25
+
+# For tensorflow, any models supported by tensorflow serving (less than v2.0)
+
+# For testing
+pytest==5.1.1

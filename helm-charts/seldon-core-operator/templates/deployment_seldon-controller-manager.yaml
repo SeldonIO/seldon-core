@@ -104,11 +104,11 @@ spec:
           protocol: TCP
         resources:
           limits:
-            cpu: {{ .Values.manager.cpuLimit }}
-            memory: {{ .Values.manager.memoryLimit }}
+            cpu: '{{ .Values.manager.cpuLimit }}'
+            memory: '{{ .Values.manager.memoryLimit }}'
           requests:
-            cpu: {{ .Values.manager.cpuRequest }}
-            memory: {{ .Values.manager.memoryRequest }}
+            cpu: '{{ .Values.manager.cpuRequest }}'
+            memory: '{{ .Values.manager.memoryRequest }}'
         volumeMounts:
         - mountPath: /tmp/k8s-webhook-server/serving-certs
           name: cert

@@ -297,7 +297,7 @@ func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(mldepName string, namespa
 				// pu needs to have an endpoint as engine reads it from SDep in order to direct graph traffic
 				// probes etc will be added later by controller
 				if pu.Endpoint == nil {
-					if p.Transport == TransportGrpc {
+					if r.Transport == TransportGrpc {
 						pu.Endpoint = &Endpoint{Type: GRPC}
 					} else {
 						pu.Endpoint = &Endpoint{Type: REST}
@@ -453,11 +453,34 @@ func sizeOfGraph(p *PredictiveUnit) int {
 	return count + 1
 }
 
+func collectTransports(pu *PredictiveUnit, transportsFound map[EndpointType]bool) {
+	if pu.Endpoint != nil && pu.Endpoint.Type != "" {
+		transportsFound[pu.Endpoint.Type] = true
+	}
+	for _, c := range pu.Children {
+		collectTransports(&c, transportsFound)
+	}
+}
+
 func (r *SeldonDeploymentSpec) ValidateSeldonDeployment() error {
 	var allErrs field.ErrorList
 
+	if r.Protocol != "" && !(r.Protocol == ProtocolSeldon || r.Protocol == ProtocolTensorflow) {
+		fldPath := field.NewPath("spec")
+		allErrs = append(allErrs, field.Invalid(fldPath, r.Protocol, "Invalid protocol"))
+	}
+
+	if r.Transport != "" && !(r.Transport == TransportRest || r.Transport == TransportGrpc) {
+		fldPath := field.NewPath("spec")
+		allErrs = append(allErrs, field.Invalid(fldPath, r.Transport, "Invalid transport"))
+	}
+
+	transports := make(map[EndpointType]bool)
+
 	predictorNames := make(map[string]bool)
 	for i, p := range r.Predictors {
+
+		collectTransports(p.Graph, transports)
 
 		_, noEngine := p.Annotations[ANNOTATION_NO_ENGINE]
 		if noEngine && sizeOfGraph(p.Graph) > 1 {
@@ -471,15 +494,17 @@ func (r *SeldonDeploymentSpec) ValidateSeldonDeployment() error {
 		}
 		predictorNames[p.Name] = true
 		allErrs = checkPredictiveUnits(p.Graph, &p, field.NewPath("spec").Child("predictors").Index(i).Child("graph"), allErrs)
+	}
 
-		if p.Protocol != "" && !(p.Protocol == ProtocolSeldon || p.Protocol == ProtocolTensorflow) {
-			fldPath := field.NewPath("spec").Child("predictors").Index(i)
-			allErrs = append(allErrs, field.Invalid(fldPath, p.Protocol, "Invalid protocol"))
-		}
-
-		if p.Transport != "" && !(p.Transport == TransportRest || p.Transport == TransportGrpc) {
-			fldPath := field.NewPath("spec").Child("predictors").Index(i)
-			allErrs = append(allErrs, field.Invalid(fldPath, p.Transport, "Invalid transport"))
+	if len(transports) > 1 {
+		fldPath := field.NewPath("spec")
+		allErrs = append(allErrs, field.Invalid(fldPath, "", "Multiple endpoint.types found - can only have 1 type in graph. Please use spec.transport"))
+	} else if len(transports) == 1 && r.Transport != "" {
+		for k := range transports {
+			if (k == REST && r.Transport != TransportRest) || (k == GRPC && r.Transport != TransportGrpc) {
+				fldPath := field.NewPath("spec")
+				allErrs = append(allErrs, field.Invalid(fldPath, "", "Mixed transport types found. Remove graph endpoint.types if transport set at deployment level"))
+			}
 		}
 	}
 
