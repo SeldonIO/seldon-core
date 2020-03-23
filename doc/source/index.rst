@@ -74,16 +74,16 @@ Documentation Index
    Java Language Wrapper [Incubating] <java/README.md>
    R Language Wrapper [ALPHA] <R/README.md>
    NodeJS Language Wrapper [ALPHA] <nodejs/README.md>
-   Custom Language Wrapper [ALPHA] <analytics/custom_metrics.md>
-   
-   
+   Go Language Wrapper [ALPHA] <go/go_wrapper_link.rst>
+
+
 .. toctree::
    :maxdepth: 1
    :caption: Ingress
 
    Ambassador Ingress <ingress/ambassador.md>
    Istio Ingress <ingress/istio.md>
-   
+
 .. toctree::
    :maxdepth: 1
    :caption: Production

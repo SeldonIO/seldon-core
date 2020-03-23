@@ -1,6 +1,8 @@
 # Custom Metrics
 
-Seldon Core exposes basic metrics via Prometheus endpoints on its service orchestrator that include request count, request time percentiles and rolling accuracy for each running model. However, you may wish to expose custom metrics from your components which are automatically added to Prometheus. For this purpose you can supply extra fields in the returned meta data of the response object in the API calls to your components as illustrated below:
+Seldon Core exposes basic metrics via Prometheus endpoints on its service orchestrator that include request count, request time percentiles and rolling accuracy for each running model as described in [metrics](./analytics.md) documentation.
+However, you may wish to expose custom metrics from your components which are automatically added to Prometheus.
+For this purpose you can supply extra fields in the returned meta data of the response object in the API calls to your components as illustrated below:
 
 ```json
 {
@@ -10,7 +12,7 @@ Seldon Core exposes basic metrics via Prometheus endpoints on its service orches
 				"type": "COUNTER",
 				"key": "mycounter",
 				"value": 1.0,
-				"tags": {"mytag":"mytagvalue"}
+				"tags": {"mytag": "mytagvalue"}
 			},
 			{
 				"type": "GAUGE",
@@ -39,7 +41,7 @@ We provide three types of metric that can be returned in the meta.metrics list:
 
  * COUNTER : a monotonically increasing value. It will be added to any existing value from the metric key.
  * GAUGE : an absolute value showing a level, it will overwrite any existing value.
- * TIMER : a time value (in msecs).
+ * TIMER : a time value (in msecs), it will be aggregated into Prometheus' HISTOGRAM.
 
 Each metric, apart from the type, takes a key and a value. The proto buffer definition is shown below:
 
@@ -53,12 +55,47 @@ message Metric {
  string key = 1;
  MetricType type = 2;
  float value = 3;
- map<string,string> tags = 4; 
+ map<string,string> tags = 4;
 }
 ```
 
+## Metrics endpoints
 
-As we expose the metrics via Prometheus, if ```tags``` are added they must appear in every metric response and always have the same set of keys since Prometheus does not allow metrics to have varying numbers of tags. This condition is enforced by the [micrometer](https://micrometer.io/) library we use to expose the metrics. Exceptions will happen if this condition is violated.
+Before Seldon Core 1.1 custom metrics have been returned to `Engine` orchestrator which exposed them all together to Prometheus via a single endpoint.
+We used following Pod annotations
+```yaml
+prometheus.io/scrape: "true"
+prometheus.io/path: "/prometheus"
+prometheus.io/port: "8000"
+```
+
+Because new `Executor` orchestrator does not inspect message payloads (for performance reasons) it cannot aggregate custom metrics and therefore we expose them directly on the Python wrapper.
+We do not define `prometheus.io/port` annotation anymore and instead use `metrics` name for ports that expose Prometheus metrics:
+```yaml
+ports:
+- containerPort: 6000
+  name: metrics
+  protocol: TCP
+```
+
+This require us to use a following entry
+```
+  - source_labels: [__meta_kubernetes_pod_container_port_name]
+    action: keep
+    regex: metrics(-.*)?
+```
+in the Prometheus [config](https://github.com/SeldonIO/seldon-core/blob/master/helm-charts/seldon-core-analytics/files/prometheus/prometheus-config.yaml).
+
+
+
+## Labels
+
+As we expose the metrics via Prometheus, if ```tags``` are added they must appear in every metric response otherwise Prometheus will consider such metrics as a new time series, see official [documentation].
+
+With the legacy `Engine` orchestrator we enforced presence of same set of labels using the [micrometer](https://micrometer.io/) library to expose metrics. Exceptions would happen if this condition is violated.
+
+
+## Supported wrappers
 
 At present the following Seldon Core wrappers provide integrations with custom metrics:
 
@@ -67,4 +104,4 @@ At present the following Seldon Core wrappers provide integrations with custom m
 
 ## Example
 
-There is an [example notebook illustrating a model with custom metrics in python](../examples/tmpl_model_with_metrics.html).
+There is an [example notebook illustrating a model with custom metrics in python](../examples/custom_metrics.html).
