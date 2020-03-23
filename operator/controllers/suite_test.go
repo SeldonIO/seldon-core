@@ -22,6 +22,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	"github.com/seldonio/seldon-core/operator/constants"
 	istio "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -169,10 +170,11 @@ var _ = BeforeSuite(func(done Done) {
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&SeldonDeploymentReconciler{
-		Client: k8sManager.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("SeldonDeployment"),
-		Scheme: k8sManager.GetScheme(),
-	}).SetupWithManager(k8sManager)
+		Client:   k8sManager.GetClient(),
+		Log:      ctrl.Log.WithName("controllers").WithName("SeldonDeployment"),
+		Scheme:   k8sManager.GetScheme(),
+		Recorder: k8sManager.GetEventRecorderFor(constants.ControllerName),
+	}).SetupWithManager(k8sManager, constants.ControllerName)
 	Expect(err).ToNot(HaveOccurred())
 
 	//k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})

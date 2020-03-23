@@ -26,7 +26,7 @@ def create_and_run_script(folder, notebook):
         raise e
 
 
-@pytest.mark.sequential
+@pytest.mark.notebooks
 class TestNotebooks(object):
 
     #
