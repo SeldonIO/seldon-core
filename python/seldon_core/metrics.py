@@ -35,23 +35,13 @@ TIMER = "TIMER"
 BINS = [0] + list(np.logspace(-3, np.log10(30), 50)) + [np.inf]
 
 # Development placeholder
-LABELS = [
-    "worker_id",
-    "seldon_deployment_name",
-    "model_name",
-    "image_name",
-    "image_version",
-    "predictor_name",
-    "predictor_version",
-]
-
 image = os.environ.get(ENV_MODEL_IMAGE, f"{NONIMPLEMENTED_MSG}:{NONIMPLEMENTED_MSG}")
 image_name, image_version = image.split(":")
 predictor_version = json.loads(os.environ.get(ENV_PREDICTOR_LABELS, "{}")).get(
     "version", f"{NONIMPLEMENTED_MSG}"
 )
 
-my_labels = {
+DEFAULT_LABELS = {
     "seldon_deployment_name": os.environ.get(
         ENV_SELDON_DEPLOYMENT_NAME, f"{NONIMPLEMENTED_MSG}"
     ),
@@ -88,15 +78,23 @@ class SeldonMetrics:
         for metrics in custom_metrics:
             metrics_type = metrics.get("type", "COUNTER")
             key = metrics_type, metrics["key"]
+            tags = metrics.get("tags", {})
             if metrics_type == "COUNTER":
-                value = data.get(key, 0)
-                data[key] = value + metrics["value"]
+                value = data.get(key, {}).get("value", 0)
+                data[key] = {"value": value + metrics["value"], "tags": tags}
             elif metrics_type == "TIMER":
-                vals, sumv = data.get(key, (list(np.zeros(len(BINS) - 1)), 0))
+                vals, sumv = data.get(key, {}).get(
+                    "value", (list(np.zeros(len(BINS) - 1)), 0)
+                )
                 # Dividing by 1000 because unit is milliseconds
-                data[key] = self._update_hist(metrics["value"] / 1000, vals, sumv)
+                data[key] = {
+                    "value": self._update_hist(metrics["value"] / 1000, vals, sumv),
+                    "tags": tags,
+                }
+            elif metrics_type == "GAUGE":
+                data[key] = {"value": metrics["value"], "tags": tags}
             else:
-                data[key] = metrics["value"]
+                logger.error(f"Unkown metrics type: {metrics_type}")
 
         # Write worker's data with lock (again - Proxy objects are not thread-safe)
         with self._lock:
@@ -112,22 +110,22 @@ class SeldonMetrics:
         logger.debug("Read current metrics data from shared memory")
 
         for worker, metrics in data.items():
-            labels = [
-                str(worker),
-                my_labels["seldon_deployment_name"],
-                my_labels["model_name"],
-                my_labels["image_name"],
-                my_labels["image_version"],
-                my_labels["predictor_name"],
-                my_labels["predictor_version"],
-            ]
-            for (item_type, item_name), item_value in metrics.items():
+            for (item_type, item_name), item in metrics.items():
+                labels_keys, labels_values = self._merge_labels(
+                    str(worker), item["tags"]
+                )
                 if item_type == "GAUGE":
-                    yield self._expose_gauge(item_name, item_value, labels)
+                    yield self._expose_gauge(
+                        item_name, item["value"], labels_keys, labels_values
+                    )
                 elif item_type == "COUNTER":
-                    yield self._expose_counter(item_name, item_value, labels)
+                    yield self._expose_counter(
+                        item_name, item["value"], labels_keys, labels_values
+                    )
                 elif item_type == "TIMER":
-                    yield self._expose_histogram(item_name, item_value, labels)
+                    yield self._expose_histogram(
+                        item_name, item["value"], labels_keys, labels_values
+                    )
 
     def generate_metrics(self):
         myregistry = CollectorRegistry()
@@ -138,30 +136,35 @@ class SeldonMetrics:
         )
 
     @staticmethod
+    def _merge_labels(worker, tags):
+        labels = {**tags, **DEFAULT_LABELS, "worker_id": str(worker)}
+        return list(labels.keys()), list(labels.values())
+
+    @staticmethod
     def _update_hist(x, vals, sumv):
         hist = np.histogram([x], BINS)[0]
         vals = list(np.array(vals) + hist)
         return vals, sumv + x
 
     @staticmethod
-    def _expose_gauge(name, value, labels):
-        metric = GaugeMetricFamily(name, "", labels=LABELS)
-        metric.add_metric(labels, value)
+    def _expose_gauge(name, value, labels_keys, labels_values):
+        metric = GaugeMetricFamily(name, "", labels=labels_keys)
+        metric.add_metric(labels_values, value)
         return metric
 
     @staticmethod
-    def _expose_counter(name, value, labels):
-        metric = CounterMetricFamily(name, "", labels=LABELS)
-        metric.add_metric(labels, value)
+    def _expose_counter(name, value, labels_keys, labels_values):
+        metric = CounterMetricFamily(name, "", labels=labels_keys)
+        metric.add_metric(labels_values, value)
         return metric
 
     @staticmethod
-    def _expose_histogram(name, value, labels):
+    def _expose_histogram(name, value, labels_keys, labels_values):
         vals, sumv = value
         buckets = [[floatToGoString(b), v] for v, b in zip(np.cumsum(vals), BINS[1:])]
 
-        metric = HistogramMetricFamily(name, "", labels=LABELS)
-        metric.add_metric(labels, buckets, sum_value=sumv)
+        metric = HistogramMetricFamily(name, "", labels=labels_keys)
+        metric.add_metric(labels_values, buckets, sum_value=sumv)
         return metric
 
 
