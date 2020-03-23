@@ -47,6 +47,7 @@ Documentation Index
    Create your Inference Graph <graph/inference-graph.md>
    Deploy your Model  <workflow/deploying.md>
    Testing your Model Endpoints  <workflow/serving.md>
+   Python Module and Client <python/index.rst>
    Troubleshooting guide <workflow/troubleshooting.md>
    Usage reporting <workflow/usage-reporting.md>
    Upgrading <reference/upgrading.md>

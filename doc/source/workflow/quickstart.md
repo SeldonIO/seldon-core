@@ -171,28 +171,19 @@ class Model:
         return output
 ```
 
-**3. Use the Seldon tools to containerise your model**
+**3. Test model locally**
 
-Now we can use the Seldon Core utilities to convert our python class into a fully fledged Seldon Core microservice. In this case we are also containerising the model binaries. 
-
-The result below is a container with the name `sklearn_iris` and the tag `0.1` which we will be able to deploy using Seldon Core.
+Before we deploy our model to production, we can actually run our model locally using the [Python seldon-core Module](../python/python_module) microservice CLI functionality.
 
 ```console
-s2i build . seldonio/seldon-core-s2i-python3:0.18 sklearn_iris:0.1 
-```
+$ seldon-core-microservice Model REST --service-type MODEL
 
-**4. Test model locally**
+2020-03-23 16:59:17,366 - werkzeug:_log:122 - INFO:   * Running on http://0.0.0.0:5000/ (Press CTRL+C to quit)
 
-Before we deploy our model to production, we can actually run our model locally using Docker, and send it a prediction request.
-
-```console
-$ docker run -p 8000:8000 --rm sklearn_iris:0.1 
-
-Listening on port 8080...
-
-$ curl -X POST localhost:8080/api/v1.0/predictions \
+$ curl -X POST localhost:5000/api/v1.0/predictions \
     -H 'Content-Type: application/json' \
-    -d '{ "data": { "ndarray": [1,2,3,4] } }' | json_pp
+    -d '{ "data": { "ndarray": [1,2,3,4] } }' \
+    | json_pp
 
 {
    "meta" : {},
@@ -213,7 +204,17 @@ $ curl -X POST localhost:8080/api/v1.0/predictions \
 }
 ```
 
-**4. Deploy to Kubernetes**
+**4. Use the Seldon tools to containerise your model**
+
+Now we can use the Seldon Core utilities to convert our python class into a fully fledged Seldon Core microservice. In this case we are also containerising the model binaries. 
+
+The result below is a container with the name `sklearn_iris` and the tag `0.1` which we will be able to deploy using Seldon Core.
+
+```console
+s2i build . seldonio/seldon-core-s2i-python3:0.18 sklearn_iris:0.1 
+```
+
+**5. Deploy to Kubernetes**
 
 Similar to what we did with the pre-packaged model server, we define here our deployment structure however we also have to specify the container that we just built, together with any further containerSpec options we may want to add.
 
@@ -239,7 +240,7 @@ spec:
 END
 ```
 
-**5. Send a request to your deployed model in Kubernetes**
+**6. Send a request to your deployed model in Kubernetes**
 
 Finally we can just send a request to the model and see the reply by the server.
 
