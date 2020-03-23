@@ -55,7 +55,7 @@ func TestSimpleModel(t *testing.T) {
 	}
 
 	url, _ := url.Parse("http://localhost")
-	r := NewServerRestApi(&p, test.NewSeldonMessageTestClient(t, 0, nil, nil), false, url, "default", api.ProtocolSeldon, "test", "/metrics")
+	r := NewServerRestApi(&p, &test.SeldonMessageTestClient{}, false, url, "default", api.ProtocolSeldon, "test", "/metrics")
 	r.Initialise()
 	var data = ` {"data":{"ndarray":[1.1,2.0]}}`
 
@@ -84,7 +84,7 @@ func TestReponsePuuidIsSet(t *testing.T) {
 	}
 
 	url, _ := url.Parse("http://localhost")
-	r := NewServerRestApi(&p, test.NewSeldonMessageTestClient(t, 0, nil, nil), false, url, "default", api.ProtocolSeldon, "test", "/metrics")
+	r := NewServerRestApi(&p, &test.SeldonMessageTestClient{}, false, url, "default", api.ProtocolSeldon, "test", "/metrics")
 	r.Initialise()
 	var data = ` {"data":{"ndarray":[1.1,2.0]}}`
 
@@ -211,7 +211,7 @@ func TestServerMetrics(t *testing.T) {
 	}
 
 	url, _ := url.Parse("http://localhost")
-	r := NewServerRestApi(&p, test.NewSeldonMessageTestClient(t, 0, nil, nil), false, url, "default", api.ProtocolSeldon, "test", "/metrics")
+	r := NewServerRestApi(&p, &test.SeldonMessageTestClient{}, false, url, "default", api.ProtocolSeldon, "test", "/metrics")
 	r.Initialise()
 
 	var data = ` {"data":{"ndarray":[1.1,2.0]}}`
@@ -252,7 +252,7 @@ func TestTensorflowStatus(t *testing.T) {
 	}
 
 	url, _ := url.Parse("http://localhost")
-	r := NewServerRestApi(&p, test.NewSeldonMessageTestClient(t, 0, nil, nil), false, url, "default", api.ProtocolTensorflow, "test", "/metrics")
+	r := NewServerRestApi(&p, &test.SeldonMessageTestClient{}, false, url, "default", api.ProtocolTensorflow, "test", "/metrics")
 	r.Initialise()
 
 	req, _ := http.NewRequest("GET", "/v1/models/mymodel", nil)
@@ -281,7 +281,7 @@ func TestSeldonStatus(t *testing.T) {
 	}
 
 	url, _ := url.Parse("http://localhost")
-	r := NewServerRestApi(&p, test.NewSeldonMessageTestClient(t, 0, nil, nil), false, url, "default", api.ProtocolSeldon, "test", "/metrics")
+	r := NewServerRestApi(&p, &test.SeldonMessageTestClient{}, false, url, "default", api.ProtocolSeldon, "test", "/metrics")
 	r.Initialise()
 
 	req, _ := http.NewRequest("GET", "/api/v1.0/status/mymodel", nil)
@@ -310,7 +310,7 @@ func TestSeldonMetadata(t *testing.T) {
 	}
 
 	url, _ := url.Parse("http://localhost")
-	r := NewServerRestApi(&p, test.NewSeldonMessageTestClient(t, 0, nil, nil), false, url, "default", api.ProtocolSeldon, "test", "/metrics")
+	r := NewServerRestApi(&p, &test.SeldonMessageTestClient{}, false, url, "default", api.ProtocolSeldon, "test", "/metrics")
 	r.Initialise()
 
 	req, _ := http.NewRequest("GET", "/api/v1.0/metadata/mymodel", nil)
@@ -339,7 +339,7 @@ func TestTensorflowMetadata(t *testing.T) {
 	}
 
 	url, _ := url.Parse("http://localhost")
-	r := NewServerRestApi(&p, test.NewSeldonMessageTestClient(t, 0, nil, nil), false, url, "default", api.ProtocolTensorflow, "test", "/metrics")
+	r := NewServerRestApi(&p, &test.SeldonMessageTestClient{}, false, url, "default", api.ProtocolTensorflow, "test", "/metrics")
 	r.Initialise()
 
 	req, _ := http.NewRequest("GET", "/v1/models/mymodel/metadata", nil)

@@ -32,21 +32,21 @@ const (
 func createPredictorProcess(t *testing.T) *PredictorProcess {
 	url, _ := url.Parse(testSourceUrl)
 	ctx := context.WithValue(context.TODO(), payload.SeldonPUIDHeader, testSeldonPuid)
-	pp := NewPredictorProcess(ctx, test.NewSeldonMessageTestClient(t, -1, nil, nil), logf.Log.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{testCustomMetaKey: []string{testCustomMetaValue}})
+	pp := NewPredictorProcess(ctx, &test.SeldonMessageTestClient{}, logf.Log.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{testCustomMetaKey: []string{testCustomMetaValue}})
 	return &pp
 }
 
 func createPredictorProcessWithRoute(t *testing.T, chosenRoute int) *PredictorProcess {
 	url, _ := url.Parse(testSourceUrl)
 	ctx := context.WithValue(context.TODO(), payload.SeldonPUIDHeader, testSeldonPuid)
-	pp := NewPredictorProcess(ctx, test.NewSeldonMessageTestClient(t, chosenRoute, nil, nil), logf.Log.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{})
+	pp := NewPredictorProcess(ctx, &test.SeldonMessageTestClient{ChosenRoute: chosenRoute}, logf.Log.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{})
 	return &pp
 }
 
 func createPredictorProcessWithError(t *testing.T, errMethod *v1.PredictiveUnitMethod, err error) *PredictorProcess {
 	url, _ := url.Parse(testSourceUrl)
 	ctx := context.WithValue(context.TODO(), payload.SeldonPUIDHeader, testSeldonPuid)
-	pp := NewPredictorProcess(ctx, test.NewSeldonMessageTestClient(t, -1, errMethod, err), logf.Log.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{})
+	pp := NewPredictorProcess(ctx, &test.SeldonMessageTestClient{ErrMethod: errMethod, Err: err}, logf.Log.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{})
 	return &pp
 }
 
