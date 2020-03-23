@@ -1,0 +1,2678 @@
+
+Showing logs for build [32mseldonio-seldon-core-pr-1507-in-zb6f7-114[0m stage [32mpr-build-comment[0m and container [32mstep-credential-initializer-99pps[0m
+{"level":"warn","ts":1584956816.4614618,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1584956816.4620154,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1507-in-zb6f7-114[0m stage [32mpr-build-comment[0m and container [32mstep-working-dir-initializer-sxmwm[0m
+{"level":"warn","ts":1584956817.4699852,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1584956817.4720922,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1507-in-zb6f7-114[0m stage [32mpr-build-comment[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-1507-in-zb6f7-114[0m stage [32mpr-build-comment[0m and container [32mstep-create-dir-workspace-jmmkj[0m
+{"level":"warn","ts":1584956823.6938002,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1584956823.6963046,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1507-in-zb6f7-114[0m stage [32mpr-build-comment[0m and container [32mstep-git-source-seldonio-seldon-core-pr-1507-in-xnrpk[0m
+{"level":"warn","ts":1584956824.053804,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1584956828.0213766,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ master in path /workspace/source"}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1507-in-zb6f7-114[0m stage [32mpr-build-comment[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:713019b1b36cb1af280389f24f1d8918441afeb4,1507:353c4b37c53d676fec18f00cd9e05da32581eca1
+DEBUG: ran git fetch --unshallow origin 353c4b37c53d676fec18f00cd9e05da32581eca1: 713019b1b36cb1af280389f24f1d8918441afeb4: in 
+DEBUG: ran git checkout master in 
+DEBUG: ran git reset --hard 713019b1b36cb1af280389f24f1d8918441afeb4 in 
+DEBUG: ran clean --force -d . in 
+DEBUG: ran git merge 353c4b37c53d676fec18f00cd9e05da32581eca1 in 
+Merged SHA 353c4b37c53d676fec18f00cd9e05da32581eca1 with commit message 'reduce logging by moving info to debug for non implemented methods, closes #1565' into base branch master
+Merged SHA 81bdf06bbacae1c583a35d10c2d8f717454426c1 with commit message 'extend metrics test to cover different microservice endpoints' into base branch master
+Merged SHA 62e5ecc95b674f4fb4693e1bd69141132fce1702 with commit message 'combine different metrics test together' into base branch master
+Merged SHA 54dcc0c0a129d308ec13cf6dcc09ece82ce1c80d with commit message 'add better tests for metrics with predict_raw (include grpc)' into base branch master
+Merged SHA 1edb88b9bf62c9a0801a72c58909c23c5a4360cd with commit message 'run linter' into base branch master
+Merged SHA 4fb20e3982950f011101a244b24bb8fa0998d79b with commit message 'update SeldonMetrics after calling other raw methods and include GRPC messages' into base branch master
+Merged SHA d1ee74ae1b0535792a092794add3936bc50efa70 with commit message 'make seldon_metrics mandatory argument for SeldonModelGRPC' into base branch master
+Merged SHA 6bb4a986d15384941ebd5843452d8923a7c41e9a with commit message 'run linter' into base branch master
+Merged SHA ac1cb00a5deaf0ace79378b3005da2c703bb4b52 with commit message 'make metrics be always expected by microservice create functions' into base branch master
+Merged SHA a186f6de23a4dd24a50c3d87e2f4d5880c507e0d with commit message 'avoid catching exception' into base branch master
+Merged SHA 32671075e10d0e28b833577de8dd0e0ca070ad3b with commit message 'run linter' into base branch master
+Merged SHA 1ed9c7c4870b4597058efa1c66dcb26dceb86094 with commit message 'gather custom metrics from predict_raw' into base branch master
+Merged SHA bee23cf4d81f9cc10dab6c94110a2c0f4110ff85 with commit message 'fix one of e2e tests that misteriously started to fail' into base branch master
+Merged SHA 0bcd907959a71dd9be2446e3cc6e9e3e777f142e with commit message 'Fix defaulting of graph elements to model. Only do when impl or methods is nil' into base branch master
+Merged SHA de4e2684ef9d61604f146e7fdb3ce03fab529359 with commit message 'remove redundant code from webhook' into base branch master
+Merged SHA 1fd74d81583825c5fd9a785f0b16732b9611a565 with commit message 'code fixes after rebase' into base branch master
+Merged SHA 8774d3068e6e4e4a4a678a178839721cdd258055 with commit message 'fix imports in test_metrics' into base branch master
+Merged SHA 16965c7d6bfaf7974922b31bd988457d239d4080 with commit message 'run linter' into base branch master
+Merged SHA 6fb999b614b5504d5299e906c1e575f70d975653 with commit message 'clarify: UNDEFINED -> NOT_IMPLEMENTED' into base branch master
+Merged SHA 50feddd276f4cd217d4ed529d033300a66219b10 with commit message 'add unit tests to new metrics microservice' into base branch master
+Merged SHA 21696bc38a0056d4ef0e1bfb7eebcbbcfab3aec6 with commit message 'merge/append metrics for request responses' into base branch master
+Merged SHA 6415817823856322e94b77f294ae899ed0a40882 with commit message 'fix analytics docs' into base branch master
+Merged SHA 7221103bde1fa0c881cb4a4678d0a64053413932 with commit message 'add tf serving metrics example' into base branch master
+Merged SHA a7a1aeb8427decf581aad5c1a2debdb6d892eab4 with commit message 'update to operator for metrics and test notebook' into base branch master
+Merged SHA 4750ee1b75d97436ba7de05ebb2798149e4791c1 with commit message 'WIP: modify engine/executor annotations and name metrics port' into base branch master
+Merged SHA d67ef06e60769e392bd48a2dad6506cafeb80ba5 with commit message 'WIP: make wrapper prometheus endpoint configurable' into base branch master
+Merged SHA 9c3c8985f73f1efe672a9b656a3267ddbeb2f21b with commit message 'WIP: add debug logger to metrics' into base branch master
+Merged SHA 6514d43234cc88b02faa214dd426b6743b9d48e2 with commit message 'WIP: do not use dashes in prometheus labels' into base branch master
+Merged SHA 74e6db5a97900774264a69b79c692e5dc6dfb663 with commit message 'WIP: read metrics labels from environmental variables' into base branch master
+Merged SHA b593437ef30bb5c97328a3200fda5e98b6bae44d with commit message 'WIP: introduce usage of Lock for  thread-safety' into base branch master
+Merged SHA 899cdfab7b604faa09286926f286eff10fd3e1ab with commit message 'WIP: apply suggestions from Alejandro' into base branch master
+Merged SHA 87e40afae6d06ded5f55cf14a25c74d0cd803b58 with commit message 'run linter' into base branch master
+Merged SHA 90d9ec436e8f6471c01575d0881e9802a39f26a5 with commit message 'WIP: add support for TIMER type of metrics' into base branch master
+Merged SHA ff66476160042447cbad598d725fa3e7f013910f with commit message 'WIP: fix tests' into base branch master
+Merged SHA fba079624acbfbbd76bc7e369122b3f2cf3226ab with commit message 'WIP: use thread names to id workers in GPRC mode' into base branch master
+Merged SHA dde19d7c7d4381b5d3c1b1ca181036770bc52215 with commit message 'WIP: gather metrics when GRPC endpoints are called (no worker separation)' into base branch master
+Merged SHA 2e57f56abc213f61c60e5c8908044621ff973edb with commit message 'WIP: run metrics endpoint as separated microservice' into base branch master
+Merged SHA ac4c86f0bae10bca440547d082a4a9dd81a62213 with commit message 'WIP: do not use global variable to store metrics' into base branch master
+Merged SHA d7e6cefbffa53667f497ee53ee49ff8d5c6c28ad with commit message 'WIP: add prometheus_client to requirements' into base branch master
+Merged SHA f92b0603507c4532985a1967d886525e0e5035fe with commit message 'WIP: introduce SeldonMetrics class (to be shared between processes)' into base branch master
+Merged SHA 529485ff34763c1d94b5bcc30497918e9d8dbbaf with commit message 'WIP: first success of serving metrics' into base branch master
+Merged SHA 0c036c5aa13668a551913db08a7364d922038627 with commit message 'example of shared dict updated on custom metrics and accessed on /metrics endpoint' into base branch master
+Merged SHA 0708c567939debc6ce6ae306ecf766aa93397c74 with commit message 'accessing shared_dict from some method' into base branch master
+
+Showing logs for build [32mseldonio-seldon-core-pr-1507-in-zb6f7-114[0m stage [32mpr-build-comment[0m and container [32mstep-step2[0m
++++ dirname ./add-pr-build-comment
+++ cd .
+++ pwd
++ STARTUP_DIR=/workspace/source/ci
++ REPO_OWNER=SeldonIO
++ REPO_NAME=seldon-core
++ PULL_NUMBER=1507
++ BUILD_NUMBER=114
++ PIPELINE_CONTEXT=integration
+++ cat
++++ date
++ COMMENT_MSG='Mon Mar 23 09:47:14 UTC 2020
+The logs for [integration] [114] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-1507/114.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-1507 --build=114'
++ ** step pr comment --owner=SeldonIO --repository=seldon-core --pull-request=1507 '--comment=Mon Mar 23 09:47:14 UTC 2020
+The logs for [integration] [114] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-1507/114.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-1507 --build=114'
+
+Showing logs for build [32mseldonio-seldon-core-pr-1507-in-zb6f7-114[0m stage [32mpr-build-comment[0m and container [32mstep-source-mkdir-seldonio-seldon-core-pr-1507-in-6cl4m[0m
+{"level":"warn","ts":1584956837.0788608,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1584956837.1653895,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1507-in-zb6f7-114[0m stage [32mpr-build-comment[0m and container [32mstep-source-copy-seldonio-seldon-core-pr-1507-in-kkdt8[0m
+{"level":"warn","ts":1584956837.3769398,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1584956837.811377,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r source/. /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1507-in-zb6f7-114[0m stage [32mend-to-end[0m and container [32mstep-credential-initializer-vbs7l[0m
+{"level":"warn","ts":1584956852.2028751,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1584956852.2033815,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1507-in-zb6f7-114[0m stage [32mend-to-end[0m and container [32mstep-working-dir-initializer-5d5s5[0m
+{"level":"warn","ts":1584956854.019323,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1584956854.0220888,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1507-in-zb6f7-114[0m stage [32mend-to-end[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-1507-in-zb6f7-114[0m stage [32mend-to-end[0m and container [32mstep-create-dir-workspace-lzgcg[0m
+{"level":"warn","ts":1584956860.4621363,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1584956860.4655097,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1507-in-zb6f7-114[0m stage [32mend-to-end[0m and container [32mstep-source-copy-workspace-57xtg[0m
+{"level":"warn","ts":1584956860.880534,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1584956867.5979586,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1507-in-zb6f7-114[0m stage [32mend-to-end[0m and container [32mstep-test-end-to-end[0m
+Test run type is: [base]
+Starting Docker: docker.
+[SETUP] Waiting for Docker to be ready, sleeping for 1 seconds ...
+kind create cluster --config ../resources/kind_config.yaml
+Creating cluster "kind" ...
+ • Ensuring node image (kindest/node:v1.16.3) 🖼  ...
+ ✓ Ensuring node image (kindest/node:v1.16.3) 🖼
+ • Preparing nodes 📦  ...
+ ✓ Preparing nodes 📦
+ • Writing configuration 📜  ...
+ ✓ Writing configuration 📜
+ • Starting control-plane 🕹️  ...
+ ✓ Starting control-plane 🕹️
+ • Installing CNI 🔌  ...
+ ✓ Installing CNI 🔌
+ • Installing StorageClass 💾  ...
+ ✓ Installing StorageClass 💾
+ • Joining worker nodes 🚜  ...
+ ✓ Joining worker nodes 🚜
+Set kubectl context to "kind-kind"
+You can now use your cluster with:
+
+kubectl cluster-info --context kind-kind
+
+Have a question, bug, or feature request? Let us know! https://kind.sigs.k8s.io/#community 🙂
+`kind get kubeconfig-path` is deprecated!
+
+KIND will export and merge kubeconfig like kops, minikube, etc.
+This command is now unnecessary and will be removed in a future release.
+
+For more info see: https://github.com/kubernetes-sigs/kind/issues/1060
+See also the output of `kind create cluster`
+
+Files changed in python folder:
+python/.gitignore
+python/requirements.txt
+python/seldon_core/metrics.py
+python/seldon_core/microservice.py
+python/seldon_core/seldon_methods.py
+python/seldon_core/user_model.py
+python/seldon_core/utils.py
+python/seldon_core/wrapper.py
+python/setup.py
+python/tests/test_application_exception_microservice.py
+python/tests/test_combiner_microservice.py
+python/tests/test_metrics.py
+python/tests/test_microservice.py
+python/tests/test_model_microservice.py
+python/tests/test_router_microservice.py
+python/tests/test_transformer_microservice.py
+cd ../../wrappers/s2i/python/build_scripts && ./build_all_local.sh
+make[1]: Entering directory '/workspace/source/wrappers/s2i/python'
+mkdir -p _python
+cp -r ../../../python _python
+cat Dockerfile.local.tmpl | sed  -e "s|%PYTHON_VERSION%|3.6|" | sed  -e "s|%CONDA_VERSION%|4.7.12|" > Dockerfile
+set -x && docker build -t docker.io/seldonio/seldon-core-s2i-python`echo -n 3.6 | sed 's/\.//g'`:0.19-SNAPSHOT .
+++ echo -n 3.6
+++ sed 's/\.//g'
++ docker build -t docker.io/seldonio/seldon-core-s2i-python36:0.19-SNAPSHOT .
+Sending build context to Docker daemon  955.4kB
+Step 1/10 : FROM continuumio/miniconda3:4.7.12
+4.7.12: Pulling from continuumio/miniconda3
+b8f262c62ec6: Pulling fs layer
+0a43c0154f16: Pulling fs layer
+906d7b5da8fb: Pulling fs layer
+b8f262c62ec6: Download complete
+906d7b5da8fb: Verifying Checksum
+906d7b5da8fb: Download complete
+0a43c0154f16: Verifying Checksum
+0a43c0154f16: Download complete
+b8f262c62ec6: Pull complete
+0a43c0154f16: Pull complete
+906d7b5da8fb: Pull complete
+Digest: sha256:6c979670684d970f8ba934bf9b7bf42e77c30a22eb96af1f30a039b484719159
+Status: Downloaded newer image for continuumio/miniconda3:4.7.12
+ ---> 406f2b43ea59
+Step 2/10 : LABEL io.openshift.s2i.scripts-url="image:///s2i/bin"
+ ---> Running in 673ca928110d
+Removing intermediate container 673ca928110d
+ ---> 56cf5ddf85b7
+Step 3/10 : RUN conda install --yes python=3.6 conda=4.7.12
+ ---> Running in 6a7bd5a6a5a1
+Collecting package metadata (current_repodata.json): ...working... done
+Solving environment: ...working... failed with initial frozen solve. Retrying with flexible solve.
+Solving environment: ...working... failed with repodata from current_repodata.json, will retry with next repodata source.
+Collecting package metadata (repodata.json): ...working... done
+Solving environment: ...working... done
+
+## Package Plan ##
+
+  environment location: /opt/conda
+
+  added / updated specs:
+    - conda=4.7.12
+    - python=3.6
+
+
+The following packages will be downloaded:
+
+    package                    |            build
+    ---------------------------|-----------------
+    asn1crypto-1.3.0           |           py36_0         164 KB
+    ca-certificates-2020.1.1   |                0         125 KB
+    certifi-2019.11.28         |           py36_0         153 KB
+    cffi-1.14.0                |   py36h2e261b9_0         223 KB
+    chardet-3.0.4              |        py36_1003         180 KB
+    conda-4.7.12               |           py36_0         2.8 MB
+    conda-package-handling-1.6.0|   py36h7b6447c_0         795 KB
+    cryptography-2.8           |   py36h1ba5d50_0         552 KB
+    idna-2.9                   |             py_1          49 KB
+    openssl-1.1.1e             |       h7b6447c_0         2.5 MB
+    pip-20.0.2                 |           py36_1         1.7 MB
+    pycosat-0.6.3              |   py36h7b6447c_0          82 KB
+    pycparser-2.20             |             py_0          92 KB
+    pyopenssl-19.1.0           |           py36_0          87 KB
+    pysocks-1.7.1              |           py36_0          30 KB
+    python-3.6.9               |       h265db76_0        30.2 MB
+    requests-2.23.0            |           py36_0          91 KB
+    ruamel_yaml-0.15.87        |   py36h7b6447c_0         257 KB
+    setuptools-46.0.0          |           py36_0         519 KB
+    six-1.14.0                 |           py36_0          27 KB
+    tqdm-4.36.1                |             py_0          50 KB
+    urllib3-1.25.8             |           py36_0         169 KB
+    wheel-0.34.2               |           py36_0          51 KB
+    ------------------------------------------------------------
+                                           Total:        40.9 MB
+
+The following packages will be UPDATED:
+
+  asn1crypto                                   1.0.1-py37_0 --> 1.3.0-py36_0
+  ca-certificates                               2019.8.28-0 --> 2020.1.1-0
+  certifi                                  2019.9.11-py37_0 --> 2019.11.28-py36_0
+  cffi                                1.12.3-py37h2e261b9_0 --> 1.14.0-py36h2e261b9_0
+  cryptography                           2.7-py37h1ba5d50_0 --> 2.8-py36h1ba5d50_0
+  idna                  pkgs/main/linux-64::idna-2.8-py37_0 --> pkgs/main/noarch::idna-2.9-py_1
+  openssl                                 1.1.1d-h7b6447c_2 --> 1.1.1e-h7b6447c_0
+  pip                                         19.2.3-py37_0 --> 20.0.2-py36_1
+  pycparser          pkgs/main/linux-64::pycparser-2.19-py~ --> pkgs/main/noarch::pycparser-2.20-py_0
+  pyopenssl                                   19.0.0-py37_0 --> 19.1.0-py36_0
+  requests                                    2.22.0-py37_0 --> 2.23.0-py36_0
+  ruamel_yaml                        0.15.46-py37h14c3975_0 --> 0.15.87-py36h7b6447c_0
+  setuptools                                  41.4.0-py37_0 --> 46.0.0-py36_0
+  six                                         1.12.0-py37_0 --> 1.14.0-py36_0
+  urllib3                                     1.24.2-py37_0 --> 1.25.8-py36_0
+  wheel                                       0.33.6-py37_0 --> 0.34.2-py36_0
+
+The following packages will be DOWNGRADED:
+
+  chardet                                   3.0.4-py37_1003 --> 3.0.4-py36_1003
+  conda                                       4.7.12-py37_0 --> 4.7.12-py36_0
+  conda-package-han~                   1.6.0-py37h7b6447c_0 --> 1.6.0-py36h7b6447c_0
+  pycosat                              0.6.3-py37h14c3975_0 --> 0.6.3-py36h7b6447c_0
+  pysocks                                      1.7.1-py37_0 --> 1.7.1-py36_0
+  python                                   3.7.4-h265db76_1 --> 3.6.9-h265db76_0
+
+
+
+Downloading and Extracting Packages
+cryptography-2.8     | 552 KB    |            |   0% cryptography-2.8     | 552 KB    | ########## | 100% 
+pycosat-0.6.3        | 82 KB     |            |   0% pycosat-0.6.3        | 82 KB     | ########## | 100% 
+asn1crypto-1.3.0     | 164 KB    |            |   0% asn1crypto-1.3.0     | 164 KB    | ########## | 100% 
+pycparser-2.20       | 92 KB     |            |   0% pycparser-2.20       | 92 KB     | ########## | 100% 
+cffi-1.14.0          | 223 KB    |            |   0% cffi-1.14.0          | 223 KB    | ########## | 100% 
+wheel-0.34.2         | 51 KB     |            |   0% wheel-0.34.2         | 51 KB     | ########## | 100% 
+openssl-1.1.1e       | 2.5 MB    |            |   0% openssl-1.1.1e       | 2.5 MB    | ########## | 100% 
+urllib3-1.25.8       | 169 KB    |            |   0% urllib3-1.25.8       | 169 KB    | ########## | 100% 
+certifi-2019.11.28   | 153 KB    |            |   0% certifi-2019.11.28   | 153 KB    | ########## | 100% 
+six-1.14.0           | 27 KB     |            |   0% six-1.14.0           | 27 KB     | ########## | 100% 
+pysocks-1.7.1        | 30 KB     |            |   0% pysocks-1.7.1        | 30 KB     | ########## | 100% 
+ruamel_yaml-0.15.87  | 257 KB    |            |   0% ruamel_yaml-0.15.87  | 257 KB    | ########## | 100% 
+python-3.6.9         | 30.2 MB   |            |   0% python-3.6.9         | 30.2 MB   | #7         |  18% python-3.6.9         | 30.2 MB   | ####5      |  45% python-3.6.9         | 30.2 MB   | #######    |  71% python-3.6.9         | 30.2 MB   | #########2 |  93% python-3.6.9         | 30.2 MB   | ########## | 100% 
+pip-20.0.2           | 1.7 MB    |            |   0% pip-20.0.2           | 1.7 MB    | ########## | 100% 
+tqdm-4.36.1          | 50 KB     |            |   0% tqdm-4.36.1          | 50 KB     | ########## | 100% 
+pyopenssl-19.1.0     | 87 KB     |            |   0% pyopenssl-19.1.0     | 87 KB     | ########## | 100% 
+idna-2.9             | 49 KB     |            |   0% idna-2.9             | 49 KB     | ########## | 100% 
+conda-package-handli | 795 KB    |            |   0% conda-package-handli | 795 KB    | ########## | 100% 
+conda-4.7.12         | 2.8 MB    |            |   0% conda-4.7.12         | 2.8 MB    | ########## | 100% 
+chardet-3.0.4        | 180 KB    |            |   0% chardet-3.0.4        | 180 KB    | ########## | 100% 
+requests-2.23.0      | 91 KB     |            |   0% requests-2.23.0      | 91 KB     | ########## | 100% 
+setuptools-46.0.0    | 519 KB    |            |   0% setuptools-46.0.0    | 519 KB    | ########## | 100% 
+ca-certificates-2020 | 125 KB    |            |   0% ca-certificates-2020 | 125 KB    | ########## | 100% 
+Preparing transaction: ...working... done
+Verifying transaction: ...working... done
+Executing transaction: ...working... done
+[91m
+
+==> WARNING: A newer version of conda exists. <==
+  current version: 4.7.12
+  latest version: 4.8.3
+
+Please update conda by running
+
+    $ conda update -n base -c defaults conda
+
+
+[0mRemoving intermediate container 6a7bd5a6a5a1
+ ---> 14a020a20fab
+Step 4/10 : RUN apt-get update --yes && apt-get install --yes gcc make build-essential
+ ---> Running in 1b45e1ff9702
+Get:1 http://security.debian.org/debian-security buster/updates InRelease [65.4 kB]
+Get:2 http://deb.debian.org/debian buster InRelease [122 kB]
+Get:3 http://deb.debian.org/debian buster-updates InRelease [49.3 kB]
+Get:4 http://security.debian.org/debian-security buster/updates/main amd64 Packages [183 kB]
+Get:5 http://deb.debian.org/debian buster/main amd64 Packages [7907 kB]
+Get:6 http://deb.debian.org/debian buster-updates/main amd64 Packages.diff/Index [2212 B]
+Get:7 http://deb.debian.org/debian buster-updates/main amd64 Packages 2020-02-23-2017.41.pdiff [2162 B]
+Get:7 http://deb.debian.org/debian buster-updates/main amd64 Packages 2020-02-23-2017.41.pdiff [2162 B]
+Fetched 8331 kB in 2s (3634 kB/s)
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following additional packages will be installed:
+  binutils binutils-common binutils-x86-64-linux-gnu cpp cpp-8 dirmngr
+  dpkg-dev fakeroot g++ g++-8 gcc-8 gnupg gnupg-l10n gnupg-utils gpg gpg-agent
+  gpg-wks-client gpg-wks-server gpgconf gpgsm libalgorithm-diff-perl
+  libalgorithm-diff-xs-perl libalgorithm-merge-perl libasan5 libassuan0
+  libatomic1 libbinutils libc-dev-bin libc6-dev libcc1-0 libdpkg-perl
+  libfakeroot libfile-fcntllock-perl libgcc-8-dev libgomp1 libisl19 libitm1
+  libksba8 liblocale-gettext-perl liblsan0 libmpc3 libmpfr6 libmpx2 libnpth0
+  libquadmath0 libstdc++-8-dev libtsan0 libubsan1 linux-libc-dev manpages
+  manpages-dev pinentry-curses
+Suggested packages:
+  binutils-doc cpp-doc gcc-8-locales dbus-user-session libpam-systemd
+  pinentry-gnome3 tor debian-keyring g++-multilib g++-8-multilib gcc-8-doc
+  libstdc++6-8-dbg gcc-multilib autoconf automake libtool flex bison gdb
+  gcc-doc gcc-8-multilib libgcc1-dbg libgomp1-dbg libitm1-dbg libatomic1-dbg
+  libasan5-dbg liblsan0-dbg libtsan0-dbg libubsan1-dbg libmpx2-dbg
+  libquadmath0-dbg parcimonie xloadimage scdaemon glibc-doc bzr
+  libstdc++-8-doc make-doc man-browser pinentry-doc
+The following NEW packages will be installed:
+  binutils binutils-common binutils-x86-64-linux-gnu build-essential cpp cpp-8
+  dirmngr dpkg-dev fakeroot g++ g++-8 gcc gcc-8 gnupg gnupg-l10n gnupg-utils
+  gpg gpg-agent gpg-wks-client gpg-wks-server gpgconf gpgsm
+  libalgorithm-diff-perl libalgorithm-diff-xs-perl libalgorithm-merge-perl
+  libasan5 libassuan0 libatomic1 libbinutils libc-dev-bin libc6-dev libcc1-0
+  libdpkg-perl libfakeroot libfile-fcntllock-perl libgcc-8-dev libgomp1
+  libisl19 libitm1 libksba8 liblocale-gettext-perl liblsan0 libmpc3 libmpfr6
+  libmpx2 libnpth0 libquadmath0 libstdc++-8-dev libtsan0 libubsan1
+  linux-libc-dev make manpages manpages-dev pinentry-curses
+0 upgraded, 55 newly installed, 0 to remove and 30 not upgraded.
+Need to get 57.7 MB of archives.
+After this operation, 202 MB of additional disk space will be used.
+Get:1 http://deb.debian.org/debian buster/main amd64 liblocale-gettext-perl amd64 1.07-3+b4 [18.9 kB]
+Get:2 http://deb.debian.org/debian buster/main amd64 manpages all 4.16-2 [1295 kB]
+Get:3 http://deb.debian.org/debian buster/main amd64 binutils-common amd64 2.31.1-16 [2073 kB]
+Get:4 http://deb.debian.org/debian buster/main amd64 libbinutils amd64 2.31.1-16 [478 kB]
+Get:5 http://deb.debian.org/debian buster/main amd64 binutils-x86-64-linux-gnu amd64 2.31.1-16 [1823 kB]
+Get:6 http://deb.debian.org/debian buster/main amd64 binutils amd64 2.31.1-16 [56.8 kB]
+Get:7 http://deb.debian.org/debian buster/main amd64 libc-dev-bin amd64 2.28-10 [275 kB]
+Get:8 http://deb.debian.org/debian buster/main amd64 linux-libc-dev amd64 4.19.98-1 [1314 kB]
+Get:9 http://deb.debian.org/debian buster/main amd64 libc6-dev amd64 2.28-10 [2691 kB]
+Get:10 http://deb.debian.org/debian buster/main amd64 libisl19 amd64 0.20-2 [587 kB]
+Get:11 http://deb.debian.org/debian buster/main amd64 libmpfr6 amd64 4.0.2-1 [775 kB]
+Get:12 http://deb.debian.org/debian buster/main amd64 libmpc3 amd64 1.1.0-1 [41.3 kB]
+Get:13 http://deb.debian.org/debian buster/main amd64 cpp-8 amd64 8.3.0-6 [8914 kB]
+Get:14 http://deb.debian.org/debian buster/main amd64 cpp amd64 4:8.3.0-1 [19.4 kB]
+Get:15 http://deb.debian.org/debian buster/main amd64 libcc1-0 amd64 8.3.0-6 [46.6 kB]
+Get:16 http://deb.debian.org/debian buster/main amd64 libgomp1 amd64 8.3.0-6 [75.8 kB]
+Get:17 http://deb.debian.org/debian buster/main amd64 libitm1 amd64 8.3.0-6 [27.7 kB]
+Get:18 http://deb.debian.org/debian buster/main amd64 libatomic1 amd64 8.3.0-6 [9032 B]
+Get:19 http://deb.debian.org/debian buster/main amd64 libasan5 amd64 8.3.0-6 [362 kB]
+Get:20 http://deb.debian.org/debian buster/main amd64 liblsan0 amd64 8.3.0-6 [131 kB]
+Get:21 http://deb.debian.org/debian buster/main amd64 libtsan0 amd64 8.3.0-6 [283 kB]
+Get:22 http://deb.debian.org/debian buster/main amd64 libubsan1 amd64 8.3.0-6 [120 kB]
+Get:23 http://deb.debian.org/debian buster/main amd64 libmpx2 amd64 8.3.0-6 [11.4 kB]
+Get:24 http://deb.debian.org/debian buster/main amd64 libquadmath0 amd64 8.3.0-6 [133 kB]
+Get:25 http://deb.debian.org/debian buster/main amd64 libgcc-8-dev amd64 8.3.0-6 [2298 kB]
+Get:26 http://deb.debian.org/debian buster/main amd64 gcc-8 amd64 8.3.0-6 [9452 kB]
+Get:27 http://deb.debian.org/debian buster/main amd64 gcc amd64 4:8.3.0-1 [5196 B]
+Get:28 http://deb.debian.org/debian buster/main amd64 libstdc++-8-dev amd64 8.3.0-6 [1532 kB]
+Get:29 http://deb.debian.org/debian buster/main amd64 g++-8 amd64 8.3.0-6 [9752 kB]
+Get:30 http://deb.debian.org/debian buster/main amd64 g++ amd64 4:8.3.0-1 [1644 B]
+Get:31 http://deb.debian.org/debian buster/main amd64 make amd64 4.2.1-1.2 [341 kB]
+Get:32 http://deb.debian.org/debian buster/main amd64 libdpkg-perl all 1.19.7 [1414 kB]
+Get:33 http://deb.debian.org/debian buster/main amd64 dpkg-dev all 1.19.7 [1773 kB]
+Get:34 http://deb.debian.org/debian buster/main amd64 build-essential amd64 12.6 [7576 B]
+Get:35 http://deb.debian.org/debian buster/main amd64 libassuan0 amd64 2.5.2-1 [49.4 kB]
+Get:36 http://deb.debian.org/debian buster/main amd64 gpgconf amd64 2.2.12-1+deb10u1 [510 kB]
+Get:37 http://deb.debian.org/debian buster/main amd64 libksba8 amd64 1.3.5-2 [99.7 kB]
+Get:38 http://deb.debian.org/debian buster/main amd64 libnpth0 amd64 1.6-1 [18.4 kB]
+Get:39 http://deb.debian.org/debian buster/main amd64 dirmngr amd64 2.2.12-1+deb10u1 [712 kB]
+Get:40 http://deb.debian.org/debian buster/main amd64 libfakeroot amd64 1.23-1 [45.9 kB]
+Get:41 http://deb.debian.org/debian buster/main amd64 fakeroot amd64 1.23-1 [85.8 kB]
+Get:42 http://deb.debian.org/debian buster/main amd64 gnupg-l10n all 2.2.12-1+deb10u1 [1010 kB]
+Get:43 http://deb.debian.org/debian buster/main amd64 gnupg-utils amd64 2.2.12-1+deb10u1 [861 kB]
+Get:44 http://deb.debian.org/debian buster/main amd64 gpg amd64 2.2.12-1+deb10u1 [865 kB]
+Get:45 http://deb.debian.org/debian buster/main amd64 pinentry-curses amd64 1.1.0-2 [64.5 kB]
+Get:46 http://deb.debian.org/debian buster/main amd64 gpg-agent amd64 2.2.12-1+deb10u1 [617 kB]
+Get:47 http://deb.debian.org/debian buster/main amd64 gpg-wks-client amd64 2.2.12-1+deb10u1 [485 kB]
+Get:48 http://deb.debian.org/debian buster/main amd64 gpg-wks-server amd64 2.2.12-1+deb10u1 [478 kB]
+Get:49 http://deb.debian.org/debian buster/main amd64 gpgsm amd64 2.2.12-1+deb10u1 [604 kB]
+Get:50 http://deb.debian.org/debian buster/main amd64 gnupg all 2.2.12-1+deb10u1 [715 kB]
+Get:51 http://deb.debian.org/debian buster/main amd64 libalgorithm-diff-perl all 1.19.03-2 [47.9 kB]
+Get:52 http://deb.debian.org/debian buster/main amd64 libalgorithm-diff-xs-perl amd64 0.04-5+b1 [11.8 kB]
+Get:53 http://deb.debian.org/debian buster/main amd64 libalgorithm-merge-perl all 0.08-3 [12.7 kB]
+Get:54 http://deb.debian.org/debian buster/main amd64 libfile-fcntllock-perl amd64 0.22-3+b5 [35.4 kB]
+Get:55 http://deb.debian.org/debian buster/main amd64 manpages-dev all 4.16-2 [2232 kB]
+[91mdebconf: delaying package configuration, since apt-utils is not installed
+[0mFetched 57.7 MB in 1s (65.5 MB/s)
+Selecting previously unselected package liblocale-gettext-perl.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 12557 files and directories currently installed.)
+Preparing to unpack .../00-liblocale-gettext-perl_1.07-3+b4_amd64.deb ...
+Unpacking liblocale-gettext-perl (1.07-3+b4) ...
+Selecting previously unselected package manpages.
+Preparing to unpack .../01-manpages_4.16-2_all.deb ...
+Unpacking manpages (4.16-2) ...
+Selecting previously unselected package binutils-common:amd64.
+Preparing to unpack .../02-binutils-common_2.31.1-16_amd64.deb ...
+Unpacking binutils-common:amd64 (2.31.1-16) ...
+Selecting previously unselected package libbinutils:amd64.
+Preparing to unpack .../03-libbinutils_2.31.1-16_amd64.deb ...
+Unpacking libbinutils:amd64 (2.31.1-16) ...
+Selecting previously unselected package binutils-x86-64-linux-gnu.
+Preparing to unpack .../04-binutils-x86-64-linux-gnu_2.31.1-16_amd64.deb ...
+Unpacking binutils-x86-64-linux-gnu (2.31.1-16) ...
+Selecting previously unselected package binutils.
+Preparing to unpack .../05-binutils_2.31.1-16_amd64.deb ...
+Unpacking binutils (2.31.1-16) ...
+Selecting previously unselected package libc-dev-bin.
+Preparing to unpack .../06-libc-dev-bin_2.28-10_amd64.deb ...
+Unpacking libc-dev-bin (2.28-10) ...
+Selecting previously unselected package linux-libc-dev:amd64.
+Preparing to unpack .../07-linux-libc-dev_4.19.98-1_amd64.deb ...
+Unpacking linux-libc-dev:amd64 (4.19.98-1) ...
+Selecting previously unselected package libc6-dev:amd64.
+Preparing to unpack .../08-libc6-dev_2.28-10_amd64.deb ...
+Unpacking libc6-dev:amd64 (2.28-10) ...
+Selecting previously unselected package libisl19:amd64.
+Preparing to unpack .../09-libisl19_0.20-2_amd64.deb ...
+Unpacking libisl19:amd64 (0.20-2) ...
+Selecting previously unselected package libmpfr6:amd64.
+Preparing to unpack .../10-libmpfr6_4.0.2-1_amd64.deb ...
+Unpacking libmpfr6:amd64 (4.0.2-1) ...
+Selecting previously unselected package libmpc3:amd64.
+Preparing to unpack .../11-libmpc3_1.1.0-1_amd64.deb ...
+Unpacking libmpc3:amd64 (1.1.0-1) ...
+Selecting previously unselected package cpp-8.
+Preparing to unpack .../12-cpp-8_8.3.0-6_amd64.deb ...
+Unpacking cpp-8 (8.3.0-6) ...
+Selecting previously unselected package cpp.
+Preparing to unpack .../13-cpp_4%3a8.3.0-1_amd64.deb ...
+Unpacking cpp (4:8.3.0-1) ...
+Selecting previously unselected package libcc1-0:amd64.
+Preparing to unpack .../14-libcc1-0_8.3.0-6_amd64.deb ...
+Unpacking libcc1-0:amd64 (8.3.0-6) ...
+Selecting previously unselected package libgomp1:amd64.
+Preparing to unpack .../15-libgomp1_8.3.0-6_amd64.deb ...
+Unpacking libgomp1:amd64 (8.3.0-6) ...
+Selecting previously unselected package libitm1:amd64.
+Preparing to unpack .../16-libitm1_8.3.0-6_amd64.deb ...
+Unpacking libitm1:amd64 (8.3.0-6) ...
+Selecting previously unselected package libatomic1:amd64.
+Preparing to unpack .../17-libatomic1_8.3.0-6_amd64.deb ...
+Unpacking libatomic1:amd64 (8.3.0-6) ...
+Selecting previously unselected package libasan5:amd64.
+Preparing to unpack .../18-libasan5_8.3.0-6_amd64.deb ...
+Unpacking libasan5:amd64 (8.3.0-6) ...
+Selecting previously unselected package liblsan0:amd64.
+Preparing to unpack .../19-liblsan0_8.3.0-6_amd64.deb ...
+Unpacking liblsan0:amd64 (8.3.0-6) ...
+Selecting previously unselected package libtsan0:amd64.
+Preparing to unpack .../20-libtsan0_8.3.0-6_amd64.deb ...
+Unpacking libtsan0:amd64 (8.3.0-6) ...
+Selecting previously unselected package libubsan1:amd64.
+Preparing to unpack .../21-libubsan1_8.3.0-6_amd64.deb ...
+Unpacking libubsan1:amd64 (8.3.0-6) ...
+Selecting previously unselected package libmpx2:amd64.
+Preparing to unpack .../22-libmpx2_8.3.0-6_amd64.deb ...
+Unpacking libmpx2:amd64 (8.3.0-6) ...
+Selecting previously unselected package libquadmath0:amd64.
+Preparing to unpack .../23-libquadmath0_8.3.0-6_amd64.deb ...
+Unpacking libquadmath0:amd64 (8.3.0-6) ...
+Selecting previously unselected package libgcc-8-dev:amd64.
+Preparing to unpack .../24-libgcc-8-dev_8.3.0-6_amd64.deb ...
+Unpacking libgcc-8-dev:amd64 (8.3.0-6) ...
+Selecting previously unselected package gcc-8.
+Preparing to unpack .../25-gcc-8_8.3.0-6_amd64.deb ...
+Unpacking gcc-8 (8.3.0-6) ...
+Selecting previously unselected package gcc.
+Preparing to unpack .../26-gcc_4%3a8.3.0-1_amd64.deb ...
+Unpacking gcc (4:8.3.0-1) ...
+Selecting previously unselected package libstdc++-8-dev:amd64.
+Preparing to unpack .../27-libstdc++-8-dev_8.3.0-6_amd64.deb ...
+Unpacking libstdc++-8-dev:amd64 (8.3.0-6) ...
+Selecting previously unselected package g++-8.
+Preparing to unpack .../28-g++-8_8.3.0-6_amd64.deb ...
+Unpacking g++-8 (8.3.0-6) ...
+Selecting previously unselected package g++.
+Preparing to unpack .../29-g++_4%3a8.3.0-1_amd64.deb ...
+Unpacking g++ (4:8.3.0-1) ...
+Selecting previously unselected package make.
+Preparing to unpack .../30-make_4.2.1-1.2_amd64.deb ...
+Unpacking make (4.2.1-1.2) ...
+Selecting previously unselected package libdpkg-perl.
+Preparing to unpack .../31-libdpkg-perl_1.19.7_all.deb ...
+Unpacking libdpkg-perl (1.19.7) ...
+Selecting previously unselected package dpkg-dev.
+Preparing to unpack .../32-dpkg-dev_1.19.7_all.deb ...
+Unpacking dpkg-dev (1.19.7) ...
+Selecting previously unselected package build-essential.
+Preparing to unpack .../33-build-essential_12.6_amd64.deb ...
+Unpacking build-essential (12.6) ...
+Selecting previously unselected package libassuan0:amd64.
+Preparing to unpack .../34-libassuan0_2.5.2-1_amd64.deb ...
+Unpacking libassuan0:amd64 (2.5.2-1) ...
+Selecting previously unselected package gpgconf.
+Preparing to unpack .../35-gpgconf_2.2.12-1+deb10u1_amd64.deb ...
+Unpacking gpgconf (2.2.12-1+deb10u1) ...
+Selecting previously unselected package libksba8:amd64.
+Preparing to unpack .../36-libksba8_1.3.5-2_amd64.deb ...
+Unpacking libksba8:amd64 (1.3.5-2) ...
+Selecting previously unselected package libnpth0:amd64.
+Preparing to unpack .../37-libnpth0_1.6-1_amd64.deb ...
+Unpacking libnpth0:amd64 (1.6-1) ...
+Selecting previously unselected package dirmngr.
+Preparing to unpack .../38-dirmngr_2.2.12-1+deb10u1_amd64.deb ...
+Unpacking dirmngr (2.2.12-1+deb10u1) ...
+Selecting previously unselected package libfakeroot:amd64.
+Preparing to unpack .../39-libfakeroot_1.23-1_amd64.deb ...
+Unpacking libfakeroot:amd64 (1.23-1) ...
+Selecting previously unselected package fakeroot.
+Preparing to unpack .../40-fakeroot_1.23-1_amd64.deb ...
+Unpacking fakeroot (1.23-1) ...
+Selecting previously unselected package gnupg-l10n.
+Preparing to unpack .../41-gnupg-l10n_2.2.12-1+deb10u1_all.deb ...
+Unpacking gnupg-l10n (2.2.12-1+deb10u1) ...
+Selecting previously unselected package gnupg-utils.
+Preparing to unpack .../42-gnupg-utils_2.2.12-1+deb10u1_amd64.deb ...
+Unpacking gnupg-utils (2.2.12-1+deb10u1) ...
+Selecting previously unselected package gpg.
+Preparing to unpack .../43-gpg_2.2.12-1+deb10u1_amd64.deb ...
+Unpacking gpg (2.2.12-1+deb10u1) ...
+Selecting previously unselected package pinentry-curses.
+Preparing to unpack .../44-pinentry-curses_1.1.0-2_amd64.deb ...
+Unpacking pinentry-curses (1.1.0-2) ...
+Selecting previously unselected package gpg-agent.
+Preparing to unpack .../45-gpg-agent_2.2.12-1+deb10u1_amd64.deb ...
+Unpacking gpg-agent (2.2.12-1+deb10u1) ...
+Selecting previously unselected package gpg-wks-client.
+Preparing to unpack .../46-gpg-wks-client_2.2.12-1+deb10u1_amd64.deb ...
+Unpacking gpg-wks-client (2.2.12-1+deb10u1) ...
+Selecting previously unselected package gpg-wks-server.
+Preparing to unpack .../47-gpg-wks-server_2.2.12-1+deb10u1_amd64.deb ...
+Unpacking gpg-wks-server (2.2.12-1+deb10u1) ...
+Selecting previously unselected package gpgsm.
+Preparing to unpack .../48-gpgsm_2.2.12-1+deb10u1_amd64.deb ...
+Unpacking gpgsm (2.2.12-1+deb10u1) ...
+Selecting previously unselected package gnupg.
+Preparing to unpack .../49-gnupg_2.2.12-1+deb10u1_all.deb ...
+Unpacking gnupg (2.2.12-1+deb10u1) ...
+Selecting previously unselected package libalgorithm-diff-perl.
+Preparing to unpack .../50-libalgorithm-diff-perl_1.19.03-2_all.deb ...
+Unpacking libalgorithm-diff-perl (1.19.03-2) ...
+Selecting previously unselected package libalgorithm-diff-xs-perl.
+Preparing to unpack .../51-libalgorithm-diff-xs-perl_0.04-5+b1_amd64.deb ...
+Unpacking libalgorithm-diff-xs-perl (0.04-5+b1) ...
+Selecting previously unselected package libalgorithm-merge-perl.
+Preparing to unpack .../52-libalgorithm-merge-perl_0.08-3_all.deb ...
+Unpacking libalgorithm-merge-perl (0.08-3) ...
+Selecting previously unselected package libfile-fcntllock-perl.
+Preparing to unpack .../53-libfile-fcntllock-perl_0.22-3+b5_amd64.deb ...
+Unpacking libfile-fcntllock-perl (0.22-3+b5) ...
+Selecting previously unselected package manpages-dev.
+Preparing to unpack .../54-manpages-dev_4.16-2_all.deb ...
+Unpacking manpages-dev (4.16-2) ...
+Setting up libksba8:amd64 (1.3.5-2) ...
+Setting up libfile-fcntllock-perl (0.22-3+b5) ...
+Setting up libalgorithm-diff-perl (1.19.03-2) ...
+Setting up manpages (4.16-2) ...
+Setting up binutils-common:amd64 (2.31.1-16) ...
+Setting up linux-libc-dev:amd64 (4.19.98-1) ...
+Setting up libnpth0:amd64 (1.6-1) ...
+Setting up libassuan0:amd64 (2.5.2-1) ...
+Setting up libgomp1:amd64 (8.3.0-6) ...
+Setting up libfakeroot:amd64 (1.23-1) ...
+Setting up fakeroot (1.23-1) ...
+update-alternatives: using /usr/bin/fakeroot-sysv to provide /usr/bin/fakeroot (fakeroot) in auto mode
+update-alternatives: warning: skip creation of /usr/share/man/man1/fakeroot.1.gz because associated file /usr/share/man/man1/fakeroot-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/faked.1.gz because associated file /usr/share/man/man1/faked-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/es/man1/fakeroot.1.gz because associated file /usr/share/man/es/man1/fakeroot-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/es/man1/faked.1.gz because associated file /usr/share/man/es/man1/faked-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/fr/man1/fakeroot.1.gz because associated file /usr/share/man/fr/man1/fakeroot-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/fr/man1/faked.1.gz because associated file /usr/share/man/fr/man1/faked-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/sv/man1/fakeroot.1.gz because associated file /usr/share/man/sv/man1/fakeroot-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/sv/man1/faked.1.gz because associated file /usr/share/man/sv/man1/faked-sysv.1.gz (of link group fakeroot) doesn't exist
+Setting up libasan5:amd64 (8.3.0-6) ...
+Setting up make (4.2.1-1.2) ...
+Setting up libmpfr6:amd64 (4.0.2-1) ...
+Setting up gnupg-l10n (2.2.12-1+deb10u1) ...
+Setting up libquadmath0:amd64 (8.3.0-6) ...
+Setting up libmpc3:amd64 (1.1.0-1) ...
+Setting up libatomic1:amd64 (8.3.0-6) ...
+Setting up libdpkg-perl (1.19.7) ...
+Setting up libmpx2:amd64 (8.3.0-6) ...
+Setting up libubsan1:amd64 (8.3.0-6) ...
+Setting up libisl19:amd64 (0.20-2) ...
+Setting up gpgconf (2.2.12-1+deb10u1) ...
+Setting up libbinutils:amd64 (2.31.1-16) ...
+Setting up cpp-8 (8.3.0-6) ...
+Setting up libc-dev-bin (2.28-10) ...
+Setting up libalgorithm-diff-xs-perl (0.04-5+b1) ...
+Setting up libcc1-0:amd64 (8.3.0-6) ...
+Setting up liblocale-gettext-perl (1.07-3+b4) ...
+Setting up gpg (2.2.12-1+deb10u1) ...
+Setting up liblsan0:amd64 (8.3.0-6) ...
+Setting up libitm1:amd64 (8.3.0-6) ...
+Setting up libalgorithm-merge-perl (0.08-3) ...
+Setting up gnupg-utils (2.2.12-1+deb10u1) ...
+Setting up binutils-x86-64-linux-gnu (2.31.1-16) ...
+Setting up libtsan0:amd64 (8.3.0-6) ...
+Setting up pinentry-curses (1.1.0-2) ...
+Setting up manpages-dev (4.16-2) ...
+Setting up gpg-agent (2.2.12-1+deb10u1) ...
+Setting up gpgsm (2.2.12-1+deb10u1) ...
+Setting up binutils (2.31.1-16) ...
+Setting up dpkg-dev (1.19.7) ...
+Setting up dirmngr (2.2.12-1+deb10u1) ...
+Setting up libgcc-8-dev:amd64 (8.3.0-6) ...
+Setting up gpg-wks-server (2.2.12-1+deb10u1) ...
+Setting up cpp (4:8.3.0-1) ...
+Setting up libc6-dev:amd64 (2.28-10) ...
+Setting up libstdc++-8-dev:amd64 (8.3.0-6) ...
+Setting up gcc-8 (8.3.0-6) ...
+Setting up gpg-wks-client (2.2.12-1+deb10u1) ...
+Setting up gcc (4:8.3.0-1) ...
+Setting up g++-8 (8.3.0-6) ...
+Setting up gnupg (2.2.12-1+deb10u1) ...
+Setting up g++ (4:8.3.0-1) ...
+update-alternatives: using /usr/bin/g++ to provide /usr/bin/c++ (c++) in auto mode
+Setting up build-essential (12.6) ...
+Processing triggers for libc-bin (2.28-10) ...
+Removing intermediate container 1b45e1ff9702
+ ---> 3f144f3ff1d8
+Step 5/10 : RUN mkdir microservice
+ ---> Running in b27d5f4f9e03
+Removing intermediate container b27d5f4f9e03
+ ---> f1ff4a5fe772
+Step 6/10 : WORKDIR /microservice
+ ---> Running in 35551c1aa3e0
+Removing intermediate container 35551c1aa3e0
+ ---> f1332f49f6c0
+Step 7/10 : COPY ./s2i/bin/ /s2i/bin
+ ---> c2722718bf2a
+Step 8/10 : COPY _python /microservice
+ ---> 9135ba292ef8
+Step 9/10 : RUN cd /microservice/python && make install
+ ---> Running in 80a36160acc7
+pip install -e .
+Obtaining file:///microservice/python
+Collecting Flask<2.0.0
+  Downloading Flask-1.1.1-py2.py3-none-any.whl (94 kB)
+Collecting Flask-cors<4.0.0
+  Downloading Flask_Cors-3.0.8-py2.py3-none-any.whl (14 kB)
+Collecting redis<4.0.0
+  Downloading redis-3.4.1-py2.py3-none-any.whl (71 kB)
+Requirement already satisfied: requests<3.0.0 in /opt/conda/lib/python3.6/site-packages (from seldon-core==1.0.2) (2.23.0)
+Collecting numpy<2.0.0
+  Downloading numpy-1.18.2-cp36-cp36m-manylinux1_x86_64.whl (20.2 MB)
+Collecting flatbuffers<2.0.0
+  Downloading flatbuffers-1.12-py2.py3-none-any.whl (15 kB)
+Collecting protobuf<4.0.0
+  Downloading protobuf-3.11.3-cp36-cp36m-manylinux1_x86_64.whl (1.3 MB)
+Collecting grpcio<2.0.0
+  Downloading grpcio-1.27.2-cp36-cp36m-manylinux2010_x86_64.whl (2.7 MB)
+Collecting Flask-OpenTracing<1.2.0,>=1.1.0
+  Downloading Flask-OpenTracing-1.1.0.tar.gz (8.2 kB)
+Collecting opentracing<2.3.0,>=2.2.0
+  Downloading opentracing-2.2.0.tar.gz (47 kB)
+Collecting jaeger-client<4.2.0,>=4.1.0
+  Downloading jaeger-client-4.1.0.tar.gz (80 kB)
+Collecting grpcio-opentracing<1.2.0,>=1.1.4
+  Downloading grpcio_opentracing-1.1.4-py3-none-any.whl (14 kB)
+Collecting pyaml<20.0.0
+  Downloading pyaml-19.12.0-py2.py3-none-any.whl (17 kB)
+Collecting gunicorn<20.1.0,>=19.9.0
+  Downloading gunicorn-20.0.4-py2.py3-none-any.whl (77 kB)
+Collecting minio<6.0.0,>=4.0.9
+  Downloading minio-5.0.8-py2.py3-none-any.whl (73 kB)
+Collecting azure-storage-blob<3.0.0,>=2.0.1
+  Downloading azure_storage_blob-2.1.0-py2.py3-none-any.whl (88 kB)
+Requirement already satisfied: setuptools>=41.0.0 in /opt/conda/lib/python3.6/site-packages (from seldon-core==1.0.2) (46.0.0.post20200309)
+Collecting prometheus_client<0.8.0,>=0.7.1
+  Downloading prometheus_client-0.7.1.tar.gz (38 kB)
+Collecting Werkzeug>=0.15
+  Downloading Werkzeug-1.0.0-py2.py3-none-any.whl (298 kB)
+Collecting Jinja2>=2.10.1
+  Downloading Jinja2-2.11.1-py2.py3-none-any.whl (126 kB)
+Collecting itsdangerous>=0.24
+  Downloading itsdangerous-1.1.0-py2.py3-none-any.whl (16 kB)
+Collecting click>=5.1
+  Downloading click-7.1.1-py2.py3-none-any.whl (82 kB)
+Requirement already satisfied: Six in /opt/conda/lib/python3.6/site-packages (from Flask-cors<4.0.0->seldon-core==1.0.2) (1.14.0)
+Requirement already satisfied: chardet<4,>=3.0.2 in /opt/conda/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.0.2) (3.0.4)
+Requirement already satisfied: certifi>=2017.4.17 in /opt/conda/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.0.2) (2019.11.28)
+Requirement already satisfied: idna<3,>=2.5 in /opt/conda/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.0.2) (2.9)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /opt/conda/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.0.2) (1.25.8)
+Collecting threadloop<2,>=1
+  Downloading threadloop-1.0.2.tar.gz (4.9 kB)
+Collecting thrift
+  Downloading thrift-0.13.0.tar.gz (59 kB)
+Collecting tornado<6,>=4.3
+  Downloading tornado-5.1.1.tar.gz (516 kB)
+Collecting PyYAML
+  Downloading PyYAML-5.3.1.tar.gz (269 kB)
+Collecting pytz
+  Downloading pytz-2019.3-py2.py3-none-any.whl (509 kB)
+Collecting configparser
+  Downloading configparser-4.0.2-py2.py3-none-any.whl (22 kB)
+Collecting python-dateutil
+  Downloading python_dateutil-2.8.1-py2.py3-none-any.whl (227 kB)
+Collecting azure-common>=1.1.5
+  Downloading azure_common-1.1.25-py2.py3-none-any.whl (12 kB)
+Collecting azure-storage-common~=2.1
+  Downloading azure_storage_common-2.1.0-py2.py3-none-any.whl (47 kB)
+Collecting MarkupSafe>=0.23
+  Downloading MarkupSafe-1.1.1-cp36-cp36m-manylinux1_x86_64.whl (27 kB)
+Requirement already satisfied: cryptography in /opt/conda/lib/python3.6/site-packages (from azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->seldon-core==1.0.2) (2.8)
+Requirement already satisfied: cffi!=1.11.3,>=1.8 in /opt/conda/lib/python3.6/site-packages (from cryptography->azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->seldon-core==1.0.2) (1.14.0)
+Requirement already satisfied: pycparser in /opt/conda/lib/python3.6/site-packages (from cffi!=1.11.3,>=1.8->cryptography->azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->seldon-core==1.0.2) (2.20)
+Building wheels for collected packages: Flask-OpenTracing, opentracing, jaeger-client, prometheus-client, threadloop, thrift, tornado, PyYAML
+  Building wheel for Flask-OpenTracing (setup.py): started
+  Building wheel for Flask-OpenTracing (setup.py): finished with status 'done'
+  Created wheel for Flask-OpenTracing: filename=Flask_OpenTracing-1.1.0-py3-none-any.whl size=9070 sha256=ba13e86920f56d18f212446f957b806a759d197489586f4ceb28090c0bd6ee4a
+  Stored in directory: /root/.cache/pip/wheels/ad/4b/2d/24ff0da0a0b53c7c77ce59b843bcceaf644c88703241e59615
+  Building wheel for opentracing (setup.py): started
+  Building wheel for opentracing (setup.py): finished with status 'done'
+  Created wheel for opentracing: filename=opentracing-2.2.0-py3-none-any.whl size=49319 sha256=f1f4b41fbc7de2c15e43804304058f5439e2800bbb31a3c28ef421270603fcd8
+  Stored in directory: /root/.cache/pip/wheels/39/40/44/8bace79f4514e99786236c31f1df8d1b814ff02c1e08b1d697
+  Building wheel for jaeger-client (setup.py): started
+  Building wheel for jaeger-client (setup.py): finished with status 'done'
+  Created wheel for jaeger-client: filename=jaeger_client-4.1.0-py3-none-any.whl size=64309 sha256=a755d8b19c5d058dd4dcdd046629bc02a55411e005fe04e3e51db59f39c7988d
+  Stored in directory: /root/.cache/pip/wheels/e9/9b/8c/503d0cc13b39a551c054515683ba1d15b40324c863dc442e66
+  Building wheel for prometheus-client (setup.py): started
+  Building wheel for prometheus-client (setup.py): finished with status 'done'
+  Created wheel for prometheus-client: filename=prometheus_client-0.7.1-py3-none-any.whl size=41404 sha256=24a5f97ada5d2546031a8af66228c50427de292473c5344fdc6276bfa3b972e3
+  Stored in directory: /root/.cache/pip/wheels/1d/4a/79/a3ad3f74b3495b4555359375ca33ad7b64e77f8b7a53c8894f
+  Building wheel for threadloop (setup.py): started
+  Building wheel for threadloop (setup.py): finished with status 'done'
+  Created wheel for threadloop: filename=threadloop-1.0.2-py3-none-any.whl size=3423 sha256=4a62e56fc2a821e17869b8b53570be6a4c3720115a10aa8f3f1ed95f01b402f4
+  Stored in directory: /root/.cache/pip/wheels/02/54/65/9f87de48fe8fcaaee30f279973d946ad55f9df56b93b3e78da
+  Building wheel for thrift (setup.py): started
+  Building wheel for thrift (setup.py): finished with status 'done'
+  Created wheel for thrift: filename=thrift-0.13.0-cp36-cp36m-linux_x86_64.whl size=483924 sha256=3a987b8d0117f4701122ae88a9721b748b9419bf808b973959e44204d1435513
+  Stored in directory: /root/.cache/pip/wheels/e0/38/fc/472fe18756b177b42096961f8bd3ff2dc5c5620ac399fce52d
+  Building wheel for tornado (setup.py): started
+  Building wheel for tornado (setup.py): finished with status 'done'
+  Created wheel for tornado: filename=tornado-5.1.1-cp36-cp36m-linux_x86_64.whl size=462664 sha256=2bc114f231a008e951cc1e02f14429c71e9ad4c72b6320b03aafa7cdb9fba88a
+  Stored in directory: /root/.cache/pip/wheels/64/74/71/e7a0d0eb4fc42cb20a17aec36f8f0b5b8c5e1ec19c701fd34a
+  Building wheel for PyYAML (setup.py): started
+  Building wheel for PyYAML (setup.py): finished with status 'done'
+  Created wheel for PyYAML: filename=PyYAML-5.3.1-cp36-cp36m-linux_x86_64.whl size=44621 sha256=807362a942665041eb8d81237e7dc8538ad662502f4c7bb562ecaaff3504cfe3
+  Stored in directory: /root/.cache/pip/wheels/e5/9d/ad/2ee53cf262cba1ffd8afe1487eef788ea3f260b7e6232a80fc
+Successfully built Flask-OpenTracing opentracing jaeger-client prometheus-client threadloop thrift tornado PyYAML
+Installing collected packages: Werkzeug, MarkupSafe, Jinja2, itsdangerous, click, Flask, Flask-cors, redis, numpy, flatbuffers, protobuf, grpcio, opentracing, Flask-OpenTracing, tornado, threadloop, thrift, jaeger-client, grpcio-opentracing, PyYAML, pyaml, gunicorn, pytz, configparser, python-dateutil, minio, azure-common, azure-storage-common, azure-storage-blob, prometheus-client, seldon-core
+  Running setup.py develop for seldon-core
+Successfully installed Flask-1.1.1 Flask-OpenTracing-1.1.0 Flask-cors-3.0.8 Jinja2-2.11.1 MarkupSafe-1.1.1 PyYAML-5.3.1 Werkzeug-1.0.0 azure-common-1.1.25 azure-storage-blob-2.1.0 azure-storage-common-2.1.0 click-7.1.1 configparser-4.0.2 flatbuffers-1.12 grpcio-1.27.2 grpcio-opentracing-1.1.4 gunicorn-20.0.4 itsdangerous-1.1.0 jaeger-client-4.1.0 minio-5.0.8 numpy-1.18.2 opentracing-2.2.0 prometheus-client-0.7.1 protobuf-3.11.3 pyaml-19.12.0 python-dateutil-2.8.1 pytz-2019.3 redis-3.4.1 seldon-core threadloop-1.0.2 thrift-0.13.0 tornado-5.1.1
+Removing intermediate container 80a36160acc7
+ ---> 66bf673bfd83
+Step 10/10 : EXPOSE 5000
+ ---> Running in 81d9eedce871
+Removing intermediate container 81d9eedce871
+ ---> db99ebf9f934
+Successfully built db99ebf9f934
+Successfully tagged seldonio/seldon-core-s2i-python36:0.19-SNAPSHOT
+make[1]: Leaving directory '/workspace/source/wrappers/s2i/python'
+make[1]: Entering directory '/workspace/source/wrappers/s2i/python'
+mkdir -p _python
+cp -r ../../../python _python
+cat Dockerfile.local.tmpl | sed  -e "s|%PYTHON_VERSION%|3.7|" | sed  -e "s|%CONDA_VERSION%|4.7.12|" > Dockerfile
+set -x && docker build -t docker.io/seldonio/seldon-core-s2i-python`echo -n 3.7 | sed 's/\.//g'`:0.19-SNAPSHOT .
+++ echo -n 3.7
+++ sed 's/\.//g'
++ docker build -t docker.io/seldonio/seldon-core-s2i-python37:0.19-SNAPSHOT .
+Sending build context to Docker daemon  955.4kB
+Step 1/10 : FROM continuumio/miniconda3:4.7.12
+ ---> 406f2b43ea59
+Step 2/10 : LABEL io.openshift.s2i.scripts-url="image:///s2i/bin"
+ ---> Using cache
+ ---> 56cf5ddf85b7
+Step 3/10 : RUN conda install --yes python=3.7 conda=4.7.12
+ ---> Running in f593da5be96a
+Collecting package metadata (current_repodata.json): ...working... done
+Solving environment: ...working... done
+
+## Package Plan ##
+
+  environment location: /opt/conda
+
+  added / updated specs:
+    - conda=4.7.12
+    - python=3.7
+
+
+The following packages will be downloaded:
+
+    package                    |            build
+    ---------------------------|-----------------
+    ca-certificates-2020.1.1   |                0         125 KB
+    certifi-2019.11.28         |           py37_0         153 KB
+    openssl-1.1.1e             |       h7b6447c_0         2.5 MB
+    ------------------------------------------------------------
+                                           Total:         2.8 MB
+
+The following packages will be UPDATED:
+
+  ca-certificates                               2019.8.28-0 --> 2020.1.1-0
+  certifi                                  2019.9.11-py37_0 --> 2019.11.28-py37_0
+  openssl                                 1.1.1d-h7b6447c_2 --> 1.1.1e-h7b6447c_0
+
+
+
+Downloading and Extracting Packages
+ca-certificates-2020 | 125 KB    |            |   0% ca-certificates-2020 | 125 KB    | ########## | 100% 
+certifi-2019.11.28   | 153 KB    |            |   0% certifi-2019.11.28   | 153 KB    | ########## | 100% 
+openssl-1.1.1e       | 2.5 MB    |            |   0% openssl-1.1.1e       | 2.5 MB    | ########## | 100% 
+Preparing transaction: ...working... done
+Verifying transaction: ...working... done
+Executing transaction: ...working... done
+[91m
+
+==> WARNING: A newer version of conda exists. <==
+  current version: 4.7.12
+  latest version: 4.8.3
+
+Please update conda by running
+
+    $ conda update -n base -c defaults conda
+
+
+[0mRemoving intermediate container f593da5be96a
+ ---> e78a80f03ee8
+Step 4/10 : RUN apt-get update --yes && apt-get install --yes gcc make build-essential
+ ---> Running in 1403483099a5
+Get:1 http://security.debian.org/debian-security buster/updates InRelease [65.4 kB]
+Get:2 http://deb.debian.org/debian buster InRelease [122 kB]
+Get:3 http://deb.debian.org/debian buster-updates InRelease [49.3 kB]
+Get:4 http://security.debian.org/debian-security buster/updates/main amd64 Packages [183 kB]
+Get:5 http://deb.debian.org/debian buster/main amd64 Packages [7907 kB]
+Get:6 http://deb.debian.org/debian buster-updates/main amd64 Packages.diff/Index [2212 B]
+Get:7 http://deb.debian.org/debian buster-updates/main amd64 Packages 2020-02-23-2017.41.pdiff [2162 B]
+Get:7 http://deb.debian.org/debian buster-updates/main amd64 Packages 2020-02-23-2017.41.pdiff [2162 B]
+Fetched 8331 kB in 2s (3648 kB/s)
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following additional packages will be installed:
+  binutils binutils-common binutils-x86-64-linux-gnu cpp cpp-8 dirmngr
+  dpkg-dev fakeroot g++ g++-8 gcc-8 gnupg gnupg-l10n gnupg-utils gpg gpg-agent
+  gpg-wks-client gpg-wks-server gpgconf gpgsm libalgorithm-diff-perl
+  libalgorithm-diff-xs-perl libalgorithm-merge-perl libasan5 libassuan0
+  libatomic1 libbinutils libc-dev-bin libc6-dev libcc1-0 libdpkg-perl
+  libfakeroot libfile-fcntllock-perl libgcc-8-dev libgomp1 libisl19 libitm1
+  libksba8 liblocale-gettext-perl liblsan0 libmpc3 libmpfr6 libmpx2 libnpth0
+  libquadmath0 libstdc++-8-dev libtsan0 libubsan1 linux-libc-dev manpages
+  manpages-dev pinentry-curses
+Suggested packages:
+  binutils-doc cpp-doc gcc-8-locales dbus-user-session libpam-systemd
+  pinentry-gnome3 tor debian-keyring g++-multilib g++-8-multilib gcc-8-doc
+  libstdc++6-8-dbg gcc-multilib autoconf automake libtool flex bison gdb
+  gcc-doc gcc-8-multilib libgcc1-dbg libgomp1-dbg libitm1-dbg libatomic1-dbg
+  libasan5-dbg liblsan0-dbg libtsan0-dbg libubsan1-dbg libmpx2-dbg
+  libquadmath0-dbg parcimonie xloadimage scdaemon glibc-doc bzr
+  libstdc++-8-doc make-doc man-browser pinentry-doc
+The following NEW packages will be installed:
+  binutils binutils-common binutils-x86-64-linux-gnu build-essential cpp cpp-8
+  dirmngr dpkg-dev fakeroot g++ g++-8 gcc gcc-8 gnupg gnupg-l10n gnupg-utils
+  gpg gpg-agent gpg-wks-client gpg-wks-server gpgconf gpgsm
+  libalgorithm-diff-perl libalgorithm-diff-xs-perl libalgorithm-merge-perl
+  libasan5 libassuan0 libatomic1 libbinutils libc-dev-bin libc6-dev libcc1-0
+  libdpkg-perl libfakeroot libfile-fcntllock-perl libgcc-8-dev libgomp1
+  libisl19 libitm1 libksba8 liblocale-gettext-perl liblsan0 libmpc3 libmpfr6
+  libmpx2 libnpth0 libquadmath0 libstdc++-8-dev libtsan0 libubsan1
+  linux-libc-dev make manpages manpages-dev pinentry-curses
+0 upgraded, 55 newly installed, 0 to remove and 30 not upgraded.
+Need to get 57.7 MB of archives.
+After this operation, 202 MB of additional disk space will be used.
+Get:1 http://deb.debian.org/debian buster/main amd64 liblocale-gettext-perl amd64 1.07-3+b4 [18.9 kB]
+Get:2 http://deb.debian.org/debian buster/main amd64 manpages all 4.16-2 [1295 kB]
+Get:3 http://deb.debian.org/debian buster/main amd64 binutils-common amd64 2.31.1-16 [2073 kB]
+Get:4 http://deb.debian.org/debian buster/main amd64 libbinutils amd64 2.31.1-16 [478 kB]
+Get:5 http://deb.debian.org/debian buster/main amd64 binutils-x86-64-linux-gnu amd64 2.31.1-16 [1823 kB]
+Get:6 http://deb.debian.org/debian buster/main amd64 binutils amd64 2.31.1-16 [56.8 kB]
+Get:7 http://deb.debian.org/debian buster/main amd64 libc-dev-bin amd64 2.28-10 [275 kB]
+Get:8 http://deb.debian.org/debian buster/main amd64 linux-libc-dev amd64 4.19.98-1 [1314 kB]
+Get:9 http://deb.debian.org/debian buster/main amd64 libc6-dev amd64 2.28-10 [2691 kB]
+Get:10 http://deb.debian.org/debian buster/main amd64 libisl19 amd64 0.20-2 [587 kB]
+Get:11 http://deb.debian.org/debian buster/main amd64 libmpfr6 amd64 4.0.2-1 [775 kB]
+Get:12 http://deb.debian.org/debian buster/main amd64 libmpc3 amd64 1.1.0-1 [41.3 kB]
+Get:13 http://deb.debian.org/debian buster/main amd64 cpp-8 amd64 8.3.0-6 [8914 kB]
+Get:14 http://deb.debian.org/debian buster/main amd64 cpp amd64 4:8.3.0-1 [19.4 kB]
+Get:15 http://deb.debian.org/debian buster/main amd64 libcc1-0 amd64 8.3.0-6 [46.6 kB]
+Get:16 http://deb.debian.org/debian buster/main amd64 libgomp1 amd64 8.3.0-6 [75.8 kB]
+Get:17 http://deb.debian.org/debian buster/main amd64 libitm1 amd64 8.3.0-6 [27.7 kB]
+Get:18 http://deb.debian.org/debian buster/main amd64 libatomic1 amd64 8.3.0-6 [9032 B]
+Get:19 http://deb.debian.org/debian buster/main amd64 libasan5 amd64 8.3.0-6 [362 kB]
+Get:20 http://deb.debian.org/debian buster/main amd64 liblsan0 amd64 8.3.0-6 [131 kB]
+Get:21 http://deb.debian.org/debian buster/main amd64 libtsan0 amd64 8.3.0-6 [283 kB]
+Get:22 http://deb.debian.org/debian buster/main amd64 libubsan1 amd64 8.3.0-6 [120 kB]
+Get:23 http://deb.debian.org/debian buster/main amd64 libmpx2 amd64 8.3.0-6 [11.4 kB]
+Get:24 http://deb.debian.org/debian buster/main amd64 libquadmath0 amd64 8.3.0-6 [133 kB]
+Get:25 http://deb.debian.org/debian buster/main amd64 libgcc-8-dev amd64 8.3.0-6 [2298 kB]
+Get:26 http://deb.debian.org/debian buster/main amd64 gcc-8 amd64 8.3.0-6 [9452 kB]
+Get:27 http://deb.debian.org/debian buster/main amd64 gcc amd64 4:8.3.0-1 [5196 B]
+Get:28 http://deb.debian.org/debian buster/main amd64 libstdc++-8-dev amd64 8.3.0-6 [1532 kB]
+Get:29 http://deb.debian.org/debian buster/main amd64 g++-8 amd64 8.3.0-6 [9752 kB]
+Get:30 http://deb.debian.org/debian buster/main amd64 g++ amd64 4:8.3.0-1 [1644 B]
+Get:31 http://deb.debian.org/debian buster/main amd64 make amd64 4.2.1-1.2 [341 kB]
+Get:32 http://deb.debian.org/debian buster/main amd64 libdpkg-perl all 1.19.7 [1414 kB]
+Get:33 http://deb.debian.org/debian buster/main amd64 dpkg-dev all 1.19.7 [1773 kB]
+Get:34 http://deb.debian.org/debian buster/main amd64 build-essential amd64 12.6 [7576 B]
+Get:35 http://deb.debian.org/debian buster/main amd64 libassuan0 amd64 2.5.2-1 [49.4 kB]
+Get:36 http://deb.debian.org/debian buster/main amd64 gpgconf amd64 2.2.12-1+deb10u1 [510 kB]
+Get:37 http://deb.debian.org/debian buster/main amd64 libksba8 amd64 1.3.5-2 [99.7 kB]
+Get:38 http://deb.debian.org/debian buster/main amd64 libnpth0 amd64 1.6-1 [18.4 kB]
+Get:39 http://deb.debian.org/debian buster/main amd64 dirmngr amd64 2.2.12-1+deb10u1 [712 kB]
+Get:40 http://deb.debian.org/debian buster/main amd64 libfakeroot amd64 1.23-1 [45.9 kB]
+Get:41 http://deb.debian.org/debian buster/main amd64 fakeroot amd64 1.23-1 [85.8 kB]
+Get:42 http://deb.debian.org/debian buster/main amd64 gnupg-l10n all 2.2.12-1+deb10u1 [1010 kB]
+Get:43 http://deb.debian.org/debian buster/main amd64 gnupg-utils amd64 2.2.12-1+deb10u1 [861 kB]
+Get:44 http://deb.debian.org/debian buster/main amd64 gpg amd64 2.2.12-1+deb10u1 [865 kB]
+Get:45 http://deb.debian.org/debian buster/main amd64 pinentry-curses amd64 1.1.0-2 [64.5 kB]
+Get:46 http://deb.debian.org/debian buster/main amd64 gpg-agent amd64 2.2.12-1+deb10u1 [617 kB]
+Get:47 http://deb.debian.org/debian buster/main amd64 gpg-wks-client amd64 2.2.12-1+deb10u1 [485 kB]
+Get:48 http://deb.debian.org/debian buster/main amd64 gpg-wks-server amd64 2.2.12-1+deb10u1 [478 kB]
+Get:49 http://deb.debian.org/debian buster/main amd64 gpgsm amd64 2.2.12-1+deb10u1 [604 kB]
+Get:50 http://deb.debian.org/debian buster/main amd64 gnupg all 2.2.12-1+deb10u1 [715 kB]
+Get:51 http://deb.debian.org/debian buster/main amd64 libalgorithm-diff-perl all 1.19.03-2 [47.9 kB]
+Get:52 http://deb.debian.org/debian buster/main amd64 libalgorithm-diff-xs-perl amd64 0.04-5+b1 [11.8 kB]
+Get:53 http://deb.debian.org/debian buster/main amd64 libalgorithm-merge-perl all 0.08-3 [12.7 kB]
+Get:54 http://deb.debian.org/debian buster/main amd64 libfile-fcntllock-perl amd64 0.22-3+b5 [35.4 kB]
+Get:55 http://deb.debian.org/debian buster/main amd64 manpages-dev all 4.16-2 [2232 kB]
+[91mdebconf: delaying package configuration, since apt-utils is not installed
+[0mFetched 57.7 MB in 1s (58.7 MB/s)
+Selecting previously unselected package liblocale-gettext-perl.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 12557 files and directories currently installed.)
+Preparing to unpack .../00-liblocale-gettext-perl_1.07-3+b4_amd64.deb ...
+Unpacking liblocale-gettext-perl (1.07-3+b4) ...
+Selecting previously unselected package manpages.
+Preparing to unpack .../01-manpages_4.16-2_all.deb ...
+Unpacking manpages (4.16-2) ...
+Selecting previously unselected package binutils-common:amd64.
+Preparing to unpack .../02-binutils-common_2.31.1-16_amd64.deb ...
+Unpacking binutils-common:amd64 (2.31.1-16) ...
+Selecting previously unselected package libbinutils:amd64.
+Preparing to unpack .../03-libbinutils_2.31.1-16_amd64.deb ...
+Unpacking libbinutils:amd64 (2.31.1-16) ...
+Selecting previously unselected package binutils-x86-64-linux-gnu.
+Preparing to unpack .../04-binutils-x86-64-linux-gnu_2.31.1-16_amd64.deb ...
+Unpacking binutils-x86-64-linux-gnu (2.31.1-16) ...
+Selecting previously unselected package binutils.
+Preparing to unpack .../05-binutils_2.31.1-16_amd64.deb ...
+Unpacking binutils (2.31.1-16) ...
+Selecting previously unselected package libc-dev-bin.
+Preparing to unpack .../06-libc-dev-bin_2.28-10_amd64.deb ...
+Unpacking libc-dev-bin (2.28-10) ...
+Selecting previously unselected package linux-libc-dev:amd64.
+Preparing to unpack .../07-linux-libc-dev_4.19.98-1_amd64.deb ...
+Unpacking linux-libc-dev:amd64 (4.19.98-1) ...
+Selecting previously unselected package libc6-dev:amd64.
+Preparing to unpack .../08-libc6-dev_2.28-10_amd64.deb ...
+Unpacking libc6-dev:amd64 (2.28-10) ...
+Selecting previously unselected package libisl19:amd64.
+Preparing to unpack .../09-libisl19_0.20-2_amd64.deb ...
+Unpacking libisl19:amd64 (0.20-2) ...
+Selecting previously unselected package libmpfr6:amd64.
+Preparing to unpack .../10-libmpfr6_4.0.2-1_amd64.deb ...
+Unpacking libmpfr6:amd64 (4.0.2-1) ...
+Selecting previously unselected package libmpc3:amd64.
+Preparing to unpack .../11-libmpc3_1.1.0-1_amd64.deb ...
+Unpacking libmpc3:amd64 (1.1.0-1) ...
+Selecting previously unselected package cpp-8.
+Preparing to unpack .../12-cpp-8_8.3.0-6_amd64.deb ...
+Unpacking cpp-8 (8.3.0-6) ...
+Selecting previously unselected package cpp.
+Preparing to unpack .../13-cpp_4%3a8.3.0-1_amd64.deb ...
+Unpacking cpp (4:8.3.0-1) ...
+Selecting previously unselected package libcc1-0:amd64.
+Preparing to unpack .../14-libcc1-0_8.3.0-6_amd64.deb ...
+Unpacking libcc1-0:amd64 (8.3.0-6) ...
+Selecting previously unselected package libgomp1:amd64.
+Preparing to unpack .../15-libgomp1_8.3.0-6_amd64.deb ...
+Unpacking libgomp1:amd64 (8.3.0-6) ...
+Selecting previously unselected package libitm1:amd64.
+Preparing to unpack .../16-libitm1_8.3.0-6_amd64.deb ...
+Unpacking libitm1:amd64 (8.3.0-6) ...
+Selecting previously unselected package libatomic1:amd64.
+Preparing to unpack .../17-libatomic1_8.3.0-6_amd64.deb ...
+Unpacking libatomic1:amd64 (8.3.0-6) ...
+Selecting previously unselected package libasan5:amd64.
+Preparing to unpack .../18-libasan5_8.3.0-6_amd64.deb ...
+Unpacking libasan5:amd64 (8.3.0-6) ...
+Selecting previously unselected package liblsan0:amd64.
+Preparing to unpack .../19-liblsan0_8.3.0-6_amd64.deb ...
+Unpacking liblsan0:amd64 (8.3.0-6) ...
+Selecting previously unselected package libtsan0:amd64.
+Preparing to unpack .../20-libtsan0_8.3.0-6_amd64.deb ...
+Unpacking libtsan0:amd64 (8.3.0-6) ...
+Selecting previously unselected package libubsan1:amd64.
+Preparing to unpack .../21-libubsan1_8.3.0-6_amd64.deb ...
+Unpacking libubsan1:amd64 (8.3.0-6) ...
+Selecting previously unselected package libmpx2:amd64.
+Preparing to unpack .../22-libmpx2_8.3.0-6_amd64.deb ...
+Unpacking libmpx2:amd64 (8.3.0-6) ...
+Selecting previously unselected package libquadmath0:amd64.
+Preparing to unpack .../23-libquadmath0_8.3.0-6_amd64.deb ...
+Unpacking libquadmath0:amd64 (8.3.0-6) ...
+Selecting previously unselected package libgcc-8-dev:amd64.
+Preparing to unpack .../24-libgcc-8-dev_8.3.0-6_amd64.deb ...
+Unpacking libgcc-8-dev:amd64 (8.3.0-6) ...
+Selecting previously unselected package gcc-8.
+Preparing to unpack .../25-gcc-8_8.3.0-6_amd64.deb ...
+Unpacking gcc-8 (8.3.0-6) ...
+Selecting previously unselected package gcc.
+Preparing to unpack .../26-gcc_4%3a8.3.0-1_amd64.deb ...
+Unpacking gcc (4:8.3.0-1) ...
+Selecting previously unselected package libstdc++-8-dev:amd64.
+Preparing to unpack .../27-libstdc++-8-dev_8.3.0-6_amd64.deb ...
+Unpacking libstdc++-8-dev:amd64 (8.3.0-6) ...
+Selecting previously unselected package g++-8.
+Preparing to unpack .../28-g++-8_8.3.0-6_amd64.deb ...
+Unpacking g++-8 (8.3.0-6) ...
+Selecting previously unselected package g++.
+Preparing to unpack .../29-g++_4%3a8.3.0-1_amd64.deb ...
+Unpacking g++ (4:8.3.0-1) ...
+Selecting previously unselected package make.
+Preparing to unpack .../30-make_4.2.1-1.2_amd64.deb ...
+Unpacking make (4.2.1-1.2) ...
+Selecting previously unselected package libdpkg-perl.
+Preparing to unpack .../31-libdpkg-perl_1.19.7_all.deb ...
+Unpacking libdpkg-perl (1.19.7) ...
+Selecting previously unselected package dpkg-dev.
+Preparing to unpack .../32-dpkg-dev_1.19.7_all.deb ...
+Unpacking dpkg-dev (1.19.7) ...
+Selecting previously unselected package build-essential.
+Preparing to unpack .../33-build-essential_12.6_amd64.deb ...
+Unpacking build-essential (12.6) ...
+Selecting previously unselected package libassuan0:amd64.
+Preparing to unpack .../34-libassuan0_2.5.2-1_amd64.deb ...
+Unpacking libassuan0:amd64 (2.5.2-1) ...
+Selecting previously unselected package gpgconf.
+Preparing to unpack .../35-gpgconf_2.2.12-1+deb10u1_amd64.deb ...
+Unpacking gpgconf (2.2.12-1+deb10u1) ...
+Selecting previously unselected package libksba8:amd64.
+Preparing to unpack .../36-libksba8_1.3.5-2_amd64.deb ...
+Unpacking libksba8:amd64 (1.3.5-2) ...
+Selecting previously unselected package libnpth0:amd64.
+Preparing to unpack .../37-libnpth0_1.6-1_amd64.deb ...
+Unpacking libnpth0:amd64 (1.6-1) ...
+Selecting previously unselected package dirmngr.
+Preparing to unpack .../38-dirmngr_2.2.12-1+deb10u1_amd64.deb ...
+Unpacking dirmngr (2.2.12-1+deb10u1) ...
+Selecting previously unselected package libfakeroot:amd64.
+Preparing to unpack .../39-libfakeroot_1.23-1_amd64.deb ...
+Unpacking libfakeroot:amd64 (1.23-1) ...
+Selecting previously unselected package fakeroot.
+Preparing to unpack .../40-fakeroot_1.23-1_amd64.deb ...
+Unpacking fakeroot (1.23-1) ...
+Selecting previously unselected package gnupg-l10n.
+Preparing to unpack .../41-gnupg-l10n_2.2.12-1+deb10u1_all.deb ...
+Unpacking gnupg-l10n (2.2.12-1+deb10u1) ...
+Selecting previously unselected package gnupg-utils.
+Preparing to unpack .../42-gnupg-utils_2.2.12-1+deb10u1_amd64.deb ...
+Unpacking gnupg-utils (2.2.12-1+deb10u1) ...
+Selecting previously unselected package gpg.
+Preparing to unpack .../43-gpg_2.2.12-1+deb10u1_amd64.deb ...
+Unpacking gpg (2.2.12-1+deb10u1) ...
+Selecting previously unselected package pinentry-curses.
+Preparing to unpack .../44-pinentry-curses_1.1.0-2_amd64.deb ...
+Unpacking pinentry-curses (1.1.0-2) ...
+Selecting previously unselected package gpg-agent.
+Preparing to unpack .../45-gpg-agent_2.2.12-1+deb10u1_amd64.deb ...
+Unpacking gpg-agent (2.2.12-1+deb10u1) ...
+Selecting previously unselected package gpg-wks-client.
+Preparing to unpack .../46-gpg-wks-client_2.2.12-1+deb10u1_amd64.deb ...
+Unpacking gpg-wks-client (2.2.12-1+deb10u1) ...
+Selecting previously unselected package gpg-wks-server.
+Preparing to unpack .../47-gpg-wks-server_2.2.12-1+deb10u1_amd64.deb ...
+Unpacking gpg-wks-server (2.2.12-1+deb10u1) ...
+Selecting previously unselected package gpgsm.
+Preparing to unpack .../48-gpgsm_2.2.12-1+deb10u1_amd64.deb ...
+Unpacking gpgsm (2.2.12-1+deb10u1) ...
+Selecting previously unselected package gnupg.
+Preparing to unpack .../49-gnupg_2.2.12-1+deb10u1_all.deb ...
+Unpacking gnupg (2.2.12-1+deb10u1) ...
+Selecting previously unselected package libalgorithm-diff-perl.
+Preparing to unpack .../50-libalgorithm-diff-perl_1.19.03-2_all.deb ...
+Unpacking libalgorithm-diff-perl (1.19.03-2) ...
+Selecting previously unselected package libalgorithm-diff-xs-perl.
+Preparing to unpack .../51-libalgorithm-diff-xs-perl_0.04-5+b1_amd64.deb ...
+Unpacking libalgorithm-diff-xs-perl (0.04-5+b1) ...
+Selecting previously unselected package libalgorithm-merge-perl.
+Preparing to unpack .../52-libalgorithm-merge-perl_0.08-3_all.deb ...
+Unpacking libalgorithm-merge-perl (0.08-3) ...
+Selecting previously unselected package libfile-fcntllock-perl.
+Preparing to unpack .../53-libfile-fcntllock-perl_0.22-3+b5_amd64.deb ...
+Unpacking libfile-fcntllock-perl (0.22-3+b5) ...
+Selecting previously unselected package manpages-dev.
+Preparing to unpack .../54-manpages-dev_4.16-2_all.deb ...
+Unpacking manpages-dev (4.16-2) ...
+Setting up libksba8:amd64 (1.3.5-2) ...
+Setting up libfile-fcntllock-perl (0.22-3+b5) ...
+Setting up libalgorithm-diff-perl (1.19.03-2) ...
+Setting up manpages (4.16-2) ...
+Setting up binutils-common:amd64 (2.31.1-16) ...
+Setting up linux-libc-dev:amd64 (4.19.98-1) ...
+Setting up libnpth0:amd64 (1.6-1) ...
+Setting up libassuan0:amd64 (2.5.2-1) ...
+Setting up libgomp1:amd64 (8.3.0-6) ...
+Setting up libfakeroot:amd64 (1.23-1) ...
+Setting up fakeroot (1.23-1) ...
+update-alternatives: using /usr/bin/fakeroot-sysv to provide /usr/bin/fakeroot (fakeroot) in auto mode
+update-alternatives: warning: skip creation of /usr/share/man/man1/fakeroot.1.gz because associated file /usr/share/man/man1/fakeroot-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/faked.1.gz because associated file /usr/share/man/man1/faked-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/es/man1/fakeroot.1.gz because associated file /usr/share/man/es/man1/fakeroot-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/es/man1/faked.1.gz because associated file /usr/share/man/es/man1/faked-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/fr/man1/fakeroot.1.gz because associated file /usr/share/man/fr/man1/fakeroot-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/fr/man1/faked.1.gz because associated file /usr/share/man/fr/man1/faked-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/sv/man1/fakeroot.1.gz because associated file /usr/share/man/sv/man1/fakeroot-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/sv/man1/faked.1.gz because associated file /usr/share/man/sv/man1/faked-sysv.1.gz (of link group fakeroot) doesn't exist
+Setting up libasan5:amd64 (8.3.0-6) ...
+Setting up make (4.2.1-1.2) ...
+Setting up libmpfr6:amd64 (4.0.2-1) ...
+Setting up gnupg-l10n (2.2.12-1+deb10u1) ...
+Setting up libquadmath0:amd64 (8.3.0-6) ...
+Setting up libmpc3:amd64 (1.1.0-1) ...
+Setting up libatomic1:amd64 (8.3.0-6) ...
+Setting up libdpkg-perl (1.19.7) ...
+Setting up libmpx2:amd64 (8.3.0-6) ...
+Setting up libubsan1:amd64 (8.3.0-6) ...
+Setting up libisl19:amd64 (0.20-2) ...
+Setting up gpgconf (2.2.12-1+deb10u1) ...
+Setting up libbinutils:amd64 (2.31.1-16) ...
+Setting up cpp-8 (8.3.0-6) ...
+Setting up libc-dev-bin (2.28-10) ...
+Setting up libalgorithm-diff-xs-perl (0.04-5+b1) ...
+Setting up libcc1-0:amd64 (8.3.0-6) ...
+Setting up liblocale-gettext-perl (1.07-3+b4) ...
+Setting up gpg (2.2.12-1+deb10u1) ...
+Setting up liblsan0:amd64 (8.3.0-6) ...
+Setting up libitm1:amd64 (8.3.0-6) ...
+Setting up libalgorithm-merge-perl (0.08-3) ...
+Setting up gnupg-utils (2.2.12-1+deb10u1) ...
+Setting up binutils-x86-64-linux-gnu (2.31.1-16) ...
+Setting up libtsan0:amd64 (8.3.0-6) ...
+Setting up pinentry-curses (1.1.0-2) ...
+Setting up manpages-dev (4.16-2) ...
+Setting up gpg-agent (2.2.12-1+deb10u1) ...
+Setting up gpgsm (2.2.12-1+deb10u1) ...
+Setting up binutils (2.31.1-16) ...
+Setting up dpkg-dev (1.19.7) ...
+Setting up dirmngr (2.2.12-1+deb10u1) ...
+Setting up libgcc-8-dev:amd64 (8.3.0-6) ...
+Setting up gpg-wks-server (2.2.12-1+deb10u1) ...
+Setting up cpp (4:8.3.0-1) ...
+Setting up libc6-dev:amd64 (2.28-10) ...
+Setting up libstdc++-8-dev:amd64 (8.3.0-6) ...
+Setting up gcc-8 (8.3.0-6) ...
+Setting up gpg-wks-client (2.2.12-1+deb10u1) ...
+Setting up gcc (4:8.3.0-1) ...
+Setting up g++-8 (8.3.0-6) ...
+Setting up gnupg (2.2.12-1+deb10u1) ...
+Setting up g++ (4:8.3.0-1) ...
+update-alternatives: using /usr/bin/g++ to provide /usr/bin/c++ (c++) in auto mode
+Setting up build-essential (12.6) ...
+Processing triggers for libc-bin (2.28-10) ...
+Removing intermediate container 1403483099a5
+ ---> 24d3e1806d8e
+Step 5/10 : RUN mkdir microservice
+ ---> Running in e249e841f46d
+Removing intermediate container e249e841f46d
+ ---> b43390cc210c
+Step 6/10 : WORKDIR /microservice
+ ---> Running in f030c91816fb
+Removing intermediate container f030c91816fb
+ ---> dc387b2b755c
+Step 7/10 : COPY ./s2i/bin/ /s2i/bin
+ ---> 897d06cfb3d7
+Step 8/10 : COPY _python /microservice
+ ---> c3433f7d0c2c
+Step 9/10 : RUN cd /microservice/python && make install
+ ---> Running in a6fdaba761f6
+pip install -e .
+Obtaining file:///microservice/python
+Collecting Flask<2.0.0 (from seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/9b/93/628509b8d5dc749656a9641f4caf13540e2cdec85276964ff8f43bbb1d3b/Flask-1.1.1-py2.py3-none-any.whl (94kB)
+Collecting Flask-cors<4.0.0 (from seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/78/38/e68b11daa5d613e3a91e4bf3da76c94ac9ee0d9cd515af9c1ab80d36f709/Flask_Cors-3.0.8-py2.py3-none-any.whl
+Collecting redis<4.0.0 (from seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/f0/05/1fc7feedc19c123e7a95cfc9e7892eb6cdd2e5df4e9e8af6384349c1cc3d/redis-3.4.1-py2.py3-none-any.whl (71kB)
+Requirement already satisfied: requests<3.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core==1.0.2) (2.22.0)
+Collecting numpy<2.0.0 (from seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/b7/ce/d0b92f0283faa4da76ea82587ff9da70104e81f59ba14f76c87e4196254e/numpy-1.18.2-cp37-cp37m-manylinux1_x86_64.whl (20.2MB)
+Collecting flatbuffers<2.0.0 (from seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/eb/26/712e578c5f14e26ae3314c39a1bdc4eb2ec2f4ddc89b708cf8e0a0d20423/flatbuffers-1.12-py2.py3-none-any.whl
+Collecting protobuf<4.0.0 (from seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/ff/f1/8dcd4219bbae8aa44fe8871a89f05eca2dca9c04f8dbfed8a82b7be97a88/protobuf-3.11.3-cp37-cp37m-manylinux1_x86_64.whl (1.3MB)
+Collecting grpcio<2.0.0 (from seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/fb/00/997acb1c16f84e6d3ede511500f54e7b7a1fdfe7b4da5a5c2d07ad4e91f1/grpcio-1.27.2-cp37-cp37m-manylinux2010_x86_64.whl (2.7MB)
+Collecting Flask-OpenTracing<1.2.0,>=1.1.0 (from seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/58/6c/6417701ba5ecc8854670c6db3207bcc3e5fbc96289a7cb18d5516d99a1c6/Flask-OpenTracing-1.1.0.tar.gz
+Collecting opentracing<2.3.0,>=2.2.0 (from seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/94/9f/289424136addf621fb4c75624ef9a3a80e8575da3993a87950c57e93217e/opentracing-2.2.0.tar.gz (47kB)
+Collecting jaeger-client<4.2.0,>=4.1.0 (from seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/f1/da/569a4f1bc3d0c412c7f903053f09ef62fa10949374ca90bc852b22dd3860/jaeger-client-4.1.0.tar.gz (80kB)
+Collecting grpcio-opentracing<1.2.0,>=1.1.4 (from seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/db/82/2fcad380697c3dab25de76ee590bcab3eb9bbfb4add916044d7e83ec2b10/grpcio_opentracing-1.1.4-py3-none-any.whl
+Collecting pyaml<20.0.0 (from seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/35/1e/eda9fe07f752ced7afcef590e7d74390f0d9c9c0b7ff98317afbaa0697e3/pyaml-19.12.0-py2.py3-none-any.whl
+Collecting gunicorn<20.1.0,>=19.9.0 (from seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/69/ca/926f7cd3a2014b16870086b2d0fdc84a9e49473c68a8dff8b57f7c156f43/gunicorn-20.0.4-py2.py3-none-any.whl (77kB)
+Collecting minio<6.0.0,>=4.0.9 (from seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/8f/ed/8670995efca990a8b6473f24331fcc40e61b59a00fe31e6e266b667f4866/minio-5.0.8-py2.py3-none-any.whl (73kB)
+Collecting azure-storage-blob<3.0.0,>=2.0.1 (from seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/3e/84/610f379b46d7d3c2d48eadeed6a12b6d46a43100fea70534f5992d0ac996/azure_storage_blob-2.1.0-py2.py3-none-any.whl (88kB)
+Requirement already satisfied: setuptools>=41.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core==1.0.2) (41.4.0)
+Collecting prometheus_client<0.8.0,>=0.7.1 (from seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/b3/23/41a5a24b502d35a4ad50a5bb7202a5e1d9a0364d0c12f56db3dbf7aca76d/prometheus_client-0.7.1.tar.gz
+Collecting itsdangerous>=0.24 (from Flask<2.0.0->seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/76/ae/44b03b253d6fade317f32c24d100b3b35c2239807046a4c953c7b89fa49e/itsdangerous-1.1.0-py2.py3-none-any.whl
+Collecting Jinja2>=2.10.1 (from Flask<2.0.0->seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/27/24/4f35961e5c669e96f6559760042a55b9bcfcdb82b9bdb3c8753dbe042e35/Jinja2-2.11.1-py2.py3-none-any.whl (126kB)
+Collecting Werkzeug>=0.15 (from Flask<2.0.0->seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/ba/a5/d6f8a6e71f15364d35678a4ec8a0186f980b3bd2545f40ad51dd26a87fb1/Werkzeug-1.0.0-py2.py3-none-any.whl (298kB)
+Collecting click>=5.1 (from Flask<2.0.0->seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/dd/c0/4d8f43a9b16e289f36478422031b8a63b54b6ac3b1ba605d602f10dd54d6/click-7.1.1-py2.py3-none-any.whl (82kB)
+Requirement already satisfied: Six in /opt/conda/lib/python3.7/site-packages (from Flask-cors<4.0.0->seldon-core==1.0.2) (1.12.0)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->seldon-core==1.0.2) (1.24.2)
+Requirement already satisfied: chardet<3.1.0,>=3.0.2 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->seldon-core==1.0.2) (3.0.4)
+Requirement already satisfied: certifi>=2017.4.17 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->seldon-core==1.0.2) (2019.11.28)
+Requirement already satisfied: idna<2.9,>=2.5 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->seldon-core==1.0.2) (2.8)
+Collecting threadloop<2,>=1 (from jaeger-client<4.2.0,>=4.1.0->seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/d3/1d/8398c1645b97dc008d3c658e04beda01ede3d90943d40c8d56863cf891bd/threadloop-1.0.2.tar.gz
+Collecting thrift (from jaeger-client<4.2.0,>=4.1.0->seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/97/1e/3284d19d7be99305eda145b8aa46b0c33244e4a496ec66440dac19f8274d/thrift-0.13.0.tar.gz (59kB)
+Collecting tornado<6,>=4.3 (from jaeger-client<4.2.0,>=4.1.0->seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/e6/78/6e7b5af12c12bdf38ca9bfe863fcaf53dc10430a312d0324e76c1e5ca426/tornado-5.1.1.tar.gz (516kB)
+Collecting PyYAML (from pyaml<20.0.0->seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/64/c2/b80047c7ac2478f9501676c988a5411ed5572f35d1beff9cae07d321512c/PyYAML-5.3.1.tar.gz (269kB)
+Collecting python-dateutil (from minio<6.0.0,>=4.0.9->seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/d4/70/d60450c3dd48ef87586924207ae8907090de0b306af2bce5d134d78615cb/python_dateutil-2.8.1-py2.py3-none-any.whl (227kB)
+Collecting pytz (from minio<6.0.0,>=4.0.9->seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/e7/f9/f0b53f88060247251bf481fa6ea62cd0d25bf1b11a87888e53ce5b7c8ad2/pytz-2019.3-py2.py3-none-any.whl (509kB)
+Collecting configparser (from minio<6.0.0,>=4.0.9->seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/7a/2a/95ed0501cf5d8709490b1d3a3f9b5cf340da6c433f896bbe9ce08dbe6785/configparser-4.0.2-py2.py3-none-any.whl
+Collecting azure-storage-common~=2.1 (from azure-storage-blob<3.0.0,>=2.0.1->seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/6b/a0/6794b318ce0118d1a4053bdf0149a60807407db9b710354f2b203c2f5975/azure_storage_common-2.1.0-py2.py3-none-any.whl (47kB)
+Collecting azure-common>=1.1.5 (from azure-storage-blob<3.0.0,>=2.0.1->seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/e5/4d/d000fc3c5af601d00d55750b71da5c231fcb128f42ac95b208ed1091c2c1/azure_common-1.1.25-py2.py3-none-any.whl
+Collecting MarkupSafe>=0.23 (from Jinja2>=2.10.1->Flask<2.0.0->seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/98/7b/ff284bd8c80654e471b769062a9b43cc5d03e7a615048d96f4619df8d420/MarkupSafe-1.1.1-cp37-cp37m-manylinux1_x86_64.whl
+Requirement already satisfied: cryptography in /opt/conda/lib/python3.7/site-packages (from azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->seldon-core==1.0.2) (2.7)
+Requirement already satisfied: asn1crypto>=0.21.0 in /opt/conda/lib/python3.7/site-packages (from cryptography->azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->seldon-core==1.0.2) (1.0.1)
+Requirement already satisfied: cffi!=1.11.3,>=1.8 in /opt/conda/lib/python3.7/site-packages (from cryptography->azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->seldon-core==1.0.2) (1.12.3)
+Requirement already satisfied: pycparser in /opt/conda/lib/python3.7/site-packages (from cffi!=1.11.3,>=1.8->cryptography->azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->seldon-core==1.0.2) (2.19)
+Building wheels for collected packages: Flask-OpenTracing, opentracing, jaeger-client, prometheus-client, threadloop, thrift, tornado, PyYAML
+  Building wheel for Flask-OpenTracing (setup.py): started
+  Building wheel for Flask-OpenTracing (setup.py): finished with status 'done'
+  Created wheel for Flask-OpenTracing: filename=Flask_OpenTracing-1.1.0-cp37-none-any.whl size=9072 sha256=0f491cdc517359db7a208057b31b6b6cf52187858462369b1b99aae42468be33
+  Stored in directory: /root/.cache/pip/wheels/7b/dc/25/3cf0b35c129232ee596c413f13d1d1f5a8e38c427266276dfd
+  Building wheel for opentracing (setup.py): started
+  Building wheel for opentracing (setup.py): finished with status 'done'
+  Created wheel for opentracing: filename=opentracing-2.2.0-cp37-none-any.whl size=49320 sha256=d8163aa06bc740808329067b6f5b45d4e6eb718ab8f254c791c13818578992cf
+  Stored in directory: /root/.cache/pip/wheels/93/e9/b5/1cdc3544f99a54caca13832b5afa26fd98701fe709dc049576
+  Building wheel for jaeger-client (setup.py): started
+  Building wheel for jaeger-client (setup.py): finished with status 'done'
+  Created wheel for jaeger-client: filename=jaeger_client-4.1.0-cp37-none-any.whl size=64309 sha256=9fdd4699ed70c11d8d2bbd1d67ce710e898d896c56be6a040a99f81b08a5b611
+  Stored in directory: /root/.cache/pip/wheels/f2/84/7f/e89da3ee8ce35598d6382b6389fa2ada5d66acca2422537994
+  Building wheel for prometheus-client (setup.py): started
+  Building wheel for prometheus-client (setup.py): finished with status 'done'
+  Created wheel for prometheus-client: filename=prometheus_client-0.7.1-cp37-none-any.whl size=41402 sha256=60e8f7ef9dd749b49eb35c0ab4d442a55a206f719319a62c730c842dace98787
+  Stored in directory: /root/.cache/pip/wheels/1c/54/34/fd47cd9b308826cc4292b54449c1899a30251ef3b506bc91ea
+  Building wheel for threadloop (setup.py): started
+  Building wheel for threadloop (setup.py): finished with status 'done'
+  Created wheel for threadloop: filename=threadloop-1.0.2-cp37-none-any.whl size=3424 sha256=95db97117f30a5d8fa5e82c976ac63acdb9e2295aa7c0861bf292a2fd8960b14
+  Stored in directory: /root/.cache/pip/wheels/d7/7a/30/d212623a4cd34f6cce400f8122b1b7af740d3440c68023d51f
+  Building wheel for thrift (setup.py): started
+  Building wheel for thrift (setup.py): finished with status 'done'
+  Created wheel for thrift: filename=thrift-0.13.0-cp37-cp37m-linux_x86_64.whl size=486876 sha256=14dc9e1d2a18062c323a07668d213312a67727db7258dbbdfc4ed02225a2a7f0
+  Stored in directory: /root/.cache/pip/wheels/02/a2/46/689ccfcf40155c23edc7cdbd9de488611c8fdf49ff34b1706e
+  Building wheel for tornado (setup.py): started
+  Building wheel for tornado (setup.py): finished with status 'done'
+  Created wheel for tornado: filename=tornado-5.1.1-cp37-cp37m-linux_x86_64.whl size=463628 sha256=be54ce067299995d6c85fafb4ac2d0c0db69efdcf85113c82d3c6fb7f2f1816d
+  Stored in directory: /root/.cache/pip/wheels/6d/e1/ce/f4ee2fa420cc6b940123c64992b81047816d0a9fad6b879325
+  Building wheel for PyYAML (setup.py): started
+  Building wheel for PyYAML (setup.py): finished with status 'done'
+  Created wheel for PyYAML: filename=PyYAML-5.3.1-cp37-cp37m-linux_x86_64.whl size=44620 sha256=029e8277028045c8fc61424774c5cf29bdcfa3189594d516e4a638f4ad25755b
+  Stored in directory: /root/.cache/pip/wheels/a7/c1/ea/cf5bd31012e735dc1dfea3131a2d5eae7978b251083d6247bd
+Successfully built Flask-OpenTracing opentracing jaeger-client prometheus-client threadloop thrift tornado PyYAML
+Installing collected packages: itsdangerous, MarkupSafe, Jinja2, Werkzeug, click, Flask, Flask-cors, redis, numpy, flatbuffers, protobuf, grpcio, opentracing, Flask-OpenTracing, tornado, threadloop, thrift, jaeger-client, grpcio-opentracing, PyYAML, pyaml, gunicorn, python-dateutil, pytz, configparser, minio, azure-common, azure-storage-common, azure-storage-blob, prometheus-client, seldon-core
+  Running setup.py develop for seldon-core
+Successfully installed Flask-1.1.1 Flask-OpenTracing-1.1.0 Flask-cors-3.0.8 Jinja2-2.11.1 MarkupSafe-1.1.1 PyYAML-5.3.1 Werkzeug-1.0.0 azure-common-1.1.25 azure-storage-blob-2.1.0 azure-storage-common-2.1.0 click-7.1.1 configparser-4.0.2 flatbuffers-1.12 grpcio-1.27.2 grpcio-opentracing-1.1.4 gunicorn-20.0.4 itsdangerous-1.1.0 jaeger-client-4.1.0 minio-5.0.8 numpy-1.18.2 opentracing-2.2.0 prometheus-client-0.7.1 protobuf-3.11.3 pyaml-19.12.0 python-dateutil-2.8.1 pytz-2019.3 redis-3.4.1 seldon-core threadloop-1.0.2 thrift-0.13.0 tornado-5.1.1
+Removing intermediate container a6fdaba761f6
+ ---> dbcd23f845c6
+Step 10/10 : EXPOSE 5000
+ ---> Running in c4937925c8cf
+Removing intermediate container c4937925c8cf
+ ---> 35ec88666690
+Successfully built 35ec88666690
+Successfully tagged seldonio/seldon-core-s2i-python37:0.19-SNAPSHOT
+make[1]: Leaving directory '/workspace/source/wrappers/s2i/python'
+make[1]: Entering directory '/workspace/source/wrappers/s2i/python'
+docker tag docker.io/seldonio/seldon-core-s2i-python`echo -n 3.7 | sed 's/\.//g'`:0.19-SNAPSHOT docker.io/seldonio/seldon-core-s2i-python`echo -n 3.7 | cut -d. -f1`:0.19-SNAPSHOT
+make[1]: Leaving directory '/workspace/source/wrappers/s2i/python'
+Files changed in operator folder:
+operator/apis/machinelearning/v1/seldondeployment_types.go
+operator/apis/machinelearning/v1/seldondeployment_webhook.go
+operator/apis/machinelearning/v1/seldondeployment_webhook_test.go
+operator/constants/constants.go
+operator/controllers/seldondeployment_controller.go
+operator/controllers/seldondeployment_engine.go
+operator/controllers/seldondeployment_prepackaged_servers_test.go
+cd ../../operator && make kind-image-install
+make[1]: Entering directory '/workspace/source/operator'
+go: creating new go.mod: module tmp
+go: finding sigs.k8s.io/controller-tools/cmd v0.2.5
+go: finding sigs.k8s.io v0.2.5
+go: finding sigs.k8s.io/controller-tools v0.2.5
+go: finding sigs.k8s.io/controller-tools/cmd/controller-gen v0.2.5
+go: downloading sigs.k8s.io/controller-tools v0.2.5
+go: extracting sigs.k8s.io/controller-tools v0.2.5
+go: downloading github.com/fatih/color v1.7.0
+go: downloading github.com/spf13/cobra v0.0.5
+go: downloading k8s.io/apiextensions-apiserver v0.17.0
+go: downloading k8s.io/api v0.17.0
+go: downloading sigs.k8s.io/yaml v1.1.0
+go: downloading k8s.io/apimachinery v0.17.0
+go: downloading github.com/gobuffalo/flect v0.2.0
+go: downloading gopkg.in/yaml.v3 v3.0.0-20190905181640-827449938966
+go: extracting github.com/fatih/color v1.7.0
+go: extracting sigs.k8s.io/yaml v1.1.0
+go: downloading github.com/mattn/go-isatty v0.0.8
+go: extracting github.com/gobuffalo/flect v0.2.0
+go: downloading github.com/mattn/go-colorable v0.1.2
+go: extracting github.com/mattn/go-isatty v0.0.8
+go: extracting github.com/spf13/cobra v0.0.5
+go: extracting gopkg.in/yaml.v3 v3.0.0-20190905181640-827449938966
+go: downloading golang.org/x/tools v0.0.0-20190920225731-5eefd052ad72
+go: downloading golang.org/x/sys v0.0.0-20190826190057-c7b8b68b1456
+go: extracting github.com/mattn/go-colorable v0.1.2
+go: downloading gopkg.in/yaml.v2 v2.2.4
+go: extracting gopkg.in/yaml.v2 v2.2.4
+go: extracting k8s.io/apiextensions-apiserver v0.17.0
+go: extracting k8s.io/apimachinery v0.17.0
+go: downloading github.com/spf13/pflag v1.0.5
+go: downloading k8s.io/utils v0.0.0-20191114184206-e782cd3c129f
+go: extracting github.com/spf13/pflag v1.0.5
+go: extracting k8s.io/utils v0.0.0-20191114184206-e782cd3c129f
+go: downloading github.com/inconshreveable/mousetrap v1.0.0
+go: downloading k8s.io/klog v1.0.0
+go: downloading github.com/google/gofuzz v1.0.0
+go: downloading golang.org/x/net v0.0.0-20191004110552-13f9640d40b9
+go: downloading gopkg.in/inf.v0 v0.9.1
+go: downloading github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d
+go: extracting github.com/inconshreveable/mousetrap v1.0.0
+go: extracting github.com/google/gofuzz v1.0.0
+go: extracting gopkg.in/inf.v0 v0.9.1
+go: extracting k8s.io/klog v1.0.0
+go: extracting golang.org/x/sys v0.0.0-20190826190057-c7b8b68b1456
+go: extracting golang.org/x/tools v0.0.0-20190920225731-5eefd052ad72
+go: extracting k8s.io/api v0.17.0
+go: extracting golang.org/x/net v0.0.0-20191004110552-13f9640d40b9
+go: extracting github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d
+go: downloading golang.org/x/text v0.3.2
+go: extracting golang.org/x/text v0.3.2
+go: finding github.com/spf13/cobra v0.0.5
+go: finding github.com/fatih/color v1.7.0
+go: finding k8s.io/api v0.17.0
+go: finding golang.org/x/tools v0.0.0-20190920225731-5eefd052ad72
+go: finding k8s.io/apimachinery v0.17.0
+go: finding k8s.io/apiextensions-apiserver v0.17.0
+go: finding gopkg.in/yaml.v3 v3.0.0-20190905181640-827449938966
+go: finding github.com/gobuffalo/flect v0.2.0
+go: finding sigs.k8s.io/yaml v1.1.0
+go: finding github.com/mattn/go-colorable v0.1.2
+go: finding github.com/mattn/go-isatty v0.0.8
+go: finding github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d
+go: finding github.com/spf13/pflag v1.0.5
+go: finding github.com/google/gofuzz v1.0.0
+go: finding gopkg.in/inf.v0 v0.9.1
+go: finding k8s.io/klog v1.0.0
+go: finding golang.org/x/sys v0.0.0-20190826190057-c7b8b68b1456
+go: finding k8s.io/utils v0.0.0-20191114184206-e782cd3c129f
+go: finding gopkg.in/yaml.v2 v2.2.4
+go: finding golang.org/x/net v0.0.0-20191004110552-13f9640d40b9
+go: finding golang.org/x/text v0.3.2
+/builder/home/go/bin/controller-gen object:headerFile=./hack/boilerplate.go.txt paths="./..."
+go fmt ./...
+go vet ./...
+go: downloading github.com/onsi/gomega v1.8.1
+go: downloading github.com/onsi/ginkgo v1.11.0
+go: downloading github.com/Azure/go-autorest/autorest v0.9.2
+go: downloading github.com/gophercloud/gophercloud v0.4.0
+go: extracting github.com/Azure/go-autorest/autorest v0.9.2
+go: extracting github.com/onsi/gomega v1.8.1
+go: downloading github.com/Azure/go-autorest/autorest/adal v0.7.0
+go: downloading github.com/Azure/go-autorest/logger v0.1.0
+go: extracting github.com/onsi/ginkgo v1.11.0
+go: downloading github.com/Azure/go-autorest/tracing v0.5.0
+go: extracting github.com/Azure/go-autorest/logger v0.1.0
+go: extracting github.com/Azure/go-autorest/tracing v0.5.0
+go: extracting github.com/Azure/go-autorest/autorest/adal v0.7.0
+go: downloading github.com/dgrijalva/jwt-go v3.2.0+incompatible
+go: downloading github.com/Azure/go-autorest/autorest/date v0.2.0
+go: downloading golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7
+go: extracting github.com/dgrijalva/jwt-go v3.2.0+incompatible
+go: extracting golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7
+go: extracting github.com/Azure/go-autorest/autorest/date v0.2.0
+go: downloading github.com/hpcloud/tail v1.0.0
+go: extracting github.com/hpcloud/tail v1.0.0
+go: downloading gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7
+go: extracting gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7
+go: extracting github.com/gophercloud/gophercloud v0.4.0
+/builder/home/go/bin/controller-gen "crd:trivialVersions=true" rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+rm -rf generated
+mkdir generated
+kustomize build config/default/ -o generated
+cp generated/apiextensions.k8s.io_v1beta1_customresourcedefinition_seldondeployments.machinelearning.seldon.io.yaml testing/machinelearning.seldon.io_seldondeployments.yaml
+go test ./controllers/... ./apis/...  -coverprofile cover.out
+ok  	github.com/seldonio/seldon-core/operator/controllers	17.353s	coverage: 48.4% of statements
+?   	github.com/seldonio/seldon-core/operator/controllers/resources/credentials	[no test files]
+ok  	github.com/seldonio/seldon-core/operator/controllers/resources/credentials/gcs	0.026s	coverage: 100.0% of statements
+ok  	github.com/seldonio/seldon-core/operator/controllers/resources/credentials/s3	0.013s	coverage: 94.6% of statements
+ok  	github.com/seldonio/seldon-core/operator/apis/machinelearning/v1	0.028s	coverage: 36.9% of statements
+?   	github.com/seldonio/seldon-core/operator/apis/machinelearning/v1alpha2	[no test files]
+?   	github.com/seldonio/seldon-core/operator/apis/machinelearning/v1alpha3	[no test files]
+docker build . -t seldonio/seldon-core-operator:1.0.3-SNAPSHOT
+Sending build context to Docker daemon  3.068MB
+Step 1/17 : FROM golang:1.13.2 as builder
+1.13.2: Pulling from library/golang
+c7b7d16361e0: Pulling fs layer
+b7a128769df1: Pulling fs layer
+1128949d0793: Pulling fs layer
+667692510b70: Pulling fs layer
+c70d80036479: Pulling fs layer
+a8669f8c1a42: Pulling fs layer
+433331673060: Pulling fs layer
+667692510b70: Waiting
+c70d80036479: Waiting
+a8669f8c1a42: Waiting
+433331673060: Waiting
+b7a128769df1: Verifying Checksum
+b7a128769df1: Download complete
+1128949d0793: Verifying Checksum
+1128949d0793: Download complete
+c7b7d16361e0: Download complete
+667692510b70: Verifying Checksum
+667692510b70: Download complete
+c70d80036479: Verifying Checksum
+c70d80036479: Download complete
+433331673060: Verifying Checksum
+433331673060: Download complete
+a8669f8c1a42: Download complete
+c7b7d16361e0: Pull complete
+b7a128769df1: Pull complete
+1128949d0793: Pull complete
+667692510b70: Pull complete
+c70d80036479: Pull complete
+a8669f8c1a42: Pull complete
+433331673060: Pull complete
+Digest: sha256:b3086f21bfbe896973dd6147b46f2736a7deb2c04ed76219835befa0244a9562
+Status: Downloaded newer image for golang:1.13.2
+ ---> e37698ff7351
+Step 2/17 : WORKDIR /workspace
+ ---> Running in ac5bfab72591
+Removing intermediate container ac5bfab72591
+ ---> 86b8bd2769b5
+Step 3/17 : COPY go.mod go.mod
+ ---> c38a80974c90
+Step 4/17 : COPY go.sum go.sum
+ ---> 000aee31dfa7
+Step 5/17 : RUN go mod download
+ ---> Running in 12c4dc681a53
+[91mgo: finding cloud.google.com/go v0.38.0
+[0m[91mgo: finding github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78
+[0m[91mgo: finding github.com/Azure/go-autorest/autorest v0.9.2
+[0m[91mgo: finding github.com/Azure/go-autorest/autorest/adal v0.7.0
+[0m[91mgo: finding github.com/Azure/go-autorest/autorest/date v0.2.0
+[0m[91mgo: finding github.com/Azure/go-autorest/autorest/mocks v0.3.0
+[0m[91mgo: finding github.com/Azure/go-autorest/logger v0.1.0
+[0m[91mgo: finding github.com/Azure/go-autorest/tracing v0.5.0
+[0m[91mgo: finding github.com/BurntSushi/toml v0.3.1
+[0m[91mgo: finding github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802
+[0m[91mgo: finding github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
+[0m[91mgo: finding github.com/PuerkitoBio/purell v1.1.1
+[0m[91mgo: finding github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
+[0m[91mgo: finding github.com/agnivade/levenshtein v1.0.1
+[0m[91mgo: finding github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc
+[0m[91mgo: finding github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf
+[0m[91mgo: finding github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
+[0m[91mgo: finding github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6
+[0m[91mgo: finding github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a
+[0m[91mgo: finding github.com/beorn7/perks v1.0.0
+[0m[91mgo: finding github.com/bgentry/speakeasy v0.1.0
+[0m[91mgo: finding github.com/blang/semver v3.5.0+incompatible
+[0m[91mgo: finding github.com/client9/misspell v0.3.4
+[0m[91mgo: finding github.com/cockroachdb/datadriven v0.0.0-20190809214429-80d97fb3cbaa
+[0m[91mgo: finding github.com/coreos/etcd v3.3.10+incompatible
+[0m[91mgo: finding github.com/coreos/go-etcd v2.0.0+incompatible
+[0m[91mgo: finding github.com/coreos/go-oidc v2.1.0+incompatible
+[0m[91mgo: finding github.com/coreos/go-semver v0.3.0
+[0m[91mgo: finding github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e
+[0m[91mgo: finding github.com/coreos/pkg v0.0.0-20180108230652-97fdf19511ea
+[0m[91mgo: finding github.com/cpuguy83/go-md2man v1.0.10
+[0m[91mgo: finding github.com/creack/pty v1.1.7
+[0m[91mgo: finding github.com/davecgh/go-spew v1.1.1
+[0m[91mgo: finding github.com/dgrijalva/jwt-go v3.2.0+incompatible
+[0m[91mgo: finding github.com/docker/docker v0.7.3-0.20190327010347-be7ac8be2ae0
+[0m[91mgo: finding github.com/docker/go-units v0.4.0
+[0m[91mgo: finding github.com/docker/spdystream v0.0.0-20160310174837-449fdfce4d96
+[0m[91mgo: finding github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815
+[0m[91mgo: finding github.com/dustin/go-humanize v1.0.0
+[0m[91mgo: finding github.com/elazarl/goproxy v0.0.0-20170405201442-c4fc26588b6e
+[0m[91mgo: finding github.com/emicklei/go-restful v2.9.5+incompatible
+[0m[91mgo: finding github.com/evanphx/json-patch v4.5.0+incompatible
+[0m[91mgo: finding github.com/fatih/color v1.7.0
+[0m[91mgo: finding github.com/fsnotify/fsnotify v1.4.7
+[0m[91mgo: finding github.com/ghodss/yaml v1.0.0
+[0m[91mgo: finding github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
+[0m[91mgo: finding github.com/go-kit/kit v0.8.0
+[0m[91mgo: finding github.com/go-logfmt/logfmt v0.3.0
+[0m[91mgo: finding github.com/go-logr/logr v0.1.0
+[0m[91mgo: finding github.com/go-logr/zapr v0.1.0
+[0m[91mgo: finding github.com/go-openapi/analysis v0.19.5
+[0m[91mgo: finding github.com/go-openapi/errors v0.19.2
+[0m[91mgo: finding github.com/go-openapi/jsonpointer v0.19.3
+[0m[91mgo: finding github.com/go-openapi/jsonreference v0.19.3
+[0m[91mgo: finding github.com/go-openapi/loads v0.19.4
+[0m[91mgo: finding github.com/go-openapi/runtime v0.19.4
+[0m[91mgo: finding github.com/go-openapi/spec v0.19.3
+[0m[91mgo: finding github.com/go-openapi/strfmt v0.19.3
+[0m[91mgo: finding github.com/go-openapi/swag v0.19.5
+[0m[91mgo: finding github.com/go-openapi/validate v0.19.5
+[0m[91mgo: finding github.com/go-stack/stack v1.8.0
+[0m[91mgo: finding github.com/gogo/protobuf v1.3.1
+[0m[91mgo: finding github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
+[0m[91mgo: finding github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6
+[0m[91mgo: finding github.com/golang/mock v1.2.0
+[0m[91mgo: finding github.com/golang/protobuf v1.3.2
+[0m[91mgo: finding github.com/google/btree v1.0.0
+[0m[91mgo: finding github.com/google/go-cmp v0.3.1
+[0m[91mgo: finding github.com/google/gofuzz v1.0.0
+[0m[91mgo: finding github.com/google/martian v2.1.0+incompatible
+[0m[91mgo: finding github.com/google/pprof v0.0.0-20181206194817-3ea8567a2e57
+[0m[91mgo: finding github.com/google/uuid v1.1.1
+[0m[91mgo: finding github.com/googleapis/gax-go/v2 v2.0.4
+[0m[91mgo: finding github.com/googleapis/gnostic v0.3.1
+[0m[91mgo: finding github.com/gophercloud/gophercloud v0.4.0
+[0m[91mgo: finding github.com/gorilla/websocket v1.4.0
+[0m[91mgo: finding github.com/gregjones/httpcache v0.0.0-20180305231024-9cad4c3443a7
+[0m[91mgo: finding github.com/grpc-ecosystem/go-grpc-middleware v1.0.1-0.20190118093823-f849b5445de4
+[0m[91mgo: finding github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
+[0m[91mgo: finding github.com/grpc-ecosystem/grpc-gateway v1.9.5
+[0m[91mgo: finding github.com/hashicorp/golang-lru v0.5.4
+[0m[91mgo: finding github.com/hashicorp/hcl v1.0.0
+[0m[91mgo: finding github.com/hpcloud/tail v1.0.0
+[0m[91mgo: finding github.com/imdario/mergo v0.3.7
+[0m[91mgo: finding github.com/inconshreveable/mousetrap v1.0.0
+[0m[91mgo: finding github.com/jonboulle/clockwork v0.1.0
+[0m[91mgo: finding github.com/json-iterator/go v1.1.9
+[0m[91mgo: finding github.com/jstemmer/go-junit-report v0.0.0-20190106144839-af01ea7f8024
+[0m[91mgo: finding github.com/julienschmidt/httprouter v1.2.0
+[0m[91mgo: finding github.com/kisielk/errcheck v1.2.0
+[0m[91mgo: finding github.com/kisielk/gotool v1.0.0
+[0m[91mgo: finding github.com/konsorten/go-windows-terminal-sequences v1.0.1
+[0m[91mgo: finding github.com/kr/logfmt v0.0.0-20140226030751-b84e30acd515
+[0m[91mgo: finding github.com/kr/pretty v0.1.0
+[0m[91mgo: finding github.com/kr/pty v1.1.5
+[0m[91mgo: finding github.com/kr/text v0.1.0
+[0m[91mgo: finding github.com/magiconair/properties v1.8.0
+[0m[91mgo: finding github.com/mailru/easyjson v0.7.0
+[0m[91mgo: finding github.com/mattn/go-colorable v0.0.9
+[0m[91mgo: finding github.com/mattn/go-isatty v0.0.4
+[0m[91mgo: finding github.com/mattn/go-runewidth v0.0.2
+[0m[91mgo: finding github.com/matttproud/golang_protobuf_extensions v1.0.1
+[0m[91mgo: finding github.com/mitchellh/go-homedir v1.1.0
+[0m[91mgo: finding github.com/mitchellh/mapstructure v1.1.2
+[0m[91mgo: finding github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+[0m[91mgo: finding github.com/modern-go/reflect2 v1.0.1
+[0m[91mgo: finding github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822
+[0m[91mgo: finding github.com/mwitkow/go-conntrack v0.0.0-20161129095857-cc309e4a2223
+[0m[91mgo: finding github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f
+[0m[91mgo: finding github.com/olekukonko/tablewriter v0.0.0-20170122224234-a0225b3f23b5
+[0m[91mgo: finding github.com/onsi/ginkgo v1.11.0
+[0m[91mgo: finding github.com/onsi/gomega v1.8.1
+[0m[91mgo: finding github.com/pborman/uuid v1.2.0
+[0m[91mgo: finding github.com/pelletier/go-toml v1.2.0
+[0m[91mgo: finding github.com/peterbourgon/diskv v2.0.1+incompatible
+[0m[91mgo: finding github.com/pkg/errors v0.8.1
+[0m[91mgo: finding github.com/pmezard/go-difflib v1.0.0
+[0m[91mgo: finding github.com/pquerna/cachecontrol v0.0.0-20171018203845-0dec1b30a021
+[0m[91mgo: finding github.com/prometheus/client_golang v1.0.0
+[0m[91mgo: finding github.com/prometheus/client_model v0.0.0-20190129233127-fd36f4220a90
+[0m[91mgo: finding github.com/prometheus/common v0.4.1
+[0m[91mgo: finding github.com/prometheus/procfs v0.0.2
+[0m[91mgo: finding github.com/remyoudompheng/bigfft v0.0.0-20170806203942-52369c62f446
+[0m[91mgo: finding github.com/rogpeppe/fastuuid v0.0.0-20150106093220-6724a57986af
+[0m[91mgo: finding github.com/russross/blackfriday v1.5.2
+[0m[91mgo: finding github.com/sergi/go-diff v1.0.0
+[0m[91mgo: finding github.com/sirupsen/logrus v1.4.2
+[0m[91mgo: finding github.com/soheilhy/cmux v0.1.4
+[0m[91mgo: finding github.com/spf13/afero v1.2.2
+[0m[91mgo: finding github.com/spf13/cast v1.3.0
+[0m[91mgo: finding github.com/spf13/cobra v0.0.5
+[0m[91mgo: finding github.com/spf13/jwalterweatherman v1.0.0
+[0m[91mgo: finding github.com/spf13/pflag v1.0.5
+[0m[91mgo: finding github.com/spf13/viper v1.3.2
+[0m[91mgo: finding github.com/stretchr/ob** v0.2.0
+[0m[91mgo: finding github.com/stretchr/testify v1.4.0
+[0m[91mgo: finding github.com/tidwall/pretty v1.0.0
+[0m[91mgo: finding github.com/tmc/grpc-websocket-proxy v0.0.0-20170815181823-89b8d40f7ca8
+[0m[91mgo: finding github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8
+[0m[91mgo: finding github.com/urfave/cli v1.20.0
+[0m[91mgo: finding github.com/vektah/gqlparser v1.1.2
+[0m[91mgo: finding github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2
+[0m[91mgo: finding github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77
+[0m[91mgo: finding go.etcd.io/bbolt v1.3.3
+[0m[91mgo: finding go.etcd.io/etcd v0.0.0-20191023171146-3cf2f69b5738
+[0m[91mgo: finding go.mongodb.org/mongo-driver v1.1.2
+[0m[91mgo: finding go.opencensus.io v0.21.0
+[0m[91mgo: finding go.uber.org/atomic v1.3.2
+[0m[91mgo: finding go.uber.org/multierr v1.1.0
+[0m[91mgo: finding go.uber.org/zap v1.10.0
+go: finding golang.org/x/crypto v0.0.0-20190923035154-9ee001bba392
+[0m[91mgo: finding golang.org/x/exp v0.0.0-20190312203227-4b39c73a6495
+[0m[91mgo: finding golang.org/x/image v0.0.0-20190227222117-0694c2d4d067
+[0m[91mgo: finding golang.org/x/lint v0.0.0-20190313153728-d0100b6bd8b3
+[0m[91mgo: finding golang.org/x/mobile v0.0.0-20190312151609-d3739f865fa6
+[0m[91mgo: finding golang.org/x/net v0.0.0-20191004110552-13f9640d40b9
+[0m[91mgo: finding golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+[0m[91mgo: finding golang.org/x/sync v0.0.0-20190423024810-112230192c58
+[0m[91mgo: finding golang.org/x/sys v0.0.0-20190924154521-2837fb4f24fe
+[0m[91mgo: finding golang.org/x/text v0.3.2
+[0m[91mgo: finding golang.org/x/time v0.0.0-20190921001708-c4c64cad1fd0
+[0m[91mgo: finding golang.org/x/tools v0.0.0-20190920225731-5eefd052ad72
+[0m[91mgo: finding golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7
+[0m[91mgo: finding gomodules.xyz/jsonpatch/v2 v2.0.1
+[0m[91mgo: finding gonum.org/v1/gonum v0.0.0-20190331200053-3d26580ed485
+[0m[91mgo: finding gonum.org/v1/netlib v0.0.0-20190331212654-76723241ea4e
+[0m[91mgo: finding google.golang.org/api v0.4.0
+[0m[91mgo: finding google.golang.org/appengine v1.6.5
+[0m[91mgo: finding google.golang.org/genproto v0.0.0-20190916214212-f660b8655731
+[0m[91mgo: finding google.golang.org/grpc v1.23.1
+[0m[91mgo: finding gopkg.in/alecthomas/kingpin.v2 v2.2.6
+[0m[91mgo: finding gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15
+[0m[91mgo: finding gopkg.in/cheggaaa/pb.v1 v1.0.25
+[0m[91mgo: finding gopkg.in/fsnotify.v1 v1.4.7
+[0m[91mgo: finding gopkg.in/inf.v0 v0.9.1
+[0m[91mgo: finding gopkg.in/natefinch/lumberjack.v2 v2.0.0
+[0m[91mgo: finding gopkg.in/resty.v1 v1.12.0
+[0m[91mgo: finding gopkg.in/square/go-jose.v2 v2.2.2
+[0m[91mgo: finding gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7
+[0m[91mgo: finding gopkg.in/yaml.v2 v2.2.4
+[0m[91mgo: finding gotest.tools v2.2.0+incompatible
+[0m[91mgo: finding honnef.co/go/tools v0.0.0-20190523083050-ea95bdfd59fc
+[0m[91mgo: finding istio.io/api v0.0.0-20200305220354-742c3015842e
+[0m[91mgo: finding istio.io/client-go v0.0.0-20200305195406-fddfc7a9ca06
+[0m[91mgo: finding istio.io/gogo-genproto v0.0.0-20190930162913-45029607206a
+[0m[91mgo: finding k8s.io/api v0.17.2
+[0m[91mgo: finding k8s.io/apiextensions-apiserver v0.17.2
+[0m[91mgo: finding k8s.io/apimachinery v0.17.2
+[0m[91mgo: finding k8s.io/apiserver v0.17.2
+[0m[91mgo: finding k8s.io/client-go v0.17.2
+[0m[91mgo: finding k8s.io/code-generator v0.17.2
+[0m[91mgo: finding k8s.io/component-base v0.17.2
+[0m[91mgo: finding k8s.io/gengo v0.0.0-20190822140433-26a664648505
+[0m[91mgo: finding k8s.io/klog v1.0.0
+[0m[91mgo: finding k8s.io/kube-openapi v0.0.0-20191107075043-30be4d16710a
+[0m[91mgo: finding k8s.io/utils v0.0.0-20191114184206-e782cd3c129f
+[0m[91mgo: finding knative.dev/pkg v0.0.0-20200306225627-d1665814487e
+[0m[91mgo: finding modernc.org/cc v1.0.0
+[0m[91mgo: finding modernc.org/golex v1.0.0
+[0m[91mgo: finding modernc.org/mathutil v1.0.0
+[0m[91mgo: finding modernc.org/strutil v1.0.0
+[0m[91mgo: finding modernc.org/xc v1.0.0
+[0m[91mgo: finding sigs.k8s.io/controller-runtime v0.5.0
+[0m[91mgo: finding sigs.k8s.io/structured-merge-diff v1.0.1-0.20191108220359-b1b620dd3f06
+[0m[91mgo: finding sigs.k8s.io/yaml v1.1.0
+[0mRemoving intermediate container 12c4dc681a53
+ ---> b7b161418822
+Step 6/17 : COPY main.go main.go
+ ---> 4a8b94c19973
+Step 7/17 : COPY apis/ apis/
+ ---> 59bcad0dac37
+Step 8/17 : COPY controllers/ controllers/
+ ---> 73cd5fad444e
+Step 9/17 : COPY utils/ utils/
+ ---> eff5f2be3303
+Step 10/17 : COPY constants/ constants/
+ ---> 3f942b1006df
+Step 11/17 : COPY client/ client/
+ ---> e6b69d5510d3
+Step 12/17 : RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o manager main.go
+ ---> Running in 9e1676f96713
+Removing intermediate container 9e1676f96713
+ ---> c7e31ab6916f
+Step 13/17 : FROM gcr.io/distroless/static:latest
+latest: Pulling from distroless/static
+9ff2acc3204b: Pulling fs layer
+9ff2acc3204b: Download complete
+9ff2acc3204b: Pull complete
+Digest: sha256:c6d5981545ce1406d33e61434c61e9452dad93ecd8397c41e89036ef977a88f4
+Status: Downloaded newer image for gcr.io/distroless/static:latest
+ ---> e4d2a899b1bf
+Step 14/17 : WORKDIR /
+ ---> Running in 3793148d4045
+Removing intermediate container 3793148d4045
+ ---> de4baa5b1d78
+Step 15/17 : COPY --from=builder /workspace/manager .
+ ---> f820fa77530b
+Step 16/17 : COPY licenses/license.txt .
+ ---> e66d71766f55
+Step 17/17 : ENTRYPOINT ["/manager"]
+ ---> Running in 7cb7c46cae21
+Removing intermediate container 7cb7c46cae21
+ ---> 976c42c19eca
+Successfully built 976c42c19eca
+Successfully tagged seldonio/seldon-core-operator:1.0.3-SNAPSHOT
+docker save seldonio/seldon-core-operator:1.0.3-SNAPSHOT > operator.tar
+kind load image-archive operator.tar 
+make[1]: Leaving directory '/workspace/source/operator'
+Files changed in engine folder:
+SKIPPING ENGINE IMAGE BUILD...
+Files changed in executor folder:
+SKIPPING EXECUTOR IMAGE BUILD...
+Build fixed models
+cd ../docker/fixed-model && make kind_load_images
+make[1]: Entering directory '/workspace/source/testing/docker/fixed-model'
+s2i build -E environment_rest_v1 . seldonio/seldon-core-s2i-python3:0.15 seldonio/fixed-model:0.1
+---> Installing application source...
+Build completed successfully
+s2i build -E environment_rest_v2 . seldonio/seldon-core-s2i-python3:0.15 seldonio/fixed-model:0.2
+---> Installing application source...
+Build completed successfully
+kind load -v 3 docker-image seldonio/fixed-model:0.1
+Image: "seldonio/fixed-model:0.1" with ID "sha256:7a48d476c548c322b8aa21da69f08cd2f1c1e6a7b82c49f52efccee181963a53" not present on node "kind-control-plane"
+Image: "seldonio/fixed-model:0.1" with ID "sha256:7a48d476c548c322b8aa21da69f08cd2f1c1e6a7b82c49f52efccee181963a53" not present on node "kind-worker"
+kind load -v 3 docker-image seldonio/fixed-model:0.2
+Image: "seldonio/fixed-model:0.2" with ID "sha256:012ac53578304c8df2538392ce69117da66dcaa76da7116f202ec66689050599" not present on node "kind-control-plane"
+Image: "seldonio/fixed-model:0.2" with ID "sha256:012ac53578304c8df2538392ce69117da66dcaa76da7116f202ec66689050599" not present on node "kind-worker"
+make[1]: Leaving directory '/workspace/source/testing/docker/fixed-model'
+kubectl create namespace seldon || echo "Namespace seldon already exists"
+namespace/seldon created
+kubectl create namespace test1 || echo "Namespace test1 already exists"
+namespace/test1 created
+helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+"stable" has been added to your repositories
+helm repo add seldonio https://storage.googleapis.com/seldon-charts
+"seldonio" has been added to your repositories
+helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
+"jaegertracing" has been added to your repositories
+helm repo update
+Hang tight while we grab the latest from your chart repositories...
+...Successfully got an update from the "jaegertracing" chart repository
+...Successfully got an update from the "seldonio" chart repository
+...Successfully got an update from the "stable" chart repository
+Update Complete. ⎈ Happy Helming!⎈ 
+helm install ambassador \
+	stable/ambassador \
+	-f ../resources/ambassador_values.yaml \
+	--set crds.keep=false \
+	--namespace seldon \
+	--set replicaCount=1 \
+	--wait
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+NAME: ambassador
+LAST DEPLOYED: Mon Mar 23 10:02:00 2020
+NAMESPACE: seldon
+STATUS: deployed
+REVISION: 1
+NOTES:
+Congratulations! You've successfully installed Ambassador.
+
+For help, visit our Slack at https://d6e.co/slack or view the documentation online at https://www.getambassador.io.
+
+To get the IP address of Ambassador, run the following commands:
+  export NODE_PORT=$(kubectl get --namespace seldon -o jsonpath="{.spec.ports[0].nodePort}" services ambassador)
+  export NODE_IP=$(kubectl get nodes --namespace seldon -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+kubectl apply -f istio-1.4.2.yaml
+clusterrole.rbac.authorization.k8s.io/istio-reader-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-reader-istio-system created
+customresourcedefinition.apiextensions.k8s.io/attributemanifests.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/clusterrbacconfigs.rbac.istio.io created
+customresourcedefinition.apiextensions.k8s.io/destinationrules.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/envoyfilters.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/gateways.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/httpapispecbindings.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/httpapispecs.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/meshpolicies.authentication.istio.io created
+customresourcedefinition.apiextensions.k8s.io/policies.authentication.istio.io created
+customresourcedefinition.apiextensions.k8s.io/quotaspecbindings.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/quotaspecs.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/rbacconfigs.rbac.istio.io created
+customresourcedefinition.apiextensions.k8s.io/rules.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/serviceentries.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/servicerolebindings.rbac.istio.io created
+customresourcedefinition.apiextensions.k8s.io/serviceroles.rbac.istio.io created
+customresourcedefinition.apiextensions.k8s.io/virtualservices.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/adapters.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/instances.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/templates.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/handlers.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/sidecars.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/authorizationpolicies.security.istio.io created
+namespace/istio-system created
+serviceaccount/istio-reader-service-account created
+clusterrole.rbac.authorization.k8s.io/istio-citadel-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-citadel-istio-system created
+deployment.apps/istio-citadel created
+poddisruptionbudget.policy/istio-citadel created
+service/istio-citadel created
+serviceaccount/istio-citadel-service-account created
+deployment.apps/istio-egressgateway created
+poddisruptionbudget.policy/istio-egressgateway created
+gateway.networking.istio.io/istio-multicluster-egressgateway created
+virtualservice.networking.istio.io/istio-multicluster-egressgateway created
+envoyfilter.networking.istio.io/istio-multicluster-egressgateway created
+destinationrule.networking.istio.io/istio-multicluster-destinationrule created
+service/istio-egressgateway created
+role.rbac.authorization.k8s.io/istio-egressgateway-sds created
+rolebinding.rbac.authorization.k8s.io/istio-egressgateway-sds created
+serviceaccount/istio-egressgateway-service-account created
+clusterrole.rbac.authorization.k8s.io/istio-galley-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-galley-*****-role-binding-istio-system created
+configmap/istio-mesh-galley created
+configmap/istio-galley-configuration created
+deployment.apps/istio-galley created
+poddisruptionbudget.policy/istio-galley created
+service/istio-galley created
+serviceaccount/istio-galley-service-account created
+configmap/istio-grafana-configuration-dashboards-citadel-dashboard created
+configmap/istio-grafana-configuration-dashboards-galley-dashboard created
+configmap/istio-grafana-configuration-dashboards-istio-mesh-dashboard created
+configmap/istio-grafana-configuration-dashboards-istio-performance-dashboard created
+configmap/istio-grafana-configuration-dashboards-istio-service-dashboard created
+configmap/istio-grafana-configuration-dashboards-istio-workload-dashboard created
+configmap/istio-grafana-configuration-dashboards-mixer-dashboard created
+configmap/istio-grafana-configuration-dashboards-pilot-dashboard created
+configmap/istio-grafana created
+deployment.apps/grafana created
+policy.authentication.istio.io/grafana-ports-mtls-disabled created
+service/grafana created
+deployment.apps/istio-ingressgateway created
+gateway.networking.istio.io/ingressgateway created
+poddisruptionbudget.policy/ingressgateway created
+service/istio-ingressgateway created
+serviceaccount/istio-ingressgateway-service-account created
+sidecar.networking.istio.io/default created
+clusterrole.rbac.authorization.k8s.io/istio-sidecar-injector-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-sidecar-injector-*****-role-binding-istio-system created
+configmap/injector-mesh created
+deployment.apps/istio-sidecar-injector created
+mutatingwebhookconfiguration.admissionregistration.k8s.io/istio-sidecar-injector created
+poddisruptionbudget.policy/istio-sidecar-injector created
+service/istio-sidecar-injector created
+serviceaccount/istio-sidecar-injector-service-account created
+configmap/istio-sidecar-injector created
+clusterrole.rbac.authorization.k8s.io/kiali created
+clusterrole.rbac.authorization.k8s.io/kiali-viewer created
+clusterrolebinding.rbac.authorization.k8s.io/kiali created
+configmap/kiali created
+secret/kiali created
+deployment.apps/kiali created
+service/kiali created
+serviceaccount/kiali-service-account created
+clusterrole.rbac.authorization.k8s.io/istio-pilot-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-pilot-istio-system created
+configmap/pilot-envoy-config created
+configmap/istio created
+deployment.apps/istio-pilot created
+meshpolicy.authentication.istio.io/default created
+poddisruptionbudget.policy/istio-pilot created
+service/istio-pilot created
+serviceaccount/istio-pilot-service-account created
+clusterrole.rbac.authorization.k8s.io/istio-policy created
+clusterrolebinding.rbac.authorization.k8s.io/istio-policy-*****-role-binding-istio-system created
+destinationrule.networking.istio.io/istio-policy created
+deployment.apps/istio-policy created
+poddisruptionbudget.policy/istio-policy created
+service/istio-policy created
+serviceaccount/istio-policy-service-account created
+clusterrole.rbac.authorization.k8s.io/prometheus-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/prometheus-istio-system created
+configmap/prometheus created
+deployment.apps/prometheus created
+service/prometheus created
+serviceaccount/prometheus created
+horizontalpodautoscaler.autoscaling/istio-telemetry created
+clusterrole.rbac.authorization.k8s.io/istio-mixer-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-mixer-*****-role-binding-istio-system created
+attributemanifest.config.istio.io/istioproxy created
+attributemanifest.config.istio.io/kubernetes created
+handler.config.istio.io/stdio created
+instance.config.istio.io/accesslog created
+instance.config.istio.io/tcpaccesslog created
+rule.config.istio.io/stdio created
+rule.config.istio.io/stdiotcp created
+instance.config.istio.io/requestcount created
+instance.config.istio.io/requestduration created
+instance.config.istio.io/requestsize created
+instance.config.istio.io/responsesize created
+instance.config.istio.io/tcpbytesent created
+instance.config.istio.io/tcpbytereceived created
+instance.config.istio.io/tcpconnectionsopened created
+instance.config.istio.io/tcpconnectionsclosed created
+handler.config.istio.io/prometheus created
+rule.config.istio.io/promhttp created
+rule.config.istio.io/promtcp created
+rule.config.istio.io/promtcpconnectionopen created
+rule.config.istio.io/promtcpconnectionclosed created
+handler.config.istio.io/kubernetesenv created
+rule.config.istio.io/kubeattrgenrulerule created
+rule.config.istio.io/tcpkubeattrgenrulerule created
+instance.config.istio.io/attributes created
+destinationrule.networking.istio.io/istio-telemetry created
+configmap/telemetry-envoy-config created
+deployment.apps/istio-telemetry created
+poddisruptionbudget.policy/istio-telemetry created
+service/istio-telemetry created
+serviceaccount/istio-mixer-service-account created
+deployment.apps/istio-tracing created
+service/jaeger-query created
+service/jaeger-collector created
+service/jaeger-agent created
+service/zipkin created
+service/tracing created
+kubectl rollout status deployment.apps/istio-ingressgateway -n istio-system
+Waiting for deployment "istio-ingressgateway" rollout to finish: 0 of 1 updated replicas are available...
+deployment "istio-ingressgateway" successfully rolled out
+kubectl rollout status deployment.apps/istio-pilot -n istio-system
+deployment "istio-pilot" successfully rolled out
+kubectl rollout status deployment.apps/istio-citadel -n istio-system
+deployment "istio-citadel" successfully rolled out
+helm install jaeger-operator \
+	jaegertracing/jaeger-operator \
+	--set rbac.clusterRole=true \
+	--namespace seldon \
+	--wait
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+NAME: jaeger-operator
+LAST DEPLOYED: Mon Mar 23 10:05:20 2020
+NAMESPACE: seldon
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+jaeger-operator is installed.
+
+
+Check the jaeger-operator logs
+  export POD=$(kubectl get pods-l app.kubernetes.io/instance=jaeger-operator -lapp.kubernetes.io/name=jaeger-operator --namespace seldon --output name)
+  kubectl logs $POD --namespace=seldon
+kubectl apply -f ../resources/jaeger.yaml --namespace seldon
+jaeger.jaegertracing.io/jaeger created
+mapping.getambassador.io/jaeger created
+cd ../../operator && make install-cert-manager
+make[1]: Entering directory '/workspace/source/operator'
+kubectl create namespace cert-manager || echo "Namespace cert-manager-exists"
+namespace/cert-manager created
+kubectl label namespace cert-manager cert-manager.io/disable-validation=true || echo "namespace cert-manager-already labelled"
+namespace/cert-manager labeled
+kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml
+customresourcedefinition.apiextensions.k8s.io/certificaterequests.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/certificates.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/challenges.acme.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/clusterissuers.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/issuers.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/orders.acme.cert-manager.io created
+Warning: kubectl apply should be used on resource created by either kubectl create --save-config or kubectl apply
+namespace/cert-manager configured
+serviceaccount/cert-manager-cainjector created
+serviceaccount/cert-manager created
+serviceaccount/cert-manager-webhook created
+clusterrole.rbac.authorization.k8s.io/cert-manager-cainjector created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-cainjector created
+role.rbac.authorization.k8s.io/cert-manager-cainjector:leaderelection created
+rolebinding.rbac.authorization.k8s.io/cert-manager-cainjector:leaderelection created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-webhook:auth-delegator created
+rolebinding.rbac.authorization.k8s.io/cert-manager-webhook:webhook-authentication-reader created
+clusterrole.rbac.authorization.k8s.io/cert-manager-webhook:webhook-requester created
+role.rbac.authorization.k8s.io/cert-manager:leaderelection created
+rolebinding.rbac.authorization.k8s.io/cert-manager:leaderelection created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-issuers created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-clusterissuers created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-certificates created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-orders created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-challenges created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-ingress-shim created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-issuers created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-clusterissuers created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-certificates created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-orders created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-challenges created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-ingress-shim created
+clusterrole.rbac.authorization.k8s.io/cert-manager-view created
+clusterrole.rbac.authorization.k8s.io/cert-manager-edit created
+service/cert-manager created
+service/cert-manager-webhook created
+deployment.apps/cert-manager-cainjector created
+deployment.apps/cert-manager created
+deployment.apps/cert-manager-webhook created
+mutatingwebhookconfiguration.admissionregistration.k8s.io/cert-manager-webhook created
+validatingwebhookconfiguration.admissionregistration.k8s.io/cert-manager-webhook created
+kubectl rollout status deployment.apps/cert-manager -n cert-manager
+Waiting for deployment "cert-manager" rollout to finish: 0 of 1 updated replicas are available...
+deployment "cert-manager" successfully rolled out
+kubectl rollout status deployment.apps/cert-manager-cainjector -n cert-manager
+deployment "cert-manager-cainjector" successfully rolled out
+kubectl rollout status deployment.apps/cert-manager-webhook -n cert-manager
+Waiting for deployment "cert-manager-webhook" rollout to finish: 0 of 1 updated replicas are available...
+deployment "cert-manager-webhook" successfully rolled out
+make[1]: Leaving directory '/workspace/source/operator'
+sleep 5 #https://github.com/jetstack/cert-manager/issues/2273
+kubectl create namespace seldon-system || echo "namespace seldon-system exists"
+namespace/seldon-system created
+helm install seldon \
+	../../helm-charts/seldon-core-operator \
+	--namespace seldon-system \
+	--set istio.enabled=true \
+	--set istio.gateway=seldon-gateway \
+	--set certManager.enabled=false \
+	--set executor.enabled=true \
+	--wait
+NAME: seldon
+LAST DEPLOYED: Mon Mar 23 10:06:11 2020
+NAMESPACE: seldon-system
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+kubectl config set-context $(kubectl config current-context) --namespace=seldon
+Context "kind-kind" modified.
+make: Entering directory '/workspace/source/python'
+pip install -e . -r requirements-dev.txt
+Obtaining file:///workspace/source/python
+Collecting Flask<2.0.0
+  Downloading Flask-1.1.1-py2.py3-none-any.whl (94 kB)
+Collecting Flask-cors<4.0.0
+  Downloading Flask_Cors-3.0.8-py2.py3-none-any.whl (14 kB)
+Collecting redis<4.0.0
+  Downloading redis-3.4.1-py2.py3-none-any.whl (71 kB)
+Requirement already satisfied: requests<3.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 4)) (2.23.0)
+Requirement already satisfied: numpy<2.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 5)) (1.18.1)
+Collecting flatbuffers<2.0.0
+  Downloading flatbuffers-1.12-py2.py3-none-any.whl (15 kB)
+Requirement already satisfied: protobuf<4.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 7)) (3.11.3)
+Requirement already satisfied: grpcio<2.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 8)) (1.27.2)
+Collecting Flask-OpenTracing<1.2.0,>=1.1.0
+  Downloading Flask-OpenTracing-1.1.0.tar.gz (8.2 kB)
+Collecting opentracing<2.3.0,>=2.2.0
+  Downloading opentracing-2.2.0.tar.gz (47 kB)
+Collecting jaeger-client<4.2.0,>=4.1.0
+  Downloading jaeger-client-4.1.0.tar.gz (80 kB)
+Collecting grpcio-opentracing<1.2.0,>=1.1.4
+  Downloading grpcio_opentracing-1.1.4-py3-none-any.whl (14 kB)
+Collecting pyaml<20.0.0
+  Downloading pyaml-19.12.0-py2.py3-none-any.whl (17 kB)
+Collecting gunicorn<20.1.0,>=19.9.0
+  Downloading gunicorn-20.0.4-py2.py3-none-any.whl (77 kB)
+Collecting minio<6.0.0,>=4.0.9
+  Downloading minio-5.0.8-py2.py3-none-any.whl (73 kB)
+Collecting azure-storage-blob<3.0.0,>=2.0.1
+  Downloading azure_storage_blob-2.1.0-py2.py3-none-any.whl (88 kB)
+Requirement already satisfied: setuptools>=41.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 17)) (45.2.0)
+Collecting google-cloud-storage>=1.16.0
+  Downloading google_cloud_storage-1.26.0-py2.py3-none-any.whl (75 kB)
+Requirement already satisfied: prometheus_client<0.8.0,>=0.7.1 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 19)) (0.7.1)
+Collecting black==19.10b0
+  Downloading black-19.10b0-py36-none-any.whl (97 kB)
+Collecting flake8==3.7.9
+  Downloading flake8-3.7.9-py2.py3-none-any.whl (69 kB)
+Collecting mypy<0.771
+  Downloading mypy-0.770-cp36-cp36m-manylinux1_x86_64.whl (21.7 MB)
+Requirement already satisfied: Pillow==7.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 5)) (7.0.0)
+Collecting pytest==5.4.1
+  Downloading pytest-5.4.1-py3-none-any.whl (246 kB)
+Collecting pytest-cov==2.8.1
+  Downloading pytest_cov-2.8.1-py2.py3-none-any.whl (18 kB)
+Collecting tox<4.0.0
+  Downloading tox-3.14.5-py2.py3-none-any.whl (81 kB)
+Collecting coverage==4.5.4
+  Downloading coverage-4.5.4-cp36-cp36m-manylinux1_x86_64.whl (205 kB)
+Requirement already satisfied: pandas==1.0.1 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 14)) (1.0.1)
+Collecting pip-licenses==2.1.1
+  Downloading pip_licenses-2.1.1-py3-none-any.whl (13 kB)
+Collecting itsdangerous>=0.24
+  Downloading itsdangerous-1.1.0-py2.py3-none-any.whl (16 kB)
+Collecting click>=5.1
+  Downloading click-7.1.1-py2.py3-none-any.whl (82 kB)
+Requirement already satisfied: Werkzeug>=0.15 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->-r requirements.txt (line 1)) (1.0.0)
+Requirement already satisfied: Jinja2>=2.10.1 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->-r requirements.txt (line 1)) (2.11.1)
+Requirement already satisfied: Six in /usr/local/lib/python3.6/site-packages (from Flask-cors<4.0.0->-r requirements.txt (line 2)) (1.14.0)
+Requirement already satisfied: idna<3,>=2.5 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->-r requirements.txt (line 4)) (2.9)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->-r requirements.txt (line 4)) (1.25.8)
+Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->-r requirements.txt (line 4)) (2019.11.28)
+Requirement already satisfied: chardet<4,>=3.0.2 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->-r requirements.txt (line 4)) (3.0.4)
+Collecting threadloop<2,>=1
+  Downloading threadloop-1.0.2.tar.gz (4.9 kB)
+Collecting thrift
+  Downloading thrift-0.13.0.tar.gz (59 kB)
+Collecting tornado<6,>=4.3
+  Downloading tornado-5.1.1.tar.gz (516 kB)
+Requirement already satisfied: PyYAML in /usr/local/lib/python3.6/site-packages (from pyaml<20.0.0->-r requirements.txt (line 13)) (5.3)
+Requirement already satisfied: pytz in /usr/local/lib/python3.6/site-packages (from minio<6.0.0,>=4.0.9->-r requirements.txt (line 15)) (2019.3)
+Requirement already satisfied: python-dateutil in /usr/local/lib/python3.6/site-packages (from minio<6.0.0,>=4.0.9->-r requirements.txt (line 15)) (2.8.1)
+Collecting configparser
+  Downloading configparser-4.0.2-py2.py3-none-any.whl (22 kB)
+Collecting azure-storage-common~=2.1
+  Downloading azure_storage_common-2.1.0-py2.py3-none-any.whl (47 kB)
+Collecting azure-common>=1.1.5
+  Downloading azure_common-1.1.25-py2.py3-none-any.whl (12 kB)
+Collecting google-cloud-core<2.0dev,>=1.2.0
+  Downloading google_cloud_core-1.3.0-py2.py3-none-any.whl (26 kB)
+Collecting google-resumable-media<0.6dev,>=0.5.0
+  Downloading google_resumable_media-0.5.0-py2.py3-none-any.whl (38 kB)
+Collecting google-auth<2.0dev,>=1.11.0
+  Downloading google_auth-1.11.3-py2.py3-none-any.whl (76 kB)
+Requirement already satisfied: attrs>=18.1.0 in /usr/local/lib/python3.6/site-packages (from black==19.10b0->-r requirements-dev.txt (line 2)) (19.3.0)
+Collecting pathspec<1,>=0.6
+  Downloading pathspec-0.7.0-py2.py3-none-any.whl (25 kB)
+Collecting typed-ast>=1.4.0
+  Downloading typed_ast-1.4.1-cp36-cp36m-manylinux1_x86_64.whl (737 kB)
+Collecting regex
+  Downloading regex-2020.2.20-cp36-cp36m-manylinux2010_x86_64.whl (690 kB)
+Collecting appdirs
+  Downloading appdirs-1.4.3-py2.py3-none-any.whl (12 kB)
+Collecting toml>=0.9.4
+  Downloading toml-0.10.0-py2.py3-none-any.whl (25 kB)
+Collecting pycodestyle<2.6.0,>=2.5.0
+  Downloading pycodestyle-2.5.0-py2.py3-none-any.whl (51 kB)
+Collecting pyflakes<2.2.0,>=2.1.0
+  Downloading pyflakes-2.1.1-py2.py3-none-any.whl (59 kB)
+Collecting mccabe<0.7.0,>=0.6.0
+  Downloading mccabe-0.6.1-py2.py3-none-any.whl (8.6 kB)
+Requirement already satisfied: entrypoints<0.4.0,>=0.3.0 in /usr/local/lib/python3.6/site-packages (from flake8==3.7.9->-r requirements-dev.txt (line 3)) (0.3)
+Collecting typing-extensions>=3.7.4
+  Downloading typing_extensions-3.7.4.1-py3-none-any.whl (20 kB)
+Collecting mypy-extensions<0.5.0,>=0.4.3
+  Downloading mypy_extensions-0.4.3-py2.py3-none-any.whl (4.5 kB)
+Collecting pluggy<1.0,>=0.12
+  Downloading pluggy-0.13.1-py2.py3-none-any.whl (18 kB)
+Requirement already satisfied: importlib-metadata>=0.12; python_version < "3.8" in /usr/local/lib/python3.6/site-packages (from pytest==5.4.1->-r requirements-dev.txt (line 6)) (1.5.0)
+Collecting packaging
+  Downloading packaging-20.3-py2.py3-none-any.whl (37 kB)
+Requirement already satisfied: wcwidth in /usr/local/lib/python3.6/site-packages (from pytest==5.4.1->-r requirements-dev.txt (line 6)) (0.1.8)
+Collecting more-itertools>=4.0.0
+  Downloading more_itertools-8.2.0-py3-none-any.whl (43 kB)
+Collecting py>=1.5.0
+  Downloading py-1.8.1-py2.py3-none-any.whl (83 kB)
+Collecting virtualenv>=16.0.0
+  Downloading virtualenv-20.0.13-py2.py3-none-any.whl (4.6 MB)
+Collecting filelock<4,>=3.0.0
+  Downloading filelock-3.0.12-py3-none-any.whl (7.6 kB)
+Collecting PTable
+  Downloading PTable-0.9.2.tar.gz (31 kB)
+Requirement already satisfied: MarkupSafe>=0.23 in /usr/local/lib/python3.6/site-packages (from Jinja2>=2.10.1->Flask<2.0.0->-r requirements.txt (line 1)) (1.1.1)
+Collecting cryptography
+  Downloading cryptography-2.8-cp34-abi3-manylinux2010_x86_64.whl (2.3 MB)
+Collecting google-api-core<2.0.0dev,>=1.16.0
+  Downloading google_api_core-1.16.0-py2.py3-none-any.whl (70 kB)
+Collecting pyasn1-modules>=0.2.1
+  Downloading pyasn1_modules-0.2.8-py2.py3-none-any.whl (155 kB)
+Collecting cachetools<5.0,>=2.0.0
+  Downloading cachetools-4.0.0-py3-none-any.whl (10 kB)
+Collecting rsa<4.1,>=3.1.4
+  Downloading rsa-4.0-py2.py3-none-any.whl (38 kB)
+Requirement already satisfied: zipp>=0.5 in /usr/local/lib/python3.6/site-packages (from importlib-metadata>=0.12; python_version < "3.8"->pytest==5.4.1->-r requirements-dev.txt (line 6)) (3.1.0)
+Requirement already satisfied: pyparsing>=2.0.2 in /usr/local/lib/python3.6/site-packages (from packaging->pytest==5.4.1->-r requirements-dev.txt (line 6)) (2.4.6)
+Collecting importlib-resources<2,>=1.0; python_version < "3.7"
+  Downloading importlib_resources-1.4.0-py2.py3-none-any.whl (20 kB)
+Collecting distlib<1,>=0.3.0
+  Downloading distlib-0.3.0.zip (571 kB)
+Collecting cffi!=1.11.3,>=1.8
+  Downloading cffi-1.14.0-cp36-cp36m-manylinux1_x86_64.whl (399 kB)
+Collecting googleapis-common-protos<2.0dev,>=1.6.0
+  Downloading googleapis-common-protos-1.51.0.tar.gz (35 kB)
+Collecting pyasn1<0.5.0,>=0.4.6
+  Downloading pyasn1-0.4.8-py2.py3-none-any.whl (77 kB)
+Collecting pycparser
+  Downloading pycparser-2.20-py2.py3-none-any.whl (112 kB)
+Building wheels for collected packages: Flask-OpenTracing, opentracing, jaeger-client, threadloop, thrift, tornado, PTable, distlib, googleapis-common-protos
+  Building wheel for Flask-OpenTracing (setup.py): started
+  Building wheel for Flask-OpenTracing (setup.py): finished with status 'done'
+  Created wheel for Flask-OpenTracing: filename=Flask_OpenTracing-1.1.0-py3-none-any.whl size=9070 sha256=c12674affc2f751e98949b2d3681d26550569e5aa56ba5eb634031c3f4321e23
+  Stored in directory: /builder/home/.cache/pip/wheels/ad/4b/2d/24ff0da0a0b53c7c77ce59b843bcceaf644c88703241e59615
+  Building wheel for opentracing (setup.py): started
+  Building wheel for opentracing (setup.py): finished with status 'done'
+  Created wheel for opentracing: filename=opentracing-2.2.0-py3-none-any.whl size=49319 sha256=74b71c4b99670a5ee04e6d22ce2d3769883509bb964185b56923cf669b58298d
+  Stored in directory: /builder/home/.cache/pip/wheels/39/40/44/8bace79f4514e99786236c31f1df8d1b814ff02c1e08b1d697
+  Building wheel for jaeger-client (setup.py): started
+  Building wheel for jaeger-client (setup.py): finished with status 'done'
+  Created wheel for jaeger-client: filename=jaeger_client-4.1.0-py3-none-any.whl size=64309 sha256=1b87a48e091ecb913a49149f1cceafcf79767606184ee1a47bab9cfa0eb39388
+  Stored in directory: /builder/home/.cache/pip/wheels/e9/9b/8c/503d0cc13b39a551c054515683ba1d15b40324c863dc442e66
+  Building wheel for threadloop (setup.py): started
+  Building wheel for threadloop (setup.py): finished with status 'done'
+  Created wheel for threadloop: filename=threadloop-1.0.2-py3-none-any.whl size=3423 sha256=9661eddbca0e37192a6b67b4ed07fd17a859a974df8eccabfb31ff1d3c66d335
+  Stored in directory: /builder/home/.cache/pip/wheels/02/54/65/9f87de48fe8fcaaee30f279973d946ad55f9df56b93b3e78da
+  Building wheel for thrift (setup.py): started
+  Building wheel for thrift (setup.py): finished with status 'done'
+  Created wheel for thrift: filename=thrift-0.13.0-cp36-cp36m-linux_x86_64.whl size=483906 sha256=bf1bdb403dd764126995f9fd29c22452cef701b88f99bcafdb81ff4af311a4bf
+  Stored in directory: /builder/home/.cache/pip/wheels/e0/38/fc/472fe18756b177b42096961f8bd3ff2dc5c5620ac399fce52d
+  Building wheel for tornado (setup.py): started
+  Building wheel for tornado (setup.py): finished with status 'done'
+  Created wheel for tornado: filename=tornado-5.1.1-cp36-cp36m-linux_x86_64.whl size=462641 sha256=a6f5a71898ce3c819b1f66d3c43f42963629ec6586b3b1a4ee461ec3a13476cd
+  Stored in directory: /builder/home/.cache/pip/wheels/64/74/71/e7a0d0eb4fc42cb20a17aec36f8f0b5b8c5e1ec19c701fd34a
+  Building wheel for PTable (setup.py): started
+  Building wheel for PTable (setup.py): finished with status 'done'
+  Created wheel for PTable: filename=PTable-0.9.2-py3-none-any.whl size=22907 sha256=af2e7bd8d7581f46fbf239c7434fcdd5895befff0853ec364cfab7b96de0bf86
+  Stored in directory: /builder/home/.cache/pip/wheels/f3/65/67/71f473ec87ea4554d1bdfb1b5128cfe1414c2b113b72a1ee8e
+  Building wheel for distlib (setup.py): started
+  Building wheel for distlib (setup.py): finished with status 'done'
+  Created wheel for distlib: filename=distlib-0.3.0-py3-none-any.whl size=340427 sha256=8132844f7097c4b8d4b60bc6521e47c1071c338692ed43d7416df0cc395afa7f
+  Stored in directory: /builder/home/.cache/pip/wheels/33/d9/71/e4e3cac73529e1947df418af0f140cd7589d5d9ec0e17ecfc2
+  Building wheel for googleapis-common-protos (setup.py): started
+  Building wheel for googleapis-common-protos (setup.py): finished with status 'done'
+  Created wheel for googleapis-common-protos: filename=googleapis_common_protos-1.51.0-py3-none-any.whl size=77592 sha256=a9ed93e6f9149a0886b70761560f6d012ae47857dcc1be3a6c2a788f9032d3d8
+  Stored in directory: /builder/home/.cache/pip/wheels/35/8d/af/a922cb18800b31fadac3523cadf6c1efdf233b788fe7a4da70
+Successfully built Flask-OpenTracing opentracing jaeger-client threadloop thrift tornado PTable distlib googleapis-common-protos
+Installing collected packages: itsdangerous, click, Flask, Flask-cors, redis, flatbuffers, opentracing, Flask-OpenTracing, tornado, threadloop, thrift, jaeger-client, grpcio-opentracing, pyaml, gunicorn, configparser, minio, azure-common, pycparser, cffi, cryptography, azure-storage-common, azure-storage-blob, pyasn1, pyasn1-modules, cachetools, rsa, google-auth, googleapis-common-protos, google-api-core, google-cloud-core, google-resumable-media, google-cloud-storage, pathspec, typed-ast, regex, appdirs, toml, black, pycodestyle, pyflakes, mccabe, flake8, typing-extensions, mypy-extensions, mypy, pluggy, packaging, more-itertools, py, pytest, coverage, pytest-cov, importlib-resources, distlib, filelock, virtualenv, tox, PTable, pip-licenses, seldon-core
+  Attempting uninstall: tornado
+    Found existing installation: tornado 6.0.4
+    Uninstalling tornado-6.0.4:
+      Successfully uninstalled tornado-6.0.4
+  Running setup.py develop for seldon-core
+Successfully installed Flask-1.1.1 Flask-OpenTracing-1.1.0 Flask-cors-3.0.8 PTable-0.9.2 appdirs-1.4.3 azure-common-1.1.25 azure-storage-blob-2.1.0 azure-storage-common-2.1.0 black-19.10b0 cachetools-4.0.0 cffi-1.14.0 click-7.1.1 configparser-4.0.2 coverage-4.5.4 cryptography-2.8 distlib-0.3.0 filelock-3.0.12 flake8-3.7.9 flatbuffers-1.12 google-api-core-1.16.0 google-auth-1.11.3 google-cloud-core-1.3.0 google-cloud-storage-1.26.0 google-resumable-media-0.5.0 googleapis-common-protos-1.51.0 grpcio-opentracing-1.1.4 gunicorn-20.0.4 importlib-resources-1.4.0 itsdangerous-1.1.0 jaeger-client-4.1.0 mccabe-0.6.1 minio-5.0.8 more-itertools-8.2.0 mypy-0.770 mypy-extensions-0.4.3 opentracing-2.2.0 packaging-20.3 pathspec-0.7.0 pip-licenses-2.1.1 pluggy-0.13.1 py-1.8.1 pyaml-19.12.0 pyasn1-0.4.8 pyasn1-modules-0.2.8 pycodestyle-2.5.0 pycparser-2.20 pyflakes-2.1.1 pytest-5.4.1 pytest-cov-2.8.1 redis-3.4.1 regex-2020.2.20 rsa-4.0 seldon-core threadloop-1.0.2 thrift-0.13.0 toml-0.10.0 tornado-5.1.1 tox-3.14.5 typed-ast-1.4.1 typing-extensions-3.7.4.1 virtualenv-20.0.13
+make: Leaving directory '/workspace/source/python'
+cp ../../proto/prediction.proto ./proto
+cd ../../proto/tensorflow && make create_protos
+make[1]: Entering directory '/workspace/source/proto/tensorflow'
+./create-protos.sh
+Downloading proto files for master
+make[1]: Leaving directory '/workspace/source/proto/tensorflow'
+cp -vr ../../proto/tensorflow/tensorflow .
+'../../proto/tensorflow/tensorflow' -> './tensorflow'
+'../../proto/tensorflow/tensorflow/core' -> './tensorflow/core'
+'../../proto/tensorflow/tensorflow/core/framework' -> './tensorflow/core/framework'
+'../../proto/tensorflow/tensorflow/core/framework/types.proto' -> './tensorflow/core/framework/types.proto'
+'../../proto/tensorflow/tensorflow/core/framework/resource_handle.proto' -> './tensorflow/core/framework/resource_handle.proto'
+'../../proto/tensorflow/tensorflow/core/framework/tensor_shape.proto' -> './tensorflow/core/framework/tensor_shape.proto'
+'../../proto/tensorflow/tensorflow/core/framework/tensor.proto' -> './tensorflow/core/framework/tensor.proto'
+python -m grpc.tools.protoc -I. --python_out=. --grpc_python_out=. ./proto/prediction.proto
+cd ../../notebooks && make build_protos
+make[1]: Entering directory '/workspace/source/notebooks'
+cd ../proto/tensorflow && make create_protos
+make[2]: Entering directory '/workspace/source/proto/tensorflow'
+make[2]: Nothing to be done for 'create_protos'.
+make[2]: Leaving directory '/workspace/source/proto/tensorflow'
+cp -vr ../proto/tensorflow/tensorflow .
+'../proto/tensorflow/tensorflow' -> './tensorflow'
+'../proto/tensorflow/tensorflow/core' -> './tensorflow/core'
+'../proto/tensorflow/tensorflow/core/framework' -> './tensorflow/core/framework'
+'../proto/tensorflow/tensorflow/core/framework/types.proto' -> './tensorflow/core/framework/types.proto'
+'../proto/tensorflow/tensorflow/core/framework/resource_handle.proto' -> './tensorflow/core/framework/resource_handle.proto'
+'../proto/tensorflow/tensorflow/core/framework/tensor_shape.proto' -> './tensorflow/core/framework/tensor_shape.proto'
+'../proto/tensorflow/tensorflow/core/framework/tensor.proto' -> './tensorflow/core/framework/tensor.proto'
+cp ../proto/prediction.proto ./proto
+python -m grpc.tools.protoc -I. --python_out=. --grpc_python_out=. ./proto/prediction.proto
+make[1]: Leaving directory '/workspace/source/notebooks'
+cd ../../proto/k8s && make create_protos
+make[1]: Entering directory '/workspace/source/proto/k8s'
+./create-k8s-protos.sh
+Downloading proto files for master
+Munging proto file packages
+sed -i.bak 's|import "k8s.io/apiextensions-apiserver/|//import "k8s.io/apiextensions-apiserver/|' k8s.io/api/core/v1/generated.proto
+rm k8s.io/api/core/v1/generated.proto.bak
+make[1]: Leaving directory '/workspace/source/proto/k8s'
+pip install -r dev_requirements.txt
+Collecting pytest==5.3.1
+  Downloading pytest-5.3.1-py3-none-any.whl (233 kB)
+Collecting pytest-xdist==1.30.0
+  Downloading pytest_xdist-1.30.0-py2.py3-none-any.whl (35 kB)
+Requirement already satisfied: pytest-cov==2.8.1 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 3)) (2.8.1)
+Collecting flaky==3.6.1
+  Downloading flaky-3.6.1-py2.py3-none-any.whl (22 kB)
+Collecting tenacity==6.0.0
+  Downloading tenacity-6.0.0-py2.py3-none-any.whl (24 kB)
+Requirement already satisfied: ipython==7.13.0 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 8)) (7.13.0)
+Requirement already satisfied: nbconvert==5.6.1 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 9)) (5.6.1)
+Requirement already satisfied: alibi==0.3.2 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 10)) (0.3.2)
+Collecting matplotlib==3.1.3
+  Downloading matplotlib-3.1.3-cp36-cp36m-manylinux1_x86_64.whl (13.1 MB)
+Requirement already satisfied: tensorflow==1.15.2 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 12)) (1.15.2)
+Requirement already satisfied: coverage==4.5.4 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 15)) (4.5.4)
+Requirement already satisfied: wcwidth in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (0.1.8)
+Requirement already satisfied: py>=1.5.0 in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (1.8.1)
+Requirement already satisfied: importlib-metadata>=0.12; python_version < "3.8" in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (1.5.0)
+Requirement already satisfied: pluggy<1.0,>=0.12 in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (0.13.1)
+Requirement already satisfied: more-itertools>=4.0.0 in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (8.2.0)
+Requirement already satisfied: attrs>=17.4.0 in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (19.3.0)
+Requirement already satisfied: packaging in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (20.3)
+Requirement already satisfied: six in /usr/local/lib/python3.6/site-packages (from pytest-xdist==1.30.0->-r dev_requirements.txt (line 2)) (1.14.0)
+Collecting pytest-forked
+  Downloading pytest_forked-1.1.3-py2.py3-none-any.whl (4.5 kB)
+Collecting execnet>=1.1
+  Downloading execnet-1.7.1-py2.py3-none-any.whl (39 kB)
+Requirement already satisfied: prompt-toolkit!=3.0.0,!=3.0.1,<3.1.0,>=2.0.0 in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 8)) (3.0.4)
+Requirement already satisfied: traitlets>=4.2 in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 8)) (4.3.3)
+Requirement already satisfied: pygments in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 8)) (2.5.2)
+Requirement already satisfied: backcall in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 8)) (0.1.0)
+Requirement already satisfied: pickleshare in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 8)) (0.7.5)
+Requirement already satisfied: setuptools>=18.5 in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 8)) (45.2.0)
+Requirement already satisfied: decorator in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 8)) (4.4.2)
+Requirement already satisfied: pexpect; sys_platform != "win32" in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 8)) (4.8.0)
+Requirement already satisfied: jedi>=0.10 in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 8)) (0.16.0)
+Requirement already satisfied: mistune<2,>=0.8.1 in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 9)) (0.8.4)
+Requirement already satisfied: nbformat>=4.4 in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 9)) (5.0.4)
+Requirement already satisfied: jupyter-core in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 9)) (4.6.3)
+Requirement already satisfied: defusedxml in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 9)) (0.6.0)
+Requirement already satisfied: pandocfilters>=1.4.1 in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 9)) (1.4.2)
+Requirement already satisfied: testpath in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 9)) (0.4.4)
+Requirement already satisfied: jinja2>=2.4 in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 9)) (2.11.1)
+Requirement already satisfied: entrypoints>=0.2.2 in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 9)) (0.3)
+Requirement already satisfied: bleach in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 9)) (3.1.1)
+Requirement already satisfied: beautifulsoup4 in /usr/local/lib/python3.6/site-packages (from alibi==0.3.2->-r dev_requirements.txt (line 10)) (4.8.2)
+Requirement already satisfied: pandas in /usr/local/lib/python3.6/site-packages (from alibi==0.3.2->-r dev_requirements.txt (line 10)) (1.0.1)
+Requirement already satisfied: Pillow in /usr/local/lib/python3.6/site-packages (from alibi==0.3.2->-r dev_requirements.txt (line 10)) (7.0.0)
+Requirement already satisfied: spacy in /usr/local/lib/python3.6/site-packages (from alibi==0.3.2->-r dev_requirements.txt (line 10)) (2.2.3)
+Requirement already satisfied: scikit-learn in /usr/local/lib/python3.6/site-packages (from alibi==0.3.2->-r dev_requirements.txt (line 10)) (0.22.2.post1)
+Requirement already satisfied: numpy in /usr/local/lib/python3.6/site-packages (from alibi==0.3.2->-r dev_requirements.txt (line 10)) (1.18.1)
+Requirement already satisfied: scikit-image in /usr/local/lib/python3.6/site-packages (from alibi==0.3.2->-r dev_requirements.txt (line 10)) (0.16.2)
+Requirement already satisfied: requests in /usr/local/lib/python3.6/site-packages (from alibi==0.3.2->-r dev_requirements.txt (line 10)) (2.23.0)
+Requirement already satisfied: cycler>=0.10 in /usr/local/lib/python3.6/site-packages (from matplotlib==3.1.3->-r dev_requirements.txt (line 11)) (0.10.0)
+Requirement already satisfied: python-dateutil>=2.1 in /usr/local/lib/python3.6/site-packages (from matplotlib==3.1.3->-r dev_requirements.txt (line 11)) (2.8.1)
+Requirement already satisfied: pyparsing!=2.0.4,!=2.1.2,!=2.1.6,>=2.0.1 in /usr/local/lib/python3.6/site-packages (from matplotlib==3.1.3->-r dev_requirements.txt (line 11)) (2.4.6)
+Requirement already satisfied: kiwisolver>=1.0.1 in /usr/local/lib/python3.6/site-packages (from matplotlib==3.1.3->-r dev_requirements.txt (line 11)) (1.1.0)
+Requirement already satisfied: termcolor>=1.1.0 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 12)) (1.1.0)
+Requirement already satisfied: wheel>=0.26; python_version >= "3" in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 12)) (0.34.2)
+Requirement already satisfied: keras-preprocessing>=1.0.5 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 12)) (1.1.0)
+Requirement already satisfied: grpcio>=1.8.6 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 12)) (1.27.2)
+Requirement already satisfied: gast==0.2.2 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 12)) (0.2.2)
+Requirement already satisfied: opt-einsum>=2.3.2 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 12)) (3.2.0)
+Requirement already satisfied: google-pasta>=0.1.6 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 12)) (0.1.8)
+Requirement already satisfied: tensorboard<1.16.0,>=1.15.0 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 12)) (1.15.0)
+Requirement already satisfied: keras-applications>=1.0.8 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 12)) (1.0.8)
+Requirement already satisfied: tensorflow-estimator==1.15.1 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 12)) (1.15.1)
+Requirement already satisfied: absl-py>=0.7.0 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 12)) (0.9.0)
+Requirement already satisfied: astor>=0.6.0 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 12)) (0.8.1)
+Requirement already satisfied: protobuf>=3.6.1 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 12)) (3.11.3)
+Requirement already satisfied: wrapt>=1.11.1 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 12)) (1.12.0)
+Requirement already satisfied: zipp>=0.5 in /usr/local/lib/python3.6/site-packages (from importlib-metadata>=0.12; python_version < "3.8"->pytest==5.3.1->-r dev_requirements.txt (line 1)) (3.1.0)
+Collecting apipkg>=1.4
+  Downloading apipkg-1.5-py2.py3-none-any.whl (4.9 kB)
+Requirement already satisfied: ipython-genutils in /usr/local/lib/python3.6/site-packages (from traitlets>=4.2->ipython==7.13.0->-r dev_requirements.txt (line 8)) (0.2.0)
+Requirement already satisfied: ptyprocess>=0.5 in /usr/local/lib/python3.6/site-packages (from pexpect; sys_platform != "win32"->ipython==7.13.0->-r dev_requirements.txt (line 8)) (0.6.0)
+Requirement already satisfied: parso>=0.5.2 in /usr/local/lib/python3.6/site-packages (from jedi>=0.10->ipython==7.13.0->-r dev_requirements.txt (line 8)) (0.6.2)
+Requirement already satisfied: jsonschema!=2.5.0,>=2.4 in /usr/local/lib/python3.6/site-packages (from nbformat>=4.4->nbconvert==5.6.1->-r dev_requirements.txt (line 9)) (3.2.0)
+Requirement already satisfied: MarkupSafe>=0.23 in /usr/local/lib/python3.6/site-packages (from jinja2>=2.4->nbconvert==5.6.1->-r dev_requirements.txt (line 9)) (1.1.1)
+Requirement already satisfied: webencodings in /usr/local/lib/python3.6/site-packages (from bleach->nbconvert==5.6.1->-r dev_requirements.txt (line 9)) (0.5.1)
+Requirement already satisfied: soupsieve>=1.2 in /usr/local/lib/python3.6/site-packages (from beautifulsoup4->alibi==0.3.2->-r dev_requirements.txt (line 10)) (2.0)
+Requirement already satisfied: pytz>=2017.2 in /usr/local/lib/python3.6/site-packages (from pandas->alibi==0.3.2->-r dev_requirements.txt (line 10)) (2019.3)
+Requirement already satisfied: murmurhash<1.1.0,>=0.28.0 in /usr/local/lib/python3.6/site-packages (from spacy->alibi==0.3.2->-r dev_requirements.txt (line 10)) (1.0.2)
+Requirement already satisfied: blis<0.5.0,>=0.4.0 in /usr/local/lib/python3.6/site-packages (from spacy->alibi==0.3.2->-r dev_requirements.txt (line 10)) (0.4.1)
+Requirement already satisfied: srsly<1.1.0,>=0.1.0 in /usr/local/lib/python3.6/site-packages (from spacy->alibi==0.3.2->-r dev_requirements.txt (line 10)) (1.0.2)
+Requirement already satisfied: catalogue<1.1.0,>=0.0.7 in /usr/local/lib/python3.6/site-packages (from spacy->alibi==0.3.2->-r dev_requirements.txt (line 10)) (1.0.0)
+Requirement already satisfied: plac<1.2.0,>=0.9.6 in /usr/local/lib/python3.6/site-packages (from spacy->alibi==0.3.2->-r dev_requirements.txt (line 10)) (1.1.3)
+Requirement already satisfied: wasabi<1.1.0,>=0.4.0 in /usr/local/lib/python3.6/site-packages (from spacy->alibi==0.3.2->-r dev_requirements.txt (line 10)) (0.6.0)
+Requirement already satisfied: preshed<3.1.0,>=3.0.2 in /usr/local/lib/python3.6/site-packages (from spacy->alibi==0.3.2->-r dev_requirements.txt (line 10)) (3.0.2)
+Requirement already satisfied: thinc<7.4.0,>=7.3.0 in /usr/local/lib/python3.6/site-packages (from spacy->alibi==0.3.2->-r dev_requirements.txt (line 10)) (7.3.1)
+Requirement already satisfied: cymem<2.1.0,>=2.0.2 in /usr/local/lib/python3.6/site-packages (from spacy->alibi==0.3.2->-r dev_requirements.txt (line 10)) (2.0.3)
+Requirement already satisfied: joblib>=0.11 in /usr/local/lib/python3.6/site-packages (from scikit-learn->alibi==0.3.2->-r dev_requirements.txt (line 10)) (0.14.1)
+Requirement already satisfied: scipy>=0.17.0 in /usr/local/lib/python3.6/site-packages (from scikit-learn->alibi==0.3.2->-r dev_requirements.txt (line 10)) (1.4.1)
+Requirement already satisfied: imageio>=2.3.0 in /usr/local/lib/python3.6/site-packages (from scikit-image->alibi==0.3.2->-r dev_requirements.txt (line 10)) (2.8.0)
+Requirement already satisfied: PyWavelets>=0.4.0 in /usr/local/lib/python3.6/site-packages (from scikit-image->alibi==0.3.2->-r dev_requirements.txt (line 10)) (1.1.1)
+Requirement already satisfied: networkx>=2.0 in /usr/local/lib/python3.6/site-packages (from scikit-image->alibi==0.3.2->-r dev_requirements.txt (line 10)) (2.4)
+Requirement already satisfied: chardet<4,>=3.0.2 in /usr/local/lib/python3.6/site-packages (from requests->alibi==0.3.2->-r dev_requirements.txt (line 10)) (3.0.4)
+Requirement already satisfied: idna<3,>=2.5 in /usr/local/lib/python3.6/site-packages (from requests->alibi==0.3.2->-r dev_requirements.txt (line 10)) (2.9)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /usr/local/lib/python3.6/site-packages (from requests->alibi==0.3.2->-r dev_requirements.txt (line 10)) (1.25.8)
+Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.6/site-packages (from requests->alibi==0.3.2->-r dev_requirements.txt (line 10)) (2019.11.28)
+Requirement already satisfied: markdown>=2.6.8 in /usr/local/lib/python3.6/site-packages (from tensorboard<1.16.0,>=1.15.0->tensorflow==1.15.2->-r dev_requirements.txt (line 12)) (3.2.1)
+Requirement already satisfied: werkzeug>=0.11.15 in /usr/local/lib/python3.6/site-packages (from tensorboard<1.16.0,>=1.15.0->tensorflow==1.15.2->-r dev_requirements.txt (line 12)) (1.0.0)
+Requirement already satisfied: h5py in /usr/local/lib/python3.6/site-packages (from keras-applications>=1.0.8->tensorflow==1.15.2->-r dev_requirements.txt (line 12)) (2.10.0)
+Requirement already satisfied: pyrsistent>=0.14.0 in /usr/local/lib/python3.6/site-packages (from jsonschema!=2.5.0,>=2.4->nbformat>=4.4->nbconvert==5.6.1->-r dev_requirements.txt (line 9)) (0.15.7)
+Requirement already satisfied: tqdm<5.0.0,>=4.10.0 in /usr/local/lib/python3.6/site-packages (from thinc<7.4.0,>=7.3.0->spacy->alibi==0.3.2->-r dev_requirements.txt (line 10)) (4.43.0)
+Installing collected packages: pytest, pytest-forked, apipkg, execnet, pytest-xdist, flaky, tenacity, matplotlib
+  Attempting uninstall: pytest
+    Found existing installation: pytest 5.4.1
+    Uninstalling pytest-5.4.1:
+      Successfully uninstalled pytest-5.4.1
+  Attempting uninstall: matplotlib
+    Found existing installation: matplotlib 3.2.0
+    Uninstalling matplotlib-3.2.0:
+      Successfully uninstalled matplotlib-3.2.0
+Successfully installed apipkg-1.5 execnet-1.7.1 flaky-3.6.1 matplotlib-3.1.3 pytest-5.3.1 pytest-forked-1.1.3 pytest-xdist-1.30.0 tenacity-6.0.0
+pip install -e ../../python
+Obtaining file:///workspace/source/python
+Requirement already satisfied: Flask<2.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.0.2) (1.1.1)
+Requirement already satisfied: Flask-cors<4.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.0.2) (3.0.8)
+Requirement already satisfied: redis<4.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.0.2) (3.4.1)
+Requirement already satisfied: requests<3.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.0.2) (2.23.0)
+Requirement already satisfied: numpy<2.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.0.2) (1.18.1)
+Requirement already satisfied: flatbuffers<2.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.0.2) (1.12)
+Requirement already satisfied: protobuf<4.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.0.2) (3.11.3)
+Requirement already satisfied: grpcio<2.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.0.2) (1.27.2)
+Requirement already satisfied: Flask-OpenTracing<1.2.0,>=1.1.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.0.2) (1.1.0)
+Requirement already satisfied: opentracing<2.3.0,>=2.2.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.0.2) (2.2.0)
+Requirement already satisfied: jaeger-client<4.2.0,>=4.1.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.0.2) (4.1.0)
+Requirement already satisfied: grpcio-opentracing<1.2.0,>=1.1.4 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.0.2) (1.1.4)
+Requirement already satisfied: pyaml<20.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.0.2) (19.12.0)
+Requirement already satisfied: gunicorn<20.1.0,>=19.9.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.0.2) (20.0.4)
+Requirement already satisfied: minio<6.0.0,>=4.0.9 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.0.2) (5.0.8)
+Requirement already satisfied: azure-storage-blob<3.0.0,>=2.0.1 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.0.2) (2.1.0)
+Requirement already satisfied: setuptools>=41.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.0.2) (45.2.0)
+Requirement already satisfied: prometheus_client<0.8.0,>=0.7.1 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.0.2) (0.7.1)
+Requirement already satisfied: Jinja2>=2.10.1 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->seldon-core==1.0.2) (2.11.1)
+Requirement already satisfied: Werkzeug>=0.15 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->seldon-core==1.0.2) (1.0.0)
+Requirement already satisfied: click>=5.1 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->seldon-core==1.0.2) (7.1.1)
+Requirement already satisfied: itsdangerous>=0.24 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->seldon-core==1.0.2) (1.1.0)
+Requirement already satisfied: Six in /usr/local/lib/python3.6/site-packages (from Flask-cors<4.0.0->seldon-core==1.0.2) (1.14.0)
+Requirement already satisfied: chardet<4,>=3.0.2 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.0.2) (3.0.4)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.0.2) (1.25.8)
+Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.0.2) (2019.11.28)
+Requirement already satisfied: idna<3,>=2.5 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.0.2) (2.9)
+Requirement already satisfied: threadloop<2,>=1 in /usr/local/lib/python3.6/site-packages (from jaeger-client<4.2.0,>=4.1.0->seldon-core==1.0.2) (1.0.2)
+Requirement already satisfied: thrift in /usr/local/lib/python3.6/site-packages (from jaeger-client<4.2.0,>=4.1.0->seldon-core==1.0.2) (0.13.0)
+Requirement already satisfied: tornado<6,>=4.3 in /usr/local/lib/python3.6/site-packages (from jaeger-client<4.2.0,>=4.1.0->seldon-core==1.0.2) (5.1.1)
+Requirement already satisfied: PyYAML in /usr/local/lib/python3.6/site-packages (from pyaml<20.0.0->seldon-core==1.0.2) (5.3)
+Requirement already satisfied: pytz in /usr/local/lib/python3.6/site-packages (from minio<6.0.0,>=4.0.9->seldon-core==1.0.2) (2019.3)
+Requirement already satisfied: python-dateutil in /usr/local/lib/python3.6/site-packages (from minio<6.0.0,>=4.0.9->seldon-core==1.0.2) (2.8.1)
+Requirement already satisfied: configparser in /usr/local/lib/python3.6/site-packages (from minio<6.0.0,>=4.0.9->seldon-core==1.0.2) (4.0.2)
+Requirement already satisfied: azure-common>=1.1.5 in /usr/local/lib/python3.6/site-packages (from azure-storage-blob<3.0.0,>=2.0.1->seldon-core==1.0.2) (1.1.25)
+Requirement already satisfied: azure-storage-common~=2.1 in /usr/local/lib/python3.6/site-packages (from azure-storage-blob<3.0.0,>=2.0.1->seldon-core==1.0.2) (2.1.0)
+Requirement already satisfied: MarkupSafe>=0.23 in /usr/local/lib/python3.6/site-packages (from Jinja2>=2.10.1->Flask<2.0.0->seldon-core==1.0.2) (1.1.1)
+Requirement already satisfied: cryptography in /usr/local/lib/python3.6/site-packages (from azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->seldon-core==1.0.2) (2.8)
+Requirement already satisfied: cffi!=1.11.3,>=1.8 in /usr/local/lib/python3.6/site-packages (from cryptography->azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->seldon-core==1.0.2) (1.14.0)
+Requirement already satisfied: pycparser in /usr/local/lib/python3.6/site-packages (from cffi!=1.11.3,>=1.8->cryptography->azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->seldon-core==1.0.2) (2.20)
+Installing collected packages: seldon-core
+  Attempting uninstall: seldon-core
+    Found existing installation: seldon-core 1.0.2
+    Uninstalling seldon-core-1.0.2:
+      Successfully uninstalled seldon-core-1.0.2
+  Running setup.py develop for seldon-core
+Successfully installed seldon-core
+# Run the core tests in parallel
+pytest \
+	--verbose \
+	-s \
+	-W ignore \
+	-n "4" \
+	-m "not sequential and not notebooks" 2>&1
+============================= test session starts ==============================
+platform linux -- Python 3.6.10, pytest-5.3.1, py-1.8.1, pluggy-0.13.1 -- /usr/local/bin/python
+cachedir: .pytest_cache
+rootdir: /workspace/source/testing/scripts, inifile: setup.cfg
+plugins: xdist-1.30.0, forked-1.1.3, flaky-3.6.1, cov-2.8.1
+gw0 I / gw1 I / gw2 I / gw3 I
+[gw0] linux Python 3.6.10 cwd: /workspace/source/testing/scripts
+[gw1] linux Python 3.6.10 cwd: /workspace/source/testing/scripts
+[gw2] linux Python 3.6.10 cwd: /workspace/source/testing/scripts
+[gw3] linux Python 3.6.10 cwd: /workspace/source/testing/scripts
+[gw1] Python 3.6.10 (default, Feb 28 2020, 10:20:25)  -- [GCC 8.3.0]
+[gw0] Python 3.6.10 (default, Feb 28 2020, 10:20:25)  -- [GCC 8.3.0]
+[gw3] Python 3.6.10 (default, Feb 28 2020, 10:20:25)  -- [GCC 8.3.0]
+[gw2] Python 3.6.10 (default, Feb 28 2020, 10:20:25)  -- [GCC 8.3.0]
+gw0 [27] / gw1 [27] / gw2 [27] / gw3 [27]
+
+scheduling tests via LoadScheduling
+
+test_api_version.py::test_api_version[machinelearning.seldon.io/v1alpha2] 
+test_api_version.py::test_api_version[machinelearning.seldon.io/v1alpha3] 
+test_api_version.py::test_api_version[machinelearning.seldon.io/v1] 
+test_bad_graphs.py::TestBadGraphs::test_duplicate_predictor_name Error from server (SeldonDeployment.machinelearing.seldon.io "dupname" is invalid: [spec.predictors[1]: Invalid value: "mymodel": Duplicate predictor name, spec: Invalid value: "mymodel": Traffic must sum to 100 for multiple predictors]): error when creating "../resources/bad_duplicate_predictor_name.json": admission webhook "v1alpha2.vseldondeployment.kb.io" denied the request: SeldonDeployment.machinelearing.seldon.io "dupname" is invalid: [spec.predictors[1]: Invalid value: "mymodel": Duplicate predictor name, spec: Invalid value: "mymodel": Traffic must sum to 100 for multiple predictors]
+
+[gw2] PASSED test_bad_graphs.py::TestBadGraphs::test_duplicate_predictor_name 
+test_helm_charts_clusterwide.py::TestClusterWide::test_mab_model Error: uninstall: Release not loaded: mymab: release: not found
+
+[gw2] PASSED test_helm_charts_clusterwide.py::TestClusterWide::test_mab_model Error: uninstall: Release not loaded: mymodel: release: not found
+
+[gw1] PASSED test_api_version.py::test_api_version[machinelearning.seldon.io/v1alpha2] Error: uninstall: Release not loaded: mymodel: release: not found
+
+[gw0] PASSED test_api_version.py::test_api_version[machinelearning.seldon.io/v1alpha3] Error: uninstall: Release not loaded: mymodel: release: not found
+
+[gw3] PASSED test_api_version.py::test_api_version[machinelearning.seldon.io/v1] 
+test_local_operators.py::TestLocalOperators::test_namespace_operator 
+test_bad_graphs.py::TestBadGraphs::test_model_name_mismatch Error from server (SeldonDeployment.machinelearing.seldon.io "namemismatch" is invalid: spec.predictors[0].graph: Invalid value: "complex-model_bad_name": Can't find container for Predictive Unit): error when creating "../resources/bad_name_mismatch.json": admission webhook "v1alpha2.vseldondeployment.kb.io" denied the request: SeldonDeployment.machinelearing.seldon.io "namemismatch" is invalid: spec.predictors[0].graph: Invalid value: "complex-model_bad_name": Can't find container for Predictive Unit
+
+[gw1] PASSED test_bad_graphs.py::TestBadGraphs::test_model_name_mismatch 
+test_prepackaged_servers.py::TestPrepack::test_sklearn 
+test_helm_charts_clusterwide.py::TestClusterWide::test_single_model 
+test_helm_charts_clusterwide.py::TestClusterWide::test_abtest_model Error: uninstall: Release not loaded: myabtest: release: not found
+
+[gw3] PASSED test_helm_charts_clusterwide.py::TestClusterWide::test_abtest_model Error: uninstall: Release not loaded: mymodel: release: not found
+
+[gw0] PASSED test_helm_charts_clusterwide.py::TestClusterWide::test_single_model 
+[gw2] PASSED test_local_operators.py::TestLocalOperators::test_namespace_operator 
+test_local_operators.py::TestLocalOperators::test_labelled_operator 
+test_prepackaged_servers.py::TestPrepack::test_xgboost Error from server (InternalError): error when creating "../resources/model_controller_id.yaml": Internal error occurred: failed calling webhook "v1alpha2.mseldondeployment.kb.io": Post https://seldon-webhook-service.test-labelled-operator.svc:443/mutate-machinelearning-seldon-io-v1alpha2-seldondeployment?timeout=30s: dial tcp 10.97.119.216:443: connect: connection refused
+
+test_prepackaged_servers.py::TestPrepack::test_mlflow 
+[gw1] PASSED test_prepackaged_servers.py::TestPrepack::test_sklearn 
+[gw2] PASSED test_local_operators.py::TestLocalOperators::test_labelled_operator 
+test_prepackaged_servers.py::TestPrepack::test_tfserving 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph2.json-True-ambas] 
+[gw0] PASSED test_prepackaged_servers.py::TestPrepack::test_xgboost 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph2.json-True-istio] 
+[gw1] PASSED test_prepackaged_servers.py::TestPrepack::test_tfserving 
+[gw3] PASSED test_prepackaged_servers.py::TestPrepack::test_mlflow 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph3.json-True-istio] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph3.json-True-ambas] 
+[gw2] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph2.json-True-ambas] 
+[gw0] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph2.json-True-istio] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph4.json-True-ambas] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph4.json-True-istio] 
+[gw0] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph4.json-True-istio] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph8.json-True-istio] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph4.json-True-ambas] 
+[gw0] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph8.json-True-istio] 
+[gw2] FAILED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph4.json-True-ambas] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph8.json-True-ambas] 
+test_rolling_updates.py::test_rolling_deployment[graph7.json-graph8.json-False-ambas] 
+[gw0] PASSED test_rolling_updates.py::test_rolling_deployment[graph7.json-graph8.json-False-ambas] 
+test_tracing.py::test_tracing_rest 
+[gw2] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph8.json-True-ambas] 
+[gw0] PASSED test_tracing.py::test_tracing_rest 
+test_rolling_updates.py::test_rolling_deployment[graph7.json-graph8.json-False-istio] 
+[gw2] PASSED test_rolling_updates.py::test_rolling_deployment[graph7.json-graph8.json-False-istio] error: timed out waiting for the condition on pods/mymodel-mymodel-0-86bc49c86-hhgrg
+error: timed out waiting for the condition on pods/mymodel-mymodel-0-6fc7655b6-8xphp
+
+[gw1] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph3.json-True-istio] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph5.json-True-ambas] 
+[gw3] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph3.json-True-ambas] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph5.json-True-istio] error: timed out waiting for the condition on pods/mymodel-mymodel-0-5897844bc6-5kshj
+error: timed out waiting for the condition on pods/mymodel-mymodel-0-585997d75b-cqb59
+
+[gw1] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph5.json-True-ambas] 
+[gw3] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph5.json-True-istio] 
+
+=================================== FAILURES ===================================
+_________ test_rolling_deployment[graph1.json-graph4.json-True-ambas] __________
+[gw2] linux -- Python 3.6.10 /usr/local/bin/python
+
+namespace = 'test-rolling-deployment-graph1-json-graph4-json-true-ambas'
+api_gateway = 'localhost:8003', from_deployment = 'graph1.json'
+to_deployment = 'graph4.json', change = True
+
+    @pytest.mark.flaky(max_runs=2)
+    @with_api_gateways
+    @pytest.mark.parametrize(
+        "from_deployment,to_deployment,change",
+        [
+            ("graph1.json", "graph2.json", True),  # New image version
+            (
+                "graph1.json",
+                "graph3.json",
+                True,
+            ),  # New image version and new name of container
+            ("graph1.json", "graph4.json", True),  # New resource request but same image
+            ("graph1.json", "graph5.json", True),  # Update with multi-deployment new model
+            ("graph1.json", "graph8.json", True),  # From v1alpha2 to v1
+            ("graph7.json", "graph8.json", False),  # From v1alpha3 to v1
+        ],
+    )
+    def test_rolling_deployment(
+        namespace, api_gateway, from_deployment, to_deployment, change
+    ):
+        if api_gateway == API_ISTIO_GATEWAY:
+            retry_run(f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}")
+    
+        from_file_path = to_resources_path(from_deployment)
+        retry_run(f"kubectl apply -f {from_file_path} -n {namespace}")
+        wait_for_status("mymodel", namespace)
+        wait_for_rollout("mymodel", namespace)
+        assert_model("mymodel", namespace, initial=True, endpoint=api_gateway)
+    
+        old_pod_name = get_pod_name_for_sdep("mymodel", namespace)[0]
+        to_file_path = to_resources_path(to_deployment)
+    
+        def _update_model():
+            retry_run(f"kubectl apply -f {to_file_path} -n {namespace}")
+            if change:
+                wait_for_pod_shutdown(old_pod_name, namespace)
+            wait_for_status("mymodel", namespace)
+            time.sleep(2)  # Wait a little after deployment marked Available
+    
+>       assert_model_during_op(_update_model, "mymodel", namespace, endpoint=api_gateway)
+
+test_rolling_updates.py:269: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+seldon_e2e_utils.py:502: in assert_model_during_op
+    raise err
+seldon_e2e_utils.py:494: in assert_model_during_op
+    assert_model(*assert_args, **assert_kwargs)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+sdep_name = 'mymodel'
+namespace = 'test-rolling-deployment-graph1-json-graph4-json-true-ambas'
+initial = False, endpoint = 'localhost:8003'
+
+    def assert_model(sdep_name, namespace, initial=False, endpoint=API_AMBASSADOR):
+        _request = initial_rest_request if initial else rest_request
+        r = _request(sdep_name, namespace, endpoint=endpoint)
+    
+>       assert r is not None
+E       AssertionError
+
+seldon_e2e_utils.py:512: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  root:seldon_e2e_utils.py:172 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:172 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:172 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:172 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:172 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:212 Bad status:404
+WARNING  root:seldon_e2e_utils.py:212 Bad status:503
+------------------------------ Captured log call -------------------------------
+WARNING  root:seldon_e2e_utils.py:172 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:172 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:172 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:172 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:172 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:172 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:212 Bad status:503
+===Flaky Test Report===
+
+test_rolling_deployment[graph1.json-graph2.json-True-istio] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph4.json-True-istio] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph8.json-True-istio] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph7.json-graph8.json-False-ambas] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph2.json-True-ambas] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph4.json-True-ambas] failed (1 runs remaining out of 2).
+	<class 'AssertionError'>
+	
+	[<TracebackEntry /workspace/source/testing/scripts/test_rolling_updates.py:269>, <TracebackEntry /workspace/source/testing/scripts/seldon_e2e_utils.py:502>, <TracebackEntry /workspace/source/testing/scripts/seldon_e2e_utils.py:494>, <TracebackEntry /workspace/source/testing/scripts/seldon_e2e_utils.py:512>]
+test_rolling_deployment[graph1.json-graph4.json-True-ambas] failed; it passed 0 out of the required 1 times.
+	<class 'AssertionError'>
+	
+	[<TracebackEntry /workspace/source/testing/scripts/test_rolling_updates.py:269>, <TracebackEntry /workspace/source/testing/scripts/seldon_e2e_utils.py:502>, <TracebackEntry /workspace/source/testing/scripts/seldon_e2e_utils.py:494>, <TracebackEntry /workspace/source/testing/scripts/seldon_e2e_utils.py:512>]
+test_rolling_deployment[graph1.json-graph8.json-True-ambas] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph7.json-graph8.json-False-istio] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph3.json-True-istio] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph5.json-True-ambas] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph3.json-True-ambas] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph5.json-True-istio] passed 1 out of the required 1 times. Success!
+
+===End Flaky Test Report===
+================== 1 failed, 26 passed in 1934.55s (0:32:14) ===================
+make: *** [Makefile:105: test_parallel] Error 1
+Test returned errors
+kind delete cluster
+Deleting cluster "kind" ...
+Stopping Docker: dockerProgram process in pidfile '/var/run/docker-ssd.pid', 1 process(es), refused to die.
+[31m
+Pipeline failed on stage 'end-to-end' : container 'step-test-end-to-end'. The execution of the pipeline has stopped.[0m
