@@ -61,16 +61,8 @@ message Metric {
 
 ## Metrics endpoints
 
-Before Seldon Core 1.1 custom metrics have been returned to `Engine` orchestrator which exposed them all together to Prometheus via a single endpoint.
-We used following Pod annotations
-```yaml
-prometheus.io/scrape: "true"
-prometheus.io/path: "/prometheus"
-prometheus.io/port: "8000"
-```
-
-Because new `Executor` orchestrator does not inspect message payloads (for performance reasons) it cannot aggregate custom metrics and therefore we expose them directly on the Python wrapper.
-We do not define `prometheus.io/port` annotation anymore and instead use `metrics` name for ports that expose Prometheus metrics:
+Custom metrics are exposed directly by the Python wrapper.
+In order for `Prometheus` to scrape multiple endpoints from a single `Pod` we use `metrics` name for ports that expose `Prometheus` metrics:
 ```yaml
 ports:
 - containerPort: 6000
@@ -84,15 +76,29 @@ This require us to use a following entry
     action: keep
     regex: metrics(-.*)?
 ```
-in the Prometheus [config](https://github.com/SeldonIO/seldon-core/blob/master/helm-charts/seldon-core-analytics/files/prometheus/prometheus-config.yaml).
+in the Prometheus [config](https://github.com/SeldonIO/seldon-core/blob/master/helm-charts/seldon-core-analytics/files/prometheus/prometheus-config.yaml) together with following two annotations:
+```
+prometheus.io/scrape: "true"
+prometheus.io/path: "/prometheus"
+```
 
+Note: we do not use `prometheus.io/port` annotation in this configuration.
+
+
+Before Seldon Core 1.1 custom metrics have been returned to the orchestrator which exposed them all together to `Prometheus` via a single endpoint.
+We used to have at this time all three following annotations:
+```yaml
+prometheus.io/scrape: "true"
+prometheus.io/path: "/prometheus"
+prometheus.io/port: "8000"
+```
 
 
 ## Labels
 
-As we expose the metrics via Prometheus, if ```tags``` are added they must appear in every metric response otherwise Prometheus will consider such metrics as a new time series, see official [documentation].
+As we expose the metrics via `Prometheus`, if ```tags``` are added they must appear in every metric response otherwise `Prometheus` will consider such metrics as a new time series, see official [documentation].
 
-With the legacy `Engine` orchestrator we enforced presence of same set of labels using the [micrometer](https://micrometer.io/) library to expose metrics. Exceptions would happen if this condition is violated.
+Before Seldon Core 1.1 orchestrator enforced presence of same set of labels using the [micrometer](https://micrometer.io/) library to expose metrics. Exceptions would happen if this condition have been violated.
 
 
 ## Supported wrappers
