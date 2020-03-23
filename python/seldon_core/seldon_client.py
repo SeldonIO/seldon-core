@@ -1743,7 +1743,7 @@ def explain_predict_gateway(
                     + gateway_endpoint
                     + "/seldon/"
                     + deployment_name
-                    + "-explainer/api/v1.0/explain"
+                    + "/explainer/api/v1.0/explain"
                 )
             else:
                 url = (
@@ -1754,7 +1754,7 @@ def explain_predict_gateway(
                     + namespace
                     + "/"
                     + deployment_name
-                    + "-explainer/api/v1.0/explain"
+                    + "/explainer/api/v1.0/explain"
                 )
         else:
             url = (

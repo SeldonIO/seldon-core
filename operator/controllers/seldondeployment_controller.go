@@ -439,7 +439,7 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 						if svc.Spec.Ports[0].Name == "grpc" {
 							httpAllowed = false
 							externalPorts[i] = httpGrpcPorts{httpPort: 0, grpcPort: port}
-							psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, 0, port, "", log)
+							psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, 0, port, false, log)
 							if err != nil {
 								return nil, err
 							}
@@ -453,7 +453,7 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 						} else {
 							externalPorts[i] = httpGrpcPorts{httpPort: port, grpcPort: 0}
 							grpcAllowed = false
-							psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, port, 0, "", log)
+							psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, port, 0, false, log)
 							if err != nil {
 								return nil, err
 							}
@@ -521,7 +521,7 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 			if grpcAllowed == false {
 				grpcPort = 0
 			}
-			psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, httpPort, grpcPort, "", log)
+			psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, httpPort, grpcPort, false, log)
 			if err != nil {
 
 				return nil, err
@@ -572,7 +572,7 @@ func createPredictorService(pSvcName string, seldonId string, p *machinelearning
 	mlDep *machinelearningv1.SeldonDeployment,
 	engine_http_port int,
 	engine_grpc_port int,
-	ambassadorNameOverride string,
+	isExplainer bool,
 	log logr.Logger) (pSvc *corev1.Service, err error) {
 	namespace := getNamespace(mlDep)
 
@@ -601,7 +601,7 @@ func createPredictorService(pSvcName string, seldonId string, p *machinelearning
 	if GetEnv("AMBASSADOR_ENABLED", "false") == "true" {
 		psvc.Annotations = make(map[string]string)
 		//Create top level Service
-		ambassadorConfig, err := getAmbassadorConfigs(mlDep, p, pSvcName, engine_http_port, engine_grpc_port, ambassadorNameOverride)
+		ambassadorConfig, err := getAmbassadorConfigs(mlDep, p, pSvcName, engine_http_port, engine_grpc_port, isExplainer)
 		if err != nil {
 			return nil, err
 		}
