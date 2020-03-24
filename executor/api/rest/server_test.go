@@ -353,13 +353,14 @@ func TestPredictErrorWithServer(t *testing.T) {
 	t.Logf("Started")
 	g := NewGomegaWithT(t)
 	called := false
+	errorCode := http.StatusConflict
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_, err := ioutil.ReadAll(r.Body)
 		g.Expect(err).To(BeNil())
 		g.Expect(r.Header.Get(payload.SeldonPUIDHeader)).To(Equal(TestSeldonPuid))
 		called = true
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(errorCode)
 		w.Write([]byte(errorPredictResponse))
 	})
 	server := httptest.NewServer(handler)
@@ -392,7 +393,8 @@ func TestPredictErrorWithServer(t *testing.T) {
 	req.Header = map[string][]string{"Content-Type": []string{"application/json"}, payload.SeldonPUIDHeader: []string{TestSeldonPuid}}
 	res := httptest.NewRecorder()
 	r.Router.ServeHTTP(res, req)
-	g.Expect(res.Code).To(Equal(http.StatusInternalServerError))
+	// check error code is the one returned by client
+	g.Expect(res.Code).To(Equal(errorCode))
 	g.Expect(called).To(Equal(true))
 	b, err := ioutil.ReadAll(res.Body)
 	g.Expect(err).Should(BeNil())
