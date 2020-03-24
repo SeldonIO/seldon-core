@@ -66,7 +66,45 @@ func TestSimpleModel(t *testing.T) {
 	g.Expect(res.Code).To(Equal(200))
 }
 
-func TestReponsePuuidIsSet(t *testing.T) {
+func TestCloudeventHeaderIsSet(t *testing.T) {
+	t.Logf("Started")
+	g := NewGomegaWithT(t)
+	testDepName := "test-deployment"
+	testPath := "/api/v0.1/predictions"
+
+	model := v1.MODEL
+	p := v1.PredictorSpec{
+		Name: "p",
+		Graph: &v1.PredictiveUnit{
+			Type: &model,
+			Endpoint: &v1.Endpoint{
+				ServiceHost: "foo",
+				ServicePort: 9000,
+				Type:        v1.REST,
+			},
+		},
+	}
+
+	url, _ := url.Parse("http://localhost")
+	r := NewServerRestApi(&p, test.NewSeldonMessageTestClient(t, 0, nil, nil), false, url, "default", api.ProtocolSeldon, testDepName, "/metrics")
+	r.Initialise()
+	var data = ` {"data":{"ndarray":[1.1,2.0]}}`
+
+	req, _ := http.NewRequest("POST", testPath, strings.NewReader(data))
+	req.Header = map[string][]string{"Content-Type": []string{"application/json"}}
+	res := httptest.NewRecorder()
+	r.Router.ServeHTTP(res, req)
+	g.Expect(res.Code).To(Equal(200))
+	// Check that the SeldonPUUIDHeader is set
+	g.Expect(len(res.Header().Get(CLOUDEVENTS_HEADER_ID_NAME))).ShouldNot(BeZero())
+	g.Expect(len(res.Header().Get(CLOUDEVENTS_HEADER_ID_NAME))).To(Equal(len(guuid.New().String())))
+	g.Expect(len(res.Header().Get(CLOUDEVENTS_HEADER_SPECVERSION_NAME))).ShouldNot(BeZero())
+	g.Expect(res.Header().Get(CLOUDEVENTS_HEADER_PATH_NAME)).To(Equal(testPath))
+	g.Expect(res.Header().Get(CLOUDEVENTS_HEADER_TYPE_NAME)).To(Equal("seldon." + testDepName + ".response"))
+	g.Expect(res.Header().Get(CLOUDEVENTS_HEADER_SOURCE_NAME)).To(Equal("seldon." + testDepName))
+}
+
+func TestReponsePuuidHeaderIsSet(t *testing.T) {
 	t.Logf("Started")
 	g := NewGomegaWithT(t)
 
@@ -98,7 +136,7 @@ func TestReponsePuuidIsSet(t *testing.T) {
 	g.Expect(len(res.Header().Get(payload.SeldonPUIDHeader))).To(Equal(len(guuid.New().String())))
 }
 
-func TestRequestPuuidIsSet(t *testing.T) {
+func TestRequestPuuidHeaderIsSet(t *testing.T) {
 	t.Logf("Started")
 	g := NewGomegaWithT(t)
 	called := false

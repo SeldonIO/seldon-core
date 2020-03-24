@@ -127,8 +127,8 @@ func (r *SeldonRestApi) Initialise() {
 	r.Router.Handle(r.prometheusPath, promhttp.Handler())
 	if !r.ProbesOnly {
 		cloudeventHeaderMiddleware := CloudeventHeaderMiddleware{deploymentName: r.DeploymentName}
-		r.Router.Use(cloudeventHeaderMiddleware.Middleware)
 		r.Router.Use(puidHeader)
+		r.Router.Use(cloudeventHeaderMiddleware.Middleware)
 		switch r.Protocol {
 		case api.ProtocolSeldon:
 			//v0.1 API
@@ -161,7 +161,6 @@ func (h *CloudeventHeaderMiddleware) Middleware(next http.Handler) http.Handler 
 		w.Header().Set(CLOUDEVENTS_HEADER_ID_NAME, puid)
 		w.Header().Set(CLOUDEVENTS_HEADER_SPECVERSION_NAME, CLOUDEVENTS_HEADER_SPECVERSION_DEFAULT)
 		w.Header().Set(CLOUDEVENTS_HEADER_PATH_NAME, r.URL.Path)
-		// TODO: Explore whether granularity is necessary on type, such as metadata, etc
 		w.Header().Set(CLOUDEVENTS_HEADER_TYPE_NAME, "seldon."+h.deploymentName+".response")
 		w.Header().Set(CLOUDEVENTS_HEADER_SOURCE_NAME, "seldon."+h.deploymentName)
 
