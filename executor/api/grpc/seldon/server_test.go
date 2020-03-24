@@ -28,7 +28,7 @@ func TestPredict(t *testing.T) {
 		},
 	}
 	url, _ := url.Parse("http://localhost")
-	server := NewGrpcSeldonServer(&p, test.SeldonMessageTestClient{}, url, "default")
+	server := NewGrpcSeldonServer(&p, &test.SeldonMessageTestClient{}, url, "default")
 
 	var sm proto.SeldonMessage
 	var data = ` {"data":{"ndarray":[[1.1,2.0]]}}`
