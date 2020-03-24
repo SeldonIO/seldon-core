@@ -4,10 +4,15 @@ import json
 from typing import Dict, List, Union, Iterable, Callable, Optional
 import numpy as np
 from seldon_core.proto import prediction_pb2
+from seldon_core.metrics import SeldonMetrics
 import inspect
 import logging
+import os
 
 logger = logging.getLogger(__name__)
+
+
+CLIENT_GETS_METRICS = os.environ.get("INCLUDE_METRICS_IN_CLIENT_RESPONSE", True)
 
 
 class SeldonNotImplementedError(SeldonMicroserviceException):
@@ -278,7 +283,9 @@ def client_transform_output(
     return features
 
 
-def client_custom_metrics(user_model: SeldonComponent) -> List[Dict]:
+def client_custom_metrics(
+    user_model: SeldonComponent, seldon_metrics: SeldonMetrics
+) -> List[Dict]:
     """
     Get custom metrics
 
@@ -302,7 +309,11 @@ def client_custom_metrics(user_model: SeldonComponent) -> List[Dict]:
                     reason="MICROSERVICE_BAD_METRIC",
                 )
 
-            return metrics
+            seldon_metrics.update(metrics)
+            if CLIENT_GETS_METRICS:
+                return metrics
+            else:
+                return []
         except SeldonNotImplementedError:
             pass
     logger.debug("custom_metrics is not implemented")
