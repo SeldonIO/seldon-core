@@ -20,6 +20,9 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"strconv"
+	"strings"
+
 	types2 "github.com/gogo/protobuf/types"
 	"github.com/seldonio/seldon-core/operator/constants"
 	"github.com/seldonio/seldon-core/operator/utils"
@@ -31,8 +34,6 @@ import (
 	"k8s.io/client-go/tools/record"
 	"knative.dev/pkg/kmp"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"strconv"
-	"strings"
 
 	"github.com/go-logr/logr"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -681,11 +682,8 @@ func createContainerService(deploy *appsv1.Deployment, p machinelearningv1.Predi
 			SessionAffinity: corev1.ServiceAffinityNone,
 		},
 	}
-
-	//Add labels for this service to deployment
-	deploy.ObjectMeta.Labels[containerServiceKey] = containerServiceValue
-	deploy.Spec.Selector.MatchLabels[containerServiceKey] = containerServiceValue
-	deploy.Spec.Template.ObjectMeta.Labels[containerServiceKey] = containerServiceValue
+	addLabelsToService(svc, pu, p)
+	addLabelsToDeployment(deploy, containerServiceKey, containerServiceValue)
 
 	if existingPort == nil || con.Ports == nil {
 		con.Ports = append(con.Ports, corev1.ContainerPort{Name: portType, ContainerPort: portNum, Protocol: corev1.ProtocolTCP})
@@ -754,7 +752,11 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      map[string]string{machinelearningv1.Label_seldon_id: seldonId, "app": depName, "fluentd": "true"},
+					Labels: map[string]string{
+						machinelearningv1.Label_seldon_id: seldonId,
+						machinelearningv1.Label_app:       depName,
+						machinelearningv1.Label_fluentd:   "true",
+					},
 					Annotations: mlDep.Spec.Annotations,
 				},
 			},
@@ -770,7 +772,7 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 	deploy.Spec.Template.Annotations["prometheus.io/scrape"] = "true"
 
 	if p.Shadow == true {
-		deploy.Spec.Template.ObjectMeta.Labels["shadow"] = "true"
+		deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_shadow] = "true"
 	}
 
 	if seldonPodSpec != nil {

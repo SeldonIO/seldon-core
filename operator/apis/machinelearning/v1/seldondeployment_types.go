@@ -19,17 +19,29 @@ package v1
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"strconv"
+
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"strconv"
 )
 
 const (
-	Label_seldon_id      = "seldon-deployment-id"
-	Label_seldon_app     = "seldon-app"
-	Label_seldon_app_svc = "seldon-app-svc"
-	Label_svc_orch       = "seldon-deployment-contains-svcorch"
+	Label_seldon_id          = "seldon-deployment-id"
+	Label_seldon_app         = "seldon-app"
+	Label_seldon_app_svc     = "seldon-app-svc"
+	Label_svc_orch           = "seldon-deployment-contains-svcorch"
+	Label_app                = "app"
+	Label_fluentd            = "fluentd"
+	Label_router             = "router"
+	Label_combiner           = "combiner"
+	Label_model              = "model"
+	Label_transformer        = "transformer"
+	Label_output_transformer = "output-transformer"
+	Label_default            = "default"
+	Label_shadow             = "shadow"
+	Label_canary             = "canary"
+	Label_explainer          = "explainer"
 
 	PODINFO_VOLUME_NAME = "podinfo"
 	PODINFO_VOLUME_PATH = "/etc/podinfo"
