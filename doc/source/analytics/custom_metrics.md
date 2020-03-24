@@ -96,7 +96,7 @@ prometheus.io/port: "8000"
 
 ## Labels
 
-As we expose the metrics via `Prometheus`, if ```tags``` are added they must appear in every metric response otherwise `Prometheus` will consider such metrics as a new time series, see official [documentation].
+As we expose the metrics via `Prometheus`, if ```tags``` are added they must appear in every metric response otherwise `Prometheus` will consider such metrics as a new time series, see official [documentation](https://prometheus.io/docs/practices/naming/).
 
 Before Seldon Core 1.1 orchestrator enforced presence of same set of labels using the [micrometer](https://micrometer.io/) library to expose metrics. Exceptions would happen if this condition have been violated.
 
