@@ -112,6 +112,7 @@ Documentation Index
    Notebooks <examples/notebooks>
    Articles/Blogs <tutorials/blogs>
    Videos <tutorials/videos>
+   Podcasts <tutorials/podcasts>
 
 .. toctree::
    :maxdepth: 1
