@@ -254,7 +254,7 @@ var _ = Describe("Create a prepacked tfserving server for tensorflow protocol an
 						Expect(arg).To(Equal(constants.TfServingArgPort + strconv.Itoa(constants.TfServingGrpcPort)))
 					}
 					if strings.Index(arg, constants.TfServingArgRestPort) == 0 {
-						Expect(arg).To(Equal(constants.TfServingArgRestPort + strconv.Itoa(constants.FirstPortNumber)))
+						Expect(arg).To(Equal(constants.TfServingArgRestPort + strconv.Itoa(int(constants.FirstPortNumber))))
 					}
 				}
 			}
@@ -378,7 +378,7 @@ var _ = Describe("Create a prepacked tfserving server for tensorflow protocol an
 			if c.Name == modelName {
 				for _, arg := range c.Args {
 					if strings.Index(arg, constants.TfServingArgPort) == 0 {
-						Expect(arg).To(Equal(constants.TfServingArgPort + strconv.Itoa(constants.FirstPortNumber)))
+						Expect(arg).To(Equal(constants.TfServingArgPort + strconv.Itoa(int(constants.FirstPortNumber))))
 					}
 					if strings.Index(arg, constants.TfServingArgRestPort) == 0 {
 						Expect(arg).To(Equal(constants.TfServingArgRestPort + strconv.Itoa(constants.TfServingRestPort)))

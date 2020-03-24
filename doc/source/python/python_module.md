@@ -3,8 +3,6 @@
 Seldon Core has a python package `seldon-core` available on PyPI. The package makes it easier to work with Seldon Core if you are using python and is the basis of the Python S2I wrapper. The module provides:
 
  * `seldon-core-microservice` executable to serve microservice components in Seldon Core. This is used by the Python Wrapper for Seldon Core.
- * `seldon-core-microservice-tester` executable to test running Seldon Core microservices over REST or gRPC.
- * `seldon-core-api-tester` executable to test the external API for running Seldon Deployment inference graphs over REST or gRPC.
  * `seldon_core.seldon_client` library. Core reference API module to call Seldon Core services (internal microservices or the external API). This is used by the testing executable and can be used by users to build their own clients to Seldon Core in Python.
 
 ## Install
@@ -17,13 +15,9 @@ $ pip install seldon-core
 
 ### Tensorflow support
 
-Seldon Core adds optional support to send a `TFTensor` as your prediction
-input.
-However, most users will prefer to send a `numpy` array, string, binary or JSON
-input instead.
-Therefore, in order to avoid including the `tensorflow` dependency on
-installations where the `TFTensor` support won't be necessary, it isn't
-installed it by default.
+Seldon Core adds optional support to send a `TFTensor` as your prediction input.
+However, most users will prefer to send a `numpy` array, string, binary or JSON input instead.
+Therefore, in order to avoid including the `tensorflow` dependency on installations where the `TFTensor` support won't be necessary, it isn't installed it by default.
 
 To include the optional `TFTensor` support, you can install `seldon-core` as:
 
@@ -68,10 +62,6 @@ distribution of `seldon-core` as [documented above](#install).
 Seldon allows you to easily take your runtime inference code and create a Docker container that can be managed by Seldon Core. Follow the [S2I instructions](../wrappers/python.md) to wrap your code.
 
 You can also create your own image and utilise the `seldon-core-microservice` executable to run your model code.
-
-## Testing Seldon Core Microservices
-
-To test your microservice standalone or your running Seldon Deployment inside Kubernetes you can follow the [API testing docs](../workflow/api-testing.md).
 
 
 ## Seldon Core Python API Client

@@ -1,6 +1,6 @@
 import grpc
 from concurrent import futures
-from flask import jsonify, Flask, send_from_directory, request
+from flask import jsonify, Flask, send_from_directory, request, Response
 from flask_cors import CORS
 import logging
 from seldon_core.utils import seldon_message_to_json, json_to_feedback
@@ -16,9 +16,10 @@ import os
 logger = logging.getLogger(__name__)
 
 PRED_UNIT_ID = os.environ.get("PREDICTIVE_UNIT_ID", "0")
+METRICS_ENDPOINT = os.environ.get("PREDICTIVE_UNIT_METRICS_ENDPOINT", "/metrics")
 
 
-def get_rest_microservice(user_model):
+def get_rest_microservice(user_model, seldon_metrics):
     app = Flask(__name__, static_url_path="")
     CORS(app)
 
@@ -45,7 +46,9 @@ def get_rest_microservice(user_model):
     def Predict():
         requestJson = get_request()
         logger.debug("REST Request: %s", request)
-        response = seldon_core.seldon_methods.predict(user_model, requestJson)
+        response = seldon_core.seldon_methods.predict(
+            user_model, requestJson, seldon_metrics
+        )
         json_response = jsonify(response)
         if "status" in response and "code" in response["status"]:
             json_response.status_code = response["status"]["code"]
@@ -71,7 +74,9 @@ def get_rest_microservice(user_model):
     def TransformInput():
         requestJson = get_request()
         logger.debug("REST Request: %s", request)
-        response = seldon_core.seldon_methods.transform_input(user_model, requestJson)
+        response = seldon_core.seldon_methods.transform_input(
+            user_model, requestJson, seldon_metrics
+        )
         logger.debug("REST Response: %s", response)
         return jsonify(response)
 
@@ -79,7 +84,9 @@ def get_rest_microservice(user_model):
     def TransformOutput():
         requestJson = get_request()
         logger.debug("REST Request: %s", request)
-        response = seldon_core.seldon_methods.transform_output(user_model, requestJson)
+        response = seldon_core.seldon_methods.transform_output(
+            user_model, requestJson, seldon_metrics
+        )
         logger.debug("REST Response: %s", response)
         return jsonify(response)
 
@@ -87,7 +94,9 @@ def get_rest_microservice(user_model):
     def Route():
         requestJson = get_request()
         logger.debug("REST Request: %s", request)
-        response = seldon_core.seldon_methods.route(user_model, requestJson)
+        response = seldon_core.seldon_methods.route(
+            user_model, requestJson, seldon_metrics
+        )
         logger.debug("REST Response: %s", response)
         return jsonify(response)
 
@@ -95,7 +104,9 @@ def get_rest_microservice(user_model):
     def Aggregate():
         requestJson = get_request()
         logger.debug("REST Request: %s", request)
-        response = seldon_core.seldon_methods.aggregate(user_model, requestJson)
+        response = seldon_core.seldon_methods.aggregate(
+            user_model, requestJson, seldon_metrics
+        )
         logger.debug("REST Response: %s", response)
         return jsonify(response)
 
@@ -109,7 +120,7 @@ def get_rest_microservice(user_model):
     @app.route("/health/status", methods=["GET"])
     def HealthStatus():
         logger.debug("REST Health Status Request")
-        response = seldon_core.seldon_methods.health_status(user_model)
+        response = seldon_core.seldon_methods.health_status(user_model, seldon_metrics)
         logger.debug("REST Health Status Response: %s", response)
         return jsonify(response)
 
@@ -119,6 +130,21 @@ def get_rest_microservice(user_model):
         response = seldon_core.seldon_methods.metadata(user_model)
         logger.debug("REST Metadata Response: %s", response)
         return jsonify(response)
+
+    return app
+
+
+def get_metrics_microservice(seldon_metrics):
+    app = Flask(__name__, static_url_path="")
+    CORS(app)
+
+    _set_flask_app_configs(app)
+
+    @app.route(METRICS_ENDPOINT, methods=["GET"])
+    def Metrics():
+        logger.debug("REST Metrics Request")
+        metrics, mimetype = seldon_metrics.generate_metrics()
+        return Response(metrics, mimetype=mimetype)
 
     return app
 
@@ -147,11 +173,14 @@ def _set_flask_app_configs(app):
 
 
 class SeldonModelGRPC(object):
-    def __init__(self, user_model):
+    def __init__(self, user_model, seldon_metrics):
         self.user_model = user_model
+        self.seldon_metrics = seldon_metrics
 
     def Predict(self, request_grpc, context):
-        return seldon_core.seldon_methods.predict(self.user_model, request_grpc)
+        return seldon_core.seldon_methods.predict(
+            self.user_model, request_grpc, self.seldon_metrics
+        )
 
     def SendFeedback(self, feedback_grpc, context):
         return seldon_core.seldon_methods.send_feedback(
@@ -159,22 +188,28 @@ class SeldonModelGRPC(object):
         )
 
     def TransformInput(self, request_grpc, context):
-        return seldon_core.seldon_methods.transform_input(self.user_model, request_grpc)
+        return seldon_core.seldon_methods.transform_input(
+            self.user_model, request_grpc, self.seldon_metrics
+        )
 
     def TransformOutput(self, request_grpc, context):
         return seldon_core.seldon_methods.transform_output(
-            self.user_model, request_grpc
+            self.user_model, request_grpc, self.seldon_metrics
         )
 
     def Route(self, request_grpc, context):
-        return seldon_core.seldon_methods.route(self.user_model, request_grpc)
+        return seldon_core.seldon_methods.route(
+            self.user_model, request_grpc, self.seldon_metrics
+        )
 
     def Aggregate(self, request_grpc, context):
-        return seldon_core.seldon_methods.aggregate(self.user_model, request_grpc)
+        return seldon_core.seldon_methods.aggregate(
+            self.user_model, request_grpc, self.seldon_metrics
+        )
 
 
-def get_grpc_server(user_model, annotations={}, trace_interceptor=None):
-    seldon_model = SeldonModelGRPC(user_model)
+def get_grpc_server(user_model, seldon_metrics, annotations={}, trace_interceptor=None):
+    seldon_model = SeldonModelGRPC(user_model, seldon_metrics)
     options = []
     if ANNOTATION_GRPC_MAX_MSG_SIZE in annotations:
         max_msg = int(annotations[ANNOTATION_GRPC_MAX_MSG_SIZE])
