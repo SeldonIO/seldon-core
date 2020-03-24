@@ -92,6 +92,7 @@ Documentation Index
    Supported API Protocols <graph/protocols.md>
    CI/CD MLOps at Scale <analytics/cicd-mlops.md>
    Metrics with Prometheus <analytics/analytics.md>
+   Custom Metrics <analytics/custom_metrics.md>
    Payload Logging with ELK <analytics/logging.md>
    Distributed Tracing with Jaeger <graph/distributed-tracing.md>
    Autoscaling in Kubernetes <graph/autoscaling.md>
