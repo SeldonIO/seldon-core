@@ -18,6 +18,7 @@ pipelineConfig:
               command: cd
               args:
               - testing/scripts &&
+              - SELDON_E2E_TESTS_TO_RUN="base"
               - bash
               - kind_test_all.sh
             options:

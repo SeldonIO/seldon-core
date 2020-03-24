@@ -47,6 +47,7 @@ Documentation Index
    Create your Inference Graph <graph/inference-graph.md>
    Deploy your Model  <workflow/deploying.md>
    Testing your Model Endpoints  <workflow/serving.md>
+   Python Module and Client <python/index.rst>
    Troubleshooting guide <workflow/troubleshooting.md>
    Usage reporting <workflow/usage-reporting.md>
    Upgrading <reference/upgrading.md>
@@ -74,16 +75,16 @@ Documentation Index
    Java Language Wrapper [Incubating] <java/README.md>
    R Language Wrapper [ALPHA] <R/README.md>
    NodeJS Language Wrapper [ALPHA] <nodejs/README.md>
-   Custom Language Wrapper [ALPHA] <analytics/custom_metrics.md>
-   
-   
+   Go Language Wrapper [ALPHA] <go/go_wrapper_link.rst>
+
+
 .. toctree::
    :maxdepth: 1
    :caption: Ingress
 
    Ambassador Ingress <ingress/ambassador.md>
    Istio Ingress <ingress/istio.md>
-   
+
 .. toctree::
    :maxdepth: 1
    :caption: Production
@@ -91,8 +92,10 @@ Documentation Index
    Supported API Protocols <graph/protocols.md>
    CI/CD MLOps at Scale <analytics/cicd-mlops.md>
    Metrics with Prometheus <analytics/analytics.md>
+   Custom Metrics <analytics/custom_metrics.md>
    Payload Logging with ELK <analytics/logging.md>
-   Autoscaling <graph/autoscaling.md>
+   Distributed Tracing with Jaeger <graph/distributed-tracing.md>
+   Autoscaling in Kubernetes <graph/autoscaling.md>
       
 .. toctree::
    :maxdepth: 1

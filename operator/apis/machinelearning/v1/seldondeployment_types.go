@@ -34,11 +34,15 @@ const (
 	PODINFO_VOLUME_NAME = "podinfo"
 	PODINFO_VOLUME_PATH = "/etc/podinfo"
 
-	ENV_PREDICTIVE_UNIT_SERVICE_PORT = "PREDICTIVE_UNIT_SERVICE_PORT"
-	ENV_PREDICTIVE_UNIT_PARAMETERS   = "PREDICTIVE_UNIT_PARAMETERS"
-	ENV_PREDICTIVE_UNIT_ID           = "PREDICTIVE_UNIT_ID"
-	ENV_PREDICTOR_ID                 = "PREDICTOR_ID"
-	ENV_SELDON_DEPLOYMENT_ID         = "SELDON_DEPLOYMENT_ID"
+	ENV_PREDICTIVE_UNIT_SERVICE_PORT         = "PREDICTIVE_UNIT_SERVICE_PORT"
+	ENV_PREDICTIVE_UNIT_SERVICE_PORT_METRICS = "PREDICTIVE_UNIT_METRICS_SERVICE_PORT"
+	ENV_PREDICTIVE_UNIT_METRICS_ENDPOINT     = "PREDICTIVE_UNIT_METRICS_ENDPOINT"
+	ENV_PREDICTIVE_UNIT_PARAMETERS           = "PREDICTIVE_UNIT_PARAMETERS"
+	ENV_PREDICTIVE_UNIT_IMAGE                = "PREDICTIVE_UNIT_IMAGE"
+	ENV_PREDICTIVE_UNIT_ID                   = "PREDICTIVE_UNIT_ID"
+	ENV_PREDICTOR_ID                         = "PREDICTOR_ID"
+	ENV_PREDICTOR_LABELS                     = "PREDICTOR_LABELS"
+	ENV_SELDON_DEPLOYMENT_ID                 = "SELDON_DEPLOYMENT_ID"
 
 	ANNOTATION_JAVA_OPTS       = "seldon.io/engine-java-opts"
 	ANNOTATION_SEPARATE_ENGINE = "seldon.io/engine-separate-pod"
@@ -349,9 +353,18 @@ type ServiceStatus struct {
 	ExplainerFor string `json:"explainerFor,omitempty" protobuf:"string,4,opt,name=explainerFor"`
 }
 
+type StatusState string
+
+// CRD Status values
+const (
+	StatusStateAvailable StatusState = "Available"
+	StatusStateCreating  StatusState = "Creating"
+	StatusStateFailed    StatusState = "Failed"
+)
+
 // SeldonDeploymentStatus defines the observed state of SeldonDeployment
 type SeldonDeploymentStatus struct {
-	State            string                      `json:"state,omitempty" protobuf:"string,1,opt,name=state"`
+	State            StatusState                 `json:"state,omitempty" protobuf:"string,1,opt,name=state"`
 	Description      string                      `json:"description,omitempty" protobuf:"string,2,opt,name=description"`
 	DeploymentStatus map[string]DeploymentStatus `json:"deploymentStatus,omitempty" protobuf:"bytes,3,opt,name=deploymentStatus"`
 	ServiceStatus    map[string]ServiceStatus    `json:"serviceStatus,omitempty" protobuf:"bytes,4,opt,name=serviceStatus"`

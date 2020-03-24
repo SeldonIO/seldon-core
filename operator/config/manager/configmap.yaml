@@ -42,11 +42,11 @@ data:
         "XGBOOST_SERVER": {
             "rest": {
               "image": "seldonio/xgboostserver_rest",
-              "defaultImageVersion": "0.2"
+              "defaultImageVersion": "0.3"
             },
             "grpc": {
               "image": "seldonio/xgboostserver_grpc",
-              "defaultImageVersion": "0.2"
+              "defaultImageVersion": "0.3"
             }
         },
         "MLFLOW_SERVER": {

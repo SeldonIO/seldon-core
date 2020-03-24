@@ -26,7 +26,7 @@ def create_and_run_script(folder, notebook):
         raise e
 
 
-@pytest.mark.sequential
+@pytest.mark.notebooks
 class TestNotebooks(object):
 
     #
@@ -91,6 +91,18 @@ class TestNotebooks(object):
         create_and_run_script(
             "../../examples/models/payload_logging", "payload_logging"
         )
+
+    def test_custom_metrics(self):
+        try:
+            create_and_run_script(
+                "../../examples/models/custom_metrics", "customMetrics"
+            )
+        except:
+            run(
+                f"helm delete seldon-core-analytics --namespace seldon-system",
+                shell=True,
+                check=False,
+            )
 
     #
     # Payloads
