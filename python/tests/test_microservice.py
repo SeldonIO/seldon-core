@@ -62,12 +62,15 @@ def start_microservice(app_location, tracing=False, grpc=False, envs={}):
         # stdout=PIPE, stderr=PIPE,
         p = Popen(cmd, cwd=app_location, env=env_vars, preexec_fn=os.setsid)
 
+        time.sleep(1)
         for q in range(10):
-            time.sleep(5)
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            result = sock.connect_ex(("127.0.0.1", 5000))
-            if result == 0:
+            s1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            r1 = s1.connect_ex(("127.0.0.1", 5000))
+            s2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            r2 = s2.connect_ex(("127.0.0.1", 6005))
+            if r1 == 0 and r2 == 0:
                 break
+            time.sleep(5)
         else:
             raise RuntimeError("Server did not bind to 127.0.0.1:5000")
         yield
