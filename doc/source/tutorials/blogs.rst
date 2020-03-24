@@ -2,6 +2,8 @@
 Blogs
 =====
 
+Blog articles featuring different use cases of Seldon:
+
 .. toctree::
    :maxdepth: 1
 

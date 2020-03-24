@@ -2,6 +2,8 @@
 Videos
 ======
 
+Talks or video tutorials showcasing Seldon:
+
 .. toctree::
    :maxdepth: 1
 
