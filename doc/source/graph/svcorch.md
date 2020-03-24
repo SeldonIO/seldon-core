@@ -16,9 +16,9 @@ Post 1.0 of Seldon Core you can specify the protocol and transport for the data 
 
 You can see basic examples for all options in the [protocol examples notebook](../examples/protocol_examples.html).
 
-## Using the deprecated Java Engine
+## Using the Java engine
 
-You can continue to use the deprecated Java engine Service Orchestrator.
+You can continue to use the Java engine Service Orchestrator but this will be deprecated in the next release.
 
   * For Helm installs `--set executor.enabled=false`
   * For Kustomize - update [manager.yaml](https://github.com/SeldonIO/seldon-core/blob/master/operator/config/manager/manager.yaml) env with `USE_EXECUTOR: "false"`
