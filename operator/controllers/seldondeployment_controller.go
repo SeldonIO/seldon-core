@@ -30,6 +30,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/tools/record"
 	"knative.dev/pkg/kmp"
+	"net/url"
 	"path"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"strconv"
@@ -49,8 +50,6 @@ import (
 	autoscaling "k8s.io/api/autoscaling/v2beta1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	apisv1 "knative.dev/pkg/apis"
-	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
 const (
@@ -91,7 +90,7 @@ type components struct {
 	hpas             []*autoscaling.HorizontalPodAutoscaler
 	virtualServices  []*istio.VirtualService
 	destinationRules []*istio.DestinationRule
-	addressable      *duckv1.Addressable
+	addressable      *machinelearningv1.SeldonAddressable
 }
 
 type serviceDetails struct {
@@ -130,7 +129,7 @@ func createHpa(podSpec *machinelearningv1.SeldonPodSpec, deploymentName string, 
 	return &hpa
 }
 
-func createAddressableResource(mlDep *machinelearningv1.SeldonDeployment, namespace string) *duckv1.Addressable {
+func createAddressableResource(mlDep *machinelearningv1.SeldonDeployment, namespace string) *machinelearningv1.SeldonAddressable {
 	addressableHost := ""
 	addressablePath := ""
 	// TODO: Make host uri construction dynamic
@@ -146,7 +145,9 @@ func createAddressableResource(mlDep *machinelearningv1.SeldonDeployment, namesp
 		addressableHost = mlDep.Name + "-" + firstPredictorName + "." + namespace + ".svc.cluster.local"
 		addressablePath = utils.GetPredictionPath(mlDep)
 	}
-	return &duckv1.Addressable{URL: &apisv1.URL{Scheme: "http", Host: addressableHost, Path: addressablePath}}
+	addressableUrl := url.URL{Scheme: "http", Host: addressableHost, Path: addressablePath}
+
+	return &machinelearningv1.SeldonAddressable{URL: addressableUrl.String()}
 }
 
 // Create istio virtual service and destination rule.
