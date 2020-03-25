@@ -168,6 +168,9 @@ func addDefaultsToGraph(pu *PredictiveUnit) {
 	if pu.Implementation == nil {
 		im := UNKNOWN_IMPLEMENTATION
 		pu.Implementation = &im
+	} else if IsPrepack(pu) {
+		ty := MODEL
+		pu.Type = &ty
 	}
 	for i := 0; i < len(pu.Children); i++ {
 		addDefaultsToGraph(&pu.Children[i])
