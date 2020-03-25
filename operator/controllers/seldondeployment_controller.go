@@ -421,7 +421,7 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 				if con.Name != EngineContainerName && con.Name != constants.TFServingContainerName {
 
 					// service for hitting a model directly, not via engine - also adds ports to container if needed
-					svc := createContainerService(deploy, p, mlDep, con, c)
+					svc := createContainerService(deploy, p, mlDep, con, c, seldonId)
 					if svc != nil {
 						c.services = append(c.services, svc)
 					} else {
@@ -618,7 +618,12 @@ func createPredictorService(pSvcName string, seldonId string, p *machinelearning
 }
 
 // service for hitting a model directly, not via engine - not exposed externally, also adds probes
-func createContainerService(deploy *appsv1.Deployment, p machinelearningv1.PredictorSpec, mlDep *machinelearningv1.SeldonDeployment, con *corev1.Container, c components) *corev1.Service {
+func createContainerService(deploy *appsv1.Deployment,
+	p machinelearningv1.PredictorSpec,
+	mlDep *machinelearningv1.SeldonDeployment,
+	con *corev1.Container,
+	c components,
+	seldonId string) *corev1.Service {
 	//containerServiceKey := machinelearningv1.GetPredictorServiceNameKey(con)
 	containerServiceKey := machinelearningv1.Label_seldon_app_svc
 	containerServiceValue := machinelearningv1.GetContainerServiceName(mlDep.Name, p, con)
@@ -666,7 +671,7 @@ func createContainerService(deploy *appsv1.Deployment, p machinelearningv1.Predi
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      containerServiceValue,
 			Namespace: namespace,
-			Labels:    map[string]string{containerServiceKey: containerServiceValue, machinelearningv1.Label_seldon_id: mlDep.Name},
+			Labels:    map[string]string{containerServiceKey: containerServiceValue, machinelearningv1.Label_seldon_id: seldonId},
 		},
 		Spec: corev1.ServiceSpec{
 			Ports: []corev1.ServicePort{

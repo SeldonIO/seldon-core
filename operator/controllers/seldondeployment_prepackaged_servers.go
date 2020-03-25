@@ -260,8 +260,8 @@ func createStandaloneModelServers(r *SeldonDeploymentReconciler, mlDep *machinel
 
 	// some predictors have no podSpec so this could be nil
 	sPodSpec, idx := utils.GetSeldonPodSpecForPredictiveUnit(p, pu.Name)
-
 	depName := machinelearningv1.GetDeploymentName(mlDep, *p, sPodSpec, idx)
+	seldonId := machinelearningv1.GetSeldonDeploymentName(mlDep)
 
 	var deploy *appsv1.Deployment
 	existing := false
@@ -276,7 +276,6 @@ func createStandaloneModelServers(r *SeldonDeploymentReconciler, mlDep *machinel
 
 	// might not be a Deployment yet - if so we have to create one
 	if deploy == nil {
-		seldonId := machinelearningv1.GetSeldonDeploymentName(mlDep)
 		deploy = createDeploymentWithoutEngine(depName, seldonId, sPodSpec, p, mlDep)
 	}
 
@@ -300,7 +299,7 @@ func createStandaloneModelServers(r *SeldonDeploymentReconciler, mlDep *machinel
 
 			//checking for con.Name != "" is a fallback check that we haven't got an empty/nil container as name is required
 			if con.Name != EngineContainerName && con.Name != constants.TFServingContainerName && con.Name != "" {
-				svc := createContainerService(deploy, *p, mlDep, con, *c)
+				svc := createContainerService(deploy, *p, mlDep, con, *c, seldonId)
 				c.services = append(c.services, svc)
 			}
 		}
