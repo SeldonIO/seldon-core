@@ -33,6 +33,9 @@ To verify if 1.1 Seldon Core is compatible with older s2i wrapper versions we co
 Model has been deployed both with REST and GRPC API with both new orchestrator and the deprecated Java engine.
 Test verifies if model can successfully serve inference requests.
 
+**NOTE:** Full support of custom metrics and tags with new orchestrator is only available from Python wrapper version 0.19.
+If you need to use older version of Python wrapper you can continue to use Java engine as described above until the next release.
+
 
 | Language Wrapper |     Version   | API Type | New Orchestrator  | Deprecated Java engine | Notes                                   |
 |------------------|---------------|----------|-------------------|------------------------|-----------------------------------------|
@@ -44,8 +47,6 @@ Test verifies if model can successfully serve inference requests.
 | Java             | 0.2 & 0.1     | REST     | yes               | yes                    |   minor difference in request format    |
 | Java             | 0.2 & 0.1     | GRPC     | yes               | yes                    |                                         |
 
-
-**NOTE:** Full support of custom metrics and tags with new orchestrator is only available from Python wrapper version 0.19.
 
 Example of request format difference with Java wrapper deployed with REST API:
 1. Using new orchestrator:
