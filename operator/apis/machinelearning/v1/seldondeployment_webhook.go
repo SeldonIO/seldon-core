@@ -38,10 +38,12 @@ import (
 
 var (
 	// log is for logging in this package.
-	seldondeploymentlog     = logf.Log.WithName("seldondeployment")
-	ControllerNamespace     = GetEnv("POD_NAMESPACE", "seldon-system")
-	ControllerConfigMapName = "seldon-config"
-	C                       client.Client
+	seldondeploymentlog                 = logf.Log.WithName("seldondeployment")
+	ControllerNamespace                 = GetEnv("POD_NAMESPACE", "seldon-system")
+	ControllerConfigMapName             = "seldon-config"
+	C                                   client.Client
+	envPredictiveUnitServicePort        = os.Getenv(ENV_PREDICTIVE_UNIT_SERVICE_PORT)
+	envPredictiveUnitServicePortMetrics = os.Getenv(ENV_PREDICTIVE_UNIT_SERVICE_PORT_METRICS)
 )
 
 const PredictorServerConfigMapKeyName = "predictor_servers"
@@ -74,7 +76,7 @@ func getPredictorServerConfigs() (map[string]PredictorServerConfig, error) {
 	if err != nil {
 		fmt.Println("Failed to find config map " + ControllerConfigMapName)
 		fmt.Println(err)
-		return nil, err
+		return map[string]PredictorServerConfig{}, err
 	}
 	return getPredictorServerConfigsFromMap(configMap)
 }
@@ -159,8 +161,8 @@ func SetImageNameForPrepackContainer(pu *PredictiveUnit, c *corev1.Container) {
 // -----
 
 func addDefaultsToGraph(pu *PredictiveUnit) {
-	if pu.Type == nil {
-		ty := UNKNOWN_TYPE
+	if pu.Type == nil && pu.Methods == nil && pu.Implementation == nil {
+		ty := MODEL
 		pu.Type = &ty
 	}
 	if pu.Implementation == nil {
@@ -180,27 +182,97 @@ func getUpdatePortNumMap(name string, nextPortNum *int32, portMap map[string]int
 	return portMap[name]
 }
 
+func addMetricsPortAndIncrement(nextMetricsPortNum *int32, con *corev1.Container) {
+	existingMetricPort := GetPort(constants.MetricsPortName, con.Ports)
+	if existingMetricPort == nil {
+		con.Ports = append(con.Ports, corev1.ContainerPort{
+			Name:          constants.MetricsPortName,
+			ContainerPort: *nextMetricsPortNum,
+			Protocol:      corev1.ProtocolTCP,
+		})
+		*nextMetricsPortNum++
+	}
+}
+
+func (r *SeldonDeploymentSpec) setContainerPredictiveUnitDefaults(compSpecIdx int,
+	portNum int32, nextMetricsPortNum *int32, mldepName string, namespace string,
+	p *PredictorSpec, pu *PredictiveUnit, con *corev1.Container) {
+
+	if pu.Endpoint == nil {
+		if r.Transport == TransportGrpc {
+			pu.Endpoint = &Endpoint{Type: GRPC}
+		} else {
+			pu.Endpoint = &Endpoint{Type: REST}
+		}
+	}
+	var portType string
+	if pu.Endpoint.Type == GRPC {
+		portType = constants.GrpcPortName
+	} else {
+		portType = constants.HttpPortName
+	}
+
+	existingPort := GetPort(portType, con.Ports)
+	if existingPort != nil {
+		portNum = existingPort.ContainerPort
+	}
+
+	volFound := false
+	for _, vol := range con.VolumeMounts {
+		if vol.Name == PODINFO_VOLUME_NAME {
+			volFound = true
+		}
+	}
+	if !volFound {
+		con.VolumeMounts = append(con.VolumeMounts, corev1.VolumeMount{
+			Name:      PODINFO_VOLUME_NAME,
+			MountPath: PODINFO_VOLUME_PATH,
+		})
+	}
+
+	//Add metrics port if missing
+	addMetricsPortAndIncrement(nextMetricsPortNum, con)
+
+	// Set ports and hostname in predictive unit so engine can read it from SDep
+	// if this is the first componentSpec then it's the one to put the engine in - note using outer loop counter here
+	if _, hasSeparateEnginePod := r.Annotations[ANNOTATION_SEPARATE_ENGINE]; compSpecIdx == 0 && !hasSeparateEnginePod {
+		pu.Endpoint.ServiceHost = constants.DNSLocalHost
+	} else {
+		containerServiceValue := GetContainerServiceName(mldepName, *p, con)
+		pu.Endpoint.ServiceHost = containerServiceValue + "." + namespace + constants.DNSClusterLocalSuffix
+	}
+	pu.Endpoint.ServicePort = portNum
+
+}
+
 func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(mldepName string, namespace string) {
 
 	var firstPuPortNum int32 = constants.FirstPortNumber
-	if env_preditive_unit_service_port, ok := os.LookupEnv("PREDICTIVE_UNIT_SERVICE_PORT"); ok {
-		portNum, err := strconv.Atoi(env_preditive_unit_service_port)
+	if envPredictiveUnitServicePort != "" {
+		portNum, err := strconv.Atoi(envPredictiveUnitServicePort)
 		if err != nil {
-			seldondeploymentlog.Error(err, "Failed to decode PREDICTIVE_UNIT_SERVICE_PORT will use default 9000", "value", env_preditive_unit_service_port)
+			seldondeploymentlog.Error(err, "Failed to decode predictive unit service port will use default", "envar", ENV_PREDICTIVE_UNIT_SERVICE_PORT, "value", envPredictiveUnitServicePort)
 		} else {
 			firstPuPortNum = int32(portNum)
 		}
 	}
 	nextPortNum := firstPuPortNum
 
+	var firstMetricsPuPortNum int32 = constants.FirstMetricsPortNumber
+	if envPredictiveUnitServicePortMetrics != "" {
+		portNum, err := strconv.Atoi(envPredictiveUnitServicePortMetrics)
+		if err != nil {
+			seldondeploymentlog.Error(err, "Failed to decode PREDICTIVE_UNIT_SERVICE_PORT_METRICS will use default", "value", envPredictiveUnitServicePortMetrics)
+		} else {
+			firstMetricsPuPortNum = int32(portNum)
+		}
+	}
+	nextMetricsPortNum := firstMetricsPuPortNum
 	portMap := map[string]int32{}
 
 	for i := 0; i < len(r.Predictors); i++ {
 		p := r.Predictors[i]
-		if p.Graph.Type == nil {
-			ty := UNKNOWN_TYPE
-			p.Graph.Type = &ty
-		}
+
 		// Add version label for predictor if not present
 		if p.Labels == nil {
 			p.Labels = map[string]string{}
@@ -220,52 +292,12 @@ func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(mldepName string, namespa
 				con := &cSpec.Spec.Containers[k]
 
 				getUpdatePortNumMap(con.Name, &nextPortNum, portMap)
-
 				portNum := portMap[con.Name]
 
 				pu := GetPredictiveUnit(p.Graph, con.Name)
 
 				if pu != nil {
-
-					if pu.Endpoint == nil {
-						pu.Endpoint = &Endpoint{Type: REST}
-					}
-					var portType string
-					if pu.Endpoint.Type == GRPC {
-						portType = "grpc"
-					} else {
-						portType = "http"
-					}
-
-					if con != nil {
-						existingPort := GetPort(portType, con.Ports)
-						if existingPort != nil {
-							portNum = existingPort.ContainerPort
-						}
-
-						volFound := false
-						for _, vol := range con.VolumeMounts {
-							if vol.Name == PODINFO_VOLUME_NAME {
-								volFound = true
-							}
-						}
-						if !volFound {
-							con.VolumeMounts = append(con.VolumeMounts, corev1.VolumeMount{
-								Name:      PODINFO_VOLUME_NAME,
-								MountPath: PODINFO_VOLUME_PATH,
-							})
-						}
-					}
-
-					// Set ports and hostname in predictive unit so engine can read it from SDep
-					// if this is the first componentSpec then it's the one to put the engine in - note using outer loop counter here
-					if _, hasSeparateEnginePod := r.Annotations[ANNOTATION_SEPARATE_ENGINE]; j == 0 && !hasSeparateEnginePod {
-						pu.Endpoint.ServiceHost = "localhost"
-					} else {
-						containerServiceValue := GetContainerServiceName(mldepName, p, con)
-						pu.Endpoint.ServiceHost = containerServiceValue + "." + namespace + ".svc.cluster.local."
-					}
-					pu.Endpoint.ServicePort = portNum
+					r.setContainerPredictiveUnitDefaults(j, portNum, &nextMetricsPortNum, mldepName, namespace, &p, pu, con)
 				}
 			}
 		}
@@ -293,23 +325,10 @@ func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(mldepName string, namespa
 					}
 				}
 
-				// Add a default REST endpoint if none provided
-				// pu needs to have an endpoint as engine reads it from SDep in order to direct graph traffic
-				// probes etc will be added later by controller
-				if pu.Endpoint == nil {
-					if r.Transport == TransportGrpc {
-						pu.Endpoint = &Endpoint{Type: GRPC}
-					} else {
-						pu.Endpoint = &Endpoint{Type: REST}
-					}
-				}
-				var portType string
-				if pu.Endpoint.Type == GRPC {
-					portType = "grpc"
-				} else {
-					portType = "http"
-				}
+				getUpdatePortNumMap(con.Name, &nextPortNum, portMap)
+				portNum := portMap[pu.Name]
 
+				r.setContainerPredictiveUnitDefaults(0, portNum, &nextMetricsPortNum, mldepName, namespace, &p, pu, con)
 				SetImageNameForPrepackContainer(pu, con)
 
 				// if new Add container to componentSpecs
@@ -329,52 +348,10 @@ func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(mldepName string, namespa
 						r.Predictors[i] = p
 					}
 				}
-
-				getUpdatePortNumMap(con.Name, &nextPortNum, portMap)
-				portNum := portMap[pu.Name]
-
-				if con != nil {
-					existingPort := GetPort(portType, con.Ports)
-					if existingPort != nil {
-						portNum = existingPort.ContainerPort
-					}
-
-					volFound := false
-					for _, vol := range con.VolumeMounts {
-						if vol.Name == PODINFO_VOLUME_NAME {
-							volFound = true
-						}
-					}
-					if !volFound {
-						con.VolumeMounts = append(con.VolumeMounts, corev1.VolumeMount{
-							Name:      PODINFO_VOLUME_NAME,
-							MountPath: PODINFO_VOLUME_PATH,
-						})
-					}
-				}
-				// Set ports and hostname in predictive unit so engine can read it from SDep
-				// if this is the firstPuPortNum then we've not added engine yet so put the engine in here
-				if pu.Endpoint.ServiceHost == "" {
-					if _, hasSeparateEnginePod := r.Annotations[ANNOTATION_SEPARATE_ENGINE]; !hasSeparateEnginePod {
-						pu.Endpoint.ServiceHost = "localhost"
-					} else {
-						containerServiceValue := GetContainerServiceName(mldepName, p, con)
-						pu.Endpoint.ServiceHost = containerServiceValue + "." + namespace + ".svc.cluster.local."
-					}
-				}
-				if pu.Endpoint.ServicePort == 0 {
-					pu.Endpoint.ServicePort = portNum
-				}
-
 			}
-
 		}
-
 	}
-
 }
-
-// -----
 
 // --- Validating
 

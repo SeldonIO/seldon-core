@@ -28,27 +28,28 @@ Seldon Core provides an example Helm analytics chart that displays the above Pro
 ```bash
 helm install seldon-core-analytics seldon-core-analytics \
    --repo https://storage.googleapis.com/seldon-charts \
-   --set grafana_prom_admin_password=password \
-   --set persistence.enabled=false \
    --namespace seldon-system
 ```
-
-The available parameters are:
-
- * ```grafana_prom_admin_password``` : The admin user Grafana password to use.
- * ```persistence.enabled``` : Whether Prometheus persistence is enabled.
 
 Once running you can expose the Grafana dashboard with:
 
 ```bash
-kubectl port-forward $(kubectl get pods -n seldon-system -l app=grafana-prom-server -o jsonpath='{.items[0].metadata.name}') 3000:3000 -n seldon-system
+kubectl port-forward svc/seldon-core-analytics-grafana 3000:80 -n seldon-system
 ```
 
-You can then view the dashboard at http://localhost:3000/dashboard/db/prediction-analytics?refresh=5s&orgId=1
+You can then view the dashboard at http://localhost:3000/dashboard/db/prediction-analytics
 
 ![dashboard](./dashboard.png)
+
+It is also possible expose Prometheus itself with:
+```bash
+kubectl port-forward svc/seldon-core-analytics-prometheus-seldon 3001:80 -n seldon-system
+```
+
+and then access it at http://localhost:3001/
+
+
 
 ## Example
 
 There is [an example notebook you can use to test the metrics](../examples/metrics.html).
-

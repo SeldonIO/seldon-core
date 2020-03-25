@@ -295,8 +295,8 @@ Below are some of the core components together with link to the logs that provid
 * [Java Language Wrapper [Incubating] ](https://docs.seldon.io/projects/seldon-core/en/latest/java/README.html)
 * [R Language Wrapper [ALPHA] ](https://docs.seldon.io/projects/seldon-core/en/latest/R/README.html)
 * [NodeJS Language Wrapper [ALPHA] ](https://docs.seldon.io/projects/seldon-core/en/latest/nodejs/README.html)
-* [Custom Language Wrapper [ALPHA] ](https://docs.seldon.io/projects/seldon-core/en/latest/analytics/custom_metrics.html)
-   
+* [Go Language Wrapper [ALPHA] ](https://docs.seldon.io/projects/seldon-core/en/latest/go/README.html)
+
 ### Ingress
 
 * [Ambassador Ingress ](https://docs.seldon.io/projects/seldon-core/en/latest/ingress/ambassador.html)
@@ -307,6 +307,7 @@ Below are some of the core components together with link to the logs that provid
 * [Supported API Protocols ](https://docs.seldon.io/projects/seldon-core/en/latest/graph/protocols.html)
 * [CI/CD MLOps at Scale ](https://docs.seldon.io/projects/seldon-core/en/latest/analytics/cicd-mlops.html)
 * [Metrics with Prometheus ](https://docs.seldon.io/projects/seldon-core/en/latest/analytics/analytics.html)
+* [Custom Metrics ](https://docs.seldon.io/projects/seldon-core/en/latest/analytics/custom_metrics.html)
 * [Payload Logging with ELK ](https://docs.seldon.io/projects/seldon-core/en/latest/analytics/logging.html)
 * [Distributed Tracing with Jaeger ](https://docs.seldon.io/projects/seldon-core/en/latest/graph/distributed-tracing.html)
 * [Autoscaling in Kubernetes ](https://docs.seldon.io/projects/seldon-core/en/latest/graph/autoscaling.html)

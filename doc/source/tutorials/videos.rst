@@ -2,6 +2,8 @@
 Videos
 ======
 
+Talks or video tutorials showcasing Seldon:
+
 .. toctree::
    :maxdepth: 1
 
@@ -12,6 +14,6 @@ Videos
    Seldon Core with Istio <https://www.youtube.com/watch?v=ydculT4e7FQ&feature=youtu.be&t=7m48s>
    Openshift Commons ML SIG - Seldon and S2I <https://www.youtube.com/watch?v=1uZPBcfYxlM>
    Spark + AI Summit 2019 - Seldon and MLflow <https://www.youtube.com/watch?v=D6eSfd9w9eA>
-
-   
+   Bristech - A journey into Cloud Native Machine Learning <https://www.youtube.com/watch?v=0ljaT1BNJgo>
+   KubeCon 2019 - Advanced Model Inferencing Leveraging KNative, Istio & Kubeflow Serving <https://www.youtube.com/watch?v=YaGASyU88dQ>
 
