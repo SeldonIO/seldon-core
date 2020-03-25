@@ -86,7 +86,7 @@ func TestCloudeventHeaderIsSet(t *testing.T) {
 	}
 
 	url, _ := url.Parse("http://localhost")
-	r := NewServerRestApi(&p, test.NewSeldonMessageTestClient(t, 0, nil, nil), false, url, "default", api.ProtocolSeldon, testDepName, "/metrics")
+	r := NewServerRestApi(&p, &test.SeldonMessageTestClient{}, false, url, "default", api.ProtocolSeldon, testDepName, "/metrics")
 	r.Initialise()
 	var data = ` {"data":{"ndarray":[1.1,2.0]}}`
 
