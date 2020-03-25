@@ -20,6 +20,9 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"strconv"
+	"strings"
+
 	types2 "github.com/gogo/protobuf/types"
 	"github.com/seldonio/seldon-core/operator/constants"
 	"github.com/seldonio/seldon-core/operator/utils"
@@ -31,8 +34,6 @@ import (
 	"k8s.io/client-go/tools/record"
 	"knative.dev/pkg/kmp"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"strconv"
-	"strings"
 
 	"github.com/go-logr/logr"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -681,11 +682,8 @@ func createContainerService(deploy *appsv1.Deployment, p machinelearningv1.Predi
 			SessionAffinity: corev1.ServiceAffinityNone,
 		},
 	}
-
-	//Add labels for this service to deployment
-	deploy.ObjectMeta.Labels[containerServiceKey] = containerServiceValue
-	deploy.Spec.Selector.MatchLabels[containerServiceKey] = containerServiceValue
-	deploy.Spec.Template.ObjectMeta.Labels[containerServiceKey] = containerServiceValue
+	addLabelsToService(svc, pu, p)
+	addLabelsToDeployment(deploy, containerServiceKey, containerServiceValue)
 
 	if existingPort == nil || con.Ports == nil {
 		con.Ports = append(con.Ports, corev1.ContainerPort{Name: portType, ContainerPort: portNum, Protocol: corev1.ProtocolTCP})
@@ -715,11 +713,28 @@ func createContainerService(deploy *appsv1.Deployment, p machinelearningv1.Predi
 	}
 
 	// Always set the predictive and deployment identifiers
+
+	labels, err := json.Marshal(p.Labels)
+	if err != nil {
+		labels = []byte("{}")
+	}
+
 	con.Env = append(con.Env, []corev1.EnvVar{
 		corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_ID, Value: con.Name},
+		corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_IMAGE, Value: con.Image},
 		corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTOR_ID, Value: p.Name},
+		corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTOR_LABELS, Value: string(labels)},
 		corev1.EnvVar{Name: machinelearningv1.ENV_SELDON_DEPLOYMENT_ID, Value: mlDep.ObjectMeta.Name},
 	}...)
+
+	//Add Metric Env Var
+	metricPort := getPort(constants.MetricsPortName, con.Ports)
+	if metricPort != nil {
+		con.Env = append(con.Env, []corev1.EnvVar{
+			corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_SERVICE_PORT_METRICS, Value: strconv.Itoa(int(metricPort.ContainerPort))},
+			corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_METRICS_ENDPOINT, Value: getPrometheusPath(mlDep)},
+		}...)
+	}
 
 	return svc
 }
@@ -737,7 +752,11 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      map[string]string{machinelearningv1.Label_seldon_id: seldonId, "app": depName, "fluentd": "true"},
+					Labels: map[string]string{
+						machinelearningv1.Label_seldon_id: seldonId,
+						machinelearningv1.Label_app:       depName,
+						machinelearningv1.Label_fluentd:   "true",
+					},
 					Annotations: mlDep.Spec.Annotations,
 				},
 			},
@@ -745,8 +764,15 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 		},
 	}
 
+	if deploy.Spec.Template.Annotations == nil {
+		deploy.Spec.Template.Annotations = map[string]string{}
+	}
+	// Add prometheus annotations
+	deploy.Spec.Template.Annotations["prometheus.io/path"] = getPrometheusPath(mlDep)
+	deploy.Spec.Template.Annotations["prometheus.io/scrape"] = "true"
+
 	if p.Shadow == true {
-		deploy.Spec.Template.ObjectMeta.Labels["shadow"] = "true"
+		deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_shadow] = "true"
 	}
 
 	if seldonPodSpec != nil {

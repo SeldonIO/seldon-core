@@ -94,6 +94,9 @@ scrape_configs:
     - __meta_kubernetes_pod_annotation_prometheus_io_scrape
     action: keep
     regex: true
+  - source_labels: [__meta_kubernetes_pod_container_port_name]
+    action: keep
+    regex: metrics(-.*)?
   - source_labels:
     - __meta_kubernetes_pod_annotation_prometheus_io_path
     action: replace

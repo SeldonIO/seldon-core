@@ -5,8 +5,10 @@ import json
 import time
 import logging
 import multiprocessing as mp
+import threading
 import sys
 import seldon_core.persistence as persistence
+from seldon_core.metrics import SeldonMetrics
 from distutils.util import strtobool
 from seldon_core.flask_utils import ANNOTATIONS_FILE
 import seldon_core.wrapper as seldon_microservice
@@ -18,14 +20,19 @@ logger = logging.getLogger(__name__)
 
 PARAMETERS_ENV_NAME = "PREDICTIVE_UNIT_PARAMETERS"
 SERVICE_PORT_ENV_NAME = "PREDICTIVE_UNIT_SERVICE_PORT"
+METRICS_SERVICE_PORT_ENV_NAME = "PREDICTIVE_UNIT_METRICS_SERVICE_PORT"
+
 LOG_LEVEL_ENV = "SELDON_LOG_LEVEL"
 DEFAULT_PORT = 5000
+DEFAULT_METRICS_PORT = 6000
 
 DEBUG_PARAMETER = "SELDON_DEBUG"
 DEBUG = False
 
 
-def start_servers(target1: Callable, target2: Callable) -> None:
+def start_servers(
+    target1: Callable, target2: Callable, metrics_target: Callable
+) -> None:
     """
     Start servers
 
@@ -41,9 +48,14 @@ def start_servers(target1: Callable, target2: Callable) -> None:
     p2.daemon = True
     p2.start()
 
+    p3 = mp.Process(target=metrics_target)
+    p3.daemon = True
+    p3.start()
+
     target1()
 
     p2.join()
+    p3.join()
 
 
 def parse_parameters(parameters: Dict) -> Dict:
@@ -282,11 +294,15 @@ def main():
         handler.setLevel(log_level_num)
 
     port = int(os.environ.get(SERVICE_PORT_ENV_NAME, DEFAULT_PORT))
+    metrics_port = int(
+        os.environ.get(METRICS_SERVICE_PORT_ENV_NAME, DEFAULT_METRICS_PORT)
+    )
 
     if args.tracing:
         tracer = setup_tracing(args.interface_name)
 
     if args.api_type == "REST":
+        seldon_metrics = SeldonMetrics(worker_id_func=os.getpid)
 
         if args.workers > 1:
 
@@ -301,7 +317,9 @@ def main():
                     "max_requests": args.max_requests,
                     "max_requests_jitter": args.max_requests_jitter,
                 }
-                app = seldon_microservice.get_rest_microservice(user_object)
+                app = seldon_microservice.get_rest_microservice(
+                    user_object, seldon_metrics
+                )
                 StandaloneApplication(app, user_object, options=options).run()
 
             logger.info("REST gunicorn microservice running on port %i", port)
@@ -310,7 +328,9 @@ def main():
         else:
 
             def rest_prediction_server():
-                app = seldon_microservice.get_rest_microservice(user_object)
+                app = seldon_microservice.get_rest_microservice(
+                    user_object, seldon_metrics
+                )
                 try:
                     user_object.load()
                 except (NotImplementedError, AttributeError):
@@ -328,6 +348,9 @@ def main():
             server1_func = rest_prediction_server
 
     elif args.api_type == "GRPC":
+        seldon_metrics = SeldonMetrics(
+            worker_id_func=lambda: threading.current_thread().name
+        )
 
         def grpc_prediction_server():
 
@@ -340,7 +363,10 @@ def main():
                 interceptor = None
 
             server = seldon_microservice.get_grpc_server(
-                user_object, annotations=annotations, trace_interceptor=interceptor
+                user_object,
+                seldon_metrics,
+                annotations=annotations,
+                trace_interceptor=interceptor,
             )
 
             try:
@@ -361,6 +387,13 @@ def main():
     else:
         server1_func = None
 
+    def rest_metrics_server():
+        app = seldon_microservice.get_metrics_microservice(seldon_metrics)
+        app.run(host="0.0.0.0", port=metrics_port)
+
+    logger.info("REST metrics microservice running on port %i", metrics_port)
+    metrics_server_func = rest_metrics_server
+
     if hasattr(user_object, "custom_service") and callable(
         getattr(user_object, "custom_service")
     ):
@@ -369,7 +402,7 @@ def main():
         server2_func = None
 
         logger.info("Starting servers")
-    start_servers(server1_func, server2_func)
+    start_servers(server1_func, server2_func, metrics_server_func)
 
 
 if __name__ == "__main__":
