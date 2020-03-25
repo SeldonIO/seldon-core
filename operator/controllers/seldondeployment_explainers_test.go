@@ -69,7 +69,7 @@ var _ = Describe("createExplainer", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(c.deployments).To(BeEmpty())
 		},
-		Entry("nil explainer", nil),
-		Entry("empty explainer", &machinelearningv1.Explainer{}),
+		Entry("nil", nil),
+		Entry("empty type", &machinelearningv1.Explainer{}),
 	)
 })
