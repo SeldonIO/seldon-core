@@ -90,5 +90,5 @@ func TestGetDeploymentNameLong(t *testing.T) {
 	name := GetDeploymentName(mlDep, mlDep.Spec.Predictors[0], mlDep.Spec.Predictors[0].ComponentSpecs[0], 0)
 	parts := strings.Split(name, "-")
 	g.Expect(len(parts)).To(Equal(2))
-	g.Expect(parts[0]).To(Equal(DeploymentNamePredfix))
+	g.Expect(parts[0]).To(Equal(DeploymentNamePrefix))
 }

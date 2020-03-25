@@ -47,7 +47,7 @@ const (
 	ANNOTATION_CUSTOM_SVC_NAME = "seldon.io/svc-name"
 	ANNOTATION_EXECUTOR        = "seldon.io/executor"
 
-	DeploymentNamePredfix = "seldon"
+	DeploymentNamePrefix = "seldon"
 )
 
 func hash(text string) string {
@@ -94,7 +94,7 @@ func GetDeploymentName(mlDep *SeldonDeployment, predictorSpec PredictorSpec, pod
 		name = baseName + getContainerNames(podSpec.Spec.Containers)
 	}
 	if len(name) > 63 {
-		return DeploymentNamePredfix + "-" + hash(name)
+		return DeploymentNamePrefix + "-" + hash(name)
 	} else {
 		return name
 	}
