@@ -13,7 +13,7 @@ const (
 	TEST_DEFAULT_EXPECTED_RETRIES = 0
 )
 
-func basicAbassadorTests(t *testing.T, mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, expectedWeight int32, expectedInstanceId string, expectedRetries int) {
+func basicAmbassadorTests(t *testing.T, mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, expectedWeight int32, expectedInstanceId string, expectedRetries int) {
 	g := NewGomegaWithT(t)
 	s, err := getAmbassadorConfigs(mlDep, p, "myservice", 9000, 5000, "")
 	g.Expect(err).To(BeNil())
@@ -42,7 +42,7 @@ func TestAmbassadorSingle(t *testing.T) {
 			},
 		},
 	}
-	basicAbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES)
+	basicAmbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES)
 }
 
 func TestAmbassadorCanary(t *testing.T) {
@@ -56,8 +56,8 @@ func TestAmbassadorCanary(t *testing.T) {
 			},
 		},
 	}
-	basicAbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES)
-	basicAbassadorTests(t, &mlDep, &p2, 80, "", TEST_DEFAULT_EXPECTED_RETRIES)
+	basicAmbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES)
+	basicAmbassadorTests(t, &mlDep, &p2, 80, "", TEST_DEFAULT_EXPECTED_RETRIES)
 }
 
 func TestAmbassadorCanaryEqual(t *testing.T) {
@@ -71,8 +71,8 @@ func TestAmbassadorCanaryEqual(t *testing.T) {
 			},
 		},
 	}
-	basicAbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES)
-	basicAbassadorTests(t, &mlDep, &p2, 50, "", TEST_DEFAULT_EXPECTED_RETRIES)
+	basicAmbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES)
+	basicAmbassadorTests(t, &mlDep, &p2, 50, "", TEST_DEFAULT_EXPECTED_RETRIES)
 }
 
 func TestAmbassadorCanaryThree(t *testing.T) {
@@ -88,9 +88,9 @@ func TestAmbassadorCanaryThree(t *testing.T) {
 			},
 		},
 	}
-	basicAbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES)
-	basicAbassadorTests(t, &mlDep, &p2, 20, "", TEST_DEFAULT_EXPECTED_RETRIES)
-	basicAbassadorTests(t, &mlDep, &p3, 20, "", TEST_DEFAULT_EXPECTED_RETRIES)
+	basicAmbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES)
+	basicAmbassadorTests(t, &mlDep, &p2, 20, "", TEST_DEFAULT_EXPECTED_RETRIES)
+	basicAmbassadorTests(t, &mlDep, &p3, 20, "", TEST_DEFAULT_EXPECTED_RETRIES)
 }
 
 func TestAmbassadorCanaryThreeEqual(t *testing.T) {
@@ -106,9 +106,9 @@ func TestAmbassadorCanaryThreeEqual(t *testing.T) {
 			},
 		},
 	}
-	basicAbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES)
-	basicAbassadorTests(t, &mlDep, &p2, 33, "", TEST_DEFAULT_EXPECTED_RETRIES)
-	basicAbassadorTests(t, &mlDep, &p3, 33, "", TEST_DEFAULT_EXPECTED_RETRIES)
+	basicAmbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES)
+	basicAmbassadorTests(t, &mlDep, &p2, 33, "", TEST_DEFAULT_EXPECTED_RETRIES)
+	basicAmbassadorTests(t, &mlDep, &p3, 33, "", TEST_DEFAULT_EXPECTED_RETRIES)
 }
 
 func TestAmbassadorID(t *testing.T) {
@@ -122,7 +122,7 @@ func TestAmbassadorID(t *testing.T) {
 			},
 		},
 	}
-	basicAbassadorTests(t, &mlDep, &p1, 0, instanceId, TEST_DEFAULT_EXPECTED_RETRIES)
+	basicAmbassadorTests(t, &mlDep, &p1, 0, instanceId, TEST_DEFAULT_EXPECTED_RETRIES)
 }
 
 func TestAmbassadorRetriesAnnotation(t *testing.T) {
@@ -135,5 +135,5 @@ func TestAmbassadorRetriesAnnotation(t *testing.T) {
 			},
 		},
 	}
-	basicAbassadorTests(t, &mlDep, &p, 0, "", 2)
+	basicAmbassadorTests(t, &mlDep, &p, 0, "", 2)
 }
