@@ -34,15 +34,18 @@ Model has been deployed both with REST and GRPC API with both new orchestrator a
 Test verifies if model can successfully serve inference requests.
 
 
-| Language Wrapper | Version   | API Type | New Orchestrator  | Deprecated Java engine | Notes                              |
-|------------------|-----------|----------|-------------------|------------------------|------------------------------------|
-| Python           | >= 0.11   | both     | yes               | yes                    |                                    |
-| Python           | 0.10      | REST     | no                | yes                    |                                    |
-| Python           | 0.10      | GRPC     | yes               | yes                    |                                    |
-| Python           | < 0.10    | GRPC     | ?                 | ?                      |                                    |
-| Java             | 0.2 & 0.1 | REST     | yes               | yes                    | minor difference in request format |
-| Java             | 0.2 & 0.1 | GRPC     | yes               | yes                    |                                    |
+| Language Wrapper |     Version   | API Type | New Orchestrator  | Deprecated Java engine | Notes                                   |
+|------------------|---------------|----------|-------------------|------------------------|-----------------------------------------|
+| Python           | 0.19          | both     | yes               | yes                    | full support of custom metrics and tags |
+| Python           | 0.11 ... 0.18 | both     | yes               | yes                    |                                         |
+| Python           | 0.10          | REST     | no                | yes                    |                                         |
+| Python           | 0.10          | GRPC     | yes               | yes                    |                                         |
+| Python           | < 0.10        | GRPC     | ?                 | ?                      |                                         |
+| Java             | 0.2 & 0.1     | REST     | yes               | yes                    |   minor difference in request format    |
+| Java             | 0.2 & 0.1     | GRPC     | yes               | yes                    |                                         |
 
+
+**NOTE:** Full support of custom metrics and tags with new orchestrator is only available from Python wrapper version 0.19.
 
 Example of request format difference with Java wrapper deployed with REST API:
 1. Using new orchestrator:
