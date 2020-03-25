@@ -28,7 +28,7 @@ func addLabelsToService(svc *corev1.Service, pu *machinelearningv1.PredictiveUni
 	if p.Traffic < 50 && p.Traffic > 0 {
 		svc.Labels[machinelearningv1.Label_canary] = "true"
 	}
-	if p.Explainer != nil {
+	if !isEmptyExplainer(p.Explainer) {
 		svc.Labels[machinelearningv1.Label_explainer] = "true"
 	}
 }
