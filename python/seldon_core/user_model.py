@@ -12,7 +12,9 @@ import os
 logger = logging.getLogger(__name__)
 
 
-CLIENT_GETS_METRICS = os.environ.get("INCLUDE_METRICS_IN_CLIENT_RESPONSE", True)
+CLIENT_GETS_METRICS = (
+    os.environ.get("INCLUDE_METRICS_IN_CLIENT_RESPONSE", "true").lower() == "true"
+)
 
 
 class SeldonNotImplementedError(SeldonMicroserviceException):
@@ -287,7 +289,10 @@ def client_custom_metrics(
     user_model: SeldonComponent, seldon_metrics: SeldonMetrics
 ) -> List[Dict]:
     """
-    Get custom metrics
+    Get custom metrics for client and update SeldonMetrics.
+
+    This function will return empty list if INCLUDE_METRICS_IN_CLIENT_RESPONSE environmental
+    variable is NOT set to "true" or "True".
 
     Parameters
     ----------
