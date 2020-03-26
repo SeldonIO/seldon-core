@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )

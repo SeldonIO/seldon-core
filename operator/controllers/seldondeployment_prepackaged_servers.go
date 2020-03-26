@@ -21,7 +21,7 @@ import (
 	"strconv"
 	"strings"
 
-	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"github.com/seldonio/seldon-core/operator/constants"
 	"github.com/seldonio/seldon-core/operator/utils"
 	appsv1 "k8s.io/api/apps/v1"

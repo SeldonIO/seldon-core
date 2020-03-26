@@ -1,12 +1,13 @@
 package controllers
 
 import (
-	. "github.com/onsi/gomega"
-	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
-	"gopkg.in/yaml.v2"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"strings"
 	"testing"
+
+	. "github.com/onsi/gomega"
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
+	"gopkg.in/yaml.v2"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
