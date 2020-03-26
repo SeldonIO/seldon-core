@@ -116,18 +116,24 @@ func TestCleanVirtualServices(t *testing.T) {
 	err = client.Create(context.Background(), vsvcOk)
 	g.Expect(err).To(BeNil())
 
-	// Virtual Service to be garbage collected
-	nameRouge := "name-rouge"
-	vsvcRouge, err := createTestVirtualService(foundInstance, scheme, nameRouge)
+	// Virtual Services to be garbage collected
+	nameRouge1 := "name-rouge1"
+	vsvcRouge1, err := createTestVirtualService(foundInstance, scheme, nameRouge1)
 	g.Expect(err).To(BeNil())
-	err = client.Create(context.Background(), vsvcRouge)
+	err = client.Create(context.Background(), vsvcRouge1)
+	g.Expect(err).To(BeNil())
+	nameRouge2 := "name-rouge2"
+	vsvcRouge2, err := createTestVirtualService(foundInstance, scheme, nameRouge2)
+	g.Expect(err).To(BeNil())
+	err = client.Create(context.Background(), vsvcRouge2)
 	g.Expect(err).To(BeNil())
 
 	okList := []*istio.VirtualService{vsvcOk}
 	cleaner := &ResourceCleaner{instance: foundInstance, client: client, virtualServices: okList, logger: logrtesting.TestLogger{}}
 	deleted, err := cleaner.cleanUnusedVirtualServices()
 	g.Expect(err).To(BeNil())
-	g.Expect(len(deleted)).To(Equal(1))
-	g.Expect(deleted[0].Name).To(Equal(nameRouge))
+	g.Expect(len(deleted)).To(Equal(2))
+	g.Expect(deleted[0].Name).To(Equal(nameRouge1))
+	g.Expect(deleted[1].Name).To(Equal(nameRouge2))
 
 }
