@@ -19,11 +19,11 @@ package v1
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"strconv"
-
+	"github.com/seldonio/seldon-core/operator/constants"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"strconv"
 )
 
 const (
@@ -80,7 +80,7 @@ func GetSeldonDeploymentName(mlDep *SeldonDeployment) string {
 }
 
 func GetExplainerDeploymentName(sdepName string, predictorSpec *PredictorSpec) string {
-	name := sdepName + "-" + predictorSpec.Name + "-explainer"
+	name := sdepName + "-" + predictorSpec.Name + constants.ExplainerNameSuffix
 	if len(name) > 63 {
 		return "seldon-" + hash(name)
 	} else {
