@@ -48,7 +48,7 @@ pipelineConfig:
               - test
           - name: seldon-executor
             steps:
-            - name: test-operator
+            - name: test-executor
               command: make
               args:
               - -C executor
