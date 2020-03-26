@@ -742,9 +742,10 @@ func createContainerService(deploy *appsv1.Deployment, p machinelearningv1.Predi
 func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpec *machinelearningv1.SeldonPodSpec, p *machinelearningv1.PredictorSpec, mlDep *machinelearningv1.SeldonDeployment) *appsv1.Deployment {
 	deploy := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      depName,
-			Namespace: getNamespace(mlDep),
-			Labels:    map[string]string{machinelearningv1.Label_seldon_id: seldonId, "app": depName, "fluentd": "true"},
+			Name:        depName,
+			Namespace:   getNamespace(mlDep),
+			Labels:      map[string]string{machinelearningv1.Label_seldon_id: seldonId, "app": depName, "fluentd": "true"},
+			Annotations: map[string]string{},
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
@@ -757,7 +758,7 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 						machinelearningv1.Label_app:       depName,
 						machinelearningv1.Label_fluentd:   "true",
 					},
-					Annotations: mlDep.Spec.Annotations,
+					Annotations: map[string]string{},
 				},
 			},
 			Strategy: appsv1.DeploymentStrategy{RollingUpdate: &appsv1.RollingUpdateDeployment{MaxUnavailable: &intstr.IntOrString{StrVal: "10%"}}},
@@ -775,10 +776,21 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 		deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_shadow] = "true"
 	}
 
+	//Add annotations from top level
+	for k, v := range mlDep.Spec.Annotations {
+		deploy.Annotations[k] = v
+		deploy.Spec.Template.ObjectMeta.Annotations[k] = v
+	}
+	// Add annottaions from predictor
+	for k, v := range p.Annotations {
+		deploy.Annotations[k] = v
+		deploy.Spec.Template.ObjectMeta.Annotations[k] = v
+	}
 	if seldonPodSpec != nil {
 		deploy.Spec.Template.Spec = seldonPodSpec.Spec
-		// add more annotations
+		// add more annotations from metadata
 		for k, v := range seldonPodSpec.Metadata.Annotations {
+			deploy.Annotations[k] = v
 			deploy.Spec.Template.ObjectMeta.Annotations[k] = v
 		}
 	}
@@ -787,6 +799,13 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 	for k, v := range p.Labels {
 		deploy.ObjectMeta.Labels[k] = v
 		deploy.Spec.Template.ObjectMeta.Labels[k] = v
+	}
+	// add labels from podSpec metadata
+	if seldonPodSpec != nil {
+		for k, v := range seldonPodSpec.Metadata.Labels {
+			deploy.ObjectMeta.Labels[k] = v
+			deploy.Spec.Template.ObjectMeta.Labels[k] = v
+		}
 	}
 
 	//Add some default to help with diffs in controller
