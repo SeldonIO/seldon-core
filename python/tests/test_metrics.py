@@ -23,6 +23,15 @@ from seldon_core.metrics import (
 )
 from seldon_core.user_model import client_custom_metrics
 
+import seldon_core
+
+
+def test_parametrize(client_gets_metrics):
+    if client_gets_metrics:
+        assert seldon_core.user_model.CLIENT_GETS_METRICS == True
+    else:
+        assert seldon_core.user_model.CLIENT_GETS_METRICS == False
+
 
 def test_create_counter():
     v = create_counter("k", 1)
@@ -311,7 +320,7 @@ def verify_seldon_metrics(data, mycounter_value, histogram_entries):
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevel])
-def test_seldon_metrics_predict(cls):
+def test_seldon_metrics_predict(cls, client_gets_metrics):
     user_object = cls()
     seldon_metrics = SeldonMetrics()
 
@@ -320,19 +329,21 @@ def test_seldon_metrics_predict(cls):
 
     rv = client.get('/predict?json={"data": {"names": ["input"], "ndarray": ["data"]}}')
     assert rv.status_code == 200
+    assert ("metrics" in json.loads(rv.data)["meta"]) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 1, [0.0202])
 
     rv = client.get('/predict?json={"data": {"names": ["input"], "ndarray": ["data"]}}')
     assert rv.status_code == 200
+    assert ("metrics" in json.loads(rv.data)["meta"]) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 2, [0.0202, 0.0202])
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevel])
-def test_seldon_metrics_aggregate(cls):
+def test_seldon_metrics_aggregate(cls, client_gets_metrics):
     user_object = cls()
     seldon_metrics = SeldonMetrics()
 
@@ -343,6 +354,7 @@ def test_seldon_metrics_aggregate(cls):
         '/aggregate?json={"seldonMessages": [{"data": {"names": ["input"], "ndarray": ["data"]}}]}'
     )
     assert rv.status_code == 200
+    assert ("metrics" in json.loads(rv.data)["meta"]) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 1, [0.0202])
@@ -351,13 +363,14 @@ def test_seldon_metrics_aggregate(cls):
         '/aggregate?json={"seldonMessages": [{"data": {"names": ["input"], "ndarray": ["data"]}}]}'
     )
     assert rv.status_code == 200
+    assert ("metrics" in json.loads(rv.data)["meta"]) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 2, [0.0202, 0.0202])
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevel])
-def test_seldon_metrics_transform_input(cls):
+def test_seldon_metrics_transform_input(cls, client_gets_metrics):
     user_object = cls()
     seldon_metrics = SeldonMetrics()
 
@@ -368,6 +381,7 @@ def test_seldon_metrics_transform_input(cls):
         '/transform-input?json={"data": {"names": ["input"], "ndarray": ["data"]}}'
     )
     assert rv.status_code == 200
+    assert ("metrics" in json.loads(rv.data)["meta"]) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 1, [0.0202])
@@ -376,13 +390,14 @@ def test_seldon_metrics_transform_input(cls):
         '/transform-input?json={"data": {"names": ["input"], "ndarray": ["data"]}}'
     )
     assert rv.status_code == 200
+    assert ("metrics" in json.loads(rv.data)["meta"]) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 2, [0.0202, 0.0202])
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevel])
-def test_seldon_metrics_transform_output(cls):
+def test_seldon_metrics_transform_output(cls, client_gets_metrics):
     user_object = cls()
     seldon_metrics = SeldonMetrics()
 
@@ -393,6 +408,7 @@ def test_seldon_metrics_transform_output(cls):
         '/transform-output?json={"data": {"names": ["input"], "ndarray": ["data"]}}'
     )
     assert rv.status_code == 200
+    assert ("metrics" in json.loads(rv.data)["meta"]) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 1, [0.0202])
@@ -401,13 +417,14 @@ def test_seldon_metrics_transform_output(cls):
         '/transform-output?json={"data": {"names": ["input"], "ndarray": ["data"]}}'
     )
     assert rv.status_code == 200
+    assert ("metrics" in json.loads(rv.data)["meta"]) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 2, [0.0202, 0.0202])
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevel])
-def test_seldon_metrics_route(cls):
+def test_seldon_metrics_route(cls, client_gets_metrics):
     user_object = cls()
     seldon_metrics = SeldonMetrics()
 
@@ -416,19 +433,21 @@ def test_seldon_metrics_route(cls):
 
     rv = client.get('/route?json={"data": {"names": ["input"], "ndarray": ["data"]}}')
     assert rv.status_code == 200
+    assert ("metrics" in json.loads(rv.data)["meta"]) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 1, [0.0202])
 
     rv = client.get('/route?json={"data": {"names": ["input"], "ndarray": ["data"]}}')
     assert rv.status_code == 200
+    assert ("metrics" in json.loads(rv.data)["meta"]) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 2, [0.0202, 0.0202])
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevelGrpc])
-def test_proto_seldon_metrics_predict(cls):
+def test_proto_seldon_metrics_predict(cls, client_gets_metrics):
     user_object = cls()
     seldon_metrics = SeldonMetrics()
 
@@ -439,17 +458,30 @@ def test_proto_seldon_metrics_predict(cls):
 
     request = prediction_pb2.SeldonMessage(data=datadef)
 
-    app.Predict(request, None)
+    resp = app.Predict(request, None)
+    assert (
+        "metrics" in json.loads(json_format.MessageToJson(resp))["meta"]
+    ) == client_gets_metrics
+    assert (
+        "metrics" in json.loads(json_format.MessageToJson(resp))["meta"]
+    ) == client_gets_metrics
+
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 1, [0.0202])
 
-    app.Predict(request, None)
+    resp = app.Predict(request, None)
+    assert (
+        "metrics" in json.loads(json_format.MessageToJson(resp))["meta"]
+    ) == client_gets_metrics
+    assert (
+        "metrics" in json.loads(json_format.MessageToJson(resp))["meta"]
+    ) == client_gets_metrics
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 2, [0.0202, 0.0202])
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevelGrpc])
-def test_proto_seldon_metrics_aggregate(cls):
+def test_proto_seldon_metrics_aggregate(cls, client_gets_metrics):
     user_object = cls()
     seldon_metrics = SeldonMetrics()
 
@@ -468,17 +500,23 @@ def test_proto_seldon_metrics_aggregate(cls):
 
     request = prediction_pb2.SeldonMessageList(seldonMessages=[msg1, msg2])
 
-    app.Aggregate(request, None)
+    resp = app.Aggregate(request, None)
+    assert (
+        "metrics" in json.loads(json_format.MessageToJson(resp))["meta"]
+    ) == client_gets_metrics
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 1, [0.0202])
 
-    app.Aggregate(request, None)
+    resp = app.Aggregate(request, None)
+    assert (
+        "metrics" in json.loads(json_format.MessageToJson(resp))["meta"]
+    ) == client_gets_metrics
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 2, [0.0202, 0.0202])
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevelGrpc])
-def test_proto_seldon_metrics_transform_input(cls):
+def test_proto_seldon_metrics_transform_input(cls, client_gets_metrics):
     user_object = cls()
     seldon_metrics = SeldonMetrics()
 
@@ -489,17 +527,23 @@ def test_proto_seldon_metrics_transform_input(cls):
 
     request = prediction_pb2.SeldonMessage(data=datadef)
 
-    app.TransformInput(request, None)
+    resp = app.TransformInput(request, None)
+    assert (
+        "metrics" in json.loads(json_format.MessageToJson(resp))["meta"]
+    ) == client_gets_metrics
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 1, [0.0202])
 
-    app.TransformInput(request, None)
+    resp = app.TransformInput(request, None)
+    assert (
+        "metrics" in json.loads(json_format.MessageToJson(resp))["meta"]
+    ) == client_gets_metrics
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 2, [0.0202, 0.0202])
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevelGrpc])
-def test_proto_seldon_metrics_transform_output(cls):
+def test_proto_seldon_metrics_transform_output(cls, client_gets_metrics):
     user_object = cls()
     seldon_metrics = SeldonMetrics()
 
@@ -510,17 +554,23 @@ def test_proto_seldon_metrics_transform_output(cls):
 
     request = prediction_pb2.SeldonMessage(data=datadef)
 
-    app.TransformOutput(request, None)
+    resp = app.TransformOutput(request, None)
+    assert (
+        "metrics" in json.loads(json_format.MessageToJson(resp))["meta"]
+    ) == client_gets_metrics
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 1, [0.0202])
 
-    app.TransformOutput(request, None)
+    resp = app.TransformOutput(request, None)
+    assert (
+        "metrics" in json.loads(json_format.MessageToJson(resp))["meta"]
+    ) == client_gets_metrics
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 2, [0.0202, 0.0202])
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevelGrpc])
-def test_proto_seldon_metrics_route(cls):
+def test_proto_seldon_metrics_route(cls, client_gets_metrics):
     user_object = cls()
     seldon_metrics = SeldonMetrics()
 
@@ -530,18 +580,24 @@ def test_proto_seldon_metrics_route(cls):
     )
 
     request = prediction_pb2.SeldonMessage(data=datadef)
-    app.Route(request, None)
+    resp = app.Route(request, None)
+    assert (
+        "metrics" in json.loads(json_format.MessageToJson(resp))["meta"]
+    ) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 1, [0.0202])
-    app.Route(request, None)
+    resp = app.Route(request, None)
+    assert (
+        "metrics" in json.loads(json_format.MessageToJson(resp))["meta"]
+    ) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 2, [0.0202, 0.0202])
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevel])
-def test_seldon_metrics_endpoint(cls):
+def test_seldon_metrics_endpoint(cls, client_gets_metrics):
     def _match_label(line):
         _data, value = line.split()
         name, labels = _data.split()[0].split("{")
@@ -568,6 +624,9 @@ def test_seldon_metrics_endpoint(cls):
     assert rv.data.decode() == ""
 
     rv = client.get('/predict?json={"data": {"names": ["input"], "ndarray": ["data"]}}')
+    assert rv.status_code == 200
+    assert ("metrics" in json.loads(rv.data)["meta"]) == client_gets_metrics
+
     rv = metrics_client.get("/metrics")
     text = rv.data.decode()
 
@@ -592,7 +651,7 @@ def test_seldon_metrics_endpoint(cls):
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevelGrpc])
-def test_proto_seldon_metrics_endpoint(cls):
+def test_proto_seldon_metrics_endpoint(cls, client_gets_metrics):
     def _match_label(line):
         _data, value = line.split()
         name, labels = _data.split()[0].split("{")
@@ -622,7 +681,10 @@ def test_proto_seldon_metrics_endpoint(cls):
     assert rv.status_code == 200
     assert rv.data.decode() == ""
 
-    app.Predict(request, None)
+    resp = app.Predict(request, None)
+    assert (
+        "metrics" in json.loads(json_format.MessageToJson(resp))["meta"]
+    ) == client_gets_metrics
     rv = metrics_client.get("/metrics")
     text = rv.data.decode()
 
