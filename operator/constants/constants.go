@@ -49,3 +49,9 @@ const (
 	EventsUpdated               = "Updated"
 	EventsUpdateFailed          = "UpdateFailed"
 )
+
+// Explainers
+const (
+	ExplainerPathSuffix = "/explainer"
+	ExplainerNameSuffix = "-explainer"
+)

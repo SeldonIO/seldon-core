@@ -3,11 +3,12 @@ package controllers
 import (
 	"testing"
 
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -36,97 +37,119 @@ func TestAddLabelsToDeployment(t *testing.T) {
 	})
 }
 
-func TestAddLabelsToService(t *testing.T) {
-	g := NewGomegaWithT(t)
-	cases1 := []struct {
-		puType machinelearningv1.PredictiveUnitType
-		result string
-	}{
-		{
-			puType: machinelearningv1.ROUTER,
-			result: machinelearningv1.Label_router,
-		},
-		{
-			puType: machinelearningv1.COMBINER,
-			result: machinelearningv1.Label_combiner,
-		},
-		{
-			puType: machinelearningv1.MODEL,
-			result: machinelearningv1.Label_model,
-		},
-		{
-			puType: machinelearningv1.TRANSFORMER,
-			result: machinelearningv1.Label_transformer,
-		},
-		{
-			puType: machinelearningv1.OUTPUT_TRANSFORMER,
-			result: machinelearningv1.Label_output_transformer,
-		},
-	}
-	cases2 := []struct {
-		shadow    bool
-		explainer *machinelearningv1.Explainer
-		traffic   int32
-		result    string
-	}{
-		{
-			shadow:    false,
-			explainer: nil,
-			traffic:   0,
-			result:    machinelearningv1.Label_default,
-		},
-		{
-			shadow:    false,
-			explainer: nil,
-			traffic:   50,
-			result:    machinelearningv1.Label_default,
-		},
-		{
-			shadow:    false,
-			explainer: nil,
-			traffic:   75,
-			result:    machinelearningv1.Label_default,
-		},
-		{
-			shadow:    true,
-			explainer: nil,
-			traffic:   0,
-			result:    machinelearningv1.Label_shadow,
-		},
-		{
-			shadow:    false,
-			explainer: nil,
-			traffic:   49,
-			result:    machinelearningv1.Label_canary,
-		},
-		{
-			shadow:    false,
-			explainer: &machinelearningv1.Explainer{},
-			traffic:   0,
-			result:    machinelearningv1.Label_explainer,
-		},
-	}
-	svc := &corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Labels: map[string]string{},
-		},
-	}
-	p := machinelearningv1.PredictorSpec{}
-	pu := &machinelearningv1.PredictiveUnit{}
-	t.Run("adds correct label to Service from Predictive Unit Type", func(t *testing.T) {
-		for _, c := range cases1 {
-			pu.Type = &c.puType
-			addLabelsToService(svc, pu, p)
-			g.Expect(svc.Labels[c.result]).To(Equal("true"))
+var _ = Describe("addLabelsToService", func() {
+
+	var svc *corev1.Service
+	var p machinelearningv1.PredictorSpec
+	var pu *machinelearningv1.PredictiveUnit
+
+	BeforeEach(func() {
+		svc = &corev1.Service{
+			ObjectMeta: metav1.ObjectMeta{
+				Labels: map[string]string{},
+			},
 		}
+		p = machinelearningv1.PredictorSpec{}
+		pu = &machinelearningv1.PredictiveUnit{}
 	})
-	t.Run("adds correct label to Service for Default, Shadow, Canary & Explainer from Predictor Spec", func(t *testing.T) {
-		for _, c := range cases2 {
-			p.Shadow = c.shadow
-			p.Explainer = c.explainer
-			p.Traffic = c.traffic
+
+	DescribeTable(
+		"Adds correct label to Service from Predictive Unit Type",
+		func(puType machinelearningv1.PredictiveUnitType, result string) {
+			pu.Type = &puType
 			addLabelsToService(svc, pu, p)
-			g.Expect(svc.Labels[c.result]).To(Equal("true"))
-		}
-	})
-}
+
+			Expect(svc.Labels[result]).To(Equal("true"))
+		},
+		Entry("router", machinelearningv1.ROUTER, machinelearningv1.Label_router),
+		Entry("combiner", machinelearningv1.COMBINER, machinelearningv1.Label_combiner),
+		Entry("model", machinelearningv1.MODEL, machinelearningv1.Label_model),
+		Entry("transformer", machinelearningv1.TRANSFORMER, machinelearningv1.Label_transformer),
+		Entry("output transformer", machinelearningv1.OUTPUT_TRANSFORMER, machinelearningv1.Label_output_transformer),
+	)
+
+	DescribeTable(
+		"Adds correct label to Service from Predictor Spec",
+		func(shadow bool, explainer *machinelearningv1.Explainer, traffic int, result string, missing []string) {
+			p.Shadow = shadow
+			p.Explainer = explainer
+			p.Traffic = int32(traffic)
+
+			// Required until https://github.com/SeldonIO/seldon-core/pull/1600 is
+			// merged. We should remove afterwards.
+			puType := machinelearningv1.MODEL
+			pu.Type = &puType
+
+			addLabelsToService(svc, pu, p)
+
+			Expect(svc.Labels[result]).To(Equal("true"))
+			for _, m := range missing {
+				Expect(svc.Labels).ToNot(HaveKey(m))
+			}
+		},
+		Entry(
+			"default",
+			false,
+			nil,
+			0,
+			machinelearningv1.Label_default,
+			[]string{machinelearningv1.Label_explainer},
+		),
+		Entry(
+			"default with 50%% traffic",
+			false,
+			nil,
+			50,
+			machinelearningv1.Label_default,
+			[]string{machinelearningv1.Label_explainer},
+		),
+		Entry(
+			"default with 75%% traffic",
+			false,
+			nil,
+			50,
+			machinelearningv1.Label_default,
+			[]string{machinelearningv1.Label_explainer},
+		),
+		Entry(
+			"default with empty explainer",
+			false,
+			&machinelearningv1.Explainer{},
+			0,
+			machinelearningv1.Label_default,
+			[]string{machinelearningv1.Label_explainer},
+		),
+		Entry(
+			"shadow",
+			true,
+			nil,
+			0,
+			machinelearningv1.Label_shadow,
+			[]string{
+				machinelearningv1.Label_explainer,
+				machinelearningv1.Label_default,
+			},
+		),
+		Entry(
+			"canary",
+			false,
+			nil,
+			48,
+			machinelearningv1.Label_canary,
+			[]string{
+				machinelearningv1.Label_explainer,
+				machinelearningv1.Label_default,
+			},
+		),
+		Entry(
+			"explainer",
+			false,
+			&machinelearningv1.Explainer{
+				Type: machinelearningv1.AlibiAnchorsImageExplainer,
+			},
+			0,
+			machinelearningv1.Label_explainer,
+			[]string{},
+		),
+	)
+})

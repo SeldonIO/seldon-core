@@ -78,3 +78,9 @@ func getEngineEnvAnnotations(mlDep *machinelearningv1.SeldonDeployment) []corev1
 	}
 	return envVars
 }
+
+// isEmptyExplainer will return true if the explainer can be considered empty
+// (either by being nil or by having unset fields)
+func isEmptyExplainer(explainer *machinelearningv1.Explainer) bool {
+	return explainer == nil || explainer.Type == ""
+}

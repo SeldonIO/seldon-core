@@ -23,6 +23,7 @@ import (
 
 	"github.com/go-logr/logr"
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
+	"github.com/seldonio/seldon-core/operator/constants"
 	"github.com/seldonio/seldon-core/operator/utils"
 	istio_networking "istio.io/api/networking/v1alpha3"
 	istio "istio.io/client-go/pkg/apis/networking/v1alpha3"
@@ -33,11 +34,11 @@ import (
 
 func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, c *components, pSvcName string, log logr.Logger) error {
 
-	if p.Explainer != nil {
+	if !isEmptyExplainer(p.Explainer) {
 
 		seldonId := machinelearningv1.GetSeldonDeploymentName(mlDep)
 
-		depName := machinelearningv1.GetExplainerDeploymentName(mlDep.ObjectMeta.Name, p)
+		depName := machinelearningv1.GetExplainerDeploymentName(mlDep.GetName(), p)
 
 		explainerContainer := p.Explainer.ContainerSpec
 
@@ -158,7 +159,7 @@ func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1.Sel
 		}
 
 		// for explainer use same service name as its Deployment
-		eSvcName := machinelearningv1.GetExplainerDeploymentName(mlDep.ObjectMeta.Name, p)
+		eSvcName := machinelearningv1.GetExplainerDeploymentName(mlDep.GetName(), p)
 
 		deploy.ObjectMeta.Labels[machinelearningv1.Label_seldon_app] = eSvcName
 		deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_seldon_app] = eSvcName
@@ -166,7 +167,7 @@ func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1.Sel
 		c.deployments = append(c.deployments, deploy)
 
 		// Use seldondeployment name dash explainer as the external service name. This should allow canarying.
-		eSvc, err := createPredictorService(eSvcName, seldonId, p, mlDep, httpPort, grpcPort, mlDep.ObjectMeta.Name+"-explainer", log)
+		eSvc, err := createPredictorService(eSvcName, seldonId, p, mlDep, httpPort, grpcPort, true, log)
 		if err != nil {
 			return err
 		}
@@ -223,7 +224,7 @@ func createExplainerIstioResources(pSvcName string, p *machinelearningv1.Predict
 				{
 					Match: []*istio_networking.HTTPMatchRequest{
 						{
-							Uri: &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Prefix{Prefix: "/seldon/" + namespace + "/" + mlDep.Name + "/" + p.Name + "/explainer/"}},
+							Uri: &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Prefix{Prefix: "/seldon/" + namespace + "/" + mlDep.Name + "/" + p.Name + constants.ExplainerPathSuffix + "/"}},
 						},
 					},
 					Rewrite: &istio_networking.HTTPRewrite{Uri: "/"},

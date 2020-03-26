@@ -597,6 +597,32 @@ func TestMetricsPortAddedToTwoPrepacked(t *testing.T) {
 	g.Expect(pu.Endpoint.Type).To(Equal(REST))
 }
 
+func TestDefaultPrepackagedServerType(t *testing.T) {
+	g := NewGomegaWithT(t)
+	scheme := runtime.NewScheme()
+	C = fake.NewFakeClientWithScheme(scheme)
+	impl := PredictiveUnitImplementation(constants.PrePackedServerTensorflow)
+	spec := &SeldonDeploymentSpec{
+		Predictors: []PredictorSpec{
+			{
+				Name: "p1",
+				Graph: &PredictiveUnit{
+					Name:           "classifier",
+					Implementation: &impl,
+				},
+			},
+		},
+	}
+
+	spec.DefaultSeldonDeployment("mydep", "default")
+
+	// Graph
+	pu := GetPredictiveUnit(spec.Predictors[0].Graph, "classifier")
+	g.Expect(pu).ToNot(BeNil())
+	g.Expect(pu.Endpoint.Type).To(Equal(REST))
+	g.Expect(*pu.Type).To(Equal(MODEL))
+}
+
 func TestValidateSingleModel(t *testing.T) {
 	g := NewGomegaWithT(t)
 	spec := &SeldonDeploymentSpec{

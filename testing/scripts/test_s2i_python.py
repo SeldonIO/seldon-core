@@ -145,7 +145,7 @@ class TestPythonS2iK8s(object):
         r = rest_request_ambassador("mymodel", namespace, API_AMBASSADOR, data=arr)
         res = r.json()
         logging.warning(res)
-        assert r.status_code == 500
+        assert r.status_code == 400
         assert r.json()["status"]["code"] == 400
         assert r.json()["status"]["info"] == "exception caught"
         assert r.json()["status"]["reason"] == "exception message"
