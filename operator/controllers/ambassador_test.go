@@ -48,6 +48,7 @@ func TestAmbassadorSingle(t *testing.T) {
 			},
 		},
 	}
+
 	basicAbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES, false)
 	basicAbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES, true)
 }
@@ -63,6 +64,7 @@ func TestAmbassadorCanary(t *testing.T) {
 			},
 		},
 	}
+
 	basicAbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES, false)
 	basicAbassadorTests(t, &mlDep, &p2, 80, "", TEST_DEFAULT_EXPECTED_RETRIES, false)
 	basicAbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES, true)
@@ -80,6 +82,7 @@ func TestAmbassadorCanaryEqual(t *testing.T) {
 			},
 		},
 	}
+
 	basicAbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES, false)
 	basicAbassadorTests(t, &mlDep, &p2, 50, "", TEST_DEFAULT_EXPECTED_RETRIES, false)
 }
@@ -97,6 +100,7 @@ func TestAmbassadorCanaryThree(t *testing.T) {
 			},
 		},
 	}
+
 	basicAbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES, false)
 	basicAbassadorTests(t, &mlDep, &p2, 20, "", TEST_DEFAULT_EXPECTED_RETRIES, false)
 	basicAbassadorTests(t, &mlDep, &p3, 20, "", TEST_DEFAULT_EXPECTED_RETRIES, false)
@@ -115,6 +119,7 @@ func TestAmbassadorCanaryThreeEqual(t *testing.T) {
 			},
 		},
 	}
+
 	basicAbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES, false)
 	basicAbassadorTests(t, &mlDep, &p2, 33, "", TEST_DEFAULT_EXPECTED_RETRIES, false)
 	basicAbassadorTests(t, &mlDep, &p3, 33, "", TEST_DEFAULT_EXPECTED_RETRIES, false)

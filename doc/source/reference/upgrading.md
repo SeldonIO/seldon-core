@@ -27,6 +27,43 @@ For those wishing to use the deprecated Java engine service orchestrator see [th
 ### Upgrading process
 
 
+### Wrapper compatibility table
+
+To verify if 1.1 Seldon Core is compatible with older s2i wrapper versions we conducted a simple test with a one-node model.
+Model has been deployed both with REST and GRPC API with both new orchestrator and the deprecated Java engine.
+Test verifies if model can successfully serve inference requests.
+
+**NOTE:** Full support of custom metrics and tags with new orchestrator is only available from Python wrapper version 0.19.
+If you need to use older version of Python wrapper you can continue to use Java engine as described above until the next release.
+
+
+| Language Wrapper |     Version   | API Type | New Orchestrator  | Deprecated Java engine | Notes                                   |
+|------------------|---------------|----------|-------------------|------------------------|-----------------------------------------|
+| Python           | 0.19          | both     | yes               | yes                    | full support of custom metrics and tags |
+| Python           | 0.11 ... 0.18 | both     | yes               | yes                    |                                         |
+| Python           | 0.10          | REST     | no                | yes                    |                                         |
+| Python           | 0.10          | GRPC     | yes               | yes                    |                                         |
+| Python           | < 0.10        | GRPC     | ?                 | ?                      |                                         |
+| Java             | 0.2 & 0.1     | REST     | yes               | yes                    |   minor difference in request format    |
+| Java             | 0.2 & 0.1     | GRPC     | yes               | yes                    |                                         |
+
+
+Example of request format difference with Java wrapper deployed with REST API:
+1. Using new orchestrator:
+```bash
+curl -s -X POST \
+    -d 'json={"data": {"names": ["a", "b"], "ndarray": [[1.0, 2.0]]}}' \
+    localhost:8003/seldon/seldon/compat-rest-java-02-executor/api/v1.0/predictions
+```
+
+2. Using deprecated Java engine:
+```bash
+curl -s -X POST -H 'Content-Type: application/json' \
+    -d '{"data": {"names": ["a", "b"], "ndarray": [[1.0, 2.0]]}}' \
+    localhost:8003/seldon/seldon/compat-rest-java-02-engine/api/v1.0/predictions
+```
+
+
 ## Upgrading to 0.5.2 from previous versions
 
 This version included significant improvements and features, including the addition of pre-packaged model servers, fixing several critical bugs.
