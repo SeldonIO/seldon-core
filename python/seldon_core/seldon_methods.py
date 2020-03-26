@@ -30,7 +30,6 @@ import numpy as np
 logger = logging.getLogger(__name__)
 
 
-
 def handle_raw_custom_metrics(response, seldon_metrics, is_proto):
     if is_proto:
         metrics = seldon_message_to_json(response.meta).get("metrics", [])
