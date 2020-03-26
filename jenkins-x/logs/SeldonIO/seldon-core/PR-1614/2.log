@@ -1,0 +1,48 @@
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-16-mhfwt-2[0m stage [32mmeta-pipeline[0m and container [32mstep-credential-initializer-rwpdz[0m
+{"level":"warn","ts":1585241620.2996619,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1585241620.300821,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-16-mhfwt-2[0m stage [32mmeta-pipeline[0m and container [32mstep-working-dir-initializer-ffvhc[0m
+{"level":"warn","ts":1585241621.9085333,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1585241621.9108498,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-16-mhfwt-2[0m stage [32mmeta-pipeline[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-16-mhfwt-2[0m stage [32mmeta-pipeline[0m and container [32mstep-git-source-meta-seldonio-seldon-core-pr-16-j8xbg[0m
+{"level":"warn","ts":1585241631.1497066,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1585241635.225347,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ 24e0f577c6f5603c822acec3cf3a4e1f4b503d4f in path /workspace/source"}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-16-mhfwt-2[0m stage [32mmeta-pipeline[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:24e0f577c6f5603c822acec3cf3a4e1f4b503d4f,1614:3b89a1e06c8d400b1e71fb0b638188c040f735db
+DEBUG: ran git fetch --unshallow origin 3b89a1e06c8d400b1e71fb0b638188c040f735db: 24e0f577c6f5603c822acec3cf3a4e1f4b503d4f: in 
+DEBUG: ran git checkout master in 
+DEBUG: ran git reset --hard 24e0f577c6f5603c822acec3cf3a4e1f4b503d4f in 
+DEBUG: ran clean --force -d . in 
+error: error during merge: merging 3b89a1e06c8d400b1e71fb0b638188c040f735db into master: git output: Auto-merging operator/controllers/seldondeployment_explainers.go
+CONFLICT (content): Merge conflict in operator/controllers/seldondeployment_explainers.go
+Auto-merging operator/controllers/seldondeployment_controller_test.go
+CONFLICT (content): Merge conflict in operator/controllers/seldondeployment_controller_test.go
+Auto-merging operator/controllers/seldondeployment_controller.go
+Auto-merging operator/controllers/labels_test.go
+CONFLICT (content): Merge conflict in operator/controllers/labels_test.go
+Auto-merging operator/controllers/labels.go
+Auto-merging operator/controllers/controller_utils.go
+Auto-merging operator/controllers/ambassador_test.go
+CONFLICT (content): Merge conflict in operator/controllers/ambassador_test.go
+Auto-merging operator/controllers/ambassador.go
+Automatic merge failed; fix conflicts and then commit the result.: failed to run 'git merge 3b89a1e06c8d400b1e71fb0b638188c040f735db' command in directory '', output: 'Auto-merging operator/controllers/seldondeployment_explainers.go
+CONFLICT (content): Merge conflict in operator/controllers/seldondeployment_explainers.go
+Auto-merging operator/controllers/seldondeployment_controller_test.go
+CONFLICT (content): Merge conflict in operator/controllers/seldondeployment_controller_test.go
+Auto-merging operator/controllers/seldondeployment_controller.go
+Auto-merging operator/controllers/labels_test.go
+CONFLICT (content): Merge conflict in operator/controllers/labels_test.go
+Auto-merging operator/controllers/labels.go
+Auto-merging operator/controllers/controller_utils.go
+Auto-merging operator/controllers/ambassador_test.go
+CONFLICT (content): Merge conflict in operator/controllers/ambassador_test.go
+Auto-merging operator/controllers/ambassador.go
+Automatic merge failed; fix conflicts and then commit the result.'
+[31m
+Pipeline failed on stage 'meta-pipeline' : container 'step-git-merge'. The execution of the pipeline has stopped.[0m
