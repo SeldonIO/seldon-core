@@ -531,8 +531,7 @@ var _ = Describe("Create a Seldon Deployment with hpa", func() {
 
 })
 
-
-var _ = FDescribe("Create a Seldon Deployment with long name", func() {
+var _ = Describe("Create a Seldon Deployment with long name", func() {
 	const timeout = time.Second * 30
 	const interval = time.Second * 1
 	namespaceName := rand.String(10)

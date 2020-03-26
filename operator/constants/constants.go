@@ -35,6 +35,7 @@ const (
 const (
 	EventsCreateVirtualService  = "CreateVirtualService"
 	EventsUpdateVirtualService  = "UpdateVirtualService"
+	EventsDeleteVirtualService  = "DeleteVirtualService"
 	EventsCreateDestinationRule = "CreateDestinationRule"
 	EventsUpdateDestinationRule = "UpdateDestinationRule"
 	EventsCreateService         = "CreateService"

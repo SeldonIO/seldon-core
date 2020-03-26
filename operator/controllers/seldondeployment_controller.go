@@ -83,13 +83,6 @@ type components struct {
 	destinationRules []*istio.DestinationRule
 }
 
-type serviceDetails struct {
-	svcName        string
-	deploymentName string
-	svcUrl         string
-	ambassadorUrl  string
-}
-
 type httpGrpcPorts struct {
 	httpPort int
 	grpcPort int
@@ -883,13 +876,8 @@ func (r *SeldonDeploymentReconciler) createIstioServices(components *components,
 				}
 			} else {
 				log.Info("Found identical Virtual Service", "namespace", found.Namespace, "name", found.Name)
-
-				if instance.Status.ServiceStatus == nil {
-					instance.Status.ServiceStatus = map[string]machinelearningv1.ServiceStatus{}
-				}
 			}
 		}
-
 	}
 
 	for _, drule := range components.destinationRules {
@@ -936,17 +924,21 @@ func (r *SeldonDeploymentReconciler) createIstioServices(components *components,
 				}
 			} else {
 				log.Info("Found identical Istio Destination Rule", "namespace", found.Namespace, "name", found.Name)
-
-				if instance.Status.ServiceStatus == nil {
-					instance.Status.ServiceStatus = map[string]machinelearningv1.ServiceStatus{}
-				}
-
-				if _, ok := instance.Status.ServiceStatus[found.Name]; !ok {
-					instance.Status.ServiceStatus[found.Name] = *components.serviceDetails[found.Name]
-				}
 			}
 		}
 
+	}
+
+	//Cleanup unused VirtualService. This should usually only happen on Operator upgrades where there is a breaking change to the names of the VirtualServices created
+	if ready {
+		cleaner := ResourceCleaner{instance: instance, client: r, virtualServices: components.virtualServices, logger: r.Log}
+		deleted, err := cleaner.cleanUnusedVirtualServices()
+		if err != nil {
+			return ready, err
+		}
+		for _, vsvcDeleted := range deleted {
+			r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsDeleteVirtualService, "Delete VirtualService %q", vsvcDeleted.GetName())
+		}
 	}
 
 	return ready, nil
