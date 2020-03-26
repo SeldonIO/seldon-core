@@ -10,6 +10,5 @@ logging.basicConfig(level=logging.DEBUG)
 @pytest.fixture(params=[True, False])
 def client_gets_metrics(monkeypatch, request):
     value = request.param
-    monkeypatch.setattr(seldon_core.user_model, "CLIENT_GETS_METRICS", value)
-    monkeypatch.setattr(seldon_core.seldon_methods, "CLIENT_GETS_METRICS", value)
+    monkeypatch.setenv("INCLUDE_METRICS_IN_CLIENT_RESPONSE", str(value).lower())
     return value

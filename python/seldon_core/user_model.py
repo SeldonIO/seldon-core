@@ -1,7 +1,7 @@
 from seldon_core.metrics import validate_metrics
 from seldon_core.flask_utils import SeldonMicroserviceException
 import json
-from typing import Dict, List, Union, Iterable, Callable, Optional
+from typing import Dict, List, Union, Iterable
 import numpy as np
 from seldon_core.proto import prediction_pb2
 from seldon_core.metrics import SeldonMetrics
@@ -12,9 +12,11 @@ import os
 logger = logging.getLogger(__name__)
 
 
-CLIENT_GETS_METRICS = (
-    os.environ.get("INCLUDE_METRICS_IN_CLIENT_RESPONSE", "true").lower() == "true"
-)
+ENV_CLIENT_GETS_METRICS = "INCLUDE_METRICS_IN_CLIENT_RESPONSE"
+
+
+def return_metrics_to_client():
+    return os.environ.get(ENV_CLIENT_GETS_METRICS, "true").lower() == "true"
 
 
 class SeldonNotImplementedError(SeldonMicroserviceException):
@@ -298,6 +300,8 @@ def client_custom_metrics(
     ----------
     user_model
        A Seldon user model
+    seldon_metrics
+        A SeldonMetrics instance
 
     Returns
     -------
@@ -313,9 +317,8 @@ def client_custom_metrics(
                     "Bad metric created during request: " + j_str,
                     reason="MICROSERVICE_BAD_METRIC",
                 )
-
             seldon_metrics.update(metrics)
-            if CLIENT_GETS_METRICS:
+            if return_metrics_to_client():
                 return metrics
             else:
                 return []
