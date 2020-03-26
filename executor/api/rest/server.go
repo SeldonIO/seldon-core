@@ -82,8 +82,13 @@ func (r *SeldonRestApi) respondWithSuccess(w http.ResponseWriter, code int, payl
 }
 
 func (r *SeldonRestApi) respondWithError(w http.ResponseWriter, payload payload.SeldonPayload, err error) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusInternalServerError)
+	w.Header().Set("Content-Type", payload.GetContentType())
+
+	if serr, ok := err.(*httpStatusError); ok {
+		w.WriteHeader(serr.StatusCode)
+	} else {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 
 	if payload != nil && payload.GetPayload() != nil {
 		err := r.Client.Marshall(w, payload)
