@@ -119,14 +119,12 @@ class ModelWithMetrics(object):
 
     def metrics(self):
         return [
-            {"type": "COUNTER", "key": "mycounter", "value": 1}, # a counter which will increase by the given value
-            {"type": "GAUGE", "key": "mygauge", "value": 100},   # a gauge which will be set to given value
-            {"type": "TIMER", "key": "mytimer", "value": 20.2},  # a timer which will add sum and count metrics - assumed millisecs
-        ]
+            {"type":"COUNTER","key":"mycounter","value":1}, # a counter which will increase by the given value
+            {"type":"GAUGE","key":"mygauge","value":100}, # a gauge which will be set to given value
+            {"type":"TIMER","key":"mytimer","value":20.2}, # a timer which will add sum and count metrics - assumed millisecs
+            ]
+
 ```
-
-Note: prior to Seldon Core 1.1 custom metrics have always been returned to client. From SC 1.1 you can control this behaviour setting `INCLUDE_METRICS_IN_CLIENT_RESPONSE` environmental variable to either `true` or `false`. Despite value of this environmental variable custom metrics will always be exposed to Prometheus.
-
 
 ## Returning Tags
 
