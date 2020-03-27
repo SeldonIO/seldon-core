@@ -95,13 +95,13 @@ class Component(object):
 
 def test_component_ok():
     c = Component(True)
-    assert client_custom_metrics(c, SeldonMetrics()) == c.metrics()
+    assert client_custom_metrics(c) == c.metrics()
 
 
 def test_component_bad():
     with pytest.raises(SeldonMicroserviceException):
         c = Component(False)
-        client_custom_metrics(c, SeldonMetrics())
+        client_custom_metrics(c)
 
 
 def test_proto_metrics():
