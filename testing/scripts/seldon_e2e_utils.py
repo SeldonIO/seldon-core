@@ -102,7 +102,7 @@ def get_deployment_names(sdep_name, namespace, attempts=20, sleep=5):
     assert ret.returncode == 0, "Failed to get deployment names: non-zero return code"
     data = json.loads(ret.stdout)
     # The `deploymentStatus` is dictionary which keys are names of deployments
-    deployment_names = list(data["status"]["deploymentStatus"])
+    deployment_names = list(data.get("status", {}).get("deploymentStatus", {}))
     logging.info(
         f"For SeldonDeployment {sdep_name} "
         f"found following deployments: {deployment_names}"
@@ -120,6 +120,7 @@ def wait_for_rollout(
 
         if deployments == expected_deployments:
             break
+        time.sleep(sleep)
 
     error_msg = (
         f"Expected {expected_deployments} deployment(s) but got {len(deployment_names)}"
