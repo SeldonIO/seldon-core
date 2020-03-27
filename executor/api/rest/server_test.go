@@ -71,6 +71,7 @@ func TestCloudeventHeaderIsSet(t *testing.T) {
 	g := NewGomegaWithT(t)
 	testDepName := "test-deployment"
 	testPath := "/api/v0.1/predictions"
+	testNamespace := "test-namespace"
 
 	model := v1.MODEL
 	p := v1.PredictorSpec{
@@ -86,7 +87,7 @@ func TestCloudeventHeaderIsSet(t *testing.T) {
 	}
 
 	url, _ := url.Parse("http://localhost")
-	r := NewServerRestApi(&p, &test.SeldonMessageTestClient{}, false, url, "default", api.ProtocolSeldon, testDepName, "/metrics")
+	r := NewServerRestApi(&p, &test.SeldonMessageTestClient{}, false, url, testNamespace, api.ProtocolSeldon, testDepName, "/metrics")
 	r.Initialise()
 	var data = ` {"data":{"ndarray":[1.1,2.0]}}`
 
@@ -100,7 +101,7 @@ func TestCloudeventHeaderIsSet(t *testing.T) {
 	g.Expect(len(res.Header().Get(CLOUDEVENTS_HEADER_ID_NAME))).To(Equal(len(guuid.New().String())))
 	g.Expect(len(res.Header().Get(CLOUDEVENTS_HEADER_SPECVERSION_NAME))).ShouldNot(BeZero())
 	g.Expect(res.Header().Get(CLOUDEVENTS_HEADER_PATH_NAME)).To(Equal(testPath))
-	g.Expect(res.Header().Get(CLOUDEVENTS_HEADER_TYPE_NAME)).To(Equal("seldon." + testDepName + ".response"))
+	g.Expect(res.Header().Get(CLOUDEVENTS_HEADER_TYPE_NAME)).To(Equal("seldon." + testDepName + "." + testNamespace + ".response"))
 	g.Expect(res.Header().Get(CLOUDEVENTS_HEADER_SOURCE_NAME)).To(Equal("seldon." + testDepName))
 }
 

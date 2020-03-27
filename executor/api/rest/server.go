@@ -131,7 +131,7 @@ func (r *SeldonRestApi) Initialise() {
 	r.Router.HandleFunc("/live", r.alive)
 	r.Router.Handle(r.prometheusPath, promhttp.Handler())
 	if !r.ProbesOnly {
-		cloudeventHeaderMiddleware := CloudeventHeaderMiddleware{deploymentName: r.DeploymentName}
+		cloudeventHeaderMiddleware := CloudeventHeaderMiddleware{deploymentName: r.DeploymentName, namespace: r.Namespace}
 		r.Router.Use(puidHeader)
 		r.Router.Use(cloudeventHeaderMiddleware.Middleware)
 		switch r.Protocol {
@@ -157,16 +157,16 @@ func (r *SeldonRestApi) Initialise() {
 
 type CloudeventHeaderMiddleware struct {
 	deploymentName string
+	namespace      string
 }
 
 func (h *CloudeventHeaderMiddleware) Middleware(next http.Handler) http.Handler {
-	// TODO: Write a test that ensures the initialise function always sets deploymentName
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		puid := r.Header.Get(payload.SeldonPUIDHeader)
 		w.Header().Set(CLOUDEVENTS_HEADER_ID_NAME, puid)
 		w.Header().Set(CLOUDEVENTS_HEADER_SPECVERSION_NAME, CLOUDEVENTS_HEADER_SPECVERSION_DEFAULT)
 		w.Header().Set(CLOUDEVENTS_HEADER_PATH_NAME, r.URL.Path)
-		w.Header().Set(CLOUDEVENTS_HEADER_TYPE_NAME, "seldon."+h.deploymentName+".response")
+		w.Header().Set(CLOUDEVENTS_HEADER_TYPE_NAME, "seldon."+h.deploymentName+"."+h.namespace+".response")
 		w.Header().Set(CLOUDEVENTS_HEADER_SOURCE_NAME, "seldon."+h.deploymentName)
 
 		next.ServeHTTP(w, r)
