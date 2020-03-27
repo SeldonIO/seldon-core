@@ -9,7 +9,7 @@ from seldon_core.utils import (
     extract_feedback_request_parts,
 )
 from seldon_core.user_model import (
-    return_metrics_to_client,
+    CLIENT_GETS_METRICS,
     client_predict,
     client_aggregate,
     client_route,
@@ -42,11 +42,11 @@ def handle_raw_custom_metrics(
     """
     if is_proto:
         metrics = seldon_message_to_json(msg.meta).get("metrics", [])
-        if metrics and not return_metrics_to_client():
+        if metrics and not CLIENT_GETS_METRICS:
             del msg.meta.metrics[:]
     else:
         metrics = msg.get("meta", {}).get("metrics", [])
-        if metrics and not return_metrics_to_client():
+        if metrics and not CLIENT_GETS_METRICS:
             del msg["meta"]["metrics"]
     seldon_metrics.update(metrics)
 
@@ -303,8 +303,6 @@ def route(
        A Seldon user model
     request
        A SelodonMessage proto
-    seldon_metrics
-        A SeldonMetrics instance
     Returns
     -------
 
@@ -373,8 +371,6 @@ def aggregate(
        A Seldon user model
     request
        SeldonMessage proto
-    seldon_metrics
-        A SeldonMetrics instance
 
     Returns
     -------
@@ -484,9 +480,6 @@ def health_status(
     ----------
     user_model
        User defined class instance
-    seldon_metrics
-        A SeldonMetrics instance
-
     Returns
     -------
       Health check output

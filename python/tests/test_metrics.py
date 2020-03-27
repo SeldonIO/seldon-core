@@ -26,6 +26,15 @@ from seldon_core.user_model import client_custom_metrics
 import seldon_core
 
 
+def test_client_gets_metrics_fixture(client_gets_metrics):
+    if client_gets_metrics:
+        assert seldon_core.user_model.CLIENT_GETS_METRICS == True
+        assert seldon_core.seldon_methods.CLIENT_GETS_METRICS == True
+    else:
+        assert seldon_core.user_model.CLIENT_GETS_METRICS == False
+        assert seldon_core.seldon_methods.CLIENT_GETS_METRICS == False
+
+
 def test_create_counter():
     v = create_counter("k", 1)
     assert v["type"] == "COUNTER"
