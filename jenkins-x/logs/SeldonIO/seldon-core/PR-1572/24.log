@@ -1,0 +1,34 @@
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-15-g9qth-24[0m stage [32mmeta-pipeline[0m and container [32mstep-credential-initializer-54775[0m
+{"level":"warn","ts":1585318417.9565463,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1585318417.9573689,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-15-g9qth-24[0m stage [32mmeta-pipeline[0m and container [32mstep-working-dir-initializer-x4z89[0m
+{"level":"warn","ts":1585318419.3277416,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1585318419.3304188,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-15-g9qth-24[0m stage [32mmeta-pipeline[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-15-g9qth-24[0m stage [32mmeta-pipeline[0m and container [32mstep-git-source-meta-seldonio-seldon-core-pr-15-w47kz[0m
+{"level":"warn","ts":1585318425.6970186,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1585318429.6122558,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ 5e7104e73588779d6f8bbaa31ebfb4e3d059e02e in path /workspace/source"}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-15-g9qth-24[0m stage [32mmeta-pipeline[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:5e7104e73588779d6f8bbaa31ebfb4e3d059e02e,1572:fbab553251cdc61b4ded4bcb6cd9f78a7fd27917
+DEBUG: ran git fetch --unshallow origin fbab553251cdc61b4ded4bcb6cd9f78a7fd27917: 5e7104e73588779d6f8bbaa31ebfb4e3d059e02e: in 
+DEBUG: ran git checkout master in 
+DEBUG: ran git reset --hard 5e7104e73588779d6f8bbaa31ebfb4e3d059e02e in 
+DEBUG: ran clean --force -d . in 
+error: error during merge: merging fbab553251cdc61b4ded4bcb6cd9f78a7fd27917 into master: git output: Auto-merging operator/controllers/seldondeployment_explainers.go
+CONFLICT (content): Merge conflict in operator/controllers/seldondeployment_explainers.go
+Auto-merging operator/controllers/seldondeployment_controller_test.go
+Auto-merging operator/controllers/seldondeployment_controller.go
+Auto-merging operator/apis/machinelearning/v1/seldondeployment_types.go
+Automatic merge failed; fix conflicts and then commit the result.: failed to run 'git merge fbab553251cdc61b4ded4bcb6cd9f78a7fd27917' command in directory '', output: 'Auto-merging operator/controllers/seldondeployment_explainers.go
+CONFLICT (content): Merge conflict in operator/controllers/seldondeployment_explainers.go
+Auto-merging operator/controllers/seldondeployment_controller_test.go
+Auto-merging operator/controllers/seldondeployment_controller.go
+Auto-merging operator/apis/machinelearning/v1/seldondeployment_types.go
+Automatic merge failed; fix conflicts and then commit the result.'
+[31m
+Pipeline failed on stage 'meta-pipeline' : container 'step-git-merge'. The execution of the pipeline has stopped.[0m
