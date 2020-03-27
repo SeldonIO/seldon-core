@@ -9,7 +9,7 @@ from seldon_core.utils import (
     extract_feedback_request_parts,
 )
 from seldon_core.user_model import (
-    return_metrics_to_client,
+    INCLUDE_METRICS_IN_CLIENT_RESPONSE,
     client_predict,
     client_aggregate,
     client_route,
@@ -42,11 +42,11 @@ def handle_raw_custom_metrics(
     """
     if is_proto:
         metrics = seldon_message_to_json(msg.meta).get("metrics", [])
-        if metrics and not return_metrics_to_client():
+        if metrics and not INCLUDE_METRICS_IN_CLIENT_RESPONSE:
             del msg.meta.metrics[:]
     else:
         metrics = msg.get("meta", {}).get("metrics", [])
-        if metrics and not return_metrics_to_client():
+        if metrics and not INCLUDE_METRICS_IN_CLIENT_RESPONSE:
             del msg["meta"]["metrics"]
     seldon_metrics.update(metrics)
 
