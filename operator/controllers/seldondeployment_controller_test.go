@@ -22,9 +22,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"path/filepath"
 	"testing"
-	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
