@@ -9,7 +9,6 @@ from seldon_core.utils import (
     extract_feedback_request_parts,
 )
 from seldon_core.user_model import (
-    INCLUDE_METRICS_IN_CLIENT_RESPONSE,
     client_predict,
     client_aggregate,
     client_route,
@@ -28,27 +27,6 @@ from typing import Any, Union, List, Dict
 import numpy as np
 
 logger = logging.getLogger(__name__)
-
-
-def handle_raw_custom_metrics(
-    msg: Union[prediction_pb2.SeldonMessage, Dict],
-    seldon_metrics: SeldonMetrics,
-    is_proto: bool,
-):
-    """
-    Update SeldonMetrics object with custom metrics from raw methods.
-    If INCLUDE_METRICS_IN_CLIENT_RESPONSE environmental variable is set to "true"
-    metrics will be dropped from msg.
-    """
-    if is_proto:
-        metrics = seldon_message_to_json(msg.meta).get("metrics", [])
-        if metrics and not INCLUDE_METRICS_IN_CLIENT_RESPONSE:
-            del msg.meta.metrics[:]
-    else:
-        metrics = msg.get("meta", {}).get("metrics", [])
-        if metrics and not INCLUDE_METRICS_IN_CLIENT_RESPONSE:
-            del msg["meta"]["metrics"]
-    seldon_metrics.update(metrics)
 
 
 def predict(
@@ -81,7 +59,11 @@ def predict(
         if hasattr(user_model, "predict_raw"):
             try:
                 response = user_model.predict_raw(request)
-                handle_raw_custom_metrics(response, seldon_metrics, is_proto)
+                if is_proto:
+                    metrics = seldon_message_to_json(response.meta).get("metrics", [])
+                else:
+                    metrics = response.get("meta", {}).get("metrics", [])
+                seldon_metrics.update(metrics)
                 return response
             except SeldonNotImplementedError:
                 pass
@@ -92,7 +74,9 @@ def predict(
                 user_model, features, datadef.names, meta=meta
             )
 
-            metrics = client_custom_metrics(user_model, seldon_metrics)
+            metrics = client_custom_metrics(user_model)
+            if seldon_metrics is not None:
+                seldon_metrics.update(metrics)
 
             return construct_response(
                 user_model, False, request, client_response, meta, metrics
@@ -104,7 +88,9 @@ def predict(
                 user_model, features, class_names, meta=meta
             )
 
-            metrics = client_custom_metrics(user_model, seldon_metrics)
+            metrics = client_custom_metrics(user_model)
+            if seldon_metrics is not None:
+                seldon_metrics.update(metrics)
 
             return construct_response_json(
                 user_model, False, request, client_response, meta, metrics
@@ -195,7 +181,11 @@ def transform_input(
         if hasattr(user_model, "transform_input_raw"):
             try:
                 response = user_model.transform_input_raw(request)
-                handle_raw_custom_metrics(response, seldon_metrics, is_proto)
+                if is_proto:
+                    metrics = seldon_message_to_json(response.meta).get("metrics", [])
+                else:
+                    metrics = response.get("meta", {}).get("metrics", [])
+                seldon_metrics.update(metrics)
                 return response
             except SeldonNotImplementedError:
                 pass
@@ -206,7 +196,9 @@ def transform_input(
                 user_model, features, datadef.names, meta=meta
             )
 
-            metrics = client_custom_metrics(user_model, seldon_metrics)
+            metrics = client_custom_metrics(user_model)
+            if seldon_metrics is not None:
+                seldon_metrics.update(metrics)
 
             return construct_response(
                 user_model, False, request, client_response, meta, metrics
@@ -218,7 +210,9 @@ def transform_input(
                 user_model, features, class_names, meta=meta
             )
 
-            metrics = client_custom_metrics(user_model, seldon_metrics)
+            metrics = client_custom_metrics(user_model)
+            if seldon_metrics is not None:
+                seldon_metrics.update(metrics)
 
             return construct_response_json(
                 user_model, False, request, client_response, meta, metrics
@@ -260,7 +254,11 @@ def transform_output(
         if hasattr(user_model, "transform_output_raw"):
             try:
                 response = user_model.transform_output_raw(request)
-                handle_raw_custom_metrics(response, seldon_metrics, is_proto)
+                if is_proto:
+                    metrics = seldon_message_to_json(response.meta).get("metrics", [])
+                else:
+                    metrics = response.get("meta", {}).get("metrics", [])
+                seldon_metrics.update(metrics)
                 return response
             except SeldonNotImplementedError:
                 pass
@@ -271,7 +269,9 @@ def transform_output(
                 user_model, features, datadef.names, meta=meta
             )
 
-            metrics = client_custom_metrics(user_model, seldon_metrics)
+            metrics = client_custom_metrics(user_model)
+            if seldon_metrics is not None:
+                seldon_metrics.update(metrics)
 
             return construct_response(
                 user_model, False, request, client_response, meta, metrics
@@ -283,7 +283,9 @@ def transform_output(
                 user_model, features, class_names, meta=meta
             )
 
-            metrics = client_custom_metrics(user_model, seldon_metrics)
+            metrics = client_custom_metrics(user_model)
+            if seldon_metrics is not None:
+                seldon_metrics.update(metrics)
 
             return construct_response_json(
                 user_model, False, request, client_response, meta, metrics
@@ -303,8 +305,6 @@ def route(
        A Seldon user model
     request
        A SelodonMessage proto
-    seldon_metrics
-        A SeldonMetrics instance
     Returns
     -------
 
@@ -321,7 +321,11 @@ def route(
         if hasattr(user_model, "route_raw"):
             try:
                 response = user_model.route_raw(request)
-                handle_raw_custom_metrics(response, seldon_metrics, is_proto)
+                if is_proto:
+                    metrics = seldon_message_to_json(response.meta).get("metrics", [])
+                else:
+                    metrics = response.get("meta", {}).get("metrics", [])
+                seldon_metrics.update(metrics)
                 return response
             except SeldonNotImplementedError:
                 pass
@@ -337,7 +341,9 @@ def route(
                 )
             client_response_arr = np.array([[client_response]])
 
-            metrics = client_custom_metrics(user_model, seldon_metrics)
+            metrics = client_custom_metrics(user_model)
+            if seldon_metrics is not None:
+                seldon_metrics.update(metrics)
 
             return construct_response(
                 user_model, False, request, client_response_arr, None, metrics
@@ -352,7 +358,9 @@ def route(
                 )
             client_response_arr = np.array([[client_response]])
 
-            metrics = client_custom_metrics(user_model, seldon_metrics)
+            metrics = client_custom_metrics(user_model)
+            if seldon_metrics is not None:
+                seldon_metrics.update(metrics)
 
             return construct_response_json(
                 user_model, False, request, client_response_arr, None, metrics
@@ -373,8 +381,6 @@ def aggregate(
        A Seldon user model
     request
        SeldonMessage proto
-    seldon_metrics
-        A SeldonMetrics instance
 
     Returns
     -------
@@ -409,7 +415,11 @@ def aggregate(
         if hasattr(user_model, "aggregate_raw"):
             try:
                 response = user_model.aggregate_raw(request)
-                handle_raw_custom_metrics(response, seldon_metrics, is_proto)
+                if is_proto:
+                    metrics = seldon_message_to_json(response.meta).get("metrics", [])
+                else:
+                    metrics = response.get("meta", {}).get("metrics", [])
+                seldon_metrics.update(metrics)
                 return response
             except SeldonNotImplementedError:
                 pass
@@ -427,7 +437,9 @@ def aggregate(
 
             client_response = client_aggregate(user_model, features_list, names_list)
 
-            metrics = client_custom_metrics(user_model, seldon_metrics)
+            metrics = client_custom_metrics(user_model)
+            if seldon_metrics is not None:
+                seldon_metrics.update(metrics)
 
             return construct_response(
                 user_model,
@@ -462,7 +474,9 @@ def aggregate(
 
             client_response = client_aggregate(user_model, features_list, names_list)
 
-            metrics = client_custom_metrics(user_model, seldon_metrics)
+            metrics = client_custom_metrics(user_model)
+            if seldon_metrics is not None:
+                seldon_metrics.update(metrics)
 
             return construct_response_json(
                 user_model,
@@ -484,9 +498,6 @@ def health_status(
     ----------
     user_model
        User defined class instance
-    seldon_metrics
-        A SeldonMetrics instance
-
     Returns
     -------
       Health check output
@@ -499,7 +510,9 @@ def health_status(
             pass
 
     client_response = client_health_status(user_model)
-    metrics = client_custom_metrics(user_model, seldon_metrics)
+    metrics = client_custom_metrics(user_model)
+    if seldon_metrics is not None:
+        seldon_metrics.update(metrics)
 
     return construct_response_json(
         user_model, False, {}, client_response, None, metrics
