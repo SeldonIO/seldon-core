@@ -92,17 +92,56 @@ func TestCloudeventHeaderIsSet(t *testing.T) {
 	var data = ` {"data":{"ndarray":[1.1,2.0]}}`
 
 	req, _ := http.NewRequest("POST", testPath, strings.NewReader(data))
-	req.Header = map[string][]string{"Content-Type": []string{"application/json"}}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Ce-Specversion", CLOUDEVENTS_HEADER_SPECVERSION_DEFAULT)
 	res := httptest.NewRecorder()
 	r.Router.ServeHTTP(res, req)
 	g.Expect(res.Code).To(Equal(200))
 	// Check that the SeldonPUUIDHeader is set
 	g.Expect(len(res.Header().Get(CLOUDEVENTS_HEADER_ID_NAME))).ShouldNot(BeZero())
 	g.Expect(len(res.Header().Get(CLOUDEVENTS_HEADER_ID_NAME))).To(Equal(len(guuid.New().String())))
-	g.Expect(len(res.Header().Get(CLOUDEVENTS_HEADER_SPECVERSION_NAME))).ShouldNot(BeZero())
+	g.Expect(res.Header().Get(CLOUDEVENTS_HEADER_SPECVERSION_NAME)).To(Equal(CLOUDEVENTS_HEADER_SPECVERSION_DEFAULT))
 	g.Expect(res.Header().Get(CLOUDEVENTS_HEADER_PATH_NAME)).To(Equal(testPath))
 	g.Expect(res.Header().Get(CLOUDEVENTS_HEADER_TYPE_NAME)).To(Equal("seldon." + testDepName + "." + testNamespace + ".response"))
 	g.Expect(res.Header().Get(CLOUDEVENTS_HEADER_SOURCE_NAME)).To(Equal("seldon." + testDepName))
+}
+
+func TestCloudeventHeaderIsNotSet(t *testing.T) {
+	t.Logf("Started")
+	g := NewGomegaWithT(t)
+	testDepName := "test-deployment"
+	testPath := "/api/v0.1/predictions"
+	testNamespace := "test-namespace"
+
+	model := v1.MODEL
+	p := v1.PredictorSpec{
+		Name: "p",
+		Graph: &v1.PredictiveUnit{
+			Type: &model,
+			Endpoint: &v1.Endpoint{
+				ServiceHost: "foo",
+				ServicePort: 9000,
+				Type:        v1.REST,
+			},
+		},
+	}
+
+	url, _ := url.Parse("http://localhost")
+	r := NewServerRestApi(&p, &test.SeldonMessageTestClient{}, false, url, testNamespace, api.ProtocolSeldon, testDepName, "/metrics")
+	r.Initialise()
+	var data = ` {"data":{"ndarray":[1.1,2.0]}}`
+
+	req, _ := http.NewRequest("POST", testPath, strings.NewReader(data))
+	req.Header.Set("Content-Type", "application/json")
+	res := httptest.NewRecorder()
+	r.Router.ServeHTTP(res, req)
+	g.Expect(res.Code).To(Equal(200))
+	// Check that the SeldonPUUIDHeader is set
+	g.Expect(len(res.Header().Get(CLOUDEVENTS_HEADER_ID_NAME))).Should(BeZero())
+	g.Expect(len(res.Header().Get(CLOUDEVENTS_HEADER_SPECVERSION_NAME))).Should(BeZero())
+	g.Expect(len(res.Header().Get(CLOUDEVENTS_HEADER_PATH_NAME))).Should(BeZero())
+	g.Expect(len(res.Header().Get(CLOUDEVENTS_HEADER_TYPE_NAME))).Should(BeZero())
+	g.Expect(len(res.Header().Get(CLOUDEVENTS_HEADER_SOURCE_NAME))).Should(BeZero())
 }
 
 func TestReponsePuuidHeaderIsSet(t *testing.T) {

@@ -25,7 +25,7 @@ import (
 
 const (
 	CLOUDEVENTS_HEADER_ID_NAME             = "Ce-Id"
-	CLOUDEVENTS_HEADER_SPECVERSION_NAME    = "Ce-specversion"
+	CLOUDEVENTS_HEADER_SPECVERSION_NAME    = "Ce-Specversion"
 	CLOUDEVENTS_HEADER_SOURCE_NAME         = "Ce-Source"
 	CLOUDEVENTS_HEADER_TYPE_NAME           = "Ce-Type"
 	CLOUDEVENTS_HEADER_PATH_NAME           = "Ce-Path"
@@ -162,12 +162,17 @@ type CloudeventHeaderMiddleware struct {
 
 func (h *CloudeventHeaderMiddleware) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		puid := r.Header.Get(payload.SeldonPUIDHeader)
-		w.Header().Set(CLOUDEVENTS_HEADER_ID_NAME, puid)
-		w.Header().Set(CLOUDEVENTS_HEADER_SPECVERSION_NAME, CLOUDEVENTS_HEADER_SPECVERSION_DEFAULT)
-		w.Header().Set(CLOUDEVENTS_HEADER_PATH_NAME, r.URL.Path)
-		w.Header().Set(CLOUDEVENTS_HEADER_TYPE_NAME, "seldon."+h.deploymentName+"."+h.namespace+".response")
-		w.Header().Set(CLOUDEVENTS_HEADER_SOURCE_NAME, "seldon."+h.deploymentName)
+		// Checking if request is cloudevent based on specname being present
+		fmt.Println(r.Header)
+		fmt.Println(w.Header())
+		if _, ok := r.Header[CLOUDEVENTS_HEADER_SPECVERSION_NAME]; ok {
+			puid := r.Header.Get(payload.SeldonPUIDHeader)
+			w.Header().Set(CLOUDEVENTS_HEADER_ID_NAME, puid)
+			w.Header().Set(CLOUDEVENTS_HEADER_SPECVERSION_NAME, CLOUDEVENTS_HEADER_SPECVERSION_DEFAULT)
+			w.Header().Set(CLOUDEVENTS_HEADER_PATH_NAME, r.URL.Path)
+			w.Header().Set(CLOUDEVENTS_HEADER_TYPE_NAME, "seldon."+h.deploymentName+"."+h.namespace+".response")
+			w.Header().Set(CLOUDEVENTS_HEADER_SOURCE_NAME, "seldon."+h.deploymentName)
+		}
 
 		next.ServeHTTP(w, r)
 	})
