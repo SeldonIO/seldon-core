@@ -3,7 +3,7 @@ package metric
 import (
 	"context"
 	"github.com/prometheus/client_golang/prometheus"
-	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/status"
 	"strings"

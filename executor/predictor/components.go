@@ -1,7 +1,7 @@
 package predictor
 
 import (
-	"github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"math/rand"
 	"strconv"
 )

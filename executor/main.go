@@ -20,7 +20,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/k8s"
 	loghandler "github.com/seldonio/seldon-core/executor/logger"
 	"github.com/seldonio/seldon-core/executor/proto/tensorflow/serving"
-	"github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"io/ioutil"
 	"net"
 	"net/url"
