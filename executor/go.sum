@@ -244,10 +244,12 @@ github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a/go.mod h1:bCqn
 github.com/rogpeppe/fastuuid v0.0.0-20150106093220-6724a57986af/go.mod h1:XWv6SoW27p1b0cqNHllgS5HIMJraePCO15w5zCzIWYg=
 github.com/seldonio/seldon-core v0.4.1 h1:CeesBeUYpvDY7/nr7OahxUnNM++g5b7uulhiWlqdUVE=
 github.com/seldonio/seldon-core v1.0.0 h1:eJCF4tYqS4uvFiMLpxKbRhKESfLU6BBK/yTGDaX6hXI=
+github.com/seldonio/seldon-core v1.0.2 h1:mkhtmaRSr5cjr+zD8SoRMT4doP1dCuYj9xAz11ylFxY=
 github.com/seldonio/seldon-core/operator v0.0.0-20191220103229-cbbcc5aed888 h1:fr9rzUWXPsSPEFEXiTLkPVL3NNFQ0DeFOsIKtMUhzqI=
 github.com/seldonio/seldon-core/operator v0.0.0-20191220103229-cbbcc5aed888/go.mod h1:Z1WNnJukibShiHq8+mOpLpIDygzbcqg2nA+pNq8vrW0=
 github.com/seldonio/seldon-core/operator v0.0.0-20191223100430-3b372610589b h1:6TG2KvNQPoBkiCFbiXP15qY9LKPfsMwkB6Kz3hdpWsg=
 github.com/seldonio/seldon-core/operator v0.0.0-20191223100430-3b372610589b/go.mod h1:Z1WNnJukibShiHq8+mOpLpIDygzbcqg2nA+pNq8vrW0=
+github.com/seldonio/seldon-core/operator v0.0.0-20200327095627-5e7104e73588 h1:0MNJl97b8voqmILlpW9dDtNXgmC/xmG9kg3PUYCYWBM=
 github.com/sirupsen/logrus v1.2.0/go.mod h1:LxeOpSwHxABJmUn/MG1IvRgCAasNZTLOkJPxbbu5VWo=
 github.com/sirupsen/logrus v1.4.2 h1:SPIRibHv4MatM3XXNO2BJeFLZwZ2LvZgfQ5+UNI2im4=
 github.com/sirupsen/logrus v1.4.2/go.mod h1:tLMulIdttU9McNUspp0xgXVQah82FyeX6MwdIuYE2rE=
