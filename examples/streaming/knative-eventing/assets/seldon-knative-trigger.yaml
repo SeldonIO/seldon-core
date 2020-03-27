@@ -7,7 +7,7 @@ spec:
   broker: default
   filter:
     attributes:
-      type: seldon.simple-iris-deployment.request
+      type: seldon.simple-iris-deployment.default.request
   subscriber:
     ref: 
       apiVersion: machinelearning.seldon.io/v1

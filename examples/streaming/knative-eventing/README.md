@@ -62,11 +62,15 @@ Now we run the Seldon Deployment configuration file we just created.
 !kubectl get pods
 ```
 
-    NAME                                                              READY   STATUS    RESTARTS   AGE
-    default-broker-filter-7ffddb5dcc-pdbdt                            1/1     Running   1          7d8h
-    default-broker-ingress-5cfc4c8cbc-dqr82                           1/1     Running   1          7d8h
-    seldon-controller-manager-5f8cfb4648-jfltq                        1/1     Running   0          163m
-    simple-iris-deployment-simple-iris-predictor-0-6dd54c578c-6gc6p   2/2     Running   0          6m58s
+    NAME                                                              READY   STATUS      RESTARTS   AGE
+    default-broker-filter-7ffddb5dcc-pdbdt                            1/1     Running     0          16d
+    default-broker-ingress-5cfc4c8cbc-dqr82                           1/1     Running     0          16d
+    event-display-7c69959598-txxdg                                    1/1     Running     0          5d21h
+    seldon-controller-manager-5f8cfb4648-pfdqv                        1/1     Running     0          15h
+    simple-iris-deployment-simple-iris-predictor-0-55d5578cc9-s9lt7   0/2     Running     0          5s
+    steps-s5gh8-282828583                                             0/2     Completed   0          25h
+    steps-s5gh8-460776080                                             0/2     Completed   0          25h
+    steps-s5gh8-511108937                                             0/2     Completed   0          25h
 
 
 ## Create a Trigger to reach our model 
@@ -81,7 +85,7 @@ We will be using the following seldon deployment:
 ```
 
     NAME                     AGE
-    simple-iris-deployment   3m22s
+    simple-iris-deployment   89s
 
 
 ### Create trigger configuration
@@ -98,7 +102,7 @@ spec:
   broker: default
   filter:
     attributes:
-      type: seldon.simple-iris-deployment.request
+      type: seldon.simple-iris-deployment.default.request
   subscriber:
     ref: 
       apiVersion: machinelearning.seldon.io/v1
@@ -117,7 +121,7 @@ Create this trigger file which will send all cloudevents of type `"seldon.<deplo
 !kubectl apply -f assets/seldon-knative-trigger.yaml
 ```
 
-    trigger.eventing.knative.dev/seldon-eventing-sklearn-trigger unchanged
+    trigger.eventing.knative.dev/seldon-eventing-sklearn-trigger configured
 
 
 CHeck that the trigger is working correctly (you should see "Ready: True"), together with the URL that will be reached.
@@ -128,8 +132,8 @@ CHeck that the trigger is working correctly (you should see "Ready: True"), toge
 ```
 
     NAME                              READY   REASON   BROKER    SUBSCRIBER_URI                                                                                                          AGE
-    event-display                     True             default   http://event-display.default.svc.cluster.local/                                                                         3d5h
-    seldon-eventing-sklearn-trigger   True             default   http://istio-ingressgateway.istio-system.svc.cluster.local/seldon/default/simple-iris-deployment/api/v1.0/predictions   74m
+    event-display                     True             default   http://event-display.default.svc.cluster.local/                                                                         9d
+    seldon-eventing-sklearn-trigger   True             default   http://istio-ingressgateway.istio-system.svc.cluster.local/seldon/default/simple-iris-deployment/api/v1.0/predictions   2d3h
 
 
 ### Send a request to the KNative Eventing default broker
@@ -142,7 +146,7 @@ To send requests we can do so by sending a curl command from a pod inside of the
     curl -v "default-broker.default.svc.cluster.local" \
         -H "Ce-Id: 536808d3-88be-4077-9d7a-a3f162705f79" \
         -H "Ce-specversion: 0.3" \
-        -H "Ce-Type: seldon.simple-iris-deployment.request" \
+        -H "Ce-Type: seldon.simple-iris-deployment.default.request" \
         -H "Ce-Source: seldon.examples.streaming.curl" \
         -H "Content-Type: application/json" \
         -d '{"data": { "ndarray": [[1,2,3,4]]}}'
@@ -174,12 +178,12 @@ We can do this by checking the logs (we can query the logs through the service n
 !kubectl logs svc/simple-iris-deployment-simple-iris-predictor simple-iris-model | tail -6
 ```
 
-    2020-03-21 03:39:34,169 - SKLearnServer:predict:37 - INFO:  Calling predict_proba
-    2020-03-21 03:39:34,170 - werkzeug:_log:122 - INFO:  127.0.0.1 - - [21/Mar/2020 03:39:34] "[37mPOST /predict HTTP/1.1[0m" 200 -
-    2020-03-21 03:41:02,604 - SKLearnServer:predict:37 - INFO:  Calling predict_proba
-    2020-03-21 03:41:02,605 - werkzeug:_log:122 - INFO:  127.0.0.1 - - [21/Mar/2020 03:41:02] "[37mPOST /predict HTTP/1.1[0m" 200 -
-    2020-03-21 03:41:28,590 - SKLearnServer:predict:37 - INFO:  Calling predict_proba
-    2020-03-21 03:41:28,591 - werkzeug:_log:122 - INFO:  127.0.0.1 - - [21/Mar/2020 03:41:28] "[37mPOST /predict HTTP/1.1[0m" 200 -
+       WARNING: This is a development server. Do not use it in a production deployment.
+       Use a production WSGI server instead.
+     * Debug mode: off
+    2020-03-27 00:07:09,902 - werkzeug:_log:122 - INFO:   * Running on http://0.0.0.0:9000/ (Press CTRL+C to quit)
+    2020-03-27 00:10:24,689 - SKLearnServer:predict:37 - INFO:  Calling predict_proba
+    2020-03-27 00:10:24,690 - werkzeug:_log:122 - INFO:  127.0.0.1 - - [27/Mar/2020 00:10:24] "[37mPOST /predict HTTP/1.1[0m" 200 -
 
 
 ## Connect a source to listen to the results of the seldon model
@@ -251,7 +255,7 @@ spec:
 !kubectl get pods | grep event
 ```
 
-    event-display-7c69959598-dr7fb                                    1/1     Running   0          3d4h
+    event-display-7c69959598-txxdg                                    1/1     Running     0          5d21h
 
 
 ### Create trigger for event display
@@ -271,7 +275,7 @@ spec:
   broker: default
   filter:
     attributes:
-      type: seldon.simple-iris-deployment.response
+      type: seldon.simple-iris-deployment.default.response
       source: seldon.simple-iris-deployment
   subscriber:
     ref:
@@ -304,8 +308,8 @@ We now should see the event trigger available.
 ```
 
     NAME                              READY   REASON   BROKER    SUBSCRIBER_URI                                                                                                          AGE
-    event-display                     True             default   http://event-display.default.svc.cluster.local/                                                                         3d5h
-    seldon-eventing-sklearn-trigger   True             default   http://istio-ingressgateway.istio-system.svc.cluster.local/seldon/default/simple-iris-deployment/api/v1.0/predictions   73m
+    event-display                     True             default   http://event-display.default.svc.cluster.local/                                                                         9d
+    seldon-eventing-sklearn-trigger   True             default   http://istio-ingressgateway.istio-system.svc.cluster.local/seldon/default/simple-iris-deployment/api/v1.0/predictions   2d3h
 
 
 ## Send a couple of requests more
@@ -318,8 +322,8 @@ We can use the same process we outlined above to send a couple more events.
 !kubectl run --quiet=true -it --rm curl --image=radial/busyboxplus:curl --restart=Never -- \
     curl -v "default-broker.default.svc.cluster.local" \
         -H "Ce-Id: 536808d3-88be-4077-9d7a-a3f162705f79" \
-        -H "Ce-specversion: 0.3" \
-        -H "Ce-Type: seldon.simple-iris-deployment.request" \
+        -H "Ce-Specversion: 0.3" \
+        -H "Ce-Type: seldon.simple-iris-deployment.default.request" \
         -H "Ce-Source: dev.knative.samples/helloworldsource" \
         -H "Content-Type: application/json" \
         -d '{"data": { "ndarray": [[1,2,3,4]]}}'
@@ -346,20 +350,30 @@ We can use the same process we outlined above to send a couple more events.
 
 
 ```python
-!kubectl logs svc/event-display | tail -30
+!kubectl logs svc/event-display | tail -40
 ```
 
+              0.9956334415074478
+            ]
+          ]
+        },
+        "meta": {}
+      }
+    
+    ☁️  cloudevents.Event
+    Validation: valid
+    Context Attributes,
       specversion: 0.3
-      type: seldon.simple-iris-deployment.response
+      type: seldon.simple-iris-deployment.default.response
       source: seldon.simple-iris-deployment
-      id: a41b4e2a-6db3-4d96-9532-29e8db1f5cef
-      time: 2020-03-21T03:41:28.593036193Z
+      id: 4bd0a491-b1a8-4f85-a5e6-d3da747c939d
+      time: 2020-03-27T00:43:32.801881033Z
       datacontenttype: application/json
     Extensions,
-      knativearrivaltime: 2020-03-21T03:41:28.594071893Z
+      knativearrivaltime: 2020-03-27T00:43:32.804300441Z
       knativehistory: default-kne-trigger-kn-channel.default.svc.cluster.local
       path: /api/v1.0/predictions
-      traceparent: 00-1a93791481a6b73a6d59b48a96e62ee6-2bac18e237bba0a5-00
+      traceparent: 00-054f70e1f0eeae112f0138019216500b-c692a208d475b9f0-00
     Data,
       {
         "data": {
@@ -370,9 +384,9 @@ We can use the same process we outlined above to send a couple more events.
           ],
           "ndarray": [
             [
-              0.0006985194531162841,
-              0.003668039039435755,
-              0.9956334415074478
+              0.8614284357776064,
+              0.13636332073414753,
+              0.002208243488246059
             ]
           ]
         },
@@ -380,8 +394,3 @@ We can use the same process we outlined above to send a couple more events.
       }
     
 
-
-
-```python
-
-```
