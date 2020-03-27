@@ -30,24 +30,15 @@ import numpy as np
 logger = logging.getLogger(__name__)
 
 
-def handle_raw_custom_metrics(
-    msg: Union[prediction_pb2.SeldonMessage, Dict],
-    seldon_metrics: SeldonMetrics,
-    is_proto: bool,
-):
-    """
-    Update SeldonMetrics object with custom metrics from raw methods.
-    If INCLUDE_METRICS_IN_CLIENT_RESPONSE environmental variable is set to "true"
-    metrics will be dropepd from msg.
-    """
+def handle_raw_custom_metrics(response, seldon_metrics, is_proto):
     if is_proto:
-        metrics = seldon_message_to_json(msg.meta).get("metrics", [])
+        metrics = seldon_message_to_json(response.meta).get("metrics", [])
         if metrics and not CLIENT_GETS_METRICS:
-            del msg.meta.metrics[:]
+            del response.meta.metrics[:]
     else:
-        metrics = msg.get("meta", {}).get("metrics", [])
+        metrics = response.get("meta", {}).get("metrics", [])
         if metrics and not CLIENT_GETS_METRICS:
-            del msg["meta"]["metrics"]
+            del metrics["meta"]["metrics"]
     seldon_metrics.update(metrics)
 
 
