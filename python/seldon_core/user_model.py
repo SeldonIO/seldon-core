@@ -12,9 +12,11 @@ import os
 logger = logging.getLogger(__name__)
 
 
-INCLUDE_METRICS_IN_CLIENT_RESPONSE = (
-    os.environ.get("INCLUDE_METRICS_IN_CLIENT_RESPONSE", "true").lower() == "true"
-)
+ENV_CLIENT_GETS_METRICS = "INCLUDE_METRICS_IN_CLIENT_RESPONSE"
+
+
+def return_metrics_to_client():
+    return os.environ.get(ENV_CLIENT_GETS_METRICS, "true").lower() == "true"
 
 
 class SeldonNotImplementedError(SeldonMicroserviceException):
@@ -315,9 +317,8 @@ def client_custom_metrics(
                     "Bad metric created during request: " + j_str,
                     reason="MICROSERVICE_BAD_METRIC",
                 )
-
             seldon_metrics.update(metrics)
-            if INCLUDE_METRICS_IN_CLIENT_RESPONSE:
+            if return_metrics_to_client():
                 return metrics
             else:
                 return []
