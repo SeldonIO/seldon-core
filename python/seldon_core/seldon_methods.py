@@ -38,7 +38,7 @@ def handle_raw_custom_metrics(
     """
     Update SeldonMetrics object with custom metrics from raw methods.
     If INCLUDE_METRICS_IN_CLIENT_RESPONSE environmental variable is set to "true"
-    metrics will be dropped from msg.
+    metrics will be dropepd from msg.
     """
     if is_proto:
         metrics = seldon_message_to_json(msg.meta).get("metrics", [])

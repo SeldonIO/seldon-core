@@ -26,13 +26,11 @@ from seldon_core.user_model import client_custom_metrics
 import seldon_core
 
 
-def test_client_gets_metrics_fixture(client_gets_metrics):
+def test_parametrize(client_gets_metrics):
     if client_gets_metrics:
         assert seldon_core.user_model.CLIENT_GETS_METRICS == True
-        assert seldon_core.seldon_methods.CLIENT_GETS_METRICS == True
     else:
         assert seldon_core.user_model.CLIENT_GETS_METRICS == False
-        assert seldon_core.seldon_methods.CLIENT_GETS_METRICS == False
 
 
 def test_create_counter():
@@ -464,10 +462,17 @@ def test_proto_seldon_metrics_predict(cls, client_gets_metrics):
     assert (
         "metrics" in json.loads(json_format.MessageToJson(resp))["meta"]
     ) == client_gets_metrics
+    assert (
+        "metrics" in json.loads(json_format.MessageToJson(resp))["meta"]
+    ) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 1, [0.0202])
+
     resp = app.Predict(request, None)
+    assert (
+        "metrics" in json.loads(json_format.MessageToJson(resp))["meta"]
+    ) == client_gets_metrics
     assert (
         "metrics" in json.loads(json_format.MessageToJson(resp))["meta"]
     ) == client_gets_metrics
