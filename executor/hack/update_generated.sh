@@ -47,12 +47,12 @@ cd "${FAKE_REPOPATH}"
 
 OUTPUT_PKG=${FAKE_REPOPATH}/client 
 
-"${BINDIR}/client-gen" -v 9 --input-base ${PKG_BASE}/api --clientset-name versioned -i ./api/machinelearning/v1alpha2/ --input machinelearning/v1alpha2 --output-package ${PKG_BASE}/client/clientset --go-header-file hack/boilerplate.go.txt -o ${FAKE_GOPATH}/src
+"${BINDIR}/client-gen" -v 9 --input-base ${PKG_BASE}/api --clientset-name versioned -i ./api/machinelearning.seldon.io/v1alpha2/ --input machinelearning.seldon.io/v1alpha2 --output-package ${PKG_BASE}/client/clientset --go-header-file hack/boilerplate.go.txt -o ${FAKE_GOPATH}/src
 
-"${BINDIR}/lister-gen" -v 5 -i ${PKG_BASE}/api/machinelearning/v1alpha2 --output-package ${PKG_BASE}/client/listers --go-header-file hack/boilerplate.go.txt -o ${FAKE_GOPATH}/src
+"${BINDIR}/lister-gen" -v 5 -i ${PKG_BASE}/api/machinelearning.seldon.io/v1alpha2 --output-package ${PKG_BASE}/client/listers --go-header-file hack/boilerplate.go.txt -o ${FAKE_GOPATH}/src
 
 "${BINDIR}/informer-gen" -v 5 \
-     -i ${PKG_BASE}/api/machinelearning/v1alpha2 \
+     -i ${PKG_BASE}/api/machinelearning.seldon.io/v1alpha2 \
      --versioned-clientset-package "${PKG_BASE}/client/clientset/versioned" \
      --listers-package "${PKG_BASE}/client/listers" \
      --output-package ${PKG_BASE}/client/informers \
