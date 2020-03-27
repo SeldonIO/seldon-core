@@ -40,6 +40,7 @@ const (
 	EventsUpdateDestinationRule = "UpdateDestinationRule"
 	EventsCreateService         = "CreateService"
 	EventsUpdateService         = "UpdateService"
+	EventsDeleteService         = "DeleteService"
 	EventsCreateHPA             = "CreateHPA"
 	EventsUpdateHPA             = "UpdateHPA"
 	EventsDeleteHPA             = "DeleteHPA"
