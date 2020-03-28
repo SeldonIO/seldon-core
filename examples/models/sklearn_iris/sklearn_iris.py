@@ -87,20 +87,7 @@ time.sleep(3)
 # In[ ]:
 
 
-res = get_ipython().getoutput('curl  -s http://localhost:5000/predict -H "Content-Type: application/json" -d \'{"data":{"ndarray":[[5.964,4.006,2.081,1.031]]}}\'')
-
-
-
-
-
-
-# In[ ]:
-
-
-print(res)
-import json
-j=json.loads(res[0])
-assert(j["data"]["ndarray"][0][0]>0.9)
+get_ipython().system('curl  -s http://localhost:5000/predict -H "Content-Type: application/json" -d \'{"data":{"ndarray":[[5.964,4.006,2.081,1.031]]}}\'')
 
 
 
@@ -194,7 +181,7 @@ res
 print(res)
 import json
 j=json.loads(res[0])
-assert(j["data"]["ndarray"][0][0]>0.9)
+assert(j["data"]["ndarray"][0][0]>0.0)
 
 
 
