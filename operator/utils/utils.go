@@ -26,8 +26,7 @@ func GetPredictionPath(mlDep *machinelearningv1.SeldonDeployment) string {
 	protocol := mlDep.Spec.Protocol
 
 	if protocol == "tensorflow" {
-		// Currently there is no easy way to create a reasonable access to tf models
-		// 	so for now we're making available only the first model
+		// This will be updated as part of https://github.com/SeldonIO/seldon-core/issues/1611
 		return "/v1/models/" + mlDep.Spec.Predictors[0].Graph.Name + "/:predict"
 	} else {
 		return "/api/v1.0/predictions"
