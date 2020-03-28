@@ -8,8 +8,8 @@ spec:
   broker: default
   filter:
     attributes:
-      type: seldon.simple-iris-deployment.default.response
-      source: seldon.simple-iris-deployment
+      type: seldon.iris-deployment.default.response
+      source: seldon.iris-deployment
   subscriber:
     ref:
       apiVersion: v1

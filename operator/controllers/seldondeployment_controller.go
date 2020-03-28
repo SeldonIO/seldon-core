@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -96,15 +97,19 @@ type httpGrpcPorts struct {
 	grpcPort int
 }
 
-func createAddressableResource(mlDep *machinelearningv1.SeldonDeployment, namespace string) *machinelearningv1.SeldonAddressable {
+func createAddressableResource(mlDep *machinelearningv1.SeldonDeployment, namespace string) (*machinelearningv1.SeldonAddressable, error) {
 	// It was an explicit design decision to expose the service name instead of the ingress
-	// Currently there will only be a URL for the first predictor
+	// Currently there will only be a URL for the first predictor, and assumes always REST
 	firstPredictorName := mlDep.Spec.Predictors[0].Name
-	addressableHost := mlDep.Name + "-" + firstPredictorName + "." + namespace + ".svc.cluster.local"
+	addressablePort, err := getEngineHttpPort()
+	if err != nil {
+		return nil, err
+	}
+	addressableHost := mlDep.Name + "-" + firstPredictorName + "." + namespace + ".svc.cluster.local" + ":" + strconv.Itoa(addressablePort)
 	addressablePath := utils.GetPredictionPath(mlDep)
 	addressableUrl := url.URL{Scheme: "http", Host: addressableHost, Path: addressablePath}
 
-	return &machinelearningv1.SeldonAddressable{URL: addressableUrl.String()}
+	return &machinelearningv1.SeldonAddressable{URL: addressableUrl.String()}, nil
 }
 
 func createHpa(podSpec *machinelearningv1.SeldonPodSpec, deploymentName string, seldonId string, namespace string) *autoscaling.HorizontalPodAutoscaler {
@@ -567,8 +572,12 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 			return nil, err
 		}
 	}
+
 	// Create the addressable as all services are created when SeldonDeployment is ready
-	c.addressable = createAddressableResource(mlDep, namespace)
+	c.addressable, err = createAddressableResource(mlDep, namespace)
+	if err != nil {
+		return nil, err
+	}
 
 	//TODO Fixme - not changed to handle per predictor scenario
 	if GetEnv(ENV_ISTIO_ENABLED, "false") == "true" {
@@ -1007,6 +1016,8 @@ func (r *SeldonDeploymentReconciler) createServices(components *components, inst
 			return ready, err
 		} else {
 			svc.Spec.ClusterIP = found.Spec.ClusterIP
+			// Configure addressable status so it can be reached through duck-typing
+			instance.Status.Address = components.addressable
 			// Update the found object and write the result back if there are any changes
 			if !equality.Semantic.DeepEqual(svc.Spec, found.Spec) || !equality.Semantic.DeepEqual(svc.Annotations, found.Annotations) {
 				desiredSvc := found.DeepCopy()
