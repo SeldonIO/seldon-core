@@ -1479,9 +1479,6 @@ func (r *SeldonDeploymentReconciler) updateStatusForError(desired *machinelearni
 		log.Error(err, "Failed to update InferenceService status")
 		r.Recorder.Eventf(desired, corev1.EventTypeWarning, constants.EventsUpdateFailed,
 			"Failed to update status for SeldonDeployment %q: %v", desired.Name, err)
-	} else {
-		// If there was a difference and there was no error.
-		r.Recorder.Eventf(desired, corev1.EventTypeNormal, constants.EventsUpdated, "Updated SeldonDeployment %q", desired.GetName())
 	}
 }
 
@@ -1498,9 +1495,6 @@ func (r *SeldonDeploymentReconciler) updateStatus(desired *machinelearningv1.Sel
 		r.Recorder.Eventf(desired, corev1.EventTypeWarning, constants.EventsUpdateFailed,
 			"Failed to update status for SeldonDeployment %q: %v", desired.Name, err)
 		return err
-	} else {
-		// If there was a difference and there was no error.
-		r.Recorder.Eventf(desired, corev1.EventTypeNormal, constants.EventsUpdated, "Updated SeldonDeployment %q", desired.GetName())
 	}
 	return nil
 }
