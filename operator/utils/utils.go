@@ -9,19 +9,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-func CreateGatewayUrlPrefix(namespace string, sdepName string) string {
-	return "/seldon/" + namespace + "/" + sdepName + "/"
-}
-
-func GetPredictiveUnitAsJson(params []machinelearningv1.Parameter) string {
-	str, err := json.Marshal(params)
-	if err != nil {
-		return ""
-	} else {
-		return string(str)
-	}
-}
-
 func GetPredictionPath(mlDep *machinelearningv1.SeldonDeployment) string {
 	protocol := mlDep.Spec.Protocol
 
@@ -30,6 +17,15 @@ func GetPredictionPath(mlDep *machinelearningv1.SeldonDeployment) string {
 		return "/v1/models/" + mlDep.Spec.Predictors[0].Graph.Name + "/:predict"
 	} else {
 		return "/api/v1.0/predictions"
+	}
+}
+
+func GetPredictiveUnitAsJson(params []machinelearningv1.Parameter) string {
+	str, err := json.Marshal(params)
+	if err != nil {
+		return ""
+	} else {
+		return string(str)
 	}
 }
 

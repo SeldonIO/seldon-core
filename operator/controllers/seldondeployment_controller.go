@@ -33,8 +33,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/tools/record"
 	"knative.dev/pkg/kmp"
-	"net/url"
-	"path"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	"github.com/go-logr/logr"
@@ -56,21 +54,13 @@ import (
 const (
 	ENV_DEFAULT_ENGINE_SERVER_PORT      = "ENGINE_SERVER_PORT"
 	ENV_DEFAULT_ENGINE_SERVER_GRPC_PORT = "ENGINE_SERVER_GRPC_PORT"
-	ENV_AMBASSADOR_ENABLED              = "AMBASSADOR_ENABLED"
 	ENV_CONTROLLER_ID                   = "CONTROLLER_ID"
 
 	DEFAULT_ENGINE_CONTAINER_PORT = 8000
 	DEFAULT_ENGINE_GRPC_PORT      = 5001
 
-	AMBASSADOR_ANNOTATION      = "getambassador.io/config"
-	LABEL_CONTROLLER_ID        = "seldon.io/controller-id"
-	ISTIO_DEFAULT_INGRESS      = "istio-ingressgateway.istio-system.svc.cluster.local"
-	AMBASSADOR_DEFAULT_INGRESS = "ambassador.ambassador.svc.cluster.local"
-)
-
-var (
-	envIstioEnabled      = GetEnv(ENV_ISTIO_ENABLED, "false")
-	envAmbassadorEnabled = GetEnv(ENV_AMBASSADOR_ENABLED, "false")
+	AMBASSADOR_ANNOTATION = "getambassador.io/config"
+	LABEL_CONTROLLER_ID   = "seldon.io/controller-id"
 )
 
 // SeldonDeploymentReconciler reconciles a SeldonDeployment object
@@ -106,6 +96,17 @@ type httpGrpcPorts struct {
 	grpcPort int
 }
 
+func createAddressableResource(mlDep *machinelearningv1.SeldonDeployment, namespace string) *machinelearningv1.SeldonAddressable {
+	// It was an explicit design decision to expose the service name instead of the ingress
+	// Currently there will only be a URL for the first predictor
+	firstPredictorName := mlDep.Spec.Predictors[0].Name
+	addressableHost := mlDep.Name + "-" + firstPredictorName + "." + namespace + ".svc.cluster.local"
+	addressablePath := utils.GetPredictionPath(mlDep)
+	addressableUrl := url.URL{Scheme: "http", Host: addressableHost, Path: addressablePath}
+
+	return &machinelearningv1.SeldonAddressable{URL: addressableUrl.String()}
+}
+
 func createHpa(podSpec *machinelearningv1.SeldonPodSpec, deploymentName string, seldonId string, namespace string) *autoscaling.HorizontalPodAutoscaler {
 	hpa := autoscaling.HorizontalPodAutoscaler{
 		ObjectMeta: metav1.ObjectMeta{
@@ -128,27 +129,6 @@ func createHpa(podSpec *machinelearningv1.SeldonPodSpec, deploymentName string, 
 	}
 
 	return &hpa
-}
-
-func createAddressableResource(mlDep *machinelearningv1.SeldonDeployment, namespace string) *machinelearningv1.SeldonAddressable {
-	addressableHost := ""
-	addressablePath := ""
-	// TODO: Make host uri construction dynamic
-	if envIstioEnabled == "true" {
-		addressableHost = ISTIO_DEFAULT_INGRESS
-		addressablePath = path.Join(utils.CreateGatewayUrlPrefix(namespace, mlDep.Name), utils.GetPredictionPath(mlDep))
-	} else if envAmbassadorEnabled == "true" {
-		addressableHost = AMBASSADOR_DEFAULT_INGRESS
-		addressablePath = path.Join(utils.CreateGatewayUrlPrefix(namespace, mlDep.Name), utils.GetPredictionPath(mlDep))
-	} else {
-		// When there is no gateway the service is created for the first predictor
-		firstPredictorName := mlDep.Spec.Predictors[0].Name
-		addressableHost = mlDep.Name + "-" + firstPredictorName + "." + namespace + ".svc.cluster.local"
-		addressablePath = utils.GetPredictionPath(mlDep)
-	}
-	addressableUrl := url.URL{Scheme: "http", Host: addressableHost, Path: addressablePath}
-
-	return &machinelearningv1.SeldonAddressable{URL: addressableUrl.String()}
 }
 
 // Create istio virtual service and destination rule.
@@ -190,7 +170,7 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 				{
 					Match: []*istio_networking.HTTPMatchRequest{
 						{
-							Uri: &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Prefix{Prefix: utils.CreateGatewayUrlPrefix(namespace, mlDep.Name)}},
+							Uri: &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Prefix{Prefix: "/seldon/" + namespace + "/" + mlDep.Name + "/"}},
 						},
 					},
 					Rewrite: &istio_networking.HTTPRewrite{Uri: "/"},
@@ -587,11 +567,11 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 			return nil, err
 		}
 	}
-
+	// Create the addressable as all services are created when SeldonDeployment is ready
 	c.addressable = createAddressableResource(mlDep, namespace)
 
 	//TODO Fixme - not changed to handle per predictor scenario
-	if envIstioEnabled == "true" {
+	if GetEnv(ENV_ISTIO_ENABLED, "false") == "true" {
 		vsvcs, dstRule, err := createIstioResources(mlDep, seldonId, namespace, externalPorts, httpAllowed, grpcAllowed)
 		if err != nil {
 			return nil, err
@@ -633,7 +613,7 @@ func createPredictorService(pSvcName string, seldonId string, p *machinelearning
 		psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engine_grpc_port), TargetPort: intstr.FromInt(engine_grpc_port), Name: "grpc"})
 	}
 
-	if envAmbassadorEnabled == "true" {
+	if GetEnv("AMBASSADOR_ENABLED", "false") == "true" {
 		psvc.Annotations = make(map[string]string)
 		//Create top level Service
 		ambassadorConfig, err := getAmbassadorConfigs(mlDep, p, pSvcName, engine_http_port, engine_grpc_port, isExplainer)
@@ -1027,8 +1007,6 @@ func (r *SeldonDeploymentReconciler) createServices(components *components, inst
 			return ready, err
 		} else {
 			svc.Spec.ClusterIP = found.Spec.ClusterIP
-			// Configure addressable status
-			instance.Status.Address = components.addressable
 			// Update the found object and write the result back if there are any changes
 			if !equality.Semantic.DeepEqual(svc.Spec, found.Spec) || !equality.Semantic.DeepEqual(svc.Annotations, found.Annotations) {
 				desiredSvc := found.DeepCopy()
@@ -1351,7 +1329,6 @@ func (r *SeldonDeploymentReconciler) completeServiceCreation(instance *machinele
 				if err != nil {
 					return err
 				}
-				r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsDeleteService, "Deleted Service %q", found.GetName())
 			}
 		}
 	}
@@ -1491,6 +1468,9 @@ func (r *SeldonDeploymentReconciler) updateStatusForError(desired *machinelearni
 		log.Error(err, "Failed to update InferenceService status")
 		r.Recorder.Eventf(desired, corev1.EventTypeWarning, constants.EventsUpdateFailed,
 			"Failed to update status for SeldonDeployment %q: %v", desired.Name, err)
+	} else {
+		// If there was a difference and there was no error.
+		r.Recorder.Eventf(desired, corev1.EventTypeNormal, constants.EventsUpdated, "Updated SeldonDeployment %q", desired.GetName())
 	}
 }
 
@@ -1507,6 +1487,9 @@ func (r *SeldonDeploymentReconciler) updateStatus(desired *machinelearningv1.Sel
 		r.Recorder.Eventf(desired, corev1.EventTypeWarning, constants.EventsUpdateFailed,
 			"Failed to update status for SeldonDeployment %q: %v", desired.Name, err)
 		return err
+	} else {
+		// If there was a difference and there was no error.
+		r.Recorder.Eventf(desired, corev1.EventTypeNormal, constants.EventsUpdated, "Updated SeldonDeployment %q", desired.GetName())
 	}
 	return nil
 }
