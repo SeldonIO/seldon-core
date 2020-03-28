@@ -13,10 +13,6 @@ func CreateGatewayUrlPrefix(namespace string, sdepName string) string {
 	return "/seldon/" + namespace + "/" + sdepName + "/"
 }
 
-func CreateExplainerGatewayUrlPrefix(namespace string, sdepName string, predictorSpecName string) string {
-	return "/seldon/" + namespace + "/" + sdepName + "/" + predictorSpecName + "/explainer/"
-}
-
 func GetPredictiveUnitAsJson(params []machinelearningv1.Parameter) string {
 	str, err := json.Marshal(params)
 	if err != nil {

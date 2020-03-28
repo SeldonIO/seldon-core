@@ -54,6 +54,9 @@ class TestNotebooks(object):
     def test_server_examples(self):
         create_and_run_script("../../notebooks", "server_examples")
 
+    def test_rolling_updates(self):
+        create_and_run_script("../../notebooks", "rolling_updates")
+
     #
     # Ambassador
     #
