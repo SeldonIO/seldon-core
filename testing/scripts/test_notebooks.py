@@ -23,6 +23,7 @@ def create_and_run_script(folder, notebook):
         logging.error(
             f"failed notebook test {notebook} stdout:{e.stdout}, stderr:{e.stderr}"
         )
+        run("kubectl delete sdep --all", shell=True, check=False)
         raise e
 
 
@@ -135,3 +136,14 @@ class TestNotebooks(object):
     #        "../../examples/models/openvino_imagenet_ensemble",
     #        "openvino_imagenet_ensemble",
     #    )
+
+
+    #
+    # Upgrade
+    #
+
+    def test_upgrade(self):
+        try:
+            create_and_run_script("../../notebooks","operator_upgrade")
+        except:
+            run("make install_seldon",shell=True,check=False)
