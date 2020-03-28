@@ -137,13 +137,12 @@ class TestNotebooks(object):
     #        "openvino_imagenet_ensemble",
     #    )
 
-
     #
     # Upgrade
     #
 
     def test_upgrade(self):
         try:
-            create_and_run_script("../../notebooks","operator_upgrade")
+            create_and_run_script("../../notebooks", "operator_upgrade")
         except:
-            run("make install_seldon",shell=True,check=False)
+            run("make install_seldon", shell=True, check=False)
