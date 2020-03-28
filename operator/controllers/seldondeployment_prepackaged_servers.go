@@ -18,6 +18,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -258,28 +259,30 @@ func SetUriParamsForTFServingProxyContainer(pu *machinelearningv1.PredictiveUnit
 
 func createStandaloneModelServers(r *SeldonDeploymentReconciler, mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, c *components, pu *machinelearningv1.PredictiveUnit) error {
 
-	// some predictors have no podSpec so this could be nil
-	sPodSpec, idx := utils.GetSeldonPodSpecForPredictiveUnit(p, pu.Name)
-	depName := machinelearningv1.GetDeploymentName(mlDep, *p, sPodSpec, idx)
-	seldonId := machinelearningv1.GetSeldonDeploymentName(mlDep)
-
-	var deploy *appsv1.Deployment
-	existing := false
-	for i := 0; i < len(c.deployments); i++ {
-		d := c.deployments[i]
-		if strings.Compare(d.Name, depName) == 0 {
-			deploy = d
-			existing = true
-			break
-		}
-	}
-
-	// might not be a Deployment yet - if so we have to create one
-	if deploy == nil {
-		deploy = createDeploymentWithoutEngine(depName, seldonId, sPodSpec, p, mlDep)
-	}
-
 	if machinelearningv1.IsPrepack(pu) {
+		sPodSpec, idx := utils.GetSeldonPodSpecForPredictiveUnit(p, pu.Name)
+		if sPodSpec == nil {
+			return fmt.Errorf("Failed to find PodSpec for Prepackaged server PreditiveUnit named %s", pu.Name)
+		}
+		depName := machinelearningv1.GetDeploymentName(mlDep, *p, sPodSpec, idx)
+		seldonId := machinelearningv1.GetSeldonDeploymentName(mlDep)
+
+		var deploy *appsv1.Deployment
+		existing := false
+		for i := 0; i < len(c.deployments); i++ {
+			d := c.deployments[i]
+			if strings.Compare(d.Name, depName) == 0 {
+				deploy = d
+				existing = true
+				break
+			}
+		}
+
+		// might not be a Deployment yet - if so we have to create one
+		if deploy == nil {
+			seldonId := machinelearningv1.GetSeldonDeploymentName(mlDep)
+			deploy = createDeploymentWithoutEngine(depName, seldonId, sPodSpec, p, mlDep)
+		}
 
 		ServerConfig := machinelearningv1.GetPrepackServerConfig(string(*pu.Implementation))
 
@@ -289,23 +292,23 @@ func createStandaloneModelServers(r *SeldonDeploymentReconciler, mlDep *machinel
 		if err := addTFServerContainer(mlDep, r, pu, p, deploy, ServerConfig); err != nil {
 			return err
 		}
-	}
 
-	if !existing {
+		if !existing {
 
-		// this is a new deployment so its containers won't have a containerService
-		for k := 0; k < len(deploy.Spec.Template.Spec.Containers); k++ {
-			con := &deploy.Spec.Template.Spec.Containers[k]
+			// this is a new deployment so its containers won't have a containerService
+			for k := 0; k < len(deploy.Spec.Template.Spec.Containers); k++ {
+				con := &deploy.Spec.Template.Spec.Containers[k]
 
-			//checking for con.Name != "" is a fallback check that we haven't got an empty/nil container as name is required
-			if con.Name != EngineContainerName && con.Name != constants.TFServingContainerName && con.Name != "" {
-				svc := createContainerService(deploy, *p, mlDep, con, *c, seldonId)
-				c.services = append(c.services, svc)
+				//checking for con.Name != "" is a fallback check that we haven't got an empty/nil container as name is required
+				if con.Name != EngineContainerName && con.Name != constants.TFServingContainerName && con.Name != "" {
+					svc := createContainerService(deploy, *p, mlDep, con, *c, seldonId)
+					c.services = append(c.services, svc)
+				}
 			}
-		}
-		if len(deploy.Spec.Template.Spec.Containers) > 0 && deploy.Spec.Template.Spec.Containers[0].Name != "" {
-			// Add deployment, provided we have a non-empty spec
-			c.deployments = append(c.deployments, deploy)
+			if len(deploy.Spec.Template.Spec.Containers) > 0 && deploy.Spec.Template.Spec.Containers[0].Name != "" {
+				// Add deployment, provided we have a non-empty spec
+				c.deployments = append(c.deployments, deploy)
+			}
 		}
 	}
 
