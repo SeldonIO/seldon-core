@@ -444,7 +444,7 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 						if svc.Spec.Ports[0].Name == "grpc" {
 							httpAllowed = false
 							externalPorts[i] = httpGrpcPorts{httpPort: 0, grpcPort: port}
-							psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, 0, port, "", log)
+							psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, 0, port, false, log)
 							if err != nil {
 								return nil, err
 							}
@@ -458,7 +458,7 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 						} else {
 							externalPorts[i] = httpGrpcPorts{httpPort: port, grpcPort: 0}
 							grpcAllowed = false
-							psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, port, 0, "", log)
+							psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, port, 0, false, log)
 							if err != nil {
 								return nil, err
 							}
@@ -526,7 +526,7 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 			if grpcAllowed == false {
 				grpcPort = 0
 			}
-			psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, httpPort, grpcPort, "", log)
+			psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, httpPort, grpcPort, false, log)
 			if err != nil {
 
 				return nil, err
@@ -577,7 +577,7 @@ func createPredictorService(pSvcName string, seldonId string, p *machinelearning
 	mlDep *machinelearningv1.SeldonDeployment,
 	engine_http_port int,
 	engine_grpc_port int,
-	ambassadorNameOverride string,
+	isExplainer bool,
 	log logr.Logger) (pSvc *corev1.Service, err error) {
 	namespace := getNamespace(mlDep)
 
@@ -606,7 +606,7 @@ func createPredictorService(pSvcName string, seldonId string, p *machinelearning
 	if GetEnv("AMBASSADOR_ENABLED", "false") == "true" {
 		psvc.Annotations = make(map[string]string)
 		//Create top level Service
-		ambassadorConfig, err := getAmbassadorConfigs(mlDep, p, pSvcName, engine_http_port, engine_grpc_port, ambassadorNameOverride)
+		ambassadorConfig, err := getAmbassadorConfigs(mlDep, p, pSvcName, engine_http_port, engine_grpc_port, isExplainer)
 		if err != nil {
 			return nil, err
 		}
@@ -746,9 +746,10 @@ func createContainerService(deploy *appsv1.Deployment, p machinelearningv1.Predi
 func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpec *machinelearningv1.SeldonPodSpec, p *machinelearningv1.PredictorSpec, mlDep *machinelearningv1.SeldonDeployment) *appsv1.Deployment {
 	deploy := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      depName,
-			Namespace: getNamespace(mlDep),
-			Labels:    map[string]string{machinelearningv1.Label_seldon_id: seldonId, "app": depName, "fluentd": "true"},
+			Name:        depName,
+			Namespace:   getNamespace(mlDep),
+			Labels:      map[string]string{machinelearningv1.Label_seldon_id: seldonId, "app": depName, "fluentd": "true"},
+			Annotations: map[string]string{},
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
@@ -761,7 +762,7 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 						machinelearningv1.Label_app:       depName,
 						machinelearningv1.Label_fluentd:   "true",
 					},
-					Annotations: mlDep.Spec.Annotations,
+					Annotations: map[string]string{},
 				},
 			},
 			Strategy: appsv1.DeploymentStrategy{RollingUpdate: &appsv1.RollingUpdateDeployment{MaxUnavailable: &intstr.IntOrString{StrVal: "10%"}}},
@@ -779,10 +780,21 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 		deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_shadow] = "true"
 	}
 
+	//Add annotations from top level
+	for k, v := range mlDep.Spec.Annotations {
+		deploy.Annotations[k] = v
+		deploy.Spec.Template.ObjectMeta.Annotations[k] = v
+	}
+	// Add annottaions from predictor
+	for k, v := range p.Annotations {
+		deploy.Annotations[k] = v
+		deploy.Spec.Template.ObjectMeta.Annotations[k] = v
+	}
 	if seldonPodSpec != nil {
 		deploy.Spec.Template.Spec = seldonPodSpec.Spec
-		// add more annotations
+		// add more annotations from metadata
 		for k, v := range seldonPodSpec.Metadata.Annotations {
+			deploy.Annotations[k] = v
 			deploy.Spec.Template.ObjectMeta.Annotations[k] = v
 		}
 	}
@@ -791,6 +803,13 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 	for k, v := range p.Labels {
 		deploy.ObjectMeta.Labels[k] = v
 		deploy.Spec.Template.ObjectMeta.Labels[k] = v
+	}
+	// add labels from podSpec metadata
+	if seldonPodSpec != nil {
+		for k, v := range seldonPodSpec.Metadata.Labels {
+			deploy.ObjectMeta.Labels[k] = v
+			deploy.Spec.Template.ObjectMeta.Labels[k] = v
+		}
 	}
 
 	//Add some default to help with diffs in controller
@@ -1300,6 +1319,7 @@ func (r *SeldonDeploymentReconciler) completeServiceCreation(instance *machinele
 				if err != nil {
 					return err
 				}
+				r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsDeleteService, "Deleted Service %q", found.GetName())
 			}
 		}
 	}
@@ -1439,9 +1459,6 @@ func (r *SeldonDeploymentReconciler) updateStatusForError(desired *machinelearni
 		log.Error(err, "Failed to update InferenceService status")
 		r.Recorder.Eventf(desired, corev1.EventTypeWarning, constants.EventsUpdateFailed,
 			"Failed to update status for SeldonDeployment %q: %v", desired.Name, err)
-	} else {
-		// If there was a difference and there was no error.
-		r.Recorder.Eventf(desired, corev1.EventTypeNormal, constants.EventsUpdated, "Updated SeldonDeployment %q", desired.GetName())
 	}
 }
 
@@ -1458,9 +1475,6 @@ func (r *SeldonDeploymentReconciler) updateStatus(desired *machinelearningv1.Sel
 		r.Recorder.Eventf(desired, corev1.EventTypeWarning, constants.EventsUpdateFailed,
 			"Failed to update status for SeldonDeployment %q: %v", desired.Name, err)
 		return err
-	} else {
-		// If there was a difference and there was no error.
-		r.Recorder.Eventf(desired, corev1.EventTypeNormal, constants.EventsUpdated, "Updated SeldonDeployment %q", desired.GetName())
 	}
 	return nil
 }
