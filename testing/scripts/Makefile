@@ -77,7 +77,11 @@ create_namespaces:
 set_namespace:
 	kubectl config set-context $$(kubectl config current-context) --namespace=seldon
 
-kind_setup: create_namespaces helm_setup install_ambassador install_istio install_jaeger install_seldon set_namespace
+# Derived from https://github.com/kubernetes-sigs/kind/issues/398#issuecomment-478325705
+install_metrics:
+	kubectl apply -f metrics.yaml
+
+kind_setup: create_namespaces helm_setup install_ambassador install_istio install_jaeger install_seldon set_namespace install_metrics
 port-forward-ambassador:
 	kubectl port-forward $$(kubectl get pods -n seldon -l app.kubernetes.io/name=ambassador -o jsonpath='{.items[0].metadata.name}') -n seldon 8003:8080
 
