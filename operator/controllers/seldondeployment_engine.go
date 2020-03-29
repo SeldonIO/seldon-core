@@ -421,8 +421,12 @@ func createEngineDeployment(mlDep *machinelearningv1.SeldonDeployment, p *machin
 				},
 			},
 			Strategy: appsv1.DeploymentStrategy{RollingUpdate: &appsv1.RollingUpdateDeployment{MaxUnavailable: &intstr.IntOrString{StrVal: "10%"}}},
-			Replicas: &p.Replicas,
+			Replicas: p.Replicas,
 		},
+	}
+
+	if deploy.Spec.Replicas == nil {
+		deploy.Spec.Replicas = mlDep.Spec.DefaultReplicas
 	}
 
 	// Add a particular service account rather than default for the engine

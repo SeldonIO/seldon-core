@@ -30,6 +30,7 @@ import (
 // +k8s:openapi-gen=true
 // +kubebuilder:resource:shortName=sdep
 // +kubebuilder:subresource:status
+// +kubebuilder:subresource:scale:specpath=.spec.defaultReplicas,statuspath=.status.defaultReplicas
 type SeldonDeployment struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

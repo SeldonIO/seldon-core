@@ -18,6 +18,9 @@ spec:
     singular: seldondeployment
   scope: Namespaced
   subresources:
+    scale:
+      specReplicasPath: .spec.defaultReplicas
+      statusReplicasPath: .status.defaultReplicas
     status: {}
   validation:
     openAPIV3Schema:
@@ -42,6 +45,9 @@ spec:
               additionalProperties:
                 type: string
               type: object
+            defaultReplicas:
+              format: int32
+              type: integer
             name:
               description: Name is Deprecated will be removed in future
               type: string
@@ -8084,6 +8090,9 @@ spec:
         status:
           description: SeldonDeploymentStatus defines the observed state of SeldonDeployment
           properties:
+            defaultReplicas:
+              format: int32
+              type: integer
             deploymentStatus:
               additionalProperties:
                 properties:

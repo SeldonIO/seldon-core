@@ -226,6 +226,11 @@ func (in *PredictorSpec) DeepCopyInto(out *PredictorSpec) {
 			}
 		}
 	}
+	if in.Replicas != nil {
+		in, out := &in.Replicas, &out.Replicas
+		*out = new(int32)
+		**out = **in
+	}
 	if in.Annotations != nil {
 		in, out := &in.Annotations, &out.Annotations
 		*out = make(map[string]string, len(*in))
@@ -334,6 +339,11 @@ func (in *SeldonDeploymentSpec) DeepCopyInto(out *SeldonDeploymentSpec) {
 		for key, val := range *in {
 			(*out)[key] = val
 		}
+	}
+	if in.DefaultReplicas != nil {
+		in, out := &in.DefaultReplicas, &out.DefaultReplicas
+		*out = new(int32)
+		**out = **in
 	}
 }
 

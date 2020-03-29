@@ -406,7 +406,11 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 			if cSpec.HpaSpec != nil {
 				c.hpas = append(c.hpas, createHpa(cSpec, depName, seldonId, namespace))
 			} else {
-				deploy.Spec.Replicas = &p.Replicas
+				if p.Replicas != nil {
+					deploy.Spec.Replicas = p.Replicas
+				} else {
+					deploy.Spec.Replicas = mlDep.Spec.DefaultReplicas
+				}
 			}
 
 			// create services for each container
