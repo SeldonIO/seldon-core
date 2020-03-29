@@ -265,6 +265,7 @@ func createStandaloneModelServers(r *SeldonDeploymentReconciler, mlDep *machinel
 			return fmt.Errorf("Failed to find PodSpec for Prepackaged server PreditiveUnit named %s", pu.Name)
 		}
 		depName := machinelearningv1.GetDeploymentName(mlDep, *p, sPodSpec, idx)
+		seldonId := machinelearningv1.GetSeldonDeploymentName(mlDep)
 
 		var deploy *appsv1.Deployment
 		existing := false
@@ -300,7 +301,7 @@ func createStandaloneModelServers(r *SeldonDeploymentReconciler, mlDep *machinel
 
 				//checking for con.Name != "" is a fallback check that we haven't got an empty/nil container as name is required
 				if con.Name != EngineContainerName && con.Name != constants.TFServingContainerName && con.Name != "" {
-					svc := createContainerService(deploy, *p, mlDep, con, *c)
+					svc := createContainerService(deploy, *p, mlDep, con, *c, seldonId)
 					c.services = append(c.services, svc)
 				}
 			}
