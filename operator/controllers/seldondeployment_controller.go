@@ -949,7 +949,8 @@ func (r *SeldonDeploymentReconciler) createIstioServices(components *components,
 	}
 
 	//Cleanup unused VirtualService. This should usually only happen on Operator upgrades where there is a breaking change to the names of the VirtualServices created
-	if ready {
+	//Only run if we have virtualservices to create - implies we are running with istio active
+	if len(components.virtualServices) > 0 && ready {
 		cleaner := ResourceCleaner{instance: instance, client: r, virtualServices: components.virtualServices, logger: r.Log}
 		deleted, err := cleaner.cleanUnusedVirtualServices()
 		if err != nil {
