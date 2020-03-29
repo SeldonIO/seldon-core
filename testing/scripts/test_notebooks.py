@@ -109,18 +109,14 @@ class TestNotebooks(object):
             )
             raise e
 
-
     def test_autoscaling(self):
         try:
-            create_and_run_script("../../examples/models/autoscaling","autoscaling_example")
-        except CalledProcessError as e:
-            run(
-                f"helm delete loadtester --namespace seldon",
-                shell=True,
-                check=False,
+            create_and_run_script(
+                "../../examples/models/autoscaling", "autoscaling_example"
             )
+        except CalledProcessError as e:
+            run(f"helm delete loadtester --namespace seldon", shell=True, check=False)
             raise e
-
 
     #
     # Payloads
