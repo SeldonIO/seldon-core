@@ -1,13 +1,20 @@
 from seldon_core.metrics import validate_metrics
 from seldon_core.flask_utils import SeldonMicroserviceException
 import json
-from typing import Dict, List, Union, Iterable, Callable, Optional
+from typing import Dict, List, Union, Iterable
 import numpy as np
 from seldon_core.proto import prediction_pb2
+from seldon_core.metrics import SeldonMetrics
 import inspect
 import logging
+import os
 
 logger = logging.getLogger(__name__)
+
+
+INCLUDE_METRICS_IN_CLIENT_RESPONSE = (
+    os.environ.get("INCLUDE_METRICS_IN_CLIENT_RESPONSE", "true").lower() == "true"
+)
 
 
 class SeldonNotImplementedError(SeldonMicroserviceException):
@@ -278,14 +285,21 @@ def client_transform_output(
     return features
 
 
-def client_custom_metrics(user_model: SeldonComponent) -> List[Dict]:
+def client_custom_metrics(
+    user_model: SeldonComponent, seldon_metrics: SeldonMetrics
+) -> List[Dict]:
     """
-    Get custom metrics
+    Get custom metrics for client and update SeldonMetrics.
+
+    This function will return empty list if INCLUDE_METRICS_IN_CLIENT_RESPONSE environmental
+    variable is NOT set to "true" or "True".
 
     Parameters
     ----------
     user_model
        A Seldon user model
+    seldon_metrics
+        A SeldonMetrics instance
 
     Returns
     -------
@@ -302,7 +316,11 @@ def client_custom_metrics(user_model: SeldonComponent) -> List[Dict]:
                     reason="MICROSERVICE_BAD_METRIC",
                 )
 
-            return metrics
+            seldon_metrics.update(metrics)
+            if INCLUDE_METRICS_IN_CLIENT_RESPONSE:
+                return metrics
+            else:
+                return []
         except SeldonNotImplementedError:
             pass
     logger.debug("custom_metrics is not implemented")

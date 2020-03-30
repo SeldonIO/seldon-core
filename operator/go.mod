@@ -15,6 +15,7 @@ require (
 	istio.io/api v0.0.0-20200305220354-742c3015842e
 	istio.io/client-go v0.0.0-20200305195406-fddfc7a9ca06
 	k8s.io/api v0.17.2
+	k8s.io/apiextensions-apiserver v0.17.2
 	k8s.io/apimachinery v0.17.2
 	k8s.io/client-go v0.17.2
 	knative.dev/pkg v0.0.0-20200306225627-d1665814487e
