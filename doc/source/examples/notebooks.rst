@@ -20,7 +20,6 @@ Python Language Wrapper Examples
    :titlesonly:
 
    Scikit-learn Spacy Reddit Text Classification Tutorial <sklearn_spacy_text_classifier_example>
-   Keras MNIST <keras_mnist>
    SKLearn Iris Classifier <iris>
    SKLearn MNIST <sklearn_mnist>
    Sagemaker SKLearn Example <sagemaker_sklearn>   
