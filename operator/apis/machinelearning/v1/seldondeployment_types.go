@@ -237,6 +237,7 @@ const (
 type SvcOrchSpec struct {
 	Resources *v1.ResourceRequirements `json:"resources,omitempty" protobuf:"bytes,1,opt,name=resources"`
 	Env       []*v1.EnvVar             `json:"env,omitempty" protobuf:"bytes,2,opt,name=env"`
+	Replicas  *int32                   `json:"replicas,omitempty" protobuf:"bytes,3,opt,name=replicas"`
 }
 
 type AlibiExplainerType string
@@ -263,6 +264,7 @@ type SeldonPodSpec struct {
 	Metadata metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 	Spec     v1.PodSpec        `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
 	HpaSpec  *SeldonHpaSpec    `json:"hpaSpec,omitempty" protobuf:"bytes,3,opt,name=hpaSpec"`
+	Replicas *int32            `json:"replicas,omitempty" protobuf:"bytes,4,opt,name=replicas"`
 }
 
 type SeldonHpaSpec struct {

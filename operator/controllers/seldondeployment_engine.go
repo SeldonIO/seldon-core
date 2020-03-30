@@ -421,11 +421,15 @@ func createEngineDeployment(mlDep *machinelearningv1.SeldonDeployment, p *machin
 				},
 			},
 			Strategy: appsv1.DeploymentStrategy{RollingUpdate: &appsv1.RollingUpdateDeployment{MaxUnavailable: &intstr.IntOrString{StrVal: "10%"}}},
-			Replicas: p.Replicas,
 		},
 	}
 
-	if deploy.Spec.Replicas == nil {
+	// Set replicas from more specific to more general settings in spec
+	if p.SvcOrchSpec.Replicas != nil {
+		deploy.Spec.Replicas = p.SvcOrchSpec.Replicas
+	} else if p.Replicas != nil {
+		deploy.Spec.Replicas = p.Replicas
+	} else if mlDep.Spec.DefaultReplicas != nil {
 		deploy.Spec.Replicas = mlDep.Spec.DefaultReplicas
 	}
 

@@ -402,8 +402,10 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 			// Add HPA if needed
 			if cSpec.HpaSpec != nil {
 				c.hpas = append(c.hpas, createHpa(cSpec, depName, seldonId, namespace))
-			} else {
-				if p.Replicas != nil {
+			} else { //set replicas from more specifc to more general replicas settings in spec
+				if cSpec.Replicas != nil {
+					deploy.Spec.Replicas = cSpec.Replicas
+				} else if p.Replicas != nil {
 					deploy.Spec.Replicas = p.Replicas
 				} else {
 					deploy.Spec.Replicas = mlDep.Spec.DefaultReplicas

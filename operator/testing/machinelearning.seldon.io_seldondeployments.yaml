@@ -406,6 +406,9 @@ spec:
                           type: object
                         metadata:
                           type: object
+                        replicas:
+                          format: int32
+                          type: integer
                         spec:
                           description: PodSpec is a description of a pod.
                           properties:
@@ -6808,6 +6811,9 @@ spec:
                           - name
                           type: object
                         type: array
+                      replicas:
+                        format: int32
+                        type: integer
                       resources:
                         description: ResourceRequirements describes the compute resource
                           requirements.

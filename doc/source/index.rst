@@ -95,7 +95,7 @@ Documentation Index
    Custom Metrics <analytics/custom_metrics.md>
    Payload Logging with ELK <analytics/logging.md>
    Distributed Tracing with Jaeger <graph/distributed-tracing.md>
-   Autoscaling in Kubernetes <graph/autoscaling.md>
+   Replica scaling  <graph/scaling.md>
       
 .. toctree::
    :maxdepth: 1

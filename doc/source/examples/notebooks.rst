@@ -78,12 +78,15 @@ MLOps: Scaling and Monitoring and Observability
 
 .. toctree::
    :titlesonly:
-  
+
+   Autoscaling Example <autoscaling_example>    
    Request Payload Logging with ELK <payload_logging>
    Custom Metrics with Grafana & Prometheus <metrics>
    Distributed Tracing with Jaeger <tracing>
    CI / CD with Jenkins Classic <jenkins_classic>
    CI / CD with Jenkins X <jenkins_x>
+   Replica control <scale>
+   
 
 Production Configurations and Integrations
 -----
@@ -91,7 +94,6 @@ Production Configurations and Integrations
 .. toctree::
    :titlesonly:
   
-   Autoscaling Example <autoscaling_example>
    Custom Endpoints <custom_endpoints>
    Example Helm Deployments <helm_examples>
    Max gRPC Message Size <max_grpc_msg_size>
