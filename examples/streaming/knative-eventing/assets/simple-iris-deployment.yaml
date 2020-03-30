@@ -1,0 +1,14 @@
+
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: iris-deployment
+spec:
+  predictors:
+  - graph:
+      implementation: SKLEARN_SERVER
+      modelUri: gs://seldon-models/sklearn/iris
+      name: simple-iris-model
+      children: []
+    name: default
+    replicas: 1
