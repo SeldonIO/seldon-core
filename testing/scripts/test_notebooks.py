@@ -118,6 +118,9 @@ class TestNotebooks(object):
             run(f"helm delete loadtester --namespace seldon", shell=True, check=False)
             raise e
 
+    def test_scaling(self):
+        create_and_run_script("../../notebooks", "scale")
+
     #
     # Payloads
     #
