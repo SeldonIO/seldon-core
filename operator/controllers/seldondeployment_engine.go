@@ -267,7 +267,7 @@ func createEngineContainerSpec(mlDep *machinelearningv1.SeldonDeployment, p *mac
 			{Name: "DEPLOYMENT_NAMESPACE", Value: mlDep.ObjectMeta.Namespace},
 			{Name: "ENGINE_SERVER_PORT", Value: strconv.Itoa(engine_http_port)},
 			{Name: "ENGINE_SERVER_GRPC_PORT", Value: strconv.Itoa(engine_grpc_port)},
-			{Name: "JAVA_OPTS", Value: getAnnotation(mlDep, machinelearningv1.ANNOTATION_JAVA_OPTS, "-server -Dcom.sun.management.jmxremote.rmi.port=9090 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9090 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.local.only=false -Djava.rmi.server.hostname=127.0.0.1")},
+			{Name: "JAVA_OPTS", Value: getAnnotation(mlDep, machinelearningv1.ANNOTATION_JAVA_OPTS, "-server")},
 		},
 		Ports: []corev1.ContainerPort{
 			{ContainerPort: int32(engine_http_port), Protocol: corev1.ProtocolTCP},
