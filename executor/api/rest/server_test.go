@@ -97,7 +97,6 @@ func TestCloudeventHeaderIsSet(t *testing.T) {
 	res := httptest.NewRecorder()
 	r.Router.ServeHTTP(res, req)
 	g.Expect(res.Code).To(Equal(200))
-	// Check that the SeldonPUUIDHeader is set
 	g.Expect(len(res.Header().Get(CLOUDEVENTS_HEADER_ID_NAME))).ShouldNot(BeZero())
 	g.Expect(len(res.Header().Get(CLOUDEVENTS_HEADER_ID_NAME))).To(Equal(len(guuid.New().String())))
 	g.Expect(res.Header().Get(CLOUDEVENTS_HEADER_SPECVERSION_NAME)).To(Equal(CLOUDEVENTS_HEADER_SPECVERSION_DEFAULT))
@@ -136,7 +135,6 @@ func TestCloudeventHeaderIsNotSet(t *testing.T) {
 	res := httptest.NewRecorder()
 	r.Router.ServeHTTP(res, req)
 	g.Expect(res.Code).To(Equal(200))
-	// Check that the SeldonPUUIDHeader is set
 	g.Expect(len(res.Header().Get(CLOUDEVENTS_HEADER_ID_NAME))).Should(BeZero())
 	g.Expect(len(res.Header().Get(CLOUDEVENTS_HEADER_SPECVERSION_NAME))).Should(BeZero())
 	g.Expect(len(res.Header().Get(CLOUDEVENTS_HEADER_PATH_NAME))).Should(BeZero())

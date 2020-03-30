@@ -93,12 +93,13 @@ type httpGrpcPorts struct {
 func createAddressableResource(mlDep *machinelearningv1.SeldonDeployment, namespace string) (*machinelearningv1.SeldonAddressable, error) {
 	// It was an explicit design decision to expose the service name instead of the ingress
 	// Currently there will only be a URL for the first predictor, and assumes always REST
-	firstPredictorName := mlDep.Spec.Predictors[0].Name
+	firstPredictor := &mlDep.Spec.Predictors[0]
+	sdepSvcName := machinelearningv1.GetPredictorKey(mlDep, firstPredictor)
 	addressablePort, err := getEngineHttpPort()
 	if err != nil {
 		return nil, err
 	}
-	addressableHost := mlDep.Name + "-" + firstPredictorName + "." + namespace + ".svc.cluster.local" + ":" + strconv.Itoa(addressablePort)
+	addressableHost := sdepSvcName + "." + namespace + ".svc.cluster.local" + ":" + strconv.Itoa(addressablePort)
 	addressablePath := utils.GetPredictionPath(mlDep)
 	addressableUrl := url.URL{Scheme: "http", Host: addressableHost, Path: addressablePath}
 
