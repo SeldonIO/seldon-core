@@ -2,8 +2,9 @@ package controllers
 
 import (
 	"context"
+
 	"github.com/go-logr/logr"
-	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	istio "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
