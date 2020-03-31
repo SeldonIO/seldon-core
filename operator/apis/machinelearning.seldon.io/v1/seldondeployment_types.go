@@ -388,12 +388,19 @@ const (
 	StatusStateFailed    StatusState = "Failed"
 )
 
+// Addressable placeholder until duckv1 issue is fixed:
+//    https://github.com/kubernetes-sigs/controller-tools/issues/391
+type SeldonAddressable struct {
+	URL string `json:"url,omitempty"`
+}
+
 // SeldonDeploymentStatus defines the observed state of SeldonDeployment
 type SeldonDeploymentStatus struct {
 	State            StatusState                 `json:"state,omitempty" protobuf:"string,1,opt,name=state"`
 	Description      string                      `json:"description,omitempty" protobuf:"string,2,opt,name=description"`
 	DeploymentStatus map[string]DeploymentStatus `json:"deploymentStatus,omitempty" protobuf:"bytes,3,opt,name=deploymentStatus"`
 	ServiceStatus    map[string]ServiceStatus    `json:"serviceStatus,omitempty" protobuf:"bytes,4,opt,name=serviceStatus"`
+	Address          *SeldonAddressable          `json:"address,omitempty"`
 }
 
 // +genclient

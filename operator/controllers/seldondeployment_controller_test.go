@@ -531,7 +531,6 @@ var _ = Describe("Create a Seldon Deployment with hpa", func() {
 		Expect(k8sClient.Delete(context.Background(), instance)).Should(Succeed())
 
 	})
-
 })
 
 var _ = Describe("Create a Seldon Deployment and then a new one", func() {
