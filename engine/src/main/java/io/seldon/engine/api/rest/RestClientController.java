@@ -16,6 +16,7 @@
 package io.seldon.engine.api.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.micrometer.core.annotation.Timed;
 import io.opentracing.Span;
@@ -28,6 +29,7 @@ import io.seldon.engine.tracing.TracingProvider;
 import io.seldon.protos.PredictionProtos.Feedback;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
