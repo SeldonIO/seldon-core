@@ -121,6 +121,68 @@ public class RestClientController {
     logger.warn("App UnPaused");
     return "unpaused";
   }
+  
+  @Timed
+  @CrossOrigin(origins = "*")
+  @RequestMapping(
+          value = {"/api/v1.0/predictions", "/api/v0.1/predictions"},
+          method = RequestMethod.POST,
+          consumes = "text/*; charset=utf-8",
+          produces = "application/json; charset=utf-8")
+  public ResponseEntity<String> predictions_text(RequestEntity<String> requestEntity) {
+    logger.debug("Received text predict request");
+    Span tracingSpan = null;
+    if (tracingProvider.isActive()) {
+      Tracer tracer = tracingProvider.getTracer();
+      tracingSpan = tracer.buildSpan("/api/v0.1/predictions").start();
+      tracer.scopeManager().activate(tracingSpan);
+    }
+    try {
+      ObjectMapper mapper = new ObjectMapper();
+      Map<String, Object> protoBody = new HashMap<String, Object>() {{
+        put("strData", requestEntity.getBody());
+      }};
+      return _predictions(mapper.writeValueAsString(protoBody));
+    } catch (IOException e) {
+      logger.error("Bad request", e);
+      throw new APIException(ApiExceptionType.REQUEST_IO_EXCEPTION, e.getMessage());
+    } finally {
+      if (tracingSpan != null) {
+        tracingSpan.finish();
+      }
+    }
+  }
+
+  @Timed
+  @CrossOrigin(origins = "*")
+  @RequestMapping(
+          value = {"/api/v1.0/predictions", "/api/v0.1/predictions"},
+          method = RequestMethod.POST,
+          consumes = "application/octet-stream; charset=utf-8",
+          produces = "application/json; charset=utf-8")
+  public ResponseEntity<String> predictions_binary(RequestEntity<InputStream> requestEntity) {
+    logger.debug("Received binary predict request");
+    Span tracingSpan = null;
+    if (tracingProvider.isActive()) {
+      Tracer tracer = tracingProvider.getTracer();
+      tracingSpan = tracer.buildSpan("/api/v0.1/predictions").start();
+      tracer.scopeManager().activate(tracingSpan);
+    }
+    try {
+      ObjectMapper mapper = new ObjectMapper();
+      Map<String, Object> protoBody = new HashMap<String, Object>() {{
+        put("binData", ByteString.readFrom(requestEntity.getBody()));
+      }};
+      return _predictions(mapper.writeValueAsString(protoBody));
+    } catch (IOException e) {
+      logger.error("Bad request", e);
+      throw new APIException(ApiExceptionType.REQUEST_IO_EXCEPTION, e.getMessage());
+    } finally {
+      if (tracingSpan != null) {
+        tracingSpan.finish();
+      }
+    }
+  }
 
   @Timed
   @CrossOrigin(origins = "*")
