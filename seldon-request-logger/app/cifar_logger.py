@@ -103,10 +103,13 @@ def process_content(message_type,content):
 
     if message_type == 'request':
         # we know this is a cifar10 image
-        content["dataType"] = "image"
-        requestCopy["image"] = decode(content)
+        requestCopy["dataType"] = "image"
+        requestCopy["instance"] = decode(content)
         if "instances" in requestCopy:
             del requestCopy["instances"]
+
+    #also record the original request as 'payload'
+    requestCopy['payload'] = content
 
     return requestCopy
 
