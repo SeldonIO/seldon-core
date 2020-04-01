@@ -1,0 +1,400 @@
+
+Showing logs for build [32mseldonio-seldon-core-pr-1650-in-9vx5s-3[0m stage [32mpr-build-comment[0m and container [32mstep-credential-initializer-xmcc4[0m
+{"level":"warn","ts":1585745578.5408936,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1585745578.541392,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1650-in-9vx5s-3[0m stage [32mpr-build-comment[0m and container [32mstep-working-dir-initializer-ht8v4[0m
+{"level":"warn","ts":1585745579.3165836,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1585745579.3184695,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1650-in-9vx5s-3[0m stage [32mpr-build-comment[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-1650-in-9vx5s-3[0m stage [32mpr-build-comment[0m and container [32mstep-create-dir-workspace-qgzp4[0m
+{"level":"warn","ts":1585745592.5227897,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1585745592.524467,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1650-in-9vx5s-3[0m stage [32mpr-build-comment[0m and container [32mstep-git-source-seldonio-seldon-core-pr-1650-in-p8tsn[0m
+{"level":"warn","ts":1585745592.9191895,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1585745597.8402133,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ master in path /workspace/source"}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1650-in-9vx5s-3[0m stage [32mpr-build-comment[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:d4c435ea5217825dacf592ee89db67d7472ff2be,1650:a954964faf9e652e54d34d602a8e3d020a0c2d62
+DEBUG: ran git fetch --unshallow origin a954964faf9e652e54d34d602a8e3d020a0c2d62: d4c435ea5217825dacf592ee89db67d7472ff2be: in 
+DEBUG: ran git checkout master in 
+DEBUG: ran git reset --hard d4c435ea5217825dacf592ee89db67d7472ff2be in 
+DEBUG: ran clean --force -d . in 
+DEBUG: ran git merge a954964faf9e652e54d34d602a8e3d020a0c2d62 in 
+Merged SHA a954964faf9e652e54d34d602a8e3d020a0c2d62 with commit message 'Update operator dependency and remove docker+make fix' into base branch master
+
+Showing logs for build [32mseldonio-seldon-core-pr-1650-in-9vx5s-3[0m stage [32mpr-build-comment[0m and container [32mstep-step2[0m
++++ dirname ./add-pr-build-comment
+++ cd .
+++ pwd
++ STARTUP_DIR=/workspace/source/ci
++ REPO_OWNER=SeldonIO
++ REPO_NAME=seldon-core
++ PULL_NUMBER=1650
++ BUILD_NUMBER=3
++ PIPELINE_CONTEXT=integration
+++ cat
++++ date
++ COMMENT_MSG='Wed Apr  1 12:53:24 UTC 2020
+The logs for [integration] [3] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-1650/3.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-1650 --build=3'
++ ** step pr comment --owner=SeldonIO --repository=seldon-core --pull-request=1650 '--comment=Wed Apr  1 12:53:24 UTC 2020
+The logs for [integration] [3] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-1650/3.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-1650 --build=3'
+
+Showing logs for build [32mseldonio-seldon-core-pr-1650-in-9vx5s-3[0m stage [32mpr-build-comment[0m and container [32mstep-source-mkdir-seldonio-seldon-core-pr-1650-in-89cpt[0m
+{"level":"warn","ts":1585745606.5001621,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1585745606.5032885,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1650-in-9vx5s-3[0m stage [32mpr-build-comment[0m and container [32mstep-source-copy-seldonio-seldon-core-pr-1650-in-zb45c[0m
+{"level":"warn","ts":1585745606.7657642,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1585745607.050282,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r source/. /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1650-in-9vx5s-3[0m stage [32mend-to-end[0m and container [32mstep-credential-initializer-s8kzh[0m
+{"level":"warn","ts":1585745619.3520362,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1585745619.3524106,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1650-in-9vx5s-3[0m stage [32mend-to-end[0m and container [32mstep-working-dir-initializer-dnxjw[0m
+{"level":"warn","ts":1585745620.6463952,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1585745620.6477256,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1650-in-9vx5s-3[0m stage [32mend-to-end[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-1650-in-9vx5s-3[0m stage [32mend-to-end[0m and container [32mstep-create-dir-workspace-5f6qj[0m
+{"level":"warn","ts":1585745710.7676172,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1585745710.7696517,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1650-in-9vx5s-3[0m stage [32mend-to-end[0m and container [32mstep-source-copy-workspace-g9pm5[0m
+{"level":"warn","ts":1585745711.017229,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1585745722.2056081,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1650-in-9vx5s-3[0m stage [32mend-to-end[0m and container [32mstep-test-end-to-end[0m
+Test run type is: [base]
+Starting Docker: docker.
+[SETUP] Waiting for Docker to be ready, sleeping for 1 seconds ...
+kind create cluster --config ../resources/kind_config.yaml
+Creating cluster "kind" ...
+ • Ensuring node image (kindest/node:v1.16.3) 🖼  ...
+ ✓ Ensuring node image (kindest/node:v1.16.3) 🖼
+ • Preparing nodes 📦  ...
+ ✓ Preparing nodes 📦
+ • Writing configuration 📜  ...
+ ✓ Writing configuration 📜
+ • Starting control-plane 🕹️  ...
+ ✓ Starting control-plane 🕹️
+ • Installing CNI 🔌  ...
+ ✓ Installing CNI 🔌
+ • Installing StorageClass 💾  ...
+ ✓ Installing StorageClass 💾
+ • Joining worker nodes 🚜  ...
+ ✓ Joining worker nodes 🚜
+Set kubectl context to "kind-kind"
+You can now use your cluster with:
+
+kubectl cluster-info --context kind-kind
+
+Thanks for using kind! 😊
+`kind get kubeconfig-path` is deprecated!
+
+KIND will export and merge kubeconfig like kops, minikube, etc.
+This command is now unnecessary and will be removed in a future release.
+
+For more info see: https://github.com/kubernetes-sigs/kind/issues/1060
+See also the output of `kind create cluster`
+
+Files changed in python folder:
+SKIPPING PYTHON IMAGE BUILD...
+Files changed in operator folder:
+SKIPPING OPERATOR IMAGE BUILD...
+Files changed in engine folder:
+SKIPPING ENGINE IMAGE BUILD...
+Files changed in executor folder:
+executor/Dockerfile
+executor/Makefile
+executor/go.mod
+executor/go.sum
+cd ../../executor && make kind-image-install
+make[1]: Entering directory '/workspace/source/executor'
+go fmt ./...
+go: downloading github.com/seldonio/seldon-core/operator v0.0.0-20200401123312-d4c435ea5217
+go: downloading github.com/go-logr/logr v0.1.0
+go: downloading github.com/grpc-ecosystem/go-grpc-middleware v1.1.0
+go: downloading google.golang.org/grpc v1.24.0
+go: downloading sigs.k8s.io/controller-runtime v0.5.0
+go: downloading github.com/golang/protobuf v1.3.2
+go: downloading github.com/prometheus/client_golang v1.3.0
+go: downloading github.com/cloudevents/sdk-go v0.10.2
+go: downloading k8s.io/apimachinery v0.17.2
+go: extracting github.com/go-logr/logr v0.1.0
+go: downloading github.com/tensorflow/tensorflow v1.14.0
+go: extracting github.com/grpc-ecosystem/go-grpc-middleware v1.1.0
+go: extracting github.com/prometheus/client_golang v1.3.0
+go: downloading github.com/uber/jaeger-client-go v2.21.1+incompatible
+go: extracting github.com/seldonio/seldon-core/operator v0.0.0-20200401123312-d4c435ea5217
+go: extracting github.com/cloudevents/sdk-go v0.10.2
+go: downloading github.com/prometheus/common v0.7.0
+go: extracting github.com/golang/protobuf v1.3.2
+go: extracting sigs.k8s.io/controller-runtime v0.5.0
+go: downloading github.com/cespare/xxhash/v2 v2.1.1
+go: extracting github.com/prometheus/common v0.7.0
+go: extracting k8s.io/apimachinery v0.17.2
+go: downloading github.com/ghodss/yaml v1.0.0
+go: downloading golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7
+go: downloading github.com/evanphx/json-patch v4.5.0+incompatible
+go: extracting github.com/cespare/xxhash/v2 v2.1.1
+go: extracting github.com/evanphx/json-patch v4.5.0+incompatible
+go: extracting github.com/ghodss/yaml v1.0.0
+go: downloading k8s.io/api v0.17.2
+go: downloading k8s.io/client-go v0.17.2
+go: extracting golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7
+go: extracting google.golang.org/grpc v1.24.0
+go: extracting github.com/uber/jaeger-client-go v2.21.1+incompatible
+go: downloading github.com/prometheus/client_model v0.1.0
+go: extracting github.com/prometheus/client_model v0.1.0
+go: downloading github.com/opentracing/opentracing-go v1.1.0
+go: downloading github.com/google/gofuzz v1.0.0
+go: extracting github.com/google/gofuzz v1.0.0
+go: downloading github.com/google/uuid v1.1.1
+go: extracting github.com/google/uuid v1.1.1
+go: downloading gopkg.in/alecthomas/kingpin.v2 v2.2.6
+go: extracting github.com/opentracing/opentracing-go v1.1.0
+go: extracting gopkg.in/alecthomas/kingpin.v2 v2.2.6
+go: downloading github.com/uber/jaeger-lib v2.2.0+incompatible
+go: downloading github.com/prometheus/procfs v0.0.8
+go: downloading github.com/alecthomas/units v0.0.0-20190717042225-c3de453c63f4
+go: extracting github.com/uber/jaeger-lib v2.2.0+incompatible
+go: extracting github.com/alecthomas/units v0.0.0-20190717042225-c3de453c63f4
+go: downloading github.com/gogo/protobuf v1.3.1
+go: downloading github.com/pkg/errors v0.8.1
+go: extracting github.com/pkg/errors v0.8.1
+go: extracting github.com/prometheus/procfs v0.0.8
+go: downloading go.uber.org/zap v1.10.0
+go: downloading golang.org/x/sys v0.0.0-20191220142924-d4481acd189f
+go: extracting go.uber.org/zap v1.10.0
+go: extracting k8s.io/client-go v0.17.2
+go: downloading k8s.io/klog v1.0.0
+go: extracting github.com/gogo/protobuf v1.3.1
+go: extracting k8s.io/api v0.17.2
+go: extracting k8s.io/klog v1.0.0
+go: extracting golang.org/x/sys v0.0.0-20191220142924-d4481acd189f
+go: downloading gomodules.xyz/jsonpatch/v2 v2.0.1
+go: downloading golang.org/x/net v0.0.0-20191004110552-13f9640d40b9
+go: downloading github.com/beorn7/perks v1.0.1
+go: downloading golang.org/x/time v0.0.0-20190921001708-c4c64cad1fd0
+go: downloading go.uber.org/atomic v1.4.0
+go: downloading go.opencensus.io v0.22.0
+go: downloading github.com/spf13/pflag v1.0.5
+go: downloading github.com/matttproud/golang_protobuf_extensions v1.0.1
+go: extracting gomodules.xyz/jsonpatch/v2 v2.0.1
+go: downloading github.com/davecgh/go-spew v1.1.1
+go: extracting github.com/matttproud/golang_protobuf_extensions v1.0.1
+go: extracting github.com/beorn7/perks v1.0.1
+go: extracting github.com/spf13/pflag v1.0.5
+go: extracting go.uber.org/atomic v1.4.0
+go: extracting golang.org/x/time v0.0.0-20190921001708-c4c64cad1fd0
+go: downloading github.com/gorilla/mux v1.7.3
+go: downloading google.golang.org/genproto v0.0.0-20190916214212-f660b8655731
+go: extracting github.com/davecgh/go-spew v1.1.1
+go: downloading k8s.io/kube-openapi v0.0.0-20191107075043-30be4d16710a
+go: downloading github.com/imdario/mergo v0.3.7
+go: downloading go.uber.org/multierr v1.1.0
+go: extracting github.com/imdario/mergo v0.3.7
+go: downloading k8s.io/utils v0.0.0-20191114184206-e782cd3c129f
+go: extracting github.com/gorilla/mux v1.7.3
+go: extracting go.uber.org/multierr v1.1.0
+go: downloading gopkg.in/fsnotify.v1 v1.4.7
+go: extracting go.opencensus.io v0.22.0
+go: extracting k8s.io/utils v0.0.0-20191114184206-e782cd3c129f
+go: extracting gopkg.in/fsnotify.v1 v1.4.7
+go: downloading github.com/googleapis/gnostic v0.3.1
+go: downloading gopkg.in/inf.v0 v0.9.1
+go: extracting gopkg.in/inf.v0 v0.9.1
+go: downloading golang.org/x/crypto v0.0.0-20190923035154-9ee001bba392
+go: downloading github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
+go: downloading github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6
+go: extracting github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6
+go: extracting golang.org/x/net v0.0.0-20191004110552-13f9640d40b9
+go: extracting github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
+go: downloading github.com/hashicorp/golang-lru v0.5.4
+go: extracting github.com/hashicorp/golang-lru v0.5.4
+go: extracting github.com/googleapis/gnostic v0.3.1
+go: downloading k8s.io/apiextensions-apiserver v0.17.2
+go: extracting k8s.io/kube-openapi v0.0.0-20191107075043-30be4d16710a
+go: extracting golang.org/x/crypto v0.0.0-20190923035154-9ee001bba392
+go: downloading sigs.k8s.io/yaml v1.1.0
+go: extracting sigs.k8s.io/yaml v1.1.0
+go: extracting k8s.io/apiextensions-apiserver v0.17.2
+go: downloading github.com/go-logr/zapr v0.1.0
+go: downloading github.com/json-iterator/go v1.1.9
+go: downloading github.com/modern-go/reflect2 v1.0.1
+go: extracting github.com/modern-go/reflect2 v1.0.1
+go: extracting github.com/go-logr/zapr v0.1.0
+go: downloading golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+go: downloading gopkg.in/yaml.v2 v2.2.4
+go: extracting golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+go: extracting gopkg.in/yaml.v2 v2.2.4
+go: extracting github.com/json-iterator/go v1.1.9
+go: downloading github.com/sirupsen/logrus v1.4.2
+go: downloading golang.org/x/text v0.3.2
+go: downloading github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+go: extracting github.com/sirupsen/logrus v1.4.2
+go: extracting github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+go: downloading github.com/google/go-cmp v0.3.1
+go: extracting github.com/google/go-cmp v0.3.1
+go: extracting google.golang.org/genproto v0.0.0-20190916214212-f660b8655731
+go: extracting golang.org/x/text v0.3.2
+go: extracting github.com/tensorflow/tensorflow v1.14.0
+go: finding github.com/cloudevents/sdk-go v0.10.2
+go: finding github.com/go-logr/logr v0.1.0
+go: finding github.com/opentracing/opentracing-go v1.1.0
+go: finding github.com/golang/protobuf v1.3.2
+go: finding github.com/seldonio/seldon-core/operator v0.0.0-20200401123312-d4c435ea5217
+go: finding github.com/prometheus/client_golang v1.3.0
+go: finding github.com/ghodss/yaml v1.0.0
+go: finding sigs.k8s.io/controller-runtime v0.5.0
+go: finding github.com/google/uuid v1.1.1
+go: finding github.com/pkg/errors v0.8.1
+go: finding github.com/uber/jaeger-client-go v2.21.1+incompatible
+go: finding google.golang.org/grpc v1.24.0
+go: finding github.com/grpc-ecosystem/go-grpc-middleware v1.1.0
+go: finding gopkg.in/yaml.v2 v2.2.4
+go: finding github.com/prometheus/common v0.7.0
+go: finding golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7
+go: finding github.com/gorilla/mux v1.7.3
+go: finding github.com/beorn7/perks v1.0.1
+go: finding k8s.io/apimachinery v0.17.2
+go: finding go.uber.org/zap v1.10.0
+go: finding k8s.io/api v0.17.2
+go: finding github.com/cespare/xxhash/v2 v2.1.1
+go: finding k8s.io/client-go v0.17.2
+go: finding go.opencensus.io v0.22.0
+go: finding github.com/sirupsen/logrus v1.4.2
+go: finding github.com/prometheus/client_model v0.1.0
+go: finding github.com/gogo/protobuf v1.3.1
+go: finding gopkg.in/alecthomas/kingpin.v2 v2.2.6
+go: finding golang.org/x/sys v0.0.0-20191220142924-d4481acd189f
+go: finding google.golang.org/genproto v0.0.0-20190916214212-f660b8655731
+go: finding github.com/go-logr/zapr v0.1.0
+go: finding go.uber.org/atomic v1.4.0
+go: finding github.com/prometheus/procfs v0.0.8
+go: finding go.uber.org/multierr v1.1.0
+go: finding k8s.io/klog v1.0.0
+go: finding github.com/google/gofuzz v1.0.0
+go: finding github.com/matttproud/golang_protobuf_extensions v1.0.1
+go: finding github.com/uber/jaeger-lib v2.2.0+incompatible
+go: finding golang.org/x/net v0.0.0-20191004110552-13f9640d40b9
+go: finding github.com/alecthomas/units v0.0.0-20190717042225-c3de453c63f4
+go: finding github.com/imdario/mergo v0.3.7
+go: finding github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
+go: finding github.com/hashicorp/golang-lru v0.5.4
+go: finding github.com/json-iterator/go v1.1.9
+go: finding github.com/modern-go/reflect2 v1.0.1
+go: finding github.com/spf13/pflag v1.0.5
+go: finding gopkg.in/inf.v0 v0.9.1
+go: finding golang.org/x/crypto v0.0.0-20190923035154-9ee001bba392
+go: finding github.com/evanphx/json-patch v4.5.0+incompatible
+go: finding gomodules.xyz/jsonpatch/v2 v2.0.1
+go: finding github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+go: finding sigs.k8s.io/yaml v1.1.0
+go: finding golang.org/x/time v0.0.0-20190921001708-c4c64cad1fd0
+go: finding golang.org/x/text v0.3.2
+go: finding gopkg.in/fsnotify.v1 v1.4.7
+go: finding github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6
+go: finding github.com/googleapis/gnostic v0.3.1
+go: finding github.com/davecgh/go-spew v1.1.1
+go: finding k8s.io/apiextensions-apiserver v0.17.2
+go: finding k8s.io/utils v0.0.0-20191114184206-e782cd3c129f
+go: finding golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+go: finding k8s.io/kube-openapi v0.0.0-20191107075043-30be4d16710a
+go: finding github.com/google/go-cmp v0.3.1
+go vet ./...
+go: downloading github.com/onsi/gomega v1.8.1
+go: downloading gotest.tools v2.2.0+incompatible
+go: extracting gotest.tools v2.2.0+incompatible
+go: extracting github.com/onsi/gomega v1.8.1
+go: finding github.com/onsi/gomega v1.8.1
+go: finding gotest.tools v2.2.0+incompatible
+go test ./api/... ./predictor/... ./k8s/...  -coverprofile cover.out
+?   	github.com/seldonio/seldon-core/executor/api	[no test files]
+?   	github.com/seldonio/seldon-core/executor/api/client	[no test files]
+ok  	github.com/seldonio/seldon-core/executor/api/grpc	0.022s	coverage: 19.6% of statements
+ok  	github.com/seldonio/seldon-core/executor/api/grpc/seldon	1.130s	coverage: 35.9% of statements
+?   	github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto	[no test files]
+?   	github.com/seldonio/seldon-core/executor/api/grpc/seldon/test	[no test files]
+ok  	github.com/seldonio/seldon-core/executor/api/grpc/tensorflow	0.023s	coverage: 17.5% of statements
+ok  	github.com/seldonio/seldon-core/executor/api/metric	0.041s	coverage: 37.5% of statements
+ok  	github.com/seldonio/seldon-core/executor/api/payload	0.027s	coverage: 64.3% of statements
+ok  	github.com/seldonio/seldon-core/executor/api/rest	1.053s	coverage: 65.8% of statements
+?   	github.com/seldonio/seldon-core/executor/api/test	[no test files]
+ok  	github.com/seldonio/seldon-core/executor/api/tracing	0.007s	coverage: 72.2% of statements
+?   	github.com/seldonio/seldon-core/executor/api/util	[no test files]
+ok  	github.com/seldonio/seldon-core/executor/predictor	0.048s	coverage: 76.6% of statements
+ok  	github.com/seldonio/seldon-core/executor/k8s	0.016s	coverage: 72.7% of statements
+docker build -f Dockerfile -t seldonio/seldon-core-executor:1.0.3-SNAPSHOT .
+Sending build context to Docker daemon  3.472MB
+Step 1/18 : FROM golang:1.13 as builder
+1.13: Pulling from library/golang
+f15005b0235f: Pulling fs layer
+41ebfd3d2fd0: Pulling fs layer
+b998346ba308: Pulling fs layer
+f01ec562c947: Pulling fs layer
+c5e092b8639b: Pulling fs layer
+89f17a5c26fc: Pulling fs layer
+c9f73938539c: Pulling fs layer
+c5e092b8639b: Waiting
+89f17a5c26fc: Waiting
+c9f73938539c: Waiting
+f01ec562c947: Waiting
+41ebfd3d2fd0: Verifying Checksum
+41ebfd3d2fd0: Download complete
+b998346ba308: Verifying Checksum
+b998346ba308: Download complete
+f15005b0235f: Verifying Checksum
+f15005b0235f: Download complete
+f01ec562c947: Download complete
+c5e092b8639b: Verifying Checksum
+c5e092b8639b: Download complete
+c9f73938539c: Verifying Checksum
+c9f73938539c: Download complete
+89f17a5c26fc: Verifying Checksum
+89f17a5c26fc: Download complete
+f15005b0235f: Pull complete
+41ebfd3d2fd0: Pull complete
+b998346ba308: Pull complete
+f01ec562c947: Pull complete
+c5e092b8639b: Pull complete
+89f17a5c26fc: Pull complete
+c9f73938539c: Pull complete
+Digest: sha256:e7f332caf6b3eba7bd7c5469d3d29fe0c386644b10bf8396cae8075cb2596abb
+Status: Downloaded newer image for golang:1.13
+ ---> ea7439326d7d
+Step 2/18 : WORKDIR /workspace
+ ---> Running in e1fd11dcdfec
+Removing intermediate container e1fd11dcdfec
+ ---> e16a55bb1ec8
+Step 3/18 : COPY go.mod go.mod
+ ---> 4ff0503cac99
+Step 4/18 : COPY go.sum go.sum
+ ---> fdbdca7f3e9f
+Step 5/18 : COPY proto/ proto/
+ ---> a991530dcb69
+Step 6/18 : COPY operator/ ../operator/
+COPY failed: stat /var/lib/docker/tmp/docker-builder054107079/operator: no such file or directory
+make[1]: Leaving directory '/workspace/source/executor'
+make[1]: *** [Makefile:58: docker-build] Error 1
+make: *** [Makefile:20: kind_build_executor] Error 2
+Executor build returned errors
+kind delete cluster
+Deleting cluster "kind" ...
+Stopping Docker: dockerProgram process in pidfile '/var/run/docker-ssd.pid', 1 process(es), refused to die.
+[31m
+Pipeline failed on stage 'end-to-end' : container 'step-test-end-to-end'. The execution of the pipeline has stopped.[0m
