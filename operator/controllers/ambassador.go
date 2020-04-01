@@ -1,11 +1,12 @@
 package controllers
 
 import (
-	"github.com/seldonio/seldon-core/operator/constants"
 	"strconv"
 	"strings"
 
-	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	"github.com/seldonio/seldon-core/operator/constants"
+
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"gopkg.in/yaml.v2"
 )
 
