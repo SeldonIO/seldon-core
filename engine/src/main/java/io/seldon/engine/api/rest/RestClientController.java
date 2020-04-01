@@ -16,6 +16,7 @@
 package io.seldon.engine.api.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.micrometer.core.annotation.Timed;
 import io.opentracing.Span;
@@ -175,7 +176,7 @@ public class RestClientController {
     try {
       ObjectMapper mapper = new ObjectMapper();
       Map<String, Object> protoBody = new HashMap<String, Object>() {{
-        put("binData", toByteArray(requestEntity.getBody()));
+        put("binData", ByteString.copyFrom(toByteArray(requestEntity.getBody())));
       }};
       return _predictions(mapper.writeValueAsString(protoBody));
     } catch (IOException e) {
