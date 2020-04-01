@@ -16,7 +16,7 @@ require (
 	github.com/pkg/errors v0.8.1
 	github.com/prometheus/client_golang v1.3.0
 	github.com/prometheus/common v0.7.0
-	github.com/seldonio/seldon-core/operator v0.0.0-20191223100430-3b372610589b
+	github.com/seldonio/seldon-core/operator v0.0.0-20200401123312-d4c435ea5217
 	github.com/tensorflow/tensorflow v1.14.0 // indirect
 	github.com/tensorflow/tensorflow/tensorflow/go/core v0.0.0-00010101000000-000000000000
 	github.com/uber/jaeger-client-go v2.21.1+incompatible
@@ -28,9 +28,8 @@ require (
 	k8s.io/apimachinery v0.17.2
 	k8s.io/client-go v0.17.2
 	sigs.k8s.io/controller-runtime v0.5.0
+	sigs.k8s.io/controller-tools v0.2.0 // indirect
 	sigs.k8s.io/testing_frameworks v0.1.1 // indirect
 )
 
 replace github.com/tensorflow/tensorflow/tensorflow/go/core => ./proto/tensorflow/core
-
-replace github.com/seldonio/seldon-core/operator => ../operator
