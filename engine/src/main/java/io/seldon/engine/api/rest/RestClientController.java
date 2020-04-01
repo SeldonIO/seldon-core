@@ -49,6 +49,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
+import static io.seldon.engine.util.StreamUtils.toByteArray;
+
 @RestController
 public class RestClientController {
 
@@ -160,7 +162,7 @@ public class RestClientController {
   @RequestMapping(
           value = {"/api/v1.0/predictions", "/api/v0.1/predictions"},
           method = RequestMethod.POST,
-          consumes = "application/octet-stream; charset=utf-8",
+          consumes = "application/octet-stream",
           produces = "application/json; charset=utf-8")
   public ResponseEntity<String> predictions_binary(RequestEntity<InputStream> requestEntity) {
     logger.debug("Received binary predict request");
@@ -173,7 +175,7 @@ public class RestClientController {
     try {
       ObjectMapper mapper = new ObjectMapper();
       Map<String, Object> protoBody = new HashMap<String, Object>() {{
-        put("binData", ByteString.readFrom(requestEntity.getBody()));
+        put("binData", toByteArray(requestEntity.getBody()));
       }};
       return _predictions(mapper.writeValueAsString(protoBody));
     } catch (IOException e) {
