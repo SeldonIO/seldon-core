@@ -55,7 +55,7 @@ test: fmt vet
 
 # Build the docker image
 docker-build: test
-	docker build -f Dockerfile -t ${IMG} --build-arg base=executor ..
+	docker build -f Dockerfile -t ${IMG} .
 
 # Push the docker image
 docker-push:
