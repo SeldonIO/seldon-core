@@ -387,7 +387,7 @@ public class TestRestClientController {
     Assert.assertEquals("COUNTER", seldonMessage.getMeta().getMetrics(0).getType().toString());
     Assert.assertEquals("GAUGE", seldonMessage.getMeta().getMetrics(1).getType().toString());
     Assert.assertEquals("TIMER", seldonMessage.getMeta().getMetrics(2).getType().toString());
-    Assert.assertEquals(imageBytes, seldonMessage.getBinData().toByteArray());
+    Assert.assertArrayEquals(imageBytes, seldonMessage.getBinData().toByteArray());
     // No Puid specified in request, verify response generated random of correct length
     Assert.assertNotNull(seldonMessage.getMeta().getPuid());
     Assert.assertTrue(Pattern.matches("[a-z0-9]{26}", seldonMessage.getMeta().getPuid()));
