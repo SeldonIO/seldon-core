@@ -165,7 +165,7 @@ public class RestClientController {
           method = RequestMethod.POST,
           consumes = "application/octet-stream",
           produces = "application/json; charset=utf-8")
-  public ResponseEntity<String> predictions_binary(RequestEntity<InputStream> requestEntity) {
+  public ResponseEntity<String> predictions_binary(RequestEntity<byte[]> requestEntity) {
     logger.debug("Received binary predict request");
     Span tracingSpan = null;
     if (tracingProvider.isActive()) {
@@ -174,10 +174,7 @@ public class RestClientController {
       tracer.scopeManager().activate(tracingSpan);
     }
     try {
-      return _predictions(toByteArray(requestEntity.getBody()));
-    } catch (IOException e) {
-      logger.error("Bad request", e);
-      throw new APIException(ApiExceptionType.REQUEST_IO_EXCEPTION, e.getMessage());
+      return _predictions(requestEntity.getBody());
     } finally {
       if (tracingSpan != null) {
         tracingSpan.finish();
@@ -276,6 +273,31 @@ public class RestClientController {
       throw new APIException(ApiExceptionType.ENGINE_INVALID_JSON, json);
     }
 
+    return _predictions(request);
+  }
+
+  /**
+   * It calls the prediction service for the input byte array.
+   *
+   * @param bytes - Input byte array to predict REST api
+   * @return The response for prediction service
+   */
+  private ResponseEntity<String> _predictions(byte[] bytes) {
+    SeldonMessage request = SeldonMessage.newBuilder()
+            .setBinData(ByteString.copyFrom(bytes))
+            .build();
+
+    return _predictions(request);
+  }
+
+  /**
+   * It calls the prediction service for the request. It is the base function for all forms of
+   * request Content-type
+   *
+   * @param request - The SeldonMessage request to the predict REST api
+   * @return The response for prediction service
+   */
+  private ResponseEntity<String> _predictions(SeldonMessage request) {
     try {
       SeldonMessage response = predictionService.predict(request);
       String responseJson = ProtoBufUtils.toJson(response);
