@@ -115,7 +115,7 @@ $ curl -X POST http://<ingress>/seldon/model-namespace/iris-model/api/v1.0/predi
 
 For more custom deep learning and machine learning use-cases which have custom dependencies (such as 3rd party libraries, operating system binaries or even external systems), we can use any of the Seldon Core language wrappers.
 
-You only have to write a class wrapper that exposes the logic of your model; for example in Python we have create a file `Model.py`:
+You only have to write a class wrapper that exposes the logic of your model; for example in Python we can create a file `Model.py`:
 
 ```python
 import pickle
