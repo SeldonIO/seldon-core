@@ -8084,6 +8084,12 @@ spec:
         status:
           description: SeldonDeploymentStatus defines the observed state of SeldonDeployment
           properties:
+            address:
+              description: 'Addressable placeholder until duckv1 issue is fixed:    https://github.com/kubernetes-sigs/controller-tools/issues/391'
+              properties:
+                url:
+                  type: string
+              type: object
             deploymentStatus:
               additionalProperties:
                 properties:
