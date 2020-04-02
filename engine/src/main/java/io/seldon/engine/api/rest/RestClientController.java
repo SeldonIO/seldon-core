@@ -174,11 +174,7 @@ public class RestClientController {
       tracer.scopeManager().activate(tracingSpan);
     }
     try {
-      ObjectMapper mapper = new ObjectMapper();
-      Map<String, Object> protoBody = new HashMap<String, Object>() {{
-        put("binData", ByteString.copyFrom(toByteArray(requestEntity.getBody())));
-      }};
-      return _predictions(mapper.writeValueAsString(protoBody));
+      return _predictions(toByteArray(requestEntity.getBody()));
     } catch (IOException e) {
       logger.error("Bad request", e);
       throw new APIException(ApiExceptionType.REQUEST_IO_EXCEPTION, e.getMessage());
