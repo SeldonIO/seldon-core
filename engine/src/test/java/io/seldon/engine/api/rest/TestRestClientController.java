@@ -378,7 +378,7 @@ public class TestRestClientController {
                             .contentType(MediaType.APPLICATION_OCTET_STREAM))
                     .andReturn();
     byte[] response = res.getResponse().getContentAsByteArray();
-    System.out.println(String(response);
+    System.out.println(new String(response));
     Assert.assertEquals(200, res.getResponse().getStatus());
     SeldonMessage.Builder builder = SeldonMessage.newBuilder();
     ProtoBufUtils.updateMessageBuilderFromJson(builder, new String(response));
