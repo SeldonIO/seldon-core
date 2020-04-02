@@ -345,6 +345,7 @@ Below are some of the core components together with link to the logs that provid
 * [Overview ](https://docs.seldon.io/projects/seldon-core/en/latest/developer/readme.html)
 * [Contributing to Seldon Core ](https://docs.seldon.io/projects/seldon-core/en/latest/developer/contributing.html)
 * [End to End Tests ](https://docs.seldon.io/projects/seldon-core/en/latest/developer/e2e.html)
+* [Roadmap ](https://docs.seldon.io/projects/seldon-core/en/latest/developer/roadmap.html)
 * [Build using private repo ](https://docs.seldon.io/projects/seldon-core/en/latest/developer/build-using-private-repo.html)
 
 
