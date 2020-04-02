@@ -347,7 +347,7 @@ public class TestRestClientController {
     MvcResult res =
             mvc.perform(
                     MockMvcRequestBuilders.post("/api/v1.0/predictions")
-                            .accept(MediaType.APPLICATION_JSON)
+                            .accept(MediaType.APPLICATION_JSON_UTF8)
                             .content(base64Image)
                             .contentType(MediaType.TEXT_PLAIN))
                     .andReturn();
@@ -364,7 +364,7 @@ public class TestRestClientController {
     Assert.assertEquals(base64Image, seldonMessage.getStrData());
     // No Puid specified in request, verify response generated random of correct length
     Assert.assertNotNull(seldonMessage.getMeta().getPuid());
-    Assert.assertTrue(Pattern.matches("[a-z0-7]{26}", seldonMessage.getMeta().getPuid()));
+    Assert.assertTrue(Pattern.matches("[a-z0-9]{26}", seldonMessage.getMeta().getPuid()));
   }
 
   @Test
@@ -373,15 +373,15 @@ public class TestRestClientController {
     MvcResult res =
             mvc.perform(
                     MockMvcRequestBuilders.post("/api/v1.0/predictions")
-                            .accept(MediaType.APPLICATION_JSON)
+                            .accept(MediaType.APPLICATION_JSON_UTF8)
                             .content(imageBytes)
                             .contentType(MediaType.APPLICATION_OCTET_STREAM))
                     .andReturn();
-    String response = res.getResponse().getContentAsString();
-    System.out.println(response);
+    byte[] response = res.getResponse().getContentAsByteArray();
+    System.out.println(String(response);
     Assert.assertEquals(200, res.getResponse().getStatus());
     SeldonMessage.Builder builder = SeldonMessage.newBuilder();
-    ProtoBufUtils.updateMessageBuilderFromJson(builder, response);
+    ProtoBufUtils.updateMessageBuilderFromJson(builder, new String(response));
     SeldonMessage seldonMessage = builder.build();
     Assert.assertEquals(3, seldonMessage.getMeta().getMetricsCount());
     Assert.assertEquals("COUNTER", seldonMessage.getMeta().getMetrics(0).getType().toString());
@@ -390,6 +390,6 @@ public class TestRestClientController {
     Assert.assertEquals(imageBytes, seldonMessage.getBinData().toByteArray());
     // No Puid specified in request, verify response generated random of correct length
     Assert.assertNotNull(seldonMessage.getMeta().getPuid());
-    Assert.assertTrue(Pattern.matches("[a-z0-7]{26}", seldonMessage.getMeta().getPuid()));
+    Assert.assertTrue(Pattern.matches("[a-z0-9]{26}", seldonMessage.getMeta().getPuid()));
   }
 }
