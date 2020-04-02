@@ -35,7 +35,7 @@ With over 2M installs, Seldon Core is used across organisations to manage large 
 
 ## Getting Started
 
-Deploying your models using Seldon Core is simplified through our pre-packaged inference servers and language wrappers. Below you can see how you can deploy our "hello world Iris" example. You can see more details on these workflows in our [Documentation Quickstart](https://docs.seldon.io/projects/seldon-core/en/latest/workflows/quickstart.html).
+Deploying your models using Seldon Core is simplified through our pre-packaged inference servers and language wrappers. Below you can see how you can deploy our "hello world Iris" example. You can see more details on these workflows in our [Documentation Quickstart](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/quickstart.html).
 
 ### Install Seldon Core
 
@@ -115,7 +115,7 @@ $ curl -X POST http://<ingress>/seldon/model-namespace/iris-model/api/v1.0/predi
 
 For more custom deep learning and machine learning use-cases which have custom dependencies (such as 3rd party libraries, operating system binaries or even external systems), we can use any of the Seldon Core language wrappers.
 
-You only have to write a class wrapper that exposes the logic of your model; for example in Python we have create a file `Model.py`:
+You only have to write a class wrapper that exposes the logic of your model; for example in Python we can create a file `Model.py`:
 
 ```python
 import pickle
@@ -128,7 +128,7 @@ class Model:
         return output
 ```
 
-We can now containerize our class file using the [Seldon Core s2i utils]() to produce the `sklear_iris` image:
+We can now containerize our class file using the [Seldon Core s2i utils](https://docs.seldon.io/projects/seldon-core/en/latest/wrappers/s2i.html) to produce the `sklearn_iris` image:
 
 ```console
 s2i build . seldonio/seldon-core-s2i-python3:0.18 sklearn_iris:0.1
@@ -295,7 +295,7 @@ Below are some of the core components together with link to the logs that provid
 * [Java Language Wrapper [Incubating] ](https://docs.seldon.io/projects/seldon-core/en/latest/java/README.html)
 * [R Language Wrapper [ALPHA] ](https://docs.seldon.io/projects/seldon-core/en/latest/R/README.html)
 * [NodeJS Language Wrapper [ALPHA] ](https://docs.seldon.io/projects/seldon-core/en/latest/nodejs/README.html)
-* [Go Language Wrapper [ALPHA] ](https://docs.seldon.io/projects/seldon-core/en/latest/go/README.html)
+* [Go Language Wrapper [ALPHA] ](https://docs.seldon.io/projects/seldon-core/en/latest/go/go_wrapper_link.html)
 
 ### Ingress
 
@@ -345,7 +345,6 @@ Below are some of the core components together with link to the logs that provid
 * [Overview ](https://docs.seldon.io/projects/seldon-core/en/latest/developer/readme.html)
 * [Contributing to Seldon Core ](https://docs.seldon.io/projects/seldon-core/en/latest/developer/contributing.html)
 * [End to End Tests ](https://docs.seldon.io/projects/seldon-core/en/latest/developer/e2e.html)
-* [Roadmap ](https://docs.seldon.io/projects/seldon-core/en/latest/developer/roadmap.html)
 * [Build using private repo ](https://docs.seldon.io/projects/seldon-core/en/latest/developer/build-using-private-repo.html)
 
 
