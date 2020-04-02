@@ -35,7 +35,7 @@ With over 2M installs, Seldon Core is used across organisations to manage large 
 
 ## Getting Started
 
-Deploying your models using Seldon Core is simplified through our pre-packaged inference servers and language wrappers. Below you can see how you can deploy our "hello world Iris" example. You can see more details on these workflows in our [Documentation Quickstart](https://docs.seldon.io/projects/seldon-core/en/latest/workflows/quickstart.html).
+Deploying your models using Seldon Core is simplified through our pre-packaged inference servers and language wrappers. Below you can see how you can deploy our "hello world Iris" example. You can see more details on these workflows in our [Documentation Quickstart](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/quickstart.html).
 
 ### Install Seldon Core
 
