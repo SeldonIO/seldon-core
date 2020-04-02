@@ -8,6 +8,7 @@ from seldon_core.proto import prediction_pb2
 from seldon_core.flask_utils import SeldonMicroserviceException
 from seldon_core.imports_helper import _TF_PRESENT
 from google.protobuf.struct_pb2 import Value
+from google.protobuf import any_pb2
 from .utils import skipif_tf_missing
 
 if _TF_PRESENT:
@@ -179,6 +180,18 @@ def test_create_grpc_response_jsondata():
     assert sm.data.WhichOneof("data_oneof") is None
     emptyValue = Value()
     assert sm.jsonData != emptyValue
+
+
+def test_create_grpc_response_customdata():
+    user_model = UserObject()
+    request_data = np.array([[5, 6, 7]])
+    datadef = scu.array_to_grpc_datadef("ndarray", request_data)
+    request = prediction_pb2.SeldonMessage(data=datadef)
+    raw_response = any_pb2.Any(value=b"testdata")
+    sm = scu.construct_response(user_model, True, request, raw_response)
+    assert sm.data.WhichOneof("data_oneof") is None
+    emptyValue = Value()
+    assert sm.customData != emptyValue
 
 
 def test_create_rest_response_jsondata():
