@@ -20,35 +20,99 @@ const (
 	ANNOTATION_AMBASSADOR_ID           = "seldon.io/ambassador-id"
 	ANNOTATION_AMBASSADOR_RETRIES      = "seldon.io/ambassador-retries"
 
+	ANNOTATION_AMBASSADOR_CIRCUIT_BREAKING_MAX_CONNECTIONS      = "seldon.io/ambassador-circuit-breakers-max-connections"
+	ANNOTATION_AMBASSADOR_CIRCUIT_BREAKING_MAX_PENDING_REQUESTS = "seldon.io/ambassador-circuit-breakers-max-pending-requests"
+	ANNOTATION_AMBASSADOR_CIRCUIT_BREAKING_MAX_REQUESTS         = "seldon.io/ambassador-circuit-breakers-max-requests"
+	ANNOTATION_AMBASSADOR_CIRCUIT_BREAKING_MAX_RETRIES          = "seldon.io/ambassador-circuit-breakers-max-retries"
+
 	YAML_SEP = "---\n"
 
 	AMBASSADOR_IDLE_TIMEOUT    = 300000
 	AMBASSADOR_DEFAULT_RETRIES = "0"
 )
 
+// AmbassadorCircuitBreakerConfig - struct for ambassador circuit breaker
+type AmbassadorCircuitBreakerConfig struct {
+	MaxConnections     int `yaml:"max_connections,omitempty"`
+	MaxPendingRequests int `yaml:"max_pending_requests,omitempty"`
+	MaxRequests        int `yaml:"max_requests,omitempty"`
+	MaxRetries         int `yaml:"max_retries,omitempty"`
+}
+
 // Struct for Ambassador configuration
 type AmbassadorConfig struct {
-	ApiVersion    string                 `yaml:"apiVersion"`
-	Kind          string                 `yaml:"kind"`
-	Name          string                 `yaml:"name"`
-	Grpc          *bool                  `yaml:"grpc,omitempty"`
-	Prefix        string                 `yaml:"prefix"`
-	PrefixRegex   *bool                  `yaml:"prefix_regex,omitempty"`
-	Rewrite       string                 `yaml:"rewrite"`
-	Service       string                 `yaml:"service"`
-	TimeoutMs     int                    `yaml:"timeout_ms"`
-	IdleTimeoutMs *int                   `yaml:"idle_timeout_ms,omitempty"`
-	Headers       map[string]string      `yaml:"headers,omitempty"`
-	RegexHeaders  map[string]string      `yaml:"regex_headers,omitempty"`
-	Weight        int32                  `yaml:"weight,omitempty"`
-	Shadow        *bool                  `yaml:"shadow,omitempty"`
-	RetryPolicy   *AmbassadorRetryPolicy `yaml:"retry_policy,omitempty"`
-	InstanceId    string                 `yaml:"ambassador_id,omitempty"`
+	ApiVersion      string                            `yaml:"apiVersion"`
+	Kind            string                            `yaml:"kind"`
+	Name            string                            `yaml:"name"`
+	Grpc            *bool                             `yaml:"grpc,omitempty"`
+	Prefix          string                            `yaml:"prefix"`
+	PrefixRegex     *bool                             `yaml:"prefix_regex,omitempty"`
+	Rewrite         string                            `yaml:"rewrite"`
+	Service         string                            `yaml:"service"`
+	TimeoutMs       int                               `yaml:"timeout_ms"`
+	IdleTimeoutMs   *int                              `yaml:"idle_timeout_ms,omitempty"`
+	Headers         map[string]string                 `yaml:"headers,omitempty"`
+	RegexHeaders    map[string]string                 `yaml:"regex_headers,omitempty"`
+	Weight          int32                             `yaml:"weight,omitempty"`
+	Shadow          *bool                             `yaml:"shadow,omitempty"`
+	RetryPolicy     *AmbassadorRetryPolicy            `yaml:"retry_policy,omitempty"`
+	InstanceId      string                            `yaml:"ambassador_id,omitempty"`
+	CircuitBreakers []*AmbassadorCircuitBreakerConfig `yaml:"circuit_breakers,omitempty"`
 }
 
 type AmbassadorRetryPolicy struct {
 	RetryOn    string `yaml:"retry_on,omitempty"`
 	NumRetries int    `yaml:"num_retries,omitempty"`
+}
+
+func getAmbassadorCircuitBreakerConfig(
+	mlDep *machinelearningv1.SeldonDeployment,
+) (*AmbassadorCircuitBreakerConfig, error) {
+
+	circuitBreakersMaxConnections := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_CIRCUIT_BREAKING_MAX_CONNECTIONS, "")
+	circuitBreakersMaxPendingRequests := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_CIRCUIT_BREAKING_MAX_PENDING_REQUESTS, "")
+	circuitBreakersMaxRequests := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_CIRCUIT_BREAKING_MAX_REQUESTS, "")
+	circuitBreakersMaxRetries := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_CIRCUIT_BREAKING_MAX_RETRIES, "")
+
+	// circuit breaker exists
+	if circuitBreakersMaxConnections != "" ||
+		circuitBreakersMaxPendingRequests != "" ||
+		circuitBreakersMaxRequests != "" ||
+		circuitBreakersMaxRetries != "" {
+
+		circuitBreaker := AmbassadorCircuitBreakerConfig{}
+
+		if circuitBreakersMaxConnections != "" {
+			maxConnections, err := strconv.Atoi(circuitBreakersMaxConnections)
+			if err != nil {
+				return nil, err
+			}
+			circuitBreaker.MaxConnections = maxConnections
+		}
+		if circuitBreakersMaxPendingRequests != "" {
+			maxPendingRequests, err := strconv.Atoi(circuitBreakersMaxPendingRequests)
+			if err != nil {
+				return nil, err
+			}
+			circuitBreaker.MaxPendingRequests = maxPendingRequests
+		}
+		if circuitBreakersMaxRequests != "" {
+			maxRequests, err := strconv.Atoi(circuitBreakersMaxRequests)
+			if err != nil {
+				return nil, err
+			}
+			circuitBreaker.MaxRequests = maxRequests
+		}
+		if circuitBreakersMaxRetries != "" {
+			maxRetries, err := strconv.Atoi(circuitBreakersMaxRetries)
+			if err != nil {
+				return nil, err
+			}
+			circuitBreaker.MaxRetries = maxRetries
+		}
+		return &circuitBreaker, nil
+	}
+	return nil, nil
 }
 
 // Return a REST configuration for Ambassador with optional custom settings.
@@ -140,6 +204,17 @@ func getAmbassadorRestConfig(mlDep *machinelearningv1.SeldonDeployment,
 	if instance_id != "" {
 		c.InstanceId = instance_id
 	}
+
+	circuitBreakerConfig, err := getAmbassadorCircuitBreakerConfig(mlDep)
+	if err != nil {
+		return "", err
+	}
+	if circuitBreakerConfig != nil {
+		c.CircuitBreakers = []*AmbassadorCircuitBreakerConfig{
+			circuitBreakerConfig,
+		}
+	}
+
 	v, err := yaml.Marshal(c)
 	if err != nil {
 		return "", err
@@ -238,6 +313,17 @@ func getAmbassadorGrpcConfig(mlDep *machinelearningv1.SeldonDeployment,
 	if instance_id != "" {
 		c.InstanceId = instance_id
 	}
+
+	circuitBreakerConfig, err := getAmbassadorCircuitBreakerConfig(mlDep)
+	if err != nil {
+		return "", err
+	}
+	if circuitBreakerConfig != nil {
+		c.CircuitBreakers = []*AmbassadorCircuitBreakerConfig{
+			circuitBreakerConfig,
+		}
+	}
+
 	v, err := yaml.Marshal(c)
 	if err != nil {
 		return "", err
