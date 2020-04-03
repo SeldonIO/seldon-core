@@ -53,7 +53,6 @@ make \
 ENGINE_EXIT_VALUE=$?
 
 
-
 #######################################
 # EXIT STOPS COMMANDS FROM HERE ONWARDS
 set -o errexit
@@ -63,8 +62,14 @@ docker ps -aq | xargs -r docker rm -f || true
 service docker stop || true
 
 # NOW THAT WE'VE CLEANED WE CAN EXIT ON TEST EXIT VALUE
+echo "Python exit value: $PYTHON_EXIT_VALUE"
+echo "Operator exit value: $OPERATOR_EXIT_VALUE"
+echo "Engine exit value: $ENGINE_EXIT_VALUE"
+echo "Executor exit value: $EXECUTOR_EXIT_VALUE"
+
 exit $((${PYTHON_EXIT_VALUE} \
     + ${OPERATOR_EXIT_VALUE} \
-    + ${ENGINE_EXIT_VALUE})) \
+    + ${ENGINE_EXIT_VALUE} \
     + ${EXECUTOR_EXIT_VALUE}))
+
 
