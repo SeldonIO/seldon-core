@@ -1,0 +1,1493 @@
+
+Showing logs for build [32mseldonio-seldon-core-pr-1652-in-qszcp-3[0m stage [32mpr-build-comment[0m and container [32mstep-credential-initializer-sjwbh[0m
+{"level":"warn","ts":1585930059.7193654,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1585930059.719802,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1652-in-qszcp-3[0m stage [32mpr-build-comment[0m and container [32mstep-working-dir-initializer-6w7c9[0m
+{"level":"warn","ts":1585930060.2526517,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1585930060.2544785,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1652-in-qszcp-3[0m stage [32mpr-build-comment[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-1652-in-qszcp-3[0m stage [32mpr-build-comment[0m and container [32mstep-create-dir-workspace-6sw4m[0m
+{"level":"warn","ts":1585930066.4429154,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1585930066.4452372,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1652-in-qszcp-3[0m stage [32mpr-build-comment[0m and container [32mstep-git-source-seldonio-seldon-core-pr-1652-in-6jpsv[0m
+{"level":"warn","ts":1585930066.6904821,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1585930070.0976715,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ master in path /workspace/source"}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1652-in-qszcp-3[0m stage [32mpr-build-comment[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:9edb1a65118b302a77531b0dae08ce726664c67e,1652:a6d44a60c6d2132b1e961c797fafe2ab40ae957a
+DEBUG: ran git fetch --unshallow origin a6d44a60c6d2132b1e961c797fafe2ab40ae957a: 9edb1a65118b302a77531b0dae08ce726664c67e: in 
+DEBUG: ran git checkout master in 
+DEBUG: ran git reset --hard 9edb1a65118b302a77531b0dae08ce726664c67e in 
+DEBUG: ran clean --force -d . in 
+DEBUG: ran git merge a6d44a60c6d2132b1e961c797fafe2ab40ae957a in 
+Merged SHA d040aec7ba289e8c3ece9c0f37134a52236ac0cf with commit message 'Merge commit 'a6d44a60c6d2132b1e961c797fafe2ab40ae957a'' into base branch master
+Merged SHA a6d44a60c6d2132b1e961c797fafe2ab40ae957a with commit message 'feat(proto): Add custom proto handling' into base branch master
+
+Showing logs for build [32mseldonio-seldon-core-pr-1652-in-qszcp-3[0m stage [32mpr-build-comment[0m and container [32mstep-step2[0m
++++ dirname ./add-pr-build-comment
+++ cd .
+++ pwd
++ STARTUP_DIR=/workspace/source/ci
++ REPO_OWNER=SeldonIO
++ REPO_NAME=seldon-core
++ PULL_NUMBER=1652
++ BUILD_NUMBER=3
++ PIPELINE_CONTEXT=integration
+++ cat
++++ date
++ COMMENT_MSG='Fri Apr  3 16:08:02 UTC 2020
+The logs for [integration] [3] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-1652/3.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-1652 --build=3'
++ ** step pr comment --owner=SeldonIO --repository=seldon-core --pull-request=1652 '--comment=Fri Apr  3 16:08:02 UTC 2020
+The logs for [integration] [3] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-1652/3.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-1652 --build=3'
+
+Showing logs for build [32mseldonio-seldon-core-pr-1652-in-qszcp-3[0m stage [32mpr-build-comment[0m and container [32mstep-source-mkdir-seldonio-seldon-core-pr-1652-in-wjk9v[0m
+{"level":"warn","ts":1585930084.4018514,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1585930084.4053764,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1652-in-qszcp-3[0m stage [32mpr-build-comment[0m and container [32mstep-source-copy-seldonio-seldon-core-pr-1652-in-kmn9n[0m
+{"level":"warn","ts":1585930084.642105,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1585930084.9206536,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r source/. /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1652-in-qszcp-3[0m stage [32mend-to-end[0m and container [32mstep-credential-initializer-6qhpc[0m
+{"level":"warn","ts":1585930089.9711583,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1585930089.9716012,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1652-in-qszcp-3[0m stage [32mend-to-end[0m and container [32mstep-working-dir-initializer-xzmj2[0m
+{"level":"warn","ts":1585930091.0182734,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1585930091.0201187,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1652-in-qszcp-3[0m stage [32mend-to-end[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-1652-in-qszcp-3[0m stage [32mend-to-end[0m and container [32mstep-create-dir-workspace-vrzf8[0m
+{"level":"warn","ts":1585930097.1943843,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1585930097.1960907,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1652-in-qszcp-3[0m stage [32mend-to-end[0m and container [32mstep-source-copy-workspace-m2ggf[0m
+{"level":"warn","ts":1585930097.4378564,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1585930099.5736194,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1652-in-qszcp-3[0m stage [32mend-to-end[0m and container [32mstep-test-end-to-end[0m
+Test run type is: [base]
+Starting Docker: docker.
+[SETUP] Waiting for Docker to be ready, sleeping for 1 seconds ...
+kind create cluster --config ../resources/kind_config.yaml
+Creating cluster "kind" ...
+ • Ensuring node image (kindest/node:v1.16.3) 🖼  ...
+ ✓ Ensuring node image (kindest/node:v1.16.3) 🖼
+ • Preparing nodes 📦  ...
+ ✓ Preparing nodes 📦
+ • Writing configuration 📜  ...
+ ✓ Writing configuration 📜
+ • Starting control-plane 🕹️  ...
+ ✓ Starting control-plane 🕹️
+ • Installing CNI 🔌  ...
+ ✓ Installing CNI 🔌
+ • Installing StorageClass 💾  ...
+ ✓ Installing StorageClass 💾
+ • Joining worker nodes 🚜  ...
+ ✓ Joining worker nodes 🚜
+Set kubectl context to "kind-kind"
+You can now use your cluster with:
+
+kubectl cluster-info --context kind-kind
+
+Have a question, bug, or feature request? Let us know! https://kind.sigs.k8s.io/#community 🙂
+`kind get kubeconfig-path` is deprecated!
+
+KIND will export and merge kubeconfig like kops, minikube, etc.
+This command is now unnecessary and will be removed in a future release.
+
+For more info see: https://github.com/kubernetes-sigs/kind/issues/1060
+See also the output of `kind create cluster`
+
+Files changed in python folder:
+python/requirements-dev.txt
+python/seldon_core/proto/prediction.proto
+python/seldon_core/proto/prediction_pb2.py
+python/seldon_core/proto/prediction_pb2.pyi
+python/seldon_core/proto/tensorflow/core/framework/resource_handle_pb2.py
+python/seldon_core/proto/tensorflow/core/framework/tensor_pb2.py
+python/seldon_core/proto/tensorflow/core/framework/tensor_shape_pb2.py
+python/seldon_core/proto/tensorflow/core/framework/types_pb2.py
+python/seldon_core/seldon_client.py
+python/seldon_core/utils.py
+python/setup.cfg
+python/tests/test_seldon_client.py
+python/tests/test_utils.py
+cd ../../wrappers/s2i/python/build_scripts && ./build_all_local.sh
+make[1]: Entering directory '/workspace/source/wrappers/s2i/python'
+mkdir -p _python
+cp -r ../../../python _python
+cat Dockerfile.local.tmpl | sed  -e "s|%PYTHON_VERSION%|3.6|" | sed  -e "s|%CONDA_VERSION%|4.7.12|" > Dockerfile
+set -x && docker build -t docker.io/seldonio/seldon-core-s2i-python`echo -n 3.6 | sed 's/\.//g'`:0.19-SNAPSHOT .
+++ echo -n 3.6
+++ sed 's/\.//g'
++ docker build -t docker.io/seldonio/seldon-core-s2i-python36:0.19-SNAPSHOT .
+Sending build context to Docker daemon  978.4kB
+Step 1/10 : FROM continuumio/miniconda3:4.7.12
+4.7.12: Pulling from continuumio/miniconda3
+b8f262c62ec6: Pulling fs layer
+0a43c0154f16: Pulling fs layer
+906d7b5da8fb: Pulling fs layer
+b8f262c62ec6: Verifying Checksum
+b8f262c62ec6: Download complete
+906d7b5da8fb: Verifying Checksum
+906d7b5da8fb: Download complete
+0a43c0154f16: Verifying Checksum
+0a43c0154f16: Download complete
+b8f262c62ec6: Pull complete
+0a43c0154f16: Pull complete
+906d7b5da8fb: Pull complete
+Digest: sha256:6c979670684d970f8ba934bf9b7bf42e77c30a22eb96af1f30a039b484719159
+Status: Downloaded newer image for continuumio/miniconda3:4.7.12
+ ---> 406f2b43ea59
+Step 2/10 : LABEL io.openshift.s2i.scripts-url="image:///s2i/bin"
+ ---> Running in a8cece21f887
+Removing intermediate container a8cece21f887
+ ---> 3eadbfbe8dbe
+Step 3/10 : RUN conda install --yes python=3.6 conda=4.7.12
+ ---> Running in 2b6ea462220e
+Collecting package metadata (current_repodata.json): ...working... done
+Solving environment: ...working... failed with initial frozen solve. Retrying with flexible solve.
+Solving environment: ...working... failed with repodata from current_repodata.json, will retry with next repodata source.
+Collecting package metadata (repodata.json): ...working... done
+Solving environment: ...working... done
+
+## Package Plan ##
+
+  environment location: /opt/conda
+
+  added / updated specs:
+    - conda=4.7.12
+    - python=3.6
+
+
+The following packages will be downloaded:
+
+    package                    |            build
+    ---------------------------|-----------------
+    asn1crypto-1.3.0           |           py36_0         164 KB
+    ca-certificates-2020.1.1   |                0         125 KB
+    certifi-2019.11.28         |           py36_1         157 KB
+    cffi-1.14.0                |   py36h2e261b9_0         223 KB
+    chardet-3.0.4              |        py36_1003         180 KB
+    conda-4.7.12               |           py36_0         2.8 MB
+    conda-package-handling-1.6.0|   py36h7b6447c_0         795 KB
+    cryptography-2.8           |   py36h1ba5d50_0         552 KB
+    idna-2.9                   |             py_1          49 KB
+    openssl-1.1.1f             |       h7b6447c_0         2.5 MB
+    pip-20.0.2                 |           py36_1         1.7 MB
+    pycosat-0.6.3              |   py36h7b6447c_0          82 KB
+    pycparser-2.20             |             py_0          92 KB
+    pyopenssl-19.1.0           |           py36_0          87 KB
+    pysocks-1.7.1              |           py36_0          30 KB
+    python-3.6.9               |       h265db76_0        30.2 MB
+    requests-2.23.0            |           py36_0          91 KB
+    ruamel_yaml-0.15.87        |   py36h7b6447c_0         257 KB
+    setuptools-46.1.3          |           py36_0         513 KB
+    six-1.14.0                 |           py36_0          27 KB
+    tqdm-4.36.1                |             py_0          50 KB
+    urllib3-1.25.8             |           py36_0         169 KB
+    wheel-0.34.2               |           py36_0          51 KB
+    ------------------------------------------------------------
+                                           Total:        40.8 MB
+
+The following packages will be UPDATED:
+
+  asn1crypto                                   1.0.1-py37_0 --> 1.3.0-py36_0
+  ca-certificates                               2019.8.28-0 --> 2020.1.1-0
+  certifi                                  2019.9.11-py37_0 --> 2019.11.28-py36_1
+  cffi                                1.12.3-py37h2e261b9_0 --> 1.14.0-py36h2e261b9_0
+  cryptography                           2.7-py37h1ba5d50_0 --> 2.8-py36h1ba5d50_0
+  idna                  pkgs/main/linux-64::idna-2.8-py37_0 --> pkgs/main/noarch::idna-2.9-py_1
+  openssl                                 1.1.1d-h7b6447c_2 --> 1.1.1f-h7b6447c_0
+  pip                                         19.2.3-py37_0 --> 20.0.2-py36_1
+  pycparser          pkgs/main/linux-64::pycparser-2.19-py~ --> pkgs/main/noarch::pycparser-2.20-py_0
+  pyopenssl                                   19.0.0-py37_0 --> 19.1.0-py36_0
+  requests                                    2.22.0-py37_0 --> 2.23.0-py36_0
+  ruamel_yaml                        0.15.46-py37h14c3975_0 --> 0.15.87-py36h7b6447c_0
+  setuptools                                  41.4.0-py37_0 --> 46.1.3-py36_0
+  six                                         1.12.0-py37_0 --> 1.14.0-py36_0
+  urllib3                                     1.24.2-py37_0 --> 1.25.8-py36_0
+  wheel                                       0.33.6-py37_0 --> 0.34.2-py36_0
+
+The following packages will be DOWNGRADED:
+
+  chardet                                   3.0.4-py37_1003 --> 3.0.4-py36_1003
+  conda                                       4.7.12-py37_0 --> 4.7.12-py36_0
+  conda-package-han~                   1.6.0-py37h7b6447c_0 --> 1.6.0-py36h7b6447c_0
+  pycosat                              0.6.3-py37h14c3975_0 --> 0.6.3-py36h7b6447c_0
+  pysocks                                      1.7.1-py37_0 --> 1.7.1-py36_0
+  python                                   3.7.4-h265db76_1 --> 3.6.9-h265db76_0
+
+
+
+Downloading and Extracting Packages
+pysocks-1.7.1        | 30 KB     |            |   0% pysocks-1.7.1        | 30 KB     | ########## | 100% 
+cffi-1.14.0          | 223 KB    |            |   0% cffi-1.14.0          | 223 KB    | ########## | 100% 
+ca-certificates-2020 | 125 KB    |            |   0% ca-certificates-2020 | 125 KB    | ########## | 100% 
+tqdm-4.36.1          | 50 KB     |            |   0% tqdm-4.36.1          | 50 KB     | ########## | 100% 
+asn1crypto-1.3.0     | 164 KB    |            |   0% asn1crypto-1.3.0     | 164 KB    | ########## | 100% 
+conda-4.7.12         | 2.8 MB    |            |   0% conda-4.7.12         | 2.8 MB    | ########## | 100% 
+idna-2.9             | 49 KB     |            |   0% idna-2.9             | 49 KB     | ########## | 100% 
+wheel-0.34.2         | 51 KB     |            |   0% wheel-0.34.2         | 51 KB     | ########## | 100% 
+six-1.14.0           | 27 KB     |            |   0% six-1.14.0           | 27 KB     | ########## | 100% 
+conda-package-handli | 795 KB    |            |   0% conda-package-handli | 795 KB    | ########## | 100% 
+python-3.6.9         | 30.2 MB   |            |   0% python-3.6.9         | 30.2 MB   | ##4        |  24% python-3.6.9         | 30.2 MB   | #####2     |  53% python-3.6.9         | 30.2 MB   | ########   |  80% python-3.6.9         | 30.2 MB   | ########## | 100% 
+cryptography-2.8     | 552 KB    |            |   0% cryptography-2.8     | 552 KB    | ########## | 100% 
+pycosat-0.6.3        | 82 KB     |            |   0% pycosat-0.6.3        | 82 KB     | ########## | 100% 
+pycparser-2.20       | 92 KB     |            |   0% pycparser-2.20       | 92 KB     | ########## | 100% 
+requests-2.23.0      | 91 KB     |            |   0% requests-2.23.0      | 91 KB     | ########## | 100% 
+certifi-2019.11.28   | 157 KB    |            |   0% certifi-2019.11.28   | 157 KB    | ########## | 100% 
+openssl-1.1.1f       | 2.5 MB    |            |   0% openssl-1.1.1f       | 2.5 MB    | ########## | 100% 
+setuptools-46.1.3    | 513 KB    |            |   0% setuptools-46.1.3    | 513 KB    | ########## | 100% 
+ruamel_yaml-0.15.87  | 257 KB    |            |   0% ruamel_yaml-0.15.87  | 257 KB    | ########## | 100% 
+chardet-3.0.4        | 180 KB    |            |   0% chardet-3.0.4        | 180 KB    | ########## | 100% 
+pip-20.0.2           | 1.7 MB    |            |   0% pip-20.0.2           | 1.7 MB    | ########## | 100% 
+urllib3-1.25.8       | 169 KB    |            |   0% urllib3-1.25.8       | 169 KB    | ########## | 100% 
+pyopenssl-19.1.0     | 87 KB     |            |   0% pyopenssl-19.1.0     | 87 KB     | ########## | 100% 
+Preparing transaction: ...working... done
+Verifying transaction: ...working... done
+Executing transaction: ...working... done
+[91m
+
+==> WARNING: A newer version of conda exists. <==
+  current version: 4.7.12
+  latest version: 4.8.3
+
+Please update conda by running
+
+    $ conda update -n base -c defaults conda
+
+
+[0mRemoving intermediate container 2b6ea462220e
+ ---> d3cbe370fb8c
+Step 4/10 : RUN apt-get update --yes && apt-get install --yes gcc make build-essential
+ ---> Running in ac5f4a1c5374
+Get:1 http://security.debian.org/debian-security buster/updates InRelease [65.4 kB]
+Get:2 http://deb.debian.org/debian buster InRelease [122 kB]
+Get:3 http://deb.debian.org/debian buster-updates InRelease [49.3 kB]
+Get:4 http://security.debian.org/debian-security buster/updates/main amd64 Packages [186 kB]
+Get:5 http://deb.debian.org/debian buster/main amd64 Packages [7907 kB]
+Get:6 http://deb.debian.org/debian buster-updates/main amd64 Packages.diff/Index [2212 B]
+Get:7 http://deb.debian.org/debian buster-updates/main amd64 Packages 2020-02-23-2017.41.pdiff [2162 B]
+Get:7 http://deb.debian.org/debian buster-updates/main amd64 Packages 2020-02-23-2017.41.pdiff [2162 B]
+Fetched 8333 kB in 2s (4373 kB/s)
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following additional packages will be installed:
+  binutils binutils-common binutils-x86-64-linux-gnu cpp cpp-8 dirmngr
+  dpkg-dev fakeroot g++ g++-8 gcc-8 gnupg gnupg-l10n gnupg-utils gpg gpg-agent
+  gpg-wks-client gpg-wks-server gpgconf gpgsm libalgorithm-diff-perl
+  libalgorithm-diff-xs-perl libalgorithm-merge-perl libasan5 libassuan0
+  libatomic1 libbinutils libc-dev-bin libc6-dev libcc1-0 libdpkg-perl
+  libfakeroot libfile-fcntllock-perl libgcc-8-dev libgomp1 libisl19 libitm1
+  libksba8 liblocale-gettext-perl liblsan0 libmpc3 libmpfr6 libmpx2 libnpth0
+  libquadmath0 libstdc++-8-dev libtsan0 libubsan1 linux-libc-dev manpages
+  manpages-dev pinentry-curses
+Suggested packages:
+  binutils-doc cpp-doc gcc-8-locales dbus-user-session libpam-systemd
+  pinentry-gnome3 tor debian-keyring g++-multilib g++-8-multilib gcc-8-doc
+  libstdc++6-8-dbg gcc-multilib autoconf automake libtool flex bison gdb
+  gcc-doc gcc-8-multilib libgcc1-dbg libgomp1-dbg libitm1-dbg libatomic1-dbg
+  libasan5-dbg liblsan0-dbg libtsan0-dbg libubsan1-dbg libmpx2-dbg
+  libquadmath0-dbg parcimonie xloadimage scdaemon glibc-doc bzr
+  libstdc++-8-doc make-doc man-browser pinentry-doc
+The following NEW packages will be installed:
+  binutils binutils-common binutils-x86-64-linux-gnu build-essential cpp cpp-8
+  dirmngr dpkg-dev fakeroot g++ g++-8 gcc gcc-8 gnupg gnupg-l10n gnupg-utils
+  gpg gpg-agent gpg-wks-client gpg-wks-server gpgconf gpgsm
+  libalgorithm-diff-perl libalgorithm-diff-xs-perl libalgorithm-merge-perl
+  libasan5 libassuan0 libatomic1 libbinutils libc-dev-bin libc6-dev libcc1-0
+  libdpkg-perl libfakeroot libfile-fcntllock-perl libgcc-8-dev libgomp1
+  libisl19 libitm1 libksba8 liblocale-gettext-perl liblsan0 libmpc3 libmpfr6
+  libmpx2 libnpth0 libquadmath0 libstdc++-8-dev libtsan0 libubsan1
+  linux-libc-dev make manpages manpages-dev pinentry-curses
+0 upgraded, 55 newly installed, 0 to remove and 31 not upgraded.
+Need to get 57.7 MB of archives.
+After this operation, 202 MB of additional disk space will be used.
+Get:1 http://deb.debian.org/debian buster/main amd64 liblocale-gettext-perl amd64 1.07-3+b4 [18.9 kB]
+Get:2 http://deb.debian.org/debian buster/main amd64 manpages all 4.16-2 [1295 kB]
+Get:3 http://deb.debian.org/debian buster/main amd64 binutils-common amd64 2.31.1-16 [2073 kB]
+Get:4 http://deb.debian.org/debian buster/main amd64 libbinutils amd64 2.31.1-16 [478 kB]
+Get:5 http://deb.debian.org/debian buster/main amd64 binutils-x86-64-linux-gnu amd64 2.31.1-16 [1823 kB]
+Get:6 http://deb.debian.org/debian buster/main amd64 binutils amd64 2.31.1-16 [56.8 kB]
+Get:7 http://deb.debian.org/debian buster/main amd64 libc-dev-bin amd64 2.28-10 [275 kB]
+Get:8 http://deb.debian.org/debian buster/main amd64 linux-libc-dev amd64 4.19.98-1 [1314 kB]
+Get:9 http://deb.debian.org/debian buster/main amd64 libc6-dev amd64 2.28-10 [2691 kB]
+Get:10 http://deb.debian.org/debian buster/main amd64 libisl19 amd64 0.20-2 [587 kB]
+Get:11 http://deb.debian.org/debian buster/main amd64 libmpfr6 amd64 4.0.2-1 [775 kB]
+Get:12 http://deb.debian.org/debian buster/main amd64 libmpc3 amd64 1.1.0-1 [41.3 kB]
+Get:13 http://deb.debian.org/debian buster/main amd64 cpp-8 amd64 8.3.0-6 [8914 kB]
+Get:14 http://deb.debian.org/debian buster/main amd64 cpp amd64 4:8.3.0-1 [19.4 kB]
+Get:15 http://deb.debian.org/debian buster/main amd64 libcc1-0 amd64 8.3.0-6 [46.6 kB]
+Get:16 http://deb.debian.org/debian buster/main amd64 libgomp1 amd64 8.3.0-6 [75.8 kB]
+Get:17 http://deb.debian.org/debian buster/main amd64 libitm1 amd64 8.3.0-6 [27.7 kB]
+Get:18 http://deb.debian.org/debian buster/main amd64 libatomic1 amd64 8.3.0-6 [9032 B]
+Get:19 http://deb.debian.org/debian buster/main amd64 libasan5 amd64 8.3.0-6 [362 kB]
+Get:20 http://deb.debian.org/debian buster/main amd64 liblsan0 amd64 8.3.0-6 [131 kB]
+Get:21 http://deb.debian.org/debian buster/main amd64 libtsan0 amd64 8.3.0-6 [283 kB]
+Get:22 http://deb.debian.org/debian buster/main amd64 libubsan1 amd64 8.3.0-6 [120 kB]
+Get:23 http://deb.debian.org/debian buster/main amd64 libmpx2 amd64 8.3.0-6 [11.4 kB]
+Get:24 http://deb.debian.org/debian buster/main amd64 libquadmath0 amd64 8.3.0-6 [133 kB]
+Get:25 http://deb.debian.org/debian buster/main amd64 libgcc-8-dev amd64 8.3.0-6 [2298 kB]
+Get:26 http://deb.debian.org/debian buster/main amd64 gcc-8 amd64 8.3.0-6 [9452 kB]
+Get:27 http://deb.debian.org/debian buster/main amd64 gcc amd64 4:8.3.0-1 [5196 B]
+Get:28 http://deb.debian.org/debian buster/main amd64 libstdc++-8-dev amd64 8.3.0-6 [1532 kB]
+Get:29 http://deb.debian.org/debian buster/main amd64 g++-8 amd64 8.3.0-6 [9752 kB]
+Get:30 http://deb.debian.org/debian buster/main amd64 g++ amd64 4:8.3.0-1 [1644 B]
+Get:31 http://deb.debian.org/debian buster/main amd64 make amd64 4.2.1-1.2 [341 kB]
+Get:32 http://deb.debian.org/debian buster/main amd64 libdpkg-perl all 1.19.7 [1414 kB]
+Get:33 http://deb.debian.org/debian buster/main amd64 dpkg-dev all 1.19.7 [1773 kB]
+Get:34 http://deb.debian.org/debian buster/main amd64 build-essential amd64 12.6 [7576 B]
+Get:35 http://deb.debian.org/debian buster/main amd64 libassuan0 amd64 2.5.2-1 [49.4 kB]
+Get:36 http://deb.debian.org/debian buster/main amd64 gpgconf amd64 2.2.12-1+deb10u1 [510 kB]
+Get:37 http://deb.debian.org/debian buster/main amd64 libksba8 amd64 1.3.5-2 [99.7 kB]
+Get:38 http://deb.debian.org/debian buster/main amd64 libnpth0 amd64 1.6-1 [18.4 kB]
+Get:39 http://deb.debian.org/debian buster/main amd64 dirmngr amd64 2.2.12-1+deb10u1 [712 kB]
+Get:40 http://deb.debian.org/debian buster/main amd64 libfakeroot amd64 1.23-1 [45.9 kB]
+Get:41 http://deb.debian.org/debian buster/main amd64 fakeroot amd64 1.23-1 [85.8 kB]
+Get:42 http://deb.debian.org/debian buster/main amd64 gnupg-l10n all 2.2.12-1+deb10u1 [1010 kB]
+Get:43 http://deb.debian.org/debian buster/main amd64 gnupg-utils amd64 2.2.12-1+deb10u1 [861 kB]
+Get:44 http://deb.debian.org/debian buster/main amd64 gpg amd64 2.2.12-1+deb10u1 [865 kB]
+Get:45 http://deb.debian.org/debian buster/main amd64 pinentry-curses amd64 1.1.0-2 [64.5 kB]
+Get:46 http://deb.debian.org/debian buster/main amd64 gpg-agent amd64 2.2.12-1+deb10u1 [617 kB]
+Get:47 http://deb.debian.org/debian buster/main amd64 gpg-wks-client amd64 2.2.12-1+deb10u1 [485 kB]
+Get:48 http://deb.debian.org/debian buster/main amd64 gpg-wks-server amd64 2.2.12-1+deb10u1 [478 kB]
+Get:49 http://deb.debian.org/debian buster/main amd64 gpgsm amd64 2.2.12-1+deb10u1 [604 kB]
+Get:50 http://deb.debian.org/debian buster/main amd64 gnupg all 2.2.12-1+deb10u1 [715 kB]
+Get:51 http://deb.debian.org/debian buster/main amd64 libalgorithm-diff-perl all 1.19.03-2 [47.9 kB]
+Get:52 http://deb.debian.org/debian buster/main amd64 libalgorithm-diff-xs-perl amd64 0.04-5+b1 [11.8 kB]
+Get:53 http://deb.debian.org/debian buster/main amd64 libalgorithm-merge-perl all 0.08-3 [12.7 kB]
+Get:54 http://deb.debian.org/debian buster/main amd64 libfile-fcntllock-perl amd64 0.22-3+b5 [35.4 kB]
+Get:55 http://deb.debian.org/debian buster/main amd64 manpages-dev all 4.16-2 [2232 kB]
+[91mdebconf: delaying package configuration, since apt-utils is not installed
+[0mFetched 57.7 MB in 1s (74.6 MB/s)
+Selecting previously unselected package liblocale-gettext-perl.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 12557 files and directories currently installed.)
+Preparing to unpack .../00-liblocale-gettext-perl_1.07-3+b4_amd64.deb ...
+Unpacking liblocale-gettext-perl (1.07-3+b4) ...
+Selecting previously unselected package manpages.
+Preparing to unpack .../01-manpages_4.16-2_all.deb ...
+Unpacking manpages (4.16-2) ...
+Selecting previously unselected package binutils-common:amd64.
+Preparing to unpack .../02-binutils-common_2.31.1-16_amd64.deb ...
+Unpacking binutils-common:amd64 (2.31.1-16) ...
+Selecting previously unselected package libbinutils:amd64.
+Preparing to unpack .../03-libbinutils_2.31.1-16_amd64.deb ...
+Unpacking libbinutils:amd64 (2.31.1-16) ...
+Selecting previously unselected package binutils-x86-64-linux-gnu.
+Preparing to unpack .../04-binutils-x86-64-linux-gnu_2.31.1-16_amd64.deb ...
+Unpacking binutils-x86-64-linux-gnu (2.31.1-16) ...
+Selecting previously unselected package binutils.
+Preparing to unpack .../05-binutils_2.31.1-16_amd64.deb ...
+Unpacking binutils (2.31.1-16) ...
+Selecting previously unselected package libc-dev-bin.
+Preparing to unpack .../06-libc-dev-bin_2.28-10_amd64.deb ...
+Unpacking libc-dev-bin (2.28-10) ...
+Selecting previously unselected package linux-libc-dev:amd64.
+Preparing to unpack .../07-linux-libc-dev_4.19.98-1_amd64.deb ...
+Unpacking linux-libc-dev:amd64 (4.19.98-1) ...
+Selecting previously unselected package libc6-dev:amd64.
+Preparing to unpack .../08-libc6-dev_2.28-10_amd64.deb ...
+Unpacking libc6-dev:amd64 (2.28-10) ...
+Selecting previously unselected package libisl19:amd64.
+Preparing to unpack .../09-libisl19_0.20-2_amd64.deb ...
+Unpacking libisl19:amd64 (0.20-2) ...
+Selecting previously unselected package libmpfr6:amd64.
+Preparing to unpack .../10-libmpfr6_4.0.2-1_amd64.deb ...
+Unpacking libmpfr6:amd64 (4.0.2-1) ...
+Selecting previously unselected package libmpc3:amd64.
+Preparing to unpack .../11-libmpc3_1.1.0-1_amd64.deb ...
+Unpacking libmpc3:amd64 (1.1.0-1) ...
+Selecting previously unselected package cpp-8.
+Preparing to unpack .../12-cpp-8_8.3.0-6_amd64.deb ...
+Unpacking cpp-8 (8.3.0-6) ...
+Selecting previously unselected package cpp.
+Preparing to unpack .../13-cpp_4%3a8.3.0-1_amd64.deb ...
+Unpacking cpp (4:8.3.0-1) ...
+Selecting previously unselected package libcc1-0:amd64.
+Preparing to unpack .../14-libcc1-0_8.3.0-6_amd64.deb ...
+Unpacking libcc1-0:amd64 (8.3.0-6) ...
+Selecting previously unselected package libgomp1:amd64.
+Preparing to unpack .../15-libgomp1_8.3.0-6_amd64.deb ...
+Unpacking libgomp1:amd64 (8.3.0-6) ...
+Selecting previously unselected package libitm1:amd64.
+Preparing to unpack .../16-libitm1_8.3.0-6_amd64.deb ...
+Unpacking libitm1:amd64 (8.3.0-6) ...
+Selecting previously unselected package libatomic1:amd64.
+Preparing to unpack .../17-libatomic1_8.3.0-6_amd64.deb ...
+Unpacking libatomic1:amd64 (8.3.0-6) ...
+Selecting previously unselected package libasan5:amd64.
+Preparing to unpack .../18-libasan5_8.3.0-6_amd64.deb ...
+Unpacking libasan5:amd64 (8.3.0-6) ...
+Selecting previously unselected package liblsan0:amd64.
+Preparing to unpack .../19-liblsan0_8.3.0-6_amd64.deb ...
+Unpacking liblsan0:amd64 (8.3.0-6) ...
+Selecting previously unselected package libtsan0:amd64.
+Preparing to unpack .../20-libtsan0_8.3.0-6_amd64.deb ...
+Unpacking libtsan0:amd64 (8.3.0-6) ...
+Selecting previously unselected package libubsan1:amd64.
+Preparing to unpack .../21-libubsan1_8.3.0-6_amd64.deb ...
+Unpacking libubsan1:amd64 (8.3.0-6) ...
+Selecting previously unselected package libmpx2:amd64.
+Preparing to unpack .../22-libmpx2_8.3.0-6_amd64.deb ...
+Unpacking libmpx2:amd64 (8.3.0-6) ...
+Selecting previously unselected package libquadmath0:amd64.
+Preparing to unpack .../23-libquadmath0_8.3.0-6_amd64.deb ...
+Unpacking libquadmath0:amd64 (8.3.0-6) ...
+Selecting previously unselected package libgcc-8-dev:amd64.
+Preparing to unpack .../24-libgcc-8-dev_8.3.0-6_amd64.deb ...
+Unpacking libgcc-8-dev:amd64 (8.3.0-6) ...
+Selecting previously unselected package gcc-8.
+Preparing to unpack .../25-gcc-8_8.3.0-6_amd64.deb ...
+Unpacking gcc-8 (8.3.0-6) ...
+Selecting previously unselected package gcc.
+Preparing to unpack .../26-gcc_4%3a8.3.0-1_amd64.deb ...
+Unpacking gcc (4:8.3.0-1) ...
+Selecting previously unselected package libstdc++-8-dev:amd64.
+Preparing to unpack .../27-libstdc++-8-dev_8.3.0-6_amd64.deb ...
+Unpacking libstdc++-8-dev:amd64 (8.3.0-6) ...
+Selecting previously unselected package g++-8.
+Preparing to unpack .../28-g++-8_8.3.0-6_amd64.deb ...
+Unpacking g++-8 (8.3.0-6) ...
+Selecting previously unselected package g++.
+Preparing to unpack .../29-g++_4%3a8.3.0-1_amd64.deb ...
+Unpacking g++ (4:8.3.0-1) ...
+Selecting previously unselected package make.
+Preparing to unpack .../30-make_4.2.1-1.2_amd64.deb ...
+Unpacking make (4.2.1-1.2) ...
+Selecting previously unselected package libdpkg-perl.
+Preparing to unpack .../31-libdpkg-perl_1.19.7_all.deb ...
+Unpacking libdpkg-perl (1.19.7) ...
+Selecting previously unselected package dpkg-dev.
+Preparing to unpack .../32-dpkg-dev_1.19.7_all.deb ...
+Unpacking dpkg-dev (1.19.7) ...
+Selecting previously unselected package build-essential.
+Preparing to unpack .../33-build-essential_12.6_amd64.deb ...
+Unpacking build-essential (12.6) ...
+Selecting previously unselected package libassuan0:amd64.
+Preparing to unpack .../34-libassuan0_2.5.2-1_amd64.deb ...
+Unpacking libassuan0:amd64 (2.5.2-1) ...
+Selecting previously unselected package gpgconf.
+Preparing to unpack .../35-gpgconf_2.2.12-1+deb10u1_amd64.deb ...
+Unpacking gpgconf (2.2.12-1+deb10u1) ...
+Selecting previously unselected package libksba8:amd64.
+Preparing to unpack .../36-libksba8_1.3.5-2_amd64.deb ...
+Unpacking libksba8:amd64 (1.3.5-2) ...
+Selecting previously unselected package libnpth0:amd64.
+Preparing to unpack .../37-libnpth0_1.6-1_amd64.deb ...
+Unpacking libnpth0:amd64 (1.6-1) ...
+Selecting previously unselected package dirmngr.
+Preparing to unpack .../38-dirmngr_2.2.12-1+deb10u1_amd64.deb ...
+Unpacking dirmngr (2.2.12-1+deb10u1) ...
+Selecting previously unselected package libfakeroot:amd64.
+Preparing to unpack .../39-libfakeroot_1.23-1_amd64.deb ...
+Unpacking libfakeroot:amd64 (1.23-1) ...
+Selecting previously unselected package fakeroot.
+Preparing to unpack .../40-fakeroot_1.23-1_amd64.deb ...
+Unpacking fakeroot (1.23-1) ...
+Selecting previously unselected package gnupg-l10n.
+Preparing to unpack .../41-gnupg-l10n_2.2.12-1+deb10u1_all.deb ...
+Unpacking gnupg-l10n (2.2.12-1+deb10u1) ...
+Selecting previously unselected package gnupg-utils.
+Preparing to unpack .../42-gnupg-utils_2.2.12-1+deb10u1_amd64.deb ...
+Unpacking gnupg-utils (2.2.12-1+deb10u1) ...
+Selecting previously unselected package gpg.
+Preparing to unpack .../43-gpg_2.2.12-1+deb10u1_amd64.deb ...
+Unpacking gpg (2.2.12-1+deb10u1) ...
+Selecting previously unselected package pinentry-curses.
+Preparing to unpack .../44-pinentry-curses_1.1.0-2_amd64.deb ...
+Unpacking pinentry-curses (1.1.0-2) ...
+Selecting previously unselected package gpg-agent.
+Preparing to unpack .../45-gpg-agent_2.2.12-1+deb10u1_amd64.deb ...
+Unpacking gpg-agent (2.2.12-1+deb10u1) ...
+Selecting previously unselected package gpg-wks-client.
+Preparing to unpack .../46-gpg-wks-client_2.2.12-1+deb10u1_amd64.deb ...
+Unpacking gpg-wks-client (2.2.12-1+deb10u1) ...
+Selecting previously unselected package gpg-wks-server.
+Preparing to unpack .../47-gpg-wks-server_2.2.12-1+deb10u1_amd64.deb ...
+Unpacking gpg-wks-server (2.2.12-1+deb10u1) ...
+Selecting previously unselected package gpgsm.
+Preparing to unpack .../48-gpgsm_2.2.12-1+deb10u1_amd64.deb ...
+Unpacking gpgsm (2.2.12-1+deb10u1) ...
+Selecting previously unselected package gnupg.
+Preparing to unpack .../49-gnupg_2.2.12-1+deb10u1_all.deb ...
+Unpacking gnupg (2.2.12-1+deb10u1) ...
+Selecting previously unselected package libalgorithm-diff-perl.
+Preparing to unpack .../50-libalgorithm-diff-perl_1.19.03-2_all.deb ...
+Unpacking libalgorithm-diff-perl (1.19.03-2) ...
+Selecting previously unselected package libalgorithm-diff-xs-perl.
+Preparing to unpack .../51-libalgorithm-diff-xs-perl_0.04-5+b1_amd64.deb ...
+Unpacking libalgorithm-diff-xs-perl (0.04-5+b1) ...
+Selecting previously unselected package libalgorithm-merge-perl.
+Preparing to unpack .../52-libalgorithm-merge-perl_0.08-3_all.deb ...
+Unpacking libalgorithm-merge-perl (0.08-3) ...
+Selecting previously unselected package libfile-fcntllock-perl.
+Preparing to unpack .../53-libfile-fcntllock-perl_0.22-3+b5_amd64.deb ...
+Unpacking libfile-fcntllock-perl (0.22-3+b5) ...
+Selecting previously unselected package manpages-dev.
+Preparing to unpack .../54-manpages-dev_4.16-2_all.deb ...
+Unpacking manpages-dev (4.16-2) ...
+Setting up libksba8:amd64 (1.3.5-2) ...
+Setting up libfile-fcntllock-perl (0.22-3+b5) ...
+Setting up libalgorithm-diff-perl (1.19.03-2) ...
+Setting up manpages (4.16-2) ...
+Setting up binutils-common:amd64 (2.31.1-16) ...
+Setting up linux-libc-dev:amd64 (4.19.98-1) ...
+Setting up libnpth0:amd64 (1.6-1) ...
+Setting up libassuan0:amd64 (2.5.2-1) ...
+Setting up libgomp1:amd64 (8.3.0-6) ...
+Setting up libfakeroot:amd64 (1.23-1) ...
+Setting up fakeroot (1.23-1) ...
+update-alternatives: using /usr/bin/fakeroot-sysv to provide /usr/bin/fakeroot (fakeroot) in auto mode
+update-alternatives: warning: skip creation of /usr/share/man/man1/fakeroot.1.gz because associated file /usr/share/man/man1/fakeroot-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/faked.1.gz because associated file /usr/share/man/man1/faked-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/es/man1/fakeroot.1.gz because associated file /usr/share/man/es/man1/fakeroot-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/es/man1/faked.1.gz because associated file /usr/share/man/es/man1/faked-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/fr/man1/fakeroot.1.gz because associated file /usr/share/man/fr/man1/fakeroot-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/fr/man1/faked.1.gz because associated file /usr/share/man/fr/man1/faked-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/sv/man1/fakeroot.1.gz because associated file /usr/share/man/sv/man1/fakeroot-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/sv/man1/faked.1.gz because associated file /usr/share/man/sv/man1/faked-sysv.1.gz (of link group fakeroot) doesn't exist
+Setting up libasan5:amd64 (8.3.0-6) ...
+Setting up make (4.2.1-1.2) ...
+Setting up libmpfr6:amd64 (4.0.2-1) ...
+Setting up gnupg-l10n (2.2.12-1+deb10u1) ...
+Setting up libquadmath0:amd64 (8.3.0-6) ...
+Setting up libmpc3:amd64 (1.1.0-1) ...
+Setting up libatomic1:amd64 (8.3.0-6) ...
+Setting up libdpkg-perl (1.19.7) ...
+Setting up libmpx2:amd64 (8.3.0-6) ...
+Setting up libubsan1:amd64 (8.3.0-6) ...
+Setting up libisl19:amd64 (0.20-2) ...
+Setting up gpgconf (2.2.12-1+deb10u1) ...
+Setting up libbinutils:amd64 (2.31.1-16) ...
+Setting up cpp-8 (8.3.0-6) ...
+Setting up libc-dev-bin (2.28-10) ...
+Setting up libalgorithm-diff-xs-perl (0.04-5+b1) ...
+Setting up libcc1-0:amd64 (8.3.0-6) ...
+Setting up liblocale-gettext-perl (1.07-3+b4) ...
+Setting up gpg (2.2.12-1+deb10u1) ...
+Setting up liblsan0:amd64 (8.3.0-6) ...
+Setting up libitm1:amd64 (8.3.0-6) ...
+Setting up libalgorithm-merge-perl (0.08-3) ...
+Setting up gnupg-utils (2.2.12-1+deb10u1) ...
+Setting up binutils-x86-64-linux-gnu (2.31.1-16) ...
+Setting up libtsan0:amd64 (8.3.0-6) ...
+Setting up pinentry-curses (1.1.0-2) ...
+Setting up manpages-dev (4.16-2) ...
+Setting up gpg-agent (2.2.12-1+deb10u1) ...
+Setting up gpgsm (2.2.12-1+deb10u1) ...
+Setting up binutils (2.31.1-16) ...
+Setting up dpkg-dev (1.19.7) ...
+Setting up dirmngr (2.2.12-1+deb10u1) ...
+Setting up libgcc-8-dev:amd64 (8.3.0-6) ...
+Setting up gpg-wks-server (2.2.12-1+deb10u1) ...
+Setting up cpp (4:8.3.0-1) ...
+Setting up libc6-dev:amd64 (2.28-10) ...
+Setting up libstdc++-8-dev:amd64 (8.3.0-6) ...
+Setting up gcc-8 (8.3.0-6) ...
+Setting up gpg-wks-client (2.2.12-1+deb10u1) ...
+Setting up gcc (4:8.3.0-1) ...
+Setting up g++-8 (8.3.0-6) ...
+Setting up gnupg (2.2.12-1+deb10u1) ...
+Setting up g++ (4:8.3.0-1) ...
+update-alternatives: using /usr/bin/g++ to provide /usr/bin/c++ (c++) in auto mode
+Setting up build-essential (12.6) ...
+Processing triggers for libc-bin (2.28-10) ...
+Removing intermediate container ac5f4a1c5374
+ ---> 03ce49d4ec0c
+Step 5/10 : RUN mkdir microservice
+ ---> Running in fbd379e51a4a
+Removing intermediate container fbd379e51a4a
+ ---> ad8cdecc143c
+Step 6/10 : WORKDIR /microservice
+ ---> Running in 9f67f8a94cee
+Removing intermediate container 9f67f8a94cee
+ ---> c3c279e61afb
+Step 7/10 : COPY ./s2i/bin/ /s2i/bin
+ ---> df324fc59b98
+Step 8/10 : COPY _python /microservice
+ ---> 3c605cc3ba52
+Step 9/10 : RUN cd /microservice/python && make install
+ ---> Running in e1661cd55b7f
+pip install -e .
+Obtaining file:///microservice/python
+Collecting Flask<2.0.0
+  Downloading Flask-1.1.1-py2.py3-none-any.whl (94 kB)
+Collecting Flask-cors<4.0.0
+  Downloading Flask_Cors-3.0.8-py2.py3-none-any.whl (14 kB)
+Collecting redis<4.0.0
+  Downloading redis-3.4.1-py2.py3-none-any.whl (71 kB)
+Requirement already satisfied: requests<3.0.0 in /opt/conda/lib/python3.6/site-packages (from seldon-core==1.0.2) (2.23.0)
+Collecting numpy<2.0.0
+  Downloading numpy-1.18.2-cp36-cp36m-manylinux1_x86_64.whl (20.2 MB)
+Collecting flatbuffers<2.0.0
+  Downloading flatbuffers-1.12-py2.py3-none-any.whl (15 kB)
+Collecting protobuf<4.0.0
+  Downloading protobuf-3.11.3-cp36-cp36m-manylinux1_x86_64.whl (1.3 MB)
+Collecting grpcio<2.0.0
+  Downloading grpcio-1.27.2-cp36-cp36m-manylinux2010_x86_64.whl (2.7 MB)
+Collecting Flask-OpenTracing<1.2.0,>=1.1.0
+  Downloading Flask-OpenTracing-1.1.0.tar.gz (8.2 kB)
+Collecting opentracing<2.3.0,>=2.2.0
+  Downloading opentracing-2.2.0.tar.gz (47 kB)
+Collecting jaeger-client<4.2.0,>=4.1.0
+  Downloading jaeger-client-4.1.0.tar.gz (80 kB)
+Collecting grpcio-opentracing<1.2.0,>=1.1.4
+  Downloading grpcio_opentracing-1.1.4-py3-none-any.whl (14 kB)
+Collecting pyaml<20.0.0
+  Downloading pyaml-19.12.0-py2.py3-none-any.whl (17 kB)
+Collecting gunicorn<20.1.0,>=19.9.0
+  Downloading gunicorn-20.0.4-py2.py3-none-any.whl (77 kB)
+Collecting minio<6.0.0,>=4.0.9
+  Downloading minio-5.0.8-py2.py3-none-any.whl (73 kB)
+Collecting azure-storage-blob<3.0.0,>=2.0.1
+  Downloading azure_storage_blob-2.1.0-py2.py3-none-any.whl (88 kB)
+Requirement already satisfied: setuptools>=41.0.0 in /opt/conda/lib/python3.6/site-packages (from seldon-core==1.0.2) (46.1.3.post20200330)
+Collecting prometheus_client<0.8.0,>=0.7.1
+  Downloading prometheus_client-0.7.1.tar.gz (38 kB)
+Collecting itsdangerous>=0.24
+  Downloading itsdangerous-1.1.0-py2.py3-none-any.whl (16 kB)
+Collecting click>=5.1
+  Downloading click-7.1.1-py2.py3-none-any.whl (82 kB)
+Collecting Jinja2>=2.10.1
+  Downloading Jinja2-2.11.1-py2.py3-none-any.whl (126 kB)
+Collecting Werkzeug>=0.15
+  Downloading Werkzeug-1.0.1-py2.py3-none-any.whl (298 kB)
+Requirement already satisfied: Six in /opt/conda/lib/python3.6/site-packages (from Flask-cors<4.0.0->seldon-core==1.0.2) (1.14.0)
+Requirement already satisfied: idna<3,>=2.5 in /opt/conda/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.0.2) (2.9)
+Requirement already satisfied: certifi>=2017.4.17 in /opt/conda/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.0.2) (2019.11.28)
+Requirement already satisfied: chardet<4,>=3.0.2 in /opt/conda/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.0.2) (3.0.4)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /opt/conda/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.0.2) (1.25.8)
+Collecting threadloop<2,>=1
+  Downloading threadloop-1.0.2.tar.gz (4.9 kB)
+Collecting thrift
+  Downloading thrift-0.13.0.tar.gz (59 kB)
+Collecting tornado<6,>=4.3
+  Downloading tornado-5.1.1.tar.gz (516 kB)
+Collecting PyYAML
+  Downloading PyYAML-5.3.1.tar.gz (269 kB)
+Collecting configparser
+  Downloading configparser-5.0.0-py3-none-any.whl (22 kB)
+Collecting pytz
+  Downloading pytz-2019.3-py2.py3-none-any.whl (509 kB)
+Collecting python-dateutil
+  Downloading python_dateutil-2.8.1-py2.py3-none-any.whl (227 kB)
+Collecting azure-storage-common~=2.1
+  Downloading azure_storage_common-2.1.0-py2.py3-none-any.whl (47 kB)
+Collecting azure-common>=1.1.5
+  Downloading azure_common-1.1.25-py2.py3-none-any.whl (12 kB)
+Collecting MarkupSafe>=0.23
+  Downloading MarkupSafe-1.1.1-cp36-cp36m-manylinux1_x86_64.whl (27 kB)
+Requirement already satisfied: cryptography in /opt/conda/lib/python3.6/site-packages (from azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->seldon-core==1.0.2) (2.8)
+Requirement already satisfied: cffi!=1.11.3,>=1.8 in /opt/conda/lib/python3.6/site-packages (from cryptography->azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->seldon-core==1.0.2) (1.14.0)
+Requirement already satisfied: pycparser in /opt/conda/lib/python3.6/site-packages (from cffi!=1.11.3,>=1.8->cryptography->azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->seldon-core==1.0.2) (2.20)
+Building wheels for collected packages: Flask-OpenTracing, opentracing, jaeger-client, prometheus-client, threadloop, thrift, tornado, PyYAML
+  Building wheel for Flask-OpenTracing (setup.py): started
+  Building wheel for Flask-OpenTracing (setup.py): finished with status 'done'
+  Created wheel for Flask-OpenTracing: filename=Flask_OpenTracing-1.1.0-py3-none-any.whl size=9070 sha256=9d902cd28064fa7e113b291fd570c11e5ec66e4d4fc1ba93aac758d187ac8aba
+  Stored in directory: /root/.cache/pip/wheels/ad/4b/2d/24ff0da0a0b53c7c77ce59b843bcceaf644c88703241e59615
+  Building wheel for opentracing (setup.py): started
+  Building wheel for opentracing (setup.py): finished with status 'done'
+  Created wheel for opentracing: filename=opentracing-2.2.0-py3-none-any.whl size=49319 sha256=93fe45e71cfe82cface96163425ca488cf50a063b7df5175310f24b33d682fba
+  Stored in directory: /root/.cache/pip/wheels/39/40/44/8bace79f4514e99786236c31f1df8d1b814ff02c1e08b1d697
+  Building wheel for jaeger-client (setup.py): started
+  Building wheel for jaeger-client (setup.py): finished with status 'done'
+  Created wheel for jaeger-client: filename=jaeger_client-4.1.0-py3-none-any.whl size=64309 sha256=9461313ffc9edfe7f855e8deb0698bbb65ce6fd080a2244564e2a8263ae05dca
+  Stored in directory: /root/.cache/pip/wheels/e9/9b/8c/503d0cc13b39a551c054515683ba1d15b40324c863dc442e66
+  Building wheel for prometheus-client (setup.py): started
+  Building wheel for prometheus-client (setup.py): finished with status 'done'
+  Created wheel for prometheus-client: filename=prometheus_client-0.7.1-py3-none-any.whl size=41404 sha256=73aff5dab558304514df12f68a7723b04ed9a9c3a7b4b30d347a0d99f3039e19
+  Stored in directory: /root/.cache/pip/wheels/1d/4a/79/a3ad3f74b3495b4555359375ca33ad7b64e77f8b7a53c8894f
+  Building wheel for threadloop (setup.py): started
+  Building wheel for threadloop (setup.py): finished with status 'done'
+  Created wheel for threadloop: filename=threadloop-1.0.2-py3-none-any.whl size=3423 sha256=756effd06bae8e32ff3a790a42fadfb1d7fd08d0a2abc6788a472610cf14bf0b
+  Stored in directory: /root/.cache/pip/wheels/02/54/65/9f87de48fe8fcaaee30f279973d946ad55f9df56b93b3e78da
+  Building wheel for thrift (setup.py): started
+  Building wheel for thrift (setup.py): finished with status 'done'
+  Created wheel for thrift: filename=thrift-0.13.0-cp36-cp36m-linux_x86_64.whl size=483947 sha256=0949a4be6eabe51004a74ee0c5331a973e4472dae28df9c6cb4fc035014dba9a
+  Stored in directory: /root/.cache/pip/wheels/e0/38/fc/472fe18756b177b42096961f8bd3ff2dc5c5620ac399fce52d
+  Building wheel for tornado (setup.py): started
+  Building wheel for tornado (setup.py): finished with status 'done'
+  Created wheel for tornado: filename=tornado-5.1.1-cp36-cp36m-linux_x86_64.whl size=462657 sha256=69dde2bc289b9146caaf278f8c4e546800f15e0819c026e521fe84c4d37f0d8e
+  Stored in directory: /root/.cache/pip/wheels/64/74/71/e7a0d0eb4fc42cb20a17aec36f8f0b5b8c5e1ec19c701fd34a
+  Building wheel for PyYAML (setup.py): started
+  Building wheel for PyYAML (setup.py): finished with status 'done'
+  Created wheel for PyYAML: filename=PyYAML-5.3.1-cp36-cp36m-linux_x86_64.whl size=44621 sha256=b805e34d40720540992dbf361401a3eb6877b1e2e69c1ae4920de3b9d3500305
+  Stored in directory: /root/.cache/pip/wheels/e5/9d/ad/2ee53cf262cba1ffd8afe1487eef788ea3f260b7e6232a80fc
+Successfully built Flask-OpenTracing opentracing jaeger-client prometheus-client threadloop thrift tornado PyYAML
+Installing collected packages: itsdangerous, click, MarkupSafe, Jinja2, Werkzeug, Flask, Flask-cors, redis, numpy, flatbuffers, protobuf, grpcio, opentracing, Flask-OpenTracing, tornado, threadloop, thrift, jaeger-client, grpcio-opentracing, PyYAML, pyaml, gunicorn, configparser, pytz, python-dateutil, minio, azure-common, azure-storage-common, azure-storage-blob, prometheus-client, seldon-core
+  Running setup.py develop for seldon-core
+Successfully installed Flask-1.1.1 Flask-OpenTracing-1.1.0 Flask-cors-3.0.8 Jinja2-2.11.1 MarkupSafe-1.1.1 PyYAML-5.3.1 Werkzeug-1.0.1 azure-common-1.1.25 azure-storage-blob-2.1.0 azure-storage-common-2.1.0 click-7.1.1 configparser-5.0.0 flatbuffers-1.12 grpcio-1.27.2 grpcio-opentracing-1.1.4 gunicorn-20.0.4 itsdangerous-1.1.0 jaeger-client-4.1.0 minio-5.0.8 numpy-1.18.2 opentracing-2.2.0 prometheus-client-0.7.1 protobuf-3.11.3 pyaml-19.12.0 python-dateutil-2.8.1 pytz-2019.3 redis-3.4.1 seldon-core threadloop-1.0.2 thrift-0.13.0 tornado-5.1.1
+Removing intermediate container e1661cd55b7f
+ ---> 615ec95e184c
+Step 10/10 : EXPOSE 5000
+ ---> Running in 493ebe49f44f
+Removing intermediate container 493ebe49f44f
+ ---> dd03cbea6aca
+Successfully built dd03cbea6aca
+Successfully tagged seldonio/seldon-core-s2i-python36:0.19-SNAPSHOT
+make[1]: Leaving directory '/workspace/source/wrappers/s2i/python'
+make[1]: Entering directory '/workspace/source/wrappers/s2i/python'
+mkdir -p _python
+cp -r ../../../python _python
+cat Dockerfile.local.tmpl | sed  -e "s|%PYTHON_VERSION%|3.7|" | sed  -e "s|%CONDA_VERSION%|4.7.12|" > Dockerfile
+set -x && docker build -t docker.io/seldonio/seldon-core-s2i-python`echo -n 3.7 | sed 's/\.//g'`:0.19-SNAPSHOT .
+++ echo -n 3.7
+++ sed 's/\.//g'
++ docker build -t docker.io/seldonio/seldon-core-s2i-python37:0.19-SNAPSHOT .
+Sending build context to Docker daemon  978.4kB
+Step 1/10 : FROM continuumio/miniconda3:4.7.12
+ ---> 406f2b43ea59
+Step 2/10 : LABEL io.openshift.s2i.scripts-url="image:///s2i/bin"
+ ---> Using cache
+ ---> 3eadbfbe8dbe
+Step 3/10 : RUN conda install --yes python=3.7 conda=4.7.12
+ ---> Running in 085c2efa6e57
+Collecting package metadata (current_repodata.json): ...working... done
+Solving environment: ...working... done
+
+## Package Plan ##
+
+  environment location: /opt/conda
+
+  added / updated specs:
+    - conda=4.7.12
+    - python=3.7
+
+
+The following packages will be downloaded:
+
+    package                    |            build
+    ---------------------------|-----------------
+    ca-certificates-2020.1.1   |                0         125 KB
+    certifi-2019.11.28         |           py37_1         156 KB
+    openssl-1.1.1f             |       h7b6447c_0         2.5 MB
+    ------------------------------------------------------------
+                                           Total:         2.8 MB
+
+The following packages will be UPDATED:
+
+  ca-certificates                               2019.8.28-0 --> 2020.1.1-0
+  certifi                                  2019.9.11-py37_0 --> 2019.11.28-py37_1
+  openssl                                 1.1.1d-h7b6447c_2 --> 1.1.1f-h7b6447c_0
+
+
+
+Downloading and Extracting Packages
+openssl-1.1.1f       | 2.5 MB    |            |   0% openssl-1.1.1f       | 2.5 MB    | ####1      |  42% openssl-1.1.1f       | 2.5 MB    | ########## | 100% 
+certifi-2019.11.28   | 156 KB    |            |   0% certifi-2019.11.28   | 156 KB    | ########## | 100% 
+ca-certificates-2020 | 125 KB    |            |   0% ca-certificates-2020 | 125 KB    | ########## | 100% 
+Preparing transaction: ...working... done
+Verifying transaction: ...working... done
+Executing transaction: ...working... done
+[91m
+
+==> WARNING: A newer version of conda exists. <==
+  current version: 4.7.12
+  latest version: 4.8.3
+
+Please update conda by running
+
+    $ conda update -n base -c defaults conda
+
+
+[0mRemoving intermediate container 085c2efa6e57
+ ---> 25b0476cfffd
+Step 4/10 : RUN apt-get update --yes && apt-get install --yes gcc make build-essential
+ ---> Running in 966933c9ea42
+Get:1 http://security.debian.org/debian-security buster/updates InRelease [65.4 kB]
+Get:2 http://deb.debian.org/debian buster InRelease [122 kB]
+Get:3 http://deb.debian.org/debian buster-updates InRelease [49.3 kB]
+Get:4 http://security.debian.org/debian-security buster/updates/main amd64 Packages [186 kB]
+Get:5 http://deb.debian.org/debian buster/main amd64 Packages [7907 kB]
+Get:6 http://deb.debian.org/debian buster-updates/main amd64 Packages.diff/Index [2212 B]
+Get:7 http://deb.debian.org/debian buster-updates/main amd64 Packages 2020-02-23-2017.41.pdiff [2162 B]
+Get:7 http://deb.debian.org/debian buster-updates/main amd64 Packages 2020-02-23-2017.41.pdiff [2162 B]
+Fetched 8333 kB in 2s (4445 kB/s)
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following additional packages will be installed:
+  binutils binutils-common binutils-x86-64-linux-gnu cpp cpp-8 dirmngr
+  dpkg-dev fakeroot g++ g++-8 gcc-8 gnupg gnupg-l10n gnupg-utils gpg gpg-agent
+  gpg-wks-client gpg-wks-server gpgconf gpgsm libalgorithm-diff-perl
+  libalgorithm-diff-xs-perl libalgorithm-merge-perl libasan5 libassuan0
+  libatomic1 libbinutils libc-dev-bin libc6-dev libcc1-0 libdpkg-perl
+  libfakeroot libfile-fcntllock-perl libgcc-8-dev libgomp1 libisl19 libitm1
+  libksba8 liblocale-gettext-perl liblsan0 libmpc3 libmpfr6 libmpx2 libnpth0
+  libquadmath0 libstdc++-8-dev libtsan0 libubsan1 linux-libc-dev manpages
+  manpages-dev pinentry-curses
+Suggested packages:
+  binutils-doc cpp-doc gcc-8-locales dbus-user-session libpam-systemd
+  pinentry-gnome3 tor debian-keyring g++-multilib g++-8-multilib gcc-8-doc
+  libstdc++6-8-dbg gcc-multilib autoconf automake libtool flex bison gdb
+  gcc-doc gcc-8-multilib libgcc1-dbg libgomp1-dbg libitm1-dbg libatomic1-dbg
+  libasan5-dbg liblsan0-dbg libtsan0-dbg libubsan1-dbg libmpx2-dbg
+  libquadmath0-dbg parcimonie xloadimage scdaemon glibc-doc bzr
+  libstdc++-8-doc make-doc man-browser pinentry-doc
+The following NEW packages will be installed:
+  binutils binutils-common binutils-x86-64-linux-gnu build-essential cpp cpp-8
+  dirmngr dpkg-dev fakeroot g++ g++-8 gcc gcc-8 gnupg gnupg-l10n gnupg-utils
+  gpg gpg-agent gpg-wks-client gpg-wks-server gpgconf gpgsm
+  libalgorithm-diff-perl libalgorithm-diff-xs-perl libalgorithm-merge-perl
+  libasan5 libassuan0 libatomic1 libbinutils libc-dev-bin libc6-dev libcc1-0
+  libdpkg-perl libfakeroot libfile-fcntllock-perl libgcc-8-dev libgomp1
+  libisl19 libitm1 libksba8 liblocale-gettext-perl liblsan0 libmpc3 libmpfr6
+  libmpx2 libnpth0 libquadmath0 libstdc++-8-dev libtsan0 libubsan1
+  linux-libc-dev make manpages manpages-dev pinentry-curses
+0 upgraded, 55 newly installed, 0 to remove and 31 not upgraded.
+Need to get 57.7 MB of archives.
+After this operation, 202 MB of additional disk space will be used.
+Get:1 http://deb.debian.org/debian buster/main amd64 liblocale-gettext-perl amd64 1.07-3+b4 [18.9 kB]
+Get:2 http://deb.debian.org/debian buster/main amd64 manpages all 4.16-2 [1295 kB]
+Get:3 http://deb.debian.org/debian buster/main amd64 binutils-common amd64 2.31.1-16 [2073 kB]
+Get:4 http://deb.debian.org/debian buster/main amd64 libbinutils amd64 2.31.1-16 [478 kB]
+Get:5 http://deb.debian.org/debian buster/main amd64 binutils-x86-64-linux-gnu amd64 2.31.1-16 [1823 kB]
+Get:6 http://deb.debian.org/debian buster/main amd64 binutils amd64 2.31.1-16 [56.8 kB]
+Get:7 http://deb.debian.org/debian buster/main amd64 libc-dev-bin amd64 2.28-10 [275 kB]
+Get:8 http://deb.debian.org/debian buster/main amd64 linux-libc-dev amd64 4.19.98-1 [1314 kB]
+Get:9 http://deb.debian.org/debian buster/main amd64 libc6-dev amd64 2.28-10 [2691 kB]
+Get:10 http://deb.debian.org/debian buster/main amd64 libisl19 amd64 0.20-2 [587 kB]
+Get:11 http://deb.debian.org/debian buster/main amd64 libmpfr6 amd64 4.0.2-1 [775 kB]
+Get:12 http://deb.debian.org/debian buster/main amd64 libmpc3 amd64 1.1.0-1 [41.3 kB]
+Get:13 http://deb.debian.org/debian buster/main amd64 cpp-8 amd64 8.3.0-6 [8914 kB]
+Get:14 http://deb.debian.org/debian buster/main amd64 cpp amd64 4:8.3.0-1 [19.4 kB]
+Get:15 http://deb.debian.org/debian buster/main amd64 libcc1-0 amd64 8.3.0-6 [46.6 kB]
+Get:16 http://deb.debian.org/debian buster/main amd64 libgomp1 amd64 8.3.0-6 [75.8 kB]
+Get:17 http://deb.debian.org/debian buster/main amd64 libitm1 amd64 8.3.0-6 [27.7 kB]
+Get:18 http://deb.debian.org/debian buster/main amd64 libatomic1 amd64 8.3.0-6 [9032 B]
+Get:19 http://deb.debian.org/debian buster/main amd64 libasan5 amd64 8.3.0-6 [362 kB]
+Get:20 http://deb.debian.org/debian buster/main amd64 liblsan0 amd64 8.3.0-6 [131 kB]
+Get:21 http://deb.debian.org/debian buster/main amd64 libtsan0 amd64 8.3.0-6 [283 kB]
+Get:22 http://deb.debian.org/debian buster/main amd64 libubsan1 amd64 8.3.0-6 [120 kB]
+Get:23 http://deb.debian.org/debian buster/main amd64 libmpx2 amd64 8.3.0-6 [11.4 kB]
+Get:24 http://deb.debian.org/debian buster/main amd64 libquadmath0 amd64 8.3.0-6 [133 kB]
+Get:25 http://deb.debian.org/debian buster/main amd64 libgcc-8-dev amd64 8.3.0-6 [2298 kB]
+Get:26 http://deb.debian.org/debian buster/main amd64 gcc-8 amd64 8.3.0-6 [9452 kB]
+Get:27 http://deb.debian.org/debian buster/main amd64 gcc amd64 4:8.3.0-1 [5196 B]
+Get:28 http://deb.debian.org/debian buster/main amd64 libstdc++-8-dev amd64 8.3.0-6 [1532 kB]
+Get:29 http://deb.debian.org/debian buster/main amd64 g++-8 amd64 8.3.0-6 [9752 kB]
+Get:30 http://deb.debian.org/debian buster/main amd64 g++ amd64 4:8.3.0-1 [1644 B]
+Get:31 http://deb.debian.org/debian buster/main amd64 make amd64 4.2.1-1.2 [341 kB]
+Get:32 http://deb.debian.org/debian buster/main amd64 libdpkg-perl all 1.19.7 [1414 kB]
+Get:33 http://deb.debian.org/debian buster/main amd64 dpkg-dev all 1.19.7 [1773 kB]
+Get:34 http://deb.debian.org/debian buster/main amd64 build-essential amd64 12.6 [7576 B]
+Get:35 http://deb.debian.org/debian buster/main amd64 libassuan0 amd64 2.5.2-1 [49.4 kB]
+Get:36 http://deb.debian.org/debian buster/main amd64 gpgconf amd64 2.2.12-1+deb10u1 [510 kB]
+Get:37 http://deb.debian.org/debian buster/main amd64 libksba8 amd64 1.3.5-2 [99.7 kB]
+Get:38 http://deb.debian.org/debian buster/main amd64 libnpth0 amd64 1.6-1 [18.4 kB]
+Get:39 http://deb.debian.org/debian buster/main amd64 dirmngr amd64 2.2.12-1+deb10u1 [712 kB]
+Get:40 http://deb.debian.org/debian buster/main amd64 libfakeroot amd64 1.23-1 [45.9 kB]
+Get:41 http://deb.debian.org/debian buster/main amd64 fakeroot amd64 1.23-1 [85.8 kB]
+Get:42 http://deb.debian.org/debian buster/main amd64 gnupg-l10n all 2.2.12-1+deb10u1 [1010 kB]
+Get:43 http://deb.debian.org/debian buster/main amd64 gnupg-utils amd64 2.2.12-1+deb10u1 [861 kB]
+Get:44 http://deb.debian.org/debian buster/main amd64 gpg amd64 2.2.12-1+deb10u1 [865 kB]
+Get:45 http://deb.debian.org/debian buster/main amd64 pinentry-curses amd64 1.1.0-2 [64.5 kB]
+Get:46 http://deb.debian.org/debian buster/main amd64 gpg-agent amd64 2.2.12-1+deb10u1 [617 kB]
+Get:47 http://deb.debian.org/debian buster/main amd64 gpg-wks-client amd64 2.2.12-1+deb10u1 [485 kB]
+Get:48 http://deb.debian.org/debian buster/main amd64 gpg-wks-server amd64 2.2.12-1+deb10u1 [478 kB]
+Get:49 http://deb.debian.org/debian buster/main amd64 gpgsm amd64 2.2.12-1+deb10u1 [604 kB]
+Get:50 http://deb.debian.org/debian buster/main amd64 gnupg all 2.2.12-1+deb10u1 [715 kB]
+Get:51 http://deb.debian.org/debian buster/main amd64 libalgorithm-diff-perl all 1.19.03-2 [47.9 kB]
+Get:52 http://deb.debian.org/debian buster/main amd64 libalgorithm-diff-xs-perl amd64 0.04-5+b1 [11.8 kB]
+Get:53 http://deb.debian.org/debian buster/main amd64 libalgorithm-merge-perl all 0.08-3 [12.7 kB]
+Get:54 http://deb.debian.org/debian buster/main amd64 libfile-fcntllock-perl amd64 0.22-3+b5 [35.4 kB]
+Get:55 http://deb.debian.org/debian buster/main amd64 manpages-dev all 4.16-2 [2232 kB]
+[91mdebconf: delaying package configuration, since apt-utils is not installed
+[0mFetched 57.7 MB in 1s (66.2 MB/s)
+Selecting previously unselected package liblocale-gettext-perl.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 12557 files and directories currently installed.)
+Preparing to unpack .../00-liblocale-gettext-perl_1.07-3+b4_amd64.deb ...
+Unpacking liblocale-gettext-perl (1.07-3+b4) ...
+Selecting previously unselected package manpages.
+Preparing to unpack .../01-manpages_4.16-2_all.deb ...
+Unpacking manpages (4.16-2) ...
+Selecting previously unselected package binutils-common:amd64.
+Preparing to unpack .../02-binutils-common_2.31.1-16_amd64.deb ...
+Unpacking binutils-common:amd64 (2.31.1-16) ...
+Selecting previously unselected package libbinutils:amd64.
+Preparing to unpack .../03-libbinutils_2.31.1-16_amd64.deb ...
+Unpacking libbinutils:amd64 (2.31.1-16) ...
+Selecting previously unselected package binutils-x86-64-linux-gnu.
+Preparing to unpack .../04-binutils-x86-64-linux-gnu_2.31.1-16_amd64.deb ...
+Unpacking binutils-x86-64-linux-gnu (2.31.1-16) ...
+Selecting previously unselected package binutils.
+Preparing to unpack .../05-binutils_2.31.1-16_amd64.deb ...
+Unpacking binutils (2.31.1-16) ...
+Selecting previously unselected package libc-dev-bin.
+Preparing to unpack .../06-libc-dev-bin_2.28-10_amd64.deb ...
+Unpacking libc-dev-bin (2.28-10) ...
+Selecting previously unselected package linux-libc-dev:amd64.
+Preparing to unpack .../07-linux-libc-dev_4.19.98-1_amd64.deb ...
+Unpacking linux-libc-dev:amd64 (4.19.98-1) ...
+Selecting previously unselected package libc6-dev:amd64.
+Preparing to unpack .../08-libc6-dev_2.28-10_amd64.deb ...
+Unpacking libc6-dev:amd64 (2.28-10) ...
+Selecting previously unselected package libisl19:amd64.
+Preparing to unpack .../09-libisl19_0.20-2_amd64.deb ...
+Unpacking libisl19:amd64 (0.20-2) ...
+Selecting previously unselected package libmpfr6:amd64.
+Preparing to unpack .../10-libmpfr6_4.0.2-1_amd64.deb ...
+Unpacking libmpfr6:amd64 (4.0.2-1) ...
+Selecting previously unselected package libmpc3:amd64.
+Preparing to unpack .../11-libmpc3_1.1.0-1_amd64.deb ...
+Unpacking libmpc3:amd64 (1.1.0-1) ...
+Selecting previously unselected package cpp-8.
+Preparing to unpack .../12-cpp-8_8.3.0-6_amd64.deb ...
+Unpacking cpp-8 (8.3.0-6) ...
+Selecting previously unselected package cpp.
+Preparing to unpack .../13-cpp_4%3a8.3.0-1_amd64.deb ...
+Unpacking cpp (4:8.3.0-1) ...
+Selecting previously unselected package libcc1-0:amd64.
+Preparing to unpack .../14-libcc1-0_8.3.0-6_amd64.deb ...
+Unpacking libcc1-0:amd64 (8.3.0-6) ...
+Selecting previously unselected package libgomp1:amd64.
+Preparing to unpack .../15-libgomp1_8.3.0-6_amd64.deb ...
+Unpacking libgomp1:amd64 (8.3.0-6) ...
+Selecting previously unselected package libitm1:amd64.
+Preparing to unpack .../16-libitm1_8.3.0-6_amd64.deb ...
+Unpacking libitm1:amd64 (8.3.0-6) ...
+Selecting previously unselected package libatomic1:amd64.
+Preparing to unpack .../17-libatomic1_8.3.0-6_amd64.deb ...
+Unpacking libatomic1:amd64 (8.3.0-6) ...
+Selecting previously unselected package libasan5:amd64.
+Preparing to unpack .../18-libasan5_8.3.0-6_amd64.deb ...
+Unpacking libasan5:amd64 (8.3.0-6) ...
+Selecting previously unselected package liblsan0:amd64.
+Preparing to unpack .../19-liblsan0_8.3.0-6_amd64.deb ...
+Unpacking liblsan0:amd64 (8.3.0-6) ...
+Selecting previously unselected package libtsan0:amd64.
+Preparing to unpack .../20-libtsan0_8.3.0-6_amd64.deb ...
+Unpacking libtsan0:amd64 (8.3.0-6) ...
+Selecting previously unselected package libubsan1:amd64.
+Preparing to unpack .../21-libubsan1_8.3.0-6_amd64.deb ...
+Unpacking libubsan1:amd64 (8.3.0-6) ...
+Selecting previously unselected package libmpx2:amd64.
+Preparing to unpack .../22-libmpx2_8.3.0-6_amd64.deb ...
+Unpacking libmpx2:amd64 (8.3.0-6) ...
+Selecting previously unselected package libquadmath0:amd64.
+Preparing to unpack .../23-libquadmath0_8.3.0-6_amd64.deb ...
+Unpacking libquadmath0:amd64 (8.3.0-6) ...
+Selecting previously unselected package libgcc-8-dev:amd64.
+Preparing to unpack .../24-libgcc-8-dev_8.3.0-6_amd64.deb ...
+Unpacking libgcc-8-dev:amd64 (8.3.0-6) ...
+Selecting previously unselected package gcc-8.
+Preparing to unpack .../25-gcc-8_8.3.0-6_amd64.deb ...
+Unpacking gcc-8 (8.3.0-6) ...
+Selecting previously unselected package gcc.
+Preparing to unpack .../26-gcc_4%3a8.3.0-1_amd64.deb ...
+Unpacking gcc (4:8.3.0-1) ...
+Selecting previously unselected package libstdc++-8-dev:amd64.
+Preparing to unpack .../27-libstdc++-8-dev_8.3.0-6_amd64.deb ...
+Unpacking libstdc++-8-dev:amd64 (8.3.0-6) ...
+Selecting previously unselected package g++-8.
+Preparing to unpack .../28-g++-8_8.3.0-6_amd64.deb ...
+Unpacking g++-8 (8.3.0-6) ...
+Selecting previously unselected package g++.
+Preparing to unpack .../29-g++_4%3a8.3.0-1_amd64.deb ...
+Unpacking g++ (4:8.3.0-1) ...
+Selecting previously unselected package make.
+Preparing to unpack .../30-make_4.2.1-1.2_amd64.deb ...
+Unpacking make (4.2.1-1.2) ...
+Selecting previously unselected package libdpkg-perl.
+Preparing to unpack .../31-libdpkg-perl_1.19.7_all.deb ...
+Unpacking libdpkg-perl (1.19.7) ...
+Selecting previously unselected package dpkg-dev.
+Preparing to unpack .../32-dpkg-dev_1.19.7_all.deb ...
+Unpacking dpkg-dev (1.19.7) ...
+Selecting previously unselected package build-essential.
+Preparing to unpack .../33-build-essential_12.6_amd64.deb ...
+Unpacking build-essential (12.6) ...
+Selecting previously unselected package libassuan0:amd64.
+Preparing to unpack .../34-libassuan0_2.5.2-1_amd64.deb ...
+Unpacking libassuan0:amd64 (2.5.2-1) ...
+Selecting previously unselected package gpgconf.
+Preparing to unpack .../35-gpgconf_2.2.12-1+deb10u1_amd64.deb ...
+Unpacking gpgconf (2.2.12-1+deb10u1) ...
+Selecting previously unselected package libksba8:amd64.
+Preparing to unpack .../36-libksba8_1.3.5-2_amd64.deb ...
+Unpacking libksba8:amd64 (1.3.5-2) ...
+Selecting previously unselected package libnpth0:amd64.
+Preparing to unpack .../37-libnpth0_1.6-1_amd64.deb ...
+Unpacking libnpth0:amd64 (1.6-1) ...
+Selecting previously unselected package dirmngr.
+Preparing to unpack .../38-dirmngr_2.2.12-1+deb10u1_amd64.deb ...
+Unpacking dirmngr (2.2.12-1+deb10u1) ...
+Selecting previously unselected package libfakeroot:amd64.
+Preparing to unpack .../39-libfakeroot_1.23-1_amd64.deb ...
+Unpacking libfakeroot:amd64 (1.23-1) ...
+Selecting previously unselected package fakeroot.
+Preparing to unpack .../40-fakeroot_1.23-1_amd64.deb ...
+Unpacking fakeroot (1.23-1) ...
+Selecting previously unselected package gnupg-l10n.
+Preparing to unpack .../41-gnupg-l10n_2.2.12-1+deb10u1_all.deb ...
+Unpacking gnupg-l10n (2.2.12-1+deb10u1) ...
+Selecting previously unselected package gnupg-utils.
+Preparing to unpack .../42-gnupg-utils_2.2.12-1+deb10u1_amd64.deb ...
+Unpacking gnupg-utils (2.2.12-1+deb10u1) ...
+Selecting previously unselected package gpg.
+Preparing to unpack .../43-gpg_2.2.12-1+deb10u1_amd64.deb ...
+Unpacking gpg (2.2.12-1+deb10u1) ...
+Selecting previously unselected package pinentry-curses.
+Preparing to unpack .../44-pinentry-curses_1.1.0-2_amd64.deb ...
+Unpacking pinentry-curses (1.1.0-2) ...
+Selecting previously unselected package gpg-agent.
+Preparing to unpack .../45-gpg-agent_2.2.12-1+deb10u1_amd64.deb ...
+Unpacking gpg-agent (2.2.12-1+deb10u1) ...
+Selecting previously unselected package gpg-wks-client.
+Preparing to unpack .../46-gpg-wks-client_2.2.12-1+deb10u1_amd64.deb ...
+Unpacking gpg-wks-client (2.2.12-1+deb10u1) ...
+Selecting previously unselected package gpg-wks-server.
+Preparing to unpack .../47-gpg-wks-server_2.2.12-1+deb10u1_amd64.deb ...
+Unpacking gpg-wks-server (2.2.12-1+deb10u1) ...
+Selecting previously unselected package gpgsm.
+Preparing to unpack .../48-gpgsm_2.2.12-1+deb10u1_amd64.deb ...
+Unpacking gpgsm (2.2.12-1+deb10u1) ...
+Selecting previously unselected package gnupg.
+Preparing to unpack .../49-gnupg_2.2.12-1+deb10u1_all.deb ...
+Unpacking gnupg (2.2.12-1+deb10u1) ...
+Selecting previously unselected package libalgorithm-diff-perl.
+Preparing to unpack .../50-libalgorithm-diff-perl_1.19.03-2_all.deb ...
+Unpacking libalgorithm-diff-perl (1.19.03-2) ...
+Selecting previously unselected package libalgorithm-diff-xs-perl.
+Preparing to unpack .../51-libalgorithm-diff-xs-perl_0.04-5+b1_amd64.deb ...
+Unpacking libalgorithm-diff-xs-perl (0.04-5+b1) ...
+Selecting previously unselected package libalgorithm-merge-perl.
+Preparing to unpack .../52-libalgorithm-merge-perl_0.08-3_all.deb ...
+Unpacking libalgorithm-merge-perl (0.08-3) ...
+Selecting previously unselected package libfile-fcntllock-perl.
+Preparing to unpack .../53-libfile-fcntllock-perl_0.22-3+b5_amd64.deb ...
+Unpacking libfile-fcntllock-perl (0.22-3+b5) ...
+Selecting previously unselected package manpages-dev.
+Preparing to unpack .../54-manpages-dev_4.16-2_all.deb ...
+Unpacking manpages-dev (4.16-2) ...
+Setting up libksba8:amd64 (1.3.5-2) ...
+Setting up libfile-fcntllock-perl (0.22-3+b5) ...
+Setting up libalgorithm-diff-perl (1.19.03-2) ...
+Setting up manpages (4.16-2) ...
+Setting up binutils-common:amd64 (2.31.1-16) ...
+Setting up linux-libc-dev:amd64 (4.19.98-1) ...
+Setting up libnpth0:amd64 (1.6-1) ...
+Setting up libassuan0:amd64 (2.5.2-1) ...
+Setting up libgomp1:amd64 (8.3.0-6) ...
+Setting up libfakeroot:amd64 (1.23-1) ...
+Setting up fakeroot (1.23-1) ...
+update-alternatives: using /usr/bin/fakeroot-sysv to provide /usr/bin/fakeroot (fakeroot) in auto mode
+update-alternatives: warning: skip creation of /usr/share/man/man1/fakeroot.1.gz because associated file /usr/share/man/man1/fakeroot-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/faked.1.gz because associated file /usr/share/man/man1/faked-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/es/man1/fakeroot.1.gz because associated file /usr/share/man/es/man1/fakeroot-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/es/man1/faked.1.gz because associated file /usr/share/man/es/man1/faked-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/fr/man1/fakeroot.1.gz because associated file /usr/share/man/fr/man1/fakeroot-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/fr/man1/faked.1.gz because associated file /usr/share/man/fr/man1/faked-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/sv/man1/fakeroot.1.gz because associated file /usr/share/man/sv/man1/fakeroot-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/sv/man1/faked.1.gz because associated file /usr/share/man/sv/man1/faked-sysv.1.gz (of link group fakeroot) doesn't exist
+Setting up libasan5:amd64 (8.3.0-6) ...
+Setting up make (4.2.1-1.2) ...
+Setting up libmpfr6:amd64 (4.0.2-1) ...
+Setting up gnupg-l10n (2.2.12-1+deb10u1) ...
+Setting up libquadmath0:amd64 (8.3.0-6) ...
+Setting up libmpc3:amd64 (1.1.0-1) ...
+Setting up libatomic1:amd64 (8.3.0-6) ...
+Setting up libdpkg-perl (1.19.7) ...
+Setting up libmpx2:amd64 (8.3.0-6) ...
+Setting up libubsan1:amd64 (8.3.0-6) ...
+Setting up libisl19:amd64 (0.20-2) ...
+Setting up gpgconf (2.2.12-1+deb10u1) ...
+Setting up libbinutils:amd64 (2.31.1-16) ...
+Setting up cpp-8 (8.3.0-6) ...
+Setting up libc-dev-bin (2.28-10) ...
+Setting up libalgorithm-diff-xs-perl (0.04-5+b1) ...
+Setting up libcc1-0:amd64 (8.3.0-6) ...
+Setting up liblocale-gettext-perl (1.07-3+b4) ...
+Setting up gpg (2.2.12-1+deb10u1) ...
+Setting up liblsan0:amd64 (8.3.0-6) ...
+Setting up libitm1:amd64 (8.3.0-6) ...
+Setting up libalgorithm-merge-perl (0.08-3) ...
+Setting up gnupg-utils (2.2.12-1+deb10u1) ...
+Setting up binutils-x86-64-linux-gnu (2.31.1-16) ...
+Setting up libtsan0:amd64 (8.3.0-6) ...
+Setting up pinentry-curses (1.1.0-2) ...
+Setting up manpages-dev (4.16-2) ...
+Setting up gpg-agent (2.2.12-1+deb10u1) ...
+Setting up gpgsm (2.2.12-1+deb10u1) ...
+Setting up binutils (2.31.1-16) ...
+Setting up dpkg-dev (1.19.7) ...
+Setting up dirmngr (2.2.12-1+deb10u1) ...
+Setting up libgcc-8-dev:amd64 (8.3.0-6) ...
+Setting up gpg-wks-server (2.2.12-1+deb10u1) ...
+Setting up cpp (4:8.3.0-1) ...
+Setting up libc6-dev:amd64 (2.28-10) ...
+Setting up libstdc++-8-dev:amd64 (8.3.0-6) ...
+Setting up gcc-8 (8.3.0-6) ...
+Setting up gpg-wks-client (2.2.12-1+deb10u1) ...
+Setting up gcc (4:8.3.0-1) ...
+Setting up g++-8 (8.3.0-6) ...
+Setting up gnupg (2.2.12-1+deb10u1) ...
+Setting up g++ (4:8.3.0-1) ...
+update-alternatives: using /usr/bin/g++ to provide /usr/bin/c++ (c++) in auto mode
+Setting up build-essential (12.6) ...
+Processing triggers for libc-bin (2.28-10) ...
+Removing intermediate container 966933c9ea42
+ ---> a780b9163697
+Step 5/10 : RUN mkdir microservice
+ ---> Running in 23c478b4b832
+Removing intermediate container 23c478b4b832
+ ---> 511c49fcb410
+Step 6/10 : WORKDIR /microservice
+ ---> Running in 1e590905f279
+Removing intermediate container 1e590905f279
+ ---> 1fa6867c17ac
+Step 7/10 : COPY ./s2i/bin/ /s2i/bin
+ ---> 9f8c863c53fd
+Step 8/10 : COPY _python /microservice
+ ---> 474ff39e3fdc
+Step 9/10 : RUN cd /microservice/python && make install
+ ---> Running in 7f534da0f29a
+pip install -e .
+Obtaining file:///microservice/python
+Collecting Flask<2.0.0 (from seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/9b/93/628509b8d5dc749656a9641f4caf13540e2cdec85276964ff8f43bbb1d3b/Flask-1.1.1-py2.py3-none-any.whl (94kB)
+Collecting Flask-cors<4.0.0 (from seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/78/38/e68b11daa5d613e3a91e4bf3da76c94ac9ee0d9cd515af9c1ab80d36f709/Flask_Cors-3.0.8-py2.py3-none-any.whl
+Collecting redis<4.0.0 (from seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/f0/05/1fc7feedc19c123e7a95cfc9e7892eb6cdd2e5df4e9e8af6384349c1cc3d/redis-3.4.1-py2.py3-none-any.whl (71kB)
+Requirement already satisfied: requests<3.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core==1.0.2) (2.22.0)
+Collecting numpy<2.0.0 (from seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/b7/ce/d0b92f0283faa4da76ea82587ff9da70104e81f59ba14f76c87e4196254e/numpy-1.18.2-cp37-cp37m-manylinux1_x86_64.whl (20.2MB)
+Collecting flatbuffers<2.0.0 (from seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/eb/26/712e578c5f14e26ae3314c39a1bdc4eb2ec2f4ddc89b708cf8e0a0d20423/flatbuffers-1.12-py2.py3-none-any.whl
+Collecting protobuf<4.0.0 (from seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/ff/f1/8dcd4219bbae8aa44fe8871a89f05eca2dca9c04f8dbfed8a82b7be97a88/protobuf-3.11.3-cp37-cp37m-manylinux1_x86_64.whl (1.3MB)
+Collecting grpcio<2.0.0 (from seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/fb/00/997acb1c16f84e6d3ede511500f54e7b7a1fdfe7b4da5a5c2d07ad4e91f1/grpcio-1.27.2-cp37-cp37m-manylinux2010_x86_64.whl (2.7MB)
+Collecting Flask-OpenTracing<1.2.0,>=1.1.0 (from seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/58/6c/6417701ba5ecc8854670c6db3207bcc3e5fbc96289a7cb18d5516d99a1c6/Flask-OpenTracing-1.1.0.tar.gz
+Collecting opentracing<2.3.0,>=2.2.0 (from seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/94/9f/289424136addf621fb4c75624ef9a3a80e8575da3993a87950c57e93217e/opentracing-2.2.0.tar.gz (47kB)
+Collecting jaeger-client<4.2.0,>=4.1.0 (from seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/f1/da/569a4f1bc3d0c412c7f903053f09ef62fa10949374ca90bc852b22dd3860/jaeger-client-4.1.0.tar.gz (80kB)
+Collecting grpcio-opentracing<1.2.0,>=1.1.4 (from seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/db/82/2fcad380697c3dab25de76ee590bcab3eb9bbfb4add916044d7e83ec2b10/grpcio_opentracing-1.1.4-py3-none-any.whl
+Collecting pyaml<20.0.0 (from seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/35/1e/eda9fe07f752ced7afcef590e7d74390f0d9c9c0b7ff98317afbaa0697e3/pyaml-19.12.0-py2.py3-none-any.whl
+Collecting gunicorn<20.1.0,>=19.9.0 (from seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/69/ca/926f7cd3a2014b16870086b2d0fdc84a9e49473c68a8dff8b57f7c156f43/gunicorn-20.0.4-py2.py3-none-any.whl (77kB)
+Collecting minio<6.0.0,>=4.0.9 (from seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/8f/ed/8670995efca990a8b6473f24331fcc40e61b59a00fe31e6e266b667f4866/minio-5.0.8-py2.py3-none-any.whl (73kB)
+Collecting azure-storage-blob<3.0.0,>=2.0.1 (from seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/3e/84/610f379b46d7d3c2d48eadeed6a12b6d46a43100fea70534f5992d0ac996/azure_storage_blob-2.1.0-py2.py3-none-any.whl (88kB)
+Requirement already satisfied: setuptools>=41.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core==1.0.2) (41.4.0)
+Collecting prometheus_client<0.8.0,>=0.7.1 (from seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/b3/23/41a5a24b502d35a4ad50a5bb7202a5e1d9a0364d0c12f56db3dbf7aca76d/prometheus_client-0.7.1.tar.gz
+Collecting Jinja2>=2.10.1 (from Flask<2.0.0->seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/27/24/4f35961e5c669e96f6559760042a55b9bcfcdb82b9bdb3c8753dbe042e35/Jinja2-2.11.1-py2.py3-none-any.whl (126kB)
+Collecting itsdangerous>=0.24 (from Flask<2.0.0->seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/76/ae/44b03b253d6fade317f32c24d100b3b35c2239807046a4c953c7b89fa49e/itsdangerous-1.1.0-py2.py3-none-any.whl
+Collecting Werkzeug>=0.15 (from Flask<2.0.0->seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/cc/94/5f7079a0e00bd6863ef8f1da638721e9da21e5bacee597595b318f71d62e/Werkzeug-1.0.1-py2.py3-none-any.whl (298kB)
+Collecting click>=5.1 (from Flask<2.0.0->seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/dd/c0/4d8f43a9b16e289f36478422031b8a63b54b6ac3b1ba605d602f10dd54d6/click-7.1.1-py2.py3-none-any.whl (82kB)
+Requirement already satisfied: Six in /opt/conda/lib/python3.7/site-packages (from Flask-cors<4.0.0->seldon-core==1.0.2) (1.12.0)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->seldon-core==1.0.2) (1.24.2)
+Requirement already satisfied: chardet<3.1.0,>=3.0.2 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->seldon-core==1.0.2) (3.0.4)
+Requirement already satisfied: certifi>=2017.4.17 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->seldon-core==1.0.2) (2019.11.28)
+Requirement already satisfied: idna<2.9,>=2.5 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->seldon-core==1.0.2) (2.8)
+Collecting threadloop<2,>=1 (from jaeger-client<4.2.0,>=4.1.0->seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/d3/1d/8398c1645b97dc008d3c658e04beda01ede3d90943d40c8d56863cf891bd/threadloop-1.0.2.tar.gz
+Collecting thrift (from jaeger-client<4.2.0,>=4.1.0->seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/97/1e/3284d19d7be99305eda145b8aa46b0c33244e4a496ec66440dac19f8274d/thrift-0.13.0.tar.gz (59kB)
+Collecting tornado<6,>=4.3 (from jaeger-client<4.2.0,>=4.1.0->seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/e6/78/6e7b5af12c12bdf38ca9bfe863fcaf53dc10430a312d0324e76c1e5ca426/tornado-5.1.1.tar.gz (516kB)
+Collecting PyYAML (from pyaml<20.0.0->seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/64/c2/b80047c7ac2478f9501676c988a5411ed5572f35d1beff9cae07d321512c/PyYAML-5.3.1.tar.gz (269kB)
+Collecting pytz (from minio<6.0.0,>=4.0.9->seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/e7/f9/f0b53f88060247251bf481fa6ea62cd0d25bf1b11a87888e53ce5b7c8ad2/pytz-2019.3-py2.py3-none-any.whl (509kB)
+Collecting python-dateutil (from minio<6.0.0,>=4.0.9->seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/d4/70/d60450c3dd48ef87586924207ae8907090de0b306af2bce5d134d78615cb/python_dateutil-2.8.1-py2.py3-none-any.whl (227kB)
+Collecting configparser (from minio<6.0.0,>=4.0.9->seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/4b/6b/01baa293090240cf0562cc5eccb69c6f5006282127f2b846fad011305c79/configparser-5.0.0-py3-none-any.whl
+Collecting azure-common>=1.1.5 (from azure-storage-blob<3.0.0,>=2.0.1->seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/e5/4d/d000fc3c5af601d00d55750b71da5c231fcb128f42ac95b208ed1091c2c1/azure_common-1.1.25-py2.py3-none-any.whl
+Collecting azure-storage-common~=2.1 (from azure-storage-blob<3.0.0,>=2.0.1->seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/6b/a0/6794b318ce0118d1a4053bdf0149a60807407db9b710354f2b203c2f5975/azure_storage_common-2.1.0-py2.py3-none-any.whl (47kB)
+Collecting MarkupSafe>=0.23 (from Jinja2>=2.10.1->Flask<2.0.0->seldon-core==1.0.2)
+  Downloading https://files.pythonhosted.org/packages/98/7b/ff284bd8c80654e471b769062a9b43cc5d03e7a615048d96f4619df8d420/MarkupSafe-1.1.1-cp37-cp37m-manylinux1_x86_64.whl
+Requirement already satisfied: cryptography in /opt/conda/lib/python3.7/site-packages (from azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->seldon-core==1.0.2) (2.7)
+Requirement already satisfied: asn1crypto>=0.21.0 in /opt/conda/lib/python3.7/site-packages (from cryptography->azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->seldon-core==1.0.2) (1.0.1)
+Requirement already satisfied: cffi!=1.11.3,>=1.8 in /opt/conda/lib/python3.7/site-packages (from cryptography->azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->seldon-core==1.0.2) (1.12.3)
+Requirement already satisfied: pycparser in /opt/conda/lib/python3.7/site-packages (from cffi!=1.11.3,>=1.8->cryptography->azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->seldon-core==1.0.2) (2.19)
+Building wheels for collected packages: Flask-OpenTracing, opentracing, jaeger-client, prometheus-client, threadloop, thrift, tornado, PyYAML
+  Building wheel for Flask-OpenTracing (setup.py): started
+  Building wheel for Flask-OpenTracing (setup.py): finished with status 'done'
+  Created wheel for Flask-OpenTracing: filename=Flask_OpenTracing-1.1.0-cp37-none-any.whl size=9072 sha256=513a90949bf48d2af9764fe35b7f8d8443c44cbc467a4358b2fc03b1909775b7
+  Stored in directory: /root/.cache/pip/wheels/7b/dc/25/3cf0b35c129232ee596c413f13d1d1f5a8e38c427266276dfd
+  Building wheel for opentracing (setup.py): started
+  Building wheel for opentracing (setup.py): finished with status 'done'
+  Created wheel for opentracing: filename=opentracing-2.2.0-cp37-none-any.whl size=49320 sha256=304374cb212e2b58b29f8245f789f85071ff5dfbd356ae724338d965a48c0e71
+  Stored in directory: /root/.cache/pip/wheels/93/e9/b5/1cdc3544f99a54caca13832b5afa26fd98701fe709dc049576
+  Building wheel for jaeger-client (setup.py): started
+  Building wheel for jaeger-client (setup.py): finished with status 'done'
+  Created wheel for jaeger-client: filename=jaeger_client-4.1.0-cp37-none-any.whl size=64309 sha256=ea93aadd02325d51a0ee3a18f1f5dce983f333b855cb7593578050901d7b3f2b
+  Stored in directory: /root/.cache/pip/wheels/f2/84/7f/e89da3ee8ce35598d6382b6389fa2ada5d66acca2422537994
+  Building wheel for prometheus-client (setup.py): started
+  Building wheel for prometheus-client (setup.py): finished with status 'done'
+  Created wheel for prometheus-client: filename=prometheus_client-0.7.1-cp37-none-any.whl size=41402 sha256=ef5e36b77424ba32b3f41a7fb8d0d737b97d024233562bc8bcc99f010e11a4c1
+  Stored in directory: /root/.cache/pip/wheels/1c/54/34/fd47cd9b308826cc4292b54449c1899a30251ef3b506bc91ea
+  Building wheel for threadloop (setup.py): started
+  Building wheel for threadloop (setup.py): finished with status 'done'
+  Created wheel for threadloop: filename=threadloop-1.0.2-cp37-none-any.whl size=3424 sha256=7f1d09289c3332b03d07670695f6d067b3cb861ff3d182b15b30825f016b7c4b
+  Stored in directory: /root/.cache/pip/wheels/d7/7a/30/d212623a4cd34f6cce400f8122b1b7af740d3440c68023d51f
+  Building wheel for thrift (setup.py): started
+  Building wheel for thrift (setup.py): finished with status 'done'
+  Created wheel for thrift: filename=thrift-0.13.0-cp37-cp37m-linux_x86_64.whl size=486819 sha256=db57eb0bf95fd8ab1993d71950cdc2d92087d0fe90cec75caee6fc4e5b015592
+  Stored in directory: /root/.cache/pip/wheels/02/a2/46/689ccfcf40155c23edc7cdbd9de488611c8fdf49ff34b1706e
+  Building wheel for tornado (setup.py): started
+  Building wheel for tornado (setup.py): finished with status 'done'
+  Created wheel for tornado: filename=tornado-5.1.1-cp37-cp37m-linux_x86_64.whl size=463614 sha256=e8fa43f0652f2c5e15c856c03808275763ad5243fcaa9199e82d6da235956576
+  Stored in directory: /root/.cache/pip/wheels/6d/e1/ce/f4ee2fa420cc6b940123c64992b81047816d0a9fad6b879325
+  Building wheel for PyYAML (setup.py): started
+  Building wheel for PyYAML (setup.py): finished with status 'done'
+  Created wheel for PyYAML: filename=PyYAML-5.3.1-cp37-cp37m-linux_x86_64.whl size=44620 sha256=6e90a4a47ffaf58d9d12cf029e21592b360717fc0d18cd2e707535c776d48edc
+  Stored in directory: /root/.cache/pip/wheels/a7/c1/ea/cf5bd31012e735dc1dfea3131a2d5eae7978b251083d6247bd
+Successfully built Flask-OpenTracing opentracing jaeger-client prometheus-client threadloop thrift tornado PyYAML
+Installing collected packages: MarkupSafe, Jinja2, itsdangerous, Werkzeug, click, Flask, Flask-cors, redis, numpy, flatbuffers, protobuf, grpcio, opentracing, Flask-OpenTracing, tornado, threadloop, thrift, jaeger-client, grpcio-opentracing, PyYAML, pyaml, gunicorn, pytz, python-dateutil, configparser, minio, azure-common, azure-storage-common, azure-storage-blob, prometheus-client, seldon-core
+  Running setup.py develop for seldon-core
+Successfully installed Flask-1.1.1 Flask-OpenTracing-1.1.0 Flask-cors-3.0.8 Jinja2-2.11.1 MarkupSafe-1.1.1 PyYAML-5.3.1 Werkzeug-1.0.1 azure-common-1.1.25 azure-storage-blob-2.1.0 azure-storage-common-2.1.0 click-7.1.1 configparser-5.0.0 flatbuffers-1.12 grpcio-1.27.2 grpcio-opentracing-1.1.4 gunicorn-20.0.4 itsdangerous-1.1.0 jaeger-client-4.1.0 minio-5.0.8 numpy-1.18.2 opentracing-2.2.0 prometheus-client-0.7.1 protobuf-3.11.3 pyaml-19.12.0 python-dateutil-2.8.1 pytz-2019.3 redis-3.4.1 seldon-core threadloop-1.0.2 thrift-0.13.0 tornado-5.1.1
+Removing intermediate container 7f534da0f29a
+ ---> 5143a8be14bb
+Step 10/10 : EXPOSE 5000
+ ---> Running in 2e076d2d49bc
+Removing intermediate container 2e076d2d49bc
+ ---> 7927bb33ac51
+Successfully built 7927bb33ac51
+Successfully tagged seldonio/seldon-core-s2i-python37:0.19-SNAPSHOT
+make[1]: Leaving directory '/workspace/source/wrappers/s2i/python'
+make[1]: Entering directory '/workspace/source/wrappers/s2i/python'
+docker tag docker.io/seldonio/seldon-core-s2i-python`echo -n 3.7 | sed 's/\.//g'`:0.19-SNAPSHOT docker.io/seldonio/seldon-core-s2i-python`echo -n 3.7 | cut -d. -f1`:0.19-SNAPSHOT
+make[1]: Leaving directory '/workspace/source/wrappers/s2i/python'
+Files changed in operator folder:
+SKIPPING OPERATOR IMAGE BUILD...
+Files changed in engine folder:
+SKIPPING ENGINE IMAGE BUILD...
+Files changed in executor folder:
+executor/api/grpc/prediction.pb.go
+cd ../../executor && make kind-image-install
+make[1]: Entering directory '/workspace/source/executor'
+go fmt ./...
+go: downloading github.com/google/uuid v1.1.1
+go: downloading k8s.io/client-go v0.17.2
+go: downloading github.com/tensorflow/tensorflow v1.14.0
+go: downloading github.com/golang/protobuf v1.3.2
+go: downloading github.com/prometheus/common v0.7.0
+go: downloading google.golang.org/grpc v1.24.0
+go: downloading github.com/grpc-ecosystem/go-grpc-middleware v1.1.0
+go: downloading github.com/pkg/errors v0.8.1
+go: downloading github.com/go-logr/logr v0.1.0
+go: extracting github.com/google/uuid v1.1.1
+go: extracting github.com/go-logr/logr v0.1.0
+go: downloading github.com/opentracing/opentracing-go v1.1.0
+go: extracting github.com/pkg/errors v0.8.1
+go: extracting github.com/golang/protobuf v1.3.2
+go: extracting github.com/opentracing/opentracing-go v1.1.0
+go: extracting github.com/prometheus/common v0.7.0
+go: extracting github.com/grpc-ecosystem/go-grpc-middleware v1.1.0
+go: downloading github.com/seldonio/seldon-core/operator v0.0.0-20200401123312-d4c435ea5217
+go: downloading github.com/sirupsen/logrus v1.4.2
+go: downloading github.com/prometheus/client_golang v1.3.0
+go: extracting github.com/sirupsen/logrus v1.4.2
+go: extracting github.com/prometheus/client_golang v1.3.0
+go: downloading github.com/uber/jaeger-client-go v2.21.1+incompatible
+go: extracting google.golang.org/grpc v1.24.0
+go: extracting github.com/seldonio/seldon-core/operator v0.0.0-20200401123312-d4c435ea5217
+go: extracting k8s.io/client-go v0.17.2
+go: downloading k8s.io/api v0.17.2
+go: downloading k8s.io/apimachinery v0.17.2
+go: downloading sigs.k8s.io/controller-runtime v0.5.0
+go: extracting k8s.io/apimachinery v0.17.2
+go: extracting sigs.k8s.io/controller-runtime v0.5.0
+go: extracting github.com/uber/jaeger-client-go v2.21.1+incompatible
+go: downloading gopkg.in/alecthomas/kingpin.v2 v2.2.6
+go: downloading golang.org/x/sys v0.0.0-20191220142924-d4481acd189f
+go: downloading github.com/cloudevents/sdk-go v0.10.2
+go: downloading google.golang.org/genproto v0.0.0-20190916214212-f660b8655731
+go: downloading golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7
+go: downloading github.com/imdario/mergo v0.3.7
+go: downloading github.com/spf13/pflag v1.0.5
+go: extracting golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7
+go: extracting github.com/imdario/mergo v0.3.7
+go: extracting gopkg.in/alecthomas/kingpin.v2 v2.2.6
+go: downloading golang.org/x/net v0.0.0-20191004110552-13f9640d40b9
+go: downloading github.com/ghodss/yaml v1.0.0
+go: extracting github.com/spf13/pflag v1.0.5
+go: downloading gomodules.xyz/jsonpatch/v2 v2.0.1
+go: extracting github.com/ghodss/yaml v1.0.0
+go: extracting github.com/cloudevents/sdk-go v0.10.2
+go: extracting gomodules.xyz/jsonpatch/v2 v2.0.1
+go: downloading github.com/cespare/xxhash/v2 v2.1.1
+go: downloading golang.org/x/crypto v0.0.0-20190923035154-9ee001bba392
+go: downloading github.com/modern-go/reflect2 v1.0.1
+go: extracting github.com/modern-go/reflect2 v1.0.1
+go: extracting github.com/cespare/xxhash/v2 v2.1.1
+go: downloading k8s.io/klog v1.0.0
+go: downloading sigs.k8s.io/yaml v1.1.0
+go: downloading github.com/gorilla/mux v1.7.3
+go: extracting k8s.io/klog v1.0.0
+go: extracting sigs.k8s.io/yaml v1.1.0
+go: downloading github.com/gogo/protobuf v1.3.1
+go: downloading github.com/prometheus/procfs v0.0.8
+go: extracting github.com/gorilla/mux v1.7.3
+go: extracting github.com/prometheus/procfs v0.0.8
+go: extracting golang.org/x/sys v0.0.0-20191220142924-d4481acd189f
+go: extracting golang.org/x/net v0.0.0-20191004110552-13f9640d40b9
+go: extracting golang.org/x/crypto v0.0.0-20190923035154-9ee001bba392
+go: extracting k8s.io/api v0.17.2
+go: downloading go.uber.org/zap v1.10.0
+go: downloading github.com/uber/jaeger-lib v2.2.0+incompatible
+go: extracting go.uber.org/zap v1.10.0
+go: extracting github.com/uber/jaeger-lib v2.2.0+incompatible
+go: extracting github.com/gogo/protobuf v1.3.1
+go: extracting google.golang.org/genproto v0.0.0-20190916214212-f660b8655731
+go: downloading github.com/go-logr/zapr v0.1.0
+go: downloading github.com/prometheus/client_model v0.1.0
+go: downloading github.com/matttproud/golang_protobuf_extensions v1.0.1
+go: downloading github.com/json-iterator/go v1.1.9
+go: downloading github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6
+go: extracting github.com/go-logr/zapr v0.1.0
+go: extracting github.com/prometheus/client_model v0.1.0
+go: downloading github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+go: extracting github.com/matttproud/golang_protobuf_extensions v1.0.1
+go: downloading github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
+go: downloading gopkg.in/inf.v0 v0.9.1
+go: extracting github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6
+go: extracting github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+go: extracting github.com/json-iterator/go v1.1.9
+go: downloading github.com/evanphx/json-patch v4.5.0+incompatible
+go: extracting gopkg.in/inf.v0 v0.9.1
+go: downloading github.com/alecthomas/units v0.0.0-20190717042225-c3de453c63f4
+go: downloading go.uber.org/atomic v1.4.0
+go: extracting github.com/evanphx/json-patch v4.5.0+incompatible
+go: extracting github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
+go: downloading github.com/beorn7/perks v1.0.1
+go: downloading github.com/davecgh/go-spew v1.1.1
+go: downloading github.com/googleapis/gnostic v0.3.1
+go: downloading k8s.io/utils v0.0.0-20191114184206-e782cd3c129f
+go: downloading gopkg.in/yaml.v2 v2.2.4
+go: extracting github.com/davecgh/go-spew v1.1.1
+go: downloading k8s.io/apiextensions-apiserver v0.17.2
+go: extracting go.uber.org/atomic v1.4.0
+go: downloading golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+go: extracting github.com/alecthomas/units v0.0.0-20190717042225-c3de453c63f4
+go: downloading go.opencensus.io v0.22.0
+go: extracting github.com/beorn7/perks v1.0.1
+go: extracting golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+go: extracting gopkg.in/yaml.v2 v2.2.4
+go: extracting k8s.io/utils v0.0.0-20191114184206-e782cd3c129f
+go: downloading go.uber.org/multierr v1.1.0
+go: extracting go.uber.org/multierr v1.1.0
+go: extracting github.com/googleapis/gnostic v0.3.1
+go: downloading golang.org/x/time v0.0.0-20190921001708-c4c64cad1fd0
+go: extracting golang.org/x/time v0.0.0-20190921001708-c4c64cad1fd0
+go: extracting go.opencensus.io v0.22.0
+go: extracting k8s.io/apiextensions-apiserver v0.17.2
+go: downloading golang.org/x/text v0.3.2
+go: downloading gopkg.in/fsnotify.v1 v1.4.7
+go: downloading github.com/hashicorp/golang-lru v0.5.4
+go: extracting gopkg.in/fsnotify.v1 v1.4.7
+go: extracting github.com/hashicorp/golang-lru v0.5.4
+go: downloading k8s.io/kube-openapi v0.0.0-20191107075043-30be4d16710a
+go: downloading github.com/google/gofuzz v1.0.0
+go: extracting github.com/google/gofuzz v1.0.0
+go: downloading github.com/google/go-cmp v0.3.1
+go: extracting github.com/google/go-cmp v0.3.1
+go: extracting k8s.io/kube-openapi v0.0.0-20191107075043-30be4d16710a
+go: extracting golang.org/x/text v0.3.2
+go: extracting github.com/tensorflow/tensorflow v1.14.0
+go: finding github.com/seldonio/seldon-core/operator v0.0.0-20200401123312-d4c435ea5217
+go: finding github.com/go-logr/logr v0.1.0
+go: finding github.com/cloudevents/sdk-go v0.10.2
+go: finding github.com/prometheus/client_golang v1.3.0
+go: finding github.com/golang/protobuf v1.3.2
+go: finding github.com/opentracing/opentracing-go v1.1.0
+go: finding github.com/google/uuid v1.1.1
+go: finding github.com/uber/jaeger-client-go v2.21.1+incompatible
+go: finding google.golang.org/grpc v1.24.0
+go: finding github.com/pkg/errors v0.8.1
+go: finding github.com/ghodss/yaml v1.0.0
+go: finding sigs.k8s.io/controller-runtime v0.5.0
+go: finding github.com/prometheus/common v0.7.0
+go: finding google.golang.org/genproto v0.0.0-20190916214212-f660b8655731
+go: finding k8s.io/api v0.17.2
+go: finding golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7
+go: finding github.com/gorilla/mux v1.7.3
+go: finding github.com/beorn7/perks v1.0.1
+go: finding k8s.io/apimachinery v0.17.2
+go: finding k8s.io/client-go v0.17.2
+go: finding go.opencensus.io v0.22.0
+go: finding github.com/cespare/xxhash/v2 v2.1.1
+go: finding go.uber.org/zap v1.10.0
+go: finding golang.org/x/net v0.0.0-20191004110552-13f9640d40b9
+go: finding github.com/prometheus/client_model v0.1.0
+go: finding github.com/uber/jaeger-lib v2.2.0+incompatible
+go: finding github.com/gogo/protobuf v1.3.1
+go: finding github.com/sirupsen/logrus v1.4.2
+go: finding gopkg.in/yaml.v2 v2.2.4
+go: finding gopkg.in/alecthomas/kingpin.v2 v2.2.6
+go: finding github.com/go-logr/zapr v0.1.0
+go: finding github.com/prometheus/procfs v0.0.8
+go: finding github.com/imdario/mergo v0.3.7
+go: finding github.com/spf13/pflag v1.0.5
+go: finding golang.org/x/crypto v0.0.0-20190923035154-9ee001bba392
+go: finding k8s.io/klog v1.0.0
+go: finding github.com/google/gofuzz v1.0.0
+go: finding github.com/evanphx/json-patch v4.5.0+incompatible
+go: finding github.com/matttproud/golang_protobuf_extensions v1.0.1
+go: finding go.uber.org/atomic v1.4.0
+go: finding github.com/hashicorp/golang-lru v0.5.4
+go: finding github.com/json-iterator/go v1.1.9
+go: finding gopkg.in/inf.v0 v0.9.1
+go: finding go.uber.org/multierr v1.1.0
+go: finding github.com/modern-go/reflect2 v1.0.1
+go: finding gomodules.xyz/jsonpatch/v2 v2.0.1
+go: finding golang.org/x/sys v0.0.0-20191220142924-d4481acd189f
+go: finding github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+go: finding github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
+go: finding github.com/alecthomas/units v0.0.0-20190717042225-c3de453c63f4
+go: finding golang.org/x/time v0.0.0-20190921001708-c4c64cad1fd0
+go: finding sigs.k8s.io/yaml v1.1.0
+go: finding gopkg.in/fsnotify.v1 v1.4.7
+go: finding golang.org/x/text v0.3.2
+go: finding github.com/davecgh/go-spew v1.1.1
+go: finding github.com/googleapis/gnostic v0.3.1
+go: finding github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6
+go: finding k8s.io/apiextensions-apiserver v0.17.2
+go: finding k8s.io/utils v0.0.0-20191114184206-e782cd3c129f
+go: finding golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+go: finding k8s.io/kube-openapi v0.0.0-20191107075043-30be4d16710a
+go: finding github.com/google/go-cmp v0.3.1
+can't load package: main.go:14:2: found packages grpc (client.go) and api (prediction.pb.go) in /workspace/source/executor/api/grpc
+make[1]: *** [Makefile:14: fmt] Error 1
+make[1]: Leaving directory '/workspace/source/executor'
+make: *** [Makefile:20: kind_build_executor] Error 2
+Executor build returned errors
+kind delete cluster
+Deleting cluster "kind" ...
+Stopping Docker: dockerProgram process in pidfile '/var/run/docker-ssd.pid', 1 process(es), refused to die.
+[31m
+Pipeline failed on stage 'end-to-end' : container 'step-test-end-to-end'. The execution of the pipeline has stopped.[0m
