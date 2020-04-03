@@ -107,10 +107,23 @@ def process_content(message_type,content):
         requestCopy["instance"] = decode(content)
         if "instances" in requestCopy:
             del requestCopy["instances"]
+        #also record the original request as 'payload'
+        requestCopy['payload'] = content
 
-    #also record the original request as 'payload'
-    requestCopy['payload'] = content
-
+    if message_type == 'response':
+        # we know cifar10 response is tabular
+        requestCopy["dataType"] = "tabular"
+        if "data" in requestCopy:
+            if "tensor" in requestCopy["data"]:
+                requestCopy["instance"] = requestCopy["data"]["tensor"]["values"]
+            if "ndarray" in requestCopy["data"]:
+                requestCopy["instance"] = requestCopy["data"]["ndarray"]
+            requestCopy['payload'] = content
+            del requestCopy["data"]
+        if "predictions" in requestCopy:
+            requestCopy["instance"] = requestCopy["predictions"]
+            requestCopy['payload'] = content
+            del requestCopy["predictions"]
     return requestCopy
 
 
