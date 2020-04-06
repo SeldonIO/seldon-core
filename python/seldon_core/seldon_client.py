@@ -1724,7 +1724,7 @@ def explain_predict_gateway(
             if not call_credentials.token is None:
                 req_headers["X-Auth-Token"] = call_credentials.token
     if http_path is not None:
-        url = url = (
+        url = (
             scheme
             + "://"
             + gateway_endpoint
@@ -1732,6 +1732,7 @@ def explain_predict_gateway(
             + namespace
             + "/"
             + deployment_name
+            + "-explainer"
             + http_path
         )
     else:
@@ -1743,7 +1744,7 @@ def explain_predict_gateway(
                     + gateway_endpoint
                     + "/seldon/"
                     + deployment_name
-                    + "/explainer/api/v1.0/explain"
+                    + "-explainer/api/v1.0/explain"
                 )
             else:
                 url = (
@@ -1754,15 +1755,11 @@ def explain_predict_gateway(
                     + namespace
                     + "/"
                     + deployment_name
-                    + "/explainer/api/v1.0/explain"
+                    + "-explainer/api/v1.0/explain"
                 )
         else:
             url = (
-                scheme
-                + "://"
-                + gateway_endpoint
-                + gateway_prefix
-                + +"/api/v1.0/explain"
+                scheme + "://" + gateway_endpoint + gateway_prefix + "/api/v1.0/explain"
             )
     verify = True
     cert = None
