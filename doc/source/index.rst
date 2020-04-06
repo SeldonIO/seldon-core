@@ -70,13 +70,13 @@ Documentation Index
 
 .. toctree::
    :maxdepth: 1
-   :caption: Language Wrappers (Incubating)
+   :caption: Incubating Projects
 
    Java Language Wrapper [Incubating] <java/README.md>
    R Language Wrapper [ALPHA] <R/README.md>
    NodeJS Language Wrapper [ALPHA] <nodejs/README.md>
    Go Language Wrapper [ALPHA] <go/go_wrapper_link.rst>
-
+   Stream Processing with KNative <streaming/knative_eventing.md>
 
 .. toctree::
    :maxdepth: 1
@@ -92,7 +92,6 @@ Documentation Index
    Supported API Protocols <graph/protocols.md>
    CI/CD MLOps at Scale <analytics/cicd-mlops.md>
    Metrics with Prometheus <analytics/analytics.md>
-   Custom Metrics <analytics/custom_metrics.md>
    Payload Logging with ELK <analytics/logging.md>
    Distributed Tracing with Jaeger <graph/distributed-tracing.md>
    Replica scaling  <graph/scaling.md>

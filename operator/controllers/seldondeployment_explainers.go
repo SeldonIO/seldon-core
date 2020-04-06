@@ -17,8 +17,12 @@ limitations under the License.
 package controllers
 
 import (
+	"sort"
+	"strconv"
+	"strings"
+
 	"github.com/go-logr/logr"
-	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"github.com/seldonio/seldon-core/operator/constants"
 	"github.com/seldonio/seldon-core/operator/utils"
 	istio_networking "istio.io/api/networking/v1alpha3"
@@ -26,9 +30,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"sort"
-	"strconv"
-	"strings"
 )
 
 func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, c *components, pSvcName string, log logr.Logger) error {

@@ -119,12 +119,14 @@ class ModelWithMetrics(object):
 
     def metrics(self):
         return [
-            {"type":"COUNTER","key":"mycounter","value":1}, # a counter which will increase by the given value
-            {"type":"GAUGE","key":"mygauge","value":100}, # a gauge which will be set to given value
-            {"type":"TIMER","key":"mytimer","value":20.2}, # a timer which will add sum and count metrics - assumed millisecs
-            ]
-
+            {"type": "COUNTER", "key": "mycounter", "value": 1}, # a counter which will increase by the given value
+            {"type": "GAUGE", "key": "mygauge", "value": 100},   # a gauge which will be set to given value
+            {"type": "TIMER", "key": "mytimer", "value": 20.2},  # a timer which will add sum and count metrics - assumed millisecs
+        ]
 ```
+
+Note: prior to Seldon Core 1.1 custom metrics have always been returned to client. From SC 1.1 you can control this behaviour setting `INCLUDE_METRICS_IN_CLIENT_RESPONSE` environmental variable to either `true` or `false`. Despite value of this environmental variable custom metrics will always be exposed to Prometheus.
+
 
 ## Returning Tags
 
@@ -145,9 +147,6 @@ class ModelWithMetrics(object):
     def tags(self,X):
     	return {"system":"production"}
 ```
-
-## REST Metadata Endpoint
-The python wrapper will automatically expose a `/metadata` endpoint to return metadata about the loaded model. It is up to the developer to implement a `metadata` method in their class to provide an arbitrary Dict back containing the model metadata.\
 
 ## REST Health Endpoint
 If you wish to add a REST health point, you can implement the `health_status` method with signature as shown below:
@@ -424,6 +423,18 @@ class Model:
 
         # Make predictions using float_array
 ```
+
+
+## Incubating features
+
+
+### REST Metadata Endpoint
+The python wrapper will automatically expose a `/metadata` endpoint to return metadata about the loaded model.
+It is up to the developer to implement a `metadata` method in their class to provide an arbitrary `dict` back containing the model metadata.
+
+Note: future work will most likely standardize `/metadata` endpoint and change behaviour of this method. See [this](https://github.com/SeldonIO/seldon-core/issues/1638) GitHub issue for details.
+
+
 
 ## Next Steps
 

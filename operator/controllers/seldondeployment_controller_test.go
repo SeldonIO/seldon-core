@@ -18,20 +18,22 @@ package controllers
 
 import (
 	"context"
+	"io/ioutil"
+	"path/filepath"
+	"time"
+
+	"testing"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"github.com/seldonio/seldon-core/operator/constants"
-	"io/ioutil"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/rand"
-	"path/filepath"
-	"testing"
-	"time"
 )
 
 func helperLoadBytes(name string) []byte {
@@ -530,7 +532,6 @@ var _ = Describe("Create a Seldon Deployment with hpa", func() {
 		Expect(k8sClient.Delete(context.Background(), instance)).Should(Succeed())
 
 	})
-
 })
 
 var _ = Describe("Create a Seldon Deployment and then a new one", func() {

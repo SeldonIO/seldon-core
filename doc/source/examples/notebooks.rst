@@ -47,6 +47,7 @@ Incubating Projects Examples
    H2O Java MoJo <h2o_mojo>
    Deploy your R models with the R <deep_mnist>
    Outlier Detection with Combiner <outlier_combiner>
+   Stream Processing with KNative Eventing <knative_eventing_streaming>
 
 
 Cloud-Specific Examples

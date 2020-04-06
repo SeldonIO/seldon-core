@@ -2,14 +2,15 @@ package client
 
 import (
 	"fmt"
+	"path/filepath"
+
 	"github.com/go-logr/logr"
-	"github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
-	clientset "github.com/seldonio/seldon-core/operator/client/machinelearning/v1/clientset/versioned/typed/machinelearning/v1"
+	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
+	clientset "github.com/seldonio/seldon-core/operator/client/machinelearning.seldon.io/v1/clientset/versioned/typed/machinelearning.seldon.io/v1"
 	v1meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
-	"path/filepath"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
