@@ -15,8 +15,8 @@ from requests.auth import HTTPBasicAuth
 from seldon_core.proto import prediction_pb2
 from seldon_core.proto import prediction_pb2_grpc
 
-API_AMBASSADOR = "localhost:80"
-API_ISTIO_GATEWAY = "localhost:80"
+API_AMBASSADOR = "localhost:8003"
+API_ISTIO_GATEWAY = "localhost:8004"
 
 
 def get_s2i_python_version():
