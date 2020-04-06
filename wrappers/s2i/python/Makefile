@@ -1,4 +1,4 @@
-VERSION := $(shell cat ../version.txt)
+IMAGE_VERSION := $(shell cat ../../../version.txt)
 SHELL:=/bin/bash
 
 PYTHON_VERSION=3.7
