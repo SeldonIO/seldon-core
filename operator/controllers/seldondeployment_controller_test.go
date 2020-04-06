@@ -117,6 +117,7 @@ var _ = Describe("Create a Seldon Deployment", func() {
 			return err
 		}, timeout, interval).Should(BeNil())
 		Expect(len(depFetched.Spec.Template.Spec.Containers)).Should(Equal(2))
+		Expect(*depFetched.Spec.Replicas).To(Equal(int32(1)))
 
 		//Check svc created
 		svcKey := types.NamespacedName{
