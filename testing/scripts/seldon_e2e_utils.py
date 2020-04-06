@@ -15,8 +15,8 @@ from requests.auth import HTTPBasicAuth
 from seldon_core.proto import prediction_pb2
 from seldon_core.proto import prediction_pb2_grpc
 
-API_AMBASSADOR = "localhost:8003"
-API_ISTIO_GATEWAY = "localhost:8004"
+API_AMBASSADOR = "localhost:80"
+API_ISTIO_GATEWAY = "localhost:80"
 
 
 def get_s2i_python_version():
@@ -197,6 +197,8 @@ def rest_request(
     data=None,
     dtype="tensor",
     names=None,
+    method="predict",
+    predictor_name="default",
 ):
     try:
         r = rest_request_ambassador(
@@ -208,6 +210,8 @@ def rest_request(
             data=data,
             dtype=dtype,
             names=names,
+            method=method,
+            predictor_name=predictor_name,
         )
         if not r.status_code == 200:
             logging.warning(f"Bad status:{r.status_code}")
@@ -228,6 +232,7 @@ def initial_rest_request(
     data=None,
     dtype="tensor",
     names=None,
+    method="predict",
 ):
     sleeping_times = [1, 5, 10]
     attempt = 0
@@ -243,6 +248,7 @@ def initial_rest_request(
             data=data,
             dtype=dtype,
             names=names,
+            method=method,
         )
 
         if r is None or r.status_code != 200:
@@ -331,6 +337,8 @@ def rest_request_ambassador(
     data=None,
     dtype="tensor",
     names=None,
+    method="predict",
+    predictor_name="default",
 ):
     if data is None:
         shape, arr = create_random_data(data_size, rows)
@@ -348,16 +356,7 @@ def rest_request_ambassador(
     if names is not None:
         payload["data"]["names"] = names
 
-    if namespace is None:
-        response = requests.post(
-            "http://"
-            + endpoint
-            + "/seldon/"
-            + deployment_name
-            + "/api/v0.1/predictions",
-            json=payload,
-        )
-    else:
+    if method == "predict":
         response = requests.post(
             "http://"
             + endpoint
@@ -368,6 +367,21 @@ def rest_request_ambassador(
             + "/api/v0.1/predictions",
             json=payload,
         )
+    elif method == "explain":
+        response = requests.post(
+            "http://"
+            + endpoint
+            + "/seldon/"
+            + namespace
+            + "/"
+            + deployment_name
+            + "-explainer"
+            + "/"
+            + predictor_name
+            + "/api/v0.1/explain",
+            json=payload,
+        )
+
     return response
 
 

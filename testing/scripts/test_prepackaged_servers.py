@@ -4,6 +4,7 @@ from seldon_e2e_utils import (
     retry_run,
     create_random_data,
     wait_for_status,
+    rest_request,
 )
 from subprocess import run
 import time
@@ -89,4 +90,28 @@ class TestPrepack(object):
         )
         assert r.status_code == 200
 
+        run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
+
+    # Test prepackaged Tabular SKLearn Alibi Explainer
+    def test_text_alibi_explainer(self, namespace):
+        spec = "../resources/movies-text-explainer.yaml"
+        retry_run(f"kubectl apply -f {spec} -n {namespace}")
+        wait_for_status("movie", namespace)
+        wait_for_rollout("movie", namespace, expected_deployments=2)
+        time.sleep(1)
+        logging.warning("Initial request")
+        r = initial_rest_request(
+            "movie", namespace, data=["This is test data"], dtype="ndarray"
+        )
+        assert r.status_code == 200
+        e = rest_request(
+            "movie",
+            namespace,
+            data=["This is test data"],
+            dtype="ndarray",
+            method="explain",
+            predictor_name="movies-predictor",
+        )
+        assert e.status_code == 200
+        logging.warning("Success for test_prepack_sklearn")
         run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
