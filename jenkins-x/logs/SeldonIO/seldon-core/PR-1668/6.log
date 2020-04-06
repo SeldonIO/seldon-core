@@ -1,0 +1,169 @@
+
+Showing logs for build [32mseldonio-seldon-core-pr-1668-in-tdbnb-6[0m stage [32mpr-build-comment[0m and container [32mstep-credential-initializer-q8g6z[0m
+{"level":"warn","ts":1586200909.9350374,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1586200909.9355197,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1668-in-tdbnb-6[0m stage [32mpr-build-comment[0m and container [32mstep-working-dir-initializer-pnklz[0m
+{"level":"warn","ts":1586200910.9621596,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1586200910.9638796,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1668-in-tdbnb-6[0m stage [32mpr-build-comment[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-1668-in-tdbnb-6[0m stage [32mpr-build-comment[0m and container [32mstep-create-dir-workspace-wskhc[0m
+{"level":"warn","ts":1586200918.024801,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1586200918.0263114,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1668-in-tdbnb-6[0m stage [32mpr-build-comment[0m and container [32mstep-git-source-seldonio-seldon-core-pr-1668-in-stc2f[0m
+{"level":"warn","ts":1586200918.2780383,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1586200921.8893526,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ master in path /workspace/source"}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1668-in-tdbnb-6[0m stage [32mpr-build-comment[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:3a0767c8ac5907ddb966001d7eca83cd362cffd2,1668:ea77210b57b2f6150c2957390bf630a3a283bbb8
+DEBUG: ran git fetch --unshallow origin ea77210b57b2f6150c2957390bf630a3a283bbb8: 3a0767c8ac5907ddb966001d7eca83cd362cffd2: in 
+DEBUG: ran git checkout master in 
+DEBUG: ran git reset --hard 3a0767c8ac5907ddb966001d7eca83cd362cffd2 in 
+DEBUG: ran clean --force -d . in 
+DEBUG: ran git merge ea77210b57b2f6150c2957390bf630a3a283bbb8 in 
+Merged SHA d3be26ccbd20a96cde00eac435b85c2e126157ed with commit message 'Merge commit 'ea77210b57b2f6150c2957390bf630a3a283bbb8'' into base branch master
+Merged SHA ea77210b57b2f6150c2957390bf630a3a283bbb8 with commit message 'Added explainer test' into base branch master
+Merged SHA d2123cd80acc26761e6d33f4968298d01f9613fb with commit message 'Updated operator to have aligned requirements on path' into base branch master
+Merged SHA a084dcc00f3c941d8792047dfe4c8e936ac8c83e with commit message 'Updated python client to existing changes of explainer' into base branch master
+Merged SHA 05ce1234f9ca24c5839b1c57e5a939aff18d664b with commit message 'Updated operator constants' into base branch master
+
+Showing logs for build [32mseldonio-seldon-core-pr-1668-in-tdbnb-6[0m stage [32mpr-build-comment[0m and container [32mstep-step2[0m
++++ dirname ./add-pr-build-comment
+++ cd .
+++ pwd
++ STARTUP_DIR=/workspace/source/ci
++ REPO_OWNER=SeldonIO
++ REPO_NAME=seldon-core
++ PULL_NUMBER=1668
++ BUILD_NUMBER=6
++ PIPELINE_CONTEXT=integration
+++ cat
++++ date
++ COMMENT_MSG='Mon Apr  6 19:22:08 UTC 2020
+The logs for [integration] [6] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-1668/6.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-1668 --build=6'
++ ** step pr comment --owner=SeldonIO --repository=seldon-core --pull-request=1668 '--comment=Mon Apr  6 19:22:08 UTC 2020
+The logs for [integration] [6] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-1668/6.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-1668 --build=6'
+
+Showing logs for build [32mseldonio-seldon-core-pr-1668-in-tdbnb-6[0m stage [32mpr-build-comment[0m and container [32mstep-source-mkdir-seldonio-seldon-core-pr-1668-in-9vp69[0m
+{"level":"warn","ts":1586200931.0110903,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1586200931.014561,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1668-in-tdbnb-6[0m stage [32mpr-build-comment[0m and container [32mstep-source-copy-seldonio-seldon-core-pr-1668-in-2wvhk[0m
+{"level":"warn","ts":1586200931.2556322,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1586200931.665909,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r source/. /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1668-in-tdbnb-6[0m stage [32mend-to-end[0m and container [32mstep-credential-initializer-zgp5w[0m
+{"level":"warn","ts":1586200940.476126,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1586200940.476503,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1668-in-tdbnb-6[0m stage [32mend-to-end[0m and container [32mstep-working-dir-initializer-lv572[0m
+{"level":"warn","ts":1586200941.803328,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1586200941.8049393,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1668-in-tdbnb-6[0m stage [32mend-to-end[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-1668-in-tdbnb-6[0m stage [32mend-to-end[0m and container [32mstep-create-dir-workspace-bpnfw[0m
+{"level":"warn","ts":1586200947.9532876,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1586200947.9554589,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1668-in-tdbnb-6[0m stage [32mend-to-end[0m and container [32mstep-source-copy-workspace-g9mv9[0m
+{"level":"warn","ts":1586200948.2064621,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1586200951.312519,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1668-in-tdbnb-6[0m stage [32mend-to-end[0m and container [32mstep-test-end-to-end[0m
+Test run type is: [base]
+Starting Docker: docker.
+[SETUP] Waiting for Docker to be ready, sleeping for 1 seconds ...
+kind create cluster --config ../resources/kind_config.yaml
+Creating cluster "kind" ...
+ • Ensuring node image (kindest/node:v1.16.3) 🖼  ...
+ ✓ Ensuring node image (kindest/node:v1.16.3) 🖼
+ • Preparing nodes 📦  ...
+ ✓ Preparing nodes 📦
+ • Writing configuration 📜  ...
+ ✓ Writing configuration 📜
+ • Starting control-plane 🕹️  ...
+ ✓ Starting control-plane 🕹️
+ • Installing CNI 🔌  ...
+ ✓ Installing CNI 🔌
+ • Installing StorageClass 💾  ...
+ ✓ Installing StorageClass 💾
+ • Joining worker nodes 🚜  ...
+ ✓ Joining worker nodes 🚜
+Set kubectl context to "kind-kind"
+You can now use your cluster with:
+
+kubectl cluster-info --context kind-kind
+
+Not sure what to do next? 😅 Check out https://kind.sigs.k8s.io/docs/user/quick-start/
+`kind get kubeconfig-path` is deprecated!
+
+KIND will export and merge kubeconfig like kops, minikube, etc.
+This command is now unnecessary and will be removed in a future release.
+
+For more info see: https://github.com/kubernetes-sigs/kind/issues/1060
+See also the output of `kind create cluster`
+
+Files changed in python folder:
+python/seldon_core/seldon_client.py
+cd ../../wrappers/s2i/python/build_scripts && ./build_all_local.sh
+make[1]: Entering directory '/workspace/source/wrappers/s2i/python'
+cat: ../version.txt: No such file or directory
+mkdir -p _python
+cp -r ../../../python _python
+cat Dockerfile.local.tmpl | sed  -e "s|%PYTHON_VERSION%|3.6|" | sed  -e "s|%CONDA_VERSION%|4.7.12|" > Dockerfile
+set -x && docker build -t docker.io/seldonio/seldon-core-s2i-python`echo -n 3.6 | sed 's/\.//g'`: .
+++ echo -n 3.6
+++ sed 's/\.//g'
++ docker build -t docker.io/seldonio/seldon-core-s2i-python36: .
+invalid argument "docker.io/seldonio/seldon-core-s2i-python36:" for "-t, --tag" flag: invalid reference format
+See 'docker build --help'.
+make[1]: Leaving directory '/workspace/source/wrappers/s2i/python'
+make[1]: *** [Makefile:33: build_local] Error 125
+make[1]: Entering directory '/workspace/source/wrappers/s2i/python'
+cat: ../version.txt: No such file or directory
+mkdir -p _python
+cp -r ../../../python _python
+cat Dockerfile.local.tmpl | sed  -e "s|%PYTHON_VERSION%|3.7|" | sed  -e "s|%CONDA_VERSION%|4.7.12|" > Dockerfile
+set -x && docker build -t docker.io/seldonio/seldon-core-s2i-python`echo -n 3.7 | sed 's/\.//g'`: .
+++ echo -n 3.7
+++ sed 's/\.//g'
++ docker build -t docker.io/seldonio/seldon-core-s2i-python37: .
+invalid argument "docker.io/seldonio/seldon-core-s2i-python37:" for "-t, --tag" flag: invalid reference format
+See 'docker build --help'.
+make[1]: *** [Makefile:33: build_local] Error 125
+make[1]: Leaving directory '/workspace/source/wrappers/s2i/python'
+make[1]: Entering directory '/workspace/source/wrappers/s2i/python'
+cat: ../version.txt: No such file or directory
+docker tag docker.io/seldonio/seldon-core-s2i-python`echo -n 3.7 | sed 's/\.//g'`: docker.io/seldonio/seldon-core-s2i-python`echo -n 3.7 | cut -d. -f1`:
+Error parsing reference: "docker.io/seldonio/seldon-core-s2i-python37:" is not a valid repository/tag: invalid reference format
+make[1]: Leaving directory '/workspace/source/wrappers/s2i/python'
+make[1]: *** [Makefile:36: tag_base_python] Error 1
+make[1]: Entering directory '/workspace/source/wrappers/s2i/python'
+cat: ../version.txt: No such file or directory
+mkdir -p _python
+cp -r ../../../python _python
+cat Dockerfile.gpu.tmpl > Dockerfile
+docker build -t docker.io/seldonio/seldon-core-s2i-python3-tf-gpu: .
+invalid argument "docker.io/seldonio/seldon-core-s2i-python3-tf-gpu:" for "-t, --tag" flag: invalid reference format
+See 'docker build --help'.
+make[1]: *** [Makefile:27: build_gpu] Error 125
+make[1]: Leaving directory '/workspace/source/wrappers/s2i/python'
+Python build returned errors
+make: *** [Makefile:90: s2i_build_base_images] Error 2
+kind delete cluster
+Deleting cluster "kind" ...
+Stopping Docker: dockerProgram process in pidfile '/var/run/docker-ssd.pid', 1 process(es), refused to die.
+[31m
+Pipeline failed on stage 'end-to-end' : container 'step-test-end-to-end'. The execution of the pipeline has stopped.[0m
