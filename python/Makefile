@@ -1,5 +1,5 @@
 SELDON_CORE_DIR=..
-VERSION=1.0.2
+VERSION := $(shell cat ../version.txt)
 
 .PHONY: get_apis
 get_apis:

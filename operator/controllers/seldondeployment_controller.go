@@ -76,13 +76,14 @@ type SeldonDeploymentReconciler struct {
 //---------------- Old part
 
 type components struct {
-	serviceDetails   map[string]*machinelearningv1.ServiceStatus
-	deployments      []*appsv1.Deployment
-	services         []*corev1.Service
-	hpas             []*autoscaling.HorizontalPodAutoscaler
-	virtualServices  []*istio.VirtualService
-	destinationRules []*istio.DestinationRule
-	addressable      *machinelearningv1.SeldonAddressable
+	serviceDetails        map[string]*machinelearningv1.ServiceStatus
+	deployments           []*appsv1.Deployment
+	services              []*corev1.Service
+	hpas                  []*autoscaling.HorizontalPodAutoscaler
+	virtualServices       []*istio.VirtualService
+	destinationRules      []*istio.DestinationRule
+	defaultDeploymentName string
+	addressable           *machinelearningv1.SeldonAddressable
 }
 
 type httpGrpcPorts struct {
@@ -411,13 +412,22 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 
 			// create Deployment from podspec
 			depName := machinelearningv1.GetDeploymentName(mlDep, p, cSpec, j)
+			if i == 0 && j == 0 {
+				c.defaultDeploymentName = depName
+			}
 			deploy := createDeploymentWithoutEngine(depName, seldonId, cSpec, &p, mlDep)
 
 			// Add HPA if needed
 			if cSpec.HpaSpec != nil {
 				c.hpas = append(c.hpas, createHpa(cSpec, depName, seldonId, namespace))
-			} else {
-				deploy.Spec.Replicas = &p.Replicas
+			} else { //set replicas from more specifc to more general replicas settings in spec
+				if cSpec.Replicas != nil {
+					deploy.Spec.Replicas = cSpec.Replicas
+				} else if p.Replicas != nil {
+					deploy.Spec.Replicas = p.Replicas
+				} else {
+					deploy.Spec.Replicas = mlDep.Spec.Replicas
+				}
 			}
 
 			// create services for each container
@@ -1228,6 +1238,9 @@ func (r *SeldonDeploymentReconciler) createDeployments(components *components, i
 					}
 
 					instance.Status.DeploymentStatus[found.Name] = deploymentStatus
+					if found.Name == components.defaultDeploymentName {
+						instance.Status.Replicas = found.Status.Replicas
+					}
 				}
 				log.Info("Deployment status ", "name", found.Name, "status", found.Status)
 				if found.Status.ReadyReplicas == 0 || found.Status.UnavailableReplicas > 0 {

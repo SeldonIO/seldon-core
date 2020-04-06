@@ -1,10 +1,10 @@
+VERSION := $(shell cat ../version.txt)
 SHELL:=/bin/bash
 
 PYTHON_VERSION=3.7
 CONDA_VERSION=4.7.12
 IMAGE_PYTHON_VERSION=`echo -n $(PYTHON_VERSION) | sed 's/\.//g'`
 BASE_IMAGE_PYTHON_VERSION=`echo -n $(PYTHON_VERSION) | cut -d. -f1`
-IMAGE_VERSION=0.19-SNAPSHOT
 IMAGE_NAME = docker.io/seldonio/seldon-core-s2i-python${IMAGE_PYTHON_VERSION}
 BASE_IMAGE_NAME = docker.io/seldonio/seldon-core-s2i-python${BASE_IMAGE_PYTHON_VERSION}
 GPU_IMAGE_NAME = docker.io/seldonio/seldon-core-s2i-python3-tf-gpu
