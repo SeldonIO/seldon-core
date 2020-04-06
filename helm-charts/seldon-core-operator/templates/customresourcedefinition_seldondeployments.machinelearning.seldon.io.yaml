@@ -23,6 +23,9 @@ spec:
     singular: seldondeployment
   scope: Namespaced
   subresources:
+    scale:
+      specReplicasPath: .spec.replicas
+      statusReplicasPath: .status.replicas
     status: {}
   validation:
     openAPIV3Schema:
@@ -275,6 +278,9 @@ spec:
                           type: object
                         metadata:
                           type: object
+                        replicas:
+                          format: int32
+                          type: integer
                         spec:
                           description: PodSpec is a description of a pod.
                           properties:
@@ -4096,6 +4102,9 @@ spec:
                           - name
                           type: object
                         type: array
+                      replicas:
+                        format: int32
+                        type: integer
                       resources:
                         description: ResourceRequirements describes the compute resource requirements.
                         properties:
@@ -4129,6 +4138,9 @@ spec:
               type: array
             protocol:
               type: string
+            replicas:
+              format: int32
+              type: integer
             transport:
               type: string
           required:
@@ -4164,6 +4176,9 @@ spec:
               type: object
             description:
               type: string
+            replicas:
+              format: int32
+              type: integer
             serviceStatus:
               additionalProperties:
                 properties:

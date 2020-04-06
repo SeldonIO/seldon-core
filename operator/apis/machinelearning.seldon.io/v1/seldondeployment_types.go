@@ -203,13 +203,14 @@ type SeldonDeploymentSpec struct {
 	Annotations map[string]string `json:"annotations,omitempty" protobuf:"bytes,5,opt,name=annotations"`
 	Protocol    Protocol          `json:"protocol,omitempty" protobuf:"bytes,6,opt,name=protocol"`
 	Transport   Transport         `json:"transport,omitempty" protobuf:"bytes,7,opt,name=transport"`
+	Replicas    *int32            `json:"replicas,omitempty" protobuf:"bytes,8,opt,name=replicas"`
 }
 
 type PredictorSpec struct {
 	Name            string                  `json:"name" protobuf:"string,1,opt,name=name"`
 	Graph           *PredictiveUnit         `json:"graph" protobuf:"bytes,2,opt,name=predictiveUnit"`
 	ComponentSpecs  []*SeldonPodSpec        `json:"componentSpecs,omitempty" protobuf:"bytes,3,opt,name=componentSpecs"`
-	Replicas        int32                   `json:"replicas,omitempty" protobuf:"string,4,opt,name=replicas"`
+	Replicas        *int32                  `json:"replicas,omitempty" protobuf:"string,4,opt,name=replicas"`
 	Annotations     map[string]string       `json:"annotations,omitempty" protobuf:"bytes,5,opt,name=annotations"`
 	EngineResources v1.ResourceRequirements `json:"engineResources,omitempty" protobuf:"bytes,6,opt,name=engineResources"`
 	Labels          map[string]string       `json:"labels,omitempty" protobuf:"bytes,7,opt,name=labels"`
@@ -236,6 +237,7 @@ const (
 type SvcOrchSpec struct {
 	Resources *v1.ResourceRequirements `json:"resources,omitempty" protobuf:"bytes,1,opt,name=resources"`
 	Env       []*v1.EnvVar             `json:"env,omitempty" protobuf:"bytes,2,opt,name=env"`
+	Replicas  *int32                   `json:"replicas,omitempty" protobuf:"bytes,3,opt,name=replicas"`
 }
 
 type AlibiExplainerType string
@@ -262,6 +264,7 @@ type SeldonPodSpec struct {
 	Metadata metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 	Spec     v1.PodSpec        `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
 	HpaSpec  *SeldonHpaSpec    `json:"hpaSpec,omitempty" protobuf:"bytes,3,opt,name=hpaSpec"`
+	Replicas *int32            `json:"replicas,omitempty" protobuf:"bytes,4,opt,name=replicas"`
 }
 
 type SeldonHpaSpec struct {
@@ -400,6 +403,7 @@ type SeldonDeploymentStatus struct {
 	Description      string                      `json:"description,omitempty" protobuf:"string,2,opt,name=description"`
 	DeploymentStatus map[string]DeploymentStatus `json:"deploymentStatus,omitempty" protobuf:"bytes,3,opt,name=deploymentStatus"`
 	ServiceStatus    map[string]ServiceStatus    `json:"serviceStatus,omitempty" protobuf:"bytes,4,opt,name=serviceStatus"`
+	Replicas         int32                       `json:"replicas,omitempty" protobuf:"string,5,opt,name=replicas"`
 	Address          *SeldonAddressable          `json:"address,omitempty"`
 }
 
@@ -408,11 +412,11 @@ type SeldonDeploymentStatus struct {
 // +kubebuilder:object:root=true
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +kubebuilder:storageversion
-
 // SeldonDeployment is the Schema for the seldondeployments API
 // +k8s:openapi-gen=true
 // +kubebuilder:resource:shortName=sdep
 // +kubebuilder:subresource:status
+// +kubebuilder:subresource:scale:specpath=.spec.replicas,statuspath=.status.replicas
 type SeldonDeployment struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
