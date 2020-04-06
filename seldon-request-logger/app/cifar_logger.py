@@ -71,17 +71,55 @@ def process_and_update_elastic_doc(elastic_object, message_type, message_body, r
     log_helper.field_from_header(content=new_content_part,header_name='ce-time',headers=headers)
     log_helper.field_from_header(content=new_content_part, header_name='ce-source', headers=headers)
 
-    upsert_body= {
-        "doc_as_upsert": True,
-        "doc": {
+    doc_body = {
             message_type: new_content_part
-        }
     }
 
-    log_helper.set_metadata(upsert_body['doc'],headers,message_type,request_id)
+    log_helper.set_metadata(doc_body,headers,message_type,request_id)
 
-    new_content = elastic_object.update(index=index_name,doc_type=log_helper.DOC_TYPE_NAME,id=request_id,body=upsert_body,retry_on_conflict=3,refresh=True,timeout="60s")
-    print('upserted to doc '+index_name+"/"+log_helper.DOC_TYPE_NAME+"/"+ request_id+ ' adding '+message_type)
+    # req or res might be batches of instances so split out into individual docs
+    if "instance" in new_content_part:
+        no_items_in_batch = len(new_content_part["instance"])
+        index = 0
+        for item in new_content_part["instance"]:
+            item_body = doc_body.copy()
+
+            item_body[message_type]['instance'] = item
+            item_request_id = build_request_id_batched(request_id,no_items_in_batch,index)
+            upsert_doc_to_elastic(elastic_object,message_type,item_body,item_request_id,index_name)
+            index = index + 1
+    elif "data" in new_content_part and message_type == 'outlier':
+        no_items_in_batch = len(doc_body[message_type]["data"]["is_outlier"])
+        index = 0
+        for item in doc_body[message_type]["data"]["is_outlier"]:
+            item_body = doc_body.copy()
+            item_body[message_type]["data"]["is_outlier"] = item
+            if "feature_score" in item_body[message_type]["data"] and item_body[message_type]["data"]["feature_score"] is not None and len(item_body[message_type]["data"]["feature_score"]) == no_items_in_batch:
+                item_body[message_type]["data"]["feature_score"] = item_body[message_type]["data"]["feature_score"][index]
+            if "instance_score" in item_body[message_type]["data"] and item_body[message_type]["data"]["instance_score"] is not None and len(item_body[message_type]["data"]["instance_score"]) == no_items_in_batch:
+                item_body[message_type]["data"]["instance_score"] = item_body[message_type]["data"]["instance_score"][index]
+            item_request_id = build_request_id_batched(request_id, no_items_in_batch, index)
+            upsert_doc_to_elastic(elastic_object, message_type, item_body, item_request_id, index_name)
+            index = index + 1
+    else:
+        print('unexpected data format')
+        print(new_content_part)
+    return
+
+def build_request_id_batched(request_id, no_items_in_batch, item_index):
+    item_request_id = request_id
+    if no_items_in_batch > 1:
+        item_request_id = item_request_id + "-item-" + item_index
+    return item_request_id
+
+def upsert_doc_to_elastic(elastic_object, message_type, upsert_body, request_id, index_name):
+    upsert_doc = {
+        "doc_as_upsert": True,
+        "doc": upsert_body,
+    }
+    new_content = elastic_object.update(index=index_name, doc_type=log_helper.DOC_TYPE_NAME, id=request_id,
+                                        body=upsert_doc, retry_on_conflict=3, refresh=True, timeout="60s")
+    print('upserted to doc ' + index_name + "/" + log_helper.DOC_TYPE_NAME + "/" + request_id + ' adding ' + message_type)
     sys.stdout.flush()
     return str(new_content)
 
@@ -102,36 +140,38 @@ def process_content(message_type,content):
     requestCopy = content.copy()
 
     if message_type == 'request':
+        requestCopy = extract_data_part(content)
         # we know this is a cifar10 image
         requestCopy["dataType"] = "image"
-        requestCopy["instance"] = decode(content)
-        if "instances" in requestCopy:
-            del requestCopy["instances"]
-        #also record the original request as 'payload'
-        requestCopy['payload'] = content
+
 
     if message_type == 'response':
+        requestCopy = extract_data_part(content)
         # we know cifar10 response is tabular
         requestCopy["dataType"] = "tabular"
-        if "data" in requestCopy:
-            if "tensor" in requestCopy["data"]:
-                requestCopy["instance"] = requestCopy["data"]["tensor"]["values"]
-            if "ndarray" in requestCopy["data"]:
-                requestCopy["instance"] = requestCopy["data"]["ndarray"]
-            requestCopy['payload'] = content
-            del requestCopy["data"]
-        if "predictions" in requestCopy:
-            requestCopy["instance"] = requestCopy["predictions"]
-            requestCopy['payload'] = content
-            del requestCopy["predictions"]
+
+    #don't do extraction in same way for outlier
     return requestCopy
 
 
-def decode(X):
-    X=np.array(X["instances"])
-    X=np.transpose(X, (0,2, 3, 1))
-    img = X/2.0 + 0.5
-    return img.tolist()
+def extract_data_part(content):
+    copy = content.copy()
+    copy['payload'] = content
+
+    if "instances" in copy:
+        copy["instance"] = copy["instances"]
+        del copy["instances"]
+    if "data" in copy:
+        if "tensor" in copy["data"]:
+            copy["instance"] = copy["data"]["tensor"]["values"]
+        if "ndarray" in copy["data"]:
+            copy["instance"] = copy["data"]["ndarray"]
+        del copy["data"]
+    if "predictions" in copy:
+        copy["instance"] = copy["predictions"]
+        del copy["predictions"]
+
+    return copy
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8080)
