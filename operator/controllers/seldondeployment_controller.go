@@ -408,7 +408,7 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 				} else if p.Replicas != nil {
 					deploy.Spec.Replicas = p.Replicas
 				} else {
-					deploy.Spec.Replicas = mlDep.Spec.DefaultReplicas
+					deploy.Spec.Replicas = mlDep.Spec.Replicas
 				}
 			}
 
@@ -1213,7 +1213,7 @@ func (r *SeldonDeploymentReconciler) createDeployments(components *components, i
 
 					instance.Status.DeploymentStatus[found.Name] = deploymentStatus
 					if found.Name == components.defaultDeploymentName {
-						instance.Status.DefaultReplicas = found.Status.Replicas
+						instance.Status.Replicas = found.Status.Replicas
 					}
 				}
 				log.Info("Deployment status ", "name", found.Name, "status", found.Status)

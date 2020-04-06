@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func createSeldonDeploymentWithReplicas(name string, namespace string, defaultReplicas *int32, predictorReplicas *int32, componentSpecReplicas *int32, svcOrchReplicas *int32) *machinelearningv1.SeldonDeployment {
+func createSeldonDeploymentWithReplicas(name string, namespace string, specReplicas *int32, predictorReplicas *int32, componentSpecReplicas *int32, svcOrchReplicas *int32) *machinelearningv1.SeldonDeployment {
 	modelType := machinelearningv1.MODEL
 	instance := &machinelearningv1.SeldonDeployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -17,7 +17,7 @@ func createSeldonDeploymentWithReplicas(name string, namespace string, defaultRe
 			Namespace: namespace,
 		},
 		Spec: machinelearningv1.SeldonDeploymentSpec{
-			DefaultReplicas: defaultReplicas,
+			Replicas: specReplicas,
 			Predictors: []machinelearningv1.PredictorSpec{
 				{
 					Name:     "p1",
@@ -57,7 +57,7 @@ func createSeldonDeploymentWithReplicas(name string, namespace string, defaultRe
 func TestDeploymentReplicas(t *testing.T) {
 	g := NewGomegaWithT(t)
 	svcOrchReplicas := int32(2)
-	defaultReplicas := int32(3)
+	specReplicas := int32(3)
 	predictorReplicas := int32(4)
 	componentSpecReplicas := int32(5)
 	name := "dep"
@@ -77,7 +77,7 @@ func TestDeploymentReplicas(t *testing.T) {
 	g.Expect(*c.deployments[0].Spec.Replicas).To(Equal(predictorReplicas))
 
 	// Just Predictor Replicas and default replicas
-	instance = createSeldonDeploymentWithReplicas(name, namespace, &defaultReplicas, &predictorReplicas, nil, nil)
+	instance = createSeldonDeploymentWithReplicas(name, namespace, &specReplicas, &predictorReplicas, nil, nil)
 	instance.Spec.DefaultSeldonDeployment(name, namespace)
 	c, err = reconciler.createComponents(instance, logger)
 	g.Expect(err).To(BeNil())
@@ -85,20 +85,20 @@ func TestDeploymentReplicas(t *testing.T) {
 	g.Expect(*c.deployments[0].Spec.Replicas).To(Equal(predictorReplicas))
 
 	// ComponentSpec replica override
-	instance = createSeldonDeploymentWithReplicas(name, namespace, &defaultReplicas, &predictorReplicas, &componentSpecReplicas, nil)
+	instance = createSeldonDeploymentWithReplicas(name, namespace, &specReplicas, &predictorReplicas, &componentSpecReplicas, nil)
 	instance.Spec.DefaultSeldonDeployment(name, namespace)
 	c, err = reconciler.createComponents(instance, logger)
 	g.Expect(err).To(BeNil())
 	g.Expect(len(c.deployments)).To(Equal(1))
 	g.Expect(*c.deployments[0].Spec.Replicas).To(Equal(componentSpecReplicas))
 
-	// Just defaultReplicas
-	instance = createSeldonDeploymentWithReplicas(name, namespace, &defaultReplicas, nil, nil, nil)
+	// Just specReplicas
+	instance = createSeldonDeploymentWithReplicas(name, namespace, &specReplicas, nil, nil, nil)
 	instance.Spec.DefaultSeldonDeployment(name, namespace)
 	c, err = reconciler.createComponents(instance, logger)
 	g.Expect(err).To(BeNil())
 	g.Expect(len(c.deployments)).To(Equal(1))
-	g.Expect(*c.deployments[0].Spec.Replicas).To(Equal(defaultReplicas))
+	g.Expect(*c.deployments[0].Spec.Replicas).To(Equal(specReplicas))
 
 	// All nil
 	instance = createSeldonDeploymentWithReplicas(name, namespace, nil, nil, nil, nil)

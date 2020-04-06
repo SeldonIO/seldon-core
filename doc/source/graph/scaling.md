@@ -4,7 +4,7 @@
 
 Replicas settings can be provided at several levels with the most specific taking precedence, from most general to most specific as shown below:
 
-  * `.spec.defaultReplicas`
+  * `.spec.replicas`
   * `.spec.predictors[].replicas`
   * `.spec.predictors[].componentSpecs[].replicas`
 
@@ -20,7 +20,7 @@ kind: SeldonDeployment
 metadata:
   name: test-replicas
 spec:
-  defaultReplicas: 1
+  replicas: 1
   predictors:
   - componentSpecs:
     - spec:
@@ -63,13 +63,13 @@ spec:
 
  * classfier will have a deployment with 2 replicas as specified by the predictor it is defined within
  * classifier2 will have a deployment with 3 replicas as that is specified in its componentSpec
- * classifier3 will have 1 replica as it takes its value from `.spec.defaultReplicas`
+ * classifier3 will have 1 replica as it takes its value from `.spec.replicas`
 
 For more details see [a worked example for the above replica settings](../examples/scale.html).
 
 ## Scale replicas
 
-Its is possible to use the `kubectl scale` command to set the `defaultReplicas` value of the SeldonDeployment. For simple inference graphs this can be an easy way to scale them up and down. For example:
+Its is possible to use the `kubectl scale` command to set the `replicas` value of the SeldonDeployment. For simple inference graphs this can be an easy way to scale them up and down. For example:
 
 ```
 apiVersion: machinelearning.seldon.io/v1

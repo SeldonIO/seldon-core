@@ -340,8 +340,8 @@ func (in *SeldonDeploymentSpec) DeepCopyInto(out *SeldonDeploymentSpec) {
 			(*out)[key] = val
 		}
 	}
-	if in.DefaultReplicas != nil {
-		in, out := &in.DefaultReplicas, &out.DefaultReplicas
+	if in.Replicas != nil {
+		in, out := &in.Replicas, &out.Replicas
 		*out = new(int32)
 		**out = **in
 	}

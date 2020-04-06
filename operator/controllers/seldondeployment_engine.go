@@ -429,8 +429,8 @@ func createEngineDeployment(mlDep *machinelearningv1.SeldonDeployment, p *machin
 		deploy.Spec.Replicas = p.SvcOrchSpec.Replicas
 	} else if p.Replicas != nil {
 		deploy.Spec.Replicas = p.Replicas
-	} else if mlDep.Spec.DefaultReplicas != nil {
-		deploy.Spec.Replicas = mlDep.Spec.DefaultReplicas
+	} else if mlDep.Spec.Replicas != nil {
+		deploy.Spec.Replicas = mlDep.Spec.Replicas
 	}
 
 	// Add a particular service account rather than default for the engine

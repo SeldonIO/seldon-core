@@ -196,14 +196,14 @@ func GetContainerServiceName(mlDepName string, predictorSpec PredictorSpec, c *v
 // SeldonDeploymentSpec defines the desired state of SeldonDeployment
 type SeldonDeploymentSpec struct {
 	//Name is Deprecated will be removed in future
-	Name            string            `json:"name,omitempty" protobuf:"string,1,opt,name=name"`
-	Predictors      []PredictorSpec   `json:"predictors" protobuf:"bytes,2,opt,name=name"`
-	OauthKey        string            `json:"oauth_key,omitempty" protobuf:"string,3,opt,name=oauth_key"`
-	OauthSecret     string            `json:"oauth_secret,omitempty" protobuf:"string,4,opt,name=oauth_secret"`
-	Annotations     map[string]string `json:"annotations,omitempty" protobuf:"bytes,5,opt,name=annotations"`
-	Protocol        Protocol          `json:"protocol,omitempty" protobuf:"bytes,6,opt,name=protocol"`
-	Transport       Transport         `json:"transport,omitempty" protobuf:"bytes,7,opt,name=transport"`
-	DefaultReplicas *int32            `json:"defaultReplicas,omitempty" protobuf:"bytes,8,opt,name=defaultReplicas"`
+	Name        string            `json:"name,omitempty" protobuf:"string,1,opt,name=name"`
+	Predictors  []PredictorSpec   `json:"predictors" protobuf:"bytes,2,opt,name=name"`
+	OauthKey    string            `json:"oauth_key,omitempty" protobuf:"string,3,opt,name=oauth_key"`
+	OauthSecret string            `json:"oauth_secret,omitempty" protobuf:"string,4,opt,name=oauth_secret"`
+	Annotations map[string]string `json:"annotations,omitempty" protobuf:"bytes,5,opt,name=annotations"`
+	Protocol    Protocol          `json:"protocol,omitempty" protobuf:"bytes,6,opt,name=protocol"`
+	Transport   Transport         `json:"transport,omitempty" protobuf:"bytes,7,opt,name=transport"`
+	Replicas    *int32            `json:"replicas,omitempty" protobuf:"bytes,8,opt,name=replicas"`
 }
 
 type PredictorSpec struct {
@@ -397,7 +397,7 @@ type SeldonDeploymentStatus struct {
 	Description      string                      `json:"description,omitempty" protobuf:"string,2,opt,name=description"`
 	DeploymentStatus map[string]DeploymentStatus `json:"deploymentStatus,omitempty" protobuf:"bytes,3,opt,name=deploymentStatus"`
 	ServiceStatus    map[string]ServiceStatus    `json:"serviceStatus,omitempty" protobuf:"bytes,4,opt,name=serviceStatus"`
-	DefaultReplicas  int32                       `json:"defaultReplicas,omitempty" protobuf:"string,5,opt,name=defaultReplicas"`
+	Replicas         int32                       `json:"replicas,omitempty" protobuf:"string,5,opt,name=replicas"`
 }
 
 // +genclient
@@ -409,7 +409,7 @@ type SeldonDeploymentStatus struct {
 // +k8s:openapi-gen=true
 // +kubebuilder:resource:shortName=sdep
 // +kubebuilder:subresource:status
-// +kubebuilder:subresource:scale:specpath=.spec.defaultReplicas,statuspath=.status.defaultReplicas
+// +kubebuilder:subresource:scale:specpath=.spec.replicas,statuspath=.status.replicas
 type SeldonDeployment struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
