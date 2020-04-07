@@ -148,18 +148,10 @@ def process_content(message_type,content):
 
     requestCopy = content.copy()
 
-    if message_type == 'request':
+    #extract data part out and process for req or resp - handle differently later for outlier
+    if message_type == 'request' or message_type == 'response':
         requestCopy = extract_data_part(content)
-        # we know this is a cifar10 image
-        requestCopy["dataType"] = "image"
 
-
-    if message_type == 'response':
-        requestCopy = extract_data_part(content)
-        # we know cifar10 response is tabular
-        requestCopy["dataType"] = "tabular"
-
-    #don't do extraction in same way for outlier
     return requestCopy
 
 
@@ -182,6 +174,8 @@ def extract_data_part(content):
         first_element = content_np.item(0)
         if first_element is not None and not isinstance(first_element, (int, float)):
             copy["dataType"] = "text"
+        print(content_np.shape)
+        print(len(content_np.shape))
         if len(content_np.shape) > 2:
             copy["dataType"] = "tabular"
         if len(content_np.shape) > 3:
