@@ -20,7 +20,6 @@ Python Language Wrapper Examples
    :titlesonly:
 
    Scikit-learn Spacy Reddit Text Classification Tutorial <sklearn_spacy_text_classifier_example>
-   Keras MNIST <keras_mnist>
    SKLearn Iris Classifier <iris>
    SKLearn MNIST <sklearn_mnist>
    Sagemaker SKLearn Example <sagemaker_sklearn>   
@@ -48,6 +47,7 @@ Incubating Projects Examples
    H2O Java MoJo <h2o_mojo>
    Deploy your R models with the R <deep_mnist>
    Outlier Detection with Combiner <outlier_combiner>
+   Stream Processing with KNative Eventing <knative_eventing_streaming>
 
 
 Cloud-Specific Examples
@@ -79,12 +79,15 @@ MLOps: Scaling and Monitoring and Observability
 
 .. toctree::
    :titlesonly:
-  
+
+   Autoscaling Example <autoscaling_example>    
    Request Payload Logging with ELK <payload_logging>
    Custom Metrics with Grafana & Prometheus <metrics>
    Distributed Tracing with Jaeger <tracing>
    CI / CD with Jenkins Classic <jenkins_classic>
    CI / CD with Jenkins X <jenkins_x>
+   Replica control <scale>
+   
 
 Production Configurations and Integrations
 -----
@@ -92,7 +95,6 @@ Production Configurations and Integrations
 .. toctree::
    :titlesonly:
   
-   Autoscaling Example <autoscaling_example>
    Custom Endpoints <custom_endpoints>
    Example Helm Deployments <helm_examples>
    Max gRPC Message Size <max_grpc_msg_size>

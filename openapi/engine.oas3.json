@@ -89,6 +89,17 @@
                                     }
                                 }
                             }
+                        },
+                        "text/*": {
+                            "schema": {
+                                "type": "string"
+                            }
+                        },
+                        "application/octet-stream": {
+                            "schema": {
+                                "type": "string",
+                                "format": "binary"
+                            }
                         }
                     },
                     "required": true

@@ -11,7 +11,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/api/test"
 	"github.com/seldonio/seldon-core/executor/logger"
-	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -32,21 +32,21 @@ const (
 func createPredictorProcess(t *testing.T) *PredictorProcess {
 	url, _ := url.Parse(testSourceUrl)
 	ctx := context.WithValue(context.TODO(), payload.SeldonPUIDHeader, testSeldonPuid)
-	pp := NewPredictorProcess(ctx, test.NewSeldonMessageTestClient(t, -1, nil, nil), logf.Log.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{testCustomMetaKey: []string{testCustomMetaValue}})
+	pp := NewPredictorProcess(ctx, &test.SeldonMessageTestClient{}, logf.Log.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{testCustomMetaKey: []string{testCustomMetaValue}})
 	return &pp
 }
 
 func createPredictorProcessWithRoute(t *testing.T, chosenRoute int) *PredictorProcess {
 	url, _ := url.Parse(testSourceUrl)
 	ctx := context.WithValue(context.TODO(), payload.SeldonPUIDHeader, testSeldonPuid)
-	pp := NewPredictorProcess(ctx, test.NewSeldonMessageTestClient(t, chosenRoute, nil, nil), logf.Log.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{})
+	pp := NewPredictorProcess(ctx, &test.SeldonMessageTestClient{ChosenRoute: chosenRoute}, logf.Log.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{})
 	return &pp
 }
 
-func createPredictorProcessWithError(t *testing.T, errMethod *v1.PredictiveUnitMethod, err error) *PredictorProcess {
+func createPredictorProcessWithError(t *testing.T, errMethod *v1.PredictiveUnitMethod, err error, errPayload payload.SeldonPayload) *PredictorProcess {
 	url, _ := url.Parse(testSourceUrl)
 	ctx := context.WithValue(context.TODO(), payload.SeldonPUIDHeader, testSeldonPuid)
-	pp := NewPredictorProcess(ctx, test.NewSeldonMessageTestClient(t, -1, errMethod, err), logf.Log.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{})
+	pp := NewPredictorProcess(ctx, &test.SeldonMessageTestClient{ErrMethod: errMethod, Err: err, ErrPayload: errPayload}, logf.Log.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{})
 	return &pp
 }
 
@@ -320,9 +320,14 @@ func TestModelError(t *testing.T) {
 
 	errMethod := v1.TRANSFORM_INPUT
 	chosenErr := errors.New("something bad happened")
-	pResp, err := createPredictorProcessWithError(t, &errMethod, chosenErr).Predict(graph, createPredictPayload(g))
+	errBytes := "{\"status\":\"failed\"}"
+	errPayload := payload.BytesPayload{
+		Msg:         []byte(errBytes),
+		ContentType: "xyz",
+	}
+	pResp, err := createPredictorProcessWithError(t, &errMethod, chosenErr, &errPayload).Predict(graph, createPredictPayload(g))
 	g.Expect(err).ShouldNot(BeNil())
-	g.Expect(pResp).Should(BeNil())
+	g.Expect(pResp).To(Equal(&errPayload))
 	g.Expect(err.Error()).Should(Equal("something bad happened"))
 }
 

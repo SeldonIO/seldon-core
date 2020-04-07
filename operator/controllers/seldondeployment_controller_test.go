@@ -20,7 +20,7 @@ import (
 	"context"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"github.com/seldonio/seldon-core/operator/constants"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta1"
@@ -28,6 +28,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/rand"
+	"testing"
 	"time"
 )
 
@@ -106,6 +107,7 @@ var _ = Describe("Create a Seldon Deployment", func() {
 			return err
 		}, timeout, interval).Should(BeNil())
 		Expect(len(depFetched.Spec.Template.Spec.Containers)).Should(Equal(2))
+		Expect(*depFetched.Spec.Replicas).To(Equal(int32(1)))
 
 		//Check svc created
 		svcKey := types.NamespacedName{
@@ -520,5 +522,397 @@ var _ = Describe("Create a Seldon Deployment with hpa", func() {
 		Expect(k8sClient.Delete(context.Background(), instance)).Should(Succeed())
 
 	})
+})
+
+var _ = Describe("Create a Seldon Deployment and then a new one", func() {
+	const timeout = time.Second * 30
+	const interval = time.Second * 1
+	namespaceName := rand.String(10)
+	By("Creating a resources sequentially")
+	It("should create a resource with defaults and then update to new resources", func() {
+		Expect(k8sClient).NotTo(BeNil())
+		var modelType = machinelearningv1.MODEL
+		key := types.NamespacedName{
+			Name:      "dep",
+			Namespace: namespaceName,
+		}
+		instance := &machinelearningv1.SeldonDeployment{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      key.Name,
+				Namespace: key.Namespace,
+			},
+			Spec: machinelearningv1.SeldonDeploymentSpec{
+				Name: "mydep",
+				Predictors: []machinelearningv1.PredictorSpec{
+					{
+						Name: "p1",
+						ComponentSpecs: []*machinelearningv1.SeldonPodSpec{
+							{
+								Spec: v1.PodSpec{
+									Containers: []v1.Container{
+										{
+											Image: "seldonio/mock_classifier:1.0",
+											Name:  "classifier",
+										},
+									},
+								},
+							},
+						},
+						Graph: &machinelearningv1.PredictiveUnit{
+							Name: "classifier",
+							Type: &modelType,
+						},
+					},
+				},
+			},
+		}
+
+		instance2 := &machinelearningv1.SeldonDeployment{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      key.Name,
+				Namespace: key.Namespace,
+			},
+			Spec: machinelearningv1.SeldonDeploymentSpec{
+				Name: "mydep",
+				Predictors: []machinelearningv1.PredictorSpec{
+					{
+						Name: "p1",
+						ComponentSpecs: []*machinelearningv1.SeldonPodSpec{
+							{
+								Spec: v1.PodSpec{
+									Containers: []v1.Container{
+										{
+											Image: "seldonio/mock_classifier:1.0",
+											Name:  "classifier2",
+										},
+									},
+								},
+							},
+						},
+						Graph: &machinelearningv1.PredictiveUnit{
+							Name: "classifier2",
+							Type: &modelType,
+						},
+					},
+				},
+			},
+		}
+
+		//Create namespace
+		namespace := &v1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: namespaceName,
+			},
+		}
+		Expect(k8sClient.Create(context.Background(), namespace)).Should(Succeed())
+
+		// Run Defaulter
+		instance.Default()
+		instance2.Default()
+
+		Expect(k8sClient.Create(context.Background(), instance)).Should(Succeed())
+		//time.Sleep(time.Second * 5)
+
+		fetched := &machinelearningv1.SeldonDeployment{}
+		Eventually(func() error {
+			err := k8sClient.Get(context.Background(), key, fetched)
+			return err
+		}, timeout, interval).Should(BeNil())
+		Expect(fetched.Name).Should(Equal("dep"))
+
+		// Check deployment created
+		depKey := types.NamespacedName{
+			Name:      machinelearningv1.GetDeploymentName(instance, instance.Spec.Predictors[0], instance.Spec.Predictors[0].ComponentSpecs[0], 0),
+			Namespace: namespaceName,
+		}
+		depFetched := &appsv1.Deployment{}
+		Eventually(func() error {
+			err := k8sClient.Get(context.Background(), depKey, depFetched)
+			return err
+		}, timeout, interval).Should(BeNil())
+		Expect(len(depFetched.Spec.Template.Spec.Containers)).Should(Equal(2))
+
+		//Check svc created
+		svcKey := types.NamespacedName{
+			Name:      machinelearningv1.GetContainerServiceName("dep", instance.Spec.Predictors[0], &instance.Spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0]),
+			Namespace: namespaceName,
+		}
+		svcFetched := &v1.Service{}
+		Eventually(func() error {
+			err := k8sClient.Get(context.Background(), svcKey, svcFetched)
+			return err
+		}, timeout, interval).Should(BeNil())
+
+		// Check events created
+		serviceCreatedEvents := 0
+		deploymentsCreatedEvents := 0
+		evts, err := clientset.CoreV1().Events(namespaceName).Search(scheme, fetched)
+		Expect(err).To(BeNil())
+		for _, evt := range evts.Items {
+			if evt.Reason == constants.EventsCreateService {
+				serviceCreatedEvents = serviceCreatedEvents + 1
+			} else if evt.Reason == constants.EventsCreateDeployment {
+				deploymentsCreatedEvents = deploymentsCreatedEvents + 1
+			}
+		}
+
+		Expect(serviceCreatedEvents).To(Equal(2))
+		Expect(deploymentsCreatedEvents).To(Equal(1))
+
+		//
+		// update to second spec
+		//
+
+		Eventually(func() error {
+			fetched := &machinelearningv1.SeldonDeployment{}
+			k8sClient.Get(context.Background(), key, fetched)
+			fetched.Spec = instance2.Spec
+			err := k8sClient.Update(context.Background(), fetched)
+			return err
+		}, timeout, interval).Should(BeNil())
+
+		fetched2 := &machinelearningv1.SeldonDeployment{}
+		Eventually(func() error {
+			err := k8sClient.Get(context.Background(), key, fetched2)
+			return err
+		}, timeout, interval).Should(BeNil())
+		Expect(fetched2.Name).Should(Equal("dep"))
+
+		// Check deployment created
+		depKey2 := types.NamespacedName{
+			Name:      machinelearningv1.GetDeploymentName(instance2, instance2.Spec.Predictors[0], instance2.Spec.Predictors[0].ComponentSpecs[0], 0),
+			Namespace: namespaceName,
+		}
+		depFetched2 := &appsv1.Deployment{}
+		Eventually(func() error {
+			err := k8sClient.Get(context.Background(), depKey2, depFetched2)
+			return err
+		}, timeout, interval).Should(BeNil())
+		Expect(len(depFetched.Spec.Template.Spec.Containers)).Should(Equal(2))
+
+		// Check previous deployment is deleted
+		//depFetched = &appsv1.Deployment{}
+		//Eventually(func() error {
+		//	err := k8sClient.Get(context.Background(), depKey, depFetched)
+		//	return err
+		//}, timeout, interval).ShouldNot(BeNil())
+
+		Expect(k8sClient.Delete(context.Background(), instance)).Should(Succeed())
+
+	})
 
 })
+
+var _ = Describe("Create a Seldon Deployment with long name", func() {
+	const timeout = time.Second * 30
+	const interval = time.Second * 1
+	namespaceName := rand.String(10)
+	name := "seldon-model-1234567890-1234567890-1234567890-1234567890-1234567890"
+	By("Creating a resource")
+	It("should create a resource with defaults", func() {
+		Expect(k8sClient).NotTo(BeNil())
+		var modelType = machinelearningv1.MODEL
+		key := types.NamespacedName{
+			Name:      name,
+			Namespace: namespaceName,
+		}
+		instance := &machinelearningv1.SeldonDeployment{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      key.Name,
+				Namespace: key.Namespace,
+			},
+			Spec: machinelearningv1.SeldonDeploymentSpec{
+				Name: "mydep",
+				Predictors: []machinelearningv1.PredictorSpec{
+					{
+						Name: "p1",
+						ComponentSpecs: []*machinelearningv1.SeldonPodSpec{
+							{
+								Spec: v1.PodSpec{
+									Containers: []v1.Container{
+										{
+											Image: "seldonio/mock_classifier:1.0",
+											Name:  "classifier",
+										},
+									},
+								},
+							},
+						},
+						Graph: &machinelearningv1.PredictiveUnit{
+							Name: "classifier",
+							Type: &modelType,
+						},
+					},
+				},
+			},
+		}
+
+		//Create namespace
+		namespace := &v1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: namespaceName,
+			},
+		}
+		Expect(k8sClient.Create(context.Background(), namespace)).Should(Succeed())
+
+		// Run Defaulter
+		instance.Default()
+
+		Expect(k8sClient.Create(context.Background(), instance)).Should(Succeed())
+		//time.Sleep(time.Second * 5)
+
+		fetched := &machinelearningv1.SeldonDeployment{}
+		Eventually(func() error {
+			err := k8sClient.Get(context.Background(), key, fetched)
+			return err
+		}, timeout, interval).Should(BeNil())
+		Expect(fetched.Name).Should(Equal(name))
+
+		// Check deployment created
+		depKey := types.NamespacedName{
+			Name:      machinelearningv1.GetDeploymentName(instance, instance.Spec.Predictors[0], instance.Spec.Predictors[0].ComponentSpecs[0], 0),
+			Namespace: namespaceName,
+		}
+		depFetched := &appsv1.Deployment{}
+		Eventually(func() error {
+			err := k8sClient.Get(context.Background(), depKey, depFetched)
+			return err
+		}, timeout, interval).Should(BeNil())
+		Expect(len(depFetched.Spec.Template.Spec.Containers)).Should(Equal(2))
+
+		//Check svc created
+		svcKey := types.NamespacedName{
+			Name:      machinelearningv1.GetContainerServiceName(name, instance.Spec.Predictors[0], &instance.Spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0]),
+			Namespace: namespaceName,
+		}
+		svcFetched := &v1.Service{}
+		Eventually(func() error {
+			err := k8sClient.Get(context.Background(), svcKey, svcFetched)
+			return err
+		}, timeout, interval).Should(BeNil())
+
+		Expect(svcFetched.Labels[machinelearningv1.Label_seldon_id]).To(Equal(machinelearningv1.GetSeldonDeploymentName(instance)))
+
+		// Check events created
+		serviceCreatedEvents := 0
+		deploymentsCreatedEvents := 0
+		evts, err := clientset.CoreV1().Events(namespaceName).Search(scheme, fetched)
+		Expect(err).To(BeNil())
+		for _, evt := range evts.Items {
+			if evt.Reason == constants.EventsCreateService {
+				serviceCreatedEvents = serviceCreatedEvents + 1
+			} else if evt.Reason == constants.EventsCreateDeployment {
+				deploymentsCreatedEvents = deploymentsCreatedEvents + 1
+			}
+		}
+
+		Expect(serviceCreatedEvents).To(Equal(2))
+		Expect(deploymentsCreatedEvents).To(Equal(1))
+
+		Expect(k8sClient.Delete(context.Background(), instance)).Should(Succeed())
+
+	})
+
+})
+
+// --- Non Ginkgo Tests
+
+func TestCreateDeploymentWithLabelsAndAnnotations(t *testing.T) {
+	g := NewGomegaWithT(t)
+	depName := "dep"
+	labelKey1 := "key1"
+	labelValue1 := "value1"
+	labelKey2 := "key2"
+	labelValue2 := "value2"
+	annotationKey1 := "key1"
+	annotationValue1 := "value1"
+	annotationKey2 := "key2"
+	annotationValue2 := "value2"
+	annotationKey3 := "key3"
+	annotationValue3 := "value3"
+	modelType := machinelearningv1.MODEL
+	instance := &machinelearningv1.SeldonDeployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      depName,
+			Namespace: "default",
+		},
+		Spec: machinelearningv1.SeldonDeploymentSpec{
+			Name:        "mydep",
+			Annotations: map[string]string{annotationKey1: annotationValue1},
+			Predictors: []machinelearningv1.PredictorSpec{
+				{
+					Name:        "p1",
+					Labels:      map[string]string{labelKey1: labelValue1},
+					Annotations: map[string]string{annotationKey2: annotationValue2},
+					ComponentSpecs: []*machinelearningv1.SeldonPodSpec{
+						{
+							Metadata: metav1.ObjectMeta{
+								Labels:      map[string]string{labelKey2: labelValue2},
+								Annotations: map[string]string{annotationKey3: annotationValue3},
+							},
+							Spec: v1.PodSpec{
+								Containers: []v1.Container{
+									{
+										Image: "seldonio/mock_classifier:1.0",
+										Name:  "classifier",
+									},
+								},
+							},
+						},
+					},
+					Graph: &machinelearningv1.PredictiveUnit{
+						Name: "classifier",
+						Type: &modelType,
+					},
+				},
+			},
+		},
+	}
+
+	dep := createDeploymentWithoutEngine(depName, "a", instance.Spec.Predictors[0].ComponentSpecs[0], &instance.Spec.Predictors[0], instance)
+	g.Expect(dep.Labels[labelKey1]).To(Equal(labelValue1))
+	g.Expect(dep.Labels[labelKey2]).To(Equal(labelValue2))
+	g.Expect(dep.Spec.Template.ObjectMeta.Labels[labelKey1]).To(Equal(labelValue1))
+	g.Expect(dep.Spec.Template.ObjectMeta.Labels[labelKey2]).To(Equal(labelValue2))
+	g.Expect(dep.Annotations[annotationKey1]).To(Equal(annotationValue1))
+	g.Expect(dep.Annotations[annotationKey2]).To(Equal(annotationValue2))
+	g.Expect(dep.Annotations[annotationKey3]).To(Equal(annotationValue3))
+}
+
+func TestCreateDeploymentWithNoLabelsAndAnnotations(t *testing.T) {
+	depName := "dep"
+	modelType := machinelearningv1.MODEL
+	instance := &machinelearningv1.SeldonDeployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      depName,
+			Namespace: "default",
+		},
+		Spec: machinelearningv1.SeldonDeploymentSpec{
+			Name: "mydep",
+			Predictors: []machinelearningv1.PredictorSpec{
+				{
+					Name: "p1",
+					ComponentSpecs: []*machinelearningv1.SeldonPodSpec{
+						{
+							Metadata: metav1.ObjectMeta{},
+							Spec: v1.PodSpec{
+								Containers: []v1.Container{
+									{
+										Image: "seldonio/mock_classifier:1.0",
+										Name:  "classifier",
+									},
+								},
+							},
+						},
+					},
+					Graph: &machinelearningv1.PredictiveUnit{
+						Name: "classifier",
+						Type: &modelType,
+					},
+				},
+			},
+		},
+	}
+
+	_ = createDeploymentWithoutEngine(depName, "a", instance.Spec.Predictors[0].ComponentSpecs[0], &instance.Spec.Predictors[0], instance)
+}

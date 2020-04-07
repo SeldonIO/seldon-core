@@ -18,7 +18,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/api/util"
 	"github.com/seldonio/seldon-core/executor/k8s"
-	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"io"
 	"io/ioutil"
 	"net"
@@ -189,7 +189,7 @@ func (smc *JSONRestClient) doHttp(ctx context.Context, modelName string, method 
 
 	if response.StatusCode != http.StatusOK {
 		smc.Log.Info("httpPost failed", "response code", response.StatusCode)
-		err = errors.Errorf("Internal service call from executor failed calling %s status code %d", url, response.StatusCode)
+		err = &httpStatusError{StatusCode: response.StatusCode, Url: url}
 	}
 
 	return b, contentType, err

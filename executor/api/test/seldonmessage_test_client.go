@@ -2,20 +2,18 @@ package test
 
 import (
 	"context"
-	"github.com/seldonio/seldon-core/executor/api/client"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/payload"
-	"github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"io"
 	"net/http"
-	"testing"
 )
 
 type SeldonMessageTestClient struct {
-	t           *testing.T
-	chosenRoute int
-	errMethod   *v1.PredictiveUnitMethod
-	err         error
+	ChosenRoute int
+	ErrMethod   *v1.PredictiveUnitMethod
+	Err         error
+	ErrPayload  payload.SeldonPayload
 }
 
 const (
@@ -52,51 +50,35 @@ func (s SeldonMessageTestClient) CreateErrorPayload(err error) payload.SeldonPay
 }
 
 func (s SeldonMessageTestClient) Predict(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
-	s.t.Logf("Predict %s %d", host, port)
-	if s.errMethod != nil && *s.errMethod == v1.TRANSFORM_INPUT {
-		return nil, s.err
+	if s.ErrMethod != nil && *s.ErrMethod == v1.TRANSFORM_INPUT {
+		return s.ErrPayload, s.Err
 	}
 	return msg, nil
 }
 
 func (s SeldonMessageTestClient) TransformInput(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
-	s.t.Logf("TransformInput %s %d", host, port)
-	if s.errMethod != nil && *s.errMethod == v1.TRANSFORM_INPUT {
-		return nil, s.err
+	if s.ErrMethod != nil && *s.ErrMethod == v1.TRANSFORM_INPUT {
+		return s.ErrPayload, s.Err
 	}
 	return msg, nil
 }
 
 func (s SeldonMessageTestClient) Route(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (int, error) {
-	s.t.Logf("Route %s %d", host, port)
-	return s.chosenRoute, nil
+	return s.ChosenRoute, nil
 }
 
 func (s SeldonMessageTestClient) Combine(ctx context.Context, modelName string, host string, port int32, msgs []payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
-	s.t.Logf("Combine %s %d", host, port)
 	return msgs[0], nil
 }
 
 func (s SeldonMessageTestClient) TransformOutput(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
-	s.t.Logf("TransformOutput %s %d", host, port)
 	return msg, nil
 }
 
 func (s SeldonMessageTestClient) Feedback(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
-	s.t.Logf("Feedback %s %d", host, port)
-	if s.errMethod != nil && *s.errMethod == v1.SEND_FEEDBACK {
-		return nil, s.err
+	if s.ErrMethod != nil && *s.ErrMethod == v1.SEND_FEEDBACK {
+		return nil, s.Err
 	}
 	resp := &payload.ProtoPayload{Msg: msg.GetPayload().(*proto.Feedback).Request}
 	return resp, nil
-}
-
-func NewSeldonMessageTestClient(t *testing.T, chosenRoute int, errMethod *v1.PredictiveUnitMethod, err error) client.SeldonApiClient {
-	client := SeldonMessageTestClient{
-		t:           t,
-		chosenRoute: chosenRoute,
-		errMethod:   errMethod,
-		err:         err,
-	}
-	return &client
 }

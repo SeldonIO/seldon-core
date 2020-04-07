@@ -1,0 +1,15 @@
+
+apiVersion: eventing.knative.dev/v1beta1
+kind: Trigger
+metadata:
+  name: seldon-eventing-sklearn-trigger
+spec:
+  broker: default
+  filter:
+    attributes:
+      type: seldon.iris-deployment.default.request
+  subscriber:
+    ref: 
+      apiVersion: machinelearning.seldon.io/v1
+      kind: SeldonDeployment
+      name: iris-deployment

@@ -1,13 +1,11 @@
-apiVersion: machinelearning.seldon.io/v1alpha2
+apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
   name: movie
 spec:
   name: movie
   annotations:
-    seldon.io/grpc-max-message-size: "10000000"
     seldon.io/rest-timeout: "100000"
-    seldon.io/grpc-timeout: "100000"
   predictors:
   - graph:
       children: []

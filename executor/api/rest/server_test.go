@@ -8,7 +8,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/metric"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/api/test"
-	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -55,7 +55,7 @@ func TestSimpleModel(t *testing.T) {
 	}
 
 	url, _ := url.Parse("http://localhost")
-	r := NewServerRestApi(&p, test.NewSeldonMessageTestClient(t, 0, nil, nil), false, url, "default", api.ProtocolSeldon, "test", "/metrics")
+	r := NewServerRestApi(&p, &test.SeldonMessageTestClient{}, false, url, "default", api.ProtocolSeldon, "test", "/metrics")
 	r.Initialise()
 	var data = ` {"data":{"ndarray":[1.1,2.0]}}`
 
@@ -66,7 +66,83 @@ func TestSimpleModel(t *testing.T) {
 	g.Expect(res.Code).To(Equal(200))
 }
 
-func TestReponsePuuidIsSet(t *testing.T) {
+func TestCloudeventHeaderIsSet(t *testing.T) {
+	t.Logf("Started")
+	g := NewGomegaWithT(t)
+	testDepName := "test-deployment"
+	testPath := "/api/v0.1/predictions"
+	testNamespace := "test-namespace"
+
+	model := v1.MODEL
+	p := v1.PredictorSpec{
+		Name: "p",
+		Graph: &v1.PredictiveUnit{
+			Type: &model,
+			Endpoint: &v1.Endpoint{
+				ServiceHost: "foo",
+				ServicePort: 9000,
+				Type:        v1.REST,
+			},
+		},
+	}
+
+	url, _ := url.Parse("http://localhost")
+	r := NewServerRestApi(&p, &test.SeldonMessageTestClient{}, false, url, testNamespace, api.ProtocolSeldon, testDepName, "/metrics")
+	r.Initialise()
+	var data = ` {"data":{"ndarray":[1.1,2.0]}}`
+
+	req, _ := http.NewRequest("POST", testPath, strings.NewReader(data))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Ce-Specversion", CLOUDEVENTS_HEADER_SPECVERSION_DEFAULT)
+	res := httptest.NewRecorder()
+	r.Router.ServeHTTP(res, req)
+	g.Expect(res.Code).To(Equal(200))
+	g.Expect(len(res.Header().Get(CLOUDEVENTS_HEADER_ID_NAME))).ShouldNot(BeZero())
+	g.Expect(len(res.Header().Get(CLOUDEVENTS_HEADER_ID_NAME))).To(Equal(len(guuid.New().String())))
+	g.Expect(res.Header().Get(CLOUDEVENTS_HEADER_SPECVERSION_NAME)).To(Equal(CLOUDEVENTS_HEADER_SPECVERSION_DEFAULT))
+	g.Expect(res.Header().Get(CLOUDEVENTS_HEADER_PATH_NAME)).To(Equal(testPath))
+	g.Expect(res.Header().Get(CLOUDEVENTS_HEADER_TYPE_NAME)).To(Equal("seldon." + testDepName + "." + testNamespace + ".response"))
+	g.Expect(res.Header().Get(CLOUDEVENTS_HEADER_SOURCE_NAME)).To(Equal("seldon." + testDepName))
+}
+
+func TestCloudeventHeaderIsNotSet(t *testing.T) {
+	t.Logf("Started")
+	g := NewGomegaWithT(t)
+	testDepName := "test-deployment"
+	testPath := "/api/v0.1/predictions"
+	testNamespace := "test-namespace"
+
+	model := v1.MODEL
+	p := v1.PredictorSpec{
+		Name: "p",
+		Graph: &v1.PredictiveUnit{
+			Type: &model,
+			Endpoint: &v1.Endpoint{
+				ServiceHost: "foo",
+				ServicePort: 9000,
+				Type:        v1.REST,
+			},
+		},
+	}
+
+	url, _ := url.Parse("http://localhost")
+	r := NewServerRestApi(&p, &test.SeldonMessageTestClient{}, false, url, testNamespace, api.ProtocolSeldon, testDepName, "/metrics")
+	r.Initialise()
+	var data = ` {"data":{"ndarray":[1.1,2.0]}}`
+
+	req, _ := http.NewRequest("POST", testPath, strings.NewReader(data))
+	req.Header.Set("Content-Type", "application/json")
+	res := httptest.NewRecorder()
+	r.Router.ServeHTTP(res, req)
+	g.Expect(res.Code).To(Equal(200))
+	g.Expect(len(res.Header().Get(CLOUDEVENTS_HEADER_ID_NAME))).Should(BeZero())
+	g.Expect(len(res.Header().Get(CLOUDEVENTS_HEADER_SPECVERSION_NAME))).Should(BeZero())
+	g.Expect(len(res.Header().Get(CLOUDEVENTS_HEADER_PATH_NAME))).Should(BeZero())
+	g.Expect(len(res.Header().Get(CLOUDEVENTS_HEADER_TYPE_NAME))).Should(BeZero())
+	g.Expect(len(res.Header().Get(CLOUDEVENTS_HEADER_SOURCE_NAME))).Should(BeZero())
+}
+
+func TestReponsePuuidHeaderIsSet(t *testing.T) {
 	t.Logf("Started")
 	g := NewGomegaWithT(t)
 
@@ -84,7 +160,7 @@ func TestReponsePuuidIsSet(t *testing.T) {
 	}
 
 	url, _ := url.Parse("http://localhost")
-	r := NewServerRestApi(&p, test.NewSeldonMessageTestClient(t, 0, nil, nil), false, url, "default", api.ProtocolSeldon, "test", "/metrics")
+	r := NewServerRestApi(&p, &test.SeldonMessageTestClient{}, false, url, "default", api.ProtocolSeldon, "test", "/metrics")
 	r.Initialise()
 	var data = ` {"data":{"ndarray":[1.1,2.0]}}`
 
@@ -98,7 +174,7 @@ func TestReponsePuuidIsSet(t *testing.T) {
 	g.Expect(len(res.Header().Get(payload.SeldonPUIDHeader))).To(Equal(len(guuid.New().String())))
 }
 
-func TestRequestPuuidIsSet(t *testing.T) {
+func TestRequestPuuidHeaderIsSet(t *testing.T) {
 	t.Logf("Started")
 	g := NewGomegaWithT(t)
 	called := false
@@ -211,7 +287,7 @@ func TestServerMetrics(t *testing.T) {
 	}
 
 	url, _ := url.Parse("http://localhost")
-	r := NewServerRestApi(&p, test.NewSeldonMessageTestClient(t, 0, nil, nil), false, url, "default", api.ProtocolSeldon, "test", "/metrics")
+	r := NewServerRestApi(&p, &test.SeldonMessageTestClient{}, false, url, "default", api.ProtocolSeldon, "test", "/metrics")
 	r.Initialise()
 
 	var data = ` {"data":{"ndarray":[1.1,2.0]}}`
@@ -252,7 +328,7 @@ func TestTensorflowStatus(t *testing.T) {
 	}
 
 	url, _ := url.Parse("http://localhost")
-	r := NewServerRestApi(&p, test.NewSeldonMessageTestClient(t, 0, nil, nil), false, url, "default", api.ProtocolTensorflow, "test", "/metrics")
+	r := NewServerRestApi(&p, &test.SeldonMessageTestClient{}, false, url, "default", api.ProtocolTensorflow, "test", "/metrics")
 	r.Initialise()
 
 	req, _ := http.NewRequest("GET", "/v1/models/mymodel", nil)
@@ -281,7 +357,7 @@ func TestSeldonStatus(t *testing.T) {
 	}
 
 	url, _ := url.Parse("http://localhost")
-	r := NewServerRestApi(&p, test.NewSeldonMessageTestClient(t, 0, nil, nil), false, url, "default", api.ProtocolSeldon, "test", "/metrics")
+	r := NewServerRestApi(&p, &test.SeldonMessageTestClient{}, false, url, "default", api.ProtocolSeldon, "test", "/metrics")
 	r.Initialise()
 
 	req, _ := http.NewRequest("GET", "/api/v1.0/status/mymodel", nil)
@@ -310,7 +386,7 @@ func TestSeldonMetadata(t *testing.T) {
 	}
 
 	url, _ := url.Parse("http://localhost")
-	r := NewServerRestApi(&p, test.NewSeldonMessageTestClient(t, 0, nil, nil), false, url, "default", api.ProtocolSeldon, "test", "/metrics")
+	r := NewServerRestApi(&p, &test.SeldonMessageTestClient{}, false, url, "default", api.ProtocolSeldon, "test", "/metrics")
 	r.Initialise()
 
 	req, _ := http.NewRequest("GET", "/api/v1.0/metadata/mymodel", nil)
@@ -339,7 +415,7 @@ func TestTensorflowMetadata(t *testing.T) {
 	}
 
 	url, _ := url.Parse("http://localhost")
-	r := NewServerRestApi(&p, test.NewSeldonMessageTestClient(t, 0, nil, nil), false, url, "default", api.ProtocolTensorflow, "test", "/metrics")
+	r := NewServerRestApi(&p, &test.SeldonMessageTestClient{}, false, url, "default", api.ProtocolTensorflow, "test", "/metrics")
 	r.Initialise()
 
 	req, _ := http.NewRequest("GET", "/v1/models/mymodel/metadata", nil)
@@ -353,13 +429,14 @@ func TestPredictErrorWithServer(t *testing.T) {
 	t.Logf("Started")
 	g := NewGomegaWithT(t)
 	called := false
+	errorCode := http.StatusConflict
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_, err := ioutil.ReadAll(r.Body)
 		g.Expect(err).To(BeNil())
 		g.Expect(r.Header.Get(payload.SeldonPUIDHeader)).To(Equal(TestSeldonPuid))
 		called = true
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(errorCode)
 		w.Write([]byte(errorPredictResponse))
 	})
 	server := httptest.NewServer(handler)
@@ -392,7 +469,8 @@ func TestPredictErrorWithServer(t *testing.T) {
 	req.Header = map[string][]string{"Content-Type": []string{"application/json"}, payload.SeldonPUIDHeader: []string{TestSeldonPuid}}
 	res := httptest.NewRecorder()
 	r.Router.ServeHTTP(res, req)
-	g.Expect(res.Code).To(Equal(http.StatusInternalServerError))
+	// check error code is the one returned by client
+	g.Expect(res.Code).To(Equal(errorCode))
 	g.Expect(called).To(Equal(true))
 	b, err := ioutil.ReadAll(res.Body)
 	g.Expect(err).Should(BeNil())

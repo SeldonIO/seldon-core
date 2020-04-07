@@ -35,10 +35,12 @@ const (
 const (
 	EventsCreateVirtualService  = "CreateVirtualService"
 	EventsUpdateVirtualService  = "UpdateVirtualService"
+	EventsDeleteVirtualService  = "DeleteVirtualService"
 	EventsCreateDestinationRule = "CreateDestinationRule"
 	EventsUpdateDestinationRule = "UpdateDestinationRule"
 	EventsCreateService         = "CreateService"
 	EventsUpdateService         = "UpdateService"
+	EventsDeleteService         = "DeleteService"
 	EventsCreateHPA             = "CreateHPA"
 	EventsUpdateHPA             = "UpdateHPA"
 	EventsDeleteHPA             = "DeleteHPA"
@@ -48,4 +50,10 @@ const (
 	EventsInternalError         = "InternalError"
 	EventsUpdated               = "Updated"
 	EventsUpdateFailed          = "UpdateFailed"
+)
+
+// Explainers
+const (
+	ExplainerPathSuffix = "/explainer"
+	ExplainerNameSuffix = "-explainer"
 )

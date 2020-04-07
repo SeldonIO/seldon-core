@@ -58,7 +58,7 @@ test: fmt vet
 
 # Build the docker image
 docker-build: test
-	docker build . -t ${IMG}
+	docker build -f Dockerfile -t ${IMG} .
 
 # Build the docker image for Redhat
 docker-build-redhat: test

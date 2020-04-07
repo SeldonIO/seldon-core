@@ -23,6 +23,7 @@ def create_and_run_script(folder, notebook):
         logging.error(
             f"failed notebook test {notebook} stdout:{e.stdout}, stderr:{e.stderr}"
         )
+        run("kubectl delete sdep --all", shell=True, check=False)
         raise e
 
 
@@ -53,6 +54,9 @@ class TestNotebooks(object):
 
     def test_server_examples(self):
         create_and_run_script("../../notebooks", "server_examples")
+
+    def test_rolling_updates(self):
+        create_and_run_script("../../notebooks", "rolling_updates")
 
     #
     # Ambassador
@@ -97,12 +101,25 @@ class TestNotebooks(object):
             create_and_run_script(
                 "../../examples/models/custom_metrics", "customMetrics"
             )
-        except:
+        except CalledProcessError as e:
             run(
                 f"helm delete seldon-core-analytics --namespace seldon-system",
                 shell=True,
                 check=False,
             )
+            raise e
+
+    def test_autoscaling(self):
+        try:
+            create_and_run_script(
+                "../../examples/models/autoscaling", "autoscaling_example"
+            )
+        except CalledProcessError as e:
+            run(f"helm delete loadtester --namespace seldon", shell=True, check=False)
+            raise e
+
+    def test_scaling(self):
+        create_and_run_script("../../notebooks", "scale")
 
     #
     # Payloads
@@ -132,3 +149,13 @@ class TestNotebooks(object):
     #        "../../examples/models/openvino_imagenet_ensemble",
     #        "openvino_imagenet_ensemble",
     #    )
+
+    #
+    # Upgrade
+    #
+
+    def test_upgrade(self):
+        try:
+            create_and_run_script("../../notebooks", "operator_upgrade")
+        except:
+            run("make install_seldon", shell=True, check=False)
