@@ -224,7 +224,7 @@ func createExplainerIstioResources(pSvcName string, p *machinelearningv1.Predict
 				{
 					Match: []*istio_networking.HTTPMatchRequest{
 						{
-							Uri: &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Prefix{Prefix: "/seldon/" + namespace + "/" + mlDep.Name + constants.ExplainerPathSuffix + "/" + p.Name + "/"}},
+							Uri: &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Prefix{Prefix: "/seldon/" + namespace + "/" + mlDep.GetName() + constants.ExplainerPathSuffix + "/" + p.Name + "/"}},
 						},
 					},
 					Rewrite: &istio_networking.HTTPRewrite{Uri: "/"},
@@ -247,7 +247,7 @@ func createExplainerIstioResources(pSvcName string, p *machinelearningv1.Predict
 						{
 							Uri: &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Prefix{Prefix: "/seldon.protos.Seldon/"}},
 							Headers: map[string]*istio_networking.StringMatch{
-								"seldon":    &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Exact{Exact: mlDep.Name}},
+								"seldon":    &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Exact{Exact: mlDep.GetName()}},
 								"namespace": &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Exact{Exact: namespace}},
 							},
 						},
