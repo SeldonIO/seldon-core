@@ -24,8 +24,19 @@ The new service orchestrator comes with several advantages including ability to 
 
 For those wishing to use the deprecated Java engine service orchestrator see [the service orchestrator docs](../graph/svcorch.md) for details.
 
-### Upgrading process
+### Python Wrapper Tag Update
 
+The Python Wrapper was using naming convention in the format 0.1 ... 0.18. In this release we have renamed the version of the Python Wrapper tag to match the same convention as the Executor, Operator, etc. This means that the Python Wrapper tag for this release is 1.1, and the snapshot would be 1.1.1-SNAPSHOT
+
+### Dated SNAPSHOTS
+
+Whenever a new PR was merged to master, we have set up our CI to build a "SNAPSHOT" version, which would contain the Docker images for that specific development / master-branch code. 
+
+Previously, we always had the SNAPSHOT tag being overriden with the latest. This didn't allow us to know what version someone may be trying out when using master, so we wanted to introduce a way to actually get unique tags for every image that gets landed into master.
+
+Now every time that a PR is landed to master, a new "dated" SNAPSHOT version is created, which pushes images with the tag `"<next-version>-SNAPSHOT_$(date)"`. A new branch is also created with the name `"v<next-version>-SNAPSHOT_$(date)"`, which contains the respective helm charts, and allows for the specific version (as outlined by the version in `version.txt`) to be installed.
+
+You can follow the instructions in the installation page to install the snapshot version.
 
 ### Wrapper compatibility table
 
