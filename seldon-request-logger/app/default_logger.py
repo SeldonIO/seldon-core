@@ -7,7 +7,7 @@ import json
 import logging
 import log_helper
 
-MAX_PAYLOAD_BYTES = 100000
+MAX_PAYLOAD_BYTES = 300000
 app = Flask(__name__)
 
 

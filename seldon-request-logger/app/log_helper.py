@@ -50,6 +50,12 @@ def build_index_name(headers):
     else:
         index_name = index_name + "-" + inference_service_name
 
+    endpoint_name = clean_header(ENDPOINT_HEADER_NAME, headers)
+    if endpoint_name is None:
+        index_name = index_name + "-unknown-endpoint"
+    else:
+        index_name = index_name + "-" + endpoint_name
+
     return index_name
 
 

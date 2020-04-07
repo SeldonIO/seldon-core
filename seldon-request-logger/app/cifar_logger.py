@@ -1,4 +1,6 @@
 from flask import Flask, request
+from seldon_core.utils import json_to_seldon_message, extract_request_parts, array_to_grpc_datadef, seldon_message_to_json
+from seldon_core.proto import prediction_pb2
 import numpy as np
 import json
 import logging
@@ -7,7 +9,7 @@ import log_helper
 
 MAX_PAYLOAD_BYTES = 300000
 app = Flask(__name__)
-print('starting cifar logger')
+print('starting logger')
 sys.stdout.flush()
 
 log = logging.getLogger('werkzeug')
@@ -67,7 +69,7 @@ def process_and_update_elastic_doc(elastic_object, message_type, message_body, r
     #first do any needed transformations
     new_content_part = process_content(message_type, message_body)
 
-    #set metadata specific to this part (request or response)
+    #set metadata to go just in this part (request or response) and not top-level
     log_helper.field_from_header(content=new_content_part,header_name='ce-time',headers=headers)
     log_helper.field_from_header(content=new_content_part, header_name='ce-source', headers=headers)
 
@@ -79,7 +81,12 @@ def process_and_update_elastic_doc(elastic_object, message_type, message_body, r
 
     # req or res might be batches of instances so split out into individual docs
     if "instance" in new_content_part:
+
+        #we assume first dimension is always batch
+
         no_items_in_batch = len(new_content_part["instance"])
+        print('items in batch')
+        print(no_items_in_batch)
         index = 0
         for item in new_content_part["instance"]:
             item_body = doc_body.copy()
@@ -109,7 +116,7 @@ def process_and_update_elastic_doc(elastic_object, message_type, message_body, r
 def build_request_id_batched(request_id, no_items_in_batch, item_index):
     item_request_id = request_id
     if no_items_in_batch > 1:
-        item_request_id = item_request_id + "-item-" + item_index
+        item_request_id = item_request_id + "-item-" + str(item_index)
     return item_request_id
 
 def upsert_doc_to_elastic(elastic_object, message_type, upsert_body, request_id, index_name):
@@ -125,6 +132,8 @@ def upsert_doc_to_elastic(elastic_object, message_type, upsert_body, request_id,
 
 # take request or response part and process it by deriving metadata
 def process_content(message_type,content):
+    print('in process_content for '+message_type)
+    sys.stdout.flush()
 
     if content is None:
         print('content is empty')
@@ -158,20 +167,103 @@ def extract_data_part(content):
     copy = content.copy()
     copy['payload'] = content
 
-    if "instances" in copy:
-        copy["instance"] = copy["instances"]
-        del copy["instances"]
-    if "data" in copy:
-        if "tensor" in copy["data"]:
-            copy["instance"] = copy["data"]["tensor"]["values"]
-        if "ndarray" in copy["data"]:
-            copy["instance"] = copy["data"]["ndarray"]
-        del copy["data"]
-    if "predictions" in copy:
-        copy["instance"] = copy["predictions"]
-        del copy["predictions"]
+    # if 'instances' in body then tensorflow request protocol
+    # if 'predictions' then tensorflow response
+    # otherwise can use seldon logic for parsing and inferring type (won't be in here if outlier)
 
+    if "instances" in copy:
+        print('inspecting tensor')
+        sys.stdout.flush()
+
+        copy["instance"] = copy["instances"]
+        content_np = np.array(copy["instance"])
+
+        copy["dataType"] = "tabular"
+        first_element = content_np.item(0)
+        if first_element is not None and not isinstance(first_element, (int, float)):
+            copy["dataType"] = "text"
+        if len(content_np.shape) > 2:
+            copy["dataType"] = "tabular"
+        if len(content_np.shape) > 3:
+            copy["dataType"] = "image"
+        del copy["instances"]
+    elif "predictions" in copy:
+        copy["instance"] = copy["predictions"]
+        copy["dataType"] = "tabular"
+        del copy["predictions"]
+    else:
+        print('parsing as seldon')
+        sys.stdout.flush()
+
+        requestMsg = json_to_seldon_message(copy)
+        (req_features, _, req_datadef, req_datatype) = extract_request_parts(requestMsg)
+        elements = createElelmentsArray(req_features, list(req_datadef.names))
+        for i, e in enumerate(elements):
+            reqJson = extractRow(i, requestMsg, req_datatype, req_features, req_datadef)
+            reqJson["elements"] = e
+            copy = reqJson
+        copy["instance"] = dict(req_features)
+
+    if "data" in copy:
+        if "names" in copy["data"]:
+            copy["names"] = copy["data"]["names"]
+        del copy["data"]
+    if "strData" in copy:
+        del copy["strData"]
+    if "jsonData" in copy:
+        del copy["jsonData"]
+    if "binData" in copy:
+        del copy["binData"]
+
+    print('extracted content')
+    print(copy)
     return copy
+
+
+def extractRow(i:int,requestMsg: prediction_pb2.SeldonMessage,req_datatype: str,req_features: np.ndarray,req_datadef: "prediction_pb2.SeldonMessage.data"):
+    datatyReq = "ndarray"
+    dataType = "tabular"
+    if len(req_features.shape) == 2:
+        dataReq = array_to_grpc_datadef(datatyReq, np.expand_dims(req_features[i], axis=0), req_datadef.names)
+    else:
+        if len(req_features.shape) > 2:
+            dataType="image"
+        else:
+            dataType="text"
+            req_features= np.char.decode(req_features.astype('S'),"utf-8")
+        dataReq = array_to_grpc_datadef(datatyReq, np.expand_dims(req_features[i], axis=0), req_datadef.names)
+    if len(req_datadef.names) > 0:
+        dataType="tabular"
+    requestMsg2 = prediction_pb2.SeldonMessage(data=dataReq, meta=requestMsg.meta)
+    reqJson = {}
+    reqJson["payload"] = seldon_message_to_json(requestMsg2)
+    # setting dataType here temporarily so calling method will be able to access it
+    # don't want to set it at the payload level
+    reqJson["dataType"] = dataType
+    return reqJson
+
+
+def createElelmentsArray(X: np.ndarray,names: list):
+    results = None
+    if isinstance(X,np.ndarray):
+        if len(X.shape) == 1:
+            results = []
+            for i in range(X.shape[0]):
+                d = {}
+                for num, name in enumerate(names, start=0):
+                    if isinstance(X[i],bytes):
+                        d[name] = X[i].decode("utf-8")
+                    else:
+                        d[name] = X[i]
+                results.append(d)
+        elif len(X.shape) >= 2:
+            results = []
+            for i in range(X.shape[0]):
+                d = {}
+                for num, name in enumerate(names, start=0):
+                    d[name] = np.expand_dims(X[i,num], axis=0).tolist()
+                results.append(d)
+    return results
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8080)
