@@ -39,6 +39,23 @@ helm install seldon-core seldon-core-operator \
 
 Make sure you install it with the relevant ingress (ambassador.enabled, istio.enabled, etc) so you are able to send requests (instructions below).
 
+### Install a SNAPSHOT version 
+
+Whenever a new PR was merged to master, we have set up our CI to build a "SNAPSHOT" version, which would contain the Docker images for that specific development / master-branch code. Whilst the images are pushed under SNAPSHOT, they also create a new "dated" SNAPSHOT version entry, which pushes images with the tag `"<next-version>-SNAPSHOT_$(date)"`. A new branch is also created with the name `"v<next-version>-SNAPSHOT_$(date)"`, which contains the respective helm charts, and allows for the specific version (as outlined by the version in `version.txt`) to be installed.
+
+This means that you can try out a dev version of master if you want to try a specific feature before it's released. 
+
+For this you would be able to clone the repository, and then checkout the relevant SNAPSHOT branch.
+
+Once you have done that you can install seldon-core using the following command:
+
+```
+helm install helm-charts/seldon-core-operator seldon-core-operator
+```
+
+In this case `helm-charts/seldon-core-operator` is the folder within the repository that contains the charts.
+
+
 ### Install with cert-manager
 
 You can follow [the cert manager documentation to install it](../install/kubernetes.html).
