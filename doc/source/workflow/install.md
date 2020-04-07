@@ -41,7 +41,7 @@ Make sure you install it with the relevant ingress (ambassador.enabled, istio.en
 
 ### Install a SNAPSHOT version 
 
-Whenever a new PR was merged to master, we have set up our CI to build a "SNAPSHOT" version, which would contain the Docker images for that specific development / master-branch code. Whilst the images are pushed under SNAPSHOT, they also create a new "dated" SNAPSHOT version entry, which pushes images with the tag `"<next-version>-SNAPSHOT_$(date)"`. A new branch is also created with the name `"v<next-version>-SNAPSHOT_$(date)"`, which contains the respective helm charts, and allows for the specific version (as outlined by the version in `version.txt`) to be installed.
+Whenever a new PR was merged to master, we have set up our CI to build a "SNAPSHOT" version, which would contain the Docker images for that specific development / master-branch code. Whilst the images are pushed under SNAPSHOT, they also create a new "dated" SNAPSHOT version entry, which pushes images with the tag `"<next-version>-SNAPSHOT_<timestamp>"`. A new branch is also created with the name `"v<next-version>-SNAPSHOT_<timestamp>"`, which contains the respective helm charts, and allows for the specific version (as outlined by the version in `version.txt`) to be installed.
 
 This means that you can try out a dev version of master if you want to try a specific feature before it's released. 
 
