@@ -95,6 +95,7 @@ Documentation Index
    Payload Logging with ELK <analytics/logging.md>
    Distributed Tracing with Jaeger <graph/distributed-tracing.md>
    Replica scaling  <graph/scaling.md>
+   Custom Inference Servers <servers/custom.md>
       
 .. toctree::
    :maxdepth: 1
