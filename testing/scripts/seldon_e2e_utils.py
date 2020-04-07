@@ -20,11 +20,7 @@ API_ISTIO_GATEWAY = "localhost:8004"
 
 
 def get_s2i_python_version():
-    cmd = (
-        "cd ../../wrappers/s2i/python && "
-        "grep 'IMAGE_VERSION=' Makefile |"
-        "cut -d'=' -f2"
-    )
+    cmd = "cat ../../version.txt"
     ret = Popen(cmd, shell=True, stdout=subprocess.PIPE)
     output = ret.stdout.readline()
     version = output.decode("utf-8").rstrip()
