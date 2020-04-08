@@ -528,6 +528,7 @@ class SeldonClient(object):
         headers: Dict = None,
         http_path: str = None,
         client_return_type: str = None,
+        predictor: str = None,
     ) -> Dict:
         """
 
@@ -573,6 +574,8 @@ class SeldonClient(object):
            Custom http path for predict call to use
         client_return_type
             the return type of all functions can be either dict or proto
+        predictor
+            The name of the predictor to send the explanations to
 
         Returns
         -------
@@ -599,6 +602,7 @@ class SeldonClient(object):
             headers=headers,
             http_path=http_path,
             client_return_type=client_return_type,
+            predictor=predictor,
         )
         self._validate_args(**k)
         if k["gateway"] == "ambassador" or k["gateway"] == "istio":
@@ -1654,7 +1658,7 @@ def explain_predict_gateway(
     channel_credentials: SeldonChannelCredentials = None,
     http_path: str = None,
     client_return_type: str = "dict",
-    **kwargs,
+    predictor: str = None ** kwargs,
 ) -> SeldonClientPrediction:
     """
     REST explain request to Gateway Ingress
@@ -1733,6 +1737,8 @@ def explain_predict_gateway(
             + "/"
             + deployment_name
             + "-explainer"
+            + "/"
+            + predictor
             + http_path
         )
     else:
@@ -1744,7 +1750,10 @@ def explain_predict_gateway(
                     + gateway_endpoint
                     + "/seldon/"
                     + deployment_name
-                    + "-explainer/api/v1.0/explain"
+                    + "-explainer"
+                    + "/"
+                    + predictor
+                    + "/api/v1.0/explain"
                 )
             else:
                 url = (
@@ -1755,7 +1764,10 @@ def explain_predict_gateway(
                     + namespace
                     + "/"
                     + deployment_name
-                    + "-explainer/api/v1.0/explain"
+                    + "-explainer"
+                    + "/"
+                    + predictor
+                    + "/api/v1.0/explain"
                 )
         else:
             url = (
