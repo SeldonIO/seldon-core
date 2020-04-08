@@ -6,6 +6,7 @@ import json
 import logging
 import sys
 import log_helper
+from collections.abc import Iterable
 
 MAX_PAYLOAD_BYTES = 300000
 app = Flask(__name__)
@@ -82,25 +83,23 @@ def process_and_update_elastic_doc(elastic_object, message_type, message_body, r
     # req or res might be batches of instances so split out into individual docs
     if "instance" in new_content_part:
 
-        #we assume first dimension is always batch
+        if type(new_content_part["instance"]) == type([]):
+            #if we've a list then this is batch
+            #we assume first dimension is always batch
 
-        no_items_in_batch = len(new_content_part["instance"])
-        print('items in batch')
-        print(no_items_in_batch)
-        sys.stdout.flush()
-        index = 0
-        for item in new_content_part["instance"]:
-            print('on item')
-            print(index)
-            print(item)
-            sys.stdout.flush()
+            no_items_in_batch = len(new_content_part["instance"])
+            index = 0
+            for item in new_content_part["instance"]:
 
-            item_body = doc_body.copy()
+                item_body = doc_body.copy()
 
-            item_body[message_type]['instance'] = item
-            item_request_id = build_request_id_batched(request_id,no_items_in_batch,index)
-            upsert_doc_to_elastic(elastic_object,message_type,item_body,item_request_id,index_name)
-            index = index + 1
+                item_body[message_type]['instance'] = item
+                item_request_id = build_request_id_batched(request_id,no_items_in_batch,index)
+                upsert_doc_to_elastic(elastic_object,message_type,item_body,item_request_id,index_name)
+                index = index + 1
+        else:
+            item_request_id = build_request_id_batched(request_id, 1, 0)
+            upsert_doc_to_elastic(elastic_object, message_type, doc_body, item_request_id, index_name)
     elif "data" in new_content_part and message_type == 'outlier':
         no_items_in_batch = len(doc_body[message_type]["data"]["is_outlier"])
         index = 0
@@ -132,15 +131,12 @@ def upsert_doc_to_elastic(elastic_object, message_type, upsert_body, request_id,
     }
     new_content = elastic_object.update(index=index_name, doc_type=log_helper.DOC_TYPE_NAME, id=request_id,
                                         body=upsert_doc, retry_on_conflict=3, refresh=True, timeout="60s")
-    print(upsert_body)
     print('upserted to doc ' + index_name + "/" + log_helper.DOC_TYPE_NAME + "/" + request_id + ' adding ' + message_type)
     sys.stdout.flush()
     return str(new_content)
 
 # take request or response part and process it by deriving metadata
 def process_content(message_type,content):
-    print('in process_content for '+message_type)
-    sys.stdout.flush()
 
     if content is None:
         print('content is empty')
@@ -189,20 +185,27 @@ def extract_data_part(content):
         copy["dataType"] = "tabular"
         del copy["predictions"]
     else:
-        print('parsing as seldon')
-
         requestMsg = json_to_seldon_message(copy)
 
         (req_features, _, req_datadef, req_datatype) = extract_request_parts(requestMsg)
 
+        #set sensible defaults for non-tabular dataTypes
+        #tabular should be iterable and get inferred through later block
+        if req_datatype == "strData":
+            copy["dataType"] = "text"
+        if req_datatype == "binData":
+            copy["dataType"] = "image"
 
-        elements = createElelmentsArray(req_features, list(req_datadef.names))
+        if isinstance(req_features, Iterable):
 
+            elements = createElelmentsArray(req_features, list(req_datadef.names))
 
-        for i, e in enumerate(elements):
-            reqJson = extractRow(i, requestMsg, req_datatype, req_features, req_datadef)
-            reqJson["elements"] = e
-            copy = reqJson
+            if isinstance(elements, Iterable):
+
+                for i, e in enumerate(elements):
+                    reqJson = extractRow(i, requestMsg, req_datatype, req_features, req_datadef)
+                    reqJson["elements"] = e
+                    copy = reqJson
 
         copy["instance"] = json.loads(json.dumps(req_features, cls=log_helper.NumpyEncoder))
 
@@ -218,6 +221,8 @@ def extract_data_part(content):
         del copy["binData"]
 
     copy['payload'] = content
+
+    print(copy)
 
     return copy
 
