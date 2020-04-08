@@ -87,8 +87,14 @@ def process_and_update_elastic_doc(elastic_object, message_type, message_body, r
         no_items_in_batch = len(new_content_part["instance"])
         print('items in batch')
         print(no_items_in_batch)
+        sys.stdout.flush()
         index = 0
         for item in new_content_part["instance"]:
+            print('on item')
+            print(index)
+            print(item)
+            sys.stdout.flush()
+
             item_body = doc_body.copy()
 
             item_body[message_type]['instance'] = item
@@ -126,6 +132,7 @@ def upsert_doc_to_elastic(elastic_object, message_type, upsert_body, request_id,
     }
     new_content = elastic_object.update(index=index_name, doc_type=log_helper.DOC_TYPE_NAME, id=request_id,
                                         body=upsert_doc, retry_on_conflict=3, refresh=True, timeout="60s")
+    print(upsert_body)
     print('upserted to doc ' + index_name + "/" + log_helper.DOC_TYPE_NAME + "/" + request_id + ' adding ' + message_type)
     sys.stdout.flush()
     return str(new_content)
@@ -157,15 +164,12 @@ def process_content(message_type,content):
 
 def extract_data_part(content):
     copy = content.copy()
-    copy['payload'] = content
 
     # if 'instances' in body then tensorflow request protocol
     # if 'predictions' then tensorflow response
     # otherwise can use seldon logic for parsing and inferring type (won't be in here if outlier)
 
     if "instances" in copy:
-        print('inspecting tensor')
-        sys.stdout.flush()
 
         copy["instance"] = copy["instances"]
         content_np = np.array(copy["instance"])
@@ -174,8 +178,7 @@ def extract_data_part(content):
         first_element = content_np.item(0)
         if first_element is not None and not isinstance(first_element, (int, float)):
             copy["dataType"] = "text"
-        print(content_np.shape)
-        print(len(content_np.shape))
+
         if len(content_np.shape) > 2:
             copy["dataType"] = "tabular"
         if len(content_np.shape) > 3:
@@ -187,16 +190,21 @@ def extract_data_part(content):
         del copy["predictions"]
     else:
         print('parsing as seldon')
-        sys.stdout.flush()
 
         requestMsg = json_to_seldon_message(copy)
+
         (req_features, _, req_datadef, req_datatype) = extract_request_parts(requestMsg)
+
+
         elements = createElelmentsArray(req_features, list(req_datadef.names))
+
+
         for i, e in enumerate(elements):
             reqJson = extractRow(i, requestMsg, req_datatype, req_features, req_datadef)
             reqJson["elements"] = e
             copy = reqJson
-        copy["instance"] = dict(req_features)
+
+        copy["instance"] = json.loads(json.dumps(req_features, cls=log_helper.NumpyEncoder))
 
     if "data" in copy:
         if "names" in copy["data"]:
@@ -209,8 +217,8 @@ def extract_data_part(content):
     if "binData" in copy:
         del copy["binData"]
 
-    print('extracted content')
-    print(copy)
+    copy['payload'] = content
+
     return copy
 
 
