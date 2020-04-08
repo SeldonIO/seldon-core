@@ -8,10 +8,13 @@ from elasticsearch import Elasticsearch, RequestsHttpConnection
 TYPE_HEADER_NAME = "Ce-Type"
 REQUEST_ID_HEADER_NAME = "Ce-Requestid"
 CLOUD_EVENT_ID = "Ce-id"
+#in seldon case modelid is node in graph as graph can have multiple models
 MODELID_HEADER_NAME = 'Ce-Modelid'
 NAMESPACE_HEADER_NAME = 'Ce-Namespace'
+#endpoint distinguishes default, canary, shadow, A/B etc.
 ENDPOINT_HEADER_NAME = 'Ce-Endpoint'
 TIMESTAMP_HEADER_NAME = 'CE-Time'
+#inferenceservicename is k8s resource name for SeldonDeployment or InferenceService
 INFERENCESERVICE_HEADER_NAME = 'Ce-Inferenceservicename'
 LENGTH_HEADER_NAME = 'Content-Length'
 DOC_TYPE_NAME = 'inferencerequest'
@@ -25,7 +28,7 @@ def get_max_payload_bytes(default_value):
 def extract_request_id(headers):
     request_id = headers.get(REQUEST_ID_HEADER_NAME)
     if request_id is None:
-        # TODO: need to fix this upstream
+        # TODO: need to fix this upstream - https://github.com/kubeflow/kfserving/pull/699/files#diff-de6e9737c409666fc6c48dbcb50363faR18
         request_id = headers.get(CLOUD_EVENT_ID)
     return request_id
 
@@ -43,7 +46,7 @@ def build_index_name(headers):
     else:
         index_name = index_name + "-" + namespace
     inference_service_name = clean_header(INFERENCESERVICE_HEADER_NAME, headers)
-    #won't get inference service name for kfserving versions prior to https://github.com/kubeflow/kfserving/pull/699/
+    #won't get inference service name for older kfserving versions i.e. prior to https://github.com/kubeflow/kfserving/pull/699/
     if inference_service_name is None or not inference_service_name:
         inference_service_name = clean_header(MODELID_HEADER_NAME, headers)
 
