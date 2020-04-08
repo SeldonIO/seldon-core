@@ -36,7 +36,7 @@ Previously, we always had the SNAPSHOT tag being overriden with the latest. This
 
 Now every time that a PR is landed to master, a new "dated" SNAPSHOT version is created, which pushes images with the tag `"<next-version>-SNAPSHOT_<timestamp>"`. A new branch is also created with the name `"v<next-version>-SNAPSHOT_<timestamp>"`, which contains the respective helm charts, and allows for the specific version (as outlined by the version in `version.txt`) to be installed.
 
-You can follow the instructions in the installation page to install the snapshot version.
+You can follow the instructions in the [installation page](../workflow/install.md) to install the snapshot version.
 
 ### Wrapper compatibility table
 
