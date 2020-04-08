@@ -23,6 +23,8 @@ Batch requests are split and indexed as separate documents with `-item-N` append
 
 See comments in log_helper.py for details of headers.
 
+Large images are not recommended to be stored in elastic and instead a pointer should be stored. For this reason MAX_PAYLOAD_BYTES env var is available and defaults to only allow smaller images.
+
 # Local Testing
 First run elastic locally
 ```
