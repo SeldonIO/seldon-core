@@ -211,10 +211,15 @@ class SeldonClient(object):
         logger.debug("Configuration:" + str(self.config))
 
     def _gather_args(self, **kwargs):
-
-        c2 = {**self.config}
-        c2.update({k: v for k, v in kwargs.items() if v is not None})
-        return c2
+        """
+        Performs a left outer join where kwargs is left and self.config is right
+        which means that the resulting dictionary will only have the variables provided
+        by the parameters available in kwargs, but will be overriden by kwargs if a value
+        that is not None is present.
+        """
+        for k, v in kwargs.items():
+            kwargs[k] = v if kwargs[k] is not None else self.config.get(k, None)
+        return kwargs
 
     def _validate_args(
         self,
@@ -512,11 +517,7 @@ class SeldonClient(object):
         transport: str = None,
         deployment_name: str = None,
         payload_type: str = None,
-        seldon_rest_endpoint: str = None,
-        seldon_grpc_endpoint: str = None,
         gateway_endpoint: str = None,
-        microservice_endpoint: str = None,
-        method: str = None,
         shape: Tuple = (1, 1),
         namespace: str = None,
         data: np.ndarray = None,
@@ -586,11 +587,7 @@ class SeldonClient(object):
             transport=transport,
             deployment_name=deployment_name,
             payload_type=payload_type,
-            seldon_rest_endpoint=seldon_rest_endpoint,
-            seldon_grpc_endpoint=seldon_grpc_endpoint,
             gateway_endpoint=gateway_endpoint,
-            microservice_endpoint=microservice_endpoint,
-            method=method,
             shape=shape,
             namespace=namespace,
             names=names,
@@ -1276,7 +1273,7 @@ def get_token(
         token = response.json()["access_token"]
         return token
     else:
-        print("Failed to get token:" + response.text)
+        logger.debug("Failed to get token:" + response.text)
         raise SeldonClientException(response.text)
 
 
@@ -1645,6 +1642,8 @@ def explain_predict_gateway(
     deployment_name: str,
     namespace: str = None,
     gateway_endpoint: str = "localhost:8003",
+    gateway: str = None,
+    transport: str = "rest",
     shape: Tuple[int, int] = (1, 1),
     data: np.ndarray = None,
     headers: Dict = None,
@@ -1658,7 +1657,7 @@ def explain_predict_gateway(
     channel_credentials: SeldonChannelCredentials = None,
     http_path: str = None,
     client_return_type: str = "dict",
-    predictor: str = None ** kwargs,
+    predictor: str = None,
 ) -> SeldonClientPrediction:
     """
     REST explain request to Gateway Ingress
@@ -1671,6 +1670,10 @@ def explain_predict_gateway(
        k8s namespace of running deployment
     gateway_endpoint
        The host:port of gateway
+    gateway
+       The type of gateway which can be seldon or ambassador/istio
+    transport
+       The type of transport, in this case only rest is supported
     shape
        The shape of the data to send
     data
@@ -1703,6 +1706,9 @@ def explain_predict_gateway(
        A JSON Dict
 
     """
+    if transport != "rest":
+        raise SeldonClientException("Only supported transport is REST for explanations")
+
     if bin_data is not None:
         request = prediction_pb2.SeldonMessage(binData=bin_data)
     elif str_data is not None:
@@ -1741,7 +1747,14 @@ def explain_predict_gateway(
             + predictor
             + http_path
         )
+    elif gateway == "seldon":
+        url = scheme + "://" + gateway_endpoint + "/api/v1.0/explain"
     else:
+        if not predictor:
+            raise SeldonClientException(
+                "Predictor parameter must be provided to talk through explainer via gateway"
+            )
+
         if gateway_prefix is None:
             if namespace is None:
                 url = (
@@ -1790,7 +1803,6 @@ def explain_predict_gateway(
         url, json=payload, headers=req_headers, verify=verify, cert=cert
     )
     if response_raw.status_code == 200:
-        print(client_return_type)
         if client_return_type == "dict":
             ret_request = payload
             ret_response = response_raw.json()
