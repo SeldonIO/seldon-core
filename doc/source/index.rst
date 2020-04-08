@@ -94,7 +94,7 @@ Documentation Index
    Metrics with Prometheus <analytics/analytics.md>
    Payload Logging with ELK <analytics/logging.md>
    Distributed Tracing with Jaeger <graph/distributed-tracing.md>
-   Replica scaling  <graph/scaling.md>
+   Replica Scaling  <graph/scaling.md>
    Custom Inference Servers <servers/custom.md>
       
 .. toctree::

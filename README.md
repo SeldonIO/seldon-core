@@ -309,7 +309,8 @@ Below are some of the core components together with link to the logs that provid
 * [Metrics with Prometheus ](https://docs.seldon.io/projects/seldon-core/en/latest/analytics/analytics.html)
 * [Payload Logging with ELK ](https://docs.seldon.io/projects/seldon-core/en/latest/analytics/logging.html)
 * [Distributed Tracing with Jaeger ](https://docs.seldon.io/projects/seldon-core/en/latest/graph/distributed-tracing.html)
-* [Autoscaling in Kubernetes ](https://docs.seldon.io/projects/seldon-core/en/latest/graph/autoscaling.html)
+* [Replica Scaling ](https://docs.seldon.io/projects/seldon-core/en/latest/graph/scaling.html)
+* [Custom Inference Servers](https://docs.seldon.io/projects/seldon-core/en/latest/servers/custom.html)
       
 ### Advanced Inference
 
