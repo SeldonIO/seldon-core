@@ -92,7 +92,7 @@ class TestPrepack(object):
 
         run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
 
-    # Test prepackaged Tabular SKLearn Alibi Explainer
+    # Test prepackaged Text SKLearn Alibi Explainer
     def test_text_alibi_explainer(self, namespace):
         spec = "../resources/movies-text-explainer.yaml"
         retry_run(f"kubectl apply -f {spec} -n {namespace}")
