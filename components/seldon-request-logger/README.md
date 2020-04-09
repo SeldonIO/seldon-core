@@ -21,7 +21,7 @@ Different endpoints in different indexes also allows us to handle shadows. A sha
 
 Batch requests are split and indexed as separate documents with `-item-N` appended to the doc id.
 
-See comments in log_helper.py for details of headers.
+See comments in log_helper.py for details of headers. The unmodified payload is logged under `request.payload` and the particular record under `request.instance`.
 
 Large images are not recommended to be stored in elastic and instead a pointer should be stored. For this reason MAX_PAYLOAD_BYTES env var is available and defaults to only allow smaller images.
 
@@ -58,61 +58,101 @@ The log output from the request-logger will show the document id and index name,
 
 View the document at `localhost:9200/<index>/inferencerequest/<doc_id>`
 
-Example output is:
+Here is a truncated version of an example output for an image use-case with outlier:
 
 ```
 {
-    "_index": "inference-log-seldon-default-seldon-single-model",
+    "_index": "inference-log-inferenceservice-default-cifar10-default",
     "_type": "inferencerequest",
-    "_id": "a8ea9850-7102-42c7-80d0-a6c26f1d8159",
-    "_version": 4,
-    "_seq_no": 3,
+    "_id": "9i",
+    "_version": 3,
+    "_seq_no": 2,
     "_primary_term": 1,
     "found": true,
     "_source": {
-        "response": {
-            "payload": {
-                "meta": {},
-                "data": {
-                    "names": [
-                        "proba"
+        "request": {
+            "instance": [
+                [
+                    [
+                        0.23137255012989044,
+                        0.24313725531101227,
+                        0.24705882370471954
                     ],
-                    "ndarray": [
+                    [
+                        0.16862745583057404,
+                        0.18039216101169586,
+                        0.1764705926179886
+                    ],
+                    [
+                        0.19607843458652496,
+                        0.1882352977991104,
+                        0.16862745583057404
+                    ],
+                    [
+                        0.2666666805744171,
+                        0.21176470816135406,
+                        0.16470588743686676
+                    ],
+                    ...<TRUNCATED>...
+                ]
+            ],
+            "dataType": "image",
+            "payload": {
+                "instances": [
+                    [
                         [
-                            0.1951846770138402
+                            [
+                                0.23137255012989044,
+                                0.24313725531101227,
+                                0.24705882370471954
+                            ],
+                            [
+                                0.16862745583057404,
+                                0.18039216101169586,
+                                0.1764705926179886
+                            ],
+                            [
+                                0.19607843458652496,
+                                0.1882352977991104,
+                                0.16862745583057404
+                            ],
+                            [
+                                0.2666666805744171,
+                                0.21176470816135406,
+                                0.16470588743686676
+                            ],
+                            ...<TRUNCATED>...
                         ]
                     ]
-                }
-            },
-            "dataType": "tabular",
-            "elements": {
-                "proba": [
-                    0.1951846770138402
+                ]
+            }
+        },
+        "ServingEngine": "inferenceservice",
+        "Ce-Inferenceservicename": "cifar10",
+        "Ce-Endpoint": "default",
+        "Ce-Namespace": "default",
+        "@timestamp": "2020-04-09T08:15:20.923625+00:00",
+        "RequestId": "9i",
+        "response": {
+            "instance": 2,
+            "payload": {
+                "predictions": [
+                    2
                 ]
             },
-            "ce-time": "2020-01-31T11:01:23.607035762Z",
-            "ce-source": "http://localhost:8000/"
+            "dataType": "tabular"
         },
-        "ServingEngine": "Seldon",
-        "Predictor": "example",
-        "Namespace": "default",
-        "Model-Id": "classifier",
-        "request": {
-            "payload": {
-                "meta": {},
-                "data": {
-                    "ndarray": [
-                        [
-                            1.0,
-                            2.0
-                        ]
-                    ]
-                }
+        "outlier": {
+            "data": {
+                "feature_score": null,
+                "instance_score": null,
+                "is_outlier": 1
             },
-            "dataType": "tabular",
-            "elements": {},
-            "ce-time": "2020-01-31T11:01:23.593571905Z",
-            "ce-source": "http://localhost:8000/"
+            "meta": {
+                "name": "OutlierVAE",
+                "data_type": "image",
+                "detector_type": "offline"
+            }
         }
     }
 }
@@ -121,8 +161,8 @@ Example output is:
 
 # On-going work
 
-TODO: SOURCE IS ALWAYS http://localhost:8000/ WHEN COMING FROM EXECUTOR
 
 TODO: HANDLE GRPC
-TODO: THINK ABOUT SHADOW CASE - HOW TO ENSURE WE HAVE SOMETHING TO LINK DEFAULT AND SHADOW? MULTIPLE SHADOWS? https://github.com/SeldonIO/seldon-core/issues/1207
+TODO: ELEMENTS ARE CURRENTLY CREATED TO SPLIT FEATURES AND MAKE SEARCHABLE BY FEATURE VALUE. BUT ONLY FOR NON-BATCHED.
 TODO: FEEDBACK - IF SENT WITH CUSTOM ID HEADER COULD SUPPORT A/B TESTS WITH RECORDED RESULTS
+TODO: SOURCE IS ALWAYS http://localhost:8000/ WHEN COMING FROM EXECUTOR. PROB NOT LOGGER PROBLEM.
