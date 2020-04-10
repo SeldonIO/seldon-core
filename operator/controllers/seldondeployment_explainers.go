@@ -32,7 +32,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, c *components, pSvcName string, log logr.Logger) error {
+func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, c *components, pSvcName string, podSecurityContect *corev1.PodSecurityContext, log logr.Logger) error {
 
 	if !isEmptyExplainer(p.Explainer) {
 
@@ -148,7 +148,7 @@ func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1.Sel
 			Containers: []corev1.Container{explainerContainer},
 		}}
 
-		deploy := createDeploymentWithoutEngine(depName, seldonId, &seldonPodSpec, p, mlDep)
+		deploy := createDeploymentWithoutEngine(depName, seldonId, &seldonPodSpec, p, mlDep, podSecurityContect)
 
 		if p.Explainer.ModelUri != "" {
 			var err error

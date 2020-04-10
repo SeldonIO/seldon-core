@@ -348,7 +348,7 @@ func getEngineGrpcPort() (engine_grpc_port int, err error) {
 }
 
 // Create all the components (Deployments, Services etc)
-func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.SeldonDeployment, log logr.Logger) (*components, error) {
+func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.SeldonDeployment, securityContext *corev1.PodSecurityContext, log logr.Logger) (*components, error) {
 	c := components{}
 	c.serviceDetails = map[string]*machinelearningv1.ServiceStatus{}
 	seldonId := machinelearningv1.GetSeldonDeploymentName(mlDep)
@@ -399,6 +399,9 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 			if err != nil {
 				return nil, err
 			}
+			if securityContext != nil {
+				deploy.Spec.Template.Spec.SecurityContext = securityContext
+			}
 			c.deployments = append(c.deployments, deploy)
 		}
 
@@ -415,8 +418,7 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 			if i == 0 && j == 0 {
 				c.defaultDeploymentName = depName
 			}
-			deploy := createDeploymentWithoutEngine(depName, seldonId, cSpec, &p, mlDep)
-
+			deploy := createDeploymentWithoutEngine(depName, seldonId, cSpec, &p, mlDep, securityContext)
 			// Add HPA if needed
 			if cSpec.HpaSpec != nil {
 				c.hpas = append(c.hpas, createHpa(cSpec, depName, seldonId, namespace))
@@ -494,7 +496,7 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 			c.deployments = append(c.deployments, deploy)
 		}
 
-		err = createStandaloneModelServers(r, mlDep, &p, &c, p.Graph)
+		err = createStandaloneModelServers(r, mlDep, &p, &c, p.Graph, securityContext)
 		if err != nil {
 			return nil, err
 		}
@@ -571,7 +573,7 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 			externalPorts[i] = httpGrpcPorts{httpPort: httpPort, grpcPort: grpcPort}
 		}
 
-		err = createExplainer(r, mlDep, &p, &c, pSvcName, log)
+		err = createExplainer(r, mlDep, &p, &c, pSvcName, securityContext, log)
 		if err != nil {
 			return nil, err
 		}
@@ -771,7 +773,7 @@ func createContainerService(deploy *appsv1.Deployment,
 	return svc
 }
 
-func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpec *machinelearningv1.SeldonPodSpec, p *machinelearningv1.PredictorSpec, mlDep *machinelearningv1.SeldonDeployment) *appsv1.Deployment {
+func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpec *machinelearningv1.SeldonPodSpec, p *machinelearningv1.PredictorSpec, mlDep *machinelearningv1.SeldonDeployment, podSecurityContext *corev1.PodSecurityContext) *appsv1.Deployment {
 	deploy := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        depName,
@@ -827,6 +829,9 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 		}
 	}
 
+	// Add Pod Security Context
+	deploy.Spec.Template.Spec.SecurityContext = podSecurityContext
+
 	// add predictor labels
 	for k, v := range p.Labels {
 		deploy.ObjectMeta.Labels[k] = v
@@ -849,9 +854,6 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 	}
 	if deploy.Spec.Template.Spec.SchedulerName == "" {
 		deploy.Spec.Template.Spec.SchedulerName = "default-scheduler"
-	}
-	if deploy.Spec.Template.Spec.SecurityContext == nil {
-		deploy.Spec.Template.Spec.SecurityContext = &corev1.PodSecurityContext{}
 	}
 	var terminationGracePeriod int64 = 20
 	deploy.Spec.Template.Spec.TerminationGracePeriodSeconds = &terminationGracePeriod
@@ -1422,6 +1424,9 @@ func (r *SeldonDeploymentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		return ctrl.Result{}, nil
 	}
 
+	//Get Security Context
+	podSecurityContext, err := createSecurityContext(instance)
+
 	//rerun defaulting
 	before := instance.DeepCopy()
 	instance.Default()
@@ -1434,7 +1439,7 @@ func (r *SeldonDeploymentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		}
 	}
 
-	components, err := r.createComponents(instance, log)
+	components, err := r.createComponents(instance, podSecurityContext, log)
 	if err != nil {
 		r.Recorder.Eventf(instance, corev1.EventTypeWarning, constants.EventsInternalError, err.Error())
 		r.updateStatusForError(instance, err, log)

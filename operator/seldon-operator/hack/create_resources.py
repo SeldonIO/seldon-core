@@ -16,6 +16,8 @@ COMBINED_ROLES_BINDING_FILE="role_binding.yaml"
 OPERATOR_FILE="operator.yaml"
 SERVICEACCOUNT_FILE="service_account.yaml"
 
+WEBHOOK_PORT=8443
+
 if __name__ == "__main__":
     exp = args.input + "/*"
     files = glob.glob(exp)
@@ -37,6 +39,30 @@ if __name__ == "__main__":
             if kind == "deployment" and name == "seldon-controller-manager":
                 serviceAccountName = res["spec"]["template"]["spec"]["serviceAccountName"]
                 res["metadata"]["namespace"] = "default"
+
+                for portSpec in res["spec"]["template"]["spec"]["containers"][0][
+                    "ports"
+                ]:
+                    if portSpec["name"] == "webhook-server":
+                        portSpec["containerPort"] = WEBHOOK_PORT
+                for argIdx in range(
+                    0, len(res["spec"]["template"]["spec"]["containers"][0]["args"])
+                ):
+                    if (
+                        res["spec"]["template"]["spec"]["containers"][0]["args"][argIdx]
+                        == "--webhook-port=443"
+                    ):
+                        res["spec"]["template"]["spec"]["containers"][0]["args"][
+                            argIdx
+                        ] = "--webhook-port=" + str(WEBHOOK_PORT)
+
+                # Ensure functionality to generate uids respecting openshift is active
+                for env in res["spec"]["template"]["spec"]["containers"][0]["env"]:
+                    if env["name"] == "EXECUTOR_CONTAINER_USER":
+                        env["value"] = ""
+                    if env["name"] == "ENGINE_CONTAINER_USER":
+                        env["value"] = ""
+
                 print("Writing ",OPERATOR_FILE)
                 filename = args.output + "/" + OPERATOR_FILE
                 fdata = yaml.dump(res, width=1000)

@@ -68,7 +68,7 @@ def seldon_version(request):
         "seldonio/seldon-core-operator "
         "--namespace seldon-system "
         "--set istio.enabled=true "
-        "--set istio.gateway=seldon-gateway "
+        "--set istio.gateway=istio-system/seldon-gateway "
         "--set certManager.enabled=false "
         "--set executor.enabled=true "
         f"--version {seldon_version} "
@@ -84,7 +84,7 @@ def seldon_version(request):
         "../../helm-charts/seldon-core-operator "
         "--namespace seldon-system "
         "--set istio.enabled=true "
-        "--set istio.gateway=seldon-gateway "
+        "--set istio.gateway=istio-system/seldon-gateway "
         "--set certManager.enabled=false "
         "--set executor.enabled=true "
         "--wait",

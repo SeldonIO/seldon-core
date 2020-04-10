@@ -171,6 +171,7 @@ Follow quay bundle upload above.
 
 See [testing/openshift/README.md](testing/openshift/README.md).
 
+[Create an Openshift cluster on AWS](https://cloud.redhat.com/openshift/install/aws/installer-provisioned)
 
 ## Release Process onto RedHat channels
 

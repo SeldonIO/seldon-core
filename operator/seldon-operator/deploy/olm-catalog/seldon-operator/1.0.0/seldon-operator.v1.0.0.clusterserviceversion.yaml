@@ -110,6 +110,12 @@ spec:
       - description: State of the deployments created from the SeldonDeployment
         displayName: deploymentStatus
         path: deploymentStatus
+      - description: The number of default replicas for predictors who do not override the value
+        displayName: replicas
+        path: replicas
+      - description: The URL of the main default predictor service
+        displayName: address
+        path: address
       version: v1
   description: "The Seldon operator enables for native operation of production machine
     learning workloads, including monitoring and operations of language-agnostic models

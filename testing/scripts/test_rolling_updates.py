@@ -35,7 +35,7 @@ class TestRollingHttp(object):
     def test_rolling_update5(self, namespace, api_gateway):
         if api_gateway == API_ISTIO_GATEWAY:
             retry_run(
-                f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
+                f"kubectl create -f ../resources/seldon-gateway.yaml -n istio-system"
             )
         retry_run(f"kubectl apply -f ../resources/graph1.json -n {namespace}")
         wait_for_status("mymodel", namespace)
@@ -70,7 +70,7 @@ class TestRollingHttp(object):
     def test_rolling_update6(self, namespace, api_gateway):
         if api_gateway == API_ISTIO_GATEWAY:
             retry_run(
-                f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
+                f"kubectl create -f ../resources/seldon-gateway.yaml -n istio-system"
             )
         retry_run(f"kubectl apply -f ../resources/graph1svc.json -n {namespace}")
         wait_for_status("mymodel", namespace)
@@ -105,7 +105,7 @@ class TestRollingHttp(object):
     def test_rolling_update7(self, namespace, api_gateway):
         if api_gateway == API_ISTIO_GATEWAY:
             retry_run(
-                f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
+                f"kubectl create -f ../resources/seldon-gateway.yaml -n istio-system"
             )
         retry_run(f"kubectl apply -f ../resources/graph1svc.json -n {namespace}")
         wait_for_status("mymodel", namespace)
@@ -140,7 +140,7 @@ class TestRollingHttp(object):
     def test_rolling_update8(self, namespace, api_gateway):
         if api_gateway == API_ISTIO_GATEWAY:
             retry_run(
-                f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
+                f"kubectl create -f ../resources/seldon-gateway.yaml -n istio-system"
             )
         retry_run(f"kubectl apply -f ../resources/graph1svc.json -n {namespace}")
         wait_for_status("mymodel", namespace)
@@ -168,7 +168,7 @@ class TestRollingHttp(object):
     def test_rolling_update9(self, namespace, api_gateway):
         if api_gateway == API_ISTIO_GATEWAY:
             retry_run(
-                f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
+                f"kubectl create -f ../resources/seldon-gateway.yaml -n istio-system"
             )
         retry_run(f"kubectl apply -f ../resources/graph1svc.json -n {namespace}")
         wait_for_status("mymodel", namespace)
@@ -196,7 +196,7 @@ class TestRollingHttp(object):
     def test_rolling_update10(self, namespace, api_gateway):
         if api_gateway == API_ISTIO_GATEWAY:
             retry_run(
-                f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
+                f"kubectl create -f ../resources/seldon-gateway.yaml -n istio-system"
             )
         retry_run(f"kubectl apply -f ../resources/graph1svc.json -n {namespace}")
         wait_for_status("mymodel", namespace)
@@ -248,7 +248,7 @@ def test_rolling_deployment(
     namespace, api_gateway, from_deployment, to_deployment, change
 ):
     if api_gateway == API_ISTIO_GATEWAY:
-        retry_run(f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}")
+        retry_run(f"kubectl create -f ../resources/seldon-gateway.yaml -n istio-system")
 
     from_file_path = to_resources_path(from_deployment)
     retry_run(f"kubectl apply -f {from_file_path} -n {namespace}")

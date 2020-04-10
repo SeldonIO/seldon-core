@@ -35,6 +35,9 @@ const (
 	ENV_DEFAULT_EXECUTOR_SERVER_GRPC_PORT = "EXECUTOR_SERVER_GRPC_PORT"
 	ENV_EXECUTOR_PROMETHEUS_PATH          = "EXECUTOR_PROMETHEUS_PATH"
 	ENV_ENGINE_PROMETHEUS_PATH            = "ENGINE_PROMETHEUS_PATH"
+	ENV_EXECUTOR_USER                     = "EXECUTOR_CONTAINER_USER"
+	ENV_ENGINE_USER                       = "ENGINE_CONTAINER_USER"
+	ENV_USE_EXECUTOR                      = "USE_EXECUTOR"
 
 	DEFAULT_EXECUTOR_CONTAINER_PORT = 8000
 	DEFAULT_EXECUTOR_GRPC_PORT      = 5001
@@ -51,6 +54,9 @@ var (
 	envExecutorImageRelated = os.Getenv(ENV_EXECUTOR_IMAGE_RELATED)
 	envEngineImage          = os.Getenv(ENV_ENGINE_IMAGE)
 	envEngineImageRelated   = os.Getenv(ENV_ENGINE_IMAGE_RELATED)
+	envEngineUser           = os.Getenv(ENV_ENGINE_USER)
+	envExecutorUser         = os.Getenv(ENV_EXECUTOR_USER)
+	envUseExecutor          = os.Getenv(ENV_USE_EXECUTOR)
 )
 
 func addEngineToDeployment(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, engine_http_port int, engine_grpc_port int, pSvcName string, deploy *appsv1.Deployment) error {
@@ -140,8 +146,7 @@ func getExecutorGrpcPort() (engine_grpc_port int, err error) {
 
 func isExecutorEnabled(mlDep *machinelearningv1.SeldonDeployment) bool {
 	useExecutor := getAnnotation(mlDep, machinelearningv1.ANNOTATION_EXECUTOR, "false")
-	useExecutorEnv := GetEnv("USE_EXECUTOR", "false")
-	return useExecutor == "true" || useExecutorEnv == "true"
+	return useExecutor == "true" || envUseExecutor == "true"
 }
 
 func getPrometheusPath(mlDep *machinelearningv1.SeldonDeployment) string {
@@ -166,31 +171,6 @@ func getSvcOrchSvcAccountName(mlDep *machinelearningv1.SeldonDeployment) string 
 		}
 	}
 	return svcAccount
-}
-
-func getSvcOrchUser(mlDep *machinelearningv1.SeldonDeployment) (int64, error) {
-	var engineUser int64 = -1
-	if isExecutorEnabled(mlDep) {
-		if engineUserEnv, ok := os.LookupEnv("EXECUTOR_CONTAINER_USER"); ok {
-			user, err := strconv.Atoi(engineUserEnv)
-			if err != nil {
-				return -1, err
-			} else {
-				engineUser = int64(user)
-			}
-		}
-
-	} else {
-		if engineUserEnv, ok := os.LookupEnv("ENGINE_CONTAINER_USER"); ok {
-			user, err := strconv.Atoi(engineUserEnv)
-			if err != nil {
-				return -1, err
-			} else {
-				engineUser = int64(user)
-			}
-		}
-	}
-	return engineUser, nil
 }
 
 func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, predictorB64 string, http_port int, grpc_port int, resources *corev1.ResourceRequirements) (*corev1.Container, error) {
@@ -324,11 +304,6 @@ func createEngineContainerSpec(mlDep *machinelearningv1.SeldonDeployment, p *mac
 
 // Create the Container for the service orchestrator.
 func createEngineContainer(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, engine_http_port, engine_grpc_port int) (*corev1.Container, error) {
-	// Get engine user
-	engineUser, err := getSvcOrchUser(mlDep)
-	if err != nil {
-		return nil, err
-	}
 	// get predictor as base64 encoded json
 	pCopy := p.DeepCopy()
 	// Set traffic to zero to ensure this doesn't cause a diff in the resulting  deployment created
@@ -368,10 +343,6 @@ func createEngineContainer(mlDep *machinelearningv1.SeldonDeployment, p *machine
 		if err != nil {
 			return nil, err
 		}
-	}
-
-	if engineUser != -1 {
-		c.SecurityContext = &corev1.SecurityContext{RunAsUser: &engineUser}
 	}
 
 	// Environment vars if specified

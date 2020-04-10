@@ -10,8 +10,9 @@ require (
 	github.com/gogo/protobuf v1.3.1
 	github.com/google/go-cmp v0.3.1
 	github.com/gophercloud/gophercloud v0.4.0 // indirect
-	github.com/onsi/ginkgo v1.11.0
+	github.com/onsi/ginkgo v1.12.0
 	github.com/onsi/gomega v1.8.1
+	golang.org/x/sys v0.0.0-20200409092240-59c9f1ba88fa // indirect
 	gopkg.in/yaml.v2 v2.2.4
 	istio.io/api v0.0.0-20200305220354-742c3015842e
 	istio.io/client-go v0.0.0-20200305195406-fddfc7a9ca06

@@ -12,7 +12,7 @@ ambassador:
 # You must make sure you create the seldon-gateway as well
 istio:
   enabled: false
-  gateway: seldon-gateway
+  gateway: istio-system/seldon-gateway
   tlsMode: ""
 
 # ## Install with Cert Manager
@@ -24,6 +24,9 @@ certManager:
 # If you want to ensure seldon-core-controller can only have visibility
 #   to specifci namespaces you can set the controllerId
 controllerId: ""
+
+# Whether to create the webhook service, and webhookconfigurations on startup
+createResources: false
 
 # ## Service Orchestrator (Executor)
 # The executor is the default service orchestrator which has superceeded the "Java Engine"

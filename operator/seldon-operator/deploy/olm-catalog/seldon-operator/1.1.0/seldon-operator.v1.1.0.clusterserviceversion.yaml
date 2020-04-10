@@ -110,6 +110,13 @@ spec:
       - description: State of the deployments created from the SeldonDeployment
         displayName: deploymentStatus
         path: deploymentStatus
+      - description: The number of default replicas for predictors who do not override
+          the value
+        displayName: replicas
+        path: replicas
+      - description: The URL of the main default predictor service
+        displayName: address
+        path: address
       version: v1
   description: "The Seldon operator enables for native operation of production machine
     learning workloads, including monitoring and operations of language-agnostic models
@@ -185,6 +192,13 @@ spec:
           - get
           - patch
           - update
+        - apiGroups:
+          - ""
+          resources:
+          - events
+          verbs:
+          - create
+          - patch
         - apiGroups:
           - ""
           resources:
@@ -368,7 +382,7 @@ spec:
               containers:
               - args:
                 - --enable-leader-election
-                - --webhook-port=443
+                - --webhook-port=8443
                 - --create-resources=$(CREATE_RESOURCES)
                 command:
                 - /manager
@@ -397,7 +411,6 @@ spec:
                 - name: ENGINE_CONTAINER_SERVICE_ACCOUNT_NAME
                   value: default
                 - name: ENGINE_CONTAINER_USER
-                  value: "8888"
                 - name: ENGINE_LOG_MESSAGES_EXTERNALLY
                   value: "false"
                 - name: PREDICTIVE_UNIT_SERVICE_PORT
@@ -412,7 +425,7 @@ spec:
                 - name: ISTIO_ENABLED
                   value: "false"
                 - name: ISTIO_GATEWAY
-                  value: seldon-gateway
+                  value: istio-system/seldon-gateway
                 - name: ISTIO_TLS_MODE
                 - name: USE_EXECUTOR
                   value: "true"
@@ -427,15 +440,15 @@ spec:
                 - name: EXECUTOR_SERVER_PORT
                   value: "8000"
                 - name: EXECUTOR_CONTAINER_USER
-                  value: "8888"
                 - name: EXECUTOR_CONTAINER_SERVICE_ACCOUNT_NAME
                   value: default
                 - name: EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX
                   value: http://default-broker.
                 image: seldonio/seldon-core-operator:1.1.0-SNAPSHOT
+                imagePullPolicy: Always
                 name: manager
                 ports:
-                - containerPort: 443
+                - containerPort: 8443
                   name: webhook-server
                   protocol: TCP
                 resources:

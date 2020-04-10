@@ -50,17 +50,28 @@ func createTestSeldonDeployment() *machinelearningv1.SeldonDeployment {
 	}
 }
 
+func cleanEnvImages() {
+	envUseExecutor = ""
+	envExecutorImage = ""
+	envExecutorImageRelated = ""
+	envEngineImage = ""
+	envEngineImageRelated = ""
+}
+
 func TestExecutorCreateNoEnv(t *testing.T) {
 	g := NewGomegaWithT(t)
+	cleanEnvImages()
 	envExecutorImage = ""
 	envExecutorImageRelated = ""
 	mlDep := createTestSeldonDeployment()
 	_, err := createExecutorContainer(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
 	g.Expect(err).ToNot(BeNil())
+	cleanEnvImages()
 }
 
 func TestExecutorCreateEnv(t *testing.T) {
 	g := NewGomegaWithT(t)
+	cleanEnvImages()
 	imageName := "myimage"
 	envExecutorImage = imageName
 	envExecutorImageRelated = ""
@@ -68,10 +79,12 @@ func TestExecutorCreateEnv(t *testing.T) {
 	con, err := createExecutorContainer(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
 	g.Expect(err).To(BeNil())
 	g.Expect(con.Image).To(Equal(imageName))
+	cleanEnvImages()
 }
 
 func TestExecutorCreateEnvRelated(t *testing.T) {
 	g := NewGomegaWithT(t)
+	cleanEnvImages()
 	imageName := "myimage"
 	imageNameRelated := "myimage2"
 	envExecutorImage = imageName
@@ -80,19 +93,23 @@ func TestExecutorCreateEnvRelated(t *testing.T) {
 	con, err := createExecutorContainer(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
 	g.Expect(err).To(BeNil())
 	g.Expect(con.Image).To(Equal(imageNameRelated))
+	cleanEnvImages()
 }
 
 func TestEngineCreateNoEnv(t *testing.T) {
 	g := NewGomegaWithT(t)
+	cleanEnvImages()
 	envEngineImage = ""
 	envEngineImageRelated = ""
 	mlDep := createTestSeldonDeployment()
 	_, err := createEngineContainerSpec(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
 	g.Expect(err).ToNot(BeNil())
+	cleanEnvImages()
 }
 
 func TestEngineCreateEnv(t *testing.T) {
 	g := NewGomegaWithT(t)
+	cleanEnvImages()
 	imageName := "myimage"
 	envEngineImage = imageName
 	envEngineImageRelated = ""
@@ -100,10 +117,12 @@ func TestEngineCreateEnv(t *testing.T) {
 	con, err := createEngineContainerSpec(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
 	g.Expect(err).To(BeNil())
 	g.Expect(con.Image).To(Equal(imageName))
+	cleanEnvImages()
 }
 
 func TestEngineCreateEnvRelated(t *testing.T) {
 	g := NewGomegaWithT(t)
+	cleanEnvImages()
 	imageName := "myimage"
 	imageNameRelated := "myimage2"
 	envEngineImage = imageName
@@ -112,4 +131,5 @@ func TestEngineCreateEnvRelated(t *testing.T) {
 	con, err := createEngineContainerSpec(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
 	g.Expect(err).To(BeNil())
 	g.Expect(con.Image).To(Equal(imageNameRelated))
+	cleanEnvImages()
 }

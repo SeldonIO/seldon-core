@@ -32,7 +32,7 @@ spec:
       containers:
       - args:
         - --enable-leader-election
-        - --webhook-port=443
+        - --webhook-port=8443
         - --create-resources=$(CREATE_RESOURCES)
         command:
         - /manager
@@ -62,7 +62,7 @@ spec:
         - name: ENGINE_CONTAINER_SERVICE_ACCOUNT_NAME
           value: default
         - name: ENGINE_CONTAINER_USER
-          value: '8888'
+          value: ''
         - name: ENGINE_LOG_MESSAGES_EXTERNALLY
           value: 'false'
         - name: PREDICTIVE_UNIT_SERVICE_PORT
@@ -78,7 +78,7 @@ spec:
         - name: ISTIO_ENABLED
           value: 'false'
         - name: ISTIO_GATEWAY
-          value: seldon-gateway
+          value: istio-system/seldon-gateway
         - name: ISTIO_TLS_MODE
           value: ''
         - name: USE_EXECUTOR
@@ -94,7 +94,7 @@ spec:
         - name: EXECUTOR_SERVER_PORT
           value: '8000'
         - name: EXECUTOR_CONTAINER_USER
-          value: '8888'
+          value: ''
         - name: EXECUTOR_CONTAINER_SERVICE_ACCOUNT_NAME
           value: default
         - name: EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX
@@ -102,7 +102,7 @@ spec:
         image: seldonio/seldon-core-operator:1.1.0-SNAPSHOT
         name: manager
         ports:
-        - containerPort: 443
+        - containerPort: 8443
           name: webhook-server
           protocol: TCP
         resources:

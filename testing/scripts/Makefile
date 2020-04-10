@@ -58,7 +58,7 @@ install_seldon: install_cert_manager
 		../../helm-charts/seldon-core-operator \
 		--namespace seldon-system \
 		--set istio.enabled=true \
-		--set istio.gateway=seldon-gateway \
+		--set istio.gateway=istio-system/seldon-gateway \
 		--set certManager.enabled=false \
 		--set executor.enabled=true \
 		--wait
