@@ -120,14 +120,18 @@ if __name__ == "__main__":
                 ] = "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
 
                 # Resource requests
-                res["spec"]["template"]["spec"]["containers"][0]["resources"]["requests"][
-                    "cpu"] = helm_value("manager.cpuRequest")
-                res["spec"]["template"]["spec"]["containers"][0]["resources"]["requests"][
-                    "memory"] = helm_value("manager.memoryRequest")
+                res["spec"]["template"]["spec"]["containers"][0]["resources"][
+                    "requests"
+                ]["cpu"] = helm_value("manager.cpuRequest")
+                res["spec"]["template"]["spec"]["containers"][0]["resources"][
+                    "requests"
+                ]["memory"] = helm_value("manager.memoryRequest")
                 res["spec"]["template"]["spec"]["containers"][0]["resources"]["limits"][
-                    "cpu"] = helm_value("manager.cpuLimit")
+                    "cpu"
+                ] = helm_value("manager.cpuLimit")
                 res["spec"]["template"]["spec"]["containers"][0]["resources"]["limits"][
-                    "memory"] = helm_value("manager.memoryLimit")
+                    "memory"
+                ] = helm_value("manager.memoryLimit")
 
                 for env in res["spec"]["template"]["spec"]["containers"][0]["env"]:
                     if env["name"] in HELM_ENV_SUBST:
