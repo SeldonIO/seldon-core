@@ -17,13 +17,13 @@ metadata:
 spec:
   name: iris
   predictors:
-  - graph:
-      children: []
-      implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/sklearn/iris
-      name: classifier
-    name: default
-    replicas: 1
+    - graph:
+        children: []
+        implementation: SKLEARN_SERVER
+        modelUri: gs://seldon-models/sklearn/iris
+        name: classifier
+      name: default
+      replicas: 1
 ```
 
 The `modelUri` specifies the bucket containing the saved model, in this case `gs://seldon-models/sklearn/iris`.
@@ -34,7 +34,6 @@ The `modelUri` specifies the bucket containing the saved model, in this case `gs
 - S3-compatible (using `s3://`)
 - Minio-compatible (using `s3://`)
 - Azure Blob storage (using `https://(.+?).blob.core.windows.net/(.+)`)
-
 
 The download is handled by an initContainer that runs before your predictor loads. This initContainer image uses our [Storage.py library](https://github.com/SeldonIO/seldon-core/blob/master/python/seldon_core/storage.py) to download the files. However it is also possible for you to override the initContainer with your own custom container to download any files from custom resources.
 
@@ -79,7 +78,8 @@ Next steps:
 - [Tensorflow Serving](tensorflow.html)
 - [MLflow Server](mlflow.html)
 
-Custom serving images or versions of images can also be added or overridden in the operator's `seldon-config` configmap.
+You can also build and add your own [custom inference servers](./custom.md),
+which can then be used in a similar way as the pre-packaged ones.
 
 If your use case does not fit for a reusable standard server then you can create your own component using our wrappers.
 
@@ -97,24 +97,24 @@ In order to understand what are the environment variables required, you can have
 
 #### AWS Required Variables
 
-* AWS_ACCESS_KEY_ID
-* AWS_SECRET_ACCESS_KEY
-* AWS_ENDPOINT_URL
-* USE_SSL
+- AWS_ACCESS_KEY_ID
+- AWS_SECRET_ACCESS_KEY
+- AWS_ENDPOINT_URL
+- USE_SSL
 
 #### Minio Required Variables
 
-* AWS_ACCESS_KEY_ID
-* AWS_SECRET_ACCESS_KEY
-* AWS_ENDPOINT_URL
-* USE_SSL
+- AWS_ACCESS_KEY_ID
+- AWS_SECRET_ACCESS_KEY
+- AWS_ENDPOINT_URL
+- USE_SSL
 
 #### Azure Required Variables
 
-* AZ_TENANT_ID
-* AZ_CLIENT_ID
-* AZ_CLIENT_SECRET
-* AZ_SUBSCRIPTION_ID
+- AZ_TENANT_ID
+- AZ_CLIENT_ID
+- AZ_CLIENT_SECRET
+- AZ_SUBSCRIPTION_ID
 
 #### Google Cloud Required Variables
 
@@ -164,7 +164,7 @@ You can set a global default when you install Seldon Core through the Helm chart
 ```yaml
 # ... other variables
 executor:
-    defaultEnvSecretRefName: seldon-core-init-container-secret
+  defaultEnvSecretRefName: seldon-core-init-container-secret
 # ... other variables
 ```
 
@@ -234,4 +234,3 @@ spec:
     name: default
     replicas: 1
 ```
-
