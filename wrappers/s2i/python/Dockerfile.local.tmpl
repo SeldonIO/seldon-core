@@ -15,4 +15,6 @@ COPY ./s2i/bin/ /s2i/bin
 COPY _python /microservice
 RUN cd /microservice/python && make install
 
+RUN mkdir -p /.conda && chmod a+rwx /.conda
+
 EXPOSE 5000

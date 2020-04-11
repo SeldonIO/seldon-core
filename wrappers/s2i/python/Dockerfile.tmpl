@@ -16,4 +16,6 @@ COPY requirements.txt ./requirements.txt
 COPY _python/python/licenses/license.txt .
 RUN pip install -r requirements.txt
 
+RUN mkdir -p /.conda && chmod a+rwx /.conda
+
 EXPOSE 5000

@@ -89,10 +89,10 @@ predictiveUnit:
 predictor_servers:
   MLFLOW_SERVER:
     grpc:
-      defaultImageVersion: "0.3"
+      defaultImageVersion: "0.4"
       image: seldonio/mlflowserver_grpc
     rest:
-      defaultImageVersion: "0.3"
+      defaultImageVersion: "0.4"
       image: seldonio/mlflowserver_rest
   SKLEARN_SERVER:
     grpc:
