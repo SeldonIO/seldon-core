@@ -68,6 +68,7 @@ install_istio:
 	kubectl rollout status deployment.apps/istio-ingressgateway -n istio-system
 	kubectl rollout status deployment.apps/istio-pilot -n istio-system
 	kubectl rollout status deployment.apps/istio-citadel -n istio-system
+	kubectl create -f ../resources/seldon-gateway.yaml -n istio-system
 
 
 create_namespaces:
