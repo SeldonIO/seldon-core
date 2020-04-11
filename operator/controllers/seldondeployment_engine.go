@@ -21,7 +21,9 @@ import (
 	"strconv"
 	"strings"
 
-	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	"github.com/seldonio/seldon-core/operator/constants"
+
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -79,10 +81,6 @@ func addEngineToDeployment(mlDep *machinelearningv1.SeldonDeployment, p *machine
 	for _, ann := range p.Annotations {
 		deploy.Spec.Template.Annotations[ann] = p.Annotations[ann]
 	}
-	// Add prometheus annotations
-	deploy.Spec.Template.Annotations["prometheus.io/path"] = getPrometheusPath(mlDep)
-	deploy.Spec.Template.Annotations["prometheus.io/port"] = strconv.Itoa(engine_http_port)
-	deploy.Spec.Template.Annotations["prometheus.io/scrape"] = "true"
 
 	deploy.ObjectMeta.Labels[machinelearningv1.Label_seldon_app] = pSvcName
 	deploy.Spec.Selector.MatchLabels[machinelearningv1.Label_seldon_app] = pSvcName
@@ -188,7 +186,7 @@ func getSvcOrchUser(mlDep *machinelearningv1.SeldonDeployment) (int64, error) {
 }
 
 func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, predictorB64 string, http_port int, grpc_port int, resources *corev1.ResourceRequirements) corev1.Container {
-	transport := p.Transport
+	transport := mlDep.Spec.Transport
 	//Backwards compatible with older resources
 	if transport == "" {
 		if p.Graph.Endpoint.Type == machinelearningv1.GRPC {
@@ -197,7 +195,7 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 			transport = machinelearningv1.TransportRest
 		}
 	}
-	protocol := p.Protocol
+	protocol := mlDep.Spec.Protocol
 	//Backwards compatibility for older resources
 	if protocol == "" {
 		protocol = machinelearningv1.ProtocolSeldon
@@ -226,9 +224,11 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 		},
 		Env: []corev1.EnvVar{
 			{Name: "ENGINE_PREDICTOR", Value: predictorB64},
+			{Name: "REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX", Value: GetEnv("EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX", "")},
 		},
 		Ports: []corev1.ContainerPort{
 			{ContainerPort: int32(http_port), Protocol: corev1.ProtocolTCP},
+			{ContainerPort: int32(http_port), Protocol: corev1.ProtocolTCP, Name: constants.MetricsPortName},
 			{ContainerPort: int32(grpc_port), Protocol: corev1.ProtocolTCP},
 		},
 		ReadinessProbe: &corev1.Probe{Handler: corev1.Handler{HTTPGet: &corev1.HTTPGetAction{Port: intstr.FromInt(http_port), Path: "/ready", Scheme: corev1.URISchemeHTTP}},
@@ -267,10 +267,11 @@ func createEngineContainerSpec(mlDep *machinelearningv1.SeldonDeployment, p *mac
 			{Name: "DEPLOYMENT_NAMESPACE", Value: mlDep.ObjectMeta.Namespace},
 			{Name: "ENGINE_SERVER_PORT", Value: strconv.Itoa(engine_http_port)},
 			{Name: "ENGINE_SERVER_GRPC_PORT", Value: strconv.Itoa(engine_grpc_port)},
-			{Name: "JAVA_OPTS", Value: getAnnotation(mlDep, machinelearningv1.ANNOTATION_JAVA_OPTS, "-server -Dcom.sun.management.jmxremote.rmi.port=9090 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9090 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.local.only=false -Djava.rmi.server.hostname=127.0.0.1")},
+			{Name: "JAVA_OPTS", Value: getAnnotation(mlDep, machinelearningv1.ANNOTATION_JAVA_OPTS, "-server")},
 		},
 		Ports: []corev1.ContainerPort{
 			{ContainerPort: int32(engine_http_port), Protocol: corev1.ProtocolTCP},
+			{ContainerPort: int32(engine_http_port), Protocol: corev1.ProtocolTCP, Name: constants.MetricsPortName},
 			{ContainerPort: int32(engine_grpc_port), Protocol: corev1.ProtocolTCP},
 			{ContainerPort: 8082, Name: "admin", Protocol: corev1.ProtocolTCP},
 			{ContainerPort: 9090, Name: "jmx", Protocol: corev1.ProtocolTCP},
@@ -399,8 +400,8 @@ func createEngineDeployment(mlDep *machinelearningv1.SeldonDeployment, p *machin
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{machinelearningv1.Label_seldon_app: seldonId, machinelearningv1.Label_seldon_id: seldonId, "app": depName},
 					Annotations: map[string]string{
-						"prometheus.io/path":   getPrometheusPath(mlDep),
-						"prometheus.io/port":   strconv.Itoa(engine_http_port),
+						"prometheus.io/path": getPrometheusPath(mlDep),
+						// "prometheus.io/port":   strconv.Itoa(engine_http_port),
 						"prometheus.io/scrape": "true",
 					},
 				},
@@ -421,8 +422,16 @@ func createEngineDeployment(mlDep *machinelearningv1.SeldonDeployment, p *machin
 				},
 			},
 			Strategy: appsv1.DeploymentStrategy{RollingUpdate: &appsv1.RollingUpdateDeployment{MaxUnavailable: &intstr.IntOrString{StrVal: "10%"}}},
-			Replicas: &p.Replicas,
 		},
+	}
+
+	// Set replicas from more specific to more general settings in spec
+	if p.SvcOrchSpec.Replicas != nil {
+		deploy.Spec.Replicas = p.SvcOrchSpec.Replicas
+	} else if p.Replicas != nil {
+		deploy.Spec.Replicas = p.Replicas
+	} else if mlDep.Spec.Replicas != nil {
+		deploy.Spec.Replicas = mlDep.Spec.Replicas
 	}
 
 	// Add a particular service account rather than default for the engine

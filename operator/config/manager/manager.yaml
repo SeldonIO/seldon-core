@@ -54,6 +54,8 @@ spec:
           value: "false"
         - name: PREDICTIVE_UNIT_SERVICE_PORT
           value: "9000"
+        - name: PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME
+          value: ""
         - name: ENGINE_SERVER_GRPC_PORT
           value: "5001"
         - name: ENGINE_SERVER_PORT
@@ -82,6 +84,8 @@ spec:
           value: "8888"          
         - name: EXECUTOR_CONTAINER_SERVICE_ACCOUNT_NAME
           value: default
+        - name: EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX
+          value: "http://default-broker."
         image: controller:latest
         name: manager
         resources:

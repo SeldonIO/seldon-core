@@ -18,14 +18,34 @@ package controllers
 
 import (
 	"encoding/json"
-	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	"fmt"
+	"strconv"
+	"strings"
+
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"github.com/seldonio/seldon-core/operator/constants"
 	"github.com/seldonio/seldon-core/operator/utils"
 	appsv1 "k8s.io/api/apps/v1"
-	"k8s.io/api/core/v1"
-	"strconv"
-	"strings"
+	v1 "k8s.io/api/core/v1"
 )
+
+const (
+	ENV_PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME = "PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME"
+)
+
+var (
+	PredictiveUnitDefaultEnvSecretRefName = GetEnv(ENV_PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME, "")
+)
+
+func extractEnvSecretRefName(pu *machinelearningv1.PredictiveUnit) string {
+	envSecretRefName := ""
+	if pu.EnvSecretRefName == "" {
+		envSecretRefName = PredictiveUnitDefaultEnvSecretRefName
+	} else {
+		envSecretRefName = pu.EnvSecretRefName
+	}
+	return envSecretRefName
+}
 
 func createTensorflowServingContainer(pu *machinelearningv1.PredictiveUnit, usePUPorts bool) *v1.Container {
 	ServerConfig := machinelearningv1.GetPrepackServerConfig(string(*pu.Implementation))
@@ -71,7 +91,7 @@ func createTensorflowServingContainer(pu *machinelearningv1.PredictiveUnit, useP
 	}
 }
 
-func addTFServerContainer(r *SeldonDeploymentReconciler, pu *machinelearningv1.PredictiveUnit, p *machinelearningv1.PredictorSpec, deploy *appsv1.Deployment, serverConfig machinelearningv1.PredictorServerConfig) error {
+func addTFServerContainer(mlDep *machinelearningv1.SeldonDeployment, r *SeldonDeploymentReconciler, pu *machinelearningv1.PredictiveUnit, p *machinelearningv1.PredictorSpec, deploy *appsv1.Deployment, serverConfig machinelearningv1.PredictorServerConfig) error {
 
 	if len(*pu.Implementation) > 0 && (serverConfig.Tensorflow || serverConfig.TensorflowImage != "") {
 
@@ -81,7 +101,7 @@ func addTFServerContainer(r *SeldonDeploymentReconciler, pu *machinelearningv1.P
 		c := utils.GetContainerForDeployment(deploy, pu.Name)
 
 		var tfServingContainer *v1.Container
-		if p.Protocol == machinelearningv1.ProtocolTensorflow {
+		if mlDep.Spec.Protocol == machinelearningv1.ProtocolTensorflow {
 			tfServingContainer = createTensorflowServingContainer(pu, true)
 			containers := make([]v1.Container, len(deploy.Spec.Template.Spec.Containers))
 			for i, ctmp := range deploy.Spec.Template.Spec.Containers {
@@ -107,7 +127,9 @@ func addTFServerContainer(r *SeldonDeploymentReconciler, pu *machinelearningv1.P
 
 		}
 
-		_, err := InjectModelInitializer(deploy, tfServingContainer.Name, pu.ModelURI, pu.ServiceAccountName, pu.EnvSecretRefName, r)
+		envSecretRefName := extractEnvSecretRefName(pu)
+
+		_, err := InjectModelInitializer(deploy, tfServingContainer.Name, pu.ModelURI, pu.ServiceAccountName, envSecretRefName, r)
 		if err != nil {
 			return err
 		}
@@ -172,7 +194,9 @@ func addModelDefaultServers(r *SeldonDeploymentReconciler, pu *machinelearningv1
 			}
 		}
 
-		_, err = InjectModelInitializer(deploy, c.Name, pu.ModelURI, pu.ServiceAccountName, pu.EnvSecretRefName, r.Client)
+		envSecretRefName := extractEnvSecretRefName(pu)
+
+		_, err = InjectModelInitializer(deploy, c.Name, pu.ModelURI, pu.ServiceAccountName, envSecretRefName, r.Client)
 		if err != nil {
 			return err
 		}
@@ -235,55 +259,56 @@ func SetUriParamsForTFServingProxyContainer(pu *machinelearningv1.PredictiveUnit
 
 func createStandaloneModelServers(r *SeldonDeploymentReconciler, mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, c *components, pu *machinelearningv1.PredictiveUnit) error {
 
-	// some predictors have no podSpec so this could be nil
-	sPodSpec, idx := utils.GetSeldonPodSpecForPredictiveUnit(p, pu.Name)
-
-	depName := machinelearningv1.GetDeploymentName(mlDep, *p, sPodSpec, idx)
-
-	var deploy *appsv1.Deployment
-	existing := false
-	for i := 0; i < len(c.deployments); i++ {
-		d := c.deployments[i]
-		if strings.Compare(d.Name, depName) == 0 {
-			deploy = d
-			existing = true
-			break
-		}
-	}
-
-	// might not be a Deployment yet - if so we have to create one
-	if deploy == nil {
-		seldonId := machinelearningv1.GetSeldonDeploymentName(mlDep)
-		deploy = createDeploymentWithoutEngine(depName, seldonId, sPodSpec, p, mlDep)
-	}
-
 	if machinelearningv1.IsPrepack(pu) {
+		sPodSpec, idx := utils.GetSeldonPodSpecForPredictiveUnit(p, pu.Name)
+		if sPodSpec == nil {
+			return fmt.Errorf("Failed to find PodSpec for Prepackaged server PreditiveUnit named %s", pu.Name)
+		}
+		depName := machinelearningv1.GetDeploymentName(mlDep, *p, sPodSpec, idx)
+		seldonId := machinelearningv1.GetSeldonDeploymentName(mlDep)
+
+		var deploy *appsv1.Deployment
+		existing := false
+		for i := 0; i < len(c.deployments); i++ {
+			d := c.deployments[i]
+			if strings.Compare(d.Name, depName) == 0 {
+				deploy = d
+				existing = true
+				break
+			}
+		}
+
+		// might not be a Deployment yet - if so we have to create one
+		if deploy == nil {
+			seldonId := machinelearningv1.GetSeldonDeploymentName(mlDep)
+			deploy = createDeploymentWithoutEngine(depName, seldonId, sPodSpec, p, mlDep)
+		}
 
 		ServerConfig := machinelearningv1.GetPrepackServerConfig(string(*pu.Implementation))
 
 		if err := addModelDefaultServers(r, pu, p, deploy, ServerConfig); err != nil {
 			return err
 		}
-		if err := addTFServerContainer(r, pu, p, deploy, ServerConfig); err != nil {
+		if err := addTFServerContainer(mlDep, r, pu, p, deploy, ServerConfig); err != nil {
 			return err
 		}
-	}
 
-	if !existing {
+		if !existing {
 
-		// this is a new deployment so its containers won't have a containerService
-		for k := 0; k < len(deploy.Spec.Template.Spec.Containers); k++ {
-			con := &deploy.Spec.Template.Spec.Containers[k]
+			// this is a new deployment so its containers won't have a containerService
+			for k := 0; k < len(deploy.Spec.Template.Spec.Containers); k++ {
+				con := &deploy.Spec.Template.Spec.Containers[k]
 
-			//checking for con.Name != "" is a fallback check that we haven't got an empty/nil container as name is required
-			if con.Name != EngineContainerName && con.Name != constants.TFServingContainerName && con.Name != "" {
-				svc := createContainerService(deploy, *p, mlDep, con, *c)
-				c.services = append(c.services, svc)
+				//checking for con.Name != "" is a fallback check that we haven't got an empty/nil container as name is required
+				if con.Name != EngineContainerName && con.Name != constants.TFServingContainerName && con.Name != "" {
+					svc := createContainerService(deploy, *p, mlDep, con, *c, seldonId)
+					c.services = append(c.services, svc)
+				}
 			}
-		}
-		if len(deploy.Spec.Template.Spec.Containers) > 0 && deploy.Spec.Template.Spec.Containers[0].Name != "" {
-			// Add deployment, provided we have a non-empty spec
-			c.deployments = append(c.deployments, deploy)
+			if len(deploy.Spec.Template.Spec.Containers) > 0 && deploy.Spec.Template.Spec.Containers[0].Name != "" {
+				// Add deployment, provided we have a non-empty spec
+				c.deployments = append(c.deployments, deploy)
+			}
 		}
 	}
 

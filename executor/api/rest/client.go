@@ -18,7 +18,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/api/util"
 	"github.com/seldonio/seldon-core/executor/k8s"
-	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"io"
 	"io/ioutil"
 	"net"
@@ -178,11 +178,6 @@ func (smc *JSONRestClient) doHttp(ctx context.Context, modelName string, method 
 		return nil, "", err
 	}
 
-	if response.StatusCode != http.StatusOK {
-		smc.Log.Info("httpPost failed", "response code", response.StatusCode)
-		return nil, "", errors.Errorf("Internal service call failed calling %s status code %d", url, response.StatusCode)
-	}
-
 	//Read response
 	b, err := ioutil.ReadAll(response.Body)
 	if err != nil {
@@ -192,7 +187,12 @@ func (smc *JSONRestClient) doHttp(ctx context.Context, modelName string, method 
 
 	contentType := response.Header.Get("Content-Type")
 
-	return b, contentType, nil
+	if response.StatusCode != http.StatusOK {
+		smc.Log.Info("httpPost failed", "response code", response.StatusCode)
+		err = &httpStatusError{StatusCode: response.StatusCode, Url: url}
+	}
+
+	return b, contentType, err
 }
 
 func (smc *JSONRestClient) modifyMethod(method string, modelName string) string {
@@ -226,11 +226,8 @@ func (smc *JSONRestClient) call(ctx context.Context, modelName string, method st
 		bytes = req.GetPayload().([]byte)
 	}
 	sm, contentType, err := smc.doHttp(ctx, modelName, method, &url, bytes, meta)
-	if err != nil {
-		return nil, err
-	}
 	res := payload.BytesPayload{Msg: sm, ContentType: contentType}
-	return &res, nil
+	return &res, err
 }
 
 func (smc *JSONRestClient) Status(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {

@@ -1,9 +1,9 @@
 -r requirements.txt
 black==19.10b0
 flake8==3.7.9
-mypy<0.762
-Pillow==7.0.0
-pytest==5.3.1
+mypy<0.771
+Pillow==7.1.1
+pytest==5.4.1
 pytest-cov==2.8.1
 tox<4.0.0
 

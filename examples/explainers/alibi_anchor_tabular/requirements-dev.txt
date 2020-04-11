@@ -1,5 +1,0 @@
-xai==0.0.5
-seldon_core==0.5.1
-alibi==0.3.2
-dill==0.3.1
-scikit-learn==0.20.1

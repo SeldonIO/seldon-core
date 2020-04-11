@@ -2,18 +2,19 @@ package controllers
 
 import (
 	"context"
+	"strconv"
+	"strings"
+	"time"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"github.com/seldonio/seldon-core/operator/constants"
 	"github.com/seldonio/seldon-core/operator/utils"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"strconv"
-	"strings"
-	"time"
 )
 
 var _ = Describe("Create a prepacked sklearn server", func() {
@@ -197,11 +198,11 @@ var _ = Describe("Create a prepacked tfserving server for tensorflow protocol an
 				Namespace: key.Namespace,
 			},
 			Spec: machinelearningv1.SeldonDeploymentSpec{
-				Name: name,
+				Name:     name,
+				Protocol: machinelearningv1.ProtocolTensorflow,
 				Predictors: []machinelearningv1.PredictorSpec{
 					{
-						Name:     "p1",
-						Protocol: machinelearningv1.ProtocolTensorflow,
+						Name: "p1",
 						Graph: &machinelearningv1.PredictiveUnit{
 							Name:           modelName,
 							Type:           &modelType,
@@ -253,7 +254,7 @@ var _ = Describe("Create a prepacked tfserving server for tensorflow protocol an
 						Expect(arg).To(Equal(constants.TfServingArgPort + strconv.Itoa(constants.TfServingGrpcPort)))
 					}
 					if strings.Index(arg, constants.TfServingArgRestPort) == 0 {
-						Expect(arg).To(Equal(constants.TfServingArgRestPort + strconv.Itoa(constants.FirstPortNumber)))
+						Expect(arg).To(Equal(constants.TfServingArgRestPort + strconv.Itoa(int(constants.FirstPortNumber))))
 					}
 				}
 			}
@@ -262,6 +263,44 @@ var _ = Describe("Create a prepacked tfserving server for tensorflow protocol an
 		Expect(k8sClient.Delete(context.Background(), instance)).Should(Succeed())
 	})
 
+})
+
+var _ = Describe("Test override of environment variable", func() {
+	const blankName = ""
+	const secretName = "SECRET_NAME"
+	const overrideName = "OVERRIDE_NAME"
+	By("Creating a predictive unit resource with an envSecretRefName and a default env var")
+	It("Should override the default env var with envSecretRefName", func() {
+		// Overriding environment variable
+		PredictiveUnitDefaultEnvSecretRefName = secretName
+		predictiveUnit := machinelearningv1.PredictiveUnit{EnvSecretRefName: overrideName}
+		resultSecretName := extractEnvSecretRefName(&predictiveUnit)
+		Expect(resultSecretName).To(Equal(overrideName))
+	})
+	By("Creating a predictive unit resource with an envSecretRefName and no default env var")
+	It("Should override the default env var with envSecretRefName", func() {
+		// Overriding environment variable
+		PredictiveUnitDefaultEnvSecretRefName = blankName
+		predictiveUnit := machinelearningv1.PredictiveUnit{EnvSecretRefName: overrideName}
+		resultSecretName := extractEnvSecretRefName(&predictiveUnit)
+		Expect(resultSecretName).To(Equal(overrideName))
+	})
+	By("Creating a predictive unit resource without an envSecretRefName and a default env var")
+	It("Should set the value to the default env var", func() {
+		// Overriding environment variable
+		PredictiveUnitDefaultEnvSecretRefName = secretName
+		predictiveUnit := machinelearningv1.PredictiveUnit{}
+		resultSecretName := extractEnvSecretRefName(&predictiveUnit)
+		Expect(resultSecretName).To(Equal(secretName))
+	})
+	By("Creating a predictive unit resource without an envSecretRefName and without default env var")
+	It("Should set the value to empty string", func() {
+		// Overriding environment variable
+		PredictiveUnitDefaultEnvSecretRefName = blankName
+		predictiveUnit := machinelearningv1.PredictiveUnit{}
+		resultSecretName := extractEnvSecretRefName(&predictiveUnit)
+		Expect(resultSecretName).To(Equal(blankName))
+	})
 })
 
 var _ = Describe("Create a prepacked tfserving server for tensorflow protocol and grpc", func() {
@@ -285,12 +324,12 @@ var _ = Describe("Create a prepacked tfserving server for tensorflow protocol an
 				Namespace: key.Namespace,
 			},
 			Spec: machinelearningv1.SeldonDeploymentSpec{
-				Name: name,
+				Name:      name,
+				Protocol:  machinelearningv1.ProtocolTensorflow,
+				Transport: machinelearningv1.TransportGrpc,
 				Predictors: []machinelearningv1.PredictorSpec{
 					{
-						Name:      "p1",
-						Protocol:  machinelearningv1.ProtocolTensorflow,
-						Transport: machinelearningv1.TransportGrpc,
+						Name: "p1",
 						Graph: &machinelearningv1.PredictiveUnit{
 							Name:           modelName,
 							Type:           &modelType,
@@ -339,7 +378,7 @@ var _ = Describe("Create a prepacked tfserving server for tensorflow protocol an
 			if c.Name == modelName {
 				for _, arg := range c.Args {
 					if strings.Index(arg, constants.TfServingArgPort) == 0 {
-						Expect(arg).To(Equal(constants.TfServingArgPort + strconv.Itoa(constants.FirstPortNumber)))
+						Expect(arg).To(Equal(constants.TfServingArgPort + strconv.Itoa(int(constants.FirstPortNumber))))
 					}
 					if strings.Index(arg, constants.TfServingArgRestPort) == 0 {
 						Expect(arg).To(Equal(constants.TfServingArgRestPort + strconv.Itoa(constants.TfServingRestPort)))

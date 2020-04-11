@@ -1,4 +1,3 @@
-import time
 from seldon_e2e_utils import (
     get_pod_names,
     get_deployment_names,
@@ -29,6 +28,18 @@ def assert_trace(trace, expected_operations):
             assert ref["spanID"] == prev_span["spanID"]
 
 
+def _is_jaeger_syncing(traces, expected_processes=2):
+    """
+    Helper method to wait until Jaeger processes all spans.
+    """
+    for trace in traces:
+        processes = trace["processes"]
+        if len(processes) != expected_processes:
+            return True
+
+    return False
+
+
 def test_tracing_rest(namespace):
     # Deploy model and check that is running
     retry_run(f"kubectl apply -f ../resources/graph-tracing.json -n {namespace}")
@@ -42,11 +53,10 @@ def test_tracing_rest(namespace):
     pod_names = get_pod_names(deployment_name, namespace)
     pod_name = pod_names[0]
 
-    # Jaeger takes a bit of time to process all spans
-    time.sleep(2)
-
     # Get traces and assert their content
-    traces = get_traces(pod_name, "executor", "predictions")
+    traces = get_traces(
+        pod_name, "executor", "predictions", _should_retry=_is_jaeger_syncing
+    )
     assert len(traces) == 1
 
     trace = traces[0]

@@ -37,6 +37,53 @@ The key components are:
   * For each predictor a list of componentSpecs. Each componentSpec is a Kubernetes PodTemplateSpec which Seldon will build into a Kubernetes Deployment. Place here the images from your graph and their requirements, e.g. Volumes, ImagePullSecrets, Resources Requests etc.
   * A graph specification that describes how your components are joined together.
 
-To understand the inference graph definition in detail see [here](../reference/seldon-deployment.md).
+## Example of graph with pre-processor and post-processor
+
+Below we show an example that has a slightly more complex graph structure. In this case we are defining a pre-processor and post-processor components.
+
+```yaml
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+metadata:
+  name: seldon-model
+spec:
+  name: test-deployment
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - name: step_one
+          image: seldonio/step_one:1.0
+        - name: step_two
+          image: seldonio/step_two:1.0
+        - name: step_three
+          image: seldonio/step_three:1.0
+    graph:
+      name: step_one
+      endpoint:
+        type: REST
+      type: MODEL
+      children:
+          name: step_two
+          endpoint:
+            type: REST
+          type: MODEL
+          children:
+              name: step_three
+              endpoint:
+                type: REST
+              type: MODEL
+              children: []
+    name: example
+    replicas: 1
+```
+
+## More complex inference graphs
+
+It's possible to define complex graphs with ROUTERS, COMBINERS, and other components. You can find more of these specialised examples in our [examples section](../examples/notebooks.rst).
+
+## Learn about all types through reference
+
+You can learn more about the SeldonDeployment YAML definition by reading the the content on our [Kubernetes Seldon Deployment Types](../reference/seldon-deployment.rst).
 
 

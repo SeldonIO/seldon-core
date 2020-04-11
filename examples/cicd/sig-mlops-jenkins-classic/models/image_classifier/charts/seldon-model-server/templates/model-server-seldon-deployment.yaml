@@ -1,0 +1,38 @@
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+metadata:
+  name: {{ .Values.model.name }}
+spec:
+  name: {{ .Values.model.name }}
+  predictors:
+  - name: default
+    graph:
+      name: default
+      implementation: {{ .Values.model.type }}
+      children: []
+      modelUri: gs://news_classifier/model
+      parameters:
+      - name: method
+        type: STRING
+        value: predict
+    componentSpecs:
+    - spec:
+        containers:
+        - name: default
+          env:
+{{- range $pkey, $pval := .Values.env }}
+          - name: {{ $pkey }}
+            value: {{ quote $pval }}
+{{- end }}
+        terminationGracePeriodSeconds: 1
+    replicas: 1
+    engineResources: {}
+    svcOrchSpec: {}
+    traffic: 100
+    explainer:
+      containerSpec:
+        name: ''
+        resources: {}
+  annotations:
+    seldon.io/engine-seldon-log-messages-externally: 'true'
+

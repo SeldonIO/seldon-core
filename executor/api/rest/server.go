@@ -15,12 +15,21 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/metric"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/predictor"
-	"github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"time"
+)
+
+const (
+	CLOUDEVENTS_HEADER_ID_NAME             = "Ce-Id"
+	CLOUDEVENTS_HEADER_SPECVERSION_NAME    = "Ce-Specversion"
+	CLOUDEVENTS_HEADER_SOURCE_NAME         = "Ce-Source"
+	CLOUDEVENTS_HEADER_TYPE_NAME           = "Ce-Type"
+	CLOUDEVENTS_HEADER_PATH_NAME           = "Ce-Path"
+	CLOUDEVENTS_HEADER_SPECVERSION_DEFAULT = "0.3"
 )
 
 type SeldonRestApi struct {
@@ -81,14 +90,26 @@ func (r *SeldonRestApi) respondWithSuccess(w http.ResponseWriter, code int, payl
 	}
 }
 
-func (r *SeldonRestApi) respondWithError(w http.ResponseWriter, err error) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusInternalServerError)
+func (r *SeldonRestApi) respondWithError(w http.ResponseWriter, payload payload.SeldonPayload, err error) {
+	w.Header().Set("Content-Type", payload.GetContentType())
 
-	errPayload := r.Client.CreateErrorPayload(err)
-	err = r.Client.Marshall(w, errPayload)
-	if err != nil {
-		r.Log.Error(err, "Failed to write error payload")
+	if serr, ok := err.(*httpStatusError); ok {
+		w.WriteHeader(serr.StatusCode)
+	} else {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
+	if payload != nil && payload.GetPayload() != nil {
+		err := r.Client.Marshall(w, payload)
+		if err != nil {
+			r.Log.Error(err, "Failed to write response")
+		}
+	} else {
+		errPayload := r.Client.CreateErrorPayload(err)
+		err = r.Client.Marshall(w, errPayload)
+		if err != nil {
+			r.Log.Error(err, "Failed to write error payload")
+		}
 	}
 }
 
@@ -110,7 +131,9 @@ func (r *SeldonRestApi) Initialise() {
 	r.Router.HandleFunc("/live", r.alive)
 	r.Router.Handle(r.prometheusPath, promhttp.Handler())
 	if !r.ProbesOnly {
+		cloudeventHeaderMiddleware := CloudeventHeaderMiddleware{deploymentName: r.DeploymentName, namespace: r.Namespace}
 		r.Router.Use(puidHeader)
+		r.Router.Use(cloudeventHeaderMiddleware.Middleware)
 		switch r.Protocol {
 		case api.ProtocolSeldon:
 			//v0.1 API
@@ -132,11 +155,40 @@ func (r *SeldonRestApi) Initialise() {
 	}
 }
 
+type CloudeventHeaderMiddleware struct {
+	deploymentName string
+	namespace      string
+}
+
+func (h *CloudeventHeaderMiddleware) Middleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Checking if request is cloudevent based on specname being present
+		fmt.Println(r.Header)
+		fmt.Println(w.Header())
+		if _, ok := r.Header[CLOUDEVENTS_HEADER_SPECVERSION_NAME]; ok {
+			puid := r.Header.Get(payload.SeldonPUIDHeader)
+			w.Header().Set(CLOUDEVENTS_HEADER_ID_NAME, puid)
+			w.Header().Set(CLOUDEVENTS_HEADER_SPECVERSION_NAME, CLOUDEVENTS_HEADER_SPECVERSION_DEFAULT)
+			w.Header().Set(CLOUDEVENTS_HEADER_PATH_NAME, r.URL.Path)
+			w.Header().Set(CLOUDEVENTS_HEADER_TYPE_NAME, "seldon."+h.deploymentName+"."+h.namespace+".response")
+			w.Header().Set(CLOUDEVENTS_HEADER_SOURCE_NAME, "seldon."+h.deploymentName)
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 func puidHeader(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if puid := r.Header.Get(payload.SeldonPUIDHeader); puid == "" {
-			r.Header.Set(payload.SeldonPUIDHeader, guuid.New().String())
+		puid := r.Header.Get(payload.SeldonPUIDHeader)
+		if len(puid) == 0 {
+			puid = guuid.New().String()
+			r.Header.Set(payload.SeldonPUIDHeader, puid)
 		}
+		if res_puid := w.Header().Get(payload.SeldonPUIDHeader); len(res_puid) == 0 {
+			w.Header().Set(payload.SeldonPUIDHeader, puid)
+		}
+
 		next.ServeHTTP(w, r)
 	})
 }
@@ -153,11 +205,6 @@ func (r *SeldonRestApi) checkReady(w http.ResponseWriter, req *http.Request) {
 
 func (r *SeldonRestApi) alive(w http.ResponseWriter, req *http.Request) {
 	w.WriteHeader(http.StatusOK)
-}
-
-func (r *SeldonRestApi) failWithError(w http.ResponseWriter, err error) {
-	r.Log.Error(err, "Failed")
-	r.respondWithError(w, err)
 }
 
 func getGraphNodeForModelName(req *http.Request, graph *v1.PredictiveUnit) (*v1.PredictiveUnit, error) {
@@ -194,7 +241,7 @@ func (r *SeldonRestApi) metadata(w http.ResponseWriter, req *http.Request) {
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace, req.Header)
 	resPayload, err := seldonPredictorProcess.Metadata(r.predictor.Graph, modelName, nil)
 	if err != nil {
-		r.failWithError(w, err)
+		r.respondWithError(w, resPayload, err)
 		return
 	}
 	r.respondWithSuccess(w, http.StatusOK, resPayload)
@@ -216,7 +263,7 @@ func (r *SeldonRestApi) status(w http.ResponseWriter, req *http.Request) {
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace, req.Header)
 	resPayload, err := seldonPredictorProcess.Status(r.predictor.Graph, modelName, nil)
 	if err != nil {
-		r.failWithError(w, err)
+		r.respondWithError(w, resPayload, err)
 		return
 	}
 	r.respondWithSuccess(w, http.StatusOK, resPayload)
@@ -238,7 +285,7 @@ func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 
 	bodyBytes, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		r.failWithError(w, err)
+		r.respondWithError(w, nil, err)
 		return
 	}
 
@@ -246,7 +293,7 @@ func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 
 	reqPayload, err := seldonPredictorProcess.Client.Unmarshall(bodyBytes)
 	if err != nil {
-		r.failWithError(w, err)
+		r.respondWithError(w, nil, err)
 		return
 	}
 
@@ -254,7 +301,7 @@ func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 	if r.Protocol == api.ProtocolTensorflow {
 		graphNode, err = getGraphNodeForModelName(req, r.predictor.Graph)
 		if err != nil {
-			r.failWithError(w, err)
+			r.respondWithError(w, nil, err)
 			return
 		}
 	} else {
@@ -262,7 +309,7 @@ func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 	}
 	resPayload, err := seldonPredictorProcess.Predict(graphNode, reqPayload)
 	if err != nil {
-		r.failWithError(w, err)
+		r.respondWithError(w, resPayload, err)
 		return
 	}
 	r.respondWithSuccess(w, http.StatusOK, resPayload)

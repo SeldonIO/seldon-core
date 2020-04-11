@@ -6,6 +6,7 @@ from google.protobuf import json_format
 import base64
 
 from seldon_core.wrapper import get_rest_microservice, SeldonModelGRPC, get_grpc_server
+from seldon_core.metrics import SeldonMetrics
 from seldon_core.proto import prediction_pb2
 from seldon_core.user_model import SeldonComponent
 from seldon_core.utils import seldon_message_to_json
@@ -186,7 +187,8 @@ class UserObjectLowLevelRawInherited(SeldonComponent):
 
 def test_transformer_input_ok():
     user_object = UserObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get('/transform-input?json={"data":{"ndarray":[1]}}')
     j = json.loads(rv.data)
@@ -200,7 +202,8 @@ def test_transformer_input_ok():
 
 def test_transformer_input_lowlevel_ok():
     user_object = UserObjectLowLevel()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get('/transform-input?json={"data":{"ndarray":[1]}}')
     j = json.loads(rv.data)
@@ -211,7 +214,8 @@ def test_transformer_input_lowlevel_ok():
 
 def test_transformer_input_lowlevel_raw_ok():
     user_object = UserObjectLowLevelRaw()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get('/transform-input?json={"data":{"ndarray":[1]}}')
     j = json.loads(rv.data)
@@ -222,7 +226,8 @@ def test_transformer_input_lowlevel_raw_ok():
 
 def test_transformer_input_lowlevel_raw_ingerited_ok():
     user_object = UserObjectLowLevelRawInherited()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get('/transform-input?json={"data":{"ndarray":[1]}}')
     logging.info(rv.data)
@@ -234,7 +239,8 @@ def test_transformer_input_lowlevel_raw_ingerited_ok():
 
 def test_transformer_input_bin_data():
     user_object = UserObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     bdata = b"123"
     bdata_base64 = base64.b64encode(bdata).decode("utf-8")
@@ -253,7 +259,8 @@ def test_transformer_input_bin_data():
 
 def test_transformer_input_bin_data_nparray():
     user_object = UserObject(ret_nparray=True)
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     bdata = b"123"
     bdata_base64 = base64.b64encode(bdata).decode("utf-8")
@@ -269,7 +276,8 @@ def test_transformer_input_bin_data_nparray():
 
 def test_tranform_input_no_json():
     user_object = UserObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     uo = UserObject()
     rv = client.get("/transform-input?")
@@ -280,7 +288,8 @@ def test_tranform_input_no_json():
 
 def test_transform_input_bad_metrics():
     user_object = UserObject(metrics_ok=False)
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get('/transform-input?json={"data":{"ndarray":[]}}')
     j = json.loads(rv.data)
@@ -290,7 +299,8 @@ def test_transform_input_bad_metrics():
 
 def test_transform_input_gets_meta():
     user_object = UserObject(ret_meta=True)
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get(
         '/transform-input?json={"meta":{"puid": "abc"},"data":{"ndarray":[]}}'
@@ -305,7 +315,8 @@ def test_transform_input_gets_meta():
 
 def test_transform_output_gets_meta():
     user_object = UserObject(ret_meta=True)
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get(
         '/transform-output?json={"meta":{"puid": "abc"},"data":{"ndarray":[]}}'
@@ -318,9 +329,80 @@ def test_transform_output_gets_meta():
     assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
 
 
+def test_transform_input_passes_through_tags():
+    user_object = UserObject()
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
+    client = app.test_client()
+    rv = client.get(
+        '/transform-input?json={"meta":{"tags":{"foo":"bar"}},"data":{"ndarray":[]}}'
+    )
+    j = json.loads(rv.data)
+    logging.info(j)
+    assert rv.status_code == 200
+    assert j["meta"]["tags"] == {"foo": "bar", "mytag": 1}
+    assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
+    assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
+
+
+def test_transform_output_passes_through_tags():
+    user_object = UserObject()
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
+    client = app.test_client()
+    rv = client.get(
+        '/transform-output?json={"meta":{"tags":{"foo":"bar"}},"data":{"ndarray":[]}}'
+    )
+    j = json.loads(rv.data)
+    logging.info(j)
+    assert rv.status_code == 200
+    assert j["meta"]["tags"] == {"foo": "bar", "mytag": 1}
+    assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
+    assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
+
+
+def test_transform_input_passes_through_metrics():
+    user_object = UserObject()
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
+    client = app.test_client()
+    rv = client.get(
+        '/transform-input?json={"meta":{"metrics":[{"key":"request_gauge","type":"GAUGE","value":100}]},"data":{"ndarray":[]}}'
+    )
+    j = json.loads(rv.data)
+    logging.info(j)
+    assert rv.status_code == 200
+    assert j["meta"]["tags"] == {"mytag": 1}
+    assert j["meta"]["metrics"][0]["key"] == "request_gauge"
+    assert j["meta"]["metrics"][0]["value"] == 100
+
+    assert j["meta"]["metrics"][1]["key"] == user_object.metrics()[0]["key"]
+    assert j["meta"]["metrics"][1]["value"] == user_object.metrics()[0]["value"]
+
+
+def test_transform_output_passes_through_metrics():
+    user_object = UserObject()
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
+    client = app.test_client()
+    rv = client.get(
+        '/transform-output?json={"meta":{"metrics":[{"key":"request_gauge","type":"GAUGE","value":100}]},"data":{"ndarray":[]}}'
+    )
+    j = json.loads(rv.data)
+    logging.info(j)
+    assert rv.status_code == 200
+    assert j["meta"]["tags"] == {"mytag": 1}
+    assert j["meta"]["metrics"][0]["key"] == "request_gauge"
+    assert j["meta"]["metrics"][0]["value"] == 100
+
+    assert j["meta"]["metrics"][1]["key"] == user_object.metrics()[0]["key"]
+    assert j["meta"]["metrics"][1]["value"] == user_object.metrics()[0]["value"]
+
+
 def test_transformer_output_ok():
     user_object = UserObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get('/transform-output?json={"data":{"ndarray":[1]}}')
     j = json.loads(rv.data)
@@ -334,7 +416,8 @@ def test_transformer_output_ok():
 
 def test_transformer_output_lowlevel_ok():
     user_object = UserObjectLowLevel()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get('/transform-output?json={"data":{"ndarray":[1]}}')
     j = json.loads(rv.data)
@@ -345,7 +428,8 @@ def test_transformer_output_lowlevel_ok():
 
 def test_transformer_output_lowlevel_raw_ok():
     user_object = UserObjectLowLevelRaw()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get('/transform-output?json={"data":{"ndarray":[1]}}')
     j = json.loads(rv.data)
@@ -356,7 +440,8 @@ def test_transformer_output_lowlevel_raw_ok():
 
 def test_transformer_output_lowlevel_raw_inherited_ok():
     user_object = UserObjectLowLevelRawInherited()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get('/transform-output?json={"data":{"ndarray":[1]}}')
     j = json.loads(rv.data)
@@ -367,7 +452,8 @@ def test_transformer_output_lowlevel_raw_inherited_ok():
 
 def test_transformer_output_bin_data():
     user_object = UserObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     bdata = b"123"
     bdata_base64 = base64.b64encode(bdata).decode("utf-8")
@@ -386,7 +472,8 @@ def test_transformer_output_bin_data():
 
 def test_transformer_output_bin_data_nparray():
     user_object = UserObject(ret_nparray=True)
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     bdata = b"123"
     bdata_base64 = base64.b64encode(bdata).decode("utf-8")
@@ -402,7 +489,8 @@ def test_transformer_output_bin_data_nparray():
 
 def test_tranform_output_no_json():
     user_object = UserObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     uo = UserObject()
     rv = client.get("/transform-output?")
@@ -413,7 +501,8 @@ def test_tranform_output_no_json():
 
 def test_transform_output_bad_metrics():
     user_object = UserObject(metrics_ok=False)
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get('/transform-output?json={"data":{"ndarray":[]}}')
     j = json.loads(rv.data)
@@ -423,7 +512,8 @@ def test_transform_output_bad_metrics():
 
 def test_transform_input_proto_ok():
     user_object = UserObject()
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
     arr = np.array([1, 2])
     datadef = prediction_pb2.DefaultData(
         tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
@@ -443,7 +533,8 @@ def test_transform_input_proto_ok():
 
 def test_transform_input_proto_lowlevel_ok():
     user_object = UserObjectLowLevelGrpc()
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
     arr = np.array([1, 2])
     datadef = prediction_pb2.DefaultData(
         tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
@@ -459,7 +550,8 @@ def test_transform_input_proto_lowlevel_ok():
 
 def test_transform_input_proto_bin_data():
     user_object = UserObject()
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
     binData = b"\0\1"
     request = prediction_pb2.SeldonMessage(binData=binData)
     resp = app.TransformInput(request, None)
@@ -468,7 +560,8 @@ def test_transform_input_proto_bin_data():
 
 def test_transform_input_proto_bin_data_nparray():
     user_object = UserObject(ret_nparray=True)
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
     binData = b"\0\1"
     request = prediction_pb2.SeldonMessage(binData=binData)
     resp = app.TransformInput(request, None)
@@ -480,7 +573,8 @@ def test_transform_input_proto_bin_data_nparray():
 
 def test_transform_output_proto_ok():
     user_object = UserObject()
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
     arr = np.array([1, 2])
     datadef = prediction_pb2.DefaultData(
         tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
@@ -500,7 +594,8 @@ def test_transform_output_proto_ok():
 
 def test_transform_output_proto_lowlevel_ok():
     user_object = UserObjectLowLevelGrpc()
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
     arr = np.array([1, 2])
     datadef = prediction_pb2.DefaultData(
         tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
@@ -516,7 +611,8 @@ def test_transform_output_proto_lowlevel_ok():
 
 def test_transform_output_proto_bin_data():
     user_object = UserObject()
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
     binData = b"\0\1"
     request = prediction_pb2.SeldonMessage(binData=binData)
     resp = app.TransformOutput(request, None)
@@ -525,7 +621,8 @@ def test_transform_output_proto_bin_data():
 
 def test_transform_output_proto_bin_data_nparray():
     user_object = UserObject(ret_nparray=True)
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
     binData = b"\0\1"
     request = prediction_pb2.SeldonMessage(binData=binData)
     resp = app.TransformOutput(request, None)
@@ -537,12 +634,14 @@ def test_transform_output_proto_bin_data_nparray():
 
 def test_get_grpc_server():
     user_object = UserObject(ret_nparray=True)
-    server = get_grpc_server(user_object)
+    seldon_metrics = SeldonMetrics()
+    server = get_grpc_server(user_object, seldon_metrics)
 
 
 def test_transform_input_proto_gets_meta():
     user_object = UserObject(ret_meta=True)
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
     arr = np.array([1, 2])
     datadef = prediction_pb2.DefaultData(
         tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
@@ -565,7 +664,8 @@ def test_transform_input_proto_gets_meta():
 
 def test_transform_output_proto_gets_meta():
     user_object = UserObject(ret_meta=True)
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
     arr = np.array([1, 2])
     datadef = prediction_pb2.DefaultData(
         tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
@@ -586,13 +686,112 @@ def test_transform_output_proto_gets_meta():
     assert j["data"]["tensor"]["values"] == [1, 2]
 
 
+def test_transform_proto_input_passes_through_tags():
+    user_object = UserObject()
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
+    arr = np.array([1, 2])
+    datadef = prediction_pb2.DefaultData(
+        tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
+    )
+    meta = prediction_pb2.Meta()
+    json_format.ParseDict({"tags": {"foo": "bar"}}, meta)
+    request = prediction_pb2.SeldonMessage(data=datadef, meta=meta)
+    resp = app.TransformInput(request, None)
+    jStr = json_format.MessageToJson(resp)
+    j = json.loads(jStr)
+    logging.info(j)
+    assert j["meta"]["tags"] == {"foo": "bar", "mytag": 1}
+    assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
+    assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
+    assert j["data"]["tensor"]["shape"] == [2, 1]
+    assert j["data"]["tensor"]["values"] == [1, 2]
+
+
+def test_transform_proto_output_passes_through_tags():
+    user_object = UserObject()
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
+    arr = np.array([1, 2])
+    datadef = prediction_pb2.DefaultData(
+        tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
+    )
+    meta = prediction_pb2.Meta()
+    json_format.ParseDict({"tags": {"foo": "bar"}}, meta)
+    request = prediction_pb2.SeldonMessage(data=datadef, meta=meta)
+    resp = app.TransformOutput(request, None)
+    jStr = json_format.MessageToJson(resp)
+    j = json.loads(jStr)
+    logging.info(j)
+    assert j["meta"]["tags"] == {"foo": "bar", "mytag": 1}
+    assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
+    assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
+    assert j["data"]["tensor"]["shape"] == [2, 1]
+    assert j["data"]["tensor"]["values"] == [1, 2]
+
+
+def test_transform_proto_input_passes_through_metrics():
+    user_object = UserObject()
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
+    arr = np.array([1, 2])
+    datadef = prediction_pb2.DefaultData(
+        tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
+    )
+    meta = prediction_pb2.Meta()
+    json_format.ParseDict(
+        {"metrics": [{"key": "request_gauge", "type": "GAUGE", "value": 100}]}, meta
+    )
+    request = prediction_pb2.SeldonMessage(data=datadef, meta=meta)
+    resp = app.TransformInput(request, None)
+    jStr = json_format.MessageToJson(resp)
+    j = json.loads(jStr)
+    logging.info(j)
+    assert j["meta"]["metrics"][0]["key"] == "request_gauge"
+    assert j["meta"]["metrics"][0]["value"] == 100
+
+    assert j["meta"]["metrics"][1]["key"] == user_object.metrics()[0]["key"]
+    assert j["meta"]["metrics"][1]["value"] == user_object.metrics()[0]["value"]
+
+    assert j["data"]["tensor"]["shape"] == [2, 1]
+    assert j["data"]["tensor"]["values"] == [1, 2]
+
+
+def test_transform_proto_output_passes_through_metrics():
+    user_object = UserObject()
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
+    arr = np.array([1, 2])
+    datadef = prediction_pb2.DefaultData(
+        tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
+    )
+    meta = prediction_pb2.Meta()
+    json_format.ParseDict(
+        {"metrics": [{"key": "request_gauge", "type": "GAUGE", "value": 100}]}, meta
+    )
+    request = prediction_pb2.SeldonMessage(data=datadef, meta=meta)
+    resp = app.TransformOutput(request, None)
+    jStr = json_format.MessageToJson(resp)
+    j = json.loads(jStr)
+    logging.info(j)
+    assert j["meta"]["metrics"][0]["key"] == "request_gauge"
+    assert j["meta"]["metrics"][0]["value"] == 100
+
+    assert j["meta"]["metrics"][1]["key"] == user_object.metrics()[0]["key"]
+    assert j["meta"]["metrics"][1]["value"] == user_object.metrics()[0]["value"]
+
+    assert j["data"]["tensor"]["shape"] == [2, 1]
+    assert j["data"]["tensor"]["values"] == [1, 2]
+
+
 def test_unimplemented_transform_input_raw_on_seldon_component():
     class CustomSeldonComponent(SeldonComponent):
         def transform_input(self, X, features_names, **kwargs):
             return X * 2
 
     user_object = CustomSeldonComponent()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get('/transform-input?json={"data":{"ndarray":[1]}}')
     j = json.loads(rv.data)
@@ -608,7 +807,8 @@ def test_unimplemented_transform_input_raw():
             return X * 2
 
     user_object = CustomObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get('/transform-input?json={"data":{"ndarray":[1]}}')
     j = json.loads(rv.data)
@@ -624,7 +824,8 @@ def test_unimplemented_transform_output_raw_on_seldon_component():
             return X * 2
 
     user_object = CustomSeldonComponent()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get('/transform-output?json={"data":{"ndarray":[1]}}')
     j = json.loads(rv.data)
@@ -640,7 +841,8 @@ def test_unimplemented_transform_output_raw():
             return X * 2
 
     user_object = CustomObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get('/transform-output?json={"data":{"ndarray":[1]}}')
     j = json.loads(rv.data)

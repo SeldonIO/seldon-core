@@ -60,6 +60,8 @@ spec:
           value: '{{ .Values.engine.logMessagesExternally }}'
         - name: PREDICTIVE_UNIT_SERVICE_PORT
           value: '{{ .Values.predictiveUnit.port }}'
+        - name: PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME
+          value: '{{ .Values.predictiveUnit.defaultEnvSecretRefName }}'
         - name: ENGINE_SERVER_GRPC_PORT
           value: '{{ .Values.engine.grpc.port }}'
         - name: ENGINE_SERVER_PORT
@@ -88,6 +90,8 @@ spec:
           value: '{{ .Values.executor.user }}'
         - name: EXECUTOR_CONTAINER_SERVICE_ACCOUNT_NAME
           value: '{{ .Values.executor.serviceAccount.name }}'
+        - name: EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX
+          value: '{{ .Values.executor.defaultRequestLoggerEndpointPrefix }}'
         image: '{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}'
         imagePullPolicy: '{{ .Values.image.pullPolicy }}'
         name: manager
@@ -100,11 +104,11 @@ spec:
           protocol: TCP
         resources:
           limits:
-            cpu: {{ .Values.manager.cpuLimit }}
-            memory: {{ .Values.manager.memoryLimit }}
+            cpu: '{{ .Values.manager.cpuLimit }}'
+            memory: '{{ .Values.manager.memoryLimit }}'
           requests:
-            cpu: {{ .Values.manager.cpuRequest }}
-            memory: {{ .Values.manager.memoryRequest }}
+            cpu: '{{ .Values.manager.cpuRequest }}'
+            memory: '{{ .Values.manager.memoryRequest }}'
         volumeMounts:
         - mountPath: /tmp/k8s-webhook-server/serving-certs
           name: cert

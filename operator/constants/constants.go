@@ -15,5 +15,45 @@ const (
 	TfServingArgPort     = "--port="
 	TfServingArgRestPort = "--rest_api_port="
 
-	FirstPortNumber = 9000
+	FirstPortNumber       = int32(9000)
+	DNSLocalHost          = "localhost"
+	DNSClusterLocalSuffix = ".svc.cluster.local."
+	GrpcPortName          = "grpc"
+	HttpPortName          = "http"
+)
+
+const (
+	MetricsPortName        = "metrics"
+	FirstMetricsPortNumber = int32(6000)
+)
+
+const (
+	ControllerName = "seldon-controller-manager"
+)
+
+// Event messages
+const (
+	EventsCreateVirtualService  = "CreateVirtualService"
+	EventsUpdateVirtualService  = "UpdateVirtualService"
+	EventsDeleteVirtualService  = "DeleteVirtualService"
+	EventsCreateDestinationRule = "CreateDestinationRule"
+	EventsUpdateDestinationRule = "UpdateDestinationRule"
+	EventsCreateService         = "CreateService"
+	EventsUpdateService         = "UpdateService"
+	EventsDeleteService         = "DeleteService"
+	EventsCreateHPA             = "CreateHPA"
+	EventsUpdateHPA             = "UpdateHPA"
+	EventsDeleteHPA             = "DeleteHPA"
+	EventsCreateDeployment      = "CreateDeployment"
+	EventsUpdateDeployment      = "UpdateDeployment"
+	EventsDeleteDeployment      = "DeleteDeployment"
+	EventsInternalError         = "InternalError"
+	EventsUpdated               = "Updated"
+	EventsUpdateFailed          = "UpdateFailed"
+)
+
+// Explainers
+const (
+	ExplainerPathSuffix = "/explainer"
+	ExplainerNameSuffix = "-explainer"
 )

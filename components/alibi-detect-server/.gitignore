@@ -1,0 +1,5 @@
+adserver.egg-info
+.idea
+.mypy_cache
+.pytest_cache
+.coverage
