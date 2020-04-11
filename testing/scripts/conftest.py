@@ -1,5 +1,5 @@
 import pytest
-from seldon_e2e_utils import clean_string, retry_run, get_s2i_python_version
+from seldon_e2e_utils import clean_string, retry_run, get_seldon_version
 from subprocess import run
 
 
@@ -104,4 +104,4 @@ def delete_seldon(name="seldon", namespace="seldon-system"):
 
 
 def do_s2i_python_version():
-    return get_s2i_python_version()
+    return get_seldon_version()
