@@ -34,7 +34,7 @@
 | Description | Image URL | Stable Version |
 |-------------|-----------|----------------|
 | [NVIDIA inference server proxy](integration_nvidia_link.rst) | [seldonio/nvidia-inference-server-proxy](https://hub.docker.com/r/seldonio/nvidia-inference-server-proxy/tags/) | 0.1 | 
-| [SageMaker proxy](integration_sagemaker_link.rst) | [seldonio/sagemaker-proxy](https://hub.docker.com/r/seldonio/sagemaker-proxy/tags/) | 0.1 | 
+| [SageMaker proxy](https://github.com/SeldonIO/seldon-core/tree/master/integrations/sagemaker) | [seldonio/sagemaker-proxy](https://hub.docker.com/r/seldonio/sagemaker-proxy/tags/) | 0.1 | 
 | [Tensorflow Serving REST proxy](../servers/tensorflow.md) | [seldonio/tfserving-proxy_rest](https://hub.docker.com/r/seldonio/tfserving-proxy_rest/tags/) | 0.7 | 
 | [Tensorflow Serving GRPC proxy](../servers/tensorflow.md) | [seldonio/tfserving-proxy_grpc](https://hub.docker.com/r/seldonio/tfserving-proxy_grpc/tags/) | 0.7 | 
 
