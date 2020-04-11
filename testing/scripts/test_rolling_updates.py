@@ -203,7 +203,7 @@ class TestRollingHttp(object):
         run(f"kubectl delete -f ../resources/graph6svc.json -n {namespace}", shell=True)
 
 
-@pytest.mark.flaky(max_runs=2)
+@pytest.mark.flaky(max_runs=3)
 @with_api_gateways
 @pytest.mark.parametrize(
     "from_deployment,to_deployment,change",
