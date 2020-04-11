@@ -18,6 +18,7 @@ from seldon_core.proto import prediction_pb2_grpc
 API_AMBASSADOR = "localhost:8003"
 API_ISTIO_GATEWAY = "localhost:8004"
 
+
 def get_seldon_version():
     ret = Popen("cat ../../version.txt", shell=True, stdout=subprocess.PIPE)
     output = ret.stdout.readline()
