@@ -1,0 +1,17 @@
+
+syntax = "proto3";
+
+package iris;
+
+message IrisPredictRequest {
+    float sepal_length = 1;
+    float sepal_width = 2;
+    float petal_length = 3;
+    float petal_width = 4;
+}
+
+message IrisPredictResponse {
+    float setosa = 1;
+    float versicolor = 2;
+    float virginica = 3;
+}

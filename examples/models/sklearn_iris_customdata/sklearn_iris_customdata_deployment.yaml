@@ -1,0 +1,22 @@
+
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: seldon-deployment-example
+spec:
+  name: sklearn-iris-deployment
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: groszewn/sklearn-iris-customdata:0.1
+          imagePullPolicy: IfNotPresent
+          name: sklearn-iris-classifier
+    graph:
+      children: []
+      endpoint:
+        type: GRPC
+      name: sklearn-iris-classifier
+      type: MODEL
+    name: sklearn-iris-predictor
+    replicas: 1
