@@ -56,7 +56,7 @@ func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1.Sel
 
 		if explainerContainer.Image == "" {
 			// TODO: should use explainer type but this is the only one available currently
-			explainerContainer.Image = "seldonio/alibiexplainer:0.1.1"
+			explainerContainer.Image = "seldonio/alibiexplainer:1.1.0"
 		}
 
 		// explainer can get port from spec or from containerSpec or fall back on default
