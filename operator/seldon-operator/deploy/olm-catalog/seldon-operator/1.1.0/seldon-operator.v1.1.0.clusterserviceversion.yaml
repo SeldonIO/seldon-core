@@ -365,7 +365,7 @@ spec:
               app: seldon
               app.kubernetes.io/instance: seldon1
               app.kubernetes.io/name: seldon
-              app.kubernetes.io/version: v0.5
+              app.kubernetes.io/version: v1.1.0
               control-plane: seldon-controller-manager
           strategy: {}
           template:
@@ -376,7 +376,7 @@ spec:
                 app: seldon
                 app.kubernetes.io/instance: seldon1
                 app.kubernetes.io/name: seldon
-                app.kubernetes.io/version: v0.5
+                app.kubernetes.io/version: v1.1.0
                 control-plane: seldon-controller-manager
             spec:
               containers:
@@ -445,7 +445,6 @@ spec:
                 - name: EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX
                   value: http://default-broker.
                 image: seldonio/seldon-core-operator:1.1.0-SNAPSHOT
-                imagePullPolicy: Always
                 name: manager
                 ports:
                 - containerPort: 8443

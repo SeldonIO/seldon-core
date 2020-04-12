@@ -6,7 +6,7 @@ metadata:
     app: seldon
     app.kubernetes.io/instance: seldon1
     app.kubernetes.io/name: seldon
-    app.kubernetes.io/version: v0.5
+    app.kubernetes.io/version: v1.1.0
   name: seldon-manager
 rules:
 - apiGroups:

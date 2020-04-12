@@ -87,9 +87,6 @@ var _ = Describe("Create a prepacked sklearn server", func() {
 		Expect(len(depFetched.Spec.Template.Spec.Containers)).Should(Equal(2))
 
 		Expect(k8sClient.Delete(context.Background(), instance)).Should(Succeed())
-
-		//j, _ := json.Marshal(depFetched)
-		//fmt.Println(string(j))
 	})
 
 })
