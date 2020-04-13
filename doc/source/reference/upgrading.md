@@ -60,6 +60,7 @@ From version 1.1 Seldon Core comes with a new service orchestrator written in Go
 
  * Metadata fields in the Seldon Protocol are no longer added. Any custom metata data will need to be added and exposed to Prometheus metrics by the individual components in the graph
  * All components in the graph must either be REST or gRPC and only the given protocol is exposed externally.
+ * The metric names placed in Prometheus have changed to include the `executor` name rather than `engine` : see the [analytics docs](../analytics/analytics.html)
 
 The new service orchestrator comes with several advantages including ability to handle Tensorflow REST and gRPC protocols and full metrics and tracing support for both REST and gRPC.
 
