@@ -276,11 +276,7 @@ if __name__ == "__main__":
             if name.find("spartakus") > -1:
                 fdata = HELM_SPARTAKUS_IF_START + fdata + HELM_IF_END
             elif name == "seldon-webhook-rolebinding" or name == "seldon-webhook-role":
-                fdata = (
-                    HELM_CREATERESOURCES_IF_START
-                    +fdata
-                    + HELM_IF_END
-                )
+                fdata = HELM_CREATERESOURCES_IF_START + fdata + HELM_IF_END
             # cluster roles for single namespace
             elif name == "seldon-manager-rolebinding" or name == "seldon-manager-role":
                 fdata = (
