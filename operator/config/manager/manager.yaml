@@ -95,6 +95,8 @@ spec:
           value: default
         - name: EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX
           value: "http://default-broker."
+        - name: DEFAULT_USER_ID
+          value: ''
         image: controller:latest
         name: manager
         resources:

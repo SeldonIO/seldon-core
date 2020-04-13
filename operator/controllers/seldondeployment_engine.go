@@ -173,6 +173,33 @@ func getSvcOrchSvcAccountName(mlDep *machinelearningv1.SeldonDeployment) string 
 	return svcAccount
 }
 
+func getSvcOrchUser(mlDep *machinelearningv1.SeldonDeployment) (*int64, error) {
+
+	if isExecutorEnabled(mlDep) {
+		if envExecutorUser != "" {
+			user, err := strconv.Atoi(envExecutorUser)
+			if err != nil {
+				return nil, err
+			} else {
+				engineUser := int64(user)
+				return &engineUser, nil
+			}
+		}
+
+	} else {
+		if envEngineUser != "" {
+			user, err := strconv.Atoi(envEngineUser)
+			if err != nil {
+				return nil, err
+			} else {
+				engineUser := int64(user)
+				return &engineUser, nil
+			}
+		}
+	}
+	return nil, nil
+}
+
 func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, predictorB64 string, http_port int, grpc_port int, resources *corev1.ResourceRequirements) (*corev1.Container, error) {
 	transport := mlDep.Spec.Transport
 	//Backwards compatible with older resources
@@ -304,6 +331,11 @@ func createEngineContainerSpec(mlDep *machinelearningv1.SeldonDeployment, p *mac
 
 // Create the Container for the service orchestrator.
 func createEngineContainer(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, engine_http_port, engine_grpc_port int) (*corev1.Container, error) {
+	// Get engine user
+	engineUser, err := getSvcOrchUser(mlDep)
+	if err != nil {
+		return nil, err
+	}
 	// get predictor as base64 encoded json
 	pCopy := p.DeepCopy()
 	// Set traffic to zero to ensure this doesn't cause a diff in the resulting  deployment created
@@ -343,6 +375,10 @@ func createEngineContainer(mlDep *machinelearningv1.SeldonDeployment, p *machine
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	if engineUser != nil {
+		c.SecurityContext = &corev1.SecurityContext{RunAsUser: engineUser}
 	}
 
 	// Environment vars if specified

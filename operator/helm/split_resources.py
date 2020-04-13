@@ -52,6 +52,7 @@ HELM_ENV_SUBST = {
     "EXECUTOR_CONTAINER_SERVICE_ACCOUNT_NAME": "executor.serviceAccount.name",
     "CREATE_RESOURCES": "createResources",
     "EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX": "executor.defaultRequestLoggerEndpointPrefix",
+    "DEFAULT_USER_ID": "defaultUserID",
 }
 HELM_VALUES_IMAGE_PULL_POLICY = "{{ .Values.image.pullPolicy }}"
 

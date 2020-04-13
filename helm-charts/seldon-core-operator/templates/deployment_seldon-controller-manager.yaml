@@ -101,6 +101,8 @@ spec:
           value: '{{ .Values.executor.serviceAccount.name }}'
         - name: EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX
           value: '{{ .Values.executor.defaultRequestLoggerEndpointPrefix }}'
+        - name: DEFAULT_USER_ID
+          value: '{{ .Values.defaultUserID }}'
         image: '{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}'
         imagePullPolicy: '{{ .Values.image.pullPolicy }}'
         name: manager

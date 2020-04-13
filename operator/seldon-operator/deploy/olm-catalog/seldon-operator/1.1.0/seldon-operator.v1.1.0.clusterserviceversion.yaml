@@ -444,7 +444,9 @@ spec:
                   value: default
                 - name: EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX
                   value: http://default-broker.
+                - name: DEFAULT_USER_ID
                 image: seldonio/seldon-core-operator:1.1.0-SNAPSHOT
+                imagePullPolicy: Always
                 name: manager
                 ports:
                 - containerPort: 8443

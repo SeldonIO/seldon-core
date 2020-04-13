@@ -61,7 +61,7 @@ func TestGetSecurityContextExecutorUser(t *testing.T) {
 		},
 		Spec: machinelearningv1.SeldonDeploymentSpec{Annotations: map[string]string{machinelearningv1.ANNOTATION_EXECUTOR: "true"}},
 	}
-	envExecutorUser = "2"
+	envDefaultUser = "2"
 
 	sc, err := createSecurityContext(mlDep)
 	g.Expect(err).To(BeNil())
