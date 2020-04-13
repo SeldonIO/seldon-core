@@ -5,7 +5,7 @@ metadata:
     app: seldon
     app.kubernetes.io/instance: seldon1
     app.kubernetes.io/name: seldon
-    app.kubernetes.io/version: v1.1.0
+    app.kubernetes.io/version: v0.5
     control-plane: seldon-controller-manager
   name: seldon-controller-manager
   namespace: default
@@ -16,7 +16,7 @@ spec:
       app: seldon
       app.kubernetes.io/instance: seldon1
       app.kubernetes.io/name: seldon
-      app.kubernetes.io/version: v1.1.0
+      app.kubernetes.io/version: v0.5
       control-plane: seldon-controller-manager
   template:
     metadata:
@@ -26,7 +26,7 @@ spec:
         app: seldon
         app.kubernetes.io/instance: seldon1
         app.kubernetes.io/name: seldon
-        app.kubernetes.io/version: v1.1.0
+        app.kubernetes.io/version: v0.5
         control-plane: seldon-controller-manager
     spec:
       containers:
