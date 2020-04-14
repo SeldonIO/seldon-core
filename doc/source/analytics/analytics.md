@@ -14,11 +14,10 @@ Each metric has the following key value pairs for further filtering which will b
   * service
   * deployment_name
   * predictor_name
-  * predictor_version
-    * This will be derived from the predictor metadata labels
+  * predictor_version (This will be derived from the predictor metadata labels)
   * model_name
   * model_image
-  * model_image
+  * model_version
 
 
 ## Helm Analytics Chart
