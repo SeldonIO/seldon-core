@@ -1,5 +1,0 @@
-numpy==1.15.4
-pandas==0.23.4
-requests>=2.20.0
-scikit-learn==0.20.1
-scipy==0.19.1
