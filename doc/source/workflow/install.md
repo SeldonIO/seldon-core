@@ -115,17 +115,15 @@ make deploy-cert
 
 Now that you have Seldon Core installed, you can set it up with:
 
-* 
-
-### Install with Kubeflow
+#### Install with Kubeflow
 
   * [Install Seldon as part of Kubeflow.](https://www.kubeflow.org/docs/guides/components/seldon/#seldon-serving)
 
-### GCP MarketPlace
+#### GCP MarketPlace
 
 If you have a Google Cloud Platform account you can install via the [GCP Marketplace](https://console.cloud.google.com/marketplace/details/seldon-portal/seldon-core).
 
-### AWS MarketPlace
+#### AWS MarketPlace
 
 If you have a AWS account you can install via the [AWS Marketplace](https://aws.amazon.com/marketplace/pp/B07KCNBCHV). See our [AWS Install Documentation](../reference/aws-mp-install.md).
 
