@@ -107,19 +107,22 @@ def update_operator_values_yaml_file(fpath, seldon_core_version, debug=False):
     fpath = os.path.realpath(fpath)
     if debug:
         print("processing [{}]".format(fpath))
-    f = open(fpath)
-    yaml_data = f.read()
-    f.close()
-
-    d = yaml_to_dict(yaml_data)
-    d["image"]["tag"] = seldon_core_version
-    d["engine"]["image"]["tag"] = seldon_core_version
-    d["executor"]["image"]["tag"] = seldon_core_version
-
-    with open(fpath, "w") as f:
-        f.write(dict_to_yaml(d))
-
-    print("updated {fpath}".format(**locals()))
+    args = [
+        "sed",
+        "-i",
+        "s/tag: \(.*\)/tag: {seldon_core_version}/".format(
+            **locals()
+        ),
+        fpath,
+    ]
+    err, out = run_command(args, debug)
+    # pp(out)
+    # pp(err)
+    if err == None:
+        print("updated operator values yaml".format(**locals()))
+    else:
+        print("error updating operator values yaml".format(**locals()))
+        print(err)
 
 
 def update_versions_txt(seldon_core_version, debug=False):
