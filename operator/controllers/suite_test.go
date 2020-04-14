@@ -119,6 +119,14 @@ var configMap = &corev1.ConfigMap{
 	Data: configs,
 }
 
+var _ = JustBeforeEach(func() {
+	envUseExecutor = "true"
+	envExecutorImage = "a"
+	envExecutorImageRelated = "b"
+	envEngineImage = "c"
+	envEngineImageRelated = "d"
+})
+
 var _ = BeforeSuite(func(done Done) {
 	logf.SetLogger(zap.LoggerTo(GinkgoWriter, true))
 

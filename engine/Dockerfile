@@ -10,11 +10,6 @@ RUN mvn clean verify -Dlicense.useMissingFile -B
 
 FROM openjdk:11.0.5-jre-slim
 
-RUN \
-    apt-get update -y && \
-    apt-get remove -y --auto-remove && \
-    apt-get clean -y && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
 COPY --from=builder /workspace/target/seldon-engine-*.jar app.jar
 COPY --from=builder /workspace/target/generated-resources /licenses/
 

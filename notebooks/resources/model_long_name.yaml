@@ -1,0 +1,20 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: seldon-model-1234567890-1234567890-1234567890-1234567890-1234567890
+spec:
+  name: test-deployment
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: seldonio/mock_classifier_rest:1.3
+          name: classifier
+    graph:
+      children: []
+      endpoint:
+        type: REST
+      name: classifier
+      type: MODEL
+    name: example-1234567890
+    replicas: 1

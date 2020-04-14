@@ -18,5 +18,6 @@ COPY requirements_gpu.txt ./requirements.txt
 COPY _python/python/licenses/license.txt .
 RUN pip3 install -r requirements.txt
 
+RUN mkdir -p /.conda && chmod a+rwx /.conda
 
 EXPOSE 5000

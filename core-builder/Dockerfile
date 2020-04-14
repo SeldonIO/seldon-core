@@ -125,6 +125,9 @@ ENV PATH="${PATH}:/root/go/bin"
 COPY dev_requirements.txt /tmp/requirements.txt
 RUN pip install -r /tmp/requirements.txt
 
+# Ginkgo
+RUN go get -u github.com/onsi/ginkgo/ginkgo
+
 WORKDIR /work
 
 # Define default command.

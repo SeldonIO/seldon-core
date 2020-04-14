@@ -12,7 +12,7 @@ ambassador:
 # You must make sure you create the seldon-gateway as well
 istio:
   enabled: false
-  gateway: seldon-gateway
+  gateway: istio-system/seldon-gateway
   tlsMode: ""
 
 # ## Install with Cert Manager
@@ -25,6 +25,15 @@ certManager:
 #   to specifci namespaces you can set the controllerId
 controllerId: ""
 
+# Whether to create the webhook service, and webhookconfigurations on startup
+createResources: false
+
+# Default user id to add to all Pod Security Context as the default
+# Use this to ensure all container run as non-root by default
+# For openshift leave blank as usually this will be injected automatically on an openshift cluster
+# to all pods.
+defaultUserID: ""
+
 # ## Service Orchestrator (Executor)
 # The executor is the default service orchestrator which has superceeded the "Java Engine"
 executor:
@@ -36,7 +45,7 @@ executor:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/seldon-core-executor
-    tag: 1.0.3-SNAPSHOT
+    tag: 1.1.0-SNAPSHOT
   prometheus:
     path: /prometheus
   serviceAccount:
@@ -51,7 +60,7 @@ image:
   pullPolicy: IfNotPresent
   registry: docker.io
   repository: seldonio/seldon-core-operator
-  tag: 1.0.3-SNAPSHOT
+  tag: 1.1.0-SNAPSHOT
 manager:
   cpuLimit: 500m
   cpuRequest: 100m
@@ -86,10 +95,10 @@ predictiveUnit:
 predictor_servers:
   MLFLOW_SERVER:
     grpc:
-      defaultImageVersion: "0.3"
+      defaultImageVersion: "0.4"
       image: seldonio/mlflowserver_grpc
     rest:
-      defaultImageVersion: "0.3"
+      defaultImageVersion: "0.4"
       image: seldonio/mlflowserver_rest
   SKLEARN_SERVER:
     grpc:
@@ -141,7 +150,7 @@ engine:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/engine
-    tag: 1.0.3-SNAPSHOT
+    tag: 1.1.0-SNAPSHOT
   logMessagesExternally: false
   port: 8000
   prometheus:

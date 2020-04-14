@@ -1,5 +1,6 @@
-IMAGE_NAME=engine
 VERSION := $(shell cat ../version.txt)
+IMG ?= seldonio/engine:$(VERSION)
+IMG_REDHAT ?= seldonio/engine-ubi8:$(VERSION)
 
 version:
 	echo ${VERSION}
@@ -8,10 +9,13 @@ build_jar: update_proto update_swagger
 	mvn clean verify -Dlicense.useMissingFile -B
 
 build_image: update_proto update_swagger
-	docker build  -f Dockerfile -t seldonio/$(IMAGE_NAME):$(VERSION) .
+	docker build  -f Dockerfile -t ${IMG} .
+
+build_image_redhat: update_proto update_swagger
+	docker build  -f Dockerfile.redhat -t ${IMG_REDHAT} .
 
 push_to_registry:
-	docker push seldonio/$(IMAGE_NAME):$(VERSION)
+	docker push ${IMG}
 
 clean:
 	@mvn clean
@@ -21,15 +25,6 @@ clean:
 cache_dependencies:
 	mvn -Dmaven.repo.local=./.m2 dependency:resolve
 	mvn -Dmaven.repo.local=./.m2 verify
-
-engine.json: engine.json.in Makefile
-	@cat engine.json.in | sed \
-		-e  "s|%ENGINE_IMAGE_VERSION%|$(ENGINE_IMAGE_VERSION)|" > $@ && echo "created $@"
-
-start_engine: engine.json
-	kubectl create -f engine.json
-stop_engine: engine.json
-	kubectl delete --ignore-not-found=true -f engine.json
 
 download_protos_k8s:
 	cd ../proto/k8s ; make create_protos
@@ -56,3 +51,9 @@ dependencies: update_proto
 	cd target/site && aws s3 cp dependencies.html s3://seldon-core-docs/master/engine/dependencies/dependencies.html --acl public-read
 	cd target/site && aws s3 cp css s3://seldon-core-docs/master/engine/dependencies/css --recursive --acl public-read
 	cd target/site && aws s3 cp images s3://seldon-core-docs/master/engine/dependencies/images --recursive --acl public-read
+
+kind-image-install: build_image
+	kind load -v 3 docker-image ${IMG}
+
+kind-image-install-redhat: build_image_redhat
+	kind load -v 3 docker-image ${IMG_REDHAT}

@@ -6,7 +6,6 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"io"
-	"net/http"
 )
 
 type SeldonMessageTestClient struct {
@@ -19,6 +18,7 @@ type SeldonMessageTestClient struct {
 const (
 	TestClientStatusResponse   = `{"status":"ok"}`
 	TestClientMetadataResponse = `{"metadata":{"name":"mymodel"}}`
+	TestContentType            = "application/json"
 )
 
 func (s SeldonMessageTestClient) Status(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
@@ -34,7 +34,7 @@ func (s SeldonMessageTestClient) Chain(ctx context.Context, modelName string, ms
 }
 
 func (s SeldonMessageTestClient) Unmarshall(msg []byte) (payload.SeldonPayload, error) {
-	reqPayload := payload.BytesPayload{Msg: msg, ContentType: "application/json"}
+	reqPayload := payload.BytesPayload{Msg: msg, ContentType: TestContentType}
 	return &reqPayload, nil
 }
 
@@ -44,9 +44,8 @@ func (s SeldonMessageTestClient) Marshall(out io.Writer, msg payload.SeldonPaylo
 }
 
 func (s SeldonMessageTestClient) CreateErrorPayload(err error) payload.SeldonPayload {
-	respFailed := proto.SeldonMessage{Status: &proto.Status{Code: http.StatusInternalServerError, Info: err.Error()}}
-	res := payload.ProtoPayload{Msg: &respFailed}
-	return &res
+	respFailed := payload.BytesPayload{Msg: []byte(err.Error()), ContentType: TestContentType}
+	return &respFailed
 }
 
 func (s SeldonMessageTestClient) Predict(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {

@@ -19,7 +19,7 @@ metadata:
   labels:
     app: seldon-request-logger
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: seldon-request-logger
@@ -30,7 +30,7 @@ spec:
     spec:    
       containers:
         - name: user-container
-          image: docker.io/seldonio/seldon-request-logger:0.2.0
+          image: docker.io/seldonio/seldon-request-logger:0.3.0
           imagePullPolicy: Always
           env:
             - name: ELASTICSEARCH_HOST
