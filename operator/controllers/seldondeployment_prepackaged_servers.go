@@ -257,7 +257,7 @@ func SetUriParamsForTFServingProxyContainer(pu *machinelearningv1.PredictiveUnit
 	}
 }
 
-func createStandaloneModelServers(r *SeldonDeploymentReconciler, mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, c *components, pu *machinelearningv1.PredictiveUnit) error {
+func createStandaloneModelServers(r *SeldonDeploymentReconciler, mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, c *components, pu *machinelearningv1.PredictiveUnit, podSecurityContext *v1.PodSecurityContext) error {
 
 	if machinelearningv1.IsPrepack(pu) {
 		sPodSpec, idx := utils.GetSeldonPodSpecForPredictiveUnit(p, pu.Name)
@@ -281,7 +281,7 @@ func createStandaloneModelServers(r *SeldonDeploymentReconciler, mlDep *machinel
 		// might not be a Deployment yet - if so we have to create one
 		if deploy == nil {
 			seldonId := machinelearningv1.GetSeldonDeploymentName(mlDep)
-			deploy = createDeploymentWithoutEngine(depName, seldonId, sPodSpec, p, mlDep)
+			deploy = createDeploymentWithoutEngine(depName, seldonId, sPodSpec, p, mlDep, podSecurityContext)
 		}
 
 		ServerConfig := machinelearningv1.GetPrepackServerConfig(string(*pu.Implementation))
@@ -313,7 +313,7 @@ func createStandaloneModelServers(r *SeldonDeploymentReconciler, mlDep *machinel
 	}
 
 	for i := 0; i < len(pu.Children); i++ {
-		if err := createStandaloneModelServers(r, mlDep, p, c, &pu.Children[i]); err != nil {
+		if err := createStandaloneModelServers(r, mlDep, p, c, &pu.Children[i], podSecurityContext); err != nil {
 			return err
 		}
 	}

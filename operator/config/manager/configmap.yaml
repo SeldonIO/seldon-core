@@ -52,11 +52,11 @@ data:
         "MLFLOW_SERVER": {
             "rest": {
               "image": "seldonio/mlflowserver_rest",
-              "defaultImageVersion": "0.2"
+              "defaultImageVersion": "0.4"
             },
             "grpc": {
               "image": "seldonio/mlflowserver_grpc",
-              "defaultImageVersion": "0.2"
+              "defaultImageVersion": "0.4"
             }
         }
     }

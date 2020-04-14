@@ -33,10 +33,6 @@ with_api_gateways = pytest.mark.parametrize(
 class TestRollingHttp(object):
     # Test updating a model to a multi predictor model
     def test_rolling_update5(self, namespace, api_gateway):
-        if api_gateway == API_ISTIO_GATEWAY:
-            retry_run(
-                f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
-            )
         retry_run(f"kubectl apply -f ../resources/graph1.json -n {namespace}")
         wait_for_status("mymodel", namespace)
         wait_for_rollout("mymodel", namespace)
@@ -68,10 +64,6 @@ class TestRollingHttp(object):
 
     # Test updating a model with a new image version as the only change
     def test_rolling_update6(self, namespace, api_gateway):
-        if api_gateway == API_ISTIO_GATEWAY:
-            retry_run(
-                f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
-            )
         retry_run(f"kubectl apply -f ../resources/graph1svc.json -n {namespace}")
         wait_for_status("mymodel", namespace)
         wait_for_rollout("mymodel", namespace, expected_deployments=2)
@@ -103,10 +95,6 @@ class TestRollingHttp(object):
 
     # test changing the image version and the name of its container
     def test_rolling_update7(self, namespace, api_gateway):
-        if api_gateway == API_ISTIO_GATEWAY:
-            retry_run(
-                f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
-            )
         retry_run(f"kubectl apply -f ../resources/graph1svc.json -n {namespace}")
         wait_for_status("mymodel", namespace)
         wait_for_rollout("mymodel", namespace, expected_deployments=2)
@@ -138,10 +126,6 @@ class TestRollingHttp(object):
 
     # Test updating a model with a new resource request but same image
     def test_rolling_update8(self, namespace, api_gateway):
-        if api_gateway == API_ISTIO_GATEWAY:
-            retry_run(
-                f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
-            )
         retry_run(f"kubectl apply -f ../resources/graph1svc.json -n {namespace}")
         wait_for_status("mymodel", namespace)
         wait_for_rollout("mymodel", namespace, expected_deployments=2)
@@ -166,10 +150,6 @@ class TestRollingHttp(object):
 
     # Test updating a model with a multi deployment new model
     def test_rolling_update9(self, namespace, api_gateway):
-        if api_gateway == API_ISTIO_GATEWAY:
-            retry_run(
-                f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
-            )
         retry_run(f"kubectl apply -f ../resources/graph1svc.json -n {namespace}")
         wait_for_status("mymodel", namespace)
         wait_for_rollout("mymodel", namespace, expected_deployments=2)
@@ -194,10 +174,6 @@ class TestRollingHttp(object):
 
     # Test updating a model to a multi predictor model
     def test_rolling_update10(self, namespace, api_gateway):
-        if api_gateway == API_ISTIO_GATEWAY:
-            retry_run(
-                f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
-            )
         retry_run(f"kubectl apply -f ../resources/graph1svc.json -n {namespace}")
         wait_for_status("mymodel", namespace)
         wait_for_rollout("mymodel", namespace, expected_deployments=2)
@@ -227,7 +203,7 @@ class TestRollingHttp(object):
         run(f"kubectl delete -f ../resources/graph6svc.json -n {namespace}", shell=True)
 
 
-@pytest.mark.flaky(max_runs=2)
+@pytest.mark.flaky(max_runs=3)
 @with_api_gateways
 @pytest.mark.parametrize(
     "from_deployment,to_deployment,change",
@@ -247,9 +223,6 @@ class TestRollingHttp(object):
 def test_rolling_deployment(
     namespace, api_gateway, from_deployment, to_deployment, change
 ):
-    if api_gateway == API_ISTIO_GATEWAY:
-        retry_run(f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}")
-
     from_file_path = to_resources_path(from_deployment)
     retry_run(f"kubectl apply -f {from_file_path} -n {namespace}")
     wait_for_status("mymodel", namespace)

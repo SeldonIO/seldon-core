@@ -37,7 +37,7 @@ func createScheme() *runtime.Scheme {
 	return scheme
 }
 
-func createTestSeldonDeployment(mlDepName string, namespace string) *machinelearningv1.SeldonDeployment {
+func createTestSeldonDeploymentForCleaners(mlDepName string, namespace string) *machinelearningv1.SeldonDeployment {
 	return &machinelearningv1.SeldonDeployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      mlDepName,
@@ -101,7 +101,7 @@ func TestCleanVirtualServices(t *testing.T) {
 
 	mlDepName := "mymodel"
 	namespace := "default"
-	instance := createTestSeldonDeployment(mlDepName, namespace)
+	instance := createTestSeldonDeploymentForCleaners(mlDepName, namespace)
 
 	//Create SeldoNDeployment
 	err := client.Create(context.Background(), instance)

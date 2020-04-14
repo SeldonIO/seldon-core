@@ -1,6 +1,9 @@
 VERSION := $(shell cat ../version.txt)
 # Image URL to use all building/pushing image targets
-IMG ?= seldonio/seldon-core-operator:${VERSION}
+IMAGE_NAME_BASE=seldon-core-operator
+IMG ?= seldonio/${IMAGE_NAME_BASE}:${VERSION}
+IMG_VERSION_REDHAT ?= ${IMAGE_NAME_BASE}-ubi8:${VERSION}
+IMG_REDHAT ?= seldonio/${IMG_VERSION_REDHAT}
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true"
 
@@ -19,7 +22,7 @@ all: manager
 
 # Run tests
 test: generate fmt vet manifests generate-resources
-	go test ./controllers/... ./apis/...  -coverprofile cover.out
+	ginkgo -r -outputdir=. -cover -coverprofile=cover.out ./controllers ./utils ./apis  
 
 # Build manager binary
 manager: generate fmt vet
@@ -66,6 +69,10 @@ undeploy-controllerid: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
 	kustomize build config/controllerid | kubectl delete -f -
 
+undeploy-lite: manifests
+	cd config/manager && kustomize edit set image controller=${IMG}
+	kustomize build config/lite | kubectl delete -f -
+
 deploy-local: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
 	kustomize build config/local | kubectl apply -f -
@@ -85,6 +92,10 @@ deploy-controllerid: manifests
 deploy-cert: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
 	kustomize build config/cert | kubectl apply -f -
+
+deploy-lite: manifests
+	cd config/manager && kustomize edit set image controller=${IMG}
+	kustomize build config/lite | kubectl apply -f -
 
 
 # Generate manifests e.g. CRD, RBAC etc.
@@ -108,18 +119,38 @@ create-client: test
 	./hack/update-codegen.sh	
 
 # Build the docker image
-docker-build: test
+docker-build: test generate-resources
 	docker build . -t ${IMG}
+
+# Build the docker image for Redhat
+docker-build-redhat: test generate-resources
+	docker build . -f Dockerfile.redhat -t ${IMG_REDHAT}
+
 
 # Push the docker image
 docker-push:
 	docker push ${IMG}
 
+# Push the docker image
+docker-push-redhat:
+	docker push ${IMG_REDHAT}
+
+# password can be found at: https://connect.redhat.com/project/1074021/view
+redhat-image-scan:
+	docker login -u unused scan.connect.redhat.com
+	docker tag ${IMG_REDHAT} scan.connect.redhat.com/ospid-82f819a9-f40d-4d59-b67c-136491f22cfb/${IMG_VERSION_REDHAT}
+	docker push scan.connect.redhat.com/ospid-82f819a9-f40d-4d59-b67c-136491f22cfb/${IMG_VERSION_REDHAT}
 
 kind-image-install: docker-build
 	docker save ${IMG} > operator.tar
 	kind load image-archive operator.tar 
 
+kind-image-install-redhat: docker-build-redhat
+	docker save ${IMG_REDHAT} > operator.tar
+	kind load image-archive operator.tar 
+
+# find or download controller-gen
+# download controller-gen if necessary
 
 controller-gen:
 ifeq (, $(shell which controller-gen))
@@ -163,4 +194,3 @@ generate-resources:
 	mkdir generated
 	kustomize build config/default/ -o generated
 	cp generated/apiextensions.k8s.io_v1beta1_customresourcedefinition_seldondeployments.machinelearning.seldon.io.yaml testing/machinelearning.seldon.io_seldondeployments.yaml
-

@@ -2,6 +2,7 @@ if [ "$#" -ne 1 ]; then
     echo "Illegal number of parameters"
 fi
 
+rm -rf tmp
 mkdir tmp
 cd tmp
 kustomize build ../../config/$1 > tt.yaml
