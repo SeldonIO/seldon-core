@@ -34,10 +34,19 @@ spec:
       - args:
         - --enable-leader-election
         - --webhook-port={{ .Values.webhook.port }}
+        - --create-resources=$(CREATE_RESOURCES)
         - '{{- if .Values.singleNamespace }}--namespace={{ .Release.Namespace }}{{- end }}'
         command:
         - /manager
         env:
+        - name: WATCH_NAMESPACE
+          value: ''
+        - name: RELATED_IMAGE_EXECUTOR
+          value: ''
+        - name: RELATED_IMAGE_ENGINE
+          value: ''
+        - name: CREATE_RESOURCES
+          value: '{{ .Values.createResources }}'
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -92,6 +101,8 @@ spec:
           value: '{{ .Values.executor.serviceAccount.name }}'
         - name: EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX
           value: '{{ .Values.executor.defaultRequestLoggerEndpointPrefix }}'
+        - name: DEFAULT_USER_ID
+          value: '{{ .Values.defaultUserID }}'
         image: '{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}'
         imagePullPolicy: '{{ .Values.image.pullPolicy }}'
         name: manager
@@ -109,14 +120,18 @@ spec:
           requests:
             cpu: '{{ .Values.manager.cpuRequest }}'
             memory: '{{ .Values.manager.memoryRequest }}'
+{{- if not .Values.createResources }}
         volumeMounts:
         - mountPath: /tmp/k8s-webhook-server/serving-certs
           name: cert
           readOnly: true
+{{- end }}
       serviceAccountName: seldon-manager
       terminationGracePeriodSeconds: 10
+{{- if not .Values.createResources }}
       volumes:
       - name: cert
         secret:
           defaultMode: 420
           secretName: seldon-webhook-server-cert
+{{- end }}

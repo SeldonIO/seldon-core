@@ -8,9 +8,12 @@ metadata:
     fluentd: "true"
 spec:
   template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "1"
     spec:
       containers:
-        - image: docker.io/seldonio/seldon-request-logger:0.2.0
+        - image: docker.io/seldonio/seldon-request-logger:0.3.0
           imagePullPolicy: Always
           env:
            - name: ELASTICSEARCH_HOST

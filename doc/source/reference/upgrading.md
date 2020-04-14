@@ -13,19 +13,77 @@ As we moved to 1.x+ there are several breaking changes that need to be considere
 
 ### New Features / Breaking Changes
 
+#### Deployment Naming and Rolling Updates
+
+The deployments created by Seldon Core have been changed to follow a fixed scheme. It will now be:
+
+```
+<seldondeployment name>-<predictor name>-<podspec idx>-<container names>
+```
+
+So for example:
+
+```
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: rest-seldon
+spec:
+  name: restseldon
+  protocol: seldon
+  transport: rest  
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: seldonio/mock_classifier_rest:1.3
+          name: classifier
+    graph:
+      name: classifier
+      type: MODEL
+    name: model
+    replicas: 1
+```
+
+For the above resource, one Deployment will be created with name:
+
+```
+rest-seldon-model-0-classifier
+```
+
+This will change how rolling updates are done. Now any change to the first PodSpec above will be updated via a rolling update as expected if the names of the containers are not changed. If however you changed "classifier" to "classifier2" you would get a new deployment created which would replace the old deployment when running. 
+
+
 #### New Service Orchestrator
 
 From version 1.1 Seldon Core comes with a new service orchestrator written in Go which replaces the previous Java engine. Some breaking changes are present:
 
  * Metadata fields in the Seldon Protocol are no longer added. Any custom metata data will need to be added and exposed to Prometheus metrics by the individual components in the graph
  * All components in the graph must either be REST or gRPC and only the given protocol is exposed externally.
+ * The metric names placed in Prometheus have changed to include the `executor` name rather than `engine` : see the [analytics docs](../analytics/analytics.html)
 
 The new service orchestrator comes with several advantages including ability to handle Tensorflow REST and gRPC protocols and full metrics and tracing support for both REST and gRPC.
 
 For those wishing to use the deprecated Java engine service orchestrator see [the service orchestrator docs](../graph/svcorch.md) for details.
 
-### Upgrading process
+#### Ambassador Retries
 
+Ambassador retries has been removed from the previous hardwired value of 3. Retries is now available via an [annotation for Ambassador](../ingress/ambassador.html).
+
+
+### Python Wrapper Tag Update
+
+The Python Wrapper was using naming convention in the format 0.1 ... 0.18. In this release we have renamed the version of the Python Wrapper tag to match the same convention as the Executor, Operator, etc. This means that the Python Wrapper tag for this release is 1.1, and the snapshot would be 1.1.1-SNAPSHOT
+
+### Dated SNAPSHOTS
+
+Whenever a new PR was merged to master, we have set up our CI to build a "SNAPSHOT" version, which would contain the Docker images for that specific development / master-branch code. 
+
+Previously, we always had the SNAPSHOT tag being overriden with the latest. This didn't allow us to know what version someone may be trying out when using master, so we wanted to introduce a way to actually get unique tags for every image that gets landed into master.
+
+Now every time that a PR is landed to master, a new "dated" SNAPSHOT version is created, which pushes images with the tag `"<next-version>-SNAPSHOT_<timestamp>"`. A new branch is also created with the name `"v<next-version>-SNAPSHOT_<timestamp>"`, which contains the respective helm charts, and allows for the specific version (as outlined by the version in `version.txt`) to be installed.
+
+You can follow the instructions in the [installation page](../workflow/install.md) to install the snapshot version.
 
 ### Wrapper compatibility table
 
@@ -96,3 +154,6 @@ The Helm chart `seldon-core-operator` will require clusterwide RBAC and should b
 ##### Dropping support for KSonnet
 
 Ksonnet is now deprecated. You should convert to using Helm to install Seldon Core.
+
+
+

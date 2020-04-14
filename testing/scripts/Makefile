@@ -58,7 +58,7 @@ install_seldon: install_cert_manager
 		../../helm-charts/seldon-core-operator \
 		--namespace seldon-system \
 		--set istio.enabled=true \
-		--set istio.gateway=seldon-gateway \
+		--set istio.gateway=istio-system/seldon-gateway \
 		--set certManager.enabled=false \
 		--set executor.enabled=true \
 		--wait
@@ -68,6 +68,7 @@ install_istio:
 	kubectl rollout status deployment.apps/istio-ingressgateway -n istio-system
 	kubectl rollout status deployment.apps/istio-pilot -n istio-system
 	kubectl rollout status deployment.apps/istio-citadel -n istio-system
+	kubectl create -f ../resources/seldon-gateway.yaml -n istio-system
 
 
 create_namespaces:

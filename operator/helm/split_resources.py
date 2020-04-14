@@ -24,6 +24,7 @@ HELM_VERSION_IF_START = (
 )
 HELM_KUBEFLOW_IF_START = "{{- if .Values.kubeflow }}\n"
 HELM_KUBEFLOW_IF_NOT_START = "{{- if not .Values.kubeflow }}\n"
+HELM_CREATERESOURCES_IF_START = "{{- if not .Values.createResources }}\n"
 # HELM_SECRET_IF_START = '{{- if .Values.webhook.secretProvided -}}\n'
 HELM_IF_END = "{{- end }}\n"
 
@@ -49,7 +50,9 @@ HELM_ENV_SUBST = {
     "EXECUTOR_PROMETHEUS_PATH": "executor.prometheus.path",
     "EXECUTOR_CONTAINER_USER": "executor.user",
     "EXECUTOR_CONTAINER_SERVICE_ACCOUNT_NAME": "executor.serviceAccount.name",
+    "CREATE_RESOURCES": "createResources",
     "EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX": "executor.defaultRequestLoggerEndpointPrefix",
+    "DEFAULT_USER_ID": "defaultUserID",
 }
 HELM_VALUES_IMAGE_PULL_POLICY = "{{ .Values.image.pullPolicy }}"
 
@@ -69,7 +72,11 @@ def helm_release(value: str):
 if __name__ == "__main__":
     exp = args.prefix + "*"
     files = glob.glob(exp)
-    webhookData = '{{- $altNames := list ( printf "seldon-webhook-service.%s" .Release.Namespace ) ( printf "seldon-webhook-service.%s.svc" .Release.Namespace ) -}}\n'
+    webhookData = HELM_CREATERESOURCES_IF_START
+    webhookData = (
+        webhookData
+        + '{{- $altNames := list ( printf "seldon-webhook-service.%s" .Release.Namespace ) ( printf "seldon-webhook-service.%s.svc" .Release.Namespace ) -}}\n'
+    )
     webhookData = webhookData + '{{- $ca := genCA "custom-metrics-ca" 365 -}}\n'
     webhookData = (
         webhookData
@@ -114,14 +121,18 @@ if __name__ == "__main__":
                 ] = "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
 
                 # Resource requests
-                res["spec"]["template"]["spec"]["containers"][0]["resources"]["requests"][
-                    "cpu"] = helm_value("manager.cpuRequest")
-                res["spec"]["template"]["spec"]["containers"][0]["resources"]["requests"][
-                    "memory"] = helm_value("manager.memoryRequest")
+                res["spec"]["template"]["spec"]["containers"][0]["resources"][
+                    "requests"
+                ]["cpu"] = helm_value("manager.cpuRequest")
+                res["spec"]["template"]["spec"]["containers"][0]["resources"][
+                    "requests"
+                ]["memory"] = helm_value("manager.memoryRequest")
                 res["spec"]["template"]["spec"]["containers"][0]["resources"]["limits"][
-                    "cpu"] = helm_value("manager.cpuLimit")
+                    "cpu"
+                ] = helm_value("manager.cpuLimit")
                 res["spec"]["template"]["spec"]["containers"][0]["resources"]["limits"][
-                    "memory"] = helm_value("manager.memoryLimit")
+                    "memory"
+                ] = helm_value("manager.memoryLimit")
 
                 for env in res["spec"]["template"]["spec"]["containers"][0]["env"]:
                     if env["name"] in HELM_ENV_SUBST:
@@ -264,6 +275,8 @@ if __name__ == "__main__":
             # Spartatkus
             if name.find("spartakus") > -1:
                 fdata = HELM_SPARTAKUS_IF_START + fdata + HELM_IF_END
+            elif name == "seldon-webhook-rolebinding" or name == "seldon-webhook-role":
+                fdata = HELM_CREATERESOURCES_IF_START + fdata + HELM_IF_END
             # cluster roles for single namespace
             elif name == "seldon-manager-rolebinding" or name == "seldon-manager-role":
                 fdata = (
@@ -330,6 +343,23 @@ if __name__ == "__main__":
                 fdata = HELM_NOT_CERTMANAGER_IF_START + fdata + HELM_IF_END
             elif name == "seldondeployments.machinelearning.seldon.io":
                 fdata = HELM_CRD_IF_START + fdata + HELM_IF_END
+            elif kind == "service" and name == "seldon-webhook-service":
+                fdata = HELM_CREATERESOURCES_IF_START + fdata + HELM_IF_END
+            elif kind == "configmap" and name == "seldon-config":
+                fdata = HELM_CREATERESOURCES_IF_START + fdata + HELM_IF_END
+            elif kind == "deployment" and name == "seldon-controller-manager":
+                fdata = re.sub(
+                    r"(.*volumeMounts:\n.*\n.*\n.*\n)",
+                    HELM_CREATERESOURCES_IF_START + r"\1" + HELM_IF_END,
+                    fdata,
+                    re.M,
+                )
+                fdata = re.sub(
+                    r"(.*volumes:\n.*\n.*\n.*\n.*\n)",
+                    HELM_CREATERESOURCES_IF_START + r"\1" + HELM_IF_END,
+                    fdata,
+                    re.M,
+                )
 
             # make sure webhook is not quoted as its an int
             fdata = fdata.replace(
@@ -401,6 +431,7 @@ if __name__ == "__main__":
         webhookData,
         re.M,
     )
+    webhookData = webhookData + "\n" + HELM_IF_END
 
     filename = args.folder + "/" + "webhook.yaml"
     with open(filename, "w") as outfile:

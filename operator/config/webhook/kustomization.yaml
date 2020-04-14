@@ -5,7 +5,7 @@ resources:
 configurations:
 - kustomizeconfig.yaml
 
-# Comment this if you have a k8s cluster < 1.15 and want to use namespaced or labelled operators
+# Comment this if you have a k8s cluster < 1.15 as objectSelector is only available in >=1.15
 patchesJson6902:
 - target:
     group: admissionregistration.k8s.io

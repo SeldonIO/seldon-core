@@ -19,14 +19,6 @@ API_AMBASSADOR = "localhost:8003"
 API_ISTIO_GATEWAY = "localhost:8004"
 
 
-def get_s2i_python_version():
-    cmd = "cat ../../version.txt"
-    ret = Popen(cmd, shell=True, stdout=subprocess.PIPE)
-    output = ret.stdout.readline()
-    version = output.decode("utf-8").rstrip()
-    return version
-
-
 def get_seldon_version():
     ret = Popen("cat ../../version.txt", shell=True, stdout=subprocess.PIPE)
     output = ret.stdout.readline()

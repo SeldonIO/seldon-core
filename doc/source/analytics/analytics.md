@@ -14,14 +14,13 @@ Each metric has the following key value pairs for further filtering which will b
   * service
   * deployment_name
   * predictor_name
-  * predictor_version
-    * This will be derived from the predictor metadata labels
+  * predictor_version (This will be derived from the predictor metadata labels)
   * model_name
   * model_image
-  * model_image
+  * model_version
 
 
-### Helm Analytics Chart
+## Helm Analytics Chart
 
 Seldon Core provides an example Helm analytics chart that displays the above Prometheus metrics in Grafana. You can install it with:
 
@@ -50,12 +49,12 @@ kubectl port-forward svc/seldon-core-analytics-prometheus-seldon 3001:80 -n seld
 
 and then access it at http://localhost:3001/
 
-### Example
+## Example
 
 There is [an example notebook you can use to test the metrics](../examples/metrics.html).
 
 
-# Custom Metrics
+## Custom Metrics
 
 Seldon Core exposes basic metrics via Prometheus endpoints on its service orchestrator that include request count, request time percentiles and rolling accuracy for each running model as described in [metrics](./analytics.md) documentation.
 However, you may wish to expose custom metrics from your components which are automatically added to Prometheus.
@@ -116,7 +115,7 @@ message Metric {
 }
 ```
 
-## Metrics endpoints
+### Metrics endpoints
 
 Custom metrics are exposed directly by the Python wrapper.
 In order for `Prometheus` to scrape multiple endpoints from a single `Pod` we use `metrics` name for ports that expose `Prometheus` metrics:
@@ -151,20 +150,20 @@ prometheus.io/port: "8000"
 ```
 
 
-## Labels
+### Labels
 
 As we expose the metrics via `Prometheus`, if ```tags``` are added they must appear in every metric response otherwise `Prometheus` will consider such metrics as a new time series, see official [documentation](https://prometheus.io/docs/practices/naming/).
 
 Before Seldon Core 1.1 orchestrator enforced presence of same set of labels using the [micrometer](https://micrometer.io/) library to expose metrics. Exceptions would happen if this condition have been violated.
 
 
-## Supported wrappers
+### Supported wrappers
 
 At present the following Seldon Core wrappers provide integrations with custom metrics:
 
  * [Python Wrapper](../python/index.html)
 
 
-## Example
+### Example
 
 There is an [example notebook illustrating a model with custom metrics in python](../examples/custom_metrics.html).
