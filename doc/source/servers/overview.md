@@ -77,6 +77,7 @@ Next steps:
 - [XGBoost Server](xgboost.html)
 - [Tensorflow Serving](tensorflow.html)
 - [MLflow Server](mlflow.html)
+- [SKLearn Server with MinIO](../examples/minio-sklearn.html)
 
 You can also build and add your own [custom inference servers](./custom.md),
 which can then be used in a similar way as the pre-packaged ones.
