@@ -20,7 +20,6 @@ import (
 	"net/http"
 	"net/url"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
-	"time"
 )
 
 const (
@@ -71,12 +70,12 @@ func (r *SeldonRestApi) CreateHttpServer(port int) *http.Server {
 	address := fmt.Sprintf("0.0.0.0:%d", port)
 	r.Log.Info("Listening", "Address", address)
 
+	// Note that we leave the Server timeouts to 0. This means that the server
+	// will apply no timeout at all. Instead, we control that through the
+	// http.Client instance making requests to the underlying node graph servers.
 	return &http.Server{
 		Handler: r.Router,
 		Addr:    address,
-		// Good practice: enforce timeouts for servers you create!
-		WriteTimeout: 15 * time.Second,
-		ReadTimeout:  15 * time.Second,
 	}
 }
 
