@@ -130,6 +130,12 @@ test_notebooks: build_protos install
 		-m "notebooks" \
 		-W ignore test_notebooks.py::TestNotebooks 2>&1
 
+test_single:
+	pytest \
+		--verbose \
+		-s \
+		-W ignore test_prepackaged_servers.py::TestPrepack::test_text_alibi_explainer 2>&1
+
 .PHONY: clean
 clean:
 	rm -f proto/prediction*

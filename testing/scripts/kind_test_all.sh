@@ -133,7 +133,8 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
         elif [ "$TESTS_TO_RUN" == "notebooks" ]; then
             make test_notebooks
         elif [ "$TESTS_TO_RUN" == "base" ]; then
-            make test_parallel test_sequential
+            #make test_parallel test_sequential
+	    make test_single
         fi
         TEST_EXIT_VALUE=$?
         if [[ $TEST_EXIT_VALUE -gt 0 ]]; then
