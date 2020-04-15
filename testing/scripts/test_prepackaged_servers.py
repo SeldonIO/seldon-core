@@ -34,7 +34,6 @@ class TestPrepack(object):
         retry_run(f"kubectl apply -f {spec}  -n {namespace}")
         wait_for_status("tfserving", namespace)
         wait_for_rollout("tfserving", namespace)
-        time.sleep(1)
         logging.warning("Initial request")
         r = initial_rest_request(
             "tfserving",
@@ -98,7 +97,8 @@ class TestPrepack(object):
         retry_run(f"kubectl apply -f {spec} -n {namespace}")
         wait_for_status("movie", namespace)
         wait_for_rollout("movie", namespace, expected_deployments=2)
-        time.sleep(1)
+        logging.warning("sleeping - test!!!!")
+        time.sleep(1200)
         logging.warning("Initial request")
         r = initial_rest_request(
             "movie", namespace, data=["This is test data"], dtype="ndarray"
