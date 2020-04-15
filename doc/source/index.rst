@@ -103,6 +103,7 @@ Documentation Index
 
    Model Explanations <analytics/explainers.md>
    Outlier Detection <analytics/outlier_detection.md>
+   Drift Detection <analytics/drift_detection.md>   
    Routers (incl. Multi Armed Bandits)  <analytics/routers.md>   
    
 .. toctree::
