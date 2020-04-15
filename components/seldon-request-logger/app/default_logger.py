@@ -172,17 +172,17 @@ def extract_data_part(content):
 
         copy["dataType"] = "tabular"
         first_element = content_np.item(0)
-        if first_element is not None and not isinstance(first_element, (int, float)):
-            copy["dataType"] = "text"
 
-        if len(content_np.shape) > 2:
-            copy["dataType"] = "tabular"
-        if len(content_np.shape) > 3:
-            copy["dataType"] = "image"
+        set_datatype_from_numpy(content_np, copy, first_element)
         del copy["instances"]
     elif "predictions" in copy:
         copy["instance"] = copy["predictions"]
+        content_np = np.array(copy["predictions"])
+
         copy["dataType"] = "tabular"
+        first_element = content_np.item(0)
+
+        set_datatype_from_numpy(content_np, copy, first_element)
         del copy["predictions"]
     else:
         requestMsg = json_to_seldon_message(copy)
@@ -223,6 +223,23 @@ def extract_data_part(content):
     copy['payload'] = content
 
     return copy
+
+
+def set_datatype_from_numpy(content_np, copy, first_element):
+
+    if first_element is not None and not isinstance(first_element, (int, float)):
+        copy["dataType"] = "text"
+    if first_element is not None and isinstance(first_element, (int, float)):
+        copy["dataType"] = "number"
+    if content_np.shape is not None and len(content_np.shape) > 1:
+        #first dim is batch so second reveals whether instance is array
+        if content_np.shape[1] > 1:
+            copy["dataType"] = "tabular"
+    if len(content_np.shape) > 2:
+        copy["dataType"] = "tabular"
+    if len(content_np.shape) > 3:
+        copy["dataType"] = "image"
+
 
 
 def extractRow(i:int,requestMsg: prediction_pb2.SeldonMessage,req_datatype: str,req_features: np.ndarray,req_datadef: "prediction_pb2.SeldonMessage.data"):
