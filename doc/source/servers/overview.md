@@ -77,6 +77,7 @@ Next steps:
 - [XGBoost Server](xgboost.html)
 - [Tensorflow Serving](tensorflow.html)
 - [MLflow Server](mlflow.html)
+- [SKLearn Server with MinIO](../examples/minio-sklearn.html)
 
 You can also build and add your own [custom inference servers](./custom.md),
 which can then be used in a similar way as the pre-packaged ones.
@@ -135,7 +136,7 @@ type: Opaque
 data:
   AWS_ACCESS_KEY_ID: XXXX
   AWS_SECRET_ACCESS_KEY: XXXX
-  AWS_ENDPOINT: XXXX
+  AWS_ENDPOINT_URL: XXXX
   USE_SSL: XXXX
 ```
 
@@ -143,7 +144,7 @@ You can also create the secret with the following command:
 
 ```
 kubectl create secret generic seldon-init-container-secret \
-    --from-literal=AWS_ENDPOINT='XXXX' \
+    --from-literal=AWS_ENDPOINT_URL='XXXX' \
     --from-literal=AWS_ACCESS_KEY_ID='XXXX' \
     --from-literal=AWS_SECRET_ACCESS_KEY='XXXX' \
     --from-literal=USE_SSL=false
@@ -172,7 +173,7 @@ executor:
 
 It is also possible to provide an override value when you deploy your model using the SeldonDeploymen YAML. You can do this through the `envSecretRefName` value:
 
-```
+```yaml
 apiVersion: machinelearning.seldon.io/v1alpha2
 kind: SeldonDeployment
 metadata:
@@ -189,6 +190,17 @@ spec:
     name: default
     replicas: 1
 ```
+
+### Examples
+
+#### MinIO running inside same Kubernetes cluster
+Assuming that you have MinIO instance running on port `9000` avaible at `minio.minio-system.svc.cluster.local` and you want to reference bucket `mymodel` you would set
+```
+AWS_ENDPOINT_URL=http://minio.minio-system.svc.cluster.local:9000
+```
+with `modelUri` being set as `s3://mymodel`.
+
+For full example please see this [notebook](../examples/minio-sklearn.html).
 
 ## Adding Credentials for Google Cloud
 

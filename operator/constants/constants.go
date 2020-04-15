@@ -54,6 +54,6 @@ const (
 
 // Explainers
 const (
-	ExplainerPathSuffix = "/explainer"
+	ExplainerPathSuffix = "-explainer"
 	ExplainerNameSuffix = "-explainer"
 )

@@ -25,7 +25,7 @@ func basicAbassadorTests(t *testing.T, mlDep *machinelearningv1.SeldonDeployment
 	err = yaml.Unmarshal([]byte(parts[0]), &c)
 	g.Expect(err).To(BeNil())
 	if isExplainer {
-		g.Expect(c.Prefix).To(Equal("/seldon/default/mymodel" + constants.ExplainerPathSuffix + "/"))
+		g.Expect(c.Prefix).To(Equal("/seldon/default/mymodel" + constants.ExplainerPathSuffix + "/" + p.Name + "/"))
 	} else {
 		g.Expect(c.Prefix).To(Equal("/seldon/default/mymodel/"))
 	}

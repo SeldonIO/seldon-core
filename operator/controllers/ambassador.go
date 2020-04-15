@@ -80,8 +80,8 @@ func getAmbassadorRestConfig(mlDep *machinelearningv1.SeldonDeployment,
 
 	name := p.Name
 	if isExplainer {
-		name = name + constants.ExplainerNameSuffix
-		serviceNameExternal = serviceNameExternal + constants.ExplainerPathSuffix
+		name = p.Name + constants.ExplainerNameSuffix
+		serviceNameExternal = serviceNameExternal + constants.ExplainerPathSuffix + "/" + p.Name
 	}
 
 	c := AmbassadorConfig{
