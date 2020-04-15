@@ -7,4 +7,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: seldonio/seldon-core-operator
-  newTag: 1.1.0-SNAPSHOT
+  newTag: 1.1.0-SNAPSHOT_20200415092332

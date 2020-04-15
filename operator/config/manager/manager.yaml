@@ -52,7 +52,7 @@ spec:
         - name: AMBASSADOR_SINGLE_NAMESPACE
           value: "false"
         - name: ENGINE_CONTAINER_IMAGE_AND_VERSION
-          value: docker.io/seldonio/engine:1.1.0-SNAPSHOT
+          value: docker.io/seldonio/engine:1.1.0-SNAPSHOT_20200415092332
         - name: ENGINE_CONTAINER_IMAGE_PULL_POLICY
           value: IfNotPresent
         - name: ENGINE_CONTAINER_SERVICE_ACCOUNT_NAME
@@ -80,7 +80,7 @@ spec:
         - name: USE_EXECUTOR
           value: "true"
         - name: EXECUTOR_CONTAINER_IMAGE_AND_VERSION
-          value: seldonio/seldon-core-executor:1.1.0-SNAPSHOT
+          value: seldonio/seldon-core-executor:1.1.0-SNAPSHOT_20200415092332
         - name: EXECUTOR_CONTAINER_IMAGE_PULL_POLICY
           value: IfNotPresent
         - name: EXECUTOR_PROMETHEUS_PATH
