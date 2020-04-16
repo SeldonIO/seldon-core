@@ -103,7 +103,7 @@ To return metrics associated with a call create a method with signature as shown
     def metrics(self) -> List[Dict]:
 ```
 
-This method should return a Dictionary of metrics as described in the [custom metrics](../analytics/custom_metrics.md) docs.
+This method should return a Dictionary of metrics as described in the [custom metrics](../analytics/analytics.md#custom-metrics) docs.
 
 An illustrative example is shown below:
 
@@ -443,9 +443,53 @@ class Model:
 
 ### REST Metadata Endpoint
 The python wrapper will automatically expose a `/metadata` endpoint to return metadata about the loaded model.
-It is up to the developer to implement a `metadata` method in their class to provide an arbitrary `dict` back containing the model metadata.
+It is up to the developer to implement a `metadata` method in their class to provide a `dict` back containing the model metadata.
 
-Note: future work will most likely standardize `/metadata` endpoint and change behaviour of this method. See [this](https://github.com/SeldonIO/seldon-core/issues/1638) GitHub issue for details.
+#### Example format:
+```python
+class Model:
+    ...
+
+    def init_metadata(self):
+
+        meta = {
+            "name": "model-name",
+            "versions": ["model-version"],
+            "platform": "platform-name",
+            "inputs": [{"name": "input", "datatype": "BYTES", "shape": [1]}],
+            "outputs": [{"name": "output", "datatype": "BYTES", "shape": [1]}],
+        }
+
+        return meta
+```
+
+#### Validation
+Output of developer-defined `metadata` method will be validated to follow the [kfserving dataplane proposal](https://github.com/kubeflow/kfserving/blob/master/docs/predict-api/v2/required_api.md#model-metadata) protocol, see [this](https://github.com/SeldonIO/seldon-core/issues/1638) GitHub issue for details:
+```
+$metadata_model_response =
+{
+  "name" : $string,
+  "versions" : [ $string, ... ] #optional,
+  "platform" : $string,
+  "inputs" : [ $metadata_tensor, ... ],
+  "outputs" : [ $metadata_tensor, ... ]
+}
+```
+with
+```
+$metadata_tensor =
+{
+  "name" : $string,
+  "datatype" : $string,
+  "shape" : [ $number, ... ]
+}
+```
+
+If validation fails server will reply with `500` response `MICROSERVICE_BAD_METADATA` when requested for `metadata`.
+
+#### Examples:
+- [Basic Examples for Model with Metadata](../examples/metadata.html)
+- [SKLearn Server example with MinIO](../examples/minio-sklearn.html)
 
 
 
