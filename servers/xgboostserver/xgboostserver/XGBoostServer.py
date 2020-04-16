@@ -3,7 +3,11 @@ import seldon_core
 from seldon_core.user_model import SeldonComponent
 from typing import Dict, List, Union, Iterable
 import os
+import yaml
+import logging
 import xgboost as xgb
+
+logger = logging.getLogger(__name__)
 
 BOOSTER_FILE = "model.bst"
 
@@ -29,3 +33,18 @@ class XGBoostServer(SeldonComponent):
         dmatrix = xgb.DMatrix(X)
         result: np.ndarray = self._booster.predict(dmatrix)
         return result
+
+    def init_metadata(self):
+        file_path = os.path.join(self.model_uri, "metadata.yaml")
+
+        try:
+            with open(file_path, "r") as f:
+                return yaml.load(f.read())
+        except FileNotFoundError:
+            logger.debug(f"metadata file {file_path} does not exist")
+            return {}
+        except yaml.YAMLError:
+            logger.error(
+                f"metadata file {file_path} present but does not contain valid yaml"
+            )
+            return {}

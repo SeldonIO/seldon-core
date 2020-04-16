@@ -211,7 +211,7 @@ def test_router_bad_metrics():
     rv = client.get('/route?json={"data":{"ndarray":[]}}')
     j = json.loads(rv.data)
     logging.info(j)
-    assert rv.status_code == 400
+    assert rv.status_code == 500
 
 
 def test_router_feedback_ok():
