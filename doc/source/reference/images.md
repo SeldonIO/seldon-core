@@ -5,9 +5,9 @@
 
 | Description | Image URL | Stable Version | Development |
 |-------------|-----------|----------------|-------------|
-| [Seldon Operator](../workflow/install.md) | [seldonio/seldon-core-operator](https://hub.docker.com/r/seldonio/seldon-core-operator/tags/) | 1.0.2 | 1.0.3-SNAPSHOT |
-| [Seldon Service Orchestrator (Go)](../graph/svcorch.md)| [seldonio/seldon-core-executor](https://hub.docker.com/r/seldonio/executor/tags/) | 1.0.2 | 1.0.3-SNAPSHOT |
-| [Seldon Service Orchestrator (Java)](../graph/svcorch.html#using-the-java-engine) | [seldonio/engine](https://hub.docker.com/r/seldonio/engine/tags/) | 1.0.2 | 1.0.3-SNAPSHOT |
+| [Seldon Operator](../workflow/install.md) | [seldonio/seldon-core-operator](https://hub.docker.com/r/seldonio/seldon-core-operator/tags/) | 1.1.0 | 1.1.1-SNAPSHOT |
+| [Seldon Service Orchestrator (Go)](../graph/svcorch.md)| [seldonio/seldon-core-executor](https://hub.docker.com/r/seldonio/executor/tags/) | 1.1.0 | 1.1.1-SNAPSHOT |
+| [Seldon Service Orchestrator (Java)](../graph/svcorch.html#using-the-java-engine) | [seldonio/engine](https://hub.docker.com/r/seldonio/engine/tags/) | 1.1.0 | 1.1.1-SNAPSHOT |
 
 ## Pre-packaged servers
 
@@ -25,9 +25,9 @@
 
 | Description | Image URL | Stable Version | Development |
 |-------------|-----------|----------------|-------------|
-| [Seldon Python 3 (3.6) Wrapper for S2I](../python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python3](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3/tags/) | 0.18 | 0.19-SNAPSHOT |
-| [Seldon Python 3.6 Wrapper for S2I](../python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python36](https://hub.docker.com/r/seldonio/seldon-core-s2i-python36/tags/) | 0.18 | 0.19-SNAPSHOT |
-| [Seldon Python 3.7 Wrapper for S2I](../python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python37](https://hub.docker.com/r/seldonio/seldon-core-s2i-python37/tags/) | 0.18 | 0.19-SNAPSHOT |
+| [Seldon Python 3 (3.6) Wrapper for S2I](../python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python3](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3/tags/) | 1.1.0 | 1.1.1-SNAPSHOT |
+| [Seldon Python 3.6 Wrapper for S2I](../python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python36](https://hub.docker.com/r/seldonio/seldon-core-s2i-python36/tags/) | 1.1.0 | 1.1.1-SNAPSHOT |
+| [Seldon Python 3.7 Wrapper for S2I](../python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python37](https://hub.docker.com/r/seldonio/seldon-core-s2i-python37/tags/) | 1.1.0 | 1.1.1-SNAPSHOT |
 
 ## Server proxies
 
@@ -43,7 +43,7 @@
 
 | Description | Python Version | Version |
 |-------------|----------------|---------|
-| [seldon-core](https://pypi.org/project/seldon-core/) | >3.4,<3.7 | 1.0.2 |
+| [seldon-core](https://pypi.org/project/seldon-core/) | >3.4,<3.7 | 1.1.0 |
 | [seldon-core](https://pypi.org/project/seldon-core/) | 2,>=3,<3.7 | 0.2.6 (deprecated) |
 
 
