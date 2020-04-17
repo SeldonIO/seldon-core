@@ -1,0 +1,64 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: seldon-batch-
+spec:
+  entrypoint: seldon-batch-process
+  templates:
+  - name: seldon-batch-process
+    steps:
+    - - name: create-seldon-resource            
+        template: create-seldon-resource-template
+    - - name: wait-seldon-resource
+        template: wait-seldon-resource-template
+    - - name: process-batch-inputs
+        template: process-batch-inputs-template
+  - name: create-seldon-resource-template
+    resource:
+      action: create
+      manifest: |
+        apiVersion: machinelearning.seldon.io/v1
+        kind: SeldonDeployment
+        metadata:
+          name: "sklearn-{{workflow.uid}}"
+          ownerReferences:
+          - apiVersion: argoproj.io/v1alpha1
+            blockOwnerDeletion: true
+            kind: Workflow
+            name: "{{workflow.name}}"
+            uid: "{{workflow.uid}}"
+        spec:
+          name: "sklearn-{{workflow.uid}}"
+          predictors:
+            - graph:
+                children: []
+                implementation: SKLEARN_SERVER
+                modelUri: gs://seldon-models/sklearn/iris
+                name: classifier
+              name: default
+              replicas: 1
+  - name: wait-seldon-resource-template
+    script:
+      image: seldonio/core-builder:0.14
+      command: [bash]
+      source: |
+        kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id=sklearn -o jsonpath='{.items[0].metadata.name}')
+  - name: process-batch-inputs-template
+    script:
+      image: seldonio/seldon-core-s2i-python3:1.1.1-SNAPSHOT
+      command: [python]
+      source: |
+        from seldon_core.seldon_client import SeldonClient
+        import numpy as np
+        import time
+        time.sleep(10)
+        sc = SeldonClient(
+            gateway_endpoint="istio-ingressgateway.istio-system.svc.cluster.local",
+            deployment_name="sklearn-{{workflow.name}}",
+            namespace="default")
+        for i in range(10):
+            data = np.array([[i, i, i, i]])
+            output = sc.predict(data=data)
+            print(output.response)
+            
