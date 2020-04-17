@@ -211,15 +211,9 @@ class SeldonClient(object):
         logger.debug("Configuration:" + str(self.config))
 
     def _gather_args(self, **kwargs):
-        """
-        Performs a left outer join where kwargs is left and self.config is right
-        which means that the resulting dictionary will only have the variables provided
-        by the parameters available in kwargs, but will be overriden by kwargs if a value
-        that is not None is present.
-        """
-        for k, v in kwargs.items():
-            kwargs[k] = v if kwargs[k] is not None else self.config.get(k, None)
-        return kwargs
+        c2 = {**self.config}
+        c2.update({k: v for k, v in kwargs.items() if v is not None})
+        return c2
 
     def _validate_args(
         self,
@@ -1658,6 +1652,7 @@ def explain_predict_gateway(
     http_path: str = None,
     client_return_type: str = "dict",
     predictor: str = None,
+    **kwargs,
 ) -> SeldonClientPrediction:
     """
     REST explain request to Gateway Ingress

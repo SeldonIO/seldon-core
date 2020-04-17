@@ -98,7 +98,7 @@ class TestPrepack(object):
         retry_run(f"kubectl apply -f {spec} -n {namespace}")
         wait_for_status("movie", namespace)
         wait_for_rollout("movie", namespace, expected_deployments=2)
-        time.sleep(1)
+        time.sleep(5)
         logging.warning("Initial request")
         r = initial_rest_request(
             "movie", namespace, data=["This is test data"], dtype="ndarray"

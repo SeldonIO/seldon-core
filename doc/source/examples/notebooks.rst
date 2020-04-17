@@ -69,10 +69,7 @@ Advanced Machine Learning Insights
    :titlesonly:
 
    Tabular, Text and Image Model Explainers <explainer_examples>
-   Outlier Detection Seq2Seq LSTM <outlier_s2s>
-   Outlier Detection Variational AutoEncoder <outlier_vae>
-   Outlier Detection Isolation Forest <outlier_if>
-   Outlier Detection Mahalanobis <outlier_mb>
+   Outlier Detection on CIFAR10 <outlier_cifar10>
   
 
 MLOps: Scaling and Monitoring and Observability
