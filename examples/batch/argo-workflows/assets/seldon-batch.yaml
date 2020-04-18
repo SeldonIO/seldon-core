@@ -21,7 +21,7 @@ spec:
         apiVersion: machinelearning.seldon.io/v1
         kind: SeldonDeployment
         metadata:
-          name: "sklearn-{{workflow.uid}}"
+          name: "{{workflow.uid}}"
           ownerReferences:
           - apiVersion: argoproj.io/v1alpha1
             blockOwnerDeletion: true
@@ -29,7 +29,7 @@ spec:
             name: "{{workflow.name}}"
             uid: "{{workflow.uid}}"
         spec:
-          name: "sklearn-{{workflow.uid}}"
+          name: "{{workflow.uid}}"
           predictors:
             - graph:
                 children: []
@@ -43,7 +43,7 @@ spec:
       image: seldonio/core-builder:0.14
       command: [bash]
       source: |
-        kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id=sklearn -o jsonpath='{.items[0].metadata.name}')
+        kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id="{{workflow.uid}}" -o jsonpath='{.items[0].metadata.name}')
   - name: process-batch-inputs-template
     script:
       image: seldonio/seldon-core-s2i-python3:1.1.1-SNAPSHOT
@@ -55,7 +55,7 @@ spec:
         time.sleep(10)
         sc = SeldonClient(
             gateway_endpoint="istio-ingressgateway.istio-system.svc.cluster.local",
-            deployment_name="sklearn-{{workflow.name}}",
+            deployment_name="{{workflow.uid}}",
             namespace="default")
         for i in range(10):
             data = np.array([[i, i, i, i]])
