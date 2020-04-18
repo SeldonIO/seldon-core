@@ -1,0 +1,115 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: seldon-batch-object-store-
+spec:
+  entrypoint: seldon-batch-process
+  templates:
+  - name: seldon-batch-process
+    steps:
+    - - name: create-seldon-resource            
+        template: create-seldon-resource-template
+    - - name: wait-seldon-resource
+        template: wait-seldon-resource-template
+    - - name: download-object-store
+        template: download-object-store-template
+    - - name: process-batch-inputs
+        template: process-batch-inputs-template
+        arguments:
+          artifacts:
+          - name: input-data
+            from: "{{steps.download-object-store.outputs.artifacts.input-data}}"
+    - - name: upload-object-store
+        template: upload-object-store-template
+        arguments:
+          artifacts:
+          - name: output-data
+            from: "{{steps.process-batch-inputs.outputs.artifacts.output-data}}"
+            
+  - name: create-seldon-resource-template
+    resource:
+      action: create
+      manifest: |
+        apiVersion: machinelearning.seldon.io/v1
+        kind: SeldonDeployment
+        metadata:
+          name: "{{workflow.uid}}"
+          ownerReferences:
+          - apiVersion: argoproj.io/v1alpha1
+            blockOwnerDeletion: true
+            kind: Workflow
+            name: "{{workflow.name}}"
+            uid: "{{workflow.uid}}"
+        spec:
+          name: "{{workflow.uid}}"
+          predictors:
+            - graph:
+                children: []
+                implementation: SKLEARN_SERVER
+                modelUri: gs://seldon-models/sklearn/iris
+                name: classifier
+              name: default
+              replicas: 1
+                
+  - name: wait-seldon-resource-template
+    script:
+      image: seldonio/core-builder:0.14
+      command: [bash]
+      source: |
+        kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id="{{workflow.uid}}" -o jsonpath='{.items[0].metadata.name}')
+                     
+  - name: download-object-store-template
+    script:
+      image: minio/mc:RELEASE.2020-04-17T08-55-48Z
+      command: [bash]
+      source: |
+        mc config host add minio-local http://localhost:9000 minioadmin minioadmin
+        mc cp minio-local/data/input-data.txt /assets/input-data.txt
+    outputs:
+      artifacts:
+      - name: input-data
+        path: /assets/input-data.txt
+            
+  - name: process-batch-inputs-template
+    inputs:
+      artifacts:
+      - name: input-data
+        path: /assets/input-data.txt
+    outputs:
+      artifacts:
+      - name: output-data
+        path: /assets/output-data.txt
+    script:
+      image: seldonio/seldon-core-s2i-python3:1.1.1-SNAPSHOT
+      command: [python]
+      source: |
+        from seldon_core.seldon_client import SeldonClient
+        import numpy as np
+        import time
+        import json
+        time.sleep(10)
+        sc = SeldonClient(
+            gateway_endpoint="istio-ingressgateway.istio-system.svc.cluster.local",
+            deployment_name="{{workflow.uid}}",
+            namespace="default")
+        input_file = open("/assets/input-data.txt", "r")
+        output_file = open"/assets/output-data.txt", "w")
+        for d in f:
+            arr = json.loads(d)
+            data = np.array(arr)
+            output = sc.predict(data=data)
+            print(output.response)
+            output_file.write(f"{output.response}\n")
+            
+  - name: upload-object-store-template
+    inputs:
+      artifacts:
+      - name: output-data
+        path: /assets/output-data.txt
+    script:
+      image: minio/mc:RELEASE.2020-04-17T08-55-48Z
+      command: [bash]
+      source: |
+        cat /assets/output-data.txt
+        
