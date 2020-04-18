@@ -57,14 +57,15 @@ spec:
       image: seldonio/core-builder:0.14
       command: [bash]
       source: |
+        sleep 3
         kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id="{{workflow.uid}}" -o jsonpath='{.items[0].metadata.name}')
                      
   - name: download-object-store-template
     script:
       image: minio/mc:RELEASE.2020-04-17T08-55-48Z
-      command: [bash]
+      command: [sh]
       source: |
-        mc config host add minio-local http://localhost:9000 minioadmin minioadmin
+        mc config host add minio-local http://minio.default.svc.cluster.local:9000 minioadmin minioadmin
         mc cp minio-local/data/input-data.txt /assets/input-data.txt
     outputs:
       artifacts:
@@ -94,13 +95,14 @@ spec:
             deployment_name="{{workflow.uid}}",
             namespace="default")
         input_file = open("/assets/input-data.txt", "r")
-        output_file = open"/assets/output-data.txt", "w")
-        for d in f:
+        output_file = open("/assets/output-data.txt", "w")
+        print("SENDING DATA")
+        for d in input_file:
             arr = json.loads(d)
             data = np.array(arr)
             output = sc.predict(data=data)
-            print(output.response)
             output_file.write(f"{output.response}\n")
+        print("DONE SENDING DATA")
             
   - name: upload-object-store-template
     inputs:
@@ -109,7 +111,8 @@ spec:
         path: /assets/output-data.txt
     script:
       image: minio/mc:RELEASE.2020-04-17T08-55-48Z
-      command: [bash]
+      command: [sh]
       source: |
-        cat /assets/output-data.txt
+        mc config host add minio-local http://minio.default.svc.cluster.local:9000 minioadmin minioadmin
+        mc cp /assets/output-data.txt minio-local/data/output-data-{{workflow.name}}.txt
         
