@@ -1,3 +1,6 @@
+PREV_VERSION=1.0.0
+VERSION=1.1.0
+COMMUNITY_OPERATORS_BASE=/home/clive/work/seldon-core/redhat/community-operators
 
 .PHONY: recreate-generated
 generate-resources:
@@ -6,20 +9,25 @@ generate-resources:
 	kustomize build ../config/lite -o generated
 
 deploy/operator.yaml: generated
-	python hack/create_resources.py --input generated --output deploy
+	python hack/create_resources.py --input generated --output deploy --version ${VERSION}
 
 # DO NOT RUN - used during development and can be used for next version
 deploy/olm-catalog/seldon-operator/1.0.2/seldon-operator.v1.0.2.clusterserviceversion.yaml: 
 	operator-sdk generate csv --csv-version 1.0.2 --from-version 0.1.5
 
 # DO NOT RUN - used during development and can be used for next version
-.PHONY: clean_1.1.0
-clean_1.1.0:
-	rm -f deploy/olm-catalog/seldon-operator/1.1.0/seldon-operator.v1.1.0.clusterserviceversion.yaml
+.PHONY: clean_csv_${VERSION}
+clean_csv_${VERSION}:
+	rm -f deploy/olm-catalog/seldon-operator/${VERSION}/seldon-operator.v${VERSION}.clusterserviceversion.yaml
+
+.PHONY: clean_csv
+clean_csv: clean_csv_${VERSION}
 
 # DO NOT RUN - used during development and can be used for next version
-deploy/olm-catalog/seldon-operator/1.1.0/seldon-operator.v1.1.0.clusterserviceversion.yaml: 
-	operator-sdk generate csv --csv-version 1.1.0 --from-version 1.0.0 --update-crds
+deploy/olm-catalog/seldon-operator/${VERSION}/seldon-operator.v${VERSION}.clusterserviceversion.yaml: 
+	operator-sdk generate csv --csv-version ${VERSION} --from-version ${PREV_VERSION} --update-crds
+
+update_csv: clean_csv_${VERSION} deploy/olm-catalog/seldon-operator/${VERSION}/seldon-operator.v${VERSION}.clusterserviceversion.yaml
 
 #
 # TESTS
@@ -34,4 +42,35 @@ operator-courier_ui_validate:
 # See https://github.com/operator-framework/community-operators/blob/master/docs/testing-operators.md
 # Used to push bundle to quay.io for testing
 operator-courier_push:
-	operator-courier push deploy/olm-catalog/seldon-operator seldon seldon-operator 1.1.0 "$$QUAY_TOKEN"
+	operator-courier push deploy/olm-catalog/seldon-operator seldon seldon-operator ${VERSION} "$$QUAY_TOKEN"
+
+
+#
+# RELEASE
+#
+
+# Set COMMUNITY_OPERATORS_BASE env
+
+.PHONY: update_community
+update_community:
+	cp deploy/olm-catalog/seldon-operator/seldon-operator.package.yaml ${COMMUNITY_OPERATORS_BASE}/community-operators/seldon-operator
+	cp -r deploy/olm-catalog/seldon-operator/${VERSION} ${COMMUNITY_OPERATORS_BASE}/community-operators/seldon-operator/${VERSION}
+
+.PHONY: update_upstream
+update_upstream:
+	cp deploy/olm-catalog/seldon-operator/seldon-operator.package.yaml ${COMMUNITY_OPERATORS_BASE}/upstream-community-operators/seldon-operator
+	cp -r deploy/olm-catalog/seldon-operator/${VERSION} ${COMMUNITY_OPERATORS_BASE}/upstream-community-operators/seldon-operator/${VERSION}
+
+# See https://github.com/operator-framework/community-operators/blob/master/docs/using-scripts.md
+.PHONY: upstream_lint
+upstream_lint:
+	cd ${COMMUNITY_OPERATORS_BASE} && make operator.verify OP_PATH=upstream-community-operators/seldon-operator VERBOSE=1
+
+.PHONY: upstream_install
+upstream_install:
+	cd ${COMMUNITY_OPERATORS_BASE} && make operator.install OP_PATH=upstream-community-operators/seldon-operator
+
+.PHONY: upstream_test
+upstream_test:
+	cd ${COMMUNITY_OPERATORS_BASE} && make operator.test OP_PATH=upstream-community-operators/seldon-operator
+

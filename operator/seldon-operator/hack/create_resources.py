@@ -5,6 +5,7 @@ import yaml
 parser = argparse.ArgumentParser()
 parser.add_argument("--input", required=True, help="Input folder")
 parser.add_argument("--output", required=True, help="Output folder")
+parser.add_argument("--version", required=False, help="Fix version for images")
 args, _ = parser.parse_known_args()
 
 ROLE_FILE = "namespace_role.yaml"
@@ -17,6 +18,10 @@ OPERATOR_FILE = "operator.yaml"
 SERVICEACCOUNT_FILE = "service_account.yaml"
 
 WEBHOOK_PORT = 8443
+
+def updateImageVersion(existing: str, desired_version: str) -> str:
+    (image,_)=existing.split(":")
+    return image + ":" + desired_version
 
 if __name__ == "__main__":
     exp = args.input + "/*"
@@ -58,12 +63,19 @@ if __name__ == "__main__":
                             argIdx
                         ] = "--webhook-port=" + str(WEBHOOK_PORT)
 
+                # Update image if needed
+                if args.version:
+                    image = res["spec"]["template"]["spec"]["containers"][0]["image"]
+                    res["spec"]["template"]["spec"]["containers"][0]["image"] = updateImageVersion(image,args.version)
                 # Ensure functionality to generate uids respecting openshift is active
                 for env in res["spec"]["template"]["spec"]["containers"][0]["env"]:
                     if env["name"] == "EXECUTOR_CONTAINER_USER":
                         env["value"] = ""
                     if env["name"] == "ENGINE_CONTAINER_USER":
                         env["value"] = ""
+                    if args.version:
+                        if env["name"] == "ENGINE_CONTAINER_IMAGE_AND_VERSION" or env["name"] == "EXECUTOR_CONTAINER_IMAGE_AND_VERSION":
+                            env["value"] = updateImageVersion(env["value"],args.version)
 
                 print("Writing ", OPERATOR_FILE)
                 filename = args.output + "/" + OPERATOR_FILE

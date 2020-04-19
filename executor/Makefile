@@ -2,7 +2,7 @@ VERSION := $(shell cat ../version.txt)
 # Image URL to use all building/pushing image targets
 IMAGE_NAME_BASE=seldon-core-executor
 IMG ?= seldonio/${IMAGE_NAME_BASE}:${VERSION}
-IMG_VERSION_REDHAT ?= ${IMAGE_NAME_BASE}-ubi8:${VERSION}
+IMG_VERSION_REDHAT ?= ${IMAGE_NAME_BASE}-ubi8:1.1.0
 IMG_REDHAT ?= seldonio/${IMG_VERSION_REDHAT}
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
@@ -72,12 +72,11 @@ docker-push:
 docker-push-redhat:
 	docker push ${IMG_REDHAT}
 
-# password can be found at: https://connect.redhat.com/project/1074021/view
-# TODO update to correct project
-#redhat-image-scan:
-#	docker login -u unused scan.connect.redhat.com
-#	docker tag ${IMG_REDHAT} scan.connect.redhat.com/ospid-82f819a9-f40d-4d59-b67c-136491f22cfb/${IMG_VERSION_REDHAT}
-#	docker push scan.connect.redhat.com/ospid-82f819a9-f40d-4d59-b67c-136491f22cfb/${IMG_VERSION_REDHAT}
+# password can be found at: https://connect.redhat.com/project/3977851/view
+redhat-image-scan:
+	docker login -u unused scan.connect.redhat.com
+	docker tag ${IMG_REDHAT} scan.connect.redhat.com/ospid-fffb6f6b-90b5-4f1d-be69-71baa8fb16cb/${IMG_VERSION_REDHAT}
+	docker push scan.connect.redhat.com/ospid-fffb6f6b-90b5-4f1d-be69-71baa8fb16cb/${IMG_VERSION_REDHAT}
 
 kind-image-install: docker-build
 	kind load -v 3 docker-image ${IMG}
