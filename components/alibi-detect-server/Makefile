@@ -52,3 +52,24 @@ curl-outlier-detector-scores:
 	curl -v localhost:8080/ -d @./input.json -H "Alibi-Detect-Return-Feature-Score: true" -H "Alibi-Detect-Return-Instance-Score: true"
 
 
+#
+# RedHat
+#
+
+IMAGE_NAME_BASE=alibi-detect-server
+IMG_VERSION_REDHAT ?= ${IMAGE_NAME_BASE}-ubi8:1.1.0
+IMG_REDHAT ?= seldonio/${IMG_VERSION_REDHAT}
+
+# Build the docker image for Redhat
+docker-build-redhat: 
+	docker build . -f Dockerfile.redhat -t ${IMG_REDHAT}
+
+# Push the docker image
+docker-push-redhat:
+	docker push ${IMG_REDHAT}
+
+# password can be found at: https://connect.redhat.com/project/3993461/view
+redhat-image-scan:
+	docker login -u unused scan.connect.redhat.com
+	docker tag ${IMG_REDHAT} scan.connect.redhat.com/ospid-32ed6498-bce5-4c3b-9486-fe1c6e2582d3/${IMG_VERSION_REDHAT}
+	docker push scan.connect.redhat.com/ospid-32ed6498-bce5-4c3b-9486-fe1c6e2582d3/${IMG_VERSION_REDHAT}

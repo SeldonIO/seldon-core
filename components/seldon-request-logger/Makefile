@@ -36,3 +36,26 @@ test_single_dim:
       -H "CE-Source: dev.knative.example" \
       -H 'Content-Type: application/json' \
       -d '{"request": {"meta": {"puid": "71dlk7k1rhmci0cd8g5rmeolmn", "tags": {}, "routing": {}, "requestPath": {}, "metrics": []}, "data": {"names": ["f0", "f1"], "ndarray": [0.77, 0.63]}, "date": "2019-06-17T10:59:55.693Z[GMT]"}, "response": {"meta": {"puid": "71dlk7k1rhmci0cd8g5rmeolmn", "tags": {}, "routing": {}, "requestPath": {"classifier": "seldonio/mock_classifier:1.0"}, "metrics": []}, "data": {"names": ["proba"], "ndarray": [0.09826376903346358]}, "date": "2019-06-17T10:59:55.696Z[GMT]"}, "sdepName": "seldon-single-model"}'
+
+
+#
+# RedHat
+#
+
+IMAGE_NAME_BASE=seldon-request-logger
+IMG_VERSION_REDHAT ?= ${IMAGE_NAME_BASE}-ubi8:1.1.0
+IMG_REDHAT ?= seldonio/${IMG_VERSION_REDHAT}
+
+# Build the docker image for Redhat
+docker-build-redhat: 
+	docker build . -f Dockerfile.redhat -t ${IMG_REDHAT}
+
+# Push the docker image
+docker-push-redhat:
+	docker push ${IMG_REDHAT}
+
+# password can be found at: https://connect.redhat.com/project/3993051/view
+redhat-image-scan:
+	docker login -u unused scan.connect.redhat.com
+	docker tag ${IMG_REDHAT} scan.connect.redhat.com/ospid-62dca88a-015b-4d08-8c52-b709e55a7790/${IMG_VERSION_REDHAT}
+	docker push scan.connect.redhat.com/ospid-62dca88a-015b-4d08-8c52-b709e55a7790/${IMG_VERSION_REDHAT}
