@@ -75,6 +75,14 @@ spec:
               fieldPath: metadata.namespace
         - name: CONTROLLER_ID
           value: '{{ .Values.controllerId }}'
+        - name: CONTOUR_ENABLED
+          value: '{{ .Values.contour.enabled }}'
+        - name: CONTOUR_PREDICTOR_FQDN_TEMPLATE
+          value: '{{ .Values.contour.predictorTemplate }}'
+        - name: CONTOUR_EXPLAINER_FQDN_TEMPLATE
+          value: '{{ .Values.contour.explainerTemplate }}'
+        - name: CONTOUR_INGRESS_CLASS
+          value: '{{ .Values.contour.ingressClass }}'
         - name: AMBASSADOR_ENABLED
           value: '{{ .Values.ambassador.enabled }}'
         - name: AMBASSADOR_SINGLE_NAMESPACE

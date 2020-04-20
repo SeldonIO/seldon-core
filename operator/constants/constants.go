@@ -6,6 +6,8 @@ const (
 
 	GRPCRegExMatchAmbassador = "/(seldon.protos.*|tensorflow.serving.*)/.*"
 	GRPCRegExMatchIstio      = ".*tensorflow.*|.*seldon.protos.*"
+	GRPCPathPrefixTensorflow = "/tensorflow.serving."
+	GRPCPathPrefixSeldon     = "/seldon.protos."
 
 	PrePackedServerTensorflow = "TENSORFLOW_SERVER"
 	PrePackedServerSklearn    = "SKLEARN_SERVER"
@@ -39,6 +41,9 @@ const (
 	EventsDeleteVirtualService  = "DeleteVirtualService"
 	EventsCreateDestinationRule = "CreateDestinationRule"
 	EventsUpdateDestinationRule = "UpdateDestinationRule"
+	EventsCreateHTTPProxy       = "CreateHTTPProxy"
+	EventsUpdateHTTPProxy       = "UpdateHTTPProxy"
+	EventsDeleteHTTPProxy       = "DeleteHTTPProxy"
 	EventsCreateService         = "CreateService"
 	EventsUpdateService         = "UpdateService"
 	EventsDeleteService         = "DeleteService"

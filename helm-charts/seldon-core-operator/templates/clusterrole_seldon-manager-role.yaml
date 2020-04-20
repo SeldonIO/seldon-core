@@ -147,6 +147,18 @@ rules:
   - patch
   - update
 - apiGroups:
+  - projectcontour.io
+  resources:
+  - httpproxies
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
   - v1
   resources:
   - namespaces

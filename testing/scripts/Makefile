@@ -76,11 +76,15 @@ install_seldon: install_cert_manager
 	helm install seldon \
 		../../helm-charts/seldon-core-operator \
 		--namespace seldon-system \
+		--set contour.enabled=true \
 		--set istio.enabled=true \
 		--set istio.gateway=istio-system/seldon-gateway \
 		--set certManager.enabled=false \
 		--set executor.enabled=$(SELDON_E2E_TESTS_USE_EXECUTOR) \
 		--wait
+
+install_contour:
+	kubectl apply -f ../resources/contour_nodeport.yaml
 
 install_istio:
 	kubectl apply -f istio-1.4.2.yaml
@@ -101,7 +105,8 @@ set_namespace:
 install_metrics:
 	kubectl apply -f metrics.yaml
 
-kind_setup: create_namespaces helm_setup install_ambassador install_istio install_jaeger install_seldon set_namespace install_metrics
+kind_setup: create_namespaces helm_setup install_ambassador install_istio install_contour install_jaeger install_seldon set_namespace install_metrics
+
 port-forward-ambassador:
 	kubectl port-forward $$(kubectl get pods -n seldon -l app.kubernetes.io/name=ambassador -o jsonpath='{.items[0].metadata.name}') -n seldon 8003:8080
 

@@ -20,6 +20,7 @@ from google.protobuf import empty_pb2
 
 API_AMBASSADOR = "localhost:8003"
 API_ISTIO_GATEWAY = "localhost:8004"
+API_CONTOUR_GATEWAY = "localhost:8005"
 
 TESTING_ROOT_PATH = os.path.dirname(os.path.dirname(__file__))
 RESOURCES_PATH = os.path.join(TESTING_ROOT_PATH, "resources")

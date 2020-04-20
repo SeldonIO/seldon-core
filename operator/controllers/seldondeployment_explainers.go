@@ -18,6 +18,7 @@ package controllers
 
 import (
 	"fmt"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"sort"
 	"strconv"
@@ -26,12 +27,8 @@ import (
 	"encoding/json"
 	"github.com/go-logr/logr"
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
-	"github.com/seldonio/seldon-core/operator/constants"
 	"github.com/seldonio/seldon-core/operator/utils"
-	istio_networking "istio.io/api/networking/v1alpha3"
-	istio "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"os"
 )
@@ -77,7 +74,7 @@ func getExplainerConfigsFromMap(configMap *corev1.ConfigMap) (*ExplainerConfig, 
 	return explainerConfig, nil
 }
 
-func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, c *components, pSvcName string, podSecurityContect *corev1.PodSecurityContext, log logr.Logger) error {
+func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, c *components, pSvcName string, podSecurityContect *corev1.PodSecurityContext, ingresses []Ingress, log logr.Logger) error {
 
 	if !isEmptyExplainer(p.Explainer) {
 
@@ -121,7 +118,7 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 			portNum = p.Explainer.Endpoint.ServicePort
 		}
 		var pSvcEndpoint = ""
-		//Explainer only accepts http at present
+		// Explainer only accepts http at present
 		portType := "http"
 		httpPort = int(portNum)
 		customPort := getPort(portType, explainerContainer.Ports)
@@ -222,7 +219,7 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		c.deployments = append(c.deployments, deploy)
 
 		// Use seldondeployment name dash explainer as the external service name. This should allow canarying.
-		eSvc, err := createPredictorService(eSvcName, seldonId, p, mlDep, httpPort, grpcPort, true, log)
+		eSvc, err := createService(eSvcName, seldonId, p, mlDep, httpPort, grpcPort, true, ingresses, log)
 		if err != nil {
 			return err
 		}
@@ -235,137 +232,14 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		if grpcPort > 0 {
 			c.serviceDetails[eSvcName].GrpcEndpoint = eSvcName + "." + eSvc.Namespace + ":" + strconv.Itoa(grpcPort)
 		}
-		if utils.GetEnv(ENV_ISTIO_ENABLED, "false") == "true" {
-			vsvcs, dstRule := createExplainerIstioResources(eSvcName, p, mlDep, seldonId, getNamespace(mlDep), httpPort, grpcPort)
-			c.virtualServices = append(c.virtualServices, vsvcs...)
-			c.destinationRules = append(c.destinationRules, dstRule...)
+		for _, ingress := range ingresses {
+			ingressResources, err := ingress.GenerateExplainerResources(eSvcName, p, mlDep, seldonId, getNamespace(mlDep), httpPort, grpcPort)
+			if err != nil {
+				return err
+			}
+			c.ingressResources = mergeIngressResourceMap(c.ingressResources, ingressResources)
 		}
 	}
 
 	return nil
-}
-
-// Create istio virtual service and destination rule for explainer.
-// Explainers need one each with no traffic-splitting
-func createExplainerIstioResources(pSvcName string, p *machinelearningv1.PredictorSpec,
-	mlDep *machinelearningv1.SeldonDeployment,
-	seldonId string,
-	namespace string,
-	engine_http_port int,
-	engine_grpc_port int) ([]*istio.VirtualService, []*istio.DestinationRule) {
-
-	vsNameHttp := pSvcName + "-http"
-	if len(vsNameHttp) > 63 {
-		vsNameHttp = vsNameHttp[0:63]
-		vsNameHttp = strings.TrimSuffix(vsNameHttp, "-")
-	}
-
-	vsNameGrpc := pSvcName + "-grpc"
-	if len(vsNameGrpc) > 63 {
-		vsNameGrpc = vsNameGrpc[0:63]
-		vsNameGrpc = strings.TrimSuffix(vsNameGrpc, "-")
-	}
-
-	istio_gateway := utils.GetEnv(ENV_ISTIO_GATEWAY, "seldon-gateway")
-	httpVsvc := &istio.VirtualService{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      vsNameHttp,
-			Namespace: namespace,
-		},
-		Spec: istio_networking.VirtualService{
-			Hosts:    []string{"*"},
-			Gateways: []string{getAnnotation(mlDep, ANNOTATION_ISTIO_GATEWAY, istio_gateway)},
-			Http: []*istio_networking.HTTPRoute{
-				{
-					Match: []*istio_networking.HTTPMatchRequest{
-						{
-							Uri: &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Prefix{Prefix: "/seldon/" + namespace + "/" + mlDep.GetName() + constants.ExplainerPathSuffix + "/" + p.Name + "/"}},
-						},
-					},
-					Rewrite: &istio_networking.HTTPRewrite{Uri: "/"},
-				},
-			},
-		},
-	}
-
-	grpcVsvc := &istio.VirtualService{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      vsNameGrpc,
-			Namespace: namespace,
-		},
-		Spec: istio_networking.VirtualService{
-			Hosts:    []string{"*"},
-			Gateways: []string{getAnnotation(mlDep, ANNOTATION_ISTIO_GATEWAY, istio_gateway)},
-			Http: []*istio_networking.HTTPRoute{
-				{
-					Match: []*istio_networking.HTTPMatchRequest{
-						{
-							Uri: &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Prefix{Prefix: "/seldon.protos.Seldon/"}},
-							Headers: map[string]*istio_networking.StringMatch{
-								"seldon":    &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Exact{Exact: mlDep.GetName()}},
-								"namespace": &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Exact{Exact: namespace}},
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-
-	routesHttp := make([]*istio_networking.HTTPRouteDestination, 1)
-	routesGrpc := make([]*istio_networking.HTTPRouteDestination, 1)
-	drules := make([]*istio.DestinationRule, 1)
-
-	drule := &istio.DestinationRule{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      pSvcName,
-			Namespace: namespace,
-		},
-		Spec: istio_networking.DestinationRule{
-			Host: pSvcName,
-			Subsets: []*istio_networking.Subset{
-				{
-					Name: p.Name,
-					Labels: map[string]string{
-						"version": p.Labels["version"],
-					},
-				},
-			},
-		},
-	}
-
-	routesHttp[0] = &istio_networking.HTTPRouteDestination{
-		Destination: &istio_networking.Destination{
-			Host:   pSvcName,
-			Subset: p.Name,
-			Port: &istio_networking.PortSelector{
-				Number: uint32(engine_http_port),
-			},
-		},
-		Weight: int32(100),
-	}
-	routesGrpc[0] = &istio_networking.HTTPRouteDestination{
-		Destination: &istio_networking.Destination{
-			Host:   pSvcName,
-			Subset: p.Name,
-			Port: &istio_networking.PortSelector{
-				Number: uint32(engine_grpc_port),
-			},
-		},
-		Weight: int32(100),
-	}
-	drules[0] = drule
-
-	httpVsvc.Spec.Http[0].Route = routesHttp
-	grpcVsvc.Spec.Http[0].Route = routesGrpc
-	vscs := make([]*istio.VirtualService, 0, 2)
-	// explainer may not expose REST and grpc (presumably engine ensures predictors do?)
-	if engine_http_port > 0 {
-		vscs = append(vscs, httpVsvc)
-	}
-	if engine_grpc_port > 0 {
-		vscs = append(vscs, grpcVsvc)
-	}
-
-	return vscs, drules
 }

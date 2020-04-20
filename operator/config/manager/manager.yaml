@@ -69,6 +69,14 @@ spec:
               fieldPath: metadata.namespace
         - name: CONTROLLER_ID
           value: ""
+        - name: CONTOUR_ENABLED
+          value: "true"
+        - name: CONTOUR_PREDICTOR_FQDN_TEMPLATE
+          value: "{{.Name}}.{{.ObjectMeta.Namespace}}"
+        - name: CONTOUR_EXPLAINER_FQDN_TEMPLATE
+          value: "{{.Name}}-explainer.{{.ObjectMeta.Namespace}}"
+        - name: CONTOUR_INGRESS_CLASS
+          value: ""
         - name: AMBASSADOR_ENABLED
           value: "true"
         - name: AMBASSADOR_SINGLE_NAMESPACE

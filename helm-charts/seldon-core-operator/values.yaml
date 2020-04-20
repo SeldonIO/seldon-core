@@ -14,6 +14,12 @@ istio:
   enabled: false
   gateway: istio-system/seldon-gateway
   tlsMode: ""
+# If you have contour enabled you can configure it with the following flags
+contour:
+  enabled: false
+  predictorTemplate: "{{.Name}}.{{.ObjectMeta.Namespace}}"
+  explainerTemplate: "{{.Name}}-explainer.{{.ObjectMeta.Namespace}}"
+  ingressClass: ""
 
 # ## Install with Cert Manager
 # See installation page in documentation for more information

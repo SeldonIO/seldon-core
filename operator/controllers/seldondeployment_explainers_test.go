@@ -92,7 +92,8 @@ func TestExplainerImageRelated(t *testing.T) {
 		},
 	}
 	envExplainerImage = "explainer:123"
-	ei.createExplainer(sdep, &sdep.Spec.Predictors[0], &c, svcName, nil, ctrl.Log)
+	err = ei.createExplainer(sdep, &sdep.Spec.Predictors[0], &c, svcName, nil, nil, ctrl.Log)
+	g.Expect(err).To(BeNil())
 	g.Expect(len(c.deployments)).To(Equal(1))
 	g.Expect(c.deployments[0].Spec.Template.Spec.Containers[0].Image).To(Equal(envExplainerImage))
 }
@@ -141,8 +142,7 @@ var _ = Describe("createExplainer", func() {
 			Expect(err).To(BeNil())
 			p.Explainer = explainer
 			ei := NewExplainerInitializer(client)
-			err = ei.createExplainer(mlDep, p, c, pSvcName, nil, r.Log)
-
+			err = ei.createExplainer(mlDep, p, c, pSvcName, nil, nil, r.Log)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(c.deployments).To(BeEmpty())
 		},

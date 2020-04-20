@@ -12,6 +12,7 @@ from seldon_e2e_utils import (
     retry_run,
     API_AMBASSADOR,
     API_ISTIO_GATEWAY,
+    API_CONTOUR_GATEWAY,
     get_pod_name_for_sdep,
     wait_for_pod_shutdown,
     to_resources_path,
@@ -19,7 +20,9 @@ from seldon_e2e_utils import (
 
 
 with_api_gateways = pytest.mark.parametrize(
-    "api_gateway", [API_AMBASSADOR, API_ISTIO_GATEWAY], ids=["ambas", "istio"]
+    "api_gateway",
+    [API_AMBASSADOR, API_ISTIO_GATEWAY, API_CONTOUR_GATEWAY],
+    ids=["ambas", "istio", "contour"],
 )
 
 

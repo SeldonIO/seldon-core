@@ -1,6 +1,9 @@
 package controllers
 
 import (
+	"github.com/go-logr/logr"
+	"k8s.io/apimachinery/pkg/runtime"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"strconv"
 	"strings"
 
@@ -12,6 +15,9 @@ import (
 )
 
 const (
+	ENV_AMBASSADOR_ENABLED = "AMBASSADOR_ENABLED"
+	AMBASSADOR_ANNOTATION  = "getambassador.io/config"
+
 	ANNOTATION_REST_TIMEOUT            = "seldon.io/rest-timeout"
 	ANNOTATION_GRPC_TIMEOUT            = "seldon.io/grpc-timeout"
 	ANNOTATION_AMBASSADOR_CUSTOM       = "seldon.io/ambassador-config"
@@ -38,6 +44,41 @@ type AmbassadorCircuitBreakerConfig struct {
 	MaxPendingRequests int `yaml:"max_pending_requests,omitempty"`
 	MaxRequests        int `yaml:"max_requests,omitempty"`
 	MaxRetries         int `yaml:"max_retries,omitempty"`
+}
+
+type AmbassadorIngress struct{}
+
+func NewAmbassadorIngress() Ingress {
+	return &AmbassadorIngress{}
+}
+
+// Ambassador support doesn't require any k8s custom types
+func (i *AmbassadorIngress) AddToScheme(scheme *runtime.Scheme) {}
+
+func (i *AmbassadorIngress) SetupWithManager(mgr ctrl.Manager) ([]runtime.Object, error) {
+	return nil, nil
+}
+
+// Because Ambassador support creates no resources these do nothing
+func (i *AmbassadorIngress) GeneratePredictorResources(mlDep *machinelearningv1.SeldonDeployment, seldonId string, namespace string, ports []httpGrpcPorts, httpAllowed bool, grpcAllowed bool) (map[IngressResourceType][]runtime.Object, error) {
+	return nil, nil
+}
+
+func (i *AmbassadorIngress) GenerateExplainerResources(pSvcName string, p *machinelearningv1.PredictorSpec, mlDep *machinelearningv1.SeldonDeployment, seldonId string, namespace string, engineHttpPort int, engineGrpcPort int) (map[IngressResourceType][]runtime.Object, error) {
+	return nil, nil
+}
+
+func (i *AmbassadorIngress) CreateResources(resources map[IngressResourceType][]runtime.Object, instance *machinelearningv1.SeldonDeployment, log logr.Logger) (bool, error) {
+	return true, nil
+}
+
+// Integration with Ambassador is done solely through annotations on services
+func (i *AmbassadorIngress) GenerateServiceAnnotations(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, serviceName string, engineHttpPort, engineGrpcPort int, isExplainer bool) (map[string]string, error) {
+	annotation, err := getAmbassadorConfigs(mlDep, p, serviceName, engineHttpPort, engineGrpcPort, isExplainer)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]string{AMBASSADOR_ANNOTATION: annotation}, nil
 }
 
 // Struct for Ambassador configuration
@@ -126,9 +167,9 @@ func getAmbassadorRestConfig(mlDep *machinelearningv1.SeldonDeployment,
 	customRegexHeader string,
 	weight *int32,
 	shadowing bool,
-	engine_http_port int,
+	engineHttpPort int,
 	isExplainer bool,
-	instance_id string) (string, error) {
+	instanceId string) (string, error) {
 
 	namespace := getNamespace(mlDep)
 
@@ -155,7 +196,7 @@ func getAmbassadorRestConfig(mlDep *machinelearningv1.SeldonDeployment,
 		Name:       "seldon_" + mlDep.ObjectMeta.Name + "_" + name + "_rest_mapping",
 		Prefix:     "/seldon/" + serviceNameExternal + "/",
 		Rewrite:    "/",
-		Service:    serviceName + "." + namespace + ":" + strconv.Itoa(engine_http_port),
+		Service:    serviceName + "." + namespace + ":" + strconv.Itoa(engineHttpPort),
 		TimeoutMs:  timeout,
 	}
 
@@ -202,8 +243,8 @@ func getAmbassadorRestConfig(mlDep *machinelearningv1.SeldonDeployment,
 	if shadowing {
 		c.Shadow = &shadowing
 	}
-	if instance_id != "" {
-		c.InstanceId = instance_id
+	if instanceId != "" {
+		c.InstanceId = instanceId
 	}
 
 	circuitBreakerConfig, err := getAmbassadorCircuitBreakerConfig(mlDep)
@@ -233,9 +274,9 @@ func getAmbassadorGrpcConfig(mlDep *machinelearningv1.SeldonDeployment,
 	customRegexHeader string,
 	weight *int32,
 	shadowing bool,
-	engine_grpc_port int,
+	engineGrpcPort int,
 	isExplainer bool,
-	instance_id string) (string, error) {
+	instanceId string) (string, error) {
 
 	grpc := true
 	namespace := getNamespace(mlDep)
@@ -266,7 +307,7 @@ func getAmbassadorGrpcConfig(mlDep *machinelearningv1.SeldonDeployment,
 		PrefixRegex: &grpc,
 		Rewrite:     "",
 		Headers:     map[string]string{"seldon": serviceNameExternal},
-		Service:     serviceName + "." + namespace + ":" + strconv.Itoa(engine_grpc_port),
+		Service:     serviceName + "." + namespace + ":" + strconv.Itoa(engineGrpcPort),
 		TimeoutMs:   timeout,
 	}
 
@@ -311,8 +352,8 @@ func getAmbassadorGrpcConfig(mlDep *machinelearningv1.SeldonDeployment,
 	if shadowing {
 		c.Shadow = &shadowing
 	}
-	if instance_id != "" {
-		c.InstanceId = instance_id
+	if instanceId != "" {
+		c.InstanceId = instanceId
 	}
 
 	circuitBreakerConfig, err := getAmbassadorCircuitBreakerConfig(mlDep)
@@ -332,10 +373,10 @@ func getAmbassadorGrpcConfig(mlDep *machinelearningv1.SeldonDeployment,
 	return string(v), nil
 }
 
-// Get the configuration for ambassador using the servce name serviceName.
-// Up to 4 confgurations will be created covering REST, GRPC and cluster-wide and namespaced varieties.
+// Get the configuration for ambassador using the service name serviceName.
+// Up to 4 configurations will be created covering REST, GRPC and cluster-wide and namespaced varieties.
 // Annotations for Ambassador will be used to customize the configuration returned.
-func getAmbassadorConfigs(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, serviceName string, engine_http_port, engine_grpc_port int, isExplainer bool) (string, error) {
+func getAmbassadorConfigs(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, serviceName string, engineHttpPort, engineGrpcPort int, isExplainer bool) (string, error) {
 	if annotation := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_CUSTOM, ""); annotation != "" {
 		return annotation, nil
 	} else {
@@ -350,40 +391,40 @@ func getAmbassadorConfigs(mlDep *machinelearningv1.SeldonDeployment, p *machinel
 		serviceNameExternal := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_SERVICE, mlDep.GetName())
 		customHeader := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_HEADER, "")
 		customRegexHeader := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_REGEX_HEADER, "")
-		instance_id := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_ID, "")
+		instanceId := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_ID, "")
 
-		cRestGlobal, err := getAmbassadorRestConfig(mlDep, p, true, serviceName, serviceNameExternal, customHeader, customRegexHeader, weight, shadowing, engine_http_port, isExplainer, instance_id)
+		cRestGlobal, err := getAmbassadorRestConfig(mlDep, p, true, serviceName, serviceNameExternal, customHeader, customRegexHeader, weight, shadowing, engineHttpPort, isExplainer, instanceId)
 		if err != nil {
 			return "", err
 		}
-		cGrpcGlobal, err := getAmbassadorGrpcConfig(mlDep, p, true, serviceName, serviceNameExternal, customHeader, customRegexHeader, weight, shadowing, engine_grpc_port, isExplainer, instance_id)
+		cGrpcGlobal, err := getAmbassadorGrpcConfig(mlDep, p, true, serviceName, serviceNameExternal, customHeader, customRegexHeader, weight, shadowing, engineGrpcPort, isExplainer, instanceId)
 		if err != nil {
 			return "", err
 		}
-		cRestNamespaced, err := getAmbassadorRestConfig(mlDep, p, false, serviceName, serviceNameExternal, customHeader, customRegexHeader, weight, shadowing, engine_http_port, isExplainer, instance_id)
+		cRestNamespaced, err := getAmbassadorRestConfig(mlDep, p, false, serviceName, serviceNameExternal, customHeader, customRegexHeader, weight, shadowing, engineHttpPort, isExplainer, instanceId)
 		if err != nil {
 			return "", err
 		}
 
-		cGrpcNamespaced, err := getAmbassadorGrpcConfig(mlDep, p, false, serviceName, serviceNameExternal, customHeader, customRegexHeader, weight, shadowing, engine_grpc_port, isExplainer, instance_id)
+		cGrpcNamespaced, err := getAmbassadorGrpcConfig(mlDep, p, false, serviceName, serviceNameExternal, customHeader, customRegexHeader, weight, shadowing, engineGrpcPort, isExplainer, instanceId)
 		if err != nil {
 			return "", err
 		}
 
 		// Return the appropriate set of config based on whether http and/or grpc is active
-		if engine_http_port > 0 && engine_grpc_port > 0 {
+		if engineHttpPort > 0 && engineGrpcPort > 0 {
 			if utils.GetEnv("AMBASSADOR_SINGLE_NAMESPACE", "false") == "true" {
 				return YAML_SEP + cRestGlobal + YAML_SEP + cGrpcGlobal + YAML_SEP + cRestNamespaced + YAML_SEP + cGrpcNamespaced, nil
 			} else {
 				return YAML_SEP + cRestGlobal + YAML_SEP + cGrpcGlobal, nil
 			}
-		} else if engine_http_port > 0 {
+		} else if engineHttpPort > 0 {
 			if utils.GetEnv("AMBASSADOR_SINGLE_NAMESPACE", "false") == "true" {
 				return YAML_SEP + cRestGlobal + YAML_SEP + cRestNamespaced, nil
 			} else {
 				return YAML_SEP + cRestGlobal, nil
 			}
-		} else if engine_grpc_port > 0 {
+		} else if engineGrpcPort > 0 {
 			if utils.GetEnv("AMBASSADOR_SINGLE_NAMESPACE", "false") == "true" {
 				return YAML_SEP + cGrpcGlobal + YAML_SEP + cGrpcNamespaced, nil
 			} else {

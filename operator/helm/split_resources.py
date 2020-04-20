@@ -30,6 +30,10 @@ HELM_CREATERESOURCES_RBAC_IF_START = "{{- if .Values.managerCreateResources }}\n
 HELM_IF_END = "{{- end }}\n"
 
 HELM_ENV_SUBST = {
+    "CONTOUR_ENABLED": "contour.enabled",
+    "CONTOUR_PREDICTOR_FQDN_TEMPLATE": "contour.predictorTemplate",
+    "CONTOUR_EXPLAINER_FQDN_TEMPLATE": "contour.explainerTemplate",
+    "CONTOUR_INGRESS_CLASS": "contour.ingressClass",
     "AMBASSADOR_ENABLED": "ambassador.enabled",
     "AMBASSADOR_SINGLE_NAMESPACE": "ambassador.singleNamespace",
     "ENGINE_SERVER_GRPC_PORT": "engine.grpc.port",

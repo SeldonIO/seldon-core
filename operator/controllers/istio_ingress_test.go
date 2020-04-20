@@ -2,9 +2,9 @@ package controllers
 
 import (
 	"context"
+	"k8s.io/client-go/tools/record"
 	"testing"
 
-	logrtesting "github.com/go-logr/logr/testing"
 	. "github.com/onsi/gomega"
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha2"
@@ -129,12 +129,24 @@ func TestCleanVirtualServices(t *testing.T) {
 	err = client.Create(context.Background(), vsvcRouge2)
 	g.Expect(err).To(BeNil())
 
-	okList := []*istio.VirtualService{vsvcOk}
-	cleaner := &ResourceCleaner{instance: foundInstance, client: client, virtualServices: okList, logger: logrtesting.TestLogger{}}
-	deleted, err := cleaner.cleanUnusedVirtualServices()
+	okList := []runtime.Object{vsvcOk}
+	logger := ctrl.Log.WithName("controllers").WithName("SeldonDeployment")
+	recorder := record.NewFakeRecorder(10)
+	ready, deleted, err := cleanupVirtualServices(client, recorder, instance, okList, logger)
 	g.Expect(err).To(BeNil())
+	g.Expect(ready).To(BeTrue())
 	g.Expect(len(deleted)).To(Equal(2))
 	g.Expect(deleted[0].Name).To(Equal(nameRouge1))
 	g.Expect(deleted[1].Name).To(Equal(nameRouge2))
 
+	// Delete events should be emitted
+	expectedEvents := 2
+	var events []string
+	for i := 0; i < expectedEvents; i++ {
+		evt := <-recorder.Events
+		events = append(events, evt)
+	}
+	g.Expect(len(events)).To(Equal(expectedEvents))
+	g.Expect(events[0]).To(Equal("Normal DeleteVirtualService Delete VirtualService \"name-rouge1\""))
+	g.Expect(events[1]).To(Equal("Normal DeleteVirtualService Delete VirtualService \"name-rouge2\""))
 }

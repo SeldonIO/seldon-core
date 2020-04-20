@@ -17,8 +17,8 @@ limitations under the License.
 package controllers
 
 import (
-	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"strconv"
@@ -27,7 +27,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
-	types2 "github.com/gogo/protobuf/types"
+	"github.com/go-logr/logr"
 	"github.com/seldonio/seldon-core/operator/constants"
 	"github.com/seldonio/seldon-core/operator/utils"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -37,18 +37,11 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/tools/record"
 	"knative.dev/pkg/kmp"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-
-	"github.com/go-logr/logr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 
-	"encoding/json"
-
-	istio_networking "istio.io/api/networking/v1alpha3"
-	istio "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscaling "k8s.io/api/autoscaling/v2beta1"
 	corev1 "k8s.io/api/core/v1"
@@ -63,18 +56,18 @@ const (
 	DEFAULT_ENGINE_CONTAINER_PORT = 8000
 	DEFAULT_ENGINE_GRPC_PORT      = 5001
 
-	AMBASSADOR_ANNOTATION = "getambassador.io/config"
-	LABEL_CONTROLLER_ID   = "seldon.io/controller-id"
+	LABEL_CONTROLLER_ID = "seldon.io/controller-id"
 )
 
 // SeldonDeploymentReconciler reconciles a SeldonDeployment object
 type SeldonDeploymentReconciler struct {
-	client.Client
+	Client    client.Client
 	Log       logr.Logger
 	Scheme    *runtime.Scheme
 	Namespace string
 	Recorder  record.EventRecorder
 	ClientSet kubernetes.Interface
+	Ingresses []Ingress
 }
 
 //---------------- Old part
@@ -84,8 +77,7 @@ type components struct {
 	deployments           []*appsv1.Deployment
 	services              []*corev1.Service
 	hpas                  []*autoscaling.HorizontalPodAutoscaler
-	virtualServices       []*istio.VirtualService
-	destinationRules      []*istio.DestinationRule
+	ingressResources      map[IngressResourceType][]runtime.Object
 	defaultDeploymentName string
 	addressable           *machinelearningv1.SeldonAddressable
 }
@@ -135,220 +127,30 @@ func createHpa(podSpec *machinelearningv1.SeldonPodSpec, deploymentName string, 
 	return &hpa
 }
 
-// Create istio virtual service and destination rule.
-// Creates routes for each predictor with traffic weight split
-func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
-	seldonId string,
-	namespace string,
-	ports []httpGrpcPorts,
-	httpAllowed bool,
-	grpcAllowed bool) ([]*istio.VirtualService, []*istio.DestinationRule, error) {
-
-	istio_gateway := utils.GetEnv(ENV_ISTIO_GATEWAY, "seldon-gateway")
-	istioTLSMode := utils.GetEnv(ENV_ISTIO_TLS_MODE, "")
-	istioRetriesAnnotation := getAnnotation(mlDep, ANNOTATION_ISTIO_RETRIES, "")
-	istioRetriesTimeoutAnnotation := getAnnotation(mlDep, ANNOTATION_ISTIO_RETRIES_TIMEOUT, "1")
-	istioRetries := 0
-	istioRetriesTimeout := 1
-	var err error
-
-	if istioRetriesAnnotation != "" {
-		istioRetries, err = strconv.Atoi(istioRetriesAnnotation)
-		if err != nil {
-			return nil, nil, err
-		}
-		istioRetriesTimeout, err = strconv.Atoi(istioRetriesTimeoutAnnotation)
-		if err != nil {
-			return nil, nil, err
-		}
-	}
-	httpVsvc := &istio.VirtualService{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      seldonId + "-http",
-			Namespace: namespace,
-		},
-		Spec: istio_networking.VirtualService{
-			Hosts:    []string{"*"},
-			Gateways: []string{getAnnotation(mlDep, ANNOTATION_ISTIO_GATEWAY, istio_gateway)},
-			Http: []*istio_networking.HTTPRoute{
-				{
-					Match: []*istio_networking.HTTPMatchRequest{
-						{
-							Uri: &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Prefix{Prefix: "/seldon/" + namespace + "/" + mlDep.Name + "/"}},
-						},
-					},
-					Rewrite: &istio_networking.HTTPRewrite{Uri: "/"},
-				},
-			},
-		},
-	}
-
-	grpcVsvc := &istio.VirtualService{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      seldonId + "-grpc",
-			Namespace: namespace,
-		},
-		Spec: istio_networking.VirtualService{
-			Hosts:    []string{"*"},
-			Gateways: []string{getAnnotation(mlDep, ANNOTATION_ISTIO_GATEWAY, istio_gateway)},
-			Http: []*istio_networking.HTTPRoute{
-				{
-					Match: []*istio_networking.HTTPMatchRequest{
-						{
-							Uri: &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Regex{Regex: constants.GRPCRegExMatchIstio}},
-							Headers: map[string]*istio_networking.StringMatch{
-								"seldon":    &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Exact{Exact: mlDep.Name}},
-								"namespace": &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Exact{Exact: namespace}},
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-	// Add retries
-	if istioRetries > 0 {
-		httpVsvc.Spec.Http[0].Retries = &istio_networking.HTTPRetry{Attempts: int32(istioRetries), PerTryTimeout: &types2.Duration{Seconds: int64(istioRetriesTimeout)}, RetryOn: "gateway-error,connect-failure,refused-stream"}
-		grpcVsvc.Spec.Http[0].Retries = &istio_networking.HTTPRetry{Attempts: int32(istioRetries), PerTryTimeout: &types2.Duration{Seconds: int64(istioRetriesTimeout)}, RetryOn: "gateway-error,connect-failure,refused-stream"}
-	}
-
-	// shadows don't get destinations in the vs as a shadow is a mirror instead
-	var shadows int = 0
-	for i := 0; i < len(mlDep.Spec.Predictors); i++ {
-		p := mlDep.Spec.Predictors[i]
-		if p.Shadow == true {
-			shadows += 1
-		}
-	}
-
-	routesHttp := make([]*istio_networking.HTTPRouteDestination, len(mlDep.Spec.Predictors)-shadows)
-	routesGrpc := make([]*istio_networking.HTTPRouteDestination, len(mlDep.Spec.Predictors)-shadows)
-
-	// the shdadow/mirror entry does need a DestinationRule though
-	drules := make([]*istio.DestinationRule, len(mlDep.Spec.Predictors))
-	routesIdx := 0
-	for i := 0; i < len(mlDep.Spec.Predictors); i++ {
-
-		p := mlDep.Spec.Predictors[i]
-		pSvcName := machinelearningv1.GetPredictorKey(mlDep, &p)
-
-		drule := &istio.DestinationRule{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      pSvcName,
-				Namespace: namespace,
-			},
-			Spec: istio_networking.DestinationRule{
-				Host: pSvcName,
-				Subsets: []*istio_networking.Subset{
-					{
-						Name: p.Name,
-						Labels: map[string]string{
-							"version": p.Labels["version"],
-						},
-					},
-				},
-			},
-		}
-
-		if istioTLSMode != "" {
-			drule.Spec.TrafficPolicy = &istio_networking.TrafficPolicy{
-				Tls: &istio_networking.TLSSettings{
-					Mode: istio_networking.TLSSettings_TLSmode(istio_networking.TLSSettings_TLSmode_value[istioTLSMode]),
-				},
-			}
-		}
-		drules[i] = drule
-
-		if p.Shadow == true {
-			//if there's a shadow then add a mirror section to the VirtualService
-
-			httpVsvc.Spec.Http[0].Mirror = &istio_networking.Destination{
-				Host:   pSvcName,
-				Subset: p.Name,
-				Port: &istio_networking.PortSelector{
-					Number: uint32(ports[i].httpPort),
-				},
-			}
-
-			grpcVsvc.Spec.Http[0].Mirror = &istio_networking.Destination{
-				Host:   pSvcName,
-				Subset: p.Name,
-				Port: &istio_networking.PortSelector{
-					Number: uint32(ports[i].grpcPort),
-				},
-			}
-
-			continue
-		}
-
-		//we split by adding different routes with their own Weights
-		//so not by tag - different destinations (like https://istio.io/docs/tasks/traffic-management/traffic-shifting/) distinguished by host
-		routesHttp[routesIdx] = &istio_networking.HTTPRouteDestination{
-			Destination: &istio_networking.Destination{
-				Host:   pSvcName,
-				Subset: p.Name,
-				Port: &istio_networking.PortSelector{
-					Number: uint32(ports[i].httpPort),
-				},
-			},
-			Weight: p.Traffic,
-		}
-		routesGrpc[routesIdx] = &istio_networking.HTTPRouteDestination{
-			Destination: &istio_networking.Destination{
-				Host:   pSvcName,
-				Subset: p.Name,
-				Port: &istio_networking.PortSelector{
-					Number: uint32(ports[i].grpcPort),
-				},
-			},
-			Weight: p.Traffic,
-		}
-		routesIdx += 1
-
-	}
-	httpVsvc.Spec.Http[0].Route = routesHttp
-	grpcVsvc.Spec.Http[0].Route = routesGrpc
-
-	if httpAllowed && grpcAllowed {
-		vscs := make([]*istio.VirtualService, 2)
-		vscs[0] = httpVsvc
-		vscs[1] = grpcVsvc
-		return vscs, drules, nil
-	} else if httpAllowed {
-		vscs := make([]*istio.VirtualService, 1)
-		vscs[0] = httpVsvc
-		return vscs, drules, nil
-	} else {
-		vscs := make([]*istio.VirtualService, 1)
-		vscs[0] = grpcVsvc
-		return vscs, drules, nil
-	}
-}
-
-func getEngineHttpPort() (engine_http_port int, err error) {
+func getEngineHttpPort() (engineHttpPort int, err error) {
 	// Get engine http port from environment or use default
-	engine_http_port = DEFAULT_ENGINE_CONTAINER_PORT
-	var env_engine_http_port = utils.GetEnv(ENV_DEFAULT_ENGINE_SERVER_PORT, "")
-	if env_engine_http_port != "" {
-		engine_http_port, err = strconv.Atoi(env_engine_http_port)
+	engineHttpPort = DEFAULT_ENGINE_CONTAINER_PORT
+	var envEngineHttpPort = utils.GetEnv(ENV_DEFAULT_ENGINE_SERVER_PORT, "")
+	if envEngineHttpPort != "" {
+		engineHttpPort, err = strconv.Atoi(envEngineHttpPort)
 		if err != nil {
 			return 0, err
 		}
 	}
-	return engine_http_port, nil
+	return engineHttpPort, nil
 }
 
-func getEngineGrpcPort() (engine_grpc_port int, err error) {
+func getEngineGrpcPort() (engineGrpcPort int, err error) {
 	// Get engine grpc port from environment or use default
-	engine_grpc_port = DEFAULT_ENGINE_GRPC_PORT
-	var env_engine_grpc_port = utils.GetEnv(ENV_DEFAULT_ENGINE_SERVER_GRPC_PORT, "")
-	if env_engine_grpc_port != "" {
-		engine_grpc_port, err = strconv.Atoi(env_engine_grpc_port)
+	engineGrpcPort = DEFAULT_ENGINE_GRPC_PORT
+	var envEngineGrpcPort = utils.GetEnv(ENV_DEFAULT_ENGINE_SERVER_GRPC_PORT, "")
+	if envEngineGrpcPort != "" {
+		engineGrpcPort, err = strconv.Atoi(envEngineGrpcPort)
 		if err != nil {
 			return 0, err
 		}
 	}
-	return engine_grpc_port, nil
+	return engineGrpcPort, nil
 }
 
 // Create all the components (Deployments, Services etc)
@@ -358,12 +160,12 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 	seldonId := machinelearningv1.GetSeldonDeploymentName(mlDep)
 	namespace := getNamespace(mlDep)
 
-	engine_http_port, err := getEngineHttpPort()
+	engineHttpPort, err := getEngineHttpPort()
 	if err != nil {
 		return nil, err
 	}
 
-	engine_grpc_port, err := getEngineGrpcPort()
+	engineGrpcPort, err := getEngineGrpcPort()
 	if err != nil {
 		return nil, err
 	}
@@ -399,7 +201,7 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 		// Add engine deployment if separate
 		hasSeparateEnginePod := strings.ToLower(mlDep.Spec.Annotations[machinelearningv1.ANNOTATION_SEPARATE_ENGINE]) == "true"
 		if hasSeparateEnginePod && !noEngine {
-			deploy, err := createEngineDeployment(mlDep, &p, pSvcName, engine_http_port, engine_grpc_port)
+			deploy, err := createEngineDeployment(mlDep, &p, pSvcName, engineHttpPort, engineGrpcPort)
 			if err != nil {
 				return nil, err
 			}
@@ -467,7 +269,7 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 						if svc.Spec.Ports[0].Name == "grpc" {
 							httpAllowed = false
 							externalPorts[i] = httpGrpcPorts{httpPort: 0, grpcPort: port}
-							psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, 0, port, false, log)
+							psvc, err := createService(pSvcName, seldonId, &p, mlDep, 0, port, false, r.Ingresses, log)
 							if err != nil {
 								return nil, err
 							}
@@ -481,7 +283,7 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 						} else {
 							externalPorts[i] = httpGrpcPorts{httpPort: port, grpcPort: 0}
 							grpcAllowed = false
-							psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, port, 0, false, log)
+							psvc, err := createService(pSvcName, seldonId, &p, mlDep, port, 0, false, r.Ingresses, log)
 							if err != nil {
 								return nil, err
 							}
@@ -534,23 +336,23 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 					// by this point we should have created the Deployment corresponding to the pu marked localhost - if we haven't something has gone wrong
 					return nil, fmt.Errorf("Engine not separate and no deployment for pu with localhost service - not clear where to inject engine")
 				}
-				err := addEngineToDeployment(mlDep, &p, engine_http_port, engine_grpc_port, pSvcName, deploy)
+				err := addEngineToDeployment(mlDep, &p, engineHttpPort, engineGrpcPort, pSvcName, deploy)
 				if err != nil {
 					return nil, err
 				}
 
 			}
 
-			//Create Service for Predictor - exposed externally (ambassador or istio) and points at engine
-			httpPort := engine_http_port
+			// Create Service for Predictor - exposed externally via ingress plugin and points at engine
+			httpPort := engineHttpPort
 			if httpAllowed == false {
 				httpPort = 0
 			}
-			grpcPort := engine_grpc_port
+			grpcPort := engineGrpcPort
 			if grpcAllowed == false {
 				grpcPort = 0
 			}
-			psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, httpPort, grpcPort, false, log)
+			psvc, err := createService(pSvcName, seldonId, &p, mlDep, httpPort, grpcPort, false, r.Ingresses, log)
 			if err != nil {
 
 				return nil, err
@@ -560,18 +362,18 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 			if httpAllowed && grpcAllowed {
 				c.serviceDetails[pSvcName] = &machinelearningv1.ServiceStatus{
 					SvcName:      pSvcName,
-					HttpEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engine_http_port),
-					GrpcEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engine_grpc_port),
+					HttpEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engineHttpPort),
+					GrpcEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engineGrpcPort),
 				}
 			} else if httpAllowed {
 				c.serviceDetails[pSvcName] = &machinelearningv1.ServiceStatus{
 					SvcName:      pSvcName,
-					HttpEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engine_http_port),
+					HttpEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engineHttpPort),
 				}
 			} else if grpcAllowed {
 				c.serviceDetails[pSvcName] = &machinelearningv1.ServiceStatus{
 					SvcName:      pSvcName,
-					GrpcEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engine_grpc_port),
+					GrpcEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engineGrpcPort),
 				}
 			}
 
@@ -579,7 +381,7 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 		}
 
 		ei := NewExplainerInitializer(r.ClientSet)
-		err = ei.createExplainer(mlDep, &p, &c, pSvcName, securityContext, log)
+		err = ei.createExplainer(mlDep, &p, &c, pSvcName, securityContext, r.Ingresses, log)
 		if err != nil {
 			return nil, err
 		}
@@ -591,25 +393,49 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 		return nil, err
 	}
 
-	//TODO Fixme - not changed to handle per predictor scenario
-	if utils.GetEnv(ENV_ISTIO_ENABLED, "false") == "true" {
-		vsvcs, dstRule, err := createIstioResources(mlDep, seldonId, namespace, externalPorts, httpAllowed, grpcAllowed)
+	for _, ingress := range r.Ingresses {
+		ingressResources, err := ingress.GeneratePredictorResources(mlDep, seldonId, namespace, externalPorts, httpAllowed, grpcAllowed)
 		if err != nil {
 			return nil, err
 		}
-		c.virtualServices = append(c.virtualServices, vsvcs...)
-		c.destinationRules = append(c.destinationRules, dstRule...)
+		c.ingressResources = mergeIngressResourceMap(c.ingressResources, ingressResources)
 	}
+
 	return &c, nil
 }
 
-//Creates Service for Predictor - exposed externally (ambassador or istio)
-func createPredictorService(pSvcName string, seldonId string, p *machinelearningv1.PredictorSpec,
-	mlDep *machinelearningv1.SeldonDeployment,
-	engine_http_port int,
-	engine_grpc_port int,
-	isExplainer bool,
-	log logr.Logger) (pSvc *corev1.Service, err error) {
+func mergeAnnotations(tgt map[string]string, src map[string]string) map[string]string {
+	if src == nil {
+		return nil
+	}
+	if tgt == nil {
+		tgt = make(map[string]string, len(src))
+	}
+	for k, v := range src {
+		tgt[k] = v
+	}
+	return tgt
+}
+
+// Merges maps of lists of runtime.Object
+func mergeIngressResourceMap(tgt map[IngressResourceType][]runtime.Object, src map[IngressResourceType][]runtime.Object) map[IngressResourceType][]runtime.Object {
+	// If the target map is nil, create it
+	if tgt == nil {
+		tgt = make(map[IngressResourceType][]runtime.Object, len(src))
+	}
+	for resType := range src {
+		// If the resource type doesn't exist in the target then create it
+		if _, ok := tgt[resType]; !ok {
+			tgt[resType] = make([]runtime.Object, 0, len(src[resType]))
+		}
+		// For every resource type in the source map, append them into the target
+		tgt[resType] = append(tgt[resType], src[resType]...)
+	}
+	return tgt
+}
+
+// Creates Service for Predictor - exposed externally via ingress plugin
+func createService(pSvcName string, seldonId string, p *machinelearningv1.PredictorSpec, mlDep *machinelearningv1.SeldonDeployment, engineHttpPort int, engineGrpcPort int, isExplainer bool, ingresses []Ingress, log logr.Logger) (pSvc *corev1.Service, err error) {
 	namespace := getNamespace(mlDep)
 
 	psvc := &corev1.Service{
@@ -627,31 +453,30 @@ func createPredictorService(pSvcName string, seldonId string, p *machinelearning
 	}
 
 	if isExecutorEnabled(mlDep) {
-		if engine_http_port != 0 && len(psvc.Spec.Ports) == 0 {
-			psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engine_http_port), TargetPort: intstr.FromInt(engine_http_port), Name: "http"})
+		if engineHttpPort != 0 && len(psvc.Spec.Ports) == 0 {
+			psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engineHttpPort), TargetPort: intstr.FromInt(engineHttpPort), Name: "http"})
 		}
 
-		if engine_grpc_port != 0 && len(psvc.Spec.Ports) < 2 {
-			psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engine_grpc_port), TargetPort: intstr.FromInt(engine_http_port), Name: "grpc"})
+		if engineGrpcPort != 0 && len(psvc.Spec.Ports) < 2 {
+			psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engineGrpcPort), TargetPort: intstr.FromInt(engineHttpPort), Name: "grpc"})
 		}
 	} else {
-		if engine_http_port != 0 && len(psvc.Spec.Ports) == 0 {
-			psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engine_http_port), TargetPort: intstr.FromInt(engine_http_port), Name: "http"})
+		if engineHttpPort != 0 && len(psvc.Spec.Ports) == 0 {
+			psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engineHttpPort), TargetPort: intstr.FromInt(engineHttpPort), Name: "http"})
 		}
 
-		if engine_grpc_port != 0 && len(psvc.Spec.Ports) < 2 {
-			psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engine_grpc_port), TargetPort: intstr.FromInt(engine_grpc_port), Name: "grpc"})
+		if engineGrpcPort != 0 && len(psvc.Spec.Ports) < 2 {
+			psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engineGrpcPort), TargetPort: intstr.FromInt(engineGrpcPort), Name: "grpc"})
 		}
 	}
 
-	if utils.GetEnv("AMBASSADOR_ENABLED", "false") == "true" {
-		psvc.Annotations = make(map[string]string)
-		//Create top level Service
-		ambassadorConfig, err := getAmbassadorConfigs(mlDep, p, pSvcName, engine_http_port, engine_grpc_port, isExplainer)
+	// Create top level Service
+	for _, ingress := range ingresses {
+		ingressAnnotations, err := ingress.GenerateServiceAnnotations(mlDep, p, pSvcName, engineHttpPort, engineGrpcPort, isExplainer)
 		if err != nil {
 			return nil, err
 		}
-		psvc.Annotations[AMBASSADOR_ANNOTATION] = ambassadorConfig
+		psvc.Annotations = mergeAnnotations(psvc.Annotations, ingressAnnotations)
 	}
 
 	if getAnnotation(mlDep, machinelearningv1.ANNOTATION_HEADLESS_SVC, "false") != "false" {
@@ -770,11 +595,11 @@ func createContainerService(deploy *appsv1.Deployment,
 	}
 
 	con.Env = append(con.Env, []corev1.EnvVar{
-		corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_ID, Value: con.Name},
-		corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_IMAGE, Value: con.Image},
-		corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTOR_ID, Value: p.Name},
-		corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTOR_LABELS, Value: string(labels)},
-		corev1.EnvVar{Name: machinelearningv1.ENV_SELDON_DEPLOYMENT_ID, Value: mlDep.ObjectMeta.Name},
+		{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_ID, Value: con.Name},
+		{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_IMAGE, Value: con.Image},
+		{Name: machinelearningv1.ENV_PREDICTOR_ID, Value: p.Name},
+		{Name: machinelearningv1.ENV_PREDICTOR_LABELS, Value: string(labels)},
+		{Name: machinelearningv1.ENV_SELDON_DEPLOYMENT_ID, Value: mlDep.ObjectMeta.Name},
 	}...)
 
 	//Add Metric Env Var
@@ -782,8 +607,8 @@ func createContainerService(deploy *appsv1.Deployment,
 	metricPort := getPort(predictiveUnitMetricsPortName, con.Ports)
 	if metricPort != nil {
 		con.Env = append(con.Env, []corev1.EnvVar{
-			corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_SERVICE_PORT_METRICS, Value: strconv.Itoa(int(metricPort.ContainerPort))},
-			corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_METRICS_ENDPOINT, Value: getPrometheusPath(mlDep)},
+			{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_SERVICE_PORT_METRICS, Value: strconv.Itoa(int(metricPort.ContainerPort))},
+			{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_METRICS_ENDPOINT, Value: getPrometheusPath(mlDep)},
 		}...)
 	}
 
@@ -832,7 +657,7 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 		deploy.Annotations[k] = v
 		deploy.Spec.Template.ObjectMeta.Annotations[k] = v
 	}
-	// Add annottaions from predictor
+	// Add annotations from predictor
 	for k, v := range p.Annotations {
 		deploy.Annotations[k] = v
 		deploy.Spec.Template.ObjectMeta.Annotations[k] = v
@@ -862,7 +687,7 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 		}
 	}
 
-	//Add some default to help with diffs in controller
+	// Add some default to help with diffs in controller
 	if deploy.Spec.Template.Spec.RestartPolicy == "" {
 		deploy.Spec.Template.Spec.RestartPolicy = corev1.RestartPolicyAlways
 	}
@@ -884,7 +709,7 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 
 	if !volFound {
 		var defaultMode = corev1.DownwardAPIVolumeSourceDefaultMode
-		//Add downwardAPI
+		// Add downwardAPI
 		deploy.Spec.Template.Spec.Volumes = append(deploy.Spec.Template.Spec.Volumes, corev1.Volume{Name: machinelearningv1.PODINFO_VOLUME_NAME, VolumeSource: corev1.VolumeSource{
 			DownwardAPI: &corev1.DownwardAPIVolumeSource{Items: []corev1.DownwardAPIVolumeFile{
 				{Path: "annotations", FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.annotations", APIVersion: "v1"}}}, DefaultMode: &defaultMode}}})
@@ -903,121 +728,6 @@ func getPort(name string, ports []corev1.ContainerPort) *corev1.ContainerPort {
 }
 
 // Create Services specified in components.
-func (r *SeldonDeploymentReconciler) createIstioServices(components *components, instance *machinelearningv1.SeldonDeployment, log logr.Logger) (bool, error) {
-	ready := true
-	for _, svc := range components.virtualServices {
-		if err := controllerutil.SetControllerReference(instance, svc, r.Scheme); err != nil {
-			return ready, err
-		}
-		found := &istio.VirtualService{}
-		err := r.Get(context.TODO(), types.NamespacedName{Name: svc.Name, Namespace: svc.Namespace}, found)
-		if err != nil && errors.IsNotFound(err) {
-			ready = false
-			log.Info("Creating Virtual Service", "namespace", svc.Namespace, "name", svc.Name)
-			err = r.Create(context.TODO(), svc)
-			if err != nil {
-				return ready, err
-			}
-			r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsCreateVirtualService, "Created VirtualService %q", svc.GetName())
-		} else if err != nil {
-			return ready, err
-		} else {
-			// Update the found object and write the result back if there are any changes
-			if !equality.Semantic.DeepEqual(svc.Spec, found.Spec) {
-				desiredSvc := found.DeepCopy()
-				found.Spec = svc.Spec
-				log.Info("Updating Virtual Service", "namespace", svc.Namespace, "name", svc.Name)
-				err = r.Update(context.TODO(), found)
-				if err != nil {
-					return ready, err
-				}
-
-				// Check if what came back from server modulo the defaults applied by k8s is the same or not
-				if !equality.Semantic.DeepEqual(desiredSvc.Spec, found.Spec) {
-					ready = false
-					r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsUpdateVirtualService, "Updated VirtualService %q", svc.GetName())
-					//For debugging we will show the difference
-					diff, err := kmp.SafeDiff(desiredSvc.Spec, found.Spec)
-					if err != nil {
-						log.Error(err, "Failed to diff")
-					} else {
-						log.Info(fmt.Sprintf("Difference in VSVC: %v", diff))
-					}
-				} else {
-					log.Info("The VSVC are the same - api server defaults ignored")
-				}
-			} else {
-				log.Info("Found identical Virtual Service", "namespace", found.Namespace, "name", found.Name)
-			}
-		}
-	}
-
-	for _, drule := range components.destinationRules {
-
-		if err := controllerutil.SetControllerReference(instance, drule, r.Scheme); err != nil {
-			return ready, err
-		}
-		found := &istio.DestinationRule{}
-		err := r.Get(context.TODO(), types.NamespacedName{Name: drule.Name, Namespace: drule.Namespace}, found)
-		if err != nil && errors.IsNotFound(err) {
-			ready = false
-			log.Info("Creating Istio Destination Rule", "namespace", drule.Namespace, "name", drule.Name)
-			err = r.Create(context.TODO(), drule)
-			if err != nil {
-				return ready, err
-			}
-			r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsCreateDestinationRule, "Created DestinationRule %q", drule.GetName())
-		} else if err != nil {
-			return ready, err
-		} else {
-			// Update the found object and write the result back if there are any changes
-			if !equality.Semantic.DeepEqual(drule.Spec, found.Spec) {
-				desiredDrule := found.DeepCopy()
-				found.Spec = drule.Spec
-				log.Info("Updating Istio Destination Rule", "namespace", drule.Namespace, "name", drule.Name)
-				err = r.Update(context.TODO(), found)
-				if err != nil {
-					return ready, err
-				}
-
-				// Check if what came back from server modulo the defaults applied by k8s is the same or not
-				if !equality.Semantic.DeepEqual(desiredDrule.Spec, found.Spec) {
-					ready = false
-					r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsUpdateDestinationRule, "Updated DestinationRule %q", drule.GetName())
-					//For debugging we will show the difference
-					diff, err := kmp.SafeDiff(desiredDrule.Spec, found.Spec)
-					if err != nil {
-						log.Error(err, "Failed to diff")
-					} else {
-						log.Info(fmt.Sprintf("Difference in Destination Rules: %v", diff))
-					}
-				} else {
-					log.Info("The Destination Rules are the same - api server defaults ignored")
-				}
-			} else {
-				log.Info("Found identical Istio Destination Rule", "namespace", found.Namespace, "name", found.Name)
-			}
-		}
-
-	}
-
-	//Cleanup unused VirtualService. This should usually only happen on Operator upgrades where there is a breaking change to the names of the VirtualServices created
-	//Only run if we have virtualservices to create - implies we are running with istio active
-	if len(components.virtualServices) > 0 && ready {
-		cleaner := ResourceCleaner{instance: instance, client: r, virtualServices: components.virtualServices, logger: r.Log}
-		deleted, err := cleaner.cleanUnusedVirtualServices()
-		if err != nil {
-			return ready, err
-		}
-		for _, vsvcDeleted := range deleted {
-			r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsDeleteVirtualService, "Delete VirtualService %q", vsvcDeleted.GetName())
-		}
-	}
-
-	return ready, nil
-}
-
-// Create Services specified in components.
 func (r *SeldonDeploymentReconciler) createServices(components *components, instance *machinelearningv1.SeldonDeployment, all bool, log logr.Logger) (bool, error) {
 	ready := true
 	for _, svc := range components.services {
@@ -1031,11 +741,11 @@ func (r *SeldonDeploymentReconciler) createServices(components *components, inst
 			return ready, err
 		}
 		found := &corev1.Service{}
-		err := r.Get(context.TODO(), types.NamespacedName{Name: svc.Name, Namespace: svc.Namespace}, found)
+		err := r.Client.Get(context.TODO(), types.NamespacedName{Name: svc.Name, Namespace: svc.Namespace}, found)
 		if err != nil && errors.IsNotFound(err) {
 			ready = false
 			log.Info("Creating Service", "all", all, "namespace", svc.Namespace, "name", svc.Name)
-			err = r.Create(context.TODO(), svc)
+			err = r.Client.Create(context.TODO(), svc)
 			if err != nil {
 				return ready, err
 			}
@@ -1053,7 +763,7 @@ func (r *SeldonDeploymentReconciler) createServices(components *components, inst
 				found.Spec = svc.Spec
 				found.Annotations = svc.Annotations
 				log.Info("Updating Service", "all", all, "namespace", svc.Namespace, "name", svc.Name)
-				err = r.Update(context.TODO(), found)
+				err = r.Client.Update(context.TODO(), found)
 				if err != nil {
 					return ready, err
 				}
@@ -1100,11 +810,11 @@ func (r *SeldonDeploymentReconciler) createHpas(components *components, instance
 		}
 		hpaSet[hpa.Name] = true
 		found := &autoscaling.HorizontalPodAutoscaler{}
-		err := r.Get(context.TODO(), types.NamespacedName{Name: hpa.Name, Namespace: hpa.Namespace}, found)
+		err := r.Client.Get(context.TODO(), types.NamespacedName{Name: hpa.Name, Namespace: hpa.Namespace}, found)
 		if err != nil && errors.IsNotFound(err) {
 			ready = false
 			log.Info("Creating HPA", "namespace", hpa.Namespace, "name", hpa.Name)
-			err = r.Create(context.TODO(), hpa)
+			err = r.Client.Create(context.TODO(), hpa)
 			if err != nil {
 				return ready, err
 			}
@@ -1119,7 +829,7 @@ func (r *SeldonDeploymentReconciler) createHpas(components *components, instance
 				found.Spec = hpa.Spec
 
 				log.Info("Updating HPA", "namespace", hpa.Namespace, "name", hpa.Name)
-				err = r.Update(context.TODO(), found)
+				err = r.Client.Update(context.TODO(), found)
 				if err != nil {
 					return ready, err
 				}
@@ -1150,7 +860,7 @@ func (r *SeldonDeploymentReconciler) createHpas(components *components, instance
 	for _, deploy := range components.deployments {
 		if _, ok := hpaSet[deploy.Name]; !ok {
 			found := &autoscaling.HorizontalPodAutoscaler{}
-			err := r.Get(context.TODO(), types.NamespacedName{Name: deploy.Name, Namespace: deploy.Namespace}, found)
+			err := r.Client.Get(context.TODO(), types.NamespacedName{Name: deploy.Name, Namespace: deploy.Namespace}, found)
 			if err != nil {
 				if !errors.IsNotFound(err) {
 					return false, err
@@ -1159,7 +869,7 @@ func (r *SeldonDeploymentReconciler) createHpas(components *components, instance
 			} else {
 				// Delete HPA
 				log.Info("Deleting hpa", "name", deploy.Name)
-				err := r.Delete(context.TODO(), found, client.PropagationPolicy(metav1.DeletePropagationForeground))
+				err := r.Client.Delete(context.TODO(), found, client.PropagationPolicy(metav1.DeletePropagationForeground))
 				if err != nil {
 					return ready, err
 				}
@@ -1168,18 +878,6 @@ func (r *SeldonDeploymentReconciler) createHpas(components *components, instance
 	}
 
 	return ready, nil
-}
-
-func jsonEquals(a, b interface{}) (bool, error) {
-	b1, err := json.Marshal(a)
-	if err != nil {
-		return false, err
-	}
-	b2, err := json.Marshal(b)
-	if err != nil {
-		return false, err
-	}
-	return bytes.Equal(b1, b2), nil
 }
 
 // Create Deployments specified in components.
@@ -1196,11 +894,11 @@ func (r *SeldonDeploymentReconciler) createDeployments(components *components, i
 		// TODO(user): Change this for the object type created by your controller
 		// Check if the Deployment already exists
 		found := &appsv1.Deployment{}
-		err := r.Get(context.TODO(), types.NamespacedName{Name: deploy.Name, Namespace: deploy.Namespace}, found)
+		err := r.Client.Get(context.TODO(), types.NamespacedName{Name: deploy.Name, Namespace: deploy.Namespace}, found)
 		if err != nil && errors.IsNotFound(err) {
 			ready = false
 			log.Info("Creating Deployment", "namespace", deploy.Namespace, "name", deploy.Name)
-			err = r.Create(context.TODO(), deploy)
+			err = r.Client.Create(context.TODO(), deploy)
 			if err != nil {
 				return ready, err
 			}
@@ -1219,7 +917,7 @@ func (r *SeldonDeploymentReconciler) createDeployments(components *components, i
 					found.Spec.Replicas = desiredDeployment.Spec.Replicas
 				}
 
-				err = r.Update(context.TODO(), found)
+				err = r.Client.Update(context.TODO(), found)
 				if err != nil {
 					return ready, err
 				}
@@ -1273,19 +971,21 @@ func (r *SeldonDeploymentReconciler) createDeployments(components *components, i
 }
 
 func (r *SeldonDeploymentReconciler) completeServiceCreation(instance *machinelearningv1.SeldonDeployment, components *components, log logr.Logger) error {
-	//Create services
+	// Create services
 	_, err := r.createServices(components, instance, true, log)
 	if err != nil {
 		return err
 	}
 
-	_, err = r.createIstioServices(components, instance, log)
-	if err != nil {
-		return err
+	for _, ingress := range r.Ingresses {
+		_, err = ingress.CreateResources(components.ingressResources, instance, log)
+		if err != nil {
+			return err
+		}
 	}
 
 	statusCopy := instance.Status.DeepCopy()
-	//delete from copied status the current expected deployments by name
+	// Delete from copied status the current expected deployments by name
 	for _, deploy := range components.deployments {
 		delete(statusCopy.DeploymentStatus, deploy.Name)
 	}
@@ -1297,7 +997,7 @@ func (r *SeldonDeploymentReconciler) completeServiceCreation(instance *machinele
 	svcOrchExists := false
 	for k := range statusCopy.DeploymentStatus {
 		found := &appsv1.Deployment{}
-		err := r.Get(context.TODO(), types.NamespacedName{Name: k, Namespace: instance.Namespace}, found)
+		err := r.Client.Get(context.TODO(), types.NamespacedName{Name: k, Namespace: instance.Namespace}, found)
 		if err != nil && errors.IsNotFound(err) {
 
 		} else {
@@ -1310,7 +1010,7 @@ func (r *SeldonDeploymentReconciler) completeServiceCreation(instance *machinele
 	}
 	for k := range statusCopy.DeploymentStatus {
 		found := &appsv1.Deployment{}
-		err := r.Get(context.TODO(), types.NamespacedName{Name: k, Namespace: instance.Namespace}, found)
+		err := r.Client.Get(context.TODO(), types.NamespacedName{Name: k, Namespace: instance.Namespace}, found)
 		if err != nil && errors.IsNotFound(err) {
 			log.Info("Failed to find old deployment - removing from status", "name", k)
 			// clean up status
@@ -1320,7 +1020,7 @@ func (r *SeldonDeploymentReconciler) completeServiceCreation(instance *machinele
 				if _, ok := found.ObjectMeta.Labels[machinelearningv1.Label_svc_orch]; ok {
 					log.Info("Deleting old svc-orch deployment ", "name", k)
 
-					err := r.Delete(context.TODO(), found, client.PropagationPolicy(metav1.DeletePropagationForeground))
+					err := r.Client.Delete(context.TODO(), found, client.PropagationPolicy(metav1.DeletePropagationForeground))
 					if err != nil {
 						return err
 					}
@@ -1329,7 +1029,7 @@ func (r *SeldonDeploymentReconciler) completeServiceCreation(instance *machinele
 			} else {
 				log.Info("Deleting old deployment (svc-orch does not exist)", "name", k)
 
-				err := r.Delete(context.TODO(), found, client.PropagationPolicy(metav1.DeletePropagationForeground))
+				err := r.Client.Delete(context.TODO(), found, client.PropagationPolicy(metav1.DeletePropagationForeground))
 				if err != nil {
 					return err
 				}
@@ -1338,7 +1038,7 @@ func (r *SeldonDeploymentReconciler) completeServiceCreation(instance *machinele
 
 			// Delete any dangling HPAs
 			foundHpa := &autoscaling.HorizontalPodAutoscaler{}
-			err := r.Get(context.TODO(), types.NamespacedName{Name: found.Name, Namespace: found.Namespace}, foundHpa)
+			err := r.Client.Get(context.TODO(), types.NamespacedName{Name: found.Name, Namespace: found.Namespace}, foundHpa)
 			if err != nil {
 				if !errors.IsNotFound(err) {
 					return err
@@ -1347,7 +1047,7 @@ func (r *SeldonDeploymentReconciler) completeServiceCreation(instance *machinele
 			} else {
 				// Delete HPA that should not exist
 				log.Info("Deleting hpa for removed predictor", "name", foundHpa.Name)
-				err := r.Delete(context.TODO(), foundHpa, client.PropagationPolicy(metav1.DeletePropagationForeground))
+				err := r.Client.Delete(context.TODO(), foundHpa, client.PropagationPolicy(metav1.DeletePropagationForeground))
 				if err != nil {
 					return err
 				}
@@ -1359,7 +1059,7 @@ func (r *SeldonDeploymentReconciler) completeServiceCreation(instance *machinele
 		log.Info("Removing unused services")
 		for k := range statusCopy.ServiceStatus {
 			found := &corev1.Service{}
-			err := r.Get(context.TODO(), types.NamespacedName{Name: k, Namespace: instance.Namespace}, found)
+			err := r.Client.Get(context.TODO(), types.NamespacedName{Name: k, Namespace: instance.Namespace}, found)
 			if err != nil && errors.IsNotFound(err) {
 				log.Error(err, "Failed to find old service", "name", k)
 				return err
@@ -1367,7 +1067,7 @@ func (r *SeldonDeploymentReconciler) completeServiceCreation(instance *machinele
 				log.Info("Deleting old service ", "name", k)
 				// clean up status
 				delete(instance.Status.ServiceStatus, k)
-				err := r.Delete(context.TODO(), found)
+				err := r.Client.Delete(context.TODO(), found)
 				if err != nil {
 					return err
 				}
@@ -1386,10 +1086,6 @@ func (r *SeldonDeploymentReconciler) completeServiceCreation(instance *machinele
 // +kubebuilder:rbac:groups=v1,resources=services,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=v1,resources=services/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=networking.istio.io,resources=virtualservices,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=networking.istio.io,resources=virtualservices/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=networking.istio.io,resources=destinationrules,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=networking.istio.io,resources=destinationrules/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=autoscaling,resources=horizontalpodautoscalers,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=autoscaling,resources=horizontalpodautoscalers/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=machinelearning.seldon.io,resources=seldondeployments,verbs=get;list;watch;create;update;patch;delete
@@ -1403,10 +1099,9 @@ func (r *SeldonDeploymentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 	ctx := context.Background()
 	log := r.Log.WithValues("SeldonDeployment", req.NamespacedName)
 	log.Info("Reconcile called")
-	// your logic here
 	// Fetch the SeldonDeployment instance
 	instance := &machinelearningv1.SeldonDeployment{}
-	err := r.Get(ctx, req.NamespacedName, instance)
+	err := r.Client.Get(ctx, req.NamespacedName, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// Object not found, return.  Created objects are automatically garbage collected.
@@ -1421,7 +1116,7 @@ func (r *SeldonDeploymentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 	// Check if we are not namespaced and should ignore this as its in a namespace managed by another operator
 	if r.Namespace == "" {
 		ns := &corev1.Namespace{}
-		err := r.Get(ctx, types.NamespacedName{Name: instance.Namespace}, ns)
+		err := r.Client.Get(ctx, types.NamespacedName{Name: instance.Namespace}, ns)
 		if err != nil {
 			log.Error(err, "unable to fetch SeldonDeployment namespace", "namespace", instance.Namespace)
 			return ctrl.Result{}, err
@@ -1441,10 +1136,10 @@ func (r *SeldonDeploymentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		return ctrl.Result{}, nil
 	}
 
-	//Get Security Context
+	// Get Security Context
 	podSecurityContext, err := createSecurityContext(instance)
 
-	//rerun defaulting
+	// Rerun defaulting
 	before := instance.DeepCopy()
 	instance.Default()
 	if !equality.Semantic.DeepEqual(instance.Spec, before.Spec) {
@@ -1515,13 +1210,13 @@ func (r *SeldonDeploymentReconciler) updateStatusForError(desired *machinelearni
 
 	existing := &machinelearningv1.SeldonDeployment{}
 	namespacedName := types.NamespacedName{Name: desired.Name, Namespace: desired.Namespace}
-	if err := r.Get(context.TODO(), namespacedName, existing); err != nil {
+	if err := r.Client.Get(context.TODO(), namespacedName, existing); err != nil {
 		log.Error(err, "Failed to get SeldonDeployment")
 		return
 	}
 	if equality.Semantic.DeepEqual(existing.Status, desired.Status) {
 		//Do nothing
-	} else if err := r.Status().Update(context.Background(), desired); err != nil {
+	} else if err := r.Client.Status().Update(context.Background(), desired); err != nil {
 		log.Error(err, "Failed to update InferenceService status")
 		r.Recorder.Eventf(desired, corev1.EventTypeWarning, constants.EventsUpdateFailed,
 			"Failed to update status for SeldonDeployment %q: %v", desired.Name, err)
@@ -1531,12 +1226,12 @@ func (r *SeldonDeploymentReconciler) updateStatusForError(desired *machinelearni
 func (r *SeldonDeploymentReconciler) updateStatus(desired *machinelearningv1.SeldonDeployment, log logr.Logger) error {
 	existing := &machinelearningv1.SeldonDeployment{}
 	namespacedName := types.NamespacedName{Name: desired.Name, Namespace: desired.Namespace}
-	if err := r.Get(context.TODO(), namespacedName, existing); err != nil {
+	if err := r.Client.Get(context.TODO(), namespacedName, existing); err != nil {
 		return err
 	}
 	if equality.Semantic.DeepEqual(existing.Status, desired.Status) {
 		//Do nothing
-	} else if err := r.Status().Update(context.Background(), desired); err != nil {
+	} else if err := r.Client.Status().Update(context.Background(), desired); err != nil {
 		log.Error(err, "Failed to update InferenceService status")
 		r.Recorder.Eventf(desired, corev1.EventTypeWarning, constants.EventsUpdateFailed,
 			"Failed to update status for SeldonDeployment %q: %v", desired.Name, err)
@@ -1588,38 +1283,26 @@ func (r *SeldonDeploymentReconciler) SetupWithManager(mgr ctrl.Manager, name str
 		return err
 	}
 
-	if utils.GetEnv(ENV_ISTIO_ENABLED, "false") == "true" {
-		if err := mgr.GetFieldIndexer().IndexField(&istio.VirtualService{}, ownerKey, func(rawObj runtime.Object) []string {
-			// grab the deployment object, extract the owner...
-			vsvc := rawObj.(*istio.VirtualService)
-			owner := metav1.GetControllerOf(vsvc)
-			if owner == nil {
-				return nil
-			}
-			// ...make sure it's a SeldonDeployment...
-			if owner.APIVersion != apiGVStr || owner.Kind != "SeldonDeployment" {
-				return nil
-			}
-
-			// ...and if so, return it
-			return []string{owner.Name}
-		}); err != nil {
+	var ingressObjects []runtime.Object
+	for _, ingress := range r.Ingresses {
+		objs, err := ingress.SetupWithManager(mgr)
+		if err != nil {
 			return err
 		}
-		return ctrl.NewControllerManagedBy(mgr).
-			Named(name).
-			For(&machinelearningv1.SeldonDeployment{}).
-			Owns(&appsv1.Deployment{}).
-			Owns(&corev1.Service{}).
-			Owns(&istio.VirtualService{}).
-			Complete(r)
-	} else {
-		return ctrl.NewControllerManagedBy(mgr).
-			Named(name).
-			For(&machinelearningv1.SeldonDeployment{}).
-			Owns(&appsv1.Deployment{}).
-			Owns(&corev1.Service{}).
-			Complete(r)
+		ingressObjects = append(ingressObjects, objs...)
 	}
 
+	controller := ctrl.NewControllerManagedBy(mgr).
+		Named(name).
+		For(&machinelearningv1.SeldonDeployment{}).
+		Owns(&appsv1.Deployment{}).
+		Owns(&corev1.Service{})
+
+	if ingressObjects != nil {
+		for _, o := range ingressObjects {
+			controller.Owns(o)
+		}
+	}
+
+	return controller.Complete(r)
 }
