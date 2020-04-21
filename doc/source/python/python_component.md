@@ -157,7 +157,7 @@ class ModelWithTags(object):
 Prior to Seldon Core 1.1.0 not implementing custom tags logs a message at the info level at each predict call. Starting with Seldon Core 1.1.0 this is logged at the debug level. To supress this warning implement a tags function returning an empty dictionary:
 
 ```python
-def metrics(self):
+def tags(self):
     return {}
 ```
 
