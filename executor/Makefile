@@ -33,9 +33,10 @@ copy_protos:
 
 .PHONY: compile_seldon_proto
 compile_seldon_proto:
-	cp ../proto/prediction.proto api/grpc
-	cd api/grpc && protoc -I. -I${GOPATH}/src/github.com/tensorflow/tensorflow --go_out=paths=source_relative,plugins=grpc:. prediction.proto
-	rm api/grpc/prediction.proto
+	cp ../proto/prediction.proto api/grpc/seldon/proto
+	cd api/grpc/seldon/proto && protoc -I. -I${GOPATH}/src/github.com/tensorflow/tensorflow --go_out=paths=source_relative,plugins=grpc:. prediction.proto
+	sed -i "s/package api/package proto/" api/grpc/seldon/proto/prediction.pb.go
+	rm api/grpc/seldon/proto/prediction.proto
 
 # https://github.com/tensorflow/serving/issues/1365#issuecomment-525351995
 .PHONY: compile_tensorflow_proto

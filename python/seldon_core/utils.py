@@ -4,7 +4,7 @@ import sys
 import base64
 import numpy as np
 
-from google.protobuf import json_format
+from google.protobuf import json_format, any_pb2
 from google.protobuf.json_format import MessageToDict, ParseDict
 from google.protobuf.struct_pb2 import ListValue
 
@@ -155,6 +155,8 @@ def get_data_from_proto(
         return request.strData
     elif data_type == "jsonData":
         return MessageToDict(request.jsonData)
+    elif data_type == "customData":
+        return request.customData
     else:
         raise SeldonMicroserviceException("Unknown data in SeldonMessage")
 
@@ -436,7 +438,7 @@ def construct_response(
     user_model: SeldonComponent,
     is_request: bool,
     client_request: prediction_pb2.SeldonMessage,
-    client_raw_response: Union[np.ndarray, str, bytes, dict],
+    client_raw_response: Union[np.ndarray, str, bytes, dict, any_pb2.Any],
     meta: dict = None,
     custom_metrics: List[Dict] = None,
 ) -> prediction_pb2.SeldonMessage:
@@ -512,6 +514,10 @@ def construct_response(
         return prediction_pb2.SeldonMessage(jsonData=jsonDataResponse, meta=meta_pb)
     elif isinstance(client_raw_response, (bytes, bytearray)):
         return prediction_pb2.SeldonMessage(binData=client_raw_response, meta=meta_pb)
+    elif isinstance(client_raw_response, any_pb2.Any):
+        return prediction_pb2.SeldonMessage(
+            customData=client_raw_response, meta=meta_pb
+        )
     else:
         raise SeldonMicroserviceException(
             "Unknown data type returned as payload:" + client_raw_response
