@@ -10,7 +10,7 @@ grpcio-tools==1.27.2
 mypy-protobuf==1.20
 
 # 2nd lvl dep on cov required to avoid sqllite dep
-coverage==4.5.4
+coverage==5.1
 
 # Used in serving_test_gen
 pandas==1.0.1
