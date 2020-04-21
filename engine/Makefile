@@ -16,11 +16,11 @@ build_image: update_proto update_swagger
 build_image_redhat: update_proto update_swagger
 	docker build  -f Dockerfile.redhat -t ${IMG_REDHAT} .
 
-# password can be found at: https://connect.redhat.com/project/3983621/view
+# password can be found at: https://connect.redhat.com/project/1366491/view
 redhat-image-scan:
 	docker login -u unused scan.connect.redhat.com
-	docker tag ${IMG_REDHAT} scan.connect.redhat.com/ospid-153e57fb-641e-487a-8926-63f5d5a2c319/${IMG_VERSION_REDHAT}
-	docker push scan.connect.redhat.com/ospid-153e57fb-641e-487a-8926-63f5d5a2c319/${IMG_VERSION_REDHAT}
+	docker tag ${IMG_REDHAT} scan.connect.redhat.com/ospid-0d5322f9-b490-461e-a93f-1a88f69c1251/${IMG_VERSION_REDHAT}
+	docker push scan.connect.redhat.com/ospid-0d5322f9-b490-461e-a93f-1a88f69c1251/${IMG_VERSION_REDHAT}
 
 push_to_registry:
 	docker push ${IMG}
