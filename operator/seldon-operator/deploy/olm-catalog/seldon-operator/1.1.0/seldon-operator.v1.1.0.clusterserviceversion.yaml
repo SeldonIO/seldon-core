@@ -42,7 +42,7 @@ metadata:
         }
       ]
     capabilities: Seamless Upgrades
-    categories: Logging & Tracing
+    categories: AI/Machine Learning
     certified: "false"
     containerImage: seldonio/seldon-core-operator:1.1.0
     createdAt: "2019-05-21 15:00:00"
