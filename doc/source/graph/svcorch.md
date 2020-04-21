@@ -1,4 +1,4 @@
-# Service Orchestrator Engine
+# Service Orchestrator
 
 The service orchestrator is a component that is added to your inference graph to:
 
