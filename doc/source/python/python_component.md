@@ -127,6 +127,12 @@ class ModelWithMetrics(object):
 
 Note: prior to Seldon Core 1.1 custom metrics have always been returned to client. From SC 1.1 you can control this behaviour setting `INCLUDE_METRICS_IN_CLIENT_RESPONSE` environmental variable to either `true` or `false`. Despite value of this environmental variable custom metrics will always be exposed to Prometheus.
 
+Prior to Seldon Core 1.1 not implementing custom metrics logs a message at the info level at each predict call. Starting with Seldon Core this is logged at the debug level. To supress this warning implement a metrics function returning an empty list:
+
+```python
+def metrics(self):
+    return []
+```
 
 ## Returning Tags
 
@@ -139,13 +145,20 @@ If we wish to add arbitrary tags to the returned metadata you can provide a `tag
 A simple example is shown below:
 
 ```python
-class ModelWithMetrics(object):
+class ModelWithTags(object):
 
     def predict(self,X,features_names):
         return X
 
     def tags(self,X):
     	return {"system":"production"}
+```
+
+Prior to Seldon Core 1.1 not implementing custom tags logs a message at the info level at each predict call. Starting with Seldon Core this is logged at the debug level. To supress this warning implement a tags function returning an empty dictionary:
+
+```python
+def metrics(self):
+    return {}
 ```
 
 ## REST Health Endpoint
