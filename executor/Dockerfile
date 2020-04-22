@@ -25,5 +25,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o executor
 FROM gcr.io/distroless/static:latest
 WORKDIR /
 COPY --from=builder /workspace/executor .
+# Copy openapi and swagger files
+COPY --from=builder /workspace/api/rest/openapi/ openapi/
 COPY licenses/license.txt .
 ENTRYPOINT ["/executor"]
