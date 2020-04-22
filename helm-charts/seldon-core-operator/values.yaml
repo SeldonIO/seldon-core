@@ -25,7 +25,7 @@ certManager:
 #   to specifci namespaces you can set the controllerId
 controllerId: ""
 
-# Whether to create the webhook service, and webhookconfigurations on startup
+# Whether operator should create the webhooks and configmap on startup (false means created from chart)
 createResources: false
 
 # Default user id to add to all Pod Security Context as the default
