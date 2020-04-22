@@ -41,7 +41,7 @@ operator-courier_ui_validate:
 
 # See https://github.com/operator-framework/community-operators/blob/master/docs/testing-operators.md
 # Used to push bundle to quay.io for testing
-operator-courier_push:
+community-quay-push:
 	operator-courier push deploy/olm-catalog/seldon-operator seldon seldon-operator ${VERSION} "$$QUAY_TOKEN"
 
 
@@ -74,3 +74,26 @@ upstream_install:
 upstream_test:
 	cd ${COMMUNITY_OPERATORS_BASE} && make operator.test OP_PATH=upstream-community-operators/seldon-operator
 
+
+
+#
+# Certified : https://redhat-connect.gitbook.io/certified-operator-guide/
+#
+
+certified_create_bundle:
+	cd bundle && ./create_bundle.sh ${VERSION}
+
+certified_validate:
+	 operator-courier --verbose verify bundle/certified/
+
+certified_validate_ui:
+	operator-courier --verbose verify --ui_validate_io bundle/certified/
+
+
+certified_push_quay:
+	operator-courier push bundle/certified/ seldon seldon-operator-certified 1.1.0 "$$QUAY_TOKEN"
+
+
+certified_zip:
+	rm -f bundle/bundle.zip
+	cd bundle/certified && zip -r ../bundle.zip .
