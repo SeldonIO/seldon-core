@@ -19,7 +19,7 @@ metadata:
                     "spec": {
                       "containers": [
                         {
-                          "image": "registry.connect.redhat.com/seldonio/mock-classifier:1.1.0",
+                          "image": "registry.connect.redhat.com/seldonio/mock-classifier@sha256:482ee477c344badcaa80e850f4339db41957f9c2396ae24f9e398b67bd5c184e",
                           "name": "classifier"
                         }
                       ]
