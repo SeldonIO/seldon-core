@@ -42,8 +42,9 @@ test_single_dim:
 # RedHat
 #
 
+RELEASE_VERSION := $(shell cat ../../version_release.txt)
 IMAGE_NAME_BASE=seldon-request-logger
-IMG_VERSION_REDHAT ?= ${IMAGE_NAME_BASE}-ubi8:1.1.0
+IMG_VERSION_REDHAT ?= ${IMAGE_NAME_BASE}-ubi8:${RELEASE_VERSION}
 IMG_REDHAT ?= seldonio/${IMG_VERSION_REDHAT}
 
 # Build the docker image for Redhat

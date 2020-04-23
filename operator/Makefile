@@ -1,8 +1,9 @@
 VERSION := $(shell cat ../version.txt)
+RELEASE_VERSION := $(shell cat ../version_release.txt)
 # Image URL to use all building/pushing image targets
 IMAGE_NAME_BASE=seldon-core-operator
 IMG ?= seldonio/${IMAGE_NAME_BASE}:${VERSION}
-IMG_VERSION_REDHAT ?= ${IMAGE_NAME_BASE}-ubi8:1.1.0
+IMG_VERSION_REDHAT ?= ${IMAGE_NAME_BASE}-ubi8:${RELEASE_VERSION}
 IMG_REDHAT ?= seldonio/${IMG_VERSION_REDHAT}
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true"

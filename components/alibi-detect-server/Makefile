@@ -56,8 +56,9 @@ curl-outlier-detector-scores:
 # RedHat
 #
 
+RELEASE_VERSION := $(shell cat ../../version_release.txt)
 IMAGE_NAME_BASE=alibi-detect-server
-IMG_VERSION_REDHAT ?= ${IMAGE_NAME_BASE}-ubi8:1.1.0
+IMG_VERSION_REDHAT ?= ${IMAGE_NAME_BASE}-ubi8:${RELEASE_VERSION}
 IMG_REDHAT ?= seldonio/${IMG_VERSION_REDHAT}
 
 # Build the docker image for Redhat
