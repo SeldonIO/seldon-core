@@ -348,12 +348,16 @@ def main():
                     logger.info("Set JAEGER_EXTRA_TAGS %s", jaeger_extra_tags)
                     tracing = FlaskTracing(tracer, True, app, jaeger_extra_tags)
 
-                app.run(host="0.0.0.0", port=port, threaded=False if args.single_threaded else True)
+                app.run(
+                    host="0.0.0.0",
+                    port=port,
+                    threaded=False if args.single_threaded else True,
+                )
 
             logger.info(
                 "REST gunicorn microservice running on port %i single-threaded=%s",
                 port,
-                args.single_threaded
+                args.single_threaded,
             )
             server1_func = rest_prediction_server
 
