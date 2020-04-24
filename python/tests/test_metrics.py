@@ -23,8 +23,6 @@ from seldon_core.metrics import (
 )
 from seldon_core.user_model import client_custom_metrics
 
-import seldon_core
-
 
 def test_create_counter():
     v = create_counter("k", 1)
