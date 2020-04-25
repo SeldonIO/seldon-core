@@ -62,7 +62,7 @@ copy-openapi-resources:
 	cp ../openapi/swagger-ui/* openapi/
 	cp ../openapi/engine.oas3.json openapi/seldon.json
 	# Remove the servers so it uses the same where it's running
-	jq -c "del(.servers)" openapi/seldon.json
+	jq "del(.servers)" openapi/seldon.json > openapi/seldon.tmp.json && mv openapi/seldon.tmp.json openapi/seldon.json
 
 # Build the docker image
 docker-build: test copy-openapi-resources
