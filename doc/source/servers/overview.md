@@ -140,7 +140,7 @@ data:
   USE_SSL: XXXX
 ```
 
-You can also create the secret with the following command:
+It is also possible to create a `Secret` object from the command line:
 
 ```
 kubectl create secret generic seldon-init-container-secret \
@@ -150,9 +150,7 @@ kubectl create secret generic seldon-init-container-secret \
     --from-literal=USE_SSL=false
 ```
 
-You can create a `Secret` object from command line by setting the exact environment variables:
-
-and you can [read more](https://kubernetes.io/docs/concepts/configuration/secret/) about interacting with `Secret` object.
+You can read the [documentation of Kubernetes](https://kubernetes.io/docs/concepts/configuration/secret/) to learn more about Kubernetes Secrets.
 
 ### 3. Ensure your SeldonDeployment has access to the secret
 
