@@ -140,7 +140,7 @@ spec:
 
 Note that your Ambassador instance must be configured with matching `ambassador_id`.
 
-See [AMBASSADOR_ID](https://github.com/datawire/ambassador/blob/master/docs/reference/running.md#ambassador_id) for details
+See [AMBASSADOR_ID](https://www.getambassador.io/docs/latest/topics/running/running/#ambassador_id) for details
 
 ### Custom Amabassador configuration
 
