@@ -12,13 +12,13 @@
 Make sure you read the ["Upgrading Seldon Core Guide"](../reference/upgrading.md)
 
 * **Seldon Core will stop supporting versions prior to 1.0 so make sure you upgrade.** 
-* If you are running an older version of Seldon Core, and will be upgading it please make sure you read the [Upgrading Seldon Core docs]() to understand breaking changes and best practices for upgrading.
+* If you are running an older version of Seldon Core, and will be upgading it please make sure you read the [Upgrading Seldon Core docs](../reference/upgrading.md) to understand breaking changes and best practices for upgrading.
 * Please see [Migrating from Helm v2 to Helm v3](https://helm.sh/blog/migrate-from-helm-v2-to-helm-v3/) if you are already running Seldon Core using Helm v2 and wish to upgrade.
 
 
 ## Install Seldon Core with Helm 
 
-First [install Helm 3.x](https://docs.helm.sh). When helm is installed you can deploy the seldon controller to manage your Seldon Deployment graphs.
+First [install Helm 3.x](https://docs.helm.sh/docs/intro/install/). When helm is installed you can deploy the seldon controller to manage your Seldon Deployment graphs.
 
 If you want to provide advanced parameters with your installation you can check the full [Seldon Core Helm Chart Reference](../reference/helm.html).
 
@@ -37,7 +37,7 @@ helm install seldon-core seldon-core-operator \
     --namespace seldon-system
 ```
 
-Make sure you install it with the relevant ingress (ambassador.enabled, istio.enabled, etc) so you are able to send requests (instructions below).
+Make sure you install it with the relevant ingress (`ambassador.enabled` or `istio.enabled`) so you are able to send requests (instructions below).
 
 ### Install a SNAPSHOT version 
 
@@ -58,7 +58,7 @@ In this case `helm-charts/seldon-core-operator` is the folder within the reposit
 
 ### Install with cert-manager
 
-You can follow [the cert manager documentation to install it](../install/kubernetes.html).
+You can follow [the cert manager documentation to install it](https://cert-manager.io/docs/installation/kubernetes/).
 
 You can then install seldon-core with:
 
@@ -76,19 +76,19 @@ For particular ingresses that we support, you can inform the controller it shoul
 
  * Ambassador
    * add `--set ambassador.enabled=true` : The controller will add annotations to services it creates so Ambassador can pick them up and wire an endpoint for your deployments.
-   * For full instructions on installation with Ambassador read the [Ingress Ambassador Integration](../ingress/ambassador.md) page.
+   * For full instructions on installation with Ambassador read the [Ingress with Ambassador](../ingress/ambassador.md) page.
  * Istio Gateway
    * add `--set istio.enabled=true` : The controller will create virtual services and destination rules to wire up endpoints in your istio ingress gateway.
-   * For full instructions on installation with Ambassador read the [Ingress Ambassador Integration](../ingress/istio.md) page.
+   * For full instructions on installation with Istio read the [Ingress with Istio](../ingress/istio.md) page.
 
 
 ## Seldon Core Kustomize Install 
 
 The [Kustomize](https://github.com/kubernetes-sigs/kustomize) installation can be found in the `/operator/config` folder of the repo. You should copy this template to your own kustomize location for editing.
 
-To use the template directly there is a Makefile which has a set of useful commands:
+To use the template directly, there is a Makefile which has a set of useful commands:
 
-For kubernetes clusters of version higher than 1.15, make sure you comment the patch_object_selector [here](https://github.com/SeldonIO/seldon-core/blob/master/operator/config/webhook/kustomization.yaml)
+For kubernetes clusters of version higher than 1.15, make sure you comment the patch_object_selector [here](https://github.com/SeldonIO/seldon-core/blob/master/operator/config/webhook/kustomization.yaml#L8).
 
 Install cert-manager
 
