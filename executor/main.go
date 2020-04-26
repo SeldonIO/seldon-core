@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"flag"
 	"fmt"
 	"github.com/ghodss/yaml"
@@ -47,10 +46,6 @@ var (
 	hostname       = flag.String("hostname", "localhost", "The hostname of the running server")
 	logWorkers     = flag.Int("logger_workers", 5, "Number of workers handling payload logging")
 	prometheusPath = flag.String("prometheus_path", "/metrics", "The prometheus metrics path")
-	// OpenAPI values
-	openapiFilePath     = "./openapi/seldon.json"
-	openapiPredPath     = "/seldon/{namespace}/{deployment}/api/v1.0/predictions"
-	openapiFeedbackPath = "/seldon/{namespace}/{deployment}/api/v1.0/feedback"
 )
 
 func getPredictorFromEnv() (*v1.PredictorSpec, error) {
@@ -91,78 +86,6 @@ func getPredictorFromFile(predictorName string, filename string) (*v1.PredictorS
 	} else {
 		return nil, fmt.Errorf("Unsupported file type %s", filename)
 	}
-}
-
-func embedSeldonDeploymentValuesToSwaggerFile(namespace string, sdepName string) error {
-	openapiInputBytes, err := ioutil.ReadFile(openapiFilePath)
-	if err != nil {
-		return err
-	}
-	var openapiInterface interface{}
-	if err := json.Unmarshal(openapiInputBytes, &openapiInterface); err != nil {
-		return err
-	}
-
-	jsonFormatError := errors.New("Incorrect format for OpenAPI JSON file")
-
-	replacer := strings.NewReplacer(
-		"{namespace}", namespace,
-		"{deployment}", sdepName)
-
-	// Ensure json is a map before performing actions
-	if openapiJson, ok := openapiInterface.(map[string]interface{}); ok {
-		// Remove the servers element to ensure it uses the same URL
-		delete(openapiJson, "servers")
-
-		// Get the paths key value to remove the parameters from each of the URLs
-		if pathsJson, ok := openapiJson["paths"].(map[string]interface{}); ok {
-			// Delete the parameters field from the predictions path
-			if openapiPredPathJson, ok := pathsJson[openapiPredPath].(map[string]interface{}); ok {
-				if openapiPredPathPostJson, ok := openapiPredPathJson["post"].(map[string]interface{}); ok {
-					delete(openapiPredPathPostJson, "parameters")
-				} else {
-					return jsonFormatError
-				}
-			} else {
-				return jsonFormatError
-			}
-
-			// Rename the predictions path to use the namespace and deploymentName instead of placeholder values
-			openapiPredPathReplaced := replacer.Replace(openapiPredPath)
-			pathsJson[openapiPredPathReplaced] = pathsJson[openapiPredPath]
-			delete(pathsJson, openapiPredPath)
-
-			// Delete the parameters field from the feedback path
-			if openapiFeedbackPathJson, ok := pathsJson[openapiFeedbackPath].(map[string]interface{}); ok {
-				if openapiFeedbackPathPostJson, ok := openapiFeedbackPathJson["post"].(map[string]interface{}); ok {
-					delete(openapiFeedbackPathPostJson, "parameters")
-				} else {
-					return jsonFormatError
-				}
-			} else {
-				return jsonFormatError
-			}
-
-			// Rename the predictions path to use the namespace and deploymentName instead of placeholder values
-			openapiFeedbackPathReplaced := replacer.Replace(openapiFeedbackPath)
-			pathsJson[openapiFeedbackPathReplaced] = pathsJson[openapiFeedbackPath]
-			delete(pathsJson, openapiFeedbackPath)
-		} else {
-			return jsonFormatError
-		}
-
-	} else {
-		return jsonFormatError
-	}
-
-	// We use MarshalIndent so that the output can be humanly visible and indented
-	openapiOutputBytes, err := json.MarshalIndent(openapiInterface, "", "    ")
-
-	if err := ioutil.WriteFile(openapiFilePath, openapiOutputBytes, 0644); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func getServerUrl(hostname string, port int) (*url.URL, error) {
@@ -288,7 +211,7 @@ func main() {
 	}
 
 	// Ensure standard OpenAPI seldon API file has this deployment's values
-	err = embedSeldonDeploymentValuesToSwaggerFile(*namespace, *sdepName)
+	err = rest.EmbedSeldonDeploymentValuesInSwaggerFile(*namespace, *sdepName)
 	if err != nil {
 		log.Error(err, "Failed to embed variables on OpenAPI template")
 	}
