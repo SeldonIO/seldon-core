@@ -249,7 +249,7 @@ class MyModel(object):
         return [{"type": "COUNTER", "key": "mycounter", "value": 1}]
 ```
 
-For more details on custom metrics and the format of the metric dict see [here](../custom_metrics.md).
+For more details on custom metrics and the format of the metric dict see [here](https://docs.seldon.io/projects/seldon-core/en/latest/analytics/analytics.html#custom-metrics).
 
 There is an [example notebook illustrating a model with custom metrics in python](../examples/custom_metrics.html).
 
