@@ -119,16 +119,16 @@ If nothing is specified, flask's default value is used.
 
 ### MODEL
 
- * [A minimal skeleton for model source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/python/test/model-template-app)
+ * [A minimal skeleton for model source code](https://github.com/SeldonIO/seldon-core/tree/master/wrappers/s2i/python/test/model-template-app)
  * [Example model notebooks](../examples/notebooks.html)
 
 ### ROUTER
- * [Description of routers in Seldon Core](../components/routers.html)
- * [A minimal skeleton for router source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/python/test/router-template-app)
+ * [Description of routers in Seldon Core](../analytics/routers.html)
+ * [A minimal skeleton for router source code](https://github.com/SeldonIO/seldon-core/tree/master/wrappers/s2i/python/test/router-template-app)
 
 ### TRANSFORMER
 
- * [A minimal skeleton for transformer source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/python/test/transformer-template-app)
+ * [A minimal skeleton for transformer source code](https://github.com/SeldonIO/seldon-core/tree/master/wrappers/s2i/python/test/transformer-template-app)
  * [Example transformers](https://github.com/SeldonIO/seldon-core/tree/master/examples/transformers)
 
 
@@ -200,9 +200,9 @@ class MyModel(object):
     	return [{"type": "COUNTER", "key": "mycounter", "value": 1}]
 ```
 
-For more details on custom metrics and the format of the metric dict see [here](../custom_metrics.md).
+For more details on custom metrics and the format of the metric dict see [here](https://docs.seldon.io/projects/seldon-core/en/latest/analytics/analytics.html#custom-metrics).
 
-There is an [example notebook illustrating a model with custom metrics in python](../examples/tmpl_model_with_metrics.html).
+There is an [example notebook illustrating a model with custom metrics in python](../examples/custom_metrics.html).
 
 ### Custom Meta Data
 ```from version 0.3```
