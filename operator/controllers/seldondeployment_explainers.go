@@ -17,6 +17,8 @@ limitations under the License.
 package controllers
 
 import (
+	"k8s.io/client-go/kubernetes"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -152,7 +154,9 @@ func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1.Sel
 
 		if p.Explainer.ModelUri != "" {
 			var err error
-			deploy, err = InjectModelInitializer(deploy, explainerContainer.Name, p.Explainer.ModelUri, p.Explainer.ServiceAccountName, p.Explainer.EnvSecretRefName, r.Client)
+
+			mi := NewModelInitializer(kubernetes.NewForConfigOrDie(ctrl.GetConfigOrDie()))
+			deploy, err = mi.InjectModelInitializer(deploy, explainerContainer.Name, p.Explainer.ModelUri, p.Explainer.ServiceAccountName, p.Explainer.EnvSecretRefName)
 			if err != nil {
 				return err
 			}

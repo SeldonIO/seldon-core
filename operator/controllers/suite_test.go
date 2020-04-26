@@ -66,7 +66,7 @@ var configs = map[string]string{
 	"predictor_servers": `{
              "TENSORFLOW_SERVER": {
                  "tensorflow": true,
-                 "tfImage": "tensorflow/serving:latest",
+                 "tfImage": "tensorflow/serving:2.1",
                  "rest": {
                    "image": "seldonio/tfserving-proxy_rest",
                    "defaultImageVersion": "0.7"
@@ -107,6 +107,14 @@ var configs = map[string]string{
                  }
              }
          }`,
+	"storageInitializer": `
+	{
+	"image" : "gcr.io/kfserving/storage-initializer:0.2.2",
+	"memoryRequest": "100Mi",
+	"memoryLimit": "1Gi",
+	"cpuRequest": "100m",
+	"cpuLimit": "1"
+	}`,
 }
 
 // Create configmap
