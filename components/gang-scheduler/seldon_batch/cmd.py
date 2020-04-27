@@ -53,7 +53,7 @@ CHOICES_LOG_LEVEL = ["debug", "info", "warning", "error"]
 )
 @click.option(
     "--output-data-path",
-    "-i",
+    "-o",
     envvar="SELDON_BATCH_OUTPUT_DATA_PATH",
     type=click.Path(),
     default="/assets/input-data.txt",
