@@ -37,7 +37,7 @@ func createTestSeldonDeployment() *machinelearningv1.SeldonDeployment {
 							},
 						},
 					},
-					Graph: &machinelearningv1.PredictiveUnit{
+					Graph: machinelearningv1.PredictiveUnit{
 						Name: "classifier",
 						Type: &modelType,
 						Endpoint: &machinelearningv1.Endpoint{

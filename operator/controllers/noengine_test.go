@@ -49,7 +49,7 @@ var _ = Describe("Create a Seldon Deployment without engine", func() {
 								},
 							},
 						},
-						Graph: &machinelearningv1.PredictiveUnit{
+						Graph: machinelearningv1.PredictiveUnit{
 							Name: "classifier",
 							Type: &modelType,
 						},
