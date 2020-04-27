@@ -11,7 +11,7 @@ from multiprocessing import Manager
 
 import numpy as np
 
-from typing import List, Dict
+from typing import List, Dict, Tuple
 import logging
 import json
 import os
@@ -34,9 +34,27 @@ TIMER = "TIMER"
 # This sets the bins spread logarithmically between 0.001 and 30
 BINS = [0] + list(np.logspace(-3, np.log10(30), 50)) + [np.inf]
 
+
+def split_image_tag(tag: str) -> Tuple[str]:
+    """
+    Extract image name and version from an image tag.
+
+    Parameters
+    ----------
+    tag
+        Fully qualified docker image tag. Eg. seldonio/sklearn-iris:0.1
+
+    Returns
+    -------
+        Image name, image version tuple
+    """
+    *name_parts, version = tag.split(':')
+    return ':'.join(name_parts), version
+
+
 # Development placeholder
 image = os.environ.get(ENV_MODEL_IMAGE, f"{NONIMPLEMENTED_MSG}:{NONIMPLEMENTED_MSG}")
-image_name, image_version = image.split(":")
+image_name, image_version = split_image_tag(image)
 predictor_version = json.loads(os.environ.get(ENV_PREDICTOR_LABELS, "{}")).get(
     "version", f"{NONIMPLEMENTED_MSG}"
 )
