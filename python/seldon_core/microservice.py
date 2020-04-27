@@ -14,6 +14,7 @@ from seldon_core.flask_utils import ANNOTATIONS_FILE
 import seldon_core.wrapper as seldon_microservice
 from typing import Dict, Callable
 from seldon_core.flask_utils import SeldonMicroserviceException
+from seldon_core import __version__
 import gunicorn.app.base
 
 logger = logging.getLogger(__name__)
@@ -202,6 +203,7 @@ def main():
     )
     logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
     logger.info("Starting microservice.py:main")
+    logger.info(f"Seldon Core version: {__version__}")
 
     sys.path.append(os.getcwd())
     parser = argparse.ArgumentParser()
