@@ -21,7 +21,6 @@ class TestBadGraphs(object):
         )
         assert ret.returncode == 1
 
-
     # Name in graph and that in PodTemplateSpec don't match
     def test_model_no_graph(self):
         ret = run(
