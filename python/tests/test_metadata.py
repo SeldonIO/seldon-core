@@ -2,6 +2,8 @@ import logging
 import json
 import pytest
 
+from unittest.mock import patch
+
 from seldon_core.metrics import SeldonMetrics
 from seldon_core.wrapper import get_rest_microservice
 from seldon_core.metadata import (
@@ -96,7 +98,38 @@ def test_validate_model_metadata():
         "inputs": [{"name": "input", "datatype": "BYTES", "shape": [1]}],
         "outputs": [{"name": "output", "datatype": "BYTES", "shape": [1]}],
     }
-    assert meta == validate_model_metadata(meta)
+    with patch(
+        'seldon_core.metadata.MODEL_IMAGE', None
+    ):
+        assert meta == validate_model_metadata(meta)
+
+
+def test_validate_model_metadata_with_env():
+    meta = {
+        "name": "my-model-name",
+        "versions": ["model-version"],
+        "platform": "model-platform",
+        "inputs": [{"name": "input", "datatype": "BYTES", "shape": [1]}],
+        "outputs": [{"name": "output", "datatype": "BYTES", "shape": [1]}],
+    }
+    with patch(
+        'seldon_core.metadata.MODEL_IMAGE', 'seldonio/sklearn-iris:0.1'
+    ):
+        assert meta == validate_model_metadata(meta)
+
+
+def test_validate_model_metadata_with_colon_in_env():
+    meta = {
+        "name": "my-model-name",
+        "versions": ["model-version"],
+        "platform": "model-platform",
+        "inputs": [{"name": "input", "datatype": "BYTES", "shape": [1]}],
+        "outputs": [{"name": "output", "datatype": "BYTES", "shape": [1]}],
+    }
+    with patch(
+        'seldon_core.metadata.MODEL_IMAGE', 'localhost:32000/sklearn-iris:0.1'
+    ):
+        assert meta == validate_model_metadata(meta)
 
 
 @pytest.mark.parametrize("invalid_versions", ["v1", [1], "[v]", "[1]", 1, 1.1])
