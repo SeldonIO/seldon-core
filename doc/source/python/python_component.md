@@ -383,6 +383,40 @@ class DeepMnist(object):
         return predictions.astype(np.float64)
 ```
 
+### Single-threaded Flask for REST (experimental)
+
+To run your class single-threaded with Flask set the environment variable `FLASK_SINGLE_THREADED` to 1. This will set the `threaded` parameter of the Flask app to `False`. It is not the optimal setup for most models, but can be useful when your model cannot be made thread-safe like many GPU-based models that deadlock when accessed from multiple threads.
+
+```
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+metadata:
+  name: flaskexample
+spec:
+  name: worker
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: seldonio/mock_classifier:1.0
+          name: classifier
+          env:
+          - name: FLASK_SINGLE_THREADED
+            value: '1'
+        terminationGracePeriodSeconds: 1
+    graph:
+      children: []
+      endpoint:
+        type: REST
+      name: classifier
+      type: MODEL
+    labels:
+      version: v1
+    name: example
+    replicas: 1
+
+```
+
 ## Multi-value numpy arrays
 
 By default, when using the data ndarray parameter, the conversion to ndarray (by default) converts all inner types into the same type. With models that may take as input arrays with different value types, you will be able to do so by overriding the `predict_raw` function yourself which gives you access to the raw request, and creating the numpy array as follows:

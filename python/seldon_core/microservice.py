@@ -355,7 +355,7 @@ def main():
                 )
 
             logger.info(
-                "REST gunicorn microservice running on port %i single-threaded=%s",
+                "REST microservice running on port %i single-threaded=%s",
                 port,
                 args.single_threaded,
             )
