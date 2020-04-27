@@ -285,9 +285,8 @@ func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(mldepName string, namespa
 		if _, present := p.Labels["version"]; !present {
 			p.Labels["version"] = p.Name
 		}
-		addDefaultsToGraph(p.Graph)
 
-		r.Predictors[i] = p
+		addDefaultsToGraph(&p.Graph)
 
 		for j := 0; j < len(p.ComponentSpecs); j++ {
 			cSpec := r.Predictors[i].ComponentSpecs[j]
@@ -299,7 +298,7 @@ func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(mldepName string, namespa
 				getUpdatePortNumMap(con.Name, &nextPortNum, portMap)
 				portNum := portMap[con.Name]
 
-				pu := GetPredictiveUnit(p.Graph, con.Name)
+				pu := GetPredictiveUnit(&p.Graph, con.Name)
 
 				if pu != nil {
 					r.setContainerPredictiveUnitDefaults(j, portNum, &nextMetricsPortNum, mldepName, namespace, &p, pu, con)
@@ -307,7 +306,7 @@ func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(mldepName string, namespa
 			}
 		}
 
-		pus := GetPredictiveUnitList(p.Graph)
+		pus := GetPredictiveUnitList(&p.Graph)
 
 		//some pus might not have a container spec so pick those up
 		for l := 0; l < len(pus); l++ {
@@ -355,6 +354,8 @@ func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(mldepName string, namespa
 				}
 			}
 		}
+
+		r.Predictors[i] = p
 	}
 }
 
@@ -462,10 +463,10 @@ func (r *SeldonDeploymentSpec) ValidateSeldonDeployment() error {
 	predictorNames := make(map[string]bool)
 	for i, p := range r.Predictors {
 
-		collectTransports(p.Graph, transports)
+		collectTransports(&p.Graph, transports)
 
 		_, noEngine := p.Annotations[ANNOTATION_NO_ENGINE]
-		if noEngine && sizeOfGraph(p.Graph) > 1 {
+		if noEngine && sizeOfGraph(&p.Graph) > 1 {
 			fldPath := field.NewPath("spec").Child("predictors").Index(i)
 			allErrs = append(allErrs, field.Invalid(fldPath, p.Name, "Running without engine only valid for single element graphs"))
 		}
@@ -475,7 +476,7 @@ func (r *SeldonDeploymentSpec) ValidateSeldonDeployment() error {
 			allErrs = append(allErrs, field.Invalid(fldPath, p.Name, "Duplicate predictor name"))
 		}
 		predictorNames[p.Name] = true
-		allErrs = checkPredictiveUnits(p.Graph, &p, field.NewPath("spec").Child("predictors").Index(i).Child("graph"), allErrs)
+		allErrs = checkPredictiveUnits(&p.Graph, &p, field.NewPath("spec").Child("predictors").Index(i).Child("graph"), allErrs)
 	}
 
 	if len(transports) > 1 {
