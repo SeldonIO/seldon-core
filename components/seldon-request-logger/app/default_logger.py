@@ -209,9 +209,13 @@ def extract_data_part(content):
 
         copy["instance"] = json.loads(json.dumps(req_features, cls=log_helper.NumpyEncoder))
 
+    #copy names into its own section of request
+    if "data" in content:
+        if "names" in content["data"]:
+            copy["names"] = content["data"]["names"]
+
+    #should now have processed content of seldon message so don't want its various constructs on top-level anymore
     if "data" in copy:
-        if "names" in copy["data"]:
-            copy["names"] = copy["data"]["names"]
         del copy["data"]
     if "strData" in copy:
         del copy["strData"]

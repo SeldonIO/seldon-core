@@ -44,7 +44,13 @@ def rs232_checksum(the_bytes):
 
 class UserObject(SeldonComponent):
     HEALTH_STATUS_REPONSE = [0.123]
-    METADATA_RESPONSE = {"metadata": {"name": "mymodel"}}
+    METADATA_RESPONSE = {
+        "name": "my-model-name",
+        "versions": ["model-version"],
+        "platform": "model-platform",
+        "inputs": [{"name": "input", "datatype": "BYTES", "shape": [1]}],
+        "outputs": [{"name": "output", "datatype": "BYTES", "shape": [1]}],
+    }
 
     def __init__(self, metrics_ok=True, ret_nparray=False, ret_meta=False):
         self.metrics_ok = metrics_ok
@@ -88,7 +94,7 @@ class UserObject(SeldonComponent):
     def health_status(self):
         return self.predict(self.HEALTH_STATUS_REPONSE, ["some_float"])
 
-    def metadata(self):
+    def init_metadata(self):
         return self.METADATA_RESPONSE
 
 
@@ -606,7 +612,7 @@ def test_model_bad_metrics():
     rv = client.get('/predict?json={"data":{"ndarray":[]}}')
     j = json.loads(rv.data)
     logging.info(j)
-    assert rv.status_code == 400
+    assert rv.status_code == 500
 
 
 def test_model_error_status_code():

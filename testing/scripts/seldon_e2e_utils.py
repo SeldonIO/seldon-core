@@ -327,6 +327,7 @@ def rest_request_ambassador(
     names=None,
     method="predict",
     predictor_name="default",
+    model_name="classifier",
 ):
     if data is None:
         shape, arr = create_random_data(data_size, rows)
@@ -368,6 +369,17 @@ def rest_request_ambassador(
             + predictor_name
             + "/api/v0.1/explain",
             json=payload,
+        )
+    elif method == "metadata":
+        response = requests.get(
+            "http://"
+            + endpoint
+            + "/seldon/"
+            + namespace
+            + "/"
+            + deployment_name
+            + "/api/v0.1/metadata/"
+            + model_name
         )
 
     return response

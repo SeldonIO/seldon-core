@@ -15,7 +15,7 @@ from typing import Tuple, Dict, Union, List, Optional, Iterable
 import json
 import logging
 import http.client as http_client
-from google.protobuf import json_format
+from google.protobuf import any_pb2, json_format
 
 logger = logging.getLogger(__name__)
 
@@ -289,6 +289,7 @@ class SeldonClient(object):
         bin_data: Union[bytes, bytearray] = None,
         str_data: str = None,
         json_data: Union[str, List, Dict] = None,
+        custom_data: any_pb2.Any = None,
         names: Iterable[str] = None,
         gateway_prefix: str = None,
         headers: Dict = None,
@@ -334,6 +335,8 @@ class SeldonClient(object):
            String payload to send - will override data
         json_data
            JSON payload to send - will override data
+        custom_data
+           Custom payload to send - will override data
         names
            Column names
         gateway_prefix
@@ -370,6 +373,7 @@ class SeldonClient(object):
             bin_data=bin_data,
             str_data=str_data,
             json_data=json_data,
+            custom_data=custom_data,
             gateway_prefix=gateway_prefix,
             headers=headers,
             http_path=http_path,
@@ -627,6 +631,7 @@ class SeldonClient(object):
         bin_data: Union[bytes, bytearray] = None,
         str_data: str = None,
         json_data: Union[str, List, Dict] = None,
+        custom_data: any_pb2.Any = None,
         names: Iterable[str] = None,
     ) -> Union[SeldonClientPrediction, SeldonClientCombine]:
         """
@@ -671,6 +676,8 @@ class SeldonClient(object):
            String payload to send - will override data
         json_data
            String payload to send - will override data
+        custom_data
+           Custom payload to send - will override data
         ndatas
            Multiple numpy arrays to send for aggregation
         bin_data
@@ -706,6 +713,7 @@ class SeldonClient(object):
             bin_data=bin_data,
             str_data=str_data,
             json_data=json_data,
+            custom_data=custom_data,
         )
         self._validate_args(**k)
         if k["transport"] == "rest":
@@ -1028,6 +1036,7 @@ def microservice_api_grpc_seldon_message(
     bin_data: Union[bytes, bytearray] = None,
     str_data: str = None,
     json_data: Union[str, List, Dict] = None,
+    custom_data: any_pb2.Any = None,
     grpc_max_send_message_length: int = 4 * 1024 * 1024,
     grpc_max_receive_message_length: int = 4 * 1024 * 1024,
     names: Iterable[str] = None,
@@ -1054,6 +1063,8 @@ def microservice_api_grpc_seldon_message(
        String data to send
     json_data
         JSON data to send
+    custom_data
+        Custom data to send
     grpc_max_send_message_length
        Max grpc send message size in bytes
     grpc_max_receive_message_length
@@ -1072,6 +1083,8 @@ def microservice_api_grpc_seldon_message(
         request = prediction_pb2.SeldonMessage(strData=str_data)
     elif json_data is not None:
         request = json_to_seldon_message({"jsonData": json_data})
+    elif custom_data is not None:
+        request = prediction_pb2.SeldonMessage(customData=custom_data)
     else:
         if data is None:
             data = np.random.rand(*shape)
@@ -1157,6 +1170,8 @@ def microservice_api_grpc_aggregate(
             msgs.append(prediction_pb2.SeldonMessage(binData=data))
         elif isinstance(data, str):
             msgs.append(prediction_pb2.SeldonMessage(strData=data))
+        elif isinstance(data, any_pb2.Any):
+            msgs.append(prediction_pb2.SeldonMessage(customData=data))
         else:
             datadef = array_to_grpc_datadef(payload_type, data, names=names)
             msgs.append(prediction_pb2.SeldonMessage(data=datadef))
@@ -1377,6 +1392,7 @@ def grpc_predict_seldon_oauth(
     bin_data: Union[bytes, bytearray] = None,
     str_data: str = None,
     json_data: Union[str, List, Dict] = None,
+    custom_data: any_pb2.Any = None,
     grpc_max_send_message_length: int = 4 * 1024 * 1024,
     grpc_max_receive_message_length: int = 4 * 1024 * 1024,
     names: Iterable[str] = None,
@@ -1406,6 +1422,10 @@ def grpc_predict_seldon_oauth(
        Binary data to send
     str_data
        String data to send
+    json_data
+       JSON data to send
+    custom_data
+       Custom data to send
     grpc_max_send_message_length
        Max grpc send message size in bytes
     grpc_max_receive_message_length
@@ -1428,6 +1448,8 @@ def grpc_predict_seldon_oauth(
         request = prediction_pb2.SeldonMessage(strData=str_data)
     elif json_data is not None:
         request = json_to_seldon_message({"jsonData": json_data})
+    elif custom_data is not None:
+        request = prediction_pb2.SeldonMessage(customData=custom_data)
     else:
         if data is None:
             data = np.random.rand(*shape)
@@ -1824,6 +1846,7 @@ def grpc_predict_gateway(
     bin_data: Union[bytes, bytearray] = None,
     str_data: str = None,
     json_data: Union[str, List, Dict] = None,
+    custom_data: any_pb2.Any = None,
     grpc_max_send_message_length: int = 4 * 1024 * 1024,
     grpc_max_receive_message_length: int = 4 * 1024 * 1024,
     names: Iterable[str] = None,
@@ -1858,6 +1881,8 @@ def grpc_predict_gateway(
        String data to send
     json_data
        JSON data to send
+    custom_data
+       Custom data to send
     grpc_max_send_message_length
        Max grpc send message size in bytes
     grpc_max_receive_message_length
@@ -1891,6 +1916,8 @@ def grpc_predict_gateway(
         request = prediction_pb2.SeldonMessage(strData=str_data, meta=metaKV)
     elif json_data is not None:
         request = json_to_seldon_message({"jsonData": json_data})
+    elif custom_data is not None:
+        request = prediction_pb2.SeldonMessage(customData=custom_data, meta=metaKV)
     else:
         if data is None:
             data = np.random.rand(*shape)

@@ -1,0 +1,12 @@
+
+name: iris
+versions: [iris/dvc:8104914e6936da9864603b9bc4be2114]
+platform: sklearn
+inputs:
+- datatype: BYTES
+  name: input
+  shape: [ 1, 4 ]
+outputs:
+- datatype: BYTES
+  name: output
+  shape: [ 3 ]

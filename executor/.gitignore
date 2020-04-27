@@ -5,4 +5,5 @@ executor
 ./bin/
 cover.out
 executor.tar
+openapi/
 	
