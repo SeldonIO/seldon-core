@@ -294,7 +294,7 @@ def test_transform_input_bad_metrics():
     rv = client.get('/transform-input?json={"data":{"ndarray":[]}}')
     j = json.loads(rv.data)
     logging.info(j)
-    assert rv.status_code == 400
+    assert rv.status_code == 500
 
 
 def test_transform_input_gets_meta():
@@ -507,7 +507,7 @@ def test_transform_output_bad_metrics():
     rv = client.get('/transform-output?json={"data":{"ndarray":[]}}')
     j = json.loads(rv.data)
     logging.info(j)
-    assert rv.status_code == 400
+    assert rv.status_code == 500
 
 
 def test_transform_input_proto_ok():

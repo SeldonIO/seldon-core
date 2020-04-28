@@ -25,6 +25,10 @@ def get_rest_microservice(user_model, seldon_metrics):
 
     _set_flask_app_configs(app)
 
+    # dict representing the validated model metadata
+    # None value will represent a validation error
+    metadata_data = seldon_core.seldon_methods.init_metadata(user_model)
+
     if hasattr(user_model, "model_error_handler"):
         logger.info("Registering the custom error handler...")
         app.register_blueprint(user_model.model_error_handler)
@@ -126,10 +130,18 @@ def get_rest_microservice(user_model, seldon_metrics):
 
     @app.route("/metadata", methods=["GET"])
     def Metadata():
+        if metadata_data is None:
+            # None value represents validation error in current implementation
+            # if user_model would not define init_metadata than metadata_data
+            # would just contain a default values
+            raise SeldonMicroserviceException(
+                "Model metadata unavailable",
+                status_code=500,
+                reason="MICROSERVICE_BAD_METADATA",
+            )
         logger.debug("REST Metadata Request")
-        response = seldon_core.seldon_methods.metadata(user_model)
-        logger.debug("REST Metadata Response: %s", response)
-        return jsonify(response)
+        logger.debug("REST Metadata Response: %s", metadata_data)
+        return jsonify(metadata_data)
 
     return app
 

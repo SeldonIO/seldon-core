@@ -1,0 +1,15 @@
+md5: 99124ac10a601ab1d9f07f9c392b5d89
+cmd: make model
+deps:
+- md5: 65fd61883993b68d1937bdc36c59b20c
+  path: Makefile
+- md5: 7e8ce9f96492fee21db6a59c2b52f34d
+  path: requirements.txt
+- md5: 49c19c3ea9deb642066c0a457181cfbf
+  path: train_iris.py
+outs:
+- md5: 8104914e6936da9864603b9bc4be2114
+  path: model.joblib
+  cache: true
+  metric: false
+  persist: false

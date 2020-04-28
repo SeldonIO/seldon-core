@@ -1,3 +1,5 @@
+import os
+import json
 import logging
 from seldon_core.utils import (
     extract_request_parts,
@@ -22,6 +24,7 @@ from seldon_core.user_model import (
 )
 from seldon_core.flask_utils import SeldonMicroserviceException
 from seldon_core.metrics import SeldonMetrics
+from seldon_core.metadata import validate_model_metadata, SeldonInvalidMetadataError
 from google.protobuf import json_format
 from seldon_core.proto import prediction_pb2
 from typing import Any, Union, List, Dict
@@ -65,6 +68,7 @@ def predict(
        User defined class instance
     request
        The incoming request
+
     Returns
     -------
       The prediction
@@ -305,6 +309,7 @@ def route(
        A SelodonMessage proto
     seldon_metrics
         A SeldonMetrics instance
+
     Returns
     -------
 
@@ -506,19 +511,43 @@ def health_status(
     )
 
 
-def metadata(user_model: Any) -> Dict:
+def init_metadata(user_model: Any) -> Dict:
     """
-    Call the user model to get the model metadata
+    Call the user model to get the model init_metadata
 
     Parameters
     ----------
     user_model
-       User defined class instance
+        User defined class instance
+
     Returns
     -------
-      Model Metadata
+        Validated model metadata
     """
-    if hasattr(user_model, "metadata"):
-        return user_model.metadata()
+    # meta_user: load metadata defined in the user_model instance
+    if hasattr(user_model, "init_metadata"):
+        try:
+            meta_user = user_model.init_metadata()
+        except SeldonNotImplementedError:
+            meta_user = {}
+            pass
     else:
-        return {}
+        meta_user = {}
+
+    if not isinstance(meta_user, dict):
+        logger.error("init_metadata must return dict")
+        meta_user = {}
+
+    # meta_env: load metadata from environmental variable
+    try:
+        meta_env = json.loads(os.environ.get("MODEL_METADATA", "{}"))
+    except json.JSONDecodeError:
+        meta_env = {}
+
+    meta = {**meta_user, **meta_env}
+
+    try:
+        return validate_model_metadata(meta)
+    except SeldonInvalidMetadataError:
+        logger.error(f"Failed to validate metadata {meta}")
+        return None
