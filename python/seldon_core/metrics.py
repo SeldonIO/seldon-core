@@ -48,8 +48,8 @@ def split_image_tag(tag: str) -> Tuple[str]:
     -------
         Image name, image version tuple
     """
-    *name_parts, version = tag.split(':')
-    return ':'.join(name_parts), version
+    *name_parts, version = tag.split(":")
+    return ":".join(name_parts), version
 
 
 # Development placeholder
