@@ -119,6 +119,9 @@ class SeldonComponent(object):
     def metadata(self) -> Dict:
         raise SeldonNotImplementedError("metadata is not implemented")
 
+    def init_metadata(self) -> Dict:
+        raise SeldonNotImplementedError("init_metadata is not implemented")
+
 
 def client_custom_tags(user_model: SeldonComponent) -> Dict:
     """
@@ -313,6 +316,7 @@ def client_custom_metrics(
                 j_str = json.dumps(metrics)
                 raise SeldonMicroserviceException(
                     "Bad metric created during request: " + j_str,
+                    status_code=500,
                     reason="MICROSERVICE_BAD_METRIC",
                 )
 

@@ -99,6 +99,7 @@ Production Configurations and Integrations
    REST timeouts <rest_timeouts>
    Deploy Multiple Seldon Core Operators <multiple_operators>
    Protocol Examples <protocol_examples>
+   Custom Protobuf Data Example <customdata_example>
 
 Complex Graph Examples
 -----

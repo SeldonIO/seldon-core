@@ -26,4 +26,7 @@ FROM gcr.io/distroless/static:latest
 WORKDIR /
 COPY --from=builder /workspace/executor .
 COPY licenses/license.txt licenses/license.txt
+# Copy openapi spec and swagger UI files
+COPY openapi/ /openapi/
+
 ENTRYPOINT ["/executor"]

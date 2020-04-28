@@ -1,25 +1,32 @@
 VERSION := $(shell cat ../../version.txt)
 IMAGE_NAME_BASE=sklearnserver
 IMAGE_BASE=seldonio/${IMAGE_NAME_BASE}
+KIND_NAME ?= kind
 
 build_rest:
 	s2i build -E environment_rest ./sklearnserver seldonio/seldon-core-s2i-python37:${VERSION} ${IMAGE_BASE}_rest:${VERSION}
 
-push_rest:
-	docker push ${IMAGE_BASE}_rest:${VERSION}
+build_%:
+	s2i build \
+		-E environment_$* \
+		./sklearnserver \
+		seldonio/seldon-core-s2i-python37:${VERSION} \
+		${IMAGE_BASE}_$*:${VERSION}
 
-build_grpc:
-	s2i build -E environment_grpc ./sklearnserver seldonio/seldon-core-s2i-python37:${VERSION} ${IMAGE_BASE}_grpc:${VERSION}
+push_%:
+	docker push ${IMAGE_BASE}_$*:${VERSION}
 
-push_grpc:
-	docker push ${IMAGE_BASE}_grpc:${VERSION}
-
+kind_load_%:
+	kind load -v 3 docker-image ${IMAGE_BASE}_$*:${VERSION} --name ${KIND_NAME}
 
 .PHONY: push_all
 push_all: push_rest push_grpc
 
 .PHONY: build_all
 build_all: build_rest build_grpc
+
+.PHONY: kind_load_all
+kind_load_all: kind_load_rest kind_load_grpc
 
 #
 # Redhat

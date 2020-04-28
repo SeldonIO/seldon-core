@@ -1,9 +1,8 @@
 VERSION := $(shell cat ../version.txt)
-RELEASE_VERSION := $(shell cat ../version_release.txt)
 # Image URL to use all building/pushing image targets
 IMAGE_NAME_BASE=seldon-core-executor
 IMG ?= seldonio/${IMAGE_NAME_BASE}:${VERSION}
-IMG_VERSION_REDHAT ?= ${IMAGE_NAME_BASE}-ubi8:${RELEASE_VERSION}
+IMG_VERSION_REDHAT ?= ${IMAGE_NAME_BASE}-ubi8:${VERSION}
 IMG_REDHAT ?= seldonio/${IMG_VERSION_REDHAT}
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
@@ -34,9 +33,10 @@ copy_protos:
 
 .PHONY: compile_seldon_proto
 compile_seldon_proto:
-	cp ../proto/prediction.proto api/grpc
-	cd api/grpc && protoc -I. -I${GOPATH}/src/github.com/tensorflow/tensorflow --go_out=paths=source_relative,plugins=grpc:. prediction.proto
-	rm api/grpc/prediction.proto
+	cp ../proto/prediction.proto api/grpc/seldon/proto
+	cd api/grpc/seldon/proto && protoc -I. -I${GOPATH}/src/github.com/tensorflow/tensorflow --go_out=paths=source_relative,plugins=grpc:. prediction.proto
+	sed -i "s/package api/package proto/" api/grpc/seldon/proto/prediction.pb.go
+	rm api/grpc/seldon/proto/prediction.proto
 
 # https://github.com/tensorflow/serving/issues/1365#issuecomment-525351995
 .PHONY: compile_tensorflow_proto
@@ -57,12 +57,17 @@ add_protos:
 test: fmt vet
 	go test ./api/... ./predictor/... ./k8s/...  -coverprofile cover.out
 
+copy-openapi-resources:
+	mkdir -p openapi/
+	cp ../openapi/swagger-ui/* openapi/
+	cp ../openapi/engine.oas3.json openapi/seldon.json
+
 # Build the docker image
-docker-build: test
+docker-build: test copy-openapi-resources
 	docker build -f Dockerfile -t ${IMG} .
 
 # Build the docker image for Redhat
-docker-build-redhat: test
+docker-build-redhat: test copy-openapi-resources
 	docker build . -f Dockerfile.redhat -t ${IMG_REDHAT}
 
 # Push the docker image

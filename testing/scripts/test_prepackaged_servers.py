@@ -1,6 +1,7 @@
 from seldon_e2e_utils import (
     wait_for_rollout,
     initial_rest_request,
+    rest_request_ambassador,
     retry_run,
     create_random_data,
     wait_for_status,
@@ -25,6 +26,15 @@ class TestPrepack(object):
             "sklearn", namespace, data=[[0.1, 0.2, 0.3, 0.4]], dtype="ndarray"
         )
         assert r.status_code == 200
+
+        r = rest_request_ambassador("sklearn", namespace, method="metadata")
+        assert r.status_code == 200
+
+        res = r.json()
+        logging.warning(res)
+        assert res["name"] == "iris"
+        assert res["versions"] == ["iris/v1"]
+
         logging.warning("Success for test_prepack_sklearn")
         run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
 
@@ -58,6 +68,15 @@ class TestPrepack(object):
             "xgboost", namespace, data=[[0.1, 0.2, 0.3, 0.4]], dtype="ndarray"
         )
         assert r.status_code == 200
+
+        r = rest_request_ambassador("xgboost", namespace, method="metadata")
+        assert r.status_code == 200
+
+        res = r.json()
+        logging.warning(res)
+        assert res["name"] == "xgboost-iris"
+        assert res["versions"] == ["xgboost-iris/v1"]
+
         logging.warning("Success for test_prepack_xgboost")
         run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
 
@@ -89,6 +108,14 @@ class TestPrepack(object):
             ],
         )
         assert r.status_code == 200
+
+        r = rest_request_ambassador("mlflow", namespace, method="metadata")
+        assert r.status_code == 200
+
+        res = r.json()
+        logging.warning(res)
+        assert res["name"] == "mlflow-wines"
+        assert res["versions"] == ["mlflow-wines/v1"]
 
         run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
 

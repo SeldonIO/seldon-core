@@ -1,4 +1,4 @@
-# # Seldon Core Operator 
+# # Seldon Core Operator
 # Below are the default values when installing Seldon Core
 
 # ## Ingress Options
@@ -25,7 +25,7 @@ certManager:
 #   to specifci namespaces you can set the controllerId
 controllerId: ""
 
-# Whether to create the webhook service, and webhookconfigurations on startup
+# Whether operator should create the webhooks and configmap on startup (false means created from chart)
 createResources: false
 
 # Default user id to add to all Pod Security Context as the default
@@ -95,17 +95,17 @@ predictiveUnit:
 predictor_servers:
   MLFLOW_SERVER:
     grpc:
-      defaultImageVersion: "0.4"
+      defaultImageVersion: "0.5"
       image: seldonio/mlflowserver_grpc
     rest:
-      defaultImageVersion: "0.4"
+      defaultImageVersion: "0.5"
       image: seldonio/mlflowserver_rest
   SKLEARN_SERVER:
     grpc:
-      defaultImageVersion: "0.2"
+      defaultImageVersion: "0.3"
       image: seldonio/sklearnserver_grpc
     rest:
-      defaultImageVersion: "0.2"
+      defaultImageVersion: "0.3"
       image: seldonio/sklearnserver_rest
   TENSORFLOW_SERVER:
     grpc:
@@ -118,10 +118,10 @@ predictor_servers:
     tfImage: tensorflow/serving:2.1.0
   XGBOOST_SERVER:
     grpc:
-      defaultImageVersion: "0.3"
+      defaultImageVersion: "0.4"
       image: seldonio/xgboostserver_grpc
     rest:
-      defaultImageVersion: "0.3"
+      defaultImageVersion: "0.4"
       image: seldonio/xgboostserver_rest
 
 # ## Other
@@ -130,7 +130,7 @@ crd:
   create: true
 
 # Warning: credentials will be depricated soon, please use defaultEnvSecretRefName above
-# For more info please check the documentation 
+# For more info please check the documentation
 credentials:
   gcs:
     gcsCredentialFileName: gcloud-application-credentials.json

@@ -19,9 +19,11 @@ SERVICEACCOUNT_FILE = "service_account.yaml"
 
 WEBHOOK_PORT = 8443
 
+
 def updateImageVersion(existing: str, desired_version: str) -> str:
-    (image,_)=existing.split(":")
+    (image, _) = existing.split(":")
     return image + ":" + desired_version
+
 
 if __name__ == "__main__":
     exp = args.input + "/*"
@@ -66,7 +68,9 @@ if __name__ == "__main__":
                 # Update image if needed
                 if args.version:
                     image = res["spec"]["template"]["spec"]["containers"][0]["image"]
-                    res["spec"]["template"]["spec"]["containers"][0]["image"] = updateImageVersion(image,args.version)
+                    res["spec"]["template"]["spec"]["containers"][0][
+                        "image"
+                    ] = updateImageVersion(image, args.version)
                 # Ensure functionality to generate uids respecting openshift is active
                 for env in res["spec"]["template"]["spec"]["containers"][0]["env"]:
                     if env["name"] == "EXECUTOR_CONTAINER_USER":
@@ -74,8 +78,13 @@ if __name__ == "__main__":
                     if env["name"] == "ENGINE_CONTAINER_USER":
                         env["value"] = ""
                     if args.version:
-                        if env["name"] == "ENGINE_CONTAINER_IMAGE_AND_VERSION" or env["name"] == "EXECUTOR_CONTAINER_IMAGE_AND_VERSION":
-                            env["value"] = updateImageVersion(env["value"],args.version)
+                        if (
+                            env["name"] == "ENGINE_CONTAINER_IMAGE_AND_VERSION"
+                            or env["name"] == "EXECUTOR_CONTAINER_IMAGE_AND_VERSION"
+                        ):
+                            env["value"] = updateImageVersion(
+                                env["value"], args.version
+                            )
 
                 print("Writing ", OPERATOR_FILE)
                 filename = args.output + "/" + OPERATOR_FILE
