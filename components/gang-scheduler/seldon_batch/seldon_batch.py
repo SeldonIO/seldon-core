@@ -41,6 +41,8 @@ from queue import Queue
 import requests
 import os
 import json
+from geventhttpclient import HTTPClient
+from geventhttpclient.url import URL
 
 
 def start_batch_processing_loop(
@@ -58,26 +60,30 @@ def start_batch_processing_loop(
     log_level,
 ):
 
-    url = f"http://{endpoint}/seldon/{namespace}/{deployment_name}/api/v1.0/{method}"
+    url = URL(
+        f"http://{endpoint}/seldon/{namespace}/{deployment_name}/api/v1.0/{method}"
+    )
+    http = HTTPClient.from_url(url, concurrency=parallelism)
     q_in = Queue(parallelism * 2)
     q_out = Queue(parallelism * 2)
     # lock = Lock()
     # file_cursor = os.path.getsize(input_file_path)
 
     def _start_request_worker():
-        with requests.Session() as session:
-            while True:
-                line = q_in.get()
-                data = json.loads(line)
-                response = session.post(url, json=data)
+        while True:
+            line = q_in.get()
+            response = http.post(
+                url.request_uri, body=line, headers={"Content-Type": "application/json"}
+            )
+            response_bytes = response.read()
 
-                q_out.put(response.text)
-                q_in.task_done()
-                ## We add a lock to ensure there is no race condition on setting end of file cursor
-                # with lock:
-                #    # Ensure cursor moves across the file based on length of line
-                #    file_cursor -= len(line)
-                #    q_out.put((response.text, bool(file_cursor)))
+            q_out.put(response_bytes.decode())
+            q_in.task_done()
+            ## We add a lock to ensure there is no race condition on setting end of file cursor
+            # with lock:
+            #    # Ensure cursor moves across the file based on length of line
+            #    file_cursor -= len(line)
+            #    q_out.put((response.text, bool(file_cursor)))
 
     def _start_file_worker():
         output_data_file = open(output_data_path, "w")
