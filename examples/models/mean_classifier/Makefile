@@ -1,16 +1,16 @@
-VERSION=1.5
+VERSION := $(shell cat ../../../version.txt)
 IMAGE_NAME_BASE=mock_classifier
 IMAGE_BASE=seldonio/${IMAGE_NAME_BASE}
-PYTHON_WRAPPER=1.1.0
+
 
 build_rest:
-	s2i build -E environment_rest . seldonio/seldon-core-s2i-python36:${PYTHON_WRAPPER} ${IMAGE_BASE}_rest:${VERSION}
+	s2i build -E environment_rest . seldonio/seldon-core-s2i-python36:${VERSION} ${IMAGE_BASE}_rest:${VERSION}
 
 push_rest:
 	docker push ${IMAGE_BASE}_rest:${VERSION}
 
 build_grpc:
-	s2i build -E environment_grpc . seldonio/seldon-core-s2i-python36:${PYTHON_WRAPPER} ${IMAGE_BASE}_grpc:${VERSION}
+	s2i build -E environment_grpc . seldonio/seldon-core-s2i-python36:${VERSION} ${IMAGE_BASE}_grpc:${VERSION}
 
 push_grpc:
 	docker push ${IMAGE_BASE}_grpc:${VERSION}
@@ -32,11 +32,10 @@ kind_load_grpc:
 # Redhat
 #
 
-VERSION_REDHAT := $(shell cat ../../../version_release.txt)
-IMG_VERSION_REDHAT ?= ${IMAGE_NAME_BASE}-ubi8:${VERSION_REDHAT}
+IMG_VERSION_REDHAT ?= ${IMAGE_NAME_BASE}-ubi8:${VERSION}
 IMG_REDHAT ?= seldonio/${IMG_VERSION_REDHAT}
 
-build_rest_ubi:
+docker-build-redhat:
 	docker build . -f Dockerfile.redhat -t ${IMG_REDHAT}
 
 # password can be found at: https://connect.redhat.com/project/4035711/view

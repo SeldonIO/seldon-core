@@ -13,7 +13,7 @@ build_jar: update_proto update_swagger
 build_image: update_proto update_swagger
 	docker build  -f Dockerfile -t ${IMG} .
 
-build_image_redhat: update_proto update_swagger
+docker-build-redhat: update_proto update_swagger
 	docker build  -f Dockerfile.redhat -t ${IMG_REDHAT} .
 
 # password can be found at: https://connect.redhat.com/project/1366491/view

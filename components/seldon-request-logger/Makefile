@@ -1,8 +1,10 @@
+VERSION := $(shell cat ../../version.txt)
+
 build_image:
-	docker build . -t seldonio/seldon-request-logger:latest
+	docker build . -t seldonio/seldon-request-logger:${VERSION}
 
 push_image:
-	docker push seldonio/seldon-request-logger:latest
+	docker push seldonio/seldon-request-logger:${VERSION}
 
 run_container:
 	docker run -p 2222:8080 seldonio/seldon-request-logger:latest
@@ -42,9 +44,8 @@ test_single_dim:
 # RedHat
 #
 
-RELEASE_VERSION := $(shell cat ../../version_release.txt)
 IMAGE_NAME_BASE=seldon-request-logger
-IMG_VERSION_REDHAT ?= ${IMAGE_NAME_BASE}-ubi8:${RELEASE_VERSION}
+IMG_VERSION_REDHAT ?= ${IMAGE_NAME_BASE}-ubi8:${VERSION}
 IMG_REDHAT ?= seldonio/${IMG_VERSION_REDHAT}
 
 # Build the docker image for Redhat
