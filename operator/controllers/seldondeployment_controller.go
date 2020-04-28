@@ -829,6 +829,11 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 		}
 	}
 
+	// Add a particular service account rather than default for the engine
+	svcAccountName := getSvcOrchSvcAccountName(mlDep)
+	deploy.Spec.Template.Spec.ServiceAccountName = svcAccountName
+	deploy.Spec.Template.Spec.DeprecatedServiceAccount = svcAccountName
+
 	// Add Pod Security Context
 	deploy.Spec.Template.Spec.SecurityContext = podSecurityContext
 
