@@ -46,11 +46,7 @@ class MetadataTensorValidator:
         return shape
 
     def to_dict(self) -> Dict:
-        return {
-            "name": self.name,
-            "datatype": self.datatype,
-            "shape": self.shape,
-        }
+        return {"name": self.name, "datatype": self.datatype, "shape": self.shape}
 
 
 class ModelMetadataValidator:
@@ -179,7 +175,7 @@ def validate_model_metadata(data: Dict) -> Dict:
         )
 
     meta = ModelMetadataValidator(
-        name=name, versions=versions, platform=platform, inputs=inputs, outputs=outputs,
+        name=name, versions=versions, platform=platform, inputs=inputs, outputs=outputs
     )
 
     return meta.to_dict()
