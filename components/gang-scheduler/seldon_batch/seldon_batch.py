@@ -1,6 +1,6 @@
-import json
-import numpy as np
-from seldon_core.seldon_client import SeldonClient
+# import json
+# import numpy as np
+# from seldon_core.seldon_client import SeldonClient
 
 
 # def start_batch_processing_loop(
@@ -40,6 +40,7 @@ from threading import Thread, Lock
 from queue import Queue
 import requests
 import os
+import json
 
 
 def start_batch_processing_loop(
@@ -64,18 +65,19 @@ def start_batch_processing_loop(
     # file_cursor = os.path.getsize(input_file_path)
 
     def _start_request_worker():
-        while True:
-            line = q_in.get()
-            data = json.loads(line)
-            response = requests.post(url, json=data)
+        with requests.Session() as session:
+            while True:
+                line = q_in.get()
+                data = json.loads(line)
+                response = session.post(url, json=data)
 
-            q_out.put(response.text)
-            q_in.task_done()
-            ## We add a lock to ensure there is no race condition on setting end of file cursor
-            # with lock:
-            #    # Ensure cursor moves across the file based on length of line
-            #    file_cursor -= len(line)
-            #    q_out.put((response.text, bool(file_cursor)))
+                q_out.put(response.text)
+                q_in.task_done()
+                ## We add a lock to ensure there is no race condition on setting end of file cursor
+                # with lock:
+                #    # Ensure cursor moves across the file based on length of line
+                #    file_cursor -= len(line)
+                #    q_out.put((response.text, bool(file_cursor)))
 
     def _start_file_worker():
         output_data_file = open(output_data_path, "w")

@@ -4,7 +4,7 @@ from .seldon_batch import start_batch_processing_loop
 CHOICES_GATEWAY_TYPE = ["ambassador", "istio", "seldon"]
 CHOICES_TRANSPORT = ["rest", "grpc"]
 CHOICES_PAYLOAD_TYPE = ["ndarray", "tensor", "tftensor", "json", "bytes", "str"]
-CHOICES_METHOD = ["predict", "explain"]
+CHOICES_METHOD = ["predictions", "explain"]
 CHOICES_LOG_LEVEL = ["debug", "info", "warning", "error"]
 
 

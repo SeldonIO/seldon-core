@@ -92,4 +92,6 @@ xai.egg-info
 xai.egg-info/
 build/
 dist/
+input.data
+output.data
 
