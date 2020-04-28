@@ -98,9 +98,7 @@ def test_validate_model_metadata():
         "inputs": [{"name": "input", "datatype": "BYTES", "shape": [1]}],
         "outputs": [{"name": "output", "datatype": "BYTES", "shape": [1]}],
     }
-    with patch(
-        'seldon_core.metadata.MODEL_IMAGE', None
-    ):
+    with patch("seldon_core.metadata.MODEL_IMAGE", None):
         assert meta == validate_model_metadata(meta)
 
 
@@ -112,9 +110,7 @@ def test_validate_model_metadata_with_env():
         "inputs": [{"name": "input", "datatype": "BYTES", "shape": [1]}],
         "outputs": [{"name": "output", "datatype": "BYTES", "shape": [1]}],
     }
-    with patch(
-        'seldon_core.metadata.MODEL_IMAGE', 'seldonio/sklearn-iris:0.1'
-    ):
+    with patch("seldon_core.metadata.MODEL_IMAGE", "seldonio/sklearn-iris:0.1"):
         assert meta == validate_model_metadata(meta)
 
 
@@ -126,9 +122,7 @@ def test_validate_model_metadata_with_colon_in_env():
         "inputs": [{"name": "input", "datatype": "BYTES", "shape": [1]}],
         "outputs": [{"name": "output", "datatype": "BYTES", "shape": [1]}],
     }
-    with patch(
-        'seldon_core.metadata.MODEL_IMAGE', 'localhost:32000/sklearn-iris:0.1'
-    ):
+    with patch("seldon_core.metadata.MODEL_IMAGE", "localhost:32000/sklearn-iris:0.1"):
         assert meta == validate_model_metadata(meta)
 
 
