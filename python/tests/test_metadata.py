@@ -74,8 +74,8 @@ def test_model_metadata_wrong_versions(invalid_versions):
     "invalid_tensor",
     [
         MetadataTensorValidator(name="tensor-name", datatype="data-type", shape=[1, 2]),
-        [{"name": "tensor-name", "datatype": "data-type", "shape": [1, 2],}],
-        {"name": "tensor-name", "datatype": "data-type", "shape": [1, 2],},
+        [{"name": "tensor-name", "datatype": "data-type", "shape": [1, 2]}],
+        {"name": "tensor-name", "datatype": "data-type", "shape": [1, 2]},
         "some string",
         ["some string in array"],
     ],
@@ -136,7 +136,7 @@ def test_validate_model_metadata_wrong_versions(invalid_versions):
     "invalid_tensor",
     [
         MetadataTensorValidator(name="tensor-name", datatype="data-type", shape=[1, 2]),
-        {"name": "tensor-name", "datatype": "data-type", "shape": [1, 2],},
+        {"name": "tensor-name", "datatype": "data-type", "shape": [1, 2]},
         "some string",
         ["some string in array"],
     ],
