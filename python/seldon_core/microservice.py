@@ -328,7 +328,7 @@ def main():
                 )
                 StandaloneApplication(app, user_object, options=options).run()
 
-            logger.info("REST microservice running on port %i", port)
+            logger.info("REST gunicorn microservice running on port %i", port)
             server1_func = rest_prediction_server
 
         else:
