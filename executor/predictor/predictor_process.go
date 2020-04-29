@@ -3,14 +3,15 @@ package predictor
 import (
 	"context"
 	"fmt"
+	"net/url"
+	"sync"
+
 	"github.com/go-logr/logr"
 	guuid "github.com/google/uuid"
 	"github.com/seldonio/seldon-core/executor/api/client"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	payloadLogger "github.com/seldonio/seldon-core/executor/logger"
-	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
-	"net/url"
-	"sync"
+	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 )
 
 type PredictorProcess struct {
@@ -251,7 +252,10 @@ func (p *PredictorProcess) logPayload(nodeName string, logger *v1.Logger, reqTyp
 	if err != nil {
 		return err
 	}
-
+	reqId := ""
+	if r, ok := p.Ctx.Value(payload.SeldonPUIDHeader).(string); ok {
+		reqId = r
+	}
 	payloadLogger.QueueLogRequest(payloadLogger.LogRequest{
 		Url:         logUrl,
 		Bytes:       &data,
@@ -260,7 +264,7 @@ func (p *PredictorProcess) logPayload(nodeName string, logger *v1.Logger, reqTyp
 		Id:          guuid.New().String(),
 		SourceUri:   p.ServerUrl,
 		ModelId:     nodeName,
-		RequestId:   p.Ctx.Value(payload.SeldonPUIDHeader).(string),
+		RequestId:   reqId,
 	})
 	return nil
 }
