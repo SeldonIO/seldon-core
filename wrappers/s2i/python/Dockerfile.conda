@@ -18,7 +18,8 @@ RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-$CONDA_VERSION-L
     /opt/conda/bin/conda clean -tipsy && \
     ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh && \
     echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc && \
-    echo "conda activate base" >> ~/.bashrc
+    echo "conda activate base" >> ~/.bashrc && \
+    chgrp -R root /opt/conda && chmod -R g+rw /opt/conda
 
 ENV TINI_VERSION v0.16.1
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /usr/bin/tini

@@ -32,7 +32,7 @@ createResources: false
 # Use this to ensure all container run as non-root by default
 # For openshift leave blank as usually this will be injected automatically on an openshift cluster
 # to all pods.
-defaultUserID: ""
+defaultUserID: "8888"
 
 # ## Service Orchestrator (Executor)
 # The executor is the default service orchestrator which has superceeded the "Java Engine"
@@ -95,33 +95,33 @@ predictiveUnit:
 predictor_servers:
   MLFLOW_SERVER:
     grpc:
-      defaultImageVersion: "0.5"
+      defaultImageVersion: "1.1.1-SNAPSHOT"
       image: seldonio/mlflowserver_grpc
     rest:
-      defaultImageVersion: "0.5"
+      defaultImageVersion: "1.1.1-SNAPSHOT"
       image: seldonio/mlflowserver_rest
   SKLEARN_SERVER:
     grpc:
-      defaultImageVersion: "0.3"
+      defaultImageVersion: "1.1.1-SNAPSHOT"
       image: seldonio/sklearnserver_grpc
     rest:
-      defaultImageVersion: "0.3"
+      defaultImageVersion: "1.1.1-SNAPSHOT"
       image: seldonio/sklearnserver_rest
   TENSORFLOW_SERVER:
     grpc:
-      defaultImageVersion: "0.7"
+      defaultImageVersion: "1.1.1-SNAPSHOT"
       image: seldonio/tfserving-proxy_grpc
     rest:
-      defaultImageVersion: "0.7"
+      defaultImageVersion: "1.1.1-SNAPSHOT"
       image: seldonio/tfserving-proxy_rest
     tensorflow: true
     tfImage: tensorflow/serving:2.1.0
   XGBOOST_SERVER:
     grpc:
-      defaultImageVersion: "0.4"
+      defaultImageVersion: "1.1.1-SNAPSHOT"
       image: seldonio/xgboostserver_grpc
     rest:
-      defaultImageVersion: "0.4"
+      defaultImageVersion: "1.1.1-SNAPSHOT"
       image: seldonio/xgboostserver_rest
 
 # ## Other

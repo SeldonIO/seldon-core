@@ -17,7 +17,7 @@ LABEL maintainer="cc@seldon.io"
 LABEL tensorflow_serving_github_branchtag=${TF_SERVING_VERSION_GIT_BRANCH}
 LABEL tensorflow_serving_github_commit=${TF_SERVING_VERSION_GIT_COMMIT}
 
-RUN microdnf install openssl ca-certificates \
+RUN microdnf install openssl ca-certificates wget \
     && microdnf update; microdnf clean all
 
 # Install TF Serving pkg
@@ -40,5 +40,7 @@ ENV MODEL_NAME=model
 COPY tf_serving_entrypoint.sh /usr/bin
 
 RUN ln -s /etc/ssl/certs/ca-bundle.crt /etc/ssl/certs/ca-certificates.crt
+
+RUN mkdir /licenses && wget -O /licenses/license.txt https://raw.githubusercontent.com/tensorflow/serving/master/LICENSE
 
 ENTRYPOINT ["/usr/bin/tf_serving_entrypoint.sh"]

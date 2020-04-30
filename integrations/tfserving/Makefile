@@ -1,20 +1,33 @@
-IMAGE_VERSION=0.7
-IMAGE_NAME = docker.io/seldonio/tfserving-proxy
+SHELL := /bin/bash
+VERSION := $(shell cat ../../version.txt)
+IMAGE_NAME_BASE=tfserving-proxy
+IMAGE_BASE=seldonio/${IMAGE_NAME_BASE}
 
-SELDON_CORE_DIR=../../..
+build_%:
+	s2i build \
+		-E environment_$* \
+		. \
+		seldonio/seldon-core-s2i-python37-ubi8:${VERSION} \
+		${IMAGE_BASE}_$*:${VERSION}
 
-.PHONY: build_rest
-build_rest: 
-	s2i build -E environment_rest . seldonio/seldon-core-s2i-python3:0.18 $(IMAGE_NAME)_rest:$(IMAGE_VERSION)
+push_%:
+	docker push ${IMG}_$*:${VERSION}
 
-.PHONY: build_grpc
-build_grpc: 
-	s2i build -E environment_grpc . seldonio/seldon-core-s2i-python3:0.18 $(IMAGE_NAME)_grpc:$(IMAGE_VERSION)
+.PHONY: build_all
+build_all: build_rest build_grpc
 
+.PHONY: push_all
+push_all: push_rest push_grpc
 
-push_to_dockerhub_rest:
-	docker push $(IMAGE_NAME)_rest:$(IMAGE_VERSION)
+# https://connect.redhat.com/project/4098981/view
+scan_rest=ospid-2cbfde5f-10d2-4cc1-9b1d-0dff7f6d1021
+# https://connect.redhat.com/project/4100321/view
+scan_grpc=ospid-da09f299-64d1-4e19-86c9-af60a0ddb851
+redhat-image-scan-%:
+	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
+		echo $${rh_password_tfproxy_$*} | docker login -u unused scan.connect.redhat.com --password-stdin
+	docker tag ${IMAGE_BASE}_$*:${VERSION} scan.connect.redhat.com/${scan_$*}/${IMAGE_NAME_BASE}_$*:${VERSION}
+	docker push scan.connect.redhat.com/${scan_$*}/${IMAGE_NAME_BASE}_$*:${VERSION}
 
-push_to_dockerhub_grpc:
-	docker push $(IMAGE_NAME)_grpc:$(IMAGE_VERSION)
-
+.PHONY: redhat-image-scan-all
+redhat-image-scan-all: redhat-image-scan-rest redhat-image-scan-grpc

@@ -1,3 +1,4 @@
+SHELL := /bin/bash
 VERSION := $(shell cat ../../version.txt)
 IMAGE=alibi-detect-server
 
@@ -16,12 +17,6 @@ test: type_check
 .PHONY: lint
 lint:
 	black .
-
-docker-build: 
-	docker build -f Dockerfile -t seldonio/${IMAGE}:${VERSION} .
-
-docker-push:
-	docker push seldonio/${IMAGE}:${VERSION} 
 
 #
 # Local Run
@@ -52,24 +47,20 @@ curl-outlier-detector-scores:
 	curl -v localhost:8080/ -d @./input.json -H "Alibi-Detect-Return-Feature-Score: true" -H "Alibi-Detect-Return-Instance-Score: true"
 
 
+docker-build: 
+	docker build -f Dockerfile -t seldonio/${IMAGE}:${VERSION} .
+
+docker-push:
+	docker push seldonio/${IMAGE}:${VERSION} 
+
+
 #
 # RedHat
 #
 
-IMAGE_NAME_BASE=alibi-detect-server
-IMG_VERSION_REDHAT ?= ${IMAGE_NAME_BASE}-ubi8:${VERSION}
-IMG_REDHAT ?= seldonio/${IMG_VERSION_REDHAT}
-
-# Build the docker image for Redhat
-docker-build-redhat: 
-	docker build . -f Dockerfile.redhat -t ${IMG_REDHAT}
-
-# Push the docker image
-docker-push-redhat:
-	docker push ${IMG_REDHAT}
-
 # password can be found at: https://connect.redhat.com/project/3993461/view
 redhat-image-scan:
-	docker login -u unused scan.connect.redhat.com
-	docker tag ${IMG_REDHAT} scan.connect.redhat.com/ospid-32ed6498-bce5-4c3b-9486-fe1c6e2582d3/${IMG_VERSION_REDHAT}
-	docker push scan.connect.redhat.com/ospid-32ed6498-bce5-4c3b-9486-fe1c6e2582d3/${IMG_VERSION_REDHAT}
+	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
+		echo $${rh_password_alibi_detect} | docker login -u unused scan.connect.redhat.com --password-stdin
+	docker tag seldonio/${IMAGE}:${VERSION} scan.connect.redhat.com/ospid-32ed6498-bce5-4c3b-9486-fe1c6e2582d3/${IMAGE}:${VERSION}
+	docker push scan.connect.redhat.com/ospid-32ed6498-bce5-4c3b-9486-fe1c6e2582d3/${IMAGE}:${VERSION}

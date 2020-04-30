@@ -68,8 +68,7 @@ function build_push_mock {
 	build_rest \
 	build_grpc \
 	push_rest \
-	push_grpc \
-	docker-build-redhat     
+	push_grpc
     MOCK_MODEL_EXIT_VALUE=$?
 }
 
@@ -77,8 +76,7 @@ function build_push_alibi_detect {
     make \
 	-C components/alibi-detect-server \
 	docker-build \
-	docker-push \
-	docker-build-redhat
+	docker-push 
     ALIBI_DETECT_EXIT_VALUE=$?
 }
 
@@ -86,10 +84,58 @@ function build_push_request_logger {
     make \
 	-C components/seldon-request-logger \
         build_image \
-	push_image \
-	docker-build-redhat
+	push_image 
     LOGGER_EXIT_VALUE=$?
 }
+
+function build_push_sklearnserver {
+    make \
+	-C servers/sklearnserver \
+        build_all \
+	push_all 
+    SKLEARN_EXIT_VALUE=$?
+}
+
+function build_push_mlflowserver {
+    make \
+	-C servers/mlflowserver \
+        build_all \
+	push_all 
+    MLFLOW_EXIT_VALUE=$?
+}
+
+function build_push_xgboostserver {
+    make \
+	-C servers/xgboostserver \
+        build_all \
+	push_all 
+    XGBOOST_EXIT_VALUE=$?
+}
+
+function build_push_tfproxy {
+    make \
+	-C integrations/tfserving \
+        build_all \
+	push_all 
+    TFPROXY_EXIT_VALUE=$?
+}
+
+function build_push_alibi_explainer {
+    make \
+	-C components/alibi-explain-server \
+        docker-build \
+	docker-push 
+    EXPLAIN_EXIT_VALUE=$?
+}
+
+function build_push_storage_initializer {
+    make \
+	-C components/storage_initializer \
+        docker-build \
+	docker-push 
+    STORAGE_INITIALIZER_EXIT_VALUE=$?
+}
+
 
 build_push_python
 build_push_operator
@@ -98,6 +144,12 @@ build_push_engine
 build_push_mock
 build_push_alibi_detect
 build_push_request_logger
+build_push_sklearnserver
+build_push_mlflowserver
+build_push_xgboostserver
+build_push_tfproxy
+build_push_alibi_explainer
+build_push_storage_initializer
 
 #######################################
 # EXIT STOPS COMMANDS FROM HERE ONWARDS
@@ -122,6 +174,12 @@ exit $((${PYTHON_EXIT_VALUE} \
     + ${EXECUTOR_EXIT_VALUE} \
     + ${MOCK_MODEL_EXIT_VALUE} \
     + ${ALIBI_DETECT_EXIT_VALUE} \
-    + ${LOGGER_EXIT_VALUE}))
+    + ${LOGGER_EXIT_VALUE} \
+    + ${SKLEARN_EXIT_VALUE} \
+    + ${MLFLOW_EXIT_VALUE} \
+    + ${XGBOOST_EXIT_VALUE} \        
+    + ${TFPROXY_EXIT_VALUE} \
+    + ${STORAGE_INITIALIZER_EXIT_VALUE} \
+    + ${EXPLAIN_EXIT_VALUE}))
 
 

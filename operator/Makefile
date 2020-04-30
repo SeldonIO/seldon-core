@@ -1,3 +1,4 @@
+SHELL := /bin/bash
 VERSION := $(shell cat ../version.txt)
 # Image URL to use all building/pushing image targets
 IMAGE_NAME_BASE=seldon-core-operator
@@ -137,7 +138,8 @@ docker-push-redhat:
 
 # password can be found at: https://connect.redhat.com/project/1366481/view
 redhat-image-scan:
-	docker login -u unused scan.connect.redhat.com
+	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
+		echo $${rh_password_operator} | docker login -u unused scan.connect.redhat.com --password-stdin
 	docker tag ${IMG_REDHAT} scan.connect.redhat.com/ospid-7f50cebe-122b-495a-a143-41426dfcb6c9/${IMG_VERSION_REDHAT}
 	docker push scan.connect.redhat.com/ospid-7f50cebe-122b-495a-a143-41426dfcb6c9/${IMG_VERSION_REDHAT}
 
