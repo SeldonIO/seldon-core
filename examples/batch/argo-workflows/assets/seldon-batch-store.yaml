@@ -50,7 +50,7 @@ spec:
                 modelUri: gs://seldon-models/sklearn/iris
                 name: classifier
               name: default
-              replicas: 1
+              replicas: 10
                 
   - name: wait-seldon-resource-template
     script:
@@ -92,7 +92,7 @@ spec:
             --deployment-name "sklearn-{{workflow.uid}}" \
             --namespace "default" \
             --endpoint "istio-ingressgateway.istio-system.svc.cluster.local" \
-            --parallelism "10" \
+            --parallelism "100" \
             --retries "10" \
             --input-data-path "/assets/input-data.txt" \
             --output-data-path /assets/output-data.txt
