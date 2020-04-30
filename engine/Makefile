@@ -1,6 +1,8 @@
 VERSION := $(shell cat ../version.txt)
-IMG ?= seldonio/engine:$(VERSION)
-IMG_REDHAT ?= seldonio/engine-ubi8:$(VERSION)
+IMAGE_NAME_BASE=engine
+IMG ?= seldonio/${IMAGE_NAME_BASE}:${VERSION}
+IMG_VERSION_REDHAT ?= ${IMAGE_NAME_BASE}-ubi8:1.1.0
+IMG_REDHAT ?= seldonio/${IMG_VERSION_REDHAT}
 
 version:
 	echo ${VERSION}
@@ -11,8 +13,14 @@ build_jar: update_proto update_swagger
 build_image: update_proto update_swagger
 	docker build  -f Dockerfile -t ${IMG} .
 
-build_image_redhat: update_proto update_swagger
+docker-build-redhat: update_proto update_swagger
 	docker build  -f Dockerfile.redhat -t ${IMG_REDHAT} .
+
+# password can be found at: https://connect.redhat.com/project/1366491/view
+redhat-image-scan:
+	docker login -u unused scan.connect.redhat.com
+	docker tag ${IMG_REDHAT} scan.connect.redhat.com/ospid-0d5322f9-b490-461e-a93f-1a88f69c1251/${IMG_VERSION_REDHAT}
+	docker push scan.connect.redhat.com/ospid-0d5322f9-b490-461e-a93f-1a88f69c1251/${IMG_VERSION_REDHAT}
 
 push_to_registry:
 	docker push ${IMG}
