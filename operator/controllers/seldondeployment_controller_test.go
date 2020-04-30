@@ -28,6 +28,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/rand"
+	"os"
 	"testing"
 	"time"
 )
@@ -915,4 +916,47 @@ func TestCreateDeploymentWithNoLabelsAndAnnotations(t *testing.T) {
 	}
 
 	_ = createDeploymentWithoutEngine(depName, "a", instance.Spec.Predictors[0].ComponentSpecs[0], &instance.Spec.Predictors[0], instance, nil)
+}
+
+func TestCreateDeploymentOverridingSAFromEnvVar(t *testing.T) {
+	g := NewGomegaWithT(t)
+	depName := "dep"
+	svcAccountName := rand.String(10)
+	os.Setenv("ENGINE_CONTAINER_SERVICE_ACCOUNT_NAME", svcAccountName)
+	modelType := machinelearningv1.MODEL
+	instance := &machinelearningv1.SeldonDeployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      depName,
+			Namespace: "default",
+		},
+		Spec: machinelearningv1.SeldonDeploymentSpec{
+			Name: "mydep",
+			Predictors: []machinelearningv1.PredictorSpec{
+				{
+					Name: "p1",
+					ComponentSpecs: []*machinelearningv1.SeldonPodSpec{
+						{
+							Metadata: metav1.ObjectMeta{},
+							Spec: v1.PodSpec{
+								Containers: []v1.Container{
+									{
+										Image: "seldonio/mock_classifier:1.0",
+										Name:  "classifier",
+									},
+								},
+							},
+						},
+					},
+					Graph: &machinelearningv1.PredictiveUnit{
+						Name: "classifier",
+						Type: &modelType,
+					},
+				},
+			},
+		},
+	}
+
+	dep := createDeploymentWithoutEngine(depName, "a", instance.Spec.Predictors[0].ComponentSpecs[0], &instance.Spec.Predictors[0], instance, nil)
+	g.Expect(dep.Spec.Template.Spec.ServiceAccountName).To(Equal(svcAccountName))
+	g.Expect(dep.Spec.Template.Spec.DeprecatedServiceAccount).To(Equal(svcAccountName))
 }
