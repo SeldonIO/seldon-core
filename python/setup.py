@@ -53,6 +53,7 @@ setup(
             "seldon-core-tester = seldon_core.microservice_tester:main",
             "seldon-core-microservice-tester = seldon_core.microservice_tester:main",
             "seldon-core-api-tester = seldon_core.api_tester:main",
+            "seldon-batch-processor = seldon_core.batch_processor:run_cli",
         ]
     },
     zip_safe=False,
