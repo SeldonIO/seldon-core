@@ -34,7 +34,7 @@ spec:
         apiVersion: machinelearning.seldon.io/v1
         kind: SeldonDeployment
         metadata:
-          name: "{{workflow.uid}}"
+          name: "sklearn-{{workflow.uid}}"
           ownerReferences:
           - apiVersion: argoproj.io/v1alpha1
             blockOwnerDeletion: true
@@ -42,7 +42,7 @@ spec:
             name: "{{workflow.name}}"
             uid: "{{workflow.uid}}"
         spec:
-          name: "{{workflow.uid}}"
+          name: "sklearn-{{workflow.uid}}"
           predictors:
             - graph:
                 children: []
@@ -58,7 +58,10 @@ spec:
       command: [bash]
       source: |
         sleep 3
-        kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id="{{workflow.uid}}" -o jsonpath='{.items[0].metadata.name}')
+        kubectl rollout status \
+            deploy/$(kubectl get deploy \
+                     -l seldon-deployment-id="sklearn-{{workflow.uid}}" \
+                     -o jsonpath='{.items[0].metadata.name}')
                      
   - name: download-object-store-template
     script:
@@ -82,28 +85,18 @@ spec:
       - name: output-data
         path: /assets/output-data.txt
     script:
-      image: seldonio/seldon-core-s2i-python3:1.1.1-SNAPSHOT
-      command: [python]
+      image: seldonio/seldon-core-s2i-python37:1.1.1-SNAPSHOT
+      command: [bash]
       source: |
-        from seldon_core.seldon_client import SeldonClient
-        import numpy as np
-        import time
-        import json
-        time.sleep(10)
-        sc = SeldonClient(
-            gateway_endpoint="istio-ingressgateway.istio-system.svc.cluster.local",
-            deployment_name="{{workflow.uid}}",
-            namespace="default")
-        input_file = open("/assets/input-data.txt", "r")
-        output_file = open("/assets/output-data.txt", "w")
-        print("SENDING DATA")
-        for d in input_file:
-            arr = json.loads(d)
-            data = np.array(arr)
-            output = sc.predict(data=data)
-            output_file.write(f"{output.response}\n")
-        print("DONE SENDING DATA")
-            
+        seldon-batch-processor \
+            --deployment-name "sklearn-{{workflow.uid}}" \
+            --namespace "default" \
+            --endpoint "istio-ingressgateway.istio-system.svc.cluster.local" \
+            --parallelism "10" \
+            --retries "10" \
+            --input-data-path "/assets/input-data.txt" \
+            --output-data-path /assets/output-data.txt
+      
   - name: upload-object-store-template
     inputs:
       artifacts:
