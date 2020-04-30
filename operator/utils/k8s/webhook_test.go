@@ -112,6 +112,28 @@ func TestMutatingWebhookCreate(t *testing.T) {
 	g.Expect(err).To(BeNil())
 	err = wc.CreateMutatingWebhookConfigurationFromFile(bytes, TestNamespace, crd, false)
 	g.Expect(err).To(BeNil())
+	_, err = client.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Get("seldon-mutating-webhook", metav1.GetOptions{})
+	g.Expect(err).To(BeNil())
+}
+
+func TestMutatingWebhookCreateNamespaced(t *testing.T) {
+	g := NewGomegaWithT(t)
+	scheme := createScheme()
+	bytes, err := LoadBytesFromFile("testdata", "mutate.yaml")
+	g.Expect(err).To(BeNil())
+	client := fake.NewSimpleClientset()
+	apiExtensionsFake := apiextensionsfake.NewSimpleClientset()
+	crd, err := createCRD(apiExtensionsFake)
+	g.Expect(err).To(BeNil())
+	hosts := []string{"seldon-webhook-service.seldon-system", "seldon-webhook-service.seldon-system.svc"}
+	certs, err := certSetup(hosts)
+	g.Expect(err).To(BeNil())
+	wc, err := NewWebhookCreator(client, certs, ctrl.Log, scheme)
+	g.Expect(err).To(BeNil())
+	err = wc.CreateMutatingWebhookConfigurationFromFile(bytes, TestNamespace, crd, true)
+	g.Expect(err).To(BeNil())
+	_, err = client.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Get("seldon-mutating-webhook-"+TestNamespace, metav1.GetOptions{})
+	g.Expect(err).To(BeNil())
 }
 
 func TestValidatingWebhookCreate(t *testing.T) {
@@ -129,6 +151,28 @@ func TestValidatingWebhookCreate(t *testing.T) {
 	wc, err := NewWebhookCreator(client, certs, ctrl.Log, scheme)
 	g.Expect(err).To(BeNil())
 	err = wc.CreateValidatingWebhookConfigurationFromFile(bytes, TestNamespace, crd, false)
+	g.Expect(err).To(BeNil())
+	_, err = client.AdmissionregistrationV1beta1().ValidatingWebhookConfigurations().Get("seldon-validating-webhook", metav1.GetOptions{})
+	g.Expect(err).To(BeNil())
+}
+
+func TestValidatingWebhookCreateNamespaced(t *testing.T) {
+	g := NewGomegaWithT(t)
+	scheme := createScheme()
+	bytes, err := LoadBytesFromFile("testdata", "validate.yaml")
+	g.Expect(err).To(BeNil())
+	client := fake.NewSimpleClientset()
+	apiExtensionsFake := apiextensionsfake.NewSimpleClientset()
+	crd, err := createCRD(apiExtensionsFake)
+	g.Expect(err).To(BeNil())
+	hosts := []string{"seldon-webhook-service.seldon-system", "seldon-webhook-service.seldon-system.svc"}
+	certs, err := certSetup(hosts)
+	g.Expect(err).To(BeNil())
+	wc, err := NewWebhookCreator(client, certs, ctrl.Log, scheme)
+	g.Expect(err).To(BeNil())
+	err = wc.CreateValidatingWebhookConfigurationFromFile(bytes, TestNamespace, crd, true)
+	g.Expect(err).To(BeNil())
+	_, err = client.AdmissionregistrationV1beta1().ValidatingWebhookConfigurations().Get("seldon-validating-webhook-"+TestNamespace, metav1.GetOptions{})
 	g.Expect(err).To(BeNil())
 }
 

@@ -36,7 +36,7 @@ You will need a running cluster with kubectl authenticated and the latest images
 make scorecard
 ```
 
-The output should be simialr to:
+The output should be similar to:
 
 ```
 INFO[0000] Using config file: /home/clive/work/seldon-core/fork-seldon-core/operator/seldon-operator/.osdk-scorecard.yaml 
