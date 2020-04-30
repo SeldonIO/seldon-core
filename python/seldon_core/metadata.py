@@ -3,6 +3,8 @@ import logging
 
 from typing import Union, List, Dict
 
+from seldon_core.metrics import split_image_tag
+
 
 logger = logging.getLogger(__name__)
 
@@ -152,7 +154,7 @@ def validate_model_metadata(data: Dict) -> Dict:
     a correct type for specific components.
     """
     if MODEL_IMAGE is not None:
-        image_name, image_version = MODEL_IMAGE.split(":")
+        image_name, image_version = split_image_tag(MODEL_IMAGE)
     else:
         image_name, image_version = "", ""
     name = data.get("name", image_name)

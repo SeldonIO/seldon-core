@@ -43,7 +43,7 @@ kubectl rollout status -n seldon-system deployment/seldon-controller-manager
 
 sleep 5
 
-helm upgrade --install seldon-core-analytics ../../helm-charts/seldon-core-analytics/ --namespace default -f ./kubeflow/seldon-analytics-kubeflow.yaml
+helm upgrade --install seldon-core-analytics ../../helm-charts/seldon-core-analytics/ --namespace seldon-system -f ./kubeflow/seldon-analytics-kubeflow.yaml
 
 kubectl create namespace logs || echo "namespace logs exists"
 helm upgrade --install elasticsearch elasticsearch --version 7.6.0 --namespace=logs --set service.type=ClusterIP --set antiAffinity="soft" --repo https://helm.elastic.co --set image=docker.elastic.co/elasticsearch/elasticsearch-oss
