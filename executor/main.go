@@ -210,6 +210,12 @@ func main() {
 		}
 	}
 
+	// Ensure standard OpenAPI seldon API file has this deployment's values
+	err = rest.EmbedSeldonDeploymentValuesInSwaggerFile(*namespace, *sdepName)
+	if err != nil {
+		log.Error(err, "Failed to embed variables on OpenAPI template")
+	}
+
 	annotations, err := k8s.GetAnnotations()
 	if err != nil {
 		log.Error(err, "Failed to load annotations")

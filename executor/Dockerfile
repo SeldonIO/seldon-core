@@ -27,6 +27,6 @@ WORKDIR /
 COPY --from=builder /workspace/executor .
 COPY licenses/license.txt licenses/license.txt
 # Copy openapi spec and swagger UI files
-COPY openapi/ /openapi/
+COPY api/rest/openapi/ /openapi/
 
 ENTRYPOINT ["/executor"]
