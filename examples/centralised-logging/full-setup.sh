@@ -23,7 +23,7 @@ helm install --name elasticsearch elasticsearch --version 7.6.0 --namespace=logs
 kubectl rollout status statefulset/elasticsearch-master -n logs
 kubectl patch svc elasticsearch-master -n logs -p '{"spec": {"type": "LoadBalancer"}}'
 
-helm install fluentd-elasticsearch --name fluentd --namespace=logs -f fluentd-values.yaml --repo https://kiwigrid.github.io
+helm install fluentd-elasticsearch --version 8.0.0 --name fluentd --namespace=logs -f fluentd-values.yaml --repo https://kiwigrid.github.io
 helm install kibana --version 7.6.0 --name=kibana --namespace=logs --set service.type=NodePort --repo https://helm.elastic.co --set image=docker.elastic.co/kibana/kibana-oss
 
 kubectl rollout status deployment/kibana-kibana -n logs
