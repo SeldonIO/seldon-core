@@ -18,6 +18,10 @@ package controllers
 
 import (
 	"fmt"
+	"os"
+	"strconv"
+	"strings"
+
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"github.com/seldonio/seldon-core/operator/constants"
 	appsv1 "k8s.io/api/apps/v1"
@@ -25,22 +29,17 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"os"
-	"strconv"
-	"strings"
 )
 
 const (
-	ENV_DEFAULT_EXECUTOR_SERVER_PORT      = "EXECUTOR_SERVER_PORT"
-	ENV_DEFAULT_EXECUTOR_SERVER_GRPC_PORT = "EXECUTOR_SERVER_GRPC_PORT"
-	ENV_EXECUTOR_PROMETHEUS_PATH          = "EXECUTOR_PROMETHEUS_PATH"
-	ENV_ENGINE_PROMETHEUS_PATH            = "ENGINE_PROMETHEUS_PATH"
-	ENV_EXECUTOR_USER                     = "EXECUTOR_CONTAINER_USER"
-	ENV_ENGINE_USER                       = "ENGINE_CONTAINER_USER"
-	ENV_USE_EXECUTOR                      = "USE_EXECUTOR"
+	ENV_DEFAULT_EXECUTOR_SERVER_PORT = "EXECUTOR_SERVER_PORT"
+	ENV_EXECUTOR_PROMETHEUS_PATH     = "EXECUTOR_PROMETHEUS_PATH"
+	ENV_ENGINE_PROMETHEUS_PATH       = "ENGINE_PROMETHEUS_PATH"
+	ENV_EXECUTOR_USER                = "EXECUTOR_CONTAINER_USER"
+	ENV_ENGINE_USER                  = "ENGINE_CONTAINER_USER"
+	ENV_USE_EXECUTOR                 = "USE_EXECUTOR"
 
 	DEFAULT_EXECUTOR_CONTAINER_PORT = 8000
-	DEFAULT_EXECUTOR_GRPC_PORT      = 5001
 
 	ENV_EXECUTOR_IMAGE         = "EXECUTOR_CONTAINER_IMAGE_AND_VERSION"
 	ENV_EXECUTOR_IMAGE_RELATED = "RELATED_IMAGE_EXECUTOR" //RedHat specific
@@ -131,19 +130,6 @@ func getExecutorHttpPort() (engine_http_port int, err error) {
 	return engine_http_port, nil
 }
 
-func getExecutorGrpcPort() (engine_grpc_port int, err error) {
-	// Get engine grpc port from environment or use default
-	engine_grpc_port = DEFAULT_EXECUTOR_GRPC_PORT
-	var env_engine_grpc_port = GetEnv(ENV_DEFAULT_EXECUTOR_SERVER_GRPC_PORT, "")
-	if env_engine_grpc_port != "" {
-		engine_grpc_port, err = strconv.Atoi(env_engine_grpc_port)
-		if err != nil {
-			return 0, err
-		}
-	}
-	return engine_grpc_port, nil
-}
-
 func isExecutorEnabled(mlDep *machinelearningv1.SeldonDeployment) bool {
 	useExecutor := getAnnotation(mlDep, machinelearningv1.ANNOTATION_EXECUTOR, "false")
 	return useExecutor == "true" || envUseExecutor == "true"
@@ -200,7 +186,7 @@ func getSvcOrchUser(mlDep *machinelearningv1.SeldonDeployment) (*int64, error) {
 	return nil, nil
 }
 
-func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, predictorB64 string, http_port int, grpc_port int, resources *corev1.ResourceRequirements) (*corev1.Container, error) {
+func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, predictorB64 string, port int, resources *corev1.ResourceRequirements) (*corev1.Container, error) {
 	transport := mlDep.Spec.Transport
 	//Backwards compatible with older resources
 	if transport == "" {
@@ -231,8 +217,7 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 			"--sdep", mlDep.Name,
 			"--namespace", mlDep.Namespace,
 			"--predictor", p.Name,
-			"--http_port", strconv.Itoa(http_port),
-			"--grpc_port", strconv.Itoa(grpc_port),
+			"--port", strconv.Itoa(port),
 			"--transport", string(transport),
 			"--protocol", string(protocol),
 			"--prometheus_path", getPrometheusPath(mlDep),
@@ -251,17 +236,16 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 			{Name: "REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX", Value: GetEnv("EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX", "")},
 		},
 		Ports: []corev1.ContainerPort{
-			{ContainerPort: int32(http_port), Protocol: corev1.ProtocolTCP},
-			{ContainerPort: int32(http_port), Protocol: corev1.ProtocolTCP, Name: constants.MetricsPortName},
-			{ContainerPort: int32(grpc_port), Protocol: corev1.ProtocolTCP},
+			{ContainerPort: int32(port), Protocol: corev1.ProtocolTCP},
+			{ContainerPort: int32(port), Protocol: corev1.ProtocolTCP, Name: constants.MetricsPortName},
 		},
-		ReadinessProbe: &corev1.Probe{Handler: corev1.Handler{HTTPGet: &corev1.HTTPGetAction{Port: intstr.FromInt(http_port), Path: "/ready", Scheme: corev1.URISchemeHTTP}},
+		ReadinessProbe: &corev1.Probe{Handler: corev1.Handler{HTTPGet: &corev1.HTTPGetAction{Port: intstr.FromInt(port), Path: "/ready", Scheme: corev1.URISchemeHTTP}},
 			InitialDelaySeconds: 20,
 			PeriodSeconds:       5,
 			FailureThreshold:    3,
 			SuccessThreshold:    1,
 			TimeoutSeconds:      60},
-		LivenessProbe: &corev1.Probe{Handler: corev1.Handler{HTTPGet: &corev1.HTTPGetAction{Port: intstr.FromInt(http_port), Path: "/live", Scheme: corev1.URISchemeHTTP}},
+		LivenessProbe: &corev1.Probe{Handler: corev1.Handler{HTTPGet: &corev1.HTTPGetAction{Port: intstr.FromInt(port), Path: "/live", Scheme: corev1.URISchemeHTTP}},
 			InitialDelaySeconds: 20,
 			PeriodSeconds:       5,
 			FailureThreshold:    3,
@@ -358,15 +342,11 @@ func createEngineContainer(mlDep *machinelearningv1.SeldonDeployment, p *machine
 
 	var c *corev1.Container
 	if isExecutorEnabled(mlDep) {
-		executor_http_port, err := getExecutorHttpPort()
+		executor_port, err := getExecutorHttpPort()
 		if err != nil {
 			return nil, err
 		}
-		executor_grpc_port, err := getExecutorGrpcPort()
-		if err != nil {
-			return nil, err
-		}
-		c, err = createExecutorContainer(mlDep, p, predictorB64, executor_http_port, executor_grpc_port, engineResources)
+		c, err = createExecutorContainer(mlDep, p, predictorB64, executor_port, engineResources)
 		if err != nil {
 			return nil, err
 		}
