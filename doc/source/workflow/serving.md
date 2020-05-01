@@ -11,6 +11,7 @@ There are several options for testing your model before deploying it.
     * This can be used for all Language Wrappers (but not prepackaged inference servers)
 * Run your SeldonDeployment in a Kubernetes Dev client such as KIND
     * This can be used for any models
+    * You can send requests through the generated Documentation UI, Python Client or CLI tools 
 
 ### Running your model directly with the Python Client
 
@@ -96,6 +97,15 @@ However you can also run Seldon using local client providers such as KIND (we us
 Once you set up KIND or your kubernetes cluster of your choice, and you've set up your cluster with one of the supported [Ingress (as outlined in installation docs)](../workflow/install.md), you can now send requests to your models.
 
 Depending on whether you deployed Seldon Core with Ambassador or the API Gateway you can access your models as discussed below:
+
+### Generated Documentation Swagger UI
+
+Every model deployed behind a Kubernetes cluster and an Ingress exposes a standardised User Interface to send requests using our OpenAPI schema.
+
+This can be accessed through the endpoint `http://<ingress_url>/seldon/<namespace>/<model-name>/api/v1.0/doc/` which will allow you to send requests directly through your browser.
+
+![](https://raw.githubusercontent.com/SeldonIO/seldon-core/master/doc/source/images/rest-openapi.jpg)
+
 
 ### Ambassador
 
