@@ -32,6 +32,7 @@ scan_rest=ospid-5c2f945c-69fa-4de4-8574-e9a61f69d69a
 # https://connect.redhat.com/project/4061631/view
 scan_grpc=ospid-d75d8767-c689-4368-9859-4ec4f0062a3a
 redhat-image-scan-%:
+	docker pull ${IMAGE_BASE}_$*:${VERSION}
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
 		echo $${rh_password_sklearnserver_$*} | docker login -u unused scan.connect.redhat.com --password-stdin
 	docker tag ${IMAGE_BASE}_$*:${VERSION} scan.connect.redhat.com/${scan_$*}/${IMAGE_NAME_BASE}_$*:${VERSION}

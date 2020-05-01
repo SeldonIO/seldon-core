@@ -138,6 +138,7 @@ docker-push-redhat:
 
 # password can be found at: https://connect.redhat.com/project/1366481/view
 redhat-image-scan:
+	docker pull ${IMG_REDHAT}
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
 		echo $${rh_password_operator} | docker login -u unused scan.connect.redhat.com --password-stdin
 	docker tag ${IMG_REDHAT} scan.connect.redhat.com/ospid-7f50cebe-122b-495a-a143-41426dfcb6c9/${IMG_VERSION_REDHAT}

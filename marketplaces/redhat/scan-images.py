@@ -22,7 +22,6 @@ def run_command(args, debug=False):
 
 def scan_images(debug=False):
     paths = [
-    "wrappers/s2i/python/build_scripts",
     "operator",
     "executor",
     "engine",

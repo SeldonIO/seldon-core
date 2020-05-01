@@ -36,6 +36,7 @@ scan_rest=ospid-c90fdfe6-d054-4598-baa8-7f7aac3ed63a
 # no groc at present
 scan_grpc=
 redhat-image-scan-%:
+	docker pull ${IMAGE_BASE}_$*:${VERSION}
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
 		echo $${rh_password_mock_model_$*} | docker login -u unused scan.connect.redhat.com --password-stdin
 	docker tag ${IMAGE_BASE}_$*:${VERSION} scan.connect.redhat.com/${scan_$*}/${IMAGE_NAME_BASE}_$*:${VERSION}

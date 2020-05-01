@@ -15,7 +15,8 @@ kind-load:
 	kind load docker-image ${IMAGE}:${TAG}
 
 # password can be found at: https://connect.redhat.com/project/3986991/view
-redhat-image-scan: 
+redhat-image-scan:
+	docker pull seldonio/${IMAGE}:${VERSION}
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
 		echo $${rh_password_storage_initializer} | docker login -u unused scan.connect.redhat.com --password-stdin
 	docker tag seldonio/${IMAGE}:${VERSION} scan.connect.redhat.com/ospid-dc132f00-5370-46ed-b506-737bb66d3f34/${IMAGE}:${VERSION}

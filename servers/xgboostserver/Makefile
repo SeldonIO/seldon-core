@@ -32,6 +32,7 @@ scan_rest=ospid-096b89ca-b4a6-4cff-8c13-d65945a5adb9
 # 
 scan_grpc=ospid-ba6387aa-1144-4764-8b04-80e3d34fbcc4
 redhat-image-scan-%:
+	docker pull ${IMAGE_BASE}_$*:${VERSION}
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
 		echo $${rh_password_xgboostserver_$*} | docker login -u unused scan.connect.redhat.com --password-stdin
 	docker tag ${IMAGE_BASE}_$*:${VERSION} scan.connect.redhat.com/${scan_$*}/${IMAGE_NAME_BASE}_$*:${VERSION}

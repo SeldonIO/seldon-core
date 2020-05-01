@@ -32,6 +32,7 @@ scan_rest=ospid-fe6af4a5-e0c6-414a-b0a6-00b7773b6336
 # https://connect.redhat.com/project/4122001/view
 scan_grpc=ospid-fbd924dd-bc1e-403b-9f35-5f75b82b1cdf
 redhat-image-scan-%:
+	docker pull ${IMAGE_BASE}_$*:${VERSION}
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
 		echo $${rh_password_mlflowserver_$*} | docker login -u unused scan.connect.redhat.com --password-stdin
 	docker tag ${IMAGE_BASE}_$*:${VERSION} scan.connect.redhat.com/${scan_$*}/${IMAGE_NAME_BASE}_$*:${VERSION}

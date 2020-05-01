@@ -16,6 +16,7 @@ kind-load:
 
 # password can be found at: https://connect.redhat.com/project/3987291/view
 redhat-image-scan:
+	docker pull seldonio/${IMAGE}:${VERSION}
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
 		echo $${rh_password_alibi_explain} | docker login -u unused scan.connect.redhat.com --password-stdin
 	docker tag seldonio/${IMAGE}:${VERSION} scan.connect.redhat.com/ospid-02f3e15b-c16f-4353-affa-61d5f3c6408b/${IMAGE}:${VERSION}

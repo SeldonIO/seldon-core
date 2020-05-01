@@ -50,6 +50,7 @@ push_image:
 
 # password can be found at: https://connect.redhat.com/project/3993051/view
 redhat-image-scan:
+	docker pull seldonio/${IMAGE}:${VERSION}
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
 		echo $${rh_password_request_logger} | docker login -u unused scan.connect.redhat.com --password-stdin
 	docker tag seldonio/${IMAGE}:${VERSION} scan.connect.redhat.com/ospid-62dca88a-015b-4d08-8c52-b709e55a7790/${IMAGE}:${VERSION}
