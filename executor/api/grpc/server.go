@@ -2,10 +2,13 @@ package grpc
 
 import (
 	"context"
+	"math"
+	"strconv"
+
 	"github.com/go-logr/logr"
 	guuid "github.com/google/uuid"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	"github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
+	grpc_opentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
 	"github.com/opentracing/opentracing-go"
 	"github.com/seldonio/seldon-core/executor/api/metric"
 	"github.com/seldonio/seldon-core/executor/api/payload"
@@ -13,8 +16,6 @@ import (
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
-	"math"
-	"strconv"
 )
 
 const (
