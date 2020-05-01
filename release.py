@@ -11,6 +11,7 @@ import sys
 import argparse
 import re
 import shutil
+import json
 
 
 def pp(o):
@@ -103,7 +104,7 @@ def update_chart_yaml_file(fpath, seldon_core_version, debug=False):
     print("updated {fpath}".format(**locals()))
 
 
-def update_operator_values_yaml_file(fpath, seldon_core_version, debug=False):
+def update_operator_values_yaml_file_core_images(fpath, seldon_core_version, debug=False):
     fpath = os.path.realpath(fpath)
     if debug:
         print("processing [{}]".format(fpath))
@@ -119,11 +120,32 @@ def update_operator_values_yaml_file(fpath, seldon_core_version, debug=False):
     # pp(out)
     # pp(err)
     if err == None:
-        print("updated operator values yaml".format(**locals()))
+        print("updated operator values yaml for core images".format(**locals()))
     else:
-        print("error updating operator values yaml".format(**locals()))
+        print("error updating operator values yaml for core images".format(**locals()))
         print(err)
 
+
+def update_operator_values_yaml_file_prepackaged_images(fpath, seldon_core_version, debug=False):
+    fpath = os.path.realpath(fpath)
+    if debug:
+        print("processing [{}]".format(fpath))
+    args = [
+        "sed",
+        "-i",
+        "s/defaultImageVersion: \(.*\)/defaultImageVersion: \"{seldon_core_version}\"/".format(
+            **locals()
+        ),
+        fpath,
+    ]
+    err, out = run_command(args, debug)
+    # pp(out)
+    # pp(err)
+    if err == None:
+        print("updated operator values yaml for prepackaged server images".format(**locals()))
+    else:
+        print("error updating operator values yaml for prepackaged server images".format(**locals()))
+        print(err)
 
 def update_versions_txt(seldon_core_version, debug=False):
     with open("version.txt", "w") as f:
@@ -185,6 +207,53 @@ def update_operator_version(seldon_core_version, debug=False):
         print(err)
 
 
+def update_image_metadata_json(seldon_core_version, debug=False):
+    paths = [
+        "examples/models/mean_classifier/image_metadata.json",
+        "integrations/tfserving/image_metadata.json",
+        "servers/sklearnserver/sklearnserver/image_metadata.json",
+        "servers/mlflowserver/mlflowserver/image_metadata.json",
+        "servers/xgboostserver/xgboostserver/image_metadata.json"
+    ]
+    for path in paths:
+        if debug:
+            print("processing [{}]".format(path))
+        with open(path) as json_file:
+            data = json.load(json_file)
+            for label in data["labels"]:
+                if "version" in label:
+                    label["version"] = f"{seldon_core_version}"
+            with open(path, 'w') as outfile:
+                json.dump(data, outfile)
+
+def update_dockerfile_label_version(seldon_core_version, debug=False):
+    paths = [
+                "operator/Dockerfile.redhat",
+                "engine/Dockerfile.redhat",
+                "executor/Dockerfile.redhat",
+                "servers/tfserving/Dockerfile.redhat",
+                "components/alibi-detect-server/Dockerfile",
+                "components/storage-initializer/Dockerfile",
+                "components/seldon-request-logger/Dockerfile",
+                "components/alibi-explain-server/Dockerfile"
+    ]
+    for path in paths:
+        if debug:
+            print("processing [{}]".format(path))
+        args = [
+            "sed",
+            "-i",
+            "s/version=\".*\" \\\\/version=\"{seldon_core_version}\" \\\\/".format(**locals()),
+            path,
+        ]
+        err, out = run_command(args, debug)
+        if err == None:
+            print("updated {path}".format(**locals()))
+        else:
+            print("error updating {path}".format(**locals()))
+            print(err)
+
+
 def set_version(
     seldon_core_version,
     pom_files,
@@ -204,16 +273,16 @@ def set_version(
     # Update kustomize
     update_kustomize_engine_version(seldon_core_version, debug)
     update_kustomize_executor_version(seldon_core_version, debug)
-
+    #
     # Update operator version
     update_operator_version(seldon_core_version, debug)
-
+    #
     # Update top level versions.txt
     update_versions_txt(seldon_core_version, debug)
-
+    #
     # update the pom files
     for fpath in pom_files_realpaths:
-        update_pom_file(fpath, seldon_core_version, debug)
+         update_pom_file(fpath, seldon_core_version, debug)
 
     # update the helm chart files
     for chart_yaml_file_realpath in chart_yaml_file_realpaths:
@@ -221,9 +290,18 @@ def set_version(
 
     # update the operator helm values file
     if operator_values_yaml_file != None:
-        update_operator_values_yaml_file(
-            operator_values_yaml_file_realpath, seldon_core_version, debug
+         update_operator_values_yaml_file_core_images(
+             operator_values_yaml_file_realpath, seldon_core_version, debug
         )
+
+    if operator_values_yaml_file != None:
+        update_operator_values_yaml_file_prepackaged_images(
+           operator_values_yaml_file_realpath, seldon_core_version, debug
+        )
+
+    # Update image version labels
+    update_image_metadata_json(seldon_core_version,debug)
+    update_dockerfile_label_version(seldon_core_version, debug)
 
 
 def main(argv):

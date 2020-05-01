@@ -42,5 +42,5 @@ redhat-image-scan-%:
 	docker push scan.connect.redhat.com/${scan_$*}/${IMAGE_NAME_BASE}_$*:${VERSION}
 
 .PHONY: redhat-image-scan-all
-redhat-image-scan-all: redhat-image-scan-rest 
+redhat-image-scan: redhat-image-scan-rest 
 

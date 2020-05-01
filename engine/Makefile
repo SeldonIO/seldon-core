@@ -17,6 +17,9 @@ build_image: update_proto update_swagger
 docker-build-redhat: update_proto update_swagger
 	docker build  -f Dockerfile.redhat -t ${IMG_REDHAT} .
 
+docker-push-redhat:
+	docker push ${IMG_REDHAT}
+
 # password can be found at: https://connect.redhat.com/project/1366491/view
 redhat-image-scan:
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \

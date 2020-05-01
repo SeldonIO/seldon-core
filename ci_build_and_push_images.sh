@@ -37,7 +37,8 @@ function build_push_operator {
 	-C operator \
 	docker-build \
 	docker-push \
-	docker-build-redhat    
+	docker-build-redhat \
+	docker-push-redhat	
     OPERATOR_EXIT_VALUE=$?
 }
 
@@ -46,7 +47,8 @@ function build_push_executor {
 	-C executor \
 	docker-build \
 	docker-push \
-	docker-build-redhat    
+	docker-build-redhat \
+	docker-push-redhat	
     EXECUTOR_EXIT_VALUE=$?
 }
 
@@ -58,7 +60,8 @@ function build_push_engine {
 	-C engine \
 	build_image \
 	push_to_registry \
-	docker-build-redhat
+	docker-build-redhat \
+	docker-push-redhat	
     ENGINE_EXIT_VALUE=$?
 }
 
