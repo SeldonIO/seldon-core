@@ -139,7 +139,7 @@ def connect_elasticsearch():
     headers = None
 
     if elastic_token:
-        headers = {"authorization": "Bearer "+elastic_token}
+        headers = {"Authorization": "Bearer "+elastic_token}
 
     _es = Elasticsearch(connection_string,verify_certs=False,connection_class=RequestsHttpConnection,headers=headers)
     if _es.ping():
