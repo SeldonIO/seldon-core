@@ -1,0 +1,116 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  {{- if eq .Values.workflow.useNameAsGenerateName false }}
+  name: {{ .Values.workflow.name }}
+  {{- else }}
+  generateName: {{ .Values.workflow.name }}
+  {{- end }}
+  namespace: {{ .Values.workflow.namespace }}
+spec:
+  entrypoint: seldon-batch-process
+  templates:
+  - name: seldon-batch-process
+    steps:
+    - - name: create-seldon-resource            
+        template: create-seldon-resource-template
+    - - name: wait-seldon-resource
+        template: wait-seldon-resource-template
+    - - name: download-object-store
+        template: download-object-store-template
+    - - name: process-batch-inputs
+        template: process-batch-inputs-template
+        arguments:
+          artifacts:
+          - name: input-data
+            from: "{{`{{steps.download-object-store.outputs.artifacts.input-data}}`}}"
+    - - name: upload-object-store
+        template: upload-object-store-template
+        arguments:
+          artifacts:
+          - name: output-data
+            from: "{{`{{steps.process-batch-inputs.outputs.artifacts.output-data}}`}}"
+            
+  - name: create-seldon-resource-template
+    resource:
+      action: create
+      manifest: |
+        apiVersion: machinelearning.seldon.io/v1
+        kind: SeldonDeployment
+        metadata:
+          name: "{{ .Values.seldonDeployment.name }}"
+          namespace: {{ .Values.workflow.namespace }}
+          ownerReferences:
+          - apiVersion: argoproj.io/v1alpha1
+            blockOwnerDeletion: true
+            kind: Workflow
+            name: "{{`{{workflow.name}}`}}"
+            uid: "{{`{{workflow.uid}}`}}"
+        spec:
+          name: "{{ .Values.seldonDeployment.name }}"
+          predictors:
+            - graph:
+                children: []
+                implementation: {{ .Values.seldonDeployment.server }}
+                modelUri: {{ .Values.seldonDeployment.modelUri }}
+                name: classifier
+              name: default
+              replicas: {{ .Values.seldonDeployment.replicas }}
+                
+  - name: wait-seldon-resource-template
+    script:
+      image: seldonio/core-builder:0.14
+      command: [bash]
+      source: |
+        sleep 3
+        echo "{{ .Values.seldonDeployment.name }}"
+        kubectl rollout status \
+            deploy/$(kubectl get deploy -l seldon-deployment-id="{{ .Values.seldonDeployment.name }}" -o jsonpath='{.items[0].metadata.name}')
+                     
+  - name: download-object-store-template
+    script:
+      image: minio/mc:RELEASE.2020-04-17T08-55-48Z
+      command: [sh]
+      source: |
+        mc config host add minio-local http://minio.default.svc.cluster.local:9000 minioadmin minioadmin
+        mc cp minio-local/data/input-data.txt /assets/input-data.txt
+    outputs:
+      artifacts:
+      - name: input-data
+        path: /assets/input-data.txt
+            
+  - name: process-batch-inputs-template
+    inputs:
+      artifacts:
+      - name: input-data
+        path: /assets/input-data.txt
+    outputs:
+      artifacts:
+      - name: output-data
+        path: /assets/output-data.txt
+    script:
+      image: {{ .Values.seldonDeployment.image }}
+      command: [bash]
+      source: |
+        seldon-batch-processor \
+            --deployment-name "{{ .Values.seldonDeployment.name }}" \
+            --namespace "{{ .Values.workflow.namespace }}" \
+            --host "{{ .Values.seldonDeployment.host }}" \
+            --workers "{{ .Values.batchWorker.workers }}" \
+            --retries "{{ .Values.batchWorker.retries }}" \
+            --input-data-path "{{ .Values.batchWorker.inputDataPath }}" \
+            --output-data-path "{{ .Values.batchWorker.outputDataPath }}"
+      
+  - name: upload-object-store-template
+    inputs:
+      artifacts:
+      - name: output-data
+        path: /assets/output-data.txt
+    script:
+      image: minio/mc:RELEASE.2020-04-17T08-55-48Z
+      command: [sh]
+      source: |
+        mc config host add minio-local http://minio.default.svc.cluster.local:9000 minioadmin minioadmin
+        mc cp /assets/output-data.txt minio-local/data/output-data-{{`{{workflow.name}}`}}.txt
+        

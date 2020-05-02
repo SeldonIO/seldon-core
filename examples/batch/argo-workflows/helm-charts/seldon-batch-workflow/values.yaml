@@ -1,0 +1,15 @@
+workflow:
+  name: seldon-batch-process
+  useNameAsGenerateName: false
+  namespace: default
+seldonDeployment:
+  name: seldon-{{workflow.uid}}
+  image: seldonio/seldon-core-s2i-python37:1.1.1-SNAPSHOT
+  server: SKLEARN_SERVER
+  modelUri: gs://seldon-models/sklearn/iris
+  replicas: 10
+batchWorker:
+  workers: 100
+  retries: 3
+  inputDataPath: /assets/input-data.txt
+  outputDataPath: /assets/output-data.txt
