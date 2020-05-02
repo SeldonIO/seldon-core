@@ -87,6 +87,7 @@ def run_cli(
     method,
     log_level,
 ):
+    # TODO: Add checks that url is valid
     url = f"http://{host}/seldon/{namespace}/{deployment_name}/api/v1.0/{method}"
     q_in = Queue(workers * 2)
     q_out = Queue(workers * 2)
