@@ -24,9 +24,9 @@ CHOICES_LOG_LEVEL = ["debug", "info", "warning", "error"]
 )
 @click.option("--namespace", "-n", envvar="SELDON_BATCH_NAMESPACE", default="default")
 @click.option(
-    "--endpoint",
-    "-e",
-    envvar="SELDON_BATCH_ENDPOINT",
+    "--host",
+    "-h",
+    envvar="SELDON_BATCH_HOST",
     default="istio-ingressgateway.istio-system.svc.cluster.local:80",
 )
 @click.option(
@@ -79,7 +79,7 @@ def run_cli(
     deployment_name,
     gateway_type,
     namespace,
-    endpoint,
+    host,
     transport,
     payload_type,
     parallelism,
@@ -89,7 +89,7 @@ def run_cli(
     method,
     log_level,
 ):
-    url = f"http://{endpoint}/seldon/{namespace}/{deployment_name}/api/v1.0/{method}"
+    url = f"http://{host}/seldon/{namespace}/{deployment_name}/api/v1.0/{method}"
     q_in = Queue(parallelism * 2)
     q_out = Queue(parallelism * 2)
 
