@@ -43,9 +43,7 @@ CHOICES_LOG_LEVEL = ["debug", "info", "warning", "error"]
     type=click.Choice(CHOICES_PAYLOAD_TYPE),
     default="raw",
 )
-@click.option(
-    "--parallelism", "-x", envvar="SELDON_BATCH_PARALLELISM", type=int, default=1
-)
+@click.option("--workers", "-w", envvar="SELDON_BATCH_WORKERS", type=int, default=1)
 @click.option("--retries", "-r", envvar="SELDON_BATCH_RETRIES", type=int, default=3)
 @click.option(
     "--input-data-path",
@@ -82,7 +80,7 @@ def run_cli(
     host,
     transport,
     payload_type,
-    parallelism,
+    workers,
     retries,
     input_data_path,
     output_data_path,
@@ -90,8 +88,8 @@ def run_cli(
     log_level,
 ):
     url = f"http://{host}/seldon/{namespace}/{deployment_name}/api/v1.0/{method}"
-    q_in = Queue(parallelism * 2)
-    q_out = Queue(parallelism * 2)
+    q_in = Queue(workers * 2)
+    q_out = Queue(workers * 2)
 
     def _start_request_worker():
         with requests.Session() as session:
@@ -112,7 +110,7 @@ def run_cli(
             output_data_file.write(f"{line}")
             q_out.task_done()
 
-    for _ in range(parallelism):
+    for _ in range(workers):
         t = Thread(target=_start_request_worker)
         t.daemon = True
         t.start()
