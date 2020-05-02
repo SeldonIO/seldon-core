@@ -1,5 +1,6 @@
-PREV_VERSION=1.0.0
-VERSION=1.1.0
+SHELL := /bin/bash
+VERSION ?= $(shell cat ../../version.txt)
+PREV_VERSION=1.1.0
 COMMUNITY_OPERATORS_BASE=/home/clive/work/seldon-core/redhat/community-operators
 
 .PHONY: recreate-generated
@@ -28,6 +29,7 @@ deploy/olm-catalog/seldon-operator/${VERSION}/seldon-operator.v${VERSION}.cluste
 	operator-sdk generate csv --csv-version ${VERSION} --from-version ${PREV_VERSION} --update-crds
 
 update_csv: clean_csv_${VERSION} deploy/olm-catalog/seldon-operator/${VERSION}/seldon-operator.v${VERSION}.clusterserviceversion.yaml
+	sed -i s/${PREV_VERSION}/${VERSION}/ deploy/olm-catalog/seldon-operator/seldon-operator.package.yaml
 
 #
 # TESTS

@@ -174,6 +174,7 @@ if __name__ == "__main__":
                 res["data"]["storageInitializer"] = helm_value_json(
                     "storageInitializer"
                 )
+                res["data"]["explainer"] = helm_value_json("explainer")
 
             if kind == "serviceaccount" and name == "seldon-manager":
                 res["metadata"]["name"] = helm_value("serviceAccount.name")

@@ -53,6 +53,8 @@ docker-build:
 docker-push:
 	docker push seldonio/${IMAGE}:${VERSION} 
 
+kind_load: docker-build
+	kind load docker-image seldonio/${IMAGE}:${VERSION}
 
 #
 # RedHat

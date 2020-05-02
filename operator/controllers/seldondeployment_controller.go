@@ -20,6 +20,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"k8s.io/client-go/kubernetes"
+	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"net/url"
 	"strconv"
 	"strings"
@@ -71,6 +73,7 @@ type SeldonDeploymentReconciler struct {
 	Scheme    *runtime.Scheme
 	Namespace string
 	Recorder  record.EventRecorder
+	ClientSet kubernetes.Interface
 }
 
 //---------------- Old part
@@ -496,7 +499,8 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 			c.deployments = append(c.deployments, deploy)
 		}
 
-		err = createStandaloneModelServers(r, mlDep, &p, &c, p.Graph, securityContext)
+		pi := NewPrePackedInitializer(r.ClientSet)
+		err = pi.createStandaloneModelServers(mlDep, &p, &c, p.Graph, securityContext)
 		if err != nil {
 			return nil, err
 		}
@@ -573,7 +577,8 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 			externalPorts[i] = httpGrpcPorts{httpPort: httpPort, grpcPort: grpcPort}
 		}
 
-		err = createExplainer(r, mlDep, &p, &c, pSvcName, securityContext, log)
+		ei := NewExplainerInitializer(r.ClientSet)
+		err = ei.createExplainer(mlDep, &p, &c, pSvcName, securityContext, log)
 		if err != nil {
 			return nil, err
 		}

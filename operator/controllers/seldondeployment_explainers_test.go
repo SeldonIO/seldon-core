@@ -28,6 +28,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/rand"
+	"k8s.io/client-go/kubernetes/fake"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"time"
 )
@@ -40,6 +41,7 @@ var _ = Describe("createExplainer", func() {
 	var pSvcName string
 
 	BeforeEach(func() {
+
 		p = &machinelearningv1.PredictorSpec{
 			Name: "main",
 		}
@@ -58,18 +60,24 @@ var _ = Describe("createExplainer", func() {
 		pSvcName = machinelearningv1.GetPredictorKey(mlDep, p)
 
 		r = &SeldonDeploymentReconciler{
-			Client:   k8sManager.GetClient(),
-			Log:      ctrl.Log.WithName("controllers").WithName("SeldonDeployment"),
-			Scheme:   k8sManager.GetScheme(),
-			Recorder: k8sManager.GetEventRecorderFor(constants.ControllerName),
+			Client:    k8sManager.GetClient(),
+			ClientSet: clientset,
+			Log:       ctrl.Log.WithName("controllers").WithName("SeldonDeployment"),
+			Scheme:    k8sManager.GetScheme(),
+			Recorder:  k8sManager.GetEventRecorderFor(constants.ControllerName),
 		}
 	})
 
 	DescribeTable(
 		"Empty explainers should not create any component",
 		func(explainer *machinelearningv1.Explainer) {
+			scheme = createScheme()
+			client := fake.NewSimpleClientset()
+			_, err := client.CoreV1().ConfigMaps(ControllerNamespace).Create(configMap)
+			Expect(err).To(BeNil())
 			p.Explainer = explainer
-			err := createExplainer(r, mlDep, p, c, pSvcName, nil, r.Log)
+			ei := NewExplainerInitializer(client)
+			err = ei.createExplainer(mlDep, p, c, pSvcName, nil, r.Log)
 
 			Expect(err).ToNot(HaveOccurred())
 			Expect(c.deployments).To(BeEmpty())
@@ -136,7 +144,7 @@ var _ = Describe("Create a Seldon Deployment with explainer", func() {
 		// Run Defaulter
 		instance.Default()
 		envUseExecutor = "true"
-		envExecutorUser = "2"
+		envDefaultUser = "2"
 		Expect(k8sClient.Create(context.Background(), instance)).Should(Succeed())
 		//time.Sleep(time.Second * 5)
 
@@ -174,6 +182,7 @@ var _ = Describe("Create a Seldon Deployment with explainer", func() {
 		Expect(len(depFetched.Spec.Template.Spec.Containers)).Should(Equal(1))
 		Expect(*depFetched.Spec.Replicas).To(Equal(int32(1)))
 		Expect(*depFetched.Spec.Template.Spec.SecurityContext.RunAsUser).To(Equal(int64(2)))
+		Expect(depFetched.Spec.Template.Spec.Containers[0].Image).To(Equal("seldonio/alibiexplainer:1.2.0"))
 
 		//Check svc created
 		svcKey := types.NamespacedName{

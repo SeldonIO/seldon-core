@@ -115,6 +115,10 @@ var configs = map[string]string{
 	"cpuRequest": "100m",
 	"cpuLimit": "1"
 	}`,
+	"explainer": `
+	{
+	"image" : "seldonio/alibiexplainer:1.2.0"
+	}`,
 }
 
 // Create configmap
@@ -132,6 +136,7 @@ var _ = JustBeforeEach(func() {
 	envExecutorImageRelated = "b"
 	envEngineImage = "c"
 	envEngineImageRelated = "d"
+	envDefaultUser = ""
 })
 
 var _ = BeforeSuite(func(done Done) {
@@ -186,10 +191,11 @@ var _ = BeforeSuite(func(done Done) {
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&SeldonDeploymentReconciler{
-		Client:   k8sManager.GetClient(),
-		Log:      ctrl.Log.WithName("controllers").WithName("SeldonDeployment"),
-		Scheme:   k8sManager.GetScheme(),
-		Recorder: k8sManager.GetEventRecorderFor(constants.ControllerName),
+		Client:    k8sManager.GetClient(),
+		ClientSet: clientset,
+		Log:       ctrl.Log.WithName("controllers").WithName("SeldonDeployment"),
+		Scheme:    k8sManager.GetScheme(),
+		Recorder:  k8sManager.GetEventRecorderFor(constants.ControllerName),
 	}).SetupWithManager(k8sManager, constants.ControllerName)
 	Expect(err).ToNot(HaveOccurred())
 

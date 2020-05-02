@@ -24,7 +24,7 @@ push_all: push_rest push_grpc
 build_all: build_rest build_grpc
 
 .PHONY: kind_load_all
-kind_load_all: kind_load_rest kind_load_grpc
+kind_load: build_all kind_load_rest kind_load_grpc
 
 
 # https://connect.redhat.com/project/4127491/view

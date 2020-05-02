@@ -9,10 +9,10 @@ docker-build: kfserving
 	docker build --file=Dockerfile --force-rm=true -t seldonio/${IMAGE}:${VERSION} .
 
 docker-push:
-	docker push ${IMAGE}:${TAG}
+	docker push seldonio/${IMAGE}:${VERSION}
 
-kind-load:
-	kind load docker-image ${IMAGE}:${TAG}
+kind_load: docker-build
+	kind load docker-image seldonio/${IMAGE}:${VERSION}
 
 # password can be found at: https://connect.redhat.com/project/3987291/view
 redhat-image-scan:

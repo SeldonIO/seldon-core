@@ -2,6 +2,7 @@ SHELL := /bin/bash
 VERSION := $(shell cat ../../version.txt)
 IMAGE_NAME_BASE=tfserving-proxy
 IMAGE_BASE=seldonio/${IMAGE_NAME_BASE}
+KIND_NAME ?= kind
 
 build_%:
 	s2i build \
@@ -11,13 +12,19 @@ build_%:
 		${IMAGE_BASE}_$*:${VERSION}
 
 push_%:
-	docker push ${IMG}_$*:${VERSION}
+	docker push ${IMAGE_BASE}_$*:${VERSION}
+
+kind_load_%:
+	kind load -v 3 docker-image ${IMAGE_BASE}_$*:${VERSION} --name ${KIND_NAME}
 
 .PHONY: build_all
 build_all: build_rest build_grpc
 
 .PHONY: push_all
 push_all: push_rest push_grpc
+
+.PHONY: kind_load_all
+kind_load: build_all kind_load_rest kind_load_grpc
 
 # https://connect.redhat.com/project/4098981/view
 scan_rest=ospid-2cbfde5f-10d2-4cc1-9b1d-0dff7f6d1021

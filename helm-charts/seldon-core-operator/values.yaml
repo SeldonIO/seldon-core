@@ -158,3 +158,8 @@ engine:
   serviceAccount:
     name: default
   user: 8888
+
+
+# Explainer image
+explainer:
+  image: seldonio/alibiexplainer:1.1.1-SNAPSHOT

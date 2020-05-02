@@ -25,7 +25,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
-	ctrl "sigs.k8s.io/controller-runtime"
 	"strconv"
 	"strings"
 )
@@ -37,6 +36,14 @@ const (
 var (
 	PredictiveUnitDefaultEnvSecretRefName = GetEnv(ENV_PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME, "")
 )
+
+type PrePackedInitialiser struct {
+	clientset kubernetes.Interface
+}
+
+func NewPrePackedInitializer(clientset kubernetes.Interface) *PrePackedInitialiser {
+	return &PrePackedInitialiser{clientset: clientset}
+}
 
 func extractEnvSecretRefName(pu *machinelearningv1.PredictiveUnit) string {
 	envSecretRefName := ""
@@ -91,7 +98,7 @@ func createTensorflowServingContainer(pu *machinelearningv1.PredictiveUnit, tens
 	}
 }
 
-func addTFServerContainer(mlDep *machinelearningv1.SeldonDeployment, r *SeldonDeploymentReconciler, pu *machinelearningv1.PredictiveUnit, deploy *appsv1.Deployment, serverConfig *machinelearningv1.PredictorServerConfig) error {
+func (pi *PrePackedInitialiser) addTFServerContainer(mlDep *machinelearningv1.SeldonDeployment, pu *machinelearningv1.PredictiveUnit, deploy *appsv1.Deployment, serverConfig *machinelearningv1.PredictorServerConfig) error {
 	ty := machinelearningv1.MODEL
 	pu.Type = &ty
 
@@ -126,7 +133,7 @@ func addTFServerContainer(mlDep *machinelearningv1.SeldonDeployment, r *SeldonDe
 
 	envSecretRefName := extractEnvSecretRefName(pu)
 
-	mi := NewModelInitializer(kubernetes.NewForConfigOrDie(ctrl.GetConfigOrDie()))
+	mi := NewModelInitializer(pi.clientset)
 	_, err := mi.InjectModelInitializer(deploy, tfServingContainer.Name, pu.ModelURI, pu.ServiceAccountName, envSecretRefName)
 	if err != nil {
 		return err
@@ -134,7 +141,7 @@ func addTFServerContainer(mlDep *machinelearningv1.SeldonDeployment, r *SeldonDe
 	return nil
 }
 
-func addModelDefaultServers(r *SeldonDeploymentReconciler, pu *machinelearningv1.PredictiveUnit, deploy *appsv1.Deployment, serverConfig *machinelearningv1.PredictorServerConfig) error {
+func (pi *PrePackedInitialiser) addModelDefaultServers(pu *machinelearningv1.PredictiveUnit, deploy *appsv1.Deployment, serverConfig *machinelearningv1.PredictorServerConfig) error {
 	ty := machinelearningv1.MODEL
 	pu.Type = &ty
 
@@ -190,7 +197,7 @@ func addModelDefaultServers(r *SeldonDeploymentReconciler, pu *machinelearningv1
 
 	envSecretRefName := extractEnvSecretRefName(pu)
 
-	mi := NewModelInitializer(kubernetes.NewForConfigOrDie(ctrl.GetConfigOrDie()))
+	mi := NewModelInitializer(pi.clientset)
 	_, err = mi.InjectModelInitializer(deploy, c.Name, pu.ModelURI, pu.ServiceAccountName, envSecretRefName)
 	if err != nil {
 		return err
@@ -251,7 +258,7 @@ func SetUriParamsForTFServingProxyContainer(pu *machinelearningv1.PredictiveUnit
 	}
 }
 
-func createStandaloneModelServers(r *SeldonDeploymentReconciler, mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, c *components, pu *machinelearningv1.PredictiveUnit, podSecurityContext *v1.PodSecurityContext) error {
+func (pi *PrePackedInitialiser) createStandaloneModelServers(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, c *components, pu *machinelearningv1.PredictiveUnit, podSecurityContext *v1.PodSecurityContext) error {
 
 	if machinelearningv1.IsPrepack(pu) {
 		sPodSpec, idx := utils.GetSeldonPodSpecForPredictiveUnit(p, pu.Name)
@@ -281,11 +288,11 @@ func createStandaloneModelServers(r *SeldonDeploymentReconciler, mlDep *machinel
 		serverConfig := machinelearningv1.GetPrepackServerConfig(string(*pu.Implementation))
 		if serverConfig != nil {
 			if *pu.Implementation != machinelearningv1.PrepackTensorflowName {
-				if err := addModelDefaultServers(r, pu, deploy, serverConfig); err != nil {
+				if err := pi.addModelDefaultServers(pu, deploy, serverConfig); err != nil {
 					return err
 				}
 			} else {
-				if err := addTFServerContainer(mlDep, r, pu, deploy, serverConfig); err != nil {
+				if err := pi.addTFServerContainer(mlDep, pu, deploy, serverConfig); err != nil {
 					return err
 				}
 			}
@@ -311,7 +318,7 @@ func createStandaloneModelServers(r *SeldonDeploymentReconciler, mlDep *machinel
 	}
 
 	for i := 0; i < len(pu.Children); i++ {
-		if err := createStandaloneModelServers(r, mlDep, p, c, &pu.Children[i], podSecurityContext); err != nil {
+		if err := pi.createStandaloneModelServers(mlDep, p, c, &pu.Children[i], podSecurityContext); err != nil {
 			return err
 		}
 	}

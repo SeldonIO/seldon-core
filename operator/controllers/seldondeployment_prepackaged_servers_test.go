@@ -548,7 +548,7 @@ var _ = Describe("Create a prepacked sklearn server", func() {
 
 		//set security user
 		envUseExecutor = "true"
-		envExecutorUser = "2"
+		envDefaultUser = "2"
 
 		Expect(k8sClient.Create(context.Background(), instance)).Should(Succeed())
 		//time.Sleep(time.Second * 5)
