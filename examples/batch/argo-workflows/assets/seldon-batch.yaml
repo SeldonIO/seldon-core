@@ -2,7 +2,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
-  generateName: seldon-batch-
+  name: seldon-batch-simple
 spec:
   entrypoint: seldon-batch-process
   templates:
@@ -14,6 +14,7 @@ spec:
         template: wait-seldon-resource-template
     - - name: process-batch-inputs
         template: process-batch-inputs-template
+            
   - name: create-seldon-resource-template
     resource:
       action: create
@@ -38,12 +39,15 @@ spec:
                 name: classifier
               name: default
               replicas: 1
+                
   - name: wait-seldon-resource-template
     script:
       image: seldonio/core-builder:0.14
       command: [bash]
       source: |
+        sleep 5
         kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id="{{workflow.uid}}" -o jsonpath='{.items[0].metadata.name}')
+        
   - name: process-batch-inputs-template
     script:
       image: seldonio/seldon-core-s2i-python3:1.1.1-SNAPSHOT
@@ -52,7 +56,6 @@ spec:
         from seldon_core.seldon_client import SeldonClient
         import numpy as np
         import time
-        time.sleep(10)
         sc = SeldonClient(
             gateway_endpoint="istio-ingressgateway.istio-system.svc.cluster.local",
             deployment_name="{{workflow.uid}}",

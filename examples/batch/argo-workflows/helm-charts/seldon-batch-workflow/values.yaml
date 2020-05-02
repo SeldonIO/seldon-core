@@ -40,4 +40,4 @@ minio:
   # The name of the file inside of minio that will contain the batch data to process
   inputDataPath: data/input-data.txt
   # The name of the file inside of minio that will contain the batch data to process
-  outputDataPath: data/output-data-{{workflow.name}}.txt
+  outputDataPath: data/output-data-{{workflow.uid}}.txt

@@ -2,7 +2,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
-  generateName: steps-
+  name: argo-basic-example
 spec:
   entrypoint: hello-hello-hello
   # This spec contains two templates: hello-hello-hello and whalesay
