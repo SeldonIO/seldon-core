@@ -33,10 +33,16 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"os"
 )
 
 const (
 	ExplainerConfigMapKeyName = "explainer"
+	EnvExplainerImageRelated  = "RELATED_IMAGE_EXPLAINER"
+)
+
+var (
+	envExplainerImage = os.Getenv(EnvExplainerImageRelated)
 )
 
 type ExplainerInitialiser struct {
@@ -93,13 +99,17 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 			p.Graph.Endpoint = &machinelearningv1.Endpoint{Type: machinelearningv1.REST}
 		}
 
-		// Image from configMap if its not set
+		// Image from configMap or Relalated Image if its not set
 		if explainerContainer.Image == "" {
-			config, err := ei.getExplainerConfigs()
-			if err != nil {
-				return err
+			if envExplainerImage != "" {
+				explainerContainer.Image = envExplainerImage
+			} else {
+				config, err := ei.getExplainerConfigs()
+				if err != nil {
+					return err
+				}
+				explainerContainer.Image = config.Image
 			}
-			explainerContainer.Image = config.Image
 		}
 
 		// explainer can get port from spec or from containerSpec or fall back on default

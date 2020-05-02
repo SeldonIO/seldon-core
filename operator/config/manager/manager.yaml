@@ -59,6 +59,8 @@ spec:
           value: ""          
         - name: RELATED_IMAGE_TENSORFLOW
           value: ""          
+        - name: RELATED_IMAGE_EXPLAINER
+          value: ""          
         - name: CREATE_RESOURCES
           value: "false"
         - name: POD_NAMESPACE

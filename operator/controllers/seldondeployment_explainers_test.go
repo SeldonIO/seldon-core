@@ -30,8 +30,72 @@ import (
 	"k8s.io/apimachinery/pkg/util/rand"
 	"k8s.io/client-go/kubernetes/fake"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"testing"
 	"time"
 )
+
+func createTestSDepWithExplainer() *machinelearningv1.SeldonDeployment {
+	var modelType = machinelearningv1.MODEL
+	key := types.NamespacedName{
+		Name:      "dep",
+		Namespace: "default",
+	}
+	return &machinelearningv1.SeldonDeployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      key.Name,
+			Namespace: key.Namespace,
+		},
+		Spec: machinelearningv1.SeldonDeploymentSpec{
+			Name: "mydep",
+			Predictors: []machinelearningv1.PredictorSpec{
+				{
+					Name: "p1",
+					ComponentSpecs: []*machinelearningv1.SeldonPodSpec{
+						{
+							Spec: v1.PodSpec{
+								Containers: []v1.Container{
+									{
+										Image: "seldonio/mock_classifier:1.0",
+										Name:  "classifier",
+									},
+								},
+							},
+						},
+					},
+					Graph: &machinelearningv1.PredictiveUnit{
+						Name: "classifier",
+						Type: &modelType,
+					},
+					Explainer: &machinelearningv1.Explainer{
+						Type: machinelearningv1.AlibiAnchorsTabularExplainer,
+					},
+				},
+			},
+		},
+	}
+}
+
+func TestExplainerImageRelated(t *testing.T) {
+	g := NewGomegaWithT(t)
+	scheme = createScheme()
+	client := fake.NewSimpleClientset()
+	_, err := client.CoreV1().ConfigMaps(ControllerNamespace).Create(configMap)
+	g.Expect(err).To(BeNil())
+	ei := NewExplainerInitializer(client)
+	sdep := createTestSDepWithExplainer()
+	svcName := "s"
+	c := components{
+		serviceDetails: map[string]*machinelearningv1.ServiceStatus{
+			svcName: &machinelearningv1.ServiceStatus{
+				HttpEndpoint: "a.svc.local",
+			},
+		},
+	}
+	envExplainerImage = "explainer:123"
+	ei.createExplainer(sdep, &sdep.Spec.Predictors[0], &c, svcName, nil, ctrl.Log)
+	g.Expect(len(c.deployments)).To(Equal(1))
+	g.Expect(c.deployments[0].Spec.Template.Spec.Containers[0].Image).To(Equal(envExplainerImage))
+}
 
 var _ = Describe("createExplainer", func() {
 	var r *SeldonDeploymentReconciler
