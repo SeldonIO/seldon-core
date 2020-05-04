@@ -16,4 +16,4 @@ coverage==5.1
 pandas==1.0.1
 
 # Fetch licenses
-pip-licenses==2.1.1
+pip-licenses==2.2.0
