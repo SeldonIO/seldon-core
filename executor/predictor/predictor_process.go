@@ -274,7 +274,10 @@ func (p *PredictorProcess) logPayload(nodeName string, logger *v1.Logger, reqTyp
 func (p *PredictorProcess) Predict(node *v1.PredictiveUnit, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	//Log Request
 	if node.Logger != nil && (node.Logger.Mode == v1.LogRequest || node.Logger.Mode == v1.LogAll) {
-		p.logPayload(node.Name, node.Logger, payloadLogger.InferenceRequest, msg)
+		err := p.logPayload(node.Name, node.Logger, payloadLogger.InferenceRequest, msg)
+		if err != nil {
+			return nil, err
+		}
 	}
 	tmsg, err := p.transformInput(node, msg)
 	if err != nil {
@@ -287,7 +290,10 @@ func (p *PredictorProcess) Predict(node *v1.PredictiveUnit, msg payload.SeldonPa
 	response, err := p.transformOutput(node, cmsg)
 	// Log Response
 	if err == nil && node.Logger != nil && (node.Logger.Mode == v1.LogResponse || node.Logger.Mode == v1.LogAll) {
-		p.logPayload(node.Name, node.Logger, payloadLogger.InferenceResponse, response)
+		err := p.logPayload(node.Name, node.Logger, payloadLogger.InferenceResponse, response)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return response, err
 }
