@@ -3,6 +3,7 @@ package seldon
 import (
 	"context"
 	"net/url"
+	"strings"
 
 	"github.com/go-logr/logr"
 	"github.com/seldonio/seldon-core/executor/api/client"
@@ -34,14 +35,15 @@ func NewGrpcSeldonServer(predictor *v1.PredictorSpec, client client.SeldonApiCli
 
 func (g GrpcSeldonServer) Predict(ctx context.Context, req *proto.SeldonMessage) (*proto.SeldonMessage, error) {
 	md := grpc.CollectMetadata(ctx)
-	ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, md[payload.SeldonPUIDHeader])
+	ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, md[strings.ToLower(payload.SeldonPUIDHeader)][0])
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("SeldonMessageRestClient"), g.ServerUrl, g.Namespace, md)
 	reqPayload := payload.ProtoPayload{Msg: req}
 	resPayload, err := seldonPredictorProcess.Predict(g.predictor.Graph, &reqPayload)
 	if err != nil {
 		g.Log.Error(err, "Failed to call predict")
+		return payloadToMessage(resPayload), err
 	}
-	return resPayload.GetPayload().(*proto.SeldonMessage), err
+	return payloadToMessage(resPayload), nil
 }
 
 func (g GrpcSeldonServer) SendFeedback(ctx context.Context, req *proto.Feedback) (*proto.SeldonMessage, error) {
@@ -50,6 +52,14 @@ func (g GrpcSeldonServer) SendFeedback(ctx context.Context, req *proto.Feedback)
 	resPayload, err := seldonPredictorProcess.Feedback(g.predictor.Graph, &reqPayload)
 	if err != nil {
 		g.Log.Error(err, "Failed to call feedback")
+		return payloadToMessage(resPayload), err
 	}
-	return resPayload.GetPayload().(*proto.SeldonMessage), err
+	return payloadToMessage(resPayload), nil
+}
+
+func payloadToMessage(p payload.SeldonPayload) *proto.SeldonMessage {
+	if m, ok := p.GetPayload().(*proto.SeldonMessage); ok {
+		return m
+	}
+	return nil
 }

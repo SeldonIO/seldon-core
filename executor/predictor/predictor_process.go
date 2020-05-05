@@ -243,7 +243,7 @@ func (p *PredictorProcess) getLogUrl(logger *v1.Logger) (*url.URL, error) {
 	}
 }
 
-func (p *PredictorProcess) logPayload(nodeName string, logger *v1.Logger, reqType payloadLogger.LogRequestType, msg payload.SeldonPayload) error {
+func (p *PredictorProcess) logPayload(nodeName string, logger *v1.Logger, reqType payloadLogger.LogRequestType, msg payload.SeldonPayload, puid string) error {
 	data, err := msg.GetBytes()
 	if err != nil {
 		return err
@@ -251,12 +251,6 @@ func (p *PredictorProcess) logPayload(nodeName string, logger *v1.Logger, reqTyp
 	logUrl, err := p.getLogUrl(logger)
 	if err != nil {
 		return err
-	}
-	var reqId string
-	if r, ok := p.Ctx.Value(payload.SeldonPUIDHeader).(string); ok {
-		reqId = r
-	} else {
-		return fmt.Errorf("context value Seldon PUID Header is nil: interface to string conversion failed")
 	}
 	payloadLogger.QueueLogRequest(payloadLogger.LogRequest{
 		Url:         logUrl,
@@ -266,15 +260,27 @@ func (p *PredictorProcess) logPayload(nodeName string, logger *v1.Logger, reqTyp
 		Id:          guuid.New().String(),
 		SourceUri:   p.ServerUrl,
 		ModelId:     nodeName,
-		RequestId:   reqId,
+		RequestId:   puid,
 	})
 	return nil
 }
 
+func (p *PredictorProcess) getPUIDHeader() (string, error) {
+	// Check request ID is not nil
+	if puid, ok := p.Ctx.Value(payload.SeldonPUIDHeader).(string); ok {
+		return puid, nil
+	}
+	return "", fmt.Errorf("context value Seldon PUID Header is nil: interface to string conversion failed")
+}
+
 func (p *PredictorProcess) Predict(node *v1.PredictiveUnit, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+	puid, err := p.getPUIDHeader()
+	if err != nil {
+		return nil, err
+	}
 	//Log Request
 	if node.Logger != nil && (node.Logger.Mode == v1.LogRequest || node.Logger.Mode == v1.LogAll) {
-		err := p.logPayload(node.Name, node.Logger, payloadLogger.InferenceRequest, msg)
+		err := p.logPayload(node.Name, node.Logger, payloadLogger.InferenceRequest, msg, puid)
 		if err != nil {
 			return nil, err
 		}
@@ -290,7 +296,7 @@ func (p *PredictorProcess) Predict(node *v1.PredictiveUnit, msg payload.SeldonPa
 	response, err := p.transformOutput(node, cmsg)
 	// Log Response
 	if err == nil && node.Logger != nil && (node.Logger.Mode == v1.LogResponse || node.Logger.Mode == v1.LogAll) {
-		err := p.logPayload(node.Name, node.Logger, payloadLogger.InferenceResponse, response)
+		err := p.logPayload(node.Name, node.Logger, payloadLogger.InferenceResponse, response, puid)
 		if err != nil {
 			return nil, err
 		}
