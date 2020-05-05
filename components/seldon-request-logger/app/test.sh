@@ -21,6 +21,7 @@ curl 0.0.0.0:2222 -d '{"data":{"names":["a","b"],"tensor":{"shape":[2,2],"values
 curl 0.0.0.0:2222 -d '{"data":{"names":["c"],"tensor":{"shape":[2,1],"values":[5,6]}}}' -H "Content-Type: application/json" -H "Ce-Inferenceservicename: tensor" -H "Ce-Type: io.seldon.serving.inference.request" -H "Ce-Requestid: 5e"
 
 #text in ndarray - based on moviesentiment example
+#note stored as tabular if names present but text without as k-v pairs assumed to be tabular
 curl 0.0.0.0:2222 -d '{"data": {"names": ["Text review"],"ndarray": ["this film has bad actors"]}}' -H "Ce-Inferenceservicename: moviesentiment" -H "Content-Type: application/json" -H "Ce-Type: io.seldon.serving.inference.request" -H "Ce-Requestid: 6f"
 curl 0.0.0.0:2222 -d '{"data":{"names":["t0","t1"],"ndarray":[[0.5,0.5]]}}' -H "Ce-Inferenceservicename: moviesentiment" -H "Content-Type: application/json" -H "Ce-Type: io.seldon.serving.inference.response" -H "Ce-Requestid: 6f"
 
